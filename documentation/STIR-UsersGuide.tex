@@ -43,7 +43,9 @@
 K. Thielemans (Hammersmith Imanet)\\
 D. Sauge, C. Labb\'e, C. Morel (Hopital Cantonal Gen\`eve)\\
 M. Jacobson (Technion University)\\
-A. Zverovich (Brunel University)
+A. Zverovich (Brunel University) \\
+T. Beisel (Univ. of Paderborn) \\
+Ch. Tsoumpas (Imperial College London)
 
 
 
@@ -151,7 +153,7 @@ C++ Compiler and make}
 
 In order to compile and run the \textit{STIR} programs, we currently recommend 
 using a recent version of the GNU gcc compiler, at least version 
-3.0.1. The final release of \textit{STIR} 2.0 should work with gcc 4.1.
+3.0.1. The final release of \textit{STIR} 2.1 should work with gcc 4.2 up to 4.5.
 Check the mailing lists for more info.
 \footnote{{\small A few years ago, some work-arounds were put in place to 
 keep \textit{STIR} compatible with gcc version 2.95.2, but this version is unlikely to
@@ -481,11 +483,16 @@ See also section \ref{sec:display}..
 \subsubsection{
 Additional options available for parallel code}
 
-\textit{STIR} 2.0 contains somewhat preliminary code for running \texttt{OSMAPOSL} in parallel-mode
-(contribution by Tobias Beisel, Univ. of Paderborn). You need a version of the MPI library and
-and compiler to get this to work. Normal build process would be something like
+\textit{STIR} 2.1 contains code for running \texttt{OSMAPOSL} and \texttt{OSMSPS} in parallel-mode
+\footnote{In fact, any algorithm that uses \texttt{PoissonLogLikelihoodWithLinearModelForMeanAndProjData}.}
+(contribution mainly by Tobias Beisel, Univ. of Paderborn). You need a version of the MPI library and
+and compiler to get this to work. We have tested this using \R2Lurl{http://www.open-mpi.org/}{OpenMPI} 1.4.2.
 
-\cmdline{make CXX=mpic++ DEST=mpiopt/ iterative/OSMAPOSL}
+Normal build process would be something like\footnote{This will need to fit all on
+1 line, or use the continuation character of your shell (normally a backslash).}
+
+\cmdline{make  CC="mpicc.openmpi-gcc" CXX="mpicxx.openmpi-gcc" DEST=mpiopt/ }
+\cmdline{\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,iterative/OSMAPOSL iterative/OSSPS}
 
 This assumes that the file \texttt{mpi.h} is the search-path of the compiler. If not,
 you could include its location for instance by using the \texttt{EXTRA\_CFLAGS} \textit{make} variable.
@@ -504,7 +511,7 @@ Additional make variables for the parallel version:
 {\raggedright \textit{STIR\_MPI=1}} & 
 {\raggedright
 Can be used to force compilation for MPI if the CXX compiler is not recognized (see 
-\textbf{STIR/config.mk}).
+\textbf{STIR/config.mk}, which sets it of the compiler name contains the string \texttt{mpi}).
 } \\
 \hline
 {\raggedright \textit{STIR\_MPI\_TIMINGS=1}} & 
@@ -525,11 +532,12 @@ Can be used to change the default MPI compilation flags which currently includes
 \hline
 \end{longtable}
 
+See section \ref{sec:RunningWithMPI} for information on how to run programs using MPI.
 
 \subsubsection{
 Additional options available for threaded code}
 
-\textit{STIR} 2.0 contains preliminary code for running \texttt{FBP2D} in threaded mode
+Since version 2.0, \textit{STIR} contains preliminary code for running \texttt{FBP2D} in threaded mode
 (contribution by Tobias Beisel, Univ. of Paderborn). You need a compiler that 
 supports \texttt{OPENMP}. Note however, that this code doesn't presently result 
 in a decent speed-up of \texttt{FBP2D}. Normal build process would be something like
@@ -582,8 +590,9 @@ At present, \textit{STIR} uses parts of the Louvain la Neuve ecat library (calle
 the rest of this document).\footnote{\textit{STIR} versions 1.? came with
 specific files for ECAT6 support without the need for the LLN library. 
 However, due to license restrictions this is now no longer the case.} 
-Unfortunately, this library is no longer
-available via the Louvain la Neuve website. Please check the \textit{STIR}
+The library might still be available on  
+\R2Lurl{ftp://ftp.topo.ucl.ac.be/pub/ecat }{ftp://ftp.topo.ucl.ac.be/pub/ecat}.
+Please check the \textit{STIR}
 mailing lists for more information.
 
 You have to download that library and issue 'make --f Makefile.unix' 
@@ -678,16 +687,13 @@ means that the above flags point to incorrect locations.
 Compilation using Visual C++}
 \label{sec:VC}
 
-You need at least Visual C++ 6.0, service pack 5 but there are no recent 
-reports if this version still works. 
-Version 7.1 (i.e. 2003) seems to be fine. 
-Oliver Nix (Heidelberg) 
-has done a few preliminary tests that indicate that Visual Studio 2005 also 
-works. 
-Note however that since release 1.3, certain features do not work 
-with versions prior to 7.1.
+Old versions of \textit{STIR} could be compiled with Visual C++ 6.0, service pack 5 but there are no recent 
+reports if this version still works. We very much recommend to upgrade your compiler. The Visual
+Studio Express versions are free. Version 7.1 (i.e. 2003) might still be fine. \textit{STIR} 2.1
+should normally compile with Visual Studio 2008 and 2010.
 
-There are two different ways to build using Visual C++. Both 
+There are two different ways to build using Visual C++ (but see also \ref{sec:UsingCMake}
+which provides a much easier way to build). Both 
 are somewhat fiddly. Before we go there, we have to got a problem out-of-the-way.
 
 { \subsubsubsection{CPUTimer problems}
@@ -771,7 +777,7 @@ all .cxx files in \texttt{buildblock} directory to the \texttt{buildblock}
 project.
 
 You will find several workspaces in the \textbf{STIR{\textbackslash}VC} subdirectory. 
-In particular, \textit{reconstructors.dsw} contains all reconstruction 
+In particular, \textit{reconstructors.sln} contains all reconstruction 
 programs.
 
 
@@ -797,7 +803,7 @@ the library in the following subdirectory of your home directory: \textbf{lln{\t
 no longer have to issue 'nmake /f Makefile.win32' in the ecat 
 directory first. The ecat.dsp project takes care of that. Using 
 the project has the advantage that you don't get error messages 
-anymore when trying to build a debug version.}} .In addition, get 
+anymore when trying to build a debug version.}} In addition, get 
 the \textbf{ecat.dsp} file from the same source and put it in a new 
 subdirectory \textbf{lln{\textbackslash}ecat{\textbackslash}VC}.
 
@@ -842,7 +848,7 @@ needs the ml32iw.lib library distributed with Mathematica, STIR\_SIMPLE\_BITMAPS
 needs X windows libraries which you would have to get from somewhere 
 else), set the environment variable to PARAPETGRAPHLIB to the 
 name of the library you want. Note that this has to be done BEFORE 
-you start Visual Studio. In Windows NT, 2000 or XP, environment 
+you start Visual Studio. In Windows NT, 2000 or XP or later, environment 
 variables can be set using the System Control Panel. On Windows 
 9?, you have to modify autoexec.bat. 
 
@@ -855,6 +861,42 @@ C/C++ tab, General).
 
 Some more info on using these projects might be available in 
 the archive of the stir\_users mailing list.
+
+\subsubsection{
+Experimental feature: using CMake}
+\label{sec:UsingCMake}
+Since version 2.1, \textit{STIR} contains files to build using the platform-independent
+\R2Lurl{"http://www.cmake.org"}{CMake}, based on example files provided by 
+Robert Barnett (SWAHS, Sydney). This is much better for configuration and finding 
+system dependencies.
+However, tests are not yet included in the CMakeFiles.
+
+See the CMake web-site more information, and in particular\\
+\R2Lurl{http://www.cmake.org/cmake/help/runningcmake.html}{http://www.cmake.org/cmake/help/runningcmake.html}.
+
+Normal build procedure on Linux/Unix would be something like
+
+\cmdline{cd /somewhere/nice/STIRbuild/Release}
+\cmdline{ccmake /somewhere/else/where/the/source/is/STIR}
+
+This will bring up a basic interface that allows you to specify build variables. For example,
+if CMake cannot find \textit{boost}, you will have to set \texttt{BOOST\_ROOT}. You can also
+specify locations for the LLN files, AVW libraries, wether to use \textit{OPENMP}, or
+\textit{MPI}, set \textit{GRAPHICS} according to what it can find on your system, etc. 
+See the section \ref{sec:normalcompilation} for explanation of some
+of the variables. Note that you can use e.g. \textit{DISABLE\_LLN\_MATRIX} to \textit{not}
+use the LLN ECAT library, even if cmake found it. Finally, do not forget to set
+\texttt{CMAKE\_BUILD\_TYPE} to \texttt{Release}, \texttt{Debug} or \texttt{RelWithDebug}.
+
+You can press \texttt{c} to do additional configurations, \texttt{g} for generating
+your build files, \texttt{q} to quit. After that, you will have to use your normal
+build system (i.e. \texttt{make} on Linux/Unix).
+
+On Windows, the procedure is essentially the same, except that you have to specify locations 
+via the cmake GUI. You can also select your build system (e.g. Visual Studio 2008). In that case,
+you do not need to specify the Build Type, as you will be able to select that from in 
+Visual Studio.
+
 
 
 \subsubsection{
@@ -1070,6 +1112,40 @@ On Unix, Linux and Windows variations, success is indicated by
 a status of 0, and failure by anything else. There is currently 
 no differentiation between the reasons for failure.
 
+\subsection{
+Running programs using MPI \label{sec:RunningWithMPI}}
+If you have compiled with STIR\_MPI, you need to the executables in such a way that
+they know about the availables nodes. How to do this is system/MPI version specific. The following
+should work with OpenMPI on Linux:
+
+\cmdline{mpirun.openmpi -np 12 --hostfile ~/myconf.txt OSMAPOSL mypars.par}
+
+\noindent 
+where the host file describes your set-up, e.g. if you have 3 nodes with differing number of cores, the
+host file could loook like this:
+\begin{verbatim}
+# The Hostfile for Open MPI
+beo-09 slots=4
+beo-10 slots=8
+beo-11 slots=8
+\end{verbatim}
+Without host file, the executables will normally be run on the host where you executed the command, which
+is useful for multi-processor machines. 
+
+\textit{MPICH} would use a similar line using \texttt{mpiexec}.
+
+If you have a queueing system that supports MPI such as 
+\R2Lurl{http://www.clusterresources.com/products/torque-resource-manager.php}{Torque}, it is better to use 
+that system for sorting out available resources etc. For example, to use 2 nodes with 4 processes each,
+the following should work
+
+\cmdline{qsub -I -l nodes=2:ppn=4}
+
+This will open a interactive prompt on one node where you just type
+
+\cmdline{mpirun.openmpi OSMAPOSL mypars.par}
+
+Of course, you can use \texttt{qsub} to submit a job as opposed to getting an interactive prompt.
 
 \subsection{
 File formats}
@@ -1104,7 +1180,7 @@ however data files must have a single data set, maximum ring
 difference 11 and contain 281 bins * 256 segments * 336 views. 
 We do have software that read VOLPET headers for all GE scanners, but can currently
 not distribute it due to licensing restrictions. If you have the
-GE Research Tools package you can ask Kris Thielemans for VOLPET
+GE PET Toolbox package you can ask Kris Thielemans for VOLPET and RDF
 support in \textit{STIR}.
 
 \subsubsection{ECAT6 and ECAT7 data} 
@@ -1559,7 +1635,7 @@ image} is specified. \\
  The output filename prefix. When image iterates are saved, subiteration 
 numbers are appended to this prefix after an underscore.
 
-\item[output file format]
+\item[output file format type]
 Set output file format, if omitted a default value will be used. 
 Subsequent parameters will depend on the type of output file 
 format. See section \ref{sec:outputfileformats}..
@@ -2956,7 +3032,7 @@ be all right. The newly proposed Interfile standard does use
 a scale factor, and the \textit{.hv} file follows this convention. 
 However, currently probably only \textit{STIR} programs know about 
 this convention.\footnote{{\small The utilities distributed by the UCL, 
-Louvain-la-Neuve, Belgium on \R2Lurl{ftp://ftp.topo.ucl.ac.be }{ftp://ftp.topo.ucl.ac.be} 
+Louvain-la-Neuve, Belgium on \R2Lurl{ftp://ftp.topo.ucl.ac.be/pub/ecat }{ftp://ftp.topo.ucl.ac.be/pub/ecat} 
 follow a different convention of reading the scale factor. Currently, \textit{STIR} 
 writes \textit{.hv} files that can be read correctly by those utilities, 
 including the \textit{mediman} image viewer and (x)medcon. Note however 
@@ -3769,6 +3845,19 @@ in a parameter file.
 
 See also online documentation for class ProjMatrixByBinUsingRayTracing. 
 
+{ \subsubsubsection{From File}
+}
+TODO
+\label{sec:projmatrixfromfile}
+
+{ \subsubsubsubsection{Parameters}
+}
+
+The following parameters can be set (default values are indicated):
+
+\begin{verbatim}
+
+\end{verbatim}
 
 
 \subsubsection{
@@ -4238,13 +4327,19 @@ Reconstruction Release 2,
 \textit{Proc. IEEE Medical Imaging Conference 2006, San Diego, CA, USA.}
 
 {[}Blu01] Blu T, Thcvenaz P, Unser M \textbf{(2001)}. MOMS: maximal-order interpolation of minimal support.  \textit{IEEE Trans Image Processing} 10(7): 1069-1080.
+
 {[}Nic02] Nichols, T. E., J. Qi, E. Asma and R. M. Leahy \textbf{(2002)}. Spatiotemporal reconstruction of list-mode PET data.  \textit{IEEE Trans Med Imaging} 21(4): 396-404.
+
 {[}Uns93] Unser M, Aldroubi A, Eden M \textbf{(1993)}. B-Spline Signal Proccessing: Part II - Efficient Design and Applications.  \textit{IEEE Trans Signal Processing} 41(2): 834-848.
+
 {[}Uns99] Unser M. \textbf{(1999)}. Splines: A Perfect Fit for Signal and Image Processing. \textit{IEEE Signal Processing Magazine}: 22-38.
 
 
 {[}Tso07{]} Tsoumpas C, Turkheimer F, Thielemans K  \textbf{(2007)}, Convergence properties of algorithms for direct parametric estimation of linear models in dynamic PET. \textit{IEEE Nucl Sci Symp Med Imaging Conf} 3034-3037.
+
 {[}Tso08{]} Tsoumpas C, Turkheimer F E, Thielemans K \textbf{(2008)}, Study of direct and indirect parametric estimation methods of linear models in dynamic positron emission tomography. \textit{Med. Phys.} 35(4): p. 1299-1309.
+
 {[}Pat83] Patlak C S, Blasberg R G, Fenstermacher J D \textbf{(1985)}  Graphical evaluation of blood-to-brain transfer constants from multiple-time uptake data. \textit{J Cereb Blood Flow Metab} 3(1): p. 1-7.
+
 {[}Pat85] Patlak C S, Blasberg R G \textbf{(1985)}  Experimental and Graphical evaluation of blood-to-brain transfer constant from multiple-time uptake data: Generalizations. \textit{J Cereb Blood Flow Metab} 5: p. 584-90. 
 \end{document}
