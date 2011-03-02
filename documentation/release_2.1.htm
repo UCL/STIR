@@ -77,7 +77,12 @@ e.g. <tt>subsens_%d.hv</tt>. This is useful when <tt>use_subset_sensitivities</t
 
 <h3>Functionality changes</h3>
 <ul>
-<li>The ray tracing projection matrix now uses a circular FOV that goes to the edge of the image (i.e. approx one pixel larger than what it used to be).
+<li>The ray tracing projection matrix can be enabled (at compile time) to use a circular FOV 
+that goes to the edge of the image (i.e. approx one pixel larger than what it used to be). 
+However, enabling this gave a change in the <tt>recon_test_pack</tt> results (probably mostly because 
+that data contains scatter, while the <tt>recon_test_pack</tt> code does not model scatter). Therefore,
+this change is disabled by default. You can add <tt>-DSTIR_PMRT_LARGER_FOV</tt> to <tt>EXTRA_CFLAGS</tt>
+if you want this anyway.
 </li>
 <li>Most utilities will now display a somewhat involved message when an error occured. Exact format
 will be system/compiler dependent, but could be something like
