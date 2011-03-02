@@ -32,10 +32,10 @@
   \author Kris Thielemans
   \author Matthew Jacobson
   \author PARAPET project
-  \athor Tobias Beisel
+  \author Tobias Beisel
 
-   $Date$
-   $Revision$
+  $Date$
+  $Revision$
 */
 #include "stir/recon_buildblock/distributable.h"
 
@@ -54,8 +54,10 @@ class DistributedCachingInformation;
   This provides the same functionality as distributable_computation(), but enables caching of
   RelatedViewgrams such that they don't need to be sent multiple times.
 
+  \warning Do not call this function directly. Use distributable_computation() instead.
   \todo Merge this functionality into distributable_computation()
 
+  \internal
  */
 void distributable_computation_cache_enabled(
                                              const shared_ptr<ForwardProjectorByBin>& forward_projector_ptr,
