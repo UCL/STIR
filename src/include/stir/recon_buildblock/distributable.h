@@ -31,6 +31,7 @@
   \author Alexey Zverovich
   \author Kris Thielemans
   \author Matthew Jacobson
+  \author Tobias Beisel
   \author PARAPET project
 
    $Date$
@@ -51,18 +52,20 @@ class ForwardProjectorByBin;
 class BackProjectorByBin;
 class ProjectorByBinPair;
 class DistributedCachingInformation;
-//!@{
-//! \ingroup distributable
 
-//! \name Task-ids current understood by STIR_MPI
-//@{
+
+//! \name Task-ids currently understood by stir::DistributedWorker
+/*! \ingroup distributable */
+//!@{
 const int task_stop_processing=0;
 const int task_setup_distributable_computation=200;
 const int task_do_distributable_gradient_computation=42;
-//@}
+//!@}
 
 //! set-up parameters before calling distributable_computation()
-/*! Empty unless STIR_MPI is defined, in which case it sends parameters to the 
+/*!
+    \ingroup distributable
+    Empty unless STIR_MPI is defined, in which case it sends parameters to the 
     slaves (see stir::DistributedWorker).
 
     \todo currently uses some global variables for configuration in the distributed
@@ -76,13 +79,15 @@ void setup_distributable_computation(
                                      const bool distributed_cache_enabled);
 
 //! clean-up after a sequence of computations
-/*!  Empty unless STIR_MPI is defined, in which case it sends the "stop" task to 
+/*! \ingroup distributable
+      Empty unless STIR_MPI is defined, in which case it sends the "stop" task to 
      the slaves (see stir::DistributedWorker)
 */
 void end_distributable_computation();
 
 //! typedef for callback functions for distributable_computation()
-/*! Pointers will be NULL when they are not to be used by the callback function.
+/*! \ingroup distributable
+    Pointers will be NULL when they are not to be used by the callback function.
 
     \a count and \a count2 are normally incremental counters that accumulate over the loop
     in distributable_computation().
@@ -102,7 +107,8 @@ typedef  void RPC_process_related_viewgrams_type (
 
 /*!
   \brief This function essentially implements a loop over segments and all views in the current subset.
-  
+  \ingroup distributable
+
   Output is in output_image_ptr and in float_out_ptr (but only if they are not NULL).
   What the output is, is really determined by the call-back function
   RPC_process_related_viewgrams.
@@ -181,7 +187,8 @@ void distributable_computation(
 
 
   /*! \name Tag-names currently used by stir::distributable_computation and related functions
-   */
+     \ingroup distributable
+  */
   //!@{
   const int AVAILABLE_NOTIFICATION_TAG=2;
   const int END_ITERATION_TAG=3;
@@ -193,7 +200,6 @@ void distributable_computation(
   const int NEW_VIEWGRAM_TAG=11;
   //!@}
 
-//!@}
 
 END_NAMESPACE_STIR
 
