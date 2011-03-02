@@ -13,7 +13,7 @@ on your hardware of course).
 Tests are independent of each other, as each test uses the 'good' files
 as input.
 
-The file run_*test*.sh are (Bourne) shell scripts that runs all tests 
+The run_*test*.sh files are (Bourne) shell scripts that runs all tests 
 automatically. run_*tests.bat is the corresponding DOS batch file
 (currently not available for all tests).
 
