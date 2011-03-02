@@ -16,7 +16,8 @@ Running the recon_test_pack will tell you if you have the problem (but
 there might still be a problem for your particular scanner/pixel size).
 
 <strong>Update</strong> Thanks to an update by Bing Bai, this seems less of 
-an issue now. Please notify the mailing list if this problem still occurs
+an issue now, but it does still occur. 
+Please notify the mailing list if this problem still occurs
 on your system (give details of OS, processor, compiler and compiler switches).
 
 See the User's Guide for details on how to choose another backprojector.
@@ -33,6 +34,10 @@ will show up some problems, which we thought to have removed already :-/ .
 fine on NT and later.There doesn't seem to be a way to get 
 CPU times in the older Windows versions. 
 </li>
+<li>The default settings for the forward projector/back projector pair result in
+ <strong>unmatched</strong> projectors. This can give problems in certain
+situations. It is <strong>strongly recommended</strong> to change this to use
+the ray tracing matrix projectors (use some extra rays to approximate strip-integrals).
 </ul>
 
 
@@ -40,7 +45,7 @@ CPU times in the older Windows versions.
 
 <!-- Created: Wed Dec 19 10:03:02 BST 2000 -->
 <!-- hhmts start -->
-Last modified: Thu May 14 21:21:26 GMT 2009
+Last modified: Wed Mar  2 18:10:45 GMT 2011
 <!-- hhmts end -->
   </body>
 </html>
