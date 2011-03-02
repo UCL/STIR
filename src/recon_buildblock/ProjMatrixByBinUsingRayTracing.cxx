@@ -23,7 +23,7 @@
   \file
   \ingroup projection
 
-  \brief non-inline implementations for ProjMatrixByBinUsingRayTracing
+  \brief non-inline implementations for stir::ProjMatrixByBinUsingRayTracing
 
   \author Mustapha Sadki
   \author Kris Thielemans
@@ -280,7 +280,11 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
     
     if (restrict_to_cylindrical_FOV)
     {
+#ifdef STIR_PMRT_LARGER_FOV
+      if (fabs(s_in_mm) >= fovrad_in_mm) return;
+#else
       if (fabs(s_in_mm) > fovrad_in_mm) return;
+#endif
       // a has to be such that X^2+Y^2 == fovrad^2      
       if (fabs(s_in_mm) == fovrad_in_mm) 
         {
@@ -523,9 +527,15 @@ calculate_proj_matrix_elems_for_one_bin(
 
   // use FOV which is slightly 'inside' the image to avoid
   // index out of range
+#ifdef STIR_PMRT_LARGER_FOV
   const float fovrad_in_mm = 
     min((min(max_index.x(), -min_index.x())+.45F)*voxel_size.x(),
         (min(max_index.y(), -min_index.y())+.45F)*voxel_size.y()); 
+#else
+  const float fovrad_in_mm = 
+    min((min(max_index.x(), -min_index.x()))*voxel_size.x(),
+        (min(max_index.y(), -min_index.y()))*voxel_size.y()); 
+#endif
 
   if (num_tangential_LORs == 1)
   {
