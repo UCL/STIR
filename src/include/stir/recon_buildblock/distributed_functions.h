@@ -419,7 +419,7 @@ namespace distributed
    */
   //!@{
   const int INT_TAG=7;
-  const int ARBITRARY_TAG=8; //! special tag, equivalent to MPI_ANY_TAG in some functions
+  const int ARBITRARY_TAG=8; //!< special tag, equivalent to MPI_ANY_TAG in some functions
   const int STIR_MPI_CONF_TAG=9;
   const int IMAGE_ESTIMATE_TAG=23;
   const int IMAGE_PARAMETER_TAG=24;
