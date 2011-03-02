@@ -43,7 +43,7 @@
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
-#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+//#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/RunTests.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/info.h"
@@ -56,6 +56,7 @@
 #include <boost/random/variate_generator.hpp>
 
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/recon_buildblock/distributable_main.h"
 START_NAMESPACE_STIR
 
 
@@ -63,20 +64,47 @@ START_NAMESPACE_STIR
   \ingroup test
   \brief Test class for PoissonLogLikelihoodWithLinearModelForMeanAndProjData
 
+  This is a somewhat preliminary implementation of a test that compares the result
+  of GeneralisedObjectiveFunction::compute_gradient 
+  with a numerical gradient computed by using the 
+  GeneralisedObjectiveFunction::compute_objective_function() function.
+
+  The trouble with this is that compute the gradient voxel by voxel is obviously 
+  terribly slow. A solution (for the test) would be to compute it only in 
+  a subset of voxels or so. We'll leave this for later.
+
+  Note that the test only works if the objective function is well-defined. For example,
+  if certain projections are non-zero, while the model estimates them to be zero, the
+  Poisson objective function is in theory infinite.
+  PoissonLogLikelihoodWithLinearModelForMeanAndProjData uses some thresholds to try to 
+  avoid overflow, but if there are too many of these bins, the total objective
+  function will become infinite. The numerical gradient then becomes ill-defined
+  (even in voxels that do not contribute to these bins).
 
 */
 class PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests : public RunTests
 {
 public:
+  //! Constructor that can take some input data to run the test with
+  /*! This makes it possible to run the test with your own data. However, beware that
+      it is very easy to set up a very long computation. See also the note about
+      non-zero measured bins.
+
+      \todo it would be better to parse an objective function. That would allow us to set
+      all parameters from the command line.
+  */
   PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests(char const * const proj_data_filename = 0, char const * const density_filename = 0);
   typedef DiscretisedDensity<3,float> target_type;
   void construct_input_data(shared_ptr<target_type>& density_sptr);
 
   void run_tests();
-private:
+protected:
   char const * proj_data_filename;
   char const * density_filename;
   shared_ptr<GeneralisedObjectiveFunction<target_type> >  objective_function_sptr;
+
+  //! run the test
+  /*! Note that this function is not specific to PoissonLogLikelihoodWithLinearModelForMeanAndProjData */
   void run_tests_for_objective_function(GeneralisedObjectiveFunction<target_type>& objective_function,
                                         target_type& target);
 };
@@ -91,7 +119,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
 run_tests_for_objective_function(GeneralisedObjectiveFunction<PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::target_type>& objective_function,
                                  PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::target_type& target) {
   shared_ptr<target_type> gradient_sptr = target.get_empty_copy();
-  shared_ptr<target_type> gradient_2_sptr = target.get_empty_copy();//XXX
+  shared_ptr<target_type> gradient_2_sptr = target.get_empty_copy();
   const int subset_num = 0;
   info("Computing gradient");
   objective_function.compute_sub_gradient(*gradient_sptr, target, subset_num);
@@ -100,31 +128,34 @@ run_tests_for_objective_function(GeneralisedObjectiveFunction<PoissonLogLikeliho
   const double value_at_target = objective_function.compute_objective_function(target, subset_num);
   target_type::full_iterator target_iter=target.begin_all();
   target_type::full_iterator gradient_iter=gradient_sptr->begin_all();
-  target_type::full_iterator gradient_2_iter=gradient_2_sptr->begin_all(); //XXX
+  target_type::full_iterator gradient_2_iter=gradient_2_sptr->begin_all(); 
   const float eps = 1e-2F;
   bool testOK = true;
-  while( testOK && target_iter!=target.end_all())
+  info("Computing gradient of objective function by numerical differences (this will take a while)");
+  while(target_iter!=target.end_all())
     {
       *target_iter += eps;
       const double value_at_inc = objective_function.compute_objective_function(target, subset_num);
       *target_iter -= eps;
       const float gradient_at_iter = static_cast<float>((value_at_inc - value_at_target)/eps);
-      *gradient_2_iter++ = gradient_at_iter;//XXX
-      //XXXtestOK = testOK && 
+      *gradient_2_iter++ = gradient_at_iter;
+      testOK = testOK && 
         this->check_if_equal(gradient_at_iter, *gradient_iter, "gradient");
       ++target_iter; ++ gradient_iter;
     }
   if (~testOK)
     {
+      info("Writing diagnostic files gradient.hv, numerical_gradient.hv");
       OutputFileFormat<target_type>::default_sptr()->write_to_file("gradient.hv", *gradient_sptr);
-      OutputFileFormat<target_type>::default_sptr()->write_to_file("gradient2.hv", *gradient_2_sptr);
+      OutputFileFormat<target_type>::default_sptr()->write_to_file("numerical_gradient.hv", *gradient_2_sptr);
+#if 0
       OutputFileFormat<target_type>::default_sptr()->write_to_file("subsens.hv", 
                                                                    reinterpret_cast<const PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type> &>(objective_function).get_subset_sensitivity(subset_num));
       gradient_sptr->fill(0.F);
       reinterpret_cast<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type> &>(objective_function).
         compute_sub_gradient_without_penalty_plus_sensitivity(*gradient_sptr, target, subset_num);
       OutputFileFormat<target_type>::default_sptr()->write_to_file("gradient-without-sens.hv", *gradient_sptr);
-
+#endif
     }
 
 }
@@ -136,6 +167,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
   shared_ptr<ProjData> proj_data_sptr = 0;
   if (this->proj_data_filename == 0)
     {
+      // construct a small scanner and sinogram
       shared_ptr<Scanner> scanner_sptr = new Scanner(Scanner::E953);
       scanner_sptr->set_num_rings(5);
       shared_ptr<ProjDataInfo> proj_data_info_sptr = 
@@ -170,6 +202,8 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
 
   if (this->density_filename == 0)
     {
+      // construct a small image
+
       CartesianCoordinate3D<float> origin (0,0,0);    
       const float zoom=1.F;
       
@@ -190,7 +224,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
       density_sptr = aptr;
     }
 
-  // make odd to avoid difficulties with outer-bin that isn't filled in when using symmetries
+  // make odd to avoid difficulties with outer-bin that isn't filled-in when using symmetries
   {
      BasicCoordinate<3,int> min_ind, max_ind;
       if (density_sptr->get_regular_range(min_ind,max_ind))
@@ -205,7 +239,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
   }
 
 
-  // multiplicative
+  // multiplicative term
   shared_ptr<BinNormalisation> bin_norm_sptr = new TrivialBinNormalisation();
   {
     shared_ptr<ProjData> mult_proj_data_sptr  = new ProjDataInMemory (proj_data_sptr->get_proj_data_info_ptr()->clone());
@@ -228,7 +262,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
     bin_norm_sptr = new BinNormalisationFromProjData(mult_proj_data_sptr);
   }
 
-  // additive
+  // additive term
   shared_ptr<ProjData> add_proj_data_sptr  = new ProjDataInMemory (proj_data_sptr->get_proj_data_info_ptr()->clone());
   {
     for (int seg_num=proj_data_sptr->get_min_segment_num(); 
@@ -281,6 +315,8 @@ run_tests()
   construct_input_data(density_sptr);
   this->run_tests_for_objective_function(*this->objective_function_sptr, *density_sptr);
 #else
+  // alternative that gets the objective function from an OSMAPOSL .par file
+  // currently disabled
   OSMAPOSLReconstruction<target_type> recon(proj_data_filename); // actually .par
   shared_ptr<GeneralisedObjectiveFunction<target_type> > objective_function_sptr = recon.get_objective_function_sptr();
   if (!check(objective_function_sptr->set_up(recon.get_initial_data_ptr())==Succeeded::yes, "set-up of objective function"))
@@ -296,7 +332,7 @@ END_NAMESPACE_STIR
 USING_NAMESPACE_STIR
 
 
-int main(int argc, char **argv)
+int distributable_main(int argc, char **argv)
 {
   PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests tests(argc>1? argv[1] : 0,
                                                                    argc>2? argv[2] : 0);
