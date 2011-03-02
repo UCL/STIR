@@ -111,6 +111,14 @@ reconstructs it with all STIR reconstruction algorithms and checks ROI values.</
 <li>Updated Windows batch files. They were broken in STIR 2.0</li>
 </ul>
 
+<h3>Other changes to tests</h3>
+<ul>
+<li>A new test in <tt>recon_test</tt> checks the gradient computation vs
+a numerical gradient by computing the objective function. This is currently
+only enabled for <code>PoissonLogLikelihoodWithLinearModelForMeanAndProjData</code>.
+</li>
+</ul>
+
 <H2>What's new for developers (aside from what should be obvious
 from the above):</H2>
 
