@@ -45,7 +45,7 @@ START_NAMESPACE_STIR
 
 
 /*!
-  \ingroup recon_buildblock
+  \ingroup priors
   \brief
   A class in the GeneralisedPrior hierarchy. This implements a quadratic Gibbs prior.
 
