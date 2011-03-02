@@ -332,7 +332,7 @@ END_NAMESPACE_STIR
 USING_NAMESPACE_STIR
 
 
-int distributable_main(int argc, char **argv)
+int main(int argc, char **argv)
 {
   PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests tests(argc>1? argv[1] : 0,
                                                                    argc>2? argv[2] : 0);
