@@ -1,4 +1,4 @@
-Licensing information for STIR 2.1alpha
+Licensing information for STIR 2.1beta
 ----------------------------------
 
 See for more info http://stir.sourceforge.net, section Registration.
@@ -118,6 +118,7 @@ Explicit list of files that carry the PARAPET license
 ./include/stir/DiscretisedDensityOnCartesianGrid.inl
 ./include/stir/display.h
 ./include/stir/display.inl
+./include/stir/error.h
 ./include/stir/evaluation/ROIValues.h
 ./include/stir/FullArrayIterator.h
 ./include/stir/FullArrayIterator.inl
@@ -177,6 +178,7 @@ Explicit list of files that carry the PARAPET license
 ./include/stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.inl
 ./include/stir/recon_buildblock/distributable.h
 ./include/stir/recon_buildblock/distributableMPICacheEnabled.h
+./include/stir/recon_buildblock/distributable_main.h
 ./include/stir/recon_buildblock/ForwardProjectorByBin.h
 ./include/stir/recon_buildblock/ForwardProjectorByBin.inl
 ./include/stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h
@@ -253,6 +255,7 @@ Explicit list of files that carry the PARAPET license
 ./recon_buildblock/DataSymmetriesForDensels.cxx
 ./recon_buildblock/distributable.cxx
 ./recon_buildblock/distributableMPICacheEnabled.cxx
+./recon_buildblock/DistributedWorker.cxx
 ./recon_buildblock/ForwardProjectorByBin.cxx
 ./recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.cxx
 ./recon_buildblock/ForwardProjectorByBinUsingRayTracing.cxx
