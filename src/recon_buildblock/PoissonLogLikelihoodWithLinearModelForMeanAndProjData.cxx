@@ -1028,16 +1028,16 @@ void RPC_process_related_viewgrams_accumulate_loglikelihood(
 
   forward_projector_sptr->forward_project(estimated_viewgrams, *input_image_ptr);
   
-  if (mult_viewgrams_ptr != NULL)
-  {
-    estimated_viewgrams *= (*mult_viewgrams_ptr);
-  }
-
   if (additive_binwise_correction_ptr != NULL)
   {
     estimated_viewgrams += (*additive_binwise_correction_ptr);
   };
   
+  if (mult_viewgrams_ptr != NULL)
+  {
+    estimated_viewgrams *= (*mult_viewgrams_ptr);
+  }
+
   RelatedViewgrams<float>::iterator meas_viewgrams_iter = 
           measured_viewgrams_ptr->begin();
   RelatedViewgrams<float>::const_iterator est_viewgrams_iter = 
