@@ -3,7 +3,9 @@
 #
 dir := recon_test
 
-$(dir)_SOURCES = bcktest.cxx fwdtest.cxx 
+$(dir)_SOURCES = bcktest.cxx fwdtest.cxx \
+  test_DataSymmetriesForBins_PET_CartesianGrid.cxx \
+  test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx
 
 # rules that do not link with all registries to save time during linking
 # Beware: the pattern below is dangerous as it relies on a naming style.
