@@ -380,8 +380,8 @@ void accumulate_loglikelihood(Viewgram<float>& projection_data,
 	   b<bs+rim_truncation_sino ||
 	   b>be-rim_truncation_sino ))
 	{
-          if (estimated_projections[r][b] == 0)
-            std::cerr << "Zero at " << r << ", " << b <<'\n';
+          // if (estimated_projections[r][b] == 0)
+          //  std::cerr << "Zero at " << r << ", " << b <<'\n';
 	  const float new_estimate =
 	    max(estimated_projections[r][b], 
 		projection_data[r][b]/max_quotient);
