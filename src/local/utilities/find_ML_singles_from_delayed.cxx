@@ -187,7 +187,7 @@ int main(int argc, char **argv)
       {
         for (int eff_iter_num = 1; eff_iter_num<=num_eff_iterations; ++eff_iter_num)
         {
-          std::cout << "Starting iteration " << eff_iter_num << std::endl;
+          std::cout << "Starting iteration " << eff_iter_num;
           iterate_efficiencies(efficiencies, data_fan_sums, max_ring_diff, half_fan_size);
           if (eff_iter_num==num_eff_iterations || (do_save_interval>0 && eff_iter_num%do_save_interval==0))
           {
@@ -213,9 +213,10 @@ int main(int argc, char **argv)
           {
 	    Array<2,float> estimated_fan_sums(data_fan_sums.get_index_range());
 	    make_fan_sum_data(estimated_fan_sums, efficiencies, max_ring_diff, half_fan_size);
-	    std::cout << "\tKL " << KL(data_fan_sums, estimated_fan_sums, threshold_for_KL) << std::endl;
+	    std::cout << "\tKL " << KL(data_fan_sums, estimated_fan_sums, threshold_for_KL);
 
           }
+          std::cout << std::endl;
           if (do_display_interval>0 && eff_iter_num%do_display_interval==0)		 
           {
             display(efficiencies, "efficiencies");
