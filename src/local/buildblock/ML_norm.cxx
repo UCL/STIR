@@ -445,11 +445,15 @@ void iterate_block_norm(BlockData& norm_block_data,
 
 float KL(const DetPairData& d1, const DetPairData& d2, const float threshold)
 {
-  float sum=0;
+  double sum=0;
   for (int a = d1.get_min_index(); a <= d1.get_max_index(); ++a)
-    for (int b = d1.get_min_index(a); b <= d1.get_max_index(a); ++b)      
-      sum += KL(d1(a,b), d2(a,b), threshold);
-  return sum;
+    {
+      double bsum=0;
+      for (int b = d1.get_min_index(a); b <= d1.get_max_index(a); ++b)      
+        bsum += KL(d1(a,b), d2(a,b), threshold);
+      sum += bsum;
+    }
+  return static_cast<float>(sum);
 }
 
 //************ 3D
@@ -1098,13 +1102,25 @@ void iterate_block_norm(BlockData3D& norm_block_data,
 
 float KL(const FanProjData& d1, const FanProjData& d2, const float threshold)
 {
-  float sum=0;
+  double sum=0;
   for (int ra = d1.get_min_ra(); ra <= d1.get_max_ra(); ++ra)
-    for (int a = d1.get_min_a(); a <= d1.get_max_a(); ++a)
-      for (int rb = max(ra,d1.get_min_rb(ra)); rb <= d1.get_max_rb(ra); ++rb)
-        for (int b = d1.get_min_b(a); b <= d1.get_max_b(a); ++b)      
-          sum += KL(d1(ra,a,rb,b), d2(ra,a,rb,b), threshold);
-  return sum;
+    {
+      double asum=0;
+      for (int a = d1.get_min_a(); a <= d1.get_max_a(); ++a)
+        {
+          double rbsum=0;
+          for (int rb = max(ra,d1.get_min_rb(ra)); rb <= d1.get_max_rb(ra); ++rb)
+            {
+              double bsum=0;
+              for (int b = d1.get_min_b(a); b <= d1.get_max_b(a); ++b)      
+                bsum += static_cast<double>(KL(d1(ra,a,rb,b), d2(ra,a,rb,b), threshold));
+              rbsum += bsum;
+            }
+          asum += rbsum;
+        }
+      sum += asum;
+    }
+  return static_cast<float>(sum);
 }
 
 END_NAMESPACE_STIR
