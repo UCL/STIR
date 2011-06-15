@@ -244,14 +244,14 @@ inline float KL(const float a, const float b, const float threshold_a = 0)
 template <int num_dimensions, typename elemT>
 float KL(const Array<num_dimensions, elemT>& a, const Array<num_dimensions, elemT>& b, const float threshold_a = 0)
 {
-  float sum = 0;
+  double sum = 0;
   typename Array<num_dimensions, elemT>::const_full_iterator iter_a = a.begin_all();
   typename Array<num_dimensions, elemT>::const_full_iterator iter_b = b.begin_all();
   while (iter_a != a.end_all())
     {
-      sum += KL(*iter_a++, *iter_b++, threshold_a);
+      sum += static_cast<double>(KL(*iter_a++, *iter_b++, threshold_a));
     }
-  return sum;
+  return static_cast<float>(sum);
 }
 
 float KL(const DetPairData& d1, const DetPairData& d2, const float threshold);
