@@ -13,8 +13,7 @@
 */
 #include "local/stir/listmode/LmToProjDataWithMC.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-#include "stir/listmode/CListRecordECAT966.h"
-#include "stir/IO/stir_ecat7.h"
+#include "stir/listmode/CListRecord.h"
 #include "stir/Succeeded.h"
 #include <time.h>
 #include "stir/is_null_ptr.h"
@@ -138,14 +137,9 @@ process_new_time_event(const CListTime& time_event)
 }
 
 void 
-LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_general_type) const
+LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event) const
 {
-  const CListRecordECAT966& record = 
-    static_cast<CListRecordECAT966 const&>(event_of_general_type);// TODO get rid of this
-
   const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
-
-
   static_cast<const ProjDataInfoCylindricalNoArcCorr&>(*template_proj_data_info_ptr);
 #ifndef FRAME_BASED_DT_CORR
   const double start_time = current_time;
@@ -155,13 +149,15 @@ LmToProjDataWithMC::get_bin_from_event(Bin& bin, const CListEvent& event_of_gene
   const double end_time =frame_defs.get_end_time(current_frame_num);
 #endif
 
-  record.get_uncompressed_bin(bin);
+  event.get_bin(bin, *this->proj_data_info_cyl_uncompressed_ptr);
+  if (bin.get_bin_value()<=0)
+    return; // rejected for some strange reason
   const float bin_efficiency = normalisation_ptr->get_bin_efficiency(bin,start_time,end_time);
    
   //Do the motion correction
-  ro3dtrans.transform_bin(bin,
-			  proj_data_info,
-			  *record.get_uncompressed_proj_data_info_sptr());
+  this->ro3dtrans.transform_bin(bin,
+                                proj_data_info,
+                                *this->proj_data_info_cyl_uncompressed_ptr);
 
   if (bin.get_bin_value() > 0)
     {
