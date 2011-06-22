@@ -126,7 +126,7 @@ get_next_record(CListRecord& record_of_general_type) const
 		    size_of_record, __LINE__);
      }
   }
-  record.init_from_data_ptr();
+  //record.init_from_data_ptr();
 
   
   if (stream_ptr->good())
