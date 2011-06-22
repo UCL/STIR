@@ -46,27 +46,21 @@ using std::streampos;
 START_NAMESPACE_STIR
 CListModeDataFromStream::
 CListModeDataFromStream(const shared_ptr<istream>& stream_ptr,
-                        const shared_ptr<Scanner>& scanner_ptr_v,
-			const bool has_delayeds, 
 			const size_t size_of_record, 
-			const shared_ptr<CListRecord>& empty_record_sptr,
 			const ByteOrder list_mode_file_format_byte_order)
   : stream_ptr(stream_ptr),
-    value_of_has_delayeds(value_of_has_delayeds),
     size_of_record(size_of_record),
-    empty_record_sptr(empty_record_sptr),
     list_mode_file_format_byte_order(list_mode_file_format_byte_order),
     do_byte_swap(
 		 size_of_record>1 &&
 		 list_mode_file_format_byte_order != ByteOrder::get_native_order())
 {
+#if 0
   // this run-time check on the type of the record should somehow be avoided
   // (by passing a shared_ptr of the correct type).
   if (dynamic_cast<CListRecordUsingUnion const *>(empty_record_sptr.get()) == 0)
     error("CListModeDataFromStream can only handle CListRecordUsingUnion types\n");
-
-  scanner_ptr =scanner_ptr_v;
-
+#endif
   if (is_null_ptr(stream_ptr))
     return;
   starting_stream_position = stream_ptr->tellg();
@@ -76,53 +70,31 @@ CListModeDataFromStream(const shared_ptr<istream>& stream_ptr,
 
 CListModeDataFromStream::
 CListModeDataFromStream(const string& listmode_filename,
-                        const shared_ptr<Scanner>& scanner_ptr_v,
-			const bool has_delayeds, 
 			const size_t size_of_record, 
-			const shared_ptr<CListRecord>& empty_record_sptr,
 			const ByteOrder list_mode_file_format_byte_order,
 			const streampos start_of_data)
   : listmode_filename(listmode_filename),
     starting_stream_position(start_of_data),
-    value_of_has_delayeds(value_of_has_delayeds),
     size_of_record(size_of_record),
-    empty_record_sptr(empty_record_sptr),
     list_mode_file_format_byte_order(list_mode_file_format_byte_order),
     do_byte_swap(
 		 size_of_record>1 &&
 		 list_mode_file_format_byte_order != ByteOrder::get_native_order())
 
 {
+#if 0
   // this run-time check on the type of the record should somehow be avoided
   // (by passing a shared_ptr of the correct type).
   if (dynamic_cast<CListRecordUsingUnion const *>(empty_record_sptr.get()) == 0)
     error("CListModeDataFromStream can only handle CListRecordUsingUnion types\n");
+#endif
   fstream* s_ptr = new fstream;
   open_read_binary(*s_ptr, listmode_filename.c_str());
   stream_ptr = s_ptr;
   if (reset() == Succeeded::no)
     error("CListModeDataFromStream: error in reset() for filename %s\n",
 	  listmode_filename.c_str());
-
-  scanner_ptr = scanner_ptr_v;
 }
-
-std::time_t 
-CListModeDataFromStream::
-get_scan_start_time_in_secs_since_1970() const
-{
-  error("CListModeDataFromStream::get_scan_start_time_in_secs_since_1970() should never be called");
-  return std::time_t(-1);
-}
-
-std::string
-CListModeDataFromStream::
-get_name() const
-{
-  error("CListModeDataFromStream::get_name() should never be called");
-  return "";
-}
-
 
 Succeeded
 CListModeDataFromStream::
@@ -188,7 +160,7 @@ reset()
 }
 
 
-CListModeData::SavedPosition
+CListModeDataFromStream::SavedPosition
 CListModeDataFromStream::
 save_get_position() 
 {

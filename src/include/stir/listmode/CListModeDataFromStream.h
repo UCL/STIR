@@ -49,37 +49,24 @@ using std::vector;
 
 START_NAMESPACE_STIR
 
-//! A class that reads the listmode data from a (presumably binary) stream 
+//! A helper class to read listmode data from a (presumably binary) stream 
 /*! \ingroup listmode
     This class is really a helper class for implementing different types
     of CListModeData types. It is useful when all types of records (e.g.
     timing and detected-event) have the same size. In that case, all IO
     handling is completely generic and is implemented in this class.
 
-    \warning Although this is currently derived from CListModeData, this
-    is not a good design choice. In the end, we really need only
-    the buffered IO. For example, to get the current implementation to work, the
-    constructors need arguments such as \a empty_record_sptr such that the
-    relevant members of CListModeData can be implemented. This increases
-    dependency on CListModeData to an unacceptable level.
-    (e.g. when adding CListModeData::num_energy_windows() we would need
-    another argument here).
-
-    \todo Do not derive this class from CListModeData.
-
     \todo This class currently relies in the fact that
      vector<streampos>::size_type == SavedPosition
 */
-class CListModeDataFromStream : public CListModeData
+class CListModeDataFromStream
 {
 public:
+  typedef CListModeData::SavedPosition SavedPosition;
   //! Constructor taking a stream
   /*! Data will be assumed to start at the current position reported by seekg().*/ 
   CListModeDataFromStream(const shared_ptr<istream>& stream_ptr,
-                          const shared_ptr<Scanner>& scanner_ptr,
-			  const bool value_of_has_delayeds,
 			  const size_t size_of_record,
-			  const shared_ptr <CListRecord>& empty_record_sptr,
 			  const ByteOrder list_mode_file_format_byte_order);
 
   //! Constructor taking a filename
@@ -87,21 +74,9 @@ public:
       start at \a start_of_data.
   */
   CListModeDataFromStream(const string& listmode_filename, 
-                          const shared_ptr<Scanner>& scanner_ptr,
-			  const bool value_of_has_delayeds,
 			  const size_t size_of_record,
-			  const shared_ptr <CListRecord>& empty_record_sptr,
 			  const ByteOrder list_mode_file_format_byte_order,
                           const streampos start_of_data = 0);
-
-
-  virtual 
-    shared_ptr <CListRecord> get_empty_record_sptr() const
-    { return empty_record_sptr; }
-
-  //! ECAT listmode data stores delayed events as well (as opposed to prompts)
-  virtual bool has_delayeds() const 
-    { return value_of_has_delayeds; }
 
   virtual 
     Succeeded get_next_record(CListRecord& event) const;
@@ -109,9 +84,9 @@ public:
   virtual 
     Succeeded reset();
 
-    SavedPosition save_get_position();
+  SavedPosition save_get_position();
 
-    Succeeded set_get_position(const SavedPosition&);
+  Succeeded set_get_position(const SavedPosition&);
 
   //! Function that enables the user to store the saved get_positions
   /*! Together with set_saved_get_positions(), this allows 
@@ -128,29 +103,14 @@ public:
   void set_saved_get_positions(const vector<streampos>& );
 
 private:
-  //! Bogus implementation
-  /*! This function should never be called. It's an artefact of having this class derived from
-    CListModeData.
-  */
-  virtual std::time_t
-    get_scan_start_time_in_secs_since_1970() const;
-
-  //! Bogus implementation
-  /*! This function should never be called. It's an artefact of having this class derived from
-    CListModeData.
-  */
-  virtual std::string
-    get_name() const;
 
   const string listmode_filename;
   shared_ptr<istream> stream_ptr;
   streampos starting_stream_position;
   vector<streampos> saved_get_positions;
 
-  const bool value_of_has_delayeds;
   const size_t size_of_record;
 
-  const shared_ptr <CListRecord> empty_record_sptr;
   const ByteOrder list_mode_file_format_byte_order;  
 
   const bool do_byte_swap;
