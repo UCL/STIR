@@ -56,12 +56,7 @@ START_NAMESPACE_STIR
     timing and detected-event) have the same size. In that case, all IO
     handling is completely generic and is implemented in this class.
 
-    The current implementation uses a buffered approach for IO. A fixed number
-    of records is read into a buffer which is then used for subsequent
-    calls to get_next_record(). So, disk IO is only necessary when the 
-    buffer is empty.
-
-    \warning Although this is currently a derived from CListModeData, this
+    \warning Although this is currently derived from CListModeData, this
     is not a good design choice. In the end, we really need only
     the buffered IO. For example, to get the current implementation to work, the
     constructors need arguments such as \a empty_record_sptr such that the
@@ -160,7 +155,6 @@ private:
 
   const bool do_byte_swap;
 
-  mutable unsigned int num_chars_left_in_buffer;
 };
 
 END_NAMESPACE_STIR
