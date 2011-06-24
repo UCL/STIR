@@ -31,16 +31,21 @@
 #ifndef __stir_listmode_CListRecordECAT962_H__
 #define __stir_listmode_CListRecordECAT962_H__
 
-#include "stir/listmode/CListRecordUsingUnion.h"
+#include "stir/listmode/CListRecord.h"
+#include "stir/listmode/CListEventCylindricalScannerWithViewTangRingRingEncoding.h"
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/IO/stir_ecat_common.h" // for namespace macros
 #include "stir/Succeeded.h"
+#include "stir/ByteOrder.h"
 #include "stir/ByteOrderDefine.h"
 #include "stir/round.h"
 #include "boost/static_assert.hpp"
 #include "boost/cstdint.hpp"
 
 START_NAMESPACE_STIR
+START_NAMESPACE_ECAT
+START_NAMESPACE_ECAT7
 
 
 //! Class for storing and using a coincidence event from a listmode file
@@ -65,23 +70,14 @@ class CListEventDataECAT962
   inline Succeeded set_prompt(const bool prompt = true) 
   { if (prompt) random=0; else random=1; return Succeeded::yes; }
 
-  //! This routine returns the corresponding detector pair   
-  void get_detectors(
-		   int& det_num_a, int& det_num_b, int& ring_a, int& ring_b) const;
-
-/*! This routine constructs a (prompt) coincidence event */
-  void set_detectors(
-			const int det_num_a, const int det_num_b,
-			const int ring_a, const int ring_b);
-
 /*! This routine returns the corresponding tangential_pos_num,view_num,ring_a and ring_b
    */
-  void get_sinogram_and_ring_coordinates(int& view, int& tangential_pos_num, int& ring_a, int& ring_b) const;
+  void get_sinogram_and_ring_coordinates(int& view, int& tangential_pos_num, unsigned int& ring_a, unsigned int& ring_b) const;
   
 /*! This routine constructs a coincidence event */
   void set_sinogram_and_ring_coordinates(
 			const int view_num, const int tangential_pos_num, 
-			const int ring_a, const int ring_b);
+			const unsigned int ring_a, const unsigned int ring_b);
 
 
  private:
@@ -127,7 +123,34 @@ class CListEventDataECAT962
 #endif
 }; /*-coincidence event*/
 
-class CListRecordECAT962;
+#if 0
+//! Class for storing and using a coincidence event from a listmode file from the ECAT 962 scanner
+class CListEventECAT962 : public CListEventCylindricalScannerWithViewTangRingRingEncoding<CListEventDataECAT962>
+{
+ public:  
+  CListEventECAT962() :
+    CListEventCylindricalScannerWithViewTangRingRingEncoding<CListEventDataECAT962>(new Scanner(Scanner::E962))
+    {}
+
+  Succeeded init_from_data_ptr(const void * const ptr)
+    {
+      const char * const data_ptr = reinterpret_cast<const char * const >(ptr);
+      std::copy(data_ptr, data_ptr+sizeof(this->raw), reinterpret_cast<char *>(&this->raw));
+      return Succeeded::yes;
+    }
+  inline bool is_prompt() const { return this->data.random == 0; }
+  inline Succeeded set_prompt(const bool prompt = true) 
+  { if (prompt) this->data.random=0; else this->data.random=1; return Succeeded::yes; }
+
+ private:
+  BOOST_STATIC_ASSERT(sizeof(CListEventDataECAT962)==4); 
+  union 
+  {
+    CListEventDataECAT962   data;
+    boost::int32_t         raw;
+  };
+};
+#endif
 
 //! A class for storing and using a timing 'event' from a listmode file
 /*! \ingroup listmode
@@ -164,19 +187,22 @@ private:
 //! A class for a general element of a listmode file
 /*! \ingroup listmode
    For the 962 it's either a coincidence event, or a timing flag.*/
-  class CListRecordECAT962 : public CListRecordUsingUnion
+class CListRecordECAT962 : public CListRecordWithGatingInput, public CListTime, public CListGatingInput,
+    public  CListEventCylindricalScannerWithViewTangRingRingEncoding<CListRecordECAT962>
 {
-private:
-  static shared_ptr<Scanner> 
-    scanner_sptr;
+ public:
+  typedef CListEventDataECAT962 DataType;
+  DataType get_data() const { return this->event_data; }
 
-  static shared_ptr<ProjDataInfoCylindricalNoArcCorr>
-    uncompressed_proj_data_info_sptr;
-
-public:
+ public:  
+  CListRecordECAT962() :
+    CListEventCylindricalScannerWithViewTangRingRingEncoding<CListRecordECAT962>(new Scanner(Scanner::E962))
+    {}
 
   bool is_time() const
   { return time_data.type == 1U; }
+  bool is_gating_input() const
+  { return this->is_time(); }
   bool is_event() const
   { return time_data.type == 0U; }
   virtual CListEvent&  event() 
@@ -187,16 +213,16 @@ public:
     { return *this; }
   virtual const CListTime&   time() const
     { return *this; }
+  virtual CListGatingInput&  gating_input()
+    { return *this; }
+  virtual const CListGatingInput&  gating_input() const
+  { return *this; }
 
   bool operator==(const CListRecord& e2) const
   {
     return dynamic_cast<CListRecordECAT962 const *>(&e2) != 0 &&
       raw == static_cast<CListRecordECAT962 const &>(e2).raw;
   }	    
-  virtual char const * get_const_data_ptr() const
-    { return reinterpret_cast<char const *>(&raw); }
-  virtual char * get_data_ptr() 
-    { return reinterpret_cast<char *>(&raw); }
 
   // time 
   inline unsigned long get_time_in_millisecs() const 
@@ -213,20 +239,23 @@ public:
   inline Succeeded set_prompt(const bool prompt = true) 
   { return event_data.set_prompt(prompt); }
 
-  virtual
-    void
-    get_detection_coordinates(CartesianCoordinate3D<float>& coord_1,
-			      CartesianCoordinate3D<float>& coord_2) const;
 
-  //! warning only ProjDataInfoCylindricalNoArcCorr
-  virtual
-    void 
-    get_bin(Bin&, const ProjDataInfo&) const;
-  void get_uncompressed_bin(Bin& bin) const;
-
-  static shared_ptr<ProjDataInfoCylindricalNoArcCorr>
-    get_uncompressed_proj_data_info_sptr()
-    { return uncompressed_proj_data_info_sptr; }
+  virtual Succeeded init_from_data_ptr(const char * const data_ptr, 
+                                       const std::size_t
+#ifndef NDEBUG
+                                       size // only used within assert, so don't define otherwise to avoid compiler warning
+#endif
+                                       , const bool do_byte_swap)
+  {
+    assert(size >= 4);
+    std::copy(data_ptr, data_ptr+4, reinterpret_cast<char *>(&raw));// TODO necessary for operator==
+    if (do_byte_swap)
+      ByteOrder::swap_order(raw);
+    return Succeeded::yes;
+  }
+  virtual std::size_t size_of_record_at_ptr(const char * const /*data_ptr*/, const std::size_t /*size*/, 
+                                            const bool /*do_byte_swap*/) const
+  { return 4; }
 
 private:
   union {
@@ -242,6 +271,8 @@ private:
 
 
 
+END_NAMESPACE_ECAT7
+END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
 
 #endif
