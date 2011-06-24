@@ -40,6 +40,7 @@
 #include "boost/static_assert.hpp"
 #include <iostream>
 #include <fstream>
+#include <typeinfo>
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
@@ -49,6 +50,8 @@ using std::ifstream;
 #endif
 
 START_NAMESPACE_STIR
+START_NAMESPACE_ECAT
+START_NAMESPACE_ECAT7
 
 // compile time asserts
 BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT966)==4);
@@ -56,7 +59,8 @@ BOOST_STATIC_ASSERT(sizeof(CListEventDataECAT966)==4);
 BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT962)==4);
 BOOST_STATIC_ASSERT(sizeof(CListEventDataECAT962)==4);
 
-CListModeDataECAT::
+template <class CListRecordT>
+CListModeDataECAT<CListRecordT>::
 CListModeDataECAT(const std::string& listmode_filename_prefix)
   : listmode_filename_prefix(listmode_filename_prefix)    
 {
@@ -71,7 +75,7 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
     if (!singles_file)
       {
 	warning("CListModeDataECAT: Couldn't open %s.", singles_filename.c_str());
-	scanner_ptr = new Scanner(Scanner::E962);
+	scanner_sptr = new Scanner(Scanner::E962);
       }
     else
       {
@@ -81,14 +85,14 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
     if (!singles_file)
       {
 	warning("CListModeDataECAT: Couldn't read main_header from %s. We forge ahead anyway (assuming this is ECAT 962 data).", singles_filename.c_str());
-	scanner_ptr = new Scanner(Scanner::E962);
+	scanner_sptr = new Scanner(Scanner::E962);
 	// TODO invalidate other fields in singles header
 	singles_main_header.scan_start_time = std::time_t(-1);
       }
     else
       {
 	unmap_main_header(buffer, &singles_main_header);
-	ecat::ecat7::find_scanner(scanner_ptr, singles_main_header);
+	ecat::ecat7::find_scanner(scanner_sptr, singles_main_header);
 	
 	// TODO get lm_duration from singles
       }
@@ -100,20 +104,33 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
   scanner_ptr = new Scanner(Scanner::E962);
 #endif
 
+  if ((scanner_sptr->get_type() == Scanner::E966 && typeid(CListRecordT) != typeid(CListRecordECAT966)) ||
+      (scanner_sptr->get_type() == Scanner::E962 && typeid(CListRecordT) != typeid(CListRecordECAT962)))
+    {
+      error("Data in %s is from a %s scanner, but reading with wrong type of CListModeData", 
+            listmode_filename_prefix.c_str(), scanner_sptr->get_name().c_str());
+    }
+  else if (scanner_sptr->get_type() != Scanner::E966 && scanner_sptr->get_type() != Scanner::E962)
+    {
+      error("CListModeDataECAT: Unsupported scanner in %s", listmode_filename_prefix.c_str());
+    }
+
   if (open_lm_file(1) == Succeeded::no)
     error("CListModeDataECAT: error opening the first listmode file for filename %s\n",
 	  listmode_filename_prefix.c_str());
 }
 
+template <class CListRecordT>
 std::string
-CListModeDataECAT::
+CListModeDataECAT<CListRecordT>::
 get_name() const
 {
   return listmode_filename_prefix;
 }
 
+template <class CListRecordT>
 std::time_t 
-CListModeDataECAT::
+CListModeDataECAT<CListRecordT>::
 get_scan_start_time_in_secs_since_1970() const
 {
 #ifdef HAVE_LLN_MATRIX
@@ -124,25 +141,17 @@ get_scan_start_time_in_secs_since_1970() const
 }
 
 
+template <class CListRecordT>
 shared_ptr <CListRecord> 
-CListModeDataECAT::
+CListModeDataECAT<CListRecordT>::
 get_empty_record_sptr() const
 {
-  // TODO differentiate using scanner_ptr
-  if (scanner_ptr->get_type() == Scanner::E966)
-    return new CListRecordECAT966;
-  else   if (scanner_ptr->get_type() == Scanner::E962)
-    return new CListRecordECAT962;
-  else
-    {
-      error("Unsupported scanner\n");
-      return 0;
-    }
-
+  return new CListRecordT;
 }
 
+template <class CListRecordT>
 Succeeded
-CListModeDataECAT::
+CListModeDataECAT<CListRecordT>::
 open_lm_file(unsigned int new_lm_file) const
 {
   // current_lm_file and new_lm_file are 1-based
@@ -175,9 +184,10 @@ open_lm_file(unsigned int new_lm_file) const
         return Succeeded::no;
       }
       current_lm_data_ptr =
-	new CListModeDataFromStream(stream_ptr, scanner_ptr, 
-				    has_delayeds(), sizeof(CListTimeDataECAT966), get_empty_record_sptr(), 
-				    ByteOrder::big_endian);
+	new InputStreamWithRecords<CListRecordT, bool>(stream_ptr, 
+                                                       sizeof(CListTimeDataECAT966), 
+                                                       sizeof(CListTimeDataECAT966), 
+                                                       ByteOrder::big_endian != ByteOrder::get_native_order());
       current_lm_file = new_lm_file;
 
       // now restore saved_get_positions for this file
@@ -197,10 +207,12 @@ open_lm_file(unsigned int new_lm_file) const
     when it failed not because of EOF, or if the listmode file is
     shorter than 2 GB.
 */
+template <class CListRecordT>
 Succeeded
-CListModeDataECAT::
-get_next_record(CListRecord& record) const
+CListModeDataECAT<CListRecordT>::
+get_next_record(CListRecord& record_of_general_type) const
 {
+  CListRecordT& record = static_cast<CListRecordT&>(record_of_general_type);
   if (current_lm_data_ptr->get_next_record(record) == Succeeded::yes)
     return Succeeded::yes;
   else
@@ -216,8 +228,9 @@ get_next_record(CListRecord& record) const
 
 
 
+template <class CListRecordT>
 Succeeded
-CListModeDataECAT::
+CListModeDataECAT<CListRecordT>::
 reset()
 {
   // current_lm_file and new_lm_file are 1-based
@@ -233,8 +246,9 @@ reset()
 }
 
 
+template <class CListRecordT>
 CListModeData::SavedPosition
-CListModeDataECAT::
+CListModeDataECAT<CListRecordT>::
 save_get_position() 
 {
   GetPosition current_pos;
@@ -244,9 +258,10 @@ save_get_position()
   return saved_get_positions.size()-1;
 } 
 
+template <class CListRecordT>
 Succeeded
-CListModeDataECAT::
-set_get_position(const CListModeDataECAT::SavedPosition& pos)
+CListModeDataECAT<CListRecordT>::
+set_get_position(const CListModeDataECAT<CListRecordT>::SavedPosition& pos)
 {
   assert(pos < saved_get_positions.size());
   if (open_lm_file(saved_get_positions[pos].first) == Succeeded::no)
@@ -256,8 +271,9 @@ set_get_position(const CListModeDataECAT::SavedPosition& pos)
     current_lm_data_ptr->set_get_position(saved_get_positions[pos].second);
 }
 #if 0
+template <class CListRecordT>
 SavedPosition
-CListModeDataECAT::
+CListModeDataECAT<CListRecordT>::
 save_get_pos_at_time(const double time)
 { 
   assert(time>=0);
@@ -304,11 +320,20 @@ save_get_pos_at_time(const double time)
 
 #endif
 #if 0
+template <class CListRecordT>
 unsigned long
-CListModeDataECAT::
+CListModeDataECAT<CListRecordT>::
 get_num_records() const
 { 
 }
 
 #endif
+
+
+// instantiations
+template class CListModeDataECAT<CListRecordECAT966>;
+template class CListModeDataECAT<CListRecordECAT962>;
+
+END_NAMESPACE_ECAT7
+END_NAMESPACE_ECAT
 END_NAMESPACE_STIR

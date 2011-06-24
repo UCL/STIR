@@ -31,7 +31,8 @@
 #ifndef __stir_listmode_CListModeDataECAT_H__
 #define __stir_listmode_CListModeDataECAT_H__
 
-#include "stir/listmode/CListModeDataFromStream.h"
+#include "stir/listmode/CListModeData.h"
+#include "stir/IO/InputStreamWithRecords.h"
 #include "stir/shared_ptr.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/stir_ecat7.h"
@@ -49,6 +50,8 @@ using std::pair;
 #endif
 
 START_NAMESPACE_STIR
+START_NAMESPACE_ECAT
+START_NAMESPACE_ECAT7
 
 //! A class that reads the listmode data for ECAT scanners
 /*!  \ingroup listmode
@@ -62,6 +65,7 @@ START_NAMESPACE_STIR
     \todo This class currently relies in the fact that
      vector<>::size_type == SavedPosition
 */
+template <class CListRecordT>
 class CListModeDataECAT : public CListModeData
 {
 public:
@@ -101,7 +105,7 @@ public:
 private:
   std::string listmode_filename_prefix;
   mutable unsigned int current_lm_file;
-  mutable shared_ptr<CListModeDataFromStream> current_lm_data_ptr;
+  mutable shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;
   //! a vector that stores the saved_get_positions for ever .lm file
   mutable vector<vector<streampos> > saved_get_positions_for_each_lm_data;
   typedef pair<unsigned int, SavedPosition> GetPosition;
@@ -117,6 +121,8 @@ private:
   Succeeded open_lm_file(unsigned int) const; 
 };
 
+END_NAMESPACE_ECAT7
+END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
 
 #endif
