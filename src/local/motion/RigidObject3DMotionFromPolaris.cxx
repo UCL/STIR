@@ -724,18 +724,23 @@ find_and_store_gate_tag_values_from_lm(VectorWithOffset<unsigned long>& lm_time,
   listmode_data.reset();
   
   shared_ptr <CListRecord> record_sptr = listmode_data.get_empty_record_sptr();
-  CListRecord& record = *record_sptr;
+  CListRecordWithGatingInput& record = dynamic_cast<CListRecordWithGatingInput &>(*record_sptr);
+
   while (more_events)
   {
-
+    unsigned long CurrentTime=0;
     if (listmode_data.get_next_record(record) == Succeeded::no) 
     {
        break; //get out of while loop
     }
     if (record.is_time())
     {
-      unsigned CurrentChannelState =  record.time().get_gating() & mask_for_tags;
-      unsigned long CurrentTime = record.time().get_time_in_millisecs();
+      CurrentTime = record.time().get_time_in_millisecs();
+    }
+    if (record.is_gating_input())
+    {
+      unsigned CurrentChannelState =  record.gating_input().get_gating() & mask_for_tags;
+      
       
       if ( LastChannelState != CurrentChannelState && CurrentChannelState )
       {
