@@ -4,7 +4,7 @@
 /*!
   \file
   \ingroup ClearPET_utilities
-  \brief Implementation of class CListModeDataLMF
+  \brief Implementation of class stir::CListModeDataLMF
   \author Monica Vieira Martins
   \author Christian Morel
   \author Kris Thielemans

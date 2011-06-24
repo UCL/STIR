@@ -39,24 +39,23 @@ class CListEventDataLMF
  public:  
   inline bool is_prompt() const { return true; } // TODO
   inline Succeeded set_prompt(const bool prompt = true) // TODO
-  { return Succeeded::yes; }
+  { return Succeeded::no; }
+  
+  inline LORAs2Points<float> get_LOR() const
+    { return this->lor; }
 
-  void
-    get_detection_coordinates(CartesianCoordinate3D<float>& coord_1,
-			      CartesianCoordinate3D<float>& coord_2) const;
 
   CartesianCoordinate3D<float> pos1() const
-    { return detection_pos1; }
+    { return lor.p1(); }
   CartesianCoordinate3D<float>& pos1()
-    { return detection_pos1; }
+    { return lor.p1(); }
   CartesianCoordinate3D<float> pos2() const
-    { return detection_pos2; }
+    { return lor.p2(); }
   CartesianCoordinate3D<float>& pos2()
-    { return detection_pos2; }
+    { return lor.p1(); }
 
  private:
-  CartesianCoordinate3D<float> detection_pos1;
-  CartesianCoordinate3D<float> detection_pos2;
+  LORAs2Points<float> lor;
 }; /*-coincidence event*/
 
 class CListRecordLMF;
@@ -71,13 +70,8 @@ class CListTimeDataLMF
     { return time;  }// TODO
   inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)//TODO
   { return Succeeded::no; }
-  inline unsigned int get_gating() const //TODO
-  { return gating; }
-  inline Succeeded set_gating(unsigned int g)//TODO
-  { return Succeeded::no;}
 private:
   unsigned long time; // in millisecs TODO
-  unsigned    gating;
 };
 
 
@@ -88,8 +82,6 @@ I really have no clue how time info is handled in LMF. At the moment,
 I store both time and CListEvent info in one CListRecordLMF.
 That's obviously not necessary nor desirable.
 
-Better would be to have some kind of union, after reading check what
-event type we have, and then fill in the appropriate members (in a union?).
  */
 class CListRecordLMF : public CListRecord, public CListTime, public CListEvent
 {
@@ -131,13 +123,6 @@ public:
   { return event_data.set_prompt(prompt); }
 
 
-  virtual
-    void
-    get_detection_coordinates(CartesianCoordinate3D<float>& coord_1,
-			      CartesianCoordinate3D<float>& coord_2) const
-  { 
-    event_data.get_detection_coordinates(coord_1, coord_2);
-  }
  private:
   friend class CListModeDataLMF;
 
