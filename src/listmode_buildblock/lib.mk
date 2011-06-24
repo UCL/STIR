@@ -6,7 +6,6 @@ dir := listmode_buildblock
 $(dir)_LIB_SOURCES = \
 	CListEvent.cxx \
 	CListModeData.cxx \
-	CListModeDataFromStream.cxx \
 	CListModeDataECAT.cxx \
 	CListRecordECAT962.cxx \
 	CListRecordECAT966.cxx \
