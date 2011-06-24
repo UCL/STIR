@@ -5,7 +5,7 @@
   \file 
   \ingroup listmode
 
-  \brief Program to compute fansums directly from listmode data
+  \brief Program to compute detector fansums directly from listmode data
  
   \author Kris Thielemans
   
@@ -13,7 +13,19 @@
   $Revision $
 */
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
     See STIR/LICENSE.txt for details
 */
 
@@ -22,7 +34,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/ParsingObject.h"
 #include "stir/listmode/CListRecord.h"
-#include "stir/listmode/CListRecordECAT966.h"// TODO get rid of this
+#include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.h"
 #include "stir/listmode/CListModeData.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/Scanner.h"
@@ -160,21 +172,12 @@ compute()
 {
 
   //*********** get Scanner details
-  shared_ptr<Scanner> scanner_ptr =
-    new Scanner(*lm_data_ptr->get_scanner_ptr());
   const int num_rings = 
     lm_data_ptr->get_scanner_ptr()->get_num_rings();
   const int num_detectors_per_ring = 
     lm_data_ptr->get_scanner_ptr()->get_num_detectors_per_ring();
   
 
-
-  const shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
-    dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>
-    (ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 1, max_segment_num_to_process,
-                                   scanner_ptr->get_num_detectors_per_ring()/2,
-                                   fan_size,
-                                   false));
   //*********** Finally, do the real work
   
   CPUTimer timer;
@@ -194,8 +197,7 @@ compute()
       lm_data_ptr->get_empty_record_sptr();
     CListRecord& record = *record_sptr;
 
-    if (dynamic_cast<const CListRecordECAT966 *>(&record) == 0)
-      error("Currently only works on 966 data. Code needs fixing.");
+    bool first_event=true;
 
     double current_time = 0;
     while (true)
@@ -224,6 +226,11 @@ compute()
         }
         else if (record.is_event() && frame_defs.get_start_time(current_frame_num) <= current_time)
 	  {
+            // do a consistency check with dynamic_cast first
+            if (first_event && dynamic_cast<const CListEventCylindricalScannerWithDiscreteDetectors *>(&record.event()) == 0)
+              error("Currently only works for scanners with discrete detectors.");
+            first_event=false;
+
             // see if we increment or decrement the value in the sinogram
             const int event_increment =
               record.event().is_prompt() 
@@ -232,11 +239,15 @@ compute()
             
             if (event_increment==0)
               continue;
-            
-            int ra,a,rb,b;
-	    // TODO get rid of this
-	    static_cast<const CListRecordECAT966&>(record).
-	      event_data.get_detectors(a,b,ra,rb);
+                        
+            DetectionPositionPair<> det_pos;
+            // because of above consistency check, we can use static_cast here (saving a bit of time)
+	    static_cast<const CListEventCylindricalScannerWithDiscreteDetectors&>(record.event()).
+	      get_detection_position(det_pos);
+            const int ra = det_pos.pos1().axial_coord();
+            const int rb = det_pos.pos2().axial_coord();
+            const int a = det_pos.pos1().tangential_coord();
+            const int b = det_pos.pos2().tangential_coord();
 	    if (abs(ra-rb)<=max_segment_num_to_process)
 	      {
 		const int det_num_diff =
@@ -244,36 +255,16 @@ compute()
 		if (det_num_diff<=fan_size/2 || 
 		    det_num_diff>=num_detectors_per_ring-fan_size/2)
 		  {
-		    if (interactive)
-		      {
-			printf("%c ra=%3d a=%4d, rb=%3d b=%4d, time=%8g accepted\n",
-			       record.event().is_prompt() ? 'p' : 'd',
-			       ra,a,rb,b,
-			       current_time);
-                    
-			Bin bin;
-			proj_data_info_ptr->get_bin_for_det_pair(bin,a, ra, b, rb);
-			printf("    is Seg %4d view %4d ax_pos %4d tang_pos %4d\n", 
-			       bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num());
-		      }
 		    data_fan_sums[ra][a] += event_increment;
 		    data_fan_sums[rb][b] += event_increment;
 		    num_stored_events += event_increment;
 		  }
 		else
 		  {
-#if 0
-                    if (interactive)		  
-		      printf(" ignored\n");
-#endif
 		  }
 	      }
 	    else
 	      {
-#if 0
-              if (interactive)		  
-		  printf(" ignored\n");
-#endif
 	      }
 	    
 	  } // end of spatial event processing
