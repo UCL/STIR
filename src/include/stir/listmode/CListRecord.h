@@ -74,30 +74,20 @@ public:
     Succeeded
     set_prompt(const bool prompt = true);
 
-  //! Finds the coordinates where the detection took place
+  //! Finds the LOR between the coordinates where the detection took place
   /*! Obviously, these coordinates are only estimates which depend on the
       scanner hardware. For example, Depth-of-Interaction might not be
       taken into account. However, the intention is that this function returns
       'likely' positions (e.g. not the face of a crystal, but a point somewhere 
       in the middle).
 
-      Coordinates are in mm and in the standard STIR coordinate system.
-    \todo This function might need time info or so for rotating scanners.
-  */
-  virtual
-    void
-    get_detection_coordinates(CartesianCoordinate3D<float>& coord_1,
-			      CartesianCoordinate3D<float>& coord_2) const=0;
-	
-  //! Finds the LOR between the coordinates where the detection took place
-  /*! Coordinates are in mm and in the standard STIR coordinate system.
+      Coordinates are in mm and in the standard STIR coordinate system
+      used by ProjDataInfo etc (i.e. origin is in the centre of the scanner).
       
-      Implementation is in terms of get_detection_coordinates().
-    \see get_detection_coordinates()
-    \todo This function might need time info or so for rotating scanners.
+      \todo This function might need time info or so for rotating scanners.
   */
-  LORAs2Points<float>
-    get_LOR() const;
+  virtual LORAs2Points<float>
+    get_LOR() const = 0;
 
   //! Finds the bin coordinates of this event for some characteristics of the projection data
   /*! bin.get_bin_value() will be <=0 when the event corresponds to
@@ -152,7 +142,20 @@ public:
       return set_time_in_millisecs(time_in_millisecs); 
     }
 
-  //! get gating info
+};
+
+//! A class recording external input to the scanner (normally used for gating)
+/*! For some scanners, the state of some external measurements can be recorded in the
+   list file, such as ECG triggers etc. We currently assume that these take discrete values.
+
+   If your scanner has more data available, you can provide it in the derived class.
+*/
+class CListGatingInput
+{
+public:
+  virtual ~CListGatingInput() {}
+
+  //! get gating-related info
   /*! Generally, gates are numbered from 0 to some maximum value.
    */
   virtual unsigned int get_gating() const = 0;
@@ -191,6 +194,13 @@ public:
 
 };
 
+class CListRecordWithGatingInput : public CListRecord
+{
+ public:
+  virtual bool is_gating_input() const { return false; }
+  virtual CListGatingInput&  gating_input() = 0; 
+  virtual const CListGatingInput&  gating_input() const = 0; 
+};
 
 END_NAMESPACE_STIR
 
