@@ -257,6 +257,11 @@ public:
 
   //! \name set of obsolete functions to go between bins<->LORs (will disappear!)
   //@{
+  /*! \warning These function take a different convention for the axial coordinate
+    compare to the get_m(), get_LOR() etc. In the current function, the axial coordinate (z)
+    is zero in the first ring, while for get_m() etc it is zero in the centre of the scanner.
+    \obsolete
+  */
   Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
 					             const CartesianCoordinate3D<float>& c1,
 						     const CartesianCoordinate3D<float>& c2) const;
