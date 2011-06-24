@@ -53,13 +53,13 @@ class InputFileFormat
   typedef DataT data_type;
   virtual ~InputFileFormat() {}
 
-  bool
+  virtual bool
     can_read(const FileSignature& signature,
 	     std::istream& input) const
   {
     return this->actual_can_read(signature, input);
   }
-  bool 
+  virtual bool 
     can_read(const FileSignature& signature,
 	     const std::string& filename) const
   {
