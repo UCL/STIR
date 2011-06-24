@@ -44,15 +44,6 @@ set_prompt(const bool)
   return Succeeded::no; 
 }
 
-LORAs2Points<float>
-CListEvent::
-get_LOR() const
-{
-  LORAs2Points<float> lor;
-  get_detection_coordinates(lor.p1(), lor.p2());
-  return lor;
-}
-
 void 
 CListEvent::
 get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
