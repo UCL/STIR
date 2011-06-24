@@ -225,7 +225,7 @@ public:
 
 protected:
   //! Has to be set by the derived class
-  shared_ptr<Scanner> scanner_ptr;
+  shared_ptr<Scanner> scanner_sptr;
 };
 
 END_NAMESPACE_STIR
