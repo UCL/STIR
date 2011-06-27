@@ -10,13 +10,13 @@
 
 \begin{center}
 \textbf{{\huge Glossary for STIR}}\\
-\textbf{C. Labb\'{e}, H. Zaidi, C. Morel, K. Thielemans}
+\textbf{C. Labb\'{e}, H. Zaidi, C. Morel, K. Thielemans, C. Tsoumpas}
 \end{center}
 
 \begin{center}
-\textit{Version 1.1}\\
-Based on PARAPET Deliverable 4.1
-
+\textit{Version 2.1}\\
+Originally based on PARAPET Deliverable 4.1,
+Extended for Quantitative Reconstruction
 
 \end{center}
 
@@ -135,7 +135,6 @@ planes} centered on the first and last \textbf{rings}.
 \textbf{Image slice} in between two consecutive \textbf{direct planes}. \textbf{Direct 
 planes} are adjacent to \textbf{cross planes}. For a \textbf{scanner} of \textit{n} \textbf{detector} \textbf{rings}, 
 there are 2\textit{n}--1 \textbf{cross planes}.
-
 \end{description}
 
 \section*{Different data compressions used in PET data}
@@ -160,7 +159,58 @@ no axial compression. Note that the GE Advance uses mixed data,
 where segment 0 has span 3, while other segments have span 1.
 \end{description}
 
-
+\section*{Terms used in quantitative PET reconstruction}
+\begin{description}
+% ROW 24
+\item[Scatter Point]
+Coordinate where a scatter event takes place. 
+% ROW 25
+\item[SSS - Single scatter simulation]
+Estimation of the probability to measure a coincidence event that one of
+the two photons has been scattered only once. 
+% ROW 26
+\item[B-Splines]
+Basis splines are a set of polynomial functions that have minimal support with 
+respect to a given degree, smoothness, and domain partition. In imaging they 
+are useful for performing very fast multidimensional interpolation calculations.
+% ROW 27
+\item[Inverse-SSRB]
+It is the pseudo-inverse operation of single slice rebinning which can be used 
+as the simplest way to extrapolate direct sinograms into indirect sinograms. 
+% ROW 28
+\item[Plasma Data]
+Radioactivity concentration in plasma (and blood) during the scanning acquisition.
+Usually it is measured in $\mathit{kBq/cm^3}$ over a time window of 1 second. 
+% ROW 29
+\item[Dynamic Data/Images]
+A stack of projection data or images through time.
+% ROW 30
+\item[Kinetic Model]
+The kinetic model describe the tracer exchange between plasma and tissue 
+and between tissue compartments.
+% ROW 31
+\item[Kinetic Parameters]
+The parameters of the kinetic model which are estimated such that 
+the model is in agreement with the acquired data. 
+% ROW 32
+\item[(Kinetic) Model Matrix]
+Linear kinetic models can be written with compact matrix operations, which 
+relate the dynamic images and the kinetic parameters with the kinetic model matrix. 
+This matrix can be seen as the application of the transformation from parametric 
+domain to the temporal domain. 
+% ROW 33
+\item[Patlak Plot]
+For irreversible tracers, after a certain period from tracer injection, 
+the free tracer in tissue reaches equilibrium with the radiotracer in plasma and 
+then the original model simplifies to a linear plot known as the Patlak Plot.
+% ROW 34
+\item[Parametric Image]
+An image whose voxels hold the values the kinetic parameters.
+% ROW 35
+\item[Parametric Image Reconstruction (PIR)]
+Estimation of the kinetic parameters from dynamic images for each voxel (indirect PIR). 
+The parametric images can also be reconstructed directly from dynamic projection data. 
+\end{description}
 
 
 \newpage
