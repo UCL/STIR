@@ -28,8 +28,8 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/listmode/CListModeDataFromStream.h"
-#include "stir/listmode/CListModeDataECAT.h"
+#include "stir/IO/read_from_file.h"
+#include "stir/listmode/CListModeData.h"
 
 START_NAMESPACE_STIR
 
@@ -46,14 +46,15 @@ CListModeData*
 CListModeData::
 read_from_file(const string& filename)
 {
-  //return new CListModeDataFromStream(filename);
-  return new CListModeDataECAT(filename);
+  std::auto_ptr<CListModeData > aptr = 
+    stir::read_from_file<CListModeData>(filename);
+  return aptr.release();
 }
 
 const Scanner* 
 CListModeData::
 get_scanner_ptr() const
 {
-  return scanner_ptr.get();
+  return this->scanner_sptr.get();
 }
 END_NAMESPACE_STIR
