@@ -1081,6 +1081,7 @@ command shell used.
 
 Most \textit{STIR} programs accept a single parameter on the command 
 line, which is usually optional
+
 \cmdline{executable\_name [parameter\_filename]}
 
 
@@ -1237,6 +1238,7 @@ This utility can be used to bin (or sort) the list mode data
 into 'projection data' (also known as \textbf{3D sinograms}. 
 This can then be processed further by other \textit{STIR} utilities. It 
 needs to be run as follows:
+
 \cmdline{lm\_to\_projdata par\_filename}
 
 
@@ -1277,6 +1279,7 @@ i.e. add views together.
 
 
 \textit{Usage:}
+
 \cmdline{SSRB output\_filename input\_projdata\_name {\textbackslash} \\
 num\_segments\_to\_combine [num\_views\_to\_combine {\textbackslash}\\
 {[}do\_normalisation [max\_in\_segment\_num\_to\_process ]]]}
@@ -2129,7 +2132,7 @@ Wat97, Wat04, Wer02, Poe03] has been implemented and evaluated [Tso04].
 
 \subsubsection{Data Initialisation}
 \begin{itemize}
-\item Apply randoms correction, normalisation and attenation correction on emission data 
+\item Apply randoms correction, normalisation and attenuation correction on emission data 
 \item Reconstruct attenuation image
 \item Use \textbf{create\_tail\_mask\_from\_ACFs} to estimate the region that will be used for scaling
 \item Reconstruct emission image without scatter correction
@@ -2138,12 +2141,12 @@ less rings and detectors without arc-correction) as suggested in literature (e.g
 \item Reconstruct a coarse attenuation image or else construct a "subsampled" attenuation image using zoom\_image and stir\_math. 
 \end{itemize}
 
-\begin{verbatim}
-create_tail_mask_from_ACFs		--ACF-filename <projdata>
-					--ACF-threshold <number (1.01)>
-					--output-filename <projdata>
-					--safety-margin <0>
-\end{verbatim}
+\cmdline{%
+create\_tail\_mask\_from\_ACFs		--ACF-filename <projdata> \textbackslash \\
+					--ACF-threshold <number (1.01)> \textbackslash \\
+					--output-filename <projdata> \textbackslash \\
+					--safety-margin <0>%
+}
 \begin{description}
 \item[ACF-filename] Attenuation Correction Factors Projection Data Filename
 \item[ACF-threshold] Value used to threshold ACF and creates the mask, defaults to 1.01
@@ -2157,8 +2160,10 @@ create_tail_mask_from_ACFs		--ACF-filename <projdata>
 \item Use \textbf{upsample\_and\_fit\_single\_scatter}
 \end{itemize} 
 
+
+\cmdline{estimate\_scatter scatter.par}
+Example \texttt{scatter.par}
 \begin{verbatim}
-./estimate_scatter scatter.par
 Scatter Estimation Parameters:=
 ; threshold below which not to bother putting a scatter point in a voxel
    attenuation_threshold :=.01
@@ -2177,17 +2182,19 @@ Scatter Estimation Parameters:=
    template_proj_data_filename := SUBSAMPLED_PROJECTION_DATA_TEMPLATE
    output_filename_prefix := OUTPUT_PROJECTION_DATA
 End Scatter Estimation Parameters:=
-
-upsample_and_fit_single_scatter
-					--min-scale-factor <number>
-					--max-scale-factor <number>
-					--remove-interleaving <1|0>
-					--half-filter-width <number>
-					--output-filename <filename>
-					--data-to-fit <filename>
-					--data-to-scale <filename>
-					--weights <filename>
 \end{verbatim}
+
+\cmdline{%
+upsample\_and\_fit\_single\_scatter \textbackslash \\
+					--min-scale-factor <number> \textbackslash \\
+					--max-scale-factor <number> \textbackslash \\
+					--remove-interleaving <1|0> \textbackslash \\
+					--half-filter-width <number> \textbackslash \\
+					--output-filename <filename> \textbackslash \\
+					--data-to-fit <filename> \textbackslash \\
+					--data-to-scale <filename> \textbackslash \\
+					--weights <filename>%
+}
 \begin{description}
 \item[min-scale-factor,max-scale-factor]: Both min and max scale factors are set such that the scaling does not explode for any reason.
 \item[remove-interleaving]: Remove the interleaving in the coarse scatter estimate before upscaling (it is recommended to set this to 1)
@@ -2198,26 +2205,31 @@ upsample_and_fit_single_scatter
 \item[weights]: This is the mask sinogram, or any other weighting factors on projection space that is used to define the region of scaling. 
 \end{description}
 The procedure of scaling involves B-Splines interpolation for the tangential (Cubic), axial (Cubic) and
-view (Linear) dimensions, while for the azimuthally the interpolation is achieved by applying the
+view (Linear) dimensions, while for oblique segments, currently the interpolation is achieved by applying the
 pseudo-inverse transform of Single Slice Rebinning as described in [Tso05].
 
 \subsubsection{Iterative loop (if necessary)}
-The scatter estimation is based on images that do not include scatter, therefore an iterative procedure is needed such that scatter is eliminated progressively. In the first iteration, scatter (B.2) is overestimated and thus images are overcorrected (B.3) for it. Then, in the second iteration (B.2) scatter is underestimated. The mean value of the two scatter estimates can be used for scatter correction. Two iterations are usually enough to estimate a good approximation of scatter. 
+The scatter estimation is based on images that do not include scatter, therefore an iterative procedure
+is needed such that scatter is eliminated progressively. In the first iteration, scatter (B.2) is
+overestimated and thus images are overcorrected (B.3) for it. Then, in the second iteration (B.2) scatter
+is underestimated. The mean value of the two scatter estimates can be used for scatter correction. Two
+iterations are usually enough to estimate a good approximation of scatter.
 
 \begin{itemize}
 \item Reconstruct emission image with scatter estimate\\
 Two options exist:
 \begin{itemize}
-\item	FBP: Subtract scatter estimate from the precorrected emission data (as described in A.1), then correct for attenuation and run FBP with sufficient filtering.
-   \[\mathrm{Image} = \mathrm{FBP}(N*\mathrm{ACF}*(Y-R)-S)) \]
-\item Iterative (e.g. OSEM or OSSPS): Include the scatter sinogram into the additive term but only after un-normalising it (i.e. dividing it with the normalization and attenuation correction factors). If you have randoms, the scatter sinogram needs to be un-normalized first and then added to randoms to create the additive sinogram. All this is due to the current implementation of the additive term (\textit{A}).
-    \[A=R+S/(N*\mathrm{ACF})  \]
+\item	FBP: Correct the scatter estimate for attenuation and subtract from the precorrected emission data. 
+Run FBP with sufficient filtering.
+   \[\mathrm{Image} = \mathrm{FBP}\(\mathrm{ACF}*(N*(P-R)-S)\) \]
+\item Iterative (e.g. OSEM or OSSPS): Use the following for the additive sinogram (\textit{A}).
+    \[A=(R/N+S)/(\mathrm{ACF})  \]
 \end{itemize}
 where, \textit{N}: Normalization Factors, 
 	\textit{ACF}: Attenuation Correction Factors,
 	\textit{R}: Random Projection Data,
 	\textit{S}: Scatter Projection Data as estimated using  \textit{STIR},
-	\textit{Y}: Measured Projection Data
+	\textit{P}: Measured Projection Data (prompts)
 \end{itemize}
 
 \subsubsection{Limitations}
@@ -2226,7 +2238,7 @@ The three separate executables need to be merged in one together with the iterat
 rings is currently in place. Therefore, upsampling of oblique sinograms is currently handled in a simple
 way i.e. (pseudo)-inverse SSRB but ideally interpolation of the 3D sinograms will be useful. In the
 current version, we have only \textit{SSS} in \textit{STIR} with scaling per sinogram of the scatter
-sinograms for taking consideration of the out of field of view activity and and multiple scattering
+sinograms for taking consideration of the out of field of view activity and multiple scattering
 events. This generally seems to produce good results in most instances [Thi07].
 
 
@@ -2278,16 +2290,15 @@ is usually given in the very first row. Currently, the parametric image
 has to be in \textbf{ECAT7} format with \textbf{num\_frames} being equal to \textbf{num\_params}.
 
 How to Run \textit{Patlak Plot}:
-\begin{verbatim} 
-apply_patlak_to_images \
-  output_parametric_image input_dynamic_image patlak_plot.par
-\end{verbatim}
+
+\cmdline{%
+apply\_patlak\_to\_images \textbackslash \\
+  output-parametric-image input-dynamic-image patlak-plot.par}
 
 How to Estimate Dynamic Images using \textit{Patlak Plot} Parametric Images:
-\begin{verbatim}
-get_dynamic_images_from_parametric_images \
-   output_dynamic_image input_parametric_image patlak_plot.par
-\end{verbatim}
+\cmdline{%
+get\_dynamic\_images\_from\_parametric\_images \textbackslash \\
+   output-dynamic-image input-parametric-image patlak-plot.par}
 
 Of course the reference tissue model can also be applied: 
 
@@ -2311,10 +2322,9 @@ end Patlak Plot Parameters:=
 
 Moreover, two direct reconstruction version of linear kinetic models have been also implemented, evaluated [Tso08, Tso07] and optimised [Ang11]. These are the parametric versions of \textbf{OSEM} and \textbf{OSSPS} therefore called \textbf{POSEM} and \textbf{POSSPS}. 
 P
-\begin{verbatim}
-OSEM POSEM.par
-POSSPS POSSPS.par
-\end{verbatim}
+\cmdline{POSMAPOSL POSEM.par}
+\cmdline{POSSPS POSSPS.par}
+
 
 The parameter files include the information of the kinetic model as described for the indirect case and the declaration of the new objective function type\\
 \texttt{PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData}.
