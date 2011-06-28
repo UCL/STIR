@@ -40,12 +40,12 @@
 \large 
 
 \noindent 
-K. Thielemans (Hammersmith Imanet)\\
+K. Thielemans (Hammersmith Imanet Ltd)\\
 D. Sauge, C. Labb\'e, C. Morel (Hopital Cantonal Gen\`eve)\\
 M. Jacobson (Technion University)\\
 A. Zverovich (Brunel University) \\
 T. Beisel (Univ. of Paderborn) \\
-Ch. Tsoumpas (Imperial College London)
+Ch. Tsoumpas (Hammersmith Imanet and Imperial College London)
 
 
 
@@ -175,8 +175,8 @@ We discourage using such versions for \textit{STIR} (check with gcc -v).
 
 
 
-Other recent C++ compilers should be ok as well. Intel's compiler
-version 9.x seems to work for everything except fourier transforms.
+Other recent C++ compilers should be ok as well, including Intel's compiler
+version 11.
 We would love 
 to hear from any attempts of using another compiler. See Section 
 \ref{sec:VC}
@@ -483,7 +483,7 @@ See also section \ref{sec:display}..
 \subsubsection{
 Additional options available for parallel code}
 
-\textit{STIR} 2.1 contains code for running \texttt{OSMAPOSL} and \texttt{OSMSPS} in parallel-mode
+\textit{STIR} 2.1 contains code for running \texttt{OSMAPOSL} and \texttt{OSSPS} in parallel-mode
 \footnote{In fact, any algorithm that uses \texttt{PoissonLogLikelihoodWithLinearModelForMeanAndProjData}.}
 (contribution mainly by Tobias Beisel, Univ. of Paderborn). You need a version of the MPI library and
 and compiler to get this to work. We have tested this using \R2Lurl{http://www.open-mpi.org/}{OpenMPI} 1.4.2.
@@ -583,7 +583,7 @@ but check it out if it is appropriate for you before copying
 it to \textbf{STIR/local/}.
 
 \subsubsection{
-Enabling ECAT 6 or 7 support}
+Enabling ECAT 7 support}
 \label{sec:ECAT67support}
 Older CTI (Siemens) scanners use a file format called ECAT.
 At present, \textit{STIR} uses parts of the Louvain la Neuve ecat library (called LLN in
@@ -700,7 +700,7 @@ are somewhat fiddly. Before we go there, we have to got a problem out-of-the-way
 }
 At present, \textit{STIR} uses some files available in the Windows API for 
 getting accurate CPU time estimates. If you do not have the Windows API
-installed, you will get compilation errors mentioning that 
+installed, you might get compilation errors mentioning that 
 the file \texttt{windows.h} cannot be found. A work-around is to
 define the preprocessor symbol \texttt{STIR\_CPUTimer\_use\_clock}. 
 This does mean that \textbf{CPUTimer} will return wall-clock time.
@@ -782,7 +782,7 @@ programs.
 
 
 
-\textbf{Note:} The project files enable ECAT6 and 7 support by default. 
+\textbf{Note:} The project files enable ECAT support by default. 
 If you do not want ECAT support (i.e. if you do not (want to) 
 have the LLN ecat library), you probably have to remove the \textit{HAVE\_LLN\_MATRIX} preprocessor 
 define, and remove dependencies on the ecat project. This might 
@@ -901,6 +901,10 @@ Visual Studio.
 
 \subsubsection{
 Operating system specifics}
+
+{ \subsubsubsection{Mac OS}
+The lln library does not compile on Mac OS. 
+}
 
 { \subsubsubsection{All Unix/Linux flavours}
 }
@@ -1223,7 +1227,8 @@ directly, this is currently not supported by \textit{STIR}.
 Currently supported list mode formats are specific to the ECAT 
 HR+ and ECAT EXACT 3D scanners. There are some unfinished classes
 available on the \textit{STIR} web-site to read \textit{LMF} format files,
-in conjunction with the \textit{LMF} library.
+in conjunction with the \textit{LMF} library. The OpenGATE project distributes files
+to enable STIR to read \textit{LMF} format files.
 
 \subsubsection{
 lm\_to\_projdata}
@@ -1515,8 +1520,7 @@ value is allowed.
 \begin{description}
 
 \item[input file]
-The name of the file for the measured projection data (e.g. .hs 
-for Interfile,.scn for GE Advance). 
+The name of the file for the measured projection data. 
 
 
 \item[zero end planes of segment 0]
@@ -1600,7 +1604,7 @@ data, the Shifted Poisson version of OSL can be run as well.
 \item[maximum absolute segment number to process]
 Denoting the input value by \textit{num\_segments}, this indicates 
 that the reconstruction will be carried out using segment numbers 
---\textit{num\_segments} through +\textit{num\_segments} of the measured 
+-\textit{num\_segments} through +\textit{num\_segments} of the measured 
 projection data. Defaults to use all segments in the input data.
 
 
@@ -2117,23 +2121,184 @@ the default backprojector used by FBP3DRP, has a central artefact
 on some systems (including Sparc and Opterons).
 
 \subsection{
-Kinetic modelling}
-\label{sec:KineticModels}
-A parametric image class (ParametricDiscretisedDensity) has been implemented that at 
-the moment can hold two parameters, but it could be extended 
-to account for more cases. In this release Patlak plot [Pat83, Pat85], i.e. a 
-linear kinetic model for tracers with irreversible kinetic behavior has been implemented. 
-Moreover, a direct version of Patlak plot has been also implemented and evaluated [Tso08]. 
+Scatter Correction}
+Coincidence events where one or more of the photons are scattered form a major contribution to the data
+in 3D PET. This scatter background needs to be estimated and taken into account during reconstruction. In
+\textit{STIR 2.1}, a version of the Single Scatter Simulation ( \textit{SSS}) algorithm [Wat96, Wat00,
+Wat97, Wat04, Wer02, Poe03] has been implemented and evaluated [Tso04].
 
-Sample parameter file:
+\subsubsection{Data Initialisation}
+\begin{itemize}
+\item Apply randoms correction, normalisation and attenation correction on emission data 
+\item Reconstruct attenuation image
+\item Use \textbf{create\_tail\_mask\_from\_ACFs} to estimate the region that will be used for scaling
+\item Reconstruct emission image without scatter correction
+\item Construct a "sub-sampled sinogram" template (i.e. same geometrical characteristics but
+less rings and detectors without arc-correction) as suggested in literature (e.g. in [Tso04]).
+\item Reconstruct a coarse attenuation image or else construct a "subsampled" attenuation image using zoom\_image and stir\_math. 
+\end{itemize}
+
 \begin{verbatim}
+create_tail_mask_from_ACFs		--ACF-filename <projdata>
+					--ACF-threshold <number (1.01)>
+					--output-filename <projdata>
+					--safety-margin <0>
+\end{verbatim}
+\begin{description}
+\item[ACF-filename] Attenuation Correction Factors Projection Data Filename
+\item[ACF-threshold] Value used to threshold ACF and creates the mask, defaults to 1.01
+\item[safety-margin] This dilates the mask for a number of safety bins in tangential direction
+\item[output-filename] The file that new projection data will be stored
+\end{description}
+
+\subsubsection{SSS}
+\begin{itemize} 
+\item Use \textbf{estimate\_scatter} to find subsampled scatter estimate from current emission image
+\item Use \textbf{upsample\_and\_fit\_single\_scatter}
+\end{itemize} 
+
+\begin{verbatim}
+./estimate_scatter scatter.par
+Scatter Estimation Parameters:=
+; threshold below which not to bother putting a scatter point in a voxel
+   attenuation_threshold :=.01
+; Placing the scatter points in a random position of a voxel (0) else randomly so
+   random := 1
+; Caching is extremely useful as it speeds up the estimation drastically.
+   use_cache := 1
+; The resolution of the scanner as given in literature
+   energy_resolution :=.22
+; Acquisition settings
+   lower_energy_threshold :=350
+   upper_energy_threshold :=650
+   activity_image_filename := ACTIVITY_IMAGE
+   density_image_filename := DENSITY_IMAGE
+   density_image_for_scatter_points_filename := LOW_RESOLUTION_DENSITY_IMAGE
+   template_proj_data_filename := SUBSAMPLED_PROJECTION_DATA_TEMPLATE
+   output_filename_prefix := OUTPUT_PROJECTION_DATA
+End Scatter Estimation Parameters:=
+
+upsample_and_fit_single_scatter
+					--min-scale-factor <number>
+					--max-scale-factor <number>
+					--remove-interleaving <1|0>
+					--half-filter-width <number>
+					--output-filename <filename>
+					--data-to-fit <filename>
+					--data-to-scale <filename>
+					--weights <filename>
+\end{verbatim}
+\begin{description}
+\item[min-scale-factor,max-scale-factor]: Both min and max scale factors are set such that the scaling does not explode for any reason.
+\item[remove-interleaving]: Remove the interleaving in the coarse scatter estimate before upscaling (it is recommended to set this to 1)
+\item[half-filter-width]: width of filter to apply on estimated scale factors (in axial direction). The filter is a simple boxcar.
+\item[output-filename]: Scatter projection data at the emission data settings
+\item[data-to-fit]: Emission sinogram 
+\item[data-to-scale]: Course scatter sinogram 
+\item[weights]: This is the mask sinogram, or any other weighting factors on projection space that is used to define the region of scaling. 
+\end{description}
+The procedure of scaling involves B-Splines interpolation for the tangential (Cubic), axial (Cubic) and
+view (Linear) dimensions, while for the azimuthally the interpolation is achieved by applying the
+pseudo-inverse transform of Single Slice Rebinning as described in [Tso05].
+
+\subsubsection{Iterative loop (if necessary)}
+The scatter estimation is based on images that do not include scatter, therefore an iterative procedure is needed such that scatter is eliminated progressively. In the first iteration, scatter (B.2) is overestimated and thus images are overcorrected (B.3) for it. Then, in the second iteration (B.2) scatter is underestimated. The mean value of the two scatter estimates can be used for scatter correction. Two iterations are usually enough to estimate a good approximation of scatter. 
+
+\begin{itemize}
+\item Reconstruct emission image with scatter estimate\\
+Two options exist:
+\begin{itemize}
+\item	FBP: Subtract scatter estimate from the precorrected emission data (as described in A.1), then correct for attenuation and run FBP with sufficient filtering.
+   \[\mathrm{Image} = \mathrm{FBP}(N*\mathrm{ACF}*(Y-R)-S)) \]
+\item Iterative (e.g. OSEM or OSSPS): Include the scatter sinogram into the additive term but only after un-normalising it (i.e. dividing it with the normalization and attenuation correction factors). If you have randoms, the scatter sinogram needs to be un-normalized first and then added to randoms to create the additive sinogram. All this is due to the current implementation of the additive term (\textit{A}).
+    \[A=R+S/(N*\mathrm{ACF})  \]
+\end{itemize}
+where, \textit{N}: Normalization Factors, 
+	\textit{ACF}: Attenuation Correction Factors,
+	\textit{R}: Random Projection Data,
+	\textit{S}: Scatter Projection Data as estimated using  \textit{STIR},
+	\textit{Y}: Measured Projection Data
+\end{itemize}
+
+\subsubsection{Limitations}
+The three separate executables need to be merged in one together with the iterative loop. The
+\textit{SSS} can estimate 3D scatter that is measured by indirect rings but no interpolation of indirect
+rings is currently in place. Therefore, upsampling of oblique sinograms is currently handled in a simple
+way i.e. (pseudo)-inverse SSRB but ideally interpolation of the 3D sinograms will be useful. In the
+current version, we have only \textit{SSS} in \textit{STIR} with scaling per sinogram of the scatter
+sinograms for taking consideration of the out of field of view activity and and multiple scattering
+events. This generally seems to produce good results in most instances [Thi07].
+
+
+\subsection{
+Parametric Image Construction using kinetic modelling}
+\label{sec:KineticModels}
+A parametric image class (\textbf{ParametricDiscretisedDensity}) has been implemented that at the moment
+can hold two parameters\footnote{Most relevant \textit{STIR} classes are templated in the number of parameters
+and would therefore work with numbers. There are some preprocessor defines however to shorten the code in
+a few places. Currently this uses \texttt{\#DEFINE NUM\_PARAMS 2}.}. 
+In this release \textit{Patlak plot} [Pat83, Pat85], i.e. a linear kinetic
+model for tracers with irreversible kinetic behavior, has been implemented. The \textbf{PatlakPlot} class
+is derived from the \textbf{KineticModel} class.
+
+The user will need to provide information about:
+\begin{itemize} 
+\item	File of input function (e.g. plasma activity or reference tissue activity values); 
+\item	Calibration Factor (i.e. scale factor that sets the projection data to the same units with the input function) 
+\item	Starting frame to apply  \textit{Patlak Plot} 
+\item	Delay between input function and PET measurement 
+\item	Time-frame definition file. 
+\item	The boolean \textit{In total counts} is 0 or 1 depending if the counts are total or mean over each frame 
+\item	In correct scale should be set to 1 if  \textit{STIR} has already scaled correctly the images according to \textit{x\_voxel\_size}
+\end{itemize}
+Example Sample File: \texttt{PatlakPlot.par} 
+
+\begin{verbatim} 
 Patlak Plot Parameters:=
 
 time frame definition filename := 
 starting frame := UNSIGNEDINT
 calibration factor := FLOAT
 scale factor := FLOAT
-blood data filename :=  
+blood data filename := plasma.if
+; In seconds
+Time Shift := FLOAT
+In total counts := 1
+In correct scale := 1
+
+end Patlak Plot Parameters:=
+\end{verbatim}
+
+Current assumptions are that an \textit{F-18} tracer is used; the input function is not decay corrected and it
+is given in a text file with three columns (i.e. \textbf{PlasmaSample}): time in \textit{seconds}, plasma-activity in
+\textit{kBq/cm-3}, and blood-activity in \textit{kBq/cm-3}) 
+%HARRY TODO "and multiple" ?
+and multiple the total number of \textbf{PlasmaSample}
+is usually given in the very first row. Currently, the parametric image
+has to be in \textbf{ECAT7} format with \textbf{num\_frames} being equal to \textbf{num\_params}.
+
+How to Run \textit{Patlak Plot}:
+\begin{verbatim} 
+apply_patlak_to_images \
+  output_parametric_image input_dynamic_image patlak_plot.par
+\end{verbatim}
+
+How to Estimate Dynamic Images using \textit{Patlak Plot} Parametric Images:
+\begin{verbatim}
+get_dynamic_images_from_parametric_images \
+   output_dynamic_image input_parametric_image patlak_plot.par
+\end{verbatim}
+
+Of course the reference tissue model can also be applied: 
+
+\begin{verbatim}
+Patlak Plot Parameters:=
+
+time frame definition filename := 
+starting frame := UNSIGNEDINT
+calibration factor := 1
+scale factor := 1
+blood data filename := tac.roi
 ; In seconds
 Time Shift := 0
 In total counts := 1
@@ -2141,22 +2306,22 @@ In correct scale := 1
 
 end Patlak Plot Parameters:=
 \end{verbatim}
-\begin{description}
-\item[blood data filename] 
-        File of input function (e.g. plasma activity or reference tissue activity values)
-\item[Calibration Factor] scale factor that sets the projection data to the same units with the input function
-\item[Starting frame] from where the Patlak Plot is valid
-\item[time shift]
-        Delay between input function and PET measurement 
-\item[In total counts]
-        is 0 or 1 depending if the counts are total or mean over each frame 
-\item[In correct scale] 
-        should be set to 1 if STIR has already scaled correctly the images according to x voxel size
-\end{description}
 
-Current assumptions are that a tracer is used with the F-18 isotope and that the input
-function is not decay corrected. 
+\textbf{Important Note}: The current version of indirect reconstruction does not consider any special weighting for the time frames. This is a good approximation only if the counts at each frame is very similar which is mostly true for frames with the same duration. If the user needs to use  \textit{weighted least-squares}, the code will need minor modification.
 
+Moreover, two direct reconstruction version of linear kinetic models have been also implemented, evaluated [Tso08, Tso07] and optimised [Ang11]. These are the parametric versions of \textbf{OSEM} and \textbf{OSSPS} therefore called \textbf{POSEM} and \textbf{POSSPS}. 
+P
+\begin{verbatim}
+OSEM POSEM.par
+POSSPS POSSPS.par
+\end{verbatim}
+
+The parameter files include the information of the kinetic model as described for the indirect case and the declaration of the new objective function type\\
+\texttt{PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData}.
+
+%TODO More information could be included for \textbf{MAP} estimation e.g. \textbf{quadratic priors}. 
+
+\textbf{Important Note}:  \textit{Patlak plot} Parameters are highly correlated thus \textbf{POSEM} and \textbf{POSSPS} will struggle to compute the parameters [Tso07]. However, for (non-negative) kinetic models that correlation is minimum it is expected that they will work fine.
 
 
 \subsection{
@@ -2856,8 +3021,7 @@ For PET and SPECT, the appropriate statistics is very closely
 Poisson\footnote{{\small For a given scan, the actual distribution of 
 the detected raw counts is binomial. However, for acquisition 
 times that are shorter than the half life of the radio-isotope, 
-the Poisson approximation is very good. For more details, see 
-the PET Basics section on http://www.HammersmithImanet.com/\ensuremath{\sim}kris.}}, 
+the Poisson approximation is very good.}}, 
 at least for uncorrected counts. \textit{STIR} includes the following 
 utility to find a noise realisation given the mean projection 
 data.
@@ -2994,7 +3158,7 @@ filled in.
 \label{sec:outputinterfile}
 The most comprehensively supported file format in the library 
 is a newly proposed version of interfile. More details about 
-this type can be found on \R2Lurl{http://www.HammersmithImanet.com/\ensuremath{\sim}kris}{http://www.HammersmithImanet.com/\ensuremath{\sim}kris}. 
+this type can be found on the \textit{STIR} website.
 Interfile image files are written as a pair of files
 \textit{image\_filename.hv,
 image\_filename.v}\\
@@ -4094,11 +4258,11 @@ being discussed are:
 expanded library of polymorphic classes (e.g. image grids, and 
 ordered subsets)
 \item
-additional scanners and modalities: HiDAC, DHCI, SPECT
+additional scanners and modalities such as SPECT
 \item
 additional data formats support, without conversion to Interfile.
 \item
-Better dynamic/gated scans support.
+point-spread function reconstruction
 \end{itemize}
 
 
@@ -4127,10 +4291,12 @@ More projectors
 \item
 More priors
 \item
-Extending the parallelisation of OSMAPOSL to OSSPS, FBP3DRP etc, or using OPEMMP
+Extending the parallelisation of OSMAPOSL and OSSPS to FBP3DRP etc, or using OPEMMP
 \item
-Compatibility of the interpolating backprojector with SPARC and opteron 
+Compatibility of the interpolating backprojector with recent 
 processors.
+\item
+More kinetic models: Spectral Analysis, Logan Plot
 \end{itemize}
 
 
@@ -4140,7 +4306,7 @@ processors.
 \section{
 References}
 
-{[Ahn2003] S. Ahn and J. A. Fessler, \textit{Globally convergent image reconstruction for
+{[}Ahn2003] S. Ahn and J. A. Fessler, \textit{Globally convergent image reconstruction for
 emission tomography using relaxed ordered subsets algorithms,} IEEE
 Trans. Med. Imag., vol. 22, no. 3, pp. 613-626, May 2003.
 
@@ -4148,6 +4314,10 @@ Trans. Med. Imag., vol. 22, no. 3, pp. 613-626, May 2003.
 reconstruction for emission tomography based on median root prior. \textit{European 
 Journal of Nuclear Medicine} , Vol. 24 No. 3: 258-265.
 
+{[}Ang11] Angelis G I, Thielemans K, Tziortzi A C, Turkheimer F E and Tsoumpas C  
+\textbf{(2011)}. Convergence Optimization of Parametric MLEM Reconstruction for Estimation of Patlak Plot Parameters.  
+\textit{(Computerized Medical Imaging and Graphics}, 35:407-416,  
+\textit{doi:10.1016/j.compmedimag.2011.01.002}
 
 {[}Ben99] Ben-Tal A, Margalit T and Nemirovski A \textbf{(1999)} The 
 ordered subsets mirror descent optimization method with application 
@@ -4161,9 +4331,11 @@ report \#5/99, October 1999, MINERVA Optimization Center, Faculty
 of Industrial Engineering and Management, Technion -- Israel Institute 
 of Technology.}
 
-[Bei08] Tobias Beisel, Stefan Lietsch, and Kris Thielemans \textbf{(2008)}
+[Bei08] Beisel T, Lietsch S, and Thielemans K \textbf{(2008)}
 A Method for OSEM PET Reconstruction on Parallel Architectures Using STIR.
 \textit{Proc. of the IEEE Medical Imaging Conference, Dresden, Germany, 2008}.
+
+{[}Blu01] Blu T, Thcvenaz P, Unser M \textbf{(2001)}. MOMS: maximal-order interpolation of minimal support.  \textit{IEEE Trans Image Processing} 10(7): 1069-1080.
 
 {[}Bou97] Boudraa \textsc{A E O} \textbf{(1997)} Automated detection of the 
 left ventricular region in magnetic resonance images by Fuzzy 
@@ -4173,8 +4345,7 @@ C-Means model. \textit{Int J of Cardiac Imag} ; 13: 347-355.
 iterative space reconstruction algorithm suitable for volume 
 ECT. \textit{IEEE Trans. Med. Imaging}, vol. MI-5: 61-66.
 
-
-{[}Dau97] M.E. Daube-Witherspoon and G. Muehllehner, \textbf{(1987)} 
+{[}Dau97] Daube-Witherspoon M E and Muehllehner G \textbf{(1987)} 
 Treatment of axial data in three-dimensional PET, 
 J. Nucl. Med. 28, 171-1724.
 
@@ -4197,8 +4368,7 @@ Biol.}, 43: 3009-3024.
 Gibbs distributions, and the Bayesian restoration of images. \textit{IEEE 
 Trans PAMI}, 6: 721-741.
 
-
-{[}Gem85] Geman S. and McClure D \textbf{(1985)} Bayesian image analysis: 
+{[}Gem85] Geman S and McClure D \textbf{(1985)} Bayesian image analysis: 
 an application to single photon emission tomography. \textit{in Proc. 
 American Statistical Society, Statistical Computing Section (Washington, 
 DC)} 12-18.
@@ -4243,15 +4413,14 @@ correction for partial volume effects within cerebral structures. \textit{Neuroi
 
 {[}Lab99a] Labb\'{e} C, Thielemans K, Belluzzo D, Bettinardi V, Gilardi 
 MC, Hague DS, Jacobson MW, Kaiser S, Levkovitz R, Margalit T, 
-Mitra G, Morel C, Spinks T, Valente P, Zaidi H, Zverovich A\textit{: 
+Mitra G, Morel C, Spinks T, Valente P, Zaidi H and Zverovich A\textit{: 
 An object-Oriented Library for 3D PET Reconstruction using Parallel 
 Computing}, Proceedings of Bildverarbeitung fuer die Medizin 
 1999, Algorithmen-Systeme-Anwendungen, \textit{Informatik} 
 \textit{aktuell, Springer}, Eds. H. Evers, G. Glombitza, T. Lehmann, 
 H.-P. Meinzer, pp 268-272. 
 
-
-{[}Lab99b] Labb\'{e} C, Thielemans K, Zaidi H, Morel C: An object-oriented 
+{[}Lab99b] Labb\'{e} C, Thielemans K, Zaidi H and Morel C: An object-oriented 
 library incorporating efficient projection/backprojection operators 
 for volume reconstruction in 3D PET\textit{. Proc. of 3D99 Conference}, 
 June 1999, Egmond aan Zee, The Netherlands 
@@ -4273,21 +4442,20 @@ University of West London. Oct 1997}.
 
 
 {[}Mar99] Margalit T, Gordon E, Jacobson M, Ben-Tal A, Nemirovski 
-A, Levkovitz R \textbf{(1999)} The ordered sets mirror descent and 
+A and Levkovitz R \textbf{(1999)} The ordered sets mirror descent and 
 conjugate barrier optimization algorithms adapted to the 3D PET 
 reconstruction problem. Technion internal report and PhD thesis of T. Margalit
 
-{[}Mus01] Mustafovic S, Thielemans K, \textbf{(2001)} Additive and Multiplicative 
+{[}Mus01] Mustafovic S and Thielemans K, \textbf{(2001)} Additive and Multiplicative 
 versions of the Maximum A Posteriori Algorithm with the Median 
 Root Prior. poster at \textit{IEEE Med. Img. Conf. 2001.}
 
-
-{[}Mus04] S. Mustafovic, K.Thielemans, \textbf{(200}\textbf{4}\textbf{)} \textit{Object 
+{[}Mus04] Mustafovic S and Thielemans K, \textbf{(200}\textbf{4}\textbf{)} \textit{Object 
 Dependency of Resolution in Reconstruction Algorithms with Inter-Iteration 
 Filtering Applied to PET} , IEEE Trans. Med. Im. 23 (4): (2004) 
 433-446.
 
-{[}Mus02] S. Mustafovic, K.Thielemans\textit{,} \textbf{(2002)}  Comparison 
+{[}Mus02] Mustafovic S and Thielemans K, \textit{,} \textbf{(2002)}  Comparison 
 of Unconventional Inter-Filtering Methods to Penalised-likelihood 
 for Space-invariant Tomographs, poster at \textit{IEEE Medical Imaging 
 Conf. 2002}.
@@ -4297,6 +4465,17 @@ and method efficiency in optimization. \textit{Nauka Publishers,
 Moscow, 1978 (in Russian); English translation: John Wiley \& 
 Sons, 1983}.
 
+{[}Nic02] Nichols, T. E., J. Qi, E. Asma and R. M. Leahy \textbf{(2002)}. Spatiotemporal reconstruction of list-mode PET data.  \textit{IEEE Trans Med Imaging} 21(4): 396-404.
+
+{[}Pat83] Patlak C S, Blasberg R G, Fenstermacher J D \textbf{(1985)}  Graphical evaluation of blood-to-brain 
+transfer constants from multiple-time uptake data. \textit{J Cereb Blood Flow Metab} 3(1): p. 1-7.
+
+{[}Pat85] Patlak C S, Blasberg R G \textbf{(1985)}  Experimental and Graphical evaluation of blood-to-brain 
+transfer constant from multiple-time uptake data: Generalizations. \textit{J Cereb Blood Flow Metab} 5: p. 584-90.
+
+{[}Poe03{]} Poenisch F, Enghardt W, and Lauckner K \textbf{(2003)}, 
+Attenuation and scatter correction for in-beam positron emission tomography 
+monitoring of tumour irradiations with heavy ions. \textit { Phys Med Biol } 48(15): 2419-2436. 
 
  {[}PAR1.3] Levkovitz R, Zibulevsky M, Labbe C, Zaidi H and Morel 
 C \textbf{(1997)} Determination of a Set of Existing Algorithms for 
@@ -4321,25 +4500,52 @@ A smoothed EM approach to indirect estimation problems, with
 particular reference to stereology and emission tomography. \textit{J. 
 Roy. Stat. Soc}., 52: 271-324. 
 
-{[}Thi06{]} Kris Thielemans, Sanida Mustafovic, Charalampos Tsoumpas \textbf{(2006)},
+{[}Thi06{]} Thielemans K, Mustafovic S, Tsoumpas C\textbf{(2006)},
 STIR: Software for Tomographic Image
 Reconstruction Release 2, 
 \textit{Proc. IEEE Medical Imaging Conference 2006, San Diego, CA, USA.}
 
-{[}Blu01] Blu T, Thcvenaz P, Unser M \textbf{(2001)}. MOMS: maximal-order interpolation of minimal support.  \textit{IEEE Trans Image Processing} 10(7): 1069-1080.
+{[}Thi07{]} Thielemans K, Manjeshwar R, Tsoumpas C and Jansen F\textbf{(2007)}, 
+A new algorithm for scaling of PET scatter estimates using all coincidence events. 
+\textit { IEEE Nucl Sci Symp Med Imaging Conf } 3586 - 3590.
 
-{[}Nic02] Nichols, T. E., J. Qi, E. Asma and R. M. Leahy \textbf{(2002)}. Spatiotemporal reconstruction of list-mode PET data.  \textit{IEEE Trans Med Imaging} 21(4): 396-404.
+{[}Tso04{]} Tsoumpas C, Aguiar P, Nikita K S, Ros D and Thielemans K\textbf{(2004)}, 
+Evaluation of the single scatter simulation algorithm implemented in the STIR library. 
+\textit { IEEE Nucl Sci Symp Med Imaging Conf } 3361-3365.
+
+{[}Tso07{]} Tsoumpas C, Turkheimer F E and Thielemans K  \textbf{(2007)}, 
+Convergence properties of algorithms for direct parametric estimation of linear models in dynamic PET. 
+\textit{IEEE Nucl Sci Symp Med Imaging Conf} 3034-3037
+
+{[}Tso08{]} Tsoumpas C, Turkheimer F E and Thielemans K \textbf{(2008)}, Study of direct and indirect 
+parametric estimation methods of linear models in dynamic positron emission tomography. \textit{Med. Phys.} 
+35(4): p. 1299-1309.</i>
+
 
 {[}Uns93] Unser M, Aldroubi A, Eden M \textbf{(1993)}. B-Spline Signal Proccessing: Part II - Efficient Design and Applications.  \textit{IEEE Trans Signal Processing} 41(2): 834-848.
 
 {[}Uns99] Unser M. \textbf{(1999)}. Splines: A Perfect Fit for Signal and Image Processing. \textit{IEEE Signal Processing Magazine}: 22-38.
 
+{[}Wat96{]} Watson C C, Newport D, and Casey M E\textbf{(1996)}, 
+A single-scatter simulation technique for scatter correction in 3D PET. 
+\textit { Fully 3D Image Recon Radiol Nucl Med} Kluwer Academic: 255-268. 
 
-{[}Tso07{]} Tsoumpas C, Turkheimer F, Thielemans K  \textbf{(2007)}, Convergence properties of algorithms for direct parametric estimation of linear models in dynamic PET. \textit{IEEE Nucl Sci Symp Med Imaging Conf} 3034-3037.
+{[}Wat97a{]} Watson C C, Newport D, Casey M E, deKemp R A, Beanlands R S, and Schmand M 
+\textbf{(1997)}, Evaluation of Simulation-Based Scatter Correction for 3-D PET Cardiac Imaging. 
+\textit { IEEE Trans Nucl Sci }, 44(1): 90-97.
 
-{[}Tso08{]} Tsoumpas C, Turkheimer F E, Thielemans K \textbf{(2008)}, Study of direct and indirect parametric estimation methods of linear models in dynamic positron emission tomography. \textit{Med. Phys.} 35(4): p. 1299-1309.
+{[}Wat97b{]} Watson C C, Newport D, Casey M E, Beanlands R S, Schmand M, and deKemp R A 
+\textbf{(1997)}, A technique for measuring the energy response of a PET tomograph using a compact scattering source. 
+\textit { IEEE Trans Nucl Sci }, 44(6): 2500-2508.
 
-{[}Pat83] Patlak C S, Blasberg R G, Fenstermacher J D \textbf{(1985)}  Graphical evaluation of blood-to-brain transfer constants from multiple-time uptake data. \textit{J Cereb Blood Flow Metab} 3(1): p. 1-7.
+{[}Wat00{]} Watson C C \textbf{(2000)}, New, faster, image-based scatter correction for 3D PET. 
+\textit { IEEE Trans Nucl Sci } 47(4): 1587-1594. 
 
-{[}Pat85] Patlak C S, Blasberg R G \textbf{(1985)}  Experimental and Graphical evaluation of blood-to-brain transfer constant from multiple-time uptake data: Generalizations. \textit{J Cereb Blood Flow Metab} 5: p. 584-90. 
+{[}Wat04{]} Watson C C, Casey M E, Michel C, Bendriem B\textbf{(2004)}, 
+Advances in scatter correction for 3D PET/CT. \textit { IEEE Nucl Sci Symp Med Imaging Conf } 3008 - 3012. 
+
+{[}Wer02{]} Werling A, Bublitz O, Doll J, Adam L E, and Brix G\textbf{(2002)}, 
+Fast implementation of the single scatter simulation algorithm and its use in iterative image 
+reconstruction of PET data. \textit { Phys Med Biol } 47(16): 2947-2960.
+
 \end{document}
