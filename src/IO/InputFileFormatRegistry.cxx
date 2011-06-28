@@ -32,6 +32,7 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"  
 #include "stir/DynamicDiscretisedDensity.h" 
+#include "stir/listmode/CListModeData.h"
 
 START_NAMESPACE_STIR
 
@@ -39,5 +40,6 @@ START_NAMESPACE_STIR
 template class InputFileFormatRegistry<DiscretisedDensity<3,float> >;
 template class InputFileFormatRegistry<ParametricVoxelsOnCartesianGrid >;
 template class InputFileFormatRegistry<DynamicDiscretisedDensity>;
+template class InputFileFormatRegistry<CListModeData>;
 
 END_NAMESPACE_STIR
