@@ -8,8 +8,12 @@ $(dir)_SOURCES = \
 	lm_to_projdata_bootstrap.cxx \
 	lm_fansums.cxx \
 	generate_headcurve.cxx \
-	list_time_events.cxx \
+	list_time_events.cxx
+
+ifeq ($(STIR_DEVEL_966_FIX),1)
+$(dir)_SOURCES+= \
 	change_lm_time_tags.cxx 
+endif
 
 ifeq ($(STIR_DEVEL_MOTION),1)
 $(dir)_SOURCES+= \
