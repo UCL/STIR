@@ -20,6 +20,7 @@
 
 #include "stir/listmode/CListRecord.h"
 #include "stir/listmode/CListModeData.h"
+#include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.h"
 #include "stir/Succeeded.h"
 
 #include "stir/Scanner.h"
@@ -137,6 +138,7 @@ int main(int argc, char *argv[])
 
     while (num_events_to_list==0 || num_events_to_list!=num_listed_events)
       {
+        bool recognised = false;
 	if (lm_data_ptr->get_next_record(record) == Succeeded::no) 
 	  {
 	    // no more events in file for some reason
@@ -144,12 +146,45 @@ int main(int argc, char *argv[])
 	  }
 	if (record.is_time())
 	  {
-	    cout << record.time().get_time_in_secs()
-		 << '\t' << hex << record.time().get_gating() << '\n';
-	    ++num_listed_events;
-	    
+            recognised=true;
+	    cout << "Time " << record.time().get_time_in_millisecs();
+	    ++num_listed_events;	    
 	   } 
+        {
+          CListRecordWithGatingInput * record_ptr = dynamic_cast<CListRecordWithGatingInput *>(&record);
+          if (record_ptr!=0 && record_ptr->is_gating_input())
+            {
+              recognised=true;
+              cout << "Gating " << hex << record_ptr->gating_input().get_gating();
+            }
+        }
+        if (record.is_event())
+        {
+          recognised=true;
+          CListEventCylindricalScannerWithDiscreteDetectors * event_ptr = 
+            dynamic_cast<CListEventCylindricalScannerWithDiscreteDetectors *>(&record.event());
+          if (event_ptr!=0)
+            {
+              DetectionPositionPair<> det_pos;
+              event_ptr->get_detection_position(det_pos);
+              cout << "Coincidence " << (event_ptr->is_prompt() ? "p " : "d ")
+                   << "(c:" << det_pos.pos1().tangential_coord()
+                   << ",r:" << det_pos.pos1().axial_coord()
+                   << ",l:" << det_pos.pos1().radial_coord()
+                   << ")-"
+                   << "(c:" << det_pos.pos2().tangential_coord()
+                   << ",r:" << det_pos.pos2().axial_coord()
+                   << ",l:" << det_pos.pos2().radial_coord()
+                   << ")";
+            }
+        }
+        if (!recognised)
+        {
+          cout << "Unknown";
+        }
+        cout << '\n';
       }
+    cout << '\n';
 
   }
 #endif
