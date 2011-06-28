@@ -160,7 +160,7 @@ save_get_position()
 template <class RecordT, class OptionsT>
 Succeeded
 InputStreamWithRecords<RecordT, OptionsT>::
-set_get_position(const InputStreamWithRecords<RecordT, OptionsT>::SavedPosition& pos)
+set_get_position(const typename InputStreamWithRecords<RecordT, OptionsT>::SavedPosition& pos)
 {
   if (is_null_ptr(stream_ptr))
     return Succeeded::no;
