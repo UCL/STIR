@@ -36,6 +36,8 @@
 #include "stir/shared_ptr.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/stir_ecat7.h"
+#else
+#include "stir/IO/stir_ecat_common.h" // for namespace macros
 #endif
 #include <iostream>
 #include <string>
