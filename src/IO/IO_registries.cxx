@@ -43,6 +43,8 @@
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ECAT6ImageInputFileFormat.h"
 #include "stir/IO/ECAT7ImageInputFileFormat.h"
+#include "stir/IO/ECAT966ListmodeInputFileFormat.h"
+#include "stir/IO/ECAT962ListmodeInputFileFormat.h"
 #endif
 #endif
 
@@ -68,4 +70,9 @@ static RegisterInputFileFormat<ecat::ecat6::ECAT6ImageInputFileFormat> idummy4(1
 #endif
 
 
+/*************************** listmode data **********************/
+#ifdef HAVE_LLN_MATRIX
+static RegisterInputFileFormat<ecat::ecat7::ECAT966ListmodeInputFileFormat> LMdummyECAT966(4);
+static RegisterInputFileFormat<ecat::ecat7::ECAT962ListmodeInputFileFormat> LMdummyECAT962(5);
+#endif
 END_NAMESPACE_STIR
