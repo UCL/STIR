@@ -38,7 +38,7 @@
 #include "stir/CPUTimer.h"
 
 #include "local/stir/fwd_and_bck_manipulation_for_SAF.h"
-#include "local/stir/recon_buildblock/BackProjectorByBinUsingSquareProjMatrixByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingSquareProjMatrixByBin.h"
 #include "stir/SegmentByView.h"
 
 #include "stir/round.h"

@@ -32,6 +32,7 @@ set(${dir_LIB_SOURCES}
 	ProjMatrixByBinFromFile 
 	ForwardProjectorByBinUsingProjMatrixByBin 
 	BackProjectorByBinUsingProjMatrixByBin 
+	BackProjectorByBinUsingSquareProjMatrixByBin
 	RayTraceVoxelsOnCartesianGrid 
 	ProjectorByBinPair 
 	ProjectorByBinPairUsingProjMatrixByBin 

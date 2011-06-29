@@ -10,7 +10,6 @@ $(dir)_LIB_SOURCES:= \
 	PostsmoothingBackProjectorByBin.cxx \
 	DataSymmetriesForDensels_PET_CartesianGrid.cxx \
 	ProjMatrixByDensel.cxx \
-	BackProjectorByBinUsingSquareProjMatrixByBin.cxx \
         ProjMatrixByDenselOnCartesianGridUsingElement.cxx \
 	ProjMatrixByDenselUsingRayTracing.cxx \
 	BinNormalisationUsingProfile.cxx \

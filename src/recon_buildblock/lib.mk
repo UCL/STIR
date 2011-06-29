@@ -28,6 +28,7 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	ProjMatrixByBinFromFile.cxx \
 	ForwardProjectorByBinUsingProjMatrixByBin.cxx \
 	BackProjectorByBinUsingProjMatrixByBin.cxx \
+	BackProjectorByBinUsingSquareProjMatrixByBin.cxx \
 	RayTraceVoxelsOnCartesianGrid.cxx \
 	ProjectorByBinPair.cxx \
 	ProjectorByBinPairUsingProjMatrixByBin.cxx \
