@@ -9,7 +9,8 @@ $(dir)_LIB_SOURCES = \
 	CListModeDataECAT.cxx \
 	CListRecordECAT962.cxx \
 	CListRecordECAT966.cxx \
-	LmToProjData.cxx 
+	LmToProjData.cxx \
+	LmToProjDataBootstrap.cxx \
 
 
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries.cxx
