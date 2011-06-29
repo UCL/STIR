@@ -1,4 +1,4 @@
-Licensing information for STIR 2.1beta
+Licensing information for STIR 2.1
 ----------------------------------
 
 See for more info http://stir.sourceforge.net, section Registration.
@@ -64,7 +64,6 @@ Explicit list of files that carry the PARAPET license
 ./buildblock/VoxelsOnCartesianGrid.cxx
 ./buildblock/warning.cxx
 ./buildblock/zoom.cxx
-./ChangeLog.bak
 ./display/display_array.cxx
 ./display/gen.c
 ./display/gen.h
@@ -76,7 +75,6 @@ Explicit list of files that carry the PARAPET license
 ./include/local/stir/fft.h
 ./include/local/stir/Filter.h
 ./include/local/stir/phantoms/Utah.h
-./include/local/stir/recon_buildblock/BackProjectorByBinUsingSquareProjMatrixByBin.h
 ./include/local/stir/recon_buildblock/oldBackProjectorByBinUsingInterpolation.h
 ./include/local/stir/recon_buildblock/oldForwardProjectorByBinUsingRayTracing.h
 ./include/stir/analytic/FBP2D/FBP2DReconstruction.h
@@ -172,6 +170,7 @@ Explicit list of files that carry the PARAPET license
 ./include/stir/recon_buildblock/BackProjectorByBin.h
 ./include/stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h
 ./include/stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h
+./include/stir/recon_buildblock/BackProjectorByBinUsingSquareProjMatrixByBin.h
 ./include/stir/recon_buildblock/DataSymmetriesForBins.h
 ./include/stir/recon_buildblock/DataSymmetriesForBins.inl
 ./include/stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h
