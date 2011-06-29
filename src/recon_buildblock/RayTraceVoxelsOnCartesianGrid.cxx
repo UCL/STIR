@@ -72,6 +72,14 @@ RayTraceVoxelsOnCartesianGrid
 
   const CartesianCoordinate3D<float> difference = stop_point-start_point;
 
+  if (norm(difference)<=.00001F)
+    {
+      // TODO
+      // not sure how to handle this case as we're normally ray tracing from voxel edges
+      warning("ray tracing with equal start and end point. Returning zero");
+      return;
+    }
+
   // Find number of contributing elements. This will be used to
   // make sure there's enough space in the LOR to avoid reallocation.
   // This will make it faster, but also avoid over-allocation
