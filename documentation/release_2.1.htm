@@ -53,6 +53,9 @@ fixes before obtaining the correct result).</li>
 <li>The interpolating back-projector can still give problems in the centre of the images
 on some architectures/compiler/optimisation settings. We recommend to use the ray-tracing
 matrix (with additional rays) instead.</li>
+<li>When using Visual Studio (Express) with the provided solution files, there is a linking problem for some
+utilities. It is recommended to use the new <tt>CMake</tt> files for building instead.</li>
+<li>Some of the new list mode files might not compile with Visual Studio (Express).</li>
 </ul>
 
 <h3>New utilities</h3>
