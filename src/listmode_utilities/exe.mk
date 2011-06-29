@@ -4,7 +4,10 @@
 
 dir:=listmode_utilities
 
-$(dir)_SOURCES = lm_to_projdata.cxx
+$(dir)_SOURCES = lm_to_projdata.cxx \
+	lm_to_projdata_bootstrap.cxx \
+	lm_fansums.cxx \
+	list_lm_events.cxx
 
 ifeq ($(HAVE_LLN_MATRIX),1)
   # yes, the LLN files seem to be there, so we can compile more
