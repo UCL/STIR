@@ -17,6 +17,7 @@ $(dir)_SOURCES:=manip_image.cxx \
 	list_projdata_info.cxx \
 	list_image_info.cxx \
 	list_image_values.cxx \
+	list_detector_and_bin_info.cxx \
 	find_maxima_in_image.cxx \
 	create_projdata_template.cxx \
 	SSRB.cxx \

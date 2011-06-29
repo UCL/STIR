@@ -19,6 +19,7 @@ set(${dir_EXE_SOURCES}
 	list_projdata_info 
 	list_image_info 
 	list_image_values 
+        list_detector_and_bin_info
 	find_maxima_in_image 
 	create_projdata_template 
 	SSRB 
