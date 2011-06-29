@@ -6,7 +6,7 @@
   \file
   \ingroup FBP2D
 
-  \brief Implementation of class RampFilter
+  \brief Implementation of class stir::RampFilter
 
   \author Kris Thielemans
   \author Claire Labbe
