@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 2.1 beta (dated March 2011)</title>
+    <title>Summary of changes in STIR release 2.1 (dated June 2011)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 2.1 beta (dated March 2011)</h1>
+    <h1>Summary of changes in STIR release 2.1 (dated June 2011)</h1>
 
 <p>Most of the work in this update was by Kris Thielemans (Hammersmith Imanet Ltd)
 and Charalampos Tsoumpas (Imperial College and Hammersmith Imanet Ltd, now King's College London).
@@ -44,25 +44,30 @@ if a viewgram of the measured data was zero (which should occur only a dramatica
 model was ignored. Objective function values prior to this fix were therefore incorrect (except for the 
 case where there was no multiplicative term). However, this bug did not affect actual reconstructed images.<br />
 (In addition, the computation of the objective function now has increased numerical accuracy.)</li>
-<li>the MPI support for OSMAPOSL introduced in STIR 2.0 was broken (it did not compile, and after 
-easy fixes did not give the correct result).</li>
+<li>the MPI support for OSMAPOSL introduced in STIR 2.0 was broken (it did not compile, and needed some 
+fixes before obtaining the correct result).</li>
 </ul>
 <h3>Known problems</h3>
 <ul>
 <li>ECAT6 routines seem to have problems since STIR 2.0. ECAT6 is therefore no longer supported</li>
 <li>The interpolating back-projector can still give problems in the centre of the images
-on some architectures/compiler/optimisation settings.</li>
+on some architectures/compiler/optimisation settings. We recommend to use the ray-tracing
+matrix (with additional rays) instead.</li>
 </ul>
 
 <h3>New utilities</h3>
 <ul>
-<li><tt>abs_image</tt>, <tt>convert_to_binary_image.cxx</tt>, <tt>find_fwhm_in_image</tt></li>
-<li>Utilities in <tt>modelling_utilities</tt>.
+<li><tt>abs_image</tt>, <tt>convert_to_binary_image</tt>, <tt>find_fwhm_in_image</tt>,
+<tt>list_detector_and_bin_info</tt>.</li>
+<li>Utilities in <tt>modelling_utilities</tt>.</li>
 <li>Parametric image reconstruction algorithms <tt>POSMAPOSL</tt> and <tt>POSSPS</tt>. 
 Currently we have only an objective function for Patlak, but extension
 to other linear models is easy.</li>
+<li>New utilities in <tt>listmode_utilities</tt>: <tt>lm_to_projdata_bootstrap</tt>
+(useful to generate multiple realisations from a single list mode file to study variance), 
+<tt>list_lm_events</tt> and <tt>lm_fansums</tt> (useful for developing normalization code).</li>
 <li>A few scripts are now also copied with <tt>make install</tt>, including the
-new <tt>stir_print_voxel_sizes.sh</tt>
+new <tt>stir_print_voxel_sizes.sh</tt>.</li>
 </ul>
 
 
@@ -131,6 +136,22 @@ from the above):</H2>
 (namely the one where view_num=segment_num). This bug existed since the
 very first version of STIR. Nobody seems to have been using
 this function, as the result was obviously wrong.</li>
+<li>The objective function values were computed ignoring multiplicative corrections
+and background terms.</li>
+<li>The ECAT962 and 966 list mode event functions <code>get_detection_coordinates()</code>
+and <code>get_LOR()</code> returned coordinates in a different coordinate system as expected
+(z=0 was in the first ring of the scanner as opposed to the centre of the scanner). These functions
+were not used by the rest of STIR however.</li>
+</ul>
+
+<h3>Major revision of the listmode classes</h3>
+<p>These are now ready for data from non-CTI scanners.</p>
+<ul>
+<li><code>CListEvent::get_detection_coordinates()</code> no longer exists (use <code>get_LOR</code> instead).</li>
+<li><code>CListTime::get/set_gating</code> have been moved to new <code>CListGatingInput</code> class 
+as not all scanners have gating related info in the timing event.</li>
+<li><code>CListRecordUsingUnion</code> and <code>CListModeDataFromStream</code> no longer exist. 
+The IO functionality of the latter is now in the new (more generic) class <code>InputStreamWithRecords</code>.</li>
 </ul>
 
 <h3>New functionality</h3>
@@ -156,17 +177,18 @@ that is a lot of work...</li>
 <li><code>ProjDataInfoCylindrical::set_num_views()</code> now  makes sure that we cover the
       same range of angles as before (usually, but not necessarily, 180 degrees).
 </li>
-<li><tt>PoissonLogLikelihoodWithLinearModelForMean</tt> has been changed to be more consistent
+<li><code>PoissonLogLikelihoodWithLinearModelForMean</code> has been changed to be more consistent
 in the subset sensitivity interface:
-- The parser has a new keyword "subset sensitivity filenames" which can be set to e.g. subsens_%d.hv
-- Derived classes have to define a virtual function set_up_before_sensitivity() (essentially
-replacing what they used to have in setup() before, except for the call to base_type::setup()).
-- setup() now class set_up_before_sensitivity(), computes (subset)sensitivities, and if required,
-writes them to disk.
-- get_sensitivity(subset_num) is replaced by get_sensitivity() and get_subset_sensitivity(subset_num)
-- set_sensitivity_sptr is now called set_subset_sensitivity_sptr
-- fill_nonidentifiable_target_parameters uses get_sensitivity() and hence no longer only checks the first subset.
-
+<ul>
+  <li>The parser has a new keyword <tt>subset sensitivity filenames</tt> which can be set to e.g. <tt>subsens_%d.hv</tt></li>
+  <li>Derived classes have to define a virtual function <code>set_up_before_sensitivity()</code> (essentially
+replacing what they used to have in <code>setup()</code> before, except for the call to <code>base_type::setup()</code>).</li>
+  <li><code>setup()</code> now class <code>set_up_before_sensitivity()</code>, computes (subset)sensitivities, and if required,
+writes them to disk.</li>
+  <li><code>get_sensitivity(subset_num)</code> is replaced by <code>get_sensitivity()</code> and <code>get_subset_sensitivity(subset_num)</code></li>
+  <li><code>set_sensitivity_sptr</code> is now called <code>set_subset_sensitivity_sptr</code></li>
+  <li> <code>fill_nonidentifiable_target_parameters</code> uses <code>get_sensitivity()</code> and hence no longer only checks the first subset.</li>
+</ul>
 <li>Most of the .cxx files in the <tt>recon_buildblock</tt> had to be updated to
 add instantiations for parametric images. This is unfortunate and another
 mechanism would be nicer.
@@ -179,9 +201,9 @@ reconstruction classes, you should use this member.
 argument of type <code>std::streamsize</code> as opposed to <code>unsigned long</code>. As
 this parameter is passed as a reference, this change is <strong>not backwards compatible</strong>
 (at least on systems where these 2 types are not equal).</li>
-<li>FullArrayIterator and NestedIterator now have extra constructors to be able to convert
-compatible iterators (e.g. full_iterator to const_full_iterator).</li>
-<li>NestedIterator has more help classes for cases where the top-level iterator refers to 
+<li><code>FullArrayIterator</code> and <code>NestedIterator</code> now have extra constructors to be able to convert
+compatible iterators (e.g. <code>full_iterator</code> to <code>const_full_iterator</code>).</li>
+<li><code>NestedIterator</code> has more help classes for cases where the top-level iterator refers to 
 a pointer to the 2nd level iterator.</li>
 <li>Various small fixes for more recent compilers such as gcc 4.3 and Visual Studio Express 2010.</li>
 <li>Initial release of files for an alternative cross-platform build system 
