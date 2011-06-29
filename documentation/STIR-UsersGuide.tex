@@ -2257,7 +2257,7 @@ Two options exist:
 \begin{itemize}
 \item	FBP: Correct the scatter estimate for attenuation and subtract from the precorrected emission data. 
 Run FBP with sufficient filtering.
-   \[\mathrm{Image} = \mathrm{FBP}\(\mathrm{ACF}*(N*(P-R)-S)\) \]
+   \[\mathrm{Image} = \mathrm{FBP}\left(\mathrm{ACF}*(N*(P-R)-S)\right) \]
 \item Iterative (e.g. OSEM or OSSPS): Use the following for the additive sinogram (\textit{A}).
     \[A=(R/N+S)/(\mathrm{ACF})  \]
 \end{itemize}
