@@ -7,6 +7,9 @@ set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 set(${dir_EXE_SOURCES}
   lm_to_projdata
+  lm_to_projdata_bootstrap
+  lm_fansums
+  list_lm_events
 )
 
 if (HAVE_ECAT)

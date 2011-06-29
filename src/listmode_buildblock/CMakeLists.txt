@@ -9,6 +9,7 @@ set(${dir_LIB_SOURCES}
 	CListEvent 
 	CListModeData 
 	LmToProjData 
+        LmToProjDataBootstrap
 )
 
 if (HAVE_ECAT)
