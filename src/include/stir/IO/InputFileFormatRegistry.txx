@@ -116,9 +116,18 @@ InputFileFormatRegistry<DataT>::
 find_factory(const FileSignature& signature,
 	     const std::string& filename) const
 {
-  std::ifstream input;
-  open_read_binary(input, filename);
-  return this->find_factory(FileSignature(input), input);
+  const_iterator iter= this->_actual_find_factory(signature, filename);
+  if (this->_valid(iter))
+    return *(iter->second);
+  else
+    {
+      std::cerr << "Available input file formats:\n";
+      this->list_registered_names(std::cerr);
+      error("no file format found that can read file '%s'", filename.c_str());
+    }
+  // we never get here, but most compilers will complain here
+  // so we 'return' a bogus factory
+  return (*iter->second);
 }
 
 template <class DataT>
