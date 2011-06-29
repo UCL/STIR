@@ -83,6 +83,13 @@ cut-off for ramp filter (in cycles) := 0.5
 ; Display level := 0
 end := 
   \endverbatim
+
+  alpha specifies the usual Hamming window (although I'm not so sure about the terminology here). So, 
+  for the "ramp filter" alpha =1. In frequency space, something like (from RampFilter.cxx)
+
+  \code
+   (alpha + (1 - alpha) * cos(_PI * f / fc))
+  \endcode
  
 */
 class FBP2DReconstruction : public AnalyticReconstruction
