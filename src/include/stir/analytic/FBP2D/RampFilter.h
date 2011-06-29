@@ -45,6 +45,18 @@ START_NAMESPACE_STIR
 /*!
   \ingroup FBP2D
   \brief The ramp filter used for (2D) FBP
+
+  The filter has 2 parameters: a cut-off frequency \c fc and \c alpha which specifies the usual 
+  Hamming window (although I'm not so sure about the terminology here). So, 
+  for the "ramp filter" alpha =1. In frequency space, something like (from RampFilter.cxx)
+
+  \code
+   (alpha + (1 - alpha) * cos(_PI * f / fc))
+  \endcode
+
+  The actual implementation works differently to overcome problems with defining the ramp in frequency 
+  space (with a well-known DC offset as consequence). We therefore compute the ramp*Hanning in 
+  "ordinary" space in continuous form, do the sampling there, and then DFT it. 
 */
 class RampFilter : 
 #ifdef NRFFT
