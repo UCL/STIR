@@ -26,8 +26,8 @@ projector pair type := Matrix
 additive sinogram := my_additive_sinogram.hs
 
 use subset sensitivities:=1
-subset sensitivity filenames:= my_DSTE_sens_2D_PM_s14_%d.hv
-recompute_sensitivity:=0
+subset sensitivity filenames:= my_DSTE_sens_2D_PM_s28_%d.hv
+recompute_sensitivity:=1
 
 prior type := quadratic
   Quadratic Prior Parameters:=
