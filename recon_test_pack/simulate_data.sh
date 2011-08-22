@@ -31,13 +31,13 @@ atten_image=$2
 template_sino=$3
 
 echo "===  create ACFs"
-calculate_attenuation_coefficients --ACF my_acfs.hs ${atten_image} ${template_sino} >& my_create_acfs.log
+calculate_attenuation_coefficients --ACF my_acfs.hs ${atten_image} ${template_sino} > my_create_acfs.log 2>&1
 if [ $? -ne 0 ]; then 
   echo "ERROR running calculate_attenuation_coefficients. Check my_create_acfs.log"; exit 1; 
 fi
 
 echo "===  create line integrals"
-fwdtest my_line_integrals.hs ${template_sino} ${emission_image} forward_projector_proj_matrix_ray_tracing.par </dev/null >& my_create_line_integrals.log
+fwdtest my_line_integrals.hs ${template_sino} ${emission_image} forward_projector_proj_matrix_ray_tracing.par </dev/null > my_create_line_integrals.log 2>&1
 if [ $? -ne 0 ]; then 
   echo "ERROR running fwdtest Check my_create_line_integrals.log"; exit 1; 
 fi
@@ -52,7 +52,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "===  create prompts"
-correct_projdata uncorrect_projdata_simulation.par >& my_create_prompts.log
+correct_projdata uncorrect_projdata_simulation.par > my_create_prompts.log 2>&1
 if [ $? -ne 0 ]; then 
   echo "ERROR running correct_projdata. Check my_create_prompts.log"; exit 1; 
 fi
