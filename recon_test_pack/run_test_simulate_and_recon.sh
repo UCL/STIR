@@ -1,7 +1,8 @@
 #! /bin/sh
 # A script to check to see if reconstruction of simulated data gives the expected result.
 #
-#  Copyright (C) 2011- $Date$, Hammersmith Imanet Ltd
+#  Copyright (C) 2011 - 2011-01-14, Hammersmith Imanet Ltd
+#  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify
@@ -25,6 +26,11 @@ if [ $# -eq 1 ]; then
   PATH=$1:$PATH
 fi
 
+# first need to set this to the C locale, as this is what the STIR utilities use
+# otherwise, awk might interpret floating point numbers incorrectly
+LC_ALL=C
+export LC_ALL
+
 echo "===  make emission image"
 generate_image  generate_uniform_cylinder.par
 echo "===  use that as template for attenuation"
@@ -39,7 +45,7 @@ n
 0
 2
 EOF
-create_projdata_template  ${template_sino} < my_input.txt >& my_create_${template_sino}.log
+create_projdata_template  ${template_sino} < my_input.txt > my_create_${template_sino}.log 2>&1
 if [ $? -ne 0 ]; then 
   echo "ERROR running create_projdata_template. Check my_create_${template_sino}.log"; exit 1; 
 fi
@@ -56,7 +62,7 @@ error_log_files=""
 input_image=my_uniform_cylinder.hv
 input_voxel_size_x=`stir_print_voxel_sizes.sh ${input_image}|awk '{print $3}'`
 ROI=ROI_uniform_cylinder.par
-list_ROI_values ${input_image}.roistats ${input_image} ${ROI} 0 >& /dev/null
+list_ROI_values ${input_image}.roistats ${input_image} ${ROI} 0 > /dev/null 2>&1
 input_ROI_mean=`awk 'NR>2 {print $2}' ${input_image}.roistats`
 
 # loop over reconstruction algorithms
@@ -71,17 +77,17 @@ for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
     if expr ${recon} : FBP > /dev/null; then
       isFBP=1
       echo "Running precorrection"
-      correct_projdata correct_projdata_simulation.par >& correct_projdata_simulation.log
+      correct_projdata correct_projdata_simulation.par > my_correct_projdata_simulation.log 2>&1
       if [ $? -ne 0 ]; then
-        echo "Error running precorrection. CHECK correct_projdata_simulation.log"
-        error_log_files="${error_log_files} correct_projdata_simulation.log"
+        echo "Error running precorrection. CHECK my_correct_projdata_simulation.log"
+        error_log_files="${error_log_files} my_correct_projdata_simulation.log"
         break
       fi
     fi
 
     # run actual reconstruction
     echo "Running ${recon} ${parfile}"
-    ${recon} ${parfile} >& my_${parfile}.log
+    ${recon} ${parfile} > my_${parfile}.log 2>&1
     if [ $? -ne 0 ]; then
        echo "Error running reconstruction. CHECK RECONSTRUCTION LOG my_${parfile}.log"
        error_log_files="${error_log_files} my_${parfile}.log"
@@ -98,7 +104,7 @@ for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
     output_image=${output_filename}.hv
 
     # compute ROI value
-    list_ROI_values ${output_image}.roistats ${output_image} ${ROI} 0  >& ${output_image}.roistats.log
+    list_ROI_values ${output_image}.roistats ${output_image} ${ROI} 0  > ${output_image}.roistats.log 2>&1
     if [ $? -ne 0 ]; then
       echo "Error running list_ROI_values. CHECK LOG ${output_image}.roistats.log"
       error_log_files="${error_log_files} ${output_image}.roistats.log"
@@ -112,8 +118,8 @@ for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
     echo "Output ROI mean: $output_ROI_mean"
     error_bigger_than_1percent=`echo $input_ROI_mean $output_ROI_mean| awk '{ print(($2/$1 - 1)*($2/$1 - 1)>0.0001) }'`
     if [ ${error_bigger_than_1percent} -eq 1 ]; then
-      echo "DIFFERENCE IN ROI VALUES IS TOO LARGE. CHECK RECONSTRUCTION LOG ${parfile}.log"
-      error_log_files="${error_log_files} ${parfile}.log"
+      echo "DIFFERENCE IN ROI VALUES IS TOO LARGE. CHECK RECONSTRUCTION LOG my_${parfile}.log"
+      error_log_files="${error_log_files} my_${parfile}.log"
     else
       echo "This seems fine."
     fi
