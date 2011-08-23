@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2009-10-18 Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$ Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -92,7 +93,7 @@ ProjDataInfoCylindrical(const shared_ptr<Scanner>& scanner_ptr,
       if (min_ring_diff[segment_num]> max_ring_diff[segment_num])
       {
         warning("ProjDataInfoCylindrical: min_ring_difference %d is larger than max_ring_difference %d for segment %d. "
-          "Swapping them around\n", 
+          "Swapping them around", 
           min_ring_diff[segment_num], max_ring_diff[segment_num], segment_num);
         swap(min_ring_diff[segment_num], max_ring_diff[segment_num]);
       }
@@ -114,7 +115,7 @@ initialise_ring_diff_arrays() const
       if (min_ring_diff[segment_num]> max_ring_diff[segment_num])
       {
         error("ProjDataInfoCylindrical: min_ring_difference %d is larger than "
-	      "max_ring_difference %d for segment %d.\n",
+	      "max_ring_difference %d for segment %d.",
           min_ring_diff[segment_num], max_ring_diff[segment_num], segment_num);        
       }
   }
@@ -187,7 +188,7 @@ initialise_ring_diff_arrays() const
 	 error("ProjDataInfoCylindrical: in segment %d, the axial positions\n"
 	       "do not correspond to the usual locations between physical rings.\n"
 	       "This is suspicious and can make things go wrong in STIR, so I abort.\n"
-	       "Check the number of axial positions in this segment.\n",
+	       "Check the number of axial positions in this segment.",
 	       segment_num);
        }
 
@@ -203,7 +204,7 @@ initialise_ring_diff_arrays() const
 	       ax_pos_num_offset[segment_num]) % 2 != 0)
 	    warning("ProjDataInfoCylindrical: the number of axial positions in "
 		    "segment %d is such that current conventions will place "
-		    "the LORs shifted with respect to the physical rings.\n",
+		    "the LORs shifted with respect to the physical rings.",
 		    segment_num);
       }
     }
@@ -245,7 +246,7 @@ initialise_ring_diff_arrays() const
       }
       if (segment_num>get_max_segment_num())
       {
-        warning("ProjDataInfoCylindrical: ring difference %d does not belong to a segment\n",
+        warning("ProjDataInfoCylindrical: ring difference %d does not belong to a segment",
           ring_diff);
       }
     }
@@ -308,10 +309,10 @@ get_ring_pair_for_segment_axial_pos_num(int& ring1,
 					const int axial_pos_num) const
 {
   if (!sampling_corresponds_to_physical_rings)
-    error("ProjDataInfoCylindrical::get_ring_pair_for_segment_axial_pos_num does not work for this type of sampled data\n");
+    error("ProjDataInfoCylindrical::get_ring_pair_for_segment_axial_pos_num does not work for this type of sampled data");
   // can do only span=1 at the moment
   if (get_min_ring_difference(segment_num) != get_max_ring_difference(segment_num))
-    error("ProjDataInfoCylindrical::get_ring_pair_for_segment_axial_pos_num does not work for data with axial compression\n");
+    error("ProjDataInfoCylindrical::get_ring_pair_for_segment_axial_pos_num does not work for data with axial compression");
 
   if (!ring_diff_arrays_computed)
     initialise_ring_diff_arrays();
@@ -481,7 +482,21 @@ ProjDataInfoCylindrical::
 reduce_segment_range(const int min_segment_num, const int max_segment_num)
 {
   ProjDataInfo::reduce_segment_range(min_segment_num, max_segment_num);
-  ring_diff_arrays_computed = false;
+  // reduce ring_diff arrays to new valid size
+  VectorWithOffset<int> new_min_ring_diff(min_segment_num, max_segment_num); 
+  VectorWithOffset<int> new_max_ring_diff(min_segment_num, max_segment_num);
+
+  for (int segment_num = min_segment_num; segment_num<= max_segment_num; ++segment_num)
+  {
+    new_min_ring_diff[segment_num] = this->min_ring_diff[segment_num];
+    new_max_ring_diff[segment_num] = this->max_ring_diff[segment_num];
+  }
+
+  this->min_ring_diff = new_min_ring_diff;
+  this->max_ring_diff = new_max_ring_diff;
+  
+  // make sure other arrays will be updated if/when necessary
+  this->ring_diff_arrays_computed = false;
 }
 
 
