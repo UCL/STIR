@@ -19,23 +19,22 @@ $(dir)_SOURCES = \
 	threshold_norm_data.cxx \
 	zero_projdata_from_norm.cxx \
 	construct_randoms_from_singles.cxx \
-	interpolate_blocks.cxx \
-	set_blocks_to_value.cxx \
-	shift_projdata_along_axis.cxx \
-	remove_sinograms.cxx \
-	fit_cylinder.cxx \
-	find_sinogram_rescaling_factors.cxx \
 	line_profiles_through_projdata.cxx \
 	interpolate_projdata.cxx \
-	make_grid_image.cxx \
-	list_TAC_ROI_values.cxx \
-	Bland_Altman_plot.cxx \
-	get_total_counts.cxx \
 	image_flip_x.cxx \
-	precompute_denominator_SPS.cxx \
-	cleanup966.cxx \
 	Hounsfield2mu.cxx
 
+#	list_TAC_ROI_values.cxx \
+#	make_grid_image.cxx \
+#	Bland_Altman_plot.cxx \
+#	get_total_counts.cxx \
+#	precompute_denominator_SPS.cxx \
+#	interpolate_blocks.cxx \
+#	set_blocks_to_value.cxx \
+#	shift_projdata_along_axis.cxx \
+#	remove_sinograms.cxx \
+#	fit_cylinder.cxx \
+#	find_sinogram_rescaling_factors.cxx \
 #	CoG.cxx \
 #	add_time_frame_info.cxx \
 #	make_cylinder.cxx 
