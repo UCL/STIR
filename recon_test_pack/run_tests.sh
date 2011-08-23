@@ -2,7 +2,25 @@
 # $Id$
 # Shell script for automatic running of the tests
 # see README.txt
-# Author: Kris Thielemans
+#  Copyright (C) 2000 - 2001 PARAPET partners
+#  Copyright (C) 2001 - 2009-10-11, Hammersmith Imanet Ltd
+#  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+#  This file is part of STIR.
+#
+#  This file is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+#  This file is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  See STIR/LICENSE.txt for details
+#      
+# Author Kris Thielemans
+# $Id$
 
 echo This script should work with STIR version 2.1. If you have
 echo a later version, you might have to update your test pack.
