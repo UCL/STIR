@@ -1,7 +1,8 @@
 #! /bin/sh
 # A script to do a simplistic analytic simulation, as used by test_simulate_and_recon.sh
 #
-#  Copyright (C) 2011- $Date$, Hammersmith Imanet Ltd
+#  Copyright (C) 2011 - 2011-01-14, Hammersmith Imanet Ltd
+#  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify
