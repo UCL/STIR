@@ -25,11 +25,6 @@ $(dir)_TEST_SOURCES := test_Array.cxx test_NestedIterator.cxx \
 	test_find_fwhm_in_image.cxx
 
 
-ifeq ($(HAVE_LLN_MATRIX),1)
-$(dir)_LIB_SOURCES += \
-	test_VAXfloat.cxx 
-endif
-
 (dir)_INTERACTIVE_TEST_SOURCES := \
 	test_display.cxx \
 	test_interpolate.cxx 
@@ -60,8 +55,6 @@ run_$(dir)/test_stir_math: $(DEST)$(dir)/test_stir_math $(DEST)utilities/stir_ma
 	$< `cygpath -w $(DEST)utilities/stir_math.exe`
 endif
 
-run_$(dir)/test_VAXfloat:  $(DEST)$(dir)/test_VAXfloat PHONY_TARGET
-	$< --read test/input/test_VAXfloat.in
 
 ##################################################
 # rules to ignore registries
