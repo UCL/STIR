@@ -58,6 +58,7 @@ SET( STIR_DIRS
      eval_buildblock 
      scatter_buildblock
      utilities 
+     modelling_utilities
      listmode_utilities
      analytic/FBP2D
      analytic/FBP3DRP
