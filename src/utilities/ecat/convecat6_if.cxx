@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2009, Hammersmith Imanet Ltd
+    Copyright 2011 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -73,6 +74,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <algorithm>
+#include <string>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -91,14 +93,15 @@ USING_NAMESPACE_ECAT6
 int
 main(int argc, char *argv[])
 {
-  char cti_name[max_filename_length], out_name[max_filename_length];
+  std::string cti_name;
+  std::string out_name;
   char * scanner_name_ptr = 0;
   FILE *cti_fptr;
  
   if(argc==3 || argc==4)
     { 
-      strcpy(cti_name, argv[2]);
-      strcpy(out_name, argv[1]);
+      cti_name = argv[2];
+      out_name = argv[1];
       if (argc>3)
         scanner_name_ptr = argv[3];
     }
@@ -116,20 +119,20 @@ main(int argc, char *argv[])
       if (argc!=1)
 	exit(EXIT_FAILURE);
 
-      ask_filename_with_extension(out_name,"Name of the output file? (.hv/.hs and .v/.s will be added)","");    
-      ask_filename_with_extension(cti_name,"Name of the input data file? ",".scn");
+      out_name = ask_filename_with_extension("Name of the output file? (.hv/.hs and .v/.s will be added)","");    
+      cti_name = ask_filename_with_extension("Name of the input data file? ",".scn");
         
     }
 
 
   // open input file, read main header
-  cti_fptr=fopen(cti_name, "rb"); 
+  cti_fptr=fopen(cti_name.c_str(), "rb"); 
   if(!cti_fptr) {
-    error("\nError opening input file: %s\n",cti_name);
+    error("Error opening input file: %s",cti_name.c_str());
   }
   ECAT6_Main_header mhead;
   if(cti_read_ECAT6_Main_header(cti_fptr, &mhead)!=EXIT_SUCCESS) {
-    error("\nUnable to read main header in file: %s\n",cti_name);
+    error("Unable to read main header in file: %s",cti_name.c_str());
   }
 
   if (scanner_name_ptr != 0)
@@ -183,12 +186,12 @@ main(int argc, char *argv[])
     { 
     case matImageFile:
       {
-	char *new_out_filename = new char[strlen(out_name)+100];
+	char *new_out_filename = new char[out_name.size()+100];
 	for (int frame_num=min_frame_num; frame_num<=max_frame_num;++frame_num)
 	  for (int bed_num=min_bed_num; bed_num<=max_bed_num;++bed_num)
 	    for (int gate_num=min_gate_num; gate_num<=max_gate_num;++gate_num)
 	      {
-		strcpy(new_out_filename, out_name);
+		strcpy(new_out_filename, out_name.c_str());
 		if (do_all)
 		  sprintf(new_out_filename+strlen(new_out_filename), "_f%dg%db%dd%d", 
 			  frame_num, gate_num, bed_num, data_num);
@@ -212,12 +215,12 @@ main(int argc, char *argv[])
         const bool arccorrected = 
 	  ask("Consider the data to be arc-corrected?",false);
 
-	char *new_out_filename = new char[strlen(out_name)+100];
+	char *new_out_filename = new char[out_name.size()+100];
 	for (int frame_num=min_frame_num; frame_num<=max_frame_num;++frame_num)
 	  for (int bed_num=min_bed_num; bed_num<=max_bed_num;++bed_num)
 	    for (int gate_num=min_gate_num; gate_num<=max_gate_num;++gate_num)
 	      {
-		strcpy(new_out_filename, out_name);
+		strcpy(new_out_filename, out_name.c_str());
 		if (do_all)
 		  sprintf(new_out_filename+strlen(new_out_filename), "_f%dg%db%dd%d", 
 			  frame_num, gate_num, bed_num, data_num);
