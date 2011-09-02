@@ -34,7 +34,12 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
         bcktest
 )
 
-# TODO test_modelling.sh
-
 include(../stir_test_exe_targets.cmake)
 
+
+# we currently need fwdtest for the recon_test_pack, and it (and bcktest)
+# could be useful on their own, so we'll add them to the installation targets
+
+install(TARGETS fwdtest bcktest DESTINATION bin)
+
+# TODO test_modelling.sh
