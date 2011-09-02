@@ -35,6 +35,8 @@
 #include "stir/modelling/PlasmaData.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/TimeFrameDefinitions.h"
+#include "stir/utilities.h"
+#include <boost/shared_array.hpp>
 
 START_NAMESPACE_STIR
 
@@ -45,12 +47,31 @@ START_NAMESPACE_STIR
 class modellingTests : public RunTests
 {
 public:
-  modellingTests() 
-  {}
+  explicit modellingTests(const std::string& directory);
+
   void run_tests();
 private:
   //istream& in;
+  std::string directory;
+  boost::shared_array<char> full_filename_sptr;
+
+  std::string add_directory(const std::string& filename);
 };
+
+modellingTests::
+modellingTests(const std::string& directory_v) 
+  : directory(directory_v),
+    full_filename_sptr(new char[directory_v.length() + 100])
+{}
+
+string 
+modellingTests::
+add_directory(const std::string& filename)
+{
+  strcpy(this->full_filename_sptr.get(), filename.c_str());
+  prepend_directory_name(this->full_filename_sptr.get(),this->directory.c_str());
+  return std::string(this->full_filename_sptr.get());
+}
 
 void modellingTests::run_tests()
 {  
@@ -61,7 +82,7 @@ void modellingTests::run_tests()
       std::cerr << "Testing the reading of PlasmaData ..." << std::endl;
 
       PlasmaData file_plasma_data, testing_plasma_data;
-      file_plasma_data.read_plasma_data("test/modelling/input/triple_plasma.if");
+      file_plasma_data.read_plasma_data(this->add_directory("triple_plasma.if"));
       std::vector<PlasmaSample> this_plasma_blood_plot;
       const PlasmaSample sample_1(0.5F,.999947F,.0999947F);
       const PlasmaSample sample_2(7573.3F,.450739F,.0450739F);
@@ -88,8 +109,8 @@ void modellingTests::run_tests()
       std::cerr << "Testing the reading and writing of the ModelMatrix ..." << std::endl;
 
       ModelMatrix<2> file_model_matrix, correct_model_matrix;
-      file_model_matrix.read_from_file("test/modelling/input/model_array.in");
-      file_model_matrix.write_to_file("test/modelling/input/model_array.out");
+      file_model_matrix.read_from_file(this->add_directory("model_array.in"));
+      file_model_matrix.write_to_file(this->add_directory("model_array.out"));
 
       BasicCoordinate<2,int> min_range;
       BasicCoordinate<2,int> max_range;
@@ -120,9 +141,9 @@ void modellingTests::run_tests()
     // This tests uses the results from the Mathematica. The used plasma and frame files are parts of the t00196 scan.
     std::cerr << "\nTesting the sampling of PlasmaData into frames ..." << std::endl;  
     PlasmaData file_plasma_data, testing_plasma_data;
-    file_plasma_data.read_plasma_data("test/modelling/input/plasma.if");
+    file_plasma_data.read_plasma_data(this->add_directory("plasma.if"));
     std::vector<PlasmaSample> this_plasma_blood_plot;
-    TimeFrameDefinitions time_frame_def("test/modelling/input/time.fdef"); 
+    TimeFrameDefinitions time_frame_def(this->add_directory("time.fdef")); 
     file_plasma_data.set_isotope_halflife(6586.2F);
     PlasmaData sample_plasma_data_in_frames = file_plasma_data.get_sample_data_in_frames(time_frame_def);
 
@@ -162,7 +183,7 @@ void modellingTests::run_tests()
       const unsigned int starting_frame=23;
       ModelMatrix<2> stir_model_matrix=(patlak_plot.get_model_matrix(sample_plasma_data_in_frames,time_frame_def,starting_frame));
       ModelMatrix<2> mathematica_model_matrix;
-      mathematica_model_matrix.read_from_file("test/modelling/input/math_model_matrix.in");
+      mathematica_model_matrix.read_from_file(this->add_directory("math_model_matrix.in"));
       stir_model_matrix.uncalibrate(10);
       //     stir_model_matrix.convert_to_total_frame_counts(time_frame_def);
       Array<2,float> stir_model_array=stir_model_matrix.get_model_array();
@@ -184,12 +205,12 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-  if (argc != 1)
+  if (argc != 2)
   {
-    cerr << "Usage : " << argv[0] << " \n";
+    cerr << "Usage : " << argv[0] << " <directory-name-for-input-files>\n";
     return EXIT_FAILURE;
   }
-  modellingTests tests;
+  modellingTests tests(argv[1]);
   tests.run_tests();
   return tests.main_return_value();
 }
