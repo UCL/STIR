@@ -1,6 +1,7 @@
 // $Id$
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004 - 2005, Hammersmith Imanet Ltd
+    Copyright 2011 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -18,8 +19,12 @@
 /*!
   \file 
   \ingroup test
+
+  \deprecated This file no longer compiles as it relies on ecat6 routines
+  which are no longer distributed due to license problems.
  
   \brief tests for the conversion routines to/from VAX float used for ECAT6 support.
+
 
   The functions are checked by comparing the results with data in 
   an input file.
@@ -94,6 +99,7 @@ int main(int argc, char **argv)
     {
       if(!fread(bufr, /*sizeof(VAXfloat)*/4, size, fptr))
 	{
+          fclose(fptr);
 	  fprintf(stderr, "Cannot read %s\n", file_name);
 	  exit(EXIT_FAILURE);
 	}
@@ -143,6 +149,7 @@ int main(int argc, char **argv)
 #endif
       if(!fwrite(bufr, /*sizeof(VAXfloat)*/4, size, fptr))
 	{
+          fclose(fptr);
 	  fprintf(stderr, "Cannot write %s\n", file_name);
 	  exit(EXIT_FAILURE);
 	}
