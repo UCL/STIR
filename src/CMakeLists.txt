@@ -34,11 +34,12 @@ option(STIR_MPI
 option(STIR_OPENMP 
        "Compile with OpenMP" OFF)
 
-# we need the boost library from boost.org
+#### we need the boost library from boost.org
 set(BOOST_ROOT CACHE PATH "root of Boost")
 find_package( Boost 1.36.0 REQUIRED )
+include_directories(${Boost_INCLUDE_DIRS})
 
-##### optional external libraries. 
+#### optional external libraries. 
 # Listed here such that we know if we should compile extra utilities
 option(DISABLE_LLN_MATRIX "disable use of LLN library" OFF)
 option(DISABLE_AVW "disable use of AVW library" OFF)
