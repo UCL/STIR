@@ -64,6 +64,8 @@ SET( STIR_DIRS
      analytic/FBP3DRP
      iterative/OSMAPOSL  
      iterative/OSSPS
+     iterative/POSMAPOSL  
+     iterative/POSSPS
      scripts
 )
 
