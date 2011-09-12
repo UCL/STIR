@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005 - 2009-10-27, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -78,6 +79,7 @@ namespace BSpline
   class BSplineFunction<near_n, posT>: public PieceWiseFunction<posT>
   {
   public:
+    BSplineFunction() {}
     posT kernel_length_left() const { return static_cast<posT>(.5); }
     BOOST_STATIC_CONSTANT(int, kernel_total_length_value=1);
     int kernel_total_length() const  { return kernel_total_length_value; }
@@ -119,6 +121,7 @@ namespace BSpline
   class BSplineFunction<linear, posT>: public PieceWiseFunction<posT>
   {
   public:
+    BSplineFunction() {}
     posT kernel_length_left() const { return static_cast<posT>(1); }
     BOOST_STATIC_CONSTANT(int, kernel_total_length_value=2);
     int kernel_total_length() const  { return kernel_total_length_value; }
@@ -161,6 +164,7 @@ namespace BSpline
   class BSplineFunction<quadratic, posT>: public PieceWiseFunction<posT>
   {
   public:
+    BSplineFunction() {}
     posT kernel_length_left() const { return static_cast<posT>(1.5); }
     BOOST_STATIC_CONSTANT(int, kernel_total_length_value=3);
     int kernel_total_length() const  { return kernel_total_length_value; }
@@ -245,6 +249,7 @@ namespace BSpline
   class BSplineFunction<cubic, posT>: public PieceWiseFunction<posT>
   {
   public:
+    BSplineFunction() {}
     posT kernel_length_left() const { return static_cast<posT>(2); }
     BOOST_STATIC_CONSTANT(int, kernel_total_length_value=4);
     int kernel_total_length() const  { return kernel_total_length_value; }
@@ -296,7 +301,8 @@ namespace BSpline
   template <class posT>
   class BSplineFunction<oMoms, posT>: public PieceWiseFunction<posT>
   {
-  public:
+  public: 
+    BSplineFunction() {}
     posT kernel_length_left() const { return static_cast<posT>(2); }
     BOOST_STATIC_CONSTANT(int, kernel_total_length_value=4);
     int kernel_total_length() const  { return kernel_total_length_value; }

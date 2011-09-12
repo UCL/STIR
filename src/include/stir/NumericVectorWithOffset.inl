@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2005-06-03, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -153,9 +154,9 @@ NumericVectorWithOffset<T, NUMBER>::operator+= (const NumericVectorWithOffset &v
     return *this = v;
   }
 #ifndef STIR_NO_NAMESPACES
-  grow (std::min(this->get_min_index(),v.get_min_index()), std::max(this->get_max_index(),v.get_max_index()));
+  this->grow (std::min(this->get_min_index(),v.get_min_index()), std::max(this->get_max_index(),v.get_max_index()));
 #else
-  grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
+  this->grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
 #endif
   for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
     this->num[i] += v.num[i];
@@ -176,9 +177,9 @@ NumericVectorWithOffset<T, NUMBER>::operator-= (const NumericVectorWithOffset &v
     return *this *= -1;
   }
 #ifndef STIR_NO_NAMESPACES
-  grow (std::min(this->get_min_index(),v.get_min_index()), std::max(this->get_max_index(),v.get_max_index()));
+  this->grow (std::min(this->get_min_index(),v.get_min_index()), std::max(this->get_max_index(),v.get_max_index()));
 #else
-  grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
+  this->grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
 #endif
   for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
     this->num[i] -= v.num[i];
@@ -200,9 +201,9 @@ NumericVectorWithOffset<T, NUMBER>::operator*= (const NumericVectorWithOffset &v
     return *this *= 0;
   }
 #ifndef STIR_NO_NAMESPACES
-  grow (std::min(this->get_min_index(),v.get_min_index()), std::max(this->get_max_index(),v.get_max_index()));
+  this->grow (std::min(this->get_min_index(),v.get_min_index()), std::max(this->get_max_index(),v.get_max_index()));
 #else
-  grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
+  this->grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
 #endif
   for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
     this->num[i] *= v.num[i];
@@ -224,9 +225,9 @@ NumericVectorWithOffset<T, NUMBER>::operator/= (const NumericVectorWithOffset &v
     return *this *= 0;
   }
 #ifndef STIR_NO_NAMESPACES
-  grow (std::min(this->get_min_index(),v.get_min_index()), std::max(this->get_max_index(),v.get_max_index()));
+  this->grow (std::min(this->get_min_index(),v.get_min_index()), std::max(this->get_max_index(),v.get_max_index()));
 #else
-  grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
+  this->grow (min(this->get_min_index(),v.get_min_index()), max(this->get_max_index(),v.get_max_index()));
 #endif
   for (int i=v.get_min_index(); i<=v.get_max_index(); i++)
     this->num[i] /= v.num[i];

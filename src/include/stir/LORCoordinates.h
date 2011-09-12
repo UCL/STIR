@@ -16,7 +16,8 @@
 
 */
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004 - 2009-06-22, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -397,7 +398,7 @@ class LORInAxialAndSinogramCoordinates
       assert(new_radius>0);
       if(fabs(s())>=new_radius)
 	return Succeeded::no;
-      set_radius_no_check(new_radius);
+      this->set_radius_no_check(new_radius);
       return Succeeded::yes;
     }
     
@@ -474,7 +475,7 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
       assert(new_radius>0);
       if(fabs(s())>=new_radius)
 	return Succeeded::no;
-      set_radius_no_check(new_radius);
+      this->set_radius_no_check(new_radius);
       return Succeeded::yes;
     }
 
