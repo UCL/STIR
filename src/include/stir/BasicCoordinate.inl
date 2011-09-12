@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -523,7 +524,7 @@ namespace detail
       c1[1]<c2[1] || 
       (c1[1]==c2[1] && 
        (c1[2]<c2[2] ||
-	c1[2]==c2[2] && c1[3]<c2[3]));
+	(c1[2]==c2[2] && c1[3]<c2[3])));
   }
 
 #if !defined(_MSC_VER) || _MSC_VER>1200

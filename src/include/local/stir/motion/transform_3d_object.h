@@ -24,8 +24,8 @@
 
 // for caching functions
 #include <utility>
-#include "stir/assign.h"
 #include "stir/Array.h"
+#include "stir/assign.h"
 #include "stir/BasicCoordinate.h"
 
 START_NAMESPACE_STIR
