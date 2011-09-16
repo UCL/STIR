@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2010-07-21, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -795,10 +796,10 @@ Scanner* Scanner::ask_parameters()
         ask_num("Enter number of detectors per ring:",0,2000,128);
   
       int NoRings = 
-        ask_num("Enter number of rings :",0,128,16);
+        ask_num("Enter number of rings :",0,1000,16);
   
       int NoBins = 
-        ask_num("Enter number of bins: ",0,2000,128);
+        ask_num("Enter default number of tangential positions for this scanner: ",0,3000,128);
   
       float InnerRingRadius=
         ask_num("Enter inner ring radius (in mm): ",0.F,600.F,256.F);
@@ -807,10 +808,10 @@ Scanner* Scanner::ask_parameters()
         ask_num("Enter average depth of interaction (in mm): ", 0.F, 100.F, 0.F);
       
       float RingSpacing= 
-        ask_num("Enter ring spacing (in mm): ",0.F,20.F,6.75F);
+        ask_num("Enter ring spacing (in mm): ",0.F,30.F,6.75F);
   
       float BinSize= 
-        ask_num("Enter bin size (in mm):",0.F,20.F,3.75F);
+        ask_num("Enter default (tangential) bin size after arc-correction (in mm):",0.F,60.F,3.75F);
       float intrTilt=
         ask_num("Enter intrinsic_tilt (in degrees):",-180.F,360.F,0.F);
       int TransBlocksPerBucket = 
