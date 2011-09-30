@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2010-10-15, Hammersmith Imanet Ltd
+    copyright (C) 2011-07-01 - $Date: %, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -192,7 +193,7 @@ read_from_file(const string& filename,
   }
 
 
-#ifdef HAVE_RDF
+#if defined(STIR_USE_GE_IO) && defined(HAVE_RDF)
   if (GE_IO::is_RDF_file(actual_filename))
     {
 #ifndef NDEBUG
