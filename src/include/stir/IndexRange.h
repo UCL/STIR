@@ -90,7 +90,7 @@ public:
   inline IndexRange();
   
   //! Make an IndexRange from the base type
-  inline IndexRange(const base_type& range);
+  inline IndexRange(const VectorWithOffset<IndexRange<num_dimensions-1> >& range);
 
   //! Copy constructor
   inline IndexRange(const IndexRange<num_dimensions>& range);
