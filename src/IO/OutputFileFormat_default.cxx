@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2009-10-08, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -63,7 +64,7 @@ OutputFileFormat<DiscretisedDensity<3,float> >::_default_sptr =
   new InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType >;
 #endif
 #endif
-#if 0
+#if 1
   template <>
   shared_ptr<OutputFileFormat<DynamicDiscretisedDensity > >
   OutputFileFormat<DynamicDiscretisedDensity>::
