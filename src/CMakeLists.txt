@@ -34,6 +34,9 @@ option(STIR_MPI
 option(STIR_OPENMP 
        "Compile with OpenMP" OFF)
 
+option(BUILD_SHARED_LIBS 
+       "Use shared libraries" OFF)
+
 #### we need the boost library from boost.org
 set(BOOST_ROOT CACHE PATH "root of Boost")
 find_package( Boost 1.36.0 REQUIRED )
@@ -43,6 +46,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 # Listed here such that we know if we should compile extra utilities
 option(DISABLE_LLN_MATRIX "disable use of LLN library" OFF)
 option(DISABLE_AVW "disable use of AVW library" OFF)
+option(DISABLE_RDF "disable use of GE RDF library" OFF)
 
 if(NOT DISABLE_LLN_MATRIX)
   find_package(LLN)
@@ -50,6 +54,10 @@ endif()
 
 if(NOT DISABLE_AVW)
   find_package(AVW)
+endif()
+
+if(NOT DISABLE_RDF)
+  find_package(RDF)
 endif()
 
 if (LLN_FOUND)
@@ -68,6 +76,16 @@ if (AVW_FOUND)
   include_directories(${AVW_INCLUDE_DIRS})
 else()
   message(STATUS "AVW IO library not used.")
+endif()
+
+if (RDF_FOUND)
+  set(HAVE_RDF ON)
+  message(STATUS "GE RDF support enabled.")
+  add_definitions(-D HAVE_RDF -D STIR_USE_GE_IO)
+  include_directories(${RDF_INCLUDE_DIRS})
+
+else()
+  message(STATUS "RDF support disabled.")
 endif()
 
 #### Compiler specific flags for fastest execution etc
@@ -108,6 +126,14 @@ ENABLE_TESTING()
 #### STIR library
 include(stir_dirs.cmake)
 
+# see if there's a local subdirectory.
+find_path(STIR_LOCAL NAME "extra_stir_dirs.cmake" PATHS "${PROJECT_SOURCE_DIR}/local/" NO_DEFAULT_PATH)
+if (STIR_LOCAL)
+  add_subdirectory(${STIR_LOCAL})
+  include(${STIR_LOCAL}/extra_stir_dirs.cmake)
+endif()
+
+
 # go and look for CMakeLists.txt files in all those directories
 foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})
 	ADD_SUBDIRECTORY(${STIR_DIR})
@@ -115,17 +141,9 @@ foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})
 endforeach(STIR_DIR)
 
 
-#TARGET_LINK_LIBRARIES(STIR recon_buildblock) #${STIR_LIBRARIES})
-
 # add the examples directory as well, but don't build it by default
 ADD_SUBDIRECTORY(examples EXCLUDE_FROM_ALL)
 
-
-# see if there's a local subdirectory.
-find_path(STIR_LOCAL NAME "CMakeLists.txt" PATHS "${PROJECT_SOURCE_DIR}/local/" NO_DEFAULT_PATH)
-if (STIR_LOCAL)
-  add_subdirectory(${STIR_LOCAL})
-endif()
 
 
 #### Export settings such that another project can import them.
