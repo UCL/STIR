@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2009-07-08, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -156,6 +157,15 @@ get_index_coordinates_for_physical_coordinates(const CartesianCoordinate3D<float
 {
   return
     this->actual_get_index_coordinates_for_relative_coordinates(coords - this->get_origin());
+}
+
+template<int num_dimensions, typename elemT>
+BasicCoordinate<num_dimensions,float>
+DiscretisedDensity<num_dimensions, elemT>::
+get_index_coordinates_for_relative_coordinates(const CartesianCoordinate3D<float>& coords) const
+{
+  return
+    this->actual_get_index_coordinates_for_relative_coordinates(coords);
 }
 
 template<int num_dimensions, typename elemT>
