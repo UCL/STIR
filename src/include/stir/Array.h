@@ -87,7 +87,13 @@ called, which initialises new elements first to 0.
 template <int num_dimensions, typename elemT>
 class Array : public NumericVectorWithOffset<Array<num_dimensions-1, elemT>, elemT>
 {
-private:
+#ifdef SWIG
+  // work-around swig problem. It gets confused when using a private (or protected)
+  // typedef in a definition of a public typedef/member
+ public:
+#else
+ private: 
+#endif  
   typedef  Array<num_dimensions, elemT> self;
   typedef NumericVectorWithOffset<Array<num_dimensions-1, elemT>, elemT> base_type;
  
@@ -240,8 +246,13 @@ class Array<1, elemT> : public NumericVectorWithOffset<elemT, elemT>
 			 boost::operators<Array<1, elemT>, elemT>
 #endif
 {
-private: 
-  
+#ifdef SWIG
+  // work-around swig problem. It gets confused when using a private (or protected)
+  // typedef in a definition of a public typedef/member
+ public:
+#else
+ private: 
+#endif  
   typedef NumericVectorWithOffset<elemT,elemT> base_type;
   typedef Array<1, elemT> self;
 
@@ -279,7 +290,7 @@ public:
   inline Array(const int min_index, const int max_index);
 
   //! constructor from basetype
-  inline Array(const base_type &il);
+  inline Array(const NumericVectorWithOffset<elemT,elemT> &il);
   
   //! virtual destructor
   inline virtual ~Array();
