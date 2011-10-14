@@ -18,7 +18,8 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2009-06-22, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -51,7 +52,7 @@ CartesianCoordinate3D<coordT>::CartesianCoordinate3D(const coordT& z,
 
 
 template <class coordT>
-CartesianCoordinate3D<coordT>::CartesianCoordinate3D(const basebase_type& c)
+CartesianCoordinate3D<coordT>::CartesianCoordinate3D(const BasicCoordinate<3, coordT>& c)
   : base_type(c)
 {}
 
@@ -59,7 +60,7 @@ CartesianCoordinate3D<coordT>::CartesianCoordinate3D(const basebase_type& c)
 
 template <class coordT>
 CartesianCoordinate3D<coordT>& 
-CartesianCoordinate3D<coordT>:: operator=(const basebase_type& c)
+CartesianCoordinate3D<coordT>:: operator=(const BasicCoordinate<3, coordT>& c)
 {
   basebase_type::operator=(c);
   return *this;

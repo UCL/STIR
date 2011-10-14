@@ -19,7 +19,8 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2009-06-22, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -58,8 +59,8 @@ protected:
 public:
   inline Coordinate3D();
   inline Coordinate3D(const coordT&, const coordT&, const coordT&);
-  inline Coordinate3D(const base_type& c);
-  inline Coordinate3D& operator=(const base_type& c);
+  inline Coordinate3D(const BasicCoordinate<3, coordT>& c);
+  inline Coordinate3D& operator=(const BasicCoordinate<3, coordT>& c);
 };
 
 END_NAMESPACE_STIR
