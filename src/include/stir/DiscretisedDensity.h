@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2009-07-08, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -104,7 +105,13 @@ template<int num_dimensions, typename elemT>
 class DiscretisedDensity : public Array<num_dimensions,elemT>
 
 { 
- private:
+#ifdef SWIG
+  // work-around swig problem. It gets confused when using a private (or protected)
+  // typedef in a definition of a public typedef/member
+ public:
+#else
+ private: 
+#endif  
   typedef Array<num_dimensions,elemT> base_type;
   typedef DiscretisedDensity<num_dimensions,elemT> self_type;
 public:
