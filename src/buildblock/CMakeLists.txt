@@ -77,3 +77,8 @@ else()
 endif()
 
 add_library(${dir} ${${dir_LIB_SOURCES}}    )
+
+# TODO Remove but currently needed for ProjData.cxx
+if (LLN_FOUND)
+  target_link_libraries(buildblock ${LLN_LIBRARIES})
+endif()
