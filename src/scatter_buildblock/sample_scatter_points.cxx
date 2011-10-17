@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-  Copyright (C) 2004- $Date$, Hammersmith Imanet
+  Copyright (C) 2004- 2010-10-15, Hammersmith Imanet
+  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -64,8 +65,8 @@ sample_scatter_points()
   const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();       
   CartesianCoordinate3D<float>  origin = image.get_origin();
   // shift origin such that we refer to the middle of the scanner
-  // TODO why not use this->shift_detector_coordinates_to_origin
-  // formula below seems unsafe
+  // this is to be consistent with projector conventions
+  // TODO use class function once it exists
   const float z_to_middle =
     (image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
   origin.z() -= z_to_middle;
