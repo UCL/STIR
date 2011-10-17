@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2007-10-08, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -180,6 +181,15 @@ initialise_uncompressed_view_tangpos_to_det1det2() const
   const int min_tang_pos_num = -(num_detectors/2)+1;
   const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
   
+  if (this->get_min_tangential_pos_num() < min_tang_pos_num ||
+      this->get_max_tangential_pos_num() > max_tang_pos_num)
+    {
+      error("The tangential_pos range (%d to %d) for this projection data is too large.\n"
+	    "Maximum supported range is from %d to %d",  
+	    this->get_min_tangential_pos_num(), this->get_max_tangential_pos_num(),
+	    min_tang_pos_num, max_tang_pos_num);
+    }
+
   uncompressed_view_tangpos_to_det1det2.grow(0,num_detectors/2-1);
   for (int v_num=0; v_num<=num_detectors/2-1; ++v_num)
   {
@@ -211,8 +221,14 @@ initialise_det1det2_to_uncompressed_view_tangpos() const
   const int num_detectors =
     get_scanner_ptr()->get_num_detectors_per_ring();
 
-  assert(num_detectors%2 == 0);
-  assert(get_min_view_num() == 0);
+  if (num_detectors%2 != 0)
+    {
+      error("Number of detectors per ring should be even but is %d", num_detectors);
+    }
+  if (this->get_min_view_num() != 0)
+    {
+      error("Minimum view number should currently be zero to be able to use get_view_tangential_pos_num_for_det_num_pair()");
+    }
   // check views range from 0 to Pi
   assert(fabs(get_phi(Bin(0,0,0,0))) < 1.E-4);
   assert(fabs(get_phi(Bin(0,get_max_view_num()+1,0,0)) - _PI) < 1.E-4);
