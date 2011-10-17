@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-  Copyright (C) 2004- $Date$, Hammersmith Imanet
+  Copyright (C) 2004- 2009-11-03, Hammersmith Imanet
+  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -31,6 +32,11 @@
 
 */
 #include "stir/scatter/ScatterEstimationByBin.h"
+#ifndef NDEBUG
+// currently necessary for assert below
+#include "stir/VoxelsOnCartesianGrid.h"
+#endif
+
 #include "stir/round.h"
 #include <math.h>
 using namespace std;
@@ -101,8 +107,21 @@ ScatterEstimationByBin::
   const float scatter_point_mu=
     scatt_points_vector[scatter_point_num].mu_value;
 
-  assert(scatter_point_mu==
-         (*density_image_sptr)[density_image_sptr->get_indices_closest_to_physical_coordinates(scatter_point)]);
+#ifndef NDEBUG
+  {  
+    // check if mu-value ok
+    // currently terribly shift needed as in sample_scatter_points (TODO)
+    const VoxelsOnCartesianGrid<float>& image =
+      dynamic_cast<const VoxelsOnCartesianGrid<float>&>(*this->density_image_for_scatter_points_sptr);
+    const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();       
+    const float z_to_middle =
+    (image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
+    CartesianCoordinate3D<float> shifted=scatter_point;
+    shifted.z() += z_to_middle;
+    assert(scatter_point_mu==
+	   (*this->density_image_for_scatter_points_sptr)[this->density_image_for_scatter_points_sptr->get_indices_closest_to_physical_coordinates(shifted)]);
+  }
+#endif
 
   float scatter_ratio=0 ;
 
