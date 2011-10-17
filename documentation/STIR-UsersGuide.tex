@@ -137,7 +137,15 @@ not have to be your home directory).
 The result is a \textbf{STIR} directory and subdirectories, described 
 in the annex section.
 
-\subsection{Download/install boost}
+\subsection{
+Installing external software}
+If you are running Ubuntu or Debian, you should be able to get do this using
+
+\cmdline{apt-get install  gcc g++ make libncurses-dev libX11-dev libboost-dev tcsh}
+
+(prefix with \texttt{sudo} for Ubuntu). For other systems, details are given below.
+
+\subsubsection{Download/install boost}
 \textit{STIR} uses the well-respected \textit{boost} library. This library
 is currently installed in many systems (especially on Linux). If it
 is not, you can download it from 
@@ -148,7 +156,7 @@ where to find the \texttt{boost/} directory with all the include files.
 See the Compilation section for some info (use \textit{make} variable 
 \textit{EXTRA\_CFLAGS}).
 
-\subsection{
+\subsubsection{
 C++ Compiler and make}
 
 In order to compile and run the \textit{STIR} programs, we currently recommend 
@@ -176,7 +184,7 @@ We discourage using such versions for \textit{STIR} (check with gcc -v).
 
 
 Other recent C++ compilers should be ok as well, including Intel's compiler
-version 11.
+version 11 and CLang.
 We would love 
 to hear from any attempts of using another compiler. See Section 
 \ref{sec:VC}
@@ -947,11 +955,10 @@ Then either set the environment variable LIBRARY\_PATH or use \\
 }
 
 You also need to install the curses or ncurses package (for some reason, KT experienced 
-a linking error when trying to use the curses library). On Ubuntu and
+a linking error when trying to use the curses library). As mentioned above, on Ubuntu and
 Debian, you can do
 
-\cmdline{apt-get install libncurses5}
-\cmdline{apt-get install libncurses5-dev}
+\cmdline{apt-get install libncurses5 libncurses5-dev}
 
 prefixed with \texttt{sudo} if you are not logged in as root. For other Linux versions, 
 you should be able to find similar RPM packages online.
