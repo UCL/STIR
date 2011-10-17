@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2011-06-24, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -152,6 +153,7 @@ public:
 
       \warning Current implementation only checked for Siemens/CTI scanners.
       It assumes interleaved data.
+      \warning Will call error() if certain conditions are not met.
 
       \see get_det_num_pair_for_view_tangential_pos_num()
   */			
@@ -172,6 +174,7 @@ public:
       
       \see get_view_tangential_pos_num_for_det_num_pair() for info and 
       restrictions.
+      \warning Will call error() if certain conditions are not met.
    */
   inline void
     get_det_num_pair_for_view_tangential_pos_num(
@@ -201,6 +204,7 @@ public:
     restrictions. In addition, this routine only works for span=1 data,
     i.e. no axial compression.
     \todo use member template for the coordT type to support continuous detectors.
+    \warning Will call error() if certain conditions are not met.
   */
   inline void
     get_det_pos_pair_for_bin(DetectionPositionPair<>&,
@@ -289,6 +293,7 @@ private:
   struct Det1Det2 { int det1_num; int det2_num; };
   mutable VectorWithOffset< VectorWithOffset<Det1Det2> > uncompressed_view_tangpos_to_det1det2;
   mutable bool uncompressed_view_tangpos_to_det1det2_initialised;
+  //! build look-up table for get_view_tangential_pos_num_for_det_num_pair()
   void initialise_uncompressed_view_tangpos_to_det1det2() const;
 
   // used in get_view_tangential_pos_num_for_det_num_pair()
@@ -296,6 +301,7 @@ private:
   struct ViewTangPosSwap { int view_num; int tang_pos_num; bool swap_detectors; };
   mutable VectorWithOffset< VectorWithOffset<ViewTangPosSwap> > det1det2_to_uncompressed_view_tangpos;
   mutable bool det1det2_to_uncompressed_view_tangpos_initialised;
+  //! build look-up table for get_view_tangential_pos_num_for_det_num_pair()
   void initialise_det1det2_to_uncompressed_view_tangpos() const;
 
   virtual bool blindly_equals(const root_type * const) const;
