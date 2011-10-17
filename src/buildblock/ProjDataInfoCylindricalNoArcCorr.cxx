@@ -149,8 +149,9 @@ ProjDataInfoCylindricalNoArcCorr::parameter_info()  const
    the 2-complement convention.
 */
 
-/*
+/*!
   Go from sinograms to detectors.
+
   Because sinograms are not arc-corrected, tang_pos_num corresponds
   to an angle as well. Before interleaving we have that
   \verbatim
