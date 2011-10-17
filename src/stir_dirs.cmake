@@ -38,7 +38,7 @@ ${CMAKE_HOME_DIRECTORY}/modelling_buildblock/modelling_registries.cxx
 
 SET( STIR_LIBRARIES analytic_FBP3DRP analytic_FBP2D       iterative_OSMAPOSL  
      iterative_OSSPS
-      modelling_buildblock listmode_buildblock recon_buildblock  
+      scatter_buildblock modelling_buildblock listmode_buildblock recon_buildblock  
       display  IO  data_buildblock numerics_buildblock  buildblock 
       Shape_buildblock eval_buildblock 
       # repeat for linking
@@ -58,6 +58,7 @@ SET( STIR_DIRS
      eval_buildblock 
      scatter_buildblock
      utilities 
+     scatter_utilities
      modelling_utilities
      listmode_utilities
      analytic/FBP2D
