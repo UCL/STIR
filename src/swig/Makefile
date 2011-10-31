@@ -1,6 +1,10 @@
+all: _stir.so
 
-stir_wrap.cxx: stir.i
+stir_wrap.cxx: stir.i Makefile
 	swig -python -c++ -builtin -I../include/ -DSTART_NAMESPACE_STIR="namespace stir {" -DEND_NAMESPACE_STIR="}" $<
+
+stir.e: stir.i Makefile
+	swig -python -c++ -builtin -E  -I../include/ -DSTART_NAMESPACE_STIR="namespace stir {" -DEND_NAMESPACE_STIR="}" $< > stir.e
 
 CFLAGS=-fpic  -I../include/ -g -I /usr/include/python2.7/ -DSWIG
 
@@ -17,5 +21,4 @@ LIBS=../../build/stir/gcc/DebugShared/buildblock/libbuildblock.so \
 _stir.so: stir_wrap.o $(LIBS)
 	g++ -g -shared $^ -o _stir.so
 
-all: _stir.so
 
