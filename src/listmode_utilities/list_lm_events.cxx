@@ -98,10 +98,10 @@ int main(int argc, char *argv[])
     {
       cerr << "Usage: " << program_name << "[options] lm_filename\n"
            << "Options:\n"
-           << "--list-time 0|1 : list time events or not (default: 1)\n"
-           << "--list-gating 0|1 : list gating events or not (default: 1)\n"
-           << "--list-coincidence 0|1 : list coincidence events or not (default: 0)\n"
-           << "--list-unknown 0|1 : list if event of unknown type encountered or not (default: 0)\n"
+           << "--time 0|1 : list time events or not (default: 1)\n"
+           << "--gating 0|1 : list gating events or not (default: 1)\n"
+           << "--coincidence 0|1 : list coincidence events or not (default: 0)\n"
+           << "--unknown 0|1 : list if event of unknown type encountered or not (default: 0)\n"
            << "--num-events-to-list <num> : limit number of events written to stdout\n";
       return EXIT_FAILURE;
     }
