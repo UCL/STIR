@@ -360,7 +360,6 @@ VoxelsOnCartesianGrid<float> ask_interfile_image(const char *const input_query)
 {
     char filename[max_filename_length];
 
-    system("ls *hv");
     ask_filename_with_extension(filename, input_query, ".hv");
 
     shared_ptr<DiscretisedDensity<3,float> > image_ptr =
