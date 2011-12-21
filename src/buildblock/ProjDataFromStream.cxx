@@ -869,8 +869,6 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
   
     
     char filename[256];
-    cout << endl;
-    system("ls *scn *dat *bin");//CL 14/10/98 ADd this printing out of some data files
         
     ask_filename_with_extension(
       filename, 
