@@ -13,7 +13,7 @@ set(${dir_LIB_SOURCES}
 
 #$(dir)_REGISTRY_SOURCES:= 
 
-add_library(${dir} ${${dir_LIB_SOURCES}}    )
+include(../../stir_lib_target.cmake)
 
 set (dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 

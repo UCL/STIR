@@ -1,7 +1,6 @@
 #
 # $Id$
 #
-# Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
 # Copyright 2011-07-01 - $Date$ Kris Thielemans
 
 # This file is part of STIR.
@@ -18,21 +17,10 @@
 #
 # See STIR/LICENSE.txt for details
 
-# cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
+# cmake helper file, to be included by CMakeLists.txt files that
+# set ${dir} to the target-name of the library and ${dir_LIB_SOURCES}
+# to its sources
 
-set(dir  data_buildblock)
+add_library(${dir} ${${dir_LIB_SOURCES}}    )
 
-set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
-
-set(${dir_LIB_SOURCES}
-	SinglesRates 
-	SinglesRatesForTimeFrames 
-)
-if (HAVE_ECAT)
-  list(APPEND  ${dir_LIB_SOURCES}
-	SinglesRatesFromSglFile 
-	SinglesRatesFromECAT7  
-  )
-endif()
-
-include(../stir_lib_target.cmake)
+install(TARGETS ${dir} DESTINATION lib)

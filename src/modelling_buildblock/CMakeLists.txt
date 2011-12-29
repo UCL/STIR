@@ -14,5 +14,5 @@ set(${dir_LIB_SOURCES}
 
 #$(dir)_REGISTRY_SOURCES:= modelling_registries
 
-add_library(${dir} ${${dir_LIB_SOURCES}}    )
+include(../stir_lib_target.cmake)
 

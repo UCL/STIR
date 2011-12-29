@@ -23,4 +23,4 @@ endif()
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries
 
 
-add_library(${dir} ${${dir_LIB_SOURCES}}    )
+include(../stir_lib_target.cmake)
