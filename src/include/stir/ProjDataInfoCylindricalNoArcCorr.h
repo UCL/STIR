@@ -93,7 +93,11 @@ class ProjDataInfoCylindricalNoArcCorr : public ProjDataInfoCylindrical
 {
 private:
   typedef ProjDataInfoCylindrical base_type;
+#ifdef SWIG
+  // SWIG needs this typedef to be public
+ public:
   typedef ProjDataInfoCylindricalNoArcCorr self_type;
+#endif
 
 public:
   //! Default constructor (leaves object in ill-defined state)

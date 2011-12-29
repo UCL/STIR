@@ -2,7 +2,8 @@
 // $Id$
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -141,8 +142,16 @@ public:
   //! Construct an Array of given range of indices, elements are initialised to 0
   inline explicit Array(const IndexRange<num_dimensions>&);
   
+#ifndef SWIG
   //! Construct an Array from an object of its base_type
   inline Array(const base_type& t);
+#else
+  // swig 2.0.4 gets confused by base_type (due to numeric template arguments)
+  // therefore, we declare this constructor using the "self" type, 
+  // i.e. it's just a copy-constructor.
+  // This is less powerful as in C++, but swig-generated interfaces don't need to know about the base_type anyway
+  inline Array(const self& t);
+#endif
   
   //! virtual destructor, frees up any allocated memory
   inline virtual ~Array();
