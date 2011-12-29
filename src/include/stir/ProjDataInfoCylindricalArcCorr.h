@@ -55,8 +55,8 @@ class ProjDataInfoCylindricalArcCorr : public ProjDataInfoCylindrical
 #ifdef SWIG
   // SWIG needs this typedef to be public
  public:
-  typedef ProjDataInfoCylindricalArcCorr self_type;
 #endif
+  typedef ProjDataInfoCylindricalArcCorr self_type;
 
 public:
   //! Constructors
