@@ -96,8 +96,8 @@ private:
 #ifdef SWIG
   // SWIG needs this typedef to be public
  public:
-  typedef ProjDataInfoCylindricalNoArcCorr self_type;
 #endif
+  typedef ProjDataInfoCylindricalNoArcCorr self_type;
 
 public:
   //! Default constructor (leaves object in ill-defined state)
