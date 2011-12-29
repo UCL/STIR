@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -62,6 +63,12 @@ class Sinogram : public Array<2,elemT>
 private:
   typedef Sinogram<elemT> self_type;
   typedef Array<2,elemT> base_type;
+
+#ifdef SWIG
+public:  
+  // SWIG needs a default constructor
+  inline Sinogram() {}
+#endif
 
 public:
   //! Construct sinogram from proj_data_info pointer, ring and segment number.  Data are set to 0.
