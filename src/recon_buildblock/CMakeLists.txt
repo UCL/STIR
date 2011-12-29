@@ -89,9 +89,7 @@ set(${dir_LIB_SOURCES}
 )
 endif()
 
-add_library(${dir} ${${dir_LIB_SOURCES}}    )
-
-
+include(../stir_lib_target.cmake)
 
 
 

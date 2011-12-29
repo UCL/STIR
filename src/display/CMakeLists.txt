@@ -43,7 +43,7 @@ else()
         message(FATAL_ERROR "GRAPHICS has to be X, PGM or None")
 endif()
 
-add_library(${dir} ${${dir_LIB_SOURCES}}    )
+include(../stir_lib_target.cmake)
 
 if( "${GRAPHICS}" STREQUAL "X")
 	find_package(Curses REQUIRED)

@@ -14,6 +14,6 @@ set(${dir_LIB_SOURCES}
 
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries.cxx
 
-add_library(${dir} ${${dir_LIB_SOURCES}}    )
+include(../stir_lib_target.cmake)
 
 

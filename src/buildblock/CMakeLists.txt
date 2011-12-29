@@ -76,9 +76,11 @@ else()
   list(APPEND ${dir_LIB_SOURCES} getopt)
 endif()
 
-add_library(${dir} ${${dir_LIB_SOURCES}}    )
-
 # TODO Remove but currently needed for ProjData.cxx
 if (LLN_FOUND)
   target_link_libraries(buildblock ${LLN_LIBRARIES})
 endif()
+
+#target_link_libraries(${dir} ${dir}_registries.cxx)
+
+include(../stir_lib_target.cmake)

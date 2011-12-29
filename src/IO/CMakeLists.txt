@@ -51,7 +51,7 @@ if(AVW_FOUND)
   )
 endif()
 
-add_library(${dir} ${${dir_LIB_SOURCES}}    )
+include(../stir_lib_target.cmake)
 
 if (LLN_FOUND)
   target_link_libraries(IO ${LLN_LIBRARIES})
