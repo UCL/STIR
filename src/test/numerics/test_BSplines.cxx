@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2009-10-27, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -401,8 +402,7 @@ namespace BSpline {
 					  		
       STIR_output_sample=BSplines1DRegularGridTests.BSplines_output_sequence(output_sample_position);
 
-      std::vector<elemT>:: iterator cur_iter_stir_out = STIR_output_sample.begin(), 
-	cur_iter_input = input_sample.begin();
+      std::vector<elemT>:: iterator cur_iter_stir_out = STIR_output_sample.begin();
 
       for (; cur_iter_stir_out!=STIR_output_sample.end(); ++cur_iter_stir_out)	
 	check_if_equal(*cur_iter_stir_out, (elemT)1,	
