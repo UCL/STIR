@@ -435,7 +435,7 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
     
   }
   {
-    shared_ptr<Scanner> scanner_ptr = new Scanner(Scanner::E953);
+    shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
     
     VectorWithOffset<int> num_axial_pos_per_segment(-1,1);
     VectorWithOffset<int> min_ring_diff(-1,1); 
@@ -535,25 +535,25 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
 #endif
 
 
-  shared_ptr<Scanner> scanner_ptr = new Scanner(Scanner::E953);
+ shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
   cerr << "Tests with proj_data_info without mashing and axial compression\n\n";
   // Note: test without axial compression requires that all ring differences 
   // are in some segment, so use maximum ring difference
-  shared_ptr<ProjDataInfo> proj_data_info_ptr =
+  shared_ptr<ProjDataInfo> proj_data_info_ptr(
     ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
 				  /*span*/1, scanner_ptr->get_num_rings()-1,
 				  /*views*/ scanner_ptr->get_num_detectors_per_ring()/2, 
 				  /*tang_pos*/64, 
-				  /*arc_corrected*/ true);
+				  /*arc_corrected*/ true));
 test_cylindrical_proj_data_info(dynamic_cast<ProjDataInfoCylindricalArcCorr &>(*proj_data_info_ptr));
 
   cerr << "\nTests with proj_data_info with mashing and axial compression\n\n";
-  proj_data_info_ptr =
+  proj_data_info_ptr.reset(
     ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
 				  /*span*/5, scanner_ptr->get_num_rings()-1,
 				  /*views*/ scanner_ptr->get_num_detectors_per_ring()/2/8, 
 				  /*tang_pos*/64, 
-				  /*arc_corrected*/ true);
+				  /*arc_corrected*/ true));
     test_cylindrical_proj_data_info(dynamic_cast<ProjDataInfoCylindricalArcCorr &>(*proj_data_info_ptr));
 }
 
@@ -577,25 +577,25 @@ ProjDataInfoCylindricalNoArcCorrTests::
 run_tests()
 { 
   cerr << "\n-------- Testing ProjDataInfoCylindricalNoArcCorr --------\n";
-  shared_ptr<Scanner> scanner_ptr = new Scanner(Scanner::E953);
+  shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
   cerr << "Tests with proj_data_info without mashing and axial compression\n\n";
   // Note: test without axial compression requires that all ring differences 
   // are in some segment, so use maximum ring difference
-  shared_ptr<ProjDataInfo> proj_data_info_ptr =
+  shared_ptr<ProjDataInfo> proj_data_info_ptr(
     ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
 				  /*span*/1, scanner_ptr->get_num_rings()-1,
 				  /*views*/ scanner_ptr->get_num_detectors_per_ring()/2, 
 				  /*tang_pos*/64, 
-				  /*arc_corrected*/ false);
+				  /*arc_corrected*/ false));
     test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr));
 
   cerr << "\nTests with proj_data_info with mashing and axial compression\n\n";
-  proj_data_info_ptr =
+  proj_data_info_ptr.reset(
     ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
 				  /*span*/5, scanner_ptr->get_num_rings()-1,
 				  /*views*/ scanner_ptr->get_num_detectors_per_ring()/2/8, 
 				  /*tang_pos*/64, 
-				  /*arc_corrected*/ false);
+				  /*arc_corrected*/ false));
     test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr));
 }
 

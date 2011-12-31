@@ -1,8 +1,9 @@
 //
-// $Id$
+// PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.txx,v 1.6 2011-01-14 17:25:05
 //
 /*
-  Copyright (C) 2006- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2006 - 2011-01-14, Hammersmith Imanet Ltd
+  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -80,29 +81,24 @@ set_defaults()
   this->_max_segment_num_to_process=0;
   //num_views_to_add=1;    // KT 20/06/2001 disabled
 
-  this->_dyn_proj_data_sptr=NULL; 
+  this->_dyn_proj_data_sptr.reset();
   this->_zero_seg0_end_planes = 0;
 
   this->_additive_dyn_proj_data_filename = "0";
-  this->_additive_dyn_proj_data_sptr=NULL;
+  this->_additive_dyn_proj_data_sptr.reset();
 
 #ifndef USE_PMRT // set default for _projector_pair_ptr
-  shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
-    new ForwardProjectorByBinUsingRayTracing();
-  shared_ptr<BackProjectorByBin> back_projector_ptr =
-    new BackProjectorByBinUsingInterpolation();
+  shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingRayTracing());
+  shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingInterpolation());
 #else
-  shared_ptr<ProjMatrixByBin> PM = 
-    new  ProjMatrixByBinUsingRayTracing();
-  shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
-    new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
-  shared_ptr<BackProjectorByBin> back_projector_ptr =
-    new BackProjectorByBinUsingProjMatrixByBin(PM); 
+  shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
+  shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(PM)); 
+  shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(PM)); 
 #endif
 
-  this->_projector_pair_ptr = 
-    new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr);
-  this->_normalisation_sptr = new TrivialBinNormalisation;
+  this->_projector_pair_ptr.
+    reset(new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
+  this->_normalisation_sptr.reset(new TrivialBinNormalisation);
 
   // image stuff
   this->_output_image_size_xy=-1;
@@ -113,7 +109,7 @@ set_defaults()
   this->_Zoffset=0.F;   // KT 20/06/2001 new
 
   // Modelling Stuff
-  this->_patlak_plot_sptr=NULL;
+  this->_patlak_plot_sptr.reset();
 }
 
 template<typename TargetT>
@@ -168,7 +164,7 @@ post_processing()
     { warning("The 'mash x views' key has an invalid value (must be 1 or even number)"); return true; }
 #endif
  
-  this->_dyn_proj_data_sptr=DynamicProjData::read_from_file(_input_filename);
+  this->_dyn_proj_data_sptr.reset(DynamicProjData::read_from_file(_input_filename));
   if (is_null_ptr(this->_dyn_proj_data_sptr))
     { warning("Error reading input file %s", _input_filename.c_str()); return true; }
   // image stuff
@@ -186,8 +182,10 @@ post_processing()
       cerr << "\nReading additive projdata data "
            << this->_additive_dyn_proj_data_filename 
            << endl;
-      this->_additive_dyn_proj_data_sptr = 
-        DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename);
+      this->_additive_dyn_proj_data_sptr.reset(DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename));
+      if (is_null_ptr(this->_additive_dyn_proj_data_sptr))
+	{ warning("Error reading additive input file %s", _additive_dyn_proj_data_filename.c_str()); return true; }
+
     }
   return false;
 }
@@ -342,8 +340,8 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
       return Succeeded::no;
     }
 
-  shared_ptr<ProjDataInfo> proj_data_info_sptr =
-    (this->_dyn_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_ptr()->clone();
+  shared_ptr<ProjDataInfo> proj_data_info_sptr(
+					       (this->_dyn_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_ptr()->clone());
   proj_data_info_sptr->
     reduce_segment_range(-this->_max_segment_num_to_process,
                          +this->_max_segment_num_to_process);
@@ -376,8 +374,9 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
       return Succeeded::no;
     }
   {
-    const shared_ptr<DiscretisedDensity<3,float> > density_template_sptr = (target_sptr->construct_single_density(1)).get_empty_copy();
-    const shared_ptr<Scanner> scanner_sptr = new Scanner(*proj_data_info_sptr->get_scanner_ptr());
+    const shared_ptr<DiscretisedDensity<3,float> > 
+      density_template_sptr((target_sptr->construct_single_density(1)).get_empty_copy());
+    const shared_ptr<Scanner> scanner_sptr(new Scanner(*proj_data_info_sptr->get_scanner_ptr()));
     this->_dyn_image_template=
       DynamicDiscretisedDensity(this->_patlak_plot_sptr->get_time_frame_definitions(), 
                                 this->_dyn_proj_data_sptr->get_start_time_in_secs_since_1970(),
@@ -563,8 +562,8 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
                 << dyn_output[frame_num].find_max() << "\n";
 #endif //NDEBUG
     } // end of loop over frames
-  shared_ptr<TargetT> unnormalised_temp = output.get_empty_copy();
-  shared_ptr<TargetT> temp = output.get_empty_copy();
+  shared_ptr<TargetT> unnormalised_temp(output.get_empty_copy());
+  shared_ptr<TargetT> temp(output.get_empty_copy());
   this->_patlak_plot_sptr->multiply_dynamic_image_with_model_gradient(*unnormalised_temp,
                                                                       dyn_output) ;
   // Trick to use a better step size for the two parameters. 

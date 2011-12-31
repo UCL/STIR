@@ -105,7 +105,7 @@ set_defaults()
   minimum_relative_change = 0;
   write_update_image = 0;
   inter_update_filter_interval = 0;
-  inter_update_filter_ptr = 0;
+  inter_update_filter_ptr.reset();
   MAP_model="additive"; 
 }
 
@@ -150,8 +150,7 @@ ask_parameters()
     
     const string inter_update_filter_type = ask_string("");
     
-    inter_update_filter_ptr = 
-      DataProcessor<TargetT >::read_registered_object(0, inter_update_filter_type);      
+    inter_update_filter_ptr.reset(DataProcessor<TargetT >::read_registered_object(0, inter_update_filter_type));
     
   } 
 
@@ -329,10 +328,12 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
      !is_null_ptr(this->inter_update_filter_ptr))
     {
       // ensure that the result image of the filter is positive
-      this->inter_update_filter_ptr =
+      shared_ptr<ThresholdMinToSmallPositiveValueDataProcessor<TargetT > >
+	thresholding_sptr(new  ThresholdMinToSmallPositiveValueDataProcessor<TargetT >);
+      this->inter_update_filter_ptr.reset(
         new ChainedDataProcessor<TargetT >(
                                   this->inter_update_filter_ptr,
-                                  new  ThresholdMinToSmallPositiveValueDataProcessor<TargetT >);
+                                  thresholding_sptr));
       // KT 04/06/2003 moved set_up after chaining the filter. Otherwise it would be 
       // called again later on anyway.
       // Note however that at present, 
@@ -349,11 +350,13 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
       !is_null_ptr(this->inter_iteration_filter_ptr))
     {
       // ensure that the result image of the filter is positive
-      this->inter_iteration_filter_ptr =
+      shared_ptr<ThresholdMinToSmallPositiveValueDataProcessor<TargetT > >
+	thresholding_sptr(new  ThresholdMinToSmallPositiveValueDataProcessor<TargetT >);
+      this->inter_iteration_filter_ptr.reset(
         new ChainedDataProcessor<TargetT >(
                                            this->inter_iteration_filter_ptr,
-                                           new  ThresholdMinToSmallPositiveValueDataProcessor<TargetT >
-);
+                                           thresholding_sptr
+					   ));
       // KT 04/06/2003 moved set_up after chaining the filter (and removed it from IterativeReconstruction)
       cerr<<endl<<"Building inter-iteration filter kernel"<<endl;
       if (this->inter_iteration_filter_ptr->set_up(*target_image_ptr)

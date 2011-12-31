@@ -41,7 +41,8 @@ ChainedBinNormalisation::registered_name = "Chained";
 void 
 ChainedBinNormalisation::set_defaults()
 {
-  apply_first=apply_second=0;
+  apply_first.reset();
+  apply_second.reset();
 }
 
 void 

@@ -125,13 +125,13 @@ VoxelsOnCartesianGridTests::run_tests()
 
   }
   
-  shared_ptr<Scanner> scanner_ptr = new Scanner(Scanner::E953);
-  shared_ptr<ProjDataInfo> proj_data_info_ptr = 
+  shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
+  shared_ptr<ProjDataInfo> proj_data_info_ptr(
     ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
 				  /*span=*/1, 
 				  /*max_delta=*/5,
 				  /*num_views=*/8,
-				  /*num_tang_poss=*/16);
+				  /*num_tang_poss=*/16));
   
   {
     cerr << "Tests with constructor with ProjDataInfo with default sizes\n";
@@ -202,7 +202,7 @@ VoxelsOnCartesianGridTests::run_tests()
     {
       cerr << "Tests get_empty_voxels_on_cartesian_grid\n";
       
-      shared_ptr< VoxelsOnCartesianGrid<float> > emp =ob5.get_empty_voxels_on_cartesian_grid();
+      shared_ptr< VoxelsOnCartesianGrid<float> > emp(ob5.get_empty_voxels_on_cartesian_grid());
       
       IndexRange<3> obtained_range2 = emp->get_index_range();
       check_if_equal( emp->get_origin(), ob5.get_origin(), "test on origin");  
@@ -214,7 +214,7 @@ VoxelsOnCartesianGridTests::run_tests()
     {
       cerr << "Tests get_empty_copy()\n";
       
-      shared_ptr<DiscretisedDensity<3,float> > emp = ob5.get_empty_copy(); 
+      shared_ptr<DiscretisedDensity<3,float> > emp(ob5.get_empty_copy()); 
       
       VoxelsOnCartesianGrid<float>* emp1 =
         dynamic_cast<VoxelsOnCartesianGrid<float>* >(emp.get());
@@ -227,7 +227,7 @@ VoxelsOnCartesianGridTests::run_tests()
     }
     {
       cerr << "Tests has_same_characteristics()\n";
-      shared_ptr<DiscretisedDensity<3,float> > emp = ob5.get_empty_copy(); 
+      shared_ptr<DiscretisedDensity<3,float> > emp (ob5.get_empty_copy()); 
       check(ob5.has_same_characteristics(*emp), "test on has_same_characteristics after get_empty_copy");
       check(ob5 != *emp, "test on operator!= after get_empty_copy");
       *emp += ob5;

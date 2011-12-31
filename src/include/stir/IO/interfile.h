@@ -87,7 +87,7 @@ bool is_interfile_signature(const char * const signature);
 
   \warning it is up to the caller to deallocate the image
 
-  This should normally never be used. Use DiscretisedDensity::read_from_file() instead.
+  This should normally never be used. Use read_from_file<DiscretisedDensity<3,float> >() instead.
  */
 VoxelsOnCartesianGrid<float>* read_interfile_image(istream& input, 
 				      const string& directory_for_data = "");
@@ -100,7 +100,7 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(istream& input,
 
   \warning it is up to the caller to deallocate the image
 
-  This should normally never be used. Use DiscretisedDensity::read_from_file() instead.
+  This should normally never be used. Use read_from_file<DiscretisedDensity<3,float> >() instead.
 */
 VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename);
 

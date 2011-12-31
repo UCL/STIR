@@ -59,6 +59,7 @@ This utility programme processes (interfile) sinogram data
 #include "stir/IO/interfile.h"
 #include "stir/utilities.h"
 #include "stir/shared_ptr.h"
+#include "stir/is_null_ptr.h"
 
 #include <numeric>
 #include <fstream> 
@@ -303,7 +304,7 @@ int main(int argc, char *argv[])
 {
     bool quit=false,reload=false;
 
-    shared_ptr<ProjData> first_operand =  NULL;
+    shared_ptr<ProjData> first_operand;
     ProjDataFromStream *output_proj_data=  NULL;
         // Start
     do { //(re)start from here
@@ -359,7 +360,7 @@ int main(int argc, char *argv[])
 		output_proj_data = NULL;
 	      }
 #endif
- 	      first_operand=NULL;
+ 	      first_operand.reset();
 	      if(operation==_restart) reload=true;
 	      if(operation==_quit) quit=true;
 	      break;
@@ -377,18 +378,17 @@ int main(int argc, char *argv[])
 	      sprintf(output_buffer_filename, "%s.%s",output_buffer_root , "s");
 	      // TODO relies on write_basic_interfile_PDFS_header using .hs extension
 	      sprintf(output_buffer_header, "%s.%s",output_buffer_root , "hs");		
-	      fstream * new_sino_ptr = new fstream;
+	      shared_ptr<fstream> new_sino_ptr(new fstream);
 	      open_write_binary(*new_sino_ptr, output_buffer_filename);
-	      ProjDataInfo * pdi_ptr =
-		first_operand->get_proj_data_info_ptr()->clone();		                         
+	      shared_ptr<ProjDataInfo> pdi_ptr =
+		first_operand->get_proj_data_info_ptr()->create_shared_clone();
 	      pdi_ptr->reduce_segment_range(-limit_segments, limit_segments);
-	      output_proj_data = 
-		new ProjDataFromStream(pdi_ptr, new_sino_ptr);
+	      output_proj_data = new ProjDataFromStream(pdi_ptr, new_sino_ptr);
 	      write_basic_interfile_PDFS_header(output_buffer_filename, *output_proj_data);
 	      buffer_opened=true;
             }
 
-            shared_ptr<ProjData> second_operand= NULL;
+            shared_ptr<ProjData> second_operand;
             float *scalar=NULL;
 
             if(operation==_absdiff || operation==_add_sino || operation==_subtract_sino || 
@@ -452,7 +452,7 @@ int main(int argc, char *argv[])
 		      }
 		  }
 #endif
-                if(second_operand.use_count() != 0)  {
+                if(!is_null_ptr(second_operand))  {
                     SegmentByView<float> seg2=second_operand->get_segment_by_view(0);
                     do_math(operation,seg1,seg2,accum_max,accum_min,accum_sum,false);
                 }
@@ -493,7 +493,7 @@ int main(int argc, char *argv[])
                     SegmentBySinogram<float>  seg_sinogram_pos=first_operand->get_segment_by_sinogram(segment_num);
                     SegmentBySinogram<float>  seg_sinogram_neg=first_operand->get_segment_by_sinogram(-segment_num);
                       
-                    if(second_operand.use_count() != 0) {
+                    if(!is_null_ptr(second_operand)) {
                         SegmentByView<float> seg2_pos=second_operand->get_segment_by_view(segment_num);
                         SegmentByView<float> seg2_neg=second_operand->get_segment_by_view(-segment_num);
                         do_math(operation,seg1_pos,seg2_pos,accum_max,accum_min,accum_sum,true);

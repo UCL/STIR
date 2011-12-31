@@ -57,7 +57,7 @@ void
 BackProjectorByBinUsingProjMatrixByBin::
 set_defaults()
 {
-  proj_matrix_ptr = 0;
+  this->proj_matrix_ptr.reset();
   //BackProjectorByBin::set_defaults();
 }
 
@@ -98,7 +98,7 @@ BackProjectorByBinUsingProjMatrixByBin(
     )		   
     : proj_matrix_ptr(proj_matrix_ptr)
 {
-  assert(proj_matrix_ptr.use_count()!=0);	 
+  assert(!is_null_ptr(proj_matrix_ptr));	 
 }
 
 void

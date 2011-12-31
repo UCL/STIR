@@ -129,11 +129,14 @@ zoom_viewgrams (RelatedViewgrams<float>& in_viewgrams,
     set_tangential_sampling(new_proj_data_info_arccorr_ptr->
 			      get_tangential_sampling() / zoom);
 
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> 
+    symmetries_sptr(in_viewgrams.get_symmetries_ptr()->clone());
+
   RelatedViewgrams<float> 
     out_viewgrams = 
     new_proj_data_info_arccorr_ptr->
       get_empty_related_viewgrams(in_viewgrams.get_basic_view_segment_num(),
-				  in_viewgrams.get_symmetries_ptr()->clone());
+				  symmetries_sptr);
 
   {
     RelatedViewgrams<float>::iterator out_iter = out_viewgrams.begin();

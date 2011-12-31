@@ -51,8 +51,8 @@ BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
 				 const ProjData& proj_data)
 {
     
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    this->get_symmetries_used()->clone();  
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> 
+    symmetries_sptr(this->get_symmetries_used()->clone());  
   
   for (int segment_num = proj_data.get_min_segment_num(); 
        segment_num <= proj_data.get_max_segment_num(); 

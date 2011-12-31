@@ -40,6 +40,7 @@
 */
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include <algorithm>
@@ -87,11 +88,12 @@ int main(int argc, char * argv[])
 	return EXIT_FAILURE;
     }
 
-  const shared_ptr<ParametricVoxelsOnCartesianGrid> input_image_sptr = 
-    ParametricVoxelsOnCartesianGrid::read_from_file(input_filename);  
+  const shared_ptr<ParametricVoxelsOnCartesianGrid> 
+    input_image_sptr(ParametricVoxelsOnCartesianGrid::read_from_file(input_filename));  
   const ParametricVoxelsOnCartesianGrid & input_image = *input_image_sptr;  
 
-  shared_ptr<DiscretisedDensity<3,float> > output_image_sptr = (input_image_sptr->construct_single_density(1)).clone();
+  shared_ptr<DiscretisedDensity<3,float> > 
+    output_image_sptr((input_image_sptr->construct_single_density(1)).clone());
   DiscretisedDensity<3,float>& output_image = *output_image_sptr;
 
   const int min_k_index = output_image.get_min_index(); 

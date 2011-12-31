@@ -56,7 +56,7 @@ Reconstruction<TargetT>::set_defaults()
   this->output_filename_prefix="";
   this->output_file_format_ptr =
     OutputFileFormat<TargetT>::default_sptr();
-  this->post_filter_sptr = 0;
+  this->post_filter_sptr.reset();
 
 }
 

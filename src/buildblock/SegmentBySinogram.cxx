@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -75,7 +76,7 @@ SegmentBySinogram(const shared_ptr<ProjDataInfo>& pdi_ptr,
 template <typename elemT>
 SegmentBySinogram<elemT>::
 SegmentBySinogram(const SegmentByView<elemT>& s_v )
-  : Segment<elemT>(s_v.get_proj_data_info_ptr()->clone(),
+  : Segment<elemT>(s_v.get_proj_data_info_ptr()->create_shared_clone(),
                    s_v.get_segment_num()),	      
    Array<3,elemT> (IndexRange3D (s_v.get_min_axial_pos_num(), s_v.get_max_axial_pos_num(),
 		                 s_v.get_min_view_num(), s_v.get_max_view_num(),
@@ -108,7 +109,7 @@ SegmentBySinogram<elemT>::get_viewgram(int view_num) const
     pre_view[r] = Array<3,elemT>::operator[](r)[view_num];
   //KT 9/12 constructed a PETSinogram before...
   // CL&KT 15/12 added ring_difference stuff
-  return Viewgram<elemT>(pre_view, this->proj_data_info_ptr->clone(), view_num, 
+  return Viewgram<elemT>(pre_view, this->proj_data_info_ptr->create_shared_clone(), view_num, 
 			 this->get_segment_num());
 }
 
@@ -143,7 +144,7 @@ resize(const IndexRange<3>& range)
   // TODO
   assert(range[ax_min].get_min_index() == 0);
 
-  ProjDataInfo* pdi_ptr = this->proj_data_info_ptr->clone();
+  shared_ptr<ProjDataInfo> pdi_ptr = this->proj_data_info_ptr->create_shared_clone();
   
   pdi_ptr->set_min_axial_pos_num(ax_min, this->get_segment_num());
   pdi_ptr->set_max_axial_pos_num(ax_max, this->get_segment_num());

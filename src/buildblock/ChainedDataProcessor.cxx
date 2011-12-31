@@ -98,8 +98,8 @@ virtual_apply(DataT& out_data,
 
 template <typename DataT>
 ChainedDataProcessor<DataT>::
-ChainedDataProcessor(shared_ptr<DataProcessor<DataT> > const& apply_first_v,
-		      shared_ptr<DataProcessor<DataT> > const& apply_second_v)
+ChainedDataProcessor(shared_ptr<DataProcessor<DataT> > apply_first_v,
+		      shared_ptr<DataProcessor<DataT> > apply_second_v)
   : apply_first(apply_first_v),
     apply_second(apply_second_v)
 {

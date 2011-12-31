@@ -58,7 +58,7 @@ be surrounded by double quotes (&quot;) when used as a command line argument.
 #include "stir/utilities.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/stir_ecat7.h"
-
+#include "stir/IO/read_from_file.h"
 #include <iostream>
 #include <vector>
 #include <string>
@@ -217,15 +217,15 @@ int main(int argc, char *argv[])
   if (its_an_image)
   {
 
-    shared_ptr<Scanner> scanner_ptr = 
+    shared_ptr<Scanner> scanner_ptr(
       strlen(scanner_name)==0 ?
       Scanner::ask_parameters() :
-      Scanner::get_scanner_from_name(scanner_name);
+      Scanner::get_scanner_from_name(scanner_name));
 
     // read first image
     cerr << "Reading " << filenames[0] << endl;
-    shared_ptr<DiscretisedDensity<3,float> > density_ptr =
-      DiscretisedDensity<3,float>::read_from_file(filenames[0]);
+    shared_ptr<DiscretisedDensity<3,float> > density_ptr(
+							 read_from_file<DiscretisedDensity<3,float> >(filenames[0]));
   
     Main_header mhead;
     make_ECAT7_main_header(mhead, *scanner_ptr, filenames[0], *density_ptr);
@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
       }
       cerr << "Reading " << filenames[frame_num-1] << endl;
       density_ptr =
-        DiscretisedDensity<3,float>::read_from_file(filenames[frame_num-1]);
+        read_from_file<DiscretisedDensity<3,float> >(filenames[frame_num-1]);
     }
   }
   else 

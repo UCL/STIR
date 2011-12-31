@@ -102,32 +102,27 @@ set_defaults()
   this->max_segment_num_to_process=-1;
   // KT 20/06/2001 disabled
   //num_views_to_add=1;  
-  this->proj_data_sptr=NULL; //MJ added
+  this->proj_data_sptr.reset(); //MJ added
   this->zero_seg0_end_planes = 0;
 
   this->additive_projection_data_filename = "0";
-  this->additive_proj_data_sptr=0;
+  this->additive_proj_data_sptr.reset();
 
 
   // set default for projector_pair_ptr
 #ifndef USE_PMRT
-  shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
-    new ForwardProjectorByBinUsingRayTracing();
-  shared_ptr<BackProjectorByBin> back_projector_ptr =
-    new BackProjectorByBinUsingInterpolation();
+  shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingRayTracing());
+  shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingInterpolation());
 #else
-  shared_ptr<ProjMatrixByBin> PM = 
-    new  ProjMatrixByBinUsingRayTracing();
-  shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
-    new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
-  shared_ptr<BackProjectorByBin> back_projector_ptr =
-    new BackProjectorByBinUsingProjMatrixByBin(PM); 
+  shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
+  shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(PM)); 
+  shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(PM)); 
 #endif
 
-  this->projector_pair_ptr = 
-    new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr);
+  this->projector_pair_ptr.reset(
+				 new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
 
-  this->normalisation_sptr = new TrivialBinNormalisation;
+  this->normalisation_sptr.reset(new TrivialBinNormalisation);
   this->frame_num = 1;
   this->frame_definition_filename = "";
   // make a single frame starting from 0 to 1.
@@ -213,6 +208,8 @@ post_processing()
 #endif
  
   this->proj_data_sptr= ProjData::read_from_file(input_filename);
+  if (is_null_ptr(this->proj_data_sptr))
+    { warning("Failed to read input file %s", input_filename.c_str()); return true; }
 
  // image stuff
   if (this->zoom <= 0)
@@ -559,8 +556,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
       return Succeeded::no;
     }
 
-  shared_ptr<ProjDataInfo> proj_data_info_sptr =
-    this->proj_data_sptr->get_proj_data_info_ptr()->clone();
+  shared_ptr<ProjDataInfo> proj_data_info_sptr(this->proj_data_sptr->get_proj_data_info_ptr()->clone());
 
   proj_data_info_sptr->
     reduce_segment_range(-this->max_segment_num_to_process,
@@ -593,8 +589,8 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
                                    target_sptr);
                                    
   // TODO check compatibility between symmetries for forward and backprojector
-  this->symmetries_sptr =
-     this->projector_pair_ptr->get_back_projector_sptr()->get_symmetries_used()->clone();
+  this->symmetries_sptr.reset(
+			      this->projector_pair_ptr->get_back_projector_sptr()->get_symmetries_used()->clone());
 
   if (is_null_ptr(this->normalisation_sptr))
   {
@@ -804,8 +800,8 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
       }
   }     
 
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    this->get_projector_pair().get_symmetries_used()->clone();
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(
+    this->get_projector_pair().get_symmetries_used()->clone());
 
   const double start_time =
     this->get_time_frame_definitions().get_start_time(this->get_time_frame_num());
@@ -904,7 +900,7 @@ void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& for
                               zero_seg0_end_planes,
                               log_likelihood_ptr,
                               additive_binwise_correction,
-                              /* normalisation info to be ignored */ 0, 0., 0.,
+                              /* normalisation info to be ignored */ shared_ptr<BinNormalisation>(), 0., 0.,
                               &RPC_process_related_viewgrams_gradient,
                               caching_info_ptr
                               );

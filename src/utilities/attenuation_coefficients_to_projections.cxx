@@ -84,9 +84,9 @@ main (int argc, char * argv[])
 
   const string output_file_name = argv[1];
 
-  shared_ptr<ProjData> out_proj_data_ptr =
-    new ProjDataInterfile(attenuation_proj_data_ptr->get_proj_data_info_ptr()->clone(),
-			  output_file_name);
+  shared_ptr<ProjData> 
+    out_proj_data_ptr(new ProjDataInterfile(attenuation_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
+					    output_file_name));
 
   for (int segment_num = attenuation_proj_data_ptr->get_min_segment_num(); 
        segment_num<= attenuation_proj_data_ptr->get_max_segment_num();

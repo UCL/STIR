@@ -80,8 +80,8 @@ read_from_file(const string& filename) // The written image is read in respect t
 	  return 0;
 	}
       gated_proj_data_ptr = new GatedProjData;
-      gated_proj_data_ptr->_scanner_sptr =
-	find_scanner_from_ECAT_system_type(mhead.system_type);
+      gated_proj_data_ptr->_scanner_sptr.reset(
+					       find_scanner_from_ECAT_system_type(mhead.system_type));
 
       const unsigned int num_gates =
 	static_cast<unsigned int>(mhead.num_gates); // TODO +1?
@@ -89,11 +89,11 @@ read_from_file(const string& filename) // The written image is read in respect t
 
       for (unsigned int gate_num=1; gate_num <= num_gates; ++ gate_num)
 	{
-	  gated_proj_data_ptr->_proj_datas[gate_num-1] =
+	  gated_proj_data_ptr->_proj_datas[gate_num-1].reset(
 	    ECAT7_to_PDFS(filename,
 			  1,
 			  gate_num, 
-			  /*  data_num, bed_num, */ 0,0);
+			  /*  data_num, bed_num, */ 0,0));
 	}
       if (is_null_ptr(gated_proj_data_ptr->_proj_datas[0]))
 	      error("GatedProjData: No gate available\n");
@@ -135,8 +135,8 @@ read_from_file(const string& filename) // The written image is read in respect t
 	   gated_proj_data_ptr->_proj_datas[gate_num-1] =
 	     ProjData::read_from_file(filenames[gate_num-1]);
 	 }
-      gated_proj_data_ptr->_scanner_sptr =
-	new Scanner(*gated_proj_data_ptr->_proj_datas[0]->get_proj_data_info_ptr()->get_scanner_ptr());
+       gated_proj_data_ptr->_scanner_sptr.reset(
+						new Scanner(*gated_proj_data_ptr->_proj_datas[0]->get_proj_data_info_ptr()->get_scanner_ptr()));
       return gated_proj_data_ptr;
      }    
   

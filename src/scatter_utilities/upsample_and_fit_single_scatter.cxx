@@ -162,7 +162,7 @@ int main(int argc, const char *argv[])
     ProjData::read_from_file(data_to_scale_filename);   
         
   shared_ptr<ProjDataInfo> data_to_fit_proj_data_info_sptr =
-    data_to_fit_proj_data_sptr->get_proj_data_info_ptr()->clone();
+    data_to_fit_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();
   
   ProjDataInterfile output_proj_data(data_to_fit_proj_data_info_sptr, output_filename);
         

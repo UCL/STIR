@@ -57,8 +57,8 @@ ProjectorByBinPairUsingSeparateProjectors::
 set_defaults()
 {
   base_type::set_defaults();
-  forward_projector_sptr = 0;
-  back_projector_sptr = 0;
+  forward_projector_sptr.reset();
+  back_projector_sptr.reset();
 }
 
 bool

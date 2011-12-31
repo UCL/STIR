@@ -33,6 +33,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/zoom.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 //#include "stir/utilities.h"
 #include "stir/Succeeded.h"
 
@@ -61,10 +62,10 @@ int main(int argc, char **argv)
       char const * const output_filename = argv[3];
       char const * const input_filename = argv[4];
 
-      shared_ptr<DiscretisedDensity<3,float> >  density_sptr = 
-	DiscretisedDensity<3,float>::read_from_file(input_filename);
-      shared_ptr<DiscretisedDensity<3,float> >  output_density_sptr = 
-	DiscretisedDensity<3,float>::read_from_file(template_filename);
+      shared_ptr<DiscretisedDensity<3,float> >  
+	density_sptr(read_from_file<DiscretisedDensity<3,float> >(input_filename));
+      shared_ptr<DiscretisedDensity<3,float> >  
+	output_density_sptr(read_from_file<DiscretisedDensity<3,float> >(template_filename));
       output_density_sptr->fill(0);
 
       // zoom
@@ -113,8 +114,8 @@ int main(int argc, char **argv)
   
   // read image 
 
-  shared_ptr<DiscretisedDensity<3,float> >  density_ptr = 
-    DiscretisedDensity<3,float>::read_from_file(input_filename);
+  shared_ptr<DiscretisedDensity<3,float> >  
+    density_ptr(read_from_file<DiscretisedDensity<3,float> >(input_filename));
 
   const VoxelsOnCartesianGrid<float> * image_ptr =
     dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_ptr.get());

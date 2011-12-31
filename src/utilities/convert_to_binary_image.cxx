@@ -32,7 +32,7 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"
-
+#include "stir/IO/read_from_file.h"
 
 USING_NAMESPACE_STIR
 
@@ -50,8 +50,8 @@ int main(int argc, char **argv)
   const float threshold = atof(argv[3]);
   // read image 
 
-  shared_ptr<DiscretisedDensity<3,float> >  density_ptr = 
-    DiscretisedDensity<3,float>::read_from_file(input_filename);
+  shared_ptr<DiscretisedDensity<3,float> >  
+    density_ptr(read_from_file<DiscretisedDensity<3,float> >(input_filename));
 
   // binarise
   for (DiscretisedDensity<3,float>::full_iterator iter = density_ptr->begin_all();

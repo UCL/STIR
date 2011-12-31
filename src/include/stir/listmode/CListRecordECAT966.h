@@ -121,7 +121,7 @@ class CListEventECAT966 : public CListEventCylindricalScannerWithViewTangRingRin
 
  public:  
   CListEventECAT966() :
-    CListEventCylindricalScannerWithViewTangRingRingEncoding<CListEventECAT966>(new Scanner(Scanner::E966))
+  CListEventCylindricalScannerWithViewTangRingRingEncoding<CListEventECAT966>(shared_ptr<Scanner>(new Scanner(Scanner::E966)))
     {}
 
   Succeeded init_from_data_ptr(const void * const ptr)

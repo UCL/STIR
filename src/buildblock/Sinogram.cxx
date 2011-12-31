@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -128,7 +129,7 @@ resize(const IndexRange<2>& range)
 
   assert(range.get_min_index() == 0);
   
-  ProjDataInfo* pdi_ptr = proj_data_info_ptr->clone();
+  shared_ptr<ProjDataInfo> pdi_ptr (proj_data_info_ptr->clone());
   
   pdi_ptr->set_num_views(range.get_max_index() + 1);
   pdi_ptr->set_min_tangential_pos_num(range[0].get_min_index());

@@ -76,7 +76,7 @@ InputStreamWithRecords(const string& filename,
   assert(size_of_record_signature<=max_size_of_record);
   fstream* s_ptr = new fstream;
   open_read_binary(*s_ptr, filename.c_str());
-  stream_ptr = s_ptr;
+  stream_ptr.reset(s_ptr);
   if (reset() == Succeeded::no)
     error("InputStreamWithRecords: error in reset() for filename %s\n",
 	  filename.c_str());

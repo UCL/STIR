@@ -38,6 +38,7 @@
 #include "stir/display.h"
 #include "stir/utilities.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/Succeeded.h"
 #include "stir/recon_array_functions.h"
 #include "stir/ArrayFunction.h"
@@ -362,8 +363,8 @@ VoxelsOnCartesianGrid<float> ask_interfile_image(const char *const input_query)
 
     ask_filename_with_extension(filename, input_query, ".hv");
 
-    shared_ptr<DiscretisedDensity<3,float> > image_ptr =
-      DiscretisedDensity<3,float>::read_from_file(filename);
+    shared_ptr<DiscretisedDensity<3,float> > 
+      image_ptr(read_from_file<DiscretisedDensity<3,float> >(filename));
     return 
       * dynamic_cast<VoxelsOnCartesianGrid<float>*>(image_ptr.get());
 

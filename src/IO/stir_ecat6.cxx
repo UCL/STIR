@@ -375,7 +375,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
 		   int max_ring_diff, bool arccorrected,
                    const string& data_name, FILE *cti_fptr, const ECAT6_Main_header &mhead)
 {
-  shared_ptr<Scanner> scanner_ptr = find_scanner_from_ECAT6_Main_header(mhead);
+  shared_ptr<Scanner> scanner_ptr(find_scanner_from_ECAT6_Main_header(mhead));
   cout << "Scanner determined from ECAT6_Main_header: " << scanner_ptr->get_name() << endl;
   if (scanner_ptr->get_type() == Scanner::Unknown_scanner ||
       scanner_ptr->get_type() == Scanner::User_defined_scanner)
@@ -384,7 +384,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
       "(Main_header.system_type=%d), defaulting to 953.\n"
       "This will give dramatic problems when the number of rings of your scanner is NOT 16.\n",
 	    mhead.system_type); 
-    scanner_ptr = new Scanner(Scanner::E953);
+    scanner_ptr.reset(new Scanner(Scanner::E953));
   }
 
   
@@ -434,7 +434,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
   }
 	
   // construct a ProjDataFromStream object
-  shared_ptr<ProjDataFromStream>  proj_data =  NULL;
+  shared_ptr<ProjDataFromStream>  proj_data;
   ScanInfoRec scanParams;
 
   { 
@@ -478,8 +478,8 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
     const int num_tangential_poss = scanParams.nprojs; 
     
     
-    shared_ptr<ProjDataInfo> p_data_info= 
-      ProjDataInfo::ProjDataInfoCTI(scanner_ptr,span,max_ring_diff,num_views,num_tangential_poss,arccorrected); 
+    shared_ptr<ProjDataInfo> p_data_info(
+      ProjDataInfo::ProjDataInfoCTI(scanner_ptr,span,max_ring_diff,num_views,num_tangential_poss,arccorrected)); 
     
     
     ProjDataFromStream::StorageOrder  storage_order=
@@ -507,8 +507,8 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
         add_extension(actual_data_name.get(), ".s");
     }
 #endif
-    shared_ptr<iostream> sino_stream =
-      new fstream (actual_data_name.c_str(), ios::out| ios::binary);
+    shared_ptr<iostream> sino_stream(
+      new fstream (actual_data_name.c_str(), ios::out| ios::binary));
     
     if (!sino_stream->good())
     {
@@ -516,8 +516,8 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
     }
     
     
-    proj_data = 
-      new ProjDataFromStream(p_data_info,sino_stream, streamoff(0), storage_order);
+    proj_data.reset(
+      new ProjDataFromStream(p_data_info,sino_stream, streamoff(0), storage_order));
     
     write_basic_interfile_PDFS_header(actual_data_name, *proj_data);
   }
@@ -735,7 +735,7 @@ DiscretisedDensity_to_ECAT6(FILE *fptr,
   ihead.x_offset= image.get_origin().x()/10;
   ihead.y_offset= image.get_origin().y()/10;
   ihead.z_offset= image.get_origin().z()/10;
-  shared_ptr<Scanner> scanner_ptr = find_scanner_from_ECAT6_Main_header(mhead);
+  shared_ptr<Scanner> scanner_ptr(find_scanner_from_ECAT6_Main_header(mhead));
 
   const float depth_of_interaction_factor =
     1 + 

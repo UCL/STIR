@@ -40,6 +40,7 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Coordinate3D.h"
+#include "stir/IO/read_from_file.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::endl;
@@ -65,11 +66,11 @@ main(int argc, char **argv)
   if (argc>2)
     { 
       shared_ptr<ProjData> proj_data_sptr = ProjData::read_from_file(argv[2]);
-      proj_data_info_sptr=proj_data_sptr->get_proj_data_info_ptr()->clone();
+      proj_data_info_sptr=proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();
     }
   else
     {
-      proj_data_info_sptr = ProjDataInfo::ask_parameters();
+      proj_data_info_sptr.reset(ProjDataInfo::ask_parameters());
     }
   shared_ptr<ProjMatrixByBin> proj_matrix_sptr;
 
@@ -86,7 +87,7 @@ main(int argc, char **argv)
 
   if (argc>4)
     {
-      image_sptr = DiscretisedDensity<3,float>::read_from_file(argv[4]);
+      image_sptr = read_from_file<DiscretisedDensity<3,float> >(argv[4]);
     }
   else
     {
@@ -108,13 +109,12 @@ main(int argc, char **argv)
 	*vox_image_ptr->get_voxel_size().z();
       vox_image_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));
 
-      image_sptr = vox_image_ptr;
+      image_sptr.reset(vox_image_ptr);
     }
 
   while (is_null_ptr(proj_matrix_sptr))
     {
-      proj_matrix_sptr =
-	ProjMatrixByBin::ask_type_and_parameters();
+      proj_matrix_sptr.reset(ProjMatrixByBin::ask_type_and_parameters());
     }
 
   proj_matrix_sptr->set_up(proj_data_info_sptr,

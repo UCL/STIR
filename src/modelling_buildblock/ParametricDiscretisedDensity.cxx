@@ -33,6 +33,7 @@
 #include "stir/modelling/KineticParameters.h"
 #include "boost/lambda/lambda.hpp"
 #include "stir/DynamicDiscretisedDensity.h"
+#include "stir/IO/read_from_file.h"
 #include <iostream>
 
 START_NAMESPACE_STIR
@@ -155,8 +156,8 @@ ParamDiscDensity::
 read_from_file(const std::string& filename)
 {
   // TODO this will only work for elemT==float
-  shared_ptr<DynamicDiscretisedDensity > multi_sptr =
-    DynamicDiscretisedDensity::read_from_file(filename);
+  shared_ptr<DynamicDiscretisedDensity > multi_sptr(
+						    stir::read_from_file<DynamicDiscretisedDensity>(filename));
 
   using namespace boost::lambda;
   

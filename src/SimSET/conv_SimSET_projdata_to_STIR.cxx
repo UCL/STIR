@@ -91,7 +91,7 @@ int main(int argc,char **argv)
   if( (file=fopen(simset_filename,"rb")) ==NULL){
     error("Cannot open the simset file %s", simset_filename);
   }
-  shared_ptr<Scanner> scanner_sptr = Scanner::get_scanner_from_name(scanner_name);
+  shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(scanner_name));
   if (is_null_ptr(scanner_sptr))
     error("Scanner '%s' is not a valid name", scanner_name);
 
@@ -108,13 +108,13 @@ int main(int argc,char **argv)
   scanner_sptr->set_num_rings(num_rings);
   scanner_sptr->set_ring_spacing(scanner_length/num_rings);
   scanner_sptr->set_num_detectors_per_ring(num_views*2);
-  shared_ptr<ProjDataInfo> proj_data_info_sptr =
+  shared_ptr<ProjDataInfo> proj_data_info_sptr(
     ProjDataInfo::ProjDataInfoCTI( scanner_sptr,
 				   /*span=*/1, 
 				   /*max_delta=*/max_ring_difference,
 				   num_views,
 				   num_tangential_poss,
-				   /*arc_corrected =*/ true);
+				   /*arc_corrected =*/ true));
   dynamic_cast<ProjDataInfoCylindricalArcCorr&>(*proj_data_info_sptr).
     set_tangential_sampling(2*FOV_radius/num_tangential_poss);
 

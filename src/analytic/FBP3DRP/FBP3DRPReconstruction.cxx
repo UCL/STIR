@@ -103,6 +103,7 @@
 #include "stir/utilities.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
+#include "stir/IO/read_from_file.h"
 //#include "stir/mash_views.h"
 
 #include <algorithm>
@@ -211,12 +212,12 @@ set_defaults()
   display_level=0;
   save_intermediate_files=0;
 
-  forward_projector_sptr =
-    new ForwardProjectorByBinUsingRayTracing;
-  back_projector_sptr =
-    new BackProjectorByBinUsingInterpolation(
-					     /*use_piecewise_linear_interpolation = */false, 
-					     /*use_exact_Jacobian = */ false);
+  forward_projector_sptr.
+    reset(new ForwardProjectorByBinUsingRayTracing);
+  back_projector_sptr.
+    reset(new BackProjectorByBinUsingInterpolation(
+						   /*use_piecewise_linear_interpolation = */false, 
+						   /*use_exact_Jacobian = */ false));
 }
 
 void 
@@ -316,13 +317,13 @@ FBP3DRPReconstruction::ask_parameters()
       back_projector_sptr =
 	BackProjectorByBin::ask_type_and_parameters();
     }
-  while (back_projector_sptr.use_count()==0);
+  while (is_null_ptr(back_projector_sptr));
   do 
     {
       forward_projector_sptr =
 	ForwardProjectorByBin::ask_type_and_parameters();
     }
-  while (forward_projector_sptr.use_count()==0);
+  while (is_null_ptr(forward_projector_sptr));
 #endif
 }
 
@@ -499,22 +500,22 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_
 	(proj_data_ptr->get_proj_data_info_ptr()) != 0)
       {
 	// it's already arc-corrected
-	arc_correction_sptr = 0; // just rest to make sure in case we run the reconstruction twice
+	arc_correction_sptr.reset(); // just rest to make sure in case we run the reconstruction twice
 	proj_data_info_with_missing_data_sptr =
-	  proj_data_ptr->get_proj_data_info_ptr()->clone();
+	  proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone();
       }
     else
       {
-	arc_correction_sptr = new ArcCorrection;
+	arc_correction_sptr.reset(new ArcCorrection);
 	// TODO arc-correct to voxel_size
-	if (arc_correction_sptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone()) ==
+	if (arc_correction_sptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone()) ==
 	    Succeeded::no)
 	  return Succeeded::no;
       
 	full_log << "FBP3DRP will arc-correct data first\n";
 	// warning: need to use clone() as we're modifying it later on
 	proj_data_info_with_missing_data_sptr =
-	  arc_correction_sptr->get_arc_corrected_proj_data_info_sptr()->clone();
+	  arc_correction_sptr->get_arc_corrected_proj_data_info_sptr()->create_shared_clone();
       }
   }
 
@@ -588,8 +589,8 @@ void FBP3DRPReconstruction::do_2D_reconstruction()
   
   
   // image_estimate should have 'default' dimensions, origin and voxel_size
-  image_estimate_density_ptr =
-    new VoxelsOnCartesianGrid<float>(*proj_data_ptr->get_proj_data_info_ptr());      
+  image_estimate_density_ptr.
+    reset(new VoxelsOnCartesianGrid<float>(*proj_data_ptr->get_proj_data_info_ptr()));
   
   {        
     FBP2DReconstruction recon2d(proj_data_ptr, 
@@ -634,7 +635,7 @@ void FBP3DRPReconstruction::do_read_image2D()
         full_log <<"  - Reading  estimated image : "<< image_for_reprojection_filename << endl;
         
         image_estimate_density_ptr =
-          DiscretisedDensity<3,float>::read_from_file(image_for_reprojection_filename.c_str() );
+          read_from_file<DiscretisedDensity<3,float> >(image_for_reprojection_filename.c_str() );
 
 	// TODO do scale checks            
           
@@ -652,8 +653,8 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
   do_byview_initialise(image);
 
   // TODO check if forward projector and back projector have compatible symmetries
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    back_projector_sptr->get_symmetries_used()->clone();
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(
+								  back_projector_sptr->get_symmetries_used()->clone());
 
   for (int seg_num= -max_segment_num_to_process; seg_num <= max_segment_num_to_process; seg_num++) 
   {

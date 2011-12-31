@@ -34,6 +34,8 @@
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/IndexRange3D.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
+#include "stir/is_null_ptr.h"
 
 /* Pretty horrible code because we don't have an iterator of neigbhourhoods yet
  */
@@ -60,7 +62,7 @@ QuadraticPrior<elemT>::post_processing()
   if (base_type::post_processing()==true)
     return true;
   if (kappa_filename.size() != 0)
-    this->kappa_ptr = DiscretisedDensity<3,elemT>::read_from_file(kappa_filename);
+    this->kappa_ptr = read_from_file<DiscretisedDensity<3,elemT> >(kappa_filename);
 
   bool warn_about_even_size = false;
 
@@ -113,7 +115,7 @@ QuadraticPrior<elemT>::set_defaults()
 {
   base_type::set_defaults();
   this->only_2D = false;
-  this->kappa_ptr = 0;  
+  this->kappa_ptr.reset();  
   this->weights.recycle();
 }
 
@@ -222,7 +224,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
     compute_weights(this->weights, current_image_cast.get_grid_spacing(), this->only_2D);
   }
     
-  const bool do_kappa = kappa_ptr.use_count() != 0;
+  const bool do_kappa = !is_null_ptr(kappa_ptr);
   
   if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
     error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
@@ -302,8 +304,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
  
  
   
-  const bool do_kappa = kappa_ptr.use_count() != 0;
-  
+  const bool do_kappa = !is_null_ptr(kappa_ptr);
   if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
     error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
 
@@ -445,7 +446,7 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
   }
  
    
-  const bool do_kappa = kappa_ptr.use_count() != 0;
+  const bool do_kappa = !is_null_ptr(kappa_ptr);
   
   if (do_kappa && kappa_ptr->has_same_characteristics(current_image_estimate))
     error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
@@ -504,7 +505,7 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>
     compute_weights(weights, current_image_cast.get_grid_spacing(), this->only_2D);
   }  
    
-  const bool do_kappa = kappa_ptr.use_count() != 0;
+  const bool do_kappa = !is_null_ptr(kappa_ptr);
   
   if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
     error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");
@@ -586,7 +587,7 @@ add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
     compute_weights(weights, output_cast.get_grid_spacing(), this->only_2D);
   }  
    
-  const bool do_kappa = kappa_ptr.use_count() != 0;
+  const bool do_kappa = !is_null_ptr(kappa_ptr);
   
   if (do_kappa && !kappa_ptr->has_same_characteristics(input))
     error("QuadraticPrior: kappa image has not the same index range as the reconstructed image\n");

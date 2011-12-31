@@ -29,6 +29,7 @@
 */
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/ProjData.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/shared_ptr.h"
@@ -44,17 +45,17 @@ int main()
   const std::string input_filename =
     ask_filename_with_extension("Input file",".hs");
 
-  shared_ptr<ProjData> proj_data_sptr =
-    ProjData::read_from_file(input_filename);
-  shared_ptr<ProjDataInfo> proj_data_info_sptr =
-    proj_data_sptr->get_proj_data_info_ptr()->clone();
+  shared_ptr<ProjData> 
+    proj_data_sptr(ProjData::read_from_file(input_filename));
+  shared_ptr<ProjDataInfo> 
+    proj_data_info_sptr(proj_data_sptr->get_proj_data_info_ptr()->clone());
 
   /////////////// template image (for sizes etc)
   const std::string template_filename =
     ask_filename_with_extension("Template image file",".hv");
 
-  shared_ptr<DiscretisedDensity<3,float> > density_sptr =
-    DiscretisedDensity<3,float>::read_from_file(template_filename);
+  shared_ptr<DiscretisedDensity<3,float> > 
+    density_sptr(read_from_file<DiscretisedDensity<3,float> >(template_filename));
 
   density_sptr->fill(0);
 

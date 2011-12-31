@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2005 - 2009-10-27, Hammersmith Imanet Ltd
+  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -64,8 +65,8 @@ namespace detail_interpolate_projdata
     if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(&proj_data_info) == NULL)
       error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
 
-    shared_ptr<ProjDataInfo> new_proj_data_info_sptr = 
-      proj_data_info.clone();
+    shared_ptr<ProjDataInfo> new_proj_data_info_sptr(
+						     proj_data_info.clone());
     new_proj_data_info_sptr->
       set_num_views(proj_data_info.get_num_views()*2);
     return new_proj_data_info_sptr;

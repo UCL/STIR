@@ -42,6 +42,7 @@
 
 #include "stir/RunTests.h"
 #include "stir/IO/InterfileOutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/SegmentByView.h"
 #include "stir/thresholding.h"
@@ -136,7 +137,7 @@ stir_mathTests::run_tests()
     // add
     if (run_stir_math("STIRtmpout.v STIRtmp1.hv STIRtmp2.hv STIRtmp3.hv"))
     {
-      out_data_ptr = DiscretisedDensity<3,float>::read_from_file("STIRtmpout.hv");
+      out_data_ptr = read_from_file<DiscretisedDensity<3,float> >("STIRtmpout.hv");
       calc_data = data1;
       calc_data += data2 + data3;
       
@@ -145,7 +146,7 @@ stir_mathTests::run_tests()
     // mult
     if (run_stir_math("--mult STIRtmpout.v STIRtmp1.hv STIRtmp2.hv STIRtmp3.hv"))
     {
-      out_data_ptr = DiscretisedDensity<3,float>::read_from_file("STIRtmpout.hv");
+      out_data_ptr = read_from_file<DiscretisedDensity<3,float> >("STIRtmpout.hv");
       calc_data = data1;
       calc_data *= data2 * data3;
       
@@ -162,7 +163,7 @@ stir_mathTests::run_tests()
 	      min_threshold, max_threshold);
       if (run_stir_math(cmd_args))
 	{
-	  out_data_ptr = DiscretisedDensity<3,float>::read_from_file("STIRtmpout.hv");
+	  out_data_ptr = read_from_file<DiscretisedDensity<3,float> >("STIRtmpout.hv");
 	  calc_data.fill(0);
 	  VoxelsOnCartesianGrid<float>  data2_thresholded(data2);
 	  VoxelsOnCartesianGrid<float>  data3_thresholded(data3);
@@ -178,7 +179,7 @@ stir_mathTests::run_tests()
     // add with power etc and including-first
     if (run_stir_math("--power 2 --times-scalar 3.2 --including-first STIRtmpout.v STIRtmp1.hv STIRtmp2.hv STIRtmp3.hv"))
     {
-      out_data_ptr = DiscretisedDensity<3,float>::read_from_file("STIRtmpout.hv");
+      out_data_ptr = read_from_file<DiscretisedDensity<3,float> >("STIRtmpout.hv");
       calc_data.fill(0);
       calc_data += (data1*data1 + data2*data2 + data3*data3)*3.2F;      
       check_if_equal( calc_data, *out_data_ptr,"test with power and scalar multiplication with --including-first");    
@@ -189,7 +190,7 @@ stir_mathTests::run_tests()
       calc_data.fill(0);
       calc_data += data1;
       calc_data += (data3*data3)*3.2F/2.1F + 3.1F;      
-      out_data_ptr = DiscretisedDensity<3,float>::read_from_file("STIRtmp1.hv");
+      out_data_ptr = read_from_file<DiscretisedDensity<3,float> >("STIRtmp1.hv");
       check_if_equal( calc_data, *out_data_ptr,"test with power and scalar multiplication, division and addition with --accumulate");    
     }
     // add with power etc and accumulate and including-first
@@ -199,7 +200,7 @@ stir_mathTests::run_tests()
       calc_data += data2;
       calc_data *= calc_data * 3.2F;
       calc_data += (data3*data3)*3.2F;      
-      out_data_ptr = DiscretisedDensity<3,float>::read_from_file("STIRtmp2.hv");
+      out_data_ptr = read_from_file<DiscretisedDensity<3,float> >("STIRtmp2.hv");
       check_if_equal( calc_data, *out_data_ptr,"test with power and scalar multiplication with --including-first and --accumulate");    
     }  
 
@@ -222,13 +223,13 @@ stir_mathTests::run_tests()
     // to  keep testing code below as close as possible to the image case, we'll just 
     // take a single segment in the data.
 
-    shared_ptr<Scanner> scanner_ptr = new Scanner(Scanner::E953);
-    shared_ptr<ProjDataInfo> proj_data_info_ptr = 
+    shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
+    shared_ptr<ProjDataInfo> proj_data_info_ptr(
       ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
 			            /*span=*/1, 
                                     /*max_delta=*/0,
                                     /*num_views=*/8,
-                                    /*num_tang_poss=*/16);
+                                    /*num_tang_poss=*/16));
     SegmentByView<float> data1 = proj_data_info_ptr->get_empty_segment_by_view(0);
     SegmentByView<float> data2 = proj_data_info_ptr->get_empty_segment_by_view(0);
     SegmentByView<float> data3 = proj_data_info_ptr->get_empty_segment_by_view(0);

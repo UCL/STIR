@@ -78,7 +78,7 @@ void ParametricDiscretisedDensityTests::run_tests()
 
   //! Setup the scanner details first
   const Scanner::Type test_scanner=Scanner::E966;
-  const shared_ptr<Scanner> scanner_sptr = new Scanner(test_scanner);
+  const shared_ptr<Scanner> scanner_sptr(new Scanner(test_scanner));
   VectorWithOffset<int> num_axial_pos_per_segment;  num_axial_pos_per_segment.resize(0,0);  num_axial_pos_per_segment[0]=48;
   VectorWithOffset<int> min_ring_diff;  min_ring_diff.resize(0,0);  min_ring_diff[0]=0;
   VectorWithOffset<int> max_ring_diff; max_ring_diff.resize(0,0);  max_ring_diff[0]=0;
@@ -92,10 +92,11 @@ void ParametricDiscretisedDensityTests::run_tests()
     cerr << "Testing ParametricDiscretisedDensity class for one voxel..." << endl;
     const CartesianCoordinate3D<int> sizes (1,1,1);
     
-    const shared_ptr<ParametricVoxelsOnCartesianGrid> parametric_image_sptr = new 
-      ParametricVoxelsOnCartesianGrid(
-				      ParametricVoxelsOnCartesianGridBaseType(proj_data_info,
-									      zoom,grid_spacing,sizes));
+    const shared_ptr<ParametricVoxelsOnCartesianGrid> parametric_image_sptr
+      (
+       new ParametricVoxelsOnCartesianGrid(
+					   ParametricVoxelsOnCartesianGridBaseType(proj_data_info,
+										   zoom,grid_spacing,sizes)));
     ParametricVoxelsOnCartesianGrid & parametric_image = *parametric_image_sptr;
     parametric_image[0][0][0][1]=1.F;  parametric_image[0][0][0][2]=2.F;
 
@@ -165,7 +166,7 @@ void ParametricDiscretisedDensityTests::run_tests()
     std::fill(single_density_1.begin_all(), single_density_1.end_all(), 1.F);
     std::fill(single_density_2.begin_all(), single_density_2.end_all(), 2.F);
     VectorWithOffset<shared_ptr<ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType> > v_test;
-    v_test.resize(1,2); v_test[1]=single_density_1.clone(); v_test[2]=single_density_2.clone();
+    v_test.resize(1,2); v_test[1].reset(single_density_1.clone()); v_test[2].reset(single_density_2.clone());
 #if 0
     // test disabled as function currently removed from class
     cerr << "- Checking constructor from(VectorWithOffset single_densities) implementation." << endl;

@@ -59,12 +59,10 @@ int main(int argc, char *argv[])
   }
 
 
-  shared_ptr<ProjDataInfo> proj_data_info_ptr = 
-    ProjDataInfo::ask_parameters();
+  shared_ptr<ProjDataInfo> proj_data_info_ptr(ProjDataInfo::ask_parameters());
   
   const string output_file_name = argv[1];
-  shared_ptr<ProjData> proj_data_ptr =
-    new ProjDataInterfile(proj_data_info_ptr, output_file_name);
+  shared_ptr<ProjData> proj_data_ptr(new ProjDataInterfile(proj_data_info_ptr, output_file_name));
 
   return EXIT_SUCCESS;
 }

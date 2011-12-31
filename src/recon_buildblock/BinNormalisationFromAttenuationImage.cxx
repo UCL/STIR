@@ -35,6 +35,7 @@
 #include "stir/ArrayFunction.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
+#include "stir/IO/read_from_file.h"
 
 START_NAMESPACE_STIR
 
@@ -46,8 +47,8 @@ BinNormalisationFromAttenuationImage::registered_name =
 void 
 BinNormalisationFromAttenuationImage::set_defaults()
 {
-  attenuation_image_ptr = 0;
-  forward_projector_ptr = 0;
+  attenuation_image_ptr.reset();
+  forward_projector_ptr.reset();
   attenuation_image_filename = "";
 }
 
@@ -68,8 +69,7 @@ post_processing()
   // read attenuation_image
   // we do this only when it isn't initialised yet, as this function can be called from a constructor
   if (is_null_ptr(attenuation_image_ptr))
-    attenuation_image_ptr = 
-      DiscretisedDensity<3,float>::read_from_file(attenuation_image_filename);
+    attenuation_image_ptr = read_from_file<DiscretisedDensity<3,float> >(attenuation_image_filename);
   if (is_null_ptr(attenuation_image_ptr))
   {
     warning("BinNormalisationFromAttenuationImage could not read attenuation image %s\n",
@@ -77,8 +77,7 @@ post_processing()
     return true;
   }
   if (is_null_ptr(forward_projector_ptr))
-    forward_projector_ptr = 
-    new ForwardProjectorByBinUsingRayTracing();
+    forward_projector_ptr.reset(new ForwardProjectorByBinUsingRayTracing());
   
   warning("\nWARNING: BinNormalisationFromAttenuationImage:\n"
     "\tattenuation image data are supposed to be in units cm^-1\n"
@@ -117,7 +116,7 @@ BinNormalisationFromAttenuationImage(const string& filename,
   : forward_projector_ptr(forward_projector_ptr),
     attenuation_image_filename(filename)
 {
-  attenuation_image_ptr = 0;
+  attenuation_image_ptr.reset();
   post_processing();
 }
 

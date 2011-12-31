@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -112,6 +113,9 @@ public:
 
   //! Standard trick for a 'virtual copy-constructor' 
   virtual ProjDataInfo* clone() const = 0;
+
+  //! Like clone() but return a shared_ptr
+  inline shared_ptr<ProjDataInfo> create_shared_clone() const;
 
   //! Destructor
   virtual ~ProjDataInfo() {}

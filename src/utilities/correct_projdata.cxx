@@ -238,11 +238,13 @@ run() const
 
 
   // TODO
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_ptr = 
-    is_null_ptr(forward_projector_ptr) ?
-      new TrivialDataSymmetriesForViewSegmentNumbers
-    :
-      forward_projector_ptr->get_symmetries_used()->clone();
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> 
+    symmetries_ptr(
+		   is_null_ptr(forward_projector_ptr) ?
+		   new TrivialDataSymmetriesForViewSegmentNumbers
+		   :
+		   forward_projector_ptr->get_symmetries_used()->clone()
+		   );
 
   for (int segment_num = output_projdata.get_min_segment_num(); segment_num <= output_projdata.get_max_segment_num() ; segment_num++)
   {
@@ -378,28 +380,25 @@ void
 CorrectProjDataApplication::
 set_defaults()
 {
-  input_projdata_ptr = 0;
+  input_projdata_ptr.reset();
   max_segment_num_to_process = -1;
-  normalisation_ptr = 0;
+  normalisation_ptr.reset();
   use_data_or_set_to_1= true;
   apply_or_undo_correction = true;
   scatter_projdata_filename = "";
   atten_image_filename = "";
   norm_filename = "";
-  normalisation_ptr = new TrivialBinNormalisation;
+  normalisation_ptr.reset(new TrivialBinNormalisation);
   randoms_projdata_filename = "";
-  attenuation_image_ptr = 0;
+  attenuation_image_ptr.reset();
   frame_num = 1;
   frame_definition_filename = "";
 
 #ifndef USE_PMRT
-  forward_projector_ptr =
-    new ForwardProjectorByBinUsingRayTracing;
+  forward_projector_ptr.reset(new ForwardProjectorByBinUsingRayTracing);
 #else
-  shared_ptr<ProjMatrixByBin> PM = 
-    new  ProjMatrixByBinUsingRayTracing;
-  forward_projector_ptr =
-    new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
+  shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing);
+  forward_projector_ptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM)); 
 #endif
 
   do_arc_correction= false;
@@ -525,7 +524,7 @@ set_up()
 	    output_filename_with_ext += ext;
 	  }
 #endif
-      output_projdata_ptr = new ProjDataInterfile(output_proj_data_info_sptr,output_filename_with_ext);
+	output_projdata_ptr.reset(new ProjDataInterfile(output_proj_data_info_sptr,output_filename_with_ext));
       }
 
   }
@@ -548,7 +547,7 @@ set_up()
       // get rid of this object for now
       // this is currently checked to find the symmetries: bad
       // TODO
-      forward_projector_ptr = 0;
+      forward_projector_ptr.reset();
     }
 
   // set up normalisation object

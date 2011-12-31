@@ -39,9 +39,9 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/shared_ptr.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
+#include "stir/shared_ptr.h"
 START_NAMESPACE_STIR
 
-//template <typename T> class shared_ptr;
 template <typename elemT> class Viewgram;
 template <typename elemT> class RelatedViewgrams;
 template <typename elemT> class VoxelsOnCartesianGrid;

@@ -32,6 +32,7 @@
 
 #include "stir/SeparableArrayFunctionObject.h"
 #include "stir/ArrayFunction.h"
+#include "stir/is_null_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -64,7 +65,7 @@ do_it(Array<num_dim,elemT>& array) const
 	      iter=all_1d_array_filters.begin();
 	    iter!=all_1d_array_filters.end();
 	    ++iter)
-	assert(iter->use_count()>0);
+	assert(!is_null_ptr(*iter));
 #endif
        in_place_apply_array_functions_on_each_index(array, 
 						    all_1d_array_filters.begin(), 
@@ -89,7 +90,7 @@ do_it(Array<num_dimensions,elemT>& out_array, const Array<num_dimensions,elemT>&
 	    iter=all_1d_array_filters.begin();
 	  iter!=all_1d_array_filters.end();
 	    ++iter)
-      assert(iter->use_count()>0);
+      assert(!is_null_ptr(*iter));
 #endif
     apply_array_functions_on_each_index(out_array, in_array,
 					all_1d_array_filters.begin(), 
@@ -111,7 +112,7 @@ is_trivial() const
         iter!=all_1d_array_filters.end();
 	++iter)
    {
-     if (iter->use_count()>0 && !(*iter)->is_trivial())
+     if (!is_null_ptr(*iter) && !(*iter)->is_trivial())
        return false;
    }
    return true;

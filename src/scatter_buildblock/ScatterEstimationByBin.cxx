@@ -37,6 +37,7 @@
 #include "stir/CPUTimer.h"
 #include "stir/Viewgram.h"
 #include "stir/is_null_ptr.h"
+#include "stir/IO/read_from_file.h"
 #include <fstream>
 
 
@@ -86,11 +87,11 @@ ScatterEstimationByBin::
 post_processing()
 {
   this->activity_image_sptr= 
-    DiscretisedDensity<3,float>::read_from_file(this->activity_image_filename);
+    read_from_file<DiscretisedDensity<3,float> >(this->activity_image_filename);
   this->density_image_sptr= 
-    DiscretisedDensity<3,float>::read_from_file(this->density_image_filename);
+    read_from_file<DiscretisedDensity<3,float> >(this->density_image_filename);
   this->density_image_for_scatter_points_sptr= 
-    DiscretisedDensity<3,float>::read_from_file(this->density_image_for_scatter_points_filename);
+    read_from_file<DiscretisedDensity<3,float> >(this->density_image_for_scatter_points_filename);
 
   if (is_null_ptr(this->activity_image_sptr))
     {
@@ -128,19 +129,17 @@ post_processing()
     }
 
 
-  shared_ptr<ProjDataInfo> proj_data_info_sptr = 
-    proj_data_info_ptr->clone();
+  shared_ptr<ProjDataInfo> proj_data_info_sptr(proj_data_info_ptr->clone());
 
-  output_proj_data_sptr = 
-    new ProjDataInterfile(proj_data_info_sptr,this->output_proj_data_filename);
+  output_proj_data_sptr.reset(new ProjDataInterfile(proj_data_info_sptr,this->output_proj_data_filename));
 
 
 
   // XXX should go to set_up
   {
-  this->proj_data_info_ptr = 
+  this->proj_data_info_ptr =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *> 
-    (this->output_proj_data_sptr->get_proj_data_info_ptr());
+    (this->output_proj_data_sptr->get_proj_data_info_ptr()->clone());
 
   this->sample_scatter_points();
 

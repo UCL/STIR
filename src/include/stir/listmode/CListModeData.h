@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003 - 2011-06-24, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -75,8 +76,8 @@ class Succeeded;
   all events, the code would be as follows:
 
   \code
-  shared_ptr<CListModeData> lm_data_sptr =
-    CListModeData::read_from_file(filename);
+  shared_ptr<CListModeData> 
+    lm_data_sptr(read_from_file<CListModeData>(filename));
 
   // get a pointer to a 'template' record that will work for the scanner 
   // from which we're reading data
@@ -130,9 +131,8 @@ class Succeeded;
 
   If you want to add a new type of list mode data, you have to make corresponding
   derived classes of CListModeData, CListRecord etc. You also have to modify
-  CListModeData::read_from_file to recognise your data.
-
-  \todo Use registry-based implementation of read_from_file.
+  make sure that read_from_file<CListModeData> recognises your data. This
+  normally involves creating a new InputFileFormat class.
 */
 class CListModeData
 {
@@ -143,6 +143,9 @@ public:
   //! Attempts to get a CListModeData object from a file
   /*! Note that the exact format of the \a filename is determined by
       the derived class.
+
+      Use stir::read_from_file<CListModeData> instead.
+      \deprecated
   */
   static CListModeData* read_from_file(const string& filename);
 

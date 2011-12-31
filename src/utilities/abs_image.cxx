@@ -37,6 +37,7 @@
 */
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/DynamicDiscretisedDensity.h"
@@ -94,9 +95,9 @@ int main(int argc, char * argv[])
 
   if(do_parametric)// A better way will be to template it...
     {
-      shared_ptr<ParametricVoxelsOnCartesianGrid> input_image_sptr = 
-	ParametricVoxelsOnCartesianGrid::read_from_file(input_filename);  
-      shared_ptr<ParametricVoxelsOnCartesianGrid> output_image_sptr = input_image_sptr->clone();		
+      shared_ptr<ParametricVoxelsOnCartesianGrid> 
+	input_image_sptr(ParametricVoxelsOnCartesianGrid::read_from_file(input_filename));  
+      shared_ptr<ParametricVoxelsOnCartesianGrid> output_image_sptr(input_image_sptr->clone());
       ParametricVoxelsOnCartesianGrid::full_iterator out_iter = output_image_sptr->begin_all();
       ParametricVoxelsOnCartesianGrid::const_full_iterator in_iter = input_image_sptr->begin_all_const();
       while( in_iter != input_image_sptr->end_all_const())
@@ -112,8 +113,8 @@ int main(int argc, char * argv[])
     }  
   else if(do_dynamic)// A better way will be to template it...
     {
-      const shared_ptr<DynamicDiscretisedDensity> input_image_sptr =
-	DynamicDiscretisedDensity::read_from_file(input_filename);  
+      const shared_ptr<DynamicDiscretisedDensity> 
+	input_image_sptr(read_from_file<DynamicDiscretisedDensity>(input_filename));  
       const DynamicDiscretisedDensity input_image = *input_image_sptr;
       DynamicDiscretisedDensity output_image = input_image;
       for(unsigned int frame_num=1;frame_num<=(input_image.get_time_frame_definitions()).get_num_frames();++frame_num)
@@ -133,10 +134,10 @@ int main(int argc, char * argv[])
     }
   else
     {
-      shared_ptr<DiscretisedDensity<3,float> > input_image_sptr = 
-	DiscretisedDensity<3,float>::read_from_file(input_filename);
+      shared_ptr<DiscretisedDensity<3,float> > 
+	input_image_sptr(read_from_file<DiscretisedDensity<3,float> >(input_filename));
 
-      shared_ptr<DiscretisedDensity<3,float> > output_image_sptr = input_image_sptr->clone();		
+      shared_ptr<DiscretisedDensity<3,float> > output_image_sptr(input_image_sptr->clone());
       DiscretisedDensity<3,float>::full_iterator out_iter = output_image_sptr->begin_all();
       DiscretisedDensity<3,float>::const_full_iterator in_iter = input_image_sptr->begin_all_const();
       while( in_iter != input_image_sptr->end_all_const())

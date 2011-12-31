@@ -37,11 +37,10 @@
    $Date$
    $Revision$
 */
-#include "stir/common.h"
+#include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 
-template <typename T> class shared_ptr;
 template <typename elemT> class RelatedViewgrams;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 class BinNormalisation;

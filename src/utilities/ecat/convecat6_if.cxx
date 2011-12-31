@@ -138,8 +138,8 @@ main(int argc, char *argv[])
   if (scanner_name_ptr != 0)
   {
     // force scanner
-    shared_ptr<Scanner> scanner_ptr = 
-      Scanner::get_scanner_from_name(scanner_name_ptr);
+    shared_ptr<Scanner> scanner_ptr(
+				    Scanner::get_scanner_from_name(scanner_name_ptr));
     mhead.system_type = find_ECAT_system_type(*scanner_ptr);
   }
 
@@ -196,9 +196,9 @@ main(int argc, char *argv[])
 		  sprintf(new_out_filename+strlen(new_out_filename), "_f%dg%db%dd%d", 
 			  frame_num, gate_num, bed_num, data_num);
 		cout << "Writing " << new_out_filename << endl;
-		shared_ptr<VoxelsOnCartesianGrid<float> > image_ptr =
+		shared_ptr<VoxelsOnCartesianGrid<float> > image_ptr(
 		  ECAT6_to_VoxelsOnCartesianGrid(frame_num, gate_num, data_num, bed_num,
-						 cti_fptr, mhead);
+						 cti_fptr, mhead));
 		InterfileOutputFileFormat output_file_format;
 		output_file_format.write_to_file(new_out_filename,*image_ptr);
 	      }

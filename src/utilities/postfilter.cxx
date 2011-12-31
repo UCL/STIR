@@ -65,6 +65,7 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/DataProcessor.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
 
@@ -102,7 +103,7 @@ public:
 
 PostFiltering::PostFiltering()
 {
-  filter_ptr = 0;
+  filter_ptr.reset();
   parser.add_start_key("PostFilteringParameters");
   parser.add_parsing_key("PostFilter type", &filter_ptr);
   parser.add_stop_key("END PostFiltering Parameters");
@@ -162,11 +163,11 @@ main(int argc, char *argv[])
   if (argc>2)
     {
       input_image_ptr = 
-	DiscretisedDensity<3,float>::read_from_file(argv[2]);
+	read_from_file<DiscretisedDensity<3,float> >(argv[2]);
     }
   else
     {
-      input_image_ptr= ask_image("Image to process?");
+      input_image_ptr.reset(ask_image("Image to process?"));
     }
   if (argc>3)
     {

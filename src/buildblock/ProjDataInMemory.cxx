@@ -13,7 +13,8 @@
   $Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002 - 2011-02-23, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -61,21 +62,21 @@ ProjDataInMemory::
 ProjDataInMemory::
 ProjDataInMemory(shared_ptr<ProjDataInfo> const& proj_data_info_ptr, const bool initialise_with_0)
   :
-  ProjDataFromStream(proj_data_info_ptr, 0) // trick: first initialise sino_stream_ptr to 0
+  ProjDataFromStream(proj_data_info_ptr, shared_ptr<iostream>()) // trick: first initialise sino_stream_ptr to 0
 {
   
 #ifdef STIR_USE_OLD_STRSTREAM
   const size_t buffer_size = get_size_of_buffer();
   //buffer = auto_ptr<char>(new char[buffer_size]);
   buffer.reset(new char[buffer_size]);
-  sino_stream = new strstream(buffer.get(), buffer_size, ios::in | ios::out | ios::binary);
+  sino_stream.reset(new strstream(buffer.get(), buffer_size, ios::in | ios::out | ios::binary));
 #else
   // it would be advantageous to preallocate memory as well
   // the only way to do this is by passing a string of the appropriate size
   // However, if basic_string doesn't do reference counting, we would have
   // temporarily 2 strings of a (potentially large) size in memory.
   // todo?
-  sino_stream = new std::stringstream(ios::in | ios::out | ios::binary);
+  sino_stream.reset(new std::stringstream(ios::in | ios::out | ios::binary));
 #endif
 
   if (!*sino_stream)
@@ -92,20 +93,20 @@ ProjDataInMemory(shared_ptr<ProjDataInfo> const& proj_data_info_ptr, const bool 
 
 ProjDataInMemory::
 ProjDataInMemory(const ProjData& proj_data)
-: ProjDataFromStream(proj_data.get_proj_data_info_ptr()->clone(), 0)
+  : ProjDataFromStream(proj_data.get_proj_data_info_ptr()->create_shared_clone(), shared_ptr<iostream>())
 {
 #ifdef STIR_USE_OLD_STRSTREAM
   const size_t buffer_size = get_size_of_buffer();
   //buffer = auto_ptr<char>(new char[buffer_size]);
   buffer.reset(new char[buffer_size]);
-  sino_stream = new strstream(buffer.get(), buffer_size, ios::in | ios::out | ios::binary);
+  sino_stream.reset(new strstream(buffer.get(), buffer_size, ios::in | ios::out | ios::binary));
 #else
   // it would be advantageous to preallocate memory as well
   // the only way to do this is by passing a string of the appropriate size
   // However, if basic_string doesn't do reference counting, we would have
   // temporarily 2 strings of a (potentially large) size in memory.
   // todo?
-  sino_stream = new std::stringstream(ios::in | ios::out | ios::binary);
+  sino_stream.reset(new std::stringstream(ios::in | ios::out | ios::binary));
 #endif
 
   if (!*sino_stream)

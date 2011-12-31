@@ -84,8 +84,8 @@ read_from_file(const string& filename) // The written projection data is read in
       dynamic_proj_data_ptr->_time_frame_definitions =
         TimeFrameDefinitions(filename);      
 
-      dynamic_proj_data_ptr->_scanner_sptr =
-        find_scanner_from_ECAT_system_type(mhead.system_type);
+      dynamic_proj_data_ptr->_scanner_sptr.reset(
+						 find_scanner_from_ECAT_system_type(mhead.system_type));
 
       dynamic_proj_data_ptr->_start_time_in_secs_since_1970 =
         static_cast<double>(mhead.scan_start_time);
@@ -96,11 +96,11 @@ read_from_file(const string& filename) // The written projection data is read in
 
       for (unsigned int frame_num=1; frame_num <= num_frames; ++ frame_num)
         {
-          dynamic_proj_data_ptr->_proj_datas[frame_num-1] =
+          dynamic_proj_data_ptr->_proj_datas[frame_num-1].reset(
             ECAT7_to_PDFS(filename,
                           frame_num, 
                           /*gate*/1,
-                          /*  data_num, bed_num, */ 0,0);
+                          /*  data_num, bed_num, */ 0,0));
         }
       if (is_null_ptr(dynamic_proj_data_ptr->_proj_datas[0]))
               error("DynamicProjData: No frame available\n");

@@ -80,6 +80,7 @@ FRAME_BASED_DT_CORR:
 #include "stir/Array.h"
 #include "stir/IndexRange3D.h"
 #endif
+#include "stir/IO/read_from_file.h"
 #include "stir/ParsingObject.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/CPUTimer.h"
@@ -150,8 +151,8 @@ set_defaults()
   store_delayeds = true;
   interactive=false;
   num_segments_in_memory = -1;
-  normalisation_ptr = new TrivialBinNormalisation;
-  post_normalisation_ptr = new TrivialBinNormalisation;
+  normalisation_ptr.reset(new TrivialBinNormalisation);
+  post_normalisation_ptr.reset(new TrivialBinNormalisation);
   do_pre_normalisation =0;
   num_events_to_store = 0;
   
@@ -204,8 +205,7 @@ post_processing()
       return true;
     }
 
-  lm_data_ptr =
-    CListModeData::read_from_file(input_filename);
+  lm_data_ptr = stir::read_from_file<CListModeData>(input_filename);
 
   if (template_proj_data_name.size()==0)
     {
@@ -215,8 +215,7 @@ post_processing()
   shared_ptr<ProjData> template_proj_data_ptr =
     ProjData::read_from_file(template_proj_data_name);
 
-  template_proj_data_info_ptr = 
-    template_proj_data_ptr->get_proj_data_info_ptr()->clone();
+  template_proj_data_info_ptr.reset(template_proj_data_ptr->get_proj_data_info_ptr()->clone());
 
   // initialise segment_num related variables
 
@@ -305,14 +304,15 @@ post_processing()
 
   if (do_pre_normalisation)
     {
+      shared_ptr<Scanner> scanner_sptr(new Scanner(*scanner_ptr));
       // TODO this won't work for the HiDAC or so
-      proj_data_info_cyl_uncompressed_ptr =
-	dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
-							 ProjDataInfo::ProjDataInfoCTI(new Scanner(*scanner_ptr), 
-										       1, scanner_ptr->get_num_rings()-1,
-										       scanner_ptr->get_num_detectors_per_ring()/2,
-										       scanner_ptr->get_default_num_arccorrected_bins(), 
-										       false));
+      proj_data_info_cyl_uncompressed_ptr.
+	reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
+							       ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
+											     1, scanner_ptr->get_num_rings()-1,
+											     scanner_ptr->get_num_detectors_per_ring()/2,
+											     scanner_ptr->get_default_num_arccorrected_bins(), 
+											     false)));
       
       if ( normalisation_ptr->set_up(proj_data_info_cyl_uncompressed_ptr)
 	   != Succeeded::yes)
@@ -791,21 +791,22 @@ construct_proj_data(shared_ptr<iostream>& output,
   }
 #ifdef USE_SegmentByView
   // don't need output stream in this case
-  return new ProjDataInterfile(proj_data_info_ptr, output_filename, ios::out, 
-                               segment_sequence_in_stream,
-                               ProjDataFromStream::Segment_View_AxialPos_TangPos,
-		               OUTPUTNumericType);
+  shared_ptr<ProjData> proj_data_sptr(new ProjDataInterfile(proj_data_info_ptr, output_filename, ios::out, 
+							    segment_sequence_in_stream,
+							    ProjDataFromStream::Segment_View_AxialPos_TangPos,
+							    OUTPUTNumericType));
+  return proj_data_sptr;
 #else
   // this code would work for USE_SegmentByView as well, but the above is far simpler...
   output = new fstream (output_filename.c_str(), ios::out|ios::binary);
   if (!*output)
     error("Error opening output file %s\n",output_filename.c_str());
-  shared_ptr<ProjDataFromStream> proj_data_ptr = 
+  shared_ptr<ProjDataFromStream> proj_data_ptr(
     new ProjDataFromStream(proj_data_info_ptr, output, 
                            /*offset=*/0, 
                            segment_sequence_in_stream,
                            ProjDataFromStream::Segment_View_AxialPos_TangPos,
-		           OUTPUTNumericType);
+		           OUTPUTNumericType));
   write_basic_interfile_PDFS_header(output_filename, *proj_data_ptr);
   return proj_data_ptr;  
 #endif

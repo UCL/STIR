@@ -205,7 +205,7 @@ int main(int argc, char **argv)
   shared_ptr<ProjData> org_proj_data_ptr = 
     ProjData::read_from_file(argv[2]);
   ProjDataInterfile 
-    new_proj_data(org_proj_data_ptr->get_proj_data_info_ptr()->clone(),
+    new_proj_data(org_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
                   argv[1]);  
 
   

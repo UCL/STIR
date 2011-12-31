@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -31,7 +32,15 @@
 */
 
 START_NAMESPACE_STIR
-  
+
+shared_ptr<ProjDataInfo> 
+ProjDataInfo::
+create_shared_clone() const
+{
+  shared_ptr<ProjDataInfo> sptr(this->clone());
+  return sptr;
+}
+
 int 
 ProjDataInfo::get_num_segments() const
 { return (max_axial_pos_per_seg.get_length());}

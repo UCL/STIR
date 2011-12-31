@@ -58,6 +58,7 @@
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/display.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInfo.h"
 // for ask_filename...
@@ -110,16 +111,16 @@ main(int argc, char *argv[])
   
   const string output_file_name = argv[1];
 
-  ProjDataInfo* new_data_info_ptr;
+  shared_ptr<ProjDataInfo> new_data_info_ptr;
   if(argc>=3)
   {
     shared_ptr<ProjData> proj_data_ptr = 
       ProjData::read_from_file(argv[2]);
-    new_data_info_ptr= proj_data_ptr->get_proj_data_info_ptr()->clone();
+    new_data_info_ptr= proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone();
   }
   else
   {
-    new_data_info_ptr= ProjDataInfo::ask_parameters();
+    new_data_info_ptr.reset(ProjDataInfo::ask_parameters());
   }
   int limit_segments=
     ask_num("Maximum absolute segment number to process: ", 0, 
@@ -129,8 +130,7 @@ main(int argc, char *argv[])
   new_data_info_ptr->reduce_segment_range(-limit_segments, limit_segments);
 
   
-  shared_ptr<ProjData> proj_data_ptr =
-    new ProjDataInterfile(new_data_info_ptr, output_file_name);
+  shared_ptr<ProjData> proj_data_ptr(new ProjDataInterfile(new_data_info_ptr, output_file_name));
   cerr << "Output will be written to " << output_file_name 
        << " and its Interfile header\n";
 
@@ -138,7 +138,7 @@ main(int argc, char *argv[])
   int dispstart = 0;
   int save = 0;
   
-  shared_ptr<DiscretisedDensity<3,float> > image_sptr = 0;   
+  shared_ptr<DiscretisedDensity<3,float> > image_sptr;   
   VoxelsOnCartesianGrid<float> * vox_image_ptr = 0;
 
   if (argc<4)
@@ -160,11 +160,12 @@ main(int argc, char *argv[])
 	    int z_size = 
 	      stir::round((2*proj_data_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings()-1)*zoom_z);
 	    z_size = ask_num("Number of z pixels",1,1000,z_size);
-	    image_sptr = vox_image_ptr =
+	    vox_image_ptr =
 	      new VoxelsOnCartesianGrid<float>(*(proj_data_ptr->get_proj_data_info_ptr()),
 					       zoom,
 					       CartesianCoordinate3D<float>(0,0,0),
 					       Coordinate3D<int>(z_size,xy_size,xy_size));
+	    image_sptr.reset(vox_image_ptr);
 	    vox_image_ptr->set_grid_spacing(
 					    vox_image_ptr->get_grid_spacing()/
 					    CartesianCoordinate3D<float>(zoom_z,1.F,1.F));
@@ -181,7 +182,7 @@ main(int argc, char *argv[])
 	    ask_filename_with_extension(filename, "Input file name ?", ".hv");
       
 	    image_sptr =
-	      DiscretisedDensity<3,float>::read_from_file(filename);
+	      read_from_file<DiscretisedDensity<3,float> >(filename);
 	    vox_image_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *> (image_sptr.get());
       
 	    break;
@@ -191,7 +192,7 @@ main(int argc, char *argv[])
   else
     {
       image_sptr =
-        DiscretisedDensity<3,float>::read_from_file(argv[3]);
+        read_from_file<DiscretisedDensity<3,float> >(argv[3]);
       vox_image_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *> (image_sptr.get());
     }
 
@@ -216,11 +217,10 @@ main(int argc, char *argv[])
 
   while (is_null_ptr(forw_projector_ptr))
     {
-    forw_projector_ptr=
-      ForwardProjectorByBin::ask_type_and_parameters();
+      forw_projector_ptr.reset(ForwardProjectorByBin::ask_type_and_parameters());
     }
 
-  forw_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
+  forw_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
 			     image_sptr);
   cerr << forw_projector_ptr->parameter_info();
 
@@ -333,8 +333,8 @@ do_segments(const VoxelsOnCartesianGrid<float>& image,
 	    ForwardProjectorByBin& forw_projector,
             const bool disp)
 {
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    forw_projector.get_symmetries_used()->clone();  
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> 
+    symmetries_sptr(forw_projector.get_symmetries_used()->clone());  
   
   list<ViewSegmentNumbers> already_processed;
   

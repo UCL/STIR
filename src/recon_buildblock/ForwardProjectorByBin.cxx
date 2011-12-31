@@ -59,8 +59,8 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
  // this->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
 //			     image_sptr);
     
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    this->get_symmetries_used()->clone();  
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> 
+    symmetries_sptr(this->get_symmetries_used()->clone());
   
   for (int segment_num = proj_data.get_min_segment_num(); 
        segment_num <= proj_data.get_max_segment_num(); 

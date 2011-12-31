@@ -12,7 +12,8 @@
   $Revision$
 */
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005 - 2011-01-12, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -95,7 +96,7 @@ class DynamicDiscretisedDensity
       _scanner_sptr=scanner_sptr;
     
       for (unsigned int frame_num=0; frame_num<time_frame_definitions.get_num_frames(); ++frame_num)
-        this->_densities[frame_num] = density_sptr->get_empty_discretised_density(); 
+        this->_densities[frame_num].reset(density_sptr->get_empty_discretised_density()); 
     }  
 
   DynamicDiscretisedDensity&

@@ -117,10 +117,8 @@ int main(int argc, char *argv[])
 
   // compare proj_data_info
   {
-    shared_ptr<ProjDataInfo> first_sptr =
-      first_operand->get_proj_data_info_ptr()->clone();
-    shared_ptr<ProjDataInfo> second_sptr =
-      second_operand->get_proj_data_info_ptr()->clone();
+    shared_ptr<ProjDataInfo> first_sptr(first_operand->get_proj_data_info_ptr()->clone());
+    shared_ptr<ProjDataInfo> second_sptr(second_operand->get_proj_data_info_ptr()->clone());
     if (argc==4)
       {
 	first_sptr->reduce_segment_range(-max_segment, max_segment);

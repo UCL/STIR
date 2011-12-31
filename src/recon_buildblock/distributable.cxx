@@ -169,39 +169,39 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
   if (!is_null_ptr(binwise_correction)) 
     {
 #if !defined(_MSC_VER) || _MSC_VER>1300
-      additive_binwise_correction_viewgrams =
+      additive_binwise_correction_viewgrams.reset(
         new RelatedViewgrams<float>
-        (binwise_correction->get_related_viewgrams(view_segment_num, symmetries_ptr));
+        (binwise_correction->get_related_viewgrams(view_segment_num, symmetries_ptr)));
 #else
       RelatedViewgrams<float> tmp(binwise_correction->
                                   get_related_viewgrams(view_segment_num, symmetries_ptr));
-      additive_binwise_correction_viewgrams = new RelatedViewgrams<float>(tmp);
+      additive_binwise_correction_viewgrams.reset(new RelatedViewgrams<float>(tmp));
 #endif      
     }
                         
   if (read_from_proj_dat)
     {
 #if !defined(_MSC_VER) || _MSC_VER>1300
-      y = new RelatedViewgrams<float>
-        (proj_dat_ptr->get_related_viewgrams(view_segment_num, symmetries_ptr));
+      y.reset(new RelatedViewgrams<float>
+	      (proj_dat_ptr->get_related_viewgrams(view_segment_num, symmetries_ptr)));
 #else
       // workaround VC++ 6.0 bug
       RelatedViewgrams<float> tmp(proj_dat_ptr->
                                   get_related_viewgrams(view_segment_num, symmetries_ptr));
-      y = new RelatedViewgrams<float>(tmp);
+      y.reset(new RelatedViewgrams<float>(tmp));
 #endif        
     }
   else
     {
-      y = new RelatedViewgrams<float>
-        (proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr));
+      y.reset(new RelatedViewgrams<float>
+	      (proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr)));
     }
 
   // multiplicative correction
   if (!is_null_ptr(normalisation_sptr) && !normalisation_sptr->is_trivial())
     {
-      mult_viewgrams_sptr =
-        new RelatedViewgrams<float>(proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr));
+      mult_viewgrams_sptr.reset(
+				new RelatedViewgrams<float>(proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr)));
       mult_viewgrams_sptr->fill(1.F);
       normalisation_sptr->undo(*mult_viewgrams_sptr,start_time_of_frame,end_time_of_frame);
     }
@@ -333,7 +333,7 @@ void distributable_computation(
   assert(subset_num >=0);
   assert(subset_num < num_subsets);
   
-  assert(proj_dat_ptr.use_count() != 0);
+  assert(!is_null_ptr(proj_dat_ptr));
   
   if (output_image_ptr != NULL)
     output_image_ptr->fill(0);
@@ -378,9 +378,9 @@ void distributable_computation(
               first_view_in_segment = false;
             }
     
-          shared_ptr<RelatedViewgrams<float> > y = 0;                                         
-          shared_ptr<RelatedViewgrams<float> > additive_binwise_correction_viewgrams = 0;
-          shared_ptr<RelatedViewgrams<float> > mult_viewgrams_sptr = 0;
+          shared_ptr<RelatedViewgrams<float> > y;
+          shared_ptr<RelatedViewgrams<float> > additive_binwise_correction_viewgrams;
+          shared_ptr<RelatedViewgrams<float> > mult_viewgrams_sptr;
 
           get_viewgrams(y, additive_binwise_correction_viewgrams, mult_viewgrams_sptr,
                         proj_dat_ptr, read_from_proj_dat,

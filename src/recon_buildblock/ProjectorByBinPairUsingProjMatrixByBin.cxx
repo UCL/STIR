@@ -58,7 +58,7 @@ void
 ProjectorByBinPairUsingProjMatrixByBin::set_defaults()
 {
   base_type::set_defaults();
-  proj_matrix_sptr = 0;
+  this->proj_matrix_sptr.reset();
 }
 
 bool
@@ -89,8 +89,8 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
        const shared_ptr<DiscretisedDensity<3,float> >& image_info_sptr)
 {    	 
 
-  this->forward_projector_sptr = new ForwardProjectorByBinUsingProjMatrixByBin(proj_matrix_sptr);
-  this->back_projector_sptr = new BackProjectorByBinUsingProjMatrixByBin(proj_matrix_sptr);
+  this->forward_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(proj_matrix_sptr));
+  this->back_projector_sptr.reset(new BackProjectorByBinUsingProjMatrixByBin(proj_matrix_sptr));
 
   // proj_matrix_sptr->set_up()  not needed as the projection matrix will be set_up indirectly by
   // the forward_projector->set_up (which is called in the base class)

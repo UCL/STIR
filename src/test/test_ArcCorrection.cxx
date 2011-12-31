@@ -158,11 +158,11 @@ ArcCorrectionTests::run_tests()
 { 
   cerr << "-------- Testing ArcCorrection --------\n";
   ArcCorrection arc_correction;
-  shared_ptr<Scanner> scanner_ptr = new Scanner(Scanner::E962);
+  shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E962));
   
-  shared_ptr<ProjDataInfo> proj_data_info_ptr =
+  shared_ptr<ProjDataInfo> proj_data_info_ptr(
     ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
-				  /*span*/7, 10,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ false);
+				  /*span*/7, 10,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ false));
   cerr << "Using default range and bin-size\n";
   {
     arc_correction.set_up(proj_data_info_ptr);

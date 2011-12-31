@@ -42,6 +42,7 @@
 #include "stir/IndexRange2D.h"
 #include "stir/stream.h"
 #include "stir/CPUTimer.h"
+#include "stir/IO/read_from_file.h"
 
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include <fstream>
@@ -132,7 +133,7 @@ LmFansums::
 post_processing()
 {
   lm_data_ptr =
-    CListModeData::read_from_file(input_filename);
+    read_from_file<CListModeData>(input_filename);
 
   const int num_rings =
       lm_data_ptr->get_scanner_ptr()->get_num_rings();

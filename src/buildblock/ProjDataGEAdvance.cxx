@@ -18,7 +18,8 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2009-06-22, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -67,11 +68,11 @@ ProjDataGEAdvance::ProjDataGEAdvance(iostream* s)
 {
   // TODO find from file
   const int max_delta = 11;
-  Scanner * scanner_ptr = new Scanner(Scanner::Advance);
-  proj_data_info_ptr = 
-    ProjDataInfo::ProjDataInfoGE(scanner_ptr, max_delta, 
-                                 scanner_ptr->get_max_num_views(), 
-				 scanner_ptr->get_default_num_arccorrected_bins());
+  shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Advance));
+  proj_data_info_ptr.reset( 
+    ProjDataInfo::ProjDataInfoGE(scanner_sptr, max_delta, 
+                                 scanner_sptr->get_max_num_views(), 
+				 scanner_sptr->get_default_num_arccorrected_bins()));
   
   
   const int min_view = proj_data_info_ptr->get_min_view_num();

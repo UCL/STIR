@@ -61,10 +61,9 @@ set_defaults()
   pad_in_s=1;
   display_level=0; // no display
   num_segments_to_combine = -1;
-  back_projector_sptr =
-    new BackProjectorByBinUsingInterpolation(
-					     /*use_piecewise_linear_interpolation = */true, 
-					     /*use_exact_Jacobian = */ false);
+  back_projector_sptr.reset(new BackProjectorByBinUsingInterpolation(
+								     /*use_piecewise_linear_interpolation = */true, 
+								     /*use_exact_Jacobian = */ false));
  
 }
 
@@ -223,11 +222,13 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
       //  full_log << "SSRB combining " << num_segments_to_combine 
       //           << " segments in input file to a new segment 0\n" << endl; 
 
-      shared_ptr<ProjData> proj_data_to_FBP_ptr = 
-        new ProjDataInMemory (SSRB(proj_data_info_cyl, 
-				   num_segments_to_combine,
-				   1, 0,
-				   (num_segments_to_combine-1)/2 ));
+      shared_ptr<ProjDataInfo> 
+	ssrb_info_sptr(SSRB(proj_data_info_cyl, 
+			    num_segments_to_combine,
+			    1, 0,
+			    (num_segments_to_combine-1)/2 ));
+      shared_ptr<ProjData> 
+	proj_data_to_FBP_ptr(new ProjDataInMemory (ssrb_info_sptr));
       SSRB(*proj_data_to_FBP_ptr, *proj_data_ptr);
       proj_data_ptr = proj_data_to_FBP_ptr;
     }
@@ -259,7 +260,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     {
       // it's already arc-corrected
       arc_corrected_proj_data_info_sptr =
-	proj_data_ptr->get_proj_data_info_ptr()->clone();
+	proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone();
       tangential_sampling =
 	dynamic_cast<const ProjDataInfoCylindricalArcCorr&>
 	(*proj_data_ptr->get_proj_data_info_ptr()).get_tangential_sampling();  
@@ -267,7 +268,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   else
     {
       // TODO arc-correct to voxel_size
-      if (arc_correction.set_up(proj_data_ptr->get_proj_data_info_ptr()->clone()) ==
+      if (arc_correction.set_up(proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone()) ==
 	  Succeeded::no)
 	return Succeeded::no;
       do_arc_correction = true;
@@ -300,8 +301,8 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 
   density_ptr->fill(0);
   
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    back_projector_sptr->get_symmetries_used()->clone();
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> 
+    symmetries_sptr(back_projector_sptr->get_symmetries_used()->clone());
     
 #ifdef STIR_OPENMP
   if (getenv("OMP_NUM_THREADS")==NULL) 

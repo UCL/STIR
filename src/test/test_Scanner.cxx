@@ -112,8 +112,7 @@ test_scanner(const Scanner& scanner)
   {
     string name = scanner.get_name();
     name += " ";
-    shared_ptr<Scanner> scanner_from_name_sptr =
-      Scanner::get_scanner_from_name(name);
+    shared_ptr<Scanner> scanner_from_name_sptr(Scanner::get_scanner_from_name(name));
     check_if_equal(scanner.get_type(), scanner_from_name_sptr->get_type(),
 		   "get_scanner_from_name");
   }
