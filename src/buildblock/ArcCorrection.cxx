@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005 - 2005-02-28, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -115,15 +116,18 @@ set_up(const shared_ptr<ProjDataInfo>& noarc_corr_proj_data_info_sptr,
 	_noarc_corr_proj_data_info_sptr->get_num_axial_poss(segment_num);
     }
 
-  _arc_corr_proj_data_info_sptr =
+  // create new scanner shared_ptr to avoid unexpected problems with people
+  // modifying the scanner_sptr of the old/new object
+  shared_ptr<Scanner> new_scanner_sptr(new Scanner(*_noarc_corr_proj_data_info_sptr->get_scanner_ptr()));
+  _arc_corr_proj_data_info_sptr.reset(
     new ProjDataInfoCylindricalArcCorr(
-				       new Scanner(*_noarc_corr_proj_data_info_sptr->get_scanner_ptr()),
+				       new_scanner_sptr,
 				       bin_size,
 				       num_axial_pos_per_segment,
 				       min_ring_diff, 
 				       max_ring_diff,
 				       noarc_corr_proj_data_info_sptr->get_num_views(),
-				       num_arccorrected_tangential_poss);
+				       num_arccorrected_tangential_poss));
 
   tangential_sampling =
     get_arc_corrected_proj_data_info().get_tangential_sampling();

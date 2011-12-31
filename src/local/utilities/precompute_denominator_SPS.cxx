@@ -248,7 +248,7 @@ main(int argc, char *argv[])
 	
 	segmnet_0 *=segmnet_1;
 	
-	if (norm_proj_data_ptr.use_count()>0)
+	if (!is_null_ptr(norm_proj_data_ptr))
 	  {
 	    segmnet_1 = norm_proj_data_ptr->get_segment_by_view(segment_num);
 	    segmnet_0 /=segmnet_1;

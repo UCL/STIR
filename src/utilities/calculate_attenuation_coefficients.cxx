@@ -56,6 +56,7 @@
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#include "stir/IO/read_from_file.h"
 #include <iostream>
 #include <list>
 #include <algorithm>
@@ -81,8 +82,8 @@ do_segments(const VoxelsOnCartesianGrid<float>& image,
 	    ForwardProjectorByBin& forw_projector,
 	    const bool doACF)
 {
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    forw_projector.get_symmetries_used()->clone();  
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> 
+    symmetries_sptr(forw_projector.get_symmetries_used()->clone());
   
   for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
     for (int view= start_view; view<=end_view; view++)      
@@ -154,8 +155,8 @@ main (int argc, char * argv[])
 
   ++argv; --argc;
   
-  shared_ptr <DiscretisedDensity<3,float> > attenuation_density_ptr =
-    DiscretisedDensity<3,float>::read_from_file(argv[2]);
+  shared_ptr <DiscretisedDensity<3,float> > 
+    attenuation_density_ptr(read_from_file<DiscretisedDensity<3,float> >(argv[2]));
   VoxelsOnCartesianGrid<float> *  attenuation_image_ptr = 
     dynamic_cast<VoxelsOnCartesianGrid<float> *> (attenuation_density_ptr.get());
 
@@ -183,25 +184,23 @@ main (int argc, char * argv[])
   shared_ptr<ForwardProjectorByBin> forw_projector_ptr;
   if (use_PMRT)
     {
-      shared_ptr<ProjMatrixByBin> PM = 
-	new  ProjMatrixByBinUsingRayTracing();
-      forw_projector_ptr =
-	new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
+      shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
+      forw_projector_ptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM)); 
     }
   else
   {
-    forw_projector_ptr =
-      new ForwardProjectorByBinUsingRayTracing();
+    forw_projector_ptr.reset(new ForwardProjectorByBinUsingRayTracing());
   }
 
-  forw_projector_ptr->set_up(template_proj_data_ptr->get_proj_data_info_ptr()->clone(),
+  forw_projector_ptr->set_up(template_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
 			       attenuation_density_ptr );
   cerr << "\n\nForward projector used:\n" << forw_projector_ptr->parameter_info();  
 
   const string output_file_name = argv[1];
-  shared_ptr<ProjData> out_proj_data_ptr =
-    new ProjDataInterfile(template_proj_data_ptr->get_proj_data_info_ptr()->clone(),
-			  output_file_name);
+  shared_ptr<ProjData> 
+    out_proj_data_ptr(
+		      new ProjDataInterfile(template_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
+					    output_file_name));
   
   do_segments(*attenuation_image_ptr,*out_proj_data_ptr,
 	      out_proj_data_ptr->get_min_segment_num(), out_proj_data_ptr->get_max_segment_num(), 

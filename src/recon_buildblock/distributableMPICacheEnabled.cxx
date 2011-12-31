@@ -273,8 +273,7 @@ void distributable_computation_cache_enabled(
   assert(subset_num >=0);
   assert(subset_num < num_subsets);
   
-  assert(proj_dat_ptr.use_count() != 0);
-  
+  assert(!is_null_ptr(proj_dat_ptr));  
   if (output_image_ptr != NULL)
     output_image_ptr->fill(0);
   

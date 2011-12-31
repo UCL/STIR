@@ -130,7 +130,7 @@ int main(int argc, const char *argv[])
   if (is_null_ptr(ACF_sptr))
     error("Check the attenuation_correct_factors file\n");
   
-  ProjDataInterfile mask_proj_data(ACF_sptr->get_proj_data_info_ptr()->clone(), 
+  ProjDataInterfile mask_proj_data(ACF_sptr->get_proj_data_info_ptr()->create_shared_clone(), 
 				   output_filename);
   
   Bin bin;

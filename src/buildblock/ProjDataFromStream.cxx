@@ -17,7 +17,8 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2011-12-21, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -865,7 +866,7 @@ ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
 ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
 {
     
- iostream * p_in_stream;
+ shared_ptr<iostream> p_in_stream;
   
     
     char filename[256];
@@ -888,8 +889,8 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
     {
       
       //fstream * p_fstream = new fstream;
-       p_in_stream = new fstream (filename, open_mode | ios::binary);
-       if (!p_in_stream->good())
+      p_in_stream.reset(new fstream (filename, open_mode | ios::binary));
+      if (!p_in_stream->good())
        {
          error("ProjDataFromStream::ask_parameters: error opening file %s\n",filename);
        }
@@ -915,12 +916,12 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
       // reading from it.
       
       strstreambuf * buffer = new strstreambuf(memory, file_size, memory+file_size);
-      p_in_stream = new iostream(buffer);
+      p_in_stream.reset(new iostream(buffer));
 #else
       // TODO this does allocate and copy 2 times
           // TODO file_size could be longer than what size_t allows, but string doesn't take anything longer
-      p_in_stream = new std::stringstream (string(memory, std::size_t(file_size)), 
-                                           open_mode | ios::binary);
+      p_in_stream.reset(new std::stringstream (string(memory, std::size_t(file_size)), 
+                                           open_mode | ios::binary));
         
       delete[] memory;
 #endif
@@ -989,8 +990,7 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
     }
     float scale_factor =1;
     
-    ProjDataInfo* data_info_ptr =
-      ProjDataInfo::ask_parameters();
+    shared_ptr<ProjDataInfo> data_info_ptr(ProjDataInfo::ask_parameters());
     
     vector<int> segment_sequence_in_stream; 
     segment_sequence_in_stream = vector<int>(data_info_ptr->get_num_segments());  

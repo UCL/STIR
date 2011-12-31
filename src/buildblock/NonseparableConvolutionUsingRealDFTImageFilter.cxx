@@ -1,7 +1,8 @@
 //
 // $Id$
 /*
-    Copyright (C) 2007- $Date$, Hammersmith Imanet
+    Copyright (C) 2007 - 2007-10-08, Hammersmith Imanet
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -20,19 +21,20 @@
 
   \file
   \ingroup ImageProcessor
-  \brief Implementations for class NonseparableConvolutionUsingRealDFTImageFilter
+  \brief Implementations for class stir::NonseparableConvolutionUsingRealDFTImageFilter
   
-    \author Sanida Mustafovic
-    \author Kris Thielemans
+  \author Sanida Mustafovic
+  \author Kris Thielemans
     
-      $Date$
-      $Revision$
+  $Date$
+  $Revision$
 */
 
 #include "stir/NonseparableConvolutionUsingRealDFTImageFilter.h"
 #include "stir/IndexRange3D.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/ArrayFunction.h"
+#include "stir/IO/read_from_file.h"
 
 
 START_NAMESPACE_STIR
@@ -77,8 +79,8 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
   IndexRange<num_dimensions> padding_range(padded_sizes);
   Array<num_dimensions, elemT> padded_filter_coefficients(padding_range);
   transform_array_to_periodic_indices(padded_filter_coefficients, this->_filter_coefficients);
-  this->_array_filter_sptr =
-    new ArrayFilterUsingRealDFTWithPadding<num_dimensions,elemT>(padded_filter_coefficients);
+  this->_array_filter_sptr.reset(
+				 new ArrayFilterUsingRealDFTWithPadding<num_dimensions,elemT>(padded_filter_coefficients));
   return Succeeded::yes;       
 }
 
@@ -96,8 +98,7 @@ NonseparableConvolutionUsingRealDFTImageFilter<elemT>::
 virtual_apply(DiscretisedDensity<3,elemT>& density) const
 {
   // should use scoped_ptr but don't have it yet
-  shared_ptr<DiscretisedDensity<3,elemT> > tmp_density_sptr =
-    density.clone();
+  shared_ptr<DiscretisedDensity<3,elemT> > tmp_density_sptr(density.clone());
   this->virtual_apply(density, *tmp_density_sptr);
 }
 
@@ -127,7 +128,7 @@ post_processing()
   if (this->_kernel_filename.length() == 0)
     { warning("You need to specify a kernel file"); return true; }
   else
-    this->_kernel_sptr = DiscretisedDensity<3,elemT>::read_from_file(this->_kernel_filename);
+    this->_kernel_sptr = read_from_file<DiscretisedDensity<3,elemT> >(this->_kernel_filename);
   const  DiscretisedDensity<3,elemT>& kernel = *this->_kernel_sptr;
   BasicCoordinate<num_dimensions, int> min_indices, max_indices;
   if (!kernel.get_regular_range(min_indices, max_indices))

@@ -5,7 +5,7 @@
 
   \file
   \ingroup projdata
-  \brief Implementation of class ProjDataInterfile
+  \brief Implementation of class stir::ProjDataInterfile
 
   \author Kris Thielemans
 
@@ -13,7 +13,8 @@
   $Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002 - 2008-10-01, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -76,8 +77,8 @@ create_stream(const string& filename, const ios::openmode open_mode)
   write_basic_interfile_PDFS_header(header_name, data_name,
                                     *this);
 
-  sino_stream = 
-    new fstream (data_name.c_str(), open_mode|ios::binary);
+  sino_stream.reset( 
+		    new fstream (data_name.c_str(), open_mode|ios::binary));
   if (!sino_stream->good())
   {
     error("ProjDataInterfile: error opening output file %s\n", data_name.c_str());
@@ -96,7 +97,7 @@ ProjDataInterfile (shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
 		     NumericType data_type,
 		     ByteOrder byte_order,  
                      float scale_factor)
-: ProjDataFromStream(proj_data_info_ptr, 0, 0, 
+  : ProjDataFromStream(proj_data_info_ptr, shared_ptr<iostream>(), 0, 
                      segment_sequence_in_stream, o, data_type, byte_order, scale_factor)
 {
   create_stream(filename, open_mode);
@@ -109,7 +110,7 @@ ProjDataInterfile (shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
 		   NumericType data_type,
 		   ByteOrder byte_order,  
                    float scale_factor )
-: ProjDataFromStream(proj_data_info_ptr, 0, 0, 
+  : ProjDataFromStream(proj_data_info_ptr, shared_ptr<iostream>(), 0, 
                      o, data_type, byte_order, scale_factor)
 {
   create_stream(filename, open_mode);

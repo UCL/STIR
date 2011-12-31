@@ -64,11 +64,10 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 set_defaults() 
 { 
   base_type::set_defaults();
-  this->additive_proj_data_sptr =NULL; 
+  this->additive_proj_data_sptr.reset();
   this->additive_projection_data_filename ="0"; 
   this->max_ring_difference_num_to_process =-1;
-  this->PM_sptr =  
-    new  ProjMatrixByBinUsingRayTracing(); 
+  this->PM_sptr.reset(new  ProjMatrixByBinUsingRayTracing()); 
 } 
  
 template <typename TargetT> 
@@ -116,7 +115,7 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
         
  
   // set projector to be used for the calculations    
-  this->PM_sptr->set_up(this->proj_data_info_cyl_uncompressed_ptr->clone(),target_sptr); 
+  this->PM_sptr->set_up(this->proj_data_info_cyl_uncompressed_ptr->create_shared_clone(),target_sptr); 
   return Succeeded::yes;
 } 
  
@@ -145,7 +144,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
       warning("No valid back projector is defined"); return true;
     }
 #endif
-  shared_ptr<Scanner> scanner_sptr = new Scanner(*this->list_mode_data_sptr->get_scanner_ptr());
+  shared_ptr<Scanner> scanner_sptr(new Scanner(*this->list_mode_data_sptr->get_scanner_ptr()));
 
   if (this->max_ring_difference_num_to_process == -1)
     {
@@ -161,17 +160,17 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
            << endl; 
       shared_ptr <ProjData> temp_additive_proj_data_sptr =  
         ProjData::read_from_file(this->additive_projection_data_filename); 
-      this->additive_proj_data_sptr = new ProjDataInMemory(* temp_additive_proj_data_sptr);
+      this->additive_proj_data_sptr.reset(new ProjDataInMemory(* temp_additive_proj_data_sptr));
     } 
   
 
-  this->proj_data_info_cyl_uncompressed_ptr =
+  this->proj_data_info_cyl_uncompressed_ptr.reset(
     dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
     ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
                   1, this->max_ring_difference_num_to_process,
                   scanner_sptr->get_num_detectors_per_ring()/2,
                   scanner_sptr->get_default_num_arccorrected_bins(), 
-                  false));
+				  false)));
    return false; 
 
 } 

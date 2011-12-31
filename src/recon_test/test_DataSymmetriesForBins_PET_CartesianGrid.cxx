@@ -579,8 +579,8 @@ run_tests_for_1_projdata(const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
 
   cerr << "\tTests with usual image size\n";
     
-  shared_ptr<DiscretisedDensity<3,float> > density_sptr =
-    new VoxelsOnCartesianGrid<float>(*proj_data_info_sptr,zoom,origin);
+  shared_ptr<DiscretisedDensity<3,float> > 
+    density_sptr(new VoxelsOnCartesianGrid<float>(*proj_data_info_sptr,zoom,origin));
 
   VoxelsOnCartesianGrid<float> & image =
     dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_sptr);
@@ -689,13 +689,13 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests()
     {
       {  
 	cerr << "Testing span=1\n";
-	shared_ptr<Scanner> scanner_sptr = new Scanner(Scanner::E953);
-	proj_data_info_sptr = 
+	shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
+	proj_data_info_sptr.reset( 
 	  ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
 					/*span=*/1, 
 					/*max_delta=*/5,
 					/*num_views=*/8,
-					/*num_tang_poss=*/16);
+					/*num_tang_poss=*/16));
   
 	run_tests_for_1_projdata(proj_data_info_sptr);
       }
@@ -703,13 +703,13 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests()
 	cerr << "Testing span=3\n";
 	// warning: make sure that parameters are ok such that hard-wired
 	// bins above are fine (e.g. segment 3 should be allowed)
-	shared_ptr<Scanner> scanner_sptr = new Scanner(Scanner::E953);
-	proj_data_info_sptr = 
+	shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
+	proj_data_info_sptr.reset(
 	  ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
 					/*span=*/3, 
 					/*max_delta=*/12,
 					/*num_views=*/8,
-					/*num_tang_poss=*/16);
+					/*num_tang_poss=*/16));
   
   
 	run_tests_for_1_projdata(proj_data_info_sptr);
@@ -720,7 +720,7 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests()
       shared_ptr<ProjData> proj_data_sptr =
 	ProjData::read_from_file(template_proj_data_filename);
       proj_data_info_sptr = 
-	proj_data_sptr->get_proj_data_info_ptr()->clone();
+	proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();
       run_tests_for_1_projdata(proj_data_info_sptr);
     }
 }

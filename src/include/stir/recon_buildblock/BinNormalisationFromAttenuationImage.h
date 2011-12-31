@@ -85,14 +85,14 @@ public:
 
   //! Constructor that reads the image from a file
   /*! Default forward projector is ForwardProjectorByBinUsingRayTracing. */
-  BinNormalisationFromAttenuationImage(const string& filename, shared_ptr<ForwardProjectorByBin> const& =0);
+  BinNormalisationFromAttenuationImage(const string& filename, shared_ptr<ForwardProjectorByBin> const& =shared_ptr<ForwardProjectorByBin>());
 
   //! Constructor that takes the image as an argument
   /*! Default forward projector is ForwardProjectorByBinUsingRayTracing.
       The image pointed to by attenuation_image_ptr is NOT modified.
   */
   BinNormalisationFromAttenuationImage(shared_ptr<DiscretisedDensity<3,float> > const& attenuation_image_ptr,
-                                       shared_ptr<ForwardProjectorByBin> const& =0);
+                                       shared_ptr<ForwardProjectorByBin> const& = shared_ptr<ForwardProjectorByBin>());
 
   //! Checks if we can handle certain projection data.
   /*! This test is essentially checking if the forward projector can handle the data 

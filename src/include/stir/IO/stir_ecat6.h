@@ -39,6 +39,7 @@
 #include "stir/IO/ecat6_types.h"
 #include <string>
 #include <stdio.h>
+#include "stir/shared_ptr.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
@@ -54,7 +55,6 @@ class Scanner;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 template <typename elemT> class VoxelsOnCartesianGrid;
 template <typename elemT> class Sinogram;
-template <typename T> class shared_ptr;
 class ProjData;
 class ProjDataInfo;
 

@@ -62,6 +62,7 @@ extern "C" {
 
 #include <string>
 #include <iostream>
+#include "stir/shared_ptr.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
@@ -76,7 +77,6 @@ class Scanner;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 template <typename elemT> class VoxelsOnCartesianGrid;
 template <typename elemT> class Sinogram;
-template <typename T> class shared_ptr;
 class ProjData;
 class ProjDataInfo;
 class ProjDataFromStream;
@@ -284,7 +284,7 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_name,
 /*
   \brief Read an image from an ECAT7 file.
   \ingroup ECAT
-  \warning do not use directly, but use DiscretisedDensity<3,float>::read_from_file().
+  \warning do not use directly, but use read_from_file<DiscretisedDensity<3,float> >().
 
   \return a pointer to a newly allocated image, or 0 if it failed.
 */

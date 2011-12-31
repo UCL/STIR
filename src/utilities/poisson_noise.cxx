@@ -257,7 +257,7 @@ main (int argc,char *argv[])
 #endif
 
 
-  ProjDataInterfile new_data(in_data->get_proj_data_info_ptr()->clone(), filename);
+  ProjDataInterfile new_data(in_data->get_proj_data_info_ptr()->create_shared_clone(), filename);
 
   
   poisson_noise(new_data,*in_data, scaling_factor, preserve_mean);

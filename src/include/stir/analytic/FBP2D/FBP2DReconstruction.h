@@ -36,6 +36,7 @@
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include <string>
+#include "stir/shared_ptr.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
@@ -44,7 +45,6 @@ using std::string;
 START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
-template <typename T> class shared_ptr;
 class Succeeded;
 class ProjData;
 

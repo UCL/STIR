@@ -34,13 +34,13 @@
 
 #include "stir/RegisteredObject.h"
 #include "stir/Bin.h"
+#include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 
 template <typename elemT> class RelatedViewgrams;
 class Succeeded;
 class ProjDataInfo;
-template <typename T> class shared_ptr;
 /*!
   \ingroup normalisation
   \brief Abstract base class for implementing bin-wise normalisation of data.

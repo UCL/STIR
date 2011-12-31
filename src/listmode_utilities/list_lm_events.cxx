@@ -35,6 +35,7 @@
 #include "stir/listmode/CListModeData.h"
 #include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.h"
 #include "stir/Succeeded.h"
+#include "stir/IO/read_from_file.h"
 
 #include "stir/Scanner.h"
 #include <iostream>
@@ -106,8 +107,7 @@ int main(int argc, char *argv[])
       return EXIT_FAILURE;
     }
 
-  shared_ptr<CListModeData> lm_data_ptr =
-    CListModeData::read_from_file(argv[0]);  
+  shared_ptr<CListModeData> lm_data_ptr(read_from_file<CListModeData>(argv[0]));  
 
   cout << "Scanner: " << lm_data_ptr->get_scanner_ptr()->get_name() << endl;
 

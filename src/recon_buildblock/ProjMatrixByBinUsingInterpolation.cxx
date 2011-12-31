@@ -130,14 +130,14 @@ set_up(
     (densel_range.get_max_index() + densel_range.get_min_index())*voxel_size.z()/2.F;
   origin.z() -= z_to_middle;
 
-  symmetries_ptr = 
+  symmetries_ptr.reset(
     new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
                                                 density_info_ptr,
                                                 do_symmetry_90degrees_min_phi,
                                                 do_symmetry_180degrees_min_phi,
 						do_symmetry_swap_segment,
 						do_symmetry_swap_s,
-						do_symmetry_shift_z);
+						do_symmetry_shift_z));
 
   if (dynamic_cast<const ProjDataInfoCylindrical*>(proj_data_info_ptr.get())==0)
     error("ProjMatrixByBinUsingInterpolation needs ProjDataInfoCylindrical for jacobian\n");

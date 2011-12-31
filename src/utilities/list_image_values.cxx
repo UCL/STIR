@@ -34,7 +34,7 @@
 */
 
 #include "stir/DiscretisedDensity.h"
-
+#include "stir/IO/read_from_file.h"
 #include <fstream>
 #include <iomanip>
 
@@ -55,8 +55,8 @@ int main(int argc, char *argv[])
   const char * const input_filename = argv[2];
 
     
-  shared_ptr<DiscretisedDensity<3,float> > input_image_sptr= 
-    DiscretisedDensity<3,float>::read_from_file(input_filename);
+  shared_ptr<DiscretisedDensity<3,float> > 
+    input_image_sptr(read_from_file<DiscretisedDensity<3,float> >(input_filename));
   const DiscretisedDensity<3,float>& input_image =
     *input_image_sptr;
   

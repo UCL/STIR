@@ -4,7 +4,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2010-10-15, Hammersmith Imanet Ltd
-    copyright (C) 2011-07-01 - $Date: %, Kris Thielemans
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -170,7 +170,8 @@ read_from_file(const string& filename,
     {
       warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s",
 	      actual_filename.c_str());
-      return ECAT7_to_PDFS(filename, /*frame_num, gate_num, data_num, bed_num*/1,1,0,0);
+      shared_ptr<ProjData> proj_data_sptr(ECAT7_to_PDFS(filename, /*frame_num, gate_num, data_num, bed_num*/1,1,0,0));
+      return proj_data_sptr;
     }
     else
     {
@@ -186,8 +187,7 @@ read_from_file(const string& filename,
 #ifndef NDEBUG
     warning("ProjData::read_from_file trying to read %s as Interfile", filename.c_str());
 #endif
-    ProjData * ptr =
-      read_interfile_PDFS(filename, openmode);
+    shared_ptr<ProjData> ptr(read_interfile_PDFS(filename, openmode));
     if (!is_null_ptr(ptr))
       return ptr;
   }
@@ -199,10 +199,9 @@ read_from_file(const string& filename,
 #ifndef NDEBUG
       warning("ProjData::read_from_file trying to read %s as RDF", filename.c_str());
 #endif
-    ProjData * ptr =
-      new GE_IO::ProjDataRDF(filename);
-    if (!is_null_ptr(ptr))
-      return ptr;
+      shared_ptr<ProjData> ptr(new GE_IO::ProjDataRDF(filename));
+      if (!is_null_ptr(ptr))
+	return ptr;
   }
 #endif // RDF
       
@@ -210,7 +209,9 @@ read_from_file(const string& filename,
   error("\nProjData::read_from_file could not read projection data %s.\n"
 	"Unsupported file format? Aborting.",
 	  filename.c_str());
-  return 0;
+  // need to return something to satisfy the compiler, but we never get here
+  shared_ptr<ProjData> null_ptr;
+  return null_ptr;
 }
 
 Viewgram<float> 

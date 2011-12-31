@@ -61,22 +61,22 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE;
 
   }
-  shared_ptr<Scanner> scanner_sptr = Scanner::get_scanner_from_name(argv[1]);
+  shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(argv[1]));
   if (scanner_sptr->get_type() == Scanner::Unknown_scanner)
     {
       std::cerr << "I did not recognise the scanner\n";
       return (EXIT_FAILURE);
     }
 
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr =
-    dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>
-    (
+  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr
+    (dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>
+     (
      ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
                                    1, scanner_sptr->get_num_rings()-1,
                                    scanner_sptr->get_num_detectors_per_ring()/2,
                                    scanner_sptr->get_default_num_arccorrected_bins(), 
                                    false)
-     );
+      ));
 
 
 

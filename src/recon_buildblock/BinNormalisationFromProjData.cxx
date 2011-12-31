@@ -145,10 +145,9 @@ void
 BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
   {
     const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
-    const DataSymmetriesForViewSegmentNumbers * symmetries_ptr =
-      viewgrams.get_symmetries_ptr();
+    shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(viewgrams.get_symmetries_ptr()->clone());
     viewgrams *= 
-      norm_proj_data_ptr->get_related_viewgrams(vs_num,symmetries_ptr->clone(), false);
+      norm_proj_data_ptr->get_related_viewgrams(vs_num,symmetries_sptr, false);
   }
 
 void 
@@ -156,10 +155,9 @@ BinNormalisationFromProjData::
 undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
   {
     const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
-    const DataSymmetriesForViewSegmentNumbers * symmetries_ptr =
-      viewgrams.get_symmetries_ptr();
+    shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(viewgrams.get_symmetries_ptr()->clone());
     viewgrams /= 
-      norm_proj_data_ptr->get_related_viewgrams(vs_num,symmetries_ptr->clone(), false);
+      norm_proj_data_ptr->get_related_viewgrams(vs_num,symmetries_sptr, false);
 
   }
 

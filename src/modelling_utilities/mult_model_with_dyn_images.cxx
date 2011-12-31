@@ -46,6 +46,7 @@
 #include "stir/modelling/PatlakPlot.h"
 #include "stir/shared_ptr.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 #include <string>
 #include <iostream>
 #include <iomanip>
@@ -75,12 +76,12 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE ;
   else
     {  
-      shared_ptr<ParametricVoxelsOnCartesianGrid> par_image_sptr =
-	ParametricVoxelsOnCartesianGrid::read_from_file(argv[1]);
+      shared_ptr<ParametricVoxelsOnCartesianGrid> 
+	par_image_sptr(ParametricVoxelsOnCartesianGrid::read_from_file(argv[1]));
       ParametricVoxelsOnCartesianGrid par_image = *par_image_sptr;
 
-      shared_ptr<DynamicDiscretisedDensity> dyn_image_sptr =
-	DynamicDiscretisedDensity::read_from_file(argv[2]);
+      shared_ptr<DynamicDiscretisedDensity> 
+	dyn_image_sptr(read_from_file<DynamicDiscretisedDensity>(argv[2]));
       const DynamicDiscretisedDensity & dyn_image= *dyn_image_sptr;
 
       //NotToDo: Assertion for the dyn-par images, sizes should not be ncessary ONLY WHEN I will create from dyn_image the par_image...

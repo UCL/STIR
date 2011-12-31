@@ -40,6 +40,7 @@ $Revision$
 #include "stir/is_null_ptr.h"
 #include "stir/NumericInfo.h"
 #include "stir/utilities.h"
+#include "stir/IO/read_from_file.h"
 
 #include <iostream>
 #include <memory>
@@ -137,8 +138,8 @@ ask_parameters()
     GeneralisedObjectiveFunction<TargetT>::list_registered_names(cerr); 
     const string objective_function_type = ask_string("");
     
-    this->objective_function_sptr = 
-      GeneralisedObjectiveFunction<TargetT>::read_registered_object(0, objective_function_type); 
+    this->objective_function_sptr.
+      reset(GeneralisedObjectiveFunction<TargetT>::read_registered_object(0, objective_function_type)); 
     
   } 
   
@@ -291,18 +292,18 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
   
   if(this->precomputed_denominator_filename=="")
   {
-    precomputed_denominator_ptr=target_image_ptr->get_empty_copy();
+    precomputed_denominator_ptr.reset(target_image_ptr->get_empty_copy());
     precompute_denominator_of_conditioner_without_penalty();
   }
   else if(this->precomputed_denominator_filename=="1")
   {
-    precomputed_denominator_ptr=target_image_ptr->get_empty_copy();
+    precomputed_denominator_ptr.reset(target_image_ptr->get_empty_copy());
     std::fill(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all(), 1.F);
   }
   else
   {       
     precomputed_denominator_ptr = 
-      TargetT::read_from_file(this->precomputed_denominator_filename);   
+      read_from_file<TargetT>(this->precomputed_denominator_filename);   
     {
       string explanation;
       if (!precomputed_denominator_ptr->has_same_characteristics(*target_image_ptr, explanation))

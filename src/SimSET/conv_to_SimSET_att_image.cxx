@@ -82,6 +82,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/IO/interfile.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/Succeeded.h"
 #include <iostream> 
 /***********************************************************/     
@@ -94,10 +95,11 @@ int main(int argc, char *argv[])
 		<< " SimSET_image_filename original_image\n";                               
       return EXIT_FAILURE;
     }
-  shared_ptr< DiscretisedDensity<3,float> >  input_image_sptr = 
-    DiscretisedDensity<3,float>::read_from_file(argv[2]);
+  shared_ptr< DiscretisedDensity<3,float> >  
+    input_image_sptr(read_from_file<DiscretisedDensity<3,float> >(argv[2]));
   string output_image_filename(argv[1]);
-  shared_ptr<DiscretisedDensity<3,float> > output_image_sptr = input_image_sptr->clone();                
+  shared_ptr<DiscretisedDensity<3,float> > 
+    output_image_sptr(input_image_sptr->clone());
   bool is_implemented=true;
   DiscretisedDensity<3,float>::full_iterator out_iter = output_image_sptr->begin_all();
   DiscretisedDensity<3,float>::const_full_iterator in_iter = input_image_sptr->begin_all_const();

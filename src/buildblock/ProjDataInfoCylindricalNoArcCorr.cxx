@@ -82,7 +82,7 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
                           min_ring_diff_v, max_ring_diff_v,
                           num_views, num_tangential_poss)
 {
-  assert(scanner_ptr.use_count()!=0);
+  assert(!is_null_ptr(scanner_ptr));
   ring_radius = scanner_ptr->get_effective_ring_radius();
   angular_increment = static_cast<float>(_PI/scanner_ptr->get_num_detectors_per_ring());
   uncompressed_view_tangpos_to_det1det2_initialised = false;

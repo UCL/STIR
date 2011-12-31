@@ -43,7 +43,7 @@ void
 GeneralisedObjectiveFunction<TargetT>::
 set_defaults()
 {
-  this->prior_sptr = 0;
+  this->prior_sptr.reset();
   // note: cannot use set_num_subsets(1) here, as other parameters (such as projectors) are not set-up yet.
   this->num_subsets = 1;
 }
@@ -138,8 +138,7 @@ compute_sub_gradient(TargetT& gradient,
 					      subset_num); 
    if (!this->prior_is_zero())
      {
-       shared_ptr<TargetT>  prior_gradient_sptr =
-	 gradient.get_empty_copy();
+       shared_ptr<TargetT>  prior_gradient_sptr(gradient.get_empty_copy());
        this->prior_sptr->compute_gradient(*prior_gradient_sptr, current_estimate);
 
        // (*prior_gradient_sptr)/= num_subsets;
@@ -247,8 +246,7 @@ add_multiplication_with_approximate_sub_Hessian(TargetT& output,
   if (!this->prior_is_zero())
     {
       // TODO used boost:scoped_ptr
-      shared_ptr<TargetT>  prior_output_sptr =
-	 output.get_empty_copy();
+      shared_ptr<TargetT>  prior_output_sptr(output.get_empty_copy());
       if (this->prior_sptr->add_multiplication_with_approximate_Hessian(*prior_output_sptr, output) ==
 	  Succeeded::no)
 	return Succeeded::no;

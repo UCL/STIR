@@ -32,6 +32,7 @@
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.h" 
 #include "stir/VoxelsOnCartesianGrid.h" 
 #include "stir/Succeeded.h" 
+#include "stir/IO/read_from_file.h"
 
 START_NAMESPACE_STIR
 
@@ -51,7 +52,7 @@ set_defaults()
   base_type::set_defaults(); 
   this->list_mode_filename =""; 
   this->frame_defs_filename ="";
-  this->list_mode_data_sptr = NULL; 
+  this->list_mode_data_sptr.reset(); 
   this->current_frame_num =0; 
  
   this->output_image_size_xy=-1; 
@@ -94,7 +95,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
   { warning("You need to specify an input file\n"); return true; } 
    
   this->list_mode_data_sptr=
-   CListModeData::read_from_file(this->list_mode_filename); 
+    read_from_file<CListModeData>(this->list_mode_filename); 
 
   if (this->frame_defs_filename.size()!=0)
     this->frame_defs = TimeFrameDefinitions(this->frame_defs_filename);

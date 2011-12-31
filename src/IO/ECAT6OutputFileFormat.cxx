@@ -81,8 +81,8 @@ post_processing()
   if (base_type::post_processing())
     return true;
 
-  shared_ptr<Scanner> scanner_ptr = 
-    Scanner::get_scanner_from_name(default_scanner_name);
+  shared_ptr<Scanner> scanner_ptr (
+				   Scanner::get_scanner_from_name(default_scanner_name));
 
   if (find_ECAT_system_type(*scanner_ptr)==0)
     {
@@ -132,8 +132,8 @@ ECAT6OutputFileFormat::
     actual_write_to_file(string& filename, 
                   const DiscretisedDensity<3,float>& density) const
 {
-  shared_ptr<Scanner> scanner_ptr = 
-    Scanner::get_scanner_from_name(default_scanner_name);
+  shared_ptr<Scanner> scanner_ptr(
+				  Scanner::get_scanner_from_name(default_scanner_name));
   
   add_extension(filename, ".img");
 

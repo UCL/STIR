@@ -132,13 +132,13 @@ void
 BackProjectorByBinUsingInterpolation::set_up(shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
 				     shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr)
 {
-  symmetries_ptr = 
-    new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr,
-                                                do_symmetry_90degrees_min_phi,
-                                                do_symmetry_180degrees_min_phi,
-						do_symmetry_swap_segment,
-						do_symmetry_swap_s,
-						do_symmetry_shift_z);
+  this->symmetries_ptr.
+    reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr,
+						      do_symmetry_90degrees_min_phi,
+						      do_symmetry_180degrees_min_phi,
+						      do_symmetry_swap_segment,
+						      do_symmetry_swap_s,
+						      do_symmetry_shift_z));
 
    // check if data are according to what we can handle
 
@@ -232,9 +232,8 @@ actual_back_project(DiscretisedDensity<3,float>& density,
 	static_cast<int>(ceil(min_tangential_pos_num*zoom));
       zoomed_max_tangential_pos_num = 
 	static_cast<int>(ceil(max_tangential_pos_num*zoom));
-      // store it in an auto_ptr, such that it gets cleaned up correctly
-      zoomed_viewgrams_sptr = 
-	new RelatedViewgrams<float>(viewgrams);
+      // store it in a shared_ptr, such that it gets cleaned up correctly
+      zoomed_viewgrams_sptr.reset(new RelatedViewgrams<float>(viewgrams));
       zoomed_viewgrams_ptr = zoomed_viewgrams_sptr.get();
 
       zoom_viewgrams(*zoomed_viewgrams_sptr, zoom, 

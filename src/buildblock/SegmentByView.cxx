@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -73,7 +74,7 @@ SegmentByView(const shared_ptr<ProjDataInfo>& pdi_ptr,
 
 template <typename elemT>
 SegmentByView<elemT>::SegmentByView(const SegmentBySinogram<elemT>& s_s)
-  : Segment<elemT>(s_s.get_proj_data_info_ptr()->clone(),
+  : Segment<elemT>(s_s.get_proj_data_info_ptr()->create_shared_clone(),
             s_s.get_segment_num()), 
 	       
     Array<3,elemT> (IndexRange3D(s_s.get_min_view_num(),s_s.get_max_view_num(),
@@ -151,7 +152,7 @@ resize(const IndexRange<3>& range)
   pdi_ptr->set_min_tangential_pos_num(range[0][ax_min].get_min_index());
   pdi_ptr->set_max_tangential_pos_num(range[0][ax_min].get_max_index());
 
-  this->proj_data_info_ptr = pdi_ptr;
+  this->proj_data_info_ptr.reset(pdi_ptr);
 
   Array<3,elemT>::resize(range);
 	

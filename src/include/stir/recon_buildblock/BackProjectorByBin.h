@@ -36,6 +36,7 @@
 
 #include "stir/RegisteredObject.h"
 #include "stir/TimedObject.h"
+#include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -44,7 +45,6 @@ template <int num_dimensions, class elemT> class DiscretisedDensity;
 class ProjDataInfo;
 class ProjData;
 class DataSymmetriesForViewSegmentNumbers;
-template <typename T> class shared_ptr;
 
 
 

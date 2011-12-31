@@ -82,8 +82,8 @@ post_processing()
   if (base_type::post_processing())
     return true;
 
-  shared_ptr<Scanner> scanner_ptr = 
-    Scanner::get_scanner_from_name(this->default_scanner_name);
+  shared_ptr<Scanner> scanner_ptr(
+    Scanner::get_scanner_from_name(this->default_scanner_name));
 
   if (find_ECAT_system_type(*scanner_ptr)==0)
     {

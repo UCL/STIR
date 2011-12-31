@@ -141,7 +141,7 @@ increment_current_shape_num()
     {
       shape_ptrs.push_back(current_shape_ptr);
       values.push_back(current_value);
-      current_shape_ptr = 0;
+      current_shape_ptr.reset();
     }
 }
 
@@ -294,8 +294,8 @@ GenerateImage::
 compute()
 {  
 #if 0
-  shared_ptr<DiscretisedDensity<3,float> > density_ptr = 
-    DiscretisedDensity<3,float>::read_from_file(template_filename);
+  shared_ptr<DiscretisedDensity<3,float> > density_ptr(
+						       read_from_file<DiscretisedDensity<3,float> >(template_filename));
   shared_ptr<DiscretisedDensity<3,float> > out_density_ptr = 
     density_ptr->clone();
   out_density_ptr->fill(0);
@@ -313,8 +313,7 @@ compute()
 		  CartesianCoordinate3D<float>(output_voxel_size_z,
 					       output_voxel_size_y,
 					       output_voxel_size_x));
-  shared_ptr<DiscretisedDensity<3,float> > out_density_ptr = 
-    current_image.clone();
+  shared_ptr<DiscretisedDensity<3,float> > out_density_ptr(current_image.clone());
 #endif
   std::vector<float >::const_iterator value_iter = values.begin();
   for (std::vector<shared_ptr<Shape3D> >::const_iterator iter = shape_ptrs.begin();

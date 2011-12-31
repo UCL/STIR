@@ -31,6 +31,7 @@
 #include "stir/DynamicDiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/IO/stir_ecat7.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/decay_correction_factor.h"
 #include <iostream>
 #include "stir/Succeeded.h"
@@ -60,7 +61,7 @@ operator=(const DynamicDiscretisedDensity& argument)
   this->_time_frame_definitions = argument._time_frame_definitions;
   this->_densities.resize(argument._densities.size());
   for (unsigned int i=0; i<argument._densities.size(); ++i)
-    this->_densities[i] = argument._densities[i]->clone();
+    this->_densities[i].reset(argument._densities[i]->clone());
 
   this->_scanner_sptr = argument._scanner_sptr;
   this->_calibration_factor = argument._calibration_factor;
@@ -120,88 +121,7 @@ DynamicDiscretisedDensity*
 DynamicDiscretisedDensity::
 read_from_file(const string& filename) // The written image is read in respect to its center as origin!!!
 {
-  const int max_length=300;
-  char signature[max_length];
-
-  // read signature
-  {
-    fstream input(filename.c_str(), ios::in | ios::binary);
-    if (!input)
-      error("DynamicDiscretisedDensity::read_from_file: error opening file %s\n", filename.c_str());
-    input.read(signature, max_length);
-    signature[max_length-1]='\0';
-  }
-
-  DynamicDiscretisedDensity * dynamic_image_ptr = 0;
-#ifdef HAVE_LLN_MATRIX
-  dynamic_image_ptr =
-      new DynamicDiscretisedDensity;
-
-  if (strncmp(signature, "MATRIX", 6) == 0)
-  {
-#ifndef NDEBUG
-    warning("DynamicDiscretisedDensity::read_from_file trying to read %s as ECAT7\n", filename.c_str());
-#endif
-    USING_NAMESPACE_ECAT
-    USING_NAMESPACE_ECAT7
-
-    if (is_ECAT7_image_file(filename))
-    {
-      Main_header mhead;
-      if (read_ECAT7_main_header(mhead, filename) == Succeeded::no)
-        {
-          warning("DynamicDiscretisedDensity::read_from_file cannot read %s as ECAT7\n", filename.c_str());
-          return 0;
-        }
-      dynamic_image_ptr->_scanner_sptr =
-        find_scanner_from_ECAT_system_type(mhead.system_type);
-
-      dynamic_image_ptr->_calibration_factor =
-        mhead.calibration_factor;
-
-      dynamic_image_ptr->_isotope_halflife =
-        mhead.isotope_halflife;
-
-      // TODO get this from the subheader fields or so
-      // dynamic_image_ptr->_is_decay_corrected =
-      //  shead.processing_code & DecayPrc
-      dynamic_image_ptr->_is_decay_corrected = false;
-
-      dynamic_image_ptr->_start_time_in_secs_since_1970 =
-        static_cast<double>(mhead.scan_start_time);
-
-      dynamic_image_ptr->_time_frame_definitions =
-        TimeFrameDefinitions(filename);      
-
-      dynamic_image_ptr->_densities.resize(dynamic_image_ptr->_time_frame_definitions.get_num_frames());
-
-      const shared_ptr<VoxelsOnCartesianGrid<float>  > read_sptr = 
-            new VoxelsOnCartesianGrid<float> ; 
-
-      for (unsigned int frame_num=1; frame_num <= (dynamic_image_ptr->_time_frame_definitions).get_num_frames(); ++ frame_num)
-        {
-          dynamic_image_ptr->_densities[frame_num-1] =
-            ECAT7_to_VoxelsOnCartesianGrid(filename,
-                                           frame_num, 
-         /* gate_num, data_num, bed_num */ 1,0,0) ;
-        }
-      if (is_null_ptr(dynamic_image_ptr->_densities[0]))
-              error("DynamicDiscretisedDensity: None frame available\n");
-    }
-    else
-    {
-      if (is_ECAT7_file(filename))
-        warning("DynamicDiscretisedDensity::read_from_file ECAT7 file %s should be an image\n", filename.c_str());
-    }
-  }
-  else 
-    error("DynamicDiscretisedDensity::read_from_file %s does not correspond to an ECAT7 image");
-#endif // end of HAVE_LLN_MATRIX
-    // }    
-  
-  if (is_null_ptr(dynamic_image_ptr))   
-  error("DynamicDiscretisedDensity::read_from_file %s pointer is NULL\n");
-  return dynamic_image_ptr;
+  return stir::read_from_file<DynamicDiscretisedDensity>(filename).get();
 }
 
 //Warning write_time_frame_definitions() is not yet implemented, so time information is missing.

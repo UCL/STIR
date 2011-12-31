@@ -61,7 +61,7 @@ AnalyticReconstruction::set_defaults()
   base_type::set_defaults();
   input_filename="";
   max_segment_num_to_process=-1;
-  proj_data_ptr=NULL; 
+  proj_data_ptr.reset(); 
   output_image_size_xy=-1;
   output_image_size_z=-1;
   zoom=1.F;
@@ -207,8 +207,7 @@ Succeeded
 AnalyticReconstruction::
 reconstruct() 
 {
-  shared_ptr<DiscretisedDensity<3,float> > target_image_ptr =
-    construct_target_image_ptr();
+  shared_ptr<DiscretisedDensity<3,float> > target_image_ptr(construct_target_image_ptr());
   const Succeeded success = this->reconstruct(target_image_ptr);
   if (success == Succeeded::yes)
   {

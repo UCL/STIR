@@ -154,14 +154,14 @@ set_up(
   origin = image_info_ptr->get_origin();
   image_info_ptr->get_regular_range(min_index, max_index);
 
-  symmetries_ptr = 
+  symmetries_ptr.reset(
     new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
                                                 density_info_ptr,
                                                 do_symmetry_90degrees_min_phi,
                                                 do_symmetry_180degrees_min_phi,
                                                 do_symmetry_swap_segment,
                                                 do_symmetry_swap_s,
-                                                do_symmetry_shift_z);
+                                                do_symmetry_shift_z));
   const float sampling_distance_of_adjacent_LORs_xy =
     proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
   

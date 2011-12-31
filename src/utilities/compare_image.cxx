@@ -45,6 +45,7 @@ if the files are identical or not.
 #include "stir/DiscretisedDensity.h"
 #include "stir/ArrayFunction.h"
 #include "stir/recon_array_functions.h"
+#include "stir/IO/read_from_file.h"
 
 #include <numeric>
 #include <stdlib.h>
@@ -104,11 +105,11 @@ int main(int argc, char *argv[])
 	}      
     }
 
-  shared_ptr< DiscretisedDensity<3,float> >  first_operand= 
-    DiscretisedDensity<3,float>::read_from_file(argv[0]);
+  shared_ptr< DiscretisedDensity<3,float> >  
+    first_operand(read_from_file<DiscretisedDensity<3,float> >(argv[0]));
 
-  shared_ptr< DiscretisedDensity<3,float> >  second_operand= 
-    DiscretisedDensity<3,float>::read_from_file(argv[1]);
+  shared_ptr< DiscretisedDensity<3,float> >  
+    second_operand(read_from_file<DiscretisedDensity<3,float> >(argv[1]));
 
   // check if images are compatible
   {

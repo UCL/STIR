@@ -16,7 +16,8 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2009-06-22, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -100,7 +101,7 @@ SeparableMetzArrayFilter
       else printf ("%d-dir Gauss[%d]=%f\n",i,j,kernel[j]);
       
       
-      this->all_1d_array_filters[i-1] = new ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>(kernel);
+    this->all_1d_array_filters[i-1].reset(new ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>(kernel));
       
   }
 }

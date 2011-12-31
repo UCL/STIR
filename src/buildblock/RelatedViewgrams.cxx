@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -340,7 +341,7 @@ grow(const IndexRange<2>& range)
   const int ax_min = range.get_min_index();
   const int ax_max = range.get_max_index();
   
-  ProjDataInfo* pdi_ptr = get_proj_data_info_ptr()->clone();
+  shared_ptr<ProjDataInfo> pdi_ptr(get_proj_data_info_ptr()->clone());
 
   // set axial_pos range for all segments
   for (const_iterator iter= begin();

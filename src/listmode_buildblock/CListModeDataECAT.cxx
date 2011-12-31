@@ -75,7 +75,7 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
     if (!singles_file)
       {
 	warning("CListModeDataECAT: Couldn't open %s.", singles_filename.c_str());
-	scanner_sptr = new Scanner(Scanner::E962);
+	scanner_sptr.reset(new Scanner(Scanner::E962));
       }
     else
       {
@@ -85,7 +85,7 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
     if (!singles_file)
       {
 	warning("CListModeDataECAT: Couldn't read main_header from %s. We forge ahead anyway (assuming this is ECAT 962 data).", singles_filename.c_str());
-	scanner_sptr = new Scanner(Scanner::E962);
+	scanner_sptr.reset(new Scanner(Scanner::E962));
 	// TODO invalidate other fields in singles header
 	singles_main_header.scan_start_time = std::time_t(-1);
       }
@@ -146,7 +146,8 @@ shared_ptr <CListRecord>
 CListModeDataECAT<CListRecordT>::
 get_empty_record_sptr() const
 {
-  return new CListRecordT;
+  shared_ptr<CListRecord> sptr(new CListRecordT);
+  return sptr;
 }
 
 template <class CListRecordT>
@@ -176,18 +177,17 @@ open_lm_file(unsigned int new_lm_file) const
       sprintf(rest, "_%d.lm", new_lm_file);
       filename += rest;
       cerr << "CListModeDataECAT: opening file " << filename << endl;
-      shared_ptr<istream> stream_ptr = 
-	new fstream(filename.c_str(), ios::in | ios::binary);
+      shared_ptr<istream> stream_ptr(new fstream(filename.c_str(), ios::in | ios::binary));
       if (!(*stream_ptr))
       {
 	warning("CListModeDataECAT: cannot open file %s (probably this is perfectly ok)\n ", filename.c_str());
         return Succeeded::no;
       }
-      current_lm_data_ptr =
+      current_lm_data_ptr.reset(
 	new InputStreamWithRecords<CListRecordT, bool>(stream_ptr, 
                                                        sizeof(CListTimeDataECAT966), 
                                                        sizeof(CListTimeDataECAT966), 
-                                                       ByteOrder::big_endian != ByteOrder::get_native_order());
+                                                       ByteOrder::big_endian != ByteOrder::get_native_order()));
       current_lm_file = new_lm_file;
 
       // now restore saved_get_positions for this file

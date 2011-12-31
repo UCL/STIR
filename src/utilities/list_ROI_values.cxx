@@ -61,6 +61,7 @@
 #include "stir/DataProcessor.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
+#include "stir/IO/read_from_file.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -105,7 +106,7 @@ increment_current_shape_num()
     {
       shape_ptrs.push_back(current_shape_sptr);
       shape_names.push_back(current_shape_name);
-      current_shape_sptr = 0;
+      current_shape_sptr.reset();
       current_shape_name = "";
     }
 }
@@ -117,8 +118,8 @@ set_defaults()
   shape_ptrs.resize(0);
   shape_names.resize(0);
 
-  filter_ptr = 0;
-  current_shape_sptr = 0;
+  filter_ptr.reset();
+  current_shape_sptr.reset();
   current_shape_name = "";
   num_samples = CartesianCoordinate3D<int>(1,1,1);
 }
@@ -215,8 +216,8 @@ main(int argc, char *argv[])
     return EXIT_FAILURE;
   }
   
-  shared_ptr<DiscretisedDensity<3,float> > image_ptr =
-    DiscretisedDensity<3,float>::read_from_file(input_file);
+  shared_ptr<DiscretisedDensity<3,float> > 
+    image_ptr(read_from_file<DiscretisedDensity<3,float> >(input_file));
   ROIValuesParameters parameters;
   if (argc<4)
     parameters.ask_parameters();

@@ -39,6 +39,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/Scanner.h"
+#include "stir/IO/read_from_file.h"
 #include <utility>
 #include <vector>
 #include <string>
@@ -78,8 +79,8 @@ START_NAMESPACE_STIR
   sizes[3]=1;
   IndexRange<3> range(sizes);
   
-  const shared_ptr<DiscretisedDensity<3,float>  > frame1_sptr = 
-    new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing) ;  
+  const shared_ptr<DiscretisedDensity<3,float>  > 
+    frame1_sptr(new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing));
   (*frame1_sptr)[0][0][0] = 1.F;
 
   std::vector< std::pair< double, double > > time_frame_definitions_vector(1) ;
@@ -89,7 +90,7 @@ START_NAMESPACE_STIR
   const double scan_start_time_in_secs_since_1970 = double(1277478034); // somewhere in June 2010...
 
   Scanner::Type test_scanner=Scanner::E966;
-  shared_ptr<Scanner> scanner_sptr = new Scanner(test_scanner);
+  shared_ptr<Scanner> scanner_sptr(new Scanner(test_scanner));
   DynamicDiscretisedDensity dynamic_image(time_frame_definitions, scan_start_time_in_secs_since_1970, scanner_sptr); 
   dynamic_image.set_density_sptr(frame1_sptr, 1);
   check_if_equal(dynamic_image[1][0][0][0],1.F,"check DynamicDiscretisedDensity class implementation");
@@ -109,10 +110,10 @@ START_NAMESPACE_STIR
   max_size[1]=63;  max_size[2]=63;  max_size[3]=63;
   
   IndexRange<3> range(min_size,max_size);
-  const shared_ptr<DiscretisedDensity<3,float>  > frame1_2_sptr = 
-    new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing) ;  
-  const shared_ptr<DiscretisedDensity<3,float>  > frame2_2_sptr = 
-    new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing) ;  
+  const shared_ptr<DiscretisedDensity<3,float>  > 
+    frame1_2_sptr(new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing));
+  const shared_ptr<DiscretisedDensity<3,float>  > 
+    frame2_2_sptr(new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing));
 
       for(int k=min_size[3];k<min_size[3];++k)
         for(int j=max_size[2];j<max_size[2];++j)  
@@ -132,7 +133,7 @@ START_NAMESPACE_STIR
   const TimeFrameDefinitions time_frame_definitions(time_frame_definitions_vector);
   const double scan_start_time_in_secs_since_1970 = double(1277478034); // somewhere in June 2010...
   Scanner::Type test_scanner=Scanner::E966;
-  shared_ptr<Scanner> scanner_sptr = new Scanner(test_scanner);
+  shared_ptr<Scanner> scanner_sptr(new Scanner(test_scanner));
 
   DynamicDiscretisedDensity empty_dynamic_image(time_frame_definitions,
                                                 scan_start_time_in_secs_since_1970,
@@ -169,12 +170,12 @@ START_NAMESPACE_STIR
   min_size[1]=0;  min_size[2]=-64;  min_size[3]=-64;
   max_size[1]=63;  max_size[2]=63;  max_size[3]=63;  
   IndexRange<3> range(min_size,max_size);
-  const shared_ptr<DiscretisedDensity<3,float>  > frame1_3_sptr = 
-    new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing) ;  
-  const shared_ptr<DiscretisedDensity<3,float>  > frame2_3_sptr = 
-    new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing) ;  
-  const shared_ptr<DiscretisedDensity<3,float>  > frame3_3_sptr = 
-    new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing) ;  
+  const shared_ptr<DiscretisedDensity<3,float>  > 
+    frame1_3_sptr(new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing));
+  const shared_ptr<DiscretisedDensity<3,float>  > 
+    frame2_3_sptr(new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing));
+  const shared_ptr<DiscretisedDensity<3,float>  > 
+    frame3_3_sptr(new VoxelsOnCartesianGrid<float> (range, origin,  grid_spacing));
 
       for(int k=min_size[3];k<min_size[3];++k)
         for(int j=max_size[2];j<max_size[2];++j)  
@@ -197,7 +198,7 @@ START_NAMESPACE_STIR
   const TimeFrameDefinitions time_frame_definitions(time_frame_definitions_vector);
   const double scan_start_time_in_secs_since_1970 = double(1277478034); // somewhere in June 2010...
   Scanner::Type test_scanner=Scanner::E966;
-  shared_ptr<Scanner> scanner_sptr = new Scanner(test_scanner);
+  shared_ptr<Scanner> scanner_sptr(new Scanner(test_scanner));
   DynamicDiscretisedDensity dynamic_image(time_frame_definitions,
                                           scan_start_time_in_secs_since_1970,
                                           scanner_sptr); 
@@ -236,8 +237,8 @@ START_NAMESPACE_STIR
   //  string string_test2("./local/samples/dyn_image_write_to_ecat7_test2.img");
   //  dynamic_image.write_to_ecat7(string_test);
   check(dynamic_image.write_to_ecat7(string_test)==Succeeded::yes,"check DynamicDiscretisedDensity::write_to_ecat7 implementation");
-  shared_ptr< DynamicDiscretisedDensity >  dyn_image_read_test_sptr =  
-    DynamicDiscretisedDensity::read_from_file(string_test);
+  shared_ptr< DynamicDiscretisedDensity >  
+    dyn_image_read_test_sptr(read_from_file<DynamicDiscretisedDensity>(string_test));
   const DynamicDiscretisedDensity & dyn_image_read_test = *dyn_image_read_test_sptr;
   //  dyn_image_read_test.write_to_ecat7(string_test2);
 

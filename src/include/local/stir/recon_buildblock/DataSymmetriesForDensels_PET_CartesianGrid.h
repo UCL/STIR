@@ -39,12 +39,12 @@
 //#include "stir/ViewSegmentNumbers.h"
 //#include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Densel.h"
+#include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 template <int num_dimensions, typename elemT> class DiscretisedDensityOnCartesianGrid;
-template <typename T> class shared_ptr;
 
 /*!
   \ingroup recon_buildblock

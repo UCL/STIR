@@ -82,7 +82,7 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
           ECAT7_filename.c_str());
   }
   
-  scanner_sptr = find_scanner_from_ECAT_system_type(mptr->mhptr->system_type);
+  scanner_sptr.reset(find_scanner_from_ECAT_system_type(mptr->mhptr->system_type));
 
 
   if (scanner_sptr->get_type() != Scanner::E966) {

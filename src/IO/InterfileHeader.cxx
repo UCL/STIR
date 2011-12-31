@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -840,8 +841,7 @@ bool InterfilePDFSHeader::post_processing()
   
   // handle scanner
 
-  shared_ptr<Scanner> guessed_scanner_ptr = 
-    Scanner::get_scanner_from_name(originating_system);
+  shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(originating_system));
   bool originating_system_was_recognised = 
     guessed_scanner_ptr->get_type() != Scanner::Unknown_scanner;
   if (!originating_system_was_recognised)
@@ -866,32 +866,32 @@ bool InterfilePDFSHeader::post_processing()
     switch (num_detectors_per_ring)
     {
     case 192*2:
-      guessed_scanner_ptr = new Scanner( Scanner::E953);
+      guessed_scanner_ptr.reset(new Scanner( Scanner::E953));
       warning(warning_msg, "ECAT 953");
       break;
     case 336*2:
-      guessed_scanner_ptr = new Scanner( Scanner::Advance);
+      guessed_scanner_ptr.reset(new Scanner( Scanner::Advance));
       warning(warning_msg, "Advance");
       break;
     case 288*2:
       if(num_rings == 104) 
       { //added by Dylan Togane
- 	guessed_scanner_ptr = new Scanner( Scanner::HRRT);
+ 	guessed_scanner_ptr.reset(new Scanner( Scanner::HRRT));
 	warning(warning_msg, "HRRT");
       }
       else if (num_rings == 48)
       {
-	guessed_scanner_ptr = new Scanner( Scanner::E966);
+	guessed_scanner_ptr.reset(new Scanner( Scanner::E966));
 	warning(warning_msg, "ECAT 966");
       }
       else if (num_rings == 32)
       {
-	guessed_scanner_ptr = new Scanner( Scanner::E962);
+	guessed_scanner_ptr.reset(new Scanner( Scanner::E962));
 	warning(warning_msg, "ECAT 962");
       }
       break; // Dylan Togane [dtogane@camhpet.on.ca] 30/07/2002 bug fix: added break
     case 256*2:
-      guessed_scanner_ptr = new Scanner( Scanner::E951);
+      guessed_scanner_ptr.reset(new Scanner( Scanner::E951));
       warning(warning_msg, "ECAT 951");
       break;
     }
@@ -1067,7 +1067,7 @@ bool InterfilePDFSHeader::post_processing()
 		"\t%s model.\n",
 		guessed_scanner_ptr->get_name().c_str());
 	if (!originating_system_was_recognised)
-	  guessed_scanner_ptr = new Scanner( Scanner::Unknown_scanner);
+	  guessed_scanner_ptr.reset(new Scanner( Scanner::Unknown_scanner));
       }
     }
 
@@ -1101,7 +1101,7 @@ bool InterfilePDFSHeader::post_processing()
 
   // finally, we construct a new scanner object with
   // data from the Interfile header (or the guessed scanner).
-  shared_ptr<Scanner> scanner_ptr_from_file =
+  shared_ptr<Scanner> scanner_ptr_from_file(
     new Scanner(guessed_scanner_ptr->get_type(), 
                 originating_system,
 		num_detectors_per_ring, 
@@ -1119,7 +1119,7 @@ bool InterfilePDFSHeader::post_processing()
 		num_transaxial_crystals_per_block,
 		num_axial_crystals_per_singles_unit,
                 num_transaxial_crystals_per_singles_unit,
-                num_detector_layers);
+                num_detector_layers));
 
   bool is_consistent =
     scanner_ptr_from_file->check_consistency() == Succeeded::yes;

@@ -68,6 +68,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
+#include "stir/IO/read_from_file.h"
 
 #include <fstream>
 #include <list>
@@ -100,8 +101,8 @@ do_segments(DiscretisedDensity<3,float>& image,
 	    bool fill_with_1)
 {
   
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    back_projector_ptr->get_symmetries_used()->clone();
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> 
+    symmetries_sptr(back_projector_ptr->get_symmetries_used()->clone());
   
   
   list<ViewSegmentNumbers> already_processed;
@@ -210,11 +211,10 @@ main(int argc, char **argv)
     }
   else
     {
-      shared_ptr<ProjDataInfo> data_info= ProjDataInfo::ask_parameters();
+      shared_ptr<ProjDataInfo> data_info(ProjDataInfo::ask_parameters());
       // create an empty ProjDataFromStream object
       // such that we don't have to differentiate between code later on
-      proj_data_ptr = 
-	new ProjDataFromStream (data_info,static_cast<iostream *>(NULL));
+      proj_data_ptr.reset(new ProjDataFromStream (data_info,shared_ptr<iostream>()));
       fill = true;
     }
   shared_ptr<BackProjectorByBin> back_projector_ptr;
@@ -243,7 +243,7 @@ main(int argc, char **argv)
 
   if (argc>3)
     {
-      image_sptr = DiscretisedDensity<3,float>::read_from_file(argv[3]);
+      image_sptr = read_from_file<DiscretisedDensity<3,float> >(argv[3]);
     }
   else
     {
@@ -265,16 +265,15 @@ main(int argc, char **argv)
 	*vox_image_ptr->get_voxel_size().z();
       vox_image_ptr->set_origin(Coordinate3D<float>(z_origin,0,0));
 
-      image_sptr = vox_image_ptr;
+      image_sptr.reset(vox_image_ptr);
     }
 
   while (is_null_ptr(back_projector_ptr))
     {
-      back_projector_ptr =
-	BackProjectorByBin::ask_type_and_parameters();
+      back_projector_ptr.reset(BackProjectorByBin::ask_type_and_parameters());
     }
 
-  back_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
+  back_projector_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
 			     image_sptr);
  
   do

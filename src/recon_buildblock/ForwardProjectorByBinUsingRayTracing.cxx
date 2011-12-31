@@ -122,8 +122,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
       error("The on-the-fly Ray tracing forward projector cannot handle data with odd number of views. Use another projector. Sorry.");
     }
 
-  symmetries_ptr =
-    new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr);
+  symmetries_ptr.reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr));
 
   // check if data are according to what we can handle
 

@@ -394,8 +394,8 @@ void
 ProjDataInfoCylindrical::
 compute_segment_axial_pos_to_ring_pair(const int segment_num, const int axial_pos_num) const
 {
-  segment_axial_pos_to_ring_pair[segment_num][axial_pos_num] =
-    new RingNumPairs;
+  shared_ptr<RingNumPairs> new_el(new RingNumPairs);
+  segment_axial_pos_to_ring_pair[segment_num][axial_pos_num] = new_el;
  
   RingNumPairs& table = 
     *segment_axial_pos_to_ring_pair[segment_num][axial_pos_num];

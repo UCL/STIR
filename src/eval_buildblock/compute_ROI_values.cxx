@@ -58,7 +58,7 @@ compute_ROI_values_per_plane(VectorWithOffset<ROIValues>& values,
   values = VectorWithOffset<ROIValues>(min_z, max_z);
 
   shared_ptr<VoxelsOnCartesianGrid<float> >
-    discretised_shape_ptr=image.get_empty_voxels_on_cartesian_grid();
+    discretised_shape_ptr(image.get_empty_voxels_on_cartesian_grid());
 
 
   shape.construct_volume(*discretised_shape_ptr, num_samples);

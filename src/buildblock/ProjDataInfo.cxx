@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2009-05-13, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -235,12 +236,12 @@ ProjDataInfo::get_empty_viewgram(const int view_num,
 				 const bool make_num_tangential_poss_odd) const
 {  
   // we can't access the shared ptr, so we have to clone 'this'.
-  ProjDataInfo *  proj_data_info_ptr = this->clone();
+  shared_ptr<ProjDataInfo>  proj_data_info_sptr(this->clone());
   
   if (make_num_tangential_poss_odd && (get_num_tangential_poss()%2==0))
-    proj_data_info_ptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
+    proj_data_info_sptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
   
-  Viewgram<float> v(proj_data_info_ptr, view_num, segment_num);
+  Viewgram<float> v(proj_data_info_sptr, view_num, segment_num);
    
   return v;
 }
@@ -251,12 +252,12 @@ ProjDataInfo::get_empty_sinogram(const int axial_pos_num, const int segment_num,
                                       const bool make_num_tangential_poss_odd) const
 {
   // we can't access the shared ptr, so we have to clone 'this'.
-  ProjDataInfo *  proj_data_info_ptr = this->clone();
+  shared_ptr<ProjDataInfo>  proj_data_info_sptr(this->clone());
   
   if (make_num_tangential_poss_odd && (get_num_tangential_poss()%2==0))
-    proj_data_info_ptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
+    proj_data_info_sptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
 
-  Sinogram<float> s(proj_data_info_ptr, axial_pos_num, segment_num);
+  Sinogram<float> s(proj_data_info_sptr, axial_pos_num, segment_num);
    
   return s;
 }
@@ -269,12 +270,12 @@ ProjDataInfo::get_empty_segment_by_sinogram(const int segment_num,
   assert(segment_num <= get_max_segment_num());
  
   // we can't access the shared ptr, so we have to clone 'this'.
-  ProjDataInfo *  proj_data_info_ptr = this->clone();
+  shared_ptr<ProjDataInfo>  proj_data_info_sptr(this->clone());
   
   if (make_num_tangential_poss_odd && (get_num_tangential_poss()%2==0))
-    proj_data_info_ptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
+    proj_data_info_sptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
 
-  SegmentBySinogram<float> s(proj_data_info_ptr, segment_num);
+  SegmentBySinogram<float> s(proj_data_info_sptr, segment_num);
 
   return s;
 }  
@@ -288,12 +289,12 @@ ProjDataInfo::get_empty_segment_by_view(const int segment_num,
   assert(segment_num <= get_max_segment_num());
 
     // we can't access the shared ptr, so we have to clone 'this'.
-  ProjDataInfo *  proj_data_info_ptr = this->clone();
+  shared_ptr<ProjDataInfo>  proj_data_info_sptr(this->clone());
   
   if (make_num_tangential_poss_odd && (get_num_tangential_poss()%2==0))
-    proj_data_info_ptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
+    proj_data_info_sptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
   
-  SegmentByView<float> s(proj_data_info_ptr, segment_num);
+  SegmentByView<float> s(proj_data_info_sptr, segment_num);
 
   return s;
 }
@@ -491,8 +492,7 @@ ProjDataInfo::ProjDataInfoGE(const shared_ptr<Scanner>& scanner,
 ProjDataInfo* ProjDataInfo::ask_parameters()
 {
 
-  shared_ptr<Scanner> scanner_ptr = 
-    Scanner::ask_parameters();
+  shared_ptr<Scanner> scanner_ptr(Scanner::ask_parameters());
   
   const bool is_Advance =
     scanner_ptr->get_type() == Scanner::Advance ||

@@ -13,7 +13,8 @@
   $Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002 - 2009-06-22, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -185,8 +186,7 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
        ++filter_iter, ++coefficients_iter)
     {
    
-      *filter_iter =
-	new ArrayFilter1DUsingConvolution<elemT>(*coefficients_iter);
+      filter_iter->reset(new ArrayFilter1DUsingConvolution<elemT>(*coefficients_iter));
     }  
   filter = SeparableArrayFunctionObject<3,elemT>(all_1d_filters);
 

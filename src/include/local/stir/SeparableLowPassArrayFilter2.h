@@ -100,7 +100,7 @@ is_trivial() const
   for (typename  VectorWithOffset< shared_ptr<ArrayFunctionObject<1,elemT> > >::const_iterator iter=all_1d_array_filters.begin();
         iter!=all_1d_array_filters.end();++iter)
    {
-     // TODO insert condition on use_count here (see SeparableArrayFunctionObject)
+     // TODO insert condition on is_null_ptr here (see SeparableArrayFunctionObject)
      if (!(*iter)->is_trivial())
        return false;
    }

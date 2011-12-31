@@ -54,6 +54,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 #include <string>
 #include <iostream>
 #include <iomanip>
@@ -81,12 +82,12 @@ USING_NAMESPACE_STIR
     return EXIT_FAILURE ;
   else
     {  
-      shared_ptr<DynamicDiscretisedDensity> dyn_image_sptr =
-	DynamicDiscretisedDensity::read_from_file(argv[2]);
+      shared_ptr<DynamicDiscretisedDensity> 
+	dyn_image_sptr(read_from_file<DynamicDiscretisedDensity>(argv[2]));
       const DynamicDiscretisedDensity & dyn_image= *dyn_image_sptr;
 #if 1
-      shared_ptr<ParametricVoxelsOnCartesianGrid> par_image_sptr =
-	ParametricVoxelsOnCartesianGrid::read_from_file(argv[1]);
+      shared_ptr<ParametricVoxelsOnCartesianGrid> 
+	par_image_sptr(ParametricVoxelsOnCartesianGrid::read_from_file(argv[1]));
       ParametricVoxelsOnCartesianGrid par_image = *par_image_sptr;
 #else
       ParametricVoxelsOnCartesianGrid par_image(dyn_image[1]);

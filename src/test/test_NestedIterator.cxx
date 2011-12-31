@@ -391,8 +391,8 @@ NestedIteratorTests::run_tests()
     typedef Array<2,int> C2;
     typedef std::vector<shared_ptr<C2> > C1;
     C1 c(2);
-    c[0] = new C2(range1);
-    c[1] = new C2(range2);
+    c[0].reset(new C2(range1));
+    c[1].reset(new C2(range2));
     int count = 1;
     for (C2::full_iterator fullarrayiter = c[0]->begin_all(); fullarrayiter != c[0]->end_all();
          ++fullarrayiter, ++count)

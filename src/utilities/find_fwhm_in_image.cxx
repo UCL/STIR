@@ -57,6 +57,7 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/find_fwhm_in_image.h"
+#include "stir/IO/read_from_file.h"
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -88,8 +89,8 @@ int main(int argc, char *argv[])
   const int dimension = argc>=5 ? atoi(argv[4]) : 0 ; 
   const bool nema = argc>=6 ? atoi(argv[5]) : 1 ; 
   std::cerr << "Finding " << num_maxima << " maxima\n" ;    
-  shared_ptr< DiscretisedDensity<3,float> >  input_image_sptr= 
-    DiscretisedDensity<3,float>::read_from_file(argv[1]);
+  shared_ptr< DiscretisedDensity<3,float> >  
+    input_image_sptr(read_from_file<DiscretisedDensity<3,float> >(argv[1]));
   DiscretisedDensity<3,float>& input_image = *input_image_sptr;  
   std::list<ResolutionIndex<3,float> > list_res_index = 
     find_fwhm_in_image(input_image,num_maxima,level,dimension,nema);    

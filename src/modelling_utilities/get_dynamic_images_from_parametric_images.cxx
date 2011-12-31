@@ -46,6 +46,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -76,16 +77,16 @@ int main(int argc, char *argv[])
     return EXIT_FAILURE ;
   else
     {  
-      shared_ptr<ParametricVoxelsOnCartesianGrid> par_image_sptr =
-	ParametricVoxelsOnCartesianGrid::read_from_file(argv[2]);
+      shared_ptr<ParametricVoxelsOnCartesianGrid> 
+	par_image_sptr(ParametricVoxelsOnCartesianGrid::read_from_file(argv[2]));
       const ParametricVoxelsOnCartesianGrid & par_image = *par_image_sptr;
 #if 1
-      shared_ptr<DynamicDiscretisedDensity> dyn_image_sptr =
-	DynamicDiscretisedDensity::read_from_file(argv[1]);
+      shared_ptr<DynamicDiscretisedDensity> 
+	dyn_image_sptr(read_from_file<DynamicDiscretisedDensity>(argv[1]));
       DynamicDiscretisedDensity & dyn_image= *dyn_image_sptr;
 #else
       // At the moment it is impossible to have the scanner information without extra prior information.
-      const shared_ptr<DiscretisedDensity<3,float> > density_template_sptr = (par_image_sptr->construct_single_density(1)).clone();
+      const shared_ptr<DiscretisedDensity<3,float> > density_template_sptr((par_image_sptr->construct_single_density(1)).clone());
       DynamicDiscretisedDensity dyn_image=DynamicDiscretisedDensity(patlak_plot.get_time_frame_definitions(), scanner_sptr, density_template_sptr);
 #endif      
       //ToDo: Assertion for the dyn-par images, sizes I have to create from one to the other image, so then it should be OK...      

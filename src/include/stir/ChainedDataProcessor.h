@@ -92,19 +92,11 @@ public:
   static const char * const registered_name; 
   
   //! Construct given DataProcessor parameters
-#ifndef _MSC_VER
   explicit
-  ChainedDataProcessor(shared_ptr<DataProcessor<DataT> > const& apply_first=0,
-		       shared_ptr<DataProcessor<DataT> > const& apply_second=0);
-#else
-  // VC does not compile the above for some reason
-  // but gcc does not compile the work-around below...
-  explicit
-  ChainedDataProcessor(shared_ptr<DataProcessor<DataT> > const& apply_first=
+  ChainedDataProcessor(shared_ptr<DataProcessor<DataT> > apply_first=
 		       shared_ptr<DataProcessor<DataT> >(),
-		       shared_ptr<DataProcessor<DataT> > const& apply_second=
+		       shared_ptr<DataProcessor<DataT> > apply_second=
 		       shared_ptr<DataProcessor<DataT> >());
-#endif    
   
 private:
   

@@ -74,7 +74,7 @@ void
 RebinProjDataParameters::
 set_defaults()
 {
-  proj_data_rebinning_sptr = 0;
+  proj_data_rebinning_sptr.reset();
 }
 
 void 

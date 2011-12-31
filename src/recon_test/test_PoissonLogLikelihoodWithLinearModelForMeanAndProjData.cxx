@@ -118,8 +118,8 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
 run_tests_for_objective_function(GeneralisedObjectiveFunction<PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::target_type>& objective_function,
                                  PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::target_type& target) {
-  shared_ptr<target_type> gradient_sptr = target.get_empty_copy();
-  shared_ptr<target_type> gradient_2_sptr = target.get_empty_copy();
+  shared_ptr<target_type> gradient_sptr(target.get_empty_copy());
+  shared_ptr<target_type> gradient_2_sptr(target.get_empty_copy());
   const int subset_num = 0;
   info("Computing gradient");
   objective_function.compute_sub_gradient(*gradient_sptr, target, subset_num);
@@ -164,19 +164,19 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
 construct_input_data(shared_ptr<target_type>& density_sptr)
 { 
-  shared_ptr<ProjData> proj_data_sptr = 0;
+  shared_ptr<ProjData> proj_data_sptr;
   if (this->proj_data_filename == 0)
     {
       // construct a small scanner and sinogram
-      shared_ptr<Scanner> scanner_sptr = new Scanner(Scanner::E953);
+      shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
       scanner_sptr->set_num_rings(5);
-      shared_ptr<ProjDataInfo> proj_data_info_sptr = 
+      shared_ptr<ProjDataInfo> proj_data_info_sptr(
         ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
                                       /*span=*/3, 
                                       /*max_delta=*/4,
                                       /*num_views=*/16,
-                                      /*num_tang_poss=*/16);
-      proj_data_sptr = new ProjDataInMemory (proj_data_info_sptr);
+                                      /*num_tang_poss=*/16));
+      proj_data_sptr.reset(new ProjDataInMemory (proj_data_info_sptr));
       for (int seg_num=proj_data_sptr->get_min_segment_num(); 
            seg_num<=proj_data_sptr->get_max_segment_num();
            ++seg_num)
@@ -207,8 +207,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
       CartesianCoordinate3D<float> origin (0,0,0);    
       const float zoom=1.F;
       
-      density_sptr =
-        new VoxelsOnCartesianGrid<float>(*proj_data_sptr->get_proj_data_info_ptr(),zoom,origin);
+      density_sptr.reset(new VoxelsOnCartesianGrid<float>(*proj_data_sptr->get_proj_data_info_ptr(),zoom,origin));
       // fill with random numbers between 0 and 1
       typedef boost::mt19937 base_generator_type;
       // initialize by reproducible seed
@@ -240,9 +239,10 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
 
 
   // multiplicative term
-  shared_ptr<BinNormalisation> bin_norm_sptr = new TrivialBinNormalisation();
+  shared_ptr<BinNormalisation> bin_norm_sptr(new TrivialBinNormalisation());
   {
-    shared_ptr<ProjData> mult_proj_data_sptr  = new ProjDataInMemory (proj_data_sptr->get_proj_data_info_ptr()->clone());
+    shared_ptr<ProjData> 
+      mult_proj_data_sptr(new ProjDataInMemory (proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone()));
     for (int seg_num=proj_data_sptr->get_min_segment_num(); 
          seg_num<=proj_data_sptr->get_max_segment_num();
          ++seg_num)
@@ -259,11 +259,11 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
           }
         mult_proj_data_sptr->set_segment(segment);
       }
-    bin_norm_sptr = new BinNormalisationFromProjData(mult_proj_data_sptr);
+    bin_norm_sptr.reset(new BinNormalisationFromProjData(mult_proj_data_sptr));
   }
 
   // additive term
-  shared_ptr<ProjData> add_proj_data_sptr  = new ProjDataInMemory (proj_data_sptr->get_proj_data_info_ptr()->clone());
+  shared_ptr<ProjData> add_proj_data_sptr(new ProjDataInMemory (proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone()));
   {
     for (int seg_num=proj_data_sptr->get_min_segment_num(); 
          seg_num<=proj_data_sptr->get_max_segment_num();
@@ -283,15 +283,13 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
       }
   }
 
-  objective_function_sptr = new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>;
+  objective_function_sptr.reset(new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>);
   PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>& objective_function =
     reinterpret_cast<  PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>& >(*objective_function_sptr);
   objective_function.set_proj_data_sptr(proj_data_sptr);
   objective_function.set_use_subset_sensitivities(true);
-  shared_ptr<ProjMatrixByBin> proj_matrix_sptr =
-    new ProjMatrixByBinUsingRayTracing();
-  shared_ptr<ProjectorByBinPair> proj_pair_sptr = new
-    ProjectorByBinPairUsingProjMatrixByBin(proj_matrix_sptr);
+  shared_ptr<ProjMatrixByBin> proj_matrix_sptr(new ProjMatrixByBinUsingRayTracing());
+  shared_ptr<ProjectorByBinPair> proj_pair_sptr(new ProjectorByBinPairUsingProjMatrixByBin(proj_matrix_sptr));
   objective_function.set_projector_pair_sptr(proj_pair_sptr) ;
   /*
   void set_frame_num(const int);

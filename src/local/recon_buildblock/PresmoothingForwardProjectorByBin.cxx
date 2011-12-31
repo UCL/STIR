@@ -49,7 +49,7 @@ bool
 PresmoothingForwardProjectorByBin::
 post_processing()
 {
-  if (original_forward_projector_ptr.use_count() == 0)
+  if (is_null_ptr(original_forward_projector_ptr))
   {
     warning("Pre Smoothing Forward Projector: original forward projector needs to be set\n");
     return true;
@@ -81,7 +81,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
        const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr)
 {
   original_forward_projector_ptr->set_up(proj_data_info_ptr, image_info_ptr);
-  if (image_processor_ptr.use_count()!=0)
+  if (!is_null_ptr(image_processor_ptr))
     image_processor_ptr->set_up(*image_info_ptr);
 }
 
@@ -99,9 +99,9 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
 		  const int min_axial_pos_num, const int max_axial_pos_num,
 		  const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
-  if (image_processor_ptr.use_count()!=0)
+  if (!is_null_ptr(image_processor_ptr))
     {
-      shared_ptr<DiscretisedDensity<3,float> > filtered_density_ptr = density.get_empty_discretised_density();
+      shared_ptr<DiscretisedDensity<3,float> > filtered_density_ptr(density.get_empty_discretised_density());
       image_processor_ptr->apply(*filtered_density_ptr, density);
       assert(density.get_index_range() == filtered_density_ptr->get_index_range());
       original_forward_projector_ptr->forward_project(viewgrams, *filtered_density_ptr,

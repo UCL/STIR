@@ -190,7 +190,7 @@ ROITests::run_tests_one_shape(Shape3D& shape,
       const float volume_before_scale = shape.get_geometric_volume();
       const CartesianCoordinate3D<float> scale(.5F,.9F,.8F);
       const float total_scale = scale[1]*scale[2]*scale[3];
-      shared_ptr<Shape3D> new_shape_sptr = shape.clone();
+      shared_ptr<Shape3D> new_shape_sptr(shape.clone());
       new_shape_sptr->scale_around_origin(scale);
       
       const ROIValues ROI_values =
@@ -231,8 +231,8 @@ ROITests::run_tests_one_shape(Shape3D& shape,
 		   make_1d_array(0.F,1.F,1.F),
 		   make_1d_array(0.F,-2.F,2.F));
       const float total_scale = 1/determinant(direction_vectors);
-      shared_ptr<Shape3DWithOrientation> new_shape_sptr = 
-	dynamic_cast<Shape3DWithOrientation *>(shape.clone());
+      shared_ptr<Shape3DWithOrientation> 
+	new_shape_sptr(dynamic_cast<Shape3DWithOrientation *>(shape.clone()));
       check(new_shape_sptr->set_direction_vectors(direction_vectors) == Succeeded::yes, "set_direction_vectors");
       //std::cerr << new_shape_sptr->parameter_info();
 
@@ -269,7 +269,7 @@ ROITests::run_tests_one_shape(Shape3D& shape,
     // test on parsing
     if (dynamic_cast<DiscretisedShape3D const *>(&shape) == 0)
     {
-      shared_ptr<Shape3D> shape_sptr = shape.clone();
+      shared_ptr<Shape3D> shape_sptr(shape.clone());
       KeyParser parser;
       parser.add_start_key("start");
       parser.add_stop_key("stop");

@@ -255,8 +255,8 @@ read_norm_data(const string& filename)
   if (mptr == 0)
     error("BinNormalisationFromECAT7: error opening %s\n", filename.c_str());
 
-  scanner_ptr =
-    find_scanner_from_ECAT_system_type(mptr->mhptr->system_type);
+  scanner_ptr.reset(
+    find_scanner_from_ECAT_system_type(mptr->mhptr->system_type));
   
   MatrixData* matrix = matrix_read( mptr, mat_numcod (1, 1, 1, 0, 0), 
 				    Norm3d /*= read data as well */);
@@ -305,14 +305,14 @@ read_norm_data(const string& filename)
           "number of detectors per ring determined from subheader is %d, while the scanner object says it is %d\n",
            nrm_subheader_ptr->crystals_per_ring, scanner_ptr->get_num_detectors_per_ring());
   
-   proj_data_info_cyl_uncompressed_ptr =
+  proj_data_info_cyl_uncompressed_ptr.reset(
     dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
     ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
                   /*span=*/1, scanner_ptr->get_num_rings()-1,
                   /*num_views,=*/scanner_ptr->get_num_detectors_per_ring()/2,
                   /*num_tangential_poss=*/nrm_subheader_ptr->num_r_elements, 
                   /*arc_corrected =*/false)
-                  );
+						     ));
   
   /*
     Extract geometrical & crystal interference, and crystal efficiencies from the

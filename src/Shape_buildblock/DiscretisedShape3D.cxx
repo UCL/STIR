@@ -31,6 +31,7 @@
 #include "stir/round.h"
 #include "stir/zoom.h"
 #include "stir/is_null_ptr.h"
+#include "stir/IO/read_from_file.h"
 START_NAMESPACE_STIR
 
 void
@@ -170,7 +171,7 @@ post_processing()
   if (Shape3D::post_processing()==true)
     return true;
 
-  density_ptr = DiscretisedDensity<3,float>::read_from_file(filename);
+  density_ptr = read_from_file<DiscretisedDensity<3,float> >(filename);
   if (!is_null_ptr(density_ptr))
     {
       if (this->get_origin() != density_ptr->get_origin())

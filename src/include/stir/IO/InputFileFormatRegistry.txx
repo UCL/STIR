@@ -58,7 +58,7 @@ InputFileFormatRegistry<DataT>::default_sptr()
      should be initialised in one translation unit only.
   */
   static shared_ptr<InputFileFormatRegistry<DataT> > 
-    _default_sptr = new InputFileFormatRegistry<DataT>;
+    _default_sptr(new InputFileFormatRegistry<DataT>);
 
   // std::cerr<< "\ndefault_sptr value " << _default_sptr.get() << std::endl;
   return _default_sptr;

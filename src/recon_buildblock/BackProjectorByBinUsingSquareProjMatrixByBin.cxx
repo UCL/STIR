@@ -38,7 +38,7 @@
 #include "stir/RelatedViewgrams.h"
 #include "stir/BasicCoordinate.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-
+#include "stir/is_null_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -51,7 +51,7 @@ void
 BackProjectorByBinUsingSquareProjMatrixByBin::
 set_defaults()
 {
-  proj_matrix_ptr = 0;
+  this->proj_matrix_ptr.reset();
 }
 
 
@@ -61,7 +61,7 @@ BackProjectorByBinUsingSquareProjMatrixByBin(
     )		   
     : proj_matrix_ptr(proj_matrix_ptr)
   {
-     assert(proj_matrix_ptr.use_count()!=0);	 
+    assert(!is_null_ptr(proj_matrix_ptr));	 
     
   }
 

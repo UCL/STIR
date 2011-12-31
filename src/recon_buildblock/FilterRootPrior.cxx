@@ -158,7 +158,7 @@ void
 FilterRootPrior<DataT>::set_defaults()
 {
   base_type::set_defaults();
-  filter_ptr = 0;  
+  filter_ptr.reset();
 }
 
 template <typename DataT>

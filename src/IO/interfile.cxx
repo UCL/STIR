@@ -580,23 +580,21 @@ read_interfile_PDFS(istream& input,
   
    assert(hdr.data_info_ptr !=0);
 
-   fstream *data_in = 
-     new fstream (full_data_file_name, open_mode | ios::binary);
+   shared_ptr<iostream> data_in(new fstream (full_data_file_name, open_mode | ios::binary));
    if (!data_in->good())
      {
-       delete data_in;
        warning("interfile parsing: error opening file %s",full_data_file_name);
        return 0;
      }
 
-  return new ProjDataFromStream(hdr.data_info_ptr,			    
-			        data_in,
-			        hdr.data_offset[0],
-                                hdr.segment_sequence,
-			        hdr.storage_order,
-			        hdr.type_of_numbers,
-			        hdr.file_byte_order,
-			        static_cast<float>(hdr.image_scaling_factors[0][0]));
+   return new ProjDataFromStream(hdr.data_info_ptr->create_shared_clone(),
+				 data_in,
+				 hdr.data_offset[0],
+				 hdr.segment_sequence,
+				 hdr.storage_order,
+				 hdr.type_of_numbers,
+				 hdr.file_byte_order,
+				 static_cast<float>(hdr.image_scaling_factors[0][0]));
 
 
 }

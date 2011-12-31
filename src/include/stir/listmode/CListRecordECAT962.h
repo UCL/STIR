@@ -196,7 +196,7 @@ class CListRecordECAT962 : public CListRecordWithGatingInput, public CListTime, 
 
  public:  
   CListRecordECAT962() :
-    CListEventCylindricalScannerWithViewTangRingRingEncoding<CListRecordECAT962>(new Scanner(Scanner::E962))
+  CListEventCylindricalScannerWithViewTangRingRingEncoding<CListRecordECAT962>(shared_ptr<Scanner>(new Scanner(Scanner::E962)))
     {}
 
   bool is_time() const

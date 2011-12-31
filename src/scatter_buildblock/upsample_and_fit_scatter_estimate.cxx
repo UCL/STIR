@@ -62,8 +62,8 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
                                   BSpline::BSplineType spline_type,
                                   const bool remove_interleaving)
 {
-  shared_ptr<ProjDataInfo> interpolated_direct_scatter_proj_data_info_sptr =
-    emission_proj_data.get_proj_data_info_ptr()->clone();
+  shared_ptr<ProjDataInfo> 
+    interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_ptr()->clone());
   interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
 
   std::cout << "Interpolating scatter estimate to size of emission data" << std::endl;
@@ -72,7 +72,7 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
 
   if (min_scale_factor != 1 || max_scale_factor != 1)
     {
-      ProjDataInMemory interpolated_scatter(emission_proj_data.get_proj_data_info_ptr()->clone());
+      ProjDataInMemory interpolated_scatter(emission_proj_data.get_proj_data_info_ptr()->create_shared_clone());
       inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
             
       Array<2,float> scale_factors;

@@ -57,9 +57,9 @@ bool
 PostsmoothingForwardProjectorByBin::
 post_processing()
 {
-  if (original_forward_projector_ptr.use_count() == 0)
+  if (is_null_ptr(original_forward_projector_ptr))
   {
-    warning("Post Smoothing Forward Projector: original forward projector needs to be set\n");
+    warning("Post Smoothing Forward Projector: original forward projector needs to be set");
     return true;
   }
   if (tang_kernel_double.size()>0)

@@ -60,7 +60,7 @@ void
 ForwardProjectorByBinUsingProjMatrixByBin::
 set_defaults()
 {
-  proj_matrix_ptr = 0;
+  this->proj_matrix_ptr.reset();
   //ForwardProjectorByBin::set_defaults();
 }
 
@@ -100,7 +100,7 @@ ForwardProjectorByBinUsingProjMatrixByBin(
     )
   : proj_matrix_ptr(proj_matrix_ptr)
 {
-  assert(proj_matrix_ptr.use_count()!=0);
+  assert(!is_null_ptr(proj_matrix_ptr));
 }
 
 void

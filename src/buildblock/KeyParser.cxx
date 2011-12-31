@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -38,6 +39,7 @@
 #include "stir/Object.h"
 #include "stir/interfile_keyword_functions.h"
 #include "stir/stream.h"
+#include "stir/is_null_ptr.h"
 #include <typeinfo>
 #include <fstream>
 #include <cstring>
@@ -843,8 +845,8 @@ void KeyParser::set_shared_parsing_object()
   if(current_index!=0)
     error("KeyParser::SHARED_PARSINGOBJECT can't handle vectored keys yet\n");
   const std::string& par_ascii = *boost::any_cast<std::string>(&this->parameter);
-  *reinterpret_cast<shared_ptr<Object> *>(current->p_object_variable) =
-    (*current->parser)(input, par_ascii);	    
+  reinterpret_cast<shared_ptr<Object> *>(current->p_object_variable)->
+    reset((*current->parser)(input, par_ascii));
 }
 
 // local function to be used in set_variable below
@@ -1138,7 +1140,7 @@ string KeyParser::parameter_info() const
           shared_ptr<Object> parsing_object_ptr =
             (*reinterpret_cast<shared_ptr<Object>*>(i->second.p_object_variable));
           
-          if (parsing_object_ptr.use_count()!=0)
+          if (!is_null_ptr(parsing_object_ptr))
 	  {
             //std::cerr << "\nBefore *parsing_object_ptr" << endl;	  
             //std::cerr << "\ntypename *parsing_object_ptr " << typeid(*parsing_object_ptr).name() <<std::endl<<std::endl;

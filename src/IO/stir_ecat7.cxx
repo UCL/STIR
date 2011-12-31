@@ -199,7 +199,7 @@ bool is_ECAT7_attenuation_file(const string& filename)
 
 void find_scanner(shared_ptr<Scanner> & scanner_ptr,const Main_header& mhead)
 {  
-  scanner_ptr = find_scanner_from_ECAT_system_type(mhead.system_type);
+  scanner_ptr.reset(find_scanner_from_ECAT_system_type(mhead.system_type));
 }
 
 
@@ -1094,7 +1094,7 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
       "(Main_header.system_type=%d), defaulting to 962.\n"
       "This might give dramatic problems.\n",
 	    mptr->mhptr->system_type); 
-    scanner_ptr = new Scanner(Scanner::E962);
+    scanner_ptr.reset(new Scanner(Scanner::E962));
   }
 #ifdef B_JOINT_STIRGATE
   // zlong, 08-04-2004, add support for Unknown_scanner
@@ -1103,7 +1103,7 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
   {
     warning("Joint Gate Stir project warning:\n");
     warning("I have no idea about your scanner, please give me the scanner info.\n");
-    scanner_ptr = Scanner::ask_parameters();
+    scanner_ptr.reset(Scanner::ask_parameters());
   }
 #endif
 
@@ -1178,10 +1178,10 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
 	}
     }
   
-  shared_ptr<ProjDataInfo> pdi_ptr =
+  shared_ptr<ProjDataInfo> pdi_ptr(
     ProjDataInfo::ProjDataInfoCTI(scanner_ptr, span_to_use, max_delta, 
 				  num_views, num_tangential_poss,  
-				  arc_corrected);
+				  arc_corrected));
   
   pdi_ptr->set_num_axial_poss_per_segment(num_axial_poss_per_seg);
     
@@ -1477,8 +1477,8 @@ ECAT7_to_PDFS(const string& ECAT7_filename,
       return 0;
     }
   
-  shared_ptr<iostream> stream_ptr = 
-    new fstream(ECAT7_filename.c_str(), ios::in | ios::binary);
+  shared_ptr<iostream> stream_ptr(
+				  new fstream(ECAT7_filename.c_str(), ios::in | ios::binary));
       
   ProjDataFromStream * pdfs_ptr = 
     make_pdfs_from_matrix(mptr, matrix, stream_ptr);
@@ -1587,14 +1587,13 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
 	  return Succeeded::no;
 	}
   
-      shared_ptr<iostream> stream_ptr = 
-	new fstream(ECAT7_filename.c_str(), ios::in | ios::binary);
+      shared_ptr<iostream> stream_ptr(
+				      new fstream(ECAT7_filename.c_str(), ios::in | ios::binary));
       
-      shared_ptr<ProjDataFromStream> pdfs_ptr = 
-	make_pdfs_from_matrix(mptr, matrix, stream_ptr);
+      shared_ptr<ProjDataFromStream> pdfs_ptr(make_pdfs_from_matrix(mptr, matrix, stream_ptr));
       free_matrix_data(matrix);
      
-      if (pdfs_ptr == NULL)
+      if (is_null_ptr(pdfs_ptr))
 	{
 	  matrix_close(mptr);
 	  return Succeeded::no;

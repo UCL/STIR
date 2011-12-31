@@ -104,7 +104,7 @@ OutputFileFormatTests::
 OutputFileFormatTests(istream& in) :
   in(in)
 {
-  output_file_format_ptr = 0;
+  output_file_format_ptr.reset();
   parser.add_start_key("Test OutputFileFormat Parameters");
   parser.add_parsing_key("output file format type", &output_file_format_ptr);
   parser.add_stop_key("END");

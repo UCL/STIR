@@ -29,6 +29,7 @@
 #include "stir/Densel.h"
 #include "stir/ProjDataInfo.h" // todo replace by forward declaration
 #include <map>
+#include "stir/shared_ptr.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::map;
@@ -45,7 +46,6 @@ START_NAMESPACE_STIR
 	    
 //template <typename elemT> class RelatedViewgrams;	    
 //class Densel;	    
-template <typename T> class shared_ptr;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 /*!
 \ingroup recon_buildblock

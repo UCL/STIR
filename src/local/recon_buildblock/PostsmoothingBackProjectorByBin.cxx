@@ -49,9 +49,9 @@ bool
 PostsmoothingBackProjectorByBin::
 post_processing()
 {
-  if (original_back_projector_ptr.use_count() == 0)
+  if (is_null_ptr(original_back_projector_ptr))
   {
-    warning("Pre Smoothing Back Projector: original back projector needs to be set\n");
+    warning("Pre Smoothing Back Projector: original back projector needs to be set");
     return true;
   }
   return false;
@@ -82,7 +82,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
 {
   original_back_projector_ptr->set_up(proj_data_info_ptr, image_info_ptr);
   // don't do set_up as image sizes might change
-  //if (image_processor_ptr.use_count()!=0)
+  //if (!is_null_ptr(image_processor_ptr))
   //   image_processor_ptr->set_up(*image_info_ptr);
 }
 
@@ -100,7 +100,7 @@ actual_back_project(DiscretisedDensity<3,float>& density,
 		    const int min_axial_pos_num, const int max_axial_pos_num,
 		    const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
-  if (image_processor_ptr.use_count()!=0)
+  if (!is_null_ptr(image_processor_ptr))
     {
       shared_ptr<DiscretisedDensity<3,float> > filtered_density_ptr = 
 	density.get_empty_discretised_density();

@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003 - 2011-06-29, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -32,6 +33,7 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/is_null_ptr.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/Succeeded.h"
 #include <algorithm>
 #include <exception>
@@ -175,7 +177,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
                       "currently cannot use subset_sensitivities if sensitivity is forced to 1");
               return Succeeded::no;
             }
-          this->sensitivity_sptr=target_sptr->get_empty_copy();
+          this->sensitivity_sptr.reset(target_sptr->get_empty_copy());
           std::fill(this->sensitivity_sptr->begin_all(), this->sensitivity_sptr->end_all(), 1);  
         }
       else
@@ -193,7 +195,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
                       info(boost::format("Reading sensitivity from '%1%'") % current_sensitivity_filename);
 
                       this->subsensitivity_sptrs[subset] = 
-                        TargetT::read_from_file(current_sensitivity_filename);   
+                        read_from_file<TargetT>(current_sensitivity_filename);   
                       string explanation;
                       if (!target_sptr->has_same_characteristics(*this->subsensitivity_sptrs[subset], 
                                                                  explanation))
@@ -211,8 +213,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
                     this->sensitivity_filename;
                   info(boost::format("Reading sensitivity from '%1%'") % current_sensitivity_filename);
 
-                  this->sensitivity_sptr = 
-                    TargetT::read_from_file(current_sensitivity_filename);   
+                  this->sensitivity_sptr = read_from_file<TargetT>(current_sensitivity_filename);
                   string explanation;
                   if (!target_sptr->has_same_characteristics(*this->sensitivity_sptr, 
                                                              explanation))
@@ -250,7 +251,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
     {
       info("Computing sensitivity");      
       // preallocate one such that compute_sensitivities knows the size
-      this->subsensitivity_sptrs[0]=target_sptr->get_empty_copy();
+      this->subsensitivity_sptrs[0].reset(target_sptr->get_empty_copy());
       this->compute_sensitivities();
       info("Done computing sensitivity");
 
@@ -352,7 +353,7 @@ compute_sensitivities()
         {
           if (this->get_use_subset_sensitivities())
             {
-              this->subsensitivity_sptrs[subset_num]=this->subsensitivity_sptrs[0]->get_empty_copy();
+              this->subsensitivity_sptrs[subset_num].reset(this->subsensitivity_sptrs[0]->get_empty_copy());
             }
           else
             {
@@ -369,7 +370,7 @@ compute_sensitivities()
     {
       // copy full sensitivity (currently stored in subsensitivity[0]) 
       this->sensitivity_sptr = this->subsensitivity_sptrs[0];
-      this->subsensitivity_sptrs[0] = 0;
+      this->subsensitivity_sptrs[0].reset();
     }
   // compute total from subsensitivity or vice versa
   this->set_total_or_subset_sensitivities();
@@ -383,7 +384,7 @@ set_total_or_subset_sensitivities()
   if (this->get_use_subset_sensitivities())
     {
       // add subset sensitivities, just in case we need the total somewhere
-      this->sensitivity_sptr = this->subsensitivity_sptrs[0]->clone();
+      this->sensitivity_sptr.reset(this->subsensitivity_sptrs[0]->clone());
       for (int subset_num=1; subset_num<this->num_subsets; ++subset_num)
         {
           typename TargetT::full_iterator sens_iter = this->sensitivity_sptr->begin_all();
@@ -398,7 +399,7 @@ set_total_or_subset_sensitivities()
   else
     {
       // copy full sensitivity
-      this->subsensitivity_sptrs[0] = this->sensitivity_sptr->clone();
+      this->subsensitivity_sptrs[0].reset(this->sensitivity_sptr->clone());
       // divide subsensitivity[0] by num_subsets
       for (typename TargetT::full_iterator subsens_iter = this->subsensitivity_sptrs[0]->begin_all();
            subsens_iter != this->subsensitivity_sptrs[0]->end_all();

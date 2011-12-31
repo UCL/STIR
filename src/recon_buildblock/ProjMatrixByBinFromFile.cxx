@@ -34,7 +34,7 @@
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/KeyParser.h"
 #include "stir/IO/OutputFileFormat.h"
-//#include "stir/IO/read_from_file.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/utilities.h"
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -140,11 +140,10 @@ ProjMatrixByBinFromFile::post_processing()
   {
     shared_ptr<ProjData> proj_data_sptr = 
       ProjData::read_from_file(template_proj_data_filename);
-    proj_data_info_ptr = 
-      proj_data_sptr->get_proj_data_info_ptr()->clone();
+    this->proj_data_info_ptr.reset(proj_data_sptr->get_proj_data_info_ptr()->clone());
   }
-  shared_ptr<DiscretisedDensity<3,float> > density_info_sptr =
-    DiscretisedDensity<3,float>::read_from_file(template_density_filename);
+  shared_ptr<DiscretisedDensity<3,float> > 
+    density_info_sptr(read_from_file<DiscretisedDensity<3,float> >(template_density_filename));
   {
     const VoxelsOnCartesianGrid<float> * image_info_ptr =
       dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_sptr.get());
@@ -159,14 +158,14 @@ ProjMatrixByBinFromFile::post_processing()
 
 
 
-  symmetries_ptr = 
+  symmetries_ptr.reset( 
     new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
                                                 density_info_sptr,
                                                 do_symmetry_90degrees_min_phi,
                                                 do_symmetry_180degrees_min_phi,
 						do_symmetry_swap_segment,
 						do_symmetry_swap_s,
-						do_symmetry_shift_z);
+						do_symmetry_shift_z));
 
   return false;
 }
@@ -454,22 +453,23 @@ write_to_file(const string& output_filename_prefix,
 	    if (is_null_ptr(already_processed[bin.segment_num()]))
 	      {
 		// range attempts to take into account that symmetries normally bring axial_pos_num back to 0 or 1
-		already_processed[bin.segment_num()]=new apos_t(std::min(0,proj_data_info_sptr->get_min_axial_pos_num(bin.segment_num())),
-								std::max(1,proj_data_info_sptr->get_max_axial_pos_num(bin.segment_num())));
+		already_processed[bin.segment_num()].
+		  reset(new apos_t(std::min(0,proj_data_info_sptr->get_min_axial_pos_num(bin.segment_num())),
+				   std::max(1,proj_data_info_sptr->get_max_axial_pos_num(bin.segment_num()))));
 	      }
 	    if (is_null_ptr((*already_processed[bin.segment_num()])[bin.axial_pos_num()]))
 	      {
-		(*already_processed[bin.segment_num()])[bin.axial_pos_num()]=
-		  new vpos_t(proj_data_info_sptr->get_min_view_num(),
-			     proj_data_info_sptr->get_max_view_num());
+		(*already_processed[bin.segment_num()])[bin.axial_pos_num()].
+		  reset(new vpos_t(proj_data_info_sptr->get_min_view_num(),
+				   proj_data_info_sptr->get_max_view_num()));
 	      }
 	    if (is_null_ptr((*(*already_processed[bin.segment_num()])[bin.axial_pos_num()])[bin.view_num()]))
 	      {
 		// range takes into account that symmetries bring negative tangential_pos_num to positive
-		(*(*already_processed[bin.segment_num()])[bin.axial_pos_num()])[bin.view_num()] =
-		  new tpos_t(proj_data_info_sptr->get_min_tangential_pos_num(),
-			     std::max(proj_data_info_sptr->get_max_tangential_pos_num(),
-				      -proj_data_info_sptr->get_min_tangential_pos_num()));
+		(*(*already_processed[bin.segment_num()])[bin.axial_pos_num()])[bin.view_num()].
+		  reset(new tpos_t(proj_data_info_sptr->get_min_tangential_pos_num(),
+				   std::max(proj_data_info_sptr->get_max_tangential_pos_num(),
+					    -proj_data_info_sptr->get_min_tangential_pos_num())));
 		(*(*already_processed[bin.segment_num()])[bin.axial_pos_num()])[bin.view_num()]->fill(false);
 	      }
 	    if ((*(*(*already_processed[bin.segment_num()])[bin.axial_pos_num()])[bin.view_num()])[bin.tangential_pos_num()])

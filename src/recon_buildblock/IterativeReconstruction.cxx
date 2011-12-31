@@ -63,7 +63,7 @@ void
 IterativeReconstruction<TargetT>::set_defaults()
 {
   base_type::set_defaults();
-  this->objective_function_sptr = 0;
+  this->objective_function_sptr.reset();
   this->num_subsets = 1;
   this->start_subset_num = 0;
   this->num_subiterations = 1;
@@ -74,7 +74,7 @@ IterativeReconstruction<TargetT>::set_defaults()
   this->max_num_full_iterations=NumericInfo<int>().max_value();
   this->save_interval = 1;
   this->inter_iteration_filter_interval = 0;
-  this->inter_iteration_filter_ptr = 0;
+  this->inter_iteration_filter_ptr.reset();
 //MJ 02/08/99 added subset randomization
   this->randomise_subset_order = false;
   this->report_objective_function_values_interval = 0;
@@ -141,8 +141,8 @@ ask_parameters()
     
     const string inter_iteration_filter_type = ask_string("");
     
-    this->inter_iteration_filter_ptr = 
-      DataProcessor<TargetT>::read_registered_object(0, inter_iteration_filter_type);      
+    this->inter_iteration_filter_ptr.
+      reset(DataProcessor<TargetT>::read_registered_object(0, inter_iteration_filter_type));      
   } 
   
   
@@ -388,8 +388,7 @@ reconstruct()
 {
   this->start_timers();
 
-  shared_ptr<TargetT > target_data_sptr =
-    this->get_initial_data_ptr();
+  shared_ptr<TargetT > target_data_sptr(this->get_initial_data_ptr());
   if (this->set_up(target_data_sptr) == Succeeded::no)
     {
       this->stop_timers();

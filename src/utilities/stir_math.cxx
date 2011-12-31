@@ -195,8 +195,7 @@ void process_data(const string& output_file_name,
     {
       if (verbose)
 	cout << "Reading image " << argv[i] << endl;
-      current_image_ptr = 
-	DataT::read_from_file(argv[i]);
+      current_image_ptr.reset(DataT::read_from_file(argv[i]));
       if (!no_math_on_data)
 	in_place_apply_function(*current_image_ptr, pow_times_add_object);
       if (do_add)
@@ -578,17 +577,16 @@ main(int argc, char **argv)
       else
 	{
 	  all_proj_data[0] = ProjData::read_from_file(argv[0]);
-	  shared_ptr<ProjDataInfo> output_proj_data_info_sptr =
-	    (*all_proj_data[0]).get_proj_data_info_ptr()->clone();
+	  shared_ptr<ProjDataInfo> 
+	    output_proj_data_info_sptr((*all_proj_data[0]).get_proj_data_info_ptr()->clone());
 	  if (max_segment_num_to_process>=0)
 	    {
 	      output_proj_data_info_sptr->
 		reduce_segment_range(-max_segment_num_to_process,
 				     max_segment_num_to_process);
 	    }
-	  out_proj_data_ptr =
-	    new ProjDataInterfile(output_proj_data_info_sptr, 
-				  output_file_name);        
+	  out_proj_data_ptr.reset(new ProjDataInterfile(output_proj_data_info_sptr, 
+							output_file_name));        
 	}
 
       // read rest of projection data headers
