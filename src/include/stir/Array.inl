@@ -622,6 +622,8 @@ Array<1, elemT>::operator/ (const elemT a) const
   return (retval /= a);
 };  
 
+#endif // boost   
+
 template <typename elemT>    
 const elemT& Array<1,elemT>:: operator[] (int i) const
 {
@@ -646,8 +648,6 @@ elemT& Array<1,elemT>::operator[] (const BasicCoordinate<1,int>& c)
   return (*this)[c[1]];
 };   
                
-
-#endif // boost   
 
 #else // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
 
