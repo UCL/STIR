@@ -68,6 +68,7 @@ SET( STIR_DIRS
      iterative/POSMAPOSL  
      iterative/POSSPS
      scripts
+     SimSET
 )
 
 
