@@ -4,7 +4,8 @@
 #ifndef __stir_IO_read_from_file_H__
 #define __stir_IO_read_from_file_H__
 /*
-    Copyright (C) 2006- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2006 - 2008-10-01, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -63,7 +64,8 @@ read_from_file(const FileSignature& signature, FileT file)
 
     \code
     typedef DiscretisedDensity<3,float> DataType ;
-    std::auto_ptr<DataType> density_aptr = read_from_file<DataType>('my_file.hv');
+    std::auto_ptr<DataType> density_aptr(read_from_file<DataType>("my_file.hv"));
+    shared_ptr<DataType> density_sptr(read_from_file<DataType>("another_file.hv"));
     \endcode
 */
 template <class DataT, class FileT>
@@ -74,7 +76,6 @@ read_from_file(FileT file)
   const FileSignature signature(file);
   return read_from_file<DataT>(signature, file);
 }
-
 
 END_NAMESPACE_STIR
 
