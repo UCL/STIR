@@ -76,11 +76,10 @@ else()
   list(APPEND ${dir_LIB_SOURCES} getopt)
 endif()
 
-# TODO Remove but currently needed for ProjData.cxx
+include(../stir_lib_target.cmake)
+
+# TODO Remove but currently needed for ProjData.cxx, DynamicDisc*cxx, TimeFrameDef
 if (LLN_FOUND)
   target_link_libraries(buildblock ${LLN_LIBRARIES})
 endif()
 
-#target_link_libraries(${dir} ${dir}_registries.cxx)
-
-include(../stir_lib_target.cmake)
