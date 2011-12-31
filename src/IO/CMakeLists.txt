@@ -41,6 +41,7 @@ if (LLN_FOUND)
     stir_ecat_common 
     ECAT7ParametricDensityOutputFileFormat 
     ECAT7DynamicDiscretisedDensityOutputFileFormat 
+    ECAT7DynamicDiscretisedDensityInputFileFormat
     stir_ecat6 ecat6_utils
  )
 endif()
