@@ -22,6 +22,10 @@ export SAVITER
 
 PATH=$WORKSPACE/$DEST/utilities:$WORKSPACE/$DEST/utilities/ecat:$WORKSPACE/scripts/:$WORKSPACE/$DEST/modelling_utilities:$WORKSPACE/$DEST/recon_test:$WORKSPACE/$DEST/iterative/POSMAPOSL:$WORKSPACE/$DEST/iterative/POSSPS:$PATH
 
+echo "Using executables like the following"
+type get_dynamic_images_from_parametric_images
+type fwdtest
+
 mkdir -p test_modelling_output
 cd test_modelling_output
 rm -f *img
