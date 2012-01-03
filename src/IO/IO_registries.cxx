@@ -30,10 +30,16 @@
   $Revision$
 */
 
+#include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/IO/InterfileOutputFileFormat.h"
+#include "stir/IO/InterfileDynamicDiscretisedDensityOutputFileFormat.h"
+#include "stir/IO/InterfileParametricDensityOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ECAT6OutputFileFormat.h"
 #include "stir/IO/ECAT7OutputFileFormat.h"
+#include "stir/IO/ECAT7DynamicDiscretisedDensityOutputFileFormat.h"
+#include "stir/IO/ECAT7ParametricDensityOutputFileFormat.h"
+#include "stir/IO/ECAT7DynamicDiscretisedDensityInputFileFormat.h"
 #endif
 
 
@@ -51,6 +57,9 @@
 START_NAMESPACE_STIR
 
 static InterfileOutputFileFormat::RegisterIt dummy1;
+static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfIn;
+static InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfIn;
+
 #ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT6
@@ -58,6 +67,8 @@ static ECAT6OutputFileFormat::RegisterIt dummy2;
 END_NAMESPACE_ECAT6
 START_NAMESPACE_ECAT7
 static ECAT7OutputFileFormat::RegisterIt dummy3;
+static ECAT7DynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynecat7In;
+static ECAT7ParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparecat7In;
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 #endif
@@ -66,7 +77,11 @@ END_NAMESPACE_ECAT
 static RegisterInputFileFormat<InterfileImageInputFileFormat> idummy0(0);
 #ifdef HAVE_LLN_MATRIX
 static RegisterInputFileFormat<ecat::ecat7::ECAT7ImageInputFileFormat> idummy2(4);
-static RegisterInputFileFormat<ecat::ecat6::ECAT6ImageInputFileFormat> idummy4(100000); // very low priority it doesn't have a signature 
+
+// ECAT6 very low priority it doesn't have a signature 
+static RegisterInputFileFormat<ecat::ecat6::ECAT6ImageInputFileFormat> idummy4(100000);
+
+static RegisterInputFileFormat<ecat::ecat7::ECAT7DynamicDiscretisedDensityInputFileFormat> dynidummy(0);
 #endif
 
 
