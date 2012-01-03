@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Summary of changes in STIR release 2.2 (alpha dated January 2012)</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in STIR release 2.2 (alpha dated January 2012)</h1>
+
+<p>This update was prepared by Kris Thielemans (Algorithms and Software Consulting Ltd).
+</p>
+<p>This update contains some bug fixes and updates for more recent compilers
+(Clang++ 2.9 and gcc 4.6.1 are now supported).
+</p>
+<ul>
+
+<h2> Summary for end users (also to be read by developers)</h2>
+
+<h3>Important bug fixes</h3>
+<p>None</p>
+
+<h3>New build system</h3>
+<ul>
+<li> release of files for an alternative cross-platform build system 
+<a href="http://www.cmake.org">CMake</a>, based on example files provided by 
+Robert Barnett (Westmead Hospital, Sydney) for STIR 2.1. The files distributed
+with version 2.2 are now complete and also include the tests.<br />
+CMake is much better than the previous STIR make files for configuration and finding system dependencies. It also works on Windows for Visual Studio.
+</li>
+</ul>
+
+<h3>Known problems</h3>
+<ul>
+<li>ECAT6 routines seem to have problems since STIR 2.0. ECAT6 is therefore no longer supported</li>
+<li>The interpolating back-projector can still give problems in the centre of the images
+on some architectures/compiler/optimisation settings. We recommend to use the ray-tracing
+matrix (with additional rays) instead.</li>
+<li>When using Visual Studio (Express) with the provided solution files, there is a linking problem for some
+utilities. It is recommended to use the new <tt>CMake</tt> files for building instead.</li>
+<li>Some of the new list mode files might not compile with Visual Studio (Express).</li>
+</ul>
+
+<h3>Functionality changes</h3>
+<ul>
+<li>On Unix/Linux systems, <tt>manip_image</tt> and <tt>manip_projdata</tt> used to
+display a list of files in the current directory when asking for new input data.
+This is no longer implemented.</li>
+<li>No longer write confusing warnings about <tt>ring
+  difference does not belong in a segment</tt> after calling
+  SSRB etc.
+</li>
+</ul>
+
+<h3>Documentation changes</h3>
+<ul>
+<li>minor changes to doxygen documentation</li>
+ </ul>
+
+<h3>recon_test_pack changes</h3>
+<p>None</p>
+
+<h3>Other changes to tests</h3>
+<p>None</p>
+
+<H2>What's new for developers (aside from what should be obvious
+from the above):</H2>
+
+<h3>Major bugs fixed</h3>
+<p>None</p>
+
+<h3>New functionality</h3>
+<p>None</p> 
+<h3>Other code changes</h3>
+<ul>
+<li> <code>stir::shared_ptr</code> is now an alias for <code>boost::shared_ptr</code> from the Boost C++ library. This makes it much more robust and
+standard compliant. This means that you might have to change your code in a few
+places. For example:
+<pre>
+ // no longer works
+ shared_ptr&lt;MyType&gt; sptr = new MyType;
+ sptr = new MyType;
+ sptr = 0;
+
+ // replace with 
+ shared_ptr&lt;MyType&gt; sptr(new MyType);
+ sptr.reset(new MyType);
+ sptr.reset();
+</pre>
+</li>
+
+<li>Introduced new input file format registries for 
+<code>stir::DynamicDiscretisedDensity</code> and  
+<code>ParametricDiscretisedDensity</code>, moving the relevant code
+from the class definition. See the <tt>IO</tt> group.
+</li>
+<li>Replaced most occurences of <code>ClassName::read_from_file</code>
+with <code>read_from_file&lt;ClassName&gt;</code>, for those classes
+which have an input file format registry (i.e. all except <code>ProjData</code>). These two versions
+are currently functionally identical (as the first version will call the
+second), but the first version is deprecated as it prevents us to separate
+the <tt>IO</tt> and <tt>buildblock</tt> libraries.
+</li>
+<li>Minor fixes to some utilities (bugs spotted by David Volgyes by using cppcheck.</li>
+</body>
+
+</html>
+
