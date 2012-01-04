@@ -1,11 +1,11 @@
 #! /bin/sh
 do_lln=0
 do_update=0
-do_version=1
+do_version=0
 do_license=1
 do_ChangeLog=1
 do_doc=1
-do_doxygen=0
+do_doxygen=1
 do_zip_source=1
 do_recon_test_pack=1
 do_transfer=1
@@ -14,7 +14,7 @@ do_website_final_version=1
 do_website_sync=0
 
 set -e
-VERSION=2.1
+VERSION=2.2a
 
 # for cvs2cl.pl
 BRANCH=trunk
