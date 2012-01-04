@@ -118,7 +118,7 @@ template <class T, class B = ::boost::detail::empty_base>
   \endcode
 */
 template <class T>
-class shared_ptr;
+  class shared_ptr {};
 
 
 }
