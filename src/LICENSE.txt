@@ -1,4 +1,4 @@
-Licensing information for STIR 2.1
+Licensing information for STIR 2.2a
 ----------------------------------
 
 See for more info http://stir.sourceforge.net, section Registration.
@@ -211,8 +211,6 @@ Explicit list of files that carry the PARAPET license
 ./include/stir/SegmentBySinogram.inl
 ./include/stir/SegmentByView.h
 ./include/stir/SegmentByView.inl
-./include/stir/shared_ptr.h
-./include/stir/shared_ptr.inl
 ./include/stir/Sinogram.h
 ./include/stir/Sinogram.inl
 ./include/stir/stream.h
