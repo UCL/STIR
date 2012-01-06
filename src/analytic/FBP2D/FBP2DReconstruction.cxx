@@ -319,7 +319,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	warning("Using OpenMP with OMP_NUM_THREADS=1 produces parallel overhead. Use more threads or compile without using USE_OPENMP=TRUE.");
     }
   cerr<<"Define number of threads by setting OMP_NUM_THREADS environment variable, i.e. \"export OMP_NUM_THREADS=<num_threads>\""<<endl;
-  shared_ptr<DiscretisedDensity<3,float> > empty_density_ptr=density_ptr->clone();
+  shared_ptr<DiscretisedDensity<3,float> > empty_density_ptr(density_ptr->clone());
 #endif
 
 #ifdef STIR_OPENMP
@@ -364,7 +364,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 
 #ifdef STIR_OPENMP 
   //clone density_ptr and backproject    
-    shared_ptr<DiscretisedDensity<3,float> > omp_density_ptr=empty_density_ptr->clone();
+  shared_ptr<DiscretisedDensity<3,float> > omp_density_ptr(empty_density_ptr->clone());
            
     back_projector_sptr->back_project(*omp_density_ptr, viewgrams);
     #pragma omp critical
