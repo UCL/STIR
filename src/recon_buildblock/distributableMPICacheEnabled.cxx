@@ -142,9 +142,9 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
   if (!is_null_ptr(binwise_correction)) 
     {
 #if !defined(_MSC_VER) || _MSC_VER>1300
-      additive_binwise_correction_viewgrams =
+      additive_binwise_correction_viewgrams.reset(
         new RelatedViewgrams<float>
-        (binwise_correction->get_related_viewgrams(view_segment_num, symmetries_ptr));
+        (binwise_correction->get_related_viewgrams(view_segment_num, symmetries_ptr)));
 #else
       RelatedViewgrams<float> tmp(binwise_correction->
                                   get_related_viewgrams(view_segment_num, symmetries_ptr));
@@ -155,8 +155,8 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
   if (read_from_proj_dat)
     {
 #if !defined(_MSC_VER) || _MSC_VER>1300
-      y = new RelatedViewgrams<float>
-        (proj_dat_ptr->get_related_viewgrams(view_segment_num, symmetries_ptr));
+      y.reset(new RelatedViewgrams<float>
+        (proj_dat_ptr->get_related_viewgrams(view_segment_num, symmetries_ptr)));
 #else
       // workaround VC++ 6.0 bug
       RelatedViewgrams<float> tmp(proj_dat_ptr->
@@ -166,15 +166,15 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
     }
   else
     {
-      y = new RelatedViewgrams<float>
-        (proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr));
+      y.reset(new RelatedViewgrams<float>
+	      (proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr)));
     }
 
   // multiplicative correction
   if (!is_null_ptr(normalisation_sptr) && !normalisation_sptr->is_trivial())
     {
-      mult_viewgrams_sptr =
-        new RelatedViewgrams<float>(proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr));
+      mult_viewgrams_sptr.reset(
+        new RelatedViewgrams<float>(proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr)));
       mult_viewgrams_sptr->fill(1.F);
       normalisation_sptr->undo(*mult_viewgrams_sptr,start_time_of_frame,end_time_of_frame);
     }
@@ -195,10 +195,12 @@ static void send_viewgrams(const shared_ptr<RelatedViewgrams<float> >& y,
   distributed::send_view_segment_numbers( y->get_basic_view_segment_num(), NEW_VIEWGRAM_TAG, next_receiver);
 
 #ifndef NDEBUG
-  //test sending related viegrams
+  //test sending related viewgrams
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> 
+    symmetries_sptr(y->get_symmetries_ptr()->clone());
   if (distributed::test && distributed::first_iteration==true && next_receiver==1) 
-    distributed::test_related_viewgrams_master(y->get_proj_data_info_ptr()->clone(), 
-                                               y->get_symmetries_ptr()->clone(), y.get(), next_receiver);
+    distributed::test_related_viewgrams_master(y->get_proj_data_info_ptr()->create_shared_clone(), 
+                                               symmetries_sptr, y.get(), next_receiver);
 #endif
 
   //TODO: this could also be done by using MPI_Probe at the slave to find out what to recieve next
@@ -257,12 +259,12 @@ void distributable_computation_cache_enabled(
       distributed::test_int_value_master(444, 1);
       distributed::test_int_values_master(1);
                 
-      Viewgram<float> viewgram(proj_dat_ptr->get_proj_data_info_ptr()->clone(), 44, 0);
+      Viewgram<float> viewgram(proj_dat_ptr->get_proj_data_info_ptr()->create_shared_clone(), 44, 0);
       for ( int tang_pos = viewgram.get_min_tangential_pos_num(); tang_pos  <= viewgram.get_max_tangential_pos_num() ;++tang_pos)  
         for ( int ax_pos = viewgram.get_min_axial_pos_num(); ax_pos <= viewgram.get_max_axial_pos_num() ;++ax_pos)
           viewgram[ax_pos][tang_pos]= rand();
                                 
-      distributed::test_viewgram_master(viewgram, proj_dat_ptr->get_proj_data_info_ptr()->clone());
+      distributed::test_viewgram_master(viewgram, proj_dat_ptr->get_proj_data_info_ptr()->create_shared_clone());
     }
 #endif
         
@@ -319,9 +321,9 @@ void distributable_computation_cache_enabled(
           cerr << "Sending segment " << view_segment_num.segment_num() 
                << ", view " << view_segment_num.view_num() << " to slave " << next_receiver << std::endl;
 
-          shared_ptr<RelatedViewgrams<float> > y = 0;                                         
-          shared_ptr<RelatedViewgrams<float> > additive_binwise_correction_viewgrams = 0;
-          shared_ptr<RelatedViewgrams<float> > mult_viewgrams_sptr = 0;
+          shared_ptr<RelatedViewgrams<float> > y;                                         
+          shared_ptr<RelatedViewgrams<float> > additive_binwise_correction_viewgrams;
+          shared_ptr<RelatedViewgrams<float> > mult_viewgrams_sptr;
 
           get_viewgrams(y, additive_binwise_correction_viewgrams, mult_viewgrams_sptr,
                         proj_dat_ptr, read_from_proj_dat,

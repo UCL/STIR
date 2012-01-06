@@ -214,9 +214,9 @@ namespace stir
 #endif
                         
     // reset cache-stores, they will be initialised if we need them
-    this->proj_data_ptr = 0;
-    this->binwise_correction = 0; 
-    this->mult_proj_data_sptr = 0; 
+    this->proj_data_ptr.reset();
+    this->binwise_correction.reset(); 
+    this->mult_proj_data_sptr.reset(); 
   } // set_up
 
   template <typename TargetT>
@@ -224,10 +224,10 @@ namespace stir
   distributable_computation(RPC_process_related_viewgrams_type * RPC_process_related_viewgrams)
   {     
     shared_ptr<TargetT> input_image_ptr = this->target_sptr; // use the target_sptr member as we don't need its values anyway
-    shared_ptr<TargetT> output_image_ptr = this->target_sptr->get_empty_copy();
+    shared_ptr<TargetT> output_image_ptr(this->target_sptr->get_empty_copy());
                 
-    shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr = 
-      this->proj_pair_sptr->get_symmetries_used()->clone();
+    shared_ptr<DataSymmetriesForViewSegmentNumbers> 
+      symmetries_sptr(this->proj_pair_sptr->get_symmetries_used()->clone());
                 
 #ifndef NDEBUG
     if (distributed::test && my_rank==1) 
@@ -305,7 +305,7 @@ namespace stir
                 if(cache_enabled)
                   {
                     if (is_null_ptr(this->proj_data_ptr))
-                      this->proj_data_ptr = new ProjDataInMemory(proj_data_info_sptr, /*init_with_0*/ false);
+                      this->proj_data_ptr.reset(new ProjDataInMemory(proj_data_info_sptr, /*init_with_0*/ false));
 
                     if (proj_data_ptr->set_related_viewgrams(*viewgrams)==Succeeded::no)
                       error("Slave %i: Storing viewgrams failed!\n", my_rank);
@@ -313,7 +313,7 @@ namespace stir
                     if (add_bin_corr_viewgrams) 
                       {
                         if (is_null_ptr(binwise_correction))
-                          binwise_correction = new ProjDataInMemory(proj_data_info_sptr, /*init_with_0*/ false);
+                          binwise_correction.reset(new ProjDataInMemory(proj_data_info_sptr, /*init_with_0*/ false));
                         
                         if (binwise_correction->set_related_viewgrams(*additive_binwise_correction_viewgrams)==Succeeded::no)
                           error("Slave %i: Storing additive_binwise_correction_viewgrams failed!\n", my_rank);
@@ -322,7 +322,7 @@ namespace stir
                     if (mult_viewgrams) 
                       {
                         if (is_null_ptr(mult_proj_data_sptr))
-                          mult_proj_data_sptr = new ProjDataInMemory(proj_data_info_sptr, /*init_with_0*/ false);
+                          mult_proj_data_sptr.reset(new ProjDataInMemory(proj_data_info_sptr, /*init_with_0*/ false));
 
                         if (mult_proj_data_sptr->set_related_viewgrams(*mult_viewgrams_ptr)==Succeeded::no)
                           error("Slave %i: Storing mult_viewgrams_ptr failed!\n", my_rank);
