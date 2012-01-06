@@ -42,8 +42,6 @@ START_NAMESPACE_STIR
 template <typename elemT> class Sinogram;
 template <typename elemT> class Viewgram;
 
-class PMessage;
-
 
 /*!
   \brief An (abstract base) class for storing 3d projection data
