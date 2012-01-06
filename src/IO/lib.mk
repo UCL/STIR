@@ -18,6 +18,7 @@ ifeq ($(HAVE_LLN_MATRIX),1)
 	  stir_ecat_common.cxx \
 	  ECAT7ParametricDensityOutputFileFormat.cxx \
 	  ECAT7DynamicDiscretisedDensityOutputFileFormat.cxx \
+	  ECAT7DynamicDiscretisedDensityInputFileFormat.cxx \
 	  stir_ecat6.cxx ecat6_utils.cxx
 endif
 
