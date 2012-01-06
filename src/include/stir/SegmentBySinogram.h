@@ -67,7 +67,7 @@ public:
   typedef typename Segment<elemT>::StorageOrder StorageOrder;
 
   //! Constructor that sets the data to a given 3d Array
-  SegmentBySinogram(const Array<3,elemT>(v), 
+  SegmentBySinogram(const Array<3,elemT>& v, 
 		    const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
 		    const int segment_num);
   
