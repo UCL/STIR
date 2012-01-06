@@ -1,6 +1,7 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/IO/interfile.h"
+#include "stir/IO/read_from_file.h"
 
 #include <vector>
 #include <algorithm>
@@ -28,7 +29,7 @@ main(int argc, char * argv[])
   }
 
   const string input_filename = argv[1];
-  shared_ptr<DiscretisedDensity<3,float> > input_image_sptr = DiscretisedDensity<3,float>::read_from_file(argv[2]);  
+  shared_ptr<DiscretisedDensity<3,float> > input_image_sptr(read_from_file<DiscretisedDensity<3,float> >(argv[2]));  
   const int number_of_planes_min = atoi(argv[3]);
   const int number_of_planes_max = atoi(argv[4]);
 

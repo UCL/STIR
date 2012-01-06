@@ -92,14 +92,14 @@ int main(int argc, char **argv)
       shared_ptr<ProjData> template_proj_data_sptr = 
 	ProjData::read_from_file(argv[4]);
       proj_data_info_ptr =
-	template_proj_data_sptr->get_proj_data_info_ptr()->clone();
+	template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();
       if (argc>=6)
 	max_out_segment_num_to_process = atoi(argv[5]);
     }
   else
     {
       proj_data_info_ptr =
-	in_projdata_ptr->get_proj_data_info_ptr()->clone();
+	in_projdata_ptr->get_proj_data_info_ptr()->create_shared_clone();
     }
   if (max_out_segment_num_to_process<0)
     max_out_segment_num_to_process = 

@@ -203,9 +203,9 @@ void
 FindMCNormFactors::set_defaults()
 {
   max_segment_num_to_process = -1;
-  ro3d_ptr = 0;
-  _reference_abs_time_sptr = 0;
-  normalisation_ptr = 0;
+  ro3d_ptr.reset();
+  _reference_abs_time_sptr.reset();
+  normalisation_ptr.reset();
   do_pre_normalisation = true;
   time_interval=1; 
   min_num_time_intervals_per_frame = 1;
@@ -271,7 +271,7 @@ post_processing()
     ProjData::read_from_file(template_proj_data_name);
 
   template_proj_data_info_ptr = 
-    template_proj_data_ptr->get_proj_data_info_ptr()->clone();
+    template_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone();
 
   // initialise segment_num related variables
 
@@ -289,16 +289,16 @@ post_processing()
     }
 
 
-    scanner_ptr = 
-    new Scanner(*template_proj_data_info_ptr->get_scanner_ptr());
+    scanner_ptr.
+      reset(new Scanner(*template_proj_data_info_ptr->get_scanner_ptr()));
 
   // TODO this won't work for the HiDAC or so
-  proj_data_info_uncompressed_ptr =
-    ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
-                  1, scanner_ptr->get_num_rings()-1,
-                  scanner_ptr->get_num_detectors_per_ring()/2,
-                  scanner_ptr->get_default_num_arccorrected_bins(), 
-                  false);
+  proj_data_info_uncompressed_ptr.
+    reset(ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
+					1, scanner_ptr->get_num_rings()-1,
+					scanner_ptr->get_num_detectors_per_ring()/2,
+					scanner_ptr->get_default_num_arccorrected_bins(), 
+					false));
   proj_data_info_cyl_uncompressed_ptr =
     dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>
     (proj_data_info_uncompressed_ptr.get());
@@ -578,8 +578,9 @@ allocate_segments( all_segments_type& segments,
   for (int seg=start_segment_index ; seg<=end_segment_index; seg++)
   {
 #ifdef USE_SegmentByView
-    segments[seg] = new SegmentByView<elem_type>(
-    	proj_data_info_ptr->get_empty_segment_by_view (seg)); 
+    segments[seg].
+      reset(new SegmentByView<elem_type>(
+					 proj_data_info_ptr->get_empty_segment_by_view (seg))); 
 #else
     segments[seg] = 
       new Array<3,elem_type>(IndexRange3D(0, proj_data_info_ptr->get_num_views()-1, 
@@ -607,7 +608,7 @@ save_and_delete_segments(shared_ptr<iostream>& output,
       write_data(*output, (*segments[seg]));
 #endif
       //delete segments[seg];      
-      segments[seg]=0; // deallocate for shared_ptr
+      segments[seg].reset(); // deallocate for shared_ptr
     }
     
   }
@@ -635,10 +636,12 @@ construct_proj_data(shared_ptr<iostream>& output,
   }
 #ifdef USE_SegmentByView
   // don't need output stream in this case
-  return new ProjDataInterfile(proj_data_info_ptr, output_filename, ios::out, 
-                               segment_sequence_in_stream,
-                               ProjDataFromStream::Segment_View_AxialPos_TangPos,
-		               OUTPUTNumericType);
+  shared_ptr<ProjData> retvalue
+    (new ProjDataInterfile(proj_data_info_ptr, output_filename, ios::out, 
+			   segment_sequence_in_stream,
+			   ProjDataFromStream::Segment_View_AxialPos_TangPos,
+			   OUTPUTNumericType));
+  return retvalue;
 #else
   // this code would work for USE_SegmentByView as well, but the above is far simpler...
   output = new fstream (output_filename.c_str(), ios::out|ios::binary);

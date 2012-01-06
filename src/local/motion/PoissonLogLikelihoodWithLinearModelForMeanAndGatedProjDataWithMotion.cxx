@@ -69,35 +69,35 @@ set_defaults()
   this->max_segment_num_to_process=-1;
   // KT 20/06/2001 disabled
   //num_views_to_add=1;  
-  this->_gated_proj_data_sptr = 0;
+  this->_gated_proj_data_sptr.reset();
   this->zero_seg0_end_planes = 0;
 
   this->_additive_projection_data_filename = "0";
-  this->_gated_additive_proj_data_sptr = 0;
+  this->_gated_additive_proj_data_sptr.reset();
 
 
   // set default for projector_pair_ptr
 #ifndef USE_PMRT
-  shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
-    new ForwardProjectorByBinUsingRayTracing();
-  shared_ptr<BackProjectorByBin> back_projector_ptr =
-    new BackProjectorByBinUsingInterpolation();
+  shared_ptr<ForwardProjectorByBin> forward_projector_ptr
+    (new ForwardProjectorByBinUsingRayTracing());
+  shared_ptr<BackProjectorByBin> back_projector_ptr
+    (new BackProjectorByBinUsingInterpolation());
 #else
-  shared_ptr<ProjMatrixByBin> PM = 
-    new  ProjMatrixByBinUsingRayTracing();
-  shared_ptr<ForwardProjectorByBin> forward_projector_ptr =
-    new ForwardProjectorByBinUsingProjMatrixByBin(PM); 
-  shared_ptr<BackProjectorByBin> back_projector_ptr =
-    new BackProjectorByBinUsingProjMatrixByBin(PM); 
+  shared_ptr<ProjMatrixByBin> PM
+    (new  ProjMatrixByBinUsingRayTracing());
+  shared_ptr<ForwardProjectorByBin> forward_projector_ptr
+    (new ForwardProjectorByBinUsingProjMatrixByBin(PM)); 
+  shared_ptr<BackProjectorByBin> back_projector_ptr
+    (new BackProjectorByBinUsingProjMatrixByBin(PM)); 
 #endif
 
-  this->projector_pair_ptr = 
-    new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr);
+  this->projector_pair_ptr
+    .reset(new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
 
   // TODO at present we used a fixed size vector
   this->_normalisation_sptrs.resize(1,20);
   for (int gate_num=1; gate_num<=20; ++gate_num)
-    this->_normalisation_sptrs[gate_num] = new TrivialBinNormalisation;
+    this->_normalisation_sptrs[gate_num].reset(new TrivialBinNormalisation);
   this->frame_num = 1;
   this->frame_definition_filename = "";
 
@@ -221,7 +221,7 @@ post_processing()
   if (this->_input_filename.length() == 0)
   { warning("You need to specify an input file"); return true; }
  
-  this->_gated_proj_data_sptr= GatedProjData::read_from_file(this->_input_filename);
+  this->_gated_proj_data_sptr.reset(GatedProjData::read_from_file(this->_input_filename));
 
  // image stuff
   if (this->zoom <= 0)
@@ -235,8 +235,8 @@ post_processing()
 
   if (this->_additive_projection_data_filename != "0")
   {
-    this->_gated_additive_proj_data_sptr = 
-      GatedProjData::read_from_file(this->_additive_projection_data_filename);
+    this->_gated_additive_proj_data_sptr
+      .reset(GatedProjData::read_from_file(this->_additive_projection_data_filename));
   };
 
   // read time frame def 
@@ -348,8 +348,8 @@ Succeeded
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 {
-  shared_ptr<ProjDataInfo> proj_data_info_sptr =
-    this->_gated_proj_data_sptr->get_proj_data_info_ptr()->clone();
+  shared_ptr<ProjDataInfo> 
+    proj_data_info_sptr(this->_gated_proj_data_sptr->get_proj_data_info_ptr()->clone());
 
   if (this->max_segment_num_to_process==-1)
     this->max_segment_num_to_process =
@@ -377,8 +377,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
   // initialise the objective functions for each gate
   {
     // for sensitivity work-around  (see below)
-    shared_ptr<TargetT> empty_target_sptr =
-      target_sptr->get_empty_copy();
+    shared_ptr<TargetT> empty_target_sptr(target_sptr->get_empty_copy());
 
     this->_functions.resize(this->_gated_proj_data_sptr->get_num_gates());
     for (unsigned int gate_num=1; 
@@ -414,35 +413,41 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
                   warning("transformation type has to be Transform3DObjectImageProcessor");
                   return Succeeded::no;
                 }
-              shared_ptr<ForwardProjectorByBin> forward_projector_sptr_this_gate =
-                new PresmoothingForwardProjectorByBin(this->projector_pair_ptr->
-                                                      get_forward_projector_sptr(),
-                                                      this->_forward_transformations[gate_num]);
+              shared_ptr<ForwardProjectorByBin> forward_projector_sptr_this_gate
+		(
+		 new PresmoothingForwardProjectorByBin(this->projector_pair_ptr->
+						       get_forward_projector_sptr(),
+						       this->_forward_transformations[gate_num])
+		 );
 
-              shared_ptr<DataProcessor<TargetT> > transpose_transformer_sptr =
-                //forward_transformer_ptr->clone();
-                new Transform3DObjectImageProcessor<float>(*forward_transformer_ptr);
+              shared_ptr<DataProcessor<TargetT> > transpose_transformer_sptr
+		(
+                //forward_transformer_ptr->clone()
+		 new Transform3DObjectImageProcessor<float>(*forward_transformer_ptr)
+		 );
               // TODO get rid if dynamic cast when using boost::shared_ptr
               Transform3DObjectImageProcessor<float> & transpose_transformer =
                 dynamic_cast<Transform3DObjectImageProcessor<float> &>(*transpose_transformer_sptr);
               transpose_transformer.
                 set_do_transpose(!forward_transformer_ptr->get_do_transpose());
-              shared_ptr<BackProjectorByBin> back_projector_sptr_this_gate =
-                new PostsmoothingBackProjectorByBin(this->projector_pair_ptr->
-                                                      get_back_projector_sptr(),
-                                                      transpose_transformer_sptr);
-              projector_pair_sptr_this_gate =
-                new ProjectorByBinPairUsingSeparateProjectors
-                (forward_projector_sptr_this_gate,
-                 back_projector_sptr_this_gate);
+              shared_ptr<BackProjectorByBin> back_projector_sptr_this_gate
+		(new PostsmoothingBackProjectorByBin(this->projector_pair_ptr->
+						     get_back_projector_sptr(),
+						     transpose_transformer_sptr)
+		 );
+              projector_pair_sptr_this_gate.
+		reset(new ProjectorByBinPairUsingSeparateProjectors
+		      (forward_projector_sptr_this_gate,
+		       back_projector_sptr_this_gate));
             }
           objective_function.
             set_projector_pair_sptr(projector_pair_sptr_this_gate);
         }
         if (is_null_ptr(this->_gated_additive_proj_data_sptr))
            {
+	     shared_ptr<ProjData> nullsptr;
              objective_function. 
-               set_additive_proj_data_sptr(0);
+               set_additive_proj_data_sptr(nullsptr);
            }
         else
           {
@@ -507,8 +512,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   if (iter == end_iter)
     return;
 
-  shared_ptr<TargetT> gradient_this_function_sptr =
-    gradient.get_empty_copy();
+  shared_ptr<TargetT> gradient_this_function_sptr(gradient.get_empty_copy());
 
   while (iter != end_iter)
     {

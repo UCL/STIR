@@ -119,9 +119,9 @@ set_up(
        "this yet. Sorry.\n");
   }
 
-  symmetries_ptr = 
-    new DataSymmetriesForDensels_PET_CartesianGrid(proj_data_info_ptr,
-                                                density_info_ptr);
+  symmetries_ptr
+    .reset(new DataSymmetriesForDensels_PET_CartesianGrid(proj_data_info_ptr,
+						   density_info_ptr));
   const float sampling_distance_of_adjacent_LORs_xy =
     proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
   

@@ -22,6 +22,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/utilities.h"
+#include "stir/IO/read_from_file.h"
 #include <fstream>
 #include <iostream>
 #include <iomanip>
@@ -38,8 +39,8 @@ int main(int argc, char * argv[])
 	 << "time_interval_in_secs defaults to 1\n";
     exit(EXIT_FAILURE);
   }
-  shared_ptr<CListModeData> lm_data_ptr =
-    CListModeData::read_from_file(argv[1]);
+  shared_ptr<CListModeData> lm_data_ptr
+    (read_from_file<CListModeData>(argv[1]));
   string hc_filename = argv[1];
   add_extension(hc_filename, ".hc");
   std::ofstream headcurve(hc_filename.c_str());

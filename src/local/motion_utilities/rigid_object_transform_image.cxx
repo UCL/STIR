@@ -32,6 +32,7 @@ namespace stir { // for doxygen
 
 #include "stir/DiscretisedDensity.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/Succeeded.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
@@ -140,10 +141,10 @@ int main(int argc, char **argv)
     }
   const string  output_filename = argv[0];
   const string  input_filename = argv[1];
-  shared_ptr<DiscretisedDensity<3,float> >  in_density_sptr = 
-    DiscretisedDensity<3,float>::read_from_file(input_filename);
-  shared_ptr< DiscretisedDensity<3,float> > out_density_sptr =
-    in_density_sptr->get_empty_discretised_density();
+  shared_ptr<DiscretisedDensity<3,float> >  in_density_sptr
+    (read_from_file<DiscretisedDensity<3,float> >(input_filename));
+  shared_ptr< DiscretisedDensity<3,float> > out_density_sptr
+    (in_density_sptr->get_empty_discretised_density());
 
   RigidObject3DTransformation rigid_object_transformation;
   {

@@ -67,8 +67,8 @@ do_segments(DiscretisedDensity<3,float>& image,
 	    bool fill_with_1)
 {
   
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr =
-    back_projector.get_symmetries_used()->clone();
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr
+    (back_projector.get_symmetries_used()->clone());
   
   
   list<ViewSegmentNumbers> already_processed;
@@ -166,7 +166,7 @@ main(int argc, char *argv[])
   VoxelsOnCartesianGrid<float> * vox_image_ptr =
     new VoxelsOnCartesianGrid<float>(*proj_data_info_ptr); 
 
-  shared_ptr<DiscretisedDensity<3,float> > image_sptr = vox_image_ptr;
+  shared_ptr<DiscretisedDensity<3,float> > image_sptr(vox_image_ptr);
 
 
   string name ;
@@ -175,12 +175,12 @@ main(int argc, char *argv[])
   else
     name = "Solid Angle";  
  
- shared_ptr<ProjMatrixByBin> PM = 
-    ProjMatrixByBin :: read_registered_object(0, name);
+ shared_ptr<ProjMatrixByBin> PM
+   (ProjMatrixByBin :: read_registered_object(0, name));
  
-  PM->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),image_sptr);
-  shared_ptr<BackProjectorByBin>  bck_projector_ptr  =
-    new BackProjectorByBinUsingSquareProjMatrixByBin(PM);   
+  PM->set_up(proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),image_sptr);
+  shared_ptr<BackProjectorByBin>  bck_projector_ptr
+    (new BackProjectorByBinUsingSquareProjMatrixByBin(PM));   
  
   
 
@@ -206,8 +206,8 @@ main(int argc, char *argv[])
 
     if (do_denominator)
     {
-      shared_ptr<DiscretisedDensity<3,float> > denominator_ptr =
-          image_sptr->get_empty_discretised_density();
+      shared_ptr<DiscretisedDensity<3,float> > denominator_ptr
+	(image_sptr->get_empty_discretised_density());
       // set to non-zero value to avoid problems with division outside the FOV
       denominator_ptr->fill(image_sptr->find_max() * 1.E-10F);
       do_segments(*denominator_ptr, 

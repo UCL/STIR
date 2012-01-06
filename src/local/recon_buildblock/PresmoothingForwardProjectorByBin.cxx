@@ -5,7 +5,7 @@
 
   \file
 
-  \brief Implementation of class PresmoothingForwardProjectorByBin
+  \brief Implementation of class stir::PresmoothingForwardProjectorByBin
 
   \author Kris Thielemans
 
@@ -20,6 +20,7 @@
 #include "local/stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
 #include "stir/DataProcessor.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/is_null_ptr.h"
 
 START_NAMESPACE_STIR
 const char * const 
@@ -31,8 +32,8 @@ void
 PresmoothingForwardProjectorByBin::
 set_defaults()
 {
-  original_forward_projector_ptr = 0;
-  image_processor_ptr = 0;
+  original_forward_projector_ptr.reset();
+  image_processor_ptr.reset();
 }
 
 void

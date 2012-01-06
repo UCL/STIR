@@ -18,6 +18,7 @@
 
 #include "local/stir/motion/NonRigidObjectTransformationUsingBSplines.h"
 #include "stir/stream.h"//xxx
+#include "stir/IO/read_from_file.h"
 #include "stir/numerics/determinant.h"
 #include "stir/IndexRange2D.h"
 #include <iostream>
@@ -193,8 +194,8 @@ set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deform
 				CartesianCoordinate3D<float>& grid_spacing,
 				CartesianCoordinate3D<float>& origin)
 {
-  shared_ptr<DiscretisedDensity<3,float> > image_sptr =
-    DiscretisedDensity<3,float>::read_from_file(deformation_field_from_file_z);
+  shared_ptr<DiscretisedDensity<3,float> > 
+    image_sptr(read_from_file<DiscretisedDensity<3,float> >(deformation_field_from_file_z));
   if (is_null_ptr(image_sptr))
     {
       warning("Error reading %s", deformation_field_from_file_z.c_str());
@@ -212,7 +213,7 @@ set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deform
   grid_spacing = voxels_ptr->get_grid_spacing();
 
   image_sptr =
-    DiscretisedDensity<3,float>::read_from_file(deformation_field_from_file_y);
+    read_from_file<DiscretisedDensity<3,float> >(deformation_field_from_file_y);
   if (is_null_ptr(image_sptr))
     {
       warning("Error reading %s", deformation_field_from_file_y.c_str());
@@ -221,7 +222,7 @@ set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deform
   deformation_field[2] = *image_sptr;
 
   image_sptr =
-    DiscretisedDensity<3,float>::read_from_file(deformation_field_from_file_x);
+    read_from_file<DiscretisedDensity<3,float> >(deformation_field_from_file_x);
   if (is_null_ptr(image_sptr))
     {
       warning("Error reading %s", deformation_field_from_file_x.c_str());
@@ -247,7 +248,7 @@ void
 NonRigidObjectTransformationUsingBSplines<num_dimensions,elemT>::
 initialise_keymap()
 {
-  this->deformation_field_sptr = new DeformationFieldOnCartesianGrid<num_dimensions,elemT>;
+  this->deformation_field_sptr.reset(new DeformationFieldOnCartesianGrid<num_dimensions,elemT>);
   this->parser.add_key("grid spacing", &this->_grid_spacing);
   this->parser.add_key("origin", &this->_origin);
   this->parser.add_key("deformation field", this->deformation_field_sptr.get());

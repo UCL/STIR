@@ -93,7 +93,7 @@ int main(int argc, const char *argv[])
     template_proj_data_sptr->get_proj_data_info_ptr();
 	
   string proj_data_out_filename(argv[1]);
-  ProjDataInterfile proj_data_out(proj_data_info_ptr->clone(), proj_data_out_filename,std::ios::out);
+  ProjDataInterfile proj_data_out(proj_data_info_ptr->create_shared_clone(), proj_data_out_filename,std::ios::out);
 	
   const shared_ptr<ProjData> proj_data_in_sptr = ProjData::read_from_file(argv[2],std::ios::in);  
 	

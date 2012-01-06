@@ -33,6 +33,7 @@
 #include "local/stir/recon_buildblock/ParametricQuadraticPrior.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 
 START_NAMESPACE_STIR
 
@@ -56,7 +57,7 @@ ParametricQuadraticPrior<TargetT>::post_processing()
   if (base_type::post_processing()==true)
     return true;
   if (kappa_filename.size() != 0)
-    this->kappa_ptr = TargetT::read_from_file(kappa_filename);
+    this->kappa_ptr = read_from_file<TargetT>(kappa_filename);
   if (this->weights.size() ==0)
     {
       // will call compute_weights() to fill it in
@@ -67,7 +68,9 @@ ParametricQuadraticPrior<TargetT>::post_processing()
 	{
 	  this->_single_quadratic_priors[param_num].set_weights(this->get_weights()); // ChT: At the moment weights are treated equally.
 	  //ChT: ToCheck
-	  this->_single_quadratic_priors[param_num].set_kappa_sptr(this->get_kappa_sptr()->construct_single_density(param_num).clone()); 
+	  shared_ptr<typename TargetT::SingleDiscretisedDensityType> 
+	    kappa_sptr(this->get_kappa_sptr()->construct_single_density(param_num).clone());
+	  this->_single_quadratic_priors[param_num].set_kappa_sptr(kappa_sptr); 
 	}
 	// only_2D??
     }
@@ -80,7 +83,7 @@ ParametricQuadraticPrior<TargetT>::set_defaults()
 {
   base_type::set_defaults();
   this->only_2D = false;
-  this->kappa_ptr = 0;  
+  this->kappa_ptr.reset();  
   this->weights.recycle();
  // construct _single_quadratic_priors
   this->_single_quadratic_priors.resize(1,2);

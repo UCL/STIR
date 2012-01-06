@@ -23,6 +23,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/index_at_maximum.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/centre_of_gravity.h"
 #include "stir/thresholding.h"
 #include <vector>
@@ -39,7 +40,7 @@ START_NAMESPACE_STIR
 void 
 MatchTrackerAndScanner::set_defaults()
 {
-  this->_ro3d_sptr = 0;
+  this->_ro3d_sptr.reset();
   this->scan_start_time_secs_since_1970_UTC=-1;
   this->relative_threshold = .1F;
 }
@@ -162,8 +163,8 @@ run()
 	sprintf(rest, "_f%dg1d0b0.hv", current_frame_num);
 	const string input_filename = this->get_image_filename_prefix() + rest;
 	
-	shared_ptr< DiscretisedDensity<3,float> >  input_image_sptr = 
-	  DiscretisedDensity<3,float>::read_from_file(input_filename);
+	shared_ptr< DiscretisedDensity<3,float> >  
+	  input_image_sptr(read_from_file<DiscretisedDensity<3,float> >(input_filename));
 
 
 #if 0

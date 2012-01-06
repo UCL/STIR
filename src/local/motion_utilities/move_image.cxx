@@ -30,6 +30,7 @@
 
 #include "stir/DiscretisedDensity.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 #include "local/stir/motion/transform_3d_object.h"
 #include "local/stir/motion/TimeFrameMotion.h"
 #include "stir/Succeeded.h"
@@ -140,7 +141,7 @@ post_processing()
       return true;
     }
   in_density_sptr = 
-    DiscretisedDensity<3,float>::read_from_file(input_filename);
+    read_from_file<DiscretisedDensity<3,float> >(input_filename);
 
   return false;
 }
@@ -150,8 +151,8 @@ Succeeded
 MoveImage::
 process_data()
 {
-  shared_ptr< DiscretisedDensity<3,float> > out_density_sptr =
-    in_density_sptr->get_empty_discretised_density();
+  shared_ptr< DiscretisedDensity<3,float> > out_density_sptr
+    (in_density_sptr->get_empty_discretised_density());
 
   const unsigned int min_frame_num =
     this->get_frame_num_to_process()==-1

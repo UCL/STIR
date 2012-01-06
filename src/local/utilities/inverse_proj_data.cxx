@@ -163,10 +163,8 @@ main(int argc, char **argv)
  const ProjDataInfo * proj_data_info_ptr = 
     proj_data_ptr->get_proj_data_info_ptr();
 
-  ProjDataInfo * data_info = proj_data_info_ptr->clone();
-
- shared_ptr<ProjData> proj_data_inv_ptr =
-   new ProjDataInterfile (data_info,argv[2]);
+ shared_ptr<ProjData> proj_data_inv_ptr
+   (new ProjDataInterfile (proj_data_info_ptr->create_shared_clone(),argv[2]));
 
 
   find_inverse(proj_data_inv_ptr.get(),proj_data_ptr.get());

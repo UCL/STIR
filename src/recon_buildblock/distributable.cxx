@@ -224,9 +224,11 @@ void send_viewgrams(const shared_ptr<RelatedViewgrams<float> >& y,
 
 #ifndef NDEBUG
   //test sending related viegrams
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> 
+    symmetries_sptr(y->get_symmetries_ptr()->clone());
   if (distributed::test && distributed::first_iteration==true && next_receiver==1) 
-    distributed::test_related_viewgrams_master(y->get_proj_data_info_ptr()->clone(), 
-                                               y->get_symmetries_ptr()->clone(), y.get(), next_receiver);
+    distributed::test_related_viewgrams_master(y->get_proj_data_info_ptr()->create_shared_clone(), 
+                                               symmetries_sptr, y.get(), next_receiver);
 #endif
 
   //TODO: this could also be done by using MPI_Probe at the slave to find out what to recieve next
@@ -315,12 +317,12 @@ void distributable_computation(
       distributed::test_int_value_master(444, 1);
       distributed::test_int_values_master(1);
                 
-      Viewgram<float> viewgram(proj_dat_ptr->get_proj_data_info_ptr()->clone(), 44, 0);
+      Viewgram<float> viewgram(proj_dat_ptr->get_proj_data_info_ptr()->create_shared_clone(), 44, 0);
       for ( int tang_pos = viewgram.get_min_tangential_pos_num(); tang_pos  <= viewgram.get_max_tangential_pos_num() ;++tang_pos)  
         for ( int ax_pos = viewgram.get_min_axial_pos_num(); ax_pos <= viewgram.get_max_axial_pos_num() ;++ax_pos)
           viewgram[ax_pos][tang_pos]= rand();
                         
-      distributed::test_viewgram_master(viewgram, proj_dat_ptr->get_proj_data_info_ptr()->clone());
+      distributed::test_viewgram_master(viewgram, proj_dat_ptr->get_proj_data_info_ptr()->create_shared_clone());
     }
 #endif
         

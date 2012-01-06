@@ -23,8 +23,8 @@ START_NAMESPACE_STIR
 void 
 TimeFrameMotion::set_defaults()
 {
-  _ro3d_sptr = 0;
-  _reference_abs_time_sptr = 0;
+  _ro3d_sptr.reset();
+  _reference_abs_time_sptr.reset();
   _frame_num_to_process = -1;
   _do_move_to_reference = true;
   _scan_start_time_secs_since_1970_UTC=-1;

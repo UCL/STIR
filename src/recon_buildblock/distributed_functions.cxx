@@ -279,7 +279,7 @@ namespace distributed
   void send_proj_data_info(stir::ProjDataInfo const* const data, int destination)
   {
     // KT TODO there must be a better way than writing to a temporary file on disk
-    stir::ProjDataInterfile projection_data_for_slave(data->clone(),"for_slave");
+    stir::ProjDataInterfile projection_data_for_slave(data->create_shared_clone(),"for_slave");
                                 
     std::ifstream is("for_slave.hs", ios::binary );
                 
@@ -473,8 +473,9 @@ namespace distributed
     //construct new Backprojector and Forward Projector, projector_pair_ptr
     std::istringstream parameter_info_stream(parameter_info);
                 
-    projector_pair_ptr = stir::RegisteredObject<stir::ProjectorByBinPair>::
-      read_registered_object(&parameter_info_stream, registered_name_proj_pair);
+    projector_pair_ptr.
+      reset(stir::RegisteredObject<stir::ProjectorByBinPair>::
+	    read_registered_object(&parameter_info_stream, registered_name_proj_pair));
   }
         
   bool receive_bool_value(int tag, int source)
@@ -586,7 +587,7 @@ namespace distributed
     //point pointer to newly created image_estimate
     image_ptr = *(stir::shared_ptr<stir::DiscretisedDensity<3, float> >*)&tmpPtr;               
 #else
-    image_ptr =  new stir::VoxelsOnCartesianGrid<float>(range, origin, grid_spacing);
+    image_ptr.reset(new stir::VoxelsOnCartesianGrid<float>(range, origin, grid_spacing));
 #endif
   }
    

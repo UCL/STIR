@@ -22,6 +22,7 @@
 #include "stir/DynamicProjData.h"
 #include "stir/info.h"
 #include "stir/is_null_ptr.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
@@ -65,8 +66,7 @@ set_times()
 
   TimeFrameDefinitions time_frame_defs;
 
-  shared_ptr<DynamicProjData> data_sptr =
-    DynamicProjData::read_from_file(this->_filename);
+  shared_ptr<DynamicProjData> data_sptr(DynamicProjData::read_from_file(this->_filename));
   
   if (!is_null_ptr(data_sptr))
     {
@@ -78,8 +78,8 @@ set_times()
     {
       info("Trying to read data as an image now.");
 
-      shared_ptr<DynamicDiscretisedDensity> data_sptr =
-        DynamicDiscretisedDensity::read_from_file(this->_filename);
+      shared_ptr<DynamicDiscretisedDensity> 
+	data_sptr(read_from_file<DynamicDiscretisedDensity>(this->_filename));
       
       if (is_null_ptr(data_sptr))
         {

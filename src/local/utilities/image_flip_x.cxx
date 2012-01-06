@@ -30,6 +30,7 @@
 */
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/DiscretisedDensity.h"
 #include <algorithm>
 #include <unistd.h>
@@ -76,8 +77,8 @@ int main(int argc, char * argv[])
 	return EXIT_FAILURE;
     }
 
-  shared_ptr<DiscretisedDensity<3,float> > density_ptr = 
-    DiscretisedDensity<3,float>::read_from_file(input_filename);
+  shared_ptr<DiscretisedDensity<3,float> > density_ptr
+    (read_from_file<DiscretisedDensity<3,float> >(input_filename));
 
   for (DiscretisedDensity<3,float>::iterator z_iter = density_ptr->begin();
        z_iter != density_ptr->end();

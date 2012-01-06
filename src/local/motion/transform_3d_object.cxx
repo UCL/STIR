@@ -187,8 +187,8 @@ transform_3d_object(ProjData& out_proj_data,
   for (int segment_num = out_min_segment_num;
        segment_num <= out_max_segment_num;
        ++segment_num)    
-    out_seg_ptr[segment_num] = 
-      new SegmentByView<float>(out_proj_data.get_empty_segment_by_view(segment_num));
+    out_seg_ptr[segment_num].
+      reset(new SegmentByView<float>(out_proj_data.get_empty_segment_by_view(segment_num)));
   for (int segment_num = min_in_segment_num_to_process;
        segment_num <= max_in_segment_num_to_process;
        ++segment_num)    

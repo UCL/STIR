@@ -20,6 +20,7 @@
 #include "local/stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
 #include "stir/DataProcessor.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/is_null_ptr.h"
 
 START_NAMESPACE_STIR
 const char * const 
@@ -31,8 +32,8 @@ void
 PostsmoothingBackProjectorByBin::
 set_defaults()
 {
-  original_back_projector_ptr = 0;
-  image_processor_ptr = 0;
+  original_back_projector_ptr.reset();
+  image_processor_ptr.reset();
 }
 
 void
@@ -102,8 +103,8 @@ actual_back_project(DiscretisedDensity<3,float>& density,
 {
   if (!is_null_ptr(image_processor_ptr))
     {
-      shared_ptr<DiscretisedDensity<3,float> > filtered_density_ptr = 
-	density.get_empty_discretised_density();
+      shared_ptr<DiscretisedDensity<3,float> > filtered_density_ptr
+	(density.get_empty_discretised_density());
       assert(density.get_index_range() == filtered_density_ptr->get_index_range());
       original_back_projector_ptr->back_project(*filtered_density_ptr, viewgrams, 
 						min_axial_pos_num, max_axial_pos_num,

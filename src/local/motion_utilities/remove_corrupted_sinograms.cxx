@@ -168,7 +168,7 @@ main(int argc, char* argv[])
     
   // construct new proj_data_info_ptr for output data
   shared_ptr<ProjDataInfo> proj_data_info_ptr =
-    in_projdata_ptr->get_proj_data_info_ptr()->clone();
+    in_projdata_ptr->get_proj_data_info_ptr()->create_shared_clone();
 
   if (proj_data_info_ptr->get_max_segment_num()<max_segment_num_to_process)
     max_segment_num_to_process = proj_data_info_ptr->get_max_segment_num();

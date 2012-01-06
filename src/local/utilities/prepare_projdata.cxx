@@ -149,12 +149,12 @@ void
 PrepareProjData::
 set_defaults()
 {
-  prompts_projdata_ptr = 0;
-  trues_projdata_ptr = 0;
-  precorrected_projdata_ptr = 0;
-  randoms_projdata_ptr = 0;
-  normalisation_ptr = new TrivialBinNormalisation;
-  scatter_projdata_ptr=0;
+  prompts_projdata_ptr.reset();
+  trues_projdata_ptr.reset();
+  precorrected_projdata_ptr.reset();
+  randoms_projdata_ptr.reset();
+  normalisation_ptr.reset(new TrivialBinNormalisation);
+  scatter_projdata_ptr.reset();
   max_segment_num_to_process = -1;
   prompts_projdata_filename = "";
   trues_projdata_filename = "";
@@ -251,9 +251,9 @@ PrepareProjData(const char * const par_filename)
   if (do_Shifted_Poisson || do_prompts)
      randoms_projdata_ptr = ProjData::read_from_file(randoms_projdata_filename);
 
-  scatter_projdata_ptr = 
-       !do_scatter && scatter_projdata_filename.size()!=0 ?
-       ProjData::read_from_file(scatter_projdata_filename) : 0;
+  scatter_projdata_ptr.reset();
+  if (!do_scatter && scatter_projdata_filename.size()!=0)
+    scatter_projdata_ptr = ProjData::read_from_file(scatter_projdata_filename);
 
   // read time frame def 
   if (frame_definition_filename.size()!=0)
@@ -282,13 +282,13 @@ PrepareProjData(const char * const par_filename)
 
     if (!is_null_ptr(trues_projdata_ptr))
       output_data_info_ptr= 
-	trues_projdata_ptr->get_proj_data_info_ptr()->clone();
+	trues_projdata_ptr->get_proj_data_info_ptr()->create_shared_clone();
     else if (!is_null_ptr(randoms_projdata_ptr))
       output_data_info_ptr= 
-	randoms_projdata_ptr->get_proj_data_info_ptr()->clone();
+	randoms_projdata_ptr->get_proj_data_info_ptr()->create_shared_clone();
     else if (!is_null_ptr(precorrected_projdata_ptr))
       output_data_info_ptr= 
-	precorrected_projdata_ptr->get_proj_data_info_ptr()->clone();
+	precorrected_projdata_ptr->get_proj_data_info_ptr()->create_shared_clone();
     else
       {
 	warning("\nAt least one of these input files must be set: trues, randoms, precorrected\n");
@@ -316,22 +316,22 @@ PrepareProjData(const char * const par_filename)
     // open other files
 
     if (normatten_projdata_filename.size()!=0)
-      normatten_projdata_ptr = 
-	new ProjDataInterfile(output_data_info_ptr, normatten_projdata_filename);
+      normatten_projdata_ptr.
+	reset(new ProjDataInterfile(output_data_info_ptr, normatten_projdata_filename));
     if (do_scatter)
-      scatter_projdata_ptr = 
-	new ProjDataInterfile(output_data_info_ptr, scatter_projdata_filename);
+      scatter_projdata_ptr.
+	reset(new ProjDataInterfile(output_data_info_ptr, scatter_projdata_filename));
     if (do_Shifted_Poisson)
     {
-      Shifted_Poisson_numerator_projdata_ptr = 
-	new ProjDataInterfile(output_data_info_ptr, Shifted_Poisson_numerator_projdata_filename);
-      Shifted_Poisson_denominator_projdata_ptr = 
-	new ProjDataInterfile(output_data_info_ptr, Shifted_Poisson_denominator_projdata_filename);
+      Shifted_Poisson_numerator_projdata_ptr.
+	reset(new ProjDataInterfile(output_data_info_ptr, Shifted_Poisson_numerator_projdata_filename));
+      Shifted_Poisson_denominator_projdata_ptr.
+	reset(new ProjDataInterfile(output_data_info_ptr, Shifted_Poisson_denominator_projdata_filename));
     }
     if (do_prompts)
     {
-      prompts_denominator_projdata_ptr = 
-	new ProjDataInterfile(output_data_info_ptr, prompts_denominator_projdata_filename);
+      prompts_denominator_projdata_ptr.
+	reset(new ProjDataInterfile(output_data_info_ptr, prompts_denominator_projdata_filename));
     }
   }
 
@@ -343,8 +343,8 @@ void
 PrepareProjData::
 doit()
 {
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_ptr =
-    new TrivialDataSymmetriesForViewSegmentNumbers;
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_ptr
+    (new TrivialDataSymmetriesForViewSegmentNumbers);
 
   // take these out of the loop to avoid reallocation (but it's ugly)
   RelatedViewgrams<float> normatten_viewgrams;

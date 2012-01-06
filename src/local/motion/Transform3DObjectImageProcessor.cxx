@@ -95,7 +95,7 @@ post_processing()
 
 template <typename elemT>
 Transform3DObjectImageProcessor<elemT>::
-Transform3DObjectImageProcessor(const shared_ptr<ObjectTransformation<3,elemT> > & transf)
+Transform3DObjectImageProcessor(const shared_ptr<ObjectTransformation<3,elemT> > transf)
 {
   set_defaults();
   this->transformation_sptr = transf;
@@ -142,8 +142,7 @@ Transform3DObjectImageProcessor<elemT>::
 virtual_apply(DiscretisedDensity<3,elemT>& density) const
 
 { 
-  shared_ptr<DiscretisedDensity<3,elemT> > density_copy_sptr =
-    density.clone();
+  shared_ptr<DiscretisedDensity<3,elemT> > density_copy_sptr(density.clone());
   density.fill(0);
   this->virtual_apply(density, *density_copy_sptr);  
 }
@@ -253,7 +252,7 @@ set_defaults()
   this->transformation = RigidObject3DTransformation(Quaternion<float>(1,0,0,0), 
 					       CartesianCoordinate3D<float>(0,0,0));
 #else
-  this->transformation_sptr = 0;
+  this->transformation_sptr.reset();
 #endif
 }
 

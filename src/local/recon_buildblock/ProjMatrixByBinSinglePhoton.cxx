@@ -83,8 +83,8 @@ set_up(
     error("Image should have y-dimension equal to the number of rings\n");
   if (max_index[3]-min_index[3]+1 != proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring())
     error("Image should have x-dimension equal to the number of detectors per ring\n");
-  symmetries_ptr = 
-    new TrivialDataSymmetriesForBins(proj_data_info_ptr);
+  symmetries_ptr
+    .reset(new TrivialDataSymmetriesForBins(proj_data_info_ptr));
   
 };
 

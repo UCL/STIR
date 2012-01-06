@@ -182,14 +182,14 @@ void make_det_pair_data(DetPairData& det_pair_data,
   const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data.get_proj_data_info_ptr());
 
-  shared_ptr<Sinogram<float> > pos_sino_ptr =
-    new Sinogram<float>(proj_data.get_sinogram(ax_pos_num,segment_num));
+  shared_ptr<Sinogram<float> > 
+    pos_sino_ptr(new Sinogram<float>(proj_data.get_sinogram(ax_pos_num,segment_num)));
   shared_ptr<Sinogram<float> > neg_sino_ptr;
   if (segment_num == 0)
     neg_sino_ptr = pos_sino_ptr;
   else
-    neg_sino_ptr =
-      new Sinogram<float>(proj_data.get_sinogram(ax_pos_num,-segment_num));
+    neg_sino_ptr.
+      reset(new Sinogram<float>(proj_data.get_sinogram(ax_pos_num,-segment_num)));
   
     
   for (int view_num = 0; view_num < num_detectors/2; view_num++)
@@ -222,12 +222,12 @@ void set_det_pair_data(ProjData& proj_data,
   const int num_detectors = det_pair_data.get_num_detectors();
   assert(proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring() == num_detectors);
 
-  shared_ptr<Sinogram<float> > pos_sino_ptr =
-    new Sinogram<float>(proj_data.get_empty_sinogram(ax_pos_num,segment_num));
+  shared_ptr<Sinogram<float> > 
+    pos_sino_ptr(new Sinogram<float>(proj_data.get_empty_sinogram(ax_pos_num,segment_num)));
   shared_ptr<Sinogram<float> > neg_sino_ptr;
   if (segment_num != 0)
-    neg_sino_ptr =
-      new Sinogram<float>(proj_data.get_empty_sinogram(ax_pos_num,-segment_num));
+    neg_sino_ptr.
+      reset(new Sinogram<float>(proj_data.get_empty_sinogram(ax_pos_num,-segment_num)));
   
     
   for (int view_num = 0; view_num < num_detectors/2; view_num++)
@@ -744,8 +744,10 @@ get_fan_info(int& num_rings, int& num_detectors_per_ring,
   fan_size = 2*half_fan_size+1;
   max_ring_diff = proj_data_info_ptr->get_max_segment_num();
 
-  return 
-    dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr->clone());
+  shared_ptr<ProjDataInfoCylindricalNoArcCorr> 
+    ret_value(dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr->clone()));
+  return ret_value;
+	    
 }
 
 void make_fan_data(FanProjData& fan_data,
@@ -767,7 +769,7 @@ void make_fan_data(FanProjData& fan_data,
 
   for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
   {
-    segment_ptr = new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num()));
+    segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num())));
     
     for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
 	 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
@@ -810,7 +812,7 @@ void set_fan_data(ProjData& proj_data,
  
   for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
   {
-    segment_ptr = new SegmentBySinogram<float>(proj_data.get_empty_segment_by_sinogram(bin.segment_num()));
+    segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_empty_segment_by_sinogram(bin.segment_num())));
     
     for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
 	 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
@@ -939,7 +941,7 @@ void make_fan_sum_data(Array<2,float>& data_fan_sums,
 
   for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
   {
-    segment_ptr = new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num()));
+    segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num())));
     
     for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
 	 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());

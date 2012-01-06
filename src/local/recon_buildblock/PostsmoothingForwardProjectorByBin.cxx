@@ -20,6 +20,7 @@
 #include "local/stir/recon_buildblock/PostsmoothingForwardProjectorByBin.h"
 #include "stir/Viewgram.h"
 #include "stir/RelatedViewgrams.h"
+#include "stir/is_null_ptr.h"
 
 START_NAMESPACE_STIR
 const char * const 
@@ -34,7 +35,7 @@ set_defaults()
   tang_kernel_double.resize(0);
   ax_kernel_double.resize(0);
 
-  original_forward_projector_ptr = 0;
+  original_forward_projector_ptr.reset();
   tang_kernel = VectorWithOffset<float>();
   ax_kernel = VectorWithOffset<float>();
   smooth_segment_0_axially= false;

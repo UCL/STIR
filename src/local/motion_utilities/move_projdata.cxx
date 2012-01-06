@@ -159,12 +159,12 @@ post_processing()
       shared_ptr<ProjData> template_proj_data_sptr = 
 	ProjData::read_from_file(output_template_filename);
       proj_data_info_ptr =
-	template_proj_data_sptr->get_proj_data_info_ptr()->clone();
+	template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();
     }
   else
     {
       proj_data_info_ptr =
-	in_proj_data_sptr->get_proj_data_info_ptr()->clone();
+	in_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();
     }
   if (max_out_segment_num_to_process<0)
     max_out_segment_num_to_process = 
@@ -199,8 +199,8 @@ process_data()
 	char rest[50];
 	sprintf(rest, "_f%dg1d0b0", current_frame_num);
 	const string output_filename = output_filename_prefix + rest;
-	out_proj_data_sptr = 
-	  new ProjDataInterfile (proj_data_info_ptr, output_filename, ios::out); 
+	out_proj_data_sptr.
+	  reset(new ProjDataInterfile (proj_data_info_ptr, output_filename, ios::out)); 
       }
 
       std::cout << "Applying transformation " 

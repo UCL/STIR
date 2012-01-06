@@ -25,6 +25,7 @@
 #include "stir/IO/interfile.h"
 #include "stir/Succeeded.h"
 #include "stir/stream.h"
+#include "stir/IO/read_from_file.h"
 #include <fstream>
 #include <vector>
 
@@ -52,8 +53,8 @@ int main(int argc, char **argv)
   
   // read image 
 
-  shared_ptr<DiscretisedDensity<3,float> >  density_ptr = 
-    DiscretisedDensity<3,float>::read_from_file(input_filename);
+  shared_ptr<DiscretisedDensity<3,float> >  density_ptr
+    (read_from_file<DiscretisedDensity<3,float> >(input_filename));
 
   // read factors
   vector<double> rescale_factors;

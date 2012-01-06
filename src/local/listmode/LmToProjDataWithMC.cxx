@@ -28,8 +28,8 @@ LmToProjDataWithMC::set_defaults()
 {
   LmToProjData::set_defaults();
   reference_position_is_average_position_in_frame = false;
-  _reference_abs_time_sptr = 0;
-  ro3d_ptr = 0; 
+  _reference_abs_time_sptr.reset();
+  ro3d_ptr.reset(); 
 }
 
 void 

@@ -27,6 +27,7 @@
 #include "stir/utilities.h"
 #include "stir/stream.h"
 #include "stir/is_null_ptr.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/linear_regression.h"
 #include <fstream>
@@ -539,8 +540,8 @@ RigidObject3DMotionFromPolaris::synchronise()
 
   try
     {
-      shared_ptr<CListModeData> lm_data_ptr =
-	CListModeData::read_from_file(list_mode_filename);
+      shared_ptr<CListModeData> lm_data_ptr
+	(read_from_file<CListModeData>(list_mode_filename));
 
       this->listmode_data_start_time_in_secs = 
 	lm_data_ptr->get_scan_start_time_in_secs_since_1970();
@@ -602,8 +603,8 @@ RigidObject3DMotionFromPolaris::synchronise()
 	warning("Could not open synchronisation file %s  for reading.\nSynchronising...",
 		sync_filename.c_str());
 
-	shared_ptr<CListModeData> lm_data_ptr =
-	  CListModeData::read_from_file(this->list_mode_filename);
+	shared_ptr<CListModeData> 
+	  lm_data_ptr(read_from_file<CListModeData>(this->list_mode_filename));
       
 	this->do_synchronisation(*lm_data_ptr);
 
@@ -946,7 +947,7 @@ RigidObject3DMotionFromPolaris::
 set_mt_file(const string& mt_filename_v)
 {
   mt_filename = mt_filename_v;
-  mt_file_ptr = new Polaris_MT_File(mt_filename);
+  mt_file_ptr.reset(new Polaris_MT_File(mt_filename));
   return is_null_ptr(mt_file_ptr) ? Succeeded::no : Succeeded::yes;
 }
 

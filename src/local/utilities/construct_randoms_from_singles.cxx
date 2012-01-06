@@ -70,7 +70,7 @@ int main(int argc, char **argv)
   const string program_name = argv[0];
 
   ProjDataInterfile 
-    proj_data(template_projdata_ptr->get_proj_data_info_ptr()->clone(), 
+    proj_data(template_projdata_ptr->get_proj_data_info_ptr()->create_shared_clone(), 
 	      output_file_name);
 
   const int num_rings = 
@@ -146,9 +146,10 @@ int main(int argc, char **argv)
     const int mashing_factor = 
       proj_data_info_ptr->get_view_mashing_factor();
 
+    shared_ptr<Scanner> scanner_sptr(new Scanner(*proj_data_info_ptr->get_scanner_ptr()));
     const ProjDataInfoCylindricalNoArcCorr * const uncompressed_proj_data_info_ptr = 
       dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>
-      (ProjDataInfo::ProjDataInfoCTI(new Scanner(*proj_data_info_ptr->get_scanner_ptr()),
+      (ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
 				    /*span=*/1, max_ring_diff,
 				    /*num_views=*/num_detectors_per_ring/2, 
 				    fan_size,
