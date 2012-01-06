@@ -129,10 +129,8 @@
 #include "stir/NumericInfo.h"
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
-#ifdef STIR_DEVEL
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/DynamicDiscretisedDensity.h"
-#endif
 
 #include <fstream> 
 #include <iostream> 
@@ -223,7 +221,6 @@ void process_data(const string& output_file_name,
   output_format.write_to_file(output_file_name, *image_ptr);
 }
 
-#ifdef STIR_DEVEL
 template <class FunctionObjectT> //class DataT, for DynProjectionData ?
 void process_data(const string& output_file_name,
 		  const int num_files, char **argv, 
@@ -233,8 +230,8 @@ void process_data(const string& output_file_name,
 		  const bool do_add,
 		  const FunctionObjectT& pow_times_add_object)
 {
-  shared_ptr<DynamicDiscretisedDensity> dyn_image_sptr =
-    DynamicDiscretisedDensity::read_from_file(*argv);
+  shared_ptr<DynamicDiscretisedDensity> 
+    dyn_image_sptr(DynamicDiscretisedDensity::read_from_file(*argv));
   DynamicDiscretisedDensity & dyn_image = *dyn_image_sptr;
   for(unsigned int frame_num=1;frame_num<=(dyn_image_sptr->get_time_frame_definitions()).get_num_frames();++frame_num)
     {
@@ -247,8 +244,8 @@ void process_data(const string& output_file_name,
     {
       if (verbose)
 	cout << "Reading image " << argv[i] << endl;
-      dyn_current_image_sptr = 
-	DynamicDiscretisedDensity::read_from_file(argv[i]);
+      dyn_current_image_sptr =
+	read_from_file<DynamicDiscretisedDensity>(argv[i]);
       DynamicDiscretisedDensity & dyn_current_image = *dyn_current_image_sptr;
       for(unsigned int frame_num=1;frame_num<=(dyn_image_sptr->get_time_frame_definitions()).get_num_frames();++frame_num)
 	{
@@ -279,7 +276,6 @@ void process_data(const string& output_file_name,
     cout << "Writing output image " << output_file_name << endl;
   dyn_image_sptr->write_to_ecat7(output_file_name);
 }
-#endif
 
 int 
 main(int argc, char **argv)
@@ -288,9 +284,7 @@ main(int argc, char **argv)
     {
       cerr<< "Usage: " << argv[0] << "\n\t"
 	  << "[--output-format parameter-filename ]\n\t"
-#ifdef STIR_DEVEL
 	  << "[--parametric || --dynamic]\n\t"
-#endif
 	  << "[-s [--max_segment_num_to_process number] ]\n\t"
 	  << "[--accumulate] [--add | --mult]\n\t"
 	  << "[--power power_float]\n\t"
@@ -347,10 +341,8 @@ main(int argc, char **argv)
   bool except_first = true;
   bool verbose = false;
   bool do_projdata = false;
-#ifdef STIR_DEVEL
   bool parametric = false;
   bool dynamic = false;
-#endif
 
   int max_segment_num_to_process = -1;
   shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > >
@@ -445,7 +437,6 @@ main(int argc, char **argv)
 	  do_projdata = true;
 	  argc-=1; argv+=1;
 	}
-#ifdef STIR_DEVEL
       else  if (strcmp(argv[0], "--parametric")==0)
 	{
 	  parametric = true;
@@ -456,7 +447,6 @@ main(int argc, char **argv)
 	  dynamic = true;
 	  argc-=1; argv+=1;
 	}
-#endif
       else  if (strcmp(argv[0], "--add")==0)
 	{
 	  do_add = true;
@@ -521,9 +511,7 @@ main(int argc, char **argv)
   if (!do_projdata)
     {
  
-#ifdef STIR_DEVEL
       if (!parametric && !dynamic)
-#endif
 	{
 	  process_data(output_file_name,
 		       num_files, argv, 
@@ -534,7 +522,6 @@ main(int argc, char **argv)
 		       pow_times_add_object,
 		       *output_format_sptr);
 	}
-#ifdef STIR_DEVEL
       else if (parametric)
 	{
 	  shared_ptr<OutputFileFormat<ParametricVoxelsOnCartesianGrid > >
@@ -560,7 +547,6 @@ main(int argc, char **argv)
 		       do_add,
 		       pow_times_add_object);
 	}
-#endif
     }
   else // do_projdata
     {
