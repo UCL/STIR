@@ -46,8 +46,6 @@
 
 START_NAMESPACE_STIR
 
-class PMessage;
-
 /*!
   \ingroup projdata
   \brief A class for 2d projection data.
@@ -61,10 +59,13 @@ template <typename elemT>
 class Viewgram : public Array<2,elemT>
 {
 private:
-  typedef Viewgram<elemT> self_type;
   typedef Array<2,elemT> base_type;
 #ifdef SWIG
+  // SWIG needs the next typedef to be public
 public:  
+#endif
+  typedef Viewgram<elemT> self_type;
+#ifdef SWIG
   // SWIG needs a default constructor
   inline Viewgram() {}
 #endif
@@ -79,8 +80,6 @@ public:
                   const int v_num, const int s_num); 
   
 
-  Viewgram(PMessage& msg);
-  
   //! Get segment number
   inline int get_segment_num() const; 
   //! Get number of views

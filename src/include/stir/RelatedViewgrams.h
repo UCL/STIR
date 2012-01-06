@@ -50,8 +50,6 @@ using std::vector;
 
 START_NAMESPACE_STIR
 
-class PMessage;
-
 // forward declarations for 'friend'
 class ProjData;
 class ProjDataInfo;
@@ -66,6 +64,9 @@ template <typename elemT>
 class RelatedViewgrams
 {
 private:
+#ifdef SWIG
+public:  
+#endif
   typedef RelatedViewgrams<elemT> self_type;
 
 public:
@@ -96,10 +97,7 @@ public:
 
   // implicit copy constructor (just element-by-element copy)
   // RelatedViewgrams(const RelatedViewgrams&);
-
-  //! serialisation ctor
-  RelatedViewgrams(PMessage& msg);
-  
+ 
   //! a private constructor which simply sets the members
   /*! \todo Currently public for the STIR_MPI version */
   inline RelatedViewgrams(const vector<Viewgram<elemT> >& viewgrams,
