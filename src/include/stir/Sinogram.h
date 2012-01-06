@@ -47,8 +47,6 @@
 
 START_NAMESPACE_STIR
 
-class PMessage;
-
 /*!
   \ingroup projdata
   \brief A class for 2d projection data.
@@ -61,11 +59,13 @@ template <typename elemT>
 class Sinogram : public Array<2,elemT>
 {
 private:
-  typedef Sinogram<elemT> self_type;
   typedef Array<2,elemT> base_type;
-
 #ifdef SWIG
+  // SWIG needs the next typedef to be public
 public:  
+#endif
+  typedef Sinogram<elemT> self_type;
+#ifdef SWIG
   // SWIG needs a default constructor
   inline Sinogram() {}
 #endif
@@ -79,9 +79,6 @@ public:
   inline Sinogram(const Array<2,elemT>& p,const shared_ptr<ProjDataInfo >& proj_data_info_ptr, 
                   const int ax_pos_num, const int segment_num); 
   
-
-  Sinogram(PMessage& msg);
-
   //! Get segment number
   inline int get_segment_num() const; 
   //! Get number of axial positions
