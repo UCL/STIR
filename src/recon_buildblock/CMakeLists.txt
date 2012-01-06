@@ -92,6 +92,9 @@ endif()
 include(../stir_lib_target.cmake)
 
 
+if (STIR_MPI)
+  target_link_libraries(recon_buildblock ${MPI_LIBRARIES})
+endif()
 
 
 
