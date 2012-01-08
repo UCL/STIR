@@ -78,12 +78,12 @@ set(file_format_tests
 )
 
 if (HAVE_ECAT)
-    message("WARNING: ECAT6 tests currently disabled")
+    #message("WARNING: ECAT6 tests currently disabled")
     list(APPEND file_format_tests
 	test_ECAT7OutputFileFormat.in
     )
 else(HAVE_ECAT)
-    message("No ECAT6/7 support compiled, so no tests for this file format")
+    #message("No ECAT6/7 support compiled, so no tests for this file format")
 endif(HAVE_ECAT)
 
 # now for each of these, add a test
