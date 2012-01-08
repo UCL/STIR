@@ -465,7 +465,11 @@ mat_write_any_subheader(
   
   matrix_errno = MAT_OK;
   matrix_errtxt[0] = '\0';
-  if (data==NULL) matrix_errno = MAT_READ_FROM_NILFPTR;
+  if (data==NULL) 
+    {
+      matrix_errno = MAT_READ_FROM_NILFPTR;
+      return Succeeded::no;
+    }
 
   MatrixFile *mptr = data->matfile;
   if (mptr == NULL)
