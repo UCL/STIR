@@ -150,7 +150,7 @@ trap "echo ERROR after creating doc" ERR
 if [ $do_zip_source = 1 ]; then
   echo Do zip source
   cd ${DISTRIB}
-  cp ${destination}/credits.htm parapet/PPhead/
+  cp -p ${destination}/credits.htm parapet/PPhead/
   rm -f parapet/all.zip parapet/VCprojects.zip
   zipit --distrib > /dev/null
   zipproj --distrib > /dev/null
