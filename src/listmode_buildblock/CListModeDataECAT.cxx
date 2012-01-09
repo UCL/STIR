@@ -101,7 +101,7 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
 #else
   warning("CListModeDataECAT: .sgl file not read (because compiled without ECAT7 support)!\n"
 	  "Assuming this is ECAT 962, but couldn't find scan start time etc");
-  this->scanner_sptr = new Scanner(Scanner::E962);
+  this->scanner_sptr.reset(new Scanner(Scanner::E962));
 #endif
 
   if ((scanner_sptr->get_type() == Scanner::E966 && typeid(CListRecordT) != typeid(CListRecordECAT966)) ||
