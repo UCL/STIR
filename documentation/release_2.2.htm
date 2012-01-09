@@ -31,6 +31,7 @@ CMake is much better than the previous STIR make files for configuration and fin
 
 <h3>Known problems</h3>
 <ul>
+<li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
 <li>ECAT6 routines seem to have problems since STIR 2.0. ECAT6 is therefore no longer supported</li>
 <li>The interpolating back-projector can still give problems in the centre of the images
 on some architectures/compiler/optimisation settings. We recommend to use the ray-tracing
@@ -42,6 +43,8 @@ utilities. It is recommended to use the new <tt>CMake</tt> files for building in
 
 <h3>Functionality changes</h3>
 <ul>
+<li>ECAT list-mode routines are now no longer included in the library when
+eCAT support is not enabled. (In STIR 2.1 they defaulted to use the ECAT 962 file format.)</li>
 <li>On Unix/Linux systems, <tt>manip_image</tt> and <tt>manip_projdata</tt> used to
 display a list of files in the current directory when asking for new input data.
 This is no longer implemented.</li>
