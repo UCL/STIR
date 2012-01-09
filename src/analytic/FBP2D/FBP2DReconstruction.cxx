@@ -47,6 +47,10 @@
 #include "stir/display.h"
 #include <algorithm>
 #include "stir/IO/interfile.h"
+
+#ifdef STIR_OPENMP
+#include <omp.h>
+#endif
 START_NAMESPACE_STIR
 
 
