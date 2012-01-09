@@ -47,6 +47,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 option(DISABLE_LLN_MATRIX "disable use of LLN library" OFF)
 option(DISABLE_AVW "disable use of AVW library" OFF)
 option(DISABLE_RDF "disable use of GE RDF library" OFF)
+option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
 
 if(NOT DISABLE_LLN_MATRIX)
   find_package(LLN)
@@ -126,11 +127,14 @@ ENABLE_TESTING()
 include(stir_dirs.cmake)
 
 # see if there's a local subdirectory.
-find_path(STIR_LOCAL NAME "extra_stir_dirs.cmake" PATHS "${PROJECT_SOURCE_DIR}/local/" NO_DEFAULT_PATH)
-if (STIR_LOCAL)
-  add_subdirectory(${STIR_LOCAL})
-  include(${STIR_LOCAL}/extra_stir_dirs.cmake)
+if(NOT DISABLE_STIR_LOCAL)
+  find_path(STIR_LOCAL NAME "extra_stir_dirs.cmake" PATHS "${PROJECT_SOURCE_DIR}/local/" NO_DEFAULT_PATH)
+  if (STIR_LOCAL)
+    add_subdirectory(${STIR_LOCAL})
+    include(${STIR_LOCAL}/extra_stir_dirs.cmake)
+  endif()
 endif()
+
 
 
 # go and look for CMakeLists.txt files in all those directories
