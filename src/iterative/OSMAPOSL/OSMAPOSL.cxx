@@ -37,18 +37,15 @@
 #include "stir/HighResWallClockTimer.h"
 #include "stir/recon_buildblock/distributable_main.h"
 
-START_NAMESPACE_STIR
-int master_main(int argc, char **argv);
-END_NAMESPACE_STIR
-
-USING_NAMESPACE_STIR
-
 #ifdef STIR_MPI
 int stir::distributable_main(int argc, char **argv)
 #else
 int main(int argc, char **argv)
 #endif
 {
+
+  USING_NAMESPACE_STIR
+
   HighResWallClockTimer t;
   t.reset();
   t.start();
