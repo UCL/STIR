@@ -16,9 +16,19 @@ ProjDataInfoCylindrical.o ProjDataInfoCylindricalArcCorr.o ProjDataInfoCylindric
 
 LIBS=../../build/stir/gcc/DebugShared/buildblock/libbuildblock.so \
 ../../build/stir/gcc/DebugShared/IO/libIO.so \
-../../build/stir/gcc/DebugShared/numerics_buildblock/libnumerics_buildblock.so
+../../build/stir/gcc/DebugShared/modelling_buildblock/libmodelling_buildblock.so \
+../../build/stir/gcc/DebugShared/numerics_buildblock/libnumerics_buildblock.so \
+../../build/stir/gcc/DebugShared/local/IO/GE/liblocal_IO_GE.so \
+../../build/stir/gcc/DebugShared/recon_buildblock/librecon_buildblock.so \
+../../build/stir/gcc/DebugShared/listmode_buildblock/liblistmode_buildblock.so \
+../../build/stir/gcc/DebugShared/utilities/CMakeFiles/stir_math.dir/__/IO/IO_registries.cxx.o 
 
-_stir.so: stir_wrap.o $(LIBS)
-	g++ -g -shared $^ -o _stir.so
+# TODO problem: need -fPIC for registries.o
+# cd /home/kris/devel/parapet/build/stir/gcc/DebugShared/utilities && /usr/bin/c++    -DSTIR_USE_BOOST_SPTR -g -I/home/kris/devel/lln/ecat -I/home/kris/devel/GE/pettoolbox/io_utils/C/include -I/home/kris/devel/parapet/PPhead/include    -D HAVE_LLN_MATRIX -D HAVE_RDF -D STIR_USE_GE_IO -Wall -Wno-deprecated -o CMakeFiles/stir_math.dir/__/IO/IO_registries.cxx.o -c /home/kris/devel/parapet/PPhead/IO/IO_registries.cxx -fPIC
+
+.PRECIOUS: stir_wrap.o
+
+_stir.so: stir_wrap.o $(LIBS) Makefile
+	g++ -g -shared stir_wrap.o $(LIBS) -o _stir.so
 
 
