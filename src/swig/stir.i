@@ -1,6 +1,6 @@
  %module stir
  %{
- /* Includes the header in the wrapper code */
+ /* Include the following headers in the wrapper code */
 #include <string>
 #include <list>
 #include <cstdio> // for size_t
@@ -13,9 +13,10 @@
  #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
  #include "stir/Viewgram.h"
  #include "stir/RelatedViewgrams.h"
-#include "stir/Sinogram.h"
-#include "stir/SegmentByView.h"
-#include "stir/SegmentBySinogram.h"
+ #include "stir/Sinogram.h"
+ #include "stir/SegmentByView.h"
+ #include "stir/SegmentBySinogram.h"
+ #include "stir/ProjData.h"
 
  #include "stir/BasicCoordinate.h"
 #include "stir/CartesianCoordinate3D.h"
@@ -60,47 +61,26 @@ typedef unsigned int size_t;
   }
 } 
 
+#if defined(SWIGPYTHON)
 %rename(__assign__) *::operator=; 
- /* Parse the header file to generate wrappers */
+#endif
+
+// include standard swig support for some bits of the STL (i.e. standard C++ lib)
 %include <stl.i>
 %include <std_list.i>
 
-#if 1
- // TODO
-#define SWIG_SHARED_PTR_NAMESPACE boost
-%include <boost_shared_ptr.i>
-%shared_ptr(stir::Scanner);
-%shared_ptr(stir::ProjDataInfo);
-%shared_ptr(stir::ProjDataInfoCylindrical);
-%shared_ptr(stir::ProjDataInfoCylindricalArcCorr);
-%shared_ptr(stir::ProjDataInfoCylindricalNoArcCorr);
-
-#else
-%ignore stir::shared_ptr::operator==(const shared_ptr<T> &) const;
-%ignore stir::shared_ptr::operator!=(const shared_ptr<T> &) const;
-%include "stir/shared_ptr.h"
-#endif
-
-%include "stir/Succeeded.h"
-%include "stir/DetectionPosition.h"
-%include "stir/Scanner.h"
-
-// Instantiate templates used by stir
+// Instantiate STL templates used by stir
 namespace std {
    %template(IntVector) vector<int>;
    %template(DoubleVector) vector<double>;
    %template(FloatVector) vector<float>;
    %template(StringList) list<string>;
 }
-%define %ADD_defaultconstructor(TYPE...)
-%extend TYPE {
- TYPE()  {}
- }
-%enddef
 
 // doesn't work (yet?) because of bug in int template arguments
 // %rename(__getitem__) *::operator[]; 
-//%define %ADD_indexaccess(RETTYPE,TYPE...)
+
+// MACROS to define index access (Work-in-progress)
 %define %ADD_indexaccess(RETTYPE,TYPE...)
 #if defined(SWIGPYTHON)
 #if defined(SWIGPYTHON_BUILTIN)
@@ -114,8 +94,10 @@ namespace std {
 #endif
 %enddef
 
+ // more or less redefinition of the above, when returning "by value"
+ // but doesn't seem to work yet
 %define %ADD_indexaccessValue(TYPE...)
- //TODO cannot do this because of commas
+ //TODO cannot do next line yet because of commas
  //%ADD_indexaccess(TYPE##::value_type, TYPE);
 #if defined(SWIGPYTHON)
 #if defined(SWIGPYTHON_BUILTIN)
@@ -129,6 +111,8 @@ namespace std {
 #endif
 %enddef
 
+ // more or less redefinition of the above, when returning "by reference"
+ // but doesn't seem to work yet
 %define %ADD_indexaccessReference(TYPE...)
  //TODO cannot do this because of commas
  //%ADD_indexaccess(TYPE##::reference, TYPE);
@@ -144,6 +128,7 @@ namespace std {
 #endif
 %enddef
 
+ // MACROS to call the above, but also instantiate the template
 %define %template_withindexaccess(NAME,RETTYPE,TYPE...)
 %template(NAME) TYPE;
 %ADD_indexaccess(RETTYPE,TYPE);
@@ -157,6 +142,38 @@ namespace std {
 %ADD_indexaccessReference(TYPE);
 %enddef
 
+ // Finally, start with STIR specific definitions
+
+#if 1
+ // first support shared_ptr
+#define SWIG_SHARED_PTR_NAMESPACE boost
+%include <boost_shared_ptr.i>
+%shared_ptr(stir::Scanner);
+%shared_ptr(stir::ProjDataInfo);
+%shared_ptr(stir::ProjDataInfoCylindrical);
+%shared_ptr(stir::ProjDataInfoCylindricalArcCorr);
+%shared_ptr(stir::ProjDataInfoCylindricalNoArcCorr);
+%shared_ptr(stir::ProjData);
+// TODO we probably need a list of other classes here
+#else
+namespace boost {
+template<class T> class shared_ptr
+{
+public:
+T * operator-> () const;
+};
+}
+#endif
+
+ /* Parse the header files to generate wrappers */
+%include "stir/Succeeded.h"
+%include "stir/DetectionPosition.h"
+%include "stir/Scanner.h"
+
+ /* First do coordinates, indices, images.
+    We first include them, and sort out template instantiation and indexing below.
+ */
+
 %ignore stir::BasicCoordinate::operator[](const int);
 %ignore stir::BasicCoordinate::operator[](const int) const;
 %include "stir/BasicCoordinate.h"
@@ -167,8 +184,10 @@ namespace std {
 %ignore  stir::CartesianCoordinate3D::x();
 %include "stir/CartesianCoordinate3D.h"
 
+ // we have to ignore the following because of a bug in SWIG 2.0.4, but we don't need it anyway
 %ignore *::IndexRange(const VectorWithOffset<IndexRange<num_dimensions-1> >& range);
 %include "stir/IndexRange.h"
+
 %ignore stir::VectorWithOffset::operator[](int);
 %ignore stir::VectorWithOffset::operator[](int) const;
 %include "stir/VectorWithOffset.h"
@@ -235,14 +254,27 @@ namespace stir {
 
 }
 
+ /* Now do ProjDataInfo, Sinogram et al
+ */
+
 %include "stir/ProjDataInfo.h"
 %include "stir/ProjDataInfoCylindrical.h"
 %include "stir/ProjDataInfoCylindricalArcCorr.h"
 %include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 
+%include "stir/Viewgram.h"
+%include "stir/RelatedViewgrams.h"
+%include "stir/Sinogram.h"
+%include "stir/SegmentByView.h"
+%include "stir/SegmentBySinogram.h"
+%include "stir/ProjData.h"
+
 namespace stir { 
   %template(FloatViewgram) Viewgram<float>;
   %template(FloatSinogram) Sinogram<float>;
-
-  //%template(SharedScanner) shared_ptr<Scanner>;
+  %template(FloatSegmentBySinogram) SegmentBySinogram<float>;
+  %template(FloatSegmentByView) SegmentByView<float>;
+  // should not have the following if using boost_smart_ptr.i
+  //  %template(SharedScanner) boost::shared_ptr<Scanner>;
+  //%template(SharedProjData) boost::shared_ptr<ProjData>;
 }
