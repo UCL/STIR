@@ -60,8 +60,8 @@ int main()
   density_sptr->fill(0);
 
   /////////////// back project
-  shared_ptr<BackProjectorByBin> back_projector_sptr =
-    BackProjectorByBin::ask_type_and_parameters();
+  shared_ptr<BackProjectorByBin> back_projector_sptr
+    (BackProjectorByBin::ask_type_and_parameters());
 
   back_projector_sptr->set_up(proj_data_info_sptr, density_sptr);
 
