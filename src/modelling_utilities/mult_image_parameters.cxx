@@ -43,8 +43,8 @@
 #include "stir/IO/read_from_file.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/getopt.h"
 #include <algorithm>
-#include <unistd.h>
 
 int main(int argc, char * argv[])
 {
