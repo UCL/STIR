@@ -1,4 +1,5 @@
+*.ncb
+*.vcproj.*
 Debug
 Release
-*.vcproj.*
-*.ncb
+poisson_noise.vcxproj.user
