@@ -1,4 +1,5 @@
+*.ncb
+*.vcproj.*
 Debug
 Release
-*.vcproj.*
-*.ncb
+postfilter.vcxproj.user
