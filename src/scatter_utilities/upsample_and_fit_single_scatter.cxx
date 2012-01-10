@@ -73,14 +73,13 @@ print_usage_and_exit(const char * const prog_name)
 
 int main(int argc, const char *argv[])                                  
 {         
-  USING_NAMESPACE_STIR;
   const char * const prog_name = argv[0];
 
   float min_scale_factor = 1.E-5F;
   float max_scale_factor = 1.E5F;
   bool remove_interleaving = true;
   unsigned int half_filter_width = 1;
-  BSpline::BSplineType  spline_type = BSpline::linear;
+  stir::BSpline::BSplineType  spline_type = stir::BSpline::linear;
   std::string data_to_fit_filename;
   std::string data_to_scale_filename;
   std::string weights_filename;
@@ -101,7 +100,7 @@ int main(int argc, const char *argv[])
         }
       else if (strcmp(argv[1], "--BSpline-type")==0)
         {
-          spline_type = (BSpline::BSplineType)atoi(argv[2]);
+          spline_type = (stir::BSpline::BSplineType)atoi(argv[2]);
           argc-=2; argv +=2;
         }
       else if (strcmp(argv[1], "--half-filter-width")==0)
@@ -154,19 +153,20 @@ int main(int argc, const char *argv[])
       print_usage_and_exit(prog_name);
     }
 
-  const shared_ptr< ProjData > weights_proj_data_sptr = 
+  using stir::ProjData;
+  const stir::shared_ptr< ProjData > weights_proj_data_sptr = 
     ProjData::read_from_file(weights_filename);
-  const shared_ptr<ProjData> data_to_fit_proj_data_sptr = 
+  const stir::shared_ptr<ProjData> data_to_fit_proj_data_sptr = 
     ProjData::read_from_file(data_to_fit_filename);
-  const shared_ptr<ProjData> data_to_scale_proj_data_sptr = 
+  const stir::shared_ptr<ProjData> data_to_scale_proj_data_sptr = 
     ProjData::read_from_file(data_to_scale_filename);   
         
-  shared_ptr<ProjDataInfo> data_to_fit_proj_data_info_sptr =
+  stir::shared_ptr<stir::ProjDataInfo> data_to_fit_proj_data_info_sptr =
     data_to_fit_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();
   
-  ProjDataInterfile output_proj_data(data_to_fit_proj_data_info_sptr, output_filename);
+  stir::ProjDataInterfile output_proj_data(data_to_fit_proj_data_info_sptr, output_filename);
         
-  ScatterEstimationByBin::
+  stir::ScatterEstimationByBin::
     upsample_and_fit_scatter_estimate(output_proj_data,
                                       *data_to_fit_proj_data_sptr,
                                       *data_to_scale_proj_data_sptr,
