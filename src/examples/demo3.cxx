@@ -57,7 +57,7 @@ private:
 void
 MyStuff::set_defaults()
 {
-  back_projector_sptr = new BackProjectorByBinUsingInterpolation;
+  back_projector_sptr.reset(new BackProjectorByBinUsingInterpolation);
   output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
 }
 
