@@ -33,6 +33,7 @@ It also works on Windows for Visual Studio. Using CMake is recommended when usin
 <h3>Known problems</h3>
 <ul>
 <li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
+<li>The recon_test_pack routines fail with the MPI version. See the mailing list for a work-around.</li>
 <li>ECAT6 routines seem to have problems since STIR 2.0. ECAT6 is therefore no longer supported</li>
 <li>The interpolating back-projector can still give problems in the centre of the images
 on some architectures/compiler/optimisation settings. We recommend to use the ray-tracing
