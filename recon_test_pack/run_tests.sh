@@ -22,7 +22,7 @@
 # Author Kris Thielemans
 # $Id$
 
-echo This script should work with STIR version 2.1. If you have
+echo This script should work with STIR version 2.1 and 2.2. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
