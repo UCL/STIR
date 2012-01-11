@@ -235,7 +235,6 @@ Explicit list of files that carry the PARAPET license
 ./IO/stir_ecat_common.cxx
 ./iterative/OSMAPOSL/OSMAPOSL.cxx
 ./iterative/OSMAPOSL/OSMAPOSLReconstruction.cxx
-./iterative/POSMAPOSL/POSMAPOSL.cxx
 ./recon_buildblock/AnalyticReconstruction.cxx
 ./recon_buildblock/BackProjectorByBin.cxx
 ./recon_buildblock/BackProjectorByBinUsingInterpolation.cxx
