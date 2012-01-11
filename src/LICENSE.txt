@@ -1,4 +1,4 @@
-Licensing information for STIR 2.2a
+Licensing information for STIR 2.2beta
 ----------------------------------
 
 See for more info http://stir.sourceforge.net, section Registration.
@@ -116,6 +116,7 @@ Explicit list of files that carry the PARAPET license
 ./include/stir/DiscretisedDensityOnCartesianGrid.inl
 ./include/stir/display.h
 ./include/stir/display.inl
+./include/stir/doxygen_doc_for_boost.h
 ./include/stir/error.h
 ./include/stir/evaluation/ROIValues.h
 ./include/stir/FullArrayIterator.h
