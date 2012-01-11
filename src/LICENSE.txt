@@ -72,11 +72,6 @@ Explicit list of files that carry the PARAPET license
 ./display/screen.h
 ./display/screengen.c
 ./eval_buildblock/ROIValues.cxx
-./include/local/stir/fft.h
-./include/local/stir/Filter.h
-./include/local/stir/phantoms/Utah.h
-./include/local/stir/recon_buildblock/oldBackProjectorByBinUsingInterpolation.h
-./include/local/stir/recon_buildblock/oldForwardProjectorByBinUsingRayTracing.h
 ./include/stir/analytic/FBP2D/FBP2DReconstruction.h
 ./include/stir/analytic/FBP2D/RampFilter.h
 ./include/stir/analytic/FBP3DRP/ColsherFilter.h
