@@ -2,7 +2,6 @@
 // $Id$
 //
 /*
-    Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
     This file is part of STIR.
 
@@ -23,9 +22,7 @@
   \ingroup main_programs
   \brief main() for stir::OSMAPOSLReconstruction on parametric images
 
-  \author Matthew Jacobson
   \author Kris Thielemans
-  \author PARAPET project
 
   $Date$
   $Revision$
