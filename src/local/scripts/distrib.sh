@@ -95,10 +95,11 @@ if [ $do_license = 1 ]; then
             }
           }"
   awk "$AWK_PROG" tmp_LICENSE.txt > LICENSE.txt
+  rm tmp_LICENSE.txt
   echo $END_STRING >> LICENSE.txt
   #then add new list on again
-  find . -path ./local -prune -path ./include/local -prune \
-     -o -name "*[xhlkc]"  -print|grep -v CVS | xargs grep -l PARAPET >>LICENSE.txt 
+  find . -path ./local -prune -path ./include/local -prune -path ./include/stir/local -prune \
+     -o -name "*[xhlkc]"  -print|grep -v CVS | xargs grep -l PARAPET |grep -v 'local/' >>LICENSE.txt 
   $CVS commit  -m "- updated for release of version $VERSION" LICENSE.txt
 fi
 
