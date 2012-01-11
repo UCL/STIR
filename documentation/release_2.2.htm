@@ -1,16 +1,16 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 2.2 (alpha dated January 2012)</title>
+    <title>Summary of changes in STIR release 2.2 (beta dated January 2012)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 2.2 (alpha dated January 2012)</h1>
+    <h1>Summary of changes in STIR release 2.2 (beta dated January 2012)</h1>
 
 <p>This update was prepared by Kris Thielemans (Algorithms and Software Consulting Ltd).
 </p>
 <p>This update contains some bug fixes and updates for more recent compilers
-(Clang++ 2.9 and gcc 4.6.1 are now supported).
+(Clang++ 2.9, gcc 4.6.1 and Visual C++ 2010 are now supported).
 </p>
 <ul>
 
@@ -25,7 +25,8 @@
 <a href="http://www.cmake.org">CMake</a>, based on example files provided by 
 Robert Barnett (Westmead Hospital, Sydney) for STIR 2.1. The files distributed
 with version 2.2 are now complete and also include the tests.<br />
-CMake is much better than the previous STIR make files for configuration and finding system dependencies. It also works on Windows for Visual Studio.
+CMake is much better than the previous STIR make files for configuration and finding system dependencies. 
+It also works on Windows for Visual Studio. Using CMake is recommended when using Visual Studio.
 </li>
 </ul>
 
@@ -43,6 +44,9 @@ utilities. It is recommended to use the new <tt>CMake</tt> files for building in
 
 <h3>Functionality changes</h3>
 <ul>
+<li><tt>stir_math</tt> has two additional switches <tt>--parametric</tt> and <tt>--dynamic</tt>
+to handle parametric or dynamic images (no sinograms yet. sorry). Note however that output data
+will not incomplete headers. In particular, timing information will be lost.</li>
 <li>ECAT list-mode routines are now no longer included in the library when
 eCAT support is not enabled. (In STIR 2.1 they defaulted to use the ECAT 962 file format.)</li>
 <li>On Unix/Linux systems, <tt>manip_image</tt> and <tt>manip_projdata</tt> used to
