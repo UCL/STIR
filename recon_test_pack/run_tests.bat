@@ -5,7 +5,7 @@ rem see README.txt
 rem Author: Kris Thielemans
 
 
-echo This script should work with STIR version 2.0. If you have
+echo This script should work with STIR version 2.1 and 2.2. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo.
@@ -163,6 +163,8 @@ goto run_OSSPS_PM_QP
 echo There were problems here!
 set ThereWereErrors=1
 
+
+:run_OSSPS_PM_QP
 
 echo.
 echo ----------- Running OSSPS with Quadratic prior ------------- 
