@@ -471,6 +471,10 @@ Succeeded KeyParser::parse_header()
     process_key();
   if (status != parsing)
   { 
+    // something's wrong. We're finding data, but we're not supposed to be
+    // parsing. We'll exit with an error, but first write a warning.
+    // The warning will say that we miss the "start parsing" keyword (if we can find it in the map)
+
     // find starting keyword
     string start_keyword;
     for (Keymap::const_iterator i=kmap.begin(); i!= kmap.end(); ++i)
@@ -478,8 +482,18 @@ Succeeded KeyParser::parse_header()
       if (i->second.p_object_member == &KeyParser::start_parsing)
       start_keyword = i->first;
     }
-    warning("KeyParser error: required first keyword \"%s\" not found\n",
-        start_keyword.c_str());  
+    if (start_keyword.length()>0)
+    {
+      warning("KeyParser error: required first keyword \"%s\" not found\n",
+	      start_keyword.c_str());  
+    }
+    else
+    {
+      // there doesn't seem to be a start_parsing keyword, so we cannot include it 
+      // in the warning. (it could be a side-effect of another key, so we're 
+      // not sure if the map is correct or not)
+      warning("KeyParser error: data found, but KeyParser status is \"not parsing\". Keymap possibly incorrect");
+    }
     return Succeeded::no; 
   }
 
@@ -493,18 +507,25 @@ Succeeded KeyParser::parse_header()
   
 }	
 
-// KT 13/03/2001 split parse_line() into 2 functions
 Succeeded KeyParser::read_and_parse_line(const bool write_warning)
 {
-  if (!input->good())
-  {
-    warning("KeyParser warning: early EOF or bad file");
-    stop_parsing();
-    return Succeeded::no;
-  }
- 
   string line;  
-  read_line(*input, line);
+  // we keep reading a line until it's either non-empty, or we're at the end of the input
+  while (true)
+    {
+      if (!input->good())
+	{
+	  warning("KeyParser warning: early EOF or bad file");
+	  stop_parsing();
+	  return Succeeded::no;
+	}
+ 
+      read_line(*input, line);
+      // check if only white-space, if not, get out of the loop to continue
+      std::size_t pos = line.find_first_not_of(" \t");
+      if ( pos != string::npos)
+        break;
+    }
 
   // gets keyword
   keyword=standardise_keyword(get_keyword(line));
