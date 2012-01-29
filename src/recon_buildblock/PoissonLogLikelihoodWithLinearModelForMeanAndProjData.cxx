@@ -522,15 +522,15 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
           str <<"Number of subsets is such that subsets will be very unbalanced.\n"
               << "Number of viewgrams in each subset would be:\n"
               << num_vs_in_subset
-              << "which should be "
-              << num_vs_in_subset.sum()/float(this->num_subsets)
               << "\nEither reduce the number of symmetries used by the projector, or\n"
             "change the number of subsets. It usually should be a divisor of\n"
               << this->proj_data_sptr->get_num_views()
               << "/4 (or if that's not an integer, a divisor of "
               << this->proj_data_sptr->get_num_views()
-              << "/2).\n";
-          str >> warning_message;
+              << "/2 or "
+              << this->proj_data_sptr->get_num_views() 
+	      << ").\n";
+          warning_message = str.str();
           return false;
         }
     }
