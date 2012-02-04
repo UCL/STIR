@@ -32,7 +32,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 2.1}}
+ Version 2.2}}
 \end{center}
 
 \end{spacing}
@@ -40,14 +40,28 @@
 \large 
 
 \noindent 
-K. Thielemans (Hammersmith Imanet Ltd)\\
+K. Thielemans (Hammersmith Imanet Ltd, Algorithms and Software Consulting Ltd)\\
 D. Sauge, C. Labb\'e, C. Morel (Hopital Cantonal Gen\`eve)\\
 M. Jacobson (Technion University)\\
 A. Zverovich (Brunel University) \\
 T. Beisel (Univ. of Paderborn) \\
 Ch. Tsoumpas (Hammersmith Imanet and Imperial College London)
 
+\begin{center}
+License
+\end{center}
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
 
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    Parts of this file are licensed under the PARAPET license.     
+    See STIR/LICENSE.txt for details.
 
 \newpage
 
@@ -72,9 +86,8 @@ original PARAPET distribution. Details on licensing are to be
 found during the registration process, and the file \textbf{STIR/LICENSE.txt} 
 that comes with the distribution. 
 
-
-Pending a publication on the current library, please put references 
-to {[}Thi06{]} in your own publications (for \textit{STIR} 1.x, use [Lab99a], [Lab99b]).
+See the publications section of the STIR website for information on which reference
+to use for STIR (for \textit{STIR} 1.x, use [Lab99a], [Lab99b]).
 
 
 
@@ -85,24 +98,25 @@ compiler tools and the \textit{STIR} reconstruction building blocks.
 Then a brief explanation is given about how to run reconstruction 
 algorithms as well as additional utilities. A description of 
 the reconstruction building block library can be found on our 
-web site (section \textit{documentation}). A short review of analytic 
+web site (section \textit{documentation}). A short (but out-dated) review of analytic 
 and iterative reconstruction methods is available in [PAR1.3] 
-(section \textit{Dissemination}).
+(available on the STIR web-site).
 
 \section{
 A general note on documentation in STIR}
 
 Although we attempt to keep all documentation up-to-date, we 
-recommend to read documentation in the following order:\\
-1.\tab 
-general overview documents, such as this User's Guide\\
-2.\tab 
+recommend to read documentation in the following order:
+\begin{itemize}
+\item general overview documents, such as this User's Guide
+\item the \R2Lurl{http://sourceforge.net/apps/mediawiki/stir}{STIR Wiki}
+\item 
 online generated documentation (produced by doxygen). This is 
-probably more up-to-date than the previous category, as it is 
-produced from comments and (partly) code in the source files.\\
-3.\tab 
-check the source itself if in any doubt
-
+produced from comments and (partly) code in the source files.
+\item check the source itself if in any doubt.
+\end{itemize}
+Many questions have already been answered via the mailing lists. See the
+web-site on how to search these.
 
 Any comments on documentation, and especially contributions are 
 always welcome. Please use the stir-users mailing list.
@@ -881,7 +895,6 @@ Since version 2.1, \textit{STIR} contains files to build using the platform-inde
 \R2Lurl{"http://www.cmake.org"}{CMake}, based on example files provided by 
 Robert Barnett (SWAHS, Sydney). This is much better for configuration and finding 
 system dependencies.
-However, tests are not yet included in the CMakeFiles.
 
 See the CMake web-site more information, and in particular\\
 \R2Lurl{http://www.cmake.org/cmake/help/runningcmake.html}{http://www.cmake.org/cmake/help/runningcmake.html}.
@@ -906,10 +919,10 @@ build system (i.e. \texttt{make} on Linux/Unix).
 
 On Windows, the procedure is essentially the same, except that you have to specify locations 
 via the cmake GUI. You can also select your build system (e.g. Visual Studio 2008). In that case,
-you do not need to specify the Build Type, as you will be able to select that from in 
+you do not need to specify the Build Type, as you will be able to select that in 
 Visual Studio.
 
-
+More information on using CMake is on the STIR Wiki.
 
 \subsubsection{
 Operating system specifics}
@@ -2143,9 +2156,20 @@ post-filter type := None
 end := 
 \end{verbatim}
 
+The filter parameters can be used to specify an apodising window with 2 parameters: 
+a cut-off frequency $\mathrm{fc}$ and $\alpha$ which specifies the usual 
+  Hamming window (although I'm not so sure about the terminology here). 
+\[
+   (\alpha + (1 - \alpha) * cos(\pi * f / \mathrm{fc}))
+\]
+
+  The actual implementation works differently to overcome problems with defining the ramp in frequency 
+  space (with a well-known DC offset as consequence). We therefore compute the ramp*Hanning in 
+  "ordinary" space in continuous form, do the sampling there, and then DFT it. 
+
 \textbf{Warning:} the current version of the interpolating backprojector, 
 the default backprojector used by FBP2D, has a central artefact 
-on some systems (including Sparc and Opterons). 
+on some systems (including Sparc and 64-bit AMD and Intel processors). 
 
 
 \subsubsection{
@@ -2161,10 +2185,11 @@ in an initial stage to avoid DC problems.
 
 A sample.par file can be found in the \textbf{samples/} 
 directory. See separate documentation on FBP3DRP, the doxygen documentation 
-(or the source) for more info.\\
+(or the source) for more info. Similar to FBP2D, an apodizing window can be specified.
+FBP3DRP defaults to using the ``pure'' Colsher filter. \\
 \textbf{Warning:} the current version of the interpolating backprojector, 
 the default backprojector used by FBP3DRP, has a central artefact 
-on some systems (including Sparc and Opterons).
+on some systems (including Sparc and 64-bit AMD and Intel processors).
 
 \subsection{
 Scatter Correction}
@@ -2175,13 +2200,36 @@ Wat97, Wat04, Wer02, Poe03] has been implemented and evaluated [Tso04].
 
 \subsubsection{Data Initialisation}
 \begin{itemize}
-\item Apply randoms correction, normalisation and attenuation correction on emission data 
-\item Reconstruct attenuation image
+\item Apply randoms correction and normalisation on emission data (this will be used to scale the scatter estimate)
+\item Reconstruct attenuation image (ideally use odd number of voxels for zoom\_image step below).
 \item Use \textbf{create\_tail\_mask\_from\_ACFs} to estimate the region that will be used for scaling
 \item Reconstruct emission image without scatter correction
-\item Construct a "sub-sampled sinogram" template (i.e. same geometrical characteristics but
-less rings and detectors without arc-correction) as suggested in literature (e.g. in [Tso04]).
-\item Reconstruct a coarse attenuation image or else construct a "subsampled" attenuation image using zoom\_image and stir\_math. 
+\item Construct a ``sub-sampled sinogram" template (i.e. same geometrical characteristics but
+less rings and detectors without arc-correction) as suggested in literature (e.g. in [Tso04]). This template
+sinogram should have no compression (number of views = half the number of detectors per ring, and span = 1 (see the
+STIR glossary). 
+Use a number of tangential positions that is (Number of detectors per ring - 1) to cover all possible
+detector pairs. You can reduce this if your scanner has a narrower FOV, but be careful that you do not 
+make it too small (otherwise you will get strange behaviour at the edge when upsampling the scatter estimate).
+Because of a limitation in the upsampling routine, it is currently recommended to have ring difference 0 only in this
+template.
+\item Construct a ``subsampled" attenuation image using zoom\_image and stir\_math. 
+ STIR SSS will select 1 scatter point per voxel in this attenuation image. This can be used to speed up your
+ calculation.
+ Careful: zoom\_image will scale the voxel values with the product of the zoom-factors in each dimension. 
+ You need to undo this scaling for the ``subsampled'' image.    
+ For example
+ \begin{verbatim}
+  # zoom to larger voxels 
+  zoom_image zoomed.hv image_mu.hv 21 .25 0 0 5 .1626
+  # correct back to mu-values
+   stir_math --accumulate  --including-first --times-scalar .1626 \
+     --times-scalar .25 --times-scalar .25  zoomed.hv
+ \end{verbatim}
+  The exact number of voxels and zoom does not matter too much (as long as you cover the 
+  whole object), but the offset parameters to zoom\_image
+  \textbf{HAVE TO BE ZERO} and the number of voxels (in both input and output image)
+  \textbf{HAVE TO BE ODD}\footnote{See the Wiki for more information on offset conventions.}
 \end{itemize}
 
 \cmdline{%
@@ -2208,13 +2256,15 @@ create\_tail\_mask\_from\_ACFs		--ACF-filename <projdata> \textbackslash \\
 Example \texttt{scatter.par}
 \begin{verbatim}
 Scatter Estimation Parameters:=
-; threshold below which not to bother putting a scatter point in a voxel
+; threshold below which not to bother putting a scatter point
+; in a voxel (in cm^-1)
    attenuation_threshold :=.01
-; Placing the scatter points in a random position of a voxel (0) else randomly so
+; Place the scatter points in a random position of a voxel or in the centre
    random := 1
 ; Caching is extremely useful as it speeds up the estimation drastically.
    use_cache := 1
-; The resolution of the scanner as given in literature
+; The resolution of the scanner (at 511 keV) as given in the literature
+; given as a ratio (example value is 22%)
    energy_resolution :=.22
 ; Acquisition settings
    lower_energy_threshold :=350
@@ -2239,11 +2289,16 @@ upsample\_and\_fit\_single\_scatter \textbackslash \\
 					--weights <filename>%
 }
 \begin{description}
-\item[min-scale-factor,max-scale-factor]: Both min and max scale factors are set such that the scaling does not explode for any reason.
+\item[min-scale-factor,max-scale-factor]: Both min and max scale factors are set such that the scaling does not explode for some reason. 
+STIR's scatter routine is scaled such that scale-factor=1 is appropriate to model single scatter only. 
+For human patients, the presence of multiple scatter and out-of-FOV scatter means that the actual 
+scale factor will be a bit more than 1. How much will depend
+on your scanner, the size of the patient etc. In most cases it shouldn't be
+more than 2. Therefore, limiting the scale factor between 0.9 and 2 is probably a good idea.
 \item[remove-interleaving]: Remove the interleaving in the coarse scatter estimate before upscaling (it is recommended to set this to 1)
 \item[half-filter-width]: width of filter to apply on estimated scale factors (in axial direction). The filter is a simple boxcar.
 \item[output-filename]: Scatter projection data at the emission data settings
-\item[data-to-fit]: Emission sinogram 
+\item[data-to-fit]: Normalised Emission sinogram (corrected for randoms) 
 \item[data-to-scale]: Course scatter sinogram 
 \item[weights]: This is the mask sinogram, or any other weighting factors on projection space that is used to define the region of scaling. 
 \end{description}
@@ -2266,13 +2321,16 @@ Two options exist:
 Run FBP with sufficient filtering.
    \[\mathrm{Image} = \mathrm{FBP}\left(\mathrm{ACF}*(N*(P-R)-S)\right) \]
 \item Iterative (e.g. OSEM or OSSPS): Use the following for the additive sinogram (\textit{A}).
-    \[A=(R/N+S)/(\mathrm{ACF})  \]
+    \[A=(R*N+S)*(\mathrm{ACF})  \]
 \end{itemize}
-where, \textit{N}: Normalization Factors, 
-	\textit{ACF}: Attenuation Correction Factors,
-	\textit{R}: Random Projection Data,
-	\textit{S}: Scatter Projection Data as estimated using  \textit{STIR},
-	\textit{P}: Measured Projection Data (prompts)
+where
+  \begin{description}
+   \item[N] Normalization Factors, 
+   \item[ACF] Attenuation Correction Factors,
+   \item[R] Random Projection Data,
+   \item[S] Scatter Projection Data as estimated using  \textit{STIR},
+   \item[P] Measured Projection Data (prompts)
+  \end{description}
 \end{itemize}
 
 \subsubsection{Limitations}
@@ -3007,6 +3065,7 @@ normalisation projdata filename:= norm.hs
 End Bin Normalisation From ProjData:=
 
 ; scatter term to be subtracted AFTER norm(+atten correction)
+; WARNING This is not the same as the output of the scatter estimation
 ; defaults to 0 
 ;scatter projdata filename := scatter.hs
 END:=
@@ -3109,6 +3168,13 @@ The \textbf{fwdtest} and \textbf{bcktest} programs located in \textbf{STIR/recon
 be used to examine forward or back projectors. They allow to 
 project only subregions of the data, but can also do the whole 
 projection in one go. 
+
+
+\subsubsection{
+Interfacing with SimSET}
+\textit{STIR} contains some routines to make it easier to reconstruct data from SimSET [Lew98], 
+a popular Monte Carlo simulator for PET and SPECT. This
+is all preliminary. Check out the \texttt{README.txt} in the \textbf{STIR/SimSET} directory.
 
 
 \subsection{
@@ -3761,10 +3827,12 @@ to be given in the.par file (or will be asked interactively).
 
 
 Samples of OSMAPOSL reconstruction parameter files selecting 
-different types of projectors should be available in \textbf{STIR/samples}.\\
-\textbf{Warning:} for most iterative algorithms, it is recommended 
+different types of projectors should be available in \textbf{STIR/samples}.
+
+\textbf{Warning: for most iterative algorithms, it is recommended 
 to use matching forward and back-projector. This is unfortunately 
-not the default due to historical reasons.
+not the default due to historical reasons. It is recommended to replace
+the default by using a projection matrix as detailed below.}
 
 { \subsubsubsection{Matrix}
 }
@@ -3893,7 +3961,7 @@ to compute its result. See [Egg98] for details. It can \textit{only} handle arc-
 
 \textbf{Warning:} The current implementation has problems (noticeable 
 sometimes at 45 and 135 degrees but mostly at the centre of the image) on Sun 
-Sparc, HP and some Opteron processors (for certain optimisation settings
+Sparc, HP and 64-bit AMD and Intel processors (for certain optimisation settings
 of the C++ compiler).
 
 { \subsubsubsubsection{Parameters}
@@ -4021,6 +4089,9 @@ do symmetry 90degrees min phi := 1
 do symmetry 180degrees min phi := 1
 End Ray Tracing Matrix Parameters :=
 \end{verbatim}
+
+\textbf{It is recommended to use a number of rays that i slarger than 1 (e.g. 10) to
+avoid some discretisation artefacts in the final image.}
 
 For the azimuthal angle $\phi$, the following angles are symmetry 
 related for a square grid: \\
@@ -4487,6 +4558,11 @@ Biol.}, 38: 729-741.
 algorithms with Gibbs smoothing. \textit{IEEE Trans. Med. Imaging}, 
 MI-9: 4.
 
+{[Lew98] Lewellen T K, Harrison R L and Vannoy S \textbf{(1998)} 
+The SimSET program,
+\textit{ Monte Carlo Calculations in Nuclear Medicine:
+Applications in Diagnostic Imaging ed M Ljungberg, S-E Strand and M A King (Bristol: Institute of Physics
+Publishing)} pp 77-92.
 
 {[}Man97] Manders Jones H \textbf{(1997)} A Computational Investigation 
 of the solution of large scale Optimization problems. \textit{Ph.D 
