@@ -94,7 +94,7 @@ endif()
 # gcc specific stuff
 if (CMAKE_COMPILER_IS_GNUCC)
      add_definitions(-Wall -Wno-deprecated)
-     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ffast-math -malign-double")
+     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -ffast-math")
 endif ()
 
 # enable Intel compiler specific flags
