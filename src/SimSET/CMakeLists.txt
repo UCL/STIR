@@ -23,9 +23,15 @@ set(dir SimSET)
 
 set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
+# routines that need linking with the STIR library
 set(${dir_EXE_SOURCES}
 	conv_SimSET_projdata_to_STIR
 	conv_to_SimSET_att_image
 )
 
 include(../stir_exe_targets.cmake)
+
+# stand-alone
+add_executable(write_phg_image_info write_phg_image_info)
+
+install(TARGETS write_phg_image_info DESTINATION bin)
