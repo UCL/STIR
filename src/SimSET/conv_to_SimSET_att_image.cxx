@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
       // values from standard Simset file at 511keV
       if (fabs(*in_iter-0.096)<0.004)     // Water
 	*out_iter = 1.F;
-      if (fabs(*in_iter-0.102)<0.004)     // Blood
+      else if (fabs(*in_iter-0.102)<0.004)     // Blood
 	*out_iter = 2.F;
       else if (fabs(*in_iter-0.01)<0.010001) // Air
 	*out_iter = 0.F;
@@ -120,18 +120,17 @@ int main(int argc, char *argv[])
 	*out_iter = 30.F;
       else if (fabs(*in_iter-0.22548)<0.005) // Aluminum
 	*out_iter = 20.F;
-
       else
 	{
 	  is_implemented=false;
-	  std::cerr  << "\t" << *out_iter ;        
+	  std::cerr  << "\t" << *in_iter ;
 	}
       ++in_iter; ++out_iter;
     }
 
   if(is_implemented==false)
-    std::cerr << "\n At least one attenuation value which has the above shown values"
-	      << "\n is not corresponded to a SimSET attenuation index in the segmentation."
+    std::cerr << "\nAt least one attenuation value (shown above) does not"
+	      << "\ncorrespond to a SimSET attenuation index in the segmentation table."
 	      << "\nImplement the new attenuation indices or change the input image. \n" 
 	      << "HINT: If produced by generate_image set the subsampling parameters to 1, \n."
 	      << "when small voxels sizes are used.\n";                        
