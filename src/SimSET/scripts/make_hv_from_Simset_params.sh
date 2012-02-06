@@ -1,14 +1,37 @@
 #! /bin/bash
 #  $Id$
+#
+# This script attempts to make Interfile headers (.hv STIR style and 
+# .ahv Analyze style) for a raw float image output by Simset.
+# It uses the geometric info in a Simset PHG file.
+# See the usage message below for some more info
+
+#  Copyright (C) 2009-07-08, Hammersmith Imanet Ltd
+#  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+#  This file is part of STIR.
+#
+#  This file is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+#  This file is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  See STIR/LICENSE.txt for details
+#      
 # Author: Kris Thielemans
 
 print_usage_and_exit()
 {
-  echo "usage: $prog simset_phg_params_filename raw_float_filename"
+  echo "usage:"
+  echo "   `basename $prog` simset_phg_params_filename raw_float_filename"
   echo "This attempts to make Interfile headers (.hv STIR style and .ahv Analyze style)"
-  echo " for a raw float image output by Simset by using the geometric info in a Simset PHG file."
+  echo "for a raw float image output by Simset by using the geometric info in a Simset PHG file."
   echo "WARNING: This does not work yet with different sized emission and attenuation images."
-  echo "warning: check if output is ok. This is not very stable code....
+  echo "warning: check if output is ok. This is not very stable code...."
   exit 1
 }
 
@@ -26,8 +49,6 @@ fi
 
 binary_file="$2"
 params_file="$1"
-output_file_hv=${binary_file%.f32}.hv
-output_file_ahv=${binary_file%.f32}.ahv
 
 if [ ! -r "$binary_file" ]; then
     echo "ERROR: $prog cannot read binary_file $binary_file" 1>&2 
@@ -40,6 +61,15 @@ fi
 
 set -e # exit on error
 trap "echo ERROR in $prog $input_file" ERR
+
+# get rid of some common extension in binary_file to construct header name
+header_name=${binary_file%.f32}
+header_name=${header_name%.dat}
+output_file_hv=${header_name}.hv
+output_file_ahv=${header_name}.ahv
+
+# remove directory info from the binary_file variable such that we don't store it in the header
+binary_file=`basename ${binary_file}`
 
 xMin=`find_param $params_file xMin`
 xMax=`find_param $params_file xMax`
@@ -58,7 +88,7 @@ Offset2=`python -c "print $yMin*10 + $ElementSpacing2/2"`
 Offset3=`python -c "print $zMin*10"`
 
 number_format="float"; bytes_per_pixel=4;
-byte_order=LITTLEENDIAN;
+byte_order=`python -c 'import sys; print sys.byteorder'`endian
 HeaderSize=0
 
 cat > $output_file_hv <<EOF
@@ -107,3 +137,6 @@ scaling factor (mm/pixel) [2] := $ElementSpacing2
 data offset in bytes := $HeaderSize
 !END OF INTERFILE :=
 EOF
+
+
+echo "Created $output_file_hv and $output_file_ahv (assuming ${byte_order} byte order)"
