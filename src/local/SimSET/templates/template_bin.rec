@@ -1,5 +1,8 @@
 ###############################################################################
 #       PARAMETER FILE FOR THE PHG BINNING MODULE
+#       to be used with run_SimSET.sh
+#       It uses the following strings which will be replaced by run_SimSET.sh:
+#       OUTPUT_DIRECTORY
 #
 #       The particular binning module is created for the Siemens HR+ scanner
 #		
@@ -21,16 +24,19 @@ INT     min_s           =       0
 INT     max_s           =       1
 
 # Z axis binning ####
+# HR+ length is 15.52 with 32 rings
+# Currently, z_Min has to start at -(ring_spacing)/2
 INT     num_z_bins              =       32
-REAL    min_z                   =       0
-REAL    max_z                   =       15.52
+REAL    min_z                   =       -0.2425
+REAL    max_z                   =       15.035
 
 # Azimuthal angle bins ####
 INT     num_aa_bins             =       144
 
 # Transaxial binning.####
 # NOTE: Take note if you are setting min_td and max_td to any value less than the radius of your object cylinder.
-INT     num_td_bins             =       288
+# num_td_bins needs to be odd for STIR, and the range needs to be symmetric
+INT     num_td_bins             =       287
 REAL    min_td                  =       -29.16815
 REAL    max_td                  =        29.16815
 # Energy bins ####
@@ -45,12 +51,14 @@ REAL    max_e                   =       650
 # Weight weight_image_type = 1 for four byte integers
 # Weight weight_image_type = 2 for four byte reals
 # Weight weight_image_type = 3 for 8 byte reals
+# Needs to be 2 for STIR conversion to work
 INT             weight_image_type       = 2
 
 # Specification of output file data type
 # Weight weight_image_type = 0 for one byte integers
 # Weight weight_image_type = 1 for two byte integers
 # Weight weight_image_type = 2 for four byte integers
+# Needs to be 2 for STIR conversion to work
 INT		count_image_type	= 2
 
 
