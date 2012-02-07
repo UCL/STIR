@@ -56,6 +56,10 @@ int main(int argc, char *argv[])
   if (!image_aptr->get_regular_range(min_indices, max_indices))
     error("Non-regular range of coordinates. That's strange.\n");
 
+  BasicCoordinate<3,float> edge_min_indices(min_indices), edge_max_indices(max_indices);
+  edge_min_indices-= 0.5F;
+  edge_max_indices+= 0.5F;
+
   std::cout << "\nOrigin in mm {z,y,x}    :" << image_aptr->get_origin()
 	    << "\nVoxel-size in mm {z,y,x}:" << image_aptr->get_voxel_size()
 	    << "\nMin_indices {z,y,x}     :" << min_indices
@@ -65,6 +69,10 @@ int main(int argc, char *argv[])
 	    << image_aptr->get_physical_coordinates_for_indices(min_indices)
 	    << "\nPhysical coordinate of last index in mm {z,y,x}  :" 
 	    << image_aptr->get_physical_coordinates_for_indices(max_indices)
+	    << "\nPhysical coordinate of first edge in mm {z,y,x} :" 
+	    << image_aptr->get_physical_coordinates_for_indices(edge_min_indices)
+	    << "\nPhysical coordinate of last edge in mm {z,y,x}  :" 
+	    << image_aptr->get_physical_coordinates_for_indices(edge_max_indices)
 	    << "\nImage min: " << image_aptr->find_min()
 	    << "\nImage max: " << image_aptr->find_max()
 	    << std::endl;
