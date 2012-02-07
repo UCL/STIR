@@ -13,9 +13,14 @@
 # currently called "multiples" which is not a good name.
 # However, since SimSET 2.9, you probably want to use scatter_parameter 4 or 5 instead.
 #
-# Names do not reflect if randoms are included or not. If you use scatter_parameter>=6,
-# the total randoms are stored in a separate file (called randoms) in most cases.
+# Names of the output files do not reflect if randoms are included or not. 
+# If you use scatter_parameter>=6, the total randoms are stored in a separate 
+# file (called randoms) in most cases.
 #
+# WARNING: If the scanner name is not supported by STIR, some information 
+# (in particular the ring diameter and average DOI) will be incorrect in the
+# *.hs files. You will need to correct this by hand for the moment.
+
 # $Id$
 #
 #  Copyright (C) 2005 - 2008/03/22, Hammersmith Imanet Ltd
