@@ -115,7 +115,7 @@ static void find_sampling_and_z_size(
         s_sampling = 
           proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
         info(boost::format("Determining voxel size from default_bin_size failed.\n"
-                           "Using sampling_in_s for central bin %.") %
+                           "Using sampling_in_s for central bin %1%.") %
              s_sampling);
       }
     else
