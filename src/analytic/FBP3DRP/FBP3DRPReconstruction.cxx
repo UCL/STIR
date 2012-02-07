@@ -423,7 +423,13 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_
   // Use funny convention that -1 means 'use maximum available'
   if (max_segment_num_to_process<0)
     max_segment_num_to_process = proj_data_ptr->get_max_segment_num();
-
+  else if (max_segment_num_to_process>proj_data_ptr->get_max_segment_num())
+    {
+      warning("max_segment_num_to_process was too large (%d) for this data, setting it to %d",
+	      max_segment_num_to_process,
+	      proj_data_ptr->get_max_segment_num());
+      max_segment_num_to_process = proj_data_ptr->get_max_segment_num();
+    }
 
 #ifndef NRFFT
   const float theta_max =
