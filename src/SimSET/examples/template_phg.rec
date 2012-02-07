@@ -1,0 +1,101 @@
+###############################################################################
+#       PARAMETER FILE FOR THE PHG SIMULATION
+#       to be used with run_SimSET.sh
+#       It uses the following strings which will be replaced by run_SimSET.sh:
+#       SIMSET_DIRECTORY, INPUT_DIRECTORY, OUTPUT_DIRECTORY, BIN.REC, DET.REC, PHOTONS
+#
+#       This particular file is created for the Siemens HR+ scanner.
+#		
+#       Author: Pablo Aguiar - University of Barcelona (Nov 2004) 
+#	Updated and added to the archive by Charalampos Tsoumpas
+#
+# $Id$
+#        
+###############################################################################
+
+# RUNTIME OPTIONS
+BOOL	simulate_stratification 	= true
+BOOL	simulate_forced_detection	= true
+BOOL	forced_non_absorbtion 		= true
+REAL	acceptance_angle 		= 90.0
+INT	num_to_simulate			= PHOTONS
+BOOL	simulate_SPECT			= false
+BOOL    simulate_PET_coincidences_only  = true
+BOOL	simulate_PET_coincidences_plus_singles = false
+BOOL	adjust_for_positron_range	= false
+#REAL    length_of_scan                  = 70
+BOOL	adjust_for_collinearity		= false
+REAL	minimum_energy			= 276
+REAL	photon_energy			= 511.0
+REAL	weight_window_ratio		= 1.0
+BOOL	point_source_voxels		= false
+INT		random_seed		= 0
+BOOL	model_coherent_scatter		= false
+ENUM isotope = f18
+
+
+# TARGET CYLINDER INFORMATION
+# HR+ length is 15.52 with 32 rings
+# Currently, z_Min has to start at -(ring_spacing)/2
+NUM_ELEMENTS_IN_LIST    target_cylinder = 3
+	REAL	target_zMin =  -0.2425
+	REAL	target_zMax = 15.035
+	REAL	radius =      41.25
+
+
+# COHERENT ANGULAR DISTRIBUTION FILES
+STR	coherent_scatter_table = "SIMSET_DIRECTORY/phg.data/coh.tables"
+
+# ACTIVITY INDEX FILE
+STR	activity_indexes = "OUTPUT_DIRECTORY/rec.act_indexes"
+
+# ACTIVITY TABLE FILE
+STR	activity_table = "SIMSET_DIRECTORY/phg.data/phg_act_table"
+
+# ACTIVITY INDEX TO TABLE TRANSLATION FILE
+STR	activity_index_trans = "SIMSET_DIRECTORY/phg.data/phg_act_index_trans"
+
+# ACTIVITY IMAGE OUTPUT FILE
+STR	activity_image = "OUTPUT_DIRECTORY/rec.activity_image"
+
+# ATTENUATION INDEX FILE
+STR	attenuation_indexes = "OUTPUT_DIRECTORY/rec.att_indexes"
+
+# ATTENUATION TABLE FILE
+STR	attenuation_table = "SIMSET_DIRECTORY/phg.data/phg_att_table"
+
+# ATTENUATION INDEX TO TABLE TRANSLATION FILE
+STR	attenuation_index_trans = "SIMSET_DIRECTORY/phg.data/phg_att_index_trans"
+
+# ATTENUATION IMAGE OUTPUT FILE
+STR	attenuation_image = "OUTPUT_DIRECTORY/rec.attenuation_image"
+
+# PRODUCTIVITY INPUT TABLE FILE
+#STR	productivity_input_table = "OUTPUT_DIRECTORY/sampling_rec"
+STR	productivity_input_table = ""
+
+# PRODUCTIVITY TABLE FILE
+#STR productivity_output_table = "OUTPUT_DIRECTORY/sampling_rec"
+STR productivity_output_table = ""
+
+# FORCED DETECTION TABLE FILE
+STR	forced_detection_table = ""
+
+STR statistics_file = "OUTPUT_DIRECTORY/rec.stat"
+
+# ISOTOPE DATA FILE
+STR isotope_data_file = "SIMSET_DIRECTORY/phg.data/isotope_positron_energy_data"
+
+#COLLIMATOR PARAMETER FILE
+#STR	collimator_params_file = "OUTPUT_DIRECTORY/col.rec"
+STR	collimator_params_file = ""
+
+# DETECTOR PARAMETER FILE
+STR	detector_params_file = "OUTPUT_DIRECTORY/DET.REC"
+
+# BINNING PARAMETER FILE
+STR	bin_params_file  = "OUTPUT_DIRECTORY/BIN.REC"
+
+# HISTORY FILE
+STR	history_file = ""
+
