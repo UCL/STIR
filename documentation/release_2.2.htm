@@ -8,7 +8,7 @@
     <h1>Summary of changes in STIR release 2.2 (beta dated January 2012)</h1>
 
 <p>This update was prepared by Kris Thielemans (Algorithms and Software Consulting Ltd).
-</p>
+SimSET scripts were updated with help from Robert Harrison (Univ Washington).</p>
 <p>This update contains some bug fixes and updates for more recent compilers
 (Clang++ 2.9, gcc 4.6.1 and Visual C++ 2010 are now supported).
 </p>
@@ -17,7 +17,12 @@
 <h2> Summary for end users (also to be read by developers)</h2>
 
 <h3>Important bug fixes</h3>
-<p>None</p>
+<ul>
+<li>The routines to handle SimSET data did not really work in previous releases,
+but should work now. This is all still preliminary. Check SimSET/README.txt for
+some information.
+</li>
+</ul>
 
 <h3>New build system</h3>
 <ul>
@@ -41,6 +46,10 @@ matrix (with additional rays) instead.</li>
 <li>When using Visual Studio (Express) with the provided solution files, there is a linking problem for some
 utilities. It is recommended to use the new <tt>CMake</tt> files for building instead.</li>
 <li>Some of the new list mode files might not compile with Visual Studio (Express).</li>
+<li>When using <code>GRAPHICS=X</code> (i.e. on Unix/Linux/MacOSX) there window displaying
+the bitmaps is sometimes empty. This might depend on your X server settings.
+This affects <tt>manip_image</tt>, <tt>manip_projdata</tt> and <tt>display_projdata</tt>.
+</li>
 </ul>
 
 <h3>Functionality changes</h3>
@@ -48,14 +57,23 @@ utilities. It is recommended to use the new <tt>CMake</tt> files for building in
 <li><tt>stir_math</tt> has two additional switches <tt>--parametric</tt> and <tt>--dynamic</tt>
 to handle parametric or dynamic images (no sinograms yet. sorry). Note however that output data
 will not incomplete headers. In particular, timing information will be lost.</li>
+<li><tt>list_image_info</tt> now also prints information about the edge of the voxels.</li>
 <li>ECAT list-mode routines are now no longer included in the library when
-eCAT support is not enabled. (In STIR 2.1 they defaulted to use the ECAT 962 file format.)</li>
+ECAT support is not enabled. (In STIR 2.1 they defaulted to use the ECAT 962 file format.)</li>
 <li>On Unix/Linux systems, <tt>manip_image</tt> and <tt>manip_projdata</tt> used to
 display a list of files in the current directory when asking for new input data.
 This is no longer implemented.</li>
+</li>
+</ul>
+
+<h3>Minor bug fixes</h3>
+<ul>
 <li>No longer write confusing warnings about <tt>ring
   difference does not belong in a segment</tt> after calling
-  SSRB etc.
+  SSRB, in FBP3DRP etc.
+</li>
+<li>Empty lines in .par files could create problems in previous versions. This
+should be fixed now.
 </li>
 </ul>
 
