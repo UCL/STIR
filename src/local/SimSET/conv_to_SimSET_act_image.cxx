@@ -27,24 +27,25 @@
   \author Charalampos Tsoumpas
   \author Kris Thielemans
   
-	$Date$
-	$Revision$
+  $Date$
+  $Revision$
 	
-	  \par Usage:
-	  \code
-	  conv_to_SimSET_image [SimSET_image_filename][original_image][multiplicated constant]
-	  Output: "SimSET_image_filename".hv AND "SimSET_image_filename".v "multiplicated constant"
-	  
-		This is a utility program converts a image into SimSET activity input file.
+  \par Usage:
+  \code
+  conv_to_SimSET_image [SimSET_image_filename][original_image][multiplicated constant]
+  Output: "SimSET_image_filename".hv AND "SimSET_image_filename".v "multiplicated constant"
+  
+  This is a utility program converts a image into SimSET activity input file.
  
 		
-		See the SimSET documentation for more details.
+  See the SimSET documentation for more details.
   
-			  \endcode	  
+  \endcode	  
 */
 #include "stir/shared_ptr.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/IO/interfile.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/Succeeded.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include <iostream> 
@@ -58,11 +59,12 @@ int main(int argc, char *argv[])
 				<< " SimSET_image_filename original_image multiplicated constant\n";    		 	  
 			return EXIT_FAILURE;
 		}
-		shared_ptr< DiscretisedDensity<3,float> >  input_image_sptr = 
-			DiscretisedDensity<3,float>::read_from_file(argv[2]);
+		shared_ptr< DiscretisedDensity<3,float> >  
+		  input_image_sptr(read_from_file<DiscretisedDensity<3,float> >(argv[2]));
 		string output_image_filename(argv[1]);
                 const float constant = argc>=4 ? atof(argv[3]) : 10;
-		shared_ptr<DiscretisedDensity<3,float> > output_image_sptr = input_image_sptr->clone();		
+		shared_ptr<DiscretisedDensity<3,float> > 
+		  output_image_sptr(input_image_sptr->clone());
 		//Array<3,unsigned char>::full_iterator out_iter = output_image.begin_all();
 
 		DiscretisedDensity<3,float>::full_iterator out_iter = output_image_sptr->begin_all();
