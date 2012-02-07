@@ -1,0 +1,24 @@
+generate_image Parameters :=
+; just a simple uniform cylinder, 10cm radius
+output filename:=my_uniform_cylinder
+X output image size (in pixels):=111
+Y output image size (in pixels):=111
+Z output image size (in pixels):=47
+X voxel size (in mm):= 3
+Y voxel size (in mm):= 3
+Z voxel size (in mm) :=3.27
+
+  Z number of samples to take per voxel := 1
+  Y number of samples to take per voxel := 1
+  X number of samples to take per voxel := 1
+
+shape type:= ellipsoidal cylinder
+Ellipsoidal Cylinder Parameters:=
+   radius-x (in mm):=100
+   radius-y (in mm):=100
+   length-z (in mm):=110
+   origin (in mm):={70,10,20}
+   END:=
+value :=1
+
+END:=
