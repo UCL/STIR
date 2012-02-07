@@ -23,7 +23,7 @@
 # be compiled and installed
 
 foreach(executable ${${dir_EXE_SOURCES}})
-   add_executable(${executable} ${executable}.cxx ${STIR_REGISTRIES})
+   add_executable(${executable} ${executable} ${STIR_REGISTRIES})
    target_link_libraries(${executable} ${STIR_LIBRARIES})
 endforeach()
 
