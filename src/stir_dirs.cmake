@@ -69,6 +69,7 @@ SET( STIR_DIRS
      iterative/POSSPS
      scripts
      SimSET
+     SimSET/scripts
 )
 
 
