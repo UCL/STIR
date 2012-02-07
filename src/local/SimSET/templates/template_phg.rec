@@ -1,8 +1,10 @@
 ###############################################################################
 #       PARAMETER FILE FOR THE PHG SIMULATION
+#       to be used with run_SimSET.sh
+#       It uses the following strings which will be replaced by run_SimSET.sh:
+#       SIMSET_DIRECTORY, INPUT_DIRECTORY, OUTPUT_DIRECTORY, BIN.REC, DET.REC, PHOTONS
 #
-#       The particular file is created for the Siemens HR+ scanner 
-#	and voxel sizes 289x289x32
+#       This particular file is created for the Siemens HR+ scanner.
 #		
 #       Author: Pablo Aguiar - University of Barcelona (Nov 2004) 
 #	Updated and added to the archive by Charalampos Tsoumpas
@@ -18,6 +20,8 @@ BOOL	forced_non_absorbtion 		= true
 REAL	acceptance_angle 		= 90.0
 INT	num_to_simulate			= PHOTONS
 BOOL	simulate_SPECT			= false
+BOOL    simulate_PET_coincidences_only  = true
+BOOL	simulate_PET_coincidences_plus_singles = false
 BOOL	adjust_for_positron_range	= false
 #REAL    length_of_scan                  = 70
 BOOL	adjust_for_collinearity		= false
@@ -29,366 +33,13 @@ INT		random_seed		= 0
 BOOL	model_coherent_scatter		= false
 ENUM isotope = f18
 
-# OBJECT GEOMETRY VALUES
-NUM_ELEMENTS_IN_LIST	object = 33
-		INT		num_slices = 32
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 0
-		REAL	zMin =  0.00 
-		REAL	zMax =  0.49  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 1
-		REAL	zMin =  0.49 
-		REAL	zMax =  0.97  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 2
-		REAL	zMin =  0.97 
-		REAL	zMax =  1.46  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 3
-		REAL	zMin =  1.46 
-		REAL	zMax =  1.94  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 4
-		REAL	zMin =  1.94 
-		REAL	zMax =  2.43  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 5
-		REAL	zMin =  2.43 
-		REAL	zMax =  2.91  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 6
-		REAL	zMin =  2.91 
-		REAL	zMax =  3.40  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 7
-		REAL	zMin =  3.40 
-		REAL	zMax =  3.88  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 8
-		REAL	zMin =  3.88 
-		REAL	zMax =  4.37  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 9
-		REAL	zMin =  4.37 
-		REAL	zMax =  4.85  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 10
-		REAL	zMin =  4.85 
-		REAL	zMax =  5.34  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 11
-		REAL	zMin =  5.34 
-		REAL	zMax =  5.82  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 12
-		REAL	zMin =  5.82 
-		REAL	zMax =  6.31  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 13
-		REAL	zMin =  6.31 
-		REAL	zMax =  6.79  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 14
-		REAL	zMin =  6.79 
-		REAL	zMax =  7.28  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 15
-		REAL	zMin =  7.28 
-		REAL	zMax =  7.76  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 16
-		REAL	zMin =  7.76 
-		REAL	zMax =  8.25  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 17
-		REAL	zMin =  8.25 
-		REAL	zMax =  8.73  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 18
-		REAL	zMin =  8.73 
-		REAL	zMax =  9.22  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 19
-		REAL	zMin =  9.22 
-		REAL	zMax =  9.70  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 20
-		REAL	zMin =  9.70 
-		REAL	zMax = 10.19  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 21
-		REAL	zMin = 10.19 
-		REAL	zMax = 10.67  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 22
-		REAL	zMin = 10.67 
-		REAL	zMax = 11.16  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 23
-		REAL	zMin = 11.16 
-		REAL	zMax = 11.64  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 24
-		REAL	zMin = 11.64 
-		REAL	zMax = 12.13  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 25
-		REAL	zMin = 12.13 
-		REAL	zMax = 12.61  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 26
-		REAL	zMin = 12.61 
-		REAL	zMax = 13.10  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 27
-		REAL	zMin = 13.10 
-		REAL	zMax = 13.58  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 28
-		REAL	zMin = 13.58 
-		REAL	zMax = 14.07  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 29
-		REAL	zMin = 14.07 
-		REAL	zMax = 14.55  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 30
-		REAL	zMin = 14.55 
-		REAL	zMax = 15.04  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
-		NUM_ELEMENTS_IN_LIST	slice = 9 
-		INT	slice_number  = 31
-		REAL	zMin = 15.04 
-		REAL	zMax = 15.52  
-		REAL	xMin = -30.00
-		REAL	xMax = 30.00
-		REAL	yMin = -30.00
-		REAL	yMax = 30.00
-		INT	num_X_bins = 289
-		INT	num_Y_bins = 289
-
 
 # TARGET CYLINDER INFORMATION
+# HR+ length is 15.52 with 32 rings
+# Currently, z_Min has to start at -(ring_spacing)/2
 NUM_ELEMENTS_IN_LIST    target_cylinder = 3
-	REAL	target_zMin =  0.00
-	REAL	target_zMax = 15.52
+	REAL	target_zMin =  -0.2425
+	REAL	target_zMax = 15.035
 	REAL	radius =      41.25
 
 
@@ -440,7 +91,7 @@ STR isotope_data_file = "SIMSET_DIRECTORY/phg.data/isotope_positron_energy_data"
 STR	collimator_params_file = ""
 
 # DETECTOR PARAMETER FILE
-STR	detector_params_file = "OUTPUT_DIRECTORY/det.rec"
+STR	detector_params_file = "OUTPUT_DIRECTORY/DET.REC"
 
 # BINNING PARAMETER FILE
 STR	bin_params_file  = "OUTPUT_DIRECTORY/BIN.REC"
