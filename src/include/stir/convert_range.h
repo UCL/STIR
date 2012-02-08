@@ -24,7 +24,7 @@
   \file 
   \ingroup Array
  
-  \brief This file declares the stir::convert_range and stir::fins_scale_factor function.
+  \brief This file declares the stir::convert_range and stir::find_scale_factor functions.
 
   \author Kris Thielemans
 
@@ -59,7 +59,7 @@ find_scale_factor(scaleT& scale_factor,
   Note order of arguments. Output-range occurs first (as standard in STIR).
   \par example 
   \code
-      convert_array(data_out.begin_all(), scale_factor, 
+      convert_range(data_out.begin_all(), scale_factor, 
                     data_in.begin_all(), data_in.end_all());
   \endcode
 
