@@ -66,6 +66,13 @@ You probably don't need this if you use run_SimSET.sh
 A script to run SimSET. It takes input images that STIR can read, and a few templates
 input files.
 
+- add_SimSET_results.sh
+A script to add results from run_SimSET.sh from different simulations. Useful if for
+example to increase statistics.
+WARNING: this script first calls mult_num_photons.sh in an attempt to handle cases where
+you have different number of decays per simulations. However, this most definitely does 
+not handle cases where you change importance sampling parameters.
+
 How to use
 -----------
 You first have to tell these routines where your SimSET installation is located, for instance
