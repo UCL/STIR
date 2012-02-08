@@ -2,7 +2,7 @@
 # $Id$
 #
 
-dir:=scripts
+dir:=SimSET/scripts
 
 $(dir)_SCRIPTS:=\
 add_SimSET_results.sh \
