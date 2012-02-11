@@ -15,16 +15,31 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet
+    Copyright (C) 2003 - 2005, Hammersmith Imanet Ltd
+    Copyright (C) 2004 - 2005 DKFZ Heidelberg, Germany
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
     See STIR/LICENSE.txt for details
 */
 
-#ifndef __stir_FORE_FourierRebinning_H__
-#define __stir_FORE_FourierRebinning_H__
+#ifndef __stir_recon_buildblock_FourierRebinning_H__
+#define __stir_recon_buildblock_FourierRebinning_H__
 
-#include <complex.h>
 #include "stir/recon_buildblock/ProjDataRebinning.h"
 #include "stir/RegisteredParsingObject.h"
+#include <complex>
 
 
 START_NAMESPACE_STIR
@@ -93,11 +108,13 @@ class PETCount_rebinned
   (the integer Fourier index corresponding to the azimuthal angle f), and by applying in each region 
   a different method to estimated the rebinned sinogram.
 
-  The rebinned data are represented by  in spatial space with |s|<=R, 0<=f<p, |z|<=L/2, 
+  KTTODO ^A in the next sentence?
+
+  The rebinned data are represented by  in spatial space with |s|\<=R, 0<=f\<p, |z|\<=L/2, 
   where L is the length of the axial FOV and R the ring radius.
   In the high frequencies (region 1), the rebinned data are estimated using Fourier rebinning.
   In the second high frequency region (region 2), the consistency condition is not satisfied 
-  and hence all the rebinned data are forced to 0: Pr(w,k, z) = 0, when |k/w|>=R; |w|>wlim or |k|>klim.
+  and hence all the rebinned data are forced to 0: Pr(w,k, z) = 0, when |k/w|\>=R; |w|\>wlim or |k|\>klim.
   Finally, in the low-frequency (region 3), Fourier rebinning is not applicable. 
   Therefore the rebinned data are estimated using only the oblique sinograms with 
   a small value of d : dlim. Owing to the small value of d, the axial shift can be 
