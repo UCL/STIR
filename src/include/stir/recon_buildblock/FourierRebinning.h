@@ -15,34 +15,22 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    Copyright (C) 2004 - 2005 DKFZ Heidelberg, Germany KTTODO check text
-
-    This file is part of STIR.
-
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
-
+    Copyright (C) 2000- $Date$, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 
-#ifndef __stir_recon_buildblock_FourierRebinning_H__
-#define __stir_recon_buildblock_FourierRebinning_H__
+#ifndef __stir_FORE_FourierRebinning_H__
+#define __stir_FORE_FourierRebinning_H__
 
+#include <complex.h>
 #include "stir/recon_buildblock/ProjDataRebinning.h"
 #include "stir/RegisteredParsingObject.h"
-#include <complex.h>
 
 
 START_NAMESPACE_STIR
+template <typename elemT> class SegmentByView;
 template <typename elemT> class SegmentBySinogram;
+//template <typename elemT> class Sinogram;
 template <int num_dimensions, typename elemT> class Array;
 class Succeeded;
 
@@ -105,13 +93,11 @@ class PETCount_rebinned
   (the integer Fourier index corresponding to the azimuthal angle f), and by applying in each region 
   a different method to estimated the rebinned sinogram.
 
-  KTTODO ^A in the next sentence?
-
-  The rebinned data are represented by  in spatial space with |s|\<=R, 0<=f\<p, |z|\<=L/2, 
+  The rebinned data are represented by  in spatial space with |s|<=R, 0<=f<p, |z|<=L/2, 
   where L is the length of the axial FOV and R the ring radius.
   In the high frequencies (region 1), the rebinned data are estimated using Fourier rebinning.
   In the second high frequency region (region 2), the consistency condition is not satisfied 
-  and hence all the rebinned data are forced to 0: Pr(w,k, z) = 0, when |k/w|\>=R; |w|\>wlim or |k|\>klim.
+  and hence all the rebinned data are forced to 0: Pr(w,k, z) = 0, when |k/w|>=R; |w|>wlim or |k|>klim.
   Finally, in the low-frequency (region 3), Fourier rebinning is not applicable. 
   Therefore the rebinned data are estimated using only the oblique sinograms with 
   a small value of d : dlim. Owing to the small value of d, the axial shift can be 
@@ -178,11 +164,11 @@ class FourierRebinning : public   RegisteredParsingObject<
 
  
 */
-    void rebinning(const Array<2,std::complex<float> > &data,
-       Array<3,std::complex<float> > &FTdata, Array<3,float> &Weights,
-       float z, float average_ring_difference_in_segment, int &num_views_pow2, int &num_tang_poss_pow2,
-       const float &half_distance_between_rings,const float &sampling_distance_in_s,const float &radial_sampling_freq_w,
-       const float &R_field_of_view_mm, const float &ratio_ring_spacing_to_ring_radius,  PETCount_rebinned &num_rebinned);
+    void rebinning(Array<3,std::complex<float> > &FT_rebinned_data, Array<3,float> &Weights_for_FT_rebinned_data,
+       PETCount_rebinned &num_rebinned, const Array<2,std::complex<float> > &FT_current_sinogram, const float z, 
+       const float average_ring_difference_in_segment, const int num_views_pow2, const int num_tang_poss_pow2,
+       const float half_distance_between_rings, const float sampling_distance_in_s, const float radial_sampling_freq_w,
+       const float R_field_of_view_mm, const float ratio_ring_spacing_to_ring_radius);
 
 /*!
   \brief This method takes as input the real 3D data set
@@ -195,11 +181,13 @@ class FourierRebinning : public   RegisteredParsingObject<
   z - (tk/w) with t=((ring0 -ring1)*ring_spacing/(2*R) with R=ring_radius, 
   Pm(w,k) = Pm(w,k) + Pij(w,k) (i=ring0 and j=ring1), and m is the nearest integer to (i+j) -k(i-j)/(Rw)).
 */
-    void do_rebinning( const SegmentBySinogram<float>&segment, int &num_tang_poss_pow2,
-                       int &num_views_pow2, const int &num_planes, const float& average_ring_difference_in_segment,
-                       const float &half_distance_between_rings,const float &sampling_distance_in_s,
-                       const float &radial_sampling_freq_w, const float &R_field_of_view_mm,const float &ratio_ring_spacing_to_ring_radius,
-                       PETCount_rebinned &num_rebinned_total, Array<3,std::complex<float> > &FTdata, Array<3,float> &weight);
+
+    void do_rebinning(Array<3,std::complex<float> > &FT_rebinned_data, Array<3,float> &Weights_for_FT_rebinned_data,
+                      PETCount_rebinned &count_rebinned, SegmentBySinogram<float> &segment, const int num_tang_poss_pow2,
+                      const int num_views_pow2, const int num_planes, const float average_ring_difference_in_segment,
+                      const float half_distance_between_rings, const float sampling_distance_in_s, 
+                      const float radial_sampling_freq_w, const float R_field_of_view_mm,
+                      const float ratio_ring_spacing_to_ring_radius);
 
 /*!
   This method takes as input the information of the 3D data set (ProjData)
@@ -218,12 +206,12 @@ class FourierRebinning : public   RegisteredParsingObject<
     void do_adjust_nb_views_to_pow2(SegmentBySinogram<float> &segment) ;
 
 //! This function checks if the steering and input paramters for FORE are inside the possible range of parameters
-    void fore_check_parameters(int num_tang_poss_pow2, int num_views_pow2, int max_segment_num_to_process);
+    Succeeded fore_check_parameters(int num_tang_poss_pow2, int num_views_pow2, int max_segment_num_to_process);
 
-
+    
  protected:
   virtual bool post_processing();  
-  virtual void set_defaults();
+  // TODO virtual void set_defaults();
   virtual void initialise_keymap();
 
 };
