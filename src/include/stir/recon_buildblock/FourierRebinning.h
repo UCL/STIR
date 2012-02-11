@@ -200,7 +200,7 @@ class FourierRebinning : public   RegisteredParsingObject<
 */
 
     void do_rebinning(Array<3,std::complex<float> > &FT_rebinned_data, Array<3,float> &Weights_for_FT_rebinned_data,
-                      PETCount_rebinned &count_rebinned, SegmentBySinogram<float> &segment, const int num_tang_poss_pow2,
+                      PETCount_rebinned &count_rebinned, const SegmentBySinogram<float> &segment, const int num_tang_poss_pow2,
                       const int num_views_pow2, const int num_planes, const float average_ring_difference_in_segment,
                       const float half_distance_between_rings, const float sampling_distance_in_s, 
                       const float radial_sampling_freq_w, const float R_field_of_view_mm,
