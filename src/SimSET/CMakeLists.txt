@@ -32,6 +32,6 @@ set(${dir_EXE_SOURCES}
 include(../stir_exe_targets.cmake)
 
 # stand-alone
-add_executable(write_phg_image_info write_phg_image_info)
+add_executable(write_phg_image_info write_phg_image_info.c)
 
 install(TARGETS write_phg_image_info DESTINATION bin)
