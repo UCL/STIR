@@ -49,10 +49,10 @@ SET( STIR_DIRS
      buildblock
      numerics_buildblock 
      data_buildblock 
+     display 
      recon_buildblock 
      modelling_buildblock 
      listmode_buildblock 
-     display 
      IO 
      Shape_buildblock 
      eval_buildblock 
