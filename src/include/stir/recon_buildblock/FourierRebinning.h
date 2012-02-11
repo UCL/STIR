@@ -131,7 +131,8 @@ class FourierRebinning : public   RegisteredParsingObject<
  public:
   //! Name which will be used when parsing a ProjDataRebinning object
   static const char * const registered_name; 
- 
+  virtual void set_defaults();
+
   protected:
 //! Smallest angular freq. index minimum 2 ( 1 is zero frequency)
     int kmin;                
@@ -228,7 +229,6 @@ class FourierRebinning : public   RegisteredParsingObject<
     
  protected:
   virtual bool post_processing();  
-  // TODO virtual void set_defaults();
   virtual void initialise_keymap();
 
 };
