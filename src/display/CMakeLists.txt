@@ -50,3 +50,5 @@ if( "${GRAPHICS}" STREQUAL "X")
 	INCLUDE_DIRECTORIES(${X11_INCLUDE_DIR} ${CURSES_INCLUDE_DIR})
 	target_link_libraries(${dir} ${X11_LIBRARIES} ${CURSES_LIBRARY})
 endif()
+
+target_link_libraries(${dir} buildblock)
