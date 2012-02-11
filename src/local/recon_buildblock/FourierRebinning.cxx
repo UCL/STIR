@@ -6,6 +6,7 @@
   \file 
   \brief FORE kernel 
   \ingroup recon_buildblock
+  \author Matthias Egger
   \author Claire LABBE
   \author Kris Thielemans
   \author Oliver Nix
@@ -14,6 +15,7 @@
   $Revision$
 */
 /*
+    Copyright (C) 1193 - 1996, Matthias Egger (copyright transfered to Hammersmith Imanet Ltd)
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2003 - 2005, Hammersmith Imanet Ltd
     Copyright (C) 2004 - 2005 DKFZ Heidelberg, Germany
