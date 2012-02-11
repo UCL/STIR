@@ -15,8 +15,9 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-    Copyright (C) 2004 - 2005 DKFZ Heidelberg, Germany KTTODO check text
+    Copyright (C) 2003 - 2005, Hammersmith Imanet Ltd
+    Copyright (C) 2004 - 2005 DKFZ Heidelberg, Germany
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
 
     This file is part of STIR.
 
@@ -347,17 +348,18 @@ rebin()
 void 
 FourierRebinning::
 do_rebinning(Array<3,std::complex<float> > &FT_rebinned_data, Array<3,float> &Weights_for_FT_rebinned_data,
-       PETCount_rebinned &count_rebinned, SegmentBySinogram<float> &segment, const int num_tang_poss_pow2,
-       const int num_views_pow2, const int num_planes, const float average_ring_difference_in_segment,
-       const float half_distance_between_rings, const float sampling_distance_in_s, 
-       const float radial_sampling_freq_w, const float R_field_of_view_mm,
-       const float ratio_ring_spacing_to_ring_radius)
+             PETCount_rebinned &count_rebinned, 
+             const SegmentBySinogram<float> &segment, const int num_tang_poss_pow2,
+             const int num_views_pow2, const int num_planes, const float average_ring_difference_in_segment,
+             const float half_distance_between_rings, const float sampling_distance_in_s, 
+             const float radial_sampling_freq_w, const float R_field_of_view_mm,
+             const float ratio_ring_spacing_to_ring_radius)
  
  
  {
-   int local_rebinned = count_rebinned.total;
-   int local_miss= count_rebinned.miss;
-   int local_ssrb= count_rebinned.ssrb;
+   const int local_rebinned = count_rebinned.total;
+   const int local_miss= count_rebinned.miss;
+   const int local_ssrb= count_rebinned.ssrb;
 
 //CON Loop over all slices, FFT the sinograms and call the actual rebinning kernel.
    for (int axial_pos_num = segment.get_min_axial_pos_num(); axial_pos_num <= segment.get_max_axial_pos_num() ;axial_pos_num++)   
