@@ -49,7 +49,7 @@
 #include <iostream>
 #include <fstream>
 #include <numeric>
-#include <time.h>
+#include <ctime>
 #include <complex>
 #include "stir/numerics/fourier.h"
 #include "stir/interpolate.h"
@@ -147,7 +147,8 @@ rebin()
   //CON Create the output (rebinned projection data) data structure and set the properties of the rebinned sinograms
   shared_ptr<ProjData> rebinned_proj_data_sptr;
   //CON initialise the new projection data properties by copying the properties from the input projection data.
-  shared_ptr<ProjDataInfo> rebinned_proj_data_info_sptr = proj_data_sptr->get_proj_data_info_ptr()->clone();
+  shared_ptr<ProjDataInfo> rebinned_proj_data_info_sptr
+    ( proj_data_sptr->get_proj_data_info_ptr()->clone());
   //CON Adapt the properties that will be modified by the rebinning.
   rebinned_proj_data_info_sptr->set_num_views(num_views_pow2/2);
   //CON After rebinning we have of course only "direct" sinograms left e.q only segment 0 exists 
@@ -159,12 +160,11 @@ rebin()
   //CON difference covered by the largest segment that has been rebinned.         
   dynamic_cast<ProjDataInfoCylindrical&>(*rebinned_proj_data_info_sptr).set_min_ring_difference(-max_delta, 0);
   dynamic_cast<ProjDataInfoCylindrical&>(*rebinned_proj_data_info_sptr).set_max_ring_difference(max_delta, 0);
-  //CON minimal and maximal axial position number. As ususal we start with axial position 0 in segement 0   
+  //CON minimal and maximal axial position number. As usual we start with axial position 0 in segment 0   
   rebinned_proj_data_info_sptr->set_min_axial_pos_num(0, 0);
-  //CON use get_num_rings to determine the maximal axial pos num. (due to comment by KT) 
-  rebinned_proj_data_info_sptr->set_max_axial_pos_num(proj_data_sptr->get_num_axial_poss(0)-1,0);
+  rebinned_proj_data_info_sptr->set_max_axial_pos_num(num_planes-1,0);
   //CON create the output (interfile) file to where the rebinned data will be written. 
-  rebinned_proj_data_sptr = new ProjDataInterfile (rebinned_proj_data_info_sptr,output_filename_prefix,ios::out);
+  rebinned_proj_data_sptr.reset(new ProjDataInterfile (rebinned_proj_data_info_sptr,output_filename_prefix));
   //CON get scanner related parameters needed for the rebinning kernel.
   //CON create a scanner object. The scanner type is identified from the projection data info. 
   const Scanner* scanner = rebinned_proj_data_sptr->get_proj_data_info_ptr()->get_scanner_ptr();
@@ -174,7 +174,7 @@ rebin()
   //CON D = #bins * binsize, R = D / 2
   const float R_field_of_view_mm = ((int) (rebinned_proj_data_info_sptr->get_num_tangential_poss() / 2) - 1)*sampling_distance_in_s;
   const float scanner_space_between_rings = scanner->get_ring_spacing();
-  const float scanner_ring_radius = scanner->get_ring_radius();
+  const float scanner_ring_radius = scanner->get_effective_ring_radius();
   const float ratio_ring_spacing_to_ring_radius = scanner_space_between_rings / scanner_ring_radius;
 
   //CON Check that the user defineable FORE parameters are inside a possible range of values
@@ -609,7 +609,7 @@ do_adjust_nb_views_to_pow2(SegmentBySinogram<float> &segment)
         return; 
 
     //CON Create the projection data info ptr for the resized segment
-    shared_ptr<ProjDataInfo> out_proj_data_info_sptr = segment.get_proj_data_info_ptr()->clone();
+    shared_ptr<ProjDataInfo> out_proj_data_info_sptr(segment.get_proj_data_info_ptr()->clone());
     out_proj_data_info_sptr->set_num_views(num_views_pow2);
     //CON the re-dimensioned segment      
     SegmentBySinogram<float> out_segment = 
