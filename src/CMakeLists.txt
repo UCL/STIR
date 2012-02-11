@@ -23,6 +23,7 @@
 PROJECT(STIR)
 
 cmake_minimum_required(VERSION 2.6)
+set(CMAKE_LEGACY_CYGWIN_WIN32 0) 
 
 # add project source to cmake path such that it can use our find_package modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
