@@ -96,5 +96,8 @@ if (STIR_MPI)
   target_link_libraries(recon_buildblock ${MPI_LIBRARIES})
 endif()
 
+# TODO what to do with IO?
+target_link_libraries(recon_buildblock display numerics_buildblock data_buildblock buildblock)
+
 
 
