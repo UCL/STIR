@@ -75,6 +75,7 @@ int main(int argc, char *argv[])
 	    << image_aptr->get_physical_coordinates_for_indices(edge_max_indices)
 	    << "\nImage min: " << image_aptr->find_min()
 	    << "\nImage max: " << image_aptr->find_max()
+	    << "\nImage sum: " << image_aptr->sum()
 	    << std::endl;
 
   return EXIT_SUCCESS;
