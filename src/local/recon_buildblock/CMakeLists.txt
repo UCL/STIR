@@ -31,7 +31,7 @@ set(${dir_LIB_SOURCES}
 include(${PROJECT_SOURCE_DIR}/stir_lib_target.cmake)
 
 
-target_link_libraries(local_recon_buildblock display)
+target_link_libraries(local_recon_buildblock display buildblock recon_buildblock)
 
 
 
