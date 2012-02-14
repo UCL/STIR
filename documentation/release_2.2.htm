@@ -59,6 +59,8 @@ to handle parametric or dynamic images (no sinograms yet. sorry). Note however t
 will not incomplete headers. In particular, timing information will be lost.</li>
 <li><tt>list_image_info</tt> now also prints information about the edge of the voxels and the total
 sum in the image.</li>
+<li><tt>list_projdata_info</tt> now also optionally prints information about min, max and the total
+sum in the data (use command line option <tt>--all</tt>.</li>
 <li>ECAT list-mode routines are now no longer included in the library when
 ECAT support is not enabled. (In STIR 2.1 they defaulted to use the ECAT 962 file format.)</li>
 <li>On Unix/Linux systems, <tt>manip_image</tt> and <tt>manip_projdata</tt> used to
