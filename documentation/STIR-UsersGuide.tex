@@ -2448,7 +2448,7 @@ sub-directory.
 \subsubsection{
 Displaying and performing operations on data}
 
-The programs are \textbf{manip\_image}, \textbf{list\_image\_info}, 
+The programs are \textbf{manip\_image}, \textbf{stir\_write\_pgm}, \textbf{list\_image\_info}, 
 \textbf{list\_image\_values} and \textbf{find\_maxima\_in\_image}
 for image data and \textbf{manip\_projdata}, 
  \textbf{display\_projdata}, \textbf{extract\_segments}, 
@@ -2474,6 +2474,19 @@ is a free viewer that can read \textit{STIR} data
 \footnote{\R2Lurl{http://amide.sourceforge.net }{http://amide.sourceforge.net}}. Alternatively, 
 convert your \textit{STIR} data to another format using (X)medcon
 \footnote{\R2Lurl{http://xmedcon.sourceforge.net }{http://xmedcon.sourceforge.net}}.
+
+{ \subsubsubsection{list\_image\_info}
+}
+
+A utility that lists information about an image on stdout. This includes number of voxels,
+physical sizes, bounding boxes, etc. It also prints min/max/sum of the data. 
+
+{ \subsubsubsection{stir\_write\_pgm}
+}
+
+A utility that writes a PGM file for a single slice of an image. You can specify min and max threshold,
+orientation and slice number. PGM files can be displayed for instance via ImageMagick.
+This utility is mainly useful for shell/batch scripts.
 
 { \subsubsubsection{manip\_image}
 }
