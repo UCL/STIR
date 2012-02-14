@@ -25,6 +25,7 @@ set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 set(${dir_EXE_SOURCES}
   manip_image 
+  stir_write_pgm
 	manip_projdata 
 	display_projdata 
 	do_linear_regression 

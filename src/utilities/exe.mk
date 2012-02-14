@@ -5,6 +5,7 @@
 dir:=utilities
 
 $(dir)_SOURCES:=manip_image.cxx \
+	stir_write_pgm.cxx \
 	manip_projdata.cxx \
 	display_projdata.cxx \
 	do_linear_regression.cxx \
