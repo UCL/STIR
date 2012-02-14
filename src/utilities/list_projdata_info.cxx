@@ -27,9 +27,10 @@
   \par Usage
 
   <pre>
-  list_projdata_info [--all] projdata_filename
+  list_projdata_info [--all  | --min | --max | --sum | --geom] projdata_filename
   </pre>
-  Add the <tt>--all</tt> option to get min/max/sum information
+  Add one or more options to print the geometric/min/max/sum information.
+  If no option is specified, geometric info is printed.
 
   \author Kris Thielemans
 
@@ -49,8 +50,9 @@ USING_NAMESPACE_STIR
 
 void print_usage_and_exit(const std::string& program_name)
 {
-  std::cerr<<"Usage: " << program_name << " [--all] projdata_file\n"
-	   <<"\nAdd the --all option to get min/max/sum information\n";
+  std::cerr<<"Usage: " << program_name << " [--all | --min | --max | --sum | --geom] projdata_file\n"
+	   <<"\nAdd one or more options to print the geometric/min/max/sum information.\n"
+	   <<"\nIf no option is specified, geometric info is printed.\n";
   exit(EXIT_FAILURE);
 }
 
@@ -61,20 +63,47 @@ int main(int argc, char *argv[])
   --argc;
   ++argv;
 
-  // default value
-  bool print_all = false;
+  // default values
+  bool print_geom = false;
+  bool print_min = false;
+  bool print_max = false;
+  bool print_sum = false;
+  bool no_options = true; // need this for default behaviour
 
   // first process command line options
   while (argc>0 && argv[0][0]=='-' && argc>=2)
     {
+      no_options=false;
       if (strcmp(argv[0], "--all")==0)
 	{
-	  print_all = true; 
+	  print_min = print_max = print_sum = print_geom = true; 
+	  --argc; ++argv;
+	}
+      else if (strcmp(argv[0], "--max")==0)
+	{
+	  print_max = true; 
+	  --argc; ++argv;
+	}
+      else if (strcmp(argv[0], "--min")==0)
+	{
+	  print_min = true; 
+	  --argc; ++argv;
+	}
+      else if (strcmp(argv[0], "--sum")==0)
+	{
+	  print_sum = true; 
+	  --argc; ++argv;
+	}
+      else if (strcmp(argv[0], "--geom")==0)
+	{
+	  print_geom = true; 
 	  --argc; ++argv;
 	}
       else
 	print_usage_and_exit(program_name);
     }
+  if (no_options)
+    print_geom = true;
 
   if(argc!=1) 
   {
@@ -92,10 +121,10 @@ int main(int argc, char *argv[])
       return EXIT_FAILURE;
     }
 
-  std::cout << "Info for file " << filename << '\n';
-  std::cout << proj_data_sptr->get_proj_data_info_ptr()->parameter_info() << std::endl;
+  if (print_geom)
+    std::cout << proj_data_sptr->get_proj_data_info_ptr()->parameter_info() << std::endl;
 
-  if (print_all)
+  if (print_min || print_max || print_sum)
     {
       const int min_segment_num = proj_data_sptr->get_min_segment_num();
       const int max_segment_num = proj_data_sptr->get_max_segment_num();     
@@ -121,10 +150,13 @@ int main(int argc, char *argv[])
 		if (accum_min>this_min) accum_min=this_min;
 	      }
 	  }
-      std::cout << "\nData min: " << accum_min
-		<< "\nData max: " << accum_max
-		<< "\nData sum: " << sum
-		<< "\n";
+      if (print_min)
+	std::cout << "\nData min: " << accum_min;
+      if (print_max)
+	std::cout << "\nData max: " << accum_max;
+      if (print_sum)
+	std::cout << "\nData sum: " << sum;
+      std::cout << "\n";
     }
   return EXIT_SUCCESS;
 }
