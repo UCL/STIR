@@ -9,9 +9,7 @@
 
 <p>This update was prepared by Kris Thielemans (Algorithms and Software Consulting Ltd).
 SimSET scripts were updated with help from Robert Harrison (Univ Washington).</p>
-<p>This update contains some bug fixes and updates for more recent compilers
-(Clang++ 2.9, gcc 4.6.1 and Visual C++ 2010 are now supported).
-</p>
+
 <ul>
 
 <h2> Summary for end users (also to be read by developers)</h2>
@@ -45,7 +43,6 @@ on some architectures/compiler/optimisation settings. We recommend to use the ra
 matrix (with additional rays) instead.</li>
 <li>When using Visual Studio (Express) with the provided solution files, there is a linking problem for some
 utilities. It is recommended to use the new <tt>CMake</tt> files for building instead.</li>
-<li>Some of the new list mode files might not compile with Visual Studio (Express).</li>
 <li>When using <code>GRAPHICS=X</code> (i.e. on Unix/Linux/MacOSX) there window displaying
 the bitmaps is sometimes empty. This might depend on your X server settings.
 This affects <tt>manip_image</tt>, <tt>manip_projdata</tt> and <tt>display_projdata</tt>.
@@ -76,6 +73,8 @@ This is no longer implemented.</li>
 
 <h3>Minor bug fixes</h3>
 <ul>
+<li>This update contains updates for more recent compilers
+(Clang++ 2.9, gcc 4.6.1 and Visual C++ 2010 are now supported).</li>
 <li>No longer write confusing warnings about <tt>ring
   difference does not belong in a segment</tt> after calling
   SSRB, in FBP3DRP etc.
@@ -90,6 +89,10 @@ you attempted to use the defaults, the program crashed).
 
 <h3>Documentation changes</h3>
 <ul>
+<li>The User's guide has been improved. Major changes are related to 
+the scatter estimation, the use of a stored projection matrix, and the CMake
+build process.
+</li>
 <li>minor changes to doxygen documentation</li>
  </ul>
 
