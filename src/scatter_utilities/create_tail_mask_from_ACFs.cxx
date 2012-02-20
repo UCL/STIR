@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2005 - 2011-12-31, Hammersmith Imanet Ltd
+  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -29,7 +30,7 @@
   (ACFs). We take a threshold as parameter (which should be a bit larger 
   than 1). Along each line in the sinogram, we search from the edges 
   until we find the first bin above the threshold. We then go back a
-  few bins (as set by \a safety_margin). All bins from the edge until
+  few bins (as set by \a safety-margin). All bins from the edge until
   this point are included in the mask.  
 
   \author Kris Thielemans
@@ -84,19 +85,19 @@ int main(int argc, const char *argv[])
   int safety_margin=4;
   std::string ACF_filename;
   std::string output_filename;
-  while (argc>1 && argv[1][1] == '-')
+  while (argc>2 && argv[1][1] == '-')
     {
       if (strcmp(argv[1], "--ACF-filename")==0)
 	{
 	  ACF_filename = (argv[2]);
 	  argc-=2; argv +=2;
 	}
-      if (strcmp(argv[1], "--output-filename")==0)
+      else if (strcmp(argv[1], "--output-filename")==0)
 	{
 	  output_filename = (argv[2]);
 	  argc-=2; argv +=2;
 	}
-      if (strcmp(argv[1], "--ACF-threshold")==0)
+      else if (strcmp(argv[1], "--ACF-threshold")==0)
 	{
 	  ACF_threshold = atof(argv[2]);
 	  argc-=2; argv +=2;
@@ -113,22 +114,21 @@ int main(int argc, const char *argv[])
 	}
     }
     
-  if (ACF_filename.size()==0 || output_filename.size()==0)
+  if (argc!=1 || ACF_filename.size()==0 || output_filename.size()==0)
     {
       print_usage_and_exit(prog_name);
     }      
   if (ACF_threshold<=1)
     error("ACF-threshold should be larger than 1");
 
-  std::cout << "\nACF_threshold: " << ACF_threshold << " safety-margin : " << safety_margin << std::endl;
+  std::cout << "\nACF-threshold: " << ACF_threshold << " safety-margin : " << safety_margin << std::endl;
 
 
   shared_ptr< ProjData >  	
-    ACF_sptr= 
-    ProjData::read_from_file(ACF_filename);
+    ACF_sptr(ProjData::read_from_file(ACF_filename));
   
   if (is_null_ptr(ACF_sptr))
-    error("Check the attenuation_correct_factors file\n");
+    error("Check the attenuation_correct_factors file");
   
   ProjDataInterfile mask_proj_data(ACF_sptr->get_proj_data_info_ptr()->create_shared_clone(), 
 				   output_filename);
@@ -143,10 +143,10 @@ int main(int argc, const char *argv[])
 	   bin.axial_pos_num()<=mask_proj_data.get_max_axial_pos_num(bin.segment_num());
 	   ++bin.axial_pos_num())
 	{
-	  const Sinogram<float> att_sinogram = 
-	    ACF_sptr->get_sinogram(bin.axial_pos_num(),bin.segment_num());
-	  Sinogram<float> mask_sinogram = 
-	    mask_proj_data.get_empty_sinogram(bin.axial_pos_num(),bin.segment_num());
+	  const Sinogram<float> att_sinogram
+	    (ACF_sptr->get_sinogram(bin.axial_pos_num(),bin.segment_num()));
+	  Sinogram<float> mask_sinogram
+	    (mask_proj_data.get_empty_sinogram(bin.axial_pos_num(),bin.segment_num()));
 
 	  int  count=0;
 	  for (bin.view_num()=mask_proj_data.get_min_view_num();
@@ -204,7 +204,8 @@ int main(int argc, const char *argv[])
 	      count += mask_left_size + mask_right_size;
 #endif
 	    }
-	  std::cout << count << " bins in mask for this sinogram\n";
+	  std::cout << count << " bins in mask for sinogram at segment " 
+		    << bin.segment_num() << ", axial_pos " << bin.axial_pos_num() << "\n";
 	  if (mask_proj_data.set_sinogram(mask_sinogram) != Succeeded::yes)
 	    return EXIT_FAILURE;
 	}
