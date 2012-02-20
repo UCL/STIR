@@ -1,38 +1,38 @@
-#! /bin/sh
-do_lln=0
-do_update=0
-do_version=1
-do_license=1
-do_ChangeLog=1
-do_doc=1
-do_doxygen=0
-do_zip_source=1
-do_recon_test_pack=1
-do_transfer=1
+#! /bin/bash
+: ${do_lln:=0}
+: ${do_update:=0}
+: ${do_version:=1}
+: ${do_license:=1}
+: ${do_ChangeLog:=1}
+: ${do_doc:=1}
+: ${do_doxygen:=0}
+: ${do_zip_source:=1}
+: ${do_recon_test_pack:=1}
+: ${do_transfer:=1}
 
-do_website_final_version=1
-do_website_sync=0
+: ${do_website_final_version:=0}
+: ${do_website_sync:=0}
 
 set -e
-VERSION=2.2beta
+: ${VERSION:=2.2}
 
 # for cvs2cl.pl
-BRANCH=trunk
+: ${BRANCH:=trunk}
 #BRANCH=OBJFUNCbranch
 
 #CVSOPTS="-d ha-beo-1:/data/home/kris/devel/cvsroot"
-CVS="cvs $CVSOPTS"
+: ${CVS:="cvs $CVSOPTS"}
 
 # TODO  problems with LICENSE.txt
 # need to get it without tag, and then update and then assign tag (potentially remove tag first)
 #CHECKOUTOPTS="-r rel_1_30"
-CHECKOUTOPTS=""
+: ${CHECKOUTOPTS:=""}
 cd $WORKSPACE/../..
 
-destination=$WORKSPACE/../../STIR-website/
-RSYNC_OPTS=
+: ${destination:=$WORKSPACE/../../STIR-website/}
+: ${RSYNC_OPTS:=""}
 
-DISTRIB=`pwd`/STIRdistrib
+: ${DISTRIB:=`pwd`/STIRdistrib}
 WORKSPACE=${DISTRIB}/parapet/PPhead 
 
 # disable warnings as we currently get rid of any existing zip files
@@ -49,7 +49,6 @@ WORKSPACE=${DISTRIB}/parapet/PPhead
 
 
 mkdir -p ${DISTRIB}
-
 cd ${DISTRIB}
 
   trap "echo ERROR in cvs update" ERR
@@ -183,7 +182,10 @@ if [ $do_transfer = 1 ]; then
   rsync --progress -uavz ${RSYNC_OPTS} \
     ChangeLog STIR_doc_${VERSION}.zip  \
     ${destination}documentation
-  echo "If you don't extract STIR_doc.zip, you might have to transfer parapet/documentation/release_${VERSION}.htm or similar explicitly."
+  cd parapet/documentation
+  rsync --progress -uavz ${RSYNC_OPTS} \
+    *htm  \
+    ${destination}documentation
 fi
 
 if [ $do_website_final_version = 1 ]; then
@@ -206,6 +208,6 @@ fi
 
 if [ $do_website_sync = 1 ]; then
     cd $destination
-    rsync  --exclude previous --exclude \*.lnk -auCzv ./ krthie,stir@web.sf.net:htdocs/ --del
+    ./sync-to-sf.sh --del
 fi
 
