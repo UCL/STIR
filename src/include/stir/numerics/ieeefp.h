@@ -82,6 +82,12 @@
 # endif
 #endif
 
+#ifdef DOXYGEN_SKIP // only when running doxygen
+  // doxygen doesn't execute above preprocessor commands, but then doesn't generate documentation
+  // so define something here
+  #define STIR_finite finite
+  #define STIR_isnan isnan
+#endif
 /*!
 \def STIR_isnan(x)
 A (hopefully) portable way to call isnan. Current implementation does not always
