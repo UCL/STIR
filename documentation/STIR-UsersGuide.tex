@@ -40,12 +40,12 @@
 \large 
 
 \noindent 
-K. Thielemans (Hammersmith Imanet Ltd, Algorithms and Software Consulting Ltd)\\
+K. Thielemans (Hammersmith Imanet Ltd; Algorithms and Software Consulting Ltd)\\
 D. Sauge, C. Labb\'e, C. Morel (Hopital Cantonal Gen\`eve)\\
 M. Jacobson (Technion University)\\
 A. Zverovich (Brunel University) \\
 T. Beisel (Univ. of Paderborn) \\
-Ch. Tsoumpas (Hammersmith Imanet and Imperial College London)
+Ch. Tsoumpas (Hammersmith Imanet Ltd; Imperial College London; King's College London)
 
 \begin{center}
 License
@@ -87,7 +87,7 @@ found during the registration process, and the file \textbf{STIR/LICENSE.txt}
 that comes with the distribution. 
 
 See the publications section of the STIR website for information on which reference
-to use for STIR (for \textit{STIR} 1.x, use [Lab99a], [Lab99b]).
+to use for STIR. You will want to read {[}Thi12] (for \textit{STIR} 1.x, use [Lab99a], [Lab99b]).
 
 
 
@@ -132,7 +132,7 @@ Download the source at the \textit{STIR} site:
 \R2Lurl{http://stir.sourceforge.net }{http://stir.sourceforge.net} 
 \end{center}
 \noindent (Section \textbf{Registered Users}).\\
-Download the source files in the zip format and use unzip from \\
+Download the source files in the zip format. You can then use unzip from \\
 \R2Lurl{http://www.info-zip.org/pub/infozip/}{http://www.info-zip.org/pub/infozip/}. 
 Extract using
 \cmdline{unzip -a file.zip}
@@ -157,7 +157,8 @@ If you are running Ubuntu or Debian, you should be able to get do this using
 
 \cmdline{apt-get install  gcc g++ make libncurses-dev libX11-dev libboost-dev tcsh}
 
-(prefix with \texttt{sudo} for Ubuntu). For other systems, details are given below.
+(prefix with \texttt{sudo} for Ubuntu). For other systems, details are given below,
+but see also the Wiki.
 
 \subsubsection{Download/install boost}
 \textit{STIR} uses the well-respected \textit{boost} library. This library
@@ -171,11 +172,11 @@ See the Compilation section for some info (use \textit{make} variable
 \textit{EXTRA\_CFLAGS}).
 
 \subsubsection{
-C++ Compiler and make}
+C++ Compiler}
 
 In order to compile and run the \textit{STIR} programs, we currently recommend 
 using a recent version of the GNU gcc compiler, at least version 
-3.0.1. The final release of \textit{STIR} 2.1 should work with gcc 4.2 up to 4.5.
+3.0.1. The final release of \textit{STIR} 2.2 should work with gcc 4.2 up to 4.6.
 Check the mailing lists for more info.
 \footnote{{\small A few years ago, some work-arounds were put in place to 
 keep \textit{STIR} compatible with gcc version 2.95.2, but this version is unlikely to
@@ -198,21 +199,12 @@ We discourage using such versions for \textit{STIR} (check with gcc -v).
 
 
 Other recent C++ compilers should be ok as well, including Intel's compiler
-version 11 and CLang.
+version 11 and CLang (checked with 2.9.1).
 We would love 
 to hear from any attempts of using another compiler. See Section 
 \ref{sec:VC}
 on how to use Visual Studio's C++ compiler.
 
-
-Additionally, you need GNU make as well. Other versions of \textit{make} 
-will NOT work with our Makefiles.
-
-
-If you do not have \textbf{gcc} or \textbf{make} you will need to 
-install them. Most systems use a package management system to install software. 
-If you cannot use that, or you are not the administrator, you 
-could follow the instructions given at \R2Lurl{http://gcc.gnu.org/ }{http://gcc.gnu.org/.}
 
 
 
@@ -222,11 +214,17 @@ Compilation}
 \subsubsection{
 Normal Compilation}
 \label{sec:normalcompilation}
-Use the GNU make utility to compile the program to be run\footnote{{\small Again, 
-a non-GNU version of make will not work. It might be that on 
-your system GNU make is launched with \texttt{gmake}.}}. The \textbf{Makefile} 
-is written for most Unix flavours: we tried it on AIX, Solaris, 
-Linux. It can also be used on Windows versions using cygwin (\R2Lurl{http://cygwin.com/}{http://cygwin.com/}). 
+\textit{STIR} currently comes with a Makefile for the GNU \textit{make} program
+\footnote{
+A non-GNU version of make will not work. It might be that on 
+your system GNU make is launched with \texttt{gmake}.}. \textit{make} is a standard
+utility that, given a Makefile which tells it how to build programs, checks which parts 
+of the building process need to be executed. For example, if you change a source file, it will
+only rebuild those programs that ``depend'' on the source file. 
+
+The \textbf{Makefile} 
+is written for most Unix flavours: we tried it on Linux, MacOSX and Solaris. 
+It can also be used on Windows versions using cygwin (\R2Lurl{http://cygwin.com/}{http://cygwin.com/}). 
 Since release 1.2 there is only one \textbf{Makefile}, which is in \textbf{STIR/}.
 
 
@@ -505,7 +503,7 @@ See also section \ref{sec:display}..
 \subsubsection{
 Additional options available for parallel code}
 
-\textit{STIR} 2.1 contains code for running \texttt{OSMAPOSL} and \texttt{OSSPS} in parallel-mode
+Since version 2.1, \textit{STIR} contains code for running \texttt{OSMAPOSL} and \texttt{OSSPS} in parallel-mode
 \footnote{In fact, any algorithm that uses \texttt{PoissonLogLikelihoodWithLinearModelForMeanAndProjData}.}
 (contribution mainly by Tobias Beisel, Univ. of Paderborn). You need a version of the MPI library and
 and compiler to get this to work. We have tested this using \R2Lurl{http://www.open-mpi.org/}{OpenMPI} 1.4.2.
@@ -519,7 +517,7 @@ Normal build process would be something like\footnote{This will need to fit all 
 This assumes that the file \texttt{mpi.h} is the search-path of the compiler. If not,
 you could include its location for instance by using the \texttt{EXTRA\_CFLAGS} \textit{make} variable.
 
-\cmdline{make ... EXTRA\_CFLAGS=''-I /where/ever/it/is''}
+\cmdline{make ... EXTRA\_CFLAGS='-I /where/ever/it/is'}
 
 All the make variables of the previous section apply. Note that at present it is 
 recommended that you build this version in a differerent destination directory then
@@ -533,7 +531,7 @@ Additional make variables for the parallel version:
 {\raggedright \textit{STIR\_MPI=1}} & 
 {\raggedright
 Can be used to force compilation for MPI if the CXX compiler is not recognized (see 
-\textbf{STIR/config.mk}, which sets it of the compiler name contains the string \texttt{mpi}).
+\textbf{STIR/config.mk}, which sets it if the compiler name contains the string \texttt{mpi}).
 } \\
 \hline
 {\raggedright \textit{STIR\_MPI\_TIMINGS=1}} & 
@@ -614,6 +612,7 @@ specific files for ECAT6 support without the need for the LLN library.
 However, due to license restrictions this is now no longer the case.} 
 The library might still be available on  
 \R2Lurl{ftp://ftp.topo.ucl.ac.be/pub/ecat }{ftp://ftp.topo.ucl.ac.be/pub/ecat}.
+It is also available for GATE users.
 Please check the \textit{STIR}
 mailing lists for more information.
 
@@ -711,15 +710,17 @@ Compilation using Visual C++}
 
 Old versions of \textit{STIR} could be compiled with Visual C++ 6.0, service pack 5 but there are no recent 
 reports if this version still works. We very much recommend to upgrade your compiler. The Visual
-Studio Express versions are free. Version 7.1 (i.e. 2003) might still be fine. \textit{STIR} 2.1
+Studio Express versions are free. Version 7.1 (i.e. 2003) might still be fine. \textit{STIR} 2.2
 should normally compile with Visual Studio 2008 and 2010.
 
-There are two different ways to build using Visual C++ (but see also \ref{sec:UsingCMake}
-which provides a much easier way to build). Both 
-are somewhat fiddly. Before we go there, we have to got a problem out-of-the-way.
+There are three different ways to build \textit{STIR} using Visual C++. The recommended way (since 2.2) is
+to use \textit{CMake}, see section \ref{sec:UsingCMake}. If you do not want to use \textit{CMake}, we provide
+two alternatives, but both 
+are fiddly. Before we go there, we have to got a problem out-of-the-way.
 
 { \subsubsubsection{CPUTimer problems}
 }
+
 At present, \textit{STIR} uses some files available in the Windows API for 
 getting accurate CPU time estimates. If you do not have the Windows API
 installed, you might get compilation errors mentioning that 
@@ -784,14 +785,15 @@ RM=del GRAPHICS=PGM install}
 
 Getting ECAT support is even more of an adventure, as it requires 
 some changes to the Makefile supplied with the LLN Matrix library. 
-See the mailing lists.
+
 
 { \subsubsubsection{Using the Visual Studio interface}
 }
+
 In addition to the source files, you will need to download VCprojects.zip. 
 Extract it in the same place as you extracted the source files. 
 
-\textbf{Currently there is a linking problem with some of the utilities using
+\textbf{Currently there might be a linking problem with some of the utilities using
 the distribution solution files} (tested using VC 2010). A workaround would be to move all files
 in the \textbf{Shape\_buildblock} and \textbf{numeric\_buildblock} projects to the \textbf{buildblock}
 project.
@@ -889,16 +891,13 @@ Some more info on using these projects might be available in
 the archive of the stir\_users mailing list.
 
 \subsubsection{
-Experimental feature: using CMake}
+Alternative building process: using CMake}
 \label{sec:UsingCMake}
-Since version 2.1, \textit{STIR} contains files to build using the platform-independent
-\R2Lurl{"http://www.cmake.org"}{CMake}, based on example files provided by 
-Robert Barnett (SWAHS, Sydney). This is much better for configuration and finding 
+Since version 2.2, \textit{STIR} contains files to build using the platform-independent
+\R2Lurl{"http://www.cmake.org"}{CMake}. This is much better for configuration and finding 
 system dependencies.
 
-See the CMake web-site more information, and in particular\\
-\R2Lurl{http://www.cmake.org/cmake/help/runningcmake.html}{http://www.cmake.org/cmake/help/runningcmake.html}.
-
+More information on using CMake is on the STIR Wiki.
 Normal build procedure on Linux/Unix would be something like
 
 \cmdline{cd /somewhere/nice/STIRbuild/Release}
@@ -922,14 +921,13 @@ via the cmake GUI. You can also select your build system (e.g. Visual Studio 200
 you do not need to specify the Build Type, as you will be able to select that in 
 Visual Studio.
 
-More information on using CMake is on the STIR Wiki.
-
 \subsubsection{
 Operating system specifics}
 
 { \subsubsubsection{Mac OS}
-The lln library does not compile on Mac OS. 
 }
+
+The lln library does not compile on Mac OS. 
 
 { \subsubsubsection{All Unix/Linux flavours}
 }
@@ -973,6 +971,7 @@ Debian, you can do
 
 \cmdline{apt-get install libncurses5 libncurses5-dev}
 
+\noindent 
 prefixed with \texttt{sudo} if you are not logged in as root. For other Linux versions, 
 you should be able to find similar RPM packages online.
 
@@ -1023,13 +1022,33 @@ Other decent X servers should work as well (Kris Thielemans used Exceed at
 some point).
 
 
-\subsubsection{
+\subsection{
 Running tests}
 
-We \textbf{highly recommend} running test programs after building. Change 
-to your \textbf{STIR} directory, and type
-\cmdline{make run\_tests}
+We \textbf{highly recommend} running test programs after building. There are currently two
+sets of tests. The first set tests various components of \textit{STIR}. This process is described below.
+The second set of tests is available via the \textit{STIR} web-site, where we 
+we provide test reconstructions as part of the
+\textbf{recon\_test\_pack}, with an 
+automated procedure to see if you can reproduce the correct results. 
+You really should download this and run it.
 
+
+Note that if you are using a non-standard scanner, 
+you might want to run one reconstruction on your data with 
+the debug version of the reconstruction program, to see if everything 
+works as intended. You'll probably want to choose a small value 
+for the `maximum absolute segment number to process' parameter 
+in your reconstruction (see Section \ref{sec:OSMAPOSL}), as this will be \textbf{\textit{very}} 
+slow.
+
+The rest of this section discusses how to run the first set of tests.
+
+\subsubsection{
+If you have used make for building}
+
+Change to your \textbf{STIR} directory, and type
+\cmdline{make run\_tests}
 
 This will compile all test programs, and run those which do not 
 require user input. You should see a sequence of messages, all 
@@ -1046,24 +1065,30 @@ using
 \cmdline{make clean\_tests}
 \cmdline{make clean\_tests BUILD=debug}
 
-We also provide \textbf{STIR/test/run\_tests.bat} for running the automatic 
-tests on Windows when using Visual Studio and the VCprojects.zip 
-files. This will currently not run any tests in \textbf{STIR/recon\_test} though.
+\subsubsection{
+If you have used CMake for building}
 
 
-On our Web page, we also provide test reconstructions as part of the
-\textbf{recon\_test\_pack}, with an 
-automated procedure to see if you can reproduce the correct results. 
-You really should download this and run it.
+When using \textit{CMake} to generate \textit{make} files, you can execute the tests as follows:
+\cmdline{make}
+\cmdline{make test}
+
+For IDE-type build such as Visual Studio, \textit{CMake} will generate a ``project'' called something like
+\texttt{RUN\_TESTS} which you will need to build.
+
+If a problem is reported, a log file should have been created (probably in
+your build directory called \texttt{Testing/Temporary/LastTest.log}).
 
 
-Also, if you are using a non-standard scanner, 
-you might want to run one reconstruction on your data with 
-the debug version of the reconstruction program, to see if everything 
-works as intended. You'll probably want to choose a small value 
-for the `maximum absolute segment number to process' parameter 
-in your reconstruction (see Section \ref{sec:OSMAPOSL}), as this will be \textbf{\textit{very}} 
-slow.
+\subsubsection{
+If you have used the distributed Visual Studio projects for building}
+
+
+This is only partially supported. There is a \texttt{test} ``solution'' which you need to build first. You can run
+the projects then by hand. We also provide \textbf{STIR/test/run\_tests.bat} for running the automatic 
+tests. This will currently not run any tests in \textbf{STIR/recon\_test} though.
+
+
 
 
 \section{
@@ -2470,7 +2495,7 @@ step into supporting dynamic data.
 \textbf{Note}: The displaying functionality is \textit{really} basic, and 
 only intended for a quick check how your data looks like. For 
 any serious work, use a decent viewer. For example, \textit{AMIDE} 
-is a free viewer that can read \textit{STIR} data
+is a free viewer that can read \textit{STIR} image data
 \footnote{\R2Lurl{http://amide.sourceforge.net }{http://amide.sourceforge.net}}. Alternatively, 
 convert your \textit{STIR} data to another format using (X)medcon
 \footnote{\R2Lurl{http://xmedcon.sourceforge.net }{http://xmedcon.sourceforge.net}}.
@@ -4104,7 +4129,7 @@ do symmetry 180degrees min phi := 1
 End Ray Tracing Matrix Parameters :=
 \end{verbatim}
 
-\textbf{It is recommended to use a number of rays that i slarger than 1 (e.g. 10) to
+\textbf{It is recommended to use a number of rays that is larger than 1 (e.g. 10) to
 avoid some discretisation artefacts in the final image.}
 
 For the azimuthal angle $\phi$, the following angles are symmetry 
@@ -4114,7 +4139,8 @@ Two boolean parameters allow to select which angles should be
 considered as related:
 \begin{description}
 \item[all 4]
-(do\_symmetry\_90degrees\_min\_phi=true)
+  (do\_symmetry\_90degrees\_min\_phi=true,  \\
+do\_symmetry\_180degrees\_min\_phi = true)
 \item[only $\{ \phi, 180- \phi \}$]
 (do\_symmetry\_90degrees\_min\_phi=false,  \\
 do\_symmetry\_180degrees\_min\_phi = true)
@@ -4149,18 +4175,89 @@ See also online documentation for class ProjMatrixByBinUsingRayTracing.
 
 { \subsubsubsection{From File}
 }
-TODO
 \label{sec:projmatrixfromfile}
+
+You can use \texttt{write\_proj\_matrix\_by\_bin} to write a projection matrix to file. You can
+then read the matrix back into memory. This
+could be useful if it takes a long time to generate the matrix, or if you have an external program
+to write the matrix (see below for more information on what you will need to do).
+
 
 { \subsubsubsubsection{Parameters}
 }
 
-The following parameters can be set (default values are indicated):
-
+The necessary parameters to include in the par file are:
 \begin{verbatim}
-
+ProjMatrixByBinFromFile Parameters:=
+  Version := 1.0
+  symmetries type := PET_CartesianGrid
+    PET_CartesianGrid symmetries parameters:=
+      do_symmetry_90degrees_min_phi:= <bool>
+      do_symmetry_180degrees_min_phi:=<bool>
+      do_symmetry_swap_segment:= <bool>
+      do_symmetry_swap_s:= <bool>
+      do_symmetry_shift_z:= <bool>
+    End PET_CartesianGrid symmetries parameters:=
+  ; example projection data of the same dimensions as used 
+  ; when constructing the matrix
+  template proj data filename:= <filename>
+  ; example image of the same dimensions as used 
+  ; when constructing the matrix
+  template density filename:= <filename>
+  ; binary data with projection matrix elements
+  data_filename:=<filename> 
+End ProjMatrixByBinFromFile Parameters:=
 \end{verbatim}
+The symmetries all default to true, but it is best to include the values in the file in all cases. 
 
+You need to be careful that these parameters match the matrix written to file. To make this easier,
+\texttt{write\_proj\_matrix\_by\_bin} will write these to file for you. In the current version
+of STIR, you will need to copy these into the .par file (this will change in a future version of STIR).
+
+Note that image and projection data characteristics are read from the \texttt{template} files. Their geometric
+characteristics have to match those of the data that you want to process with the stored matrix
+(the stored matrix could have more segments or tangential positions than the data). This will be
+checked at run-time.
+
+{ \subsubsubsubsection{Information on how to write your own projection matrix to file}
+}
+
+The projection matrix is stored as a sparse matrix (in the file dennoted by the \texttt{data\_filename}
+parameter). The format is reasonably simple. For each element (``bin'') in the projection data, the 
+Line of Response (LOR) is encoded as follows:
+\begin{verbatim}
+  segment_num (int32_t)
+  view_num (int32_t)
+  axial_pos_num (int32_t)
+  tangential_pos_num (int32_t)
+  num_voxels_in_LOR (uint32_t)
+  for_each voxel
+     z (int16_t)
+     y (int16_t)
+     x (int16_t)
+     matrix_value (float)
+  end
+\end{verbatim}
+The order of bins is not important, neither is the order of the voxels (although you will get better
+performance if these are stored such that voxels are listed consecutively).
+
+To reduce data size, symmetries can be used to store only ``basic'' Lines Of Responses (LORs). 
+The exact definition of the symmetries is unfortunately
+not easy and not documented fully here. If you want to use your own code to write the matrix and want to use
+symmetries you will need to check the \texttt{DataSymmetriesForBins} class or a derived class. In case all
+symmetries are enabled, the following should hold:
+\begin{verbatim}
+0<=segment_num
+0<=view_num<=num_views/4
+axial_pos_num==0
+0<=tangential_pos_num
+\end{verbatim}
+Check the STIR developer's guide and the Wiki for information on coordinate systems used by STIR. In particular,
+note the STIR convention about index numbering in section 2.2 of the developer's guide.
+
+A final note: currently the sparse matrix is read completely into memory before it is used (but of course
+keeping only the ``basic'' part of the matrix taking the symmetries into account). This restricts the size
+of the matrix according to how much memory your system has available.
 
 \subsubsection{
 Selecting a bin normalisation procedure}
@@ -4412,7 +4509,8 @@ where they can follow developments of the software and obtain
 helpful information from other users. Questions will ONLY be 
 answered (if at all) when directed to the mailing list.
 
-
+Commercial support is available from \R2Lurl{http://asc.uk.com}{Algorithms and
+Software Consulting Ltd}.
 
 Below, we list of some of the features that might make it into the next releases. 
 However, which feature is actually finalised/implemented depends 
@@ -4572,7 +4670,7 @@ Biol.}, 38: 729-741.
 algorithms with Gibbs smoothing. \textit{IEEE Trans. Med. Imaging}, 
 MI-9: 4.
 
-{[Lew98] Lewellen T K, Harrison R L and Vannoy S \textbf{(1998)} 
+{[}Lew98] Lewellen T K, Harrison R L and Vannoy S \textbf{(1998)} 
 The SimSET program,
 \textit{ Monte Carlo Calculations in Nuclear Medicine:
 Applications in Diagnostic Imaging ed M Ljungberg, S-E Strand and M A King (Bristol: Institute of Physics
@@ -4643,14 +4741,13 @@ A smoothed EM approach to indirect estimation problems, with
 particular reference to stereology and emission tomography. \textit{J. 
 Roy. Stat. Soc}., 52: 271-324. 
 
-{[}Thi06{]} Thielemans K, Mustafovic S, Tsoumpas C\textbf{(2006)},
-STIR: Software for Tomographic Image
-Reconstruction Release 2, 
-\textit{Proc. IEEE Medical Imaging Conference 2006, San Diego, CA, USA.}
-
 {[}Thi07{]} Thielemans K, Manjeshwar R, Tsoumpas C and Jansen F\textbf{(2007)}, 
 A new algorithm for scaling of PET scatter estimates using all coincidence events. 
 \textit { IEEE Nucl Sci Symp Med Imaging Conf } 3586 - 3590.
+
+{[}Thi12] Kris Thielemans, Charalampos Tsoumpas, Sanida Mustafovic, Tobias Beisel, Pablo Aguiar, Nikolaos Dikaios, and Matthew W Jacobson,
+STIR: Software for Tomographic Image Reconstruction Release 2,
+\textit{Physics in Medicine and Biology, 57 (4), 2012 pp.867-883}.
 
 {[}Tso04{]} Tsoumpas C, Aguiar P, Nikita K S, Ros D and Thielemans K\textbf{(2004)}, 
 Evaluation of the single scatter simulation algorithm implemented in the STIR library. 
