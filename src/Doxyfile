@@ -1459,9 +1459,8 @@ INCLUDE_FILE_PATTERNS  =
 # instead of the = operator.
 
 PREDEFINED             = __GNUC__=4 \
-                         __GNUC_MINOR__=2 \
+                         __GNUC_MINOR__=6 \
                          DOXYGEN_SKIP \
-                         PARALLEL \
                          HAVE_LLN_MATRIX \
                          HAVE_AVW \
                          "START_NAMESPACE_STIR=namespace stir {" \
