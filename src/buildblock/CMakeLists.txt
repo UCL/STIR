@@ -83,3 +83,11 @@ if (LLN_FOUND)
   target_link_libraries(buildblock ${LLN_LIBRARIES})
 endif()
 
+if (RDF_FOUND)
+  # TODO cannot do this as it creates circular dependencies
+  # target_link_libraries(buildblock local_IO_GE)
+endif()
+
+# TODO currently needed as filters need fourier
+target_link_libraries(buildblock numerics_buildblock)
+
