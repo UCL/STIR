@@ -528,7 +528,7 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
   // KT 03/07/2001 modified handling of scale_factor etc.
   if (on_disk_data_type.id != NumericType::FLOAT)
   {
-    warning("ProjDataFromStream::set_viewgram: non-float output uses original "
+    warning("ProjDataFromStream::set_sinogram: non-float output uses original "
             "scale factor %g which might not be appropriate for the current data\n",
             scale_factor); 
   }
@@ -537,7 +537,7 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
   {
     warning("ProjDataFromStream::set_sinogram: Sinogram<float> has incompatible ProjDataInfo member.\n"
             "Original ProjDataInfo: %s\n"
-            "ProjDataInfo From sinogram: %s",
+            "ProjDataInfo from sinogram: %s",
             this->get_proj_data_info_ptr()->parameter_info().c_str(),
             s.get_proj_data_info_ptr()->parameter_info().c_str()
             );
