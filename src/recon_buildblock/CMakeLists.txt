@@ -97,7 +97,8 @@ if (STIR_MPI)
 endif()
 
 # TODO what to do with IO?
-target_link_libraries(recon_buildblock display numerics_buildblock data_buildblock buildblock)
+# modelling_buildblock currently needed for ParametricDensity and Patlak (TODO get rid of this somehow?)
+target_link_libraries(recon_buildblock modelling_buildblock display numerics_buildblock data_buildblock buildblock)
 
 
 
