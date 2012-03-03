@@ -61,3 +61,6 @@ endif()
 if (AVW_FOUND)
   target_link_libraries(IO ${AVW_LIBRARIES})
 endif()
+
+# currently needed for ParametricDensity (TODO get rid of this somehow?)
+target_link_libraries(IO modelling_buildblock )
