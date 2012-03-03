@@ -32,6 +32,7 @@
 #include "stir/utilities.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
+#include "stir/shared_ptr.h"
 #include <fstream>
 
 #ifndef STIR_NO_NAMESPACES
@@ -92,7 +93,8 @@ get_next_record(RecordT& record) const
 
   // rely on file caching by the C++ library or the OS
 
-  char data_ptr[this->max_size_of_record];
+  shared_ptr<char> data_sptr(new char(this->max_size_of_record));
+  char * data_ptr = data_sptr.get();
   stream_ptr->read(data_ptr, this->size_of_record_signature);
   if (stream_ptr->gcount()<static_cast<streamsize>(this->size_of_record_signature))
     return Succeeded::no; 
