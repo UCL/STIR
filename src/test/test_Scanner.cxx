@@ -35,6 +35,10 @@
 #include "stir/shared_ptr.h"
 #ifdef HAVE_LLN_MATRIX
 #include "ecat_model.h"
+extern "C" {
+  EcatModel *ecat_model(int);
+}
+
 #include "stir/IO/stir_ecat_common.h"
 #endif
 #include <iostream>
