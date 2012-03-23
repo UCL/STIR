@@ -68,10 +68,7 @@ set(${dir_LIB_SOURCES}
 	find_fwhm_in_image
 )
 
-check_function_exists(getopt HAVE_SYSTEM_GETOPT)
-if (HAVE_SYSTEM_GETOPT)
-  add_definitions(-D HAVE_SYSTEM_GETOPT)
-else()
+if (NOT HAVE_SYSTEM_GETOPT)
   # add our own version of getopt to buildblock
   list(APPEND ${dir_LIB_SOURCES} getopt)
 endif()
