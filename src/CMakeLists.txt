@@ -20,9 +20,11 @@
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
 
+# avoid warning about WIN32 no longer defined in CYGWIN
+set(CMAKE_LEGACY_CYGWIN_WIN32 0) 
+
 PROJECT(STIR)
 
-set(CMAKE_LEGACY_CYGWIN_WIN32 0) 
 cmake_minimum_required(VERSION 2.6)
 
 # add project source to cmake path such that it can use our find_package modules
@@ -88,6 +90,15 @@ if (RDF_FOUND)
 
 else()
   message(STATUS "RDF support disabled.")
+endif()
+
+
+#### Flags for compatibility between different systems
+
+check_function_exists(getopt HAVE_SYSTEM_GETOPT)
+if (HAVE_SYSTEM_GETOPT)
+  add_definitions(-D HAVE_SYSTEM_GETOPT)
+  # buildblock will have a replacement for it as long as you include stir/getopt.h
 endif()
 
 #### Compiler specific flags for fastest execution etc
