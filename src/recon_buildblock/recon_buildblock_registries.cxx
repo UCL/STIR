@@ -62,6 +62,8 @@
 #include "stir/recon_buildblock/BinNormalisationFromECAT7.h"
 #endif
 
+#include "stir/recon_buildblock/FourierRebinning.h"
+
 //#include "stir/IO/InputFileFormatRegistry.h"
 
 START_NAMESPACE_STIR
@@ -99,5 +101,7 @@ static BinNormalisationFromECAT7::RegisterIt dummy102;
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 #endif
+
+static FourierRebinning::RegisterIt dummyFORE;
 
 END_NAMESPACE_STIR

@@ -25,7 +25,6 @@ set(dir local_recon_buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-	FourierRebinning
 )
 
 include(${PROJECT_SOURCE_DIR}/stir_lib_target.cmake)

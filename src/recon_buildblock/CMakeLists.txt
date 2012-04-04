@@ -62,6 +62,7 @@ set(${dir_LIB_SOURCES}
 	BinNormalisationFromAttenuationImage 
 	GeneralisedPrior 
 	ProjDataRebinning 
+	FourierRebinning
 	QuadraticPrior 
 	FilterRootPrior 
 	GeneralisedObjectiveFunction 
@@ -69,7 +70,7 @@ set(${dir_LIB_SOURCES}
 	PoissonLogLikelihoodWithLinearModelForMeanAndProjData 
 	PoissonLogLikelihoodWithLinearModelForMeanAndListModeData 
 	PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin 
-PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData	
+        PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData	
 )
 
 if (HAVE_ECAT)

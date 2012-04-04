@@ -40,6 +40,7 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	BinNormalisationFromAttenuationImage.cxx \
 	GeneralisedPrior.cxx \
 	ProjDataRebinning.cxx \
+	FourierRebinning.cxx \
 	GeneralisedPrior.cxx \
 	QuadraticPrior.cxx \
 	FilterRootPrior.cxx \
