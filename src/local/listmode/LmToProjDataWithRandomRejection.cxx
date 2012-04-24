@@ -29,7 +29,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/listmode/LmToProjDataWithRandomRejection.h"
+#include "local/stir/listmode/LmToProjDataWithRandomRejection.h"
 #include "stir/listmode/CListRecord.h"
 #include "stir/Succeeded.h"
 #include <iostream>
