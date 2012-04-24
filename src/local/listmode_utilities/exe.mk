@@ -6,6 +6,7 @@ dir:=local/listmode_utilities
 
 $(dir)_SOURCES = \
 	generate_headcurve.cxx \
+	lm_to_projdata_with_random_rejection.cxx
 
 ifeq ($(STIR_DEVEL_966_FIX),1)
 $(dir)_SOURCES+= \
