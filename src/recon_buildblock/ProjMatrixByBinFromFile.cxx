@@ -221,7 +221,7 @@ set_up(
   }
 
   if (read_data() ==Succeeded::no)
-    error("Exiting\n");
+    error("Something wrong reading the matrix from file. Exiting.");
 }
 
 // anonymous namespace for local functions
@@ -307,8 +307,11 @@ namespace {
     boost::uint32_t count;
     fst.read ( (char*)&count, sizeof(boost::uint32_t));
 
-    if (!fst)
+    if (!fst || fst.gcount() != 4)
       return readReturnType::problem;
+
+    if (count>10000)
+      error("Unbelievably high count of voxels in LOR: %d", count);
 
     lor.reserve(count);
 
@@ -512,10 +515,11 @@ read_data()
 
 void 
 ProjMatrixByBinFromFile::
-calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& 
+calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor
 					) const
 {
-  error("ProjMatrixByBinFromFile element not found in cache (and hence file)");
+  //error("ProjMatrixByBinFromFile element not found in cache (and hence file)");
+  lor.erase();
 }
 END_NAMESPACE_STIR
 
