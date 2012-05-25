@@ -24,7 +24,7 @@ LIBS=../../build/stir/gcc/DebugShared/buildblock/libbuildblock.so \
 ../../build/stir/gcc/DebugShared/utilities/CMakeFiles/stir_math.dir/__/IO/IO_registries.cxx.o 
 
 # TODO problem: need -fPIC for registries.o
-# cd /home/kris/devel/parapet/build/stir/gcc/DebugShared/utilities && /usr/bin/c++    -DSTIR_USE_BOOST_SPTR -g -I/home/kris/devel/lln/ecat -I/home/kris/devel/GE/pettoolbox/io_utils/C/include -I/home/kris/devel/parapet/PPhead/include    -D HAVE_LLN_MATRIX -D HAVE_RDF -D STIR_USE_GE_IO -Wall -Wno-deprecated -o CMakeFiles/stir_math.dir/__/IO/IO_registries.cxx.o -c /home/kris/devel/parapet/PPhead/IO/IO_registries.cxx -fPIC
+# pushd /home/kris/devel/parapet/build/stir/gcc/DebugShared/utilities && /usr/bin/c++    -DSTIR_USE_BOOST_SPTR -g -I/home/kris/devel/lln/ecat -I/home/kris/devel/GE/pettoolbox/io_utils/C/include -I/home/kris/devel/parapet/PPhead/include    -D HAVE_LLN_MATRIX -D HAVE_RDF -D STIR_USE_GE_IO -Wall -Wno-deprecated -o CMakeFiles/stir_math.dir/__/IO/IO_registries.cxx.o -c /home/kris/devel/parapet/PPhead/IO/IO_registries.cxx -fPIC;popd
 
 .PRECIOUS: stir_wrap.o
 
