@@ -17,6 +17,7 @@
  #include "stir/SegmentByView.h"
  #include "stir/SegmentBySinogram.h"
  #include "stir/ProjData.h"
+ #include "stir/ProjDataInterfile.h"
 
  #include "stir/BasicCoordinate.h"
 #include "stir/CartesianCoordinate3D.h"
@@ -32,6 +33,7 @@
    // TODO seem to need this for using shared_ptr
    // in ProjDataInfoGE
    using namespace stir;
+   using std::iostream;
  %}
 
 %feature("autodoc", "1");
@@ -68,6 +70,8 @@ typedef unsigned int size_t;
 // include standard swig support for some bits of the STL (i.e. standard C++ lib)
 %include <stl.i>
 %include <std_list.i>
+%include <std_ios.i>
+%include <std_iostream.i>
 
 // Instantiate STL templates used by stir
 namespace std {
@@ -146,7 +150,8 @@ namespace std {
 
 #if 1
  // first support shared_ptr
-#define SWIG_SHARED_PTR_NAMESPACE boost
+ // note: cannot use boost::shared_ptr here yet due to bug in swig
+#define SWIG_SHARED_PTR_NAMESPACE stir
 %include <boost_shared_ptr.i>
 %shared_ptr(stir::Scanner);
 %shared_ptr(stir::ProjDataInfo);
@@ -154,6 +159,16 @@ namespace std {
 %shared_ptr(stir::ProjDataInfoCylindricalArcCorr);
 %shared_ptr(stir::ProjDataInfoCylindricalNoArcCorr);
 %shared_ptr(stir::ProjData);
+%shared_ptr(stir::ProjDataFromStream);
+%shared_ptr(stir::ProjDataInterfile);
+
+%shared_ptr(stir::Array<3,float>);
+%shared_ptr(stir::DiscretisedDensity<3,float>);
+%shared_ptr(stir::DiscretisedDensityOnCartesianGrid<3,float>);
+%shared_ptr(stir::VoxelsOnCartesianGrid<float>);
+%shared_ptr(stir::SegmentBySinogram<float>);
+%shared_ptr(stir::SegmentByView<float>);
+%shared_ptr(stir::Segment<float>);
 // TODO we probably need a list of other classes here
 #else
 namespace boost {
@@ -166,6 +181,7 @@ T * operator-> () const;
 #endif
 
  /* Parse the header files to generate wrappers */
+//%include "stir/shared_ptr.h"
 %include "stir/Succeeded.h"
 %include "stir/DetectionPosition.h"
 %include "stir/Scanner.h"
@@ -236,7 +252,7 @@ namespace stir {
   // and value is not float
   //%template_withindexaccessValue(FloatArray1D,Array<1,float>);
 
-  //  William S Fulton trick (already define in swgmacros.swg)
+  //  William S Fulton trick (already defined in swgmacros.swg)
   //#define %arg(X...) X
   //%template_withindexaccess(FloatArray2D, %arg(Array<1,float>), %arg(Array<2,float>));
   %template(FloatArray2D) Array<2,float>;
@@ -268,6 +284,9 @@ namespace stir {
 %include "stir/SegmentByView.h"
 %include "stir/SegmentBySinogram.h"
 %include "stir/ProjData.h"
+
+%include "stir/ProjDataFromStream.h"
+%include "stir/ProjDataInterfile.h"
 
 namespace stir { 
   %template(FloatViewgram) Viewgram<float>;
