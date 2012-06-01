@@ -58,8 +58,8 @@ protected:
 public:
   inline Coordinate2D();
   inline Coordinate2D(const coordT&, const coordT&);
-  inline Coordinate2D(const base_type& c);
-  inline Coordinate2D& operator=(const base_type& c);
+  inline Coordinate2D(const BasicCoordinate<2,coordT>& c);
+  inline Coordinate2D& operator=(const BasicCoordinate<2, coordT>& c);
 };
 
 END_NAMESPACE_STIR
