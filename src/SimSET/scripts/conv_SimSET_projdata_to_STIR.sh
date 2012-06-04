@@ -170,14 +170,19 @@ case $scatter_parameter in
     ;;  
 
   4|5|9|10) # scatter_parameter
+    # (PET-only) to histogram coincidences into one index with (max_s-min_s)+1 bins 
+    # using (blueScatters + pinkScatters) to compute the index number. 
+    # The coincidence is rejected if the sum is < min_s (or > max_s for scatter_param 4,9).
 
-    for i in $all_scatter_bin_nums ;
+    for scatter_bin_num in $all_scatter_bin_nums ;
     do 
-        echo extracting scatter bin $scatter_bin_num  
-        echo ${conv_cmdline} ${scatter_bin_num} scatter${i};
-        eval ${conv_cmdline} ${scatter_bin_num} scatter${i};
+        echo extracting scatter bin $scatter_bin_num
+        idx=$((scatter_bin_num - min_scatter_bin_num))
+        echo ${conv_cmdline} ${idx} scatter${scatter_bin_num};
+        eval ${conv_cmdline} ${idx} scatter${scatter_bin_num};
     done
     if [ $scatter_parameter == 10 -o $scatter_parameter == 9  ]; then
+        echo ${conv_cmdline} $((max_scatter_bin_num - min_scatter_bin_num + 1)) randoms
         eval ${conv_cmdline} $((max_scatter_bin_num - min_scatter_bin_num + 1)) randoms
     fi 
     ;;
