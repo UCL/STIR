@@ -69,7 +69,7 @@ public:
   inline NumericVectorWithOffset(const int min_index, const int max_index);
 
   //! Constructor from an object of this class' base_type
-  inline NumericVectorWithOffset(const base_type& t);
+  inline NumericVectorWithOffset(const VectorWithOffset<T>& t);
 
   // arithmetic operations with a vector, combining element by element
 

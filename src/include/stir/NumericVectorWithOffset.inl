@@ -55,7 +55,7 @@ NumericVectorWithOffset<T, NUMBER>::NumericVectorWithOffset(const int min_index,
 
 template <class T, class NUMBER>
 NumericVectorWithOffset<T, NUMBER>::
-NumericVectorWithOffset(const base_type& t)
+NumericVectorWithOffset(const VectorWithOffset<T>& t)
   : base_type(t)
 {}
 
