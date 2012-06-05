@@ -185,7 +185,7 @@ SSRB(const string& output_filename,
 	 num_tang_poss_to_trim,
          max_in_segment_num_to_process
 	 ));
-  ProjDataInterfile out_proj_data(out_proj_data_info_ptr, output_filename, ios::out); 
+  ProjDataInterfile out_proj_data(out_proj_data_info_ptr, output_filename, std::ios::out); 
 
   SSRB(out_proj_data, in_proj_data, do_norm);
 }

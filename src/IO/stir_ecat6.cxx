@@ -517,7 +517,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
     
     
     proj_data.reset(
-      new ProjDataFromStream(p_data_info,sino_stream, streamoff(0), storage_order));
+		    new ProjDataFromStream(p_data_info,sino_stream, std::streamoff(0), storage_order));
     
     write_basic_interfile_PDFS_header(actual_data_name, *proj_data);
   }

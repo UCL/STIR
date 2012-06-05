@@ -42,7 +42,6 @@
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
-using std::ios;
 #endif
 
 START_NAMESPACE_STIR

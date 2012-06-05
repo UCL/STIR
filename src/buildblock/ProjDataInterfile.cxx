@@ -41,6 +41,7 @@
 #ifndef STIR_NO_NAMESPACES
 using std::iostream;
 using std::fstream;
+using std::vector;
 #endif
 
 START_NAMESPACE_STIR
