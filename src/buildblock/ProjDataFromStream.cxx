@@ -54,10 +54,12 @@
 using std::find;
 using std::ios;
 using std::iostream;
+using std::streamoff;
 using std::fstream;
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::vector;
 #endif
 
 #ifdef _MSC_VER

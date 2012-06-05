@@ -44,13 +44,6 @@
 #include <iostream>
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
-using std::istream;
-using std::iostream;
-using std::streamoff;
-using std::vector;
-#endif
-
 START_NAMESPACE_STIR
 
 
@@ -88,9 +81,9 @@ public:
     is the segment number of the i-th segment in the stream.
   */
   ProjDataFromStream (shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
-		      shared_ptr<iostream> const& s, 
-		      const streamoff offs, 
-		      const vector<int>& segment_sequence_in_stream,
+		      shared_ptr<std::iostream> const& s, 
+		      const std::streamoff offs, 
+		      const std::vector<int>& segment_sequence_in_stream,
 		      StorageOrder o = Segment_View_AxialPos_TangPos,
 		      NumericType data_type = NumericType::FLOAT,
 		      ByteOrder byte_order = ByteOrder::native,  
@@ -101,8 +94,8 @@ public:
     values min_segment_num, min_segment_num+1, ..., max_segment_num
   */
   ProjDataFromStream (shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
-		      shared_ptr<iostream> const& s, 
-		      const streamoff offs = 0, 
+		      shared_ptr<std::iostream> const& s, 
+		      const std::streamoff offs = 0, 
 		      StorageOrder o = Segment_View_AxialPos_TangPos,
 		      NumericType data_type = NumericType::FLOAT,
 		      ByteOrder byte_order = ByteOrder::native,  
@@ -112,7 +105,7 @@ public:
     
   //! Get the offset -Changed into streamoff from int
   //inline int get_offset_in_stream() const;
-  inline streamoff get_offset_in_stream() const;
+  inline std::streamoff get_offset_in_stream() const;
     
   //! Get the data_type in the stream 
   inline NumericType get_data_type_in_stream() const;
@@ -121,7 +114,7 @@ public:
   inline ByteOrder get_byte_order_in_stream() const;   
     
   //! Get the segment sequence
-  inline vector<int> get_segment_sequence_in_stream() const;
+  inline std::vector<int> get_segment_sequence_in_stream() const;
     
   //! Get & set viewgram 
   Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const;
@@ -148,15 +141,15 @@ public:
     
 protected:
   //! the stream with the data
-  shared_ptr<iostream> sino_stream;
+  shared_ptr<std::iostream> sino_stream;
 
 private:
   //! offset of the whole 3d sinogram in the stream
-  streamoff  offset;
+  std::streamoff  offset;
   
   
   //!the order in which the segments occur in the stream
-  vector<int> segment_sequence;
+  std::vector<int> segment_sequence;
   
   inline int find_segment_index_in_sequence(const int segment_num) const;
   
@@ -171,12 +164,12 @@ private:
   float scale_factor;
   
   //! Calculate the offset for the given segmnet
-  streamoff get_offset_segment(const int segment_num) const;
+  std::streamoff get_offset_segment(const int segment_num) const;
   
   //! Calculate offsets for viewgram data  
-  vector<streamoff> get_offsets(const int view_num, const int segment_num) const;
+  std::vector<std::streamoff> get_offsets(const int view_num, const int segment_num) const;
   //! Calculate offsets for sinogram data
-  vector<streamoff> get_offsets_sino(const int ax_pos_num, const int segment_num) const;
+  std::vector<std::streamoff> get_offsets_sino(const int ax_pos_num, const int segment_num) const;
     
   
 };

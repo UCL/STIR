@@ -17,7 +17,8 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2009-06-22, Hammersmith Imanet Ltd
+    Copyright (C) 2012-06-06 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -59,7 +60,7 @@ ProjDataFromStream::find_segment_index_in_sequence(const int segment_num) const
 }
 
 
-streamoff 
+std::streamoff 
 ProjDataFromStream::get_offset_in_stream() const
 { return offset; }
 
@@ -71,7 +72,7 @@ ByteOrder
 ProjDataFromStream::get_byte_order_in_stream() const
 { return on_disk_byte_order; }
 
-vector<int> 
+std::vector<int> 
 ProjDataFromStream::get_segment_sequence_in_stream() const
 { return segment_sequence; }
 

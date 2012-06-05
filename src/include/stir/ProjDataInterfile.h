@@ -13,7 +13,8 @@
   $Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002 - 2009-06-22, Hammersmith Imanet Ltd
+    Copyright (C) 2012-06-06 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -37,13 +38,6 @@
 #include <iostream>
 #include <string>
 
-#ifndef STIR_NO_NAMESPACES
-using std::istream;
-using std::ios;
-using std::iostream;
-using std::streamoff;
-using std::string;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -80,8 +74,8 @@ public:
     Any existing files with the same file anmes will be overwritten without warning.
   */
   ProjDataInterfile (shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
-		     const string& filename, const ios::openmode, 
-		     const vector<int>& segment_sequence_in_stream,
+		     const std::string& filename, const std::ios::openmode, 
+		     const std::vector<int>& segment_sequence_in_stream,
 		     StorageOrder o = Segment_View_AxialPos_TangPos,
 		     NumericType data_type = NumericType::FLOAT,
 		     ByteOrder byte_order = ByteOrder::native,  
@@ -92,19 +86,14 @@ public:
     values min_segment_num, min_segment_num+1, ..., max_segment_num
   */
   ProjDataInterfile (shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
-                     const string& filename, 
-                     const ios::openmode open_mode = 
-#ifndef STIR_NO_NAMESPACES
-                     std::ios::out, //necessary for VC bug
-#else
-                     ios::out,
-#endif
+                     const std::string& filename, 
+                     const std::ios::openmode open_mode = std::ios::out,
 		     StorageOrder o = Segment_View_AxialPos_TangPos,
 		     NumericType data_type = NumericType::FLOAT,
 		     ByteOrder byte_order = ByteOrder::native,  
 		     float scale_factor = 1 );
 private:
-  void create_stream(const string& filename, const ios::openmode open_mode);
+  void create_stream(const std::string& filename, const std::ios::openmode open_mode);
 };
 
 END_NAMESPACE_STIR
