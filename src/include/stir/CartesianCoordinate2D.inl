@@ -49,7 +49,7 @@ CartesianCoordinate2D<coordT>::CartesianCoordinate2D(const coordT& y,
 
 
 template <class coordT>
-CartesianCoordinate2D<coordT>::CartesianCoordinate2D(const basebase_type& c)
+CartesianCoordinate2D<coordT>::CartesianCoordinate2D(const BasicCoordinate<2,coordT>& c)
   : base_type(c)
 {}
 
@@ -57,7 +57,7 @@ CartesianCoordinate2D<coordT>::CartesianCoordinate2D(const basebase_type& c)
 
 template <class coordT>
 CartesianCoordinate2D<coordT>& 
-CartesianCoordinate2D<coordT>:: operator=(const basebase_type& c)
+CartesianCoordinate2D<coordT>:: operator=(const BasicCoordinate<2,coordT>& c)
 {
   basebase_type::operator=(c);
   return *this;

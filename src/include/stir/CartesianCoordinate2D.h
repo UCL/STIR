@@ -1,5 +1,5 @@
-#ifndef __CartesianCoordinate2D_H__
-#define __CartesianCoordinate2D_H__
+#ifndef __stir_CartesianCoordinate2D_H__
+#define __stir_CartesianCoordinate2D_H__
 //
 // $Id$
 //
@@ -19,7 +19,8 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2009-06-22, Hammersmith Imanet Ltd
+    Copyright (C) 2012-06-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -62,8 +63,8 @@ protected:
 public:
   inline CartesianCoordinate2D();
   inline CartesianCoordinate2D(const coordT&, const coordT&);
-  inline CartesianCoordinate2D(const basebase_type& c);
-  inline CartesianCoordinate2D& operator=(const basebase_type& c);
+  inline CartesianCoordinate2D(const BasicCoordinate<2,coordT>& c);
+  inline CartesianCoordinate2D& operator=(const BasicCoordinate<2,coordT>& c);
 
   inline coordT& y();
   inline coordT y() const;
