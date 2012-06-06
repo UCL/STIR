@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2011-12-31, Hammersmith Imanet Ltd
+    Copyright (C) 2012-06-05 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -91,6 +92,14 @@ objective_function() const
     (*this->objective_function_sptr);
 }
 
+template <typename TargetT>
+PoissonLogLikelihoodWithLinearModelForMean<TargetT > const&
+OSMAPOSLReconstruction<TargetT>::
+get_objective_function() const
+{
+  // just use the above (private) function
+  return this->objective_function();
+}
 
 //*********** parameters ***********
 
