@@ -1,3 +1,33 @@
+// $Id$
+/*
+    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file 
+  \brief Interface file for SWIG
+
+  \author Kris Thielemans 
+
+  $Date$
+
+  $Revision$
+
+*/
+
+
  %module stir
  %{
  /* Include the following headers in the wrapper code */
@@ -9,6 +39,7 @@
  #include "stir/Succeeded.h"
  #include "stir/DetectionPosition.h"
  #include "stir/Scanner.h"
+ #include "stir/Bin.h"
  #include "stir/ProjDataInfoCylindricalArcCorr.h"
  #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
  #include "stir/Viewgram.h"
@@ -20,6 +51,7 @@
  #include "stir/ProjDataInterfile.h"
 
  #include "stir/BasicCoordinate.h"
+#include "stir/CartesianCoordinate2D.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/IndexRange.h"
 #include "stir/VectorWithOffset.h"
@@ -30,8 +62,13 @@
  #include "stir/PixelsOnCartesianGrid.h"
  #include "stir/VoxelsOnCartesianGrid.h"
 
-   // TODO seem to need this for using shared_ptr
-   // in ProjDataInfoGE
+#include "stir/ChainedDataProcessor.h"
+#include "stir/SeparableCartesianMetzImageFilter.h"
+
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" 
+#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+
+   // TODO seem to need this for using shared_ptr (bug in swig?)
    using namespace stir;
    using std::iostream;
  %}
@@ -51,6 +88,7 @@ typedef unsigned int size_t;
 // disable warnings about unknown base-class
 %warnfilter(401);
 
+# catch all C++ exceptions in python
 %include "exception.i"
 
 %exception {
@@ -127,7 +165,7 @@ namespace std {
 #endif
 %extend TYPE {
   TYPE##::reference __getitem__(int i) { return (*self)[i]; };
-	void __setitem__(int i, const TYPE##::reference val) { (*self)[i]=val; }
+  void __setitem__(int i, const TYPE##::reference val) { (*self)[i]=val; }
  }
 #endif
 %enddef
@@ -150,9 +188,15 @@ namespace std {
 
 #if 1
  // first support shared_ptr
- // note: cannot use boost::shared_ptr here yet due to bug in swig
+ // note: due to a current bug in swig, we have to explicitly tell it to use 
+ // stir::shared_ptr (even though it's identical to boost::shared_ptr)
 #define SWIG_SHARED_PTR_NAMESPACE stir
 %include <boost_shared_ptr.i>
+%shared_ptr(stir::ParsingObject);
+%include "stir/ParsingObject.h"
+%ignore stir::RegisteredParsingObject::RegisteredIt;
+%include "stir/RegisteredParsingObject.h"
+
 %shared_ptr(stir::Scanner);
 %shared_ptr(stir::ProjDataInfo);
 %shared_ptr(stir::ProjDataInfoCylindrical);
@@ -162,6 +206,9 @@ namespace std {
 %shared_ptr(stir::ProjDataFromStream);
 %shared_ptr(stir::ProjDataInterfile);
 
+# TODO cannot do this yet as then the FloatArray1D(FloatArray1D&) construction fails in test.py
+#%shared_ptr(stir::Array<1,float>);
+%shared_ptr(stir::Array<2,float>);
 %shared_ptr(stir::Array<3,float>);
 %shared_ptr(stir::DiscretisedDensity<3,float>);
 %shared_ptr(stir::DiscretisedDensityOnCartesianGrid<3,float>);
@@ -169,6 +216,8 @@ namespace std {
 %shared_ptr(stir::SegmentBySinogram<float>);
 %shared_ptr(stir::SegmentByView<float>);
 %shared_ptr(stir::Segment<float>);
+%shared_ptr(stir::Sinogram<float>);
+%shared_ptr(stir::Viewgram<float>);
 // TODO we probably need a list of other classes here
 #else
 namespace boost {
@@ -189,6 +238,7 @@ T * operator-> () const;
  /* First do coordinates, indices, images.
     We first include them, and sort out template instantiation and indexing below.
  */
+#%include <boost/operators.hpp>
 
 %ignore stir::BasicCoordinate::operator[](const int);
 %ignore stir::BasicCoordinate::operator[](const int) const;
@@ -199,6 +249,11 @@ T * operator-> () const;
 %ignore  stir::CartesianCoordinate3D::y();
 %ignore  stir::CartesianCoordinate3D::x();
 %include "stir/CartesianCoordinate3D.h"
+%include "stir/Coordinate2D.h"
+// ignore const versions
+%ignore  stir::CartesianCoordinate2D::x() const;
+%ignore  stir::CartesianCoordinate2D::y() const;
+%include "stir/CartesianCoordinate2D.h"
 
  // we have to ignore the following because of a bug in SWIG 2.0.4, but we don't need it anyway
 %ignore *::IndexRange(const VectorWithOffset<IndexRange<num_dimensions-1> >& range);
@@ -236,6 +291,10 @@ namespace stir {
   %template(Float3Coordinate) Coordinate3D< float >;
   %template(FloatCartesianCoordinate3D) CartesianCoordinate3D<float>;
 
+  %template_withindexaccess(Int2BasicCoordinate,int, BasicCoordinate<2,int>);
+  %template_withindexaccessValue(Float2BasicCoordinate, BasicCoordinate<2,float>);
+  %template(Float2Coordinate) Coordinate2D< float >;
+  %template(FloatCartesianCoordinate2D) CartesianCoordinate2D<float>;
 
   %template(make_FloatCoordinate) make_coordinate<float>;
   %template(IndexRange1D) IndexRange<1>;
@@ -247,6 +306,8 @@ namespace stir {
   //    %template(FloatVectorWithOffset) VectorWithOffset<float>;
   %template_withindexaccess(FloatVectorWithOffset, float, VectorWithOffset<float>);
 
+  # TODO need to instantiate with name?
+  %template (FloatNumericVectorWithOffset) NumericVectorWithOffset<float, float>;
   %template_withindexaccess(FloatArray1D,float, Array<1,float>);
   // next doesn't work: memory leak of type 'stir::Array< 1,float >::value_type *', no destructor found.
   // and value is not float
@@ -255,10 +316,13 @@ namespace stir {
   //  William S Fulton trick (already defined in swgmacros.swg)
   //#define %arg(X...) X
   //%template_withindexaccess(FloatArray2D, %arg(Array<1,float>), %arg(Array<2,float>));
+  # Todo need to instantiate with name?
+  %template (_FloatNumericVectorWithOffset2D) NumericVectorWithOffset<Array<1,float>, float>;
   %template(FloatArray2D) Array<2,float>;
   // TODO these only work for getitem. setitem claims to work, but it doesn't modify the object for more than 1 level
   %ADD_indexaccess(%arg(Array<1,float>),%arg(Array<2,float>));
 
+  %template () NumericVectorWithOffset<Array<2,float>, float>;
   %template(FloatArray3D) Array<3,float>;
   %ADD_indexaccess(%arg(Array<2,float>),%arg(Array<3,float>));
   //%template_withindexaccess(FloatArray3D,  %arg(Array<2,float>), %arg(Array<3,float>));
@@ -272,7 +336,12 @@ namespace stir {
 
  /* Now do ProjDataInfo, Sinogram et al
  */
-
+// ignore non-const versions
+%ignore stir::Bin::segment_num();
+%ignore stir::Bin::axial_pos_num();
+%ignore stir::Bin::view_num();
+%ignore stir::Bin::tangential_pos_num();
+%include "stir/Bin.h"
 %include "stir/ProjDataInfo.h"
 %include "stir/ProjDataInfoCylindrical.h"
 %include "stir/ProjDataInfoCylindricalArcCorr.h"
@@ -296,4 +365,82 @@ namespace stir {
   // should not have the following if using boost_smart_ptr.i
   //  %template(SharedScanner) boost::shared_ptr<Scanner>;
   //%template(SharedProjData) boost::shared_ptr<ProjData>;
+
 }
+
+// filters
+#define elemT float
+%shared_ptr(stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >)
+%shared_ptr(stir::ChainedDataProcessor<stir::DiscretisedDensity<3,elemT> >)
+%shared_ptr(stir::RegisteredParsingObject<stir::SeparableCartesianMetzImageFilter<elemT>,
+	    stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
+%shared_ptr(stir::SeparableCartesianMetzImageFilter<elemT>)
+#undef elemT
+
+%include "stir/DataProcessor.h"
+%include "stir/ChainedDataProcessor.h"
+%include "stir/SeparableCartesianMetzImageFilter.h"
+
+#define elemT float
+%template(DataProcessor3DFloat) stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >;
+%template(ChainedDataProcessor3DFloat) stir::ChainedDataProcessor<stir::DiscretisedDensity<3,elemT> >;
+%template(__RPSeparableCartesianMetzImageFilter3DFloat) stir::RegisteredParsingObject<
+             stir::SeparableCartesianMetzImageFilter<elemT>,
+             stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+             stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
+%template(SeparableCartesianMetzImageFilter3DFloat) stir::SeparableCartesianMetzImageFilter<elemT>;
+#undef elemT
+
+ // reconstruction
+%shared_ptr(stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >);
+%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMean<stir::DiscretisedDensity<3,float> >);
+#define TargetT stir::DiscretisedDensity<3,float>
+%shared_ptr(stir::RegisteredParsingObject<stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >,
+	    stir::GeneralisedObjectiveFunction<TargetT >,
+	    stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT > >);
+#undef TargetT
+
+%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<stir::DiscretisedDensity<3,float> >);
+
+%shared_ptr(stir::Reconstruction<stir::DiscretisedDensity<3,float> >);
+%shared_ptr(stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >);
+%shared_ptr(stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >);
+
+
+%include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
+%include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
+%include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
+%include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
+
+%include "stir/recon_buildblock/Reconstruction.h"
+%include "stir/recon_buildblock/IterativeReconstruction.h"
+%include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+
+
+%template (GeneralisedObjectiveFunction3DFloat) stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >;
+#%template () stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >;
+%template (PoissonLogLikelihoodWithLinearModelForMean3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMean<stir::DiscretisedDensity<3,float> >;
+
+#define TargetT stir::DiscretisedDensity<3,float>
+# TODO do we really need this name?
+%template(___RPPoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat)  stir::RegisteredParsingObject<stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >,
+  stir::GeneralisedObjectiveFunction<TargetT >,
+  stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT > >;
+
+%template (PoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<stir::DiscretisedDensity<3,float> >;
+
+%inline %{
+  template <class T>
+    stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<T> *
+    ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData(stir::GeneralisedObjectiveFunction<T> *b) {
+    return dynamic_cast<stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<T>*>(b);
+}
+%}
+
+%template(ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData<stir::DiscretisedDensity<3,float> >;
+
+
+%template (Reconstruction3DFloat) stir::Reconstruction<stir::DiscretisedDensity<3,float> >;
+%template (IterativeReconstruction3DFloat) stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
+%template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >;
