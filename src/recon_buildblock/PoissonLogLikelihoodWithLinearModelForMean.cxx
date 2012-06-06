@@ -84,6 +84,49 @@ post_processing()
 }
 
 template<typename TargetT>
+std::string
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
+get_sensitivity_filename() const
+{
+  return this->sensitivity_filename;
+}
+
+template<typename TargetT>
+std::string
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
+get_subsensitivity_filenames() const
+{
+  return this->subsensitivity_filenames;
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
+set_sensitivity_filename(const std::string& filename)
+{
+  this->sensitivity_filename = filename;
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
+set_subsensitivity_filenames(const std::string& filenames)
+{
+  this->subsensitivity_filenames = filenames;
+  try
+    {
+      const std::string test_sensitivity_filename =
+	boost::str(boost::format(this->subsensitivity_filenames) % 0);
+    }
+  catch (std::exception& e)
+    {
+      error("argument %s to set_subsensitivity_filenames is invalid (see boost::format documentation)\n. Error message: %s", filenames.c_str(), e.what());
+    }
+
+}
+
+
+template<typename TargetT>
 shared_ptr<TargetT> 
 PoissonLogLikelihoodWithLinearModelForMean<TargetT>::
 get_subset_sensitivity_sptr(const int subset_num) const

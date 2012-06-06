@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003 - 2011-01-14, Hammersmith Imanet Ltd
+    Copyright (C) 2012-06-05 - $Date$, Kris Thielemans
 
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -172,7 +173,7 @@ public  GeneralisedObjectiveFunction<TargetT>
       to <code>&quot;1&quot;</code>, all data are
       set to \c 1.
 
-      \warning The special handling of the string \c might be removed later.
+      \warning This special handling of the string might be removed later.
 
       Calls set_up_before_sensitivity().
   */
@@ -197,6 +198,16 @@ public  GeneralisedObjectiveFunction<TargetT>
   //! find current value of recompute_sensitivity
   bool get_recompute_sensitivity() const;
 
+  //! get filename to read (or write) the total sensitivity
+  /*! will be a zero string if not set */
+  std::string get_sensitivity_filename() const;
+  //! get filename pattern to read (or write) the subset sensitivities
+  /*! will be a zero string if not set.
+  Could be e.g. "subsens_%d.hv"
+  boost::format is used with the pattern (which means you can use it like sprintf)
+ */
+  std::string get_subsensitivity_filenames() const;
+
   /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
    \warning After using any of these, you have to call set_up().
@@ -208,6 +219,18 @@ public  GeneralisedObjectiveFunction<TargetT>
   void set_subset_sensitivity_sptr(const shared_ptr<TargetT>&, const int subset_num);
 
   void set_use_subset_sensitivities(const bool);
+
+  //! set filename to read (or write) the total sensitivity
+  /*! set to a zero-length string to avoid reading/writing a file */
+  void set_sensitivity_filename(const std::string&);
+  //! set filename pattern to read (or write) the subset sensitivities
+  /*! set to a zero-length string to avoid reading/writing a file
+  Could be e.g. "subsens_%d.hv"
+  boost::format is used with the pattern (which means you can use it like sprintf)
+
+  Calls error() if the pattern is invalid.
+ */
+  void set_subsensitivity_filenames(const std::string&);
   //@}
 
   /*! The implementation checks if the sensitivity of a voxel is zero. If so,
