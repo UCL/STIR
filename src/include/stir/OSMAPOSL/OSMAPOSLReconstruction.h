@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
+    Copyright (C) 2012-06-05 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -103,6 +104,13 @@ public:
 
   //! gives method information
   virtual string method_info() const;
+
+  //! Return current objective function
+  /* Overloading IterativeReconstruction::get_objective_function()
+     with a return-type specifying it'll always be a Poisson log likelihood.
+  */
+  PoissonLogLikelihoodWithLinearModelForMean<TargetT > const&
+    get_objective_function() const;
 
   /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
