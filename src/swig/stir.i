@@ -123,15 +123,18 @@ namespace std {
 // %rename(__getitem__) *::operator[]; 
 
 // MACROS to define index access (Work-in-progress)
-%define %ADD_indexaccess(RETTYPE,TYPE...)
+%define %ADD_indexaccess(INDEXTYPE,RETTYPE,TYPE...)
 #if defined(SWIGPYTHON)
 #if defined(SWIGPYTHON_BUILTIN)
-  %feature("python:slot", "sq_item", functype="ssizeargfunc") TYPE##::__getitem__;
-  %feature("python:slot", "sq_ass_item", functype="ssizeobjargproc") TYPE##::__setitem__;
+ //  %feature("python:slot", "sq_item", functype="ssizeargfunc") TYPE##::__getitem__;
+ // %feature("python:slot", "sq_ass_item", functype="ssizeobjargproc") TYPE##::__setitem__;
+  %feature("python:slot", "mp_subscript", functype="binaryfunc") TYPE##::__getitem__;
+  %feature("python:slot", "mp_ass_subscript", functype="objobjargproc") TYPE##::__setitem__;
+
 #endif
 %extend TYPE {
-        RETTYPE __getitem__(int i) { return (*self)[i]; };
-	void __setitem__(int i, const RETTYPE val) { (*self)[i]=val; }
+        RETTYPE __getitem__(INDEXTYPE i) { return (*self)[i]; };
+	void __setitem__(INDEXTYPE i, const RETTYPE val) { (*self)[i]=val; }
  }
 #endif
 %enddef
@@ -140,11 +143,13 @@ namespace std {
  // but doesn't seem to work yet
 %define %ADD_indexaccessValue(TYPE...)
  //TODO cannot do next line yet because of commas
- //%ADD_indexaccess(TYPE##::value_type, TYPE);
+ //%ADD_indexaccess(int,TYPE##::value_type, TYPE);
 #if defined(SWIGPYTHON)
 #if defined(SWIGPYTHON_BUILTIN)
-  %feature("python:slot", "sq_item", functype="ssizeargfunc") TYPE##::__getitem__;
-  %feature("python:slot", "sq_ass_item", functype="ssizeobjargproc") TYPE##::__setitem__;
+ //  %feature("python:slot", "sq_item", functype="ssizeargfunc") TYPE##::__getitem__;
+ //  %feature("python:slot", "sq_ass_item", functype="ssizeobjargproc") TYPE##::__setitem__;
+%feature("python:slot", "mp_subscript", functype="binaryfunc") TYPE##::__getitem__;
+%feature("python:slot", "mp_ass_subscript", functype="objobjargproc") TYPE##::__setitem__;
 #endif
 %extend TYPE {
         TYPE##::value_type __getitem__(int i) { return (*self)[i]; };
@@ -157,11 +162,13 @@ namespace std {
  // but doesn't seem to work yet
 %define %ADD_indexaccessReference(TYPE...)
  //TODO cannot do this because of commas
- //%ADD_indexaccess(TYPE##::reference, TYPE);
+ //%ADD_indexaccess(int,TYPE##::reference, TYPE);
 #if defined(SWIGPYTHON)
 #if defined(SWIGPYTHON_BUILTIN)
-  %feature("python:slot", "sq_item", functype="ssizeargfunc") TYPE##::__getitem__;
-  %feature("python:slot", "sq_ass_item", functype="ssizeobjargproc") TYPE##::__setitem__;
+ //  %feature("python:slot", "sq_item", functype="ssizeargfunc") TYPE##::__getitem__;
+ // %feature("python:slot", "sq_ass_item", functype="ssizeobjargproc") TYPE##::__setitem__;
+  %feature("python:slot", "mp_subscript", functype="binaryfunc") TYPE##::__getitem__;
+%feature("python:slot", "mp_ass_subscript", functype="objobjargproc") TYPE##::__setitem__;
 #endif
 %extend TYPE {
   TYPE##::reference __getitem__(int i) { return (*self)[i]; };
@@ -173,7 +180,7 @@ namespace std {
  // MACROS to call the above, but also instantiate the template
 %define %template_withindexaccess(NAME,RETTYPE,TYPE...)
 %template(NAME) TYPE;
-%ADD_indexaccess(RETTYPE,TYPE);
+%ADD_indexaccess(int,RETTYPE,TYPE);
 %enddef
 %define %template_withindexaccessValue(NAME,TYPE...)
 %template(NAME) TYPE;
@@ -284,7 +291,7 @@ T * operator-> () const;
 
 %include "stir/VoxelsOnCartesianGrid.h"
 
- //%ADD_indexaccess(stir::BasicCoordinate::value_type,stir::BasicCoordinate);
+ //%ADD_indexaccess(int,stir::BasicCoordinate::value_type,stir::BasicCoordinate);
 namespace stir { 
   %template_withindexaccess(Int3BasicCoordinate,int, BasicCoordinate<3,int>);
   %template_withindexaccessValue(Float3BasicCoordinate, BasicCoordinate<3,float>);
@@ -296,6 +303,7 @@ namespace stir {
   %template(Float2Coordinate) Coordinate2D< float >;
   %template(FloatCartesianCoordinate2D) CartesianCoordinate2D<float>;
 
+  %template(make_IntCoordinate) make_coordinate<int>;
   %template(make_FloatCoordinate) make_coordinate<float>;
   %template(IndexRange1D) IndexRange<1>;
   //    %template(IndexRange1DVectorWithOffset) VectorWithOffset<IndexRange<1> >;
@@ -319,12 +327,15 @@ namespace stir {
   # Todo need to instantiate with name?
   %template (_FloatNumericVectorWithOffset2D) NumericVectorWithOffset<Array<1,float>, float>;
   %template(FloatArray2D) Array<2,float>;
-  // TODO these only work for getitem. setitem claims to work, but it doesn't modify the object for more than 1 level
-  %ADD_indexaccess(%arg(Array<1,float>),%arg(Array<2,float>));
+  // TODO setitem claims to work, but it doesn't modify the object for more than 1 level
+  // this can be solved by using a reference as retvalue, but then we get memory allocation problems
+  %ADD_indexaccess(int,%arg(Array<1,float>),%arg(Array<2,float>));
+  %ADD_indexaccess(%arg(const BasicCoordinate<2,int>&),float, %arg(Array<2,float>));
 
   %template () NumericVectorWithOffset<Array<2,float>, float>;
   %template(FloatArray3D) Array<3,float>;
-  %ADD_indexaccess(%arg(Array<2,float>),%arg(Array<3,float>));
+  %ADD_indexaccess(int,%arg(Array<2,float>),%arg(Array<3,float>));
+  %ADD_indexaccess(%arg(const BasicCoordinate<3,int>&),float, %arg(Array<3,float>));
   //%template_withindexaccess(FloatArray3D,  %arg(Array<2,float>), %arg(Array<3,float>));
 
   %template(Float3DDiscretisedDensity) DiscretisedDensity<3,float>;
