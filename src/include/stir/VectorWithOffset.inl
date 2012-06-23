@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2010-07-01, Hammersmith Imanet Ltd
+    Copyright (C) 2012-06-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -32,6 +33,7 @@
 */
 
 #include <algorithm>
+#include <stdexcept>
 
 START_NAMESPACE_STIR
 
@@ -134,6 +136,34 @@ VectorWithOffset<T>::operator[] (int i) const
   assert(i<=this->get_max_index());
   
   return num[i];
+}
+
+template <class T>
+T& 
+VectorWithOffset<T>::at(int i) 
+{
+  if (length==0 || i<this->get_min_index() || i>this->get_max_index())
+    throw std::out_of_range("index out of range");
+  this->check_state();
+  return num[i];
+}
+
+template <class T>
+const T& 
+VectorWithOffset<T>::at(int i) const 
+{ 
+  if (length==0 || i<this->get_min_index() || i>this->get_max_index())
+    throw std::out_of_range("index out of range");
+  this->check_state();
+  
+  return num[i];
+}
+
+template <class T>
+bool
+VectorWithOffset<T>::empty() const
+{
+  return length==0;
 }
 
 template <class T>

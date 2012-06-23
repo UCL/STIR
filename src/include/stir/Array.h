@@ -227,14 +227,29 @@ public:
   inline const Array<num_dimensions-1, elemT>& 
 	operator[] (int i) const;
 
-  //! allow array-style access giving its BasicCoordinate, read/write  
+  //! allow array-style access given a BasicCoordinate to specify the indices, read/write  
   inline elemT&
   operator[](const BasicCoordinate<num_dimensions,int> &c) ;
 
-  //! array access giving its BasicCoordinate, read-only
+  //! array access given a BasicCoordinate to specify the indices, read-only
   // TODO alternative return value: elemT
   inline const elemT&
   operator[](const BasicCoordinate<num_dimensions,int> &c) const;
+
+  //! \name indexed access with range checking (throw std:out_of_range)
+  //@{
+  inline Array<num_dimensions-1, elemT>& 
+    at (int i);
+
+  inline const Array<num_dimensions-1, elemT>& 
+    at (int i) const;
+
+  inline elemT&
+    at(const BasicCoordinate<num_dimensions,int> &c) ;
+
+  inline const elemT&
+    at(const BasicCoordinate<num_dimensions,int> &c) const;
+  //@}
 };
 
 
@@ -406,6 +421,22 @@ public:
 
   //! array access giving its BasicCoordinate, read-only
   inline elemT& operator[](const BasicCoordinate<1,int>& c) ;    
+
+  //! \name indexed access with range checking (throw std:out_of_range)
+  //@{
+  inline elemT& 
+    at (int i);
+
+  inline const elemT& 
+    at (int i) const;
+
+  inline elemT&
+    at(const BasicCoordinate<1,int> &c) ;
+
+  inline const elemT&
+    at(const BasicCoordinate<1,int> &c) const;
+  //@}
+
   
 };
 

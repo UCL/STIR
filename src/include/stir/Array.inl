@@ -311,6 +311,32 @@ Array<num_dimensions,elemT>::operator[](const BasicCoordinate<num_dimensions,int
   return (*this)[c[1]][cut_first_dimension(c)] ; 
 }				    
 
+template <int num_dimension, typename elemT>
+Array<num_dimension-1,elemT>& 
+Array<num_dimension,elemT>::at(int i)
+{
+  return base_type::at(i);                                   
+}                                                  
+
+template <int num_dimension, typename elemT>
+const Array<num_dimension-1,elemT>& 
+Array<num_dimension,elemT>::at(int i) const 
+{ 
+  return base_type::at(i);
+}      
+template <int num_dimensions, typename elemT>
+elemT&
+Array<num_dimensions,elemT>::at(const BasicCoordinate<num_dimensions,int> &c) 
+{
+  return (*this).at(c[1]).at(cut_first_dimension(c)); 
+}			
+template <int num_dimensions, typename elemT>
+const elemT&
+Array<num_dimensions,elemT>::at(const BasicCoordinate<num_dimensions,int> &c) const
+{ 
+  return (*this).at(c[1]).at(cut_first_dimension(c)); 
+}				    
+
 /**********************************************
  inlines for Array<1, elemT>
  **********************************************/
@@ -646,6 +672,30 @@ template <typename elemT>
 elemT& Array<1,elemT>::operator[] (const BasicCoordinate<1,int>& c) 
 {
   return (*this)[c[1]];
+};   
+
+template <typename elemT>    
+const elemT& Array<1,elemT>:: at (int i) const
+{
+   return base_type::at(i);
+};
+
+template <typename elemT>    
+elemT& Array<1,elemT>:: at (int i)
+{
+   return base_type::at(i);
+};
+
+template <typename elemT>    
+const elemT& Array<1,elemT>:: at (const BasicCoordinate<1,int>& c) const
+{
+  return (*this).at(c[1]);
+}; 
+                             
+template <typename elemT>    
+elemT& Array<1,elemT>::at (const BasicCoordinate<1,int>& c) 
+{
+  return (*this).at(c[1]);
 };   
                
 

@@ -40,6 +40,7 @@
 #include <cmath>
 // for equal and fill
 #include <algorithm>
+#include <stdexcept>
 
 #ifndef STIR_NO_NAMESPACES
 # ifndef BOOST_NO_STDC_NAMESPACE
@@ -83,7 +84,7 @@ BasicCoordinate<num_dimensions, coordT>::end() const
 
 
 /*
-  operator[]
+  operator[] and at
 */
 template <int num_dimensions, class coordT>
 coordT& 
@@ -100,6 +101,24 @@ BasicCoordinate<num_dimensions, coordT>::operator[](const int d) const
 {
   assert(d>0);
   assert(d<=num_dimensions);
+  return coords[d-1]; 
+}
+
+template <int num_dimensions, class coordT>
+coordT& 
+BasicCoordinate<num_dimensions, coordT>::at(const int d) 
+{
+  if (d<=0 || d>num_dimensions)
+    throw std::out_of_range("index out of range");
+  return coords[d-1]; 
+}
+ 
+template <int num_dimensions, class coordT>
+coordT const&
+BasicCoordinate<num_dimensions, coordT>::at(const int d) const
+{
+  if (d<=0 || d>num_dimensions)
+    throw std::out_of_range("index out of range");
   return coords[d-1]; 
 }
 

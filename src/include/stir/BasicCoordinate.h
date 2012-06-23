@@ -5,7 +5,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2011-01-04, Hammersmith Imanet Ltd
+    Copyright (C) 2012-06-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -137,6 +138,14 @@ http://groups.google.com/group/comp.lang.c%2B%2B.moderated/browse_thread/thread/
      is a type for large objects.
   */
   inline coordT const& operator[](const int d) const;
+
+  //! Return value at index \c t (which is 1-based), but with range checking (throws std::out_of_range)
+  inline coordT& at(const int d);
+  //! Return value at index \c t (which is 1-based) if the BasicCoordinate object is const, but with range checking (throws std::out_of_range)
+  inline coordT const& at(const int d) const;
+
+  // check if the coordinate is empty (always returns false)
+  inline bool empty() const { return false; }
 
   //! \name Functions as in VectorWithOffset
   //@{
