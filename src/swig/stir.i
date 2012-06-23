@@ -120,7 +120,7 @@ namespace std {
 }
 
 // doesn't work (yet?) because of bug in int template arguments
-// %rename(__getitem__) *::operator[]; 
+// %rename(__getitem__) *::at; 
 
 // MACROS to define index access (Work-in-progress)
 %define %ADD_indexaccess(INDEXTYPE,RETTYPE,TYPE...)
@@ -133,8 +133,21 @@ namespace std {
 
 #endif
 %extend TYPE {
-        RETTYPE __getitem__(INDEXTYPE i) { return (*self)[i]; };
-	void __setitem__(INDEXTYPE i, const RETTYPE val) { (*self)[i]=val; }
+    %exception __getitem__ {
+      try
+	{
+	  $action
+	}
+      catch (std::out_of_range& e) {
+        SWIG_exception(SWIG_IndexError,const_cast<char*>(e.what()));
+      }
+      catch (std::invalid_argument& e) {
+        SWIG_exception(SWIG_TypeError,const_cast<char*>(e.what()));
+      }
+    }
+
+  RETTYPE __getitem__(INDEXTYPE i) { return (*self).at(i); }
+  void __setitem__(INDEXTYPE i, const RETTYPE val) { (*self).at(i)=val; }
  }
 #endif
 %enddef
@@ -152,7 +165,10 @@ namespace std {
 %feature("python:slot", "mp_ass_subscript", functype="objobjargproc") TYPE##::__setitem__;
 #endif
 %extend TYPE {
-        TYPE##::value_type __getitem__(int i) { return (*self)[i]; };
+        TYPE##::value_type __getitem__(int i) 
+	  { 
+	    return (*self)[i]; 
+	  };
 	void __setitem__(int i, const TYPE##::value_type val) { (*self)[i]=val; }
  }
 #endif
@@ -268,6 +284,7 @@ T * operator-> () const;
 
 %ignore stir::VectorWithOffset::operator[](int);
 %ignore stir::VectorWithOffset::operator[](int) const;
+%ignore stir::VectorWithOffset::at(int) const;
 %include "stir/VectorWithOffset.h"
 %include "stir/NumericVectorWithOffset.h"
 // ignore these as problems with num_dimensions-1
@@ -284,6 +301,13 @@ T * operator-> () const;
 %ignore stir::Array::operator[](const BasicCoordinate<num_dimensions, int>&) const;
 %ignore stir::Array::operator[](const BasicCoordinate<1, int>&);
 %ignore stir::Array::operator[](const BasicCoordinate<1, int>&) const;
+// need to ignore at() because of SWIG template bug with recursive num_dimensions
+%ignore stir::Array::at(int) const;
+%ignore stir::Array::at(int);
+%ignore stir::Array::at(const BasicCoordinate<num_dimensions, int>&);
+%ignore stir::Array::at(const BasicCoordinate<num_dimensions, int>&) const;
+%ignore stir::Array::at(const BasicCoordinate<1, int>&);
+%ignore stir::Array::at(const BasicCoordinate<1, int>&) const;
 %include "stir/Array.h"
 
 %include "stir/DiscretisedDensity.h"
@@ -331,11 +355,23 @@ namespace stir {
   // this can be solved by using a reference as retvalue, but then we get memory allocation problems
   %ADD_indexaccess(int,%arg(Array<1,float>),%arg(Array<2,float>));
   %ADD_indexaccess(%arg(const BasicCoordinate<2,int>&),float, %arg(Array<2,float>));
+  %extend Array<2,float> {
+    float __getitem__(PyObject* args)
+    {
+      stir::BasicCoordinate<2,int> c;
+      if (!PyArg_ParseTuple(args, "ii", &c[1], &c[2]))
+	{
+	  throw std::invalid_argument("Wrong type of indexing argument used");
+	}
+      return (*self).at(c);
+    };
+  }
 
   %template () NumericVectorWithOffset<Array<2,float>, float>;
   %template(FloatArray3D) Array<3,float>;
   %ADD_indexaccess(int,%arg(Array<2,float>),%arg(Array<3,float>));
   %ADD_indexaccess(%arg(const BasicCoordinate<3,int>&),float, %arg(Array<3,float>));
+
   //%template_withindexaccess(FloatArray3D,  %arg(Array<2,float>), %arg(Array<3,float>));
 
   %template(Float3DDiscretisedDensity) DiscretisedDensity<3,float>;
