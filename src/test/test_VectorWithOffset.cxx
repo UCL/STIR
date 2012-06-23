@@ -1,7 +1,8 @@
 // $Id$
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
+    Copyright (C) 2012-06-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -503,6 +504,57 @@ VectorWithOffsetTests::run_tests()
     check_if_equal(v0.get_max_index(), 40-1, "test 1-arg constructor and get_max_index");
     check_if_equal(v0.size(), size_t(40), "test 1-arg constructor and size");
     check_if_equal(v0.capacity(), size_t(40), "test 1-arg constructor and capacity");
+  }
+
+  // tests on empty
+  {
+    {
+      VectorWithOffset<int> test;
+      check(test.empty(), "test default constructor gives empty vector");
+    }
+    {
+      VectorWithOffset<int> test(1,-1);
+      check(test.empty(), "test reverse range gives empty vector");
+    }
+    {
+      VectorWithOffset<int> test(3,6);
+      check(!test.empty(), "test vector says !empty()");
+      test.resize(0);
+      check(test.empty(), "test vector resized to size 0 is empty()");
+    }
+  }
+
+  // tests on at() with out-of-range
+  {
+    {
+      VectorWithOffset<int> test;
+      try
+	{
+	  int a=test.at(5);
+	  // if we get here, there's a problem, so we report that by failing the next test.
+	  check(false, "test out-of-range on empty vector");
+	}
+      catch (std::out_of_range& e)
+	{
+	}
+    }
+    {
+      VectorWithOffset<int> test(1,54);
+      try
+	{
+	  test[4]=1;
+	  check_if_equal(test.at(4),1, "test using at() to read content");
+	  test.at(3)=2;
+	  check_if_equal(test[3],2, "test using at() to set content");
+
+	  int a=test.at(55);
+	  // if we get here, there's a problem, so we report that by failing the next test.
+	  check(false, "test out-of-range on vector");
+	}
+      catch (std::out_of_range& e)
+	{
+	}
+    }
   }
 
   // checks on using existing data_ptr with constructor indices starting at 0
