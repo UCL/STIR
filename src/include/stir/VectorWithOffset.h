@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
+    Copyright (C) 2012-06-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -257,7 +258,16 @@ public:
 
   //! array access, read-only
   inline const T& operator[] (int i) const;
+
+  //! allow array-style access, read/write, but with range checking (throws std::out_of_range)
+  inline T& at (int i);
+
+  //! array access, read-only, but with range checking (throws std::out_of_range)
+  inline const T& at(int i) const;
   
+  //! checks if the vector is empty
+  inline bool empty() const;
+
   //! \name comparison operators
   //@{
   inline bool operator== (const VectorWithOffset &iv) const;
