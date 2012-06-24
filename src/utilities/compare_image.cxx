@@ -22,7 +22,8 @@ if the files are identical or not.
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2009-06-22, Hammersmith Imanet Ltd
+    Copyright (C) 2011-12-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -46,7 +47,7 @@ if the files are identical or not.
 #include "stir/ArrayFunction.h"
 #include "stir/recon_array_functions.h"
 #include "stir/IO/read_from_file.h"
-
+#include "stir/is_null_ptr.h"
 #include <numeric>
 #include <stdlib.h>
 
@@ -108,8 +109,13 @@ int main(int argc, char *argv[])
   shared_ptr< DiscretisedDensity<3,float> >  
     first_operand(read_from_file<DiscretisedDensity<3,float> >(argv[0]));
 
+  if (is_null_ptr(first_operand))
+    { cerr << "Could not read first file\n"; exit(EXIT_FAILURE); }
+
   shared_ptr< DiscretisedDensity<3,float> >  
     second_operand(read_from_file<DiscretisedDensity<3,float> >(argv[1]));
+  if (is_null_ptr(second_operand))
+    { cerr << "Could not read 2nd file\n"; exit(EXIT_FAILURE); }
 
   // check if images are compatible
   {
