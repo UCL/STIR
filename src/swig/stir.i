@@ -35,7 +35,6 @@
 #include <list>
 #include <cstdio> // for size_t
 
- #include "boost/shared_ptr.hpp"
  #include "stir/Succeeded.h"
  #include "stir/DetectionPosition.h"
  #include "stir/Scanner.h"
@@ -50,12 +49,9 @@
  #include "stir/ProjData.h"
  #include "stir/ProjDataInterfile.h"
 
- #include "stir/BasicCoordinate.h"
 #include "stir/CartesianCoordinate2D.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/IndexRange.h"
-#include "stir/VectorWithOffset.h"
-#include "stir/NumericVectorWithOffset.h"
 #include "stir/Array.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
@@ -145,9 +141,9 @@ namespace std {
         SWIG_exception(SWIG_TypeError,const_cast<char*>(e.what()));
       }
     }
-
-  RETTYPE __getitem__(INDEXTYPE i) { return (*self).at(i); }
-  void __setitem__(INDEXTYPE i, const RETTYPE val) { (*self).at(i)=val; }
+    %newobject __getitem__;
+    RETTYPE __getitem__(INDEXTYPE i) { return (*self).at(i); }
+    void __setitem__(INDEXTYPE i, const RETTYPE val) { (*self).at(i)=val; }
  }
 #endif
 %enddef
@@ -252,19 +248,34 @@ T * operator-> () const;
 }
 #endif
 
+#if defined(SWIGPYTHON)
+ // these will be replaced by __getitem__ etc
+%ignore *::operator[](const int);
+%ignore *::operator[](const int) const;
+%ignore *::operator[](int);
+%ignore *::operator[](int) const;
+%ignore *::at(int);
+%ignore *::at(int) const;
+
+#endif
+
+//  William S Fulton trick for passing templates (wtih commas) through macro arguments
+// (already defined in swgmacros.swg)
+//#define %arg(X...) X
+
  /* Parse the header files to generate wrappers */
 //%include "stir/shared_ptr.h"
 %include "stir/Succeeded.h"
 %include "stir/DetectionPosition.h"
 %include "stir/Scanner.h"
 
+%ignore stir::BasicCoordinate::operator[](const int);
+%ignore stir::BasicCoordinate::operator[](const int) const;
  /* First do coordinates, indices, images.
     We first include them, and sort out template instantiation and indexing below.
  */
-#%include <boost/operators.hpp>
+ //%include <boost/operators.hpp>
 
-%ignore stir::BasicCoordinate::operator[](const int);
-%ignore stir::BasicCoordinate::operator[](const int) const;
 %include "stir/BasicCoordinate.h"
 %include "stir/Coordinate3D.h"
 // ignore non-const versions
@@ -282,10 +293,49 @@ T * operator-> () const;
 %ignore *::IndexRange(const VectorWithOffset<IndexRange<num_dimensions-1> >& range);
 %include "stir/IndexRange.h"
 
-%ignore stir::VectorWithOffset::operator[](int);
-%ignore stir::VectorWithOffset::operator[](int) const;
-%ignore stir::VectorWithOffset::at(int) const;
+%ignore stir::VectorWithOffset::get_const_data_ptr() const;
+%ignore stir::VectorWithOffset::get_data_ptr();
+%ignore stir::VectorWithOffset::release_const_data_ptr() const;
+%ignore stir::VectorWithOffset::release_data_ptr();
 %include "stir/VectorWithOffset.h"
+
+#if defined(SWIGPYTHON)
+ // TODO ideally would use %swig_container_methods but we don't have getslice yet
+#if defined(SWIGPYTHON_BUILTIN)
+  %feature("python:slot", "nb_nonzero", functype="inquiry") __nonzero__;
+  %feature("python:slot", "sq_length", functype="lenfunc") __len__;
+#endif // SWIGPYTHON_BUILTIN
+
+%extend stir::VectorWithOffset {
+    bool __nonzero__() const {
+      return !(self->empty());
+    }
+
+    /* Alias for Python 3 compatibility */
+    bool __bool__() const {
+      return !(self->empty());
+    }
+
+    size_type __len__() const {
+      return self->size();
+    }
+#if 0
+    // TODO this does not work yet
+    %swig_sequence_iterator(stir::VectorWithOffset<T>);
+#else
+    %newobject _iterator(PyObject **PYTHON_SELF);
+    swig::SwigPyIterator* _iterator(PyObject **PYTHON_SELF) {
+      return swig::make_output_iterator(self->begin(), self->begin(), self->end(), *PYTHON_SELF);
+    }
+#if defined(SWIGPYTHON_BUILTIN)
+    %feature("python:slot", "tp_iter", functype="getiterfunc") _iterator;
+#else
+    %pythoncode {def __iter__(self): return self._iterator()}
+#endif
+#endif
+  }
+#endif
+
 %include "stir/NumericVectorWithOffset.h"
 // ignore these as problems with num_dimensions-1
 %ignore stir::Array::begin_all();
@@ -295,8 +345,6 @@ T * operator-> () const;
 %ignore stir::Array::end_all() const;
 %ignore stir::Array::end_all_const() const;
 
-%ignore stir::Array::operator[](int) const;
-%ignore stir::Array::operator[](int);
 %ignore stir::Array::operator[](const BasicCoordinate<num_dimensions, int>&);
 %ignore stir::Array::operator[](const BasicCoordinate<num_dimensions, int>&) const;
 %ignore stir::Array::operator[](const BasicCoordinate<1, int>&);
@@ -317,44 +365,66 @@ T * operator-> () const;
 
  //%ADD_indexaccess(int,stir::BasicCoordinate::value_type,stir::BasicCoordinate);
 namespace stir { 
-  %template_withindexaccess(Int3BasicCoordinate,int, BasicCoordinate<3,int>);
-  %template_withindexaccessValue(Float3BasicCoordinate, BasicCoordinate<3,float>);
+  %ADD_indexaccess(int, coordT, BasicCoordinate);
+  %template(Int3BasicCoordinate) BasicCoordinate<3,int>;
+  %template(Float3BasicCoordinate) BasicCoordinate<3,float>;
   %template(Float3Coordinate) Coordinate3D< float >;
   %template(FloatCartesianCoordinate3D) CartesianCoordinate3D<float>;
 
-  %template_withindexaccess(Int2BasicCoordinate,int, BasicCoordinate<2,int>);
-  %template_withindexaccessValue(Float2BasicCoordinate, BasicCoordinate<2,float>);
+  %template(Int2BasicCoordinate) BasicCoordinate<2,int>;
+  %template(Float2BasicCoordinate) BasicCoordinate<2,float>;
   %template(Float2Coordinate) Coordinate2D< float >;
   %template(FloatCartesianCoordinate2D) CartesianCoordinate2D<float>;
 
   %template(make_IntCoordinate) make_coordinate<int>;
   %template(make_FloatCoordinate) make_coordinate<float>;
+
   %template(IndexRange1D) IndexRange<1>;
   //    %template(IndexRange1DVectorWithOffset) VectorWithOffset<IndexRange<1> >;
   %template(IndexRange2D) IndexRange<2>;
   //%template(IndexRange2DVectorWithOffset) VectorWithOffset<IndexRange<2> >;
   %template(IndexRange3D) IndexRange<3>;
 
-  //    %template(FloatVectorWithOffset) VectorWithOffset<float>;
-  %template_withindexaccess(FloatVectorWithOffset, float, VectorWithOffset<float>);
+  %ADD_indexaccess(int,T,VectorWithOffset);
+  %template(FloatVectorWithOffset) VectorWithOffset<float>;
 
-  # TODO need to instantiate with name?
+  // TODO need to instantiate with name?
   %template (FloatNumericVectorWithOffset) NumericVectorWithOffset<float, float>;
-  %template_withindexaccess(FloatArray1D,float, Array<1,float>);
-  // next doesn't work: memory leak of type 'stir::Array< 1,float >::value_type *', no destructor found.
-  // and value is not float
-  //%template_withindexaccessValue(FloatArray1D,Array<1,float>);
 
-  //  William S Fulton trick (already defined in swgmacros.swg)
-  //#define %arg(X...) X
-  //%template_withindexaccess(FloatArray2D, %arg(Array<1,float>), %arg(Array<2,float>));
-  # Todo need to instantiate with name?
-  %template (_FloatNumericVectorWithOffset2D) NumericVectorWithOffset<Array<1,float>, float>;
-  %template(FloatArray2D) Array<2,float>;
-  // TODO setitem claims to work, but it doesn't modify the object for more than 1 level
-  // this can be solved by using a reference as retvalue, but then we get memory allocation problems
+  // TODO next line doesn't give anything useful as SWIG doesn't recognise that 
+  // the return value is an array. So, we get a wrapped object that we cannot handle
+  //%ADD_indexaccess(int,Array::value_type, Array);
+  %ADD_indexaccess(%arg(const BasicCoordinate<num_dimensions,int>&),elemT, Array);
+
+  %template(FloatArray1D) Array<1,float>;
+
+  // this doesn't work because of bug in swig (incorrectly parses num_dimensions)
+  //%ADD_indexaccess(int,%arg(Array<num_dimensions -1,elemT>), Array);
+  // In any case, even if the above is made to work (e.g. explicit override for every class as below)
+  //  then setitem still doesn't modify the object for more than 1 level
+#if 1
+  // note: next line has no memory allocation problems because all Array<1,...> objects
+  // are auto-converted to shared_ptrs.
   %ADD_indexaccess(int,%arg(Array<1,float>),%arg(Array<2,float>));
-  %ADD_indexaccess(%arg(const BasicCoordinate<2,int>&),float, %arg(Array<2,float>));
+#endif
+
+  // Todo need to instantiate with name?
+  // TODO Swig doesn't see that Array<2,float> is derived from it anyway for some strange reason
+  %template (FloatNumericVectorWithOffset2D) NumericVectorWithOffset<Array<1,float>, float>;
+
+  %template(FloatArray2D) Array<2,float>;
+  // attempt to add 2 index access without going through a stir Coordinate
+#if 0
+  %extend Array<2,float> {  
+    %pythoncode %{
+    # TODO doesn't work yet with builtin types
+    def xxxx(self, i1,i2):
+        ind=make_IntCoordinate(i1,i2)
+        return self[ind];
+    %}
+  }
+  
+#else
   %extend Array<2,float> {
     float __getitem__(PyObject* args)
     {
@@ -366,13 +436,14 @@ namespace stir {
       return (*self).at(c);
     };
   }
+#endif
 
   %template () NumericVectorWithOffset<Array<2,float>, float>;
   %template(FloatArray3D) Array<3,float>;
+#if 0
   %ADD_indexaccess(int,%arg(Array<2,float>),%arg(Array<3,float>));
   %ADD_indexaccess(%arg(const BasicCoordinate<3,int>&),float, %arg(Array<3,float>));
-
-  //%template_withindexaccess(FloatArray3D,  %arg(Array<2,float>), %arg(Array<3,float>));
+#endif
 
   %template(Float3DDiscretisedDensity) DiscretisedDensity<3,float>;
   %template(Float3DDiscretisedDensityOnCartesianGrid) DiscretisedDensityOnCartesianGrid<3,float>;
@@ -432,10 +503,11 @@ namespace stir {
 #define elemT float
 %template(DataProcessor3DFloat) stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >;
 %template(ChainedDataProcessor3DFloat) stir::ChainedDataProcessor<stir::DiscretisedDensity<3,elemT> >;
-%template(__RPSeparableCartesianMetzImageFilter3DFloat) stir::RegisteredParsingObject<
+%template(RPSeparableCartesianMetzImageFilter3DFloat) stir::RegisteredParsingObject<
              stir::SeparableCartesianMetzImageFilter<elemT>,
              stir::DataProcessor<DiscretisedDensity<3,elemT> >,
              stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
+
 %template(SeparableCartesianMetzImageFilter3DFloat) stir::SeparableCartesianMetzImageFilter<elemT>;
 #undef elemT
 
@@ -470,8 +542,10 @@ namespace stir {
 %template (PoissonLogLikelihoodWithLinearModelForMean3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMean<stir::DiscretisedDensity<3,float> >;
 
 #define TargetT stir::DiscretisedDensity<3,float>
-# TODO do we really need this name?
-%template(___RPPoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat)  stir::RegisteredParsingObject<stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >,
+// TODO do we really need this name?
+// Without it we don't see the parsing functions in python...
+// Note: we cannot start it with __ as then we we get a run-time error when we're not using the builtin option
+%template(RPPoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat)  stir::RegisteredParsingObject<stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >,
   stir::GeneralisedObjectiveFunction<TargetT >,
   stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT > >;
 
