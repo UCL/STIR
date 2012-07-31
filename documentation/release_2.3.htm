@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Summary of changes in STIR release 2.3 (dated ??  2012)</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in STIR release 2.3 (dated ?? 2012)</h1>
+
+<p>This update was prepared by Kris Thielemans (Algorithms and Software Consulting Ltd).
+
+<ul>
+
+<h2> Summary for end users (also to be read by developers)</h2>
+<!---
+<h3>Important bug fixes</h3>
+<ul>
+<li>The routines to handle SimSET data did not really work in previous releases,
+but should work now. This is all still preliminary. Check SimSET/README.txt for
+some information.
+</li>
+</ul>
+
+<h3>build system</h3>
+<ul>
+<li> 
+Using <a href="http://www.cmake.org">CMake</a> is now recommended. Some options
+such as shared libraries and SWIG support can only be enabled when using CMake.
+</li>
+</ul>
+
+<h3>Known problems</h3>
+<ul>
+<li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
+<li>The recon_test_pack routines fail with the MPI version. See the mailing list for a work-around.</li>
+<li>ECAT6 routines seem to have problems since STIR 2.0. ECAT6 is therefore no longer supported</li>
+<li>The interpolating back-projector can still give problems in the centre of the images
+on some architectures/compiler/optimisation settings. We recommend to use the ray-tracing
+matrix (with additional rays) instead.</li>
+<li>When using Visual Studio (Express) with the provided solution files, there is a linking problem for some
+utilities. It is recommended to use the new <tt>CMake</tt> files for building instead.</li>
+<li>When using <code>GRAPHICS=X</code> (i.e. on Unix/Linux/MacOSX) the window displaying
+the bitmaps is sometimes empty. This might depend on your X server settings.
+This affects <tt>manip_image</tt>, <tt>manip_projdata</tt> and <tt>display_projdata</tt>. 
+We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
+<tt>stir_write_pgm</tt>).
+</li>
+</ul>
+
+<h3>New functionality</h3>
+<ul>
+<li>Addition of the FORE algorithm.</li>
+<li>Preliminary (but functional) interface for using STIR from Python.</li>
+</ul>
+
+
+<h3>Minor bug fixes</h3>
+
+<h3>Documentation changes</h3>
+<ul>
+<li>The Wiki expands more and more, so use it in addition to the provided PDFs.
+</li>
+ </ul>
+
+<h3>recon_test_pack changes</h3>
+<ul>
+<li>minor changes to some scripts</li>
+ </ul>
+
+<h3>Other changes to tests</h3>
+<p>None</p>
+
+<H2>What's new for developers (aside from what should be obvious
+from the above):</H2>
+
+<h3>Major bugs fixed</h3>
+<p>None</p>
+
+<h3>New functionality</h3>
+<ul>
+<li>BasicCoordinate, VectorWithOffset and Array now have new members at() (checking for out-of-range index access) and empty() (like std::vector).
+</li>
+</ul>
+
+<h3>Other code changes</h3>
+<ul>
+<li> A few minor changes for SWIG compatibility</li>
+</ul>
+</body>
+
+</html>
+
