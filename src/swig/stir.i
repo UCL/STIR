@@ -34,6 +34,7 @@
 #include <string>
 #include <list>
 #include <cstdio> // for size_t
+#include <sstream>
 
  #include "stir/Succeeded.h"
  #include "stir/DetectionPosition.h"
@@ -67,6 +68,30 @@
    // TODO seem to need this for using shared_ptr (bug in swig?)
    using namespace stir;
    using std::iostream;
+
+
+   namespace swigstir {
+#if defined(SWIGPYTHON)
+   // helper function to translate a tuple to a BasicCoordinate
+   // returns zero on failure
+   template <int num_dimensions, typename coordT>
+     int coord_from_tuple(stir::BasicCoordinate<num_dimensions, coordT>& c, PyObject* const args)
+    { return 0;  }
+    template<> int coord_from_tuple(stir::BasicCoordinate<1, int>& c, PyObject* const args)
+    { return PyArg_ParseTuple(args, "i", &c[1]);  }
+    template<> int coord_from_tuple(stir::BasicCoordinate<2, int>& c, PyObject* const args)
+    { return PyArg_ParseTuple(args, "ii", &c[1], &c[2]);  }
+    template<> int coord_from_tuple(stir::BasicCoordinate<3, int>& c, PyObject* const args)
+      { return PyArg_ParseTuple(args, "iii", &c[1], &c[2], &c[3]);  }
+    template<> int coord_from_tuple(stir::BasicCoordinate<1, float>& c, PyObject* const args)
+    { return PyArg_ParseTuple(args, "f", &c[1]);  }
+    template<> int coord_from_tuple(stir::BasicCoordinate<2, float>& c, PyObject* const args)
+    { return PyArg_ParseTuple(args, "ff", &c[1], &c[2]);  }
+    template<> int coord_from_tuple(stir::BasicCoordinate<3, float>& c, PyObject* const args)
+      { return PyArg_ParseTuple(args, "fff", &c[1], &c[2], &c[3]);  }
+    
+#endif
+  }
  %}
 
 %feature("autodoc", "1");
@@ -142,8 +167,20 @@ namespace std {
       }
     }
     %newobject __getitem__;
-    RETTYPE __getitem__(INDEXTYPE i) { return (*self).at(i); }
-    void __setitem__(INDEXTYPE i, const RETTYPE val) { (*self).at(i)=val; }
+    RETTYPE __getitem__(const INDEXTYPE i) { return (*self).at(i); }
+    %exception __setitem__ {
+      try
+	{
+	  $action
+	}
+      catch (std::out_of_range& e) {
+        SWIG_exception(SWIG_IndexError,const_cast<char*>(e.what()));
+      }
+      catch (std::invalid_argument& e) {
+        SWIG_exception(SWIG_TypeError,const_cast<char*>(e.what()));
+      }
+    }
+    void __setitem__(const INDEXTYPE i, const RETTYPE val) { (*self).at(i)=val; }
  }
 #endif
 %enddef
@@ -321,6 +358,14 @@ T * operator-> () const;
     }
 #if 0
     // TODO this does not work yet
+    /*
+%define %emit_swig_traits(_Type...)
+%traits_swigtype(_Type);
+%fragment(SWIG_Traits_frag(_Type));
+%enddef
+
+%emit_swig_traits(MyPrice)
+    */
     %swig_sequence_iterator(stir::VectorWithOffset<T>);
 #else
     %newobject _iterator(PyObject **PYTHON_SELF);
@@ -365,6 +410,69 @@ T * operator-> () const;
 
  //%ADD_indexaccess(int,stir::BasicCoordinate::value_type,stir::BasicCoordinate);
 namespace stir { 
+#ifdef SWIGPYTHON
+  // add extra features to the coordinates to make them a bit more Python friendly
+  %extend BasicCoordinate {
+    //%feature("autodoc", "construct from tuple, e.g. (2,3,4) for a 3d coordinate")
+    BasicCoordinate(PyObject* args)
+    {
+      BasicCoordinate<num_dimensions,coordT> *c=new BasicCoordinate<num_dimensions,coordT>;
+      if (!swigstir::coord_from_tuple(*c, args))
+	{
+	  throw std::invalid_argument("Wrong type of argument to construct Coordinate used");
+	}
+      return c;
+    };
+
+    // print as (1,2,3) as opposed to non-informative default provided by SWIG
+    std::string __str__()
+    { 
+      std::ostringstream s;
+      s<<'(';
+      for (int d=1; d<=num_dimensions-1; ++d)
+	s << (*$self)[d] << ", ";
+      s << (*$self)[num_dimensions] << ')';
+      return s.str();
+    }
+
+    // print as stir.Coordinate(1,2,3) as opposed to non-informative default provided by SWIG
+    std::string __repr__()
+    { 
+      // TODO  don't know how to get the Python typename
+      std::string repr = "stir.Coordinate(";
+      // TODO attempt to re-use __str__ above, but it doesn't compile, so we replicate the code
+      // repr += $self->__str__() + ')';
+      std::ostringstream s;
+      s<<'(';
+      for (int d=1; d<=num_dimensions-1; ++d)
+	s << (*$self)[d] << ", ";
+      s << (*$self)[num_dimensions] << ')';
+      repr += s.str() + ')';
+      return repr;
+    }
+
+    bool __nonzero__() const {
+      return true;
+    }
+
+    /* Alias for Python 3 compatibility */
+    bool __bool__() const {
+      return true;
+    }
+
+    size_type __len__() const {
+      return $self->size();
+    }
+#if defined(SWIGPYTHON_BUILTIN)
+    %feature("python:slot", "tp_str", functype="reprfunc") __str__; 
+    %feature("python:slot", "tp_repr", functype="reprfunc") __repr__; 
+    %feature("python:slot", "nb_nonzero", functype="inquiry") __nonzero__;
+    %feature("python:slot", "sq_length", functype="lenfunc") __len__;
+#endif // SWIGPYTHON_BUILTIN
+
+  }
+#endif // PYTHONCODE
+
   %ADD_indexaccess(int, coordT, BasicCoordinate);
   %template(Int3BasicCoordinate) BasicCoordinate<3,int>;
   %template(Float3BasicCoordinate) BasicCoordinate<3,float>;
@@ -373,11 +481,15 @@ namespace stir {
 
   %template(Int2BasicCoordinate) BasicCoordinate<2,int>;
   %template(Float2BasicCoordinate) BasicCoordinate<2,float>;
+  // TODO not needed in python case?
   %template(Float2Coordinate) Coordinate2D< float >;
   %template(FloatCartesianCoordinate2D) CartesianCoordinate2D<float>;
 
+  //#ifndef SWIGPYTHON
+  // not necessary for Python as we can use tuples there
   %template(make_IntCoordinate) make_coordinate<int>;
   %template(make_FloatCoordinate) make_coordinate<float>;
+  //#endif
 
   %template(IndexRange1D) IndexRange<1>;
   //    %template(IndexRange1DVectorWithOffset) VectorWithOffset<IndexRange<1> >;
@@ -391,9 +503,33 @@ namespace stir {
   // TODO need to instantiate with name?
   %template (FloatNumericVectorWithOffset) NumericVectorWithOffset<float, float>;
 
+#ifdef SWIGPYTHON
+  // add tuple indexing
+  %extend Array{
+    elemT __getitem__(PyObject* const args)
+    {
+      stir::BasicCoordinate<num_dimensions, int> c;
+      if (!swigstir::coord_from_tuple(c, args))
+	{
+	  throw std::invalid_argument("Wrong type of indexing argument used");
+	}
+      return (*$self).at(c);
+    };
+    void __setitem__(PyObject* const args, const elemT value)
+    {
+      stir::BasicCoordinate<num_dimensions, int> c;
+      if (!swigstir::coord_from_tuple(c, args))
+	{
+	  throw std::invalid_argument("Wrong type of indexing argument used");
+	}
+      (*$self).at(c) = value;
+    };
+  }
+#endif
   // TODO next line doesn't give anything useful as SWIG doesn't recognise that 
   // the return value is an array. So, we get a wrapped object that we cannot handle
   //%ADD_indexaccess(int,Array::value_type, Array);
+
   %ADD_indexaccess(%arg(const BasicCoordinate<num_dimensions,int>&),elemT, Array);
 
   %template(FloatArray1D) Array<1,float>;
@@ -405,6 +541,7 @@ namespace stir {
 #if 1
   // note: next line has no memory allocation problems because all Array<1,...> objects
   // are auto-converted to shared_ptrs.
+  // however, cannot use setitem to modify so ideally we would define getitem only (at least for python) (TODO)
   %ADD_indexaccess(int,%arg(Array<1,float>),%arg(Array<2,float>));
 #endif
 
@@ -413,36 +550,11 @@ namespace stir {
   %template (FloatNumericVectorWithOffset2D) NumericVectorWithOffset<Array<1,float>, float>;
 
   %template(FloatArray2D) Array<2,float>;
-  // attempt to add 2 index access without going through a stir Coordinate
-#if 0
-  %extend Array<2,float> {  
-    %pythoncode %{
-    # TODO doesn't work yet with builtin types
-    def xxxx(self, i1,i2):
-        ind=make_IntCoordinate(i1,i2)
-        return self[ind];
-    %}
-  }
-  
-#else
-  %extend Array<2,float> {
-    float __getitem__(PyObject* args)
-    {
-      stir::BasicCoordinate<2,int> c;
-      if (!PyArg_ParseTuple(args, "ii", &c[1], &c[2]))
-	{
-	  throw std::invalid_argument("Wrong type of indexing argument used");
-	}
-      return (*self).at(c);
-    };
-  }
-#endif
 
   %template () NumericVectorWithOffset<Array<2,float>, float>;
   %template(FloatArray3D) Array<3,float>;
 #if 0
   %ADD_indexaccess(int,%arg(Array<2,float>),%arg(Array<3,float>));
-  %ADD_indexaccess(%arg(const BasicCoordinate<3,int>&),float, %arg(Array<3,float>));
 #endif
 
   %template(Float3DDiscretisedDensity) DiscretisedDensity<3,float>;
