@@ -435,19 +435,23 @@ namespace stir {
       return s.str();
     }
 
-    // print as stir.Coordinate(1,2,3) as opposed to non-informative default provided by SWIG
+    // print as classname((1,2,3)) as opposed to non-informative default provided by SWIG
     std::string __repr__()
     { 
-      // TODO  don't know how to get the Python typename
-      std::string repr = "stir.Coordinate(";
+#if SWIG_VERSION < 0x020009
+      // don't know how to get the Python typename
+      std::string repr = "stir.Coordinate";
+#else
+      std::string repr = "$parentclasssymname";
+#endif
       // TODO attempt to re-use __str__ above, but it doesn't compile, so we replicate the code
       // repr += $self->__str__() + ')';
       std::ostringstream s;
-      s<<'(';
+      s<<"((";
       for (int d=1; d<=num_dimensions-1; ++d)
 	s << (*$self)[d] << ", ";
       s << (*$self)[num_dimensions] << ')';
-      repr += s.str() + ')';
+      repr += s.str() + ")";
       return repr;
     }
 
