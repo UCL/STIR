@@ -19,6 +19,8 @@
 
 # cmake file for building interfaces to STIR usgin SWIG. See the STIR User's Guide and http://www.cmake.org.
 
+set(dir swig)
+
 FIND_PACKAGE(SWIG REQUIRED)
 INCLUDE(${SWIG_USE_FILE})
 
@@ -34,3 +36,7 @@ add_definitions(-D SWIG)
 
 SWIG_ADD_MODULE(stir python stir.i ${STIR_REGISTRIES})
 SWIG_LINK_LIBRARIES(stir ${STIR_LIBRARIES} ${PYTHON_LIBRARIES})
+
+set(PYTHON_DEST ${CMAKE_INSTALL_PREFIX}/python CACHE PATH "Destination for python module")
+INSTALL(TARGETS _stir DESTINATION ${PYTHON_DEST})
+INSTALL(FILES ${CMAKE_BINARY_DIR}/${dir}/stir.py  DESTINATION ${PYTHON_DEST})
