@@ -14,6 +14,7 @@ set(${dir_LIB_SOURCES}
 #$(dir)_REGISTRY_SOURCES:= 
 
 include(../../stir_lib_target.cmake)
+target_link_libraries(analytic_FBP2D recon_buildblock IO )
 
 set (dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
