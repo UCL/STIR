@@ -43,7 +43,7 @@ PHOTONS=5000000
 # specify names/locations of input files
 EMISS_DATA=my_uniform_cylinder.hv
 ATTEN_DATA=uniform_cylinder_atten.hv
-templ_dir=.
+templ_dir=`pwd`
 TEMPLATE_PHG=${templ_dir}/template_phg.rec
 TEMPLATE_BIN=${templ_dir}/template_bin.rec
 TEMPLATE_DET=${templ_dir}/template_det.rec
