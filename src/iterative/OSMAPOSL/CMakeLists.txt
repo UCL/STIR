@@ -21,5 +21,5 @@ set(${dir_EXE_SOURCES}
 )
 
 include(../../stir_exe_targets.cmake)
-
+target_link_libraries(iterative_OSMAPOSL recon_buildblock )
 

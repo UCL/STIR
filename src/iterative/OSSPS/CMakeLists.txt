@@ -22,3 +22,4 @@ set(${dir_EXE_SOURCES}
 
 
 include(../../stir_exe_targets.cmake)
+target_link_libraries(iterative_OSSPS recon_buildblock )
