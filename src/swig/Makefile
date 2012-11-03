@@ -1,7 +1,7 @@
 all: _stir.so
 
 stir_wrap.cxx: stir.i Makefile
-	swig -python -c++ --builtin -I../include/ -I/usr/include -DSTART_NAMESPACE_STIR="namespace stir {" -DEND_NAMESPACE_STIR="}" $<
+	swig -python -c++ -builtin -I../include/ -I/usr/include -DSTART_NAMESPACE_STIR="namespace stir {" -DEND_NAMESPACE_STIR="}" $<
 
 stir.e: stir.i Makefile
 	swig -python -c++ -builtin -E  -I../include/ -DSTART_NAMESPACE_STIR="namespace stir {" -DEND_NAMESPACE_STIR="}" $< > stir.e
