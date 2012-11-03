@@ -18,3 +18,5 @@ endif()
 
 
 include(../../stir_lib_target.cmake)
+
+target_link_libraries(local_listmode_buildblock listmode_buildblock  )

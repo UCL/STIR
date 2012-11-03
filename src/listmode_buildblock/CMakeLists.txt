@@ -24,3 +24,5 @@ endif()
 
 
 include(../stir_lib_target.cmake)
+
+target_link_libraries(listmode_buildblock IO data_buildblock )

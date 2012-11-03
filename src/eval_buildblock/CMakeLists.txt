@@ -16,4 +16,6 @@ set(${dir_LIB_SOURCES}
 
 include(../stir_lib_target.cmake)
 
+target_link_libraries(eval_buildblock buildblock )
+
 
