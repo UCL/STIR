@@ -1,0 +1,13 @@
+The SimSET header does not contain the ring radius used for the binning. 
+This is why we need to pass the scanner name to th eSTIR conversion routines. 
+This is underdesirable (or even dangerous) however as
+it relies on the user having match the SimSET and STIR scanner. 
+We could get the ring radius from phg.rec.
+
+The correspondence between the coordinate system between the SimSET scanner 
+definition and STIR image needs to be documented better (currently only 
+via the example files) image. The SimSET input image is constructed 
+using coordinates obtained by list_image_info. Scanner
+coordinates have currently to be set by hand. 
+It needs to be tested what happens with non-standard number of planes in 
+the image etc. (Definitely not the same as STIR which shifts to centre of image)
