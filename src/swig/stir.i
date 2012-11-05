@@ -36,6 +36,10 @@
 #include <cstdio> // for size_t
 #include <sstream>
 
+// TODO terrible work-around to avoid conflict between stir::error and Octave error
+// they are in conflict with eachother because we need "usng namespace stir" below (swig bug)
+ #define __stir_error_H__
+
  #include "stir/Succeeded.h"
  #include "stir/DetectionPosition.h"
  #include "stir/Scanner.h"
@@ -65,10 +69,9 @@
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 
-   // TODO seem to need this for using shared_ptr (bug in swig?)
-   using namespace stir;
-   using std::iostream;
-
+   // TODO need this (bug in swig)
+using namespace stir;
+using std::iostream;
 
    namespace swigstir {
 #if defined(SWIGPYTHON)
@@ -122,6 +125,12 @@ typedef unsigned int size_t;
   }
 } 
 
+// declare some functions that return a new pointer such that SWIG can release memory properly
+%newobject *::clone;
+%newobject *::get_empty_copy;
+%newobject *::read_from_file;
+%newobject *::ask_parameters;
+
 #if defined(SWIGPYTHON)
 %rename(__assign__) *::operator=; 
 #endif
@@ -129,9 +138,10 @@ typedef unsigned int size_t;
 // include standard swig support for some bits of the STL (i.e. standard C++ lib)
 %include <stl.i>
 %include <std_list.i>
+#if defined(SWIGPYTHON)
 %include <std_ios.i>
 %include <std_iostream.i>
-
+#endif
 // Instantiate STL templates used by stir
 namespace std {
    %template(IntVector) vector<int>;
@@ -181,6 +191,36 @@ namespace std {
       }
     }
     void __setitem__(const INDEXTYPE i, const RETTYPE val) { (*self).at(i)=val; }
+ }
+#elif defined(SWIGOCTAVE)
+%extend TYPE {
+    %exception __brace__ {
+      try
+	{
+	  $action
+	}
+      catch (std::out_of_range& e) {
+        SWIG_exception(SWIG_IndexError,const_cast<char*>(e.what()));
+      }
+      catch (std::invalid_argument& e) {
+        SWIG_exception(SWIG_TypeError,const_cast<char*>(e.what()));
+      }
+    }
+    %newobject __brace__;
+    RETTYPE __brace__(const INDEXTYPE i) { return (*self).at(i); }
+    %exception __brace_asgn__ {
+      try
+	{
+	  $action
+	}
+      catch (std::out_of_range& e) {
+        SWIG_exception(SWIG_IndexError,const_cast<char*>(e.what()));
+      }
+      catch (std::invalid_argument& e) {
+        SWIG_exception(SWIG_TypeError,const_cast<char*>(e.what()));
+      }
+    }
+    void __brace_asgn__(const INDEXTYPE i, const RETTYPE val) { (*self).at(i)=val; }
  }
 #endif
 %enddef
@@ -243,15 +283,19 @@ namespace std {
  // Finally, start with STIR specific definitions
 
 #if 1
- // first support shared_ptr
- // note: due to a current bug in swig, we have to explicitly tell it to use 
- // stir::shared_ptr (even though it's identical to boost::shared_ptr)
+// #define used below to check what to do
+#define STIRSWIG_SHARED_PTR
+
+ // internally convert all pointers to shared_ptr. This prevents problems
+ // with STIR functions which accept a shared_ptr as input argument.
 #define SWIG_SHARED_PTR_NAMESPACE stir
+#ifdef SWIGOCTAVE
+ // TODO temp work-around
+%include <boost_shared_ptr_test.i>
+#else
 %include <boost_shared_ptr.i>
+#endif
 %shared_ptr(stir::ParsingObject);
-%include "stir/ParsingObject.h"
-%ignore stir::RegisteredParsingObject::RegisteredIt;
-%include "stir/RegisteredParsingObject.h"
 
 %shared_ptr(stir::Scanner);
 %shared_ptr(stir::ProjDataInfo);
@@ -287,27 +331,31 @@ T * operator-> () const;
 
 #if defined(SWIGPYTHON)
  // these will be replaced by __getitem__ etc
-%ignore *::operator[](const int);
-%ignore *::operator[](const int) const;
-%ignore *::operator[](int);
-%ignore *::operator[](int) const;
 %ignore *::at(int);
-%ignore *::at(int) const;
-
 #endif
+// always ignore these as they are unsafe in out-of-range index access (use at() instead)
+%ignore *::operator[](const int);
+%ignore *::operator[](int);
+%ignore *::operator[](const int) const;
+%ignore *::operator[](int) const;
+// always ignore const versions as for swig they're the same
+%ignore *::at(int) const;
 
 //  William S Fulton trick for passing templates (wtih commas) through macro arguments
 // (already defined in swgmacros.swg)
 //#define %arg(X...) X
 
+%include "stir/ParsingObject.h"
+%ignore stir::RegisteredParsingObject::RegisteredIt;
+%include "stir/RegisteredParsingObject.h"
+
  /* Parse the header files to generate wrappers */
 //%include "stir/shared_ptr.h"
 %include "stir/Succeeded.h"
 %include "stir/DetectionPosition.h"
+%newobject stir::Scanner::get_scanner_from_name;
 %include "stir/Scanner.h"
 
-%ignore stir::BasicCoordinate::operator[](const int);
-%ignore stir::BasicCoordinate::operator[](const int) const;
  /* First do coordinates, indices, images.
     We first include them, and sort out template instantiation and indexing below.
  */
@@ -390,17 +438,21 @@ T * operator-> () const;
 %ignore stir::Array::end_all() const;
 %ignore stir::Array::end_all_const() const;
 
-%ignore stir::Array::operator[](const BasicCoordinate<num_dimensions, int>&);
-%ignore stir::Array::operator[](const BasicCoordinate<num_dimensions, int>&) const;
-%ignore stir::Array::operator[](const BasicCoordinate<1, int>&);
-%ignore stir::Array::operator[](const BasicCoordinate<1, int>&) const;
-// need to ignore at() because of SWIG template bug with recursive num_dimensions
+// need to ignore at(int) because of SWIG template bug with recursive num_dimensions
 %ignore stir::Array::at(int) const;
 %ignore stir::Array::at(int);
+
+// ignore as we will use ADD_indexvalue
 %ignore stir::Array::at(const BasicCoordinate<num_dimensions, int>&);
 %ignore stir::Array::at(const BasicCoordinate<num_dimensions, int>&) const;
 %ignore stir::Array::at(const BasicCoordinate<1, int>&);
 %ignore stir::Array::at(const BasicCoordinate<1, int>&) const;
+
+// ignore as unsafe index access (and useing ADD_indexvalue)
+%ignore stir::Array::operator[](const BasicCoordinate<num_dimensions, int>&);
+%ignore stir::Array::operator[](const BasicCoordinate<num_dimensions, int>&) const;
+%ignore stir::Array::operator[](const BasicCoordinate<1, int>&);
+%ignore stir::Array::operator[](const BasicCoordinate<1, int>&) const;
 %include "stir/Array.h"
 
 %include "stir/DiscretisedDensity.h"
@@ -546,6 +598,7 @@ namespace stir {
   // note: next line has no memory allocation problems because all Array<1,...> objects
   // are auto-converted to shared_ptrs.
   // however, cannot use setitem to modify so ideally we would define getitem only (at least for python) (TODO)
+  // TODO DISABLE THIS
   %ADD_indexaccess(int,%arg(Array<1,float>),%arg(Array<2,float>));
 #endif
 
@@ -576,6 +629,8 @@ namespace stir {
 %ignore stir::Bin::view_num();
 %ignore stir::Bin::tangential_pos_num();
 %include "stir/Bin.h"
+%newobject stir::ProjDataInfo::ProjDataInfoGE;
+%newobject stir::ProjDataInfo::ProjDataInfoCTI;
 %include "stir/ProjDataInfo.h"
 %include "stir/ProjDataInfoCylindrical.h"
 %include "stir/ProjDataInfoCylindricalArcCorr.h"
@@ -603,6 +658,7 @@ namespace stir {
 }
 
 // filters
+#ifdef STIRSWIG_SHARED_PTR
 #define elemT float
 %shared_ptr(stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >)
 %shared_ptr(stir::ChainedDataProcessor<stir::DiscretisedDensity<3,elemT> >)
@@ -611,6 +667,7 @@ namespace stir {
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
 %shared_ptr(stir::SeparableCartesianMetzImageFilter<elemT>)
 #undef elemT
+#endif
 
 %include "stir/DataProcessor.h"
 %include "stir/ChainedDataProcessor.h"
@@ -628,6 +685,7 @@ namespace stir {
 #undef elemT
 
  // reconstruction
+#ifdef STIRSWIG_SHARED_PTR
 %shared_ptr(stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMean<stir::DiscretisedDensity<3,float> >);
 #define TargetT stir::DiscretisedDensity<3,float>
@@ -641,7 +699,7 @@ namespace stir {
 %shared_ptr(stir::Reconstruction<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >);
-
+#endif
 
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
