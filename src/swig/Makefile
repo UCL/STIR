@@ -1,10 +1,15 @@
+SWIG=swig
+
 all: _stir.so
 
-stir_wrap.cxx: stir.i Makefile
-	swig -python -c++ -builtin -I../include/ -I/usr/include -DSTART_NAMESPACE_STIR="namespace stir {" -DEND_NAMESPACE_STIR="}" $<
+stir_PYTHONwrap.cxx: stir.i Makefile
+	$(SWIG) -python -c++ -builtin -I../include/ -I/usr/include -DSTART_NAMESPACE_STIR="namespace stir {" -DEND_NAMESPACE_STIR="}" -o $@ $< 
+
+stir_OCTAVEwrap.cpp: stir.i Makefile
+	$(SWIG) -octave -c++ -I../include/ -I/usr/include -DSTART_NAMESPACE_STIR="namespace stir {" -DEND_NAMESPACE_STIR="}"  -o $@ $<
 
 stir.e: stir.i Makefile
-	swig -python -c++ -builtin -E  -I../include/ -DSTART_NAMESPACE_STIR="namespace stir {" -DEND_NAMESPACE_STIR="}" $< > stir.e
+	$(SWIG) -python -c++ -builtin -E  -I../include/ -DSTART_NAMESPACE_STIR="namespace stir {" -DEND_NAMESPACE_STIR="}" $< > stir.e
 
 CFLAGS=-fpic  -I../include/ -g -I /usr/include/python2.7/ -DSWIG
 
@@ -28,12 +33,26 @@ LIBS=../../build/stir/gcc/DebugShared/buildblock/libbuildblock.so \
 ../../build/stir/gcc/DebugShared/swig/CMakeFiles/_stir.dir/__/buildblock/buildblock_registries.cxx.o
 
 
-# TODO problem: need -fPIC for registries.o
-# pushd /home/kris/devel/parapet/build/stir/gcc/DebugShared/swig/CMakeFiles/_stir.dir/__/ && for f in IO/IO_registries.cxx recon_buildblock/recon_buildblock_registries.cxx buildblock/buildblock_registries.cxx;do /usr/bin/c++    -DSTIR_USE_BOOST_SPTR -g -I/home/kris/devel/lln/ecat -I/home/kris/devel/GE/pettoolbox/io_utils/C/include -I/home/kris/devel/parapet/PPhead/include    -D HAVE_LLN_MATRIX -D HAVE_RDF -D STIR_USE_GE_IO -Wall -Wno-deprecated -o ${f}.o -c /home/kris/devel/parapet/PPhead/${f} -fPIC;done;popd
+LIBSa=-lbuildblock \
+-ldata_buildblock \
+-lIO \
+-lmodelling_buildblock \
+-lnumerics_buildblock \
+-llocal_IO_GE \
+-lrecon_buildblock \
+-llistmode_buildblock \
+-literative_OSMAPOSL \
+../../build/stir/gcc/DebugShared/swig/CMakeFiles/_stir.dir/__/IO/IO_registries.cxx.o \
+../../build/stir/gcc/DebugShared/swig/CMakeFiles/_stir.dir/__/recon_buildblock/recon_buildblock_registries.cxx.o \
+../../build/stir/gcc/DebugShared/swig/CMakeFiles/_stir.dir/__/buildblock/buildblock_registries.cxx.o \
+-L/home/kris/binDebugShared/lib
 
-.PRECIOUS: stir_wrap.o
 
-_stir.so: stir_wrap.o $(LIBS) Makefile
-	g++ -g -shared stir_wrap.o $(LIBS) -o _stir.so
+.PRECIOUS: stir_PYTHONwrap.cxx stir_OCTAVEwrap.cpp
+
+_stir.so: stir_PYTHONwrap.o $(LIBS) Makefile
+	g++ -g -shared stir_PYTHONwrap.o $(LIBS) -o $@
 
 
+stir.oct: stir_OCTAVEwrap.cpp $(LIBS) Makefile
+	CXXFLAGS=-g mkoctfile -v  -I../include/ -g  -DSWIG -o $@ $< $(LIBSa)
