@@ -36,9 +36,11 @@
 #include <cstdio> // for size_t
 #include <sstream>
 
+#ifdef SWIGOCTAVE
 // TODO terrible work-around to avoid conflict between stir::error and Octave error
 // they are in conflict with eachother because we need "usng namespace stir" below (swig bug)
- #define __stir_error_H__
+#define __stir_error_H__
+#endif
 
  #include "stir/Succeeded.h"
  #include "stir/DetectionPosition.h"
@@ -149,6 +151,77 @@ namespace std {
    %template(FloatVector) vector<float>;
    %template(StringList) list<string>;
 }
+
+// section for helper classes for creating new iterators. 
+// The code here is nearly a copy of what's in PyIterators.swg,
+// except that the decr() function isn't defined. This is because we need it for some STIR iterators
+// which are forward_iterators.
+// Ideally this code would be moved to SWIG.
+//
+// Note: this needs to be defined after including some stl stuff, as otherwise the necessary fragments
+// haven't been included in the wrap.cxx yet.
+%{
+  namespace swigstir {
+#ifdef SWIGPYTHON
+  template<typename OutIterator, 
+	   typename ValueType = typename std::iterator_traits<OutIterator>::value_type,
+    typename FromOper = swig::from_oper<ValueType> >
+    class SwigPyForwardIteratorClosed_T :  public swig::SwigPyIterator_T<OutIterator>
+  {
+  public:
+    FromOper from;
+    typedef OutIterator out_iterator;
+    typedef ValueType value_type;
+    typedef swig::SwigPyIterator_T<out_iterator>  base;    
+    typedef SwigPyForwardIteratorClosed_T<OutIterator, ValueType, FromOper> self_type;
+    
+    SwigPyForwardIteratorClosed_T(out_iterator curr, out_iterator first, out_iterator last, PyObject *seq)
+      : swig::SwigPyIterator_T<OutIterator>(curr, seq), begin(first), end(last)
+    {
+    }
+    
+    PyObject *value() const {
+      if (base::current == end) {
+	throw swig::stop_iteration();
+      } else {
+	return swig::from(static_cast<const value_type&>(*(base::current)));
+      }
+    }
+    
+  swig::SwigPyIterator *copy() const
+    {
+      return new self_type(*this);
+    }
+
+    swig::SwigPyIterator *incr(size_t n = 1)
+    {
+      while (n--) {
+	if (base::current == end) {
+	  throw swig::stop_iteration();
+	} else {
+	  ++base::current;
+	}
+      }
+      return this;
+    }
+
+  private:
+    out_iterator begin;
+    out_iterator end;
+  };
+
+  template<typename OutIter>
+  inline swig::SwigPyIterator*
+  make_forward_iterator(const OutIter& current, const OutIter& begin,const OutIter& end, PyObject *seq = 0)
+  {
+    return new SwigPyForwardIteratorClosed_T<OutIter>(current, begin, end, seq);
+  }
+
+
+#endif
+ } // end of namespace
+
+  %}
 
 // doesn't work (yet?) because of bug in int template arguments
 // %rename(__getitem__) *::at; 
@@ -560,8 +633,14 @@ namespace stir {
   %template (FloatNumericVectorWithOffset) NumericVectorWithOffset<float, float>;
 
 #ifdef SWIGPYTHON
-  // add tuple indexing
+  // TODO this extends ND-Arrays, but apparently not 1D Arrays (because specialised template?)
   %extend Array{
+    // add "flat" iterator, using begin_all()
+    %newobject flat(PyObject **PYTHON_SELF);
+    swig::SwigPyIterator* flat(PyObject **PYTHON_SELF) {
+      return swigstir::make_forward_iterator(self->begin_all(), self->begin_all(), self->end_all(), *PYTHON_SELF);
+    }
+    // add tuple indexing
     elemT __getitem__(PyObject* const args)
     {
       stir::BasicCoordinate<num_dimensions, int> c;
