@@ -40,9 +40,6 @@ option(STIR_OPENMP
 option(BUILD_SHARED_LIBS 
        "Use shared libraries" OFF)
 
-option(BUILD_SWIG_PYTHON
-       "Use SWIG to generate python bindings for STIR (experimental)" OFF)
-
 #### we need the boost library from boost.org
 set(BOOST_ROOT CACHE PATH "root of Boost")
 find_package( Boost 1.36.0 REQUIRED )
@@ -169,9 +166,7 @@ endforeach(STIR_DIR)
 ADD_SUBDIRECTORY(examples EXCLUDE_FROM_ALL)
 
 #### SWIG settings
-if(BUILD_SWIG_PYTHON)
-	ADD_SUBDIRECTORY(swig)
-endif()
+ADD_SUBDIRECTORY(swig)
 
 #### Export settings such that another project can import them.
 # Save the compiler settings 
