@@ -2223,7 +2223,7 @@ in 3D PET. This scatter background needs to be estimated and taken into account 
 \textit{STIR 2.1}, a version of the Single Scatter Simulation ( \textit{SSS}) algorithm [Wat96, Wat00,
 Wat97, Wat04, Wer02, Poe03] has been implemented and evaluated [Tso04].
 
-\subsubsection{Data Initialisation}
+\subsubsection{Data Initialisation \label{sec:scatter_data_initialisation}}
 \begin{itemize}
 \item Apply randoms correction and normalisation on emission data (this will be used to scale the scatter estimate)
 \item Reconstruct attenuation image (ideally use odd number of voxels for zoom\_image step below).
@@ -2238,10 +2238,11 @@ detector pairs. You can reduce this if your scanner has a narrower FOV, but be c
 make it too small (otherwise you will get strange behaviour at the edge when upsampling the scatter estimate).
 Because of a limitation in the upsampling routine, it is currently recommended to have ring difference 0 only in this
 template.
-\item Construct a ``subsampled" attenuation image using zoom\_image and stir\_math. 
+\item Construct a ``subsampled" attenuation image using \texttt{zoom\_image} and \texttt{stir\_math}. 
  STIR SSS will select 1 scatter point per voxel in this attenuation image. This can be used to speed up your
- calculation.
- Careful: zoom\_image will scale the voxel values with the product of the zoom-factors in each dimension. 
+ calculation. When caching line integrals (which is the default), it also means that the scatter estimation
+ needs less memory.\\
+ Careful: \texttt{zoom\_image} will scale the voxel values with the product of the zoom-factors in each dimension. 
  You need to undo this scaling for the ``subsampled'' image.    
  For example
  \begin{verbatim}
@@ -2271,11 +2272,12 @@ create\_tail\_mask\_from\_ACFs		--ACF-filename <projdata> \textbackslash \\
 \end{description}
 
 \subsubsection{SSS}
+The actual scatter estimation process consists of $2$ steps:
 \begin{itemize} 
-\item Use \textbf{estimate\_scatter} to find subsampled scatter estimate from current emission image
+\item Use \textbf{estimate\_scatter} to find subsampled (single) scatter estimate from current emission image
 \item Use \textbf{upsample\_and\_fit\_single\_scatter}
 \end{itemize} 
-
+These steps are now discussed in more detail.\\[1cm]
 
 \cmdline{estimate\_scatter scatter.par}
 Example \texttt{scatter.par}
@@ -2286,7 +2288,7 @@ Scatter Estimation Parameters:=
    attenuation_threshold :=.01
 ; Place the scatter points in a random position of a voxel or in the centre
    random := 1
-; Caching is extremely useful as it speeds up the estimation drastically.
+; Caching (of the line integrals) speeds up the estimation drastically.
    use_cache := 1
 ; The resolution of the scanner (at 511 keV) as given in the literature
 ; given as a ratio (example value is 22%)
@@ -2301,7 +2303,25 @@ Scatter Estimation Parameters:=
    output_filename_prefix := OUTPUT_PROJECTION_DATA
 End Scatter Estimation Parameters:=
 \end{verbatim}
-
+\begin{description}
+\item[activity\_image]
+current estimate of the activity (or emission) image
+\item[density\_image] mu-map or attenuation image (at 511 keV and in units cm$^{-1}$),
+used to compute the line-integrals (in the exponentials) in the Klein-Nishina formula.
+\item[density\_image\_for\_scatter\_points] "subsampled" attenuation image (at 511 keV and in units cm${}^{-1}$), 
+used to select scatter points (and their corresponding mu),
+as discussed in section \ref{sec:scatter_data_initialisation}
+\item[template\_proj\_data]
+``subsampled sinogram'' template,
+as discussed in section \ref{sec:scatter_data_initialisation}
+\end{description}
+The reason we use $2$ different attenuation images is to be able to investigate if the sampling used for
+the attenuation in those $2$ situations makes any difference. Unfortunately, we didn't complete that
+investigation so cannot recommend what to use for the original attenuation image (for large uniform
+objects, it won't make any difference, for objects with small features of high attenuation, it might). 
+As discussed in the literature however, you can safely reduce the number of scatter points and still get
+good estimates. 
+\\[1cm]
 \cmdline{%
 upsample\_and\_fit\_single\_scatter \textbackslash \\
 					--min-scale-factor <number> \textbackslash \\
@@ -3154,7 +3174,10 @@ This parameter will be removed.
 
 The \textbf{calculate\_attenuation\_coefficients} utility (located in STIR/\textbf{utilities})
 can also convert an attenuation image to attenuation (correction) factors. It is less
-flexible than \textbf{correct\_projdata} though.
+flexible than \textbf{correct\_projdata} though. For example, using the \texttt{--ACF} switch,
+it will compute the attenuation correction factors (ACFs)\footnote{roughly
+\texttt{log(-ray\_tracing(image))}}, which can then be used in other STIR programs.
+
 
 The \textbf{attenuation\_coefficients\_to\_projections} utility 
 (located in STIR/\textbf{utilities}) is a (simplistic) example to convert
