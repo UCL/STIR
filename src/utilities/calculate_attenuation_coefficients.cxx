@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-    Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2001 - 2011-12-31, Hammersmith Imanet Ltd
+    Copyright (C) 2013-01-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,7 +28,7 @@
   \par Usage
   \verbatim
      calculate_attenuation_coefficients
-             [--PMRT]  --AF|--ACF <output filename > <input header file name> <template_proj_data>
+             [--PMRT]  --AF|--ACF <output filename > <input image file name> <template_proj_data>
   \endverbatim
   <tt>--ACF</tt>  calculates the attenuation correction factors, <tt>--AF</tt>  calculates
   the attenuation factor (i.e. the inverse of the ACFs).
@@ -57,6 +58,8 @@
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/IO/read_from_file.h"
+#include "stir/info.h"
+#include <boost/format.hpp>
 #include <iostream>
 #include <list>
 #include <algorithm>
@@ -120,9 +123,10 @@ do_segments(const VoxelsOnCartesianGrid<float>& image,
 
 static void print_usage_and_exit()
 {
-    std::cerr<<"\nUsage: calculate_attenuation_coefficients [--PMRT]  --AF|--ACF <output filename > <input header file name> <template_proj_data>\n"
+    std::cerr<<"\nUsage: calculate_attenuation_coefficients [--PMRT]  --AF|--ACF <output filename > <input image file name> <template_proj_data>\n"
 	     <<"\t--ACF  calculates the attenuation correction factors\n"
-	     <<"\t--AF  calculates the attenuation factor (i.e. the inverse of the ACFs)\n";
+	     <<"\t--AF  calculates the attenuation factor (i.e. the inverse of the ACFs)\n"
+             <<"The input image has to give the attenuation (or mu) values at 511 keV, and be in units of cm^-1.\n";
     exit(EXIT_FAILURE);
 }
 
@@ -160,10 +164,10 @@ main (int argc, char * argv[])
   VoxelsOnCartesianGrid<float> *  attenuation_image_ptr = 
     dynamic_cast<VoxelsOnCartesianGrid<float> *> (attenuation_density_ptr.get());
 
-  warning("attenuation image data are supposed to be in units cm^-1\n"
-	  "Reference: water has mu .096 cm^-1\n"
-	  "Max in attenuation image: %g", 
-	  attenuation_image_ptr->find_max());
+  info(boost::format("attenuation image data are supposed to be in units cm^-1\n"
+		     "Reference: water has mu .096 cm^-1\n"
+		     "Max in attenuation image: %g") % 
+       attenuation_image_ptr->find_max());
 #ifndef NEWSCALE
     /*
       cerr << "WARNING: multiplying attenuation image by x-voxel size "
