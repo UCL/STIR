@@ -34,6 +34,9 @@
 #include "stir/RelatedViewgrams.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/Succeeded.h"
+#include "stir/warning.h"
+#include "stir/error.h"
+#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
@@ -112,7 +115,9 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
       return Succeeded::yes;
     else
       {
-	warning("BinNormalisationFromProjData: incompatible projection data\n");
+	warning(boost::format("BinNormalisationFromProjData: incompatible projection data:\nNorm projdata info:\n%s\nEmission projdata info:\n%s\n--- (end of incompatible projection data info)---\n")
+		% norm_proj.parameter_info()
+		% proj.parameter_info());
 	return Succeeded::no;
       }
   }
