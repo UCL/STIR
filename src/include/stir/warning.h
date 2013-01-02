@@ -29,6 +29,7 @@
   $Revision$
 */
 #include "stir/common.h"
+#include <iostream>
 
 START_NAMESPACE_STIR
 
@@ -44,9 +45,41 @@ START_NAMESPACE_STIR
   \code
   warning("Cannot open file %s, but I will work around it", filename);
   \endcode
+
+  \deprecated (use 1 argument version instead)
 */
 void
 warning(const char *const s, ...);
 
+
+//! Use this function for writing warning messages
+/*! \ingroup buildblock
+
+  The argument is expected to be a string, but could be anything for which
+  std::ostream::operator\<\< would work.
+
+  This function currently first writes a newline, then \c WARNING:, then \c string
+  and then another newline to std::cerr. 
+
+  \todo At a later stage, it will also write to a log-file.
+
+  \c boost::format is useful in this context.
+
+  \par Example
+  \code
+  warning(boost::format("Type is like this: %" % projdata_info.parameter_info());
+
+  warning("This might not work");
+  \endcode
+*/
+
+template <class STRING>
+inline void
+warning(const STRING& string)
+{
+  std::cerr << "\nWARNING: "
+	    << string
+	    << std::endl;
+}
 END_NAMESPACE_STIR
 #endif
