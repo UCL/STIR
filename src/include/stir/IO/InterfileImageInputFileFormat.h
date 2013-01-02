@@ -77,7 +77,7 @@ public InputFileFormat<DiscretisedDensity<3,float> >
     std::auto_ptr<data_type> ret(read_interfile_image(filename));
     if (is_null_ptr(ret))
       {
-	error("failed to read an Interfile image from file \"%s\"", filename.str());
+	error("failed to read an Interfile image from file \"%s\"", filename.c_str());
       }
     return ret;
   }
