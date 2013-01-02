@@ -24,6 +24,11 @@ projector pair type := Matrix
   End Ray tracing matrix parameters :=
   End Projector Pair Using Matrix Parameters :=
 
+Bin Normalisation type := From ProjData
+  Bin Normalisation From ProjData :=
+    normalisation projdata filename := all_ones.hs
+  End Bin Normalisation From ProjData :=
+
 ; if the next parameter is disabled, 
 ; the sensitivity will be computed using the normalisation object
 sensitivity filename:= sens.img

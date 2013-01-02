@@ -13,7 +13,7 @@ INPUTDIR=$WORKSPACE/recon_test/input/
 NUMSUBS=4 # 16 subsets create a difference in the direct method of more than 8%!!!
 ITER=40
 SAVITER=40
-MAXSEG=3
+MAXSEG=1
 export INPUTDIR
 export NUMSUBS
 export ITER
@@ -82,6 +82,10 @@ for fr in `count 23 28`; do
     fwdtest fwd_dyn_from_p0005-p5_f${fr}g1d0b0 ${INPUTDIR}ECAT_931_projdata_template.hs dyn_from_p0005-p5_img_f${fr}g1d0b0.hv fwd.par < /dev/null
 done
 #fi
+
+# create "fake" normalisation file just for testing.
+# we will use a sinogram full of ones (which won't influence the result)
+stir_math -s --including-first --max_segment_num_to_process $MAXSEG --times-scalar 0 --add-scalar 1 all_ones.hs fwd_dyn_from_p0005-p5_f23g1d0b0.hs
 
 tmpvar="" ;
 for fr in `count 1 23 `; do
