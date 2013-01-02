@@ -40,7 +40,10 @@ START_NAMESPACE_STIR
     This is a convenience function that uses InputFileFormatRegistry::find_factory() to find the
     InputFileFormat factory, and uses it to create the \c DataT object.
 
-    You probably want to use read_from_file(file);
+    Note that (at the time of writing) InputFileFormatRegistry::find_factory() calls
+    error() if no matching file format was found.
+
+    You probably want to use read_from_file(filename);
  */
 template <class DataT, class FileT>
 inline 
@@ -58,6 +61,9 @@ read_from_file(const FileSignature& signature, FileT file)
     This is a convenience function that first reads the FileSignature, then uses 
     InputFileFormatRegistry::find_factory() to find the factory, which then is used
     to create the object.
+
+    Note that (at the time of writing) InputFileFormatRegistry::find_factory() calls
+    error() if no matching file format was found.
 
     \see read_from_file(const FileSignature&, FileT)
     \par Example
