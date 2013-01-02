@@ -31,7 +31,7 @@
 #define __stir_is_null_ptr_H__
 
 #include "stir/shared_ptr.h"
-
+#include <memory> // for auto_ptr
 START_NAMESPACE_STIR
 /*! \ingroup buildblock
   \name testing of (smart) pointers
@@ -52,13 +52,11 @@ bool
 is_null_ptr(shared_ptr<T> const& sptr)
 { return is_null_ptr(sptr.get()); }
 
-#if 0
 template <typename T>
 inline 
 bool 
-is_null_ptr(auto_ptr<T> const& aptr)
+is_null_ptr(std::auto_ptr<T> const& aptr)
 { return is_null_ptr(aptr.get()); }
-#endif
 
 //@}
 
