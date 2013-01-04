@@ -6,7 +6,7 @@ OSSPSParameters :=
 objective function type:=PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData Parameters:=
 
-input file := fwd_dyn_from_p0005-p5.S
+input file := ${INPUT}
 
 ; if next disabled, defaults to maximum segment number in the file
 maximum absolute segment number to process := ${MAXSEG}

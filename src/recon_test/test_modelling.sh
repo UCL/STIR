@@ -1,9 +1,16 @@
 #! /bin/bash
 # $Id$
-# A script to check for any changes in the code which didn't cause any changes in the results.
+# A script to check internal consistency of the parametric imaging code.
+# It tests both the indirect and direct methods.
+# First, dynamic data is simulated from parametric images.
+# Then the estimated parametric images are compared with the originals.
+# 
+# This script currently needs to be executed in the parent-directory of "recon_test"
+# (This could be changed by adjusting INPUTDIR below).
 # Author: Charalampos Tsoumpas
 
-# we do this but it only works in bash. all the rest will work in sh
+# we do the next line such that the script aborts at any error (i.e. any non-zero return value of a command).
+# Note that it only works in bash. all the rest will work in sh (except for a substition line, look for //)
 set -e
 trap "echo ERROR" ERR
 #Run Parametric Reconstruction
@@ -95,17 +102,24 @@ for fr in `count 24 28 `; do
  tmpvar="$tmpvar fwd_dyn_from_p0005-p5_f${fr}g1d0b0.hs"
 done
 
-
 #tmpvar=`count --pre  "fwd_dyn_from_p0005-p5_f" --post "g1d0b0.hs" 1 28`
-conv_to_ecat7 -s fwd_dyn_from_p0005-p5.S $tmpvar
 
+# conv_to_ecat7 -s fwd_dyn_from_p0005-p5.S $tmpvar
+# make interfile dynamic data by concatenation and creating (by adjustment) a new header
+cat ${tmpvar//.hs/.s} > fwd_dyn_from_p0005-p5.s
+sed -e 's/number of time frames := 1/number of time frames := 28/' \
+   -e 's/name of data file :=.*/name of data file := fwd_dyn_from_p0005-p5.s/' \
+   fwd_dyn_from_p0005-p5_f23g1d0b0.hs > fwd_dyn_from_p0005-p5.hs
+
+# TODO we need to fill in timing info really, but currently we'll pass time.fdef in the .par file instead
 #copy_frame_info.sh --frame-info-only  time.fdef fwd_dyn_from_p0005-p5.S
 #copy_frame_info.sh --frame-info-only time.fdef dyn_from_p0005-p5.img
 for direct in OSMAPOSL OSSPS ; do 
 cp ${INPUTDIR}P${direct}.par .
 echo "Test the direct P${direct} Patlak Plot reconstruction"
-rm -f P${direct}.txt; P${direct} P${direct}.par > P${direct}.txt
-echo "Multiply the parametri8c images with the model matrix to get the correspoding dynamic images."
+rm -f P${direct}.txt; 
+INPUT=fwd_dyn_from_p0005-p5.hs P${direct} P${direct}.par > P${direct}.txt
+echo "Multiply the parametric images with the model matrix to get the corresponding dynamic images."
 get_dynamic_images_from_parametric_images dyn_from_recon_p0005-p5.img P${direct}_${ITER}.img  ${INPUTDIR}PatlakPlot.par
 get_dynamic_images_from_parametric_images dyn_sens.img sens.img ${INPUTDIR}PatlakPlot.par
 ifheaders_for_ecat7 p0005-p5.img < /dev/null
