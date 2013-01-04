@@ -39,8 +39,6 @@ START_NAMESPACE_STIR
   The arguments are the same as if you would call printf(). The warning message is written to stderr,
   preceeded by "WARNING:".
 
-  \todo As opposed to using printf-style calling sequence, use a syntax like stir::info
-
   \par Example
   \code
   warning("Cannot open file %s, but I will work around it", filename);
@@ -67,7 +65,7 @@ warning(const char *const s, ...);
 
   \par Example
   \code
-  warning(boost::format("Type is like this: %" % projdata_info.parameter_info());
+  warning(boost::format("Type is like this: %1%. Not sure if that will work.") % projdata_info.parameter_info());
 
   warning("This might not work");
   \endcode
