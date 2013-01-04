@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005 - 2011-01-04, Hammersmith Imanet Ltd
+    Copyright (C) 2013-01-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -40,6 +41,9 @@ class Succeeded;
 //! Dynamic projection data
 /*! \ingroup buildblock
   Somewhat preliminary
+ 
+  \todo Move read_from_file, write_to_ecat7 to usual registry methods
+  \todo Interfile support currently doesn't set start_time_in_secs_since_1970
 */
 class DynamicProjData :
  public MultipleProjData
@@ -55,7 +59,7 @@ public:
   /*! \return the time in seconds since 1 Jan 1970 00:00 UTC, i.e. independent
         of your local time zone.
 
-      Note that the return type is a \c double. This has allows for enough accuracy
+      Note that the return type is a \c double. This allows for enough accuracy
       for a long time to come. It also means that the start time can have fractional 
       seconds.
 
@@ -63,6 +67,10 @@ public:
   */
   const double get_start_time_in_secs_since_1970() const;
 
+  //! set start of scan
+  /*! \see get_start_time_in_secs_since_1970()
+   */
+  void set_start_time_in_secs_since_1970(const double start_time);  
   unsigned int get_num_frames() const
   {
     return this->get_num_proj_data();
@@ -71,24 +79,14 @@ public:
   Succeeded   
     write_to_ecat7(const std::string& filename) const;
 
-
-  //! Return time of start of scan
-  /*! \return the time in seconds since 1 Jan 1970 00:00 UTC, i.e. independent
-    of your local time zone.
-
-    Note that the return type is a \c double. This has allows for enough accuracy
-    for a long time to come. It also means that the start time can have fractional 
-    seconds.
-
-    The time frame definitions should be relative to this time.
-  */
-
- void set_time_frame_definitions(TimeFrameDefinitions time_frame_definitions) 
+  void set_time_frame_definitions(const TimeFrameDefinitions& time_frame_definitions) 
    { this->_time_frame_definitions=time_frame_definitions; }
 
   const TimeFrameDefinitions& get_time_frame_definitions() const
     {   return _time_frame_definitions;    }
 
+  //! multiply data with a constant factor
+  /*! \warning for most types of data, this will modify the data on disk */
   void
     calibrate_frames(const float cal_factor)
     {
@@ -107,6 +105,8 @@ public:
 	}
     }
 
+  //! divide data with the corresponding frame duration
+  /*! \warning for most types of data, this will modify the data on disk */
   void
     divide_with_duration()
     {   
