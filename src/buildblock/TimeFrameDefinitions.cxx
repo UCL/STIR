@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2008-02-22, Hammersmith Imanet Ltd
+    Copyright (C) 2013-01-01 - $Date$, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -40,9 +41,15 @@
 #include "stir/IO/ecat6_utils.h"     
 #endif
 #endif
+#include "stir/IO/InterfileHeader.h"
+#include "stir/IO/interfile.h"
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <boost/format.hpp>
+#include "stir/warning.h"
+#include "stir/error.h"
+#include "stir/info.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::make_pair;
@@ -130,10 +137,27 @@ get_time_frame_num(const double start_time, const double end_time) const
 }
 
 
-
+/*! \todo Move this IO code to a registry.
+  \todo Interfile IO code gives plenty of warnings about unknown keywords at the moment (as we're 
+  reading only the common keywords using InterfileHeader)
+*/
 TimeFrameDefinitions::
 TimeFrameDefinitions(const string& filename)
 {
+  const int max_length=300;
+  char signature[max_length];
+
+  // read signature
+  {
+    std::ifstream input(filename.c_str(), std::ios::binary);
+    if (!input)
+      {
+        error(boost::format("TimeFrameDefinitions: error opening file '%s'. Does it exist?") % filename);
+      }
+    input.read(signature, max_length);
+    signature[max_length-1]='\0';
+  }
+
 #ifdef STIR_ORIGINAL_ECAT6
   if (ecat::ecat6::is_ECAT6_file(filename))
     read_ECAT6_frame_definitions(filename);
@@ -149,6 +173,21 @@ TimeFrameDefinitions(const string& filename)
     read_ECAT7_frame_definitions(filename);
   else
 #endif
+  // Interfile
+  if (is_interfile_signature(signature))
+  {
+#ifndef NDEBUG
+    info(boost::format("TimeFrameDefinitions: trying to read '%s' as Interfile") % filename);
+#endif
+    InterfileHeader hdr;  
+
+    if (!hdr.parse(filename.c_str()))
+      {
+	error(boost::format("Parsing of Interfile header failed for file '%s'") % filename);
+      }
+    *this = hdr.time_frame_definitions;
+  }
+  else
     read_fdef_file(filename);
 
 #if 0
