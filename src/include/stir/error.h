@@ -74,7 +74,7 @@ error(const char *const s, ...);
 
   \par Example
   \code
-  error(boost::format("Incorrect number of subsets: %d" % num_subsets);
+  error(boost::format("Incorrect number of subsets: %d") % num_subsets);
 
   error("This does not work");
   \endcode

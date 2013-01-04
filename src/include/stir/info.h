@@ -48,7 +48,7 @@ START_NAMESPACE_STIR
 
   \par Example
   \code
-  info(boost::format("Running sub-iteration %)" % subiter_num);
+  info(boost::format("Running sub-iteration %1% of total %2%") % subiter_num % total);
 
   info("Running a really complicated algorithm");
   \endcode
