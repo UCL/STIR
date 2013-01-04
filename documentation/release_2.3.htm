@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 2.3 (dated ??  2012)</title>
+    <title>Summary of changes in STIR release 2.3 (dated ??  2013)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 2.3 (dated ?? 2012)</h1>
+    <h1>Summary of changes in STIR release 2.3 (dated ?? 2013)</h1>
 
 <p>This update was prepared by Kris Thielemans (Algorithms and Software Consulting Ltd).
 
@@ -32,6 +32,7 @@ such as shared libraries and SWIG support can only be enabled when using CMake.
 <h3>Known problems</h3>
 <ul>
 <li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
+<li>On Windows, using shared libraries fails. We need to sort out dependencies between libraries to fix this.</li>
 <li>The recon_test_pack routines fail with the MPI version. See the mailing list for a work-around.</li>
 <li>ECAT6 routines seem to have problems since STIR 2.0. ECAT6 is therefore no longer supported</li>
 <li>The interpolating back-projector can still give problems in the centre of the images
@@ -50,7 +51,11 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 <h3>New functionality</h3>
 <ul>
 <li>Addition of the FORE algorithm.</li>
-<li>Preliminary (but functional) interface for using STIR from Python.</li>
+<li>Preliminary (but functional) interface for using STIR from Python. Work-in-progress for Octave, but this
+needs fixing Octave support in SWIG.</li>
+<li>Dynamic projection data can now be read from Interfile data. This means that the parametric
+image estimation routines need less of ECAT7 support (still required for images at present).
+<tt>get_time_frame_definitions</tt> also works
 </ul>
 
 
@@ -80,11 +85,16 @@ from the above):</H2>
 <ul>
 <li>BasicCoordinate, VectorWithOffset and Array now have new members at() (checking for out-of-range index access) and empty() (like std::vector).
 </li>
+<li>error() and warning() now support using boost::format. The old (unsafe) printf-like syntax will be removed in 
+a future version.
 </ul>
 
 <h3>Other code changes</h3>
 <ul>
 <li> A few minor changes for SWIG compatibility</li>
+<li>ProjMatrixByBinFromFile now assumes that if an LOR
+  isn't found in the file, it's empty (previously we called error())</li>
+
 </ul>
 </body>
 
