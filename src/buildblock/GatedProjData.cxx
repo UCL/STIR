@@ -80,8 +80,9 @@ read_from_file(const string& filename) // The written image is read in respect t
 	  return 0;
 	}
       gated_proj_data_ptr = new GatedProjData;
-      gated_proj_data_ptr->_scanner_sptr.reset(
-					       find_scanner_from_ECAT_system_type(mhead.system_type));
+      // we no longer have a _scanner_sptr member, so next lines are commented out
+      //gated_proj_data_ptr->_scanner_sptr.reset(
+      //					       find_scanner_from_ECAT_system_type(mhead.system_type));
 
       const unsigned int num_gates =
 	static_cast<unsigned int>(mhead.num_gates); // TODO +1?
@@ -135,8 +136,9 @@ read_from_file(const string& filename) // The written image is read in respect t
 	   gated_proj_data_ptr->_proj_datas[gate_num-1] =
 	     ProjData::read_from_file(filenames[gate_num-1]);
 	 }
-       gated_proj_data_ptr->_scanner_sptr.reset(
-						new Scanner(*gated_proj_data_ptr->_proj_datas[0]->get_proj_data_info_ptr()->get_scanner_ptr()));
+       // we no longer have a _scanner_sptr member, so next lines are commented out
+       //gated_proj_data_ptr->_scanner_sptr.reset(
+       //					new Scanner(*gated_proj_data_ptr->_proj_datas[0]->get_proj_data_info_ptr()->get_scanner_ptr()));
       return gated_proj_data_ptr;
      }    
   
