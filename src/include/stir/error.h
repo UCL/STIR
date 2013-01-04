@@ -5,7 +5,8 @@
 #define __stir_error_H__
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2010-06-25, Hammersmith Imanet Ltd
+    Copyright (C) 2013-01-01 - $Date$, Kris Thielemans
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -30,6 +31,8 @@
   $Revision$
 */
 #include "stir/common.h"
+#include <iostream>
+#include <sstream>
 
 START_NAMESPACE_STIR
 
@@ -49,9 +52,45 @@ START_NAMESPACE_STIR
   \code
   error("Error opening file %s", filename);
   \endcode
+
+  \deprecated (use 1 argument version instead)
 */
 void
 error(const char *const s, ...);
+
+
+//! Use this function for writing error messages and throwing an exception
+/*! \ingroup buildblock
+
+  The argument is expected to be a string, but could be anything for which
+  std::ostream::operator\<\< would work.
+
+  This function currently first writes a newline, then \c ERROR:, then \c string
+  and then another newline to std::cerr. Then it throws an exception (of type string).
+
+  \todo At a later stage, it will also write to a log-file.
+
+  \c boost::format is useful in this context.
+
+  \par Example
+  \code
+  error(boost::format("Incorrect number of subsets: %d" % num_subsets);
+
+  error("This does not work");
+  \endcode
+*/
+
+template <class STRING>
+inline void
+error(const STRING& string)
+{
+  std::stringstream sstr;
+  sstr << "\nERROR: "
+	    << string
+	    << std::endl;
+  std::cerr << sstr.str();
+  throw sstr.str();
+}
 
 END_NAMESPACE_STIR
 #endif
