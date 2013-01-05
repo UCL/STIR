@@ -2,7 +2,8 @@
 # $Id$
 #
 # Author Kris Thielemans
-# Copyright 2004- $Date$ Hammersmith Imanet Ltd
+# Copyright 2004 - 2011-03-01 Hammersmith Imanet Ltd
+# Copyright (C) 2013-01-01 - $Date$, Kris Thielemans
 # This file is part of STIR, and is distributed under the 
 # terms of the GNU Lesser General Public Licence (LGPL) Version 2.1.
 
@@ -125,10 +126,18 @@ IE_INCLUDE_DIR=${IE_BASE_DIR}
 
 IS_GCC:=$(shell $(CXX) -v 2>&1 |grep "gcc")
 ifneq ("$(IS_GCC)","")
-  FAST_CFLAG=-ffast-math
+  # gcc compiler
+  # check if it supports -Ofast
+  ifneq ("$(shell $(CXX) --help=optimizers|fgrep "Ofast")", "")
+    FAST_CFLAG=-Ofast
+  else
+    FAST_CFLAG=-ffast-math
+  endif
 else
   ifeq ($(CC),icc)
+    # Intel C compiler
     FAST_CFLAG=-fast
+    AR=xiar
   endif
 endif
 
