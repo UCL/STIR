@@ -3,7 +3,8 @@
 #
 # Author Kris Thielemans
 #
-# Copyright 2004- $Date$ Hammersmith Imanet Ltd
+# Copyright (C) 2004 - 2011-01-23 Hammersmith Imanet Ltd
+# Copyright (C) 2013-01-01 - $Date$, Kris Thielemans
 # This file is part of STIR.
 #
 #   This file is free software; you can redistribute it and/or modify
@@ -165,6 +166,8 @@ print-make-vars:
 	@echo CFLAGS: $(CFLAGS)
 	@echo LINKFLAGS: $(LINKFLAGS)
 	@echo SYS_LIBS: $(SYS_LIBS)
+	@echo AR: $(AR)
+	@echo ARFLAGS: $(ARFLAGS)
 	@echo DEST: $(DEST)
 	@echo INSTALL_PREFIX: $(INSTALL_PREFIX)
 	@echo INSTALL_EXE_DIR: $(INSTALL_EXE_DIR)
