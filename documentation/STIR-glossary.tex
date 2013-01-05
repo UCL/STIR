@@ -14,9 +14,9 @@
 \end{center}
 
 \begin{center}
-\textit{Version 2.1}\\
+\textit{Version 2.3}\\
 Originally based on PARAPET Deliverable 4.1,
-Extended for Quantitative Reconstruction
+Extended for Quantitative Reconstruction and motion compenstation
 
 \end{center}
 
@@ -212,6 +212,23 @@ Estimation of the kinetic parameters from dynamic images for each voxel (indirec
 The parametric images can also be reconstructed directly from dynamic projection data. 
 \end{description}
 
+\section*{Terms used in motion-compensated reconstruction}
+
+\begin{description}
+\item[Gated Data/Images]
+PET acquisitions can be gated according to an external signal (e.g. respiration, ECG). Gated projection data or gated images correspond to one cardiac/respiratory position of the cardiac/respiratory cycle. 
+
+
+\item[Motion Vectors]
+3D vectors that store the information of the location where the activity was originally. Information is stored in x-y-z motion vectors and they relate the image at the reference position with the image at the corresponding gate.
+
+
+\item[Motion Compensated Image Reconstruction (MCIR)]
+Incorporates motion information within reconstruction so that a motion-free image is directly reconstructed. 
+
+\item[Reconstruct-Transform-Average (RTA)]
+Incorporates motion information after reconstruction to obtain a motion-free image.
+\end{description}
 
 \newpage
  \section*{ ANNEX 1 :Michelogram}
