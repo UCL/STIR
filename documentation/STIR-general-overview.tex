@@ -17,7 +17,7 @@
 \textbf{{\huge STIR \\
 General Overview}}\\
 \textbf{Kris Thielemans}\\
-\textbf{\textit{version 2.0}}
+\textbf{\textit{version 2.3}}
 
 
 \end{spacing}
@@ -296,12 +296,19 @@ resolution properties, in contrast to EMS.
 
 \subsection{Other}
 
-We have an implementation of FORE  [Def97] working which will 
-be released in the near future (pending final legal issues). PARAPET code for 
+We distribute an implementation of FORE  [Def97]. It is an efficient 
+rebinning algorithm to reduce the data-size from 3D-PET to 2D-PET. 
+
+PARAPET code for 
 Ordered Subsets Conjugate Barrier (OSCB) [Mar99] exists but needs
 a bit of work to convert to STIR. Please let us know if you 
 want to help.
  
+With respect to dynamic and gated imaging
+techniques, we have direct estimation of Patlak
+parameters [Tso08] (using Parametric OSMAPOSL or OSSPS).
+We plan to release motion compensated image reconstruction [Thi06] as
+implemented by Tsoumpas et al [Tso11].
 
 \section{
 Optimisation}
@@ -375,13 +382,16 @@ but we strongly recommend that you get a recent compiler instead.
 \begin{itemize}
 \item 
 Intel based PCs using Windows XP or higher (NT probably still works if you
-find a compiler for it). These were tested with Microsoft Visual C++ 2003 and 2005
-and various GNU g++ versions via CYGWIN (http://cygwin.com).
+find a compiler for it). These were tested with Microsoft Visual C++ 2003, 2005 up to
+Visual Studio 2010,
+and various GNU g++ versions (up to at least 4.5.3) via CYGWIN (http://cygwin.com).
 \item 
-Linux (tested on x86 processors and Athlon) using GNU g++ (from 3.5 to 4.3)
-At some point, Intel's C++ compiler worked fine, except for some problems with Fourier transforms.
+Linux using GNU g++ (from 3.5 to 4.6).
+Intel's C++ compiler worked fine, except for some problems with Fourier transforms.
+\item
+MacOS using GNU g++.
 \end{itemize}
-However, people run STIR on various other systems, including MacOSX. Please
+However, people run STIR on various other systems, including Solaris. Please
 check the mailing lists.
 
 We currently have a problem 
@@ -396,7 +406,7 @@ See the User's Guide for how to use another backprojector.
 \subsubsection{
 Parallel versions of algorithms}
 \begin{itemize}
-\item a parallel version of \texttt{OSMAPOSL} using MPI 
+\item a parallel version of \texttt{OSMAPOSL} and \texttt{OSSPS} using MPI 
 \item a threaded version of FBP2D using OPENMP, but for most systems, there is no performance gain.
 \end{itemize}
 
@@ -435,7 +445,8 @@ very limited support for the header). If you have a research contract with GE,
 you might be able to get a STIR extension to read Discovery ST, STE and RX data in both 
 VOLPET and RDF format.
 \item 
-ECAT 7 matrix format for reading only (currently, an Interfile 
+ECAT 7 matrix format for reading only (for reading multiple
+frames/gates, an Interfile 
 header has to be created using a utility we provide). Single 
 frame/gate/bed images can be directly read or written. Single 
 frame/gate/bed sinograms can be directly read.
@@ -556,10 +567,21 @@ Roy. Stat. Soc}., 52: 271-324.\\
 {[}Sli98{]} Slijpen E T P, Beekman F J \textbf{(1998)} Comparison of post-filtering 
 and filtering between iterations for SPECT reconstruction. \textit{in 
 Proc. IEEE Nucl. Sci. Symp. and Med. Imaging Conf.}, 2: 1363-6.\\
+{[}Thi06{]} Thielemans, K., Manjeshwar, R. M., Xiaodong T., and Asma E.
+\textbf{(2006)}, Lesion detectability in motion compensated
+image reconstruction of respiratory gated PET/CT. \textit { 2006 IEEE
+Nuclear Science Symposium and Medical Imaging Conference} 3278-3282.
 {[}Thi99{]} Thielemans K, Jacobson M W, Belluzzo D \textbf{(1999)} On 
 various approximations for the projectors in iterative reconstruction 
 algorithms for 3D-PET. \textit{in Proceedings of the 3D99 Conference, 
 Egmond Aan Zee}, (June 1999): 232-235.
+{[}Tso08{]} Tsoumpas C, Turkheimer F E, Thielemans K \textbf{(2008)},
+Study of direct and indirect parametric estimation methods of linear
+models in dynamic positron emission tomography. \textit{Med. Phys.} 35(4):
+p. 1299-1309.
+{[}Tso11{]} Tsoumpas, C., et al \textbf{(2011)}, The effect of
+regularisation in motion compensated image reconstruction. \textit { IEEE
+Nucl Sci Symp Med Imaging Conf }.
 
 
 
