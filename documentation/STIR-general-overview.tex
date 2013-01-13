@@ -61,7 +61,9 @@ Overview}
 STIR (\textit{Software for Tomographic Image Reconstruction}) is Open 
 Source software (written in C++) consisting of classes, functions 
 and utilities for 3D PET image reconstruction, although it is 
-general enough to accommodate other imaging modalities. \\
+general enough to accommodate other imaging modalities. An overview
+of STIR 2.x is given in [Thi12], which you ideally refer to in your paper.
+
 STIR consists of 2 parts. 
 \begin{itemize}
 \item
@@ -138,7 +140,10 @@ sinograms, viewgrams) and images (2D and 3D);
 computation and pre-stored;
 \item trimming and zooming utilities on projection and image 
 data;
+\item classes for scatter estimation
+\item classes for normalisation and attenuation correction
 \item classes for iterative reconstruction algorithms;
+\item some classes for kinetic modelling and parametric imaging
 \item stream-based classes for message passing between different 
 processes, built on top of MPI
 \end{itemize}
@@ -209,8 +214,6 @@ iterations (e.g. [Sil90]) and Bayesian methods which incorporate
 prior information about the smoothness of the object to be reconstructed 
 (e.g. [Gem84], [Heb89]).
 
-OSMAPOSL is currently the only algorithm for which an MPI version is 
-available, such that it can be run on clusters or multi-core systems.
 
 \begin{spacing}{1.5}
 \textit{Filtering}
@@ -354,8 +357,12 @@ confirmed properly working projectors, our main strategy consisted
 in checking results of new versions with the established results.
 
 Aside from these checks, all algorithms can run in a debugging 
-mode where assertions are checked on consistency and validity.
+mode where assertions  check consistency and validity.
 
+Finally, the web-site also provide the \texttt{recon\_test\_pack}.
+The distributed script contains consistency checks on the reconstruction
+(forward simulation followed by reconstruction with various algorithms) and
+a number of data-sets and expected end-results.
 
 
 \section{
@@ -373,7 +380,7 @@ Computing platforms}
 
 \subsubsection{
 Serial versions of algorithms}
-A lot of STIR was developed roughly 10 years ago. Therefore, the code
+A lot of STIR was developed kust before 2000. Therefore, the code
 contains in various places work-arounds for deficient C++ compilers
 (e.g. GNU g++ 2.95.2 or Microsoft Visual C++ 6.0 service pack 3). 
 However, we are no longer
@@ -387,17 +394,18 @@ Visual Studio 2010,
 and various GNU g++ versions (up to at least 4.5.3) via CYGWIN (http://cygwin.com).
 \item 
 Linux using GNU g++ (from 3.5 to 4.6).
-Intel's C++ compiler worked fine, except for some problems with Fourier transforms.
+Intel's C++ compiler 12.1.0  works fine (tested on Linux), older versions had some problems with the Fourier transform code but the reconstruction itself was fine.
 \item
 MacOS using GNU g++.
 \end{itemize}
 However, people run STIR on various other systems, including Solaris. Please
 check the mailing lists.
 
+\textbf{Warning}: 
 We currently have a problem 
 in the incremental backprojection routines due to different rounding 
 of floating point calculations on Sparc, HP and Opteron processors. 
-Thanks to a fix of Bing Bai this problem might have disappeared on your processor.
+Thanks to a fix of Bing Bai this problem might have disappeared on your processor, but it is still there on recent 64-bit processors.
 You will find out if this problem still exists when you run the 
 recon\_text\_pack available on the STIR web-site. Please let us know.
 See the User's Guide for how to use another backprojector.
@@ -428,7 +436,8 @@ HRRT apparently works as well
 \item Philips Allegro (using its convention of having a ``virtual'' extra crystal to cover the gaps).
 \end{itemize}
 
-Other cylindrical PET scanners can easily be added.
+Other cylindrical PET scanners can easily be added. This can be done
+without modifying the code (see the Wiki).
 
 
 \subsection{
@@ -451,7 +460,7 @@ header has to be created using a utility we provide). Single
 frame/gate/bed images can be directly read or written. Single 
 frame/gate/bed sinograms can be directly read.
 However, this file format needs the ECAT Matrix library (developed 
-previously by M. Sibomana and C. Michel at Louvan la Neuve, Belgium).
+previously by M. Sibomana and C. Michel at Louvain la Neuve, Belgium).
 This library is no longer maintained however.
 \item 
 ECAT 6 matrix format was supported in previous version of STIR, but
@@ -575,6 +584,9 @@ Nuclear Science Symposium and Medical Imaging Conference} 3278-3282.
 various approximations for the projectors in iterative reconstruction 
 algorithms for 3D-PET. \textit{in Proceedings of the 3D99 Conference, 
 Egmond Aan Zee}, (June 1999): 232-235.
+[Thi12] Kris Thielemans, Charalampos Tsoumpas, Sanida Mustafovic, Tobias Beisel, Pablo Aguiar, Nikolaos Dikaios, and Matthew W Jacobson,
+\textit{STIR: Software for Tomographic Image Reconstruction Release 2},
+Physics in Medicine and Biology, 57 (4), 2012 pp.867-883.
 {[}Tso08{]} Tsoumpas C, Turkheimer F E, Thielemans K \textbf{(2008)},
 Study of direct and indirect parametric estimation methods of linear
 models in dynamic positron emission tomography. \textit{Med. Phys.} 35(4):
