@@ -638,13 +638,14 @@ add_adjacent_z(ProjMatrixElemsForOneBin& lor,
   assert(z_of_first_voxel+.5>=0);
   assert(z_of_first_voxel-.5<=right_edge_of_TOR);
   // first reserve enough memory for the whole vector
-  // otherwise the iterators can be invalidated by memory allocation
+  // this speeds things up.
   const int num_overlapping_voxels =
     round(ceil(right_edge_of_TOR-z_of_first_voxel+.5));
   lor.reserve(lor.size() * num_overlapping_voxels);
   
   // point to end of original LOR, i.e. first plane
-  const ProjMatrixElemsForOneBin::const_iterator element_end = lor.end();
+  // const ProjMatrixElemsForOneBin::const_iterator element_end = lor.end();
+  const std::size_t org_size = lor.size();
 
   for (int z_index= 1; /* no end condition here */; ++z_index)
     {
@@ -661,10 +662,12 @@ add_adjacent_z(ProjMatrixElemsForOneBin& lor,
       if (overlap_of_voxel_with_TOR>.9999) // test if it is 1
         {
           // just copy the value
+          std::size_t count = 0; // counter for elements in original LOR
           for (  ProjMatrixElemsForOneBin::const_iterator element_ptr = lor.begin();
-                 element_ptr != element_end;
-                 ++element_ptr)
+                 count != org_size; //element_ptr != element_end;
+                 ++element_ptr, ++count)
             {      
+              assert(lor.size()+1 <= lor.capacity()); // not really necessary now, but check on reserve()  best for performance
               assert(new_z == element_ptr->coord1()+z_index);
               lor.push_back(
                             ProjMatrixElemsForOneBin::
@@ -678,10 +681,12 @@ add_adjacent_z(ProjMatrixElemsForOneBin& lor,
       else
         {
           // multiply the value with the overlap
+          std::size_t count = 0; // counter for elements in original LOR
           for (  ProjMatrixElemsForOneBin::const_iterator element_ptr = lor.begin();
-                 element_ptr != element_end;
-                 ++element_ptr)
+                 count != org_size; //element_ptr != element_end;
+                 ++element_ptr, ++count)
             {      
+              assert(lor.size()+1 <= lor.capacity());
               assert(new_z == element_ptr->coord1()+z_index);
               lor.push_back(
                             ProjMatrixElemsForOneBin::
@@ -704,9 +709,10 @@ add_adjacent_z(ProjMatrixElemsForOneBin& lor,
     if (overlap_of_voxel_with_TOR<.9999) // test if it is 1
       {
         // multiply the value with the overlap
+        std::size_t count = 0; // counter for elements in original LOR
         for (  ProjMatrixElemsForOneBin::iterator element_ptr = lor.begin();
-               element_ptr != element_end;
-               ++element_ptr)
+               count != org_size; //element_ptr != element_end;
+               ++element_ptr, ++count)
             *element_ptr *= overlap_of_voxel_with_TOR;
       }
   }
