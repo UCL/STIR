@@ -287,17 +287,17 @@ ArrayTests::run_tests()
       test.set_offset(-1);
       check_if_equal(test.size(), size_t(10), "test size() with non-zero offset");
       check_if_equal(test.size_all(), size_t(10), "test size_all() with non-zero offset");
-      check_if_equal( test[0], 10.5, "test indexing of Array1D");
+      check_if_equal( test[0], 10.5F, "test indexing of Array1D");
       test += 1;
-      check_if_equal( test[0] , 11.5, "test operator+=(float)");
-      check_if_equal( test.sum(), 20.5,  "test operator+=(float) and sum()");
+      check_if_equal( test[0] , 11.5F, "test operator+=(float)");
+      check_if_equal( test.sum(), 20.5F,  "test operator+=(float) and sum()");
       check_if_zero( test - test, "test operator-(Array1D)");
 
       BasicCoordinate<1,int> c;
       c[1]=0;       
-      check_if_equal(test[c] , 11.5 , "test operator[](BasicCoordinate)");   
+      check_if_equal(test[c] , 11.5F , "test operator[](BasicCoordinate)");   
       test[c] = 12.5;
-      check_if_equal(test[c] , 12.5 , "test operator[](BasicCoordinate)");  
+      check_if_equal(test[c] , 12.5F , "test operator[](BasicCoordinate)");  
 
       {
         Array<1,float> ref(-1,2); 
@@ -389,17 +389,17 @@ ArrayTests::run_tests()
 #endif
 
       Array<2,float> t2 = t2fp + testfp;
-      check_if_equal( t2[3][2] , 5.5, "test operator +(Array2D)");
+      check_if_equal( t2[3][2] , 5.5F, "test operator +(Array2D)");
       t2fp += testfp;
-      check_if_equal( t2fp[3][2] , 5.5, "test operator +=(Array2D)");
+      check_if_equal( t2fp[3][2] , 5.5F, "test operator +=(Array2D)");
       check_if_equal(t2  , t2fp, "test comparing Array2D+= and +" );
 
       {     
         BasicCoordinate<2,int> c;
         c[1]=3; c[2]=2; 
-        check_if_equal(t2[c], 5.5, "test on operator[](BasicCoordinate)");   
+        check_if_equal(t2[c], 5.5F, "test on operator[](BasicCoordinate)");   
         t2[c] = 6.;
-        check_if_equal(t2[c], 6., "test on operator[](BasicCoordinate)");   
+        check_if_equal(t2[c], 6.F, "test on operator[](BasicCoordinate)");   
       }
 
       // assert should break on next line if uncommented
@@ -409,7 +409,7 @@ ArrayTests::run_tests()
       IndexRange<2> larger_range(Coordinate2D<int>(-5,0),Coordinate2D<int>(5,3));
       t2.grow(larger_range);
       t2[-4][3]=1.F;
-      check_if_equal( t2[3][2] , 6., "test on grow");
+      check_if_equal( t2[3][2] , 6.F, "test on grow");
     
       // test assignment
       t2fp = t2;
@@ -515,17 +515,17 @@ ArrayTests::run_tests()
     test3[1][0][1] = -1;
 
     
-    check_if_equal( test3.sum() , 12.9, "test on sum");
-    check_if_equal( test3.find_max() , 7.3, "test on find_max");
-    check_if_equal( test3.find_min() , -1., "test on find_min");
+    check_if_equal( test3.sum() , 12.9F, "test on sum");
+    check_if_equal( test3.find_max() , 7.3F, "test on find_max");
+    check_if_equal( test3.find_min() , -1.F, "test on find_min");
 
     {
        Array<3,float> test3copy(test3);
        BasicCoordinate<3,int> c;
        c[1]=1; c[2]=0; c[3]=2;
-       check_if_equal(test3[c], 7.3, "test on operator[](BasicCoordinate)");   
+       check_if_equal(test3[c], 7.3F, "test on operator[](BasicCoordinate)");   
        test3copy[c]=8.;
-       check_if_equal(test3copy[1][0][2], 8., "test on operator[](BasicCoordinate)");   
+       check_if_equal(test3copy[1][0][2], 8.F, "test on operator[](BasicCoordinate)");   
     }
 
     Array<3,float> test3bis(range);
@@ -534,7 +534,7 @@ ArrayTests::run_tests()
     Array<3,float> test3ter = test3bis;
 
     test3ter += test3;
-    check_if_equal(test3ter[1][0][1] , .3, "test on operator+=(Array3D)");
+    check_if_equal(test3ter[1][0][1] , .3F, "test on operator+=(Array3D)");
 
     Array<3,float> test3quat = test3 + test3bis;
     check_if_equal(test3quat  , test3ter, "test summing Array3D");
@@ -616,30 +616,30 @@ ArrayTests::run_tests()
 #endif
     {
     float sum = test4.sum();
-    check_if_equal( sum , 131.9, "test on sum()");
+    check_if_equal( sum , 131.9F, "test on sum()");
     }
     const IndexRange<4> larger_range(Coordinate4D<int>(-3,0,-1,1),Coordinate4D<int>(-1,3,3,5));
     test4.grow(larger_range);
     check_if_equal(test4.get_index_range(), larger_range, "test Array4D grow index range");
-    check_if_equal(test4.sum(), 131.9 , "test Array4D grow sum");
+    check_if_equal(test4.sum(), 131.9F , "test Array4D grow sum");
     {
       const Array<4,float> test41 = test4;
       check_if_equal(test4  , test41, "test Array4D copy constructor" );
-      check_if_equal( test41[-3][1][2][1] , 6.6, "test on indexing after grow");
+      check_if_equal( test41[-3][1][2][1] , 6.6F, "test on indexing after grow");
     }
     {
       Array<4,float> test41 = test4;
       const IndexRange<4> mixed_range(Coordinate4D<int>(-4,1,0,1),Coordinate4D<int>(-2,3,3,6));
       test41.resize(mixed_range);
       check_if_equal(test41.get_index_range(), mixed_range, "test Array4D resize index range");
-      check_if_equal( test41[-3][1][2][1] , 6.6, "test on indexing after resize");
+      check_if_equal( test41[-3][1][2][1] , 6.6F, "test on indexing after resize");
     }
     { 
       BasicCoordinate<4,int> c;
       c[1]=-2;c[2]=1;c[3]=0;c[4]=2;
-      check_if_equal(test4[c] , 7.3 , "test on operator[](BasicCoordinate)");   
+      check_if_equal(test4[c] , 7.3F , "test on operator[](BasicCoordinate)");   
       test4[c]=1.;
-      check_if_equal(test4[c] , 1. , "test on operator[](BasicCoordinate)");   
+      check_if_equal(test4[c] , 1.F , "test on operator[](BasicCoordinate)");   
     }
     {
       Array<4,float> test4bis(range);
@@ -648,7 +648,7 @@ ArrayTests::run_tests()
       Array<4,float> test4ter = test4bis;
 
       test4ter += test4;
-      check_if_equal(test4ter[-3][1][0][1] ,2.3, "test on operator+=(Array4D)");
+      check_if_equal(test4ter[-3][1][0][1] ,2.3F, "test on operator+=(Array4D)");
       check(test4ter.get_index_range() == larger_range, "test range for operator+=(Array4D) with grow");
            
       // Note that test4 is bigger in size than test4bis.
@@ -663,7 +663,7 @@ ArrayTests::run_tests()
       test4bis *= 6.F;
       check_if_equal(test4bis.sum() ,test4.sum()*6, "test operator *=(float)");
       test4bis /= 5.F;
-      check_if_equal(test4bis.sum() ,test4.sum()*6./5, "test operator /=(float)");
+      check_if_equal(test4bis.sum() ,test4.sum()*6.F/5, "test operator /=(float)");
     } 
 
     // test on element-wise multiplication, division

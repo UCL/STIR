@@ -124,7 +124,7 @@ VectorWithOffsetTests::run_tests()
 
     {
       VectorWithOffset<int>::iterator p=find(v.begin(), v.end(), 6);
-      check_if_equal(p - v.begin(), 9, "test iterators: find");
+      check_if_zero(p - v.begin() - 9, "test iterators: find");
       check_if_equal(*p, 6, "test iterators: find");
     }
 

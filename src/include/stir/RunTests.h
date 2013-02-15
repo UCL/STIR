@@ -106,9 +106,16 @@ public:
 
   //! Tests equality, see check()
   bool check_if_equal(const double a, const double b, char const * const str = "");
-  bool check_if_equal(const int a, const int b, char const * const str = "");
-  bool check_if_equal(const unsigned int a, const unsigned int b, char const * const str = "");
-  bool check_if_equal(const unsigned long a, const unsigned long b, char const * const str = "");
+    bool check_if_equal(const short a, const short b, char const * const str = "");
+    bool check_if_equal(const unsigned short a, const unsigned short b, char const * const str = "");
+    bool check_if_equal(const int a, const int b, char const * const str = "");
+    bool check_if_equal(const unsigned int a, const unsigned int b, char const * const str = "");
+    bool check_if_equal(const long a, const long b, char const * const str = "");
+    bool check_if_equal(const unsigned long a, const unsigned long b, char const * const str = "");
+#ifdef BOOST_HAS_LONG_LONG
+    bool check_if_equal(const long long a, const long long b, char const * const str = "");
+    bool check_if_equal(const unsigned long long a, const unsigned long long b, char const * const str = "");
+#endif
   // VC 6.0 needs definition of template members in the class def unfortunately.
   template <class T>
     bool check_if_equal(const std::complex<T> a, const std::complex<T> b, char const * const str = "")
@@ -176,8 +183,17 @@ public:
   }
 
   //! Tests if the value is 0, see check()
-  bool check_if_zero(const int a, const char * const str = "");
   bool check_if_zero(const double a, const char * const str = "");
+  bool check_if_zero(const short a, char const * const str = "");
+  bool check_if_zero(const unsigned short a, char const * const str = "");
+  bool check_if_zero(const int a, char const * const str = "");
+  bool check_if_zero(const unsigned int a, char const * const str = "");
+  bool check_if_zero(const long a, char const * const str = "");
+  bool check_if_zero(const unsigned long a, char const * const str = "");
+#ifdef BOOST_HAS_LONG_LONG
+  bool check_if_zero(const long long a, char const * const str = "");
+  bool check_if_zero(const unsigned long long a, char const * const str = "");
+#endif
 
   // VC needs definition of template members in the class def unfortunately.
   template <class T>
@@ -228,6 +244,35 @@ public:
 private:
   double tolerance;
   bool everything_ok;
+
+  template<class T>
+  bool
+    check_if_equal_generic(const T& a, const T& b, char const * const str)
+    {
+      if (a != b)
+        {
+          cerr << "Error : unequal values are " << a << " and " << b 
+               << ". " << str<< endl;
+          everything_ok = false;
+          return false;
+        }
+      else
+        return true;
+    }
+
+  template <class T> 
+    bool 
+    check_if_zero_generic(T a, const char * const str)
+    {
+      if ((a!=static_cast<T>(0)))
+        {
+          cerr << "Error : 0 value is " << a << " ." << str  << endl;
+          everything_ok = false;
+          return false;
+        }
+      else
+        return true;
+    }
   
 };
 
@@ -299,60 +344,43 @@ RunTests::check_if_equal(const double a, const double b, char const * const str)
 }
 
 
-bool
-RunTests::check_if_equal(const int a, const int b, char const * const str)
-{
-  if (a != b)
-  {
-    cerr << "Error : unequal values are " << a << " and " << b 
-         << ". " << str<< endl;
-    everything_ok = false;
-    return false;
-  }
-  else
-    return true;
-}
+bool RunTests::check_if_equal(const short a, const short b, char const * const str)
+{  return this->check_if_equal_generic(a,b,str);}
+bool RunTests::check_if_equal(const unsigned short a, const unsigned  short b, char const * const str)
+{  return this->check_if_equal_generic(a,b,str);}
+bool RunTests::check_if_equal(const int a, const int b, char const * const str)
+{  return this->check_if_equal_generic(a,b,str);}
+bool RunTests::check_if_equal(const unsigned int a, const unsigned int b, char const * const str)
+{  return this->check_if_equal_generic(a,b,str);}
+bool RunTests::check_if_equal(const long a, const long b, char const * const str)
+{  return this->check_if_equal_generic(a,b,str);}
+bool RunTests::check_if_equal(const unsigned long a, const unsigned long b, char const * const str)
+{  return this->check_if_equal_generic(a,b,str);}
+#ifdef BOOST_HAS_LONG_LONG
+bool RunTests::check_if_equal(const long long a, const long long b, char const * const str)
+{  return this->check_if_equal_generic(a,b,str);}
+bool RunTests::check_if_equal(const unsigned long long a, const unsigned long long b, char const * const str)
+{  return this->check_if_equal_generic(a,b,str);}
+#endif
 
-bool
-RunTests::check_if_equal(const unsigned long a, const unsigned long b, char const * const str)
-{
-  if (a != b)
-  {
-    cerr << "Error : unequal values are " << a << " and " << b 
-         << ". " << str<< endl;
-    everything_ok = false;
-    return false;
-  }
-  else
-    return true;
-}
-
-bool
-RunTests::check_if_equal(const unsigned int a, const unsigned int b, char const * const str)
-{
-  if (a != b)
-  {
-    cerr << "Error : unequal values are " << a << " and " << b 
-         << ". " << str<< endl;
-    everything_ok = false;
-    return false;
-  }
-  else
-    return true;
-}
-
-bool 
-RunTests::check_if_zero(const int a, const char * const str)
-{
-  if ((a!=0))
-  {
-    cerr << "Error : 0 value is " << a << " ." << str  << endl;
-    everything_ok = false;
-    return false;
-  }
-  else
-    return true;
-}
+bool RunTests::check_if_zero(const short a, char const * const str)
+{  return this->check_if_zero_generic(a,str);}
+bool RunTests::check_if_zero(const unsigned short a, char const * const str)
+{  return this->check_if_zero_generic(a,str);}
+bool RunTests::check_if_zero(const int a, char const * const str)
+{  return this->check_if_zero_generic(a,str);}
+bool RunTests::check_if_zero(const unsigned int a, char const * const str)
+{  return this->check_if_zero_generic(a,str);}
+bool RunTests::check_if_zero(const long a, char const * const str)
+{  return this->check_if_zero_generic(a,str);}
+bool RunTests::check_if_zero(const unsigned long a, char const * const str)
+{  return this->check_if_zero_generic(a,str);}
+#ifdef BOOST_HAS_LONG_LONG
+bool RunTests::check_if_zero(const long long a, char const * const str)
+{  return this->check_if_zero_generic(a,str);}
+bool RunTests::check_if_zero(const unsigned long long a, char const * const str)
+{  return this->check_if_zero_generic(a,str);}
+#endif
 
 bool 
 RunTests::check_if_zero(const double a, const char * const str )

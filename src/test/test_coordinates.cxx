@@ -81,7 +81,7 @@ coordinateTests::run_tests()
 
     
     check(a[3]==3, "testing operator[]");
-    check_if_equal(inner_product(a,b), 8., "testing inner_product");
+    check_if_equal(inner_product(a,b), 8.F, "testing inner_product");
     check_if_equal(norm(a), 3.74166, "testing norm");
 
     a += b;
@@ -127,7 +127,7 @@ coordinateTests::run_tests()
 #else
       float *p=find(b.begin(), b.end(), -3);
 #endif
-      check_if_equal(p - b.begin(), 1, "iterator test");
+      check_if_zero(p - b.begin() - 1, "iterator test");
       BasicCoordinate<3, float> b_sorted;
       b_sorted[1]=-3;b_sorted[2]=-1;b_sorted[3]=5;
 #ifndef STIR_NO_NAMESPACES
@@ -233,7 +233,7 @@ coordinateTests::run_tests()
     a_plus_b[1]=0;a_plus_b[2]=-1;a_plus_b[3]=8;
     
     check(a[3]==3, "testing operator[]");
-    check_if_equal(inner_product(a,b), 8., "testing inner_product");
+    check_if_equal(inner_product(a,b), 8.F, "testing inner_product");
     check_if_equal(norm(a), 3.74166, "testing norm");
 
     a += b;
@@ -288,7 +288,7 @@ coordinateTests::run_tests()
     a_plus_b[1]=0;a_plus_b[2]=-1;a_plus_b[3]=8;
     
     check(a[3]==3, "testing operator[]");
-    check_if_equal(inner_product(a,b), 8., "testing inner_product");
+    check_if_equal(inner_product(a,b), 8.F, "testing inner_product");
     check_if_equal(norm(a), 3.74166, "testing norm");
 
     a += b;

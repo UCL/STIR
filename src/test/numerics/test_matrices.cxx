@@ -99,7 +99,7 @@ run_tests_1D()
 
   {
     const Array<1,float> v = make_1d_array(1.F,2.F,3.F,-5.F);
-    check_if_equal(norm(v),std::sqrt(square(1.F)+square(2)+square(3)+square(5)),
+    check_if_equal(norm(v),static_cast<double>(std::sqrt(square(1.F)+square(2)+square(3)+square(5))),
 		   "norm of float array");
     check_if_equal(inner_product(v,v),square(1.F)+square(2)+square(3)+square(5),
 		   "inner_product of float array with itself");
@@ -111,7 +111,7 @@ run_tests_1D()
     typedef std::complex<float>  complex_t;
     const Array<1,complex_t > v = make_1d_array(complex_t(1.F,0.F),
 						complex_t(2.F,-3.F));
-    check_if_equal(norm(v),std::sqrt(square(1.F)+square(2)+square(3)),
+    check_if_equal(norm(v),static_cast<double>(std::sqrt(square(1.F)+square(2)+square(3))),
 		   "norm of complex array");
     check_if_equal(inner_product(v,v),
 		   complex_t(square(1.F)+square(2)+square(3),0.F),
@@ -265,7 +265,7 @@ run_tests_max_eigenvector()
   }
 
   {
-      const float pi2=_PI/2;
+    const float pi2=static_cast<float>(_PI/2);
     const Array<2,float> rotation =
       //      make_orthogonal_matrix(.2F,.4F,-1.F);
       make_orthogonal_matrix(pi2,pi2,pi2);
