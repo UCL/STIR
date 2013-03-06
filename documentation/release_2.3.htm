@@ -1,31 +1,55 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 2.3 (dated ??  2013)</title>
+    <title>Summary of changes in STIR release 2.3 (dated 6/03/2013)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 2.3 (dated ?? 2013)</h1>
+    <h1>Summary of changes in STIR release 2.3 (dated 06/03/2013)</h1>
 
 <p>This update was prepared by Kris Thielemans (Algorithms and Software Consulting Ltd).
 
 <ul>
 
 <h2> Summary for end users (also to be read by developers)</h2>
-<!---
 <h3>Important bug fixes</h3>
 <ul>
-<li>The routines to handle SimSET data did not really work in previous releases,
-but should work now. This is all still preliminary. Check SimSET/README.txt for
-some information.
+<li>The routines to handle SimSET data did have some problems in the previous release,
+but should work now. Check SimSET/README.txt for some information.
+<ul>
+<li><tt>run_SimSET.sh</tt> had a few crucial lines commented out.</li>
+<li>corrected the case where scatter_parameter is 4|5|9|10 in <tt>conv_SimSET_projdata_to_STIR.sh</tt></li>
+</ul>
 </li>
 </ul>
 
-<h3>build system</h3>
+<h3>New functionality</h3>
+<ul>
+<li>Addition of the FORE algorithm.</li>
+<li>Dynamic projection data can now be read from Interfile data. This means that the parametric
+image estimation routines need less ECAT7 support (still required for images at present).
+</li>
+<li>Expanded the interface for using STIR from Python. This works now but
+needs documentation. There's functions
+to copy STIR arrays to <tt>numpy</tt> arrays, indexing STIR arrays with tuples, etc. To use this, you will need to get a recent version of SWIG and enable
+the <tt>BUILD_SWIG_PYTHON</tt> option when using CMake.</li>
+<li>Preliminary support for using STIR from Octave. However, this is
+partially broken due to problems in SWIG for octave.</li>
+</ul>
+
+<h3>Changed functionality</h3>
+<ul>
+<li><tt>ProjMatrixByBinFromFile</tt> now assumes that if an LOR isn't found in the file, it's empty (in previous STIR versions, we called error())</li>
+</ul>
+
+<h3>Build system</h3>
 <ul>
 <li> 
-Using <a href="http://www.cmake.org">CMake</a> is now recommended. Some options
+Using <a href="http://www.cmake.org">CMake</a> is now recommended (see the wiki). Some options
 such as shared libraries and SWIG support can only be enabled when using CMake.
+</li>
+<li>For the normal Makefiles, we now use the <tt>-Ofast</tt> option for gcc
+if it supports it.
 </li>
 </ul>
 
@@ -34,12 +58,12 @@ such as shared libraries and SWIG support can only be enabled when using CMake.
 <li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
 <li>On Windows, using shared libraries fails. We need to sort out dependencies between libraries to fix this.</li>
 <li>The recon_test_pack routines fail with the MPI version. See the mailing list for a work-around.</li>
-<li>ECAT6 routines seem to have problems since STIR 2.0. ECAT6 is therefore no longer supported</li>
-<li>The interpolating back-projector can still give problems in the centre of the images
+<li>ECAT6 is no longer supported</li>
+<li>The interpolating back-projector still gives problems in the centre of the images
 on some architectures/compiler/optimisation settings. We recommend to use the ray-tracing
 matrix (with additional rays) instead.</li>
 <li>When using Visual Studio (Express) with the provided solution files, there is a linking problem for some
-utilities. It is recommended to use the new <tt>CMake</tt> files for building instead.</li>
+utilities. It is recommended to use the new <tt>CMake</tt> files for building instead (see the wiki).</li>
 <li>When using <code>GRAPHICS=X</code> (i.e. on Unix/Linux/MacOSX) the window displaying
 the bitmaps is sometimes empty. This might depend on your X server settings.
 This affects <tt>manip_image</tt>, <tt>manip_projdata</tt> and <tt>display_projdata</tt>. 
@@ -48,18 +72,17 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 </li>
 </ul>
 
-<h3>New functionality</h3>
-<ul>
-<li>Addition of the FORE algorithm.</li>
-<li>Preliminary (but functional) interface for using STIR from Python. Work-in-progress for Octave, but this
-needs fixing Octave support in SWIG.</li>
-<li>Dynamic projection data can now be read from Interfile data. This means that the parametric
-image estimation routines need less of ECAT7 support (still required for images at present).
-<tt>get_time_frame_definitions</tt> also works
-</ul>
-
 
 <h3>Minor bug fixes</h3>
+<ul>
+<li>This update contains a few fixes for Visual C++ 2010 and 2012, e.g. in Debug mode and on 64bit systems, Intel C++ (adapt the makefile to use xiar when using -fast).</li>
+<li>a few changes to the CMakeLists.txt files for cmake clarifying dependencies
+between libraries. This makes shared libraries better suppported, but there are still circular dependencies. This doesn't seem to create trouble on most systems,
+but makes shared libraries fail on some (e.g. msys on windows).</li>
+<li><tt>test_Scanner.cxx</tt>:
+declare <tt>ecat_model</tt> function in case it isn't in <tt>ecat_model.h</tt>
+</li>
+</ul>
 
 <h3>Documentation changes</h3>
 <ul>
@@ -69,7 +92,8 @@ image estimation routines need less of ECAT7 support (still required for images 
 
 <h3>recon_test_pack changes</h3>
 <ul>
-<li>minor changes to some scripts</li>
+<li>updated version number and added some clarification to the README.txt</li>
+<li>removed the ECAT6 tests</li>
  </ul>
 
 <h3>Other changes to tests</h3>
@@ -91,10 +115,16 @@ a future version.
 
 <h3>Other code changes</h3>
 <ul>
+<li>removed <tt>_scanner_sptr</tt> member of <tt>MultipleProjData</tt>, 
+added a few <tt>set_*()</tt> functions.</li>
+<li><tt>error</tt> and <tt>warning</tt> have now an additional version using only 1 argument that writes to stream, i.e. like info()</li>
+<li><tt>PoissonLogLikelihoodWithLinearModelForMean</tt>:
+	added get/set pair for (sub)sensitivity_filename(s)</li>
+<li><tt>OSMAPOSLReconstruction:
+	overloading <tt>IterativeReconstruction::get_objective_function()</tt>
+     with a return-type specifying it'll always be a Poisson log likelihood.</li>
+<li>no longer have <tt>using std::vector</tt> and/or <tt>using std::ios</tt> etc in some .h files</li>
 <li> A few minor changes for SWIG compatibility</li>
-<li>ProjMatrixByBinFromFile now assumes that if an LOR
-  isn't found in the file, it's empty (previously we called error())</li>
-
 </ul>
 </body>
 
