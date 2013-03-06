@@ -22,7 +22,7 @@
 # Author Kris Thielemans
 # $Id$
 
-echo This script should work with STIR version 2.1. If you have
+echo This script should work with STIR version 2.3. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -65,11 +65,16 @@ INSTALL_DIR=$1
 
 ThereWereErrors=0
 
+run_ECAT6_tests=0
+if [ $run_ECAT6_tests = 0 ]; then
+echo ----------------- ECAT6 tests --------------------------------
+echo No longer running ECAT6 tests as this file format is no longer supported.
+else
 
 echo ------------- Converting ECAT6 file to Interfile ------------- 
 echo Running ${INSTALL_DIR}convecat6_if
 ${INSTALL_DIR}convecat6_if my_Utahscat600k_ca_seg4 Utahscat600k_ca.scn 1> convecat6_if.log 2> convecat6_if_stderr.log <  convecat6_if.inp
-echo '---- Comparing output of convecat6 (error should be 0)'
+echo '---- Comparing output of convecat6_if (error should be 0)'
 echo Running ${INSTALL_DIR}compare_projdata
 if ${INSTALL_DIR}compare_projdata my_Utahscat600k_ca_seg4.hs Utahscat600k_ca_seg4.hs 2>compare_projdata_convecat6_if_stderr.log;
 then
@@ -77,6 +82,7 @@ echo ---- This test seems to be ok !;
 else
 echo There were problems here!;
 ThereWereErrors=1;
+fi
 fi
 
 echo ------------- Converting Interfile to ECAT7 file ------------- 
