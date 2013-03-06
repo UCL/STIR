@@ -1,5 +1,5 @@
 $Id$
-README file for STIR recon_test_pack version 2.1 (and later versions?)
+README file for STIR recon_test_pack version 2.3 (and later versions?)
 ------------------------------------------------
 
 This test pack runs some simple tests to check if various STIR reconstruction
@@ -14,7 +14,7 @@ Tests are independent of each other, as each test uses the 'good' files
 as input.
 
 The run_*test*.sh files are (Bourne) shell scripts that runs all tests 
-automatically. run_*tests.bat is the corresponding DOS batch file
+automatically. run_*tests.bat is the corresponding DOS/Windows batch file
 (currently not available for all tests).
 
 The scripts write some diagnostic output to stdout. Output of
@@ -29,7 +29,18 @@ tests start. This is because all tests generate such files and we do not
 want to have any confusion with files that remained from a previous run.
 
 
-Run the tests as follows:
+Run the tests as follows.
+
+Note: in the command line description the notation [] is used to
+denote an optional argument.
+
+Prerequisites:
+---------------
+You need to have installed STIR into a target directory first, 
+i.e. "make install", or build the INSTALL target when using
+Visual Studio (and cmake). You then need to either add the
+directory where the STIR executables are copied to your path, or
+pass it to the scripts as indicated below.
 
 On Unix:
 --------
@@ -46,8 +57,8 @@ sh run_tests.sh [ --nointbp ] my_install_dir/
 
 Use the --nointbp option (case is important) if you want to skip 
 reconstructions that use  the interpolating backprojector. You
-probably want to do this on Suns (and maybe HP stations ?), as that
-backprojector is known to have a problem on those processors
+probably want to do this on modern systems using 64bit compilation, as that
+backprojector is known to have a problem on many of those processors
 in the centre of the image.
 
 Testing self-consistency of STIR simulation and reconstruction
@@ -63,9 +74,11 @@ sh run_test_simulate_and_recon.sh my_install_dir/
 	(if you copied the executables to one directory, 
 	 but it isn't in your path)
 
-Testing ECAT 6 and 7 utilities
+Testing ECAT7 utilities
 ..............................
-If you have compiled STIR to use the LNN matrix library for ECAT support.
+If you have compiled STIR to use the LNN matrix library for ECAT7 support.
+(ECAT6 support is no longer tested as it usually fails due to bugs in the 
+LLN matrix library).
 
 sh run_ecat_tests.sh 
 	(if all executables are in your path)
@@ -91,7 +104,7 @@ run_tests [ --nointbp ] g:\my_install_dir\
 
 See above for the --nointbp option.
 
-Similarly, to execute tests for ECAT 6 and 7 routines, do
+Similarly, to execute tests for ECAT7 routines, do
 
 run_ecat_tests [ install_dir ]
 
