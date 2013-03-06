@@ -1,0 +1,24 @@
+OSMAPOSLParameters :=
+
+objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+input file := smalllong.hs
+ ;Utahscat600k_ca_seg4.hs
+;maximum absolute segment number to process := 2
+;zero end planes of segment 0:= 1
+
+end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+initial estimate := init.hv
+output filename prefix := my_test_image
+
+number of subsets:= 12
+start at subset:= 1
+number of subiterations:= 1
+save estimates at subiteration intervals:= 1
+
+
+
+
+END :=
