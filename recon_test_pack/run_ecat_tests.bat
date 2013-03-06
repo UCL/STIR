@@ -5,7 +5,7 @@ rem see README.txt
 rem Author: Kris Thielemans
 
 
-echo This script should work with STIR version 2.1. If you have
+echo This script should work with STIR version 2.3. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo.
@@ -19,18 +19,6 @@ echo.
 set INSTALL_DIR=%1
 
 set ThereWereErrors=0
-echo ------------- Converting ECAT6 file to Interfile ------------- 
-echo Running %INSTALL_DIR%convecat6_if
-%INSTALL_DIR%convecat6_if my_Utahscat600k_ca_seg4 Utahscat600k_ca.scn 1> convecat6_if.log 2> convecat6_if_stderr.log < convecat6_if.inp
-echo ---- Comparing output of convecat6 (error should be 0)
-echo Running %INSTALL_DIR%compare_projdata 
-%INSTALL_DIR%compare_projdata my_Utahscat600k_ca_seg4.hs Utahscat600k_ca_seg4.hs 2>compare_projdata_stderr.log
-if ERRORLEVEL 1 goto conv_ecat6_problem
-echo ---- This test seems to be ok !
-goto run_conv_to_ecat7
-:conv_ecat6_problem
-echo There were problems here!
-set ThereWereErrors=1
 
 :run_conv_to_ecat7
 
