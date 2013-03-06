@@ -1,3 +1,5 @@
+# This is a temporary makefile used for development only.
+# Do not use. Instead, use CMake for building
 SWIG=swig
 
 all: _stir.so
