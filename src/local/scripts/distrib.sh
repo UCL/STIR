@@ -10,7 +10,8 @@
 : ${do_recon_test_pack:=1}
 : ${do_transfer:=1}
 
-: ${do_website_final_version:=1}
+# only enable this when non-beta version
+: ${do_website_final_version:=0}
 : ${do_website_sync:=0}
 
 set -e
