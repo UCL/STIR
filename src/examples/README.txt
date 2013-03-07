@@ -48,6 +48,9 @@ extra_dirs.mk
 	will be picked up by the Makefile. Its contents simply say
 	that there is an exe.mk sub-makefile in examples/.
 
+extra_stir_dirs.cmake
+	As extra_dirs.mk, but when using CMake
+
 demo.par
 	An example parameter file for demo3.cxx, using the 
 	interpolating backprojector (i.e. the default one set-up by
@@ -69,11 +72,22 @@ small.*s
 	constructing projection data
 
 
-How to compile
---------------
-cp extra_dirs.mk ../local/extra_dirs.mk
+How to compile using the "hand-made" Makefiles
+-----------------------------------------------
+cp extra_dirs.mk ../local/
 cd ..
 make examples
+
+How to compile using CMake (on Unix-type systems)
+-----------------------------------------------
+cp extra_stir_dirs.cmake ../local/
+cd your-build-dir
+# reconfigure your project
+ccmake .
+# make the examples
+make examples
+# optionally install everything, including the demos
+make install
 
 How to run
 ----------
@@ -86,21 +100,24 @@ First you need to create some data.
       fwdtest sino.hs small.hs image.hv
 
 # Run the demos.
+DEST=../opt
+# Note: Using ../opt/ above which is appropriate when using the hand-made Makefiles
+# for CMake, it'd have to be your-build-dir
 
-	../opt/examples/demo1
+	$DEST/examples/demo1
 # you can display the output using for instance
       manip_image output.hv
       
 
-	../opt/examples/demo2
+	$DEST/examples/demo2
 # demo2 contains a call stir::display, so you'll see the display immediately
 ( at least when on Unix)
 
 
-	../opt/examples/demo3 demo.par
-	../opt/examples/demo3 demoPM.par
+	$DEST/examples/demo3 demo.par
+	$DEST/examples/demo3 demoPM.par
 # the next one will ask the questions interactively
-	../opt/examples/demo3 
+	$DEST/examples/demo3 
 
 
 What now ?

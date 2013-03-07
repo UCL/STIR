@@ -162,9 +162,6 @@ foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})
 endforeach(STIR_DIR)
 
 
-# add the examples directory as well, but don't build it by default
-ADD_SUBDIRECTORY(examples EXCLUDE_FROM_ALL)
-
 #### SWIG settings
 ADD_SUBDIRECTORY(swig)
 
