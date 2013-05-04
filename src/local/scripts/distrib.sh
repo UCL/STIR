@@ -15,7 +15,7 @@
 : ${do_website_sync:=0}
 
 set -e
-: ${VERSION:=2.3beta}
+: ${VERSION:=2.3}
 
 # for cvs2cl.pl
 : ${BRANCH:=trunk}
