@@ -3,7 +3,8 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2011-12-31, Hammersmith Imanet Ltd
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -38,7 +39,8 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
-#include <iostream>
+#include "stir/info.h"
+
 
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
@@ -79,9 +81,6 @@ Reconstruction<TargetT>::initialise(const string& parameter_filename)
 {
   if(parameter_filename.size()==0)
   {
-    cerr << "Next time, try passing the executable a parameter file"
-	 << endl;
-
     this->set_defaults();
     this->ask_parameters();
   }
@@ -144,7 +143,7 @@ set_up(shared_ptr<TargetT> const& target_data_sptr)
 
   if(!is_null_ptr(this->post_filter_sptr)) 
   {
-    cerr<<endl<<"Building post filter kernel"<<endl;
+    info("Building post filter kernel");
     
     if (this->post_filter_sptr->set_up(*target_data_sptr)
           == Succeeded::no)

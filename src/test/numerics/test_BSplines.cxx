@@ -68,7 +68,7 @@ namespace BSpline {
       std::vector<elemT> out;
       for (unsigned int i=0, imax=v.size(); i<imax ; ++i)		
 	out.push_back(interpolator.BSplines(static_cast<elemT>(i)));
-      cout << "IN: " << v << "OUT: " << out;    		
+      std::cout << "IN: " << v << "OUT: " << out;    		
       return 
 	check_if_equal(v, out,  message);
     }

@@ -15,7 +15,8 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2009 Hammersmith Imanet Ltd
+    Copyright (C) 2013 Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -37,17 +38,12 @@
 */
 
 #include <algorithm>
-#ifndef STIR_NO_NAMESPACE
-using std::ws;
-using std::copy;
-using std::endl;
-#endif
 
 START_NAMESPACE_STIR
 
 template <typename elemT>
-ostream& 
-operator<<(ostream& str, const VectorWithOffset<elemT>& v)
+std::ostream& 
+operator<<(std::ostream& str, const VectorWithOffset<elemT>& v)
 {
       str << '{';
       for (int i=v.get_min_index(); i<v.get_max_index(); i++)
@@ -55,13 +51,13 @@ operator<<(ostream& str, const VectorWithOffset<elemT>& v)
 
       if (v.get_length()>0)
 	str << v[v.get_max_index()];
-      str << '}' << endl;
+      str << '}' << std::endl;
       return str;
 }
 
 template <int num_dimensions, typename coordT>
-ostream& 
-operator<<(ostream& str, const BasicCoordinate<num_dimensions, coordT>& v)
+std::ostream& 
+operator<<(std::ostream& str, const BasicCoordinate<num_dimensions, coordT>& v)
 {
       str << '{';
       for (int i=1; i<num_dimensions; i++)
@@ -75,8 +71,8 @@ operator<<(ostream& str, const BasicCoordinate<num_dimensions, coordT>& v)
 
 
 template <typename elemT>
-ostream& 
-operator<<(ostream& str, const vector<elemT>& v)
+std::ostream& 
+operator<<(std::ostream& str, const std::vector<elemT>& v)
 {
       str << '{';
       // slightly different from above because vector::size() is unsigned
@@ -87,17 +83,17 @@ operator<<(ostream& str, const vector<elemT>& v)
 	  str << v[i] << ", ";      
 	str << v[v.size()-1];
       }
-      str << '}' << endl;
+      str << '}' << std::endl;
       return str;
 }
 
 template <typename elemT>
-istream& 
-operator>>(istream& str, vector<elemT>& v)
+std::istream& 
+operator>>(std::istream& str, std::vector<elemT>& v)
 {
   v.resize(0);
   char c;
-  str >> ws >> c;
+  str >> std::ws >> c;
   if (!str || c != '{')
     return str;
   
@@ -108,7 +104,7 @@ operator>>(istream& str, vector<elemT>& v)
     if (!str.fail())
     { 
       v.push_back(t);
-      str >> ws >> c;
+      str >> std::ws >> c;
     }
     else 
       break;
@@ -118,7 +114,7 @@ operator>>(istream& str, vector<elemT>& v)
   if (str.fail())
   {
     str.clear();
-    str >> ws >> c;
+    str >> std::ws >> c;
   }
   if (!str)
   {
@@ -132,22 +128,22 @@ operator>>(istream& str, vector<elemT>& v)
 }
 
 template <typename elemT>
-istream& 
-operator>>(istream& str, VectorWithOffset<elemT>& v)
+std::istream& 
+operator>>(std::istream& str, VectorWithOffset<elemT>& v)
 {
-  vector<elemT> vv;
+  std::vector<elemT> vv;
   str >> vv;
-  v = VectorWithOffset<elemT>(vv.size());
-  copy(vv.begin(), vv.end(), v.begin());
+  v = VectorWithOffset<elemT>(static_cast<int>(vv.size()));
+  std::copy(vv.begin(), vv.end(), v.begin());
   return str;
 }
 
 template <int num_dimensions, typename coordT>
-istream& 
-operator>>(istream& str, BasicCoordinate<num_dimensions, coordT>& v)
+std::istream& 
+operator>>(std::istream& str, BasicCoordinate<num_dimensions, coordT>& v)
 {
   char c = '\0';
-  str >> ws >> c;
+  str >> std::ws >> c;
   if (!str || c != '{')
   {
     warning("reading a coordinate of dimension %d, expected opening {, found %c instead.\n"
@@ -158,7 +154,7 @@ operator>>(istream& str, BasicCoordinate<num_dimensions, coordT>& v)
   { 
     c = '\0';
     str >> v[i];
-    str >> ws >> c;
+    str >> std::ws >> c;
     if (i<num_dimensions && (!str || c!=','))
     {
       warning("reading a coordinate of dimension %d, expected comma, found %c instead.\n"

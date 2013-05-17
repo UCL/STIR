@@ -107,7 +107,7 @@ public:
   /*! \deprecated */
   unsigned int get_num_gates() const
   {
-    return _proj_datas.size();
+    return static_cast<unsigned int>(_proj_datas.size());
   }
 
 protected:

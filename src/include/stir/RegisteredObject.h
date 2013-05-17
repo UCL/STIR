@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -139,7 +139,7 @@ public:
 
   //! List all possible registered names to the stream
   /*! Names are separated with newlines. */
-  inline static void list_registered_names(ostream& stream);
+  inline static void list_registered_names(std::ostream& stream);
 
   
 protected:

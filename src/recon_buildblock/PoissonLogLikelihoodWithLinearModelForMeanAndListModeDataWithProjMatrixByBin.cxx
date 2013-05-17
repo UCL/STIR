@@ -2,7 +2,7 @@
 // $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet
+    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -37,6 +37,9 @@
 #include "stir/ProjData.h"
 #include "stir/listmode/CListRecord.h"
 #include "stir/Viewgram.h"
+#include "stir/info.h"
+#include <boost/format.hpp>
+
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributed_functions.h"
 #endif
@@ -155,9 +158,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
      
   if (this->additive_projection_data_filename != "0") 
     { 
-      cerr << "\nReading additive projdata data " 
-           << additive_projection_data_filename  
-           << endl; 
+      info(boost::format("Reading additive projdata data '%1%'")
+           % additive_projection_data_filename  );
       shared_ptr <ProjData> temp_additive_proj_data_sptr =  
         ProjData::read_from_file(this->additive_projection_data_filename); 
       this->additive_proj_data_sptr.reset(new ProjDataInMemory(* temp_additive_proj_data_sptr));

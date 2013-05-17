@@ -3,7 +3,7 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2012-01-09, Hammersmith Imanet Ltd
 
     This file is part of STIR.
 
@@ -183,7 +183,7 @@ FBP2DReconstruction::
 FBP2DReconstruction(const string& parameter_filename)
 {  
   initialise(parameter_filename);
-  cerr<<parameter_info() << endl;
+  std::cerr<<parameter_info() << std::endl;
 }
 
 FBP2DReconstruction::FBP2DReconstruction()

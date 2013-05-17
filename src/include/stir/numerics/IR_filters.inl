@@ -29,7 +29,7 @@
   $Revision$
 */
 
-using namespace std;
+#include <iterator>
 
 START_NAMESPACE_STIR
 
@@ -52,9 +52,16 @@ IIR_filter(RandIter1 output_begin_iterator,
   // The input should be initialised to 0
   //    if(output_begin_iterator==output_end_iterator)
   //            warning("No output signal is given./n");
-
+#if 1
   if(if_initial_exists==false) 
     *output_begin_iterator=(*input_begin_iterator)*(*input_factor_begin_iterator);
+#else
+  // an attempt to remove warnings by VC++, but it doesn't work for higher-dimensional arrays
+  typedef typename std::iterator_traits<RandIter1>::value_type out_type;
+
+  if(if_initial_exists==false) 
+    *output_begin_iterator=static_cast<out_type>((*input_begin_iterator)*(*input_factor_begin_iterator));
+#endif
 
   RandIter1 current_output_iterator = output_begin_iterator ;
   RandIter2 current_input_iterator = input_begin_iterator ;
@@ -69,10 +76,16 @@ IIR_filter(RandIter1 output_begin_iterator,
           current_input_factor_iterator != input_factor_end_iterator;
           ++current_input_factor_iterator,--current_current_input_iterator
           )
-        {                                       
+        {
+#if 1
           (*current_output_iterator) += 
             (*current_current_input_iterator) *
             (*current_input_factor_iterator);
+#else
+          (*current_output_iterator) += 
+            static_cast<out_type>((*current_current_input_iterator) *
+                                  (*current_input_factor_iterator));
+#endif
           if (current_current_input_iterator==input_begin_iterator)
             break;
         }
@@ -85,8 +98,13 @@ IIR_filter(RandIter1 output_begin_iterator,
             ;++current_pole_iterator,--current_feedback_iterator)
         {                                                       
           (*current_output_iterator) -= 
+#if 1
             (*current_feedback_iterator) *
             (*current_pole_iterator);
+#else
+            static_cast<out_type>((*current_feedback_iterator) *
+                                  (*current_pole_iterator));
+#endif
           if(current_feedback_iterator==output_begin_iterator)
             break;
         }                                       

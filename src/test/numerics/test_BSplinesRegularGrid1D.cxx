@@ -2,7 +2,7 @@
 // $Id$
 //
 /*
-  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2005- 2009-10-27, Hammersmith Imanet Ltd
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -65,7 +65,7 @@ namespace BSpline {
           relative_positions[1]=i;
           out[i]=interpolator(relative_positions);
         }                       
-      cout << "IN: " << v << "OUT: " << out;                    
+      std::cout << "IN: " << v << "OUT: " << out;                    
       return 
         check_if_equal(v, out,  message);
     }
@@ -78,7 +78,7 @@ namespace BSpline {
       IndexRange<1> out_range(v.size());
       Array<1,elemT> out(out_range);            
       out=interpolator.get_coefficients();                      
-      cout << "IN: " << v << "Coefficients: " << out;                   
+      std::cout << "IN: " << v << "Coefficients: " << out;                   
       return 
         check_if_equal(v, out,  message);
     }           

@@ -53,8 +53,10 @@
 #include <numeric>
 #include <ctime>
 #include <complex>
+#include <boost/format.hpp>
 #include "stir/numerics/fourier.h"
 #include "stir/interpolate.h"
+#include "stir/info.h"
 
 #define POSITIVE_Z_SHIFT -1
 #define NEGATIVE_Z_SHIFT 1
@@ -170,9 +172,9 @@ rebin()
   //CON get scanner related parameters needed for the rebinning kernel.
   //CON create a scanner object. The scanner type is identified from the projection data info. 
   const Scanner* scanner = rebinned_proj_data_sptr->get_proj_data_info_ptr()->get_scanner_ptr();
-  const float half_distance_between_rings = scanner->get_ring_spacing()/2.; 
+  const float half_distance_between_rings = scanner->get_ring_spacing()/2.F; 
   const float sampling_distance_in_s = rebinned_proj_data_info_sptr->get_sampling_in_s(Bin(0,0,0,0));
-  const float radial_sampling_freq_w = 2.*_PI/sampling_distance_in_s/num_tang_poss_pow2;
+  const float radial_sampling_freq_w = float(2.*_PI)/sampling_distance_in_s/num_tang_poss_pow2;
   //CON D = #bins * binsize, R = D / 2
   const float R_field_of_view_mm = ((int) (rebinned_proj_data_info_sptr->get_num_tangential_poss() / 2) - 1)*sampling_distance_in_s;
   const float scanner_space_between_rings = scanner->get_ring_spacing();
@@ -181,15 +183,14 @@ rebin()
 
   //CON Check that the user defineable FORE parameters are inside a possible range of values
   if(fore_check_parameters(num_tang_poss_pow2,num_views_pow2,max_segment_num_to_process) != Succeeded::yes){
-    cerr << "FORE Rebinning :: Setup failed " << endl;
-    cerr << "FORE Rebinning :: Abort " << endl; 
+    error("FORE Rebinning :: Setup failed "); 
    };
   
   //CON Loop over all positive segments. Negative segments (those with negative (opposite) ring differences
   //CON will be merged with the positive segment 180 degree sinograms to form a 360 degree segment.  
    for (int seg_num=0; seg_num <=max_segment_num_to_process ; seg_num++){
                    
-     cout <<"FORE Rebinning :: Processing segment No " << seg_num << " *" <<endl;
+    info(boost::format("FORE Rebinning :: Processing segment No %1% *") % seg_num);
 
      // TODO at present, the processing is done by segment. However, it's fairly easy to
      // change this to by sinogram (the rebinning call below will do everything 
@@ -262,17 +263,17 @@ rebin()
 
 
   //CON Some statistics 
-  cout << endl << "FORE Rebinning :: Total rebinning count: " << endl;
+  std::cout << "\nFORE Rebinning :: Total rebinning count: \n";
   do_display_count(num_rebinned);
 
-  cout << "FORE Rebinning :: Inverse FFT the rebinned sinograms " << endl;
+  info("FORE Rebinning :: Inverse FFT the rebinned sinograms " );
   //CL now finally fill in the new sinogram s
   SegmentBySinogram<float> sino2D_rebinned = rebinned_proj_data_sptr->get_empty_segment_by_sinogram(0);
 
   
   for (int plane=FT_rebinned_data.get_min_index();plane <= FT_rebinned_data.get_max_index(); plane++){
    
-   if(plane%10==0) cout << "FORE Rebinning :: Inv FFT rebinned z-position (slice) = " << plane << endl;
+   if(plane%10==0) info(boost::format("FORE Rebinning :: Inv FFT rebinned z-position (slice) = %1%") % plane);
  
   //CON Create a temporary 2D array of complex numbers to store the rebinned and summed fourier coefficients for one slice.
   //CON This data is then inverse FFTd and copied to a sinogram data structure. 
@@ -290,7 +291,7 @@ rebin()
  for (int j = 0; j < num_tang_poss_pow2; j++) {    
    for (int i = 0; i <= num_views_pow2/2; i++) {   
      const float Actual_Weight = (Weights_for_FT_rebinned_data[plane][i][j] == 0) ? 0 : 
-       1./(Weights_for_FT_rebinned_data[plane][i][j]);
+       1.F/(Weights_for_FT_rebinned_data[plane][i][j]);
      FT_rebinned_sinogram[j][i] = FT_rebinned_data[plane][i][j]* Actual_Weight;
      
    }
@@ -324,9 +325,10 @@ rebin()
  } //CON end loop over planes
       
 
-    cout << "FORE Rebinning :: 2D Rebinned sinograms => Min = " << sino2D_rebinned.find_min()
-    << " Max = " << sino2D_rebinned.find_max()
-    << " Sum = " << sino2D_rebinned.sum() << endl;
+    info(boost::format("FORE Rebinning :: 2D Rebinned sinograms => Min = %1%, Max= %2%, Sum = %3%")
+         % sino2D_rebinned.find_min()
+         % sino2D_rebinned.find_max()
+         % sino2D_rebinned.sum());
         
    //CON finally write the rebinned sinograms to file 
     const Succeeded success_this_sino =
@@ -367,7 +369,7 @@ do_rebinning(Array<3,std::complex<float> > &FT_rebinned_data, Array<3,float> &We
    for (int axial_pos_num = segment.get_min_axial_pos_num(); axial_pos_num <= segment.get_max_axial_pos_num() ;axial_pos_num++)   
      {
 
-      if(axial_pos_num%10 == 0)  cout << "FORE Rebinning z (slice) = " << axial_pos_num << endl;   
+      if(axial_pos_num%10 == 0)  info(boost::format("FORE Rebinning z (slice) = %1%") % axial_pos_num);   
       Array<2,float> current_sinogram(IndexRange2D(0,num_tang_poss_pow2-1,0,num_views_pow2-1));
   
   //CL Calculate the 2D FFT of P(w,k) of the merged segment
@@ -394,9 +396,10 @@ do_rebinning(Array<3,std::complex<float> > &FT_rebinned_data, Array<3,float> &We
  }//CL End of loop of axial_pos_num
      
     if(fore_debug_level > 0){
-      cout << "      Total rebinned: " <<  count_rebinned.total - local_rebinned<< endl;
-      cout << "      Total missed: " << count_rebinned.miss - local_miss<< endl;
-      cout << "      Total rebinned SSRB: " << count_rebinned.ssrb - local_ssrb << endl;
+      info(boost::format("Total rebinned: %1%\n"
+                         "Total missed: %2%\n"
+                         "Total rebinned SSRB: %3%") 
+           % (count_rebinned.total - local_rebinned) % (count_rebinned.miss - local_miss) % (count_rebinned.ssrb - local_ssrb) );
    }
 
 }
@@ -580,7 +583,7 @@ do_log_file()
     std::time_t now = std::time(NULL);
     logfile << "FORE Rebinning :: Date of the FORE image reconstruction : " << std::asctime(std::localtime(&now))
             << parameter_info()
-            << "\n\n CPU Time :\n" << get_CPU_timer_value() << endl;
+            << "\n\n CPU Time :\n" << get_CPU_timer_value() << '\n';
 }
 
 
@@ -588,13 +591,13 @@ void
 FourierRebinning::
 do_display_count(PETCount_rebinned &count)
 {// Display rebinning statistics 
-    cout << "FORE Rebinning :: Total rebinned: " <<  count.total << endl;
-    cout << "                  Total missed: " << count.miss << endl;
+  std::cout << "FORE Rebinning :: Total rebinned: " <<  count.total << '\n'
+            << "                  Total missed: " << count.miss << '\n';
                 
     if (count.miss != 0)
-        cout << "                  (" << 100. * count.miss / (count.miss + count.ssrb)
-             << " percent)" << endl;
-    cout << "FORE Rebinning :: Total rebinned SSRB: " << count.ssrb << endl;
+      std::cout << "                  (" << 100. * count.miss / (count.miss + count.ssrb)
+             << " percent)\n";
+    std::cout << "FORE Rebinning :: Total rebinned SSRB: " << count.ssrb << std::endl;
 }
 
 
@@ -605,7 +608,7 @@ do_adjust_nb_views_to_pow2(SegmentBySinogram<float> &segment)
 // Adjustment of the number of views to a power of two
 //CON Use the STIR overlap_interpolate method and remove the simlar private implementation (adjust_pow2) here.      
   const int num_views_pow2 = stir::round(pow(2.,((int)ceil(log ((float)segment.get_num_views())/log(2.)))));
-    const int offset_for_overlap_interpolate = 0;
+  const float offset_for_overlap_interpolate = 0.F;
       
     if (num_views_pow2 == segment.get_num_views()) 
         return; 
@@ -631,66 +634,55 @@ do_adjust_nb_views_to_pow2(SegmentBySinogram<float> &segment)
     segment = out_segment;
 }
 
-// KTTODO use warning() instead of cerr<<
 Succeeded FourierRebinning::
 fore_check_parameters(int num_tang_poss_pow2, int num_views_pow2, int max_segment_num_to_process){
 
 //CON Check if the parameters given make sense.
 
  if(deltamin<0) {
-   cerr << "FORE initialisation :: The deltamin parameter must be an integer value >= 0 " << endl;
-   cerr << "                       Fix this in your FORE parameter section of your steering file " << endl;
-   cerr << "                       Abort now !" << endl;
+   warning("FORE initialisation :: The deltamin parameter must be an integer value >= 0");
    return Succeeded::no; 
 
  }
 
 
  if(wmin < 0 || kmin < 0){
-   cerr << "FORE initialisation :: The parameters wmin and kmin must be >=0 " << endl;
-   cerr << "                       Negative frequencies are not allowed. Due to symmetry reasons they are implicitly defined by the positive wmin/kmin cut off values " << endl;
-   cerr << "                       Fix this in your FORE parameter section of your steering file " << endl;
-   cerr << "                       Abort now !" << endl;
+   warning("FORE initialisation :: The parameters wmin and kmin must be >=0\n"
+           "                       Negative frequencies are not allowed. Due to symmetry reasons they are implicitly defined by the positive wmin/kmin cut off values");
    return Succeeded::no; 
  }
 
 
  if(wmin >= num_tang_poss_pow2/2 || kmin >= num_views_pow2/2) {
-   cerr << "FORE initialisation :: The parameter wmin or kmin is larger than the highest frequency component computed by the FFT alogorithm " << endl;
-   cerr << "                       Choose an value smaller than the largest frequency " << endl;
-   cerr << "                       kmin must be smaller than " << num_tang_poss_pow2/2 << " and wmin must be smaller than " << num_views_pow2/2 << endl;
-   cerr << "                       Fix this in your FORE parameter section of your steering file " << endl;
-   cerr << "                       Abort now ! " << endl;
+   warning(boost::format("FORE initialisation :: The parameter wmin or kmin is larger than the highest frequency component computed by the FFT algorithm\n"
+                         "                       Choose an value smaller than the largest frequency\n"
+                         "                       kmin must be smaller than %1% and wmin must be smaller than %2%")
+           % (num_tang_poss_pow2/2) % (num_views_pow2/2));
    return Succeeded::no; 
-   }
+ }
 
 
  if(kc >= num_views_pow2/2) {
-   cerr << "FORE initialisation :: Your parameter kc is larger than the highest frequency component in w (FTT of radial coordinate s) " << endl;
-   cerr << "                       Choose an value smaller than the largest frequency " << endl;
-   cerr << "                       kc must be smaller than " << num_views_pow2/2 << endl;
-   cerr << "                       Fix this in your FORE parameter section of your steering file " << endl;
-   cerr << "                       Abort now ! " << endl;
-  return Succeeded::no; 
-  } 
+   warning(boost::format("FORE initialisation :: Your parameter kc is larger than the highest frequency component in w (FTT of radial coordinate s)\n"
+                         "                       Choose an value smaller than the largest frequency\n"
+                         "                       kc must be smaller than %1%") 
+           % num_views_pow2);
+   return Succeeded::no; 
+ } 
 
 
  if(max_segment_num_to_process > proj_data_sptr->get_num_segments()){
-   cerr << "FORE initialisation :: Your data set stores " << proj_data_sptr->get_num_segments()/2+1 << " segments " << endl;
-   cerr << "                       The maximum number of segments to process variable is larger than that. " << endl;
-   cerr << "                       Fix this in your FORE parameter section of your steering file " << endl;
-   cerr << "                       Abort now ! " << endl;
-  return Succeeded::no; 
-
-   }
+   warning(boost::format("FORE initialisation :: Your data set stores %1% segments\n"
+                         "                       The maximum number of segments to process variable is larger than that.")
+           % (proj_data_sptr->get_num_segments()/2+1));
+   return Succeeded::no;   
+ }
 
 
  if(max_segment_num_to_process < 0){
-   cerr << "FORE initialisation :: The maximum segment number to process must be an integer value >=0 " << endl;
-   cerr << "                       Fix this in your FORE parameter section of your steering file " << endl;
-   cerr << "                       Abort now ! " << endl;
+   warning("FORE initialisation :: The maximum segment number to process must be an integer value >=0");
    return Succeeded::no; 
-  }       
+ }       
 
  return Succeeded::yes; 
 }

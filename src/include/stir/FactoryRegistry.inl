@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2001- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,12 +30,7 @@
 */
 
 #include <utility>
-
-#ifndef STIR_NO_NAMESPACES
-using std::pair;
-using std::cerr;
-using std::endl;
-#endif
+#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
@@ -75,13 +70,12 @@ add_to_registry(const Key& key, Factory const & factory)
   typename FactoryMap::iterator iter = m.find(key);
   if (iter != m.end())
   {
-    // TODO don't output to cerr, but use only warning()
-    warning("FactoryRegistry:: overwriting previous value of key in registry.\n");
-    cerr << "     key: " << key << endl;
+    warning(boost::format("FactoryRegistry:: overwriting previous value of key in registry.\n"
+                           "     key: %1%") % key);
   }
 
 #endif    
-  m.insert(pair<Key, Factory>(key, factory));
+  m.insert(std::pair<Key, Factory>(key, factory));
 }
 
 template <class Key, class Factory, class Compare>
@@ -95,8 +89,8 @@ remove_from_registry(const Key& key)
   {
 #ifndef _NDEBUG
     // TODO don't output to cerr, but use only warning()
-    warning("\nFactoryRegistry:: Attempt to remove key from registry, but it's not in there...\n");
-    cerr << "     key: " << key << endl;
+    warning(boost::format("FactoryRegistry:: Attempt to remove key from registry, but it's not in there...\n"
+                          "     key: %1%") % key);
 #endif    
   }
   else
@@ -107,7 +101,7 @@ remove_from_registry(const Key& key)
 template <class Key, class Factory, class Compare>
 void
 FactoryRegistry<Key, Factory, Compare>::
-list_keys(ostream& s) const
+list_keys(std::ostream& s) const
 {
   for (typename FactoryMap::const_iterator i = m.begin(); i != m.end(); ++i)
     s << i->first << '\n';
@@ -126,18 +120,18 @@ find_factory(const Key& key) const /*throw(unknown_typename)*/
   
   // throw(unknown_typename(key));
   // TODO don't output to cerr, but use only error()
-  cerr << "FactoryRegistry: key " << key << " not found in current registry\n"
+  std::cerr << "FactoryRegistry: key " << key << " not found in current registry\n"
        << m.size() << " possible values are:\n";
-  list_keys(cerr);
-  cerr << endl;
+  list_keys(std::cerr);
+  std::cerr << '\n';
   if (has_defaults)
     {
-      cerr << "Using value corresponding to key \"" << default_key << "\""<<endl;
+      std::cerr << "Using value corresponding to key \"" << default_key << "\""<<std::endl;
       return default_factory;
     }
   else
     {
-      error("FactoryRegistry: aborting\n");
+      error("FactoryRegistry: aborting");
       // stupid line to prevent warning messages of good compilers
       return default_factory;
     }

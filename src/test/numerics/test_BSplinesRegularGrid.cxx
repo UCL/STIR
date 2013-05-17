@@ -2,7 +2,7 @@
 // $Id$
 //
 /*
-  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2005- 2009-10-27, Hammersmith Imanet Ltd
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -113,7 +113,7 @@ namespace BSpline {
                                 
       //                cout << "Checking BSplines implementation at half way:\n" ;
       //                        cout << "IN: \n" << v_at_half << "OUT: \n" << out_at_half;
-      cout << "The mean deviation from the correct value is: " 
+      std::cout << "The mean deviation from the correct value is: " 
            << sqrt(dv.sum()/dv.size_all()) << endl;
       return 
         check_if_zero(sqrt(dv.sum()/dv.size_all()), message);
@@ -132,8 +132,8 @@ namespace BSpline {
             relative_positions[2]=i+0.5;
             out[j][i]=interpolator(relative_positions);                                 
           }             
-      cout << "BSplines implementation at half way:\n" ;
-      cout << "IN: \n" << v << "OUT: \n" << out;
+      std::cout << "BSplines implementation at half way:\n" ;
+      std::cout << "IN: \n" << v << "OUT: \n" << out;
       return true;
     }
 
