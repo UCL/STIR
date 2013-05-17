@@ -5,7 +5,7 @@
 
   \file
   \ingroup projdata
-  \brief inline implementations for class RelatedViewgrams
+  \brief inline implementations for class stir::RelatedViewgrams
 
   \author Kris Thielemans
   \author PARAPET project
@@ -16,7 +16,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2005, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -61,7 +61,7 @@ template <typename elemT>
 int RelatedViewgrams<elemT>::get_num_viewgrams() const
 {
   check_state();
-  return viewgrams.size();
+  return static_cast<int>(viewgrams.size());
 }
 
 

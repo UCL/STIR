@@ -13,7 +13,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2001- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -38,13 +38,6 @@
 #include <map>
 #include <functional>
 
-#ifndef STIR_NO_NAMESPACE
-using std::ostream;
-using std::map;
-using std::less;
-#endif
-
-
 START_NAMESPACE_STIR
 
 /*!
@@ -68,7 +61,7 @@ START_NAMESPACE_STIR
   with new, and hence would prevent using simple function pointers.
 */
 template <typename Key, typename Factory, 
-	  typename Compare = less<Key> > 
+	  typename Compare = std::less<Key> > 
 class FactoryRegistry
 {
 
@@ -100,7 +93,7 @@ public:
   inline void remove_from_registry(const Key& key);
 
   //! List all keys to an ostream, separated by newlines.
-  inline void list_keys(ostream& s) const;
+  inline void list_keys(std::ostream& s) const;
   
   //! Find a factory corresponding to a key
   /*! If the key is not found, the behaviour depends on which constructor
@@ -112,7 +105,7 @@ public:
   inline Factory const & find_factory(const Key& key) const;
 
 private:
-  typedef map<Key, Factory, Compare > FactoryMap;
+  typedef std::map<Key, Factory, Compare > FactoryMap;
   FactoryMap m;	  
   const bool has_defaults;
   const Key default_key;

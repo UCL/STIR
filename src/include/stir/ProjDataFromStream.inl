@@ -56,7 +56,7 @@ ProjDataFromStream::find_segment_index_in_sequence(const int segment_num) const
 #endif
   // TODO do some proper error handling here
   assert(iter !=  segment_sequence.end());
-  return iter - segment_sequence.begin();
+  return static_cast<int>(iter - segment_sequence.begin());
 }
 
 

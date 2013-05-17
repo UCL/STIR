@@ -6,7 +6,7 @@
   \file
   \ingroup projdata
 
-  \brief Implementation of inline functions of class ProjDataInfoCylindrical
+  \brief Implementation of inline functions of class stir::ProjDataInfoCylindrical
 
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -17,7 +17,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000-2003, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 
@@ -195,8 +195,8 @@ get_num_ring_pairs_for_segment_axial_pos_num(const int segment_num,
 					     const int axial_pos_num) const
 {
   return 
-    get_all_ring_pairs_for_segment_axial_pos_num(segment_num, 
-						 axial_pos_num).size();
+    static_cast<unsigned>(
+       this->get_all_ring_pairs_for_segment_axial_pos_num(segment_num,axial_pos_num).size());
 }
 
 END_NAMESPACE_STIR

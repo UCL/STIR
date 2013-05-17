@@ -179,9 +179,9 @@ post_processing()
 
   if (this->_additive_dyn_proj_data_filename != "0")
     {
-      cerr << "\nReading additive projdata data "
-           << this->_additive_dyn_proj_data_filename 
-           << endl;
+      std::cerr << "\nReading additive projdata data "
+                << this->_additive_dyn_proj_data_filename 
+                << std::endl;
       this->_additive_dyn_proj_data_sptr.reset(DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename));
       if (is_null_ptr(this->_additive_dyn_proj_data_sptr))
 	{ warning("Error reading additive input file %s", _additive_dyn_proj_data_filename.c_str()); return true; }

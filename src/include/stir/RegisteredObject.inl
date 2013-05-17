@@ -14,7 +14,7 @@
   $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -32,9 +32,6 @@
 
 #include "stir/utilities.h"
 #include <iostream>
-#ifndef STIR_NO_NAMESPACE
-using std::cout;
-#endif
 
 START_NAMESPACE_STIR 
 
@@ -65,8 +62,8 @@ template <class Root>
 Root*
 RegisteredObject<Root>::ask_type_and_parameters()
 {
-  cout << "Which type do you want? Possible values are:\n";
-  list_registered_names(cout);
+  std::cout << "Which type do you want? Possible values are:\n";
+  list_registered_names(std::cout);
   const string registered_name = ask_string("Enter type", "None");
   return read_registered_object(0, registered_name);
 }
@@ -74,7 +71,7 @@ RegisteredObject<Root>::ask_type_and_parameters()
 template <class Root>
 void 
 RegisteredObject<Root>::
-list_registered_names(ostream& stream)
+list_registered_names(std::ostream& stream)
 {
   registry().list_keys(stream);
 }

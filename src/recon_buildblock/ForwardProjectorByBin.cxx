@@ -17,7 +17,8 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2011 Hammersmith Imanet Ltd
+    Copyright (C) 2013 Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -39,6 +40,9 @@
 #include "stir/ProjData.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/Succeeded.h"
+#include "stir/info.h"
+#include <boost/format.hpp>
+#include <iostream>
 
 START_NAMESPACE_STIR
 
@@ -72,9 +76,7 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
       ViewSegmentNumbers vs(view, segment_num);
       if (!symmetries_sptr->is_basic(vs))
         continue;
-      cerr << "Processing view " << vs.view_num() 
-        << " of segment " <<vs.segment_num()
-        << endl;
+      info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num());
       
       RelatedViewgrams<float> viewgrams = 
         proj_data.get_empty_related_viewgrams(vs, symmetries_sptr);

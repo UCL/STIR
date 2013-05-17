@@ -15,7 +15,9 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2009 Hammersmith Imanet Ltd
+    Copyright (C) 2013 Kris Thielemans
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -37,11 +39,6 @@
 #include "stir/BasicCoordinate.h"
 #include <iostream>
 #include <vector>
-#ifndef STIR_NO_NAMESPACE
-using std::istream;
-using std::ostream;
-using std::vector;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -61,8 +58,8 @@ START_NAMESPACE_STIR
 
 template <typename elemT>
 inline 
-ostream& 
-operator<<(ostream& str, const VectorWithOffset<elemT>& v);
+std::ostream& 
+operator<<(std::ostream& str, const VectorWithOffset<elemT>& v);
 
 /*!
   \brief Outputs a BasicCoordinate to a stream.
@@ -75,8 +72,8 @@ operator<<(ostream& str, const VectorWithOffset<elemT>& v);
   */
 template <int num_dimensions, typename coordT>
 inline 
-ostream& 
-operator<<(ostream& str, const BasicCoordinate<num_dimensions, coordT>& v);
+std::ostream& 
+operator<<(std::ostream& str, const BasicCoordinate<num_dimensions, coordT>& v);
 
 
 /*!
@@ -88,12 +85,12 @@ operator<<(ostream& str, const BasicCoordinate<num_dimensions, coordT>& v);
   \endverbatim
   with an endl at the end. 
   
-  For each element of the vector ostream::operator<<() will be called.
+  For each element of the vector std::ostream::operator<<() will be called.
 */
 template <typename elemT>
 inline 
-ostream& 
-operator<<(ostream& str, const vector<elemT>& v);
+std::ostream& 
+operator<<(std::ostream& str, const std::vector<elemT>& v);
 
 /*!
   \brief Inputs a vector from a stream.
@@ -107,14 +104,14 @@ operator<<(ostream& str, const vector<elemT>& v);
   trailing '}' is not found. The size of the vector will be the number of 
   correctly read elemT elements.
   
-  For each element of the vector istream::operator>>(element) will be called.
+  For each element of the vector std::istream::operator>>(element) will be called.
 
   elemT needs to have a default constructor.
 */
 template <typename elemT>
 inline 
-istream& 
-operator>>(istream& str, vector<elemT>& v);
+std::istream& 
+operator>>(std::istream& str, std::vector<elemT>& v);
 
 /*!
   \brief Inputs a VectorWithOffset from a stream.
@@ -136,14 +133,14 @@ operator>>(istream& str, vector<elemT>& v);
   
   v.get_min_index() will be 0 at the end of the call.
 
-  For each element of the vector istream::operator>>(element) will be called.
+  For each element of the vector std::istream::operator>>(element) will be called.
 
   elemT needs to have a default constructor.
 */
 template <typename elemT>
 inline 
-istream& 
-operator>>(istream& str, VectorWithOffset<elemT>& v);
+std::istream& 
+operator>>(std::istream& str, VectorWithOffset<elemT>& v);
 
 /*!
   \brief Inputs a coordinate from a stream.
@@ -157,14 +154,14 @@ operator>>(istream& str, VectorWithOffset<elemT>& v);
   trailing '}' is not found. If the number of correctly read elements is not \a num_dimensions,
   the last few will have undefined values.
   
-  For each element of the vector istream::operator>>(element) will be called.
+  For each element of the vector std::istream::operator>>(element) will be called.
 
   elemT needs to have a default constructor.
 */
 template <int num_dimensions, typename coordT>
 inline 
-istream& 
-operator>>(istream& str, BasicCoordinate<num_dimensions, coordT>& v);
+std::istream& 
+operator>>(std::istream& str, BasicCoordinate<num_dimensions, coordT>& v);
 
 END_NAMESPACE_STIR
 

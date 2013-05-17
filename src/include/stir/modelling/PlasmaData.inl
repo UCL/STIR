@@ -2,7 +2,7 @@
 // $Id$
 //
 /*
-    Copyright (C) 2005 - $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005 - 2011 Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -248,7 +248,7 @@ PlasmaData::end() const
 
 unsigned int
 PlasmaData::size() const
-{ return this->_plasma_blood_plot.size() ; }
+{ return static_cast<unsigned>(this->_plasma_blood_plot.size()) ; }
 
 /*
 //PlasmaData begin() and end() of the PlasmaData ;
