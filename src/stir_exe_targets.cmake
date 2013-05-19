@@ -25,6 +25,7 @@
 foreach(executable ${${dir_EXE_SOURCES}})
    add_executable(${executable} ${executable} ${STIR_REGISTRIES})
    target_link_libraries(${executable} ${STIR_LIBRARIES})
+   SET_PROPERTY(TARGET ${executable} PROPERTY FOLDER "Executables")
 endforeach()
 
 install(TARGETS ${${dir_EXE_SOURCES}} DESTINATION bin)

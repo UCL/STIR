@@ -11,6 +11,7 @@ LIBDIRS += buildblock recon_buildblock display IO \
 	listmode_buildblock \
 	modelling_buildblock \
 	scatter_buildblock \
+	spatial_deformation_buildblock \
 	iterative/OSMAPOSL \
 	iterative/OSSPS \
 	analytic/FBP2D \

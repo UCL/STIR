@@ -29,10 +29,12 @@ foreach(executable ${${dir_SIMPLE_TEST_EXE_SOURCES}})
    add_executable(${executable} ${executable}.cxx ${STIR_REGISTRIES})
    target_link_libraries(${executable} ${STIR_LIBRARIES})
    ADD_TEST(${executable} ${CMAKE_CURRENT_BINARY_DIR}/${executable})
+   SET_PROPERTY(TARGET ${executable} PROPERTY FOLDER "Tests")
 endforeach()
 
 foreach(executable ${${dir_INVOLVED_TEST_EXE_SOURCES}})
    add_executable(${executable} ${executable}.cxx ${STIR_REGISTRIES})
    target_link_libraries(${executable} ${STIR_LIBRARIES})
+   SET_PROPERTY(TARGET ${executable} PROPERTY FOLDER "Tests")
 endforeach()
 

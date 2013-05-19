@@ -25,7 +25,9 @@ set(CMAKE_LEGACY_CYGWIN_WIN32 0)
 
 PROJECT(STIR)
 
-cmake_minimum_required(VERSION 2.6)
+SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
+# require 2.8.3 to get FOLDER properties support (without that, we only need cmake 2.6)
+cmake_minimum_required(VERSION 2.8.3)
 
 # add project source to cmake path such that it can use our find_package modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
@@ -166,10 +168,11 @@ endforeach(STIR_DIR)
 ADD_SUBDIRECTORY(swig)
 
 #### Export settings such that another project can import them.
+# Disabled as no longer deemed safe
 # Save the compiler settings 
-INCLUDE(${CMAKE_ROOT}/Modules/CMakeExportBuildSettings.cmake)
-CMAKE_EXPORT_BUILD_SETTINGS(${STIR_BINARY_DIR}/STIRBuildSettings.cmake)
+#INCLUDE(${CMAKE_ROOT}/Modules/CMakeExportBuildSettings.cmake)
+#CMAKE_EXPORT_BUILD_SETTINGS(${STIR_BINARY_DIR}/STIRBuildSettings.cmake)
 
 # Save library dependencies.
-EXPORT_LIBRARY_DEPENDENCIES(${STIR_BINARY_DIR}/STIRLibraryDepends.cmake)
+#EXPORT_LIBRARY_DEPENDENCIES(${STIR_BINARY_DIR}/STIRLibraryDepends.cmake)
 
