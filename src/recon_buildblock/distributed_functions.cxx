@@ -2,7 +2,7 @@
 // $Id$
 //
 /*
-    Copyright (C) 2007- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2007-2012, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -81,7 +81,7 @@ namespace distributed
 
 #ifdef STIR_MPI_TIMINGS         
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Master/Slave: sending int value took " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master/Slave: sending int value took " << t.value() << " seconds" << std::endl;
 #endif
   }
         
@@ -111,7 +111,7 @@ namespace distributed
                 
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Master/Slave: sending string took " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master/Slave: sending string took " << t.value() << " seconds" << std::endl;
 #endif
 
     delete[] buf;
@@ -132,7 +132,7 @@ namespace distributed
                 
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Master/Slave: sending bool value took " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master/Slave: sending bool value took " << t.value() << " seconds" << std::endl;
 #endif
 
   }
@@ -154,7 +154,7 @@ namespace distributed
     if (test_send_receive_times) t.stop();
     int my_rank=0;
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank) ; /*Gets the rank of the Processor*/         
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Master/Slave " << my_rank << ": sending int values took " << t.value() << " seconds"<< endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master/Slave " << my_rank << ": sending int values took " << t.value() << " seconds"<< std::endl;
 #endif
 
   }
@@ -175,7 +175,7 @@ namespace distributed
                 
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Master: sending double values took " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master: sending double values took " << t.value() << " seconds" << std::endl;
 #endif
   }
 
@@ -230,7 +230,7 @@ namespace distributed
 
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Master/Slave: sending image parameters took " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master/Slave: sending image parameters took " << t.value() << " seconds" << std::endl;
 #endif
                 
     //send dimensions to construct IndexRange-object
@@ -243,7 +243,7 @@ namespace distributed
 
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Master/Slave: sending image dimensions took " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master/Slave: sending image dimensions took " << t.value() << " seconds" << std::endl;
 #endif
                 
   }
@@ -272,7 +272,7 @@ namespace distributed
 
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Master/Slave: sending image values took " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master/Slave: sending image values took " << t.value() << " seconds" << std::endl;
 #endif
   }
         
@@ -316,7 +316,7 @@ namespace distributed
                 
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Master: sending projection_data_info took " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master: sending projection_data_info took " << t.value() << " seconds" << std::endl;
 #endif
                 
                 
@@ -373,7 +373,7 @@ namespace distributed
 
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Master: sending viewgram took " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master: sending viewgram took " << t.value() << " seconds" << std::endl;
 #endif
                 
     delete[] viewgram_buf;
@@ -403,7 +403,7 @@ namespace distributed
         
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Slave: received int value after " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received int value after " << t.value() << " seconds" << std::endl;
 #endif
         
     return i;
@@ -421,7 +421,7 @@ namespace distributed
         
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Slave: received string value after " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received string value after " << t.value() << " seconds" << std::endl;
 #endif
                 
     //convert to string
@@ -444,7 +444,7 @@ namespace distributed
                 
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Slave: received REGISTERED_NAME_TAG value after " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received REGISTERED_NAME_TAG value after " << t.value() << " seconds" << std::endl;
 #endif
                 
     //convert to string
@@ -463,7 +463,7 @@ namespace distributed
 
 #ifdef STIR_MPI_TIMINGS         
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Slave: received parameter info value after " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received parameter info value after " << t.value() << " seconds" << std::endl;
 #endif
                 
     //convert to string 
@@ -491,7 +491,7 @@ namespace distributed
                 
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Slave: received bool value after " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received bool value after " << t.value() << " seconds" << std::endl;
 #endif
                 
     return i!=0;
@@ -511,7 +511,7 @@ namespace distributed
     if (test_send_receive_times) t.stop();
     int my_rank=0;
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank) ; /*Gets the rank of the Processor*/         
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Master/Slave " << my_rank << ": received "<< count << " int values after " << t.value() << " seconds"<< endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master/Slave " << my_rank << ": received "<< count << " int values after " << t.value() << " seconds"<< std::endl;
 #endif
 
     return status;
@@ -529,7 +529,7 @@ namespace distributed
                 
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Slave: received double values after " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received double values after " << t.value() << " seconds" << std::endl;
 #endif
                 
     return status;
@@ -556,7 +556,7 @@ namespace distributed
 
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Slave: received origin and grid_spacing after " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received origin and grid_spacing after " << t.value() << " seconds" << std::endl;
                 
     //receive dimensions of Image-data
     if (test_send_receive_times) {t.reset(); t.start();} 
@@ -567,7 +567,7 @@ namespace distributed
 
 #ifdef STIR_MPI_TIMINGS         
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Slave: received image dimensions after " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received image dimensions after " << t.value() << " seconds" << std::endl;
 #endif
         
     buffer=(sizes[3]-sizes[0]+1)*(sizes[4]-sizes[1]+1)*(sizes[5]-sizes[2]+1);
@@ -607,7 +607,7 @@ namespace distributed
 
 #ifdef STIR_MPI_TIMINGS         
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Slave: received image values after " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received image values after " << t.value() << " seconds" << std::endl;
 #endif
                 
     std::copy(buffer, buffer + buffer_size, image_ptr->begin_all());
@@ -630,7 +630,7 @@ namespace distributed
 
 #ifdef STIR_MPI_TIMINGS 
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Slave: received proj_data_info after " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received proj_data_info after " << t.value() << " seconds" << std::endl;
 #endif
         
     //construct pojector_info_ptr
@@ -703,7 +703,7 @@ namespace distributed
 
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Slave: received viewgram_array after " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received viewgram_array after " << t.value() << " seconds" << std::endl;
 #endif
 
   }     
@@ -734,17 +734,17 @@ namespace distributed
 
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) t.stop();
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Master: reduced output_image after " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Master: reduced output_image after " << t.value() << " seconds" << std::endl;
 #endif
 
-    cout <<"Master: output_image reduced.\n";
+    std::cout <<"Master: output_image reduced.\n";
                 
     //get input_image from 1-demnsional array
     std::copy(output_buf, output_buf+image_buffer_size, output_image_ptr->begin_all());
     delete[] output_buf;
 #ifdef STIR_MPI_TIMINGS
     fulltimer.stop();
-    if (test_send_receive_times /*&& fulltimer.value()>min_threshold*/) cout << "Master: reduced output_image total after " << fulltimer.value() << " seconds" << endl;
+    if (test_send_receive_times /*&& fulltimer.value()>min_threshold*/) std::cout << "Master: reduced output_image total after " << fulltimer.value() << " seconds" << std::endl;
 #endif
   }
         
@@ -769,7 +769,7 @@ namespace distributed
     if (test_send_receive_times) t.stop();
     int my_rank=0;
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank) ; /*Gets the rank of the Processor*/         
-    if (test_send_receive_times && t.value()>min_threshold) cout << "Slave " << my_rank << ": reduced output_image after " << t.value() << " seconds" << endl;
+    if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave " << my_rank << ": reduced output_image after " << t.value() << " seconds" << std::endl;
 #endif          
     delete[] output_buf;
   }
