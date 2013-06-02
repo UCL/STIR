@@ -2,7 +2,7 @@
 // $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003-2011 Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -173,6 +173,7 @@ int main(int argc, char *argv[])
         if (!recognised && list_unknown)
         {
           cout << "Unknown type";
+          listed = true; 
         }
         if (listed)
           {
