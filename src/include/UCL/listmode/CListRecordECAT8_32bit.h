@@ -77,9 +77,7 @@ class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDet
   DataType get_data() const { return this->data; }
 
  public:  
-  CListEventECAT8_32bit() :
-  CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(Scanner::Siemens_mMR)))
-    {}
+  CListEventECAT8_32bit();
 
  //! This routine returns the corresponding detector pair   
   virtual void get_detection_position(DetectionPositionPair<>&) const;
@@ -104,6 +102,8 @@ class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDet
     CListEventDataECAT8_32bit   data;
     boost::int32_t         raw;
   };
+  vector<int> segment_sequence;
+  vector<int> sizes;
 
 };
 

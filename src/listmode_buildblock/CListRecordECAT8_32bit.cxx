@@ -2,7 +2,6 @@
 // $Id: CListRecordECAT8_32bit.cxx,v 1.5 2011-06-24 15:36:55 kris Exp $
 //
 /*
-    Copyright (C) 1998-2011, Hammersmith Imanet Ltd
     Copyright (C) 2013 University College London
 */
 /*!
@@ -28,6 +27,24 @@
 START_NAMESPACE_STIR
 namespace UCL {
 
+CListEventECAT8_32bit::
+CListEventECAT8_32bit() :
+  CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(Scanner::Siemens_mMR)))
+{
+  // TODO remove hard-coding of sizes. depends on mMR (and acquisition?)
+  this->segment_sequence.resize(121);
+  this->sizes.resize(121);
+  this->segment_sequence[0]=0;
+  this->sizes[0]=64;
+  for (int ringdiff=1; ringdiff<=60; ++ringdiff)
+    {
+      // TODO need to check if it's -,+ or +,-
+      this->segment_sequence[2*ringdiff-1]=-ringdiff;
+      this->segment_sequence[2*ringdiff]=ringdiff;
+      this->sizes[2*ringdiff-1]=64-ringdiff;
+      this->sizes[2*ringdiff]=64-ringdiff;
+    }
+}
 
 void
 CListEventECAT8_32bit::
@@ -38,52 +55,26 @@ get_detection_position(DetectionPositionPair<>& det_pos) const
   const int num_views = this->scanner_sptr->get_num_detectors_per_ring()/2;
 
   const int tang_pos_num = this->data.offset % num_tangential_poss;//(this->num_sinograms * this-> num_views);
-  int rest = this->data.offset / num_tangential_poss;
+  const int rest = this->data.offset / num_tangential_poss;
   const int view_num = rest % num_views;
   int z = rest / num_views;
   // TODO
   int axial_pos_num = 0;
   int segment_num = 0;
-    vector<int> segment_sequence(121);
-    vector<int> sizes(121);
-    segment_sequence[0]=0;
-    sizes[0]=64;
-    for (int ringdiff=1; ringdiff<=60; ++ringdiff)
+  for (std::size_t i=0; i<this->segment_sequence.size();++i)
     {
-        segment_sequence[2*ringdiff-1]=ringdiff;
-        segment_sequence[2*ringdiff]=-ringdiff;
-        sizes[2*ringdiff-1]=64-ringdiff;
-        sizes[2*ringdiff]=64-ringdiff;
-    }
-    for (int i=0; i<segment_sequence.size();++i)
-    {
-        if (z< sizes[i])
+      if (z< this->sizes[i])
         {
-            axial_pos_num = z;
-            segment_num = segment_sequence[i];
-            break;
+          axial_pos_num = z;
+          segment_num = this->segment_sequence[i];
+          break;
         }
-        else
+      else
         {
-            z -= sizes[i];
+          z -= this->sizes[i];
         }
     }
-/*
- //   for segment 0
-  if (z<this->get_uncompressed_proj_data_info_sptr()->get_num_axial_poss(0))
-  {
-      axial_pos_num = z;
-      segment_num = 0;
-  }
-    else
-    {
-       segment_num = 1;
-       axial_pos_num=0;
-    }
-*/
-//    if (segment_num==0 && axial_pos_num==0 && (this->data.offset == 66753-1 || tang_pos_num == 16 || view_num == 193) )
-//        std::cerr << "offset " << this->data.offset << "t " << tang_pos_num << " v" << view_num << std::endl;
-  Bin uncompressed_bin(segment_num, view_num, axial_pos_num,tang_pos_num - (num_tangential_poss/2));
+  const Bin uncompressed_bin(segment_num, view_num, axial_pos_num,tang_pos_num - (num_tangential_poss/2));
   this->get_uncompressed_proj_data_info_sptr()->get_det_pos_pair_for_bin(det_pos,uncompressed_bin);  
 }
 
