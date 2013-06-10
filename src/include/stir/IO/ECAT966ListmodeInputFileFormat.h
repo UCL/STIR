@@ -91,7 +91,7 @@ public InputFileFormat<CListModeData >
     actual_can_read(const FileSignature& signature,
 		    std::istream& input) const
   {
-    warning("can_read for ECAT966 listmode data with istream not implemented %s:%s. Sorry",
+    warning("can_read for ECAT966 listmode data with istream not implemented %s:%d. Sorry",
 	  __FILE__, __LINE__);
     return false;
 
@@ -107,7 +107,7 @@ public InputFileFormat<CListModeData >
     read_from_file(std::istream& input) const
   {
     // cannot do this as need both .sgl and .lm
-    warning("read_from_file for ECAT966 listmode data with istream not implemented %s:%s. Sorry",
+    warning("read_from_file for ECAT966 listmode data with istream not implemented %s:%d. Sorry",
 	  __FILE__, __LINE__);
     return
       std::auto_ptr<data_type>
