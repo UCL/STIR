@@ -68,7 +68,7 @@ public InputFileFormat<DiscretisedDensity<3,float> >
     read_from_file(std::istream& input) const
   {
     //TODO
-    error("read_from_file for ECAT6 with istream not implemented %s:%s. Sorry",
+    error("read_from_file for ECAT6 with istream not implemented %s:%d. Sorry",
 	  __FILE__, __LINE__);
     return
       std::auto_ptr<data_type>
