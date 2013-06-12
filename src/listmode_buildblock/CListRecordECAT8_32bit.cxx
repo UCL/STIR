@@ -31,18 +31,19 @@ CListEventECAT8_32bit::
 CListEventECAT8_32bit() :
   CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(Scanner::Siemens_mMR)))
 {
+  const int num_rings = this->scanner_sptr->get_num_rings();
   // TODO remove hard-coding of sizes. depends on mMR (and acquisition?)
-  this->segment_sequence.resize(121);
-  this->sizes.resize(121);
+  const int max_ring_diff=60;
+  this->segment_sequence.resize(2*max_ring_diff+1);
+  this->sizes.resize(2*max_ring_diff+1);
   this->segment_sequence[0]=0;
-  this->sizes[0]=64;
-  for (int ringdiff=1; ringdiff<=60; ++ringdiff)
+  this->sizes[0]=num_rings;
+  for (int ringdiff=1; ringdiff<=max_ring_diff; ++ringdiff)
     {
-      // TODO need to check if it's -,+ or +,-
       this->segment_sequence[2*ringdiff-1]=-ringdiff;
       this->segment_sequence[2*ringdiff]=ringdiff;
-      this->sizes[2*ringdiff-1]=64-ringdiff;
-      this->sizes[2*ringdiff]=64-ringdiff;
+      this->sizes[2*ringdiff-1]=num_rings-ringdiff;
+      this->sizes[2*ringdiff]=num_rings-ringdiff;
     }
 }
 
@@ -58,7 +59,6 @@ get_detection_position(DetectionPositionPair<>& det_pos) const
   const int rest = this->data.offset / num_tangential_poss;
   const int view_num = rest % num_views;
   int z = rest / num_views;
-  // TODO
   int axial_pos_num = 0;
   int segment_num = 0;
   for (std::size_t i=0; i<this->segment_sequence.size();++i)
