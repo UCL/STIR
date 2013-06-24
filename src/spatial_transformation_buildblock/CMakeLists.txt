@@ -1,8 +1,7 @@
 #
 # $Id$
 #
-# Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
-# Copyright 2011-07-01 - $Date$ Kris Thielemans
+# Copyright 2013 Kris Thielemans
 
 # This file is part of STIR.
 #
@@ -20,21 +19,16 @@
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
 
-set(dir  data_buildblock)
+set(dir spatial_transformation_buildblock)
 
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-	SinglesRates 
-	SinglesRatesForTimeFrames 
-)
-if (HAVE_ECAT)
-  list(APPEND  ${dir_LIB_SOURCES}
-	SinglesRatesFromSglFile 
-	SinglesRatesFromECAT7  
-  )
-endif()
+   SpatialTransformation
+   GatedSpatialTransformation
+   warp_image
+) 
 
 include(../stir_lib_target.cmake)
 
-target_link_libraries(${dir} buildblock)
+target_link_libraries(${dir} buildblock numerics_buildblock )

@@ -66,6 +66,10 @@ set(${dir_LIB_SOURCES}
 	ArrayFilter2DUsingConvolution 
 	ArrayFilter3DUsingConvolution 
 	find_fwhm_in_image
+        GatedDiscretisedDensity
+        MaximalArrayFilter3D
+        MaximalImageFilter3D
+        TimeGateDefinitions
 )
 
 if (NOT HAVE_SYSTEM_GETOPT)
@@ -86,5 +90,5 @@ if (RDF_FOUND)
 endif()
 
 # TODO currently needed as filters need fourier
-target_link_libraries(buildblock numerics_buildblock)
+#target_link_libraries(buildblock numerics_buildblock)
 

@@ -40,6 +40,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_ArcCorrection
 	test_DynamicDiscretisedDensity  
 	test_find_fwhm_in_image
+        test_warp_image
 )
 
 set(${dir_INVOLVED_TEST_EXE_SOURCES}

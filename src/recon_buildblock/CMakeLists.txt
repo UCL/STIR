@@ -71,6 +71,7 @@ set(${dir_LIB_SOURCES}
 	PoissonLogLikelihoodWithLinearModelForMeanAndListModeData 
 	PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin 
         PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData	
+        PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion
 )
 
 if (HAVE_ECAT)
@@ -99,7 +100,7 @@ endif()
 
 # TODO what to do with IO?
 # modelling_buildblock currently needed for ParametricDensity and Patlak (TODO get rid of this somehow?)
-target_link_libraries(recon_buildblock modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock)
+target_link_libraries(recon_buildblock modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
 
 
 
