@@ -1,4 +1,4 @@
-Licensing information for STIR 2.3
+Licensing information for STIR 2.4a
 ----------------------------------
 
 See for more info http://stir.sourceforge.net, section Registration.
