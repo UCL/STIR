@@ -32,6 +32,7 @@ set(${dir_LIB_SOURCES}
   InputFileFormatRegistry 
   InterfileDynamicDiscretisedDensityOutputFileFormat 
   InterfileParametricDensityOutputFileFormat
+  GIPL_ImageFormat
 ) 
 
 if (LLN_FOUND)
