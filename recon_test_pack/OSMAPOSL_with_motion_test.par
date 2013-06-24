@@ -1,0 +1,48 @@
+OSMAPOSLParameters :=
+; test file used for OSEM with motion modelling
+
+objective function type:=PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion Parameters:=
+
+input filename := my_att_fwd_test_object
+
+; if disabled, defaults to maximum segment number in the file
+maximum absolute segment number to process := -1
+; see User's Guide to see when you need this
+zero end planes of segment 0 := 0
+
+projector pair type := Matrix
+Projector Pair Using Matrix Parameters :=
+Matrix type := Ray Tracing
+Ray Tracing Matrix Parameters:=
+  restrict to cylindrical fov := 1
+  ; use a slightly better approximation than simple ray tracing
+  number of rays in tangential direction to trace for each bin := 10
+  ; remove one symmetry such that we can use more subsets
+  do symmetry 90degrees min phi := 0
+End Ray Tracing Matrix Parameters:=
+End Projector Pair Using Matrix Parameters :=
+
+recompute sensitivity := 1
+use subset sensitivities := 1
+
+normalisation sinograms := my_ACF_test_object
+;additive sinograms := my_test_object_additive_sinogram
+
+Gate Definitions filename := my_translation.gdef
+Motion Vectors filename prefix := my_translation
+Reverse Motion Vectors filename prefix := my_reverse_translation
+
+zoom:= 1
+xy output image size (in pixels) := 101
+end PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion Parameters:=
+
+; Number of subsets should be a divisor of num_views/4
+;initial estimate := my_test_object_g1.hv
+number of subsets:= 28
+number of subiterations:= 46
+save estimates at subiteration intervals:= 28
+output filename prefix := my_rec_test_object
+
+END :=
+

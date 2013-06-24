@@ -4,7 +4,8 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2010-07-21, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011, Kris Thielemans
+    Copyright (C) 2010-2013, King's College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -33,7 +34,6 @@
   \author PARAPET project
 
   $Date$
-
   $Revision$
 */
 
@@ -218,6 +218,32 @@ Scanner::Scanner(Type scanner_type)
     // although likely transaxial_blocks_per_bucket*transaxial_crystals_per_block
     break;
 
+  case PANDA:
+    
+    set_params(PANDA, string_list("PANDA"), 
+               1 /*NumRings*/, 512 /*MaxBinsNonArcCor*/, 512 /*MaxBinsArcCor*/, 2048 /*NumDetPerRing*/, 
+               /*MeanInnerRadius*/ 75.5/2.F, /*AverageDoI*/ 10.F, /*Ring Spacing*/ 3.F, /*BinSize*/ 0.1F, /*IntrinsicTilt*/ 0.F, 
+               1, 1, 1, 1, 0, 0, 1);     
+    break;
+		  
+  case nanoPET:
+		  
+	  set_params(nanoPET, string_list("nanoPET"), /*Modelling the gap with one fake crystal */
+				 81, 39*3, /* We could also model gaps in the future as one detector so 39->39+1, while 1 (point source), 3 (mouse) or 5 (rats) */
+				 39*3, /* Just put the same with NonArcCor for now*/
+				 12 * 39, 174.F,  5.0F, 1.17F, 1.17F, /* Actual size is 1.12 and 0.05 is the thickness of the optical reflector */ 0.0F, /* not sure for this */ 
+				 0,0,0,0,0,0, 1);
+	  break; 
+
+  case HYPERimage:
+		  
+	  set_params(HYPERimage, string_list("HYPERimage"), /*Modelling the gap with one fake crystal */
+				 22, 239, 245,
+			     490, 103.97F, 3.0F, 1.4F, 1.4F, /* Actual size is 1.3667 and assume 0.0333 is the thickness of the optical reflector */  0.F,
+				 0,0,0,0,0,0,1);
+	  break; 
+		  
+		  
   case Advance:
     
     // 283 bins (non-uniform sampling) 
@@ -242,52 +268,52 @@ Scanner::Scanner(Type scanner_type)
     // 221 bins (uniform sampling)
     /* crystal size: 6.3 x 6.3 x 30 mm*/
     set_params(DiscoveryST, string_list("GE Discovery ST", "Discovery ST"), 
-               24, 249, 221, 2 * 210,
+	       24, 249, 221, 2 * 210,
                886.2F/2.F, 8.4F, 6.54F, 3.195F, 
-               static_cast<float>(-4.54224*_PI/180),//sign?
-               4, 2, 6, 6, 1, 1, 1);// TODO not sure about sign of view_offset
+	       static_cast<float>(-4.54224*_PI/180),//sign?
+	       4, 2, 6, 6, 1, 1, 1);// TODO not sure about sign of view_offset
     break;
 
  case DiscoverySTE: 
 
     set_params(DiscoverySTE, string_list("GE Discovery STE", "Discovery STE"), 
-               24, 329, 293, 2 * 280, 
+	       24, 329, 293, 2 * 280, 
                886.2F/2.F, 8.4F, 6.54F, 2.397F, 
-               static_cast<float>(-4.5490*_PI/180),//sign?
-               4, 2, 6, 8, 1, 1, 1);// TODO not sure about sign of view_offset
+	       static_cast<float>(-4.5490*_PI/180),//sign?
+	       4, 2, 6, 8, 1, 1, 1);// TODO not sure about sign of view_offset
     break;
 
  case DiscoveryRX: 
 
     set_params(DiscoveryRX, string_list("GE Discovery RX", "Discovery RX"), 
-               24, 
-               367, 
-               331, 
-               2 * 315,
+	       24, 
+	       367, 
+	       331, 
+	       2 * 315,
                886.2F/2.F, 
-               9.4F,  
-               6.54F, 2.13F,
-               static_cast<float>(-4.5950*_PI/180),//sign?
-               4,
-               2,
-               6, 9, 1, 1, 1);// TODO not sure about sign of view_offset    
+	       9.4F,  
+	       6.54F, 2.13F,
+	       static_cast<float>(-4.5950*_PI/180),//sign?
+	       4,
+	       2,
+	       6, 9, 1, 1, 1);// TODO not sure about sign of view_offset    
     break;
 
  case Discovery600: 
 
     set_params(Discovery600, string_list("GE Discovery 600", "Discovery 600"), 
-               24, 
-               339, 
-               293, // TODO
-               2 * 256,
+	       24, 
+	       339, 
+	       293, // TODO
+	       2 * 256,
                826.70F/2.F - 8.4F, 
-               8.4F,  
-               6.54F,
-               2.3974F,
-               static_cast<float>(-4.5490*_PI/180),//sign? TODO value
-               4,
-               2,
-               6, 8, 1, 1, 1);
+	       8.4F,  
+	       6.54F,
+	       2.3974F,
+	       static_cast<float>(-4.5490*_PI/180),//sign? TODO value
+	       4,
+	       2,
+	       6, 8, 1, 1, 1);
     break;
   
   case HZLR:
@@ -334,23 +360,33 @@ Scanner::Scanner(Type scanner_type)
        scanner.
     */
     set_params(Allegro,string_list("Allegro", "Philips Allegro"), 
-               29, 295, 28*23, 
-               430.05F, 12.F,
-               6.3F, 4.3F, 0.0F, 
-               1, 0, 
-               29, 0 /* 23* or 22*/,
-               29, 0 /*  all detectors in a ring? */, 
+	       29, 295, 28*23, 
+	       430.05F, 12.F, 
+	       6.3F, 4.3F, 0.0F, 
+	       1, 0, 
+	       29, 0 /* 23* or 22*/,
+	       29, 0 /*  all detectors in a ring? */, 
+	       1);
+    break;
+
+  case GeminiTF:
+    set_params(GeminiTF,string_list("GeminiTF", "Philips GeminiTF"), 
+               44, 322, 287, // Based on GATE output - Normally it is 644 detectors at each of the 44 rings
+               322*2, // Actual number of crystals is 644
+               450.17F, 8.F, // DOI is from XXX et al 2008 MIC
+               4.F, 4.F, 0.F, 
+               0, 0, 
+               0, 0, // Not considering any gap, but this is per module 28 flat modules in total, while 420 PMTs 
+               0, 0 /*  Not sure about these, but shouldn't be important */, 
                1);
     break;
 
-  case HiDAC:
-
-    // all of these don't make any sense for the HiDAC
+  case HiDAC: // all of these don't make any sense for the HiDAC
     set_params(HiDAC, string_list("HiDAC"), 
                0, 0, 0, 
                0.F, 0.F, 0.F, 0.F, 0.F, 
                0, 0, 0, 0, 0, 0, 0);
-    
+ 
     break;
     
   case User_defined_scanner: // zlong, 08-04-2004, Userdefined support
@@ -374,9 +410,6 @@ Scanner::Scanner(Type scanner_type)
   }
 
 }
-
-
-
 
 
 Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
@@ -457,16 +490,16 @@ set_params(Type type_v,const list<string>& list_of_names_v,
 {
   set_params(type_v, list_of_names_v, num_rings_v,
              max_num_non_arccorrected_bins_v,
-             max_num_non_arccorrected_bins_v,
-             num_detectors_per_ring_v, 
-             inner_ring_radius_v, 
+	     max_num_non_arccorrected_bins_v,
+	     num_detectors_per_ring_v, 
+	     inner_ring_radius_v, 
              average_depth_of_interaction_v,
              ring_spacing_v, bin_size_v, intrinsic_tilt_v,
-             num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
-             num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
+	     num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
+	     num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
              num_axial_crystals_per_singles_unit_v, 
              num_transaxial_crystals_per_singles_unit_v,
-             num_detector_layers_v);
+	     num_detector_layers_v);
 }
 
 
@@ -497,7 +530,7 @@ set_params(Type type_v,const list<string>& list_of_names_v,
   average_depth_of_interaction = average_depth_of_interaction_v;
   ring_spacing = ring_spacing_v;
   bin_size = bin_size_v;
-  intrinsic_tilt = intrinsic_tilt_v;    
+  intrinsic_tilt = intrinsic_tilt_v;	
   num_transaxial_blocks_per_bucket = num_transaxial_blocks_per_bucket_v;
   num_axial_blocks_per_bucket = num_axial_blocks_per_bucket_v;
   num_axial_crystals_per_block= num_axial_crystals_per_block_v;
@@ -516,127 +549,127 @@ check_consistency() const
 {
   if (intrinsic_tilt<-_PI || intrinsic_tilt>_PI)
     warning("Scanner %s: intrinsic_tilt is very large. maybe it's in degrees (but should be in radians)",
-            this->get_name().c_str());
+	    this->get_name().c_str());
 
   {
     if (get_num_transaxial_crystals_per_block() <= 0 ||
-        get_num_transaxial_blocks() <= 0)
+	get_num_transaxial_blocks() <= 0)
       warning("Scanner %s: transaxial block info is not set",
-              this->get_name().c_str());
+	      this->get_name().c_str());
     else
       {
-        const int dets_per_ring =
-          get_num_transaxial_blocks() *
-          get_num_transaxial_crystals_per_block();
-        if ( dets_per_ring != get_num_detectors_per_ring())
-          { 
-            warning("Scanner %s: inconsistent transaxial block info",
-                    this->get_name().c_str()); 
-            return Succeeded::no; 
-          }
+	const int dets_per_ring =
+	  get_num_transaxial_blocks() *
+	  get_num_transaxial_crystals_per_block();
+	if ( dets_per_ring != get_num_detectors_per_ring())
+	  { 
+	    warning("Scanner %s: inconsistent transaxial block info",
+		    this->get_name().c_str()); 
+	    return Succeeded::no; 
+	  }
       }
   }
   {
     if (get_num_transaxial_blocks_per_bucket() <= 0 ||
-        get_num_transaxial_buckets() <=0)
+	get_num_transaxial_buckets() <=0)
       warning("Scanner %s: transaxial bucket info is not set",
-              this->get_name().c_str());
+	      this->get_name().c_str());
     else
       {
-        const int blocks_per_ring =
-          get_num_transaxial_buckets() *
-          get_num_transaxial_blocks_per_bucket();
-        if ( blocks_per_ring != get_num_transaxial_blocks())
-          { 
-            warning("Scanner %s: inconsistent transaxial block/bucket info",
-                    this->get_name().c_str()); 
-            return Succeeded::no; 
-          }
+	const int blocks_per_ring =
+	  get_num_transaxial_buckets() *
+	  get_num_transaxial_blocks_per_bucket();
+	if ( blocks_per_ring != get_num_transaxial_blocks())
+	  { 
+	    warning("Scanner %s: inconsistent transaxial block/bucket info",
+		    this->get_name().c_str()); 
+	    return Succeeded::no; 
+	  }
       }
   }
   {
     if (get_num_axial_crystals_per_block() <= 0 ||
-        get_num_axial_blocks() <=0)
+	get_num_axial_blocks() <=0)
       warning("Scanner %s: axial block info is not set",
-              this->get_name().c_str());
+	      this->get_name().c_str());
     else
       {
-        const int dets_axial =
-          get_num_axial_blocks() *
-          get_num_axial_crystals_per_block();
-        if ( dets_axial != get_num_rings())
-          { 
-            warning("Scanner %s: inconsistent axial block info",
-                    this->get_name().c_str()); 
-            return Succeeded::no; 
-          }
+	const int dets_axial =
+	  get_num_axial_blocks() *
+	  get_num_axial_crystals_per_block();
+	if ( dets_axial != get_num_rings())
+	  { 
+	    warning("Scanner %s: inconsistent axial block info",
+		    this->get_name().c_str()); 
+	    return Succeeded::no; 
+	  }
       }
   }
   {
     if (get_num_axial_blocks_per_bucket() <= 0 ||
-        get_num_axial_buckets() <=0)
+	get_num_axial_buckets() <=0)
       warning("Scanner %s: axial bucket info is not set",
-              this->get_name().c_str());
+	      this->get_name().c_str());
     else
       {
-        const int blocks_axial =
-          get_num_axial_buckets() *
-          get_num_axial_blocks_per_bucket();
-        if ( blocks_axial != get_num_axial_blocks())
-          { 
-            warning("Scanner %s: inconsistent axial block/bucket info",
-                    this->get_name().c_str()); 
-            return Succeeded::no; 
-          }
+	const int blocks_axial =
+	  get_num_axial_buckets() *
+	  get_num_axial_blocks_per_bucket();
+	if ( blocks_axial != get_num_axial_blocks())
+	  { 
+	    warning("Scanner %s: inconsistent axial block/bucket info",
+		    this->get_name().c_str()); 
+	    return Succeeded::no; 
+	  }
       }
   }
   // checks on singles units
   {
     if (get_num_transaxial_crystals_per_singles_unit() <= 0)
       warning("Scanner %s: transaxial singles_unit info is not set",
-              this->get_name().c_str());
+	      this->get_name().c_str());
     else
       {
-        if ( get_num_detectors_per_ring() % get_num_transaxial_crystals_per_singles_unit() != 0)
-          { 
-            warning("Scanner %s: inconsistent transaxial singles unit info:\n"
-                    "\tnum_detectors_per_ring %d should be a multiple of num_transaxial_crystals_per_singles_unit %d",
-                    this->get_name().c_str(),
-                    get_num_detectors_per_ring(), get_num_transaxial_crystals_per_singles_unit()); 
-            return Succeeded::no; 
-          }
-        if ( get_num_transaxial_crystals_per_bucket() % get_num_transaxial_crystals_per_singles_unit() != 0)
-          { 
-            warning("Scanner %s: inconsistent transaxial singles unit info:\n"
-                    "\tnum_transaxial_crystals_per_bucket %d should be a multiple of num_transaxial_crystals_per_singles_unit %d",
-                    this->get_name().c_str(),
-                    get_num_transaxial_crystals_per_bucket(), get_num_transaxial_crystals_per_singles_unit()); 
-            return Succeeded::no; 
-          }
+	if ( get_num_detectors_per_ring() % get_num_transaxial_crystals_per_singles_unit() != 0)
+	  { 
+	    warning("Scanner %s: inconsistent transaxial singles unit info:\n"
+		    "\tnum_detectors_per_ring %d should be a multiple of num_transaxial_crystals_per_singles_unit %d",
+		    this->get_name().c_str(),
+		    get_num_detectors_per_ring(), get_num_transaxial_crystals_per_singles_unit()); 
+	    return Succeeded::no; 
+	  }
+	if ( get_num_transaxial_crystals_per_bucket() % get_num_transaxial_crystals_per_singles_unit() != 0)
+	  { 
+	    warning("Scanner %s: inconsistent transaxial singles unit info:\n"
+		    "\tnum_transaxial_crystals_per_bucket %d should be a multiple of num_transaxial_crystals_per_singles_unit %d",
+		    this->get_name().c_str(),
+		    get_num_transaxial_crystals_per_bucket(), get_num_transaxial_crystals_per_singles_unit()); 
+	    return Succeeded::no; 
+	  }
       }
   }
   {
     if (get_num_axial_crystals_per_singles_unit() <= 0)
       warning("Scanner %s: axial singles_unit info is not set",
-              this->get_name().c_str());
+	      this->get_name().c_str());
     else
       {
-        if ( get_num_rings() % get_num_axial_crystals_per_singles_unit() != 0)
-          { 
-            warning("Scanner %s: inconsistent axial singles unit info:\n"
-                    "\tnum_rings %d should be a multiple of num_axial_crystals_per_singles_unit %d",
-                    this->get_name().c_str(),
-                    get_num_rings(), get_num_axial_crystals_per_singles_unit()); 
-            return Succeeded::no; 
-          }
-        if ( get_num_axial_crystals_per_bucket() % get_num_axial_crystals_per_singles_unit() != 0)
-          { 
-            warning("Scanner %s: inconsistent axial singles unit info:\n"
-                    "\tnum_axial_crystals_per_bucket %d should be a multiple of num_axial_crystals_per_singles_unit %d",
-                    this->get_name().c_str(),
-                    get_num_axial_crystals_per_bucket(), get_num_axial_crystals_per_singles_unit()); 
-            return Succeeded::no; 
-          }
+	if ( get_num_rings() % get_num_axial_crystals_per_singles_unit() != 0)
+	  { 
+	    warning("Scanner %s: inconsistent axial singles unit info:\n"
+		    "\tnum_rings %d should be a multiple of num_axial_crystals_per_singles_unit %d",
+		    this->get_name().c_str(),
+		    get_num_rings(), get_num_axial_crystals_per_singles_unit()); 
+	    return Succeeded::no; 
+	  }
+	if ( get_num_axial_crystals_per_bucket() % get_num_axial_crystals_per_singles_unit() != 0)
+	  { 
+	    warning("Scanner %s: inconsistent axial singles unit info:\n"
+		    "\tnum_axial_crystals_per_bucket %d should be a multiple of num_axial_crystals_per_singles_unit %d",
+		    this->get_name().c_str(),
+		    get_num_axial_crystals_per_bucket(), get_num_axial_crystals_per_singles_unit()); 
+	    return Succeeded::no; 
+	  }
       }
   }
 
@@ -654,7 +687,6 @@ bool static close_enough(const double a, const double b)
 {
   return fabs(a-b) <= std::min(fabs(a), fabs(b)) * 10E-4;
 }
-
 
 bool 
 Scanner::operator ==(const Scanner& scanner) const
@@ -793,7 +825,7 @@ Scanner* Scanner::ask_parameters()
   while (true)
     {
       int num_detectors_per_ring = 
-        ask_num("Enter number of detectors per ring:",0,2000,128);
+	ask_num("Enter number of detectors per ring:",0,2000,128);
   
       int NoRings = 
         ask_num("Enter number of rings :",0,1000,16);
@@ -802,7 +834,7 @@ Scanner* Scanner::ask_parameters()
         ask_num("Enter default number of tangential positions for this scanner: ",0,3000,128);
   
       float InnerRingRadius=
-        ask_num("Enter inner ring radius (in mm): ",0.F,600.F,256.F);
+	ask_num("Enter inner ring radius (in mm): ",0.F,600.F,256.F);
   
       float AverageDepthOfInteraction = 
         ask_num("Enter average depth of interaction (in mm): ", 0.F, 100.F, 0.F);
@@ -813,15 +845,15 @@ Scanner* Scanner::ask_parameters()
       float BinSize= 
         ask_num("Enter default (tangential) bin size after arc-correction (in mm):",0.F,60.F,3.75F);
       float intrTilt=
-        ask_num("Enter intrinsic_tilt (in degrees):",-180.F,360.F,0.F);
+	ask_num("Enter intrinsic_tilt (in degrees):",-180.F,360.F,0.F);
       int TransBlocksPerBucket = 
-        ask_num("Enter number of transaxial blocks per bucket: ",0,10,2);
+	ask_num("Enter number of transaxial blocks per bucket: ",0,10,2);
       int AxialBlocksPerBucket = 
-        ask_num("Enter number of axial blocks per bucket: ",0,10,6);
+	ask_num("Enter number of axial blocks per bucket: ",0,10,6);
       int AxialCrystalsPerBlock = 
-        ask_num("Enter number of axial crystals per block: ",0,12,8);
+	ask_num("Enter number of axial crystals per block: ",0,12,8);
       int TransaxialCrystalsPerBlock = 
-        ask_num("Enter number of transaxial crystals per block: ",0,12,8);
+	ask_num("Enter number of transaxial crystals per block: ",0,12,8);
       int AxialCrstalsPerSinglesUnit = 
         ask_num("Enter number of axial crystals per singles unit: ", 0, NoRings, 1);
       int TransaxialCrystalsPerSinglesUnit = 
@@ -829,23 +861,23 @@ Scanner* Scanner::ask_parameters()
         
 
       int num_detector_layers =
-        ask_num("Enter number of detector layers per block: ",1,100,1);
+	ask_num("Enter number of detector layers per block: ",1,100,1);
       Type type = User_defined_scanner;
   
       Scanner* scanner_ptr =
-        new Scanner(type, string_list(name),
-                    num_detectors_per_ring,  NoRings, 
-                    NoBins, NoBins, 
-                    InnerRingRadius, AverageDepthOfInteraction,
+	new Scanner(type, string_list(name),
+		    num_detectors_per_ring,  NoRings, 
+		    NoBins, NoBins, 
+		    InnerRingRadius, AverageDepthOfInteraction,
                     RingSpacing, BinSize,intrTilt*float(_PI)/180,
-                    AxialBlocksPerBucket,TransBlocksPerBucket,
-                    AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
+		    AxialBlocksPerBucket,TransBlocksPerBucket,
+		    AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
                     AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
                     num_detector_layers );
   
       if (scanner_ptr->check_consistency()==Succeeded::yes ||
-          !ask("Ask questions again?",true))
-        return scanner_ptr;
+	  !ask("Ask questions again?",true))
+	return scanner_ptr;
   
       delete scanner_ptr;
     } // infinite loop
@@ -866,13 +898,13 @@ Scanner::get_scanner_from_name(const string& name)
     scanner_ptr = new Scanner(type);
     const list<string>& list_of_names = scanner_ptr->get_all_names();
     for (std::list<string>::const_iterator iter =list_of_names.begin();
-         iter!=list_of_names.end();
-           ++iter)
+	 iter!=list_of_names.end();
+	   ++iter)
       {
-        const string matching_scanner_name =
-          standardise_interfile_keyword(*iter);
-        if (matching_scanner_name==matching_name)
-          return scanner_ptr;
+	const string matching_scanner_name =
+	  standardise_interfile_keyword(*iter);
+	if (matching_scanner_name==matching_name)
+	  return scanner_ptr;
       }
     
     // we didn't find it yet

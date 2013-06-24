@@ -10,7 +10,8 @@ $(dir)_LIB_SOURCES := \
   interfile.cxx InterfileHeader.cxx \
   InputFileFormatRegistry.cxx \
   InterfileDynamicDiscretisedDensityOutputFileFormat.cxx \
-  InterfileParametricDensityOutputFileFormat.cxx
+  InterfileParametricDensityOutputFileFormat.cxx \
+  GIPL_ImageFormat.cxx
 
 ifeq ($(HAVE_LLN_MATRIX),1)
   $(dir)_LIB_SOURCES += ECAT7OutputFileFormat.cxx stir_ecat7.cxx \

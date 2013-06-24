@@ -3,7 +3,9 @@
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2010, Hammersmith Imanet Ltd
+    Copyright (C) 2011-2013, King's College London
+ 
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -116,12 +118,10 @@ class Scanner
      to flag up an error and do some guess work in trying to recognise the scanner from 
      any given parameters.
   */
-  enum Type {E931, E951, E953, E921, E925, E961, E962, E966,E1080,RPT,HiDAC,
-             Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600,
-             HZLR, RATPET,HRRT, Allegro,
-             User_defined_scanner,
-             Unknown_scanner};
-  
+  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, RPT,HiDAC,
+	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600,
+	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,
+	     Unknown_scanner};
   
   //! constructor that takes scanner type as an input argument
   Scanner(Type scanner_type);

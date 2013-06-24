@@ -63,7 +63,12 @@ $(dir)_LIB_SOURCES := \
 	GatedProjData.cxx \
 	ArrayFilter2DUsingConvolution.cxx \
 	ArrayFilter3DUsingConvolution.cxx \
-	find_fwhm_in_image.cxx
+	find_fwhm_in_image.cxx \
+        GatedDiscretisedDensity.cxx \
+        MaximalArrayFilter3D.cxx \
+        MaximalImageFilter3D.cxx \
+        TimeGateDefinitions.cxx
+
 
 $(dir)_REGISTRY_SOURCES:= $(dir)_registries.cxx
 
