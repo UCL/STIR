@@ -34,12 +34,8 @@
 #include "stir/is_null_ptr.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/Succeeded.h"
-#include "stir/RelatedViewgrams.h"
-#include "stir/stream.h"
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 
-// for get_symmetries_ptr()
-#include "stir/DataSymmetriesForViewSegmentNumbers.h"
 // include the following to set defaults
 #ifndef USE_PMRT
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
@@ -51,11 +47,6 @@
 #endif
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 
-#include "stir/Succeeded.h"
-#include "stir/IO/OutputFileFormat.h"
-
-#include "stir/Viewgram.h"
-#include "stir/recon_array_functions.h"
 #include <algorithm>
 #include <string> 
 // For the Patlak Plot Modelling
@@ -78,7 +69,7 @@ set_defaults()
   base_type::set_defaults();
 
   this->_input_filename="";
-  this->_max_segment_num_to_process=0;
+  this->_max_segment_num_to_process=-1; // use all segments
   //num_views_to_add=1;    // KT 20/06/2001 disabled
 
   this->_dyn_proj_data_sptr.reset();
@@ -157,7 +148,7 @@ post_processing()
   if (base_type::post_processing() == true)
     return true;
   if (this->_input_filename.length() == 0)
-    { warning("You need to specify an input file"); return true; }
+    { warning("You need to specify an input filename"); return true; }
   
 #if 0 // KT 20/06/2001 disabled as not functional yet
   if (num_views_to_add!=1 && (num_views_to_add<=0 || num_views_to_add%2 != 0))
@@ -233,8 +224,8 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
       return frames_are_balanced;
     }
   else 
-    warning("Something stange happened in PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData:\n"
-            "actual_subsets_are_approximately_balanced \n");
+    error("Something strange happened in PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData:\n"
+            "actual_subsets_are_approximately_balanced called before setup()?\n");
   return 
     false;    
 }
