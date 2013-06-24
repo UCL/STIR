@@ -1,0 +1,76 @@
+
+\documentclass[a4paper]{article} %!PN
+
+\usepackage{graphicx}
+\usepackage{cite}
+\usepackage{hyperref}
+
+\usepackage{epstopdf}
+\newcommand{\pet}{\textsc{pet}}
+\hypersetup{colorlinks=true,
+			linkcolor=black,
+			citecolor=black,
+			urlcolor=cyan
+}
+
+\begin{document}
+
+During RTA, motion correction is performed by first reconstructing independently the raw data of each respiratory position using a conventional iterative algorithm, such as the ordered subsets expectation maximisation (OSEM).Then the reconstructed image of each gate is transformed to the reference position using known motion fields. The transformed gates are then averaged to produce a motion-corrected image:
+
+\begin{equation}
+\begin{array}{rrr}
+\Lambda_{\nu g}^{(s+1)}=\Lambda_{\nu g}^{(s)}\frac{1}{ \sum\limits_{b\in S_{l}}P_{\nu b}A_{bg}+\beta_{g} \nabla_{\Lambda_{\nu}} E_{\nu}^{(s)}}\sum\limits_{b\in S_{l}}P_{\nu b}\frac{Y_{bg}}{\sum\limits_{\tilde{\nu}}P_{b\tilde{\nu}}\Lambda_{\tilde{\nu} g}^{(s)}+\frac{B_{bg}}{A_{bg}}}
+\end{array}
+\end{equation}
+
+Where:
+
+\begin{equation}
+\begin{array}{rrr}
+\beta_{g} \nabla_{\Lambda_{\nu}} E_{\nu}^{(s)} \equiv \beta_{g}\frac{\Lambda_{{\nu}g}^{(s)}-M_{{\nu}}^{(s)}}{M_{{\nu}}^{(s)}}
+\end{array}
+\end{equation}
+
+\begin{equation}
+\begin{array}{rrr}
+\Lambda_{\nu}=\frac{1}{G}\sum\limits_{g}\sum\limits_{\nu'}\hat{W}^{-1} _{\nu'g\rightarrow \nu}\Lambda_{\nu'g}
+\end{array}
+\end{equation}
+
+
+For MCIR the motion transformations are incorporated directly into reconstruction. The motion corrected image is reconstructed using the following iterative formula which is based on conventional OSEM including motion via the forward / backward transformation operators, as well.
+
+\begin{equation}
+\begin{array}{lcl}
+\Lambda_{\nu}^{(s+1)}&&=\Lambda_{\nu}^{(s)} \frac{1}{ \sum\limits_{b\in S_{l}, g} \sum\limits_{\nu'} \hat{W}^{-1} _{\nu'g\rightarrow \nu}P_{\nu' b}A_{bg}+\beta \nabla_{\Lambda_{\nu}} E_{\nu}^{(s)}}\\
+&&\times \sum\limits_{b\in S_{l}, g} \sum\limits_{\nu'}\left(\hat{W}^{-1} _{\nu'g\rightarrow \nu}P_{\nu' b}\frac{Y_{bg}}{\sum\limits_{\tilde{\nu}}P_{b\tilde{\nu}}\sum\limits_{\tilde{\nu}'}\hat{W} _{\tilde{\nu}'\rightarrow \tilde{\nu}g}\Lambda_{\tilde{\nu}'}^{(s)}+\frac{B_{bg}}{A_{bg}}}\right)
+\end{array}
+\end{equation}
+
+
+
+Notation: 
+
+$\Lambda_{\nu}^{(s)}$ is the radioactivity distribution at voxel ${\nu}$ and subiteration number $s$;
+
+$Y_{bg}$ is the number of coincident photons of each detector pair (bin) $b$ that belongs to the $lth$ subset $S$ and gate $g$;
+
+$S_{l}$ corresponds to the $lth$ subset of the projection space, which is divided into $L$ total subsets;
+
+$s$ is the subiteration number and $l = s$ mod $L$. A set of $L$ subiterations comprises a full iteration;
+
+$P_{b\nu}$ is the system projection matrix;
+
+$\hat{W}$ , $\hat{W}^{-1}$ represent the forward / backward warping operations of the image that move the activity from voxel $\nu'$ to the voxel $\nu$ using the motion fields and linear interpolation;
+
+$E$ is the ‘potential’ function;
+
+$M_{\nu}$ corresponds to the median $3\times3\times3$ mask width of neighbourhood voxels centred at voxel $\nu$;
+
+$G$ is the total number of gates;
+
+$\beta$, $\beta_{g}$ are the penalisation factors for MCIR and RTA, respectively. Note that $\beta$ = $G\times\beta_{g}$, but for simplicity all cases are displayed with respect to $\beta_{g}$;
+
+$A_{bg}$ and $B_{bg}$ are the attenuation coeffecient and background term (e.g. scatter) for each bin and gate, respectively.
+
+\end{document}

@@ -33,7 +33,15 @@ $(dir)_SOURCES:=manip_image.cxx \
 	rebin_projdata.cxx \
 	write_proj_matrix_by_bin.cxx \
 	calculate_attenuation_coefficients.cxx \
-	attenuation_coefficients_to_projections.cxx 
+	attenuation_coefficients_to_projections.cxx  \
+        conv_GATE_raw_ECAT_projdata_to_interfile.cxx \
+        conv_gipl_to_interfile.cxx \
+        conv_interfile_to_gipl.cxx \
+        shift_image.cxx \
+        shift_image_origin.cxx \
+        warp_and_accumulate_gated_images.cxx \
+        warp_image.cxx \
+        zeropad_planes.cxx
 
 ifeq ($(HAVE_AVW),1)
   $(dir)_SOURCES += conv_AVW.cxx

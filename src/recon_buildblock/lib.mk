@@ -49,7 +49,8 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx \
 	PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.cxx \
 	PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin.cxx \
-	PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.cxx
+	PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.cxx \
+        PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.cxx
 
 #InputFileFormatRegistry_recon_buildblock.cxx
 

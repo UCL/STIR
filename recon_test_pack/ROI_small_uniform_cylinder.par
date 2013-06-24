@@ -1,0 +1,13 @@
+ROIValues Parameters :=
+  ; give the ROI an (optional) name. Defaults to the empty string.              
+  ROI name := cylinder
+
+ROI shape type:= ellipsoidal cylinder
+Ellipsoidal Cylinder Parameters:=
+   radius-x (in mm):=60
+   radius-y (in mm):=50
+   length-z (in mm):=12
+   origin (in mm):={80,40,-30}
+   END:=
+
+END:=

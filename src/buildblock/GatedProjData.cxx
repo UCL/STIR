@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005-2011, Hammersmith Imanet Ltd
+    Copyright (C) 2009-2013, King's College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -36,6 +37,7 @@
 #include "stir/KeyParser.h"
 #include "stir/is_null_ptr.h"
 #include <fstream>
+#include <sstream>
 
 START_NAMESPACE_STIR
 #if 0
@@ -55,7 +57,11 @@ read_from_file(const string& filename) // The written image is read in respect t
   {
     std::fstream input(filename.c_str(), std::ios::in | std::ios::binary);
     if (!input)
-      error("GatedProjData::read_from_file: error opening file %s\n", filename.c_str());
+      {
+        // error("GatedProjData::read_from_file: error opening file %s\n", filename.c_str());
+        warning("GatedProjData::read_from_file cannot read file '%s'. Will now attempt to append .gdef\n", filename.c_str());
+        return read_from_gdef(filename);
+      }
     input.read(signature, max_length);
     signature[max_length-1]='\0';
   }
@@ -148,6 +154,31 @@ read_from_file(const string& filename) // The written image is read in respect t
   return gated_proj_data_ptr;
 }
 
+GatedProjData* 
+GatedProjData::read_from_gdef(const string& filename)
+{
+  const string gdef_filename=filename+".gdef";
+  std::cout << "GatedProjData: Reading gate definitions " << gdef_filename.c_str() << std::endl;
+  GatedProjData * gated_proj_data_ptr = new GatedProjData;
+  gated_proj_data_ptr->_time_gate_definitions.read_gdef_file(gdef_filename);
+  gated_proj_data_ptr->_proj_datas.resize(gated_proj_data_ptr->_time_gate_definitions.get_num_gates());
+  for ( unsigned int num = 1 ; num<=(gated_proj_data_ptr->_time_gate_definitions).get_num_gates() ;  ++num ) 
+    {	
+      std::stringstream gate_num_stream;
+      gate_num_stream << gated_proj_data_ptr->_time_gate_definitions.get_gate_num(num);
+      const string input_filename=filename+"_g"+gate_num_stream.str()+".hs";
+      std::cout << "GatedProjData: Reading gate projection file: " << input_filename.c_str() << std::endl;
+      gated_proj_data_ptr->_proj_datas[num-1] = ProjData::read_from_file(input_filename);
+    }	
+  // we no longer have a _scanner_sptr member, so next lines are commented out
+  // gated_proj_data_ptr->_scanner_sptr.
+  //   reset(new Scanner(*gated_proj_data_ptr->_proj_datas[0]->get_proj_data_info_ptr()->get_scanner_ptr()));
+  if (is_null_ptr(gated_proj_data_ptr))   
+    error("GatedProjData::read_from_file unrecognised file format for projection files with prefix '%s'",
+          filename.c_str());
+  return gated_proj_data_ptr;	
+}
+
 Succeeded 
 GatedProjData::
 write_to_ecat7(const string& filename) const 
@@ -186,5 +217,28 @@ write_to_ecat7(const string& filename) const
   return Succeeded::yes;
 #endif // end of HAVE_LLN_MATRIX
 }
+
+#if 0 // This is not necessary for the moment as we only read the files.
+Succeeded 
+GatedProjData::
+write_to_files(const string& filename) const 
+{
+	for (  unsigned int num = 1 ; num<=(_time_gate_definitions).get_num_gates() ;  ++num ) 
+	{
+		std::stringstream gate_num_stream;
+		gate_num_stream << _time_gate_definitions.get_gate_num(num);
+		const string output_filename=filename+"_g"+gate_num_stream.str()+".hv";
+		std::cout << "GatedProjData: Writing new gate file: " << output_filename.c_str() << std::endl;
+		if(XXX->write_to_file(output_filename, this->get_density(num))
+		   == Succeeded::no)
+			return Succeeded::no;
+	}	
+	if((this->_time_gate_definitions).get_num_gates()==0)
+		std::cout << "GatedDiscretisedDensity: No gates to write, please check!!" <<  std::endl;
+	return Succeeded::yes;	 
+	
+  return Succeeded::yes;
+}
+#endif
 
 END_NAMESPACE_STIR

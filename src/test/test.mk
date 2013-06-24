@@ -22,8 +22,8 @@ $(dir)_TEST_SOURCES := test_Array.cxx test_NestedIterator.cxx \
 	test_ROIs.cxx \
 	test_ArcCorrection.cxx \
 	test_DynamicDiscretisedDensity.cxx   \
-	test_find_fwhm_in_image.cxx
-
+	test_find_fwhm_in_image.cxx \
+        test_warp_image.cxx
 
 (dir)_INTERACTIVE_TEST_SOURCES := \
 	test_display.cxx \

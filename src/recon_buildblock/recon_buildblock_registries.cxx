@@ -2,7 +2,7 @@
 // $Id$
 //
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute that part and/or modify
@@ -20,9 +20,7 @@
 /*!
   \file
   \ingroup recon_buildblock
-
   \brief File that registers all stir::RegisterObject children in recon_buildblock
-
   \author Kris Thielemans
   
   $Date$
@@ -57,6 +55,7 @@
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/DynamicDiscretisedDensity.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.h"
 
 #ifdef HAVE_LLN_MATRIX
 #include "stir/recon_buildblock/BinNormalisationFromECAT7.h"
@@ -93,6 +92,7 @@ static ChainedBinNormalisation::RegisterIt dummy92;
 static BinNormalisationFromProjData::RegisterIt dummy93;
 static BinNormalisationFromAttenuationImage::RegisterIt dummy94;
 static PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<ParametricVoxelsOnCartesianGrid>::RegisterIt Dummyxxx;
+static PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<DiscretisedDensity<3,float> >::RegisterIt Dummyxxxzz;
 
 #ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT

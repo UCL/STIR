@@ -2,7 +2,8 @@
 // $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005-2009, Hammersmith Imanet Ltd
+    Copyright (C) 2010-2013, King's College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -21,12 +22,14 @@
   \file
   \ingroup data_buildblock
   \brief Declaration of class stir::GatedProjData
-  \author Kris Thielemans
-  
+ \author Kris Thielemans
+ \author Charalampos Tsoumpas
+
   $Date$
   $Revision$
 */
 #include "stir/MultipleProjData.h"
+#include "stir/TimeGateDefinitions.h"
 #include <string>
 
 START_NAMESPACE_STIR
@@ -50,6 +53,12 @@ public:
 
   Succeeded   
     write_to_ecat7(const std::string& filename) const;
+  //Succeeded
+  //  write_to_files(const std::string& filename) const;
+
+ private:
+  TimeGateDefinitions _time_gate_definitions;
+  static GatedProjData* read_from_gdef(const string& filename);
 };
 
 END_NAMESPACE_STIR
