@@ -21,3 +21,5 @@ Added "wedge" capabilities to EllipsoidalCylinder and Box3D.
 - code for SimSET support
   by Pablo Aguiar, Nikolaos Dikaios, Charalampos Tsoumpas, Kris Thielemans
 
+- code for (spatial) warping and motion correction (and GIPL IO and raw GATE projection data conversion)
+  by Charlampos Tsoumpas
