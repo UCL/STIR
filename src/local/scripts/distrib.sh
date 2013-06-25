@@ -148,7 +148,8 @@ if [ $do_doc = 1 ]; then
   chmod go+x doxy/html
   chmod -R go+r *
   rm -f ${DISTRIB}/STIR_doc_${VERSION}.zip
-  zip -r ${DISTRIB}/STIR_doc_${VERSION}.zip *.rtf *.pdf *.htm contrib doxy >/dev/null
+  zip -rD ${DISTRIB}/STIR_doc_${VERSION}.zip *.rtf *.pdf *.htm doxy >/dev/null
+  find contrib -type f |fgrep -v CVS | zip -@ ${DISTRIB}/STIR_doc_${VERSION}.zip 
 fi
 
 trap "echo ERROR after creating doc" ERR
