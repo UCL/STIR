@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Summary of changes in STIR release 2.4a (dated 25/06/2013)</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in STIR release 2.4a (dated 25/06/2013)</h1>
+
+<p>This update was mostly prepared by Charalampos Tsoumpas (King's College London). Minor changes by Kris Thielemans 
+(Algorithms and Software Consulting Ltd, University College London).</p>
+
+
+<ul>
+
+<h2> Summary for end users (also to be read by developers)</h2>
+<h3>Important bug fixes</h3>
+<p>None</p>
+
+<h3>New functionality</h3>
+<ul>
+<li>Addition of motion utilities and an objective function for reconstructing a single motion corrected
+image from gated projection data.</li>
+<li>Conversion routines for reading/writing GIPL images.</li>
+<li>A conversion routine to  create Interfile data from raw GATE projection data output.</li>
+<li>3 new scanners: nanoPET (Mediso), HYPER (HyperImage FP7 project), PANDA (KCL internal).</li>
+<li>Added input files for python examples.</li>
+</ul>
+
+<h3>Changed functionality</h3>
+<ul>
+<li><tt>PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData</tt> now defaults to using all segments (to be consistent with other 
+objective functions)</li>
+</ul>
+
+<h3>Build system</h3>
+<ul>
+<li> 
+Using <a href="http://www.cmake.org">CMake</a> is now recommended (see the wiki). Some options
+such as shared libraries and SWIG support can only be enabled when using CMake. Hand-crafted project files
+for Visual Studio are no longer distributed.
+</li>
+<li>use CMake FOLDER properties to group projects in
+  Visual Studio (and XCode etc?), needs CMake 2.8.3</li>
+<li> disable export of cmake settings as it's no longer supported by CMake</li>
+</ul>
+
+
+<h3>Known problems</h3>
+<ul>
+<li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
+<li>On Windows, using shared libraries fails. We need to sort out dependencies between libraries to fix this.</li>
+<li>The recon_test_pack routines fail with the MPI version. A work-around is to prefix the reconstruction executables with <tt>mpirun.openmpi -np 4</tt> or so).</li>
+<li>ECAT6 is no longer supported</li>
+<li>The interpolating back-projector still gives problems in the centre of the images
+on some architectures/compiler/optimisation settings. We recommend to use the ray-tracing
+matrix (with additional rays) instead.</li>
+<li>When using <code>GRAPHICS=X</code> (i.e. on Unix/Linux/MacOSX) the window displaying
+the bitmaps is sometimes empty. This might depend on your X server settings.
+This affects <tt>manip_image</tt>, <tt>manip_projdata</tt> and <tt>display_projdata</tt>. 
+We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
+<tt>stir_write_pgm</tt>).
+</li>
+</ul>
+
+
+<h3>Minor bug fixes</h3>
+<ul>
+<li>A few error messages in ECAT IO would actually crash as opposed to writing a descent message.</li>
+<li>A few changes to the CMakeLists.txt files for cmake clarifying dependencies
+between libraries. This makes shared libraries better suppported, but there are still circular dependencies. This doesn't seem to create trouble on most systems,
+but makes shared libraries fail on some (e.g. msys on windows).</li>
+<li><tt>list_lm_events</tt>: added newline after printing an unknown event
+</li>
+</ul>
+
+<h3>Documentation changes</h3>
+<ul>
+<li>The Wiki expands more and more, so use it in addition to the provided PDFs.
+</li>
+ </ul>
+
+<h3>recon_test_pack changes</h3>
+<ul>
+<li>updated version number and added some clarification to the README.txt</li>
+<li>added a test script for the motion version</li>
+<li>relaxed test for OSSPS in <tt>run_tests.sh</tt> to avoid problem of outer rim voxels on cygwin (and others?)</li>
+ </ul>
+
+<h3>Other changes to tests</h3>
+<ul>
+<li>added a test for warping images</li>
+</ul>
+
+<H2>What's new for developers (aside from what should be obvious
+from the above):</H2>
+
+<h3>Major bugs fixed</h3>
+<p>None</p>
+
+<h3>New functionality</h3>
+<ul>
+<li>Lots of warping/motion stuff!</li>
+</ul>
+
+<h3>Other code changes</h3>
+<ul>
+<li>removed a few <tt>using std::cout</tt> (and other items in the <tt>std</tt> namespace) from some include files
+as this created problems on some compilers. This might affect your code if it relied on these <tt>using</tt> statements.
+</li>
+<li>replaced a few output lines to <tt>std::cerr</tt> with calls to <tt>stir::info</tt> (still many more to do).</li>
+</ul>
+</body>
+
+</html>
+
