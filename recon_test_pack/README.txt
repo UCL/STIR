@@ -1,6 +1,6 @@
 $Id$
-README file for STIR recon_test_pack version 2.3 (and later versions?)
-------------------------------------------------
+README file for STIR recon_test_pack version 2.4 (and later versions?)
+----------------------------------------------------------------------
 
 This test pack runs some simple tests to check if various STIR reconstruction
 algorithms, correct_projdata, generate_image and stir_math (and optionally some ECAT utilities)
@@ -19,7 +19,8 @@ automatically. run_*tests.bat is the corresponding DOS/Windows batch file
 
 The scripts write some diagnostic output to stdout. Output of
 all programs is redirected to log files. In case anything is wrong, these
-might contain something useful. If you cannot solve the problems, email to
+might contain something useful. Please check the FAQ on the STIR Wiki if
+you have test failures. If you cannot solve the problems, email to
 the user's mailing list (see http://stir.sourceforge.net for info), with all log 
 files attached to the email.
 
@@ -42,8 +43,8 @@ Visual Studio (and cmake). You then need to either add the
 directory where the STIR executables are copied to your path, or
 pass it to the scripts as indicated below.
 
-On Unix:
---------
+On Unix/Linux/MacOSX:
+--------------------
 (this also work on Windows if you installed CYGWIN)
 
 Testing STIR utilities by comparing output with the output of the STIR team
@@ -73,6 +74,10 @@ sh run_test_simulate_and_recon.sh
 sh run_test_simulate_and_recon.sh my_install_dir/
 	(if you copied the executables to one directory, 
 	 but it isn't in your path)
+
+Similarly, a test for motion corrected reconstruction of gated data is run as
+
+sh run_test_simulate_and_recon_with_motion.sh optional_install_path
 
 Testing ECAT7 utilities
 ..............................
