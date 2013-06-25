@@ -4,7 +4,7 @@
 # see README.txt
 #  Copyright (C) 2000 - 2001 PARAPET partners
 #  Copyright (C) 2001 - 2009-10-11, Hammersmith Imanet Ltd
-#  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+#  Copyright (C) 2011-07-01 - 2013, Kris Thielemans
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 # Author Kris Thielemans
 # $Id$
 
-echo This script should work with STIR version 2.1, 2.2 and 2.3. If you have
+echo This script should work with STIR version 2.1, 2.2, 2.3 and 2.4. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -48,6 +48,7 @@ do
   elif test "$1" = "--help"
   then
     echo "Usage: run_tests.sh [--nointbp] [install_dir]"
+    echo "(where [] means that an argument is optional)"
     echo "See README.txt for more info."
     exit 1
   else
@@ -231,7 +232,9 @@ ${INSTALL_DIR}OSSPS OSSPS_test_PM_QP.par 1> OSSPS_PM_QP.log 2> OSSPS_PM_QP_stder
 
 echo '---- Comparing output of OSSPS subiter 8 (should be identical up to tolerance)'
 echo Running ${INSTALL_DIR}compare_image
-if ${INSTALL_DIR}compare_image test_image_OSSPS_PM_QP_8.hv my_test_image_OSSPS_PM_QP_8.hv;
+# relax test for the outer-rim voxels as these turn out to be more unstable than the internal ones
+if ${INSTALL_DIR}compare_image -t 0.002 test_image_OSSPS_PM_QP_8.hv my_test_image_OSSPS_PM_QP_8.hv -a
+   ${INSTALL_DIR}compare_image -r 1 test_image_OSSPS_PM_QP_8.hv my_test_image_OSSPS_PM_QP_8.hv
 then
 echo ---- This test seems to be ok !;
 else
