@@ -137,7 +137,12 @@ if [ $do_doc = 1 ]; then
   pushd contrib/Shape3D_enhancements_RS_AK/
   pdflatex generate_image_upgrade.tex
   pdflatex generate_image_upgrade.tex
-  rm *log *aux
+  rm -f *log *aux *out
+  popd
+  pushd contrib/Motion_files_KCL/Documentation/
+  pdflatex Software_Description.tex
+  pdflatex Software_Description.tex
+  rm -f *log *aux *out
   popd
   chmod go+x doxy
   chmod go+x doxy/html
@@ -154,8 +159,8 @@ if [ $do_zip_source = 1 ]; then
   cp -p ${destination}/credits.htm parapet/PPhead/
   rm -f parapet/all.zip parapet/VCprojects.zip
   zipit --distrib > /dev/null
-  zipproj --distrib > /dev/null
-  mv parapet/VCprojects.zip VCprojects_${VERSION}.zip 
+  #zipproj --distrib > /dev/null
+  #mv parapet/VCprojects.zip VCprojects_${VERSION}.zip 
   mv parapet/all.zip STIR_${VERSION}.zip 
 fi
 
@@ -177,7 +182,7 @@ if [ $do_transfer = 1 ]; then
 
   # put it all there
   rsync --progress -uavz ${RSYNC_OPTS} \
-    STIR_${VERSION}.zip VCprojects_${VERSION}.zip \
+    STIR_${VERSION}.zip \
     recon_test_pack_${VERSION}.zip \
     ${destination}registered
   rsync --progress -uavz ${RSYNC_OPTS} \
@@ -194,7 +199,7 @@ if [ $do_website_final_version = 1 ]; then
     cd registered
     rm -f recon_test_pack.tar.gz STIR.zip VCprojects.zip recon_test_pack.zip 
     ln -s STIR_${VERSION}.zip STIR.zip 
-    ln -s VCprojects_${VERSION}.zip  VCprojects.zip
+    #ln -s VCprojects_${VERSION}.zip  VCprojects.zip
     #ln -s recon_test_pack_${VERSION}.tar.gz  recon_test_pack.tar.gz 
     ln -s recon_test_pack_${VERSION}.zip recon_test_pack.zip
     rm -f .htaccess
