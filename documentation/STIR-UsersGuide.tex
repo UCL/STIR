@@ -32,7 +32,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 2.3}}
+ Version 2.4}}
 \end{center}
 
 \end{spacing}
@@ -78,8 +78,8 @@ document (and the library) can be found on \\
 \R2Lurl{http://stir.sourceforge.net}{http://stir.sourceforge.net}.
 
 
-This library was originally developed by the (now finished) PARAPET 
-project (funded by the European Union), extended by Hammersmith 
+This library was originally developed by the PARAPET 
+project (funded by the European Union during 1997-2000), extended by Hammersmith 
 Imanet and made into an Open Source project. \\
 The current library has different license restrictions than the 
 original PARAPET distribution. Details on licensing are to be 
@@ -153,17 +153,13 @@ in the annex section.
 
 \subsection{
 Installing external software}
-If you are running Ubuntu or Debian, you should be able to get do this using
+STIR relies on some external software and a few external libraries which enable certain functionality. 
+On most systems, you should be able to get these using your package manager. 
+Please check the Wiki for most up-to-date information.
 
-\cmdline{apt-get install  gcc g++ make libncurses-dev libX11-dev libboost-dev tcsh}
-
-(prefix with \texttt{sudo} for Ubuntu). For other systems, details are given below,
-but see also the Wiki.
-
-\subsubsection{Download/install boost}
-\textit{STIR} uses the well-respected \textit{boost} library. This library
-is currently installed in many systems (especially on Linux). If it
-is not, you can download it from 
+\subsubsection{BOOST}
+The only required external library is the well-respected \textit{boost} library. If it
+is not installed on your system, you can download it from 
 \R2Lurl{http://www.boost.org}{http://www.boost.org}. Currently \textit{STIR} only
 uses the include files from \textit{boost} (so you do not need to build
 the boost libraries). However, you will need to tell your compiler
@@ -176,9 +172,9 @@ C++ Compiler}
 
 In order to compile and run the \textit{STIR} programs, we currently recommend 
 using a recent version of the GNU gcc compiler, at least version 
-3.0.1. The final release of \textit{STIR} 2.2 should work with gcc 4.2 up to 4.6.
+3.0.1. The final release of \textit{STIR} 2.4 should work with gcc 4.2 up to 4.8.
 Check the mailing lists for more info.
-\footnote{{\small A few years ago, some work-arounds were put in place to 
+\footnote{{\small Many years ago, some work-arounds were put in place to 
 keep \textit{STIR} compatible with gcc version 2.95.2, but this version is unlikely to
 to be usable for recent versions of \textit{STIR}. It is known that with this
 old version, some functionality is not supported. Specifically, 
@@ -199,21 +195,135 @@ We discourage using such versions for \textit{STIR} (check with gcc -v).
 
 
 Other recent C++ compilers should be ok as well, including Intel's compiler
-version 11 and CLang (checked with 2.9.1).
+version 11, CLang (checked with 2.9.1), Visual Studio 2008, 2010 or later
 We would love 
-to hear from any attempts of using another compiler. See Section 
-\ref{sec:VC}
-on how to use Visual Studio's C++ compiler.
+to hear from any attempts of using another compiler. 
 
+\subsubsection{
+Enabling ECAT 7 support}
+\label{sec:ECAT67support}
+Older CTI (Siemens) scanners use a file format called ECAT\texttrademark{}.
+At present, \textit{STIR} uses parts of the Louvain la Neuve ecat library (called LLN in
+the rest of this document).\footnote{\textit{STIR} versions 1.? came with
+specific files for ECAT6 support without the need for the LLN library. 
+However, due to license restrictions this is now no longer the case.} 
+The library might still be available on  
+\R2Lurl{ftp://ftp.topo.ucl.ac.be/pub/ecat }{ftp://ftp.topo.ucl.ac.be/pub/ecat}.
+It is also available for GATE users.
+Please check the \textit{STIR}
+mailing lists for more information.
 
+You have to download that library and issue 'make --f Makefile.unix' 
+(or 'make --f Makefile.cygwin' if you are using CYGWIN on Windows) 
+in the new ecat directory first. Please get a recent version 
+of this library (dated 20 July 2004 or later) as Merence Sibomana 
+has introduced various bug fixes, some of which solve problems 
+that you would otherwise experience when using \textit{STIR} and ECAT7 
+files.
 
+\subsubsection{
+Enabling GE RDF and VOLPET support}
+\label{sec:RDFsupport}
+We software that reads VOLPET and RDF data for all GE scanners, but this can currently
+not distribute it due to licensing restrictions. If you have the
+GE PET Toolbox proprietary package you can ask Kris Thielemans for VOLPET and RDF
+support in \textit{STIR}.
 
 \subsection{
 Compilation}
+\subsubsection{
+Using CMake}
+\label{sec:UsingCMake}
+Since version 2.2, \textit{STIR} contains files to build using the platform-independent
+\R2Lurl{"http://www.cmake.org"}{CMake}. This is the recommended way to build STIR as
+it is easier for configuration and finding system dependencies.
+
+Normal build procedure on Linux/Unix would be something like
+
+\cmdline{cd /somewhere/nice/STIRbuild/Release}
+\cmdline{ccmake /somewhere/else/where/the/source/is/STIR}
+
+This will bring up a basic interface where you might to use your normal
+build system (i.e. \texttt{make} on Linux/Unix) and do an initial configuration. Then 
+you specify build variables. You can press \texttt{c} to do additional configurations, \texttt{g} for generating
+your build files, \texttt{q} to quit. After this step, you will have to run your build system (e.g.\ on Linux etc,
+type \texttt{make}, then \texttt{make test}, then \texttt{make install}).
+More information on using CMake is on the STIR Wiki.
+
+For example, if CMake cannot find \textit{boost}, you will have to set \texttt{BOOST\_ROOT}. 
+\newlength{\MakeTableFirstCol}
+\newlength{\MakeTableSecondCol}
+\setlength{\MakeTableFirstCol}{1.5in}
+\setlength{\MakeTableSecondCol}{\textwidth}
+\addtolength{\MakeTableSecondCol}{-\MakeTableFirstCol}
+
+\begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
+\hline
+% ROW 1
+{\raggedright \textit{GRAPHICS}} & 
+{\raggedright Possible values: X, PGM, MATHLINK, NONE. X (default) uses basic 
+X windows graphics, PGM writes the graphics to a .pgm file, MATHLINK 
+uses the (external) MathLink library which could be used to send 
+data directly to Mathematica, NONE switches off all graphics. See also section \ref{sec:display}.
+} \\
+\hline
+% ROW 
+{\raggedright \textit{STIR\_MPI}} & 
+{\raggedright Toggles between ON, OFF. Enable parallel processing using MPI.\\
+\textit{STIR} contains code for running \texttt{OSMAPOSL} and \texttt{OSSPS} in parallel-mode. 
+See section \ref{sec:RunningWithMPI} for information on how to run programs using MPI.
+\footnote{In fact, any algorithm that uses \texttt{PoissonLogLikelihoodWithLinearModelForMeanAndProjData}.
+This functionality was contributed mainly by Tobias Beisel, Univ. of Paderborn). You need a version of the MPI library and
+and compiler to get this to work. We have tested this using \R2Lurl{http://www.open-mpi.org/}{OpenMPI} 1.4.2.}
+} \\
+\hline
+% ROW 
+{\raggedright \textit{STIR\_OPENMP}} & 
+{\raggedright Toggles between ON, OFF. Enable threaded processing using OPENMP.
+\footnote{Since version 2.0, \textit{STIR} contains preliminary code for running \texttt{FBP2D} in threaded mode
+(contribution by Tobias Beisel, Univ. of Paderborn). You need a compiler that 
+supports \texttt{OPENMP}. Note however, that this code doesn't presently result 
+in a decent speed-up of \texttt{FBP2D}.}
+See section \ref{sec:RunningWithOPENMP} for information on how to run programs using OPENMP.
+} \\
+\hline
+% ROW 
+{\raggedright \textit{STIR\_LOCAL}} & 
+{\raggedright Specify location of directy with your own extensions to STIR. See
+the developer's guide.}\\
+\hline
+\end{longtable}
+See the section \ref{sec:normalcompilation} for explanation of these variables. 
+
+You can also (optionally) specify locations of some external libraries for additional IO
+capabilities of STIR. 
+\begin{itemize}
+\item LLN files for ECAT support via \texttt{LLN\_INCLUDE\_DIRS} and \texttt{LLN\_LIBRARIES}.
+\item AVW\texttrademark{} (a commercial library\footnote{See \R2Lurl{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
+{www.mayo.edu/bir/Software/AVW/AVW1.html}.}
+via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.
+, 
+\item GE RDF\texttrademark{} support via \texttt{RDF\_INCLUDE\_DIRS} and \texttt{RDF\_LIBRARIES} (requires the GE proprietary Pet Toolbox).
+\end{itemize}
+
+Note that you can use e.g. \textit{DISABLE\_LLN\_MATRIX} to \textit{not}
+use the LLN ECAT library, even if cmake found it. 
+
+Finally, do not forget to set
+\texttt{CMAKE\_BUILD\_TYPE} to \texttt{Release}, \texttt{Debug} or \texttt{RelWithDebug}.
+
+
+On Windows or MacOSX, the procedure is essentially the same, except that you have to specify locations 
+via the cmake GUI. When using Visual Studio or other IDEs as  your build system,
+you do not need to specify the Build Type, as you will be able to select that in 
+your IDE.
+
 
 \subsubsection{
-Normal Compilation}
+Compilation using GNU make}
 \label{sec:normalcompilation}
+\textit{This build process will no longer be provided in future versions of STIR.}
+
 \textit{STIR} currently comes with a Makefile for the GNU \textit{make} program
 \footnote{
 A non-GNU version of make will not work. It might be that on 
@@ -292,12 +402,10 @@ The following table gives a summary of all available build options.
 In this table, the notation \$(VAR) means: substitute the value of the
 (make) variable VAR.
 
-
-\newlength{\MakeTableFirstCol}
-\newlength{\MakeTableSecondCol}
 \setlength{\MakeTableFirstCol}{2.5in}
 \setlength{\MakeTableSecondCol}{\textwidth}
 \addtolength{\MakeTableSecondCol}{-\MakeTableFirstCol}
+
 \begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
 \hline
 % ROW 1
@@ -456,19 +564,6 @@ install).} \\
 {\raggedright
 This is used by the uninstall targets. It defaults to \texttt{rm -f}.} \\
 \hline
-% ROW 15
-
-{\raggedright
-\textit{DISABLE\_DEPENDENCY\_\linebreak
-GENERATION=1}} & 
-
-{\raggedright
-By default, the makefile is set-up to generate dependencies 
-on the include files. This means that if an include file is changed, 
-the relevant .cxx files will be recompiled. This feature is really 
-only necessary when you are modifying the \textit{STIR} source files, 
-so you could switch it off to saved a little bit of time.} \\
-\hline
 \end{longtable}
 
 
@@ -485,10 +580,7 @@ to what is specified above
 \hline
 % ROW 1
 {\raggedright \textit{GRAPHICS=value}} & 
-{\raggedright Possible values: X, PGM, MATHLINK, NONE. X (default) uses basic 
-X windows graphics, PGM writes the graphics to a .pgm file, MATHLINK 
-uses the (external) MathLink library which could be used to send 
-data directly to Mathematica, NONE switches off all graphics.} \\
+{\raggedright see section \ref{sec:UsingCMake}} \\
 \hline
 \end{longtable}
 
@@ -498,15 +590,10 @@ If you have problems, you might have to change \textbf{STIR/local/config.mk}
 specific for your system.
 
 
-See also section \ref{sec:display}..
 
 \subsubsection{
-Additional options available for parallel code}
-
-Since version 2.1, \textit{STIR} contains code for running \texttt{OSMAPOSL} and \texttt{OSSPS} in parallel-mode
-\footnote{In fact, any algorithm that uses \texttt{PoissonLogLikelihoodWithLinearModelForMeanAndProjData}.}
-(contribution mainly by Tobias Beisel, Univ. of Paderborn). You need a version of the MPI library and
-and compiler to get this to work. We have tested this using \R2Lurl{http://www.open-mpi.org/}{OpenMPI} 1.4.2.
+Additional options available for parallel code using MPI}
+See section \ref{sec:UsingCMake}.
 
 Normal build process would be something like\footnote{This will need to fit all on
 1 line, or use the continuation character of your shell (normally a backslash).}
@@ -552,15 +639,10 @@ Can be used to change the default MPI compilation flags which currently includes
 \hline
 \end{longtable}
 
-See section \ref{sec:RunningWithMPI} for information on how to run programs using MPI.
-
 \subsubsection{
 Additional options available for threaded code}
+See section \ref{sec:UsingCMake}.
 
-Since version 2.0, \textit{STIR} contains preliminary code for running \texttt{FBP2D} in threaded mode
-(contribution by Tobias Beisel, Univ. of Paderborn). You need a compiler that 
-supports \texttt{OPENMP}. Note however, that this code doesn't presently result 
-in a decent speed-up of \texttt{FBP2D}. Normal build process would be something like
 
 \cmdline{make DEST=openmpopt/ analytic/FBP2D STIR\_OPENMP=1}
 
@@ -585,10 +667,6 @@ Can be used to change the default OPEN-MP compilation flags which currently incl
 \hline
 \end{longtable}
 
-When running a threaded executable, the environment variable \texttt{OMP\_NUM\_THREADS} can be set
-to the number of processes to be used for OpenMP. Without using this, the number of threads is 
-defined as the number of processors available.
-
 \subsubsection{
 Usage of STIR/local/config.mk}
 \label{sec:local_config.mk}
@@ -602,28 +680,9 @@ The distribution contains a sample file \textbf{STIR/samples/local/config.mk},
 but check it out if it is appropriate for you before copying 
 it to \textbf{STIR/local/}.
 
+
 \subsubsection{
 Enabling ECAT 7 support}
-\label{sec:ECAT67support}
-Older CTI (Siemens) scanners use a file format called ECAT.
-At present, \textit{STIR} uses parts of the Louvain la Neuve ecat library (called LLN in
-the rest of this document).\footnote{\textit{STIR} versions 1.? came with
-specific files for ECAT6 support without the need for the LLN library. 
-However, due to license restrictions this is now no longer the case.} 
-The library might still be available on  
-\R2Lurl{ftp://ftp.topo.ucl.ac.be/pub/ecat }{ftp://ftp.topo.ucl.ac.be/pub/ecat}.
-It is also available for GATE users.
-Please check the \textit{STIR}
-mailing lists for more information.
-
-You have to download that library and issue 'make --f Makefile.unix' 
-(or 'make --f Makefile.cygwin' if you are using CYGWIN on Windows) 
-in the new ecat directory first. Please get a recent version 
-of this library (dated 20 July 2004 or later) as Merence Sibomana 
-has introduced various bug fixes, some of which solve problems 
-that you would otherwise experience when using \textit{STIR} and ECAT7 
-files.
-
 
 To compile and link ifheaders\_for\_ecat7.cxx and the other files 
 that enable ECAT support, \textit{STIR} needs to know the location 
@@ -659,11 +718,6 @@ means that the above flags point to an incorrect location.
 \subsubsection{
 Enabling AVW support}
 \label{sec:AVWsupport}
-If you have the \textit{AVW}\texttrademark{}  library
-\footnote{See \R2Lurl{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
-{www.mayo.edu/bir/Software/AVW/AVW1.html}.
-} installed on your system, the make process should automatically built
-some \textit{STIR} routines to be to use it for IO (see \ref{sec:convAVW}).
 
 To compile and link \textit{AVW} support, \textit{STIR} needs to know the location 
 of the \textit{AVW} files. 
@@ -704,222 +758,7 @@ If the file \texttt{conv\_AVW} is not compiled, it probably
 means that the above flags point to incorrect locations.
 
 
-\subsubsection{
-Compilation using Visual C++}
-\label{sec:VC}
 
-Old versions of \textit{STIR} could be compiled with Visual C++ 6.0, service pack 5 but there are no recent 
-reports if this version still works. We very much recommend to upgrade your compiler. The Visual
-Studio Express versions are free. Version 7.1 (i.e. 2003) might still be fine. \textit{STIR} 2.2
-should normally compile with Visual Studio 2008 and 2010.
-
-There are three different ways to build \textit{STIR} using Visual C++. The recommended way (since 2.2) is
-to use \textit{CMake}, see section \ref{sec:UsingCMake}. If you do not want to use \textit{CMake}, we provide
-two alternatives, but both 
-are fiddly. Before we go there, we have to got a problem out-of-the-way.
-
-{ \subsubsubsection{CPUTimer problems}
-}
-
-At present, \textit{STIR} uses some files available in the Windows API for 
-getting accurate CPU time estimates. If you do not have the Windows API
-installed, you might get compilation errors mentioning that 
-the file \texttt{windows.h} cannot be found. A work-around is to
-define the preprocessor symbol \texttt{STIR\_CPUTimer\_use\_clock}. 
-This does mean that \textbf{CPUTimer} will return wall-clock time.
-If you are using \textbf{make}, you can put a line
-\begin{verbatim}
-  EXTRA_CFLAGS=-DSTIR_CPUTimer_use_clock
-\end{verbatim}
-in your \textbf{STIR/local/config.mk}, see section \ref{sec:local_config.mk}.
-If you are using the Visual Studio GUI, you can either add this preprocessor
-variable to all projects, or you can put a line
-\begin{verbatim}
-  #define STIR_CPUTimer_use_clock
-\end{verbatim}
-at the start of \texttt{include/stir/CPUTimer.inl}.
-
-
-{ \subsubsubsection{Using make}
-}
-
-
-If you have a Unix compatible \textbf{make} program and possibly some 
-other Unix-like programs such as \textbf{sh}, then life could be as 
-simple as typing
-\cmdline{make CXX=cl}
-
-
-Kris Thielemans has tested this with the make program included in the CYGWIN 
-distribution (\R2Lurl{http://cygwin.com }{http://cygwin.com}). 
-
-
-
-See section \ref{sec:normalcompilation} et al. for general info on the make parameters. 
-Specific information to VC follows now.
-
-
-
-You have to make sure that the location of the Visual C++ files 
-is known. In particular, you will need to set the path and the 
-environment variables \textbf{LIB} and \textbf{INCLUDE}. This is normally 
-done by running the file \textbf{vcvars32.bat} supplied with Visual 
-C++. Note that when using CYGWIN, the easiest way to do this 
-is to include a line 
-\begin{verbatim}
-call vcvars32.bat
-\end{verbatim} 
-in your  \textbf{cygwin.bat}.
-
-
-
-Where we rely on external programs such as \textbf{cp}, it is generally 
-possibly to either replace these by setting a \textit{make} variable, 
-or by switching the relevant lines off. Do some investigation, 
-and let the mailing list know. So, if you do not have cygwin, 
-a possibly more realistic line is
-\cmdline{make CXX=cl DISABLE\_DEPENDENCY\_GENERATION=1 {\textbackslash}\\
- INSTALL=copy 
-RM=del GRAPHICS=PGM install}
-
-
-Getting ECAT support is even more of an adventure, as it requires 
-some changes to the Makefile supplied with the LLN Matrix library. 
-
-
-{ \subsubsubsection{Using the Visual Studio interface}
-}
-
-In addition to the source files, you will need to download VCprojects.zip. 
-Extract it in the same place as you extracted the source files. 
-
-\textbf{Currently there might be a linking problem with some of the utilities using
-the distribution solution files} (tested using VC 2010). A workaround would be to move all files
-in the \textbf{Shape\_buildblock} and \textbf{numeric\_buildblock} projects to the \textbf{buildblock}
-project.
-
-Note that since \textit{STIR} 1.3, the Visual Studio projects might be 
-out of date. You essentially have to add all source files in the
-\textit{STIR} sub-directories to a relevant project (e.g., add 
-all .cxx files in \texttt{buildblock} directory to the \texttt{buildblock}
-project.
-
-You will find several solutions in the \textbf{STIR{\textbackslash}VC} subdirectory. 
-In particular, \textit{reconstructors.sln} contains all reconstruction 
-programs.
-
-
-
-\textbf{Note:} The project files enable ECAT support by default. 
-If you do not want ECAT support (i.e. if you do not (want to) 
-have the LLN ecat library), you probably have to remove the \textit{HAVE\_LLN\_MATRIX} preprocessor 
-define, and remove dependencies on the ecat project. This might 
-all be avoidable, but we didn't do this for you. Please feel 
-free to find a neat way around all this ugly stuff and let us 
-know.
-
-\textbf{Note:} The projects and workspaces in the distribution contain references to
-files and projects called \texttt{local*}. You will probably have to delete those
-manually from the projects.
-
-
-At present, \textit{STIR} uses parts of the Louvain la Neuve ecat library, see \ref{sec:ECAT67support}. 
-The following are instructions specific to using VC projects.
-
-Extract 
-the library in the following subdirectory of your home directory: \textbf{lln{\textbackslash}ecat}.\footnote{{\small You 
-no longer have to issue 'nmake /f Makefile.win32' in the ecat 
-directory first. The ecat.dsp project takes care of that. Using 
-the project has the advantage that you don't get error messages 
-anymore when trying to build a debug version.}} In addition, get 
-the \textbf{ecat.dsp} file from the same source and put it in a new 
-subdirectory \textbf{lln{\textbackslash}ecat{\textbackslash}VC}.
-
-
-
-When opening the workpackages the first time, and if you want
-ECAT 6 and 7 support, you will need to tell Visual 
-Studio the location of the \textbf{ecat.dsp} project file (which should 
-be in the VC subdirectory of the ecat distribution).
-
-
-There are various graphical display modes supported. To set them:\\
-1.\tab 
-Choose Settings in the Project menu\\
-2.\tab 
-Select all projects you want to modify (for the libraries, this 
-is only necessary for the \textit{display} project)\\
-3.\tab 
-Choose C/C++ tab and go to Preprocessor options\\
-4.\tab 
-Add a predefined preprocessor value appropriate to the display 
-mode you want. Supported values are: 
-
-
-STIR\_SIMPLE\_BITMAPS uses X Windows (simple display, no menus).
-
-
-STIR\_MATHLINK sends the image information over a MathLink connection 
-to Mathematica (or any other MathLink program) where it can be 
-displayed anyway you like.
-
-
-STIR\_PGM puts all images in a single PGM file.
-
-
-Multiple preprocessor symbols may be defined. The distributed 
-version uses STIR\_PGM.
-
-
-If your mode selection requires an additional library (STIR\_MATHLINK 
-needs the ml32iw.lib library distributed with Mathematica, STIR\_SIMPLE\_BITMAPS 
-needs X windows libraries which you would have to get from somewhere 
-else), set the environment variable to PARAPETGRAPHLIB to the 
-name of the library you want. Note that this has to be done BEFORE 
-you start Visual Studio. In Windows NT, 2000 or XP or later, environment 
-variables can be set using the System Control Panel. On Windows 
-9?, you have to modify autoexec.bat. 
-
-
-
-When creating new projects, make sure that RTTI is enabled (Settings, 
-C/C++ tab, General). 
-
-
-
-Some more info on using these projects might be available in 
-the archive of the stir\_users mailing list.
-
-\subsubsection{
-Alternative building process: using CMake}
-\label{sec:UsingCMake}
-Since version 2.2, \textit{STIR} contains files to build using the platform-independent
-\R2Lurl{"http://www.cmake.org"}{CMake}. This is much better for configuration and finding 
-system dependencies.
-
-More information on using CMake is on the STIR Wiki.
-Normal build procedure on Linux/Unix would be something like
-
-\cmdline{cd /somewhere/nice/STIRbuild/Release}
-\cmdline{ccmake /somewhere/else/where/the/source/is/STIR}
-
-This will bring up a basic interface that allows you to specify build variables. For example,
-if CMake cannot find \textit{boost}, you will have to set \texttt{BOOST\_ROOT}. You can also
-specify locations for the LLN files, AVW libraries, wether to use \textit{OPENMP}, or
-\textit{MPI}, set \textit{GRAPHICS} according to what it can find on your system, etc. 
-See the section \ref{sec:normalcompilation} for explanation of some
-of the variables. Note that you can use e.g. \textit{DISABLE\_LLN\_MATRIX} to \textit{not}
-use the LLN ECAT library, even if cmake found it. Finally, do not forget to set
-\texttt{CMAKE\_BUILD\_TYPE} to \texttt{Release}, \texttt{Debug} or \texttt{RelWithDebug}.
-
-You can press \texttt{c} to do additional configurations, \texttt{g} for generating
-your build files, \texttt{q} to quit. After that, you will have to use your normal
-build system (i.e. \texttt{make} on Linux/Unix).
-
-On Windows, the procedure is essentially the same, except that you have to specify locations 
-via the cmake GUI. You can also select your build system (e.g. Visual Studio 2008). In that case,
-you do not need to specify the Build Type, as you will be able to select that in 
-Visual Studio.
 
 \subsubsection{
 Operating system specifics}
@@ -1080,15 +919,6 @@ If a problem is reported, a log file should have been created (probably in
 your build directory called \texttt{Testing/Temporary/LastTest.log}).
 
 
-\subsubsection{
-If you have used the distributed Visual Studio projects for building}
-
-
-This is only partially supported. There is a \texttt{test} ``solution'' which you need to build first. You can run
-the projects then by hand. We also provide \textbf{STIR/test/run\_tests.bat} for running the automatic 
-tests. This will currently not run any tests in \textbf{STIR/recon\_test} though.
-
-
 
 
 \section{
@@ -1168,7 +998,7 @@ no differentiation between the reasons for failure.
 
 \subsection{
 Running programs using MPI \label{sec:RunningWithMPI}}
-If you have compiled with STIR\_MPI, you need to the executables in such a way that
+If you have compiled with STIR\_MPI, you need run the executables in such a way that
 they know about the availables nodes. How to do this is system/MPI version specific. The following
 should work with OpenMPI on Linux:
 
@@ -1202,6 +1032,13 @@ This will open a interactive prompt on one node where you just type
 Of course, you can use \texttt{qsub} to submit a job as opposed to getting an interactive prompt.
 
 \subsection{
+Running programs using OPENMP \label{sec:RunningWithOPENMP}}
+If you have compiled with OPENMP support, th eexecutables should run as normal.
+The environment variable \texttt{OMP\_NUM\_THREADS} can be set to the number of processes to be used for OpenMP. 
+Without using this, the number of threads is  defined as the number of cores on your system. It is probably 
+useful to reduce the number of threads as currently performance is limited by the available cache in your system.
+
+\subsection{
 File formats}
 
 The STIR utility and reconstruction programs frequently need 
@@ -1229,13 +1066,11 @@ images written by \textit{STIR} in Interfile.
 \subsubsection{VOLPET sinograms}
 
 The GE VOLPET sinogram format is supported for reading, but for
-the Advance only, 
+the GE Advance only, 
 however data files must have a single data set, maximum ring 
 difference 11 and contain 281 bins * 256 segments * 336 views. 
-We do have software that read VOLPET headers for all GE scanners, but can currently
-not distribute it due to licensing restrictions. If you have the
-GE PET Toolbox package you can ask Kris Thielemans for VOLPET and RDF
-support in \textit{STIR}.
+See section \ref{sec:RDFsupport} for enabling support for other scanners and
+data in the GE RDF format.
 
 \subsubsection{ECAT6 and ECAT7 data} 
 See section \ref{sec:ECAT67support} for enabling support for ECAT data.
@@ -4468,7 +4303,7 @@ data3d=LinkRead[link];
 
 
 (* display the 3rd image *)
-ListPlot3D[data3d[[3]], Mesh->}False];
+ListPlot3D[data3d[[3]], Mesh->False];
 (* read data from link from next display *)
 nextdata3d=LinkRead[link];
 (* and so on *)
