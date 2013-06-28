@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2006 Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,9 +23,6 @@
 \author Matthew Jacobson
 \author Kris Thielemans
 \author PARAPET project
-
-$Date$
-$Revision$
 
 This utility compares two input projection data sets. 
 The input data are deemed identical if their maximum absolute difference 
@@ -100,20 +94,46 @@ int main(int argc, char *argv[])
 
   USING_NAMESPACE_STIR;
 
-  if(argc<3)
+  // defaults
+  float tolerance=0.0001F;
+
+
+  // first process command line options
+  const char * const progname = argv[0];
+
+  // skip program name
+  --argc;
+  ++argv;
+
+  while (argc>0 && argv[0][0]=='-')
+    {
+      if (strcmp(argv[0], "-t")==0)
+	{
+	  if (argc<2)
+	    { cerr << "Option '-t' expects a (float) argument\n"; exit(EXIT_FAILURE); }
+	  tolerance = static_cast<float>(atof(argv[1]));
+	  argc-=2; argv+=2;
+	}      
+      else
+        {
+          std::cerr << "Unknown option '" << argv[0] <<"'\n"; exit(EXIT_FAILURE);
+        }
+    }
+
+  if(argc<2)
   {
-    cerr<< "Usage:" << argv[0] << " old_projdata new_projdata [max_segment_num]\n";
+    cerr<< "Usage:" << progname << " [-t tolerance] old_projdata new_projdata [max_segment_num]\n";
     exit(EXIT_FAILURE);
   }
 
 	
 
-  shared_ptr<ProjData> first_operand=ProjData::read_from_file(argv[1]);
-  shared_ptr<ProjData> second_operand=ProjData::read_from_file(argv[2]);
+  shared_ptr<ProjData> first_operand=ProjData::read_from_file(argv[0]);
+  shared_ptr<ProjData> second_operand=ProjData::read_from_file(argv[1]);
 
   int max_segment=first_operand->get_max_segment_num();
-  if(argc==4 && atoi(argv[3])>=0 && atoi(argv[3])<max_segment) 
-    max_segment=atoi(argv[3]);
+  if(argc==3 && atoi(argv[2])>=0 && atoi(argv[2])<max_segment) 
+    max_segment=atoi(argv[2]);
 
   // compare proj_data_info
   {
@@ -130,8 +150,6 @@ int main(int argc, char *argv[])
 	     << "Use list_projdata_info to investigate.\n";
 	return EXIT_FAILURE;    }
   }
-
-  const float tolerance=0.0001F;
 
   float max_pos_error=0.F, max_neg_error=0.F, amplitude=0.F;
   for (int segment_num = -max_segment; segment_num <= max_segment ; segment_num++) 
