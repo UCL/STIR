@@ -19,6 +19,7 @@
 /*!
   \file
   \ingroup GeneralisedObjectiveFunction
+  \ingroup modelling
   \brief Declaration of class stir::PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData
 
   \author Kris Thielemans
@@ -45,6 +46,7 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup GeneralisedObjectiveFunction
+  \ingroup modelling
   \brief a base class for LogLikelihood of independent Poisson variables 
   where the mean values are linear combinations of the kinetic parameters.
 
