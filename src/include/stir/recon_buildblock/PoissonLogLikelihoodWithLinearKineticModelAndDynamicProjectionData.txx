@@ -21,6 +21,7 @@
 /*!
   \file
   \ingroup GeneralisedObjectiveFunction
+  \ingroup modelling
   \brief Implementation of class stir::PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData
 
   \author Kris Thielemans
@@ -52,6 +53,9 @@
 // For the Patlak Plot Modelling
 #include "stir/modelling/ModelMatrix.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.h"
+#ifndef NDEBUG
+#include "stir/IO/OutputFileFormat.h"
+#endif
 
 START_NAMESPACE_STIR
 
