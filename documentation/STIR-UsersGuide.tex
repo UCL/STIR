@@ -1,7 +1,13 @@
 
 \batchmode
 \documentclass{article}
-\usepackage{a4wide}
+\usepackage{geometry}
+%\usepackage{a4wide}
+%\usepackage{layout}
+
+\geometry{
+  margin=2.54cm
+}
 \usepackage{setspace}
 \usepackage{longtable}
 \usepackage{hyperref}
@@ -18,7 +24,6 @@
 \newcommand{\cmdline}[1]{\par \noindent $>$ \texttt{#1}\par}
 
 \begin{document}
-
 
 \begin{spacing}{2}
 \begin{center}
@@ -1308,6 +1313,7 @@ is not used, the program prompts the user for the required information.
 The form of a typical parameter file\footnote{Parameter values used here are for
 illustration only and are \textit{not} recommended.} is as follows:
 
+{\small 
 \begin{verbatim}
 OSMAPOSLParameters :=
 ;lines starting with semicolons are comments
@@ -1418,6 +1424,7 @@ write update image := 0
 
 END :=
 \end{verbatim}
+}
 
 See \textbf{STIR/samples/} for example parameter files.
 
@@ -1885,6 +1892,7 @@ without any resolution loss etc.
 the mailing lists for questions and results.
 
 The following gives the main parameters to use for OSMAPOSL.
+{ \small
 \begin{verbatim}
 OSMAPOSLParameters :=
   objective function type:=\
@@ -1910,6 +1918,7 @@ OSMAPOSLParameters :=
 
 End:=
 \end{verbatim}
+}
 
 Currently, the sensitivity filename needs to be specified as the code to compute it using
 a bin normalisation type has not yet been copied to the 
@@ -2357,7 +2366,7 @@ For example, when using MRP:
 \end{array}
 \end{equation}
 In STIR, the transform-and-average operation is performed using the
-utility called \texttt{warp\_and\_accumulate\_gated\_images}.
+\texttt{warp\_and\_accumulate\_gated\_images} utility.
 
 For MCIR the motion transformations are incorporated directly into reconstruction. The motion corrected
 image is reconstructed using the following iterative formula which is based on conventional OSEM
@@ -2447,25 +2456,23 @@ images. We hope to change this in future releases.
 
 Although motion is designed for general motion
 information such as rigid motion, affine etc, currently only MotionVectors on a
-Cartesian grid are implemented. Information is stored in millimeter. The origin
-of the motion vectors system is located in the same place as the coordinate
-system The coordinate axes for Cartesian grids are chosen as follows.
+Cartesian grid are implemented. Information is stored in millimeter using the normal
+STIR coordinate system and axes (see the developer's guide).
 
+\textbf{Important} STIR (as many other programs) uses a 
+\textit{pull interpolation} warping, i.e.\ for each voxel in the target
+(i.e.\ motion-corrected) image, the motion vector
+at that voxel is added to its coordinates, the corresponding location (i.e.\ before motion correction)
+in the original image is found and the new value is obtained by interpolating 
+between the values of the surrounding voxels of the original image.
 
-$m_x$: motion on the horizontal axis, pointing left when
-looking from the bed into the gantry 
+One way to understand this is as follows: if a point-source is in a voxel at location $\vec r$ in the motion-corrected image
+and the motion field at that voxel is $\vec m_1$ for gate $1$, then this means that the point source
+was at location $\vec r + \vec m_1$ in gate $1$.
 
-$m_y$: motion on the vertical axis, pointing upwards
-
-$m_z$: motion on the scanner axis, pointing from the bed
-towards the gantry
-
-See figure below for an illustration of how the warping operator works in a 3D grid.
-As it can be noticed, the motion vector arrow is located at the centre of the
-voxel and the direction of the motion field points opposite than the standard
-grid. This is also known as \textit{pull-interpolator} warping operation.
-
-%TODO<img width=216 height=176 src="Software_Description_files/image005.png" align=left hspace=12>
+A nice illustration can be found (at the time of writing) at\\ 
+{ \small
+\R2Lurl{http://www.bioen.utah.edu/wiki/index.php?title=Geometric_Transformation_and_Interpolation}{http://www.bioen.utah.edu/wiki/index.php?title=Geometric\_Transformation\_and\_Interpolation}}.
 
 \subsubsection{Motion Correction}
 
@@ -2488,6 +2495,8 @@ objective function.
 \cmdline{OSMAPOSL OSMAPOSL\_with\_motion\_correction.par}
 
 An example parameter file would be as follows
+{
+\small
 \begin{verbatim}
 OSMAPOSLParameters :=
 objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion
@@ -2543,10 +2552,9 @@ output filename prefix := MOTIONCORRECTEDIMAGE
 
 END:=
 \end{verbatim}
-
-{\subsubsection{Regularisation and Noise}
 }
 
+\subsubsection{Regularisation and Noise}
 According to [Tso13], regularisation is generally advised for either RTA or MCIR.
 Currently, MRP is validated. Further tests on quadratic prior and OSSPS
 implementation are recommended to the researchers using STIR. Otherwise, two
@@ -2554,9 +2562,7 @@ iterations are usually enough to obtain a relatively good image if followed by
 postfiltering. 
 
 
-{\subsubsection{Further Extensions for the Future}
-}
-
+\subsubsection{Further Extensions for the Future}
 More robust testing: Currently the tests are performed based on basic tests.
 
 OSSPS: Needs further debugging as it seems the current settings do not reconstruct the
@@ -2564,11 +2570,9 @@ motion compensated image.
 
 Scatter Estimation: Assumed to have it already estimated prior to reconstruction. 
 
-{\subsubsection{Realistic Datasets and other info}
-}
-
+\subsubsection{Realistic Datasets and other info}
 An extensive
-database of realistic simulated PET data with motion is available at
+database of realistic simulated PET data with motion is available at\\
 \R2Lurl{http://www.isd.kcl.ac.uk/pet-mri/simulated-data/}{http://www.isd.kcl.ac.uk/pet-mri/simulated-data}. 
 
 Motion fields of these data have been estimated using a local hierarchical affine
@@ -4756,7 +4760,7 @@ A Method for OSEM PET Reconstruction on Parallel Architectures Using STIR.
 [Bue12] Buerger, C., T. Schaeffter, and A. P. King \textbf{(2011)}, Hierarchical adaptive
 local affine registration for fast and robust respiratory motion estimation.
 Medical Image Analysis, vol. 15, pp. 551-564, 
-\R2Lurl{http://dx.doi.org/10.1016/j.media.2011.02.009}{http://dx.doi.org/10.1016/j.media.2011.02.009} 
+\R2Lurl{http://dx.doi.org/10.1016/j.media.2011.02.009}{doi 10.1016/j.media.2011.02.009} 
 
 {[}Bou97] Boudraa \textsc{A E O} \textbf{(1997)} Automated detection of the 
 left ventricular region in magnetic resonance images by Fuzzy 
@@ -4830,7 +4834,7 @@ Sci.}, 36: 964-968.
 Klein, G. J., B. W. Reutter, and R. H. Huesman \textbf{(1996)}, Non-rigid summing of gated PET via optical flow, \textit{1996 IEEE Nuclear
 Science Symposium Conference Record},
 vol. 2, pp. 1339-1342, 
-\R2Lurl{http://dx.doi.org/10.1109/NSSMIC.1996.591692}{http://dx.doi.org/10.1109/NSSMIC.1996.591692}
+\R2Lurl{http://dx.doi.org/10.1109/NSSMIC.1996.591692}{doi 10.1109/NSSMIC.1996.591692}
 
 {[}Lab97] Labbe C, Ashburner J, Koepp M, Spinks T, Richardson M 
 and Cunningham V \textbf{(1997)} Accurate PET quantification using 
@@ -4870,7 +4874,7 @@ Publishing)} pp 77-92.
 [Li06] Li, T., B. Thorndyke, E.
 Schreibmann, \textit{et al} \textbf{(2006)}, Model-based image reconstruction for
 four-dimensional PET. \textit{Med Phys} vol. 2, pp. 1288-1298
-\R2Lurl{http://link.aip.org/link/doi/10.1118/1.2192581}{http://dx.doi.org/10.1118/1.2192581}
+\R2Lurl{http://link.aip.org/link/doi/10.1118/1.2192581}{doi 10.1118/1.2192581}
 
 {[}Man97] Manders Jones H \textbf{(1997)} A Computational Investigation 
 of the solution of large scale Optimization problems. \textit{Ph.D 
@@ -4923,14 +4927,14 @@ Available at \R2Lurl{http://stir.sourceforge.net }{http://stir.sourceforge.net}.
 [Pol12] Polycarpou, I., C.
 Tsoumpas and P. K. Marsden \textbf{(2012)}, A new algorithm for scaling of PET
 scatter estimates using all coincidence events. \textit{Med Phys} vol. 39, 3586-3590, 
-\R2Lurl{http://dx.doi.org/10.1118/1.4754586}{http://dx.doi.org/10.1118/1.4754586}.
+\R2Lurl{http://dx.doi.org/10.1118/1.4754586}{doi 10.1118/1.4754586}.
 
 
 [Rah08] Rahmim, A., K.
 Dinelle, \textit{et al} \textbf{(2008)}, Accurate event-driven motion compensation
 in high-resolution PET incorporating scattered and random events. \textit{IEEE Trans
 Med Imaging}, vol. 27, 1018-1033, 
-\R2Lurl{http://dx.doi.org/10.1109/TMI.2008.917248}{http://dx.doi.org/10.1109/TMI.2008.917248}.
+\R2Lurl{http://dx.doi.org/10.1109/TMI.2008.917248}{doi 10.1109/TMI.2008.917248}.
 
 
  {[}Rea98] Reader A J, Visvikis A, Erlandsson K, Ott R J, and Flower 
@@ -4972,7 +4976,7 @@ parametric estimation methods of linear models in dynamic positron emission tomo
 Polycarpou, K. Thielemans, \textit{et al} \textbf{(2013)}, The effect of
 regularisation in motion compensated PET image reconstruction: A realistic
 numerical 4D simulation study. \textit{Phys Med Biol}, vol. 58, 1759-1773, 
-\R2Lurl{http://dx.doi.org/10.1088/0031-9155/58/6/1759}{http://dx.doi.org/10.1088/0031-9155/58/6/1759}.
+\R2Lurl{http://dx.doi.org/10.1088/0031-9155/58/6/1759}{doi 10.1088/0031-9155/58/6/1759}.
 
 
 {[}Uns93] Unser M, Aldroubi A, Eden M \textbf{(1993)}. B-Spline Signal Proccessing: Part II - Efficient Design and Applications.  \textit{IEEE Trans Signal Processing} 41(2): 834-848.
