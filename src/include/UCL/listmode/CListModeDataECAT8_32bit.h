@@ -91,8 +91,16 @@ private:
   typedef CListRecordECAT8_32bit CListRecordT;
   std::string listmode_filename;
   shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
   InterfileHeader interfile_parser;
-    float lm_start_time;
+  int axial_compression;
+  int maximum_ring_difference;
+  int number_of_projections;
+  int number_of_views;
+  int number_of_segments;
+  //std::vector<int> segment_table;
+
+  float lm_start_time;
   float lm_duration;
 
   Succeeded open_lm_file();

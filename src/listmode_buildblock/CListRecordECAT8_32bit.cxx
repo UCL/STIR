@@ -7,7 +7,7 @@
 /*!
   \file
   \ingroup listmode
-  \brief Implementation of classes CListEventECAT8_32bit and CListRecordECAT8_32bit 
+  \brief Implementation of classes stir::UCL::CListEventECAT8_32bit and stir::UCL::CListRecordECAT8_32bit 
   for listmode events for the ECAT8 32bit listmode file format.
     
   \author Kris Thielemans
@@ -28,8 +28,8 @@ START_NAMESPACE_STIR
 namespace UCL {
 
 CListEventECAT8_32bit::
-CListEventECAT8_32bit() :
-  CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(Scanner::Siemens_mMR)))
+CListEventECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
+  CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(*proj_data_info_sptr->get_scanner_ptr()))) //(Scanner::Siemens_mMR)))
 {
   const int num_rings = this->scanner_sptr->get_num_rings();
   // TODO remove hard-coding of sizes. depends on mMR (and acquisition?)

@@ -43,12 +43,38 @@ CListModeDataECAT8_32bit(const std::string& listmode_filename)
   : listmode_filename(listmode_filename)
 {
   // initialise scanner_ptr before calling open_lm_file, as it is used in that function
+  this->interfile_parser.add_key("%axial_compression", &this->axial_compression);
+  this->interfile_parser.add_key("%maximum_ring_difference", &this->maximum_ring_difference);
+  this->interfile_parser.add_key("%number_of_projections", &this->number_of_projections);
+  this->interfile_parser.add_key("%number_of_views", &this->number_of_views);
+  this->interfile_parser.add_key("%number_of_segments", &this->number_of_segments);
+  // TODO cannot do this yet
+  //this->interfile_parser.add_key("segment_table", &this->segment_table);
+  
+  // We need to set num_time_frames to 1 as the Siemens header doesn't have the keyword
+  {
+    const int num_time_frames=1;
+    this->interfile_parser.num_time_frames=1;
+    this->interfile_parser.image_scaling_factors.resize(num_time_frames);
+    for (int i=0; i<num_time_frames; i++)
+      this->interfile_parser.image_scaling_factors[i].resize(1, 1.);
+    this->interfile_parser.data_offset.resize(num_time_frames, 0UL);
+    this->interfile_parser.image_relative_start_times.resize(num_time_frames, 0.);
+    this->interfile_parser.image_durations.resize(num_time_frames, 0.);
+  }
 
-  //interfile_parser.add_key("number of projections", &this->num_views);
+  this->interfile_parser.parse(listmode_filename.c_str());
+  if (this->interfile_parser.originating_system == "2008")
+    this->scanner_sptr.reset(new Scanner(Scanner::Siemens_mMR));
+  else
+    error("Unknown originating_system");
 
-  // TODO interfile_parser.parse(listmode_filename.c_str());
-  interfile_parser.data_file_name = "test.lm";
-  this->scanner_sptr.reset(new Scanner(Scanner::Siemens_mMR));
+  this->proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(this->scanner_sptr, 
+								this->axial_compression,
+								this->maximum_ring_difference,
+								this->number_of_views,
+								this->number_of_projections,
+								/* arc_correction*/false));
 
   if (this->open_lm_file() == Succeeded::no)
     error("CListModeDataECAT8_32bit: error opening the first listmode file for filename %s\n",
@@ -76,7 +102,7 @@ shared_ptr <CListRecord>
 CListModeDataECAT8_32bit::
 get_empty_record_sptr() const
 {
-  shared_ptr<CListRecord> sptr(new CListRecordT);
+  shared_ptr<CListRecord> sptr(new CListRecordT(this->proj_data_info_sptr));
   return sptr;
 }
 
@@ -93,7 +119,7 @@ open_lm_file()
       shared_ptr<istream> stream_ptr(new fstream(filename.c_str(), ios::in | ios::binary));
       if (!(*stream_ptr))
       {
-	warning("CListModeDataECAT8_32bit: cannot open file %s (probably this is perfectly ok)\n ", filename.c_str());
+	warning("CListModeDataECAT8_32bit: cannot open file '%s'", filename.c_str());
         return Succeeded::no;
       }
       current_lm_data_ptr.reset(
