@@ -31,11 +31,12 @@
 #include "stir/Bin.h"
 #include "stir/display.h"
 #include "stir/IO/read_data.h"
+#include "stir/IO/InterfileHeader.h"
 #include "stir/ByteOrder.h"
 #include "stir/is_null_ptr.h"
 #include <algorithm>
 #include <fstream>
-
+#include <cctype>
 #ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::fstream;
@@ -235,14 +236,43 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   
   num_transaxial_crystals_per_block =	nrm_subheader_ptr->num_transaxial_crystals ;
 #endif
-  scanner_ptr.reset(new Scanner(Scanner::Siemens_mMR));
+#if 0
+  InterfileHeader interfile_parser;
+ add_key("data format", 
+    KeyArgument::ASCII,	&KeyParser::do_nothing);
+  interfile_parser.parse(filename.c_str());
+
+#else
+  KeyParser parser;
+  std::string originating_system;
+  std::string data_file_name;
+  {
+    parser.add_start_key("INTERFILE");
+    parser.add_key("originating_system", &originating_system);
+    parser.add_key("name_of_data_file", &data_file_name);
+    parser.parse(filename.c_str());
+  }
+#endif
+  // remove trailing \r
+  std::string s=/*interfile_parser.*/originating_system;
+  s.erase( std::remove_if( s.begin(), s.end(), isspace ), s.end() );
+  /*interfile_parser.*/originating_system=s;
+  s=/*interfile_parser.*/data_file_name;
+  s.erase( std::remove_if( s.begin(), s.end(), isspace ), s.end() );
+  /*interfile_parser.*/data_file_name=s;
+  
+  if (/*interfile_parser.*/originating_system == "2008")
+    this->scanner_ptr.reset(new Scanner(Scanner::Siemens_mMR));
+  else
+    error("Unknown originating_system '%s'", /*interfile_parser.*/originating_system.c_str() );
+
 
   const std::size_t buf_size = 344*127+9*344+504*64+837+64+64+9+837;
   Array<1,float> buffer(buf_size);
   {
-    std::ifstream binary_data("norm.n", std::ios::binary|std::ios::in);
+    std::ifstream binary_data(/*interfile_parser.*/data_file_name.c_str(), std::ios::binary|std::ios::in);
     if (read_data(binary_data, buffer, ByteOrder::little_endian) != Succeeded::yes)
-      error("failed reading norm.n");
+      error("failed reading '%s'",/*interfile_parser.*/data_file_name.c_str());
 
   }
   num_transaxial_crystals_per_block = scanner_ptr->get_num_transaxial_crystals_per_block();
@@ -375,8 +405,6 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   
 #if 1
    // to test pipe the obtained values into file
-  // char out_name[max_filename_length];
-    char name[80];
     ofstream out_geom;
     ofstream out_inter;
     ofstream out_eff;

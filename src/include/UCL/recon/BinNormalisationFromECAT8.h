@@ -8,7 +8,7 @@
   \file
   \ingroup recon_buildblock
 
-  \brief Declaration of class stir::ecat::BinNormalisationFromECAT8
+  \brief Declaration of class stir::UCL::BinNormalisationFromECAT8
 
   \author Kris Thielemans
 */
