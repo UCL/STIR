@@ -1,7 +1,3 @@
-//
-// $Id$
-//
-
 /*!
   \file 
  
@@ -9,15 +5,10 @@
 
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-
-  $Revision$
-
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2009 Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -40,6 +31,11 @@
  */
 #include "stir/NumericType.h"
 #include "stir/NumericInfo.h"
+
+#ifndef STIR_NO_NAMESPACES
+using std::size_t;
+using std::string;
+#endif
 
 START_NAMESPACE_STIR
 

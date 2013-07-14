@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,24 +20,16 @@
 
 /*!
   \file 
- 
+  \ingroup Array  
   \brief This file declares the stir::FullArrayIterator class.
 
   \author Kris Thielemans
   \author Alexey Zverovich
   \author PARAPET project
-
-  $Date$
-  $Revision$
 */
 
 #include "stir/common.h"
 #include <iterator>
-#ifndef STIR_NO_NAMESPACES
-using std::size_t;
-using std::ptrdiff_t;
-using std::forward_iterator_tag;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -65,8 +54,8 @@ template <typename topleveliterT, typename restiterT, typename elemT, typename _
 class FullArrayIterator
 {
 public:
-  typedef forward_iterator_tag iterator_category;
-  typedef ptrdiff_t difference_type;
+  typedef std::forward_iterator_tag iterator_category;
+  typedef std::ptrdiff_t difference_type;
 
   typedef elemT value_type;
   typedef _Ref reference;

@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2012 Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,10 +23,6 @@
 
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-
-  $Revision$
 */
 #ifndef __Segment_H__
 #define __Segment_H__
@@ -60,8 +53,11 @@ template <typename elemT> class Viewgram;
 template <typename elemT>
 class Segment
 {
+#ifdef SWIG
+  // need to make typedef public for swig
+ public:
+#endif
   typedef Segment<elemT> self_type;
-  typedef Segment<elemT> root_type;
 public:
   
   enum StorageOrder{ StorageByView, StorageBySino };

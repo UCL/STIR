@@ -1,9 +1,6 @@
-//
-//  $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2009 Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -29,10 +26,7 @@
 
   \author Kris Thielemans 
   \author PARAPET project
-
-  $Date$
-  $Revision$
-  */
+*/
 /*
   Modification History:
 
@@ -55,11 +49,6 @@
 #include <string>
 
 START_NAMESPACE_STIR
-
-#ifndef STIR_NO_NAMESPACES
-using std::size_t;
-using std::string;
-#endif
 
 /*!
   \ingroup buildblock
@@ -93,16 +82,16 @@ public:
    <tt>bit</tt>, <tt>signed integer</tt>, <tt>unsigned integer</tt>, <tt>float</tt>
    Exact types are determined via the size_in_bytes parameter.
   */
-  NumericType(const string& number_format, const size_t size_in_bytes);
+  NumericType(const std::string& number_format, const std::size_t size_in_bytes);
 
   //! comparison operator
   inline bool operator==(NumericType type) const;
   inline bool operator!=(NumericType type) const;
 
   //! as reported by sizeof(), so it is really size_in_sizeof_char
-  size_t size_in_bytes() const;
+  std::size_t size_in_bytes() const;
   
-  size_t size_in_bits() const;
+  std::size_t size_in_bits() const;
 
   //! returns true for all built-in types, except \c unsigned types
   bool signed_type() const;
@@ -111,8 +100,8 @@ public:
   bool integer_type() const;
 
 
-  //! returns the names and size a la Interfile. see NumericType(const string&,const size_t)
-  void get_Interfile_info(string& number_format, size_t& size_in_bytes) const;
+  //! returns the names and size a la Interfile. see NumericType(const string&,const std::size_t)
+  void get_Interfile_info(std::string& number_format, std::size_t& size_in_bytes) const;
 };
 
 /*!
@@ -121,7 +110,7 @@ public:
 
   Use as follows:
   \code
-  typedef TypeForNumericType<NumericType::SHORT>::type current_type;
+  typedef typename TypeForNumericType<NumericType::SHORT>::type current_type;
   \endcode
   This is useful when writing code depending on the value of a NumericType enum.
 */

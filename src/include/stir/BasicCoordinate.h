@@ -46,12 +46,6 @@
 #include <boost/operators.hpp>
 #include <iterator>
 
-#ifndef STIR_NO_NAMESPACES
-using std::size_t;
-using std::ptrdiff_t;
-using std::random_access_iterator_tag;
-#endif
-
 START_NAMESPACE_STIR
 /*!
   \ingroup Coordinate
@@ -76,15 +70,15 @@ template <int num_dimensions, typename coordT>
 public:
   //! \name typedefs for iterator support
   //@{
-  typedef random_access_iterator_tag iterator_category;
+  typedef std::random_access_iterator_tag iterator_category;
   typedef coordT value_type;
   typedef value_type& reference;
   typedef const value_type& const_reference;
   typedef value_type* iterator;
   typedef value_type* pointer;
   typedef const value_type* const_iterator;
-  typedef ptrdiff_t difference_type;
-  typedef size_t size_type;
+  typedef std::ptrdiff_t difference_type;
+  typedef std::size_t size_type;
   //@}
 
   //! default constructor. NO initialisation
