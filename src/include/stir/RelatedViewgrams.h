@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2012, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,10 +23,6 @@
 
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-
-  $Revision$
 */
 
 #ifndef __RelatedViewgrams_h__
@@ -40,13 +33,6 @@
 #include <vector>
 
 #include <iterator>
-
-#ifndef STIR_NO_NAMESPACES
-using std::size_t;
-using std::ptrdiff_t;
-using std::random_access_iterator_tag;
-using std::vector;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -70,24 +56,18 @@ public:
   typedef RelatedViewgrams<elemT> self_type;
 
 public:
-  //! typedefs for iterator support
+  //! \name typedefs for iterator support
+  //@{
+  typedef std::random_access_iterator_tag iterator_category;
+  typedef Viewgram<elemT> value_type;
+  typedef value_type& reference;
+  typedef const value_type& const_reference;
+  typedef std::ptrdiff_t difference_type;
+  typedef std::size_t size_type;
 
-
- typedef random_access_iterator_tag iterator_category;
- typedef Viewgram<elemT> value_type;
- typedef value_type& reference;
- typedef const value_type& const_reference;
- typedef ptrdiff_t difference_type;
- typedef size_t size_type;
-
-#ifndef STIR_NO_NAMESPACES
   typedef typename std::vector<Viewgram<elemT> >::iterator iterator;
   typedef typename std::vector<Viewgram<elemT> >::const_iterator const_iterator;
-#else
-  typedef typename vector<Viewgram<elemT> >::iterator iterator;
-  typedef typename vector<Viewgram<elemT> >::const_iterator const_iterator;
-#endif
-
+  //@}
 
 
   // --- constructors ---
