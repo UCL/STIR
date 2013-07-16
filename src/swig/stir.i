@@ -1,6 +1,5 @@
-// $Id$
 /*
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-07-01 - 2013, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -20,11 +19,6 @@
   \brief Interface file for SWIG
 
   \author Kris Thielemans 
-
-  $Date$
-
-  $Revision$
-
 */
 
 
@@ -38,7 +32,7 @@
 
 #ifdef SWIGOCTAVE
 // TODO terrible work-around to avoid conflict between stir::error and Octave error
-// they are in conflict with eachother because we need "usng namespace stir" below (swig bug)
+// they are in conflict with eachother because we need "using namespace stir" below (swig bug)
 #define __stir_error_H__
 #endif
 
@@ -62,8 +56,14 @@
 #include "stir/Array.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
- #include "stir/PixelsOnCartesianGrid.h"
- #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/PixelsOnCartesianGrid.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+
+#include "stir/IO/read_from_file.h"
+#include "stir/IO/InterfileOutputFileFormat.h"
+#ifdef HAVE_LLN_MATRIX
+#include "stir/IO/ECAT7OutputFileFormat.h"
+#endif
 
 #include "stir/ChainedDataProcessor.h"
 #include "stir/SeparableCartesianMetzImageFilter.h"
@@ -72,8 +72,10 @@
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 
    // TODO need this (bug in swig)
-using namespace stir;
-using std::iostream;
+   // this bug occurs (only?) when using "%template(name) someclass;" inside the namespace
+   // as opposed to "%template(name) stir::someclass" outside the namespace
+   using namespace stir;
+   using std::iostream;
 
    namespace swigstir {
 #if defined(SWIGPYTHON)
@@ -94,6 +96,32 @@ using std::iostream;
     { return PyArg_ParseTuple(args, "ff", &c[1], &c[2]);  }
     template<> int coord_from_tuple(stir::BasicCoordinate<3, float>& c, PyObject* const args)
       { return PyArg_ParseTuple(args, "fff", &c[1], &c[2], &c[3]);  }
+
+    template <int num_dimensions>
+      PyObject* tuple_from_coord(const stir::BasicCoordinate<num_dimensions, int>& c)
+      {
+	PyObject* p = PyTuple_New(num_dimensions);
+	for (int d=1; d<=num_dimensions; ++d)
+	  PyTuple_SET_ITEM(p, d-1, PyInt_FromLong(c[d]));
+	return p;
+      }
+    template <int num_dimensions>
+      PyObject* tuple_from_coord(const stir::BasicCoordinate<num_dimensions, std::size_t>& c)
+      {
+	PyObject* p = PyTuple_New(num_dimensions);
+	for (int d=1; d<=num_dimensions; ++d)
+	  PyTuple_SET_ITEM(p, d-1, PyInt_FromSize_t(c[d]));
+	return p;
+      }
+    template <int num_dimensions>
+      PyObject* tuple_from_coord(const stir::BasicCoordinate<num_dimensions,float>& c)
+      {
+	PyObject* p = PyTuple_New(num_dimensions);
+	for (int d=1; d<=num_dimensions; ++d)
+	  PyTuple_SET_ITEM(p, d-1, PyFloat_FromDouble(double(c[d])));
+	return p;
+      }
+     
     
 #endif
   }
@@ -101,18 +129,13 @@ using std::iostream;
 
 %feature("autodoc", "1");
 
-/* work-around for messages when using "using" in BasicCoordinate.h*/
-%warnfilter(302) size_t; // suppress surprising warning about size_t redefinition (compilers don't do this)
-%warnfilter(302) ptrdiff_t;
-struct std::random_access_iterator_tag {};
-typedef int ptrdiff_t;
-typedef unsigned int size_t;
-
 // TODO doesn't work
 %warnfilter(315) std::auto_ptr;
 
-// disable warnings about unknown base-class
-%warnfilter(401);
+// disable warnings about unknown base-class 401
+// disable warnings about "no access specified given for base class" as we use this correctly for private derivation 319
+// disable warnings about nested bass-class 325
+#pragma SWIG nowarn=319,401,325
 
 # catch all C++ exceptions in python
 %include "exception.i"
@@ -368,6 +391,8 @@ namespace std {
 #else
 %include <boost_shared_ptr.i>
 #endif
+
+%shared_ptr(stir::TimedObject);
 %shared_ptr(stir::ParsingObject);
 
 %shared_ptr(stir::Scanner);
@@ -379,8 +404,8 @@ namespace std {
 %shared_ptr(stir::ProjDataFromStream);
 %shared_ptr(stir::ProjDataInterfile);
 
-# TODO cannot do this yet as then the FloatArray1D(FloatArray1D&) construction fails in test.py
-#%shared_ptr(stir::Array<1,float>);
+// TODO cannot do this yet as then the FloatArray1D(FloatArray1D&) construction fails in test.py
+//%shared_ptr(stir::Array<1,float>);
 %shared_ptr(stir::Array<2,float>);
 %shared_ptr(stir::Array<3,float>);
 %shared_ptr(stir::DiscretisedDensity<3,float>);
@@ -418,13 +443,32 @@ T * operator-> () const;
 // (already defined in swgmacros.swg)
 //#define %arg(X...) X
 
+%include "stir/TimedObject.h"
 %include "stir/ParsingObject.h"
-%ignore stir::RegisteredParsingObject::RegisteredIt;
+#if 0
+%include "stir/Object.h"
+%include "stir/RegisteredObject.h"
+#else
+  // use simpler version for SWIG to make the hierarchy a bit easier
+  namespace stir {
+    template <typename Root>
+      class RegisteredObject 
+      {
+      public:
+	//! List all possible registered names to the stream
+	/*! Names are separated with newlines. */
+	inline static void list_registered_names(std::ostream& stream);
+      };
+  }
+#endif
+%warnfilter(SWIGWARN_PARSE_NAMED_NESTED_CLASS) stir::RegisteredParsingObject::RegisteredIt;
 %include "stir/RegisteredParsingObject.h"
 
  /* Parse the header files to generate wrappers */
 //%include "stir/shared_ptr.h"
 %include "stir/Succeeded.h"
+%include "stir/NumericType.h"
+%include "stir/ByteOrder.h"
 %include "stir/DetectionPosition.h"
 %newobject stir::Scanner::get_scanner_from_name;
 %include "stir/Scanner.h"
@@ -521,17 +565,36 @@ T * operator-> () const;
 %ignore stir::Array::at(const BasicCoordinate<1, int>&);
 %ignore stir::Array::at(const BasicCoordinate<1, int>&) const;
 
-// ignore as unsafe index access (and useing ADD_indexvalue)
+// ignore as unsafe index access (and using ADD_indexvalue)
 %ignore stir::Array::operator[](const BasicCoordinate<num_dimensions, int>&);
 %ignore stir::Array::operator[](const BasicCoordinate<num_dimensions, int>&) const;
 %ignore stir::Array::operator[](const BasicCoordinate<1, int>&);
 %ignore stir::Array::operator[](const BasicCoordinate<1, int>&) const;
+
+#ifdef SWIGPYTHON
+// ignore as we will add a version that returns a tuple instead
+%ignore stir::Array::shape() const;
+#endif
+
 %include "stir/Array.h"
 
+// ignore this one and add it later (see below)
+%ignore stir::DiscretisedDensity::read_from_file(const std::string& filename);
 %include "stir/DiscretisedDensity.h"
 %include "stir/DiscretisedDensityOnCartesianGrid.h"
 
 %include "stir/VoxelsOnCartesianGrid.h"
+
+%extend stir::VoxelsOnCartesianGrid {
+  // add read_from_file to this class, as currently there is no way
+  // to convert the swigged DiscretisedDensity to a VoxelsOnCartesianGrid
+  static stir::VoxelsOnCartesianGrid<elemT> * read_from_file(const std::string& filename)
+    {
+      std::auto_ptr<stir::DiscretisedDensity<3,elemT> > 
+	ret(stir::read_from_file<stir::DiscretisedDensity<3,elemT> >(filename));
+      return dynamic_cast<stir::VoxelsOnCartesianGrid<elemT> *>(ret.release());
+    }
+ }
 
  //%ADD_indexaccess(int,stir::BasicCoordinate::value_type,stir::BasicCoordinate);
 namespace stir { 
@@ -604,11 +667,13 @@ namespace stir {
 
   %ADD_indexaccess(int, coordT, BasicCoordinate);
   %template(Int3BasicCoordinate) BasicCoordinate<3,int>;
+  %template(Size3BasicCoordinate) BasicCoordinate<3,std::size_t>;
   %template(Float3BasicCoordinate) BasicCoordinate<3,float>;
   %template(Float3Coordinate) Coordinate3D< float >;
   %template(FloatCartesianCoordinate3D) CartesianCoordinate3D<float>;
 
   %template(Int2BasicCoordinate) BasicCoordinate<2,int>;
+  %template(Size2BasicCoordinate) BasicCoordinate<2,std::size_t>;
   %template(Float2BasicCoordinate) BasicCoordinate<2,float>;
   // TODO not needed in python case?
   %template(Float2Coordinate) Coordinate2D< float >;
@@ -659,8 +724,30 @@ namespace stir {
 	}
       (*$self).at(c) = value;
     };
+
+    //! shape version returning a tuple (almost) compatible with numpy
+    // use as array.shape()
+    const PyObject* shape()
+    {
+      //const stir::BasicCoordinate<num_dimensions, std::size_t> c = (*$self).shape();
+      stir::BasicCoordinate<num_dimensions,int> minind,maxind;
+      if (!$self->get_regular_range(minind, maxind))
+	throw std::range_error("shape called on irregular array");
+      stir::BasicCoordinate<num_dimensions, int> sizes=maxind-minind+1;
+      return swigstir::tuple_from_coord(sizes);
+    }
+
   }
 #endif
+
+  %extend Array{
+    // add way to know how many dimensions there are
+    int get_num_dimensions()
+    {
+      return num_dimensions;
+    }
+  }
+
   // TODO next line doesn't give anything useful as SWIG doesn't recognise that 
   // the return value is an array. So, we get a wrapped object that we cannot handle
   //%ADD_indexaccess(int,Array::value_type, Array);
@@ -681,24 +768,51 @@ namespace stir {
   %ADD_indexaccess(int,%arg(Array<1,float>),%arg(Array<2,float>));
 #endif
 
+} // namespace stir
+
   // Todo need to instantiate with name?
-  // TODO Swig doesn't see that Array<2,float> is derived from it anyway for some strange reason
-  %template (FloatNumericVectorWithOffset2D) NumericVectorWithOffset<Array<1,float>, float>;
+  // TODO Swig doesn't see that Array<2,float> is derived from it anyway becuse of num_dimensions bug
+%template (FloatNumericVectorWithOffset2D) stir::NumericVectorWithOffset<stir::Array<1,float>, float>;
 
-  %template(FloatArray2D) Array<2,float>;
-
-  %template () NumericVectorWithOffset<Array<2,float>, float>;
-  %template(FloatArray3D) Array<3,float>;
+  %template(FloatArray2D) stir::Array<2,float>;
+  // TODO name
+  %template (FloatNumericVectorWithOffset3D) stir::NumericVectorWithOffset<stir::Array<2,float>, float>;
+  %template(FloatArray3D) stir::Array<3,float>;
 #if 0
-  %ADD_indexaccess(int,%arg(Array<2,float>),%arg(Array<3,float>));
+  %ADD_indexaccess(int,%arg(stir::Array<2,float>),%arg(stir::Array<3,float>));
 #endif
 
-  %template(Float3DDiscretisedDensity) DiscretisedDensity<3,float>;
-  %template(Float3DDiscretisedDensityOnCartesianGrid) DiscretisedDensityOnCartesianGrid<3,float>;
-  %template(FloatVoxelsOnCartesianGrid) VoxelsOnCartesianGrid<float>;
+%template(Float3DDiscretisedDensity) stir::DiscretisedDensity<3,float>;
+%template(Float3DDiscretisedDensityOnCartesianGrid) stir::DiscretisedDensityOnCartesianGrid<3,float>;
+%template(FloatVoxelsOnCartesianGrid) stir::VoxelsOnCartesianGrid<float>;
 
 
-}
+#ifdef STIRSWIG_SHARED_PTR
+#define DataT stir::DiscretisedDensity<3,float>
+%shared_ptr(stir::OutputFileFormat<stir::DiscretisedDensity<3,float> >);
+%shared_ptr(stir::RegisteredObject< stir::OutputFileFormat< stir::DiscretisedDensity< 3,float > > >);
+%shared_ptr(stir::RegisteredParsingObject< stir::InterfileOutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >);
+#undef DataT
+%shared_ptr(stir::InterfileOutputFileFormat);
+#ifdef HAVE_LLN_MATRIX
+%shared_ptr(stir::RegisteredParsingObject<stir::ecat::ecat7::ECAT7OutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >);
+%shared_ptr(stir::ecat::ecat7::ECAT7OutputFileFormat);
+#endif
+#endif
+
+%include "stir/IO/OutputFileFormat.h"
+
+#define DataT stir::DiscretisedDensity<3,float>
+%template(Float3DDiscretisedDensityOutputFileFormat) stir::OutputFileFormat<DataT >;
+  //cannot do that as pure virtual functions
+  //%template(ROOutputFileFormat3DFloat) RegisteredObject< OutputFileFormat< DiscretisedDensity< 3,float > > >;
+  %template(RPInterfileOutputFileFormat) stir::RegisteredParsingObject<stir::InterfileOutputFileFormat, stir::OutputFileFormat<DataT >, stir::OutputFileFormat<DataT > >;
+  #undef DataT
+
+%include "stir/IO/InterfileOutputFileFormat.h"
+#ifdef HAVE_LLN_MATRIX
+%include "stir/IO/ECAT7OutputFileFormat.h"
+#endif
 
  /* Now do ProjDataInfo, Sinogram et al
  */
@@ -718,6 +832,7 @@ namespace stir {
 %include "stir/Viewgram.h"
 %include "stir/RelatedViewgrams.h"
 %include "stir/Sinogram.h"
+%include "stir/Segment.h"
 %include "stir/SegmentByView.h"
 %include "stir/SegmentBySinogram.h"
 %include "stir/ProjData.h"
@@ -728,6 +843,8 @@ namespace stir {
 namespace stir { 
   %template(FloatViewgram) Viewgram<float>;
   %template(FloatSinogram) Sinogram<float>;
+  // TODO don't want to give a name
+  %template(FloatSegment) Segment<float>;
   %template(FloatSegmentBySinogram) SegmentBySinogram<float>;
   %template(FloatSegmentByView) SegmentByView<float>;
   // should not have the following if using boost_smart_ptr.i
@@ -740,6 +857,10 @@ namespace stir {
 #ifdef STIRSWIG_SHARED_PTR
 #define elemT float
 %shared_ptr(stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >)
+%shared_ptr(stir::RegisteredParsingObject<
+             stir::ChainedDataProcessor<stir::DiscretisedDensity<3,elemT> >,
+             stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
 %shared_ptr(stir::ChainedDataProcessor<stir::DiscretisedDensity<3,elemT> >)
 %shared_ptr(stir::RegisteredParsingObject<stir::SeparableCartesianMetzImageFilter<elemT>,
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> >,
@@ -754,6 +875,10 @@ namespace stir {
 
 #define elemT float
 %template(DataProcessor3DFloat) stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >;
+%template(RPChainedDataProcessor3DFloat) stir::RegisteredParsingObject<
+             stir::ChainedDataProcessor<stir::DiscretisedDensity<3,elemT> >,
+             stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+             stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
 %template(ChainedDataProcessor3DFloat) stir::ChainedDataProcessor<stir::DiscretisedDensity<3,elemT> >;
 %template(RPSeparableCartesianMetzImageFilter3DFloat) stir::RegisteredParsingObject<
              stir::SeparableCartesianMetzImageFilter<elemT>,

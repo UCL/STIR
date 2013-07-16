@@ -1,5 +1,5 @@
 # A simple module with a few python functions to make it easier to work with STIR
-# Copyright 2012-10-05 - $Date$ Kris Thielemans
+# Copyright 2012-10-05 - 2013 Kris Thielemans
 
 # This file is part of STIR.
 #
@@ -17,13 +17,22 @@
 
 import numpy
 import stir
+import exceptions
 
 def get_bounding_box_indices(image):
     """
     return [min,max] tuple with indices of first and last voxel in a STIR image
     """
-    minind=stir.Int3BasicCoordinate()
-    maxind=stir.Int3BasicCoordinate()
+    num_dims = image.get_num_dimensions();
+    if num_dims == 2:
+        minind=stir.Int2BasicCoordinate()
+        maxind=stir.Int2BasicCoordinate()
+    elif num_dims == 3:
+        minind=stir.Int3BasicCoordinate()
+        maxind=stir.Int3BasicCoordinate()
+    else:
+        raise exceptions.NotImplementedError('need to handle dimensions different from 2 and 3')
+
     image.get_regular_range(minind, maxind);
     return [minind, maxind]
 
@@ -44,17 +53,22 @@ def get_physical_coordinates_for_grid(image):
     sizes=maxind-minind+1;
     minphys=image.get_physical_coordinates_for_indices(minind);
     maxphys=image.get_physical_coordinates_for_indices(maxind);
-    [z,y,x]=numpy.mgrid[minphys[1]:maxphys[1]:sizes[1]*1j, minphys[2]:maxphys[2]:sizes[2]*1j, minphys[3]:maxphys[3]:sizes[3]*1j];
-    return [z,y,x]
+    num_dims = image.get_num_dimensions();
+    if num_dims == 2:
+        [y,x]=numpy.mgrid[minphys[1]:maxphys[1]:sizes[1]*1j, minphys[2]:maxphys[2]:sizes[2]*1j];
+        return [y,x]
+    elif num_dims == 3:
+        [z,y,x]=numpy.mgrid[minphys[1]:maxphys[1]:sizes[1]*1j, minphys[2]:maxphys[2]:sizes[2]*1j, minphys[3]:maxphys[3]:sizes[3]*1j];
+        return [z,y,x]
+    else:
+        raise exceptions.NotImplementedError('need to handle dimensions different from 2 and 3')
 
 def to_numpy(image):
     """
     return the data in a STIR image as a 3D numpy array
     """
-    [minind,maxind]=get_bounding_box_indices(image);
-    sizes=maxind-minind+1;
     # construct a numpy array using the "flat" STIR iterator
     npimage=numpy.fromiter(image.flat(), dtype=numpy.float32);
-    # now reshape into 3D array
-    npimage=npimage.reshape(sizes[1], sizes[2], sizes[3]);
+    # now reshape into ND array
+    npimage=npimage.reshape(image.shape());
     return npimage
