@@ -22,25 +22,32 @@ INSTALLATION
 
 On Ubuntu, something like this could work:
 
-sudo apt-get install swig python-numpy python-instant python
+sudo apt-get install swig python-numpy python-instant python python-py
 
-(in the future, you might need to do copy /usr/share/pyshared/instant/swig/numpy.i to the STIR swig directory)
+python-py isn't really required but used for testing so highly recommended.
+
+(in the future, you might need to copy /usr/share/pyshared/instant/swig/numpy.i to the STIR swig directory)
 
 Then (re)build and install STIR with BUILD_PYTHON ON. You probably 
 need to build with shared libraries.
 
-
-RUNNING
-
-On Linux, you will have to tell the system where to find STIR. For instance
+On Linux, you will have to tell the system where to find the STIR shared libraries. 
+For instance, if you set CMAKE_INSTALL_PREFIX to ~/binDebugShared, you would need to do
 
 export PYTHONPATH=~/binDebugShared/python/:$PYTHONPATH
 export LD_LIBRARY_PATH=~/binDebugShared/lib:$LD_LIBRARY_PATH
 
-Then you can run python or alternatives. There are some examples in the
+RUNNING
+
+After all of the above, you can run python or alternatives. There are some examples in the
 python_examples directory. These might need adapting for your local
 situation. You can then run them for instance like
 
 	   ipython -pylab -i matplotlib_demo.py
 
 (if you installed ipython).
+
+TESTING
+
+See the swig/test sub-directory. Have a look at the tests to see what's possible with 
+the current version of the code.
