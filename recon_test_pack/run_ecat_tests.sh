@@ -4,7 +4,7 @@
 #
 #  Copyright (C) 2001 PARAPET partners
 #  Copyright (C) 2005- 2009-10-11, Hammersmith Imanet Ltd
-#  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+#  Copyright (C) 2011-07-01 - 2013, Kris Thielemans
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify
@@ -20,9 +20,8 @@
 #  See STIR/LICENSE.txt for details
 #      
 # Author Kris Thielemans
-# $Id$
 
-echo This script should work with STIR version 2.3. If you have
+echo This script should work with STIR version 2.3 and 2.4. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -62,6 +61,8 @@ echo Executing tests on ecat file format conversion for projection data
 rm -f my_*v my_*s
 
 INSTALL_DIR=$1
+
+command -v ${INSTALL_DIR}conv_to_ecat7 >/dev/null 2>&1 || { echo "${INSTALL_DIR}conv_to_ecat7 not found or not executable. Aborting." >&2; exit 1; }
 
 ThereWereErrors=0
 

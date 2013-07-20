@@ -2,7 +2,7 @@
 # A script to check to see if reconstruction of simulated data gives the expected result.
 #
 #  Copyright (C) 2011 - 2011-01-14, Hammersmith Imanet Ltd
-#  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+#  Copyright (C) 2011-07-01 - 2011, Kris Thielemans
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify
@@ -18,13 +18,21 @@
 #  See STIR/LICENSE.txt for details
 #      
 # Author Kris Thielemans
-# $Id$
 # 
+
+echo This script should work with STIR version 2.2, 2.3 and 2.4. If you have
+echo a later version, you might have to update your test pack.
+echo Please check the web site.
+echo
 
 if [ $# -eq 1 ]; then
   echo "Prepending $1 to your PATH for the duration of this script."
   PATH=$1:$PATH
 fi
+
+command -v generate_image >/dev/null 2>&1 || { echo "generate_image not found or not executable. Aborting." >&2; exit 1; }
+echo "Using `command -v generate_image`"
+echo "Using `command -v OSMAPOSL`"
 
 # first need to set this to the C locale, as this is what the STIR utilities use
 # otherwise, awk might interpret floating point numbers incorrectly
@@ -70,6 +78,7 @@ input_ROI_mean=`awk 'NR>2 {print $2}' ${input_image}.roistats`
 # the OSSPS par file uses an OSMAPOSL result as initial image
 # and reuses its subset sensitivities
 for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
+  echo "Using `command -v ${recon}`"
   for parfile in ${recon}_test_sim*.par; do
     echo "============================================="
     # test first if analytic reconstruction and if so, run pre-correction
