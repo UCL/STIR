@@ -1,5 +1,4 @@
 #! /bin/sh
-# $Id$
 # Shell script for automatic running of the tests
 # see README.txt
 #  Copyright (C) 2000 - 2001 PARAPET partners
@@ -20,7 +19,6 @@
 #  See STIR/LICENSE.txt for details
 #      
 # Author Kris Thielemans
-# $Id$
 
 echo This script should work with STIR version 2.1, 2.2, 2.3 and 2.4. If you have
 echo a later version, you might have to update your test pack.
@@ -84,6 +82,8 @@ echo
 rm -f my_*v my_*s
 
 INSTALL_DIR=$1
+
+command -v ${INSTALL_DIR}compare_image >/dev/null 2>&1 || { echo "${INSTALL_DIR}compare_image not found or not executable. Aborting." >&2; exit 1; }
 
 ThereWereErrors=0
 

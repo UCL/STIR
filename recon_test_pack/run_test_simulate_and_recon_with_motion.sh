@@ -22,10 +22,20 @@
 # Author Kris Thielemans
 # 
 
+echo This script should work with STIR version 2.4. If you have
+echo a later version, you might have to update your test pack.
+echo Please check the web site.
+echo
+
 if [ $# -eq 1 ]; then
   echo "Prepending $1 to your PATH for the duration of this script."
   PATH=$1:$PATH
 fi
+
+command -v generate_image >/dev/null 2>&1 || { echo "generate_image not found or not executable. Aborting." >&2; exit 1; }
+command -v warp_and_accumulate_gated_images >/dev/null 2>&1 || { echo "warp_and_accumulate_gated_images not found or not executable. Aborting." >&2; exit 1; }
+echo "Using `command -v warp_and_accumulate_gated_images`"
+echo "Using `command -v OSMAPOSL`"
 
 # first need to set this to the C locale, as this is what the STIR utilities use
 # otherwise, awk might interpret floating point numbers incorrectly
