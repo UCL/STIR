@@ -139,11 +139,6 @@ if [ $do_doc = 1 ]; then
   pdflatex generate_image_upgrade.tex
   rm -f *log *aux *out
   popd
-  pushd contrib/Motion_files_KCL/Documentation/
-  pdflatex Software_Description.tex
-  pdflatex Software_Description.tex
-  rm -f *log *aux *out
-  popd
   chmod go+x doxy
   chmod go+x doxy/html
   chmod -R go+r *
