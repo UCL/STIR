@@ -1,18 +1,13 @@
-//
-// $Id$
-//
 /*!
   \file
   \ingroup IO
   \brief Implementation of class stir::InputStreamWithRecords
     
   \author Kris Thielemans
-      
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003-2011, Hammersmith Imanet Ltd
+    Copyright (C) 2012-2013, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -33,6 +28,7 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/shared_ptr.h"
+#include "boost/shared_array.hpp"
 #include <fstream>
 
 #ifndef STIR_NO_NAMESPACES
@@ -92,13 +88,14 @@ get_next_record(RecordT& record) const
     return Succeeded::no;
 
   // rely on file caching by the C++ library or the OS
-
-  shared_ptr<char> data_sptr(new char(this->max_size_of_record));
+  assert(this->size_of_record_signature <= this->max_size_of_record);
+  boost::shared_array<char> data_sptr(new char[this->max_size_of_record]);
   char * data_ptr = data_sptr.get();
   stream_ptr->read(data_ptr, this->size_of_record_signature);
   if (stream_ptr->gcount()<static_cast<streamsize>(this->size_of_record_signature))
     return Succeeded::no; 
   const std::size_t size_of_record = record.size_of_record_at_ptr(data_ptr, this->size_of_record_signature,options);
+  assert(size_of_record <= this->max_size_of_record);
   if (size_of_record > this->size_of_record_signature)
     stream_ptr->read(data_ptr + this->size_of_record_signature,
                      size_of_record - this->size_of_record_signature);
