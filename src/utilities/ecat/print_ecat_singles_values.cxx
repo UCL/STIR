@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004-2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,8 +21,6 @@
 
   \author Kris Thielemans
   \author Tim Borgeaud
-  $Date$
-  $Revision$
 */
 
 
@@ -39,6 +34,7 @@
 
 
 #ifndef STIR_NO_NAMESPACES
+using std::cout;
 using std::cerr;
 using std::endl;
 using std::setw;
