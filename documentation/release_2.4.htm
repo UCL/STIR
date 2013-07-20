@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 2.4a (dated 25/06/2013)</title>
+    <title>Summary of changes in STIR release 2.4 (dated 20/07/2013)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 2.4a (dated 25/06/2013)</h1>
+    <h1>Summary of changes in STIR release 2.4 (dated 20/07/2013)</h1>
 
 <p>This update was mostly prepared by Charalampos Tsoumpas (King's College London). Minor changes by Kris Thielemans 
 (Algorithms and Software Consulting Ltd, University College London).</p>
@@ -15,7 +15,11 @@
 
 <h2> Summary for end users (also to be read by developers)</h2>
 <h3>Important bug fixes</h3>
-<p>None</p>
+<ul>
+<li>corrected BUG in memory allocation in InputStreamWithRecords (introduced in STIR 2.3).
+This potentially affected all list mode handling.
+</li>
+</ul>
 
 <h3>New functionality</h3>
 <ul>
@@ -24,8 +28,16 @@ image from gated projection data.</li>
 <li>Conversion routines for reading/writing GIPL images.</li>
 <li>A conversion routine to  create Interfile data from raw GATE projection data output.</li>
 <li>3 new scanners: nanoPET (Mediso), HYPER (HyperImage FP7 project), PANDA (KCL internal).</li>
-<li>Added input files for python examples.</li>
 <li>Added "-t tolerance" option to compare_projdata.</li>
+<li>Python support:
+  <ul>
+    <li>Added input files for python examples.</li>
+    <li>Added test scripts using py.test (these need to be run manually at present)</li>
+    <li>Added ByteOrder, NumericType, Segment, TimedObject, 
+            InterfileOutputFileFormat, ECAT7OutputFileFormat (applicable to all swig interfaces)</li>
+    <li>Added get_num_dimensions() and shape() to Array</li>
+  </ul>
+</li>
 </ul>
 
 <h3>Changed functionality</h3>
@@ -67,7 +79,7 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 
 <h3>Minor bug fixes</h3>
 <ul>
-<li>A few error messages in ECAT IO would actually crash as opposed to writing a descent message.</li>
+<li>A few error messages in ECAT IO would actually crash as opposed to writing a decent message.</li>
 <li>A few changes to the CMakeLists.txt files for cmake clarifying dependencies
 between libraries. This makes shared libraries better suppported, but there are still circular dependencies. This doesn't seem to create trouble on most systems,
 but makes shared libraries fail on some (e.g. msys on windows).</li>
@@ -86,6 +98,7 @@ but makes shared libraries fail on some (e.g. msys on windows).</li>
 <li>updated version number and added some clarification to the README.txt</li>
 <li>added a test script for the motion version</li>
 <li>relaxed test for OSSPS in <tt>run_tests.sh</tt> to avoid problem of outer rim voxels on cygwin (and others?)</li>
+<li>small updates to test scrips, giving early exit if a STIR executable not found and feedback which STIR executable is being used</li>
  </ul>
 
 <h3>Other changes to tests</h3>
@@ -97,7 +110,11 @@ but makes shared libraries fail on some (e.g. msys on windows).</li>
 from the above):</H2>
 
 <h3>Major bugs fixed</h3>
-<p>None</p>
+<ul>
+<li>corrected BUG in memory allocation in InputStreamWithRecords (introduced in STIR 2.3).
+This potentially affected all list mode handling.
+</li>
+</ul>
 
 <h3>New functionality</h3>
 <ul>
