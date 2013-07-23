@@ -418,7 +418,7 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
       {
 	 out_geom << geometric_factors[i][j] << "   " ;
       }
-      out_geom << endl;
+      out_geom << std::endl;
     }
 
 
@@ -428,7 +428,7 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
       {
 	 out_inter << crystal_interference_factors[i][j] << "   " ;
       }
-      out_inter << endl;
+      out_inter << std::endl;
    }
 
    for ( int i = efficiency_factors.get_min_index(); i<=efficiency_factors.get_max_index();i++)
@@ -437,7 +437,7 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
       {
 	 out_eff << efficiency_factors[i][j] << "   " ;
       }
-      out_eff << endl<< endl;
+      out_eff << std::endl<< std::endl;
    }
 
 #endif
