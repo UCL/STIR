@@ -22,17 +22,12 @@
 #include "UCL/listmode/CListRecordECAT8_32bit.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
-#include "boost/static_assert.hpp"
+#include "stir/info.h"
+#include "stir/warning.h"
+#include "stir/error.h"
+#include <boost/format.hpp>
 #include <iostream>
 #include <fstream>
-#include <typeinfo>
-#ifndef STIR_NO_NAMESPACES
-using std::cerr;
-using std::endl;
-using std::ios;
-using std::fstream;
-using std::ifstream;
-#endif
 
 START_NAMESPACE_STIR
 namespace UCL {
@@ -51,7 +46,14 @@ CListModeDataECAT8_32bit(const std::string& listmode_filename)
   // TODO cannot do this yet
   //this->interfile_parser.add_key("segment_table", &this->segment_table);
   
-  // We need to set num_time_frames to 1 as the Siemens header doesn't have the keyword
+#if 0
+  // at the moment, we fix the header itself, so don't enable the following
+  // It doesn't work properly anyway, as the "image duration (sec)" keyword
+  // isn't "vectored" in Siemens headers (i.e. it doesn't have "[1]" appended).
+  // As stir::KeyParser currently doesn't know if a keyword is vectored or not,
+  // it causes memory overwrites if you use the wrong one.
+
+  // We need to set num_time_frames to 1 as the Siemens header doesn't have the num_time_frames keyword
   {
     const int num_time_frames=1;
     this->interfile_parser.num_time_frames=1;
@@ -62,12 +64,12 @@ CListModeDataECAT8_32bit(const std::string& listmode_filename)
     this->interfile_parser.image_relative_start_times.resize(num_time_frames, 0.);
     this->interfile_parser.image_durations.resize(num_time_frames, 0.);
   }
+#endif
 
   this->interfile_parser.parse(listmode_filename.c_str());
-  if (this->interfile_parser.originating_system == "2008")
-    this->scanner_sptr.reset(new Scanner(Scanner::Siemens_mMR));
-  else
-    error("Unknown originating_system");
+  this->scanner_sptr.reset(Scanner::get_scanner_from_name(this->interfile_parser.originating_system));
+  if (this->scanner_sptr->get_type() == Scanner::Unknown_scanner)
+    error(boost::format("Unknown value for originating_system keyword: '%s") % this->interfile_parser.originating_system );
 
   this->proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(this->scanner_sptr, 
 								this->axial_compression,
@@ -115,7 +117,7 @@ open_lm_file()
 
       // now open new file
       std::string filename = interfile_parser.data_file_name;
-      cerr << "CListModeDataECAT8_32bit: opening file " << filename << endl;
+      info(boost::format("CListModeDataECAT8_32bit: opening file %s") % filename);
       shared_ptr<istream> stream_ptr(new fstream(filename.c_str(), ios::in | ios::binary));
       if (!(*stream_ptr))
       {
