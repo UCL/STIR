@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2007- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2007- 2012, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,7 +25,6 @@
   \author Kris Thielemans
   \author Alexey Zverovich (idea of using main() function)
   \author PARAPET project (idea of using main() function)
-  $Date$
 */
 #include "stir/recon_buildblock/DistributedWorker.h"
 #include "stir/recon_buildblock/distributed_functions.h"
@@ -48,8 +44,12 @@
 
 #include "stir/recon_buildblock/distributable_main.h"
 
+using std::cout;
+using std::endl;
+
 int main(int argc, char **argv)
 {
+
   int return_value = EXIT_FAILURE;
   try
     {

@@ -1,6 +1,3 @@
-#
-# $Id$
-#
 
 set(dir iterative_OSMAPOSL)
 
@@ -21,5 +18,10 @@ set(${dir_EXE_SOURCES}
 )
 
 include(../../stir_exe_targets.cmake)
+
+if (STIR_MPI)
+  SET_PROPERTY(TARGET OSMAPOSL PROPERTY LINK_FLAGS ${MPI_CXX_LINK_FLAGS})
+endif()
+
 target_link_libraries(iterative_OSMAPOSL recon_buildblock )
 

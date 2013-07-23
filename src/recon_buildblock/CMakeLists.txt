@@ -1,8 +1,5 @@
-#
-# $Id$
-#
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
-# Copyright 2011-07-01 - $Date$ Kris Thielemans
+# Copyright 2011-07-01 - 2013 Kris Thielemans
 
 # This file is part of STIR.
 #
@@ -95,7 +92,7 @@ include(../stir_lib_target.cmake)
 
 
 if (STIR_MPI)
-  target_link_libraries(recon_buildblock ${MPI_LIBRARIES})
+  target_link_libraries(recon_buildblock ${MPI_CXX_LIBRARIES})
 endif()
 
 # TODO what to do with IO?

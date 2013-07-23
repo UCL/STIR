@@ -1,8 +1,5 @@
-#
-# $Id$
-#
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
-# Copyright 2011-07-01 - $Date$ Kris Thielemans
+# Copyright 2011-07-01 - 2013 Kris Thielemans
 
 # This file is part of STIR.
 #
@@ -120,9 +117,11 @@ endif()
 
 if (STIR_MPI)
   find_package(MPI REQUIRED)
-  include_directories(${MPI_INCLUDE_PATH})
-  # not sure if we need to use MPI_LINK_FLAGS
-  add_definitions(${MPI_COMPILE_FLAGS} -DMPICH_IGNORE_CXX_SEEK -DSTIR_MPI)
+  include_directories(${MPI_CXX_INCLUDE_PATH})  
+  # we add MPI_CXX_COMPILE_FLAGS for all files
+  add_definitions(${MPI_CXX_COMPILE_FLAGS} -DMPICH_IGNORE_CXX_SEEK -DSTIR_MPI)
+  # However, currently we decide to add  MPI_CXX_LINK_FLAGS only to those programs that need it,
+  # just in case these flags would make normal executables unexecutable without mpi-specific things
   option(STIR_MPI_TIMINGS "Enable timings for MPI code" OFF)
   if (STIR_MPI_TIMINGS)
     add_definitions(-DSTIR_MPI_TIMINGS)
