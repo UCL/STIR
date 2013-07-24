@@ -1,7 +1,9 @@
-// $Id$
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2011, Hammersmith Imanet Ltd
+    Copyright (C) 2013 Kris Thielemans
+    Copyright (C) 2013 University College London
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -19,16 +21,12 @@
 /*!
   \file 
   \ingroup test
+  \ingroup Array
  
   \brief tests for the stir::Array class
 
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-
-  $Revision$
-
 */
 
 #ifndef NDEBUG
@@ -160,7 +158,7 @@ private:
     */
     {
       const Array<num_dimensions, float> copy=t1;
-      warning("You should now see a warning that writing failed. That's by intention.\n");
+      cerr << "\n\tYou should now see a warning that writing failed. That's by intention.\n";
       check(write_data(os,t1,ByteOrder::swapped)!=Succeeded::yes, "write_data with swapped byte order should have failed");
       check_if_equal(t1  ,copy, "test out with byte-swapping didn't change the array even with failed IO" );
     }
@@ -220,10 +218,11 @@ private:
                 }
             }
          
-            // difference should be maximum .5
-            // the next test relies on how check_if_zero works
-            diff *= float(2*get_tolerance());
+            // difference should be maximum .5 (but we test with slightly larger tolerance to accomodate numerical precision)
+            const double tol=this->get_tolerance();
+            this->set_tolerance(.501);
             check_if_zero(diff, "test out/in: floats written as other_type" );
+            this->set_tolerance(tol);
           }
 
 
@@ -248,11 +247,12 @@ private:
                     *diff_iter++ -= *data_read_back_iter++;
                   }
               }
-         
-              // difference should be maximum .5
-              // the next test relies on how check_if_zero works
-              diff *= float(2*get_tolerance());
-              check_if_zero(diff, "test out/in: floats written as other_type" );
+
+              // difference should be maximum .5 (but we test with slightly larger tolerance to accomodate numerical precision)
+              const double tol=this->get_tolerance();
+              this->set_tolerance(.501);
+              check_if_zero(diff, "test out/in: floats written as other_type and read as floats" );
+              this->set_tolerance(tol);
             }
           }
           remove("output.other");
