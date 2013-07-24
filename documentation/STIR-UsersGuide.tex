@@ -2066,6 +2066,8 @@ Coincidence events where one or more of the photons are scattered form a major c
 in 3D PET. This scatter background needs to be estimated and taken into account during reconstruction. In
 \textit{STIR 2.1}, a version of the Single Scatter Simulation ( \textit{SSS}) algorithm [Wat96, Wat00,
 Wat97, Wat04, Wer02, Poe03] has been implemented and evaluated [Tso04].
+Polycarpou et al describe in detail how to perform scatter correction
+using STIR [Pol11].
 
 \subsubsection{Data Initialisation \label{sec:scatter_data_initialisation}}
 \begin{itemize}
@@ -2360,6 +2362,7 @@ For example, when using MRP:
 \end{array}
 \end{equation}
 
+% TODO needs modification with ``time-duration''
 \begin{equation}
 \begin{array}{rrr}
 \Lambda_{\nu}=\frac{1}{G}\sum\limits_{g}\sum\limits_{\nu'}\hat{W}^{-1} _{\nu'g\rightarrow \nu}\Lambda_{\nu'g}
@@ -2372,6 +2375,7 @@ For MCIR the motion transformations are incorporated directly into reconstructio
 image is reconstructed using the following iterative formula which is based on conventional OSEM
 including motion via the forward / backward transformation operators, as well. Again using the Median Root Prior, we get
 
+% TODO needs modification with ``time-duration''
 \begin{equation}
 \begin{array}{lcl}
 \Lambda_{\nu}^{(s+1)}&&=\Lambda_{\nu}^{(s)} \frac{1}{ \sum\limits_{b\in S_{l}, g} \sum\limits_{\nu'} \hat{W}^{-1} _{\nu'g\rightarrow \nu}P_{\nu' b}A_{bg}+\beta \nabla_{\Lambda_{\nu}} E_{\nu}^{(s)}}\\
@@ -2420,6 +2424,12 @@ The current implementation has been tested for respiratory gating, where each ga
 counts. If this is not the case, or if there is for instance radioactive decay between frames in dynamic
 PET, the implementation likely needs minor modifications. For instance, the different gate duration could
 be accounted for by normalising for the time duration [Rah08].
+A simple temporary solution is to rescale the
+normalisation sinogram to take into account time duration, e.g. for two
+gates with the first gate having $80$\% of the total duration and the second
+gate $20$\%, the normalisation sinogram for the first gate should be divided
+by a factor $0.8$ and the second by $0.2$.
+
 
 
 \subsubsection{Data Preparation}
@@ -4736,7 +4746,7 @@ Journal of Nuclear Medicine} , Vol. 24 No. 3: 258-265.
 
 {[}Ang11] Angelis G I, Thielemans K, Tziortzi A C, Turkheimer F E and Tsoumpas C  
 \textbf{(2011)}. Convergence Optimization of Parametric MLEM Reconstruction for Estimation of Patlak Plot Parameters.  
-\textit{(Computerized Medical Imaging and Graphics}, 35:407-416,  
+\textit{Computerized Medical Imaging and Graphics}, 35:407-416,  
 \textit{doi:10.1016/j.compmedimag.2011.01.002}
 
 {[}Ben99] Ben-Tal A, Margalit T and Nemirovski A \textbf{(1999)} The 
@@ -4924,9 +4934,15 @@ Comparative Evaluation. \textit{PARAPET documentation for D1.3, Geneva
 University Hospital and Technion}. \\
 Available at \R2Lurl{http://stir.sourceforge.net }{http://stir.sourceforge.net}. 
 
+[Pol 11] Polycarpou I, Thielemans K, Manjeshwar R, Aguiar P, Marsden PK,
+Tsoumpas C (2011) Comparative evaluation of scatter correction in 3D PET
+using different scatter-level approximations. Ann Nucl Med, 25(9):
+643-649, doi: 10.1007/s12149-011-0514-y.
+
 [Pol12] Polycarpou, I., C.
-Tsoumpas and P. K. Marsden \textbf{(2012)}, A new algorithm for scaling of PET
-scatter estimates using all coincidence events. \textit{Med Phys} vol. 39, 3586-3590, 
+Tsoumpas and P. K. Marsden \textbf{(2012)}, Analysis and
+comparison of two methods for motion correction in PET imaging
+\textit{Med Phys} vol. 39, 3586-3590, 
 \R2Lurl{http://dx.doi.org/10.1118/1.4754586}{doi 10.1118/1.4754586}.
 
 
