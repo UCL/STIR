@@ -4,7 +4,7 @@
 #     py.test test_IO.py
 
 
-#    Copyright (C) 2013, Kris Thielemans
+#    Copyright (C) 2013 University College London
 #    This file is part of STIR.
 #
 #    This file is free software; you can redistribute it and/or modify

@@ -1,9 +1,11 @@
 //
-// PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.txx,v 1.6 2011-01-14 17:25:05
+// PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.txx
 //
 /*
-  Copyright (C) 2006 - 2011-01-14, Hammersmith Imanet Ltd
-  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+  Copyright (C) 2006 - 2011-01-14 Hammersmith Imanet Ltd
+  Copyright (C) 2011 Kris Thielemans
+  Copyright (C) 2013 University College London
+
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -27,9 +29,6 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author Charalampos Tsoumpas
-
-  $Date$
-  $Revision$
 */
 #include "stir/DiscretisedDensity.h"
 #include "stir/is_null_ptr.h"
