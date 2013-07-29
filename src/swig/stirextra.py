@@ -1,5 +1,6 @@
 # A simple module with a few python functions to make it easier to work with STIR
-# Copyright 2012-10-05 - 2013 Kris Thielemans
+# Copyright (C) 2012 Kris Thielemans
+# Copyright (C) 2013 University College London
 
 # This file is part of STIR.
 #
