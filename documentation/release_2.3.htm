@@ -58,6 +58,8 @@ if it supports it.
 
 <h3>Known problems</h3>
 <ul>
+<li>This release has a <strong>memory allocation problem when processing list mode data</strong>. Depending on your system, compiler,
+bad luck, you might get wrong results. If you use list mode, please upgrade to STIR 2.4.</li>
 <li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
 <li>On Windows, using shared libraries fails. We need to sort out dependencies between libraries to fix this.</li>
 <li>The recon_test_pack routines fail with the MPI version. See the mailing list for a work-around.</li>
