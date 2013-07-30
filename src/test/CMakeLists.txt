@@ -1,7 +1,5 @@
-#
-# $Id$
-#
-# Copyright 2011-07-01 - $Date$ Kris Thielemans
+# Copyright (C) 2011-2012, Kris Thielemans
+# Copyright (C) 2013, University College London
 # This file is part of STIR.
 #
 # This file is free software; you can redistribute it and/or modify
@@ -20,9 +18,23 @@
 set(dir test)
 
 set(dir_SIMPLE_TEST_EXE_SOURCES ${dir}_SIMPLE_TEST_EXE_SOURCES)
+set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES)
 set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
+	test_ROIs
+)
+
+Set(${dir_INVOLVED_TEST_EXE_SOURCES}
+	test_OutputFileFormat
+	test_linear_regression
+	test_stir_math
+        # the next 2 are interactive, so we don't add a test for it, but only compile them
+	test_display
+	test_interpolate
+)
+
+set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
         test_Array
         test_NestedIterator
         test_VectorWithOffset
@@ -36,22 +48,11 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_proj_data_info
 	test_ByteOrder
 	test_Scanner
-	test_ROIs
 	test_ArcCorrection
 	test_DynamicDiscretisedDensity  
 	test_find_fwhm_in_image
         test_warp_image
 )
-
-set(${dir_INVOLVED_TEST_EXE_SOURCES}
-	test_OutputFileFormat
-	test_linear_regression
-	test_stir_math
-        # the next 2 are interactive, so we don't add a test for it, but only compile them
-	test_display
-	test_interpolate
-)
-
 
 include(../stir_test_exe_targets.cmake)
 
