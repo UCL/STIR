@@ -56,11 +56,13 @@ sh run_tests.sh [ --nointbp ] my_install_dir/
 	(if you copied the executables to one directory, 
 	 but it isn't in your path)
 
-Use the --nointbp option (case is important) if you want to skip 
+Use the --nointbp option (case is important, don't include the []) if you want to skip 
 reconstructions that use  the interpolating backprojector. You
 probably want to do this on modern systems using 64bit compilation, as that
 backprojector is known to have a problem on many of those processors
 in the centre of the image.
+
+sh run_scatter_tests.sh optional_install_path
 
 Testing self-consistency of STIR simulation and reconstruction
 ..............................................................
@@ -68,12 +70,7 @@ This test does a simplistic analytic simulation (no noise) of
 a uniform cylinder and reconstructs the data in various ways.
 The test checks the ROI mean of the reconstructed image.
 
-sh run_test_simulate_and_recon.sh
-	(if all executables are in your path)
-
-sh run_test_simulate_and_recon.sh my_install_dir/
-	(if you copied the executables to one directory, 
-	 but it isn't in your path)
+sh run_test_simulate_and_recon.sh optional_install_path
 
 Similarly, a test for motion corrected reconstruction of gated data is run as
 
@@ -85,12 +82,7 @@ If you have compiled STIR to use the LNN matrix library for ECAT7 support.
 (ECAT6 support is no longer tested as it usually fails due to bugs in the 
 LLN matrix library).
 
-sh run_ecat_tests.sh 
-	(if all executables are in your path)
-
-sh run_ecat_tests.sh my_install_dir/  
-	(if you copied the executables to one directory, 
-	 but it isn't in your path)
+sh run_ecat_tests.sh optional_install_path
 
 
 
