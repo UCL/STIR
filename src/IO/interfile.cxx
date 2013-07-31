@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,10 +24,6 @@
   \author Kris Thielemans 
   \author Sanida Mustafovic
   \author PARAPET project
-
-  $Date$
-  $Revision$
-    
 */
 //   Pretty horrible implementations at the moment...
 
@@ -126,10 +119,6 @@ read_interfile_image(istream& input,
 			float(hdr.first_pixel_offsets[1]),
 			float(hdr.first_pixel_offsets[0]))
 	- voxel_size * BasicCoordinate<3,float>(min_indices);
-      // TODO remove
-      if (norm(origin)>.01)
-	warning("interfile parsing: setting origin to (z=%g,y=%g,x=%g)",
-		origin.z(), origin.y(), origin.x());
     }
 
   VoxelsOnCartesianGrid<float>* image_ptr =
