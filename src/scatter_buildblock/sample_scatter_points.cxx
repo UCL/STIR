@@ -1,9 +1,7 @@
-//
-// $Id$
-//
 /*
-  Copyright (C) 2004- 2010-10-15, Hammersmith Imanet
-  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+  Copyright (C) 2004- 2010-10-15, Hammersmith Imanet Ltd
+  Copyright (C) 2011 Kris Thielemans
+  Copyright (C) 2013 University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -26,9 +24,6 @@
   \author Charalampos Tsoumpas
   \author Pablo Aguiar
   \author Kris Thielemans
-  
-  $Date$
-  $Revision$
 */
 
 #include "stir/scatter/ScatterEstimationByBin.h"
@@ -97,6 +92,8 @@ sample_scatter_points()
               voxel_size*scatter_point.coord + origin;
             scatter_point.mu_value = attenuation_map[coord];
             this->scatt_points_vector.push_back(scatter_point);
-          }                                     
+          }
+  this->remove_cache_for_integrals_over_activity();
+  this->remove_cache_for_integrals_over_attenuation();
 }
 END_NAMESPACE_STIR 

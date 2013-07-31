@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-  Copyright (C) 2004- $Date$, Hammersmith Imanet
+  Copyright (C) 2004-2009, Hammersmith Imanet Ltd
+  Copyright (C) 2013 University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -21,15 +19,12 @@
   \ingroup scatter
   \brief Implementations of functions defined in stir::ScatterEstimationByBin
 
-  Functions calculates the integral along LOR in an image (attenuation or emission). 
+  Functions calculate the integral along LOR in an image (attenuation or emission). 
   (from scatter point to detector coordinate).
 
   \author Charalampos Tsoumpas
   \author Nikolaos Dikaios
   \author Kris Thielemans
-          
-  $Date$
-  $Revision$
 */
 #include "stir/scatter/ScatterEstimationByBin.h"
 #include "stir/IndexRange.h" 
@@ -37,21 +32,56 @@
 
 START_NAMESPACE_STIR
 
-const float cache_init_value = -1.234F; // an arbitrary value that should never occur
+const float cache_init_value = -1234567.89E10F; // an arbitrary value that should never occur
 
 void
 ScatterEstimationByBin::
-initialise_cache_for_scattpoint_det()
+remove_cache_for_integrals_over_attenuation()
 {
-  IndexRange<2> range (Coordinate2D<int> (0,0), 
-                       Coordinate2D<int> (static_cast<int>(this->scatt_points_vector.size()-1),
-                                          this->total_detectors-1));
+  this->cached_attenuation_integral_scattpoint_det.recycle();
+}
+
+void
+ScatterEstimationByBin::
+remove_cache_for_integrals_over_activity()
+{
+  this->cached_activity_integral_scattpoint_det.recycle();
+}
+
+
+void
+ScatterEstimationByBin::
+initialise_cache_for_scattpoint_det_integrals_over_attenuation()
+{
+  if (!this->use_cache)
+    return;
+
+  const IndexRange<2> range (Coordinate2D<int> (0,0), 
+                             Coordinate2D<int> (static_cast<int>(this->scatt_points_vector.size()-1),
+                                                this->total_detectors-1));
+  if (this->cached_attenuation_integral_scattpoint_det.get_index_range() == range)
+    return;  // keep cache if correct size
+
+  this->cached_attenuation_integral_scattpoint_det.resize(range);
+  this->cached_attenuation_integral_scattpoint_det.fill(cache_init_value);
+}
+
+void
+ScatterEstimationByBin::
+initialise_cache_for_scattpoint_det_integrals_over_activity()
+{
+  if (!this->use_cache)
+    return;
+
+  const IndexRange<2> range (Coordinate2D<int> (0,0), 
+                             Coordinate2D<int> (static_cast<int>(this->scatt_points_vector.size()-1),
+                                                this->total_detectors-1));
+
+  if (this->cached_activity_integral_scattpoint_det.get_index_range() == range)
+    return; // keep cache if correct size
 
   this->cached_activity_integral_scattpoint_det.resize(range);
-  this->cached_attenuation_integral_scattpoint_det.resize(range);
-
   this->cached_activity_integral_scattpoint_det.fill(cache_init_value);
-  this->cached_attenuation_integral_scattpoint_det.fill(cache_init_value);
 }
 
 float 
