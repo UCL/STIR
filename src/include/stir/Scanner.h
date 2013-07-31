@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2010, Hammersmith Imanet Ltd
@@ -32,9 +29,6 @@
   \author Sanida Mustafovic
   \author Charalampos Tsoumpas
   \author PARAPET project
-
-  $Date$
-  $Revision$
 */
 #ifndef __stir_buildblock_SCANNER_H__
 #define __stir_buildblock_SCANNER_H__
@@ -118,7 +112,7 @@ class Scanner
      to flag up an error and do some guess work in trying to recognise the scanner from 
      any given parameters.
   */
-  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, RPT,HiDAC,
+  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR, RPT,HiDAC,
 	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600,
 	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,
 	     Unknown_scanner};
