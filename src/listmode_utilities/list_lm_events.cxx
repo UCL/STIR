@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2003-2011 Hammersmith Imanet Ltd
     This file is part of STIR.
@@ -25,9 +22,6 @@
   \brief Program to show info about listmode data
  
   \author Kris Thielemans
-  
-  $Date$
-  $Revision$
 */
 
 
@@ -42,7 +36,6 @@
 #include <vector>
 
 #ifndef STIR_NO_NAMESPACES
-using std::hex;
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -142,7 +135,7 @@ int main(int argc, char *argv[])
               recognised=true;
               if (list_gating)
                 {
-                  cout << "Gating " << hex << record_ptr->gating_input().get_gating();
+                  cout << "Gating " << std::hex << record_ptr->gating_input().get_gating() << std::dec;
                   listed = true; 
                 }
             }
