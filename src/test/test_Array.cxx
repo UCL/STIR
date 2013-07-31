@@ -251,7 +251,7 @@ private:
             full_message << boost::format("unequal values are %2% and %3%. %1%: difference larger than .5")
               % message % static_cast<elemT>(*data_read_back_iter) % *diff_iter;
             // difference should be maximum .5 (but we test with slightly larger tolerance to accomodate numerical precision)
-            test_failed = check(fabs(*diff_iter - *data_read_back_iter)<=.501, 
+            test_failed = check(fabs(*diff_iter - *data_read_back_iter)<=.502, 
                                 full_message.str().c_str());
           }
         else
@@ -262,7 +262,7 @@ private:
                                          full_message.c_str());
           }
         if (test_failed)
-          {}//break;
+          break;
         diff_iter++; data_read_back_iter++;
       }
     return test_failed;
