@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-  Copyright (C) 2004 - $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2004 -  2009 Hammersmith Imanet Ltd
+  Copyright (C) 2013 University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -24,9 +22,6 @@
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
-  
-  $Date$
-  $Revision$
 */
 #include "stir/scatter/ScatterEstimationByBin.h"
 #include "stir/ProjDataInterfile.h"
@@ -38,7 +33,10 @@
 #include "stir/Viewgram.h"
 #include "stir/is_null_ptr.h"
 #include "stir/IO/read_from_file.h"
+#include "stir/info.h"
+#include "stir/error.h"
 #include <fstream>
+#include <boost/format.hpp>
 
 
 START_NAMESPACE_STIR
@@ -59,6 +57,9 @@ set_defaults()
   this->density_image_for_scatter_points_filename = "";
   this->template_proj_data_filename = "";
   this->output_proj_data_filename = "";
+
+  this->remove_cache_for_integrals_over_activity();
+  this->remove_cache_for_integrals_over_attenuation();
 }
 
 void
@@ -86,85 +87,19 @@ bool
 ScatterEstimationByBin::
 post_processing()
 {
-  this->activity_image_sptr= 
-    read_from_file<DiscretisedDensity<3,float> >(this->activity_image_filename);
-  this->density_image_sptr= 
-    read_from_file<DiscretisedDensity<3,float> >(this->density_image_filename);
-  this->density_image_for_scatter_points_sptr= 
-    read_from_file<DiscretisedDensity<3,float> >(this->density_image_for_scatter_points_filename);
-
-  if (is_null_ptr(this->activity_image_sptr))
-    {
-      warning("Error reading activity image %s",
-              this->activity_image_filename.c_str());
-      return true;
-    }
-  if (is_null_ptr(this->density_image_for_scatter_points_sptr))
-    {
-      warning("Error reading density image %s",
-              this->density_image_filename.c_str());
-      return true;
-    }
-  if (is_null_ptr(this->density_image_for_scatter_points_sptr))
-    {
-      warning("Error reading density_for_scatter_points image %s",
-              this->density_image_for_scatter_points_filename.c_str());
-      return true;
-    }
+  this->set_activity_image(this->activity_image_filename);
+  this->set_density_image(this->density_image_filename);
+  this->set_density_image_for_scatter_points(this->density_image_for_scatter_points_filename);
         
-  warning("\nWARNING: Attenuation image data are supposed to be in units cm^-1\n"
-          "\tReference: water has mu .096 cm^-1\n" 
-          "\tMax in attenuation image: %g\n" ,
-          this->density_image_sptr->find_max());
-  shared_ptr<ProjData> template_proj_data_sptr = 
-    ProjData::read_from_file(this->template_proj_data_filename);  
-  const ProjDataInfoCylindricalNoArcCorr* proj_data_info_ptr =
-    dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(
-                                                           template_proj_data_sptr->get_proj_data_info_ptr());
-        
-  if (is_null_ptr(proj_data_info_ptr))
-    {     
-      warning("ScatterEstimationByBin can only handle non-arccorrected data");
-      return true;
-    }
+  info(boost::format("Attenuation image data are supposed to be in units cm^-1\n"
+                     "\tReference: water has mu .096 cm^-1\n" 
+                     "\tMax in attenuation image: %g\n") %
+       this->density_image_sptr->find_max());
 
+  this->set_template_proj_data_info(this->template_proj_data_filename);
+  // create output (has to be AFTER set_template_proj_data_info)
+  this->set_output_proj_data(this->output_proj_data_filename);
 
-  shared_ptr<ProjDataInfo> proj_data_info_sptr(proj_data_info_ptr->clone());
-
-  output_proj_data_sptr.reset(new ProjDataInterfile(proj_data_info_sptr,this->output_proj_data_filename));
-
-
-
-  // XXX should go to set_up
-  {
-  this->proj_data_info_ptr =
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *> 
-    (this->output_proj_data_sptr->get_proj_data_info_ptr()->clone());
-
-  this->sample_scatter_points();
-
-  
-  // find final size of detection_points_vector
-  this->total_detectors = 
-    this->proj_data_info_ptr->get_scanner_ptr()->get_num_rings()*
-    this->proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring ();
-  // reserve space to avoid reallocation, but the actual size will grow dynamically
-  detection_points_vector.reserve(total_detectors);
-
-  this->initialise_cache_for_scattpoint_det();
-
-#if 0
-  {
-    std::ofstream scatter_points_file("scatter_points.txt"); 
-    if(!scatter_points_file)    
-      warning("Cannot open scatter_points file.\n") ;                 
-    else
-      scatter_points_file << scatt_points_vector;
-    std::cerr << scatt_points_vector.size() << " scatter points selected!" << std::endl;                                
-  }
-#endif
-
-  }
   return false;
 }
 
@@ -174,10 +109,143 @@ ScatterEstimationByBin()
   this->set_defaults();
 }
 
+
+/****************** functions to set images **********************/
+void
+ScatterEstimationByBin::
+set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >& new_sptr)
+{
+  this->activity_image_sptr=new_sptr;
+  this->remove_cache_for_integrals_over_activity();
+}
+
+void
+ScatterEstimationByBin::
+set_activity_image(const std::string& filename)  
+{
+  this->activity_image_filename=filename;
+  this->activity_image_sptr= 
+    read_from_file<DiscretisedDensity<3,float> >(filename);
+  if (is_null_ptr(this->activity_image_sptr))
+    {
+      error(boost::format("Error reading activity image %s") %
+            this->activity_image_filename);
+    }
+  this->set_activity_image_sptr(this->activity_image_sptr);
+}
+
+
+void
+ScatterEstimationByBin::
+set_density_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >& new_sptr)
+{
+  this->density_image_sptr=new_sptr;
+  this->remove_cache_for_integrals_over_attenuation();
+}
+
+void
+ScatterEstimationByBin::
+set_density_image(const std::string& filename)  
+{
+  this->density_image_filename=filename;
+  this->density_image_sptr= 
+    read_from_file<DiscretisedDensity<3,float> >(filename);
+  if (is_null_ptr(this->density_image_sptr))
+    {
+      error(boost::format("Error reading density image %s") %
+            this->density_image_filename);
+    }
+  this->set_density_image_sptr(this->density_image_sptr);
+}
+
+void
+ScatterEstimationByBin::
+set_density_image_for_scatter_points_sptr(const shared_ptr<DiscretisedDensity<3,float> >& new_sptr)
+{
+  this->density_image_for_scatter_points_sptr=new_sptr;
+  this->sample_scatter_points();
+  this->remove_cache_for_integrals_over_attenuation();
+}
+
+void
+ScatterEstimationByBin::
+set_density_image_for_scatter_points(const std::string& filename)  
+{
+  this->density_image_for_scatter_points_filename=filename;
+  this->density_image_for_scatter_points_sptr= 
+    read_from_file<DiscretisedDensity<3,float> >(filename);
+  if (is_null_ptr(this->density_image_for_scatter_points_sptr))
+    {
+      error(boost::format("Error reading density_for_scatter_points image %s") %
+            this->density_image_for_scatter_points_filename);
+    }
+  this->set_density_image_for_scatter_points_sptr(this->density_image_for_scatter_points_sptr);
+}
+
+
+/****************** functions to set projection data **********************/
+
+void
+ScatterEstimationByBin::
+set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>& new_sptr)
+{
+  
+  this->proj_data_info_ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(new_sptr->clone());
+
+  if (is_null_ptr(this->proj_data_info_ptr))
+    {     
+      error("ScatterEstimationByBin can only handle non-arccorrected data");
+    }
+      
+  // find final size of detection_points_vector
+  this->total_detectors = 
+    this->proj_data_info_ptr->get_scanner_ptr()->get_num_rings()*
+    this->proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring ();
+  // reserve space to avoid reallocation, but the actual size will grow dynamically
+  this->detection_points_vector.reserve(total_detectors);
+
+  // remove any cached values as they'd be incorrect if the sizes changes
+  this->remove_cache_for_integrals_over_attenuation();
+  this->remove_cache_for_integrals_over_activity();
+}
+
+void
+ScatterEstimationByBin::
+set_template_proj_data_info(const std::string& filename)
+{
+  this->template_proj_data_filename = filename;
+  shared_ptr<ProjData> template_proj_data_sptr = 
+    ProjData::read_from_file(this->template_proj_data_filename);  
+
+  this->set_template_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone());
+}
+
+/*
+void
+ScatterEstimationByBin::
+set_output_proj_data_sptr(const shared_ptr<ProjData>& new_sptr)
+{
+  this->output_proj_data_sptr = new_sptr;
+}
+*/
+
+void
+ScatterEstimationByBin::
+set_output_proj_data(const std::string& filename)
+{
+  this->output_proj_data_filename = filename;
+  this->output_proj_data_sptr.reset(new ProjDataInterfile(this->proj_data_info_ptr->create_shared_clone(),this->output_proj_data_filename));
+}
+
+/****************** functions to compute scatter **********************/
+
 Succeeded 
 ScatterEstimationByBin::
 process_data()
 {               
+  this->initialise_cache_for_scattpoint_det_integrals_over_attenuation();
+  this->initialise_cache_for_scattpoint_det_integrals_over_activity();
+ 
   ViewSegmentNumbers vs_num;
         
   /* ////////////////// SCATTER ESTIMATION TIME ////////////////
@@ -338,7 +406,7 @@ write_log(const double simulation_time,
 
   mystream << this->parameter_info()
            << "\nTotal simulation time elapsed: "                                 
-           <<   simulation_time/60 
+           <<   simulation_time/60 << "min"
            << "\nTotal Scatter Points : " << scatt_points_vector.size() 
            << "\nTotal Scatter Counts : " << total_scatter 
            << "\nActivity image SIZE: " 

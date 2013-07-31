@@ -1,11 +1,9 @@
-//
-// $Id$
-//
 #ifndef __stir_scatter_ScatterEstimationByBin_H__
 #define __stir_scatter_ScatterEstimationByBin_H__
 
 /*
-    Copyright (C) 2004 - $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004 - 2009 Hammersmith Imanet Ltd
+    Copyright (C) 2013 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,9 +26,6 @@
   \author Charalampos Tsoumpas
   \author Nikolaos Dikaios
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 
 #include "stir/shared_ptr.h"
@@ -70,7 +65,7 @@ class ViewSegmentNumbers;
   be read from the emission data, as opposed to setting them here.
 
   \todo detector coordinates are derived from ProjDataInfo, but areas and orientations are 
-  deteremined by using a cylindrical scanner.
+  determined by using a cylindrical scanner.
 
   \todo This class should be split into a generic class and one specific to PET single scatter.
 
@@ -101,6 +96,14 @@ class ScatterEstimationByBin : public ParsingObject
 {
  public:
   //! upsample coarse scatter estimate and fit it to tails of the emission data
+  /*! Current procedure:
+    1. interpolate segment 0 of \a scatter_proj_data to size of segment 0 of \a emission_proj_data
+    2. inverseSSRB to create oblique segments
+    3. find scale factors with get_scale_factors_per_sinogram()
+    4. apply thresholds
+    5. filter scale-factors in axial direction (independently for every segment)
+    6. apply scale factors using scale_sinograms()
+  */
  static void
    upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
 				     const  ProjData& emission_proj_data,
@@ -115,11 +118,47 @@ class ScatterEstimationByBin : public ParsingObject
 
   //! Default constructor (calls set_defaults())
   ScatterEstimationByBin();
-  //! Function that does all the actual work
-  Succeeded process_data();
+
+  /*! \name functions to (re)set images or projection data
+      These functions also invalidate cached activity integrals such that the cache will be recomputed.
+
+      The functions that read a file call error() if the reading failed.
+  */
+  //@{
+  void set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
+  void set_activity_image(const std::string& filename);
+
+  void set_density_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
+  void set_density_image(const std::string& filename);
+
+  //! set the image that determines where the scatter points are
+  /*! Also calls sample_scatter_points()
+   \warning Uses attenuation_threshold member variable
+  */
+  void set_density_image_for_scatter_points_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
+  
+  //! set the image that determines where the scatter points are
+  /*! Calls set_density_image_for_scatter_points_sptr() to make sure all other variables are ok. */
+  void set_density_image_for_scatter_points(const std::string& filename);
+
+  void set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>&);
+  void set_template_proj_data_info(const std::string& filename);
+
+  //void set_output_proj_data_sptr(const shared_ptr<ProjData>& new_sptr);
+  //! create output projection data of same size as template_proj_data_info
+  /*! \warning use set_template_proj_data_info() first. 
+
+   Currently always uses Interfile output.
+  */
+  void set_output_proj_data(const std::string& filename);
+
+
+  //@}
+
+  virtual Succeeded process_data();
 
   // TODO write_log can't be const because parameter_info isn't const
-  void
+  virtual void
     write_log(const double simulation_time, 
 	      const float total_scatter);
 
@@ -185,9 +224,13 @@ class ScatterEstimationByBin : public ParsingObject
   std::vector< ScatterPoint> scatt_points_vector;
   float scatter_volume;
 
-  //! fill in scatt_points_vector and scatter_volume       
+  //! find scatter points
+  /*! This function sets scatt_points_vector and scatter_volume. It will also
+      remove any cached integrals as they would be incorrect otherwise.
+  */
   void 
     sample_scatter_points();
+
 
   /************************************************************************/
 
@@ -319,11 +362,31 @@ class ScatterEstimationByBin : public ParsingObject
     compute_emis_to_det_points_solid_angle_factor(const CartesianCoordinate3D<float>& emis_point,
 						  const CartesianCoordinate3D<float>& detector_coord) ;
 
+ protected:
+  //! remove cached attenuation integrals
+  /*! should be used before recalculating scatter for a new attenuation image or 
+    when changing the sampling of the detector etc */
+  virtual void remove_cache_for_integrals_over_attenuation();
+  //! reset cached activity integrals
+  /*! should be used before recalculating scatter for a new activity image or 
+    when changing the sampling of the detector etc */
+  virtual void remove_cache_for_integrals_over_activity();
+
  private:
   Array<2,float> cached_activity_integral_scattpoint_det;
   Array<2,float> cached_attenuation_integral_scattpoint_det;
-  void initialise_cache_for_scattpoint_det();
 
+
+  //! set-up cache for attenuation integrals
+  /*! \warning This will not remove existing cached data (if the sizes match). If you need this,
+      call remove_cache_for_scattpoint_det_integrals_over_attenuation() first. 
+  */
+  void initialise_cache_for_scattpoint_det_integrals_over_attenuation();
+  //! set-up cache for activity integrals
+  /*! \warning This will not remove existing cached data (if the sizes match). If you need this,
+      call remove_cache_for_scattpoint_det_integrals_over_activity() first. 
+  */
+  void initialise_cache_for_scattpoint_det_integrals_over_activity();
 };
 
 
