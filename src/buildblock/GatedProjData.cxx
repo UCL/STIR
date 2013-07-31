@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2005-2011, Hammersmith Imanet Ltd
     Copyright (C) 2009-2013, King's College London
@@ -24,12 +21,10 @@
   \brief Implementation of class stir::GatedProjData
   \author Kris Thielemans
   \author Charalampos Tsoumpas
-  
-  $Date$
-  $Revision$
 */
 
 #include "stir/GatedProjData.h"
+#include "stir/IO/FileSignature.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/ProjDataFromStream.h"
 #include <iostream>
@@ -40,31 +35,20 @@
 #include <sstream>
 
 START_NAMESPACE_STIR
-#if 0
-static
-GatedProjData * 
-read_multi_gated_proj_data(const string& filename)
-#endif
 
 GatedProjData*
 GatedProjData::
 read_from_file(const string& filename) // The written image is read in respect to its center as origin!!!
 {
-  const int max_length=300;
-  char signature[max_length];
+  std::fstream input(filename.c_str(), std::ios::in | std::ios::binary);
+  if (!input)
+    {
+      warning("GatedProjData::read_from_file cannot read file '%s'. Will now attempt to append .gdef", filename.c_str());
+      return read_from_gdef(filename);
+    }
 
-  // read signature
-  {
-    std::fstream input(filename.c_str(), std::ios::in | std::ios::binary);
-    if (!input)
-      {
-        // error("GatedProjData::read_from_file: error opening file %s\n", filename.c_str());
-        warning("GatedProjData::read_from_file cannot read file '%s'. Will now attempt to append .gdef\n", filename.c_str());
-        return read_from_gdef(filename);
-      }
-    input.read(signature, max_length);
-    signature[max_length-1]='\0';
-  }
+  const FileSignature file_signature(input);
+  const char * signature = file_signature.get_signature();
 
   GatedProjData * gated_proj_data_ptr = 0;
 
