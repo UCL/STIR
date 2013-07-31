@@ -238,7 +238,7 @@ private:
   template <int num_dimensions, typename elemT, class output_type>
   bool check_array_equality_with_rounding(const Array<num_dimensions,elemT>& orig, const Array<num_dimensions,output_type>& data_read_back, const char*const message)
   {
-    const NumericInfo<output_type> output_type_info;
+    NumericInfo<output_type> output_type_info;
     bool test_failed=false;
     typename Array<num_dimensions,elemT>::const_full_iterator diff_iter = orig.begin_all();
     typename Array<num_dimensions,output_type>::const_full_iterator data_read_back_iter = data_read_back.begin_all_const();
