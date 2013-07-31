@@ -23,6 +23,9 @@ set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_ROIs
+	test_proj_data_info
+        test_warp_image
+	test_DynamicDiscretisedDensity  
 )
 
 Set(${dir_INVOLVED_TEST_EXE_SOURCES}
@@ -45,13 +48,10 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
 	test_filename_functions
 	test_VoxelsOnCartesianGrid
 	test_zoom_image
-	test_proj_data_info
 	test_ByteOrder
 	test_Scanner
 	test_ArcCorrection
-	test_DynamicDiscretisedDensity  
 	test_find_fwhm_in_image
-        test_warp_image
 )
 
 include(../stir_test_exe_targets.cmake)
