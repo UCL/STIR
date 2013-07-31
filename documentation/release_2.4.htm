@@ -1,13 +1,13 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 2.4 (dated 20/07/2013)</title>
+    <title>Summary of changes in STIR release 2.4 (dated 31/07/2013)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 2.4 (dated 20/07/2013)</h1>
+    <h1>Summary of changes in STIR release 2.4 (dated 31/07/2013)</h1>
 
-<p>This update was mostly prepared by Charalampos Tsoumpas (King's College London). Minor changes by Kris Thielemans 
+<p>This update was mostly prepared by Charalampos Tsoumpas (King's College London). Minor changes and bug fixes by Kris Thielemans 
 (Algorithms and Software Consulting Ltd, University College London).</p>
 
 
@@ -27,7 +27,7 @@ This potentially affected all list mode handling.
 image from gated projection data.</li>
 <li>Conversion routines for reading/writing GIPL images.</li>
 <li>A conversion routine to  create Interfile data from raw GATE projection data output.</li>
-<li>3 new scanners: nanoPET (Mediso), HYPER (HyperImage FP7 project), PANDA (KCL internal).</li>
+<li>4 new scanners: Siemens mMR, nanoPET (Mediso), HYPER (HyperImage FP7 project), PANDA (KCL internal).</li>
 <li>Added "-t tolerance" option to compare_projdata.</li>
 <li>Python support:
   <ul>
@@ -63,7 +63,7 @@ for Visual Studio are no longer distributed.
 <ul>
 <li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
 <li>On Windows, using shared libraries fails. We need to sort out dependencies between libraries to fix this.</li>
-<li>The recon_test_pack routines fail with the MPI version. A work-around is to prefix the reconstruction executables with <tt>mpirun.openmpi -np 4</tt> or so).</li>
+<li>The recon_test_pack routines fail with the MPI version. A work-around is to prefix the reconstruction executables with <tt>mpirun -np 4</tt> or so).</li>
 <li>ECAT6 is no longer supported</li>
 <li>The interpolating back-projector still gives problems in the centre of the images
 on some architectures/compiler/optimisation settings. We recommend to use the ray-tracing
@@ -79,6 +79,11 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 
 <h3>Minor bug fixes</h3>
 <ul>
+<li>fixed possible race-condition in OPENMP version of FBP2D (but it's still too slow to be practical)</li>
+<li>list_lm_events: reset output-format to decimal after printing a gating event (previously all
+  remaining output was in hex)</li>
+<li>fix a (nearly irrelevant) bug in reading a file signature that lead to uninitialised memory being 
+  returned if the file size was shorter than 1024 bytes (but that doesn't really happen for normal files).</li>
 <li>A few error messages in ECAT IO would actually crash as opposed to writing a decent message.</li>
 <li>A few changes to the CMakeLists.txt files for cmake clarifying dependencies
 between libraries. This makes shared libraries better suppported, but there are still circular dependencies. This doesn't seem to create trouble on most systems,
@@ -97,6 +102,7 @@ but makes shared libraries fail on some (e.g. msys on windows).</li>
 <ul>
 <li>updated version number and added some clarification to the README.txt</li>
 <li>added a test script for the motion version</li>
+<li>added a test script for the scatter simulation</li>
 <li>relaxed test for OSSPS in <tt>run_tests.sh</tt> to avoid problem of outer rim voxels on cygwin (and others?)</li>
 <li>small updates to test scrips, giving early exit if a STIR executable not found and feedback which STIR executable is being used</li>
  </ul>
@@ -104,6 +110,7 @@ but makes shared libraries fail on some (e.g. msys on windows).</li>
 <h3>Other changes to tests</h3>
 <ul>
 <li>added a test for warping images</li>
+<li>changed IO tests in test_Array to accomodate for gcc 4.8.1 numerical precision (flagged and tested by Justin Mikell)</li>
 </ul>
 
 <H2>What's new for developers (aside from what should be obvious
@@ -123,10 +130,20 @@ This potentially affected all list mode handling.
 
 <h3>Other code changes</h3>
 <ul>
+<li>modifications to the scatter estimation code changes to be able to run multiple scatter
+  simulation from the same ScatterEstimation object (possibly re-using the
+  cache). Results are identical.</li>
 <li>removed a few <tt>using std::cout</tt> (and other items in the <tt>std</tt> namespace) from some include files
 as this created problems on some compilers. This might affect your code if it relied on these <tt>using</tt> statements.
 </li>
 <li>replaced a few output lines to <tt>std::cerr</tt> with calls to <tt>stir::info</tt> (still many more to do).</li>
+</ul>
+
+<h3>Build system</h3>
+<ul>
+<li> changes to test-macros for CMake to allow linking without the registries (such as
+  IO_registries), speeding up the linking process of some tests.</li>
+<li> fixes for MPI. The CMake files might now work on more MPI platforms.</li>
 </ul>
 </body>
 
