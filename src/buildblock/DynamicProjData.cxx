@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2005 - 2011-12-31, Hammersmith Imanet Ltd
-    Copyright (C) 2013-01-01 - $Date$, Kris Thielemans
+    Copyright (C) 2013, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,9 +21,6 @@
   \brief Implementation of class stir::DynamicProjData
   \author Kris Thielemans
   \author Charalampos Tsoumpas
-  
-  $Date$
-  $Revision$
 */
 
 #include "stir/DynamicProjData.h"
@@ -40,6 +34,7 @@
 #include "stir/warning.h"
 #include "stir/info.h"
 #include "stir/utilities.h"
+#include "stir/IO/FileSignature.h"
 #include "stir/IO/InterfileHeader.h"
 #include "stir/IO/interfile.h"
 #include <boost/format.hpp>
@@ -67,20 +62,8 @@ DynamicProjData*
 DynamicProjData::
 read_from_file(const string& filename) // The written projection data is read in respect to its center as origin!!!
 {
-  const int max_length=300;
-  char signature[max_length];
-
-  // read signature
-  {
-    std::ifstream input(filename.c_str(), std::ios::binary);
-    if (!input)
-      {
-        warning("DynamicProjData::read_from_file: error opening file '%s'. Does it exist?", filename.c_str());
-        return 0;
-      }
-    input.read(signature, max_length);
-    signature[max_length-1]='\0';
-  }
+  const FileSignature file_signature(filename);
+  const char * signature = file_signature.get_signature();
 
   // Interfile
   if (is_interfile_signature(signature))

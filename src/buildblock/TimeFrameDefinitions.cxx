@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 - 2008-02-22, Hammersmith Imanet Ltd
-    Copyright (C) 2013-01-01 - $Date$, Kris Thielemans
+    Copyright (C) 2013, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,12 +22,10 @@
   \brief Implementation of class stir::TimeFrameDefinitions
  
   \author Kris Thielemans
-  
-  $Date$
-  $Revision$
 */
 
 #include "stir/TimeFrameDefinitions.h"
+#include "stir/IO/FileSignature.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/stir_ecat6.h"
 #include "stir/IO/ecat6_utils.h"     
@@ -144,19 +139,9 @@ get_time_frame_num(const double start_time, const double end_time) const
 TimeFrameDefinitions::
 TimeFrameDefinitions(const string& filename)
 {
-  const int max_length=300;
-  char signature[max_length];
+  const FileSignature file_signature(filename);
+  const char * signature = file_signature.get_signature();
 
-  // read signature
-  {
-    std::ifstream input(filename.c_str(), std::ios::binary);
-    if (!input)
-      {
-        error(boost::format("TimeFrameDefinitions: error opening file '%s'. Does it exist?") % filename);
-      }
-    input.read(signature, max_length);
-    signature[max_length-1]='\0';
-  }
 
 #ifdef STIR_ORIGINAL_ECAT6
   if (ecat::ecat6::is_ECAT6_file(filename))

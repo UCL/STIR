@@ -1,10 +1,7 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2010-10-15, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-07-01 -2013, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,9 +24,6 @@
 
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-  $Revision$
 */
 #include "stir/ProjData.h"
 #include "stir/Succeeded.h"
@@ -41,6 +35,7 @@
 
 #include "stir/utilities.h" // TODO remove (temporary for test GEAdvance)
 // for read_from_file
+#include "stir/IO/FileSignature.h"
 #include "stir/IO/interfile.h"
 #include "stir/ProjDataFromStream.h" // needed for converting ProjDataFromStream* to ProjData*
 
@@ -111,10 +106,8 @@ read_from_file(const string& filename,
   if (! *input)
     error("ProjData::read_from_file: error opening file %s", actual_filename.c_str());
 
-  const int max_length=300;
-  char signature[max_length];
-  input->read(signature, max_length);
-  signature[max_length-1]='\0';
+  const FileSignature file_signature(actual_filename);
+  const char * signature = file_signature.get_signature();
 
   // GE Advance
   if (strncmp(signature, "2D3D", 4) == 0)
