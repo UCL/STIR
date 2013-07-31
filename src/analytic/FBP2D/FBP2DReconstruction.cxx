@@ -1,9 +1,7 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012-01-09, Hammersmith Imanet Ltd
+    Copyright (C) 2013 University College London
 
     This file is part of STIR.
 
@@ -51,6 +49,10 @@
 #ifdef STIR_OPENMP
 #include <omp.h>
 #endif
+
+using std::cerr;
+using std::endl;
+
 START_NAMESPACE_STIR
 
 
@@ -327,7 +329,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 #endif
 
 #ifdef STIR_OPENMP
-#pragma omp parallel for
+#pragma omp parallel for shared(empty_density_ptr)
 #endif
   for (int view_num=proj_data_ptr->get_min_view_num(); view_num <= proj_data_ptr->get_max_view_num(); ++view_num) 
   {         
@@ -342,8 +344,14 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     if (!symmetries_sptr->is_basic(vs_num))
       continue;
 
-    RelatedViewgrams<float> viewgrams = 
-      proj_data_ptr->get_related_viewgrams(vs_num, symmetries_sptr);   
+    RelatedViewgrams<float> viewgrams;
+#ifdef STIR_OPENMP
+#pragma omp critical(FBP2D_get_viewgrams)
+#endif
+    {
+      viewgrams =
+	proj_data_ptr->get_related_viewgrams(vs_num, symmetries_sptr);   
+    }
 
     if (do_arc_correction)
       viewgrams =
@@ -371,7 +379,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   shared_ptr<DiscretisedDensity<3,float> > omp_density_ptr(empty_density_ptr->clone());
            
     back_projector_sptr->back_project(*omp_density_ptr, viewgrams);
-    #pragma omp critical
+#pragma omp critical(FBP2D_REDUCTION)
     {	//reduction
       
       DiscretisedDensity<3,float>::full_iterator density_iter = density_ptr->begin_all();
