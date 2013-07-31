@@ -1,11 +1,9 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2010-07-21, Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -32,9 +30,6 @@
   \author Kris Thielemans
   \author Claire Labbe
   \author PARAPET project
-
-  $Date$
-  $Revision$
 */
 
 #include "stir/Scanner.h"
@@ -185,7 +180,7 @@ Scanner::Scanner(Type scanner_type)
 
   case E1080:
     // data added by Robert Barnett, Westmead Hospital, Sydney
-    set_params(E1080, string_list("ECAT 1080", "Biograph 16"),
+    set_params(E1080, string_list("ECAT 1080", "Biograph 16", "1080"),
                41, 336, 2* 336,
                412.0F, 7.0F, 4.0F, 2.000F, 0.0F,
                1, 2, 41, 14, 41, 14, 1);
@@ -193,6 +188,16 @@ Scanner::Scanner(Type scanner_type)
     // 14th crystal where the counts are zero.
     // There are 39 rings with 13 axial crystals per block. Two virtual
     // rings are added, but contain counts after applying axial compression.
+    break;
+
+  case Siemens_mMR:
+    // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
+    // Transaxial blocks have 8 physical crystals and a gap at the  
+    // 9th crystal where the counts are zero.
+    set_params(Siemens_mMR, string_list("Siemens mMR", "mMR", "2008"),
+               64, 344, 2* 252,
+               328.0F, 7.0F, 4.0625F, 2.0445F, 0.0F,
+               4, 1, 8, 9, 8, 9, 1 ); // TODO bucket/singles info incorrect
     break;
 
   case RPT:
