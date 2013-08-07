@@ -61,9 +61,11 @@ for Visual Studio are no longer distributed.
 
 <h3>Known problems</h3>
 <ul>
-<li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
 <li>On Windows, using shared libraries fails. We need to sort out dependencies between libraries to fix this.</li>
+<li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
 <li>The recon_test_pack routines fail with the MPI version. A work-around is to prefix the reconstruction executables with <tt>mpirun -np 4</tt> or so).</li>
+<li>The MPI version of OSMAPOSL and OSSPS cannot compute the value of the objective function. Therefore, setting the
+<tt>report objective function values interval</tt> keyword to 1 will cause a crash.</li>
 <li>ECAT6 is no longer supported</li>
 <li>The interpolating back-projector still gives problems in the centre of the images
 on some architectures/compiler/optimisation settings. We recommend to use the ray-tracing
@@ -81,19 +83,19 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 <ul>
 <li>fixed possible race-condition in OPENMP version of FBP2D (but it's still too slow to be practical)</li>
 <li>list_lm_events: reset output-format to decimal after printing a gating event (previously all
-  remaining output was in hex)</li>
+  remaining output was in hex); also added newline after printing an unknown event.</li>
 <li>fix a (nearly irrelevant) bug in reading a file signature that lead to uninitialised memory being 
   returned if the file size was shorter than 1024 bytes (but that doesn't really happen for normal files).</li>
 <li>A few error messages in ECAT IO would actually crash as opposed to writing a decent message.</li>
 <li>A few changes to the CMakeLists.txt files for cmake clarifying dependencies
 between libraries. This makes shared libraries better suppported, but there are still circular dependencies. This doesn't seem to create trouble on most systems,
 but makes shared libraries fail on some (e.g. msys on windows).</li>
-<li><tt>list_lm_events</tt>: added newline after printing an unknown event
 </li>
 </ul>
 
 <h3>Documentation changes</h3>
 <ul>
+<li>Added documentation on new features, more on using CMake, etc</li> 
 <li>The Wiki expands more and more, so use it in addition to the provided PDFs.
 </li>
  </ul>
