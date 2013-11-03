@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include <boost/math/special_functions/fpclassify.hpp>
+#include "stir/error.h"
+#include <boost/format.hpp>
 
 using namespace std;
 //using std::string;
@@ -23,6 +25,8 @@ using namespace std;
 #include "stir/recon_buildblock/SPECTUB_Tools.h"
 #include "stir/recon_buildblock/SPECTUB_Weight3d.h"
 
+
+namespace SPECTUB {
 
 #define NUMARG 29  
 
@@ -900,29 +904,54 @@ void free_wm_da( wm_da_type *f )
 
 void error_wmtools_SPECT( int nerr, string txt )
 {
-	switch(nerr){
-		case 11: printf("\n\nError wm_SPECT: number of variable rotation radius in file: %s different from number of angles\n",txt.c_str());break;
-		case 12: printf("\n\nError wm_SPECT: first parameter in collimator file should be 'p' or 'f' to indicate parallel or fanbeam collimator\n");break;
-		case 13: printf("\n\nError wm_SPECT: not enough parameters in collimator file: %s \n",txt.c_str());break;
-		case 21: printf("\n\nError wmtools_SPECT: undefined collimator. Collimator %s not found\n",txt.c_str()); break;
-		case 30: printf("\n\nError wmtools_SPECT: can not open %s for reading\n",txt.c_str()); break;
-		case 31: printf("\n\nError wmtools_SPECT: can not open %s for writing\n",txt.c_str()); break;
-		case 46: printf( "\n\nError weight3d: there are voxels near or further than de FOCAL lenght\n"); break;
-		case 50: printf("\n\nError wmtools_SPECT: No header stored in %s \n",txt.c_str()); break;
+#if 0
+  switch(nerr){
+  case 11: printf("\n\nError wm_SPECT: number of variable rotation radius in file: %s different from number of angles\n",txt.c_str());break;
+  case 12: printf("\n\nError wm_SPECT: first parameter in collimator file should be 'p' or 'f' to indicate parallel or fanbeam collimator\n");break;
+  case 13: printf("\n\nError wm_SPECT: not enough parameters in collimator file: %s \n",txt.c_str());break;
+  case 21: printf("\n\nError wmtools_SPECT: undefined collimator. Collimator %s not found\n",txt.c_str()); break;
+  case 30: printf("\n\nError wmtools_SPECT: can not open %s for reading\n",txt.c_str()); break;
+  case 31: printf("\n\nError wmtools_SPECT: can not open %s for writing\n",txt.c_str()); break;
+  case 46: printf( "\n\nError weight3d: there are voxels near or further than de FOCAL lenght\n"); break;
+  case 50: printf("\n\nError wmtools_SPECT: No header stored in %s \n",txt.c_str()); break;
 			
-		//... error: value of argv[]..........................
+    //... error: value of argv[]..........................
 		
-		case 114: printf("\n\nError wm_SPECT: file with variable rotation radius: %s not found\n",txt.c_str());break;
-		case 122: printf("\n\nError wm_SPECT: file with variable collimator parameters: %s not found\n",txt.c_str());break;
-		case 124: printf("\n\nError wm_SPECT: can not open attenuation map-> argv[24]: %s for reading\n",txt.c_str()); break;
-		case 126: printf("\n\nError wm_SPECT: can not open file mask-> argv[26]: %s for reading\n",txt.c_str()); break;
+  case 114: printf("\n\nError wm_SPECT: file with variable rotation radius: %s not found\n",txt.c_str());break;
+  case 122: printf("\n\nError wm_SPECT: file with variable collimator parameters: %s not found\n",txt.c_str());break;
+  case 124: printf("\n\nError wm_SPECT: can not open attenuation map-> argv[24]: %s for reading\n",txt.c_str()); break;
+  case 126: printf("\n\nError wm_SPECT: can not open file mask-> argv[26]: %s for reading\n",txt.c_str()); break;
 			
-		default: printf("\n\nError wmtools_SPECT: unknown error number on error_wmtools_SPECT()"); 
-	}
+  default: printf("\n\nError wmtools_SPECT: unknown error number on error_wmtools_SPECT()"); 
+  }
 	
-	exit(0);
+  exit(0);
+#else
+  using stir::error;
+  switch(nerr){
+  case 11: printf("\n\nError wm_SPECT: number of variable rotation radius in file: %s different from number of angles\n",txt.c_str());break;
+  case 12: error("\n\nError wm_SPECT: first parameter in collimator file should be 'p' or 'f' to indicate parallel or fanbeam collimator\n");break;
+  case 13: printf("\n\nError wm_SPECT: not enough parameters in collimator file: %s \n",txt.c_str());break;
+  case 21: printf("\n\nError wmtools_SPECT: undefined collimator. Collimator %s not found\n",txt.c_str()); break;
+  case 30: printf("\n\nError wmtools_SPECT: can not open %s for reading\n",txt.c_str()); break;
+  case 31: printf("\n\nError wmtools_SPECT: can not open %s for writing\n",txt.c_str()); break;
+  case 46: error( "\n\nError weight3d: there are voxels near or further than de FOCAL lenght\n"); break;
+  case 50: printf("\n\nError wmtools_SPECT: No header stored in %s \n",txt.c_str()); break;
+			
+    //... error: value of argv[]..........................
+		
+  case 114: printf("\n\nError wm_SPECT: file with variable rotation radius: %s not found\n",txt.c_str());break;
+  case 122: printf("\n\nError wm_SPECT: file with variable collimator parameters: %s not found\n",txt.c_str());break;
+  case 124: printf("\n\nError wm_SPECT: can not open attenuation map-> argv[24]: %s for reading\n",txt.c_str()); break;
+  case 126: printf("\n\nError wm_SPECT: can not open file mask-> argv[26]: %s for reading\n",txt.c_str()); break;
+			
+  default: error("\n\nError wmtools_SPECT: unknown error number on error_wmtools_SPECT()"); 
+  }
+	
+#endif
 }    
 
+#if 0
 void error_wm_SPECT( int nerr, string txt)
 {
 	string opcions[]={
@@ -1020,3 +1049,6 @@ void error_wm_SPECT( int nerr, string txt)
 	
 	exit(0);
 }
+#endif
+
+} // namespace SPECTUB

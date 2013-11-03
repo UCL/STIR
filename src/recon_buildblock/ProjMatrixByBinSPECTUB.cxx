@@ -39,9 +39,13 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Coordinate3D.h"
+#include "stir/info.h"
+#include "stir/CPUTimer.h"
+
 //#include "boost/cstdint.hpp"
 //#include "boost/scoped_ptr.hpp"
 #include <boost/math/special_functions/fpclassify.hpp>
+#include <boost/format.hpp>
 
 #include <fstream>
 #include <algorithm>
@@ -52,19 +56,20 @@
 #include <stdlib.h>
 #include <math.h>
 #include <ctype.h>
-#include <time.h>
+//#include <time.h>
 
 using namespace std;
-using std::string;
 
 //... user defined libraries .............................................................
 
 #include "stir/recon_buildblock/SPECTUB_Weight3d.h"
 
 /* UB-SPECT global variables */
-wm_da_type wm;
-wmh_type wmh; 
-float * Rrad;
+namespace SPECTUB {
+  wm_da_type wm;
+  wmh_type wmh; 
+  float * Rrad;
+}
 
 START_NAMESPACE_STIR
 
@@ -143,6 +148,8 @@ set_up(
     const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     )
 {
+  using namespace SPECTUB;
+
    const VoxelsOnCartesianGrid<float> * image_info_ptr =
       dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
 
@@ -277,7 +284,11 @@ set_up(
 				wmh.do_psf_3d = false;
 				cout << "2D PSF Correction. Parallel geometry" << endl;
 			}
-			else error_wm_SPECT( 120, psf_type );
+			else 
+                          {
+                            //error_wm_SPECT( 120, psf_type );
+                            error("PSF type has to be 2D, 3D or Geometrical");
+                          }
 		}
 	}
 	
@@ -312,12 +323,16 @@ set_up(
 		if ( attenuation_type == "Simple" ) wmh.do_full_att = false;
 		else {
 			if (attenuation_type == "Full" ) wmh.do_full_att = true;
-			else error_wm_SPECT( 123, attenuation_type );
+			else 
+                          {
+                            //error_wm_SPECT( 123, attenuation_type );
+                            error("attenuation_type has to be Simple or Full");
+                          }
 		}
 		
 	    wmh.att_fn = attenuation_map;
 
-		cout << "Attenuation filename = " << wmh.att_fn << endl;
+            cout << "Attenuation filename = " << wmh.att_fn << endl;
 	}
 	
 	//... masking parameters.............................		
@@ -338,7 +353,11 @@ set_up(
 					
 					cout << "MASK filename = " << wmh.msk_fn << endl;
 				}
-				else error_wm_SPECT( 125, mask_type);
+				else 
+                                {
+                                  // error_wm_SPECT( 125, mask_type);
+                                  error("mask_type has to be Cylinder, Attenuation Map or Explicit Mask");
+                                }
 			}
 		}
 	}
@@ -425,27 +444,28 @@ set_up(
 
 	//... to generate mask..........................................................
 
-	if ( wmh.do_msk ){
-		msk_3d = new bool [ vol.Nvox ];
-		msk_2d = new bool [ vol.Npix ];
-		if (!wmh.do_msk_att && wmh.do_msk_file)
-		{
-			shared_ptr<DiscretisedDensity<3,float> > mask_sptr(
-				read_from_file<DiscretisedDensity<3,float> >(wmh.msk_fn));
-			if (!density_info_ptr->has_same_characteristics(*mask_sptr))
-				error("Currently the mask image and emission image must have the same dimension, orientation and voxel size");
-			float * mask_from_file = new float [ vol.Nvox ];
-			std::copy(mask_sptr->begin_all(), mask_sptr->end_all(),mask_from_file);
-		    wmh.do_msk_file = false;
+	if ( wmh.do_msk )
+          {
+            msk_3d = new bool [ vol.Nvox ];
+            msk_2d = new bool [ vol.Npix ];
+            if (!wmh.do_msk_att && wmh.do_msk_file)
+              {
+                shared_ptr<DiscretisedDensity<3,float> > mask_sptr(
+                                                                   read_from_file<DiscretisedDensity<3,float> >(wmh.msk_fn));
+                if (!density_info_ptr->has_same_characteristics(*mask_sptr))
+                  error("Currently the mask image and emission image must have the same dimension, orientation and voxel size");
+                float * mask_from_file = new float [ vol.Nvox ];
+                std::copy(mask_sptr->begin_all(), mask_sptr->end_all(),mask_from_file);
+                wmh.do_msk_file = false;
 	        wmh.do_msk_att = true;
-		    generate_msk( msk_3d, msk_2d, mask_from_file, &vol);
-			delete[] mask_from_file;
-		}
-		else
-		{
+                generate_msk( msk_3d, msk_2d, mask_from_file, &vol);
+                delete[] mask_from_file;
+              }
+            else
+              {
 		generate_msk( msk_3d, msk_2d, attmap, &vol);
-		}
-	}
+              }
+          }
 	else msk_2d = msk_3d = NULL;
 
 	//... Initialization and memory allocation for the weight matrix ...................
@@ -463,12 +483,25 @@ set_up(
 
 	//... double array wm.val and wm.col .....................................................
 
-	if ( ( wm.val = new (nothrow) float * [ wm.NbOS ] ) == NULL ) error_wm_SPECT( 200, "wm.val[]" );
-	if ( ( wm.col = new (nothrow) int   * [ wm.NbOS ] ) == NULL ) error_wm_SPECT( 200, "wm.col[]" );
+	if ( ( wm.val = new (nothrow) float * [ wm.NbOS ] ) == NULL ) 
+          {
+            //error_wm_SPECT( 200, "wm.val[]" );
+            error("Error allocating space to store values for SPECTUB matrix");
+          }
+	if ( ( wm.col = new (nothrow) int   * [ wm.NbOS ] ) == NULL ) 
+          {
+            //error_wm_SPECT( 200, "wm.col[]" );
+            error("Error allocating space to store column indices for SPECTUB matrix");
+          }
 
 	//... array wm.ne .........................................................................
 
-	if ( ( wm.ne = new (nothrow) int [ wm.NbOS + 1 ]) == 0 ) error_wm_SPECT(200,"wm.ne[]");
+	if ( ( wm.ne = new (nothrow) int [ wm.NbOS + 1 ]) == 0 ) 
+          {
+            // error_wm_SPECT(200,"wm.ne[]");
+            error("Error allocating space to store number of elements for SPECTUB matrix");
+          }
+
 
 	//... STIR indices .......................................................................
 
@@ -517,7 +550,7 @@ set_up(
 	}   // end of LOOP: Subsets
 
 	//delete_UB_SPECT_arrays();
-	cout<<"\nINFO: done. Execution time (s): " << double( clock()-ini )/CLOCKS_PER_SEC <<endl;	
+	info(boost::format("done. Execution time %1% s ") % (double( clock()-ini )/CLOCKS_PER_SEC));
 	// wm_SPECT ends here ---------------------------------------------------------------------------------------------
 
 	this->already_setup= true;
@@ -533,144 +566,155 @@ void
 ProjMatrixByBinSPECTUB::
 delete_UB_SPECT_arrays()
 {
-	//... freeing matrix memory....................................
+  //... freeing matrix memory....................................
+  using namespace SPECTUB;
+  if ( !wmh.do_psf ){
+    for ( int i = 0 ; i < prj.Nang ; i++ ){
+      delete [] ang[ i ].vxprj.val;
+      delete [] ang[ i ].vxprj.acu ;
+    }
+  }
 
-	if ( !wmh.do_psf ){
-		for ( int i = 0 ; i < prj.Nang ; i++ ){
-			delete [] ang[ i ].vxprj.val;
-			delete [] ang[ i ].vxprj.acu ;
-		}
-	}
+  delete [] wm.val;
+  delete [] wm.col;
+  delete [] wm.ne;
 
-	delete [] wm.val;
-	delete [] wm.col;
-	delete [] wm.ne;
+  //... freeing memory .............................................
 
-	//... freeing memory .............................................
+  delete [] prj.order;
+  delete [] ang;
+  for (int kOS=0; kOS<prj.NOS; ++kOS)
+    delete [] NITEMS[kOS];
+  delete [] NITEMS;	
+  delete [] wmh.index;
+  delete [] wmh.Rrad;
 
-	delete [] prj.order;
-	delete [] ang;
-	for (int kOS=0; kOS<prj.NOS; ++kOS)
-	  delete [] NITEMS[kOS];
-	delete [] NITEMS;	
-	delete [] wmh.index;
-	delete [] wmh.Rrad;
+  if (wmh.do_psf){
+    delete [] gaussdens.val;
+    delete [] gaussdens.acu;
+  }
+  if ( wmh.do_att ) delete [] attmap;
 
-	if (wmh.do_psf){
-		delete [] gaussdens.val;
-		delete [] gaussdens.acu;
-	}
-	if ( wmh.do_att ) delete [] attmap;
+  if ( wmh.do_msk ){
+    delete [] msk_3d;
+    delete [] msk_2d;
+  }
 
-	if ( wmh.do_msk ){
-		delete [] msk_3d;
-		delete [] msk_2d;
-	}
-
-	if ( wm.do_save_STIR ){
-		delete [] wm.ns;
-		delete [] wm.nb;
-		delete [] wm.na;
-		delete [] wm.nx;
-		delete [] wm.ny;
-		delete [] wm.nz;
-	}
+  if ( wm.do_save_STIR ){
+    delete [] wm.ns;
+    delete [] wm.nb;
+    delete [] wm.na;
+    delete [] wm.nx;
+    delete [] wm.ny;
+    delete [] wm.nz;
+  }
 
 }
 void
 ProjMatrixByBinSPECTUB::
 compute_one_subset(const int kOS) const
 {
-	double ini = clock();
-		cout << "\n\n--- Processing subset: " << kOS+1 << "/" << prj.NOS << " ----------------------------------------\n" << endl;
+  using namespace SPECTUB;
 
-		//... to fill wmh fields related to the subset ..................................
+  CPUTimer timer;
+  timer.start();
+  // cout << "\n\n--- Processing subset: " << kOS+1 << "/" << prj.NOS << " ----------------------------------------\n" << endl;
 
-		wmh.subset_ind = kOS;
+  //... to fill wmh fields related to the subset ..................................
 
-		for ( int i = 0 ; i < prj.NangOS ; i ++ ){
+  wmh.subset_ind = kOS;
 
-			wmh.index[ i ] = prj.order[ i + kOS * prj.NangOS ];
-			wmh.Rrad [ i ] = Rrad[ wmh.index[ i ] ];
-		}
+  for ( int i = 0 ; i < prj.NangOS ; i ++ ){
 
-		//... NITEMS initialization  ......................
+    wmh.index[ i ] = prj.order[ i + kOS * prj.NangOS ];
+    wmh.Rrad [ i ] = Rrad[ wmh.index[ i ] ];
+  }
 
-		// for ( int i = 0 ; i < prj.NbOS ; i++ ) NITEMS[ i ] = 1;
+  //... NITEMS initialization  ......................
+
+  // for ( int i = 0 ; i < prj.NbOS ; i++ ) NITEMS[ i ] = 1;
 
 
-		//... size esmitations ........................................................
+  //... size esmitations ........................................................
 
-		//wm_size_estimation ( kOS,  ang, vox, bin, vol, prj, msk_3d, msk_2d, maxszb, &gaussdens, NITEMS );
+  //wm_size_estimation ( kOS,  ang, vox, bin, vol, prj, msk_3d, msk_2d, maxszb, &gaussdens, NITEMS );
 
-		//cout << "\nwm_SPECT. Size estimation done. time (s): " << double( clock()-ini )/CLOCKS_PER_SEC <<endl;
+  //cout << "\nwm_SPECT. Size estimation done. time (s): " << double( clock()-ini )/CLOCKS_PER_SEC <<endl;
 
-		int ne = 0;
+  int ne = 0;
 
-		for ( int i = 0 ; i < wmh.prj.NbOS ; i++ ) ne += NITEMS[kOS][ i ];
+  for ( int i = 0 ; i < wmh.prj.NbOS ; i++ ) ne += NITEMS[kOS][ i ];
 
-		//... size information ....................................................................
+  //... size information ....................................................................
 
-		cout << "\ntotal number of non-zero weights: " << ne << endl;
+  cout << "\ntotal number of non-zero weights: " << ne << endl;
 
-		if ( wm.do_save_STIR ) cout << "estimated matrix size: " << (ne + 10* prj.NbOS)/104857.6  << " Mb\n" << endl;
-		else cout << "estimated matrix size: " << ne/131072 << " Mb\n" << endl;
+  if ( wm.do_save_STIR ) cout << "estimated matrix size: " << (ne + 10* prj.NbOS)/104857.6  << " Mb\n" << endl;
+  else cout << "estimated matrix size: " << ne/131072 << " Mb\n" << endl;
 
-		//... memory allocation for wm float arrays ...................................
+  //... memory allocation for wm float arrays ...................................
 
-		for( int i = 0 ; i < wmh.prj.NbOS ; i++ ){
+  for( int i = 0 ; i < wmh.prj.NbOS ; i++ ){
 
-			if ( ( wm.val[ i ] = new (nothrow) float [ NITEMS[kOS][ i ] ]) == NULL) error_wm_SPECT( 200, "wm.val[][]" );
-			if ( ( wm.col[ i ] = new (nothrow) int   [ NITEMS[kOS][ i ] ]) == NULL) error_wm_SPECT( 200, "wm.col[][]" );
-		}
+    if ( ( wm.val[ i ] = new (nothrow) float [ NITEMS[kOS][ i ] ]) == NULL) 
+      {
+        //error_wm_SPECT( 200, "wm.val[][]" );
+        error("Error allocating space to store values for SPECTUB matrix");
+      }
 
-		//... to initialize wm to zero ......................
+    if ( ( wm.col[ i ] = new (nothrow) int   [ NITEMS[kOS][ i ] ]) == NULL) 
+      {
+        //error_wm_SPECT( 200, "wm.col[]" );
+        error("Error allocating space to store column indices for SPECTUB matrix");
+      }
+  }
 
-		for ( int i = 0 ; i < wm.NbOS ; i++ ){
+  //... to initialize wm to zero ......................
 
-			wm.ne[ i ] = 0;
+  for ( int i = 0 ; i < wm.NbOS ; i++ ){
 
-			for( int j = 0 ; j < NITEMS[kOS][ i ] ; j++ ){
+    wm.ne[ i ] = 0;
 
-				wm.val[ i ][ j ] = (float)0.;
-				wm.col[ i ][ j ] = 0;
-			}
-		}
-		wm.ne[ wm.NbOS ] = 0;
+    for( int j = 0 ; j < NITEMS[kOS][ i ] ; j++ ){
 
-		//... wm calculation for this subset ...........................
+      wm.val[ i ][ j ] = (float)0.;
+      wm.col[ i ][ j ] = 0;
+    }
+  }
+  wm.ne[ wm.NbOS ] = 0;
 
-		wm_calculation ( kOS, ang, vox, bin, vol, prj, attmap, msk_3d, msk_2d, maxszb, &gaussdens, NITEMS[kOS] );
-		cout << "\n INFO: Weight matrix calculation done. time (s): " << double( clock()-ini )/CLOCKS_PER_SEC <<endl;
+  //... wm calculation for this subset ...........................
 
-		//... fill lor .........................
+  wm_calculation ( kOS, ang, vox, bin, vol, prj, attmap, msk_3d, msk_2d, maxszb, &gaussdens, NITEMS[kOS] );
+  info(boost::format("Weight matrix calculation done. time %1% (s)") % timer.value());
 
-		for( int j = 0 ; j < wm.NbOS ; j++ ){
-			ProjMatrixElemsForOneBin lor;
-			Bin bin;
-			bin.segment_num()=0;	
-			bin.view_num()=wm.na [ j ];	
-			bin.axial_pos_num()=wm.ns [ j ];	
-			bin.tangential_pos_num()=wm.nb [ j ];	
-			bin.set_bin_value(0);
-			lor.set_bin(bin);
+  //... fill lor .........................
 
-			lor.reserve(wm.ne[ j ]);
-			for ( int i = 0 ; i < wm.ne[ j ] ; i++ ){
+  for( int j = 0 ; j < wm.NbOS ; j++ ){
+    ProjMatrixElemsForOneBin lor;
+    Bin bin;
+    bin.segment_num()=0;	
+    bin.view_num()=wm.na [ j ];	
+    bin.axial_pos_num()=wm.ns [ j ];	
+    bin.tangential_pos_num()=wm.nb [ j ];	
+    bin.set_bin_value(0);
+    lor.set_bin(bin);
 
-				const ProjMatrixElemsForOneBin::value_type 
-					elem(Coordinate3D<int>(wm.nz[ wm.col[ j ][ i ] ],wm.ny[ wm.col[ j ][ i ] ],wm.nx[ wm.col[ j ][ i ] ]), wm.val[ j ][ i ]);      
-				lor.push_back( elem);	
-			}
+    lor.reserve(wm.ne[ j ]);
+    for ( int i = 0 ; i < wm.ne[ j ] ; i++ ){
 
-			delete [] wm.val[ j ];
-			delete [] wm.col[ j ];
+      const ProjMatrixElemsForOneBin::value_type 
+        elem(Coordinate3D<int>(wm.nz[ wm.col[ j ][ i ] ],wm.ny[ wm.col[ j ][ i ] ],wm.nx[ wm.col[ j ][ i ] ]), wm.val[ j ][ i ]);      
+      lor.push_back( elem);	
+    }
 
-			this->cache_proj_matrix_elems_for_one_bin(lor);
-		}
+    delete [] wm.val[ j ];
+    delete [] wm.col[ j ];
 
-		cout << "\n INFO: Information transfered to ProjMatrixElemsForOneBin. time (s): " << double( clock()-ini )/CLOCKS_PER_SEC <<endl;
-		//... freeing wm.val and wm.col ...................................
+    this->cache_proj_matrix_elems_for_one_bin(lor);
+  }
+
+  info(boost::format("Total time after transfering to ProjMatrixElemsForOneBin. time %1% (s)") % timer.value());
 
 }
 void 
@@ -696,6 +740,7 @@ calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor
 	  this->clear_cache();
 	  subset_already_processed.assign(prj.NOS,false);
 	}
+      info(boost::format("Computing matrix elements for view %1%") % view_num);
       compute_one_subset(kOS);
       subset_already_processed[kOS]=true;
     }

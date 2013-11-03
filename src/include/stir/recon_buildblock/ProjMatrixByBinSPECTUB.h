@@ -37,9 +37,6 @@
 
 
 #include "stir/recon_buildblock/SPECTUB_Tools.h"
-#ifdef abs
-   #undef abs // TODO modify WMTools.h
-#endif
 
 START_NAMESPACE_STIR
 
@@ -49,8 +46,46 @@ class Bin;
   \ingroup projection
   \brief generates projection matrix for SPECT studies
 
+  This functionality is described in
+  Berta Marti Fuster, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Pablo Aguiar, Albert Cot, Domenec Ros and Kris Thielemans,
+  <i>Integration of advanced 3D SPECT modeling into the open-source STIR framework</i>,
+  Med. Phys. 40, 092502 (2013); http://dx.doi.org/10.1118/1.4816676
 
-  \todo this class currently only works with VoxelsOnCartesianGrid. 
+  \warning this class currently only works with VoxelsOnCartesianGrid. 
+
+  \par Sample parameter file
+
+\verbatim
+  Projection Matrix By Bin SPECT UB Parameters:=				
+    ; elements below this weight will be truncate
+    minimum weight:= 0.001
+    ; width of PSF
+    maximum number of sigmas:= 2.0
+    ; resolution used to computed Gaussian (leave as-is)
+    spatial resolution PSF:= 0.00001
+
+    ;PSF type of correction { 2D // 3D // Geometrical }
+    psf type:= 2D
+    ; next 2 parameters define the PSF. They are ignored if psf_type is "Geometrical"
+    ; the PSF is modelled as a Gaussian with sigma dependent on the distance from the collimator
+    ; sigma_at_depth = collimator_slope * depth_in_cm + collimator sigma 0(cm)
+    collimator slope := 0.0163
+    collimator sigma 0(cm) := 0.1466
+
+    ;Attenuation correction { Simple // Full // No }
+    attenuation type := Simple	
+    ;Values in attenuation map in cm-1			
+    attenuation map := attMapRec.hv
+
+    ;Mask properties { Cylinder // Attenuation Map // Explicit Mask // No}
+    mask type := Explicit Mask
+    mask file := mask.hv
+
+    ; if next variable is set to 0, only a single view is kept in memory
+   keep all views in cache:=1
+
+End Projection Matrix By Bin SPECT UB Parameters:=
+\endverbatim
 */
 
 class ProjMatrixByBinSPECTUB : 
@@ -78,6 +113,7 @@ class ProjMatrixByBinSPECTUB :
 
  private:
 
+  // parameters that will be parsed
  
   float minimum_weight;
   float maximum_number_of_sigmas;
@@ -89,8 +125,8 @@ class ProjMatrixByBinSPECTUB :
   string attenuation_map;
   string mask_type;
   string mask_file;
+  bool keep_all_views_in_cache; //!< if set to false, only a single view is kept in memory
 
-  // TODO this only works as long as we only have VoxelsOnCartesianGrid
   // explicitly list necessary members for image details (should use an Info object instead)
   CartesianCoordinate3D<float> voxel_size;
   CartesianCoordinate3D<float> origin;  
@@ -110,28 +146,28 @@ class ProjMatrixByBinSPECTUB :
   virtual bool post_processing();
 
   // wm_SPECT starts here ---------------------------------------------------------------------------------------------
-  bool *msk_3d, *msk_2d; // voxels to be included in matrix (no weight calculated outside the mask) and its 2d collapse
+  bool *msk_3d; //!< voxels to be included in matrix (no weight calculated outside the mask) 
+  bool *msk_2d; //!< 2d collapse of msk_3d.
 
   //... variables for estimated sizes of arrays to allocate ................................
-  int **NITEMS;           // number of non-zero elements for each weight matrix row
+  int **NITEMS;           //!< number of non-zero elements for each weight matrix row
 
-  //... user defined structures (defined in wm_SPECT.h) .....................................
+  //... user defined structures (types defined in SPECTUB_Tools.h) .....................................
 
-  volume_type vol;       // structure with volume (image) information
-  proj_type prj;         // structure with projection information
+  SPECTUB::volume_type vol;       //!< structure with volume (image) information
+  SPECTUB::proj_type prj;         //!< structure with projection information
 
-  voxel_type vox;        // structure with voxel information
-  bin_type bin;          // structure with bin information
+  SPECTUB::voxel_type vox;        //!< structure with voxel information
+  SPECTUB::bin_type bin;          //!< structure with bin information
 
-  angle_type * ang;      // structure with angle indices, values, ratios and voxel projections
-  float *attmap;         // attenuation map
+  SPECTUB::angle_type * ang;      //!< structure with angle indices, values, ratios and voxel projections
+  float *attmap;         //!< attenuation map (copied as float array)
 
-  bool keep_all_views_in_cache;
-	
-  discrf_type gaussdens; // strucutre with gaussian density function 
+  SPECTUB::discrf_type gaussdens; //!< structure with gaussian density function 
 
   int maxszb;
 
+	
   void compute_one_subset(const int kOS) const;
   void delete_UB_SPECT_arrays();
   mutable std::vector<bool> subset_already_processed;

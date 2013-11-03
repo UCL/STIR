@@ -19,7 +19,10 @@
 
 #include "stir/recon_buildblock/SPECTUB_Tools.h"
 #include "stir/recon_buildblock/SPECTUB_Weight3d.h"
+#include "stir/error.h"
+#include <boost/format.hpp>
 
+namespace SPECTUB {
 
 #define EPSILON 1e-12
 #define EOS '\0'
@@ -122,7 +125,7 @@ void wm_calculation( const int kOS,
 	
 	for ( vox.irow = 0 ; vox.irow < vol.Nrow ; vox.irow++ ){
 		
-		cout << "weights: " << 100.*(vox.irow+1)/vol.Nrow << "%" << endl;
+                //cout << "weights: " << 100.*(vox.irow+1)/vol.Nrow << "%" << endl;
 		
 		vox.y = vol.y0 + vox.irow * vol.szcm ;       // y coordinate of the voxel (index 0->Nrow-1: irow)
 		
@@ -900,6 +903,7 @@ float calc_att( const attpth_type *const attpth, const float *const attmap , int
 
 void error_weight3d ( int nerr, const string& text )
 {
+#if 0
 	switch(nerr){
 		case 13: printf( "\n\nError weight3d: wm.NbOS and/or wm.Nvox are negative"); break;
 		case 21: printf( "\n\nError weight3d: undefined collimator. Collimator %s not found\n",text.c_str() ); break;
@@ -914,7 +918,25 @@ void error_weight3d ( int nerr, const string& text )
 	}
 	
 	exit(0);
+#else
+        using stir::error;
+	switch(nerr){
+		case 13: error( "\n\nError weight3d: wm.NbOS and/or wm.Nvox are negative"); break;
+		case 21: printf( "\n\nError weight3d: undefined collimator. Collimator %s not found\n",text.c_str() ); break;
+		case 30: printf( "\n\nError weight3d: can not open \n%s for reading\n", text.c_str() ); break;
+		case 31: printf( "\n\nError weight3d: can not open \n%s for writing\n", text.c_str() ); break;
+		case 40: error( "\n\nError weight3d: wrong codification in comp_dist function");break;
+		case 45: error( "\n\nError weight3d: Realloc needed for WM\n"); break;
+		case 47: error( "\n\nError weight3d: psf length greater than maxszb in calc_psf_bin\n"); break;
+		case 49: error( "\n\nError weight3d: attpth larger than allocated\n"); break;
+		case 50: printf( "\n\nError weight3d: No header stored in %s \n",text.c_str() ); break;
+		default: error( "\n\nError weight3d: unknown error number on error_weight3d()"); 
+	}
+	
+	exit(0);
+#endif
 }    
 
 
 
+} // namespace SPECTUB
