@@ -167,6 +167,9 @@ InterfileHeader::InterfileHeader()
     KeyArgument::NONE,	&KeyParser::do_nothing);
   add_key("PET STUDY (Image data)", 
     KeyArgument::NONE,	&KeyParser::do_nothing);
+  add_key("SPECT STUDY (General)" , 
+    KeyArgument::NONE,	&KeyParser::do_nothing);  
+
   // TODO
   add_key("process status", 
     KeyArgument::NONE,	&KeyParser::do_nothing);
@@ -227,8 +230,8 @@ bool InterfileHeader::post_processing()
   file_byte_order = byte_order_index==0 ? 
     ByteOrder::little_endian : ByteOrder::big_endian;
   
-  if(type_of_data_values[type_of_data_index] != "PET")
-    warning("Interfile Warning: only 'type of data := PET' supported.\n");
+  if(type_of_data_values[type_of_data_index] != "PET" && type_of_data_values[type_of_data_index] != "Tomographic")
+    warning("Interfile Warning: only 'type of data := PET or Tomographic' supported.");
 
   // KT 07/10/2002 more extensive error checking for matrix_size keyword
   if (matrix_size.size()==0)
@@ -495,14 +498,23 @@ void InterfilePDFSHeader::resize_segments_and_set()
 
 int InterfilePDFSHeader::find_storage_order()
 {
-  
+
+  /*	if(type_of_data_values[type_of_data_index] != "PET")
+	{
+		
+	warning("Interfile error: expecting PET study ");
+	stop_parsing();
+	return true; 
+
+	}
+*/
   if (num_dimensions != 4)
   { 
     warning("Interfile error: expecting 4D structure "); 
     stop_parsing();
     return true; 
   }
-  
+
   if (matrix_labels[0] != "tangential coordinate")
   { 
     // use error message with index [1] as that is what the user sees.

@@ -1,8 +1,7 @@
 #
-# $Id$
-#
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
-# Copyright 2011-07-01 - $Date$ Kris Thielemans
+# Copyright 2011-07-01 - 2012, Kris Thielemans
+# Copyright (C) 2013, University College London
 
 # This file is part of STIR.
 #
@@ -27,13 +26,23 @@ set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 set(${dir_LIB_SOURCES}
   OutputFileFormat 
   OutputFileFormat_default 
-  InterfileOutputFileFormat 
-  interfile InterfileHeader 
+  InterfileOutputFileFormat
+  interfile InterfileHeader InterfilePDFSHeaderSPECT
   InputFileFormatRegistry 
   InterfileDynamicDiscretisedDensityOutputFileFormat 
   InterfileParametricDensityOutputFileFormat
   GIPL_ImageFormat
 ) 
+
+#### we can use IO from the itk library from http://www.itk.org/
+find_package(ITK QUIET)
+if (ITK_FOUND)
+  include(${ITK_USE_FILE})
+  list(APPEND ${dir_LIB_SOURCES}
+    ITKOutputFileFormat
+    ITKImageInputFileFormat  
+ )
+endif()
 
 if (LLN_FOUND)
  list(APPEND ${dir_LIB_SOURCES}
@@ -65,3 +74,8 @@ endif()
 
 # currently needed for ParametricDensity (TODO get rid of this somehow?)
 target_link_libraries(IO modelling_buildblock )
+
+#Linking to the libraries that we will need from ITK
+if (ITK_FOUND) 
+  target_link_libraries(IO ITKCommon ${ITK_LIBRARIES})
+endif()

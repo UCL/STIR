@@ -1,6 +1,23 @@
-//
-// $Id$
-//
+/*
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000-2003, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
+    Copyright (C) 2013, Institute for Bioengineering of Catalonia
+
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
 
   \file
@@ -10,15 +27,8 @@
 
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Berta Marti Fuster
   \author PARAPET project
-
-  $Date$
-  $Revision$
-*/
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000-2003, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 // for sqrt
@@ -26,6 +36,7 @@
 #include "stir/Bin.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
+#include <algorithm>
 
 START_NAMESPACE_STIR
 
@@ -58,7 +69,7 @@ ProjDataInfoCylindrical::get_tantheta(const Bin& bin) const
   return
     get_average_ring_difference(bin.segment_num())*
     ring_spacing/ 
-    (2*sqrt(square(ring_radius)-square(get_s(bin))));  
+	(2*sqrt(square(get_ring_radius(bin.view_num()))-square(get_s(bin))));  
 }
 
 
@@ -113,7 +124,52 @@ ProjDataInfoCylindrical::get_max_ring_difference(int segment_num) const
 
 float
 ProjDataInfoCylindrical::get_ring_radius() const
-{return ring_radius;}
+{
+  if (this->ring_radius.get_min_index()!=0 || this->ring_radius.get_max_index()!=0)
+    {
+      // check if all elements are equal
+      for (VectorWithOffset<float>::const_iterator iter=this->ring_radius.begin(); iter!= this->ring_radius.end(); ++iter)
+	{
+	  if (*iter != *this->ring_radius.begin())
+	    error("get_ring_radius called for non-circular ring");
+	}
+    }
+  return *this->ring_radius.begin();
+}
+
+void
+ProjDataInfoCylindrical::set_ring_radii_for_all_views(const VectorWithOffset<float>& new_ring_radius)
+{
+  if (new_ring_radius.get_min_index() != this->get_min_view_num() ||
+      new_ring_radius.get_max_index() != this->get_max_view_num())
+    {
+      error("error set_ring_radii_for_all_views: you need to use correct range of view numbers");
+    }
+
+  this->ring_radius = new_ring_radius;
+}
+
+VectorWithOffset<float>
+ProjDataInfoCylindrical::get_ring_radii_for_all_views() const
+{
+  if (this->ring_radius.get_min_index()==0 && this->ring_radius.get_max_index()==0)
+    {
+      VectorWithOffset<float> out(this->get_min_view_num(), this->get_max_view_num());
+      out.fill(this->ring_radius[0]);
+      return out;
+    }
+  else
+    return this->ring_radius;
+}
+
+float
+ProjDataInfoCylindrical::get_ring_radius( const int view_num) const
+{
+  if (this->ring_radius.get_min_index()==0 && this->ring_radius.get_max_index()==0)
+    return ring_radius[0];
+  else
+    return ring_radius[view_num];
+}
 
 float
 ProjDataInfoCylindrical::get_ring_spacing() const

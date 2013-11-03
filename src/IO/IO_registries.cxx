@@ -25,6 +25,7 @@
   \brief File that registers all stir::RegisterObject children in IO
 
   \author Kris Thielemans
+  \author Berta Marti Fuster
   
   $Date$
   $Revision$
@@ -32,6 +33,7 @@
 
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/IO/InterfileOutputFileFormat.h"
+#include "stir/IO/ITKOutputFileFormat.h"
 #include "stir/IO/InterfileDynamicDiscretisedDensityOutputFileFormat.h"
 #include "stir/IO/InterfileParametricDensityOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
@@ -54,9 +56,17 @@
 #endif
 #endif
 
+#ifdef HAVE_ITK
+#include "stir/IO/ITKOutputFileFormat.h"
+#include "stir/IO/ITKImageInputFileFormat.h"
+#endif
+
 START_NAMESPACE_STIR
 
 static InterfileOutputFileFormat::RegisterIt dummy1;
+#ifdef HAVE_ITK
+static ITKOutputFileFormat::RegisterIt dummy15;
+#endif
 static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfIn;
 static InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfIn;
 
@@ -82,6 +92,9 @@ static RegisterInputFileFormat<ecat::ecat7::ECAT7ImageInputFileFormat> idummy2(4
 static RegisterInputFileFormat<ecat::ecat6::ECAT6ImageInputFileFormat> idummy4(100000);
 
 static RegisterInputFileFormat<ecat::ecat7::ECAT7DynamicDiscretisedDensityInputFileFormat> dynidummy(0);
+#endif
+#ifdef HAVE_ITK
+static RegisterInputFileFormat<ITKImageInputFileFormat> idummy8(8);
 #endif
 
 

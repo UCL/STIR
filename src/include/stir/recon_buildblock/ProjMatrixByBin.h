@@ -1,7 +1,3 @@
-//
-// $Id$
-//
-
 #ifndef __stir_recon_buildblock_ProjMatrixByBin_H__
 #define __stir_recon_buildblock_ProjMatrixByBin_H__
 
@@ -14,13 +10,12 @@
   \author Mustapha Sadki
   \author Kris Thielemans
   \author PARAPET project
-   
-  $Date$  
-  $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2009, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -42,8 +37,9 @@
 #include "stir/recon_buildblock/DataSymmetriesForBins.h"
 #include "stir/shared_ptr.h"
 #include "stir/TimedObject.h"
-
-#include <map>
+#include <boost/cstdint.hpp>
+//#include <map>
+#include <boost/unordered_map.hpp>
 
 #ifndef STIR_NO_NAMESPACES
 using std::map;
@@ -150,6 +146,10 @@ public:
   bool is_cache_enabled() const;
   bool does_cache_store_only_basic_bins() const;
 
+  // void reserve_num_elements_in_cache(const std::size_t);
+  //! Remove all elements from the cache
+  void clear_cache() STIR_MUTABLE_CONST;
+
   
 protected:
   shared_ptr<DataSymmetriesForBins> symmetries_ptr;
@@ -205,13 +205,11 @@ protected:
 
 private:
   
-  typedef unsigned int CacheKey;
+  //KTBMCHANGE typedef unsigned int CacheKey;
+	typedef boost::uint64_t CacheKey;
 
-#ifndef STIR_NO_NAMESPACES
-  typedef std::map<CacheKey, ProjMatrixElemsForOneBin>   MapProjMatrixElemsForOneBin;
-#else
-  typedef map<CacheKey, ProjMatrixElemsForOneBin>   MapProjMatrixElemsForOneBin;
- #endif
+	//  typedef std::map<CacheKey, ProjMatrixElemsForOneBin>   MapProjMatrixElemsForOneBin;
+  typedef boost::unordered_map<CacheKey, ProjMatrixElemsForOneBin>   MapProjMatrixElemsForOneBin;
   typedef MapProjMatrixElemsForOneBin::iterator MapProjMatrixElemsForOneBinIterator;
   typedef MapProjMatrixElemsForOneBin::const_iterator const_MapProjMatrixElemsForOneBinIterator;
  

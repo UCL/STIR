@@ -86,6 +86,8 @@ ProjMatrixByBin::cache_key(const Bin& bin) const
   else
 #endif
 {
+ //KTBMCHANGE allow more entries by going to 64-bit
+#if 0
     assert(abs(bin.segment_num()) < (1<<7));
     assert(bin.view_num() >= 0);
     assert(bin.view_num() < (1<<9));
@@ -100,7 +102,23 @@ ProjMatrixByBin::cache_key(const Bin& bin) const
         | (static_cast<unsigned int>(bin.tangential_pos_num()>=0?0:1) << 8)
         |  static_cast<unsigned int>(abs(bin.tangential_pos_num())) );    	
   }
-} 
+#else
+      assert(abs(bin.segment_num()) < (1<<7));
+    assert(bin.view_num() >= 0);
+    assert(bin.view_num() < (1<<9));
+    assert(bin.axial_pos_num() >= 0);
+    assert(static_cast<boost::uint64_t>(bin.axial_pos_num()) < (static_cast<boost::uint64_t>(1)<<38));
+    assert(abs(bin.tangential_pos_num()) < (1<<8));
+    return (CacheKey)( 
+        (static_cast<boost::uint64_t>(bin.axial_pos_num())<<26) 
+        | (static_cast<boost::uint64_t>(bin.view_num()) << 17) 
+        | (static_cast<boost::uint64_t>(bin.segment_num()>=0?0:1) << 16)
+        | (static_cast<boost::uint64_t>(abs(bin.segment_num())) << 9) 
+        | (static_cast<boost::uint64_t>(bin.tangential_pos_num()>=0?0:1) << 8)
+        |  static_cast<boost::uint64_t>(abs(bin.tangential_pos_num())) );    	
+  }
+#endif
+  } 
 
 void  
 ProjMatrixByBin::

@@ -44,7 +44,10 @@ set(${dir_LIB_SOURCES}
 	ProjMatrixByBin 
 	ProjMatrixByBinUsingRayTracing 
 	ProjMatrixByBinUsingInterpolation 
-	ProjMatrixByBinFromFile 
+	ProjMatrixByBinFromFile
+	ProjMatrixByBinSPECTUB
+	SPECTUB_Tools
+	SPECTUB_Weight3d
 	ForwardProjectorByBinUsingProjMatrixByBin 
 	BackProjectorByBinUsingProjMatrixByBin 
 	BackProjectorByBinUsingSquareProjMatrixByBin
