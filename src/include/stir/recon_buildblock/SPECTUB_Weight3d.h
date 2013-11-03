@@ -11,14 +11,31 @@
 #ifndef _WEIGHT3D_SPECTUB_H
 #define _WEIGHT3D_SPECTUB_H
 
+/*! \namespace SPECTUB
+  \brief Namespace for the SPECT library from University of Barcelona
+
+  This namespace encompasses function to construct a projection matrix suitable for SPECT.
+  The integration of this library into STIR is described in
+
+  Berta Marti Fuster, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Pablo Aguiar, Albert Cot, Domenec Ros and Kris Thielemans,
+  <i>Integration of advanced 3D SPECT modeling into the open-source STIR framework</i>,
+  Med. Phys. 40, 092502 (2013); http://dx.doi.org/10.1118/1.4816676
+
+  \todo Variables wm, wmh and Rrad are currently global variables. This means that this code would be very dangerous
+  in a parallel setting.
+*/
+
+namespace SPECTUB {
+
 /* Global variables: the matrix etc TODO 
    Need to be defined elsewhere
 
    A lot of the functions below modify these variables.
 */
-extern wm_da_type wm;
-extern wmh_type wmh; 
-extern float * Rrad;
+  extern wm_da_type wm; //! weight (or probability) matrix
+  extern wmh_type wmh;  //! information to construct wm 
+  extern float * Rrad;  //! radii per view
+
 
 void wm_calculation( const int kOS,
 					const angle_type *const ang, 
@@ -79,5 +96,7 @@ int comp_dist ( float dx, float dy, float dz, float dlast );
 
 
 void error_weight3d ( int nerr, const std::string& txt);               // error messages in weight3d_SPECT
+
+} // napespace SPECTUB
 
 #endif

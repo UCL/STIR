@@ -15,10 +15,11 @@
 
 #include <string>
 
+namespace SPECTUB {
+
 //::: srtuctures ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-//... collimator parametres structure................................
-
+//! collimator parameters structure
 typedef struct
 {
  	int num;      // number of collimator (see weight_64.cpp for options) 
@@ -41,8 +42,7 @@ typedef struct
 	
 } collim_type;
 
-//... structure for bin information..................................
-
+//! structure for bin information
 typedef struct
 {
 	int Nrow;     // number of rows
@@ -74,8 +74,7 @@ typedef struct
 } volume_type;
 
 
-//.....structure for projection information
-
+//! structure for projection information
 typedef struct
 {
 	int   Nbin;     // length of the detection line in bins (number of bins per line)
@@ -102,8 +101,7 @@ typedef struct
 	
 } proj_type;
 
-//complementary information (matrix header)
-
+//! complementary information (matrix header)
 typedef struct  
 {
 	int subset_ind;   // subset index of this matrix (-1: all subsets in a single file)
@@ -138,8 +136,7 @@ typedef struct
 	
 } wmh_type;
 
-//.......weight_mat structure definition. Structure for reading weight matrix
-
+//! weight_mat structure definition. Structure for reading weight matrix
 typedef struct  
 {
     //weight matrix dimensions
@@ -158,8 +155,7 @@ typedef struct
 
 } wm_type;
 
-//.......weight_mat_da structure definition. Structure for generating weight matrix
-
+//! weight_mat_da structure definition. Structure for generating weight matrix
 typedef struct   
 {
 	int NbOS;          // dimension 1 (rows) of the weight matrix (NbOS or NBt)
@@ -186,8 +182,7 @@ typedef struct
 		
 } wm_da_type;
 
-//.....structure for distribution function information
-
+//! structure for distribution function information
 typedef struct
 {
 	int lng;		// length (in discretization intervals) (odd number)
@@ -198,8 +193,7 @@ typedef struct
 
 } discrf_type;
 
-//.....structure for distribution function information
-
+//! structure for PSF information
 typedef struct
 {
 	int maxszb;		// maximum size in bins (for allocation purposes)
@@ -218,8 +212,7 @@ typedef struct
 	
 } psf_type;
 
-//.......structure to store angles values, indices and ratios
-
+//! structure to store angles values, indices and ratios
 typedef struct   
 {
 	int ind;           // index of angle considering the whole set of projections (sequential order: 0->Nang-1)
@@ -252,8 +245,7 @@ typedef struct
 } angle_type;
 
 
-//.....structure for voxel information
-
+//! structure for voxel information
 typedef struct
 {
 	float szcm;   // voxel size (side length in cm)
@@ -278,8 +270,7 @@ typedef struct
 	
 } voxel_type;
 
-//.....structure for bin information
-
+//! structure for bin information
 typedef struct
 {	
 	float szcm;   // bin size (cm)
@@ -296,8 +287,7 @@ typedef struct
 	
 } bin_type;
 
-//...... structure for attenuation calculus
-
+//! structure for attenuation calculus
 typedef struct
 {
 	float *dl;	// distance of attenuation path on each crossed voxel of the attenuation map 
@@ -362,7 +352,7 @@ void error_wmtools_SPECT(int nerr, std::string txt);    // error messages in wm_
 
 //int wm_SPECT( std::string inputFile);
 
-void error_wm_SPECT( int nerr, std::string txt);      //list of error messages
+// void error_wm_SPECT( int nerr, std::string txt);      //list of error messages
 
 ////void wm_inputs( std::string fileName, proj_type * prj, volume_type *vol, voxel_type *vox, bin_type *bin );
 //void wm_inputs(char **argv, 
@@ -386,5 +376,6 @@ void error_wm_SPECT( int nerr, std::string txt);      //list of error messages
 //
 //extern float * Rrad;           // variable projection radius (in acquisition order)
 
+} // namespace SPECTUB
 
 #endif //_WM_SPECT_H
