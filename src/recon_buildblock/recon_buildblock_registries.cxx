@@ -22,9 +22,6 @@
   \ingroup recon_buildblock
   \brief File that registers all stir::RegisterObject children in recon_buildblock
   \author Kris Thielemans
-  
-  $Date$
-  $Revision$
 */
 #include "stir/DiscretisedDensity.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
@@ -37,6 +34,7 @@
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingInterpolation.h"
 #include "stir/recon_buildblock/ProjMatrixByBinFromFile.h"
+#include "stir/recon_buildblock/ProjMatrixByBinSPECTUB.h"
 
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
@@ -77,6 +75,7 @@ static QuadraticPrior<float>::RegisterIt dummy5;
 static ProjMatrixByBinUsingRayTracing::RegisterIt dummy11;
 static ProjMatrixByBinUsingInterpolation::RegisterIt dummy12;
 static ProjMatrixByBinFromFile::RegisterIt dumy13;
+static ProjMatrixByBinSPECTUB::RegisterIt dumy14;
 
 static ForwardProjectorByBinUsingProjMatrixByBin::RegisterIt dummy31;
 static ForwardProjectorByBinUsingRayTracing::RegisterIt dummy32;

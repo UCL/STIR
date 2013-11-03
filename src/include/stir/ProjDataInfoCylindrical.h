@@ -1,9 +1,8 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2009, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
+    Copyright (C) 2013, Institute for Bioengineering of Catalonia
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,11 +25,9 @@
 
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Berta Marti Fuster
   \author PARAPET project
-
-  $Date$
-  $Revision$
-  */
+*/
 #ifndef __stir_ProjDataInfoCylindrical_H__
 #define __stir_ProjDataInfoCylindrical_H__
 
@@ -105,7 +102,7 @@ public:
 	    const Bin& bin) const;
 
  
-  //void set_azimuthal_angle_sampling(const float angle);
+  void set_azimuthal_angle_sampling(const float angle);
  
   //void set_axial_sampling(const float samp, int segment_num);
 
@@ -148,8 +145,16 @@ public:
   virtual void set_max_axial_pos_num(const int max_ax_pos_num, const int segment_num);
   virtual void reduce_segment_range(const int min_segment_num, const int max_segment_num);
 
+  //! Set detector ring radius for all views
+  inline void set_ring_radii_for_all_views(const VectorWithOffset<float>& new_ring_radius);
+  
+  //! Get detector ring radius for all views
+  inline VectorWithOffset<float> get_ring_radii_for_all_views() const;
+
   //! Get detector ring radius
   inline float get_ring_radius() const;
+
+  inline float get_ring_radius( const int view_num) const;
   //! Get detector ring spacing
   inline float get_ring_spacing() const;
 
@@ -240,8 +245,6 @@ public:
 
 protected:
 
-  float azimuthal_angle_sampling;
-  float ring_radius;
   //! a variable that is set if the data corresponds to physical rings in the scanner
   /*! This is (only) used to prevent get_segment_axial_pos_num_for_ring_pair() et al
       to go wild. Indeed, for cases where there's cylindrical sampling, but not
@@ -264,6 +267,8 @@ protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
 
 private:
+  float azimuthal_angle_sampling;
+  VectorWithOffset<float> ring_radius;
   float ring_spacing;
   VectorWithOffset<int> min_ring_diff; 
   VectorWithOffset<int> max_ring_diff;

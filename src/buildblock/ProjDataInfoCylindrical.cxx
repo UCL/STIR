@@ -1,10 +1,9 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-10-18 Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$ Kris Thielemans
+    Copyright (C) 2011, Kris Thielemans
+    Copyright (C) 2013, University College London
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -75,7 +74,8 @@ ProjDataInfoCylindrical(const shared_ptr<Scanner>& scanner_ptr,
 {
   
   azimuthal_angle_sampling = static_cast<float>(_PI/num_views);
-  ring_radius = get_scanner_ptr()->get_effective_ring_radius();
+  ring_radius.resize(0,0);
+  ring_radius[0] = get_scanner_ptr()->get_effective_ring_radius();
   ring_spacing= get_scanner_ptr()->get_ring_spacing() ;
 
   // TODO this info should probably be provided via the constructor, or at
@@ -327,17 +327,19 @@ get_ring_pair_for_segment_axial_pos_num(int& ring1,
   assert((ring1_plus_ring2 - ring_diff)%2 == 0);
 }
 
-/*
-void
-ProjDataInfoCylindrical::
-set_azimuthal_angle_sampling(const float angle_v)
-{azimuthal_angle_sampling =  angle_v;}
 
 void
 ProjDataInfoCylindrical::
-set_axial_sampling(const float samp_v, int segment_num)
-{axial_sampling = samp_v;}
-*/
+set_azimuthal_angle_sampling(const float angle_v)
+{
+	azimuthal_angle_sampling =  angle_v;
+}
+
+//void
+//ProjDataInfoCylindrical::
+//set_axial_sampling(const float samp_v, int segment_num)
+//{axial_sampling = samp_v;}
+
 
 void
 ProjDataInfoCylindrical::

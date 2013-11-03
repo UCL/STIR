@@ -49,6 +49,9 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx \
 	PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.cxx \
 	PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin.cxx \
+	ProjMatrixByBinSPECTUB.cxx \
+	SPECTUB_Tools.cxx \
+	SPECTUB_Weight3d.cxx \
 	PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.cxx \
         PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.cxx
 

@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*!
 
   \file
@@ -11,14 +8,12 @@
   \author Mustapha Sadki
   \author Kris Thielemans
   \author PARAPET project
-      
-  $Date$
-        
-  $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2009, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -38,6 +33,12 @@
 #include "stir/recon_buildblock/ProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 
+// define a local preprocessor symbol to keep code relatively clean
+#ifdef STIR_NO_MUTABLE
+#define STIR_MUTABLE_CONST
+#else
+#define STIR_MUTABLE_CONST const
+#endif
 
 START_NAMESPACE_STIR
 
@@ -84,6 +85,24 @@ bool
 ProjMatrixByBin::
 does_cache_store_only_basic_bins() const
 { return cache_stores_only_basic_bins; }
+
+void 
+ProjMatrixByBin::
+clear_cache() STIR_MUTABLE_CONST
+{
+  this->cache_collection.clear();
+}
+
+/*
+void  
+ProjMatrixByBin::
+reserve_num_elements_in_cache(const std::size_t num_elems)
+{
+  if ( cache_disabled ) return;
+  //cache_collection.reserve(num_elems);
+  cache_collection.rehash(ceil(num_elems / cache_collection.max_load_factor()));
+}
+*/
 
 Succeeded 
 ProjMatrixByBin::

@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,20 +28,11 @@
 */
 //   Pretty horrible implementations at the moment...
 
-/* Modification history
-
-  KT 29/06/2001 make sure that a filename ending on .hv is treated correctly
-  KT 26/08/2001 make sure that a data_filename ending on .hs is treated correctly
-  KT 05/09/2001 added directory capability
-  KT 14/01/2000 added directory capability in read_interfile_PDFS
-  KT 18/01/2001 use data from proj_data_info instead of scanner
-  KT 10/12/2001 do not call ask_parameters anymore when failing to parse the header
-                write applied corrections keyword for arc-correction	  
-*/
 
 #include "stir/IO/interfile.h"
 #include "stir/interfile_keyword_functions.h"
 #include "stir/IO/InterfileHeader.h"
+#include "stir/IO/InterfilePDFSHeaderSPECT.h"
 #include "stir/IndexRange3D.h"
 #include "stir/utilities.h"
 #include "stir/CartesianCoordinate3D.h"
@@ -51,7 +43,7 @@
 #include "stir/Succeeded.h"
 #include "stir/IO/write_data.h"
 #include "stir/IO/read_data.h"
-
+#include "stir/is_null_ptr.h"
 #include <fstream>
 
 #ifndef STIR_NO_NAMESPACES
@@ -530,6 +522,59 @@ write_basic_interfile(const string& filename,
 }
 
 
+static ProjDataFromStream* 
+read_interfile_PDFS_SPECT(istream& input,
+		    const string& directory_for_data,
+		    const ios::openmode open_mode)
+{
+  
+  InterfilePDFSHeaderSPECT hdr;  
+   if (!hdr.parse(input))
+    {
+      return 0; // KT 10122001 do not call ask_parameters anymore
+    }
+
+  char full_data_file_name[max_filename_length];
+  strcpy(full_data_file_name, hdr.data_file_name.c_str());
+  prepend_directory_name(full_data_file_name, directory_for_data.c_str());  
+ 
+  vector<int> min_ring_num_per_segment(1);
+  vector<int> max_ring_num_per_segment(1);
+  vector<int> segment_sequence(1);
+  
+  min_ring_num_per_segment[0] = 0;
+  max_ring_num_per_segment[0] = hdr.num_axial[0]-1;
+  segment_sequence[0]=0;
+   
+  for (unsigned int i=1; i<hdr.image_scaling_factors[0].size(); i++)
+    if (hdr.image_scaling_factors[0][0] != hdr.image_scaling_factors[0][i])
+      { 
+	warning("Interfile warning: all image scaling factors should be equal \n"
+		"at the moment. Using the first scale factor only.\n");
+	break;
+      }
+  
+  assert(!is_null_ptr(hdr.data_info_sptr));
+
+   shared_ptr<iostream> data_in(new fstream (full_data_file_name, open_mode | ios::binary));
+   if (!data_in->good())
+     {
+       warning("interfile parsing: error opening file %s",full_data_file_name);
+       return 0;
+     }
+
+   return new ProjDataFromStream(hdr.data_info_sptr,
+				 data_in,
+				 hdr.data_offset[0],
+				 segment_sequence,
+				 hdr.storage_order,
+				 hdr.type_of_numbers,
+				 hdr.file_byte_order,
+				 static_cast<float>(hdr.image_scaling_factors[0][0]));
+
+
+}
+
 
 ProjDataFromStream* 
 read_interfile_PDFS(istream& input,
@@ -538,10 +583,11 @@ read_interfile_PDFS(istream& input,
 {
   
   InterfilePDFSHeader hdr;  
-
+  std::ios::off_type offset = input.tellg();
    if (!hdr.parse(input))
     {
-      return 0; // KT 10122001 do not call ask_parameters anymore
+  	  input.seekg(offset);
+      return read_interfile_PDFS_SPECT(input, directory_for_data, open_mode); 
     }
 
   // KT 14/01/2000 added directory capability
@@ -551,6 +597,15 @@ read_interfile_PDFS(istream& input,
   strcpy(full_data_file_name, hdr.data_file_name.c_str());
   prepend_directory_name(full_data_file_name, directory_for_data.c_str());  
  
+  vector<int> min_ring_num_per_segment(hdr.num_segments);
+  vector<int> max_ring_num_per_segment(hdr.num_segments);
+
+  for (int s=0; s<hdr.num_segments; s++)
+    {
+      min_ring_num_per_segment[s] = 0;
+      max_ring_num_per_segment[s] = hdr.num_rings_per_segment[s]-1;
+    }
+  
   for (unsigned int i=1; i<hdr.image_scaling_factors[0].size(); i++)
     if (hdr.image_scaling_factors[0][0] != hdr.image_scaling_factors[0][i])
       { 

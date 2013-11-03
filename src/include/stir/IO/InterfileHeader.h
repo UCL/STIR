@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002-2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -76,7 +73,7 @@ private:
   // Lists of possible values for some keywords
   ASCIIlist_type number_format_values;	
   ASCIIlist_type byte_order_values;
-  ASCIIlist_type type_of_data_values;
+  /*ASCIIlist_type type_of_data_values;*/
   ASCIIlist_type patient_orientation_values;
   ASCIIlist_type patient_rotation_values;
 
@@ -84,7 +81,7 @@ private:
 
   int number_format_index;
   int byte_order_index;
-  int type_of_data_index;
+  /*int type_of_data_index;*/
   int patient_orientation_index;
   int patient_rotation_index;
 
@@ -101,6 +98,9 @@ public :
 
   string originating_system;
   
+  ASCIIlist_type type_of_data_values;
+  int type_of_data_index;
+
   ASCIIlist_type PET_data_type_values;	
   int PET_data_type_index;
 
