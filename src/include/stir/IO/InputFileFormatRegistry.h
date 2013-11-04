@@ -1,10 +1,7 @@
-//
-// $Id$
-//
 #ifndef __stir_IO_InputFileFormatRegistry_h__
 #define __stir_IO_InputFileFormatRegistry_h__
 /*
-    Copyright (C) 2006- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2006-2008, Hammersmith Imanet Ltd
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -24,20 +21,13 @@
   \brief Declaration of class stir::InputFileFormatRegistry, stir::RegisterInputFileFormat.
 
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 #include "stir/IO/InputFileFormat.h"
 #include "stir/shared_ptr.h"
 #include <map> 
 #include <fstream>
 #include <string>
-
-namespace std
-{
-  template <class T> class auto_ptr;
-}
+#include <memory>
 
 START_NAMESPACE_STIR
 
