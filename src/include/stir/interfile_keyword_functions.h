@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*!
   \file
   \ingroup buildblock
@@ -8,12 +5,9 @@
   \brief Functions useful for manipulating Interfile keywords
 
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,16 +22,14 @@
 
     See STIR/LICENSE.txt for details
 */
+
+#ifndef __stir_interfile_keyword_functions_H__ 
+#define __stir_interfile_keyword_functions_H__ 
 #include "stir/common.h"
 
 
 #include <string>
 #include <functional>
-
-#ifndef STIR_NO_NAMESPACE
-using std::string;
-using std::binary_function;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -52,19 +44,19 @@ START_NAMESPACE_STIR
   <li> All letters are made lowercase.
   </ul>  
 */
-string 
-standardise_interfile_keyword(const string& keyword);
+std::string 
+standardise_interfile_keyword(const std::string& keyword);
 
 //! A function object that compares Interfile keywords
-/*! This is similar to std::less<string>, except that it applies 
+/*! This is similar to std::less<std::string>, except that it applies 
     standardise_interfile_keyword() on its arguments before doing the
     comparison.
 
     Useful for  constructing a std::map for instance.
 */
-struct interfile_less : public binary_function<string, string, bool>
+struct interfile_less : public std::binary_function<std::string, std::string, bool>
 {
-  bool operator()(const string& a, const string& b) const
+  bool operator()(const std::string& a, const std::string& b) const
   {
     return 
       standardise_interfile_keyword(a) < 
@@ -73,3 +65,5 @@ struct interfile_less : public binary_function<string, string, bool>
 };
 
 END_NAMESPACE_STIR
+
+#endif
