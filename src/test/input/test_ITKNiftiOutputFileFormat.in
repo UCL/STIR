@@ -1,0 +1,8 @@
+Test OutputFileFormat Parameters:=
+output file format type := ITK
+ITK Output File Format Parameters:=
+number format := float
+number_of_bytes_per_pixel:=4
+default extension:=.nii
+End ITK Output File Format Parameters:=
+End:=

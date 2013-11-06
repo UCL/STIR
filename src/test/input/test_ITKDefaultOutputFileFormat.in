@@ -1,0 +1,6 @@
+Test OutputFileFormat Parameters:=
+output file format type := ITK
+ITK Output File Format Parameters:=
+;default extension:=.nhdr
+End ITK Output File Format Parameters:=
+End:=

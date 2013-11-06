@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -15,21 +16,18 @@
     See STIR/LICENSE.txt for details
 */
 /*!
-
   \file
   \ingroup IO
   \brief Implementation of class stir::ITKOutputFileFormat
 
   \author Berta Marti Fuster
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 #include "stir/VoxelsOnCartesianGrid.h"
 
 #include "stir/IO/ITKOutputFileFormat.h"
-#include "stir/IO/interfile.h"
+#include "stir/utilities.h"
+#include "stir/Succeeded.h"
 #include "itkImage.h"
 #include "itkImageFileWriter.h"
 #include "itkImageRegionIterator.h"
@@ -38,15 +36,15 @@ START_NAMESPACE_STIR
 
 
 const char * const 
-ITKOutputFileFormat::registered_name = "Nifti";
+ITKOutputFileFormat::registered_name = "ITK";
 
 ITKOutputFileFormat::
 ITKOutputFileFormat(const NumericType& type, 
                    const ByteOrder& byte_order) 
 {
-  base_type::set_defaults();
-  set_type_of_numbers(type);
-  set_byte_order(byte_order);
+  this->set_defaults();
+  this->set_type_of_numbers(type);
+  this->set_byte_order(byte_order);
 }
 
 void 
@@ -54,14 +52,16 @@ ITKOutputFileFormat::
 set_defaults()
 {
   base_type::set_defaults();
+  this->default_extension = ".nhdr";
 }
 
 void 
 ITKOutputFileFormat::
 initialise_keymap()
 {
-  parser.add_start_key("Nifti Output File Format Parameters");
-  parser.add_stop_key("End Nifti Output File Format Parameters");
+  parser.add_start_key("ITK Output File Format Parameters");
+  parser.add_key("default extension", &this->default_extension);
+  parser.add_stop_key("End ITK Output File Format Parameters");
   base_type::initialise_keymap();
 }
 
@@ -90,63 +90,88 @@ ITKOutputFileFormat::
 actual_write_to_file(string& filename, 
                      const DiscretisedDensity<3,float>& density) const
 {
-  const VoxelsOnCartesianGrid<float> image_ptr =
-    dynamic_cast<const VoxelsOnCartesianGrid<float>& >(density);
+#if 0
+  TODO use:
+                              this->type_of_numbers, this->scale_to_write_data,
+                              this->file_byte_order);
+#endif
+  try
+    {
+      add_extension(filename, this->default_extension);
+
+      const VoxelsOnCartesianGrid<float> image_ptr =
+        dynamic_cast<const VoxelsOnCartesianGrid<float>& >(density);
+      CartesianCoordinate3D<int> min_indices;
+      CartesianCoordinate3D<int> max_indices;
+      if (!density.get_regular_range(min_indices, max_indices))
+	{
+	  warning("ITK writer: can handle only regular index ranges.");
+	  return Succeeded::no;
+	}
 	
-  // TODO modify write_basic_interfile to return filename
-  typedef itk::Image< float, 3> ImageType;
-  typedef itk::ImageFileWriter<ImageType> WriterType;
-  WriterType::Pointer writer = WriterType::New();
+      typedef itk::Image< float, 3> ImageType;
+      typedef itk::ImageFileWriter<ImageType> WriterType;
+      WriterType::Pointer writer = WriterType::New();
 
-  //Creating the image
-  ImageType::Pointer image = ImageType::New();
-  ImageType::IndexType start;
-  start[0] = 0; // first index on X
-  start[1] = 0; // first index on Y
-  start[2] = 0; // first index on Z
+      //Creating the image
+      ImageType::Pointer image = ImageType::New();
+      
+      // use 0 start indices in ITK
+      ImageType::IndexType start;
+      start[0] = 0; // first index on X
+      start[1] = 0; // first index on Y
+      start[2] = 0; // first index on Z
 
-  ImageType::SizeType size;
-  size[0] = image_ptr.get_x_size(); // size along X
-  size[1] = image_ptr.get_y_size(); // size along Y
-  size[2] = image_ptr.get_z_size(); // size along Z
+      // find ITK origin (i.e. coordinates of first voxel)
+      ImageType::PointType origin;
+      CartesianCoordinate3D<float> stir_offset = density.get_physical_coordinates_for_indices(min_indices);
+      origin[0] = stir_offset.x();
+      origin[1] = stir_offset.y();
+      origin[2] = stir_offset.z();
+      
+      // find ITK size
+      ImageType::SizeType size;
+      size[0] = image_ptr.get_x_size(); // size along X
+      size[1] = image_ptr.get_y_size(); // size along Y
+      size[2] = image_ptr.get_z_size(); // size along Z
 
-  ImageType::SpacingType spacing;
-  spacing[0] = image_ptr.get_voxel_size().x(); // size along X
-  spacing[1] = image_ptr.get_voxel_size().y(); // size along Y
-  spacing[2] = image_ptr.get_voxel_size().z(); // size along Z
+      // find ITK voxel size
+      ImageType::SpacingType spacing;
+      spacing[0] = image_ptr.get_voxel_size().x(); // size along X
+      spacing[1] = image_ptr.get_voxel_size().y(); // size along Y
+      spacing[2] = image_ptr.get_voxel_size().z(); // size along Z
 
-  ImageType::RegionType region;
-  region.SetSize( size );
-  region.SetIndex( start );
+      ImageType::RegionType region;
+      region.SetSize( size );
+      region.SetIndex( start );
 	
-  image->SetSpacing(spacing);
-  image->SetRegions( region );
-  image->Allocate();
+      image->SetSpacing(spacing);
+      image->SetRegions( region );
+      image->SetOrigin(origin);
+      image->Allocate();
 	
-  float * image_raw = new float [ size[0]*size[1]*size[2] ];
-  std::copy(image_ptr.begin_all(),image_ptr.end_all(), image_raw);
+      // copy data
+      typedef itk::ImageRegionIterator< ImageType >	IteratorType;
+      IteratorType it (image, image->GetLargestPossibleRegion() );	
+      DiscretisedDensity<3,float>::const_full_iterator stir_iter = density.begin_all_const();
+      for ( it = it.Begin(); !it.IsAtEnd(); ++it, ++stir_iter  ){
 
-  typedef itk::ImageRegionIterator< ImageType >	IteratorType;
-  IteratorType it (image, image->GetLargestPossibleRegion() );
-	
-  int i = 0;
-  for ( it = it.Begin(); !it.IsAtEnd(); ++it, ++i  ){
+        it.Set(*stir_iter);
+      }
 
-    it.Set(image_raw[i]);
-  }
+      // write it!
+      writer->SetInput(image);
+      writer->SetFileName(filename);
+      writer->Update();
 
-  writer->SetInput(image);
-  writer->SetFileName(filename);
-  writer->Update();
-  
-  Succeeded success =
-    write_basic_interfile(filename, density, 
-			  this->type_of_numbers, this->scale_to_write_data,
-			  this->file_byte_order);
-  if (success == Succeeded::yes)
-    replace_extension(filename, ".hv");
-  return success;
-};
+      return Succeeded::yes;
+    }
+  catch (...)
+    {
+      return Succeeded::no;
+    }
+
+}
 
 END_NAMESPACE_STIR
 

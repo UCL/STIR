@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
+    Copyright (C) 2013, University College London
 
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
@@ -17,17 +18,14 @@
 /*!
   \file
   \ingroup IO
-  \brief Declaration of class stir::ITKInputFileFormat
+  \brief Declaration of class stir::ITKImageInputFileFormat
 
   \author Berta Marti Fuster
-
+  \author Kris Thielemans
 */
 
 #include "stir/IO/ITKImageInputFileFormat.h"
-#include "stir/IO/InputFileFormat.h"
 #include "stir/DiscretisedDensity.h"
-
-#include "stir/IO/interfile.h"
 
 #include "itkImage.h"
 #include "itkImageFileReader.h"
@@ -59,7 +57,7 @@ ITKImageInputFileFormat::can_read(const FileSignature& signature,
 }
 
 bool 
-ITKImageInputFileFormat::can_read(const FileSignature& signature,
+ITKImageInputFileFormat::can_read(const FileSignature& /*signature*/,
                                   const std::string& filename) const
 {
   typedef itk::ImageFileReader<FinalImageType> ReaderType;
@@ -68,6 +66,7 @@ ITKImageInputFileFormat::can_read(const FileSignature& signature,
   try 
     { 
       reader->Update(); 
+      return true;
     } 
   catch( itk::ExceptionObject & err ) 
     { 
@@ -76,113 +75,24 @@ ITKImageInputFileFormat::can_read(const FileSignature& signature,
     } 
 }
  
-   std::auto_ptr< DiscretisedDensity<3,float> >
-	ITKImageInputFileFormat::read_from_file(std::istream& input) const
-  {
-    return
-      std::auto_ptr<DiscretisedDensity<3,float> >
-      (read_interfile_image(input));
-  }
-   std::auto_ptr< DiscretisedDensity<3,float> >
-   ITKImageInputFileFormat::read_from_file(const std::string& filename) const
-   {
-     typedef itk::ImageIOBase::IOComponentType ScalarPixelType;
+std::auto_ptr< DiscretisedDensity<3,float> >
+ITKImageInputFileFormat::read_from_file(std::istream& input) const
+{
+  error("read_from_file for ITK with istream not implemented %s:%d. Sorry",
+        __FILE__, __LINE__);
+  return
+    std::auto_ptr<DiscretisedDensity<3,float> >
+    (0);
+}
 
-     itk::ImageIOBase::Pointer imageIO =
-       itk::ImageIOFactory::CreateImageIO(filename.c_str(),
-                                          itk::ImageIOFactory::ReadMode);
-
-     //Set the inputFileName
-     imageIO->SetFileName(filename);
-     //Read the information using ImageIOFactory
-     imageIO->ReadImageInformation();
-
-     //Get the pixel Type to create a itkImage
-     const ScalarPixelType pixelType = imageIO->GetComponentType();
-     //Get the Dimension of the image to create a itkImage
-     const size_t numDimensions =  imageIO->GetNumberOfDimensions();
-	   
-     switch ( pixelType )
-       {
-       case 1: //Unsigned char
-         {
-           typedef itk::Image< unsigned char, 3> ImageType;
-           return
-             std::auto_ptr<DiscretisedDensity<3,float> >
-             (read_file_itk< ImageType >(filename));
-         }
-
-       case 2: //Char
-         {
-           typedef itk::Image< char, 3> ImageType;
-           return
-             std::auto_ptr<DiscretisedDensity<3,float> >
-             (read_file_itk< ImageType >(filename));
-         }
-
-       case 3: //Unsigned short
-         {
-           typedef itk::Image< unsigned short, 3> ImageType;
-           return
-             std::auto_ptr<DiscretisedDensity<3,float> >
-             (read_file_itk< ImageType >(filename));
-         }
-       case 4: // Short
-         {
-           typedef itk::Image< short, 3> ImageType;
-           return
-             std::auto_ptr<DiscretisedDensity<3,float> >
-             (read_file_itk< ImageType >(filename));
-         }
-       case 5: //Unsigned Integer
-         {
-           typedef itk::Image< unsigned int, 3> ImageType;
-           return
-             std::auto_ptr<DiscretisedDensity<3,float> >
-             (read_file_itk< ImageType >(filename));
-         }
-
-       case 6: //Integer
-         {
-           typedef itk::Image< int, 3> ImageType;
-           return
-             std::auto_ptr<DiscretisedDensity<3,float> >
-             (read_file_itk< ImageType >(filename));
-         }
-
-       case 7: //Unsigned long
-         {
-           typedef itk::Image< unsigned long, 3> ImageType;
-           return
-             std::auto_ptr<DiscretisedDensity<3,float> >
-             (read_file_itk< ImageType >(filename));
-         }
-
-       case 8: //Long
-         {
-           typedef itk::Image< long, 3> ImageType;
-           return
-             std::auto_ptr<DiscretisedDensity<3,float> >
-             (read_file_itk< ImageType >(filename));
-         }
-
-       case 9: //Float
-         {
-           typedef itk::Image< float, 3> ImageType;
-           return
-             std::auto_ptr<DiscretisedDensity<3,float> >
-             (read_file_itk< ImageType >(filename));
-         }
-
-       case 10:
-         {
-           typedef itk::Image< double, 3> ImageType;
-           return
-             std::auto_ptr<DiscretisedDensity<3,float> >
-             (read_file_itk< ImageType >(filename));
-         }
-       }
-   }
+std::auto_ptr< DiscretisedDensity<3,float> >
+ITKImageInputFileFormat::read_from_file(const std::string& filename) const
+{
+  typedef itk::Image< float, 3> ImageType;
+  return
+    std::auto_ptr<DiscretisedDensity<3,float> >
+    (read_file_itk< ImageType >(filename));
+}
 
 //To read any file format
 template<typename TImageType> VoxelsOnCartesianGrid<float>*
@@ -195,14 +105,16 @@ ITKImageInputFileFormat::read_file_itk(std::string filename) const
   reader->Update();
 
   typedef itk::CastImageFilter<TImageType, FinalImageType> CastType;
-  CastType::Pointer castFilter = CastType::New();
+  typename CastType::Pointer castFilter = CastType::New();
   castFilter->SetInput(reader->GetOutput());
   castFilter->Update();
 
+  // find voxel size
   CartesianCoordinate3D<float> voxel_size(static_cast<float>(castFilter->GetOutput()->GetSpacing()[2]), 
                                           static_cast<float>(castFilter->GetOutput()->GetSpacing()[1]), 
                                           static_cast<float>(castFilter->GetOutput()->GetSpacing()[0]));
 
+  // find index range in usual STIR convention
   const int z_size =  castFilter->GetOutput()->GetLargestPossibleRegion().GetSize()[2];
   const int y_size =  castFilter->GetOutput()->GetLargestPossibleRegion().GetSize()[1];
   const int x_size =  castFilter->GetOutput()->GetLargestPossibleRegion().GetSize()[0];
@@ -211,22 +123,17 @@ ITKImageInputFileFormat::read_file_itk(std::string filename) const
   const BasicCoordinate<3,int> max_indices = 
     min_indices + make_coordinate(z_size, y_size, x_size) - 1;
 
-  CartesianCoordinate3D<float> origin(0,0,0);
-  //if (hdr.first_pixel_offsets[2] != InterfileHeader::double_value_not_set)
-  //{
-  //	// make sure that origin is such that 
-  //	// first_pixel_offsets =  min_indices*voxel_size + origin
-  //	origin =
-  //		make_coordinate(float(hdr.first_pixel_offsets[2]),
-  //		float(hdr.first_pixel_offsets[1]),
-  //		float(hdr.first_pixel_offsets[0]))
-  //		- voxel_size * BasicCoordinate<3,float>(min_indices);
-  //	// TODO remove
-  //	if (norm(origin)>.01)
-  //		warning("interfile parsing: setting origin to (z=%g,y=%g,x=%g)",
-  //		origin.z(), origin.y(), origin.x());
-  //}
+  // find STIR origin
+  CartesianCoordinate3D<float> origin(static_cast<float>(castFilter->GetOutput()->GetOrigin()[2]), 
+				      static_cast<float>(castFilter->GetOutput()->GetOrigin()[1]), 
+				      static_cast<float>(castFilter->GetOutput()->GetOrigin()[0]));
+  {
+    // make sure that origin is such that 
+    // first_pixel_offsets =  min_indices*voxel_size + origin
+    origin -= voxel_size * BasicCoordinate<3,float>(min_indices);
+  }
 
+  // create STIR image
   VoxelsOnCartesianGrid<float>* image_ptr =
     new VoxelsOnCartesianGrid<float>
     (IndexRange<3>(min_indices, max_indices),
@@ -234,6 +141,7 @@ ITKImageInputFileFormat::read_file_itk(std::string filename) const
      voxel_size);
   VoxelsOnCartesianGrid<float>::full_iterator stir_iter = image_ptr->begin_all();
 
+  // copy data
   typedef itk::ImageRegionIterator< FinalImageType >	IteratorType;
   IteratorType it (castFilter->GetOutput(), castFilter->GetOutput()->GetLargestPossibleRegion() );
 	

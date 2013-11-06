@@ -1,8 +1,9 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002-2011, Hammersmith Imanet Ltd
+    Copyright (C) 2012, Kris Thielemans
+    Copyright (C) 2013, Institute for Bioengineering of Catalonia
+    Copyright (C) 2013, University College London
+    
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,9 +27,6 @@
 
   \author Kris Thielemans
   \author Berta Marti Fuster
-  
-  $Date$
-  $Revision$
 */
 
 #include "stir/modelling/ParametricDiscretisedDensity.h"
@@ -65,7 +63,7 @@ START_NAMESPACE_STIR
 
 static InterfileOutputFileFormat::RegisterIt dummy1;
 #ifdef HAVE_ITK
-static ITKOutputFileFormat::RegisterIt dummy15;
+static ITKOutputFileFormat::RegisterIt dummyITK1;
 #endif
 static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfIn;
 static InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfIn;
@@ -94,7 +92,9 @@ static RegisterInputFileFormat<ecat::ecat6::ECAT6ImageInputFileFormat> idummy4(1
 static RegisterInputFileFormat<ecat::ecat7::ECAT7DynamicDiscretisedDensityInputFileFormat> dynidummy(0);
 #endif
 #ifdef HAVE_ITK
-static RegisterInputFileFormat<ITKImageInputFileFormat> idummy8(8);
+// we'll put it at low priority such that it tried (almost) last, i.e. after STIR specific input routines
+// This is because we translate the ITK info currently incompletely.
+static RegisterInputFileFormat<ITKImageInputFileFormat> idummy8(100000);
 #endif
 
 
