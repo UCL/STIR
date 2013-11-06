@@ -1,0 +1,15 @@
+fbp2dparameters :=
+
+input file := input.hs
+output filename prefix := output
+
+; choose the output file format
+; note that these keywords are supported by all reconstruction programs
+; here we use ITK (so this will only work if you linked STIR with ITK)
+output file format type := ITK
+ITK Output File Format Parameters:=
+  ; use Nifti as output (could also use .mhdr, .nhdr etc)
+  default extension:=.nii
+End ITK Output File Format Parameters:=
+end := 
+
