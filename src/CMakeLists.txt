@@ -1,5 +1,6 @@
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
-# Copyright 2011-07-01 - 2013 Kris Thielemans
+# Copyright 2011-07-01 - 2012 Kris Thielemans
+# Copyright 2013 University College London
 
 # This file is part of STIR.
 #
@@ -91,6 +92,17 @@ else()
   message(STATUS "RDF support disabled.")
 endif()
 
+
+# See if we can find a compiled version of ITK (http://www.itk.org/)
+find_package(ITK QUIET)
+if (ITK_FOUND) 
+  message(STATUS "ITK libraries added.")
+  set(HAVE_ITK ON)
+  add_definitions(-DHAVE_ITK)
+  include(${ITK_USE_FILE})
+else()
+  message(STATUS "ITK support disabled.")
+endif()
 
 #### Flags for compatibility between different systems
 

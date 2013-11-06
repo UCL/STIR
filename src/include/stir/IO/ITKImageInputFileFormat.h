@@ -22,9 +22,6 @@
 
   \author Berta Marti Fuster
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 #include "stir/IO/InputFileFormat.h"
 #include "stir/DiscretisedDensity.h"
@@ -32,10 +29,13 @@
 
 START_NAMESPACE_STIR
 
-//! Class for reading images in ITK file-format.
+//! Class for reading images using ITK.
 /*! \ingroup IO
     \preliminary
 
+    ITK (http://www.itk.org) has its own registry of file formats, so the current class
+    provides an interface to that code. We use ITK for reading, and then translate the ITK
+    data and meta-info to STIR. This translation is currently incomplete however.
 */
 class ITKImageInputFileFormat :
 public InputFileFormat<DiscretisedDensity<3,float> >
@@ -43,10 +43,12 @@ public InputFileFormat<DiscretisedDensity<3,float> >
 
  public:
 
-	   virtual bool
+  //! This function always returns \c false as ITK cannot read from istream
+  virtual bool
     can_read(const FileSignature& signature,
 	std::istream& input) const;
-	   virtual bool 
+  //! Use ITK reader to check if it throws an exception or not
+  virtual bool 
     can_read(const FileSignature& signature,
 	     const std::string& filename) const;
  
@@ -64,9 +66,11 @@ public InputFileFormat<DiscretisedDensity<3,float> >
     actual_can_read(const FileSignature& signature,
 		    std::istream& input) const;
 
+  //! This function always calls error() as ITK cannot read from istream
   virtual std::auto_ptr<data_type>
     read_from_file(std::istream& input) const;
 
+  //! The function does the translation
   virtual std::auto_ptr<data_type>
     read_from_file(const std::string& filename) const;
 

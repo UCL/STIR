@@ -34,9 +34,19 @@ START_NAMESPACE_STIR
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
 /*!
-  \ingroup InterfileIO
-  \brief 
-  Implementation of OutputFileFormat paradigm for the Interfile format.
+  \ingroup IO
+  \brief  Implementation of OutputFileFormat paradigm using the ITK library for writing.
+
+  ITK (http://www.itk.org) has its own registry of file formats, so the current class
+  provides an interface to that code. We translate the STIR data to ITK and then use its
+  writing code. This translation is currently incomplete however.
+
+  ITK chooses the file format based on the extension of the filename. This is currently 
+  different from STIR. Therefore, this calss can be used to write Nifti (.nii), Teem (.nhdr),
+  MetaIO (.mhdr), etc.
+
+  In this class, we provide a default extension that will be 
+  appended if a filename without extension is used.
  */
 class ITKOutputFileFormat : 
   public RegisteredParsingObject<
@@ -54,6 +64,10 @@ class ITKOutputFileFormat :
 public :
     //! Name which will be used when parsing an OutputFileFormat object
   static const char * const registered_name;
+
+  //! default extension to use if none present
+  /*! This will determine the file format used if passing a filename without extension. */
+  std::string default_extension;
 
   ITKOutputFileFormat(const NumericType& = NumericType::FLOAT, 
                    const ByteOrder& = ByteOrder::native);

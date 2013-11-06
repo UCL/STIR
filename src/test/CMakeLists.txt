@@ -88,6 +88,13 @@ else(HAVE_ECAT)
     #message("No ECAT6/7 support compiled, so no tests for this file format")
 endif(HAVE_ECAT)
 
+if (HAVE_ITK)
+    list(APPEND file_format_tests
+	test_ITKDefautOutputFileFormat.in
+	test_ITKNiftiOutputFileFormat.in
+    )
+endif()
+
 # now for each of these, add a test
 foreach(file_format ${file_format_tests})
   set(test_name test_OutputFileFormat_${file_format})
