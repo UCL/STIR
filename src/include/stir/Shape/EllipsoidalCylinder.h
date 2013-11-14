@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,10 +22,6 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author C. Ross Schmidtlein (Added overload functions to define sectors of a cylinder)
-
-
-  $Date$
-  $Revision$
 */
 
 #ifndef __stir_Shape_EllipsoidalCylinder_h__
@@ -54,6 +47,11 @@ START_NAMESPACE_STIR
   \f[
   {(r.dir_x)^2 \over R_y^2} + {(r.dir_y)^2 \over R_y^2} <= 1
   \f]
+  and
+  \f[
+   \theta_1 <= atan2(r.dir_y,r.dir_x) <= \theta_2
+  \f]
+
   where \f$dir_x, dir_y, dir_z\f$ are described in the documentation for class
   Shape3DWithOrientation.
 
@@ -61,17 +59,15 @@ START_NAMESPACE_STIR
    To specify an ellipsoidal cylinder with the dimensions 
   (radius_x,radius_y,length, theta_1, theta_2), where radius_x is
    in x direction, radius_y in y direction, length in z-direction,
-   theta_1 is defined counter clockwise from the positive x-axis 
-   about the z-axis, and theta_2 is defined counter clockwise from 
-   the positive x-axisc about the z-axis 
-   (before any rotations), use:
+   theta_1 and theta_2 are defined counter clockwise from the positive x-axis 
+   about the z-axis (before any rotations), use:
   \verbatim
      Ellipsoidal Cylinder Parameters:=
      radius-x (in mm):= <float>
      radius-y (in mm):= <float>
      length-z (in mm):= <float>
-     theta_1 (in deg):= <float>
-     theta_2 (in deg):= <float>
+     initial angle (in deg):= <float> ; (defaults to 0)
+     final_angle (in deg):= <float>   ; (defaults to 360)
      ; any parameters of Shape3DWithOrientation
      End:=
   \endverbatim
@@ -96,7 +92,9 @@ public:
 		      const Array<2,float>& direction_vectors = diagonal_matrix(3,1.F));
   
   //! Constructor
-  /*! \warning: note order of arguments */
+  /*! \warning: note order of arguments.
+      \bug angles \a theta_1 and \a theta_2 are currently in degrees, while STIR conventions dictate radians.
+  */
   EllipsoidalCylinder(const float length_z, 
                       const float radius_y,
                       const float radius_x,
@@ -143,9 +141,9 @@ protected:
   float radius_x;
   //! Radius in y-direction if the shape is not rotated
   float radius_y;
-  //! initial theta if the shape is not rotated
+  //! initial theta if the shape is not rotated (in degrees)
     float theta_1;
-  //! final theta if the shape is not rotated
+  //! final theta if the shape is not rotated (in degrees)
     float theta_2;
 
   //! set defaults before parsing
