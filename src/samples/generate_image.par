@@ -1,6 +1,8 @@
 generate_image Parameters :=
+; a sample file on how to use generate_image
+
 output filename:=image
-; optional keyword to specify the output file format
+; optional keywords to specify the output file format
 ; example below uses Interfile with 16-bit unsigned integers
 output file format type:= Interfile
   interfile Output File Format Parameters:=
@@ -26,12 +28,20 @@ Z voxel size (in mm) := 2.425
 ; Z number of samples to take per voxel := 5
 ; Y number of samples to take per voxel := 5
 ; X number of samples to take per voxel := 5
-	    
+
+; now follows a list of shapes and their values
+; each will be added to the image (so values accumulate)
+; see Shape3D hierarchy for possibly shapes
+
 shape type:= ellipsoidal cylinder
 Ellipsoidal Cylinder Parameters:=
    radius-x (in mm) := 100
    radius-y (in mm) := 100
    length-z (in mm) := 400
+   ; optional start-end angles to define a wedge as opposed to a full cylinder
+   initial angle (in deg) :=10
+   final angle (in deg) :=90
+
    ; next keyword can be used for non-default axes
    ; values below are give a rotation around y for 90 degrees (swapping x and z)
    ; Warning: this uses the STIR convention {z,y,x}
@@ -41,7 +51,29 @@ Ellipsoidal Cylinder Parameters:=
    END:=
 value := 1
 
-; next shape :=
-; see Shape3D hierarhcy for possibly shapes
+next shape :=
+
+shape type:= ellipsoid
+Ellipsoid Parameters:=
+     radius-x (in mm):= 60
+     radius-y (in mm):= 40
+     radius-z (in mm):= 30
+     direction vectors (in mm) := { {0,0,1}, {0,1,0}, {-1,0,0}}
+     origin (in mm):={130.375, 3.0192, -0.590588}
+End:=
+value:=5
+
+next shape :=
+
+; now cut lower activity in a box
+shape type:= Box3D
+box parameters:=
+origin (in mm):={130.375, 3.0192, -0.590588}
+length-x (in mm):=30
+length-y (in mm):=40
+length-z (in mm):=50
+END:=
+value:=-1
+
 
 END:=
