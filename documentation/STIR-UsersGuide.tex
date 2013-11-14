@@ -4187,7 +4187,7 @@ See Section \ref{sec:projmatrix} for possible values for the 'matrix type' keywo
 
 { \subsubsubsection{Interpolation}
 }
-
+\label{sec:IncrementalInterpolationBackProjector}
 This back projector uses incremental (piecewise)-linear interpolation 
 to compute its result. See [Egg98] for details. It can \textit{only} handle arc-corrected data.
 
@@ -4366,6 +4366,52 @@ in a parameter file.
 
 
 See also online documentation for class ProjMatrixByBinUsingRayTracing. 
+
+
+{ \subsubsubsection{Interpolation}
+}
+\label{sec:projmatrixusinginterpolation}
+This projection matrix uses interpolation in projection space as model. 
+When using this matrix for back-projection, the centre of a voxel is projected 
+into a ``viewgram'' (\textit{i.e.} roughly a projection plane but taking scanner 
+geometry into account), and its contribution is computed by linearly interpolating
+between the surrounding values in the viewgram.
+
+It is intended to give
+essentially the same results as the incremental-interpolation backprojector
+\ref{sec:IncrementalInterpolationBackProjector}.
+This matrix version allows using the same model for forward projection. 
+
+\textbf{Note} The implementation does not use the incremental computations of 
+\ref{sec:IncrementalInterpolationBackProjector} and is therefore not affected 
+by rounding error.
+
+\textbf{Warning} The current implementation is quite slow in constructing the matrix.
+If you need to use this multiple times, it might be worth writing it to disk and
+then reading it (see \ref{sec:projmatrixfromfile}).
+
+{ \subsubsubsubsection{Parameters}
+}
+
+The following parameters can be set (default values are indicated):
+
+\begin{verbatim}
+Interpolation Matrix Parameters:=
+  ; any parameters appropriate for all matrices
+
+  use_piecewise_linear_interpolation:=1
+  use_exact_Jacobian:=1
+
+  do_symmetry_90degrees_min_phi:=1
+  do_symmetry_180degrees_min_phi:=1
+  do_symmetry_swap_segment:=1
+  do_symmetry_swap_s:=1
+  do_symmetry_shift_z:=1
+End Interpolation Matrix Parameters:=
+\end{verbatim}
+
+See \ref{sec:IncrementalInterpolationBackProjector} for an explanation 
+of the first two parameters.
 
 { \subsubsubsection{From File}
 }
