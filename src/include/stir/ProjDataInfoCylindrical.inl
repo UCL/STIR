@@ -66,10 +66,12 @@ ProjDataInfoCylindrical::get_t(const Bin& bin) const
 float
 ProjDataInfoCylindrical::get_tantheta(const Bin& bin) const
 {
-  return
-    get_average_ring_difference(bin.segment_num())*
-    ring_spacing/ 
-	(2*sqrt(square(get_ring_radius(bin.view_num()))-square(get_s(bin))));  
+  const float delta=get_average_ring_difference(bin.segment_num());
+  if (fabs(delta)<0.0001F)
+    return 0;
+  const float R=get_ring_radius(bin.view_num());
+  assert(R>=fabs(get_s(bin)));
+  return delta*ring_spacing/(2*sqrt(square(R)-square(get_s(bin))));
 }
 
 
