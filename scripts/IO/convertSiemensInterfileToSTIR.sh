@@ -13,10 +13,24 @@ if [ $# -ne 2 ]; then
   exit 1
 fi
 
+# give names to arguments
+# we will use e.g. "${in}" below to get the corresponding values. The quotes serve to handle spaces in filenames.
 in=$1
 out=$2
 
-#-e "s/originating system *:= *2008/originating system:=Siemens mMR/" \
+# check if filenames are different
+if [ "${in}" = "${out}" ]; then
+  echo "Input and output file names need to be different"
+  exit 1
+fi
+
+# check if input is readable
+if [ -r "${in}" ]; then
+  : # ok, it's readable
+else
+    echo "Input file is not readable"
+  exit 1
+fi
 
 # replace a number of keywords according to the proposed Interfile standard
 # due to restrictions of many sed versions, we first use @ in the replacement string to indicate a newline, 
@@ -29,16 +43,24 @@ sed \
  -e "s/!*image duration (sec)/number of time frames:=1@\
 !image duration (sec)[1]/" \
  -e "s/\(image relative start time (sec)\)/\1[1]/" \
- -e "$ a\!END OF INTERFILE :=" \
- $in | tr @ "\n"> $out
+ "${in}" | tr @ "\n" > "${out}"
+
+# check if sed worked
+if [ $? -ne 0 ]; then
+  echo 'sed command failed. Output file writable?'
+  exit 1
+fi
+
+# append "END OF INTERFILE" as Siemens doesn't do it
+echo "!END OF INTERFILE :=" >> "${out}"
 
 # check if it's a sinogram
-fgrep -i "sinogram subheader" $in >/dev/null
+fgrep -i "sinogram subheader" "${in}" >/dev/null
 if [ $? = 0 ]; then
   # yes it is, so we need to do some more replacements
-  mv $out ${out}.tmp
+  mv "${out}" "${out}.tmp"
   # first find out if it's 3D or 2D Data by checking how many sinograms there are
-  grep -i "%segment table *:= *{ *127 *}" $in >/dev/null
+  grep -i "%segment table *:= *{ *127 *}" "${in}" >/dev/null
   if [ $? = 0 ]; then
     # we found 127, so it's 2D
     # TODO could be larger ring diff, but STIR will currently ignore it anyway
@@ -65,8 +87,8 @@ if [ $? = 0 ]; then
  -e "s/%segment table *:=\(.*\)/matrix size [3] :=\1@ minimum ring difference per segment := ${minringdiff}@\
  maximum ring difference per segment := ${maxringdiff}@\
 /" \
-   ${out}.tmp | tr @ "\n" > $out
-   rm ${out}.tmp
+   "${out}.tmp" | tr @ "\n" > "${out}"
+   rm "${out}.tmp"
 fi
 
 
