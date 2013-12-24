@@ -568,6 +568,8 @@ delete_UB_SPECT_arrays()
 {
   //... freeing matrix memory....................................
   using namespace SPECTUB;
+  delete [] Rrad;
+
   if ( !wmh.do_psf ){
     for ( int i = 0 ; i < prj.Nang ; i++ ){
       delete [] ang[ i ].vxprj.val;
@@ -607,6 +609,7 @@ delete_UB_SPECT_arrays()
     delete [] wm.nx;
     delete [] wm.ny;
     delete [] wm.nz;
+
   }
 
 }
