@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005-2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,9 +21,6 @@
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 
 #include "stir/modulo.h"
@@ -88,12 +82,12 @@ START_NAMESPACE_STIR
 
 #if defined(_MSC_VER) && _MSC_VER<=1300
     typedef float out_elemT;
-    typedef float in_elemT;
+    // typedef float in_elemT;
     //typedef typename _Val_Type(c_begin_iterator) out_elemT;
     //typedef typename _Val_Type(c_begin_iterator) in_elemT;
 #else
     typedef typename std::iterator_traits<RandIterOut>::value_type out_elemT;
-    typedef typename std::iterator_traits<RandIterOut>::value_type in_elemT;
+    // typedef typename std::iterator_traits<RandIterOut>::value_type in_elemT;
 #endif
                 
     /*          
