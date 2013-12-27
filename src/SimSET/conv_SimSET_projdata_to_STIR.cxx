@@ -1,6 +1,5 @@
-// $Id$
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005-2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,9 +25,6 @@
   \author Pablo Aguiar
   \author Charalampos Tsoumpas
   \author Kris Thielemans 
-
-  $Date$
-  $Revision$
 */
 
 #include <stdlib.h>
@@ -58,7 +54,7 @@ int main(int argc,char **argv)
     "argv[5]  Axial slices in SimSET file\n",
     "argv[6]  FOV_radius in cm as given to simset binning module (max_td)\n",
     "argv[7]  range on Z value in cm as given to simset binning module\n",
-    "argv[8]  STIR scanner name\n"
+    "argv[8]  STIR scanner name\n",
     "argv[9]  maximum ring difference to use for writing\n",
     "argv[10]  index of 3d-sinogram in file (0-based)\n"
     "argv[11] STIR file name\n"
@@ -119,7 +115,7 @@ int main(int argc,char **argv)
     set_tangential_sampling(2*FOV_radius/num_tangential_poss);
 
   ProjDataInterfile proj_data(proj_data_info_sptr,
-			      stir_filename, std::ios::out);
+  			      stir_filename, std::ios::out);
  
 
 
