@@ -21,7 +21,7 @@
 #      
 # Author Kris Thielemans
 
-echo This script should work with STIR version 2.3 and 2.4. If you have
+echo This script should work with STIR version 2.3, 2.4 and 3.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -58,7 +58,7 @@ echo Executing tests on ecat file format conversion for projection data
 
 
 # first delete any files remaining from a previous run
-rm -f my_*v my_*s
+rm -f my_*v my_*s my_*S
 
 INSTALL_DIR=$1
 
