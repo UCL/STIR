@@ -1,10 +1,7 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-07-01 - 2012-01-29, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,10 +25,6 @@
   \author Patrick Valente
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-
-  $Revision$
 */
 
 #include "stir/KeyParser.h"
@@ -261,7 +254,7 @@ KeyParser::~KeyParser()
 {
 }
 
-bool KeyParser::parse(const char * const filename)
+bool KeyParser::parse(const char * const filename, const bool write_warning)
 {
    ifstream hdr_stream(filename);
    if (!hdr_stream)
@@ -269,15 +262,15 @@ bool KeyParser::parse(const char * const filename)
       warning("KeyParser::parse: couldn't open file %s\n", filename);
       return false;
     }
-    return parse(hdr_stream);
+   return parse(hdr_stream, write_warning);
 }
 
-bool KeyParser::parse(istream& f)
+bool KeyParser::parse(istream& f, const bool write_warning)
 {
   // print_keywords_to_stream(cerr);
 
   input=&f;
-  return (parse_header()==Succeeded::yes && post_processing()==false);
+  return (parse_header(write_warning)==Succeeded::yes && post_processing()==false);
 }
 
 
@@ -464,7 +457,7 @@ KeyParser::print_keywords_to_stream(ostream& out) const
 }
 
   
-Succeeded KeyParser::parse_header()
+Succeeded KeyParser::parse_header(const bool write_warning)
 {
     
   if (read_and_parse_line(false)  == Succeeded::yes)	
@@ -499,7 +492,7 @@ Succeeded KeyParser::parse_header()
 
   while(status==parsing)
     {
-    if(read_and_parse_line(true) == Succeeded::yes)	
+    if(read_and_parse_line(write_warning) == Succeeded::yes)	
 	process_key();    
     }
   
@@ -864,7 +857,7 @@ void KeyParser::set_shared_parsing_object()
   
   // current_index is set to 0 when there was no index
   if(current_index!=0)
-    error("KeyParser::SHARED_PARSINGOBJECT can't handle vectored keys yet\n");
+    error("KeyParser::SHARED_PARSINGOBJECT can't handle vectored keys yet");
   const std::string& par_ascii = *boost::any_cast<std::string>(&this->parameter);
   reinterpret_cast<shared_ptr<Object> *>(current->p_object_variable)->
     reset((*current->parser)(input, par_ascii));
@@ -878,11 +871,10 @@ assign_to_list(T1& mylist, const T2& value, const int current_index,
 {
   if(mylist.size() < static_cast<unsigned>(current_index))
     {
-      // this is based on a suggestion by Dylan Togane [dtogane@camhpet.on.ca]
-      warning("KeyParser: the list corresponding to the keyword \"%s\" has to be resized "
-	      "to size %d. This might mean you have a problem in the keyword values.\n",
+      error("KeyParser: the list corresponding to the keyword \"%s\" has to be resized "
+	      "to size %d. This means you have a problem in the keyword values.",
 	      keyword.c_str(), current_index);
-      mylist.resize(current_index);
+      // mylist.resize(current_index);
     }
   mylist[current_index-1] = value;
 }
