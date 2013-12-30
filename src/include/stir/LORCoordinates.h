@@ -371,8 +371,10 @@ class LORInAxialAndSinogramCoordinates
   inline
     LORInAxialAndSinogramCoordinates(const LORInAxialAndNoArcCorrSinogramCoordinates<coordT>&);
 
+#if __cplusplus>= 201103L
   inline
     LORInAxialAndSinogramCoordinates(const LORAs2Points<coordT>&);
+#endif
 
   virtual
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES
@@ -500,8 +502,10 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
   inline
   LORInAxialAndNoArcCorrSinogramCoordinates(const LORInAxialAndSinogramCoordinates<coordT>&);
 
+#if __cplusplus>= 201103L
   inline
     LORInAxialAndNoArcCorrSinogramCoordinates(const LORAs2Points<coordT>&);
+#endif
 
   virtual
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES

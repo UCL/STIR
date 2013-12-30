@@ -268,6 +268,7 @@ LORInAxialAndNoArcCorrSinogramCoordinates(const LORInAxialAndSinogramCoordinates
   check_state();
 }
 
+#if __cplusplus>= 201103L
 template <class coordT>
 LORInAxialAndSinogramCoordinates<coordT>::
 LORInAxialAndSinogramCoordinates(const LORAs2Points<coordT>& coords)
@@ -279,7 +280,7 @@ LORInAxialAndNoArcCorrSinogramCoordinates<coordT>::
 LORInAxialAndNoArcCorrSinogramCoordinates(const LORAs2Points<coordT>& coords)
   : LORInAxialAndNoArcCorrSinogramCoordinates(LORInCylinderCoordinates<coordT>(coords))
 {}
-
+#endif
 
 template <class coordT>
 LORAs2Points<coordT>::
