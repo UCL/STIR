@@ -1,9 +1,7 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,9 +25,6 @@
   \author Patrick Valente
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-  $Revision$
 */
 
 
@@ -176,9 +171,11 @@ public:
   virtual ~KeyParser();
 
   //! parse() returns false if there is some error, true otherwise
-  bool parse(istream& f);
+  /*! if \s write_warnings is \c false, warnigns about undefined keywords will be supressed.*/
+  bool parse(istream& f, const bool write_warnings=true);
   //! parse() returns false if there is some error, true otherwise
-  bool parse(const char * const filename);
+  /*! if \s write_warnings is \c false, warnigns about undefined keywords will be supressed.*/
+  bool parse(const char * const filename, const bool write_warnings=true);
 
   ////// functions to add keys and their actions 
 
@@ -435,7 +432,7 @@ private :
   ////// methods
 
   // loops over all lines in the file.
-  Succeeded parse_header();
+  Succeeded parse_header(const bool write_warnings);
 
   // read a line, find keyword and call parse_value_in_line()
   Succeeded read_and_parse_line(const bool write_warning);
