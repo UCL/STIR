@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*!
   \file
   \ingroup projdata
@@ -9,14 +6,11 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-
-  $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2009, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -42,11 +36,24 @@ ProjData::get_proj_data_info_ptr() const
   return proj_data_info_ptr.get();
 }
 
+const ExamInfo*
+ProjData::get_exam_info_ptr() const
+{
+  return exam_info_sptr.get();
+}
+
+shared_ptr<ExamInfo>
+ProjData::get_exam_info_sptr() const
+{
+  return exam_info_sptr;
+}
+
 ProjData:: ProjData()
 {}
 
-ProjData::ProjData(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
-: proj_data_info_ptr(proj_data_info_ptr)
+ProjData::ProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
+		   const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
+  : exam_info_sptr(exam_info_sptr), proj_data_info_ptr(proj_data_info_sptr)
 {}
 
 

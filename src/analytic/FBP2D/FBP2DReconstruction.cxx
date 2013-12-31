@@ -25,9 +25,6 @@
   \author Kris Thielemans
   \author Claire Labbe
   \author PARAPET project
-
-  $Date$
-  $Revision$
 */
 
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
@@ -234,7 +231,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 			    1, 0,
 			    (num_segments_to_combine-1)/2 ));
       shared_ptr<ProjData> 
-	proj_data_to_FBP_ptr(new ProjDataInMemory (ssrb_info_sptr));
+	proj_data_to_FBP_ptr(new ProjDataInMemory (proj_data_ptr->get_exam_info_sptr(), ssrb_info_sptr));
       SSRB(*proj_data_to_FBP_ptr, *proj_data_ptr);
       proj_data_ptr = proj_data_to_FBP_ptr;
     }

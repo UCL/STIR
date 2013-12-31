@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003 - 2012-01-06, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is for internal GE use only
 */
 /*!
@@ -17,8 +15,6 @@
   find_motion_corrected_norm_factors parameter_file
 \endverbatim
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"

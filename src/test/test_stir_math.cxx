@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*!
 
   \file
@@ -13,12 +10,9 @@
   the path is used.
   \warning will overwite (and then delete) files called STIR$$*.
   \author Kris Thielemans
-      
-  $Date$        
-  $Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002-2003, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -35,6 +29,7 @@
 */
 
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/ExamInfo.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/Scanner.h"
 #include "stir/IndexRange.h"
@@ -245,10 +240,11 @@ stir_mathTests::run_tests()
     // first create files and close them afterwards
     // This is necessary because system() requires all streams to be flushed.
     {
+      shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
                                       
-      ProjDataInterfile proj_data1(proj_data_info_ptr, "STIRtmp1");
-      ProjDataInterfile proj_data2(proj_data_info_ptr, "STIRtmp2");
-      ProjDataInterfile proj_data3(proj_data_info_ptr, "STIRtmp3");
+      ProjDataInterfile proj_data1(exam_info_sptr, proj_data_info_ptr, "STIRtmp1");
+      ProjDataInterfile proj_data2(exam_info_sptr, proj_data_info_ptr, "STIRtmp2");
+      ProjDataInterfile proj_data3(exam_info_sptr, proj_data_info_ptr, "STIRtmp3");
       
       proj_data1.set_segment(data1);
       proj_data2.set_segment(data2);

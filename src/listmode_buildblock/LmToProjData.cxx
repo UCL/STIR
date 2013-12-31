@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*!
   \file 
   \ingroup listmode
@@ -9,12 +6,10 @@
  
   \author Kris Thielemans
   \author Sanida Mustafovic
-  
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2011-12-31, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -68,6 +63,7 @@ FRAME_BASED_DT_CORR:
 #include "stir/listmode/LmToProjData.h"
 #include "stir/listmode/CListRecord.h"
 #include "stir/listmode/CListModeData.h"
+#include "stir/ExamInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 
 #include "stir/Scanner.h"
@@ -92,6 +88,7 @@ FRAME_BASED_DT_CORR:
 #include <vector>
 
 #ifndef STIR_NO_NAMESPACES
+using std::string;
 using std::fstream;
 using std::ifstream;
 using std::iostream;
@@ -137,6 +134,7 @@ static
 shared_ptr<ProjData>
 construct_proj_data(shared_ptr<iostream>& output,
                     const string& output_filename, 
+		    const ExamInfo& exam_info,
                     const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
 
 /**************************************************************
@@ -550,6 +548,13 @@ process_data()
 
      start_new_time_frame(current_frame_num);
 
+     TimeFrameDefinitions this_time_frame_defs(frame_defs, current_frame_num);
+     // TODO ExamInfo this_frame_exam_info(*this->get_exam_info_ptr());
+     ExamInfo this_frame_exam_info;
+     this_frame_exam_info.start_time_in_secs_since_1970 = 
+       lm_data_ptr->get_scan_start_time_in_secs_since_1970();
+     this_frame_exam_info.set_time_frame_definitions(this_time_frame_defs);
+
      //*********** open output file
        shared_ptr<iostream> output;
        shared_ptr<ProjData> proj_data_ptr;
@@ -560,7 +565,7 @@ process_data()
 	 const string output_filename = output_filename_prefix + rest;
       
 	 proj_data_ptr = 
-	   construct_proj_data(output, output_filename, template_proj_data_info_ptr);
+	   construct_proj_data(output, output_filename, this_frame_exam_info, template_proj_data_info_ptr);
        }
        /*
 	 For each start_segment_index, we check which events occur in the
@@ -778,8 +783,20 @@ static
 shared_ptr<ProjData>
 construct_proj_data(shared_ptr<iostream>& output,
                     const string& output_filename, 
+		    const ExamInfo& exam_info,
                     const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
 {
+  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo(exam_info));
+
+#ifdef USE_SegmentByView
+  // don't need output stream in this case
+  shared_ptr<ProjData> proj_data_sptr(new ProjDataInterfile(exam_info_sptr,
+							    proj_data_info_ptr, output_filename, ios::out, 
+							    ProjDataFromStream::Segment_View_AxialPos_TangPos,
+							    OUTPUTNumericType));
+  return proj_data_sptr;
+#else
+  // this code would work for USE_SegmentByView as well, but the above is far simpler...
   vector<int> segment_sequence_in_stream(proj_data_info_ptr->get_num_segments());
   { 
     std::vector<int>::iterator current_segment_iter =
@@ -789,24 +806,15 @@ construct_proj_data(shared_ptr<iostream>& output,
          ++segment_num)
       *current_segment_iter++ = segment_num;
   }
-#ifdef USE_SegmentByView
-  // don't need output stream in this case
-  shared_ptr<ProjData> proj_data_sptr(new ProjDataInterfile(proj_data_info_ptr, output_filename, ios::out, 
-							    segment_sequence_in_stream,
-							    ProjDataFromStream::Segment_View_AxialPos_TangPos,
-							    OUTPUTNumericType));
-  return proj_data_sptr;
-#else
-  // this code would work for USE_SegmentByView as well, but the above is far simpler...
   output = new fstream (output_filename.c_str(), ios::out|ios::binary);
   if (!*output)
     error("Error opening output file %s\n",output_filename.c_str());
   shared_ptr<ProjDataFromStream> proj_data_ptr(
-    new ProjDataFromStream(proj_data_info_ptr, output, 
-                           /*offset=*/0, 
-                           segment_sequence_in_stream,
-                           ProjDataFromStream::Segment_View_AxialPos_TangPos,
-		           OUTPUTNumericType));
+					       new ProjDataFromStream(exam_info_sptr, proj_data_info_ptr, output, 
+								      /*offset=*/std::streamoff(0), 
+								      segment_sequence_in_stream,
+								      ProjDataFromStream::Segment_View_AxialPos_TangPos,
+								      OUTPUTNumericType));
   write_basic_interfile_PDFS_header(output_filename, *proj_data_ptr);
   return proj_data_ptr;  
 #endif

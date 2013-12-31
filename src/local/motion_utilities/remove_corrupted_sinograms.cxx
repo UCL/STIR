@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003 - 2012-01-06, Hammersmith Imanet Ltd
     This file is for internal GE use only
 */
 /*!
@@ -29,12 +26,6 @@
 
   \author Sanida Mustafovic
   \author Kris Thielemans
-  $Date$
-  $Revision$
-*/
-/*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
-    See STIR/LICENSE.txt for details
 */
 
 
@@ -268,7 +259,7 @@ main(int argc, char* argv[])
 	  }
       }
   }
-  ProjDataInterfile out_projdata(proj_data_info_ptr, output_filename); 
+  ProjDataInterfile out_projdata(in_projdata_ptr->get_exam_info_sptr(), proj_data_info_ptr, output_filename); 
 
   Succeeded succes = Succeeded::yes;
   std::vector<int>::iterator iter_record_of_number_of_planes_to_remove_min =

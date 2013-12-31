@@ -1,4 +1,3 @@
-// $Id$
 /*
  Copyright (C) 2005- 2009, Hammersmith Imanet Ltd
  Copyright (C) 2010- 2013, King's College London
@@ -24,12 +23,10 @@
  \author Charalampos Tsoumpas
  \author Pablo Aguiar
  \author Kris Thielemans 
-
- $Date$
- $Revision$
  */
 
 #include "stir/ProjDataInterfile.h"
+#include "stir/ExamInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/Sinogram.h"
 #include "stir/Scanner.h"
@@ -103,7 +100,8 @@ int main(int argc,char **argv)
                                                                               num_views,
                                                                               num_tangential_poss,
                                                                               /*arc_corrected =*/ false)); 
-  ProjDataInterfile proj_data(proj_data_info_sptr,
+  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+  ProjDataInterfile proj_data(exam_info_sptr, proj_data_info_sptr,
                               STIR_output_filename, std::ios::out);
   long long total_bins=num_tangential_poss*num_views*num_rings*num_rings; 
   Array<1,short int> GATE_data(0,total_bins-1); 

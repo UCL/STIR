@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004 - 2007-10-08, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,9 +22,6 @@
   \brief Declaration of class stir::PatientPosition
 
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 
 #ifndef __stir_PatientPosition_H__
@@ -41,40 +36,79 @@ START_NAMESPACE_STIR
 class PatientPosition
 {
  public:
-  enum OrientationValues
-    { head_in, feet_in, other_orientation };
-  enum RotationValues
-    { supine, prone, other_rotation };
+  //! enum specifying if the patient is scanned with the head first in the gantry, or the feet.
+  enum OrientationValue
+  { head_in, feet_in, other_orientation, unknown_orientation };
+  //! enum specifying on what side the patient is lying on
+  /*! \a prone is face-downward, \a left is lying on the left side */
+  enum RotationValue
+  { supine, prone, right, left, other_rotation, unknown_rotation };
 
+  //! enum using DICOM abreviations
+  /*! See Dicom C.7.3.1.1.2 */
+  enum PositionValue
+  {
+    HFS, //!< Head First-Supine
+    HFP, //!< Head First-Prone 	
+    HFDR, //!< Head First-Decubitus Right 	
+    HFDL, //!< Head First-Decubitus Left
+    FFDR, //!< Feet First-Decubitus Right 	
+    FFDL, //!< Feet First-Decubitus Left
+    FFP, //!< Feet First-Prone 	
+    FFS, //!< Feet First-Supine 
+    unknown_position
+  };
+
+  //! Default constructor (setting to unknown position and orientation)
   PatientPosition()
-    : orientation(head_in), rotation(supine)
-    {}
+    : orientation(unknown_orientation), rotation(unknown_rotation)
+    {
+      assert(rotation >=0);
+      assert(rotation<= unknown_rotation);
+      assert(orientation >=0);
+      assert(orientation<= unknown_orientation);
+    }
+
+ PatientPosition(OrientationValue orientation, RotationValue rotation)
+    : orientation(orientation), rotation(rotation)
+    {
+      assert(rotation >=0);
+      assert(rotation<= unknown_rotation);
+      assert(orientation >=0);
+      assert(orientation<= unknown_orientation);
+    }
+
+  explicit PatientPosition(PositionValue position);
 
   void
-    set_rotation(const RotationValues rotation_v)
+    set_rotation(const RotationValue rotation_v)
   { 
     assert(rotation_v >=0);
-    assert(rotation_v<= other_rotation);
+    assert(rotation_v<= unknown_rotation);
     rotation = rotation_v; 
   }
-  RotationValues
+  RotationValue
     get_rotation() const
   { return rotation; }
 
   void
-    set_orientation(const OrientationValues orientation_v)
+    set_orientation(const OrientationValue orientation_v)
   { 
     assert(orientation_v >=0);
-    assert(orientation_v<= other_orientation);
+    assert(orientation_v<= unknown_orientation);
     orientation = orientation_v; 
   }
-  OrientationValues
+  OrientationValue
     get_orientation() const
   { return orientation; }
 
+  PositionValue
+    get_position() const;
+
+  const char * const get_position_as_string() const;	
  private:
-  OrientationValues orientation;
-  RotationValues rotation;
+  OrientationValue orientation;
+  RotationValue rotation;
 };
 
 END_NAMESPACE_STIR

@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
     Internal GE use only
@@ -11,8 +8,6 @@
   \brief Utility to move projection data according to average motion in the frame.
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
   
   \par Usage
 \verbatim
@@ -200,7 +195,7 @@ process_data()
 	sprintf(rest, "_f%dg1d0b0", current_frame_num);
 	const string output_filename = output_filename_prefix + rest;
 	out_proj_data_sptr.
-	  reset(new ProjDataInterfile (proj_data_info_ptr, output_filename, ios::out)); 
+	  reset(new ProjDataInterfile (in_proj_data_sptr->get_exam_info_sptr(), proj_data_info_ptr, output_filename, ios::out)); 
       }
 
       std::cout << "Applying transformation " 

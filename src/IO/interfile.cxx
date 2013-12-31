@@ -29,6 +29,10 @@
 //   Pretty horrible implementations at the moment...
 
 
+#include "stir/ExamInfo.h"
+#include "stir/TimeFrameDefinitions.h"
+#include "stir/PatientPosition.h"
+#include "stir/ImagingModality.h"
 #include "stir/IO/interfile.h"
 #include "stir/interfile_keyword_functions.h"
 #include "stir/IO/InterfileHeader.h"
@@ -44,7 +48,10 @@
 #include "stir/IO/write_data.h"
 #include "stir/IO/read_data.h"
 #include "stir/is_null_ptr.h"
+#include "stir/Bin.h"
+#include "stir/stream.h"
 #include <fstream>
+#include <algorithm>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -119,7 +126,7 @@ read_interfile_image(istream& input,
      origin,
      voxel_size);
   
-  data_in.seekg(hdr.data_offset[0]);
+  data_in.seekg(hdr.data_offset_each_dataset[0]);
   
   float scale = float(1);
   if (read_data(data_in, *image_ptr, hdr.type_of_numbers, scale, hdr.file_byte_order)
@@ -292,8 +299,11 @@ write_basic_interfile_image_header(const string& header_file_name,
   
   for (int i=1; i<=scaling_factors.get_length();i++)
     {
-      output_header << "image scaling factor"<<"["<<i<<"] := " << scaling_factors[i-1]<< endl;
-      output_header << "data offset in bytes"<<"["<<i<<"] := "<< file_offsets[i-1]<< endl;
+      // only write scaling factors and offset if more than 1 frame or they are not default values
+      if (scaling_factors[i-1]!=1. || scaling_factors.get_length()>1)
+	output_header << "image scaling factor"<<"["<<i<<"] := " << scaling_factors[i-1]<< endl;
+      if (file_offsets[i-1] || scaling_factors.get_length()>1)
+	output_header << "data offset in bytes"<<"["<<i<<"] := "<< file_offsets[i-1]<< endl;
     }
 
   // analogue of image scaling factor[*] for Louvain la Neuve Interfile reader
@@ -306,11 +316,16 @@ write_basic_interfile_image_header(const string& header_file_name,
 	{
 	  if (scaling_factors[i] != first_scaling_factor)
 	    {
-	      cerr << "Interfile WARNING: non-standard 'quantification units' keyword not set as not all scale factors are the same\n";
+	      warning("Interfile: non-standard 'quantification units' keyword not set as not all scale factors are the same");
               output_quantification_units = false;
 	      break;
 	    }
 	}
+    }
+    if (output_quantification_units)
+    {
+      // only write when not 1
+      output_quantification_units = (scaling_factors[0] != 1.);
     }
     if (output_quantification_units)
       output_header << "quantification units := " << scaling_factors[0] << endl;
@@ -538,20 +553,13 @@ read_interfile_PDFS_SPECT(istream& input,
   strcpy(full_data_file_name, hdr.data_file_name.c_str());
   prepend_directory_name(full_data_file_name, directory_for_data.c_str());  
  
-  vector<int> min_ring_num_per_segment(1);
-  vector<int> max_ring_num_per_segment(1);
-  vector<int> segment_sequence(1);
-  
-  min_ring_num_per_segment[0] = 0;
-  max_ring_num_per_segment[0] = hdr.num_axial[0]-1;
+  vector<int> segment_sequence(1);  
   segment_sequence[0]=0;
    
   for (unsigned int i=1; i<hdr.image_scaling_factors[0].size(); i++)
     if (hdr.image_scaling_factors[0][0] != hdr.image_scaling_factors[0][i])
       { 
-	warning("Interfile warning: all image scaling factors should be equal \n"
-		"at the moment. Using the first scale factor only.\n");
-	break;
+	error("Interfile error: all image scaling factors should be equal at the moment.");
       }
   
   assert(!is_null_ptr(hdr.data_info_sptr));
@@ -563,9 +571,10 @@ read_interfile_PDFS_SPECT(istream& input,
        return 0;
      }
 
-   return new ProjDataFromStream(hdr.data_info_sptr,
+   return new ProjDataFromStream(hdr.get_exam_info_sptr(), 
+				 hdr.data_info_sptr,
 				 data_in,
-				 hdr.data_offset[0],
+				 hdr.data_offset_each_dataset[0],
 				 segment_sequence,
 				 hdr.storage_order,
 				 hdr.type_of_numbers,
@@ -582,12 +591,30 @@ read_interfile_PDFS(istream& input,
 		    const ios::openmode open_mode)
 {
   
+  {
+    InterfileHeader hdr;  
+    std::ios::off_type offset = input.tellg();
+    if (!hdr.parse(input, false)) // parse without warnings
+      {
+        warning("Interfile parsing failed");
+        return 0;
+      }
+    input.seekg(offset);
+    if (hdr.get_exam_info_ptr()->imaging_modality.get_modality() ==
+        ImagingModality::NM)
+      {
+        // spect data
+        input.seekg(offset);
+        return read_interfile_PDFS_SPECT(input, directory_for_data, open_mode); 
+      }
+  }
+  // if we get here, it's PET
+
   InterfilePDFSHeader hdr;  
-  std::ios::off_type offset = input.tellg();
-   if (!hdr.parse(input))
+  if (!hdr.parse(input))
     {
-  	  input.seekg(offset);
-      return read_interfile_PDFS_SPECT(input, directory_for_data, open_mode); 
+      warning("Interfile parsing of PET projection data failed");
+      return 0;
     }
 
   // KT 14/01/2000 added directory capability
@@ -623,9 +650,10 @@ read_interfile_PDFS(istream& input,
        return 0;
      }
 
-   return new ProjDataFromStream(hdr.data_info_ptr->create_shared_clone(),
+   return new ProjDataFromStream(hdr.get_exam_info_sptr(),
+				 hdr.data_info_ptr->create_shared_clone(),
 				 data_in,
-				 hdr.data_offset[0],
+				 hdr.data_offset_each_dataset[0],
 				 hdr.segment_sequence,
 				 hdr.storage_order,
 				 hdr.type_of_numbers,
@@ -652,7 +680,7 @@ read_interfile_PDFS(const string& filename,
   return read_interfile_PDFS(image_stream, directory_name, open_mode);
 }
 
-// KT 05/09/2001 added directory capability
+
 Succeeded 
 write_basic_interfile_PDFS_header(const string& header_file_name,
 				  const string& data_file_name,
@@ -675,30 +703,86 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 
   const vector<int> segment_sequence = pdfs.get_segment_sequence_in_stream();
 
+  const float angle_first_view = pdfs.get_proj_data_info_ptr()->get_phi(Bin(0,0,0,0)) * float(180/_PI);
+  const float angle_increment = pdfs.get_proj_data_info_ptr()->get_phi(Bin(0,1,0,0)) * float(180/_PI) - angle_first_view;
+
+  const ExamInfo * exam_info_ptr = pdfs.get_exam_info_ptr();
+  // default modality is PET
+  ImagingModality imaging_modality(ImagingModality::PT);
+  if (!is_null_ptr(exam_info_ptr))
+    imaging_modality=exam_info_ptr->imaging_modality;
+  const bool is_spect = imaging_modality.get_modality() == ImagingModality::NM;
+ 
   output_header << "!INTERFILE  :=\n";
+  output_header << "!imaging modality := " << imaging_modality.get_name() << '\n';
+
   output_header << "name of data file := " << data_file_name_in_header << endl;
 
   output_header << "originating system := ";
   output_header <<pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_name() << endl;
 
+  if (is_spect)
+    output_header << "!version of keys := 3.3\n";
+  else
+    output_header << "!version of keys := STIR3.0\n";
+
   output_header << "!GENERAL DATA :=\n";
   output_header << "!GENERAL IMAGE DATA :=\n";
-  output_header << "!type of data := PET\n";
+  output_header << "!type of data := " << (is_spect ? "Tomographic" : "PET") << '\n';
+
+  // output patient position
+  // note: strictly speaking this should come after "!SPECT STUDY (general)" but 
+  // that's strange as these keys would be useful for all other cases as well
+  {
+    string orientation;
+    switch (pdfs.get_exam_info_ptr()->patient_position.get_orientation())
+      {
+      case PatientPosition::head_in: orientation="head_in";break;
+      case PatientPosition::feet_in: orientation="feet_in";break;
+      case PatientPosition::other_orientation: orientation="other";break;
+      default: orientation="unknown"; break;
+      }
+    string rotation;
+    switch (pdfs.get_exam_info_ptr()->patient_position.get_rotation())
+      {
+      case PatientPosition::prone: rotation="prone";break;
+      case PatientPosition::supine: rotation="supine";break;
+      case PatientPosition::other_rotation:
+      case PatientPosition::left:
+      case PatientPosition::right:
+	rotation="other";break;
+      default: rotation="unknown"; break;
+      }
+    if (orientation!="unknown")
+      output_header << "patient orientation := " << orientation << '\n';
+    if (rotation!="unknown")
+      output_header << "patient rotation := " << rotation << '\n';
+  }
+
   output_header << "imagedata byte order := " <<
     (pdfs.get_byte_order_in_stream() == ByteOrder::little_endian 
      ? "LITTLEENDIAN"
      : "BIGENDIAN")
 		<< endl;
 
-  output_header << "!PET STUDY (General) :=\n";
-  output_header << "!PET data type := Emission\n";
-  {
-    // KT 10/12/2001 write applied corrections keyword
-    if(dynamic_cast< const ProjDataInfoCylindricalArcCorr*> (pdfs.get_proj_data_info_ptr()) != NULL)
-      output_header << "applied corrections := {arc correction}\n";
-    else
-      output_header << "applied corrections := {None}\n";
-  }
+  
+  if (is_spect)
+    {
+      output_header << "!number of windows :=1\n";
+      output_header << "!SPECT STUDY (General) :=\n";
+    }
+  else
+    {
+      output_header << "!PET STUDY (General) :=\n";
+      output_header << "!PET data type := Emission\n";
+      {
+        // KT 10/12/2001 write applied corrections keyword
+        if(dynamic_cast< const ProjDataInfoCylindricalArcCorr*> (pdfs.get_proj_data_info_ptr()) != NULL)
+          output_header << "applied corrections := {arc correction}\n";
+        else
+          output_header << "applied corrections := {None}\n";
+      }
+    }
   {
     string number_format;
     size_t size_in_bytes;
@@ -709,6 +793,50 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
     output_header << "!number format := " << number_format << "\n";
     output_header << "!number of bytes per pixel := " << size_in_bytes << "\n";
   }
+
+  if (is_spect)
+    {
+      output_header << "!number of projections := " << pdfs.get_num_views() << '\n';
+      output_header << "!extent of rotation := " << pdfs.get_num_views() * fabs(angle_increment) << '\n';        
+      output_header << "process status := acquired\n";
+      output_header << "!SPECT STUDY (acquired data):=\n";
+
+      output_header << "!direction of rotation := " 
+                    <<  (angle_increment<0 ? "CCW" : "CW")
+                    << '\n';
+      output_header << "start angle := " << angle_first_view << '\n';
+
+      ProjDataInfoCylindricalArcCorr const * proj_data_info_cyl_ptr = 
+        dynamic_cast<ProjDataInfoCylindricalArcCorr const *>(pdfs.get_proj_data_info_ptr());
+
+      VectorWithOffset<float> ring_radii = proj_data_info_cyl_ptr->get_ring_radii_for_all_views();
+      if (*std::min_element(ring_radii.begin(),ring_radii.end()) == 
+          *std::max_element(ring_radii.begin(),ring_radii.end()))
+        {
+          output_header << "orbit := Circular\n";
+          output_header << "Radius := " << *ring_radii.begin() << '\n';
+        }
+      else
+        {
+          output_header << "orbit := Non-circular\n";
+          output_header << "Radius := " << ring_radii << '\n';
+        }
+
+      output_header << "!matrix size [1] := "
+                    <<proj_data_info_cyl_ptr->get_num_tangential_poss() << '\n';
+      output_header << "!scaling factor (mm/pixel) [1] := "
+                    <<proj_data_info_cyl_ptr->get_tangential_sampling() << '\n';
+      output_header << "!matrix size [2] := "
+                    <<proj_data_info_cyl_ptr->get_num_axial_poss(0) << '\n';
+      output_header << "!scaling factor (mm/pixel) [2] := "
+                    <<proj_data_info_cyl_ptr->get_axial_sampling(0) << '\n';
+
+      output_header << "!END OF INTERFILE :=\n";
+
+      return Succeeded::yes;
+    }
+
+  // it's PET data if we get here
 
   output_header << "number of dimensions := 4\n";
   
@@ -830,15 +958,36 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
       // TODO something here
     }
 
-  output_header <<"image scaling factor[1] := "
+
+  // write time frame info
+  // TODO this is according to the proposed interfile standard for PET. Interfile 3.3 is different
+  {
+    const TimeFrameDefinitions& frame_defs(pdfs.get_exam_info_ptr()->time_frame_definitions);
+    if (frame_defs.get_num_time_frames()>0)
+      {
+	output_header << "number of time frames := " << frame_defs.get_num_time_frames() << '\n';
+	for (unsigned int frame_num=1; frame_num<=frame_defs.get_num_time_frames(); ++frame_num)
+	  {
+	    output_header << "image duration (sec)[" << frame_num << "] := "
+			  << frame_defs.get_duration(frame_num) << '\n';
+	    output_header << "image relative start time (sec)[" << frame_num << "] := "
+			  << frame_defs.get_start_time(frame_num) << '\n';
+	  }
+      }
+    else
+      {
+	// need to write this anyway to allow vectored keys below
+	output_header << "number of time frames := 1\n";
+      }
+  }
+ output_header <<"image scaling factor[1] := "
 		<<pdfs.get_scale_factor()<<endl;
 
-  output_header<<"data offset in bytes[1] := "
-	       <<pdfs.get_offset_in_stream()<<endl;
+  if (pdfs.get_offset_in_stream() != 0UL)
+    output_header<<"data offset in bytes[1] := "
+                 <<pdfs.get_offset_in_stream()<<endl;
     
- 
-  output_header << "number of time frames := 1\n";
-  output_header << "!END OF INTERFILE :=\n";
+   output_header << "!END OF INTERFILE :=\n";
 
   return Succeeded::yes;
 }

@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2011- $Date$, Hammersmith Imanet
+    Copyright (C) 2011, Hammersmith Imanet
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,16 +20,13 @@
   \ingroup recon_test
   
   \brief Test program for stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData
-
     
-   \author Kris Thielemans
-      
-   $Date$        
-   $Revision$
+  \author Kris Thielemans
 */
 
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjData.h"
+#include "stir/ExamInfo.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/SegmentByView.h"
@@ -176,7 +170,8 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
                                       /*max_delta=*/4,
                                       /*num_views=*/16,
                                       /*num_tang_poss=*/16));
-      proj_data_sptr.reset(new ProjDataInMemory (proj_data_info_sptr));
+      shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+      proj_data_sptr.reset(new ProjDataInMemory (exam_info_sptr, proj_data_info_sptr));
       for (int seg_num=proj_data_sptr->get_min_segment_num(); 
            seg_num<=proj_data_sptr->get_max_segment_num();
            ++seg_num)
@@ -242,7 +237,8 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
   shared_ptr<BinNormalisation> bin_norm_sptr(new TrivialBinNormalisation());
   {
     shared_ptr<ProjData> 
-      mult_proj_data_sptr(new ProjDataInMemory (proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone()));
+      mult_proj_data_sptr(new ProjDataInMemory (proj_data_sptr->get_exam_info_sptr(),
+						proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone()));
     for (int seg_num=proj_data_sptr->get_min_segment_num(); 
          seg_num<=proj_data_sptr->get_max_segment_num();
          ++seg_num)
@@ -263,7 +259,9 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
   }
 
   // additive term
-  shared_ptr<ProjData> add_proj_data_sptr(new ProjDataInMemory (proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone()));
+  shared_ptr<ProjData> add_proj_data_sptr(new ProjDataInMemory (proj_data_sptr->get_exam_info_sptr(),
+								
+proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone()));
   {
     for (int seg_num=proj_data_sptr->get_min_segment_num(); 
          seg_num<=proj_data_sptr->get_max_segment_num();

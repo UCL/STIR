@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002 - 2011-12-31, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -32,15 +30,16 @@
   
   \warning Implementation uses the Louvain la Neuve Ecat library. So, it will
     only work on systems where this library works properly.
-
-  $Date$
-  $Revision$
 */
 
 #ifdef HAVE_LLN_MATRIX
 
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataFromStream.h"
+#include "stir/ExamInfo.h"
+#include "stir/TimeFrameDefinitions.h"
+#include "stir/PatientPosition.h"
+#include "stir/ImagingModality.h"
 #include "stir/IO/interfile.h"
 #include "stir/utilities.h"
 #include "stir/NumericInfo.h"
@@ -62,7 +61,8 @@
 #include "stir/IO/stir_ecat7.h"
 #include "stir/IO/write_data.h"
 #include "stir/IO/read_data.h"
-
+#include "stir/ExamInfo.h"
+#include "stir/TimeFrameDefinitions.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -71,7 +71,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <memory>
-
+#include <boost/cstdint.hpp>
 
 #ifndef STIR_NO_NAMESPACES
 using std::size_t;
@@ -517,6 +517,131 @@ static void fill_string (char *str, int len)
     str[len-2]='\0';
 }
 
+shared_ptr<ExamInfo>
+read_ECAT7_exam_info(MatrixFile *mptr)
+{
+  
+  const int num_frames = std::max(static_cast<int>( mptr->mhptr->num_frames),1);
+  // funnily enough, num_bed_pos seems to be offset with 1
+  // (That's to say, in a singled bed study, num_bed_pos==0) 
+  // TODO maybe not true for multi-bed studies
+  const int num_bed_poss = static_cast<int>( mptr->mhptr->num_bed_pos) + 1;
+  // const int num_gates = std::max(static_cast<int>( mptr->mhptr->num_gates),1);
+
+  int min_frame_num = 1;
+  int max_frame_num = num_frames;
+  const int min_bed_num = 0;
+  const int max_bed_num = num_bed_poss-1;
+  const int gate_num = 1;
+  const int data_num = 0;
+
+  std::vector<std::pair<double,double> > frame_times;
+
+  for (int frame_num=min_frame_num; frame_num<=max_frame_num;++frame_num)
+    for (int bed_num=min_bed_num; bed_num<=max_bed_num;++bed_num)
+      {
+	const int matnum = mat_numcod (frame_num, 1, gate_num, data_num, bed_num);
+	MatrixData* matrix = matrix_read( mptr, matnum, MAT_SUB_HEADER);
+  
+	if (matrix==NULL)
+	  { 
+	    warning("TimeFrameDefinitions: Matrix not found at \"%d,1,%d,%d,%d\" in file \"%s\"\n.",
+		    frame_num, 1, gate_num, data_num, bed_num,  mptr->fname);
+	    continue;
+	  }
+
+	switch (mptr->mhptr->file_type)
+	  {
+	  case PetImage: 
+	  case ByteVolume:
+	  case PetVolume:
+	    {
+	      Image_subheader *sheader_ptr=
+		reinterpret_cast<Image_subheader*>(matrix->shptr);
+	      frame_times.push_back(std::make_pair(sheader_ptr->frame_start_time/1000.,
+						   sheader_ptr->frame_start_time/1000. 
+						   + sheader_ptr->frame_duration/1000.));
+	  
+	      break;
+	    }
+	  case Byte3dSinogram:
+	  case Short3dSinogram:
+	  case Float3dSinogram :
+	    {
+	      Scan3D_subheader *sheader_ptr=
+		reinterpret_cast<Scan3D_subheader*>(matrix->shptr);
+	      frame_times.push_back(std::make_pair(sheader_ptr->frame_start_time/1000.,
+						   sheader_ptr->frame_start_time/1000. 
+						   + sheader_ptr->frame_duration/1000.));
+	  
+	      break;
+	    }
+	  case CTISinogram :
+	    {
+	      Scan_subheader *sheader_ptr=
+		reinterpret_cast<Scan_subheader*>(matrix->shptr);
+	      frame_times.push_back(std::make_pair(sheader_ptr->frame_start_time/1000.,
+						   sheader_ptr->frame_start_time/1000. 
+						   + sheader_ptr->frame_duration/1000.));
+	  
+	      break;
+	    }
+	  default:
+	    {
+	      // can't do anything here
+	    }
+	  }
+	free_matrix_data(matrix);
+      }
+
+  TimeFrameDefinitions time_frame_defs(frame_times);
+  ExamInfo exam_info;
+  exam_info.imaging_modality = ImagingModality::PT;
+  exam_info.set_time_frame_definitions(time_frame_defs);
+  exam_info.start_time_in_secs_since_1970 = double(mptr->mhptr->scan_start_time);
+
+  switch(mptr->mhptr->patient_orientation)
+    {
+    case FeetFirstProne:
+      exam_info.patient_position = PatientPosition(PatientPosition::FFP); break;
+    case HeadFirstProne:
+      exam_info.patient_position = PatientPosition(PatientPosition::HFP); break;
+    case FeetFirstSupine:
+      exam_info.patient_position = PatientPosition(PatientPosition::FFS); break;
+    case HeadFirstSupine:
+      exam_info.patient_position = PatientPosition(PatientPosition::HFS); break;
+    case FeetFirstRight:
+      exam_info.patient_position = PatientPosition(PatientPosition::FFDR); break;
+    case HeadFirstRight:
+      exam_info.patient_position = PatientPosition(PatientPosition::HFDR); break;
+    case FeetFirstLeft:
+      exam_info.patient_position = PatientPosition(PatientPosition::FFDL); break;
+    case HeadFirstLeft:
+      exam_info.patient_position = PatientPosition(PatientPosition::HFDL); break;
+    case UnknownOrientation:
+    default:
+      exam_info.patient_position = PatientPosition(PatientPosition::unknown_position); break;
+    }
+
+  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo(exam_info));
+  return exam_info_sptr;
+}
+
+shared_ptr<ExamInfo>
+read_ECAT7_exam_info(const string& filename)
+{
+  MatrixFile * const mptr = 
+    matrix_open( filename.c_str(), MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
+  if (!mptr)
+    {
+      matrix_perror( filename.c_str());
+      error("Error reading ECAT7 file");
+    }
+  shared_ptr<ExamInfo> exam_info_sptr(read_ECAT7_exam_info(mptr));
+  matrix_close(mptr);
+  return exam_info_sptr;
+}
+
 void make_ECAT7_main_header(Main_header& mhead,
 			    Scanner const& scanner,
                             const string& orig_name                     
@@ -690,6 +815,7 @@ static short find_axial_compression(const ProjDataInfo& proj_data_info)
 NumericType 
 make_ECAT7_main_header(Main_header& mhead,
 		       const string& orig_name,
+		       ExamInfo const & exam_info,
 		       ProjDataInfo const & proj_data_info,
 		       const bool write_as_attenuation,
 		       NumericType output_type
@@ -698,6 +824,34 @@ make_ECAT7_main_header(Main_header& mhead,
   
   make_ECAT7_main_header(mhead, *proj_data_info.get_scanner_ptr(), orig_name);
   
+  mhead.num_frames = exam_info.time_frame_definitions.get_num_frames();
+  mhead.acquisition_type =
+    mhead.num_frames>1 ? DynamicEmission : StaticEmission;
+
+  mhead.scan_start_time = static_cast<boost::uint32_t>(floor(exam_info.start_time_in_secs_since_1970));
+
+  switch(exam_info.patient_position.get_position())
+    {
+    case PatientPosition::FFP:
+      mhead.patient_orientation = FeetFirstProne; break;
+    case PatientPosition::HFP:
+      mhead.patient_orientation = HeadFirstProne; break;
+    case PatientPosition::FFS:
+      mhead.patient_orientation = FeetFirstSupine; break;
+    case PatientPosition::HFS:
+      mhead.patient_orientation = HeadFirstSupine; break;
+    case PatientPosition::FFDR:
+      mhead.patient_orientation = FeetFirstRight; break;
+    case PatientPosition::HFDR:
+      mhead.patient_orientation = HeadFirstRight; break;
+    case PatientPosition::FFDL:
+      mhead.patient_orientation = FeetFirstLeft; break;
+    case PatientPosition::HFDL:
+      mhead.patient_orientation = HeadFirstLeft; break;
+    default:
+      mhead.patient_orientation = UnknownOrientation; break;
+    }
+
   // extra main parameters that depend on data type
   
   mhead.num_planes = 0;
@@ -1082,8 +1236,11 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
 			  short const * num_z_elements,
 			  const int span,
 			  const bool arc_corrected,
+			  unsigned int frame_start_time,
+			  unsigned int frame_duration,
 			  MatrixFile * const mptr, 
 			  MatrixData * const matrix, 
+			  const ExamInfo& exam_info_whole_file,
 			  const shared_ptr<iostream>&  stream_ptr)
 {
   shared_ptr<Scanner> scanner_ptr;
@@ -1107,7 +1264,18 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
   }
 #endif
 
- 
+  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo(exam_info_whole_file));
+  if (frame_duration>0)
+    {
+      std::vector<std::pair<double, double> > frame_times;
+      frame_times.push_back(std::make_pair(frame_start_time/1000.,
+					   frame_start_time/1000. 
+					   + frame_duration/1000.));
+      TimeFrameDefinitions time_frame_defs(frame_times);
+      exam_info_sptr->set_time_frame_definitions(time_frame_defs);
+      exam_info_sptr->start_time_in_secs_since_1970 = double(mptr->mhptr->scan_start_time);
+    }
+
   if(sub_header_ptr->num_dimensions != 4)
     warning("ECAT7 IO: Expected subheader.num_dimensions==4. Continuing...");
   const int num_tangential_poss = sub_header_ptr->num_r_elements;
@@ -1207,7 +1375,7 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
     return 0;
 
   
-  return new ProjDataFromStream (pdi_ptr, stream_ptr, offset_in_file, 
+  return new ProjDataFromStream (exam_info_sptr, pdi_ptr, stream_ptr, offset_in_file, 
 				 segment_sequence_in_stream,
 				 storage_order,
 				 data_type,
@@ -1221,6 +1389,7 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
                       MatrixData * const matrix, 
                       const shared_ptr<iostream>&  stream_ptr)
 {
+  shared_ptr<ExamInfo> exam_info_sptr(read_ECAT7_exam_info(mptr));
   switch (mptr->mhptr->file_type)
     {
     case AttenCor:   		
@@ -1238,7 +1407,8 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
 				    sub_header_ptr->z_elements,
 				    sub_header_ptr->span,
 				    arc_corrected,
-				    mptr, matrix, stream_ptr);
+				    0U, 0U, // pass invalid frame_duration
+				    mptr, matrix, *exam_info_sptr, stream_ptr);
       }
     case Byte3dSinogram:
     case Short3dSinogram:
@@ -1257,8 +1427,10 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
 	  make_pdfs_from_matrix_aux(sub_header_ptr, 
 				    sub_header_ptr->num_z_elements,
 				    sub_header_ptr->axial_compression,
+				    sub_header_ptr->frame_start_time,
+				    sub_header_ptr->frame_duration,
 				    arc_corrected,
-				    mptr, matrix, stream_ptr);
+				    mptr, matrix, *exam_info_sptr, stream_ptr);
       }
     default:
       {
@@ -1957,6 +2129,27 @@ ByteOrder::big_endian;
     scan3d_shead.loss_correction_fctr= 1.F; 
     scan3d_shead.scale_factor= scale_factor; 
     scan3d_shead.storage_order = ElAxVwRd;
+    // do frame times.
+    if (mhead.num_bed_pos>1)
+      {
+	// TODO not sure how to handle this
+	warning("Not filling in frame-start/duration for multi-bed position data in ECAT7 subheader");
+      }
+    else
+      {
+	const ExamInfo& exam_info = *proj_data.get_exam_info_ptr();
+	if (exam_info.time_frame_definitions.get_num_time_frames()==1)
+	  {
+	    // note: always use frame 1 for proj_data
+	    const double frame_start_time = 
+	      exam_info.time_frame_definitions.get_start_time(1U)
+	      + exam_info.start_time_in_secs_since_1970 - mhead.scan_start_time;
+	    const double frame_duration = 
+	      exam_info.time_frame_definitions.get_duration(1U);
+	    scan3d_shead.frame_start_time = static_cast<unsigned int>(round(frame_start_time*1000.));
+	    scan3d_shead.frame_duration = static_cast<unsigned int>(round(frame_duration*1000.));
+	  }
+      }
   }
 
   // allocate space in file, and write subheader
@@ -2103,7 +2296,9 @@ ProjData_to_ECAT7(ProjData const& proj_data, NumericType output_type,
 {  
   Main_header mhead;
 
-  make_ECAT7_main_header(mhead, orig_name, *proj_data.get_proj_data_info_ptr(),
+  make_ECAT7_main_header(mhead, orig_name, 
+			 *proj_data.get_exam_info_ptr(),
+			 *proj_data.get_proj_data_info_ptr(),
                          write_as_attenuation, output_type);
 
   MatrixFile *mptr= matrix_create(cti_name.c_str(), MAT_CREATE, &mhead);   

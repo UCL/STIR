@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2005 - 2011-12-31, Hammersmith Imanet Ltd
     Copyright (C) 2013, Kris Thielemans
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,8 +25,12 @@
 */
 
 #include "stir/DynamicProjData.h"
+#include "stir/ExamInfo.h"
+#include "stir/TimeFrameDefinitions.h"
 #include "stir/IO/stir_ecat7.h"
 #include "stir/ProjDataFromStream.h"
+#include "stir/ExamInfo.h"
+#include "stir/TimeFrameDefinitions.h"
 #include <iostream>
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
@@ -51,12 +56,32 @@ read_interfile_DPDFS(const string& filename,
 const double
 DynamicProjData::
 get_start_time_in_secs_since_1970() const
-{ return this->_start_time_in_secs_since_1970; }
+{ return this->get_exam_info_sptr()->start_time_in_secs_since_1970; }
 
 void 
 DynamicProjData::
 set_start_time_in_secs_since_1970(const double start_time)
-{ this->_start_time_in_secs_since_1970=start_time; }
+{ 
+  // reset local pointer to a new one (with the same info) to avoid changing
+  // other objects that happen to use the same shared_ptr
+  this->_exam_info_sptr.reset(new ExamInfo(*this->_exam_info_sptr));
+  this->_exam_info_sptr->start_time_in_secs_since_1970=start_time; 
+}
+
+void
+DynamicProjData::
+set_time_frame_definitions(const TimeFrameDefinitions& time_frame_definitions) 
+{ 
+  // reset local pointer to a new one (with the same info) to avoid changing
+  // other objects that happen to use the same shared_ptr
+  this->_exam_info_sptr.reset(new ExamInfo(*this->_exam_info_sptr));
+  this->_exam_info_sptr->time_frame_definitions=time_frame_definitions; 
+}
+
+const TimeFrameDefinitions& 
+DynamicProjData::
+get_time_frame_definitions() const
+{   return this->_exam_info_sptr->time_frame_definitions;    }
 
 DynamicProjData*
 DynamicProjData::
@@ -95,16 +120,12 @@ read_from_file(const string& filename) // The written projection data is read in
           warning("DynamicProjData::read_from_file cannot read '%s' as ECAT7", filename.c_str());
           return 0;
         }
-      DynamicProjData * dynamic_proj_data_ptr = new DynamicProjData;
-      dynamic_proj_data_ptr->_time_frame_definitions =
-        TimeFrameDefinitions(filename);      
+      shared_ptr<ExamInfo> exam_info_sptr(read_ECAT7_exam_info(filename));
+      DynamicProjData * dynamic_proj_data_ptr = new DynamicProjData(exam_info_sptr);
 
       // we no longer have a _scanner_sptr member, so next lines are commented out
       //dynamic_proj_data_ptr->_scanner_sptr.reset(
       //					 find_scanner_from_ECAT_system_type(mhead.system_type));
-
-      dynamic_proj_data_ptr->_start_time_in_secs_since_1970 =
-        static_cast<double>(mhead.scan_start_time);
 
       const unsigned int num_frames =
         static_cast<unsigned int>(mhead.num_frames);
@@ -154,12 +175,8 @@ write_to_ecat7(const string& filename) const
 
   Main_header mhead;
   ecat::ecat7::make_ECAT7_main_header(mhead, filename, 
+				      *get_exam_info_ptr(),
                                       *get_proj_data(1).get_proj_data_info_ptr() );
-  mhead.num_frames = this->get_num_frames();
-  mhead.acquisition_type =
-    mhead.num_frames>1 ? DynamicEmission : StaticEmission;
-
-  round_to(mhead.scan_start_time, floor(this->get_start_time_in_secs_since_1970()));
     
   MatrixFile* mptr= matrix_create (filename.c_str(), MAT_CREATE, &mhead);
   if (mptr == 0)
@@ -224,75 +241,79 @@ read_interfile_DPDFS(istream& input,
        return 0;
      }
    shared_ptr<ProjDataInfo> proj_data_info_sptr(hdr.data_info_ptr->create_shared_clone());
-   unsigned long data_offset = hdr.data_offset[0];
+   unsigned long data_offset = hdr.data_offset_each_dataset[0];
    // offset in file between time frames
    unsigned long data_offset_increment = 0UL; // we will find it below
-   DynamicProjData * dynamic_proj_data_ptr = new DynamicProjData;
+   DynamicProjData * dynamic_proj_data_ptr = new DynamicProjData(hdr.get_exam_info_sptr());
    if (is_null_ptr(dynamic_proj_data_ptr))
      {
        error(boost::format("DynamicProjData: error allocating memory for new object (for file \"%1%\")")
 		    % full_data_file_name);
      }
-   dynamic_proj_data_ptr->resize(hdr.num_time_frames);
-   dynamic_proj_data_ptr->set_time_frame_definitions(hdr.time_frame_definitions);
-
-   // TODO set start_time*UTC
-
+   dynamic_proj_data_ptr->resize(hdr.get_exam_info_ptr()->time_frame_definitions.get_num_time_frames());
+   
    // now set all proj_data_sptrs
    for (unsigned int frame_num=1; frame_num <= dynamic_proj_data_ptr->get_num_frames(); ++frame_num)
-        {
-	  // TODO remove
-	  info(boost::format("Using data offset %1% for frame %2% in file %3%\n") % data_offset % frame_num % full_data_file_name);
-	  shared_ptr<ProjData> 
-	    proj_data_sptr(new ProjDataFromStream(proj_data_info_sptr,
-						  data_in,
-						  data_offset,
-						  hdr.segment_sequence,
-						  hdr.storage_order,
-						  hdr.type_of_numbers,
-						  hdr.file_byte_order,
-						  static_cast<float>(hdr.image_scaling_factors[0][0])));
-	  if (is_null_ptr(proj_data_sptr))
-	    {
-	      error(boost::format("DynamicProjData: error reading frame %1% from file '%2%'")
-		    % frame_num % full_data_file_name);
-	    }
+     {
+       info(boost::format("Using data offset %1% for frame %2% in file %3%\n") % data_offset % frame_num % full_data_file_name);
+       shared_ptr<ExamInfo> current_exam_info_sptr(new ExamInfo(*hdr.get_exam_info_sptr()));
+       std::vector<std::pair<double, double> > frame_times;
+       frame_times.push_back(std::make_pair(hdr.get_exam_info_ptr()->time_frame_definitions.get_start_time(frame_num),
+					    hdr.get_exam_info_ptr()->time_frame_definitions.get_end_time(frame_num)));
+       TimeFrameDefinitions time_frame_defs(frame_times);
+       current_exam_info_sptr->set_time_frame_definitions(time_frame_defs);
+
+       shared_ptr<ProjData> 
+	 proj_data_sptr(new ProjDataFromStream(current_exam_info_sptr,
+					       proj_data_info_sptr,
+					       data_in,
+					       data_offset,
+					       hdr.segment_sequence,
+					       hdr.storage_order,
+					       hdr.type_of_numbers,
+					       hdr.file_byte_order,
+					       static_cast<float>(hdr.image_scaling_factors[0][0])));
+       if (is_null_ptr(proj_data_sptr))
+	 {
+	   error(boost::format("DynamicProjData: error reading frame %1% from file '%2%'")
+		 % frame_num % full_data_file_name);
+	 }
       
-          dynamic_proj_data_ptr->set_proj_data_sptr(proj_data_sptr, frame_num);
+       dynamic_proj_data_ptr->set_proj_data_sptr(proj_data_sptr, frame_num);
 
-	  // TODO, move offset code to InterfileHeader.cxx
-	  // find data offset increment
-	  if (frame_num==1)
-	    {
-	      int num_sinos = 0;
-	      for (int s=proj_data_info_sptr->get_min_segment_num();
-		   s<=proj_data_info_sptr->get_max_segment_num();
-		   ++s)
-		{
-		  num_sinos += proj_data_info_sptr->get_num_axial_poss(s);
-		}
-	      data_offset_increment = static_cast<unsigned long>(num_sinos) * 
-		proj_data_info_sptr->get_num_tangential_poss() * proj_data_info_sptr->get_num_views() * 
-		hdr.type_of_numbers.size_in_bytes();
-	    }
+       // TODO, move offset code to InterfileHeader.cxx
+       // find data offset increment
+       if (frame_num==1)
+	 {
+	   int num_sinos = 0;
+	   for (int s=proj_data_info_sptr->get_min_segment_num();
+		s<=proj_data_info_sptr->get_max_segment_num();
+		++s)
+	     {
+	       num_sinos += proj_data_info_sptr->get_num_axial_poss(s);
+	     }
+	   data_offset_increment = static_cast<unsigned long>(num_sinos) * 
+	     proj_data_info_sptr->get_num_tangential_poss() * proj_data_info_sptr->get_num_views() * 
+	     hdr.type_of_numbers.size_in_bytes();
+	 }
 
-	  // find offset of next frame
-	  if (frame_num < dynamic_proj_data_ptr->get_num_frames())
-	    {
-	      // note that hdr.data_offset uses zero-based indexing, so next line finds the offset for frame frame_num+1
-	      if (hdr.data_offset[frame_num]>0)
-		{
-		  if (fabs(static_cast<double>(data_offset) - hdr.data_offset[frame_num]) < data_offset_increment)
-		    {
-		      error(boost::format("data offset for frame %1% is too small. Difference in offsets needs to be at least %2%")
-			    % (frame_num+1) % data_offset_increment);
-		    }
-		  data_offset = hdr.data_offset[frame_num];
-		}
-	      else
-		data_offset += data_offset_increment;
-	    }
-	} // end loop over frames
+       // find offset of next frame
+       if (frame_num < dynamic_proj_data_ptr->get_num_frames())
+	 {
+	   // note that hdr.data_offset uses zero-based indexing, so next line finds the offset for frame frame_num+1
+	   if (hdr.data_offset_each_dataset[frame_num]>0)
+	     {
+	       if (fabs(static_cast<double>(data_offset) - hdr.data_offset_each_dataset[frame_num]) < data_offset_increment)
+		 {
+		   error(boost::format("data offset for frame %1% is too small. Difference in offsets needs to be at least %2%")
+			 % (frame_num+1) % data_offset_increment);
+		 }
+	       data_offset = hdr.data_offset_each_dataset[frame_num];
+	     }
+	   else
+	     data_offset += data_offset_increment;
+	 }
+     } // end loop over frames
 
    return dynamic_proj_data_ptr;
 }

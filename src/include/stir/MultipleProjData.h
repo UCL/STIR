@@ -1,9 +1,7 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2005 - 2007-10-08, Hammersmith Imanet Ltd
-    Copyright (C) 2013-01-01 - $Date$, Kris Thielemans
+    Copyright (C) 2013, Kris Thielemans
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,9 +24,6 @@
   \ingroup data_buildblock
   \brief Declaration of class stir::MultipleProjData
   \author Kris Thielemans
-  
-  $Date$
-  $Revision$
 */
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
@@ -42,12 +37,25 @@ class MultipleProjData
 public:
 
   MultipleProjData() {};
-#if 0
-  MultipleProjData(const shared_ptr<Scanner>& scanner_sptr)
+
+  MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr)
+    : _exam_info_sptr(exam_info_sptr)
   {
-    _scanner_sptr=scanner_sptr;
   }
-#endif
+  //! Get a pointer to the exam information
+  const ExamInfo*
+    get_exam_info_ptr() const
+  {
+    return this->_exam_info_sptr.get();
+  }
+
+  //! Get a shared pointer to the exam information
+  shared_ptr<ExamInfo>
+    get_exam_info_sptr() const
+  {
+    return this->_exam_info_sptr;
+  }
+
   unsigned
     get_num_proj_data() const
   {
@@ -113,6 +121,8 @@ public:
 protected:
   std::vector<shared_ptr<ProjData > > _proj_datas;
   //shared_ptr<Scanner> _scanner_sptr;
+ protected:
+  shared_ptr<ExamInfo> _exam_info_sptr;
 };
 
 END_NAMESPACE_STIR

@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*!
   \file
   \ingroup utilities 
@@ -9,9 +6,6 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
-
-  $Date$
-  $Revision$
 
   Usage:
   \code
@@ -29,7 +23,7 @@
   The options -p and --preserve-mean are identical.
 */
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2004, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -257,7 +251,7 @@ main (int argc,char *argv[])
 #endif
 
 
-  ProjDataInterfile new_data(in_data->get_proj_data_info_ptr()->create_shared_clone(), filename);
+  ProjDataInterfile new_data(in_data->get_exam_info_sptr(),in_data->get_proj_data_info_ptr()->create_shared_clone(), filename);
 
   
   poisson_noise(new_data,*in_data, scaling_factor, preserve_mean);

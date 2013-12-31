@@ -1,8 +1,4 @@
-//
-// $Id$
-//
 /*!
-
   \file
   \ingroup projdata
   \brief Implementations for non-inline functions of class stir::ProjDataFromStream
@@ -11,14 +7,13 @@
   \author Kris Thielemans
   \author Claire Labbe
   \author PARAPET project
-
-  $Date$
-  $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-12-21, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-2012, Kris Thielemans
+    Copyright (C) 2013, University College London
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -35,6 +30,7 @@
 */
 
 #include "stir/ProjDataFromStream.h"
+#include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
 #include "stir/Viewgram.h"
 #include "stir/Sinogram.h"
@@ -74,7 +70,8 @@ START_NAMESPACE_STIR
 // constructors
 //---------------------------------------------------------
 
-ProjDataFromStream::ProjDataFromStream(shared_ptr<ProjDataInfo> const& proj_data_info_ptr, 
+ProjDataFromStream::ProjDataFromStream(shared_ptr<ExamInfo> const& exam_info_sptr,
+				       shared_ptr<ProjDataInfo> const& proj_data_info_ptr, 
                                        shared_ptr<iostream> const& s, const streamoff offs, 
                                        const vector<int>& segment_sequence_in_stream_v,
                                        StorageOrder o,                
@@ -83,7 +80,7 @@ ProjDataFromStream::ProjDataFromStream(shared_ptr<ProjDataInfo> const& proj_data
                                        float scale_factor)
                                        
                                        :
-                                       ProjData(proj_data_info_ptr),
+                                       ProjData(exam_info_sptr, proj_data_info_ptr),
                                        sino_stream(s), offset(offs),
                                        segment_sequence(segment_sequence_in_stream_v),
                                        storage_order(o),
@@ -95,14 +92,15 @@ ProjDataFromStream::ProjDataFromStream(shared_ptr<ProjDataInfo> const& proj_data
   assert(!(data_type == NumericType::UNKNOWN_TYPE));
 }
 
-ProjDataFromStream::ProjDataFromStream(shared_ptr<ProjDataInfo> const& proj_data_info_ptr, 
+ProjDataFromStream::ProjDataFromStream(shared_ptr<ExamInfo> const& exam_info_sptr,
+				       shared_ptr<ProjDataInfo> const& proj_data_info_ptr, 
                                        shared_ptr<iostream> const& s, const streamoff offs, 
                                        StorageOrder o,                
                                        NumericType data_type,
                                        ByteOrder byte_order,  
                                        float scale_factor)                                     
                                        :
-                                       ProjData(proj_data_info_ptr),
+                                       ProjData(exam_info_sptr, proj_data_info_ptr),
                                        sino_stream(s), offset(offs),
                                        storage_order(o),
                                        on_disk_data_type(data_type),
@@ -864,7 +862,7 @@ ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
 }
 
 
-
+#if 0
 ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
 {
     
@@ -1014,7 +1012,8 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
     
     ProjDataFromStream* proj_data_ptr =
       new 
-      ProjDataFromStream (data_info_ptr,
+      ProjDataFromStream (exam_info_sptr, 
+			  data_info_ptr,
                           p_in_stream, offset_in_file, 
                           segment_sequence_in_stream,
                           storage_order,data_type,byte_order,  
@@ -1026,6 +1025,8 @@ ProjDataFromStream* ProjDataFromStream::ask_parameters(const bool on_disk)
     return proj_data_ptr;
     
 }
+
+#endif
 
 float
 ProjDataFromStream::get_scale_factor() const

@@ -175,9 +175,6 @@ SSRB(const string& output_filename,
      const int max_in_segment_num_to_process
      )
 {
-  if (num_segments_to_combine%2==0)
-    error("SSRB: num_segments_to_combine (%d) needs to be odd\n", 
-	  num_segments_to_combine);
   shared_ptr<ProjDataInfo> out_proj_data_info_ptr(
     SSRB(*in_proj_data.get_proj_data_info_ptr(),
          num_segments_to_combine,
@@ -185,7 +182,8 @@ SSRB(const string& output_filename,
 	 num_tang_poss_to_trim,
          max_in_segment_num_to_process
 	 ));
-  ProjDataInterfile out_proj_data(out_proj_data_info_ptr, output_filename, std::ios::out); 
+  ProjDataInterfile out_proj_data(in_proj_data.get_exam_info_sptr(), 
+				  out_proj_data_info_ptr, output_filename, std::ios::out); 
 
   SSRB(out_proj_data, in_proj_data, do_norm);
 }

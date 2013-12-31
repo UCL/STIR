@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-  Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2001- 2009, Hammersmith Imanet Ltd
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -112,9 +109,6 @@
   in the order that they will be executed (i.e. as listed above). It might be 
   that we take the order into account in a future release.
   \author Kris Thielemans 
-
-  $Date$
-  $Revision$ 
 */
 
 #include "stir/ArrayFunction.h"
@@ -124,6 +118,7 @@
 #include "stir/IO/read_from_file.h"
 #include "stir/Succeeded.h"
 #include "stir/ProjDataInterfile.h"
+#include "stir/ExamInfo.h"
 #include "stir/utilities.h"
 #include "stir/Succeeded.h"
 #include "stir/NumericInfo.h"
@@ -571,10 +566,17 @@ main(int argc, char **argv)
 		reduce_segment_range(-max_segment_num_to_process,
 				     max_segment_num_to_process);
 	    }
-	  out_proj_data_ptr.reset(new ProjDataInterfile(output_proj_data_info_sptr, 
+	  out_proj_data_ptr.reset(new ProjDataInterfile((*all_proj_data[0]).get_exam_info_sptr(),
+							output_proj_data_info_sptr, 
 							output_file_name));        
 	}
-
+      if (num_files>1)
+	{
+	  // reset time-frames as we don't really know what's happening with all this
+	  ExamInfo new_exam_info(*out_proj_data_ptr->get_exam_info_ptr());
+	  new_exam_info.set_time_frame_definitions(TimeFrameDefinitions());
+	  out_proj_data_ptr->set_exam_info(new_exam_info);
+	}
       // read rest of projection data headers
       for (int i=1; i<num_files; ++i)
 	all_proj_data[i] =  ProjData::read_from_file(argv[i]); 

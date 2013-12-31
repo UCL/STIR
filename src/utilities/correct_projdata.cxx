@@ -509,7 +509,8 @@ set_up()
 	    char ext[50];
 	    sprintf(ext, "_f%dg1b0d0", current_frame);
 	    const string output_filename_with_ext = output_filename + ext;	
-	    output_projdata_ptr = new ProjDataInterfile(output_proj_data_info_sptr,output_filename_with_ext);
+	    output_projdata_ptr = new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), 
+							output_proj_data_info_sptr,output_filename_with_ext);
 	  }
       }
     else
@@ -524,7 +525,8 @@ set_up()
 	    output_filename_with_ext += ext;
 	  }
 #endif
-	output_projdata_ptr.reset(new ProjDataInterfile(output_proj_data_info_sptr,output_filename_with_ext));
+	output_projdata_ptr.reset(new ProjDataInterfile(input_projdata_ptr->get_exam_info_sptr(), 
+							output_proj_data_info_sptr,output_filename_with_ext));
       }
 
   }

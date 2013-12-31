@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002 - 2011-02-23, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,9 +20,6 @@
   \brief Declaration of class stir::ProjDataInMemory
 
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 
 #ifndef __stir_ProjDataInMemory_H__
@@ -81,7 +75,8 @@ public:
     \param initialise_with_0 specifies if the data should be set to 0. 
         If \c false, the data is undefined until you set it yourself.
   */
-  ProjDataInMemory (shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
+  ProjDataInMemory (shared_ptr<ExamInfo> const& exam_info_sptr,
+		    shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
                     const bool initialise_with_0 = true);
 
   //! constructor that copies data from another ProjData

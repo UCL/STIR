@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2004, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -49,9 +46,6 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
-  
-  $Date$
-  $Revision$
 */
 
 #include "stir/recon_buildblock/BackProjectorByBin.h"
@@ -61,6 +55,7 @@
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/ProjDataInfo.h"
+#include "stir/ExamInfo.h"
 // for ask_filename...
 #include "stir/utilities.h"
 #include "stir/IndexRange3D.h"
@@ -214,7 +209,8 @@ main(int argc, char **argv)
       shared_ptr<ProjDataInfo> data_info(ProjDataInfo::ask_parameters());
       // create an empty ProjDataFromStream object
       // such that we don't have to differentiate between code later on
-      proj_data_ptr.reset(new ProjDataFromStream (data_info,shared_ptr<iostream>()));
+      shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+      proj_data_ptr.reset(new ProjDataFromStream (exam_info_sptr, data_info,shared_ptr<iostream>()));
       fill = true;
     }
   shared_ptr<BackProjectorByBin> back_projector_ptr;

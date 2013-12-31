@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
   Copyright (C) 2005 - 2011-12-31, Hammersmith Imanet Ltd
-  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+  Copyright (C) 2011-07-01 - 2012, Kris Thielemans
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -34,9 +31,6 @@
   this point are included in the mask.  
 
   \author Kris Thielemans
-  
-  $Date$
-  $Revision$
 	
   \par Usage:   
   
@@ -130,7 +124,8 @@ int main(int argc, const char *argv[])
   if (is_null_ptr(ACF_sptr))
     error("Check the attenuation_correct_factors file");
   
-  ProjDataInterfile mask_proj_data(ACF_sptr->get_proj_data_info_ptr()->create_shared_clone(), 
+  ProjDataInterfile mask_proj_data(ACF_sptr->get_exam_info_sptr(),
+				   ACF_sptr->get_proj_data_info_ptr()->create_shared_clone(), 
 				   output_filename);
   
   Bin bin;

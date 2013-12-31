@@ -1,7 +1,3 @@
-//
-// $Id$
-//
-
 /*!  
   \file 
   \brief FORE kernel 
@@ -11,16 +7,14 @@
   \author Kris Thielemans
   \author Oliver Nix
   \author PARAPET project
-  $Date$
-  $Revision$
 */
 /*
     Copyright (C) 1193 - 1996, Matthias Egger (copyright transfered to Hammersmith Imanet Ltd)
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2003 - 2005, Hammersmith Imanet Ltd
     Copyright (C) 2004 - 2005 DKFZ Heidelberg, Germany
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
-
+    Copyright (C) 2011-07-01 - 2012, Kris Thielemans
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -168,7 +162,8 @@ rebin()
   rebinned_proj_data_info_sptr->set_min_axial_pos_num(0, 0);
   rebinned_proj_data_info_sptr->set_max_axial_pos_num(num_planes-1,0);
   //CON create the output (interfile) file to where the rebinned data will be written. 
-  rebinned_proj_data_sptr.reset(new ProjDataInterfile (rebinned_proj_data_info_sptr,output_filename_prefix));
+  rebinned_proj_data_sptr.reset(new ProjDataInterfile (proj_data_sptr->get_exam_info_sptr(),
+						       rebinned_proj_data_info_sptr,output_filename_prefix));
   //CON get scanner related parameters needed for the rebinning kernel.
   //CON create a scanner object. The scanner type is identified from the projection data info. 
   const Scanner* scanner = rebinned_proj_data_sptr->get_proj_data_info_ptr()->get_scanner_ptr();

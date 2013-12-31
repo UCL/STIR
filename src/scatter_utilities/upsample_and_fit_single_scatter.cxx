@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2005- 2009, Hammersmith Imanet Ltd
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -27,9 +24,6 @@
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
-  
-  $Date$
-  $Revision$
         
   \par Usage:
   \code
@@ -164,7 +158,8 @@ int main(int argc, const char *argv[])
   stir::shared_ptr<stir::ProjDataInfo> data_to_fit_proj_data_info_sptr =
     data_to_fit_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();
   
-  stir::ProjDataInterfile output_proj_data(data_to_fit_proj_data_info_sptr, output_filename);
+  stir::ProjDataInterfile output_proj_data(data_to_fit_proj_data_sptr->get_exam_info_sptr(),
+					   data_to_fit_proj_data_info_sptr, output_filename);
         
   stir::ScatterEstimationByBin::
     upsample_and_fit_scatter_estimate(output_proj_data,

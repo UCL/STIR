@@ -25,6 +25,7 @@
 */
 #include "stir/scatter/ScatterEstimationByBin.h"
 #include "stir/ProjDataInterfile.h"
+#include "stir/ExamInfo.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h" 
 #include "stir/Bin.h"
@@ -234,7 +235,11 @@ ScatterEstimationByBin::
 set_output_proj_data(const std::string& filename)
 {
   this->output_proj_data_filename = filename;
-  this->output_proj_data_sptr.reset(new ProjDataInterfile(this->proj_data_info_ptr->create_shared_clone(),this->output_proj_data_filename));
+  // TODO get ExamInfo from image
+  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+  this->output_proj_data_sptr.reset(new ProjDataInterfile(exam_info_sptr,
+							  this->proj_data_info_ptr->create_shared_clone(),
+							  this->output_proj_data_filename));
 }
 
 /****************** functions to compute scatter **********************/

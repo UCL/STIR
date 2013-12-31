@@ -1,7 +1,3 @@
-//
-// $Id$
-//
-
 /*!
 \file
 \ingroup utilities
@@ -10,9 +6,6 @@
 \author Matthew Jacobson
 \author Sanida Mustafovic and Kris Thielemans (conversion to new design)
 \author PARAPET project
-
-$Date$
-$Revision$
 
 This utility programme processes (interfile) sinogram data 
 (maximum number of segments as input). It can
@@ -24,7 +17,7 @@ This utility programme processes (interfile) sinogram data
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -383,7 +376,8 @@ int main(int argc, char *argv[])
 	      shared_ptr<ProjDataInfo> pdi_ptr =
 		first_operand->get_proj_data_info_ptr()->create_shared_clone();
 	      pdi_ptr->reduce_segment_range(-limit_segments, limit_segments);
-	      output_proj_data = new ProjDataFromStream(pdi_ptr, new_sino_ptr);
+	      output_proj_data = new ProjDataFromStream(first_operand->get_exam_info_sptr(),
+							pdi_ptr, new_sino_ptr);
 	      write_basic_interfile_PDFS_header(output_buffer_filename, *output_proj_data);
 	      buffer_opened=true;
             }

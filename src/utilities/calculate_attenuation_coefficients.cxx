@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2001 - 2011-12-31, Hammersmith Imanet Ltd
-    Copyright (C) 2013-01-01 - $Date$, Kris Thielemans
+    Copyright (C) 2013, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -44,9 +41,6 @@
 
   \author Sanida Mustafovic
   \author Kris Thielemans
-  
-  $Date$
-  $Revision$
 */
 
 #include "stir/ProjDataInterfile.h"
@@ -203,7 +197,8 @@ main (int argc, char * argv[])
   const string output_file_name = argv[1];
   shared_ptr<ProjData> 
     out_proj_data_ptr(
-		      new ProjDataInterfile(template_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
+		      new ProjDataInterfile(template_proj_data_ptr->get_exam_info_sptr(),
+					    template_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
 					    output_file_name));
   
   do_segments(*attenuation_image_ptr,*out_proj_data_ptr,

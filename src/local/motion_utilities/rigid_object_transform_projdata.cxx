@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003 - 2012-01-06, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 namespace stir { // for doxygen
@@ -24,8 +21,6 @@ namespace stir { // for doxygen
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 } // END_NAMESPACE_STIR
 
@@ -107,7 +102,7 @@ int main(int argc, char **argv)
   else
     proj_data_info_ptr->reduce_segment_range(-max_out_segment_num_to_process,max_out_segment_num_to_process);
 
-  ProjDataInterfile out_projdata(proj_data_info_ptr, output_filename, ios::out); 
+  ProjDataInterfile out_projdata(in_projdata_sptr->get_exam_info_sptr(), proj_data_info_ptr, output_filename, ios::out); 
 
   if (do_origin_shift)
     {

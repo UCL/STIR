@@ -26,6 +26,7 @@
   \author PARAPET project
 */
 #include "stir/ProjData.h"
+#include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/SegmentBySinogram.h"
@@ -61,6 +62,7 @@
 using std::istream;
 using std::fstream;
 using std::ios;
+using std::string;
 #endif
 
 START_NAMESPACE_STIR
@@ -207,6 +209,13 @@ read_from_file(const string& filename,
   return null_ptr;
 }
 
+void
+ProjData::set_exam_info(ExamInfo const& new_exam_info)
+{
+  this->exam_info_sptr.reset(new ExamInfo(new_exam_info));
+}
+
+  
 Viewgram<float> 
 ProjData::get_empty_viewgram(const int view_num, const int segment_num, 
 			     const bool make_num_tangential_poss_odd) const
