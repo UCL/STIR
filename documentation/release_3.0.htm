@@ -1,0 +1,176 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Summary of changes in STIR release 3.0 (dated ??/11/2013)</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in STIR release 3.0 (dated ??/11/2013)</h1>
+
+<p>This release is the first to handle SPECT data properly.
+It contains code by Carl&eacute;s Falc&oacute;n (Biomedical Image Group (GIB), Universitat de Barcelona)
+to create the system matrix for SPECT, integrated into STIR by Bert&aacute; Mart&iacute; Fuster 
+(Institute for Bioengineering of Catalonia) and Kris Thielemans 
+(University College London, Algorithms and Software Consulting Ltd), together with some
+additions and minor bug fixes by the same authors.
+Additional testing by Charalampos Tsoumpas (KCL).</p>
+<p>This work was the result of a collaboration between University of Barcelona,
+King's College London and University College London, and is reported in<br />
+  Berta Marti Fuster, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Pablo Aguiar, Albert Cot, Domenec Ros and Kris Thielemans,<br />
+  <i>Integration of advanced 3D SPECT modeling into the open-source STIR framework</i>,<br />
+  Med. Phys. 40, 092502 (2013); 
+  <a href="http://dx.doi.org/10.1118/1.4816676">DOI 10.1118/1.4816676</a>.
+</p>
+
+
+
+
+<h2> Summary for end users (also to be read by developers)</h2>
+<h3>Important bug fixes</h3>
+<ul>
+<li>None
+</li>
+</ul>
+
+<h3>New functionality</h3>
+<ul>
+<li> new projection matrix for SPECT (called <code>SPECT UB</code>) supporting parallel hole collimators 
+with non-circular orbits, including attenuation modelling and 3D PSF</li>
+<li>modifications to <code>ProjMatrixByBin</code> to allow larger matrices (currently needing uint64 support by the compiler) and clearing the cache</li>
+<li>Interfile 3.3 IO for SPECT projection data.</li>
+<li>changes to <code>ProjDatainfoCylindrical</code> to allow different radii for different views</li>
+<li> reading and writing of images via <a href="http://www.itk.org">ITK</a>. As ITK has its own registry of 
+file formats, this extends STIR to support Nifti (.nii), MetaIO (.mhdr), NRRD (.nhdr)  etc. 
+To enable this, you need to have ITK installed when building STIR with CMake. 
+To write images in any of these file formats, you need
+to set an explict file format type and set it to <tt>ITK</tt> .<br />
+<strong>Warning:</strong> The translation of the geometry between STIR and ITK
+is currently incomplete as STIR <strong>ignores patient orientation</strong>. 
+</li>
+<li>The <tt>list_projdata_info</tt> utilities has an extra option <tt>--exam</tt> to
+list some exam information (patient position and timing).
+</li>
+<li>The distribution now includes sample scripts  (in the <tt>samples</tt> folder) 
+for simulating PET data, adding Poisson noise
+and reconstructing the data.</li>
+</ul>
+
+<h3>Changed functionality</h3>
+<ul>
+<li>Interfile reading/writing has changed to accomodate SPECT. /li>
+<li>ECAT7 and Interfile reading/writing of projection data now preserve
+more information such as patient position and time frame definitions.
+</li>
+<li>Interfile reading now exits with an error if a vectored key (such as <tt>matrix size</tt>
+</ul>
+
+<h3>Build system</h3>
+<ul>
+<li> 
+Using <a href="http://www.cmake.org">CMake</a> is now recommended (see the wiki). Some options
+such as shared libraries and SWIG support can only be enabled when using CMake. Hand-crafted project files
+for Visual Studio are no longer distributed.
+</li>
+</ul>
+
+
+<h3>Known problems</h3>
+<ul>
+<li>On Windows, using shared libraries fails. We need to sort out dependencies between libraries to fix this.</li>
+<li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
+<li>The recon_test_pack routines fail with the MPI version. A work-around is to prefix the reconstruction executables with <tt>mpirun -np 4</tt> or so.</li>
+<li>The MPI version of OSMAPOSL and OSSPS cannot compute the value of the objective function. Therefore, setting the
+<tt>report objective function values interval</tt> keyword to 1 will cause a crash.</li>
+<li>ECAT6 is no longer supported</li>
+<li>The interpolating back-projector still gives problems in the centre of the images
+on some architectures/compiler/optimisation settings. We recommend to use the ray-tracing
+matrix (with additional rays) instead.</li>
+<li>When using <code>GRAPHICS=X</code> (i.e. on Unix/Linux/MacOSX) the window displaying
+the bitmaps is sometimes empty. This might depend on your X server settings.
+This affects <tt>manip_image</tt>, <tt>manip_projdata</tt> and <tt>display_projdata</tt>. 
+We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
+<tt>stir_write_pgm</tt>).
+</li>
+</ul>
+
+
+<h3>Minor bug fixes</h3>
+<ul>
+<li>small changes to allow compilation with the CLang compiler version 5.0.</li>
+</li>
+</ul>
+
+<h3>Documentation changes</h3>
+<ul>
+<li>Added documentation on new features</li> 
+<li>Added documentation on the <code>Interpolation</code> matrix. Somehow
+we had forgotten to include that before.</li>
+<li>Added more examples of shapes to <tt>samples/generate_image.par</tt>. Also corrected doxygen of
+<code>EllipsoidalCylinder</code> for initial/final angle parameters.</li>
+<li>The Wiki expands more and more, so use it in addition to the provided PDFs.
+</li>
+ </ul>
+
+<h3>recon_test_pack changes</h3>
+<ul>
+<li>updated version number and added some clarification to the README.txt</li>
+<li>added a test script for the motion version</li>
+TODO SPECT
+ </ul>
+
+<h3>Other changes to tests</h3>
+<ul>
+<li>test the ITK IO routines</li>
+</ul>
+
+<H2>What's new for developers (aside from what should be obvious
+from the above):</H2>
+
+<h3>Major bugs fixed</h3>
+<ul>
+<li>none</li>
+</ul>
+
+<h3>New functionality</h3>
+<ul>
+<li>SPECT matrix modelling etc (see above)</li>
+<li>expanded the class <code>PatientPosition</code> to allow left/right positioning, 
+unknown positioning, and using DICOM-style abbreviations such as <tt>HFS</tt>.<br />
+<strong>WARNING:</strong>The default constructor used to set the position to HFS
+but now sets it to unknown.
+</li>
+<li>new classes <code>ImagingModality</code> and <code>ExamInfo</code>. The latter
+contains the modality, <code>PatientPosition</code> and <code>TimeFrameDefinitions</code>.
+</li>
+<li>projection data (<code>ProjData</code>, <code>DynamicProjData</code> etc) and
+list mode data (<code>CListModeData</code>)
+now have an <code>ExamInfo</code> member such that time frames etc can be passed along.
+Their constructors have been modified accordingly.
+</li>
+</ul>
+
+<h3>Other code changes</h3>
+<ul>
+<li>minor changes for compatibility with recent scanners</li>
+<li>removed a few instances of <code>using std::string</code> etc from the include files
+to avoid conflicts with global or non-std classes. This might mean you need to put these
+statements in your .cxx files (or add <code>std::</code> in various places of course).</li>
+</ul>
+
+<h3>Build system</h3>
+<ul>
+<li> We no longer add the STIR_LOCAL subdirectory in the main CMakeLists.txt
+(if STIR_LOCAL is enabled). 
+We now  leave that to STIR_LOCAL/stir_extra_dirs.cmake. This effectively means
+that if you extended STIR by having a CMakeLists.txt in your local directory,
+it will no longer be picked-up and you will have to edit your local 
+stir_extra_dirs.cmake with something like
+<code>
+ add_subdirectory(${STIR_LOCAL})
+</code>
+</li>
+</ul>
+</body>
+
+</html>
+
