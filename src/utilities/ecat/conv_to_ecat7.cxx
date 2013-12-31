@@ -1,7 +1,3 @@
-//
-// $Id$
-//
-
 /*! 
 \file
 \ingroup ECAT_utilities
@@ -9,8 +5,6 @@
   to ECAT 7 cti (image and sinogram data)
 \author Kris Thielemans
 \author PARAPET project
-$Date$
-$Revision$
 
 
 This programme is used to convert image or projection data into CTI ECAT 7 data (input 
@@ -34,7 +28,8 @@ be surrounded by double quotes (&quot;) when used as a command line argument.
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -62,6 +57,7 @@ be surrounded by double quotes (&quot;) when used as a command line argument.
 #include <iostream>
 #include <vector>
 #include <string>
+#include <boost/format.hpp>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -236,7 +232,7 @@ int main(int argc, char *argv[])
     MatrixFile* mptr= matrix_create (cti_name, MAT_CREATE, &mhead);
     if (mptr == 0)
     {
-      warning("conv_to_ecat7: error opening output file %s\n", cti_name);
+      warning(boost::format("conv_to_ecat7: error opening output file %s. Remove first if it exists already") % cti_name);
       return EXIT_FAILURE;
     }
     unsigned int frame_num = 1;
@@ -270,9 +266,14 @@ int main(int argc, char *argv[])
       ProjData::read_from_file(filenames[0]);
   
     Main_header mhead;
-    make_ECAT7_main_header(mhead, filenames[0], *proj_data_ptr->get_proj_data_info_ptr(),
+    // TODO exam_info currently used from the first frame, which means that time frame info is incorrect
+    // better to use DynamicProjData etc.
+    make_ECAT7_main_header(mhead, filenames[0], 
+			   *proj_data_ptr->get_exam_info_ptr(),
+			   *proj_data_ptr->get_proj_data_info_ptr(),
 			   write_as_attenuation,
 			   NumericType::SHORT);
+    // fix time frame info
     mhead.num_frames = filenames.size();
     if (!write_as_attenuation)
       {
@@ -282,7 +283,7 @@ int main(int argc, char *argv[])
     MatrixFile* mptr= matrix_create (cti_name, MAT_CREATE, &mhead);
     if (mptr == 0)
     {
-      warning("conv_to_ecat7: error opening output file %s\n", cti_name);
+      warning(boost::format("conv_to_ecat7: error opening output file %s. Remove first if it exists already") % cti_name);
       return EXIT_FAILURE;
     }
 

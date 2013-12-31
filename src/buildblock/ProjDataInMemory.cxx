@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*!
 
   \file
@@ -8,13 +5,10 @@
   \brief Implementations for non-inline functions of class stir::ProjDataInMemory
 
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 /*
     Copyright (C) 2002 - 2011-02-23, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -60,9 +54,10 @@ ProjDataInMemory::
 {}
 
 ProjDataInMemory::
-ProjDataInMemory(shared_ptr<ProjDataInfo> const& proj_data_info_ptr, const bool initialise_with_0)
+ProjDataInMemory(shared_ptr<ExamInfo> const& exam_info_sptr,
+		 shared_ptr<ProjDataInfo> const& proj_data_info_ptr, const bool initialise_with_0)
   :
-  ProjDataFromStream(proj_data_info_ptr, shared_ptr<iostream>()) // trick: first initialise sino_stream_ptr to 0
+  ProjDataFromStream(exam_info_sptr, proj_data_info_ptr, shared_ptr<iostream>()) // trick: first initialise sino_stream_ptr to 0
 {
   
 #ifdef STIR_USE_OLD_STRSTREAM
@@ -93,7 +88,8 @@ ProjDataInMemory(shared_ptr<ProjDataInfo> const& proj_data_info_ptr, const bool 
 
 ProjDataInMemory::
 ProjDataInMemory(const ProjData& proj_data)
-  : ProjDataFromStream(proj_data.get_proj_data_info_ptr()->create_shared_clone(), shared_ptr<iostream>())
+  : ProjDataFromStream(proj_data.get_exam_info_sptr(),
+		       proj_data.get_proj_data_info_ptr()->create_shared_clone(), shared_ptr<iostream>())
 {
 #ifdef STIR_USE_OLD_STRSTREAM
   const size_t buffer_size = get_size_of_buffer();
@@ -140,7 +136,8 @@ ProjDataInMemory::
 write_to_file(const string& output_filename) const
 {
 
-  ProjDataInterfile out_projdata(proj_data_info_ptr, output_filename, ios::out); 
+  ProjDataInterfile out_projdata(this->get_exam_info_sptr(),
+				 this->proj_data_info_ptr, output_filename, ios::out); 
   
   Succeeded success=Succeeded::yes;
   for (int segment_num = proj_data_info_ptr->get_min_segment_num();

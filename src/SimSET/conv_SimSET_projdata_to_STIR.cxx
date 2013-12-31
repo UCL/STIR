@@ -31,6 +31,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "stir/ProjDataInterfile.h"
+#include "stir/ExamInfo.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/Sinogram.h"
 #include "stir/Scanner.h"
@@ -114,9 +115,9 @@ int main(int argc,char **argv)
   dynamic_cast<ProjDataInfoCylindricalArcCorr&>(*proj_data_info_sptr).
     set_tangential_sampling(2*FOV_radius/num_tangential_poss);
 
-  ProjDataInterfile proj_data(proj_data_info_sptr,
-  			      stir_filename, std::ios::out);
- 
+  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+  ProjDataInterfile proj_data(exam_info_sptr, proj_data_info_sptr,
+			      stir_filename, std::ios::out); 
 
 
   if(strncmp(input_data_type,"fl",2)==0)

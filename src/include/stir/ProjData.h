@@ -1,9 +1,7 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,12 +24,9 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-  $Revision$
 */
-#ifndef __ProjData_H__
-#define __ProjData_H__
+#ifndef __stir_ProjData_H__
+#define __stir_ProjData_H__
 
 
 #include "stir/shared_ptr.h"
@@ -39,10 +34,6 @@
 #include <string>
 #include <iostream>
 //#include <ios>
-
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -55,7 +46,7 @@ template <typename elemT> class Viewgram;
 template <typename elemT> class Sinogram;
 class ViewSegmentNumbers;
 class Succeeded;
-
+class ExamInfo;
 
 /*!
   \ingroup projdata
@@ -105,17 +96,30 @@ class ProjData
 public:
   //! A static member to get the projection data from a file
   static shared_ptr<ProjData> 
-    read_from_file(const string& filename,
+    read_from_file(const std::string& filename,
 		   const std::ios::openmode open_mode = std::ios::in);
 
   //! Constructors
   inline ProjData();
-  inline ProjData(const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
+  inline ProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
+		  const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
   //! Destructor
   virtual ~ProjData() {}
   //! Get proj data info pointer
   inline const ProjDataInfo* 
     get_proj_data_info_ptr() const;
+  //! Get pointer to exam info
+  inline const ExamInfo*
+    get_exam_info_ptr() const;
+  //! Get shared pointer to exam info
+  /*! \warning Use with care. If you modify a shared ptr, all objects using the same
+    shared pinter will be affected. */
+  inline shared_ptr<ExamInfo>
+    get_exam_info_sptr() const;
+  //! change exam info
+  /*! This will allocate a new ExamInfo object and copy the data in there. */
+  void
+    set_exam_info(ExamInfo const&);
   //! Get viewgram
   virtual Viewgram<float> 
     get_viewgram(const int view, const int segment_num,const bool make_num_tangential_poss_odd = false) const=0;
@@ -203,8 +207,8 @@ public:
   inline int get_max_tangential_pos_num() const;
   
 protected:
+   shared_ptr<ExamInfo> exam_info_sptr;  
    shared_ptr<ProjDataInfo> proj_data_info_ptr;
-  
 };
 
 

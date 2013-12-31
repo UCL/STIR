@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002 - 2011-12-31, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -37,9 +34,6 @@
   \todo get threshold from command line
 
   \author Kris Thielemans
-  
-  $Date$
-  $Revision$
 */
 
 
@@ -85,7 +79,8 @@ main (int argc, char * argv[])
   const string output_file_name = argv[1];
 
   shared_ptr<ProjData> 
-    out_proj_data_ptr(new ProjDataInterfile(attenuation_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
+    out_proj_data_ptr(new ProjDataInterfile(attenuation_proj_data_ptr->get_exam_info_sptr(),
+					    attenuation_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
 					    output_file_name));
 
   for (int segment_num = attenuation_proj_data_ptr->get_min_segment_num(); 

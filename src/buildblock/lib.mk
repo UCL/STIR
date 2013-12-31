@@ -1,11 +1,9 @@
-#
-# $Id$
-#
 dir:=buildblock
 
 $(dir)_LIB_SOURCES := \
   Array.cxx  \
   IndexRange.cxx \
+  PatientPosition.cxx \
   ProjData.cxx \
   ProjDataInfo.cxx \
   ProjDataInfoCylindrical.cxx \

@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2005 - 2011-12-31, Hammersmith Imanet Ltd
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -24,10 +21,6 @@
 
 \author Charalampos Tsoumpas
 \author Kris Thielemans
-  
-$Date$
-$Revision$
-        
 */
 
 #include <iostream>
@@ -67,12 +60,14 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
   interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
 
   std::cout << "Interpolating scatter estimate to size of emission data" << std::endl;
-  ProjDataInMemory interpolated_direct_scatter(interpolated_direct_scatter_proj_data_info_sptr);        
+  ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
+					       interpolated_direct_scatter_proj_data_info_sptr);        
   interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, remove_interleaving);
 
   if (min_scale_factor != 1 || max_scale_factor != 1)
     {
-      ProjDataInMemory interpolated_scatter(emission_proj_data.get_proj_data_info_ptr()->create_shared_clone());
+      ProjDataInMemory interpolated_scatter(emission_proj_data.get_exam_info_sptr(),
+					    emission_proj_data.get_proj_data_info_ptr()->create_shared_clone());
       inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
             
       Array<2,float> scale_factors;

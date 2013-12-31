@@ -43,7 +43,7 @@ class ProjDataInfo;
 
 /*!
   \brief a class for Interfile keywords (and parsing) specific to 
-  projection data (i.e. ProjDataFromStream)
+  SPECT projection data
   \ingroup InterfileIO
   */
 class InterfilePDFSHeaderSPECT : public InterfileHeader
@@ -56,25 +56,28 @@ protected:
   //! Returns false if OK, true if not.
   virtual bool post_processing();
 
-public:
- 
-  vector<int> num_axial;
-  vector<double> radius_of_rotation;
+ private:
+
+  //! in mm
+  vector<double> radii_of_rotation;
   
-  // derived values
-  int num_segments;
   int num_views;
   int num_bins;
   int start_angle;
   string direction_of_rotation;
   int extent_of_rotation;
   string orbit;
-  
+public:  
   ProjDataFromStream::StorageOrder storage_order;
   shared_ptr<ProjDataInfo> data_info_sptr;
 
 private:
+  int num_segments;
+  // ! for circular orbits (in mm )
+  double radius_of_rotation;
+
   double bin_size_in_cm; 
+  int num_axial_poss;
 
 };
 

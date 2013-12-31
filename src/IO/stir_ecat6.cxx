@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*!
   \file
   \ingroup ECAT
@@ -10,13 +7,11 @@
 
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-  $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2012-06-05, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -48,6 +43,7 @@
 #include "stir/utilities.h"
 
 #include "stir/Scanner.h" 
+#include "stir/ExamInfo.h"
 #include "stir/IO/ecat6_utils.h"
 #include "stir/IO/stir_ecat6.h"
 #ifndef STIR_ORIGINAL_ECAT6
@@ -515,9 +511,9 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
       error("ECAT6cti_to_PDFS: error opening file %s\n",actual_data_name.c_str());
     }
     
-    
+    shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
     proj_data.reset(
-		    new ProjDataFromStream(p_data_info,sino_stream, std::streamoff(0), storage_order));
+		    new ProjDataFromStream(exam_info_sptr,p_data_info,sino_stream, std::streamoff(0), storage_order));
     
     write_basic_interfile_PDFS_header(actual_data_name, *proj_data);
   }

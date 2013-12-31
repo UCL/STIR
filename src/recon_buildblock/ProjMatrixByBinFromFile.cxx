@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004 - 2008, Hammersmith Imanet Ltd
+    Copyright (C) 2011 - 2012, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,12 +22,10 @@
   \brief Implementation of class stir::ProjMatrixByBinFromFile
 
   \author Kris Thielemans
-  
-  $Date$
-  $Revision$
 */
 
 #include "stir/ProjDataInterfile.h"
+#include "stir/ExamInfo.h"
 #include "stir/recon_buildblock/ProjMatrixByBinFromFile.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/KeyParser.h"
@@ -357,7 +353,9 @@ write_to_file(const string& output_filename_prefix,
     output_filename_prefix + "_template_proj_data";
   {
     // the following constructor will write an interfile header (and empty data) to disk
-    ProjDataInterfile template_projdata(proj_data_info_sptr,
+    shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+    ProjDataInterfile template_projdata(exam_info_sptr, 
+					proj_data_info_sptr,
 					template_proj_data_filename);
   }
 

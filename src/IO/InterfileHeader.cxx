@@ -1,10 +1,8 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-07-01 - 2012, Kris Thielemans
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,13 +24,13 @@
 
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-  $Revision$
-
 */
 
 #include "stir/IO/InterfileHeader.h"
+#include "stir/ExamInfo.h"
+#include "stir/TimeFrameDefinitions.h"
+#include "stir/PatientPosition.h"
+#include "stir/ImagingModality.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include <numeric>
@@ -51,9 +49,22 @@ const double
 InterfileHeader::
 double_value_not_set = -12345.60789;
 
+const ExamInfo*
+InterfileHeader::get_exam_info_ptr() const
+{
+  return exam_info_sptr.get();
+}
+
+shared_ptr<ExamInfo>
+InterfileHeader::get_exam_info_sptr() const
+{
+  return exam_info_sptr;
+}
+
 InterfileHeader::InterfileHeader()
      : KeyParser()
 {
+  exam_info_sptr.reset(new ExamInfo);
 
   number_format_values.push_back("bit");
   number_format_values.push_back("ascii");
@@ -93,42 +104,54 @@ InterfileHeader::InterfileHeader()
   bytes_per_pixel = -1; // standard does not provide a default
   // KT 02/11/98 set default for correct variable
   byte_order_index = 1;//  file_byte_order = ByteOrder::big_endian;
+
+  // need to default to PET for backwards compatibility
+  this->exam_info_sptr->imaging_modality = ImagingModality::PT;
   type_of_data_index = 6; // PET
   PET_data_type_index = 5; // Image
   patient_orientation_index = 0; //head-in
   patient_rotation_index = 0; //supine
-  num_dimensions = 0;
+  num_dimensions = 2; // set to 2 to be compatible with Interfile version 3.3 (which doesn't have this keyword)
+  matrix_labels.resize(num_dimensions);
+  matrix_size.resize(num_dimensions);
+  pixel_sizes.resize(num_dimensions, 1.);
   num_time_frames = 1;
   image_scaling_factors.resize(num_time_frames);
   for (int i=0; i<num_time_frames; i++)
     image_scaling_factors[i].resize(1, 1.);
   lln_quantification_units = 1.;
 
-  data_offset.resize(num_time_frames, 0UL);
+  data_offset_each_dataset.resize(num_time_frames, 0UL);
 
+  data_offset = 0UL;
 
-  // KT 09/10/98 replaced NULL arguments with the do_nothing function
-  // as gcc cannot convert 0 to a 'pointer to member function'  
   add_key("INTERFILE", 
     KeyArgument::NONE,	&KeyParser::start_parsing);
+  add_key("imaging modality",
+          KeyArgument::ASCII, (KeywordProcessor)&InterfileHeader::set_imaging_modality,
+          &imaging_modality_as_string);
+
+  add_key("version of keys", &version_of_keys);
+ 
   add_key("name of data file", 
     KeyArgument::ASCII,	&data_file_name);
   add_key("originating system",
-    KeyArgument::ASCII, &originating_system);
+    KeyArgument::ASCII, &exam_info_sptr->originating_system);
   add_key("GENERAL DATA", 
     KeyArgument::NONE,	&KeyParser::do_nothing);
   add_key("GENERAL IMAGE DATA", 
     KeyArgument::NONE,	&KeyParser::do_nothing);
   add_key("type of data", 
-    KeyArgument::ASCIIlist,
-    &type_of_data_index, 
-    &type_of_data_values);
+          KeyArgument::ASCIIlist,
+          (KeywordProcessor)&InterfileHeader::set_type_of_data,
+          &type_of_data_index, 
+          &type_of_data_values);
 
   add_key("patient orientation",
 	  KeyArgument::ASCIIlist,
 	  &patient_orientation_index,
 	  &patient_orientation_values);
-  add_key("patient rotation_index",
+  add_key("patient rotation",
 	  KeyArgument::ASCIIlist,
 	  &patient_rotation_index,
 	  &patient_rotation_values);
@@ -138,12 +161,6 @@ InterfileHeader::InterfileHeader()
     KeyArgument::ASCIIlist,
     &byte_order_index, 
     &byte_order_values);
-  add_key("PET STUDY (General)", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
-  add_key("PET data type", 
-    KeyArgument::ASCIIlist,
-    &PET_data_type_index, 
-    &PET_data_type_values);
   
   add_key("data format", 
     KeyArgument::ASCII,	&KeyParser::do_nothing);
@@ -163,19 +180,6 @@ InterfileHeader::InterfileHeader()
     KeyArgument::DOUBLE, &pixel_sizes);
   add_key("number of time frames", 
     KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_frames_info,&num_time_frames);
-  add_key("PET STUDY (Emission data)", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
-  add_key("PET STUDY (Image data)", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
-  add_key("SPECT STUDY (General)" , 
-    KeyArgument::NONE,	&KeyParser::do_nothing);  
-
-  // TODO
-  add_key("process status", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
-  add_key("IMAGE DATA DESCRIPTION", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
-
   add_key("image relative start time (sec)",
 	  KeyArgument::DOUBLE, &image_relative_start_times);
   add_key("image duration (sec)",
@@ -195,8 +199,9 @@ InterfileHeader::InterfileHeader()
   add_key("quantification units",
     KeyArgument::DOUBLE, &lln_quantification_units);
 
+  // TODO rename keyword 
   add_key("data offset in bytes", 
-    KeyArgument::ULONG,	&data_offset);
+    KeyArgument::ULONG,	&data_offset_each_dataset);
   add_key("END OF INTERFILE", 
     KeyArgument::NONE,	&KeyParser::stop_parsing);
 }
@@ -205,11 +210,17 @@ InterfileHeader::InterfileHeader()
 // MJ 17/05/2000 made bool
 bool InterfileHeader::post_processing()
 {
+  if(type_of_data_index<0)
+    {
+      warning("Interfile Warning: 'type_of_data' keyword required");
+      return true;
+    }
+
   if (patient_orientation_index<0 || patient_rotation_index<0)
     return true;
   // warning: relies on index taking same values as enums in PatientPosition
-  patient_position.set_rotation(static_cast<PatientPosition::RotationValues>(patient_rotation_index));
-  patient_position.set_orientation(static_cast<PatientPosition::OrientationValues>(patient_orientation_index));
+  exam_info_sptr->patient_position.set_rotation(static_cast<PatientPosition::RotationValue>(patient_rotation_index));
+  exam_info_sptr->patient_position.set_orientation(static_cast<PatientPosition::OrientationValue>(patient_orientation_index));
 
   if (number_format_index<0 || 
       static_cast<ASCIIlist_type::size_type>(number_format_index)>=number_format_values.size())
@@ -230,9 +241,6 @@ bool InterfileHeader::post_processing()
   file_byte_order = byte_order_index==0 ? 
     ByteOrder::little_endian : ByteOrder::big_endian;
   
-  if(type_of_data_values[type_of_data_index] != "PET" && type_of_data_values[type_of_data_index] != "Tomographic")
-    warning("Interfile Warning: only 'type of data := PET or Tomographic' supported.");
-
   // KT 07/10/2002 more extensive error checking for matrix_size keyword
   if (matrix_size.size()==0)
   {
@@ -309,11 +317,17 @@ bool InterfileHeader::post_processing()
   } // lln_quantification_units
 
 
-  time_frame_definitions = 
+  exam_info_sptr->time_frame_definitions = 
     TimeFrameDefinitions(image_relative_start_times, image_durations);
 
   return false;
 
+}
+
+void InterfileHeader::set_imaging_modality()
+{
+  set_variable();
+  this->exam_info_sptr->imaging_modality = ImagingModality(imaging_modality_as_string);
 }
 
 void InterfileHeader::read_matrix_info()
@@ -326,13 +340,60 @@ void InterfileHeader::read_matrix_info()
   
 }
 
+void InterfileHeader::set_type_of_data()
+{
+  set_variable();
+  
+  if (this->type_of_data_index == -1)
+    error("Interfile parsing: type_of_data needs to be set to supported value");
+
+  const string type_of_data = this->type_of_data_values[this->type_of_data_index];
+
+  if (type_of_data == "PET")
+    {
+      add_key("PET STUDY (Emission data)", 
+              KeyArgument::NONE,	&KeyParser::do_nothing);
+      add_key("PET STUDY (Image data)", 
+              KeyArgument::NONE,	&KeyParser::do_nothing);
+      add_key("PET STUDY (General)", 
+              KeyArgument::NONE,	&KeyParser::do_nothing);
+      add_key("PET data type", 
+              KeyArgument::ASCIIlist,
+              &PET_data_type_index, 
+              &PET_data_type_values);
+      add_key("process status", 
+              KeyArgument::NONE,	&KeyParser::do_nothing);
+      add_key("IMAGE DATA DESCRIPTION", 
+              KeyArgument::NONE,	&KeyParser::do_nothing);
+    }
+  else if (type_of_data == "Tomographic")
+    {
+      add_key("SPECT STUDY (General)" , 
+              KeyArgument::NONE,	&KeyParser::do_nothing);  
+      add_key("SPECT STUDY (acquired data)",
+              KeyArgument::NONE,	&KeyParser::do_nothing);
+
+      process_status_values.push_back("Reconstructed");
+      process_status_values.push_back("Acquired");
+      add_key("process status", 
+              KeyArgument::ASCIIlist,
+              &process_status_index,
+              &process_status_values);
+
+#if 0
+      // overwrite vectored-value, as v3.3 had a scalar
+      add_key("data offset in bytes", &data_offset);
+#endif
+    }
+}
+
 void InterfileHeader::read_frames_info()
 {
   set_variable();
   image_scaling_factors.resize(num_time_frames);
   for (int i=0; i<num_time_frames; i++)
     image_scaling_factors[i].resize(1, 1.);
-  data_offset.resize(num_time_frames, 0UL);
+  data_offset_each_dataset.resize(num_time_frames, 0UL);
   image_relative_start_times.resize(num_time_frames, 0.);
   image_durations.resize(num_time_frames, 0.);
 }
@@ -853,7 +914,7 @@ bool InterfilePDFSHeader::post_processing()
   
   // handle scanner
 
-  shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(originating_system));
+  shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(get_exam_info_ptr()->originating_system));
   bool originating_system_was_recognised = 
     guessed_scanner_ptr->get_type() != Scanner::Unknown_scanner;
   if (!originating_system_was_recognised)
@@ -1115,7 +1176,7 @@ bool InterfilePDFSHeader::post_processing()
   // data from the Interfile header (or the guessed scanner).
   shared_ptr<Scanner> scanner_ptr_from_file(
     new Scanner(guessed_scanner_ptr->get_type(), 
-                originating_system,
+                get_exam_info_ptr()->originating_system,
 		num_detectors_per_ring, 
                 num_rings, 
 		max_num_non_arccorrected_bins, 

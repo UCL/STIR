@@ -65,8 +65,9 @@ public:
   enum StorageOrder {
     Segment_AxialPos_View_TangPos, Segment_View_AxialPos_TangPos, 
     Unsupported };
-    
+#if 0    
   static  ProjDataFromStream* ask_parameters(const bool on_disk = true);
+#endif
 
 #if 0   
   //! Empty constructor
@@ -80,7 +81,8 @@ public:
     in which the segments occur in the stream. segment_sequence_in_stream[i]
     is the segment number of the i-th segment in the stream.
   */
-  ProjDataFromStream (shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
+  ProjDataFromStream (shared_ptr<ExamInfo> const& exam_info_sptr,
+		      shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
 		      shared_ptr<std::iostream> const& s, 
 		      const std::streamoff offs, 
 		      const std::vector<int>& segment_sequence_in_stream,
@@ -93,7 +95,8 @@ public:
   /*! The default value for segment_sequence_in_stream is a vector with
     values min_segment_num, min_segment_num+1, ..., max_segment_num
   */
-  ProjDataFromStream (shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
+  ProjDataFromStream (shared_ptr<ExamInfo> const& exam_info_sptr,
+		      shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
 		      shared_ptr<std::iostream> const& s, 
 		      const std::streamoff offs = 0, 
 		      StorageOrder o = Segment_View_AxialPos_TangPos,

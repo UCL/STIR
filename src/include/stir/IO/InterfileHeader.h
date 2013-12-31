@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2002-2007, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,10 +25,7 @@
   \author Sanida Mustafovic
   \author PARAPET project
 
-  $Date$
-  $Revision$
-
-  See http://www.HammersmithImanet.com/~kris for a description of the full
+  See http://stir.sourceforge.net for a description of the full
   proposal for Interfile headers for 3D PET.
 */
 
@@ -38,10 +36,8 @@
 #include "stir/ByteOrder.h"
 #include "stir/NumericInfo.h"
 #include "stir/KeyParser.h"
-#include "stir/PatientPosition.h"
 #include "stir/ProjDataFromStream.h"
-#include "stir/TimeFrameDefinitions.h"
-
+#include "stir/ExamInfo.h"
 
 START_NAMESPACE_STIR
 
@@ -66,6 +62,7 @@ protected:
   // Returns false if OK, true if not.
   virtual bool post_processing();
 
+  shared_ptr<ExamInfo> exam_info_sptr;
 
 private:
 
@@ -73,7 +70,6 @@ private:
   // Lists of possible values for some keywords
   ASCIIlist_type number_format_values;	
   ASCIIlist_type byte_order_values;
-  /*ASCIIlist_type type_of_data_values;*/
   ASCIIlist_type patient_orientation_values;
   ASCIIlist_type patient_rotation_values;
 
@@ -81,11 +77,19 @@ private:
 
   int number_format_index;
   int byte_order_index;
-  /*int type_of_data_index;*/
   int patient_orientation_index;
   int patient_rotation_index;
 
   // Extra private variables which will be translated to something more useful
+  string imaging_modality_as_string;
+  void set_imaging_modality();
+
+  void set_type_of_data();
+
+  int			num_time_frames;
+  std::vector<double> image_relative_start_times;
+  std::vector<double> image_durations;
+
   int bytes_per_pixel;
 
   // Louvain la Neuve style of 'image scaling factors'
@@ -95,8 +99,15 @@ private:
   void read_frames_info();
 
 public :
+  //! Get a pointer to the exam information
+  const ExamInfo*
+    get_exam_info_ptr() const;
 
-  string originating_system;
+  //! Get a shared pointer to the exam information
+  shared_ptr<ExamInfo>
+    get_exam_info_sptr() const;
+
+  string version_of_keys;
   
   ASCIIlist_type type_of_data_values;
   int type_of_data_index;
@@ -104,11 +115,10 @@ public :
   ASCIIlist_type PET_data_type_values;	
   int PET_data_type_index;
 
-  // TODO these shouldn't be here, but in PETStudy or something
+  ASCIIlist_type process_status_values;
+  int process_status_index;
 
   // 'Final' variables
-
-  PatientPosition patient_position;
 
   string data_file_name;
 
@@ -118,16 +128,14 @@ public :
   ByteOrder file_byte_order;
 	
   int			num_dimensions;
-  int			num_time_frames;
   std::vector<std::string>	matrix_labels;
   std::vector<std::vector<int> > matrix_size; 
   std::vector<double>	pixel_sizes;
-  std::vector<double> image_relative_start_times;
-  std::vector<double> image_durations;
   std::vector<std::vector<double> > image_scaling_factors;
-  std::vector<unsigned long> data_offset;
-
-  TimeFrameDefinitions time_frame_definitions;
+  std::vector<unsigned long> data_offset_each_dataset;
+ protected:
+  // version 3.3 had only a single offset. we'll internally replace it with data_offset_each_dataset
+  unsigned long data_offset;
 };
 
 

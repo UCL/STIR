@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*!
   \file
   \ingroup utilities
@@ -18,12 +15,9 @@
   be used for other STIR utilities (such as fwdtest, lm_to_projdata etc.).
 
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -40,6 +34,7 @@
 */
 
 #include "stir/ProjDataInterfile.h"
+#include "stir/ExamInfo.h"
 #include "stir/ProjDataInfo.h"
 
 #ifndef STIR_NO_NAMESPACES
@@ -62,7 +57,8 @@ int main(int argc, char *argv[])
   shared_ptr<ProjDataInfo> proj_data_info_ptr(ProjDataInfo::ask_parameters());
   
   const string output_file_name = argv[1];
-  shared_ptr<ProjData> proj_data_ptr(new ProjDataInterfile(proj_data_info_ptr, output_file_name));
+  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+  shared_ptr<ProjData> proj_data_ptr(new ProjDataInterfile(exam_info_sptr, proj_data_info_ptr, output_file_name));
 
   return EXIT_SUCCESS;
 }

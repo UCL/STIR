@@ -1,9 +1,7 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2005 - 2011-01-04, Hammersmith Imanet Ltd
-    Copyright (C) 2013-01-01 - $Date$, Kris Thielemans
+    Copyright (C) 2013, Kris Thielemans
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,9 +23,6 @@
   \ingroup data_buildblock
   \brief Declaration of class stir::DynamicProjData
   \author Kris Thielemans
-  
-  $Date$
-  $Revision$
 */
 #include "stir/MultipleProjData.h"
 #include "stir/TimeFrameDefinitions.h"
@@ -53,7 +48,12 @@ public:
   DynamicProjData*
     read_from_file(const std::string& filename);
 
-  //  DynamicProjData() {};
+  DynamicProjData() {}
+
+  DynamicProjData(const shared_ptr<ExamInfo>& exam_info_sptr)
+    : MultipleProjData(exam_info_sptr)
+  {
+  }
 
   //! Return time of start of scan
   /*! \return the time in seconds since 1 Jan 1970 00:00 UTC, i.e. independent
@@ -79,23 +79,21 @@ public:
   Succeeded   
     write_to_ecat7(const std::string& filename) const;
 
-  void set_time_frame_definitions(const TimeFrameDefinitions& time_frame_definitions) 
-   { this->_time_frame_definitions=time_frame_definitions; }
+  void set_time_frame_definitions(const TimeFrameDefinitions& time_frame_definitions);
 
-  const TimeFrameDefinitions& get_time_frame_definitions() const
-    {   return _time_frame_definitions;    }
+  const TimeFrameDefinitions& get_time_frame_definitions() const;
 
   //! multiply data with a constant factor
   /*! \warning for most types of data, this will modify the data on disk */
   void
     calibrate_frames(const float cal_factor)
     {
-      for (  unsigned int frame_num = 1 ; frame_num<=(_time_frame_definitions).get_num_frames() ;  ++frame_num ) 
+      for (  unsigned int frame_num = 1 ; frame_num<=this->get_time_frame_definitions().get_num_frames() ;  ++frame_num ) 
 	for (int segment_num = (this->_proj_datas[frame_num-1])->get_min_segment_num();
 	     segment_num <= (this->_proj_datas[frame_num-1])->get_max_segment_num();	   ++segment_num)
 	  {   
-	    SegmentByView<float> segment_by_view = 
-	      (*(this->_proj_datas[frame_num-1])).get_segment_by_view(segment_num);
+	    SegmentByView<float> segment_by_view
+	      ((*(this->_proj_datas[frame_num-1])).get_segment_by_view(segment_num));
 	    segment_by_view *= cal_factor;
 	    if ((*(this->_proj_datas[frame_num-1])).set_segment(segment_by_view)
 		==Succeeded::no)
@@ -111,13 +109,13 @@ public:
     divide_with_duration()
     {   
   // do reading/writing in a loop over segments
-      for(unsigned int frame_num=1;frame_num<=this->_time_frame_definitions.get_num_frames();++frame_num)
+      for(unsigned int frame_num=1;frame_num<=this->get_time_frame_definitions().get_num_frames();++frame_num)
 	for (int segment_num = (this->_proj_datas[frame_num-1])->get_min_segment_num();
 	     segment_num <= (this->_proj_datas[frame_num-1])->get_max_segment_num();	   ++segment_num)
 	  {   
 	    SegmentByView<float> segment_by_view = 
 	      (*(this->_proj_datas[frame_num-1])).get_segment_by_view(segment_num);
-	    segment_by_view /= static_cast<float>(this->_time_frame_definitions.get_duration(frame_num));
+	    segment_by_view /= static_cast<float>(this->get_time_frame_definitions().get_duration(frame_num));
             if ((*(this->_proj_datas[frame_num-1])).set_segment(segment_by_view) 
                 ==Succeeded::no) 
               { 
@@ -126,9 +124,6 @@ public:
 
 	}
     }
- private:
-  TimeFrameDefinitions _time_frame_definitions;
-  double _start_time_in_secs_since_1970;
 };
 
 END_NAMESPACE_STIR

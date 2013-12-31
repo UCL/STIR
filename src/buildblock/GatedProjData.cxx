@@ -173,6 +173,7 @@ write_to_ecat7(const string& filename) const
 
   Main_header mhead;
   ecat::ecat7::make_ECAT7_main_header(mhead, filename, 
+				      *get_proj_data(1).get_exam_info_ptr(),
 				      *get_proj_data(1).get_proj_data_info_ptr() );
   mhead.num_gates = 1;
   mhead.num_gates = this->get_num_gates();

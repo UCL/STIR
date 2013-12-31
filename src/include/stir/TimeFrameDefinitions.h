@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003 - 2007-10-08, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,9 +22,6 @@
   \brief Declaration of class stir::TimeFrameDefinitions
     
   \author Kris Thielemans
-      
-  $Date$
-  $Revision$
 */
 #ifndef __stir_TimeFrameDefinitions_H__
 #define __stir_TimeFrameDefinitions_H__
@@ -36,23 +31,17 @@
 #include <vector>
 #include <utility>
 
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-using std::pair;
-using std::vector;
-#endif
-
 START_NAMESPACE_STIR
 /*!
   \ingroup buildblock
   \brief Class used for storing time frame durations
 
-  Times are supposed to be relative to the scan start time.
+  All times are in seconds as per standard STIR conventions.
+
+  Times are supposed to be relative to the exam start time.
 
   Currently this class can read frame info from an ECAT6, ECAT7 and a 'frame definition'
   file. See the documentation for the constructor.
-
-  Will probably be superseded by Study classes.
 */
 class TimeFrameDefinitions
 {
@@ -62,8 +51,9 @@ public:
 
   //! Read the frame definitions from a file
   /*! 
+   \deprecated
    The filename can point to an ECAT6 file, and ECAT7 file (if you
-   have installed the LLN library), or a simple ASCII text file.
+   have installed the LLN library), an Interfile file, or a simple ASCII text file.
 
    This latter uses the '.fdef' format used by Peter Bloomfield's software.
    The format is a number of lines, each existing of 2 numbers
@@ -76,15 +66,19 @@ public:
   \a num_frames_of_this_duration to 0 allows skipping
   a time period of the corresponding \a duration_in_secs.
   */
-  explicit TimeFrameDefinitions(const string& fdef_filename);
+  explicit TimeFrameDefinitions(const std::string& fdef_filename);
   
   //! Construct from a list of time frames
-  /*! Times have to be in increasing order*/
-  TimeFrameDefinitions(const vector<pair<double, double> >&);
+  /*! Each frame is specified as a std::pair with start and end time (in seconds).
+      Start times have to be in increasing order*/
+  TimeFrameDefinitions(const std::vector<std::pair<double, double> >&);
 
   //! Construct from a list of start times and durations
   /*! start times have to be in increasing order*/
-  TimeFrameDefinitions(const vector<double>& start_times, const vector<double>& durations);
+  TimeFrameDefinitions(const std::vector<double>& start_times, const std::vector<double>& durations);
+
+  //! Construct from a single time frame of an existing object 
+  TimeFrameDefinitions(const TimeFrameDefinitions&, unsigned int frame_num);
 
   //! \name get info for 1 frame (frame_num is 1 based)
   //@{
@@ -110,11 +104,8 @@ public:
 
 private:
   //! Stores start and end time for each frame
-  vector<pair<double, double> > frame_times;
-
-  void  read_ECAT6_frame_definitions(const string& filename);
-  void  read_ECAT7_frame_definitions(const string& filename);
-  void  read_fdef_file(const string& filename);
+  std::vector<std::pair<double, double> > frame_times;
+  void  read_fdef_file(const std::string& filename);
 
 };
 

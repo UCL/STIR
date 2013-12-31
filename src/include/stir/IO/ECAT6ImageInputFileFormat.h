@@ -1,11 +1,8 @@
-
-//
-// $Id$
-//
 #ifndef __stir_IO_ECAT6ImageInputFileFormat_h__
 #define __stir_IO_ECAT6ImageInputFileFormat_h__
 /*
-    Copyright (C) 2006- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2006, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -20,15 +17,11 @@
     See STIR/LICENSE.txt for details
 */
 /*!
-
   \file
   \ingroup ECAT
   \brief Declaration of class stir::ecat::ecat6::ECAT6ImageInputFileFormat
 
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 #include "stir/IO/InputFileFormat.h"
 #include "stir/utilities.h"
@@ -59,9 +52,21 @@ public InputFileFormat<DiscretisedDensity<3,float> >
     actual_can_read(const FileSignature& signature,
 		    std::istream& input) const
   {
-    // TODO
-    // return (is_ECAT6_image_file(filename))
-    return true;
+    return false;
+  }
+
+  bool
+    can_read(const FileSignature& signature,
+                                  std::istream& input) const
+  {
+    return false; // cannot read from istream
+  }
+
+  bool 
+    can_read(const FileSignature&,
+	     const std::string& filename) const
+  {
+    return is_ECAT6_image_file(filename);
   }
 
   virtual std::auto_ptr<data_type>

@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011-12-31, Hammersmith Imanet Ltd
@@ -27,9 +24,6 @@
 
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-  $Revision$
 
   This program allows forward projection of a few segments/views
   only, or of the full data set. 
@@ -61,6 +55,7 @@
 #include "stir/IO/read_from_file.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInfo.h"
+#include "stir/ExamInfo.h"
 // for ask_filename...
 #include "stir/utilities.h"
 #include "stir/round.h"
@@ -132,8 +127,8 @@ main(int argc, char *argv[])
 
   new_data_info_ptr->reduce_segment_range(-limit_segments, limit_segments);
 
-  
-  shared_ptr<ProjData> proj_data_ptr(new ProjDataInterfile(new_data_info_ptr, output_file_name));
+  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);  
+  shared_ptr<ProjData> proj_data_ptr(new ProjDataInterfile(exam_info_sptr, new_data_info_ptr, output_file_name));
   cerr << "Output will be written to " << output_file_name 
        << " and its Interfile header\n";
 

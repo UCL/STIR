@@ -48,6 +48,7 @@
  #include "stir/Sinogram.h"
  #include "stir/SegmentByView.h"
  #include "stir/SegmentBySinogram.h"
+ #include "stir/ExamInfo.h"
  #include "stir/ProjData.h"
  #include "stir/ProjDataInterfile.h"
 
@@ -396,6 +397,7 @@ namespace std {
 %shared_ptr(stir::TimedObject);
 %shared_ptr(stir::ParsingObject);
 
+%shared_ptr(stir::ExamInfo);
 %shared_ptr(stir::Scanner);
 %shared_ptr(stir::ProjDataInfo);
 %shared_ptr(stir::ProjDataInfoCylindrical);

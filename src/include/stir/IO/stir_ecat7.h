@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*!
   \file
   \ingroup ECAT
@@ -11,14 +8,11 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  $Date$
-
-  $Revision$
-
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2011-12-31, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -77,6 +71,7 @@ class Scanner;
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 template <typename elemT> class VoxelsOnCartesianGrid;
 template <typename elemT> class Sinogram;
+class ExamInfo;
 class ProjData;
 class ProjDataInfo;
 class ProjDataFromStream;
@@ -182,6 +177,15 @@ ProjData_to_ECAT7(MatrixFile *mptr,
                   const int data_num = 0, const int bed_num = 0,
                   float scale_factor = 0.0F);
 
+//! read ExamInfo from an ECAT7 MatrixFile object
+/*! This includes time frame definitions, patient_position and scan_start. */
+shared_ptr<ExamInfo>
+read_ECAT7_exam_info(MatrixFile *mptr);
+
+//! read ExamInfo from an ECAT7 file
+/*! open the file and calls read_ECAT7_exam_info(MatrixFile*) */
+shared_ptr<ExamInfo>
+read_ECAT7_exam_info(const std::string& filename);
 
 //! Fill in most of the main header given a Scanner object and orig_name.
 /*!
@@ -223,6 +227,7 @@ void make_ECAT7_main_header(Main_header& mhead,
 NumericType 
 make_ECAT7_main_header(Main_header& mhead,
 		       const string& orig_name,
+		       ExamInfo const & exam_info,
 		       ProjDataInfo const & proj_data_info,
 		       const bool write_as_attenuation = false,
 		       NumericType output_type = NumericType::FLOAT
