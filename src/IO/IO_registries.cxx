@@ -92,9 +92,9 @@ static RegisterInputFileFormat<ecat::ecat6::ECAT6ImageInputFileFormat> idummy4(1
 static RegisterInputFileFormat<ecat::ecat7::ECAT7DynamicDiscretisedDensityInputFileFormat> dynidummy(0);
 #endif
 #ifdef HAVE_ITK
-// we'll put it at low priority such that it tried (almost) last, i.e. after STIR specific input routines
+// we'll put it at low priority such that it is tried (almost) last, i.e. after STIR specific input routines
 // This is because we translate the ITK info currently incompletely.
-static RegisterInputFileFormat<ITKImageInputFileFormat> idummy8(100000);
+static RegisterInputFileFormat<ITKImageInputFileFormat> idummy8(10000);
 #endif
 
 
