@@ -90,7 +90,7 @@ endif(HAVE_ECAT)
 
 if (HAVE_ITK)
     list(APPEND file_format_tests
-	test_ITKDefautOutputFileFormat.in
+	test_ITKDefaultOutputFileFormat.in
 	test_ITKNiftiOutputFileFormat.in
     )
 endif()
@@ -102,6 +102,5 @@ foreach(file_format ${file_format_tests})
     ${CMAKE_CURRENT_BINARY_DIR}/test_OutputFileFormat ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format}
 )
 endforeach()
-
 
 
