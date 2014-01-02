@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2009, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,12 +22,7 @@
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
-
-#include <iterator>
 
 START_NAMESPACE_STIR
 
@@ -57,10 +50,10 @@ IIR_filter(RandIter1 output_begin_iterator,
     *output_begin_iterator=(*input_begin_iterator)*(*input_factor_begin_iterator);
 #else
   // an attempt to remove warnings by VC++, but it doesn't work for higher-dimensional arrays
-  typedef typename std::iterator_traits<RandIter1>::value_type out_type;
+  typedef typename CastScalarForOperation<typename std::iterator_traits<RandIter1>::value_type>::type cast_type;
 
   if(if_initial_exists==false) 
-    *output_begin_iterator=static_cast<out_type>((*input_begin_iterator)*(*input_factor_begin_iterator));
+    *output_begin_iterator=(*input_begin_iterator)*static_cast<cast_type>(*input_factor_begin_iterator);
 #endif
 
   RandIter1 current_output_iterator = output_begin_iterator ;
@@ -83,8 +76,8 @@ IIR_filter(RandIter1 output_begin_iterator,
             (*current_input_factor_iterator);
 #else
           (*current_output_iterator) += 
-            static_cast<out_type>((*current_current_input_iterator) *
-                                  (*current_input_factor_iterator));
+            (*current_current_input_iterator) *
+                                  static_cast<cast_type>(*current_input_factor_iterator);
 #endif
           if (current_current_input_iterator==input_begin_iterator)
             break;
@@ -102,8 +95,8 @@ IIR_filter(RandIter1 output_begin_iterator,
             (*current_feedback_iterator) *
             (*current_pole_iterator);
 #else
-            static_cast<out_type>((*current_feedback_iterator) *
-                                  (*current_pole_iterator));
+            (*current_feedback_iterator) *
+                                  static_cast<cast_type>(*current_pole_iterator);
 #endif
           if(current_feedback_iterator==output_begin_iterator)
             break;
