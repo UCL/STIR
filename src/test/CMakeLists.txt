@@ -23,9 +23,13 @@ set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_ROIs
-	test_proj_data_info
         test_warp_image
 	test_DynamicDiscretisedDensity  
+)
+
+set(${dir_TEST_EXE_SOURCES_NO_REGISTRIES}
+        test_ArrayFilter
+	test_proj_data_info
 )
 
 Set(${dir_INVOLVED_TEST_EXE_SOURCES}
@@ -37,11 +41,10 @@ Set(${dir_INVOLVED_TEST_EXE_SOURCES}
 	test_interpolate
 )
 
-set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
+set(buildblock_simple_tests
         test_Array
         test_NestedIterator
         test_VectorWithOffset
-        test_ArrayFilter
         test_convert_array
 	test_IndexRange
 	test_coordinates
@@ -54,7 +57,11 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
 	test_find_fwhm_in_image
 )
 
-include(../stir_test_exe_targets.cmake)
+include(${PROJECT_SOURCE_DIR}/stir_test_exe_targets.cmake)
+
+foreach(source ${buildblock_simple_tests})
+  create_stir_test(${source} "buildblock;IO;buildblock" "")
+endforeach()
 
 ### add tests for the "involved" commands
 ### i.e. those that need command line arguments
