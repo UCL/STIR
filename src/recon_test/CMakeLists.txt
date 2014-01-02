@@ -1,7 +1,4 @@
-#
-# $Id$
-#
-# Copyright 2011-07-01 - $Date$ Kris Thielemans
+# Copyright 2011, Kris Thielemans
 # This file is part of STIR.
 #
 # This file is free software; you can redistribute it and/or modify
@@ -22,6 +19,7 @@ set(dir recon_test)
 
 set(dir_SIMPLE_TEST_EXE_SOURCES ${dir}_SIMPLE_TEST_EXE_SOURCES)
 set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
+set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES)
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_DataSymmetriesForBins_PET_CartesianGrid
