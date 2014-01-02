@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2000 - 2008-02-22, Hammersmith Imanet Ltd
     Copyright (C) 2013, Kris Thielemans
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,8 +29,8 @@
 #include "stir/ExamInfo.h"
 #include "stir/IO/FileSignature.h"
 #ifdef HAVE_LLN_MATRIX
+#include "stir/IO/stir_ecat6.h"
 #include "stir/IO/stir_ecat7.h"
-#endif
 #endif
 #include "stir/IO/InterfileHeader.h"
 #include "stir/IO/interfile.h"
@@ -97,14 +98,14 @@ unsigned int
 TimeFrameDefinitions::
 get_num_frames() const
 {
-  return frame_times.size();
+  return static_cast<unsigned int>(frame_times.size());
 }
 
 unsigned int
 TimeFrameDefinitions::
 get_num_time_frames() const
 {
-  return frame_times.size();
+  return static_cast<unsigned int>(frame_times.size());
 }
 
 TimeFrameDefinitions::
@@ -139,8 +140,8 @@ TimeFrameDefinitions(const string& filename)
   if (ecat::ecat6::is_ECAT6_file(filename) ||
       ecat::ecat7::is_ECAT7_file(filename))
     {
-      shared_ptr<ExamInfo> exam_info_sptr(read_ECAT7_exam_info(filename));
-      *this = exam_info_sptr()->time_frame_definitions;
+      shared_ptr<ExamInfo> exam_info_sptr(ecat::ecat7::read_ECAT7_exam_info(filename));
+      *this = exam_info_sptr->time_frame_definitions;
     }
   else
 #endif
