@@ -1,5 +1,6 @@
 /*
  Copyright (C) 2009 - 2013, King's College London
+ Copyright (C) 2013, University College London
  This file is part of STIR.
  
  This file is free software; you can redistribute it and/or modify
@@ -22,16 +23,16 @@
  \author Charalampos Tsoumpas
  */
 
-#include <stdio.h>
-#include <sstream>
-#include <fstream>
-#include <iostream>
-
-#include "stir/IO/GIPL_ImageFormat.h"
 #include "stir/IO/InterfileOutputFileFormat.h"
 #include "stir/shared_ptr.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Succeeded.h"
+#include "stir/IO/GIPL_ImageFormat.h"
+
+#include <stdio.h>
+#include <sstream>
+#include <fstream>
+#include <iostream>
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
@@ -79,8 +80,8 @@ int main(int argc, char* argv[])
   if (orientation==1) {
     BasicCoordinate<3,int> min_range; 	BasicCoordinate<3,int> max_range;
     min_range[1]=0;  max_range[1]=image->m_dim[2]-1;
-    min_range[2]=-floor(image->m_dim[1]/2.F);  max_range[2]=floor((image->m_dim[1]-1)/2.F);
-    min_range[3]=-floor(image->m_dim[0]/2.F);  max_range[3]=floor((image->m_dim[0]-1)/2.F);
+    min_range[2]=-static_cast<int>(floor(image->m_dim[1]/2.F));  max_range[2]=min_range[2] + image->m_dim[1]-1;
+    min_range[3]=-static_cast<int>(floor(image->m_dim[0]/2.F));  max_range[3]=min_range[3] + image->m_dim[0]-1;
     IndexRange<3> data_range(min_range,max_range);
     Array<3,float> v_array(data_range);
 
@@ -97,9 +98,10 @@ int main(int argc, char* argv[])
     const CartesianCoordinate3D<float> 
       grid_spacing(image->m_pixdim[2],image->m_pixdim[1],image->m_pixdim[0]);
     CartesianCoordinate3D<float> origin(0.F,0.F,0.F);
-    origin[1]=image->m_origin[2]+image->m_pixdim[2]*image->m_dim[2]/2.F;
-    origin[2]=image->m_origin[1]+image->m_pixdim[1]*image->m_dim[1]/2.F;
-    origin[3]=image->m_origin[0]+image->m_pixdim[0]*image->m_dim[0]/2.F;
+	// TODO not sure if this is correct for even/odd-sized data.
+    origin[1]=static_cast<float>(image->m_origin[2]+image->m_pixdim[2]*image->m_dim[2]/2.F);
+    origin[2]=static_cast<float>(image->m_origin[1]+image->m_pixdim[1]*image->m_dim[1]/2.F);
+    origin[3]=static_cast<float>(image->m_origin[0]+image->m_pixdim[0]*image->m_dim[0]/2.F);
     const VoxelsOnCartesianGrid<float> new_image(v_array,origin,grid_spacing);
     OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
       write_to_file(output_filename, new_image);
@@ -107,8 +109,8 @@ int main(int argc, char* argv[])
   else if (orientation==2) {
     BasicCoordinate<3,int> min_range; 	BasicCoordinate<3,int> max_range;
     min_range[1]=0;  max_range[1]=image->m_dim[1]-1;
-    min_range[2]=-floor(image->m_dim[2]/2.F);  max_range[2]=floor((image->m_dim[2]-1)/2.F);
-    min_range[3]=-floor(image->m_dim[0]/2.F);  max_range[3]=floor((image->m_dim[0]-1)/2.F);
+    min_range[2]=-static_cast<int>(floor(image->m_dim[2]/2.F));  max_range[2]=min_range[2] + image->m_dim[2]-1;
+    min_range[3]=-static_cast<int>(floor(image->m_dim[0]/2.F));  max_range[3]=min_range[3] + image->m_dim[0]-1;
 		
     IndexRange<3> data_range(min_range,max_range);
     Array<3,float> v_array(data_range);
@@ -126,9 +128,9 @@ int main(int argc, char* argv[])
     const CartesianCoordinate3D<float> 
       grid_spacing(image->m_pixdim[1],image->m_pixdim[2],image->m_pixdim[0]);
     CartesianCoordinate3D<float> origin(0.F,0.F,0.F);
-    origin[2]=image->m_origin[2]+image->m_pixdim[2]*image->m_dim[2]/2.F;
-    origin[1]=image->m_origin[1]+image->m_pixdim[1]*image->m_dim[1]/2.F;
-    origin[3]=image->m_origin[0]+image->m_pixdim[0]*image->m_dim[0]/2.F;
+    origin[2]=static_cast<float>(image->m_origin[2]+image->m_pixdim[2]*image->m_dim[2]/2.F);
+    origin[1]=static_cast<float>(image->m_origin[1]+image->m_pixdim[1]*image->m_dim[1]/2.F);
+    origin[3]=static_cast<float>(image->m_origin[0]+image->m_pixdim[0]*image->m_dim[0]/2.F);
     const VoxelsOnCartesianGrid<float> new_image(v_array,origin,grid_spacing);
     OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
       write_to_file(output_filename, new_image);
@@ -136,8 +138,8 @@ int main(int argc, char* argv[])
   else if (orientation==3) {
     BasicCoordinate<3,int> min_range; 	BasicCoordinate<3,int> max_range;
     min_range[1]=0;  max_range[1]=image->m_dim[1]-1;
-    min_range[2]=-floor(image->m_dim[0]/2.F);  max_range[2]=floor((image->m_dim[0]-1)/2.F);
-    min_range[3]=-floor(image->m_dim[2]/2.F);  max_range[3]=floor((image->m_dim[2]-1)/2.F);
+    min_range[2]=-static_cast<int>(floor(image->m_dim[0]/2.F));  max_range[2]=min_range[2] + image->m_dim[0]-1;
+    min_range[3]=-static_cast<int>(floor(image->m_dim[2]/2.F));  max_range[3]=max_range[3] + image->m_dim[2]-1;
 		
     IndexRange<3> data_range(min_range,max_range);
     Array<3,float> v_array(data_range);
@@ -155,9 +157,9 @@ int main(int argc, char* argv[])
     const CartesianCoordinate3D<float> 
       grid_spacing(image->m_pixdim[1],image->m_pixdim[0],image->m_pixdim[2]);
     CartesianCoordinate3D<float> origin(0.F,0.F,0.F);
-    origin[3]=image->m_origin[2]+image->m_pixdim[2]*image->m_dim[2]/2.F;
-    origin[1]=image->m_origin[1]+image->m_pixdim[1]*image->m_dim[1]/2.F;
-    origin[2]=image->m_origin[0]+image->m_pixdim[0]*image->m_dim[0]/2.F;
+    origin[3]=static_cast<float>(image->m_origin[2]+image->m_pixdim[2]*image->m_dim[2]/2.F);
+    origin[1]=static_cast<float>(image->m_origin[1]+image->m_pixdim[1]*image->m_dim[1]/2.F);
+    origin[2]=static_cast<float>(image->m_origin[0]+image->m_pixdim[0]*image->m_dim[0]/2.F);
 
     const VoxelsOnCartesianGrid<float> new_image(v_array,origin,grid_spacing);
     OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
