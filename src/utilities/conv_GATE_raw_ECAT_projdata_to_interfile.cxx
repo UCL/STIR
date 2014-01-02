@@ -1,6 +1,43 @@
 /*
  Copyright (C) 2005- 2009, Hammersmith Imanet Ltd
+*** test_IR_filters.cxx.~1.4.~	2009-10-27 10:49:03.000000000 +0000
+--- test_IR_filters.cxx	2014-01-02 21:42:36.530820900 +0000
+***************
+*** 1,18 ****
+- //
+- // $Id$
+- //
+  /*!
+    \file 
+    \ingroup numerics_test
+    \brief tests the implementation of the IR_filters
+  
+    \author Charalampos Tsoumpas
+- 
+-   $Date$
+-   $Revision$
+  */
+  /*
+!     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+      This file is part of STIR.
+  
+      This file is free software; you can redistribute it and/or modify
+--- 1,13 ----
+  /*!
+    \file 
+    \ingroup numerics_test
+    \brief tests the implementation of the IR_filters
+  
+    \author Charalampos Tsoumpas
+  */
+  /*
+!     Copyright (C) 2000 - 2009-10-27, Hammersmith Imanet Ltd
+!     Copyright (C) 2013, University College London
+      This file is part of STIR.
+  
+      This file is free software; you can redistribute it and/or modify
  Copyright (C) 2010- 2013, King's College London
+ Copyright (C) 2013, University College London
  This file is part of STIR.
  
  This file is free software; you can redistribute it and/or modify
@@ -103,12 +140,7 @@ int main(int argc,char **argv)
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
   ProjDataInterfile proj_data(exam_info_sptr, proj_data_info_sptr,
                               STIR_output_filename, std::ios::out);
-  long long total_bins=num_tangential_poss*num_views*num_rings*num_rings; 
-  Array<1,short int> GATE_data(0,total_bins-1); 
-
-  read_data(GATE_file, GATE_data);
 	
-  long long counter=0;
   for (int segment_num=0; segment_num<=max_ring_difference; segment_num = (segment_num<=0) ? 1+segment_num*-1 : -1*segment_num)
     {
       for (int axial_pos_num = proj_data.get_min_axial_pos_num(segment_num);
@@ -116,9 +148,7 @@ int main(int argc,char **argv)
            axial_pos_num++)
         {
           Sinogram<float> sino = proj_data.get_empty_sinogram(axial_pos_num,segment_num);		
-          for (int i=sino.get_min_view_num(); i<=sino.get_max_view_num();i++)
-            for (int j=sino.get_min_tangential_pos_num(); j<=sino.get_max_tangential_pos_num(); j++)
-              sino[i][j]=float(GATE_data[counter++]);
+          read_data(GATE_file, sino);
           proj_data.set_sinogram(sino);
         }
     }
