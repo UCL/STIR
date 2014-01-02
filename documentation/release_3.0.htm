@@ -21,7 +21,9 @@ King's College London and University College London, and is reported in<br />
   Med. Phys. 40, 092502 (2013); 
   <a href="http://dx.doi.org/10.1118/1.4816676">DOI 10.1118/1.4816676</a>.
 </p>
-
+<p>In addition, changes to the IO code (currently enabled for projection data only) mean that
+more information such as modality, patient position and timing is available and kept (update by Kris Thielemans, UCL).
+</p>
 
 
 
@@ -38,14 +40,13 @@ King's College London and University College London, and is reported in<br />
 with non-circular orbits, including attenuation modelling and 3D PSF</li>
 <li>modifications to <code>ProjMatrixByBin</code> to allow larger matrices (currently needing uint64 support by the compiler) and clearing the cache</li>
 <li>Interfile 3.3 IO for SPECT projection data.</li>
-<li>changes to <code>ProjDatainfoCylindrical</code> to allow different radii for different views</li>
 <li> reading and writing of images via <a href="http://www.itk.org">ITK</a>. As ITK has its own registry of 
 file formats, this extends STIR to support Nifti (.nii), MetaIO (.mhdr), NRRD (.nhdr)  etc. 
 To enable this, you need to have ITK installed when building STIR with CMake. 
 To write images in any of these file formats, you need
 to set an explict file format type and set it to <tt>ITK</tt> .<br />
 <strong>Warning:</strong> The translation of the geometry between STIR and ITK
-is currently incomplete as STIR <strong>ignores patient orientation</strong>. 
+is currently incomplete as STIR <strong>ignores patient orientation</strong> for images. 
 </li>
 <li>The <tt>list_projdata_info</tt> utilities has an extra option <tt>--exam</tt> to
 list some exam information (patient position and timing).
@@ -57,11 +58,13 @@ and reconstructing the data.</li>
 
 <h3>Changed functionality</h3>
 <ul>
-<li>Interfile reading/writing has changed to accomodate SPECT. /li>
-<li>ECAT7 and Interfile reading/writing of projection data now preserve
-more information such as patient position and time frame definitions.
+<li>Interfile reading/writing has changed to accomodate SPECT. </li>
+<li>Projection data IO (both static and dynamic) now keeps more information such as modality, patient position and timing. This should mean for instance that convertions between different file
+formats (e.g. conv_to_ecat7, stir_math -s) preserve more information.
 </li>
-<li>Interfile reading now exits with an error if a vectored key (such as <tt>matrix size</tt>
+<li>Interfile reading now exits with an error if a vectored key (such as <tt>matrix size</tt>)
+is used before its size is given with the appropriate keyword (such as <tt>number of dimensions</tt>). In prior versions of STIR, a warning was issued, but a crash could happen afterwards.
+</li>
 </ul>
 
 <h3>Build system</h3>
@@ -69,8 +72,10 @@ more information such as patient position and time frame definitions.
 <li> 
 Using <a href="http://www.cmake.org">CMake</a> is now recommended (see the wiki). Some options
 such as shared libraries and SWIG support can only be enabled when using CMake. Hand-crafted project files
-for Visual Studio are no longer distributed.
+for Visual Studio are no longer distributed. Hand-crafted Unix Makefiles are still there but 
+getting out-of date (no ITK for instance).
 </li>
+<li>compilation when using CMake is speeded-up a bit as dependencies of the tests on STIR libraries are reduced.</li>
 </ul>
 
 
@@ -97,7 +102,9 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 <h3>Minor bug fixes</h3>
 <ul>
 <li>small changes to allow compilation with the CLang compiler version 5.0.</li>
-</li>
+<li>removed an error when writing a usage message when converting SimSET projection data.</li>
+<li>when ECAT6 image IO is enabled, now first check if it's an ECAT6 file (this avoids strange
+crashes when the file turns out not be ECAT6 after all).</li>
 </ul>
 
 <h3>Documentation changes</h3>
@@ -120,7 +127,7 @@ TODO SPECT
 
 <h3>Other changes to tests</h3>
 <ul>
-<li>test the ITK IO routines</li>
+<li>added tests for the ITK IO routines</li>
 </ul>
 
 <H2>What's new for developers (aside from what should be obvious
@@ -147,11 +154,11 @@ list mode data (<code>CListModeData</code>)
 now have an <code>ExamInfo</code> member such that time frames etc can be passed along.
 Their constructors have been modified accordingly.
 </li>
+<li>changes to <code>ProjDatainfoCylindrical</code> to allow different radii for different views</li>
 </ul>
 
 <h3>Other code changes</h3>
 <ul>
-<li>minor changes for compatibility with recent scanners</li>
 <li>removed a few instances of <code>using std::string</code> etc from the include files
 to avoid conflicts with global or non-std classes. This might mean you need to put these
 statements in your .cxx files (or add <code>std::</code> in various places of course).</li>
