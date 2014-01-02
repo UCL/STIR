@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005 - 2009-10-08, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,9 +22,6 @@
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 
 #include "stir/numerics/BSplinesDetail.inl"
@@ -35,35 +30,35 @@ START_NAMESPACE_STIR
 
 namespace BSpline {
 
-  template <typename out_elemT, typename in_elemT>
-  BSplines1DRegularGrid<out_elemT,in_elemT>::
+  template <typename out_elemT, typename in_elemT, typename constantsT>
+  BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
   BSplines1DRegularGrid()
   { }
 
-  template <typename out_elemT, typename in_elemT>
-  BSplines1DRegularGrid<out_elemT,in_elemT>::
+  template <typename out_elemT, typename in_elemT, typename constantsT>
+  BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
   BSplines1DRegularGrid(const std::vector<in_elemT> & input_vector)
   {	 
     set_private_values(cubic);	  	
     set_coef(input_vector.begin(), input_vector.end());
   }
   ///*
-  template <typename out_elemT, typename in_elemT>
-  BSplines1DRegularGrid<out_elemT,in_elemT>::
+  template <typename out_elemT, typename in_elemT, typename constantsT>
+  BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
   BSplines1DRegularGrid(const std::vector<in_elemT> & input_vector, const BSplineType this_type)
   {	 
     set_private_values(this_type);
     set_coef(input_vector.begin(), input_vector.end());
   }
 
-  template <typename out_elemT, typename in_elemT>
-  BSplines1DRegularGrid<out_elemT,in_elemT>::
+  template <typename out_elemT, typename in_elemT, typename constantsT>
+  BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
   ~BSplines1DRegularGrid()
   {}
 
-  template <typename out_elemT, typename in_elemT>
+  template <typename out_elemT, typename in_elemT, typename constantsT>
   void
-  BSplines1DRegularGrid<out_elemT,in_elemT>::
+  BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
   set_private_values(BSplineType this_type)
   {
     this->spline_type = this_type;
@@ -72,9 +67,9 @@ namespace BSpline {
 
 #if 0
   // needs to be in .h for VC 6.0
-  template <typename out_elemT, typename in_elemT>
+  template <typename out_elemT, typename in_elemT, typename constantsT>
   void
-  BSplines1DRegularGrid<out_elemT,in_elemT>::
+  BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
   set_coef(RandIterIn input_begin_iterator, RandIterIn input_end_iterator)
   {	
     input_size = input_end_iterator - input_begin_iterator;
@@ -87,9 +82,9 @@ namespace BSpline {
   }
 #endif
 
-  template <typename out_elemT, typename in_elemT>
+  template <typename out_elemT, typename in_elemT, typename constantsT>
   out_elemT 
-  BSplines1DRegularGrid<out_elemT,in_elemT>::
+  BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
   compute_BSplines_value(const pos_type relative_position, const bool if_deriv) const
   {
     assert(relative_position>-input_size+2);
@@ -136,25 +131,25 @@ namespace BSpline {
     return BSplines_value;
   }
 
-  template <typename out_elemT, typename in_elemT>
+  template <typename out_elemT, typename in_elemT, typename constantsT>
   out_elemT 
-  BSplines1DRegularGrid<out_elemT,in_elemT>::
+  BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
   BSplines(const pos_type relative_position) const
   {
     return compute_BSplines_value(relative_position, false);
   }
 
-  template <typename out_elemT, typename in_elemT>
+  template <typename out_elemT, typename in_elemT, typename constantsT>
   out_elemT 
-  BSplines1DRegularGrid<out_elemT,in_elemT>::
+  BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
   BSplines_1st_der(const pos_type relative_position) const
   {	
     return compute_BSplines_value(relative_position, true);
   }
 
-  template <typename out_elemT, typename in_elemT>
+  template <typename out_elemT, typename in_elemT, typename constantsT>
   out_elemT
-  BSplines1DRegularGrid<out_elemT,in_elemT>::
+  BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
   BSplines_product(const int index, const pos_type relative_position, const bool if_deriv) const
   {
     if (if_deriv==true)		
@@ -163,17 +158,17 @@ namespace BSpline {
       return BSplines_coef_vector[index]*BSplines_weights(relative_position,spline_type);	
   }
 
-  template <typename out_elemT, typename in_elemT>
-  const out_elemT BSplines1DRegularGrid<out_elemT,in_elemT>::
+  template <typename out_elemT, typename in_elemT, typename constantsT>
+  const out_elemT BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
   operator() (const pos_type relative_position) const 
   {
-    return BSplines1DRegularGrid<out_elemT,in_elemT>::
+    return BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
       BSplines(relative_position);		
   }
 
   //*
-  template <typename out_elemT, typename in_elemT>
-  const std::vector<out_elemT> BSplines1DRegularGrid<out_elemT,in_elemT>::
+  template <typename out_elemT, typename in_elemT, typename constantsT>
+  const std::vector<out_elemT> BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
   BSplines_output_sequence(RandIterOut output_relative_position_begin_iterator,  //relative_position might be better float
 			   RandIterOut output_relative_position_end_iterator)
   {
@@ -185,13 +180,13 @@ namespace BSpline {
 	current_iterator!=output_vector.end() && 
 	  current_relative_position_iterator!=output_relative_position_end_iterator; 
 	++current_iterator,++current_relative_position_iterator)
-      *current_iterator = BSplines1DRegularGrid<out_elemT,in_elemT>:: 
+      *current_iterator = BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>:: 
 	BSplines(*current_relative_position_iterator);		
 
     return output_vector;		
   }
-  template <typename out_elemT, typename in_elemT>
-  const std::vector<out_elemT> BSplines1DRegularGrid<out_elemT,in_elemT>::
+  template <typename out_elemT, typename in_elemT, typename constantsT>
+  const std::vector<out_elemT> BSplines1DRegularGrid<out_elemT,in_elemT,constantsT>::
   BSplines_output_sequence(std::vector<pos_type> output_relative_position)
   {
     return BSplines_output_sequence(output_relative_position.begin(),

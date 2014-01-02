@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2005 - 2009-10-27, Hammersmith Imanet Ltd
+  Copyright (C) 2013, University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -26,9 +24,6 @@
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
-  
-  $Date$
-  $Revision$
 */
 
 #include "stir/Array.h"
@@ -61,7 +56,7 @@ namespace BSpline {
           can ask for values of the interpolator outside the original grid, but the results
           might not be what you expect.
    */
-  template <int num_dimensions, typename out_elemT, typename in_elemT = out_elemT>
+  template <int num_dimensions, typename out_elemT, typename in_elemT = out_elemT, typename constantsT = in_elemT>
     class BSplinesRegularGrid
     {
                 
@@ -155,9 +150,9 @@ namespace BSpline {
       // variables that store numbers for the spline type
       // TODO these coefficients and the spline type could/should be integrated into 1 class
       BasicCoordinate<num_dimensions,BSplineType> _spline_types;
-      BasicCoordinate<num_dimensions,double> _z1s;
-      BasicCoordinate<num_dimensions,double> _z2s;
-      BasicCoordinate<num_dimensions,double> _lambdas;
+      BasicCoordinate<num_dimensions,constantsT> _z1s;
+      BasicCoordinate<num_dimensions,constantsT> _z2s;
+      BasicCoordinate<num_dimensions,constantsT> _lambdas;
       //! coefficients for B-splines
       Array<num_dimensions,out_elemT> _coeffs;  
                 

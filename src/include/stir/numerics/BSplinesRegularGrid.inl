@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2005 - 2009-10-08, Hammersmith Imanet Ltd
+  Copyright (C) 2013, University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -24,9 +22,6 @@
 
   \author Kris Thielemans
   \author Charalampos Tsoumpas
-  
-  $Date$
-  $Revision$
 */
 
 #include "stir/numerics/BSplinesDetail.inl"
@@ -35,13 +30,13 @@ START_NAMESPACE_STIR
 namespace BSpline {
 
 		
-template <int num_dimensions, typename out_elemT, typename in_elemT>
-BSplinesRegularGrid<num_dimensions,out_elemT,in_elemT>::
+template <int num_dimensions, typename out_elemT, typename in_elemT, typename constantsT>
+BSplinesRegularGrid<num_dimensions,out_elemT,in_elemT, constantsT>::
 ~BSplinesRegularGrid()
 {}
 	
-  template <int num_dimensions, typename out_elemT, typename in_elemT>
-  void BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT>::
+  template <int num_dimensions, typename out_elemT, typename in_elemT, typename constantsT>
+  void BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT, constantsT>::
   set_private_values(const BasicCoordinate<num_dimensions, BSplineType> & this_type)
   {
     this->_spline_types = this_type;
@@ -49,8 +44,8 @@ BSplinesRegularGrid<num_dimensions,out_elemT,in_elemT>::
       detail::set_BSpline_values(this->_z1s[i],this->_z2s[i],this->_lambdas[i],this_type[i]);
   }
 	
-  template <int num_dimensions, typename out_elemT, typename in_elemT>
-  void BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT>::
+  template <int num_dimensions, typename out_elemT, typename in_elemT, typename constantsT>
+  void BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT, constantsT>::
   set_private_values(const BSplineType & this_type)
   {		
     for ( int i = 1 ; i<=num_dimensions; ++i)
@@ -60,8 +55,8 @@ BSplinesRegularGrid<num_dimensions,out_elemT,in_elemT>::
       }
   }
 	
-  template <int num_dimensions, typename out_elemT, typename in_elemT>
-  void BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT> ::
+  template <int num_dimensions, typename out_elemT, typename in_elemT, typename constantsT>
+  void BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT, constantsT> ::
   set_coef(const Array<num_dimensions,in_elemT> & input)
   {	
     this->_coeffs = Array<num_dimensions,out_elemT>(input.get_index_range());
@@ -69,17 +64,17 @@ BSplinesRegularGrid<num_dimensions,out_elemT,in_elemT>::
   }
 	
 	
-  template <int num_dimensions, typename out_elemT, typename in_elemT>
+  template <int num_dimensions, typename out_elemT, typename in_elemT, typename constantsT>
   const out_elemT 
-  BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT>::
+  BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT, constantsT>::
   operator() (const BasicCoordinate<num_dimensions,pos_type>& relative_positions) const
   {
     return detail::compute_BSplines_value<num_dimensions, num_dimensions, in_elemT>()(this->_coeffs, relative_positions, this->_spline_types);
   }
 
-  template <int num_dimensions, typename out_elemT, typename in_elemT>
+  template <int num_dimensions, typename out_elemT, typename in_elemT, typename constantsT>
   const BasicCoordinate<num_dimensions, out_elemT> 
-  BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT>::
+  BSplinesRegularGrid<num_dimensions, out_elemT, in_elemT, constantsT>::
   gradient(const BasicCoordinate<num_dimensions,pos_type>& relative_positions) const
   {
     return detail::compute_BSplines_gradient<num_dimensions, num_dimensions, in_elemT>()(this->_coeffs, relative_positions, this->_spline_types);

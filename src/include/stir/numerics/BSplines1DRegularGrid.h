@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2005 - 2009-10-27, Hammersmith Imanet Ltd
+  Copyright (C) 2013, University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -27,9 +25,6 @@
 
 \author Charalampos Tsoumpas
 \author Kris Thielemans
-  
-$Date$
-$Revision$
 */
 
 #include "stir/numerics/BSplines.h"
@@ -47,15 +42,15 @@ namespace BSpline
     stir::Array objects.
     \todo remove overlap with the n-dimensional version BSplinesRegularGrid 
   */
-  template <typename out_elemT, typename in_elemT=out_elemT>
+  template <typename out_elemT, typename in_elemT=out_elemT, typename constantsT = in_elemT>
     class BSplines1DRegularGrid
     {
       private:
       typedef typename std::vector<out_elemT>::iterator RandIterOut; 
       int input_size; // create in the constructor 
-      double z1;
-      double z2;
-      double lambda;
+      constantsT z1;
+      constantsT z2;
+      constantsT lambda;
         
         
       inline
@@ -76,7 +71,7 @@ namespace BSpline
       void
       set_coef(IterT input_begin_iterator, IterT input_end_iterator)
       {         
-        BSplines1DRegularGrid::input_size = input_end_iterator - input_begin_iterator;
+        BSplines1DRegularGrid::input_size = static_cast<int>(input_end_iterator - input_begin_iterator);
         BSplines_coef_vector.resize(input_size);
         BSplines_coef(BSplines_coef_vector.begin(),BSplines_coef_vector.end(), 
                       input_begin_iterator, input_end_iterator, z1, z2, lambda);                                
