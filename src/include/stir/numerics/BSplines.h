@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2005 - 2009-10-27, Hammersmith Imanet Ltd
+  Copyright (C) 2013, University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -27,9 +25,6 @@
 
 \author Charalampos Tsoumpas
 \author Kris Thielemans
-  
-$Date$
-$Revision$
 */
 
 #include "stir/common.h"
@@ -54,14 +49,14 @@ namespace BSpline {
   \ingroup BSpline
   You should never have to use this function yourself.
   */
-  template <class RandIterOut, class IterT>
+  template <class RandIterOut, class IterT, class constantsT>
     inline  
     void
     BSplines_coef(RandIterOut c_begin_iterator, 
                   RandIterOut c_end_iterator,
                   IterT input_begin_iterator, 
                   IterT input_end_iterator, 
-                  const double z1, const double z2, const double lambda); // to be taken from the class
+                  const constantsT z1, const constantsT z2, const constantsT lambda); // to be taken from the class
 
   /*! \brief return value of the first derivative of the spline 
       \ingroup BSpline

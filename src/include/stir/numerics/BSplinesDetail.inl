@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2005- 2009, Hammersmith Imanet Ltd
+  Copyright (C) 2013, University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -24,11 +22,7 @@
   
   \author Kris Thielemans
   \author Charalampos Tsoumpas
-  
-  $Date$
-  $Revision$
 */
-#include "stir/round.h"
 #include "stir/assign.h"
 
 START_NAMESPACE_STIR
@@ -36,66 +30,67 @@ START_NAMESPACE_STIR
 namespace BSpline {
   ///// implementation functions Out Of the Class ////////
   namespace detail {
+    template <typename constantsT>
     static inline void 
-    set_BSpline_values(double& z1, double& z2, double& lambda,
+    set_BSpline_values(constantsT& z1, constantsT& z2, constantsT& lambda,
                        const BSplineType spline_type)
     {
       switch(spline_type)
         {
         case near_n:
-          z1=0.;
-          z2=0.;
+          z1=static_cast<constantsT>(0);
+          z2=static_cast<constantsT>(0);
           break;
         case linear:
-          z1=0.;
-          z2=0.;
+          z1=static_cast<constantsT>(0);
+          z2=static_cast<constantsT>(0);
           break;
         case quadratic:
-          z1 = sqrt(8.)-3.;
-          z2=0.;
+          z1 = static_cast<constantsT>(sqrt(8.)-3);
+          z2=static_cast<constantsT>(0);
           break;
         case cubic:
-          z1 = sqrt(3.)-2.;
-          z2=0.;
+          z1 = static_cast<constantsT>(sqrt(3.)-2);
+          z2=static_cast<constantsT>(0);
           break;
         case quartic:
-          z1 = sqrt(664.-sqrt(438976.))+sqrt(304.)-19.;
-          z2 = sqrt(664.-sqrt(438976.))-sqrt(304.)-19.;
+          z1 = static_cast<constantsT>(sqrt(664.-sqrt(438976.))+sqrt(304.)-19.);
+          z2 = static_cast<constantsT>(sqrt(664.-sqrt(438976.))-sqrt(304.)-19.);
           break;
         case quintic:
-          z1 = 0.5*(sqrt(270.-sqrt(70980.))+sqrt(105.)-13.);
-          z2 = 0.5*(sqrt(270.-sqrt(70980.))-sqrt(105.)-13.);
+          z1 = static_cast<constantsT>(0.5*(sqrt(270.-sqrt(70980.))+sqrt(105.)-13.));
+          z2 = static_cast<constantsT>(0.5*(sqrt(270.-sqrt(70980.))-sqrt(105.)-13.));
           break;
         case oMoms:
-          z1 = (sqrt(105.)-13.)/8.;     
-          z2 = 0.;              
+          z1 = static_cast<constantsT>((sqrt(105.)-13.)/8.);
+          z2 = static_cast<constantsT>(0); 
           break;
         }
-      lambda = (1.-z1)*(1. - (1./z1));
-      if (z2!=0.)
-        lambda *= (1.-z2)*(1. - (1./z2));
+      lambda = static_cast<constantsT>((1.-z1)*(1. - (1./z1)));
+      if (z2!=static_cast<constantsT>(0))
+        lambda *= static_cast<constantsT>((1.-z2)*(1. - (1./z2)));
     }
         
                 
   // 1d specialisation
-  template <typename out_elemT, typename in_elemT>
+    template <typename out_elemT, typename in_elemT, typename constantsT>
   void 
   set_coef(Array<1, out_elemT>& coeffs, const Array<1, in_elemT>& input,
-           const BasicCoordinate<1,double>& z1s,
-           const BasicCoordinate<1,double>& z2s,
-           const BasicCoordinate<1,double>& lambdas)
+           const BasicCoordinate<1,constantsT>& z1s,
+           const BasicCoordinate<1,constantsT>& z2s,
+           const BasicCoordinate<1,constantsT>& lambdas)
   {                             
     BSplines_coef(coeffs.begin(), coeffs.end(), 
                   input.begin(), input.end(), z1s[1], z2s[1], lambdas[1]);
   }
 
-  template <int num_dimensions, typename out_elemT, typename in_elemT>
+    template <int num_dimensions, typename out_elemT, typename in_elemT, typename constantsT>
   void
   set_coef(Array<num_dimensions, out_elemT>& coeffs, 
            const Array<num_dimensions, in_elemT>& input,
-           const BasicCoordinate<num_dimensions,double>& z1s,
-           const BasicCoordinate<num_dimensions,double>& z2s,
-           const BasicCoordinate<num_dimensions,double>& lambdas)
+           const BasicCoordinate<num_dimensions,constantsT>& z1s,
+           const BasicCoordinate<num_dimensions,constantsT>& z2s,
+           const BasicCoordinate<num_dimensions,constantsT>& lambdas)
   {             
     Array<num_dimensions,out_elemT> temp ( input.get_index_range());                    
     BSplines_coef(temp.begin(),temp.end(), 

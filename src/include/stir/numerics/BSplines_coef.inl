@@ -27,16 +27,12 @@
 #include "stir/assign.h"
 #include "stir/numerics/IR_filters.h"
 START_NAMESPACE_STIR
-#ifdef _MSC_VER
-  // disable warning about conversion frm double to float with possible loss of data
-  #pragma warning(disable:4244)
-#endif
 
-  namespace BSpline {
+namespace BSpline {
 
   namespace detail 
   {
-    template <class IterT>
+    template <class IterT, class constantsT>
     inline 
 #if defined(_MSC_VER) && _MSC_VER<=1300
     float
@@ -45,7 +41,7 @@ START_NAMESPACE_STIR
 #endif
     cplus0(const IterT input_begin_iterator,
            const IterT input_end_iterator,                 
-           const double z1, const double precision, const bool periodicity)
+           const constantsT z1, const constantsT precision, const bool periodicity)
     {
 #if defined(_MSC_VER) && _MSC_VER<=1300
       typedef float out_elemT;
@@ -53,7 +49,7 @@ START_NAMESPACE_STIR
       typedef typename std::iterator_traits<IterT>::value_type out_elemT;
 #endif
         
-      const int input_size = input_end_iterator - input_begin_iterator; 
+      const int input_size = static_cast<int>(input_end_iterator - input_begin_iterator); 
       //        assert(input_size>BSplines_coef_vector.size());
       out_elemT sum=*input_begin_iterator;
       for(int i=1; 
@@ -71,13 +67,13 @@ START_NAMESPACE_STIR
     }   
   } // end of namespace detail
 
-  template <class RandIterOut, class IterT>
+  template <class RandIterOut, class IterT, class constantsT>
   void
   BSplines_coef(RandIterOut c_begin_iterator, 
                 RandIterOut c_end_iterator,
                 IterT input_begin_iterator, 
                 IterT input_end_iterator, 
-                const double z1, const double z2, const double lamda)
+                const constantsT z1, const constantsT z2, const constantsT lamda)
   {
 
 #if defined(_MSC_VER) && _MSC_VER<=1300
@@ -111,14 +107,14 @@ START_NAMESPACE_STIR
         typedef std::vector<out_elemT> c_vector_type;
         c_vector_type cplus(c_end_iterator-c_begin_iterator), 
           cminus(c_end_iterator-c_begin_iterator);
-        std::vector<double>
+        std::vector<constantsT>
           input_factor_for_cminus(1, -z1), pole_for_cplus(1, -z1), pole_for_cminus(1,-z1);
         assign(cplus,0);
         assign(cminus,0);
-        std::vector<double> input_factor_for_cplus(1, (double)1);
+        std::vector<constantsT> input_factor_for_cplus(1, (constantsT)1);
                         
         *(cplus.begin())=detail::cplus0(
-                                input_begin_iterator,input_end_iterator, z1,.00001,0); //k or Nmax_precision
+                                        input_begin_iterator,input_end_iterator, z1,static_cast<constantsT>(.00001),0); //k or Nmax_precision
                         
         IIR_filter(cplus.begin(), cplus.end(),
                    input_begin_iterator, input_end_iterator,
@@ -143,10 +139,5 @@ START_NAMESPACE_STIR
   }
 
 } // end BSpline namespace
-
-#ifdef _MSC_VER
-  // reinstate warning about conversion
-  #pragma warning(default:4244)
-#endif
 
 END_NAMESPACE_STIR
