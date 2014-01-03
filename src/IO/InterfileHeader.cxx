@@ -90,13 +90,17 @@ InterfileHeader::InterfileHeader()
   type_of_data_values.push_back("PET");
   type_of_data_values.push_back("Other");
   
-  patient_orientation_values.push_back("head_in"); //default
+  patient_orientation_values.push_back("head_in");
   patient_orientation_values.push_back("feet_in");
   patient_orientation_values.push_back("other");
+  patient_orientation_values.push_back("unknown"); //default
 
-  patient_rotation_values.push_back("supine"); //default
+  patient_rotation_values.push_back("supine");
   patient_rotation_values.push_back("prone");
+  patient_rotation_values.push_back("right");
+  patient_rotation_values.push_back("left");
   patient_rotation_values.push_back("other");
+  patient_rotation_values.push_back("unknown"); //default
 
   // default values
   // KT 07/10/2002 added 2 new ones
@@ -109,8 +113,8 @@ InterfileHeader::InterfileHeader()
   this->exam_info_sptr->imaging_modality = ImagingModality::PT;
   type_of_data_index = 6; // PET
   PET_data_type_index = 5; // Image
-  patient_orientation_index = 0; //head-in
-  patient_rotation_index = 0; //supine
+  patient_orientation_index = 3; //unknown
+  patient_rotation_index = 5; //unknown
   num_dimensions = 2; // set to 2 to be compatible with Interfile version 3.3 (which doesn't have this keyword)
   matrix_labels.resize(num_dimensions);
   matrix_size.resize(num_dimensions);
@@ -186,22 +190,20 @@ InterfileHeader::InterfileHeader()
 	  KeyArgument::DOUBLE, &image_durations);
     //image start time[<f>] := <TimeFormat>
 
-  //TODO
+  // ignore these as we'll never use them
   add_key("maximum pixel count", 
     KeyArgument::NONE,	&KeyParser::do_nothing);
   add_key("minimum pixel count", 
     KeyArgument::NONE,	&KeyParser::do_nothing);
 
+  // TODO move to PET?
   add_key("image scaling factor", 
     KeyArgument::LIST_OF_DOUBLES, &image_scaling_factors);
-  // KT 07/10/2002 new
+
   // support for Louvain la Neuve's extension of 3.3
   add_key("quantification units",
     KeyArgument::DOUBLE, &lln_quantification_units);
 
-  // TODO rename keyword 
-  add_key("data offset in bytes", 
-    KeyArgument::ULONG,	&data_offset_each_dataset);
   add_key("END OF INTERFILE", 
     KeyArgument::NONE,	&KeyParser::stop_parsing);
 }
@@ -365,6 +367,10 @@ void InterfileHeader::set_type_of_data()
               KeyArgument::NONE,	&KeyParser::do_nothing);
       add_key("IMAGE DATA DESCRIPTION", 
               KeyArgument::NONE,	&KeyParser::do_nothing);
+      // TODO rename keyword 
+      add_key("data offset in bytes", 
+	      KeyArgument::ULONG,	&data_offset_each_dataset);
+
     }
   else if (type_of_data == "Tomographic")
     {

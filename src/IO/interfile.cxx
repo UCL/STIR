@@ -711,7 +711,9 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
   const float angle_first_view = 
     pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_intrinsic_tilt() * float(180/_PI);
 #endif
-  const float angle_increment = pdfs.get_proj_data_info_ptr()->get_phi(Bin(0,1,0,0)) * float(180/_PI) - angle_first_view;
+  const float angle_increment = 
+    (pdfs.get_proj_data_info_ptr()->get_phi(Bin(0,1,0,0)) -
+     pdfs.get_proj_data_info_ptr()->get_phi(Bin(0,0,0,0))) * float(180/_PI);
 
   const ExamInfo * exam_info_ptr = pdfs.get_exam_info_ptr();
   // default modality is PET
@@ -838,6 +840,9 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
       output_header << "!scaling factor (mm/pixel) [2] := "
                     <<proj_data_info_cyl_ptr->get_axial_sampling(0) << '\n';
 
+      if (pdfs.get_offset_in_stream())
+	output_header<<"data offset in bytes := "
+		     <<pdfs.get_offset_in_stream()<<'\n';;
       output_header << "!END OF INTERFILE :=\n";
 
       return Succeeded::yes;
@@ -975,10 +980,13 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 	output_header << "number of time frames := " << frame_defs.get_num_time_frames() << '\n';
 	for (unsigned int frame_num=1; frame_num<=frame_defs.get_num_time_frames(); ++frame_num)
 	  {
-	    output_header << "image duration (sec)[" << frame_num << "] := "
-			  << frame_defs.get_duration(frame_num) << '\n';
-	    output_header << "image relative start time (sec)[" << frame_num << "] := "
-			  << frame_defs.get_start_time(frame_num) << '\n';
+	    if (frame_defs.get_duration(frame_num)>0)
+	      {
+		output_header << "image duration (sec)[" << frame_num << "] := "
+			      << frame_defs.get_duration(frame_num) << '\n';
+		output_header << "image relative start time (sec)[" << frame_num << "] := "
+			      << frame_defs.get_start_time(frame_num) << '\n';
+	      }
 	  }
       }
     else
@@ -987,10 +995,11 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 	output_header << "number of time frames := 1\n";
       }
   }
+  if (pdfs.get_scale_factor()!=1.F)
  output_header <<"image scaling factor[1] := "
 		<<pdfs.get_scale_factor()<<endl;
 
-  if (pdfs.get_offset_in_stream() != 0UL)
+  if (pdfs.get_offset_in_stream())
     output_header<<"data offset in bytes[1] := "
                  <<pdfs.get_offset_in_stream()<<endl;
     
