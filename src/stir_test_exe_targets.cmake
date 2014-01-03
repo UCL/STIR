@@ -24,30 +24,43 @@
 # the files in dir_SIMPLE_TEST_EXE_SOURCES and dir_INVOLVED_TEST_EXE_SOURCES_NO_REGISTRIES
 # (assuming these don't need any parameters).
 # The user has to add ADD_TEST for the executables in dir_INVOLVED_TEST_EXE_SOURCES
+#
+# Alternatively, the user can directly use the macros create_stir_involved_test and create_stir_test as follows:
+#
+#   create_stir_test (test_something.cxx "buildblock;recon_buildblock" "")
+# or when it needs to be linked with a registry (but this usage is not recommended as the registry mechanism is likely to change)
+#   create_stir_test (test_something.cxx "buildblock;recon_buildblock" "${CMAKE_HOME_DIRECTORY}/buildblock/buildblock_registries.cxx")
+
+
 
 #message(status dir_SIMPLE_TEST_EXE_SOURCES: ${dir_SIMPLE_TEST_EXE_SOURCES})
 #message(status dir_SIMPLE_TEST_EXE_SOURCES: ${${dir_SIMPLE_TEST_EXE_SOURCES}})
 #message(status dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES: ${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES})
 #message(status dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES: ${${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}})
 
-foreach(executable ${${dir_SIMPLE_TEST_EXE_SOURCES}})
-   add_executable(${executable} ${executable}.cxx ${STIR_REGISTRIES})
-   target_link_libraries(${executable} ${STIR_LIBRARIES})
-   ADD_TEST(${executable} ${CMAKE_CURRENT_BINARY_DIR}/${executable})
+macro (create_stir_involved_test source  libraries dependencies)
+   get_filename_component(executable ${source} NAME_WE)
+   add_executable(${executable} ${source} ${dependencies})
+   target_link_libraries(${executable} ${libraries})
    SET_PROPERTY(TARGET ${executable} PROPERTY FOLDER "Tests")
+endmacro( create_stir_involved_test)
+
+macro (create_stir_test source  libraries dependencies)
+   create_stir_involved_test(${source}  "${libraries}" "${dependencies}")
+   ADD_TEST(${executable} ${CMAKE_CURRENT_BINARY_DIR}/${executable})
+endmacro( create_stir_test)
+
+
+foreach(executable ${${dir_SIMPLE_TEST_EXE_SOURCES}})
+   create_stir_test (${executable}.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
 endforeach()
 
 # identical to above, but without including the registries as dependencies
 foreach(executable ${${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}})
-   add_executable(${executable} ${executable}.cxx )
-   target_link_libraries(${executable} ${STIR_LIBRARIES})
-   ADD_TEST(${executable} ${CMAKE_CURRENT_BINARY_DIR}/${executable})
-   SET_PROPERTY(TARGET ${executable} PROPERTY FOLDER "Tests")
+   create_stir_test (${executable}.cxx "${STIR_LIBRARIES}" "")
 endforeach()
 
 foreach(executable ${${dir_INVOLVED_TEST_EXE_SOURCES}})
-   add_executable(${executable} ${executable}.cxx ${STIR_REGISTRIES})
-   target_link_libraries(${executable} ${STIR_LIBRARIES})
-   SET_PROPERTY(TARGET ${executable} PROPERTY FOLDER "Tests")
+   create_stir_involved_test (${executable}.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
 endforeach()
 
