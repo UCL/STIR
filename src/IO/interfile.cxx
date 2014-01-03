@@ -159,22 +159,22 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename)
   return read_interfile_image(image_stream, directory_name);
 }
 
-
-const VectorWithOffset<unsigned long> 
+#if 0
+const VectorWithOffset<std::streamoff> 
 compute_file_offsets(int number_of_time_frames,
 		     const NumericType output_type,
 		     const CartesianCoordinate3D<int>& dim,
-		     unsigned long initial_offset)
+		     std::streamoff initial_offset)
 { 
-  const unsigned long a= dim.x()*dim.y()*dim.z()*output_type.size_in_bytes();
-  VectorWithOffset<unsigned long> temp(number_of_time_frames);
+  const std::size_t a= dim.x()*dim.y()*dim.z()*output_type.size_in_bytes();
+  VectorWithOffset<std::streamoff> temp(number_of_time_frames);
   {
     for (int i=0; i<=number_of_time_frames-1;i++)
       temp[i]= initial_offset +i*a;
   }
   return temp;
 }
-
+#endif
 /* A function that finds the appropriate filename for the binary data
    to write in the header. It tries to cut the directory part of
    data_file_name if it's the same as the directory part of the header.
@@ -703,7 +703,14 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 
   const vector<int> segment_sequence = pdfs.get_segment_sequence_in_stream();
 
-  const float angle_first_view = pdfs.get_proj_data_info_ptr()->get_phi(Bin(0,0,0,0)) * float(180/_PI);
+#if 0
+  // TODO get_phi currently ignores view offset
+  const float angle_first_view = 
+    pdfs.get_proj_data_info_ptr()->get_phi(Bin(0,0,0,0)) * float(180/_PI);
+#else
+  const float angle_first_view = 
+    pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_intrinsic_tilt() * float(180/_PI);
+#endif
   const float angle_increment = pdfs.get_proj_data_info_ptr()->get_phi(Bin(0,1,0,0)) * float(180/_PI) - angle_first_view;
 
   const ExamInfo * exam_info_ptr = pdfs.get_exam_info_ptr();
@@ -768,7 +775,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
   
   if (is_spect)
     {
-      output_header << "!number of windows :=1\n";
+      // output_header << "number of energy windows :=1\n";
       output_header << "!SPECT STUDY (General) :=\n";
     }
   else

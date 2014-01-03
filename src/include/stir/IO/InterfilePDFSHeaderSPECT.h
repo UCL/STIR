@@ -25,15 +25,9 @@
 */
 
 
-#ifndef __stir_INTERFILEHEADERSPECT_H__
-#define __stir_INTERFILEHEADERSPECT_H__
+#ifndef __stir_INTERFILEPDFSHEADERSPECT_H__
+#define __stir_INTERFILEPDFSHEADERSPECT_H__
 
-#include "stir/ByteOrder.h"
-#include "stir/NumericInfo.h"
-#include "stir/KeyParser.h"
-#include "stir/PatientPosition.h"
-#include "stir/ProjDataFromStream.h"
-#include "stir/TimeFrameDefinitions.h"
 #include "stir/IO/InterfileHeader.h"
 
 
@@ -59,13 +53,13 @@ protected:
  private:
 
   //! in mm
-  vector<double> radii_of_rotation;
+  std::vector<double> radii_of_rotation;
   
   int num_views;
   int num_bins;
   int start_angle;
   string direction_of_rotation;
-  int extent_of_rotation;
+  double extent_of_rotation;
   string orbit;
 public:  
   ProjDataFromStream::StorageOrder storage_order;
