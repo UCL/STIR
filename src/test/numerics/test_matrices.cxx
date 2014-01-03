@@ -1,6 +1,6 @@
-// $Id$
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -22,12 +22,11 @@
   \brief tests for functions in MatrixFunction.h etc.
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 #include "stir/numerics/max_eigenvector.h"
 #include "stir/numerics/norm.h"
 #include "stir/make_array.h"
+#include "stir/Array_complex_numbers.h"
 #include "stir/more_algorithms.h"
 #include "stir/Coordinate2D.h"
 #include "stir/Coordinate3D.h"

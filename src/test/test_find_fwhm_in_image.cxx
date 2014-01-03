@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-  Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2004 - 2009-11-03, Hammersmith Imanet Ltd
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -26,11 +23,6 @@
 
   \author Pablo Aguiar
   \author Kris Thielemans
-
-  $Date$
-
-  $Revision$
-
   
   To run the test, simply run the executable.  
 */
@@ -206,8 +198,8 @@ void find_fwhm_in_imageTests::run_tests()
    
     Coordinate3D<int> location_of_maximum2(19,32,36);
     Coordinate3D<int> location_of_maximum3(3,-32,-32);
-    image[location_of_maximum2]=3;
-    image[location_of_maximum3]=1.2;
+    image[location_of_maximum2]=3.F;
+    image[location_of_maximum3]=1.2F;
     // other_image[24][10][0]=1;
     //other_image[0][0][10]=1;
     //other_image[14][64][0]=1;

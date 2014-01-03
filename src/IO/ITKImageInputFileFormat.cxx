@@ -68,7 +68,7 @@ ITKImageInputFileFormat::can_read(const FileSignature& /*signature*/,
       reader->Update(); 
       return true;
     } 
-  catch( itk::ExceptionObject & err ) 
+  catch( itk::ExceptionObject & /*err*/ ) 
     { 
 		
       return false;

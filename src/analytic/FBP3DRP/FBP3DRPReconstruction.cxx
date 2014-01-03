@@ -1,7 +1,3 @@
-//
-// $Id$
-//
-
 /*! 
   \file 
   \ingroup FBP3DRP
@@ -9,12 +5,10 @@
   \author Kris Thielemans
   \author Claire LABBE
   \author PARAPET project
-  $Date$
-  $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
 
     This file is part of STIR.
 
@@ -438,8 +432,8 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_
   
   colsher_filter = 
     ColsherFilter(theta_max, 
-		  alpha_colsher_axial, fc_colsher_axial,
-		  alpha_colsher_planar, fc_colsher_planar,
+		  static_cast<float>(alpha_colsher_axial), static_cast<float>(fc_colsher_axial),
+		  static_cast<float>(alpha_colsher_planar), static_cast<float>(fc_colsher_planar),
 		  colsher_stretch_factor_planar,
 		  colsher_stretch_factor_axial);
 #else

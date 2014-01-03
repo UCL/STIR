@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*!
   \file
   \ingroup ImageProcessor  
@@ -8,13 +5,10 @@
     
   \author Kris Thielemans
   \author Sanida Mustafovic
-
-  $Date$
-  $Revision$
 */
 /*
     Copyright (C) 2002 - 2009-06-22, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -80,7 +74,7 @@ post_processing()
        parsing_iter != filter_coefficients_for_parsing.end();
        ++parsing_iter, ++coefficients_iter)
     {
-      const unsigned int size = parsing_iter->size();
+      const unsigned int size = static_cast<unsigned int>(parsing_iter->size());
       const int min_index = -static_cast<int>((size/2));
       if (size%2==0)
 	warning("Parsing SeparableConvolutionImageFilter\n"

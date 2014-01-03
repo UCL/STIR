@@ -1,8 +1,6 @@
-//
-// $Id$
 /*
     Copyright (C) 2007 - 2007-10-08, Hammersmith Imanet
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,15 +23,13 @@
   
   \author Sanida Mustafovic
   \author Kris Thielemans
-    
-  $Date$
-  $Revision$
 */
 
 #include "stir/NonseparableConvolutionUsingRealDFTImageFilter.h"
 #include "stir/IndexRange3D.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/ArrayFunction.h"
+#include "stir/Array_complex_numbers.h"
 #include "stir/IO/read_from_file.h"
 
 

@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,9 +22,6 @@
 
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-  $Revision$
 */
 
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
@@ -73,7 +67,7 @@ DataSymmetriesForViewSegmentNumbers::num_related_view_segment_numbers(const View
 {
   vector<ViewSegmentNumbers> rel_vs;
   get_related_view_segment_numbers(rel_vs, vs);
-  return rel_vs.size();
+  return static_cast<int>(rel_vs.size());
 }
 
 bool

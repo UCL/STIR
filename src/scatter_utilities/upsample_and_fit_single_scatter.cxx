@@ -40,12 +40,12 @@
   and \a max-scale-factor to 1e5.
 */
 
-#include <iostream>
-#include <string>
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/scatter/ScatterEstimationByBin.h"
 #include "stir/Succeeded.h"
+#include <iostream>
+#include <string>
 /***********************************************************/     
 
 static void
@@ -84,12 +84,12 @@ int main(int argc, const char *argv[])
     {
       if (strcmp(argv[1], "--min-scale-factor")==0)
         {
-          min_scale_factor = atof(argv[2]);
+          min_scale_factor = static_cast<float>(atof(argv[2]));
           argc-=2; argv +=2;
         }
       else if (strcmp(argv[1], "--max-scale-factor")==0)
         {
-          max_scale_factor = atof(argv[2]);
+          max_scale_factor = static_cast<float>(atof(argv[2]));
           argc-=2; argv +=2;
         }
       else if (strcmp(argv[1], "--BSpline-type")==0)
@@ -104,7 +104,7 @@ int main(int argc, const char *argv[])
         }
       else if (strcmp(argv[1], "--remove-interleaving")==0)
         {
-          remove_interleaving = atoi(argv[2]);
+          remove_interleaving = atoi(argv[2])!=0;
           argc-=2; argv +=2;
         }
       else if (strcmp(argv[1], "--output-filename")==0)

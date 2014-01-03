@@ -20,8 +20,6 @@
  
  \brief This program zero pads the start & end planes of an image.
  \author Charalampos Tsoumpas
- $Date$
- $Revision$
  */
 #include "stir/DiscretisedDensity.h"
 #include "stir/Succeeded.h"
@@ -38,7 +36,7 @@ int main(int argc, char **argv)
   }
   char const * const output_filename_prefix = argv[1];
   char const * const input_filename = argv[2];
-  const unsigned int num_planes = atoi(argv[3]);
+  const int num_planes = atoi(argv[3]);
 
   const shared_ptr<DiscretisedDensity<3,float> > image_sptr(DiscretisedDensity<3,float>::read_from_file(input_filename));
   const shared_ptr<DiscretisedDensity<3,float> > out_image_sptr(image_sptr->clone());

@@ -1,18 +1,12 @@
-//
-// $Id$
-//
 /*!
   \file
   \ingroup Array
   \brief Declaration of class stir::ArrayFilterUsingRealDFTWithPadding
 
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004-2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -33,6 +27,7 @@
 
 #include "stir/Array.h"
 #include "stir/ArrayFunctionObject_2ArgumentImplementation.h"
+#include "stir/Array_complex_numbers.h"
 #include "stir/IndexRange.h"
 #include <complex>
 
@@ -125,7 +120,8 @@ public:
   bool is_trivial() const;
 
 protected:
-  Array<num_dimensions, std::complex<elemT> > kernel_in_frequency_space;
+
+	Array<num_dimensions, std::complex<elemT> > kernel_in_frequency_space;
 
   //! Performs the convolution
   /*! \a in_array and \a out_array can have arbitrary (even non-regular)

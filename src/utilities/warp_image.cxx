@@ -21,8 +21,6 @@
  
   \brief This program warps an image.
   \author Charalampos Tsoumpas
-  $Date$
-  $Revision$
 */
 #include "stir/spatial_transformation/warp_image.h"
 #include "stir/Succeeded.h"
@@ -48,7 +46,7 @@ int main(int argc, char **argv)
   char const * const motion_y_filename = argv[4];
   char const * const motion_z_filename = argv[5];
   const int interpolation_type = (argc==6) ? 3 : atoi(argv[6]);	
-  const int extend_borders = (argc<=7) ? 0 : atoi(argv[7]);
+  const bool extend_borders = (argc<=7) ? false : (atoi(argv[7])!=0);
 
   const BSpline::BSplineType spline_type = static_cast<BSpline::BSplineType> (interpolation_type);
 

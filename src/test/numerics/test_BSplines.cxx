@@ -1,9 +1,7 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2005- 2009-10-27, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2013, University College London
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,9 +23,6 @@
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */  
 #include "stir/RunTests.h"
 #include "stir/Array.h"
@@ -66,8 +61,8 @@ namespace BSpline {
 				const char * const message)
     {
       std::vector<elemT> out;
-      for (unsigned int i=0, imax=v.size(); i<imax ; ++i)		
-	out.push_back(interpolator.BSplines(static_cast<elemT>(i)));
+      for (std::size_t i=0, imax=v.size(); i<imax ; ++i)		
+	     out.push_back(interpolator.BSplines(static_cast<elemT>(i)));
       std::cout << "IN: " << v << "OUT: " << out;    		
       return 
 	check_if_equal(v, out,  message);

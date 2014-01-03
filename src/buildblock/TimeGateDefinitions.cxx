@@ -56,14 +56,14 @@ unsigned int
 TimeGateDefinitions::
 get_num_gates() const
 {
-  return this->_gate_sequence.size();
+  return static_cast<unsigned int>(this->_gate_sequence.size());
 }
 
 unsigned int
 TimeGateDefinitions::
 get_num_time_gates() const
 {
-  return this->_gate_sequence.size();
+  return static_cast<unsigned int>(this->_gate_sequence.size());
 }
 
 TimeGateDefinitions::

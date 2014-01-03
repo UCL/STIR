@@ -1,10 +1,6 @@
-	
-//
-// $Id$
-//
 /*
     Copyright (C) 2004 - 2005-04-19, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-07-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,8 +21,6 @@
   \brief Write object-spec for PHG parameter file for SimSET
   \author Pablo Aguiar
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 
 #include <math.h>
@@ -101,10 +95,10 @@ void assign_inputs(char **arg,int *nslices,int *xbins,int *ybins,
   *nslices=atoi(arg[1]);
   *xbins=atoi(arg[2]);
   *ybins=atoi(arg[3]);
-  *xMin=atof(arg[4])/10.F;
-  *xMax=atof(arg[5])/10.F;
-  *yMin=atof(arg[6])/10.F;
-  *yMax=atof(arg[7])/10.F;
-  *zMin=atof(arg[8])/10.F;
-  *zMax=atof(arg[9])/10.F;
+  *xMin=(float)(atof(arg[4]))/10.F;
+  *xMax=(float)(atof(arg[5]))/10.F;
+  *yMin=(float)(atof(arg[6]))/10.F;
+  *yMax=(float)(atof(arg[7]))/10.F;
+  *zMin=(float)(atof(arg[8]))/10.F;
+  *zMax=(float)(atof(arg[9]))/10.F;
 }

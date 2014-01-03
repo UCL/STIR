@@ -1,19 +1,12 @@
-//
-// $Id$
-//
-
 /*!
   \file 
   \ingroup DFT
   \brief Functions for computing discrete fourier transforms
 
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003 - 2005-01-17, Hammersmith Imanet Ltd
 
     This file is part of STIR.
 
@@ -241,7 +234,7 @@ fourier_1d_for_real_data(const Array<1,T>& v, const int sign)
     error("fourier_1d_of_real can only handle arrays of even length.\n");
 
   Array<1,complex_t> c;
-  const unsigned int n = v.size()/2;
+  const unsigned int n = static_cast<unsigned int>(v.size()/2);
   // we reserve a range of 0,n here, such that 
   // resize(n) later doesn't reallocate and copy
   c.reserve(n+1);

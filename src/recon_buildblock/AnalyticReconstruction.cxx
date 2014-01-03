@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$,  Hammersmith Imanet Ltd 
+    Copyright (C) 2000 - 2006,  Hammersmith Imanet Ltd 
     This file is part of STIR. 
  
     This file is free software; you can redistribute it and/or modify 
@@ -191,10 +188,10 @@ construct_target_image_ptr() const
 {
   return
       new VoxelsOnCartesianGrid<float> (*this->proj_data_ptr->get_proj_data_info_ptr(),
-					this->zoom,
-					CartesianCoordinate3D<float>(this->Zoffset,
-								     this->Yoffset,
-								     this->Xoffset),
+					static_cast<float>(this->zoom),
+					CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset),
+								     static_cast<float>(this->Yoffset),
+								     static_cast<float>(this->Xoffset)),
 					CartesianCoordinate3D<int>(this->output_image_size_z,
                                                                    this->output_image_size_xy,
                                                                    this->output_image_size_xy)

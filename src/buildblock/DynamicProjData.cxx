@@ -292,9 +292,10 @@ read_interfile_DPDFS(istream& input,
 	     {
 	       num_sinos += proj_data_info_sptr->get_num_axial_poss(s);
 	     }
-	   data_offset_increment = static_cast<unsigned long>(num_sinos) * 
-	     proj_data_info_sptr->get_num_tangential_poss() * proj_data_info_sptr->get_num_views() * 
-	     hdr.type_of_numbers.size_in_bytes();
+	   data_offset_increment = 
+		   static_cast<unsigned long>(num_sinos * 
+	                                  proj_data_info_sptr->get_num_tangential_poss() * proj_data_info_sptr->get_num_views() * 
+	                                  hdr.type_of_numbers.size_in_bytes());
 	 }
 
        // find offset of next frame

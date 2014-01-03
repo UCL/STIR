@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
+    Copyright (C) 2013-2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -21,10 +22,6 @@
 
 \author Kris Thielemans
 \author Berta Marti Fuster
-
-$Date: 2013-04-03 
-$Revision$
-
 */
 
 #include "stir/IO/InterfilePDFSHeaderSPECT.h"
@@ -119,7 +116,7 @@ bool InterfilePDFSHeaderSPECT::post_processing()
           warning("Interfile error: radius not set");
           return true;
         }
-      for ( int i = 0 ; i < num_views ; i++ ) radii[ i ] = radius_of_rotation;	
+      for ( int i = 0 ; i < num_views ; i++ ) radii[ i ] = static_cast<float>(radius_of_rotation);	
     }
   else if (orbit == "non-circular")
     {
