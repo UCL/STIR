@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
     Copyright (C) Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain.
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013-2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -183,7 +183,8 @@ set_up(
 	const ProjDataInfoCylindricalArcCorr * proj_Data_Info_Cylindrical =
       dynamic_cast<const ProjDataInfoCylindricalArcCorr* > (this->proj_data_info_ptr.get());
 
-	double ini = clock();
+	CPUTimer timer; 
+	timer.start();
 
 	//... fill prj structure from projection data info
 
@@ -540,7 +541,7 @@ set_up(
 		for ( int i = 0 ; i < prj.NbOS ; i++ ) NITEMS[kOS][ i ] = 1;
 
 
-		//... size esmitations ........................................................
+		//... size estimations ........................................................
 
 		wm_size_estimation ( kOS,  ang, vox, bin, vol, prj, msk_3d, msk_2d, maxszb, &gaussdens, NITEMS[kOS] );
 
@@ -550,7 +551,7 @@ set_up(
 	}   // end of LOOP: Subsets
 
 	//delete_UB_SPECT_arrays();
-	info(boost::format("done. Execution time %1% s ") % (double( clock()-ini )/CLOCKS_PER_SEC));
+	info(boost::format("Done estimating size of matrix. Execution (CPU) time %1% s ") % timer.value());
 	// wm_SPECT ends here ---------------------------------------------------------------------------------------------
 
 	this->already_setup= true;
@@ -650,10 +651,9 @@ compute_one_subset(const int kOS) const
 
   //... size information ....................................................................
 
-  cout << "\ntotal number of non-zero weights: " << ne << endl;
-
-  if ( wm.do_save_STIR ) cout << "estimated matrix size: " << (ne + 10* prj.NbOS)/104857.6  << " Mb\n" << endl;
-  else cout << "estimated matrix size: " << ne/131072 << " Mb\n" << endl;
+  info(boost::format("total number of non-zero weights in this view: %1%, estimated size: %2% MB") 
+       % ne
+       % ( wm.do_save_STIR ?  (ne + 10* prj.NbOS)/104857.6 : ne/131072));
 
   //... memory allocation for wm float arrays ...................................
 
