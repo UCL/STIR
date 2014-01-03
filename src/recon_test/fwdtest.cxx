@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- 2011-12-31, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2010, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -110,11 +110,13 @@ main(int argc, char *argv[])
   const string output_file_name = argv[1];
 
   shared_ptr<ProjDataInfo> new_data_info_ptr;
+  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);  
   if(argc>=3)
   {
-    shared_ptr<ProjData> proj_data_ptr = 
+    shared_ptr<ProjData> proj_data_sptr = 
       ProjData::read_from_file(argv[2]);
-    new_data_info_ptr= proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone();
+    exam_info_sptr = proj_data_sptr->get_exam_info_sptr();
+    new_data_info_ptr= proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();
   }
   else
   {
@@ -127,7 +129,6 @@ main(int argc, char *argv[])
 
   new_data_info_ptr->reduce_segment_range(-limit_segments, limit_segments);
 
-  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);  
   shared_ptr<ProjData> proj_data_ptr(new ProjDataInterfile(exam_info_sptr, new_data_info_ptr, output_file_name));
   cerr << "Output will be written to " << output_file_name 
        << " and its Interfile header\n";
