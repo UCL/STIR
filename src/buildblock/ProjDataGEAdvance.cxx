@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*!
 
   \file
@@ -11,15 +8,11 @@
   \author Damiano Belluzzo
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-
-  $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-06-22, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -163,11 +156,11 @@ get_viewgram(const int view_num, const int segment_num,
     // min_ring_diff   -1      +2      -2      +3      -3      +4      -4 .......
     
     
-    int odd_ring_segment_offset;
-    long num_rings_offset;
-    long segment_offset;
-    long jump_size;
-    int jump_ring;
+    streamoff odd_ring_segment_offset;
+    streamoff num_rings_offset;
+    streamoff segment_offset;
+    streamoff jump_size;
+    streamoff jump_ring;
     
     
     //----------------------------------------------------------------
@@ -186,9 +179,9 @@ get_viewgram(const int view_num, const int segment_num,
     // segment index in the unsorted data format
     
     const int  index_orig = 
-      find(segment_sequence_orig.begin(), 
-	     segment_sequence_orig.end(), segment_num_orig) - 
-             segment_sequence_orig.begin();
+      static_cast<int>(find(segment_sequence_orig.begin(), 
+	                        segment_sequence_orig.end(), segment_num_orig) - 
+                       segment_sequence_orig.begin());
     
     //      cout << "index_orig " << index_orig << endl;
     
@@ -197,7 +190,7 @@ get_viewgram(const int view_num, const int segment_num,
     // OFFSETS
     //---------------------------------------------------------------
     
-    const int offset_begin = 256;
+    const streamoff offset_begin = 256;
     
     // offset in rings for the odd sorted segments (value 0 or 1)
     
@@ -250,7 +243,7 @@ get_viewgram(const int view_num, const int segment_num,
     else
       jump_ring = get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
     
-    int ring_offset = get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
+    streamoff ring_offset = get_num_tangential_poss() * on_disk_data_type.size_in_bytes();
     
     // jumps the initial offset
     
@@ -264,7 +257,7 @@ get_viewgram(const int view_num, const int segment_num,
     
     // jump to the right Viewgram
     
-    int jump_ini = (view_num - get_min_view_num())*
+    streamoff jump_ini = (view_num - get_min_view_num())*
       (ring_offset*get_num_axial_poss(segment_num)
       + jump_ring*get_num_axial_poss(segment_num)
       + jump_size);

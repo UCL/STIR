@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*
   Copyright (C) 2005- 2009-10-27, Hammersmith Imanet Ltd
   This file is part of STIR.
@@ -24,9 +21,6 @@
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
-  
-  $Date$
-  $Revision$
 */  
 #include "stir/RunTests.h"
 #include "stir/Array.h"
@@ -57,10 +51,10 @@ namespace BSpline {
                                 BSplinesRegularGrid<1, elemT, elemT>& interpolator,
                                 const char * const message)
     {                   
-      IndexRange<1> out_range(v.size());
+      IndexRange<1> out_range(static_cast<int>(v.size()));
       Array<1,elemT> out(out_range);                    
       BasicCoordinate<1, elemT> relative_positions;
-      for (int i=0, imax=v.size(); i<imax ; ++i)        
+      for (int i=0, imax=static_cast<int>(v.size()); i<imax ; ++i)        
         {
           relative_positions[1]=i;
           out[i]=interpolator(relative_positions);
@@ -75,7 +69,7 @@ namespace BSpline {
                             BSplinesRegularGrid<1, elemT, elemT>& interpolator,
                             const char * const message)
     {                   
-      IndexRange<1> out_range(v.size());
+      IndexRange<1> out_range(static_cast<int>(v.size()));
       Array<1,elemT> out(out_range);            
       out=interpolator.get_coefficients();                      
       std::cout << "IN: " << v << "Coefficients: " << out;                   
@@ -109,7 +103,7 @@ namespace BSpline {
         check_at_sample_points(const_input_sample, BSplinesRegularGridTest_const,
                                "check BSplines implementation for nearest interpolation");
         cerr << "At half points: "  ;
-        for (elemT i=0, imax=const_input_sample.size(); i<imax ; ++i)   
+        for (int i=0, imax=static_cast<int>(const_input_sample.size()); i<imax ; ++i)        
           {                                     
             relative_positions[1]=i-0.5;
             cerr <<  BSplinesRegularGridTest_const(relative_positions) <<  " " ;
@@ -118,7 +112,7 @@ namespace BSpline {
         check_at_sample_points(linear_input_sample, BSplinesRegularGridTest_linear,
                                "check BSplines implementation for nearest interpolation");
         cerr << "At half points: "  ;
-        for (elemT i=0, imax=linear_input_sample.size(); i<imax ; ++i)  
+        for (int i=0, imax=static_cast<int>(linear_input_sample.size()); i<imax ; ++i)        
           {                                     
             relative_positions[1]=i-0.5;
             cerr <<  BSplinesRegularGridTest_linear(relative_positions) << " " ;
@@ -145,7 +139,7 @@ namespace BSpline {
         check_at_sample_points(const_input_sample, BSplinesRegularGridTest_const,
                                "check BSplines implementation for linear interpolation");
         cerr << "At half points: "  ;
-        for (elemT i=0, imax=const_input_sample.size(); i<imax ; ++i)   
+        for (int i=0, imax=static_cast<int>(const_input_sample.size()); i<imax ; ++i)        
           {                                     
             relative_positions[1]=i-0.5;
             cerr <<  BSplinesRegularGridTest_const(relative_positions) <<  " " ;
@@ -154,7 +148,7 @@ namespace BSpline {
         check_at_sample_points(linear_input_sample, BSplinesRegularGridTest_linear,
                                "check BSplines implementation for linear interpolation");
         cerr << "At half points: "  ;
-        for (elemT i=0, imax=linear_input_sample.size(); i<imax ; ++i)  
+        for (int i=0, imax=static_cast<int>(linear_input_sample.size()); i<imax ; ++i)        
           {                                     
             relative_positions[1]=i-0.5;
             cerr <<  BSplinesRegularGridTest_linear(relative_positions) << " " ;
@@ -181,7 +175,7 @@ namespace BSpline {
         check_at_sample_points(const_input_sample, BSplinesRegularGridTest_const,
                                "check BSplines implementation for quadratic interpolation");
         cerr << "At half points: "  ;
-        for (elemT i=0, imax=const_input_sample.size(); i<imax ; ++i)   
+        for (std::size_t i=0, imax=const_input_sample.size(); i<imax ; ++i)   
           {                                     
             relative_positions[1]=i-0.5;
             cerr <<  BSplinesRegularGridTest_const(relative_positions) <<  " " ;
@@ -190,7 +184,7 @@ namespace BSpline {
         check_at_sample_points(linear_input_sample, BSplinesRegularGridTest_linear,
                                "check BSplines implementation for quadratic interpolation");
         cerr << "At half points: "  ;
-        for (elemT i=0, imax=linear_input_sample.size(); i<imax ; ++i)  
+        for (std::size_t i=0, imax=linear_input_sample.size(); i<imax ; ++i)  
           {                                     
             relative_positions[1]=i-0.5;
             cerr <<  BSplinesRegularGridTest_linear(relative_positions) << " " ;
@@ -217,7 +211,7 @@ namespace BSpline {
         check_at_sample_points(const_input_sample, BSplinesRegularGridTest_const,
                                "check BSplines implementation for cubic interpolation");
         cerr << "At half points: "  ;
-        for (elemT i=0, imax=const_input_sample.size(); i<imax ; ++i)   
+        for (std::size_t i=0, imax=const_input_sample.size(); i<imax ; ++i)   
           {                                     
             relative_positions[1]=i-0.5;
             cerr <<  BSplinesRegularGridTest_const(relative_positions) <<  " " ;
@@ -226,7 +220,7 @@ namespace BSpline {
         check_at_sample_points(linear_input_sample, BSplinesRegularGridTest_linear,
                                "check BSplines implementation for cubic interpolation");
         cerr << "At half points: "  ;
-        for (elemT i=0, imax=linear_input_sample.size(); i<imax ; ++i)  
+        for (std::size_t i=0, imax=linear_input_sample.size(); i<imax ; ++i)  
           {                                     
             relative_positions[1]=i-0.5;
             cerr <<  BSplinesRegularGridTest_linear(relative_positions) << " " ;
@@ -253,7 +247,7 @@ namespace BSpline {
         check_at_sample_points(const_input_sample, BSplinesRegularGridTest_const,
                                "check BSplines implementation for oMoms interpolation");
         cerr << "At half points: "  ;
-        for (elemT i=0, imax=const_input_sample.size(); i<imax ; ++i)   
+        for (std::size_t i=0, imax=const_input_sample.size(); i<imax ; ++i)   
           {                                     
             relative_positions[1]=i-0.5;
             cerr <<  BSplinesRegularGridTest_const(relative_positions) <<  " " ;
@@ -262,7 +256,7 @@ namespace BSpline {
         check_at_sample_points(linear_input_sample, BSplinesRegularGridTest_linear,
                                "check BSplines implementation for oMoms interpolation");
         cerr << "At half points: "  ;
-        for (elemT i=0, imax=linear_input_sample.size(); i<imax ; ++i)  
+        for (std::size_t i=0, imax=linear_input_sample.size(); i<imax ; ++i)  
           {                                     
             relative_positions[1]=i-0.5;
             cerr <<  BSplinesRegularGridTest_linear(relative_positions) << " " ;

@@ -20,22 +20,19 @@
 
  \brief This program converts Images from Interfile Format to GIPL (Guy's Imaging Processing Lab) format. 
  \author Charalampos Tsoumpas
- $Date$
- $Revision$
  */
+
+#include "stir/IO/InterfileOutputFileFormat.h"
+#include "stir/shared_ptr.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/Succeeded.h"
+#include "stir/IO/GIPL_ImageFormat.h"
 
 // general header files
 #include <stdio.h>
 #include <sstream>
 #include <fstream>
 #include <iostream>
-
-#include "stir/IO/GIPL_ImageFormat.h"
-#include "stir/IO/InterfileOutputFileFormat.h"
-#include "stir/shared_ptr.h"
-#include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/Succeeded.h"
-
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;

@@ -43,9 +43,6 @@
   ACF-threshold defaults to 1.1 (should be larger than 1), safety-margin to 4
 */
 
-#include <iostream>
-#include <fstream>
-#include <string>
 #include "stir/ProjDataInfo.h"
 #include "stir/Sinogram.h"
 #include "stir/ProjDataInterfile.h"
@@ -53,6 +50,9 @@
 #include "stir/is_null_ptr.h"
 #include "stir/Bin.h"
 #include "boost/lambda/lambda.hpp"
+#include <iostream>
+#include <fstream>
+#include <string>
 
 
 /***********************************************************/     

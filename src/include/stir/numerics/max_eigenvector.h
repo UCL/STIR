@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005 - 2007-10-08, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,9 +24,6 @@
     
   \author Kris Thielemans
   \author Sanida Mustafovic
-
-  $Date$
-  $Revision$
 */
 #include "stir/numerics/MatrixFunction.h"
 #include "stir/numerics/norm.h"
@@ -110,13 +104,13 @@ absolute_max_eigenvector_using_power_method(elemT& max_eigenvalue,
     }
   while (change > tolerance_squared && remaining_num_iterations!=0);
   
-  current /= norm(current);
+  current /= static_cast<elemT>(norm(current));
   max_eigenvector = matrix_multiply(m, current);
   // compute eigenvalue using Rayleigh quotient
   max_eigenvalue = 
-    inner_product(current,max_eigenvector) /
-    norm_squared(current);
-  max_eigenvector /= norm(max_eigenvector);
+    static_cast<elemT>(inner_product(current,max_eigenvector) /
+                       norm_squared(current));
+  max_eigenvector /= static_cast<elemT>(norm(max_eigenvector));
 
   return remaining_num_iterations ==0 ? Succeeded::no : Succeeded::yes;
 
@@ -157,7 +151,7 @@ absolute_max_eigenvector_using_shifted_power_method(elemT& max_eigenvalue,
     absolute_max_eigenvector_using_power_method(max_eigenvalue,
 						max_eigenvector,
 						// sadly need to explicitly convert result of subtraction back to Array
-						Array<2,elemT>(m - diagonal_matrix(m.size(), shift)), 
+						Array<2,elemT>(m - diagonal_matrix(static_cast<unsigned>(m.size()), shift)), 
 						start,
 						tolerance,
 						max_num_iterations);

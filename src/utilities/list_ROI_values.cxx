@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -50,9 +47,6 @@
   \endverbatim
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
-
 */
 #include "stir/utilities.h"
 #include "stir/evaluation/compute_ROI_values.h"
@@ -234,7 +228,7 @@ main(int argc, char *argv[])
   const int max_plane_number = 
     argc==6 ? atoi(argv[5])-1 : image_ptr->get_max_index();
 
-  const bool by_plane=argc==5 ? atoi(argv[4]):true ;  
+  const bool by_plane=argc==5 ? (atoi(argv[4])!=0):true ;  
 
   if (parameters.filter_ptr!=0)
     parameters.filter_ptr->apply(*image_ptr);

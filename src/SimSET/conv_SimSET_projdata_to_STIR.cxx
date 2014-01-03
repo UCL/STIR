@@ -27,9 +27,6 @@
   \author Kris Thielemans 
 */
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
 #include "stir/ProjDataInterfile.h"
 #include "stir/ExamInfo.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
@@ -40,6 +37,9 @@
 #include "stir/IO/read_data.h"
 #include "stir/Succeeded.h"
 #include <iostream>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #define NUMARG 12
 
 
@@ -72,8 +72,8 @@ int main(int argc,char **argv)
   const int num_views=atoi(argv[3]);
   const int num_tangential_poss=atoi(argv[4]);
   const int num_rings=atoi(argv[5]);
-  const float FOV_radius = atof(argv[6])*10; // times 10 for mm
-  const float scanner_length = atof(argv[7])*10; // times 10 for mm
+  const float FOV_radius = static_cast<float>(atof(argv[6])*10); // times 10 for mm
+  const float scanner_length = static_cast<float>(atof(argv[7])*10); // times 10 for mm
   const char * const scanner_name = argv[8];
   const int max_ring_difference=atoi(argv[9]);
   const int dataset_num = atoi(argv[10]);

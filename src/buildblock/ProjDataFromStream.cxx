@@ -215,8 +215,8 @@ ProjDataFromStream::get_offsets(const int view_num, const int segment_num) const
 
 
  const  int index = 
-    FIND(segment_sequence.begin(), segment_sequence.end(), segment_num) - 
-    segment_sequence.begin();
+    static_cast<int>(FIND(segment_sequence.begin(), segment_sequence.end(), segment_num) - 
+                     segment_sequence.begin());
    
   streamoff num_axial_pos_offset = 0;
   for (int i=0; i<index; i++)
@@ -386,8 +386,8 @@ ProjDataFromStream::get_offsets_sino(const int ax_pos_num, const int segment_num
     error("ProjDataFromStream::get_offsets: axial_pos_num out of range : %d", ax_pos_num);
 
   const int index = 
-    FIND(segment_sequence.begin(), segment_sequence.end(), segment_num) - 
-    segment_sequence.begin();
+    static_cast<int>(FIND(segment_sequence.begin(), segment_sequence.end(), segment_num) - 
+                     segment_sequence.begin());
   
   
   streamoff num_axial_pos_offset = 0;
@@ -613,8 +613,8 @@ ProjDataFromStream::get_offset_segment(const int segment_num) const
   segment_num <=  get_max_segment_num());
   { 
       const int index = 
-        FIND(segment_sequence.begin(), segment_sequence.end(), segment_num) - 
-        segment_sequence.begin();
+        static_cast<int>(FIND(segment_sequence.begin(), segment_sequence.end(), segment_num) - 
+                         segment_sequence.begin());
 
       streamoff num_axial_pos_offset = 0;
       for (int i=0; i<index; i++)

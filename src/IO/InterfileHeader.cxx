@@ -666,7 +666,7 @@ find_segment_sequence(vector<int>& segment_sequence,
 		      const vector<int>& min_ring_difference, 
 		      const vector<int>& max_ring_difference)
 {
-  const int num_segments = min_ring_difference.size();
+  const int num_segments = static_cast<int>(min_ring_difference.size());
   assert(num_segments%2 == 1);
   
   

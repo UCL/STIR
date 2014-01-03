@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004- 2010, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,9 +21,6 @@
 
   \author Charalampos Tsoumpas
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 #include "stir/shared_ptr.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
@@ -132,7 +126,7 @@ float find_level_width(const RandomAccessIterType& begin_iterator,
                        const RandomAccessIterType& end_iterator,
                        const float level_height)
 { 
-  const int max_position = current_max_iterator - begin_iterator + 1;
+  const int max_position = static_cast<int>(current_max_iterator - begin_iterator + 1);
   RandomAccessIterType current_iter = current_max_iterator;
   while(current_iter!= end_iterator && *current_iter > level_height)   ++current_iter;
   if (current_iter==end_iterator)  

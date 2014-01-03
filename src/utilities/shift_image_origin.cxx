@@ -19,8 +19,6 @@
  \ingroup utilities
  \brief This program shifts the origin of an image.
  \author Charalampos Tsoumpas
- $Date$
- $Revision$
  */
 #include "stir/DiscretisedDensity.h"
 #include "stir/IO/OutputFileFormat.h"
@@ -44,9 +42,9 @@ int main(int argc, char **argv)
   // get parameters from command line
   char const * const output_filename = argv[1];
   char const * const input_filename = argv[2];
-  const float x_shift_in_mm = (argc>3) ? atof(argv[3]) : 0;
-  const float y_shift_in_mm = (argc>4) ? atof(argv[4]) : 0;
-  const float z_shift_in_mm = (argc>5) ? atof(argv[5]) : 0;
+  const float x_shift_in_mm = (argc>3) ? static_cast<float>(atof(argv[3])) : 0;
+  const float y_shift_in_mm = (argc>4) ? static_cast<float>(atof(argv[4])) : 0;
+  const float z_shift_in_mm = (argc>5) ? static_cast<float>(atof(argv[5])) : 0;
 	
   // read image 
   shared_ptr<DiscretisedDensity<3,float> >  density_sptr( 

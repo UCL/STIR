@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet
+    Copyright (C) 2004 - 2011-12-31, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -22,13 +19,9 @@
   \ingroup utilities
   \brief List of FWHM and location of maximum in the image
   
-
   \author Charalampos Tsoumpas
   \author Kris Thielemans
   \author Sanida Mustafovic
-
-  $Date$
-  $Revision$
 
   \par Usage:
    \code
@@ -87,7 +80,7 @@ int main(int argc, char *argv[])
   const unsigned short num_maxima = argc>=3 ? atoi(argv[2]) : 1 ;
   const float level = argc>=4 ? static_cast<float>(atof(argv[3])) : 2 ;  
   const int dimension = argc>=5 ? atoi(argv[4]) : 0 ; 
-  const bool nema = argc>=6 ? atoi(argv[5]) : 1 ; 
+  const bool nema = argc>=6 ? (atoi(argv[5])!=0) : true ; 
   std::cerr << "Finding " << num_maxima << " maxima\n" ;    
   shared_ptr< DiscretisedDensity<3,float> >  
     input_image_sptr(read_from_file<DiscretisedDensity<3,float> >(argv[1]));
