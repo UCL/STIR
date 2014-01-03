@@ -126,6 +126,7 @@ int main(int argc, char *argv[])
   if (print_exam)
     {
       const ExamInfo& exam_info = *proj_data_sptr->get_exam_info_ptr();
+      std::cout << "Modality: " << proj_data_sptr->get_exam_info_ptr()->imaging_modality.get_name() << '\n';
       std::cout << "Patient position: " << exam_info.patient_position.get_position_as_string() << '\n';
       std::cout << "Scan start time in secs since 1970 UTC: " << exam_info.start_time_in_secs_since_1970 << '\n';
       if (exam_info.time_frame_definitions.get_num_time_frames() == 1)
