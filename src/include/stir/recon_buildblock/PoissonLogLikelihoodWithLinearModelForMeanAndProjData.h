@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003 - 2011-02-23, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -366,6 +363,7 @@ protected:
 #ifdef STIR_MPI
 //made available to be called from DistributedWorker object
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
+RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
 #endif
 
 END_NAMESPACE_STIR

@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2007- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2007 - 2011-02-23, Hammersmith Imanet Ltd
+    Copyright (C) 2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,7 +28,6 @@
 
   \author Tobias Beisel
   \author Kris Thielemans
-  $Date$
 */
 
 #include "stir/shared_ptr.h"
@@ -43,6 +40,8 @@
 #include <vector>
 
 START_NAMESPACE_STIR
+
+class ExamInfo;
 
 /*!
   \ingroup distributable
@@ -74,6 +73,7 @@ class DistributedWorker : public TimedObject //, public ParsingObject
   double* log_likelihood_ptr;
   bool zero_seg0_end_planes;
   shared_ptr<ProjectorByBinPair> proj_pair_sptr;
+  shared_ptr<ExamInfo> exam_info_sptr;
   shared_ptr<ProjDataInfo> proj_data_info_sptr;
   shared_ptr<TargetT> target_sptr;
                 

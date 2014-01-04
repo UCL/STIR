@@ -1,9 +1,7 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2013-2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,9 +28,6 @@
   \author Matthew Jacobson
   \author PARAPET project
   \author Tobias Beisel
-
-  $Date$
-  $Revision$
 */
 /* Modification history:
    KT 30/05/2002
@@ -50,6 +45,7 @@
 #include "stir/recon_buildblock/distributable.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/ProjData.h"
+#include "stir/ExamInfo.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/CPUTimer.h"
@@ -57,6 +53,7 @@
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/is_null_ptr.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
 
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributableMPICacheEnabled.h"
@@ -75,6 +72,7 @@ START_NAMESPACE_STIR
    in DistributedWorker */
 void setup_distributable_computation(
                                      const shared_ptr<ProjectorByBinPair>& proj_pair_sptr,
+                                     const shared_ptr<ExamInfo>& exam_info_sptr,
                                      const ProjDataInfo * const proj_data_info_ptr,
                                      const shared_ptr<DiscretisedDensity<3,float> >& target_sptr,
                                      const bool zero_seg0_end_planes,
@@ -93,12 +91,12 @@ void setup_distributable_computation(
   distributed::send_image_parameters(target_sptr.get(), -1, -1);
   distributed::send_image_estimate(target_sptr.get(), -1);
         
-  //sending Projection_Data_info
-  distributed::send_proj_data_info(proj_data_info_ptr, -1);
+  //sending Data_info
+  distributed::send_exam_and_proj_data_info(*exam_info_sptr, *proj_data_info_ptr, -1);
 
   //send projector pair
   distributed::send_projectors(proj_pair_sptr, -1);
-        
+
   //send configuration values for distributed computation
   int configurations[4];
   configurations[0]=distributed::test?1:0;
@@ -280,7 +278,21 @@ void distributable_computation(
 {
 #ifdef STIR_MPI 
   // TODO need to differentiate depending on RPC_process_related_viewgrams
-  distributed::send_int_value(task_do_distributable_gradient_computation, -1);
+  int task_id;
+  if (RPC_process_related_viewgrams == &RPC_process_related_viewgrams_accumulate_loglikelihood)
+    task_id=task_do_distributable_loglikelihood_computation;
+  else if (RPC_process_related_viewgrams == &RPC_process_related_viewgrams_gradient)
+    task_id=task_do_distributable_gradient_computation;
+      /* else if (RPC_process_related_viewgrams == &
+	case 
+	task_id=task_do_distributable_sensitivity_computation;break;
+      */
+  else
+    {
+      error("distributable_computation: unknown RPC task");
+    }
+
+  distributed::send_int_value(task_id, -1);
 
   if (caching_info_ptr != NULL)
     {
@@ -326,8 +338,12 @@ void distributable_computation(
     }
 #endif
         
+  //send if log_likelihood_ptr is valid and so needs to be accumulated
+  distributed::send_bool_value(!is_null_ptr(log_likelihood_ptr),USE_DOUBLE_ARG_TAG,-1);
   //send the current image estimate
   distributed::send_image_estimate(input_image_ptr, -1);
+  //send if output_image_ptr is valid and so needs to be accumulated
+  distributed::send_bool_value(!is_null_ptr(output_image_ptr),USE_OUTPUT_IMAGE_ARG_TAG,-1);
         
 #endif
 
@@ -464,9 +480,16 @@ void distributable_computation(
   int int_values[2];  int_values[0]=3; int_values[1]=4; // values are ignored
   distributed::send_int_values(int_values, 2, END_ITERATION_TAG, -1);
         
-  //reduce output image                 
-  distributed::reduce_received_output_image(output_image_ptr, 0);
-        
+  //reduce output image
+  if (!is_null_ptr(output_image_ptr))
+    distributed::reduce_received_output_image(output_image_ptr, 0);
+  // and log_likelihood
+  if (!is_null_ptr(log_likelihood_ptr))
+    {
+      double buffer = 0.0;
+      MPI_Reduce(&buffer, log_likelihood_ptr, /*size*/1, MPI_DOUBLE, MPI_SUM, /*destination*/ 0, MPI_COMM_WORLD);
+    }
+
   //reduce timed rpc-value
   if(distributed::rpc_time)
     {

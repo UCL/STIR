@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2007- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2007 - 2011/03/02, Hammersmith Imanet Ltd
+    Copyright (C) 2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,8 +26,7 @@
   \brief Declaration of functions in the distributed namespace
 
   \author Tobias Beisel
-
-  $Date$
+  \author Kris Thielemans
 */
 
 /*!
@@ -88,6 +85,10 @@
 #include "stir/Viewgram.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfo.h"
+
+namespace stir {
+  class ExamInfo;
+}
 
 namespace distributed
 {
@@ -198,20 +199,22 @@ namespace distributed
   void send_image_estimate(const stir::DiscretisedDensity<3,float>* input_image_ptr, int destination);
         
         
-  /*! \brief sends or broadcasts the parameter_info() of the ProjDataInfo pointer
-   * \param data the ProjDataInfo pointer to be sent
-   * \param destination the process id where to send the image values. If set to -1 a Broadcast will be done
+  /*! \brief sends or broadcasts the information from ExamInfo and ProjDataInfo 
+   * \param exam_info the ExamInfo pointer to be sent
+   * \param proj_data_info the ProjDataInfo pointer to be sent
+   * \param destination the process id where to send the values. If set to -1 a Broadcast will be done
    * 
-   * For sending the ProjDataInfo object a rather "dirty trick" is used:
-   * Instead of sending all needed data for constructing a ProjDataInfd object, 
-   * the parameter_info() is temporarily stored as ProjDataInterfile and then buffered
+   * For sending the objects a rather "dirty trick" is used:
+   * Instead of sending all needed data for constructing the objects, 
+   * the information is temporarily stored as ProjDataInterfile and then buffered
    * as text from the file. Afterwards, that is sent to the slave. 
    * 
-   * Doing this, the slave is able to construct the ProjDataInfo by using the received infomation
-   * for a InterfilePDFSHeader object. The sent char-array is used as stream-
-   * input to the parse() function of InterfilePDFSHeader. 
+   * Doing this, the slave is able to construct the objects by using the received information.
+   * The sent char-array is used as stream-input to the parse() function of InterfileHeader. 
+   *
+   * \warning Creates a temporary Interfile header in the local working directory.
    */
-  void send_proj_data_info(stir::ProjDataInfo const * const data, int destination);
+  void send_exam_and_proj_data_info(const stir::ExamInfo& exam_info, const stir::ProjDataInfo&  proj_data_info, int destination);
         
         
   /*! \brief sends a RelatedViegrams object
@@ -342,18 +345,21 @@ namespace distributed
   MPI_Status receive_image_values_and_fill_image_ptr(stir::shared_ptr<stir::DiscretisedDensity<3,float> > &image_ptr, int buffer_size, int source);
         
         
-  /*! \brief receives the parameter_info() of the ProjDataInfo pointer and constructs a new ProjDataInfo object from it
+  /*! \brief receives information of ExamInfo and ProjDataInfo objects and constructs new ones from it
+   * \param exam_info_sptr the new ExamInfo pointer to be set up
    * \param proj_data_info_sptr the new ProjDataInfo pointer to be set up
-   * \param source the process id from which to receive the ProjDataInfo
+   * \param source the process id from which to receive from
    * 
-   * The parameter info is received as a Interfile Header sting. That way the slave is able 
+   * The parameter info is received as a Interfile Header string. That way the slave is able 
    * to construct a ProjDataInfo within a InterfilePDFSHeader using the received 
    * char-array as stream-input to the parse() function of InterfilePDFSHeader. 
    */
-  void receive_and_construct_proj_data_info_ptr(stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_sptr, int source);
+  void receive_and_construct_exam_and_proj_data_info_ptr(stir::shared_ptr<stir::ExamInfo>& exam_info_sptr,
+							 stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_sptr, 
+							 int source);
         
         
-  /*! \brief receives and constructs a RelatedViegrams object
+  /*! \brief receives and constructs a RelatedViewgrams object
    * \param viewgrams object that will be filled with the data
    * \param proj_data_info_ptr the ProjDataInfo pointer describing the data
    * \param symmetries_sptr the symmetries pointer constructed when setting up the projectors

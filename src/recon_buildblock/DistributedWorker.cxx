@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2007- 2012, Hammersmith Imanet Ltd
+    Copyright (C) 2013-2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,17 +25,16 @@
   \author Tobias Beisel  
   \author Kris Thielemans
   \author Alexey Zverovich (idea of using main() function)
-  \author PARAPET project (idea of using main() function)
 */
 #include "stir/recon_buildblock/DistributedWorker.h"
 #include "stir/recon_buildblock/distributed_functions.h"
 #include "stir/recon_buildblock/distributed_test_functions.h"
+#include "stir/ExamInfo.h"
 #include "stir/Viewgram.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 
 #include "stir/ProjDataInMemory.h"
-#include "stir/IO/InterfileHeader.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/HighResWallClockTimer.h"
 #include "stir/is_null_ptr.h"
@@ -159,6 +159,14 @@ namespace stir
               this->distributable_computation(RPC_process_related_viewgrams_gradient);
               break;
             }
+	  case task_do_distributable_loglikelihood_computation:
+	    {
+	      this->distributable_computation(RPC_process_related_viewgrams_accumulate_loglikelihood);
+	      break;
+	    }
+      /*
+	case task_do_distributable_sensitivity_computation;break;
+      */
           default:
             {
               error("Internal error: Slave %d received unknown task-id %d", this->my_rank, task_id);
@@ -178,11 +186,10 @@ namespace stir
                         
     //Receive input_image values
     MPI_Status status;
-    status = distributed::receive_image_values_and_fill_image_ptr(this->target_sptr, this->image_buffer_size, 0);
-          
-    //construct projection_data_info_ptr
-    distributed::receive_and_construct_proj_data_info_ptr(this->proj_data_info_sptr, 0);
-                
+    status = distributed::receive_image_values_and_fill_image_ptr(this->target_sptr, this->image_buffer_size, 0);          
+    //construct exam_info_ptr and projection_data_info_ptr
+    distributed::receive_and_construct_exam_and_proj_data_info_ptr(this->exam_info_sptr, this->proj_data_info_sptr, 0);
+                   
     //initialize projectors and call set_up
     distributed::receive_and_initialize_projectors(this->proj_pair_sptr, 0);
                 
@@ -224,7 +231,6 @@ namespace stir
   distributable_computation(RPC_process_related_viewgrams_type * RPC_process_related_viewgrams)
   {     
     shared_ptr<TargetT> input_image_ptr = this->target_sptr; // use the target_sptr member as we don't need its values anyway
-    shared_ptr<TargetT> output_image_ptr(this->target_sptr->get_empty_copy());
                 
     shared_ptr<DataSymmetriesForViewSegmentNumbers> 
       symmetries_sptr(this->proj_pair_sptr->get_symmetries_used()->clone());
@@ -244,11 +250,26 @@ namespace stir
     HighResWallClockTimer t;
                 
       {
-        // set output_image to zero
-        output_image_ptr->fill(0.F);
+	if (distributed::receive_bool_value(USE_DOUBLE_ARG_TAG,-1))
+	  {
+	    this->log_likelihood_ptr = new double;
+	    *this->log_likelihood_ptr=0.0;
+	  }
+	else
+	  {
+	    this->log_likelihood_ptr = 0;
+	  }
                 
         //Receive input_image values 
         MPI_Status status = distributed::receive_image_values_and_fill_image_ptr(input_image_ptr, this->image_buffer_size, 0);
+
+	shared_ptr<TargetT> output_image_ptr;
+	if (distributed::receive_bool_value(USE_OUTPUT_IMAGE_ARG_TAG,-1))
+	  {
+	    output_image_ptr.reset(this->target_sptr->get_empty_copy());
+	    // already set to zero
+	    //output_image_ptr->fill(0.F);
+	  }
                    
         //loop to receive viewgrams until received END_ITERATION_TAG
         while (true)
@@ -305,7 +326,7 @@ namespace stir
                 if(cache_enabled)
                   {
                     if (is_null_ptr(this->proj_data_ptr))
-                      this->proj_data_ptr.reset(new ProjDataInMemory(proj_data_info_sptr, /*init_with_0*/ false));
+                      this->proj_data_ptr.reset(new ProjDataInMemory(this->exam_info_sptr,this->proj_data_info_sptr, /*init_with_0*/ false));
 
                     if (proj_data_ptr->set_related_viewgrams(*viewgrams)==Succeeded::no)
                       error("Slave %i: Storing viewgrams failed!\n", my_rank);
@@ -313,7 +334,7 @@ namespace stir
                     if (add_bin_corr_viewgrams) 
                       {
                         if (is_null_ptr(binwise_correction))
-                          binwise_correction.reset(new ProjDataInMemory(proj_data_info_sptr, /*init_with_0*/ false));
+                          binwise_correction.reset(new ProjDataInMemory(this->exam_info_sptr,this->proj_data_info_sptr, /*init_with_0*/ false));
                         
                         if (binwise_correction->set_related_viewgrams(*additive_binwise_correction_viewgrams)==Succeeded::no)
                           error("Slave %i: Storing additive_binwise_correction_viewgrams failed!\n", my_rank);
@@ -322,7 +343,7 @@ namespace stir
                     if (mult_viewgrams) 
                       {
                         if (is_null_ptr(mult_proj_data_sptr))
-                          mult_proj_data_sptr.reset(new ProjDataInMemory(proj_data_info_sptr, /*init_with_0*/ false));
+                          mult_proj_data_sptr.reset(new ProjDataInMemory(this->exam_info_sptr,this->proj_data_info_sptr, /*init_with_0*/ false));
 
                         if (mult_proj_data_sptr->set_related_viewgrams(*mult_viewgrams_ptr)==Succeeded::no)
                           error("Slave %i: Storing mult_viewgrams_ptr failed!\n", my_rank);
@@ -333,7 +354,15 @@ namespace stir
               { 
                 //make reduction over computed output_images
                 distributed::first_iteration=false;
-                distributed::reduce_output_image(output_image_ptr, image_buffer_size, my_rank, 0);
+		if (!is_null_ptr(output_image_ptr))
+		  distributed::reduce_output_image(output_image_ptr, image_buffer_size, my_rank, 0);
+		// and log_likelihood
+		if (!is_null_ptr(log_likelihood_ptr))
+		  {
+		    double buffer = 0.0;
+		    MPI_Reduce(log_likelihood_ptr, &buffer, /*size*/1, MPI_DOUBLE, MPI_SUM, /*destination*/ 0, MPI_COMM_WORLD);
+		    delete log_likelihood_ptr;
+		  }
                                 
                 if(distributed::rpc_time)
                   {
@@ -342,6 +371,7 @@ namespace stir
                     MPI_Reduce(&send, &receive, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
                     distributed::total_rpc_time = 0.0;
                   }
+		// get out of infinite while loop
                 break;
               }
             else 

@@ -1,9 +1,7 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -33,9 +31,6 @@
   \author Matthew Jacobson
   \author Tobias Beisel
   \author PARAPET project
-
-   $Date$
-   $Revision$
 */
 #include "stir/shared_ptr.h"
 
@@ -46,6 +41,7 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
 class BinNormalisation;
 class ProjData;
 class ProjDataInfo;
+class ExamInfo;
 class DataSymmetriesForViewSegmentNumbers;
 class ForwardProjectorByBin;
 class BackProjectorByBin;
@@ -59,6 +55,8 @@ class DistributedCachingInformation;
 const int task_stop_processing=0;
 const int task_setup_distributable_computation=200;
 const int task_do_distributable_gradient_computation=42;
+const int task_do_distributable_loglikelihood_computation=43;
+const int task_do_distributable_sensitivity_computation=44;
 //!@}
 
 //! set-up parameters before calling distributable_computation()
@@ -72,6 +70,7 @@ const int task_do_distributable_gradient_computation=42;
 */
 void setup_distributable_computation(
                                      const shared_ptr<ProjectorByBinPair>& proj_pair_sptr,
+                                     const shared_ptr<ExamInfo>& exam_info_sptr,
                                      const ProjDataInfo * const proj_data_info_ptr,
                                      const shared_ptr<DiscretisedDensity<3,float> >& target_sptr,
                                      const bool zero_seg0_end_planes,
@@ -185,7 +184,7 @@ void distributable_computation(
                                DistributedCachingInformation* caching_info_ptr);
 
 
-  /*! \name Tag-names currently used by stir::distributable_computation and related functions
+  /*! \name Tag-names currently used by stir::distributable_computation and related functions0
      \ingroup distributable
   */
   //!@{
@@ -197,6 +196,9 @@ void distributable_computation(
   const int BINWISE_MULT_TAG=66;
   const int REUSE_VIEWGRAM_TAG=10;
   const int NEW_VIEWGRAM_TAG=11;
+  const int USE_DOUBLE_ARG_TAG=70;
+  const int USE_OUTPUT_IMAGE_ARG_TAG=71;
+
   //!@}
 
 
