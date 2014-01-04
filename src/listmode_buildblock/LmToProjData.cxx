@@ -506,11 +506,8 @@ start_new_time_frame(const unsigned int)
 /**************************************************************
  Here follows the actual rebinning code (finally).
 
- It's essentially simple, but is complicate because of the facility
+ It's essentially simple, but is in fact complicated because of the facility
  to store only part of the segments in memory.
- This really should be cleared up (maybe using ProjDataInMemory?)
-
- This code will also simplify when we have Study objects allowing multiple frames.
 ***************************************************************/
 void
 LmToProjData::
@@ -530,44 +527,45 @@ process_data()
     segments (template_proj_data_info_ptr->get_min_segment_num(), 
 	      template_proj_data_info_ptr->get_max_segment_num());
   
- VectorWithOffset<CListModeData::SavedPosition> 
-   frame_start_positions(1, frame_defs.get_num_frames());
- shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
- CListRecord& record = *record_sptr;
+  VectorWithOffset<CListModeData::SavedPosition> 
+    frame_start_positions(1, frame_defs.get_num_frames());
+  shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
+  CListRecord& record = *record_sptr;
 
   /* Here starts the main loop which will store the listmode data. */
- for (current_frame_num = 1;
-      current_frame_num<=frame_defs.get_num_frames();
-      ++current_frame_num)
-   {
-     long num_prompts_in_frame = 0;
-     long num_delayeds_in_frame = 0;
+  for (current_frame_num = 1;
+       current_frame_num<=frame_defs.get_num_frames();
+       ++current_frame_num)
+    {
+      start_new_time_frame(current_frame_num);
 
-     const double start_time = frame_defs.get_start_time(current_frame_num);
-     const double end_time = frame_defs.get_end_time(current_frame_num);
+      // construct ExamInfo appropriate for a single projdata with this time frame
+      ExamInfo this_frame_exam_info(*lm_data_ptr->get_exam_info_ptr());
+      {
+        TimeFrameDefinitions this_time_frame_defs(frame_defs, current_frame_num);
+        this_frame_exam_info.set_time_frame_definitions(this_time_frame_defs);
+      }
 
-     start_new_time_frame(current_frame_num);
+      // *********** open output file
+      shared_ptr<iostream> output;
+      shared_ptr<ProjData> proj_data_ptr;
 
-     TimeFrameDefinitions this_time_frame_defs(frame_defs, current_frame_num);
-     // TODO ExamInfo this_frame_exam_info(*this->get_exam_info_ptr());
-     ExamInfo this_frame_exam_info;
-     this_frame_exam_info.start_time_in_secs_since_1970 = 
-       lm_data_ptr->get_scan_start_time_in_secs_since_1970();
-     this_frame_exam_info.set_time_frame_definitions(this_time_frame_defs);
-
-     //*********** open output file
-       shared_ptr<iostream> output;
-       shared_ptr<ProjData> proj_data_ptr;
-
-       {
-	 char rest[50];
-	 sprintf(rest, "_f%dg1d0b0", current_frame_num);
-	 const string output_filename = output_filename_prefix + rest;
+      {
+        char rest[50];
+        sprintf(rest, "_f%dg1d0b0", current_frame_num);
+        const string output_filename = output_filename_prefix + rest;
       
-	 proj_data_ptr = 
-	   construct_proj_data(output, output_filename, this_frame_exam_info, template_proj_data_info_ptr);
-       }
-       /*
+        proj_data_ptr = 
+          construct_proj_data(output, output_filename, this_frame_exam_info, template_proj_data_info_ptr);
+      }
+
+      long num_prompts_in_frame = 0;
+      long num_delayeds_in_frame = 0;
+
+      const double start_time = frame_defs.get_start_time(current_frame_num);
+      const double end_time = frame_defs.get_end_time(current_frame_num);
+
+      /*
 	 For each start_segment_index, we check which events occur in the
 	 segments between start_segment_index and 
 	 start_segment_index+num_segments_in_memory.

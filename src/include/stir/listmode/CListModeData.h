@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2003 - 2011-06-24, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
@@ -24,9 +21,6 @@
   \brief Declaration of class stir::CListModeData
     
   \author Kris Thielemans
-      
-  $Date$
-  $Revision$
 */
 
 #ifndef __stir_listmode_CListModeData_H__
@@ -49,6 +43,7 @@ using std::string;
 START_NAMESPACE_STIR
 class CListRecord;
 class Succeeded;
+class ExamInfo;
 
 /*!
   \brief The base class for reading list mode data.
@@ -140,15 +135,6 @@ public:
   //! Use this typedef for save/set_get_position
   typedef unsigned int SavedPosition;
 
-  //! Attempts to get a CListModeData object from a file
-  /*! Note that the exact format of the \a filename is determined by
-      the derived class.
-
-      Use stir::read_from_file<CListModeData> instead.
-      \deprecated
-  */
-  static CListModeData* read_from_file(const string& filename);
-
   //! Default constructor
   CListModeData();
 
@@ -167,14 +153,27 @@ public:
   virtual std::string
     get_name() const = 0;
 
+  //! Get const pointer to exam info
+  const ExamInfo*
+    get_exam_info_ptr() const;
+  //! Get shared pointer to exam info
+  /*! \warning Use with care. If you modify the object pointer to by a shared ptr, all objects using the same
+    shared pointer will be affected. */
+  shared_ptr<ExamInfo>
+    get_exam_info_sptr() const;
+
+#if 0
   //! Scan start time
   /*! In secs since midnight (UTC) 1/1/1970 (as returned by std::time()).
 
      Should return <tt>std::time_t(-1)</tt> if unknown or invalid.
+     \deprecated
+     Use ExamInfo instead.
   */
   virtual
     std::time_t 
-    get_scan_start_time_in_secs_since_1970() const = 0;
+    get_scan_start_time_in_secs_since_1970() const;
+#endif
 
   //! Get a pointer to an empty record
   /*! This is mainly/only useful to get a record of the correct type, that can then be
@@ -229,6 +228,8 @@ public:
 protected:
   //! Has to be set by the derived class
   shared_ptr<Scanner> scanner_sptr;
+  //! Has to be set by the derived class
+  shared_ptr<ExamInfo> exam_info_sptr;
 };
 
 END_NAMESPACE_STIR

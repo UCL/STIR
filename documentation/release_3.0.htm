@@ -7,6 +7,9 @@
   <body>
     <h1>Summary of changes in STIR release 3.0 (dated ??/11/2013)</h1>
 
+<p>This version is backwards compatible with STIR 2.4 for the user, but <strong>not for developers</strong>. Required code changes
+are minor however and detailed below.
+</p>
 <p>This release is the first to handle SPECT data properly.
 It contains code by Carl&eacute;s Falc&oacute;n (Biomedical Image Group (GIB), Universitat de Barcelona)
 to create the system matrix for SPECT, integrated into STIR by Bert&aacute; Mart&iacute; Fuster 
@@ -22,7 +25,7 @@ King's College London and University College London, and is reported in<br />
   <a href="http://dx.doi.org/10.1118/1.4816676">DOI 10.1118/1.4816676</a>.
 </p>
 <p>In addition, changes to the IO code (currently enabled for projection data only) mean that
-more information such as modality, patient position and timing is available and kept (update by Kris Thielemans, UCL).
+more information such as modality, patient position and timing is available and kept. Also general code-cleanup (update by Kris Thielemans, UCL).
 </p>
 
 
@@ -30,7 +33,7 @@ more information such as modality, patient position and timing is available and 
 <h2> Summary for end users (also to be read by developers)</h2>
 <h3>Important bug fixes</h3>
 <ul>
-<li>None
+<li>fix PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin: it was processing all events up-to end-time as opposed ignoring the first events up-to start-time
 </li>
 </ul>
 
@@ -149,11 +152,19 @@ but now sets it to unknown.
 <li>new classes <code>ImagingModality</code> and <code>ExamInfo</code>. The latter
 contains the modality, <code>PatientPosition</code> and <code>TimeFrameDefinitions</code>.
 </li>
-<li>projection data (<code>ProjData</code>, <code>DynamicProjData</code> etc) and
-list mode data (<code>CListModeData</code>)
+<li>projection data (<code>ProjData</code>, <code>DynamicProjData</code> etc)
 now have an <code>ExamInfo</code> member such that time frames etc can be passed along.
-Their constructors have been modified accordingly.
+Their constructors have been modified accordingly  (<strong>NOT backwards-compatible</strong>).
 </li>
+<li>list mode data (<code>CListModeData</code>) changes (<strong>NOT backwards-compatible</strong>):
+  <ul>
+  <li> also has an ExamInfo. This member needs to be set by every derived class.</li>
+  <li> removed <ocde>CListModeData::read_from_file</ocde>. Use <ocde>read_from_file&lt;CListModeData&gt;</code> instead.</li>
+  <li> removed <ocde>CListModeData::get_scan_start_time_in_secs_since_1970()</code>. Get it via its <code>ExamInfo</code>.</li>
+  </ul>
+</li>
+<li> Using the above changes, <code>LmToProjData</code> properly writes time frame information to the projection data.</li>
+
 <li>changes to <code>ProjDatainfoCylindrical</code> to allow different radii for different views</li>
 </ul>
 
@@ -162,6 +173,10 @@ Their constructors have been modified accordingly.
 <li>removed a few instances of <code>using std::string</code> etc from the include files
 to avoid conflicts with global or non-std classes. This might mean you need to put these
 statements in your .cxx files (or add <code>std::</code> in various places of course).</li>
+<li>add 3rd argument to BSplines templates to specify type of internal constants (with a good default).
+This gets rid of a lot of conversion warnings with MSVC but could also potentially speed up calculations.
+</li>
+<li>Many minor changes to avoid conversion warnings with MSVC.</li>
 </ul>
 
 <h3>Build system</h3>
