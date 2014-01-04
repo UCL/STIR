@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
