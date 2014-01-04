@@ -623,15 +623,6 @@ read_interfile_PDFS(istream& input,
   char full_data_file_name[max_filename_length];
   strcpy(full_data_file_name, hdr.data_file_name.c_str());
   prepend_directory_name(full_data_file_name, directory_for_data.c_str());  
- 
-  vector<int> min_ring_num_per_segment(hdr.num_segments);
-  vector<int> max_ring_num_per_segment(hdr.num_segments);
-
-  for (int s=0; s<hdr.num_segments; s++)
-    {
-      min_ring_num_per_segment[s] = 0;
-      max_ring_num_per_segment[s] = hdr.num_rings_per_segment[s]-1;
-    }
   
   for (unsigned int i=1; i<hdr.image_scaling_factors[0].size(); i++)
     if (hdr.image_scaling_factors[0][0] != hdr.image_scaling_factors[0][i])
