@@ -3,6 +3,7 @@
 #
 #  Copyright (C) 2011 - 2011-01-14, Hammersmith Imanet Ltd
 #  Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+#  Copyright (C) 2014, University College London
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify
@@ -20,10 +21,43 @@
 # Author Kris Thielemans
 # 
 
-echo This script should work with STIR version 2.2, 2.3 and 2.4. If you have
+echo This script should work with STIR version 2.2, 2.3, 2.4 and 3.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
+
+#
+# Options
+#
+MPIRUN=""
+
+#
+# Parse option arguments (--)
+# Note that the -- is required to suppress interpretation of $1 as options 
+# to expr
+#
+while test `expr -- "$1" : "--.*"` -gt 0
+do
+
+  if test "$1" = "--mpicmd"
+  then
+    MPIRUN="$2"
+    shift 1
+  elif test "$1" = "--help"
+  then
+    echo "Usage: `basename $0` [--mpicmd somecmd] [install_dir]"
+    echo "(where [] means that an argument is optional)"
+    echo "See README.txt for more info."
+    exit 1
+  else
+    echo Warning: Unknown option "$1"
+    echo rerun with --help for more info.
+    exit 1
+  fi
+
+  shift 1
+
+done 
 
 if [ $# -eq 1 ]; then
   echo "Prepending $1 to your PATH for the duration of this script."
@@ -96,7 +130,7 @@ for recon in FBP2D FBP3DRP OSMAPOSL OSSPS; do
 
     # run actual reconstruction
     echo "Running ${recon} ${parfile}"
-    ${recon} ${parfile} > my_${parfile}.log 2>&1
+    ${MPIRUN} ${recon} ${parfile} > my_${parfile}.log 2>&1
     if [ $? -ne 0 ]; then
        echo "Error running reconstruction. CHECK RECONSTRUCTION LOG my_${parfile}.log"
        error_log_files="${error_log_files} my_${parfile}.log"

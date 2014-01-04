@@ -3,7 +3,8 @@
 # see README.txt
 #  Copyright (C) 2000 - 2001 PARAPET partners
 #  Copyright (C) 2001 - 2009-10-11, Hammersmith Imanet Ltd
-#  Copyright (C) 2011-07-01 - 2013, Kris Thielemans
+#  Copyright (C) 2011, Kris Thielemans
+#  Copyright (C) 2013 - 2014, University College London
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify
@@ -20,7 +21,7 @@
 #      
 # Author Kris Thielemans
 
-echo This script should work with STIR version 2.1, 2.2, 2.3 and 2.4. If you have
+echo This script should work with STIR version 2.1, 2.2, 2.3, 2.4 and 3.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -30,6 +31,7 @@ echo
 #
 NOINTBP=0
 
+MPIRUN=""
 
 #
 # Parse option arguments (--)
@@ -42,10 +44,13 @@ do
   if test "$1" = "--nointbp"
   then
     NOINTBP=1
-
+  elif test "$1" = "--mpicmd"
+  then
+    MPIRUN="$2"
+    shift 1
   elif test "$1" = "--help"
   then
-    echo "Usage: run_tests.sh [--nointbp] [install_dir]"
+    echo "Usage: run_tests.sh [--mpicmd somecmd] [--nointbp] [install_dir]"
     echo "(where [] means that an argument is optional)"
     echo "See README.txt for more info."
     exit 1
@@ -93,7 +98,7 @@ echo --------- TESTS THAT USE INTERPOLATING BACKPROJECTOR --------
 echo
 echo ------------- Running OSMAPOSL for sensitivity ------------- 
 echo Running ${INSTALL_DIR}OSMAPOSL for sensitivity
-${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_for_sensitivity.par 1> OSMAPOSL_test_for_sensitivity.log 2> OSMAPOSL_test_for_sensitivity_stderr.log 
+${MPIRUN} ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_for_sensitivity.par 1> OSMAPOSL_test_for_sensitivity.log 2> OSMAPOSL_test_for_sensitivity_stderr.log 
 
 echo '---- Comparing output of sensitivity (should be identical up to tolerance)'
 echo Running ${INSTALL_DIR}compare_image
@@ -108,7 +113,7 @@ fi
 echo
 echo ------------- Running OSMAPOSL ------------- 
 echo Running ${INSTALL_DIR}OSMAPOSL
-${INSTALL_DIR}OSMAPOSL OSMAPOSL_test.par 1> OSMAPOSL_test.log 2> OSMAPOSL_test_stderr.log
+${MPIRUN} ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test.par 1> OSMAPOSL_test.log 2> OSMAPOSL_test_stderr.log
 
 echo '---- Comparing output of OSMAPOSL subiter 3 (should be identical up to tolerance)'
 echo Running ${INSTALL_DIR}compare_image
@@ -140,7 +145,7 @@ ${INSTALL_DIR}generate_image generate_uniform_image.par
 ${INSTALL_DIR}postfilter my_uniform_image_circular.hv my_uniform_image.hv postfilter_truncate_circular_FOV.par
 echo ------------- Running OSMAPOSL for sensitivity ------------- 
 echo Running ${INSTALL_DIR}OSMAPOSL for sensitivity
-${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_for_sensitivity.par 1> sensitivity_PM.log 2> sensitivity_PM_stderr.log
+${MPIRUN} ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_for_sensitivity.par 1> sensitivity_PM.log 2> sensitivity_PM_stderr.log
 
 echo '---- Comparing output of sensitivity (should be identical up to tolerance)'
 echo Running ${INSTALL_DIR}compare_image
@@ -155,7 +160,7 @@ fi
 echo
 echo -------- Running OSMAPOSL  with the MRP prior -------- 
 echo Running ${INSTALL_DIR}OSMAPOSL
-${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_MRP.par 1> OSMAPOSL_PM_MRP.log 2> OSMAPOSL_PM_MRP_stderr.log
+${MPIRUN} ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_MRP.par 1> OSMAPOSL_PM_MRP.log 2> OSMAPOSL_PM_MRP_stderr.log
 
 echo '---- Comparing output of OSMAPOSL subiter 6 (should be identical up to tolerance)'
 echo Running ${INSTALL_DIR}compare_image
@@ -170,7 +175,7 @@ fi
 echo
 echo -------- Running OSMAPOSL with a quadratic prior -------- 
 echo Running ${INSTALL_DIR}OSMAPOSL
-${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_QP.par 1> OSMAPOSL_PM_QP.log 2> OSMAPOSL_PM_QP_stderr.log
+${MPIRUN} ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_QP.par 1> OSMAPOSL_PM_QP.log 2> OSMAPOSL_PM_QP_stderr.log
 
 echo '---- Comparing output of OSMAPOSL subiter 6 (should be identical up to tolerance)'
 echo Running ${INSTALL_DIR}compare_image
@@ -185,7 +190,7 @@ fi
 echo
 echo -------- Running OSMAPOSL with a quadratic prior with given weights -------- 
 echo Running ${INSTALL_DIR}OSMAPOSL
-${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_QPweights.par 1> OSMAPOSL_PM_QPweights.log 2> OSMAPOSL_PM_QPweights_stderr.log
+${MPIRUN} ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PM_QPweights.par 1> OSMAPOSL_PM_QPweights.log 2> OSMAPOSL_PM_QPweights_stderr.log
 
 echo '---- Comparing output of OSMAPOSL subiter 6 (should be identical up to tolerance)'
 echo Running ${INSTALL_DIR}compare_image
@@ -213,7 +218,7 @@ echo -------- Running OSMAPOSL stored projection matrix with a quadratic prior w
 echo Running ${INSTALL_DIR}OSMAPOSL
 # Note: for this test, it is important that the projection matrix parameters in
 # write_proj_matrix_by_bin.par and OSMAPOSL_test_PM_QPweights.par are the same.
-${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PMFromFile_QPweights.par 1> OSMAPOSL_PMFromFile_QPweights.log 2> OSMAPOSL_PMFromFile_QPweights_stderr.log
+${MPIRUN} ${INSTALL_DIR}OSMAPOSL OSMAPOSL_test_PMFromFile_QPweights.par 1> OSMAPOSL_PMFromFile_QPweights.log 2> OSMAPOSL_PMFromFile_QPweights_stderr.log
 
 echo '---- Comparing output of OSMAPOSL subiter 6 (should be identical up to tolerance)'
 echo Running ${INSTALL_DIR}compare_image
@@ -228,7 +233,7 @@ fi
 echo
 echo -------- Running OSSPS with a quadratic prior -------- 
 echo Running ${INSTALL_DIR}OSSPS
-${INSTALL_DIR}OSSPS OSSPS_test_PM_QP.par 1> OSSPS_PM_QP.log 2> OSSPS_PM_QP_stderr.log
+${MPIRUN} ${INSTALL_DIR}OSSPS OSSPS_test_PM_QP.par 1> OSSPS_PM_QP.log 2> OSSPS_PM_QP_stderr.log
 
 echo '---- Comparing output of OSSPS subiter 8 (should be identical up to tolerance)'
 echo Running ${INSTALL_DIR}compare_image

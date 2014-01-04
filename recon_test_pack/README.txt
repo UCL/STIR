@@ -1,5 +1,5 @@
-$Id$
-README file for STIR recon_test_pack version 2.4 (and later versions?)
+
+README file for STIR recon_test_pack version 3.0 (and later versions?)
 ----------------------------------------------------------------------
 
 This test pack runs some simple tests to check if various STIR reconstruction
@@ -13,7 +13,7 @@ on your hardware of course).
 Tests are independent of each other, as each test uses the 'good' files
 as input.
 
-The run_*test*.sh files are (Bourne) shell scripts that runs all tests 
+The run_*test*.sh files are (Bourne) shell scripts that run all tests 
 automatically. run_*tests.bat is the corresponding DOS/Windows batch file
 (currently not available for all tests).
 
@@ -39,20 +39,29 @@ Prerequisites:
 ---------------
 You need to have installed STIR into a target directory first, 
 i.e. "make install", or build the INSTALL target when using
-Visual Studio (and cmake). You then need to either add the
+Visual Studio, XCode or another IDE. You then need to either add the
 directory where the STIR executables are copied to your path, or
 pass it to the scripts as indicated below.
 
 On Unix/Linux/MacOSX:
 --------------------
-(this also work on Windows if you installed CYGWIN)
+(this also work on Windows if you installed CYGWIN or MSYS)
+
+Important: if you compiled STIR with the MPI option, you will need to use a special
+option to most scripts to tell them how to run the STIR executables. On most 
+systems, something like the following would work:
+
+sh run_tests.sh --mpicmd "mpirun -np 4" any_other_arguments_as_below
+
+indicating that MPI is going to use your default configuration with 4 processes.
+
 
 Testing STIR utilities by comparing output with the output of the STIR team
 ...........................................................................
-sh run_tests.sh [ --nointbp ] 
+sh run_tests.sh [ --mpicmd cmd] [ --nointbp ] 
 	(if all executables are in your path)
 
-sh run_tests.sh [ --nointbp ] my_install_dir/  
+sh run_tests.sh [ --mpicmd cmd]  [ --nointbp ] my_install_dir/  
 	(if you copied the executables to one directory, 
 	 but it isn't in your path)
 
@@ -70,11 +79,11 @@ This test does a simplistic analytic simulation (no noise) of
 a uniform cylinder and reconstructs the data in various ways.
 The test checks the ROI mean of the reconstructed image.
 
-sh run_test_simulate_and_recon.sh optional_install_path
+sh run_test_simulate_and_recon.sh  [ --mpicmd cmd] [optional_install_path]
 
 Similarly, a test for motion corrected reconstruction of gated data is run as
 
-sh run_test_simulate_and_recon_with_motion.sh optional_install_path
+sh run_test_simulate_and_recon_with_motion.sh  [ --mpicmd cmd] [optional_install_path]
 
 Testing ECAT7 utilities
 ..............................
@@ -82,12 +91,15 @@ If you have compiled STIR to use the LNN matrix library for ECAT7 support.
 (ECAT6 support is no longer tested as it usually fails due to bugs in the 
 LLN matrix library).
 
-sh run_ecat_tests.sh optional_install_path
+sh run_ecat_tests.sh [optional_install_path]
 
 
 
 On Windows:
 ----------
+Note: currently MPI support is not in these batch files. Install CYGWIN or MSYS and use the 
+above scripts (which will work executables compiled with Visual Studio)..
+
 Open a command prompt window
 cd to where you extracted the test pack.
 type
@@ -108,11 +120,4 @@ run_ecat_tests [ install_dir ]
 
 Kris Thielemans
 Matthew Jacobson
-
-
-
-
-
-
-
 
