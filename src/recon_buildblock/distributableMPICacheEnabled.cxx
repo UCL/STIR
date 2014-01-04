@@ -1,9 +1,7 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000 - 2012-01-06, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -31,9 +29,6 @@
   \author Matthew Jacobson
   \author PARAPET project
   \author Tobias Beisel
-
-  $Date$
-  $Revision$
 */
 /* Modification history:
    KT 30/05/2002
@@ -268,8 +263,12 @@ void distributable_computation_cache_enabled(
     }
 #endif
         
+  //send if log_likelihood_ptr is valid and so needs to be accumulated
+  distributed::send_bool_value(!is_null_ptr(log_likelihood_ptr),USE_DOUBLE_ARG_TAG,-1);
   //send the current image estimate
   distributed::send_image_estimate(input_image_ptr, -1);
+  //send if output_image_ptr is valid and so needs to be accumulated
+  distributed::send_bool_value(!is_null_ptr(output_image_ptr),USE_OUTPUT_IMAGE_ARG_TAG,-1);
   
   assert(min_segment_num <= max_segment_num);
   assert(subset_num >=0);
@@ -392,8 +391,15 @@ void distributable_computation_cache_enabled(
   //send end_iteration notification
   distributed::send_int_values(int_values, 2, END_ITERATION_TAG, -1);
         
-  //reduce output_image
-  distributed::reduce_received_output_image(output_image_ptr, 0);
+  //reduce output image
+  if (!is_null_ptr(output_image_ptr))
+    distributed::reduce_received_output_image(output_image_ptr, 0);
+  // and log_likelihood
+  if (!is_null_ptr(log_likelihood_ptr))
+    {
+      double buffer = 0.0;
+      MPI_Reduce(&buffer, log_likelihood_ptr, /*size*/1, MPI_DOUBLE, MPI_SUM, /*destination*/ 0, MPI_COMM_WORLD);
+    }
         
   //reduce timed rpc-value
   if(distributed::rpc_time)

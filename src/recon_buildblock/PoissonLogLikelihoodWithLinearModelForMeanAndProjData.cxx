@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,9 +24,6 @@
   \author Matthew Jacobson
   \author Sanida Mustafovic
   \author PARAPET project
-
-  $Date$
-  $Revision$
 */
 
 
@@ -568,6 +562,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
   // set projectors to be used for the calculations
 
   setup_distributable_computation(this->projector_pair_ptr,
+                                  this->proj_data_sptr->get_exam_info_sptr(),
                                   this->proj_data_sptr->get_proj_data_info_ptr(),
                                   target_sptr,
                                   zero_seg0_end_planes,

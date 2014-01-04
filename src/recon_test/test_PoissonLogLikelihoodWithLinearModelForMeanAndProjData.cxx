@@ -1,5 +1,6 @@
 /*
-    Copyright (C) 2011, Hammersmith Imanet
+    Copyright (C) 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -20,7 +21,14 @@
   \ingroup recon_test
   
   \brief Test program for stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData
-    
+
+  \par Usage
+
+  <pre>
+  test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData [proj_data_filename [ density_filename ] ]
+  </pre>
+  where the 2 arguments are optional. See the class documentation for more info.
+
   \author Kris Thielemans
 */
 
@@ -38,6 +46,7 @@
 #include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 //#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+#include "stir/recon_buildblock/distributable_main.h"
 #include "stir/RunTests.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/info.h"
@@ -327,8 +336,11 @@ END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-
+#ifdef STIR_MPI
+int stir::distributable_main(int argc, char **argv)
+#else
 int main(int argc, char **argv)
+#endif
 {
   PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests tests(argc>1? argv[1] : 0,
                                                                    argc>2? argv[2] : 0);

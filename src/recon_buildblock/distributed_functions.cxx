@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2007-2012, Hammersmith Imanet Ltd
+    Copyright (C) 2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,17 +24,20 @@
 
   \author Tobias Beisel  
   \author Kris Thielemans
-  $Date$
 */
 
 #include "stir/recon_buildblock/distributed_functions.h"
 #include "stir/HighResWallClockTimer.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/InterfileHeader.h"
+#include "stir/IO/InterfilePDFSHeaderSPECT.h"
 #include "stir/ProjDataInterfile.h"
+#include "stir/ExamInfo.h"
+#include "stir/shared_ptr.h"
 #include <fstream>
 #include "stir/Succeeded.h"
 #include "stir/error.h"
+#include <boost/shared_array.hpp>
 
 namespace distributed
 {
@@ -276,10 +277,11 @@ namespace distributed
 #endif
   }
         
-  void send_proj_data_info(stir::ProjDataInfo const* const data, int destination)
+  void send_exam_and_proj_data_info(const stir::ExamInfo& exam_info, const stir::ProjDataInfo& proj_data_info, int destination)
   {
     // KT TODO there must be a better way than writing to a temporary file on disk
-    stir::ProjDataInterfile projection_data_for_slave(data->create_shared_clone(),"for_slave");
+    stir::shared_ptr<stir::ExamInfo> exam_info_sptr(new stir::ExamInfo(exam_info));
+    stir::ProjDataInterfile projection_data_for_slave(exam_info_sptr, proj_data_info.create_shared_clone(),"for_slave");
                                 
     std::ifstream is("for_slave.hs", ios::binary );
                 
@@ -616,7 +618,9 @@ namespace distributed
     return status;                      
   }
         
-  void receive_and_construct_proj_data_info_ptr(stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_sptr, int source)
+  void receive_and_construct_exam_and_proj_data_info_ptr(stir::shared_ptr<stir::ExamInfo>& exam_info_sptr, 
+							 stir::shared_ptr<stir::ProjDataInfo>& proj_data_info_sptr, 
+							 int source)
   {
     int len;
     //receive projection data info pointer
@@ -625,22 +629,43 @@ namespace distributed
 #endif
         
     MPI_Recv(&len, 1, MPI_INT, source, PROJECTION_DATA_INFO_TAG, MPI_COMM_WORLD, &status);
-    char * proj_data_info_buf= new char[len];
-    MPI_Recv(proj_data_info_buf, len, MPI_CHAR, source, PROJECTION_DATA_INFO_TAG, MPI_COMM_WORLD, & status);
+    boost::shared_array<char> proj_data_info_buf(new char[len]);
+    MPI_Recv(proj_data_info_buf.get(), len, MPI_CHAR, source, PROJECTION_DATA_INFO_TAG, MPI_COMM_WORLD, & status);
 
 #ifdef STIR_MPI_TIMINGS 
     if (test_send_receive_times) t.stop();
     if (test_send_receive_times && t.value()>min_threshold) std::cout << "Slave: received proj_data_info after " << t.value() << " seconds" << std::endl;
 #endif
         
-    //construct pojector_info_ptr
-    std::istringstream pojector_info_ptr_stream(proj_data_info_buf);
-    stir::InterfilePDFSHeader hdr;  
-    if (!hdr.parse(pojector_info_ptr_stream))
-      stir::error("Error receiving projection data info. Text does not seem to be in Interfile format");
+    //construct projector_info_ptr
+    std::istringstream projector_info_ptr_stream(proj_data_info_buf.get());
+
+    stir::InterfileHeader hdr;  
+    std::ios::off_type offset = projector_info_ptr_stream.tellg();
+    if (!hdr.parse(projector_info_ptr_stream, false)) // parse without warnings
+      {
+	stir::error("Error receiving projection data info. Text does not seem to be in Interfile format");
+      }
+    projector_info_ptr_stream.seekg(offset);
+    exam_info_sptr = hdr.get_exam_info_sptr();
+    if (hdr.get_exam_info_ptr()->imaging_modality.get_modality() ==
+        stir::ImagingModality::NM)
+      {
+	stir::InterfilePDFSHeaderSPECT hdr;  
+	if (!hdr.parse(projector_info_ptr_stream))
+	  stir::error("Error receiving projection data info. Text does not seem to be in Interfile format");
+	proj_data_info_sptr = 
+	  stir::shared_ptr<stir::ProjDataInfo> (hdr.data_info_sptr->clone());
+      }
+    else
+      {
+	stir::InterfilePDFSHeader hdr;  
+	if (!hdr.parse(projector_info_ptr_stream))
+	  stir::error("Error receiving projection data info. Text does not seem to be in Interfile format");
         
-    proj_data_info_sptr = 
-      stir::shared_ptr<stir::ProjDataInfo> (hdr.data_info_ptr->clone());
+	proj_data_info_sptr = 
+	  stir::shared_ptr<stir::ProjDataInfo> (hdr.data_info_ptr->clone());
+      }
   }
    
   void receive_and_construct_related_viewgrams(stir::RelatedViewgrams<float>*& viewgrams, 
