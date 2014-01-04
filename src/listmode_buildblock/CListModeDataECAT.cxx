@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,19 +21,19 @@
   \brief Implementation of class stir::CListModeDataECAT
     
   \author Kris Thielemans
-      
-  $Date$
-  $Revision$
 */
 
 
 #include "stir/listmode/CListModeDataECAT.h"
 #include "stir/listmode/CListRecordECAT966.h"
 #include "stir/listmode/CListRecordECAT962.h"
+#include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/stir_ecat7.h"
+#else
+#error Need HAVE_LLN_MATRIX
 #endif
 #include "boost/static_assert.hpp"
 #include <iostream>
@@ -47,6 +45,7 @@ using std::endl;
 using std::ios;
 using std::fstream;
 using std::ifstream;
+using std::istream;
 #endif
 
 START_NAMESPACE_STIR
@@ -66,7 +65,9 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
 {
   // initialise scanner_ptr before calling open_lm_file, as it is used in that function
 
-#ifdef HAVE_LLN_MATRIX
+  this->exam_info_sptr.reset(new ExamInfo);
+  ExamInfo& exam_info(*exam_info_sptr);
+  exam_info.imaging_modality = ImagingModality::PT;
   // attempt to read the .sgl file
   {
     const string singles_filename = listmode_filename_prefix + "_1.sgl";
@@ -74,35 +75,44 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
     char buffer[sizeof(Main_header)];
     if (!singles_file)
       {
-	warning("CListModeDataECAT: Couldn't open %s.", singles_filename.c_str());
-	scanner_sptr.reset(new Scanner(Scanner::E962));
-      }
-    else
-      {
-	singles_file.read(buffer,
-			  sizeof(singles_main_header));
-      }
-    if (!singles_file)
-      {
 	warning("CListModeDataECAT: Couldn't read main_header from %s. We forge ahead anyway (assuming this is ECAT 962 data).", singles_filename.c_str());
 	scanner_sptr.reset(new Scanner(Scanner::E962));
 	// TODO invalidate other fields in singles header
-	singles_main_header.scan_start_time = std::time_t(-1);
       }
     else
       {
+        Main_header singles_main_header;
+	singles_file.read(buffer,
+			  sizeof(singles_main_header));
 	unmap_main_header(buffer, &singles_main_header);
 	ecat::ecat7::find_scanner(scanner_sptr, singles_main_header);
-	
-	// TODO get lm_duration from singles
+
+        exam_info.start_time_in_secs_since_1970 = double(singles_main_header.scan_start_time);
+
+        switch(singles_main_header.patient_orientation)
+          {
+          case FeetFirstProne:
+            exam_info.patient_position = PatientPosition(PatientPosition::FFP); break;
+          case HeadFirstProne:
+            exam_info.patient_position = PatientPosition(PatientPosition::HFP); break;
+          case FeetFirstSupine:
+            exam_info.patient_position = PatientPosition(PatientPosition::FFS); break;
+          case HeadFirstSupine:
+            exam_info.patient_position = PatientPosition(PatientPosition::HFS); break;
+          case FeetFirstRight:
+            exam_info.patient_position = PatientPosition(PatientPosition::FFDR); break;
+          case HeadFirstRight:
+            exam_info.patient_position = PatientPosition(PatientPosition::HFDR); break;
+          case FeetFirstLeft:
+            exam_info.patient_position = PatientPosition(PatientPosition::FFDL); break;
+          case HeadFirstLeft:
+            exam_info.patient_position = PatientPosition(PatientPosition::HFDL); break;
+          case UnknownOrientation:
+          default:
+            exam_info.patient_position = PatientPosition(PatientPosition::unknown_position); break;
+          }
       }
   }
-
-#else
-  warning("CListModeDataECAT: .sgl file not read (because compiled without ECAT7 support)!\n"
-	  "Assuming this is ECAT 962, but couldn't find scan start time etc");
-  this->scanner_sptr.reset(new Scanner(Scanner::E962));
-#endif
 
   if ((scanner_sptr->get_type() == Scanner::E966 && typeid(CListRecordT) != typeid(CListRecordECAT966)) ||
       (scanner_sptr->get_type() == Scanner::E962 && typeid(CListRecordT) != typeid(CListRecordECAT962)))
@@ -125,19 +135,7 @@ std::string
 CListModeDataECAT<CListRecordT>::
 get_name() const
 {
-  return listmode_filename_prefix;
-}
-
-template <class CListRecordT>
-std::time_t 
-CListModeDataECAT<CListRecordT>::
-get_scan_start_time_in_secs_since_1970() const
-{
-#ifdef HAVE_LLN_MATRIX
-  return singles_main_header.scan_start_time;
-#else
-  return std::time_t(-1);
-#endif
+  return listmode_filename_prefix + "_1.sgl";
 }
 
 

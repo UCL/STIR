@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
@@ -24,9 +21,6 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
-
-  $Date$
-  $Revision$
 */
 
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin.h" 
@@ -212,7 +206,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   //  list_mode_data_sptr->set_get_position(start_time);
   // TODO implement function that will do this for a random time
   this->list_mode_data_sptr->reset();
-  double current_time = start_time;
+  double current_time = 0.;
   ProjMatrixElemsForOneBin proj_matrix_row; 
   shared_ptr<CListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr(); 
   CListRecord& record = *record_sptr; 
@@ -221,14 +215,17 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   while (this->list_mode_data_sptr->get_next_record(record) == Succeeded::yes) 
   { 
     //count_of_events++;
-     if(record.is_time())
+    if(record.is_time())
       {
-       const double new_time = record.time().get_time_in_secs();
-       if ( new_time >= end_time)
-           break; // get out of while loop
-       current_time = new_time;
+        current_time = record.time().get_time_in_secs();
       }
-    else if (record.is_event() && record.event().is_prompt()) 
+    if (current_time >= end_time)
+      {
+        break; // get out of while loop
+      }
+    if (current_time < start_time)
+      continue;
+    if (record.is_event() && record.event().is_prompt()) 
       { 
         Bin measured_bin; 
         record.event().get_bin(measured_bin, *proj_data_info_cyl_uncompressed_ptr); 

@@ -1,8 +1,6 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,9 +21,6 @@
   \brief Declaration of class stir::CListModeDataECAT
     
   \author Kris Thielemans
-      
-  $Date$
-  $Revision$
 */
 
 #ifndef __stir_listmode_CListModeDataECAT_H__
@@ -43,13 +38,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-#ifndef STIR_NO_NAMESPACES
-using std::istream;
-using std::streampos;
-using std::vector;
-using std::pair;
-#endif
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
@@ -82,9 +70,6 @@ public:
   virtual std::string
     get_name() const;
 
-  virtual
-    std::time_t get_scan_start_time_in_secs_since_1970() const;
-
   virtual 
     shared_ptr <CListRecord> get_empty_record_sptr() const;
 
@@ -109,14 +94,9 @@ private:
   mutable unsigned int current_lm_file;
   mutable shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;
   //! a vector that stores the saved_get_positions for ever .lm file
-  mutable vector<vector<streampos> > saved_get_positions_for_each_lm_data;
-  typedef pair<unsigned int, SavedPosition> GetPosition;
-  vector<GetPosition > saved_get_positions;
-#ifdef HAVE_LLN_MATRIX
-  Main_header singles_main_header;
-#endif
-  float lm_start_time;
-  float lm_duration;
+  mutable std::vector<std::vector<std::streampos> > saved_get_positions_for_each_lm_data;
+  typedef std::pair<unsigned int, SavedPosition> GetPosition;
+  std::vector<GetPosition > saved_get_positions;
   
   // const as it modifies only mutable elements
   // It has to be const as e.g. get_next_record calls it
