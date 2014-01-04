@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,20 +20,21 @@
   \brief main() for stir::OSMAPOSLReconstruction on parametric images
 
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 #include "stir/Succeeded.h"
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
+#include "stir/recon_buildblock/distributable_main.h"
 
 
 
-USING_NAMESPACE_STIR
-
+#ifdef STIR_MPI
+int stir::distributable_main(int argc, char **argv)
+#else
 int main(int argc, char **argv)
+#endif
 {
+  using namespace stir;
 
   OSMAPOSLReconstruction<ParametricVoxelsOnCartesianGrid >
     reconstruction_object(argc>1?argv[1]:"");
