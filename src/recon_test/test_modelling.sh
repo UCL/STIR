@@ -1,5 +1,21 @@
 #! /bin/bash
-# $Id$
+#
+#  Copyright (C) 2009 - 2011, Hammersmith Imanet Ltd
+#  Copyright (C) 2013 - 2014, University College London
+#  This file is part of STIR.
+#
+#  This file is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+#  This file is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  See STIR/LICENSE.txt for details
+
 # A script to check internal consistency of the parametric imaging code.
 # It tests both the indirect and direct methods.
 # First, dynamic data is simulated from parametric images.
@@ -7,7 +23,9 @@
 # 
 # This script currently needs to be executed in the parent-directory of "recon_test"
 # (This could be changed by adjusting INPUTDIR below).
+
 # Author: Charalampos Tsoumpas
+# Author: Kris Thielemans
 
 # we do the next line such that the script aborts at any error (i.e. any non-zero return value of a command).
 # Note that it only works in bash. all the rest will work in sh (except for a substition line, look for //)
@@ -27,11 +45,51 @@ export ITER
 export MAXSEG
 export SAVITER
 
-PATH=$WORKSPACE/$DEST/utilities:$WORKSPACE/$DEST/utilities/ecat:$WORKSPACE/scripts/:$WORKSPACE/$DEST/modelling_utilities:$WORKSPACE/$DEST/recon_test:$WORKSPACE/$DEST/iterative/POSMAPOSL:$WORKSPACE/$DEST/iterative/POSSPS:$PATH
+#
+# Options
+#
+MPIRUN=""
+
+#
+# Parse option arguments (--)
+# Note that the -- is required to suppress interpretation of $1 as options 
+# to expr
+#
+while test `expr -- "$1" : "--.*"` -gt 0
+do
+
+  if test "$1" = "--mpicmd"
+  then
+    MPIRUN="$2"
+    shift 1
+  elif test "$1" = "--help"
+  then
+    echo "Usage: `basename $0` [--mpicmd somecmd] [install_dir]"
+    echo "(where [] means that an argument is optional)"
+    #echo "See README.txt for more info."
+    exit 1
+  else
+    echo Warning: Unknown option "$1"
+    echo rerun with --help for more info.
+    exit 1
+  fi
+
+  shift 1
+
+done 
+
+if [ $# -eq 1 ]; then
+  echo "Prepending $1 to your PATH for the duration of this script."
+  PATH=$1:$PATH
+fi
+
+command -v generate_image >/dev/null 2>&1 || { echo "generate_image not found or not executable. Aborting." >&2; exit 1; }
+command -v get_dynamic_images_from_parametric_images >/dev/null 2>&1 || { echo "get_dynamic_images_from_parametric_images not found or not executable. Aborting." >&2; exit 1; }
+command -v conv_to_ecat7 >/dev/null 2>&1 || { echo "conv_to_ecat7 not found or not executable. Aborting." >&2; exit 1; }
 
 echo "Using executables like the following"
-type get_dynamic_images_from_parametric_images
-type fwdtest
+echo "Using `command -v get_dynamic_images_from_parametric_images`"
+echo "Using `command -v fwdtest`"
 
 mkdir -p test_modelling_output
 cd test_modelling_output
@@ -118,7 +176,7 @@ for direct in OSMAPOSL OSSPS ; do
 cp ${INPUTDIR}P${direct}.par .
 echo "Test the direct P${direct} Patlak Plot reconstruction"
 rm -f P${direct}.txt; 
-INPUT=fwd_dyn_from_p0005-p5.hs P${direct} P${direct}.par > P${direct}.txt
+INPUT=fwd_dyn_from_p0005-p5.hs ${MPIRUN} P${direct} P${direct}.par > P${direct}.txt 2>&1
 echo "Multiply the parametric images with the model matrix to get the corresponding dynamic images."
 get_dynamic_images_from_parametric_images dyn_from_recon_p0005-p5.img P${direct}_${ITER}.img  ${INPUTDIR}PatlakPlot.par
 get_dynamic_images_from_parametric_images dyn_sens.img sens.img ${INPUTDIR}PatlakPlot.par

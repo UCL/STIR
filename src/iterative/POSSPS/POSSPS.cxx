@@ -1,7 +1,5 @@
-// $Id$
-//
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,23 +23,23 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Charalampos Tsoumpas
-  
-  $Date$
-  $Revision$
 */
 #include "stir/OSSPS/OSSPSReconstruction.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/Succeeded.h"
+#include "stir/recon_buildblock/distributable_main.h"
 
 
-USING_NAMESPACE_STIR
 
+#ifdef STIR_MPI
+int stir::distributable_main(int argc, char **argv)
+#else
 int main(int argc, char **argv)
+#endif
 {
-
+  using namespace stir;
   OSSPSReconstruction<ParametricVoxelsOnCartesianGrid > reconstruction_object(argc>1?argv[1]:"");  
 
   return reconstruction_object.reconstruct() == Succeeded::yes ?
            EXIT_SUCCESS : EXIT_FAILURE;
 }
-
