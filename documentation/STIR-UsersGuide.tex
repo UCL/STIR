@@ -37,7 +37,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 2.4}}
+ Version 3.0}}
 \end{center}
 
 \end{spacing}
@@ -45,12 +45,18 @@
 \large 
 
 \noindent 
-K. Thielemans (Hammersmith Imanet Ltd; Algorithms and Software Consulting Ltd) \\
-Ch. Tsoumpas (Hammersmith Imanet Ltd; Imperial College London; King's College London)\\
-D. Sauge, C. Labb\'e, C. Morel (Hopital Cantonal Gen\`eve)\\
-M. Jacobson (Technion University)\\
-A. Zverovich (Brunel University) \\
-T. Beisel (Univ. of Paderborn)
+K. Thielemans \\
+{\it \small Hammersmith Imanet Ltd; Algorithms and Software Consulting Ltd; University College London}\\
+Ch. Tsoumpas\\ 
+{\it \small Hammersmith Imanet Ltd; Imperial College London; King's College London}\\
+D. Sauge, C. Labb\'e, C. Morel \\
+{\it \small Hopital Cantonal Gen\`eve}\\
+M. Jacobson \\
+{\it \small Technion University}\\
+A. Zverovich \\
+{\it \small Brunel University} \\
+T. Beisel \\
+{\it \small Univ. of Paderborn}
 
 \begin{center}
 License
@@ -78,7 +84,7 @@ Introduction}
 
 The objective of this document is to give practical information 
 about the use of the object-oriented library for 3D Reconstruction 
-of PET data, called \textit{STIR}. The most recent version of this 
+of PET and SPECT data, called \textit{STIR}. The most recent version of this 
 document (and the library) can be found on \\
 \R2Lurl{http://stir.sourceforge.net}{http://stir.sourceforge.net}.
 
@@ -92,12 +98,13 @@ found during the registration process, and the file \textbf{STIR/LICENSE.txt}
 that comes with the distribution. 
 
 See the publications section of the STIR website for information on which reference
-to use for STIR. You will want to read {[}Thi12] (for \textit{STIR} 1.x, use [Lab99a], [Lab99b]).
+to use for STIR. You will want to read {[}Thi12] and {[}Fus13] for SPECT additions
+since STIR 3.0 (for \textit{STIR} 1.x, use [Lab99a], [Lab99b]).
 
 
 
-This guide attempts to give end users the shortest pathway to 
-perform 3D reconstructions using \textit{STIR}. It mainly provides 
+This guide attempts to give end users an overview of all the functionality
+in \textit{STIR}. It mainly provides 
 procedures for downloading and installing the necessary gnu g++ 
 compiler tools and the \textit{STIR} reconstruction building blocks. 
 Then a brief explanation is given about how to run reconstruction 
@@ -175,32 +182,10 @@ See the Compilation section for some info (use \textit{make} variable
 \subsubsection{
 C++ Compiler}
 
-In order to compile and run the \textit{STIR} programs, we currently recommend 
-using a recent version of the GNU gcc compiler, at least version 
-3.0.1. The final release of \textit{STIR} 2.4 should work with gcc 4.2 up to 4.8.
-Check the mailing lists for more info.
-\footnote{{\small Many years ago, some work-arounds were put in place to 
-keep \textit{STIR} compatible with gcc version 2.95.2, but this version is unlikely to
-to be usable for recent versions of \textit{STIR}. It is known that with this
-old version, some functionality is not supported. Specifically, 
-some programs that take a parameter file as input also list the 
-actual parameters used on stdout. This is especially useful if 
-you used the interactive version and want to copy this output 
-to a file. There is a bug in gcc 2.95.2 though such that this 
-info cannot be listed correctly for the hierarchies based on 
-registries (pretty much everything in section 
-\ref{sec:user-selectablecomponents}).}}. 
-
-
-\textbf{Warning} Please note that many Linux distributions come with 
-prerelease versions of gcc. These versions are sometimes not as stable
-as the normal gcc releases, especially for C++ code.
-We discourage using such versions for \textit{STIR} (check with gcc -v).
-
-
-
-Other recent C++ compilers should be ok as well, including Intel's compiler
-version 11, CLang (checked with 2.9.1), Visual Studio 2008, 2010 or later
+In order to compile and run the \textit{STIR} programs, you will need a compiler
+and associated tools. These days, any compiler should work. See the 
+\R2Lurl{http://sourceforge.net/apps/mediawiki/stir}{STIR Wiki} for more
+specific information of which compilers we have tried.
 We would love 
 to hear from any attempts of using another compiler. 
 
@@ -215,8 +200,6 @@ However, due to license restrictions this is now no longer the case.}
 The library might still be available on  
 \R2Lurl{ftp://ftp.topo.ucl.ac.be/pub/ecat }{ftp://ftp.topo.ucl.ac.be/pub/ecat}.
 It is also available for GATE users.
-Please check the \textit{STIR}
-mailing lists for more information.
 
 You have to download that library and issue 'make --f Makefile.unix' 
 (or 'make --f Makefile.cygwin' if you are using CYGWIN on Windows) 
@@ -229,8 +212,8 @@ files.
 \subsubsection{
 Enabling GE RDF and VOLPET support}
 \label{sec:RDFsupport}
-We software that reads VOLPET and RDF data for all GE scanners, but this can currently
-not distribute it due to licensing restrictions. If you have the
+We have software that reads VOLPET and RDF data for all GE scanners, but this can currently
+not be distributed due to licensing restrictions. If you have the
 GE PET Toolbox proprietary package you can ask Kris Thielemans for VOLPET and RDF
 support in \textit{STIR}.
 
@@ -246,9 +229,9 @@ it is easier for configuration and finding system dependencies.
 Normal build procedure on Linux/Unix would be something like
 
 \cmdline{cd /somewhere/nice/STIRbuild/Release}
-\cmdline{ccmake /somewhere/else/where/the/source/is/STIR}
+\cmdline{cmake-gui /somewhere/else/where/the/source/is/STIR\&}
 
-This will bring up a basic interface where you might to use your normal
+This will bring up a basic interface where you might to have to choose your prefered
 build system (i.e. \texttt{make} on Linux/Unix) and do an initial configuration. Then 
 you specify build variables. You can press \texttt{c} to do additional configurations, \texttt{g} for generating
 your build files, \texttt{q} to quit. After this step, you will have to run your build system (e.g.\ on Linux etc,
@@ -278,8 +261,13 @@ data directly to Mathematica, NONE switches off all graphics. See also section \
 \textit{STIR} contains code for running \texttt{OSMAPOSL} and \texttt{OSSPS} in parallel-mode. 
 See section \ref{sec:RunningWithMPI} for information on how to run programs using MPI.
 \footnote{In fact, any algorithm that uses \texttt{PoissonLogLikelihoodWithLinearModelForMeanAndProjData}.
-This functionality was contributed mainly by Tobias Beisel, Univ. of Paderborn). You need a version of the MPI library and
-and compiler to get this to work. We have tested this using \R2Lurl{http://www.open-mpi.org/}{OpenMPI} 1.4.2.}
+This functionality was contributed mainly by Tobias Beisel, Univ. of Paderborn). You need a version of the MPI library 
+to get this to work. We have tested this using \R2Lurl{http://www.open-mpi.org/}{OpenMPI} 1.4.2 and 1.4.5}.\footnote{
+{When using MPI, you can set a compiler define \texttt{STIR\_MPI\_TIMINGS=1}} to
+enable additional timings for all send/receive pairs 
+(see \textbf{distributed\_functions.h} in \textbf{include/stir/recon\_buildblock}. 
+This should only be used for testing purposes as it can slow down
+STIR dramatically.}
 } \\
 \hline
 % ROW 
@@ -298,7 +286,6 @@ See section \ref{sec:RunningWithOPENMP} for information on how to run programs u
 the developer's guide.}\\
 \hline
 \end{longtable}
-See the section \ref{sec:normalcompilation} for explanation of these variables. 
 
 You can also (optionally) specify locations of some external libraries for additional IO
 capabilities of STIR. 
@@ -307,461 +294,26 @@ capabilities of STIR.
 \item AVW\texttrademark{} (a commercial library\footnote{See \R2Lurl{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
 {www.mayo.edu/bir/Software/AVW/AVW1.html}.}
 via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.
-, 
+\item ITK\_DIR, use IO from \R2Lurl{http://www.itk.org}{ITK}, a large open source library. Specifying this
+ enables NRRD, MetaIO and Nifti IO.
 \item GE RDF\texttrademark{} support via \texttt{RDF\_INCLUDE\_DIRS} and \texttt{RDF\_LIBRARIES} (requires the GE proprietary Pet Toolbox).
 \end{itemize}
 
 Note that you can use e.g. \textit{DISABLE\_LLN\_MATRIX} to \textit{not}
-use the LLN ECAT library, even if cmake found it. 
+use the LLN ECAT library, even if cmake found it.
 
 Finally, do not forget to set
-\texttt{CMAKE\_BUILD\_TYPE} to \texttt{Release}, \texttt{Debug} or \texttt{RelWithDebug}.
+\begin{itemize}
+\item CMAKE\_BUILD\_TYPE to \texttt{Release}, \texttt{Debug} or \texttt{RelWithDebug},
+\item CMAKE\_INSTALL\_PREFIX to specify where the final installation has to occur. CMake
+provides normally a default in a system location, but you could set it for instance to
+\texttt{./install} to put thef iles inside your build directory.
+\end{itemize}
 
-
-On Windows or MacOSX, the procedure is essentially the same, except that you have to specify locations 
-via the cmake GUI. When using Visual Studio or other IDEs as  your build system,
+On Windows or MacOSX, the procedure is essentially the same, except that you will likely have 
+to specify more locations When using Visual Studio, XCode or other IDEs as  your build system,
 you do not need to specify the Build Type, as you will be able to select that in 
 your IDE.
-
-
-\subsubsection{
-Compilation using GNU make}
-\label{sec:normalcompilation}
-\textit{This build process will no longer be provided in future versions of STIR.}
-
-\textit{STIR} currently comes with a Makefile for the GNU \textit{make} program
-\footnote{
-A non-GNU version of make will not work. It might be that on 
-your system GNU make is launched with \texttt{gmake}.}. \textit{make} is a standard
-utility that, given a Makefile which tells it how to build programs, checks which parts 
-of the building process need to be executed. For example, if you change a source file, it will
-only rebuild those programs that ``depend'' on the source file. 
-
-The \textbf{Makefile} 
-is written for most Unix flavours: we tried it on Linux, MacOSX and Solaris. 
-It can also be used on Windows versions using cygwin (\R2Lurl{http://cygwin.com/}{http://cygwin.com/}). 
-Since release 1.2 there is only one \textbf{Makefile}, which is in \textbf{STIR/}.
-
-
-In addition, the distribution includes a file \textbf{STIR/samples/local/config.mk} 
-which you might copy to \textbf{STIR/local/config.mk} and modify according 
-to your own needs. See section \ref{sec:local_config.mk}.
-
-
-The default compilation (BUILD=opt) is optimised and is achieved 
-by simply typing:
-\cmdline{make all}
-
-
-It results in the creation of subdirectories in \textbf{STIR/opt} 
-with object and executable files (one for each of the subdirectories 
-of \textbf{STIR} that contain code).
-
-
-The 'debug' compilation can be obtained by typing the following 
-command:
-\cmdline{make BUILD=debug all}
-\noindent
-This switches off any optimisations and allows the debugging 
-of the programs, and results in the creation of subdirectories 
-in \textbf{STIR/debug} with object and executable files. Various assert 
-statements are enabled in the code, resulting in very slow execution. 
-If you experience problems with our software, we recommend running 
-the debug version to see if any of these asserts flags the reason.
-
-
-If you want to copy the executables to a location in your path, 
-use
-\cmdline{make install INSTALL\_EXE\_DIR=/here}
-
-\noindent
-\texttt{INSTALL\_EXE\_DIR} defaults to \texttt{\$(INSTALL\_PREFIX)/bin}, which 
-in turns defaults to \textbf{\$\{HOME\}/bin}.
-
-
-If you want to remove all generated files (such as object files 
-and executables), use
-\cmdline{make clean}
-
-
-If you want to remove the installed files, do
-\cmdline{make uninstall INSTALL\_EXE\_DIR=/here}
-
-These are only the most basic options. For more targets, 
-type
-\cmdline{make how}
-The following line is useful to check what settings will be used for some
-variables (such as \texttt{CFLAGS}). This can be useful to find out
-if a particular external library (such as the LLN ecat library) was 
-found by the Makefile
-\cmdline{make print-make-vars}
-
-
-One should normally not see warnings when compiling \textit{STIR}
-except possibly 'variable not used' type of warnings (although when using
-optimization of at least level 2, gcc 3.4 
-generates warnings about uninitialised variables in the system library).
-
-
-The following table gives a summary of all available build options. 
-In this table, the notation \$(VAR) means: substitute the value of the
-(make) variable VAR.
-
-\setlength{\MakeTableFirstCol}{2.5in}
-\setlength{\MakeTableSecondCol}{\textwidth}
-\addtolength{\MakeTableSecondCol}{-\MakeTableFirstCol}
-
-\begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
-\hline
-% ROW 1
-
-{\raggedright
-\textit{BUILD=build}} & 
-
-{\raggedright
-Specifies whether the debugging or optimised version of the 
-binaries will be produced. 'BUILD=debug' builds the debugging 
-version, 'BUILD=opt' builds the optimised version (default).
-'BUILD=nonopt' builds a debugging version without asserts.} \\
-\hline
-% ROW 2
-
-{\raggedright
-\textit{DEST=dir/}} & 
-
-{\raggedright
-Put the compilation files in an alternative place. Default is the value
-of the \textit{BUILD} make variable (with trailing slash appended).} \\
-\hline
-% ROW 3
-
-{\raggedright
-\textit{WORKSPACE= \linebreak
-/absolutedir}} & 
-
-{\raggedright
-\textit{Use not recommended} \linebreak
-Can be used to tell \textit{make} where the \textit{STIR} subdirectory is, 
-but it should find out by itself. The path given should include 
-\textit{STIR} as well.} \\
-\hline
-% ROW 4
-
-{\raggedright
-\textit{INSTALL\_EXE\_DIR= \linebreak
-/absolutedir}} & 
-
-{\raggedright
-Can be used to change the location for executables when using 
-'make install'. Defaults to \$(INSTALL\_PREFIX)/bin} \\
-\hline
-% ROW 5
-
-{\raggedright
-\textit{INSTALL\_LIB\_DIR= \linebreak
-/absolutedir}} & 
-
-{\raggedright
-Can be used to change the location for the library and registry 
-object files when using 'make install-all'. Defaults to \$(INSTALL\_PREFIX)/lib} \\
-\hline
-% ROW 6
-
-{\raggedright
-\textit{INSTALL\_INCLUDE\_DIR= \linebreak
-/absolutedir}} & 
-
-{\raggedright
-Can be used to change the location for the include files when 
-using 'make install'. Defaults to \$(INSTALL\_PREFIX)/include} \\
-\hline
-% ROW 7
-
-{\raggedright
-\textit{INSTALL\_PREFIX=/absolutedir}} & 
-
-{\raggedright
-See above. It defaults to \$(HOME) which should be your home 
-directory. You could set it to /usr/local (if you have write 
-permissions there).} \\
-\hline
-% ROW 8
-
-{\raggedright
-\textit{EXTRA\_CFLAGS= \linebreak
-'some options'}} & 
-
-{\raggedright
-Use to pass extra options to the compiler. For example, if you
-use a version of the \textit{boost} files that is not in the standard
-include path, you can add the location of its include files to the 
-search path of the compiler, e.g. \linebreak
-\texttt{EXTRA\_CFLAGS='-I /someloc/boost\_1\_34\_1'}} \\
-\hline
-% ROW 9
-
-{\raggedright
-\textit{EXTRA\_LINKFLAGS= \linebreak
-'some options'}} & 
-
-{\raggedright
-Use to pass extra options to the compiler when linking} \\
-\hline
-% ROW 10
-
-{\raggedright
-\textit{OPTIM\_CFLAGS, \linebreak
-NONOPTIM\_CFLAGS, \linebreak
-DEBUG\_CFLAGS}} & 
-
-{\raggedright
-Use to pass replace the default optimization options for the compiler when using BUILD=opt, nonopt and debug respectively.} \\
-\hline
-% ROW 9
-
-{\raggedright
-\textit{OPTIM\_LINKFLAGS, \linebreak
-NONOPTIM\_LINKFLAGS, \linebreak
-DEBUG\_LINKFLAGS}} & 
-
-{\raggedright
-Use to pass replace the default optimization options for the linker when using BUILD=opt, nonopt and debug respectively.} \\
-\hline
-% ROW 10
-
-{\raggedright
-\textit{CXX=compiler}} & 
-
-{\raggedright
-Use if you want another C++ compiler then g++} \\
-\hline
-% ROW 11
-
-{\raggedright
-\textit{CC=compiler}} & 
-
-{\raggedright
-Use if you want another C compiler then gcc} \\
-\hline
-% ROW 12
-
-{\raggedright
-\textit{LINK=compiler}} & 
-
-{\raggedright
-Program used for producing the executable, defaults to \$(CXX)} \\
-\hline
-% ROW 13
-
-{\raggedright
-\textit{INSTALL=program}} & 
-
-{\raggedright
-This is used by the install targets to copy the files. It defaults 
-to cp, but could be set to 'install -m 755 -s' (if you have GNU 
-install).} \\
-\hline
-% ROW 14
-
-{\raggedright
-\textit{RM=program}} & 
-
-{\raggedright
-This is used by the uninstall targets. It defaults to \texttt{rm -f}.} \\
-\hline
-\end{longtable}
-
-
-Note that if the \textit{BUILD, DEST, WORKSPACE} options are used at 
-compilation time, they also have to be used when using different 
-targets (such as \textit{install, clean}).
-\subsubsection{
-Additional options available for non-parallel code}
-\label{sec:compilationgraphics}
-The following option can be given to the make command in addition 
-to what is specified above
-
-\begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
-\hline
-% ROW 1
-{\raggedright \textit{GRAPHICS=value}} & 
-{\raggedright see section \ref{sec:UsingCMake}} \\
-\hline
-\end{longtable}
-
-
-If you have problems, you might have to change \textbf{STIR/local/config.mk}
-(or in extreme circumstances \textbf{STIR/config.mk}) and introduce options 
-specific for your system.
-
-
-
-\subsubsection{
-Additional options available for parallel code using MPI}
-See section \ref{sec:UsingCMake}.
-
-Normal build process would be something like\footnote{This will need to fit all on
-1 line, or use the continuation character of your shell (normally a backslash).}
-
-\cmdline{make  CC="mpicc.openmpi-gcc" CXX="mpicxx.openmpi-gcc" DEST=mpiopt/ }
-\cmdline{\,\,\,\,\,\,\,\,\,\,\,\,\,\,\,iterative/OSMAPOSL iterative/OSSPS}
-
-This assumes that the file \texttt{mpi.h} is the search-path of the compiler. If not,
-you could include its location for instance by using the \texttt{EXTRA\_CFLAGS} \textit{make} variable.
-
-\cmdline{make ... EXTRA\_CFLAGS='-I /where/ever/it/is'}
-
-All the make variables of the previous section apply. Note that at present it is 
-recommended that you build this version in a differerent destination directory then
-your usual (non-parallel) build. This is because conditional compilation is used
-in a few files.
-
-Additional make variables for the parallel version:
-
-\begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
-\hline
-{\raggedright \textit{STIR\_MPI=1}} & 
-{\raggedright
-Can be used to force compilation for MPI if the CXX compiler is not recognized (see 
-\textbf{STIR/config.mk}, which sets it if the compiler name contains the string \texttt{mpi}).
-} \\
-\hline
-{\raggedright \textit{STIR\_MPI\_TIMINGS=1}} & 
-{\raggedright
-Can be used to enable additional timings for all send/receive pairs 
-(see \textbf{distributed\_functions.h} in \textbf{include/stir/recon\_buildblock}. 
-This should only be used for testing purposes as it can slow down
-the program dramatically.
-} \\
-\hline
-{\raggedright
-\textit{MPI\_CFLAGS=...}} & 
-{\raggedright
-Can be used to change the default MPI compilation flags which currently includes
-\texttt{-DMPICH\_IGNORE\_CXX\_SEEK} (see 
-\texttt{STIR/config.mk}).
-} \\
-\hline
-\end{longtable}
-
-\subsubsection{
-Additional options available for threaded code}
-See section \ref{sec:UsingCMake}.
-
-
-\cmdline{make DEST=openmpopt/ analytic/FBP2D STIR\_OPENMP=1}
-
-This assumes that the file \texttt{omp.h} is the search-path of the compiler. If not,
-you could include its location for instance by using the \texttt{EXTRA\_CFLAGS} \textit{make} variable.
-
-\cmdline{make ... EXTRA\_CFLAGS=''-I /where/ever/it/is''}
-
-
-Additional make variables for the threaded version:
-
-\begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
-\hline
-
-{\raggedright
-\textit{OPENMP\_CFLAGS=...}} &
-{\raggedright
-Can be used to change the default OPEN-MP compilation flags which currently includes
-\texttt{-fopenmp} (see 
-\texttt{STIR/config.mk}).
-} \\
-\hline
-\end{longtable}
-
-\subsubsection{
-Usage of STIR/local/config.mk}
-\label{sec:local_config.mk}
-
-Having to type in the above options at every make is quite painful. 
-Luckily, the file \textbf{STIR/local/config.mk} comes to your rescue. 
-This file is imported (if it exists) by every make (after reading 
-STIR/config.mk), and hence can be used to override the defaults 
-of all of the above make flags, \textit{except} the \textit{WORKSPACE} flag. 
-The distribution contains a sample file \textbf{STIR/samples/local/config.mk}, 
-but check it out if it is appropriate for you before copying 
-it to \textbf{STIR/local/}.
-
-
-\subsubsection{
-Enabling ECAT 7 support}
-
-To compile and link ifheaders\_for\_ecat7.cxx and the other files 
-that enable ECAT support, \textit{STIR} needs to know the location 
-of the LLN files. The following 2 \textit{make} options allow you 
-to set this:
-
-
-
-\begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
-\hline
-% ROW 1
-\raggedright
-\textit{LLN\_INCLUDE\_DIR=\linebreak
-/loc/of/includes} &
-This needs to point to the path of the LLN include files. Default 
-value is \textit{\$(WORKSPACE)/../lln/ecat}, which by default expands 
-to \textbf{STIR/../lln/ecat}\\
-\hline
-% ROW 2
-{\raggedright \textit{LLN\_LIB\_DIR= \linebreak
-/loc/of/lib}} & 
-{\raggedright This needs to point to the directory where libecat.a is produced. 
-Default value for \textit{LLN\_LIB\_DIR} is \textit{\$(LLN\_INCLUDE\_DIR).}} \\
-\hline
-\end{longtable}
-
-
-Once these options are set correctly (for example in STIR/local/config.mk), 
-ECAT support will be automatically enabled after issuing \textit{make}. 
-If the file ifheaders\_for\_ecat7 is not compiled, it probably 
-means that the above flags point to an incorrect location.
-
-\subsubsection{
-Enabling AVW support}
-\label{sec:AVWsupport}
-
-To compile and link \textit{AVW} support, \textit{STIR} needs to know the location 
-of the \textit{AVW} files. 
-They are set in \texttt{config.mk} according to recommend \textit{AVW} values,
-i.e. using the environment variables \texttt{AVW} and \texttt{TARGET}.
-The following \textit{make} options allow you 
-to set this:
-
-\begin{longtable}{|p{\MakeTableFirstCol}|p{\MakeTableSecondCol}|}
-\hline
-% ROW 1
-\raggedright
-\textit{AVW\_INCLUDE\_DIR=\linebreak
-/loc/of/includes} &
-This needs to point to the path of the AVW include files. Default 
-value is \textit{\$(AVW)/include}\\
-\hline
-% ROW 2
-{\raggedright \textit{AVW\_LIBS= \linebreak
-/loc/of/lib}} & 
-{\raggedright This needs to point to the AVW library.
-Default value is \textit{\$(AVW)/\$(TARGET)/lib/libAVW.so}.
-Note that this default is inappropriate on Windows.} \\
-\hline
-% ROW 3
-{\raggedright \textit{HAVE\_AVW= \linebreak
-0 or 1}} & 
-Can be used to remove AVW support even if the library is found.\\
-\hline
-\end{longtable}
-Note that the preprocessor symbol \texttt{HAVE\_AVW} will be defined 
-if all files have been found (see \texttt{config.mk}).
-
-
-Once these options are set correctly (for example in \texttt{local/config.mk}), 
-AVW support will be automatically enabled after issuing \textit{make}. 
-If the file \texttt{conv\_AVW} is not compiled, it probably 
-means that the above flags point to incorrect locations.
-
 
 
 
@@ -776,9 +328,9 @@ The lln library does not compile on Mac OS.
 { \subsubsubsection{All Unix/Linux flavours}
 }
 
-If you want to use the X windows display routines, the Makefile 
-supplied should work out-of-the-box if you have suitable libraries installed. 
-You can diagnose this as follows.
+If you want to use the X windows display routines,  CMake
+should work out-of-the-box if you have suitable libraries installed, see the wiki
+for required packages.
 
 { \subsubsubsubsection{X development libraries}
 }
@@ -790,34 +342,7 @@ check this by doing
 \cmdline{find /usr -name Xlib.h -print}
 
 If this file is not found, you'll have to install these libraries 
-somehow (on Linux you would normally use \texttt{apt-get} or \texttt{rpm}).
-If after this, Xlib.h is not found while compiling, 
-either set the environment variable C\_INCLUDE\_PATH (when using 
-gcc) or use \\
-\texttt{EXTRA\_CFLAGS='-I /usr/X11R6/include' }\\
-or whatever suitable path (the quotes are necessary when setting 
-EXTRA\_CFLAGS on the command line, not when setting it in 
-STIR/local/config.mk).\\
-If while linking the libX11.a library is not found, it is not 
-in the default path of your linker. First find out where it is:
-\cmdline{find /usr -name libX11.a --print}
-
-Then either set the environment variable LIBRARY\_PATH or use \\
-\texttt{EXTRA\_LINKFLAGS='-L /usr/X11R6/lib/'}\\
- or a suitable path.
-
-{ \subsubsubsubsection{curses library}
-}
-
-You also need to install the curses or ncurses package (for some reason, KT experienced 
-a linking error when trying to use the curses library). As mentioned above, on Ubuntu and
-Debian, you can do
-
-\cmdline{apt-get install libncurses5 libncurses5-dev}
-
-\noindent 
-prefixed with \texttt{sudo} if you are not logged in as root. For other Linux versions, 
-you should be able to find similar RPM packages online.
+somehow.
 
 { \subsubsubsubsection{X display depth}
 }
@@ -846,21 +371,10 @@ install ncurses-devel if you don't have it yet (use the cygwin
 Net setup).
 \item make sure that /usr/X11R6/bin is in your PATH (necessary 
 for DLLs)
-\item
-make sure gcc will find the X11 files. This should happen automatically, 
-but if not you either set the 
-environment variables C\_INCLUDE\_PATH and LIBRARY\_PATH, or 
-do
-\cmdline{make GRAPHICS=X EXTRA\_CFLAGS='-I /usr/X11R6/include' 
-{\textbackslash} \\
-EXTRA\_LINKFLAGS='-L 
-/usr/X11R6/lib/'}
 \end{itemize}
 
 You can start the Xorg X server by executing the startxwin.sh 
 script (you might want to modify this a bit to suit your taste). 
-
-
 
 Other decent X servers should work as well (Kris Thielemans used Exceed at 
 some point).
@@ -870,7 +384,7 @@ some point).
 Running tests}
 
 We \textbf{highly recommend} running test programs after building. There are currently two
-sets of tests. The first set tests various components of \textit{STIR}. This process is described below.
+sets of tests. The first set tests various components of \textit{STIR}. This process is described on the Wiki.
 The second set of tests is available via the \textit{STIR} web-site, where we 
 we provide test reconstructions as part of the
 \textbf{recon\_test\_pack}, with an 
@@ -886,58 +400,31 @@ for the `maximum absolute segment number to process' parameter
 in your reconstruction (see Section \ref{sec:OSMAPOSL}), as this will be \textbf{\textit{very}} 
 slow.
 
-The rest of this section discusses how to run the first set of tests.
-
-\subsubsection{
-If you have used make for building}
-
-Change to your \textbf{STIR} directory, and type
-\cmdline{make run\_tests}
-
-This will compile all test programs, and run those which do not 
-require user input. You should see a sequence of messages, all 
-ending with \texttt{All tests ok}. (The make process will fail 
-when any of the tests fails.). You may also wish to run \texttt{make 
-run\_interactive\_tests}. It is recommended to do these tests 
-also with the version compiled in debug mode (as that implies 
-more tests). 
-\cmdline{make run\_tests BUILD=debug}
-
-
-If everything is all right, you can free up some disk space by 
-using
-\cmdline{make clean\_tests}
-\cmdline{make clean\_tests BUILD=debug}
-
-\subsubsection{
-If you have used CMake for building}
-
-
-When using \textit{CMake} to generate \textit{make} files, you can execute the tests as follows:
-\cmdline{make}
-\cmdline{make test}
-
-For IDE-type build such as Visual Studio, \textit{CMake} will generate a ``project'' called something like
-\texttt{RUN\_TESTS} which you will need to build.
-
-If a problem is reported, a log file should have been created (probably in
-your build directory called \texttt{Testing/Temporary/LastTest.log}).
-
 
 
 
 \section{
 Running \textit{STIR} programs}
 
-Here we describe:\\
-{\textbullet} documentation and program conventions\\
-{\textbullet} supported file formats \\
-{\textbullet} rebinning algorithms\\
-{\textbullet} reconstruction programs\\
-{\textbullet} utility programs\\
-{\textbullet} user-selectable components\\
-{\textbullet} display properties
+Here we describe:
+\begin{itemize}
+\item documentation and program conventions
+\item supported file formats 
+\item rebinning algorithms
+\item reconstruction programs
+\item utility programs
+\item user-selectable components
+\item display properties
+\end{itemize}
 
+\textit{STIR} is highly configurable and modular. It is therefore difficult to give a complete (and readable)
+description of all the options in this guide. Moreover, many options are common to many
+programs. For instance, a forward projector will be needed in many places, and there are 
+different forward projectors implemented in \textit{STIR}, each with their own set of 
+parameters. Your best bet might be to start with some of the sample parameter files, and then
+come back to this guide. In particular, section \ref{sec:user-selectablecomponents}
+on user-selectable components gives more detail on what options are available
+and what their parameters are.
 
 \subsection{
 Conventions}
@@ -964,7 +451,7 @@ command shell used.
 
 
 Most \textit{STIR} programs accept a single parameter on the command 
-line, which is usually optional
+line, which is sometimes optional
 
 \cmdline{executable\_name [parameter\_filename]}
 
@@ -994,8 +481,16 @@ parameter file relevant to a particular common component) are
 presented in subsequent sections. See also the files in \textbf{STIR}/\textbf{samples}.
 
 
+\subsection{
+Error handling etc}
+\textit{STIR} executables tend to write a lot of information to the terminal on what is happening.
+Check for lines starting with \texttt{WARNING} and \texttt{ERROR}. 
+After an error, the executable will stop\footnote{On some systems there is at the end
+a somewhat confusing error about
+exceptions thrown, but ignore that and check the ERROR line.}.Information on some of the common
+causes for errors is on the Wiki.
 
-All \textit{STIR} executables returns a status value to signify success 
+All \textit{STIR} executables return a status value to signify success 
 or failure. What value this is depends on your Operating System. 
 On Unix, Linux and Windows variations, success is indicated by 
 a status of 0, and failure by anything else. There is currently 
@@ -1007,11 +502,11 @@ If you have compiled with STIR\_MPI, you need run the executables in such a way 
 they know about the availables nodes. How to do this is system/MPI version specific. The following
 should work with OpenMPI on Linux:
 
-\cmdline{mpirun.openmpi -np 12 --hostfile ~/myconf.txt OSMAPOSL mypars.par}
+\cmdline{mpirun -np 12 --hostfile ~/myconf.txt OSMAPOSL mypars.par}
 
 \noindent 
 where the host file describes your set-up, e.g. if you have 3 nodes with differing number of cores, the
-host file could loook like this:
+host file could look like this:
 \begin{verbatim}
 # The Hostfile for Open MPI
 beo-09 slots=4
@@ -1019,7 +514,7 @@ beo-10 slots=8
 beo-11 slots=8
 \end{verbatim}
 Without host file, the executables will normally be run on the host where you executed the command, which
-is useful for multi-processor machines. 
+is useful for multi-processor/core machines. 
 
 \textit{MPICH} would use a similar line using \texttt{mpiexec}.
 
@@ -1032,16 +527,17 @@ the following should work
 
 This will open a interactive prompt on one node where you just type
 
-\cmdline{mpirun.openmpi OSMAPOSL mypars.par}
+\cmdline{mpirun OSMAPOSL mypars.par}
 
 Of course, you can use \texttt{qsub} to submit a job as opposed to getting an interactive prompt.
 
 \subsection{
 Running programs using OPENMP \label{sec:RunningWithOPENMP}}
-If you have compiled with OPENMP support, th eexecutables should run as normal.
+If you have compiled with OPENMP support, the executables should run as normal.
 The environment variable \texttt{OMP\_NUM\_THREADS} can be set to the number of processes to be used for OpenMP. 
 Without using this, the number of threads is  defined as the number of cores on your system. It is probably 
-useful to reduce the number of threads as currently performance is limited by the available cache in your system.
+useful to reduce the number of threads as currently performance is limited by the available cache in your 
+processor.
 
 \subsection{
 File formats}
@@ -1052,6 +548,11 @@ are encountered in which data and header information are maintained
 in separate files (e.g. interfile). In other formats, data files 
 carry header information (e.g. the native GE Advance sinogram 
 format).
+
+When reading a file, \textit{STIR} will automatically discover its file format
+(independent of its name). See section \ref{sec:outputfileformats} for supported output file formats. In addition, 
+utilities are available for converting ECAT6 and ECAT7 to/from 
+interfile (see Section \ref{sec:convertingdata}). 
 
 \subsubsection{Interfile}
 
@@ -1085,26 +586,25 @@ first frame (ECAT matrix 1,1,1,0,0) will be read.
 
 ECAT7 sinograms, attenuation files and images can be read without 
 conversion. However, only the first frame (ECAT matrix 1,1,1,0,0) 
-will be read.
+will be read for static reconstruction.
+
 \textbf{Warning} The calibration factor field in the main header of ECAT7 images
 is currently ignored.
 
 For dynamic or gated data, conversion can be used, see \ref{sec:convertingdata}.
 
 \subsubsection{Image IO using the AVW library}
-First steps are made to be able to use the \textit{AVW} library. See the
-\texttt{conv\_AVW} utility (section \ref{sec:convAVW}).
+See the \texttt{conv\_AVW} utility (section \ref{sec:convAVW}).
 
-
-
-See section \ref{sec:outputfileformats} for supported output file formats. In addition, 
-utilities are available for converting ECAT6 and ECAT7 to/from 
-interfile (see Section \ref{sec:convertingdata}). 
-These should be used for dynamic 
-or gated scans.
+\subsubsection{Image IO using the ITK library \label{sec:ITKIO}}
+If you compiled \textit{STIR} such that it could find the \textit{ITK} library, you will be read
+all image formats supported by \textit{ITK}, see \R2Lurl{http://www.itk.org/Wiki/ITK/File_Formats}{the ITK Wiki}
+for some information. However, many file formats do not specify geometric information (e.g jpg). For those
+that do, \textit{STIR} currently ignores orientation, offset and timing.
+Note that as DICOM files often store only a single slice, DICOM is currently not very well supported by \textit{STIR}.
 
 \subsubsection{SimSET files}
-There are some preliminary files for make it easier to use SimSET and \textit{STIR} together in the
+There are some preliminary files to make it easier to use SimSET and \textit{STIR} together in the
 \textbf{SimSET} directory. See the README.txt in that directory for more info.
 
 \subsection{
@@ -1126,7 +626,7 @@ to enable STIR to read \textit{LMF} format files.
 \subsubsection{
 lm\_to\_projdata}
 
-This utility can be used to bin (or sort) the list mode data 
+This utility can be used to bin (or ``sort'') the list mode data 
 into 'projection data' (also known as \textbf{3D sinograms}. 
 This can then be processed further by other \textit{STIR} utilities. It 
 needs to be run as follows:
@@ -1137,6 +637,9 @@ needs to be run as follows:
 See \textbf{STIR/samples/lm\_to\_projdata.par} for an example file. Please 
 check out the online documentation (as generated by doxygen) 
 for more info.
+
+Currently, each time frame is written in a different file (as Interfile). Gating 
+will be supported in a future version.
 
 \subsubsection{
 lm\_to\_projdata\_bootstrap}
@@ -1158,7 +661,7 @@ properly for instance.
 
 \subsubsection{
 list\_lm\_events}
-Allows inspecting the events in a list mode file.
+Allows inspecting the events in a list mode file. Run without arguments to see a usage message.
 
 \subsection{
 Rebinning algorithms}
@@ -1263,8 +766,11 @@ case.
 \label{sec:OSMAPOSL}
 
 The program \textbf{OSMAPOSL} executes the IF-OSEM-OSL algorithm. 
-This is a generalisation of the One Step Late algorithm [Gre90]. In 
-particular, the prior can be set to the Median Root Prior [Ale97]. \textbf{OSMAPOSL} 
+This is a generalisation of the One Step Late algorithm [Gre90] but allowing
+inter-iteration filtering and/or a prior. Note that this 
+algorithm is in general not convergent.
+
+\textbf{OSMAPOSL} 
 allows \\
 -\tab 
 the use of subsets, similar to the OSEM algorithm [Hud94]. OSMAPOSL
@@ -1388,6 +894,7 @@ uniformly randomise subset order:= 1
 
 
 ; keywords that specify the filtering that occurs after every subiteration
+; warning: do not normally use together with a prior
 inter-iteration filter subiteration interval := 4
 inter-iteration filter type := Separable Cartesian Metz
  ; keywords below will depend on the filter type (see text)
@@ -1395,6 +902,7 @@ inter-iteration filter type := Separable Cartesian Metz
    x-dir filter fwhm (in mm) := 6 
    y-dir filter fwhm (in mm) := 6 
    z-dir filter fwhm (in mm) := 6 
+   ; use some sharpening here as example (not really recommended though)
    x-dir filter metz power := 2 
    y-dir filter metz power := 2 
    z-dir filter metz power := 2 
@@ -1568,7 +1076,7 @@ numbers are appended to this prefix after an underscore.
 \item[output file format type]
 Set output file format, if omitted a default value will be used. 
 Subsequent parameters will depend on the type of output file 
-format. See section \ref{sec:outputfileformats}..
+format. See section \ref{sec:outputfileformats}.
 
 
 \item[initial estimate]
@@ -2368,7 +1876,7 @@ For example, when using MRP:
 \Lambda_{\nu}=\frac{1}{G}\sum\limits_{g}\sum\limits_{\nu'}\hat{W}^{-1} _{\nu'g\rightarrow \nu}\Lambda_{\nu'g}
 \end{array}
 \end{equation}
-In STIR, the transform-and-average operation is performed using the
+The transform-and-average operation is performed by the
 \texttt{warp\_and\_accumulate\_gated\_images} utility.
 
 For MCIR the motion transformations are incorporated directly into reconstruction. The motion corrected
@@ -2437,7 +1945,7 @@ by a factor $0.8$ and the second by $0.2$.
 Multiple
 Files (one for each position): Emission sinogram, Multiplicative corrections
 (attenuation, normalisation), additive corrections (scatter, randoms), motion
-vectors, and gate definitions filename. Å†
+vectors, and gate definitions filename.
 
 \begin{itemize}
 \item Sinograms for each position: 
@@ -2496,7 +2004,7 @@ See section \ref{sec:motionRelatedUtilities}.
 The procedure involves warping operation by the use of linear interpolation (based
 on B-Splines) in each forward/backward step. Note that the current release
 assumes no weighting over the respiratory positions but this could be manually
-included in the multiplicative sinogram.† 
+included in the multiplicative sinogram.
 
 As the main reconstruction algorithm is exactly the same as for ordinary image
 reconstruction, we can use the normal OSMAPOSL program, but with a different
@@ -2517,8 +2025,8 @@ projector pair type := Matrix
 Projector Pair Using Matrix Parameters :=
 Matrix type := Ray Tracing
 Ray Tracing Matrix Parameters:=
-Å† ; use a slightly better approximation than simple ray tracing
-Å† number of rays in tangential direction to trace for each bin := 10
+ ; use a slightly better approximation than simple ray tracing
+ number of rays in tangential direction to trace for each bin := 10
 End Ray Tracing Matrix Parameters:=
 End Projector Pair Using Matrix Parameters :=
 
@@ -2542,12 +2050,12 @@ Reverse Motion Vectors filename prefix := INVERTEDMOTION
 ; here comes the MRP stuff
 prior type := FilterRootPrior
 FilterRootPrior Parameters :=
-† penalisation factor := 1
-† ; you can use any image processor here
-† ; the next parameters specify a 3x3x3 median
-† Filter type := Median
-† Median Filter Parameters :=
-      mask radius x := 1
+ penalisation factor := 1
+ ; you can use any image processor here
+ ; the next parameters specify a 3x3x3 median
+ Filter type := Median
+ Median Filter Parameters :=
+     mask radius x := 1
      mask radius y := 1
      mask radius z := 1
   End Median Filter Parameters:=
@@ -3117,8 +2625,8 @@ parameters for usage info.
 If you have the \textit{AVW}\texttrademark  library
 \footnote{See \R2Lurl{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
 {www.mayo.edu/bir/Software/AVW/AVW1.html}.
-} installed on your system, the make process should have built \texttt{utilities/conv\_AVW}.
-See also \ref{sec:AVWsupport}.
+} installed on your system, the build process should have built \texttt{utilities/conv\_AVW},
+see also \ref{sec:UsingCMake}.
 This utility allows to use the \textit{AVW} library to read an image, and then write it out
 using \textit{STIR} as Interfile.\\
 \textbf{Warning:} the \textit{AVW} library seems to do flip some images depending
@@ -3424,7 +2932,8 @@ class documentation for \textbf{RegisteredObject}.
 
 For each component, there are different types, each with its 
 own unique name. Each type has its specific set of parameters. 
-\\
+
+\textbf{Conventions used in this section}\\
 Each component has its own section, and each type has its subsection. 
 The name of the subsection is the unique identifier of the type.
 
@@ -3570,6 +3079,21 @@ Currently, data is written always in the native byte order, and
 only signed short, unsigned short or float data are supported 
 (although this could easily be extended to 1 or 4 byte integers 
 or doubles).
+
+{ \subsubsubsection{ITK}
+}
+If this output file format is used, \textit{ITK} IO is used, see also \ref{sec:ITKIO}. 
+In this case, the actual file format will be determined by the extension of the filename.
+Therefore, this can be used to write Nifti (.nii), Teem (.nhdr),
+MetaIO (.mhdr), etc.
+
+A default extension can be set that will be  appended if a filename without extension is used.
+
+\begin{verbatim}
+ITK Output File Format Parameters:=
+  default extension:= .nhdr ; current default value
+End ITK Output File Format Parameters:=
+\end{verbatim}
 
 { \subsubsubsection{ECAT6}
 }
@@ -4237,6 +3761,9 @@ It is possible to select these independently at run-time, and
 extend the available ones at compile time. The mechanism is exactly 
 the same as for the ForwardProjector hierarchy.
 
+\textbf{Warning}: Currently, most projection matrices are implemented for PET. Using them for 
+SPECT data could lead to surprising results. 
+
 { \subsubsubsection{Common parameters to all projection matrices}
 }
 \label{sec:projmatrixcommon}
@@ -4412,6 +3939,37 @@ End Interpolation Matrix Parameters:=
 
 See \ref{sec:IncrementalInterpolationBackProjector} for an explanation 
 of the first two parameters.
+
+{ \subsubsubsection{SPECT UB}
+}
+\label{sec:projmatrixSPECTUB}
+This is a flexible implementation specific to SPECT data. See [Fus13] for some information.
+Actual parameters are currently described in a separate document. A sample is given below
+
+\begin{verbatim}
+ction Matrix By Bin SPECT UB Parameters:=
+
+   ;PSF type of correction { 2D // 3D // Geometrical }
+   psf type:= 2D
+   ; next 2 parameters define the PSF. 
+   ; They are ignored if psf_type is "Geometrical"
+   ; the PSF is modelled as a Gaussian with sigma dependent on the 
+   ; distance from the collimator
+   ; sigma_at_depth = collimator_slope * depth_in_cm + collimator_sigma_0
+   collimator slope := 0.0163
+   collimator sigma 0(cm) := 0.1466
+
+   ;Attenuation correction { Simple // Full // No }
+   attenuation type := Simple
+   ;Values in attenuation map in cm-1
+   attenuation map := attMapRec.hv
+
+   ;Mask properties { Cylinder // Attenuation Map // Explicit Mask // No}
+   mask type := Explicit Mask
+   mask file := mask.hv
+
+End Projection Matrix By Bin SPECT UB Parameters:=
+\end{verbatim}
 
 { \subsubsubsection{From File}
 }
@@ -4621,8 +4179,8 @@ Display}
 
 Some of the programs (e.g. in utilities/, recon\_tests/) use 
 the display routines. Which version is actually used depends 
-on the compilation settings (in particular the \textit{GRAPHICS} make 
-flag), see section \ref{sec:compilationgraphics}. 
+on the compilation settings (in particular the \textit{GRAPHICS} cmake 
+variable), see section \ref{sec:UsingCMake}. 
 
 
 \subsubsection{
@@ -4641,14 +4199,6 @@ next set of bitmaps until no more are left.
 In addition, when your X server supports the Pseudocolor visual, 
 you can cycle between 4 different colour scales by pressing Mouse 
 button 2 while the 'bitmap' window is selected.
-
-
-\textbf{Note:} When you are using cygwin on Windows with the XFree86 
-X server, there is currently a somewhat strange problem. If you 
-forget to switch focus to the 'bitmap' window and press a key 
-(which will end up in the terminal window you started the program 
-in), you might not be able to continue the display in the usual 
-way and have to abort the program by pressing Ctrl-C. 
 
 
 \textbf{Warning} In the current implementation, it seems to happen 
@@ -4760,7 +4310,7 @@ and are willing to help, let us know.
 \item
 More automatic testing programs
 \item
-More algorithms: potentially ART, FORE [Def95], 
+More algorithms: potentially ART,  
 OSCB [Ben99b] 
 \item
 More projectors
@@ -4872,6 +4422,11 @@ New York}.
 {[}Hud94] Hudson H M and Larkin R S \textbf{(1994)} Accelerated image 
 reconstruction using ordered subsets of projection data. \textit{IEEE 
 Trans. Med. Imaging}, MI-13: 601-609.
+
+{[}Fus13]  Berta Marti Fuster, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Pablo Aguiar, Albert Cot, Domenec Ros and Kris Thielemans,
+  \textbf{ (2013)}
+  Integration of advanced 3D SPECT modeling into the open-source STIR framework,
+  \textit{Med. Phys. 40}, 092502; http://dx.doi.org/10.1118/1.4816676
 
 
 {[}Jac00] Jacobson M, Levkovitz R, Ben-Tal A, Thielemans K, Spinks 
@@ -5032,7 +4587,7 @@ Convergence properties of algorithms for direct parametric estimation of linear 
 
 {[}Tso08{]} Tsoumpas C, Turkheimer F E and Thielemans K \textbf{(2008)}, Study of direct and indirect 
 parametric estimation methods of linear models in dynamic positron emission tomography. \textit{Med. Phys.} 
-35(4): p. 1299-1309.</i>
+35(4): p. 1299-1309.
 
 [Tso13] Tsoumpas, C., I.
 Polycarpou, K. Thielemans, \textit{et al} \textbf{(2013)}, The effect of
