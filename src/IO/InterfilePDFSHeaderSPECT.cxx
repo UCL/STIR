@@ -206,17 +206,17 @@ bool InterfilePDFSHeaderSPECT::post_processing()
 
   direction_of_rotation =  standardise_keyword(direction_of_rotation);
   const float angle_sampling = float (extent_of_rotation)/num_views * float(_PI/180);
-  if(direction_of_rotation=="ccw")
+  if(direction_of_rotation=="cw")
     {
       my_data_info_ptr->set_azimuthal_angle_sampling(-angle_sampling);
     }
-  else if(direction_of_rotation=="cw")
+  else if(direction_of_rotation=="ccw")
     {
       my_data_info_ptr->set_azimuthal_angle_sampling(angle_sampling);
     }
   else
     {
-      warning("direction of rotation has to be CC or CCW");
+      warning("direction of rotation has to be CW or CCW");
       return true;
     }
   this->data_info_sptr.reset(my_data_info_ptr);

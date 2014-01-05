@@ -181,7 +181,7 @@ set_up(
 	this->origin = image_info_ptr->get_origin();
 
 	const ProjDataInfoCylindricalArcCorr * proj_Data_Info_Cylindrical =
-      dynamic_cast<const ProjDataInfoCylindricalArcCorr* > (this->proj_data_info_ptr.get());
+          dynamic_cast<const ProjDataInfoCylindricalArcCorr* > (this->proj_data_info_ptr.get());
 
 	CPUTimer timer; 
 	timer.start();
@@ -226,7 +226,7 @@ set_up(
 	vox.thcm = vol.thcm;
 	
 	//... projecction parameters ..........................................
-	prj.ang0 = this->proj_data_info_ptr->get_scanner_ptr()->get_default_intrinsic_tilt();
+	prj.ang0 = this->proj_data_info_ptr->get_scanner_ptr()->get_default_intrinsic_tilt() * float(180/_PI);
 	prj.incr = proj_Data_Info_Cylindrical->get_azimuthal_angle_sampling() * float(180/_PI);
 	prj.thcm = vol.thcm;
 	
@@ -333,7 +333,6 @@ set_up(
 		
 	    wmh.att_fn = attenuation_map;
 
-            cout << "Attenuation filename = " << wmh.att_fn << endl;
 	}
 	
 	//... masking parameters.............................		
@@ -374,11 +373,11 @@ set_up(
 
 	//:: Control of read parameters
 	cout << "" << endl;
-	cout << "Parameters of reconstruction:" << endl;
+	cout << "Parameters of SPECT UB matrix:" << endl;
 	cout << "Image grid side row: " << wmh.vol.Nrow << "\tcol: " << wmh.vol.Ncol << "\tvoxel_size: " << wmh.vol.szcm<< endl;
 	cout << "Number of slices: " << wmh.vol.Nsli << "\tslice_thickness: " << wmh.vol.thcm << endl;
 	cout << "Number of bins: " << wmh.prj.Nbin << "\tbin size: " << wmh.prj.szcm << endl;
-	cout << "Number of angles: " << wmh.prj.Nang << "\tAngle increment: " << wmh.prj.incr << endl;
+	cout << "Number of angles: " << wmh.prj.Nang << "\tAngle increment: " << wmh.prj.incr << "\tFirst angle: " << wmh.prj.ang0 << endl;
 	cout << "Number of subsets: " << wmh.prj.NOS << endl;
 	if ( wmh.do_att ){
 		cout << "Correction for atenuation: " << wmh.att_fn << "\t\tdo_msk_att: " << wmh.do_msk_att << endl;
