@@ -40,7 +40,7 @@
 #endif
 
 #include "stir/round.h"
-
+#include <math.h>
 
 #ifndef STIR_NO_NAMESPACES
 using std::min_element;
@@ -550,7 +550,7 @@ ProjDataInfoCylindrical::parameter_info()  const
 #endif  
   s << ProjDataInfo::parameter_info();
   s << "Azimuthal angle increment (deg):   " << get_azimuthal_angle_sampling()*180/_PI << '\n';
-  s << "Azimuthal angle extent (deg):      " << get_azimuthal_angle_sampling()*get_num_views()*180/_PI << '\n';
+  s << "Azimuthal angle extent (deg):      " << fabs(get_azimuthal_angle_sampling())*get_num_views()*180/_PI << '\n';
 
   s << "ring differences per segment: \n";
   for (int segment_num=get_min_segment_num(); segment_num<=get_max_segment_num(); ++segment_num)
