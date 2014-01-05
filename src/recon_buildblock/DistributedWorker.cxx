@@ -39,13 +39,12 @@
 #include "stir/HighResWallClockTimer.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
+#include "stir/info.h"
+#include <boost/format.hpp>
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
 #include <exception>
 
 #include "stir/recon_buildblock/distributable_main.h"
-
-using std::cout;
-using std::endl;
 
 int main(int argc, char **argv)
 {
@@ -70,14 +69,25 @@ int main(int argc, char **argv)
       MPI_Comm_size(MPI_COMM_WORLD, &distributed::num_processors) ; /*Finds the number of processes being used*/     
       MPI_Get_processor_name(processor_name, &namelength);
       
-      fprintf(stderr, "Process %d on %s\n", my_rank, processor_name);
+      stir::info(boost::format("Process %d of %d on %s") 
+	   % my_rank % distributed::num_processors % processor_name);
          
       //master
       if (my_rank==0)
         {
-          return_value=stir::distributable_main(argc, argv);
-          if (distributed::total_rpc_time_slaves!=0) cout << "Total time used for RPC-processing: "<< distributed::total_rpc_time_slaves << endl;
-        }
+	  if (distributed::num_processors<2)
+	    {
+	      stir::error("STIR MPI processing needs more than 1 processor");
+	      return_value = EXIT_FAILURE;
+	    }
+	  else
+	    {
+	      return_value=stir::distributable_main(argc, argv);
+	      if (distributed::total_rpc_time_slaves!=0) 
+		stir::info(boost::format("Total time used for RPC-processing: %1%") %
+		     distributed::total_rpc_time_slaves);
+	    }
+	}
       else //slaves
         {           
           //create Slave Object
@@ -408,7 +418,8 @@ namespace stir
             if (mult_viewgrams_ptr!=NULL) delete mult_viewgrams_ptr;
           }
         if (distributed::rpc_time)
-          cerr << "Slave "<<my_rank<<" used "<<distributed::total_rpc_time_2<<" seconds for PRC-processing."<<endl;
+	  stir::info(boost::format("Slave %1% used %2% seconds for PRC-processing.")
+		     % my_rank % distributed::total_rpc_time_2);
       }         
   }
 
