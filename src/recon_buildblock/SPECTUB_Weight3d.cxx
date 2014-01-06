@@ -1,10 +1,22 @@
 /*
-* Copyright (c) 2013,
-* Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain. All rights reserved.
-* This software is distributed WITHOUT ANY WARRANTY; 
-* without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    Copyright (c) 2013, Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain. 
+    Copyright (c) 2013, University College London
 
-  \author Carles Falcon
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+
+    \author Carles Falcon
 */
 
 
@@ -59,32 +71,43 @@ void wm_calculation( const int kOS,
 	
 	float weight;
 	float coeff_att = (float) 1.;
-	int   jp, nel;
+	int   jp;
+	float eff;
+    
+    //... variables for geometric component ..............................................
 	
-	//... variables for geometric component ..............................................
-	
-	float eff;	
-	psf_type psf;          // structure for psf distribution
-	
-	psf.maxszb = maxszb;
-	
-	if ( wmh.do_psf_3d ) nel = maxszb * maxszb ;
-	else nel = maxszb;
-	
-	psf.val    = new float [ nel ];    // allocation for PSF values
-	psf.ib     = new int   [ nel ];    // allocation for PSF indices
-	psf.jb     = new int   [ nel ];    // allocation for PSF indices
-	
+    psf1d_type psf1d_h, psf1d_v;
+    
+    psf1d_h.maxszb = maxszb;
+    psf1d_h.val    = new float [ maxszb ];
+    psf1d_h.ind    = new int   [ maxszb ];
+    
+    if ( wmh.do_psf_3d ){
+        psf1d_v.maxszb = maxszb;
+        psf1d_v.val    = new float [ maxszb ];
+        psf1d_v.ind    = new int   [ maxszb ];
+    }
+    
+    psf2da_type psf;
+    
+    psf.maxszb_h = maxszb;
+    if ( wmh.do_psf_3d ) psf.maxszb_v = maxszb;
+	else psf.maxszb_v = 1;
+	psf.maxszb_t = psf.maxszb_h * psf.maxszb_v;
+    
+	psf.val    = new float [ psf.maxszb_t ];    // allocation for PSF values
+	psf.ib     = new int   [ psf.maxszb_t ];    // allocation for PSF indices
+	psf.jb     = new int   [ psf.maxszb_t ];    // allocation for PSF indices
 
 	//... variables for attenuation component .............................................
 		
 	attpth_type *attpth = 0; // initialise to avoid compiler warning
 	int sizeattpth = 1; // initialise to avoid compiler warning
 	
-	if ( wmh.do_att ){
+	if ( wmh.do_att || wmh.do_msk_att ){
 
 		if ( !wmh.do_full_att ) sizeattpth = 1 ;
-		else sizeattpth = nel ;
+		else sizeattpth = psf.maxszb_t ;
 	
 		attpth = new attpth_type [ sizeattpth ] ;		
 		attpth[ 0 ].maxlng = vol.Ncol + vol.Nrow + vol.Nsli ; // maximum length of an attenuation path
@@ -165,21 +188,21 @@ void wm_calculation( const int kOS,
 				
 				//... setting PSF to zero	.........................................	
 				
-				for ( int i = 0 ; i < nel ; i++ ){
-					
-					psf.val[ i ] = (float)0.;
-					psf.ib[ i ]  = psf.jb[ i ] = 0;
-				}	
+		//		for ( int i = 0 ; i < nel ; i++ ){
+		//			
+		//			psf.val[ i ] = (float)0.;
+		//			psf.ib[ i ]  = psf.jb[ i ] = 0;
+		//		}	
 				
 				//... correction for PSF ..............................
 				
-				if ( !wmh.do_psf  )	fill_psf_no ( &psf, vox, &ang[ ka ], bin.szdx );
+				if ( !wmh.do_psf  )	fill_psf_no ( &psf, &psf1d_h, vox, &ang[ ka ], bin.szdx );
 				
 				else{
 					
-					if ( wmh.do_psf_3d ) fill_psf_3d ( &psf, vox, gaussdens, bin.szdx, bin.thdx, bin.thcmd2 );
+					if ( wmh.do_psf_3d ) fill_psf_3d ( &psf, &psf1d_h, &psf1d_v, vox, gaussdens, bin.szdx, bin.thdx, bin.thcmd2 );
 					
-					else fill_psf_2d ( &psf, vox, gaussdens, bin.szdx );
+					else fill_psf_2d ( &psf, &psf1d_h, vox, gaussdens, bin.szdx );
 				}
 				
 				//... correction for attenuation .................................................
@@ -211,7 +234,7 @@ void wm_calculation( const int kOS,
 			
 				//=== LOOP4: IMAGE SLICES ================================================================
 				
-				for ( vox.islc = 0 ; vox.islc < vol.Nsli ; vox.islc++ ){
+				for ( vox.islc = vol.first_sl ; vox.islc < vol.last_sl ; vox.islc++ ){
 					
 					vox.iv = vox.ip + vox.islc * vol.Npix ;   // volume index of the voxel (volume as an array)
 					
@@ -223,43 +246,54 @@ void wm_calculation( const int kOS,
 					
 					//... weight matrix values calculation .......................................
 					
-					for ( int i = 0 ; i < psf.Nib ; i++ ){
+					for ( int ie = 0 ; ie < psf.Nib ; ie++ ){
 						
-						if ( psf.ib[ i ] < 0 ) continue;					
-						if ( psf.ib[ i ] >= prj.Nbin ) break;
+						if ( psf.ib[ ie ] < 0 ) continue;
+						if ( psf.ib[ ie ] >= prj.Nbin ) continue;
+				
+                        int ks = ( vox.islc + psf.jb[ ie ] );
 						
-						//... to fill image STIR indices ...........................
+						if ( ks < 0 ) continue;
+						if ( ks >= vol.Nsli ) continue;
+
+						jp = k * prj.Nbp + ks * prj.Nbin + psf.ib[ ie ];
 						
-						if ( wm.do_save_STIR ){
+						if ( wmh.do_full_att ) coeff_att = calc_att( &attpth[ ie ], attmap, vox.islc );
+						
+						weight = psf.val[ ie ] * eff * coeff_att ;
+                        
+                        //... fill image STIR indices ...........................
+						
+                        if ( wm.do_save_STIR ){
 							wm.nx[ vox.iv ] = (short int)( vox.icol - (int) floor( vol.Ncold2 ) );  // centered index for STIR format
 							wm.ny[ vox.iv ] = (short int)( vox.irow - (int) floor( vol.Nrowd2 ) );  // centered index for STIR format
 							wm.nz[ vox.iv ] = (short int)  vox.islc ;                               // non-centered index for STIR format
 						}
-						
-						int ks = (vox.islc + psf.jb[ i ]);
-						
-						if ( ks < vol.first_sl ) continue;						
-						if ( ks >= vol.last_sl ) break;
-						
-						jp = k * prj.Nbp + ks * prj.Nbin + psf.ib[ i ];		
-						
-						if ( wmh.do_full_att ) coeff_att = calc_att( &attpth[ i ], attmap, vox.islc );
-						
-						weight = psf.val[ i ] * eff * coeff_att;
-						
+                        
+                        //... fill wm values .....................
+                        
 						wm.col[ jp ][ wm.ne[ jp ] ] = vox.iv;
 						wm.val[ jp ][ wm.ne[ jp ] ] = weight;
 						wm.ne[ jp ]++;
 						
-						if ( wm.ne[ jp ] >= NITEMS[ jp ] ) {
-							error_weight3d(45, "" );
-						}
+						if ( wm.ne[ jp ] >= NITEMS[ jp ] ) error_weight3d(45, "" );
 					}   
 				}                    // end of LOOP4: image slices
 			}                        // end of LOOP3: projection angle into subset
 		}                            // end of LOOP2: image rows		
 	}                                // end of LOOP1: image cols
-	delete [] psf.val;
+	
+    //... detele allocated memory ..............
+    
+    delete [] psf1d_h.val ;
+	delete [] psf1d_h.ind ;
+    
+    if ( wmh.do_psf_3d ){
+        delete [] psf1d_v.val ;
+        delete [] psf1d_v.ind ;
+	}
+
+    delete [] psf.val;
 	delete [] psf.ib;
 	delete [] psf.jb;
 	
@@ -289,24 +323,33 @@ void wm_size_estimation (int kOS,
 						 const discrf_type * const gaussdens,
 						 int *NITEMS)
 {
-
-	int   jp, nel;
+	int   jp;
 	float eff;
 	
-	//... variables for geometric component ..............................................
-
-	psf_type psf;          // structure for psf distribution
+    //... variables for geometric component ..............................................
 	
-	psf.maxszb = maxszb;
-	
-	if ( wmh.do_psf_3d ) nel = maxszb * maxszb ;
-	else nel = maxszb;
-	
-	psf.val    = new float [ nel ];    // allocation for PSF values
-	psf.ib     = new int   [ nel ];    // allocation for PSF indices
-	psf.jb     = new int   [ nel ];    // allocation for PSF indices
-	
-
+    psf1d_type psf1d_h, psf1d_v;
+    
+    psf1d_h.maxszb = maxszb;
+    psf1d_h.val    = new float [ maxszb ];
+    psf1d_h.ind    = new int   [ maxszb ];
+    
+    if ( wmh.do_psf_3d ){
+        psf1d_v.maxszb = maxszb;
+        psf1d_v.val    = new float [ maxszb ];
+        psf1d_v.ind    = new int   [ maxszb ];
+    }
+    
+    psf2da_type psf;
+    
+    psf.maxszb_h = maxszb;
+    if ( wmh.do_psf_3d ) psf.maxszb_v = maxszb;
+	else psf.maxszb_v = 1;
+	psf.maxszb_t = psf.maxszb_h * psf.maxszb_v;
+    
+	psf.val    = new float [ psf.maxszb_t ];    // allocation for PSF values
+	psf.ib     = new int   [ psf.maxszb_t ];    // allocation for PSF indices
+	psf.jb     = new int   [ psf.maxszb_t ];    // allocation for PSF indices
 	
 	//=== LOOP1: IMAGE ROWS =======================================================================
 	
@@ -350,45 +393,46 @@ void wm_size_estimation (int kOS,
 				
 				//... setting PSF to zero	.........................................	
 				
-				for ( int i = 0 ; i < nel ; i++ ){
-					psf.val[ i ] = (float) 0.;
-					psf.ib[ i ] = psf.jb[ i ] = 0;
-				}
+//				for ( int i = 0 ; i < psf.maxszb ; i++ ){
+//					psf.val[ i ] = (float) 0.;
+//					psf.ib[ i ] = psf.jb[ i ] = 0;
+//				}
 				
 				//... correction for PSF ..............................	
 				
-				if ( !wmh.do_psf  )	fill_psf_no ( &psf, vox, &ang[ ka ], bin.szdx );
+				if ( !wmh.do_psf  )	fill_psf_no ( &psf, &psf1d_h, vox, &ang[ ka ], bin.szdx );
 				
 				else{
 					
-					if ( wmh.do_psf_3d ) fill_psf_3d ( &psf, vox, gaussdens, bin.szdx, bin.thdx, bin.thcmd2 );
+					if ( wmh.do_psf_3d ) fill_psf_3d ( &psf, &psf1d_h, &psf1d_v, vox, gaussdens, bin.szdx, bin.thdx, bin.thcmd2 );
 					
-					else fill_psf_2d ( &psf, vox, gaussdens, bin.szdx );
+					else fill_psf_2d ( &psf, &psf1d_h, vox, gaussdens, bin.szdx );
 				}
-				
-				//... weight matrix values calculation .......................................
-						
-				for ( int i = 0 ; i < psf.Nib ; i++ ){
-							
-					if ( psf.ib[ i ] < 0 ) continue;			
-					if ( psf.ib[ i ] >= prj.Nbin ) break;
-					
-					//=== LOOP4: IMAGE SLICES ================================================================
-					
-					for (vox.islc = 0 ; vox.islc < vol.Nsli ; vox.islc++ ){	
-						
-						int ks = (vox.islc + psf.jb[ i ]);
-						
-						if ( ks < vol.first_sl ) continue;		
-						if ( ks >= vol.last_sl ) break;
 
-						vox.iv = vox.ip + vox.islc * vol.Npix ;   // volume index of the voxel (volume as an array)
+				
+                //=== LOOP4: IMAGE SLICES ================================================================
+				
+				for ( vox.islc = vol.first_sl ; vox.islc < vol.last_sl ; vox.islc++ ){
+					
+					vox.iv = vox.ip + vox.islc * vol.Npix ;   // volume index of the voxel (volume as an array)
+					
+					if ( wmh.do_msk ){
+						if ( !msk_3d[ vox.iv ] ) continue;
+					}
+					
+					//... weight matrix values calculation .......................................
+					
+					for ( int ie = 0 ; ie < psf.Nib ; ie++ ){
 						
-						if ( wmh.do_msk ){
-							if( !msk_3d[ vox.iv ] ) continue;
-						}
+						if ( psf.ib[ ie ] < 0 ) continue;
+						if ( psf.ib[ ie ] >= prj.Nbin ) continue;
+                        
+                        int ks = ( vox.islc + psf.jb[ ie ] );
 						
-						jp = k * prj.Nbp + ks * prj.Nbin + psf.ib[ i ];		
+						if ( ks < 0 ) continue;
+						if ( ks >= vol.Nsli ) continue;
+                        
+						jp = k * prj.Nbp + ks * prj.Nbin + psf.ib[ ie ];
 						
 						NITEMS[ jp ]++;						
 					}
@@ -397,7 +441,17 @@ void wm_size_estimation (int kOS,
 		}                            // end of LOOP2: image rows		
 	}                                // end of LOOP1: image cols
 
-	delete [] psf.val;
+    //... detele allocated memory ..............
+    
+    delete [] psf1d_h.val ;
+	delete [] psf1d_h.ind ;
+    
+    if ( wmh.do_psf_3d ){
+        delete [] psf1d_v.val ;
+        delete [] psf1d_v.ind ;
+	}
+    
+    delete [] psf.val;
 	delete [] psf.ib;
 	delete [] psf.jb;
 }	
@@ -512,122 +566,130 @@ void voxel_projection ( voxel_type *vox, float * eff, float lngcmd2)
 //=== fill_psf_no ==========================================================
 //==========================================================================
 
-void fill_psf_no( psf_type *psf, const voxel_type& vox, angle_type const *const ang , float szdx )
+void fill_psf_no( psf2da_type *psf, psf1d_type * psf1d_h, const voxel_type& vox, angle_type const *const ang , float szdx )
 {
-	psf->sgmcm   = vox.szcm;
+	psf1d_h->sgmcm   = vox.szcm;
 
 	if ( wmh.COL.do_fb){
-		if ( fabs( vox.x1 ) > EPSILON ) psf->sgmcm  *= vox.xdc / vox.x1;   // fb expanded projection of the voxel
+		if ( fabs( vox.x1 ) > EPSILON ) psf1d_h->sgmcm  *= vox.xdc / vox.x1;   // fb expanded projection of the voxel
 	}
 	
-	psf->di		 = min( (int) floor( szdx / psf->sgmcm ), ang->vxprj.lng -1 ) ; 
-	psf->lngcm	 = ( fabs ( ang->sin ) + fabs( ang->cos ) ) * psf->sgmcm ; 
+	psf1d_h->di	 = min( (int) floor( szdx / psf1d_h->sgmcm ), ang->vxprj.lng -1 ) ;
+	psf1d_h->lngcm	 = ( fabs ( ang->sin ) + fabs( ang->cos ) ) * psf1d_h->sgmcm ;
 	
-	psf->lngcmd2 = psf->lngcm / (float)2.;
-	psf->efres   = ang->vxprj.res * psf->sgmcm;  // to resize discretization resolution once applied sgmcm
+	psf1d_h->lngcmd2 = psf1d_h->lngcm / (float)2.;
+	psf1d_h->efres   = ang->vxprj.res * psf1d_h->sgmcm;  // to resize discretization resolution once applied sgmcm
 	
-	calc_psf_bin( vox.xd0, wmh.prj.szcm, &ang->vxprj, psf );	
-								   
+	calc_psf_bin( vox.xd0, wmh.prj.szcm, &ang->vxprj, psf1d_h );
+    
+    for ( int ie = 0 ; ie < psf1d_h->Nib ; ie++ ){
+        
+        psf->val [ ie ] = psf1d_h->val[ ie ];
+        psf->ib  [ ie ] = psf1d_h->ind[ ie ];
+        psf->jb  [ ie ] = 0;
+    }
+    psf->Nib = psf1d_h->Nib;
 }
 
 //==========================================================================
 //=== fill_psf_2d ==========================================================
 //==========================================================================
 
-void fill_psf_2d( psf_type *psf, const voxel_type& vox, discrf_type const* const gaussdens, float szdx )
+void fill_psf_2d( psf2da_type *psf, psf1d_type * psf1d_h, const voxel_type& vox, discrf_type const* const gaussdens, float szdx )
 {
+ 
+    psf1d_h->sgmcm   = calc_sigma_h( vox, wmh.COL );
 	
-	psf->sgmcm   = calc_sigma_h( vox, wmh.COL );	
+	psf1d_h->di      = min ( (int) floor( szdx / psf1d_h->sgmcm ), gaussdens->lng -1) ;
+	psf1d_h->lngcmd2 = psf1d_h->sgmcm * wmh.maxsigm ;
+	psf1d_h->lngcm   = psf1d_h->lngcmd2 * (float)2.;
 	
-	psf->di      = min ( (int) floor( szdx / psf->sgmcm ), gaussdens->lng -1) ;
-	psf->lngcmd2 = psf->sgmcm * wmh.maxsigm ;
-	psf->lngcm   = psf->lngcmd2 * (float)2.;
+	psf1d_h->efres   = gaussdens->res * psf1d_h->sgmcm ;
 	
-	psf->efres   = gaussdens->res * psf->sgmcm ;
-	
-	calc_psf_bin( vox.xd0, wmh.prj.szcm, gaussdens, psf );		
+	calc_psf_bin( vox.xd0, wmh.prj.szcm, gaussdens, psf1d_h );
+    
+    for ( int ie = 0 ; ie < psf1d_h->Nib ; ie++ ){
+        
+        psf->val [ ie ] = psf1d_h->val[ ie ];
+        psf->ib  [ ie ] = psf1d_h->ind[ ie ];
+        psf->jb  [ ie ] = 0;
+        
+    }
+    psf->Nib = psf1d_h->Nib;
 }
 
 //==========================================================================
 //=== fill_psf_3d ==========================================================
 //==========================================================================
 
-void fill_psf_3d ( psf_type *psf, const voxel_type& vox, discrf_type const * const gaussdens, float szdx, float thdx, float thcmd2 )
+void fill_psf_3d (psf2da_type *psf,
+                  psf1d_type *psf1d_h,
+                  psf1d_type *psf1d_v,
+                  const voxel_type& vox, discrf_type const * const gaussdens, float szdx, float thdx, float thcmd2 )
 {
-	psf_type psf_h;        // structure with horizontal psf distribution
-	psf_type psf_v;        // structure with vertical psf distribution	
 	
 	//... horizontal component ...........................
-	
-	psf_h.maxszb  = psf->maxszb;
-	psf_h.val     = new float [ psf->maxszb ];  // allocation for PSF values (horizontal component of PSF)
-	psf_h.ib      = new int   [ psf->maxszb ];  // allocation for PSF indices (horizontal component of PSF)
 
-	psf_h.sgmcm   = calc_sigma_h( vox, wmh.COL);
-	psf_h.lngcmd2 = psf_h.sgmcm * wmh.maxsigm ;
-	psf_h.lngcm   = psf_h.lngcmd2 * (float)2.;
-	psf_h.di      = min( (int) floor( szdx / psf_h.sgmcm ), gaussdens->lng - 1 ) ;
-	psf_h.efres   = gaussdens->res * psf_h.sgmcm ;
+	psf1d_h->sgmcm   = calc_sigma_h( vox, wmh.COL);
+	psf1d_h->lngcmd2 = psf1d_h->sgmcm * wmh.maxsigm ;
+	psf1d_h->lngcm   = psf1d_h->lngcmd2 * (float)2.;
+	psf1d_h->di      = min( (int) floor( szdx / psf1d_h->sgmcm ), gaussdens->lng - 1 ) ;
+	psf1d_h->efres   = gaussdens->res * psf1d_h->sgmcm ;
 	
 	//... setting PSF to zero	.........................................	
 	
-	for ( int i = 0 ; i < psf->maxszb ; i++ ){
-		psf_h.val[ i ] = (float)0.;
-		psf_h.ib[ i ]  = 0;
-	}
+//	for ( int i = 0 ; i < psf1d_h->maxszb ; i++ ){
+//		psf1d_h->val[ i ] = (float)0.;
+//		psf1d_h->ind[ i ] = 0;
+//	}
 	
 	//... calculation of the horizontal component of psf ...................
 	
-	calc_psf_bin( vox.xd0, wmh.prj.szcm, gaussdens, &psf_h );	
+	calc_psf_bin( vox.xd0, wmh.prj.szcm, gaussdens, psf1d_h );
 
 	//... vertical component ..............................
 	
-	psf_v.maxszb  = psf->maxszb;
-	psf_v.val     = new float[ psf->maxszb ];   // allocation for PSF values (vertical component of PSF)
-	psf_v.ib      = new int  [ psf->maxszb ];   // allocation for PSF indices (vertical component of PSF)
-	
-	psf_v.sgmcm   = calc_sigma_v( vox, wmh.COL);
-	psf_v.lngcmd2 = psf_v.sgmcm * wmh.maxsigm;
-	psf_v.lngcm   = psf_v.lngcmd2 * (float)2.;
-	psf_v.di      = min( (int) floor( thdx / psf_v.sgmcm ), gaussdens->lng - 1 ) ;
-	psf_v.efres   = gaussdens->res * psf_v.sgmcm ;
+	psf1d_v->sgmcm   = calc_sigma_v( vox, wmh.COL);
+	psf1d_v->lngcmd2 = psf1d_v->sgmcm * wmh.maxsigm;
+	psf1d_v->lngcm   = psf1d_v->lngcmd2 * (float)2.;
+	psf1d_v->di      = min( (int) floor( thdx / psf1d_v->sgmcm ), gaussdens->lng - 1 ) ;
+	psf1d_v->efres   = gaussdens->res * psf1d_v->sgmcm ;
 	
 	//... setting PSF to zero	.........................................	
 	
-	for ( int i = 0 ; i < psf->maxszb ; i++ ){
-		psf_v.val[ i ] = (float)0.;
-		psf_v.ib[ i ]  = 0;
-	}
+//	for ( int i = 0 ; i < psf1d_v->maxszb ; i++ ){
+//		psf1d_v->val[ i ] = (float)0.;
+//		psf1d_v->ind[ i ] = 0;
+//	}
 	
 	//... calculation of the vertical component of psf ....................
 	
-	calc_psf_bin( thcmd2, wmh.prj.thcm, gaussdens, &psf_v );	
+	calc_psf_bin( thcmd2, wmh.prj.thcm, gaussdens, psf1d_v );
 	
-	//... mixing and setting PSF area to 1 (to correct for tail truncation of Gaussian function) .....
+    //... mixing and setting PSF area to 1 (to correct for tail truncation of Gaussian function) .....
 	
 	float w;
 	float area = 0;
 	int ip = 0;
-	float Nib_hp2 = (float) (psf_h.Nib * psf_h.Nib / 4);
-	float Nib_vp2 = (float) (psf_v.Nib * psf_v.Nib / 4);
+	float Nib_hp2 = (float) ( psf1d_h->Nib * psf1d_h->Nib )/ (float)4. ;
+	float Nib_vp2 = (float) ( psf1d_v->Nib * psf1d_v->Nib )/ (float)4. ;
 	
-	
-	for ( int i = 0 ; i < psf_h.Nib ; i++ ){
+	for ( int i = 0 ; i < psf1d_h->Nib ; i++ ){
 		
-		float b = ( (float) psf_h.ib[ 0 ] + (float)psf_h.ib[ psf_h.Nib -1 ] )/ (float)2. ;
-		float a = ( (float)psf_h.ib[ i ] - b ) * ( (float)psf_h.ib[ i ] - b ) / Nib_hp2;
+		float b = ( (float) psf1d_h->ind [ 0 ] + (float) psf1d_h->ind [ psf1d_h->Nib - 1 ] ) / (float)2. ;
+		float a = ( (float) psf1d_h->ind [ i ] - b ) * ( (float) psf1d_h->ind [ i ] - b ) / Nib_hp2 ;
 		
-		for ( int j = 0 ; j < psf_v.Nib ; j++ ){
+		for ( int j = 0 ; j < psf1d_v->Nib ; j++ ){
 			
-			if ( ( a + (float)(psf_v.ib [ j ] * psf_v.ib [ j ]) / Nib_vp2 ) > (float)1. ) continue;
+			if ( ( a + (float)( psf1d_v->ind [ j ] * psf1d_v->ind [ j ] ) / Nib_vp2 ) > (float)1. ) continue;
 				
-			w = psf_h.val[ i ] * psf_v.val[ j ];
+			w = psf1d_h->val[ i ] * psf1d_v->val[ j ];
 			
 			if ( w < wmh.min_w ) continue;
 			
 			psf->val[ ip ] = w;
-			psf->ib [ ip ] = psf_h.ib [ i ];
-			psf->jb [ ip ] = psf_v.ib [ j ];
+			psf->ib [ ip ] = psf1d_h->ind [ i ];
+			psf->jb [ ip ] = psf1d_v->ind [ j ];
 			ip++;
 			
 			area += w;
@@ -637,12 +699,6 @@ void fill_psf_3d ( psf_type *psf, const voxel_type& vox, discrf_type const * con
 	
 	for( int i = 0 ; i < ip ; i++ ) psf->val[ i ] /= area ; 
 	
-	//... to delete allocated memory .................
-	
-	delete [] psf_h.val ;
-	delete [] psf_h.ib ;
-	delete [] psf_v.val ;
-	delete [] psf_v.ib ;
 }
 
 //==========================================================================
@@ -651,8 +707,8 @@ void fill_psf_3d ( psf_type *psf, const voxel_type& vox, discrf_type const * con
 
 void calc_psf_bin (float center_psf,
 				   float binszcm,
-				   discrf_type const* const vxprj,
-				   psf_type *psf)
+				   discrf_type const * const vxprj,
+				   psf1d_type *psf)
 {
 	float weight, preval;
 
@@ -673,7 +729,7 @@ void calc_psf_bin (float center_psf,
 	
 	if ( weight >= wmh.min_w ){
 		psf->val[ ip ] = weight;	
-		psf->ib[ ip ]  = jm; 
+		psf->ind[ ip ] = jm;
 		area += weight;
 		ip++;
 	}
@@ -690,7 +746,7 @@ void calc_psf_bin (float center_psf,
 		
 		if ( weight >= wmh.min_w){
 			psf->val[ ip ] = weight;
-			psf->ib[ ip ]  = jm;
+			psf->ind[ ip ] = jm;
 			area += weight;
 			ip++;
 		}		
@@ -703,7 +759,7 @@ void calc_psf_bin (float center_psf,
 	
 	if ( weight >= wmh.min_w){
 		psf->val[ ip ] = weight;
-		psf->ib[ ip ]  = jm;
+		psf->ind[ ip ] = jm;
 		area += weight;
 		ip++;
 	}	
@@ -728,10 +784,10 @@ void calc_att_path(const bin_type& bin, const voxel_type& vox, const volume_type
 	
 	//... to initializate attpth to zero..............................
 	
-	for (int i = 0 ; i < attpth->maxlng	; i++ ){
-		attpth->dl [ i ] = (float) 0.;
-		attpth->iv [ i ] = 0;
-	}
+//	for (int i = 0 ; i < attpth->maxlng	; i++ ){
+//		attpth->dl [ i ] = (float) 0.;
+//		attpth->iv [ i ] = 0;
+//	}
 	
 	//... vector from voxel to bin and the sign of its components ....
 	

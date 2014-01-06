@@ -1,8 +1,19 @@
 /*
-* Copyright (c) 2013,
-* Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain. All rights reserved.
-* This software is distributed WITHOUT ANY WARRANTY; 
-* without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    Copyright (c) 2013, Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain. 
+    Copyright (c) 2013, University College London
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
 
   \author Carles Falcon
 */
@@ -106,7 +117,6 @@ typedef struct
 {
 	int subset_ind;   // subset index of this matrix (-1: all subsets in a single file)
 	int *index;       // included angles into this subset (index. Multiply by increm to get corresponding angles in degrees)
-	int NpixAngOS;    // number of pixel multiplied by number of angles into subset (for allocation)
 
 	float *Rrad;      // Rotation radius (one value for each projection angle)
 	float min_w;      // minimum weight to be taken into account
@@ -118,7 +128,7 @@ typedef struct
 	bool do_psf_3d;   // true: 3d correction for PSF      || false: 2d correction for PSF
 	bool predef_col;  // true: predefined collimator      || false: user defined PSF parametres  
 	bool do_att;      // true: to correct for attenuation || false: do not correct for attenuation
-	bool do_full_att; // true: diff att for each PSF bin  || false: the whole PSF has the same att. factor (central line). For speeding calculation.
+	bool do_full_att; // true: diff att for each PSF bin  || false: the whole PSF has the same att. factor (central line)
 	bool do_msk;      // true: weights just inside msk    || false: weights for the whole FOV
 	bool do_msk_slc;  // true: weights for several slices || false: weights for all slices
 	bool do_msk_cyl;  // true: to use cylinder as a mask  || false: not to use cylinder as a mask
@@ -197,20 +207,33 @@ typedef struct
 typedef struct
 {
 	int maxszb;		// maximum size in bins (for allocation purposes)
-
+    
 	int di;         // discretization interval (to reduce spatial resolution to bin resolution). (int: #points)
-	int *ib;        // projection indexs for the bins of the PSF (horizontal)
-	int *jb;        // projection indexs for the bins of the PSF (vertical)
+	int *ind;        // projection indexs for the bins of the PSF (horizontal)
  	int Nib;        // actual number of bins forming the PSF (length of PSF in bins)
-	
+ 	
 	float sgmcm;    // sigma of the PSF in cm
 	float lngcm;    // length of PSF (in cm)
 	float lngcmd2;  // half of the length of PSF (in cm)
 	float *val;     // array of values
 	float efres;    // effective resolution (psfres rescaled to real psf length)
 	
+} psf1d_type;
+
+//! structure for distribution function information
+typedef struct
+{
+	int maxszb_h;   // maximum size in bins horizontal (for allocation purposes)
+    int maxszb_v;   // maximum size in bins vertical (for allocation purposes)
+    int maxszb_t;   // maximum size in bins total (for allocation purposes)
 	
-} psf_type;
+    int *ib;        // projection indexs for the bins of the PSF (horizontal)
+	int *jb;        // projection indexs for the bins of the PSF (vertical)
+ 	int Nib;        // actual number of bins forming the PSF (length of PSF in bins)
+	
+	float *val;     // array of values
+	
+} psf2da_type;
 
 //! structure to store angles values, indices and ratios
 typedef struct   
