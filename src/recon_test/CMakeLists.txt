@@ -1,4 +1,5 @@
 # Copyright 2011, Kris Thielemans
+# Copyright (C) 2013-2014, University College London
 # This file is part of STIR.
 #
 # This file is free software; you can redistribute it and/or modify
@@ -23,7 +24,6 @@ set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_DataSymmetriesForBins_PET_CartesianGrid
-        test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData
 )
 
 
@@ -34,6 +34,8 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
 
 include(../stir_test_exe_targets.cmake)
 
+# a test that uses MPI
+create_stir_mpi_test(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
 
 # we currently need fwdtest for the recon_test_pack, and it (and bcktest)
 # could be useful on their own, so we'll add them to the installation targets
