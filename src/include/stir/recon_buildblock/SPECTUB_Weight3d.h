@@ -1,8 +1,19 @@
  /*
-* Copyright (c) 2013,
-* Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain. All rights reserved.
-* This software is distributed WITHOUT ANY WARRANTY; 
-* without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    Copyright (c) 2013, Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain. 
+    Copyright (c) 2013, University College London
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
 
   \author Carles Falcon
 
@@ -72,21 +83,24 @@ void calc_vxprj ( angle_type *ang );
 
 void voxel_projection ( voxel_type *vox, float * eff, float lngcmd2 );
 
-void fill_psf_no( psf_type *psf, const voxel_type& vox, const angle_type * const ang, float szdx );
+void fill_psf_no( psf2da_type *psf, psf1d_type *psf1d_h, const voxel_type& vox, const angle_type * const ang, float szdx );
 
-void fill_psf_2d( psf_type *psf, const voxel_type& vox, discrf_type const*const gaussdens, float szdx );
+void fill_psf_2d( psf2da_type *psf, psf1d_type *psf1d_h, const voxel_type& vox, discrf_type const*const gaussdens, float szdx );
 
-void fill_psf_3d( psf_type *psf, const voxel_type& vox, discrf_type const * const gaussdens, float szdx, float thdx, float thcmd2 );
+void fill_psf_3d(psf2da_type *psf,
+                 psf1d_type *psf1d_h,
+                 psf1d_type *psf1d_v,
+                 const voxel_type& vox, discrf_type const * const gaussdens, float szdx, float thdx, float thcmd2 );
 
-void calc_psf_bin ( float center_psf, float binszcm, discrf_type const * const vxprj, psf_type *psf );
+void calc_psf_bin ( float center_psf, float binszcm, discrf_type const * const vxprj, psf1d_type *psf );
 
 
 //... attenuation...................................................
 
 // not used
-//void size_attpth_simple( psf_type *psf, voxel_type vox, volume_type vol, float *att, angle_type *ang );
+//void size_attpth_simple( psf2da_type *psf, voxel_type vox, volume_type vol, float *att, angle_type *ang );
 
-//void size_attpth_full( psf_type *psf, voxel_type vox, volume_type vol, float *att, angle_type *ang );
+//void size_attpth_full( psf2da_type *psf, voxel_type vox, volume_type vol, float *att, angle_type *ang );
 
 void calc_att_path ( const bin_type& bin, const voxel_type& vox, const volume_type& vol, attpth_type *attpth );
 

@@ -1,8 +1,19 @@
 /*
-* Copyright (c) 2013,
-* Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain. All rights reserved.
-* This software is distributed WITHOUT ANY WARRANTY; 
-* without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    Copyright (c) 2013, Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain. 
+    Copyright (c) 2013, University College London
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
 
   \author Carles Falcon
 */
@@ -70,9 +81,8 @@ void write_wm_FC()
 	//... number of non-zero elements in the weight matrix .......
 	
 	int ne = 0;
-	for ( int j=0 ; j < wm.NbOS ; j++ ){
-		ne += wm.ne[j];
-    }
+	for ( int j=0 ; j < wm.NbOS ; j++ )	ne += wm.ne[j];
+
 	fwrite ( &ne, sizeof(int), 1, fid);         // to write number of non-zeros element in the weight matrix
 	
 	//... to write the array of weights (along rows) ..............
@@ -90,6 +100,7 @@ void write_wm_FC()
 			fwrite ( &wm.col[ i ][ j ] ,sizeof(int) ,1 , fid);
 		}
 	}
+
 	//... to write the indexs of the array of weights where a change of row happens .........
 	
 	for ( int i = 0 ; i < wm.NbOS ; i++ ){
@@ -117,7 +128,7 @@ void write_wm_hdr()
 	
 	//....... image and projections characteristics.........
 
-	stream1 << "Header for the matrix " << wm.fn << endl;
+	stream1 << "Header for the matrix: " << wm.fn << endl;
 	stream1 << "number of columns: " << wmh.vol.Ncol << endl;
 	stream1 << "number of rows: " << wmh.vol.Nrow << endl;
 	stream1 << "number of slices: " << wmh.vol.Nsli << endl;
@@ -149,10 +160,10 @@ void write_wm_hdr()
 	
 	stream1 << "psf correction: " << wmh.do_psf << endl;
 	if ( wmh.do_psf ){
-		if ( wmh.do_psf_3d ) stream1 << "\t mode: 3d " << endl;
-		else stream1 << "\t mode: 2d " << endl;
+		if ( wmh.do_psf_3d ) stream1 << "\tmode: 3d " << endl;
+		else stream1 << "\tmode: 2d " << endl;
 		if ( wmh.predef_col ) stream1 << "\tpredefined collimator number: " << wmh.COL.num << endl;
-		else stream1 << "\tcollimator parameters from: " << wmh.col_fn << endl; 
+		else stream1 << "\tcollimator parameters from: " << wmh.col_fn << endl;
 		
 		if ( wmh.COL.do_fb ) stream1 << "collimator geometry: fanbeam " << endl;
 		else stream1 << "collimator geometry: parallel" << endl;
@@ -164,11 +175,12 @@ void write_wm_hdr()
 	
 	stream1 << "attenuation correction: " << wmh.do_att << endl;
 	if ( wmh.do_att ){
-		if ( wmh.do_full_att ) stream1 << "\t mode: full " << endl;
-		else stream1 << "\t mode: simple " << endl;
+		if ( wmh.do_full_att ) stream1 << "\tmode: full " << endl;
+		else stream1 << "\tmode: simple " << endl;
 	}
-			
-	//......... masking ....................................
+    stream1 << "\tattenuation map: " << wmh.att_fn << endl;
+	
+    //......... masking ....................................
 	
 	stream1 << "masking: " << wmh.do_msk << endl;
 	if ( wmh.do_msk ){

@@ -246,7 +246,7 @@ set_up(
 	prj.NbOS    = prj.Nbt / prj.NOS;          // total number of bins in each subset
 	
 	wmh.prj = prj;
-	wmh.NpixAngOS = vol.Npix * prj.NangOS;
+	// wmh.NpixAngOS = vol.Npix * prj.NangOS;
 	
 	//....rotation radius .................................................	
 	const VectorWithOffset<float> radius_all_views =
@@ -425,7 +425,7 @@ set_up(
 
 	//... to read attenuation map ..................................................
 
-	if ( wmh.do_att ){
+	if ( wmh.do_att || wmh.do_msk_att ){
 		shared_ptr<DiscretisedDensity<3,float> > att_sptr(
 			read_from_file<DiscretisedDensity<3,float> >(wmh.att_fn));
 		if (!density_info_ptr->has_same_characteristics(*att_sptr))
@@ -456,6 +456,8 @@ set_up(
                   error("Currently the mask image and emission image must have the same dimension, orientation and voxel size");
                 float * mask_from_file = new float [ vol.Nvox ];
                 std::copy(mask_sptr->begin_all(), mask_sptr->end_all(),mask_from_file);
+                // call UB generate_msk pretending that this mask is an attenuation image
+                // we do this to avoid using its own read_msk_file
                 wmh.do_msk_file = false;
 	        wmh.do_msk_att = true;
                 generate_msk( msk_3d, msk_2d, mask_from_file, &vol);
@@ -475,7 +477,7 @@ set_up(
 
 	//... setting PSF maximum size (in bins) and memory allocation for PSF values .......
 
-	maxszb = max_psf_szb( ang );  // maximum PSF size (horizontal component of PSF)
+	this->maxszb = max_psf_szb( ang );  // maximum PSF size (horizontal component of PSF)
 	NITEMS = new int * [prj.NOS];
 	for (int kOS=0; kOS<prj.NOS; ++kOS) {
 	  NITEMS[kOS] = new int [ wm.NbOS ];
