@@ -104,6 +104,7 @@ bool InterfilePDFSHeaderSPECT::post_processing()
 
   storage_order =ProjDataFromStream::Segment_View_AxialPos_TangPos;
   num_axial_poss= matrix_size[1][0];
+  const double z_spacing_in_cm = pixel_sizes[1]/10.;
 
   //Fill the radius depending on the type of orbit (just two orbits are supported)
   // will be in mm (SPECT Interfile uses mm)
@@ -148,19 +149,19 @@ bool InterfilePDFSHeaderSPECT::post_processing()
   // Initialize the scanner values (most are not used in SPECT reconstruction)
 
   const int num_rings = sorted_num_rings_per_segment[0];
-  const int num_detectors_per_ring = num_views*2;  
+  const int num_detectors_per_ring = -1;//num_views*2;  
   const double average_depth_of_interaction_in_cm = 0;
-  const double distance_between_rings_in_cm = bin_size_in_cm*2;
+  const double distance_between_rings_in_cm = z_spacing_in_cm*2; // need to do times 2  such that default z-spacing of reconstruction is z_spacing
   double default_bin_size_in_cm = bin_size_in_cm ;
   const double view_offset_in_degrees = start_angle;
   const int max_num_non_arccorrected_bins = num_bins;
   const int default_num_arccorrected_bins = num_bins;
-  const int num_axial_blocks_per_bucket = 1;
-  const int num_transaxial_blocks_per_bucket = 1;
-  const int num_axial_crystals_per_block = 1;
-  const int num_transaxial_crystals_per_block = 1;
-  const int num_axial_crystals_per_singles_unit = 1;
-  const int num_transaxial_crystals_per_singles_unit = 1;
+  const int num_axial_blocks_per_bucket = -1;
+  const int num_transaxial_blocks_per_bucket = -1;
+  const int num_axial_crystals_per_block = -1;
+  const int num_transaxial_crystals_per_block = -1;
+  const int num_axial_crystals_per_singles_unit = -1;
+  const int num_transaxial_crystals_per_singles_unit = -1;
   const int num_detector_layers = 1;
 	
   shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(get_exam_info_ptr()->originating_system));
@@ -183,7 +184,7 @@ bool InterfilePDFSHeaderSPECT::post_processing()
                                                         num_axial_crystals_per_singles_unit,
                                                         num_transaxial_crystals_per_singles_unit,
                                                         num_detector_layers));
-
+#if 0
   if (default_bin_size_in_cm <= 0)
     default_bin_size_in_cm =
       scanner_ptr_from_file->get_default_bin_size()/10;
@@ -192,7 +193,7 @@ bool InterfilePDFSHeaderSPECT::post_processing()
     warning("Interfile warning: unexpected bin size in cm\n",
             bin_size_in_cm,
             scanner_ptr_from_file->get_default_bin_size()/10);
-
+#endif
   ProjDataInfoCylindricalArcCorr* my_data_info_ptr = 
     new ProjDataInfoCylindricalArcCorr (
                                         scanner_ptr_from_file,
