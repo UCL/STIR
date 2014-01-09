@@ -1,7 +1,28 @@
 #! /bin/sh
-# call OSMAPOSL for our simulated data
-if [ $# -lt 5 ]; then
-  echo "Usage: `basename $0` output_prefix prompts reconProg OSMAPOSLparfile multfactors additive_sinogram "
+
+# A simple script to run OSMAPOSL or OSSPS with "corrections" as input.
+# This script is part of the PET simulation example and assumes that the reconstruction .par file 
+# uses INPUT, OUTPUT, MULTFACTORS and ADDSINO variables.
+
+#  Copyright (C) 2013-2014 University College London
+#  This file is part of STIR.
+#
+#  This file is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+#  This file is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  See STIR/LICENSE.txt for details
+#      
+#  Author Kris Thielemans
+
+if [ $# -ne 5 ]; then
+  echo "Usage: `basename $0` output_prefix prompts reconProg reconParfile multfactors additive_sinogram "
   exit 1
 fi
 

@@ -1,0 +1,79 @@
+#  Copyright (C) 2014 University College London
+#  This file is part of STIR.
+#
+#  This file is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+#  This file is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  See STIR/LICENSE.txt for details
+#      
+# Author Kris Thielemans
+
+
+The scripts to run this example simulation use the Bourne shell (a subset of 
+ksh, bash, zsh etc, but different from csh). 
+
+If you want to modify these scripts, you probably will have to read a 
+tutorial on shell scripting. Below are a few pointers to give you a basic 
+understanding of what is in the current scripts.
+
+
+Basically, a shell script is a step-by-step execution of commands, but with 
+some if/for/etc statements thrown in. We use this here to call STIR
+executables, but allow for some basic flexibility. Unfortunately, this 
+flexibility makes the scripts more complicated. 
+
+* what do $1, $2 etc mean?
+
+These are variables that correspond to the arguments of the script (i.e. the 
+first argument etc)
+
+$0 is the name of the script (and `basename $0` is just 
+   the filename of the script without path info)
+$# is the number of arguments
+$? is the return value of the last command executed. By convention, if 
+   a program works fine, it should "return" 0.
+
+* what does "if [ $? -ne 0 ];" mean?
+
+It checks if the return value of the previous command is not equal to zero, i.e.
+if it failed. If so, we'll write an error message and exit.
+
+* and what about "${output}.log" etc?
+
+somewhere above in the script "output" will have been set to a value. ${output}
+now does a (string) substitution of that value. So, if you would do
+   output=hello
+   echo ${output}.log
+would write 
+   hello.log
+
+Note: shell scripts do not normally treat the value of as a variable as a number
+(unless you do something special, but here we didn't).
+
+* This appears at then end of the "list_ROI_values line:  > /dev/null 2>&1"
+
+This magic incantation says: pipe everything that goes to stderr to stdout and
+then pipe stdout to /dev/null. /dev/null is the garbage can, so overall it means
+"do not show any output".
+
+
+* Before calling create_projdata_template in generate_input_data.sh, I see something like
+cat > my_input.txt <<EOF
+sometext
+EOF
+
+This is a shell-way to enter text into a text file (called my_input.txt). Whatever
+appears between the 2 EOF strings will be written to my_input.txt. In the script
+that file is then passed as input to create_projdata_template. This normally
+expects you to type the answer to the questions, but here we provide the answer
+already.
+
+
+

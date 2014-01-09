@@ -20,7 +20,7 @@ performing analytic simulation of PET data using STIR.
 These files serve as illustration and a starting-point for your own work.
 Do not use just "as-is".
 
-These files should be compatible with STIR 2.4.
+These files should be compatible with STIR 2.4 and 3.0.
 
 Requirements:
 - STIR utilities installed in your PATH 
@@ -49,7 +49,8 @@ scatter by making the input images larger than the scanner axial FOV.
 
 You can modify .par files at will to experiment. However, don't change names of files and variables
 (unless you want to modify the scripts as well). There are a few things hard-wired in the scripts, among them:
-- down-sampling factors in simulate_scatter.sh. 
+- down-sampling factors in simulate_scatter.sh.
+- a single noise simulation (in run_simulation.sh). 
 
 If you change the scanner, adjust
 - both template sinograms (i.e. also for scatter) and scatter.par (for energy windows)
@@ -66,7 +67,8 @@ some stages. If necessary, you could add some options to the /bin/sh first line 
 - Reconstructed images are scaled w.r.t. the input image. The scaling factor is equal to
     reconstructed_x_voxel_size / original_x_voxel_size.
 
-- It will be easy to run multiple noise realisations. Just change the seed when calling poisson_noise
+- It would be relatively easy to run multiple noise realisations. 
+Just change the seed when calling poisson_noise and rename your output files (e.g. using the seed)
 (no need to rerun simulate_data.sh of course).
 
 Enjoy!

@@ -1,7 +1,27 @@
 #! /bin/sh
+# A simple script to run FBP2D with precorrections.
+# This script is part of the PET simulation example and assumes that FBP .par file 
+# uses INPUT and OUTPUT variables.
 
-if [ $# -lt 3 ]; then
-  echo "Usage: `basename $0` output_prefix prompts FBPparfile multfactors additive_sinogram "
+#  Copyright (C) 2013-2014 University College London
+#  This file is part of STIR.
+#
+#  This file is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+#  This file is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Lesser General Public License for more details.
+#
+#  See STIR/LICENSE.txt for details
+#      
+#  Author Kris Thielemans
+
+if [ $# -ne 3 -a $# -ne 5 ]; then
+  echo "Usage: `basename $0` output_prefix prompts FBPparfile [ multfactors additive_sinogram ]"
   exit 1
 fi
 
@@ -11,26 +31,28 @@ parfile=$3
 multfactors=$4
 addsino=$5
 
-
 if [ $# -eq 3 ]; then
   # no corrections
-  INPUT=my_prompts.hs OUTPUT=${output} FBP2D ${parfile}  > my_fbp.log 2>&1
+  INPUT=${prompts} OUTPUT=${output} FBP2D ${parfile}  > ${output}.log 2>&1
+  if [ $? -ne 0 ]; then 
+    echo "ERROR running FBP2D. Check ${output}.log"; exit 1; 
+  fi
 else
   # do precorrections
-  # normalise
-  stir_math -s --mult my_precorrected.hs  ${prompts} ${multfactors}
+  # normalise (and correct for attenuation if its in multfactors)
+  stir_math -s --mult ${output}_precorrected.hs  ${prompts} ${multfactors}
   if [ $? -ne 0 ]; then 
     echo "ERROR running stir_math for norm"; exit 1; 
   fi
   #remove  background
-  stir_subtract -s --accumulate my_precorrected.hs ${addsino}
+  stir_subtract -s --accumulate ${output}_precorrected.hs ${addsino}
   if [ $? -ne 0 ]; then 
     echo "ERROR running stir_math for background subtraction"; exit 1; 
   fi
   # reconstruct
-  INPUT=my_precorrected.hs OUTPUT=${output} FBP2D ${parfile}  > ${output}.log 2>&1
+  INPUT=${output}_precorrected.hs OUTPUT=${output} FBP2D ${parfile}  > ${output}.log 2>&1
   if [ $? -ne 0 ]; then 
-    echo "ERROR running FBP2D"; exit 1; 
+    echo "ERROR running FBP2D. Check ${output}.log"; exit 1; 
   fi
 
 fi
