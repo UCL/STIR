@@ -91,9 +91,11 @@ initialise_keymap()
   parser.add_start_key("Projection Matrix By Bin SPECT UB Parameters");
   ProjMatrixByBin::initialise_keymap();
 
-  parser.add_key("minimum weight", &minimum_weight);
+  // no longer parse this
+  // parser.add_key("minimum weight", &minimum_weight);
   parser.add_key("maximum number of sigmas", &maximum_number_of_sigmas);
-  parser.add_key("spatial resolution PSF", &spatial_resolution_PSF);
+  // no longer parse this
+  // parser.add_key("spatial resolution PSF", &spatial_resolution_PSF);
   parser.add_key("psf type", &psf_type);
   parser.add_key("collimator sigma 0(cm)", &collimator_sigma_0);
   parser.add_key("collimator slope", &collimator_slope);
@@ -114,13 +116,13 @@ ProjMatrixByBinSPECTUB::set_defaults()
   
   this->already_setup= false;
 
-  this->keep_all_views_in_cache=true;
-  minimum_weight=0.001;
+  this->keep_all_views_in_cache=false;
+  minimum_weight=0.0;
   maximum_number_of_sigmas= 2.;
   spatial_resolution_PSF= 0.00001;
-  psf_type= "no";
+  psf_type= "Geometrical";
   collimator_slope= 0.;
-  collimator_slope= 0.;
+  collimator_sigma_0= 0.;
   attenuation_type= "no";
   attenuation_map= "";
   mask_type= "no";

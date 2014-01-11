@@ -57,12 +57,8 @@ class Bin;
 
 \verbatim
   Projection Matrix By Bin SPECT UB Parameters:=				
-    ; elements below this weight will be truncate
-    minimum weight:= 0.001
     ; width of PSF
     maximum number of sigmas:= 2.0
-    ; resolution used to computed Gaussian (leave as-is)
-    spatial resolution PSF:= 0.00001
 
     ;PSF type of correction { 2D // 3D // Geometrical }
     psf type:= 2D
