@@ -11,18 +11,20 @@
 \usepackage{setspace}
 \usepackage{longtable}
 \usepackage{hyperref}
-\def\R2Lurl#1#2{\mbox{\href{#1}{\tt #2}}}                                              
+\def\url#1#2{\mbox{\href{#1}{\tt #2}}}                                              
 \newcommand{\tab}{\hspace{5mm}}
 % attempt to define lower levels than subsubsections
 % This does not work very well as you need to put them in extra {}
 % to avoid the fonts being messed up etc.
 % However, it does work for automatic numbering
-\newtheorem{subsubsubsection}{{}}[subsubsection] 
-\newtheorem{subsubsubsubsection}{{}}[subsubsubsection] 
-
+%\newtheorem{subsubsubsection}{{}}[subsubsection] 
+%\newtheorem{subsubsubsubsection}{{}}[subsubsubsection] 
+\newcommand{\subsubsubsection}[1]{\paragraph{#1}\mbox{} \\}
+\newcommand{\subsubsubsubsection}[1]{\subparagraph{#1} \mbox{} \\}
 % a simple definition for formatting command lines
 \newcommand{\cmdline}[1]{\par \noindent $>$ \texttt{#1}\par}
-
+\setcounter{tocdepth}{4}
+\setcounter{secnumdepth}{4}
 \begin{document}
 
 \begin{spacing}{2}
@@ -88,7 +90,7 @@ The objective of this document is to give practical information
 about the use of the object-oriented library for 3D Reconstruction 
 of PET and SPECT data, called \textit{STIR}. The most recent version of this 
 document (and the library) can be found on \\
-\R2Lurl{http://stir.sourceforge.net}{http://stir.sourceforge.net}.
+\url{http://stir.sourceforge.net}{http://stir.sourceforge.net}.
 
 
 This library was originally developed by the PARAPET 
@@ -123,7 +125,7 @@ Although we attempt to keep all documentation up-to-date, we
 recommend to read documentation in the following order:
 \begin{itemize}
 \item general overview documents, such as this User's Guide
-\item the \R2Lurl{http://sourceforge.net/apps/mediawiki/stir}{STIR Wiki}
+\item the \url{http://sourceforge.net/apps/mediawiki/stir}{STIR Wiki}
 \item 
 online generated documentation (produced by doxygen). This is 
 produced from comments and (partly) code in the source files.
@@ -143,11 +145,11 @@ Installing source files}
 
 Download the source at the \textit{STIR} site: 
 \begin{center}
-\R2Lurl{http://stir.sourceforge.net }{http://stir.sourceforge.net} 
+\url{http://stir.sourceforge.net }{http://stir.sourceforge.net} 
 \end{center}
 \noindent (Section \textbf{Registered Users}).\\
 Download the source files in the zip format. You can then use unzip from \\
-\R2Lurl{http://www.info-zip.org/pub/infozip/}{http://www.info-zip.org/pub/infozip/}. 
+\url{http://www.info-zip.org/pub/infozip/}{http://www.info-zip.org/pub/infozip/}. 
 Extract using
 \cmdline{unzip -a file.zip}
 
@@ -174,7 +176,7 @@ Please check the Wiki for most up-to-date information.
 \subsubsection{BOOST}
 The only required external library is the well-respected \textit{boost} library. If it
 is not installed on your system, you can download it from 
-\R2Lurl{http://www.boost.org}{http://www.boost.org}. Currently \textit{STIR} only
+\url{http://www.boost.org}{http://www.boost.org}. Currently \textit{STIR} only
 uses the include files from \textit{boost} (so you do not need to build
 the boost libraries). However, you will need to tell your compiler
 where to find the \texttt{boost/} directory with all the include files
@@ -186,7 +188,7 @@ C++ Compiler}
 
 In order to compile and run the \textit{STIR} programs, you will need a compiler
 and associated tools. These days, any compiler should work. See the 
-\R2Lurl{http://sourceforge.net/apps/mediawiki/stir}{STIR Wiki} for more
+\url{http://sourceforge.net/apps/mediawiki/stir}{STIR Wiki} for more
 specific information of which compilers we have tried.
 We would love 
 to hear from any attempts of using another compiler. 
@@ -200,7 +202,7 @@ the rest of this document).\footnote{\textit{STIR} versions 1.? came with
 specific files for ECAT6 support without the need for the LLN library. 
 However, due to license restrictions this is now no longer the case.} 
 The library might still be available on  
-\R2Lurl{ftp://ftp.topo.ucl.ac.be/pub/ecat }{ftp://ftp.topo.ucl.ac.be/pub/ecat}.
+\url{ftp://ftp.topo.ucl.ac.be/pub/ecat }{ftp://ftp.topo.ucl.ac.be/pub/ecat}.
 It is also available for GATE users.
 
 You have to download that library and issue 'make --f Makefile.unix' 
@@ -225,7 +227,7 @@ Compilation}
 Using CMake}
 \label{sec:UsingCMake}
 Since version 2.2, \textit{STIR} contains files to build using the platform-independent
-\R2Lurl{"http://www.cmake.org"}{CMake}. This is the recommended way to build STIR as
+\url{"http://www.cmake.org"}{CMake}. This is the recommended way to build STIR as
 it is easier for configuration and finding system dependencies.
 
 Normal build procedure on Linux/Unix would be something like
@@ -264,7 +266,7 @@ data directly to Mathematica, NONE switches off all graphics. See also section \
 See section \ref{sec:RunningWithMPI} for information on how to run programs using MPI.
 \footnote{In fact, any algorithm that uses \texttt{PoissonLogLikelihoodWithLinearModelForMeanAndProjData}.
 This functionality was contributed mainly by Tobias Beisel, Univ. of Paderborn). You need a version of the MPI library 
-to get this to work. We have tested this using \R2Lurl{http://www.open-mpi.org/}{OpenMPI} 1.4.2 and 1.4.5}.\footnote{
+to get this to work. We have tested this using \url{http://www.open-mpi.org/}{OpenMPI} 1.4.2 and 1.4.5}.\footnote{
 {When using MPI, you can set a compiler define \texttt{STIR\_MPI\_TIMINGS=1}} to
 enable additional timings for all send/receive pairs 
 (see \textbf{distributed\_functions.h} in \textbf{include/stir/recon\_buildblock}. 
@@ -293,10 +295,10 @@ You can also (optionally) specify locations of some external libraries for addit
 capabilities of STIR. 
 \begin{itemize}
 \item LLN files for ECAT support via \texttt{LLN\_INCLUDE\_DIRS} and \texttt{LLN\_LIBRARIES}.
-\item AVW\texttrademark{} (a commercial library\footnote{See \R2Lurl{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
+\item AVW\texttrademark{} (a commercial library\footnote{See \url{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
 {www.mayo.edu/bir/Software/AVW/AVW1.html}.}
 via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.
-\item ITK\_DIR, use IO from \R2Lurl{http://www.itk.org}{ITK}, a large open source library. Specifying this
+\item ITK\_DIR, use IO from \url{http://www.itk.org}{ITK}, a large open source library. Specifying this
  enables NRRD, MetaIO and Nifti IO.
 \item GE RDF\texttrademark{} support via \texttt{RDF\_INCLUDE\_DIRS} and \texttt{RDF\_LIBRARIES} (requires the GE proprietary PET Toolbox).
 \end{itemize}
@@ -523,7 +525,7 @@ is useful for multi-processor/core machines.
 \textit{MPICH} would use a similar line using \texttt{mpiexec}.
 
 If you have a queueing system that supports MPI such as 
-\R2Lurl{http://www.clusterresources.com/products/torque-resource-manager.php}{Torque}, it is better to use 
+\url{http://www.clusterresources.com/products/torque-resource-manager.php}{Torque}, it is better to use 
 that system for sorting out available resources etc. For example, to use 2 nodes with 4 processes each,
 the following should work
 
@@ -613,7 +615,7 @@ See the \texttt{conv\_AVW} utility (section \ref{sec:convAVW}).
 
 \subsubsection{Image IO using the ITK library \label{sec:ITKIO}}
 If you compiled \textit{STIR} such that it could find the \textit{ITK} library, you will be read
-all image formats supported by \textit{ITK}, see \R2Lurl{http://www.itk.org/Wiki/ITK/File_Formats}{the ITK Wiki}
+all image formats supported by \textit{ITK}, see \url{http://www.itk.org/Wiki/ITK/File_Formats}{the ITK Wiki}
 for some information. However, many file formats do not specify geometric information (e.g jpg). For those
 that do, \textit{STIR} currently ignores orientation, offset and timing.
 Note that as DICOM files often store only a single slice, DICOM is currently not really supported by \textit{STIR}.
@@ -1322,7 +1324,7 @@ Finally, for phantom studies in which the activity is known to
 lie within the space covered by the voxel grid, the end plane 
 phenomenon does not arise.
 
-{\subsubsubsection{Extra parameters the MPI version}}\\
+{\subsubsubsection{Extra parameters the MPI version}}
 When running the MPI version of \texttt{OSMAPOSL} on distributed memory
 systems, the following extra parameters can be set in the .par files.
 
@@ -1353,10 +1355,8 @@ See [Bei08] for some info on performance.
 { \subsubsubsection{OSSPS}
 }
 \label{sec:OSSPS}
-
   { \subsubsubsubsection{Algorithm description}
   }
-
   OSSPS is a relaxed preconditioned sub-gradient descent algorithm:
 
   \[ \lambda^\mathrm{new} = \lambda + \zeta D \nabla \Psi \]
@@ -2011,7 +2011,7 @@ was at location $\vec r + \vec m_1$ in gate $1$.
 
 A nice illustration can be found (at the time of writing) at\\ 
 { \small
-\R2Lurl{http://www.bioen.utah.edu/wiki/index.php?title=Geometric_Transformation_and_Interpolation}{http://www.bioen.utah.edu/wiki/index.php?title=Geometric\_Transformation\_and\_Interpolation}}.
+\url{http://www.bioen.utah.edu/wiki/index.php?title=Geometric_Transformation_and_Interpolation}{http://www.bioen.utah.edu/wiki/index.php?title=Geometric\_Transformation\_and\_Interpolation}}.
 
 \subsubsection{Motion Correction}
 
@@ -2112,12 +2112,12 @@ Scatter Estimation: Assumed to have it already estimated prior to reconstruction
 \subsubsection{Realistic Datasets and other info}
 An extensive
 database of realistic simulated PET data with motion is available at\\
-\R2Lurl{http://www.isd.kcl.ac.uk/pet-mri/simulated-data/}{http://www.isd.kcl.ac.uk/pet-mri/simulated-data}. 
+\url{http://www.isd.kcl.ac.uk/pet-mri/simulated-data/}{http://www.isd.kcl.ac.uk/pet-mri/simulated-data}. 
 
 Motion fields of these data have been estimated using a local hierarchical affine
 registration algorithm developed by Christian Buerger [Bue11]. This independent
 library is available at
-\R2Lurl{http://www.isd.kcl.ac.uk/internal/hyperimage}{http://www.isd.kcl.ac.uk/internal/hyperimage}. 
+\url{http://www.isd.kcl.ac.uk/internal/hyperimage}{http://www.isd.kcl.ac.uk/internal/hyperimage}. 
 The library is working with GIPL (Guy's Image Processing Lab) File Format and we provide in STIR two utilities two convert
 them to/from Interfile format (conv\_gipl\_to\_interfile and
 conv\_interfile\_to\_gipl). Note that special care need to be taken with respect
@@ -2160,9 +2160,9 @@ step into supporting dynamic data.
 only intended for a quick check how your data looks like. For 
 any serious work, use a decent viewer. For example, \textit{AMIDE} 
 is a free viewer that can read \textit{STIR} image data
-\footnote{\R2Lurl{http://amide.sourceforge.net }{http://amide.sourceforge.net}}. Alternatively, 
+\footnote{\url{http://amide.sourceforge.net }{http://amide.sourceforge.net}}. Alternatively, 
 convert your \textit{STIR} data to another format using (X)medcon
-\footnote{\R2Lurl{http://xmedcon.sourceforge.net }{http://xmedcon.sourceforge.net}}.
+\footnote{\url{http://xmedcon.sourceforge.net }{http://xmedcon.sourceforge.net}}.
 
 { \subsubsubsection{list\_image\_info}
 }
@@ -2450,7 +2450,6 @@ see section \ref{sec:ecat_swap_corners}.
 
 { \subsubsubsection{conv\_to\_ecat6}
 }
-
 This program is used to convert image or projection data into 
 CTI ECAT 6 data (input can be any format currently supported 
 by the library). It normally should be run as follows:
@@ -2494,7 +2493,6 @@ data back to the `raw' convention, see section \ref{sec:ecat_swap_corners}.
 
 { \subsubsubsection{conv\_to\_ecat7}
 }
-
 This program is used to convert image or projection data into 
 CTI ECAT7 data (input can be any format currently supported by 
 the library). \textbf{conv\_to\_ecat7} uses the Louvain la Neuve ecat 
@@ -2529,7 +2527,6 @@ examples are ``ECAT 953'', ``ART'', ``Advance''.
 
 { \subsubsubsection{ifheaders\_for\_ecat7: ECAT7 support for reading}
 }
-
 The current release includes some support for making Interfile 
 headers that point towards and ECAT 7 file. This is possible 
 because ECAT7 normally stores the data with single subheaders 
@@ -2558,17 +2555,14 @@ can pass the ECAT7 file directly to any \textit{STIR} program.
 \textbf{Warning} The calibration factor field in the main header of ECAT7 images
 is currently ignored.
 
-{ \subsubsubsection{ecat\_swap\_corners}
-}
+\subsubsubsection{ecat\_swap\_corners}
 \label{sec:ecat_swap_corners}
-
 { \subsubsubsubsection{Usage}
 }
 \cmdline{ecat\_swap\_corners out\_name in\_name}
 
 { \subsubsubsubsection{What does it do?}
 }
-
 For some historical reason, CTI scanners store 3D sinograms sometimes 
 in a 'corner-swapped' mode. What happens is that some corners 
 of the positive and negative segments are interchanged. (As a 
@@ -2625,7 +2619,6 @@ projection data for you.
 
 { \subsubsubsubsection{Who implemented this and how was it tested?}
 }
-
 The actual corner swapping code was supplied by Christian Michel, 
 based on code by Larry Byars. KT has tested it by performing 
 a very long cylinder scan in 'volume-mode' on the ECAT 966, and 
@@ -2646,10 +2639,9 @@ parameters for usage info.
 
 { \subsubsubsection{conv\_AVW}
 }
-
 \label{sec:convAVW}
 If you have the \textit{AVW}\texttrademark  library
-\footnote{See \R2Lurl{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
+\footnote{See \url{http://www.mayo.edu/bir/Software/AVW/AVW1.html}
 {www.mayo.edu/bir/Software/AVW/AVW1.html}.
 } installed on your system, the build process should have built \texttt{utilities/conv\_AVW},
 see also \ref{sec:UsingCMake}.
@@ -2666,12 +2658,10 @@ It will require access to a run-time license for \textit{AVW}.
 
 { \subsubsubsection{conv\_GATE\_projdata\_to\_interfile}
 }
-
 This program converts GATE raw sinogram output (.ima) into STIR interfile format. 
 
 { \subsubsubsection{conv\_gipl\_to\_interfile and conv\_interfile\_to\_gipl}
 }
-
 These programs convert from/to GIPL format. The latter program has a somewhat wrong name.
 It will actually read an image in any format supported by STIR.
 
@@ -2886,12 +2876,10 @@ The options -p and --preserve-mean are identical.
 \label{sec:motionRelatedUtilities}
 { \subsubsubsection{warp\_image}
 }
-
 This program warps an image to another position using as input given motion vectors 
 
 { \subsubsubsection{warp\_and\_accumulate\_gated\_images}
 }
-
 \cmdline{warp\_and\_accumulate\_gated\_images \textbackslash \\
 \,\,\,\,output\_filename filename\_prefix motion\_vectors\_prefix}
 
@@ -2911,18 +2899,15 @@ scaled according to duration of each position prior to the correction.
 
 { \subsubsubsection{zeropad\_planes}
 }
-
 This program zero pads the start and end planes of an image. 
 
 { \subsubsubsection{shift\_image\_origin}
 }
-
 This utility can be used to simply
 change the origin in the interfile header of an image. 
 
 { \subsubsubsection{shift\_image}
 }
-
 This utility can be used to
 apply translations to an image. The translations are applied with no
 interpolation, but the entire image moves for an given integer number of
@@ -3083,7 +3068,7 @@ be all right. The newly proposed Interfile standard does use
 a scale factor, and the \textit{.hv} file follows this convention. 
 However, currently probably only \textit{STIR} programs know about 
 this convention.\footnote{{\small The utilities distributed by the UCL, 
-Louvain-la-Neuve, Belgium on \R2Lurl{ftp://ftp.topo.ucl.ac.be/pub/ecat }{ftp://ftp.topo.ucl.ac.be/pub/ecat} 
+Louvain-la-Neuve, Belgium on \url{ftp://ftp.topo.ucl.ac.be/pub/ecat }{ftp://ftp.topo.ucl.ac.be/pub/ecat} 
 follow a different convention of reading the scale factor. Currently, \textit{STIR} 
 writes \textit{.hv} files that can be read correctly by those utilities, 
 including the \textit{mediman} image viewer and (x)medcon. Note however 
@@ -3091,7 +3076,6 @@ that \textit{mediman} cannot read float data.}}
 
 { \subsubsubsubsection{Parameters}
 }
-
 This file format currently has no extra parameters, except for 
 the start and stop keywords.
 
@@ -3123,13 +3107,11 @@ End ITK Output File Format Parameters:=
 
 { \subsubsubsection{ECAT6}
 }
-
 If this output file format is used, and a filename without extension 
 is specified for output, \textit{.img} will be added to the filename.
 
 { \subsubsubsubsection{Parameters}
 }
-
 This file format currently has only 1 extra parameter, except 
 for the start and stop keywords.
 
@@ -3150,7 +3132,6 @@ and only signed short data are supported.
 
 { \subsubsubsection{ECAT7}
 }
-
 The file format is only available when the ECAT7 support is enabled 
 during compilation, see section \ref{sec:ECAT67support}.\\
 If this output file format is used, and a filename without extension 
@@ -3158,7 +3139,6 @@ is specified for output, \textit{.img} will be added to the filename.
 
 { \subsubsubsubsection{Parameters}
 }
-
 This file format currently has only 1 extra parameter, except 
 for the start and stop keywords.
 
@@ -3213,7 +3193,6 @@ See also the online documentation for the class \textbf{DataProcessor}.
 
 { \subsubsubsection{Separable Convolution}
 }
-
 This implements spatial non-periodic convolution with a 3D separable 
 filter. The kernel is given in voxel units (\textit{not} in Fourier 
 space).\\
@@ -3272,7 +3251,6 @@ END Separable Convolution Parameters :=
 
 { \subsubsubsection{Separable Cartesian Metz}
 }
-
 This is a separable 3D Metz filter for images discretised on 
 a Cartesian voxel grid. These filters are composed of 3 1D filter 
 kernels, one for the x,y and z directions each. Each 1D filter 
@@ -3351,9 +3329,7 @@ values.
 
 { \subsubsubsubsection{Parameters}
 }
-
 Sample parameters are given below
-
 \begin{verbatim}
 separable cartesian metz filter parameters :=
 x-dir filter fwhm (in mm) := 6
@@ -3393,9 +3369,7 @@ image.
 
 { \subsubsubsubsection{Parameters}
 }
-
 Sample parameters are given below
-
 \begin{verbatim}
 Median Filter Parameters := 
 mask radius x := 1  
@@ -3416,9 +3390,7 @@ This image processor will set all voxels to 0 outside a certain radius.
 TODO this needs updating.
 { \subsubsubsubsection{Parameters}
 }
-
 Sample parameters are given below
-
 \begin{verbatim}
 Truncate To Cylindrical FOV Parameters:=
 ; default use x^2 + y^2 < R^2
@@ -3453,9 +3425,7 @@ first Metz filter an image and then threshold it.
 
 { \subsubsubsubsection{Parameters}
 }
-
 Example parameters are given by
-
 \begin{verbatim}
 Chained Data Processor Parameters :=
 Data Processor to apply first := None
@@ -3501,7 +3471,6 @@ See also the online documentation for the class \textbf{GeneralisedPrior}.
 
 { \subsubsubsubsection{Parameters}
 }
-
 These are the keywords that can be used for all priors.
   \begin{verbatim}
    penalisation factor := <float>
@@ -3512,7 +3481,6 @@ These are the keywords that can be used for all priors.
 
 { \subsubsubsection{FilterRootPrior}
 }
-
 This prior is an extension of the idea first developed for the 
 Median Root Prior [Ale97]. The prior takes any Data Processor 
 (i.e. a filter), and computes the prior 'gradient' as 
@@ -3536,7 +3504,6 @@ as Data Processor.
 
 { \subsubsubsubsection{Parameters}
 }
-
 These are the keywords that can be used in addition to the ones listed in \ref{sec:priors}..
   \begin{verbatim}
   FilterRootPrior Parameters :=
@@ -3555,9 +3522,7 @@ These are the keywords that can be used in addition to the ones listed in \ref{s
 
 { \subsubsubsection{Quadratic}
 }
-
 This implements a quadratic Gibbs prior. The gradient of the prior is computed as follows:
-  
  \[
   g_r = \sum_dr w_{dr} (\lambda_r - \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
   \]
@@ -3636,7 +3601,6 @@ See Section \ref{sec:projmatrix} for possible values for the 'matrix type' keywo
 
 { \subsubsubsection{Separate Projectors }
 }
-
 Forward and back projectors are completely independent of each 
 other. In some programs this is necessary to handle images or 
 projection data of different sizes. \\
@@ -3652,7 +3616,6 @@ Forward projector type:= some value
 Back projector type:= some value
 End Projector Pair Using Separate Projectors Parameters:=
 \end{verbatim}
-
 
 See Section \ref{sec:forwardprojectors} for possible values for the 'forward projector 
 type' keyword and Section \ref{sec:backprojectors} for the 'back projector type' 
@@ -3675,7 +3638,6 @@ be given in the.par file (or will be asked interactively).
 
 { \subsubsubsection{Matrix}
 }
-
 This forward projector uses a projection matrix to compute its 
 result.
 
@@ -3691,7 +3653,6 @@ See Section \ref{sec:projmatrix} for possible values for the 'matrix type' keywo
 
 { \subsubsubsection{Ray Tracing}
 }
-
 This forward projector uses an optimisation of Siddon's algorithm 
 to compute its result. That is, it uses Length of Intersection. 
 As it avoids storing the matrix elements, it is currently faster 
@@ -3722,7 +3683,6 @@ is exactly the same as for the ForwardProjector hierarchy.
 
 { \subsubsubsection{Matrix}
 }
-
 This back projector uses a projection matrix to compute its result.
 
 { \subsubsubsubsection{Parameters}
@@ -3861,9 +3821,7 @@ direction of the segments.
 
 { \subsubsubsubsection{Parameters}
 }
-
 The following parameters can be set (default values are indicated):
-
 \begin{verbatim}
 Ray Tracing Matrix Parameters := 
 ; any parameters appropriate for all matrices
@@ -3945,9 +3903,7 @@ then reading it (see \ref{sec:projmatrixfromfile}).
 
 { \subsubsubsubsection{Parameters}
 }
-
 The following parameters can be set (default values are indicated):
-
 \begin{verbatim}
 Interpolation Matrix Parameters:=
   ; any parameters appropriate for all matrices
@@ -4011,7 +3967,6 @@ using a modified version of the Siddon algorithm.
 
 { \subsubsubsubsection{Parameters}
 }
-
 \begin{description}
 \item[maximum number of sigmas] [0,$\infty$,2{]}
 
@@ -4100,7 +4055,6 @@ using a modified version of the Siddon algorithm.
 
 { \subsubsubsection{From File} }
 \label{sec:projmatrixfromfile}
-
 You can use \texttt{write\_proj\_matrix\_by\_bin} to write a projection matrix to file. You can
 then read the matrix back into memory. This
 could be useful if it takes a long time to generate the matrix, or if you have an external program
@@ -4109,7 +4063,6 @@ to write the matrix (see below for more information on what you will need to do)
 
 { \subsubsubsubsection{Parameters}
 }
-
 The necessary parameters to include in the par file are:
 \begin{verbatim}
 ProjMatrixByBinFromFile Parameters:=
@@ -4145,7 +4098,6 @@ checked at run-time.
 
 { \subsubsubsubsection{Information on how to write your own projection matrix to file}
 }
-
 The projection matrix is stored as a sparse matrix (in the file dennoted by the \texttt{data\_filename}
 parameter). The format is reasonably simple. For each element (``bin'') in the projection data, the 
 Line of Response (LOR) is encoded as follows:
@@ -4201,7 +4153,6 @@ which means that the data won't normalised at all.
 
 { \subsubsubsection{From Projdata}
 }
-
 This can be used when the normalisation factors are stored simply 
 as projection data. Currently, these data have to have exactly 
 the same characteristics (size etc.) as the projection data which 
@@ -4221,7 +4172,6 @@ See also online documentation for class BinNormalisationFromProjData.
 
 { \subsubsubsection{From ECAT7}
 }
-
 This can be used when normalising ECAT7 data. CTI/Siemens stores
 the normalisation data in a files normally ending on
 \texttt{.n} or \texttt{.N}. Dead-time correction is also
@@ -4409,7 +4359,7 @@ being discussed are:
 expanded library of polymorphic classes (e.g. image grids, and 
 ordered subsets)
 \item
-additional scanners and modalities such as SPECT
+additional scanners, also for SPECT
 \item
 additional data formats support, without conversion to Interfile.
 \item
@@ -4420,12 +4370,12 @@ point-spread function reconstruction
 While support for the library is on a voluntary basis, users 
 of the library are encouraged to subscribe to relevant \textit{STIR} 
 mailing lists (see the `Mailing Lists' section of the \textit{STIR} website 
-\R2Lurl{http://stir.sourceforge.net/ }{http://stir.sourceforge.net}) 
+\url{http://stir.sourceforge.net/ }{http://stir.sourceforge.net}) 
 where they can follow developments of the software and obtain 
 helpful information from other users. Questions will ONLY be 
 answered (if at all) when directed to the mailing list.
 
-Commercial support is available from \R2Lurl{http://asc.uk.com}{Algorithms and
+Commercial support is available from \url{http://asc.uk.com}{Algorithms and
 Software Consulting Ltd}.
 
 Below, we list of some of the features that might make it into the next releases. 
@@ -4492,7 +4442,7 @@ A Method for OSEM PET Reconstruction on Parallel Architectures Using STIR.
 [Bue12] Buerger, C., T. Schaeffter, and A. P. King \textbf{(2011)}, Hierarchical adaptive
 local affine registration for fast and robust respiratory motion estimation.
 Medical Image Analysis, vol. 15, pp. 551-564, 
-\R2Lurl{http://dx.doi.org/10.1016/j.media.2011.02.009}{doi 10.1016/j.media.2011.02.009} 
+\url{http://dx.doi.org/10.1016/j.media.2011.02.009}{doi 10.1016/j.media.2011.02.009} 
 
 {[}Bou97] Boudraa \textsc{A E O} \textbf{(1997)} Automated detection of the 
 left ventricular region in magnetic resonance images by Fuzzy 
@@ -4576,7 +4526,7 @@ Sci.}, 36: 964-968.
 Klein, G. J., B. W. Reutter, and R. H. Huesman \textbf{(1996)}, Non-rigid summing of gated PET via optical flow, \textit{1996 IEEE Nuclear
 Science Symposium Conference Record},
 vol. 2, pp. 1339-1342, 
-\R2Lurl{http://dx.doi.org/10.1109/NSSMIC.1996.591692}{doi 10.1109/NSSMIC.1996.591692}
+\url{http://dx.doi.org/10.1109/NSSMIC.1996.591692}{doi 10.1109/NSSMIC.1996.591692}
 
 {[}Lab97] Labbe C, Ashburner J, Koepp M, Spinks T, Richardson M 
 and Cunningham V \textbf{(1997)} Accurate PET quantification using 
@@ -4616,7 +4566,7 @@ Publishing)} pp 77-92.
 [Li06] Li, T., B. Thorndyke, E.
 Schreibmann, \textit{et al} \textbf{(2006)}, Model-based image reconstruction for
 four-dimensional PET. \textit{Med Phys} vol. 2, pp. 1288-1298
-\R2Lurl{http://link.aip.org/link/doi/10.1118/1.2192581}{doi 10.1118/1.2192581}
+\url{http://link.aip.org/link/doi/10.1118/1.2192581}{doi 10.1118/1.2192581}
 
 {[}Man97] Manders Jones H \textbf{(1997)} A Computational Investigation 
 of the solution of large scale Optimization problems. \textit{Ph.D 
@@ -4664,7 +4614,7 @@ monitoring of tumour irradiations with heavy ions. \textit { Phys Med Biol } 48(
 C \textbf{(1997)} Determination of a Set of Existing Algorithms for 
 Comparative Evaluation. \textit{PARAPET documentation for D1.3, Geneva 
 University Hospital and Technion}. \\
-Available at \R2Lurl{http://stir.sourceforge.net }{http://stir.sourceforge.net}. 
+Available at \url{http://stir.sourceforge.net }{http://stir.sourceforge.net}. 
 
 [Pol 11] Polycarpou I, Thielemans K, Manjeshwar R, Aguiar P, Marsden PK,
 Tsoumpas C (2011) Comparative evaluation of scatter correction in 3D PET
@@ -4675,14 +4625,14 @@ using different scatter-level approximations. Ann Nucl Med, 25(9):
 Tsoumpas and P. K. Marsden \textbf{(2012)}, Analysis and
 comparison of two methods for motion correction in PET imaging
 \textit{Med Phys} vol. 39, 3586-3590, 
-\R2Lurl{http://dx.doi.org/10.1118/1.4754586}{doi 10.1118/1.4754586}.
+\url{http://dx.doi.org/10.1118/1.4754586}{doi 10.1118/1.4754586}.
 
 
 [Rah08] Rahmim, A., K.
 Dinelle, \textit{et al} \textbf{(2008)}, Accurate event-driven motion compensation
 in high-resolution PET incorporating scattered and random events. \textit{IEEE Trans
 Med Imaging}, vol. 27, 1018-1033, 
-\R2Lurl{http://dx.doi.org/10.1109/TMI.2008.917248}{doi 10.1109/TMI.2008.917248}.
+\url{http://dx.doi.org/10.1109/TMI.2008.917248}{doi 10.1109/TMI.2008.917248}.
 
 
  {[}Rea98] Reader A J, Visvikis A, Erlandsson K, Ott R J, and Flower 
@@ -4724,7 +4674,7 @@ parametric estimation methods of linear models in dynamic positron emission tomo
 Polycarpou, K. Thielemans, \textit{et al} \textbf{(2013)}, The effect of
 regularisation in motion compensated PET image reconstruction: A realistic
 numerical 4D simulation study. \textit{Phys Med Biol}, vol. 58, 1759-1773, 
-\R2Lurl{http://dx.doi.org/10.1088/0031-9155/58/6/1759}{doi 10.1088/0031-9155/58/6/1759}.
+\url{http://dx.doi.org/10.1088/0031-9155/58/6/1759}{doi 10.1088/0031-9155/58/6/1759}.
 
 
 {[}Uns93] Unser M, Aldroubi A, Eden M \textbf{(1993)}. B-Spline Signal Proccessing: Part II - Efficient Design and Applications.  \textit{IEEE Trans Signal Processing} 41(2): 834-848.
