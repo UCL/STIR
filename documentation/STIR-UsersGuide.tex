@@ -6,7 +6,7 @@
 %\usepackage{layout}
 
 \geometry{
-  margin=2.54cm
+  margin=2.cm
 }
 \usepackage{setspace}
 \usepackage{longtable}
@@ -56,7 +56,9 @@ M. Jacobson \\
 A. Zverovich \\
 {\it \small Brunel University} \\
 T. Beisel \\
-{\it \small Univ. of Paderborn}
+{\it \small Univ. of Paderborn} \\
+C. Falc\'{o}n \\
+{\it \small Univ. of Barcelona}
 
 \begin{center}
 License
@@ -98,7 +100,7 @@ found during the registration process, and the file \textbf{STIR/LICENSE.txt}
 that comes with the distribution. 
 
 See the publications section of the STIR website for information on which reference
-to use for STIR. You will want to read {[}Thi12] and {[}Fus13] for SPECT additions
+to use for STIR. You will want to read {[}Thi12], see {[}Fus13] for SPECT additions
 since STIR 3.0 (for \textit{STIR} 1.x, use [Lab99a], [Lab99b]).
 
 
@@ -175,9 +177,9 @@ is not installed on your system, you can download it from
 \R2Lurl{http://www.boost.org}{http://www.boost.org}. Currently \textit{STIR} only
 uses the include files from \textit{boost} (so you do not need to build
 the boost libraries). However, you will need to tell your compiler
-where to find the \texttt{boost/} directory with all the include files.
-See the Compilation section for some info (use \textit{make} variable 
-\textit{EXTRA\_CFLAGS}).
+where to find the \texttt{boost/} directory with all the include files
+(see section \ref{sec:UsingCMake}).
+
 
 \subsubsection{
 C++ Compiler}
@@ -296,7 +298,7 @@ capabilities of STIR.
 via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.
 \item ITK\_DIR, use IO from \R2Lurl{http://www.itk.org}{ITK}, a large open source library. Specifying this
  enables NRRD, MetaIO and Nifti IO.
-\item GE RDF\texttrademark{} support via \texttt{RDF\_INCLUDE\_DIRS} and \texttt{RDF\_LIBRARIES} (requires the GE proprietary Pet Toolbox).
+\item GE RDF\texttrademark{} support via \texttt{RDF\_INCLUDE\_DIRS} and \texttt{RDF\_LIBRARIES} (requires the GE proprietary PET Toolbox).
 \end{itemize}
 
 Note that you can use e.g. \textit{DISABLE\_LLN\_MATRIX} to \textit{not}
@@ -461,10 +463,12 @@ syntax. It is composed of keywords, corresponding to the names
 of the various parameters, with the values entered next to them. 
 Spaces and tabs are normally irrelevant. Parameters omitted from 
 the parameter file are assigned a default value. 
+Comments are indicated via a semi-colon (;) at the start of the line. Do
+not put a comment before the first keyword in the file.
 
-
-If a parameter file is not passed to the executable, the user 
-is prompted for the required information. For questions that 
+If a parameter file is not passed to the executable, some
+programs will prompt the user 
+for the required information. For questions that 
 ask for a number, the format is as follows:
 
 
@@ -560,7 +564,19 @@ The most comprehensively supported file format in the library
 is a newly proposed version of interfile. More details about 
 this type can be found in the ''Other info'' section of the \textit{STIR} website.
 
-It is currently the only format supported for writing projection 
+\begin{itemize}
+\item For PET projection data, we use the proposed Interfile version. You can
+find sample Interfile headers in the \textbf{recon\_test\_pack} or by using
+\texttt{create\_projdata\_template}.
+
+\item For SPECT projection data, we use Interfile version 3.3 (with a few small changes).
+You can find a sample SPECT Interfile header in the \textbf{samples} directory.
+
+\item For images, we use the proposed Interfile version. Currently, images have to 
+be written as PET data, even for SPECT.
+\end{itemize}
+
+Interfile is currently the only format supported for writing projection 
 data (except by the \textit{conv\_to\_ecat?} utilities\textit{)}. Projection 
 data files are written in pairs:\\
 \textit{projdata\_filename.hs, 
@@ -572,8 +588,7 @@ images written by \textit{STIR} in Interfile.
 \subsubsection{VOLPET sinograms}
 
 The GE VOLPET sinogram format is supported for reading, but for
-the GE Advance only, 
-however data files must have a single data set, maximum ring 
+the GE Advance only and data files must have a single data set, maximum ring 
 difference 11 and contain 281 bins * 256 segments * 336 views. 
 See section \ref{sec:RDFsupport} for enabling support for other scanners and
 data in the GE RDF format.
@@ -601,7 +616,7 @@ If you compiled \textit{STIR} such that it could find the \textit{ITK} library, 
 all image formats supported by \textit{ITK}, see \R2Lurl{http://www.itk.org/Wiki/ITK/File_Formats}{the ITK Wiki}
 for some information. However, many file formats do not specify geometric information (e.g jpg). For those
 that do, \textit{STIR} currently ignores orientation, offset and timing.
-Note that as DICOM files often store only a single slice, DICOM is currently not very well supported by \textit{STIR}.
+Note that as DICOM files often store only a single slice, DICOM is currently not really supported by \textit{STIR}.
 
 \subsubsection{SimSET files}
 There are some preliminary files to make it easier to use SimSET and \textit{STIR} together in the
@@ -619,9 +634,12 @@ this has not been tested very well yet as of \textit{STIR 2.1}.
 Currently supported list mode formats are specific to the ECAT 
 HR+ and ECAT EXACT 3D scanners. There are some unfinished classes
 available on the \textit{STIR} web-site to read \textit{LMF} format files,
-in conjunction with the \textit{LMF} library. However, these are obsolete
-as the OpenGATE project distributes files
+in conjunction with the \textit{LMF} library. However, these might be obsolete
+as the OpenGATE project might be distributing files
 to enable STIR to read \textit{LMF} format files.
+
+See the \textit{STIR} web-site for an independent project that allows reading
+\textit{ROOT} files and convert it to \textit{STIR}-compatible Interfile projection data.
 
 \subsubsection{
 lm\_to\_projdata}
@@ -837,6 +855,8 @@ zero end planes of segment 0 := 1
 ; keywords that specify the projectors to be used
 Projector pair type := Matrix 
  Projector Pair Using Matrix Parameters := 
+   ; Use the PET Ray-tracing matrix.
+   ;  This needs to be changed to SPECT UB when using SPECT data
    Matrix type := Ray Tracing
      Ray Tracing Matrix Parameters:=
    End Ray Tracing Matrix Parameters:= 
@@ -917,6 +937,7 @@ post-filter type := None
 ; multiplying with the update image
 
 inter-update filter subiteration interval := 4
+; would have to be filled in.
 inter-update filter type := None
 
 map model := additive
@@ -2242,6 +2263,11 @@ This will ask questions to the user about the scanner, the data
 size, etc. It will then output new projection data (in Interfile 
 format). However, the binary file will not contain any data.
 
+It currently only supports PET data. For SPECT, you will have to copy the
+sample Interfile header from the \textbf{samples} directory and edit it by hand.
+You will also need to provide a file with the binary data (but this can be empty if
+you are only going to use this as a template).
+
 { \subsubsubsection{extract\_segments}
 }
 
@@ -3027,8 +3053,8 @@ where \textit{image\_filename.hv} is the header text file and \textit{image\_fil
 is the data file. In addition, we currently write a \textit{.ahv} 
 file which uses Interfile 3.3 conventions, with a tweak for the 
 \texttt{slice thickness} keyword to work-around an Analyze\texttrademark{} 
-bug (see the comments for write\_basic\_interfile\_image\_header() 
-in \textbf{STIR}/\textbf{IO/interfile.cxx}). The \textit{.ahv} file is probably 
+bug\footnote{See the comments for write\_basic\_interfile\_image\_header() 
+in \textbf{STIR}/\textbf{IO/interfile.cxx}}. The \textit{.ahv} file is probably 
 also readable by other programs capable of reading Interfile 
 3.3.
 
@@ -3943,11 +3969,11 @@ of the first two parameters.
 { \subsubsubsection{SPECT UB}
 }
 \label{sec:projmatrixSPECTUB}
-This is a flexible implementation specific to SPECT data. See [Fus13] for some information.
-Actual parameters are currently described in a separate document. A sample is given below
+This is a flexible implementation specific to SPECT data. See [Fus13] and [Fus14] for some information.
+A sample is given below
 
 \begin{verbatim}
-ction Matrix By Bin SPECT UB Parameters:=
+Projection Matrix By Bin SPECT UB Parameters:=
 
    ;PSF type of correction { 2D // 3D // Geometrical }
    psf type:= 2D
@@ -3968,11 +3994,111 @@ ction Matrix By Bin SPECT UB Parameters:=
    mask type := Explicit Mask
    mask file := mask.hv
 
+   ; if next variable is set to 0, only a single view is kept in memory
+   keep all views in cache:=1
+
 End Projection Matrix By Bin SPECT UB Parameters:=
 \end{verbatim}
 
-{ \subsubsubsection{From File}
+The weight matrix or system matrix in tomographic reconstruction in SPECT is the matrix that stores the
+percentual contribution of each voxel of the object into each bin in the projections. In the MLE
+framework, weight ij can be though as the probability of one photon being emitted in the voxel i reached
+the bin j. Each weight can be factorized in three components: geometry (PSF), attenuation and scattering.
+This software can calculate the geometrical and the attenuation component. The correction for scattering
+should be done using alternative strategies. The geometrical part is calculated as the integral of the
+PSF (area 1) within the bin. The geometrical part is multiplied by the attenuation factor calculated
+using a modified version of the Siddon algorithm.  
+
+{ \subsubsubsubsection{Parameters}
 }
+
+\begin{description}
+\item[maximum number of sigmas] [0,$\infty$,2{]}
+
+  This is the number of sigmas to consider in PSF correction (float, typically 1.5 to 2.5). PSF are
+  modelled by Gaussian functions whose extension is infinite. To increase unnecessarily the number of
+  sigmas would produce an increase of the weight matrix size that would not result in a better correction
+  for PSF. It does not make sense to take into account very small contributions. A balance between the
+  precision of the correction for PSF and the size of the matrix and the time of the reconstruction
+  process should be done.
+
+%\item[spatial resolution PSF:= 0.00001]
+%	
+% This is the spatial resolution in which to sample PSF distributions. PSF is modelled as a Gaussian or as a trapezoid (linear projection of a square) in case of no correction for PSF.  The calculus of the area within the bin is calculated by means of the Gaussian distribution function (cumulative sum). The parameter indicates the discretization interval for such functions (float, cm, typically 0.001-0.02, depending on the voxel size)
+
+\item[psf type] 
+ 
+  The possible values are \{ 2D, 3D, Geometrical (default) \} to indicate, respectively, a planar
+  reconstruction (no information mixed between planes, planes reconstructed sequentially, 1d -PSF),
+  volumetric (mixed information between planes, volume reconstructed at once, 2d-PSF), or no correction
+  for PSF (in this case PSF is the trapezoid obtained by the projection of the square voxel).
+
+\item[collimator slope, collimator slope sigma 0 (cm)] (default 0) 
+
+  These two 2 parameters define the PSF.
+  They are ignored if \textit{psf type} is \textit{Geometrical}.  These values are mostly dependent on
+  your collimator.  The PSF is modelled as a Gaussian with sigma dependent on the distance from the
+  collimator
+\begin{equation}
+ \sigma(d) = \mathrm{slope} * d + \mathrm{\sigma_0}
+\end{equation} \noindent
+  with $d$ the distance (in cm) of the voxel to the collimator radius.
+
+  In the range of usual distances between the object and the detector, the dependence of the sigma with the
+  distance keeps perfectly linear for parallel collimators. You can adjust this dependence experimentally
+  or use analytical methods to determine it.
+
+\item[attenuation type] 
+
+  The possible values are \{ Simple, Full, No (default) \}. Attenuation is calculated as the negative
+  exponential of the sum of the length of the projection ray in each crossed voxel by its attenuation
+  coefficient. It requires an attenuation map (see next keyword). The simple option for correction for
+  attenuation is to consider that the whole PSF suffers the same attenuation (the attenuation of the
+  central ray). One single factor is applied to weight the contribution from one voxel to all the bins in
+  a detection plane. It is a very good approximation for uniform attenuation maps. The full option means
+  that a different attenuation coefficient is calculated for each voxel-bin contribution (that is obtained
+  along the voxel-bin pathway). It could be useful for very inhomogeneous attenuation maps.
+
+  See [Fus14] for an evaluation and more explanation.
+
+\item[attenuation map]
+
+  A filename giving the attenuation map as the attenuation coefficient at each voxel (in
+  $\mathrm{cm}^{-1}$).  Currently, this file has the same geometric characteristics as the image to be
+  reconstructed (number of columns, row, slices and voxel dimensions, orientation).
+
+\item[mask type]
+
+  This is a parameter to indicate if any mask should be applied to the volume, to reduce the matrix size
+  by removing weights from voxels that, according the prevoius information, do no contribute to the
+  projections. Possible values are:
+ \begin{description}
+ \item[Cylinder] the cylinder inscribed into the volume is used as a mask. The radius of the cylinder is
+   the maximum volume dimension (x-y),
+ \item[Attenuation Map] the attenuation map is used as a mask. No weight is calculated where the
+   attenuation map is zero ( assiming no attenuation=no activity). NaNs values are set to zero.
+ \item[Explicit Mask] the mask is defined in a file. The mask should have the same geometrical
+   prescription than the image. It could be useful for instance to remove the weight of voxels from the
+   table (no activity but attenuation) or to reduce the matrix size when no attenuation for correction is
+   considered. 
+  \item[No] (default). No attenuation correction.
+ \end{description}
+
+\item[mask file]
+
+ A filename with the mask (if the mask type is set to \textit{Explicit Mask}). Any voxels which are 
+ (exactly) zero in the mask will be ignored.
+ Currently, this file has the same geometric characteristics as the image to be
+  reconstructed (number of columns, row, slices and voxel dimensions, orientation).
+
+\item[keep all views in cache] [0,1,0{]}
+
+  If this variable is set to 0 (default), only a single view is kept in memory. This avoids running
+  out-of-memory but means that the matrix has to be recomputed at every iteration.
+
+\end{description}
+
+{ \subsubsubsection{From File} }
 \label{sec:projmatrixfromfile}
 
 You can use \texttt{write\_proj\_matrix\_by\_bin} to write a projection matrix to file. You can
@@ -4428,6 +4554,11 @@ Trans. Med. Imaging}, MI-13: 601-609.
   Integration of advanced 3D SPECT modeling into the open-source STIR framework,
   \textit{Med. Phys. 40}, 092502; http://dx.doi.org/10.1118/1.4816676
 
+[Fus14{]} Berta Marti Fuster, Kjell Erlandsson, Carles Falcon, Charalampos Tsoumpas, Lefteris
+  Livieratos, Domenec Ros, Kris Thielemans, \textbf{(2014)}
+  Evaluation of the novel 3D SPECT Modelling Algorithm in the
+  STIR Reconstruction Framework: Simple vs. full attenuation correction, 
+  \textit{proc. IEEE MIC 2013}, Seoul, Korea.
 
 {[}Jac00] Jacobson M, Levkovitz R, Ben-Tal A, Thielemans K, Spinks 
 T, Belluzzo D, Pagani E, Bettinardi V, Gilardi M C, Zverovich 
