@@ -57,6 +57,7 @@
 
 #include "stir/Viewgram.h"
 #include "stir/recon_array_functions.h"
+#include "stir/is_null_ptr.h"
 #include <iostream>
 #include <algorithm>
 #include <sstream>
@@ -65,7 +66,7 @@
 #endif
 #include "stir/CPUTimer.h"
 #include "stir/info.h"
-#include "boost/format.hpp"
+#include <boost/format.hpp>
 
 #ifndef STIR_NO_NAMESPACES
 using std::ends;
@@ -108,7 +109,8 @@ set_defaults()
   shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingRayTracing());
   shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingInterpolation());
 #else
-  shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
+  shared_ptr<ProjMatrixByBinUsingRayTracing> PM(new  ProjMatrixByBinUsingRayTracing());
+  // PM->set_num_tangential_LORs(5);
   shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(PM)); 
   shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(PM)); 
 #endif
@@ -287,7 +289,8 @@ post_processing()
    
 #endif
 
-  return false;
+   //this->already_setup = false;
+   return false;
 }
 
 template <typename TargetT>
