@@ -34,7 +34,7 @@ PROJECT_NAME           = STIR
 # This could be handy for archiving the generated documentation or
 # if some version control system is used.
 
-PROJECT_NUMBER         = Version_2.4
+PROJECT_NUMBER         = Version_3.0
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer
@@ -1631,6 +1631,7 @@ PREDEFINED             = __GNUC__=4 \
                          DOXYGEN_SKIP \
                          HAVE_LLN_MATRIX \
                          HAVE_AVW \
+                         USE_PMRT \                         
                          "USING_NAMESPACE_STIR=using namespace stir;" \
                          "START_NAMESPACE_STIR=namespace stir {" \
                          "END_NAMESPACE_STIR= }" \

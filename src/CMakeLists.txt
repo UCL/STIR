@@ -104,6 +104,17 @@ else()
   message(STATUS "ITK support disabled.")
 endif()
 
+#### Flags for defaults
+option(STIR_DEFAULT_PROJECTOR_AS_V2
+       "Use same default projectors as STIR 1.x and 2.x (not recommended)" OFF)
+#mark_as_advanced(STIR_DEFAULT_PROJECTOR_AS_VERSION_2)
+
+if (STIR_DEFAULT_PROJECTOR_AS_V2)
+ # nothing
+else()
+  add_definitions(-D USE_PMRT)
+endif()
+
 #### Flags for compatibility between different systems
 
 check_function_exists(getopt HAVE_SYSTEM_GETOPT)
