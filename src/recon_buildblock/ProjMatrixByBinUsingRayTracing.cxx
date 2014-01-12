@@ -1,9 +1,7 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2011, Hammersmith Imanet Ltd
+    Copyright (C) 2013-2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,9 +26,6 @@
   \author Mustapha Sadki
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-  $Revision$
 */
 
 /* History
@@ -62,6 +57,7 @@
 #include "stir/stream.h"
 #include <algorithm>
 #include <math.h>
+#include <boost/format.hpp>
 
 #ifndef STIR_NO_NAMESPACE
 using std::min;
@@ -79,6 +75,7 @@ ProjMatrixByBinUsingRayTracing()
 {
   set_defaults();
 }
+//******************** parsing *************
 
 void 
 ProjMatrixByBinUsingRayTracing::initialise_keymap()
@@ -102,14 +99,15 @@ void
 ProjMatrixByBinUsingRayTracing::set_defaults()
 {
   ProjMatrixByBin::set_defaults();
-  restrict_to_cylindrical_FOV = true;
-  num_tangential_LORs = 1;
-  use_actual_detector_boundaries = false;
-  do_symmetry_90degrees_min_phi = true;
-  do_symmetry_180degrees_min_phi = true;
-  do_symmetry_swap_segment = true;
-  do_symmetry_swap_s = true;
-  do_symmetry_shift_z = true;
+  this->restrict_to_cylindrical_FOV = true;
+  this->num_tangential_LORs = 1;
+  this->use_actual_detector_boundaries = false;
+  this->do_symmetry_90degrees_min_phi = true;
+  this->do_symmetry_180degrees_min_phi = true;
+  this->do_symmetry_swap_segment = true;
+  this->do_symmetry_swap_s = true;
+  this->do_symmetry_shift_z = true;
+  this->already_setup = false;
 }
 
 
@@ -118,14 +116,144 @@ ProjMatrixByBinUsingRayTracing::post_processing()
 {
   if (ProjMatrixByBin::post_processing() == true)
     return true;
-  if (num_tangential_LORs<1)
+  if (this->num_tangential_LORs<1)
   { 
-    warning("ProjMatrixByBinUsingRayTracing: num_tangential_LORs should be at least 1, but is %d\n",
-            num_tangential_LORs);
+    warning(boost::format("ProjMatrixByBinUsingRayTracing: num_tangential_LORs should be at least 1, but is %d")
+            % this->num_tangential_LORs);
     return true;
   }
+  this->already_setup = false;
   return false;
 }
+
+//******************** get/set pairs *************
+
+bool
+ProjMatrixByBinUsingRayTracing::
+get_restrict_to_cylindrical_FOV() const
+{
+  return this->restrict_to_cylindrical_FOV;
+}
+
+void
+ProjMatrixByBinUsingRayTracing::
+set_restrict_to_cylindrical_FOV(bool val)
+{
+  this->already_setup = (this->restrict_to_cylindrical_FOV == val);
+  this->restrict_to_cylindrical_FOV = val;
+}
+
+int
+ProjMatrixByBinUsingRayTracing::
+get_num_tangential_LORs() const
+{
+  return this->num_tangential_LORs;
+}
+
+void
+ProjMatrixByBinUsingRayTracing::
+set_num_tangential_LORs(int val)
+{
+  this->already_setup = (this->num_tangential_LORs == val);
+  this->num_tangential_LORs = val;
+}
+
+bool
+ProjMatrixByBinUsingRayTracing::
+get_use_actual_detector_boundaries() const
+{
+  return this->use_actual_detector_boundaries;
+}
+
+void
+ProjMatrixByBinUsingRayTracing::
+set_use_actual_detector_boundaries(bool val)
+{
+  this->already_setup = (this->use_actual_detector_boundaries == val);
+  this->use_actual_detector_boundaries = val;
+}
+
+bool
+ProjMatrixByBinUsingRayTracing::
+get_do_symmetry_90degrees_min_phi() const
+{
+  return this->do_symmetry_90degrees_min_phi;
+}
+
+void
+ProjMatrixByBinUsingRayTracing::
+set_do_symmetry_90degrees_min_phi(bool val)
+{
+  this->already_setup = (this->do_symmetry_90degrees_min_phi == val);
+  this->do_symmetry_90degrees_min_phi = val;
+}
+
+
+bool
+ProjMatrixByBinUsingRayTracing::
+get_do_symmetry_180degrees_min_phi() const
+{
+  return this->do_symmetry_180degrees_min_phi;
+}
+
+void
+ProjMatrixByBinUsingRayTracing::
+set_do_symmetry_180degrees_min_phi(bool val)
+{
+  this->already_setup = (this->do_symmetry_180degrees_min_phi == val);
+  this->do_symmetry_180degrees_min_phi = val;
+}
+
+
+bool
+ProjMatrixByBinUsingRayTracing::
+get_do_symmetry_swap_segment() const
+{
+  return this->do_symmetry_swap_segment;
+}
+
+void
+ProjMatrixByBinUsingRayTracing::
+set_do_symmetry_swap_segment(bool val)
+{
+  this->already_setup = (this->do_symmetry_swap_segment == val);
+  this->do_symmetry_swap_segment = val;
+}
+
+
+bool
+ProjMatrixByBinUsingRayTracing::
+get_do_symmetry_swap_s() const
+{
+  return this->do_symmetry_swap_s;
+}
+
+void
+ProjMatrixByBinUsingRayTracing::
+set_do_symmetry_swap_s(bool val)
+{
+  this->already_setup = (this->do_symmetry_swap_s == val);
+  this->do_symmetry_swap_s = val;
+}
+
+
+bool
+ProjMatrixByBinUsingRayTracing::
+get_do_symmetry_shift_z() const
+{
+  return this->do_symmetry_shift_z;
+}
+
+void
+ProjMatrixByBinUsingRayTracing::
+set_do_symmetry_shift_z(bool val)
+{
+  this->already_setup = (this->do_symmetry_shift_z == val);
+  this->do_symmetry_shift_z = val;
+}
+
+
+//******************** actual implementation *************
 
 #if 0
 // static helper function
@@ -224,6 +352,10 @@ set_up(
             "(for some integer n).\n");
   }
 #endif
+
+
+  this->already_setup = true;
+  this->clear_cache();
 };
 
 /* this is used when 
@@ -398,6 +530,11 @@ ProjMatrixByBinUsingRayTracing::
 calculate_proj_matrix_elems_for_one_bin(
                                         ProjMatrixElemsForOneBin& lor) const
 {
+  if (!this->already_setup)
+    {
+      error("ProjMatrixByBinUsingRayTracing used before calling setup");
+    }
+
   const Bin bin = lor.get_bin();
   assert(bin.segment_num() >= proj_data_info_ptr->get_min_segment_num());    
   assert(bin.segment_num() <= proj_data_info_ptr->get_max_segment_num());    

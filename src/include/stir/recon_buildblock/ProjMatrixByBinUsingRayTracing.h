@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*!
   \file
   \ingroup projection
@@ -10,13 +7,11 @@
   \author Kris Thielemans
   \author Mustapha Sadki
   \author PARAPET project
-
-  $Date$
-  $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2009, Hammersmith Imanet Ltd
+    Copyright (C) 2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -36,7 +31,6 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h"
-#include "stir/ProjDataInfo.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/shared_ptr.h"
 
@@ -45,6 +39,7 @@
 START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
+class ProjDataInfo;
 
 /*!
   \ingroup projection
@@ -76,11 +71,16 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
   slightly 'inside' the image (i.e. it is about 1 voxel at each side
   smaller than the maximum possible).
 
+  \par Symmetries
+
   For the azimuthal angle phi, the following angles are symmetry related for a square grid:
       {phi, 180-phi, 90-phi, 90+phi}.
   The boolean parameters &quot;do symmetry 90degrees min phi&quot;, &quot;do symmetry 180degrees min phi&quot;
-  allow to select if all 4 angles should be considered as related
-  \see DataSymmetriesForBins_PET_CartesianGrid.
+  allow to select if all 4 angles should be considered as related.
+
+  Enabling more symmetries (from DataSymmetriesForBins_PET_CartesianGrid) means that less memory is
+  needed to store the matrix (when caching), less time to compute it, but using the matrix might be
+  slightly slower. By default, as many symmetries as possible are enabled.
   
   \par Parsing parameters
 
@@ -103,13 +103,19 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
 
   The implementation uses RayTraceVoxelsOnCartesianGrid().
 
+  \warning After calling any of the \c set functions or parsing, you have to call setup(), otherwise
+  using the matrix will result in a call to error().
+
   \warning Only appropriate for VoxelsOnCartesianGrid type of images
   (otherwise error() will be called).
   
   \warning Care should be taken to select the number of rays in tangential direction 
-  such that the sampling is not greater than the x,y voxel sizes.
+  such that the sampling is at least as small as the x,y voxel sizes.
   \warning Current implementation assumes that z voxel size is either
   smaller than or exactly twice the sampling in axial direction of the segments.
+
+  \bug Currently, strange things happen if the z voxel size is not exactly equal to half 
+  the ring spacing of the scanner.
 */
 
 class ProjMatrixByBinUsingRayTracing : 
@@ -134,7 +140,47 @@ public :
     const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     );
 
+  //! \name If a cylindrical FOV or the whole image will be handled
+  //!@{
+  bool get_restrict_to_cylindrical_FOV() const;
+  void set_restrict_to_cylindrical_FOV(bool);
+  //!@}
+  //! \name How many rays will be traced in tangential direction for one bin
+  //!@{
+  int get_num_tangential_LORs() const;
+  void set_num_tangential_LORs(int);
+  //!@}
+
+  //! \name If interleaved sinogram coordinates are used or not.
+  //!@{
+  bool get_use_actual_detector_boundaries() const;
+  void set_use_actual_detector_boundaries(bool);
+  //@}
+
+  //! \name Which symmetries will be used
+  //!@{
+  bool get_do_symmetry_90degrees_min_phi() const;
+  void set_do_symmetry_90degrees_min_phi(bool);
+
+  bool get_do_symmetry_180degrees_min_phi() const;
+  void set_do_symmetry_180degrees_min_phi(bool);
+
+  bool get_do_symmetry_swap_segment() const;
+  void set_do_symmetry_swap_segment(bool);
+
+  bool get_do_symmetry_swap_s() const;
+  void set_do_symmetry_swap_s(bool);
+
+  bool get_do_symmetry_shift_z() const;
+  void set_do_symmetry_shift_z(bool);
+  //!@}
+
 private:
+  //! variable to keep track if setup is called already
+  /*! Using any of the \c set function will set it to false, so you will have to call setup() again.
+   */
+  bool already_setup;
+
   //! variable that determines if a cylindrical FOV or the whole image will be handled
   bool restrict_to_cylindrical_FOV;
   //! variable that determines how many rays will be traced in tangential direction for one bin
