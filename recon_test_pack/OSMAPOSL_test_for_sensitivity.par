@@ -8,6 +8,16 @@ input file := Utahscat600k_ca_seg4.hs
 maximum absolute segment number to process := 4
 zero end planes of segment 0:= 1
 
+projector pair type := Separate Projectors
+ projector pair using separate projectors parameters :=
+ forward projector type := Ray Tracing
+ forward projector using ray tracing parameters :=
+ end forward projector using ray tracing parameters := 
+ back projector type := Interpolation
+ back projector using interpolation parameters :=
+ end back projector using interpolation parameters := 
+end projector pair using separate projectors parameters := 
+
 ;Bin Normalisation type:=None
 ; if the next parameter is disabled, 
 ; it default to an image full of 1s.

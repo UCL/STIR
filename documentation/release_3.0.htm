@@ -7,8 +7,8 @@
   <body>
     <h1>Summary of changes in STIR release 3.0 (dated ??/11/2013)</h1>
 
-<p>This version is backwards compatible with STIR 2.4 for the user, but <strong>not for developers</strong>. Required code changes
-are minor however and detailed below.
+<p>This version is almost backwards compatible with STIR 2.4 for the user (see below), but <strong>not for 
+developers</strong>. Required code changes are minor however and detailed below.
 </p>
 <p>This release is the first to handle SPECT data properly.
 It contains code by Carl&eacute;s Falc&oacute;n (Biomedical Image Group (GIB), Universitat de Barcelona)
@@ -16,16 +16,18 @@ to create the system matrix for SPECT, integrated into STIR by Bert&aacute; Mart
 (Institute for Bioengineering of Catalonia) and Kris Thielemans 
 (University College London, Algorithms and Software Consulting Ltd), together with some
 additions and minor bug fixes by the same authors.
-Additional testing by Charalampos Tsoumpas (KCL).</p>
-<p>This work was the result of a collaboration between University of Barcelona,
-King's College London and University College London, and is reported in<br />
+Additional testing by Charalampos Tsoumpas (KCL), Lefteris Livierators (KCL) and 
+Kjell Erlandsson (UCL). This work was the result of a collaboration between University of Barcelona,
+King's College London and University College London, and is reported in</p>
+  <p>
   Berta Marti Fuster, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Pablo Aguiar, Albert Cot, Domenec Ros and Kris Thielemans,<br />
-  <i>Integration of advanced 3D SPECT modeling into the open-source STIR framework</i>,<br />
+  <i><cite>Integration of advanced 3D SPECT modeling into the open-source STIR framework</cite></i>,<br />
   Med. Phys. 40, 092502 (2013); 
-  <a href="http://dx.doi.org/10.1118/1.4816676">DOI 10.1118/1.4816676</a>.
+  <a href="http://dx.doi.org/10.1118/1.4816676">DOI 10.1118/1.4816676</a>.  
 </p>
-<p>In addition, changes to the IO code (currently enabled for projection data only) mean that
-more information such as modality, patient position and timing is available and kept. Also general code-cleanup (update by Kris Thielemans, UCL).
+<p>In addition, this version contains updates by Kris Thielemans, UCL: changes to the IO code (currently enabled for projection data only) mean that
+more information such as modality, patient position and timing is available and kept; improvements to the MPI code and tests,
+some code-cleanup and improvements to the documentation.
 </p>
 
 
@@ -33,7 +35,31 @@ more information such as modality, patient position and timing is available and 
 <h2> Summary for end users (also to be read by developers)</h2>
 <h3>Important bug fixes</h3>
 <ul>
-<li>fix PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin: it was processing all events up-to end-time as opposed ignoring the first events up-to start-time
+<li>fix PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin: it was processing all events up-to end-time as opposed ignoring 
+the events before start-time.
+</li>
+</ul>
+
+<h3>Changes that break backwards compatibility</h3>
+<ul>
+<li>The default projectors for the iterative reconstructions and <tt>correct_projdata</tt> have changed to
+use the ray tracing projection matrix. This means that the forward and back projector (used for instance for the Poisson
+log-likelihood) are now matched by default. If you did specify the projectors in your .par file, results will be identical 
+to STIR 2.x, but if you did not, you could add the following to the parameters of the log-likelihood
+(if you want to get the same results as with STIR 2.x):
+<pre>
+projector pair type := Separate Projectors
+ projector pair using separate projectors parameters :=
+ forward projector type := Ray Tracing
+ forward projector using ray tracing parameters :=
+ end forward projector using ray tracing parameters := 
+ back projector type := Interpolation
+ back projector using interpolation parameters :=
+ end back projector using interpolation parameters := 
+end projector pair using separate projectors parameters := 
+</pre>
+Alternatively, when building STIR, you could enable set the (advanced) CMake option
+<tt>STIR_DEFAULT_PROJECTOR_AS_V2</tt> to true (not recommended).
 </li>
 </ul>
 
@@ -86,9 +112,6 @@ getting out-of date (no ITK for instance).
 <ul>
 <li>On Windows, using shared libraries fails. We need to sort out dependencies between libraries to fix this.</li>
 <li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
-<li>The recon_test_pack routines fail with the MPI version. A work-around is to prefix the reconstruction executables with <tt>mpirun -np 4</tt> or so.</li>
-<li>The MPI version of OSMAPOSL and OSSPS cannot compute the value of the objective function. Therefore, setting the
-<tt>report objective function values interval</tt> keyword to 1 will cause a crash.</li>
 <li>ECAT6 is no longer supported</li>
 <li>The interpolating back-projector still gives problems in the centre of the images
 on some architectures/compiler/optimisation settings. We recommend to use the ray-tracing
@@ -101,6 +124,12 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 </li>
 </ul>
 
+<h3>Bug fixes</h3>
+<ul>
+<li>The MPI version of OSMAPOSL and OSSPS can now compute the value of the objective function. The corresponding test
+now works.</li>
+<li>The recon_test_pack routines now have an additional option such that they work with the MPI version.</li>
+</ul>
 
 <h3>Minor bug fixes</h3>
 <ul>
@@ -165,7 +194,7 @@ Their constructors have been modified accordingly  (<strong>NOT backwards-compat
 </li>
 <li> Using the above changes, <code>LmToProjData</code> properly writes time frame information to the projection data.</li>
 
-<li>changes to <code>ProjDatainfoCylindrical</code> to allow different radii for different views</li>
+<li>changes to <code>ProjDataInfoCylindrical</code> to allow different radii for different views, useful for SPECT (or an elliptical PET scanner?)</li>
 </ul>
 
 <h3>Other code changes</h3>
