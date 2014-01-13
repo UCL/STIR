@@ -1,10 +1,12 @@
 OSMAPOSLParameters :=
 ; example file for running OSEM with interfiltering
 ; filter specific things are at the end
-; WARNING: At least up to STIR 2.1 this will use the default projectors
+; WARNING: At least up to STIR 2.4 this will use the default projectors
 ; which are unmatched (ray tracing forward projector, interpolating backprojector).
-; This is NOT recommended. See OSMAPOSL_emml_with_projmatrix.par how to specify
-; different projectors.
+; This is NOT recommended. 
+; From STIR 3.0 onwards, a matching projector is used, but it is based on 
+; ray tracing a single line, which leads to some discretisation artefacts.
+; See OSMAPOSL_emml_with_projmatrix.par how to specify a different projection matrix.
 
 objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
@@ -50,12 +52,12 @@ zero end planes of segment 0:= 1
   END Chained Bin Normalisation Parameters:=
 
 ; if next is set to 1, sensitivity will be recomputed
-; and also written to file (if "sensitivity filename" or "subset sensitivity filesnames" is set)
+; and also written to file (if "sensitivity filename" or "subset sensitivity filenames" is set)
 ; if it is zero, the sensitivity will be read from file
  recompute sensitivity := 0
- use subset sensitivities:=1 ; recommended (but default is currently 0)
+ use subset sensitivities:=1 ; recommended
  ; optional filename to store/read the sensitivity image 
- ; (if use subset sensitivity is off)
+ ; (if "use subset sensitivity" is off)
  ;sensitivity filename:=
  ; optional filename to store/read the subsensitivities
  ; use %d where you want the subset-number (a la printf)

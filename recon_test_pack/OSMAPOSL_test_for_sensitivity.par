@@ -22,6 +22,8 @@ end projector pair using separate projectors parameters :=
 ; if the next parameter is disabled, 
 ; it default to an image full of 1s.
 ; this will be wrong however
+; change to STIR 2.x default for compatibility 
+use subset sensitivities:=0
 sensitivity filename:= my_RPTsens_seg4.hv
 recompute sensitivity:=1
 

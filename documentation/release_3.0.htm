@@ -61,6 +61,17 @@ end projector pair using separate projectors parameters :=
 Alternatively, when building STIR, you could enable set the (advanced) CMake option
 <tt>STIR_DEFAULT_PROJECTOR_AS_V2</tt> to true (not recommended).
 </li>
+<li>For the Poisson log-likelihood, the default is now to use subset sensitivities (as opposed 
+to computing them as a fraction of the total sensitivity). This new default is more stable 
+for most algorithms and in particular for OSEM (or OS-OSL) where you see less of a subset-cycle
+when using the correct subset sensitivity.<br /> 
+If you need to reproduce the default of STIR 2.x, you
+can use the following setting
+<pre>
+use subset sensitivities:=0
+</pre>
+inside the parameters of the log likelihood.
+</li>
 </ul>
 
 <h3>New functionality</h3>

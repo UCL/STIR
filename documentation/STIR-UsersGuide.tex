@@ -876,7 +876,7 @@ additive sinogram := 0
  ; Bin Normalisation type:= None
  
  recompute sensitivity := 1
- use subset sensitivities:=1 ; recommended (but default is currently 0)
+ use subset sensitivities:=1 ; recommended 
  ; optional filename to store/read the sensitivity image 
  ; (if use subset sensitivity is off)
  ;sensitivity filename:=
@@ -994,10 +994,11 @@ This keyword is used to set both normalisation factors and attenuation
 correction factors. See section \ref{sec:binnormalisation}.
 
 \item[use subset sensitivities]
-Defaults to 0 but it is recommended to set it to 1.
-By default, it is assumed that all subset sensitivities are equal, and therefore proportional 
+Defaults to 1 (recommended).
+If you set this to 0, it is assumed that all subset sensitivities are equal, and therefore proportional 
 to the total sensitivity. We can then save some memory by internally storing only the total sensitivity. 
-However, if you have non-uniform attenuation, this assumption will generate some artefacts in the image.
+However, in many cases and in particular f you have non-uniform attenuation, 
+this assumption will generate some artefacts in the image.
 
 \item[recompute sensitivity]
 Defaults to 0. If \textit{sensitivity filename} or \textit{subset sensitivity filenames} 

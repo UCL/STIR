@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2003 - 2011-06-29, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-07-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,9 +22,6 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
-
-  $Date$
-  $Revision$
 */
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 #include "stir/DiscretisedDensity.h"
@@ -54,7 +48,7 @@ set_defaults()
   this->sensitivity_filename = "";  
   this->subsensitivity_filenames = "";  
   this->recompute_sensitivity = false;
-  this->use_subset_sensitivities = false;
+  this->use_subset_sensitivities = true;
   this->subsensitivity_sptrs.resize(0);
 }
 

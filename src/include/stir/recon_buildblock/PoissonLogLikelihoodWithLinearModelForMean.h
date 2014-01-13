@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2003 - 2011-01-14, Hammersmith Imanet Ltd
-    Copyright (C) 2012-06-05 - $Date$, Kris Thielemans
+    Copyright (C) 2012, Kris Thielemans
 
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -24,9 +21,6 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
-
-  $Date$
-  $Revision$
 */
 
 #ifndef __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMean_H__
@@ -101,11 +95,12 @@ START_NAMESPACE_STIR
   \f$y=\bar y\f$.
 
   \par Parameters for parsing
-  Defaults are indicate below
+  Defaults are indicated below
   \verbatim
   ; specifies if we keep separate sensitivity images (which is more accurate and is 
-  ; recommended) or if we assume the subsets are exactly balanced (this uses more memory).
-  use_subset_sensitivities := 0
+  ; recommended) or if we assume the subsets are exactly balanced 
+  ; and hence compute the subset-senstivity as sensitivity/num_subsets (this uses less memory).
+  use_subset_sensitivities := 1
   ; for recomputing sensitivity, even if a filename is specified
   recompute sensitivity:= 0
   ; filename for reading the sensitivity, or writing if it is recomputed
@@ -118,7 +113,9 @@ START_NAMESPACE_STIR
   subset sensitivity filenames:=
   \endverbatim
 
-
+  \par Terminology
+  We currently use \c sub_gradient for the gradient of the likelihood of the subset (not 
+  the mathematical subgradient).
 */
 template <typename TargetT>
 class PoissonLogLikelihoodWithLinearModelForMean: 
@@ -173,7 +170,7 @@ public  GeneralisedObjectiveFunction<TargetT>
       to <code>&quot;1&quot;</code>, all data are
       set to \c 1.
 
-      \warning This special handling of the string might be removed later.
+      \deprecated This special handling of the string "1" will be removed later.
 
       Calls set_up_before_sensitivity().
   */
@@ -218,6 +215,7 @@ public  GeneralisedObjectiveFunction<TargetT>
   void set_recompute_sensitivity(const bool);
   void set_subset_sensitivity_sptr(const shared_ptr<TargetT>&, const int subset_num);
 
+  //! See get_use_subset_sensitivities()
   void set_use_subset_sensitivities(const bool);
 
   //! set filename to read (or write) the total sensitivity
