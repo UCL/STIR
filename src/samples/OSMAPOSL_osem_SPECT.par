@@ -1,4 +1,8 @@
 OSMAPOSLParameters :=
+  ; sample .par file to use OSEM on SPECT data. 
+  ; Any of the algorithm parameters illustrated for PET (such as filtering, prior etc)
+  ; will work for SPECT as well, as would OSSPS.
+  ; The only thing different here is the projector.
 
   objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
     
@@ -12,12 +16,8 @@ OSMAPOSLParameters :=
         Matrix type := SPECT UB
 
         Projection Matrix By Bin SPECT UB Parameters:=
-            ; elements below this weight will be truncate
-            minimum weight:= 0.001
             ; width of PSF
             maximum number of sigmas:= 2.0
-            ; resolution used to computed Gaussian (leave as-is)
-            spatial resolution PSF:= 0.00001
 
             ;PSF type of correction { 2D // 3D // Geometrical }
             psf type:= 2D
@@ -46,9 +46,12 @@ OSMAPOSLParameters :=
 
   end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
+  ; best to specifiy an initial image (e.g. filled with 1) for sizes
+  ; or see OSMAPOSL_osem_with_interfiltering.par and FBP2D_SPECT.par for some keywords 
   initial estimate:= init.hv
   output filename prefix := out
 
+  ; needs to be a divisor of the number of views
   number of subsets:= 8
   number of subiterations:= 16
   Save estimates at subiteration intervals:= 16

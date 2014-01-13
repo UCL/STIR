@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 3.0 (dated ??/11/2013)</title>
+    <title>Summary of changes in STIR release 3.0 alpha (dated 13/01/2014)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 3.0 (dated ??/11/2013)</h1>
+    <h1>Summary of changes in STIR release 3.0 alpha (dated 13/01/2014)</h1>
 
 <p>This version is almost backwards compatible with STIR 2.4 for the user (see below), but <strong>not for 
 developers</strong>. Required code changes are minor however and detailed below.
@@ -121,10 +121,29 @@ getting out-of date (no ITK for instance).
 
 <h3>Known problems</h3>
 <ul>
-<li>On Windows, using shared libraries fails. We need to sort out dependencies between libraries to fix this.</li>
+<li>SPECT related
+ <ul>
+ <li> Do NOT use current PET projectors on SPECT Data. You will have to choose the "SPECT UB" projector 
+    in all cases (see the sample .par files).</li>
+ <li>The quantitative scale of reconstructed SPECT images is generally different than for PET reconstructions.
+    It probably also behaves differently than the PET projectors when using different voxel sizes.</li>
+ <li>Images are still written as PET Interfile (but this is ignored when reading).</li>
+ <li>At present, the collimator model varies the width of the PSF linearly with distance. This was
+   experimentally verified with some collimators (for normal distances to the collimator).
+   However, we need to add the possibility to use different models.
+  </li>
+  <li><tt>list_projdata_info</tt> still reports SPECT data as if it's a PET scanner, but you can see
+    all necessary geometric info from it anyway.</li>
+  <li><tt>create_projdata_template</tt> only works for PET scanners. For SPECT, you could take the 
+   sample Interfile header, modify it to your needs (and create an empty file for the binary data pointed to
+   by the Interfile header).
+  </li>
+  </ul>
+</li>
+<li>Building with shared libraries is currently broken on many (all?) systems due to inter-dependencies between libraries.</li>
 <li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
 <li>ECAT6 is no longer supported</li>
-<li>The interpolating back-projector still gives problems in the centre of the images
+<li>The incremental interpolating back-projector still gives problems in the centre of the images
 on some architectures/compiler/optimisation settings. We recommend to use the ray-tracing
 matrix (with additional rays) instead.</li>
 <li>When using <code>GRAPHICS=X</code> (i.e. on Unix/Linux/MacOSX) the window displaying
@@ -135,7 +154,7 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 </li>
 </ul>
 
-<h3>Bug fixes</h3>
+<h3>Major bug fixes</h3>
 <ul>
 <li>The MPI version of OSMAPOSL and OSSPS can now compute the value of the objective function. The corresponding test
 now works.</li>

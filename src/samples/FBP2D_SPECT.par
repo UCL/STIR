@@ -1,0 +1,47 @@
+FBP2DParameters :=
+; Example file to run FBP on SPECT data
+
+input file := input.hs
+
+output filename prefix := fbp_recon
+
+; output image parameters
+; zoom defaults to 1
+zoom := 1
+; image size defaults to whole FOV
+xy output image size (in pixels) := 180
+
+; you NEED to set this to the number of z-position in your data.
+; otherwise, things will currently go wrong
+Z output image size (in pixels):=64
+
+; filter parameters, default to pure ramp
+; choose alpha < 1 for a Hamming window
+alpha parameter for ramp filter := 1
+; cut-off (max 0.5 for no cut-off (i.e. at Nyquist)
+cut-off for ramp filter (in cycles) := 0.5
+
+; you need to use the SPECT UB projection matrix for back projection
+Back Projector type:= matrix
+  Back Projector Using Matrix Parameters :=
+	Matrix type := SPECT UB
+	Projection Matrix By Bin SPECT UB Parameters:=
+	
+                ; has to be Geometrical for FBP
+		psf type:= Geometrical
+
+		;Attenuation correction has to be off for FBP
+		attenuation type := No	
+
+                ; you could use a mask to backproject only to a part of the image
+                ; this will save time and memory
+		;Mask properties { Cylinder // Attenuation Map // Explicit Mask // No}
+		mask type := No
+		mask file := mask.hv
+
+                ; no point in keeping things in memory as FBP runs the projector only once
+                keep all views in cache := 0
+
+	End Projection Matrix By Bin SPECT UB Parameters:=
+  End Back Projector Using Matrix Parameters :=
+end:=
