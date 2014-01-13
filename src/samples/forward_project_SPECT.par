@@ -1,0 +1,28 @@
+Forward Projector parameters:=
+; example par file for specifying the forward projector for e.g. fwdtest
+type:=Matrix
+  Forward Projector Using Matrix Parameters :=
+
+     Matrix type := SPECT UB
+     Projection Matrix By Bin SPECT UB Parameters:=
+        ; same parameters as used in the OSMAPOSL_osem_SPECT.par file
+
+        maximum number of sigmas:= 2.0
+
+        psf type:= 2D
+        ; sigma_at_depth = collimator_slope * depth_in_cm + collimator sigma 0(cm)
+        collimator slope := 0.0163
+        collimator sigma 0(cm) := 0.1466
+
+        ;Attenuation correction { Simple // Full // No }
+        attenuation type := Simple      
+        ;Values in attenuation map in cm-1 (float file)                         
+        attenuation map := attMapRec.hv
+
+        ;Mask properties { Cylinder // Attenuation Map // Explicit Mask // No}
+        mask type := Attenuation Map
+
+     End Projection Matrix By Bin SPECT UB Parameters:=
+
+  End Forward Projector Using Matrix Parameters :=
+end:=
