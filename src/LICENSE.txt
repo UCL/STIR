@@ -1,4 +1,4 @@
-Licensing information for STIR 2.4a
+Licensing information for STIR 3.0alpha
 ----------------------------------
 
 See for more info http://stir.sourceforge.net, section Registration.
@@ -64,7 +64,6 @@ Explicit list of files that carry the PARAPET license
 ./buildblock/VoxelsOnCartesianGrid.cxx
 ./buildblock/warning.cxx
 ./buildblock/zoom.cxx
-./ChangeLog.bak
 ./display/display_array.cxx
 ./display/gen.c
 ./display/gen.h
@@ -248,7 +247,6 @@ Explicit list of files that carry the PARAPET license
 ./recon_buildblock/DataSymmetriesForDensels.cxx
 ./recon_buildblock/distributable.cxx
 ./recon_buildblock/distributableMPICacheEnabled.cxx
-./recon_buildblock/DistributedWorker.cxx
 ./recon_buildblock/ForwardProjectorByBin.cxx
 ./recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.cxx
 ./recon_buildblock/ForwardProjectorByBinUsingRayTracing.cxx
