@@ -1,0 +1,56 @@
+OSMAPOSLParameters :=
+
+  objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+    
+  PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+    input file := input.hs
+
+    projector pair type := Matrix
+
+      Projector Pair Using Matrix Parameters :=
+        Matrix type := SPECT UB
+
+        Projection Matrix By Bin SPECT UB Parameters:=
+            ; elements below this weight will be truncate
+            minimum weight:= 0.001
+            ; width of PSF
+            maximum number of sigmas:= 2.0
+            ; resolution used to computed Gaussian (leave as-is)
+            spatial resolution PSF:= 0.00001
+
+            ;PSF type of correction { 2D // 3D // Geometrical }
+            psf type:= 2D
+            ; next 2 parameters define the PSF. They are ignored if psf_type is "Geometrical"
+            ; These values are mostly dependent on your collimator.
+            ; the PSF is modelled as a Gaussian with sigma dependent on the distance from the collimator
+            ; sigma_at_depth = collimator_slope * depth_in_cm + collimator sigma 0(cm)
+            collimator slope := 0.0163
+            collimator sigma 0(cm) := 0.1466
+
+            ;Attenuation correction { Simple // Full // No }
+            attenuation type := Simple      
+            ;Values in attenuation map in cm-1
+            attenuation map := attMapRec.hv
+
+            ;Mask properties { Cylinder // Attenuation Map // Explicit Mask // No}
+            mask type := Explicit Mask
+            mask file := mask.hv
+
+           ; if next variable is set to 0, only a single view is kept in memory
+           keep all views in cache:=1
+
+        End Projection Matrix By Bin SPECT UB Parameters:=
+
+     End Projector Pair Using Matrix Parameters :=
+
+  end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+  initial estimate:= init.hv
+  output filename prefix := out
+
+  number of subsets:= 8
+  number of subiterations:= 16
+  Save estimates at subiteration intervals:= 16
+
+END :=

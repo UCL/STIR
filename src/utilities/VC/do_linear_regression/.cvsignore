@@ -1,5 +1,0 @@
-*.ncb
-*.vcproj.*
-Debug
-Release
-do_linear_regression.vcxproj.user
