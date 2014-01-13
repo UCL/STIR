@@ -16,15 +16,24 @@ to create the system matrix for SPECT, integrated into STIR by Bert&aacute; Mart
 (Institute for Bioengineering of Catalonia) and Kris Thielemans 
 (University College London, Algorithms and Software Consulting Ltd), together with some
 additions and minor bug fixes by the same authors.
-Additional testing by Charalampos Tsoumpas (KCL), Lefteris Livierators (KCL) and 
+Additional testing by Charalampos Tsoumpas (KCL), Lefteris Livieratos (KCL) and 
 Kjell Erlandsson (UCL). This work was the result of a collaboration between University of Barcelona,
 King's College London and University College London, and is reported in</p>
-  <p>
+  <ul>
+  <li>
   Berta Marti Fuster, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Pablo Aguiar, Albert Cot, Domenec Ros and Kris Thielemans,<br />
   <i><cite>Integration of advanced 3D SPECT modeling into the open-source STIR framework</cite></i>,<br />
   Med. Phys. 40, 092502 (2013); 
   <a href="http://dx.doi.org/10.1118/1.4816676">DOI 10.1118/1.4816676</a>.  
-</p>
+  </li>
+  <li>
+  Berta Marti Fuster, Kjell Erlandsson, Carles Falcon, Charalampos Tsoumpas, Lefteris Livieratos, Domenec Ros, Kris Thielemans, <br />
+  <i><cite>Evaluation of the novel 3D SPECT Modelling Algorithm in the STIR Reconstruction Framework: Simple vs. full attenuation correction</cite></i>, <br /> 
+  proc. IEEE MIC 2013, Seoul, Korea
+  </li>
+  </ul>
+
+
 <p>In addition, this version contains updates by Kris Thielemans, UCL: changes to the IO code (currently enabled for projection data only) mean that
 more information such as modality, patient position and timing is available and kept; improvements to the MPI code and tests,
 some code-cleanup and improvements to the documentation.
@@ -183,8 +192,7 @@ we had forgotten to include that before.</li>
 <h3>recon_test_pack changes</h3>
 <ul>
 <li>updated version number and added some clarification to the README.txt</li>
-<li>added a test script for the motion version</li>
-TODO SPECT
+<li>added a test script for the SPECT reconstructions</li>
  </ul>
 
 <h3>Other changes to tests</h3>
