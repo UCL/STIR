@@ -1,0 +1,19 @@
+FBP2DParameters :=
+output filename prefix := out/FBP
+input file := input.hs
+Z output image size (in pixels):=64
+Back Projector type:= matrix
+  Back Projector Using Matrix Parameters :=
+	Matrix type := SPECT UB
+	Projection Matrix By Bin SPECT UB Parameters:=
+		psf type:= Geometrical
+		attenuation type := No	
+		mask type := No
+		;mask file := mask.hv
+
+                ; no point in keeping things in memory as FBP runs the projector only once
+                keep all views in cache := 0
+
+	End Projection Matrix By Bin SPECT UB Parameters:=
+  End Back Projector Using Matrix Parameters :=
+end:=
