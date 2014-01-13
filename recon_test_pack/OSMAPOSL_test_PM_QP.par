@@ -10,6 +10,8 @@ zero end planes of segment 0:= 1
 ; if disabled, defaults to maximum segment number in the file
 maximum absolute segment number to process := 3
 
+; change to STIR 2.x default for compatibility 
+use subset sensitivities:=0
 sensitivity filename:= RPTsens_seg3_PM.hv
 
 projector pair type := Matrix

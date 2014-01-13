@@ -11,6 +11,12 @@ projector pair type := Matrix
   Projector Pair Using Matrix Parameters :=
   Matrix type := Ray Tracing
   Ray tracing matrix parameters :=
+   ; use multiple (almost) parallel LORs for every bin in the sinogram 
+   ; to avoid discretisation artefacts
+   number of rays in tangential direction to trace for each bin:= 5
+   ; you could disable some symmetries if you have enough memory
+   ; this would for instance allow you to increase the number of subsets
+   ; do_symmetry_90degrees_min_phi:=0
   End Ray tracing matrix parameters :=
   End Projector Pair Using Matrix Parameters :=
 

@@ -16,6 +16,8 @@ zoom := .7
 ; number of x,y pixels (-1 takes default value to cover the FOV)
 xy output image size (in pixels) := 60
 
+; change to STIR 2.x default for compatibility 
+use subset sensitivities:=0
 sensitivity filename:= my_RPTsens_seg3_PM.hv
 recompute sensitivity := 1
 

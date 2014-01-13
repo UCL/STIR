@@ -19,6 +19,8 @@ projector pair type := Separate Projectors
 end projector pair using separate projectors parameters := 
 
 ;Bin Normalisation type:=None
+; change to STIR 2.x default for compatibility 
+use subset sensitivities:=0
 ; if the next parameter is disabled, 
 ; it default to an image full of 1s.
 ; this will be wrong however
