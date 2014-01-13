@@ -1,7 +1,4 @@
-#
-# $Id$
-#
-# Copyright 2012-06-05 - $Date$ Kris Thielemans
+# Copyright 2012 Kris Thielemans
 
 # This file is part of STIR.
 #
@@ -26,6 +23,9 @@ option(BUILD_SWIG_PYTHON
 
 option(BUILD_SWIG_OCTAVE
        "Use SWIG to generate octave bindings for STIR (experimental)" OFF)
+
+# Octave support doesn't really work very well yet, so hide it a bit
+mark_as_advanced(BUILD_SWIG_OCTAVE)
 
 if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE)
 
