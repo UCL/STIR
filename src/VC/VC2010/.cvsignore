@@ -1,8 +1,0 @@
-*.ncb
-*.opensdf
-*.sdf
-*.suo
-*.vc*proj.*user
-Debug
-Release
-ipch

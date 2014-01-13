@@ -1,5 +1,0 @@
-*.ncb
-*.vcproj.*
-Debug
-Release
-create_template_projdata.vcxproj.user
