@@ -1,9 +1,6 @@
-//
-// $Id: CListModeDataECAT8_32bit.h,v 1.12 2011-06-28 14:48:09 kris Exp $
-//
 /*
     Copyright (C) 2003-2011 Hammersmith Imanet Ltd
-    Copyright (C) 2013 University College London
+    Copyright (C) 2013-2014 University College London
 */
 /*!
   \file
@@ -11,9 +8,6 @@
   \brief Declaration of class stir::CListModeDataECAT8_32bit
     
   \author Kris Thielemans
-      
-  $Date: 2011-06-28 14:48:09 $
-  $Revision: 1.12 $
 */
 
 #ifndef __stir_listmode_CListModeDataECAT8_32bit_H__
@@ -28,13 +22,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-#ifndef STIR_NO_NAMESPACES
-using std::istream;
-using std::streampos;
-using std::vector;
-using std::pair;
-#endif
 
 START_NAMESPACE_STIR
 namespace UCL {
@@ -64,9 +51,6 @@ public:
 
   virtual std::string
     get_name() const;
-
-  virtual
-    std::time_t get_scan_start_time_in_secs_since_1970() const;
 
   virtual 
     shared_ptr <CListRecord> get_empty_record_sptr() const;
@@ -99,9 +83,6 @@ private:
   int number_of_views;
   int number_of_segments;
   //std::vector<int> segment_table;
-
-  float lm_start_time;
-  float lm_duration;
 
   Succeeded open_lm_file();
 

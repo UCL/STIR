@@ -1,9 +1,6 @@
-//
-// $Id: CListModeDataECAT.cxx,v 1.25 2012-01-09 09:04:55 kris Exp $
-//
 /*
     Copyright (C) 2003-2012 Hammersmith Imanet Ltd
-    Copyright (C) 2013 University College London
+    Copyright (C) 2013-2014 University College London
 
 */
 /*!
@@ -12,14 +9,12 @@
   \brief Implementation of class stir::UCL::CListModeDataECAT8_32bit
 
   \author Kris Thielemans
-      
-  $Date: 2012-01-09 09:04:55 $
-  $Revision: 1.25 $
 */
 
 
 #include "UCL/listmode/CListModeDataECAT8_32bit.h"
 #include "UCL/listmode/CListRecordECAT8_32bit.h"
+#include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
@@ -66,10 +61,14 @@ CListModeDataECAT8_32bit(const std::string& listmode_filename)
   }
 #endif
 
-  this->interfile_parser.parse(listmode_filename.c_str());
-  this->scanner_sptr.reset(Scanner::get_scanner_from_name(this->interfile_parser.originating_system));
+  this->interfile_parser.parse(listmode_filename.c_str(), false /* no warnings about unrecognised keywords */);
+
+  this->exam_info_sptr.reset(new ExamInfo(*interfile_parser.get_exam_info_ptr()));
+
+  const std::string originating_system(this->interfile_parser.get_exam_info_ptr()->originating_system);
+  this->scanner_sptr.reset(Scanner::get_scanner_from_name(originating_system));
   if (this->scanner_sptr->get_type() == Scanner::Unknown_scanner)
-    error(boost::format("Unknown value for originating_system keyword: '%s") % this->interfile_parser.originating_system );
+    error(boost::format("Unknown value for originating_system keyword: '%s") % originating_system );
 
   this->proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(this->scanner_sptr, 
 								this->axial_compression,
@@ -89,15 +88,6 @@ get_name() const
 {
   return listmode_filename;
 }
-
-std::time_t 
-CListModeDataECAT8_32bit::
-get_scan_start_time_in_secs_since_1970() const
-{
-  // TODO
-  return std::time_t(-1);
-}
-
 
 
 shared_ptr <CListRecord> 
