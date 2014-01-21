@@ -1,7 +1,7 @@
 /*
   Copyright (C) 2002-2011, Hammersmith Imanet Ltd
   Copyright CTI
-  Copyright (C) 2013 University College London
+  Copyright (C) 2013-2014 University College London
 
   This file contains proprietary information supplied by Siemens so cannot
   be redistributed without their consent.
@@ -146,6 +146,7 @@ void
 BinNormalisationFromECAT8::set_defaults()
 {
   this->normalisation_ECAT8_filename = "";
+  this->_use_gaps = true;
   this->_use_detector_efficiencies = true;
   this->_use_dead_time = false;
   this->_use_geometric_factors = true;
@@ -372,6 +373,19 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
     )
       *iter++ = *data_ptr++;
   }
+
+  if (this->_use_gaps)
+    {
+      // TODO we really have no idea where the gaps are for every ECAT8 scanners.
+      // The code below works for the mMR
+      for (int r=0; r<scanner_ptr->get_num_rings(); ++r)
+          for (int c=0; c<scanner_ptr->get_num_detectors_per_ring(); 
+               c+=scanner_ptr->get_num_transaxial_crystals_per_block())
+            {
+              efficiency_factors[r][c]=0.F;
+            }
+    }
+
   // TODO mvoe dead-time stuff to a separate function
 #if 0
   /* Set up equation parameters for dead_time correction */

@@ -1,6 +1,6 @@
 /*
-  Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
-  Copyright (C) 2013 University College London
+  Copyright (C) 2000-2007, Hammersmith Imanet Ltd
+  Copyright (C) 2013-2014 University College London
 
   Largely a copy of the ECAT7 version. 
 */
@@ -49,6 +49,7 @@ START_NAMESPACE_ECAT
 
   ; next keywords can be used to switch off some of the normalisation components
   ; do not use unless you know why
+  ; use_gaps:=1
   ; use_detector_efficiencies:=1
   ; use_dead_time:=1
   ; use_geometric_factors:=1
@@ -102,6 +103,7 @@ private:
   int mash;
   int num_blocks_per_singles_unit;
 
+  bool _use_gaps;
   bool _use_detector_efficiencies;
   bool _use_dead_time;
   bool _use_geometric_factors;
