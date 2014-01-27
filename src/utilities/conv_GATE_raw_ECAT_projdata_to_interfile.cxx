@@ -1,41 +1,5 @@
 /*
  Copyright (C) 2005- 2009, Hammersmith Imanet Ltd
-*** test_IR_filters.cxx.~1.4.~	2009-10-27 10:49:03.000000000 +0000
---- test_IR_filters.cxx	2014-01-02 21:42:36.530820900 +0000
-***************
-*** 1,18 ****
-- //
-- // $Id$
-- //
-  /*!
-    \file 
-    \ingroup numerics_test
-    \brief tests the implementation of the IR_filters
-  
-    \author Charalampos Tsoumpas
-- 
--   $Date$
--   $Revision$
-  */
-  /*
-!     Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
-      This file is part of STIR.
-  
-      This file is free software; you can redistribute it and/or modify
---- 1,13 ----
-  /*!
-    \file 
-    \ingroup numerics_test
-    \brief tests the implementation of the IR_filters
-  
-    \author Charalampos Tsoumpas
-  */
-  /*
-!     Copyright (C) 2000 - 2009-10-27, Hammersmith Imanet Ltd
-!     Copyright (C) 2013, University College London
-      This file is part of STIR.
-  
-      This file is free software; you can redistribute it and/or modify
  Copyright (C) 2010- 2013, King's College London
  Copyright (C) 2013, University College London
  This file is part of STIR.
