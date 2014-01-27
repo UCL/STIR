@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2003- 2009-10-08, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011, Kris Thielemans
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -23,10 +20,7 @@
   \ingroup IO
   
   \brief  Instantiations of the stir::OutputFileFormat class 
-  \author Kris Thielemans
-      
-  $Date$
-  $Revision$
+  \author Kris Thielemans      
 */
 
 #include "stir/IO/OutputFileFormat.txx"
@@ -34,6 +28,10 @@
 #include "stir/DynamicDiscretisedDensity.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h" 
 #include "stir/modelling/KineticParameters.h" 
+
+#ifdef _MSC_VER
+#pragma warning (disable : 4661)
+#endif
 
 START_NAMESPACE_STIR
 
