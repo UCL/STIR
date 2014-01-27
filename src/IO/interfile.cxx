@@ -58,6 +58,7 @@ using std::cerr;
 using std::endl;
 using std::ofstream;
 using std::ifstream;
+using std::iostream;
 using std::fstream;
 #endif
 

@@ -256,7 +256,7 @@ private:
           }
         else
           {
-            string full_message = message;
+            std::string full_message = message;
             full_message += ": difference larger than tolerance";
             test_failed = check_if_equal(static_cast<elemT>(*data_read_back_iter), *diff_iter, 
                                          full_message.c_str());

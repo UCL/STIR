@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*!
   \file 
   \ingroup buildblock 
@@ -8,14 +5,10 @@
 
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-
-  $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -37,10 +30,6 @@
 #include <sstream>
 #endif
 
-#ifndef STIR_NO_NAMESPACES
-using std::cerr;
-#endif
-
 START_NAMESPACE_STIR
 /*!
   The question is currently presented as
@@ -52,7 +41,7 @@ START_NAMESPACE_STIR
 */
 template <class NUMBER>
 inline NUMBER 
-ask_num (const string& str,
+ask_num (const std::string& str,
 	 NUMBER minimum_value,
 	 NUMBER maximum_value,
 	 NUMBER default_value)
@@ -60,8 +49,8 @@ ask_num (const string& str,
   
   while(1)
   { 
-    string input;
-    cerr << "\n" << str 
+    std::string input;
+    std::cerr << "\n" << str 
          << "[" << minimum_value << "," << maximum_value 
 	 << " D:" << default_value << "]: ";
     std::getline(std::cin, input);
@@ -75,7 +64,7 @@ ask_num (const string& str,
     ss >> value;
     if ((value>=minimum_value) && (maximum_value>=value))
       return value;
-    cerr << "\nOut of bounds. Try again.";
+    std::cerr << "\nOut of bounds. Try again.";
   }
 }
 
@@ -83,17 +72,17 @@ ask_num (const string& str,
 
 template <class IFSTREAM>
 inline IFSTREAM& open_read_binary(IFSTREAM& s, 
-				  const string& name)
+				  const std::string& name)
 {
 #if 0
   //KT 30/07/98 The next lines are only necessary (in VC 5.0) when importing 
   // <fstream.h>. We use <fstream> now, so they are disabled.
 
   // Visual C++ does not complain when opening a nonexisting file for reading,
-  // unless using ios::nocreate
-  s.open(name.c_str(), ios::in | ios::binary | ios::nocreate); 
+  // unless using std::ios::nocreate
+  s.open(name.c_str(), std::ios::in | std::ios::binary | std::ios::nocreate); 
 #else
-  s.open(name.c_str(), ios::in | ios::binary); 
+  s.open(name.c_str(), std::ios::in | std::ios::binary); 
 #endif
   // KT 14/01/2000 added name of file in error message
   if (s.fail() || s.bad())
@@ -103,9 +92,9 @@ inline IFSTREAM& open_read_binary(IFSTREAM& s,
 
 template <class OFSTREAM>
 inline OFSTREAM& open_write_binary(OFSTREAM& s, 
-				  const string& name)
+				  const std::string& name)
 {
-    s.open(name.c_str(), ios::out | ios::binary); 
+    s.open(name.c_str(), std::ios::out | std::ios::binary); 
     // KT 14/01/2000 added name of file in error message
     if (s.fail() || s.bad())
     { error("Error opening file %s\n", name.c_str()); }

@@ -93,6 +93,7 @@ using std::fstream;
 using std::ifstream;
 using std::iostream;
 using std::ofstream;
+using std::ios;
 using std::cerr;
 using std::cout;
 using std::flush;
