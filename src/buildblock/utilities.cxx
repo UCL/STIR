@@ -1,6 +1,3 @@
-//
-// $Id$
-//
 /*!
   \file 
  
@@ -9,14 +6,11 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
-
-  $Date$
-
-  $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2010, Hammersmith Imanet Ltd
+    Copyright (C) 2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -39,10 +33,15 @@
 #ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::ofstream;
+using std::iostream;
+using std::istream;
 using std::fstream;
 using std::streampos;
+using std::streamsize;
 using std::cerr;
 using std::endl;
+using std::ios;
+using std::string;
 #endif
 
 START_NAMESPACE_STIR
@@ -190,8 +189,11 @@ get_directory_name(char *directory_name,
 string
 get_directory_name(const string& filename_with_directory)
 {
-  return 
+  string dir_name =
     filename_with_directory.substr(0, find_pos_of_filename(filename_with_directory));
+  if (dir_name.empty())
+    dir_name = ".";
+  return dir_name;
 }
 
 string::size_type
