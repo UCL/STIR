@@ -108,7 +108,7 @@ open_lm_file()
       // now open new file
       std::string filename = interfile_parser.data_file_name;
       info(boost::format("CListModeDataECAT8_32bit: opening file %s") % filename);
-      shared_ptr<istream> stream_ptr(new fstream(filename.c_str(), ios::in | ios::binary));
+      shared_ptr<istream> stream_ptr(new fstream(filename.c_str(), std::ios::in | std::ios::binary));
       if (!(*stream_ptr))
       {
 	warning("CListModeDataECAT8_32bit: cannot open file '%s'", filename.c_str());
@@ -148,13 +148,13 @@ CListModeData::SavedPosition
 CListModeDataECAT8_32bit::
 save_get_position() 
 {
-  return current_lm_data_ptr->save_get_position();
+  return static_cast<SavedPosition>(current_lm_data_ptr->save_get_position());
 } 
 
 
 Succeeded
 CListModeDataECAT8_32bit::
-set_get_position(const typename CListModeDataECAT8_32bit::SavedPosition& pos)
+set_get_position(const CListModeDataECAT8_32bit::SavedPosition& pos)
 {
   return
     current_lm_data_ptr->set_get_position(pos);
