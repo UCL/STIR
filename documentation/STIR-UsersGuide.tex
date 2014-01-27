@@ -618,7 +618,8 @@ If you compiled \textit{STIR} such that it could find the \textit{ITK} library, 
 all image formats supported by \textit{ITK}, see \url{http://www.itk.org/Wiki/ITK/File_Formats}{the ITK Wiki}
 for some information. However, many file formats do not specify geometric information (e.g jpg). For those
 that do, \textit{STIR} currently ignores orientation, offset and timing.
-Note that as DICOM files often store only a single slice, DICOM is currently not really supported by \textit{STIR}.
+Note that as DICOM files often store only a single slice, \textit{STIR} attempts to find
+other slices belonging to the same series/time frame/gate.
 
 \subsubsection{SimSET files}
 There are some preliminary files to make it easier to use SimSET and \textit{STIR} together in the
