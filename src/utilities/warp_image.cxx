@@ -25,6 +25,7 @@
 #include "stir/spatial_transformation/warp_image.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/read_from_file.h"
 
 USING_NAMESPACE_STIR
 
@@ -32,10 +33,10 @@ USING_NAMESPACE_STIR
 int main(int argc, char **argv)
 {
   if(argc<6 || argc>8) {
-    cerr<<"Usage: " << argv[0] << " <output image filename> <input image filename> [x-motion-field] [y-motion-field] [z-motion-field] [spline_type] [extend_borders]\n"
-        << "all shifts are in mm\n"
-        << "x, y, z are in STIR conventions\n"
-        << "extend borders is either 1 or 0, defaults to 0\n";
+    std::cerr<<"Usage: " << argv[0] << " <output image filename> <input image filename> [x-motion-field] [y-motion-field] [z-motion-field] [spline_type] [extend_borders]\n"
+             << "all shifts are in mm\n"
+             << "x, y, z are in STIR conventions\n"
+             << "extend borders is either 1 or 0, defaults to 0\n";
     exit(EXIT_FAILURE);
   }
   
@@ -52,13 +53,13 @@ int main(int argc, char **argv)
 
   std::cerr << "Interpolating using with splines level: " << spline_type << "\n"; 
   // read image
-  const shared_ptr<DiscretisedDensity<3,float> > density_sptr(DiscretisedDensity<3,float>::read_from_file(input_filename));
+  const shared_ptr<DiscretisedDensity<3,float> > density_sptr(read_from_file<DiscretisedDensity<3,float> >(input_filename));
   const shared_ptr<DiscretisedDensity<3,float> > motion_x_sptr(
-                                                               DiscretisedDensity<3,float>::read_from_file(motion_x_filename));
+                                                               read_from_file<DiscretisedDensity<3,float> >(motion_x_filename));
   const shared_ptr<DiscretisedDensity<3,float> > motion_y_sptr(
-                                                               DiscretisedDensity<3,float>::read_from_file(motion_y_filename));
+                                                               read_from_file<DiscretisedDensity<3,float> >(motion_y_filename));
   const shared_ptr<DiscretisedDensity<3,float> > motion_z_sptr(
-                                                               DiscretisedDensity<3,float>::read_from_file(motion_z_filename));
+                                                               read_from_file<DiscretisedDensity<3,float> >(motion_z_filename));
 	
   const VoxelsOnCartesianGrid<float> out_density=warp_image(density_sptr, motion_x_sptr, motion_y_sptr, motion_z_sptr, spline_type, extend_borders);
 	

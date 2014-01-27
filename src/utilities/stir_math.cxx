@@ -549,7 +549,7 @@ main(int argc, char **argv)
       shared_ptr<ProjData> out_proj_data_ptr;
       if (accumulate)
 	{
-	  all_proj_data[0] = ProjData::read_from_file(argv[0], ios::in | ios::out);
+	  all_proj_data[0] = ProjData::read_from_file(argv[0], std::ios::in | std::ios::out);
 	  out_proj_data_ptr = all_proj_data[0];
 
 	  if (max_segment_num_to_process>=0)

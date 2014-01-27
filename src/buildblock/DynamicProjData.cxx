@@ -234,7 +234,7 @@ read_interfile_DPDFS(istream& input,
   
    assert(hdr.data_info_ptr !=0);
 
-   shared_ptr<iostream> data_in(new std::fstream (full_data_file_name, open_mode | std::ios::binary));
+   shared_ptr<std::iostream> data_in(new std::fstream (full_data_file_name, open_mode | std::ios::binary));
    if (!data_in->good())
      {
        warning("interfile parsing: error opening file %s",full_data_file_name);

@@ -1,8 +1,5 @@
-//
-// $Id$
-//
 /*
-  Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2003-2011, Hammersmith Imanet Ltd
   This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -83,9 +80,6 @@
   must be given on the command line.
 
   \author Kris Thielemans
-
-  $Date$
-  $Revision$
 */
 #include "stir/Shape/Shape3D.h"
 #include "stir/KeyParser.h"
@@ -340,7 +334,7 @@ int main(int argc, char * argv[])
 {
   
   if ( argc!=2) {
-    cerr << "Usage: " << argv[0] << " par_file\n";
+    std::cerr << "Usage: " << argv[0] << " par_file\n";
     exit(EXIT_FAILURE);
   }
   GenerateImage application(argc==2 ? argv[1] : 0);

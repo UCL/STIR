@@ -112,7 +112,7 @@
 using std::cerr;
 using std::endl;
 using std::ofstream;
-
+using std::ios;
 #endif
 
 START_NAMESPACE_STIR

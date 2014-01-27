@@ -1,9 +1,6 @@
-//
-// $Id$
-//
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000-2010, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,22 +24,11 @@
 
   \author Kris Thielemans
   \author PARAPET project
-
-  $Date$
-  $Revision$
 */
 #include "stir/common.h"
 #include <stdio.h>
 #include <iostream>
 #include <string>
-
-#ifndef STIR_NO_NAMESPACES
-using std::ios;
-using std::iostream;
-using std::istream;
-using std::streamsize;
-using std::string;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -55,14 +41,14 @@ START_NAMESPACE_STIR
 //! A function to ask a number from the user 
 template <class NUMBER>
 inline NUMBER 
-ask_num (const string& prompt,
+ask_num (const std::string& prompt,
          NUMBER minimum_value, 
          NUMBER maximum_value, 
          NUMBER default_value);
 
 //! A function to ask a string from the user 
-string
-ask_string(const string& prompt, const string& default_value = "");
+std::string
+ask_string(const std::string& prompt, const std::string& default_value = "");
 
 /*! 
   \brief A function to ask a yes/no question from the user
@@ -80,7 +66,7 @@ ask_string(const string& prompt, const string& default_value = "");
   the question will be asked again.
   */
 bool 
-ask (const string& prompt, bool default_value);
+ask (const std::string& prompt, bool default_value);
 
 
 /***** filename functions ****/
@@ -90,7 +76,7 @@ ask (const string& prompt, bool default_value);
  Asks for a filename (appending an extension if none is provided)
  and stores the string where file_in_directory_name points to.
 
- \deprecated Use ask_filename_with_extension(const string&, const string&);
+ \deprecated Use ask_filename_with_extension(const std::string&, const std::string&);
 
  Example:
  \code
@@ -103,8 +89,8 @@ ask (const string& prompt, bool default_value);
  */
 char *
 ask_filename_with_extension(char *file_in_directory_name, 
-                            const string& prompt,
-                            const string& default_extension);
+                            const std::string& prompt,
+                            const std::string& default_extension);
 
 /*! 
  \brief
@@ -112,14 +98,14 @@ ask_filename_with_extension(char *file_in_directory_name,
 
  Example:
  \code
-     string filename =
+     std::string filename =
      ask_filename_with_extension("Input file name ?", ".img");
  \endcode
  \warning starting or ending spaces are NOT stripped.
  */
-string
-ask_filename_with_extension(const string& prompt,
-                            const string& default_extension);
+std::string
+ask_filename_with_extension(const std::string& prompt,
+                            const std::string& default_extension);
 
 /*!
   \brief
@@ -129,7 +115,7 @@ ask_filename_with_extension(const string& prompt,
  Example: open a binary input file, aborting if it is not found
  \code
     ifstream in;
-    ask_filename_and_open(s, "Input file ?", ".hv", ios::in | ios::binary);
+    ask_filename_and_open(s, "Input file ?", ".hv", std::ios::in | std::ios::binary);
  \endcode
  Note: this function is templated to allow \a s to be of different
        types \c ifstream, \c ofstream, \c fstream
@@ -139,9 +125,9 @@ ask_filename_with_extension(const string& prompt,
 template <class FSTREAM>
 void
 ask_filename_and_open(FSTREAM& s,
-                      const string& prompt,
-                      const string& default_extension,
-                      ios::openmode mode,
+                      const std::string& prompt,
+                      const std::string& default_extension,
+                      std::ios::openmode mode,
                       bool abort_if_failed);
 
 //! as above, but with default \c abort_if_failed = true
@@ -149,9 +135,9 @@ template <class FSTREAM>
 void
 inline 
 ask_filename_and_open(FSTREAM& s,
-                      const string& prompt,
-                      const string& default_extension,
-                      ios::openmode mode)
+                      const std::string& prompt,
+                      const std::string& default_extension,
+                      std::ios::openmode mode)
 { 
   ask_filename_and_open(s, prompt, default_extension, mode, true);
 }
@@ -174,7 +160,7 @@ ask_filename_and_open(FSTREAM& s,
  At the end of this function, the 'input' stream will be positioned 
  at original_position + file_size.
  */
-void * read_stream_in_memory(istream& input, streamsize& file_size);
+void * read_stream_in_memory(std::istream& input, std::streamsize& file_size);
 
 /*! 
  \brief Find number of remaining characters in the stream
@@ -183,17 +169,17 @@ void * read_stream_in_memory(istream& input, streamsize& file_size);
  at the original_position.
  \warning Works only properly for binary streams.
  */
-streamsize find_remaining_size (istream& input);
+std::streamsize find_remaining_size (std::istream& input);
 
 //! opens a stream for reading binary data. Calls error() when it does not succeed.
 /*! \warning probably does not work if you are not in the C-locale */
 template <class IFSTREAM>
 inline IFSTREAM& open_read_binary(IFSTREAM& s, 
-                                  const string& name);
+                                  const std::string& name);
 //! opens a FILE for reading binary data. Calls error() when it does not succeed.
 /*! \warning probably does not work if you are not in the C-locale*/
 FILE*& open_read_binary(FILE*& fptr, 
-                              const string& name);
+                              const std::string& name);
 
 //! opens a stream for writing binary data. Calls error() when it does not succeed.
 /*! 
@@ -202,11 +188,11 @@ FILE*& open_read_binary(FILE*& fptr,
  */
 template <class OFSTREAM>
 inline OFSTREAM& open_write_binary(OFSTREAM& s, 
-                                   const string& name);
+                                   const std::string& name);
 //! opens a FILE for writing binary data. Calls error() when it does not succeed.
 /*! \warning probably does not work if you are not in the C-locale*/
 FILE*& open_write_binary(FILE*& fptr, 
-                        const string& name);
+                        const std::string& name);
 
 
 //! closes a stream without error checking.
@@ -231,7 +217,7 @@ void close_file(FILE*& fptr);
 /*! \brief
   some large value to say how long filenames can be in  
   the (deprecated) function
-  ask_filename_with_extension(char *,const string&, const string&)
+  ask_filename_with_extension(char *,const std::string&, const std::string&)
   \ingroup buildblock
  */
 const int max_filename_length = 1000;
@@ -265,16 +251,16 @@ find_filename(const char * const filename_with_directory);
     \warning This function works only with string manipulations. There is no check
     if the 'filename' part actually corresponds to a directory on disk.
 */
-string::size_type
-find_pos_of_filename(const string& filename_with_directory);
+std::string::size_type
+find_pos_of_filename(const std::string& filename_with_directory);
 
 //! return a std::string containing only the filename (i.e. after directory specifications)
 /*!
     \warning This function works only with string manipulations. There is no check
     if the 'filename' part actually corresponds to a directory on disk.
 */
-string
-get_filename(const string& filename_with_directory);
+std::string
+get_filename(const std::string& filename_with_directory);
 
 /*! 
  \brief
@@ -284,7 +270,7 @@ get_filename(const string& filename_with_directory);
  if the 'filename' part actually corresponds to a directory on disk.
 
  \warning assumes that directory_name points to enough allocated space
- \deprecated Use get_directory_name(const string&)
+ \deprecated Use get_directory_name(const std::string&)
 */
 char *
 get_directory_name(char *directory_name, 
@@ -292,11 +278,14 @@ get_directory_name(char *directory_name,
 
 //! Returns a string with the directory part from 'filename_with_directory'.
 /*!
+    If there was no directory information present, the return value is the string "." (i.e. the current directory).
+    (It was the empty string prior to STIR 3.0).
+
     \warning This function works only with string manipulations. There is no check
     if the 'filename' part actually corresponds to a directory on disk.
 */
-string
-get_directory_name(const string& filename_with_directory);
+std::string
+get_directory_name(const std::string& filename_with_directory);
 
 /*! 
  \brief
@@ -304,7 +293,7 @@ get_directory_name(const string& filename_with_directory);
  a relative (e.g. to current directory) pathname.
  */
 extern bool
-is_absolute_pathname(const string& filename_with_directory);
+is_absolute_pathname(const std::string& filename_with_directory);
 
 /*! 
  \brief
@@ -333,10 +322,10 @@ prepend_directory_name(char * filename_with_directory,
 //! find the position of the '.' of the extension
 /*! 
   If no '.' is found in the filename part (i.e. ignoring the
-    directory name), the function returns \c string::npos
+    directory name), the function returns \c std::string::npos
 */
-string::size_type
-find_pos_of_extension(const string& file_in_directory_name);
+std::string::size_type
+find_pos_of_extension(const std::string& file_in_directory_name);
 #if 0
 // terribly dangerous for memory overrun.
 
@@ -362,9 +351,9 @@ add_extension(char * file_in_directory_name,
 #endif
 
 //! Append extension if none present
-string& 
-add_extension(string& file_in_directory_name, 
-              const string& extension);
+std::string& 
+add_extension(std::string& file_in_directory_name, 
+              const std::string& extension);
 
 #if 0
 // disabled because possible memory overrun
@@ -391,9 +380,9 @@ replace_extension(char *file_in_directory_name,
 #endif
 
 //! Replace extension (or append if none present)
-string& 
-replace_extension(string& file_in_directory_name, 
-                  const string& extension);
+std::string& 
+replace_extension(std::string& file_in_directory_name, 
+                  const std::string& extension);
                    
 
 //@}
