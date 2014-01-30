@@ -21,7 +21,7 @@
 #      
 #  Author Kris Thielemans
 
-if [ $# -ne 5 ]; then
+if [ $# -ne 6 ]; then
   echo "Usage: `basename $0` output_prefix prompts reconProg reconParfile multfactors additive_sinogram "
   exit 1
 fi
