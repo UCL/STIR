@@ -163,6 +163,7 @@ initialise_keymap()
   this->parser.add_key("normalisation_ECAT8_filename", &this->normalisation_ECAT8_filename);
   this->parser.add_key("normalisation_filename", &this->normalisation_ECAT8_filename);
   this->parser.add_parsing_key("singles rates", &this->singles_rates_ptr);
+  this->parser.add_key("use_gaps", &this->_use_gaps);
   this->parser.add_key("use_detector_efficiencies", &this->_use_detector_efficiencies);
   //this->parser.add_key("use_dead_time", &this->_use_dead_time);
   this->parser.add_key("use_geometric_factors", &this->_use_geometric_factors);
