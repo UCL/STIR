@@ -10,10 +10,49 @@ mv parapet STIR
 cd STIR
 rm -rf doxygen doc
 mv PPhead src
+rm -rf   src/include/stir/local/ src/include/tomo/local/
+
+# remove files that are already in Attic
+rm src/local/howto/howto_compile_AVRWOI.txt,v
+rm src/local/recon_test/input/POSSPS.par,v
+rm src/local/reconstruction_data/params/966/rescale_atten.par,v
+rm src/local/scripts/counts_in_images.sh,v
+rm src/local/scripts/is_interfile.sh,v
+
+# remove a few files that create trouble and we're not interested in anyway
+rm src/local/test/test_NRVO.cxx,v
+rm documentation/release_template.htm,v
+rm src/local/*gangelis.mk,v
+rm src/local/extra_dirs*.mk,v
+rm src/local/config_*.mk,v
+rm -rf src/local/reconstruction_data/params
+
+# uninteresting stuff
+rm src/local/recon_buildblock/old*cxx,v src/include/local/stir/recon_buildblock/old*,v
+rm src/local/buildblock/cleanup966ImageProcessor.cxx,v src/include/local/stir/cleanup966ImageProcessor.h,v
+rm -rf src/local/howto
+
 cd src
-rm -rf   include/stir/local/ include/tomo/local/
+
+# remove Numerical Recipes
+rm local/buildblock/fft.cxx,v
+# remove QHidac
+rm -rf local/QH*  include/local/stir/QHidac include/local/tomo/QHidac
+# remove  GE things
+cd local
+rm -rf recon_buildblock/BackProjectorByBinDistanceDriven.cxx,v recon_buildblock/ForwardProjectorByBinDistanceDriven.cxx,v ../include/local/stir/recon_buildblock/BackProjectorByBinDistanceDriven.h,v ../include/local/stir/recon_buildblock/ForwardProjectorByBinDistanceDriven.h,v IO/GE ../include/local/stir/IO/GE motion/ScatterSimulationByBinWithMotion.cxx,v ../include/local/stir/motion/ScatterSimulationByBinWithMotion.h,v motion_utilities/fwd_image_and_fill_missing_data.cxx,v motion_utilities/simulate_scatter_with_motion.cxx,v scatter/ scatter_buildblock/ ../include/local/stir/DoubleScatterEstimationByBin.h,v  utilities/Hounsfield2mu.cxx,v reconstruction_data/
+cd ..
+# remove old/irrelevant scripts
+cd local/scripts
+rm -rf CalibrateImage966,v change_voxel_sizes_in_hv.sh,v find_normfile.sh,v get_* Makefile,v newpostproc.sh,v print_original_voxel_size_for_cti_zoom.sh,v process_966_transmission.sh,v recon* Recons* rmtags,v up-comp-debug.sh,v zip* scatter GE *total* *ecat* cvs2cl.pl,v check* cloc* compare* construct* correct_voxel* MCdistrib.sh,v *counts* PPlist* q* remove_q* add_pre* rename.sh,v set* copy* extract* header_doc* is_norm* MetaIO* is_Meta* precorrect* run_splines* show_header* Evaluation how_many* estimate_scatter.sh,v
+cd ../..
+cd ..
+
+# handle ecat6. cut out revisions
+rm -rf src/include/CTI  src/include/stir/CTI
+
 # attempt to keep local files such that we detect revisions in moved files.
-# However, that fails because of OBJFUNCbranch (can't remove the corresponding revisions yet by rm_revs.sh)
+
 
 ## remove all files that are still in local (i.e. not yet in an Attic
 #find local -name Attic -prune -o -type f -name \*,v -exec rm {} \;
@@ -23,11 +62,14 @@ rm -rf   include/stir/local/ include/tomo/local/
 # so, instead, we just remove them.
 # consequence: files will have all history, but they will "exist" before a particular release
 # e.g. hg up -r rel_1_00 extracts too many files
-rm -rf include/local local
+#rm -rf include/local local
 
 cd ..
 find .   \( -name '*.h',v -o -name \*.hpp,v -o -name \*.cxx,v -o -name \*.txx,v -o -name \*.c,v -o -name \*.inl,v -o  -name Makefile\*,v -o -name \*.mk,v -o -name \*.cmake,v -o -name CMakeLists.txt,v -o -name \*.bat,v -o -name '*.txt',v -o -name \*sh,v -o -name \*.py,v -o -name \*.i,v -o -name \*tcl,v -o -name \*.rec,v -o -name \*.in,v -o -name \*.par,v -o -name Doxyfile\*,v -o -name ChangeLog,v -o -name zipit,v -o -name zipnewer,v -o -name PPlist,v -o  -name header_doc_sgl,v -o -name header_doc_sgl_edit,v -o -name show_header_sgl,v -o -name \*.\*s,v -o -name \*.htm,v -o -name \*.if,v -o -name \*.fdef,v -o -name \*.in,v -o -name \*.sh,v -o -name stir_subtract,v -o -name stir_divide,v -o -name count,v -o -name '*.dsw,v' -o -name '*.dsp,v' -o -name '*.sln,v' -o -name '*.vc*proj,v' -o -name '*.vcxproj.filters,v' -o -name \*htm,v -o -name \*sty,v -o -name \*tex,v -o -name Jam\* -o -name '*h[sv],v' -o -name \*inp,v \) -exec dos2unix {} \;
 find .   \( -name '*.h',v -o -name \*.hpp,v -o -name \*.cxx,v -o -name \*.txx,v -o -name \*.c,v -o -name \*.inl,v -o  -name Makefile\*,v -o -name \*.mk,v -o -name \*.cmake,v -o -name CMakeLists.txt,v -o -name '*.txt',v  -o -name \*.i,v -o -name \*tcl,v -o -name \*.rec,v -o -name \*.in,v -o -name \*.par,v -o -name Doxyfile\*,v -o -name ChangeLog,v  -o -name \*.\*s,v -o -name \*.htm,v -o -name \*.if,v -o -name \*.fdef,v -o -name \*.in,v -o -name '*.dsw,v' -o -name '*.dsp,v' -o -name '*.sln,v' -o -name '*.vc*proj,v' -o -name '*.vcxproj.filters,v' -o -name \*htm,v -o -name \*sty,v -o -name \*tex,v -o -name Jam\* -o -name '*h[sv],v' -o -name '*.[sv],v' -o -name \*jpg,v -o -name \*png,v -o -name \*scn,v -o -name \*inp,v -o -name \*rtf,v \) -exec chmod -x {} \;
+
+find .   \( -name '*.sh,v' -o -name \*.tcl,v -o -name zip\*,v  \) -exec chmod +x {} \;
+
 
 popd
 
@@ -35,8 +77,6 @@ cd STIR-hg
 cvs -d  /home/kris/devel/STIR-hg/cvsroot/ checkout STIR
 cd STIR
 
-# handle ecat6. cut out revisions
-rm -rf src/include/CTI  src/include/stir/CTI
 for TAG in \
 	rel_2_00_beta \
 	trunk_after_merging_OBJFUNCbranch \
@@ -94,17 +134,45 @@ for f in ~/devel/STIR-hg/cvsroot/STIR/documentation/Attic/*rtf,v; do
    sed -e 's/date\t2001.06.15/date\t2001.05.15/' -e 's/date\t2003.06.02.14.38/date\t2001.12.20.14.38/' $f.org > $f
 done
 	
-
+# change a few dates to get all moves before rel_1_00 in one commit
+for f in ~/devel/STIR-hg/cvsroot/STIR/src/LICENSE.txt,v ~/devel/STIR-hg/cvsroot/STIR/src/VERSION.txt,v; do
+   if [ ! -r $f.org ]; then
+       mv $f $f.org 
+   fi
+   sed -e 's/date\t2001.12.20.21.17.17/date\tt2001.12.20.21.21.48/' -e 's/date\t2001.12.20.20.04.08/date\t2001.12.20.20.21.22.49/' $f.org > $f
+done
+# and get rid of one irrelevant revision
+cvs admin -o 1.3 src/test/test_display.cxx
 
 cvs rtag -dB tag STIR
 # remove these to avoid problems with fixup
 cvs rtag -d rel_1_40_beta STIR
 cvs rtag -d OBJFUNC_updated_to_rel_1_40_beta STIR
+
+cvs rtag -d OBJFUNC_before_merging_OBJFUNCbranch_to_trunk STIR
+cvs rtag -d OBJFUNC_before_update_to_rel_1_40_beta STIR
+cvs rtag -d OBJFUNC_after_update_to_rel_1_40 STIR
+cvs rtag -d OBJFUNC_updated_to_rel_1_30_beta STIR
+cvs tag -r 1.29 -F rel_2_30_beta src/local/scripts/distrib.sh
+cvs tag -r 1.7 -F rel_1_30 src/local/scripts/distrib.sh
+
 # a problem with test_VAXfloat.cxx (tag applied to listmode_buildblock/lib.mk a few weeks later?)
 cvs rtag -d rel_2_20_alpha STIR
 cvs rtag -d beforescannereffectiveringradius STIR
 cvs rtag -d beforevectorwithcapacity STIR
 cvs rtag -d beforegeneralsymmetryloops STIR
+for t in \
+ OBJFUNC_after_merge_for_patlak \
+ OBJFUNC_before_merge_for_patlak STIR \
+ OBJFUNC_before_update_to_rel_1_40 \
+  OBJFUNC_rel_2_00_alpha \
+  trunk_merge_to_OBJFUNC_for_patlak \
+  after_moving_modelling_to_global \
+  rel_2_10_alpha \
+  before_ExamInfo ;
+do
+  cvs rtag -d $t STIR
+done
 
 # get rid of RS_AK branch stuff
 cvs rtag -d SHAPE3D_UPDATES_1_00 STIR
@@ -131,33 +199,63 @@ cvs admin -o 1.3.2.1 src/analytic/FBP3DRP/ColsherFilter.cxx
 cvs admin -o 1.1.2.1 src/analytic/FBP3DRP/exe.mk 
 cvs admin -o 1.1.2.1 src/analytic/FBP3DRP/lib.mk 
 
-~/devel/hgroot/rm_revs_dir.sh src/include 2>&1 > ../cvs_manips.log 
-~/devel/hgroot/rm_revs_dir.sh src/include/tomo 2>&1 >> ../cvs_manips.log 
-~/devel/hgroot/rm_revs_dir.sh src/include/recon_buildblock 2>&1 >> ../cvs_manips.log 
+# fix problem with Reconstruct.h being reinstated as different file
+mv ~/devel/STIR-hg/cvsroot/STIR/src/include/Attic/Reconstruction.h,v ~/devel/STIR-hg/cvsroot/STIR/src/include/Attic/XXXReconstruction.h,v
+
+~/devel/hgroot/rm_revs_dir.sh src/include > ../cvs_manips.log  2>&1
+~/devel/hgroot/rm_revs_dir.sh src/include/tomo  >> ../cvs_manips.log  2>&1
+~/devel/hgroot/rm_revs_dir.sh src/include/recon_buildblock  >> ../cvs_manips.log   2>&1
 ~/devel/hgroot/rm_revs_dir.sh src/include/OSMAPOSL 2>&1 >> ../cvs_manips.log 
+find src/local  -name CVS -prune  -o -type d -exec ~/devel/hgroot/rm_revs_dir.sh {} \;  >> ../cvs_manips.log  2>&1
+find src/include/local  -name CVS -prune  -o -type d -exec ~/devel/hgroot/rm_revs_dir.sh {} \;  >> ../cvs_manips.log  2>&1
+# ecat utilities moved
+~/devel/hgroot/rm_revs_dir.sh src/utilities 2>&1 >> ../cvs_manips.log 
+
+mv ~/devel/STIR-hg/cvsroot/STIR/src/include/Attic/XXXReconstruction.h,v ~/devel/STIR-hg/cvsroot/STIR/src/include/Attic/Reconstruction.h,v
 
 
 cd ..
-# this used to fail. maybe it might work now.
+# this used to fail. it might work now.
 # see https://groups.google.com/forum/?hl=en&fromgroups=#!topic/mercurial_general/7-ObkSj17qE
 #hg convert --authormap ~/devel/hgroot/STIR-authors.txt --filemap ~/devel/hgroot/STIR-filemap.txt . ../STIR-hg
 
 
-../cvs2hg/cvs2svn/cvs2hg --options=../hgroot/cvs2hg.options >& ../hgroot/cvs2hg.log
+~/devel/cvs2hg/cvs2svn/cvs2hg --options=../hgroot/cvs2hg.options >& ../hgroot/cvs2hg.log
+
+# now convert to git
+mkdir STIRfrommerc;cd STIRfrommerc
+git init;~/devel/fast-export/hg-fast-export.sh -r ../main.hg/
+git checkout master
+cd ..
 
 
-#cvs admin: /home/kris/devel/STIR-hg/cvsroot/STIR/src/include/recon_buildblock/Attic/Reconstruction.h,v: Revision 1.19 doesn't exist.
-#cvs admin: RCS file for `Reconstruction.h' not modified.
 
-cd main.hg
-hg up -C OBJFUNCbranch
-hg commit --close-branch -m"closing OBJFUNBbranch. It's long been merged." 
-hg up -C default
+# don't bother closing the branch. it creates an ugly commit right at the top.
+#cd main.hg
+#hg up -C OBJFUNCbranch
+#hg commit --close-branch -m"closing OBJFUNCbranch. It's long been merged and no longer active." 
+#hg up -C default
+#cd ..
 
+# ../cvs2svn-trunk/cvs2git --options=../hgroot/cvs2git.options >& ../hgroot/cvs2git.log
+
+#git init --bare STIR.git
+#cd STIR.git
+#cat ../cvs2git-tmp/git-blob.dat ../cvs2git-tmp/git-dump.dat | git fast-import
+#git branch -D TAG.FIXUP
+#gitk --all
+
+#git checkout -b open rel_1_00
+#git tag release_1_00
+#git checkout -b open rel_0_93
+#git tag release_0_93
+#git merge --no-commit rel_1_00
+
+#(Recommended) To get rid of unnecessary tag fixup branches, run the contrib/git-move-refs.py script from within the git repository.
 
 # TODO fix keywords
 # sed script changes "Copyright ... $Date$" to "Copyright ... 2009 ..."
-# and removed lines with $Id$ and only $date$ and $Revision$
+# and remove lines with $Id$ and only $date$ and $Revision$
 
 #sed -e's/\(Copyright.*\)\$Date$/\1\2/' -e '/\$Id$/d' -e'/ *\$Date$ *$/d' -e'/ *\$Revision$ *$/d' 
 
