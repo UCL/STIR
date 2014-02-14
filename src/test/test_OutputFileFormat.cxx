@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
 
@@ -10,8 +9,6 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 
   
   To run the test, you should use a command line argument with the name of a file.
@@ -25,7 +22,7 @@
   run-time switch to not run that part of the tests.
 */
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002- 2011, Hammersmith Imanet Ltd
 
     This file is part of STIR.
 

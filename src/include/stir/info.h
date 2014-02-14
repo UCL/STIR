@@ -1,10 +1,9 @@
 //
-// $Id$
 //
 #ifndef __stir_info_H__
 #define __stir_info_H__
 /*
-    Copyright (C) 2006- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2006- 2013, Hammersmith Imanet Ltd
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -25,8 +24,6 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 #include "stir/common.h"
 #include <iostream>

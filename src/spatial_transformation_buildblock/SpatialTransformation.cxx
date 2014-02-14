@@ -24,8 +24,6 @@
 
   This is the most basic class for including Motion Fields. 
 
-  $Date$
-  $Revision$
 */
 
 

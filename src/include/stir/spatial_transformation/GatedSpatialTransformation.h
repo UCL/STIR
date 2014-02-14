@@ -21,8 +21,6 @@
  \brief Declaration of class stir::GatedSpatialTransformation
  \author Charalampos Tsoumpas
  
- $Date$
- $Revision$
 */
 
 #ifndef __stir_spatial_transformation_GatedSpatialTransformation_H__

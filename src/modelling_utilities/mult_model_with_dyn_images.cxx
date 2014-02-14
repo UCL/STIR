@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-  Copyright (C) 2006- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2006- 2011, Hammersmith Imanet Ltd
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -37,8 +36,6 @@
 
   \todo Add to the Doxygen documentation how exactly this utility works.
 
-  $Date$
-  $Revision$
 */
 
 #include "stir/modelling/PlasmaData.h"

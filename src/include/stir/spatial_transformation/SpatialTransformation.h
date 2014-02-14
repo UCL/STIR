@@ -21,8 +21,6 @@
   \brief Definition of class stir::SpatialTransformation
   \author Charalampos Tsoumpas
  
-  $Date$
-  $Revision$
 */
 
 #ifndef __stir_spatial_transformation_SpatialTransformation_H__

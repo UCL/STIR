@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 
 
@@ -10,8 +9,6 @@
   \brief Implementation of ECAT 6 CTI functions to access data
   \author Kris Thielemans (conversions from/to VAX floats, longs)
   \author PARAPET project
-  $Revision$
-  $Date$
 
   \warning This file relies on ByteOrderDefine.h to find out if it 
   has to byteswap. This ideally would be changed to use the class stir::ByteOrder. 
@@ -20,7 +17,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

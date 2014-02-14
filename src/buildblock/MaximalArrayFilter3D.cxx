@@ -23,8 +23,6 @@
   \author Charalampos Tsoumpas
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 #include "stir/MaximalArrayFilter3D.h"
 #include "stir/Coordinate3D.h"

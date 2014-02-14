@@ -1,5 +1,4 @@
 #
-# $Id$
 #
 set(dir utilities/ecat)
 

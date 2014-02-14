@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 #ifndef __stir_LORCoordinates_H__
 #define __stir_LORCoordinates_H__
@@ -11,13 +10,11 @@
   \warning This is all preliminary and likely to change.
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 
 */
 /*
     Copyright (C) 2004 - 2009-06-22, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-07-01 - 2013, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

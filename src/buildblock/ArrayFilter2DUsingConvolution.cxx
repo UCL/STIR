@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
 
@@ -10,11 +9,9 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2001- $Date$, IRSL
+    Copyright (C) 2001- 2009, IRSL
     See STIR/LICENSE.txt for details
 */
 

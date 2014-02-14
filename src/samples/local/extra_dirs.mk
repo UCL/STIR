@@ -1,5 +1,4 @@
 #
-# $Id$
 #
 
 LIBDIRS += local/buildblock local/recon_buildblock 

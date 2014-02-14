@@ -1,7 +1,7 @@
 // @(#)Timer.h	1.6: 00/03/23
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,8 +26,6 @@
  \author Alexey Zverovich
  \author PARAPET project
 
-  $Date$
-  $Revision$
 */
 #ifndef _stir_TimedBlock_H_
 #define _stir_TimedBlock_H_

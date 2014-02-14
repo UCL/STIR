@@ -1,6 +1,6 @@
 # Demo of how to use STIR from python to reconstruct some data
 
-# Copyright 2012-06-05 - $Date$ Kris Thielemans
+# Copyright 2012-06-05 - 2013 Kris Thielemans
 
 # This file is part of STIR.
 #

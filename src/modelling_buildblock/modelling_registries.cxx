@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     Some parts of this file originate in CTI code, distributed as
@@ -29,8 +28,6 @@
 
   \author Charalampos Tsoumpas
   
-  $Date$
-  $Revision$
 */
 #include "stir/modelling/PatlakPlot.h"
 

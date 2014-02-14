@@ -1,11 +1,10 @@
 //
-// $Id$
 //
 #ifndef __stir_IO_InterfileInputFileFormat_h__
 #define __stir_IO_InterfileInputFileFormat_h__
 /*
     Copyright (C) 2006 - 2007-10-08, Hammersmith Imanet Ltd
-    Copyright (C) 2013-01-01 - $Date$, Kris Thielemans
+    Copyright (C) 2013-01-01 - 2013, Kris Thielemans
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -26,8 +25,6 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 #include "stir/IO/InputFileFormat.h"
 #include "stir/IO/interfile.h"

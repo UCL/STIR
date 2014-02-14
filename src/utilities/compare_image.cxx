@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 
 /*!
@@ -11,8 +10,6 @@
 \author Kris Thielemans
 \author PARAPET project
 \author Charalampos Tsoumpas: Add the tolerance as input
-$Date$
-$Revision$
 
 This utility compares two images. They are deemed identical if
 their maximum absolute relative difference is less than a hard-coded tolerance 
@@ -23,7 +20,7 @@ if the files are identical or not.
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-06-22, Hammersmith Imanet Ltd
-    Copyright (C) 2011-12-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-12-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

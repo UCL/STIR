@@ -1,9 +1,8 @@
 
 //
-// $Id$ 
 //
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,8 +25,6 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
   
-  $Date$
-  $Revision$
 */
 
 #ifndef __stir_OSSPS_OSSPSReconstruction_h__

@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 
 /*!
@@ -9,12 +8,10 @@
   \warning This is all preliminary and likely to change.
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 
 */
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004- 2013, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

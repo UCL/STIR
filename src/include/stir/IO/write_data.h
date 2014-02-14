@@ -1,8 +1,7 @@
-// $Id$
 #ifndef __stir_IO_write_data_H__
 #define __stir_IO_write_data_H__
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,8 +23,6 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 
 #include "stir/ByteOrder.h"

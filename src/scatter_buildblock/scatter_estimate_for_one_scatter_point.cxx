@@ -1,9 +1,8 @@
 //
-// $Id$
 //
 /*
   Copyright (C) 2004- 2009-11-03, Hammersmith Imanet
-  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+  Copyright (C) 2011-07-01 - 2011, Kris Thielemans
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -27,8 +26,6 @@
   \author Pablo Aguiar
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 
 */
 #include "stir/scatter/ScatterEstimationByBin.h"

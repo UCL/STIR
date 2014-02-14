@@ -1,4 +1,3 @@
-# $Id$
 # Sample file for local/config.mk (by Kris Thielemans)
 # See the STIR User's Guide.
 # Use this file to modify defaults for some variables in the 'global' config.mk

@@ -1,5 +1,4 @@
 #
-# $Id$
 #
 dir := scatter_utilities
 

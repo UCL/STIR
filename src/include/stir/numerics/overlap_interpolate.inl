@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2006, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,8 +22,6 @@
 
   \brief Implementation of inline versions of stir::overlap_interpolate
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 #include <algorithm>
 #include "boost/iterator/iterator_traits.hpp"

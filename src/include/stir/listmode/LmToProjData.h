@@ -1,7 +1,6 @@
 #ifndef __stir_listmode_LmToProjData_H__
 #define __stir_listmode_LmToProjData_H__
 //
-// $Id$
 //
 /*!
   \file 
@@ -12,11 +11,9 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

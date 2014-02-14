@@ -1,5 +1,4 @@
 #
-# $Id$
 #
 
 dir:=analytic/FBP2D

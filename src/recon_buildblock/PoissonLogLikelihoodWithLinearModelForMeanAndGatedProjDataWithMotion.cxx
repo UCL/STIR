@@ -20,8 +20,6 @@
  \brief Instantiations for class stir::PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion
  \author Charalampos Tsoumpas
 
- $Date$
- $Revision$
 */
 
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.txx"

@@ -1,10 +1,9 @@
 //
-// $Id$
 //
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009, Hammersmith Imanet Ltd
-    Copyright 2011 - $Date$, Kris Thielemans
+    Copyright 2011 - 2011, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,8 +27,6 @@
   \author Damien Sauge
   \author Sanida Mustafovic
   \author PARAPET project
-  $Revision$
-  $Date$
 
   \par Usage: 
   <pre>convecat6_if [output_file_name_without_extension cti_data_file_name [scanner_name]]

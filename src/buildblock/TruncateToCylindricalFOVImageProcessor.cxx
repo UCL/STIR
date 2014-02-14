@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,8 +23,6 @@
   \brief Implementations for class stir::TruncateToCylindricalFOVImageProcessor
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 #include "stir/TruncateToCylindricalFOVImageProcessor.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"

@@ -1,5 +1,4 @@
 @echo off
-rem $Id$
 rem Batch file for automatic running of the tests
 rem see README.txt
 rem Author: Kris Thielemans

@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
 
@@ -10,9 +9,7 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  $Date$
 
-  $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners

@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
 
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -25,8 +24,6 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  $Date$
-  $Revision$
 */
 #ifndef __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin_H__
 #define __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin_H__

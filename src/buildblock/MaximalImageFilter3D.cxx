@@ -23,8 +23,6 @@
  \author Charalampos Tsoumpas
  \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 
 #include "stir/MaximalImageFilter3D.h"

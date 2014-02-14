@@ -1,9 +1,8 @@
 //
-// $Id$
 //
 /*
     Copyright (C) 2006 - 2007-10-08, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -25,8 +24,6 @@
   \author Kris Thielemans
   \author Charalampos Tsoumpas
 
-  $Date$
-  $Revision$
 */
 #include "stir/IO/ECAT7DynamicDiscretisedDensityInputFileFormat.h"
 #include "stir/Succeeded.h"

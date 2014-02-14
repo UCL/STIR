@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,8 +23,6 @@
   \brief Declaration of class stir::SinglesRatesForTimeFrames
   \author Kris Thielemans
   \author Timothy Borgeaud
-  $Date$
-  $Revision$ 
 */
 
 #ifndef __stir_data_SinglesRatesForTimeFrames_H__

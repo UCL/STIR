@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 
 /*! 
@@ -8,11 +7,9 @@
   \brief  A few functions to compute distances between lines etc
   \todo move implementations to .cxx
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2005, Hammersmith Imanet Ltd
 
     This file is part of STIR.
 

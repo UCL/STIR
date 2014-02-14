@@ -1,5 +1,4 @@
 #
-# $Id$
 #
 dir := listmode_buildblock
 

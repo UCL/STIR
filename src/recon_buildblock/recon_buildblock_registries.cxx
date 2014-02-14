@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd

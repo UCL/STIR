@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -22,8 +21,6 @@
   \ingroup projdata
   \brief Declaration of class stir::DetectionPosition
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 #ifndef __stir_DetectionPosition_H__
 #define __stir_DetectionPosition_H__

@@ -23,8 +23,6 @@
   \author Charalampos Tsoumpas
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 
 #ifndef __stir_MaximalArrayFilter3D_H__

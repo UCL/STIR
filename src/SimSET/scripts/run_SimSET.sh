@@ -1,5 +1,4 @@
 #! /bin/bash
-# $Id$
 #PBS -k eo 
 # better to add this in the qsub statement PBS -l vmem=1900mb
 
@@ -14,10 +13,9 @@
 #
 # You need to set various environment variables to run this script.
 # Check the code below and the example.
-# $Id$
 #
 #  Copyright (C) 2005 - 2006, Hammersmith Imanet Ltd
-#  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+#  Copyright (C) 2011-07-01 - 2012, Kris Thielemans
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify

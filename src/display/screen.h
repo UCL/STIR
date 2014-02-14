@@ -6,8 +6,6 @@
  \author Kris Thielemans
  \author PARAPET project
  
- $Date$
- $Revision$
 
  This is part of a library by Kris Thielemans, mainly written in 1991.
  It provides macros (and a few functions) for displaying stuff on a screen.
@@ -20,7 +18,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- 2012, IRSL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

@@ -1,5 +1,4 @@
 OSSPSParameters :=
-; $Id$
 ; test file for OSSPS with a quadratic prior (and ray tracing projection matrix)
 objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=

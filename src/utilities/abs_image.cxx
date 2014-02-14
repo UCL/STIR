@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-  Copyright (C) 2006- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2006- 2011, Hammersmith Imanet Ltd
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -24,8 +23,6 @@
   \author Kris Thielemans
   \author Charalampos Tsoumpas
 
-  $Date$
-  $Revision$
 
   \todo Potentially, in the future it should be included in stir_math as an option.
 

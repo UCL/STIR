@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,8 +26,6 @@
   \see zoom_image_in_place for conventions
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/zoom.h"

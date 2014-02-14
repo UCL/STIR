@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2003 - 2011-06-24, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-07-01 - 2014, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

@@ -1,9 +1,8 @@
 //
-// $Id$
 //
 /*
     Copyright (C) 2003, Hammersmith Imanet Ltd
-    Copyright (C) 2012-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2012-07-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,8 +27,6 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 
   \warning It only supports stir::VoxelsOnCartesianGrid type of images.
 */

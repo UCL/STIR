@@ -1,9 +1,8 @@
 //
-// $Id$
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
 
     This file is part of STIR.
 
@@ -26,8 +25,6 @@
   \author Claire LABBE
   \author Kris Thielemans
   \author PARAPET project
-  $Date$
-  $Revision$
 */
 
 #ifndef __stir_analytic_FBP3DRP_FBP3DRPRECONSTRUCTION_H__

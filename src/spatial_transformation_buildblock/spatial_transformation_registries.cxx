@@ -22,8 +22,6 @@
 
   \author Charalampos Tsoumpas
   
-  $Date$
-  $Revision$
 */
 
 #include "stir/spatial_transformation/GatedSpatialTransformation.h"

@@ -1,10 +1,9 @@
 //
-// $Id$
 //
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-01-11, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-07-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,8 +26,6 @@
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
 
-  $Date$
-  $Revision$
 
 */
 // include for min,max definitions

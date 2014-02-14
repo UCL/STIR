@@ -1,9 +1,8 @@
 //
-// $Id$
 //
 /*
     Copyright (C) 2002 - 2009, Hammersmith Imanet Ltd
-    Copyright 2011 - $Date$, Kris Thielemans
+    Copyright 2011 - 2012, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -39,8 +38,6 @@ To copy a subheader (but keeping essential info)
 \endverbatim
 
 \author Kris Thielemans
-$Date$
-$Revision$
 */
 
 

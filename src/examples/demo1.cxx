@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
   \file
@@ -16,11 +15,9 @@
   See examples/README.txt
 
   \author Kris Thielemans      
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004- 2011, Hammersmith Imanet Ltd
 
     This software is distributed under the terms 
     of the GNU General  Public Licence (GPL)

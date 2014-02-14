@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,8 +23,6 @@
   \brief Implementations of centre_of_gravity.h 
   \warning Only 1, 2 and 3 dimensional versions with floats are instantiated.  
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 
 

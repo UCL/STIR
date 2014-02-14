@@ -1,6 +1,5 @@
-/* $Id$
 
-    Copyright (C) 2008- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2008- 2012, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

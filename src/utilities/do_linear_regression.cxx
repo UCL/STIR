@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
   \file 
@@ -11,8 +10,6 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  $Date$
-  $Revision$
 
   This performs a weighted least squares fit.<br>
   stdev and covariance are computed using the estimated 
@@ -26,7 +23,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

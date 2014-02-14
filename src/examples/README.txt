@@ -1,4 +1,3 @@
-$Id$
 
 This directory contains some files that are intended for beginning STIR
 developers. The first version of these files was constructed for 

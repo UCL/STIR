@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2006 - $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2006 - 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,8 +24,6 @@
   \author Kris Thielemans
   \author Charalampos Tsoumpas
 
-  $Date$
-  $Revision$
 */
 #include "stir/MinimalArrayFilter3D.h"
 #include "stir/Coordinate3D.h"

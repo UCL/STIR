@@ -1,10 +1,9 @@
 //
-// $Id$
 //
 #ifndef __stir_IO_stir_AVW__H__
 #define __stir_IO_stir_AVW__H__
 /*
-    Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2001- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,8 +25,6 @@
 \brief routines to convert AVW data structures to STIR
 \author Kris Thielemans 
 
-$Date$
-$Revision$ 
 */
 
 

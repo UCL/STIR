@@ -1,10 +1,9 @@
 //
-// $Id$
 //
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
-    Copyright (C) 2012-06-01 - $Date$, Kris Thielemans
+    Copyright (C) 2012-06-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -16,7 +15,7 @@
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Lesser General Public License for more details.
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_VectorWithOffset_H__
@@ -30,8 +29,6 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  $Date$
-  $Revision$
 */
 
 #include "stir/common.h"

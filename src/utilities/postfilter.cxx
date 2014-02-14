@@ -1,9 +1,8 @@
 //
-// $Id$
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,8 +29,6 @@
   \author Matthew Jacobson
   \author PARAPET project
   
-  $Date$
-  $Revision$
 
   This program enables calling any ImageProcessor object on input data, 
   and writing it to file. It can take the following command line:

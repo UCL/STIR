@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2006- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2006- 2013, Hammersmith Imanet Ltd
 
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -26,8 +25,6 @@
   \author Sanida Mustafovic
   \author Charalampos Tsoumpas
 
-  $Date$
-  $Revision$
 */
 
 #ifndef __stir_recon_buildblock_PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData_H__

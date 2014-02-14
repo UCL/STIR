@@ -1,7 +1,6 @@
 #
-# $Id$
 #
-# Copyright 2011-07-01 - $Date$ Kris Thielemans
+# Copyright 2011-07-01 - 2013 Kris Thielemans
 
 # This file is part of STIR.
 #

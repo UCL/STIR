@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*
     Copyright (C) 2000 PARAPET partners
@@ -30,8 +29,6 @@
   \author Kris Thielemans
   \author PARAPET project
       
-  $Date$       
-  $Revision$
 */
 
 #include "stir/recon_buildblock/Reconstruction.h"

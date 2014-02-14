@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 
 /*!
@@ -9,11 +8,9 @@
   \brief Prints start time and duration of a frame to stdout
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

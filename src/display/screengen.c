@@ -6,9 +6,7 @@
  \author Kris Thielemans (with help from Claire Labbe)
  \author PARAPET project
  
- $Date$
   
- $Revision$
 
  Implementations common to all SC_x types
   
@@ -19,7 +17,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- 2001, IRSL
     See STIR/LICENSE.txt for details
 */
 #include "gen.h"

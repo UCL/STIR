@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2001- 2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,8 +23,6 @@
 \brief routines to convert AVW data structures to STIR
 \author Kris Thielemans 
 
-$Date$
-$Revision$ 
 */
 
 #ifdef HAVE_AVW

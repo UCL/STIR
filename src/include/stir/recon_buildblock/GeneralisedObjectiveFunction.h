@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,8 +24,6 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  $Date$
-  $Revision$
 */
 #ifndef __stir_recon_buildblock_GeneralisedObjectiveFunction_H__
 #define __stir_recon_buildblock_GeneralisedObjectiveFunction_H__

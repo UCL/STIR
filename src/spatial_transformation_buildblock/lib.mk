@@ -1,5 +1,4 @@
 #
-# $Id$
 #
 
 dir := spatial_transformation_buildblock

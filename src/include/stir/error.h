@@ -1,12 +1,11 @@
 //
-// $Id$
 //
 #ifndef __stir_error_H__
 #define __stir_error_H__
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2010-06-25, Hammersmith Imanet Ltd
-    Copyright (C) 2013-01-01 - $Date$, Kris Thielemans
+    Copyright (C) 2013-01-01 - 2013, Kris Thielemans
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -27,8 +26,6 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 #include "stir/common.h"
 #include <iostream>

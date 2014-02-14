@@ -26,8 +26,6 @@
  
   \todo This files needs proper test
       
-  $Date$
-  $Revision$
 */
 #ifndef __stir_TimeGateDefinitions_H__
 #define __stir_TimeGateDefinitions_H__
