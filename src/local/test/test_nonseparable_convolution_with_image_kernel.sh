@@ -1,5 +1,4 @@
 #! /bin/sh
-# $Id$
 # A script to test the nonseparable image filtering with convolution.
 # Author: Charalampos Tsoumpas
 

@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
 
@@ -10,11 +9,9 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2001- $Date$, IRSL
+    Copyright (C) 2001- 2012, IRSL
     See STIR/LICENSE.txt for details
 */
 

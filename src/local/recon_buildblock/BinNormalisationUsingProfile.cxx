@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
   \file
@@ -8,11 +7,9 @@
   \brief Implementations for class BinNormalisationUsingProfile
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet
+    Copyright (C) 2000- 2003, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 

@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -29,8 +28,6 @@
   sector of a cylinder can be defined and updated the 
   associated tests and volume and area calculations.)_
 
-  $Date$
-  $Revision$
 */
 #include "stir/Shape/EllipsoidalCylinder.h"
 #include "stir/numerics/MatrixFunction.h"

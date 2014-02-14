@@ -329,7 +329,7 @@ cd ..
 #(Recommended) To get rid of unnecessary tag fixup branches, run the contrib/git-move-refs.py script from within the git repository.
 
 # TODO fix keywords
-# sed script changes "Copyright ... $Date$" to "Copyright ... 2009 ..."
+# sed script changes "Copyright ... 2009" to "Copyright ... 2009 ..."
 # and remove lines with $Id$ and only $date$ and $Revision$
 
 #sed -e's/\(Copyright.*\)\$Date$/\1\2/' -e '/\$Id$/d' -e'/ *\$Date$ *$/d' -e'/ *\$Revision$ *$/d' 

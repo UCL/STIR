@@ -1,8 +1,7 @@
 x//
-// $Id$
 //
 /*
-    Copyright (C) 2001- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2001- 2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,8 +22,6 @@ x//
 \brief convert AVW ROI files to images. Images are read using the AVW library.
 \author Kris Thielemans 
 
-$Date$
-$Revision$ 
 */
 #include "stir/IO/stir_AVW.h"
 #include "AVW_ObjectMap.h"

@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2012, Hammersmith Imanet Ltd
     Internal GE use only.
 */
 
@@ -25,8 +24,6 @@ namespace stir { // for doxygen
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 } // end namespace stir
 

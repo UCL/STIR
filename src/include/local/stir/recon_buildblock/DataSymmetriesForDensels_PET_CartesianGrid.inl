@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
   \file
@@ -8,11 +7,9 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2001- $Date$, IRSL
+    Copyright (C) 2001- 2002, IRSL
     See STIR/LICENSE.txt for details
 */
 #include "stir/ProjDataInfoCylindrical.h"

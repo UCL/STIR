@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
 
@@ -10,11 +9,9 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- 2004, IRSL
     See STIR/LICENSE.txt for details
 */
 #include "stir/ProjData.h"

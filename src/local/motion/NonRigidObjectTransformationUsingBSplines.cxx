@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2005- $Date$ , Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2012 , Hammersmith Imanet Ltd
     For internal GE use only
 */
 /*!
@@ -12,8 +11,6 @@
   \brief Implementation of class stir::NonRigidObjectTransformationUsingBSplines
 
   \author  Kris Thielemans
-  $Date$
-  $Revision$
 */
 
 #include "local/stir/motion/NonRigidObjectTransformationUsingBSplines.h"

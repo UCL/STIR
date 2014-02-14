@@ -1,16 +1,13 @@
 //
-// $Id$
 //
 /*!
   \file
   \ingroup numerics_test
   \brief Test stir::integrate_discrete_function
   \author Charalampos Tsoumpas
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

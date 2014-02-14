@@ -1,5 +1,4 @@
 #
-# $Id$
 #
 set(dir Shape_buildblock)
 

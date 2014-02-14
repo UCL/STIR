@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2005- 2007, Hammersmith Imanet Ltd
   This file is part of STIR.
   
   This file is free software; you can redistribute it and/or modify
@@ -15,7 +15,6 @@
   See STIR/LICENSE.txt for details
  */
 /*
- * $Id$
  *
  *
  * \file
@@ -26,9 +25,7 @@
  * \author T. Borgeaud
  *
  *
- * $Date$
  *
- * $Revision$
  *
  *
  */

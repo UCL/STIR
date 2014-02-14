@@ -1,6 +1,6 @@
 # Demo of how to mayavi to display some STIR data
 
-# Copyright 2012-06-05 - $Date$ Kris Thielemans
+# Copyright 2012-06-05 - 2013 Kris Thielemans
 
 # This file is part of STIR.
 #

@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
 
@@ -9,8 +8,6 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 /*
     Copyright (C) 2001- 2009, Hammersmith Imanet Ltd

@@ -1,10 +1,9 @@
 //
-// $Id$
 //
 #ifndef __stir_DiscretisedDensityOnCartesianGrid_H__
 #define __stir_DiscretisedDensityOnCartesianGrid_H__
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     Copyright (C) 2000 PARAPET partners
     This file is part of STIR.
 
@@ -31,8 +30,6 @@
   \author (help from Alexey Zverovich)
   \author PARAPET project
 
-  $Date$
-  $Revision$
 
 */
 #include "stir/DiscretisedDensity.h"

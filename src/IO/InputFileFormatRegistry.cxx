@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2008- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2008- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -23,8 +22,6 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 
 #include "stir/IO/InputFileFormatRegistry.txx"

@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2005- $Date$ , Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2010 , Hammersmith Imanet Ltd
     For internal GE use only
 */
 #ifndef __stir_AbsTimeInterval__H__
@@ -14,8 +13,6 @@
   \brief Declaration of class stir::AbsTimeInterval
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 
 #include "stir/RegisteredObject.h"

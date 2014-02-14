@@ -1,5 +1,4 @@
 OSMAPOSLParameters :=
-; $Id$
 ; test file for OSMAPOSL with a quadratic prior (and ray tracing projection matrix)
 
 objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData

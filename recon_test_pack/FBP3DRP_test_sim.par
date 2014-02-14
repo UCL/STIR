@@ -1,5 +1,4 @@
 FBP3DRPParameters :=
-; $Id$
 ; test file for FBP2D
 input file := my_precorrected_sino.hs
 xy output image size (in pixels) := 91

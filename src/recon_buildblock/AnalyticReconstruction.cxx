@@ -27,8 +27,6 @@
   \author Sanida Mustafovic
   \author PARAPET project
       
-  $Date$       
-  $Revision$
 */
 
 #include "stir/recon_buildblock/AnalyticReconstruction.h"

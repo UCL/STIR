@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2006, Hammersmith Imanet Ltd
     Internal GE use only
 */
 #ifndef __stir_motion_TimeFrameMotion__H__
@@ -13,8 +12,6 @@
   \brief stir::TimeFrameMotion
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 
 #include "local/stir/motion/RigidObject3DTransformation.h"

@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2000- $Date$ , Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2005 , Hammersmith Imanet Ltd
     For internal GE use only
 */
 /*!
@@ -12,8 +11,6 @@
   \brief Declaration of class stir::RigidObject3DTransformation
 
   \author  Sanida Mustafovic and Kris Thielemans
-  $Date$
-  $Revision$
 */
 
 #ifndef __stir_motion_RigidObject3DTransformation_H__

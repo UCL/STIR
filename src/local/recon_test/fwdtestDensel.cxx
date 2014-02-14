@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 
 /*!
@@ -11,8 +10,6 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  $Date$
-  $Revision$
 
   This programme allows forward projection of a few segments/views
   only, or of the full data set. 
@@ -28,7 +25,7 @@
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- 2003, IRSL
     See STIR/LICENSE.txt for details
 */
 

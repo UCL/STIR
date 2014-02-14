@@ -1,9 +1,8 @@
 //
-// $Id$
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,8 +25,6 @@
   \author Kris Thielemans
   \author PARAPET project
 
-  $Date$
-  $Revision$
 */
 
 #include "stir/recon_buildblock/SymmetryOperation.h"

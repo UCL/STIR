@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
   \file
@@ -9,13 +8,11 @@
   \author Christian Morel
   \author Kris Thielemans
       
-  $Date$
-  $Revision$
 */
 /*
     Crystal Clear Collaboration
     Copyright (C) 2003 IPHE/UNIL, CH-1015 Lausanne
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
 
     This software is distributed under the terms 
     of the GNU Lesser General  Public Licence (LGPL)

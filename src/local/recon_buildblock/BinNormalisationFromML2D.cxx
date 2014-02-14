@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002- 2008, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,8 +22,6 @@
   \brief Implementation for class stir::BinNormalisationFromML2D
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 
 

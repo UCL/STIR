@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet
+    Copyright (C) 2003- 2005, Hammersmith Imanet
     For GE internal use only
 */
 /*!
@@ -14,8 +13,6 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
       
-  $Date$
-  $Revision$
 */
 
 #ifndef __stir_listmode_LmToProjDataWithMC_H__

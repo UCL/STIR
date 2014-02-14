@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2005- 2012, Hammersmith Imanet Ltd
   This file is free software; you can redistribute it and/or modify
   it under the terms of the GNU Lesser General Public License as published by
   the Free Software Foundation; either version 2.1 of the License, or
@@ -23,8 +22,6 @@
   \author Charalampos Tsoumpas
   \author Kris Thielemans
   
-  $Date$
-  $Revision$
 	
   \par Usage:
   \verbatim

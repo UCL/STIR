@@ -1,9 +1,8 @@
 //
-// $Id$
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -29,8 +28,6 @@
   \author (loosely based on some C code by Matthias Egger)
   \author PARAPET project
 
-  $Date$
-  $Revision$
 */
 /* Modification history:
    KT 30/05/2002 

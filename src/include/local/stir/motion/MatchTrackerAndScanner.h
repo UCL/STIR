@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$ , Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2010 , Hammersmith Imanet Ltd
     For GE Internal use only
 */
 
@@ -16,8 +15,6 @@
   \author Kris Thielemans
 
   
-  $Date$
-  $Revision$
 */
 #include "local/stir/motion/RigidObject3DTransformation.h"
 #include "stir/TimeFrameDefinitions.h"

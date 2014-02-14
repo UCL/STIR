@@ -1,5 +1,4 @@
 #! /bin/bash
-# $Id$
 
 # Script to normalise simset simulations
 #
@@ -13,7 +12,7 @@
 # This script relies on names of files fixed on other scripts, so beware.
 
 #  Copyright (C) 2005, Hammersmith Imanet Ltd
-#  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+#  Copyright (C) 2011-07-01 - 2012, Kris Thielemans
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify

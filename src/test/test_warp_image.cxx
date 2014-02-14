@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*
  Copyright (C) 2013, King's College London

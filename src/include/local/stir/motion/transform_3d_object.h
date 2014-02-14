@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     For internal GE use only
 */
 #ifndef __stir_motion_transformed_3d_object_H__
@@ -16,8 +15,6 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 
 #include "stir/common.h"

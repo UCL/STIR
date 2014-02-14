@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002- 2011, Hammersmith Imanet Ltd
     Copyright CTI
     This file is part of STIR.
 
@@ -32,8 +31,6 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
-  $Date$
-  $Revision$
 */
 
 // enable if you want results identical to Peter Bloomfield's normalisation code

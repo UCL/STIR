@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2006- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2006- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,8 +25,6 @@
   \author Sanida Mustafovic
   \author Charalampos Tsoumpas
 
-  $Date$
-  $Revision$
 */
 
 

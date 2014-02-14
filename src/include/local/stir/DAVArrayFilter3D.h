@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
 
@@ -10,15 +9,13 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
    Warning: 
    At the moment it is essential to have 
    mask_radius_x = mask_radius_y =mask_radius_z = odd.
 
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- 2001, IRSL
     See STIR/LICENSE.txt for details
 */
 

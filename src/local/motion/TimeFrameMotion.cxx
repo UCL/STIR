@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2012, Hammersmith Imanet Ltd
     Internal GE use only
 */
 /*!
@@ -11,8 +10,6 @@
   \brief stir::TimeFrameMotion
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 
 #include "local/stir/motion/TimeFrameMotion.h"

@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2012, Hammersmith Imanet Ltd
 */
 /*!
   \file
@@ -11,8 +10,6 @@
     
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 
 #include "local/stir/motion/Transform3DObjectImageProcessor.h"

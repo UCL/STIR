@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
   \file
@@ -8,12 +7,10 @@
   \brief Declaration of class stir::AbsTimeIntervalWithParsing
 
   \author  Sanida Mustafovic and Kris Thielemans
-  $Date$
-  $Revision$
 */
 
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2010, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 

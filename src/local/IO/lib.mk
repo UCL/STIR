@@ -1,5 +1,4 @@
 #
-# $Id$
 #
 
 dir := local/IO

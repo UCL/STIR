@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 //#error This file is for doxygen only. It does not contain any code.
 /*!
@@ -11,15 +10,13 @@
   \author Kris Thielemans
   \author PARAPET project
       
-  \date $Date$
         
-  \version $Revision$
 */         
 
 /*
     Copyright (C) 2000 PARAPET project
     Copyright (C) 2001 - 2004-09-14, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-07-01 - 2012, Kris Thielemans
 
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by

@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2007, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -11,8 +10,6 @@
  
   \brief This program creates a simple grid image
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 #include "stir/DiscretisedDensity.h"
 #include "stir/IO/OutputFileFormat.h"

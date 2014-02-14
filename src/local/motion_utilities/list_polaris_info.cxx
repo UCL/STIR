@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2010, Hammersmith Imanet Ltd
     This file is for internal GE use only
 */
 /*!
@@ -11,8 +10,6 @@
   \brief Utility to list information from a Polaris file
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
   \par Usage:
   \verbatim
   list_polaris_info somefile.mt

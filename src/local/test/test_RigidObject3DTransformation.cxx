@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$ , Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2007 , Hammersmith Imanet Ltd
     For GE Internal use only
 */
 /*!
@@ -13,8 +12,6 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   
-  $Date$
-  $Revision$
 */
 #include "stir/RunTests.h"
 #include "local/stir/Quaternion.h"

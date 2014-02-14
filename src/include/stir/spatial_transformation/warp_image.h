@@ -21,8 +21,6 @@
  
  \brief This warps an image.
  \author Charalampos Tsoumpas
- $Date$
- $Revision$
 */
 
 #ifndef __stir_warp_image_H__

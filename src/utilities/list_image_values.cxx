@@ -1,6 +1,5 @@
-// $Id$
 /*
-    Copyright (C) 2002- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2002- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -29,8 +28,6 @@
   \endcode
   Indices need to be in the STIR convention (plane starts from 0, col,row are centred around 0)
 
-  $Date$
-  $Revision$
 */
 
 #include "stir/DiscretisedDensity.h"

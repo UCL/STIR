@@ -6,8 +6,6 @@
 
   \author Sanida Mustafovic
 
-  $Date$ 
-  $Revision$ 
   
     This program precomputes denominator for the SPS 
     (separable paraboloidal surrogates)  in ET.
@@ -23,7 +21,7 @@
 */
 
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- 2011, IRSL
     See STIR/LICENSE.txt for details
 */
 

@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*
   Copyright (C) 2005- 2009-10-27, Hammersmith Imanet Ltd
@@ -25,8 +24,6 @@
   \author Charalampos Tsoumpas
   \author Kris Thielemans
   
-  $Date$
-  $Revision$
 */  
 #include "stir/RunTests.h"
 #include "stir/Array.h"

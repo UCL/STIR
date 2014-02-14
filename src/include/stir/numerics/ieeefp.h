@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004- 2012, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,8 +29,6 @@
   http://std.dkuug.dk/jtc1/sc22/wg21/docs/papers/2004/n1568.htm
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 
 #include "stir/common.h"

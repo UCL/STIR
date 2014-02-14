@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2005 - $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005 - 2005, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,8 +24,6 @@
 
   \author Charalampos Tsoumpas
  
-  $Date$
-  $Revision$
 */
 
 #ifndef __stir_modelling_BloodFrame_H__

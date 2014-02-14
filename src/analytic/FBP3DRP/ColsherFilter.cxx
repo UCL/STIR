@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 
 /*! 
@@ -10,12 +9,10 @@
   \author Claire LABBE
   \author based on C-code by Matthias Egger
   \author PARAPET project
-  $Date$
-  $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2004, Hammersmith Imanet Ltd
 
     This file is part of STIR.
 

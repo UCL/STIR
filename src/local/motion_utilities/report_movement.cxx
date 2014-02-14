@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2006, Hammersmith Imanet Ltd
     Internal GE use only
 */
 /*!
@@ -11,8 +10,6 @@
   \brief Utility to report RMSE w.r.t. reference position and within the frames
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
   
   \par Usage
 \verbatim

@@ -3,7 +3,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- 2011, IRSL
     See STIR/LICENSE.txt for details
 */
 START_NAMESPACE_STIR

@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2005, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -12,8 +11,6 @@
   \brief Declaration of class stir::BinNormalisationSinogramRescaling
 
   \author Sanida Mustafovic
-  $Date$
-  $Revision$ 
 */
 
 

@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
 
@@ -10,11 +9,9 @@
   \author Kris Thielemans
   \author Katie Dinelle
   \author Tim Borgeaud
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004- 2005, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 

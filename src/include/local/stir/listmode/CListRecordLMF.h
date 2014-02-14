@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
   \file
@@ -8,11 +7,9 @@
     
   \author Kris Thielemans
       
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
 
     This software is distributed under the terms 
     of the GNU Lesser General  Public Licence (LGPL)

@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
 
@@ -11,11 +10,9 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2004, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 // note: include has to be before #ifdef as it's in this file that

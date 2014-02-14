@@ -1,5 +1,4 @@
 #
-# $Id$
 #
 # This file contains a list of all subdirectories in STIR
 # that will be compiled when using the Makefile

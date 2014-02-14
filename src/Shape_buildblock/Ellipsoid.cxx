@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,8 +23,6 @@
   \brief Non-inline implementations for class stir::Ellipsoid
 
   \author Sanida Mustafovic
-  $Date$
-  $Revision$
 */
 #include "stir/Shape/Ellipsoid.h"
 #include "stir/numerics/MatrixFunction.h"

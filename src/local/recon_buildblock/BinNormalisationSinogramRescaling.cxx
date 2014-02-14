@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
   \file
@@ -9,11 +8,9 @@
   \brief Implementation for class BinNormalisationSinogramRescaling
 
   \author Sanida Mustafovic
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2004, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 

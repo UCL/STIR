@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2005- 2009, Hammersmith Imanet Ltd
   This file is part of STIR.
   This file is free software; you can redistribute it and/or modify
   it under the terms of the GNU Lesser General Public License as published by
@@ -22,8 +21,6 @@
   \brief  initialisation of the stir::OutputFileFormat::_default_sptr member
   \author Kris Thielemans
       
-  $Date$
-  $Revision$
 */
 
 

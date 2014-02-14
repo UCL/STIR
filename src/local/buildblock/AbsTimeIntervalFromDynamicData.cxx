@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
   \file
@@ -8,12 +7,10 @@
   \brief Declaration of class stir::AbsTimeIntervalFromDynamicData
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 
 /*
-    Copyright (C) 2010- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2010- 2012, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 

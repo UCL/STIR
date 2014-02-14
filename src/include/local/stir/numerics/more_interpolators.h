@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2005, Hammersmith Imanet Ltd
     For internal GE use only.
 */
 #ifndef __stir_numerics_more_interpolators_H__
@@ -16,8 +15,6 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 #include "stir/BasicCoordinate.h"
 #include "stir/Array.h"

@@ -1,5 +1,4 @@
 #
-# $Id$
 #
 # Copyright 2013 Kris Thielemans
 

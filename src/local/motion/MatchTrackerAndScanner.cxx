@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$ , Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2012 , Hammersmith Imanet Ltd
     For GE Internal use only
 */
 /*!
@@ -12,8 +11,6 @@
   \author Kris Thielemans
 
   
-  $Date$
-  $Revision$
 */
 #include "local/stir/motion/MatchTrackerAndScanner.h"
 #include "stir/stream.h"

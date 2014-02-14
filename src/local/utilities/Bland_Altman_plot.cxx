@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-  Copyright (C) 2006- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2006- 2007, Hammersmith Imanet Ltd
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -22,8 +21,6 @@
   \ingroup utilities
   \brief Writes the Bland-Altman values for two images in a text file.
   \author Charalampos Tsoumpas
-  $Date$
-  $Revision$
 
   \par Usage:
   \code 

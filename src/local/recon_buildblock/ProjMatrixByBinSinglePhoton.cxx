@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
 
@@ -10,11 +9,9 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet
+    Copyright (C) 2003- 2012, Hammersmith Imanet
     See STIR/LICENSE.txt for details
 */
 

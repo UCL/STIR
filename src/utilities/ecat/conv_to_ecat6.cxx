@@ -1,9 +1,8 @@
 //
-// $Id$
 //
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,8 +24,6 @@
   to ECAT 6 cti (image and sinogram data)
 \author Kris Thielemans
 \author PARAPET project
-$Date$
-$Revision$
 
 This programme is used to convert image or projection data into CTI ECAT 6 data (input 
 can be any format currently supported by the library). It normally should be run as 

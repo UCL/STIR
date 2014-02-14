@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
   \file 
@@ -13,11 +12,9 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- 2012, IRSL
     See STIR/LICENSE.txt for details
 */
 #include "stir/DiscretisedDensity.h"

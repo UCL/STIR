@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2012, Hammersmith Imanet Ltd
 */
 /*!
 
@@ -12,8 +11,6 @@
   \brief Declaration of class stir::Transform3DObjectImageProcessor
   \author Kris Thielemans
       
-  $Date$
-  $Revision$
 */
 
 #ifndef __stir_motion_Transform3DObjectImageProcessor_H__

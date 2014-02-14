@@ -24,8 +24,6 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  $Date$
-  $Revision$
 */
 #include "stir/DiscretisedDensity.h"
 #include "stir/is_null_ptr.h"

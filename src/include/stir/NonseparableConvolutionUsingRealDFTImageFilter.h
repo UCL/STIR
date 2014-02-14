@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2007- $Date$, Hammersmith Imanet
+    Copyright (C) 2007- 2007, Hammersmith Imanet
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,8 +24,6 @@
   \author Kris Thielemans
   \author Charalampos Tsoumpas
       
-  $Date$
-  $Revision$
 */
 
 

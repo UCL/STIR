@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 
 /*! 
@@ -7,11 +6,9 @@
 \ingroup utilities
 \brief A small utility that changes the file type in an ECAT7 main header.
 \author Kris Thielemans
-$Date$
-$Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- 2002, IRSL
     See STIR/LICENSE.txt for details
 */
 

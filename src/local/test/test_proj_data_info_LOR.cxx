@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004- 2008, Hammersmith Imanet Ltd
     For GE internal use only.
 */
 /*!
@@ -22,8 +21,6 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 #include "local/stir/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
 #include "stir/ProjData.h"

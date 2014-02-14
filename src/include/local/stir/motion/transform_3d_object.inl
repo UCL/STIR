@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2005, Hammersmith Imanet Ltd
     For internal GE use only.
 */
 /*!
@@ -12,8 +11,6 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 
 #include "stir/VoxelsOnCartesianGrid.h"

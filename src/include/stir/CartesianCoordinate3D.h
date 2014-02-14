@@ -1,7 +1,6 @@
 #ifndef __CartesianCoordinate3D_H__
 #define __CartesianCoordinate3D_H__
 //
-// $Id$
 //
 /*!
   \file 
@@ -12,14 +11,12 @@
   \author Kris Thielemans 
   \author PARAPET project
 
-  $Date$
-  $Revision$
 
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009-06-22, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

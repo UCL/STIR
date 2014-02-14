@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
   \file
@@ -7,11 +6,9 @@
   
   \brief Import of boost::shared_ptr into stir namespace
           
-  $Date$        
-  $Revision$
 */         
 /*
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-07-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

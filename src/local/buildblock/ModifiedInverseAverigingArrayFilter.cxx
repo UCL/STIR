@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2001- $Date$, IRSL
+    Copyright (C) 2001- 2002, IRSL
     See STIR/LICENSE.txt for details
 */
 #include "local/stir/ModifiedInverseAverigingArrayFilter.h"

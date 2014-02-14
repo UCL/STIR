@@ -1,5 +1,4 @@
 #! /bin/bash
-#  $Id$
 #
 # This script attempts to make Interfile headers (.hv STIR style and 
 # .ahv Analyze style) for a raw float image output by Simset.
@@ -7,7 +6,7 @@
 # See the usage message below for some more info
 
 #  Copyright (C) 2009-07-08, Hammersmith Imanet Ltd
-#  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+#  Copyright (C) 2011-07-01 - 2012, Kris Thielemans
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify

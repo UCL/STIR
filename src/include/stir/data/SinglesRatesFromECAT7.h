@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,8 +22,6 @@
 
   \brief Declaration of class stir::ecat::ecat7::SinglesRatesFromECAT7
   \author  Sanida Mustafovic and Kris Thielemans
-  $Date$
-  $Revision$ 
 */
 
 #ifndef __stir_data_SinglesRatesFromECAT7_H__

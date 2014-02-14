@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 
 /*! 
@@ -8,11 +7,9 @@
 \ingroup ECAT
 \brief Show contents of ECAT7 header
 \author Kris Thielemans
-$Date$
-$Revision$
 */
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- 2003, IRSL
     See STIR/LICENSE.txt for details
 */
 

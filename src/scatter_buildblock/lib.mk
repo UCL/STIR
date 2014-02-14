@@ -1,6 +1,5 @@
 
 #
-# $Id$
 #
 
 dir := scatter_buildblock

@@ -22,8 +22,6 @@
  
  \brief This program corrects the motion from an image.
  \author Charalampos Tsoumpas
- $Date$
- $Revision$
  */
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/DiscretisedDensity.h"

@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004- 2007, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -11,8 +10,6 @@
   \brief Utility program that prints out values from an RDF file.
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 
 

@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 
 #ifndef __stir_recon_buildblock_ProjMatrixByDensel_H__
@@ -13,11 +12,9 @@
   
   \author Kris Thielemans
    
-  $Date$  
-  $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 

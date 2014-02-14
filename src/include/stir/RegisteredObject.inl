@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
 
@@ -10,8 +9,6 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  $Date$
-  $Revision$
 */
 /*
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd

@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 
 /*! 
@@ -8,12 +7,10 @@
   \author Kris Thielemans
   \author Claire LABBE
   \author PARAPET project
-  $Date$
-  $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- 2002, IRSL
     See STIR/LICENSE.txt for details
 */
 

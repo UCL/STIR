@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$ , Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2005 , Hammersmith Imanet Ltd
     For GE Internal use only
 */
 /*!
@@ -11,8 +10,6 @@
 
 \brief Test program for class Quaternion 
 \author Sanida Mustafovic    
-$Date$
-$Revision$
 */
 #include "stir/RunTests.h"
 #include "local/stir/Quaternion.h"

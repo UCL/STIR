@@ -1,4 +1,3 @@
-@rem $Id$
 @rem Batch programme to run STIR tests
 @rem Kris Thielemans
 

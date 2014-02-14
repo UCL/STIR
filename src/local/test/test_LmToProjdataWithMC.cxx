@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
   \file
@@ -9,11 +8,9 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2003, Hammersmith Imanet Ltd
     See STIR/LICENSE.txt for details
 */
 #include "stir/RunTests.h"

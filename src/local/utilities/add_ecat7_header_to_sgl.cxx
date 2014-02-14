@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2005, Hammersmith Imanet Ltd
     For internal use only
 */
 
@@ -13,8 +12,6 @@
 \brief Prepend contents of ECAT7 header to a new sgl file (from list mode acquisition)
 \author Kris Thielemans
 \author Nacer Kerrouche
-$Date$
-$Revision$
 */
 
 

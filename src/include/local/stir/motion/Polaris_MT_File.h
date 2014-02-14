@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2010, Hammersmith Imanet Ltd
     For internal GE use only.
 */
 /*!
@@ -13,8 +12,6 @@
 
   \author Sanida Mustafovic
   \author Kris Thielemans
-  $Date$
-  $Revision$ 
 */
 
 #ifndef __stir_Polaris_MT_File__

@@ -1,10 +1,9 @@
 #ifndef __stir_cross_product_H__
 #define __stir_cross_product_H__
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2005, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,8 +24,6 @@
   \brief defines the cross-product of 2 CartesianCoordinate3D numbers
 
   \author Kris Thielemans 
-  $Date$
-  $Revision$
 
 */
 

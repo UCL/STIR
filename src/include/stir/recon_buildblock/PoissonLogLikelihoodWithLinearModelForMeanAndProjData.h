@@ -22,8 +22,6 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
 
-  $Date$
-  $Revision$
 */
 
 #ifndef __stir_recon_buildblock_PoissonLogLikelihoodWithLinearModelForMeanAndProjData_H__

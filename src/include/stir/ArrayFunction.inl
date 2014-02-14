@@ -1,7 +1,6 @@
-// $Id$
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,8 +24,6 @@
   \author Kris Thielemans (some functions based on some earlier work by Darren Hague)
   \author PARAPET project
 
-  $Date$
-  $Revision$
   
   \warning Compilers without partial specialisation of templates are
    catered for by explicit instantiations. If you need it for any other

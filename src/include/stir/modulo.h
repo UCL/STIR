@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 #ifndef __stir_modulo_H__
 #define __stir_modulo_H__
@@ -11,12 +10,10 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 
 */
 /*
-    Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2004- 2009, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

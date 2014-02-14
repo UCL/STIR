@@ -1,8 +1,7 @@
 #
-# $Id$
 #
 # Author Kris Thielemans
-# Copyright 2004- $Date$ Hammersmith Imanet Ltd
+# Copyright 2004- 2011 Hammersmith Imanet Ltd
 # This file is part of STIR, and is distributed under the 
 # terms of the GNU Lesser General Public Licence (LGPL) Version 2.1.
 #

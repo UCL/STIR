@@ -1,5 +1,4 @@
 #
-# $Id$
 #
 # sample file that includes the examples directory into the STIR build.
 # You should copy this file to STIR/local (unless you have one there already, in 

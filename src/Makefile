@@ -1,10 +1,9 @@
 #
-# $Id$
 #
 # Author Kris Thielemans
 #
 # Copyright (C) 2004 - 2011-01-23 Hammersmith Imanet Ltd
-# Copyright (C) 2013-01-01 - $Date$, Kris Thielemans
+# Copyright (C) 2013-01-01 - 2013, Kris Thielemans
 # This file is part of STIR.
 #
 #   This file is free software; you can redistribute it and/or modify

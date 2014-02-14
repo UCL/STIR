@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2007- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2007- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,7 +25,6 @@
 
   \author Tobias Beisel  
 
-  $Date$
 */
 
 #include "stir/recon_buildblock/distributed_test_functions.h"

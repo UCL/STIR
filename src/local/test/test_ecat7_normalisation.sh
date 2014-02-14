@@ -1,5 +1,4 @@
 #! /bin/bash 
-# $Id$
 # This is a script that compares results from STIR's correct_projdata
 # when using ECAT7 norm files and CTI's bkproj_3D. Results should obviously
 # identical.

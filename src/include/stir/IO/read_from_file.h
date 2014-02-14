@@ -1,11 +1,10 @@
 //
-// $Id$
 //
 #ifndef __stir_IO_read_from_file_H__
 #define __stir_IO_read_from_file_H__
 /*
     Copyright (C) 2006 - 2008-10-01, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-07-01 - 2013, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,8 +27,6 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 */
 #include "stir/IO/InputFileFormatRegistry.h"
 

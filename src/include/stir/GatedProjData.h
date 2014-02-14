@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*
     Copyright (C) 2005-2009, Hammersmith Imanet Ltd
@@ -25,8 +24,6 @@
  \author Kris Thielemans
  \author Charalampos Tsoumpas
 
-  $Date$
-  $Revision$
 */
 #include "stir/MultipleProjData.h"
 #include "stir/TimeGateDefinitions.h"

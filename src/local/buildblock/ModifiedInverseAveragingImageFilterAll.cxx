@@ -1,5 +1,4 @@
 //
-// $Id$
 /*!
 
   \file
@@ -9,11 +8,9 @@
     \author Sanida Mustafovic
     \author Kris Thielemans
     
-      $Date$
-      $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- 2003, IRSL
     See STIR/LICENSE.txt for details
 */
 #include "local/stir/ModifiedInverseAveragingImageFilterAll.h"

@@ -1,9 +1,8 @@
 
-// $Id$
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-07-01 - 2012, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -34,8 +33,6 @@
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
 
-  $Date$
-  $Revision$
 
   Not all compilers support the full iterators, so you could disabled them by editing 
   the file and removing the define ARRAY_FULL. Lots of other things in the library 

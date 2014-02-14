@@ -9,12 +9,10 @@
 
 \author Kris Thielemans 
 
-$Date$
-$Revision$ 
 
 */
 /*
-    Copyright (C) 2002- $Date$, IRSL
+    Copyright (C) 2002- 2012, IRSL
     See STIR/LICENSE.txt for details
 */
 

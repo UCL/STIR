@@ -3,7 +3,6 @@
 # can also write csv files for import into e.g. matlab
 
 # Author: Kris Thielemans
-# $Id$
 
 #defaults
 makeCSV=1

@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2010, Hammersmith Imanet Ltd
     For internal GE use only
 */
 #ifndef __stir_motion_RigidObject3DMotionFromPolaris__H__
@@ -14,8 +13,6 @@
   \brief Declaration of class stir::RigidObject3DMotionFromPolaris
 
   \author  Sanida Mustafovic and Kris Thielemans
-  $Date$
-  $Revision$ 
 */
 
 #include "local/stir/motion/RigidObject3DMotion.h"

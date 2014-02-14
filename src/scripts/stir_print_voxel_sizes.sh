@@ -4,7 +4,7 @@
 # print_voxel_sizes.sh img.hv
 # => will print voxel sizes (in mm) as 3 numbers separated by spaces, in order z y x
 #
-#  Copyright (C) 2011- $Date$, Hammersmith Imanet Ltd
+#  Copyright (C) 2011- 2011, Hammersmith Imanet Ltd
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify
@@ -20,7 +20,6 @@
 #  See STIR/LICENSE.txt for details
 #      
 # Author Kris Thielemans
-# $Id$
 # 
 if [ $# -ne 1 ]; then
   echo "Usage: `basename $0` filename"

@@ -1,11 +1,10 @@
 #! /bin/bash 
-#  $Id$
 #
 # This script attempts to find dimensions etc of an image using list_image_info
 # and calls write_phg_image_info to write the corresponding lines for a 
 # PHG input file to stdout.
 
-#  Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+#  Copyright (C) 2011-07-01 - 2012, Kris Thielemans
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify

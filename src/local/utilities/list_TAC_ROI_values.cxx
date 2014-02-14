@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2010, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -63,8 +62,6 @@
   \todo Add the --V option to include the volume information for the sample region. 
   \todo Merge it with the list_ROI_values.cxx utility. 
 
-  $Date$
-  $Revision$
 */
 #include "stir/utilities.h"
 #include "stir/evaluation/compute_ROI_values.h"

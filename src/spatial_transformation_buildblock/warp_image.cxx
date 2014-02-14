@@ -20,8 +20,6 @@
  \ingroup buildblock
  \brief Implementation of function stir::warp_image 
  \author Charalampos Tsoumpas
-  $Date$
-  $Revision$
 */
 
 #include "stir/spatial_transformation/warp_image.h"

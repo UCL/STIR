@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*! 
   \file 
@@ -7,11 +6,9 @@
   \ingroup main_programs
   \brief Main program for FBP2D reconstruction 
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet
+    Copyright (C) 2003- 2004, Hammersmith Imanet
 
     This file is part of STIR.
 

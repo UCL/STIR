@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2012, Hammersmith Imanet Ltd
     Internal GE use only
 */
 /*!
@@ -11,8 +10,6 @@
   \brief Utility to move an image according to average motion in the frame.
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
   
   \par Usage
 \verbatim

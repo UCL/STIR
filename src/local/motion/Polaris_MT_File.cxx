@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
   \file 
@@ -10,11 +9,9 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
   
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2010, Hammersmith Imanet Ltd
     GE Internal use only
 */
 #include "local/stir/motion/Polaris_MT_File.h"

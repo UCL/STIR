@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- 2002, IRSL
     See STIR/LICENSE.txt for details
 */
 

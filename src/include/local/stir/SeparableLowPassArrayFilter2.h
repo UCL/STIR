@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*!
   \file
@@ -7,11 +6,9 @@
   \brief 
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- 2011, IRSL
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_SeparableLowPassArrayFilter2__H__

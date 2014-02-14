@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2013, Hammersmith Imanet Ltd
     Internal GE use only
 */
 /*!

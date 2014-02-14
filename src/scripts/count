@@ -1,7 +1,7 @@
 #! /bin/csh -fe
 # A script to write a sequence of numbered strings to stdout
 #
-#  Copyright (C) 2005- $Date$, Hammersmith Imanet Ltd
+#  Copyright (C) 2005- 2008, Hammersmith Imanet Ltd
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify
@@ -17,7 +17,6 @@
 #  See STIR/LICENSE.txt for details
 #      
 # Author Kris Thielemans
-# $Id$
 # Examples:
 # count 3 5
 # => 3 4 5

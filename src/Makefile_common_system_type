@@ -1,5 +1,4 @@
 #
-# $Id$
 #
 # find out which system we are on
 # sets SYSTEM to LINUX, DARWIN, CYGWIN, AIX, SUN, CC, AP3000

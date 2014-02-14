@@ -1,5 +1,4 @@
 #! /bin/bash
-#  $Id$
 # Author: Kris Thielemans
 
 print_usage_and_exit()

@@ -21,8 +21,6 @@
  \brief Applies the dilation filter (i.e. voxel=max(neighbours))
  \author Charalampos Tsoumpas [extension of original by Buerger, see below]
  
- $Date$
- $Revision$
  */
 
 /*-----

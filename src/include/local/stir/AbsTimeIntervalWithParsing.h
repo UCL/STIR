@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2005- $Date$ , Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2010 , Hammersmith Imanet Ltd
     For internal GE use only
 */
 #ifndef __stir_AbsTimeIntervalWithParsing__H__
@@ -14,8 +13,6 @@
   \brief Declaration of class stir::AbsTimeIntervalWithParsing
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 
 #include "stir/RegisteredParsingObject.h"

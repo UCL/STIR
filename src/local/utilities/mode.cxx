@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*
   \file
@@ -7,11 +6,9 @@
   \author Kris Thielemans
   \brief Program that computes the mode of a set binary data.
 
-  $Date$
-  $Revision$
 */
 /*
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- 2001, IRSL
     See STIR/LICENSE.txt for details
 */
 #include <fstream>

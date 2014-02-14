@@ -1,9 +1,8 @@
 /* 
- $Id$
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- 2012, IRSL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,9 +25,7 @@
  \author Kris Thielemans
  \author PARAPET project
  
- $Date$
   
- $Revision$
 
  \see screen.h for a few details
   

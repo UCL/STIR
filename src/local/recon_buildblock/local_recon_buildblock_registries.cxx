@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
     For GE internal use only.
 */
 /*!
@@ -12,8 +11,6 @@
   \brief File that registers all RegisterObject children in recon_buildblock
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 
 

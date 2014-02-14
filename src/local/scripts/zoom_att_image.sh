@@ -1,8 +1,7 @@
 #
-# $Id$
 #
 #
-#  Copyright (C) 2004- $Date$, Hammersmith Imanet Ltd
+#  Copyright (C) 2004- 2007, Hammersmith Imanet Ltd
 #      See STIR/LICENSE.txt for details
 #      
 # Author /Charalampos Tsoumpas 07/10/2005

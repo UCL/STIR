@@ -1,5 +1,4 @@
 //
-// $Id$
 //
 /*
     Copyright (C) 2005 - 2011 Hammersmith Imanet Ltd
@@ -24,8 +23,6 @@
 
   \author Charalampos Tsoumpas
 
-  $Date$
-  $Revision$
 */
 #include "stir/decay_correction_factor.h"
 #include "stir/numerics/integrate_discrete_function.h"

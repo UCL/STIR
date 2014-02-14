@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2001- $Date$,  Hammersmith Imanet Ltd
+    Copyright (C) 2001- 2011,  Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,8 +25,6 @@
 
   \author Kris Thielemans
   
-  $Date$
-  $Revision$
 */
 #ifndef __stir_recon_buildblock_DataSymmetriesForDensels_PET_CartesianGrid_H__
 #define __stir_recon_buildblock_DataSymmetriesForDensels_PET_CartesianGrid_H__

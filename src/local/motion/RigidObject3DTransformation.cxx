@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2003- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2005, Hammersmith Imanet Ltd
     For internal GE use only.
 */
 /*!
@@ -12,8 +11,6 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
 
 */
 #include "local/stir/motion/RigidObject3DTransformation.h"

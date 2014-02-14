@@ -1,9 +1,8 @@
 //
-// $Id$
 //
 /*
     Copyright (C) 2005 - 2005-02-28, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - $Date$, Kris Thielemans
+    Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,8 +24,6 @@
 
   \author Kris Thielemans
 
-  $Date$
-  $Revision$
   */
 #include "stir/ArcCorrection.h"
 #include "stir/Sinogram.h"

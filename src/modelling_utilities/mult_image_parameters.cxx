@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-  Copyright (C) 2006- $Date$, Hammersmith Imanet Ltd
+  Copyright (C) 2006- 2012, Hammersmith Imanet Ltd
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -35,8 +34,6 @@
 
   \note It is useful to estimate the covariance between the two parameters of the parametric images. 
 
-  $Date$
-  $Revision$
 */
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"

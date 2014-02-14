@@ -1,8 +1,7 @@
 //
-// $Id$
 //
 /*
-    Copyright (C) 2005- $Date$ , Hammersmith Imanet Ltd
+    Copyright (C) 2005- 2005 , Hammersmith Imanet Ltd
     For internal GE use only
 */
 #ifndef __stir_AbsTimeIntervalFromECAT7ACF__H__
@@ -14,8 +13,6 @@
   \brief Declaration of class stir::AbsTimeIntervalFromECAT7ACF
 
   \author Kris Thielemans
-  $Date$
-  $Revision$
 */
 
 #include "stir/RegisteredParsingObject.h"

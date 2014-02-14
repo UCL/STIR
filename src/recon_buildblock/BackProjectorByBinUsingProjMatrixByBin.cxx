@@ -1,6 +1,5 @@
 
 //
-// $Id$
 //
 
 /*!
@@ -13,12 +12,10 @@
   \author Kris Thielemans
   \author PARAPET project
     
-  $Date$
-  $Revision$
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

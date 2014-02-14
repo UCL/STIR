@@ -1,9 +1,8 @@
 /* 
-   $Id$
 */
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- $Date$, IRSL
+    Copyright (C) 2000- 2001, IRSL
     See STIR/LICENSE.txt for details
 */
 /*!
@@ -14,9 +13,7 @@
  \author Kris Thielemans
  \author PARAPET project
  
- $Date$
   
- $Revision$
 
 
  This is part of a library by Kris Thielemans, mainly written in 1991.
