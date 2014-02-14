@@ -3,7 +3,7 @@ set -e
 orgdir=$1
 cvsdir=~/devel/STIR-hg/cvsroot/STIR/
 cd $cvsdir
-for f in ${orgdir}/Attic/*.*[xhl],v; do
+for f in ${orgdir}/Attic/*.*[xhlnfrscekt],v; do
  if [ -r $f ]; then
    name=`basename $f`
    numfound=`find . -type f -name ${name}|wc -l`

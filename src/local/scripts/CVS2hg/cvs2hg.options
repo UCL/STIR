@@ -390,7 +390,7 @@ ctx.file_property_setters.extend([
 
     # The following causes keywords to be collapsed in all text to be
     # committed:
-    KeywordHandlingPropertySetter('expanded'), #collapsed'),
+    KeywordHandlingPropertySetter('collapsed'),
 
     ])
 ctx.revision_property_setters.extend([

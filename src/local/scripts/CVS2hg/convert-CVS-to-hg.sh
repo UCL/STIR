@@ -2,6 +2,15 @@
 set -e
 cd ~/devel/
 rm -rf STIR-hg/*
+
+if [ -r ~/devel/hgroot/cvsroot/STIR ]; then
+  cp -rp ~/devel/hgroot/cvsroot STIR-hg
+  cd STIR-hg
+  cvs -d  /home/kris/devel/STIR-hg/cvsroot/ checkout STIR
+  cd STIR
+
+else
+
 mkdir -p STIR-hg/cvsroot
 cp -rp cvsroot/CVSROOT cvsroot/parapet STIR-hg/cvsroot/
 
@@ -28,7 +37,7 @@ rm src/local/config_*.mk,v
 rm -rf src/local/reconstruction_data/params
 
 # uninteresting stuff
-rm src/local/recon_buildblock/old*cxx,v src/include/local/stir/recon_buildblock/old*,v
+rm src/local/recon_buildblock/old*cxx,v src/include/local/stir/recon_buildblock/old*,v src/include/local/recon_buildblock/Attic/old*,v
 rm src/local/buildblock/cleanup966ImageProcessor.cxx,v src/include/local/stir/cleanup966ImageProcessor.h,v
 rm -rf src/local/howto
 
@@ -40,11 +49,11 @@ rm local/buildblock/fft.cxx,v
 rm -rf local/QH*  include/local/stir/QHidac include/local/tomo/QHidac
 # remove  GE things
 cd local
-rm -rf recon_buildblock/BackProjectorByBinDistanceDriven.cxx,v recon_buildblock/ForwardProjectorByBinDistanceDriven.cxx,v ../include/local/stir/recon_buildblock/BackProjectorByBinDistanceDriven.h,v ../include/local/stir/recon_buildblock/ForwardProjectorByBinDistanceDriven.h,v IO/GE ../include/local/stir/IO/GE motion/ScatterSimulationByBinWithMotion.cxx,v ../include/local/stir/motion/ScatterSimulationByBinWithMotion.h,v motion_utilities/fwd_image_and_fill_missing_data.cxx,v motion_utilities/simulate_scatter_with_motion.cxx,v scatter/ scatter_buildblock/ ../include/local/stir/DoubleScatterEstimationByBin.h,v  utilities/Hounsfield2mu.cxx,v reconstruction_data/
+rm -rf recon_buildblock/BackProjectorByBinDistanceDriven.cxx,v recon_buildblock/ForwardProjectorByBinDistanceDriven.cxx,v ../include/local/stir/recon_buildblock/BackProjectorByBinDistanceDriven.h,v ../include/local/stir/recon_buildblock/ForwardProjectorByBinDistanceDriven.h,v IO/GE ../include/local/stir/IO/GE motion/ScatterSimulationByBinWithMotion.cxx,v ../include/local/stir/motion/ScatterSimulationByBinWithMotion.h,v motion_utilities/fwd_image_and_fill_missing_data.cxx,v motion_utilities/simulate_scatter_with_motion.cxx,v scatter/*,v scatter_buildblock/*,v scatter_buildblock/*two_*,v ../include/local/stir/DoubleScatterEstimationByBin.h,v  utilities/Hounsfield2mu.cxx,v reconstruction_data/ ../include/local/stir/IO/Attic/ProjDataVOLPET.h,v ../include/local/stir/IO/Attic/niff.h,v IO/Attic/ProjDataVOLPET* IO/Attic/niff*
 cd ..
 # remove old/irrelevant scripts
 cd local/scripts
-rm -rf CalibrateImage966,v change_voxel_sizes_in_hv.sh,v find_normfile.sh,v get_* Makefile,v newpostproc.sh,v print_original_voxel_size_for_cti_zoom.sh,v process_966_transmission.sh,v recon* Recons* rmtags,v up-comp-debug.sh,v zip* scatter GE *total* *ecat* cvs2cl.pl,v check* cloc* compare* construct* correct_voxel* MCdistrib.sh,v *counts* PPlist* q* remove_q* add_pre* rename.sh,v set* copy* extract* header_doc* is_norm* MetaIO* is_Meta* precorrect* run_splines* show_header* Evaluation how_many* estimate_scatter.sh,v
+rm -rf CalibrateImage966,v change_voxel_sizes_in_hv.sh,v find_normfile.sh,v get_* Makefile,v newpostproc.sh,v print_original_voxel_size_for_cti_zoom.sh,v process_966_transmission.sh,v recon* Recons* rmtags,v up-comp-debug.sh,v zip* scatter GE *total* *ecat* cvs2cl.pl,v check* cloc* compare* construct* correct_voxel* MCdistrib.sh,v *counts* PPlist* q* remove_q* add_pre* rename.sh,v set* copy* extract* header_doc* is_norm* MetaIO* is_Meta* precorrect* run_splines* show_header* Evaluation how_many* estimate_scatter.sh,v get_num_frames* Attic
 cd ../..
 cd ..
 
@@ -126,23 +135,14 @@ cvs rtag -d 'before_VC_project_conversion_to_2010' STIR
 
 # change dates in documentation *rtf such that they coincide with actual release
 
-#  *rtf change date to avoid fixups for rel_0_92 and rel_1_00
+#  *rtf change date to avoid fixups for rel_0_92, rel_1_00 (and rel_1_20?)
 for f in ~/devel/STIR-hg/cvsroot/STIR/documentation/Attic/*rtf,v; do
    if [ ! -r $f.org ]; then
        mv $f $f.org 
    fi
-   sed -e 's/date\t2001.06.15/date\t2001.05.15/' -e 's/date\t2003.06.02.14.38/date\t2001.12.20.14.38/' $f.org > $f
+   sed -e 's/date\t2001.06.15/date\t2001.05.15/' -e 's/date\t2003.06.02.14.38/date\t2001.12.20.14.38/'  $f.org > $f
+  #-e 's/date\t2004.04.02.17.13.49/date\t2004.04.01.00.13.49/' not necessary?
 done
-	
-# change a few dates to get all moves before rel_1_00 in one commit
-for f in ~/devel/STIR-hg/cvsroot/STIR/src/LICENSE.txt,v ~/devel/STIR-hg/cvsroot/STIR/src/VERSION.txt,v; do
-   if [ ! -r $f.org ]; then
-       mv $f $f.org 
-   fi
-   sed -e 's/date\t2001.12.20.21.17.17/date\tt2001.12.20.21.21.48/' -e 's/date\t2001.12.20.20.04.08/date\t2001.12.20.20.21.22.49/' $f.org > $f
-done
-# and get rid of one irrelevant revision
-cvs admin -o 1.3 src/test/test_display.cxx
 
 cvs rtag -dB tag STIR
 # remove these to avoid problems with fixup
@@ -169,10 +169,52 @@ for t in \
   trunk_merge_to_OBJFUNC_for_patlak \
   after_moving_modelling_to_global \
   rel_2_10_alpha \
+  rel_MC_0_90 \
   before_ExamInfo ;
 do
   cvs rtag -d $t STIR
 done
+
+cp -rp 	~/devel/STIR-hg/cvsroot ~/devel/hgroot
+
+fi
+
+# change a few dates to get all moves before rel_1_00 in one commit
+for f in ~/devel/STIR-hg/cvsroot/STIR/src/LICENSE.txt,v ~/devel/STIR-hg/cvsroot/STIR/src/VERSION.txt,v; do
+   if [ ! -r $f.org ]; then
+       mv $f $f.org 
+   fi
+   sed -e 's/date\t2001.12.20.21.17.17/date\t2001.12.20.21.21.48/' -e 's/date\t2001.12.20.20.04.08/date\t2001.12.20.20.21.22.49/' $f.org > $f
+done
+# and get rid of one irrelevant revision
+cvs admin -o 1.3 src/test/test_display.cxx
+
+# change date of move (commit was one year too late)
+f=~/devel/STIR-hg/cvsroot/STIR/src/local/listmode_utilities/Attic/lm_to_projdata.cxx,v
+   if [ ! -r $f.org ]; then
+       mv $f $f.org 
+   fi
+   sed -e 's/date\t2005.02.24.13.56.00/date\t2004.03.19.14.56.00/' $f.org >$f
+
+ for n in CListRecordECAT962.h CListRecordECAT966.h; do
+   f=~/devel/STIR-hg/cvsroot/STIR/src/include/local/stir/listmode/Attic/${n},v
+   if [ ! -r $f.org ]; then
+       mv $f $f.org 
+   fi
+   sed -e 's/date\t2005.03.08.15.24.09/date\t2004.03.03.12.08.50/' -e 's/date\t2005.12.05.10.27.48/date\t2004.03.03.12.08.50/' $f.org >$f
+done
+   cvs admin -m1.2:"moved to global distro" src/include/local/stir/listmode/CListRecordECAT962.h
+   cvs admin -m1.3:"moved to global distro" src/include/local/stir/listmode/CListRecordECAT966.h
+
+   # now need to remove tags as well to take this into account
+   for t in OBJFUNC_updated_to_rel_1_40_beta \
+        OBJFUNC_before_update_to_rel_1_40_beta \
+        rel_1_30 \
+        OBJFUNC_updated_to_rel_1_30_beta \
+        rel_1_30_beta \
+        rel_1_20; do
+     cvs tag -d $t src/local/listmode_utilities/lm_to_projdata.cxx src/include/local/stir/listmode/CListRecordECAT962.h src/include/local/stir/listmode/CListRecordECAT966.h
+   done
 
 # get rid of RS_AK branch stuff
 cvs rtag -d SHAPE3D_UPDATES_1_00 STIR
@@ -202,16 +244,49 @@ cvs admin -o 1.1.2.1 src/analytic/FBP3DRP/lib.mk
 # fix problem with Reconstruct.h being reinstated as different file
 mv ~/devel/STIR-hg/cvsroot/STIR/src/include/Attic/Reconstruction.h,v ~/devel/STIR-hg/cvsroot/STIR/src/include/Attic/XXXReconstruction.h,v
 
+# find copies. Important: these have to be in chronological order
 ~/devel/hgroot/rm_revs_dir.sh src/include > ../cvs_manips.log  2>&1
 ~/devel/hgroot/rm_revs_dir.sh src/include/tomo  >> ../cvs_manips.log  2>&1
 ~/devel/hgroot/rm_revs_dir.sh src/include/recon_buildblock  >> ../cvs_manips.log   2>&1
+~/devel/hgroot/rm_revs_dir.sh src/include/tomo/recon_buildblock  >> ../cvs_manips.log  2>&1
 ~/devel/hgroot/rm_revs_dir.sh src/include/OSMAPOSL 2>&1 >> ../cvs_manips.log 
+~/devel/hgroot/rm_revs_dir.sh src/include/local >> ../cvs_manips.log  2>&1
+~/devel/hgroot/rm_revs_dir.sh src/include/local/tomo >> ../cvs_manips.log  2>&1
+~/devel/hgroot/rm_revs_dir.sh src/include/local/tomo/recon_buildblock >> ../cvs_manips.log  2>&1
+~/devel/hgroot/rm_revs_dir.sh src/include/local/tomo/Shape >> ../cvs_manips.log  2>&1
+~/devel/hgroot/rm_revs_dir.sh src/include/local/tomo/eval_buildblock >> ../cvs_manips.log  2>&1
+#~/devel/hgroot/rm_revs_dir.sh src/include/local/stir >> ../cvs_manips.log  2>&1
+#~/devel/hgroot/rm_revs_dir.sh src/include/local/stir/recon_buildblock >> ../cvs_manips.log  2>&1
+#~/devel/hgroot/rm_revs_dir.sh src/include/local/stir/modelling >> ../cvs_manips.log  2>&1
+find src/include/local/stir  -name CVS -prune  -o -type d -exec ~/devel/hgroot/rm_revs_dir.sh {} \;  >> ../cvs_manips.log  2>&1
+
+
+~/devel/hgroot/rm_revs_dir.sh src/local/listmode  >> ../cvs_manips.log  2>&1
+# need to move this out of the way now
+#mv ~/devel/STIR-hg/cvsroot/STIR/src/local/listmode/Attic ~/devel/STIR-hg/cvsroot/STIR/src/local/listmode/Attic.org
+
+
 find src/local  -name CVS -prune  -o -type d -exec ~/devel/hgroot/rm_revs_dir.sh {} \;  >> ../cvs_manips.log  2>&1
-find src/include/local  -name CVS -prune  -o -type d -exec ~/devel/hgroot/rm_revs_dir.sh {} \;  >> ../cvs_manips.log  2>&1
+
+# move back
+#mv ~/devel/STIR-hg/cvsroot/STIR/src/local/listmode/Attic.org ~/devel/STIR-hg/cvsroot/STIR/src/local/listmode/Attic
+
 # ecat utilities moved
 ~/devel/hgroot/rm_revs_dir.sh src/utilities 2>&1 >> ../cvs_manips.log 
 
 mv ~/devel/STIR-hg/cvsroot/STIR/src/include/Attic/XXXReconstruction.h,v ~/devel/STIR-hg/cvsroot/STIR/src/include/Attic/Reconstruction.h,v
+
+pushd ~/devel/STIR-hg/cvsroot/STIR/src/
+# get rid of some makefiles that seem to create trouble
+#rm -f local/Attic/Makefile* local/*/Attic/Makefile* listmode_utilities/Attic/Makefile*
+# duplicate
+rm -f include/local/Attic/BackProjectorByBinUsingSquareProjMatrixByBin.h,v include/local/stir/Attic/BackProjectorByBinUsingSquareProjMatrixByBin.h,v
+# erroneous
+rm -f include/local/stir/Attic/IR_filters.*~,v
+# trouble makers
+find . -name \*.dsp,v -exec rm {} \;
+find . -name \*.dsw,v -exec rm {} \;
+popd
 
 
 cd ..
