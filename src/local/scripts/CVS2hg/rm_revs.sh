@@ -30,6 +30,16 @@ if [ xx"`~/devel/hgroot/find_log_of_rev.sh $org $previousrev`" != xx"`~/devel/hg
   echo "log messages do not match at rev $previousrev. leave $newloc alone ($org)"
   exit 0
 fi
+cvs up -p -ko -r$previousrev $org > /tmp/cvs2hg.tmp1 2> /dev/null
+cvs up -p -ko -r$previousrev $newloc > /tmp/cvs2hg.tmp2 2> /dev/null
+if cmp /tmp/cvs2hg.tmp1 /tmp/cvs2hg.tmp2 > /dev/null
+then
+ :
+else
+  echo "content does not match at rev $previousrev. leave $newloc alone ($org)"
+  exit 0
+fi
+
 
 echo "$org=>$newloc removing revs up to $previousrev"
 # find any tags in old and remove from new

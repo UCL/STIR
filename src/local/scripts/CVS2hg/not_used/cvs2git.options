@@ -1,7 +1,7 @@
 # (Be in -*- mode: python; coding: utf-8 -*- mode.)
 #
 # ====================================================================
-# Copyright (c) 2006-2009 CollabNet.  All rights reserved.
+# Copyright (c) 2006-2010 CollabNet.  All rights reserved.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution.  The terms
@@ -19,19 +19,21 @@
 #                  #####################
 #
 # This is a template for an options file that can be used to configure
-# cvs2svn to convert to Mercurial rather than to Subversion.  See
+# cvs2git to convert to git rather than to Subversion.  See
 # www/cvs2git.html and www/cvs2svn.html for general information, and
 # see the comments in this file for information about what options are
 # available and how they can be set.
 #
-# The program that is run to convert from CVS to Mercurial is called
-# cvs2hg.  Run it with the --options option, passing it this file as
-# argument:
+# The program that is run to convert from CVS to git is called
+# cvs2git.  Run it with the --options option, passing it this file
+# like this:
 #
-#     cvs2hg --options=cvs2hg-example.options
+#     cvs2git --options=cvs2git-example.options
 #
-# The output of cvs2hg is a Mercurial repository.  Please see
-# README.cvs2hg for more information.
+# The output of cvs2git is a blob file and a dump file that can be
+# loaded into git using the "git fast-import" command.  Please read
+# www/cvs2git.html for more information.
+#
 # Many options do not have defaults, so it is easier to copy this file
 # and modify what you need rather than creating a new options file
 # from scratch.  This file is in Python syntax, but you don't need to
@@ -76,14 +78,13 @@ from cvs2svn_lib import config
 from cvs2svn_lib import changeset_database
 from cvs2svn_lib.common import CVSTextDecoder
 from cvs2svn_lib.log import logger
-from cvs2svn_lib.project import Project
-from cvs2svn_lib.hg_output_option import HgOutputOption
+from cvs2svn_lib.git_revision_collector import GitRevisionCollector
+from cvs2svn_lib.external_blob_generator import ExternalBlobGenerator
+from cvs2svn_lib.git_output_option import GitRevisionMarkWriter
+from cvs2svn_lib.git_output_option import GitOutputOption
 from cvs2svn_lib.dvcs_common import KeywordHandlingPropertySetter
-from cvs2svn_lib.revision_manager import NullRevisionCollector
 from cvs2svn_lib.rcs_revision_manager import RCSRevisionReader
 from cvs2svn_lib.cvs_revision_manager import CVSRevisionReader
-from cvs2svn_lib.checkout_internal import InternalRevisionCollector
-from cvs2svn_lib.checkout_internal import InternalRevisionReader
 from cvs2svn_lib.symbol_strategy import AllBranchRule
 from cvs2svn_lib.symbol_strategy import AllTagRule
 from cvs2svn_lib.symbol_strategy import BranchIfCommitsRule
@@ -101,6 +102,8 @@ from cvs2svn_lib.symbol_transform import RegexpSymbolTransform
 from cvs2svn_lib.symbol_transform import IgnoreSymbolTransform
 from cvs2svn_lib.symbol_transform import NormalizePathsSymbolTransform
 from cvs2svn_lib.property_setters import AutoPropsPropertySetter
+from cvs2svn_lib.property_setters import ConditionalPropertySetter
+from cvs2svn_lib.property_setters import cvs_file_is_binary
 from cvs2svn_lib.property_setters import CVSBinaryFileDefaultMimeTypeSetter
 from cvs2svn_lib.property_setters import CVSBinaryFileEOLStyleSetter
 from cvs2svn_lib.property_setters import DefaultEOLStyleSetter
@@ -115,24 +118,60 @@ from cvs2svn_lib.property_setters import SVNBinaryFileKeywordsPropertySetter
 #logger.log_level = logger.WARN
 #logger.log_level = logger.QUIET
 logger.log_level = logger.NORMAL
-logger.log_level = logger.VERBOSE
-logger.log_level = logger.DEBUG
+#logger.log_level = logger.VERBOSE
+#logger.log_level = logger.DEBUG
 
 
 # The directory to use for temporary files:
-ctx.tmpdir = r'cvs2svn-tmp'
+ctx.tmpdir = r'cvs2git-tmp'
 
-# Choose one of the following three groups of lines
-# (see cvs2svn-example.options for details):
-ctx.revision_collector = InternalRevisionCollector(compress=True)
-ctx.revision_reader = InternalRevisionReader(compress=True)
+# During FilterSymbolsPass, cvs2git records the contents of file
+# revisions into a "blob" file in git-fast-import format.  The
+# ctx.revision_collector option configures that process.  Choose one
+# of the two versions and customize its options.
 
-#ctx.revision_collector = NullRevisionCollector()
-#ctx.revision_reader = RCSRevisionReader(co_executable=r'co')
+# This first alternative is much slower but is better tested and has a
+# chance of working with CVSNT repositories.  It invokes CVS or RCS to
+# reconstuct the contents of CVS file revisions:
+ctx.revision_collector = GitRevisionCollector(
+    # The file in which to write the git-fast-import stream that
+    # contains the file revision contents:
+    'cvs2git-tmp/git-blob.dat',
 
-#ctx.revision_collector = NullRevisionCollector()
-#ctx.revision_reader = CVSRevisionReader(cvs_executable=r'cvs')
+    # The following option specifies how the revision contents of the
+    # RCS files should be read.
+    #
+    # RCSRevisionReader uses RCS's "co" program to extract the
+    # revision contents of the RCS files during CollectRevsPass.  The
+    # constructor argument specifies how to invoke the "co"
+    # executable.
+    #
+    # CVSRevisionReader uses the "cvs" program to extract the revision
+    # contents out of the RCS files during OutputPass.  This option is
+    # considerably slower than RCSRevisionReader because "cvs" is
+    # considerably slower than "co".  However, it works in some
+    # situations where RCSRevisionReader fails; see the HTML
+    # documentation of the "--use-cvs" option for details.  The
+    # constructor argument specifies how to invoke the "co"
+    # executable.  It is also possible to pass a global_options
+    # parameter to CVSRevisionReader to specify which options should
+    # be passed to the cvs command.  By default the correct options
+    # are usually chosen, but for CVSNT you might want to add
+    # global_options=['-q', '-N', '-f'].
+    #
+    # Uncomment one of the two following lines:
+    #RCSRevisionReader(co_executable=r'co'),
+    CVSRevisionReader(cvs_executable=r'cvs'),
+    )
+# This second alternative is vastly faster than the version above.  It
+# uses an external Python program to reconstruct the contents of CVS
+# file revisions:
+#ctx.revision_collector = ExternalBlobGenerator('cvs2git-tmp/git-blob.dat')
 
+# cvs2git doesn't need a revision reader because OutputPass only
+# refers to blobs that were output during CollectRevsPass, so leave
+# this option set to None.
+ctx.revision_reader = None
 
 # Change the following line to True if the conversion should only
 # include the trunk of the repository (i.e., all branches and tags
@@ -148,46 +187,65 @@ ctx.trunk_only = False
 # information loss.
 ctx.cvs_author_decoder = CVSTextDecoder(
     [
-        #'latin1',
         #'utf8',
+        #'latin1',
         'ascii',
         ],
     #fallback_encoding='ascii'
     )
 ctx.cvs_log_decoder = CVSTextDecoder(
     [
-        #'latin1',
         #'utf8',
+        #'latin1',
         'ascii',
         ],
-    #fallback_encoding='ascii'
+    #fallback_encoding='ascii',
+    eol_fix='\n',
     )
 # You might want to be especially strict when converting filenames to
 # Unicode (e.g., maybe not specify a fallback_encoding).
 ctx.cvs_filename_decoder = CVSTextDecoder(
     [
-        #'latin1',
         #'utf8',
+        #'latin1',
         'ascii',
         ],
     #fallback_encoding='ascii'
     )
 
-# Template for the commit message to be used for tag/branch fixup
-# changesets.  This message can use '%(symbol_type)s' to include the
-# type of the symbol ('branch' or 'tag') and/or '%(symbol_name)s' to
-# include the name of the symbol.
-ctx.symbol_commit_message = (
-    "fixup commit for %(symbol_type)s '%(symbol_name)s'"
+# Template for the commit message to be used for initial project
+# commits.
+ctx.initial_project_commit_message = (
+    'Standard project directories initialized by cvs2git.'
     )
 
 # Template for the commit message to be used for post commits, in
 # which modifications to a vendor branch are copied back to trunk.
-# This message can use '%(revnum)s' to include the changeset id
-# of the revision that included the change to the vendor branch.
+# This message can use '%(revnum)d' to include the SVN revision number
+# of the revision that included the change to the vendor branch
+# (admittedly rather pointless in a cvs2git conversion).
 ctx.post_commit_message = (
-    "artificial commit to compensate for changes in %(revnum)s from "
-    "a CVS vendor branch"
+    'This commit was generated by cvs2git to track changes on a CVS '
+    'vendor branch.'
+    )
+
+# Template for the commit message to be used for commits in which
+# symbols are created.  This message can use '%(symbol_type)s' to
+# include the type of the symbol ('branch' or 'tag') or
+# '%(symbol_name)s' to include the name of the symbol.
+ctx.symbol_commit_message = (
+    "This commit was manufactured by cvs2git to create %(symbol_type)s "
+    "'%(symbol_name)s'."
+    )
+
+# Template for the commit message to be used for commits in which
+# tags are pseudo-merged back to their source branch.  This message can
+# use '%(symbol_name)s' to include the name of the symbol.
+# (Not used by default unless you enable tie_tag_fixup_branches on
+# GitOutputOption.)
+ctx.tie_tag_ancestry_message = (
+    "This commit was manufactured by cvs2git to tie ancestry for "
+    "tag '%(symbol_name)s' back to the source branch."
     )
 
 # Some CVS clients for MacOS store resource fork data into CVS along
@@ -195,7 +253,7 @@ ctx.post_commit_message = (
 # format called "AppleSingle".  Subversion currently does not support
 # MacOS resource forks.  Nevertheless, sometimes the resource fork
 # information is not necessary and can be discarded.  Set the
-# following option to True if you would like cvs2svn to identify files
+# following option to True if you would like cvs2git to identify files
 # whose contents are encoded in AppleSingle format, and discard all
 # but the data fork for such files before committing them to
 # Subversion.  (Please note that AppleSingle contents are identified
@@ -206,27 +264,27 @@ ctx.decode_apple_single = False
 
 # This option can be set to the name of a filename to which are stored
 # statistics and conversion decisions about the CVS symbols.
-#ctx.symbol_info_filename = None
-ctx.symbol_info_filename = 'symbol-info.txt'
+ctx.symbol_info_filename = None
+#ctx.symbol_info_filename = 'symbol-info.txt'
 
-# cvs2svn uses "symbol strategy rules" to help decide how to handle
+# cvs2git uses "symbol strategy rules" to help decide how to handle
 # CVS symbols.  The rules in a project's symbol_strategy_rules are
 # applied in order, and each rule is allowed to modify the symbol.
 # The result (after each of the rules has been applied) is used for
 # the conversion.
 #
 # 1. A CVS symbol might be used as a tag in one file and as a branch
-#    in another file.  cvs2svn has to decide whether to convert such a
-#    symbol as a tag or as a branch.  cvs2svn uses a series of
+#    in another file.  cvs2git has to decide whether to convert such a
+#    symbol as a tag or as a branch.  cvs2git uses a series of
 #    heuristic rules to decide how to convert a symbol.  The user can
 #    override the default rules for specific symbols or symbols
 #    matching regular expressions.
 #
-# 2. cvs2svn is also capable of excluding symbols from the conversion
+# 2. cvs2git is also capable of excluding symbols from the conversion
 #    (provided no other symbols depend on them.
 #
 # 3. CVS does not record unambiguously the line of development from
-#    which a symbol sprouted.  cvs2svn uses a heuristic to choose a
+#    which a symbol sprouted.  cvs2git uses a heuristic to choose a
 #    symbol's "preferred parents".
 #
 # The standard branch/tag/exclude StrategyRules do not change a symbol
@@ -277,7 +335,7 @@ global_symbol_strategy_rules = [
     # To exclude all vendor branches (branches that had "cvs import"s
     # on them but no other kinds of commits), uncomment the following
     # line:
-    ExcludeVendorBranchRule(),
+    #ExcludeVendorBranchRule(),
 
     # Usually you want this rule, to convert unambiguous symbols
     # (symbols that were only ever used as tags or only ever used as
@@ -313,11 +371,11 @@ global_symbol_strategy_rules = [
     HeuristicPreferredParentRule(),
     ]
 
-# Specify a username to be used for artificial commits created to
-# account for CVS weirdness (e.g. fixup commits to make a Mercurial
-# tag describe exactly the same tree as its corresponding CVS tag).
-# This can be any Unicode or ASCII string.
-ctx.username = 'cvs2hg'
+# Specify a username to be used for commits for which CVS doesn't
+# record the original author (for example, the creation of a branch).
+# This should be a simple (unix-style) username, but it can be
+# translated into a git-style name by the author_transforms map.
+ctx.username = 'cvs2git'
 
 # ctx.file_property_setters and ctx.revision_property_setters contain
 # rules used to set the svn properties on files in the converted
@@ -330,9 +388,9 @@ ctx.username = 'cvs2hg'
 # should be used for properties that are allowed to vary from revision
 # to revision; these should implement RevisionPropertySetter.
 #
-# Obviously, SVN properties per se are not interesting for a cvs2hg
+# Obviously, SVN properties per se are not interesting for a cvs2git
 # conversion, but some of these properties have side-effects that do
-# affect the Mercurial output.  FIXME: Document this in more detail.
+# affect the git output.  FIXME: Document this in more detail.
 ctx.file_property_setters.extend([
     # To read auto-props rules from a file, uncomment the following line
     # and specify a filename.  The boolean argument specifies whether
@@ -343,8 +401,11 @@ ctx.file_property_setters.extend([
     #    ignore_case=True,
     #    ),
 
-    # To read mime types from a file, uncomment the following line and
-    # specify a filename:
+    # To read mime types from a file and use them to set svn:mime-type
+    # based on the filename extensions, uncomment the following line
+    # and specify a filename (see
+    # http://en.wikipedia.org/wiki/Mime.types for information about
+    # mime.types files):
     #MimeMapper(r'/etc/mime.types', ignore_case=False),
 
     # Omit the svn:eol-style property from any files that are listed
@@ -373,7 +434,7 @@ ctx.file_property_setters.extend([
     # might prefer to use 'native' as the default, as it is usually
     # the most convenient setting for text files.  Other possible
     # options: 'CRLF', 'CR', 'LF'.
-    # DefaultEOLStyleSetter(None),
+    #DefaultEOLStyleSetter(None),
     DefaultEOLStyleSetter('native'),
 
     # Prevent svn:keywords from being set on files that have
@@ -388,8 +449,11 @@ ctx.file_property_setters.extend([
     # being executable:
     ExecutablePropertySetter(),
 
-    # The following causes keywords to be collapsed in all text to be
-    # committed:
+    # The following causes keywords to be untouched in binary files and
+    # collapsed in all text to be committed:
+    ConditionalPropertySetter(
+        cvs_file_is_binary, KeywordHandlingPropertySetter('untouched'),
+        ),
     KeywordHandlingPropertySetter('collapsed'),
 
     ])
@@ -404,7 +468,7 @@ ctx.revision_property_setters.extend([
 # In CVS, it is perfectly possible to make a single commit that
 # affects more than one project or more than one branch of a single
 # project.  Subversion also allows such commits.  Therefore, by
-# default, when cvs2svn sees what looks like a cross-project or
+# default, when cvs2git sees what looks like a cross-project or
 # cross-branch CVS commit, it converts it into a
 # cross-project/cross-branch Subversion commit.
 #
@@ -414,18 +478,18 @@ ctx.revision_property_setters.extend([
 # such commits.)  Therefore, we provide the following two options to
 # allow cross-project/cross-branch commits to be suppressed.
 
-# cvs2hg only supports single-project conversions (multiple-project
-# conversions wouldn't really make sense for hg anyway).  So this
+# cvs2git only supports single-project conversions (multiple-project
+# conversions wouldn't really make sense for git anyway).  So this
 # option must be set to False:
 ctx.cross_project_commits = False
 
-# Mercurial itself doesn't allow commits that affect more than one
-# branch, so this option must be set to False:
+# git itself doesn't allow commits that affect more than one branch,
+# so this option must be set to False:
 ctx.cross_branch_commits = False
 
-# cvs2hg does not yet handle translating .cvsignore files into
-# .hgignore content, so by default, the .cvsignore files are included
-# inthe conversion output.  If you would like to omit the .cvsignore
+# cvs2git does not yet handle translating .cvsignore files into
+# .gitignore files, so by default, the .cvsignore files are included
+# in the conversion output.  If you would like to omit the .cvsignore
 # files from the output, set this option to False:
 ctx.keep_cvsignore = False
 
@@ -438,15 +502,16 @@ ctx.keep_cvsignore = False
 # output repository:
 ctx.retain_conflicting_attic_files = False
 
-# CVS uses unix login names as author names whereas Mercurial allows any
-# string (conventionally of the form "Real Name <email@domain>").  The
-# default is to leave CVS author names as-is.  author_transforms can be
-# used to map cvs author names (e.g., "jrandom") to a true name and
-# email address (e.g., "J. Random <jrandom@example.com>" for the example
-# shown).  All values should be either Unicode strings (i.e., with "u"
-# as a prefix) or 8-bit strings in the UTF-8 encoding.  Please
-# substitute your own project's usernames here to use with the
-# author_transforms option of HgOutputOption below.
+# CVS uses unix login names as author names whereas git requires
+# author names to be of the form "foo <bar>".  The default is to set
+# the git author to "cvsauthor <cvsauthor>".  author_transforms can be
+# used to map cvsauthor names (e.g., "jrandom") to a true name and
+# email address (e.g., "J. Random <jrandom@example.com>" for the
+# example shown).  All strings should be either Unicode strings (i.e.,
+# with "u" as a prefix) or 8-bit strings in the utf-8 encoding.  The
+# values can either be strings in the form "name <email>" or tuples
+# (name, email).  Please substitute your own project's usernames here
+# to use with the author_transforms option of GitOutputOption below.
 author_transforms={
     'mcib' : 'Matthew Jacobson <Matthew.Jacobson@stir>',
     'kris' : 'Kris Thielemans <Kris.Thielemans@stir>',
@@ -473,53 +538,25 @@ author_transforms={
     'schmidtlein' : 'C. Ross Schmidtlein <C.Ross.Schmidtlein@stir>',
     # This one will be used for commits for which CVS doesn't record
     # the original author, as explained above.
-    'cvs2hg' : 'cvs2hg <admin@stir>',
+    'cvs2git' : 'cvs2git <admin@stir>',
     }
 
-# This is the main option that causes cvs2svn to write to a Mercurial
-# repository rather than to Subversion:
-ctx.output_option = HgOutputOption(
-    # The Mercurial repository to write to; must not exist.
-    'main.hg',
+# This is the main option that causes cvs2git to output to a
+# "fastimport"-format dumpfile rather than to Subversion:
+ctx.output_option = GitOutputOption(
+    # The file in which to write the git-fast-import stream that
+    # contains the changesets and branch/tag information:
+    os.path.join(ctx.tmpdir, 'git-dump.dat'),
 
-    # Optional map from CVS author names to Mercurial author names:
+    # The blobs will be written via the revision recorder, so in
+    # OutputPass we only have to emit references to the blob marks:
+    GitRevisionMarkWriter(),
+
+    # Optional map from CVS author names to git author names:
     author_transforms=author_transforms,
-
-    # CVS stores timestamps in UTC with no timezone.  Mercurial timestamps
-    # are also UTC, but with the timezone from when each commit was made.
-    # If all of your commits were made from the same timezone (or if you are
-    # willing to pretend that they were), then you can tell cvs2hg to use
-    # that timezone in the timestamp for every commit.
-    #
-    # timezone can be an integer (seconds east of UTC) or a timezone name
-    # (e.g. 'Canada/Eastern' or 'Europe/Berlin').  If you just supply an
-    # integer offset, it is always used regardless of daylight savings time
-    # -- so it really only makes sense if all your CVS commits happened in a
-    # jurisdiction without daylight savings time.  If you supply a timezone
-    # name, you must install the pytz library (see
-    # http://pypi.python.org/pypi/pytz/).
-    #
-    # The default timezone is UTC.
-    timezone=None,
-
-    # Control how/when to create fixup commits, which are artificial
-    # changesets to account for CVS tags/branches that do not reference
-    # a single point in history.  Allowed values:
-    #  'always': always create fixups, whether they are needed or not
-    #  'optional': only create fixups when necessary (i.e. if a CVS
-    #    tag or branch references a single point in history, there
-    #    will be no fixup for that tag or branch)
-    #  'sloppy': like optional, but further suppress fixups that only
-    #    remove files (this is to account for the CVS practice of tagging
-    #    or branching only part of a source tree)
-    #branch_fixup_mode='optional',
-    #tag_fixup_mode='optional',
-    branch_fixup_mode='sloppy',
-    tag_fixup_mode='sloppy',
-
     )
 
-# Change this option to True to turn on profiling of cvs2svn (for
+# Change this option to True to turn on profiling of cvs2git (for
 # debugging purposes):
 run_options.profiling = False
 
@@ -534,9 +571,9 @@ run_options.profiling = False
 # memory mapped.
 #changeset_database.use_mmap_for_cvs_item_to_changeset_table = True
 
-# Now set the project to be converted to Mercurial.  cvs2hg only
-# supports single-project conversions, so this method must only be
-# called once:
+# Now set the project to be converted to git.  cvs2git only supports
+# single-project conversions, so this method must only be called
+# once:
 run_options.set_project(
     # The filesystem path to the part of the CVS repository (*not* a
     # CVS working copy) that should be converted.  This may be a
@@ -555,7 +592,7 @@ run_options.set_project(
         # IgnoreSymbolTransforms are less flexible and don't exclude
         # branches correctly.  The argument is a Python-style regular
         # expression that has to match the *whole* CVS symbol name:
-        IgnoreSymbolTransform(r''),
+        #IgnoreSymbolTransform(r'nightly-build-tag-.*')
 
         # RegexpSymbolTransforms transform symbols textually using a
         # regular expression.  The first argument is a Python regular
@@ -586,4 +623,9 @@ run_options.set_project(
     # See the definition of global_symbol_strategy_rules above for a
     # description of this option:
     symbol_strategy_rules=global_symbol_strategy_rules,
+
+    # Exclude paths from the conversion. Should be relative to
+    # repository path and use forward slashes:
+    #exclude_paths=['file-to-exclude.txt,v', 'dir/to/exclude'],
     )
+
