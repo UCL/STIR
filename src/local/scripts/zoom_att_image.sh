@@ -26,7 +26,7 @@ zoom_z=$4
 # offset_z default to 0
 offset_z=${5:-0}
 
-voxel_sizes=`get_image_dimensions.sh ${input_image}`
+voxel_sizes=`get_num_voxels.sh ${input_image}`
 voxels_x=`echo ${voxel_sizes} |awk '{print $1}'`
 voxels_y=`echo ${voxel_sizes} |awk '{print $2}'`
 if [ $voxels_x != $voxels_y ] ; then 

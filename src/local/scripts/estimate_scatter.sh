@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 # (very complicated) script to estimate scatter for PET
 # Authors: Kris Thielemans and Nikolaos Dikaios
 #
@@ -21,7 +21,7 @@ if [ -z "${mask}" ]; then mask=mask$suffix.hv; fi
 if [ -z "${min_scale_factor}" ]; then min_scale_factor=.4; fi
 if [ -z "${max_scale_factor}" ]; then max_scale_factor=100; fi
 if [ -z "${back_off}" ]; then back_off=0; fi
-if [ -z "${max_mask_length}" ]; then max_mask_length=100000; fi
+#if [ -z "${max_mask_length}" ]; then max_mask_length=100000; fi
 if [ -z "${DORANDOM}" ]; then DORANDOM=0; fi # TODO only in ST_scatter.par
 if [ -z "${do_FBP}" ]; then do_FBP=1; fi
 if [ -z "${postfilter_FWHM}" ]; then postfilter_FWHM=20; fi
@@ -45,10 +45,16 @@ trap "echo ERROR in estimate_scatter.sh" ERR
 atten_image=$1
 emission_proj_data_file=$2
 template_proj_data_file=$3
-if [ $# -ne 4 ]; then
+if [ $# -lt 4 ]; then
 attenuation_coefficients=attenuation_coefficients$suffix.hs
 else
 attenuation_coefficients=$4
+fi
+if [ $# -lt 5 ]; then
+do_norm=0
+else
+norm_factors=$5
+do_norm=1;
 fi
 
 if [ -r scatter.par ]; then
@@ -110,7 +116,7 @@ z-dir filter FWHM (in mm):= ${postfilter_FWHM}
 end Separable Cartesian Metz Filter Parameters :=
 EOF
   using_PMRTBP=0
-  ;if [ "`get_system_type.csh $2`" = "RX" ]; then
+  #if [ "`get_system_type.csh $2`" = "RX" ]; then
   if false; then
   using_PMRTBP=1
   cat <<EOF  >> ${FBP2Dpar}
@@ -328,10 +334,8 @@ if [ $N = 2 -a ${do_average_at_2} = 1 ]; then
   stir_math --including-first --divide-scalar 2 ${activity_image}.hv ${activity_image_prefix}_tmp.hv
 fi
 
-# local/scatter/estimate_scatter.cxx
 
-# Output of estimate_scatter
- 
+# name for output of estimate_scatter 
 unscaled=${unscaled_prefix}_$N
 
 ACTIVITY_IMAGE=${activity_image}.hv
@@ -350,7 +354,7 @@ if [ ! -z ${image_filter} ]; then
 fi
 
 if [ $do_threshold = 1 ]; then
-    echo Thresholding activity image
+    echo Thresholding activity image to positive values
     stir_math --min-threshold 0 --including-first ${ACTIVITY_IMAGE%.hv}_thresholded$$ ${ACTIVITY_IMAGE%.hv}.hv
     ACTIVITY_IMAGE=${ACTIVITY_IMAGE%.hv}_thresholded$$.hv
 fi # end threshold
@@ -366,14 +370,14 @@ echo estimate_scatter ${ACTIVITY_IMAGE} ${zoomed_attenuation_image} $template_pr
 estimate_scatter $scatterpar >> estimate_scatter_${OUTPUT_PREFIX}.log 2>&1 
 
 
-# output of scale_single_scatter
+# output of upsample_and_fit_single_scatter
 scaled=${scaled_prefix}_$N.hs
 
 # make mask in sinogram space
-sinomask=mask${suffix}_threshold${attenuation_threshold}_backoff${back_off}_length${max_mask_length}.hs
+sinomask=mask${suffix}_threshold${attenuation_threshold}_backoff${back_off}.hs
 if [ ! -r $sinomask ]; then
- if [ ${attenuation_threshold} != 1000 -o ${max_mask_length} -gt 500 ]; then
-    create_tail_mask_from_ACFs --max-mask-length ${max_mask_length} --safety-margin ${back_off} --ACF-threshold ${attenuation_threshold} --ACF-filename ${attenuation_coefficients} --output-filename ${sinomask} >& ${sinomask}.log
+ if [ ${attenuation_threshold} != 1000  ]; then
+    create_tail_mask_from_ACFs  --safety-margin ${back_off} --ACF-threshold ${attenuation_threshold} --ACF-filename ${attenuation_coefficients} --output-filename ${sinomask} >& ${sinomask}.log
  else
     # first make mask complement
     create_tail_mask_from_ACFs --safety-margin ${max_mask_length}  --ACF-threshold 1.5 --ACF-filename ${attenuation_coefficients} --output-filename ${sinomask} >& ${sinomask}.log
@@ -400,9 +404,10 @@ else
   minSF=1;maxSF=1;
 fi
 
-cmd="scale_single_scatter --min-scale-factor ${minSF} --max-scale-factor ${maxSF} --remove-interleaving 1 --half-filter-width 3  --output-filename ${scaled1} --data-to-fit ${projdata_to_fit} --data-to-scale ${unscaled}.hs --weights ${sinomask}" 
-echo $cmd > scale_single_scatter_$unscaled.log
-$cmd >> scale_single_scatter_$unscaled.log 2>&1 
+
+cmd="upsample_and_fit_single_scatter --min-scale-factor ${minSF} --max-scale-factor ${maxSF} --remove-interleaving 1 --half-filter-width 3  --output-filename ${scaled1} --data-to-fit ${projdata_to_fit} --data-to-scale ${unscaled}.hs --weights ${sinomask}" 
+echo $cmd > upsample_and_fit_single_scatter_$unscaled.log
+$cmd >> upsample_and_fit_single_scatter_$unscaled.log 2>&1 
 
 if [ ! ${multiples_FWHM} = 0 ]; then
   multfiltered=${scaled_prefix}_filtered_$N.hs
@@ -410,9 +415,9 @@ if [ ! ${multiples_FWHM} = 0 ]; then
   mult=${scaled_prefix}_with_mult_$N.hs
   stir_math -s --times-scalar ${multiples_norm} $mult $scaled1 $multfiltered
 
-  cmd="scale_single_scatter --min-scale-factor ${actual_min_scale_factor} --max-scale-factor ${actual_max_scale_factor} --remove-interleaving 0 --half-filter-width 3  --output-filename ${scaled} --data-to-fit ${projdata_to_fit} --data-to-scale ${mult} --weights ${sinomask}" 
-  echo $cmd > scale_single_scatter_${mult%.hs}.log
-  $cmd > scale_single_scatter_${mult%.hs}.log 2>&1 
+  cmd="upsample_and_fit_single_scatter --min-scale-factor ${actual_min_scale_factor} --max-scale-factor ${actual_max_scale_factor} --remove-interleaving 0 --half-filter-width 3  --output-filename ${scaled} --data-to-fit ${projdata_to_fit} --data-to-scale ${mult} --weights ${sinomask}" 
+  echo $cmd > upsample_and_fit_single_scatter_${mult%.hs}.log
+  $cmd > upsample_and_fit_single_scatter_${mult%.hs}.log 2>&1 
 fi
  
 
