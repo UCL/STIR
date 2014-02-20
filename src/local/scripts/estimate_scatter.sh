@@ -3,6 +3,7 @@
 # Authors: Kris Thielemans and Nikolaos Dikaios
 #
 # Copyright 2005-2009, Hammersmith Imanet Ltd
+# Copyright 2014, University College London
 
 # Script for including single scatter correction to the final emission image
 
