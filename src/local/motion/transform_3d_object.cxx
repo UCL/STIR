@@ -12,6 +12,7 @@
   \author Kris Thielemans
 
 */
+#define NEW_ROT
 #include "local/stir/motion/transform_3d_object.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/CartesianCoordinate3D.h"

@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     {
       std::cerr << "Usage:\n"
 		<< program_name 
-		<< "\n\t --no_origin_shift\\"
+		<< "\n\t [--no_origin_shift]\\"
 		<< "\n\t output_filename input_projdata_name  \\"
 		<< "\n\t \"{{q0, qz, qy, qx},{ tz, ty, tx}}\"\\"
 		<<"\n\t [max_in_segment_num_to_process [template_projdata_name [max_out_segment_num_to_process ]]]\n"
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
       exit(EXIT_FAILURE);
     }
   const std::string  output_filename = argv[0];
-  shared_ptr<ProjData> in_projdata_ptr = ProjData::read_from_file(argv[1]);  
+  shared_ptr<ProjData> in_projdata_sptr = ProjData::read_from_file(argv[1]);  
   //const float angle_around_x =  atof(argv[3]) *_PI/180;
   RigidObject3DTransformation rigid_object_transformation;
   {
@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 	error("error parsing transformation");
   }
 
-  const int max_in_segment_num_to_process = argc <4 ? in_projdata_ptr->get_max_segment_num() : atoi(argv[3]);
+  const int max_in_segment_num_to_process = argc <4 ? in_projdata_sptr->get_max_segment_num() : atoi(argv[3]);
 
   shared_ptr<ProjDataInfo> proj_data_info_ptr; // template for output
   int max_out_segment_num_to_process=-1;
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
   else
     {
       proj_data_info_ptr =
-	in_projdata_ptr->get_proj_data_info_ptr()->create_shared_clone();
+	in_projdata_sptr->get_proj_data_info_ptr()->create_shared_clone();
     }
   if (max_out_segment_num_to_process<0)
     max_out_segment_num_to_process = 
@@ -102,12 +102,12 @@ int main(int argc, char **argv)
   else
     proj_data_info_ptr->reduce_segment_range(-max_out_segment_num_to_process,max_out_segment_num_to_process);
 
-  ProjDataInterfile out_projdata(in_projdata_sptr->get_exam_info_sptr(), proj_data_info_ptr, output_filename, ios::out); 
+  ProjDataInterfile out_projdata(in_projdata_sptr->get_exam_info_sptr(), proj_data_info_ptr, output_filename, std::ios::out); 
 
   if (do_origin_shift)
     {
       const float in_z_shift =
-	-in_projdata_ptr->get_proj_data_info_ptr()->get_m(Bin(0,0,0,0));
+	-in_projdata_sptr->get_proj_data_info_ptr()->get_m(Bin(0,0,0,0));
       const float out_z_shift =
 	-proj_data_info_ptr->get_m(Bin(0,0,0,0));
 
@@ -124,7 +124,7 @@ int main(int argc, char **argv)
   CPUTimer timer;
   timer.start();
   Succeeded succes =
-    transform_3d_object(out_projdata, *in_projdata_ptr,
+    transform_3d_object(out_projdata, *in_projdata_sptr,
 			rigid_object_transformation,
 			-max_in_segment_num_to_process,
 			max_in_segment_num_to_process);

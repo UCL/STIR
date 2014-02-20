@@ -13,6 +13,7 @@
 
 
 */
+#define NEW_ROT
 #include "local/stir/motion/RigidObject3DTransformation.h"
 #include "stir/IndexRange2D.h"
 #include "stir/LORCoordinates.h"
