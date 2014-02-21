@@ -1,3 +1,4 @@
+/*
     Copyright (C) 2006- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
   
