@@ -69,8 +69,18 @@ if [ $? = 0 ]; then
   else
     # TODO construct this based on actual max ring diff. also take axial compression into account
     # below is ok for mMR probably
-    minringdiff='{ 0,1,-1,2,-2,3,-3,4,-4,5,-5,6,-6,7,-7,8,-8,9,-9,10,-10,11,-11,12,-12,13,-13,14,-14,15,-15,16,-16,17,-17,18,-18,19,-19,20,-20,21,-21,22,-22,23,-23,24,-24,25,-25,26,-26,27,-27,28,-28,29,-29,30,-30,31,-31,32,-32,33,-33,34,-34,35,-35,36,-36,37,-37,38,-38,39,-39,40,-40,41,-41,42,-42,43,-43,44,-44,45,-45,46,-46,47,-47,48,-48,49,-49,50,-50,51,-51,52,-52,53,-53,54,-54,55,-55,56,-56,57,-57,58,-58,59,-59,60,-60}'
+    # find out about span
+   grep -i "%axial compression *:= *11" "${in}" >/dev/null
+   if [ $? = 0 ]; then
+     # span 11
+     minringdiff="{-5,-16, 6,-27,17,-38,28,-49,39,-60,50}"
+     maxringdiff="{ 5, -6,16,-17,27,-28,38,-39,49,-50,60}"
+   else
+     echo " wrong span"
+     exit 1
+     # gamble on span=1   minringdiff='{ 0,1,-1,2,-2,3,-3,4,-4,5,-5,6,-6,7,-7,8,-8,9,-9,10,-10,11,-11,12,-12,13,-13,14,-14,15,-15,16,-16,17,-17,18,-18,19,-19,20,-20,21,-21,22,-22,23,-23,24,-24,25,-25,26,-26,27,-27,28,-28,29,-29,30,-30,31,-31,32,-32,33,-33,34,-34,35,-35,36,-36,37,-37,38,-38,39,-39,40,-40,41,-41,42,-42,43,-43,44,-44,45,-45,46,-46,47,-47,48,-48,49,-49,50,-50,51,-51,52,-52,53,-53,54,-54,55,-55,56,-56,57,-57,58,-58,59,-59,60,-60}'
     maxringdiff=${minringdiff}
+   fi
   fi
   # TODO by-view/by-sino based on "plane/projection" order in matrix label
   # code below assumes it's by-sino, but this is incorrect for Siemens 2D data apparently
@@ -79,9 +89,10 @@ if [ $? = 0 ]; then
  -e "s/applied corrections:= *$/applied corrections:={None}/" \
  -e "s/applied corrections:=\(.*\)radial arc-correction\(.*\)$/applied corrections:=\1arc-correction\2/"\
  -e "s/matrix axis label\(.*\):=bin/matrix axis label\1:= tangential coordinate/" \
+ -e "s/matrix axis label\(.*\):=sinogram projections/matrix axis label\1:= tangential coordinate/" \
  -e "s/matrix axis label\(.*\):=x/matrix axis label\1:= tangential coordinate/" \
- -e "s/matrix axis label\(.*\):=projection/matrix axis label\1:=view/" \
- -e "s/matrix axis label\(.*\):=plane/matrix axis label\1:= axial coordinate/" \
+ -e "s/matrix axis label\(.*\):=plane/matrix axis label\1:=view/" \
+ -e "s/matrix axis label\(.*\):=projection/matrix axis label\1:= axial coordinate/" \
  -e "s/matrix size *\[3\].*$//" \
  -e "s/%number of segments *:=/matrix axis label [4] := segment@matrix size [4] :=/" \
  -e "s/%segment table *:=\(.*\)/matrix size [3] :=\1@ minimum ring difference per segment := ${minringdiff}@\
