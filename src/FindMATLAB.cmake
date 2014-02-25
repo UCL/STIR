@@ -36,15 +36,32 @@
 # (To distribute this file outside of CMake, substitute the full
 #  License text for the above reference.)
 
-set(MATLAB_FOUND 0)
-
 # If MATLAB_ROOT was defined in the environment, use it.
 if (NOT MATLAB_ROOT AND NOT $ENV{MATLAB_ROOT} STREQUAL "")
   set(MATLAB_ROOT $ENV{MATLAB_ROOT} CACHE PATH "set this if CMake does not find it automatically")
+  file(TO_CMAKE_PATH "${MATLAB_ROOT}" MATLAB_ROOT)
 endif()
 
-if( MATLAB_ROOT )
-  file(TO_CMAKE_PATH "${MATLAB_ROOT}" MATLAB_ROOT)
+if (NOT MATLAB_ROOT)
+    # get path to the Matlab executable
+    find_program(MATLAB_EXE_PATH matlab
+        PATHS /usr/local/bin)
+    if (MATLAB_EXE_PATH)
+      message(STATUS "MATLAB executable found: ${MATLAB_EXE_PATH}")
+      # remove symbolic links
+      get_filename_component(MATLAB_EXE_PATH "${MATLAB_EXE_PATH}" ABSOLUTE )
+      # find directory of executable
+      get_filename_component(my_MATLAB_ROOT "${MATLAB_EXE_PATH}" PATH )
+      # find root dir
+      get_filename_component(my_MATLAB_ROOT "${my_MATLAB_ROOT}" PATH )
+      # store it in the cache
+      set(MATLAB_ROOT "${my_MATLAB_ROOT}" CACHE PATH "Location of MATLAB files")
+      message(STATUS "MATLAB_ROOT set to ${MATLAB_ROOT}")
+     endif()
+else()
+     # set MATLAB_ROOT to an empty string but as a cached variable
+     # this avoids CMake creating a local variable with the same name
+     set(MATLAB_ROOT "" CACHE PATH "Location of MATLAB files")
 endif()
 
 if(WIN32)
@@ -133,21 +150,6 @@ if(WIN32)
             )
 else()
 
-  if((NOT DEFINED MATLAB_ROOT)
-      OR ("${MATLAB_ROOT}" STREQUAL ""))
-    # get path to the Matlab root directory
-    # TODO this will fail if there is a space in the path (or when "which" isn't present)
-    execute_process(
-      COMMAND which matlab
-      COMMAND xargs readlink
-      COMMAND xargs dirname
-      COMMAND xargs dirname
-      COMMAND xargs echo -n
-      OUTPUT_VARIABLE MATLAB_ROOT
-      ERROR_QUIET
-      )
-  endif()
-
   # Check if this is a Mac
   if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
@@ -204,12 +206,12 @@ else()
     )
 
   find_program( MATLAB_MEX_PATH mex
-             HINTS ${MATLAB_ROOT}/bin
+             HINTS "${MATLAB_ROOT}/bin"
              DOC "The mex program path"
             )
 
   find_program( MATLAB_MEXEXT_PATH mexext
-             HINTS ${MATLAB_ROOT}/bin
+             HINTS "${MATLAB_ROOT}/bin"
              DOC "The mexext program path"
             )
 
@@ -229,19 +231,18 @@ set(MATLAB_LIBRARIES
   ${MATLAB_ENG_LIBRARY}
 )
 
-# add it to the cache
-set(MATLAB_ROOT "${MATLAB_ROOT}" CACHE PATH "Location of Matlab files")
-
 # handle the QUIETLY and REQUIRED arguments and set MATLAB_FOUND to TRUE if 
 # all listed variables are TRUE
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(MATLAB "MATLAB not found. If you do have it, set MATLAB_ROOT and reconfigure" MATLAB_ROOT MATLAB_INCLUDE_DIR  MATLAB_LIBRARIES
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(MATLAB "MATLAB not found. If you do have it, set MATLAB_ROOT and reconfigure" 
+  MATLAB_ROOT MATLAB_INCLUDE_DIR  MATLAB_LIBRARIES
   MATLAB_MEX_PATH
   MATLAB_MEXEXT_PATH
   MATLAB_MEX_EXT
 )
 
 mark_as_advanced(
+  MATLAB_EXE_PATH
   MATLAB_LIBRARIES
   MATLAB_MEX_LIBRARY
   MATLAB_MX_LIBRARY
