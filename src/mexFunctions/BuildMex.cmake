@@ -6,17 +6,9 @@ include(CMakeParseArguments)
 if(NOT MATLAB_FOUND)
   find_package(MATLAB REQUIRED)
 endif()
-# CMake 2.8.12 & earlier apparently don't define the
-# Mex script path, so find it.
+
 if(NOT MATLAB_MEX_PATH)
-  find_program( MATLAB_MEX_PATH mex
-    HINTS ${MATLAB_ROOT}/bin
-    PATHS ${MATLAB_ROOT}/bin
-    DOC "The mex program path"
-    )
-  if(NOT MATLAB_MEX_PATH)
-    message(FATAL_ERROR "Can't find Matlab MEX compiler")
-  endif()
+  message(FATAL_ERROR "Can't find Matlab MEX compiler")
 endif()
 
 include_directories(${MATLAB_INCLUDE_DIR})
@@ -38,8 +30,6 @@ if (WIN32)
     string(REGEX REPLACE " *LINKFLAGS *= *" "" mexLdFlags "${line}")
     # get rid of /implib statement (refers to temp file)
     string(REGEX REPLACE "/implib:\".*\"" "" mexLdFlags "${mexLdFlags}")
-  elseif("${line}" MATCHES " *Name directive *=")
-    string(REGEX REPLACE " *Name directive *= */out:\"(.*)\"" "\\1" mexLdExtension "${line}")
   endif()
 else()
   if("${line}" MATCHES " CXXFLAGS *=")
@@ -48,8 +38,6 @@ else()
     string(REGEX REPLACE " *CXXLIBS *= *" "" mexCxxLibs "${line}")
   elseif("${line}" MATCHES " LDFLAGS *=")
     string(REGEX REPLACE " *LDFLAGS *= *" "" mexLdFlags "${line}")
-  elseif("${line}" MATCHES " LDEXTENSION *=")
-    string(REGEX REPLACE " *LDEXTENSION *= *" "" mexLdExtension "${line}")
   endif()
 endif()
 endforeach()
@@ -70,7 +58,7 @@ ${ARGN})
   set_source_files_properties(${BuildMex_SOURCE}    COMPILE_DEFINITIONS ${mexCxxFlags}    )
   add_library(${BuildMex_MEXNAME} SHARED ${BuildMex_SOURCE})
   set_target_properties(${BuildMex_MEXNAME} PROPERTIES
-    SUFFIX "${mexLdExtension}"
+    SUFFIX "${MATLAB_MEX_EXT}"
     LINK_FLAGS ${mexLdFlags}
     RUNTIME_OUTPUT_DIRECTORY "${BuildMex_TARGETDIR}"
     ARCHIVE_OUTPUT_DIRECTORY "${BuildMex_TARGETDIR}"

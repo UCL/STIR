@@ -41,24 +41,28 @@ set(MATLAB_FOUND 0)
 # If MATLAB_ROOT was defined in the environment, use it.
 if (NOT MATLAB_ROOT AND NOT $ENV{MATLAB_ROOT} STREQUAL "")
   set(MATLAB_ROOT $ENV{MATLAB_ROOT} CACHE PATH "set this if CMake does not find it automatically")
-else()
-  set(MATLAB_ROOT "" CACHE PATH "set this if CMake does not find it automatically")
 endif()
 
 if( MATLAB_ROOT )
-  file(TO_CMAKE_PATH ${MATLAB_ROOT} MATLAB_ROOT)
+  file(TO_CMAKE_PATH "${MATLAB_ROOT}" MATLAB_ROOT)
 endif()
 
 if(WIN32)
   # Search for a version of Matlab available, starting from the most modern one to older versions
-  foreach(MATVER "7.14" "7.11" "7.10" "7.9" "7.8" "7.7" "7.6" "7.5" "7.4")
+  foreach(MATVER "8.5" "8.4" "8.3" "8.2" "8.1" "8.0" "7.16" "7.15" "7.14" "7.13" "7.12" "7.11" "7.10" "7.9" "7.8" "7.7" "7.6" "7.5" "7.4")
     if((NOT DEFINED MATLAB_ROOT)
         OR ("${MATLAB_ROOT}" STREQUAL "")
         OR ("${MATLAB_ROOT}" STREQUAL "/registry"))
       get_filename_component(MATLAB_ROOT "[HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB\\${MATVER};MATLABROOT]" ABSOLUTE)
-      set(MATLAB_VERSION ${MATVER})
     endif()
   endforeach()
+  if("${MATLAB_ROOT}" STREQUAL "/registry")
+    set(MATLAB_ROOT "")
+  endif()
+  if ("${MATLAB_ROOT}" STREQUAL "")
+    message(STATUS "MATLAB not found. Set MATLAB_ROOT")
+    # TODO should really skip rest of configuration as it will all fail anyway.
+  endif()
 
   # Directory name depending on whether the Windows architecture is 32
   # bit or 64 bit
@@ -115,20 +119,24 @@ if(WIN32)
   # Get path to the include directory
   find_path(MATLAB_INCLUDE_DIR
     "mex.h"
-    "${MATLAB_ROOT}/extern/include"
+    HINTS  "${MATLAB_ROOT}/extern/include"  "${MATLAB_ROOT}/include"
     )
 
   find_program( MATLAB_MEX_PATH mex.bat
              HINTS ${MATLAB_ROOT}/bin
-             PATHS ${MATLAB_ROOT}/bin
              DOC "The mex program path"
             )
 
+  find_program( MATLAB_MEXEXT_PATH mexext.bat
+             HINTS ${MATLAB_ROOT}/bin
+             DOC "The mexext program path"
+            )
 else()
 
   if((NOT DEFINED MATLAB_ROOT)
       OR ("${MATLAB_ROOT}" STREQUAL ""))
     # get path to the Matlab root directory
+    # TODO this will fail if there is a space in the path (or when "which" isn't present)
     execute_process(
       COMMAND which matlab
       COMMAND xargs readlink
@@ -136,6 +144,7 @@ else()
       COMMAND xargs dirname
       COMMAND xargs echo -n
       OUTPUT_VARIABLE MATLAB_ROOT
+      ERROR_QUIET
       )
   endif()
 
@@ -149,7 +158,7 @@ else()
     if((NOT DEFINED MATLAB_ROOT) OR ("${MATLAB_ROOT}" STREQUAL ""))
 
     # Search for a version of Matlab available, starting from the most modern one to older versions
-      foreach(MATVER "R2013b" "R2013a" "R2012b" "R2012a" "R2011b" "R2011a" "R2010b" "R2010a" "R2009b" "R2009a" "R2008b")
+      foreach(MATVER "2015b" "2015a" "R2014b" "R2014a" "R2013b" "R2013a" "R2012b" "R2012a" "R2011b" "R2011a" "R2010b" "R2010a" "R2009b" "R2009a" "R2008b")
         if((NOT DEFINED MATLAB_ROOT) OR ("${MATLAB_ROOT}" STREQUAL ""))
           if(EXISTS /Applications/MATLAB_${MATVER}.app)
             set(MATLAB_ROOT /Applications/MATLAB_${MATVER}.app)
@@ -191,39 +200,46 @@ else()
   # Get path to the include directory
   find_path(MATLAB_INCLUDE_DIR
     "mex.h"
-    PATHS "${MATLAB_ROOT}/extern/include"
+    HINTS "${MATLAB_ROOT}/include"  "${MATLAB_ROOT}/extern/include"
     )
 
   find_program( MATLAB_MEX_PATH mex
              HINTS ${MATLAB_ROOT}/bin
-             PATHS ${MATLAB_ROOT}/bin
              DOC "The mex program path"
             )
 
   find_program( MATLAB_MEXEXT_PATH mexext
              HINTS ${MATLAB_ROOT}/bin
-             PATHS ${MATLAB_ROOT}/bin
              DOC "The mexext program path"
             )
-
-  execute_process(
-        COMMAND ${MATLAB_MEXEXT_PATH}
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    OUTPUT_VARIABLE MATLAB_MEX_EXT
-    )
 
 endif()
 
 # This is common to UNIX and Win32:
+
+execute_process(
+    COMMAND ${MATLAB_MEXEXT_PATH}
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    OUTPUT_VARIABLE MATLAB_MEX_EXT
+    )
+
 set(MATLAB_LIBRARIES
   ${MATLAB_MEX_LIBRARY}
   ${MATLAB_MX_LIBRARY}
   ${MATLAB_ENG_LIBRARY}
 )
 
-if(MATLAB_INCLUDE_DIR AND MATLAB_LIBRARIES)
-  set(MATLAB_FOUND 1)
-endif()
+# add it to the cache
+set(MATLAB_ROOT "${MATLAB_ROOT}" CACHE PATH "Location of Matlab files")
+
+# handle the QUIETLY and REQUIRED arguments and set MATLAB_FOUND to TRUE if 
+# all listed variables are TRUE
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(MATLAB "MATLAB not found. If you do have it, set MATLAB_ROOT and reconfigure" MATLAB_ROOT MATLAB_INCLUDE_DIR  MATLAB_LIBRARIES
+  MATLAB_MEX_PATH
+  MATLAB_MEXEXT_PATH
+  MATLAB_MEX_EXT
+)
 
 mark_as_advanced(
   MATLAB_LIBRARIES
