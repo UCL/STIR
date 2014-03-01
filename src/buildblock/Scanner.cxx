@@ -186,7 +186,7 @@ Scanner::Scanner(Type scanner_type)
                412.0F, 7.0F, 4.0F, 2.000F, 0.0F,
                1, 2, 41, 14, 41, 14, 1);
     // Transaxial blocks have 13 physical crystals and a gap at the  
-    // 14th crystal where the counts are zero.
+    // 140th crystal where the counts are zero.
     // There are 39 rings with 13 axial crystals per block. Two virtual
     // rings are added, but contain counts after applying axial compression.
     break;
@@ -197,8 +197,8 @@ Scanner::Scanner(Type scanner_type)
     // 9th crystal where the counts are zero.
     set_params(Siemens_mMR, string_list("Siemens mMR", "mMR", "2008"),
                64, 344, 2* 252,
-               328.0F, 7.0F, 4.0625F, 2.0445F, 0.0F,
-               4, 1, 8, 9, 8, 9, 1 ); // TODO bucket/singles info incorrect
+               328.0F, 7.0F, 4.0625F, 2.08626F, 0.0F,
+               2, 1, 8, 9, 16, 9, 1 ); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
     break;
 
   case RPT:
