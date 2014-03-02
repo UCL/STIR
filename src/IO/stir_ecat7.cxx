@@ -1427,9 +1427,9 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
 	  make_pdfs_from_matrix_aux(sub_header_ptr, 
 				    sub_header_ptr->num_z_elements,
 				    sub_header_ptr->axial_compression,
+				    arc_corrected,
 				    sub_header_ptr->frame_start_time,
 				    sub_header_ptr->frame_duration,
-				    arc_corrected,
 				    mptr, matrix, *exam_info_sptr, stream_ptr);
       }
     default:
