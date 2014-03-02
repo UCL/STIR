@@ -90,12 +90,12 @@ with non-circular orbits, including attenuation modelling and 3D PSF</li>
 <li>modifications to <code>ProjMatrixByBin</code> to allow larger matrices (currently needing uint64 support by the compiler) and clearing the cache</li>
 <li>Interfile 3.3 IO for SPECT projection data.</li>
 <li> reading and writing of images via <a href="http://www.itk.org">ITK</a>. As ITK has its own registry of 
-file formats, this extends STIR to support Nifti (.nii), MetaIO (.mhdr), NRRD (.nhdr)  etc. 
+file formats, this extends STIR to support DICOM, Nifti (.nii), MetaIO (.mhdr), NRRD (.nhdr) etc.
 To enable this, you need to have ITK installed when building STIR with CMake. 
-To write images in any of these file formats, you need
-to set an explict file format type and set it to <tt>ITK</tt> .<br />
+To write images in any of these file formats (DICOM not supported), you need
+to set an explicit file format type and set it to <tt>ITK</tt> .<br />
 <strong>Warning:</strong> The translation of the geometry between STIR and ITK
-is currently incomplete as STIR <strong>ignores patient orientation</strong> for images. 
+is currently incomplete as STIR <strong>ignores patient orientation</strong> and direction information for images. 
 </li>
 <li>The <tt>list_projdata_info</tt> utilities has an extra option <tt>--exam</tt> to
 list some exam information (patient position and timing).
@@ -244,6 +244,7 @@ statements in your .cxx files (or add <code>std::</code> in various places of co
 This gets rid of a lot of conversion warnings with MSVC but could also potentially speed up calculations.
 </li>
 <li>Many minor changes to avoid conversion warnings with MSVC.</li>
+<li>modified get_directory_name in utilities.cxx to return "." if the directory info was not given.</li>
 </ul>
 
 <h3>Build system</h3>
