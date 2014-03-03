@@ -114,6 +114,9 @@ formats (e.g. conv_to_ecat7, stir_math -s) preserve more information.
 <li>Interfile reading now exits with an error if a vectored key (such as <tt>matrix size</tt>)
 is used before its size is given with the appropriate keyword (such as <tt>number of dimensions</tt>). In prior versions of STIR, a warning was issued, but a crash could happen afterwards.
 </li>
+<li><tt>extract_segments</tt> now handles filenames with more than one dot. It also writes images with
+voxel-size equal to the central-bin size of the sinogram (the view dimension is set to 1mm).
+</li>
 </ul>
 
 <h3>Build system</h3>
