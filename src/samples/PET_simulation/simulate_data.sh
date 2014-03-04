@@ -4,7 +4,7 @@
 #
 #  Copyright (C) 2011 - 2011-01-14, Hammersmith Imanet Ltd
 #  Copyright (C) 2011-07-01 - 2011-08-23, Kris Thielemans
-#  Copyright (C) 2013 University College London
+#  Copyright (C) 2013-2014 University College London
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify
@@ -35,9 +35,13 @@ template_sino=$3
 scatter_params="$4 $5"
 
 echo "===  create line integrals"
-fwdtest my_line_integrals.hs ${template_sino} ${emission_image} ../forward_projector_proj_matrix_ray_tracing.par </dev/null > my_create_line_integrals.log 2>&1
+# Call forward_project to compute line integrals
+# If you have a STIR version prior to 3.0, you can uncomment the following line (and comment the one 
+# after that) to use fwdtest
+#fwdtest my_line_integrals.hs ${template_sino} ${emission_image} ../forward_projector_proj_matrix_ray_tracing.par </dev/null > my_create_line_integrals.log 2>&1
+forward_project my_line_integrals.hs ${emission_image}  ${template_sino} ../forward_projector_proj_matrix_ray_tracing.par > my_create_line_integrals.log 2>&1
 if [ $? -ne 0 ]; then 
-  echo "ERROR running fwdtest Check my_create_line_integrals.log"; exit 1; 
+  echo "ERROR running forward_project. Check my_create_line_integrals.log"; exit 1; 
 fi
 
 echo "===  create ACFs"
