@@ -2257,7 +2257,7 @@ reads your projection data.
 }
 
 This utility is mainly useful to create a template that can then 
-be used for other \textit{STIR} utilities (such as fwdtest, lm\_to\_projdata 
+be used for other \textit{STIR} utilities (such as forward\_project, lm\_to\_projdata 
 etc.).
 \cmdline{create\_projdata\_template output\_filename}
 
@@ -2916,12 +2916,29 @@ interpolation, but the entire image moves for an given integer number of
 voxels. 
 
 \subsubsection{
-Testing (or using) projectors}
+Using projectors}
+
+\subsubsubsection{
+Utilities for forward or back-projection}
+\textbf{forward\_project} and \textbf{back\_project} will perform a single projection given
+input data and a ``template'' for the output. The template is used to know what data sizes and
+characteristics to use. Both utilities optionally allow passing a parameter file with settings
+which projector to use (see \ref{sec:forwardprojectors} for forward projection
+and \ref{sec:backprojectors} for back-projection).
+Run these utilities for a usage message.
+
+\subsubsubsection{Utilities for testing}
+The \textbf{fwdtest} and \textbf{bcktest} programs located in \textbf{STIR/recon\_test/} can 
+be used to examine forward or back projectors. They allow to 
+project only subregions of the data, but can also do the whole 
+projection in one go. These programs are really only intended for testing though.
+Normally, you would use \textbf{forward\_project} and \textbf{back\_project}.
 
 The \textbf{fwdtest} and \textbf{bcktest} programs located in \textbf{STIR/recon\_test/} can 
 be used to examine forward or back projectors. They allow to 
 project only subregions of the data, but can also do the whole 
-projection in one go. 
+projection in one go. These programs are really only intended for testing though.
+Normally, you would use \textbf{forward\_project} and \textbf{back\_project}.
 
 
 \subsubsection{

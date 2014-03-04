@@ -31,6 +31,8 @@ $(dir)_SOURCES:=manip_image.cxx \
         convert_to_binary_image.cxx \
 	rebin_projdata.cxx \
 	write_proj_matrix_by_bin.cxx \
+	forward_project.cxx \
+	back_project.cxx \
 	calculate_attenuation_coefficients.cxx \
 	attenuation_coefficients_to_projections.cxx  \
         conv_GATE_raw_ECAT_projdata_to_interfile.cxx \
