@@ -1,0 +1,9 @@
+# Output files
+STIR-UsersGuide.pdf
+STIR-developers-overview.pdf
+STIR-general-overview.pdf
+STIR-glossary.pdf
+STIR-version2-vs-version1.pdf
+
+# Directory made by AucTeX
+auto/
