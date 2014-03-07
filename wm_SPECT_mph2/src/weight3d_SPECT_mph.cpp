@@ -20,15 +20,16 @@
 #include "wmtools_SPECT_mph.h"
 #include "weight3d_SPECT_mph.h"
 
+namespace SPECTUB_mph
+{
+
+using namespace std;
+
 #define in_limits( a ,l1 , l2 ) ( (a) < (l1) ? (l1) : ( (a) > (l2) ? (l2) : (a) ) )
 
 //==========================================================================
 //=== wm_calculation =======================================================
 //==========================================================================
-
-extern wm_da_type wm;
-extern wmh_mph_type wmh;
-extern pcf_type pcf;
 
 void wm_calculation_mph ( bool do_calc,
                           psf2d_type *psf_bin,
@@ -1069,3 +1070,4 @@ void error_weight3d ( int nerr, string text )
 	exit(0);
 }
 
+} // end of namespace

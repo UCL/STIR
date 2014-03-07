@@ -30,6 +30,7 @@ using std::string;
 #include "wmtools_SPECT_mph.h"
 #include "weight3d_SPECT_mph.h"
 
+
 //... functions from wm_SPECT.2.0............................
 
 void error_wm_SPECT_mph( int nerr, string txt);      //list of error messages
@@ -38,9 +39,14 @@ void read_inputs_mph( vector<string> param );
 
 //.. global variables ....................................................................
 
-wmh_mph_type wmh;       // weight matrix header. Global variable
-wm_da_type wm;          // double array weight matrix structure. Global variable
-pcf_type pcf;           // pre-calculated functions
+namespace SPECTUB_mph
+{
+  wmh_mph_type wmh;       // weight matrix header. Global variable
+  wm_da_type wm;          // double array weight matrix structure. Global variable
+  pcf_type pcf;           // pre-calculated functions
+}
+
+using namespace SPECTUB_mph;
 
 //==========================================================================
 //=== main =================================================================

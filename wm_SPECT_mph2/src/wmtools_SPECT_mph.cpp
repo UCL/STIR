@@ -28,11 +28,10 @@ using std::string;
 #include "wmtools_SPECT_mph.h"
 #include "weight3d_SPECT_mph.h"
 
-//... global variables ..............................................
+namespace SPECTUB_mph
+{
 
-extern wm_da_type wm;
-extern wmh_mph_type wmh;
-extern pcf_type pcf;
+using namespace std;
 
 //=============================================================================
 //=== wm_alloc =============================================================
@@ -1041,3 +1040,4 @@ void error_wmtools_SPECT_mph( int nerr, int ip, string txt )
 	exit(0);
 }    
 
+} // end of namespace
