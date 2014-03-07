@@ -1,0 +1,38 @@
+PARAMETERS FOR MATRIX_OSEM. 
+Text codification: 
+   	- The reading routine do no read the number of  argv[x]. This value (or any other comment at the begin of the line) is put just for information. Parameters are read and assigned sequentially
+    	- Hash (number sign) ends the previous-to-parameter comment. If no comment, a single hash symbol is needed to indicate the line is not a text line but a parameter one. Lines without hash will be skipped when reading parameters.
+	- Percent indicates comment. The text to the end of the line will not be considered in the reading routine
+     	- Hash and percent symbols are designated as comments delimiters of this file in the header file.
+	- Double vertical bar indicates encoded options. 
+	- Double slash into braces to separate encoded options. Encoded options are case sensitive.
+	- Single slash indicates alternatives for parameters depending on previous parameters.
+
+argv[1]  # mph_matrix.stir	% Matrix file: Weight matrix filename (without extension index)
+			
+argv[2]  #  50 	 	% Image: Number of columns (int)
+argv[3]  #  50	   	% Image: Number of rows (int)
+argv[4]  #  50          % Image: Number of slices (int)
+argv[5]  #  0.2	  	% Image: Voxel size (cm). Only square voxels are considered (float cm)
+argv[6]  #  0.2       	% Image: Volume slice thickness (float cm)
+argv[7]  #  1 		% Image: First slice to reconstruct (int) (1 to Nslices)
+argv[8]  #  50		% Image: Last slice to reconstruct (int) (1 to Nslices)
+argv[9]  #  5.		% Image: Radius of the object (cm): minimum radius of a centered cylinder containing the object
+
+argv[10] #  detector27.txt     	        % Projections: File with detector parameters 
+argv[11] #  collimator27_pol.txt    	% Matrix: File with collimator parameters 
+
+argv[12] #  0.00001	% Matrix: Minimum weight to take into account (float) (typically 0.005-0.02)
+argv[13] #  2		% Matrix: Maximum number of sigmas to consider in PSF calculation (float) (Typically 2 - 3)
+argv[14] #  0.001	% Matrix: high resolution in which to sample distributions (float)(typically 0.001)
+argv[15] #  1	        % Matrix: subsampling factor for mid resolution
+
+argv[16] #  yes        	% Matrix: Correction for intrinsic PSF || { yes // no }
+argv[17] #  yes       	% Matrix: Correction for impact depth  || { yes // no }
+argv[18] #  no		% Matrix: Correction for attenuation   || { simple // full // no }
+
+argv[19] #  maps/map_64.img	% Matrix: Attenuation map filename / no . Values in attenuation map in cm-1. 
+argv[20] #  no	  	% Matrix: volume extra masking || { att // file // no } att: no weight calculated where att=0. Default mask = cylinder object radius
+argv[21] #  no       	% Matrix: explicit mask (filename/no) (in case of explicit mask)
+
+argv[22] #  STIR     	% Matrix file: Format. Options: (STIR, FruitCake)  || { STIR // FC }
