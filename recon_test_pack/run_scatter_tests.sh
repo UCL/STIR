@@ -56,7 +56,8 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "===  compare result"
-compare_projdata -t .03 my_scatter_cylinder.hs scatter_cylinder.hs > my_scatter_compare_projdata.log 2>&1
+# we need a fairly large threshold (4%) as scatter points are chosen randomly
+compare_projdata -t .04 my_scatter_cylinder.hs scatter_cylinder.hs > my_scatter_compare_projdata.log 2>&1
 if [ $? -ne 0 ]; then
   echo "Error comparing scatter output."
   error_log_files="${error_log_files} my_scatter_compare_projdata.log"
