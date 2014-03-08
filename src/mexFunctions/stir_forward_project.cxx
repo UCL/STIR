@@ -1,4 +1,27 @@
-#include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
+/*
+    Copyright (C) 2014, University College London
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \ingroup mex
+  \brief a Mex function for forward projection
+
+  \author Kris Thielemans
+*/
+
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/IO/read_from_file.h"
@@ -12,6 +35,11 @@
 
 using namespace stir;
 
+/* Usage:
+   out=stir_forward_project(image_filename, template_projdata_filename);
+
+   out will be a 1D array containing all projection data
+*/
 
 void mexFunction(
 		 int          nlhs,
@@ -25,7 +53,7 @@ void mexFunction(
 
   if (nrhs != 2) {
     mexErrMsgIdAndTxt("MATLAB:stir_forward_project:nargin", 
-            "Usage: out=stir_forward_project(image_filename, template_projdata_filename).");
+            "Usage: out=stir_forward_project(image_filename, template_projdata_filename);");
   } else if (nlhs != 1) {
     mexErrMsgIdAndTxt("MATLAB:stir_forward_project:nargout",
             "stir_forward_project requires 1 output argument.");
@@ -63,7 +91,7 @@ void mexFunction(
       forw_projector_ptr->forward_project(output_projdata, *image_density_ptr);
 
 
-      // find projdata-size 
+      // find projdata-size (a bit awkward at the moment)
       std::size_t projdata_size(0);
       for (int segment_num=output_projdata.get_min_segment_num();
            segment_num<=output_projdata.get_max_segment_num();
@@ -72,11 +100,12 @@ void mexFunction(
           const SegmentByView<float> seg(output_projdata.get_empty_segment_by_view(segment_num));
           projdata_size += seg.size_all();
         }
-      // create output array somehow
-      // float *mat_array=(float *)mxCalloc(projdata_size, sizeof(float));
-      mxArray * mat_array = mxCreateNumericMatrix(projdata_size, 1, mxSINGLE_CLASS,mxREAL);
-	  float *destination = (float *)mxGetPr(mat_array);
 
+      // create output array 
+      mxArray * mat_array = mxCreateNumericMatrix(projdata_size, 1, mxSINGLE_CLASS,mxREAL);
+
+	  // copy data from STIR to matlab output array
+	  float *destination = (float *)mxGetPr(mat_array);
       for (int segment_num=output_projdata.get_min_segment_num();
            segment_num<=output_projdata.get_max_segment_num();
            ++segment_num)
@@ -86,7 +115,7 @@ void mexFunction(
           destination += seg.size_all();
         }
 
-      // finally, somehow store mat_arrat into phls
+      // finally, store mat_array into prls
       prls[0] = mat_array;
 
       return;
