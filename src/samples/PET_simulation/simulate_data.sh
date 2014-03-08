@@ -76,7 +76,7 @@ stir_math -s --including-first \
 # we divide by the norm here to put some efficiency pattern on the data.
 # this isn't entirely accurate as a "proper" norm contains geometric effects
 # which shouldn't be in the randoms, but this is supposed to be a "simple" simulation :-;
-stir_divide -s --accumulate --including-first \
+stir_divide -s --accumulate \
          my_randoms.hs my_norm.hs
 if [ $? -ne 0 ]; then 
   echo "ERROR running stir_math"; exit 1; 
@@ -89,7 +89,7 @@ echo "===  create scatter"
 #         --times-scalar 0 --add-scalar 0 \
 #         my_scatter.hs my_line_integrals.hs
 
-simulate_scatter.sh my_scatter my_uniform_cylinder.hv my_atten_image.hv my_norm.hs ${scatter_params}
+simulate_scatter.sh my_scatter ${emission_image} ${atten_image} my_norm.hs ${scatter_params}
 if [ $? -ne 0 ]; then 
   echo "ERROR running simulate_scatter"; exit 1; 
 fi
