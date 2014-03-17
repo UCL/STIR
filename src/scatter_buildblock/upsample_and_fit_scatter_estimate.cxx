@@ -23,9 +23,6 @@
 \author Kris Thielemans
 */
 
-#include <iostream>
-#include <fstream>
-#include <string>
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/inverse_SSRB.h"
@@ -39,7 +36,10 @@
 #include "stir/thresholding.h"
 #include "stir/is_null_ptr.h"
 #include "stir/ArrayFilter1DUsingConvolution.h"
-/***********************************************************/     
+#include <iostream>
+#include <fstream>
+#include <string>
+/***********************************************************/
 
 START_NAMESPACE_STIR
 
@@ -87,7 +87,7 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
                       max_scale_factor);
       std::cout << "After thresholding:\n";
       std::cout << scale_factors;
-      VectorWithOffset<float> kernel(-half_filter_width,half_filter_width);
+      VectorWithOffset<float> kernel(-static_cast<int>(half_filter_width),half_filter_width);
       kernel.fill(1.F/(2*half_filter_width+1));
       ArrayFilter1DUsingConvolution<float> lowpass_filter(kernel, BoundaryConditions::constant);
       std::for_each(scale_factors.begin(), 

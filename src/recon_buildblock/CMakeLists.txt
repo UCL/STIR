@@ -91,7 +91,7 @@ set(${dir_LIB_SOURCES}
 )
 endif()
 
-include(../stir_lib_target.cmake)
+include(stir_lib_target)
 
 
 if (STIR_MPI)

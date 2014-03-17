@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 3.0 alpha (dated 13/01/2014)</title>
+    <title>Summary of changes in STIR release 3.0 beta (dated 17/03/2014)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 3.0 alpha (dated 13/01/2014)</h1>
+    <h1>Summary of changes in STIR release 3.0 beta (dated 17/03/2014)</h1>
 
 <p>This version is almost backwards compatible with STIR 2.4 for the user (see below), but <strong>not for 
 developers</strong>. Required code changes are minor however and detailed below.
@@ -83,6 +83,15 @@ inside the parameters of the log likelihood.
 </li>
 </ul>
 
+<h3>New directory structure</h3>
+<ul>
+<li>Top-level directories are now <tt>src</tt>, <tt>scripts</tt>, <tt>examples</tt>, <tt>documentation</tt>, <tt>doximages</tt>. The <tt>samples</tt> directory is now a
+sub-directory of <tt>examples</tt>, and the old <tt>examples</tt> is now
+<tt>examples/src</tt>.</li>
+<li><tt>recon_test_pack</tt> and <tt>documentation</tt> are now distributed in
+zip files that unpack as <tt>STIR/recon_test_pack</tt> and <tt>STIR/documentation</tt>.</li>
+</ul>
+
 <h3>New functionality</h3>
 <ul>
 <li> new projection matrix for SPECT (called <code>SPECT UB</code>) supporting parallel hole collimators 
@@ -90,17 +99,20 @@ with non-circular orbits, including attenuation modelling and 3D PSF</li>
 <li>modifications to <code>ProjMatrixByBin</code> to allow larger matrices (currently needing uint64 support by the compiler) and clearing the cache</li>
 <li>Interfile 3.3 IO for SPECT projection data.</li>
 <li> reading and writing of images via <a href="http://www.itk.org">ITK</a>. As ITK has its own registry of 
-file formats, this extends STIR to support Nifti (.nii), MetaIO (.mhdr), NRRD (.nhdr)  etc. 
+file formats, this extends STIR to support DICOM, Nifti (.nii), MetaIO (.mhdr), NRRD (.nhdr) etc.
 To enable this, you need to have ITK installed when building STIR with CMake. 
-To write images in any of these file formats, you need
-to set an explict file format type and set it to <tt>ITK</tt> .<br />
+To write images in any of these file formats (DICOM not supported), you need
+to set an explicit file format type and set it to <tt>ITK</tt> .<br />
 <strong>Warning:</strong> The translation of the geometry between STIR and ITK
-is currently incomplete as STIR <strong>ignores patient orientation</strong> for images. 
+is currently incomplete as STIR <strong>ignores patient orientation</strong> and direction information for images. 
+</li>
+<li>New utilities <tt>forward_project</tt> and <tt>back_project</tt> for easier scripting of STIR
+(<tt>fwdtest</tt> and <tt>bcktest</tt> now really only should be used for testing.)
 </li>
 <li>The <tt>list_projdata_info</tt> utilities has an extra option <tt>--exam</tt> to
 list some exam information (patient position and timing).
 </li>
-<li>The distribution now includes sample scripts  (in the <tt>samples</tt> folder) 
+<li>The distribution now includes sample scripts  (in the <tt>examples/PET_simulation</tt> folder) 
 for simulating PET data, adding Poisson noise
 and reconstructing the data.</li>
 </ul>
@@ -114,6 +126,9 @@ formats (e.g. conv_to_ecat7, stir_math -s) preserve more information.
 <li>Interfile reading now exits with an error if a vectored key (such as <tt>matrix size</tt>)
 is used before its size is given with the appropriate keyword (such as <tt>number of dimensions</tt>). In prior versions of STIR, a warning was issued, but a crash could happen afterwards.
 </li>
+<li><tt>extract_segments</tt> now handles filenames with more than one dot. It also writes images with
+voxel-size equal to the central-bin size of the sinogram (the view dimension is set to 1mm).
+</li>
 </ul>
 
 <h3>Build system</h3>
@@ -124,7 +139,8 @@ such as shared libraries and SWIG support can only be enabled when using CMake. 
 for Visual Studio are no longer distributed. Hand-crafted Unix Makefiles are still there but 
 getting out-of date (no ITK for instance).
 </li>
-<li>compilation when using CMake is speeded-up a bit as dependencies of the tests on STIR libraries are reduced.</li>
+<li>Compilation when using CMake is speeded-up a bit as dependencies of the tests on STIR libraries are reduced.</li>
+<li>You should now point cmake to the STIR main directory, not <tt>STIR/src</tt>.
 </ul>
 
 
@@ -172,7 +188,7 @@ now works.</li>
 
 <h3>Minor bug fixes</h3>
 <ul>
-<li>small changes to allow compilation with the CLang compiler version 5.0.</li>
+<li>small changes to allow compilation with the CLang compiler version 5.0 and with Visual Studio 2013.</li>
 <li>removed an error when writing a usage message when converting SimSET projection data.</li>
 <li>when ECAT6 image IO is enabled, now first check if it's an ECAT6 file (this avoids strange
 crashes when the file turns out not be ECAT6 after all).</li>
@@ -205,7 +221,7 @@ from the above):</H2>
 
 <h3>Major bugs fixed</h3>
 <ul>
-<li>none</li>
+<li>see above</li>
 </ul>
 
 <h3>New functionality</h3>
@@ -230,7 +246,7 @@ Their constructors have been modified accordingly  (<strong>NOT backwards-compat
   <li> removed <ocde>CListModeData::get_scan_start_time_in_secs_since_1970()</code>. Get it via its <code>ExamInfo</code>.</li>
   </ul>
 </li>
-<li> Using the above changes, <code>LmToProjData</code> properly writes time frame information to the projection data.</li>
+<li> using the above changes, <code>LmToProjData</code> properly writes time frame information to the projection data.</li>
 
 <li>changes to <code>ProjDataInfoCylindrical</code> to allow different radii for different views, useful for SPECT (or an elliptical PET scanner?)</li>
 </ul>
@@ -244,6 +260,7 @@ statements in your .cxx files (or add <code>std::</code> in various places of co
 This gets rid of a lot of conversion warnings with MSVC but could also potentially speed up calculations.
 </li>
 <li>Many minor changes to avoid conversion warnings with MSVC.</li>
+<li>modified get_directory_name in utilities.cxx to return "." if the directory info was not given.</li>
 </ul>
 
 <h3>Build system</h3>
@@ -257,6 +274,12 @@ stir_extra_dirs.cmake with something like
 <code>
  add_subdirectory(${STIR_LOCAL})
 </code>
+</li>
+<li> All CMake help-fules have been moved to a spearate sub-directory  <tt>src/cmake</tt> which is 
+added to the CMazke module path. That means that you should use them for instance as
+<pre>
+include(stir_lib_target)
+</pre>
 </li>
 </ul>
 </body>

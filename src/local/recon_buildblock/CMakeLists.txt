@@ -26,7 +26,7 @@ set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 set(${dir_LIB_SOURCES}
 )
 
-include(${PROJECT_SOURCE_DIR}/stir_lib_target.cmake)
+include(stir_lib_target)
 
 
 target_link_libraries(local_recon_buildblock display buildblock recon_buildblock)

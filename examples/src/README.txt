@@ -43,7 +43,7 @@ exe.mk
 Supporting files
 ----------------
 extra_dirs.mk
-	A sub-makefile that needs to be moved to STIR/local. This way, it
+	A sub-makefile that needs to be moved to STIR/src/local. This way, it
 	will be picked up by the Makefile. Its contents simply say
 	that there is an exe.mk sub-makefile in examples/.
 
@@ -73,13 +73,15 @@ small.*s
 
 How to compile using the "hand-made" Makefiles
 -----------------------------------------------
-cp extra_dirs.mk ../local/
+mkdir -p ../src/local
+cp extra_dirs.mk ../src/local/
 cd ..
 make examples
 
 How to compile using CMake (on Unix-type systems)
 -----------------------------------------------
-cp extra_stir_dirs.cmake ../local/
+mkdir -p ../src/local
+cp extra_stir_dirs.cmake ../src/local/
 cd your-build-dir
 # reconfigure your project
 ccmake .
@@ -95,8 +97,8 @@ First you need to create some data.
 #Generate an image
       generate_image generate_image.par
 
-#Generate projection data (you will have to answer questions by fwdtest)
-      fwdtest sino.hs small.hs image.hv
+#Generate projection data
+      forward_project sino.hs image.hv  small.hs
 
 # Run the demos.
 DEST=../opt
@@ -127,3 +129,4 @@ Good luck
 
 Kris Thielemans
 12 November 2004
+(with minor updates until 2014)

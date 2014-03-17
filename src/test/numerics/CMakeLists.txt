@@ -32,5 +32,5 @@ create_stir_test (test_overlap_interpolate.cxx "buildblock" "")
 create_stir_test (test_integrate_discrete_function.cxx "buildblock" "")
 
 
-include(${PROJECT_SOURCE_DIR}/stir_test_exe_targets.cmake)
+include(stir_test_exe_targets)
 

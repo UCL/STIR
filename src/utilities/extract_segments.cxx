@@ -4,7 +4,7 @@
   \file 
   \ingroup utilities
  
-  \brief This programme extracts projection data by segment into 3d
+  \brief This program extracts projection data by segment into 3d
   image files
 
   \author Kris Thielemans
@@ -19,6 +19,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
+    Copyright (C) 2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -38,6 +39,8 @@
 #include "stir/SegmentBySinogram.h"
 #include "stir/IO/interfile.h"
 #include "stir/utilities.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/Bin.h"
 #include "boost/format.hpp"
 
 
@@ -71,15 +74,26 @@ int main(int argc, char *argv[])
         output_filename+="seg";
 	output_filename+=boost::str(boost::format("%d") % segment_num);
 
+	Bin central_bin(segment_num,0,0,0);
+	const float m_spacing = s3d->get_proj_data_info_ptr()->get_sampling_in_m(central_bin);
+	const float s_spacing = s3d->get_proj_data_info_ptr()->get_sampling_in_s(central_bin);
+	const float m = s3d->get_proj_data_info_ptr()->get_m(central_bin);
+	const float s = s3d->get_proj_data_info_ptr()->get_s(central_bin);
+
         if (extract_by_view)
         {
             SegmentByView <float> segment= s3d->get_segment_by_view(segment_num);
-
-            write_basic_interfile(output_filename + "_by_view", segment);
+            write_basic_interfile(output_filename + "_by_view.hv", 
+				  segment,
+				  CartesianCoordinate3D<float>(1.F, m_spacing, s_spacing),
+				  CartesianCoordinate3D<float>(0.F, m, s));
 	}
         else {
             SegmentBySinogram<float> segment = s3d->get_segment_by_sinogram(segment_num);  
-            write_basic_interfile(output_filename + "_by_sino", segment);
+            write_basic_interfile(output_filename + "_by_sino.hv", 
+				  segment,
+				  CartesianCoordinate3D<float>(m_spacing, 1.F, s_spacing),
+				  CartesianCoordinate3D<float>(m, 0.F, s));
 	}
     }
 

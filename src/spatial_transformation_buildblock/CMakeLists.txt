@@ -28,6 +28,6 @@ set(${dir_LIB_SOURCES}
    warp_image
 ) 
 
-include(../stir_lib_target.cmake)
+include(stir_lib_target)
 
 target_link_libraries(${dir} buildblock numerics_buildblock )

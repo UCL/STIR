@@ -18,6 +18,7 @@
 */
 /*
     Copyright (C) 2004, Hammersmith Imanet Ltd
+    Copyright (C) 2014, University College London    
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -34,6 +35,7 @@
 */
 
 #include "stir/ProjDataInterfile.h"
+#include "stir/ImagingModality.h"
 #include "stir/ExamInfo.h"
 #include "stir/ProjDataInfo.h"
 
@@ -58,6 +60,8 @@ int main(int argc, char *argv[])
   
   const string output_file_name = argv[1];
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+  // TODO, Currently all stir::Scanner types are PET.
+  exam_info_sptr->imaging_modality = ImagingModality::PT;
   shared_ptr<ProjData> proj_data_ptr(new ProjDataInterfile(exam_info_sptr, proj_data_info_ptr, output_file_name));
 
   return EXIT_SUCCESS;

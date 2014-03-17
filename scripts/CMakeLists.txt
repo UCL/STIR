@@ -30,7 +30,7 @@ set(${dir_scripts}
 
 
 
-#include(../stir_test_exe_targets.cmake)
+#include(stir_test_exe_targets)
 
 install(PROGRAMS ${${dir_scripts}} DESTINATION bin)
 

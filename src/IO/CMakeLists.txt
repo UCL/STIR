@@ -60,7 +60,7 @@ if(AVW_FOUND)
   )
 endif()
 
-include(../stir_lib_target.cmake)
+include(stir_lib_target)
 
 if (LLN_FOUND)
   target_link_libraries(IO ${LLN_LIBRARIES})

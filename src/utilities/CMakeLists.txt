@@ -51,6 +51,8 @@ set(${dir_EXE_SOURCES}
         convert_to_binary_image 
 	rebin_projdata 
 	write_proj_matrix_by_bin 
+        forward_project
+        back_project
 	calculate_attenuation_coefficients 
 	attenuation_coefficients_to_projections 
         conv_GATE_raw_ECAT_projdata_to_interfile
@@ -67,4 +69,4 @@ if (AVW_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  conv_AVW)
 endif()
 
-include(../stir_exe_targets.cmake)
+include(stir_exe_targets)

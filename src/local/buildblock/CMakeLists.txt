@@ -7,7 +7,7 @@ set(${dir_LIB_SOURCES}
 	Quaternion.cxx 
 )
 
-include(${CMAKE_SOURCE_DIR}/stir_lib_target.cmake)
+include(stir_lib_target)
 
 target_link_libraries(${dir} buildblock)
 

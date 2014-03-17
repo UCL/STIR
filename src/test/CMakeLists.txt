@@ -57,7 +57,7 @@ set(buildblock_simple_tests
 	test_find_fwhm_in_image
 )
 
-include(${PROJECT_SOURCE_DIR}/stir_test_exe_targets.cmake)
+include(stir_test_exe_targets)
 
 foreach(source ${buildblock_simple_tests})
   create_stir_test(${source} "buildblock;IO;buildblock" "")

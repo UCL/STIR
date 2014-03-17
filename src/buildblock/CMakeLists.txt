@@ -75,7 +75,7 @@ if (NOT HAVE_SYSTEM_GETOPT)
   list(APPEND ${dir_LIB_SOURCES} getopt)
 endif()
 
-include(../stir_lib_target.cmake)
+include(stir_lib_target)
 
 # TODO Remove but currently needed for ProjData.cxx, DynamicDisc*cxx, TimeFrameDef
 if (LLN_FOUND)

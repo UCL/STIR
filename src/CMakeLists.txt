@@ -18,18 +18,6 @@
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
 
-# avoid warning about WIN32 no longer defined in CYGWIN
-set(CMAKE_LEGACY_CYGWIN_WIN32 0) 
-
-PROJECT(STIR)
-
-SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
-# require 2.8.3 to get FOLDER properties support (without that, we only need cmake 2.6)
-cmake_minimum_required(VERSION 2.8.3)
-
-# add project source to cmake path such that it can use our find_package modules
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR})
-
 INCLUDE(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
 
 option(STIR_MPI 
@@ -162,15 +150,12 @@ if(STIR_OPENMP)
 
 endif()
 
-#### enable support for ctest
-ENABLE_TESTING()
-
 #### STIR library
-include(stir_dirs.cmake)
+include(stir_dirs)
 
 # see if there's a local subdirectory.
 if(NOT DISABLE_STIR_LOCAL)
-  find_path(STIR_LOCAL NAME "extra_stir_dirs.cmake" PATHS "${PROJECT_SOURCE_DIR}/local/" NO_DEFAULT_PATH)
+  find_path(STIR_LOCAL NAME "extra_stir_dirs.cmake" PATHS "${PROJECT_SOURCE_DIR}/src/local/" NO_DEFAULT_PATH)
   if (STIR_LOCAL)
     include(${STIR_LOCAL}/extra_stir_dirs.cmake)
   endif()
