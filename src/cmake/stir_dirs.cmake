@@ -24,16 +24,18 @@
 
 
 # add the STIR include directory to the search path for the compiler
-include_directories ("${PROJECT_SOURCE_DIR}/include")
+include_directories ("${PROJECT_SOURCE_DIR}/src/include")
+
+SET( STIR_IO_REGISTRIES ${PROJECT_SOURCE_DIR}/src/IO/IO_registries.cxx)
 
 SET ( STIR_REGISTRIES
-${CMAKE_HOME_DIRECTORY}/buildblock/buildblock_registries.cxx
-${CMAKE_HOME_DIRECTORY}/data_buildblock/data_buildblock_registries.cxx
-${CMAKE_HOME_DIRECTORY}/IO/IO_registries.cxx
-${CMAKE_HOME_DIRECTORY}/recon_buildblock/recon_buildblock_registries.cxx
-${CMAKE_HOME_DIRECTORY}/Shape_buildblock/Shape_buildblock_registries.cxx
-${CMAKE_HOME_DIRECTORY}/modelling_buildblock/modelling_registries.cxx
-${CMAKE_HOME_DIRECTORY}/spatial_transformation_buildblock/spatial_transformation_registries.cxx
+${PROJECT_SOURCE_DIR}/src/buildblock/buildblock_registries.cxx
+${PROJECT_SOURCE_DIR}/src/data_buildblock/data_buildblock_registries.cxx
+${STIR_IO_REGISTRIES}
+${PROJECT_SOURCE_DIR}/src/recon_buildblock/recon_buildblock_registries.cxx
+${PROJECT_SOURCE_DIR}/src/Shape_buildblock/Shape_buildblock_registries.cxx
+${PROJECT_SOURCE_DIR}/src/modelling_buildblock/modelling_registries.cxx
+${PROJECT_SOURCE_DIR}/src/spatial_transformation_buildblock/spatial_transformation_registries.cxx
 )
 
 SET( STIR_LIBRARIES analytic_FBP3DRP analytic_FBP2D       iterative_OSMAPOSL  
@@ -69,7 +71,6 @@ SET( STIR_DIRS
      iterative/OSSPS
      iterative/POSMAPOSL  
      iterative/POSSPS
-     scripts
      SimSET
      SimSET/scripts
 )

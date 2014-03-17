@@ -9,7 +9,7 @@ set(${dir_LIB_SOURCES}
 
 #$(dir)_REGISTRY_SOURCES:= 
 
-include(${PROJECT_SOURCE_DIR}/stir_lib_target.cmake)
+include(stir_lib_target)
 
 set (dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
@@ -17,7 +17,7 @@ set(${dir_EXE_SOURCES}
 	OSMAPOSL
 )
 
-include(../../stir_exe_targets.cmake)
+include(stir_exe_targets)
 
 if (STIR_MPI)
   SET_PROPERTY(TARGET OSMAPOSL PROPERTY LINK_FLAGS ${MPI_CXX_LINK_FLAGS})

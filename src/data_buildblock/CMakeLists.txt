@@ -34,6 +34,6 @@ if (HAVE_ECAT)
   )
 endif()
 
-include(../stir_lib_target.cmake)
+include(stir_lib_target)
 
 target_link_libraries(${dir} buildblock)

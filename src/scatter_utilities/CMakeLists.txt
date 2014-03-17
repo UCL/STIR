@@ -27,4 +27,4 @@ set(${dir_EXE_SOURCES}
 	upsample_and_fit_single_scatter
 )
 
-include(../stir_exe_targets.cmake)
+include(stir_exe_targets)

@@ -7,7 +7,7 @@ set(${dir_LIB_SOURCES}
 	transform_3d_object.cxx 
 )
 
-include(${CMAKE_SOURCE_DIR}/stir_lib_target.cmake)
+include(stir_lib_target)
 
 target_link_libraries(${dir} numerics_buildblock local_buildblock )
 

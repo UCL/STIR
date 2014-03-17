@@ -28,7 +28,7 @@ set(${dir_EXE_SOURCES}
 	conv_to_SimSET_att_image
 )
 
-include(../stir_exe_targets.cmake)
+include(stir_exe_targets)
 
 # stand-alone
 add_executable(write_phg_image_info write_phg_image_info.c)
