@@ -30,4 +30,4 @@ set(${dir_EXE_SOURCES}
 	mult_image_parameters
 )
 
-include(../stir_exe_targets.cmake)
+include(stir_exe_targets)

@@ -13,7 +13,7 @@ set(${dir_LIB_SOURCES}
 
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries.cxx
 
-include(../stir_lib_target.cmake)
+include(stir_lib_target)
 
 target_link_libraries(eval_buildblock buildblock )
 

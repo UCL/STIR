@@ -34,5 +34,5 @@ ADD_TEST(test_modelling
    ${CMAKE_CURRENT_BINARY_DIR}/test_modelling ${CMAKE_CURRENT_SOURCE_DIR}/input
 )
 
-include(../../stir_test_exe_targets.cmake)
+include(stir_test_exe_targets)
 

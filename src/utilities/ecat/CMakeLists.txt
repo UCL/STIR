@@ -13,4 +13,4 @@ set(${dir_EXE_SOURCES}
 )
 
 
-include(../../stir_exe_targets.cmake)
+include(stir_exe_targets)

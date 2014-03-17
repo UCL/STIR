@@ -15,7 +15,7 @@
 #  message(STATUS "AVW_INCLUDE_DIRS ${AVW_INCLUDE_DIRS}")
   
   find_library(AVW_LIBRARIES NAME AVW
-        HINTS ${AVW_ROOT_DIR}/$ENV(TARGET)/lib/
+        HINTS ${AVW_ROOT_DIR}/$ENV{TARGET}/lib/
         DOC "location of AVW library")
 
 # handle the QUIETLY and REQUIRED arguments and set AVW_FOUND to TRUE if 

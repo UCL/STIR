@@ -18,5 +18,5 @@ set(${dir_LIB_SOURCES}
 #$(dir)_REGISTRY_SOURCES:= scatter_buildblock_registries
 
 
-include(../stir_lib_target.cmake)
+include(stir_lib_target)
 target_link_libraries(scatter_buildblock recon_buildblock )

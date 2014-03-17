@@ -22,6 +22,6 @@ endif()
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries
 
 
-include(../stir_lib_target.cmake)
+include(stir_lib_target)
 
 target_link_libraries(listmode_buildblock IO data_buildblock )

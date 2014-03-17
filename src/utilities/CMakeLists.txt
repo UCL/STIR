@@ -69,4 +69,4 @@ if (AVW_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  conv_AVW)
 endif()
 
-include(../stir_exe_targets.cmake)
+include(stir_exe_targets)

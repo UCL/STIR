@@ -26,4 +26,4 @@ set(${dir_EXE_SOURCES}
    POSSPS
 )
 
-include(../../stir_exe_targets.cmake)
+include(stir_exe_targets)

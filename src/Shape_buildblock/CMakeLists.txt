@@ -15,6 +15,6 @@ set(${dir_LIB_SOURCES}
 
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries
 
-include(../stir_lib_target.cmake)
+include(stir_lib_target)
 
 target_link_libraries(Shape_buildblock buildblock IO )

@@ -13,6 +13,6 @@ set(${dir_LIB_SOURCES}
 
 #$(dir)_REGISTRY_SOURCES:= modelling_registries
 
-include(../stir_lib_target.cmake)
+include(stir_lib_target)
 
 target_link_libraries(modelling_buildblock buildblock)

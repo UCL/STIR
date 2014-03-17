@@ -1,8 +1,3 @@
-#
-#
-# Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
-# Copyright 2011-07-01 - 2011 Kris Thielemans
-
 # This file is part of STIR.
 #
 # This file is free software; you can redistribute it and/or modify
@@ -18,27 +13,21 @@
 # See STIR/LICENSE.txt for details
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
-set(dir listmode_utilities)
 
-set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
+# avoid warning about WIN32 no longer defined in CYGWIN
+set(CMAKE_LEGACY_CYGWIN_WIN32 0) 
 
-set(${dir_EXE_SOURCES}
-  lm_to_projdata
-  lm_to_projdata_bootstrap
-  lm_fansums
-  list_lm_events
-)
+PROJECT(STIR)
 
-if (HAVE_ECAT)
-  # yes, the LLN files seem to be there, so we can compile more
-  list(APPEND ${dir_EXE_SOURCES}
-	scan_sgl_file 
-	print_sgl_values 
-	rebin_sgl_file 
-	add_ecat7_header_to_sgl
-  )
-endif()
+SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
+# require 2.8.3 to get FOLDER properties support (without that, we only need cmake 2.6)
+cmake_minimum_required(VERSION 2.8.3)
 
+# add project source to cmake path such that it can use our find_package modules and .cmake files
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/src/cmake)
 
+#### enable support for ctest
+ENABLE_TESTING()
 
-include(stir_exe_targets)
+ADD_SUBDIRECTORY(src)
+ADD_SUBDIRECTORY(scripts)
