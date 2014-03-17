@@ -26,9 +26,9 @@ set(${dir_EXE_SOURCES}
   rigid_object_transform_image
 )
 
-#include(${CMAKE_SOURCE_DIR}/stir_exe_targets.cmake)
+#include(stir_exe_targets)
 foreach(executable ${${dir_EXE_SOURCES}})
-   add_executable(${executable} ${executable} ${CMAKE_HOME_DIRECTORY}/IO/IO_registries.cxx )
+   add_executable(${executable} ${executable} ${STIR_IO_REGISTRIES} )
    target_link_libraries(${executable} buildblock IO buildblock local_motion_buildblock buildblock IO buildblock listmode_buildblock)
    SET_PROPERTY(TARGET ${executable} PROPERTY FOLDER "Executables")
 endforeach()

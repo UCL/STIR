@@ -32,7 +32,7 @@ stir_image_to_simset_object.sh
 )
 
 
-#include(../stir_test_exe_targets.cmake)
+#include(stir_test_exe_targets)
 
 install(PROGRAMS ${${dir_scripts}} DESTINATION bin)
 

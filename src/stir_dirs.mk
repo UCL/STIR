@@ -29,6 +29,6 @@ EXEDIRS += utilities recon_test \
 	analytic/FBP3DRP \
 	SimSET \
 	SimSET/scripts \
-	scripts
+	../scripts
 
 TESTDIRS += test recon_test test/numerics test/modelling

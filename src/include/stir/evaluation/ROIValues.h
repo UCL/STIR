@@ -1,5 +1,3 @@
-//
-//
 /*!
   \file
   \ingroup evaluation
@@ -35,6 +33,7 @@
 
 #include <string>
 #include <iostream>
+#include <algorithm>
 #ifndef STIR_NO_NAMESPACES
 using std::string;
 #endif

@@ -60,9 +60,9 @@ int main(int argc, char **argv)
   const CartesianCoordinate3D<float> origin=density_cartesian_sptr->get_origin(); 
 
   const Coordinate3D<float> image_shift(z_shift_in_mm,y_shift_in_mm,x_shift_in_mm);
-  const int voxel_shift_z=round(image_shift[1]/grid_spacing[1]);
-  const int voxel_shift_y=round(image_shift[2]/grid_spacing[2]);
-  const int voxel_shift_x=round(image_shift[3]/grid_spacing[3]);
+  const int voxel_shift_z=stir::round(image_shift[1]/grid_spacing[1]);
+  const int voxel_shift_y=stir::round(image_shift[2]/grid_spacing[2]);
+  const int voxel_shift_x=stir::round(image_shift[3]/grid_spacing[3]);
   const Coordinate3D<int> num_voxels_to_shift(voxel_shift_z,voxel_shift_y,voxel_shift_x);
 	
   const float actual_z_shift_in_mm = static_cast<float> (voxel_shift_z)*grid_spacing[1];

@@ -32,7 +32,7 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
         bcktest
 )
 
-include(../stir_test_exe_targets.cmake)
+include(stir_test_exe_targets)
 
 # a test that uses MPI
 create_stir_mpi_test(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
