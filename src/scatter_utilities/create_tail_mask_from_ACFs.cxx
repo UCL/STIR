@@ -75,7 +75,7 @@ int main(int argc, const char *argv[])
   const char * const prog_name = argv[0];
 
   // option processing
-  float ACF_threshold = 1.1;
+  float ACF_threshold = 1.1F;
   int safety_margin=4;
   std::string ACF_filename;
   std::string output_filename;
@@ -93,7 +93,7 @@ int main(int argc, const char *argv[])
 	}
       else if (strcmp(argv[1], "--ACF-threshold")==0)
 	{
-	  ACF_threshold = atof(argv[2]);
+	  ACF_threshold = float(atof(argv[2]));
 	  argc-=2; argv +=2;
 	}
       else if (strcmp(argv[1], "--safety-margin")==0)
@@ -143,7 +143,7 @@ int main(int argc, const char *argv[])
 	  Sinogram<float> mask_sinogram
 	    (mask_proj_data.get_empty_sinogram(bin.axial_pos_num(),bin.segment_num()));
 
-	  int  count=0;
+	  std::size_t count=0;
 	  for (bin.view_num()=mask_proj_data.get_min_view_num();
 	       bin.view_num()<=mask_proj_data.get_max_view_num();
 	       ++bin.view_num())

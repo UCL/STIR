@@ -20,19 +20,19 @@
 */
 
 
-//system libraries
-#include <stdio.h>
-#include <iostream>
-#include <stdlib.h>
-#include <string>
-#include <math.h>
-
 //user defined libraries
 
 #include "stir/recon_buildblock/SPECTUB_Tools.h"
 #include "stir/recon_buildblock/SPECTUB_Weight3d.h"
 #include "stir/error.h"
 #include <boost/format.hpp>
+
+//system libraries
+#include <stdio.h>
+#include <iostream>
+#include <stdlib.h>
+#include <string>
+#include <math.h>
 
 namespace SPECTUB {
 
