@@ -42,7 +42,7 @@ START_NAMESPACE_STIR
   A point with coordinates \a coord is inside the shape if for
   \f$r = coord - origin\f$:
   \f[
-  {(r.dir_x)^2 \over R_y^2} + {(r.dir_y)^2 \over R_y^2}+ + {(r.dir_z)^2 \over R_z^2} <= 1
+  {(r.dir_x)^2 \over R_x^2} + {(r.dir_y)^2 \over R_y^2} + {(r.dir_z)^2 \over R_z^2} <= 1
   \f]
   where \f$dir_x, dir_y, dir_z\f$ are described in the documentation for class
   stir::Shape3DWithOrientation.

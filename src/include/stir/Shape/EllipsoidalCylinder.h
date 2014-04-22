@@ -45,7 +45,7 @@ START_NAMESPACE_STIR
   \f]
   and
   \f[
-  {(r.dir_x)^2 \over R_y^2} + {(r.dir_y)^2 \over R_y^2} <= 1
+  {(r.dir_x)^2 \over R_x^2} + {(r.dir_y)^2 \over R_y^2} <= 1
   \f]
   and
   \f[
