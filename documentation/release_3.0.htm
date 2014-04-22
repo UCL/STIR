@@ -87,7 +87,10 @@ inside the parameters of the log likelihood.
 <ul>
 <li>Top-level directories are now <tt>src</tt>, <tt>scripts</tt>, <tt>examples</tt>, <tt>documentation</tt>, <tt>doximages</tt>. The <tt>samples</tt> directory is now a
 sub-directory of <tt>examples</tt>, and the old <tt>examples</tt> is now
-<tt>examples/src</tt>.</li>
+<tt>examples/src</tt>.<br />
+<strong>Warning: when using CMake for building, you have to point it to do the main STIR directory</strong>
+(not STIR/src).
+</li>
 <li><tt>recon_test_pack</tt> and <tt>documentation</tt> are now distributed in
 zip files that unpack as <tt>STIR/recon_test_pack</tt> and <tt>STIR/documentation</tt>.</li>
 </ul>

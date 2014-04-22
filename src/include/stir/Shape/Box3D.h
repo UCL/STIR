@@ -22,22 +22,6 @@
   
   \brief Declaration of class stir::Box3D
   
-  \par Description
-  A point with coordinates \a coord is inside the shape if for
-  x,y,z given by <code>Shape3DWithOrientation::transform_to_original_coords(coord)</code>
-  \f[
-  abs(x), abs(y), abs(z) <= length_x/2, length_y/2, length_z/2
-\f]
-  
-  \par Parameters
-  \verbatim
-  Box3D Parameters:=
-     length-x (in mm):= <float>
-     length-y (in mm):= <float>
-     length-z (in mm):= <float>
-     ; any parameters of Shape3DWithOrientation
-     End:=
-  \endverbatim
   \author C. Ross Schmidtlein
 */
 
@@ -51,12 +35,24 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup Shape
-  \brief Three-dimensional box
+  \brief Three-dimensional cuboid box
+
+  \par Description
+  A point with coordinates \a coord is inside the shape if for
+  x,y,z given by <code>Shape3DWithOrientation::transform_to_shape_coords(coord)</code>
+  \f[
+  abs(x), abs(y), abs(z) <= length_x/2, length_y/2, length_z/2
+\f]
   
-  box with the dimensions 
-   (length_x,length_y,length_z), where length_x assumed to be
-  in x direction, length_y in y direction, and length_z in z-direction,
-   before any rotation with Euler angles.
+  \par Parameters
+  \verbatim
+  Box3D Parameters:=
+     length-x (in mm):= <float>
+     length-y (in mm):= <float>
+     length-z (in mm):= <float>
+     ; any parameters of Shape3DWithOrientation
+  End:=
+  \endverbatim
 */
 class Box3D: 
 public RegisteredParsingObject<Box3D, Shape3D, Shape3DWithOrientation>
