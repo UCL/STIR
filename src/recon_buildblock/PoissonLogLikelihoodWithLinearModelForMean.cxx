@@ -477,5 +477,6 @@ PoissonLogLikelihoodWithLinearModelForMean<TargetT>::fill_nonidentifiable_target
 
 template class PoissonLogLikelihoodWithLinearModelForMean<DiscretisedDensity<3, float>>;
 template class PoissonLogLikelihoodWithLinearModelForMean<ParametricVoxelsOnCartesianGrid>;
+template class PoissonLogLikelihoodWithLinearModelForMean<GeneralizedPatlakVoxelsOnCartesianGrid>;
 
 END_NAMESPACE_STIR

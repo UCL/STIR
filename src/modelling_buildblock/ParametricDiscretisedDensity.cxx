@@ -16,8 +16,8 @@
   \brief Declaration of class stir::ParametricDiscretisedDensity
 
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
   \author Richard Brown
-
 */
 
 #include "stir/modelling/ParametricDiscretisedDensity.h"
@@ -284,5 +284,7 @@ construct_single_density(const int index)
 
 // template class ParametricDiscretisedDensity<3,KineticParameters<NUM_PARAMS,float> >;
 template class ParametricDiscretisedDensity<ParametricVoxelsOnCartesianGridBaseType>;
+
+template class ParametricDiscretisedDensity<GeneralizedPatlakVoxelsOnCartesianGridBaseType>;
 
 END_NAMESPACE_STIR

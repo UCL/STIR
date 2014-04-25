@@ -14,6 +14,7 @@
   \brief Implementation of functions of class stir::PatlakPlot
 
   \author Charalampos Tsoumpas
+  \author Nicolas A Karakatsanis
 
 */
 
@@ -116,6 +117,37 @@ public:
   virtual void get_dynamic_image_from_parametric_image(DynamicDiscretisedDensity& dyn_image,
                                                        const ParametricVoxelsOnCartesianGrid& par_image) const;
 
+  //! Multiplies the dynamic image with the initialization kinetic model gradient.
+  /*!  For a linear model the model gradient is the transpose of the model matrix.
+    So, the dynamic image is "projected" from time domain to the parameter domain.
+
+    \todo Should be a virtual function declared in the KineticModel class.
+        Only intended for the initialization of the Generalized Patlak Model EM update estimates
+        Currently not used but retained for future potential usage.
+    The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method
+  */
+  virtual void multiply_dynamic_image_with_initialization_model_gradient(GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image,
+                                                                         const DynamicDiscretisedDensity& dyn_image) const;
+
+  //! Multiplies the dynamic image with the initialization kinetic model gradient and add to original \c parametric_image
+  /*! \todo Should be a virtual function declared in the KineticModel class.
+      Only intended for the initialization of the Generalized Patlak Model EM update estimates
+          Currently not used but retained for future potential usage.
+      The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method
+  */
+  virtual void multiply_dynamic_image_with_initialization_model_gradient_and_add_to_input(
+      GeneralizedPatlakVoxelsOnCartesianGrid& parametric_image, const DynamicDiscretisedDensity& dyn_image) const;
+
+  //! Multiplies the parametric image with the initialization kinetic model matrix to get the corresponding dynamic image.
+  /*! \todo Should be a virtual function declared in the KineticModel class.
+          Only intended for the initialization of the Generalized Patlak Model EM update estimates
+          Currently not used but retained for future potential usage.
+      The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method
+  */
+  virtual void
+  get_dynamic_image_from_initialization_parametric_image(DynamicDiscretisedDensity& dyn_image,
+                                                         const GeneralizedPatlakVoxelsOnCartesianGrid& par_image) const;
+
   //! This is the common method used to estimate the parametric images from the dynamic images.
   /*! \todo There is currently no check if the time frame definitions from \a dyn_image are
     the same as the ones encoded in the model.
@@ -130,9 +162,10 @@ public:
   unsigned int _starting_frame; //!< Starting frame to apply the model
   float _cal_factor;            //!< Calibration Factor, maybe to be removed.
   float _time_shift;            //!< Shifts the time to fit the timing of Plasma Data with the Projection Data.
-  bool _in_correct_scale; //!< Switch to scale or not the model_matrix to the correct scale, according to the appropriate scale
-                          //!< factor.
-  bool _in_total_cnt;     //!< Switch to choose the values of the model to be in total counts or in mean counts.
+  bool _in_correct_scale;    //!< Switch to scale or not the model_matrix to the correct scale, according to the appropriate scale
+                             //!< factor.
+  bool _in_total_cnt;        //!< Switch to choose the values of the model to be in total counts or in mean counts.
+  bool _plasma_in_total_cnt; //!< Switch to choose the plasma values of the model to be in total counts or in mean counts.
   std::string _blood_data_filename;            //!< Name of file in which the input function is stored
   PlasmaData _plasma_frame_data;               //!< Stores the plasma data into frames for brain studies
   std::string _time_frame_definition_filename; //!< name of file to get frame definitions

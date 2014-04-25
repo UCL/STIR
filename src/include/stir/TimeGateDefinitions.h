@@ -61,12 +61,20 @@ public:
     \a gate_num_of_this_duration to 0 allows skipping
     a time period of the corresponding \a duration_in_secs.
   */
+
   void read_gdef_file(const std::string& gdef_filename);
+
+  // Nicolas A Karakatsanis: Calculate and set the time fraction for each motion/gate relative to the total frame duration
+  void set_gate_relative_durations(const vector<pair<unsigned int, double>>& gate_sequence);
 
   //! \name get info for a gate
   //@{
   double get_gate_duration(unsigned int num) const;
+
   unsigned int get_gate_num(unsigned int num) const;
+
+  // Get the time fraction for each motion/gate relative to the total acquisition duration
+  float get_gate_relative_duration(unsigned int num) const; // Nicolas A Karakatsanis
 
   //@}
 
@@ -78,6 +86,13 @@ public:
 private:
   //! Stores start and end time for each gate
   std::vector<std::pair<unsigned int, double>> _gate_sequence;
+
+  // Total duration of all gates (total acquisition length) (Nicolas A Karakatsanis)
+  float _acquisition_total_duration;
+
+  //! Stores the time fractions for all motions/gate (time fraction = gate_duration/acquisition_total_duration)  (Nicolas A
+  //! Karakatsanis)
+  vector<float> _gate_relative_durations_sequence;
 };
 
 END_NAMESPACE_STIR

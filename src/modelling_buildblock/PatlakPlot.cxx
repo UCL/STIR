@@ -12,6 +12,7 @@
   \ingroup modelling
   \brief Implementations of inline functions of class stir::PatlakPlot
   \author Charalampos Tsoumpas
+  \author Nicolas A Karakatsanis
 
   \sa PatlakPlot.h, ModelMatrix.h and KineticModel.h
 
@@ -34,6 +35,7 @@ PatlakPlot::set_defaults()
   this->_time_shift = 0.;
   this->_in_correct_scale = false;
   this->_in_total_cnt = false;
+  this->_plasma_in_total_cnt = false;
 }
 
 const char* const PatlakPlot::registered_name = "Patlak Plot";
@@ -93,6 +95,7 @@ PatlakPlot::create_model_matrix()
       PlasmaData::const_iterator cur_iter = this->_plasma_frame_data.begin();
 
       double sum_value = 0.;
+      double integral_step = 0.;
       unsigned int sample_num;
       // Compute the value of the integral of Cp(t) for frames before the one we want to start applying Patlak to.
       // Remember that this code requires all frames, from t=0 to be included, otherwise this integral will be wrongly computed.
@@ -123,6 +126,8 @@ PatlakPlot::create_model_matrix()
               time_vector[sample_num] = static_cast<float>(
                   0.5 * (this->_frame_defs.get_end_time(sample_num) + this->_frame_defs.get_start_time(sample_num)));
             }
+          // Completion of integral calculation before moving to the next plasma frame
+          sum_value += 0.5 * integral_step;
         }
       if (this->_plasma_frame_data.get_is_decay_corrected())
         warning("Uncorrecting previous decay correction, while putting the plasma_data into the model_matrix.");
@@ -187,6 +192,11 @@ PatlakPlot::apply_linear_regression(ParametricVoxelsOnCartesianGrid& par_image, 
   VectorWithOffset<float> patlak_y(starting_frame - 1, num_frames - 1);
   VectorWithOffset<float> weights(starting_frame - 1, num_frames - 1);
 
+  std::cout << "\nFrame	"
+            << "		Plasma Integral	"
+            << "		Plasma	"
+            << "		Patlak X\n";
+
   // Patlak Linear regression is applied to the data in the format:
   // C(t)/Cp(t)=Ki*\int{Cp(t)}/Cp(t)+Vb
   // therefore our "x" value for the regression is \int{Cp(t)}/Cp(t)  (which we know from the model)
@@ -199,6 +209,9 @@ PatlakPlot::apply_linear_regression(ParametricVoxelsOnCartesianGrid& par_image, 
     {
       patlak_x[frame_num - 1] = patlak_model_array[1][frame_num] / patlak_model_array[2][frame_num];
       weights[frame_num - 1] = 1;
+      std::cout << frame_num << "			" << brain_patlak_model_array[1][frame_num]
+                << "				" << brain_patlak_model_array[2][frame_num] << "			"
+                << patlak_x[frame_num - 1] << "\n";
     }
   { // Do linear_regression for each voxel // for k j i
     float slope = 0.F;
@@ -314,6 +327,74 @@ PatlakPlot::get_dynamic_image_from_parametric_image(DynamicDiscretisedDensity& d
   this->_model_matrix.multiply_parametric_image_with_model(dyn_image, par_image);
 }
 
+// Currently not used but retained for future potential usage.
+// The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method
+void
+PatlakPlot::multiply_dynamic_image_with_initialization_model_gradient(GeneralizedPatlakVoxelsOnCartesianGrid& par_image,
+                                                                      const DynamicDiscretisedDensity& dyn_image) const
+{
+  if (!this->_in_correct_scale)
+    {
+#ifndef NDEBUG
+      this->_model_matrix.write_to_file("patlak_matrix_not_in_correct_scale.txt");
+#endif // NDEBUG
+      const DiscretisedDensityOnCartesianGrid<3, float>* image_cartesian_ptr
+          = dynamic_cast<DiscretisedDensityOnCartesianGrid<3, float>*>(((dyn_image.get_densities())[0]).get());
+      const BasicCoordinate<3, float> this_grid_spacing = image_cartesian_ptr->get_grid_spacing();
+      this->_model_matrix.scale_model_matrix(this_grid_spacing[2] / dyn_image.get_scanner_default_bin_size());
+#ifndef NDEBUG
+      this->_model_matrix.write_to_file("patlak_matrix_in_correct_scale.txt");
+#endif // NDEBUG
+    }
+  this->_model_matrix.multiply_dynamic_image_with_initialization_model(par_image, dyn_image);
+}
+
+// Currently not used but retained for future potential usage.
+// The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method
+void
+PatlakPlot::multiply_dynamic_image_with_initialization_model_gradient_and_add_to_input(
+    GeneralizedPatlakVoxelsOnCartesianGrid& par_image, const DynamicDiscretisedDensity& dyn_image) const
+{
+  if (!this->_in_correct_scale)
+    {
+#ifndef NDEBUG
+      this->_model_matrix.write_to_file("patlak_matrix_not_in_correct_scale.txt");
+#endif // NDEBUG
+      const DiscretisedDensityOnCartesianGrid<3, float>* image_cartesian_ptr
+          = dynamic_cast<DiscretisedDensityOnCartesianGrid<3, float>*>(((dyn_image.get_densities())[0]).get());
+      const BasicCoordinate<3, float> this_grid_spacing = image_cartesian_ptr->get_grid_spacing();
+      this->_model_matrix.scale_model_matrix(this_grid_spacing[2] / dyn_image.get_scanner_default_bin_size());
+#ifndef NDEBUG
+      this->_model_matrix.write_to_file("patlak_matrix_in_correct_scale.txt");
+#endif // NDEBUG
+    }
+  this->_model_matrix.multiply_dynamic_image_with_initialization_model_and_add_to_input(par_image, dyn_image);
+}
+
+// Should be a virtual function declared in the KineticModels or better to the LinearModels
+// Currently not used but retained for future potential usage.
+// The initialization of generalized Patlak nested estimates is performed by GeneralizedPatlakPlot equivalent method
+void
+PatlakPlot::get_dynamic_image_from_initialization_parametric_image(DynamicDiscretisedDensity& dyn_image,
+                                                                   const GeneralizedPatlakVoxelsOnCartesianGrid& par_image) const
+{
+  if (!this->_in_correct_scale)
+    {
+#ifndef NDEBUG
+      this->_model_matrix.write_to_file("patlak_matrix_not_in_correct_scale.txt");
+#endif // NDEBUG
+      const DiscretisedDensityOnCartesianGrid<3, float>* image_cartesian_ptr
+          = dynamic_cast<DiscretisedDensityOnCartesianGrid<3, float>*>(((dyn_image.get_densities())[0]).get());
+      const BasicCoordinate<3, float> this_grid_spacing = image_cartesian_ptr->get_grid_spacing();
+      this->_model_matrix.scale_model_matrix(this_grid_spacing[2] / dyn_image.get_scanner_default_bin_size());
+#ifndef NDEBUG
+      this->_model_matrix.write_to_file("patlak_matrix_in_correct_scale.txt");
+#endif // NDEBUG
+    }
+
+  this->_model_matrix.multiply_parametric_image_with_initialization_model(dyn_image, par_image);
+}
+
 unsigned int
 PatlakPlot::get_starting_frame() const
 {
@@ -342,6 +423,7 @@ PatlakPlot::initialise_keymap()
   this->parser.add_key("Starting Frame", &this->_starting_frame);
   this->parser.add_key("Time Shift", &this->_time_shift);
   this->parser.add_key("In total counts", &this->_in_total_cnt);
+  this->parser.add_key("Plasma in total counts", &this->_plasma_in_total_cnt);
   this->parser.add_key("In correct scale", &this->_in_correct_scale);
   this->parser.add_key("Time Frame Definition Filename", &this->_time_frame_definition_filename);
   this->parser.add_stop_key("end Patlak Plot Parameters");
@@ -417,17 +499,23 @@ get_model_matrix(const BloodFrameData& blood_frame_data, const unsigned int star
         {
           const float blood=cur_iter->get_blood_counts_in_kBq();
           const float durat=(cur_iter->get_frame_end_time_in_s()-cur_iter->get_frame_start_time_in_s());
-          sum_value+=blood*durat
+		 // Calculation of the plasma integral only up to the mid time of the current plasma frame
+          sum_value+=0.5*blood*durat
             *decay_correct_factor(this->_plasma_frame_data.get_isotope_halflife(),
                                 cur_iter->get_frame_start_time_in_s(),
                                 cur_iter->get_frame_end_time_in_s()) ;
           // Normalize with the decay correct factor now.
           patlak_array[1][sample_num]=sum_value/decay_correct_factor(this->_plasma_frame_data.get_isotope_halflife(),
                                                              cur_iter->get_frame_start_time_in_s(),
-                                                             cur_iter->get_frame_end_time_in_s()) ;
-          patlak_array[2][sample_num]=blood;
-          time_vector[sample_num]=0.5*(cur_iter->get_frame_start_time_in_s()+cur_iter->get_frame_end_time_in_s()) ;
-        }      
+                                                             cur_iter->get_frame_end_time_in_s());
+          patlak_array[2][sample_num]=blood/decay_correct_factor(this->_plasma_frame_data.get_isotope_halflife(),
+                                                             cur_iter->get_frame_start_time_in_s(),
+                                                             cur_iter->get_frame_end_time_in_s());
+          time_vector[sample_num]=0.5*(cur_iter->get_frame_start_time_in_s()+cur_iter->get_frame_end_time_in_s());
+		  // Completion of integral calculation before moving to the next plasma frame
+		  sum_value+=0.5*blood*durat;  
+        }
+		
       assert(sample_num-1==blood_frame_data.size());  
 
       this->_model_matrix.set_model_array(patlak_array);

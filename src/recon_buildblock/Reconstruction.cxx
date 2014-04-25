@@ -195,4 +195,5 @@ Reconstruction<TargetT>::get_target_image()
 
 template class Reconstruction<DiscretisedDensity<3, float>>;
 template class Reconstruction<ParametricVoxelsOnCartesianGrid>;
+template class Reconstruction<GeneralizedPatlakVoxelsOnCartesianGrid>;
 END_NAMESPACE_STIR

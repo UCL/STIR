@@ -87,6 +87,7 @@ const char* const ThresholdMinToSmallPositiveValueDataProcessor<DataT>::register
 
 template class ThresholdMinToSmallPositiveValueDataProcessor<DiscretisedDensity<3, float>>;
 template class ThresholdMinToSmallPositiveValueDataProcessor<ParametricVoxelsOnCartesianGrid>;
+template class ThresholdMinToSmallPositiveValueDataProcessor<GeneralizedPatlakVoxelsOnCartesianGrid>;
 // template class ThresholdMinToSmallPositiveValueDataProcessor< VoxelsOnCartesianGrid<KineticParameters<1,float> > >;
 // template class ThresholdMinToSmallPositiveValueDataProcessor< VoxelsOnCartesianGrid<KineticParameters<2,float> > >;
 // template class ThresholdMinToSmallPositiveValueDataProcessor< VoxelsOnCartesianGrid<KineticParameters<3,float> > >;

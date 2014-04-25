@@ -17,6 +17,7 @@
   \brief Declaration of class stir::InterfileDynamicDiscretisedDensityInputFileFormat
 
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
   \author Richard Brown
 
 */
@@ -64,7 +65,14 @@ protected:
       }
     return ret;
   }
+  std::auto_ptr<data_type> read_interfile_dyn_image(std::istream& input,
+                                                    const string& directory_for_data = "",
+                                                    const std::ios::openmode open_mode = std::ios::in) const;
+
+  std::auto_ptr<data_type> read_interfile_dyn_image(const string& filename,
+                                                    const std::ios::openmode open_mode = std::ios::in) const;
 };
+
 END_NAMESPACE_STIR
 
 #endif
