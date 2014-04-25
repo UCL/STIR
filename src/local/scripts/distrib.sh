@@ -15,7 +15,7 @@
 : ${do_website_sync:=0}
 
 set -e
-: ${VERSION:=3.0beta}
+: ${VERSION:=3.0}
 
 : ${REPO:=~/devel/STIR -b open_source}
 : ${CHECKOUTOPTS:=""}
@@ -43,7 +43,7 @@ cd ${DISTRIB}
 
 trap "echo ERROR in git clone" ERR
 if [ ! -r STIR ]; then
-    git clone $CHECKOUTOPTS  $REPO -b open_source STIR
+    git clone $CHECKOUTOPTS  $REPO STIR
     cd STIR
 else
   if [ $do_update = 1 ]; then
