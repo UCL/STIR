@@ -26,6 +26,7 @@
   by iterators).
 
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
 
 */
 
@@ -64,6 +65,23 @@ threshold_upper_lower(forw_iterT begin, forw_iterT end,
       else
 	if (new_min > *iter)
 	  *iter = new_min;
+    }
+}
+
+// Nicolas A Karakatsanis: Zero thresholding
+//! Set all values of a sequence exceeding range [low_thresh, upper_thresh] to zero
+template <typename forw_iterT, typename elemT>
+inline void
+zero_threshold_upper_lower(forw_iterT begin, forw_iterT end,
+		                   const elemT new_min, const elemT new_max)
+{
+  for (forw_iterT iter = begin; iter != end; ++iter)
+    {
+      if (*iter > new_max)
+	    *iter = 0;
+      else
+	  if (new_min > *iter)
+	    *iter = 0;
     }
 }
 

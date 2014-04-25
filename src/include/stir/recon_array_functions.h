@@ -30,6 +30,7 @@
   \author Matthew Jacobson
   \author Kris Thielemans
   \author PARAPET project
+  \author Nicolas A Karakatsanis
 
 */
 
@@ -110,6 +111,12 @@ void divide_array(DiscretisedDensity<3,float>& numerator, const DiscretisedDensi
 //! compute the log term of the loglikelihood function for given part of the projection space
 void accumulate_loglikelihood(Viewgram<float>& projection_data, 
 			 const Viewgram<float>& estimated_projections,
+			 const int rim_truncation_sino,
+			 double* accum);
+			 
+//! compute the log term of the loglikelihood function for given part of the image space
+void accumulate_loglikelihood(DiscretisedDensity<3,float>& outer_loop_dyn_image_estimate, 
+			 const DiscretisedDensity<3,float>& nested_loop_dyn_image_estimate,
 			 const int rim_truncation_sino,
 			 double* accum);
 

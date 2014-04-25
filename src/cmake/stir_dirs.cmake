@@ -70,6 +70,8 @@ SET( STIR_DIRS
      iterative/OSMAPOSL  
      iterative/OSSPS
      iterative/POSMAPOSL  
+     iterative/NESTPOSMAPOSL
+     iterative/NESTGPOSMAPOSL	 
      iterative/POSSPS
      SimSET
      SimSET/scripts

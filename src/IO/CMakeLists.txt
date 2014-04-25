@@ -30,6 +30,7 @@ set(${dir_LIB_SOURCES}
   interfile InterfileHeader InterfilePDFSHeaderSPECT
   InputFileFormatRegistry 
   InterfileDynamicDiscretisedDensityOutputFileFormat 
+  InterfileDynamicDiscretisedDensityInputFileFormat
   InterfileParametricDensityOutputFileFormat
   GIPL_ImageFormat
 ) 

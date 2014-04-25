@@ -7,7 +7,8 @@ set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
 	KineticModel 
-	PatlakPlot 
+	PatlakPlot
+    GeneralizedPatlakPlot	
 	ParametricDiscretisedDensity
 )
 

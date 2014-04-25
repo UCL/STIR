@@ -21,6 +21,7 @@
   \ingroup IO
   \brief  initialisation of the stir::OutputFileFormat::_default_sptr member
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
       
 */
 
@@ -60,6 +61,17 @@ OutputFileFormat<DiscretisedDensity<3,float> >::_default_sptr(new InterfileOutpu
   new InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType >
 #endif
 								   );
+
+template <>
+  shared_ptr<OutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGrid > >
+  OutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGrid>::_default_sptr(
+#ifdef HAVE_LLN_MATRIX
+  new ecat::ecat7::ECAT7ParametricDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType>
+#else
+  new InterfileParametricDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType >
+#endif
+								   );
+								   
 #endif
 #if 1
   template <>

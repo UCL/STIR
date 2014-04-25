@@ -322,6 +322,9 @@ bool InterfileHeader::post_processing()
   exam_info_sptr->time_frame_definitions = 
     TimeFrameDefinitions(image_relative_start_times, image_durations);
 
+  //Added for old implementations relying on this->time_frame_definitions variable
+  this->time_frame_definitions=exam_info_sptr->time_frame_definitions;
+
   return false;
 
 }

@@ -23,6 +23,7 @@
   \ingroup modelling
   \brief Declaration of class stir::ParametricDiscretisedDensity
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
  
 */
 
@@ -175,11 +176,20 @@ public DiscDensT
 //! Convenience typedef for base-type of Cartesian Voxelised Parametric Images with just two parameters 
 typedef VoxelsOnCartesianGrid<KineticParameters<2,float> >
            ParametricVoxelsOnCartesianGridBaseType;
-
+		   
 
 //! Convenience typedef for Cartesian Voxelised Parametric Images with just two parameters 
 typedef ParametricDiscretisedDensity<ParametricVoxelsOnCartesianGridBaseType>
    ParametricVoxelsOnCartesianGrid;
+   
+   
+//! Convenience typedef for base-type of Cartesian Voxelised Parametric Images with just three parameters (for Generalized Patlak algorithm) 
+typedef VoxelsOnCartesianGrid<KineticParameters<3,float> >
+           GeneralizedPatlakVoxelsOnCartesianGridBaseType;
+   
+//! Convenience typedef for Cartesian Voxelised Parametric Images with just three parameters (for Generalized Patlak algorithm) 
+typedef ParametricDiscretisedDensity<GeneralizedPatlakVoxelsOnCartesianGridBaseType>
+   GeneralizedPatlakVoxelsOnCartesianGrid;
 
 
 END_NAMESPACE_STIR

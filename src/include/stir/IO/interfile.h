@@ -1,11 +1,12 @@
 // 
+// $Id: interfile.h,v 1.27 2011-12-31 16:42:44 kris Exp $
 //
 #ifndef __stir_Interfile_h__
 #define __stir_Interfile_h__
 
 /*
     Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2000- $Date: 2011-12-31 16:42:44 $, Hammersmith Imanet Ltd
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -27,8 +28,11 @@
 
   \author Kris Thielemans 
   \author Sanida Mustafovic
+  \author Nicolas A Karakatsanis
   \author PARAPET project
 
+  $Date: 2011-12-31 16:42:44 $
+  $Revision: 1.27 $  
 */
 
 #include "stir/NumericType.h"
@@ -37,6 +41,7 @@
 // has to include Succeeded.h (even if it doesn't use the return value).
 #include "stir/Succeeded.h"
 #include "stir/ByteOrder.h"
+#include "stir/IO/InterfileHeader.h"
 #include <iostream>
 #include <string>
 
@@ -86,9 +91,12 @@ bool is_interfile_signature(const char * const signature);
 
   This should normally never be used. Use read_from_file<DiscretisedDensity<3,float> >() instead.
  */
-VoxelsOnCartesianGrid<float>* read_interfile_image(istream& input, 
+VoxelsOnCartesianGrid<float>* read_interfile_image(std::istream& input, 
 				      const string& directory_for_data = "");
 
+
+					  
+					  
 //! This reads the first 3d image in an Interfile header file, given as a filename.
 /*!
   \ingroup InterfileIO
@@ -100,6 +108,35 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(istream& input,
   This should normally never be used. Use read_from_file<DiscretisedDensity<3,float> >() instead.
 */
 VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename);
+
+
+//! This reads one of the 3d images out of a single binary file containing 
+//! a collection of dynamic/parametric images given as a stream.
+//! An Interfile header file points to the single data file. 
+//! The data_offset parameter determines (provided it has been calculated correctly) 
+//! which frame/parametric image is picked 
+/*!
+  \ingroup InterfileIO
+ If there is trouble interpreting the header, 
+ VoxelsOnCartesianGrid<float>::ask_parameters() is called instead
+ If the name for the data file is not an absolute pathname,
+ \a directory_for_data is prepended (if not NULL).
+
+  \warning it is up to the caller to deallocate the image
+
+  This should normally never be used. Use read_from_file<DiscretisedDensity<3,float> >() instead.
+ */
+VoxelsOnCartesianGrid<float>* read_interfile_frame_image(std::istream& input, 
+                                                         const unsigned int data_offset, 
+														 InterfileImageHeader& ifheader,
+														 const string& directory_for_data = "");
+
+//! Same as previous function, except here the filename and the data offset are provided as parameters instead.
+//! From the filename, the collection data stream is derived and then the previous function is called.														 
+VoxelsOnCartesianGrid<float>* read_interfile_frame_image(const string& filename, 
+                                                         const unsigned int frame_num);
+
+
 
 //! This outputs an Interfile header for an image.
 /*!
@@ -212,6 +249,17 @@ write_basic_interfile(const string& filename,
 Succeeded 
 write_basic_interfile(const string& filename, 
 		      const DiscretisedDensity<3,float>& image,
+		      const NumericType output_type = NumericType::FLOAT,
+		      const float scale= 0,
+		      const ByteOrder byte_order=ByteOrder::native);
+
+//  Nicolas A Karakatsanis			  
+//	This outputs an Interfile header and data for a DiscretisedDensity<3,float> object after 
+//  modifying the filename to denote a particular frame/type of image		  
+Succeeded 
+write_basic_interfile(string& filename, 
+		      const DiscretisedDensity<3,float>& image,
+			  const unsigned int param_num,
 		      const NumericType output_type = NumericType::FLOAT,
 		      const float scale= 0,
 		      const ByteOrder byte_order=ByteOrder::native);

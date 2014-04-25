@@ -22,6 +22,7 @@
   \brief Implementation of class stir::ecat::ecat7::ECAT7ParametricDensityOutputFileFormat
 
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
 
 */
 
@@ -183,6 +184,7 @@ ECAT7ParametricDensityOutputFileFormat<DiscretisedDensityT>::
 }
 
 template class ECAT7ParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>;  
+template class ECAT7ParametricDensityOutputFileFormat<GeneralizedPatlakVoxelsOnCartesianGridBaseType>;
 
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT

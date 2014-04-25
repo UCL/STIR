@@ -154,5 +154,6 @@ set_up(shared_ptr<TargetT> const& target_data_sptr)
 
 template class Reconstruction<DiscretisedDensity<3,float> >; 
 template class Reconstruction<ParametricVoxelsOnCartesianGrid >; 
+template class Reconstruction<GeneralizedPatlakVoxelsOnCartesianGrid >;
 END_NAMESPACE_STIR
 

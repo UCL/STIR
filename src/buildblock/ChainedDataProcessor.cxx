@@ -22,6 +22,7 @@
   \brief Implementations for class stir::ChainedDataProcessor
 
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
 
 */
 #include "stir/ChainedDataProcessor.h"
@@ -142,7 +143,8 @@ ChainedDataProcessor<DataT>::registered_name =
 // have the above variable in a separate file, which you need to pass at link time
 
 template class ChainedDataProcessor<DiscretisedDensity<3,float> >;
-template class ChainedDataProcessor<ParametricVoxelsOnCartesianGrid >;   
+template class ChainedDataProcessor<ParametricVoxelsOnCartesianGrid >;  
+template class ChainedDataProcessor<GeneralizedPatlakVoxelsOnCartesianGrid >;  
 END_NAMESPACE_STIR
 
 

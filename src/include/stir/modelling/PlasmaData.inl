@@ -22,6 +22,7 @@
   \brief Implementations of inline functions of class stir::PlasmaData
 
   \author Charalampos Tsoumpas
+  \author Nicolas A Karakatsanis
 
 */
 #include "stir/decay_correction_factor.h"
@@ -231,6 +232,33 @@ PlasmaData::get_sample_data_in_frames(TimeFrameDefinitions time_frame_def)
         plasma_data_in_frames.set_if_decay_corrected(this->_is_decay_corrected);
         plasma_data_in_frames.set_isotope_halflife(this->_isotope_halflife);
         plasma_data_in_frames.set_time_frame_definitions(plasma_fdef);
+
+		PlasmaData::const_iterator cur_plasma_frame_iter;
+
+		std::cout << "Plasma data after sorted in user-defined time frames.\n";
+		std::cout << "Time frame	" << "Plasma counts	" << "Blood counts	\n";
+		
+        for(cur_plasma_frame_iter=plasma_data_in_frames.begin() ;
+            cur_plasma_frame_iter!=plasma_data_in_frames.end(); ++cur_plasma_frame_iter )
+          std::cout << cur_plasma_frame_iter->get_time_in_s() << "		" 
+		            << cur_plasma_frame_iter->get_plasma_counts_in_kBq() << "		"
+					<< cur_plasma_frame_iter->get_blood_counts_in_kBq()  << "		"
+					<< "\n";
+
+        std::cout << "\n";
+
+        //for(cur_plasma_frame_iter=plasma_data_in_frames.begin() ;
+        //    cur_plasma_frame_iter!=plasma_data_in_frames.end(); ++cur_plasma_frame_iter )
+        //  std::cout << "Current frame blood counts: " << cur_plasma_frame_iter->get_blood_counts_in_kBq() << "\n";
+
+        //std::cout << "\n";
+
+        //for(cur_plasma_frame_iter=plasma_data_in_frames.begin() ;
+        //    cur_plasma_frame_iter!=plasma_data_in_frames.end(); ++cur_plasma_frame_iter )
+        //  std::cout << "Current frame times: " << cur_plasma_frame_iter->get_time_in_s() << "\n";
+
+        //std::cout << "\n";
+		
         return plasma_data_in_frames;
 }
 

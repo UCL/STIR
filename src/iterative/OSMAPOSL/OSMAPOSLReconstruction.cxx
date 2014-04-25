@@ -28,6 +28,7 @@
   \author Matthew Jacobson
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Nicolas A Karakatsanis
   \author PARAPET project
       
 */
@@ -395,6 +396,13 @@ update_estimate(TargetT &current_image_estimate)
   PTimer timerSubset;
   timerSubset.Start();
 #endif // PARALLEL
+
+  // Nicolas A Karakatsanis: Pass the name and the subiteration number to the obj function 
+  // as a new output filename prefix for the multiple nested images within the same global iteration
+  // This can be utilized by nested obj functions for many purposes
+  this->objective_function().
+    set_nested_output_filename_prefix(this->output_filename_prefix,
+	                                  this->subiteration_num);
   
   // TODO make member parameter to avoid reallocation all the time
   auto_ptr< TargetT > multiplicative_update_image_ptr =
@@ -408,7 +416,17 @@ update_estimate(TargetT &current_image_estimate)
                                                           current_image_estimate,
                                                           subset_num); 
   
-  // divide by subset sensitivity  
+  if (this->objective_function_sptr->is_nested())
+  {
+  // If nested EM algorithm has been selected a new estimate is already computed 
+  // from method: compute_sub_gradient_without_penalty_plus_sensitivity
+    cerr << endl << "Update mechanism is nested" << endl;
+    current_image_estimate=*this->objective_function_sptr->last_nested_estimate_sptr;
+  }
+	
+  else
+  // divide subset gradient by subset sensitivity to obtain update image
+  // and multuply previous estimate with update image to obtain new estimate  
   {
     const TargetT& sensitivity =
       this->objective_function().get_subset_sensitivity(subset_num);
@@ -446,14 +464,14 @@ update_estimate(TargetT &current_image_estimate)
         // with p_v = sum_{b in subset} p_bv
         // actually, we restrict 1 + beta*prior_gradient/num_subsets/p_v between .1 and 10
         while (denominator_iter != denominator_end)
-          {
-            *denominator_iter = *denominator_iter/this->get_num_subsets() + (*sensitivity_iter);
-            // bound denominator between (*sensitivity_iter)/10 and (*sensitivity_iter)*10
-            *denominator_iter =
-                std::max(std::min(*denominator_iter, (*sensitivity_iter)*10),(*sensitivity_iter)/10);
-            ++denominator_iter;
-            ++sensitivity_iter;
-          }
+        {
+          *denominator_iter = *denominator_iter/this->get_num_subsets() + (*sensitivity_iter);
+          // bound denominator between (*sensitivity_iter)/10 and (*sensitivity_iter)*10
+          *denominator_iter =
+              std::max(std::min(*denominator_iter, (*sensitivity_iter)*10),(*sensitivity_iter)/10);
+          ++denominator_iter;
+          ++sensitivity_iter;
+        }
       }
       else
       {
@@ -485,69 +503,71 @@ update_estimate(TargetT &current_image_estimate)
     
     cerr<<"Number of (cancelled) singularities in Sensitivity division: "
       <<count<<endl;
-  }
-  
-    
-  if(this->inter_update_filter_interval>0 &&
-     !is_null_ptr(this->inter_update_filter_ptr) &&
-     !(this->subiteration_num%this->inter_update_filter_interval))
-  {
-    
-    cerr<<endl<<"Applying inter-update filter"<<endl;
-    this->inter_update_filter_ptr->apply(current_image_estimate); 
-    
-  }
-  
-  // KT 17/08/2000 limit update
-  // TODO move below thresholding?
-  if (this->write_update_image)
-  {
-    // allocate space for the filename assuming that
-    // we never have more than 10^49 subiterations ...
-    char * fname = new char[this->output_filename_prefix.size() + 60];
-    sprintf(fname, "%s_update_%d", this->output_filename_prefix.c_str(), this->subiteration_num);
-    
-    // Write it to file
-    this->output_file_format_ptr->
-      write_to_file(fname, *multiplicative_update_image_ptr);
-    delete[] fname;
-  }
-  
-  if (this->subiteration_num != 1)
-    {
-      const float current_min =
-        *std::min_element(multiplicative_update_image_ptr->begin_all(),
-                          multiplicative_update_image_ptr->end_all()); 
-      const float current_max = 
-        *std::max_element(multiplicative_update_image_ptr->begin_all(),
-                          multiplicative_update_image_ptr->end_all()); 
-      const float new_min = 
-        static_cast<float>(this->minimum_relative_change);
-      const float new_max = 
-        static_cast<float>(this->maximum_relative_change);
-      cerr << "Update image old min,max: " 
-           << current_min
-           << ", " 
-           << current_max
-           << ", new min,max " 
-           << max(current_min, new_min) << ", " << min(current_max, new_max)
-           << endl;
 
-      threshold_upper_lower(multiplicative_update_image_ptr->begin_all(),
+  
+    
+    if(this->inter_update_filter_interval>0 &&
+       !is_null_ptr(this->inter_update_filter_ptr) &&
+       !(this->subiteration_num%this->inter_update_filter_interval))
+    {
+    
+      cerr<<endl<<"Applying inter-update filter"<<endl;
+      this->inter_update_filter_ptr->apply(current_image_estimate); 
+    
+    }
+  
+    // KT 17/08/2000 limit update
+    // TODO move below thresholding?
+    if (this->write_update_image)
+    {
+      // allocate space for the filename assuming that
+      // we never have more than 10^49 subiterations ...
+      char * fname = new char[this->output_filename_prefix.size() + 60];
+      sprintf(fname, "%s_update_%d", this->output_filename_prefix.c_str(), this->subiteration_num);
+    
+      // Write it to file
+      this->output_file_format_ptr->
+        write_to_file(fname, *multiplicative_update_image_ptr);
+      delete[] fname;
+    }
+  
+    if (this->subiteration_num != 1)
+      {
+        const float current_min =
+          *std::min_element(multiplicative_update_image_ptr->begin_all(),
+                          multiplicative_update_image_ptr->end_all()); 
+        const float current_max = 
+          *std::max_element(multiplicative_update_image_ptr->begin_all(),
+                          multiplicative_update_image_ptr->end_all()); 
+        const float new_min = 
+          static_cast<float>(this->minimum_relative_change);
+        const float new_max = 
+          static_cast<float>(this->maximum_relative_change);
+        cerr << "Update image old min,max: " 
+             << current_min
+             << ", " 
+             << current_max
+             << ", new min,max " 
+             << max(current_min, new_min) << ", " << min(current_max, new_max)
+             << endl;
+
+        threshold_upper_lower(multiplicative_update_image_ptr->begin_all(),
                             multiplicative_update_image_ptr->end_all(), 
                             new_min, new_max);      
-    }  
-
-  //current_image_estimate *= *multiplicative_update_image_ptr; 
-  {
-    typename TargetT::const_full_iterator multiplicative_update_image_iter = multiplicative_update_image_ptr->begin_all_const(); 
-    const typename TargetT::const_full_iterator end_multiplicative_update_image_iter = multiplicative_update_image_ptr->end_all_const(); 
-    typename TargetT::full_iterator current_image_estimate_iter = current_image_estimate.begin_all(); 
-    while (multiplicative_update_image_iter!=end_multiplicative_update_image_iter) 
+      }
+	
+    //current_image_estimate *= *multiplicative_update_image_ptr; 
+    {
+      typename TargetT::const_full_iterator multiplicative_update_image_iter = multiplicative_update_image_ptr->begin_all_const(); 
+      const typename TargetT::const_full_iterator end_multiplicative_update_image_iter = multiplicative_update_image_ptr->end_all_const(); 
+	  typename TargetT::full_iterator current_image_estimate_iter = current_image_estimate.begin_all();
+	
+	  while (multiplicative_update_image_iter!=end_multiplicative_update_image_iter) 
       { 
         *current_image_estimate_iter *= (*multiplicative_update_image_iter); 
         ++current_image_estimate_iter; ++multiplicative_update_image_iter; 
       } 
+    }
   }
   
 #ifndef PARALLEL
@@ -561,6 +581,7 @@ update_estimate(TargetT &current_image_estimate)
 
 template class OSMAPOSLReconstruction<DiscretisedDensity<3,float> >;
 template class OSMAPOSLReconstruction<ParametricVoxelsOnCartesianGrid >; 
+template class OSMAPOSLReconstruction<GeneralizedPatlakVoxelsOnCartesianGrid >;
 
 
 END_NAMESPACE_STIR

@@ -23,8 +23,14 @@
   \brief Declaration of class stir::GatedProjData
  \author Kris Thielemans
  \author Charalampos Tsoumpas
+ \author Nicolas A Karakatsanis
 
 */
+// Header guards were added by Nicolas K. to avoid multiple definition of the class from multiple obj functions 
+// (e.g. when motion is corrected in non-nested and nested implementation)
+#ifndef __stir_GatedProjData_H__
+#define __stir_GatedProjData_H__
+
 #include "stir/MultipleProjData.h"
 #include "stir/TimeGateDefinitions.h"
 #include <string>
@@ -59,3 +65,5 @@ public:
 };
 
 END_NAMESPACE_STIR
+
+#endif //__stir_GatedProjData_H__

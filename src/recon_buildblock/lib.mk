@@ -52,7 +52,11 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	SPECTUB_Tools.cxx \
 	SPECTUB_Weight3d.cxx \
 	PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.cxx \
-        PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.cxx
+    PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.cxx \
+	PoissonNestedLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.cxx \
+	PoissonNestedLogLikelihoodWithGeneralizedPatlakAndDynamicProjectionData.cxx \
+	PoissonNestedLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.cxx \
+	PoissonNestedLogLikelihoodWithLinearModelForMeanAndConvolvedProjDataWithMotion.cxx
 
 #InputFileFormatRegistry_recon_buildblock.cxx
 

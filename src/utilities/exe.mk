@@ -41,8 +41,10 @@ $(dir)_SOURCES:=manip_image.cxx \
         shift_image.cxx \
         shift_image_origin.cxx \
         warp_and_accumulate_gated_images.cxx \
-        warp_image.cxx \
-        zeropad_planes.cxx
+	warp_gated_images.cxx \
+    warp_image.cxx \
+	apply_RL_deconvolution \
+    zeropad_planes.cxx
 
 ifeq ($(HAVE_AVW),1)
   $(dir)_SOURCES += conv_AVW.cxx

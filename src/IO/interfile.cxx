@@ -24,6 +24,7 @@
 
   \author Kris Thielemans 
   \author Sanida Mustafovic
+  \author Nicolas A Karakatsanis
   \author PARAPET project
 */
 //   Pretty horrible implementations at the moment...
@@ -159,6 +160,118 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename)
   
   return read_interfile_image(image_stream, directory_name);
 }
+
+//Nicolas A Karakatsanis
+VoxelsOnCartesianGrid<float>* 
+read_interfile_frame_image(std::istream& input, 
+						   const unsigned int data_offset,
+						   InterfileImageHeader& ifheader,
+						   const string&  directory_for_data)
+{
+  /*
+  InterfileImageHeader ifheader;
+  if (!ifheader.parse(input))
+    {
+      error("read_interfile_frame_image: Failed to properly parse the Interfile header file of the provided data stream");
+	  return 0;
+    }
+  */
+  // prepend directory_for_data to the data_file_name from the header
+
+  char full_data_file_name[max_filename_length];
+  strcpy(full_data_file_name, ifheader.data_file_name.c_str());
+  prepend_directory_name(full_data_file_name, directory_for_data.c_str());  
+  
+  std::cout << "Preparing to load the image data of current image with offset = " << data_offset << endl;
+  ifstream data_in;
+  open_read_binary(data_in, full_data_file_name);
+  
+  std::cout << "Loading of image data stream for current image/frame was successful\n";
+ 
+  CartesianCoordinate3D<float> voxel_size(static_cast<float>(ifheader.pixel_sizes[2]), 
+					  static_cast<float>(ifheader.pixel_sizes[1]), 
+					  static_cast<float>(ifheader.pixel_sizes[0]));
+  
+  const int z_size =  ifheader.matrix_size[2][0];
+  const int y_size =  ifheader.matrix_size[1][0];
+  const int x_size =  ifheader.matrix_size[0][0];
+  const BasicCoordinate<3,int> min_indices = 
+    make_coordinate(0, -y_size/2, -x_size/2);
+  const BasicCoordinate<3,int> max_indices = 
+    min_indices + make_coordinate(z_size, y_size, x_size) - 1;
+
+  CartesianCoordinate3D<float> origin(0,0,0);
+  if (ifheader.first_pixel_offsets[2] != InterfileHeader::double_value_not_set)
+    {
+      // make sure that origin is such that 
+      // first_pixel_offsets =  min_indices*voxel_size + origin
+      origin =
+	make_coordinate(float(ifheader.first_pixel_offsets[2]),
+			float(ifheader.first_pixel_offsets[1]),
+			float(ifheader.first_pixel_offsets[0]))
+	- voxel_size * BasicCoordinate<3,float>(min_indices);
+      // TODO remove
+      if (norm(origin)>.01)
+	warning("interfile parsing: setting origin to (z=%g,y=%g,x=%g)",
+		origin.z(), origin.y(), origin.x());
+    }
+
+  std::cout << "The min. and max. indices as well as the origin of the current image have been determined.\n";
+	
+  VoxelsOnCartesianGrid<float>* image_ptr =
+      new VoxelsOnCartesianGrid<float>
+       (IndexRange<3>(min_indices, max_indices),
+        origin,
+        voxel_size);
+  
+  std::cout << "Loading of image data buffer for current image was successful.\n";
+  
+  data_in.seekg(data_offset);
+
+  std::cout << "Shifting of the reference point of the current data stream was successful.\n";
+  
+  float scale = float(1);
+  if (read_data(data_in, *image_ptr, ifheader.type_of_numbers, scale, ifheader.file_byte_order)
+    == Succeeded::no
+    || scale != 1)
+  {
+    error("read_interfile_image: error reading data or scale factor returned by read_data not equal to 1\n");
+    return 0;
+  }
+  
+  for (int i=0; i< ifheader.matrix_size[2][0]; i++)
+    if (ifheader.image_scaling_factors[0][i]!= 1)
+      (*image_ptr)[i] *= static_cast<float>(ifheader.image_scaling_factors[0][i]);
+  
+  std::cout << "Binary data stream was successfully loaded to the image buffer.\nReady to return the current image/frame data buffer pointer.\n\n"; 
+  
+  return image_ptr;
+}
+
+//Nicolas A Karakatsanis
+VoxelsOnCartesianGrid<float>* read_interfile_frame_image(const string& filename,
+                                                         const unsigned int data_offset)
+{
+  ifstream image_stream(filename.c_str());
+  if (!image_stream)
+    { 
+      error("read_interfile_frame_image: couldn't open file %s\n", filename.c_str());
+    }
+
+
+  InterfileImageHeader ifheader;
+  if (!ifheader.parse(image_stream))
+    {
+      error("read_interfile_frame_image: Failed to properly parse the Interfile header file of the provided data stream\n");
+	  return 0;
+    }
+	
+  char directory_name[max_filename_length];
+  get_directory_name(directory_name, filename.c_str());
+  
+  return read_interfile_frame_image(image_stream, data_offset, ifheader, directory_name);
+}
+
 
 #if 0
 const VectorWithOffset<std::streamoff> 
@@ -537,6 +650,32 @@ write_basic_interfile(const string& filename,
 			  scale, byte_order);
 }
 
+//Nicolas A Karakatsanis
+Succeeded 
+write_basic_interfile(string& filename, 
+		      const DiscretisedDensity<3,float>& image,
+			  const unsigned int param_num,
+		      const NumericType output_type,
+		      const float scale,
+		      const ByteOrder byte_order)
+{
+  
+  //Construct a string stream from the integer denoting the frame index
+  std::ostringstream frame_idx;
+  frame_idx << param_num;
+  
+  //Append the frame/parameter dependent extension to the original filename
+  //string frame_ext = "_p";
+  filename+="_p";
+  filename+=frame_idx.str();
+  
+  // dynamic_cast will throw an exception when it's not valid
+  return
+    write_basic_interfile(filename,
+                          dynamic_cast<const VoxelsOnCartesianGrid<float>& >(image),
+                          output_type,
+			  scale, byte_order);
+}
 
 static ProjDataFromStream* 
 read_interfile_PDFS_SPECT(istream& input,
