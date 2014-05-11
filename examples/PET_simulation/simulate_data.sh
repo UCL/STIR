@@ -96,7 +96,7 @@ fi
 
 echo "===  create additive sinogram for reconstruction"
 # model is
-#   data = ACF*norm* ( fwd(image) + additive_sinogram)
+#   data = 1/(ACF*norm) * ( fwd(image) + additive_sinogram)
 #
 # Therefore, we need (randoms+scatter)  multiplied by ACF and norm 
 stir_math -s   my_additive_sinogram.hs  my_randoms.hs my_scatter.hs
