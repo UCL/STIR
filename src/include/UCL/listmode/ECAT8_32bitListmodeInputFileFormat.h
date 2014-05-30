@@ -1,6 +1,3 @@
-//
-// $Id: ECAT8_32bitListmodeInputFileFormat.h,v 1.1 2011-06-28 14:46:08 kris Exp $
-//
 #ifndef __UCL_IO_ECAT8_32bitListmodeInputFileFormat_h__
 #define __UCL_IO_ECAT8_32bitListmodeInputFileFormat_h__
 /*
@@ -13,9 +10,6 @@
   \brief Declaration of class stir::UCL::ECAT8_32bitListmodeInputFileFormat
 
   \author Kris Thielemans
-
-  $Date: 2011-06-28 14:46:08 $
-  $Revision: 1.1 $
 */
 #include "stir/IO/InputFileFormat.h"
 #include "stir/IO/interfile.h"
@@ -28,7 +22,7 @@
 START_NAMESPACE_STIR
 namespace UCL {
 
-//! Class for reading list mode data from the ECAT 8_32bit scanner
+//! Class for being able to read list mode data from the ECAT 8_32bit scanner via the listmode-data registry.
 /*! \ingroup ECAT
   \ingroup listmode
 */

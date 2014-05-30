@@ -32,17 +32,18 @@ CListModeDataECAT8_32bit::
 CListModeDataECAT8_32bit(const std::string& listmode_filename)
   : listmode_filename(listmode_filename)
 {
-  // initialise scanner_ptr before calling open_lm_file, as it is used in that function
   this->interfile_parser.add_key("%axial_compression", &this->axial_compression);
   this->interfile_parser.add_key("%maximum_ring_difference", &this->maximum_ring_difference);
   this->interfile_parser.add_key("%number_of_projections", &this->number_of_projections);
   this->interfile_parser.add_key("%number_of_views", &this->number_of_views);
   this->interfile_parser.add_key("%number_of_segments", &this->number_of_segments);
-  // TODO cannot do this yet
-  //this->interfile_parser.add_key("segment_table", &this->segment_table);
+  // TODO add overload to KeyParser such that we can read std::vector<int>
+  // However, we would need the value of this keyword only for verification purposes, so we don't read it for now.
+  // this->interfile_parser.add_key("segment_table", &this->segment_table);
   
 #if 0
-  // at the moment, we fix the header itself, so don't enable the following
+  // at the moment, we fix the header to confirm to "STIR interfile" as opposed to
+  // "Siemens interfile", so don't enable the following.
   // It doesn't work properly anyway, as the "image duration (sec)" keyword
   // isn't "vectored" in Siemens headers (i.e. it doesn't have "[1]" appended).
   // As stir::KeyParser currently doesn't know if a keyword is vectored or not,
@@ -103,23 +104,19 @@ Succeeded
 CListModeDataECAT8_32bit::
 open_lm_file()
 {
+  const std::string filename = interfile_parser.data_file_name;
+  info(boost::format("CListModeDataECAT8_32bit: opening file %s") % filename);
+  shared_ptr<istream> stream_ptr(new fstream(filename.c_str(), std::ios::in | std::ios::binary));
+  if (!(*stream_ptr))
     {
-
-      // now open new file
-      std::string filename = interfile_parser.data_file_name;
-      info(boost::format("CListModeDataECAT8_32bit: opening file %s") % filename);
-      shared_ptr<istream> stream_ptr(new fstream(filename.c_str(), std::ios::in | std::ios::binary));
-      if (!(*stream_ptr))
-      {
-	warning("CListModeDataECAT8_32bit: cannot open file '%s'", filename.c_str());
-        return Succeeded::no;
-      }
-      current_lm_data_ptr.reset(
-				new InputStreamWithRecords<CListRecordT, bool>(stream_ptr,  4, 4,
-                                                       ByteOrder::little_endian != ByteOrder::get_native_order()));
-
-      return Succeeded::yes;
+      warning("CListModeDataECAT8_32bit: cannot open file '%s'", filename.c_str());
+      return Succeeded::no;
     }
+  current_lm_data_ptr.reset(
+                            new InputStreamWithRecords<CListRecordT, bool>(stream_ptr,  4, 4,
+                                                                           ByteOrder::little_endian != ByteOrder::get_native_order()));
+
+  return Succeeded::yes;
 }
 
 
@@ -133,15 +130,12 @@ get_next_record(CListRecord& record_of_general_type) const
  }
 
 
-
-
 Succeeded
 CListModeDataECAT8_32bit::
 reset()
 {  
   return current_lm_data_ptr->reset();
 }
-
 
 
 CListModeData::SavedPosition

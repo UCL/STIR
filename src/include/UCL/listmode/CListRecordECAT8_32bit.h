@@ -1,9 +1,6 @@
-//
-// $Id: CListRecordECAT966.h,v 1.9 2011-12-31 16:42:45 kris Exp $
-//
 /*
     Copyright (C) 2003-2011 Hammersmith Imanet Ltd
-    Copyright (C) 2013 University College London
+    Copyright (C) 2013-2014 University College London
 
   This file contains proprietary information supplied by Siemens so cannot
   be redistributed without their consent.
@@ -14,9 +11,6 @@
   \brief Classes for listmode events for the ECAT 8 format
     
   \author Kris Thielemans
-      
-  $Date: 2011-12-31 16:42:45 $
-  $Revision: 1.9 $
 */
 
 #ifndef __stir_listmode_CListRecordECAT966_H__
@@ -39,14 +33,13 @@ namespace UCL {
 //! Class for decoding storing and using a raw coincidence event from a listmode file from the ECAT 966 scanner
 /*! \ingroup listmode
 
-     This class just provides the bit-field definitions. You should normally use CListEventECAT966.
+     This class is based on Siemens information on the PETLINK protocol, available at
+     http://usa.healthcare.siemens.com/siemens_hwem-hwem_ssxa_websites-context-root/wcm/idc/groups/public/@us/@imaging/@molecular/documents/download/mdax/mjky/~edisp/petlink_guideline_j1-00672485.pdf
 
-     For the 966 the event word is 32 bit. To save 1 bit in size, a 2d sinogram
-     encoding is used (as opposed to a detector number on the ring
-     for both events).
-     Both bin and view use 9 bits, so their maximum range is
-     512 values, which is fine for the 966 (which needs only 288).
+     This class just provides the bit-field definitions. You should normally use CListEventECAT8_32bit.
 
+     In the 32-bit event format, the listmode data just stores on offset into a (3D) sinogram. Its
+     characteristics are given in the Interfile header.
 */
 class CListEventDataECAT8_32bit
 {
@@ -68,7 +61,12 @@ class CListEventDataECAT8_32bit
 #endif
 }; /*-coincidence event*/
 
-//! Class for storing and using a coincidence event from a listmode file from the ECAT 8_32bit scanner
+//! Class for storing and using a coincidence event from a listmode file from Siemens scanners using the ECAT 8_32bit format
+/*! \todo This implementation only works if the list-mode data is stored without axial compression.
+  \todo If the target sinogram has the same characteristics as the sinogram encoding used in the list file 
+  (via the offset), the code could be sped-up dramatically by using the information. 
+  At present, we go a huge round-about (offset->sinogram->detectors->sinogram->offset)
+*/
 class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDetectors
 {
  private:
@@ -110,7 +108,6 @@ class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDet
 //! A class for decoding a raw  timing 'event' from a listmode file from the ECAT 8_32bit scanner
 /*! \ingroup listmode
      This class just provides the bit-field definitions. You should normally use CListTimeECAT8_32bit.
-
  */
 class CListTimeDataECAT8_32bit
 {
@@ -118,12 +115,12 @@ class CListTimeDataECAT8_32bit
 
 #if STIRIsNativeByteOrderBigEndian
   unsigned    type : 1;    /* 0-coincidence event, 1-time tick */
-  unsigned    deadtimeetc : 2;  /* some info about the gating signals, zero if timing event */
+  unsigned    deadtimeetc : 2;  /* extra bits differentiating between timing or other stuff, zero if timing event */
   unsigned    time : 29 ;  /* since scan start */
 #else
   // Do byteswapping first before using this bit field.
   unsigned    time : 29 ;  /* since scan start */
-  unsigned    deadtimeetc : 2;  /* some info about the gating signals, zero if timing event */
+  unsigned    deadtimeetc : 2;  /* extra bits differentiating between timing or other stuff, zero if timing event */
   unsigned    type : 1;    /* 0-coincidence event, 1-time tick */
 #endif
 };
@@ -132,7 +129,7 @@ class CListTimeDataECAT8_32bit
 //! A class for storing and using a timing 'event' from a listmode file from the ECAT 8_32bit scanner
 /*! \ingroup listmode
  */
-class CListTimeECAT8_32bit : public CListTime, public CListGatingInput
+class CListTimeECAT8_32bit : public CListTime
 {
  public:
   Succeeded init_from_data_ptr(const void * const ptr)
@@ -151,11 +148,6 @@ class CListTimeECAT8_32bit : public CListTime, public CListGatingInput
     // TODO return more useful value
     return Succeeded::yes;
   }
-  // TODO
-  inline unsigned int get_gating() const
-  { return 0; }
-  inline Succeeded set_gating(unsigned int g)
-  { return Succeeded::no;}
 
  private:
   BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT8_32bit)==4); 
@@ -166,10 +158,16 @@ class CListTimeECAT8_32bit : public CListTime, public CListGatingInput
   };
 };
 
-//! A class for a general element of a listmode file
+//! A class for a general element of a listmode file for a Siemens scanner using the ECAT8 32bit format.
 /*! \ingroup listmode
-   For the 8_32bit it's either a coincidence event, or a timing flag.*/
-class CListRecordECAT8_32bit : public CListRecordWithGatingInput
+   We currently only support coincidence events and  a timing flag.
+   Here we only support the 32bit version specified by the PETLINK protocol.
+
+   This class is based on Siemens information on the PETLINK protocol, available at
+   http://usa.healthcare.siemens.com/siemens_hwem-hwem_ssxa_websites-context-root/wcm/idc/groups/public/@us/@imaging/@molecular/documents/download/mdax/mjky/~edisp/petlink_guideline_j1-00672485.pdf
+
+*/
+ class CListRecordECAT8_32bit : public CListRecord // currently no gating yet
 {
 
   //public:
@@ -188,10 +186,6 @@ class CListRecordECAT8_32bit : public CListRecordWithGatingInput
     { return this->time_data; }
   virtual const CListTimeECAT8_32bit&   time() const
     { return this->time_data; }
-  virtual CListTimeECAT8_32bit&  gating_input()
-    { return this->time_data; }
-  virtual const CListTimeECAT8_32bit&  gating_input() const
-  { return this->time_data; }
 
   bool operator==(const CListRecord& e2) const
   {
@@ -207,12 +201,12 @@ class CListRecordECAT8_32bit : public CListRecordWithGatingInput
   virtual Succeeded init_from_data_ptr(const char * const data_ptr, 
                                        const std::size_t
 #ifndef NDEBUG
-                                       size // only use within assert
+                                       size // only used within assert, so commented-out otherwise to avoid compiler warnings
 #endif
                                        , const bool do_byte_swap)
   {
     assert(size >= 4);
-    std::copy(data_ptr, data_ptr+4, reinterpret_cast<char *>(&raw));// TODO necessary for operator==
+    std::copy(data_ptr, data_ptr+4, reinterpret_cast<char *>(&raw));
     if (do_byte_swap)
       ByteOrder::swap_order(raw);
     this->time_data.init_from_data_ptr(&raw);
@@ -230,7 +224,7 @@ class CListRecordECAT8_32bit : public CListRecordWithGatingInput
  private:
   CListEventECAT8_32bit  event_data;
   CListTimeECAT8_32bit   time_data; 
-  boost::int32_t         raw;
+  boost::int32_t         raw; // this raw field is currently only used to for operator==, get rid of it?
 
 };
 

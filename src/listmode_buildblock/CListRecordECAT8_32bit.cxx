@@ -1,6 +1,3 @@
-//
-// $Id: CListRecordECAT8_32bit.cxx,v 1.5 2011-06-24 15:36:55 kris Exp $
-//
 /*
     Copyright (C) 2013 University College London
 */
@@ -11,9 +8,6 @@
   for listmode events for the ECAT8 32bit listmode file format.
     
   \author Kris Thielemans
-      
-  $Date: 2011-06-24 15:36:55 $
-  $Revision: 1.5 $
 */
 
 #include "UCL/listmode/CListRecordECAT8_32bit.h"
@@ -29,11 +23,17 @@ namespace UCL {
 
 CListEventECAT8_32bit::
 CListEventECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
-  CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(*proj_data_info_sptr->get_scanner_ptr()))) //(Scanner::Siemens_mMR)))
+  CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(*proj_data_info_sptr->get_scanner_ptr()))) 
 {
+  const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr =
+    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>(proj_data_info_sptr.get());
+  if (proj_data_info_ptr == 0)
+    error("CListEventECAT8_32bit can only be initialised with cylindrical projection data without arc-correction");
+
   const int num_rings = this->scanner_sptr->get_num_rings();
-  // TODO remove hard-coding of sizes. depends on mMR (and acquisition?)
-  const int max_ring_diff=60;
+  const int max_ring_diff=proj_data_info_ptr->get_max_ring_difference(proj_data_info_ptr->get_max_segment_num());
+  if (proj_data_info_ptr->get_max_ring_difference(0) != proj_data_info_ptr->get_min_ring_difference(0))
+    error("CListEventECAT8_32bit can only handle axial compression==1");
   this->segment_sequence.resize(2*max_ring_diff+1);
   this->sizes.resize(2*max_ring_diff+1);
   this->segment_sequence[0]=0;

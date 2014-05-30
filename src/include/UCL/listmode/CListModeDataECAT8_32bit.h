@@ -26,27 +26,20 @@
 START_NAMESPACE_STIR
 namespace UCL {
 
-//! A class that reads the listmode data for ECAT scanners
+//! A class that reads the listmode data for Siemens scanners
 /*!  \ingroup listmode
-    This file format is currently used by the HR+ and HR++. It stores
-    the coincidence data in multiple .lm files, with a maximum filesize
-    of about 2 GB (to avoid problems with OS limits on filesize).
-    In addition, there is a .sgl file with the singles rate per 'bucket'-per-ring 
-    (roughly every 2 seconds). The .sgl also contains a 'main_header'
-    with some scanner and patient info.
+    This file format is currently used by the Siemens Biograph PET/CT and mMR scanners. 
+    There's an Interfile-like header and a binary file with the actual list mode data.
+    The name of the binary file is given by the value of the "name of data file" keyword
+    in the header.
 
-    \todo This class currently relies in the fact that
-     vector<>::size_type == SavedPosition
+    Currently, the class only supports the 32bit version of the list mode format, see
+    http://usa.healthcare.siemens.com/siemens_hwem-hwem_ssxa_websites-context-root/wcm/idc/groups/public/@us/@imaging/@molecular/documents/download/mdax/mjky/~edisp/petlink_guideline_j1-00672485.pdf
 */
 class CListModeDataECAT8_32bit : public CListModeData
 {
 public:
-  //! Constructor taking a prefix for the filename
-  /*! If the listmode files are called something_1.lm, something_2.lm etc.
-      Then this constructor should be called with the argument "something" 
-
-      \todo Maybe allow for passing e.g. something_2.lm in case the first lm file is missing.
-  */
+  //! Construct fron the filename of the Interfile header
   CListModeDataECAT8_32bit(const std::string& listmode_filename_prefix);
 
   virtual std::string
@@ -77,12 +70,14 @@ private:
   shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;
   shared_ptr<ProjDataInfo> proj_data_info_sptr;
   InterfileHeader interfile_parser;
+  // members to store info from the interfile header.
+  // These tell us something about how the listmode is stored.
   int axial_compression;
   int maximum_ring_difference;
   int number_of_projections;
   int number_of_views;
   int number_of_segments;
-  //std::vector<int> segment_table;
+  // std::vector<int> segment_table;
 
   Succeeded open_lm_file();
 
