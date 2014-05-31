@@ -27,8 +27,11 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 {
     
 
- const VoxelsOnCartesianGrid<float>& image =
-    dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
+  if(dynamic_cast<const VoxelsOnCartesianGrid<float>*>(&density)== 0)
+    {
+      warning("SeparableGaussianImageFilter can only handle images of type VoxelsOnCartesianGrid");
+      return Succeeded::no;
+    }
 
    gaussian_filter = 
     SeparableGaussianArrayFilter<3,elemT>(standard_deviation,     
