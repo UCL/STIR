@@ -1,22 +1,33 @@
 /*
     Copyright (C) 2003-2012 Hammersmith Imanet Ltd
     Copyright (C) 2013-2014 University College London
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
 */
 /*!
   \file
   \ingroup listmode  
-  \brief Implementation of class stir::UCL::CListModeDataECAT8_32bit
+  \brief Implementation of class stir::CListModeDataECAT8_32bit
 
   \author Kris Thielemans
 */
 
 
-#include "UCL/listmode/CListModeDataECAT8_32bit.h"
-#include "UCL/listmode/CListRecordECAT8_32bit.h"
+#include "stir/listmode/CListModeDataECAT8_32bit.h"
+#include "stir/listmode/CListRecordECAT8_32bit.h"
 #include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
-#include "stir/is_null_ptr.h"
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
@@ -25,8 +36,7 @@
 #include <fstream>
 
 START_NAMESPACE_STIR
-namespace UCL {
-
+namespace ecat {
 
 CListModeDataECAT8_32bit::
 CListModeDataECAT8_32bit(const std::string& listmode_filename)
@@ -154,7 +164,5 @@ set_get_position(const CListModeDataECAT8_32bit::SavedPosition& pos)
     current_lm_data_ptr->set_get_position(pos);
 }
 
-
-} // namespace UCL 
-
+} // namespace ecat
 END_NAMESPACE_STIR

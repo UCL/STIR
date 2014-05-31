@@ -1,9 +1,19 @@
 /*
     Copyright (C) 2003-2011 Hammersmith Imanet Ltd
     Copyright (C) 2013-2014 University College London
+    This file is part of STIR.
 
-  This file contains proprietary information supplied by Siemens so cannot
-  be redistributed without their consent.
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
 */
 /*!
   \file
@@ -28,7 +38,7 @@
 #include "stir/DetectionPositionPair.h"
 
 START_NAMESPACE_STIR
-namespace UCL {
+namespace ecat {
 
 //! Class for decoding storing and using a raw coincidence event from a listmode file from the ECAT 966 scanner
 /*! \ingroup listmode
@@ -224,11 +234,12 @@ class CListTimeECAT8_32bit : public CListTime
  private:
   CListEventECAT8_32bit  event_data;
   CListTimeECAT8_32bit   time_data; 
-  boost::int32_t         raw; // this raw field is currently only used to for operator==, get rid of it?
+  boost::int32_t         raw; // this raw field isn't strictly necessary, get rid of it?
 
 };
 
-} // namespace UCL 
+} // namespace ecat
 END_NAMESPACE_STIR
 
 #endif
+

@@ -1,11 +1,23 @@
 /*
-    Copyright (C) 2003-2011 Hammersmith Imanet Ltd
     Copyright (C) 2013-2014 University College London
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
 */
 /*!
   \file
   \ingroup listmode
-  \brief Declaration of class stir::CListModeDataECAT8_32bit
+  \brief Declaration of class stir::ecat::CListModeDataECAT8_32bit
     
   \author Kris Thielemans
 */
@@ -14,7 +26,7 @@
 #define __stir_listmode_CListModeDataECAT8_32bit_H__
 
 #include "stir/listmode/CListModeData.h"
-#include "UCL/listmode/CListRecordECAT8_32bit.h"
+#include "stir/listmode/CListRecordECAT8_32bit.h"
 #include "stir/IO/InputStreamWithRecords.h"
 #include "stir/shared_ptr.h"
 #include "stir/IO/InterfileHeader.h"
@@ -24,7 +36,7 @@
 #include <vector>
 
 START_NAMESPACE_STIR
-namespace UCL {
+namespace ecat {
 
 //! A class that reads the listmode data for Siemens scanners
 /*!  \ingroup listmode
@@ -84,7 +96,7 @@ private:
 
 };
 
-} //namespace UCL 
+} // namespace ecat
 END_NAMESPACE_STIR
 
 #endif

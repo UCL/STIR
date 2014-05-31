@@ -1,26 +1,39 @@
-#ifndef __UCL_IO_ECAT8_32bitListmodeInputFileFormat_h__
-#define __UCL_IO_ECAT8_32bitListmodeInputFileFormat_h__
+#ifndef __stir_IO_ECAT8_32bitListmodeInputFileFormat_h__
+#define __stir_IO_ECAT8_32bitListmodeInputFileFormat_h__
 /*
     Copyright (C) 2013 University College London
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
 */
 /*!
 
   \file
   \ingroup ECAT
-  \brief Declaration of class stir::UCL::ECAT8_32bitListmodeInputFileFormat
+  \brief Declaration of class stir::ecat::ECAT8_32bitListmodeInputFileFormat
 
   \author Kris Thielemans
 */
 #include "stir/IO/InputFileFormat.h"
 #include "stir/IO/interfile.h"
-#include "UCL/listmode/CListModeDataECAT8_32bit.h"
-//#include "UCL/listmode/CListRecordECAT8_32bit.h"
+#include "stir/listmode/CListModeDataECAT8_32bit.h"
+//#include "stir/listmode/CListRecordECAT8_32bit.h"
 
 #include "stir/utilities.h"
 #include <string>
 
 START_NAMESPACE_STIR
-namespace UCL {
+namespace ecat {
 
 //! Class for being able to read list mode data from the ECAT 8_32bit scanner via the listmode-data registry.
 /*! \ingroup ECAT
@@ -59,7 +72,8 @@ public InputFileFormat<CListModeData >
     return std::auto_ptr<data_type>(new CListModeDataECAT8_32bit(filename)); 
   }
 };
-} // namespace UCL
+
+} // namespace ecat
 END_NAMESPACE_STIR
 
 #endif

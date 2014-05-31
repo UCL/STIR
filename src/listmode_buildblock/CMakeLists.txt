@@ -9,6 +9,8 @@ set(${dir_LIB_SOURCES}
 	CListModeData 
 	LmToProjData 
         LmToProjDataBootstrap
+        CListModeDataECAT8_32bit
+        CListRecordECAT8_32bit
 )
 
 if (HAVE_ECAT)
