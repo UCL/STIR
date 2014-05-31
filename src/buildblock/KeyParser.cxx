@@ -33,6 +33,7 @@
 #include "stir/interfile_keyword_functions.h"
 #include "stir/stream.h"
 #include "stir/is_null_ptr.h"
+#include <boost/format.hpp>
 #include <typeinfo>
 #include <fstream>
 #include <cstring>
@@ -55,6 +56,13 @@ using std::cin;
 using std::endl;
 using std::istrstream;
 using std::ostrstream;
+using std::vector;
+using std::string;
+//using std::map;
+using std::list;
+using std::pair;
+using std::istream;
+using std::ostream;
 #endif
 
 START_NAMESPACE_STIR
@@ -323,7 +331,7 @@ KeyParser::add_in_keymap(const string& keyword, const map_element& new_element)
   map_element * elem_ptr = find_in_keymap(standardised_keyword);
   if (elem_ptr != 0)
   {
-    warning("KeyParser: overwriting value of the keyword %s\n", keyword.c_str());
+    warning(boost::format("KeyParser: keyword '%s' already registered for parsing, overwriting previous value") % keyword);
     *elem_ptr = new_element;
   }
   else
