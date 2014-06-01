@@ -60,6 +60,11 @@ using std::ofstream;
 using std::ifstream;
 using std::iostream;
 using std::fstream;
+using std::string;
+using std::vector;
+using std::istream;
+using std::string;
+using std::ios;
 #endif
 
 START_NAMESPACE_STIR

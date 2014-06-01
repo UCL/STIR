@@ -43,10 +43,6 @@
 #include "stir/Array.h"
 #include <string>
 
-#ifndef STIR_NO_NAMESPACE
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
@@ -96,7 +92,7 @@ public:
   BinNormalisationFromECAT7();
 
   //! Constructor that reads the projdata from a file
-  BinNormalisationFromECAT7(const string& filename);
+  BinNormalisationFromECAT7(const std::string& filename);
 
   virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
   float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
@@ -130,7 +126,7 @@ private:
   bool _use_geometric_factors;
   bool _use_crystal_interference_factors;
 
-  void read_norm_data(const string& filename);
+  void read_norm_data(const std::string& filename);
   float get_dead_time_efficiency ( const DetectionPosition<>& det_pos,
 				  const double start_time, const double end_time) const;
 
@@ -139,7 +135,7 @@ private:
   virtual void initialise_keymap();
   virtual bool post_processing();
 
-  string normalisation_ECAT7_filename;
+  std::string normalisation_ECAT7_filename;
 };
 
 END_NAMESPACE_ECAT7

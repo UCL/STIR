@@ -37,13 +37,6 @@
 #include <vector>
 #include <iterator>
 
-#ifndef STIR_NO_NAMESPACES
-using std::size_t;
-using std::ptrdiff_t;
-using std::random_access_iterator_tag;
-using std::vector;
-#endif
-
 START_NAMESPACE_STIR
 
 class DataSymmetriesForDensels;
@@ -58,12 +51,12 @@ public:
  //! typedefs for iterator support
 
 
-  typedef random_access_iterator_tag iterator_category;  
+  typedef std::random_access_iterator_tag iterator_category;  
   typedef Densel value_type;
   typedef value_type& reference;
   typedef const value_type& const_reference;
-  typedef ptrdiff_t difference_type;
-  typedef size_t size_type;
+  typedef std::ptrdiff_t difference_type;
+  typedef std::size_t size_type;
 
   //! typedefs to make it partly comply with STL requirements
 #ifndef STIR_NO_NAMESPACES
@@ -105,10 +98,10 @@ public:
 
 
 private:
-   vector<Densel> related_densels;
+   std::vector<Densel> related_densels;
    shared_ptr<DataSymmetriesForDensels> symmetries;
      //! a private constructor which sets the members
-  inline RelatedDensels(const vector<Densel>& related_densels,
+  inline RelatedDensels(const std::vector<Densel>& related_densels,
                      const shared_ptr<DataSymmetriesForDensels>& symmetries_used);
  
 

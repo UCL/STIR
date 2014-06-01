@@ -114,13 +114,13 @@ class ProjMatrixByBinSPECTUB :
   float minimum_weight;
   float maximum_number_of_sigmas;
   float spatial_resolution_PSF;
-  string psf_type;
+  std::string psf_type;
   float collimator_sigma_0;
   float collimator_slope;
-  string attenuation_type;
-  string attenuation_map;
-  string mask_type;
-  string mask_file;
+  std::string attenuation_type;
+  std::string attenuation_map;
+  std::string mask_type;
+  std::string mask_file;
   bool keep_all_views_in_cache; //!< if set to false, only a single view is kept in memory
 
   // explicitly list necessary members for image details (should use an Info object instead)

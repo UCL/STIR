@@ -105,7 +105,7 @@ public:
   parameter_filename == "") by calling ask_parameters().
   */
   explicit 
-    OSSPSReconstruction(const string& parameter_filename);
+    OSSPSReconstruction(const std::string& parameter_filename);
 
   //! prompts the user to enter parameter values manually
   virtual void ask_parameters();
@@ -117,7 +117,7 @@ public:
     {return *this;}
 
   //! gives method information
-  virtual string method_info() const;
+  virtual std::string method_info() const;
 
   //! Precompute the data-dependent part of the denominator for the preconditioner
 /*!
@@ -143,7 +143,7 @@ public:
 
   //! optional name of the file containing the "precomputed denominator" - see Erdogan & Fessler for more info
   /*! If not specified, the corresponding object will be computed. */
-  string precomputed_denominator_filename;
+  std::string precomputed_denominator_filename;
 
 #if 0
   bool do_line_search;

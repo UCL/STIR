@@ -108,8 +108,8 @@ short find_ECAT_data_type(const NumericType& type, const ByteOrder& byte_order)
       }
     }
   }
-  string number_format;
-  size_t size_in_bytes;
+  std::string number_format;
+  std::size_t size_in_bytes;
   type.get_Interfile_info(number_format, size_in_bytes);
   error("find_ecat_data_type: ecat does not support data type '%s' of %d bytes.\n",
     number_format.c_str(), size_in_bytes);

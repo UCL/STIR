@@ -37,12 +37,6 @@
 
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
-using std::vector;
-#endif
-
-
-
 START_NAMESPACE_STIR
 
 
@@ -65,7 +59,7 @@ class FrameSinglesRates
     //! Constructor taking all arguments
     /*! \warning only checks sizes with an \c assert.
     */
-    FrameSinglesRates(vector<float>& avg_singles_rates,
+    FrameSinglesRates(std::vector<float>& avg_singles_rates,
                       double start_time,
                       double end_time,
                       shared_ptr<Scanner> scanner);
@@ -115,7 +109,7 @@ class FrameSinglesRates
     
     double _start_time;
     double _end_time;
-    vector<float> _singles;
+    std::vector<float> _singles;
     
     // Scanner specifics
     shared_ptr<Scanner> _scanner_sptr;

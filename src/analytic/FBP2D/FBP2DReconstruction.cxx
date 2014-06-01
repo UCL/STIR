@@ -173,13 +173,13 @@ bool FBP2DReconstruction::post_processing_only_FBP2D_parameters()
   return false;
 }
 
-string FBP2DReconstruction::method_info() const
+std::string FBP2DReconstruction::method_info() const
 {
   return "FBP2D";
 }
 
 FBP2DReconstruction::
-FBP2DReconstruction(const string& parameter_filename)
+FBP2DReconstruction(const std::string& parameter_filename)
 {  
   initialise(parameter_filename);
   std::cerr<<parameter_info() << std::endl;

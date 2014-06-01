@@ -104,7 +104,7 @@ get_rates_for_frame(double start_time,
   int num_singles_units = scanner_sptr->get_num_singles_units();
 
   // Create a temporary vector
-  vector<float> average_singles_rates(num_singles_units);
+  std::vector<float> average_singles_rates(num_singles_units);
   
 
   // Loop over all bins.
@@ -268,7 +268,7 @@ set_singles_rate(int singles_bin_index, int time_slice, int new_rate) {
 
 int 
 SinglesRatesFromSglFile::
-rebin(vector<double>& new_end_times) {
+rebin(std::vector<double>& new_end_times) {
 
   const int num_new_slices = new_end_times.size();
   const int total_singles_units = scanner_sptr->get_num_singles_units();
@@ -322,7 +322,7 @@ rebin(vector<double>& new_end_times) {
 
 
  
-vector<double> 
+std::vector<double> 
 SinglesRatesFromSglFile::get_times() const
 {
   return _times;
@@ -351,7 +351,7 @@ get_singles_time_interval() const {
 
 int
 SinglesRatesFromSglFile::
-read_singles_from_sgl_file(const string& sgl_filename)
+read_singles_from_sgl_file(const std::string& sgl_filename)
 {
 
   int slice = 0;
@@ -362,7 +362,7 @@ read_singles_from_sgl_file(const string& sgl_filename)
 
 #else
 
-  ifstream singles_file(sgl_filename.c_str(), ios::binary);
+  std::ifstream singles_file(sgl_filename.c_str(), std::ios::binary);
   if (!singles_file) {
     error("\nSinglesRatesFromSglFile: Couldn't open \"%s\".\n", sgl_filename.c_str());
   }

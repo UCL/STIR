@@ -36,10 +36,6 @@
 #include "stir/shared_ptr.h"
 #include <string>
 
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 
 template <typename elemT> class Sinogram;
@@ -329,7 +325,7 @@ public:
   inline const Scanner* get_scanner_ptr() const;
   
   //! Return a string describing the object
-  virtual string parameter_info() const;
+  virtual std::string parameter_info() const;
   
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;

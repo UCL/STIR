@@ -209,7 +209,7 @@ BinNormalisationFromECAT7()
 }
 
 BinNormalisationFromECAT7::
-BinNormalisationFromECAT7(const string& filename)
+BinNormalisationFromECAT7(const std::string& filename)
 {
   read_norm_data(filename);
 }
@@ -245,7 +245,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
 
 void
 BinNormalisationFromECAT7::
-read_norm_data(const string& filename)
+read_norm_data(const std::string& filename)
 {
   
   MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);

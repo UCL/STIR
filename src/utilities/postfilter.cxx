@@ -124,7 +124,7 @@ main(int argc, char *argv[])
   
   shared_ptr<DiscretisedDensity<3,float> > input_image_ptr;
   PostFiltering post_filtering;
-  string out_filename;
+  std::string out_filename;
   bool verbose = false;
 
   // option processing

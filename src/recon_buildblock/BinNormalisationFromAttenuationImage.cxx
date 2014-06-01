@@ -108,7 +108,7 @@ BinNormalisationFromAttenuationImage()
 }
 
 BinNormalisationFromAttenuationImage::
-BinNormalisationFromAttenuationImage(const string& filename,
+BinNormalisationFromAttenuationImage(const std::string& filename,
                                      shared_ptr<ForwardProjectorByBin> const& forward_projector_ptr)
   : forward_projector_ptr(forward_projector_ptr),
     attenuation_image_filename(filename)

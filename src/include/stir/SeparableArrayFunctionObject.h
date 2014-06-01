@@ -32,13 +32,7 @@
 
 #include "stir/ArrayFunctionObject_1ArgumentImplementation.h"
 #include "stir/shared_ptr.h"
-#include <vector>
 #include "stir/VectorWithOffset.h"
-
-#ifndef STIR_NO_NAMESPACES
-using std::vector;
-#endif
-
 
 START_NAMESPACE_STIR
 

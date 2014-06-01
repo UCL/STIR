@@ -293,7 +293,7 @@ void
 ROITests::run_tests()
 
 { 
-  cerr << "Tests for compute_ROI_values and Shape3D hierarchy\n";
+  std::cerr << "Tests for compute_ROI_values and Shape3D hierarchy\n";
   
   CartesianCoordinate3D<float> origin (0,0,0);  
   CartesianCoordinate3D<float> grid_spacing (3,4,5); 

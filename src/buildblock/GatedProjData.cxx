@@ -34,6 +34,8 @@
 #include <fstream>
 #include <sstream>
 
+using std::string;
+
 START_NAMESPACE_STIR
 
 GatedProjData*

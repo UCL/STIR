@@ -147,7 +147,7 @@ class FourierRebinning : public   RegisteredParsingObject<
     FourierRebinning();
 
 //! This method returns the type of the algorithm for the rebinning
-    string method_info() const
+    std::string method_info() const
         { return("FORE"); }
 
 

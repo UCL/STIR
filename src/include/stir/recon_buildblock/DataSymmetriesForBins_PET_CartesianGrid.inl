@@ -364,11 +364,11 @@ find_basic_bin(Bin& b) const
 
 
 // TODO, optimise
-auto_ptr<SymmetryOperation>
+std::auto_ptr<SymmetryOperation>
 DataSymmetriesForBins_PET_CartesianGrid::
   find_symmetry_operation_from_basic_bin(Bin& b) const
 {
-  auto_ptr<SymmetryOperation> 
+  std::auto_ptr<SymmetryOperation> 
     sym_op(
       (b.tangential_pos_num()==0) ?
         find_sym_op_bin0(b.segment_num(), b.view_num(), b.axial_pos_num()) :
@@ -412,7 +412,7 @@ num_related_bins(const Bin& b) const
 
 void
 DataSymmetriesForBins_PET_CartesianGrid::
-get_related_bins_factorised(vector<AxTangPosNumbers>& ax_tang_poss, const Bin& b,
+get_related_bins_factorised(std::vector<AxTangPosNumbers>& ax_tang_poss, const Bin& b,
                             const int min_axial_pos_num, const int max_axial_pos_num,
                             const int min_tangential_pos_num, const int max_tangential_pos_num) const
 {
@@ -432,7 +432,7 @@ get_related_bins_factorised(vector<AxTangPosNumbers>& ax_tang_poss, const Bin& b
     
 void
 DataSymmetriesForBins_PET_CartesianGrid::
-get_related_view_segment_numbers(vector<ViewSegmentNumbers>& rel_vs, const ViewSegmentNumbers& vs) const
+get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>& rel_vs, const ViewSegmentNumbers& vs) const
 {
 #ifndef NDEBUG
   {

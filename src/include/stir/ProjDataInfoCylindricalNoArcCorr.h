@@ -131,7 +131,7 @@ public:
   //! Gets angular increment (in radians)
   inline float get_angular_increment() const;
 
-  virtual string parameter_info() const;
+  virtual std::string parameter_info() const;
 
   //! \name Functions that convert between bins and detection positions
   //@{ 
@@ -225,7 +225,7 @@ public:
     arc-corrected data).
   */
   void
-    get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >&,
+    get_all_det_pos_pairs_for_bin(std::vector<DetectionPositionPair<> >&,
 				  const Bin&) const;
 
   //! This gets Bin coordinates for a particular detector pair

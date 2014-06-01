@@ -60,6 +60,9 @@
 #include <sstream>
 #endif
 
+#include <algorithm>
+using std::min;
+using std::max;
 #ifndef STIR_NO_NAMESPACES
 using std::auto_ptr;
 using std::cerr;
@@ -154,7 +157,7 @@ ask_parameters()
     cerr<<endl<<"Supply inter-update filter type:\nPossible values:\n";
     DataProcessor<TargetT >::list_registered_names(cerr);
     
-    const string inter_update_filter_type = ask_string("");
+    const std::string inter_update_filter_type = ask_string("");
     
     inter_update_filter_ptr.reset(DataProcessor<TargetT >::read_registered_object(0, inter_update_filter_type));
     
@@ -242,7 +245,7 @@ set_write_update_image(const int arg)
 template <typename TargetT>
 void
 OSMAPOSLReconstruction<TargetT>::
-set_MAP_model(const string& arg)
+set_MAP_model(const std::string& arg)
 {
   this->MAP_model  = arg;
 }
@@ -260,7 +263,7 @@ OSMAPOSLReconstruction()
 
 template <typename TargetT>
 OSMAPOSLReconstruction<TargetT>::
-OSMAPOSLReconstruction(const string& parameter_filename)
+OSMAPOSLReconstruction(const std::string& parameter_filename)
 {  
   this->initialise(parameter_filename);
   std::cerr<<this->parameter_info();

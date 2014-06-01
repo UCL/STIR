@@ -64,6 +64,7 @@ set(${dir_LIB_SOURCES}
 	ProjDataRebinning 
 	FourierRebinning
 	QuadraticPrior 
+        NewAnatomicalPrior
 	FilterRootPrior 
 	GeneralisedObjectiveFunction 
 	PoissonLogLikelihoodWithLinearModelForMean 

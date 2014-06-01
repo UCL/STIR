@@ -115,7 +115,7 @@ public:
   */
   bool
     has_same_characteristics(self_type const&,
-			     string& explanation) const;
+			     std::string& explanation) const;
 
   //! Checks if the 2 objects have the proj_data_info, segment_num etc.
   /*! Use this version if you do not need to know why they do not match.

@@ -31,12 +31,6 @@
 #include "local/stir/SeparableLowPassArrayFilter2.h"
 #include "stir/Array.h"
 #include "stir/IndexRange.h"
-#include <vector>
-
-
-#ifndef STIR_NO_NAMESPACES
-using std::vector;
-#endif
 
 
 START_NAMESPACE_STIR

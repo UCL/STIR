@@ -33,11 +33,6 @@
 #include "stir/ParsingObject.h"
 #include <string>
 
-#ifndef STIR_NO_NAMESPACE
-using std::string;
-#endif
-
-
 START_NAMESPACE_STIR
 
 
@@ -114,12 +109,12 @@ public:
       (unsafe) reinterpret_casts to get that to work.
       (TODO find a remedy).
   */
-  inline static Base* read_from_stream(istream*); 
+inline static Base* read_from_stream(std::istream*); 
 
   //! Returns  Derived::registered_name
-  inline string get_registered_name() const;
+  inline std::string get_registered_name() const;
   //! Returns a string with all parameters and their values, in a form suitable for parsing again
-  inline string parameter_info();
+  inline std::string parameter_info();
 
 public:
 

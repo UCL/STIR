@@ -157,7 +157,7 @@ protected:
      gradient is computed. The filename will be constructed by concatenating 
      gradient_filename_prefix and the counter.
   */
-  string gradient_filename_prefix;
+  std::string gradient_filename_prefix;
 
   //! penalty weights
   /*! 

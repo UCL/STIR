@@ -42,14 +42,6 @@
 #include "stir/ByteOrder.h"
 #include "stir/IndexRange.h"   
 
-#include <iostream>
-
-#ifndef STIR_NO_NAMESPACES
-using std::istream;
-using std::ostream;
-#endif
-
-
 START_NAMESPACE_STIR
 class NumericType;
 

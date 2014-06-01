@@ -33,6 +33,8 @@
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
 
+using std::string;
+
 START_NAMESPACE_STIR
 
 template <typename TargetT>

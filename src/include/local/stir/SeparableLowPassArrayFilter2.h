@@ -23,9 +23,6 @@
 #include "stir/ArrayFunction.h"
 #include <iostream>
 
-#ifndef STIR_NO_NAMESPACES
-using std::cerr;
-#endif
 #include "stir/ArrayFilter1DUsingConvolution.h"
 
 START_NAMESPACE_STIR
@@ -142,9 +139,9 @@ SeparableLowPassArrayFilter2(const VectorWithOffset<elemT>& filter_coefficients_
 {
   assert(num_dimensions==3);
 
-  cerr << "Printing filter coefficients" << endl;
+  std::cerr << "Printing filter coefficients" << endl;
   for (int i =filter_coefficients_v.get_min_index();i<=filter_coefficients_v.get_max_index();i++)    
-    cerr  << i<<"   "<< filter_coefficients_v[i] <<"   " << endl;
+    std::cerr  << i<<"   "<< filter_coefficients_v[i] <<"   " << endl;
 
 
    all_1d_array_filters[2] = 	 

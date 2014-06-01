@@ -34,10 +34,6 @@
 #include "stir/shared_ptr.h"
 #include <string>
 
-#ifndef STIR_NO_NAMESPACE
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 
 /*!
@@ -71,7 +67,7 @@ public:
   BinNormalisationFromProjData();
 
   //! Constructor that reads the projdata from a file
-  BinNormalisationFromProjData(const string& filename);
+  BinNormalisationFromProjData(const std::string& filename);
 
   //! Constructor that takes the projdata from a shared_pointer
   /*! The projdata object pointed to will \c not be modified. */
@@ -110,7 +106,7 @@ private:
   virtual void initialise_keymap();
   virtual bool post_processing();
 
-  string normalisation_projdata_filename;
+  std::string normalisation_projdata_filename;
 };
 
 

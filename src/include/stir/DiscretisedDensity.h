@@ -40,10 +40,6 @@
 #include "stir/shared_ptr.h"
 #include <string>
 
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 
 /*!
@@ -113,7 +109,7 @@ class DiscretisedDensity : public Array<num_dimensions,elemT>
   typedef DiscretisedDensity<num_dimensions,elemT> self_type;
 public:
   //! A static member to read an image from file
-  static DiscretisedDensity * read_from_file(const string& filename);
+  static DiscretisedDensity * read_from_file(const std::string& filename);
 
   //! Construct an empty DiscretisedDensity
   inline DiscretisedDensity();
@@ -229,7 +225,7 @@ public:
   */
   inline bool
     has_same_characteristics(self_type const&,
-			     string& explanation) const;
+			     std::string& explanation) const;
 
   //! Checks if the 2 objects have the same type, index range, origin etc
   /*! Use this version if you do not need to know why they do not match.
@@ -260,7 +256,7 @@ public:
   */
   virtual bool
     actual_has_same_characteristics(DiscretisedDensity<num_dimensions, elemT> const&,
-				    string& explanation) const;
+				    std::string& explanation) const;
 
   //! Implementation used by get_relative_coordinates_for_indices
   /*!  \par Developer's note

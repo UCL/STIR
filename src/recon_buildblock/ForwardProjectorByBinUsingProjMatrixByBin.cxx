@@ -43,6 +43,7 @@
 using std::find;
 using std::vector;
 using std::list;
+using std::auto_ptr;
 #endif
 
 START_NAMESPACE_STIR

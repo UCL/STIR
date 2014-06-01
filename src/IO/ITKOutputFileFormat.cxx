@@ -87,7 +87,7 @@ set_byte_order(const ByteOrder& new_byte_order, const bool /* warn */)
 
 Succeeded  
 ITKOutputFileFormat::
-actual_write_to_file(string& filename, 
+actual_write_to_file(std::string& filename, 
                      const DiscretisedDensity<3,float>& density) const
 {
 #if 0

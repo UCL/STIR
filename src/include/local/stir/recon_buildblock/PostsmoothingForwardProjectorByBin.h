@@ -71,8 +71,8 @@ private:
   bool smooth_segment_0_axially;
 
   // next 2 necessary for parsing because of limitation in KeyParser
-  vector<double> tang_kernel_double;
-  vector<double> ax_kernel_double;
+  std::vector<double> tang_kernel_double;
+  std::vector<double> ax_kernel_double;
 
   void actual_forward_project(RelatedViewgrams<float>&, 
 		  const DiscretisedDensity<3,float>&,

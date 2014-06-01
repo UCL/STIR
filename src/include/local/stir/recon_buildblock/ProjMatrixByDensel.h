@@ -28,10 +28,6 @@
 #include <map>
 #include "stir/shared_ptr.h"
 
-#ifndef STIR_NO_NAMESPACES
-using std::map;
-#endif
-
 // define a local preprocessor symbol to keep code relatively clean
 #ifdef STIR_NO_MUTABLE
 #define STIR_MUTABLE_CONST

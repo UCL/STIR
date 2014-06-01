@@ -40,7 +40,7 @@ RelatedBins::RelatedBins()
 :related_bins(),symmetries()
 {}
 
-RelatedBins::RelatedBins(const vector< Bin>& related_bins_v,
+RelatedBins::RelatedBins(const std::vector< Bin>& related_bins_v,
                          const shared_ptr<DataSymmetriesForBins>& symmetries_used)
 :related_bins(related_bins_v),symmetries(symmetries_used)
 {}

@@ -87,7 +87,7 @@ static void read_sinogram(Sinogram<float>& sino_2D,
 		   int mat_index, 
 		   int frame, int gate, int data, int bed);
 
-static bool is_ECAT6_file(ECAT6_Main_header& mhead, const string& filename)
+static bool is_ECAT6_file(ECAT6_Main_header& mhead, const std::string& filename)
 {
   //check if it's ECAT 6 
   FILE * cti_fptr=fopen(filename.c_str(), "rb"); 
@@ -145,13 +145,13 @@ static bool is_ECAT6_file(ECAT6_Main_header& mhead, const string& filename)
 }
 
   
-bool is_ECAT6_file(const string& filename)
+bool is_ECAT6_file(const std::string& filename)
 {
   ECAT6_Main_header mhead;
   return is_ECAT6_file(mhead, filename);
 }
 
-bool is_ECAT6_image_file(const string& filename)
+bool is_ECAT6_image_file(const std::string& filename)
 {
   ECAT6_Main_header mhead;
   return is_ECAT6_file(mhead, filename) &&
@@ -159,7 +159,7 @@ bool is_ECAT6_image_file(const string& filename)
 }
 
 
-bool is_ECAT6_emission_file(const string& filename)
+bool is_ECAT6_emission_file(const std::string& filename)
 {
   ECAT6_Main_header mhead;
   return is_ECAT6_file(mhead, filename) &&
@@ -167,7 +167,7 @@ bool is_ECAT6_emission_file(const string& filename)
 }
 
 
-bool is_ECAT6_attenuation_file(const string& filename)
+bool is_ECAT6_attenuation_file(const std::string& filename)
 {
   ECAT6_Main_header mhead;
   return is_ECAT6_file(mhead, filename) &&
@@ -189,7 +189,7 @@ Scanner* find_scanner_from_ECAT6_Main_header(const ECAT6_Main_header& mhead)
 
 void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
 			    Scanner const& scanner,
-                            const string& orig_name                     
+                            const std::string& orig_name                     
                             )
 {
 #ifndef STIR_ORIGINAL_ECAT6
@@ -218,7 +218,7 @@ void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
 
 void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
 			    Scanner const& scanner,
-                            const string& orig_name,
+                            const std::string& orig_name,
                             DiscretisedDensity<3,float> const & density
                             )
 {
@@ -235,7 +235,7 @@ void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
 }
 
 void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
-			    const string& orig_name,
+			    const std::string& orig_name,
                             ProjDataInfo const & proj_data_info
                             )
 {
@@ -369,7 +369,7 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
 
 void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, const int bed_num,
 		   int max_ring_diff, bool arccorrected,
-                   const string& data_name, FILE *cti_fptr, const ECAT6_Main_header &mhead)
+                   const std::string& data_name, FILE *cti_fptr, const ECAT6_Main_header &mhead)
 {
   shared_ptr<Scanner> scanner_ptr(find_scanner_from_ECAT6_Main_header(mhead));
   cout << "Scanner determined from ECAT6_Main_header: " << scanner_ptr->get_name() << endl;
@@ -482,10 +482,10 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
       ProjDataFromStream::Segment_AxialPos_View_TangPos;
     
 #if 1
-    string actual_data_name=data_name;
+    std::string actual_data_name=data_name;
     {
-      string::size_type pos=find_pos_of_extension(data_name);
-      if (pos!=string::npos && data_name.substr(pos)==".hs")
+      std::string::size_type pos=find_pos_of_extension(data_name);
+      if (pos!=std::string::npos && data_name.substr(pos)==".hs")
 	replace_extension(actual_data_name, ".s");
       else
 	add_extension(actual_data_name, ".s");
@@ -503,7 +503,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
         add_extension(actual_data_name.get(), ".s");
     }
 #endif
-    shared_ptr<iostream> sino_stream(
+    shared_ptr<std::iostream> sino_stream(
       new fstream (actual_data_name.c_str(), ios::out| ios::binary));
     
     if (!sino_stream->good())
@@ -804,7 +804,7 @@ DiscretisedDensity_to_ECAT6(FILE *fptr,
 
 Succeeded 
 DiscretisedDensity_to_ECAT6(DiscretisedDensity<3,float> const & density, 
-			    string const & cti_name, string const&orig_name,
+			    std::string const & cti_name, std::string const&orig_name,
 			    const Scanner& scanner,
                             const int frame_num, const int gate_num, const int data_num, const int bed_num)
 {  
@@ -1010,7 +1010,7 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const ECAT6_Main_header
 
 
 Succeeded 
-ProjData_to_ECAT6(ProjData const& proj_data, string const & cti_name, string const & orig_name,
+ProjData_to_ECAT6(ProjData const& proj_data, std::string const & cti_name, std::string const & orig_name,
                   const int frame_num, const int gate_num, const int data_num, const int bed_num,
 		  const bool write_2D_sinograms)
 {  

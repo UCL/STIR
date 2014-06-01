@@ -71,7 +71,7 @@ BinNormalisationFromProjData()
 }
 
 BinNormalisationFromProjData::
-BinNormalisationFromProjData(const string& filename)
+BinNormalisationFromProjData(const std::string& filename)
     : norm_proj_data_ptr(ProjData::read_from_file(filename))
   {}
 

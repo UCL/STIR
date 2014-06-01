@@ -3,7 +3,7 @@
 /*!
   \file
   \ingroup ClearPET_utilities
-  \brief Declaration of class CListModeDataLMF
+  \brief Declaration of class stir::CListModeDataLMF
     
   \author Kris Thielemans
       
@@ -29,11 +29,6 @@
 #include <string>
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-using std::vector;
-#endif
-
 START_NAMESPACE_STIR
 
 
@@ -43,7 +38,7 @@ class CListModeDataLMF : public CListModeData
 public:
 
   //! Constructor taking a filename
-  CListModeDataLMF(const string& listmode_filename);
+  CListModeDataLMF(const std::string& listmode_filename);
 
   // Destructor closes the file and destroys various structures
   ~CListModeDataLMF();
@@ -81,7 +76,7 @@ private:
 
   // possibly use this from LMF2Projection
   // SCANNER_CHECK_LIST scanCheckList;
-  vector<unsigned long> saved_get_positions;
+  std::vector<unsigned long> saved_get_positions;
 
 };
 

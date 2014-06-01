@@ -35,12 +35,6 @@
 #include <vector>
 #include <utility>
 
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-using std::pair;
-using std::vector;
-#endif
-
 START_NAMESPACE_STIR
 /*!
   \ingroup buildblock
@@ -58,10 +52,10 @@ class TimeGateDefinitions
  public:
   //! Default constructor: no time gates at all
   TimeGateDefinitions();
-  TimeGateDefinitions(const vector<unsigned int>& gate_num_vector, 
-                      const vector<double>& duration_vector);
-  TimeGateDefinitions(const vector<pair<unsigned int, double> >& gate_sequence);
-  explicit TimeGateDefinitions(const string& gdef_filename);
+  TimeGateDefinitions(const std::vector<unsigned int>& gate_num_vector, 
+                      const std::vector<double>& duration_vector);
+  TimeGateDefinitions(const std::vector<std::pair<unsigned int, double> >& gate_sequence);
+  explicit TimeGateDefinitions(const std::string& gdef_filename);
 
   //! Read the gate definitions from a file
   /*! 
@@ -76,7 +70,7 @@ class TimeGateDefinitions
     \a gate_num_of_this_duration to 0 allows skipping
     a time period of the corresponding \a duration_in_secs.
   */
-  void read_gdef_file(const string& gdef_filename);
+  void read_gdef_file(const std::string& gdef_filename);
 
   //! \name get info for a gate
   //@{
@@ -92,7 +86,7 @@ class TimeGateDefinitions
 
  private:
   //! Stores start and end time for each gate
-  vector<pair<unsigned int, double> > _gate_sequence;
+  std::vector<std::pair<unsigned int, double> > _gate_sequence;
 };
 
 END_NAMESPACE_STIR

@@ -106,7 +106,7 @@ public:
     parameter_filename == "") by calling ask_parameters().
   */
   explicit 
-    FBP3DRPReconstruction(const string& parameter_filename);
+    FBP3DRPReconstruction(const std::string& parameter_filename);
 
   // explicitly implement destructor (NOT inline) to avoid funny problems with
   // the shared_ptr<DiscretisedDensity<3,float> > destructor with gcc.
@@ -115,7 +115,7 @@ public:
   ~FBP3DRPReconstruction();
 
 //! This method returns the type of the reconstruction algorithm during the reconstruction, here it is FBP3DRP
-   virtual string method_info() const;
+  virtual std::string method_info() const;
 
 protected:
 /*!
@@ -203,7 +203,7 @@ protected:
     forward projector on it, you get sinograms of the same scale as the 
     input sinograms. There is NO check on this.
   */  
-  string image_for_reprojection_filename;
+  std::string image_for_reprojection_filename;
 
   //! Number of segments to combine with SSRB before calling FBP
   /*! default -1 will use SSRB only when the data are not yet axially compressed */

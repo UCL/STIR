@@ -97,10 +97,10 @@ public:
   */
     TimeFrameDefinitions frame_defs;
 protected:
-   string frame_defs_filename;
+  std::string frame_defs_filename;
 
   //! Filename with input projection data
-  string list_mode_filename;
+  std::string list_mode_filename;
  
   //! Listmode pointer
   shared_ptr<CListModeData> list_mode_data_sptr; 

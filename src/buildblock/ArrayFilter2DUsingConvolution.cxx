@@ -21,6 +21,10 @@
 #include "stir/Array.h"
 #include "stir/IndexRange2D.h"
 
+#include <algorithm>
+using std::max;
+using std::min;
+
 START_NAMESPACE_STIR
 
 template <typename elemT>

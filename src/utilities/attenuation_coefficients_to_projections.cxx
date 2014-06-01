@@ -76,7 +76,7 @@ main (int argc, char * argv[])
   shared_ptr <ProjData> attenuation_proj_data_ptr =
     ProjData::read_from_file(argv[2]);
 
-  const string output_file_name = argv[1];
+  const std::string output_file_name = argv[1];
 
   shared_ptr<ProjData> 
     out_proj_data_ptr(new ProjDataInterfile(attenuation_proj_data_ptr->get_exam_info_sptr(),

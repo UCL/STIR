@@ -70,7 +70,7 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
   exam_info.imaging_modality = ImagingModality::PT;
   // attempt to read the .sgl file
   {
-    const string singles_filename = listmode_filename_prefix + "_1.sgl";
+    const std::string singles_filename = listmode_filename_prefix + "_1.sgl";
     ifstream singles_file(singles_filename.c_str(), ios::binary);
     char buffer[sizeof(Main_header)];
     if (!singles_file)

@@ -96,7 +96,7 @@ set_num_subsets(const int new_num_subsets)
 template<typename TargetT>
 bool
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-actual_subsets_are_approximately_balanced(string&) const
+actual_subsets_are_approximately_balanced(std::string&) const
 {
   return true; 
 }

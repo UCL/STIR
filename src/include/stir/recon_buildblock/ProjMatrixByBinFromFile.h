@@ -94,7 +94,7 @@ public :
       matrix back in.
   */
 static Succeeded
-  write_to_file(const string& output_filename_prefix, 
+  write_to_file(const std::string& output_filename_prefix, 
 		const ProjMatrixByBin& proj_matrix,
 		const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
 		const DiscretisedDensity<3,float>& template_density);
@@ -110,12 +110,12 @@ static Succeeded
 
 private:
 
-  string parsed_version;
-  string template_density_filename;
-  string template_proj_data_filename;
-  string data_filename;
+  std::string parsed_version;
+  std::string template_density_filename;
+  std::string template_proj_data_filename;
+  std::string data_filename;
   
-  string symmetries_type;
+  std::string symmetries_type;
   // should be in symmetries
   bool do_symmetry_90degrees_min_phi;
   bool do_symmetry_180degrees_min_phi;

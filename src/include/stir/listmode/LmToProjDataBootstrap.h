@@ -33,10 +33,6 @@
 #include "stir/listmode/LmToProjData.h"
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
-using std::vector;
-#endif
-
 START_NAMESPACE_STIR
 
 /*! \ingroup listmode
@@ -103,7 +99,7 @@ protected:
 
 private:
   typedef LmToProjDataT base_type;
-  typedef vector<unsigned char> replication_type;
+  typedef std::vector<unsigned char> replication_type;
 
 
   replication_type num_times_to_replicate;

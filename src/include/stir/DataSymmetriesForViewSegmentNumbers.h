@@ -33,10 +33,6 @@
 #include "stir/common.h"
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
-using std::vector;
-#endif
-
 START_NAMESPACE_STIR
 
 class ViewSegmentNumbers;
@@ -84,7 +80,7 @@ public:
 
   //! fills in a vector with all the view/segments that are related to 'v_s' (including itself)
   virtual void
-    get_related_view_segment_numbers(vector<ViewSegmentNumbers>&, const ViewSegmentNumbers& v_s) const = 0;
+    get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>&, const ViewSegmentNumbers& v_s) const = 0;
 
   //! returns the number of view_segment_numbers related to 'v_s'
   /*! The default implementation is in terms of get_related_view_segment_numbers, which will be 

@@ -141,9 +141,9 @@ class PatlakPlot : public RegisteredParsingObject<PatlakPlot, KineticModel>
   float _time_shift;   //!< Shifts the time to fit the timing of Plasma Data with the Projection Data.
   bool _in_correct_scale; //!< Switch to scale or not the model_matrix to the correct scale, according to the appropriate scale factor.
   bool _in_total_cnt;   //!< Switch to choose the values of the model to be in total counts or in mean counts.
-  string _blood_data_filename;   //!< Name of file in which the input function is stored
+  std::string _blood_data_filename;   //!< Name of file in which the input function is stored
   PlasmaData _plasma_frame_data;    //!< Stores the plasma data into frames for brain studies
-  string _time_frame_definition_filename;   //!< name of file to get frame definitions
+  std::string _time_frame_definition_filename;   //!< name of file to get frame definitions
   TimeFrameDefinitions _frame_defs;   //!< TimeFrameDefinitions
 
  private:

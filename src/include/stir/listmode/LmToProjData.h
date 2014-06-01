@@ -215,12 +215,12 @@ protected:
 
   //! \name parsing variables
   //{@
-  string input_filename;
-  string output_filename_prefix;
-  string template_proj_data_name;
+  std::string input_filename;
+  std::string output_filename_prefix;
+  std::string template_proj_data_name;
   //! frame definitions
   /*! Will be read using TimeFrameDefinitions */
-  string frame_definition_filename;
+  std::string frame_definition_filename;
   bool do_pre_normalisation;
   bool store_prompts;
   bool store_delayeds;

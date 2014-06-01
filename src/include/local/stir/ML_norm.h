@@ -34,13 +34,7 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/IndexRange2D.h"
 #include "stir/Sinogram.h"
-#include <string>
 #include <iostream>
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-using std::ostream;
-using std::istream;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -158,8 +152,8 @@ public:
 
 
 private:
-  friend ostream& operator<<(ostream&, const FanProjData&);
-  friend istream& operator>>(istream&, FanProjData&);
+  friend std::ostream& operator<<(std::ostream&, const FanProjData&);
+  friend std::istream& operator>>(std::istream&, FanProjData&);
   typedef Array<4,float> base_type;
   //FanProjData(const IndexRange<4>& range);
   //void grow(const IndexRange<4>&);

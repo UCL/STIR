@@ -73,7 +73,7 @@ public:
 protected:
   virtual inline bool
     actual_has_same_characteristics(DiscretisedDensity<num_dimensions, elemT> const&, 
-				    string& explanation) const;
+				    std::string& explanation) const;
 
   //! Return the relative coordinates of the centre of the basis-function corresponding to \c indices. 
   /*! The return value is relative to the origin. 

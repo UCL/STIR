@@ -37,11 +37,6 @@
 #include <string>
 #include <list>
 
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-using std::list;
-#endif
-
 START_NAMESPACE_STIR
 
 class Succeeded;
@@ -97,9 +92,9 @@ class Scanner
   static Scanner * ask_parameters();
 
   //! get the scanner pointer from the name
-  static Scanner * get_scanner_from_name(const string& name);
+  static Scanner * get_scanner_from_name(const std::string& name);
   //! get the list of all names for the particular scanner
-  static string list_all_names();
+  static std::string list_all_names();
 
   // E931 HAS to be first, Unknown_scanner HAS to be last
   // also, the list HAS to be consecutive (so DO NOT assign numbers here)
@@ -126,7 +121,7 @@ class Scanner
       \param intrinsic_tilt_v value in radians, \see get_default_intrinsic_tilt()
       \warning calls error() when block/bucket info are inconsistent
    */
-  Scanner(Type type_v, const list<string>& list_of_names_v,
+  Scanner(Type type_v, const std::list<std::string>& list_of_names_v,
           int num_detectors_per_ring_v, int num_rings_v, 
           int max_num_non_arccorrected_bins_v,
           int default_num_arccorrected_bins_v,
@@ -143,7 +138,7 @@ class Scanner
       \param intrinsic_tilt value in radians, \see get_default_intrinsic_tilt()
       \warning calls error() when block/bucket info are inconsistent
    */
-  Scanner(Type type_v, const string& name,
+  Scanner(Type type_v, const std::string& name,
           int num_detectors_per_ring_v, int num_rings_v, 
           int max_num_non_arccorrected_bins_v,
           int default_num_arccorrected_bins_v,
@@ -157,14 +152,14 @@ class Scanner
 
 
 
-  //! get scanner parameters as a string
-  string parameter_info() const;
+  //! get scanner parameters as a std::string
+  std::string parameter_info() const;
   //! get the scanner name
-  const string& get_name() const;
+  const std::string& get_name() const;
   //! get all scanner names as a list of strings
-  const list<string>& get_all_names() const;
+  const std::list<std::string>& get_all_names() const;
   //! get all scanner names as a string
-  string list_names() const;
+  std::string list_names() const;
 
   //! comparison operator
   bool operator ==(const Scanner& scanner) const;
@@ -330,7 +325,7 @@ class Scanner
 
 private:
   Type type;
-  list<string> list_of_names;
+  std::list<std::string> list_of_names;
   int num_rings;                /* number of direct planes */
   int max_num_non_arccorrected_bins; 
   int default_num_arccorrected_bins; /* default number of bins */
@@ -353,7 +348,7 @@ private:
 
 
   // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
-  void set_params(Type type_v, const list<string>& list_of_names_v,
+  void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
                   int num_rings_v, 
                   int max_num_non_arccorrected_bins_v,
                   int num_detectors_per_ring_v,
@@ -368,7 +363,7 @@ private:
                   int num_detector_layers_v);
 
   // ! set all parameters
-  void set_params(Type type_v, const list<string>& list_of_names_v,
+  void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
                   int num_rings_v, 
                   int max_num_non_arccorrected_bins_v,
                   int default_num_arccorrected_bins_v,

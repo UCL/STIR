@@ -53,7 +53,7 @@ SinglesRatesFromECAT7()
 
 
 int
-SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
+SinglesRatesFromECAT7::read_singles_from_file(const std::string& ECAT7_filename,
                                               const std::ios::openmode open_mode)
 
 {
@@ -102,7 +102,7 @@ SinglesRatesFromECAT7::read_singles_from_file(const string& ECAT7_filename,
 
   
   MatrixData* matrix;
-  vector<pair<double, double> > time_frames(main_header->num_frames);
+  std::vector<std::pair<double, double> > time_frames(main_header->num_frames);
 
 
   for ( int mat_frame = 1 ; mat_frame <= num_frames ; mat_frame++ )

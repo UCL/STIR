@@ -42,11 +42,6 @@
 #include "stir/ProjData.h"
 #include <string>
 
-
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 
 
@@ -125,7 +120,7 @@ public:
 
 
   //! the input projection data file name
-  string input_filename;
+  std::string input_filename;
   //! the maximum absolute ring difference number to use in the reconstruction
   /*! convention: if -1, use get_max_segment_num()*/
   int max_segment_num_to_process;

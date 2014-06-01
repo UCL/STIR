@@ -46,6 +46,7 @@
 using std::cerr;
 using std::ifstream;
 using std::istream;
+using std::endl;
 #endif
 
 START_NAMESPACE_STIR

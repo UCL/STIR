@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 
   // check if images are compatible
   {
-    string explanation;
+    std::string explanation;
     if (!first_operand->has_same_characteristics(*second_operand, 
 						 explanation))
       {

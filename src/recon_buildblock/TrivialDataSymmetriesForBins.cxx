@@ -29,6 +29,9 @@
 #include "stir/recon_buildblock/SymmetryOperation.h"
 #include "stir/ViewSegmentNumbers.h"
 
+using std::vector;
+using std::auto_ptr;
+
 START_NAMESPACE_STIR
 TrivialDataSymmetriesForBins::
 TrivialDataSymmetriesForBins

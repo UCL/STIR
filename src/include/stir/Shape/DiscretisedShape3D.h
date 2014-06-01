@@ -168,7 +168,7 @@ private:
   */
   virtual bool post_processing();
   //@}
-  string filename;
+  std::string filename;
 };
 
 

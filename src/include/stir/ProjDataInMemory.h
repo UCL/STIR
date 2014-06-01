@@ -29,10 +29,6 @@
 #include "boost/shared_array.hpp"
 #include <string>
 
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-#endif
-
 /* Implementation note (KT)
    
    I first used the std::stringstream class (when available).
@@ -89,7 +85,7 @@ public:
   /*! \warning This might change as soon as we have proper output of projdata
   */
   Succeeded
-    write_to_file(const string& filename) const;
+    write_to_file(const std::string& filename) const;
  
   //! Returns a  value of a bin
   float get_bin_value(Bin& bin);

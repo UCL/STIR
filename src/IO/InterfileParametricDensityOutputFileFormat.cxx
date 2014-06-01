@@ -104,8 +104,8 @@ set_byte_order(const ByteOrder& new_byte_order, const bool warn)
 TEMPLATE
 Succeeded  
 InterfileParamDiscDensity::
-    actual_write_to_file(string& filename, 
-			 const ParametricDiscretisedDensity<DiscDensityT>& density) const
+actual_write_to_file(std::string& filename, 
+		     const ParametricDiscretisedDensity<DiscDensityT>& density) const
 {
   // TODO modify write_basic_interfile to return filename
   

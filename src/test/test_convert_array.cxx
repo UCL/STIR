@@ -35,6 +35,8 @@
 #include <vector>
 #include <iostream>
 #include <math.h>
+using std::cerr;
+using std::endl;
 
 START_NAMESPACE_STIR
 

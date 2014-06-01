@@ -74,7 +74,7 @@ Reconstruction<TargetT>::initialise_keymap()
 
 template <typename TargetT>
 void 
-Reconstruction<TargetT>::initialise(const string& parameter_filename)
+Reconstruction<TargetT>::initialise(const std::string& parameter_filename)
 {
   if(parameter_filename.size()==0)
   {
@@ -111,7 +111,7 @@ post_processing()
 template <typename TargetT>
 void
 Reconstruction<TargetT>::
-set_output_filename_prefix(const string& arg)
+set_output_filename_prefix(const std::string& arg)
 {
   this->output_filename_prefix  = arg;
 }

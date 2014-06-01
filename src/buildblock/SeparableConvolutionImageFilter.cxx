@@ -29,6 +29,10 @@
 #include "stir/ArrayFilter1DUsingConvolution.h"
 #include "stir/DiscretisedDensity.h"
 
+#include <algorithm>
+using std::vector;
+using std::max;
+
 START_NAMESPACE_STIR
 
 template<>

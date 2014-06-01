@@ -27,7 +27,7 @@
 */
 
 #include "stir/data/SinglesRates.h"
-
+using std::vector;
 
 START_NAMESPACE_STIR
 

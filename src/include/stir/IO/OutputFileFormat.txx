@@ -106,8 +106,8 @@ set_key_values()
     file_byte_order == ByteOrder::little_endian ?
       0 : 1;
 
-  string number_format; 
-  size_t bytes_per_pixel_in_size_t;
+  std::string number_format; 
+  std::size_t bytes_per_pixel_in_size_t;
   type_of_numbers.get_Interfile_info(number_format, 
                                      bytes_per_pixel_in_size_t);
   bytes_per_pixel = static_cast<int>(bytes_per_pixel_in_size_t);
@@ -216,7 +216,7 @@ set_byte_order_and_type_of_numbers(ByteOrder& new_byte_order, NumericType& new_t
 template <typename DataT>
 Succeeded  
 OutputFileFormat<DataT>::
-write_to_file(string& filename, 
+write_to_file(std::string& filename, 
 	      const DataT& density) const
 {
   return actual_write_to_file(filename, density);
@@ -225,10 +225,10 @@ write_to_file(string& filename,
 template <typename DataT>
 Succeeded  
 OutputFileFormat<DataT>::
-write_to_file(const string& filename, 
+write_to_file(const std::string& filename, 
 	      const DataT& density) const
 {
-  string filename_to_use = filename;
+  std::string filename_to_use = filename;
   return 
     write_to_file(filename_to_use, density);
 };

@@ -139,6 +139,10 @@ using std::endl;
 using std::fstream;
 using std::unary_function;
 using std::transform;
+using std::max;
+using std::min;
+using std::string;
+using std::vector;
 #endif
 
 
