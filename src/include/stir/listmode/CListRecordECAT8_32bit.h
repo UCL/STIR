@@ -23,8 +23,8 @@
   \author Kris Thielemans
 */
 
-#ifndef __stir_listmode_CListRecordECAT966_H__
-#define __stir_listmode_CListRecordECAT966_H__
+#ifndef __stir_listmode_CListRecordECAT8_32bit_H__
+#define __stir_listmode_CListRecordECAT8_32bit_H__
 
 #include "stir/listmode/CListRecord.h"
 #include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.h"
@@ -110,8 +110,8 @@ class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDet
     CListEventDataECAT8_32bit   data;
     boost::int32_t         raw;
   };
-  vector<int> segment_sequence;
-  vector<int> sizes;
+  std::vector<int> segment_sequence;
+  std::vector<int> sizes;
 
 };
 
