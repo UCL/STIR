@@ -184,8 +184,10 @@ class CListTimeECAT8_32bit : public CListTime
 
   bool is_time() const
   { return this->time_data.is_time(); }
+  /*
   bool is_gating_input() const
   { return this->is_time(); }
+  */
   bool is_event() const
   { return !this->is_time(); }
   virtual CListEventECAT8_32bit&  event() 
