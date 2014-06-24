@@ -163,12 +163,12 @@ def test_ProjDataInfo():
     #		  const int span, const int max_delta,
     #             const int num_views, const int num_tangential_poss, 
     #
-    projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,3,8,6)
+    projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,9,8,6)
     #print projdatainfo
     assert projdatainfo.get_scanner_ptr().get_num_rings()==32
-    sinogram=projdatainfo.get_empty_sinogram(1,3)
+    sinogram=projdatainfo.get_empty_sinogram(1,2)
     assert sinogram.sum()==0
-    assert sinogram.get_segment_num()==3
+    assert sinogram.get_segment_num()==2
     assert sinogram.get_axial_pos_num()==1
     assert sinogram.get_num_views() == projdatainfo.get_num_views()
     assert sinogram.get_proj_data_info_ptr() == projdatainfo

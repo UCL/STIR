@@ -320,6 +320,36 @@ namespace std {
     }
     void __brace_asgn__(const INDEXTYPE i, const RETTYPE val) { (*self).at(i)=val; }
  }
+#elif defined(SWIGMATLAB)
+%extend TYPE {
+    %exception getel {
+      try
+	{
+	  $action
+	}
+      catch (std::out_of_range& e) {
+        SWIG_exception(SWIG_IndexError,const_cast<char*>(e.what()));
+      }
+      catch (std::invalid_argument& e) {
+        SWIG_exception(SWIG_TypeError,const_cast<char*>(e.what()));
+      }
+    }
+    %newobject getel;
+    RETTYPE getel(const INDEXTYPE i) { return (*self).at(i); }
+    %exception setel {
+      try
+	{
+	  $action
+	}
+      catch (std::out_of_range& e) {
+        SWIG_exception(SWIG_IndexError,const_cast<char*>(e.what()));
+      }
+      catch (std::invalid_argument& e) {
+        SWIG_exception(SWIG_TypeError,const_cast<char*>(e.what()));
+      }
+    }
+    void setel(const INDEXTYPE i, const RETTYPE val) { (*self).at(i)=val; }
+ }
 #endif
 %enddef
 
@@ -397,6 +427,7 @@ namespace std {
 %shared_ptr(stir::TimedObject);
 %shared_ptr(stir::ParsingObject);
 
+%shared_ptr(stir::TimeFrameDefinitions);
 %shared_ptr(stir::ExamInfo);
 %shared_ptr(stir::Scanner);
 %shared_ptr(stir::ProjDataInfo);
@@ -787,6 +818,8 @@ namespace stir {
 
 %template(Float3DDiscretisedDensity) stir::DiscretisedDensity<3,float>;
 %template(Float3DDiscretisedDensityOnCartesianGrid) stir::DiscretisedDensityOnCartesianGrid<3,float>;
+//%template() stir::DiscretisedDensity<3,float>;
+//%template() stir::DiscretisedDensityOnCartesianGrid<3,float>;
 %template(FloatVoxelsOnCartesianGrid) stir::VoxelsOnCartesianGrid<float>;
 
 
@@ -819,6 +852,8 @@ namespace stir {
 
  /* Now do ProjDataInfo, Sinogram et al
  */
+%include "stir/TimeFrameDefinitions.h"
+%include "stir/ExamInfo.h"
 // ignore non-const versions
 %ignore stir::Bin::segment_num();
 %ignore stir::Bin::axial_pos_num();
@@ -919,7 +954,7 @@ namespace stir {
 
 
 %template (GeneralisedObjectiveFunction3DFloat) stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >;
-#%template () stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >;
+//%template () stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >;
 %template (PoissonLogLikelihoodWithLinearModelForMean3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMean<stir::DiscretisedDensity<3,float> >;
 
 #define TargetT stir::DiscretisedDensity<3,float>
@@ -944,5 +979,7 @@ namespace stir {
 
 
 %template (Reconstruction3DFloat) stir::Reconstruction<stir::DiscretisedDensity<3,float> >;
+//%template () stir::Reconstruction<stir::DiscretisedDensity<3,float> >;
 %template (IterativeReconstruction3DFloat) stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
+//%template () stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
 %template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >;
