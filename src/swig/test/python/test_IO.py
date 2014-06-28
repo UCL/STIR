@@ -52,9 +52,10 @@ def test_ProjDataInfo(tmpdir):
     #		  const int span, const int max_delta,
     #             const int num_views, const int num_tangential_poss, 
     #
+    examinfo=ExamInfo();
     projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,6,8,6)
     assert projdatainfo.get_scanner_ptr().get_num_rings()==32
-    projdata=ProjDataInterfile(projdatainfo, "stir_python_test.hs")
+    projdata=ProjDataInterfile(examinfo, projdatainfo, "stir_python_test.hs")
     print projdata.get_min_segment_num()
     print projdata.get_max_segment_num()
     for seg in xrange(projdata.get_min_segment_num(), projdata.get_max_segment_num()+1):

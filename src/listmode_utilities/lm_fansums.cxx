@@ -80,11 +80,11 @@ private:
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
-  string input_filename;
-  string output_filename_prefix;
-  string frame_definition_filename;
+  std::string input_filename;
+  std::string output_filename_prefix;
+  std::string frame_definition_filename;
   bool store_prompts;
-int delayed_increment;
+  int delayed_increment;
   int current_frame;
 
   bool interactive;
@@ -293,7 +293,7 @@ write_fan_sums(const Array<2,float>& data_fan_sums,
 {
   char txt[50];
   sprintf(txt, "_f%d.dat", current_frame_num);
-  string filename = output_filename_prefix;
+  std::string filename = output_filename_prefix;
   filename += txt;
   ofstream out(filename.c_str());
   out << data_fan_sums;

@@ -194,7 +194,7 @@ main (int argc, char * argv[])
 			       attenuation_density_ptr );
   cerr << "\n\nForward projector used:\n" << forw_projector_ptr->parameter_info();  
 
-  const string output_file_name = argv[1];
+  const std::string output_file_name = argv[1];
   shared_ptr<ProjData> 
     out_proj_data_ptr(
 		      new ProjDataInterfile(template_proj_data_ptr->get_exam_info_sptr(),

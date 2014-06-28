@@ -27,8 +27,11 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 {
     
 
- const VoxelsOnCartesianGrid<float>& image =
-    dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
+  if(dynamic_cast<const VoxelsOnCartesianGrid<float>*>(&density)== 0)
+    {
+      warning("SeparableGaussianImageFilter can only handle images of type VoxelsOnCartesianGrid");
+      return Succeeded::no;
+    }
 
    gaussian_filter = 
     SeparableGaussianArrayFilter<3,elemT>(standard_deviation,     
@@ -76,10 +79,10 @@ void
 SeparableGaussianImageFilter<elemT>::
 initialise_keymap()
 {
-  parser.add_start_key("Separable Gaussian Filter Parameters");
-  parser.add_key ("standard_deviation", &standard_deviation);
-  parser.add_key ("number_of_coefficients", &number_of_coefficients);
-  parser.add_stop_key("END Separable Gaussian Filter Parameters");
+  this->parser.add_start_key("Separable Gaussian Filter Parameters");
+  this->parser.add_key ("standard_deviation", &standard_deviation);
+  this->parser.add_key ("number_of_coefficients", &number_of_coefficients);
+  this->parser.add_stop_key("END Separable Gaussian Filter Parameters");
 
 }
 
@@ -100,9 +103,10 @@ post_processing()
 
 
 
+template<>
 const char * const 
 SeparableGaussianImageFilter<float>::registered_name =
-  "Separable Gaussian Filter";
+  "Separable Gaussian";
 
 
 #  ifdef _MSC_VER
@@ -115,6 +119,6 @@ SeparableGaussianImageFilter<float>::registered_name =
 // static SeparableGaussianImageFilter<float>::RegisterIt dummy;
 // have the above variable in a separate file, which you need to pass at link time
 
-template SeparableGaussianImageFilter<float>;
+template class SeparableGaussianImageFilter<float>;
 
 END_NAMESPACE_STIR

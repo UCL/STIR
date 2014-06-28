@@ -116,14 +116,14 @@ public:
 #endif
 
   inline void
-    get_related_bins_factorised(vector<AxTangPosNumbers>&, const Bin& b,
+    get_related_bins_factorised(std::vector<AxTangPosNumbers>&, const Bin& b,
                                 const int min_axial_pos_num, const int max_axial_pos_num,
                                 const int min_tangential_pos_num, const int max_tangential_pos_num) const;
 
   inline int
     num_related_bins(const Bin& b) const;
 
-  inline auto_ptr<SymmetryOperation>
+  inline std::auto_ptr<SymmetryOperation>
     find_symmetry_operation_from_basic_bin(Bin&) const;
 
   inline bool
@@ -133,7 +133,7 @@ public:
     num_related_view_segment_numbers(const ViewSegmentNumbers& vs) const;
   
   inline void
-    get_related_view_segment_numbers(vector<ViewSegmentNumbers>& rel_vs, const ViewSegmentNumbers& vs) const;
+    get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>& rel_vs, const ViewSegmentNumbers& vs) const;
   
   inline bool
     find_basic_view_segment_numbers(ViewSegmentNumbers& v_s) const;

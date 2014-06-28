@@ -55,7 +55,7 @@ public:
 
  private:
   TimeGateDefinitions _time_gate_definitions;
-  static GatedProjData* read_from_gdef(const string& filename);
+  static GatedProjData* read_from_gdef(const std::string& filename);
 };
 
 END_NAMESPACE_STIR

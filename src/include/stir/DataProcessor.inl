@@ -58,7 +58,7 @@ reset()
 template <typename DataT>
 bool
 DataProcessor<DataT>::
-parse(istream& f)
+parse(std::istream& f)
 {
   this->reset();
   return ParsingObject::parse(f);

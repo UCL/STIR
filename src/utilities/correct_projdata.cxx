@@ -162,6 +162,7 @@ using std::fstream;
 using std::ifstream;
 using std::cout;
 using std::string;
+using std::vector;
 #endif
 
 START_NAMESPACE_STIR
@@ -441,7 +442,7 @@ post_processing()
    else
     {
       // make a single frame starting from 0 to 1.
-      vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
+      std::vector<std::pair<double, double> > frame_times(1, std::pair<double,double>(0,1));
       frame_defs = TimeFrameDefinitions(frame_times);
     }
 

@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
     }
   shared_ptr< DiscretisedDensity<3,float> >  
     input_image_sptr(read_from_file<DiscretisedDensity<3,float> >(argv[2]));
-  string output_image_filename(argv[1]);
+  std::string output_image_filename(argv[1]);
   shared_ptr<DiscretisedDensity<3,float> > 
     output_image_sptr(input_image_sptr->clone());
   bool is_implemented=true;

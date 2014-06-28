@@ -502,7 +502,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
                                                                        const int subset_num) const
 {
   {
-    string explanation;
+    std::string explanation;
     if (!input.has_same_characteristics(this->get_sensitivity(), 
                                         explanation))
       {

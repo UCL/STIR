@@ -37,12 +37,6 @@
 #include "stir/DataProcessor.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/VectorWithOffset.h"
-#include <vector>
-
-#ifndef STIR_NO_NAMESPACES
-using std::vector;
-#endif
-
 
 START_NAMESPACE_STIR
 
@@ -110,7 +104,7 @@ public:
   NonseparableConvolutionUsingRealDFTImageFilter( const Array<num_dimensions,elemT>& filter_coefficients ); 
   
 private:
-  string _kernel_filename;
+  std::string _kernel_filename;
   shared_ptr<DiscretisedDensity<num_dimensions,elemT> > _kernel_sptr;
   shared_ptr<ArrayFilterUsingRealDFTWithPadding<num_dimensions,elemT> > _array_filter_sptr; // ChT::float
   Array<num_dimensions,elemT> _filter_coefficients;

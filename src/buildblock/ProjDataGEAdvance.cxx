@@ -48,6 +48,8 @@ using std::vector;
 using std::ios;
 using std::accumulate;
 using std::find;
+using std::iostream;
+using std::streamoff;
 #endif
 
 START_NAMESPACE_STIR

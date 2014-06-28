@@ -10,6 +10,9 @@ stir_PYTHONwrap.cxx: stir.i Makefile
 stir_OCTAVEwrap.cpp: stir.i Makefile
 	$(SWIG) -octave -c++ -I../include/ -I/usr/include -DSTART_NAMESPACE_STIR="namespace stir {" -DEND_NAMESPACE_STIR="}"  -o $@ $<
 
+stir_MATLABwrap.cpp: stir.i Makefile
+	$(SWIG) -matlab -c++ -I../include/ -I/usr/include -DSTART_NAMESPACE_STIR="namespace stir {" -DEND_NAMESPACE_STIR="}"  -o $@ $<
+
 stir.e: stir.i Makefile
 	$(SWIG) -python -c++ -builtin -E  -I../include/ -DSTART_NAMESPACE_STIR="namespace stir {" -DEND_NAMESPACE_STIR="}" $< > stir.e
 

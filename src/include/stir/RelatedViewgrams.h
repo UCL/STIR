@@ -80,7 +80,7 @@ public:
  
   //! a private constructor which simply sets the members
   /*! \todo Currently public for the STIR_MPI version */
-  inline RelatedViewgrams(const vector<Viewgram<elemT> >& viewgrams,
+  inline RelatedViewgrams(const std::vector<Viewgram<elemT> >& viewgrams,
                    const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used);
 
 
@@ -178,7 +178,7 @@ public:
   */
   bool
     has_same_characteristics(self_type const&,
-			     string& explanation) const;
+			     std::string& explanation) const;
 
   //! Checks if the 2 objects have the proj_data_info, segment_num etc.
   /*! Use this version if you do not need to know why they do not match.
@@ -203,7 +203,7 @@ private:
   friend class ProjDataInfo;
 
   // members
-  vector<Viewgram<elemT> > viewgrams;
+  std::vector<Viewgram<elemT> > viewgrams;
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used;
 
   //! a function which is called internally to see if the object is valid

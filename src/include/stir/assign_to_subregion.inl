@@ -36,15 +36,15 @@ assign_to_subregion(Array<3,elemT>& input_array,
 {
   const int min_k_index = input_array.get_min_index();
   const int max_k_index = input_array.get_max_index();
-  for ( int k = max(mask_location[1]-half_mask_size[1],min_k_index); k<= min(mask_location[1]+half_mask_size[1],max_k_index); ++k)
+  for ( int k = std::max(mask_location[1]-half_mask_size[1],min_k_index); k<= std::min(mask_location[1]+half_mask_size[1],max_k_index); ++k)
     {
       const int min_j_index = input_array[k].get_min_index();
       const int max_j_index = input_array[k].get_max_index();
-      for ( int j = max(mask_location[2]-half_mask_size[2],min_j_index); j<= min(mask_location[2]+half_mask_size[2],max_j_index); ++j)
+      for ( int j = std::max(mask_location[2]-half_mask_size[2],min_j_index); j<= std::min(mask_location[2]+half_mask_size[2],max_j_index); ++j)
         {
           const int min_i_index = input_array[k][j].get_min_index();
           const int max_i_index = input_array[k][j].get_max_index();
-          for ( int i = max(mask_location[3]-half_mask_size[3],min_i_index); i<= min(mask_location[3]+half_mask_size[3],max_i_index); ++i)
+          for ( int i = std::max(mask_location[3]-half_mask_size[3],min_i_index); i<= std::min(mask_location[3]+half_mask_size[3],max_i_index); ++i)
             input_array[k][j][i] = value;
         }
     } 

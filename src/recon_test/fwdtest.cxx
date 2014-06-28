@@ -107,7 +107,7 @@ main(int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
   
-  const string output_file_name = argv[1];
+  const std::string output_file_name = argv[1];
 
   shared_ptr<ProjDataInfo> new_data_info_ptr;
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);  
@@ -237,7 +237,7 @@ main(int argc, char *argv[])
       write_to_file("test_image", *image_sptr);
   }
     
-  list<ViewSegmentNumbers> already_processed;
+  std::list<ViewSegmentNumbers> already_processed;
 
   if (ask("Do full forward projection ?", true))
   {    
@@ -335,7 +335,7 @@ do_segments(const VoxelsOnCartesianGrid<float>& image,
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(forw_projector.get_symmetries_used()->clone());  
   
-  list<ViewSegmentNumbers> already_processed;
+  std::list<ViewSegmentNumbers> already_processed;
   
   for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
     for (int view= start_view; view<=end_view; view++)      

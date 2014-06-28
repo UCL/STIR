@@ -32,11 +32,6 @@
 #include <algorithm>
 #include "stir/assign.h"
 
-#ifndef STIR_NO_NAMESPACES
-using std::max;
-using std::min;
-#endif
-
 START_NAMESPACE_STIR
 
 /**********************************************

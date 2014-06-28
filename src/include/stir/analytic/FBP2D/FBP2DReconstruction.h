@@ -35,10 +35,6 @@
 #include <string>
 #include "stir/shared_ptr.h"
 
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
@@ -100,7 +96,7 @@ public:
     parameter_filename == "") by calling ask_parameters().
   */
   explicit 
-    FBP2DReconstruction(const string& parameter_filename);
+    FBP2DReconstruction(const std::string& parameter_filename);
 
   FBP2DReconstruction(const shared_ptr<ProjData>&, 
 		      const double alpha_ramp=1.,
@@ -109,7 +105,7 @@ public:
 		      const int num_segments_to_combine=-1
 		      );
   
-  virtual string method_info() const;
+  virtual std::string method_info() const;
 
   virtual void ask_parameters();
 

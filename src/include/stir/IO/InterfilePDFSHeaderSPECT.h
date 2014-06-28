@@ -58,9 +58,9 @@ protected:
   int num_views;
   int num_bins;
   int start_angle;
-  string direction_of_rotation;
+  std::string direction_of_rotation;
   double extent_of_rotation;
-  string orbit;
+  std::string orbit;
 public:  
   ProjDataFromStream::StorageOrder storage_order;
   shared_ptr<ProjDataInfo> data_info_sptr;

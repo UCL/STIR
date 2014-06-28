@@ -45,6 +45,7 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::max;
 #endif
 
 START_NAMESPACE_STIR

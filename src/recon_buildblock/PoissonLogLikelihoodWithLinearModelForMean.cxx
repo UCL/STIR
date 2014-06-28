@@ -36,6 +36,8 @@
 #include "stir/info.h"
 #include "boost/format.hpp"
 
+using std::string;
+
 START_NAMESPACE_STIR
 
 template<typename TargetT>

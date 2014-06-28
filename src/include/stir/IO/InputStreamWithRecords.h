@@ -35,13 +35,6 @@
 #include <string>
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
-using std::istream;
-using std::string;
-using std::streampos;
-using std::vector;
-#endif
-
 START_NAMESPACE_STIR
 
 //! A helper class to read data from a (presumably binary) stream 
@@ -74,12 +67,12 @@ template <class RecordT, class OptionsT>
 class InputStreamWithRecords
 {
 public:
-  typedef vector<streampos>::size_type SavedPosition;
+  typedef std::vector<std::streampos>::size_type SavedPosition;
   //! Constructor taking a stream
   /*! Data will be assumed to start at the current position reported by seekg().
       If reset() is used, it will go back to this starting position.*/ 
   inline
-    InputStreamWithRecords(const shared_ptr<istream>& stream_ptr,
+    InputStreamWithRecords(const shared_ptr<std::istream>& stream_ptr,
                            const std::size_t size_of_record_signature,
                            const std::size_t max_size_of_record, 
                            const OptionsT& options);
@@ -89,11 +82,11 @@ public:
       start at \a start_of_data.
   */
   inline
-  InputStreamWithRecords(const string& filename, 
-                          const std::size_t size_of_record_signature,
-                          const std::size_t max_size_of_record, 
-			  const OptionsT& options,
-                          const streampos start_of_data = 0);
+    InputStreamWithRecords(const std::string& filename, 
+			   const std::size_t size_of_record_signature,
+			   const std::size_t max_size_of_record, 
+			   const OptionsT& options,
+			   const std::streampos start_of_data = 0);
 
   inline
   virtual 
@@ -120,7 +113,7 @@ public:
       reopening the same stream.
   */
   inline
-  vector<streampos> get_saved_get_positions() const;
+    std::vector<std::streampos> get_saved_get_positions() const;
   //! Function that sets the saved get_positions
   /*! Normally, the argument results from a call to 
       get_saved_get_positions() on the same stream.
@@ -128,14 +121,14 @@ public:
       for the current stream.
   */ 
   inline
-  void set_saved_get_positions(const vector<streampos>& );
+    void set_saved_get_positions(const std::vector<std::streampos>& );
 
 private:
 
-  const string filename;
-  shared_ptr<istream> stream_ptr;
-  streampos starting_stream_position;
-  vector<streampos> saved_get_positions;
+  const std::string filename;
+  shared_ptr<std::istream> stream_ptr;
+  std::streampos starting_stream_position;
+  std::vector<std::streampos> saved_get_positions;
 
   const std::size_t size_of_record_signature;
   const std::size_t max_size_of_record;

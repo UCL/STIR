@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 
   shared_ptr<ProjDataInfo> proj_data_info_ptr(ProjDataInfo::ask_parameters());
   
-  const string output_file_name = argv[1];
+  const std::string output_file_name = argv[1];
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
   // TODO, Currently all stir::Scanner types are PET.
   exam_info_sptr->imaging_modality = ImagingModality::PT;

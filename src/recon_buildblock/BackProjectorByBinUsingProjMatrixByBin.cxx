@@ -43,6 +43,9 @@
 #include "stir/RelatedViewgrams.h"
 #include "stir/is_null_ptr.h"
 
+using std::vector;
+using std::auto_ptr;
+
 START_NAMESPACE_STIR
 
 const char * const 

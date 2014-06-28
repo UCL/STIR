@@ -57,7 +57,7 @@ class GatedDiscretisedDensity
   GatedDiscretisedDensity() {}
 
   GatedDiscretisedDensity(const GatedDiscretisedDensity&argument);
-  GatedDiscretisedDensity(const string& filename);
+  GatedDiscretisedDensity(const std::string& filename);
 
   GatedDiscretisedDensity(const TimeGateDefinitions& time_gate_definitions)
     {
@@ -153,7 +153,7 @@ class GatedDiscretisedDensity
   Succeeded   
     write_to_files(const std::string& filename) const;
   Succeeded   
-    write_to_files(const string& filename,const string& suffix) const;
+    write_to_files(const std::string& filename,const std::string& suffix) const;
 
 
  private:

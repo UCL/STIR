@@ -42,6 +42,8 @@ using std::pair;
 using std::sort;
 using std::cerr;
 using std::endl;
+using std::string;
+using std::vector;
 #endif
 
 START_NAMESPACE_STIR

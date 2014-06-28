@@ -42,6 +42,10 @@
 #include <memory>
 #include <math.h>
 
+#include <algorithm>
+using std::min;
+using std::max;
+
 #ifndef STIR_NAMESPACES
 using std::auto_ptr;
 #endif

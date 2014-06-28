@@ -65,7 +65,7 @@ public :
   virtual ByteOrder set_byte_order(const ByteOrder&, const bool warn = false);
  protected:
   virtual Succeeded  
-    actual_write_to_file(string& output_filename,
+    actual_write_to_file(std::string& output_filename,
 		  const DiscretisedDensity<3,float>& density) const;
 
 

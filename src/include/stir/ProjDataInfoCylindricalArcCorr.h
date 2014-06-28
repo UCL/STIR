@@ -80,7 +80,7 @@ public:
     Bin
     get_bin(const LOR<float>&) const;
 
-  virtual string parameter_info() const;
+  virtual std::string parameter_info() const;
 private:
   
   float bin_size;

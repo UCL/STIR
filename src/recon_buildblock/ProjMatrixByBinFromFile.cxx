@@ -44,6 +44,7 @@
 #include <fstream>
 #include <algorithm>
 
+using std::string;
 
 START_NAMESPACE_STIR
 
@@ -332,7 +333,7 @@ namespace {
     
 Succeeded
 ProjMatrixByBinFromFile::
-write_to_file(const string& output_filename_prefix, 
+write_to_file(const std::string& output_filename_prefix, 
 	      const ProjMatrixByBin& proj_matrix,
 	      const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
 	      const DiscretisedDensity<3,float>& template_density)

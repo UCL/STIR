@@ -39,6 +39,8 @@
 #include "stir/error.h"
 #include <boost/shared_array.hpp>
 
+using std::ios;
+
 namespace distributed
 {
   //timings and tests

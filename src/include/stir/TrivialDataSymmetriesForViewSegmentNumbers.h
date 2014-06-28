@@ -57,7 +57,7 @@ public:
 #endif
 
   virtual inline void
-    get_related_view_segment_numbers(vector<ViewSegmentNumbers>&, const ViewSegmentNumbers& v_s) const;
+    get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>&, const ViewSegmentNumbers& v_s) const;
 
   virtual inline int
     num_related_view_segment_numbers(const ViewSegmentNumbers& v_s) const;

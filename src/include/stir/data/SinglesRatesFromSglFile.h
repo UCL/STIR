@@ -145,11 +145,11 @@ public:
  //! Rebin the sgl slices into a different set of consecutive slices.
  //
  // Returns the number of new bins.
- int rebin(vector<double>& new_end_times);
+ int rebin(std::vector<double>& new_end_times);
  
   
  //! Get the vector of time values for each time slice index.
- vector<double> get_times() const;
+ std::vector<double> get_times() const;
 
 
  // Some inspectors
@@ -165,7 +165,7 @@ public:
  // IO Methods
 
  //! The function that reads singles from *.sgl file.
- int read_singles_from_sgl_file(const string& sgl_filename);
+ int read_singles_from_sgl_file(const std::string& sgl_filename);
 
  /*!
   * \brief Write the SinglesRatesFromSglFile object to a stream.
@@ -180,9 +180,9 @@ private:
  // Indexed by time slice and singles bin index.
  Array<2, int> _singles;
  
- vector<double> _times;
- vector<int> _total_prompts;
- vector<int> _total_randoms;
+ std::vector<double> _times;
+ std::vector<int> _total_prompts;
+ std::vector<int> _total_randoms;
 
 
 #ifdef HAVE_LLN_MATRIX
@@ -195,7 +195,7 @@ private:
  // are of different lengths.
  double _singles_time_interval;
 
- string _sgl_filename;
+ std::string _sgl_filename;
 
  // Calculate and set _singles_time_interval.
  void set_time_interval();

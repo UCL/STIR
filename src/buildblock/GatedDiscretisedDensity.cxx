@@ -38,6 +38,7 @@
 using std::fstream;
 using std::cerr;
 using std::istringstream;
+using std::string;
 #endif
 
 START_NAMESPACE_STIR

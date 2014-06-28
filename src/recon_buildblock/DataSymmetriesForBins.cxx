@@ -35,6 +35,9 @@
 #include "stir/BasicCoordinate.h"
 #include "stir/recon_buildblock/SymmetryOperation.h"
 
+using std::vector;
+using std::auto_ptr;
+
 START_NAMESPACE_STIR
 
 DataSymmetriesForBins::

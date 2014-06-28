@@ -390,7 +390,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 	  this->_single_gate_obj_funcs[gate_num].set_additive_proj_data_sptr(this->_additive_gated_proj_data_sptr->get_proj_data_sptr(gate_num));
 	this->_single_gate_obj_funcs[gate_num].set_num_subsets(this->num_subsets);
 	this->_single_gate_obj_funcs[gate_num].set_frame_num(1);//This should be gate...
-        vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
+	std::vector<std::pair<double, double> > frame_times(1, std::pair<double,double>(0,1));
 	this->_single_gate_obj_funcs[gate_num].set_frame_definitions(TimeFrameDefinitions(frame_times));
 
 	shared_ptr<BinNormalisation> current_gate_norm_factors_sptr;
@@ -506,7 +506,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 {
   // TODO this does not add but replace
   {
-    string explanation;
+    std::string explanation;
     if (!input.has_same_characteristics(this->get_subset_sensitivity(0),  ////////////////////
 					explanation))
       {

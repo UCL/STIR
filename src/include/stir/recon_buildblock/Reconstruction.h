@@ -39,11 +39,6 @@
 #include "stir/IO/OutputFileFormat.h"
 #include <string>
 
-
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 
 
@@ -87,7 +82,7 @@ public:
   virtual ~Reconstruction() {};
   
   //! gives method information
-  virtual string method_info() const = 0;
+  virtual std::string method_info() const = 0;
   
   //! executes the reconstruction
   /*!
@@ -129,7 +124,7 @@ public:
   //@{
 
   //! file name for output reconstructed images
-  void set_output_filename_prefix(const string&); 
+  void set_output_filename_prefix(const std::string&); 
 
   //! defines the format of the output files
   void set_output_file_format_ptr(const shared_ptr<OutputFileFormat<TargetT> >&);
@@ -142,7 +137,7 @@ public:
  protected:
 
   //! file name for output reconstructed images
-  string output_filename_prefix; 
+  std::string output_filename_prefix; 
 
   //! defines the format of the output files
   shared_ptr<OutputFileFormat<TargetT> > output_file_format_ptr; 
@@ -165,7 +160,7 @@ protected:
   \todo It currently calls error() when something goes wrong. It should
   return Succeeded (or throw an exception).
   */
-  void initialise(const string& parameter_filename);
+  void initialise(const std::string& parameter_filename);
   
   virtual void set_defaults();
   virtual void initialise_keymap();

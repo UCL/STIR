@@ -40,6 +40,7 @@
 #else
 #include <sstream>
 #endif
+#include <algorithm>
 
 /* Note: #ifdef NRFFT, then the Numerical Recipes version is used (if you have it...) */
 
@@ -88,7 +89,7 @@ RampFilter::RampFilter(float sampledist_v, int length , float alpha_v, float fc_
 #ifdef NRFFT
   Filter1D <float>(length), 
 #endif
-  fc(min(fc_v, .5F)), alpha(alpha_v), sampledist(sampledist_v)
+  fc(std::min(fc_v, .5F)), alpha(alpha_v), sampledist(sampledist_v)
 {
 
   start_timers();

@@ -69,6 +69,8 @@
 #include <boost/format.hpp>
 
 #ifndef STIR_NO_NAMESPACES
+using std::vector;
+using std::pair;
 using std::ends;
 using std::cerr;
 using std::endl;
@@ -786,7 +788,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
                                                                        const int subset_num) const
 {
   {
-    string explanation;
+    std::string explanation;
     if (!input.has_same_characteristics(this->get_sensitivity(), 
                                         explanation))
       {

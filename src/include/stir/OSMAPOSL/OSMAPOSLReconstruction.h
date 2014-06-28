@@ -90,7 +90,7 @@ public:
   parameter_filename == "") by calling ask_parameters().
   */
   explicit 
-    OSMAPOSLReconstruction(const string& parameter_filename);
+    OSMAPOSLReconstruction(const std::string& parameter_filename);
 
   //! accessor for the external parameters
   OSMAPOSLReconstruction& get_parameters(){return *this; }
@@ -100,7 +100,7 @@ public:
     {return *this;}
 
   //! gives method information
-  virtual string method_info() const;
+  virtual std::string method_info() const;
 
   //! Return current objective function
   /* Overloading IterativeReconstruction::get_objective_function()
@@ -131,7 +131,7 @@ public:
   void set_write_update_image(const int);
 
   //! should be either additive or multiplicative
-  void set_MAP_model(const string&); 
+  void set_MAP_model(const std::string&); 
   //@}
 
  protected:
@@ -165,7 +165,7 @@ public:
   int write_update_image;
 
   //! should be either additive or multiplicative
-  string MAP_model; 
+  std::string MAP_model; 
 
   virtual void set_defaults();
   virtual void initialise_keymap();

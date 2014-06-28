@@ -54,12 +54,12 @@ public:
     //!  The function that reads singles from ECAT7 file
     /*! \return The number of frames found. 0 if failed.
      */
-    int read_singles_from_file(const string& ECAT7_filename,
+    int read_singles_from_file(const std::string& ECAT7_filename,
                                const std::ios::openmode open_mode = std::ios::in);
     
    
 private:
-  string ECAT7_filename;
+  std::string ECAT7_filename;
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();  

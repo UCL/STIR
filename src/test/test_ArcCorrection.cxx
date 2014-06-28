@@ -36,6 +36,8 @@
 #include "stir/round.h"
 #include "stir/index_at_maximum.h"
 
+using std::cerr;
+
 START_NAMESPACE_STIR
 
 /*!

@@ -36,6 +36,9 @@
 #include "stir/Coordinate3D.h"
 #include "stir/RunTests.h"
 
+using std::cerr;
+using std::endl;
+
 START_NAMESPACE_STIR
 
 /*!

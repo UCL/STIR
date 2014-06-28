@@ -35,11 +35,6 @@
 namespace std { using ::time_t; }
 #endif
 
-
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 class CListRecord;
 class Succeeded;

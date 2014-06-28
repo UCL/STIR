@@ -126,8 +126,8 @@ set_byte_order(const ByteOrder& new_byte_order, const bool warn)
 
 Succeeded  
 ECAT7DynamicDiscretisedDensityOutputFileFormat::
-    actual_write_to_file(string& filename, 
-			 const DynamicDiscretisedDensity& dynamic_density) const
+actual_write_to_file(std::string& filename, 
+		     const DynamicDiscretisedDensity& dynamic_density) const
 {
   add_extension(filename, ".img");
   return

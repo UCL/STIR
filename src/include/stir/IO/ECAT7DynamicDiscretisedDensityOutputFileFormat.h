@@ -36,10 +36,6 @@
 #include "stir/IO/stir_ecat_common.h"
 #include <string>
 
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 
 class DynamicDiscretisedDensity;
@@ -86,12 +82,12 @@ public :
   virtual ByteOrder set_byte_order(const ByteOrder&, const bool warn = false);
   //virtual ByteOrder set_byte_order_and_type_of_numbers(ByteOrder&, NumericType&, const bool warn = false);
 public:
-  string default_scanner_name;
+  std::string default_scanner_name;
 
 protected:
 
   virtual Succeeded  
-    actual_write_to_file(string& output_filename,
+    actual_write_to_file(std::string& output_filename,
 		  const DynamicDiscretisedDensity & density) const;
 
   virtual void set_defaults();

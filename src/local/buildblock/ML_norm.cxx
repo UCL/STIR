@@ -32,6 +32,10 @@
 #include "stir/SegmentBySinogram.h"
 #include "stir/stream.h"
 
+#include <algorithm>
+using std::min;
+using std::max;
+
 START_NAMESPACE_STIR
 
 DetPairData::DetPairData()
@@ -644,12 +648,12 @@ int FanProjData::get_num_rings() const
   return num_rings;
 }
 
-ostream& operator<<(ostream& s, const FanProjData& fan_data)
+std::ostream& operator<<(std::ostream& s, const FanProjData& fan_data)
 {
   return s << static_cast<FanProjData::base_type>(fan_data);
 }
 
-istream& operator>>(istream& s, FanProjData& fan_data)
+std::istream& operator>>(std::istream& s, FanProjData& fan_data)
 {
   s >> static_cast<FanProjData::base_type&>(fan_data);
   if (!s)

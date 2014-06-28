@@ -137,10 +137,10 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
   //@}
  protected:
   //! Filename with input projection data
-  string _input_filename;
-  string _motion_vectors_filename_prefix;
-  string _reverse_motion_vectors_filename_prefix;
-  string _gate_definitions_filename;
+  std::string _input_filename;
+  std::string _motion_vectors_filename_prefix;
+  std::string _reverse_motion_vectors_filename_prefix;
+  std::string _gate_definitions_filename;
 
   //! points to the object for the total input projection data
   shared_ptr<GatedProjData> _gated_proj_data_sptr;
@@ -180,17 +180,17 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
 
   /********************************/
   //! name of file in which additive projection data are stored
-  string _additive_gated_proj_data_filename;
+  std::string _additive_gated_proj_data_filename;
 
   //! name of file in which normalisation projection data are stored
-  string _normalisation_gated_proj_data_filename;
+  std::string _normalisation_gated_proj_data_filename;
 
   //! points to the additive projection data
   /*! the projection data in this file is bin-wise added to forward projection results*/
   shared_ptr<GatedProjData> _additive_gated_proj_data_sptr;
   shared_ptr<GatedProjData> _normalisation_gated_proj_data_sptr;
   /*! the normalisation or/and attenuation data */
-  string _normalisation_filename_prefix;
+  std::string _normalisation_filename_prefix;
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjectorByBinPair> _projector_pair_ptr;
   //! signals whether to zero the data in the end planes of the projection data
@@ -202,7 +202,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
 
   //! gated image template
   GatedDiscretisedDensity _gated_image_template;
-  bool actual_subsets_are_approximately_balanced(string& warning_message) const;
+  bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
 
   //! Sets defaults before parsing 
   virtual void set_defaults();

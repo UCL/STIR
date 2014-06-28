@@ -18,6 +18,9 @@
 #include "stir/Viewgram.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/is_null_ptr.h"
+#include <algorithm>
+using std::min;
+using std::max;
 
 START_NAMESPACE_STIR
 const char * const 
@@ -181,7 +184,7 @@ smooth(Viewgram<float>& v,
 	for (int ax_pos = min_axial_pos_num; ax_pos<= max_axial_pos_num; ++ax_pos)
 	  {
 	    new_column[ax_pos] = 0;
-	    for (int i=max(ax_pos - v.get_max_axial_pos_num(), ax_kernel.get_min_index()); 
+	    for (int i=std::max(ax_pos - v.get_max_axial_pos_num(), ax_kernel.get_min_index()); 
 		 i<= ax_kernel.get_max_index() && i<= ax_pos - v.get_min_axial_pos_num(); ++i)
 	      new_column[ax_pos] += ax_kernel[i] * v[ax_pos][tang_pos-i];
 	  }

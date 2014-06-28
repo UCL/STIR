@@ -32,9 +32,6 @@
 */
 #include "stir/round.h"
 #include <string>
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-#endif
 #include <typeinfo>
 
 START_NAMESPACE_STIR
@@ -70,7 +67,7 @@ template<int num_dimensions, typename elemT>
 bool
 DiscretisedDensity<num_dimensions, elemT>::
 actual_has_same_characteristics(DiscretisedDensity<num_dimensions, elemT> const& other,
-				string& explanation) const
+				std::string& explanation) const
 {
   if (typeid(other) != typeid(*this))
     {
@@ -95,7 +92,7 @@ template<int num_dimensions, typename elemT>
 bool
 DiscretisedDensity<num_dimensions, elemT>::
 has_same_characteristics(DiscretisedDensity<num_dimensions, elemT> const& other,
-			 string& explanation) const
+			 std::string& explanation) const
 {
   return this->actual_has_same_characteristics(other, explanation);
 }

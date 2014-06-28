@@ -48,6 +48,7 @@
 #else
 #include <sstream>
 #endif
+#include <algorithm>
 #include "boost/lambda/lambda.hpp"
 
 #ifndef STIR_NO_NAMESPACES
@@ -133,7 +134,7 @@ ask_parameters()
     
     cerr<<endl<<"Supply objective function type:\nPossible values:\n";
     GeneralisedObjectiveFunction<TargetT>::list_registered_names(cerr); 
-    const string objective_function_type = ask_string("");
+    const std::string objective_function_type = ask_string("");
     
     this->objective_function_sptr.
       reset(GeneralisedObjectiveFunction<TargetT>::read_registered_object(0, objective_function_type)); 
@@ -174,7 +175,7 @@ OSSPSReconstruction()
 
 template <class TargetT>
 OSSPSReconstruction<TargetT>::
-OSSPSReconstruction(const string& parameter_filename)
+OSSPSReconstruction(const std::string& parameter_filename)
 {    
   this->initialise(parameter_filename);
   cerr<<this->parameter_info();
@@ -302,7 +303,7 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
     precomputed_denominator_ptr = 
       read_from_file<TargetT>(this->precomputed_denominator_filename);   
     {
-      string explanation;
+      std::string explanation;
       if (!precomputed_denominator_ptr->has_same_characteristics(*target_image_ptr, explanation))
 	{
 	  warning("OSSPS: precomputed_denominator should have same characteristics as target image: %s",
@@ -473,7 +474,7 @@ update_estimate(TargetT &current_image_estimate)
 	 << ", " 
 	 << current_max
 	 << ", new min,max " 
-	 << max(current_min, new_min) << ", " << min(current_max, new_max)
+	 << std::max(current_min, new_min) << ", " << std::min(current_max, new_max)
 	 << endl;
     
     threshold_upper_lower(current_image_estimate.begin_all(),

@@ -79,7 +79,7 @@ public InputFileFormat<CListModeData >
       return false;
 
     //const string singles_filename = listmode_filename_prefix + "_1.sgl";
-    std::ifstream singles_file(singles_filename.c_str(), ios::binary);
+    std::ifstream singles_file(singles_filename.c_str(), std::ios::binary);
     char buffer[sizeof(Main_header)];
     Main_header singles_main_header;
     singles_file.read(buffer,

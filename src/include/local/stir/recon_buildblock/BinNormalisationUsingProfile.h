@@ -22,10 +22,6 @@
 
 #include <string>
 
-#ifndef STIR_NO_NAMESPACE
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 
 class BinNormalisationUsingProfile : 
@@ -37,7 +33,7 @@ public:
 
   BinNormalisationUsingProfile();
 
-  BinNormalisationUsingProfile(const string& filename);
+  BinNormalisationUsingProfile(const std::string& filename);
 
   virtual void apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
@@ -47,7 +43,7 @@ public:
  
 private:
   mutable Array<1,float> profile;
-  string profile_filename;
+  std::string profile_filename;
 
   virtual void set_defaults();
   virtual void initialise_keymap();

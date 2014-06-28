@@ -36,6 +36,8 @@
 using std::iostream;
 using std::fstream;
 using std::vector;
+using std::string;
+using std::ios;
 #endif
 
 START_NAMESPACE_STIR

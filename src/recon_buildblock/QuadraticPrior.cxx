@@ -33,6 +33,9 @@
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/is_null_ptr.h"
+#include <algorithm>
+using std::min;
+using std::max;
 
 /* Pretty horrible code because we don't have an iterator of neigbhourhoods yet
  */

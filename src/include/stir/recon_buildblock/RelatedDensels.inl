@@ -40,8 +40,8 @@ RelatedDensels::RelatedDensels()
 :related_densels(),symmetries()
 {}
 
-RelatedDensels::RelatedDensels(const vector< Densel>& related_densels_v,
-                         const shared_ptr<DataSymmetriesForDensels>& symmetries_used)
+RelatedDensels::RelatedDensels(const std::vector< Densel>& related_densels_v,
+			       const shared_ptr<DataSymmetriesForDensels>& symmetries_used)
 :related_densels(related_densels_v),symmetries(symmetries_used)
 {}
 

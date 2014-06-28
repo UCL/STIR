@@ -230,10 +230,11 @@ Since version 2.2, \textit{STIR} contains files to build using the platform-inde
 \url{"http://www.cmake.org"}{CMake}. This is the recommended way to build STIR as
 it is easier for configuration and finding system dependencies.
 
-Normal build procedure on Linux/Unix would be something like
+Normal build procedure on Linux/Unix would be something like\footnote{Point \texttt{CMake} to the main \textbf{STIR}
+directory, not \textbf{STIR/src}.}
 
 \cmdline{cd /somewhere/nice/STIRbuild/Release}
-\cmdline{cmake-gui /somewhere/else/where/the/source/is/STIR\&}
+\cmdline{cmake-gui /somewhere/else/STIR\&}
 
 This will bring up a basic interface where you might to have to choose your prefered
 build system (i.e. \texttt{make} on Linux/Unix) and do an initial configuration. Then 
@@ -311,7 +312,7 @@ Finally, do not forget to set
 \item CMAKE\_BUILD\_TYPE to \texttt{Release}, \texttt{Debug} or \texttt{RelWithDebug},
 \item CMAKE\_INSTALL\_PREFIX to specify where the final installation has to occur. CMake
 provides normally a default in a system location, but you could set it for instance to
-\texttt{./install} to put thef iles inside your build directory.
+\texttt{./install} to put the files inside your build directory.
 \end{itemize}
 
 On Windows or MacOSX, the procedure is essentially the same, except that you will likely have 
@@ -4168,7 +4169,7 @@ the same as for the ForwardProjector hierarchy.
 
 
 In addition to the types listed below, you can also enter 'None', 
-which means that the data won't normalised at all.
+which means that the data won't be normalised at all.
 
 { \subsubsubsection{From Projdata}
 }
@@ -4267,6 +4268,97 @@ END Chained Bin Normalisation Parameters:=
 
 See also online documentation for class ChainedBinNormalisation.
 
+\subsubsection{
+Available shapes}
+\label{sec:shapes}
+\textbf{STIR} can use shapes, \textit{e.g.} in the \texttt{generate\_image}
+utility, or for specifying ROIs. The distribution contains sample parameter files in the
+\textbf{samples} directory. In the following sub-sections the available shapes are listed.
+
+Most shapes have a centre and orientation. This is specified in the parameter files
+by giving the ``origin'' and a $3x3$ matrix specifying $3$ direction vectors.
+Note that these vectors do not necessarily have to be orthogonal nor have unit-norm.
+To decide if a point with coordinates \texttt{coords} is inside the shape, the
+coordinates are first translated to ``shape-specific'' coordinates using:
+\[
+\mathtt{shape\_coords} = \mathtt{direction\_vectors}. (\mathtt{coord}-\mathtt{origin})
+\]
+
+When parsing, the relevant variables are specified as follows:
+\begin{verbatim}
+    origin (in mm):= <float> ;defaults to {0,0,0}
+     ; values below are give a rotation around y for 90 degrees (swapping x and z)
+     ; Warning: this uses the STIR convention {z,y,x}
+     direction vectors (in mm) := { {0,0,1}, {0,1,0}, {-1,0,0}}
+\end{verbatim}
+
+See also the online documentation for the class \textbf{Shape3D} and
+\textbf{Shape3DWithOrientation}.
+
+{ \subsubsubsection{Box3D}
+}
+Three-dimensional cuboid box.
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+  Box3D Parameters:=
+     length-x (in mm):= <float>
+     length-y (in mm):= <float>
+     length-z (in mm):= <float>
+     ; any parameters of Shape3DWithOrientation
+  End:=
+\end{verbatim}
+
+{ \subsubsubsection{Ellipsoid}
+}
+Three-dimensional ellipsoid.
+A point with coordinates ``shape-coordinates'' $x,y,z$ is inside the shape if
+\[
+  {x^2 \over R_x^2} + {y^2 \over R_y^2} + {z^2 \over R_z^2} \le 1
+\]
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+   Ellipsoid Parameters:=
+     radius-x (in mm):= <float>
+     radius-y (in mm):= <float>
+     radius-z (in mm):= <float>
+     ; any parameters of Shape3DWithOrientation
+   End:=
+\end{verbatim}
+
+{ \subsubsubsection{Ellipsoidal Cylinder}
+}
+Three-dimensional ellipsoidal cylinder (oriented along the z-axis).
+A point with coordinates ``shape-coordinates'' $x,y,z$ is inside the shape if
+\[
+  {x^2 \over R_x^2} + {y^2 \over R_y^2}  \le 1 \,\,\,\, \mathrm{and}  \,\,\,\,\mathrm{abs}(z) \le L_z/2
+\]
+In addition, this shape can be restricted to a wedge by specifying initial and final angles (w.r.t. the $x$ axis).
+\subsubsubsubsection{Parameters}
+\begin{verbatim}
+   Ellipsoidal Cylinder Parameters:=
+     radius-x (in mm):= <float>
+     radius-y (in mm):= <float>
+     length-z (in mm):= <float>
+     initial angle (in deg):= <float> ; (defaults to 0)
+     final angle (in deg):= <float>   ; (defaults to 360)
+     ; any parameters of Shape3DWithOrientation
+   End:=
+\end{verbatim}
+
+{ \subsubsubsection{Discretised Shape3D}
+}
+This shape can be used to read for instance saved ROIs. Image values are supposed to be between $0$ and $1$.
+Note that centre and orientation are taken from the image data, not from the parameter file.
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+  Discretised Shape3D Parameters:=
+    input filename := <filename>
+  END:=
+\end{verbatim}
+where \texttt{filename} needs to specify a volume that can be read by STIR.
 
 
 \subsection{

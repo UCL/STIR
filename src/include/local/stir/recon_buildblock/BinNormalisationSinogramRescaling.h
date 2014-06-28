@@ -27,10 +27,6 @@
 #include "stir/Array.h"
 #include <string>
 
-#ifndef STIR_NO_NAMESPACE
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 
 
@@ -56,7 +52,7 @@ public:
   BinNormalisationSinogramRescaling();
 
   //! Constructor that reads the scale factors from a file
-  BinNormalisationSinogramRescaling(const string& filename);
+  BinNormalisationSinogramRescaling(const std::string& filename);
 
   virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
 
@@ -84,7 +80,7 @@ private:
   virtual void initialise_keymap();
   virtual bool post_processing();
 
-  string sinogram_rescaling_factors_filename;
+  std::string sinogram_rescaling_factors_filename;
 };
 
 

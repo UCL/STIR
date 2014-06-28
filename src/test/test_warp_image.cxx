@@ -69,8 +69,6 @@ warp_imageTests::run_tests()
 
   const BasicCoordinate<3,int> indices = make_coordinate(10,22,23);
   image[indices] = 1.F;
-  const CartesianCoordinate3D<float> coord =
-    image.get_physical_coordinates_for_indices(indices);
 
   VoxelsOnCartesianGrid<float>  motion_x(range, origin, grid_spacing);
   VoxelsOnCartesianGrid<float>  motion_y(range, origin, grid_spacing);
@@ -85,7 +83,7 @@ warp_imageTests::run_tests()
   const shared_ptr<VoxelsOnCartesianGrid<float> > motion_x_sptr(motion_x.clone()) ;
   const shared_ptr<VoxelsOnCartesianGrid<float> > motion_y_sptr(motion_y.clone()) ;
   const shared_ptr<VoxelsOnCartesianGrid<float> > motion_z_sptr(motion_z.clone()) ;
-  vector<pair<unsigned int, double> > gate_sequence;
+  std::vector<std::pair<unsigned int, double> > gate_sequence;
   gate_sequence.resize(2);
   for (unsigned int current_gate = 1; 
        current_gate <= 2; 

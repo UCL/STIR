@@ -88,7 +88,7 @@
 
 // #include "gen.h"
 // gen.h defined Min (which is used in screen.h)
-#define Min min
+#define Min std::min
 #include "screen.h"
 #include <cstring>
 

@@ -40,13 +40,6 @@
 
 #include "stir/Coordinate2D.h"
 
-#ifndef STIR_NO_NAMESPACES
-using std::vector;
-#ifndef STIR_NO_AUTO_PTR
-using std::auto_ptr;
-#endif
-#endif
-
 START_NAMESPACE_STIR
 
 class Bin;
@@ -114,13 +107,13 @@ public:
   // next return value could be a RelatedBins ???
   // however, both Bin and RelatedBins have data in there (which is not needed here)
   inline void
-    get_related_bins(vector<Bin>&, const Bin& b) const;
+    get_related_bins(std::vector<Bin>&, const Bin& b) const;
 
   //! fills in a vector with all the bins (within the range) that are related to 'b'
   /*! \warning \c b has to be a 'basic' bin
   */
   virtual void
-    get_related_bins(vector<Bin>&, const Bin& b,
+    get_related_bins(std::vector<Bin>&, const Bin& b,
                       const int min_axial_pos_num, const int max_axial_pos_num,
                       const int min_tangential_pos_num, const int max_tangential_pos_num) const;
 
@@ -131,7 +124,7 @@ public:
       \see 6 argument version of get_related_bins_factorised()
   */
   inline void
-    get_related_bins_factorised(vector<AxTangPosNumbers>&, const Bin& b) const;
+    get_related_bins_factorised(std::vector<AxTangPosNumbers>&, const Bin& b) const;
 
  //! fills in a vector with the axial and tangential position numbers related to this bin
   /*!
@@ -146,7 +139,7 @@ public:
      \warning \c b has to be a 'basic' bin
   */
   virtual void
-    get_related_bins_factorised(vector<AxTangPosNumbers>&, const Bin& b,
+    get_related_bins_factorised(std::vector<AxTangPosNumbers>&, const Bin& b,
                                 const int min_axial_pos_num, const int max_axial_pos_num,
                                 const int min_tangential_pos_num, const int max_tangential_pos_num) const = 0;
 
@@ -159,7 +152,7 @@ public:
   sets 'b' to the corresponding 'basic' bin and returns the symmetry 
   transformation from 'basic' to 'b'.
   */
-  virtual auto_ptr<SymmetryOperation>
+  virtual std::auto_ptr<SymmetryOperation>
     find_symmetry_operation_from_basic_bin(Bin&) const = 0;
 
   /*! \brief given an arbitrary bin 'b', find the basic bin
@@ -178,7 +171,7 @@ public:
     is_basic(const Bin& v_s) const;
 
   //! default implementation in terms of find_symmetry_operation_from_basic_bin
-  virtual auto_ptr<SymmetryOperation>
+  virtual std::auto_ptr<SymmetryOperation>
     find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers&) const;
 
 

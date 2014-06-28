@@ -45,6 +45,7 @@ using std::fstream;
 using std::iostream;
 using std::ios;
 using std::strstream;
+using std::string;
 #endif
 
 START_NAMESPACE_STIR

@@ -46,6 +46,9 @@
 #include <fstream>
 #include <math.h>
 
+using std::string;
+using std::istream;
+
 START_NAMESPACE_STIR
 // declaration of helper function
 static
@@ -321,7 +324,7 @@ read_interfile_DPDFS(istream& input,
 static
 DynamicProjData*
 read_interfile_DPDFS(const string& filename,
-		     const ios::openmode open_mode)
+		     const std::ios::openmode open_mode)
 {
   std::ifstream image_stream(filename.c_str(), open_mode);
   if (!image_stream)

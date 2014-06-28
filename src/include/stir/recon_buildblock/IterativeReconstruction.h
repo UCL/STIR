@@ -289,7 +289,7 @@ protected:
   int start_subiteration_num;
 
   //! name of the file containing the data for intializing the reconstruction
-  string initial_data_filename;
+  std::string initial_data_filename;
 
   //! the starting subset number
   int start_subset_num;

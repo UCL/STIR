@@ -115,7 +115,7 @@ public:
       These call reset() first, and then ParsingObject::parse
   */
   //@{
-  inline bool parse(istream& f);
+  inline bool parse(std::istream& f);
   bool parse(const char * const filename);
   //@}
 

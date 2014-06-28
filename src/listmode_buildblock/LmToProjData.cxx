@@ -100,6 +100,8 @@ using std::flush;
 using std::endl;
 using std::min;
 using std::max;
+using std::vector;
+using std::pair;
 #endif
 
 START_NAMESPACE_STIR

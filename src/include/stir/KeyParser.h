@@ -42,19 +42,9 @@
 #include <iostream>
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
-using std::vector;
-using std::string;
-//using std::map;
-using std::list;
-using std::pair;
-using std::istream;
-using std::ostream;
-#endif
-
 START_NAMESPACE_STIR
 
-typedef vector<string> ASCIIlist_type;
+typedef std::vector<std::string> ASCIIlist_type;
 
 class Object;
 class Succeeded;
@@ -100,7 +90,7 @@ public :
   void *p_object_variable;		// pointer to a variable 
   const ASCIIlist_type *p_object_list_of_values;// only used by ASCIIlist
   // TODO should really not be here, but it works for now
-  typedef Object * (Parser)(istream*, const string&);
+  typedef Object * (Parser)(std::istream*, const std::string&);
   Parser* parser;
 
   map_element();
@@ -172,7 +162,7 @@ public:
 
   //! parse() returns false if there is some error, true otherwise
   /*! if \s write_warnings is \c false, warnigns about undefined keywords will be supressed.*/
-  bool parse(istream& f, const bool write_warnings=true);
+  bool parse(std::istream& f, const bool write_warnings=true);
   //! parse() returns false if there is some error, true otherwise
   /*! if \s write_warnings is \c false, warnigns about undefined keywords will be supressed.*/
   bool parse(const char * const filename, const bool write_warnings=true);
@@ -182,44 +172,44 @@ public:
   // KT 07/02/2001 all these are new (up to add_parsing_key)
 
   //! add a keyword. When parsing, parse its value as a float and put it in *variable_ptr
-  void add_key(const string& keyword, float * variable_ptr);
+  void add_key(const std::string& keyword, float * variable_ptr);
   //! add a keyword. When parsing, parse its value as a double and put it in *variable_ptr
-  void add_key(const string& keyword, double * variable_ptr);
+  void add_key(const std::string& keyword, double * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a int and put it in *variable_ptr
-  void add_key(const string& keyword, int * variable_ptr);
+  void add_key(const std::string& keyword, int * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a int and put it in *variable_ptr
-  void add_key(const string& keyword, unsigned int * variable_ptr);
+  void add_key(const std::string& keyword, unsigned int * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as an unsigned long and put it in *variable_ptr
-  void add_key(const string& keyword, unsigned long * variable_ptr);
+  void add_key(const std::string& keyword, unsigned long * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a int  and put the bool value in *variable_ptr
   /*! The integer should be 0 or 1, corresponding to false and true resp. */
-  void add_key(const string& keyword, bool * variable_ptr);
+  void add_key(const std::string& keyword, bool * variable_ptr);
   
   //! add a keyword. When parsing, parse its value as a list of doubles and put its value in *variable_ptr
-  void add_key(const string& keyword, vector<double> * variable_ptr);
+  void add_key(const std::string& keyword, std::vector<double> * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a list of comma-separated strings and put its value in *variable_ptr
-  void add_key(const string& keyword, vector<std::string> * variable_ptr);
+  void add_key(const std::string& keyword, std::vector<std::string> * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a 2d array of floats and put its value in *variable_ptr
-  void add_key(const string& keyword, Array<2,float>* variable_ptr);
+  void add_key(const std::string& keyword, Array<2,float>* variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a 3d array of floats and put its value in *variable_ptr
-  void add_key(const string& keyword, Array<3,float>* variable_ptr);
+  void add_key(const std::string& keyword, Array<3,float>* variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a 3d BasicCoordinate of floats and put its value in *variable_ptr
-  void add_key(const string& keyword,BasicCoordinate<3,float>* variable_ptr);
+  void add_key(const std::string& keyword,BasicCoordinate<3,float>* variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a 3d BasicCoordinate of a 3d array of floats and put its value in *variable_ptr
-  void add_key(const string& keyword, BasicCoordinate<3,Array<3,float> >* variable_ptr);
+  void add_key(const std::string& keyword, BasicCoordinate<3,Array<3,float> >* variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a string and put it in *variable_ptr
   /*! The 'value' can contain spaces. */
-  void add_key(const string& keyword, string * variable_ptr);
+  void add_key(const std::string& keyword, std::string * variable_ptr);
   /*!
     \brief add a keyword. When parsing, its string value is checked against 
     a list of strings. The corresponding index is stored in 
@@ -228,14 +218,14 @@ public:
     If no match is found, a warning message is issued and *variable_ptr
     is set to -1.
   */
-  void add_key(const string& keyword, 
+  void add_key(const std::string& keyword, 
     int* variable_ptr, const ASCIIlist_type * const list_of_values);
 
   //! add keyword that has to occur before all others
   /*! Example of such a key: INTERFILE*/
-  void add_start_key(const string& keyword);
+  void add_start_key(const std::string& keyword);
   //! add a keyword that when encountered, will stop the parsing
-  void add_stop_key(const string& keyword);
+  void add_stop_key(const std::string& keyword);
  
   //! add keyword corresponding to an object that will parse the next keys itself
   /*!
@@ -278,7 +268,7 @@ public:
   */
   // definition of next function has to be here to get it to compile with VC (it uses member templates)
   template <typename ParsingClass>
-  void add_parsing_key(const string& keyword, ParsingClass** parsed_object_ptr_ptr)
+  void add_parsing_key(const std::string& keyword, ParsingClass** parsed_object_ptr_ptr)
   {
     add_in_keymap(keyword,     
                   map_element(&KeyParser::set_parsing_object, 
@@ -290,7 +280,7 @@ public:
   //! add keyword corresponding to an object that will parse the next keys itself
   /*! As above, but with a shared_ptr */
   template <typename ParsingClass>
-  void add_parsing_key(const string& keyword, shared_ptr<ParsingClass>* parsed_object_ptr_ptr)
+  void add_parsing_key(const std::string& keyword, shared_ptr<ParsingClass>* parsed_object_ptr_ptr)
   {
     add_in_keymap(keyword,     
                   map_element(&KeyParser::set_shared_parsing_object, 
@@ -300,7 +290,7 @@ public:
   }
 
   //! Prints all keywords (in random order) to the stream
-  void print_keywords_to_stream(ostream&) const;
+  void print_keywords_to_stream(std::ostream&) const;
 
   // KT 07/02/2001 new 
   //! Returns a string with keywords and their values
@@ -309,7 +299,7 @@ public:
 
       \bug breaks with 'vectored' keys.
       */
-  virtual string parameter_info() const;
+  virtual std::string parameter_info() const;
 
   // KT 07/02/2001 new 
   //! Ask interactively for values for all keywords
@@ -328,7 +318,7 @@ public:
   /*! Implementation note: this function is non-static because it uses
       standardise_keyword
   */
-  int find_in_ASCIIlist(const string&, const ASCIIlist_type& list_of_values);
+  int find_in_ASCIIlist(const std::string&, const ASCIIlist_type& list_of_values);
 
   
 protected : 
@@ -348,16 +338,16 @@ protected :
   /*! \todo Implementation note: this function is non-static such that it can
       be overloaded. Probably a template with a function object would be 
       better. */
-  virtual string 
-    standardise_keyword(const string& keyword) const;
+  virtual std::string 
+    standardise_keyword(const std::string& keyword) const;
 
 
   //! gets a keyword from a string
   /*! Implementation note: this function is non-static as it uses 
       standardise_keyword().
   */ 
-  virtual string 
-    get_keyword(const string&) const;
+  virtual std::string 
+    get_keyword(const std::string&) const;
 
 
 
@@ -370,13 +360,13 @@ protected :
       Can currently only be used by derived classes, as KeywordProcessor has to be a 
       pointer to member function.
       \warning this interface to KeyParser will change in a future release */
-  void add_key(const string& keyword, 
+  void add_key(const std::string& keyword, 
     KeyArgument::type t, KeywordProcessor function,
     void* variable= 0, const ASCIIlist_type * const list = 0);
   
   //! version that defaults 'function' to set_variable
   /*! \warning this interface to KeyParser will change in a future release */
-  void add_key(const string& keyword, KeyArgument::type t, 
+  void add_key(const std::string& keyword, KeyArgument::type t, 
 	      void* variable, const ASCIIlist_type * const list = 0);
 
   ////// predefined call_back functions
@@ -410,18 +400,18 @@ private :
   parse_status status;
 
   // KT 01/05/2001 changed to a list, to preserve order of keywords
-  //typedef map<string,map_element> Keymap;
-  typedef list<pair<string, map_element> > Keymap;
+  //typedef std::map<std::string,map_element> Keymap;
+  typedef std::list<std::pair<std::string, map_element> > Keymap;
 
   Keymap kmap;
   // KT 01/05/2001 new functions to allow a list type
-  map_element* find_in_keymap(const string& keyword);
-  void add_in_keymap(const string& keyword, const map_element& new_element);
+  map_element* find_in_keymap(const std::string& keyword);
+  void add_in_keymap(const std::string& keyword, const map_element& new_element);
 
-  istream * input;
+  std::istream * input;
   map_element* current;
   int current_index;
-  string keyword;
+  std::string keyword;
 
   // next will be false when there's only a keyword on the line
   // maybe should be protected (or even public?). At the moment, this is only used by set_variable().
@@ -440,11 +430,11 @@ private :
   // see if current keyword is in the keymap using map_keyword
   // if so, call its call_back function and return Succeeded::yes, else
   // conditionally write a warning and return Succeeded::no
-  Succeeded parse_value_in_line(const string& line, const bool write_warning);
+  Succeeded parse_value_in_line(const std::string& line, const bool write_warning);
 
   // set 'current' to map_element corresponding to 'keyword'
   // return Succeeded::yes if valid keyword, Succeeded::no otherwise
-  Succeeded map_keyword(const string& keyword);
+  Succeeded map_keyword(const std::string& keyword);
 
   // call appropriate member function
   void process_key();

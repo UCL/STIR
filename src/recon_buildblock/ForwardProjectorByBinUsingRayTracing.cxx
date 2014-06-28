@@ -70,6 +70,9 @@
 #include "stir/Array.h"
 #include "stir/round.h"
 
+#include <algorithm>
+using std::min;
+using std::max;
 
 START_NAMESPACE_STIR
 

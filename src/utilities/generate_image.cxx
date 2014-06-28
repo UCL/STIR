@@ -107,11 +107,11 @@ private:
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
-  vector<shared_ptr<Shape3D> > shape_ptrs;
+  std::vector<shared_ptr<Shape3D> > shape_ptrs;
   shared_ptr<Shape3D> current_shape_ptr;
-  vector<float> values;
+  std::vector<float> values;
   float current_value;
-  string output_filename;
+  std::string output_filename;
   shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > >
      output_file_format_sptr;
 

@@ -64,6 +64,8 @@ using std::ofstream;
 using std::ifstream;
 using std::plus;
 using std::bind2nd;
+using std::cerr;
+using std::endl;
 #endif
 
 START_NAMESPACE_STIR

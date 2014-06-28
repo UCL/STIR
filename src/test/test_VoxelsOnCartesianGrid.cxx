@@ -37,7 +37,12 @@
 
 #include <iostream>
 #include <math.h>
+#include <algorithm>
 #include "stir/RunTests.h"
+
+using std::cerr;
+using std::endl;
+using std::max;
 
 START_NAMESPACE_STIR
 

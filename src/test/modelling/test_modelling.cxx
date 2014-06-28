@@ -61,7 +61,7 @@ modellingTests(const std::string& directory_v)
     full_filename_sptr(new char[directory_v.length() + 100])
 {}
 
-string 
+std::string 
 modellingTests::
 add_directory(const std::string& filename)
 {
@@ -204,7 +204,7 @@ int main(int argc, char **argv)
 {
   if (argc != 2)
   {
-    cerr << "Usage : " << argv[0] << " <directory-name-for-input-files>\n";
+    std::cerr << "Usage : " << argv[0] << " <directory-name-for-input-files>\n";
     return EXIT_FAILURE;
   }
   modellingTests tests(argv[1]);

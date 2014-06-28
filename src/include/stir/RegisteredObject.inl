@@ -49,7 +49,7 @@ RegisteredObject<Root>::registry ()
 
 template <class Root>
 Root*
-RegisteredObject<Root>::read_registered_object(istream* in, const string& registered_name)
+RegisteredObject<Root>::read_registered_object(std::istream* in, const std::string& registered_name)
 {
   RootFactory factory = registry().find_factory(registered_name);
   return factory==0 ? 0 : (*factory)(in);
@@ -61,7 +61,7 @@ RegisteredObject<Root>::ask_type_and_parameters()
 {
   std::cout << "Which type do you want? Possible values are:\n";
   list_registered_names(std::cout);
-  const string registered_name = ask_string("Enter type", "None");
+  const std::string registered_name = ask_string("Enter type", "None");
   return read_registered_object(0, registered_name);
 }
  
