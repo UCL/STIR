@@ -73,12 +73,16 @@
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 
+#include <boost/iterator/reverse_iterator.hpp>
+
    // TODO need this (bug in swig)
    // this bug occurs (only?) when using "%template(name) someclass;" inside the namespace
    // as opposed to "%template(name) stir::someclass" outside the namespace
    using namespace stir;
    using std::iostream;
 
+   // local helper functions for conversions etc. These are not "exposed" to the target language 
+   // (but only enter in the wrapper)
    namespace swigstir {
 #if defined(SWIGPYTHON)
    // helper function to translate a tuple to a BasicCoordinate
@@ -123,10 +127,62 @@
 	  PyTuple_SET_ITEM(p, d-1, PyFloat_FromDouble(double(c[d])));
 	return p;
       }
-     
-    
+#elif defined(SWIGMATLAB)
+     // convert stir::Array to matlab (currently always converting to double)
+     // note that the order of the dimensions is reversed to take row-first vs column-first ordering into account
+     template <int num_dimensions, typename elemT>
+     mxArray * Array_to_matlab(const stir::Array<num_dimensions, elemT>& a)
+     {
+       mwSize dims[num_dimensions];
+       BasicCoordinate<num_dimensions,int> minind,maxind;
+       a.get_regular_range(minind,maxind);
+       const BasicCoordinate<num_dimensions,int> sizes=maxind-minind+1;
+       // copy dimensions in reverse order
+       std::copy(boost::make_reverse_iterator(sizes.end()), boost::make_reverse_iterator(sizes.begin()), dims);
+       mxArray *pm = mxCreateNumericArray(3, dims, mxDOUBLE_CLASS, mxREAL);
+       double * data_ptr = mxGetPr(pm);
+       std::copy(a.begin_all(), a.end_all(), data_ptr);
+       return pm;
+     }
+
+     template <int num_dimensions, typename elemT>
+     void fill_Array_from_matlab(stir::Array<num_dimensions, elemT>& a, const mxArray *pm, bool do_resize)
+     {
+      const mwSize matlab_num_dims = mxGetNumberOfDimensions(pm);
+      if (matlab_num_dims > static_cast<mwSize>(num_dimensions))
+       { mexErrMsgIdAndTxt("stir:array","number of dimensions in matlab array is incorrect for constructing a stir array of dimension %d", num_dimensions); }
+       const mwSize * m_sizes = mxGetDimensions(pm);
+       BasicCoordinate<num_dimensions,int>  sizes;
+       // first set all to 1 to cope with lower-dimensional arrays from matlab
+       sizes.fill(1);
+       std::copy(m_sizes, m_sizes+matlab_num_dims, boost::make_reverse_iterator(sizes.end()));
+       if (do_resize)
+       {
+         a.resize(sizes);
+       }
+       else
+       { 
+         // check sizes
+         if (!std::equal(m_sizes, m_sizes+matlab_num_dims, boost::make_reverse_iterator(sizes.end())))
+         {
+           mexErrMsgIdAndTxt("stir:array","sizes of matlab array incompatible with stir array");
+         }
+       }       
+       if (mxIsDouble(pm))
+       {
+         double * data_ptr = mxGetPr(pm);
+         std::copy(data_ptr, data_ptr+a.size_all(), a.begin_all());
+       } else if (mxIsSingle(pm))
+       {
+         float * data_ptr = (float *)mxGetData(pm);
+         std::copy(data_ptr, data_ptr+a.size_all(), a.begin_all());
+       } else
+       { 
+         mexErrMsgIdAndTxt("stir:array","currently only supporting double or single arrays for constructing a stir array");
+       }
+     }     
 #endif
-  }
+  } // end namespace swigstir
  %}
 
 %feature("autodoc", "1");
@@ -782,6 +838,48 @@ namespace stir {
     }
   }
 
+#ifdef SWIGMATLAB
+  %extend Array {
+
+     %newobject to_matlab;
+     mxArray * to_matlab()
+     { return swigstir::Array_to_matlab(*$self); }
+
+     void fill(const mxArray *pm)
+     { swigstir::fill_Array_from_matlab(*$self, pm, false /*do not resize */); }
+   }
+   // TODO this extends only 3D-Arrays because of bug in $parentclassname in current SWIG
+  %extend Array<3,float> {
+     Array<3,float>(const mxArray *pm)
+     {
+       // swig bug prevents the following line
+       // $parentclassname * array_ptr = new $parentclassname();
+       Array<3,float> * array_ptr = new Array<3,float>(); 
+       swigstir::fill_Array_from_matlab(*array_ptr, pm, true /* do resize */);
+       return array_ptr;
+     }
+  }
+  %extend Array<2,float> {
+     Array<2,float>(const mxArray *pm)
+     {
+       // swig bug prevents the following line
+       // $parentclassname * array_ptr = new $parentclassname();
+       Array<2,float> * array_ptr = new Array<2,float>(); 
+       swigstir::fill_Array_from_matlab(*array_ptr, pm, true /* do resize */);
+       return array_ptr;
+     }
+  }
+  %extend Array<1,float> {
+     Array<1,float>(const mxArray *pm)
+     {
+       // swig bug prevents the following line
+       // $parentclassname * array_ptr = new $parentclassname();
+       Array<1,float> * array_ptr = new Array<1,float>(); 
+       swigstir::fill_Array_from_matlab(*array_ptr, pm, true /* do resize */);
+       return array_ptr;
+     }
+  }
+#endif
   // TODO next line doesn't give anything useful as SWIG doesn't recognise that 
   // the return value is an array. So, we get a wrapped object that we cannot handle
   //%ADD_indexaccess(int,Array::value_type, Array);
