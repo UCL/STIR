@@ -41,7 +41,7 @@ export LD_LIBRARY_PATH=~/binDebugShared/lib:$LD_LIBRARY_PATH
 RUNNING
 
 After all of the above, you can run python or alternatives. There are some examples in the
-python_examples directory. These might need adapting for your local
+examples/python directory (located in the top-level STIR directory). These might need adapting for your local
 situation. You can then run them for instance like
 
 	   ipython -pylab -i matplotlib_demo.py

@@ -20,7 +20,10 @@ import stir
 import stirextra
 import pylab
 import numpy
+import os
 
+# go to directory with input files
+os.chdir('../recon_demo')
 
 # initialise reconstruction object
 # we will do this here via a .par file 
