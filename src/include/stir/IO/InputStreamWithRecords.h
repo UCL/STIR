@@ -88,6 +88,8 @@ public:
 			   const OptionsT& options,
 			   const std::streampos start_of_data = 0);
 
+  virtual ~InputStreamWithRecords() {}
+
   inline
   virtual 
     Succeeded get_next_record(RecordT& record) const;
