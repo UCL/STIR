@@ -55,7 +55,7 @@ const Scanner*
 CListModeData::
 get_scanner_ptr() const
 {
-  assert(!is_null_ptr(exam_info_sptr));
+  assert(!is_null_ptr(scanner_sptr));
   return this->scanner_sptr.get();
 }
 
