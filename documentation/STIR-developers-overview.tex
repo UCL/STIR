@@ -16,7 +16,7 @@
 \textbf{{\huge STIR \\
 Overview for developers}}\\
 \textbf{Kris Thielemans}\\
-\textbf{\textit{version 2.0}}
+\textbf{\textit{version 3.0}}
 
 
 \end{center}
@@ -361,21 +361,24 @@ Note that the standard C++ library does not use this convention.
 Error handling }
 
 Problem reporting is via two functions \textit{error()} and \textit{warning()}. 
-Currently, \textit{error()} simply aborts the programme (after writing 
-a diagnostic message). \\
+Currently, \textit{error()} throws an exception. If you do not ``catch'' that
+exception, the program will be simply aborted (after writing 
+a diagnostic message). 
+
 In many places, validity of input arguments or of the state of 
 an object is checked by \textit{assert} macros. This code is only 
-compiled when the \textit{NDEBUG} preprocessor macro is not defined, 
+compiled when the \textit{NDEBUG} preprocessor macro is not defined (for isntance,
+when setting \texttt{CMAKE\_BUILD\_TYPE} to \texttt{Debug}), 
 such that a production version of the programs 
 is not slowed down. If an assertion is false, the program aborts 
 with info on the file and line number where the assertion failed.
 
-\subsection{
+\subsection{\label{ssect:AdvancedCppFeatures}
 Advanced (?) C++ features used}
 
 We attempted to follow the ANSI C++ standard as close as possible. 
 We expect to have some marginal problems with a 'strict' ANSI 
-C++ compiler, although there should now be very few cases(as 
+C++ compiler, although there should now be very few cases (as 
 gcc warns about a lot of stuff). We have used some preprocessor 
 macros (see \textit{stir/common.h}) to isolate work-arounds for older 
 compilers. Ideally, all these \#ifdefs should disappear at a 
@@ -383,6 +386,7 @@ later development stage of the library. We gradually give up
 on supporting older compilers anyway.
 
 
+\subsubsection{Templates}
 The library uses templates very often. This allows us to write 
 'generic' code, independent of specific types. For instance, 
 multi-dimensional arrays correspond to 
@@ -395,21 +399,23 @@ class Array;
 
 To avoid linking problems, the templates which we use are explicitly 
 instantiated in the relevant \textit{.cxx} files. If a user needs 
-other types, (s)he will have to add the instantiations (or use 
-a more recent compiler).\\
+other types, (s)he will have to add the instantiations. In some cases,
+this is not necessary as all methods of a template class are inlined, or the
+actual definition is in a \textit{.txx} file that you can include.\\
 We do use partial class template specialisation in some places. 
 However, (very ugly) work-arounds are provided for compilers 
-that do not support this feature.\\
+that do not support this feature (although not anymore in recent code).\\
 Very occasionally we use member templates (in such a form that 
-it can be compiled by Visual C++, i.e. inline in the class definition). 
-It would be possible, but slightly tedious, to write explicit 
-code for older compilers, but we did not do this.\\
-Another fairly recent C++ feature that we use is Run Time Type 
+it could be compiled by Visual C++ 6.0, i.e. inline in the class definition). 
+
+\subsubsection{Run Time Type Information}
+Another C++ feature that we use is Run Time Type 
 Information (RTTI). We almost exclusively use this to check validity 
 of pointer (or reference) casts down a hierarchy ('down-casting'). 
 See section \ref{sect:classhierarchies} 
 for an example. If a compiler does not support 
-RTTI, it would be possible to declare a (essentially empty) {\small dynamic\_cast} 
+RTTI (but all compilers do these days), it would be possible to declare 
+a (essentially empty) \texttt{dynamic\_cast} 
 template function such that the above code would compile. The 
 resulting programme would become inherently type-unsafe though, 
 and we recommend that you upgrade your compiler. Some code does 
@@ -445,7 +451,7 @@ So, typical code in C++ would look as follows:
 template <class Container>
 void f(Container& v)
 {
-  for (Container::iterator iter = v.begin(); iter != v.end(); ++iter)
+  for (typename Container::iterator iter = v.begin(); iter != v.end(); ++iter)
      *iter += 2;
 }
 \end{verbatim}
@@ -464,7 +470,7 @@ can be done as follows
 template <int n, class elemT>
 void f(Array<n,elemT>& a)
 {
-  for (Array<n,elemT>::full_iterator iter = a.begin_all(); 
+  for (typename Array<n,elemT>::full_iterator iter = a.begin_all(); 
        iter != a.end_all(); ++iter)
      *iter += 2;
 }
@@ -485,7 +491,7 @@ a += 2;
 \subsubsection{
 Shared pointers and other smart pointers \label{sect:sharedptr}}
 
-STIR uses the \textit{shared\_ptr} class considerably. Shared pointers 
+STIR uses the \texttt{shared\_ptr} class considerably. Shared pointers 
 are a specific type of 'smart pointers'. These have the advantage 
 that they essentially clean up after you. That is, you do not 
 have to call \textit{delete} on them. They are even exception proof 
@@ -497,42 +503,43 @@ suitable for pointers to objects where there's only one smart
 pointer for each object. Unfortunately, its syntax has been decided 
 rather late in ANSI C++ and its implementation requires some 
 advanced C++ features, leading to a non-standard implementation 
-of auto\_ptr in older compilers (including VC 6.0). For this 
+of \texttt{std::auto\_ptr} in older compilers (including VC 6.0) and it is now
+superseded by \texttt{std::unique\_ptr} in C++11. For this 
 reason, we do not use this smart pointer class too much, and 
-generally use shared\_ptr instead. This is somewhat unfortunate 
+generally use \texttt{shared\_ptr} instead. This is somewhat unfortunate 
 as these two smart pointers are generally quite different concepts. 
-\\
-\textit{shared\_ptr} is a STIR (or boost) smart pointer class which 
+
+\texttt{shared\_ptr} is a STIR (or boost) smart pointer class which 
 is suitable when there are (potentially) more than one pointer 
 pointing to the same object. It keeps a reference count such 
 that the object is (only) deleted when the last shared pointer 
 that references it is destructed. \\
-Caveat: if you modify the object of 1 shared\_ptr, the change 
+\textbf{Caveat}: if you modify the object of 1 \texttt{shared\_ptr}, the change 
 obviously applies to all shared\_ptrs sharing that object.\\
-Caveat: if you assign an ordinary pointer to a shared\_ptr, you 
+\textbf{Caveat}: if you assign an ordinary pointer to a \texttt{shared\_ptr}, you 
 cannot delete the ordinary pointer anymore (it will be done by 
-the shared\_ptr). As a consequence, you cannot assign an ordinary 
-pointer twice to a shared\_ptr. It is thus better to go all the 
+the \texttt{shared\_ptr}). As a consequence, you cannot assign an ordinary 
+pointer twice to a \texttt{shared\_ptr}. It is thus better to go all the 
 way, and not have any ordinary pointers anymore.\\
-Caveat: do not initialise a shared\_ptr with a pointer that cannot/should 
+\textbf{Caveat}: do not initialise a \texttt{shared\_ptr} with a pointer that cannot/should 
 not be deleted. For instance, initialising it with the address 
 of a local variable, or even a reference, will cause a delete 
 on an object that is not allocated on the heap, and so probably 
-crash your program.\\
+crash your program.
+
 It is clear that smart pointers are very useful, but also somewhat 
 dangerous. For this reason, most classes do not return shared\_ptrs 
 to their members (even if they store one). Instead, they return 
 a pointer to a const object. This prevents a user of a class 
 to inadvertently change members of the class-object. This does 
-involve a performance penalty when the user then needs to create 
-a shared\_ptr himself. For example, you'll see code like this
+involve a memory/performance penalty when the user then needs to create 
+a \texttt{shared\_ptr} himself. For example, you'll see code like this
 
 \begin{verbatim}
 ProjData proj_data(...);
 ProjDataInfo const * proj_data_info_ptr = 
   proj_data.get_proj_data_info_ptr();
-shared_ptr<ProjDataInfo> new_proj_data_info_sptr = 
-  proj_data_info_ptr->clone();
+shared_ptr<ProjDataInfo> new_proj_data_info_sptr(proj_data_info_ptr->clone());
 // now do something with new_proj_data_info_sptr
 \end{verbatim}
 
@@ -873,19 +880,22 @@ concentrate on computing the 'independent' part of $P_{bv}$.
 \end{itemize}
 
 
-At the moment, we have two derived classes:
+At the moment, we have three derived classes:
 \begin{itemize}
 \item 
-\textit{ProjMatrixByBinUsingRayTracing} uses essentially the same 
-implementation as \textit{ForwardProjectorByBinUsingRayTracing}, but 
+\texttt{ProjMatrixByBinUsingRayTracing} uses essentially the same 
+(although more flexible) implementation as the on-the-fly \texttt{ForwardProjectorByBinUsingRayTracing}, but 
 returns the row of the projection matrix. However, because symmetries 
 are not handled 'in-line', and elements need to be stored, using 
-a \textit{ProjMatrixByBinUsingRayTracing} object for forward projection 
-is not as efficient as using \textit{ForwardProjectorByBinUsingRayTracing}.
+a \texttt{ProjMatrixByBinUsingRayTracing} object for forward projection 
+is in some cases not as efficient as using \texttt{ForwardProjectorByBinUsingRayTracing}.
+\item
+\texttt{ProjMatrixByBinUsingInterpolation} implements the same as
+\texttt{BackProjectorByBinUsingInterpolation}, but is much slower to initialise.
 \item 
-\textit{ProjMatrixByBinFromFile} handles the case where the projection 
+\texttt{ProjMatrixByBinFromFile} handles the case where the projection 
 matrix is stored on disk [not distributed yet]. Because of the 
-support provided by \textit{ProjMatrixByBin}, only the 'independent' 
+support provided by \texttt{ProjMatrixByBin}, only the 'independent' 
 part of the projection matrix needs to be stored. Our current 
 implementation does not yet provide a very compact format for 
 storing the elements (although they are of course stored sparsely).
@@ -929,7 +939,7 @@ of EMML with non-matching forward and back projectors, the 'gradient'
 that is computed is generally not the gradient of the
 log-likelihood that corresponds to the forward projector.
 However, one hopes that it still points towards the optimum.
-The corresponding objective function is implemented in the class
+The corresponding objective function is implemented in the class\\
 \texttt{PoissonLogLikelihoodWithLinearModelForMeanAndProjData}.
 
 There can be different objective function that use common operations.
@@ -940,7 +950,7 @@ STIR implements those common operations using a separate class.
 As an example, projection operations are implemented via a pointer to a 
 \texttt{ProjectorByBinPair}, which in itself is a small
 class hierarchy using either a \texttt{ProjMatrixByBin} object, 
-or a \texttt{ForwardProjectorByBin/BackProjectorByBin} pair.
+or a \texttt{ForwardProjectorByBin} and \texttt{BackProjectorByBin} pair.
 
 Often, one includes a penalty (or prior) in the objective function
 (see doxygen documentation for the class \texttt{GeneralisedPrior}).
@@ -960,7 +970,7 @@ iterative algorithms are similar, and differ only in some minor
 steps. We do not discuss the actual 'leaves' of the Reconstruction 
 tree here.
 \\
-The tree starts at the abstract Reconstruction base class. Classes 
+The tree starts at the abstract \texttt{Reconstruction} base class. Classes 
 ending in ``\textit{Reconstruction}'' are abstract base classes for 
 a family of algorithms. Classes including the name of an algorithm 
 are concrete ones whose principal purpose is to implement the 
@@ -1102,34 +1112,14 @@ In the mean time, there is some preliminary functionality via the
 \texttt{TimeFrameDefinitions} class and the \texttt{get\_time\_frame\_info}
 utility.
 
-\section{
-Registries of classes \label{sect:registries}}
-
-Several class hierarchies in STIR keep a registry of all \textit{leaf} 
-derived classes (i.e. classes at the end of the hierarchy). This 
-registry allows the user to select \textit{at run-time} which image 
-processor, projector, matrix, output file format etc. (s)he 
-wants to use. It is fairly easy to add your own leaf class to 
-the hierarchy such that it will be added to the registry\textit{.} How 
-to do this needs more documentation, but see the doxygen 
-documentation of classes \textit{RegisteredObject} and \textit{RegisteredParsingObject.} 
-\\
-The recommended way to add your own class (as always) is to take 
-a look at an existing leaf in the hierarchy, copy the files and 
-change what you need. Also make sure you new class gets linked 
-in by adding it to one of the *registries.cxx files. 
-\\
-See also section \ref{sect:extendingSTIR}.
-
-
 
 \section{
 Using class hierarchies \label{sect:classhierarchies}}
 
 The main strength of object-oriented programming is that you 
-can write code that is as generic as possible\footnote{{In C++, 
-another very powerful way to write generic code are templates. 
-But you will have to read about those somewhere else.}}. In STIR, 
+can write code that is as generic as possible\footnote{In C++, 
+another very powerful way to write generic code are templates,
+see section \ref{ssect:AdvancedCppFeatures}.}. In STIR, 
 we have tried to use this feature as much as possible (although 
 there are still remaining generalisations to be implemented). 
 This works by having a base class and a bunch of derived classes. 
@@ -1166,8 +1156,7 @@ copy an object of a base-class. This is solved by using the \textit{virtual
 copy constructor} idiom:
 
 \begin{verbatim}
-shared_ptr< DiscretisedDensity<3,float> > new_density_sptr =
-     density.clone();
+shared_ptr< DiscretisedDensity<3,float> > new_density_sptr(density.clone());
 \end{verbatim}
 
 This constructs an object of the same type as the given density.\\
@@ -1191,11 +1180,50 @@ void f(DiscretisedDensity<3, elemT>& density)
 \end{verbatim}
 
 
-Note that dynamic\_cast of pointers allows easy checking if the 
+Note that \texttt{dynamic\_cast} of pointers allows easy checking if the 
 types matched. When using references, a non-matching type will 
 cause an exception to be thrown. There currently is no code in 
 STIR using/catching exceptions, so if you do not catch the exception 
 yourself, your program will abort mysteriously.
+
+
+\section{
+Registries of classes \label{sect:registries}}
+
+Several class hierarchies in STIR keep a registry of all \textit{leaf} 
+derived classes (i.e. classes at the end of the hierarchy). This 
+registry allows the user to select \textit{at run-time} which image 
+processor, projector, matrix, output file format etc. (s)he 
+wants to use. It is fairly easy to add your own leaf class to 
+the hierarchy such that it will be added to the registry. How 
+to do this is briefly described here, but see the doxygen 
+documentation of classes \texttt{RegisteredObject} and \texttt{RegisteredParsingObject}
+and the example below. 
+
+The recommended way to add your own class (as always) is to take 
+a look at an existing leaf in the hierarchy, copy the files and 
+change what you need. Also make sure you new class gets linked 
+in by adding it to one of existing \textbf{*registries.cxx} files, although
+it is probably better to put your own additions in separate files
+such that you can easily import a new version of STIR. 
+See section \ref{sect:extendingSTIR} for information on how to do that.
+
+\subsection{How does the STIR implementation of registries work?}
+The \texttt{RegisteredObject} class takes care of finding your class etc, but it
+will only do that if you have registered your own class. In an attempt to 
+avoid having to do this explicitly, we currently use the following scheme:
+\begin{itemize}
+\item creating a variable of type \texttt{yourClass::RegisterIt} will add \textit{yourClass}
+to the registry as long as this variable persists.
+\item we put that variable in a separate source file and declare it static. This means it
+will be ``initialised'' (\textit{i.e.} its constructor will be called, which actually does the
+registration) before the main program starts.
+\item the special source file needs to be added explicitly to the list of files to link with\footnote{
+If the file is added to a library, many linkers will think that it only contains variables which are
+not referenced by anything else, so will discard it from the linking, and hence the relevant 
+constructor will never be called.}. This is currently done by adding the file to the 
+\texttt{STIR\_REGISTRIES} CMake variable.
+\end{itemize}
 
 \section{
 Extending STIR with your own files \label{sect:extendingSTIR}}
@@ -1207,42 +1235,82 @@ and
 \item 
 make sure that your compiler finds the STIR include files in \textbf{STIR/include}
 \item 
-make sure that you link with \textbf{STIR/opt/libstir.a} (replace \textbf{opt} 
-with whatever value you used for the \textit{DEST} option of make)
+make sure that you link with all the necessary libraries
 \item 
-make sure that you link with the *\_registries
+make sure that you link with the *\_registries object files
 \end{itemize}
 
-All of this is made easier by using 
+All of this is made easier if you  \textit{installed}
+STIR after you built it (\textit{i.e.} used \texttt{make install} or built the \texttt{INSTALL}
+target in your IDE).
 
+Nevertheless, wipping up your own \textbf{CMakeLists.txt} is slightly painful, and when using the
+above mechanism, it is impossible for STIR to call your own routines, \textit{e.g.} if you
+added your own filter or prior and want to use that during reconstruction.
+For a true integration with  STIR, we provide the following alternative.
 
-{\small make install-all INSTALL\_PREFIX=/my/favorite/location}
-
-
-Nevertheless, wipping up your own makefile is slightly painful, 
-so we provide the following alternative. \\
-Put all your files in (subdirectories of) \textbf{STIR/local} (the distribution 
-will never contain any files in that directory)\\
-Create a file \textbf{STIR/local/extra\_dirs.mk} containing a list 
-of your subdirectories (see \textbf{STIR/samples/local/} for an example). 
-This file (if it exists) will be imported by \textbf{STIR/Makefile}. 
-Put in each of your subdirectories one or more files called \textbf{lib.mk}, \textbf{exe.mk}, \textbf{test.mk} 
-which list all files you want to compile. These files have to 
-be in a specific (but simple) format. The easiest way to do this 
-is to copy for instance \textbf{buildblock/lib.mk}, \textbf{utilities/exe.mk}, \textbf{test/test.mk} 
-and change the list of filenames. \\
-The result will be that, when you use the relevant \textit{make} command 
-in the \textbf{STIR} directory,
 \begin{itemize}
-\item 
-all your files listed in one of the \textbf{lib.mk} will be included 
-in \textbf{libstir.a}
-\item 
-all your executables will be build and/or installed
-\item 
-all your test programs will be run
+\item Put all your files in a separate subdirectory or in \textbf{STIR/local} (the distribution 
+will never contain any files in that directory). Let us call your directory 
+\textbf{mySTIRext} as an example.
+\item Create a file \textbf{mySTIRext/extra\_stir\_dirs.cmake} with CMake statements,
+in particular a list of your subdirectories. For instance,
+\begin{verbatim}
+# add include directory to compiler switches
+include_directories(include)
+
+# check CMakeLists in next directories
+add_subdirectory(buildblock my_buildblock)
+\end{verbatim}
+where \textbf{recon} is the name of your subdirectory and \textbf{my\_recon} is a name for the
+sub-directory where CMake will build the files (make sure the latter is different from any
+sub-directories in \textbf{STIR/src}).
+
+\item Put in each of your subdirectories a file called \textbf{CMakeLists.txt}
+which list all files you want to compile. This file have to 
+be in a specific (but simple) format. The easiest way to do this 
+is to copy for instance \textbf{buildblock/CMakeLists.txt}, \textbf{utilities/CMakeLists.txt}
+or  \textbf{test/CMakeLists.txt} and change the list of filenames. For instance, an extra library
+would be specified like this:
+\begin{verbatim}
+set(dir my_buildblock)
+set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
+
+set(${dir_LIB_SOURCES}
+   my_source1
+   my_source2
+)
+
+# declare dependencies on other STIR libraries, for instance
+target_link_libraries($(dir) buildblock)
+
+# add to list of libraries for STIR to include in linking
+list(APPEND STIR_LIBRARIES $(dir))
+
+# add source file for registries (if you have one)
+list(APPEND STIR_REGISTRIES my_registry)
+
+include(stir_lib_target)
+\end{verbatim}
+
+\item Re-run \textbf{CMake} and set the CMake variable \texttt{STIR\_LOCAL} to the directory where your
+\textbf{extra\_stir\_dirs.cmake} file (\textit{i.e.} \textbf{mySTIRext} in this example),
+the result will be that, when you (re-)build STIR, your files will be included in 
+the normal build/test process.
 \end{itemize}
 
+As discussed in section \ref{sect:registries}, if you implement a projector, filter
+or similar, you will need to add it to its relevant registry
+such that normal STIR utilities can use it at run-time.
+As an example, let us say you have written a class that implements
+a different output fileformat. You could create a new file \textbf{my\_registry.cxx} with
+content like this
+\begin{verbatim}
+#include "myOutputFileFormat.h"
+static myOutputFileFormat::RegisterIt dummy1;
+\end{verbatim}
+If you add that to the \texttt{STIR\_REGISTRIES} variable in your \textbf{CMakeListst.txt}
+as above, everything should work as expected.
 
 
 \section{
@@ -1259,6 +1327,6 @@ itself (of course, the projectors do depend on the actual type
 of image, so you would have to write those).\\
 The STIR library allows maximal code re-use when implementing 
 new functionality. Its structure and its documentation features 
-make it into a unique resource for the PET community. 
+make it into a unique resource for the PET/SPECT community. 
 
 \end{document}
