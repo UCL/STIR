@@ -16,6 +16,6 @@ endif()
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries
 
 
-include(/stir_lib_target)
+include(stir_lib_target)
 
 target_link_libraries(local_listmode_buildblock listmode_buildblock  )
