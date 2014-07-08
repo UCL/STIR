@@ -36,9 +36,15 @@ include_directories(${Boost_INCLUDE_DIRS})
 #### optional external libraries. 
 # Listed here such that we know if we should compile extra utilities
 option(DISABLE_LLN_MATRIX "disable use of LLN library" OFF)
+option(DISABLE_ITK "disable use of ITK library" OFF)
 option(DISABLE_AVW "disable use of AVW library" OFF)
 option(DISABLE_RDF "disable use of GE RDF library" OFF)
 option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
+
+if(NOT DISABLE_ITK)
+   # See if we can find a compiled version of ITK (http://www.itk.org/)
+   find_package(ITK QUIET)
+endif()
 
 if(NOT DISABLE_LLN_MATRIX)
   find_package(LLN)
@@ -81,8 +87,6 @@ else()
 endif()
 
 
-# See if we can find a compiled version of ITK (http://www.itk.org/)
-find_package(ITK QUIET)
 if (ITK_FOUND) 
   message(STATUS "ITK libraries added.")
   set(HAVE_ITK ON)
