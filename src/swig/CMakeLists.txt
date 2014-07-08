@@ -24,13 +24,16 @@ option(BUILD_SWIG_PYTHON
 option(BUILD_SWIG_OCTAVE
        "Use SWIG to generate octave bindings for STIR (experimental)" OFF)
 
+option(BUILD_SWIG_MATLAB
+       "Use SWIG to generate matlab bindings for STIR (experimental)" OFF)
+
 # Octave support doesn't really work very well yet, so hide it a bit
 mark_as_advanced(BUILD_SWIG_OCTAVE)
 
-if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE)
+if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
 
   FIND_PACKAGE(SWIG REQUIRED)
-  INCLUDE(${SWIG_USE_FILE})
+  INCLUDE("${SWIG_USE_FILE}")
 
   SET(CMAKE_SWIG_FLAGS -DSTART_NAMESPACE_STIR=\"namespace stir {\" -DEND_NAMESPACE_STIR=\"}\")
 
@@ -100,3 +103,28 @@ if (BUILD_SWIG_OCTAVE)
   INSTALL(TARGETS ${SWIG_MODULE_stiroct_REAL_NAME} DESTINATION ${OCTAVE_DEST})
 
 endif (BUILD_SWIG_OCTAVE)
+
+if (BUILD_SWIG_MATLAB)
+  FIND_PACKAGE(MATLAB)
+  include(BuildMex)
+
+  SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module stirMATLAB)
+  SWIG_ADD_MODULE(stirMATLAB matlab stir.i ${STIR_REGISTRIES})
+  SET_TARGET_PROPERTIES(${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTIES SUFFIX "${MATLAB_MEX_EXT}" PREFIX "${MATLAB_PREFIX}")
+  SET_PROPERTY(TARGET ${SWIG_MODULE_stirMATLAB PROPERTY FOLDER "Matlab")
+  
+  #set(mexFile stir_forward_project)
+  #BuildMex(MEXNAME ${mexFile} TARGETDIR . SOURCE stir_forward_project.cxx ${STIR_REGISTRIES} LIBRARIES ${STIR_LIBRARIES})
+message(" MEXLIBS ${mexCxxLibs}")
+  SWIG_LINK_LIBRARIES(stirMATLAB ${STIR_LIBRARIES} ${mexCxxLibs})
+
+  # add MATLAB_INCFLAGS to swig-generated file only, not to all files as 
+  # 1) we don't need it at the moment 2) we'd need to change from -Ibla to bla
+  #INCLUDE_DIRECTORIES(${MATLAB_INCLUDE_PATH})
+  SET_SOURCE_FILES_PROPERTIES( ${swig_generated_file_fullname}
+        PROPERTIES COMPILE_FLAGS "${mexCxxFlags}")
+
+  set(MATLAB_DEST ${CMAKE_INSTALL_PREFIX}/matlab CACHE PATH "Destination for Matlab module")
+  INSTALL(TARGETS ${SWIG_MODULE_stirMATLAB_REAL_NAME} DESTINATION ${MATLAB_DEST})
+
+endif (BUILD_SWIG_MATLAB)
