@@ -17,7 +17,7 @@
 % See STIR/LICENSE.txt for details
 
 %% read an image using STIR
-image=stir.FloatVoxelsOnCartesianGrid.read_from_file('../../../recon_test_pack/test_image_3.hv');
+image=stir.FloatVoxelsOnCartesianGrid.read_from_file('../../recon_test_pack/test_image_3.hv');
 
 %% convert data to matlab3d array
 matimage=image.to_matlab();

@@ -21,7 +21,7 @@ cd ../recon_demo
 %% initialise reconstruction object
 % we will do this here via a .par file 
 recon=stir.OSMAPOSLReconstruction3DFloat('recon_demo_OSEM.par')
-%% now modify a few settings from in Python for illustration
+%% now modify a few settings from in MATLAB for illustration
 recon.set_num_subsets(2);
 poissonobj=recon.get_objective_function()
 poissonobj.set_sensitivity_filename('sens.hv');
