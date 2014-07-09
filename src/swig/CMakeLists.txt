@@ -1,5 +1,5 @@
 # Copyright 2012 Kris Thielemans
-
+# Copyright 2014 University College London
 # This file is part of STIR.
 #
 # This file is free software; you can redistribute it and/or modify
@@ -108,7 +108,8 @@ if (BUILD_SWIG_MATLAB)
   FIND_PACKAGE(MATLAB)
   include(BuildMex)
 
-  SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module stir)
+  set(module_name stir)
+  SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module ${module_name})
   SWIG_ADD_MODULE(stirMATLAB matlab stir.i ${STIR_REGISTRIES})
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTIES SUFFIX "_wrap.${MATLAB_MEX_EXT}" PREFIX "${MATLAB_PREFIX}")
   SET_PROPERTY(TARGET ${SWIG_MODULE_stirMATLAB} PROPERTY FOLDER "Matlab")
@@ -127,7 +128,9 @@ message(STATUS "MEXFLAGS ${mexCxxFlags}")
   # linked libraries need to have been compiled with -fPIC as well.
   # However, that means we need to move this add_definitions stuff into src/CMakeLists.txt
 
-  set(MATLAB_DEST ${CMAKE_INSTALL_PREFIX}/matlab CACHE PATH "Destination for Matlab module")
+  set(MATLAB_DEST ${CMAKE_INSTALL_PREFIX}/matlab CACHE PATH "Destination for Matlab module (relative to CMAKE_INSTALL_PREFIX)")
   INSTALL(TARGETS ${SWIG_MODULE_stirMATLAB_REAL_NAME} DESTINATION ${MATLAB_DEST})
-
+  INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/+${module_name} DESTINATION ${MATLAB_DEST})
+  INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/SwigRef.m DESTINATION ${MATLAB_DEST})
+  
 endif (BUILD_SWIG_MATLAB)
