@@ -49,7 +49,7 @@ if (NOT MATLAB_ROOT)
     if (MATLAB_EXE_PATH)
       message(STATUS "MATLAB executable found: ${MATLAB_EXE_PATH}")
       # remove symbolic links
-      get_filename_component(MATLAB_EXE_PATH "${MATLAB_EXE_PATH}" ABSOLUTE )
+      get_filename_component(MATLAB_EXE_PATH "${MATLAB_EXE_PATH}" REALPATH )
       # find directory of executable
       get_filename_component(my_MATLAB_ROOT "${MATLAB_EXE_PATH}" PATH )
       # find root dir
