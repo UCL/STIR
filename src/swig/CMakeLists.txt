@@ -111,13 +111,10 @@ if (BUILD_SWIG_MATLAB)
   set(module_name stir)
   SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module ${module_name})
   SWIG_ADD_MODULE(stirMATLAB matlab stir.i ${STIR_REGISTRIES})
-  SET_TARGET_PROPERTIES(${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTIES SUFFIX "_wrap.${MATLAB_MEX_EXT}" PREFIX "${MATLAB_PREFIX}")
-  SET_PROPERTY(TARGET ${SWIG_MODULE_stirMATLAB} PROPERTY FOLDER "Matlab")
-  
-  #set(mexFile stir_forward_project)
-  #BuildMex(MEXNAME ${mexFile} TARGETDIR . SOURCE stir_forward_project.cxx ${STIR_REGISTRIES} LIBRARIES ${STIR_LIBRARIES})
-message(STATUS "MEXLIBS ${mexCxxLibs}")
-message(STATUS "MEXFLAGS ${mexCxxFlags}")
+  SET_TARGET_PROPERTIES(${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTIES
+        SUFFIX "_wrap.${MATLAB_MEX_EXT}" PREFIX "${MATLAB_PREFIX}"
+        LINK_FLAGS "${mexLdFlags}"
+        FOLDER "Matlab")  
   SWIG_LINK_LIBRARIES(stirMATLAB ${STIR_LIBRARIES} ${mexCxxLibs})
 
   SET_SOURCE_FILES_PROPERTIES( ${swig_generated_file_fullname}
