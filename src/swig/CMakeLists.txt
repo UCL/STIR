@@ -105,22 +105,21 @@ if (BUILD_SWIG_OCTAVE)
 endif (BUILD_SWIG_OCTAVE)
 
 if (BUILD_SWIG_MATLAB)
-  FIND_PACKAGE(MATLAB)
-  include(BuildMex)
+  FIND_PACKAGE(MATLAB REQUIRED)
 
   set(module_name stir)
   SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module ${module_name})
   SWIG_ADD_MODULE(stirMATLAB matlab stir.i ${STIR_REGISTRIES})
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTIES
         SUFFIX "_wrap.${MATLAB_MEX_EXT}" PREFIX "${MATLAB_PREFIX}"
-        LINK_FLAGS "${mexLdFlags}"
+        LINK_FLAGS "${MATLAB_CXXLINK_FLAGS}"
         FOLDER "Matlab")  
-  SWIG_LINK_LIBRARIES(stirMATLAB ${STIR_LIBRARIES} ${mexCxxLibs})
+  SWIG_LINK_LIBRARIES(stirMATLAB ${STIR_LIBRARIES})
 
   SET_SOURCE_FILES_PROPERTIES( ${swig_generated_file_fullname}
-        PROPERTIES COMPILE_FLAGS "${mexCxxFlags}")
+        PROPERTIES COMPILE_FLAGS "${MATLAB_CXXFLAGS}")
   # TODO we really need this for all files, at least on Linux 
-  # add_definitions(${mexCxxFlags})
+  # add_definitions(${MATLAB_CXXFLAGS})
   # Reason: matlab needs mex files to be compiled with -fPIC, but that means all 
   # linked libraries need to have been compiled with -fPIC as well.
   # However, that means we need to move this add_definitions stuff into src/CMakeLists.txt

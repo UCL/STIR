@@ -231,6 +231,72 @@ set(MATLAB_LIBRARIES
   ${MATLAB_ENG_LIBRARY}
 )
 
+######################### alternative to find flags using "mex -v"
+#
+# mex -v outputs all the settings used for building MEX files, so it
+# we can use it to grab the important variables needed
+execute_process(COMMAND ${MATLAB_MEX_PATH} -v -n ${PROJECT_SOURCE_DIR}/src/cmake/FindMATLAB_mextest.c
+  OUTPUT_VARIABLE mexOut
+  ERROR_VARIABLE mexErr)
+
+# parse mex output line by line by turning file into CMake list of lines
+string(REGEX REPLACE "\r?\n" ";" _mexOut "${mexOut}")
+foreach(line ${_mexOut})  
+if (WIN32)
+  if("${line}" MATCHES "[\t ]*COMPDEFINES *:")
+    string(REGEX REPLACE "[\t ]*COMPDEFINES *: *" "" mexCxxFlags "${line}")
+    set(mexCFlags "${mexCxxFlags}")
+  elseif("${line}" MATCHES "[\t ]*INCLUDE *:")
+    string(REGEX REPLACE "[\t ]*INCLUDE *: *" "" mexIncludeFlags "${line}")
+  elseif("${line}" MATCHES "[\t ]*LINKFLAGS *:")
+    string(REGEX REPLACE "[\t ]*LINKFLAGS *: *" "" mexLdFlags "${line}")
+  elseif("${line}" MATCHES "[\t ]*LINKLIBS *:")
+    string(REGEX REPLACE "[\t ]*LINKLIBS *: *" "" mexLdLibs "${line}")
+  elseif("${line}" MATCHES "[\t ]*LINKEXPORT *:")
+    string(REGEX REPLACE "[\t ]*LINKEXPORT *: *" "" mexLdExport "${line}")
+    # get rid of /implib statement (refers to temp file)
+    string(REGEX REPLACE "/implib:\".*\"" "" mexLdFlags "${mexLdFlags}")
+  endif()
+else (WIN32)
+  if("${line}" MATCHES " CXXFLAGS *=")
+    string(REGEX REPLACE " *CXXFLAGS *= *" "" mexCxxFlags "${line}")
+  elseif("${line}" MATCHES " CFLAGS *=")
+    string(REGEX REPLACE " *CFLAGS *= *" "" mexCFlags "${line}")
+  elseif("${line}" MATCHES " FFLAGS *=")
+    string(REGEX REPLACE " *FFLAGS *= *" "" mexFFlags "${line}")
+  elseif("${line}" MATCHES " CXXLIBS *=")
+    string(REGEX REPLACE " *CXXLIBS *= *" "" mexCxxLibs "${line}")
+  elseif("${line}" MATCHES " CLIBS *=")
+    string(REGEX REPLACE " *CLIBS *= *" "" mexCLibs "${line}")
+  elseif("${line}" MATCHES " FLIBS *=")
+    string(REGEX REPLACE " *FLIBS *= *" "" mexFLibs "${line}")
+  elseif("${line}" MATCHES " LDFLAGS *=")
+    string(REGEX REPLACE " *LDFLAGS *= *" "" mexLdFlags "${line}")
+  endif()
+endif(WIN32)
+endforeach()
+
+set(MATLAB_CXXFLAGS "${mexCxxFlags}" CACHE PATH "Flags to compile C++ MATLAB Mex files (or libraries that link with them)")
+set(MATLAB_CFLAGS "${mexCFlags}" CACHE PATH "Flags to compile C MATLAB Mex files (or libraries that link with them)")
+set(MATLAB_FFLAGS "${mexFFlags}" CACHE PATH "Flags to compile Fortran MATLAB Mex files (or libraries that link with them)")
+if (WIN32)
+  # note: cannot use mexLdLibs for "target_link_libraries" as that gets confused 
+  # by the flag that specifies where the matlab libraries are. So, instead we add
+  # it to the linker flags
+  set(MATLAB_CLINK_FLAGS "${mexLdFlags} ${mexLdLibs} ${mexLdExport}" CACHE PATH "Flags to link MATLAB Mex files")
+  set(MATLAB_CXXLINK_FLAGS "${MATLAB_CLINK_FLAGS}" CACHE PATH "Flags to link MATLAB C++ Mex files")
+  set(MATLAB_FLINK_FLAGS "${MATLAB_CLINK_FLAGS}" CACHE PATH "Flags to link MATLAB Fortran Mex files")
+else()
+  # note: cannot use mexCLibs for "target_link_libraries" as that gets confused 
+  # by the flag that specifies where the matlab libraries are. So, instead we add
+  # it to the linker flags
+  set(MATLAB_CLINK_FLAGS "${mexLdFlags} ${mexCLibs} " CACHE PATH "Flags to link MATLAB Mex files")
+  set(MATLAB_CXXLINK_FLAGS "${mexLdFlags} ${mexCxxLibs} " CACHE PATH "Flags to link MATLAB C++ Mex files")
+  set(MATLAB_FLINK_FLAGS "${mexLdFlags} ${mexFLibs} " CACHE PATH "Flags to link MATLAB Fortran Mex files")
+endif()
+
+########################
+
 # handle the QUIETLY and REQUIRED arguments and set MATLAB_FOUND to TRUE if 
 # all listed variables are TRUE
 INCLUDE(FindPackageHandleStandardArgs)
@@ -254,4 +320,10 @@ mark_as_advanced(
   MATLAB_MEX_PATH
   MATLAB_MEXEXT_PATH
   MATLAB_MEX_EXT
+  MATLAB_CFLAGS
+  MATLAB_CXXFLAGS
+  MATLAB_FFLAGS
+  MATLAB_CLINK_FLAGS
+  MATLAB_CXXLINK_FLAGS
+  MATLAB_FLINK_FLAGS
 )
