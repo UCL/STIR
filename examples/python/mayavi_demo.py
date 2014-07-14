@@ -23,7 +23,7 @@ import stirextra
 from mayavi import mlab
 
 # read in an image using STIR
-image=stir.FloatVoxelsOnCartesianGrid.read_from_file('../../../recon_test_pack/test_image_3.hv')
+image=stir.FloatVoxelsOnCartesianGrid.read_from_file('../../recon_test_pack/test_image_3.hv')
 
 # convert data to numpy 3d array
 npimage=stirextra.to_numpy(image);
