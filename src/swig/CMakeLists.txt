@@ -18,18 +18,6 @@
 
 set(dir swig)
 
-option(BUILD_SWIG_PYTHON
-       "Use SWIG to generate python bindings for STIR (experimental)" OFF)
-
-option(BUILD_SWIG_OCTAVE
-       "Use SWIG to generate octave bindings for STIR (experimental)" OFF)
-
-option(BUILD_SWIG_MATLAB
-       "Use SWIG to generate matlab bindings for STIR (experimental)" OFF)
-
-# Octave support doesn't really work very well yet, so hide it a bit
-mark_as_advanced(BUILD_SWIG_OCTAVE)
-
 if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
 
   FIND_PACKAGE(SWIG REQUIRED)
@@ -105,7 +93,6 @@ if (BUILD_SWIG_OCTAVE)
 endif (BUILD_SWIG_OCTAVE)
 
 if (BUILD_SWIG_MATLAB)
-  FIND_PACKAGE(MATLAB REQUIRED)
 
   set(module_name stir)
   SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module ${module_name})
@@ -116,13 +103,9 @@ if (BUILD_SWIG_MATLAB)
         FOLDER "Matlab")  
   SWIG_LINK_LIBRARIES(stirMATLAB ${STIR_LIBRARIES})
 
-  SET_SOURCE_FILES_PROPERTIES( ${swig_generated_file_fullname}
-        PROPERTIES COMPILE_FLAGS "${MATLAB_CXXFLAGS}")
-  # TODO we really need this for all files, at least on Linux 
-  # add_definitions(${MATLAB_CXXFLAGS})
-  # Reason: matlab needs mex files to be compiled with -fPIC, but that means all 
-  # linked libraries need to have been compiled with -fPIC as well.
-  # However, that means we need to move this add_definitions stuff into src/CMakeLists.txt
+  # disabled, as currently set via add_definitions in main CMakeLists.txt
+  #SET_SOURCE_FILES_PROPERTIES( ${swig_generated_file_fullname}
+  #      PROPERTIES COMPILE_FLAGS "${MATLAB_CXXFLAGS}")
 
   set(MATLAB_DEST ${CMAKE_INSTALL_PREFIX}/matlab CACHE PATH "Destination for Matlab module (relative to CMAKE_INSTALL_PREFIX)")
   INSTALL(TARGETS ${SWIG_MODULE_stirMATLAB_REAL_NAME} DESTINATION ${MATLAB_DEST})

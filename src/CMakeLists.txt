@@ -96,6 +96,27 @@ else()
   message(STATUS "ITK support disabled.")
 endif()
 
+#### Swig related
+option(BUILD_SWIG_PYTHON
+       "Use SWIG to generate python bindings for STIR (experimental)" OFF)
+
+option(BUILD_SWIG_OCTAVE
+       "Use SWIG to generate octave bindings for STIR (experimental)" OFF)
+
+option(BUILD_SWIG_MATLAB
+       "Use SWIG to generate matlab bindings for STIR (experimental)" OFF)
+
+# Octave support doesn't really work very well yet, so hide it a bit
+mark_as_advanced(BUILD_SWIG_OCTAVE)
+
+if (BUILD_SWIG_MATLAB)
+  FIND_PACKAGE(MATLAB REQUIRED)
+  # Add matlab compiler flags to everything
+  # Reason: on linux, mex files need to be compiled with -fPIC, but that means all 
+  # linked libraries need to have been compiled with -fPIC as well.
+  add_definitions(${MATLAB_CXXFLAGS})
+endif()
+
 #### Flags for defaults
 option(STIR_DEFAULT_PROJECTOR_AS_V2
        "Use same default projectors as STIR 1.x and 2.x (not recommended)" OFF)
