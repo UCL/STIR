@@ -53,7 +53,7 @@ int asknr (char str[],int minv,int maxv,int def)
   while(1)
   { printf ("\n%s [%d:%d D:%d]: ",str,minv,maxv,def);
     if (fgets(ptr,10,stdin) == NULL)
-      return def; // nothing read, so return default
+      return def; /* nothing read, so return default */
     ret=sscanf(ptr,"%d",&nnn);
     if (ret==0 || ret==EOF)
       return def;
