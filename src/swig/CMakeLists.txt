@@ -103,6 +103,7 @@ if (BUILD_SWIG_MATLAB)
         FOLDER "Matlab")  
   SWIG_LINK_LIBRARIES(stirMATLAB ${STIR_LIBRARIES})
 
+  include_directories(${MATLAB_INCLUDE_DIR})
   # disabled, as currently set via add_definitions in main CMakeLists.txt
   #SET_SOURCE_FILES_PROPERTIES( ${swig_generated_file_fullname}
   #      PROPERTIES COMPILE_FLAGS "${MATLAB_CXXFLAGS}")
