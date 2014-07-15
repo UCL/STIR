@@ -1,0 +1,32 @@
+ProjMatrixByBin parameters:=
+; example par file for specifying the projection matrix for e.g. write_proj_matrix_by_bin
+; Use this on the command line as follows:
+; write_proj_matrix_by_bin savedPM projdata.hs write_proj_matrix_by_bin_SPECT.par image.hv 
+
+; here we will be writing a SPECT matrix. You should set the matrix parameters to fit your needs.
+type := SPECT UB
+Projection Matrix By Bin SPECT UB Parameters:=
+
+	;PSF type of correction { 2D // 3D // Geometrical }
+	psf type:= 2D
+	; next 2 parameters define the PSF. They are ignored if psf_type is "Geometrical"
+	; the PSF is modelled as a Gaussian with sigma dependent on the distance from the collimator
+	; sigma_at_depth = collimator_slope * depth_in_cm + collimator sigma 0(cm)
+	collimator slope := 0.0163
+	collimator sigma 0(cm) := 0.1466
+
+	;Attenuation correction { Simple // Full // No }
+	attenuation type := No
+	;Values in attenuation map in cm-1
+	attenuation map := attMapRec.hv
+
+	;Mask properties { Cylinder // Attenuation Map // Explicit Mask // No}
+	mask type := Explicit Mask
+	mask file := mask.hv
+
+        ; currently still need to cache the matrix when only writing
+        ; as the outer loop is over axial positions
+        keep all views in cache := 1
+
+End Projection Matrix By Bin SPECT UB Parameters:=
+End:=

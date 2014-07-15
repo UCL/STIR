@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2004 - 2008, Hammersmith Imanet Ltd
     Copyright (C) 2011 - 2012, Kris Thielemans
+    Copyright (C) 2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,7 +29,9 @@
 #include "stir/ExamInfo.h"
 #include "stir/recon_buildblock/ProjMatrixByBinFromFile.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
+#include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
 #include "stir/KeyParser.h"
+#include "stir/interfile_keyword_functions.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/ProjDataInfo.h"
@@ -113,9 +116,10 @@ ProjMatrixByBinFromFile::post_processing()
       warning("version has to be 1.0");
       return true;
     }
-  if (this->symmetries_type != "PET_CartesianGrid")
+  this->symmetries_type = standardise_interfile_keyword(this->symmetries_type);
+  if (this->symmetries_type != standardise_interfile_keyword("PET_CartesianGrid") && this->symmetries_type != "none")
     { 
-      warning("symmetries type has to be PET_CartesianGrid");
+      warning("symmetries type has to be PET_CartesianGrid or None");
       return true;
     }
 
@@ -155,14 +159,25 @@ ProjMatrixByBinFromFile::post_processing()
 
 
 
-  symmetries_ptr.reset( 
-    new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
-                                                density_info_sptr,
-                                                do_symmetry_90degrees_min_phi,
-                                                do_symmetry_180degrees_min_phi,
-						do_symmetry_swap_segment,
-						do_symmetry_swap_s,
-						do_symmetry_shift_z));
+  if (this->symmetries_type == standardise_interfile_keyword("PET_CartesianGrid"))
+    {
+      symmetries_ptr.reset( 
+                           new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
+                                                                       density_info_sptr,
+                                                                       do_symmetry_90degrees_min_phi,
+                                                                       do_symmetry_180degrees_min_phi,
+                                                                       do_symmetry_swap_segment,
+                                                                       do_symmetry_swap_s,
+                                                                       do_symmetry_shift_z));
+    }
+  else if (this->symmetries_type == "none")
+    {
+      symmetries_ptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_ptr));
+    }
+  else
+    {
+      error("internal error: symmetries handling in ProjMatrixByBinFromFile");
+    }
 
   return false;
 }
@@ -377,18 +392,32 @@ write_to_file(const std::string& output_filename_prefix,
     header << "Projection Matrix By Bin From File Parameters:=\n"
 	   << "Version := 1.0\n";
     // TODO symmetries should not be hard-coded
-    const DataSymmetriesForBins_PET_CartesianGrid& symmetries =
-      dynamic_cast<const DataSymmetriesForBins_PET_CartesianGrid&>
-      (*proj_matrix.get_symmetries_ptr());
-    header << "symmetries type := PET_CartesianGrid\n"
-	   << " PET_CartesianGrid symmetries parameters:=\n"
-	   << "  do_symmetry_90degrees_min_phi:= " << (symmetries.using_symmetry_90degrees_min_phi() ? 1 : 0) << '\n'
-	   << "  do_symmetry_180degrees_min_phi:= " << (symmetries.using_symmetry_180degrees_min_phi() ? 1 : 0) << '\n'
-	   << "  do_symmetry_swap_segment:= " << (symmetries.using_symmetry_swap_segment() ? 1 : 0) << '\n'
-	   << "  do_symmetry_swap_s:= " << (symmetries.using_symmetry_swap_s() ? 1 : 0) << '\n'
-	   << "  do_symmetry_shift_z:= " << (symmetries.using_symmetry_shift_z() ? 1 : 0) << '\n'
-	   << " End PET_CartesianGrid symmetries parameters:=\n";
+    if (!is_null_ptr(dynamic_cast<const DataSymmetriesForBins_PET_CartesianGrid * const>(proj_matrix.get_symmetries_ptr())))
+      {
+        const DataSymmetriesForBins_PET_CartesianGrid& symmetries =
+          dynamic_cast<const DataSymmetriesForBins_PET_CartesianGrid&>
+          (*proj_matrix.get_symmetries_ptr());
+        
+        header << "symmetries type := PET_CartesianGrid\n"
+               << " PET_CartesianGrid symmetries parameters:=\n"
+               << "  do_symmetry_90degrees_min_phi:= " << (symmetries.using_symmetry_90degrees_min_phi() ? 1 : 0) << '\n'
+               << "  do_symmetry_180degrees_min_phi:= " << (symmetries.using_symmetry_180degrees_min_phi() ? 1 : 0) << '\n'
+               << "  do_symmetry_swap_segment:= " << (symmetries.using_symmetry_swap_segment() ? 1 : 0) << '\n'
+               << "  do_symmetry_swap_s:= " << (symmetries.using_symmetry_swap_s() ? 1 : 0) << '\n'
+               << "  do_symmetry_shift_z:= " << (symmetries.using_symmetry_shift_z() ? 1 : 0) << '\n'
+               << " End PET_CartesianGrid symmetries parameters:=\n";
+      }
+    else if (!is_null_ptr(dynamic_cast<const TrivialDataSymmetriesForBins *const>(proj_matrix.get_symmetries_ptr())))
+      {
+        header << "symmetries type := none\n";
+      }
+    else
+      {
+        warning("ProjMatrixByBinFromFile does not yet support this type of symmetries. sorry");
+        return Succeeded::no;
+      }
 
+      
     header << "template proj data filename:=" << template_proj_data_filename << '\n';
     header << "template density filename:=" << template_density_filename << '\n';
 
