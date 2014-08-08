@@ -376,6 +376,22 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
       *iter++ = *data_ptr++;
   }
 
+  {
+    // for mMR, we need to shift the efficiencies for 1 crystal. This is probably because of where the gap is inserted
+    // TODO we have no idea if this is necessary for other ECAT8 scanners.
+    // The code below works for the mMR ONLY
+    for (int r=0; r<scanner_ptr->get_num_rings(); ++r)
+      {
+	int c=scanner_ptr->get_num_detectors_per_ring()-1;
+	const float save_last_eff = efficiency_factors[r][c];
+	for (; c>0; --c)
+	  {
+	    efficiency_factors[r][c]= efficiency_factors[r][c-1];
+	  }
+	efficiency_factors[r][c]= save_last_eff;
+      }
+  }
+
   if (this->_use_gaps)
     {
       // TODO we really have no idea where the gaps are for every ECAT8 scanners.
