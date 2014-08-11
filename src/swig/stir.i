@@ -50,6 +50,7 @@
  #include "stir/SegmentBySinogram.h"
  #include "stir/ExamInfo.h"
  #include "stir/ProjData.h"
+ #include "stir/ProjDataInMemory.h"
  #include "stir/ProjDataInterfile.h"
 
 #include "stir/CartesianCoordinate2D.h"
@@ -72,6 +73,9 @@
 
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 
 #include <boost/iterator/reverse_iterator.hpp>
 
@@ -221,10 +225,17 @@
 // include standard swig support for some bits of the STL (i.e. standard C++ lib)
 %include <stl.i>
 %include <std_list.i>
-#if defined(SWIGPYTHON)
-%include <std_ios.i>
-%include <std_iostream.i>
+#ifdef STIRMATLAB
+%ignore *::operator>>;
+%ignore *::operator<<;
 #endif
+
+#ifndef SWIGOCTAVE
+%include <std_ios.i>
+// do not need this at present
+// %include <std_iostream.i>
+#endif
+
 // Instantiate STL templates used by stir
 namespace std {
    %template(IntVector) vector<int>;
@@ -493,7 +504,7 @@ namespace std {
 %shared_ptr(stir::ProjData);
 %shared_ptr(stir::ProjDataFromStream);
 %shared_ptr(stir::ProjDataInterfile);
-
+%shared_ptr(stir::ProjDataInMemory);
 // TODO cannot do this yet as then the FloatArray1D(FloatArray1D&) construction fails in test.py
 //%shared_ptr(stir::Array<1,float>);
 %shared_ptr(stir::Array<2,float>);
@@ -551,7 +562,12 @@ T * operator-> () const;
       };
   }
 #endif
-%warnfilter(SWIGWARN_PARSE_NAMED_NESTED_CLASS) stir::RegisteredParsingObject::RegisteredIt;
+
+// disabled warning about nested class. we don't need this class anyway
+%warnfilter(SWIGWARN_PARSE_NAMED_NESTED_CLASS) stir::RegisteredParsingObject::RegisterIt;
+// in some cases, swig generates a default constructor.
+// we have to explictly disable this for RegisteredParsingObject as it could be an abstract class.
+%nodefaultctor stir::RegisteredParsingObject;
 %include "stir/RegisteredParsingObject.h"
 
  /* Parse the header files to generate wrappers */
@@ -975,6 +991,7 @@ namespace stir {
 
 %include "stir/ProjDataFromStream.h"
 %include "stir/ProjDataInterfile.h"
+%include "stir/ProjDataInMemory.h"
 
 namespace stir { 
   %template(FloatViewgram) Viewgram<float>;
@@ -1081,3 +1098,50 @@ namespace stir {
 %template (IterativeReconstruction3DFloat) stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
 //%template () stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
 %template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >;
+
+
+/// projectors
+%shared_ptr(stir::ForwardProjectorByBin);
+%shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,
+    stir::ForwardProjectorByBin>);
+%shared_ptr(stir::ForwardProjectorByBinUsingProjMatrixByBin);
+%shared_ptr(stir::BackProjectorByBin);
+%shared_ptr(stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
+    stir::BackProjectorByBin>);
+%shared_ptr(stir::BackProjectorByBinUsingProjMatrixByBin);
+%shared_ptr(stir::ProjMatrixByBin);
+%shared_ptr(stir::RegisteredParsingObject<
+	      stir::ProjMatrixByBinUsingRayTracing,
+              stir::ProjMatrixByBin,
+              stir::ProjMatrixByBin
+	    >);
+%shared_ptr(stir::ProjMatrixByBinUsingRayTracing);
+
+%include "stir/recon_buildblock/ForwardProjectorByBin.h"
+%include "stir/recon_buildblock/BackProjectorByBin.h"
+
+%include "stir/recon_buildblock/ProjMatrixByBin.h"
+
+%template (internalRPProjMatrixByBinUsingRayTracing) stir::RegisteredParsingObject<
+	      stir::ProjMatrixByBinUsingRayTracing,
+              stir::ProjMatrixByBin,
+              stir::ProjMatrixByBin
+  >;
+
+%include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+
+%shared_ptr(  stir::AddParser<stir::ForwardProjectorByBin>);
+%template (internalAddParserForwardProjectorByBin)
+  stir::AddParser<stir::ForwardProjectorByBin>;
+%template (internalRPForwardProjectorByBinUsingProjMatrixByBin)  
+  stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,
+     stir::ForwardProjectorByBin>;
+%include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+
+%shared_ptr(  stir::AddParser<stir::BackProjectorByBin>);
+%template (internalAddParserBackProjectorByBin)
+  stir::AddParser<stir::BackProjectorByBin>;
+%template (internalRPBackProjectorByBinUsingProjMatrixByBin)  
+  stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
+     stir::BackProjectorByBin>;
+%include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
