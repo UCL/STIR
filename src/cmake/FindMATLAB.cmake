@@ -226,14 +226,20 @@ execute_process(
     )
 
 set(MATLAB_LIBRARIES
-  ${MATLAB_MEX_LIBRARY} ${MATLAB_MX_LIBRARY} ${MATLAB_MAT_LIBRARY}
+  ${MATLAB_MEX_LIBRARY} ${MATLAB_MX_LIBRARY} ${MATLAB_ENG_LIBRARY}
   CACHE PATH "Libraries to link mex files"
 )
 
 ######################### alternative to find flags using "mex -v"
-#
 # mex -v outputs all the settings used for building MEX files, so 
 # we can use it to grab the important variables needed
+
+# This sets MATLAB_CFLAGS, MATLAB_CLINKER_FLAGS, MATLAB_CLIBS (and same for CXX and Fortran)
+# Note: You cannot use MATLAB_CLIBS etc to "target_link_libraries" as that gets confused 
+# by the flag that specifies where the matlab libraries are (at least on Windows for Visual Studio).
+# This variable also contains system libraries etc so it's probably not a good idea to use it in 
+# your CMake file. You should probably use
+#  target_link_libraries(yourmexfile ${MATLAB_LIBRARIES} )
 
 macro(MATLAB_GETFLAGS FILENAME)
  execute_process(COMMAND ${MATLAB_MEX_PATH} -v -n ${FILENAME}
@@ -271,6 +277,12 @@ foreach(line ${_mexOut})
     string(REGEX REPLACE "[\t ]+FLIBS *[:=] *" "" mexFLibs "${line}")
   elseif("${line}" MATCHES "[\t ]+LDFLAGS *[:=]")
     string(REGEX REPLACE "[\t ]+LDFLAGS *[:=] *" "" mexLdFlags "${line}")
+  elseif("${line}" MATCHES "[\t ]+LDCXXFLAGS *[:=]")
+    string(REGEX REPLACE "[\t ]+LDCXXFLAGS *[:=] *" "" mexLdCxxFlags "${line}")
+  elseif("${line}" MATCHES "[\t ]+LDCFLAGS *[:=]")
+    string(REGEX REPLACE "[\t ]+LDCFLAGS *[:=] *" "" mexLdCFlags "${line}")
+  elseif("${line}" MATCHES "[\t ]+LDFLAGS *[:=]")
+    string(REGEX REPLACE "[\t ]+LDFLAGS *[:=] *" "" mexLdFFlags "${line}")
   endif()
 endforeach()
 endmacro()
@@ -280,16 +292,20 @@ endmacro()
 #### C
 MATLAB_GETFLAGS(${PROJECT_SOURCE_DIR}/src/cmake/FindMATLAB_mextest.c)
 set(MATLAB_CFLAGS "${mexDefines} ${mexCFlags}" CACHE STRING "Flags to compile C MATLAB Mex files (or libraries that link with them)")
-# note: cannot use mexLdLibs as libraries to pass to "target_link_libraries" as that gets confused 
-# by the flag that specifies where the matlab libraries are. So, instead we add
-# it to the linker flags
-set(MATLAB_CLINK_FLAGS "${mexLdFlags}  ${mexCLibs} ${mexLdLibs}" CACHE STRING "Flags to link MATLAB C Mex files")
-set(MATLAB_LINKEXPORT_FLAGS "${mexLdExport}" CACHE STRING "Flags to link MATLAB Mex files to automatically export mexFunction")
+set(MATLAB_CLINKER_FLAGS "${mexLdFlags} ${mexLdCFlags} ${mexLdExport}" CACHE STRING "Flags to link MATLAB C Mex files")
+set(MATLAB_CLIBS "${mexLdLibs} ${mexCLibs}" CACHE STRING "Flags with libraries to link MATLAB C Mex files")
 
 #### C++
 MATLAB_GETFLAGS(${PROJECT_SOURCE_DIR}/src/cmake/FindMATLAB_mextest.cxx)
 set(MATLAB_CXXFLAGS "${mexDefines} ${mexCxxFlags}" CACHE STRING "Flags to compile C++ MATLAB Mex files (or libraries that link with them)")
-set(MATLAB_CXXLINK_FLAGS "${mexLdFlags}  ${mexCxxLibs} ${mexLdLibs}" CACHE STRING "Flags to link MATLAB C++ Mex files")
+set(MATLAB_CXXLINKER_FLAGS "${mexLdFlags} ${mexLdCxxFlags} ${mexLdExport}" CACHE STRING "Flags to link MATLAB C++ Mex files")
+set(MATLAB_CXXLIBS "${mexLdLibs} ${mexCxxLibs}" CACHE STRING "Flags with libraries to link MATLAB C++ Mex files")
+
+#### Fortran
+MATLAB_GETFLAGS(${PROJECT_SOURCE_DIR}/src/cmake/FindMATLAB_mextest.f)
+set(MATLAB_FFLAGS "${mexDefines} ${mexFFlags}" CACHE STRING "Flags to compile Fortran MATLAB Mex files (or libraries that link with them)")
+set(MATLAB_FLINKER_FLAGS "${mexLdFlags} ${mexLdFFlags} ${mexLdExport}" CACHE STRING "Flags to link MATLAB Fortran Mex files")
+set(MATLAB_FLIBS "${mexLdLibs} ${mexFLibs}" CACHE STRING "Flags with libraries to link MATLAB Fortran Mex files")
 
 # handle the QUIETLY and REQUIRED arguments and set MATLAB_FOUND to TRUE if 
 # all listed variables are TRUE
@@ -309,7 +325,6 @@ mark_as_advanced(
   MATLAB_ENG_LIBRARY
   MATLAB_INCLUDE_DIR
   MATLAB_FOUND
-  MATLAB_ROOT
   MATLAB_MAT_LIBRARY
   MATLAB_MEX_PATH
   MATLAB_MEXEXT_PATH
@@ -317,7 +332,10 @@ mark_as_advanced(
   MATLAB_CFLAGS
   MATLAB_CXXFLAGS
   MATLAB_FFLAGS
-  MATLAB_CLINK_FLAGS
-  MATLAB_CXXLINK_FLAGS
-  MATLAB_FLINK_FLAGS
+  MATLAB_CLINKER_FLAGS
+  MATLAB_CXXLINKER_FLAGS
+  MATLAB_FLINKER_FLAGS
+  MATLAB_CLIBS
+  MATLAB_CXXLIBS
+  MATLAB_FLIBS
 )
