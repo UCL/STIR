@@ -18,6 +18,7 @@
 % You can just run this file (probably after adding the stir files to your
 % matlab path)
 %addpath('C:\Users\kris\Documents\devel\UCL-STIR\src\swig')
+%addpath('~/devel/build/UCL-STIR/gcc-4.8.1-debug/src/swig')
 % if there's no assertion errors, everything is fine
 %% basic tests on 1D arrays
 a=stir.FloatArray1D(3,4);
@@ -38,6 +39,28 @@ a=stir.FloatArray1D(3,4);
 a.fill(5)
 tmp=a.find_min();
 assert(tmp==5)
+%%
+% tests filling with vectors
+a.fill([2; 3])
+assert(a.getel(3)==2)
+assert(a.getel(4)==3)
+try
+  a.fill([2; 3;4])
+  assert(false, 'fill with wrong size should have failed')
+catch e
+end
+%% wrong dimensions, should fail
+try 
+  a.fill(ones(1,2))
+  assert(false, 'fill with wrong dimension should have failed')
+catch e
+end
+% test convert to array
+tmp=[2; 3];
+a.fill(tmp+1)
+tmp2=a.to_matlab();
+assert(isequal(tmp2,tmp+1))
+
 %% basic tests on 2D arrays
 % next is currently not wrapped
 % r=stir.IndexRange2D(1,4,2,7)
@@ -57,6 +80,30 @@ tmp=[1 2; 3 4; 5 6];
 a=stir.FloatArray2D(tmp);
 % note complicated correspondence if indexing (reverse-order and 0-based vs 1-based)
 assert(a.getel(stir.make_IntCoordinate(1,2)) == tmp(3,2))
+% test filling
+a.fill(tmp+1)
+assert(a.getel(stir.make_IntCoordinate(1,2)) == tmp(3,2)+1)
+tmp2=a.to_matlab();
+assert(isequal(tmp2,tmp+1))
+% test fill with wrong size
+try
+  a.fill(ones([2,3]))
+  assert(false, 'fill with wrong size should have failed')
+catch e
+end
+% wrong dimensions, should fail
+try 
+  a.fill(ones(2,3,3))
+  assert(false, 'fill with wrong dimension should have failed')
+catch e
+end
+% trivial upper dimension
+c=stir.make_IntCoordinate(1,3);
+b=stir.IndexRange2D(c);
+a=stir.FloatArray2D(b);
+a.fill([1;2;3]);
+assert(a.getel(stir.make_IntCoordinate(0,1))==2)
+
 %% test conversion of arrays in 3D
 tmp=[1 2 3 4; 5 6 7 8; 9 10 11 12];
 tmp(:,:,2)=[1 2 3 4; 5 6 7 8; 9 10 11 12]+100;

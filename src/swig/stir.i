@@ -143,33 +143,80 @@
        const BasicCoordinate<num_dimensions,int> sizes=maxind-minind+1;
        // copy dimensions in reverse order
        std::copy(boost::make_reverse_iterator(sizes.end()), boost::make_reverse_iterator(sizes.begin()), dims);
-       mxArray *pm = mxCreateNumericArray(3, dims, mxDOUBLE_CLASS, mxREAL);
+       mxArray *pm = mxCreateNumericArray(num_dimensions, dims, mxDOUBLE_CLASS, mxREAL);
        double * data_ptr = mxGetPr(pm);
        std::copy(a.begin_all(), a.end_all(), data_ptr);
        return pm;
      }
 
      template <int num_dimensions, typename elemT>
+     void fill_Array_from_matlab_scalar(stir::Array<num_dimensions, elemT>& a, const mxArray *pm)
+     {
+       if (mxIsDouble(pm))
+       {
+         double const* data_ptr = mxGetPr(pm);
+         a.fill(static_cast<elemT>(*data_ptr));
+       } else if (mxIsSingle(pm))
+       {
+         float const* data_ptr = (float *)mxGetData(pm);
+         a.fill(static_cast<elemT>(*data_ptr));
+       } else
+       { 
+         mexWarnMsgIdAndTxt("stir:array","currently only supporting double or single arrays for filling a stir array");
+         mexErrMsgTxt("Exiting");
+       }
+     }
+
+     template <int num_dimensions, typename elemT>
      void fill_Array_from_matlab(stir::Array<num_dimensions, elemT>& a, const mxArray *pm, bool do_resize)
      {
-      const mwSize matlab_num_dims = mxGetNumberOfDimensions(pm);
-      if (matlab_num_dims > static_cast<mwSize>(num_dimensions))
-       { mexErrMsgIdAndTxt("stir:array","number of dimensions in matlab array is incorrect for constructing a stir array of dimension %d", num_dimensions); }
+       mwSize matlab_num_dims = mxGetNumberOfDimensions(pm);
        const mwSize * m_sizes = mxGetDimensions(pm);
-       BasicCoordinate<num_dimensions,int>  sizes;
-       // first set all to 1 to cope with lower-dimensional arrays from matlab
-       sizes.fill(1);
-       std::copy(m_sizes, m_sizes+matlab_num_dims, boost::make_reverse_iterator(sizes.end()));
+       // matlab represents scalars/vectors as a matrix, so let's check this first
+       if (matlab_num_dims == static_cast<mwSize>(2) && m_sizes[1]==static_cast<mwSize>(1))
+       {
+         if (m_sizes[0] ==static_cast<mwSize>(1))
+         {
+           // it's a scalar
+           fill_Array_from_matlab_scalar(a, pm);
+           return;
+         }
+         matlab_num_dims=static_cast<mwSize>(1); // set it to a 1-dimensional array
+       }
+       if (matlab_num_dims > static_cast<mwSize>(num_dimensions))
+       {
+         mexWarnMsgIdAndTxt("stir:array",
+                            "number of dimensions in matlab array is incorrect for constructing a stir array of dimension %d", 
+                            num_dimensions); 
+         mexErrMsgTxt("Exiting");
+       }
        if (do_resize)
        {
+         BasicCoordinate<num_dimensions,int>  sizes;
+         // first set all to 1 to cope with lower-dimensional arrays from matlab
+         sizes.fill(1);
+         std::copy(m_sizes, m_sizes+matlab_num_dims, boost::make_reverse_iterator(sizes.end()));
          a.resize(sizes);
        }
        else
        { 
          // check sizes
+         BasicCoordinate<num_dimensions,int> minind,maxind;
+         a.get_regular_range(minind,maxind);
+         const BasicCoordinate<num_dimensions,int> sizes=maxind-minind+1;
          if (!std::equal(m_sizes, m_sizes+matlab_num_dims, boost::make_reverse_iterator(sizes.end())))
          {
-           mexErrMsgIdAndTxt("stir:array","sizes of matlab array incompatible with stir array");
+           mexWarnMsgIdAndTxt("stir:array","sizes of matlab array incompatible with stir array");
+           mexErrMsgTxt("Exiting");
+         }
+         for (int d=1; d<= num_dimensions-matlab_num_dims; ++d)
+         {
+           if (sizes[d]!=1)
+           {
+             mexWarnMsgIdAndTxt("stir:array",
+                               "sizes of first dimensions of the stir array have to be 1 if initialising from a lower dimensional matlab array");
+             mexErrMsgTxt("Exiting");
+           }
          }
        }       
        if (mxIsDouble(pm))
@@ -182,7 +229,8 @@
          std::copy(data_ptr, data_ptr+a.size_all(), a.begin_all());
        } else
        { 
-         mexErrMsgIdAndTxt("stir:array","currently only supporting double or single arrays for constructing a stir array");
+         mexWarnMsgIdAndTxt("stir:array","currently only supporting double or single arrays for constructing a stir array");
+         mexErrMsgTxt("Exiting");
        }
      }     
 #endif
@@ -856,6 +904,12 @@ namespace stir {
 
 #ifdef SWIGMATLAB
   %extend Array {
+     Array(const mxArray *pm)
+     {
+       $parentclassname * array_ptr = new $parentclassname();
+       swigstir::fill_Array_from_matlab(*array_ptr, pm, true /* do resize */);
+       return array_ptr;
+     }
 
      %newobject to_matlab;
      mxArray * to_matlab()
@@ -864,37 +918,22 @@ namespace stir {
      void fill(const mxArray *pm)
      { swigstir::fill_Array_from_matlab(*$self, pm, false /*do not resize */); }
    }
-   // TODO this extends only 3D-Arrays because of bug in $parentclassname in current SWIG
-  %extend Array<3,float> {
-     Array<3,float>(const mxArray *pm)
-     {
-       // swig bug prevents the following line
-       // $parentclassname * array_ptr = new $parentclassname();
-       Array<3,float> * array_ptr = new Array<3,float>(); 
-       swigstir::fill_Array_from_matlab(*array_ptr, pm, true /* do resize */);
-       return array_ptr;
-     }
-  }
-  %extend Array<2,float> {
-     Array<2,float>(const mxArray *pm)
-     {
-       // swig bug prevents the following line
-       // $parentclassname * array_ptr = new $parentclassname();
-       Array<2,float> * array_ptr = new Array<2,float>(); 
-       swigstir::fill_Array_from_matlab(*array_ptr, pm, true /* do resize */);
-       return array_ptr;
-     }
-  }
+  // repeat this for 1D due to template (partial) specialisation (TODO, get round that somehow)
   %extend Array<1,float> {
      Array<1,float>(const mxArray *pm)
      {
-       // swig bug prevents the following line
-       // $parentclassname * array_ptr = new $parentclassname();
-       Array<1,float> * array_ptr = new Array<1,float>(); 
+       $parentclassname * array_ptr = new $parentclassname();
        swigstir::fill_Array_from_matlab(*array_ptr, pm, true /* do resize */);
        return array_ptr;
      }
-  }
+
+     %newobject to_matlab;
+     mxArray * to_matlab()
+     { return swigstir::Array_to_matlab(*$self); }
+
+     void fill(const mxArray *pm)
+     { swigstir::fill_Array_from_matlab(*$self, pm, false /*do not resize */); }
+   }
 #endif
   // TODO next line doesn't give anything useful as SWIG doesn't recognise that 
   // the return value is an array. So, we get a wrapped object that we cannot handle
