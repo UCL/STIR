@@ -53,7 +53,7 @@ import stir.*
     %
     examinfo=ExamInfo();
     projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,6,8,6);
-    assert (projdatainfo.get_scanner_ptr().get_num_rings()==32)
+    assert (projdatainfo.get_scanner().get_num_rings()==32)
     projdata=ProjDataInterfile(examinfo, projdatainfo, 'stir_matlab_test.hs');
     assert (projdata.get_min_segment_num()==-1)
     assert( projdata.get_max_segment_num()==+1)
@@ -66,7 +66,7 @@ import stir.*
     delete( projdata)
 
     projdata2=ProjData.read_from_file('stir_matlab_test.hs');
-    assert (isequal(projdatainfo,projdata2.get_proj_data_info_ptr()))
+    assert (isequal(projdatainfo,projdata2.get_proj_data_info()))
     for seg=projdatainfo.get_min_segment_num() : projdatainfo.get_max_segment_num()
         % construct same segment data as above (TODO: better to stick it into a list or so)
         segment=projdatainfo.get_empty_segment_by_view(seg);

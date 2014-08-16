@@ -144,13 +144,13 @@ assert (s.get_num_detectors_per_ring()==576)
 s=stir.Scanner(stir.Scanner.E962());
 projdatainfo=stir.ProjDataInfo.ProjDataInfoCTI(s,3,9,8,6);
 %print projdatainfo
-assert( projdatainfo.get_scanner_ptr().get_num_rings()==32)
+assert( projdatainfo.get_scanner().get_num_rings()==32)
 sinogram=projdatainfo.get_empty_sinogram(1,2);
 assert( sinogram.sum()==0)
 assert( sinogram.get_segment_num()==2)
 assert( sinogram.get_axial_pos_num()==1)
 assert( sinogram.get_num_views() == projdatainfo.get_num_views())
-assert( isequal(sinogram.get_proj_data_info_ptr(), projdatainfo))
+assert( isequal(sinogram.get_proj_data_info(), projdatainfo))
 % create some empty objects
 segment=projdatainfo.get_empty_segment_by_view(0);
 assert(segment.find_max()==0)

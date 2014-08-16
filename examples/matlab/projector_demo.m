@@ -21,26 +21,27 @@ cd ../recon_demo
 projdata=stir.ProjData.read_from_file('smalllong.hs');
 % use smaller voxels than the default
 zoom=2.216842;
-target=stir.FloatVoxelsOnCartesianGrid(projdata.get_proj_data_info_ptr(), zoom);
+target=stir.FloatVoxelsOnCartesianGrid(projdata.get_proj_data_info(), zoom);
 %% initialise the projection matrix 
 % (using ray-tracing here)
 projmatrix=stir.ProjMatrixByBinUsingRayTracing();
-projmatrix.set_up(projdata.get_proj_data_info_ptr(), target);
+projmatrix.set_up(projdata.get_proj_data_info(), target);
 %% construct projectors
 forwardprojector=stir.ForwardProjectorByBinUsingProjMatrixByBin(projmatrix);
 backprojector=stir.BackProjectorByBinUsingProjMatrixByBin(projmatrix);
 
 %% create projection data for output of forward projection
 % we will currently write to file as at present we cannot read/write for some reason (TODO)
-projdataout=stir.ProjDataInterfile(projdata.get_exam_info_ptr(), projdata.get_proj_data_info_ptr(), 'stir_matlab_test.hs');%,stir.ios_inout());
-%projdataout=stir.ProjDataInMemory(examinfo, projdata.get_proj_data_info_ptr());
+inout=bitor(uint32(stir.ios.ios_base_in()),uint32(stir.ios.out()));
+projdataout=stir.ProjDataInterfile(projdata.get_exam_info(), projdata.get_proj_data_info(), 'stir_matlab_test.hs',inout);
+%projdataout=stir.ProjDataInMemory(projdata.get_exam_info(), projdata.get_proj_data_info());
 %% forward project an image
 target.fill(2);
 forwardprojector.forward_project(projdataout, target);
 %% work-around read/write problem
 % currently need to close and re-open for reading
-clear projdataout
-projdataout=stir.ProjData.read_from_file('stir_matlab_test.hs');
+%clear projdataout
+%projdataout=stir.ProjData.read_from_file('stir_matlab_test.hs');
 %% display
 seg=projdataout.get_segment_by_sinogram(0);
 segmatlab=seg.to_matlab();

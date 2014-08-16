@@ -29,7 +29,7 @@ poissonobj.set_recompute_sensitivity(true)
 projdata=stir.ProjData.read_from_file('smalllong.hs');
 % use smaller voxels than the default
 zoom=2.216842;
-target=stir.FloatVoxelsOnCartesianGrid(projdata.get_proj_data_info_ptr(), zoom);
+target=stir.FloatVoxelsOnCartesianGrid(projdata.get_proj_data_info(), zoom);
 %% set-up reconstruction object
 % this will already compute the (subset) sensitivities
 s=recon.set_up(target);

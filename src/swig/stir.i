@@ -1015,7 +1015,15 @@ namespace stir {
 %include "stir/Bin.h"
 %newobject stir::ProjDataInfo::ProjDataInfoGE;
 %newobject stir::ProjDataInfo::ProjDataInfoCTI;
+%ignore *::get_scanner_ptr;
 %include "stir/ProjDataInfo.h"
+namespace stir{
+  %extend ProjDataInfo
+  {
+    const Scanner& get_scanner() const
+    { return *$self->get_scanner_ptr(); }
+  }
+ }
 %include "stir/ProjDataInfoCylindrical.h"
 %include "stir/ProjDataInfoCylindricalArcCorr.h"
 %include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -1026,11 +1034,30 @@ namespace stir {
 %include "stir/Segment.h"
 %include "stir/SegmentByView.h"
 %include "stir/SegmentBySinogram.h"
-%include "stir/ProjData.h"
 
+%ignore *::get_proj_data_info_ptr;
+%ignore *::get_exam_info_ptr;
+%rename(get_exam_info) *::get_exam_info_sptr;
+%define %extend_with_proj_data_info(CLASS)
+namespace stir{
+  %extend CLASS
+  {
+    const ProjDataInfo& get_proj_data_info() const
+    { return *$self->get_proj_data_info_ptr(); }
+  }
+ }
+%enddef
+%include "stir/ProjData.h"
 %include "stir/ProjDataFromStream.h"
 %include "stir/ProjDataInterfile.h"
 %include "stir/ProjDataInMemory.h"
+
+%extend_with_proj_data_info(ProjData);
+//%extend_with_proj_data_info(MultipleProjData);
+%extend_with_proj_data_info(Sinogram);
+%extend_with_proj_data_info(Viewgram);
+%extend_with_proj_data_info(Segment);
+%extend_with_proj_data_info(RelatedViewgrams);
 
 namespace stir { 
   %template(FloatViewgram) Viewgram<float>;

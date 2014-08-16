@@ -165,11 +165,11 @@ def test_ProjDataInfo():
     #
     projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,9,8,6)
     #print projdatainfo
-    assert projdatainfo.get_scanner_ptr().get_num_rings()==32
+    assert projdatainfo.get_scanner().get_num_rings()==32
     sinogram=projdatainfo.get_empty_sinogram(1,2)
     assert sinogram.sum()==0
     assert sinogram.get_segment_num()==2
     assert sinogram.get_axial_pos_num()==1
     assert sinogram.get_num_views() == projdatainfo.get_num_views()
-    assert sinogram.get_proj_data_info_ptr() == projdatainfo
+    assert sinogram.get_proj_data_info() == projdatainfo
     
