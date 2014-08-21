@@ -24,6 +24,7 @@ See STIR/LICENSE.txt for details
 #include "local/stir/recon_buildblock/ProjMatrixByDenselUsingRayTracing.h"
 #include "stir/CPUTimer.h"
 #include "stir/SegmentByView.h"
+#include "stir/info.h"
 
 #include "stir/round.h"
 #include <iostream>
@@ -711,7 +712,7 @@ NonseparableSpatiallyVaryingFilters<elemT>::precalculate_filter_coefficients_2D 
   
   proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
     image_sptr);
-  cerr << proj_matrix_ptr->parameter_info();
+  info(proj_matrix_ptr->parameter_info());
   
   fwd_densels_all(all_segments,proj_matrix_ptr, proj_data_ptr,
     in_density_cast->get_min_z(), in_density_cast->get_max_z(),
@@ -757,8 +758,7 @@ NonseparableSpatiallyVaryingFilters<elemT>::precalculate_filter_coefficients_2D 
   }
   const float threshold = 0.0001F*max_in_viewgram;  
   
-  cerr << " THRESHOLD IS" << threshold; 
-  cerr << endl;
+  info(boost::format(" THRESHOLD IS %1%") % threshold);
   
   find_inverse_and_bck_densels(*kappa1_ptr_bck,all_segments,
     all_attenuation_segments,
@@ -773,8 +773,7 @@ NonseparableSpatiallyVaryingFilters<elemT>::precalculate_filter_coefficients_2D 
     delete all_attenuation_segments[segment_num];
   }   
   
-  cerr << "min and max in image - kappa1 " <<kappa1_ptr_bck->find_min()
-    << ", " << kappa1_ptr_bck->find_max() << endl;   
+  info(boost::format("min and max in image - kappa1 %1%, %2%") % kappa1_ptr_bck->find_min() % kappa1_ptr_bck->find_max());
   
   for (int k=in_density_cast->get_min_z();k<=in_density_cast->get_max_z();k++)   
     for (int j =in_density_cast->get_min_y();j<=in_density_cast->get_max_y();j++)
@@ -892,7 +891,7 @@ NonseparableSpatiallyVaryingFilters<elemT>::precalculate_filter_coefficients_2D 
 	  if ( filter_lookup[k_index]==NULL )
 	  {
 	    Array <2,float> new_coeffs;
-	    cerr << "\ncomputing new filter for sq_kappas " << sq_kapas << " at index " <<k_index<< std::endl;
+            info(boost::format("computing new filter for sq_kappas %1% at index %2%") % sq_kapas % k_index);
 	    construct_scaled_filter_coefficients_2D(new_coeffs, filter_coefficients,sq_kapas, number_of_coefficients_before_padding);    
 	    filter_lookup[k_index] = new ArrayFilter2DUsingConvolution<float>(new_coeffs);
 	    all_filter_coefficients[k][j][i] = filter_lookup[k_index];
@@ -941,7 +940,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
   static int count=0;
   // every time it's called, counter is incremented
   count++;
-  cerr << " checking the counter  " << count << endl; 
+  info(boost::format(" checking the counter  %1%") % count);
   
   const VoxelsOnCartesianGrid<float>& in_density_cast_0 =
     dynamic_cast< const VoxelsOnCartesianGrid<float>& >(in_density); 
@@ -968,7 +967,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
       {
 	VoxelsOnCartesianGrid<float>* precomputed_coefficients_image_cast =
 	  dynamic_cast< VoxelsOnCartesianGrid<float>* >(precomputed_coefficients_image); 
-	cerr << " In here nonseparable" << endl;
+	info(" In here nonseparable");
 	for ( int k = precomputed_coefficients_image_cast->get_min_z(); k<=precomputed_coefficients_image_cast->get_max_z();k++)
 	  for ( int j = precomputed_coefficients_image_cast->get_min_y(); j<=precomputed_coefficients_image_cast->get_max_y();j++)
 	    for ( int i = precomputed_coefficients_image_cast->get_min_x(); i<=precomputed_coefficients_image_cast->get_max_x();i++)
@@ -1011,7 +1010,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 		&& normalised_bck_filename !="1")
 
 	       { 
-		 cerr <<  " IN the LOOP "  << k << "   " << j << "  " <<i << "   " << endl;
+		 info(boost::format(" IN the LOOP %1%   %2%  %3%   ") % k % j % i);
 		 for (int k=in_density_cast_0.get_min_z();k<=in_density_cast_0.get_max_z();k++)   
 		   for (int j =in_density_cast_0.get_min_y();j<=in_density_cast_0.get_max_y();j++)
 		     for (int i =in_density_cast_0.get_min_x();i<=in_density_cast_0.get_max_x();i++)	

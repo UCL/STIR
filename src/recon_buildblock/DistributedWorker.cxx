@@ -40,6 +40,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/info.h"
+#include "stir/error.h"
 #include <boost/format.hpp>
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
 #include <exception>
@@ -108,7 +109,7 @@ int main(int argc, char **argv)
     }
   catch (std::exception& e)
     {
-      std::cerr << e.what() << std::endl;
+      warning(e.what());
       return_value = EXIT_FAILURE;
     }
 #ifdef STIR_MPI

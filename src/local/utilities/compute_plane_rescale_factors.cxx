@@ -21,6 +21,7 @@
 #include "stir/stream.h"
 #include "stir/Array.h"
 #include "stir/IO/read_from_file.h"
+#include "stir/error.h"
 #include <fstream>
 
 #ifndef STIR_NO_NAMESPACES

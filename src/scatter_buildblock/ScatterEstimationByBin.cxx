@@ -317,13 +317,14 @@ process_data()
             // TODO remove statics
             static double previous_timer = 0 ;          
             static int previous_bin_count = 0 ;
-            std::cerr << bin_counter << " bins  Total time elapsed "
-                      << bin_timer.value() << " sec \tTime remaining about "
-                      << (bin_timer.value()-previous_timer)*
-                         (total_bins-bin_counter)/
-                         (bin_counter-previous_bin_count)/60
-                      << " minutes"
-                      << std::endl;                             
+
+            info(boost::format("%1% bins  Total time elapsed %2% sec "
+              "\tTime remaining about %3% minutes") 
+              % bin_counter 
+              % bin_timer.value() 
+              % ((bin_timer.value()-previous_timer)
+                *(total_bins-bin_counter)/(bin_counter-previous_bin_count)/60) );
+
             previous_timer = bin_timer.value() ;
             previous_bin_count = bin_counter ;
           }

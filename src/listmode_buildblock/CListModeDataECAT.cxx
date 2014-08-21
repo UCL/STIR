@@ -30,6 +30,7 @@
 #include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
+#include "stir/info.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/stir_ecat7.h"
 #else
@@ -174,7 +175,7 @@ open_lm_file(unsigned int new_lm_file) const
       char rest[50];
       sprintf(rest, "_%d.lm", new_lm_file);
       filename += rest;
-      cerr << "CListModeDataECAT: opening file " << filename << endl;
+      info(boost::format("CListModeDataECAT: opening file %1%") % filename);
       shared_ptr<istream> stream_ptr(new fstream(filename.c_str(), ios::in | ios::binary));
       if (!(*stream_ptr))
       {

@@ -31,6 +31,7 @@
 #include "stir/scatter/ScatterEstimationByBin.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/numerics/erf.h"
+#include "stir/info.h"
 #include <iostream>
 
 START_NAMESPACE_STIR
@@ -134,7 +135,7 @@ detection_efficiency_no_scatter(const unsigned det_num_A,
   static const float detector_efficiency_no_scatter =
     detection_efficiency(511.F) > 0 
     ? detection_efficiency(511.F)
-    : (std::cerr << "Zero detection efficiency for 511. Will normalise to 1\n", 1.F);
+    : (info("Zero detection efficiency for 511. Will normalise to 1"), 1.F);
 
   const CartesianCoordinate3D<float>& detector_coord_A =
     detection_points_vector[det_num_A];

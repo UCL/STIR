@@ -38,6 +38,7 @@
 #include "stir/NumericInfo.h"
 #include "stir/utilities.h"
 #include "stir/IO/read_from_file.h"
+#include "stir/info.h"
 
 #include <iostream>
 #include <memory>
@@ -178,7 +179,7 @@ OSSPSReconstruction<TargetT>::
 OSSPSReconstruction(const std::string& parameter_filename)
 {    
   this->initialise(parameter_filename);
-  cerr<<this->parameter_info();
+  info(this->parameter_info());
 }
 
 template <class TargetT>
@@ -233,13 +234,8 @@ precompute_denominator_of_conditioner_without_penalty()
 								*precomputed_denominator_ptr, 
 								*data_full_of_ones_aptr);
   timer.stop();
-  cerr << "Precomputing denominator took " << timer.value() << " s CPU time\n";
-  cerr << "min and max in precomputed denominator " 
-       << *std::min_element(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all())
-       << ", "
-       << *std::max_element(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all())
-       << std::endl;
-  
+  info(boost::format("Precomputing denominator took %1% s CPU time") % timer.value());
+  info(boost::format("min and max in precomputed denominator %1%, %2%") % *std::min_element(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all()) % *std::max_element(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all()));  
 
   // Write it to file
   {
@@ -247,7 +243,7 @@ precompute_denominator_of_conditioner_without_penalty()
       this->output_filename_prefix +
       "_precomputed_denominator";
     
-      cerr <<"  - Saving " << fname << endl;
+      info(boost::format("  - Saving %1%") % fname);
       this->output_file_format_ptr->
 	write_to_file(fname, *precomputed_denominator_ptr);
   }
@@ -348,8 +344,8 @@ update_estimate(TargetT &current_image_estimate)
   timerSubset.Start();
 #endif // PARALLEL
   
-  const int subset_num=this->get_subset_num();  
-  cerr<<endl<<"Now processing subset #: "<<subset_num<<endl;
+  const int subset_num=this->get_subset_num();
+  info(boost::format("Now processing subset #: %1%") % subset_num);
     
   // TODO make member or static parameter to avoid reallocation all the time
   auto_ptr< TargetT > numerator_ptr =
@@ -361,12 +357,8 @@ update_estimate(TargetT &current_image_estimate)
 		 numerator_ptr->begin_all(),
 		 _1 * this->num_subsets);
 
-  cerr<< "num subsets " << this->num_subsets << '\n';  
-  cerr << "this->num_subsets*subgradient : max " 
-       << *std::max_element(numerator_ptr->begin_all(), numerator_ptr->end_all());
-  cerr << ", min " 
-       << *std::min_element(numerator_ptr->begin_all(), numerator_ptr->end_all())
-       << endl;
+  info(boost::format("num subsets %1%") % this->num_subsets);
+  info(boost::format("this->num_subsets*subgradient : max %1%, min %2%") % *std::max_element(numerator_ptr->begin_all(), numerator_ptr->end_all()) % *std::min_element(numerator_ptr->begin_all(), numerator_ptr->end_all()));
 
   // now divide by denominator
 
@@ -396,11 +388,7 @@ update_estimate(TargetT &current_image_estimate)
       threshold_min_to_small_positive_value(work_image_ptr->begin_all(),
 					    work_image_ptr->end_all(),
 					    10.E-6F);
-      cerr << " denominator max " 
-	   << *std::max_element(work_image_ptr->begin_all(), work_image_ptr->end_all());
-      cerr << ", min " 
-	   << *std::min_element(work_image_ptr->begin_all(), work_image_ptr->end_all())
-	   << endl;
+      info(boost::format(" denominator max %1%, min %2%") % *std::max_element(work_image_ptr->begin_all(), work_image_ptr->end_all()) % *std::min_element(work_image_ptr->begin_all(), work_image_ptr->end_all()));
 
       if (!recompute_penalty_term_in_denominator)
 	{
@@ -431,7 +419,7 @@ update_estimate(TargetT &current_image_estimate)
     (1+this->relaxation_gamma*(this->subiteration_num/this->num_subsets));
 
 
-  std::cerr << "relaxation parameter = " << relaxation_parameter << '\n';
+  info(boost::format("relaxation parameter = %1%") % relaxation_parameter);
 
   const float alpha = 1.F;  //  line_search(current_image_estimate, *numerator_ptr);
   // *numerator_ptr *= relaxation_parameter * alpha;  
@@ -450,11 +438,8 @@ update_estimate(TargetT &current_image_estimate)
     }
   
   {
-    cerr << "additive update image min,max: " 
-	 << *std::min_element(numerator_ptr->begin_all(), numerator_ptr->end_all())
-	 << ", " 
-	 << *std::max_element(numerator_ptr->begin_all(), numerator_ptr->end_all())
-	 << endl;
+    info(boost::format("additive update image min,max: %1%, %2%") % *std::min_element(numerator_ptr->begin_all(), numerator_ptr->end_all()) % *std::max_element(numerator_ptr->begin_all(), numerator_ptr->end_all()));
+
   }  
   current_image_estimate += *numerator_ptr; 
 
@@ -469,13 +454,7 @@ update_estimate(TargetT &current_image_estimate)
     const float new_min = 0.F;
     const float new_max = 
       static_cast<float>(upper_bound);
-    cerr << "current image old min,max: " 
-	 << current_min
-	 << ", " 
-	 << current_max
-	 << ", new min,max " 
-	 << std::max(current_min, new_min) << ", " << std::min(current_max, new_max)
-	 << endl;
+    info(boost::format("current image old min,max: %1%, %2%, new min,max %3%, %4%") % current_min % current_max % std::max(current_min, new_min) % std::min(current_max, new_max));
     
     threshold_upper_lower(current_image_estimate.begin_all(),
 			  current_image_estimate.end_all(), 
@@ -486,7 +465,7 @@ update_estimate(TargetT &current_image_estimate)
   //cerr << "Subset : " << subset_timer.value() << "secs " <<endl;
 #else // PARALLEL
   timerSubset.Stop();
-  cerr << "Subset: " << timerSubset.GetTime() << "secs" << endl;
+  info(boost::format("Subset: %1%secs") % timerSubset.GetTime());
 
 #endif
   

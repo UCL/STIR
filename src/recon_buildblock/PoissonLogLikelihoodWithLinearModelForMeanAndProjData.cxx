@@ -33,6 +33,7 @@
 #include "stir/Succeeded.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/stream.h"
+#include "stir/info.h"
 
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 
@@ -72,8 +73,6 @@
 using std::vector;
 using std::pair;
 using std::ends;
-using std::cerr;
-using std::endl;
 using std::max;
 #endif
 
@@ -221,9 +220,7 @@ post_processing()
 
   if (this->additive_projection_data_filename != "0")
   {
-    cerr << "\nReading additive projdata data "
-         << this->additive_projection_data_filename 
-         << endl;
+    info(boost::format("Reading additive projdata data %1%") % this->additive_projection_data_filename);
     this->additive_proj_data_sptr = 
       ProjData::read_from_file(this->additive_projection_data_filename);
   };
@@ -255,8 +252,8 @@ post_processing()
 #else 
    //check caching enabled value
    if (this->distributed_cache_enabled==true) 
-     cerr<<"\nWill use distributed caching!"<<endl;
-   else cerr<<"\nDistributed caching is disabled. Will use standard distributed version without forced caching!"<<endl;
+     info("Will use distributed caching!");
+   else info("Distributed caching is disabled. Will use standard distributed version without forced caching!");
    
 #ifndef NDEBUG 
    //check tests enabled value
@@ -277,7 +274,7 @@ post_processing()
    //check timing values
    if (this->message_timings_enabled==true)
      {
-       cerr<<"\nWill print timings of MPI-Messages! This is used to find bottlenecks!"<<endl;
+       info("Will print timings of MPI-Messages! This is used to find bottlenecks!");
        distributed::test_send_receive_times=true;
      }
    //set timing threshold
@@ -285,7 +282,7 @@ post_processing()
    
    if (this->rpc_timings_enabled==true)
      {
-       cerr<<"\nWill print run-times of processing RPC_process_related_viewgrams_gradient for every slave! This will give an idea of the parallelization effect!"<<endl;
+       info("Will print run-times of processing RPC_process_related_viewgrams_gradient for every slave! This will give an idea of the parallelization effect!");
        distributed::rpc_time=true;
      }          
    
