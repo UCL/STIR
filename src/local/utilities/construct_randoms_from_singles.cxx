@@ -30,6 +30,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <algorithm>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -67,7 +68,8 @@ int main(int argc, char **argv)
   const string program_name = argv[0];
 
   ProjDataInterfile 
-    proj_data(template_projdata_ptr->get_proj_data_info_ptr()->create_shared_clone(), 
+    proj_data(template_projdata_ptr->get_exam_info_sptr(),
+              template_projdata_ptr->get_proj_data_info_ptr()->create_shared_clone(), 
 	      output_file_name);
 
   const int num_rings = 
@@ -133,7 +135,7 @@ int main(int argc, char **argv)
 	error("Can only process not arc-corrected data\n");
       }
     const int half_fan_size = 
-      min(proj_data_info_ptr->get_max_tangential_pos_num(),
+      std::min(proj_data_info_ptr->get_max_tangential_pos_num(),
           -proj_data_info_ptr->get_min_tangential_pos_num());
     const int fan_size = 2*half_fan_size+1;
     const int max_ring_diff = 

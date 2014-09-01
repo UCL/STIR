@@ -27,6 +27,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <algorithm>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -91,7 +92,7 @@ int main(int argc, char **argv)
              for (int ra = norm_block_data.get_min_ra(); ra <= norm_block_data.get_max_ra(); ++ra)
               for (int a = norm_block_data.get_min_a(); a <= norm_block_data.get_max_a(); ++a)
                 // loop rb from ra to avoid double counting
-                for (int rb = max(ra,norm_block_data.get_min_rb(ra)); rb <= norm_block_data.get_max_rb(ra); ++rb)
+                for (int rb = std::max(ra,norm_block_data.get_min_rb(ra)); rb <= norm_block_data.get_max_rb(ra); ++rb)
                   for (int b = norm_block_data.get_min_b(a); b <= norm_block_data.get_max_b(a); ++b)      
                   {                  
 		    norm_block_data(ra,a,rb,b) =

@@ -46,7 +46,7 @@ static unsigned long compute_num_bins(const int num_rings, const int num_detecto
   for (int ra = 0; ra < num_rings; ++ra)
     for (int a =0; a < num_detectors_per_ring; ++a)
     {
-      for (int rb = max(ra-max_ring_diff, 0); rb <= min(ra+max_ring_diff, num_rings-1); ++rb)
+      for (int rb = std::max(ra-max_ring_diff, 0); rb <= std::min(ra+max_ring_diff, num_rings-1); ++rb)
         for (int b = a+num_detectors_per_ring/2-half_fan_size; b <= a+num_detectors_per_ring/2+half_fan_size; ++b)
   	   ++num;
     }
@@ -62,17 +62,17 @@ int main(int argc, char **argv)
 {  
   if (!(argc==4 || (argc==7 && strcmp(argv[1],"-f")==0)))
     {
-      cerr << "Usage: \n" 
-	   << '\t' << argv[0] << " -f out_filename_prefix measured_fan_sum_data  num_iterations max_ring_diff fan_size\n"
-	   << "or\n"
-	   << '\t' << argv[0] << " out_filename_prefix measured_projdata  num_iterations\n"
-	   << "If the -f option is used, the 2nd arg should be a file with fan_sums. "
-	   << "Otherwise, it has to be projection data.\n";
+      std::cerr << "Usage: \n" 
+                << '\t' << argv[0] << " -f out_filename_prefix measured_fan_sum_data  num_iterations max_ring_diff fan_size\n"
+                << "or\n"
+                << '\t' << argv[0] << " out_filename_prefix measured_projdata  num_iterations\n"
+                << "If the -f option is used, the 2nd arg should be a file with fan_sums. "
+                << "Otherwise, it has to be projection data.\n";
 
       return EXIT_FAILURE;
     }
   const int num_eff_iterations = atoi(argv[argc==4?3:4]);
-  const string out_filename_prefix = argv[argc==4?1:2];
+  const std::string out_filename_prefix = argv[argc==4?1:2];
 
   const int do_display_interval = 
     ask_num("Display iterations which are a multiple of ",0,num_eff_iterations,0);
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 #endif
       // write fan sums to file
       {
-	string fan_sum_name = "fansums_for_";
+        std::string fan_sum_name = "fansums_for_";
 	fan_sum_name += argv[2];
 	fan_sum_name.erase(fan_sum_name.begin() + fan_sum_name.rfind('.'), 
 			   fan_sum_name.end());

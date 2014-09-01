@@ -36,6 +36,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <algorithm>
 #include "stir/ProjData.h"
 //#include "stir/ProjDataInterfile.h"
 
@@ -122,7 +123,7 @@ int main(int argc, char **argv)
     }
 #endif
     
-    for (int iter_num = 1; iter_num<=max(num_iterations, 1); ++iter_num)
+    for (int iter_num = 1; iter_num<=std::max(num_iterations, 1); ++iter_num)
     {
       if (iter_num== 1)
       {

@@ -36,7 +36,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-
+#include <algorithm>
 
 START_NAMESPACE_STIR
 
@@ -184,7 +184,7 @@ int main(int argc, char **argv)
       make_det_pair_data(model_det_pair_data, *model_data, segment_num, ax_pos_num);
       //display(model_det_pair_data, "model");
 
-      for (int iter_num = 1; iter_num<=max(num_iterations, 1); ++iter_num)
+      for (int iter_num = 1; iter_num<=std::max(num_iterations, 1); ++iter_num)
 	{
 	  if (iter_num== 1)
 	    {
