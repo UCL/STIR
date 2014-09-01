@@ -159,3 +159,18 @@ segment2=stir.FloatSegmentByView(projdatainfo,0);
 % check conversion
 a=stir.FloatArray3D(segment);
 assert(a.find_max()==2)
+
+%% ProjDataInMemory
+success=stir.Succeeded(stir.Succeeded.yes());
+
+s=stir.Scanner(stir.Scanner.E962());
+proj_data_info=stir.ProjDataInfo.ProjDataInfoCTI(s,3,9,8,6);
+proj_data=stir.ProjDataInMemory(stir.ExamInfo(), proj_data_info);
+seg=proj_data.get_segment_by_sinogram(0);
+
+assert(seg.find_min()==0);
+seg.fill(4);
+assert(seg.find_min()==4);
+assert(isequal(proj_data.set_segment(seg), success));
+seg2=proj_data.get_segment_by_sinogram(0);
+assert(isequal(seg2.to_matlab(), seg.to_matlab()));
