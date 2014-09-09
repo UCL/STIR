@@ -35,14 +35,9 @@
 #include "stir/Succeeded.h"
 #include "stir/utilities.h"
 #include "stir/is_null_ptr.h"
+#include "stir/info.h"
 #include <iostream>
 #include "stir/IO/OutputFileFormat.h"
-
-#ifndef STIR_NO_NAMESPACES
-using std::cerr;
-using std::endl;
-using std::ends;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -222,11 +217,10 @@ reconstruct(shared_ptr<TargetT> const& target_image_sptr)
   {
     if(!is_null_ptr(this->post_filter_sptr))
       {
-	std::cerr << "\nApplying post-filter"<<endl;
+	info("Applying post-filter");
 	this->post_filter_sptr->apply(*target_image_sptr);
 	
-	std::cerr << "  min and max after post-filtering " << target_image_sptr->find_min() 
-		  << " " << target_image_sptr->find_max() << std::endl;
+	info(boost::format("  min and max after post-filtering %1% %2%") % target_image_sptr->find_min() % target_image_sptr->find_max());
       }
   }
   return success;

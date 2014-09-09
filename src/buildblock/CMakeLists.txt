@@ -20,7 +20,8 @@ set(${dir_LIB_SOURCES}
   SegmentBySinogram 
   Segment 
   SegmentByView 
-  Viewgram 
+  Viewgram
+  Verbosity
   Sinogram 
   RelatedViewgrams 
   scale_sinograms 

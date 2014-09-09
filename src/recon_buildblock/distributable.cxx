@@ -54,16 +54,12 @@
 #include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/is_null_ptr.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
+#include "stir/info.h"
 
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributableMPICacheEnabled.h"
 #include "stir/recon_buildblock/distributed_functions.h"
 #include "stir/recon_buildblock/distributed_test_functions.h"
-#endif
-
-#ifndef STIR_NO_NAMESPACES
-using std::cerr;
-using std::endl;
 #endif
 
 START_NAMESPACE_STIR
@@ -362,7 +358,7 @@ void distributable_computation(
     };
 
   if (zero_seg0_end_planes)
-    cerr << "End-planes of segment 0 will be zeroed" << endl;
+    info("End-planes of segment 0 will be zeroed");
 
 #ifdef STIR_MPI
   int sent_count=0;                     //counts the work packages sent 
@@ -371,8 +367,10 @@ void distributable_computation(
 #endif
   //double total_seq_rpc_time=0.0; //sums up times used for RPC_process_related_viewgrams
 
+
   for (int segment_num = min_segment_num; segment_num <= max_segment_num; segment_num++)
     {
+
       CPUTimer segment_timer;
       segment_timer.start();
             
@@ -392,7 +390,7 @@ void distributable_computation(
 
           if (first_view_in_segment)
             {
-              cerr << "Starting to process segment " << segment_num << " (and symmetry related segments)" << endl;
+              info(boost::format("Starting to process segment %1% (and symmetry related segments)") % segment_num);
               first_view_in_segment = false;
             }
     
@@ -461,9 +459,7 @@ void distributable_computation(
           // TODO this message relies on knowledge of count, count2 which might be inappropriate for 
           // the call-back function
 #ifndef STIR_NO_RUNNING_LOG
-          cerr<<"\tNumber of (cancelled) singularities: "<<count
-              <<"\n\tNumber of (cancelled) negative numerators: "<<count2
-              << "\n\tSegment " << segment_num << ": " << segment_timer.value() << "secs" <<endl;
+          info(boost::format("Number of (cancelled) singularities: %1%\nNumber of (cancelled) negative numerators: %2%\nSegment %3%: %4%secs") % count % count2 % segment_num % segment_timer.value());
 #endif
         }
     }

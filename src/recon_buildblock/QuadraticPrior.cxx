@@ -33,6 +33,7 @@
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/is_null_ptr.h"
+#include "stir/info.h"
 #include <algorithm>
 using std::min;
 using std::max;
@@ -404,8 +405,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
           }
     }
 
-  std::cerr << "Prior gradient max " << prior_gradient.find_max()
-    << ", min " << prior_gradient.find_min() << std::endl;
+  info(boost::format("Prior gradient max %1%, min %2%\n") % prior_gradient.find_max() % prior_gradient.find_min());
 
   static int count = 0;
   ++count;
@@ -553,8 +553,7 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>
           }
     }
 
-  std::cerr << " parabolic_surrogate_curvature max " << parabolic_surrogate_curvature.find_max()
-    << ", min " << parabolic_surrogate_curvature.find_min() << std::endl;
+  info(boost::format("parabolic_surrogate_curvature max %1%, min %2%\n") % parabolic_surrogate_curvature.find_max() % parabolic_surrogate_curvature.find_min());
   /*{
     static int count = 0;
     ++count;

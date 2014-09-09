@@ -24,6 +24,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/round.h"
 #include "stir/Succeeded.h"
+#include "stir/info.h"
 #include "local/stir/motion/ObjectTransformation.h"
 #include "local/stir/motion/RigidObject3DTransformation.h"
 #include "local/stir/numerics/more_interpolators.h"
@@ -193,7 +194,7 @@ transform_3d_object(ProjData& out_proj_data,
     {       
       const SegmentByView<float> in_segment = 
         in_proj_data.get_segment_by_view( segment_num);
-      std::cerr << "segment_num "<< segment_num << std::endl;
+      info(boost::format("segment_num %1%") % segment_num);
       const int in_max_ax_pos_num = in_segment.get_max_axial_pos_num();
       const int in_min_ax_pos_num = in_segment.get_min_axial_pos_num();
       const int in_max_view_num = in_segment.get_max_view_num();
@@ -269,7 +270,7 @@ transform_3d_object(ProjData& out_proj_data,
     {       
       SegmentByView<float> out_segment = 
         out_proj_data.get_empty_segment_by_view( segment_num);
-      std::cerr << "segment_num "<< segment_num << std::endl;
+      info(boost::format("segment_num %1%") % segment_num);
       const int out_max_ax_pos_num = out_segment.get_max_axial_pos_num();
       const int out_min_ax_pos_num = out_segment.get_min_axial_pos_num();
       const int out_max_view_num = out_segment.get_max_view_num();

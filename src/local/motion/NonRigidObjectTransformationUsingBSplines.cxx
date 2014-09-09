@@ -18,6 +18,7 @@
 #include "stir/IO/read_from_file.h"
 #include "stir/numerics/determinant.h"
 #include "stir/IndexRange2D.h"
+#include "stir/info.h"
 #include <iostream>
 
 // for ncat
@@ -104,8 +105,7 @@ parse_line(const string& deformation_field_from_NCAT_file,
       warning("Error in line in NCAT file %s: inconsistent coordinates\n\"%s\"", 
 	      deformation_field_from_NCAT_file.c_str(),
 	      line.c_str());
-      std::cerr << new_voxel_coords << current_voxel_coords << current_displacement
-		<< new_voxel_coords - current_voxel_coords - current_displacement << std::endl;
+      info(boost::format("%1% %2% %3% %4%") % new_voxel_coords % current_voxel_coords % current_displacement % new_voxel_coords - current_voxel_coords - current_displacement);
       return Succeeded::no;
     }
 #endif
@@ -146,7 +146,7 @@ set_deformation_field_from_NCAT_file(DeformationFieldOnCartesianGrid<3,float>& d
   deformation_field[3].grow(IndexRange<3>(image_size));
   // note: constructor sets all deformations to 0
 
-  std::cerr << "\nstart parsing  NCAT" << std::endl;
+  info("start parsing  NCAT");
   CartesianCoordinate3D<int> current_voxel;
   CartesianCoordinate3D<float> current_displacement;
   while (ncat_file)
@@ -166,7 +166,7 @@ set_deformation_field_from_NCAT_file(DeformationFieldOnCartesianGrid<3,float>& d
 	  current_voxel[3] < deformation_field[1][current_voxel[1]][current_voxel[2]].get_min_index() ||
 	  current_voxel[3] > deformation_field[1][current_voxel[1]][current_voxel[2]].get_max_index())
 	{
-	  std::cerr << "\nCoordinates out of range : " << current_voxel << current_displacement << std::endl;
+	  info(boost::format("Coordinates out of range : %1% %2%") %  current_voxel % current_displacement);
 	  return Succeeded::no;
 	}
       deformation_field[1][current_voxel] = current_displacement_in_mm.z();
@@ -175,7 +175,7 @@ set_deformation_field_from_NCAT_file(DeformationFieldOnCartesianGrid<3,float>& d
       if (ncat_file.eof())
 	break;
     }
-  std::cerr << "\nend parsing  NCAT" << std::endl;
+  info("end parsing  NCAT");
   return Succeeded::yes;
 }
 /////////////// end of NCAT parsing stuff //////////////
@@ -318,11 +318,11 @@ post_processing()
 	}
     }
 
-  std::cerr << "\nStarting to compute interpolators";
+  info("Starting to compute interpolators");
   for (int i=1; i<=num_dimensions; ++i)
     this->interpolator[i] = 
       BSpline::BSplinesRegularGrid<num_dimensions,elemT,elemT>((*this->deformation_field_sptr)[i],this->_bspline_type);
-  std::cerr << "\nDone computing interpolators";
+  info("Done computing interpolators");
   // deallocate data for deformation field
   // at present, have to do this by assigning an object as opposed to 0
   // in case we want to parse twice

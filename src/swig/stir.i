@@ -37,6 +37,7 @@
 #define __stir_error_H__
 #endif
 
+ 
  #include "stir/Succeeded.h"
  #include "stir/DetectionPosition.h"
  #include "stir/Scanner.h"
@@ -49,6 +50,7 @@
  #include "stir/SegmentByView.h"
  #include "stir/SegmentBySinogram.h"
  #include "stir/ExamInfo.h"
+ #include "stir/Verbosity.h"
  #include "stir/ProjData.h"
  #include "stir/ProjDataInMemory.h"
  #include "stir/ProjDataInterfile.h"
@@ -544,6 +546,7 @@ namespace std {
 
 %shared_ptr(stir::TimeFrameDefinitions);
 %shared_ptr(stir::ExamInfo);
+%shared_ptr(stir::Verbosity);
 %shared_ptr(stir::Scanner);
 %shared_ptr(stir::ProjDataInfo);
 %shared_ptr(stir::ProjDataInfoCylindrical);
@@ -1007,6 +1010,7 @@ namespace stir {
  */
 %include "stir/TimeFrameDefinitions.h"
 %include "stir/ExamInfo.h"
+%include "stir/Verbosity.h"
 // ignore non-const versions
 %ignore stir::Bin::segment_num();
 %ignore stir::Bin::axial_pos_num();

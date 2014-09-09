@@ -19,6 +19,7 @@ $(dir)_LIB_SOURCES := \
   Segment.cxx \
   SegmentByView.cxx \
   Viewgram.cxx \
+  Verbosity.cxx \
   Sinogram.cxx \
   RelatedViewgrams.cxx \
   scale_sinograms.cxx \

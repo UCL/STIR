@@ -50,6 +50,8 @@
 #include "stir/is_null_ptr.h"
 #include "stir/Bin.h"
 #include "stir/stream.h"
+#include "stir/error.h"
+#include <boost/format.hpp>
 #include <fstream>
 #include <algorithm>
 
@@ -349,8 +351,7 @@ write_basic_interfile_image_header(const string& header_file_name,
     ofstream output_header(header_name.c_str(), ios::out);
     if (!output_header.good())
       {
-	cerr << "Error opening old-style Interfile header '" 
-	     << header_name << " for writing" << endl;
+	error(boost::format("Error opening old-style Interfile header %1% for writing") % header_name);
         return Succeeded::no;
       }  
     

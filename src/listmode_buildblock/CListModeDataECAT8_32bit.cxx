@@ -115,7 +115,7 @@ CListModeDataECAT8_32bit::
 open_lm_file()
 {
   const std::string filename = interfile_parser.data_file_name;
-  info(boost::format("CListModeDataECAT8_32bit: opening file %s") % filename);
+  info(boost::format("CListModeDataECAT8_32bit: opening file %1%") % filename);
   shared_ptr<std::istream> stream_ptr(new std::fstream(filename.c_str(), std::ios::in | std::ios::binary));
   if (!(*stream_ptr))
     {

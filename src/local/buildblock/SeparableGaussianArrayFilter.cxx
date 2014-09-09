@@ -2,7 +2,8 @@
 #include "local/stir/SeparableGaussianArrayFilter.h"
 #include "stir/ArrayFilter1DUsingConvolution.h"
 #include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
-
+#include "stir/info.h"
+#include <boost/format.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -47,9 +48,9 @@ SeparableGaussianArrayFilter(const float standard_deviation_v,
  calculate_coefficients(filter_coefficients, number_of_coefficients_v,
 			 standard_deviation_v);
  
- cerr << "Printing filter coefficients - nonrescaled" << endl;
+ info("Printing filter coefficients - nonrescaled");
   for (int i =filter_coefficients.get_min_index();i<=filter_coefficients.get_max_index();i++)    
-    cerr  << i<<"   "<< filter_coefficients[i] <<"   " << endl;
+    info(boost::format("%1%   %2%   ") % i % filter_coefficients[i]);
 
   // rescaled to dc =1
  /* float sum =0.F;  

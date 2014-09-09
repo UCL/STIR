@@ -47,7 +47,7 @@
 // for get_symmetries_ptr()
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 #include "stir/ViewSegmentNumbers.h"
-
+#include "stir/info.h"
 
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
@@ -266,7 +266,7 @@ OSMAPOSLReconstruction<TargetT>::
 OSMAPOSLReconstruction(const std::string& parameter_filename)
 {  
   this->initialise(parameter_filename);
-  std::cerr<<this->parameter_info();
+  info(this->parameter_info());
 }
 
 template <typename TargetT>
@@ -346,7 +346,7 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
       // KT 04/06/2003 moved set_up after chaining the filter. Otherwise it would be 
       // called again later on anyway.
       // Note however that at present, 
-      cerr<<endl<<"Building inter-update filter kernel"<<endl;
+      info("Building inter-update filter kernel");
       if (this->inter_update_filter_ptr->set_up(*target_image_ptr)
           == Succeeded::no)
         {
@@ -367,7 +367,7 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
                                            thresholding_sptr
 					   ));
       // KT 04/06/2003 moved set_up after chaining the filter (and removed it from IterativeReconstruction)
-      cerr<<endl<<"Building inter-iteration filter kernel"<<endl;
+      info("Building inter-iteration filter kernel");
       if (this->inter_iteration_filter_ptr->set_up(*target_image_ptr)
           == Succeeded::no)
         {
@@ -404,7 +404,7 @@ update_estimate(TargetT &current_image_estimate)
     auto_ptr< TargetT >(current_image_estimate.get_empty_copy());
 
   const int subset_num=this->get_subset_num();  
-  cerr<<endl<<"Now processing subset #: "<<subset_num<<endl;
+  info(boost::format("Now processing subset #: %1%") % subset_num);
 
   this->objective_function().
     compute_sub_gradient_without_penalty_plus_sensitivity(*multiplicative_update_image_ptr,
@@ -486,8 +486,7 @@ update_estimate(TargetT &current_image_estimate)
              small_num);
     }
     
-    cerr<<"Number of (cancelled) singularities in Sensitivity division: "
-      <<count<<endl;
+    info(boost::format("Number of (cancelled) singularities in Sensitivity division: %1%") % count);
   }
   
     
@@ -495,10 +494,8 @@ update_estimate(TargetT &current_image_estimate)
      !is_null_ptr(this->inter_update_filter_ptr) &&
      !(this->subiteration_num%this->inter_update_filter_interval))
   {
-    
-    cerr<<endl<<"Applying inter-update filter"<<endl;
+    info("Applying inter-update filter");
     this->inter_update_filter_ptr->apply(current_image_estimate); 
-    
   }
   
   // KT 17/08/2000 limit update
@@ -528,13 +525,7 @@ update_estimate(TargetT &current_image_estimate)
         static_cast<float>(this->minimum_relative_change);
       const float new_max = 
         static_cast<float>(this->maximum_relative_change);
-      cerr << "Update image old min,max: " 
-           << current_min
-           << ", " 
-           << current_max
-           << ", new min,max " 
-           << max(current_min, new_min) << ", " << min(current_max, new_max)
-           << endl;
+      info(boost::format("Update image old min,max: %1%, %2%, new min,max %3%, %4%") % current_min % current_max % (min(current_min, new_min)) % (max(current_max, new_max)));
 
       threshold_upper_lower(multiplicative_update_image_ptr->begin_all(),
                             multiplicative_update_image_ptr->end_all(), 
@@ -557,7 +548,7 @@ update_estimate(TargetT &current_image_estimate)
   //cerr << "Subset : " << subset_timer.value() << "secs " <<endl;
 #else // PARALLEL
   timerSubset.Stop();
-  cerr << "Subset: " << timerSubset.GetTime() << "secs" << endl;
+  info(boost::format("Subset: %1%secs") % timerSubset.GetTime());
 #endif
   
 }
