@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -38,6 +39,8 @@ START_NAMESPACE_STIR
 template <typename elemT> class RelatedViewgrams;
 class Succeeded;
 class ProjDataInfo;
+class ProjData;
+class DataSymmetriesForViewSegmentNumbers;
 /*!
   \ingroup normalisation
   \brief Abstract base class for implementing bin-wise normalisation of data.
@@ -96,7 +99,34 @@ public:
     Default implementation multiplies with the factors returned by get_bin_efficiency().
   */
   virtual void undo(RelatedViewgrams<float>&,const double start_time, const double end_time) const; 
- 
+
+  //! normalise some data
+  /*! 
+    This would be used for instance to precorrect unnormalised data. With the
+    notation of the class documentation, this would \c divide by the factors 
+    \f$\mathrm{norm}_b \f$.
+
+    This just loops over all RelatedViewgrams. 
+
+    The default value for the symmetries means that TrivialDataSymmetriesForBins will be used.
+  */
+  void apply(ProjData&,const double start_time, const double end_time, 
+             shared_ptr<DataSymmetriesForViewSegmentNumbers> = 0) const;
+
+  //! undo the normalisation of some data
+  /*! 
+    This would be used for instance to bring geometrically forward projected data to 
+    the mean of the measured data. With the
+    notation of the class documentation, this would \c multiply by the factors 
+    \f$\mathrm{norm}_b \f$.
+
+    This just loops over all RelatedViewgrams. 
+
+    The default value for the symmetries means that TrivialDataSymmetriesForBins will be used.
+  */
+  void undo(ProjData&,const double start_time, const double end_time, 
+            shared_ptr<DataSymmetriesForViewSegmentNumbers> = 0) const; 
+
 };
 
 END_NAMESPACE_STIR
