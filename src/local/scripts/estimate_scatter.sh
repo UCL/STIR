@@ -25,6 +25,7 @@ if [ -z "${back_off}" ]; then back_off=0; fi
 #if [ -z "${max_mask_length}" ]; then max_mask_length=100000; fi
 if [ -z "${DORANDOM}" ]; then DORANDOM=0; fi # TODO only in ST_scatter.par
 if [ -z "${do_FBP}" ]; then do_FBP=1; fi
+if [ -z "${NUM_SUBSETS}" ]; then export NUM_SUBSETS=8; fi
 if [ -z "${postfilter_FWHM}" ]; then postfilter_FWHM=20; fi
 if [ -z "${do_average_at_2}" ]; then do_average_at_2=0; fi
 if [ -z "${multiples_FWHM}" ]; then multiples_FWHM=0; fi
@@ -233,10 +234,9 @@ EOF
   else
     export RECOMPUTE_SENSITIVITY=1
   fi
-  export NUM_SUBSETS=8
   export START_SUBITERATION=1
-  export NUM_SUBITERATIONS=8
-  export SAVE_SUBITERATION_NUM=8
+  export NUM_SUBITERATIONS=${NUM_SUBSETS}
+  export SAVE_SUBITERATION_NUM=${NUM_SUBSETS}
 
   if [ -z ${background_sino} ]; then
     total_background_sino=${scatter_sino}
@@ -247,7 +247,13 @@ EOF
   export SINOGRAM_TO_ADD_IN_DENOMINATOR=AC_of_${total_background_sino%%*/}
 
   stir_math -s --mult ${SINOGRAM_TO_ADD_IN_DENOMINATOR} ${MULTIPLICATIVE_SINOGRAM} ${total_background_sino}
-  OSMAPOSL ${OSEMpar} >& ${OUTPUT}.log
+  echo "Running OSMAPOSL"
+  if OSMAPOSL ${OSEMpar} >& ${OUTPUT}.log
+  then
+      : #ok
+  else
+      echo "Error running OSMAPOSL. Check ${OUTPUT}.log" 1>&2
+  fi
   rm -f ${SINOGRAM_TO_ADD_IN_DENOMINATOR%.*}.*s
   stir_math $final_output ${OUTPUT}_${NUM_SUBITERATIONS}.hv
 }
