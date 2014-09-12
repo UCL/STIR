@@ -32,9 +32,9 @@ if [ -z "${multiples_FWHM}" ]; then multiples_FWHM=0; fi
 # note if multiples_FWHM>0, set multiples_norm
 
 
-if [ $# -ne 3 -a $# -ne 4 ]; then
+if [ $# -lt 3 -a $# -gt 5 ]; then
     echo "usage: $0 \\" 1>&2
-    echo "   atten_image emission_proj_data_file template_proj_data [ ACFfile ] " 1>&2
+    echo "   atten_image emission_proj_data_file template_proj_data [ ACFfile [NORMsino ]] " 1>&2
     echo "If ACFfile is not given I will use attenuation_coefficients'$suffix'.hs" 1>&2
     echo "WARNING: atten_image has to be in interfile format right now" 1>&2
 # TODO this is because of restriction in get_image_dimensions.sh etc (used in zoom_att_image.sh)
@@ -153,7 +153,7 @@ EOF
   fi
 } # end of reconstruct
 
-# define reconstructOSEM(output_prefix,input, ACFs, scatter_sino_before_AC, background_sino_before_AC, initial_image[, OSEMpar] )
+# define reconstructOSEM(output_prefix,input, ACFNORM, scatter_sino_before_ACNORM, background_sino_before_ACNORM, initial_image[, OSEMpar] )
 function reconstructOSEM()
 {
   if [ $# != 6 -a $# != 7 ]; then
@@ -244,7 +244,7 @@ EOF
     total_background_sino=total_background_with_${scatter_sino%%*/}
     stir_math -s ${total_background_sino} ${scatter_sino} ${background_sino}
   fi
-  export SINOGRAM_TO_ADD_IN_DENOMINATOR=AC_of_${total_background_sino%%*/}
+  export SINOGRAM_TO_ADD_IN_DENOMINATOR=ACNORM_of_${total_background_sino%%*/}
 
   stir_math -s --mult ${SINOGRAM_TO_ADD_IN_DENOMINATOR} ${MULTIPLICATIVE_SINOGRAM} ${total_background_sino}
   echo "Running OSMAPOSL"
@@ -263,6 +263,24 @@ echo "Computing attenuation correction factors "
 calculate_attenuation_coefficients --PMRT --ACF \
     $attenuation_coefficients \
     $atten_image $emission_proj_data_file
+fi
+
+# multiply with norm if it exists
+if [ $do_norm = 1 ]; then
+    stir_math -s --mult multiplicative_factors.hs ${attenuation_coefficients} ${norm_factors}
+    mult_factors=multiplicative_factors.hs
+    # construct parameter file for later
+    normpar=norm.par
+    cat <<EOF > ${normpar}
+Bin Normalisation parameters:=
+    type:= From ProjData
+    Bin Normalisation From ProjData :=
+      normalisation projdata filename:= ${norm_factors}
+    End Bin Normalisation From ProjData:=
+END:=
+EOF
+else
+    mult_factors=${attenuation_coefficients}
 fi
 
 echo "zooming attenuation image to reduce number of scatter points"
@@ -306,7 +324,7 @@ if [ ! -z "${initial_image}" ]; then
 else
   echo "reconstructing initial image"
   activity_image=${activity_image_prefix}_0
-  reconstruct ${activity_image} ${projdata_to_fit} ${attenuation_coefficients} ${FBP2Dpar}
+  reconstruct ${activity_image} ${projdata_to_fit} ${mult_factors} ${FBP2Dpar}
 fi
 else
   activity_image=${activity_image_prefix}_${startN}
@@ -413,6 +431,9 @@ fi
 
 
 cmd="upsample_and_fit_single_scatter --min-scale-factor ${minSF} --max-scale-factor ${maxSF} --remove-interleaving 1 --half-filter-width 3  --output-filename ${scaled1} --data-to-fit ${projdata_to_fit} --data-to-scale ${unscaled}.hs --weights ${sinomask}" 
+if [ $do_norm = 1 ]; then
+    cmd="$cmd --norm ${normpar}"
+fi
 echo $cmd > upsample_and_fit_single_scatter_$unscaled.log
 $cmd >> upsample_and_fit_single_scatter_$unscaled.log 2>&1 
 
@@ -423,6 +444,9 @@ if [ ! ${multiples_FWHM} = 0 ]; then
   stir_math -s --times-scalar ${multiples_norm} $mult $scaled1 $multfiltered
 
   cmd="upsample_and_fit_single_scatter --min-scale-factor ${actual_min_scale_factor} --max-scale-factor ${actual_max_scale_factor} --remove-interleaving 0 --half-filter-width 3  --output-filename ${scaled} --data-to-fit ${projdata_to_fit} --data-to-scale ${mult} --weights ${sinomask}" 
+  if [ $do_norm = 1 ]; then
+      cmd="$cmd --norm ${normpar}"
+  fi
   echo $cmd > upsample_and_fit_single_scatter_${mult%.hs}.log
   $cmd > upsample_and_fit_single_scatter_${mult%.hs}.log 2>&1 
 fi
@@ -432,10 +456,10 @@ if [ ${do_FBP} = 1 ]; then
   # do precorrection
   #emission_proj_data - scatter_estimate(n) - background
   stir_subtract -s ${scatter_corrected_data_prefix}_$N.hs $emission_proj_data_file  $scaled ${background_proj_data_file}
-  reconstruct ${activity_image_prefix}_${nextN} ${scatter_corrected_data_prefix}_$N.hs ${attenuation_coefficients} ${FBP2Dpar}
+  reconstruct ${activity_image_prefix}_${nextN} ${scatter_corrected_data_prefix}_$N.hs ${mult_factors} ${FBP2Dpar}
 
 else
-  reconstructOSEM ${activity_image_prefix}_${nextN} ${emission_proj_data_file} ${attenuation_coefficients} ${scaled} "${background_proj_data_file}" ${ACTIVITY_IMAGE} ${OSEMpar}
+  reconstructOSEM ${activity_image_prefix}_${nextN} ${emission_proj_data_file} ${mult_factors} ${scaled} "${background_proj_data_file}" ${ACTIVITY_IMAGE} ${OSEMpar}
 
 fi
 

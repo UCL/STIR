@@ -1603,8 +1603,9 @@ using STIR [Pol11].
 
 \subsubsection{Data Initialisation \label{sec:scatter_data_initialisation}}
 \begin{itemize}
-\item Apply randoms correction and normalisation on emission data (this will be used to scale the scatter estimate)
-\item Reconstruct attenuation image (ideally use odd number of voxels for zoom\_image step below).
+\item Apply randoms correction (and optionally normalisation) to the emission data (this will be used to scale the scatter estimate)
+\item Reconstruct/get attenuation image (ideally use odd number of voxels for zoom\_image step below).
+\item Calculate Attenuation Correction Factors (ACFs)
 \item Use \textbf{create\_tail\_mask\_from\_ACFs} to estimate the region that will be used for scaling
 \item Reconstruct emission image without scatter correction
 \item Construct a ``sub-sampled sinogram" template (i.e. same geometrical characteristics but
@@ -1709,8 +1710,14 @@ upsample\_and\_fit\_single\_scatter \textbackslash \\
 					--output-filename <filename> \textbackslash \\
 					--data-to-fit <filename> \textbackslash \\
 					--data-to-scale <filename> \textbackslash \\
+					--norm <filename> \textbackslash \\
 					--weights <filename>%
 }
+This program takes the coarse scatter estimate, upsamples it to the size of the emission data (\textit{data-to-fit}) and 
+performs ``tail-fitting'': the tails in the sinograms are supposed to contain only scattered counts, so the upsampled
+scatter estimate is scaled to fit the emission data in the tails. The tails are determined from the \textit{weights}
+parameter.
+
 \begin{description}
 \item[min-scale-factor,max-scale-factor]: Both min and max scale factors are set such that the scaling does not explode for some reason. 
 STIR's scatter routine is scaled such that scale-factor=1 is appropriate to model single scatter only. 
@@ -1723,8 +1730,26 @@ more than 2. Therefore, limiting the scale factor between 0.9 and 2 is probably 
 \item[output-filename]: Scatter projection data at the emission data settings
 \item[data-to-fit]: Normalised Emission sinogram (corrected for randoms) 
 \item[data-to-scale]: Course scatter sinogram 
+\item[norm]: optional parameter to specify normalisation appropriate for the emission data (see below).
+  The parameter expects the filename of a .par file with the following keywords
+  \begin{verbatim}
+  Bin Normalisation parameters:=
+  type:= <type info as usual>
+  <other keywords for the chosen type>
+  END:=
+  \end{verbatim}
 \item[weights]: This is the mask sinogram, or any other weighting factors on projection space that is used to define the region of scaling. 
 \end{description}
+If the emission data was pre-normalised, the \textit{norm} parameter should not be used. However, this strategy fails for
+scanners which have zero detection efficiency in some bins (as pre-normalisation cannot work in those bins). Therefore,
+it is also possible to use emission data without normalisation, but pass the normalisation info to the fitting. In effect, what this 
+will do is find scale factors $\alpha$ that minimise
+\[  \sum_b w_b (D_b - \alpha U_b/N_b)^2 \]
+with $b$ an index running over the bins in the sinograms, $D$ the data to fit (normally randoms-corrected emission), $N$ the 
+normalisation factors, $U$ the upsampled scatter estimate. (If no normalisation is given, $N=1$). The output of the program is the
+final scatter estimate:
+\[S_b =  \alpha U_b/N_b \]
+
 The procedure of scaling involves B-Splines interpolation for the tangential (Cubic), axial (Cubic) and
 view (Linear) dimensions, while for oblique segments, currently the interpolation is achieved by applying the
 pseudo-inverse transform of Single Slice Rebinning as described in [Tso05].
