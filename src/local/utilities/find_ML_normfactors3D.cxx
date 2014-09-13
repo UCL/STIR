@@ -35,6 +35,7 @@
 #include "stir/utilities.h"
 #include "stir/info.h"
 #include "stir/error.h"
+#include <boost/format.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>
