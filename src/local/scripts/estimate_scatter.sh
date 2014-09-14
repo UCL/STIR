@@ -194,7 +194,10 @@ projector pair type := Matrix
   Projector Pair Using Matrix Parameters :=
   Matrix type := Ray Tracing
   Ray tracing matrix parameters :=
-   number of rays in tangential direction to trace for each bin := 10
+   number of rays in tangential direction to trace for each bin := 3
+   ; disable symmetries to be able to use more subsets
+   do symmetry 90degrees min phi := 0
+   do symmetry 180degrees min phi := 0
   End Ray tracing matrix parameters :=
   End Projector Pair Using Matrix Parameters :=
 
@@ -208,6 +211,9 @@ recompute sensitivity := \${RECOMPUTE_SENSITIVITY}
 
 additive sinogram := \${SINOGRAM_TO_ADD_IN_DENOMINATOR}
 zero end planes of segment 0:= 0
+
+; save time by using larger voxels
+zoom:=.3
 
 end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
