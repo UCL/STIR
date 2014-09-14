@@ -31,6 +31,7 @@ if [ -z "${do_average_at_2}" ]; then do_average_at_2=0; fi
 if [ -z "${multiples_FWHM}" ]; then multiples_FWHM=0; fi
 # note if multiples_FWHM>0, set multiples_norm
 
+if [ -z "${sinomask}" ]; then =mask${suffix}_threshold${attenuation_threshold}_backoff${back_off}.hs; fi
 
 if [ $# -lt 3 -a $# -gt 5 ]; then
     echo "usage: $0 \\" 1>&2
@@ -419,7 +420,6 @@ estimate_scatter $scatterpar >> estimate_scatter_${OUTPUT_PREFIX}.log 2>&1
 scaled=${scaled_prefix}_$N.hs
 
 # make mask in sinogram space
-sinomask=mask${suffix}_threshold${attenuation_threshold}_backoff${back_off}.hs
 if [ ! -r $sinomask ]; then
  if [ ${attenuation_threshold} != 1000  ]; then
     create_tail_mask_from_ACFs  --safety-margin ${back_off} --ACF-threshold ${attenuation_threshold} --ACF-filename ${attenuation_coefficients} --output-filename ${sinomask} >& ${sinomask}.log
