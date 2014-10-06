@@ -1,5 +1,6 @@
 /*
   Copyright (C) 2005- 2009, Hammersmith Imanet Ltd
+  Copyright (C) 2014, University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -34,16 +35,28 @@
   --output-filename <filename> 
   --data-to-fit <filename>
   --data-to-scale <filename>
+  --norm <filename>
   --weights <filename>
   \endcode
   \a remove_interleaving defaults to 1\, \a min-scale-factor to 1e-5, 
   and \a max-scale-factor to 1e5.
+
+  The norm parameter expects the filename of a .par file with the following keywords
+  \code
+  Bin Normalisation parameters:=
+  type:= <type info as usual>
+  <other keywords for the chosen type>
+  END:=
+  \code
 */
 
 #include "stir/ProjDataInfo.h"
+#include "stir/KeyParser.h"
 #include "stir/ProjDataInterfile.h"
+#include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/scatter/ScatterEstimationByBin.h"
 #include "stir/Succeeded.h"
+#include "stir/is_null_ptr.h"
 #include <iostream>
 #include <string>
 /***********************************************************/     
@@ -59,9 +72,16 @@ print_usage_and_exit(const char * const prog_name)
             << "\t--output-filename <filename>\\\n" 
             << "\t--data-to-fit <filename>\\\n"
             << "\t--data-to-scale <filename>\\\n"
+            << "\t--norm <filename>\\\n"
             << "\t--weights <filename>\n"
             << "remove_interleaving defaults to 1\n"
-            << "min-scale-factor to 1e-5, and max scale factor to 1e5\n";
+            << "min-scale-factor to 1e-5, and max scale factor to 1e5\n"
+            << "The norm parameter expects the filename of a .par file with the following keywords\n"
+            << "Bin Normalisation parameters:=\n"
+            << "type:= <type info as usual>\n"
+            << "<other keywords for the chosen type>\n"
+            << "END:=\n";
+
   exit(EXIT_FAILURE);
 }
 
@@ -78,6 +98,7 @@ int main(int argc, const char *argv[])
   std::string data_to_scale_filename;
   std::string weights_filename;
   std::string output_filename;
+  stir::shared_ptr<stir::BinNormalisation> normalisation_sptr;
 
   // option processing
   while (argc>1 && argv[1][1] == '-')
@@ -127,6 +148,16 @@ int main(int argc, const char *argv[])
           weights_filename = argv[2];
           argc-=2; argv +=2;
         }
+      else if (strcmp(argv[1], "--norm")==0)
+        {
+          stir::KeyParser parser;
+          parser.add_start_key("Bin Normalisation parameters");
+          parser.add_parsing_key("type", &normalisation_sptr);
+          parser.add_stop_key("END"); 
+          if (!parser.parse(argv[2]))
+            { return EXIT_FAILURE; }
+          argc-=2; argv +=2;
+        }
       else
         {
           std::cerr << "\nUnknown option: " << argv[1];
@@ -154,7 +185,11 @@ int main(int argc, const char *argv[])
     ProjData::read_from_file(data_to_fit_filename);
   const stir::shared_ptr<ProjData> data_to_scale_proj_data_sptr = 
     ProjData::read_from_file(data_to_scale_filename);   
-        
+
+  if (stir::is_null_ptr(normalisation_sptr))
+    {
+	  normalisation_sptr.reset(new stir::TrivialBinNormalisation);
+    }
   stir::shared_ptr<stir::ProjDataInfo> data_to_fit_proj_data_info_sptr =
     data_to_fit_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();
   
@@ -165,6 +200,7 @@ int main(int argc, const char *argv[])
     upsample_and_fit_scatter_estimate(output_proj_data,
                                       *data_to_fit_proj_data_sptr,
                                       *data_to_scale_proj_data_sptr,
+                                      *normalisation_sptr,
                                       *weights_proj_data_sptr,
                                       min_scale_factor,
                                       max_scale_factor,
