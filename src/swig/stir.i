@@ -828,7 +828,8 @@ namespace stir {
   %template(Float3BasicCoordinate) BasicCoordinate<3,float>;
   %template(Float3Coordinate) Coordinate3D< float >;
   %template(FloatCartesianCoordinate3D) CartesianCoordinate3D<float>;
-
+  %template(IntCartesianCoordinate3D) CartesianCoordinate3D<int>;
+  
   %template(Int2BasicCoordinate) BasicCoordinate<2,int>;
   %template(Size2BasicCoordinate) BasicCoordinate<2,std::size_t>;
   %template(Float2BasicCoordinate) BasicCoordinate<2,float>;
