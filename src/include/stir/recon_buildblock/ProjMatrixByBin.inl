@@ -126,6 +126,9 @@ cache_proj_matrix_elems_for_one_bin(
   
   //std::cerr << "cached lor size " << probabilities.size() << " capacity " << probabilities.capacity() << std::endl;    
   // insert probabilities into the collection	
+#ifdef STIR_OPENMP
+#pragma omp critical(PROJMATRIXBYBINCACHE)
+#endif
   cache_collection.insert(MapProjMatrixElemsForOneBin::value_type( cache_key(probabilities.get_bin()), 
                                                                    probabilities));  
 }
@@ -145,7 +148,7 @@ get_proj_matrix_elems_for_one_bin(
   {
     // find basic bin
     Bin basic_bin = bin;    
-    auto_ptr<SymmetryOperation> symm_ptr = 
+    std::auto_ptr<SymmetryOperation> symm_ptr = 
       symmetries_ptr->find_symmetry_operation_from_basic_bin(basic_bin);
     
     probabilities.set_bin(basic_bin);
@@ -173,7 +176,7 @@ get_proj_matrix_elems_for_one_bin(
     {
       // find basic bin
       Bin basic_bin = bin;  
-      auto_ptr<SymmetryOperation> symm_ptr = 
+      std::auto_ptr<SymmetryOperation> symm_ptr = 
         symmetries_ptr->find_symmetry_operation_from_basic_bin(basic_bin);
 
       probabilities.set_bin(basic_bin);

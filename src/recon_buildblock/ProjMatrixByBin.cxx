@@ -123,19 +123,30 @@ get_cached_proj_matrix_elems_for_one_bin(
   }
 #endif         
   
-	 
-  const_MapProjMatrixElemsForOneBinIterator  pos = 
-    cache_collection.find(cache_key( bin));
+  bool found=false;
+#ifdef STIR_OPENMP
+#pragma omp critical(PROJMATRIXBYBINCACHE)
+#endif
+  {
+    const_MapProjMatrixElemsForOneBinIterator pos = 
+      cache_collection.find(cache_key( bin));
   
-  if ( pos != cache_collection. end())
-  { 
-    //cout << Key << " =========>> entry found in cache " <<  endl;
-    probabilities = pos->second;	 	                    
+    if ( pos != cache_collection. end())
+      { 
+	//cout << Key << " =========>> entry found in cache " <<  endl;
+	probabilities = pos->second;
+	// note: cannot return from inside an OPENMP critical section
+	//return Succeeded::yes;	
+	found=true;
+      } 
+  }
+  if (found)
     return Succeeded::yes;	
-  } 
-  
-  //cout << " This entry  is not in the cache :" << Key << endl;	
-  return Succeeded::no;
+  else
+    {
+      //cout << " This entry  is not in the cache :" << Key << endl;	
+      return Succeeded::no;
+    }
 }
 
 
