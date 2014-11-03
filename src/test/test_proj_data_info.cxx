@@ -781,7 +781,7 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
     Bin bin;
     // set value for comparison later on
     bin.set_bin_value(0);
-    vector<DetectionPositionPair<> > det_pos_pairs;
+    std::vector<DetectionPositionPair<> > det_pos_pairs;
     for (bin.segment_num() = proj_data_info.get_min_segment_num(); 
 	 bin.segment_num() <= proj_data_info.get_max_segment_num(); 
 	 ++bin.segment_num())
