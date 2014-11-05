@@ -58,7 +58,6 @@
 #include "stir/RelatedViewgrams.h"
 #include "stir/Viewgram.h"
 #include "stir/ProjDataInfo.h"
-#include <cstring>
 #include <iostream>
 #include <fstream>
 
@@ -83,9 +82,9 @@ namespace distributed
 				    const stir::shared_ptr<stir::DataSymmetriesForViewSegmentNumbers> symmetries_sptr
 				    );
 	
-  void test_parameter_info_master(const string str, int slave, char const * const text);
+  void test_parameter_info_master(const std::string str, int slave, char const * const text);
 	
-  void test_parameter_info_slave(const string str);
+  void test_parameter_info_slave(const std::string str);
 	
   void test_bool_value_master(bool value, int slave);
 	

@@ -88,7 +88,7 @@ namespace distributed
 #endif
   }
         
-  void send_string(const string& str, int tag, int destination)
+  void send_string(const std::string& str, int tag, int destination)
   {
     //prepare sending parameter info
     length=str.length()+1;
@@ -413,7 +413,7 @@ namespace distributed
     return i;
   }
         
-  string receive_string(int tag, int source)
+  std::string receive_string(int tag, int source)
   {             
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.reset(); t.start();} 
@@ -429,7 +429,7 @@ namespace distributed
 #endif
                 
     //convert to string
-    string str(buf);
+    std::string str(buf);
     delete[] buf;
     return str;
   }
@@ -452,7 +452,7 @@ namespace distributed
 #endif
                 
     //convert to string
-    string registered_name_proj_pair(buf);
+    std::string registered_name_proj_pair(buf);
     delete[] buf;
                 
     //Receive parameter info            
@@ -471,7 +471,7 @@ namespace distributed
 #endif
                 
     //convert to string 
-    string parameter_info(buf3);
+    std::string parameter_info(buf3);
     delete[] buf3;
                 
     //construct new Backprojector and Forward Projector, projector_pair_ptr
@@ -679,7 +679,7 @@ namespace distributed
     int int_values[1];
     status=distributed::receive_int_values(int_values, 1, VIEWGRAM_COUNT_TAG);
         
-    vector<stir::Viewgram<float> > viewgrams_vector;
+    std::vector<stir::Viewgram<float> > viewgrams_vector;
                 
     viewgrams_vector.reserve(int_values[0]);
         
