@@ -22,6 +22,7 @@ set(dir_local_scripts ${dir}_SCRIPTS)
 set(${dir_local_scripts}
   estimate_scatter.sh
   zoom_att_image.sh
+  get_num_voxels.sh
 )
 
 
