@@ -25,10 +25,12 @@ set(${dir_LIB_SOURCES}
  ForwardProjectorByBin 
 	ForwardProjectorByBinUsingRayTracing 
 	ForwardProjectorByBinUsingRayTracing_Siddon 
+	PresmoothingForwardProjectorByBin
 	BackProjectorByBin 
 	BackProjectorByBinUsingInterpolation 
 	BackProjectorByBinUsingInterpolation_linear 
 	BackProjectorByBinUsingInterpolation_piecewise_linear 
+	PostsmoothingBackProjectorByBin
 	Reconstruction 
 	AnalyticReconstruction 
 	IterativeReconstruction 

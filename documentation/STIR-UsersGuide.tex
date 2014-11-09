@@ -3719,6 +3719,22 @@ This projector currently has no user-selectable parameters. Nevertheless,
 the 2 keywords given above have to follow the 'forward projector 
 type' keyword in a parameter file.
 
+{ \subsubsubsection{Pre Smoothing}
+}
+This forward projector applies a filter before the normal back-projection.
+This is useful for reconstruction with resolution-recovery 
+by using an (image-based) PSF.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Pre Smoothing Forward Projector Parameters:=
+  Original Forward projector type:= some projector value 
+  ; normal projector parameters
+  filter type:= some filter value
+  ; normal filter parameters
+End Pre Smoothing Forward Projector Parameters:=
+\end{verbatim}
 
 \subsubsection{
 Selecting a back projector}
@@ -3783,6 +3799,22 @@ in a parameter file.
 
 See also online documentation for class BackProjectorByBinUsingInterpolation.
 
+{ \subsubsubsection{Post Smoothing}
+}
+This back projector applies a filter after the normal back-projection.
+This is useful for reconstruction with resolution-recovery 
+by using an (image-based) PSF.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Post Smoothing Back Projector Parameters:=
+  Original Back projector type:= some projector value 
+  ; normal projector parameters
+  filter type:= some filter value
+  ; normal filter parameters
+End Post Smoothing Back Projector Parameters:=
+\end{verbatim}
 
 
 \subsubsection{
