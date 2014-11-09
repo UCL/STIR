@@ -24,12 +24,12 @@ set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_
 
 create_stir_test (test_IR_filters.cxx "" "")
 create_stir_test (test_BSplines.cxx "buildblock" "")
-create_stir_test (test_BSplinesRegularGrid.cxx "buildblock;IO;buildblock" "")
-create_stir_test (test_BSplinesRegularGrid1D.cxx "buildblock;IO;buildblock" "")
+create_stir_test (test_BSplinesRegularGrid.cxx "buildblock;IO;buildblock;display" "")
+create_stir_test (test_BSplinesRegularGrid1D.cxx "buildblock;IO;buildblock;display" "")
 create_stir_test (test_erf.cxx "" "")
-create_stir_test (test_matrices.cxx "buildblock;IO;numerics_buildblock;buildblock" "")
-create_stir_test (test_overlap_interpolate.cxx "buildblock" "")
-create_stir_test (test_integrate_discrete_function.cxx "buildblock" "")
+create_stir_test (test_matrices.cxx "buildblock;IO;numerics_buildblock;buildblock;display" "")
+create_stir_test (test_overlap_interpolate.cxx "buildblock;IO;buildblock;display" "")
+create_stir_test (test_integrate_discrete_function.cxx "buildblock;IO;buildblock;display" "")
 
 
 include(stir_test_exe_targets)
