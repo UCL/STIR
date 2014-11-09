@@ -66,7 +66,8 @@ $(dir)_LIB_SOURCES := \
         GatedDiscretisedDensity.cxx \
         MaximalArrayFilter3D.cxx \
         MaximalImageFilter3D.cxx \
-        TimeGateDefinitions.cxx
+        TimeGateDefinitions.cxx \
+	ML_norm.cxx
 
 
 $(dir)_REGISTRY_SOURCES:= $(dir)_registries.cxx

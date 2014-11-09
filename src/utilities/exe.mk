@@ -42,7 +42,14 @@ $(dir)_SOURCES:=manip_image.cxx \
         shift_image_origin.cxx \
         warp_and_accumulate_gated_images.cxx \
         warp_image.cxx \
-        zeropad_planes.cxx
+        zeropad_planes.cxx \
+	find_ML_normfactors.cxx \
+	apply_normfactors.cxx \
+	find_ML_normfactors3D.cxx \
+	apply_normfactors3D.cxx \
+	find_ML_singles_from_delayed.cxx \
+	construct_randoms_from_singles.cxx
+
 
 ifeq ($(HAVE_AVW),1)
   $(dir)_SOURCES += conv_AVW.cxx

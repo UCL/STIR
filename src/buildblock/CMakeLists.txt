@@ -69,6 +69,7 @@ set(${dir_LIB_SOURCES}
         MaximalArrayFilter3D
         MaximalImageFilter3D
         TimeGateDefinitions
+	ML_norm.cxx
 )
 
 if (NOT HAVE_SYSTEM_GETOPT)
