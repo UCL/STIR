@@ -1,21 +1,31 @@
-//
-//
 /*!
 
   \file
   \ingroup utilities
 
-  \brief Apply normalisation factors to projection data
+  \brief Construct randoms as a product of singles estimates
 
   \author Kris Thielemans
 
 */
 /*
-    Copyright (C) 2001- 2012, IRSL
-    See STIR/LICENSE.txt for details
+  Copyright (C) 2001- 2012, Hammersmith Imanet Ltd
+  This file is part of STIR.
+
+  This file is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2.0 of the License, or
+  (at your option) any later version.
+
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/ML_norm.h"
+#include "stir/ML_norm.h"
 
 #include "stir/ProjDataInterfile.h"
 
