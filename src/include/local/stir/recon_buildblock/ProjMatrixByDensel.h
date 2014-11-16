@@ -102,7 +102,7 @@ public:
   */
   
   //void set_maximum_cache_size(const unsigned long size){;}        
-  void enable_cache(bool v){cache_disabled = v;}
+  void enable_cache(bool v){cache_disabled = !v;}
   /* TODO
   void set_subset_usage(const SubsetInfo&, const int num_access_times);
   */
