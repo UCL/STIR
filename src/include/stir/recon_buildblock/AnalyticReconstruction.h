@@ -59,7 +59,7 @@ class Succeeded;
   */
 class AnalyticReconstruction : public Reconstruction<DiscretisedDensity<3,float> >
 {
-protected:
+public:
   typedef DiscretisedDensity<3,float> TargetT;
 private:
   typedef Reconstruction<TargetT > base_type;
