@@ -43,7 +43,7 @@
   very soon. Still, if you no longer have strstream, or don't want to use it, you can enable 
   the stringstream implementation by removing the next line.
 */
-#define STIR_USE_OLD_STRSTREAM
+//#define STIR_USE_OLD_STRSTREAM
 
 #if defined(BOOST_NO_STRINGSTREAM) && !defined(STIR_USE_OLD_STRSTREAM)
 #define STIR_USE_OLD_STRSTREAM 
