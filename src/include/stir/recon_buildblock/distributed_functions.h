@@ -128,7 +128,7 @@ namespace distributed
    * \param tag identifier to associate messages
    * \param destination the process id where to send the string. If set to -1 a Broadcast will be done
    */
-  void send_string(const string& str, int tag, int destination);
+  void send_string(const std::string& str, int tag, int destination);
         
         
   /*! \brief send or broadcast a bool value
@@ -256,7 +256,7 @@ namespace distributed
    * \param source the process id from which to receive the string
    * \returns the received string
    */
-  string receive_string(int tag, int source);
+  std::string receive_string(int tag, int source);
 
 
   /*! \brief receives all needed information to subsequently construct a ProjectorByBinPair object

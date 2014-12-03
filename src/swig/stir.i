@@ -79,6 +79,9 @@
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 
+#include "stir/analytic/FBP2D/FBP2DReconstruction.h"
+#include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
+
 #include <boost/iterator/reverse_iterator.hpp>
 
    // TODO need this (bug in swig)
@@ -1127,6 +1130,9 @@ namespace stir {
 %shared_ptr(stir::Reconstruction<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >);
+%shared_ptr(stir::AnalyticReconstruction);
+%shared_ptr(stir::FBP2DReconstruction);
+%shared_ptr(stir::FBP3DRPReconstruction);
 #endif
 
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
@@ -1137,6 +1143,11 @@ namespace stir {
 %include "stir/recon_buildblock/Reconstruction.h"
 %include "stir/recon_buildblock/IterativeReconstruction.h"
 %include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+
+%include "stir/recon_buildblock/AnalyticReconstruction.h"
+%include "stir/analytic/FBP2D/FBP2DReconstruction.h"
+%include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
+
 
 
 %template (GeneralisedObjectiveFunction3DFloat) stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >;

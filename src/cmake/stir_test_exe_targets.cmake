@@ -65,11 +65,13 @@ macro (create_stir_test source  libraries dependencies)
 endmacro( create_stir_test)
 
 # for executables that use MPI.
-# Note that if MPI is not enabled, these MPI macros will be empty, so this
-# macro will then effectively me the same as create_stir_test
 macro (create_stir_mpi_test source  libraries dependencies)
-   create_stir_involved_test(${source}  "${libraries}" "${dependencies}")
-   ADD_TEST(${executable}  ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}  ${MPIEXEC_PREFLAGS} ${CMAKE_CURRENT_BINARY_DIR}/${executable} ${MPIEXEC_POSTFLAGS})
+   if(STIR_MPI)
+     create_stir_involved_test(${source}  "${libraries}" "${dependencies}")
+     ADD_TEST(${executable}  ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}  ${MPIEXEC_PREFLAGS} ${CMAKE_CURRENT_BINARY_DIR}/${executable} ${MPIEXEC_POSTFLAGS})
+   else()
+     create_stir_test(${source}  "${libraries}" "${dependencies}")
+   endif()
 endmacro( create_stir_mpi_test)
 
 

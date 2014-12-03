@@ -1,0 +1,21 @@
+output file format parameters:=
+; sample .par file that can be used with stir_math to specify the
+; output file format
+;
+; See the stir::OutputFileFormat hierarchy for possible values.
+; here we use ITK (so this will only work if you linked STIR with ITK)
+;
+; Example usage to convert an image (in any format that STIR can read) to 
+; a file format that ITK can write:
+;
+; convert input.hv to MetaIO
+;    stir_math --output-format stir_math_ITK_output_file_format.par output.mhd input.hv
+; use the default extension to determine the file format (here set too Nifti)
+;    stir_math --output-format stir_math_ITK_output_file_format.par output input.hv
+
+output file format type := ITK
+ITK Output File Format Parameters:=
+  ; use Nifti as output (could also use .mhdr, .nhdr etc)
+  default extension:=.nii
+End ITK Output File Format Parameters:=
+END:=

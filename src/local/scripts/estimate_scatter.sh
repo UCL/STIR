@@ -9,36 +9,78 @@
 
 #estimate_single_scatter:
 #needs a template-proj_data with sizes for scatter output
-#important: 2D only , and not arc-corrected, 2*num_views = num_detectors_per_ring, no axial compression
+#important: The template needs to be 2D only, and not arc-corrected, 2*num_views = num_detectors_per_ring, no axial compression
 # will create FBP2D.par and template_osem.par unless FBP2Dpar and OSEMpar environment variables are set
 
+# See the usage message below. 
+# Also, there are a whole load of default parameters, which you can override by 
+# setting them as environment variables.
+# For instance, the script can be run (in bash/ksh/sh) as
+#  do_FBP=0 estimate_scatter.sh ....
+
+#################### list of default parameters starts here
+# note: those that are exported are for use in .par files
+
+## suffix for output files
+if [ -z "${suffix}" ]; then suffix=""; fi
+
+## iterations
+# could use startN if you want to continue from a previous run
 if [ -z "${startN}" ]; then startN=0; fi
-if [ -z "${endN}" ]; then endN=50; fi
+# number of iterations
+if [ -z "${endN}" ]; then endN=5; fi
+
+## tail-fitting
+# threshold to find tails on ACFs
 if [ -z "${attenuation_threshold}" ]; then attenuation_threshold=1.04; fi
-if [ -z "${scale_factor_per_sinogram}" ]; then scale_factor_per_sinogram=1; fi
+# safety margin on tails (go back from edge where threshold is reached)
+if [ -z "${back_off}" ]; then back_off=2; fi
+# option to specify tails yourself 
+if [ -z "${sinomask}" ]; then sinomask=mask${suffix}_threshold${attenuation_threshold}_backoff${back_off}.hs; fi
+
+## reconstruction
 if [ -z "${do_FBP}" ]; then do_FBP=1; fi
+# cut negatives in FBP reconstruction
 if [ -z "${do_threshold}" ]; then do_threshold=${do_FBP}; fi
-if [ -z "${do_mask}" ]; then do_mask=1; fi
-if [ -z "${mask}" ]; then mask=mask$suffix.hv; fi
-if [ -z "${min_scale_factor}" ]; then min_scale_factor=.4; fi
-if [ -z "${max_scale_factor}" ]; then max_scale_factor=100; fi
-if [ -z "${back_off}" ]; then back_off=0; fi
-#if [ -z "${max_mask_length}" ]; then max_mask_length=100000; fi
-if [ -z "${DORANDOM}" ]; then DORANDOM=0; fi # TODO only in ST_scatter.par
+# if using OSEM...
 if [ -z "${NUM_SUBSETS}" ]; then export NUM_SUBSETS=8; fi
 if [ -z "${postfilter_FWHM}" ]; then postfilter_FWHM=20; fi
-if [ -z "${do_average_at_2}" ]; then do_average_at_2=0; fi
+# image masking. can be used to force outside of patient to zero 
+# (you will need to create the image mask first)
+if [ -z "${do_mask}" ]; then do_mask=0; fi
+if [ -z "${mask}" ]; then mask=mask$suffix.hv; fi
+
+# max/min scale factors for tail-fitting
+if [ -z "${min_scale_factor}" ]; then min_scale_factor=.4; fi
+if [ -z "${max_scale_factor}" ]; then max_scale_factor=100; fi
+#if [ -z "${max_mask_length}" ]; then max_mask_length=100000; fi
+
+## scatter simulation variables
+# could be used to enable/disable randomising the scatter point location in your scatter.par
+if [ -z "${DORANDOM}" ]; then export DORANDOM=0; fi # TODO only in ST_scatter.par
+# Ollinger-type of multiples
 if [ -z "${multiples_FWHM}" ]; then multiples_FWHM=0; fi
 # note if multiples_FWHM>0, set multiples_norm
 
-if [ -z "${sinomask}" ]; then =mask${suffix}_threshold${attenuation_threshold}_backoff${back_off}.hs; fi
+# average first 2 scatter estimates
+if [ -z "${do_average_at_2}" ]; then do_average_at_2=0; fi
 
-if [ $# -lt 3 -a $# -gt 5 ]; then
-    echo "usage: $0 \\" 1>&2
-    echo "   atten_image emission_proj_data_file template_proj_data [ ACFfile [NORMsino ]] " 1>&2
-    echo "If ACFfile is not given I will use attenuation_coefficients'$suffix'.hs" 1>&2
-    echo "WARNING: atten_image has to be in interfile format right now" 1>&2
-# TODO this is because of restriction in get_image_dimensions.sh etc (used in zoom_att_image.sh)
+if [ -z "${scatterpar}" ]; then scatterpar=scatter.par; fi
+#system_type=`get_system_type.csh $emission_proj_data_file`
+#scatterpar=${STIR_DATA_DIR}/templates/${system_type}_scatter.par
+
+
+#### done setting default parameters
+
+if [ $# -lt 3 -o $# -gt 5 ]; then
+    echo "USAGE: $0 \\" 1>&2
+    echo "   atten_image emission_proj_data_file template_scatter_proj_data [ ACFfile [NORMsino ]] " 1>&2
+    echo "If the ACFfile parameter is not given, I will use attenuation_coefficients$suffix.hs as filename." 1>&2
+    echo "If the ACFfile doesn't exist, I will compute it." 1>&2
+    echo "emission, ACF and NORM all have to have the same sizes." 1>&2
+    echo "template_scatter_proj_data specifies down-sampled sizes for the scatter calculation." 1>&2
+    echo "By default, this script expects scatter.par in the current directory."
+    echo "Check the script for how to set variables." 1>&2
     exit 1
 fi
 
@@ -60,13 +102,6 @@ norm_factors=$5
 do_norm=1;
 fi
 
-if [ -r scatter.par ]; then
-scatterpar=scatter.par
-else
-system_type=`get_system_type.csh $emission_proj_data_file`
-scatterpar=${STIR_DATA_DIR}/templates/${system_type}_scatter.par
-fi
-
 echo Using $scatterpar
 
 if [ ! -r $atten_image ]
@@ -82,6 +117,11 @@ fi
 if [ ! -r $template_proj_data_file ]
 then
     echo "Input file $template_proj_data_file not found - Aborting"
+    exit 1
+fi
+if [ ! -r $scatterpar ]
+then
+    echo "Input file $scatterpar - Aborting"
     exit 1
 fi
 
@@ -312,10 +352,6 @@ if [ ! -r ${zoomed_attenuation_image}.hv ]; then
   if [ -z "${zoom_xy}" ]; then zoom_xy=.14; fi
   if [ -z "${zoom_z}" ]; then zoom_z=.25; fi
   zoom_att_image.sh ${zoomed_attenuation_image} ${atten_image} ${zoom_xy} ${zoom_z}
-fi
-
-if [ -z "${suffix}" ]; then
-  suffix=""
 fi
 
 if [ -z "${activity_image_prefix}" ]; then activity_image_prefix=activity_image${suffix}; fi

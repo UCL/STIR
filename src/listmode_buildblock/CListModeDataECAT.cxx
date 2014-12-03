@@ -31,6 +31,7 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
+#include <boost/format.hpp>
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/stir_ecat7.h"
 #else

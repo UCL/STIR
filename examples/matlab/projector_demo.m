@@ -32,9 +32,9 @@ backprojector=stir.BackProjectorByBinUsingProjMatrixByBin(projmatrix);
 
 %% create projection data for output of forward projection
 % we will currently write to file as at present we cannot read/write for some reason (TODO)
-inout=bitor(uint32(stir.ios.ios_base_in()),uint32(stir.ios.out()));
-projdataout=stir.ProjDataInterfile(projdata.get_exam_info(), projdata.get_proj_data_info(), 'stir_matlab_test.hs',inout);
-%projdataout=stir.ProjDataInMemory(projdata.get_exam_info(), projdata.get_proj_data_info());
+%inout=bitor(uint32(stir.ios.ios_base_in()),bitor(uint32(stir.ios.trunc()),uint32(stir.ios.out())));
+%projdataout=stir.ProjDataInterfile(projdata.get_exam_info(), projdata.get_proj_data_info(), 'stir_matlab_test.hs',inout);
+projdataout=stir.ProjDataInMemory(projdata.get_exam_info(), projdata.get_proj_data_info());
 %% forward project an image
 target.fill(2);
 forwardprojector.forward_project(projdataout, target);
