@@ -69,7 +69,7 @@ ProjMatrixByBin::ProjMatrixByBin()
 void 
 ProjMatrixByBin::
 enable_cache(const bool v)
-{ cache_disabled = v;}
+{ cache_disabled = !v;}
 
 void 
 ProjMatrixByBin::
