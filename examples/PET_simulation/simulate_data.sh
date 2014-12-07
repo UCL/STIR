@@ -51,8 +51,9 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "===  create normalisation factors"
-# right now, just use a constant sinogram 
-# (all bins set to 3.4 here, just to check if it's handled properly in the script)
+# For illustration purposes, we will use include a normalisation file but it is currently
+# just set to a constant sinogram 
+# (all bins set to 3.4 here, just to check if it's handled properly in the reconstruction script)
 stir_math -s --including-first \
          --times-scalar 0 --add-scalar 3.4 \
          my_norm.hs my_acfs.hs
@@ -69,18 +70,24 @@ fi
 
 
 echo "===  create constant randoms background"
+# For illustration purposes, we will have a constant randoms background.
+# The number 10 is used, but this is arbitrary (and it's going to be modified below anyway).
 # TODO compute sensible randoms-to-true background here
 stir_math -s --including-first \
          --times-scalar 0 --add-scalar 10 \
          my_randoms.hs my_line_integrals.hs
-# we divide by the norm here to put some efficiency pattern on the data.
-# this isn't entirely accurate as a "proper" norm contains geometric effects
-# which shouldn't be in the randoms, but this is supposed to be a "simple" simulation :-;
+# We divide by the norm here to put some efficiency pattern on the data.
+# This isn't entirely accurate as a "proper" norm contains geometric effects
+# which shouldn't be in the randoms. Moreover, the norm can contain a global scaling
+# factor (e.g. for calibration) so this division will actually scale the randoms as well.
+# In particular, in the current script, it will divide the randoms by 3.4!
+# Ideally we'd fix this but this is supposed to be a "simple" simulation :-;
 stir_divide -s --accumulate \
          my_randoms.hs my_norm.hs
 if [ $? -ne 0 ]; then 
   echo "ERROR running stir_math"; exit 1; 
 fi
+# We've finished constructing my_randoms.hs
 
 
 echo "===  create scatter"
