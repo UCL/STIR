@@ -3,6 +3,12 @@
 # A simple script to run OSMAPOSL or OSSPS with "corrections" as input.
 # This script is part of the PET simulation example and assumes that the reconstruction .par file 
 # uses INPUT, OUTPUT, MULTFACTORS and ADDSINO variables.
+#
+# If you have installed STIR with MPI, you will need to first set the MPIRUN
+# environment variable. In sh/bash/ksh etc, the following might work
+#
+# MPIRUN="mpirun -np 4"
+# export MPIRUN
 
 #  Copyright (C) 2013-2014 University College London
 #  This file is part of STIR.
@@ -36,9 +42,9 @@ addsino=$6
 
 if [ $# -eq 4 ]; then
   # no background
-  INPUT=${prompts} OUTPUT=${output} MULTFACTORS=my_norm.hs ADDSINO=my_zeros.hs ${reconProg} ${parfile}
+  INPUT=${prompts} OUTPUT=${output} MULTFACTORS=my_norm.hs ADDSINO=my_zeros.hs ${MPIRUN} ${reconProg} ${parfile}
 else
-  INPUT=${prompts} OUTPUT=${output} MULTFACTORS=${multfactors} ADDSINO=${addsino} ${reconProg} ${parfile}
+  INPUT=${prompts} OUTPUT=${output} MULTFACTORS=${multfactors} ADDSINO=${addsino} ${MPIRUN} ${reconProg} ${parfile}
 fi
 if [ $? -ne 0 ]; then 
   echo "ERROR running iterative recon"; exit 1; 
