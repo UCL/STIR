@@ -1,5 +1,8 @@
 OSSPSParameters :=
 ; test file for OSSPS with a quadratic prior (and ray tracing projection matrix)
+; It is highly recommended to set the INIT environment variable to an image of the correct scale
+; e.g. an OSEM image or (smoothed) FBP. Otherwise OSSPS will converge very slowly
+
 objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
