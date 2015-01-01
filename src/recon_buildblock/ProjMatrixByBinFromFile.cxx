@@ -232,6 +232,11 @@ set_up(
       error("ProjMatrixByBinFromFile set-up with proj data with wrong characteristics");
   }
 
+  // note: currently setting up with proj_data_info stored in the file
+  // even though it's potentially larger. This is because we currently store
+  // every LOR that's in the file in the cache
+  ProjMatrixByBin::set_up(this->proj_data_info_ptr, density_info_ptr);
+
   if (read_data() ==Succeeded::no)
     error("Something wrong reading the matrix from file. Exiting.");
 }
