@@ -39,6 +39,7 @@
 using std::fstream;
 using std::min;
 using std::max;
+using std::string;
 #endif
 
 START_NAMESPACE_STIR

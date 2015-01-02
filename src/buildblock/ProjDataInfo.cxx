@@ -58,6 +58,7 @@
 
 
 #ifndef STIR_NO_NAMESPACES
+using std::string;
 using std::vector;
 using std::cerr;
 using std::cout;

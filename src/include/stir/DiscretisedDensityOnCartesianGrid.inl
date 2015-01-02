@@ -75,7 +75,7 @@ template<int num_dimensions, typename elemT>
 bool
 DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>::
 actual_has_same_characteristics(DiscretisedDensity<num_dimensions, elemT> const& other_of_base_type,
-			 string& explanation) const
+				std::string& explanation) const
 {
   if (!base_type::actual_has_same_characteristics(other_of_base_type, explanation))
     return false;

@@ -36,14 +36,6 @@
 #include "stir/recon_buildblock/ProjMatrixElemsForOneDenselValue.h"
 #include "stir/Densel.h"
 #include <vector>
-//#include <fstream>
-
-#ifndef STIR_NO_NAMESPACES
-using std::vector;
-//using std::fstream;
-using std::random_access_iterator_tag;
-#endif
-
 
 
 START_NAMESPACE_STIR
@@ -72,7 +64,7 @@ class Succeeded;
 
 /* 
   it might be a bit faster to derive this (privately) from
-  vector<value_type> as opposed to having a member of
+  std::vector<value_type> as opposed to having a member of
   that type.
   TODO: check
 */
@@ -89,7 +81,7 @@ public:
   typedef ProjMatrixElemsForOneDenselValue value_type;
 private:
   //! shorthand to keep typedefs below concise
-  typedef vector<value_type> Element_vector;
+  typedef std::vector<value_type> Element_vector;
 
 public:  
   //! typedefs for iterator support
@@ -97,7 +89,7 @@ public:
   typedef Element_vector::const_iterator const_iterator;  
   typedef Element_vector::size_type size_type;
   typedef Element_vector::difference_type difference_type;
-  typedef random_access_iterator_tag iterator_category;
+  typedef std::random_access_iterator_tag iterator_category;
 
   typedef value_type& reference;
   typedef const value_type& const_reference;
@@ -195,7 +187,7 @@ public:
 #endif
   
 private:
-  vector<value_type> elements;    
+  std::vector<value_type> elements;    
   Densel densel;
 
 

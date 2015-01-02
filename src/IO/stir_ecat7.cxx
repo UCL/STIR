@@ -1353,7 +1353,7 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
   
   pdi_ptr->set_num_axial_poss_per_segment(num_axial_poss_per_seg);
     
-  vector<int> segment_sequence_in_stream(2*max_segment_num+1);
+  std::vector<int> segment_sequence_in_stream(2*max_segment_num+1);
   // KT 25/10/2000 swapped segment order
   // ECAT 7 always stores segments as 0, -1, +1, ...
   segment_sequence_in_stream[0] = 0;

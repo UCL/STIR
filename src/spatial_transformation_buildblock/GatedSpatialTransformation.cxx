@@ -26,6 +26,7 @@
 
 #include "stir/spatial_transformation/GatedSpatialTransformation.h"
 #include "stir/spatial_transformation/warp_image.h"
+#include "stir/info.h"
 #include <boost/format.hpp>
 
 START_NAMESPACE_STIR
@@ -185,8 +186,8 @@ GatedSpatialTransformation::warp_image(GatedDiscretisedDensity & gated_image,
     error("GatedSpatialTransformation::warp_image needs the same sizes for input and output images.\n");
   }
   if ((gated_image.get_densities())[0]->size_all()!=(this->_spatial_transformation_y.get_densities())[0]->size_all()){
-    std::cerr << "Number of voxels in one gated image: " << (gated_image.get_densities())[0]->size_all() << "\n";
-    std::cerr << "Number of voxels in one motion vector gated image: " << (this->_spatial_transformation_y.get_densities())[0]->size_all() << "\n";
+    info(boost::format("Number of voxels in one gated image: %1%") % (gated_image.get_densities())[0]->size_all());
+    info(boost::format("Number of voxels in one motion vector gated image: %1%") % (this->_spatial_transformation_y.get_densities())[0]->size_all());
     error("GatedSpatialTransformation::warp_image needs the same sizes for motion vectors and input/output images.\n");
   }
   const shared_ptr<DiscretisedDensity<3,float> > reference_image_sptr( reference_image.clone());

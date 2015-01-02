@@ -36,9 +36,15 @@ include_directories(${Boost_INCLUDE_DIRS})
 #### optional external libraries. 
 # Listed here such that we know if we should compile extra utilities
 option(DISABLE_LLN_MATRIX "disable use of LLN library" OFF)
+option(DISABLE_ITK "disable use of ITK library" OFF)
 option(DISABLE_AVW "disable use of AVW library" OFF)
 option(DISABLE_RDF "disable use of GE RDF library" OFF)
 option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
+
+if(NOT DISABLE_ITK)
+   # See if we can find a compiled version of ITK (http://www.itk.org/)
+   find_package(ITK QUIET)
+endif()
 
 if(NOT DISABLE_LLN_MATRIX)
   find_package(LLN)
@@ -81,8 +87,6 @@ else()
 endif()
 
 
-# See if we can find a compiled version of ITK (http://www.itk.org/)
-find_package(ITK QUIET)
 if (ITK_FOUND) 
   message(STATUS "ITK libraries added.")
   set(HAVE_ITK ON)
@@ -90,6 +94,27 @@ if (ITK_FOUND)
   include(${ITK_USE_FILE})
 else()
   message(STATUS "ITK support disabled.")
+endif()
+
+#### Swig related
+option(BUILD_SWIG_PYTHON
+       "Use SWIG to generate python bindings for STIR (experimental)" OFF)
+
+option(BUILD_SWIG_OCTAVE
+       "Use SWIG to generate octave bindings for STIR (experimental)" OFF)
+
+option(BUILD_SWIG_MATLAB
+       "Use SWIG to generate matlab bindings for STIR (experimental)" OFF)
+
+# Octave support doesn't really work very well yet, so hide it a bit
+mark_as_advanced(BUILD_SWIG_OCTAVE)
+
+if (BUILD_SWIG_MATLAB)
+  FIND_PACKAGE(MATLAB REQUIRED)
+  # Add matlab compiler flags to everything
+  # Reason: on linux, mex files need to be compiled with -fPIC, but that means all 
+  # linked libraries need to have been compiled with -fPIC as well.
+  add_definitions(${MATLAB_CXXFLAGS})
 endif()
 
 #### Flags for defaults

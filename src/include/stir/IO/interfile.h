@@ -40,13 +40,6 @@
 #include <iostream>
 #include <string>
 
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-using std::istream;
-using std::ios;
-#endif
-
-
 START_NAMESPACE_STIR
 
 template <int num_dimensions> class IndexRange;
@@ -86,8 +79,8 @@ bool is_interfile_signature(const char * const signature);
 
   This should normally never be used. Use read_from_file<DiscretisedDensity<3,float> >() instead.
  */
-VoxelsOnCartesianGrid<float>* read_interfile_image(istream& input, 
-				      const string& directory_for_data = "");
+VoxelsOnCartesianGrid<float>* read_interfile_image(std::istream& input, 
+						   const std::string& directory_for_data = "");
 
 //! This reads the first 3d image in an Interfile header file, given as a filename.
 /*!
@@ -99,7 +92,7 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(istream& input,
 
   This should normally never be used. Use read_from_file<DiscretisedDensity<3,float> >() instead.
 */
-VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename);
+VoxelsOnCartesianGrid<float>* read_interfile_image(const std::string& filename);
 
 //! This outputs an Interfile header for an image.
 /*!
@@ -121,8 +114,8 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename);
  */
 
 Succeeded 
-write_basic_interfile_image_header(const string& header_file_name,
-				   const string& image_file_name,
+write_basic_interfile_image_header(const std::string& header_file_name,
+				   const std::string& image_file_name,
 				   const IndexRange<3>& index_range,
 				   const CartesianCoordinate3D<float>& voxel_size,
 				   const CartesianCoordinate3D<float>& origin,
@@ -152,7 +145,7 @@ compute_file_offsets(int number_of_time_frames,
 
 template <class elemT>
 Succeeded 
-write_basic_interfile(const string&filename, 
+write_basic_interfile(const std::string&filename, 
 		      const Array<3,elemT>& image,
 		      const CartesianCoordinate3D<float>& voxel_size,
 		      const CartesianCoordinate3D<float>& origin,
@@ -177,7 +170,7 @@ template <class elemT>
 #define elemT float
 #endif
 Succeeded 
-write_basic_interfile(const string& filename, 
+write_basic_interfile(const std::string& filename, 
 		      const Array<3,elemT>& image,
 		      const NumericType output_type = NumericType::FLOAT,
 		      const float scale= 0,
@@ -193,7 +186,7 @@ write_basic_interfile(const string& filename,
  Extensions .hv (and .ahv) will be used for the header filename. 
 */
 Succeeded 
-write_basic_interfile(const string& filename, 
+write_basic_interfile(const std::string& filename, 
 		      const VoxelsOnCartesianGrid<float>& image,
 		      const NumericType output_type = NumericType::FLOAT,
 		      const float scale= 0,
@@ -210,7 +203,7 @@ write_basic_interfile(const string& filename,
   VoxelsOnCartesianGrid<float> object.
 */
 Succeeded 
-write_basic_interfile(const string& filename, 
+write_basic_interfile(const std::string& filename, 
 		      const DiscretisedDensity<3,float>& image,
 		      const NumericType output_type = NumericType::FLOAT,
 		      const float scale= 0,
@@ -231,9 +224,9 @@ write_basic_interfile(const string& filename,
 
   \warning it is up to the caller to deallocate the object  
 */
-ProjDataFromStream* read_interfile_PDFS(istream& input,
- 				        const string& directory_for_data = "",
-					const ios::openmode openmode = ios::in);
+ProjDataFromStream* read_interfile_PDFS(std::istream& input,
+ 				        const std::string& directory_for_data = "",
+					const std::ios::openmode openmode = std::ios::in);
 
 //! This reads the first 3D sinogram from an Interfile header, given as a filename
 /*!
@@ -245,8 +238,8 @@ ProjDataFromStream* read_interfile_PDFS(istream& input,
 
   This should normally never be used. Use ProjData::read_from_file() instead.
 */
-ProjDataFromStream* read_interfile_PDFS(const string& filename,
-					const ios::openmode open_mode);
+ProjDataFromStream* read_interfile_PDFS(const std::string& filename,
+					const std::ios::openmode open_mode);
 
 //! This writes an Interfile header appropriate for the ProjDataFromStream object.
 /*!
@@ -254,9 +247,9 @@ ProjDataFromStream* read_interfile_PDFS(const string& filename,
   A .hs extension will be added to the header_file_name if none is present.
  \return Succeeded::yes when succesful, Succeeded::no otherwise.
 */
- Succeeded write_basic_interfile_PDFS_header(const string& header_filename,
-      			                const string& data_filename,
-				        const ProjDataFromStream& pdfs);
+Succeeded write_basic_interfile_PDFS_header(const std::string& header_filename,
+					    const std::string& data_filename,
+					    const ProjDataFromStream& pdfs);
 
 //! This function writes an Interfile header for the pdfs object.
 /*! 
@@ -265,7 +258,7 @@ ProjDataFromStream* read_interfile_PDFS(const string& filename,
    data_filename with .hs
    \return Succeeded::yes when succesful, Succeeded::no otherwise.
  */
-Succeeded write_basic_interfile_PDFS_header(const string& data_filename,
+Succeeded write_basic_interfile_PDFS_header(const std::string& data_filename,
 			    const ProjDataFromStream& pdfs);
 
 END_NAMESPACE_STIR

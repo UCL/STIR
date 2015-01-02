@@ -42,6 +42,7 @@
 #include "stir/display.h"
 #include <algorithm>
 #include "stir/IO/interfile.h"
+#include "stir/info.h"
 
 #ifdef STIR_OPENMP
 #include <omp.h>
@@ -173,16 +174,16 @@ bool FBP2DReconstruction::post_processing_only_FBP2D_parameters()
   return false;
 }
 
-string FBP2DReconstruction::method_info() const
+std::string FBP2DReconstruction::method_info() const
 {
   return "FBP2D";
 }
 
 FBP2DReconstruction::
-FBP2DReconstruction(const string& parameter_filename)
+FBP2DReconstruction(const std::string& parameter_filename)
 {  
   initialise(parameter_filename);
-  std::cerr<<parameter_info() << std::endl;
+  info(boost::format("%1%") % parameter_info());
 }
 
 FBP2DReconstruction::FBP2DReconstruction()
@@ -313,15 +314,15 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
       omp_set_num_threads(omp_get_num_procs());
       if (omp_get_num_procs()==1) 
 	warning("Using OpenMP with #processors=1 produces parallel overhead. You should compile without using USE_OPENMP=TRUE.");
-      cerr<<"Using OpenMP-version of FBP2D with thread-count = processor-count (="<<omp_get_num_procs()<<")."<<endl;
+      info(boost::format("Using OpenMP-version of FBP2D with thread-count = processor-count (=%1%).") % omp_get_num_procs());
     }
   else 
     {
-      cerr<<"Using OpenMP-version of FBP2D with "<<getenv("OMP_NUM_THREADS")<<" threads on "<<omp_get_num_procs()<<" processors."<<endl;
+      info(boost::format("Using OpenMP-version of FBP2D with %1% threads on %2% processors.") % getenv("OMP_NUM_THREADS") % omp_get_num_procs());
       if (atoi(getenv("OMP_NUM_THREADS"))==1) 
 	warning("Using OpenMP with OMP_NUM_THREADS=1 produces parallel overhead. Use more threads or compile without using USE_OPENMP=TRUE.");
     }
-  cerr<<"Define number of threads by setting OMP_NUM_THREADS environment variable, i.e. \"export OMP_NUM_THREADS=<num_threads>\""<<endl;
+  info("Define number of threads by setting OMP_NUM_THREADS environment variable, i.e. \"export OMP_NUM_THREADS=<num_threads>\"");
   shared_ptr<DiscretisedDensity<3,float> > empty_density_ptr(density_ptr->clone());
 #endif
 
@@ -334,7 +335,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     
 #ifndef NDEBUG
 #ifdef STIR_OPENMP
-    cerr<<"Thread "<<omp_get_thread_num()<<" calculating view_num: "<<view_num<<endl;
+    info(boost::format("Thread %1% calculating view_num: %2%") % omp_get_thread_num() % view_num);
 #endif 
 #endif
     

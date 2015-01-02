@@ -35,6 +35,9 @@
 #include "stir/recon_buildblock/SymmetryOperation.h"
 #include <typeinfo>
 
+using std::vector;
+using std::auto_ptr;
+
 START_NAMESPACE_STIR
 
 DataSymmetriesForDensels::

@@ -138,9 +138,9 @@ do_segments(DiscretisedDensity<3,float>& image,
       } 
       
       back_projector_ptr->back_project(image,viewgrams_empty,
-	max(start_axial_pos_num, viewgrams_empty.get_min_axial_pos_num()), 
-	min(end_axial_pos_num, viewgrams_empty.get_max_axial_pos_num()),
-	start_tang_pos_num, end_tang_pos_num);
+				       std::max(start_axial_pos_num, viewgrams_empty.get_min_axial_pos_num()), 
+				       std::min(end_axial_pos_num, viewgrams_empty.get_max_axial_pos_num()),
+				       start_tang_pos_num, end_tang_pos_num);
     }
     else
     {
@@ -171,9 +171,9 @@ do_segments(DiscretisedDensity<3,float>& image,
       }
 	
       back_projector_ptr->back_project(image,viewgrams,
-	  max(start_axial_pos_num, viewgrams.get_min_axial_pos_num()), 
-	  min(end_axial_pos_num, viewgrams.get_max_axial_pos_num()),
-	  start_tang_pos_num, end_tang_pos_num);      
+				       std::max(start_axial_pos_num, viewgrams.get_min_axial_pos_num()), 
+				       std::min(end_axial_pos_num, viewgrams.get_max_axial_pos_num()),
+				       start_tang_pos_num, end_tang_pos_num);      
     } // fill
   } // for view_num, segment_num    
     
@@ -193,7 +193,7 @@ main(int argc, char **argv)
 	   << "\t[output-filename [proj_data_file [template-image [backprojector-parfile ]]]]\n";
       exit(EXIT_FAILURE);
     }
-  const string output_filename=
+  const std::string output_filename=
     argc>1? argv[1] : ask_string("Output filename");
 
   shared_ptr<ProjData> proj_data_ptr;

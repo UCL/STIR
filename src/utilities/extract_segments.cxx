@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
          segment_num <=  s3d->get_max_segment_num();
          ++segment_num)
     {
-        string output_filename=filename;
+        std::string output_filename=filename;
         replace_extension(output_filename, "");
         output_filename+="seg";
 	output_filename+=boost::str(boost::format("%d") % segment_num);

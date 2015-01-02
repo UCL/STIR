@@ -145,7 +145,7 @@ line_search(const TargetT& current_estimate, const TargetT& additive_update)
       {
 	previous = current;
 	FUNC(value_at_current, current);
-	std::cerr << "line search at " << current << " value " << value_at_current << '\n';
+	info(boost::format("line search at %1% value %2%") % current % value_at_current);
 	if (value_at_current <= value_at_min &&
 	    value_at_max <= value_at_current)
 	  {
@@ -183,7 +183,7 @@ line_search(const TargetT& current_estimate, const TargetT& additive_update)
 	      for (current=list_from; current<=list_to; current += increment)
 		{
 		  FUNC(value_at_current, current);
-		  std::cerr << current << " d " << value_at_current-value_at_min << '\n';
+		  info(boost::format("%1% d %2%") % current % value_at_current-value_at_min);
 		}
 	      exit(EXIT_FAILURE);
 	      }
@@ -211,8 +211,8 @@ line_search(const TargetT& current_estimate, const TargetT& additive_update)
     result = current;
   }
   timer.stop();
-  std::cerr << "line search  took " << timer.value() << " s CPU time\n";
-  std::cerr << "value for alpha " << result << '\n';
+  info(boost::format("line search took %1% s CPU time") % timer.value());
+  info(boost::format("value for alpha %1%") % result);
   /*
   this->output_file_format_ptr->
 	write_to_file("curr_est", current_estimate);

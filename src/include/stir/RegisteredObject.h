@@ -3,7 +3,7 @@
 /*!
   \file
   \ingroup buildblock
-  \brief Declaration of class stir::RegisteredObject
+  \brief Declaration of class stiir::RegisteredObject
 
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -33,11 +33,6 @@
 #include "stir/interfile_keyword_functions.h"
 #include <iostream>
 #include <string>
-
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-using std::istream;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -123,7 +118,7 @@ public:
     This works by finding the 'root factory' object in a registry that corresponds to
     \a registered_name, and calling the factory on this istream*.
   */
-  inline static Root* read_registered_object(istream* in, const string& registered_name);
+  inline static Root* read_registered_object(std::istream* in, const std::string& registered_name);
 
   //! \brief ask the user for the type, and then calls read_registered_object(0, type)
   /*! 
@@ -141,9 +136,9 @@ public:
   
 protected:
   //! The type of a root factory is a function, taking an istream* as argument, and returning a Root*
-  typedef Root * (*RootFactory)(istream*);
+  typedef Root * (*RootFactory)(std::istream*);
   //! The type of the registry
-  typedef FactoryRegistry<string, RootFactory, interfile_less> RegistryType;
+  typedef FactoryRegistry<std::string, RootFactory, interfile_less> RegistryType;
 
 #if defined(_MSC_VER) && _MSC_VER<=1300
 #  define __STIR_REGISTRY_NOT_INLINE

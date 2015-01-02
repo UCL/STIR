@@ -45,6 +45,8 @@
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
+using std::endl;
+using std::string;
 #endif
 
 START_NAMESPACE_STIR
@@ -148,10 +150,10 @@ START_NAMESPACE_STIR
 #ifdef HAVE_LLN_MATRIX
   check(dynamic_image.write_to_ecat7(string_test)==Succeeded::yes,"check DynamicDiscretisedDensity::write_to_ecat7 implementation");
 #endif
-  check_if_equal((empty_dynamic_image.get_density(1)).find_min(),0.F,"check DynamicDiscretisedDensity constructor implementation");          
-  check_if_equal((empty_dynamic_image.get_density(1)).find_max(),0.F,"check DynamicDiscretisedDensity constructor implementation");          
-  check_if_equal((empty_dynamic_image.get_density(2)).find_min(),0.F,"check DynamicDiscretisedDensity constructor implementation");          
-  check_if_equal((empty_dynamic_image.get_density(2)).find_max(),0.F,"check DynamicDiscretisedDensity constructor implementation");          
+  check_if_zero((empty_dynamic_image.get_density(1)).find_min(),"check DynamicDiscretisedDensity constructor implementation");          
+  check_if_zero((empty_dynamic_image.get_density(1)).find_max(),"check DynamicDiscretisedDensity constructor implementation");          
+  check_if_zero((empty_dynamic_image.get_density(2)).find_min(),"check DynamicDiscretisedDensity constructor implementation");          
+  check_if_zero((empty_dynamic_image.get_density(2)).find_max(),"check DynamicDiscretisedDensity constructor implementation");          
 }
   {
   //  Test of three frame images, read voxel  

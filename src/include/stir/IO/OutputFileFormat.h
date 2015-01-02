@@ -35,10 +35,6 @@
 #include "stir/ByteOrder.h"
 #include <string>
 
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 
 class Succeeded;
@@ -97,7 +93,7 @@ public:
        <strong>not</strong> use an extension for the output filename.
   */
   Succeeded  
-    write_to_file(string& filename, 
+    write_to_file(std::string& filename, 
                   const DataT& data) const;
 		  
   //! write a single image to file
@@ -105,7 +101,7 @@ public:
       filename used. 
   */
   Succeeded  
-    write_to_file(const string& filename, 
+    write_to_file(const std::string& filename, 
                   const DataT& density) const;
 
 
@@ -175,7 +171,7 @@ protected:
       this problem.
   */
   virtual Succeeded  
-    actual_write_to_file(string& filename, 
+    actual_write_to_file(std::string& filename, 
                   const DataT& density) const = 0;
 
   // parsing stuff

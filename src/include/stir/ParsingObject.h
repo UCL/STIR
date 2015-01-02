@@ -63,13 +63,13 @@ public:
       parse() returns false if there is some error, true otherwise.
   */
   //@{
-   bool parse(istream& f);
+   bool parse(std::istream& f);
    bool parse(const char * const filename);
    //@}
 
    void ask_parameters();
 
-   string parameter_info();  
+   std::string parameter_info();  
 
 protected:
   //! Set defaults before parsing

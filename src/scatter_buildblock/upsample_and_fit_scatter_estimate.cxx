@@ -1,5 +1,6 @@
 /*
   Copyright (C) 2005 - 2011-12-31, Hammersmith Imanet Ltd
+  Copyright (C) 2014, University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -24,10 +25,12 @@
 */
 
 #include "stir/ProjDataInfo.h"
+#include "stir/ExamInfo.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/inverse_SSRB.h"
 #include "stir/scale_sinograms.h"
 #include "stir/scatter/ScatterEstimationByBin.h"
+#include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/interpolate_projdata.h"
 #include "stir/utilities.h"
 #include "stir/IndexRange2D.h" 
@@ -48,6 +51,7 @@ ScatterEstimationByBin::
 upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
                                   const  ProjData& emission_proj_data,
                                   const ProjData& scatter_proj_data,
+                                  const BinNormalisation& scatter_normalisation,
                                   const ProjData& weights_proj_data,
                                   const float min_scale_factor,
                                   const float max_scale_factor,
@@ -64,12 +68,17 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
 					       interpolated_direct_scatter_proj_data_info_sptr);        
   interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, remove_interleaving);
 
-  if (min_scale_factor != 1 || max_scale_factor != 1)
+  const TimeFrameDefinitions& time_frame_defs =
+    emission_proj_data.get_exam_info_sptr()->time_frame_definitions;
+
+  if (min_scale_factor != 1 || max_scale_factor != 1 || !scatter_normalisation.is_trivial())
     {
       ProjDataInMemory interpolated_scatter(emission_proj_data.get_exam_info_sptr(),
 					    emission_proj_data.get_proj_data_info_ptr()->create_shared_clone());
       inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
-            
+
+      scatter_normalisation.undo(interpolated_scatter, 
+                                 time_frame_defs.get_start_time(), time_frame_defs.get_end_time());
       Array<2,float> scale_factors;
       
       std::cout << "Finding scale factors by sinogram" << std::endl;

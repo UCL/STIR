@@ -81,7 +81,7 @@ private:
   int patient_rotation_index;
 
   // Extra private variables which will be translated to something more useful
-  string imaging_modality_as_string;
+  std::string imaging_modality_as_string;
   void set_imaging_modality();
 
   void set_type_of_data();
@@ -107,7 +107,7 @@ public :
   shared_ptr<ExamInfo>
     get_exam_info_sptr() const;
 
-  string version_of_keys;
+  std::string version_of_keys;
   
   ASCIIlist_type type_of_data_values;
   int type_of_data_index;
@@ -120,7 +120,7 @@ public :
 
   // 'Final' variables
 
-  string data_file_name;
+  std::string data_file_name;
 
   //! This will be determined from number_format_index and bytes_per_pixel
   NumericType		type_of_numbers;
@@ -176,12 +176,12 @@ protected:
 
 public:
  
-  vector<int> segment_sequence;
-  vector<int> min_ring_difference; 
-  vector<int> max_ring_difference; 
-  vector<int> num_rings_per_segment;
+  std::vector<int> segment_sequence;
+  std::vector<int> min_ring_difference; 
+  std::vector<int> max_ring_difference; 
+  std::vector<int> num_rings_per_segment;
 
-  vector<string> applied_corrections;
+  std::vector<std::string> applied_corrections;
  
   // derived values
   int num_segments;

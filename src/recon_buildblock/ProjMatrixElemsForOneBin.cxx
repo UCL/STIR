@@ -46,6 +46,7 @@
 
 #ifndef STIR_NO_NAMESPACES
 using std::copy;
+using std::auto_ptr;
 #endif
 
 START_NAMESPACE_STIR

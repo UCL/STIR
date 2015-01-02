@@ -56,7 +56,7 @@ main(int argc, char **argv)
 	 << "\toutput-filename [proj_data_file [projmatrixbybin-parfile [template-image]]]\n";
     exit(EXIT_FAILURE);
   }
-  const string output_filename_prefix=
+  const std::string output_filename_prefix=
     argc>1? argv[1] : ask_string("Output filename prefix");
   
   shared_ptr<ProjDataInfo> proj_data_info_sptr;  

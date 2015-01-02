@@ -79,7 +79,7 @@ set_key_values()
 
 //void
 bool
-ParsingObject:: parse(istream& in) 
+ParsingObject:: parse(std::istream& in) 
 { 
   // potentially remove the if() and always call initialise_keymap
   if (!keymap_is_initialised)
@@ -142,7 +142,7 @@ ParsingObject::ask_parameters()
   }
 }
 
-string
+std::string
 ParsingObject::parameter_info() 
 { 
   if (!keymap_is_initialised)

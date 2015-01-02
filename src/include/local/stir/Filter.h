@@ -23,11 +23,6 @@
 #include "local/stir/fft.h"
 #include <string>
 
-
-#ifndef STIR_NO_NAMESPACE
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 
 template <int num_dimensions, typename elemT> class Array;
@@ -67,7 +62,7 @@ template <class T> class Filter1D : public TimedObject
     inline void apply(Array<3,T> &data);
 
     
-    virtual string parameter_info() const = 0;
+    virtual std::string parameter_info() const = 0;
 };
 
 // TODO can't be const due to start_timers()
@@ -123,7 +118,7 @@ public:
   // TODO ???
   void padd_scale_filter(int height_proj, int width_proj);
     
-  virtual string parameter_info() const = 0;
+  virtual std::string parameter_info() const = 0;
 
 protected:
   int height; 

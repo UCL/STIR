@@ -30,6 +30,8 @@
 #include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
+#include "stir/info.h"
+#include <boost/format.hpp>
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/stir_ecat7.h"
 #else
@@ -70,7 +72,7 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
   exam_info.imaging_modality = ImagingModality::PT;
   // attempt to read the .sgl file
   {
-    const string singles_filename = listmode_filename_prefix + "_1.sgl";
+    const std::string singles_filename = listmode_filename_prefix + "_1.sgl";
     ifstream singles_file(singles_filename.c_str(), ios::binary);
     char buffer[sizeof(Main_header)];
     if (!singles_file)
@@ -174,7 +176,7 @@ open_lm_file(unsigned int new_lm_file) const
       char rest[50];
       sprintf(rest, "_%d.lm", new_lm_file);
       filename += rest;
-      cerr << "CListModeDataECAT: opening file " << filename << endl;
+      info(boost::format("CListModeDataECAT: opening file %1%") % filename);
       shared_ptr<istream> stream_ptr(new fstream(filename.c_str(), ios::in | ios::binary));
       if (!(*stream_ptr))
       {

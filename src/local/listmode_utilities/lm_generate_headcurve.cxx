@@ -24,7 +24,7 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
-
+#include <string>
 
 
 USING_NAMESPACE_STIR
@@ -32,15 +32,14 @@ USING_NAMESPACE_STIR
 int main(int argc, char * argv[])
 {
   
-  if (argc!=2 && argc!=3) {
-    std::cerr << "Usage: " << argv[0] << " listmode_file [time_interval_in_secs]\n"
+  if (argc<2 || argc>5) {
+    std::cerr << "Usage: " << argv[0] << "hc_filename listmode_file [time_interval_in_secs]\n"
 	 << "time_interval_in_secs defaults to 1\n";
     exit(EXIT_FAILURE);
   }
   shared_ptr<CListModeData> lm_data_ptr
-    (read_from_file<CListModeData>(argv[1]));
-  string hc_filename = argv[1];
-  add_extension(hc_filename, ".hc");
+    (read_from_file<CListModeData>(argv[2]));
+  const std::string hc_filename = argv[1];
   std::ofstream headcurve(hc_filename.c_str());
   if (!headcurve)
     {
@@ -48,8 +47,7 @@ int main(int argc, char * argv[])
       exit(EXIT_FAILURE);
     }
 
-  const double interval = argc==3 ? atof(argv[2]) : 1;
-
+  const double interval = argc>3 ? atof(argv[3]) : 1;
 
   shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
   CListRecord& record = *record_sptr;

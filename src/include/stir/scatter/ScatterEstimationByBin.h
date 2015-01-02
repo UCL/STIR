@@ -41,6 +41,7 @@ START_NAMESPACE_STIR
 class Succeeded;
 class ProjDataInfoCylindricalNoArcCorr;
 class ViewSegmentNumbers;
+class BinNormalisation;
 
 /*!
   \ingroup scatter
@@ -108,6 +109,7 @@ class ScatterEstimationByBin : public ParsingObject
    upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
 				     const  ProjData& emission_proj_data,
 				     const ProjData& scatter_proj_data,
+                                     const BinNormalisation& scatter_normalisation,
 				     const ProjData& weights_proj_data,
 				     const float min_scale_factor,
 				     const float max_scale_factor,

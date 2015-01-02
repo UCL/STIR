@@ -37,6 +37,9 @@
 // disable warning that not all functions have been implemented when instantiating
 #pragma warning(disable: 4661)
 #endif // _MSC_VER
+
+using std::string;
+
 START_NAMESPACE_STIR
 
 template<typename elemT>

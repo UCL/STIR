@@ -180,11 +180,11 @@ namespace distributed
     delete received_viewgrams;	
   }
 	
-  void test_parameter_info_master(const string str, int slave, char const * const text)
+  void test_parameter_info_master(const std::string str, int slave, char const * const text)
   {
     printf("\n-----Running Test for sending %s-----\n", text);
 		
-    string slave_string= receive_string(88, slave);
+    std::string slave_string= receive_string(88, slave);
 		
     assert(str.compare(slave_string)==0);
 		
@@ -196,7 +196,7 @@ namespace distributed
     printf("\n-----Test sending %s done-----\n", text);
   }
 	
-  void test_parameter_info_slave(const string str)
+  void test_parameter_info_slave(const std::string str)
   {
     printf("\n-----Slave startet Test for sending parameter_info or string-----\n");
     send_string(str, 88, 0);

@@ -36,11 +36,6 @@
 #include <utility>
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
-using std::vector;
-using std::pair;
-#endif
-
 START_NAMESPACE_STIR
 
 class Succeeded;
@@ -64,7 +59,7 @@ private:
 
 public:
   //! Type used by get_all_ring_pairs_for_segment_axial_pos_num()
-  typedef vector<pair<int, int> > RingNumPairs;
+  typedef std::vector<std::pair<int, int> > RingNumPairs;
 
   //! Constructors
   ProjDataInfoCylindrical();
@@ -241,7 +236,7 @@ public:
 					    const int segment_num,
                                             const int axial_pos_num) const;
 
-  virtual string parameter_info() const;
+  virtual std::string parameter_info() const;
 
 protected:
 

@@ -39,9 +39,9 @@ SeparableLowPassArrayFilter(const VectorWithOffset<elemT>& filter_coefficients_v
 :filter_coefficients(filter_coefficients_v)
 {
 
-  cerr << "Printing filter coefficients" << endl;
+  info("Printing filter coefficients");
   for (int i =filter_coefficients_v.get_min_index();i<=filter_coefficients_v.get_max_index();i++)    
-    cerr  << i<<"   "<< filter_coefficients_v[i] <<"   " << endl;
+    info(boost::format("%1%   %2%   ") % i % filter_coefficients_v[i]);
    //err << " Z_TRIVIAL "  << z_trivial << endl;
     
  if (!z_trivial) 

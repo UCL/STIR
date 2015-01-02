@@ -26,6 +26,7 @@
 
 */
 #include "stir/common.h"
+#include "stir/Verbosity.h"
 #include <iostream>
 
 START_NAMESPACE_STIR
@@ -52,9 +53,10 @@ START_NAMESPACE_STIR
 */
 template <class STRING>
 void
-info(const STRING& string)
+info(const STRING& string, const int verbosity_level = 1)
 {
-  std::cerr << "\nINFO: "
+  if (Verbosity::get() >= verbosity_level)
+    std::cerr << "\nINFO: "
 	    << string
 	    << std::endl;
 }

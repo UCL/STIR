@@ -58,11 +58,6 @@ extern "C" {
 #include <iostream>
 #include "stir/shared_ptr.h"
 
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-using std::iostream;
-#endif
-
 START_NAMESPACE_STIR
 
 class Succeeded;
@@ -91,29 +86,29 @@ START_NAMESPACE_ECAT7
   </ol>
   \warning When the file is not readable, error() is called.
 */
-bool is_ECAT7_file(const string& filename);
+bool is_ECAT7_file(const std::string& filename);
 /*!
   \brief checks if the file is in ECAT6 format and if the file contains images
   \ingroup ECAT
 */
-bool is_ECAT7_image_file(const string& filename);
+bool is_ECAT7_image_file(const std::string& filename);
 /*!
   \brief checks if the file is in ECAT6 format and
   if the file contains emission sinograms (or blank/transmision)
   \ingroup ECAT
 */
-bool is_ECAT7_emission_file(const string& filename);
+bool is_ECAT7_emission_file(const std::string& filename);
 /*!
   \brief checks if the file is in ECAT6 format and 
   if the file contains attenuation correction factors
   \ingroup ECAT
 */
-bool is_ECAT7_attenuation_file(const string& filename);
+bool is_ECAT7_attenuation_file(const std::string& filename);
 
 /*!
   \brief read an ECAT7 main header from a file
 */
-Succeeded read_ECAT7_main_header(Main_header& mhead, const string& filename);
+Succeeded read_ECAT7_main_header(Main_header& mhead, const std::string& filename);
 
 //! determine scanner type from the main_header
 /*! 
@@ -128,7 +123,7 @@ void find_scanner(shared_ptr<Scanner> & scanner_ptr,const Main_header& mhead);
 */
 Succeeded 
 DiscretisedDensity_to_ECAT7(DiscretisedDensity<3,float> const & density, 
-                            string const & cti_name, string const& orig_name,
+                            std::string const & cti_name, std::string const& orig_name,
 			    const Scanner& scanner,
                             const int frame_num = 1, const int gate_num = 1, 
 			    const int data_num = 0, const int bed_num = 0);
@@ -153,7 +148,7 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
 */
 Succeeded 
 ProjData_to_ECAT7(ProjData const& proj_data, NumericType output_type,
-		  string const & cti_name, string const & orig_name,
+		  std::string const & cti_name, std::string const & orig_name,
 		  const int frame_num = 1, const int gate_num = 1, 
 		  const int data_num = 0, const int bed_num = 0,
 		  const bool write_as_attenuation = false,
@@ -193,7 +188,7 @@ read_ECAT7_exam_info(const std::string& filename);
 */
 void make_ECAT7_main_header(Main_header&, 
 			    const Scanner&,
-                            const string& orig_name                     
+                            const std::string& orig_name                     
                             );
 
 //! Fill in most of the main header given a Scanner object and orig_name and an image
@@ -202,7 +197,7 @@ void make_ECAT7_main_header(Main_header&,
   Sets num_planes, plane_separation as well*/
 void make_ECAT7_main_header(Main_header& mhead,
 			    Scanner const& scanner,
-                            const string& orig_name,
+                            const std::string& orig_name,
                             DiscretisedDensity<3,float> const & density
                             );
 
@@ -226,7 +221,7 @@ void make_ECAT7_main_header(Main_header& mhead,
 */
 NumericType 
 make_ECAT7_main_header(Main_header& mhead,
-		       const string& orig_name,
+		       const std::string& orig_name,
 		       ExamInfo const & exam_info,
 		       ProjDataInfo const & proj_data_info,
 		       const bool write_as_attenuation = false,
@@ -269,7 +264,7 @@ make_subheader_for_ECAT7(Scan3D_subheader& shead,
 ProjDataFromStream * 
 make_pdfs_from_matrix(MatrixFile * const mptr, 
                       MatrixData * const matrix, 
-                      const shared_ptr<iostream>&  stream_ptr);
+                      const shared_ptr<std::iostream>&  stream_ptr);
 
 //! Writes an Interfile header that 'points' into an ECAT7 file
 /*! 
@@ -282,8 +277,8 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
     frame=2, gate=3, data=4, bed=5, the header name will be test_S_f2g3d4b5.hs
 */
 Succeeded 
-write_basic_interfile_header_for_ECAT7(string& interfile_header_name,
-                                       const string& ECAT7_filename,
+write_basic_interfile_header_for_ECAT7(std::string& interfile_header_name,
+                                       const std::string& ECAT7_filename,
 				       const int frame_num, const int gate_num, const int data_num, const int bed_num);
 
 /*
@@ -294,7 +289,7 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_name,
   \return a pointer to a newly allocated image, or 0 if it failed.
 */
 VoxelsOnCartesianGrid<float> * 
-ECAT7_to_VoxelsOnCartesianGrid(const string& ECAT7_filename,
+ECAT7_to_VoxelsOnCartesianGrid(const std::string& ECAT7_filename,
 			       const int frame_num, const int gate_num, const int data_num, const int bed_num);
 /* 
   \brief Read projection data from an ECAT7 file
@@ -304,7 +299,7 @@ ECAT7_to_VoxelsOnCartesianGrid(const string& ECAT7_filename,
   \return a pointer to a newly allocated ProjDataFromStream object, or 0 if it failed.
 */
 ProjDataFromStream*
-ECAT7_to_PDFS(const string& ECAT7_filename,
+ECAT7_to_PDFS(const std::string& ECAT7_filename,
 		   const int frame_num, const int gate_num, const int data_num, const int bed_num);
 
 END_NAMESPACE_ECAT7

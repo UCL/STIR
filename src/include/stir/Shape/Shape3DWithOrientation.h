@@ -21,19 +21,6 @@
   \ingroup Shape
 
   \brief Declaration of class stir::Shape3DWithOrientation
-
-  \todo document parsing parameters
-  \par Parameters
-  \verbatim
-     ; any parameters of Shape3D
-
-     ; parameters that enable to use non-default axes
-     ; values below are give a rotation around y for 90 degrees (swapping x and z)
-     ; Warning: this uses the STIR convention {z,y,x}
-     direction vectors (in mm) := { {0,0,1}, {0,1,0}, {-1,0,0}}
-     End:=
-  \endverbatim
-
   \author Sanida Mustafovic
   \author Kris Thielemans
 */
@@ -58,10 +45,22 @@ class Succeeded;
 
   Functions like \c is_inside_shape(coord) should compute the coordinate to be used
   in the calculation as <code>matrix_multiply(direction_vectors, coord-origin)</code>,
-  or best practice is to call transform_to_original_coords().
+  or best practice is to call <code>transform_to_shape_coords(coords)</code>.
 
   \todo A previous release had Euler angle code. However, it is currently disabled as 
   there were bugs in it.
+
+  \par Parameters
+  \verbatim
+     ; any parameters of Shape3D
+
+     ; parameters that enable to use non-default axes
+     ; values below are give a rotation around y for 90 degrees (swapping x and z)
+     ; Warning: this uses the STIR convention {z,y,x}
+     direction vectors (in mm) := { {0,0,1}, {0,1,0}, {-1,0,0}}
+     End:=
+  \endverbatim
+
 */
 
 class Shape3DWithOrientation: public Shape3D

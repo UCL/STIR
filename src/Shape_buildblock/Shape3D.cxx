@@ -29,6 +29,7 @@
 #include "stir/Shape/DiscretisedShape3D.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/info.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -192,7 +193,7 @@ Shape3D::construct_volume(VoxelsOnCartesianGrid<float> &image,
 	  image[z][y][x] = get_voxel_weight(current_index*voxel_size+origin,voxel_size,num_samples);
 	}
       }
-  cerr << "Number of voxels recomputed with finer sampling : " << num_recomputed << endl;
+  info(boost::format("Number of voxels recomputed with finer sampling : %1%") % num_recomputed);
       
 }
 

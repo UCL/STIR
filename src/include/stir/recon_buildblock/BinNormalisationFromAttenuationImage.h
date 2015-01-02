@@ -35,10 +35,6 @@
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include <string>
 
-#ifndef STIR_NO_NAMESPACE
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 
 /*!
@@ -82,7 +78,7 @@ public:
 
   //! Constructor that reads the image from a file
   /*! Default forward projector is ForwardProjectorByBinUsingRayTracing. */
-  BinNormalisationFromAttenuationImage(const string& filename, shared_ptr<ForwardProjectorByBin> const& =shared_ptr<ForwardProjectorByBin>());
+  BinNormalisationFromAttenuationImage(const std::string& filename, shared_ptr<ForwardProjectorByBin> const& =shared_ptr<ForwardProjectorByBin>());
 
   //! Constructor that takes the image as an argument
   /*! Default forward projector is ForwardProjectorByBinUsingRayTracing.
@@ -122,7 +118,7 @@ private:
   virtual void initialise_keymap();
   virtual bool post_processing();
 
-  string attenuation_image_filename;
+  std::string attenuation_image_filename;
 };
 
 

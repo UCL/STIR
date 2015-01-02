@@ -174,7 +174,7 @@ void OutputFileFormatTests::run_tests()
 
     // write to file
 
-    string filename = "STIRtmp";
+    std::string filename = "STIRtmp";
     const Succeeded success =
       output_file_format_ptr->write_to_file(filename,image);
     

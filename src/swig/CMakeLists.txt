@@ -1,5 +1,5 @@
 # Copyright 2012 Kris Thielemans
-
+# Copyright 2014 University College London
 # This file is part of STIR.
 #
 # This file is free software; you can redistribute it and/or modify
@@ -18,19 +18,10 @@
 
 set(dir swig)
 
-option(BUILD_SWIG_PYTHON
-       "Use SWIG to generate python bindings for STIR (experimental)" OFF)
-
-option(BUILD_SWIG_OCTAVE
-       "Use SWIG to generate octave bindings for STIR (experimental)" OFF)
-
-# Octave support doesn't really work very well yet, so hide it a bit
-mark_as_advanced(BUILD_SWIG_OCTAVE)
-
-if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE)
+if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
 
   FIND_PACKAGE(SWIG REQUIRED)
-  INCLUDE(${SWIG_USE_FILE})
+  INCLUDE("${SWIG_USE_FILE}")
 
   SET(CMAKE_SWIG_FLAGS -DSTART_NAMESPACE_STIR=\"namespace stir {\" -DEND_NAMESPACE_STIR=\"}\")
 
@@ -52,7 +43,7 @@ if(BUILD_SWIG_PYTHON)
 
   set(PYTHON_DEST ${CMAKE_INSTALL_PREFIX}/python CACHE PATH "Destination for python module")
   INSTALL(TARGETS ${SWIG_MODULE_stir_REAL_NAME} DESTINATION ${PYTHON_DEST})
-  INSTALL(FILES ${CMAKE_BINARY_DIR}/${dir}/stir.py  DESTINATION ${PYTHON_DEST})
+  INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/stir.py  DESTINATION ${PYTHON_DEST})
   INSTALL(FILES stirextra.py  DESTINATION ${PYTHON_DEST})
 
 endif(BUILD_SWIG_PYTHON)
@@ -100,3 +91,26 @@ if (BUILD_SWIG_OCTAVE)
   INSTALL(TARGETS ${SWIG_MODULE_stiroct_REAL_NAME} DESTINATION ${OCTAVE_DEST})
 
 endif (BUILD_SWIG_OCTAVE)
+
+if (BUILD_SWIG_MATLAB)
+
+  set(module_name stir)
+  SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module ${module_name})
+  SWIG_ADD_MODULE(stirMATLAB matlab stir.i ${STIR_REGISTRIES})
+  SET_TARGET_PROPERTIES(${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTIES
+        SUFFIX "_wrap.${MATLAB_MEX_EXT}" PREFIX "${MATLAB_PREFIX}"
+        LINK_FLAGS "${MATLAB_CXXLINKER_FLAGS}"
+        FOLDER "Matlab")  
+  SWIG_LINK_LIBRARIES(stirMATLAB ${STIR_LIBRARIES}  ${MATLAB_LIBRARIES})
+
+  include_directories(${MATLAB_INCLUDE_DIR})
+  # disabled, as currently set via add_definitions in main CMakeLists.txt
+  #SET_SOURCE_FILES_PROPERTIES( ${swig_generated_file_fullname}
+  #      PROPERTIES COMPILE_FLAGS "${MATLAB_CXXFLAGS}")
+
+  set(MATLAB_DEST ${CMAKE_INSTALL_PREFIX}/matlab CACHE PATH "Destination for Matlab module (relative to CMAKE_INSTALL_PREFIX)")
+  INSTALL(TARGETS ${SWIG_MODULE_stirMATLAB_REAL_NAME} DESTINATION ${MATLAB_DEST})
+  INSTALL(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/+${module_name} DESTINATION ${MATLAB_DEST})
+  INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/SwigRef.m DESTINATION ${MATLAB_DEST})
+  
+endif (BUILD_SWIG_MATLAB)

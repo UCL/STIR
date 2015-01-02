@@ -30,6 +30,7 @@
 #include "local/stir/fft.h"
 #include "local/stir/ArrayFilter3DUsingConvolution.h"
 #include "local/stir/ArrayFilter2DUsingConvolution.h"
+#include "stir/info.h"
 
 
 #include "stir/CPUTimer.h"
@@ -110,7 +111,7 @@ construct_scaled_filter_coefficients(Array<3,float> &new_filter_coefficients_3D_
       const int size_x = size;
       int filter_length = static_cast<int>(floor(kernel_1d.get_length()/2));
       
-      cerr << "Now doing size " << size << std::endl;
+      info(boost::format("Now doing size %1%") % size);
       
       
       float inverse_sq_kapas;
@@ -586,7 +587,7 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
   
   proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
     image_sptr);
-  cerr << proj_matrix_ptr->parameter_info();
+  info(proj_matrix_ptr->parameter_info());
   
   //fwd_densels_all(all_segments,proj_matrix_ptr, proj_data_ptr,
     //in_density_cast->get_min_z(), in_density_cast->get_max_z(),
@@ -638,8 +639,7 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
   }
   const float threshold = 0.0001F*max_in_viewgram;  
   
-  cerr << " THRESHOLD IS" << threshold; 
-  cerr << endl;
+  info(boost::format(" THRESHOLD IS %1%") % threshold);
   
   find_inverse_and_bck_densels(*kappa1_ptr_bck,all_segments,
     all_attenuation_segments,
@@ -654,8 +654,7 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
     delete all_attenuation_segments[segment_num];
   }   
   
-  cerr << "min and max in image - kappa1 " <<kappa1_ptr_bck->find_min()
-    << ", " << kappa1_ptr_bck->find_max() << endl;   
+  info(boost::format("min and max in image - kappa1 %1%, %2%") % kappa1_ptr_bck->find_min() % kappa1_ptr_bck->find_max());
   
   for (int k=in_density_cast->get_min_z();k<=in_density_cast->get_max_z();k++)   
     for (int j =in_density_cast->get_min_y();j<=in_density_cast->get_max_y();j++)
@@ -779,7 +778,7 @@ ModifiedInverseAverigingImageFilter<elemT>::precalculate_filter_coefficients (Ve
 	    //const bool z_direction_trivial= false;//TODO parse
 				     
 	    Array <3,float> new_coeffs;
-	    cerr << "\ncomputing new filter for sq_kappas " << sq_kapas << " at index " <<k_index<< std::endl;
+	    info(boost::format("computing new filter for sq_kappas %1% at index %2%") % sq_kapas % k_index);
 	    construct_scaled_filter_coefficients(new_coeffs, filter_coefficients,z_direction_trivial,sq_kapas);  
 	    filter_lookup[k_index] = new ArrayFilter3DUsingConvolution<float>(new_coeffs);	    
 
@@ -820,7 +819,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
   static int count=0;
   // every time it's called, counter is incremented
   count++;
-  cerr << " checking the counter  " << count << endl; 
+  info(boost::format("checking the counter  %1%") % count);
   
   const VoxelsOnCartesianGrid<float>& in_density_cast_0 =
     dynamic_cast< const VoxelsOnCartesianGrid<float>& >(in_density); 
@@ -935,7 +934,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	
 	proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
 	  image_sptr);
-	cerr << proj_matrix_ptr->parameter_info();
+	info(proj_matrix_ptr->parameter_info());
 	
 	fwd_densels_all(all_segments,proj_matrix_ptr, proj_data_ptr,
 	  in_density_cast_0.get_min_z(), in_density_cast_0.get_max_z(),
@@ -977,8 +976,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	}
 	const float threshold = 0.0001F*max_in_viewgram;  
 	
-	cerr << " THRESHOLD IS" << threshold; 
-	cerr << endl;
+	info(boost::format(" THRESHOLD IS %1%") % threshold);
 	
 	find_inverse_and_bck_densels(*kappa1_ptr_bck,all_segments,
 	  all_attenuation_segments,
@@ -992,8 +990,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	  delete all_segments[segment_num];
 	}   
 	
-	cerr << "min and max in image - kappa1 " <<kappa1_ptr_bck->find_min()
-	  << ", " << kappa1_ptr_bck->find_max() << endl;   
+	info(boost::format("min and max in image - kappa1 %1%, %2%") % kappa1_ptr_bck->find_min() % kappa1_ptr_bck->find_max());
 	
 	char* file1 = "kappa1";
 	//cerr <<"  - Saving " << file1 << endl;

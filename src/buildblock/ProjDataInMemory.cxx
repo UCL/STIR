@@ -44,7 +44,10 @@
 using std::fstream;
 using std::iostream;
 using std::ios;
+#ifdef STIR_USE_OLD_STRSTREAM
 using std::strstream;
+#endif
+using std::string;
 #endif
 
 START_NAMESPACE_STIR
@@ -64,7 +67,7 @@ ProjDataInMemory(shared_ptr<ExamInfo> const& exam_info_sptr,
   const size_t buffer_size = get_size_of_buffer();
   //buffer = auto_ptr<char>(new char[buffer_size]);
   buffer.reset(new char[buffer_size]);
-  sino_stream.reset(new strstream(buffer.get(), buffer_size, ios::in | ios::out | ios::binary));
+  sino_stream.reset(new strstream(buffer.get(), buffer_size, ios::in | ios::out | ios::trunc | ios::binary));
 #else
   // it would be advantageous to preallocate memory as well
   // the only way to do this is by passing a string of the appropriate size

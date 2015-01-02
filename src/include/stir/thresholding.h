@@ -32,10 +32,6 @@
 #include "stir/min_positive_element.h"
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACES
-using std::fill;
-#endif
-
 START_NAMESPACE_STIR
 /*!  \ingroup buildblock
    \name Functions for thresholding numbers and sequences
@@ -123,7 +119,7 @@ threshold_min_to_small_positive_value(ForwardIter_t begin, ForwardIter_t end,
   if (smallest_positive_element_iter!= end)
     threshold_lower(begin, end,  (*smallest_positive_element_iter)*small_number);
   else
-    fill(begin, end, small_number);
+    std::fill(begin, end, small_number);
 }
 
 //@}

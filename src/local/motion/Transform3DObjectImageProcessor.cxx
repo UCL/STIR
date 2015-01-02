@@ -19,6 +19,7 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/stream.h"
 #include "stir/CPUTimer.h"
+#include "stir/info.h"
 START_NAMESPACE_STIR
 
 template<>
@@ -77,8 +78,8 @@ post_processing()
 	  return true;
 	}
     } 
-  cerr << "'transformation' quaternion  " << this->transformation.get_quaternion()<<endl;
-  cerr << "'transformation' translation  " << this->transformation.get_translation()<<endl;
+  info(boost::format("'transformation' quaternion  %1%") % this->transformation.get_quaternion());
+  info(boost::format("'transformation' translation  %1%") % this->transformation.get_translation());
 #else
   if (is_null_ptr(transformation_sptr))
     {
@@ -122,7 +123,7 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 								 *this->transformation_sptr);
 	}
       timer.stop();
-      std::cerr<< "\nCPU time for computing centre coords " << timer.value() << " secs";
+      info(boost::format("CPU time for computing centre coords %1% secs") % timer.value());
     }
   else
     {

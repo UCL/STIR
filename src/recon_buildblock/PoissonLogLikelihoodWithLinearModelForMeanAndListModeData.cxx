@@ -31,6 +31,9 @@
 #include "stir/Succeeded.h" 
 #include "stir/IO/read_from_file.h"
 
+using std::vector;
+using std::pair;
+
 START_NAMESPACE_STIR
 
  

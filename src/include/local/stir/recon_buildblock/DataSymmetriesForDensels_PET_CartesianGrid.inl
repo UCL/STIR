@@ -17,10 +17,6 @@
 
 #include <algorithm>
 
-#ifndef STIR_NO_NAMESPACE
-using std::swap;
-#endif
-
 START_NAMESPACE_STIR
 
 #if 0
@@ -112,7 +108,7 @@ find_basic_densel(Densel& c) const
   z = z%num_independent_planes;
   if (x<0) x = -x;
   if (y<0) y = -y;
-  if (y>x) swap(x,y);
+  if (y>x) std::swap(x,y);
   return true;
 }
 

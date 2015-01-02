@@ -1,0 +1,2 @@
+For installation instructions, please consult the STIR User's Guide (available in the
+documentation and on the web-site) and the STIR Wiki.

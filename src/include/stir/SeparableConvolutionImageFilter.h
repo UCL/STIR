@@ -37,11 +37,6 @@
 #include "stir/VectorWithOffset.h"
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
-using std::vector;
-#endif
-
-
 START_NAMESPACE_STIR
 
 // TODO!! remove define
@@ -129,7 +124,7 @@ public:
 private:
   // silly business because KeyParser supports only LIST_OF_DOUBLES
   // TODO remove
-  vector< vector<double> > filter_coefficients_for_parsing;
+  std::vector< std::vector<double> > filter_coefficients_for_parsing;
 
   VectorWithOffset< VectorWithOffset<elemT> > filter_coefficients;
      

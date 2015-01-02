@@ -267,7 +267,7 @@ public:
 
 protected:
   //! Filename with input projection data
-  string input_filename;
+  std::string input_filename;
 
   //! points to the object for the total input projection data
   shared_ptr<ProjData> proj_data_sptr;
@@ -311,14 +311,14 @@ protected:
   bool zero_seg0_end_planes;
 
   //! name of file in which additive projection data are stored
-  string additive_projection_data_filename;
+  std::string additive_projection_data_filename;
  //! points to the additive projection data
   /*! the projection data in this file is bin-wise added to forward projection results*/
  shared_ptr<ProjData> additive_proj_data_sptr;
 
  // TODO doc
   int frame_num;
-  string frame_definition_filename;
+  std::string frame_definition_filename;
   TimeFrameDefinitions frame_defs;
   shared_ptr<BinNormalisation> normalisation_sptr;
 
@@ -332,7 +332,7 @@ protected:
   bool compute_total_loglikelihood;
 
   //! name of file in which loglikelihood measurements are stored
-  string loglikelihood_data_filename;
+  std::string loglikelihood_data_filename;
 
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */
@@ -350,7 +350,7 @@ protected:
       of views etc. It ignores unbalancing caused by normalisation_sptr
       (e.g. for instance when using asymmetric attenuation).
   */
-  bool actual_subsets_are_approximately_balanced(string& warning_message) const;
+  bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
  private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr;
 

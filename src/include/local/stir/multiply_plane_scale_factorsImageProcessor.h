@@ -23,10 +23,6 @@
 #include "stir/DiscretisedDensity.h"
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
-using std::vector;
-#endif
-
 START_NAMESPACE_STIR
 
 template <typename elemT> class VectorWithOffset;
@@ -56,11 +52,11 @@ public:
   static const char * const registered_name;   
   multiply_plane_scale_factorsImageProcessor();
   multiply_plane_scale_factorsImageProcessor(const VectorWithOffset<double>&  plane_scale_factors);
-  multiply_plane_scale_factorsImageProcessor(const vector<double>&  plane_scale_factors);
+  multiply_plane_scale_factorsImageProcessor(const std::vector<double>&  plane_scale_factors);
     
   
 private:
-  vector<double>  plane_scale_factors;
+  std::vector<double>  plane_scale_factors;
 
   virtual void set_defaults();
   virtual void initialise_keymap();

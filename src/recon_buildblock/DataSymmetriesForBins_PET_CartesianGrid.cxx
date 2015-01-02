@@ -32,6 +32,9 @@
 #include "stir/shared_ptr.h"
 #include "stir/round.h"
 #include <typeinfo>
+#include <algorithm>
+using std::min;
+using std::max;
 
 START_NAMESPACE_STIR
 

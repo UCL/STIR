@@ -109,7 +109,7 @@ protected:
   //! points to the additive projection data
   shared_ptr<ProjDataInMemory> additive_proj_data_sptr; 
  
-  string additive_projection_data_filename ; 
+  std::string additive_projection_data_filename ; 
   //! ProjDataInfo
   shared_ptr<ProjDataInfo> proj_data_info_cyl_uncompressed_ptr; 
 

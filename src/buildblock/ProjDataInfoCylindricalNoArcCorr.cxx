@@ -43,6 +43,9 @@
 #ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::ends;
+using std::string;
+using std::pair;
+using std::vector;
 #endif
 
 START_NAMESPACE_STIR

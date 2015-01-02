@@ -30,9 +30,6 @@
 #include "stir/common.h"
 
 #include <string>
-#ifndef STIR_NO_NAMESPACE
-using std::string;
-#endif
 
 #ifndef __stir_Object_H__
 #define __stir_Object_H__
@@ -61,7 +58,7 @@ public:
   \todo Ideally this function would be a const member, but we cannot
   do this because ParsingObject::parameter_info is not const.
   */
-  virtual string parameter_info()  = 0;
+  virtual std::string parameter_info()  = 0;
   /*! \brief Returns the name of the type of the object.
 
   Each type that can be parsed has a unique (within its hierarchy) name
@@ -69,7 +66,7 @@ public:
   KeyParser::parameter_info() needs to know this
   name such that it can fill it in.
   */
-  virtual string get_registered_name() const= 0;
+  virtual std::string get_registered_name() const= 0;
 };
 END_NAMESPACE_STIR
 #endif

@@ -244,18 +244,18 @@ get_geometric_volume()const
      }
    
    if (T2 >=   0.0 && T2 <  90.0) //branch one
-     A2 = atan2(radius_x/radius_y * fabs(tan(phi_2)),1);
+	 A2 = static_cast<float>(atan2(radius_x / radius_y * fabs(tan(phi_2)), 1));
    if (T2 >=  90.0 && T2 < 180.0) //branch two
-     A2 = atan2(radius_x/radius_y * fabs(tan(phi_2)),-1);
+     A2 = static_cast<float>(atan2(radius_x / radius_y * fabs(tan(phi_2)), -1));
    if (T2 >= 180.0 && T2 < 270.0) //branch three
      A2 = static_cast<float>(2*_PI + atan2(-radius_x/radius_y * fabs(tan(phi_2)),-1));
    if (T2 >= 270.0 && T2 <= 360.0) //branch four
      A2 = static_cast<float>(2*_PI + atan2(-radius_x/radius_y * fabs(tan(phi_2)),1));
    
    if (T1 >=   0.0 && T1 <  90.0) //branch one
-     A1 = atan2(radius_x/radius_y * fabs(tan(phi_1)),1);
+     A1 = static_cast<float>(atan2(radius_x/radius_y * fabs(tan(phi_1)),1));
    if (T1 >=  90.0 && T1 < 180.0) //branch two
-     A1 = atan2(radius_x/radius_y * fabs(tan(phi_1)),-1);
+     A1 = static_cast<float>(atan2(radius_x/radius_y * fabs(tan(phi_1)),-1));
    if (T1 >= 180.0 && T1 < 270.0) //branch three
      A1 = static_cast<float>(2*_PI + atan2(-radius_x/radius_y * fabs(tan(phi_1)),-1));
    if (T1 >= 270.0 && T1 <= 360.0) //branch four

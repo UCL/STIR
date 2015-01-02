@@ -31,6 +31,9 @@
 #include "stir/VectorWithOffset.h"
 #include "stir/Array.h"
 
+#include <algorithm>
+using std::min;
+
 START_NAMESPACE_STIR
 template <typename elemT>
 ArrayFilter1DUsingConvolutionSymmetricKernel<elemT>::

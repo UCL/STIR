@@ -1,0 +1,29 @@
+generate_image Parameters :=
+output filename:=my_atten_image
+X output image size (in pixels):=111
+Y output image size (in pixels):=111
+Z output image size (in pixels):=47
+X voxel size (in mm):= 3
+Y voxel size (in mm):= 3
+Z voxel size (in mm) :=3.27
+
+  Z number of samples to take per voxel := 1
+  Y number of samples to take per voxel := 1
+  X number of samples to take per voxel := 1
+
+shape type:= ellipsoidal cylinder
+Ellipsoidal Cylinder Parameters:=
+   ; use same parameters as emission image in this example simulation
+   ; but you could use anything else of course
+   radius-x (in mm):=100
+   radius-y (in mm):=100
+   length-z (in mm):=110
+   origin (in mm):={70,10,20}
+   END:=
+; set value to attenuation of water (in cm^-1)
+value :=.096
+
+; could add other objects here (see generate_image samples for an example)
+; next shape :=
+
+END:=

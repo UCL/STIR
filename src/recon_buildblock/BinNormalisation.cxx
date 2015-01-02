@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,8 +28,11 @@
 
 
 #include "stir/recon_buildblock/BinNormalisation.h"
+#include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/Bin.h"
+#include "stir/ProjData.h"
+#include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
@@ -81,6 +85,57 @@ undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double en
   }
 
 }
+
+void 
+BinNormalisation::
+apply(ProjData& proj_data,const double start_time, const double end_time, 
+      shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr) const
+{
+  if (is_null_ptr(symmetries_sptr))
+    symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_ptr()->create_shared_clone()));
+  for (int segment_num = proj_data.get_min_segment_num(); 
+       segment_num <= proj_data.get_max_segment_num(); 
+       ++segment_num)
+    for (int view= proj_data.get_min_view_num(); 
+	 view <= proj_data.get_max_view_num();
+	 view++)      
+    {       
+      ViewSegmentNumbers vs(view, segment_num);
+      if (!symmetries_sptr->is_basic(vs))
+        continue;
+      
+      RelatedViewgrams<float> viewgrams = 
+        proj_data.get_related_viewgrams(vs, symmetries_sptr);
+      this->apply(viewgrams, start_time, end_time);
+      proj_data.set_related_viewgrams(viewgrams);
+    }
+}
+
+void 
+BinNormalisation::
+undo(ProjData& proj_data,const double start_time, const double end_time, 
+     shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr) const
+{
+  if (is_null_ptr(symmetries_sptr))
+    symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_ptr()->create_shared_clone()));
+  for (int segment_num = proj_data.get_min_segment_num(); 
+       segment_num <= proj_data.get_max_segment_num(); 
+       ++segment_num)
+    for (int view= proj_data.get_min_view_num(); 
+	 view <= proj_data.get_max_view_num();
+	 view++)      
+    {       
+      ViewSegmentNumbers vs(view, segment_num);
+      if (!symmetries_sptr->is_basic(vs))
+        continue;
+      
+      RelatedViewgrams<float> viewgrams = 
+        proj_data.get_related_viewgrams(vs, symmetries_sptr);
+      this->undo(viewgrams, start_time, end_time);
+      proj_data.set_related_viewgrams(viewgrams);
+    }
+}
+
  
 END_NAMESPACE_STIR
 

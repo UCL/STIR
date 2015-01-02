@@ -78,6 +78,8 @@
 #include "stir/IndexRange3D.h"
 #include "stir/utilities.h"
 #include "stir/RelatedViewgrams.h"
+#include "stir/info.h"
+#include <boost/format.hpp>
 #include <iostream>
 
   
@@ -88,7 +90,7 @@
 
 // #include "gen.h"
 // gen.h defined Min (which is used in screen.h)
-#define Min min
+#define Min std::min
 #include "screen.h"
 #include <cstring>
 
@@ -427,7 +429,7 @@ display_pgm (const Array<3,elemT>& plane_stack,
     }
   }
   
-  std::cerr << "Scaled maximum in image = " << scaled_max << std::endl;
+  info(boost::format("Scaled maximum in image = %1%") % scaled_max);
 
   for ( int z = min_indices[1]; z <= max_indices[1]; z++)
   {
@@ -447,7 +449,7 @@ display_pgm (const Array<3,elemT>& plane_stack,
     }			  
   }
   fclose ( pgm);
-  std::cerr<< "Wrote PGM plane_stack to file " <<  name << std::endl;
+  info(boost::format("Wrote PGM plane_stack to file %1%") % name);
 }
 
 END_NAMESPACE_STIR
@@ -473,7 +475,7 @@ void display(const Array<3,elemT>& plane_stack,
   assert(plane_stack.get_min_index() == text.get_min_index());
   assert(plane_stack.get_max_index() == text.get_max_index());
 
-  std::cerr << "Displaying " << (title==0 ? "" : title) << std::endl;
+  info(boost::format("Displaying %1%") % (title==0 ? "" : title));
 #if defined(STIR_PGM)
   display_pgm(plane_stack, scale_factors, 
                    text, maxi, title,  scale);

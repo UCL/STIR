@@ -35,14 +35,6 @@
 
 #include "stir/Coordinate2D.h"
 
-#ifndef STIR_NO_NAMESPACES
-using std::vector;
-#ifndef STIR_NO_AUTO_PTR
-using std::auto_ptr;
-#endif
-#endif
-
-
 START_NAMESPACE_STIR
 
 //class Densel;
@@ -94,14 +86,14 @@ public:
   */
   // next return value could be a RelatedDensels ???
   virtual  void
-    get_related_densels(vector<Densel>&, const Densel& b) const = 0;
+    get_related_densels(std::vector<Densel>&, const Densel& b) const = 0;
 
 #if 0
   //! fills in a vector with all the Densels (within the range) that are related to 'b'
   /*! \warning \c b has to be a 'basic' Densel
   */
   virtual void
-    get_related_densels(vector<Densel>&, const Densel& b,
+    get_related_densels(std::vector<Densel>&, const Densel& b,
                       const int min_axial_pos_num, const int max_axial_pos_num) const;
 #endif
 
@@ -114,7 +106,7 @@ public:
   sets 'b' to the corresponding 'basic' Densel and returns the symmetry 
   transformation from 'basic' to 'b'.
   */
-  virtual auto_ptr<SymmetryOperation>
+  virtual std::auto_ptr<SymmetryOperation>
     find_symmetry_operation_from_basic_densel(Densel&) const = 0;
 
   /*! \brief given an arbitrary Densel 'b', find the basic Densel

@@ -2,6 +2,7 @@
 
 #include "local/stir/local_helping_functions.h"
 #include "stir/IndexRange2D.h"
+#include "stir/info.h"
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -119,7 +120,7 @@ void create_kernel_3d ( Array<3,float>& kernel_3d, const VectorWithOffset < floa
 
   if (kernel_3d.get_min_index() ==kernel_3d.get_max_index())
   {
-      cerr << " In the right loop" << endl;
+      info("In the right loop");
       Array<2,float> kernel_2d(IndexRange2D(kernel_1d.get_min_index(), kernel_1d.get_max_index(),
       kernel_1d.get_min_index(), kernel_1d.get_max_index()));
   
@@ -181,7 +182,6 @@ void padd_filter_coefficients_3D_and_make_them_symmetric(VectorWithOffset < Vect
    
   int size = padded_filter_coefficients_3D.get_length();
   
-  cerr << endl;
   for ( int k=start_z; k <= end_z;k++)
   {
     for ( int j=start_y; j <= end_y;j++)
@@ -190,21 +190,20 @@ void padd_filter_coefficients_3D_and_make_them_symmetric(VectorWithOffset < Vect
       {
 	float tmp = filter_coefficients[k][j][i];
 	padded_filter_coefficients_3D[k+min_z][j+min_y][i+min_x] = filter_coefficients[k][j][i];
-	cerr << padded_filter_coefficients_3D[k+min_z][j+min_y][i+min_x] << "   ";
+        info(boost::format("%1%  ") % padded_filter_coefficients_3D[k+min_z][j+min_y][i+min_x]);
 	float tmp_1 = padded_filter_coefficients_3D[k+min_z][j+min_y][i+min_x];
 	//padded_filter_coefficients_3D[size-pad_k][size-pad_j][size-pad_i] = filter_coefficients[k][j][i];
       } 
     }
   }
 
-   cerr << " Padded filter coefficients " ;
+  info(" Padded filter coefficients ");
   for ( int k = -4;k<=4;k++)
     for ( int j = -4;j<=4;j++)
       for ( int i = -4;i<=4;i++)
       {
-	cerr << padded_filter_coefficients_3D[k][j][i] << "  ";
+	info(boost::format("%1%  ") % padded_filter_coefficients_3D[k][j][i]);
       }
-      cerr << endl;
   
   
 }

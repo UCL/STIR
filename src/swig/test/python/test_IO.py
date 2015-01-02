@@ -52,9 +52,10 @@ def test_ProjDataInfo(tmpdir):
     #		  const int span, const int max_delta,
     #             const int num_views, const int num_tangential_poss, 
     #
+    examinfo=ExamInfo();
     projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,6,8,6)
-    assert projdatainfo.get_scanner_ptr().get_num_rings()==32
-    projdata=ProjDataInterfile(projdatainfo, "stir_python_test.hs")
+    assert projdatainfo.get_scanner().get_num_rings()==32
+    projdata=ProjDataInterfile(examinfo, projdatainfo, "stir_python_test.hs")
     print projdata.get_min_segment_num()
     print projdata.get_max_segment_num()
     for seg in xrange(projdata.get_min_segment_num(), projdata.get_max_segment_num()+1):
@@ -65,7 +66,7 @@ def test_ProjDataInfo(tmpdir):
     del projdata
 
     projdata2=ProjData.read_from_file('stir_python_test.hs');
-    assert projdatainfo==projdata2.get_proj_data_info_ptr()
+    assert projdatainfo==projdata2.get_proj_data_info()
     for seg in xrange(projdata2.get_min_segment_num(), projdata2.get_max_segment_num()+1):
         # construct same segment data as above (TODO: better to stick it into a list or so)
         segment=projdatainfo.get_empty_segment_by_view(seg)

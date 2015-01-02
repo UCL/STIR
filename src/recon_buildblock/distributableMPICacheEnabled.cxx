@@ -50,17 +50,12 @@
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/recon_buildblock/BinNormalisation.h"
+#include "stir/info.h"
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributed_functions.h"
 #include "stir/recon_buildblock/distributed_test_functions.h"
 #include "stir/recon_buildblock/DistributedCachingInformation.h"
 #endif
-
-#ifndef STIR_NO_NAMESPACES
-using std::cerr;
-using std::endl;
-#endif
-
 
 START_NAMESPACE_STIR
 // TODO all these functions are the same as in distributable.cxx
@@ -317,8 +312,7 @@ void distributable_computation_cache_enabled(
       //the slave has not yet processed this vs_num, so the viewgrams have to be sent                   
       if (new_viewgrams==true)
         {       
-          cerr << "Sending segment " << view_segment_num.segment_num() 
-               << ", view " << view_segment_num.view_num() << " to slave " << next_receiver << std::endl;
+          info(boost::format("Sending segment %1%, view %2% to slave %3%\n") % view_segment_num.segment_num() % view_segment_num.view_num() % next_receiver);
 
           shared_ptr<RelatedViewgrams<float> > y;                                         
           shared_ptr<RelatedViewgrams<float> > additive_binwise_correction_viewgrams;
@@ -337,8 +331,7 @@ void distributable_computation_cache_enabled(
         } // if(new_viewgram)
       else
         {
-          cerr << "Re-using  segment " << view_segment_num.segment_num() 
-               << ", view " << view_segment_num.view_num() << " at slave " << next_receiver << std::endl;
+          info(boost::format("Re-using  segment %1%, view %2% to slave %3%\n") % view_segment_num.segment_num() % view_segment_num.view_num() % next_receiver);
           //send vs_num with reuse-tag, the slave will immediatelly start calculation
           distributed::send_view_segment_numbers( view_segment_num, REUSE_VIEWGRAM_TAG, next_receiver);
         }
@@ -380,9 +373,7 @@ void distributable_computation_cache_enabled(
   // TODO this message relies on knowledge of count, count2 which might be inappropriate for 
   // the call-back function
 #ifndef STIR_NO_RUNNING_LOG
-  cerr<<"\tNumber of (cancelled) singularities: "<<count
-      <<"\n\tNumber of (cancelled) negative numerators: "<<count2
-      << "\n\tIteration: "<< iteration_timer.value() << "secs" <<endl;
+  info(boost::format("\tNumber of (cancelled) singularities: %1%\n\tNumber of (cancelled) negative numerators: %2%\n\tIteration: %3%secs\n") % count % count2 % iteration_timer.value());
 #endif
     
   int_values[0]=3;

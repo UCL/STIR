@@ -14,7 +14,10 @@ zero end planes of segment 0:= 1
 
 ; if the next parameter is disabled, 
 ; the sensitivity will be computed
-sensitivity filename:= sens.hv
+; use %d where you want the subset-number (a la printf)
+subset sensitivity filenames:= sens_%d.hv
+
+
 ; specify additive projection data to handle randoms or so
 ; see User's Guide for more info
 additive sinogram := 0

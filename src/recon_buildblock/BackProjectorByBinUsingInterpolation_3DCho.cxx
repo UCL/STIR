@@ -86,6 +86,10 @@
 #include "stir/round.h"
 #include "stir/Succeeded.h"
 #include <math.h>
+
+#include <algorithm>
+using std::min;
+using std::max;
 /*
   KT 22/05/98 drastic revision
 

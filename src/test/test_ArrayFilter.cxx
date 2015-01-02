@@ -207,13 +207,13 @@ ArrayFilterTests::run_tests()
       set_tolerance(test.find_max()*kernel_for_conv.sum()*1.E-6);
       //std::cerr << get_tolerance();
 
-      cerr <<"Comparing DFT and Convolution with input offset 0\n";
+      std::cerr <<"Comparing DFT and Convolution with input offset 0\n";
       compare_results_2arg(DFT_filter, conv_filter, test);
       compare_results_1arg(DFT_filter, conv_filter, test);
-      cerr <<"Comparing DFT and Convolution with input negative offset\n";
+      std::cerr <<"Comparing DFT and Convolution with input negative offset\n";
       compare_results_2arg(DFT_filter, conv_filter, test_neg_offset);
       compare_results_1arg(DFT_filter, conv_filter, test_neg_offset);
-      cerr <<"Comparing DFT and Convolution with input positive offset\n";
+      std::cerr <<"Comparing DFT and Convolution with input positive offset\n";
       compare_results_2arg(DFT_filter, conv_filter, test_pos_offset);
       compare_results_1arg(DFT_filter, conv_filter, test_pos_offset);
     }
@@ -242,7 +242,7 @@ ArrayFilterTests::run_tests()
       check(!symconv_filter.is_trivial(), "symconv is_trivial");
       check(!conv_filter.is_trivial(), "conv is_trivial");
       set_tolerance(test.find_max()*kernel_for_conv.sum()*1.E-6);
-      cerr <<"Comparing SymmetricConvolution and Convolution\n";
+      std::cerr <<"Comparing SymmetricConvolution and Convolution\n";
       // note: SymmetricConvolution cannot handle different input and output ranges
       compare_results_1arg(symconv_filter, conv_filter, test);
     }
@@ -367,13 +367,13 @@ ArrayFilterTests::run_tests()
       set_tolerance(test.find_max()*kernel_for_conv.sum()*1.E-6);
       //std::cerr << get_tolerance();
 
-      cerr <<"Comparing DFT and Convolution with input offset 0\n";
+      std::cerr <<"Comparing DFT and Convolution with input offset 0\n";
       compare_results_2arg(DFT_filter, conv_filter, test);
       compare_results_1arg(DFT_filter, conv_filter, test);
-      cerr <<"Comparing DFT and Convolution with input negative offset\n";
+      std::cerr <<"Comparing DFT and Convolution with input negative offset\n";
       compare_results_2arg(DFT_filter, conv_filter, test_neg_offset);
       compare_results_1arg(DFT_filter, conv_filter, test_neg_offset);
-      cerr <<"Comparing DFT and Convolution with input positive offset\n";
+      std::cerr <<"Comparing DFT and Convolution with input positive offset\n";
       compare_results_2arg(DFT_filter, conv_filter, test_pos_offset);
       compare_results_1arg(DFT_filter, conv_filter, test_pos_offset);
     }
@@ -426,13 +426,13 @@ ArrayFilterTests::run_tests()
       set_tolerance(test.find_max()*kernel_for_conv.sum()*1.E-6);
       //std::cerr << get_tolerance();
 
-      cerr <<"Comparing DFT and Convolution with input offset 0\n";
+      std::cerr <<"Comparing DFT and Convolution with input offset 0\n";
       compare_results_2arg(DFT_filter, conv_filter, test);
       compare_results_1arg(DFT_filter, conv_filter, test);
-      cerr <<"Comparing DFT and Convolution with input negative offset\n";
+      std::cerr <<"Comparing DFT and Convolution with input negative offset\n";
       compare_results_2arg(DFT_filter, conv_filter, test_neg_offset);
       compare_results_1arg(DFT_filter, conv_filter, test_neg_offset);
-      cerr <<"Comparing DFT and Convolution with input positive offset\n";
+      std::cerr <<"Comparing DFT and Convolution with input positive offset\n";
       compare_results_2arg(DFT_filter, conv_filter, test_pos_offset);
       compare_results_1arg(DFT_filter, conv_filter, test_pos_offset);
     }

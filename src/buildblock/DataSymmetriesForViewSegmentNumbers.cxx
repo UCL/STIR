@@ -28,6 +28,8 @@
 #include "stir/ViewSegmentNumbers.h"
 #include <typeinfo>
 
+using std::vector;
+
 START_NAMESPACE_STIR
 
 DataSymmetriesForViewSegmentNumbers::

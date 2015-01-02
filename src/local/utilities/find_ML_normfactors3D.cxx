@@ -33,9 +33,13 @@
 #include "stir/display.h"
 #include "stir/CPUTimer.h"
 #include "stir/utilities.h"
+#include "stir/info.h"
+#include "stir/error.h"
+#include <boost/format.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <algorithm>
 #include "stir/ProjData.h"
 //#include "stir/ProjDataInterfile.h"
 
@@ -47,8 +51,8 @@ int main(int argc, char **argv)
   if (argc!=6)
     {
       std::cerr << "Usage: " << argv[0] 
-		<< " out_filename_prefix measured_data model num_iterations num_eff_iterations\n"
-		<< " set num_iterations to 0 to do only efficiencies\n";
+        << " out_filename_prefix measured_data model num_iterations num_eff_iterations\n"
+        << " set num_iterations to 0 to do only efficiencies\n";
       return EXIT_FAILURE;
     }
   const bool do_display = ask("Display",false);
@@ -122,7 +126,7 @@ int main(int argc, char **argv)
     }
 #endif
     
-    for (int iter_num = 1; iter_num<=max(num_iterations, 1); ++iter_num)
+    for (int iter_num = 1; iter_num<=std::max(num_iterations, 1); ++iter_num)
     {
       if (iter_num== 1)
       {
@@ -153,7 +157,7 @@ int main(int argc, char **argv)
             //std::cerr << "model*norm min " << fan_data.find_min() << " ,max " << fan_data.find_max() << std::endl; 
             if (do_display)
               display( fan_data, "model_times_norm");
-	    std::cerr << "KL " << KL(measured_fan_data, fan_data, threshold_for_KL) << std::endl;
+	    info(boost::format("KL %1%") % KL(measured_fan_data, fan_data, threshold_for_KL));
             // now restore for further iterations
             fan_data = model_fan_data;
             //apply_geo_norm(fan_data, norm_geo_data);
@@ -198,7 +202,7 @@ int main(int argc, char **argv)
         if (do_KL)
         {
           apply_block_norm(fan_data, norm_block_data);
-	  std::cerr << "KL " << KL(measured_fan_data, fan_data, threshold_for_KL) << std::endl;
+	  info(boost::format("KL %1%") % KL(measured_fan_data, fan_data, threshold_for_KL));
         }
         if (do_display)		 
         {
@@ -212,6 +216,6 @@ int main(int argc, char **argv)
     }
   }    
   timer.stop();
-  std::cerr << "CPU time " << timer.value() << " secs" << std::endl;
+  info(boost::format("CPU time %1% secs") % timer.value());
   return EXIT_SUCCESS;
 }

@@ -108,6 +108,9 @@
 // for asctime()
 #include <ctime>
 
+#include <algorithm>
+using std::min;
+using std::max;
 #ifndef STIR_NO_NAMESPACE
 using std::cerr;
 using std::endl;
@@ -321,7 +324,7 @@ FBP3DRPReconstruction::ask_parameters()
 #endif
 }
 
-string
+std::string
 FBP3DRPReconstruction::
 method_info() const
 { return("FBP3DRP"); }
@@ -350,7 +353,7 @@ FBP3DRPReconstruction::input_proj_data_info_cyl() const
 }
 
 FBP3DRPReconstruction::
-FBP3DRPReconstruction(const string& parameter_filename)
+FBP3DRPReconstruction(const std::string& parameter_filename)
 {  
   initialise(parameter_filename);
 }
@@ -402,7 +405,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_
   {
     //char file[max_filename_length];
     //sprintf(file,"%s.full_log",output_filename_prefix.c_str());
-    string file = output_filename_prefix;
+    std::string file = output_filename_prefix;
     file += ".full_log";
     full_log.open(file.c_str(), ios::out);
     if (!full_log)

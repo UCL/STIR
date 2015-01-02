@@ -82,7 +82,7 @@ void ROIValues::update()
   }
 }
 
-string ROIValues::report() const
+std::string ROIValues::report() const
 {
 #ifdef BOOST_NO_STRINGSTREAM
   // dangerous for out-of-range, but 'old-style' ostrstream seems to need this

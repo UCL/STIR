@@ -38,11 +38,6 @@
 #include <stdio.h>
 #include "stir/shared_ptr.h"
 
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-#endif
-
-
 START_NAMESPACE_STIR
 
 class Succeeded;
@@ -71,24 +66,24 @@ START_NAMESPACE_ECAT6
   <li> num_frames field > 0
   </ol>
 */
-bool is_ECAT6_file(const string& filename);
+bool is_ECAT6_file(const std::string& filename);
 /*!
   \brief checks if the file is in ECAT6 format and if the file contains images
   \ingroup ECAT
 */
-bool is_ECAT6_image_file(const string& filename);
+bool is_ECAT6_image_file(const std::string& filename);
 /*!
   \brief checks if the file is in ECAT6 format and
   if the file contains emission sinograms (or blank/transmision)
   \ingroup ECAT
 */
-  bool is_ECAT6_emission_file(const string& filename);
+bool is_ECAT6_emission_file(const std::string& filename);
 /*!
   \brief checks if the file is in ECAT6 format and 
   if the file contains attenuation correction factors
   \ingroup ECAT
 */
-bool is_ECAT6_attenuation_file(const string& filename);
+bool is_ECAT6_attenuation_file(const std::string& filename);
 
 /*
   \brief Convert image data
@@ -115,7 +110,7 @@ ECAT6_to_VoxelsOnCartesianGrid(const int frame_num, const int gate_num, const in
 */
 void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, const int bed_num,
 		   int max_ring_diff, bool arccorrected,
-		   const string& output_file_name, 
+		   const std::string& output_file_name, 
                    FILE *cti_fptr, const ECAT6_Main_header & mhead);
 
 //! determine scanner type from the ECAT6_Main_header
@@ -128,7 +123,7 @@ Scanner * find_scanner_from_ECAT6_Main_header(const ECAT6_Main_header& mhead);
 /*! \ingroup ECAT*/
 Succeeded 
 DiscretisedDensity_to_ECAT6(DiscretisedDensity<3,float> const & density, 
-                            string const & cti_name, string const& orig_name,
+                            std::string const & cti_name, std::string const& orig_name,
 			    const Scanner& scanner,
                             const int frame_num = 1, const int gate_num = 1, 
 			    const int data_num = 0, const int bed_num = 0);
@@ -154,7 +149,7 @@ DiscretisedDensity_to_ECAT6(FILE *fptr,
   when write_2D_sinograms==true
  */
 Succeeded ProjData_to_ECAT6(ProjData const& proj_data, 
-                            string const & cti_name, string const & orig_name,
+                            std::string const & cti_name, std::string const & orig_name,
                             const int frame_num = 1, const int gate_num = 1, 
 			    const int data_num = 0, const int bed_num = 0,
 			    const bool write_2D_sinograms = false);
@@ -182,7 +177,7 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data,
 */
 void make_ECAT6_Main_header(ECAT6_Main_header&, 
 			    const Scanner&,
-                            const string& orig_name                     
+                            const std::string& orig_name                     
                             );
 
 //! Fill in most of the main header given a Scanner object and orig_name and an image
@@ -191,7 +186,7 @@ void make_ECAT6_Main_header(ECAT6_Main_header&,
   Sets file_type, num_planes, plane_separation as well*/
 void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
 			    Scanner const& scanner,
-                            const string& orig_name,
+                            const std::string& orig_name,
                             DiscretisedDensity<3,float> const & density
                             );
 
@@ -201,7 +196,7 @@ void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
   It gets the scanner from the proj_data_info object.
    Sets file_type, num_planes, plane_separation as well*/
 void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
-			    const string& orig_name,
+			    const std::string& orig_name,
                             ProjDataInfo const & proj_data_info
                             );
 END_NAMESPACE_ECAT

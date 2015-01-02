@@ -38,7 +38,7 @@ RelatedViewgrams<elemT>::RelatedViewgrams() :
      {}
   
 template <typename elemT>
-RelatedViewgrams<elemT>::RelatedViewgrams(const vector<Viewgram<elemT> >& viewgrams,
+RelatedViewgrams<elemT>::RelatedViewgrams(const std::vector<Viewgram<elemT> >& viewgrams,
                    const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used)
 		   : viewgrams(viewgrams), 
 		     symmetries_used(symmetries_used)

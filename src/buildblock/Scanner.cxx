@@ -3,7 +3,7 @@
     Copyright (C) 2000 - 2010-07-21, Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013-2014, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -50,6 +50,8 @@ using std::cerr;
 using std::cout;
 using std::endl;
 using std::cin;
+using std::string;
+using std::list;
 #endif
 
 START_NAMESPACE_STIR
@@ -560,7 +562,7 @@ check_consistency() const
   {
     if (get_num_transaxial_crystals_per_block() <= 0 ||
 	get_num_transaxial_blocks() <= 0)
-      warning("Scanner %s: transaxial block info is not set",
+      warning("Scanner %s: transaxial block info is not set (probably irrelevant unless you use a projector or normalisation that needs this block info)",
 	      this->get_name().c_str());
     else
       {
@@ -578,7 +580,7 @@ check_consistency() const
   {
     if (get_num_transaxial_blocks_per_bucket() <= 0 ||
 	get_num_transaxial_buckets() <=0)
-      warning("Scanner %s: transaxial bucket info is not set",
+      warning("Scanner %s: transaxial bucket info is not set (probably irrelevant unless you use dead-time correction that needs this info)",
 	      this->get_name().c_str());
     else
       {
@@ -596,7 +598,7 @@ check_consistency() const
   {
     if (get_num_axial_crystals_per_block() <= 0 ||
 	get_num_axial_blocks() <=0)
-      warning("Scanner %s: axial block info is not set",
+      warning("Scanner %s: axial block info is not set (probably irrelevant unless you use a projector or normalisation that needs this block info)",
 	      this->get_name().c_str());
     else
       {
@@ -614,7 +616,7 @@ check_consistency() const
   {
     if (get_num_axial_blocks_per_bucket() <= 0 ||
 	get_num_axial_buckets() <=0)
-      warning("Scanner %s: axial bucket info is not set",
+      warning("Scanner %s: axial bucket info is not set (probably irrelevant unless you use dead-time correction that needs this info)",
 	      this->get_name().c_str());
     else
       {
@@ -632,7 +634,7 @@ check_consistency() const
   // checks on singles units
   {
     if (get_num_transaxial_crystals_per_singles_unit() <= 0)
-      warning("Scanner %s: transaxial singles_unit info is not set",
+      warning("Scanner %s: transaxial singles_unit info is not set (probably irrelevant unless you use dead-time correction that needs this info)",
 	      this->get_name().c_str());
     else
       {
@@ -656,7 +658,7 @@ check_consistency() const
   }
   {
     if (get_num_axial_crystals_per_singles_unit() <= 0)
-      warning("Scanner %s: axial singles_unit info is not set",
+      warning("Scanner %s: axial singles_unit info is not set (probably irrelevant unless you use dead-time correction that needs this info)",
 	      this->get_name().c_str());
     else
       {

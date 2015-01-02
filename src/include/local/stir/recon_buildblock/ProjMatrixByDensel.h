@@ -28,10 +28,6 @@
 #include <map>
 #include "stir/shared_ptr.h"
 
-#ifndef STIR_NO_NAMESPACES
-using std::map;
-#endif
-
 // define a local preprocessor symbol to keep code relatively clean
 #ifdef STIR_NO_MUTABLE
 #define STIR_MUTABLE_CONST
@@ -106,7 +102,7 @@ public:
   */
   
   //void set_maximum_cache_size(const unsigned long size){;}        
-  void enable_cache(bool v){cache_disabled = v;}
+  void enable_cache(bool v){cache_disabled = !v;}
   /* TODO
   void set_subset_usage(const SubsetInfo&, const int num_access_times);
   */

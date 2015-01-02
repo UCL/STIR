@@ -2,9 +2,9 @@
 \batchmode
 \documentclass{article}
 \usepackage{graphicx}
+\usepackage{hyperref}
 
 \newcommand{\tab}{\hspace{5mm}}
-
 
 \begin{document}
 
@@ -14,11 +14,17 @@
 \end{center}
 
 \begin{center}
-\textit{Version 2.3}\\
+\textit{Version 3.0}\\
 Originally based on PARAPET Deliverable 4.1,
-Extended for Quantitative Reconstruction and motion compenstation
+Extended for Quantitative Reconstruction and motion compensation
 
 \end{center}
+
+\section*{Introduction}
+The purpose of this document is to define the terms used by STIR, as not everyone in the nuclear 
+medicine community uses the same words. In addition, it also gives a brief overview and explanation 
+of data concepts. However, this is all kept brief. Please read additional material, for instance
+[Fah2002].
 
 \section*{Basics}
 
@@ -153,10 +159,11 @@ have been added 2 by 2 to form only one \textbf{view}.
 \item[Axial compression (Span)] 
 Reduction of the number of \textbf{sinograms} at different \textbf{ring 
 differences} as shown in Annex 1. \textbf{Span} is a number used by 
-CTI to say how much axial compression has been used. It is always 
+Siemens/CTI to say how much axial compression has been used. It is always 
 an odd number. Higher span, more axial compression. Span 1 means 
-no axial compression. Note that the GE Advance uses mixed data, 
-where segment 0 has span 3, while other segments have span 1.
+no axial compression. Note that GE scanners uses mixed data, 
+where segment 0 has span 3, while other segments have span 1 (or 2, depending on how you look at it, 
+see the Annex).
 \end{description}
 
 \section*{Terms used in quantitative PET reconstruction}
@@ -248,8 +255,10 @@ are added, while for others only 3. Note that \textbf{span} is always
 odd.).\\
 Note that STIR supports data with different \textbf{span} for each \textbf{segment}. 
 In particular, STIR currently interpretes the (3D) data organisation of the
-GE Advance and Discovery scanners as using segment 0 with span=3, while 
-other segments are span=1.
+GE Advance and GE Discovery scanners as using segment 0 with span=3, while 
+other segments are span=1. Another interpretation of GE data is that segment 0 uses
+span=3, while other segments use span=2 (i.e. segment 1 contains ring differences +2 and +3), 
+see the slide on p.7 of [Fay2004].
 
 \begin{figure}[htbp]
 \begin{center}
@@ -268,4 +277,11 @@ Legend:
 \item[average\_delta] the averaged ring difference. This is equal 
 to segment\_num*span if the span is the same for each segment.
 \end{description}
+
+\section*{References}
+
+[Fah2002] FH Fahey, "Data Acquisition in PET Imaging", J Nucl Med Technol 2002; 30:39, 49.
+
+[Fah2004] FH Fahey, 2004 SNM Mid-Winter Educational Symposium slides, online at
+\url{http://interactive.snm.org/docs/Fahey%20presentation.pdf}
 \end{document}

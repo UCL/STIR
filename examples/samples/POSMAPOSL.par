@@ -38,9 +38,10 @@ projector pair type := Matrix
 
 ; if the next parameter is disabled, 
 ; the sensitivity will be computed using the normalisation object
-sensitivity filename:= sens.img
+; use %d where you want the subset-number (a la printf)
+subset sensitivity filenames:= sens_%d.img
 ; if next is set to 1, sensitivity will be recomputed
-; and written to file (if "sensitivity filename" is set)
+; and written to file (if "subset sensitivity filenames" is set)
 recompute sensitivity := 1
 
 ; specify additive projection data to handle randoms or so

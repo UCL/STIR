@@ -78,12 +78,12 @@ public:
   virtual void initialise_keymap();
   virtual bool post_processing();
   std::vector<shared_ptr<Shape3D> > shape_ptrs;
-  std::vector<string> shape_names;
+  std::vector<std::string> shape_names;
   CartesianCoordinate3D<int> num_samples;
   shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > filter_ptr;
 private:
   shared_ptr<Shape3D> current_shape_sptr;
-  string current_shape_name;
+  std::string current_shape_name;
   void increment_current_shape_num();  
 };
 
@@ -248,7 +248,7 @@ main(int argc, char *argv[])
   {
     std::vector<shared_ptr<Shape3D> >::const_iterator current_shape_iter =
       parameters.shape_ptrs.begin();
-    std::vector<string >::const_iterator current_name_iter =
+    std::vector<std::string >::const_iterator current_name_iter =
       parameters.shape_names.begin();
     for (;
 	 current_shape_iter != parameters.shape_ptrs.end();

@@ -39,13 +39,6 @@
 #include <algorithm>
 #include <stdexcept>
 
-#ifndef STIR_NO_NAMESPACES
-# ifndef BOOST_NO_STDC_NAMESPACE
-using std::acos;
-using std::sqrt;
-# endif
-#endif
-
 START_NAMESPACE_STIR
 
 /*
@@ -432,7 +425,7 @@ template <int num_dimensions, class coordT>
 double
 norm (const BasicCoordinate<num_dimensions, coordT>& p1)
 {
-  return sqrt(norm_squared(p1));
+  return std::sqrt(norm_squared(p1));
 }
 
 template <int num_dimensions, class coordT>
@@ -440,7 +433,7 @@ double
 cos_angle (const BasicCoordinate<num_dimensions, coordT>& p1, 
            const BasicCoordinate<num_dimensions, coordT>& p2)
 {
-  return inner_product(p1,p2)/sqrt(norm_squared(p1)*norm_squared(p2)) ;
+  return inner_product(p1,p2)/std::sqrt(norm_squared(p1)*norm_squared(p2)) ;
 }
 
 template <int num_dimensions, class coordT>
@@ -448,7 +441,7 @@ double
 angle (const BasicCoordinate<num_dimensions, coordT>& p1, 
        const BasicCoordinate<num_dimensions, coordT>& p2)
 {
-  return acos(cos_angle(p1,p2));
+  return std::acos(cos_angle(p1,p2));
 }
 
 template <int num_dimensions, class coordT>

@@ -29,6 +29,7 @@
 #include "stir/listmode/LmToProjDataBootstrap.h"
 #include "stir/listmode/CListRecord.h"
 #include "stir/Succeeded.h"
+#include "stir/info.h"
 #include <iostream>
 #include <algorithm>
 
@@ -133,7 +134,7 @@ start_new_time_frame(const unsigned int new_frame_num)
   shared_ptr <CListRecord> record_sptr = this->lm_data_ptr->get_empty_record_sptr();
   CListRecord& record = *record_sptr;
 
-  cerr << "\nGoing through listmode file to find number of events in this frame" << endl;
+  info("Going through listmode file to find number of events in this frame");
   double current_time = start_time;
   while (more_events)
     {
@@ -225,8 +226,7 @@ start_new_time_frame(const unsigned int new_frame_num)
 	 
   num_times_to_replicate_iter = num_times_to_replicate.begin();
     
-  cerr << "\nFilled in replication vector for " << total_num_events_in_this_frame 
-       << " events." << endl;
+  info(boost::format("Filled in replication vector for %1% events.") % total_num_events_in_this_frame);
 }
 
 template <typename LmToProjDataT> 

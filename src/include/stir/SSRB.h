@@ -32,10 +32,6 @@
 #include "stir/common.h"
 #include <string>
 
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 
 class ProjData;
@@ -110,7 +106,7 @@ SSRB(const ProjDataInfo& in_proj_data_info,
      ) for restrictions
   */
 void 
-SSRB(const string& output_filename,
+SSRB(const std::string& output_filename,
      const ProjData& in_projdata,
      const int num_segments_to_combine,
      const int num_views_to_combine = 1,

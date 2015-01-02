@@ -31,10 +31,11 @@
     See STIR/LICENSE.txt for details
 */
 
-
 #include "stir/SeparableMetzArrayFilter.h"
 #include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
 #include "stir/VectorWithOffset.h"
+#include "stir/info.h"
+#include <boost/format.hpp>
 #include <iostream>
 
 #ifndef STIR_NO_NAMESPACES
@@ -213,14 +214,13 @@ void build_metz(VectorWithOffset<elemT>& kernel,
     int Res=(int)(log((sqrt(8*n*log(10.)*s2)+stretch)/sampling_interval)/log(2.)+1);
     Res=(int) pow(2.0,(double) Res); //MJ 12/05/98 made adaptive 
     
-    
-    
-    cerr<<endl<<"Variance: "<< s2<<endl; 
-    cerr<<"Voxel dimension (in mm): "<< MmPerVox<<endl;  
-    cerr<<"Samples per voxel: "<< samples_per_voxel<<endl;
-    cerr<<"Sampling interval (in mm): "<< sampling_interval<<endl;
-    cerr<<"FFT vector length: "<<Res<<endl;  
-    
+    info(boost::format("Filter parameters:\n"
+      "Variance: %1%\n"
+      "Voxel dimension (in mm): %2%\n"
+      "Samples per voxel: %3%\n"
+      "Sampling interval (in mm):  %4%\n"
+      "FFT vector length: %5%") 
+      % s2 % MmPerVox % samples_per_voxel % sampling_interval % Res);    
     
     /* allocate memory to metz arrays */
     VectorWithOffset<elemT> filter(Res);

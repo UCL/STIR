@@ -32,6 +32,10 @@
 #include "stir/VectorWithOffset.h"
 #include "stir/Array.h"
 
+#include <algorithm>
+using std::min;
+using std::max;
+
 START_NAMESPACE_STIR
 
 template <typename elemT>

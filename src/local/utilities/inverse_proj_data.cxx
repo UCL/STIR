@@ -32,6 +32,8 @@
 #include "stir/SegmentByView.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/Viewgram.h"
+#include "stir/info.h"
+#include "stir/error.h"
 
 
 #include <fstream>
@@ -42,11 +44,8 @@
 using std::ofstream;
 using std::fstream;
 using std::iostream;
-using std::endl;
 using std::list;
 using std::find;
-using std::cerr;
-using std::endl;
 #endif
 
 
@@ -93,8 +92,7 @@ find_inverse( ProjData* proj_data_ptr_out, const ProjData* proj_data_ptr_in)
       else
       continue;
   }
-  cerr << " Max number in viewgram is: " << max_in_viewgram;
-  cerr << endl;
+  info(boost::format("Max number in viewgram is: %1%") % max_in_viewgram);
 
   for (int segment_num = min_segment_num; segment_num<= max_segment_num;
   segment_num++) 

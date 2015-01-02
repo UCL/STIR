@@ -126,8 +126,8 @@ set_byte_order(const ByteOrder& new_byte_order, const bool warn)
 
 Succeeded  
 ECAT7OutputFileFormat::
-    actual_write_to_file(string& filename, 
-                  const DiscretisedDensity<3,float>& density) const
+actual_write_to_file(std::string& filename, 
+		     const DiscretisedDensity<3,float>& density) const
 {
   shared_ptr<Scanner> scanner_ptr(Scanner::get_scanner_from_name(default_scanner_name));
   

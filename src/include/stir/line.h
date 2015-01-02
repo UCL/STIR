@@ -38,33 +38,28 @@
 #include <string>
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-using std::vector;
-#endif
-
 START_NAMESPACE_STIR
 
 /*!
   \brief A class used by the Interfile parser.
   \warning This will be removed soon. Do NOT USE.
 */
-class Line : public string
+class Line : public std::string
 {
 
 public :
-	Line() : string()
+        Line() : std::string()
 	{}
 
 	Line& operator=(const char* ch);
 
-	string get_keyword();
+	std::string get_keyword();
 	int get_index();
-	int get_param(vector<int>& v);
+	int get_param(std::vector<int>& v);
 	// KT 29/10/98 new
-	int get_param(vector<double>& v);
-	int get_param(vector<string>& v);
-	int get_param(string& s);
+	int get_param(std::vector<double>& v);
+	int get_param(std::vector<std::string>& v);
+	int get_param(std::string& s);
 	int get_param(int& i);
 	// KT 01/08/98 new
 	int get_param(unsigned long& i);

@@ -53,6 +53,7 @@
 #include "stir/IO/ECAT962ListmodeInputFileFormat.h"
 #endif
 #endif
+#include "stir/IO/ECAT8_32bitListmodeInputFileFormat.h"
 
 #ifdef HAVE_ITK
 #include "stir/IO/ITKOutputFileFormat.h"
@@ -103,4 +104,6 @@ static RegisterInputFileFormat<ITKImageInputFileFormat> idummy8(10000);
 static RegisterInputFileFormat<ecat::ecat7::ECAT966ListmodeInputFileFormat> LMdummyECAT966(4);
 static RegisterInputFileFormat<ecat::ecat7::ECAT962ListmodeInputFileFormat> LMdummyECAT962(5);
 #endif
+static RegisterInputFileFormat<ecat::ECAT8_32bitListmodeInputFileFormat> LMdummyECAT8(6);
+
 END_NAMESPACE_STIR

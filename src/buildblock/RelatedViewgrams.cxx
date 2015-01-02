@@ -38,6 +38,9 @@
 #pragma warning(disable: 4661)
 #endif // _MSC_VER
 
+using std::string;
+using std::vector;
+
 START_NAMESPACE_STIR
 
 

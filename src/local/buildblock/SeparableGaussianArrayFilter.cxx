@@ -2,7 +2,8 @@
 #include "local/stir/SeparableGaussianArrayFilter.h"
 #include "stir/ArrayFilter1DUsingConvolution.h"
 #include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
-
+#include "stir/info.h"
+#include <boost/format.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -25,10 +26,11 @@ SeparableGaussianArrayFilter<num_dimensions,elemT>::
 SeparableGaussianArrayFilter()
 :standard_deviation(0),number_of_coefficients(0)
 {
+
  for (int i=1;i<=num_dimensions;i++)
   {
-    all_1d_array_filters[i-1] = 	 
-      new ArrayFilter1DUsingConvolution<float>();
+    this->all_1d_array_filters[i-1].
+      reset(new ArrayFilter1DUsingConvolution<float>());
   }
 }
 
@@ -46,9 +48,9 @@ SeparableGaussianArrayFilter(const float standard_deviation_v,
  calculate_coefficients(filter_coefficients, number_of_coefficients_v,
 			 standard_deviation_v);
  
- cerr << "Printing filter coefficients - nonrescaled" << endl;
+ info("Printing filter coefficients - nonrescaled");
   for (int i =filter_coefficients.get_min_index();i<=filter_coefficients.get_max_index();i++)    
-    cerr  << i<<"   "<< filter_coefficients[i] <<"   " << endl;
+    info(boost::format("%1%   %2%   ") % i % filter_coefficients[i]);
 
   // rescaled to dc =1
  /* float sum =0.F;  
@@ -69,12 +71,12 @@ SeparableGaussianArrayFilter(const float standard_deviation_v,
   for (int i =filter_coefficients.get_min_index();i<=filter_coefficients.get_max_index();i++)    
     cerr  << i<<"   "<< filter_coefficients[i] <<"   " << endl;
  */
-   all_1d_array_filters[2] = 	 
-      new ArrayFilter1DUsingConvolution<float>(filter_coefficients);
-   all_1d_array_filters[0] = 	 
-       new ArrayFilter1DUsingConvolution<float>();
-   all_1d_array_filters[1] = 	 
-       new ArrayFilter1DUsingConvolution<float>(filter_coefficients);
+  this->all_1d_array_filters[2].
+    reset(new ArrayFilter1DUsingConvolution<float>(filter_coefficients));
+  this->all_1d_array_filters[0].
+    reset(new ArrayFilter1DUsingConvolution<float>());
+  this->all_1d_array_filters[1].
+    reset(new ArrayFilter1DUsingConvolution<float>(filter_coefficients));
   
 
 }
@@ -99,6 +101,6 @@ calculate_coefficients(VectorWithOffset<elemT>& filter_coefficients, const int n
     
 }
 
-template SeparableGaussianArrayFilter<3,float>;
+template class SeparableGaussianArrayFilter<3,float>;
 
 END_NAMESPACE_STIR

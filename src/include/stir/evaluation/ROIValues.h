@@ -34,9 +34,6 @@
 #include <string>
 #include <iostream>
 #include <algorithm>
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-#endif
 
 START_NAMESPACE_STIR
 
@@ -85,7 +82,7 @@ public:
     };
 
   //! Return a string with all info, one per line
-  string report() const;
+  std::string report() const;
 
   //! Total valume (in mm^3)
   float get_roi_volume() const

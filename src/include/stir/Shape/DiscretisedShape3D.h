@@ -43,6 +43,13 @@ template <int num_dimensions, typename elemT> class DiscretisedDensity;
   For DiscretisedShaped3D objects with smooth edges, voxel values
     will vary between 0 and 1. 
 
+  \par Parameters for parsing
+  \verbatim
+  Discretised Shape3D Parameters:=
+  input filename := <filename>
+  END:=
+  \endverbatim
+  where \a filename needs to specify a volume that can be read by STIR.
 */
 class DiscretisedShape3D: 
   public RegisteredParsingObject<DiscretisedShape3D, Shape3D, Shape3D>
@@ -161,7 +168,7 @@ private:
   */
   virtual bool post_processing();
   //@}
-  string filename;
+  std::string filename;
 };
 
 

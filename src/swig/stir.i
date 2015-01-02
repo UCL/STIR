@@ -37,6 +37,7 @@
 #define __stir_error_H__
 #endif
 
+ 
  #include "stir/Succeeded.h"
  #include "stir/DetectionPosition.h"
  #include "stir/Scanner.h"
@@ -49,7 +50,9 @@
  #include "stir/SegmentByView.h"
  #include "stir/SegmentBySinogram.h"
  #include "stir/ExamInfo.h"
+ #include "stir/Verbosity.h"
  #include "stir/ProjData.h"
+ #include "stir/ProjDataInMemory.h"
  #include "stir/ProjDataInterfile.h"
 
 #include "stir/CartesianCoordinate2D.h"
@@ -72,6 +75,14 @@
 
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+
+#include "stir/analytic/FBP2D/FBP2DReconstruction.h"
+#include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
+
+#include <boost/iterator/reverse_iterator.hpp>
 
    // TODO need this (bug in swig)
    // this bug occurs (only?) when using "%template(name) someclass;" inside the namespace
@@ -79,6 +90,8 @@
    using namespace stir;
    using std::iostream;
 
+   // local helper functions for conversions etc. These are not "exposed" to the target language 
+   // (but only enter in the wrapper)
    namespace swigstir {
 #if defined(SWIGPYTHON)
    // helper function to translate a tuple to a BasicCoordinate
@@ -123,10 +136,110 @@
 	  PyTuple_SET_ITEM(p, d-1, PyFloat_FromDouble(double(c[d])));
 	return p;
       }
-     
-    
+#elif defined(SWIGMATLAB)
+     // convert stir::Array to matlab (currently always converting to double)
+     // note that the order of the dimensions is reversed to take row-first vs column-first ordering into account
+     template <int num_dimensions, typename elemT>
+     mxArray * Array_to_matlab(const stir::Array<num_dimensions, elemT>& a)
+     {
+       mwSize dims[num_dimensions];
+       BasicCoordinate<num_dimensions,int> minind,maxind;
+       a.get_regular_range(minind,maxind);
+       const BasicCoordinate<num_dimensions,int> sizes=maxind-minind+1;
+       // copy dimensions in reverse order
+       std::copy(boost::make_reverse_iterator(sizes.end()), boost::make_reverse_iterator(sizes.begin()), dims);
+       mxArray *pm = mxCreateNumericArray(num_dimensions, dims, mxDOUBLE_CLASS, mxREAL);
+       double * data_ptr = mxGetPr(pm);
+       std::copy(a.begin_all(), a.end_all(), data_ptr);
+       return pm;
+     }
+
+     template <int num_dimensions, typename elemT>
+     void fill_Array_from_matlab_scalar(stir::Array<num_dimensions, elemT>& a, const mxArray *pm)
+     {
+       if (mxIsDouble(pm))
+       {
+         double const* data_ptr = mxGetPr(pm);
+         a.fill(static_cast<elemT>(*data_ptr));
+       } else if (mxIsSingle(pm))
+       {
+         float const* data_ptr = (float *)mxGetData(pm);
+         a.fill(static_cast<elemT>(*data_ptr));
+       } else
+       { 
+         mexWarnMsgIdAndTxt("stir:array","currently only supporting double or single arrays for filling a stir array");
+         mexErrMsgTxt("Exiting");
+       }
+     }
+
+     template <int num_dimensions, typename elemT>
+     void fill_Array_from_matlab(stir::Array<num_dimensions, elemT>& a, const mxArray *pm, bool do_resize)
+     {
+       mwSize matlab_num_dims = mxGetNumberOfDimensions(pm);
+       const mwSize * m_sizes = mxGetDimensions(pm);
+       // matlab represents scalars/vectors as a matrix, so let's check this first
+       if (matlab_num_dims == static_cast<mwSize>(2) && m_sizes[1]==static_cast<mwSize>(1))
+       {
+         if (m_sizes[0] ==static_cast<mwSize>(1))
+         {
+           // it's a scalar
+           fill_Array_from_matlab_scalar(a, pm);
+           return;
+         }
+         matlab_num_dims=static_cast<mwSize>(1); // set it to a 1-dimensional array
+       }
+       if (matlab_num_dims > static_cast<mwSize>(num_dimensions))
+       {
+         mexWarnMsgIdAndTxt("stir:array",
+                            "number of dimensions in matlab array is incorrect for constructing a stir array of dimension %d", 
+                            num_dimensions); 
+         mexErrMsgTxt("Exiting");
+       }
+       if (do_resize)
+       {
+         BasicCoordinate<num_dimensions,int>  sizes;
+         // first set all to 1 to cope with lower-dimensional arrays from matlab
+         sizes.fill(1);
+         std::copy(m_sizes, m_sizes+matlab_num_dims, boost::make_reverse_iterator(sizes.end()));
+         a.resize(sizes);
+       }
+       else
+       { 
+         // check sizes
+         BasicCoordinate<num_dimensions,int> minind,maxind;
+         a.get_regular_range(minind,maxind);
+         const BasicCoordinate<num_dimensions,int> sizes=maxind-minind+1;
+         if (!std::equal(m_sizes, m_sizes+matlab_num_dims, boost::make_reverse_iterator(sizes.end())))
+         {
+           mexWarnMsgIdAndTxt("stir:array","sizes of matlab array incompatible with stir array");
+           mexErrMsgTxt("Exiting");
+         }
+         for (int d=1; d<= num_dimensions-matlab_num_dims; ++d)
+         {
+           if (sizes[d]!=1)
+           {
+             mexWarnMsgIdAndTxt("stir:array",
+                               "sizes of first dimensions of the stir array have to be 1 if initialising from a lower dimensional matlab array");
+             mexErrMsgTxt("Exiting");
+           }
+         }
+       }       
+       if (mxIsDouble(pm))
+       {
+         double * data_ptr = mxGetPr(pm);
+         std::copy(data_ptr, data_ptr+a.size_all(), a.begin_all());
+       } else if (mxIsSingle(pm))
+       {
+         float * data_ptr = (float *)mxGetData(pm);
+         std::copy(data_ptr, data_ptr+a.size_all(), a.begin_all());
+       } else
+       { 
+         mexWarnMsgIdAndTxt("stir:array","currently only supporting double or single arrays for constructing a stir array");
+         mexErrMsgTxt("Exiting");
+       }
+     }     
 #endif
-  }
+  } // end namespace swigstir
  %}
 
 %feature("autodoc", "1");
@@ -165,10 +278,17 @@
 // include standard swig support for some bits of the STL (i.e. standard C++ lib)
 %include <stl.i>
 %include <std_list.i>
-#if defined(SWIGPYTHON)
-%include <std_ios.i>
-%include <std_iostream.i>
+#ifdef STIRMATLAB
+%ignore *::operator>>;
+%ignore *::operator<<;
 #endif
+
+#ifndef SWIGOCTAVE
+%include <std_ios.i>
+// do not need this at present
+// %include <std_iostream.i>
+#endif
+
 // Instantiate STL templates used by stir
 namespace std {
    %template(IntVector) vector<int>;
@@ -320,6 +440,36 @@ namespace std {
     }
     void __brace_asgn__(const INDEXTYPE i, const RETTYPE val) { (*self).at(i)=val; }
  }
+#elif defined(SWIGMATLAB)
+%extend TYPE {
+    %exception getel {
+      try
+	{
+	  $action
+	}
+      catch (std::out_of_range& e) {
+        SWIG_exception(SWIG_IndexError,const_cast<char*>(e.what()));
+      }
+      catch (std::invalid_argument& e) {
+        SWIG_exception(SWIG_TypeError,const_cast<char*>(e.what()));
+      }
+    }
+    %newobject getel;
+    RETTYPE getel(const INDEXTYPE i) { return (*self).at(i); }
+    %exception setel {
+      try
+	{
+	  $action
+	}
+      catch (std::out_of_range& e) {
+        SWIG_exception(SWIG_IndexError,const_cast<char*>(e.what()));
+      }
+      catch (std::invalid_argument& e) {
+        SWIG_exception(SWIG_TypeError,const_cast<char*>(e.what()));
+      }
+    }
+    void setel(const INDEXTYPE i, const RETTYPE val) { (*self).at(i)=val; }
+ }
 #endif
 %enddef
 
@@ -397,7 +547,9 @@ namespace std {
 %shared_ptr(stir::TimedObject);
 %shared_ptr(stir::ParsingObject);
 
+%shared_ptr(stir::TimeFrameDefinitions);
 %shared_ptr(stir::ExamInfo);
+%shared_ptr(stir::Verbosity);
 %shared_ptr(stir::Scanner);
 %shared_ptr(stir::ProjDataInfo);
 %shared_ptr(stir::ProjDataInfoCylindrical);
@@ -406,7 +558,7 @@ namespace std {
 %shared_ptr(stir::ProjData);
 %shared_ptr(stir::ProjDataFromStream);
 %shared_ptr(stir::ProjDataInterfile);
-
+%shared_ptr(stir::ProjDataInMemory);
 // TODO cannot do this yet as then the FloatArray1D(FloatArray1D&) construction fails in test.py
 //%shared_ptr(stir::Array<1,float>);
 %shared_ptr(stir::Array<2,float>);
@@ -464,7 +616,12 @@ T * operator-> () const;
       };
   }
 #endif
-%warnfilter(SWIGWARN_PARSE_NAMED_NESTED_CLASS) stir::RegisteredParsingObject::RegisteredIt;
+
+// disabled warning about nested class. we don't need this class anyway
+%warnfilter(SWIGWARN_PARSE_NAMED_NESTED_CLASS) stir::RegisteredParsingObject::RegisterIt;
+// in some cases, swig generates a default constructor.
+// we have to explictly disable this for RegisteredParsingObject as it could be an abstract class.
+%nodefaultctor stir::RegisteredParsingObject;
 %include "stir/RegisteredParsingObject.h"
 
  /* Parse the header files to generate wrappers */
@@ -674,7 +831,8 @@ namespace stir {
   %template(Float3BasicCoordinate) BasicCoordinate<3,float>;
   %template(Float3Coordinate) Coordinate3D< float >;
   %template(FloatCartesianCoordinate3D) CartesianCoordinate3D<float>;
-
+  %template(IntCartesianCoordinate3D) CartesianCoordinate3D<int>;
+  
   %template(Int2BasicCoordinate) BasicCoordinate<2,int>;
   %template(Size2BasicCoordinate) BasicCoordinate<2,std::size_t>;
   %template(Float2BasicCoordinate) BasicCoordinate<2,float>;
@@ -751,6 +909,39 @@ namespace stir {
     }
   }
 
+#ifdef SWIGMATLAB
+  %extend Array {
+     Array(const mxArray *pm)
+     {
+       $parentclassname * array_ptr = new $parentclassname();
+       swigstir::fill_Array_from_matlab(*array_ptr, pm, true /* do resize */);
+       return array_ptr;
+     }
+
+     %newobject to_matlab;
+     mxArray * to_matlab()
+     { return swigstir::Array_to_matlab(*$self); }
+
+     void fill(const mxArray *pm)
+     { swigstir::fill_Array_from_matlab(*$self, pm, false /*do not resize */); }
+   }
+  // repeat this for 1D due to template (partial) specialisation (TODO, get round that somehow)
+  %extend Array<1,float> {
+     Array<1,float>(const mxArray *pm)
+     {
+       $parentclassname * array_ptr = new $parentclassname();
+       swigstir::fill_Array_from_matlab(*array_ptr, pm, true /* do resize */);
+       return array_ptr;
+     }
+
+     %newobject to_matlab;
+     mxArray * to_matlab()
+     { return swigstir::Array_to_matlab(*$self); }
+
+     void fill(const mxArray *pm)
+     { swigstir::fill_Array_from_matlab(*$self, pm, false /*do not resize */); }
+   }
+#endif
   // TODO next line doesn't give anything useful as SWIG doesn't recognise that 
   // the return value is an array. So, we get a wrapped object that we cannot handle
   //%ADD_indexaccess(int,Array::value_type, Array);
@@ -787,6 +978,8 @@ namespace stir {
 
 %template(Float3DDiscretisedDensity) stir::DiscretisedDensity<3,float>;
 %template(Float3DDiscretisedDensityOnCartesianGrid) stir::DiscretisedDensityOnCartesianGrid<3,float>;
+//%template() stir::DiscretisedDensity<3,float>;
+//%template() stir::DiscretisedDensityOnCartesianGrid<3,float>;
 %template(FloatVoxelsOnCartesianGrid) stir::VoxelsOnCartesianGrid<float>;
 
 
@@ -819,6 +1012,9 @@ namespace stir {
 
  /* Now do ProjDataInfo, Sinogram et al
  */
+%include "stir/TimeFrameDefinitions.h"
+%include "stir/ExamInfo.h"
+%include "stir/Verbosity.h"
 // ignore non-const versions
 %ignore stir::Bin::segment_num();
 %ignore stir::Bin::axial_pos_num();
@@ -827,7 +1023,15 @@ namespace stir {
 %include "stir/Bin.h"
 %newobject stir::ProjDataInfo::ProjDataInfoGE;
 %newobject stir::ProjDataInfo::ProjDataInfoCTI;
+%ignore *::get_scanner_ptr;
 %include "stir/ProjDataInfo.h"
+namespace stir{
+  %extend ProjDataInfo
+  {
+    const Scanner& get_scanner() const
+    { return *$self->get_scanner_ptr(); }
+  }
+ }
 %include "stir/ProjDataInfoCylindrical.h"
 %include "stir/ProjDataInfoCylindricalArcCorr.h"
 %include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -838,10 +1042,30 @@ namespace stir {
 %include "stir/Segment.h"
 %include "stir/SegmentByView.h"
 %include "stir/SegmentBySinogram.h"
-%include "stir/ProjData.h"
 
+%ignore *::get_proj_data_info_ptr;
+%ignore *::get_exam_info_ptr;
+%rename(get_exam_info) *::get_exam_info_sptr;
+%define %extend_with_proj_data_info(CLASS)
+namespace stir{
+  %extend CLASS
+  {
+    const ProjDataInfo& get_proj_data_info() const
+    { return *$self->get_proj_data_info_ptr(); }
+  }
+ }
+%enddef
+%include "stir/ProjData.h"
 %include "stir/ProjDataFromStream.h"
 %include "stir/ProjDataInterfile.h"
+%include "stir/ProjDataInMemory.h"
+
+%extend_with_proj_data_info(ProjData);
+//%extend_with_proj_data_info(MultipleProjData);
+%extend_with_proj_data_info(Sinogram);
+%extend_with_proj_data_info(Viewgram);
+%extend_with_proj_data_info(Segment);
+%extend_with_proj_data_info(RelatedViewgrams);
 
 namespace stir { 
   %template(FloatViewgram) Viewgram<float>;
@@ -906,6 +1130,9 @@ namespace stir {
 %shared_ptr(stir::Reconstruction<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >);
+%shared_ptr(stir::AnalyticReconstruction);
+%shared_ptr(stir::FBP2DReconstruction);
+%shared_ptr(stir::FBP3DRPReconstruction);
 #endif
 
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
@@ -917,9 +1144,14 @@ namespace stir {
 %include "stir/recon_buildblock/IterativeReconstruction.h"
 %include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 
+%include "stir/recon_buildblock/AnalyticReconstruction.h"
+%include "stir/analytic/FBP2D/FBP2DReconstruction.h"
+%include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
+
+
 
 %template (GeneralisedObjectiveFunction3DFloat) stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >;
-#%template () stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >;
+//%template () stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >;
 %template (PoissonLogLikelihoodWithLinearModelForMean3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMean<stir::DiscretisedDensity<3,float> >;
 
 #define TargetT stir::DiscretisedDensity<3,float>
@@ -944,5 +1176,54 @@ namespace stir {
 
 
 %template (Reconstruction3DFloat) stir::Reconstruction<stir::DiscretisedDensity<3,float> >;
+//%template () stir::Reconstruction<stir::DiscretisedDensity<3,float> >;
 %template (IterativeReconstruction3DFloat) stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
+//%template () stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
 %template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >;
+
+
+/// projectors
+%shared_ptr(stir::ForwardProjectorByBin);
+%shared_ptr(stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,
+    stir::ForwardProjectorByBin>);
+%shared_ptr(stir::ForwardProjectorByBinUsingProjMatrixByBin);
+%shared_ptr(stir::BackProjectorByBin);
+%shared_ptr(stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
+    stir::BackProjectorByBin>);
+%shared_ptr(stir::BackProjectorByBinUsingProjMatrixByBin);
+%shared_ptr(stir::ProjMatrixByBin);
+%shared_ptr(stir::RegisteredParsingObject<
+	      stir::ProjMatrixByBinUsingRayTracing,
+              stir::ProjMatrixByBin,
+              stir::ProjMatrixByBin
+	    >);
+%shared_ptr(stir::ProjMatrixByBinUsingRayTracing);
+
+%include "stir/recon_buildblock/ForwardProjectorByBin.h"
+%include "stir/recon_buildblock/BackProjectorByBin.h"
+
+%include "stir/recon_buildblock/ProjMatrixByBin.h"
+
+%template (internalRPProjMatrixByBinUsingRayTracing) stir::RegisteredParsingObject<
+	      stir::ProjMatrixByBinUsingRayTracing,
+              stir::ProjMatrixByBin,
+              stir::ProjMatrixByBin
+  >;
+
+%include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+
+%shared_ptr(  stir::AddParser<stir::ForwardProjectorByBin>);
+%template (internalAddParserForwardProjectorByBin)
+  stir::AddParser<stir::ForwardProjectorByBin>;
+%template (internalRPForwardProjectorByBinUsingProjMatrixByBin)  
+  stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,
+     stir::ForwardProjectorByBin>;
+%include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+
+%shared_ptr(  stir::AddParser<stir::BackProjectorByBin>);
+%template (internalAddParserBackProjectorByBin)
+  stir::AddParser<stir::BackProjectorByBin>;
+%template (internalRPBackProjectorByBinUsingProjMatrixByBin)  
+  stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
+     stir::BackProjectorByBin>;
+%include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"

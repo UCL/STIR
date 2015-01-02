@@ -126,7 +126,7 @@ run_tests_for_objective_function(GeneralisedObjectiveFunction<PoissonLogLikeliho
   const int subset_num = 0;
   info("Computing gradient");
   objective_function.compute_sub_gradient(*gradient_sptr, target, subset_num);
-  this->set_tolerance(max(fabs(double(gradient_sptr->find_min())), double(gradient_sptr->find_max()))/1000);
+  this->set_tolerance(std::max(fabs(double(gradient_sptr->find_min())), double(gradient_sptr->find_max()))/1000);
   info("Computing objective function at target");
   const double value_at_target = objective_function.compute_objective_function(target, subset_num);
   target_type::full_iterator target_iter=target.begin_all();
@@ -313,7 +313,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests::
 run_tests()
 {
-  cerr << "Tests for PoissonLogLikelihoodWithLinearModelForMeanAndProjData\n";
+  std::cerr << "Tests for PoissonLogLikelihoodWithLinearModelForMeanAndProjData\n";
 
 #if 1
   shared_ptr<target_type> density_sptr;

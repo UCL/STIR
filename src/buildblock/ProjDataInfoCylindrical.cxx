@@ -49,6 +49,9 @@ using std::min;
 using std::max;
 using std::swap;
 using std::endl;
+using std::string;
+using std::pair;
+using std::vector;
 #endif
 
 START_NAMESPACE_STIR

@@ -41,12 +41,6 @@
 #include <iostream>
 #include <vector>
 
-#ifndef STIR_NO_NAMESPACES
-using std::iostream;
-using std::streamoff;
-using std::vector;
-#endif
-
 START_NAMESPACE_STIR
 
 
@@ -69,7 +63,7 @@ public:
     static  ProjDataGEAdvance* ask_parameters(const bool on_disk = true);
    
     
-    ProjDataGEAdvance (iostream* s);
+    ProjDataGEAdvance (std::iostream* s);
   
     //! Get & set viewgram 
     Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const;
@@ -85,9 +79,9 @@ private:
   //This has to be a reference (or pointer) to a stream, 
   //because assignment on streams is not defined;
   // TODO make shared_ptr
-  iostream* sino_stream;
+  std::iostream* sino_stream;
   //offset of the whole 3d sinogram in the stream
-  streamoff  offset;
+  std::streamoff  offset;
   
   
   NumericType on_disk_data_type;
@@ -99,8 +93,8 @@ private:
  
   Array<1,float> view_scaling_factor;
   
-  vector<int> num_rings_orig;
-  vector<int> segment_sequence_orig;
+  std::vector<int> num_rings_orig;
+  std::vector<int> segment_sequence_orig;
 
 
 };

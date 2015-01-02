@@ -54,19 +54,19 @@ public:
     * clone() const;
 
   virtual void
-    get_related_bins(vector<Bin>&, const Bin& b,
+    get_related_bins(std::vector<Bin>&, const Bin& b,
                       const int min_axial_pos_num, const int max_axial_pos_num,
                       const int min_tangential_pos_num, const int max_tangential_pos_num) const;
 
   virtual void
-    get_related_bins_factorised(vector<AxTangPosNumbers>&, const Bin& b,
+    get_related_bins_factorised(std::vector<AxTangPosNumbers>&, const Bin& b,
                                 const int min_axial_pos_num, const int max_axial_pos_num,
                                 const int min_tangential_pos_num, const int max_tangential_pos_num) const;
 
   virtual int
     num_related_bins(const Bin& b) const;
 
-  virtual auto_ptr<SymmetryOperation>
+  virtual std::auto_ptr<SymmetryOperation>
     find_symmetry_operation_from_basic_bin(Bin&) const;
 
   virtual bool
@@ -75,11 +75,11 @@ public:
   virtual bool
     is_basic(const Bin& v_s) const;
 
-  virtual auto_ptr<SymmetryOperation>
+  virtual std::auto_ptr<SymmetryOperation>
     find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers&) const;
 
   virtual void
-    get_related_view_segment_numbers(vector<ViewSegmentNumbers>&, const ViewSegmentNumbers&) const;
+    get_related_view_segment_numbers(std::vector<ViewSegmentNumbers>&, const ViewSegmentNumbers&) const;
 
   virtual int
     num_related_view_segment_numbers(const ViewSegmentNumbers&) const;

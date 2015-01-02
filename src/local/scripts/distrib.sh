@@ -15,7 +15,7 @@
 : ${do_website_sync:=0}
 
 set -e
-: ${VERSION:=3.0beta}
+: ${VERSION:=3.0}
 
 : ${REPO:=~/devel/STIR -b open_source}
 : ${CHECKOUTOPTS:=""}
@@ -49,6 +49,7 @@ else
   if [ $do_update = 1 ]; then
     trap "echo ERROR in git checkout" ERR
     cd STIR
+    git pull
     git checkout  $CHECKOUTOPTS
   else
     cd STIR
@@ -87,7 +88,7 @@ if [ $do_license = 1 ]; then
      -o -name "*[xhlkc]" -type f  -print | xargs grep -l PARAPET |grep -v 'local/' >>LICENSE.txt 
 fi
 
-#git commit  -m "updated for release of version $VERSION"
+#git commit  -m "updated VERSION.txt etc for release of version $VERSION"
 
 # make ChangeLog file
 if [ $do_ChangeLog = 1 ]; then
@@ -136,7 +137,7 @@ if [ $do_zip_source = 1 ]; then
   #zipproj --distrib > /dev/null
   #mv parapet/VCprojects.zip VCprojects_${VERSION}.zip 
   #mv parapet/all.zip STIR_${VERSION}.zip 
-  zip -rp STIR_${VERSION}.zip  STIR/src STIR/doximages
+  zip -rp STIR_${VERSION}.zip  STIR/src STIR/doximages STIR/examples STIR/scripts STIR/*.txt
 fi
 
 if [ $do_recon_test_pack = 1 ]; then
@@ -180,6 +181,9 @@ if [ $do_website_final_version = 1 ]; then
     ln -s STIR_doc_${VERSION}.zip STIR_doc.zip 
     rm -fr doxy
     unzip -u STIR_doc
+    mv STIR/documentation/* .
+    rmdir STIR/documentation
+    rmdir STIR
     cd ..
 fi
 

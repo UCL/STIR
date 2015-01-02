@@ -63,6 +63,7 @@ using std::istream;
 using std::fstream;
 using std::ios;
 using std::string;
+using std::vector;
 #endif
 
 START_NAMESPACE_STIR

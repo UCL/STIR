@@ -57,6 +57,7 @@
 #include "stir/info.h"
 #include <boost/format.hpp>
 #include <algorithm>
+//#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
 
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributableMPICacheEnabled.h"
@@ -68,11 +69,6 @@
 #    error Cannot use both OPENMP and MP
 #  endif
 #include <omp.h>
-#endif
-
-#ifndef STIR_NO_NAMESPACES
-using std::cerr;
-using std::endl;
 #endif
 
 START_NAMESPACE_STIR
@@ -93,15 +89,16 @@ void setup_distributable_computation(
       omp_set_num_threads(omp_get_num_procs());
       if (omp_get_num_procs()==1) 
 	warning("Using OpenMP with #processors=1 produces parallel overhead. You should compile without using USE_OPENMP=TRUE.");
-      cerr<<"Using OpenMP-version of distributable with thread-count = processor-count (="<<omp_get_num_procs()<<")."<<endl;
+      info(boost::format("Using OpenMP-version of distributable with thread-count = processor-count (=%d)") % omp_get_num_procs());
     }
   else 
     {
-      cerr<<"Using OpenMP-version of distributable_computation with "<<getenv("OMP_NUM_THREADS")<<" threads on "<<omp_get_num_procs()<<" processors."<<endl;
+      info(boost::format("Using OpenMP-version of distributable_computation with %d threahds on %d processors.")
+           % getenv("OMP_NUM_THREADS") % omp_get_num_procs());
       if (atoi(getenv("OMP_NUM_THREADS"))==1) 
 	warning("Using OpenMP with OMP_NUM_THREADS=1 produces parallel overhead. Use more threads or compile without using USE_OPENMP=TRUE.");
     }
-  cerr<<"Define number of threads by setting OMP_NUM_THREADS environment variable, i.e. \"export OMP_NUM_THREADS=<num_threads>\""<<endl;
+      info("Define number of threads by setting OMP_NUM_THREADS environment variable, i.e. \"export OMP_NUM_THREADS=<num_threads>\"");
 #endif
 #ifdef STIR_MPI
   distributed::first_iteration = true;
@@ -435,7 +432,7 @@ void distributable_computation(
     };
 
   if (zero_seg0_end_planes)
-    cerr << "End-planes of segment 0 will be zeroed" << endl;
+    info("End-planes of segment 0 will be zeroed");
 
   const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
     find_vs_nums_in_subset(*proj_dat_ptr->get_proj_data_info_ptr(), *symmetries_ptr,
@@ -474,7 +471,7 @@ void distributable_computation(
     for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
       {
         const ViewSegmentNumbers view_segment_num=vs_nums_to_process[i];
-    
+
         shared_ptr<RelatedViewgrams<float> > y;
         shared_ptr<RelatedViewgrams<float> > additive_binwise_correction_viewgrams;
         shared_ptr<RelatedViewgrams<float> > mult_viewgrams_sptr;
@@ -512,9 +509,13 @@ void distributable_computation(
 
 #ifdef STIR_OPENMP
           const int thread_num=omp_get_thread_num();
-          cerr<<"Thread "<<thread_num<<"/" << local_output_image_sptrs.size() << " ";
+          info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d")
+               % thread_num %  local_output_image_sptrs.size()
+               % view_segment_num.segment_num() % view_segment_num.view_num());
+#else
+          info(boost::format("calculating segment_num: %d, view_num: %d")
+               % view_segment_num.segment_num() % view_segment_num.view_num());
 #endif
-          cerr<<"calculating segment_num: " << view_segment_num.segment_num() << ", view_num: "<<view_segment_num.view_num() << '\n';
 #ifdef STIR_OPENMP
           if (output_image_ptr != NULL)
             {
@@ -609,9 +610,7 @@ void distributable_computation(
   {
     // TODO this message relies on knowledge of count, count2 which might be inappropriate for 
     // the call-back function
-    cerr<<"\tNumber of (cancelled) singularities: "<<count
-        <<"\n\tNumber of (cancelled) negative numerators: "<<count2
-        <<endl;
+    info(boost::format("Number of (cancelled) singularities: %1%\nNumber of (cancelled) negative numerators: %2%") % count % count2);
   }
 
   CPU_timer.stop();

@@ -38,12 +38,6 @@
 #include "stir/shared_ptr.h"
 #include <string>
 
-
-#ifndef STIR_NO_NAMESPACES
-using std::string;
-#endif
-
-
 START_NAMESPACE_STIR
 
 
@@ -93,7 +87,7 @@ public:
   virtual ~ProjDataRebinning();
   
   //! gives method information
-  virtual string method_info() const = 0;
+  virtual std::string method_info() const = 0;
   
   //! executes the rebinning
   /*!
@@ -115,8 +109,8 @@ public:
   /*! get/set file name for output projdata (should be without extension)
    */
   //@{
-  void set_output_filename_prefix(const string& s);
-  string get_output_filename_prefix() const;
+  void set_output_filename_prefix(const std::string& s);
+  std::string get_output_filename_prefix() const;
   //@}
 
   //! set projection data that will be rebinned
@@ -135,9 +129,9 @@ public:
  protected:
 
   //! file name for output projdata (should be without extension)
-  string output_filename_prefix; 
+  std::string output_filename_prefix; 
   //! file name for input projdata
-  string input_filename; 
+  std::string input_filename; 
   //! the maximum absolute segment number to use in the reconstruction
   /*! convention: if -1, use get_max_segment_num()*/
   int max_segment_num_to_process;
@@ -154,7 +148,7 @@ protected:
   initialised, and ask_parameters() will be the appropriate virtual
   function, such that questions are asked for all parameters.
   */
-  void initialise(const string& parameter_filename);
+  void initialise(const std::string& parameter_filename);
 #endif
 
   //! used to check acceptable parameter ranges, etc...

@@ -168,9 +168,6 @@
 
 
 #include <cmath>
-using std::fabs;
-using std::exp;
-
 #include "stir/numerics/ieeefp.h"
 
 
@@ -303,7 +300,7 @@ erf(double x)
 		return x + x*(p0+r);
 	}
 	if (ax < 1.25) {		/* 0.84375 <= |x| < 1.25 */
-		s = fabs(x)-one;
+		s = std::fabs(x)-one;
 		P = pa0+s*(pa1+s*(pa2+s*(pa3+s*(pa4+s*(pa5+s*pa6)))));
 		Q = one+s*(qa1+s*(qa2+s*(qa3+s*(qa4+s*(qa5+s*qa6)))));
 		if (x>=0)
@@ -331,7 +328,7 @@ erf(double x)
 	}
 	y = (R/S -.5*s) - lsqrtPI_hi;
 	z += y;
-	z = exp(z)/ax;
+	z = std::exp(z)/ax;
 	if (x >= 0)
 		return (one-z);
 	else
@@ -406,18 +403,18 @@ erfc(double x)
 		y += R/S;
 		R = -.5*s;
 	}
-	/* return exp(-x^2 - lsqrtPI_hi + R + y)/x;	*/
+	/* return std::exp(-x^2 - lsqrtPI_hi + R + y)/x;	*/
 	//	s = ((R + y) - lsqrtPI_hi) + z;
 	//	y = (((z-s) - lsqrtPI_hi) + R) + y;
-	//	r = exp(-x + s/x);
+	//	r = std::exp(-x + s/x);
 	//r = __exp__D(s, y)/x;
 	if (x>0)
 		return
-		(exp(-x*x - lsqrtPI_hi + R + y))/x;
+		(std::exp(-x*x - lsqrtPI_hi + R + y))/x;
 	//return r;
 	else
 		return
-		2. - (exp(-x*x - lsqrtPI_hi + R + y))/x;
+		2. - (std::exp(-x*x - lsqrtPI_hi + R + y))/x;
 	//	return two-r;
 }
 

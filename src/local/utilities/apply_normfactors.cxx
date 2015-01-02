@@ -67,9 +67,10 @@ int main(int argc, char **argv)
   const std::string output_file_name = argv[1];
   const std::string program_name = argv[0];
 
-  shared_ptr<ProjData> out_proj_data_ptr=
-      new ProjDataInterfile(measured_data->get_proj_data_info_ptr()->clone(),
-			    output_file_name);
+  shared_ptr<ProjData> out_proj_data_ptr
+    (new ProjDataInterfile(measured_data->get_exam_info_sptr(),
+                           measured_data->get_proj_data_info_ptr()->create_shared_clone(),
+                           output_file_name));
 
   const int num_detectors = 
     measured_data->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_detectors_per_ring();

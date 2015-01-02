@@ -28,6 +28,8 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 
+using std::string;
+
 START_NAMESPACE_STIR
 
 void 
