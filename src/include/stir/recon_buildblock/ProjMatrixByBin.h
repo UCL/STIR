@@ -14,7 +14,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2015 University College London
 
     This file is part of STIR.
 
@@ -36,6 +36,7 @@
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins.h"
 #include "stir/shared_ptr.h"
+#include "stir/VectorWithOffset.h"
 #include "stir/TimedObject.h"
 #include <boost/cstdint.hpp>
 //#include <map>
@@ -93,6 +94,9 @@ public:
   //! To be called before any calculation is performed
   /*! Note that get_proj_matrix_elems_for_one_bin() will expect objects of
       compatible sizes and other info.
+
+      \warning: Any implementation of set_up in a derived class has to 
+      call ProjMatrixByBin::set_up first.
   */
   virtual void set_up(
     const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
@@ -196,13 +200,12 @@ protected:
                  ) const;		
   
   //! The method to store data in the cache.
-  inline void  cache_proj_matrix_elems_for_one_bin( const ProjMatrixElemsForOneBin&)
+  void  cache_proj_matrix_elems_for_one_bin( const ProjMatrixElemsForOneBin&)
     STIR_MUTABLE_CONST;
 
 private:
   
-  //KTBMCHANGE typedef unsigned int CacheKey;
-	typedef boost::uint64_t CacheKey;
+  typedef boost::uint32_t CacheKey;
 
 	//  typedef std::map<CacheKey, ProjMatrixElemsForOneBin>   MapProjMatrixElemsForOneBin;
   typedef boost::unordered_map<CacheKey, ProjMatrixElemsForOneBin>   MapProjMatrixElemsForOneBin;
@@ -213,11 +216,11 @@ private:
 #ifndef STIR_NO_MUTABLE
   mutable
 #endif
-    MapProjMatrixElemsForOneBin cache_collection;
+    VectorWithOffset<VectorWithOffset<MapProjMatrixElemsForOneBin> > cache_collection;
          
   //! create the key for caching
   // KT 15/05/2002 not static anymore as it uses cache_stores_only_basic_bins
-  inline CacheKey cache_key(const Bin& bin) const;
+  CacheKey cache_key(const Bin& bin) const;
 
    
 };
