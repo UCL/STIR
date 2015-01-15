@@ -90,6 +90,9 @@ void
 ProjMatrixByBin::
 clear_cache() STIR_MUTABLE_CONST
 {
+#ifdef STIR_OPENMP
+#pragma omp critical(PROJMATRIXBYBINCLEARCACHE)
+#endif
   for (int i=this->cache_collection.get_min_index();
        i<=this->cache_collection.get_max_index();
        ++i)
@@ -121,15 +124,26 @@ set_up(
     const shared_ptr<DiscretisedDensity<3,float> >& /*density_info_ptr*/ // TODO should be Info only
     )
 {
-
-  this->cache_collection.recycle();
   const int min_view_num = proj_data_info_sptr->get_min_view_num();
   const int max_view_num = proj_data_info_sptr->get_max_view_num();
+  const int min_segment_num = proj_data_info_sptr->get_min_segment_num();
+  const int max_segment_num = proj_data_info_sptr->get_max_segment_num();
+
+  this->cache_collection.recycle();
   this->cache_collection.resize(min_view_num, max_view_num);
+#ifdef STIR_OPENMP
+  this->cache_locks.recycle();
+  this->cache_locks.resize(min_view_num, max_view_num);
+#endif
+
   for (int view_num=min_view_num; view_num<=max_view_num; ++view_num)
     {
-      this->cache_collection[view_num].resize(proj_data_info_sptr->get_min_segment_num(),
-                                              proj_data_info_sptr->get_max_segment_num());
+      this->cache_collection[view_num].resize(min_segment_num, max_segment_num);
+#ifdef STIR_OPENMP
+      this->cache_locks[view_num].resize(min_segment_num, max_segment_num);
+      for (int seg_num = min_segment_num; seg_num <=max_segment_num; ++seg_num)
+        omp_init_lock(&this->cache_locks[view_num][seg_num]);
+#endif
     }
 }
 
@@ -163,10 +177,13 @@ cache_proj_matrix_elems_for_one_bin(
   // insert probabilities into the collection	
   const Bin bin = probabilities.get_bin();
 #ifdef STIR_OPENMP
-#pragma omp critical(PROJMATRIXBYBINCACHE)
+  omp_set_lock(&this->cache_locks[bin.view_num()][bin.segment_num()]);
 #endif
   cache_collection[bin.view_num()][bin.segment_num()].insert(MapProjMatrixElemsForOneBin::value_type( cache_key(bin), 
                                                                                                       probabilities));  
+#ifdef STIR_OPENMP
+  omp_unset_lock(&this->cache_locks[bin.view_num()][bin.segment_num()]);
+#endif
 }
 
 
@@ -191,8 +208,9 @@ get_cached_proj_matrix_elems_for_one_bin(
   
   bool found=false;
 #ifdef STIR_OPENMP
-#pragma omp critical(PROJMATRIXBYBINCACHE)
+  omp_set_lock(&this->cache_locks[bin.view_num()][bin.segment_num()]);
 #endif
+
   {
     const_MapProjMatrixElemsForOneBinIterator pos = 
       cache_collection[bin.view_num()][bin.segment_num()].find(cache_key( bin));
@@ -206,6 +224,9 @@ get_cached_proj_matrix_elems_for_one_bin(
 	found=true;
       } 
   }
+#ifdef STIR_OPENMP
+  omp_unset_lock(&this->cache_locks[bin.view_num()][bin.segment_num()]);
+#endif
   if (found)
     return Succeeded::yes;	
   else

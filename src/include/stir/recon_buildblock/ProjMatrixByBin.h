@@ -41,6 +41,9 @@
 #include <boost/cstdint.hpp>
 //#include <map>
 #include <boost/unordered_map.hpp>
+#ifdef STIR_OPENMP
+#include <omp.h>
+#endif
 
 // define a local preprocessor symbol to keep code relatively clean
 #ifdef STIR_NO_MUTABLE
@@ -217,7 +220,13 @@ private:
   mutable
 #endif
     VectorWithOffset<VectorWithOffset<MapProjMatrixElemsForOneBin> > cache_collection;
-         
+#ifdef STIR_OPENMP
+#ifndef STIR_NO_MUTABLE
+  mutable
+#endif
+  VectorWithOffset<VectorWithOffset<omp_lock_t> > cache_locks;
+#endif
+
   //! create the key for caching
   // KT 15/05/2002 not static anymore as it uses cache_stores_only_basic_bins
   CacheKey cache_key(const Bin& bin) const;
