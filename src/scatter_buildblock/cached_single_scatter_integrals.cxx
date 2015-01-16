@@ -106,6 +106,9 @@ cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatte
          detection_points_vector[det_num]
          );
       if (this->use_cache)
+#ifdef STIR_OPENMP
+#pragma omp critical(SCATTEREMISSIONCACHEUPDATE)
+#endif
         *location_in_cache=result;
       return result;
     }
@@ -133,6 +136,9 @@ cached_exp_integral_over_attenuation_image_between_scattpoint_det(const unsigned
          detection_points_vector[det_num]
          );
       if (this->use_cache)
+#ifdef STIR_OPENMP
+#pragma omp critical(SCATTERATTENUATIONCACHEUPDATE)
+#endif
         *location_in_cache=result;
       return result;
     }

@@ -31,6 +31,7 @@
 #include "stir/Bin.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/CPUTimer.h"
+#include "stir/HighResWallClockTimer.h"
 #include "stir/Viewgram.h"
 #include "stir/is_null_ptr.h"
 #include "stir/IO/read_from_file.h"
@@ -256,8 +257,10 @@ process_data()
   /* ////////////////// SCATTER ESTIMATION TIME ////////////////
    */
   CPUTimer bin_timer;
-  int bin_counter = 0;
   bin_timer.start();
+  HighResWallClockTimer wall_clock_timer;
+  wall_clock_timer.start();
+  int bin_counter = 0;
   int axial_bins = 0 ;
   for (vs_num.segment_num()=this->proj_data_info_ptr->get_min_segment_num();
        vs_num.segment_num()<=this->proj_data_info_ptr->get_max_segment_num();
@@ -318,22 +321,26 @@ process_data()
             static double previous_timer = 0 ;          
             static int previous_bin_count = 0 ;
 
+            wall_clock_timer.stop(); // must be stopped before getting the value
             info(boost::format("%1% bins  Total time elapsed %2% sec "
               "\tTime remaining about %3% minutes") 
               % bin_counter 
-              % bin_timer.value() 
-              % ((bin_timer.value()-previous_timer)
+              % wall_clock_timer.value() 
+              % ((wall_clock_timer.value()-previous_timer)
                 *(total_bins-bin_counter)/(bin_counter-previous_bin_count)/60) );
 
-            previous_timer = bin_timer.value() ;
+            previous_timer = wall_clock_timer.value() ;
             previous_bin_count = bin_counter ;
+
+            wall_clock_timer.start();
           }
           /* ////////////////// end SCATTER ESTIMATION TIME ////////////////
            */
         }
     }
-  bin_timer.stop();             
-  this->write_log(bin_timer.value(), total_scatter);
+  bin_timer.stop();
+  wall_clock_timer.stop();
+  this->write_log(wall_clock_timer.value(), total_scatter);
 
   if (detection_points_vector.size() != static_cast<unsigned int>(total_detectors))
     {
@@ -360,10 +367,14 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
        bin.axial_pos_num()<=this->proj_data_info_ptr->get_max_axial_pos_num(bin.segment_num());
        ++bin.axial_pos_num())
     {
-      for (bin.tangential_pos_num()=this->proj_data_info_ptr->get_min_tangential_pos_num();
-           bin.tangential_pos_num()<=this->proj_data_info_ptr->get_max_tangential_pos_num();
-           ++bin.tangential_pos_num())
+#ifdef STIR_OPENMP
+#pragma omp parallel for firstprivate(bin)
+#endif
+      for (int tang_pos_num=this->proj_data_info_ptr->get_min_tangential_pos_num();
+           tang_pos_num<=this->proj_data_info_ptr->get_max_tangential_pos_num();
+           ++tang_pos_num)
         {  
+          bin.tangential_pos_num() = tang_pos_num;
 
           unsigned det_num_A = 0; // initialise to avoid compiler warnings
           unsigned det_num_B = 0;

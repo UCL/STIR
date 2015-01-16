@@ -314,6 +314,7 @@ get_ring_pair_for_segment_axial_pos_num(int& ring1,
   if (get_min_ring_difference(segment_num) != get_max_ring_difference(segment_num))
     error("ProjDataInfoCylindrical::get_ring_pair_for_segment_axial_pos_num does not work for data with axial compression");
 
+#pragma omp critical(PROJDATAINFOCYLINDRICALRINGDIFFARRAY)
   if (!ring_diff_arrays_computed)
     initialise_ring_diff_arrays();
 

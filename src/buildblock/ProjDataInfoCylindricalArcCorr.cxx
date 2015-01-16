@@ -220,6 +220,7 @@ get_bin(const LOR<float>& lor) const
 #if 0
     // this uses private member of ProjDataInfoCylindrical
     // enable when moved
+#pragma omp critical(PROJDATAINFOCYLINDRICALARCCORR_RINGDIFFARRAYS)
     if (!ring_diff_arrays_computed)
       initialise_ring_diff_arrays();
 #ifndef NDEBUG

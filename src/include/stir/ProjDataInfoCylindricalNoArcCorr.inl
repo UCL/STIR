@@ -57,6 +57,7 @@ get_det_num_pair_for_view_tangential_pos_num(
 					     const int tang_pos_num) const
 {
   assert(get_view_mashing_factor() == 1);
+#pragma omp critical(PROJDATAINFOCYLINDRICALNOARCCORR_VIEWTANGPOS_TO_DETS)
   if (!uncompressed_view_tangpos_to_det1det2_initialised)
     initialise_uncompressed_view_tangpos_to_det1det2();
 
@@ -73,6 +74,7 @@ get_view_tangential_pos_num_for_det_num_pair(int& view_num,
 					     const int det2_num) const
 {
   assert(det1_num!=det2_num);
+#pragma omp critical(PROJDATAINFOCYLINDRICALNOARCCORR_DETS_TO_VIEWTANGPOS)
   if (!det1det2_to_uncompressed_view_tangpos_initialised)
     initialise_det1det2_to_uncompressed_view_tangpos();
 

@@ -49,6 +49,8 @@ ProjDataInfoCylindrical::get_phi(const Bin& bin)const
 float
 ProjDataInfoCylindrical::get_m(const Bin& bin) const
 { 
+
+#pragma omp critical(PROJDATAINFOCYLINDRICALRINGDIFFARRAY)
   if (!ring_diff_arrays_computed)
     initialise_ring_diff_arrays();
   return 
@@ -201,6 +203,7 @@ get_segment_num_for_ring_difference(int& segment_num, const int ring_diff) const
       ring_diff < get_min_ring_difference(get_min_segment_num()))
     return Succeeded::no;
 
+#pragma omp critical(PROJDATAINFOCYLINDRICALRINGDIFFARRAY)
   if (!ring_diff_arrays_computed)
     initialise_ring_diff_arrays();
 
@@ -240,6 +243,7 @@ ProjDataInfoCylindrical::
 get_all_ring_pairs_for_segment_axial_pos_num(const int segment_num,
 					     const int axial_pos_num) const
 {
+#pragma omp critical(PROJDATAINFOCYLINDRICALRINGDIFFARRAY)
   if (!ring_diff_arrays_computed)
     initialise_ring_diff_arrays();
   if (is_null_ptr(segment_axial_pos_to_ring_pair[segment_num][axial_pos_num]))

@@ -322,6 +322,7 @@ ProjDataInfoCylindricalNoArcCorr::
 get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
 			      const Bin& bin) const
 {
+#pragma omp critical(PROJDATAINFOCYLINDRICALNOARCCORR_VIEWTANGPOS_TO_DETS)
   if (!uncompressed_view_tangpos_to_det1det2_initialised)
     initialise_uncompressed_view_tangpos_to_det1det2();
 
@@ -671,6 +672,7 @@ get_bin(const LOR<float>& lor) const
 #if 0
     // this uses private member of ProjDataInfoCylindrical
     // enable when moved
+#pragma omp critical(PROJDATAINFOCYLINDRICALNOARCCORR_RINGDIFFARRAYS)
     if (!ring_diff_arrays_computed)
       initialise_ring_diff_arrays();
 #ifndef NDEBUG
