@@ -58,8 +58,10 @@ get_det_num_pair_for_view_tangential_pos_num(
 {
   assert(get_view_mashing_factor() == 1);
 #pragma omp critical(PROJDATAINFOCYLINDRICALNOARCCORR_VIEWTANGPOS_TO_DETS)
-  if (!uncompressed_view_tangpos_to_det1det2_initialised)
-    initialise_uncompressed_view_tangpos_to_det1det2();
+  { 
+    if (!uncompressed_view_tangpos_to_det1det2_initialised)
+      initialise_uncompressed_view_tangpos_to_det1det2();
+  }
 
   det1_num = uncompressed_view_tangpos_to_det1det2[view_num][tang_pos_num].det1_num;
   det2_num = uncompressed_view_tangpos_to_det1det2[view_num][tang_pos_num].det2_num;
@@ -75,8 +77,11 @@ get_view_tangential_pos_num_for_det_num_pair(int& view_num,
 {
   assert(det1_num!=det2_num);
 #pragma omp critical(PROJDATAINFOCYLINDRICALNOARCCORR_DETS_TO_VIEWTANGPOS)
-  if (!det1det2_to_uncompressed_view_tangpos_initialised)
-    initialise_det1det2_to_uncompressed_view_tangpos();
+  {
+    if (!det1det2_to_uncompressed_view_tangpos_initialised)
+      initialise_det1det2_to_uncompressed_view_tangpos();
+
+  }
 
   view_num = 
     det1det2_to_uncompressed_view_tangpos[det1_num][det2_num].view_num/get_view_mashing_factor();

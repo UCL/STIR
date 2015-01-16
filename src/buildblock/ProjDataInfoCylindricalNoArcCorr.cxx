@@ -323,8 +323,10 @@ get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
 			      const Bin& bin) const
 {
 #pragma omp critical(PROJDATAINFOCYLINDRICALNOARCCORR_VIEWTANGPOS_TO_DETS)
-  if (!uncompressed_view_tangpos_to_det1det2_initialised)
-    initialise_uncompressed_view_tangpos_to_det1det2();
+  {
+    if (!uncompressed_view_tangpos_to_det1det2_initialised)
+      initialise_uncompressed_view_tangpos_to_det1det2();
+  }
 
   dps.resize(get_num_det_pos_pairs_for_bin(bin));
 
@@ -673,8 +675,11 @@ get_bin(const LOR<float>& lor) const
     // this uses private member of ProjDataInfoCylindrical
     // enable when moved
 #pragma omp critical(PROJDATAINFOCYLINDRICALNOARCCORR_RINGDIFFARRAYS)
-    if (!ring_diff_arrays_computed)
-      initialise_ring_diff_arrays();
+    {
+      if (!ring_diff_arrays_computed)
+        initialise_ring_diff_arrays();
+    }
+
 #ifndef NDEBUG
     bin.axial_pos_num()=0;
     assert(get_m(bin)==- m_offset[bin.segment_num()]);
