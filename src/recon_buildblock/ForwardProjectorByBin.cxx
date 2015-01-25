@@ -16,6 +16,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011 Hammersmith Imanet Ltd
     Copyright (C) 2013 Kris Thielemans
+    Copyright (C) 2015, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -53,6 +54,42 @@ ForwardProjectorByBin::~ForwardProjectorByBin()
 {
 }
 
+
+static std::vector<ViewSegmentNumbers> 
+find_vs_nums_in_subset(const ProjDataInfo& proj_data_info,
+                       const DataSymmetriesForViewSegmentNumbers& symmetries, 
+                       const int min_segment_num, const int max_segment_num,
+                       const int subset_num, const int num_subsets)
+{
+  std::vector<ViewSegmentNumbers> vs_nums_to_process;
+  for (int segment_num = min_segment_num; segment_num <= max_segment_num; segment_num++)
+  {
+    for (int view = proj_data_info.get_min_view_num() + subset_num; 
+        view <= proj_data_info.get_max_view_num(); 
+        view += num_subsets)
+    {
+      const ViewSegmentNumbers view_segment_num(view, segment_num);
+        
+      if (!symmetries.is_basic(view_segment_num))
+        continue;
+
+      vs_nums_to_process.push_back(view_segment_num);
+
+#ifndef NDEBUG
+      // test if symmetries didn't take us out of the segment range
+      std::vector<ViewSegmentNumbers> rel_vs;
+      symmetries.get_related_view_segment_numbers(rel_vs, view_segment_num);
+      for (std::vector<ViewSegmentNumbers>::const_iterator iter = rel_vs.begin(); iter!= rel_vs.end(); ++iter)
+        {
+          assert(iter->segment_num() >= min_segment_num);
+          assert(iter->segment_num() <= max_segment_num);
+        }
+#endif
+    }
+  }
+  return vs_nums_to_process;
+}
+
 void 
 ForwardProjectorByBin::forward_project(ProjData& proj_data, 
 				       const DiscretisedDensity<3,float>& image)
@@ -64,23 +101,30 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(this->get_symmetries_used()->clone());
   
-  for (int segment_num = proj_data.get_min_segment_num(); 
-       segment_num <= proj_data.get_max_segment_num(); 
-       ++segment_num)
-    for (int view= proj_data.get_min_view_num(); 
-	 view <= proj_data.get_max_view_num();
-	 view++)      
-    {       
-      ViewSegmentNumbers vs(view, segment_num);
-      if (!symmetries_sptr->is_basic(vs))
-        continue;
+  const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
+    find_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
+                           proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
+                           0, 1/*subset_num, num_subsets*/);
+#ifdef STIR_OPENMP
+#pragma omp parallel for  shared(proj_data, image, symmetries_sptr) schedule(runtime)  
+#endif
+    // note: older versions of openmp need an int as loop
+  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+    {
+      const ViewSegmentNumbers vs=vs_nums_to_process[i];
+
       info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num());
       
       RelatedViewgrams<float> viewgrams = 
         proj_data.get_empty_related_viewgrams(vs, symmetries_sptr);
       forward_project(viewgrams, image);	  
-      if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
-        error("Error set_related_viewgrams in forward projecting\n");            
+#ifdef STIR_OPENMP
+#pragma omp critical (FORWARDPROJ_SETVIEWGRAMS)
+#endif
+      {
+        if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
+          error("Error set_related_viewgrams in forward projecting");
+      }
     }   
   
 }
