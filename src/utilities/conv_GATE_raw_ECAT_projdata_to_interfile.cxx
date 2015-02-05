@@ -33,6 +33,7 @@
 #include "stir/Scanner.h"
 #include "stir/IO/read_data.h"
 #include "stir/Succeeded.h"
+#include "stir/NumericType.h"
 
 #define NUMARG 8
 
@@ -112,7 +113,14 @@ int main(int argc,char **argv)
            axial_pos_num++)
         {
           Sinogram<float> sino = proj_data.get_empty_sinogram(axial_pos_num,segment_num);		
-          read_data(GATE_file, sino);
+          float scale=1;
+          if (read_data(GATE_file, sino, NumericType::SHORT, scale) !=
+	      Succeeded::yes)
+	    {
+              error("error reading from sino");
+              fclose(GATE_file);
+	      return EXIT_FAILURE;
+	    }
           proj_data.set_sinogram(sino);
         }
     }
