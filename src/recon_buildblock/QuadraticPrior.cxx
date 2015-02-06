@@ -257,7 +257,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
                 
                 /* formula:
                   sum_dx,dy,dz
-                   1/2 weights[dz][dy][dx] *
+                   1/4 weights[dz][dy][dx] *
                    (current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])^2 *
                    (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
                 */
@@ -267,7 +267,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
                       {
                         elemT current =
                           weights[dz][dy][dx] *
-                          square(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])/2;
+                          square(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])/4;
 
                         if (do_kappa)
                           current *= 
