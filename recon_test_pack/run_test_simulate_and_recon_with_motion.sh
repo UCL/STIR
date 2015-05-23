@@ -134,7 +134,7 @@ for g in 1 2 ; do
 echo "===  creating ACF for gate $g"
 calculate_attenuation_coefficients --ACF my_ACF_test_object_g$g my_att_test_object_g$g.hv ${template_sino} > my_create_ACF_g$g.log 2>&1
 echo "===  creating sinogram for gate $g"
-fwdtest my_fwd_test_object_g$g ${template_sino} my_test_object_g$g.hv forward_projector_proj_matrix_ray_tracing.par </dev/null > my_fwd_test_object_g$g.log 2>&1
+forward_project my_fwd_test_object_g$g  my_test_object_g$g.hv ${template_sino} forward_projector_proj_matrix_ray_tracing.par > my_fwd_test_object_g$g.log 2>&1
 stir_math -s --mult --power -1 my_att_fwd_test_object_g$g  my_fwd_test_object_g$g.hs my_ACF_test_object_g$g.hs
 done
 
