@@ -94,9 +94,24 @@ cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatte
     ? &cached_activity_integral_scattpoint_det[scatter_point_num][det_num]
     : 0;
 
-  if (this->use_cache && *location_in_cache!=cache_init_value)
+  /* OPENMP note:
+     We use atomic read/write to get at the cache. This should ensure validity.
+     Probably we could have 2 threads computing the same value that will be
+     cached later, but this might be better than locking (and it's simpler to write).
+  */
+  float value;
+#if defined(STIR_OPENMP)
+# if _OPENMP >=201012
+#  pragma omp atomic read
+# else
+#  pragma omp atomic
+# endif
+#endif
+  value = *location_in_cache;
+
+  if (this->use_cache && value!=cache_init_value)
     {
-      return *location_in_cache;
+      return value;
     }
   else
     {
@@ -107,7 +122,11 @@ cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatte
          );
       if (this->use_cache)
 #ifdef STIR_OPENMP
-#pragma omp critical(SCATTEREMISSIONCACHEUPDATE)
+# if _OPENMP >=201012
+#  pragma omp atomic write
+# else
+#  pragma omp atomic
+# endif
 #endif
         *location_in_cache=result;
       return result;
@@ -124,7 +143,17 @@ cached_exp_integral_over_attenuation_image_between_scattpoint_det(const unsigned
     ? &cached_attenuation_integral_scattpoint_det[scatter_point_num][det_num]
     : 0;
 
-  if (this->use_cache && *location_in_cache!=cache_init_value)
+  float value;
+#if defined(STIR_OPENMP)
+# if _OPENMP >=201012
+#  pragma omp atomic read
+# else
+#  pragma omp atomic
+# endif
+#endif
+  value = *location_in_cache;
+
+  if (this->use_cache && value!=cache_init_value)
     {
       return *location_in_cache;
     }
@@ -137,7 +166,11 @@ cached_exp_integral_over_attenuation_image_between_scattpoint_det(const unsigned
          );
       if (this->use_cache)
 #ifdef STIR_OPENMP
-#pragma omp critical(SCATTERATTENUATIONCACHEUPDATE)
+# if _OPENMP >=201012
+#  pragma omp atomic write
+# else
+#  pragma omp atomic
+# endif
 #endif
         *location_in_cache=result;
       return result;
