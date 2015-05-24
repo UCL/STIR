@@ -258,10 +258,14 @@ process_data()
    */
   CPUTimer bin_timer;
   bin_timer.start();
+  // variables to report (remaining) time
   HighResWallClockTimer wall_clock_timer;
-  wall_clock_timer.start();
+  double previous_timer = 0 ;          
+  int previous_bin_count = 0 ;
   int bin_counter = 0;
   int axial_bins = 0 ;
+  wall_clock_timer.start();
+
   for (vs_num.segment_num()=this->proj_data_info_ptr->get_min_segment_num();
        vs_num.segment_num()<=this->proj_data_info_ptr->get_max_segment_num();
        ++vs_num.segment_num())  
@@ -317,9 +321,6 @@ process_data()
           /* ////////////////// SCATTER ESTIMATION TIME ////////////////
            */
           {
-            // TODO remove statics
-            static double previous_timer = 0 ;          
-            static int previous_bin_count = 0 ;
 
             wall_clock_timer.stop(); // must be stopped before getting the value
             info(boost::format("%1% bins  Total time elapsed %2% sec "
@@ -368,7 +369,7 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
        ++bin.axial_pos_num())
     {
 #ifdef STIR_OPENMP
-#pragma omp parallel for firstprivate(bin)
+#pragma omp parallel for firstprivate(bin) reduction(+:total_scatter) schedule(dynamic)
 #endif
       for (int tang_pos_num=this->proj_data_info_ptr->get_min_tangential_pos_num();
            tang_pos_num<=this->proj_data_info_ptr->get_max_tangential_pos_num();
@@ -382,7 +383,7 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
 
           const double scatter_ratio =
             scatter_estimate(det_num_A, det_num_B);
-                  
+             
           viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
             static_cast<float>(scatter_ratio);
 
