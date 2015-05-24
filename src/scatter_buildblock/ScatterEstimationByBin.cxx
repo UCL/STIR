@@ -239,8 +239,8 @@ set_output_proj_data(const std::string& filename)
   // TODO get ExamInfo from image
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
   this->output_proj_data_sptr.reset(new ProjDataInterfile(exam_info_sptr,
-							  this->proj_data_info_ptr->create_shared_clone(),
-							  this->output_proj_data_filename));
+                                                          this->proj_data_info_ptr->create_shared_clone(),
+                                                          this->output_proj_data_filename));
 }
 
 /****************** functions to compute scatter **********************/
@@ -358,39 +358,49 @@ double
 ScatterEstimationByBin::
 process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
 {
-  Bin bin(vs_num.segment_num(), vs_num.view_num(), 0,0);
+  // First construct a vector of all bins that we'll process.
+  // The reason for making this list before the actual calculation is that we can then parallelise over all bins
+  // without having to think about double loops.
+  std::vector<Bin> all_bins;
+  {
+    Bin bin(vs_num.segment_num(), vs_num.view_num(), 0,0);
+    for (bin.axial_pos_num()=this->proj_data_info_ptr->get_min_axial_pos_num(bin.segment_num());
+         bin.axial_pos_num()<=this->proj_data_info_ptr->get_max_axial_pos_num(bin.segment_num());
+         ++bin.axial_pos_num())
+    {
+      for (bin.tangential_pos_num()=this->proj_data_info_ptr->get_min_tangential_pos_num();
+           bin.tangential_pos_num()<=this->proj_data_info_ptr->get_max_tangential_pos_num();
+           ++bin.tangential_pos_num())
+        {
+          all_bins.push_back(bin);
+        }
+    }
+  }
+
+  // now compute scatter for all bins
   double total_scatter = 0;
   Viewgram<float> viewgram =
-    this->output_proj_data_sptr->get_empty_viewgram(bin.view_num(), bin.segment_num());       
+    this->output_proj_data_sptr->get_empty_viewgram(vs_num.view_num(), vs_num.segment_num());
 
-                
-  for (bin.axial_pos_num()=this->proj_data_info_ptr->get_min_axial_pos_num(bin.segment_num());
-       bin.axial_pos_num()<=this->proj_data_info_ptr->get_max_axial_pos_num(bin.segment_num());
-       ++bin.axial_pos_num())
-    {
 #ifdef STIR_OPENMP
-#pragma omp parallel for firstprivate(bin) reduction(+:total_scatter) schedule(dynamic)
+#pragma omp parallel for reduction(+:total_scatter) schedule(dynamic)
 #endif
-      for (int tang_pos_num=this->proj_data_info_ptr->get_min_tangential_pos_num();
-           tang_pos_num<=this->proj_data_info_ptr->get_max_tangential_pos_num();
-           ++tang_pos_num)
-        {  
-          bin.tangential_pos_num() = tang_pos_num;
+  for (int i=0; i<static_cast<int>(all_bins.size()); ++i)
+    {
+      const Bin bin = all_bins[i];
 
-          unsigned det_num_A = 0; // initialise to avoid compiler warnings
-          unsigned det_num_B = 0;
-          this->find_detectors(det_num_A, det_num_B, bin);
+      unsigned det_num_A = 0; // initialise to avoid compiler warnings
+      unsigned det_num_B = 0;
+      this->find_detectors(det_num_A, det_num_B, bin);
 
-          const double scatter_ratio =
-            scatter_estimate(det_num_A, det_num_B);
+      const double scatter_ratio =
+        scatter_estimate(det_num_A, det_num_B);
              
-          viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
-            static_cast<float>(scatter_ratio);
+      viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
+        static_cast<float>(scatter_ratio);
 
-          total_scatter += scatter_ratio;
-
-        }
-    } // end loop over axial_pos
+      total_scatter += scatter_ratio;
+    } // end loop over bins
 
   if (this->output_proj_data_sptr->set_viewgram(viewgram) == Succeeded::no)
     error("ScatterEstimationByBin: error writing viewgram");
