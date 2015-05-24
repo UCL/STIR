@@ -40,6 +40,30 @@
 
 START_NAMESPACE_STIR
 
+void 
+ProjDataInfoCylindrical::
+initialise_ring_diff_arrays_if_not_done_yet() const
+{
+  // for efficiency reasons, use "Double-Checked-Locking(DCL) pattern" with OpenMP atomic operation
+  // OpenMP v3.1 or later required
+  // thanks to yohjp: http://stackoverflow.com/questions/27975737/how-to-handle-cached-data-structures-with-multi-threading-e-g-openmp
+#if defined(STIR_OPENMP) &&  _OPENMP >=201012
+  bool initialised;
+#pragma omp atomic read
+  initialised = ring_diff_arrays_computed;
+
+  if (!initialised)
+#endif
+    {
+#if defined(STIR_OPENMP)
+#pragma omp critical(PROJDATAINFOCYLINDRICALRINGDIFFARRAY)
+#endif
+      {
+        if (!ring_diff_arrays_computed)
+          initialise_ring_diff_arrays();
+      }
+    }
+}
 
 float
 ProjDataInfoCylindrical::get_phi(const Bin& bin)const
@@ -50,11 +74,7 @@ float
 ProjDataInfoCylindrical::get_m(const Bin& bin) const
 { 
 
-#pragma omp critical(PROJDATAINFOCYLINDRICALRINGDIFFARRAY)
-  {
-  if (!ring_diff_arrays_computed)
-    initialise_ring_diff_arrays();
-  }
+  this->initialise_ring_diff_arrays_if_not_done_yet();
   return 
     bin.axial_pos_num()*get_axial_sampling(bin.segment_num())
     - m_offset[bin.segment_num()];
@@ -205,11 +225,7 @@ get_segment_num_for_ring_difference(int& segment_num, const int ring_diff) const
       ring_diff < get_min_ring_difference(get_min_segment_num()))
     return Succeeded::no;
 
-#pragma omp critical(PROJDATAINFOCYLINDRICALRINGDIFFARRAY)
-  {
-    if (!ring_diff_arrays_computed)
-      initialise_ring_diff_arrays();
-  }
+  this->initialise_ring_diff_arrays_if_not_done_yet();
 
   segment_num = ring_diff_to_segment_num[ring_diff];
   // warning: relies on initialise_ring_diff_arrays to set invalid ring_diff to a too large segment_num
@@ -247,11 +263,7 @@ ProjDataInfoCylindrical::
 get_all_ring_pairs_for_segment_axial_pos_num(const int segment_num,
 					     const int axial_pos_num) const
 {
-#pragma omp critical(PROJDATAINFOCYLINDRICALRINGDIFFARRAY)
-  {
-    if (!ring_diff_arrays_computed)
-      initialise_ring_diff_arrays();
-  }
+  this->initialise_ring_diff_arrays_if_not_done_yet();
   if (is_null_ptr(segment_axial_pos_to_ring_pair[segment_num][axial_pos_num]))
     compute_segment_axial_pos_to_ring_pair(segment_num, axial_pos_num);
   return *segment_axial_pos_to_ring_pair[segment_num][axial_pos_num];
