@@ -28,6 +28,7 @@
  Modification history:
 
   <TT>
+  May 2015 -- Kris Thielemans -- removed overflow when using gettimeofday and reinstated AZ's WIN32 version (as MS had get_nanosec() wrong)
   May 2008 -- Kris Thielemans -- renamed PTimer to HighResWallClockTimer and renamed functions to by compatible with stir::Timer
   18 Aug 99 -- Mustapha Sadki -- corrected the formula for HighResWallClockTimer::stop() & HighResWallClockTimer::GetTime() for WIN32\n
   08 Jul 99 -- Mustapha Sadki -- added global Ptimers and #define manipulations\n
@@ -78,8 +79,13 @@ namespace stir {
   do_something();
   t.stop();
   cout << "do_something took " << t.value() << " seconds" << endl;
+  t.start();
+  do_something_else();
+  t.stop();
+  cout << "total wall-clock time: " << t.value() << " seconds" << endl;
   \endcode
 
+  You have to call stop() before getting the value.
   You have to call reset() if you wish to use the same timer to measure
   several separate time intervals, otherwise the time will be accumulated.
   */
@@ -236,37 +242,16 @@ namespace stir {
 
 	LONGLONG Delta = m_Finish.QuadPart - m_Start.QuadPart;
 
-	// MS 18-8-99  inserted this scope to correct the formula
-	{
-	  LARGE_INTEGER Freq;
-	  BOOL          Result;
-	  Result = QueryPerformanceFrequency(&Freq);         
+        int Resolution = get_resolution_in_nanosecs();
 
-	  assert(Result); // if failed, high-resolution timers are not supported by this hardware,//TODO: use GetTickCount()
-
-	  m_Secs += static_cast<int>( Delta / Freq.QuadPart);
-	  m_Nanosecs += static_cast<int>(Delta % Freq.QuadPart);
-
-	  if (m_Nanosecs >= (int)Freq.QuadPart )
-	    {
-	      m_Secs++;
-	      m_Nanosecs -= (int)Freq.QuadPart;
-	    };
-	  assert(m_Nanosecs >= 0 && m_Nanosecs < (int)Freq.QuadPart);
-
-	}
-	// and commented out 
-	/*
-	  int Resolution = get_resolution_in_nanosecs();
-
-	  m_Secs += static_cast<int>(Delta / Resolution);
-	  m_Nanosecs += static_cast<int>(Delta % Resolution);
-	  if (m_Nanosecs >= 1000000000)
+        m_Secs += static_cast<int>(Delta / Resolution);
+        m_Nanosecs += static_cast<int>(Delta % Resolution);
+        if (m_Nanosecs >= 1000000000)
 	  {
-	  m_Secs++;
-	  m_Nanosecs -= 1000000000;
-	  };
-	*/
+            m_Secs++;
+            m_Nanosecs -= 1000000000;
+	  }
+
 #elif defined(STIR_HRWCT_Use_gettimeofday)
 
 #ifndef NDEBUG
@@ -274,7 +259,6 @@ namespace stir {
 #endif
 	  gettimeofday(&m_Finish, NULL);
 	assert(Result == 0);
-
 	m_Secs += (m_Finish.tv_sec - m_Start.tv_sec);
 	int Microsecs = (m_Finish.tv_usec - m_Start.tv_usec);
 	if (Microsecs < 0)
@@ -284,6 +268,11 @@ namespace stir {
 	  };
 
 	m_Nanosecs += (Microsecs * 1000);
+	if (m_Nanosecs >= 1000000000)
+	  {
+	    m_Secs++;
+	    m_Nanosecs -= 1000000000;
+	  };
 
 #endif
 
@@ -323,17 +312,8 @@ namespace stir {
     /*! The timer must not be running */
     inline double HighResWallClockTimer::value(void)
       {
-	// MS 18-8-99 added 
-#ifdef WIN32
-	LARGE_INTEGER Freq;
-	BOOL          Result;
-	Result = QueryPerformanceFrequency(&Freq);         
-	return get_sec() + double(get_nanosec()) / (double)Freq.QuadPart;
-
-#else
 	return get_sec() + double(get_nanosec()) / 1e9;
-#endif
-      };
+      }
 
     // HighResWallClockTimer.cxx -- high-resolution timers implementation
 
