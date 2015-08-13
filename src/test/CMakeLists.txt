@@ -56,6 +56,7 @@ set(buildblock_simple_tests
 	test_ArcCorrection
 	test_find_fwhm_in_image
 	test_proj_data_info
+	test_proj_data_in_memory
 )
 
 include(stir_test_exe_targets)
