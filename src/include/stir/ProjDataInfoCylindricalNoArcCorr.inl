@@ -59,6 +59,29 @@ initialise_uncompressed_view_tangpos_to_det1det2_if_not_done_yet() const
     }
 }
 
+void 
+ProjDataInfoCylindricalNoArcCorr::
+initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet() const
+{
+  // as above
+#if defined(STIR_OPENMP) &&  _OPENMP >=201012
+  bool initialised;
+#pragma omp atomic read
+  initialised = det1det2_to_uncompressed_view_tangpos_initialised;
+
+  if (!initialised)
+#endif
+    {
+#if defined(STIR_OPENMP)
+#pragma omp critical(PROJDATAINFOCYLINDRICALNOARCCORR_DETS_TO_VIEWTANGPOS)
+#endif
+          { 
+            if (!det1det2_to_uncompressed_view_tangpos_initialised)
+              initialise_det1det2_to_uncompressed_view_tangpos();
+          }
+    }
+}
+
 float
 ProjDataInfoCylindricalNoArcCorr::
 get_s(const Bin& bin) const
@@ -97,7 +120,7 @@ get_view_tangential_pos_num_for_det_num_pair(int& view_num,
 					     const int det2_num) const
 {
   assert(det1_num!=det2_num);
-  this->initialise_uncompressed_view_tangpos_to_det1det2_if_not_done_yet();
+  this->initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet();
 
   view_num = 
     det1det2_to_uncompressed_view_tangpos[det1_num][det2_num].view_num/get_view_mashing_factor();
