@@ -252,7 +252,7 @@
 // disable warnings about nested bass-class 325
 #pragma SWIG nowarn=319,401,325
 
-# catch all C++ exceptions in python
+// catch all C++ exceptions in python
 %include "exception.i"
 
 %exception {

@@ -15,7 +15,7 @@
   a new class from ParsingObject. One could have a KeyParser object
   in main() and fill it in directly.
 
-  See examples/README.txt
+  See README.txt in the directory where this file is located.
 
   \author Kris Thielemans      
 */

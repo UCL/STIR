@@ -67,6 +67,13 @@ public DiscDensT
   //  typedef DiscretisedDensity<num_dimensions, KinParsT> base_type;
   typedef DiscDensT base_type;
  public:
+  //! A typedef that can be used what the base of the hierarchy is
+  /*! For these purposes, we don't use DiscDensT (even though it's the base_type).
+
+      This typedef is used in write_to_file().
+  */
+  typedef ParametricDiscretisedDensity hierarchy_base_type;
+
   typedef typename Parametric2Single<DiscDensT>::type SingleDiscretisedDensityType;
 
   typedef typename base_type::full_iterator full_densel_iterator;

@@ -10,7 +10,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2015 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -36,6 +36,12 @@ ProjData::get_proj_data_info_ptr() const
   return proj_data_info_ptr.get();
 }
 
+shared_ptr<ProjDataInfo>
+ProjData::get_proj_data_info_sptr() const
+{
+  return proj_data_info_ptr;
+}
+
 const ExamInfo*
 ProjData::get_exam_info_ptr() const
 {
@@ -47,15 +53,6 @@ ProjData::get_exam_info_sptr() const
 {
   return exam_info_sptr;
 }
-
-ProjData:: ProjData()
-{}
-
-ProjData::ProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
-		   const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
-  : exam_info_sptr(exam_info_sptr), proj_data_info_ptr(proj_data_info_sptr)
-{}
-
 
 int ProjData::get_num_segments() const
 { return proj_data_info_ptr->get_num_segments(); }

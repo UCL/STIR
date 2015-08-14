@@ -108,6 +108,14 @@ class DiscretisedDensity : public Array<num_dimensions,elemT>
   typedef Array<num_dimensions,elemT> base_type;
   typedef DiscretisedDensity<num_dimensions,elemT> self_type;
 public:
+  //! A typedef that can be used what the base of the hierarchy is
+  /*! For these purposes, we don't use Array (even though it's the base_type)
+      as DiscretisedDensity is used in STIR as the type for any image.
+
+      This typedef is used in write_to_file().
+  */
+  typedef DiscretisedDensity<num_dimensions,elemT> hierarchy_base_type;
+
   //! A static member to read an image from file
   static DiscretisedDensity * read_from_file(const std::string& filename);
 

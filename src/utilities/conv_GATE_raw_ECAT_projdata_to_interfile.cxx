@@ -33,6 +33,7 @@
 #include "stir/Scanner.h"
 #include "stir/IO/read_data.h"
 #include "stir/Succeeded.h"
+#include "stir/NumericType.h"
 
 #define NUMARG 8
 
@@ -67,9 +68,6 @@ int main(int argc,char **argv)
 		
   if(max_ring_difference>=num_rings)
     error("Cannot have max ring difference larger than the number of rings");	
-  if (num_tangential_poss%2 != 1)
-    warning("Not sure if STIR can handle GATE data with even number of tangential positions.\n"
-            "Proceed at your  risk (but you might have artifacts)");
   if( sizeof(short int)!=2 ) 
     error("Expected Input Data should be in UINT16 format\nand size of short int is should be 2\n") ;
   shared_ptr<Scanner> scanner_sptr( Scanner::get_scanner_from_name(scanner_name));
@@ -105,14 +103,24 @@ int main(int argc,char **argv)
   ProjDataInterfile proj_data(exam_info_sptr, proj_data_info_sptr,
                               STIR_output_filename, std::ios::out);
 	
-  for (int segment_num=0; segment_num<=max_ring_difference; segment_num = (segment_num<=0) ? 1+segment_num*-1 : -1*segment_num)
+  // loop over segments in the GATE ECAT output in a fancy way
+  for (int seg_num=0; seg_num<=max_ring_difference; seg_num = (seg_num<=0) ? 1+seg_num*-1 : -1*seg_num)
     {
+      // correct sign
+      const int segment_num = -seg_num;
       for (int axial_pos_num = proj_data.get_min_axial_pos_num(segment_num);
            axial_pos_num <= proj_data.get_max_axial_pos_num(segment_num); 
            axial_pos_num++)
         {
           Sinogram<float> sino = proj_data.get_empty_sinogram(axial_pos_num,segment_num);		
-          read_data(GATE_file, sino);
+          float scale=1;
+          if (read_data(GATE_file, sino, NumericType::SHORT, scale) !=
+	      Succeeded::yes)
+	    {
+              warning("error reading from GATE sino");
+              fclose(GATE_file);
+	      return EXIT_FAILURE;
+	    }
           proj_data.set_sinogram(sino);
         }
     }

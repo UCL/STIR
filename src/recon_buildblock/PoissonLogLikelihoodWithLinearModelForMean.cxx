@@ -26,7 +26,7 @@
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/is_null_ptr.h"
-#include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/write_to_file.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/Succeeded.h"
 #include <algorithm>
@@ -306,9 +306,8 @@ set_up(shared_ptr<TargetT> const& target_sptr)
                       const std::string current_sensitivity_filename =
                         boost::str(boost::format(this->subsensitivity_filenames) % subset);
                       info(boost::format("Writing sensitivity to '%1%'") % current_sensitivity_filename);
-                      OutputFileFormat<TargetT>::default_sptr()->
-                        write_to_file(current_sensitivity_filename,
-                                      this->get_subset_sensitivity(subset));
+                      write_to_file(current_sensitivity_filename,
+                                    this->get_subset_sensitivity(subset));
                     }
                 }
             }
@@ -319,8 +318,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
                   const std::string current_sensitivity_filename =
                     this->sensitivity_filename;
                   info(boost::format("Writing sensitivity to '%1%'") % current_sensitivity_filename);
-                  OutputFileFormat<TargetT>::default_sptr()->
-                    write_to_file(current_sensitivity_filename,
+                  write_to_file(current_sensitivity_filename,
                                   this->get_sensitivity());
                 }
             }

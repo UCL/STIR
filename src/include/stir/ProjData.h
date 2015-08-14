@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2015, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -78,10 +78,10 @@ class ExamInfo;
   <li> RelatedViewgrams (different Viewgrams related by symmetry)
   </ul>
 
-  This abstract class proves the general interface for accessing the
+  This abstract class provides the general interface for accessing the
   projection data. This works with get_ and set_ pairs. (Generally, 
-  the 4D dataset is too big to be kept in memory.) In addition, there
-  are get_empty_ functions that just created the corresponding object
+  the 4D dataset might be too big to be kept in memory.) In addition, there
+  are get_empty_ functions that just create the corresponding object
   of appropriate sizes etc. but filled with 0.
 
   One important member of this class is get_proj_data_info_ptr() which
@@ -99,21 +99,34 @@ public:
     read_from_file(const std::string& filename,
 		   const std::ios::openmode open_mode = std::ios::in);
 
-  //! Constructors
-  inline ProjData();
-  inline ProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
-		  const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
+  //! Empty constructor 
+  ProjData();
+  //! construct by specifying info. Data will be undefined.
+  ProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
+           const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
+#if 0
+  // it would be nice to have something like this. However, it's implementation
+  // normally fails as we'd need to use set_viewgram or so, which is virtual, but
+  // this doesn't work inside a constructor
+  ProjData(const ProjData&);
+#endif
+
   //! Destructor
   virtual ~ProjData() {}
   //! Get proj data info pointer
   inline const ProjDataInfo* 
     get_proj_data_info_ptr() const;
+  //! Get shared pointer to proj data info
+  /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
+    shared pointer will be affected. */
+  inline shared_ptr<ProjDataInfo>
+    get_proj_data_info_sptr() const;
   //! Get pointer to exam info
   inline const ExamInfo*
     get_exam_info_ptr() const;
   //! Get shared pointer to exam info
-  /*! \warning Use with care. If you modify a shared ptr, all objects using the same
-    shared pinter will be affected. */
+  /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
+    shared pointer will be affected. */
   inline shared_ptr<ExamInfo>
     get_exam_info_sptr() const;
   //! change exam info
@@ -164,7 +177,7 @@ public:
   //! Set segment by view 
   virtual Succeeded 
     set_segment(const SegmentByView<float>&);
-  
+
   //! Get related viewgrams
   virtual RelatedViewgrams<float> 
     get_related_viewgrams(const ViewSegmentNumbers&,
@@ -180,6 +193,18 @@ public:
     //const int view_num, const int segment_num, 
     const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_ptr,
     const bool make_num_tangential_poss_odd = false) const;   
+
+
+  //! set all bins to the same value
+  /*! will call error() if setting failed */
+  void fill(const float value);
+
+  //! set all bins from another ProjData object
+  /*! will call error() if setting failed or if the 'source' proj_data is not compatible.
+    The current check requires at least the same segment numbers (but the source can have more),
+    all other geometric parameters have to be the same.
+ */
+  void fill(const ProjData&);
 
   //! Get number of segments
   inline int get_num_segments() const;
@@ -208,7 +233,7 @@ public:
   
 protected:
    shared_ptr<ExamInfo> exam_info_sptr;  
-   shared_ptr<ProjDataInfo> proj_data_info_ptr;
+   shared_ptr<ProjDataInfo> proj_data_info_ptr; // TODO fix name to _sptr
 };
 
 

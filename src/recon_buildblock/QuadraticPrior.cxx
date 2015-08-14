@@ -30,7 +30,7 @@
 #include "stir/Succeeded.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/IndexRange3D.h"
-#include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/write_to_file.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
@@ -257,7 +257,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
                 
                 /* formula:
                   sum_dx,dy,dz
-                   1/2 weights[dz][dy][dx] *
+                   1/4 weights[dz][dy][dx] *
                    (current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])^2 *
                    (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
                 */
@@ -267,7 +267,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
                       {
                         elemT current =
                           weights[dz][dy][dx] *
-                          square(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])/2;
+                          square(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])/4;
 
                         if (do_kappa)
                           current *= 
@@ -413,8 +413,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
     {
       char *filename = new char[gradient_filename_prefix.size()+100];
       sprintf(filename, "%s%d.v", gradient_filename_prefix.c_str(), count);
-      OutputFileFormat<DiscretisedDensity<3,elemT> >::default_sptr()->
-        write_to_file(filename, prior_gradient);
+      write_to_file(filename, prior_gradient);
       delete[] filename;
     }
 }
