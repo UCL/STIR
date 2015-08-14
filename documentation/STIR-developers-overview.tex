@@ -16,7 +16,7 @@
 \textbf{{\huge STIR \\
 Overview for developers}}\\
 \textbf{Kris Thielemans}\\
-\textbf{\textit{version 3.0}}
+\textbf{\textit{version 3.1}}
 
 
 \end{center}
@@ -1069,6 +1069,11 @@ if that corresponds to the signature of any of the file formats in the
 default registry, and use the first matching file format to read the data.
 
 For output, you can use
+\begin{verbatim}
+   write_to_file(filename, density);
+\end{verbatim}
+You will have to include \texttt{stir/IO/write\_to\_file.h} for this to work. This
+will write using the default output file format and is equivalent to the following:
 \begin{verbatim}
     typedef DiscretisedDensity<3,float> DataType ;
     shared_ptr<OutputFileFormat<DataType > output_format_sptr =

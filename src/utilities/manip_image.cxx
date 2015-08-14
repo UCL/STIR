@@ -34,7 +34,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/display.h"
 #include "stir/utilities.h"
-#include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/write_to_file.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/Succeeded.h"
 #include "stir/recon_array_functions.h"
@@ -254,8 +254,7 @@ int main(int argc, char *argv[])
             {
                 char outfile[max_filename_length];
                 ask_filename_with_extension(outfile, "Output filename (without extension) ", "");
-		OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-		  write_to_file(outfile, main_buffer);
+                write_to_file(outfile, main_buffer);
                 break;
             }  
 
