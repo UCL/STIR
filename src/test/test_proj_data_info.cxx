@@ -107,6 +107,9 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
   int max_diff_view_num=0;
   int max_diff_axial_pos_num=0;
   int max_diff_tangential_pos_num=0;
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(dynamic)
+#endif
   for (int segment_num=proj_data_info.get_min_segment_num();
        segment_num<=proj_data_info.get_max_segment_num();
 	 ++segment_num)
@@ -319,6 +322,9 @@ test_cylindrical_proj_data_info(ProjDataInfoCylindrical& proj_data_info)
     {
       // these tests work only without axial compression
       cerr << "\tTest ring pair to segment,ax_pos (span 1)\n";
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(dynamic)
+#endif
     for (int ring1=0; ring1<proj_data_info.get_scanner_ptr()->get_num_rings(); ++ring1)
       for (int ring2=0; ring2<proj_data_info.get_scanner_ptr()->get_num_rings(); ++ring2)
 	{
@@ -362,6 +368,9 @@ test_cylindrical_proj_data_info(ProjDataInfoCylindrical& proj_data_info)
 
   cerr << "\tTest ring pair to segment,ax_pos and vice versa (for any axial compression)\n";
   {
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(dynamic)
+#endif
     for (int segment_num=proj_data_info.get_min_segment_num(); 
 	 segment_num<=proj_data_info.get_max_segment_num(); 
 	 ++segment_num)
@@ -608,18 +617,19 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
   if (proj_data_info.get_view_mashing_factor()==1)
     {
       // these tests work only without mashing
-      int det_num_a;
-      int det_num_b;
-      int tang_pos_num;
-      int view;
 
       cerr << "\n\tTest code for sinogram <-> detector conversions.";
       
-      for (det_num_a = 0; det_num_a < num_detectors; det_num_a++)
-	for (det_num_b = 0; det_num_b < num_detectors; det_num_b++)
+#ifdef STIR_OPENMP
+      #pragma omp parallel for schedule(dynamic)
+#endif
+      for (int det_num_a = 0; det_num_a < num_detectors; det_num_a++)
+	for (int det_num_b = 0; det_num_b < num_detectors; det_num_b++)
 	  {
 	    int det1, det2;
 	    bool positive_segment;
+            int tang_pos_num;
+            int view;
 	    
 	    // skip case of equal detectors (as this is a singular LOR)
 	    if (det_num_a == det_num_b)
@@ -650,11 +660,16 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 	  } // end of detectors_to_sinogram, sinogram_to_detector test
 
 	
-      for (view = 0; view < num_detectors/2; ++view)
-	for (tang_pos_num = -(num_detectors/2)+1; tang_pos_num < num_detectors/2; ++tang_pos_num)
+#ifdef STIR_OPENMP
+#pragma omp parallel for
+#endif
+      for (int view = 0; view < num_detectors/2; ++view)
+	for (int tang_pos_num = -(num_detectors/2)+1; tang_pos_num < num_detectors/2; ++tang_pos_num)
 	  {
 	    int new_tang_pos_num, new_view;
 	    bool positive_segment;
+            int det_num_a;
+            int det_num_b;
 
 	    proj_data_info.get_det_num_pair_for_view_tangential_pos_num(det_num_a, det_num_b, view, tang_pos_num);
 	    positive_segment = 
@@ -684,18 +699,26 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
       
       DetectionPositionPair<> det_pos_pair;
       for (det_pos_pair.pos1().axial_coord() = 0; 
-	   det_pos_pair.pos1().axial_coord() <= 2; 
+           det_pos_pair.pos1().axial_coord() <= 2;
 	   det_pos_pair.pos1().axial_coord()++)
 	for (det_pos_pair.pos2().axial_coord() = 0; 
 	     det_pos_pair.pos2().axial_coord() <= 2; 
 	     det_pos_pair.pos2().axial_coord()++)
-	  for (det_pos_pair.pos1().tangential_coord() = 0; 
-	       det_pos_pair.pos1().tangential_coord() < (unsigned)num_detectors;
-	       det_pos_pair.pos1().tangential_coord()++)
-	    for (det_pos_pair.pos2().tangential_coord() = 0; 
-		 det_pos_pair.pos2().tangential_coord() < (unsigned)num_detectors; 
-		 det_pos_pair.pos2().tangential_coord()++)
+#ifdef STIR_OPENMP
+            // insert a parallel for here for testing.
+            // we do it at this level to avoid too much overhead for the thread creation, while still having enough jobs to do
+            // note: for-loop writing somewhat awkwardly as openmp needs int variables for the loop
+#pragma omp parallel for firstprivate(det_pos_pair)
+#endif
+          for (unsigned tangential_coord1 = 0; 
+               tangential_coord1 < (unsigned)num_detectors; 
+               tangential_coord1++)
+            for (det_pos_pair.pos2().tangential_coord() = 0; 
+                 det_pos_pair.pos2().tangential_coord() < (unsigned)num_detectors;
+                 det_pos_pair.pos2().tangential_coord()++)
 	      {
+                // set from for-loop variable
+                det_pos_pair.pos1().tangential_coord() = tangential_coord1;
 		// skip case of equal detector numbers (as this is either a singular LOR)
 		// or an LOR parallel to the scanner axis
 		if (det_pos_pair.pos1().tangential_coord() == det_pos_pair.pos2().tangential_coord())
@@ -739,12 +762,19 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 	  for (bin.axial_pos_num() = proj_data_info.get_min_axial_pos_num(bin.segment_num());
 	       bin.axial_pos_num() <= proj_data_info.get_max_axial_pos_num(bin.segment_num());
 	       ++bin.axial_pos_num())
-	    for (bin.view_num() = 0; bin.view_num() < num_detectors/2; ++bin.view_num())
-	      for (bin.tangential_pos_num() = -(num_detectors/2)+1; 
-		   bin.tangential_pos_num() < num_detectors/2; 
-		   ++bin.tangential_pos_num())
+#ifdef STIR_OPENMP
+            // insert a parallel for here for testing.
+            // we do it at this level to avoid too much overhead for the thread creation, while still having enough jobs to do
+            // Note that the omp construct needs an int loop variable
+#pragma omp parallel for firstprivate(bin)
+#endif
+            for (int tangential_pos_num = -(num_detectors/2)+1; 
+                 tangential_pos_num < num_detectors/2; 
+                 ++tangential_pos_num)
+              for (bin.view_num() = 0; bin.view_num() < num_detectors/2; ++bin.view_num())
 		{
-
+                  // set from for-loop variable
+                  bin.tangential_pos_num() = tangential_pos_num;
 		  Bin new_bin;
 		  // set value for comparison with bin
 		  new_bin.set_bin_value(0);
@@ -782,6 +812,9 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
     // set value for comparison later on
     bin.set_bin_value(0);
     std::vector<DetectionPositionPair<> > det_pos_pairs;
+#ifdef STIR_OPENMP
+    //#pragma omp parallel for schedule(dynamic)
+#endif
     for (bin.segment_num() = proj_data_info.get_min_segment_num(); 
 	 bin.segment_num() <= proj_data_info.get_max_segment_num(); 
 	 ++bin.segment_num())
@@ -836,6 +869,9 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
       const int num_rings =
 	proj_data_info.get_scanner_ptr()->get_num_rings();
 
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(dynamic)
+#endif
       for ( int Ring_A = 0; Ring_A < num_rings; Ring_A+=num_rings/3)
 	for ( int Ring_B = 0; Ring_B < num_rings; Ring_B+=num_rings/3)
 	  for ( int det1 =0; det1 < num_detectors_per_ring; ++det1)
