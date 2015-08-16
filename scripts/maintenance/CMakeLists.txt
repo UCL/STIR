@@ -15,16 +15,16 @@
 
 # cmake file declaring all tests in this subdirectory
 
-set(dir local_scripts)
+set(dir maintenance_scripts)
 
-set(dir_local_scripts ${dir}_SCRIPTS)
+set(dir_maintenance_scripts ${dir}_SCRIPTS)
 
-set(${dir_local_scripts}
+set(${dir_maintenance_scripts}
 )
 
 
 
 #include(stir_test_exe_targets)
 
-install(PROGRAMS ${${dir_local_scripts}} DESTINATION bin)
+install(PROGRAMS ${${dir_maintenance_scripts}} DESTINATION bin)
 

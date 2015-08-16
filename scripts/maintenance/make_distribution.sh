@@ -1,4 +1,36 @@
 #! /bin/bash
+# A script to package a new distribution of STIR.
+# It is probably specific to the set-up of files on Kris Thielemans' computer,
+# although should need only minor tweaking for others.
+# It is not documented though and possibly unsafe.
+# Use with care!
+#
+# You would use this in bash for instance like
+# VERSION=3.1 make_distribution.sh
+# Check list of variables below for configuration options
+
+# This file is part of STIR.
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation; either version 2.1 of the License, or
+# (at your option) any later version.
+#
+# This file is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# See STIR/LICENSE.txt for details
+#
+# Copyright 2004-2011, Hammersmith Imanet Ltd
+# Copyright 2011-2013, Kris Thielemans
+# Copyright 2014-2015, University College London
+
+
+# set default for variables.
+# A lot of these are for being able to do the processing in stages
+# (e.g. for when something went wrong)
 : ${do_lln:=0}
 : ${do_update:=0}
 : ${do_version:=1}
@@ -17,7 +49,7 @@
 set -e
 : ${VERSION:=3.0}
 
-: ${REPO:=~/devel/STIR -b open_source}
+: ${REPO:=~/devel/UCL_STIR}
 : ${CHECKOUTOPTS:=""}
 
 : ${destination:=~/devel/STIR-website/}
