@@ -33,6 +33,7 @@
 */
 
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
+#include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjData.h"
@@ -54,42 +55,6 @@ ForwardProjectorByBin::~ForwardProjectorByBin()
 {
 }
 
-
-static std::vector<ViewSegmentNumbers> 
-find_vs_nums_in_subset(const ProjDataInfo& proj_data_info,
-                       const DataSymmetriesForViewSegmentNumbers& symmetries, 
-                       const int min_segment_num, const int max_segment_num,
-                       const int subset_num, const int num_subsets)
-{
-  std::vector<ViewSegmentNumbers> vs_nums_to_process;
-  for (int segment_num = min_segment_num; segment_num <= max_segment_num; segment_num++)
-  {
-    for (int view = proj_data_info.get_min_view_num() + subset_num; 
-        view <= proj_data_info.get_max_view_num(); 
-        view += num_subsets)
-    {
-      const ViewSegmentNumbers view_segment_num(view, segment_num);
-        
-      if (!symmetries.is_basic(view_segment_num))
-        continue;
-
-      vs_nums_to_process.push_back(view_segment_num);
-
-#ifndef NDEBUG
-      // test if symmetries didn't take us out of the segment range
-      std::vector<ViewSegmentNumbers> rel_vs;
-      symmetries.get_related_view_segment_numbers(rel_vs, view_segment_num);
-      for (std::vector<ViewSegmentNumbers>::const_iterator iter = rel_vs.begin(); iter!= rel_vs.end(); ++iter)
-        {
-          assert(iter->segment_num() >= min_segment_num);
-          assert(iter->segment_num() <= max_segment_num);
-        }
-#endif
-    }
-  }
-  return vs_nums_to_process;
-}
-
 void 
 ForwardProjectorByBin::forward_project(ProjData& proj_data, 
 				       const DiscretisedDensity<3,float>& image)
@@ -102,9 +67,9 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
     symmetries_sptr(this->get_symmetries_used()->clone());
   
   const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
-    find_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
-                           proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
-                           0, 1/*subset_num, num_subsets*/);
+    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
+                                         proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
+                                         0, 1/*subset_num, num_subsets*/);
 #ifdef STIR_OPENMP
 #pragma omp parallel for  shared(proj_data, image, symmetries_sptr) schedule(runtime)  
 #endif

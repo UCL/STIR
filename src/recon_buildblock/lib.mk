@@ -19,6 +19,7 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	DataSymmetriesForBins_PET_CartesianGrid.cxx \
 	SymmetryOperation.cxx \
 	SymmetryOperations_PET_CartesianGrid.cxx \
+	find_basic_vs_nums_in_subset.cxx \
 	ProjMatrixElemsForOneBin.cxx \
 	ProjMatrixElemsForOneDensel.cxx \
 	ProjMatrixByBin.cxx \

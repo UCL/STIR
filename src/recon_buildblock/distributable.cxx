@@ -53,6 +53,7 @@
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/recon_buildblock/BinNormalisation.h"
+#include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
 #include <boost/format.hpp>
@@ -168,41 +169,6 @@ zero_end_sinograms(ViewgramsPtr viewgrams_ptr)
           (*r_viewgrams_iter)[max_ax_pos_num].fill(0);
         }
     }
-}
-
-static std::vector<ViewSegmentNumbers> 
-find_vs_nums_in_subset(const ProjDataInfo& proj_data_info,
-                       const DataSymmetriesForViewSegmentNumbers& symmetries, 
-                       const int min_segment_num, const int max_segment_num,
-                       const int subset_num, const int num_subsets)
-{
-  std::vector<ViewSegmentNumbers> vs_nums_to_process;
-  for (int segment_num = min_segment_num; segment_num <= max_segment_num; segment_num++)
-  {
-    for (int view = proj_data_info.get_min_view_num() + subset_num; 
-        view <= proj_data_info.get_max_view_num(); 
-        view += num_subsets)
-    {
-      const ViewSegmentNumbers view_segment_num(view, segment_num);
-        
-      if (!symmetries.is_basic(view_segment_num))
-        continue;
-
-      vs_nums_to_process.push_back(view_segment_num);
-
-#ifndef NDEBUG
-      // test if symmetries didn't take us out of the segment range
-      std::vector<ViewSegmentNumbers> rel_vs;
-      symmetries.get_related_view_segment_numbers(rel_vs, view_segment_num);
-      for (std::vector<ViewSegmentNumbers>::const_iterator iter = rel_vs.begin(); iter!= rel_vs.end(); ++iter)
-        {
-          assert(iter->segment_num() >= min_segment_num);
-          assert(iter->segment_num() <= max_segment_num);
-        }
-#endif
-    }
-  }
-  return vs_nums_to_process;
 }
 
 static
@@ -435,9 +401,9 @@ void distributable_computation(
     info("End-planes of segment 0 will be zeroed");
 
   const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
-    find_vs_nums_in_subset(*proj_dat_ptr->get_proj_data_info_ptr(), *symmetries_ptr,
-                           min_segment_num, max_segment_num,
-                           subset_num, num_subsets);
+    detail::find_basic_vs_nums_in_subset(*proj_dat_ptr->get_proj_data_info_ptr(), *symmetries_ptr,
+                                         min_segment_num, max_segment_num,
+                                         subset_num, num_subsets);
         
   int count=0, count2=0;
   
