@@ -26,8 +26,6 @@
 //#include "local/stir/recon_buildblock/oldForwardProjectorByBinUsingRayTracing.h"
 //#include "local/stir/recon_buildblock/oldBackProjectorByBinUsingInterpolation.h"
 #include "local/stir/recon_buildblock/PostsmoothingForwardProjectorByBin.h"
-#include "local/stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
-#include "local/stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
 #if 0
 #include "local/stir/recon_buildblock/BinNormalisationUsingProfile.h"
 #include "local/stir/recon_buildblock/BinNormalisationSinogramRescaling.h"
@@ -57,8 +55,6 @@ static ParametricQuadraticPrior<ParametricVoxelsOnCartesianGrid>::RegisterIt dum
 
 //static oldForwardProjectorByBinUsingRayTracing::RegisterIt dummy1;
 static PostsmoothingForwardProjectorByBin::RegisterIt dummy2;
-static PresmoothingForwardProjectorByBin::RegisterIt dummy3;
-static PostsmoothingBackProjectorByBin::RegisterIt dummy4;
 //static oldBackProjectorByBinUsingInterpolation::RegisterIt dummy5;
 
 #if 0

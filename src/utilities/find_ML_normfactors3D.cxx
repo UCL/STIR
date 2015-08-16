@@ -1,5 +1,3 @@
-//
-//
 /*
     Copyright (C) 2001- 2008, Hammersmith Imanet Ltd
     This file is part of STIR.
@@ -26,7 +24,7 @@
   \author Kris Thielemans
 
 */
-#include "local/stir/ML_norm.h"
+#include "stir/ML_norm.h"
 
 #include "stir/Scanner.h"
 #include "stir/stream.h"

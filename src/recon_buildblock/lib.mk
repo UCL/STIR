@@ -5,10 +5,12 @@ dir := recon_buildblock
 $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	ForwardProjectorByBinUsingRayTracing.cxx \
 	ForwardProjectorByBinUsingRayTracing_Siddon.cxx \
+	PresmoothingForwardProjectorByBin.cxx \
 	BackProjectorByBin.cxx \
 	BackProjectorByBinUsingInterpolation.cxx \
 	BackProjectorByBinUsingInterpolation_linear.cxx \
 	BackProjectorByBinUsingInterpolation_piecewise_linear.cxx \
+	PostsmoothingBackProjectorByBin.cxx \
 	Reconstruction.cxx \
 	AnalyticReconstruction.cxx \
 	IterativeReconstruction.cxx \

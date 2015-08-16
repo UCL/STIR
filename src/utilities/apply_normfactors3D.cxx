@@ -1,5 +1,3 @@
-//
-//
 /*
     Copyright (C) 2001- 2012, Hammersmith Imanet Ltd
     This file is part of STIR.
@@ -25,7 +23,7 @@
 
 */
 
-#include "local/stir/ML_norm.h"
+#include "stir/ML_norm.h"
 
 #include "stir/ProjDataInterfile.h"
 

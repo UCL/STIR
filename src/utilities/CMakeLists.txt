@@ -63,6 +63,12 @@ set(${dir_EXE_SOURCES}
         warp_and_accumulate_gated_images
         warp_image
         zeropad_planes
+	apply_normfactors3D
+	apply_normfactors
+	construct_randoms_from_singles
+	find_ML_normfactors3D
+	find_ML_normfactors
+	find_ML_singles_from_delayed
 )
 
 if (AVW_FOUND)

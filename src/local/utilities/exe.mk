@@ -11,13 +11,9 @@ $(dir)_SOURCES = \
 	prepare_projdata.cxx \
 	normalizedbckproj.cxx \
 	inverse_proj_data.cxx 	\
-	find_ML_normfactors3D.cxx \
-	apply_normfactors3D.cxx \
-	create_normfactors3D.cxx \
-	find_ML_singles_from_delayed.cxx \
 	threshold_norm_data.cxx \
+	create_normfactors3D.cxx \
 	zero_projdata_from_norm.cxx \
-	construct_randoms_from_singles.cxx \
 	line_profiles_through_projdata.cxx \
 	interpolate_projdata.cxx \
 	image_flip_x.cxx \
