@@ -293,6 +293,10 @@ private:
   //! This function sets all of the above
   void initialise_ring_diff_arrays() const;
 
+  //! This function guarantees that ring_diff_arrays will be set but checks first if was done already
+  /*! This function is OPENMP thread-safe */
+  inline void initialise_ring_diff_arrays_if_not_done_yet() const;
+
   inline int get_num_axial_poss_per_ring_inc(const int segment_num) const;
 
   //! This member will signal if the array below contain sensible info or not

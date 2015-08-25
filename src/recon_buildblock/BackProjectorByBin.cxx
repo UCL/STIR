@@ -13,6 +13,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2015, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,8 +31,15 @@
 
 
 #include "stir/recon_buildblock/BackProjectorByBin.h"
+#include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/ProjData.h"
+#include <vector>
+#ifdef STIR_OPENMP
+#include "stir/is_null_ptr.h"
+#include "stir/DiscretisedDensity.h"
+#include <omp.h>
+#endif
 
 START_NAMESPACE_STIR
 
@@ -51,21 +59,54 @@ BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(this->get_symmetries_used()->clone());  
   
-  for (int segment_num = proj_data.get_min_segment_num(); 
-       segment_num <= proj_data.get_max_segment_num(); 
-       ++segment_num)
-    for (int view_num= proj_data.get_min_view_num(); 
-	 view_num <= proj_data.get_max_view_num();
-	 ++view_num)      
-    {       
-      ViewSegmentNumbers vs(view_num, segment_num);
-      if (!symmetries_sptr->is_basic(vs))
-        continue;
-      
-      const RelatedViewgrams<float> viewgrams = 
-        proj_data.get_related_viewgrams(vs, symmetries_sptr);
-      back_project(image, viewgrams);	  
+  const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
+    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
+                                         proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
+                                         0, 1/*subset_num, num_subsets*/);
+
+#ifdef STIR_OPENMP
+  std::vector< shared_ptr<DiscretisedDensity<3,float> > > local_output_image_sptrs;
+#pragma omp parallel shared(proj_data, symmetries_sptr, local_output_image_sptrs)
+#endif
+  { 
+#ifdef STIR_OPENMP
+#pragma omp single
+    {
+      local_output_image_sptrs.resize(omp_get_num_threads(), shared_ptr<DiscretisedDensity<3,float> >());
     }
+#pragma omp for schedule(runtime)  
+#endif
+    // note: older versions of openmp need an int as loop
+    for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+      {
+        const ViewSegmentNumbers vs=vs_nums_to_process[i];
+#ifdef STIR_OPENMP
+        RelatedViewgrams<float> viewgrams;
+#pragma omp critical (BACKPROJECTORBYBIN_GETVIEWGRAMS)
+        viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr);
+#else
+        const RelatedViewgrams<float> viewgrams = 
+          proj_data.get_related_viewgrams(vs, symmetries_sptr);
+#endif
+#ifdef STIR_OPENMP
+        const int thread_num=omp_get_thread_num();
+        if(is_null_ptr(local_output_image_sptrs[thread_num]))
+          local_output_image_sptrs[thread_num].reset(image.get_empty_copy());
+        
+        back_project(*(local_output_image_sptrs[thread_num]), viewgrams);	  
+#else            
+        back_project(image, viewgrams);
+#endif
+      }
+  }
+#ifdef STIR_OPENMP
+  // "reduce" data constructed by threads
+  {
+    for (int i=0; i<static_cast<int>(local_output_image_sptrs.size()); ++i)
+      if(!is_null_ptr(local_output_image_sptrs[i])) // only accumulate if a thread filled something in
+        image += *(local_output_image_sptrs[i]);
+  }
+#endif
 }
 
 void 

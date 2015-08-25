@@ -150,6 +150,9 @@ set_up(
     const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     )
 {
+
+  ProjMatrixByBin::set_up(proj_data_info_ptr_v, density_info_ptr);
+
   using namespace SPECTUB;
 
    const VoxelsOnCartesianGrid<float> * image_info_ptr =

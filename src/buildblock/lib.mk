@@ -67,7 +67,8 @@ $(dir)_LIB_SOURCES := \
         MaximalArrayFilter3D.cxx \
         MaximalImageFilter3D.cxx \
         TimeGateDefinitions.cxx \
-	ML_norm.cxx
+	ML_norm.cxx \
+	num_threads.cxx
 
 
 $(dir)_REGISTRY_SOURCES:= $(dir)_registries.cxx

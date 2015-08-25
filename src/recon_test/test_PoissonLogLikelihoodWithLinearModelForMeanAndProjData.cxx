@@ -52,6 +52,7 @@
 #include "stir/IO/write_to_file.h"
 #include "stir/info.h"
 #include "stir/Succeeded.h"
+#include "stir/num_threads.h"
 #include <iostream>
 #include <memory>
 #include <boost/random/uniform_01.hpp>
@@ -343,6 +344,8 @@ int stir::distributable_main(int argc, char **argv)
 int main(int argc, char **argv)
 #endif
 {
+  set_default_num_threads();
+
   PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests tests(argc>1? argv[1] : 0,
                                                                    argc>2? argv[2] : 0);
   tests.run_tests();

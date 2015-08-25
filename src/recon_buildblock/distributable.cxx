@@ -49,18 +49,29 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/CPUTimer.h"
+#include "stir/HighResWallClockTimer.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/recon_buildblock/BinNormalisation.h"
+#include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
 #include "stir/is_null_ptr.h"
-#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
 #include "stir/info.h"
+#include <boost/format.hpp>
+#include <algorithm>
+//#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
 
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributableMPICacheEnabled.h"
 #include "stir/recon_buildblock/distributed_functions.h"
 #include "stir/recon_buildblock/distributed_test_functions.h"
 #endif
+#ifdef STIR_OPENMP
+#  ifdef STIR_MPI
+#    error Cannot use both OPENMP and MP
+#  endif
+#include <omp.h>
+#endif
+#include "stir/num_threads.h"
 
 START_NAMESPACE_STIR
 
@@ -74,6 +85,12 @@ void setup_distributable_computation(
                                      const bool zero_seg0_end_planes,
                                      const bool distributed_cache_enabled)
 {
+  set_num_threads();
+#ifdef STIR_OPENMP
+  info(boost::format("Using distributable_computation with %d threads on %d processors.")
+       % omp_get_max_threads() % omp_get_num_procs());
+#endif
+
 #ifdef STIR_MPI
   distributed::first_iteration = true;
          
@@ -144,7 +161,6 @@ zero_end_sinograms(ViewgramsPtr viewgrams_ptr)
     }
 }
 
-
 static
 void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
                    shared_ptr<RelatedViewgrams<float> >& additive_binwise_correction_viewgrams,
@@ -162,6 +178,9 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
 {
   if (!is_null_ptr(binwise_correction)) 
     {
+#ifdef STIR_OPENMP
+#pragma omp critical(ADDSINO)
+#endif
 #if !defined(_MSC_VER) || _MSC_VER>1300
       additive_binwise_correction_viewgrams.reset(
         new RelatedViewgrams<float>
@@ -175,6 +194,9 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
                         
   if (read_from_proj_dat)
     {
+#ifdef STIR_OPENMP
+#pragma omp critical(VIEW)
+#endif
 #if !defined(_MSC_VER) || _MSC_VER>1300
       y.reset(new RelatedViewgrams<float>
 	      (proj_dat_ptr->get_related_viewgrams(view_segment_num, symmetries_ptr)));
@@ -197,6 +219,9 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
       mult_viewgrams_sptr.reset(
 				new RelatedViewgrams<float>(proj_dat_ptr->get_empty_related_viewgrams(view_segment_num, symmetries_ptr)));
       mult_viewgrams_sptr->fill(1.F);
+#ifdef STIR_OPENMP
+#pragma omp critical(MULT)
+#endif
       normalisation_sptr->undo(*mult_viewgrams_sptr,start_time_of_frame,end_time_of_frame);
     }
                         
@@ -343,6 +368,11 @@ void distributable_computation(
         
 #endif
 
+  CPUTimer CPU_timer;
+  CPU_timer.start();
+  HighResWallClockTimer wall_clock_timer;
+  wall_clock_timer.start();
+
   assert(min_segment_num <= max_segment_num);
   assert(subset_num >=0);
   assert(subset_num < num_subsets);
@@ -360,6 +390,13 @@ void distributable_computation(
   if (zero_seg0_end_planes)
     info("End-planes of segment 0 will be zeroed");
 
+  const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
+    detail::find_basic_vs_nums_in_subset(*proj_dat_ptr->get_proj_data_info_ptr(), *symmetries_ptr,
+                                         min_segment_num, max_segment_num,
+                                         subset_num, num_subsets);
+        
+  int count=0, count2=0;
+  
 #ifdef STIR_MPI
   int sent_count=0;                     //counts the work packages sent 
   int working_slaves_count=0; //counts the number of slaves which are currently working
@@ -367,44 +404,40 @@ void distributable_computation(
 #endif
   //double total_seq_rpc_time=0.0; //sums up times used for RPC_process_related_viewgrams
 
-
-  for (int segment_num = min_segment_num; segment_num <= max_segment_num; segment_num++)
+#ifdef STIR_OPENMP
+  std::vector< shared_ptr<DiscretisedDensity<3,float> > > local_output_image_sptrs;
+  std::vector<double> local_log_likelihoods;
+  std::vector<int> local_counts, local_count2s;
+#pragma omp parallel shared(local_output_image_sptrs, local_log_likelihoods, local_counts, local_count2s)
+#endif
+  // start of threaded section if openmp
+  { 
+#ifdef STIR_OPENMP
+#pragma omp single
     {
+      std::cerr << "Starting loop with " << omp_get_num_threads() << " threads\n"; 
+      local_output_image_sptrs.resize(omp_get_max_threads(), shared_ptr<DiscretisedDensity<3,float> >());
+      local_log_likelihoods.resize(omp_get_max_threads(), 0.);
+      local_counts.resize(omp_get_max_threads(), 0);
+      local_count2s.resize(omp_get_max_threads(), 0);
+    }
+#pragma omp for schedule(runtime)  
+#endif
+    // note: older versions of openmp need an int as loop
+    for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+      {
+        const ViewSegmentNumbers view_segment_num=vs_nums_to_process[i];
 
-      CPUTimer segment_timer;
-      segment_timer.start();
-            
-      int count=0, count2=0;
+        shared_ptr<RelatedViewgrams<float> > y;
+        shared_ptr<RelatedViewgrams<float> > additive_binwise_correction_viewgrams;
+        shared_ptr<RelatedViewgrams<float> > mult_viewgrams_sptr;
 
-      // boolean used to see when to write diagnostic message
-      bool first_view_in_segment = true;
-
-      for (int view = proj_dat_ptr->get_min_view_num() + subset_num; 
-           view <= proj_dat_ptr->get_max_view_num(); 
-           view += num_subsets)
-        {
-          const ViewSegmentNumbers view_segment_num(view, segment_num);
-        
-          if (!symmetries_ptr->is_basic(view_segment_num))
-            continue;
-
-          if (first_view_in_segment)
-            {
-              info(boost::format("Starting to process segment %1% (and symmetry related segments)") % segment_num);
-              first_view_in_segment = false;
-            }
-    
-          shared_ptr<RelatedViewgrams<float> > y;
-          shared_ptr<RelatedViewgrams<float> > additive_binwise_correction_viewgrams;
-          shared_ptr<RelatedViewgrams<float> > mult_viewgrams_sptr;
-
-          get_viewgrams(y, additive_binwise_correction_viewgrams, mult_viewgrams_sptr,
-                        proj_dat_ptr, read_from_proj_dat,
-                        zero_seg0_end_planes,
-                        binwise_correction,
-                        normalisation_sptr, start_time_of_frame, end_time_of_frame,
-                        symmetries_ptr, view_segment_num);
-      
+        get_viewgrams(y, additive_binwise_correction_viewgrams, mult_viewgrams_sptr,
+                      proj_dat_ptr, read_from_proj_dat,
+                      zero_seg0_end_planes,
+                      binwise_correction,
+                      normalisation_sptr, start_time_of_frame, end_time_of_frame,
+                      symmetries_ptr, view_segment_num);
 #ifdef STIR_MPI     
 
           //send viewgrams, the slave will immediatelly start calculation
@@ -429,47 +462,77 @@ void distributable_computation(
               count2+=int_values[1];
             }
 #else // STIR_MPI
+
+#ifdef STIR_OPENMP
+          const int thread_num=omp_get_thread_num();
+          info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d")
+               % thread_num % omp_get_num_threads()
+               % view_segment_num.segment_num() % view_segment_num.view_num());
+#else
+          info(boost::format("calculating segment_num: %d, view_num: %d")
+               % view_segment_num.segment_num() % view_segment_num.view_num());
+#endif
+#ifdef STIR_OPENMP
+          if (output_image_ptr != NULL)
+            {
+              if(is_null_ptr(local_output_image_sptrs[thread_num]))
+                local_output_image_sptrs[thread_num].reset(output_image_ptr->get_empty_copy());
+            }
+            
+          RPC_process_related_viewgrams(forward_projector_ptr,
+                                        back_projector_ptr,
+                                        local_output_image_sptrs[thread_num].get(), input_image_ptr, y.get(), 
+                                        local_counts[thread_num], local_count2s[thread_num], 
+                                        is_null_ptr(log_likelihood_ptr)? NULL : &local_log_likelihoods[thread_num], 
+                                        additive_binwise_correction_viewgrams.get(),
+                                        mult_viewgrams_sptr.get());
+            
+#else
           RPC_process_related_viewgrams(forward_projector_ptr,
                                         back_projector_ptr,
                                         output_image_ptr, input_image_ptr, y.get(), count, count2, log_likelihood_ptr, 
                                         additive_binwise_correction_viewgrams.get(),
                                         mult_viewgrams_sptr.get());
-                                    
-#endif
-        }
-#ifdef STIR_MPI
-      //in case of the last segment, receive remaining available notifications
-      if (segment_num == max_segment_num)
-        {
-          while(working_slaves_count>0)
-            {
-              int int_values[2];
-              const MPI_Status status=distributed::receive_int_values(int_values, 2, AVAILABLE_NOTIFICATION_TAG);
-              working_slaves_count--;
-            
-              //reduce count values
-              count+=int_values[0];
-              count2+=int_values[1];
-            }
-        }
-#endif
-
-      if (first_view_in_segment != true) // only write message when at least one view was processed
-        {
-          // TODO this message relies on knowledge of count, count2 which might be inappropriate for 
-          // the call-back function
-#ifndef STIR_NO_RUNNING_LOG
-          info(boost::format("Number of (cancelled) singularities: %1%\nNumber of (cancelled) negative numerators: %2%\nSegment %3%: %4%secs") % count % count2 % segment_num % segment_timer.value());
-#endif
-        }
-    }
+#endif // OPENMP                                    
+#endif // MPI
+      } // end of for-loop 
+  } // end of parallel section of openmp
   
-#ifndef STIR_MPI  
-  //printf("Total Iteration Wall clock time used for RPC processing: %.6lf seconds\n", total_seq_rpc_time);
+#ifdef STIR_OPENMP
+  // "reduce" data constructed by threads
+  {
+    if (output_image_ptr != NULL)
+      {
+        for (int i=0; i<static_cast<int>(local_output_image_sptrs.size()); ++i)
+	  if(!is_null_ptr(local_output_image_sptrs[i])) // only accumulate if a thread filled something in
+	    *output_image_ptr += *(local_output_image_sptrs[i]);
+      }
+    if (log_likelihood_ptr != NULL)
+      {
+        for (int i=0; i<static_cast<int>(local_log_likelihoods.size()); ++i)
+	  if(!is_null_ptr(local_output_image_sptrs[i])) // only accumulate if a thread filled something in
+	    *log_likelihood_ptr += local_log_likelihoods[i];
+      }
+    count += std::accumulate(local_counts.begin(), local_counts.end(), 0);
+    count2 += std::accumulate(local_count2s.begin(), local_count2s.end(), 0);
+  }
 #endif
-
 #ifdef STIR_MPI
   //end of iteration processing
+
+  // receive remaining available notifications
+  {
+    while(working_slaves_count>0)
+      {
+        int int_values[2];
+        const MPI_Status status=distributed::receive_int_values(int_values, 2, AVAILABLE_NOTIFICATION_TAG);
+        working_slaves_count--;
+            
+        //reduce count values
+        count+=int_values[0];
+        count2+=int_values[1];
+      }
+  }
   distributed::first_iteration=false;   
         
   //broadcast end of iteration notification
@@ -498,8 +561,18 @@ void distributable_computation(
       printf("Average time used by slaves for RPC processing: %f secs\n", distributed::total_rpc_time);
       distributed::total_rpc_time_slaves+=receive;
     }
-        
+ 
 #endif
+  {
+    // TODO this message relies on knowledge of count, count2 which might be inappropriate for 
+    // the call-back function
+    info(boost::format("Number of (cancelled) singularities: %1%\nNumber of (cancelled) negative numerators: %2%") % count % count2);
+  }
+
+  CPU_timer.stop();
+  wall_clock_timer.stop();
+  info(boost::format("Computation times for distributable_computation, CPU %1%s, wall-clock %2%s") 
+       % CPU_timer.value() % wall_clock_timer.value());
 }
 
 END_NAMESPACE_STIR

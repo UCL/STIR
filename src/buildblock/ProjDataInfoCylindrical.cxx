@@ -314,8 +314,7 @@ get_ring_pair_for_segment_axial_pos_num(int& ring1,
   if (get_min_ring_difference(segment_num) != get_max_ring_difference(segment_num))
     error("ProjDataInfoCylindrical::get_ring_pair_for_segment_axial_pos_num does not work for data with axial compression");
 
-  if (!ring_diff_arrays_computed)
-    initialise_ring_diff_arrays();
+  this->initialise_ring_diff_arrays_if_not_done_yet();
 
   const int ring_diff = get_max_ring_difference(segment_num);
   const int ring1_plus_ring2= segment_axial_pos_to_ring1_plus_ring2[segment_num][axial_pos_num];

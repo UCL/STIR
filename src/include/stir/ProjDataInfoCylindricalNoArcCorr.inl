@@ -34,6 +34,54 @@
 
 START_NAMESPACE_STIR
 
+void 
+ProjDataInfoCylindricalNoArcCorr::
+initialise_uncompressed_view_tangpos_to_det1det2_if_not_done_yet() const
+{
+  // for efficiency reasons, use "Double-Checked-Locking(DCL) pattern" with OpenMP atomic operation
+  // OpenMP v3.1 or later required
+  // thanks to yohjp: http://stackoverflow.com/questions/27975737/how-to-handle-cached-data-structures-with-multi-threading-e-g-openmp
+#if defined(STIR_OPENMP) &&  _OPENMP >=201012
+  bool initialised;
+#pragma omp atomic read
+  initialised = uncompressed_view_tangpos_to_det1det2_initialised;
+
+  if (!initialised)
+#endif
+    {
+#if defined(STIR_OPENMP)
+#pragma omp critical(PROJDATAINFOCYLINDRICALNOARCCORR_VIEWTANGPOS_TO_DETS)
+#endif
+          { 
+            if (!uncompressed_view_tangpos_to_det1det2_initialised)
+              initialise_uncompressed_view_tangpos_to_det1det2();
+          }
+    }
+}
+
+void 
+ProjDataInfoCylindricalNoArcCorr::
+initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet() const
+{
+  // as above
+#if defined(STIR_OPENMP) &&  _OPENMP >=201012
+  bool initialised;
+#pragma omp atomic read
+  initialised = det1det2_to_uncompressed_view_tangpos_initialised;
+
+  if (!initialised)
+#endif
+    {
+#if defined(STIR_OPENMP)
+#pragma omp critical(PROJDATAINFOCYLINDRICALNOARCCORR_DETS_TO_VIEWTANGPOS)
+#endif
+          { 
+            if (!det1det2_to_uncompressed_view_tangpos_initialised)
+              initialise_det1det2_to_uncompressed_view_tangpos();
+          }
+    }
+}
+
 float
 ProjDataInfoCylindricalNoArcCorr::
 get_s(const Bin& bin) const
@@ -57,8 +105,7 @@ get_det_num_pair_for_view_tangential_pos_num(
 					     const int tang_pos_num) const
 {
   assert(get_view_mashing_factor() == 1);
-  if (!uncompressed_view_tangpos_to_det1det2_initialised)
-    initialise_uncompressed_view_tangpos_to_det1det2();
+  this->initialise_uncompressed_view_tangpos_to_det1det2_if_not_done_yet();
 
   det1_num = uncompressed_view_tangpos_to_det1det2[view_num][tang_pos_num].det1_num;
   det2_num = uncompressed_view_tangpos_to_det1det2[view_num][tang_pos_num].det2_num;
@@ -73,8 +120,7 @@ get_view_tangential_pos_num_for_det_num_pair(int& view_num,
 					     const int det2_num) const
 {
   assert(det1_num!=det2_num);
-  if (!det1det2_to_uncompressed_view_tangpos_initialised)
-    initialise_det1det2_to_uncompressed_view_tangpos();
+  this->initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet();
 
   view_num = 
     det1det2_to_uncompressed_view_tangpos[det1_num][det2_num].view_num/get_view_mashing_factor();

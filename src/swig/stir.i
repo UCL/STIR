@@ -37,7 +37,8 @@
 #define __stir_error_H__
 #endif
 
- 
+#include "stir/num_threads.h"
+
  #include "stir/Succeeded.h"
  #include "stir/DetectionPosition.h"
  #include "stir/Scanner.h"
@@ -529,6 +530,8 @@ namespace std {
 %enddef
 
  // Finally, start with STIR specific definitions
+
+%include "stir/num_threads.h"
 
 #if 1
 // #define used below to check what to do

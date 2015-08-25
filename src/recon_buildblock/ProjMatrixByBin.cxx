@@ -12,7 +12,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2015 University College London
 
     This file is part of STIR.
 
@@ -90,7 +90,20 @@ void
 ProjMatrixByBin::
 clear_cache() STIR_MUTABLE_CONST
 {
-  this->cache_collection.clear();
+#ifdef STIR_OPENMP
+#pragma omp critical(PROJMATRIXBYBINCLEARCACHE)
+#endif
+  for (int i=this->cache_collection.get_min_index();
+       i<=this->cache_collection.get_max_index();
+       ++i)
+    {
+      for (int j=this->cache_collection[i].get_min_index();
+           j<=this->cache_collection[i].get_max_index();
+           ++j)
+        {
+          this->cache_collection[i][j].clear();
+        }
+    }
 }
 
 /*
@@ -103,6 +116,76 @@ reserve_num_elements_in_cache(const std::size_t num_elems)
   cache_collection.rehash(ceil(num_elems / cache_collection.max_load_factor()));
 }
 */
+
+void
+ProjMatrixByBin::
+set_up(		 
+    const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
+    const shared_ptr<DiscretisedDensity<3,float> >& /*density_info_ptr*/ // TODO should be Info only
+    )
+{
+  const int min_view_num = proj_data_info_sptr->get_min_view_num();
+  const int max_view_num = proj_data_info_sptr->get_max_view_num();
+  const int min_segment_num = proj_data_info_sptr->get_min_segment_num();
+  const int max_segment_num = proj_data_info_sptr->get_max_segment_num();
+
+  this->cache_collection.recycle();
+  this->cache_collection.resize(min_view_num, max_view_num);
+#ifdef STIR_OPENMP
+  this->cache_locks.recycle();
+  this->cache_locks.resize(min_view_num, max_view_num);
+#endif
+
+  for (int view_num=min_view_num; view_num<=max_view_num; ++view_num)
+    {
+      this->cache_collection[view_num].resize(min_segment_num, max_segment_num);
+#ifdef STIR_OPENMP
+      this->cache_locks[view_num].resize(min_segment_num, max_segment_num);
+      for (int seg_num = min_segment_num; seg_num <=max_segment_num; ++seg_num)
+        omp_init_lock(&this->cache_locks[view_num][seg_num]);
+#endif
+    }
+}
+
+
+/*!
+    \warning Preconditions
+    <li>abs(axial_pos_num) fits in 17 bits
+    <li>abs(tangential_pos_num) fits in 11 bits   
+  */
+ProjMatrixByBin::CacheKey
+ProjMatrixByBin::cache_key(const Bin& bin) const
+{
+  assert(static_cast<boost::uint32_t>(abs(bin.axial_pos_num())) < (static_cast<boost::uint32_t>(1)<<18));
+  assert(abs(bin.tangential_pos_num()) < (1<<12));
+  return (CacheKey)( 
+                    (static_cast<boost::uint32_t>(bin.axial_pos_num()>=0?0:1) << 31)
+                    | (static_cast<boost::uint32_t>(bin.axial_pos_num())<<13) 
+                    | (static_cast<boost::uint32_t>(bin.tangential_pos_num()>=0?0:1) << 12)
+                    |  static_cast<boost::uint32_t>(abs(bin.tangential_pos_num())) );    	
+} 
+
+
+void  
+ProjMatrixByBin::
+cache_proj_matrix_elems_for_one_bin(
+                                    const ProjMatrixElemsForOneBin& probabilities) STIR_MUTABLE_CONST
+{ 
+  if ( cache_disabled ) return;
+  
+  //std::cerr << "cached lor size " << probabilities.size() << " capacity " << probabilities.capacity() << std::endl;    
+  // insert probabilities into the collection	
+  const Bin bin = probabilities.get_bin();
+#ifdef STIR_OPENMP
+  omp_set_lock(&this->cache_locks[bin.view_num()][bin.segment_num()]);
+#endif
+  cache_collection[bin.view_num()][bin.segment_num()].insert(MapProjMatrixElemsForOneBin::value_type( cache_key(bin), 
+                                                                                                      probabilities));  
+#ifdef STIR_OPENMP
+  omp_unset_lock(&this->cache_locks[bin.view_num()][bin.segment_num()]);
+#endif
+}
+
 
 Succeeded 
 ProjMatrixByBin::
@@ -123,19 +206,34 @@ get_cached_proj_matrix_elems_for_one_bin(
   }
 #endif         
   
-	 
-  const_MapProjMatrixElemsForOneBinIterator  pos = 
-    cache_collection.find(cache_key( bin));
+  bool found=false;
+#ifdef STIR_OPENMP
+  omp_set_lock(&this->cache_locks[bin.view_num()][bin.segment_num()]);
+#endif
+
+  {
+    const_MapProjMatrixElemsForOneBinIterator pos = 
+      cache_collection[bin.view_num()][bin.segment_num()].find(cache_key( bin));
   
-  if ( pos != cache_collection. end())
-  { 
-    //cout << Key << " =========>> entry found in cache " <<  endl;
-    probabilities = pos->second;	 	                    
+    if ( pos != cache_collection[bin.view_num()][bin.segment_num()]. end())
+      { 
+	//cout << Key << " =========>> entry found in cache " <<  endl;
+	probabilities = pos->second;
+	// note: cannot return from inside an OPENMP critical section
+	//return Succeeded::yes;	
+	found=true;
+      } 
+  }
+#ifdef STIR_OPENMP
+  omp_unset_lock(&this->cache_locks[bin.view_num()][bin.segment_num()]);
+#endif
+  if (found)
     return Succeeded::yes;	
-  } 
-  
-  //cout << " This entry  is not in the cache :" << Key << endl;	
-  return Succeeded::no;
+  else
+    {
+      //cout << " This entry  is not in the cache :" << Key << endl;	
+      return Succeeded::no;
+    }
 }
 
 

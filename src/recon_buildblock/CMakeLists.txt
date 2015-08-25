@@ -41,6 +41,7 @@ set(${dir_LIB_SOURCES}
 	DataSymmetriesForBins_PET_CartesianGrid 
 	SymmetryOperation 
 	SymmetryOperations_PET_CartesianGrid 
+        find_basic_vs_nums_in_subset
 	ProjMatrixElemsForOneBin 
 	ProjMatrixElemsForOneDensel 
 	ProjMatrixByBin 
