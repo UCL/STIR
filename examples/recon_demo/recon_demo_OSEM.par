@@ -13,8 +13,7 @@ end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 initial estimate := init.hv
 output filename prefix := my_test_image
 
-number of subsets:= 12
-start at subset:= 1
+number of subsets:= 4
 number of subiterations:= 1
 save estimates at subiteration intervals:= 1
 
