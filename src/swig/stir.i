@@ -279,9 +279,17 @@
 // include standard swig support for some bits of the STL (i.e. standard C++ lib)
 %include <stl.i>
 %include <std_list.i>
+%ignore *::begin;
+%ignore *::begin_all;
+%ignore *::end;
+%ignore *::end_all;
 #ifdef STIRMATLAB
 %ignore *::operator>>;
 %ignore *::operator<<;
+%ignore *::operator+=;
+%ignore *::operator-=;
+%ignore *::operator*=;
+%ignore *::operator/=;
 #endif
 
 #ifndef SWIGOCTAVE
