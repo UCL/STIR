@@ -224,13 +224,30 @@ set_up(shared_ptr<TargetT> const& target_sptr)
           // read from file
           try 
             {
+              if (this->subsensitivity_filenames.empty())
+                {
+                  warning("'subset sensitivity filenames' is empty. You need to set this before using it.");
+                  return Succeeded::no;
+                }
+
               if (this->get_use_subset_sensitivities())
                 {
                   // read subsensitivies
                   for (int subset=0; subset<this->get_num_subsets(); ++subset)
                     {
-                      const std::string current_sensitivity_filename =
-                        boost::str(boost::format(this->subsensitivity_filenames) % subset);
+                      std::string current_sensitivity_filename;
+                      try
+                        {
+                          current_sensitivity_filename =
+                            boost::str(boost::format(this->subsensitivity_filenames) % subset);
+                        }
+                      catch (std::exception& e)
+                        {
+                          warning(boost::format("Error using 'subset sensitivity filenames' pattern (which is set to '%1%'). "
+                                                "Check syntax for boost::format. Error is:\n%2%") %
+                                  this->subsensitivity_filenames % e.what());
+                          return Succeeded::no;
+                        }
                       info(boost::format("Reading sensitivity from '%1%'") % current_sensitivity_filename);
 
                       this->subsensitivity_sptrs[subset] = 
