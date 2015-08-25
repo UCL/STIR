@@ -47,9 +47,7 @@
 #ifdef STIR_OPENMP
 #include <omp.h>
 #endif
-
-using std::cerr;
-using std::endl;
+#include "stir/num_threads.h"
 
 START_NAMESPACE_STIR
 
@@ -224,7 +222,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	(*proj_data_ptr->get_proj_data_info_ptr());
 
       //  full_log << "SSRB combining " << num_segments_to_combine 
-      //           << " segments in input file to a new segment 0\n" << endl; 
+      //           << " segments in input file to a new segment 0\n" << std::endl; 
 
       shared_ptr<ProjDataInfo> 
 	ssrb_info_sptr(SSRB(proj_data_info_cyl, 
@@ -308,21 +306,8 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(back_projector_sptr->get_symmetries_used()->clone());
     
+  set_num_threads();
 #ifdef STIR_OPENMP
-  if (getenv("OMP_NUM_THREADS")==NULL) 
-    {
-      omp_set_num_threads(omp_get_num_procs());
-      if (omp_get_num_procs()==1) 
-	warning("Using OpenMP with #processors=1 produces parallel overhead. You should compile without using USE_OPENMP=TRUE.");
-      info(boost::format("Using OpenMP-version of FBP2D with thread-count = processor-count (=%1%).") % omp_get_num_procs());
-    }
-  else 
-    {
-      info(boost::format("Using OpenMP-version of FBP2D with %1% threads on %2% processors.") % getenv("OMP_NUM_THREADS") % omp_get_num_procs());
-      if (atoi(getenv("OMP_NUM_THREADS"))==1) 
-	warning("Using OpenMP with OMP_NUM_THREADS=1 produces parallel overhead. Use more threads or compile without using USE_OPENMP=TRUE.");
-    }
-  info("Define number of threads by setting OMP_NUM_THREADS environment variable, i.e. \"export OMP_NUM_THREADS=<num_threads>\"");
   shared_ptr<DiscretisedDensity<3,float> > empty_density_ptr(density_ptr->clone());
 #endif
 

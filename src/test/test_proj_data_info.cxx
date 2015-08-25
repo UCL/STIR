@@ -37,6 +37,7 @@
 #include "stir/Bin.h"
 #include "stir/LORCoordinates.h"
 #include "stir/round.h"
+#include "stir/num_threads.h"
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
@@ -920,6 +921,8 @@ USING_NAMESPACE_STIR
 
 int main()
 {
+  set_default_num_threads();
+
   ProjDataInfoCylindricalArcCorrTests tests;
   tests.run_tests();
   ProjDataInfoCylindricalNoArcCorrTests tests1;

@@ -71,6 +71,7 @@
 #  endif
 #include <omp.h>
 #endif
+#include "stir/num_threads.h"
 
 START_NAMESPACE_STIR
 
@@ -84,23 +85,12 @@ void setup_distributable_computation(
                                      const bool zero_seg0_end_planes,
                                      const bool distributed_cache_enabled)
 {
+  set_num_threads();
 #ifdef STIR_OPENMP
-  if (getenv("OMP_NUM_THREADS")==NULL) 
-    {
-      omp_set_num_threads(omp_get_num_procs());
-      if (omp_get_num_procs()==1) 
-	warning("Using OpenMP with #processors=1 produces parallel overhead. You should compile without using USE_OPENMP=TRUE.");
-      info(boost::format("Using OpenMP-version of distributable with thread-count = processor-count (=%d)") % omp_get_num_procs());
-    }
-  else 
-    {
-      info(boost::format("Using OpenMP-version of distributable_computation with %d threahds on %d processors.")
-           % getenv("OMP_NUM_THREADS") % omp_get_num_procs());
-      if (atoi(getenv("OMP_NUM_THREADS"))==1) 
-	warning("Using OpenMP with OMP_NUM_THREADS=1 produces parallel overhead. Use more threads or compile without using USE_OPENMP=TRUE.");
-    }
-      info("Define number of threads by setting OMP_NUM_THREADS environment variable, i.e. \"export OMP_NUM_THREADS=<num_threads>\"");
+  info(boost::format("Using distributable_computation with %d threads on %d processors.")
+       % omp_get_max_threads() % omp_get_num_procs());
 #endif
+
 #ifdef STIR_MPI
   distributed::first_iteration = true;
          
@@ -425,11 +415,11 @@ void distributable_computation(
 #ifdef STIR_OPENMP
 #pragma omp single
     {
-      //std::cerr << "Starting loop with " << omp_get_num_threads() << " threads\n"; 
-      local_output_image_sptrs.resize(omp_get_num_threads(), shared_ptr<DiscretisedDensity<3,float> >());
-      local_log_likelihoods.resize(omp_get_num_threads(), 0.);
-      local_counts.resize(omp_get_num_threads(), 0);
-      local_count2s.resize(omp_get_num_threads(), 0);
+      std::cerr << "Starting loop with " << omp_get_num_threads() << " threads\n"; 
+      local_output_image_sptrs.resize(omp_get_max_threads(), shared_ptr<DiscretisedDensity<3,float> >());
+      local_log_likelihoods.resize(omp_get_max_threads(), 0.);
+      local_counts.resize(omp_get_max_threads(), 0);
+      local_count2s.resize(omp_get_max_threads(), 0);
     }
 #pragma omp for schedule(runtime)  
 #endif
@@ -476,7 +466,7 @@ void distributable_computation(
 #ifdef STIR_OPENMP
           const int thread_num=omp_get_thread_num();
           info(boost::format("Thread %d/%d calculating segment_num: %d, view_num: %d")
-               % thread_num %  local_output_image_sptrs.size()
+               % thread_num % omp_get_num_threads()
                % view_segment_num.segment_num() % view_segment_num.view_num());
 #else
           info(boost::format("calculating segment_num: %d, view_num: %d")
