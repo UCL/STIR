@@ -711,15 +711,15 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
             // note: for-loop writing somewhat awkwardly as openmp needs int variables for the loop
 #pragma omp parallel for firstprivate(det_pos_pair)
 #endif
-          for (unsigned tangential_coord1 = 0; 
-               tangential_coord1 < (unsigned)num_detectors; 
+          for (int tangential_coord1 = 0; 
+               tangential_coord1 < num_detectors; 
                tangential_coord1++)
             for (det_pos_pair.pos2().tangential_coord() = 0; 
                  det_pos_pair.pos2().tangential_coord() < (unsigned)num_detectors;
                  det_pos_pair.pos2().tangential_coord()++)
 	      {
                 // set from for-loop variable
-                det_pos_pair.pos1().tangential_coord() = tangential_coord1;
+                det_pos_pair.pos1().tangential_coord() = (unsigned)tangential_coord1;
 		// skip case of equal detector numbers (as this is either a singular LOR)
 		// or an LOR parallel to the scanner axis
 		if (det_pos_pair.pos1().tangential_coord() == det_pos_pair.pos2().tangential_coord())
