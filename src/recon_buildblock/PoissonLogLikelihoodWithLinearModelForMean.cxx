@@ -224,14 +224,13 @@ set_up(shared_ptr<TargetT> const& target_sptr)
           // read from file
           try 
             {
-              if (this->subsensitivity_filenames.empty())
-                {
-                  warning("'subset sensitivity filenames' is empty. You need to set this before using it.");
-                  return Succeeded::no;
-                }
-
               if (this->get_use_subset_sensitivities())
                 {
+		  if (this->subsensitivity_filenames.empty())
+		    {
+		      warning("'subset sensitivity filenames' is empty. You need to set this before using it.");
+		      return Succeeded::no;
+		    }
                   // read subsensitivies
                   for (int subset=0; subset<this->get_num_subsets(); ++subset)
                     {
@@ -264,6 +263,11 @@ set_up(shared_ptr<TargetT> const& target_sptr)
                 }
               else
                 {
+		  if (this->sensitivity_filename.empty())
+		    {
+		      warning("'sensitivity filename' is empty. You need to set this before using it.");
+		      return Succeeded::no;
+		    }
                   // reading single sensitivity
                   const std::string current_sensitivity_filename =
                     this->sensitivity_filename;
