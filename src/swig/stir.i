@@ -84,6 +84,8 @@
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
 #include <boost/iterator/reverse_iterator.hpp>
+#include <boost/format.hpp>
+#include <stdexcept>
 
    // TODO need this (bug in swig)
    // this bug occurs (only?) when using "%template(name) someclass;" inside the namespace
@@ -168,8 +170,7 @@
          a.fill(static_cast<elemT>(*data_ptr));
        } else
        { 
-         mexWarnMsgIdAndTxt("stir:array","currently only supporting double or single arrays for filling a stir array");
-         mexErrMsgTxt("Exiting");
+         throw std::runtime_error("currently only supporting double or single arrays for filling a stir array");
        }
      }
 
@@ -191,10 +192,8 @@
        }
        if (matlab_num_dims > static_cast<mwSize>(num_dimensions))
        {
-         mexWarnMsgIdAndTxt("stir:array",
-                            "number of dimensions in matlab array is incorrect for constructing a stir array of dimension %d", 
-                            num_dimensions); 
-         mexErrMsgTxt("Exiting");
+         throw std::runtime_error(boost::str(boost::format("number of dimensions in matlab array is incorrect for constructing a stir array of dimension %d") % 
+                                             num_dimensions)); 
        }
        if (do_resize)
        {
@@ -212,16 +211,13 @@
          const BasicCoordinate<num_dimensions,int> sizes=maxind-minind+1;
          if (!std::equal(m_sizes, m_sizes+matlab_num_dims, boost::make_reverse_iterator(sizes.end())))
          {
-           mexWarnMsgIdAndTxt("stir:array","sizes of matlab array incompatible with stir array");
-           mexErrMsgTxt("Exiting");
+           throw std::runtime_error("sizes of matlab array incompatible with stir array");
          }
-         for (int d=1; d<= num_dimensions-matlab_num_dims; ++d)
+         for (int d=1; d<= num_dimensions-static_cast<int>(matlab_num_dims); ++d)
          {
            if (sizes[d]!=1)
            {
-             mexWarnMsgIdAndTxt("stir:array",
-                               "sizes of first dimensions of the stir array have to be 1 if initialising from a lower dimensional matlab array");
-             mexErrMsgTxt("Exiting");
+             throw std::runtime_error("sizes of first dimensions of the stir array have to be 1 if initialising from a lower dimensional matlab array");
            }
          }
        }       
@@ -235,8 +231,7 @@
          std::copy(data_ptr, data_ptr+a.size_all(), a.begin_all());
        } else
        { 
-         mexWarnMsgIdAndTxt("stir:array","currently only supporting double or single arrays for constructing a stir array");
-         mexErrMsgTxt("Exiting");
+         throw std::runtime_error("currently only supporting double or single arrays for constructing a stir array");
        }
      }     
 #endif
