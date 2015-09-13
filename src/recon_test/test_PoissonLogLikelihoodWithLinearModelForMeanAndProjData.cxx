@@ -148,7 +148,7 @@ run_tests_for_objective_function(GeneralisedObjectiveFunction<PoissonLogLikeliho
         this->check_if_equal(gradient_at_iter, *gradient_iter, "gradient");
       ++target_iter; ++ gradient_iter;
     }
-  if (~testOK)
+  if (!testOK)
     {
       info("Writing diagnostic files gradient.hv, numerical_gradient.hv");
       write_to_file("gradient.hv", *gradient_sptr);
@@ -220,7 +220,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
       static base_generator_type generator(boost::uint32_t(42));
       static boost::uniform_01<base_generator_type> random01(generator);
       for (target_type::full_iterator iter=density_sptr->begin_all(); iter!=density_sptr->end_all(); ++iter)
-        *iter = random01();
+        *iter = static_cast<float>(random01());
 
     }
   else
