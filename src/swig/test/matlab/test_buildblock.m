@@ -1,6 +1,6 @@
 %% Test file for STIR building blocks from MATLAB
 
-%    Copyright (C) 2013-2014 University College London
+%    Copyright (C) 2013-2015 University College London
 %    This file is part of STIR.
 %
 %    This file is free software; you can redistribute it and/or modify
@@ -20,10 +20,22 @@
 %addpath('C:\Users\kris\Documents\devel\UCL-STIR\src\swig')
 %addpath('~/devel/build/UCL-STIR/gcc-4.8.1-debug/src/swig')
 % if there's no assertion errors, everything is fine
+%%
+fprintf(['You will see 4 warnings about arrays and incompatible sizes, even if the test works.\n'...
+    'This is a defect of current SWIG. Ignore.\n']);
+%% basic tests on coordinates
+c=stir.make_FloatCoordinate(3.3,4.4,5);
+assert(abs(c(1)-3.3)<1e-5)
+assert(c(3)==5)
+cm=c.to_matlab();
+assert(cm(3)==5);
+c.fill(6)
+assert(c(2)==6)
+c.fill([1;2;3])
+assert(c(1)==1)
+
 %% basic tests on 1D arrays
 a=stir.FloatArray1D(3,4);
-% currently returns nothing useful (p_float)
-tmp=a.at(3);
 tmp=a.get_length();
 assert(tmp==2)
 b=stir.IndexRange1D(2,6);
@@ -42,8 +54,8 @@ assert(tmp==5)
 %%
 % tests filling with vectors
 a.fill([2; 3])
-assert(a.getel(3)==2)
-assert(a.getel(4)==3)
+assert(a(3)==2)
+assert(a(4)==3)
 try
   a.fill([2; 3;4])
   assert(false, 'fill with wrong size should have failed')
@@ -79,10 +91,10 @@ assert(a.find_max()==0);
 tmp=[1 2; 3 4; 5 6];
 a=stir.FloatArray2D(tmp);
 % note complicated correspondence if indexing (reverse-order and 0-based vs 1-based)
-assert(a.getel(stir.make_IntCoordinate(1,2)) == tmp(3,2))
+assert(a(stir.make_IntCoordinate(1,2)) == tmp(3,2))
 % test filling
 a.fill(tmp+1)
-assert(a.getel(stir.make_IntCoordinate(1,2)) == tmp(3,2)+1)
+assert(a(stir.make_IntCoordinate(1,2)) == tmp(3,2)+1)
 tmp2=a.to_matlab();
 assert(isequal(tmp2,tmp+1))
 % test fill with wrong size
@@ -102,19 +114,19 @@ c=stir.make_IntCoordinate(1,3);
 b=stir.IndexRange2D(c);
 a=stir.FloatArray2D(b);
 a.fill([1;2;3]);
-assert(a.getel(stir.make_IntCoordinate(0,1))==2)
+assert(a(stir.make_IntCoordinate(0,1))==2)
 
 %% test conversion of arrays in 3D
 tmp=[1 2 3 4; 5 6 7 8; 9 10 11 12];
 tmp(:,:,2)=[1 2 3 4; 5 6 7 8; 9 10 11 12]+100;
 a=stir.FloatArray3D(tmp);
-assert(a.getel(stir.make_IntCoordinate(1,3,2)) == tmp(3,4,2))
+assert(a(stir.make_IntCoordinate(1,3,2)) == tmp(3,4,2))
 assert(isequal(tmp, a.to_matlab()));
 % check if it's possible to create a FloatArray3D from a 2D matlab array
 % (i.e. single slice)
 tmp=[1 2 3 4; 5 6 7 8; 9 10 11 12];
 a=stir.FloatArray3D(tmp);
-assert(a.getel(stir.make_IntCoordinate(0,1,2)) == tmp(3,2))
+assert(a(stir.make_IntCoordinate(0,1,2)) == tmp(3,2))
 assert(isequal(tmp, a.to_matlab()));
 %% basic tests on FloatVoxelsOnCartesianGrid
 origin=stir.FloatCartesianCoordinate3D(0,1,6);
@@ -127,10 +139,10 @@ org= image.get_origin();
 
 image.fill(2);
 ind=stir.make_IntCoordinate(3,4,5);
-tmp=image.getel(ind);
+tmp=image(ind);
 assert(tmp==2)
-image.setel(ind,6);
-tmp=image.getel(ind);
+image.paren_asgn(ind,6);
+tmp=image(ind);
 assert(tmp==6)
 %% simple test on Scanner
 s=stir.Scanner.get_scanner_from_name('ECAT 962');

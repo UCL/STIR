@@ -76,6 +76,7 @@
 
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+#include "stir/OSSPS/OSSPSReconstruction.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
@@ -234,6 +235,77 @@
          throw std::runtime_error("currently only supporting double or single arrays for constructing a stir array");
        }
      }     
+
+
+     //////////// same for Coordinate
+     // convert stir::BasicCoordinate to matlab (currently always converting to double)
+     template <int num_dimensions, typename elemT>
+     mxArray * BasicCoordinate_to_matlab(const stir::BasicCoordinate<num_dimensions, elemT>& a)
+     {
+       mwSize dims[2];
+       dims[0]=mwSize(num_dimensions);
+       dims[1]=mwSize(1);
+       mxArray *pm = mxCreateNumericArray(mwSize(2), dims, mxDOUBLE_CLASS, mxREAL);
+       double * data_ptr = mxGetPr(pm);
+       std::copy(a.begin(), a.end(), data_ptr);
+       return pm;
+     }
+
+     template <int num_dimensions, typename elemT>
+     void fill_BasicCoordinate_from_matlab_scalar(stir::BasicCoordinate<num_dimensions, elemT>& a, const mxArray *pm)
+     {
+       if (mxIsDouble(pm))
+       {
+         double const* data_ptr = mxGetPr(pm);
+         a.fill(static_cast<elemT>(*data_ptr));
+       } else if (mxIsSingle(pm))
+       {
+         float const* data_ptr = (float *)mxGetData(pm);
+         a.fill(static_cast<elemT>(*data_ptr));
+       } else
+       { 
+         throw std::runtime_error("currently only supporting double or single arrays for filling a stir coordinate");
+       }
+     }
+
+     template <int num_dimensions, typename elemT>
+     void fill_BasicCoordinate_from_matlab(stir::BasicCoordinate<num_dimensions, elemT>& a, const mxArray *pm)
+     {
+       mwSize matlab_num_dims = mxGetNumberOfDimensions(pm);
+       const mwSize * m_sizes = mxGetDimensions(pm);
+       // matlab represents scalars/vectors as a matrix, so let's check this first
+       if (matlab_num_dims == static_cast<mwSize>(2) && m_sizes[1]==static_cast<mwSize>(1))
+       {
+         if (m_sizes[0] ==static_cast<mwSize>(1))
+         {
+           // it's a scalar
+           fill_BasicCoordinate_from_matlab_scalar(a, pm);
+           return;
+         }
+         matlab_num_dims=static_cast<mwSize>(1); // set it to a 1-dimensional array
+       }
+       if (matlab_num_dims != static_cast<mwSize>(1))
+       {
+         throw std::runtime_error(boost::str(boost::format("number of dimensions %d of matlab array is incorrect for constructing a stir coordinate of dimension %d (expecting a column vector)") % 
+                                             matlab_num_dims % num_dimensions)); 
+       }
+       if (m_sizes[0]!=static_cast<mwSize>(num_dimensions))
+       {
+	 throw std::runtime_error("length of matlab array incompatible with stir coordinate");
+       }
+       if (mxIsDouble(pm))
+       {
+         double * data_ptr = mxGetPr(pm);
+         std::copy(data_ptr, data_ptr+a.size(), a.begin());
+       } else if (mxIsSingle(pm))
+       {
+         float * data_ptr = (float *)mxGetData(pm);
+         std::copy(data_ptr, data_ptr+a.size(), a.begin());
+       } else
+       { 
+         throw std::runtime_error("currently only supporting double or single arrays for constructing a stir array");
+       }
+     }     
 #endif
   } // end namespace swigstir
  %}
@@ -267,6 +339,8 @@
 %newobject *::read_from_file;
 %newobject *::ask_parameters;
 
+%ignore *::create_shared_clone;
+
 #if defined(SWIGPYTHON)
 %rename(__assign__) *::operator=; 
 #endif
@@ -278,6 +352,14 @@
 %ignore *::begin_all;
 %ignore *::end;
 %ignore *::end_all;
+%ignore *::begin_all_const;
+%ignore *::end_all_const;
+
+// always ignore these as they are unsafe in out-of-range index access (use at() instead)
+%ignore *::operator[];
+ // this will be replaced by __getitem__ etc, we could keep this for languages not supported by ADD_indexvalue
+%ignore *::at;
+
 #ifdef STIRMATLAB
 %ignore *::operator>>;
 %ignore *::operator<<;
@@ -285,6 +367,10 @@
 %ignore *::operator-=;
 %ignore *::operator*=;
 %ignore *::operator/=;
+
+// use isequal, not eq at the moment. This might change later.
+//%rename(isequal) *::operator==;
+%rename(isequal) *::eq;
 #endif
 
 #ifndef SWIGOCTAVE
@@ -446,7 +532,7 @@ namespace std {
  }
 #elif defined(SWIGMATLAB)
 %extend TYPE {
-    %exception getel {
+    %exception paren {
       try
 	{
 	  $action
@@ -458,9 +544,9 @@ namespace std {
         SWIG_exception(SWIG_TypeError,const_cast<char*>(e.what()));
       }
     }
-    %newobject getel;
-    RETTYPE getel(const INDEXTYPE i) { return (*self).at(i); }
-    %exception setel {
+    %newobject paren;
+    RETTYPE paren(const INDEXTYPE i) { return (*self).at(i); }
+    %exception paren_asgn {
       try
 	{
 	  $action
@@ -472,64 +558,9 @@ namespace std {
         SWIG_exception(SWIG_TypeError,const_cast<char*>(e.what()));
       }
     }
-    void setel(const INDEXTYPE i, const RETTYPE val) { (*self).at(i)=val; }
+    void paren_asgn(const INDEXTYPE i, const RETTYPE val) { (*self).at(i)=val; }
  }
 #endif
-%enddef
-
- // more or less redefinition of the above, when returning "by value"
- // but doesn't seem to work yet
-%define %ADD_indexaccessValue(TYPE...)
- //TODO cannot do next line yet because of commas
- //%ADD_indexaccess(int,TYPE##::value_type, TYPE);
-#if defined(SWIGPYTHON)
-#if defined(SWIGPYTHON_BUILTIN)
- //  %feature("python:slot", "sq_item", functype="ssizeargfunc") TYPE##::__getitem__;
- //  %feature("python:slot", "sq_ass_item", functype="ssizeobjargproc") TYPE##::__setitem__;
-%feature("python:slot", "mp_subscript", functype="binaryfunc") TYPE##::__getitem__;
-%feature("python:slot", "mp_ass_subscript", functype="objobjargproc") TYPE##::__setitem__;
-#endif
-%extend TYPE {
-        TYPE##::value_type __getitem__(int i) 
-	  { 
-	    return (*self)[i]; 
-	  };
-	void __setitem__(int i, const TYPE##::value_type val) { (*self)[i]=val; }
- }
-#endif
-%enddef
-
- // more or less redefinition of the above, when returning "by reference"
- // but doesn't seem to work yet
-%define %ADD_indexaccessReference(TYPE...)
- //TODO cannot do this because of commas
- //%ADD_indexaccess(int,TYPE##::reference, TYPE);
-#if defined(SWIGPYTHON)
-#if defined(SWIGPYTHON_BUILTIN)
- //  %feature("python:slot", "sq_item", functype="ssizeargfunc") TYPE##::__getitem__;
- // %feature("python:slot", "sq_ass_item", functype="ssizeobjargproc") TYPE##::__setitem__;
-  %feature("python:slot", "mp_subscript", functype="binaryfunc") TYPE##::__getitem__;
-%feature("python:slot", "mp_ass_subscript", functype="objobjargproc") TYPE##::__setitem__;
-#endif
-%extend TYPE {
-  TYPE##::reference __getitem__(int i) { return (*self)[i]; };
-  void __setitem__(int i, const TYPE##::reference val) { (*self)[i]=val; }
- }
-#endif
-%enddef
-
- // MACROS to call the above, but also instantiate the template
-%define %template_withindexaccess(NAME,RETTYPE,TYPE...)
-%template(NAME) TYPE;
-%ADD_indexaccess(int,RETTYPE,TYPE);
-%enddef
-%define %template_withindexaccessValue(NAME,TYPE...)
-%template(NAME) TYPE;
-%ADD_indexaccessValue(TYPE);
-%enddef
-%define %template_withindexaccessReference(NAME,TYPE...)
-%template(NAME) TYPE;
-%ADD_indexaccessReference(TYPE);
 %enddef
 
  // Finally, start with STIR specific definitions
@@ -577,7 +608,6 @@ namespace std {
 %shared_ptr(stir::Segment<float>);
 %shared_ptr(stir::Sinogram<float>);
 %shared_ptr(stir::Viewgram<float>);
-// TODO we probably need a list of other classes here
 #else
 namespace boost {
 template<class T> class shared_ptr
@@ -588,19 +618,7 @@ T * operator-> () const;
 }
 #endif
 
-#if defined(SWIGPYTHON)
- // these will be replaced by __getitem__ etc
-%ignore *::at(int);
-#endif
-// always ignore these as they are unsafe in out-of-range index access (use at() instead)
-%ignore *::operator[](const int);
-%ignore *::operator[](int);
-%ignore *::operator[](const int) const;
-%ignore *::operator[](int) const;
-// always ignore const versions as for swig they're the same
-%ignore *::at(int) const;
-
-//  William S Fulton trick for passing templates (wtih commas) through macro arguments
+//  William S Fulton trick for passing templates (with commas) through macro arguments
 // (already defined in swgmacros.swg)
 //#define %arg(X...) X
 
@@ -713,29 +731,6 @@ T * operator-> () const;
 #endif
 
 %include "stir/NumericVectorWithOffset.h"
-// ignore these as problems with num_dimensions-1
-%ignore stir::Array::begin_all();
-%ignore stir::Array::begin_all() const;
-%ignore stir::Array::begin_all_const() const;
-%ignore stir::Array::end_all();
-%ignore stir::Array::end_all() const;
-%ignore stir::Array::end_all_const() const;
-
-// need to ignore at(int) because of SWIG template bug with recursive num_dimensions
-%ignore stir::Array::at(int) const;
-%ignore stir::Array::at(int);
-
-// ignore as we will use ADD_indexvalue
-%ignore stir::Array::at(const BasicCoordinate<num_dimensions, int>&);
-%ignore stir::Array::at(const BasicCoordinate<num_dimensions, int>&) const;
-%ignore stir::Array::at(const BasicCoordinate<1, int>&);
-%ignore stir::Array::at(const BasicCoordinate<1, int>&) const;
-
-// ignore as unsafe index access (and using ADD_indexvalue)
-%ignore stir::Array::operator[](const BasicCoordinate<num_dimensions, int>&);
-%ignore stir::Array::operator[](const BasicCoordinate<num_dimensions, int>&) const;
-%ignore stir::Array::operator[](const BasicCoordinate<1, int>&);
-%ignore stir::Array::operator[](const BasicCoordinate<1, int>&) const;
 
 #ifdef SWIGPYTHON
 // ignore as we will add a version that returns a tuple instead
@@ -829,7 +824,35 @@ namespace stir {
 #endif // SWIGPYTHON_BUILTIN
 
   }
-#endif // PYTHONCODE
+#elif defined(SWIGMATLAB)
+    %extend BasicCoordinate {
+    // print as [1;2;3] as opposed to non-informative default provided by SWIG
+    void disp()
+    { 
+      std::ostringstream s;
+      s<<'[';
+      for (int d=1; d<=num_dimensions-1; ++d)
+	s << (*$self)[d] << "; ";
+      s << (*$self)[num_dimensions] << "]\n";
+      mexPrintf(s.str().c_str());
+      
+    }
+    //%feature("autodoc", "construct from vector, e.g. [2;3;4] for a 3d coordinate")
+    BasicCoordinate(const mxArray *pm)
+    {
+      $parentclassname * array_ptr = new $parentclassname();
+      swigstir::fill_BasicCoordinate_from_matlab(*array_ptr, pm);
+      return array_ptr;
+    }
+
+    %newobject to_matlab;
+    mxArray * to_matlab()
+    { return swigstir::BasicCoordinate_to_matlab(*$self); }
+
+    void fill(const mxArray *pm)
+    { swigstir::fill_BasicCoordinate_from_matlab(*$self, pm); }
+  }
+  #endif // PYTHON, MATLAB extension of BasicCoordinate
 
   %ADD_indexaccess(int, coordT, BasicCoordinate);
   %template(Int3BasicCoordinate) BasicCoordinate<3,int>;
@@ -1029,15 +1052,14 @@ namespace stir {
 %include "stir/Bin.h"
 %newobject stir::ProjDataInfo::ProjDataInfoGE;
 %newobject stir::ProjDataInfo::ProjDataInfoCTI;
-%ignore *::get_scanner_ptr;
+
+%rename (get_scanner) *::get_scanner_ptr;
+%ignore *::get_proj_data_info_ptr;
+%rename (get_proj_data_info) *::get_proj_data_info_sptr;
+%ignore *::get_exam_info_sptr;
+%rename (get_exam_info) *::get_exam_info_sptr;
+			
 %include "stir/ProjDataInfo.h"
-namespace stir{
-  %extend ProjDataInfo
-  {
-    const Scanner& get_scanner() const
-    { return *$self->get_scanner_ptr(); }
-  }
- }
 %include "stir/ProjDataInfoCylindrical.h"
 %include "stir/ProjDataInfoCylindricalArcCorr.h"
 %include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -1049,29 +1071,10 @@ namespace stir{
 %include "stir/SegmentByView.h"
 %include "stir/SegmentBySinogram.h"
 
-%ignore *::get_proj_data_info_ptr;
-%ignore *::get_exam_info_ptr;
-%rename(get_exam_info) *::get_exam_info_sptr;
-%define %extend_with_proj_data_info(CLASS)
-namespace stir{
-  %extend CLASS
-  {
-    const ProjDataInfo& get_proj_data_info() const
-    { return *$self->get_proj_data_info_ptr(); }
-  }
- }
-%enddef
 %include "stir/ProjData.h"
 %include "stir/ProjDataFromStream.h"
 %include "stir/ProjDataInterfile.h"
 %include "stir/ProjDataInMemory.h"
-
-%extend_with_proj_data_info(ProjData);
-//%extend_with_proj_data_info(MultipleProjData);
-%extend_with_proj_data_info(Sinogram);
-%extend_with_proj_data_info(Viewgram);
-%extend_with_proj_data_info(Segment);
-%extend_with_proj_data_info(RelatedViewgrams);
 
 namespace stir { 
   %template(FloatViewgram) Viewgram<float>;
@@ -1136,6 +1139,7 @@ namespace stir {
 %shared_ptr(stir::Reconstruction<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >);
+%shared_ptr(stir::OSSPSReconstruction<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::AnalyticReconstruction);
 %shared_ptr(stir::FBP2DReconstruction);
 %shared_ptr(stir::FBP3DRPReconstruction);
@@ -1149,6 +1153,7 @@ namespace stir {
 %include "stir/recon_buildblock/Reconstruction.h"
 %include "stir/recon_buildblock/IterativeReconstruction.h"
 %include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+%include "stir/OSSPS/OSSPSReconstruction.h"
 
 %include "stir/recon_buildblock/AnalyticReconstruction.h"
 %include "stir/analytic/FBP2D/FBP2DReconstruction.h"
@@ -1186,6 +1191,7 @@ namespace stir {
 %template (IterativeReconstruction3DFloat) stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
 //%template () stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
 %template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >;
+%template (OSSPSReconstruction3DFloat) stir::OSSPSReconstruction<stir::DiscretisedDensity<3,float> >;
 
 
 /// projectors

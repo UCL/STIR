@@ -32,7 +32,7 @@ import stir.*
     indrange=IndexRange3D(minind,maxind);
     image=FloatVoxelsOnCartesianGrid(indrange, origin,gridspacing);
     ind=make_IntCoordinate(5,3,4);
-    image.setel(ind,2);
+    image.paren_asgn(ind,2);
     %print image.shape()
     output_format=InterfileOutputFileFormat();
     output_format.write_to_file('stir_matlab_test.hv', image) ;
@@ -40,7 +40,7 @@ import stir.*
     assert (isequal(image.get_voxel_size(),image2.get_voxel_size()))
     %assert (image.shape()==image2.shape())
     %assert (get_physical_coordinates_for_bounding_box(image) == get_physical_coordinates_for_bounding_box(image2))
-    assert(image2.getel(ind - image.get_min_indices() + image2.get_min_indices()) == image.getel(ind))
+    assert(image2(ind - image.get_min_indices() + image2.get_min_indices()) == image(ind))
     assert(norm(reshape(image.to_matlab()-image2.to_matlab(),1,[]))<.1)
 %%
 %def test_ProjDataInfo(tmpdir):
@@ -75,6 +75,6 @@ import stir.*
         segment2=projdata2.get_segment_by_view(seg);
         % compare
         ind=stir.make_IntCoordinate(0,0,0);
-        assert(segment.getel(ind) == segment2.getel(ind));
+        assert(segment(ind) == segment2(ind));
         assert(norm(reshape(segment.to_matlab()-segment2.to_matlab(),1,[]))<.1)
     end   
