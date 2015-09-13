@@ -36,6 +36,7 @@ detailed below.
 
 </p>
 
+<p>Initial support for image-based PSF-modelling in PET.</p>
 <p>There is also initial support for the 32-bit list mode file format
 for Siemens scanners (warning: tested in Biograph mMR only at present).
 </p>
@@ -67,6 +68,11 @@ own reconstruction algorithms that used the objective function value. (bug found
 By default, we use about 90% of your cores, but you can change that by setting the OMP_NUM_THREADS
 environment variable before you start your STIR work (see the wiki).
 Please note that you cannot enable both OPENMP and MPI.</li>
+<li>Image-based PSF-modelling in PET can be achieved by using projectors
+  that first smooth data image before forward projection or after back projection.
+  However, this is currently somewhat difficult to set-up and has a too high performance impact.
+  Note that the SPECT projector does allow sinogram-based PSF modelling.
+  </li>
 <li>Functions and executables for ML estimation of singles/randoms/normalisation factors.
 These are only minimally documented at the present stage unfortunately.
 </li>
@@ -92,7 +98,8 @@ Python (and MATLAB) interface to <code>get_scanner()</code> and <code>get_proj_d
 <li> 
 Using <a href="http://www.cmake.org">CMake</a> is now highly recommended (see the wiki). Some options
 such as shared libraries, openmp and SWIG support can only be enabled when using CMake. 
-Hand-crafted Unix Makefiles are still there but will no longer be included in the next release.
+Hand-crafted Unix Makefiles are still there but are no longer supported and
+will no longer be included in the next release.
 </li>
 </ul>
 
@@ -166,11 +173,11 @@ from the above):</H2>
 <ul>
 <li><code>write_to_file</code> is a new addition that makes it easier to write
 using the default output file format.</li>
-<li>Added apply/undo methods to BinNormalisation to process whole ProjData</li>
-<li>extra functionality for ProjData:
+<li>Added apply/undo methods to <code>BinNormalisation</code> to process whole <code>ProjData</code></li>
+<li>extra functionality for <code>ProjData</code>:
   <ul>
-   <li>added fill() functions (with float or with another ProjData)</li>
-   <li>added get_proj_data_info_sptr()</li>
+   <li>added <code>fill()</code> functions (with float or with another <code>ProjData</code>)</li>
+   <li>added <code>get_proj_data_info_sptr()</code> (also to <code>Sinogram</code> et al)</li>
   </ul>
 </li>
 
@@ -179,11 +186,18 @@ using the default output file format.</li>
 <h3>Other code changes</h3>
 <ul>
 <li>We removed all <code>using std::vector</code> etc statements from .h,.inl,.txx files.
-This means you might have to modify your own code accordingly.</li>
-<li>info() and warning() really should no longer be used in the printf style. In the next
-version, they will only accept 1 argument. Use boost::format.</li>
-<li>get_proj_data_info_sptr() and get_scanner_ptr() should no longer be used as they
-can create problems with the lifetime of objects.</li>
+  This means you might have to modify your own code accordingly.</li>
+<li>Changed <code>ProjMatrixByBin</code> to have separate caches per view-segment number
+  to allow much larger axial/tangential_pos range and for finer-grained OPENMP locking.
+  <br />    
+  <strong>WARNING</strong>: breaks backwards compatibility as <code>ProjMatrixByBin::set_up</code>
+  now has to be called by <code>set_up</code> in each derived class.
+  </li>
+<li><code>info()</code> and <code>warning()</code> really should no longer be used in the
+  <code>printf</code> style, i.e. <code>warning("Some message %d", x)</code> .
+  In the next version, they will only accept 1 argument. Use <code>boost::format</code>.</li>
+<li><code>get_proj_data_info_ptr()</code> and <code>get_scanner_ptr()</code> should no longer be used as they
+can create problems with the lifetime of objects. Use <code>get..._sptr</code> instead.</li>
 </ul>
 
 </body>
