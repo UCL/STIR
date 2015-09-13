@@ -95,6 +95,13 @@ Sinogram<elemT>:: get_proj_data_info_ptr() const
 }
 
 template <typename elemT>
+shared_ptr<ProjDataInfo>
+Sinogram<elemT>::get_proj_data_info_sptr() const
+{
+  return proj_data_info_ptr;
+}
+
+template <typename elemT>
 Sinogram<elemT>::
 Sinogram(const Array<2,elemT>& p, 
          const shared_ptr<ProjDataInfo >& pdi_ptr, 

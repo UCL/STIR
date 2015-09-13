@@ -93,6 +93,13 @@ Viewgram<elemT>:: get_proj_data_info_ptr()const
   return proj_data_info_ptr.get();
 }
 
+template <typename elemT>
+shared_ptr<ProjDataInfo>
+Viewgram<elemT>::get_proj_data_info_sptr() const
+{
+  return proj_data_info_ptr;
+}
+
 
 template <typename elemT>
 Viewgram<elemT>::

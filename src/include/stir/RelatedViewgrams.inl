@@ -144,6 +144,16 @@ get_proj_data_info_ptr() const
 }
 
 template <typename elemT>
+shared_ptr<ProjDataInfo>
+RelatedViewgrams<elemT>::
+get_proj_data_info_sptr() const
+{
+  assert(viewgrams.size()>0);
+  check_state();
+  return viewgrams[0].get_proj_data_info_sptr();
+}
+
+template <typename elemT>
 const DataSymmetriesForViewSegmentNumbers * 
 RelatedViewgrams<elemT>::get_symmetries_ptr() const
 {
