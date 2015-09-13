@@ -32,3 +32,21 @@ figure()
 plot(matimage(:,45,10));
 xlabel('x')
 title('slice 10, line 45 (starting from 0)')
+
+%% example for projection data (aka sinograms)
+projdata=stir.ProjData.read_from_file('../../recon_test_pack/SPECT/input.hs');
+%% display direct sinograms
+% Of course, for SPECT there are only 'direct' sinograms (and no oblique sinograms)
+seg=projdata.get_segment_by_sinogram(0);
+matseg=seg.to_matlab();
+figure;
+imshow(matseg(:,:,10)',[])
+title '10th sinogram'
+%% do a little movie rotating around the object
+threshold=max(matseg(:)*.6);
+figure;
+for (v=1:3:size(matseg,2))
+  imshow(squeeze(matseg(:,v,:))',[0,threshold], 'InitialMagnification','fit')
+  colormap('winter')
+  pause(.1)
+end
