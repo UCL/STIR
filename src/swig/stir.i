@@ -1058,7 +1058,9 @@ namespace stir {
 %rename (get_proj_data_info) *::get_proj_data_info_sptr;
 %ignore *::get_exam_info_sptr;
 %rename (get_exam_info) *::get_exam_info_sptr;
-			
+
+%rename (set_objective_function) *::set_objective_function_sptr;
+
 %include "stir/ProjDataInfo.h"
 %include "stir/ProjDataInfoCylindrical.h"
 %include "stir/ProjDataInfoCylindricalArcCorr.h"
@@ -1151,6 +1153,8 @@ namespace stir {
 %include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 
 %include "stir/recon_buildblock/Reconstruction.h"
+ // there's a get_objective_function, so we'll ignore the sptr version
+%ignore *::get_objective_function_sptr;
 %include "stir/recon_buildblock/IterativeReconstruction.h"
 %include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 %include "stir/OSSPS/OSSPSReconstruction.h"
