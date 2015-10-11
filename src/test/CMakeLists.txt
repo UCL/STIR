@@ -79,7 +79,9 @@ ADD_TEST(test_linear_regression
 ADD_TEST(NAME test_stir_math
    COMMAND test_stir_math $<TARGET_FILE:stir_math>
 )
-# Final note: we could use this to avoid the use of ${CMAKE_CURRENT_BINARY_DIR} in the other tests, but both strategies work fine.
+set_tests_properties(test_stir_math PROPERTIES DEPENDS stir_math)
+
+# Final note: we could use TARGET_FILE to avoid the use of ${CMAKE_CURRENT_BINARY_DIR} in the other tests, but both strategies work fine.
 
 ## add tests for OutputFileFormat
 
