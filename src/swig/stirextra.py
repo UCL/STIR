@@ -18,7 +18,9 @@
 
 import numpy
 import stir
-import exceptions
+import sys
+if sys.version_info < (3,):
+    import exceptions
 
 def get_bounding_box_indices(image):
     """
