@@ -68,7 +68,7 @@ def get_physical_coordinates_for_grid(image):
 
 def to_numpy(image):
     """
-    return the data in a STIR image as a 3D numpy array
+    return the data in a STIR image or other Array as a numpy array
     """
     # construct a numpy array using the "flat" STIR iterator
     npimage=numpy.fromiter(image.flat(), dtype=numpy.float32);
