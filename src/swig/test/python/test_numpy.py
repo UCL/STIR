@@ -38,7 +38,10 @@ def test_Array2D():
     assert np[(0,0)]==2
     npind=(ind[1]-minind[1], ind[2]-minind[2])
     assert np[npind]==a[ind]
-
+    np+=2
+    a.fill(np.flat)
+    assert np[(0,0)]==4
+    
 def test_Array2Diterator():
     a=FloatArray2D(IndexRange2D(Int2BasicCoordinate((1,3)), Int2BasicCoordinate((3,9))))
     for i1,i2 in zip(a.flat(), range(a.size_all())):
@@ -56,6 +59,10 @@ def test_Array3D():
     np=stirextra.to_numpy(a);
     assert np[(0,0,1)]==2
     npind=(ind[1]-minind[1], ind[2]-minind[2], ind[3]-minind[3])
+    assert np[npind]==a[ind]
+    np+=2
+    a.fill(np.flat)
+    assert np[(0,0,1)]==4
     assert np[npind]==a[ind]
 
 def test_Array3Diterator():
