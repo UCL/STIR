@@ -100,7 +100,7 @@
    // need to declare this internal SWIG function as we're using it in the
    // helper code below. It is used to convert a Python object to a float.
    SWIGINTERN int
-   SWIG_AsVal_float (PyObject * obj, float *val);
+   SWIG_AsVal_double (PyObject * obj, double *val);
 #endif
 
    // local helper functions for conversions etc. These are not "exposed" to the target language 
