@@ -70,6 +70,8 @@ public:
   ProjMatrixByBin const * 
     get_proj_matrix_ptr() const;
 
+  void set_proj_matrix_ptr(const shared_ptr<ProjMatrixByBin>& sptr);
+
 private:
 
   shared_ptr<ProjMatrixByBin> proj_matrix_sptr;
