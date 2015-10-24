@@ -66,12 +66,17 @@ def get_physical_coordinates_for_grid(image):
     else:
         raise exceptions.NotImplementedError('need to handle dimensions different from 2 and 3')
 
-def to_numpy(image):
+def to_numpy(stirdata):
     """
     return the data in a STIR image or other Array as a numpy array
     """
     # construct a numpy array using the "flat" STIR iterator
-    npimage=numpy.fromiter(image.flat(), dtype=numpy.float32);
-    # now reshape into ND array
-    npimage=npimage.reshape(image.shape());
-    return npimage
+    try:
+        npstirdata=numpy.fromiter(stirdata.flat(), dtype=numpy.float32);
+        # now reshape into ND array
+        npdata=npstirdata.reshape(stirdata.shape());
+        return npdata
+    except:
+        # hopefully it's projection data
+        stirarray=stirdata.to_array();
+        return to_numpy(stirarray);

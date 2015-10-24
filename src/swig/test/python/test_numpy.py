@@ -73,3 +73,18 @@ def test_Array3Diterator():
     for i1,i2 in zip(a.flat(), np.flat):
         assert abs(i1-i2)<.01
 
+def test_ProjData():
+    s=Scanner.get_scanner_from_name("ECAT 962")
+    #ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
+    #		  const int span, const int max_delta,
+    #             const int num_views, const int num_tangential_poss, 
+    #
+    projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,9,8,6)
+    #print projdatainfo
+    projdata=ProjDataInMemory(ExamInfo(), projdatainfo)
+    np=stirextra.to_numpy(projdata)
+    np+=2
+    projdata.fill(np.flat)
+    seg0=stirextra.to_numpy(projdata.get_segment_by_sinogram(0))
+    assert(seg0.max() == 2)
+
