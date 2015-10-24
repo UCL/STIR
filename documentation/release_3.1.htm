@@ -55,6 +55,9 @@ Benjamin Thomas (CIRC ASTAR), Yu-jung Tsai, Vesna Cuplov).
 
 <h3>Important bug fixes</h3>
 <ul>
+<li>bug fixed in writing of SPECT interfile headers: "direction of rotation" was set incorrect. This 
+affected output of forward_project (and stir_math -s). Reconstruction was not affected though.
+</li>
 <li>fix conversion from raw GATE (it was using the wrong segment-order and data-type).</li>
 <li>the function value of the quadratic prior value was inconsistent with its gradient. It is now
 divided by 2. This bug did not affect OSMAPOSL nor OSSPS, but did affect the value of the 
