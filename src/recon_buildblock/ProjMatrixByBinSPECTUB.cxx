@@ -41,6 +41,9 @@
 #include "stir/Coordinate3D.h"
 #include "stir/info.h"
 #include "stir/CPUTimer.h"
+#ifdef STIR_OPENMP
+#include "stir/num_threads.h"
+#endif
 
 //#include "boost/cstdint.hpp"
 //#include "boost/scoped_ptr.hpp"
@@ -152,6 +155,14 @@ set_up(
 {
 
   ProjMatrixByBin::set_up(proj_data_info_ptr_v, density_info_ptr);
+
+#ifdef STIR_OPENMP
+  if (!this->keep_all_views_in_cache)
+    {
+      warning("SPECTUB matrix can currently only use single-threaded code unless all views are kept. Setting num_threads to 1");
+      set_num_threads(1);
+    }
+#endif
 
   using namespace SPECTUB;
 
@@ -742,6 +753,9 @@ calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor
       if (prj.order[kOS] == view_num)
 	break;
     }
+#ifdef STIR_OPENMP
+#pragma omp critical(PROJMATRIXBYBINUBONEVIEW)
+#endif
   if (!subset_already_processed[kOS])
     {
       if (!this->keep_all_views_in_cache)
