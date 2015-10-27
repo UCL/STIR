@@ -1,3 +1,7 @@
+#! /bin/bash
+#PBS -k eo
+# note: this script needs bash because of (trap ERR below)
+# 
 #
 #
 #
@@ -7,9 +11,6 @@
 # Author /Charalampos Tsoumpas 07/10/2005
 
 # This script is used to zoom the attenuation image, given the zoom factor. The image preserves the mu factor using stir-math. 
-
-#! /bin/sh
-#PBS -k eo 
 
 
 if [ $# -lt 4 -o $# -gt 5 ]; then
