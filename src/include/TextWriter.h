@@ -4,9 +4,10 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-using namespace std;
 
 #define DEFAULT_STREAM std::cerr
+
+enum OUTPUT_CHANNEL {INFORMATION_CHANNEL, WARNING_CHANNEL, ERROR_CHANNEL};
 
 class aTextWriter {
 public:
@@ -27,10 +28,10 @@ public:
 	virtual void write(const char* text) const {
 		switch (_stream) {
 		case 1:
-			cout << text;
+			std::cout << text;
 			break;
 		case 2:
-			cerr << text;
+			std::cerr << text;
 			break;
 		default:
 			DEFAULT_STREAM << text;
@@ -42,8 +43,8 @@ private:
 
 class TextWriter : public aTextWriter {
 public:
-	ostream* out;
-	TextWriter(ostream* os = 0) : out(os) {}
+	std::ostream* out;
+	TextWriter(std::ostream* os = 0) : out(os) {}
 	virtual void write(const char* text) const {
 		if (out) {
 			(*out) << text;
@@ -56,58 +57,49 @@ public:
 
 class TextWriterHandle {
 public:
-	static aTextWriter* writer;
-	void write(const char* text) const {
-		if (writer)
-			writer->write(text);
-		else
-			DEFAULT_STREAM << text;
+	void set_information_channel(aTextWriter* info) {
+		init_();
+		information_channel_ = info;
+	}
+	void set_warning_channel(aTextWriter* warn) {
+		init_();
+		warning_channel_ = warn;
+	}
+	void set_error_channel(aTextWriter* errr) {
+		init_();
+		error_channel_ = errr;
+	}
+	void print_information(const char* text) {
+		init_();
+		if (information_channel_)
+			information_channel_->write(text);
+	}
+	void print_warning(const char* text) {
+		init_();
+		if (warning_channel_)
+			warning_channel_->write(text);
+	}
+	void print_error(const char* text) {
+		init_();
+		if (error_channel_)
+			error_channel_->write(text);
+	}
+
+private:
+	static aTextWriter* information_channel_;
+	static aTextWriter* warning_channel_;
+	static aTextWriter* error_channel_;
+	static void init_() {
+		static bool initialized = false;
+		if (!initialized) {
+			information_channel_ = 0;
+			warning_channel_ = 0;
+			error_channel_ = 0;
+			initialized = true;
+		}
 	}
 };
 
-void writeText(const char* text);
-
-class AltCout {
-public:
-	AltCout& operator<<(int i) {
-		char buff[32];
-		sprintf_s(buff, 32, "%d", i);
-		//printf("%s", buff);
-		writeText(buff);
-		return *this;
-	}
-	AltCout& operator<<(double x) {
-		char buff[32];
-		sprintf_s(buff, 32, "%f", x);
-		//printf("%s", buff);
-		writeText(buff);
-		return *this;
-	}
-	AltCout& operator<<(char a) {
-		//printf("%c", a);
-		char buff[2];
-		buff[0] = a;
-		buff[1] = '\0';
-		writeText(buff);
-		return *this;
-	}
-	AltCout& operator<<(const char* s) {
-		//printf("%s", s);
-		writeText(s);
-		return *this;
-	}
-	AltCout& operator<<(string s) {
-		//printf("%s", s);
-		writeText(s.c_str());
-		return *this;
-	}
-};
-
-class Stir {
-public:
-	static char endl;
-	static AltCout cout;
-	static AltCout cerr;
-};
+void writeText(const char* text, OUTPUT_CHANNEL channel = INFORMATION_CHANNEL);
 
 #endif

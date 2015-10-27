@@ -5,9 +5,8 @@
 
 #include <exception>
 #include <iostream>
-using namespace std;
 
-class StirException : public exception {
+class StirException : public std::exception {
 public:
 	StirException(const char* reason, const char* file, int line) {
 		size_t len = strlen(reason) + 1;

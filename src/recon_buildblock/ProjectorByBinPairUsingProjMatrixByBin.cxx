@@ -108,7 +108,7 @@ get_proj_matrix_ptr() const
 
 void
 ProjectorByBinPairUsingProjMatrixByBin::
-set_proj_matrix_ptr(const shared_ptr<ProjMatrixByBin>& sptr)
+set_proj_matrix_sptr(const shared_ptr<ProjMatrixByBin>& sptr)
 {
 	proj_matrix_sptr = sptr;
 }
