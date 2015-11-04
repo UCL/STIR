@@ -71,8 +71,15 @@ public:
   
   //! Default constructor
   TruncateToCylindricalFOVImageProcessor();
-  
- private:
+
+  void set_strictly_less_than_radius(const bool arg) {
+	  this->_strictly_less_than_radius = arg;
+  }
+  bool get_strictly_less_than_radius() const {
+	  return this->_strictly_less_than_radius;
+  }
+
+private:
   bool _strictly_less_than_radius;
 
   virtual void set_defaults();
