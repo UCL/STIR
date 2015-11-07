@@ -86,6 +86,14 @@ get_prior_ptr() const
 { return this->prior_sptr.get(); }
 
 template <typename TargetT>
+shared_ptr<GeneralisedPrior<TargetT> >
+GeneralisedObjectiveFunction<TargetT>::
+get_prior_sptr()
+{
+	return this->prior_sptr;
+}
+
+template <typename TargetT>
 void
 GeneralisedObjectiveFunction<TargetT>::
 set_prior_sptr(const shared_ptr<GeneralisedPrior<TargetT> >& arg)

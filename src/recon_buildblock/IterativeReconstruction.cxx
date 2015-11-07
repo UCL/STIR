@@ -230,6 +230,14 @@ get_inter_iteration_filter() const
 { return *this->inter_iteration_filter_ptr; }
 
 template <typename TargetT>
+shared_ptr<DataProcessor<TargetT> >
+IterativeReconstruction<TargetT>::
+get_inter_iteration_filter_sptr()
+{
+	return this->inter_iteration_filter_ptr;
+}
+
+template <typename TargetT>
 const int 
 IterativeReconstruction<TargetT>::
 get_inter_iteration_filter_interval() const

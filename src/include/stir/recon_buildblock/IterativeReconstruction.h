@@ -190,6 +190,8 @@ public:
   //! inter-iteration filter
   const DataProcessor<TargetT>& get_inter_iteration_filter() const;
 
+  shared_ptr<DataProcessor<TargetT> > get_inter_iteration_filter_sptr();
+
   //! subiteration interval at which to apply inter-iteration filters 
   const int get_inter_iteration_filter_interval() const;
 
