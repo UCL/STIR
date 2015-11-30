@@ -32,6 +32,9 @@
 
 #include <cstdarg>
 #include <iostream>
+#include <sstream>
+
+#include "TextWriter.h"
 
 /* Warning: vsnprintf is only ISO C99. So your compiler might not have it.
    Visual Studio can be accomodated with the following work-around
@@ -49,15 +52,17 @@ void warning(const char *const s, ...)
   const unsigned size=10000;
   char tmp[size];
   const int returned_size= vsnprintf(tmp,size, s, ap);
-  if (returned_size<0)
-    std::cerr << "\nWARNING: error formatting warning message" << std::endl;
+  std::stringstream ss;
+  if (returned_size < 0)
+	  ss << "\nWARNING: error formatting warning message" << std::endl;
   else
-    {
-      std::cerr << "\nWARNING: " << tmp <<std::endl;
+  {
+	  ss << "\nWARNING: " << tmp << std::endl;
       if (static_cast<unsigned>(returned_size)>=size)
-	std::cerr << "\nWARNING: previous warning message truncated as it exceeds "
+		  ss << "\nWARNING: previous warning message truncated as it exceeds "
 		  << size << "bytes" << std::endl;
-    }
+  }
+  writeText(ss.str().c_str(), WARNING_CHANNEL);
 }
 
 END_NAMESPACE_STIR
