@@ -1,6 +1,8 @@
 #ifndef TEXT_WRITER_TYPES
 #define TEXT_WRITER_TYPES
 
+#include <string.h>
+
 #include <fstream>
 #include <iostream>
 #include <string>
