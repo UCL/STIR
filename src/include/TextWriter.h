@@ -52,8 +52,6 @@ public:
 			(*out) << text;
 			(*out).flush();
 		}
-		else
-			DEFAULT_STREAM << text;
 	}
 };
 
@@ -63,13 +61,25 @@ public:
 		init_();
 		information_channel_ = info;
 	}
+	void* information_channel_ptr() {
+		init_();
+		return (void*)information_channel_;
+	}
 	void set_warning_channel(aTextWriter* warn) {
 		init_();
 		warning_channel_ = warn;
 	}
+	void* warning_channel_ptr() {
+		init_();
+		return (void*)warning_channel_;
+	}
 	void set_error_channel(aTextWriter* errr) {
 		init_();
 		error_channel_ = errr;
+	}
+	void* error_channel_ptr() {
+		init_();
+		return (void*)error_channel_;
 	}
 	void print_information(const char* text) {
 		init_();
