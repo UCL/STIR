@@ -34,7 +34,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "TextWriter.h"
+#include "stir/TextWriter.h"
 
 /* Warning: vsnprintf is only ISO C99. So your compiler might not have it.
    Visual Studio can be accomodated with the following work-around

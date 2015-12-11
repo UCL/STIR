@@ -46,7 +46,7 @@
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
 
-#include "TextWriter.h"
+#include "stir/TextWriter.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;

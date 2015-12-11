@@ -1,4 +1,6 @@
-#include "TextWriter.h"
+#include "stir/TextWriter.h"
+
+START_NAMESPACE_STIR
 
 aTextWriter* TextWriterHandle::information_channel_;
 aTextWriter* TextWriterHandle::warning_channel_;
@@ -18,3 +20,4 @@ void writeText(const char* text, OUTPUT_CHANNEL channel) {
 	}
 }
 
+END_NAMESPACE_STIR

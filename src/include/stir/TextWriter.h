@@ -7,7 +7,11 @@
 #include <iostream>
 #include <string>
 
+#include "stir/common.h"
+
 #define DEFAULT_STREAM std::cerr
+
+START_NAMESPACE_STIR
 
 enum OUTPUT_CHANNEL {INFORMATION_CHANNEL, WARNING_CHANNEL, ERROR_CHANNEL};
 
@@ -107,5 +111,7 @@ private:
 };
 
 void writeText(const char* text, OUTPUT_CHANNEL channel = INFORMATION_CHANNEL);
+
+END_NAMESPACE_STIR
 
 #endif
