@@ -55,6 +55,10 @@
 // this will cause a run-time error when overwriting memory etc
 // hopefully this is enough to avoid a lot of warnings
 // otherwise we'll need to set define _CTR_SECURE_NO_WARNINGS
+#ifdef _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES
+  // it's already defined. let's get rid of it.
+# undef _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES
+#endif
 #define _CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES 1
 #endif 
 
