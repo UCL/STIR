@@ -57,7 +57,7 @@ if (s==stir.Succeeded(stir.Succeeded.yes)):
     pylab.figure()
     pylab.hold(True)
     for iter in range(1,4):
-        print '\n--------------------- Subiteration ', iter
+        print('\n--------------------- Subiteration ', iter)
         recon.set_start_subiteration_num(iter)
         recon.set_num_subiterations(iter)
         s=recon.reconstruct(target);
@@ -74,5 +74,5 @@ if (s==stir.Succeeded(stir.Succeeded.yes)):
     pylab.imshow(npimage[10,:,:])
     pylab.show()
 else:
-    print 'Error setting-up reconstruction object'
+    print('Error setting-up reconstruction object')
 

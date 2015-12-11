@@ -41,6 +41,9 @@
 #include "stir/Coordinate3D.h"
 #include "stir/info.h"
 #include "stir/CPUTimer.h"
+#ifdef STIR_OPENMP
+#include "stir/num_threads.h"
+#endif
 
 //#include "boost/cstdint.hpp"
 //#include "boost/scoped_ptr.hpp"
@@ -152,6 +155,14 @@ set_up(
 {
 
   ProjMatrixByBin::set_up(proj_data_info_ptr_v, density_info_ptr);
+
+#ifdef STIR_OPENMP
+  if (!this->keep_all_views_in_cache)
+    {
+      warning("SPECTUB matrix can currently only use single-threaded code unless all views are kept. Setting num_threads to 1");
+      set_num_threads(1);
+    }
+#endif
 
   using namespace SPECTUB;
 
@@ -557,7 +568,8 @@ set_up(
 	}   // end of LOOP: Subsets
 
 	//delete_UB_SPECT_arrays();
-	info(boost::format("Done estimating size of matrix. Execution (CPU) time %1% s ") % timer.value());
+	info(boost::format("Done estimating size of matrix. Execution (CPU) time %1% s ") % timer.value(), 
+             2);
 	// wm_SPECT ends here ---------------------------------------------------------------------------------------------
 
 	this->already_setup= true;
@@ -659,7 +671,8 @@ compute_one_subset(const int kOS) const
 
   info(boost::format("total number of non-zero weights in this view: %1%, estimated size: %2% MB") 
        % ne
-       % ( wm.do_save_STIR ?  (ne + 10* prj.NbOS)/104857.6 : ne/131072));
+       % ( wm.do_save_STIR ?  (ne + 10* prj.NbOS)/104857.6 : ne/131072),
+       2);
 
   //... memory allocation for wm float arrays ...................................
 
@@ -695,7 +708,8 @@ compute_one_subset(const int kOS) const
   //... wm calculation for this subset ...........................
 
   wm_calculation ( kOS, ang, vox, bin, vol, prj, attmap, msk_3d, msk_2d, maxszb, &gaussdens, NITEMS[kOS] );
-  info(boost::format("Weight matrix calculation done. time %1% (s)") % timer.value());
+  info(boost::format("Weight matrix calculation done. time %1% (s)") % timer.value(),
+       2);
 
   //... fill lor .........................
 
@@ -723,7 +737,8 @@ compute_one_subset(const int kOS) const
     this->cache_proj_matrix_elems_for_one_bin(lor);
   }
 
-  info(boost::format("Total time after transfering to ProjMatrixElemsForOneBin. time %1% (s)") % timer.value());
+  info(boost::format("Total time after transfering to ProjMatrixElemsForOneBin. time %1% (s)") % timer.value(),
+       2);
 
 }
 void 
@@ -742,6 +757,9 @@ calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor
       if (prj.order[kOS] == view_num)
 	break;
     }
+#ifdef STIR_OPENMP
+#pragma omp critical(PROJMATRIXBYBINUBONEVIEW)
+#endif
   if (!subset_already_processed[kOS])
     {
       if (!this->keep_all_views_in_cache)
@@ -749,7 +767,8 @@ calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin& lor
 	  this->clear_cache();
 	  subset_already_processed.assign(prj.NOS,false);
 	}
-      info(boost::format("Computing matrix elements for view %1%") % view_num);
+      info(boost::format("Computing matrix elements for view %1%") % view_num,
+        2);
       compute_one_subset(kOS);
       subset_already_processed[kOS]=true;
     }
