@@ -32,6 +32,10 @@
 #include <cstdarg>
 #include <string>
 #include <iostream>
+#include <sstream>
+
+#include "stir/TextWriter.h"
+
 /* Warning: vsnprintf is only ISO C99. So your compiler might not have it.
    Visual Studio can be accomodated with the following work-around
 */
@@ -48,15 +52,17 @@ void error(const char *const s, ...)
   const unsigned size=10000;
   char tmp[size];
   const int returned_size= vsnprintf(tmp,size, s, ap);
+  std::stringstream ss;
   if (returned_size<0)
-    std::cerr << "\nERROR: but error formatting error message" << std::endl;
+	  ss << "\nERROR: but error formatting error message" << std::endl;
   else
-    {
-      std::cerr << "\nERROR: " << tmp <<std::endl;
+  {
+	  ss << "\nERROR: " << tmp << std::endl;
       if (static_cast<unsigned>(returned_size)>=size)
-	std::cerr << "\nWARNING: previous error message truncated as it exceeds "
+		  ss << "\nWARNING: previous error message truncated as it exceeds "
 		  << size << "bytes" << std::endl;
-    }
+  }
+  writeText(ss.str().c_str(), ERROR_CHANNEL);
   std::string msg = tmp;
   throw msg;
 }

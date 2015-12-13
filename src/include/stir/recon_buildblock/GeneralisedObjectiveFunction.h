@@ -257,6 +257,9 @@ public:
   GeneralisedPrior<TargetT> * const
     get_prior_ptr() const;
 
+  shared_ptr<GeneralisedPrior<TargetT> >
+	  get_prior_sptr();
+
   //! Change the prior
   /*! \warning You should call set_up() again after using this function.
    */
