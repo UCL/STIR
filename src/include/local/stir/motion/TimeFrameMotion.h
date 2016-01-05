@@ -109,7 +109,7 @@ protected:
 
 
 private:
-  string _frame_definition_filename;
+  std::string _frame_definition_filename;
   bool _do_move_to_reference;
 
   TimeFrameDefinitions _frame_defs;

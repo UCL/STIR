@@ -91,8 +91,8 @@ public:
     get_transformation_from_scanner_coords() const;
   virtual void  
     set_transformation_from_scanner_coords(const RigidObject3DTransformation&);
-  Succeeded set_mt_file(const string& mt_filename);
-  Succeeded set_list_mode_data_file(const string& lm_filename);
+  Succeeded set_mt_file(const std::string& mt_filename);
+  Succeeded set_list_mode_data_file(const std::string& lm_filename);
 
   virtual void set_defaults();
   virtual void initialise_keymap();
@@ -126,8 +126,8 @@ private:
 
 
   shared_ptr<Polaris_MT_File> mt_file_ptr;
-  string mt_filename;  
-  string list_mode_filename;
+  std::string mt_filename;  
+  std::string list_mode_filename;
 
  
 
@@ -136,7 +136,7 @@ private:
   unsigned int _mask_for_tags;
 
   // TODO this should probably be moved to RigidObject3DMotion
-  string transformation_from_scanner_coordinates_filename;
+  std::string transformation_from_scanner_coordinates_filename;
   RigidObject3DTransformation move_to_scanner_coords;
   RigidObject3DTransformation move_from_scanner_coords;
 
