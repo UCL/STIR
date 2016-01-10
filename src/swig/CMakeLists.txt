@@ -32,8 +32,13 @@ endif()
 
 if(BUILD_SWIG_PYTHON)
 
-  FIND_PACKAGE(PythonLibs)
+  # find libraries and include files
+  # TODO would be better to use target_include_directories
+
+  FIND_PACKAGE(PythonLibs REQUIRED)
   INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+  FIND_PACKAGE(Numpy REQUIRED)
+  INCLUDE_DIRECTORIES(${NUMPY_INCLUDE_DIRS})
   # TODO probably better to call the module stirpy or something
   # TODO -builtin option only appropriate for python
   # while the next statement sets it for all modules called stir
