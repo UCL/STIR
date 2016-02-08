@@ -59,6 +59,7 @@
 #ifdef HAVE_LLN_MATRIX
 #include "stir/recon_buildblock/BinNormalisationFromECAT7.h"
 #endif
+#include "stir/recon_buildblock/BinNormalisationFromECAT8.h"
 
 #include "stir/recon_buildblock/FourierRebinning.h"
 
@@ -103,6 +104,10 @@ static BinNormalisationFromECAT7::RegisterIt dummy102;
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 #endif
+
+START_NAMESPACE_ECAT
+static BinNormalisationFromECAT8::RegisterIt dummy103;
+END_NAMESPACE_ECAT
 
 static FourierRebinning::RegisterIt dummyFORE;
 
