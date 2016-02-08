@@ -20,7 +20,7 @@
 */
 
 
-#include "UCL/recon/BinNormalisationFromECAT8.h"
+#include "stir/recon_buildblock/BinNormalisationFromECAT8.h"
 #include "stir/DetectionPosition.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/shared_ptr.h"
