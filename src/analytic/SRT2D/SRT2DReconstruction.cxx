@@ -1,10 +1,11 @@
-/*
+/* 
 \author Dimitra Kyriakopoulou
+\author Dr Kris Thielemans
 
 Initial version June 2012, 1st updated version (4-point symmetry included) November 2012, 2nd updated version (restriction within object boundary) January 2013, 3rd updated version (8-point symmetry included) July 2013  
 */
 
- 
+  
 #include "stir/analytic/SRT2D/SRT2DReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h" 
@@ -15,6 +16,9 @@ Initial version June 2012, 1st updated version (4-point symmetry included) Novem
 #include <vector>
 #include "stir/Sinogram.h"
 #include <math.h>
+
+using std::cerr;
+using std::endl;
 
 START_NAMESPACE_STIR
 
@@ -128,7 +132,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 			    1, 0,
 			    (num_segments_to_combine-1)/2 ));
       shared_ptr<ProjData> 
-	proj_data_to_FBP_ptr(new ProjDataInMemory (ssrb_info_sptr));
+	proj_data_to_FBP_ptr(new ProjDataInMemory (proj_data_ptr->get_exam_info_sptr(), ssrb_info_sptr));
       SSRB(*proj_data_to_FBP_ptr, *proj_data_ptr);
       proj_data_ptr = proj_data_to_FBP_ptr;
     }
@@ -184,7 +188,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	int i,j,slc,k,k1,k2,l;
 	int cns;
 
-	float pp2,aux,x,trm0, trm1, lg, pcon;
+	float pp2,aux,x,trm0, trm1, lg, pcon, rr;
 	float f, f1, fB, f1B, f_, f1_, fB_, f1B_;
 	float term,term1,termB,term1B,termd01B,termd1B,termd0B,termdB,termd0, termd01,termd, termd1;
 	float term_, term1_, termB_, term1B_, termd0_, termd01_, termd0B_, termd01B_, termd_, termd1_, termdB_,termd1B_; 
@@ -198,8 +202,8 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	VoxelsOnCartesianGrid<float>& image = dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);
 	Sinogram<float> sino = proj_data_ptr->get_sinogram((int)((proj_data_ptr->get_min_axial_pos_num(0) + proj_data_ptr->get_max_axial_pos_num(0))/2), 0);
 
-	if (fabs(tangential_sampling - image.get_voxel_size().x())> .001)
-	  error("SRT2D currently needs voxel-size equal to tangential sampling (i.e. zoom 1)");
+	//if (fabs(tangential_sampling - image.get_voxel_size().x())> .001)
+	  //error("SRT2D currently needs voxel-size equal to tangential sampling (i.e. zoom 1)");
 	
 //-- Program variables defined by use of STIR object functions
 	int sx = image.get_x_size(), a=ceil(sx/2.0); 
@@ -236,11 +240,15 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	po_d=2.0*d*d;
 	minus_half_div_d_po_d = minus_half_div_d*po_d;
 
+  rr = 1.0*sx/(sp+1); 
 //-- Creation of the grid
 	for(k1=0; k1<sx; k1++)
-		x1[k1]=-1.0+2.0*k1/(sx-1); 
+		x1[k1]=-1.0*sx/(sp+1)+2.0*sx/(sp+1)*k1/(sx-1); 
+	//x1[k1]=-91.0/129.0+2.0*91.0/129.0*k1/(sx-1); 
+	//x1[k1]=-1.0+2.0*k1/(sx-1); 
 	for(k2=0; k2<sx; k2++) 
-		x2[k2]=-1.0+2.0*k2/(sx-1); 
+		x2[k2]=-1.0*sx/(sp+1)+2.0*sx/(sp+1)*k2/(sx-1); 
+	//x2[k2]=-1.0+2.0*k2/(sx-1); 
 
 //-- Starting calculations per slice
 	// 2D algorithm only
@@ -298,8 +306,10 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 		  std::cerr << " k1 " << k1;
 	  
 			for(k2=0; k2<=k1; k2++){ 
-				aux=sqrt(1.0-x2[k2]*x2[k2]);
-				if(fabs(x2[k2]) >= 1.0 || fabs(x1[k1]) >= aux){ 
+				//aux=sqrt(1.0-x2[k2]*x2[k2]);
+				aux=sqrt(rr*rr-x2[k2]*x2[k2]);
+				//if(fabs(x2[k2]) >= 1.0 || fabs(x1[k1]) >= aux){
+				if(fabs(x2[k2]) >= rr || fabs(x1[k1]) >= aux){  
 					image[cns][imsx + k1][imsx + k2] = 0; 
 					image[cns][imsx + k1][imsx + sx - k2-1] = 0;
 					image[cns][imsx + sx - k1-1][imsx + k2] = 0; 
@@ -832,7 +842,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 
 					} 
 	
-					hx[0]+=term;
+					hx[0]+= term;
 					hx[1]+= term1;
 
 					hx[2]+= termB; 
@@ -847,19 +857,19 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 
 			 
 //--Integration 
-				f=pcon*hx[0];		
-				f1=pcon*hx[1]; 
-				fB=pcon*hx[2]; 
-				f1B=pcon*hx[3]; 
-				f_=pcon*hx[4];
-				f1_=pcon*hx[5]; 
-				fB_=pcon*hx[6];
-				f1B_=pcon*hx[7];   
+				f=2*pcon*hx[0]*2/(sp-1);		
+				f1=2*pcon*hx[1]*2/(sp-1); 
+				fB=2*pcon*hx[2]*2/(sp-1); 
+				f1B=2*pcon*hx[3]*2/(sp-1); 
+				f_=2*pcon*hx[4]*2/(sp-1);
+				f1_=2*pcon*hx[5]*2/(sp-1); 
+				fB_=2*pcon*hx[6]*2/(sp-1);
+				f1B_=2*pcon*hx[7]*2/(sp-1);   
 
 
 //--Saving f
 //Positivity constraint and completion of restriction to boundary object
-				image[cns][imsx +sx-k1-1][imsx + k2] = f>0 && calc1==1 ? f : 0;  
+/*				image[cns][imsx +sx-k1-1][imsx + k2] = f>0 && calc1==1 ? f : 0;  
 				image[cns][imsx +sx-k1-1][imsx + sx - k2-1] = f1>0 && calc2==1 ? f1 : 0; 
 
 				image[cns][imsx +k1][imsx + k2] = fB>0 && calc3==1 ? fB : 0; 
@@ -870,11 +880,21 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 
 				image[cns][imsx +sx-k2-1][imsx + sx - k1-1] = f1_>0 && calc7==1 ? f1_ : 0; 
 				image[cns][imsx +k2][imsx + sx - k1-1] = f1B_>0 && calc8==1 ? f1B_ : 0; 
-			
+*/
+			 	image[cns][imsx +sx-k1-1][imsx + k2] = (calc1==1 ? f : 0);  
+				image[cns][imsx +sx-k1-1][imsx + sx - k2-1] = (calc2==1 ? f1 : 0); 
+
+				image[cns][imsx +k1][imsx + k2] = (calc3==1 ? fB : 0); 
+				image[cns][imsx +k1][imsx + sx - k2-1] = (calc4==1 ? f1B : 0); 
+
+				image[cns][imsx +sx-k2-1][imsx + k1] = (calc5==1 ? f_ : 0); 
+				image[cns][imsx +k2][imsx + k1] = (calc6==1 ? fB_ : 0); 
+
+				image[cns][imsx +sx-k2-1][imsx + sx - k1-1] = (calc7==1 ? f1_ : 0); 
+				image[cns][imsx +k2][imsx + sx - k1-1] = (calc8==1 ? f1B_ : 0); 			
 			}  
 		}
 	}	
-
 
 	return Succeeded::yes;
 } 
