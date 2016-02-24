@@ -14,6 +14,7 @@ LIBDIRS += buildblock recon_buildblock display IO \
 	iterative/OSMAPOSL \
 	iterative/OSSPS \
 	analytic/FBP2D \
+	analytic/SRT2D \
 	analytic/FBP3DRP
 
 EXEDIRS += utilities recon_test \
@@ -26,6 +27,7 @@ EXEDIRS += utilities recon_test \
 	iterative/OSSPS \
 	iterative/POSSPS \
 	analytic/FBP2D \
+	analytic/SRT2D \
 	analytic/FBP3DRP \
 	SimSET \
 	SimSET/scripts \
