@@ -34,6 +34,8 @@ public:
 
   virtual void ask_parameters();
 
+  int num_segments_to_combine;
+  
  protected: 
 
 
@@ -45,6 +47,7 @@ vector<double> thres_restr_bound_vector;
 
   virtual void set_defaults();
   virtual void initialise_keymap();
+  virtual bool post_processing();
 
  inline void spline(float x[],float y[],int n, float y2[]);
 

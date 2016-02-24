@@ -1,5 +1,4 @@
-﻿/* 
-
+/*
 \author Dimitra Kyriakopoulou
 
 Initial version June 2012, 1st updated version (4-point symmetry included) November 2012, 2nd updated version (restriction within object boundary) January 2013, 3rd updated version (8-point symmetry included) July 2013  
@@ -10,6 +9,8 @@ Initial version June 2012, 1st updated version (4-point symmetry included) Novem
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h" 
 #include "stir/ArcCorrection.h"
+#include "stir/SSRB.h"
+#include "stir/ProjDataInMemory.h"
 #include "stir/Array.h"
 #include <vector>
 #include "stir/Sinogram.h"
@@ -24,6 +25,7 @@ set_defaults()
 {
   base_type::set_defaults();
   thres_restr_bound=-pow(10,6); 
+  num_segments_to_combine = -1;
 
 }
 
@@ -34,6 +36,7 @@ SRT2DReconstruction::initialise_keymap()
 
   parser.add_start_key("SRT2DParameters");
   parser.add_stop_key("End");
+  parser.add_key("num_segments_to_combine with SSRB", &num_segments_to_combine);
   parser.add_key("threshold for restriction within boundary", &thres_restr_bound);
   parser.add_key("threshold_per slice for restriction within boundary", &thres_restr_bound_vector);
 }
@@ -43,7 +46,41 @@ SRT2DReconstruction::
 ask_parameters()
 { 
   base_type::ask_parameters();
+  num_segments_to_combine = ask_num("num_segments_to_combine (must be odd)",-1,101,-1);
   thres_restr_bound=ask_num("threshold for restriction within boundary",-pow(10,6),pow(10,6),-pow(10,6));
+}
+
+bool
+SRT2DReconstruction::
+post_processing()
+{
+  if (base_type::post_processing())
+    return true;
+  if (num_segments_to_combine>=0 && num_segments_to_combine%2==0)
+    {
+      warning("num_segments_to_combine has to be odd (or -1), but is %d\n", num_segments_to_combine);
+      return true;
+    }
+
+  if (num_segments_to_combine==-1)
+    {
+      const ProjDataInfoCylindrical * proj_data_info_cyl_ptr =
+	dynamic_cast<const ProjDataInfoCylindrical *>(proj_data_ptr->get_proj_data_info_ptr());
+
+      if (proj_data_info_cyl_ptr==0)
+        num_segments_to_combine = 1; //cannot SSRB non-cylindrical data yet
+      else
+	{
+	  if (proj_data_info_cyl_ptr->get_min_ring_difference(0) != 
+	      proj_data_info_cyl_ptr->get_max_ring_difference(0)
+	      ||
+	      proj_data_info_cyl_ptr->get_num_segments()==1)
+	    num_segments_to_combine = 1;
+	  else
+	    num_segments_to_combine = 3;
+	}
+    }
+  return false;
 }
 
 string SRT2DReconstruction::method_info() const
@@ -75,6 +112,74 @@ Succeeded
 SRT2DReconstruction::
 actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 {
+  // perform SSRB
+  if (num_segments_to_combine>1)
+    {  
+      const ProjDataInfoCylindrical& proj_data_info_cyl =
+	dynamic_cast<const ProjDataInfoCylindrical&>
+	(*proj_data_ptr->get_proj_data_info_ptr());
+
+      //  full_log << "SSRB combining " << num_segments_to_combine 
+      //           << " segments in input file to a new segment 0\n" << endl; 
+
+      shared_ptr<ProjDataInfo> 
+	ssrb_info_sptr(SSRB(proj_data_info_cyl, 
+			    num_segments_to_combine,
+			    1, 0,
+			    (num_segments_to_combine-1)/2 ));
+      shared_ptr<ProjData> 
+	proj_data_to_FBP_ptr(new ProjDataInMemory (ssrb_info_sptr));
+      SSRB(*proj_data_to_FBP_ptr, *proj_data_ptr);
+      proj_data_ptr = proj_data_to_FBP_ptr;
+    }
+  else
+    {
+      // just use the proj_data_ptr we have already
+    }
+
+  // check if segment 0 has direct sinograms
+  {
+    const float tan_theta = proj_data_ptr->get_proj_data_info_ptr()->get_tantheta(Bin(0,0,0,0));
+    if(fabs(tan_theta ) > 1.E-4)
+      {
+	warning("SRT2D: segment 0 has non-zero tan(theta) %g", tan_theta);
+	return Succeeded::no;
+      }
+  }
+
+  float tangential_sampling;
+  // TODO make next type shared_ptr<ProjDataInfoCylindricalArcCorr> once we moved to boost::shared_ptr
+  // will enable us to get rid of a few of the ugly lines related to tangential_sampling below
+  shared_ptr<ProjDataInfo> arc_corrected_proj_data_info_sptr;
+
+  // arc-correction if necessary
+  ArcCorrection arc_correction;
+  bool do_arc_correction = false;
+  if (dynamic_cast<const ProjDataInfoCylindricalArcCorr*>
+      (proj_data_ptr->get_proj_data_info_ptr()) != 0)
+    {
+      // it's already arc-corrected
+      arc_corrected_proj_data_info_sptr =
+	proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone();
+      tangential_sampling =
+	dynamic_cast<const ProjDataInfoCylindricalArcCorr&>
+	(*proj_data_ptr->get_proj_data_info_ptr()).get_tangential_sampling();  
+    }
+  else
+    {
+      // TODO arc-correct to voxel_size
+      if (arc_correction.set_up(proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone()) ==
+	  Succeeded::no)
+	return Succeeded::no;
+      do_arc_correction = true;
+      // TODO full_log
+      warning("FBP2D will arc-correct data first");
+      arc_corrected_proj_data_info_sptr =
+	arc_correction.get_arc_corrected_proj_data_info_sptr();
+      tangential_sampling =
+	arc_correction.get_arc_corrected_proj_data_info().get_tangential_sampling();  
+    }
+  
 //-- Declaration of variables
 	int i,j,slc,k,k1,k2,l;
 	int cns;
@@ -93,12 +198,15 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	VoxelsOnCartesianGrid<float>& image = dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);
 	Sinogram<float> sino = proj_data_ptr->get_sinogram((int)((proj_data_ptr->get_min_axial_pos_num(0) + proj_data_ptr->get_max_axial_pos_num(0))/2), 0);
 
+	if (fabs(tangential_sampling - image.get_voxel_size().x())> .001)
+	  error("SRT2D currently needs voxel-size equal to tangential sampling (i.e. zoom 1)");
+	
 //-- Program variables defined by use of STIR object functions
 	int sx = image.get_x_size(), a=ceil(sx/2.0); 
 
 	int imsx = image.get_min_x(); 
 
-	const int sp = sino.get_num_tangential_poss(); 
+	const int sp =  arc_corrected_proj_data_info_sptr->get_num_tangential_poss(); 
 	const int sth = sino.get_num_views();
 
 //-- Declaration of arrays 
@@ -135,18 +243,18 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 		x2[k2]=-1.0+2.0*k2/(sx-1); 
 
 //-- Starting calculations per slice
-	for(slc=proj_data_ptr->get_min_segment_num(); slc<=proj_data_ptr->get_max_segment_num(); slc++){
-
-		cns=image.get_min_z() - proj_data_ptr->get_min_segment_num() + slc;
+	// 2D algorithm only
+	const int segment_num = 0;      
+	for(slc=proj_data_ptr->get_min_axial_pos_num(segment_num); slc<=proj_data_ptr->get_max_axial_pos_num(segment_num); slc++){
+	  std::cerr << "\nSlice " << slc << std::endl;
+	  
+		cns=image.get_min_z() - proj_data_ptr->get_min_axial_pos_num(segment_num) + slc;
 
 //-- Loading the sinograms  
-		if(proj_data_ptr->get_max_segment_num()-proj_data_ptr->get_min_segment_num()==0) {
-			//one segment case
-			sino = proj_data_ptr->get_sinogram(ceil((proj_data_ptr->get_max_axial_pos_num(slc)-proj_data_ptr->get_min_axial_pos_num(slc))/2.0), 0); 
-			cns = ceil((image.get_max_z()-image.get_min_z())/2.0);
-		}
-		else //many segments case
-			sino = proj_data_ptr->get_sinogram(proj_data_ptr->get_max_segment_num()+slc, 0);      
+		sino = proj_data_ptr->get_sinogram(slc, segment_num);      
+		if (do_arc_correction)
+		  sino =
+		    arc_correction.do_arc_correction(sino);
 
 		for(k=0; k<sp; k++)
 			for(i=0; i<sth; i++){ 	 
@@ -187,6 +295,8 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 
 //----- Starting the calculation of f(x1,x2) -----
 		for(k1=0; k1<=a; k1++){
+		  std::cerr << " k1 " << k1;
+	  
 			for(k2=0; k2<=k1; k2++){ 
 				aux=sqrt(1.0-x2[k2]*x2[k2]);
 				if(fabs(x2[k2]) >= 1.0 || fabs(x1[k1]) >= aux){ 
