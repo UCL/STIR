@@ -83,8 +83,9 @@ run_stir_math(const char * const arguments)
 {
   static string cmdline;
   static string error_string;
-  
-  cmdline = stir_math_executable;
+
+  // note: add extra quotes around executable name to cope with spaces in the filename
+  cmdline = "\"" + stir_math_executable + "\"";
   cmdline += ' ' ;
   cmdline += arguments;
   error_string = "error executing command '";

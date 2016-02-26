@@ -16,6 +16,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011 Hammersmith Imanet Ltd
     Copyright (C) 2013 Kris Thielemans
+    Copyright (C) 2015, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -32,6 +33,7 @@
 */
 
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
+#include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjData.h"
@@ -64,23 +66,30 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(this->get_symmetries_used()->clone());
   
-  for (int segment_num = proj_data.get_min_segment_num(); 
-       segment_num <= proj_data.get_max_segment_num(); 
-       ++segment_num)
-    for (int view= proj_data.get_min_view_num(); 
-	 view <= proj_data.get_max_view_num();
-	 view++)      
-    {       
-      ViewSegmentNumbers vs(view, segment_num);
-      if (!symmetries_sptr->is_basic(vs))
-        continue;
+  const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
+    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
+                                         proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
+                                         0, 1/*subset_num, num_subsets*/);
+#ifdef STIR_OPENMP
+#pragma omp parallel for  shared(proj_data, image, symmetries_sptr) schedule(runtime)  
+#endif
+    // note: older versions of openmp need an int as loop
+  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+    {
+      const ViewSegmentNumbers vs=vs_nums_to_process[i];
+
       info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num());
       
       RelatedViewgrams<float> viewgrams = 
         proj_data.get_empty_related_viewgrams(vs, symmetries_sptr);
       forward_project(viewgrams, image);	  
-      if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
-        error("Error set_related_viewgrams in forward projecting\n");            
+#ifdef STIR_OPENMP
+#pragma omp critical (FORWARDPROJ_SETVIEWGRAMS)
+#endif
+      {
+        if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
+          error("Error set_related_viewgrams in forward projecting");
+      }
     }   
   
 }

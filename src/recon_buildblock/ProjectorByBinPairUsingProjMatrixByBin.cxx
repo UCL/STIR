@@ -106,4 +106,18 @@ get_proj_matrix_ptr() const
   return proj_matrix_sptr.get();
 }
 
+shared_ptr<ProjMatrixByBin>
+ProjectorByBinPairUsingProjMatrixByBin::
+get_proj_matrix_sptr() const
+{
+	return proj_matrix_sptr;
+}
+
+void
+ProjectorByBinPairUsingProjMatrixByBin::
+set_proj_matrix_sptr(const shared_ptr<ProjMatrixByBin>& sptr)
+{
+	proj_matrix_sptr = sptr;
+}
+
 END_NAMESPACE_STIR

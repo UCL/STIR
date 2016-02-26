@@ -151,6 +151,10 @@ be selected at run-time.
 
 */
 
+/*!
+\defgroup threads Items relating to threading of certain STIR functions.
+\ingroup buildblock
+*/
 
 /*!
 \defgroup data_buildblock Acquisition data building blocks

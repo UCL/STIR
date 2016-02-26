@@ -94,9 +94,29 @@ cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatte
     ? &cached_activity_integral_scattpoint_det[scatter_point_num][det_num]
     : 0;
 
-  if (this->use_cache && *location_in_cache!=cache_init_value)
+  /* OPENMP note:
+     We use atomic read/write to get at the cache. This should ensure validity.
+     Probably we could have 2 threads computing the same value that will be
+     cached later, but this might be better than locking (and it's simpler to write).
+     Sadly, this is only supported from OpenMP 3.1, so we need to add some extra checks.
+  */
+  float value;
+#if defined(STIR_OPENMP)
+# if _OPENMP >=201012
+#  pragma omp atomic read
+# else
+#  pragma omp critical(STIRSCATTERESTIMATIONREADCACHE)
+  {
+# endif
+#endif
+  value = *location_in_cache;
+#if defined(STIR_OPENMP) && (_OPENMP <201012)
+  }
+#endif
+
+  if (this->use_cache && value!=cache_init_value)
     {
-      return *location_in_cache;
+      return value;
     }
   else
     {
@@ -106,7 +126,18 @@ cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatte
          detection_points_vector[det_num]
          );
       if (this->use_cache)
+#ifdef STIR_OPENMP
+# if _OPENMP >=201012
+#  pragma omp atomic write
+# else
+#  pragma omp critical(STIRSCATTERESTIMATIONWRITECACHE)
+        {
+# endif
+#endif
         *location_in_cache=result;
+#if defined(STIR_OPENMP) && (_OPENMP <201012)
+        }
+#endif
       return result;
     }
 }
@@ -121,7 +152,21 @@ cached_exp_integral_over_attenuation_image_between_scattpoint_det(const unsigned
     ? &cached_attenuation_integral_scattpoint_det[scatter_point_num][det_num]
     : 0;
 
-  if (this->use_cache && *location_in_cache!=cache_init_value)
+  float value;
+#if defined(STIR_OPENMP)
+# if _OPENMP >=201012
+#  pragma omp atomic read
+# else
+#  pragma omp critical(STIRSCATTERESTIMATIONREADCACHEATTENINT)
+  {
+# endif
+#endif
+  value = *location_in_cache;
+#if defined(STIR_OPENMP) && (_OPENMP <201012)
+  }
+#endif
+
+  if (this->use_cache && value!=cache_init_value)
     {
       return *location_in_cache;
     }
@@ -133,7 +178,18 @@ cached_exp_integral_over_attenuation_image_between_scattpoint_det(const unsigned
          detection_points_vector[det_num]
          );
       if (this->use_cache)
+#ifdef STIR_OPENMP
+# if _OPENMP >=201012
+#  pragma omp atomic write
+# else
+#  pragma omp critical(STIRSCATTERESTIMATIONREADCACHEATTENINT)
+        {
+# endif
+#endif
         *location_in_cache=result;
+#if defined(STIR_OPENMP) && (_OPENMP <201012)
+        }
+#endif
       return result;
     }
 }

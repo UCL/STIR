@@ -25,10 +25,12 @@ set(${dir_LIB_SOURCES}
  ForwardProjectorByBin 
 	ForwardProjectorByBinUsingRayTracing 
 	ForwardProjectorByBinUsingRayTracing_Siddon 
+	PresmoothingForwardProjectorByBin
 	BackProjectorByBin 
 	BackProjectorByBinUsingInterpolation 
 	BackProjectorByBinUsingInterpolation_linear 
 	BackProjectorByBinUsingInterpolation_piecewise_linear 
+	PostsmoothingBackProjectorByBin
 	Reconstruction 
 	AnalyticReconstruction 
 	IterativeReconstruction 
@@ -39,6 +41,7 @@ set(${dir_LIB_SOURCES}
 	DataSymmetriesForBins_PET_CartesianGrid 
 	SymmetryOperation 
 	SymmetryOperations_PET_CartesianGrid 
+        find_basic_vs_nums_in_subset
 	ProjMatrixElemsForOneBin 
 	ProjMatrixElemsForOneDensel 
 	ProjMatrixByBin 
@@ -79,6 +82,11 @@ if (HAVE_ECAT)
 	BinNormalisationFromECAT7
  )
 endif()
+
+# ECAT8 doesn't need the LLN matrix library
+list(APPEND ${dir_LIB_SOURCES}
+	BinNormalisationFromECAT8
+)
 
 if(STIR_MPI)
 set(${dir_LIB_SOURCES}

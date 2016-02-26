@@ -50,6 +50,11 @@ class Succeeded;
 class DynamicDiscretisedDensity
 {
  public:
+  //! A typedef that can be used what the base of the hierarchy is
+  /*! This typedef is used in write_to_file().
+  */
+  typedef DynamicDiscretisedDensity hierarchy_base_type;
+
   typedef DiscretisedDensity<3,float> singleDiscDensT;
  private:
   //! typedef for the private member that stores the densities (one for each time frame)

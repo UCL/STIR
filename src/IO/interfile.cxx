@@ -809,7 +809,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
       output_header << "!SPECT STUDY (acquired data):=\n";
 
       output_header << "!direction of rotation := " 
-                    <<  (angle_increment<0 ? "CCW" : "CW")
+                    <<  (angle_increment>0 ? "CCW" : "CW")
                     << '\n';
       output_header << "start angle := " << angle_first_view << '\n';
 

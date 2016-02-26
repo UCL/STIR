@@ -2,6 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2010-10-15, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 -2013, Kris Thielemans
+    Copyright (C) 2015, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -57,6 +58,7 @@
 #include "stir/is_null_ptr.h"
 #include <cstring>
 #include <fstream>
+#include <algorithm>
 
 #ifndef STIR_NO_NAMESPACES
 using std::istream;
@@ -358,5 +360,43 @@ ProjData::set_segment(const SegmentByView<float>& segment)
   }
   return Succeeded::yes;
 }
-  
+
+
+void 
+ProjData::fill(const float value)
+{
+  for (int segment_num = this->get_min_segment_num(); segment_num <= this->get_max_segment_num(); ++segment_num)
+  {
+    SegmentByView<float> segment(this->get_empty_segment_by_view(segment_num));
+    segment.fill(value);
+    if(this->set_segment(segment) == Succeeded::no)
+      error("Error setting segment of projection data");
+  }
+}
+
+void 
+ProjData::fill(const ProjData& proj_data)
+{
+  shared_ptr<ProjDataInfo> source_proj_data_info_sptr = proj_data.get_proj_data_info_ptr()->create_shared_clone();
+  source_proj_data_info_sptr->reduce_segment_range(std::max(this->get_min_segment_num(), proj_data.get_min_segment_num()),
+                                                   std::min(this->get_max_segment_num(), proj_data.get_max_segment_num()));
+  if ((*this->get_proj_data_info_ptr()) != (*source_proj_data_info_sptr))
+      error("Filling projection data from incompatible  source");
+
+  for (int segment_num = this->get_min_segment_num(); segment_num <= this->get_max_segment_num(); ++segment_num)
+  {
+    if(this->set_segment(proj_data.get_segment_by_view(segment_num))
+       == Succeeded::no)
+      error("Error setting segment of projection data");
+  }
+}
+
+ProjData:: ProjData()
+{}
+
+ProjData::ProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
+		   const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
+  : exam_info_sptr(exam_info_sptr), proj_data_info_ptr(proj_data_info_sptr)
+{}
+
 END_NAMESPACE_STIR

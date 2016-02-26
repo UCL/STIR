@@ -73,7 +73,7 @@ public:
 
   //! Default constructor calls set_defaults()
   PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion();
-
+  
   /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
    \warning After using any of these, you have to call set_up().
@@ -99,7 +99,7 @@ public:
     void
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 							  const TargetT& target, 
-							  int subset_num);
+							  const int subset_num);
 protected:
 
   virtual
@@ -155,7 +155,7 @@ protected:
 
  // TODO doc
   int frame_num;
-  string frame_definition_filename;
+  std::string frame_definition_filename;
   TimeFrameDefinitions frame_defs;
   VectorWithOffset<shared_ptr<BinNormalisation> > _normalisation_sptrs;
 

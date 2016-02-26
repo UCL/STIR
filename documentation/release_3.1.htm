@@ -1,0 +1,209 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Summary of changes in STIR release 3.1 (dated 25/08/2015)</title>
+  </head>
+
+  <body>
+    <h1>Summary of changes in STIR release 3.1 (dated 25/08/2015)</h1>
+
+<p>This version is 100% backwards compatible with STIR 3.0 for the user aside from minor changes 
+when using Python (see below). Developers might need to make minor code changes as 
+detailed below.
+</p>
+<h2>Overall summary</h2>
+<p>This release considerably expands OpenMP support for multi-threaded 
+   execution. Previously, only FBP2D was multi-threaded and it underperformed.
+   Now, any reconstruction code using distributable_computation() (including
+   OSMAPOSL and OSSPS) and the scatter estimation code is multi-threaded. See
+  <ul>
+  <li>Kris Thielemans, Vesna Cuplov, Benjamin A. Thomas, <br />
+  <i><cite>Multi-threaded image reconstruction of 3D PET sinogram data with STIR,</cite></i> <br /> 
+  proc. Fully 3D Conference, Newport, RI, USA, Jun 2015.</li>
+  </ul>
+</p>
+<p>In addition, this version contains preliminary code for Maximum Likelihood estimation
+  of normalisation factors and randoms for PET, written mostly by Kris Thielemans, 
+  then at Hammersmith Imanet Ltd. This code is kindly contributed by GE Healthcare. See
+  <ul>
+   <li>Hogg, K. Thielemans, T. Spinks, N. Spyrou,  <br />
+     <i><cite>Maximum-Likelihood Estimation of Normalisation Factors for PET, </cite></i> <br /> 
+     proc. of IEEE Medical Imaging Conf. 2001, vol. 4 pp. 2065 - 2069.</li>
+  <li>D. Hogg, K. Thielemans, S. Mustafovic and T.J. Spinks,  <br />
+    <i><cite>A Study of Bias for various Iterative Reconstruction Methods in PET,</cite></i> <br /> 
+    Proc. of IEEE Medical Imaging Conf. 2002, vol. 3, pp. 1519 - 1523.</li>
+  </ul>
+
+</p>
+
+<p>Initial support for image-based PSF-modelling in PET.</p>
+<p>There is also initial support for the 32-bit list mode file format
+for Siemens scanners (warning: tested in Biograph mMR only at present).
+</p>
+
+</p>Of course, there is also the usual code-cleanup and 
+improvements to the documentation.
+</p>
+
+<p>This release contains mainly code written by Kris Thielemans, but various bits
+were tested by (in alphabetical order, all UCL except where indicated):
+Ottavia Bertolli, Matthias Ehrhardt, Pawel Markiewicz, Richard Manber,
+Benjamin Thomas (CIRC ASTAR), Yu-jung Tsai, Vesna Cuplov).
+</p>
+
+<h2> Summary for end users (also to be read by developers)</h2>
+
+<h3>Important bug fixes</h3>
+<ul>
+<li>bug fixed in writing of SPECT interfile headers: "direction of rotation" was set incorrect. This 
+affected output of forward_project (and stir_math -s). Reconstruction was not affected though.
+</li>
+<li>fix conversion from raw GATE (it was using the wrong segment-order and data-type).</li>
+<li>the function value of the quadratic prior value was inconsistent with its gradient. It is now
+divided by 2. This bug did not affect OSMAPOSL nor OSSPS, but did affect the value of the 
+objective function being printed out. This bug would cause major problems if you developed your
+own reconstruction algorithms that used the objective function value. (bug found by Yu-Jung Tsai).</li>
+</ul>
+
+<h3>New functionality</h3>
+<ul>
+<li>As mentioned above, many operations are now multi-threaded when you built with OPENMP support.
+By default, we use about 90% of your cores, but you can change that by setting the OMP_NUM_THREADS
+environment variable before you start your STIR work (see the wiki).
+Please note that you cannot enable both OPENMP and MPI.</li>
+<li>Image-based PSF-modelling in PET can be achieved by using projectors
+  that first smooth data image before forward projection or after back projection.
+  However, this is currently somewhat difficult to set-up and has a too high performance impact.
+  Note that the SPECT projector does allow sinogram-based PSF modelling.
+  </li>
+<li>Functions and executables for ML estimation of singles/randoms/normalisation factors.
+These are only minimally documented at the present stage unfortunately.
+</li>
+<li>We now include a shell script for easier scatter estimation.</li>
+<li><tt>lm_generate_headcurve</tt> is a new list mode utility to output total counts.</li>
+<li>List-mode classes for Siemens ECAT8 (32-bit).</li>
+<li>add Verbosity level (currently only to be set from interactive languages)</li>
+</ul>
+
+<h3>Changed functionality</h3>
+<ul>
+<li>
+renamed <code>get_scanner_ptr()</code> and <code>get_proj_data_info_ptr()</code> in the 
+Python (and MATLAB) interface to <code>get_scanner()</code> and <code>get_proj_data_info()</code>
+</li>
+</ul>
+
+
+<h3>Build system</h3>
+<ul>
+<li>provide CMake option to disable ITK usage even if it's found. </li>
+<li>fixes related to OpenMP</li>
+<li> 
+Using <a href="http://www.cmake.org">CMake</a> is now highly recommended (see the wiki). Some options
+such as shared libraries, openmp and SWIG support can only be enabled when using CMake. 
+Hand-crafted Unix Makefiles are still there but are no longer supported and
+will no longer be included in the next release.
+</li>
+</ul>
+
+
+<h3>Known problems</h3>
+<ul>
+<li>SPECT related
+ <ul>
+ <li> Do NOT use current PET projectors on SPECT Data. You will have to choose the "SPECT UB" projector 
+    in all cases (see the sample .par files).</li>
+ <li>The quantitative scale of reconstructed SPECT images is generally different than for PET reconstructions.
+    It probably also behaves differently than the PET projectors when using different voxel sizes.</li>
+ <li>Images are still written as PET Interfile (but this is ignored when reading).</li>
+ <li>At present, the collimator model varies the width of the PSF linearly with distance. This was
+   experimentally verified with some collimators (for normal distances to the collimator).
+   However, we need to add the possibility to use different models.
+  </li>
+  <li><tt>list_projdata_info</tt> still reports SPECT data as if it's a PET scanner, but you can see
+    all necessary geometric info from it anyway.</li>
+  <li><tt>create_projdata_template</tt> only works for PET scanners. For SPECT, you could take the 
+   sample Interfile header, modify it to your needs (and create an empty file for the binary data pointed to
+   by the Interfile header).
+  </li>
+  </ul>
+</li>
+<li>Building with shared libraries is currently broken on many (all?) systems due to inter-dependencies between libraries.</li>
+<li>This release is known to fail when both MPI and shared libraries are enabled. You will see linking errors in all non_MPI executables.</li>
+<li>ECAT6 is no longer supported</li>
+<li>The incremental interpolating back-projector still gives problems in the centre of the images
+on some architectures/compiler/optimisation settings. We recommend to use the ray-tracing
+matrix (with additional rays) instead.</li>
+<li>When using <code>GRAPHICS=X</code> (i.e. on Unix/Linux/MacOSX) the window displaying
+the bitmaps is sometimes empty. This might depend on your X server settings.
+This affects <tt>manip_image</tt>, <tt>manip_projdata</tt> and <tt>display_projdata</tt>. 
+We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
+<tt>stir_write_pgm</tt>).
+</li>
+</ul>
+
+<h3>Minor bug fixes</h3>
+<ul>
+<li>fix HighResWallClockTimer on Linux and Win32 which caused reporting wrong timings in certain situations</li>
+</ul>
+
+<h3>Documentation changes</h3>
+<ul>
+<li>Added documentation on new features</li> 
+<li>The Wiki expands more and more, so use it in addition to the provided PDFs.
+</li>
+ </ul>
+
+<h3>recon_test_pack changes</h3>
+<ul>
+<li>updated version number and added some clarification to the README.txt</li>
+ </ul>
+
+<h3>Other changes to tests</h3>
+<ul>
+<li>added tests for the ITK IO routines</li>
+</ul>
+
+<H2>What's new for developers (aside from what should be obvious
+from the above):</H2>
+
+<h3>Major bugs fixed</h3>
+<ul>
+<li>see above</li>
+</ul>
+
+<h3>New functionality</h3>
+<ul>
+<li><code>write_to_file</code> is a new addition that makes it easier to write
+using the default output file format.</li>
+<li>Added apply/undo methods to <code>BinNormalisation</code> to process whole <code>ProjData</code></li>
+<li>extra functionality for <code>ProjData</code>:
+  <ul>
+   <li>added <code>fill()</code> functions (with float or with another <code>ProjData</code>)</li>
+   <li>added <code>get_proj_data_info_sptr()</code> (also to <code>Sinogram</code> et al)</li>
+  </ul>
+</li>
+
+</ul>
+
+<h3>Other code changes</h3>
+<ul>
+<li>We removed all <code>using std::vector</code> etc statements from .h,.inl,.txx files.
+  This means you might have to modify your own code accordingly.</li>
+<li>Changed <code>ProjMatrixByBin</code> to have separate caches per view-segment number
+  to allow much larger axial/tangential_pos range and for finer-grained OPENMP locking.
+  <br />    
+  <strong>WARNING</strong>: breaks backwards compatibility as <code>ProjMatrixByBin::set_up</code>
+  now has to be called by <code>set_up</code> in each derived class.
+  </li>
+<li><code>info()</code> and <code>warning()</code> really should no longer be used in the
+  <code>printf</code> style, i.e. <code>warning("Some message %d", x)</code> .
+  In the next version, they will only accept 1 argument. Use <code>boost::format</code>.</li>
+<li><code>get_proj_data_info_ptr()</code> and <code>get_scanner_ptr()</code> should no longer be used as they
+can create problems with the lifetime of objects. Use <code>get..._sptr</code> instead.</li>
+</ul>
+
+</body>
+
+</html>
+

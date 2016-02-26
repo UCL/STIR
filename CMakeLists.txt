@@ -26,8 +26,14 @@ cmake_minimum_required(VERSION 2.8.3)
 # add project source to cmake path such that it can use our find_package modules and .cmake files
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/src/cmake)
 
+# set default build-type to Release
+if(NOT CMAKE_BUILD_TYPE)
+   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "type of build: Debug Release RelWithDebInfo MinSizeRel." FORCE)
+endif()
+
 #### enable support for ctest
 ENABLE_TESTING()
 
 ADD_SUBDIRECTORY(src)
 ADD_SUBDIRECTORY(scripts)
+

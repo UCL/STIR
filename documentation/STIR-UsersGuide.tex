@@ -743,6 +743,42 @@ produced), as 9 input segments would be necessary to produce
 3 'complete' output segments.
 \end{description}
 
+\subsubsection{
+FORE}
+\label{sec:FORE}
+The \textit{Fourier Rebinning} algorithm [Def97] is probably the most popular
+rebinning algorithm. It is based on an approximate formula called the
+``frequency-distance relationship''. FORE works better than SSRB but starts
+to fail with larger acceptance angles. Also, the mathematics
+for FORE only works if the data were fully precorrected before running FORE.
+
+\textit{Usage:}
+
+\cmdline{rebin\_projdata fore.par}
+
+The form of a typical parameter file\footnote{Parameter values used here are for
+illustration only and are \textit{not} necessarily recommended.} is as follows:
+
+{\small 
+\begin{verbatim}
+Rebin projdata Parameters :=
+ rebinning type := FORE
+    FORE Parameters :=
+     input file := Your_Input_File_Name.hs
+     output filename prefix := Your_Output_File_Name
+     Smallest angular frequency := 20
+     Smallest transaxial frequency := 20
+     Index for consistency := 20
+     Delta max for small omega := 10
+     maximum absolute segment number to process := 2
+     FORE debug level := 0
+   End FORE Parameters:=
+ END:=
+\end{verbatim}
+
+For the meaning of these parameters, check the documentation for the
+\texttt{FourierRebinning} class or read
+\texttt{src/include/recon\_buildblock/FourierRebinning.h}.
 
 \subsection{
 Image reconstruction programs}
@@ -3719,6 +3755,22 @@ This projector currently has no user-selectable parameters. Nevertheless,
 the 2 keywords given above have to follow the 'forward projector 
 type' keyword in a parameter file.
 
+{ \subsubsubsection{Pre Smoothing}
+}
+This forward projector applies a filter before the normal back-projection.
+This is useful for reconstruction with resolution-recovery 
+by using an (image-based) PSF.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Pre Smoothing Forward Projector Parameters:=
+  Original Forward projector type:= some projector value 
+  ; normal projector parameters
+  filter type:= some filter value
+  ; normal filter parameters
+End Pre Smoothing Forward Projector Parameters:=
+\end{verbatim}
 
 \subsubsection{
 Selecting a back projector}
@@ -3783,6 +3835,22 @@ in a parameter file.
 
 See also online documentation for class BackProjectorByBinUsingInterpolation.
 
+{ \subsubsubsection{Post Smoothing}
+}
+This back projector applies a filter after the normal back-projection.
+This is useful for reconstruction with resolution-recovery 
+by using an (image-based) PSF.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Post Smoothing Back Projector Parameters:=
+  Original Back projector type:= some projector value 
+  ; normal projector parameters
+  filter type:= some filter value
+  ; normal filter parameters
+End Post Smoothing Back Projector Parameters:=
+\end{verbatim}
 
 
 \subsubsection{

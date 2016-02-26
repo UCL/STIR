@@ -29,7 +29,7 @@
 
 #include "local/stir/recon_buildblock/ParametricQuadraticPrior.h"
 #include "stir/Succeeded.h"
-#include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/write_to_file.h"
 #include "stir/IO/read_from_file.h"
 
 START_NAMESPACE_STIR
@@ -173,7 +173,7 @@ compute_gradient(TargetT& prior_gradient,
       char *filename = new char[gradient_filename_prefix.size()+100];
       sprintf(filename, "%s%d.img", gradient_filename_prefix.c_str(), count);
       // This works only for ParametricVoxelsOnCartesianGrid and maybe for other ecat7 format files.    
-      const Succeeded writing_succeeded=OutputFileFormat<TargetT>::default_sptr()->write_to_file(filename, prior_gradient); 
+      write_to_file(filename, prior_gradient); 
       delete[] filename;
     }
 }

@@ -5,8 +5,6 @@ dir := local/recon_buildblock
 $(dir)_LIB_SOURCES:= \
 	ProjMatrixByBinUsingSolidAngle.cxx \
 	PostsmoothingForwardProjectorByBin.cxx \
-	PresmoothingForwardProjectorByBin.cxx \
-	PostsmoothingBackProjectorByBin.cxx \
 	DataSymmetriesForDensels_PET_CartesianGrid.cxx \
 	ProjMatrixByDensel.cxx \
         ProjMatrixByDenselOnCartesianGridUsingElement.cxx \

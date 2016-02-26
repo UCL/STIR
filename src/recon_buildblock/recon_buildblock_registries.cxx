@@ -40,6 +40,8 @@
 
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+#include "stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
+#include "stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
 
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
@@ -57,6 +59,7 @@
 #ifdef HAVE_LLN_MATRIX
 #include "stir/recon_buildblock/BinNormalisationFromECAT7.h"
 #endif
+#include "stir/recon_buildblock/BinNormalisationFromECAT8.h"
 
 #include "stir/recon_buildblock/FourierRebinning.h"
 
@@ -78,9 +81,11 @@ static ProjMatrixByBinSPECTUB::RegisterIt dumy14;
 
 static ForwardProjectorByBinUsingProjMatrixByBin::RegisterIt dummy31;
 static ForwardProjectorByBinUsingRayTracing::RegisterIt dummy32;
+static PostsmoothingBackProjectorByBin::RegisterIt dummy33;
 
 static BackProjectorByBinUsingProjMatrixByBin::RegisterIt dummy51;
 static BackProjectorByBinUsingInterpolation::RegisterIt dummy52;
+static PresmoothingForwardProjectorByBin::RegisterIt dummy53;
 
 static ProjectorByBinPairUsingProjMatrixByBin::RegisterIt dummy71;
 static ProjectorByBinPairUsingSeparateProjectors::RegisterIt dummy72;
@@ -99,6 +104,10 @@ static BinNormalisationFromECAT7::RegisterIt dummy102;
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 #endif
+
+START_NAMESPACE_ECAT
+static BinNormalisationFromECAT8::RegisterIt dummy103;
+END_NAMESPACE_ECAT
 
 static FourierRebinning::RegisterIt dummyFORE;
 

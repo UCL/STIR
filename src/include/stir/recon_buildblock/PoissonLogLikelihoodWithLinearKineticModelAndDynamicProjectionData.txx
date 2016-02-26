@@ -54,7 +54,7 @@
 #include "stir/modelling/ModelMatrix.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.h"
 #ifndef NDEBUG
-#include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/write_to_file.h"
 #endif
 
 START_NAMESPACE_STIR
@@ -559,8 +559,8 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 #ifndef NDEBUG
   info(boost::format("TEMP max: (%1% , %2%)") % temp->construct_single_density(1).find_max() % temp->construct_single_density(2).find_max());
   // Writing images
-  OutputFileFormat<ParametricVoxelsOnCartesianGrid>::default_sptr()->write_to_file("all_params_one_input.img", input);
-  OutputFileFormat<ParametricVoxelsOnCartesianGrid>::default_sptr()->write_to_file("temp_denominator.img", *temp);
+  write_to_file("all_params_one_input.img", input);
+  write_to_file("temp_denominator.img", *temp);
   dyn_input.write_to_ecat7("dynamic_input_from_all_params_one.img");
   dyn_output.write_to_ecat7("dynamic_precomputed_denominator.img");
   DynamicProjData temp_projdata = this->get_dyn_proj_data();

@@ -13,7 +13,7 @@
 	- that STIR is able to select basic processing units at run-time
 	- how to use the (very) basic display facilities in STIR
 
-  See examples/README.txt
+  See README.txt in the directory where this file is located.
 
   \author Kris Thielemans      
 */
@@ -25,7 +25,7 @@
     See STIR/LICENSE.txt for details
 */
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-#include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/write_to_file.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/ProjData.h"
 #include "stir/DiscretisedDensity.h"
@@ -65,8 +65,7 @@ int main()
   back_projector_sptr->back_project(*density_sptr, *proj_data_sptr);
 
   /////////////// output
-    OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-      write_to_file("output", *density_sptr);
+  write_to_file("output", *density_sptr);
 
   return EXIT_SUCCESS;
 }

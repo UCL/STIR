@@ -29,6 +29,7 @@
 
 #include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
+#include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/Bin.h"
 #include "stir/ProjData.h"
@@ -48,6 +49,7 @@ set_up(const shared_ptr<ProjDataInfo>& )
   return Succeeded::yes;  
 }
 
+// TODO remove duplication between apply and undo by just having 1 functino that does the loops
 
 void 
 BinNormalisation::apply(RelatedViewgrams<float>& viewgrams,
@@ -93,21 +95,41 @@ apply(ProjData& proj_data,const double start_time, const double end_time,
 {
   if (is_null_ptr(symmetries_sptr))
     symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_ptr()->create_shared_clone()));
-  for (int segment_num = proj_data.get_min_segment_num(); 
-       segment_num <= proj_data.get_max_segment_num(); 
-       ++segment_num)
-    for (int view= proj_data.get_min_view_num(); 
-	 view <= proj_data.get_max_view_num();
-	 view++)      
-    {       
-      ViewSegmentNumbers vs(view, segment_num);
-      if (!symmetries_sptr->is_basic(vs))
-        continue;
+
+  const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
+    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
+                                         proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
+                                         0, 1/*subset_num, num_subsets*/);
+
+#ifdef STIR_OPENMP
+#pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(runtime)  
+#endif
+    // note: older versions of openmp need an int as loop
+  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+    {
+      const ViewSegmentNumbers vs=vs_nums_to_process[i];
       
-      RelatedViewgrams<float> viewgrams = 
-        proj_data.get_related_viewgrams(vs, symmetries_sptr);
+      RelatedViewgrams<float> viewgrams;
+#ifdef STIR_OPENMP
+      // reading/writing to streams is not safe in multi-threaded code
+      // so protect with a critical section
+      // note that the name of the section has to be same for the get/set
+      // function as they're reading from/writing to the same stream
+#pragma omp critical (BINNORMALISATION_APPLY__VIEWGRAMS)
+#endif
+      {
+        viewgrams = 
+          proj_data.get_related_viewgrams(vs, symmetries_sptr);
+      }
+
       this->apply(viewgrams, start_time, end_time);
-      proj_data.set_related_viewgrams(viewgrams);
+
+#ifdef STIR_OPENMP
+#pragma omp critical (BINNORMALISATION_APPLY__VIEWGRAMS)
+#endif
+      {
+        proj_data.set_related_viewgrams(viewgrams);
+      }
     }
 }
 
@@ -118,21 +140,37 @@ undo(ProjData& proj_data,const double start_time, const double end_time,
 {
   if (is_null_ptr(symmetries_sptr))
     symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_ptr()->create_shared_clone()));
-  for (int segment_num = proj_data.get_min_segment_num(); 
-       segment_num <= proj_data.get_max_segment_num(); 
-       ++segment_num)
-    for (int view= proj_data.get_min_view_num(); 
-	 view <= proj_data.get_max_view_num();
-	 view++)      
-    {       
-      ViewSegmentNumbers vs(view, segment_num);
-      if (!symmetries_sptr->is_basic(vs))
-        continue;
+
+  const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
+    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
+                                         proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
+                                         0, 1/*subset_num, num_subsets*/);
+
+#ifdef STIR_OPENMP
+#pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(runtime)  
+#endif
+    // note: older versions of openmp need an int as loop
+  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+    {
+      const ViewSegmentNumbers vs=vs_nums_to_process[i];
       
-      RelatedViewgrams<float> viewgrams = 
-        proj_data.get_related_viewgrams(vs, symmetries_sptr);
+      RelatedViewgrams<float> viewgrams;
+#ifdef STIR_OPENMP
+#pragma omp critical (BINNORMALISATION_UNDO__VIEWGRAMS)
+#endif
+      {
+        viewgrams = 
+          proj_data.get_related_viewgrams(vs, symmetries_sptr);
+      }
+
       this->undo(viewgrams, start_time, end_time);
-      proj_data.set_related_viewgrams(viewgrams);
+
+#ifdef STIR_OPENMP
+#pragma omp critical (BINNORMALISATION_UNDO__VIEWGRAMS)
+#endif
+      {
+        proj_data.set_related_viewgrams(viewgrams);
+      }
     }
 }
 

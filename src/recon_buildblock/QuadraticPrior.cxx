@@ -30,7 +30,7 @@
 #include "stir/Succeeded.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/IndexRange3D.h"
-#include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/write_to_file.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
@@ -413,8 +413,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
     {
       char *filename = new char[gradient_filename_prefix.size()+100];
       sprintf(filename, "%s%d.v", gradient_filename_prefix.c_str(), count);
-      OutputFileFormat<DiscretisedDensity<3,elemT> >::default_sptr()->
-        write_to_file(filename, prior_gradient);
+      write_to_file(filename, prior_gradient);
       delete[] filename;
     }
 }

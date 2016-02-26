@@ -26,7 +26,7 @@
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/is_null_ptr.h"
-#include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/write_to_file.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/Succeeded.h"
 #include <algorithm>
@@ -226,11 +226,27 @@ set_up(shared_ptr<TargetT> const& target_sptr)
             {
               if (this->get_use_subset_sensitivities())
                 {
+		  if (this->subsensitivity_filenames.empty())
+		    {
+		      warning("'subset sensitivity filenames' is empty. You need to set this before using it.");
+		      return Succeeded::no;
+		    }
                   // read subsensitivies
                   for (int subset=0; subset<this->get_num_subsets(); ++subset)
                     {
-                      const std::string current_sensitivity_filename =
-                        boost::str(boost::format(this->subsensitivity_filenames) % subset);
+                      std::string current_sensitivity_filename;
+                      try
+                        {
+                          current_sensitivity_filename =
+                            boost::str(boost::format(this->subsensitivity_filenames) % subset);
+                        }
+                      catch (std::exception& e)
+                        {
+                          warning(boost::format("Error using 'subset sensitivity filenames' pattern (which is set to '%1%'). "
+                                                "Check syntax for boost::format. Error is:\n%2%") %
+                                  this->subsensitivity_filenames % e.what());
+                          return Succeeded::no;
+                        }
                       info(boost::format("Reading sensitivity from '%1%'") % current_sensitivity_filename);
 
                       this->subsensitivity_sptrs[subset] = 
@@ -247,6 +263,11 @@ set_up(shared_ptr<TargetT> const& target_sptr)
                 }
               else
                 {
+		  if (this->sensitivity_filename.empty())
+		    {
+		      warning("'sensitivity filename' is empty. You need to set this before using it.");
+		      return Succeeded::no;
+		    }
                   // reading single sensitivity
                   const std::string current_sensitivity_filename =
                     this->sensitivity_filename;
@@ -306,9 +327,8 @@ set_up(shared_ptr<TargetT> const& target_sptr)
                       const std::string current_sensitivity_filename =
                         boost::str(boost::format(this->subsensitivity_filenames) % subset);
                       info(boost::format("Writing sensitivity to '%1%'") % current_sensitivity_filename);
-                      OutputFileFormat<TargetT>::default_sptr()->
-                        write_to_file(current_sensitivity_filename,
-                                      this->get_subset_sensitivity(subset));
+                      write_to_file(current_sensitivity_filename,
+                                    this->get_subset_sensitivity(subset));
                     }
                 }
             }
@@ -319,8 +339,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
                   const std::string current_sensitivity_filename =
                     this->sensitivity_filename;
                   info(boost::format("Writing sensitivity to '%1%'") % current_sensitivity_filename);
-                  OutputFileFormat<TargetT>::default_sptr()->
-                    write_to_file(current_sensitivity_filename,
+                  write_to_file(current_sensitivity_filename,
                                   this->get_sensitivity());
                 }
             }

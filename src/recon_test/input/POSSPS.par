@@ -18,8 +18,8 @@ projector pair type := Matrix
   End Ray tracing matrix parameters :=
 End Projector Pair Using Matrix Parameters :=
 
-; if the next parameter is disabled, 
-; the sensitivity will be computed using the normalisation object
+; we need this for backwards compatibility with the testing script
+use subset sensitivities:=0
 sensitivity filename:= sens_POSSPS.img
 ; if next is set to 1, sensitivity will be recomputed
 ; and written to file (if "sensitivity filename" is set)

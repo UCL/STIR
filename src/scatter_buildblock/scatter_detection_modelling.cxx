@@ -39,13 +39,16 @@ unsigned
 ScatterEstimationByBin::
 find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord) const
 {
+  unsigned int ret_value = 0;
+#pragma omp critical(SCATTERESTIMATIONFINDDETECTIONPOINTS)
+  {
   std::vector<CartesianCoordinate3D<float> >::const_iterator iter=
     std::find(detection_points_vector.begin(),
               detection_points_vector.end(),
               coord);
   if (iter != detection_points_vector.end())
     {
-      return iter-detection_points_vector.begin();
+      ret_value = iter-detection_points_vector.begin();
     }
   else
     {
@@ -53,8 +56,10 @@ find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord) const
         error("More detection points than we think there are!\n");
 
       detection_points_vector.push_back(coord);
-      return detection_points_vector.size()-1;
+      ret_value = detection_points_vector.size()-1;
     }
+  }
+  return ret_value;
 }
 
 void

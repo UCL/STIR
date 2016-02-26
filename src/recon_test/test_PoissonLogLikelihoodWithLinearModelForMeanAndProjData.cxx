@@ -49,8 +49,10 @@
 #include "stir/recon_buildblock/distributable_main.h"
 #include "stir/RunTests.h"
 #include "stir/IO/read_from_file.h"
+#include "stir/IO/write_to_file.h"
 #include "stir/info.h"
 #include "stir/Succeeded.h"
+#include "stir/num_threads.h"
 #include <iostream>
 #include <memory>
 #include <boost/random/uniform_01.hpp>
@@ -146,18 +148,18 @@ run_tests_for_objective_function(GeneralisedObjectiveFunction<PoissonLogLikeliho
         this->check_if_equal(gradient_at_iter, *gradient_iter, "gradient");
       ++target_iter; ++ gradient_iter;
     }
-  if (~testOK)
+  if (!testOK)
     {
       info("Writing diagnostic files gradient.hv, numerical_gradient.hv");
-      OutputFileFormat<target_type>::default_sptr()->write_to_file("gradient.hv", *gradient_sptr);
-      OutputFileFormat<target_type>::default_sptr()->write_to_file("numerical_gradient.hv", *gradient_2_sptr);
+      write_to_file("gradient.hv", *gradient_sptr);
+      write_to_file("numerical_gradient.hv", *gradient_2_sptr);
 #if 0
-      OutputFileFormat<target_type>::default_sptr()->write_to_file("subsens.hv", 
-                                                                   reinterpret_cast<const PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type> &>(objective_function).get_subset_sensitivity(subset_num));
+      write_to_file("subsens.hv", 
+                    reinterpret_cast<const PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type> &>(objective_function).get_subset_sensitivity(subset_num));
       gradient_sptr->fill(0.F);
       reinterpret_cast<PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type> &>(objective_function).
         compute_sub_gradient_without_penalty_plus_sensitivity(*gradient_sptr, target, subset_num);
-      OutputFileFormat<target_type>::default_sptr()->write_to_file("gradient-without-sens.hv", *gradient_sptr);
+      write_to_file("gradient-without-sens.hv", *gradient_sptr);
 #endif
     }
 
@@ -218,7 +220,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
       static base_generator_type generator(boost::uint32_t(42));
       static boost::uniform_01<base_generator_type> random01(generator);
       for (target_type::full_iterator iter=density_sptr->begin_all(); iter!=density_sptr->end_all(); ++iter)
-        *iter = random01();
+        *iter = static_cast<float>(random01());
 
     }
   else
@@ -342,6 +344,8 @@ int stir::distributable_main(int argc, char **argv)
 int main(int argc, char **argv)
 #endif
 {
+  set_default_num_threads();
+
   PoissonLogLikelihoodWithLinearModelForMeanAndProjDataTests tests(argc>1? argv[1] : 0,
                                                                    argc>2? argv[2] : 0);
   tests.run_tests();

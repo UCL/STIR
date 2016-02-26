@@ -69,6 +69,8 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
 {
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
+  //this->initialise_uncompressed_view_tangpos_to_det1det2();
+  //this->initialise_det1det2_to_uncompressed_view_tangpos();
 }
 
 ProjDataInfoCylindricalNoArcCorr:: 
@@ -87,6 +89,8 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
   angular_increment = static_cast<float>(_PI/scanner_ptr->get_num_detectors_per_ring());
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
+  //this->initialise_uncompressed_view_tangpos_to_det1det2();
+  //this->initialise_det1det2_to_uncompressed_view_tangpos();
 }
 
 
@@ -322,8 +326,7 @@ ProjDataInfoCylindricalNoArcCorr::
 get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
 			      const Bin& bin) const
 {
-  if (!uncompressed_view_tangpos_to_det1det2_initialised)
-    initialise_uncompressed_view_tangpos_to_det1det2();
+  this->initialise_uncompressed_view_tangpos_to_det1det2_if_not_done_yet();
 
   dps.resize(get_num_det_pos_pairs_for_bin(bin));
 
@@ -671,8 +674,8 @@ get_bin(const LOR<float>& lor) const
 #if 0
     // this uses private member of ProjDataInfoCylindrical
     // enable when moved
-    if (!ring_diff_arrays_computed)
-      initialise_ring_diff_arrays();
+    initialise_ring_diff_arrays_if_not_done_yet();
+
 #ifndef NDEBUG
     bin.axial_pos_num()=0;
     assert(get_m(bin)==- m_offset[bin.segment_num()]);

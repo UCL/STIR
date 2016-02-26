@@ -29,8 +29,8 @@ Bin Normalisation type := From ProjData
     normalisation projdata filename := all_ones.hs
   End Bin Normalisation From ProjData :=
 
-; if the next parameter is disabled, 
-; the sensitivity will be computed using the normalisation object
+; we need this for backwards compatibility with the testing script
+use subset sensitivities:=0
 sensitivity filename:= sens.img
 ; if next is set to 1, sensitivity will be recomputed
 ; and written to file (if "sensitivity filename" is set)

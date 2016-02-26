@@ -4,7 +4,9 @@ set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
 	RigidObject3DTransformation.cxx
-	transform_3d_object.cxx 
+        Transform3DObjectImageProcessor.cxx
+        NonRigidObjectTransformationUsingBSplines.cxx
+	transform_3d_object.cxx
 )
 
 include(stir_lib_target)

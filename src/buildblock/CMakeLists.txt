@@ -36,7 +36,8 @@ set(${dir_LIB_SOURCES}
   KeyParser  
   recon_array_functions 
   linear_regression overlap_interpolate 
-  error warning  
+  error warning
+  TextWriter
   DataSymmetriesForViewSegmentNumbers 
   TimeFrameDefinitions 
   ParsingObject 
@@ -69,6 +70,8 @@ set(${dir_LIB_SOURCES}
         MaximalArrayFilter3D
         MaximalImageFilter3D
         TimeGateDefinitions
+	ML_norm
+        num_threads
 )
 
 if (NOT HAVE_SYSTEM_GETOPT)

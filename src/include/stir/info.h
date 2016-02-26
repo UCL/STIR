@@ -28,6 +28,9 @@
 #include "stir/common.h"
 #include "stir/Verbosity.h"
 #include <iostream>
+#include <sstream>
+
+#include "TextWriter.h"
 
 START_NAMESPACE_STIR
 
@@ -55,10 +58,11 @@ template <class STRING>
 void
 info(const STRING& string, const int verbosity_level = 1)
 {
-  if (Verbosity::get() >= verbosity_level)
-    std::cerr << "\nINFO: "
-	    << string
-	    << std::endl;
+	if (Verbosity::get() >= verbosity_level) {
+		std::stringstream ss;
+		ss <<  "\nINFO: " << string << std::endl;
+		writeText(ss.str().c_str(), INFORMATION_CHANNEL);
+	}
 }
 
 END_NAMESPACE_STIR

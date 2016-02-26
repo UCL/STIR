@@ -31,6 +31,7 @@
 #include "stir/Bin.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/CPUTimer.h"
+#include "stir/HighResWallClockTimer.h"
 #include "stir/Viewgram.h"
 #include "stir/is_null_ptr.h"
 #include "stir/IO/read_from_file.h"
@@ -238,8 +239,8 @@ set_output_proj_data(const std::string& filename)
   // TODO get ExamInfo from image
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
   this->output_proj_data_sptr.reset(new ProjDataInterfile(exam_info_sptr,
-							  this->proj_data_info_ptr->create_shared_clone(),
-							  this->output_proj_data_filename));
+                                                          this->proj_data_info_ptr->create_shared_clone(),
+                                                          this->output_proj_data_filename));
 }
 
 /****************** functions to compute scatter **********************/
@@ -256,9 +257,15 @@ process_data()
   /* ////////////////// SCATTER ESTIMATION TIME ////////////////
    */
   CPUTimer bin_timer;
-  int bin_counter = 0;
   bin_timer.start();
+  // variables to report (remaining) time
+  HighResWallClockTimer wall_clock_timer;
+  double previous_timer = 0 ;          
+  int previous_bin_count = 0 ;
+  int bin_counter = 0;
   int axial_bins = 0 ;
+  wall_clock_timer.start();
+
   for (vs_num.segment_num()=this->proj_data_info_ptr->get_min_segment_num();
        vs_num.segment_num()<=this->proj_data_info_ptr->get_max_segment_num();
        ++vs_num.segment_num())  
@@ -314,26 +321,27 @@ process_data()
           /* ////////////////// SCATTER ESTIMATION TIME ////////////////
            */
           {
-            // TODO remove statics
-            static double previous_timer = 0 ;          
-            static int previous_bin_count = 0 ;
 
+            wall_clock_timer.stop(); // must be stopped before getting the value
             info(boost::format("%1% bins  Total time elapsed %2% sec "
               "\tTime remaining about %3% minutes") 
               % bin_counter 
-              % bin_timer.value() 
-              % ((bin_timer.value()-previous_timer)
+              % wall_clock_timer.value() 
+              % ((wall_clock_timer.value()-previous_timer)
                 *(total_bins-bin_counter)/(bin_counter-previous_bin_count)/60) );
 
-            previous_timer = bin_timer.value() ;
+            previous_timer = wall_clock_timer.value() ;
             previous_bin_count = bin_counter ;
+
+            wall_clock_timer.start();
           }
           /* ////////////////// end SCATTER ESTIMATION TIME ////////////////
            */
         }
     }
-  bin_timer.stop();             
-  this->write_log(bin_timer.value(), total_scatter);
+  bin_timer.stop();
+  wall_clock_timer.stop();
+  this->write_log(wall_clock_timer.value(), total_scatter);
 
   if (detection_points_vector.size() != static_cast<unsigned int>(total_detectors))
     {
@@ -350,35 +358,49 @@ double
 ScatterEstimationByBin::
 process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
 {
-  Bin bin(vs_num.segment_num(), vs_num.view_num(), 0,0);
-  double total_scatter = 0;
-  Viewgram<float> viewgram =
-    this->output_proj_data_sptr->get_empty_viewgram(bin.view_num(), bin.segment_num());       
-
-                
-  for (bin.axial_pos_num()=this->proj_data_info_ptr->get_min_axial_pos_num(bin.segment_num());
-       bin.axial_pos_num()<=this->proj_data_info_ptr->get_max_axial_pos_num(bin.segment_num());
-       ++bin.axial_pos_num())
+  // First construct a vector of all bins that we'll process.
+  // The reason for making this list before the actual calculation is that we can then parallelise over all bins
+  // without having to think about double loops.
+  std::vector<Bin> all_bins;
+  {
+    Bin bin(vs_num.segment_num(), vs_num.view_num(), 0,0);
+    for (bin.axial_pos_num()=this->proj_data_info_ptr->get_min_axial_pos_num(bin.segment_num());
+         bin.axial_pos_num()<=this->proj_data_info_ptr->get_max_axial_pos_num(bin.segment_num());
+         ++bin.axial_pos_num())
     {
       for (bin.tangential_pos_num()=this->proj_data_info_ptr->get_min_tangential_pos_num();
            bin.tangential_pos_num()<=this->proj_data_info_ptr->get_max_tangential_pos_num();
            ++bin.tangential_pos_num())
-        {  
-
-          unsigned det_num_A = 0; // initialise to avoid compiler warnings
-          unsigned det_num_B = 0;
-          this->find_detectors(det_num_A, det_num_B, bin);
-
-          const double scatter_ratio =
-            scatter_estimate(det_num_A, det_num_B);
-                  
-          viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
-            static_cast<float>(scatter_ratio);
-
-          total_scatter += scatter_ratio;
-
+        {
+          all_bins.push_back(bin);
         }
-    } // end loop over axial_pos
+    }
+  }
+
+  // now compute scatter for all bins
+  double total_scatter = 0;
+  Viewgram<float> viewgram =
+    this->output_proj_data_sptr->get_empty_viewgram(vs_num.view_num(), vs_num.segment_num());
+
+#ifdef STIR_OPENMP
+#pragma omp parallel for reduction(+:total_scatter) schedule(dynamic)
+#endif
+  for (int i=0; i<static_cast<int>(all_bins.size()); ++i)
+    {
+      const Bin bin = all_bins[i];
+
+      unsigned det_num_A = 0; // initialise to avoid compiler warnings
+      unsigned det_num_B = 0;
+      this->find_detectors(det_num_A, det_num_B, bin);
+
+      const double scatter_ratio =
+        scatter_estimate(det_num_A, det_num_B);
+             
+      viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
+        static_cast<float>(scatter_ratio);
+
+      total_scatter += scatter_ratio;
+    } // end loop over bins
 
   if (this->output_proj_data_sptr->set_viewgram(viewgram) == Succeeded::no)
     error("ScatterEstimationByBin: error writing viewgram");

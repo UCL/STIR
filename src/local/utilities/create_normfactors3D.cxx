@@ -15,7 +15,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "local/stir/ML_norm.h"
+#include "stir/ML_norm.h"
 
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/Scanner.h"

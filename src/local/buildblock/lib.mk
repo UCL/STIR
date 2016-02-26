@@ -4,7 +4,6 @@
 dir := local/buildblock
 $(dir)_LIB_SOURCES:= \
 	fft.cxx \
-	ML_norm.cxx \
 	multiply_plane_scale_factorsImageProcessor.cxx \
 	Quaternion.cxx \
 	cleanup966ImageProcessor.cxx \

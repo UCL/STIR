@@ -305,6 +305,11 @@ private:
   //! build look-up table for get_view_tangential_pos_num_for_det_num_pair()
   void initialise_det1det2_to_uncompressed_view_tangpos() const;
 
+  //! build look-up table unless already done before
+  inline void initialise_uncompressed_view_tangpos_to_det1det2_if_not_done_yet() const;
+  //! build look-up table unless already done before
+  inline void initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet() const;
+
   virtual bool blindly_equals(const root_type * const) const;
 
 };

@@ -12,7 +12,7 @@
 	- how to use back-project all projection data
 	- output of images
 
-  See examples/README.txt
+  See README.txt in the directory where this file is located.
 
   \author Kris Thielemans      
 */
@@ -25,7 +25,7 @@
 */
 #include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
-#include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/write_to_file.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/ProjData.h"
 #include "stir/DiscretisedDensity.h"
@@ -63,8 +63,7 @@ int main()
   back_projector.back_project(*density_sptr, *proj_data_sptr);
 
   /////////////// output
-    OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-      write_to_file("output", *density_sptr);
+  write_to_file("output", *density_sptr);
 
   return EXIT_SUCCESS;
 }

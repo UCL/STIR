@@ -1,6 +1,6 @@
 % Demo of how to use STIR from matlab to project some data
 
-% Copyright 2014 - University College London
+% Copyright 2014-2015 - University College London
 % This file is part of STIR.
 %
 % This file is free software; you can redistribute it and/or modify
@@ -31,17 +31,15 @@ forwardprojector=stir.ForwardProjectorByBinUsingProjMatrixByBin(projmatrix);
 backprojector=stir.BackProjectorByBinUsingProjMatrixByBin(projmatrix);
 
 %% create projection data for output of forward projection
-% we will currently write to file as at present we cannot read/write for some reason (TODO)
-%inout=bitor(uint32(stir.ios.ios_base_in()),bitor(uint32(stir.ios.trunc()),uint32(stir.ios.out())));
-%projdataout=stir.ProjDataInterfile(projdata.get_exam_info(), projdata.get_proj_data_info(), 'stir_matlab_test.hs',inout);
+% We'll just create the data in memory here
 projdataout=stir.ProjDataInMemory(projdata.get_exam_info(), projdata.get_proj_data_info());
+% Note: we could write to file, but it is right now a bit complicated to open a
+% file for read/write:
+%  inout=bitor(uint32(stir.ios.ios_base_in()),bitor(uint32(stir.ios.trunc()),uint32(stir.ios.out())));
+%  projdataout=stir.ProjDataInterfile(projdata.get_exam_info(), projdata.get_proj_data_info(), 'stir_matlab_test.hs',inout);
 %% forward project an image
 target.fill(2);
 forwardprojector.forward_project(projdataout, target);
-%% work-around read/write problem
-% currently need to close and re-open for reading
-%clear projdataout
-%projdataout=stir.ProjData.read_from_file('stir_matlab_test.hs');
 %% display
 seg=projdataout.get_segment_by_sinogram(0);
 segmatlab=seg.to_matlab();

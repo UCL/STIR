@@ -109,9 +109,10 @@ ProjDataInMemory(const ProjData& proj_data)
 #endif
 
   if (!*sino_stream)
-    error("ProjDataInMemory error initialising stream\n");
+    error("ProjDataInMemory error initialising stream");
 
   // copy data
+  // (note: cannot use fill(projdata) as that uses virtual functions, which won't work in a constructor
   for (int segment_num = proj_data_info_ptr->get_min_segment_num();
        segment_num <= proj_data_info_ptr->get_max_segment_num();
        ++segment_num)

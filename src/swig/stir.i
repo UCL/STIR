@@ -23,21 +23,24 @@
 */
 
 
- %module stir
- %{
+%module stir
+%{
+#define SWIG_FILE_WITH_INIT
+
  /* Include the following headers in the wrapper code */
 #include <string>
 #include <list>
 #include <cstdio> // for size_t
 #include <sstream>
-
+#include <iterator>
 #ifdef SWIGOCTAVE
 // TODO terrible work-around to avoid conflict between stir::error and Octave error
 // they are in conflict with eachother because we need "using namespace stir" below (swig bug)
 #define __stir_error_H__
 #endif
 
- 
+#include "stir/num_threads.h"
+
  #include "stir/Succeeded.h"
  #include "stir/DetectionPosition.h"
  #include "stir/Scanner.h"
@@ -58,6 +61,7 @@
 #include "stir/CartesianCoordinate2D.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/IndexRange.h"
+#include "stir/IndexRange3D.h"
 #include "stir/Array.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
@@ -75,6 +79,7 @@
 
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+#include "stir/OSSPS/OSSPSReconstruction.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
@@ -83,12 +88,21 @@
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
 #include <boost/iterator/reverse_iterator.hpp>
+#include <boost/format.hpp>
+#include <stdexcept>
 
    // TODO need this (bug in swig)
    // this bug occurs (only?) when using "%template(name) someclass;" inside the namespace
    // as opposed to "%template(name) stir::someclass" outside the namespace
    using namespace stir;
    using std::iostream;
+
+#if defined(SWIGPYTHON)
+   // need to declare this internal SWIG function as we're using it in the
+   // helper code below. It is used to convert a Python object to a float.
+   SWIGINTERN int
+   SWIG_AsVal_double (PyObject * obj, double *val);
+#endif
 
    // local helper functions for conversions etc. These are not "exposed" to the target language 
    // (but only enter in the wrapper)
@@ -136,6 +150,135 @@
 	  PyTuple_SET_ITEM(p, d-1, PyFloat_FromDouble(double(c[d])));
 	return p;
       }
+
+    // fill an array from a Python sequence
+    // (could be trivially modified to just write to a C++ iterator)
+    template <int num_dimensions, typename elemT>
+      void fill_Array_from_Python_iterator(stir::Array<num_dimensions, elemT> * array_ptr, PyObject* const arg)
+    {
+      if (!PyIter_Check(arg))
+	throw std::runtime_error("STIR-Python internal error: fill_Array_from_Python_iterators called but input is not an iterator");
+
+      {
+	PyObject *iterator = PyObject_GetIter(arg);
+	
+	PyObject *item;
+	typename stir::Array<num_dimensions, elemT>::full_iterator array_iter = array_ptr->begin_all();
+	while ((item = PyIter_Next(iterator)) && array_iter != array_ptr->end_all()) 
+        {
+	  double val;
+	  // TODO currently hard-wired as double which might imply extra conversions
+	  int ecode = SWIG_AsVal_double(item, &val);
+	  if (SWIG_IsOK(ecode)) 
+	  {
+	    *array_iter++ = static_cast<elemT>(val);
+	  }
+	  else
+	  {
+	    Py_DECREF(item);
+	    Py_DECREF(iterator);
+	    char str[1000];
+	    snprintf(str, 1000, "Wrong type used for fill(): iterator elements are of type %s but needs to be convertible to double",
+			 item->ob_type->tp_name);
+	    throw std::invalid_argument(str);
+	  }
+	  Py_DECREF(item);
+	}
+
+	if (PyIter_Next(iterator) != NULL || array_iter != array_ptr->end_all())
+        {
+	  throw std::runtime_error("fill() called with incorrect range of iterators, array needs to have the same number of elements");
+	}
+	Py_DECREF(iterator);
+
+	if (PyErr_Occurred()) 
+	{
+	  throw std::runtime_error("Error during fill()");
+	}
+      }
+
+    }
+
+#if 0
+    
+    // TODO  does not work yet.
+    // it doesn't compile as includes are in init section, which follows after this in the wrapper
+    // Even if it did compile, it might not work anyway as I haven't tested it.
+    template <typename IterT>
+      void fill_nparray_from_iterator(PyObject * np, IterT iterator)
+    {
+      // This code is more or less a copy of the "simple iterator example" (!) in the Numpy doc
+      // see e.g. http://students.mimuw.edu.pl/~pbechler/numpy_doc/reference/c-api.iterator.html
+      typedef float elemT;
+    NpyIter* iter;
+    NpyIter_IterNextFunc *iternext;
+    char** dataptr;
+    npy_intp* strideptr,* innersizeptr;
+
+    /* Handle zero-sized arrays specially */
+    if (PyArray_SIZE(np) == 0) {
+        return;
+    }
+
+    /*
+     * Create and use an iterator to count the nonzeros.
+     *   flag NPY_ITER_READONLY
+     *     - The array is never written to.
+     *   flag NPY_ITER_EXTERNAL_LOOP
+     *     - Inner loop is done outside the iterator for efficiency.
+     *   flag NPY_ITER_NPY_ITER_REFS_OK
+     *     - Reference types are acceptable.
+     *   order NPY_KEEPORDER
+     *     - Visit elements in memory order, regardless of strides.
+     *       This is good for performance when the specific order
+     *       elements are visited is unimportant.
+     *   casting NPY_NO_CASTING
+     *     - No casting is required for this operation.
+     */
+    iter = NpyIter_New(np, NPY_ITER_WRITEONLY|
+                             NPY_ITER_EXTERNAL_LOOP,
+                        NPY_KEEPORDER, NPY_NO_CASTING,
+                        NULL);
+    if (iter == NULL) {
+      throw std::runtime_error("Error creating numpy iterator");
+    }
+
+    /*
+     * The iternext function gets stored in a local variable
+     * so it can be called repeatedly in an efficient manner.
+     */
+    iternext = NpyIter_GetIterNext(iter, NULL);
+    if (iternext == NULL) {
+        NpyIter_Deallocate(iter);
+	throw std::runtime_error("Error creating numpy iterator function");
+    }
+    /* The location of the data pointer which the iterator may update */
+    dataptr = NpyIter_GetDataPtrArray(iter);
+    /* The location of the stride which the iterator may update */
+    strideptr = NpyIter_GetInnerStrideArray(iter);
+    /* The location of the inner loop size which the iterator may update */
+    innersizeptr = NpyIter_GetInnerLoopSizePtr(iter);
+
+    /* The iteration loop */
+    do {
+        /* Get the inner loop data/stride/count values */
+        char* data = *dataptr;
+        npy_intp stride = *strideptr;
+        npy_intp count = *innersizeptr;
+
+        /* This is a typical inner loop for NPY_ITER_EXTERNAL_LOOP */
+        while (count--) {
+	  *(reinterpret_cast<elemT *>(data)) = static_cast<elemT>(*iterator++);
+            data += stride;
+        }
+
+        /* Increment the iterator to the next inner loop */
+    } while(iternext(iter));
+
+    NpyIter_Deallocate(iter);
+    }
+#endif
+
 #elif defined(SWIGMATLAB)
      // convert stir::Array to matlab (currently always converting to double)
      // note that the order of the dimensions is reversed to take row-first vs column-first ordering into account
@@ -167,8 +310,7 @@
          a.fill(static_cast<elemT>(*data_ptr));
        } else
        { 
-         mexWarnMsgIdAndTxt("stir:array","currently only supporting double or single arrays for filling a stir array");
-         mexErrMsgTxt("Exiting");
+         throw std::runtime_error("currently only supporting double or single arrays for filling a stir array");
        }
      }
 
@@ -190,10 +332,8 @@
        }
        if (matlab_num_dims > static_cast<mwSize>(num_dimensions))
        {
-         mexWarnMsgIdAndTxt("stir:array",
-                            "number of dimensions in matlab array is incorrect for constructing a stir array of dimension %d", 
-                            num_dimensions); 
-         mexErrMsgTxt("Exiting");
+         throw std::runtime_error(boost::str(boost::format("number of dimensions in matlab array is incorrect for constructing a stir array of dimension %d") % 
+                                             num_dimensions)); 
        }
        if (do_resize)
        {
@@ -211,16 +351,13 @@
          const BasicCoordinate<num_dimensions,int> sizes=maxind-minind+1;
          if (!std::equal(m_sizes, m_sizes+matlab_num_dims, boost::make_reverse_iterator(sizes.end())))
          {
-           mexWarnMsgIdAndTxt("stir:array","sizes of matlab array incompatible with stir array");
-           mexErrMsgTxt("Exiting");
+           throw std::runtime_error("sizes of matlab array incompatible with stir array");
          }
-         for (int d=1; d<= num_dimensions-matlab_num_dims; ++d)
+         for (int d=1; d<= num_dimensions-static_cast<int>(matlab_num_dims); ++d)
          {
            if (sizes[d]!=1)
            {
-             mexWarnMsgIdAndTxt("stir:array",
-                               "sizes of first dimensions of the stir array have to be 1 if initialising from a lower dimensional matlab array");
-             mexErrMsgTxt("Exiting");
+             throw std::runtime_error("sizes of first dimensions of the stir array have to be 1 if initialising from a lower dimensional matlab array");
            }
          }
        }       
@@ -234,13 +371,96 @@
          std::copy(data_ptr, data_ptr+a.size_all(), a.begin_all());
        } else
        { 
-         mexWarnMsgIdAndTxt("stir:array","currently only supporting double or single arrays for constructing a stir array");
-         mexErrMsgTxt("Exiting");
+         throw std::runtime_error("currently only supporting double or single arrays for constructing a stir array");
+       }
+     }     
+
+
+     //////////// same for Coordinate
+     // convert stir::BasicCoordinate to matlab (currently always converting to double)
+     template <int num_dimensions, typename elemT>
+     mxArray * BasicCoordinate_to_matlab(const stir::BasicCoordinate<num_dimensions, elemT>& a)
+     {
+       mwSize dims[2];
+       dims[0]=mwSize(num_dimensions);
+       dims[1]=mwSize(1);
+       mxArray *pm = mxCreateNumericArray(mwSize(2), dims, mxDOUBLE_CLASS, mxREAL);
+       double * data_ptr = mxGetPr(pm);
+       std::copy(a.begin(), a.end(), data_ptr);
+       return pm;
+     }
+
+     template <int num_dimensions, typename elemT>
+     void fill_BasicCoordinate_from_matlab_scalar(stir::BasicCoordinate<num_dimensions, elemT>& a, const mxArray *pm)
+     {
+       if (mxIsDouble(pm))
+       {
+         double const* data_ptr = mxGetPr(pm);
+         a.fill(static_cast<elemT>(*data_ptr));
+       } else if (mxIsSingle(pm))
+       {
+         float const* data_ptr = (float *)mxGetData(pm);
+         a.fill(static_cast<elemT>(*data_ptr));
+       } else
+       { 
+         throw std::runtime_error("currently only supporting double or single arrays for filling a stir coordinate");
+       }
+     }
+
+     template <int num_dimensions, typename elemT>
+     void fill_BasicCoordinate_from_matlab(stir::BasicCoordinate<num_dimensions, elemT>& a, const mxArray *pm)
+     {
+       mwSize matlab_num_dims = mxGetNumberOfDimensions(pm);
+       const mwSize * m_sizes = mxGetDimensions(pm);
+       // matlab represents scalars/vectors as a matrix, so let's check this first
+       if (matlab_num_dims == static_cast<mwSize>(2) && m_sizes[1]==static_cast<mwSize>(1))
+       {
+         if (m_sizes[0] ==static_cast<mwSize>(1))
+         {
+           // it's a scalar
+           fill_BasicCoordinate_from_matlab_scalar(a, pm);
+           return;
+         }
+         matlab_num_dims=static_cast<mwSize>(1); // set it to a 1-dimensional array
+       }
+       if (matlab_num_dims != static_cast<mwSize>(1))
+       {
+         throw std::runtime_error(boost::str(boost::format("number of dimensions %d of matlab array is incorrect for constructing a stir coordinate of dimension %d (expecting a column vector)") % 
+                                             matlab_num_dims % num_dimensions)); 
+       }
+       if (m_sizes[0]!=static_cast<mwSize>(num_dimensions))
+       {
+	 throw std::runtime_error("length of matlab array incompatible with stir coordinate");
+       }
+       if (mxIsDouble(pm))
+       {
+         double * data_ptr = mxGetPr(pm);
+         std::copy(data_ptr, data_ptr+a.size(), a.begin());
+       } else if (mxIsSingle(pm))
+       {
+         float * data_ptr = (float *)mxGetData(pm);
+         std::copy(data_ptr, data_ptr+a.size(), a.begin());
+       } else
+       { 
+         throw std::runtime_error("currently only supporting double or single arrays for constructing a stir array");
        }
      }     
 #endif
   } // end namespace swigstir
  %}
+
+#if defined(SWIGPYTHON)
+%include "numpy.i"
+%fragment("NumPy_Fragments");
+#endif
+
+%init %{
+#if defined(SWIGPYTHON)
+  // numpy support
+  import_array();
+   #include <numpy/ndarraytypes.h>
+#endif
+%}
 
 %feature("autodoc", "1");
 
@@ -271,6 +491,8 @@
 %newobject *::read_from_file;
 %newobject *::ask_parameters;
 
+%ignore *::create_shared_clone;
+
 #if defined(SWIGPYTHON)
 %rename(__assign__) *::operator=; 
 #endif
@@ -278,9 +500,29 @@
 // include standard swig support for some bits of the STL (i.e. standard C++ lib)
 %include <stl.i>
 %include <std_list.i>
+%ignore *::begin;
+%ignore *::begin_all;
+%ignore *::end;
+%ignore *::end_all;
+%ignore *::begin_all_const;
+%ignore *::end_all_const;
+
+// always ignore these as they are unsafe in out-of-range index access (use at() instead)
+%ignore *::operator[];
+ // this will be replaced by __getitem__ etc, we could keep this for languages not supported by ADD_indexvalue
+%ignore *::at;
+
 #ifdef STIRMATLAB
 %ignore *::operator>>;
 %ignore *::operator<<;
+%ignore *::operator+=;
+%ignore *::operator-=;
+%ignore *::operator*=;
+%ignore *::operator/=;
+
+// use isequal, not eq at the moment. This might change later.
+//%rename(isequal) *::operator==;
+%rename(isequal) *::eq;
 #endif
 
 #ifndef SWIGOCTAVE
@@ -364,9 +606,79 @@ namespace std {
 
 
 #endif
+  static Array<3,float> create_array_for_proj_data(const ProjData& proj_data)
+  {
+    int num_sinos=proj_data.get_num_axial_poss(0);
+    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
+      {
+        num_sinos += 2*proj_data.get_num_axial_poss(s);
+      }
+    
+    Array<3,float> array(IndexRange3D(num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
+    return array;
+  }
+
+  // a function for  converting ProjData to a 3D array as that's what is easy to use
+  static Array<3,float> projdata_to_3D(const ProjData& proj_data)
+  {
+    Array<3,float> array = create_array_for_proj_data(proj_data);
+    Array<3,float>::full_iterator array_iter = array.begin_all();
+    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
+      {
+        SegmentBySinogram<float> segment=proj_data.get_segment_by_sinogram(s);
+        std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+        std::advance(array_iter, segment.size_all());
+        if (s!=0)
+          {
+            segment=proj_data.get_segment_by_sinogram(-s);
+            std::advance(array_iter, segment.size_all());
+          }
+      }
+    return array;
+  }
+
+  // inverse of the above function
+  void fill_proj_data_from_3D(ProjData& proj_data, const Array<3,float>& array)
+  {
+    int num_sinos=proj_data.get_num_axial_poss(0);
+    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
+      {
+        num_sinos += 2*proj_data.get_num_axial_poss(s);
+      }
+    if (array.size() != static_cast<std::size_t>(num_sinos)||
+        array[0].size() != static_cast<std::size_t>(proj_data.get_num_views()) || 
+        array[0][0].size() != static_cast<std::size_t>(proj_data.get_num_tangential_poss()))
+      {
+        throw std::runtime_error("Incorrect size for filling this projection data");
+      }
+    Array<3,float>::const_full_iterator array_iter = array.begin_all();
+
+    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
+      {
+        SegmentBySinogram<float> segment=proj_data.get_empty_segment_by_sinogram(s);
+        // cannot use std::copy sadly as needs end-iterator for range
+        for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
+             seg_iter != segment.end_all();
+             /*empty*/)
+          *seg_iter++ = *array_iter++;
+        proj_data.set_segment(segment);
+
+        if (s!=0)
+          {
+            segment=proj_data.get_empty_segment_by_sinogram(-s);
+            for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
+                 seg_iter != segment.end_all();
+                 /*empty*/)
+              *seg_iter++ = *array_iter++;
+            proj_data.set_segment(segment);
+          }
+      }
+  }
+  
+  
  } // end of namespace
 
-  %}
+  %} // end of initial code specification for inclusino in the SWIG wrapper
 
 // doesn't work (yet?) because of bug in int template arguments
 // %rename(__getitem__) *::at; 
@@ -442,7 +754,7 @@ namespace std {
  }
 #elif defined(SWIGMATLAB)
 %extend TYPE {
-    %exception getel {
+    %exception paren {
       try
 	{
 	  $action
@@ -454,9 +766,9 @@ namespace std {
         SWIG_exception(SWIG_TypeError,const_cast<char*>(e.what()));
       }
     }
-    %newobject getel;
-    RETTYPE getel(const INDEXTYPE i) { return (*self).at(i); }
-    %exception setel {
+    %newobject paren;
+    RETTYPE paren(const INDEXTYPE i) { return (*self).at(i); }
+    %exception paren_asgn {
       try
 	{
 	  $action
@@ -468,67 +780,14 @@ namespace std {
         SWIG_exception(SWIG_TypeError,const_cast<char*>(e.what()));
       }
     }
-    void setel(const INDEXTYPE i, const RETTYPE val) { (*self).at(i)=val; }
+    void paren_asgn(const INDEXTYPE i, const RETTYPE val) { (*self).at(i)=val; }
  }
 #endif
-%enddef
-
- // more or less redefinition of the above, when returning "by value"
- // but doesn't seem to work yet
-%define %ADD_indexaccessValue(TYPE...)
- //TODO cannot do next line yet because of commas
- //%ADD_indexaccess(int,TYPE##::value_type, TYPE);
-#if defined(SWIGPYTHON)
-#if defined(SWIGPYTHON_BUILTIN)
- //  %feature("python:slot", "sq_item", functype="ssizeargfunc") TYPE##::__getitem__;
- //  %feature("python:slot", "sq_ass_item", functype="ssizeobjargproc") TYPE##::__setitem__;
-%feature("python:slot", "mp_subscript", functype="binaryfunc") TYPE##::__getitem__;
-%feature("python:slot", "mp_ass_subscript", functype="objobjargproc") TYPE##::__setitem__;
-#endif
-%extend TYPE {
-        TYPE##::value_type __getitem__(int i) 
-	  { 
-	    return (*self)[i]; 
-	  };
-	void __setitem__(int i, const TYPE##::value_type val) { (*self)[i]=val; }
- }
-#endif
-%enddef
-
- // more or less redefinition of the above, when returning "by reference"
- // but doesn't seem to work yet
-%define %ADD_indexaccessReference(TYPE...)
- //TODO cannot do this because of commas
- //%ADD_indexaccess(int,TYPE##::reference, TYPE);
-#if defined(SWIGPYTHON)
-#if defined(SWIGPYTHON_BUILTIN)
- //  %feature("python:slot", "sq_item", functype="ssizeargfunc") TYPE##::__getitem__;
- // %feature("python:slot", "sq_ass_item", functype="ssizeobjargproc") TYPE##::__setitem__;
-  %feature("python:slot", "mp_subscript", functype="binaryfunc") TYPE##::__getitem__;
-%feature("python:slot", "mp_ass_subscript", functype="objobjargproc") TYPE##::__setitem__;
-#endif
-%extend TYPE {
-  TYPE##::reference __getitem__(int i) { return (*self)[i]; };
-  void __setitem__(int i, const TYPE##::reference val) { (*self)[i]=val; }
- }
-#endif
-%enddef
-
- // MACROS to call the above, but also instantiate the template
-%define %template_withindexaccess(NAME,RETTYPE,TYPE...)
-%template(NAME) TYPE;
-%ADD_indexaccess(int,RETTYPE,TYPE);
-%enddef
-%define %template_withindexaccessValue(NAME,TYPE...)
-%template(NAME) TYPE;
-%ADD_indexaccessValue(TYPE);
-%enddef
-%define %template_withindexaccessReference(NAME,TYPE...)
-%template(NAME) TYPE;
-%ADD_indexaccessReference(TYPE);
 %enddef
 
  // Finally, start with STIR specific definitions
+
+%include "stir/num_threads.h"
 
 #if 1
 // #define used below to check what to do
@@ -571,7 +830,6 @@ namespace std {
 %shared_ptr(stir::Segment<float>);
 %shared_ptr(stir::Sinogram<float>);
 %shared_ptr(stir::Viewgram<float>);
-// TODO we probably need a list of other classes here
 #else
 namespace boost {
 template<class T> class shared_ptr
@@ -582,19 +840,7 @@ T * operator-> () const;
 }
 #endif
 
-#if defined(SWIGPYTHON)
- // these will be replaced by __getitem__ etc
-%ignore *::at(int);
-#endif
-// always ignore these as they are unsafe in out-of-range index access (use at() instead)
-%ignore *::operator[](const int);
-%ignore *::operator[](int);
-%ignore *::operator[](const int) const;
-%ignore *::operator[](int) const;
-// always ignore const versions as for swig they're the same
-%ignore *::at(int) const;
-
-//  William S Fulton trick for passing templates (wtih commas) through macro arguments
+//  William S Fulton trick for passing templates (with commas) through macro arguments
 // (already defined in swgmacros.swg)
 //#define %arg(X...) X
 
@@ -707,29 +953,6 @@ T * operator-> () const;
 #endif
 
 %include "stir/NumericVectorWithOffset.h"
-// ignore these as problems with num_dimensions-1
-%ignore stir::Array::begin_all();
-%ignore stir::Array::begin_all() const;
-%ignore stir::Array::begin_all_const() const;
-%ignore stir::Array::end_all();
-%ignore stir::Array::end_all() const;
-%ignore stir::Array::end_all_const() const;
-
-// need to ignore at(int) because of SWIG template bug with recursive num_dimensions
-%ignore stir::Array::at(int) const;
-%ignore stir::Array::at(int);
-
-// ignore as we will use ADD_indexvalue
-%ignore stir::Array::at(const BasicCoordinate<num_dimensions, int>&);
-%ignore stir::Array::at(const BasicCoordinate<num_dimensions, int>&) const;
-%ignore stir::Array::at(const BasicCoordinate<1, int>&);
-%ignore stir::Array::at(const BasicCoordinate<1, int>&) const;
-
-// ignore as unsafe index access (and using ADD_indexvalue)
-%ignore stir::Array::operator[](const BasicCoordinate<num_dimensions, int>&);
-%ignore stir::Array::operator[](const BasicCoordinate<num_dimensions, int>&) const;
-%ignore stir::Array::operator[](const BasicCoordinate<1, int>&);
-%ignore stir::Array::operator[](const BasicCoordinate<1, int>&) const;
 
 #ifdef SWIGPYTHON
 // ignore as we will add a version that returns a tuple instead
@@ -823,7 +1046,35 @@ namespace stir {
 #endif // SWIGPYTHON_BUILTIN
 
   }
-#endif // PYTHONCODE
+#elif defined(SWIGMATLAB)
+    %extend BasicCoordinate {
+    // print as [1;2;3] as opposed to non-informative default provided by SWIG
+    void disp()
+    { 
+      std::ostringstream s;
+      s<<'[';
+      for (int d=1; d<=num_dimensions-1; ++d)
+	s << (*$self)[d] << "; ";
+      s << (*$self)[num_dimensions] << "]\n";
+      mexPrintf(s.str().c_str());
+      
+    }
+    //%feature("autodoc", "construct from vector, e.g. [2;3;4] for a 3d coordinate")
+    BasicCoordinate(const mxArray *pm)
+    {
+      $parentclassname * array_ptr = new $parentclassname();
+      swigstir::fill_BasicCoordinate_from_matlab(*array_ptr, pm);
+      return array_ptr;
+    }
+
+    %newobject to_matlab;
+    mxArray * to_matlab()
+    { return swigstir::BasicCoordinate_to_matlab(*$self); }
+
+    void fill(const mxArray *pm)
+    { swigstir::fill_BasicCoordinate_from_matlab(*$self, pm); }
+  }
+  #endif // PYTHON, MATLAB extension of BasicCoordinate
 
   %ADD_indexaccess(int, coordT, BasicCoordinate);
   %template(Int3BasicCoordinate) BasicCoordinate<3,int>;
@@ -863,10 +1114,11 @@ namespace stir {
   %extend Array{
     // add "flat" iterator, using begin_all()
     %newobject flat(PyObject **PYTHON_SELF);
+    %feature("autodoc", "create a Python iterator over all elements, e.g. array.flat()") flat;
     swig::SwigPyIterator* flat(PyObject **PYTHON_SELF) {
       return swigstir::make_forward_iterator(self->begin_all(), self->begin_all(), self->end_all(), *PYTHON_SELF);
     }
-    // add tuple indexing
+    %feature("autodoc", "tuple indexing, e.g. array[(1,2,3)]") __getitem__;
     elemT __getitem__(PyObject* const args)
     {
       stir::BasicCoordinate<num_dimensions, int> c;
@@ -876,6 +1128,7 @@ namespace stir {
 	}
       return (*$self).at(c);
     };
+    %feature("autodoc", "tuple indexing, e.g. array[(1,2,3)]=4") __setitem__;
     void __setitem__(PyObject* const args, const elemT value)
     {
       stir::BasicCoordinate<num_dimensions, int> c;
@@ -886,8 +1139,7 @@ namespace stir {
       (*$self).at(c) = value;
     };
 
-    //! shape version returning a tuple (almost) compatible with numpy
-    // use as array.shape()
+    %feature("autodoc", "return number of elements per dimension as a tuple, (almost) compatible with numpy. Use as array.shape()") shape;
     const PyObject* shape()
     {
       //const stir::BasicCoordinate<num_dimensions, std::size_t> c = (*$self).shape();
@@ -898,11 +1150,26 @@ namespace stir {
       return swigstir::tuple_from_coord(sizes);
     }
 
+    %feature("autodoc", "fill from a Python iterator, e.g. array.fill(numpyarray.flat)") fill;
+    void fill(PyObject* const arg)
+    {
+      if (PyIter_Check(arg))
+      {
+	swigstir::fill_Array_from_Python_iterator($self, arg);
+      }
+      else
+      {
+	char str[1000];
+	snprintf(str, 1000, "Wrong argument-type used for fill(): should be a scalar or an iterator or so, but is of type %s",
+		arg->ob_type->tp_name);
+	throw std::invalid_argument(str);
+      } 
+    }
   }
 #endif
 
   %extend Array{
-    // add way to know how many dimensions there are
+    %feature("autodoc", "return number of dimensions in the array") get_num_dimensions;
     int get_num_dimensions()
     {
       return num_dimensions;
@@ -1023,15 +1290,16 @@ namespace stir {
 %include "stir/Bin.h"
 %newobject stir::ProjDataInfo::ProjDataInfoGE;
 %newobject stir::ProjDataInfo::ProjDataInfoCTI;
-%ignore *::get_scanner_ptr;
+
+%rename (get_scanner) *::get_scanner_ptr;
+%ignore *::get_proj_data_info_ptr;
+%rename (get_proj_data_info) *::get_proj_data_info_sptr;
+%ignore *::get_exam_info_sptr;
+%rename (get_exam_info) *::get_exam_info_sptr;
+
+%rename (set_objective_function) *::set_objective_function_sptr;
+
 %include "stir/ProjDataInfo.h"
-namespace stir{
-  %extend ProjDataInfo
-  {
-    const Scanner& get_scanner() const
-    { return *$self->get_scanner_ptr(); }
-  }
- }
 %include "stir/ProjDataInfoCylindrical.h"
 %include "stir/ProjDataInfoCylindricalArcCorr.h"
 %include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -1043,29 +1311,59 @@ namespace stir{
 %include "stir/SegmentByView.h"
 %include "stir/SegmentBySinogram.h"
 
-%ignore *::get_proj_data_info_ptr;
-%ignore *::get_exam_info_ptr;
-%rename(get_exam_info) *::get_exam_info_sptr;
-%define %extend_with_proj_data_info(CLASS)
-namespace stir{
-  %extend CLASS
+%include "stir/ProjData.h"
+
+namespace stir {
+%extend ProjData 
   {
-    const ProjDataInfo& get_proj_data_info() const
-    { return *$self->get_proj_data_info_ptr(); }
+#ifdef SWIGPYTHON
+    %feature("autodoc", "create a stir 3D Array from the projection data (internal)") to_array;
+    %newobject to_array;
+    Array<3,float> to_array()
+    { 
+      Array<3,float> array = swigstir::projdata_to_3D(*$self);
+      return array;
+    }
+
+    %feature("autodoc", "fill from a Python iterator, e.g. proj_data.fill(numpyarray.flat)") fill;
+    void fill(PyObject* const arg)
+    {
+      if (PyIter_Check(arg))
+      {
+        Array<3,float> array = swigstir::create_array_for_proj_data(*$self);
+	swigstir::fill_Array_from_Python_iterator(&array, arg);
+        swigstir::fill_proj_data_from_3D(*$self, array);        
+      }
+      else
+      {
+	char str[1000];
+	snprintf(str, 1000, "Wrong argument-type used for fill(): should be a scalar or an iterator or so, but is of type %s",
+		arg->ob_type->tp_name);
+	throw std::invalid_argument(str);
+      } 
+    }
+
+#elif defined(SWIGMATLAB)
+    %newobject to_matlab;
+    mxArray * to_matlab()
+    { 
+      Array<3,float> array = swigstir::projdata_to_3D(*$self);
+      return swigstir::Array_to_matlab(array); 
+    }
+
+    void fill(const mxArray *pm)
+    { 
+      Array<3,float> array;
+      swigstir::fill_Array_from_matlab(array, pm, true);
+      swigstir::fill_proj_data_from_3D(*$self, array);
+    }
+#endif
   }
  }
-%enddef
-%include "stir/ProjData.h"
+
 %include "stir/ProjDataFromStream.h"
 %include "stir/ProjDataInterfile.h"
 %include "stir/ProjDataInMemory.h"
-
-%extend_with_proj_data_info(ProjData);
-//%extend_with_proj_data_info(MultipleProjData);
-%extend_with_proj_data_info(Sinogram);
-%extend_with_proj_data_info(Viewgram);
-%extend_with_proj_data_info(Segment);
-%extend_with_proj_data_info(RelatedViewgrams);
 
 namespace stir { 
   %template(FloatViewgram) Viewgram<float>;
@@ -1130,6 +1428,7 @@ namespace stir {
 %shared_ptr(stir::Reconstruction<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >);
+%shared_ptr(stir::OSSPSReconstruction<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::AnalyticReconstruction);
 %shared_ptr(stir::FBP2DReconstruction);
 %shared_ptr(stir::FBP3DRPReconstruction);
@@ -1141,8 +1440,11 @@ namespace stir {
 %include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 
 %include "stir/recon_buildblock/Reconstruction.h"
+ // there's a get_objective_function, so we'll ignore the sptr version
+%ignore *::get_objective_function_sptr;
 %include "stir/recon_buildblock/IterativeReconstruction.h"
 %include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+%include "stir/OSSPS/OSSPSReconstruction.h"
 
 %include "stir/recon_buildblock/AnalyticReconstruction.h"
 %include "stir/analytic/FBP2D/FBP2DReconstruction.h"
@@ -1180,6 +1482,7 @@ namespace stir {
 %template (IterativeReconstruction3DFloat) stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
 //%template () stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
 %template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >;
+%template (OSSPSReconstruction3DFloat) stir::OSSPSReconstruction<stir::DiscretisedDensity<3,float> >;
 
 
 /// projectors

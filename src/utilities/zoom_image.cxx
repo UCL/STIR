@@ -29,7 +29,7 @@
 */
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/zoom.h"
-#include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/write_to_file.h"
 #include "stir/IO/read_from_file.h"
 //#include "stir/utilities.h"
 #include "stir/Succeeded.h"
@@ -78,8 +78,7 @@ int main(int argc, char **argv)
 	zoom_image(*output_image_ptr, *image_ptr);
       }
       // write it to file
-      OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-	write_to_file(output_filename, *output_density_sptr);
+      write_to_file(output_filename, *output_density_sptr);
 
       return EXIT_SUCCESS;
     }
@@ -138,8 +137,7 @@ int main(int argc, char **argv)
     zoom_image(*image_ptr, zooms, offsets_in_mm, new_sizes);
 
   // write it to file
-  OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-    write_to_file(output_filename, new_image);
+  write_to_file(output_filename, new_image);
 
   return EXIT_SUCCESS;
 

@@ -5,10 +5,12 @@ dir := recon_buildblock
 $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	ForwardProjectorByBinUsingRayTracing.cxx \
 	ForwardProjectorByBinUsingRayTracing_Siddon.cxx \
+	PresmoothingForwardProjectorByBin.cxx \
 	BackProjectorByBin.cxx \
 	BackProjectorByBinUsingInterpolation.cxx \
 	BackProjectorByBinUsingInterpolation_linear.cxx \
 	BackProjectorByBinUsingInterpolation_piecewise_linear.cxx \
+	PostsmoothingBackProjectorByBin.cxx \
 	Reconstruction.cxx \
 	AnalyticReconstruction.cxx \
 	IterativeReconstruction.cxx \
@@ -19,6 +21,7 @@ $(dir)_LIB_SOURCES:= ForwardProjectorByBin.cxx \
 	DataSymmetriesForBins_PET_CartesianGrid.cxx \
 	SymmetryOperation.cxx \
 	SymmetryOperations_PET_CartesianGrid.cxx \
+	find_basic_vs_nums_in_subset.cxx \
 	ProjMatrixElemsForOneBin.cxx \
 	ProjMatrixElemsForOneDensel.cxx \
 	ProjMatrixByBin.cxx \

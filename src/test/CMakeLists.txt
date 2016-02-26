@@ -27,9 +27,8 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_DynamicDiscretisedDensity  
 )
 
-set(${dir_TEST_EXE_SOURCES_NO_REGISTRIES}
-        test_ArrayFilter
-	test_proj_data_info
+set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
+
 )
 
 Set(${dir_INVOLVED_TEST_EXE_SOURCES}
@@ -43,6 +42,7 @@ Set(${dir_INVOLVED_TEST_EXE_SOURCES}
 
 set(buildblock_simple_tests
         test_Array
+        test_ArrayFilter
         test_NestedIterator
         test_VectorWithOffset
         test_convert_array
@@ -55,6 +55,8 @@ set(buildblock_simple_tests
 	test_Scanner
 	test_ArcCorrection
 	test_find_fwhm_in_image
+	test_proj_data_info
+	test_proj_data_in_memory
 )
 
 include(stir_test_exe_targets)
@@ -77,7 +79,9 @@ ADD_TEST(test_linear_regression
 ADD_TEST(NAME test_stir_math
    COMMAND test_stir_math $<TARGET_FILE:stir_math>
 )
-# Final note: we could use this to avoid the use of ${CMAKE_CURRENT_BINARY_DIR} in the other tests, but both strategies work fine.
+set_tests_properties(test_stir_math PROPERTIES DEPENDS stir_math)
+
+# Final note: we could use TARGET_FILE to avoid the use of ${CMAKE_CURRENT_BINARY_DIR} in the other tests, but both strategies work fine.
 
 ## add tests for OutputFileFormat
 
