@@ -2,14 +2,18 @@
 /*!
   \file 
   \ingroup listmode
+  \ingroup executables
 
-  \brief Implementation of class stir::LmToProjData
- 
+  \brief Preliminary Implementation of converting GATE ROOT file to STIR ProjData
+
+  Fairly ugly hack from LmToProjData combined with reading ROOT. Based on Sadek Nehmeh's code
+  available on OpenGATE.
+
   \author Kris Thielemans
   \author Sanida Mustafovic
 */
 /*
-    Copyright (C) 2013, University College London
+    Copyright (C) 2015, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -340,76 +344,6 @@ int main(int argc, char** argv)
 	  if (crystal2 >= N_DET)  crystal2 = crystal2 - N_DET;
 	}
 
-#if 0
-      //--------------------------------
-      //  Bin the crystal ring pairs into Michelograms
-      //  u - radial sinogram component
-      //  phi - azimuthal sinogram component
-      //  ring pairs are sorted according to c1 < c2 else flip
-      //  where c1 and c2 are crystals at phi(u = S_WIDTH/2)
-      //--------------------------------
-      phi = ((crystal1 + crystal2 + N_DET/2)%N_DET)/2;
-  
-      if (((crystal1 + crystal2) < (3*N_DET/2)) && ((crystal1 + crystal2) >= (N_DET/2)))
-	u    =  abs(crystal1 - crystal2) -  N_DET/2 + S_WIDTH/2;
-      else u = -abs(crystal1 - crystal2) +  N_DET/2 + S_WIDTH/2;         
-
-      if ( u >= S_WIDTH || u < 0 ) continue;
-
-      if (u%2 == 0) 
-	{
-	  zi = (N_DET/2 - (crystal1 - crystal2) - 1)/2;
-	  if (zi >=  N_DET/4) zi = zi - N_DET/2 + 1;
-	  if (zi <= -N_DET/4) zi = zi + N_DET/2 - 1;
-	}
-      else          
-	{
-	  zi = (N_DET/2 - (crystal1 - crystal2))/2;
-	  if (zi >=  N_DET/4) zi = zi - N_DET/2;
-	  if (zi <= -N_DET/4) zi = zi + N_DET/2;
-	}
-
-      c1 = crystal1 + zi;
-      c2 = crystal2 - zi;
-      if (c1 >= N_DET) c1 = c1 - N_DET;
-      if (c1 < 0)      c1 = c1 + N_DET;
-      if (c2 >= N_DET) c2 = c2 - N_DET;
-      if (c2 < 0)      c2 = c2 + N_DET;
-      
-      if (c1 < c2) flip = 0;
-      else         flip = 1;
-
-      if (flip) 
-	{
-	  swap  = ring1;
-	  ring1 = ring2;
-	  ring2 = swap;
-	}
-
-     // Update the different arrays...
-     //-------------------------------
-     //***ALL EVENTS
-     Mich_r1r2fu[ring2][ring1][phi][u] += 1.;
-
-     if (eventID1 == eventID2)
-       {
-	 //***true+scatter
-	 if (comptonPhantom1 == 0 && comptonPhantom1 == 0)
-	   {
-	     //***true
-	   }
-	 else
-	   {
-	     //***scatter
-	   }
-       }
-     else
-       {
-	 //***random
-       }
-     Counts++;
-	
-#endif
 
     Bin bin;
     if (proj_data_info.
@@ -438,47 +372,6 @@ int main(int argc, char** argv)
   save_and_delete_segments(output, segments, 
 			   start_segment_index, end_segment_index, 
 			   *proj_data_ptr);  
-
-#if 0
-  // Write the data to disk, and then close Michelogram file...
-  //----------------------------------------------------------------
-  ans = fwrite(Mich_r1r2fu,4,(N_RINGS*N_RINGS*N_DET/2*S_WIDTH),Mich_r1r2fuFile);
-  fclose(Mich_r1r2fuFile);
-  
-  // Generate projection files...
-  //-----------------------------
-  // From Segment number -MAX_D_RING to +MAX_D_RING
-  // After phi
-  // After z
-  // After r
-  Int_t S_NUM;
-  for (int i = 0 ; i < 2*MAX_D_RING + 1 ; i++)
-    {
-      if (i <= MAX_D_RING) S_NUM = N_RINGS - MAX_D_RING + i;
-      else                 S_NUM = N_RINGS + MAX_D_RING - i;
-  
-      for (int j = 0 ; j < N_DET/2 ; j++)
-	{ 
-	  float Proj[S_NUM][S_WIDTH];
-	  for (int k = 0 ; k < S_NUM ; k++)
-	    {
-	      if (i <= MAX_D_RING) ring1 = k;
-	      else                 ring2 = k;
-
-	      if (i <= MAX_D_RING) ring2 = ring1 + MAX_D_RING - i;
-	      else                 ring1 = ring2 - MAX_D_RING + i;
-
-	      for (int l = 0 ; l < S_WIDTH ; l++)
-		Proj[k][l] = Mich_r1r2fu[ring2][ring1][j][l];
-	    }
-	  ans = fwrite(Proj,4,(S_NUM*S_WIDTH),Proj_File); 
-	}
-    }
-  
-  fclose(Proj_File);
-#endif
-
-  //-----------------------------
   
   return(EXIT_SUCCESS);
 }
