@@ -2,14 +2,17 @@
 # Example script to reconstruct MMR data with randoms, norm and scatter.
 # Currently supposes you have randoms estimated already.
 
+# Author: Kris Thielemans
+
 # directory with some standard .par files
-par_dir=/home/kris/data/mmr
+: ${par_dir:=~/devel/STIR-UCL-extensions/mMR}
 
-sino_input=sinospan11_f1g1d0b0.hs
+: ${sino_input:=sinospan11_f1g1d0b0.hs}
 # find norm file (variable used in correct_projdata.par)
-export ECATNORM=Norm_20130515125744.hn
+: ${ECATNORM:=Norm_20130515125744.n.hdr.STIR}
+export ECATNORM
 
-norm_sino_prefix=fullnormfactorsspan11
+: ${norm_sino_prefix:=fullnormfactorsspan11}
 
 if [ -r ${norm_sino_prefix}.hs ]; then
   echo "Re-using existing ${norm_sino_prefix}.hs"
@@ -20,19 +23,37 @@ fi
 
 # input files etc
 # (one level up as we will change directory)
-atnimg=~/data/mmr/umap-bed.hv
+: ${atnimg:=~/data/mmr/umap-bed.hv}
 data3d=../${sino_input}
 norm3d=../${norm_sino_prefix}.hs
-randoms3d=../MLrandomsspan11_f1.hs
+: ${randoms3d:=../MLrandoms.hs}
 acf3d=../acf.hs # will be created if it doesn't exist yet
 # image 0 everywhere where activity is zero, 1 elsewhere
-mask_image=../mask_image.hv 
+: ${mask_image:=mask_image.hv}
 
 # all the rest should not need changing
 
+# create mask image if it doesn't exist yet
+if [ -r ${mask_image} ]; then
+  echo Reusing mask image ${mask_image}
+else
+  FWHMx=20 FWHMz=20 postfilter ${mask_image} ${atnimg} ${par_dir}/postfilter_Gaussian.par
+  stir_math --accumulate --including-first  --max-threshold .001 ${mask_image}
+  stir_math --accumulate --including-first  --add-scalar -.00099 ${mask_image}
+  stir_math --accumulate --including-first  --min-threshold 0 ${mask_image}
+  stir_math --accumulate --including-first  --times-scalar 100002 ${mask_image}
+fi
+
+# sum atn images
+stir_math summed_atnimg.hv ${atnimg} ${bedcoilatnimg}
+
 # put all output in a subdir
 mkdir -p output
+# copy image there such that we don't have to worry about names/location
+stir_math output/mask_image.hv ${mask_image}
 cd output
+mask_image=mask_image.hv
+atnimg=../summed_atnimg.hv
 
 cp ${par_dir}/scatter.par .
 
