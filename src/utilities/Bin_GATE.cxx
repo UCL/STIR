@@ -183,8 +183,7 @@ int main(int argc, char** argv)
   Char_t          comptVolName1[40], comptVolName2[40];
   Int_t           compton1, compton2;
   Int_t           runID, sourceID1, sourceID2, eventID1, eventID2; 
-  Int_t           layerID1, layerID2, crystalID1, crystalID2;
-  Int_t           submoduleID1, submoduleID2, moduleID1, moduleID2, rsectorID1, rsectorID2;
+  Int_t           crystalID1, crystalID2;
   Int_t           comptonPhantom1, comptonPhantom2;
   Float_t         energy1, energy2;   
   Float_t         globalPosX1, globalPosX2, globalPosY1, globalPosY2, globalPosZ1, globalPosZ2;
@@ -216,6 +215,8 @@ int main(int argc, char** argv)
   Coincidences->SetBranchAddress("globalPosZ1",&globalPosZ1);
   Coincidences->SetBranchAddress("globalPosZ2",&globalPosZ2);
 #ifdef MODULES
+  Int_t           layerID1, layerID2;
+  Int_t           submoduleID1, submoduleID2, moduleID1, moduleID2, rsectorID1, rsectorID2;
   Coincidences->SetBranchAddress("layerID1",&layerID1);
   Coincidences->SetBranchAddress("layerID2",&layerID2);
   Coincidences->SetBranchAddress("moduleID1",&moduleID1);
@@ -284,7 +285,7 @@ int main(int argc, char** argv)
     {      
 
       if ((i%250000)  == 0 && i!=0)  printf("... %d ",i);       
-      if ((i%1000000) == 0 && i!=0)  printf("\n",i);       
+      if ((i%1000000) == 0 && i!=0)  printf("\n");       
 
       nbytes += Coincidences->GetEntry(i);
 
