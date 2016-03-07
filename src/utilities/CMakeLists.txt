@@ -71,11 +71,14 @@ set(${dir_EXE_SOURCES}
 	find_ML_singles_from_delayed
 )
 
-find_package(ROOT  REQUIRED)
-set (executable Bin_GATE)
+find_package(ROOT)
+if (ROOT_FOUND)
+ set (executable Bin_GATE)
    add_executable(${executable} ${executable} ${STIR_REGISTRIES})
    target_link_libraries(${executable} ${STIR_LIBRARIES} ${ROOT_LIBRARIES})
    SET_PROPERTY(TARGET ${executable} PROPERTY FOLDER "Executables")
+   target_include_directories(Bin_GATE SYSTEM PUBLIC ${ROOT_INCLUDE_DIR})
+endif()
 
 
 if (AVW_FOUND)

@@ -24,9 +24,13 @@ else()
 
   execute_process(
     COMMAND ${ROOT_CONFIG_EXECUTABLE} --version 
-    OUTPUT_VARIABLE ROOT_VERSION
+    OUTPUT_VARIABLE ROOT_TMP
     OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(ROOT_VERSION ${ROOT_TMP} CACHE STRING "ROOT version")
 
+#message("VER ${ROOT_TMP} VER2 ${ROOT_VERSION}")
+
+  set(ROOT_INCLUDE_DIR "" CACHE PATH "include directory for ROOT files")
   execute_process(
     COMMAND ${ROOT_CONFIG_EXECUTABLE} --incdir
     OUTPUT_VARIABLE ROOT_INCLUDE_DIR
@@ -34,12 +38,13 @@ else()
 
   execute_process(
     COMMAND ${ROOT_CONFIG_EXECUTABLE} --libs
-    OUTPUT_VARIABLE ROOT_LIBRARIES
+    OUTPUT_VARIABLE ROOT_TMP
     OUTPUT_STRIP_TRAILING_WHITESPACE)
+  set(ROOT_LIBRARIES ${ROOT_TMP} CACHE STRING "ROOT libraries")
 
   #set(ROOT_LIBRARIES ${ROOT_LIBRARIES} -lThread -lMinuit -lHtml -lVMC -lEG -lGeom -lTreePlayer -lXMLIO -lProof)
   #set(ROOT_LIBRARIES ${ROOT_LIBRARIES} -lProofPlayer -lMLP -lSpectrum -lEve -lRGL -lGed -lXMLParser -lPhysics)
-  set(ROOT_LIBRARY_DIR ${ROOTSYS}/lib)
+  set(ROOT_LIBRARY_DIR ${ROOTSYS}/lib CACHE PATH "ROOT library directory")
 endif()
 
 include(FindPackageHandleStandardArgs)
@@ -49,8 +54,8 @@ find_package_handle_standard_args(ROOT DEFAULT_MSG ROOT_CONFIG_EXECUTABLE
 mark_as_advanced(ROOT_CONFIG_EXECUTABLE)
 
 include(CMakeParseArguments)
-find_program(ROOTCINT_EXECUTABLE rootcint PATHS $ENV{ROOTSYS}/bin)
-find_program(GENREFLEX_EXECUTABLE genreflex PATHS $ENV{ROOTSYS}/bin)
+find_program(ROOTCINT_EXECUTABLE rootcint PATHS ${ROOTSYS}/bin)
+find_program(GENREFLEX_EXECUTABLE genreflex PATHS ${ROOTSYS}/bin)
 find_package(GCCXML)
 
 #----------------------------------------------------------------------------
