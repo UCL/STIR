@@ -20,7 +20,25 @@
 # set ${dir} to the target-name of the library and ${dir_LIB_SOURCES}
 # to its sources
 
-add_library(${dir} ${${dir_LIB_SOURCES}}    )
+#
+# The following code has been modified in order to display .h and .inl files in Qt-Creator
+#
+
+#MESSAGE(STATUS "Configuring library ${dir}")
+set(G_HEADER_PATH "${PROJECT_SOURCE_DIR}/src/include/stir/")
+set(HEADER_PATH "${PROJECT_SOURCE_DIR}/src/include/stir/${dir}")
+
+#MESSAGE(STATUS "Configuring library ${HEADER_PATH}")
+
+FILE(GLOB_RECURSE INC_ALL "${HEADER_PATH}/*.h")
+FILE(GLOB_RECURSE G_INC_ALL "${G_HEADER_PATH}/*.h")
+
+FILE(GLOB_RECURSE I_ INC_ALL "${HEADER_PATH}/*.inl")
+FILE(GLOB_RECURSE I_G_INC_ALL "${G_HEADER_PATH}/*.inl")
+
+#MESSAGE(STATUS "headers: ${INC_ALL}")
+
+add_library(${dir} ${INC_ALL} ${G_INC_ALL} ${I_INC_ALL} ${I_G_INC_ALL} ${${dir_LIB_SOURCES}}  )
 SET_PROPERTY(TARGET ${dir} PROPERTY FOLDER "Libs")
 
 install(TARGETS ${dir} DESTINATION lib)
