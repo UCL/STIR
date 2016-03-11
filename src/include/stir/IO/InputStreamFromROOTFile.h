@@ -47,50 +47,22 @@ template <class RecordT, class OptionsT>
 {
 public:
     typedef std::vector<std::streampos>::size_type SavedPosition;
-    //    //! Constructor taking a ROOT file
-    //    /*! Data will be assumed to start at the current position reported by seekg().
-    //      If reset() is used, it will go back to this starting position.*/
-    //    //!
-    //    //! \brief InputStreamFromROOTFile
-    //    //! \param stream_ptr
-    //    //! \param size_of_record_signature
-    //    //! \param max_size_of_record
-    //    //! \param options
-    //    //! \warning Is going to be deleted
-    //    inline
-    //    InputStreamFromROOTFile(const shared_ptr<std::istream>& stream_ptr,
-    //                            const std::size_t size_of_record_signature,
-    //                            const std::size_t max_size_of_record,
-    //                            const OptionsT& options);
-
-    //    //! Constructor taking a filename
-    //    /*! File will be opened in binary mode. Data will be assumed to
-    //      start at \a start_of_data.
-    //  */
-    //    //!
-    //    //! \brief InputStreamFromROOTFile
-    //    //! \param filename
-    //    //! \param size_of_record_signature
-    //    //! \param max_size_of_record
-    //    //! \param options
-    //    //! \param start_of_data
-    //    //! \warning Is going to be deleted
-    //    //!
-    //    inline
-    //    InputStreamFromROOTFile(const std::string& filename,
-    //                            const std::size_t size_of_record_signature,
-    //                            const std::size_t max_size_of_record,
-    //                            const OptionsT& options,
-    //                            const std::streampos start_of_data = 0);
-
-
 
     //!
     //! \brief InputStreamFromROOTFile
     //! \param filename
+    //! \param crystal_repeater_x According to GATE crystal repeater x - This would be meaningfull in multilayer arrays
+    //! \param crystal_repeater_y According to GATE crystal repeater y - In PET geometry would be the tangestial axis
+    //! \param crystal_repeater_z According to GATE crystal repeater z - Axial axis
+    //! \param submodule_repeater_x According to GATE submodule repeater x - If none then 1
+    //! \param submodule_repeater_y According to GATE submodule repeater y - If none then 1
+    //! \param submodule_repeater_z According to GATE submodule repeater z - If none then 1
+    //! \param module_repeater_x
+    //! \param module_repeater_y
+    //! \param module_repeater_z
+    //! \param rsector_repeater
     //! \author Nikos Efthimiou
-    //! \details The actual default contractor of this class.
-    //!
+    //! \details The default constructor.
     inline
     InputStreamFromROOTFile(const std::string& filename,
                             int crystal_repeater_x, int crystal_repeater_y, int crystal_repeater_z,
@@ -103,7 +75,7 @@ public:
 
     //!
     //! \brief get_next_record
-    //! \param record
+    //! \param record Reference to the Record
     //! \return
     //! \author Nikos Efthimiou
     //!  \details Returns the next record in the ROOT file.
@@ -119,7 +91,9 @@ public:
     //! \return
     //! \author Nikos Efthimiou
     //!  \details go back to starting position
-    //!  \warning Has no significant functionality. Is maintained for compatibility.
+    //!  \warning Has no significant functionality. It sets the current position to the starting position.
+    //!  Is maintained for compatibility.
+    //!
     inline
     Succeeded reset();
 

@@ -76,7 +76,7 @@ endif
 #** EXTRA_CFLAGS: for compiler
 # allow the user to get some extra options by using make EXTRA_CFLAGS=bla 
 ifeq ($(CC),gcc)
-EXTRA_CFLAGS =-Wall -Wno-deprecated
+EXTRA_CFLAGS =-Wall -Wno-deprecated -c `root-config --cflags`
 endif
 
 #** PARALLEL FLAGS***
@@ -108,6 +108,11 @@ EXTRA_LINKFLAGS=
 # local/config.mk can override these defaults
 LLN_INCLUDE_DIR=$(WORKSPACE)/../lln/ecat
 LLN_LIB_DIR=$(LLN_INCLUDE_DIR)
+
+#******** variables used only for ROOT
+# local/config.mk can override these defaults
+ROOT_LIB_DIR=/usr/lib/x86_64-linux-gnu/root5.34
+ROOT_INCLUDE_DIR=/usr/include/root
 
 #******** variables used only for GE RDF IO
 # local/config.mk can override these defaults
@@ -150,7 +155,7 @@ EXTRA_LINKFLAGS+=-Xlinker --enable-auto-import
 endif
 
 NONOPTIM_CFLAGS=-g
-DEBUG_CFLAGS=-D_DEBUG -g
+DEBUG_CFLAGS=-D_DEBUG -ggdb -g3
 
 OPTIM_LINKFLAGS=
 NONOPTIM_LINKFLAGS=-g
@@ -174,7 +179,7 @@ endif
 # if so, we should additionally check on ifeq($(CC),gcc)
 # as -Xlinker is only appropriate for gcc
 ifeq ($(SYSTEM),CC)
-LINKFLAGS=-Xlinker -bbigtoc $(EXTRA_LINKFLAGS) $(EXTRA_LIBS)
+LINKFLAGS=-Xlinker -bbigtoc $(EXTRA_LINKFLAGS) $(EXTRA_LIBS) `root-config --libs`
 else
 LINKFLAGS=$(EXTRA_LINKFLAGS) $(EXTRA_LIBS) 
 endif
