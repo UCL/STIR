@@ -56,7 +56,6 @@
 #include "stir/IO/ECAT8_32bitListmodeInputFileFormat.h"
 
 //! Addition for ROOT support - Nikos Efthimiou
-
 #ifdef HAVE_CERN_ROOT
 #include "stir/IO/ROOTListmodeInputFileFormat.h"
 #endif

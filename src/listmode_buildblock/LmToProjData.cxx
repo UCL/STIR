@@ -175,6 +175,9 @@ initialise_keymap()
   parser.add_key("do pre normalisation ", &do_pre_normalisation);
   parser.add_key("num_segments_in_memory", &num_segments_in_memory);
 
+  parser.add_key("exclude scattered events", &exclude_scattered);
+  parser.add_key("exclude random events", &exclude_random);
+
   //if (lm_data_ptr->has_delayeds()) TODO we haven't read the CListModeData yet, so cannot access has_delayeds() yet
   // one could add the next 2 keywords as part of a callback function for the 'input file' keyword.
   // That's a bit too much trouble for now though...

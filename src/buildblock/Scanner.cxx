@@ -203,6 +203,16 @@ Scanner::Scanner(Type scanner_type)
                2, 1, 8, 9, 16, 9, 1 ); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
     break;
 
+  case Siemens_mCT: // dummy
+          // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
+          // Transaxial blocks have 8 physical crystals and a gap at the
+          // 9th crystal where the counts are zero.
+          set_params(Siemens_mCT, string_list("Siemens mCT", "mCT", "2011"),
+                     52, 312, 624,
+                     424.5F, 7.0F, 4.16F, 2.0F, 0.0F,
+                     2, 1, 8, 9, 16, 9, 1 ); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+          break;
+
   case RPT:
     
     set_params(RPT, string_list("PRT-1", "RPT"), 

@@ -84,7 +84,7 @@ get_detection_position(DetectionPositionPair<>& det_pos) const
     return Succeeded::yes;
 }
 
-void
+Succeeded
 CListEventROOT::
 set_detection_position(const DetectionPositionPair<>&)
 {

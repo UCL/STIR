@@ -5,7 +5,6 @@
 #include "stir/IO/InputFileFormat.h"
 #include "stir/listmode/CListModeDataROOT.h"
 
-
 #include "stir/utilities.h"
 #include <string>
 

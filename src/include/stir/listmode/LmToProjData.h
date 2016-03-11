@@ -209,6 +209,11 @@ protected:
   //! \name parsing functions
   //@{
   virtual void set_defaults();
+  //!
+  //! \brief initialise_keymap
+  //! \date 11/03/2016
+  //! \author Nikos Efthimiou
+  //! \details New keymaps added, for ROOT: Exclude scattered, Exclude random
   virtual void initialise_keymap();
   virtual bool post_processing();
   //@}
@@ -239,6 +244,14 @@ protected:
   //! This will be used for post-normalisation
   shared_ptr<BinNormalisation> post_normalisation_ptr;
 
+  //!
+  //! \brief exclude_scattered Applied only in ROOT files
+  //! \author Nikos Efthimiou
+  bool exclude_scattered;
+  //!
+  //! \brief exclude_random Applied only in ROOT files
+  //! \author Nikos Efthimiou
+  bool exclude_random;
   //@}
 
   //! Pointer to the actual data
