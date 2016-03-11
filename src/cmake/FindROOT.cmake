@@ -1,7 +1,7 @@
 find_program(HAS_GLOBAL_ROOT "root-config")
 
 if (HAS_GLOBAL_ROOT)
-  #SET(CERN_ROOT_INCLUDE_DIRS `root-config --cflags`)
+
   set (root_cmd "root-config")
   set (root_incl_arg "--incdir")
   set (root_lib_arg "--libs")
@@ -10,9 +10,10 @@ if (HAS_GLOBAL_ROOT)
   CERN_ROOT_INCLUDE_DIRS)
 
   execute_process(COMMAND ${root_cmd} ${root_lib_arg} OUTPUT_VARIABLE
-  CERN_ROOT_LIBRARIES)
+  TCERN_ROOT_LIBRARIES)
 
-  #message(STATUS "NIKOS: " ${CERN_ROOT_INCLUDE_DIRS})
+  string (REPLACE ";" " " TCERN_ROOT_LIBRARIES "${CERN_ROOT_LIBRARIES}")
+
 endif(HAS_GLOBAL_ROOT)
 
 INCLUDE(FindPackageHandleStandardArgs)

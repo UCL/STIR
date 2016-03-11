@@ -75,11 +75,17 @@ public CListEventCylindricalScannerWithDiscreteDetectors
     CListEventCylindricalScannerWithDiscreteDetectors(scanner_sptr)
     {}
 
-  //! This routine returns the corresponding detector pair   
-  inline void get_detection_position(DetectionPositionPair<>&) const;
+  //! This routine returns the corresponding detector pair
+  //! \date  11/03/16
+  //! \author Nikos Efthimiou
+  //! \details I changed the return type is Succeeded.
+  inline Succeeded get_detection_position(DetectionPositionPair<>&) const;
 
 /*! This routine constructs a (prompt) coincidence event */
-  inline void set_detection_position(const DetectionPositionPair<>&);
+  //! \date  11/03/16
+  //! \author Nikos Efthimiou
+  //! \details I changed the return type is Succeeded.
+  inline Succeeded set_detection_position(const DetectionPositionPair<>&);
 
   //! warning only ProjDataInfoCylindricalNoArcCorr
   inline virtual

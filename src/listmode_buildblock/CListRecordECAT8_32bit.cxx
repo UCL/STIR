@@ -60,7 +60,7 @@ CListEventECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
     }
 }
 
-void
+Succeeded
 CListEventECAT8_32bit::
 get_detection_position(DetectionPositionPair<>& det_pos) const
 {
@@ -91,7 +91,7 @@ get_detection_position(DetectionPositionPair<>& det_pos) const
   this->get_uncompressed_proj_data_info_sptr()->get_det_pos_pair_for_bin(det_pos,uncompressed_bin);  
 }
 
-void
+Succeeded
 CListEventECAT8_32bit::
 set_detection_position(const DetectionPositionPair<>&)
 {

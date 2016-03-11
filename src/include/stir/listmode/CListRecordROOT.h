@@ -73,10 +73,16 @@ public:
     CListEventROOT(const shared_ptr<ProjDataInfo>& proj_data_info_sptr);
 
     //! This routine returns the corresponding detector pair
+    //! \date  11/03/16
+    //! \author Nikos Efthimiou
+    //! \details I changed the return type is Succeeded.
     virtual Succeeded get_detection_position(DetectionPositionPair<>&) const;
 
     //! This routine sets in a coincidence event from detector "indices"
-    virtual void set_detection_position(const DetectionPositionPair<>&);
+    //! \date  11/03/16
+    //! \author Nikos Efthimiou
+    //! \details I changed the return type is Succeeded.
+    virtual Succeeded set_detection_position(const DetectionPositionPair<>&);
 
     bool is_data() const
     {

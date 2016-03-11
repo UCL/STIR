@@ -49,10 +49,16 @@ public:
     { return this->scanner_sptr.get(); }
 
   //! This routine returns the corresponding detector pair   
-  virtual void get_detection_position(DetectionPositionPair<>&) const = 0;
+  //! \date  11/03/16
+  //! \author Nikos Efthimiou
+  //! \details I changed the return type is Succeeded.
+  virtual Succeeded get_detection_position(DetectionPositionPair<>&) const = 0;
 
   //! This routine sets in a coincidence event from detector "indices"
-  virtual void set_detection_position(const DetectionPositionPair<>&) = 0;
+  //! \date  11/03/16
+  //! \author Nikos Efthimiou
+  //! \details I changed the return type is Succeeded.
+  virtual Succeeded set_detection_position(const DetectionPositionPair<>&) = 0;
 
   //! find LOR between detector pairs
   /*! Overrides the default implementation to use get_detection_position()

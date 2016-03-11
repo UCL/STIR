@@ -66,6 +66,10 @@ if (LLN_FOUND)
   target_link_libraries(IO ${LLN_LIBRARIES})
 endif()
 
+if (CERN_ROOT_FOUND)
+  target_link_libraries(IO ${CERN_ROOT_LIBRARIES})
+endif()
+
 if (AVW_FOUND)
   target_link_libraries(IO ${AVW_LIBRARIES})
 endif()

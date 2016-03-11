@@ -28,7 +28,7 @@
 START_NAMESPACE_STIR
 
 template <class Derived>
-void 
+Succeeded
 CListEventCylindricalScannerWithViewTangRingRingEncoding<Derived>::
 get_detection_position(DetectionPositionPair<>& det_pos) const
 {
@@ -50,7 +50,7 @@ get_detection_position(DetectionPositionPair<>& det_pos) const
 }
 
 template <class Derived>
-void 
+Succeeded
 CListEventCylindricalScannerWithViewTangRingRingEncoding<Derived>::
 set_detection_position(const DetectionPositionPair<>& det_pos)
 {
