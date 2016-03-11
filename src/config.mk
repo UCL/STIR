@@ -76,7 +76,7 @@ endif
 #** EXTRA_CFLAGS: for compiler
 # allow the user to get some extra options by using make EXTRA_CFLAGS=bla 
 ifeq ($(CC),gcc)
-EXTRA_CFLAGS =-Wall -Wno-deprecated -c `root-config --cflags`
+EXTRA_CFLAGS =-Wall -Wno-deprecated 
 endif
 
 #** PARALLEL FLAGS***
@@ -162,13 +162,13 @@ NONOPTIM_LINKFLAGS=-g
 DEBUG_LINKFLAGS=-g
 
 ifeq ($(BUILD),debug)
-CFLAGS = $(DEBUG_CFLAGS) $(OPENMP_CFLAGS) $(MPI_CFLAGS) $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
+CFLAGS = $(DEBUG_CFLAGS) $(OPENMP_CFLAGS) $(MPI_CFLAGS) $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) -c`root-config --cflags`
 else 
 ifeq ($(BUILD),nonopt)
-CFLAGS = $(NONOPTIM_CFLAGS)  $(OPENMP_CFLAGS) $(MPI_CFLAGS) $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
+CFLAGS = $(NONOPTIM_CFLAGS)  $(OPENMP_CFLAGS) $(MPI_CFLAGS) $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) -c`root-config --cflags`
 else
 # release version
-CFLAGS = $(OPTIM_CFLAGS)  $(OPENMP_CFLAGS) $(MPI_CFLAGS) $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
+CFLAGS = $(OPTIM_CFLAGS)  $(OPENMP_CFLAGS) $(MPI_CFLAGS) $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) -c`root-config --cflags`
 endif
 endif 
 

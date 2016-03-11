@@ -40,6 +40,7 @@ option(DISABLE_ITK "disable use of ITK library" OFF)
 option(DISABLE_AVW "disable use of AVW library" OFF)
 option(DISABLE_RDF "disable use of GE RDF library" OFF)
 option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
+option(DISABLE_CERN_ROOT_SUPPORT "disable use of Cern ROOT libraries" OFF)
 
 if(NOT DISABLE_ITK)
    # See if we can find a compiled version of ITK (http://www.itk.org/)
@@ -48,6 +49,10 @@ endif()
 
 if(NOT DISABLE_LLN_MATRIX)
   find_package(LLN)
+endif()
+
+if(NOT DISABLE_CERN_ROOT_SUPPORT)
+  find_package(ROOT)
 endif()
 
 if(NOT DISABLE_AVW)
@@ -66,6 +71,16 @@ if (LLN_FOUND)
 
 else()
   message(STATUS "ECAT support disabled.")
+endif()
+
+if (CERN_ROOT_FOUND)
+  set(HAVE_CERN_ROOT ON)
+  message(STATUS "CERN ROOT support enabled.")
+  add_definitions(-D HAVE_CERN_ROOT)
+  include_directories(${CERN_ROOT_INCLUDE_DIRS})
+  message(STATUS "NIKOS: " ${CERN_ROOT_INCLUDE_DIRS})
+else()
+  message(STATUS "CERN ROOT support disabled.")
 endif()
 
 if (AVW_FOUND)

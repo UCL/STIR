@@ -18,10 +18,6 @@
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
 
-#include <iostream>
-#include <string>
-#include <vector>
-
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TChain.h>
@@ -40,7 +36,7 @@ START_NAMESPACE_STIR
         \author Nikos Efthimiou
 
         \details This class takes as input a root file, and returns the data stored in a meaningfull
-        way.
+        way. The validation of the ROOT input was done with version 5.34.
 */
 template <class RecordT, class OptionsT>
         class InputStreamFromROOTFile

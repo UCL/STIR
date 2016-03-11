@@ -37,18 +37,6 @@
 #include "boost/cstdint.hpp"
 #include "stir/DetectionPositionPair.h"
 
-
-#include <TROOT.h>
-#include <TSystem.h>
-#include <TChain.h>
-#include <TH2D.h>
-#include <TDirectory.h>
-#include <TList.h>
-#include <TChainElement.h>
-#include <TTree.h>
-#include <TFile.h>
-#include <TVersionCheck.h>
-
 START_NAMESPACE_STIR
 
 //! Class for decoding storing and using a raw coincidence event from a listmode file from any ROOT file
