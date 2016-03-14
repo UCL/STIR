@@ -231,6 +231,11 @@ class CListTimeECAT8_32bit : public CListTime
   virtual const CListTimeECAT8_32bit&   time() const
     { return this->time_data; }
 
+  bool is_random() const
+    { return false; }
+  bool is_scattered() const
+    { return false; }
+
   bool operator==(const CListRecord& e2) const
   {
     return dynamic_cast<CListRecordECAT8_32bit const *>(&e2) != 0 &&

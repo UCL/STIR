@@ -5,9 +5,9 @@
   \ingroup listmode
   \brief Declarations of classes stir::CListRecord, stir::CListTime and stir::CListEvent which
   are used for list mode data.
-    
+
   \author Kris Thielemans
-      
+
 */
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
@@ -49,33 +49,33 @@ template <typename coordT> class LORAs2Points;
     energy windows and time-of-flight info. Also, get_bin() would need
     time info or so for rotating scanners.
 
-    \see CListModeData for more info on list mode data. 
+    \see CListModeData for more info on list mode data.
 */
 class CListEvent
 {
 public:
-  virtual ~CListEvent() {}
+    virtual ~CListEvent() {}
 
-  //! Checks if this is a prompt event or a delayed event
-  /*! PET scanners generally have a facility to detect events in a 
+    //! Checks if this is a prompt event or a delayed event
+    /*! PET scanners generally have a facility to detect events in a
       'delayed' coincidence window. This is used to estimate the
       number of accidental coincidences (or 'randoms').
   */
-  virtual
+    virtual
     bool
     is_prompt() const = 0;
 
-  //! Changes the event from prompt to delayed or vice versa
-  /*! Default implementation just returns Succeeded::no. */
-  virtual 
+    //! Changes the event from prompt to delayed or vice versa
+    /*! Default implementation just returns Succeeded::no. */
+    virtual
     Succeeded
     set_prompt(const bool prompt = true);
 
-  //! Finds the LOR between the coordinates where the detection took place
-  /*! Obviously, these coordinates are only estimates which depend on the
+    //! Finds the LOR between the coordinates where the detection took place
+    /*! Obviously, these coordinates are only estimates which depend on the
       scanner hardware. For example, Depth-of-Interaction might not be
       taken into account. However, the intention is that this function returns
-      'likely' positions (e.g. not the face of a crystal, but a point somewhere 
+      'likely' positions (e.g. not the face of a crystal, but a point somewhere
       in the middle).
 
       Coordinates are in mm and in the standard STIR coordinate system
@@ -83,11 +83,11 @@ public:
       
       \todo This function might need time info or so for rotating scanners.
   */
-  virtual LORAs2Points<float>
+    virtual LORAs2Points<float>
     get_LOR() const = 0;
 
-  //! Finds the bin coordinates of this event for some characteristics of the projection data
-  /*! bin.get_bin_value() will be <=0 when the event corresponds to
+    //! Finds the bin coordinates of this event for some characteristics of the projection data
+    /*! bin.get_bin_value() will be <=0 when the event corresponds to
       an LOR outside the range of the projection data.
 
       bin.get_bin_value() will be set to a negative value if no such bin
@@ -103,7 +103,7 @@ public:
 
     \todo get_bin() might need time info or so for rotating scanners.
   */
-  virtual
+    virtual
     void
     get_bin(Bin& bin, const ProjDataInfo&) const;
 
@@ -112,31 +112,31 @@ public:
 
 //! A class for storing and using a timing record from a listmode file
 /*! \ingroup listmode
-    CListTime is used to provide an interface to the 'timing' events 
-    in the list mode stream. Usually, the timing event also contains 
+    CListTime is used to provide an interface to the 'timing' events
+    in the list mode stream. Usually, the timing event also contains
     gating information. For rotating scanners, it could also contain
     angle info.
 
     \todo this is still under development. Things to add are angles
     or so for rotating scanners. Also, some info on the maximum
     (and actual?) number of gates would be useful.
-    \see CListModeData for more info on list mode data. 
+    \see CListModeData for more info on list mode data.
 */
 class CListTime
 {
 public:
-  virtual ~CListTime() {}
+    virtual ~CListTime() {}
 
-  virtual unsigned long get_time_in_millisecs() const = 0;
-  inline double get_time_in_secs() const
+    virtual unsigned long get_time_in_millisecs() const = 0;
+    inline double get_time_in_secs() const
     { return get_time_in_millisecs()/1000.; }
 
-  virtual Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs) = 0;
-  inline Succeeded set_time_in_secs(const double time_in_secs)
-    { 
-      unsigned long time_in_millisecs;
-      round_to(time_in_millisecs, time_in_secs/1000.);
-      return set_time_in_millisecs(time_in_millisecs); 
+    virtual Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs) = 0;
+    inline Succeeded set_time_in_secs(const double time_in_secs)
+    {
+        unsigned long time_in_millisecs;
+        round_to(time_in_millisecs, time_in_secs/1000.);
+        return set_time_in_millisecs(time_in_millisecs);
     }
 
 };
@@ -150,14 +150,14 @@ public:
 class CListGatingInput
 {
 public:
-  virtual ~CListGatingInput() {}
+    virtual ~CListGatingInput() {}
 
-  //! get gating-related info
-  /*! Generally, gates are numbered from 0 to some maximum value.
+    //! get gating-related info
+    /*! Generally, gates are numbered from 0 to some maximum value.
    */
-  virtual unsigned int get_gating() const = 0;
+    virtual unsigned int get_gating() const = 0;
 
-  virtual Succeeded set_gating(unsigned int) = 0;
+    virtual Succeeded set_gating(unsigned int) = 0;
 };
 
 //! A class for a general element of a list mode file
@@ -170,33 +170,51 @@ public:
     list mode file. If you need that information,
     you will have to do casting to e.g. CListRecordQHiDAC.
     
-    \see CListModeData for more info on list mode data. 
+    \see CListModeData for more info on list mode data.
 */
 class CListRecord
 {
 public:
-  virtual ~CListRecord() {}
+    virtual ~CListRecord() {}
 
-  virtual bool is_time() const = 0;
+    virtual bool is_time() const = 0;
 
-  virtual bool is_event() const = 0;
+    virtual bool is_event() const = 0;
 
-  virtual CListEvent&  event() = 0;
-  virtual const CListEvent&  event() const = 0;
-  virtual CListTime&   time() = 0; 
-  virtual const CListTime&   time() const = 0; 
+    virtual CListEvent&  event() = 0;
+    virtual const CListEvent&  event() const = 0;
+    virtual CListTime&   time() = 0;
+    virtual const CListTime&   time() const = 0;
 
-  virtual bool operator==(const CListRecord& e2) const = 0;
-  bool operator!=(const CListRecord& e2) const { return !(*this == e2); }
+    //!
+    //! \brief is_random
+    //! \return
+    //! \author Nikos Efthimiou
+    //! \details This function is available when the input is a ROOT file.
+    //! In simulations we are perfectly aware of which event is random
+    //! \warning Other listmode inputs return false at all cases.
+    virtual bool is_random() const = 0;
+
+    //!
+    //! \brief is_scattered
+    //! \return
+    //! \author Nikos Efthimiou
+    //! \details This function is available when the input is a ROOT file.
+    //! In simulations we are perfectly aware of which event is random
+    //! \warning Other listmode inputs return false at all cases.
+    virtual bool is_scattered() const = 0;
+
+    virtual bool operator==(const CListRecord& e2) const = 0;
+    bool operator!=(const CListRecord& e2) const { return !(*this == e2); }
 
 };
 
 class CListRecordWithGatingInput : public CListRecord
 {
- public:
-  virtual bool is_gating_input() const { return false; }
-  virtual CListGatingInput&  gating_input() = 0; 
-  virtual const CListGatingInput&  gating_input() const = 0; 
+public:
+    virtual bool is_gating_input() const { return false; }
+    virtual CListGatingInput&  gating_input() = 0;
+    virtual const CListGatingInput&  gating_input() const = 0;
 };
 
 END_NAMESPACE_STIR

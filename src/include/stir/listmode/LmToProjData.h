@@ -244,6 +244,7 @@ protected:
   //! This will be used for post-normalisation
   shared_ptr<BinNormalisation> post_normalisation_ptr;
 
+
   //!
   //! \brief exclude_scattered Applied only in ROOT files
   //! \author Nikos Efthimiou

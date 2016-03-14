@@ -156,6 +156,9 @@ set_defaults()
   post_normalisation_ptr.reset(new TrivialBinNormalisation);
   do_pre_normalisation =0;
   num_events_to_store = 0;
+
+  exclude_random = false;
+  exclude_scattered = false;
   
 }
 
@@ -641,7 +644,7 @@ process_data()
 		 // note: could do "else if" here if we would be sure that
 		 // a record can never be both timing and coincidence event
 		 // and there might be a scanner around that has them both combined.
-		 if (record.is_event())
+         if (record.is_event())
 		   {
 		     assert(start_time <= current_time);
 		     Bin bin;
