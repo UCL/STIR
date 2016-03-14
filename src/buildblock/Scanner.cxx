@@ -387,6 +387,16 @@ Scanner::Scanner(Type scanner_type)
 	       1);
     break;
 
+    case Tahereh_scanner: // dummy
+        // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
+        // Transaxial blocks have 8 physical crystals and a gap at the
+        // 9th crystal where the counts are zero.
+        set_params(Tahereh_scanner, string_list("Tahereh"),
+                   16, 96, 192,
+                   117.0F, 11.0F, 3.2F, 2.43F, 0.0F,
+                   4, 2, 4, 4, 4, 4, 1); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+        break;
+
   case GeminiTF:
     set_params(GeminiTF,string_list("GeminiTF", "Philips GeminiTF"), 
                44, 322, 287, // Based on GATE output - Normally it is 644 detectors at each of the 44 rings

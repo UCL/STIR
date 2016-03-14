@@ -52,7 +52,7 @@ ENDMACRO()
 HEADER_DIRECTORIES(ALL_HEADERS ALL_INLINES)
 
 foreach(executable ${${dir_EXE_SOURCES}})
-    add_executable(${executable} ${ALL_HEADERS}  ${ALL_INLINES} ${executable} ${STIR_REGISTRIES})
+    add_executable(${executable} ${ALL_HEADERS} ${ALL_INLINES} ${executable} ${STIR_REGISTRIES})
     target_link_libraries(${executable} ${STIR_LIBRARIES})
     SET_PROPERTY(TARGET ${executable} PROPERTY FOLDER "Executables")
 endforeach()

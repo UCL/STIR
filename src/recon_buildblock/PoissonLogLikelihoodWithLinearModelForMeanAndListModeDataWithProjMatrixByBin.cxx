@@ -226,7 +226,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
       }
     if (current_time < start_time)
       continue;
-    if (record.is_event() && record.event().is_prompt()) 
+    if (record.is_event() && record.event().is_prompt())
       { 
         Bin measured_bin; 
         record.event().get_bin(measured_bin, *proj_data_info_cyl_uncompressed_ptr); 

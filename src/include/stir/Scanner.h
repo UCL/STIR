@@ -108,7 +108,7 @@ class Scanner
      any given parameters.
   */
   enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR,
-          Siemens_mCT,
+          Siemens_mCT, Tahereh_scanner,
          RPT,HiDAC,  Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600,
 	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,
 	     Unknown_scanner};
