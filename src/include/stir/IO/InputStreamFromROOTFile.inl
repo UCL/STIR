@@ -113,21 +113,6 @@ get_next_record(RecordT& record)
 
     current_position ++ ;
 
-    // TAHEREH modification
-    int sorted_rsector_1 = 0;
-    int sorted_rsector_2 = 0;
-
-    if (rsectorID1%2 == 0 )
-        sorted_rsector_1 = rsectorID1 /2;
-    else
-        sorted_rsector_1 = rsector_repeater/2 + (rsectorID1 -1 )/2;
-
-    if (rsectorID2%2 == 0 )
-        sorted_rsector_2 = rsectorID2 /2;
-    else
-        sorted_rsector_2 = rsector_repeater/2 + (rsectorID2 -1 )/2;
-    // end of Tahereh modification
-
     int half_block = (int)(crystal_repeater_y/2);
 
     int ring1 = (int)(crystalID1/crystal_repeater_y)
@@ -138,12 +123,12 @@ get_next_record(RecordT& record)
             + (int)(submoduleID2/submodule_repeater_y)*crystal_repeater_z
             + (int)(moduleID2/module_repeater_y)*submodule_repeater_z*crystal_repeater_z;
 
-    int crystal1 = sorted_rsector_1  * module_repeater_y * submodule_repeater_y * crystal_repeater_y
+    int crystal1 = rsectorID1  * module_repeater_y * submodule_repeater_y * crystal_repeater_y
             + (moduleID1%module_repeater_y) * submodule_repeater_y * crystal_repeater_y
             + (submoduleID1%submodule_repeater_y) * crystal_repeater_y
             + (crystalID1%crystal_repeater_y);
 
-    int crystal2 = sorted_rsector_2 * module_repeater_y * submodule_repeater_y * crystal_repeater_y
+    int crystal2 = rsectorID2 * module_repeater_y * submodule_repeater_y * crystal_repeater_y
             + (moduleID2%module_repeater_y) * submodule_repeater_y * crystal_repeater_y
             + (submoduleID2% submodule_repeater_y) * crystal_repeater_y
             + (crystalID2%crystal_repeater_y);
