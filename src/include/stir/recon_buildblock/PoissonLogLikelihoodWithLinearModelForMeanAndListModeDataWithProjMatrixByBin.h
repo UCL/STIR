@@ -91,13 +91,12 @@ protected:
   virtual Succeeded 
     set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr); 
  
-  // TODO
   virtual void
     add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
   {
     error("add_subset_sensitivity not implemented yet");
   }
-  
+
   //! Maximum ring difference to take into account
   /*! \todo Might be removed */
   int  max_ring_difference_num_to_process;
