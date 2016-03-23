@@ -644,9 +644,14 @@ process_data()
          // note: could do "else if" here if we would be sure that
          // a record can never be both timing and coincidence event
          // and there might be a scanner around that has them both combined.
-         if (record.is_event() &&
-                 record.is_random() != exclude_random && record.is_scattered() != exclude_scattered)
+         if (record.is_event())
            {
+
+             if (exclude_randoms && record.is_random())
+                 continue;
+             if (exclude_scattered && record.is_scattered())
+                 continue;
+
              assert(start_time <= current_time);
              Bin bin;
              // set value in case the event decoder doesn't touch it
