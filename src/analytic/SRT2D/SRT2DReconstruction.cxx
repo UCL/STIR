@@ -4,14 +4,11 @@
 #include "stir/ArcCorrection.h"
 #include "stir/SSRB.h"
 #include "stir/ProjDataInMemory.h"
-#include "stir/Array.h" 
-#include <vector> 
-#include "stir/Sinogram.h"
+#include "stir/Array.h"
+#include <vector>
+#include "stir/Sinogram.h" 
+#include "stir/Viewgram.h" 
 #include <math.h>
-
-#ifdef STIR_OPENMP
-#include <omp.h>
-#endif
 
 using std::cerr;
 using std::endl;
@@ -167,7 +164,8 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 
 	VoxelsOnCartesianGrid<float>& image = dynamic_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);	
 	Sinogram<float> sino = proj_data_ptr->get_empty_sinogram(0,0); 
-	
+	Viewgram<float> view = proj_data_ptr->get_empty_viewgram(0,0); 
+	Viewgram<float> view1 = proj_data_ptr->get_empty_viewgram(0,0); 
 	/*cerr << "ax_min = " << proj_data_ptr->get_min_axial_pos_num(0) << 
 	", ax_max = " << proj_data_ptr->get_max_axial_pos_num(0) << 
 	", img_min = " << image.get_min_y() << 
@@ -177,16 +175,17 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	
 	const int sp = proj_data_ptr->get_num_tangential_poss(); 
 	const int sth = proj_data_ptr->get_num_views();
-	const int sa = proj_data_ptr->get_num_axial_poss(0); 
+	const int sa = proj_data_ptr->get_num_axial_poss(0);
 
 	const int sx = image.get_x_size();
 	const int sy = image.get_y_size();
+	const int sx2 = ceil(sx/2.0), sy2 = ceil(sy/2.0); 
 
 	//The rest of the variables used by the program.
-	int axial_pos, image_pos;
+	int ia, image_pos;
 	int ith, jth, ip, ix1, ix2; 
 
-	float x, aux,dh[8], z[8]; //ff, pp2
+	float x, aux, dh[8], z[8]; //ff, pp2
 	
 	const int image_min_x = image.get_min_x();
 	const int image_min_y = image.get_min_y();
@@ -194,26 +193,12 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	float th[sth], p[sp], p_ud[sp], x1[sx], x2[sy]; //hx[sth]
 	float f[sth][sp], ddf[sth][sp];
 	float f_ud[sth][sp], ddf_ud[sth][sp];
+	float f1[sth][sp], ddf1[sth][sp];
+	float f1_ud[sth][sp], ddf1_ud[sth][sp];
 	
 	float lg[sp], termC[sth]; 
-	const float dp6 = 6.0/4.0*2.0/(sp-1.0); 
-	const int sx2 = ceil(sx/2.0); 
+	const float dp6 = 6.0/4.0*2.0/(sp-1.0);
 	
-	#ifdef STIR_OPENMP
-	if (getenv("OMP_NUM_THREADS")==NULL) {
-		omp_set_num_threads(omp_get_num_procs());
-		if (omp_get_num_procs()==1) 
-				warning("Using OpenMP with #processors=1 produces parallel overhead. You should compile without using USE_OPENMP=TRUE.");
-		cerr<<"Using OpenMP-version of SRT2D with thread-count = processor-count (="<<omp_get_num_procs()<<")."<<endl;
-	} else {
-		cerr<<"Using OpenMP-version of SRT2D with "<<getenv("OMP_NUM_THREADS")<<" threads on "<<omp_get_num_procs()<<" processors."<<endl;
-			if (atoi(getenv("OMP_NUM_THREADS"))==1) 
-					warning("Using OpenMP with OMP_NUM_THREADS=1 produces parallel overhead. Use more threads or compile without using USE_OPENMP=TRUE.");
-	}
-	//cerr<<"Define number of threads by setting OMP_NUM_THREADS environment variable, i.e. \"export OMP_NUM_THREADS=<num_threads>\""<<endl;
-	//shared_ptr<DiscretisedDensity<3,float> > empty_density_ptr(density_ptr->clone());
-	#endif
-
 	//Some constants.
 	//pp2= -1.0/(4*M_PI*M_PI); 
 	
@@ -234,125 +219,128 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 		x2[ix2]=-1.0+2.0*ix2/(sy-1);
 	
 	// Calculate constants 
-	//dp6 = 6.0/4.0*2.0/(sp-1.0);
+	//dp = p[1]-p[0];
+	//dp6 = 6.0/4.0*dp;
 
-	// Starting calculations per slice
+	for(ia=0; ia<sa; ia++) { 
+		for(ix1=0; ix1<sx; ix1++){ 
+			for(ix2=0; ix2<sy; ix2++){  
+				image_pos= image.get_min_z() + 2*(ia - proj_data_ptr->get_min_axial_pos_num(0));
+				
+				image[image_pos][image_min_x +sx-ix1-1][image_min_y +ix2] = 0; 
+			}
+		}
+	}
+	
+	// Starting calculations per view
 	// 2D algorithm only   
-	#ifdef STIR_OPENMP
-	#pragma omp parallel \
-	shared(image,do_arc_correction,arc_correction,sino,x2,x1,th,p) \
-	private(axial_pos,image_pos,ith,ip,f,f_ud,ddf,ddf_ud,termC,ix1,ix2,aux,z,x,lg,dh,jth)
-	#pragma omp for schedule(auto)  nowait
-	#endif
-	for(axial_pos=0; axial_pos<sa; axial_pos++){
-		//for(axial_pos=proj_data_ptr->get_min_axial_pos_num(0); axial_pos<=proj_data_ptr->get_max_axial_pos_num(0); axial_pos++){		
-		
-		image_pos= image.get_min_z() + 2*(axial_pos - proj_data_ptr->get_min_axial_pos_num(0));
-		std::cerr << "\nRing " << axial_pos << ", image pos " << image_pos << std::endl;
-		
-		//if(axial_pos!=8) continue; 
-
-		// Loading the sinograms  
-		#ifdef STIR_OPENMP
-		#pragma omp critical
-		#endif
-		{
-			sino = proj_data_ptr->get_sinogram(axial_pos, 0);      
-			if (do_arc_correction)
-				sino = arc_correction.do_arc_correction(sino);
-		
-			for(ith=0; ith<sth; ith++){
-				for(ip=0; ip<sp; ip++) { 	 
-					f[ith][ip] = sino[sino.get_min_view_num() + ith][sino.get_min_tangential_pos_num()  + ip];
-					f_ud[ith][sp-ip-1] = f[ith][ip]; 
-				  }
-			}
+	// special case of ith=0 
+	view = proj_data_ptr->get_viewgram(0, 0);
+	if (do_arc_correction) { 
+		  view = arc_correction.do_arc_correction(view);
+	}
+	for(ia=0; ia<sa; ia++){
+		for(ip=0; ip<sp; ip++) {
+			f[ia][ip] = view[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
 		}
-
-		// Calculation of second derivative by use of function spline
-		for(ith=0; ith<sth; ith++){ 
-			spline(p,f[ith],sp,ddf[ith]);
-			for(ip=0; ip<sp; ip++) { 
-				ddf_ud[ith][sp-ip-1] = ddf[ith][ip]; 
-			}
+		spline(p,f[ia],sp,ddf[ia]);
+	}
+	for(ia=0; ia<sa; ia++) { 
+		termC[ia] = (ddf[ia][0]*(3*p[1]-p[0]) + ddf[ia][sp-1]*(p[sp-1]-3.0*p[sp-2]))/4.0;
+		for (ip=0; ip<sp; ip++) {
+			termC[ia] += dp6*ddf[ia][ip];
 		}
-		 
-
-		for(ith=0; ith<sth; ith++) { 
-			termC[ith] = (ddf[ith][0]*(3*p[1]-p[0]) + ddf[ith][sp-1]*(p[sp-1]-3.0*p[sp-2]))/4.0;
+	}
+	for(ix1=0; ix1<sx2; ix1++){
+		for(ix2=0; ix2<sy2; ix2++){  
+			aux=sqrt(1.0-x2[ix2]*x2[ix2]);
+			if(fabs(x2[ix2]) >= 1.0 || fabs(x1[ix1]) >= aux){ 
+				continue;
+			}		
+			x=x2[ix2]*cos(th[ith])-x1[ix1]*sin(th[ith]); 
 			for (ip=0; ip<sp; ip++) {
-				termC[ith] += dp6*ddf[ith][ip];
+				lg[ip] = log(fabs(x-p[ip])); 
+			}
+			for(ia=0; ia<sa; ia++){
+					image[2*ia][image_min_x +sx-ix1-1][image_min_y +ix2] 
+							= -hilbert_der(x, f[ia], ddf[ia], p, sp, lg, termC[ia])/(M_PI*sth*(sp-1)); 
+			}
+		}
+	}
+	// general case, ith=1...sth-1
+	for(ith=1; ith<sth; ith++){
+		//image_pos= image.get_min_z() + 2*(ia - proj_data_ptr->get_min_axial_pos_num(0));
+		//std::cerr << "\nView " << ith << " of " << sth << std::endl;
+		
+		// Loading related viewgrams 
+		view = proj_data_ptr->get_viewgram(ith, 0);
+		view1 = proj_data_ptr->get_viewgram(sth-ith, 0);
+		if (do_arc_correction) { 
+		  view = arc_correction.do_arc_correction(view);
+		  view1 = arc_correction.do_arc_correction(view1);
+		}
+		
+		for(ia=0; ia<sa; ia++){
+			for(ip=0; ip<sp; ip++) {
+				f[ia][ip] = view[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
+				f_ud[ia][sp-ip-1] = f[ia][ip]; 
+				f1[ia][ip] = view1[view.get_min_axial_pos_num() + ia][view.get_min_tangential_pos_num() + ip];
+				f1_ud[ia][sp-ip-1] = f1[ia][ip]; 
+		    }
+		}
+		
+		// Calculation of second derivative by use of function spline
+		for(ia=0; ia<sa; ia++){ 
+			spline(p,f[ia],sp,ddf[ia]);
+			spline(p,f1[ia],sp,ddf1[ia]);
+			for(ip=0; ip<sp; ip++) { 
+				ddf_ud[ia][sp-ip-1] = ddf[ia][ip]; 
+				ddf1_ud[ia][sp-ip-1] = ddf1[ia][ip]; 
 			}
 		}
 		
+
+		for(ia=0; ia<sa; ia++) { 
+			termC[ia] = (ddf[ia][0]*(3*p[1]-p[0]) + ddf[ia][sp-1]*(p[sp-1]-3.0*p[sp-2]))/4.0;
+			for (ip=0; ip<sp; ip++) {
+				termC[ia] += dp6*ddf[ia][ip];
+			}
+		}
 		
 		//Starting the calculation of ff(x1,x2).
-		for(ix1=0; ix1<=sx2; ix1++){
-		//	std::cerr << " k1 " << ix1;
-
-			for(ix2=0; ix2<=ix1; ix2++){  
-				
+		for(ix1=0; ix1<sx2; ix1++){
+			for(ix2=0; ix2<sy2; ix2++){  
 				// If x1,x2 off range put ff(x1,x2)=0
 				aux=sqrt(1.0-x2[ix2]*x2[ix2]);
 				if(fabs(x2[ix2]) >= 1.0 || fabs(x1[ix1]) >= aux){ 
-					//image[image_pos][image_min_x +sx-ix1-1][image_min_y + ix2] = 0; 
-					/*
-					image[image_pos][image_min_x +sx-ix1-1][image_min_y +ix2] = 0; 
-					image[image_pos][image_min_x +sx-ix1-1][image_min_y +sy-ix2-1] = 0; 
-					image[image_pos][image_min_x +ix1][image_min_y +ix2] = 0; 
-					image[image_pos][image_min_x +ix1][image_min_y +sy-ix2-1] = 0; 
-					
-					image[image_pos][image_min_x +sx-ix2-1][image_min_y +ix1] = 0; 
-					image[image_pos][image_min_x +ix2][image_min_y +ix1] = 0; 
-					image[image_pos][image_min_x +sx-ix2-1][image_min_y +sx-ix1-1] = 0; 
-					image[image_pos][image_min_x +ix2][image_min_y +sx-ix1-1] = 0;
-					*/
 					continue;
 				}
 				
-				// Computation of h_rho
-				//dh[0]=0.0;dh[1]=0.0;dh[2]=0.0;dh[3]=0.0;
-				
-				z[0]=x2[ix2]*cos(th[0])-x1[ix1]*sin(th[0]);
-				z[1]=x2[sy-ix2-1]*cos(th[0])-x1[ix1]*sin(th[0]);
-				z[2]=x2[ix2]*cos(th[0])-x1[sx-ix1-1]*sin(th[0]);
-				z[3]=x2[sy-ix2-1]*cos(th[0])-x1[sx-ix1-1]*sin(th[0]); 
-				z[4]=x2[ix1]*cos(th[0])-x1[ix2]*sin(th[0]);
-				z[6]=x2[ix1]*cos(th[0])-x1[sy-ix2-1]*sin(th[0]);
-				z[5]=x2[sx-ix1-1]*cos(th[0])-x1[ix2]*sin(th[0]); 
-				z[7]=x2[sx-ix1-1]*cos(th[0])-x1[sy-ix2-1]*sin(th[0]);
-				for(int i=0; i<8; i++) {
-					x = z[i];
-					for (ip=0; ip<sp; ip++) {
-						lg[ip] = log(fabs(x-p[ip])); 
-					}
-					dh[i] = hilbert_der(x, f[0], ddf[0], p, sp, lg, termC[0]);
-				}
-				
-				x=x2[ix2]*cos(th[0])-x1[ix1]*sin(th[0]); 
+				// Computation of h_rho			
+				x=x2[ix2]*cos(th[ith])-x1[ix1]*sin(th[ith]); 
 				for (ip=0; ip<sp; ip++) {
 					lg[ip] = log(fabs(x-p[ip])); 
 				}
-				jth = ceil(sth/2.0);
-				dh[4] -= hilbert_der(-x, f_ud[jth], ddf_ud[jth], p_ud, sp, lg, termC[jth]);
-				dh[5] += hilbert_der(x, f[sth-jth], ddf[sth-jth], p, sp, lg, termC[jth]);
-				dh[6] -= hilbert_der(-x, f_ud[sth-jth], ddf_ud[sth-jth], p_ud, sp, lg, termC[jth]);
-				dh[7] += hilbert_der(x, f[jth], ddf[jth], p, sp, lg, termC[jth]);
 				
-				for(ith=1; ith<sth; ith++){
-					x=x2[ix2]*cos(th[ith])-x1[ix1]*sin(th[ith]); 
+				for(ia=0; ia<sa; ia++){
+					//image_pos= image.get_min_z() + 2*(ia - proj_data_ptr->get_min_axial_pos_num(0));
+					image_pos= 2*ia;
 					
-
-					for (ip=0; ip<sp; ip++) {
-						lg[ip] = log(fabs(x-p[ip])); 
+					image[image_pos][image_min_x +sx-ix1-1][image_min_y +ix2] 
+							+= -hilbert_der(x, f[ia], ddf[ia], p, sp, lg, termC[ia])/(M_PI*sth*(sp-1)); // bot-left
+					if(ix2<sy2){ 
+						image[image_pos][image_min_x +sx-ix1-1][image_min_y +sy-ix2-1] 
+							+= -hilbert_der(x, f1[ia], ddf1[ia], p, sp, lg, termC[ia])/(M_PI*sth*(sp-1)); // bot-right
 					}
-
-					dh[0] += hilbert_der(x, f[ith], ddf[ith], p, sp, lg, termC[ith]);
-					dh[1] += hilbert_der(x, f[sth-ith], ddf[sth-ith], p, sp, lg, termC[ith]);
-					dh[2] -= hilbert_der(-x, f_ud[sth-ith], ddf_ud[sth-ith], p_ud, sp, lg, termC[ith]);
-					dh[3] -= hilbert_der(-x, f_ud[ith], ddf_ud[ith], p_ud, sp, lg, termC[ith]);
-					
-					if(ith<ceil(sth/2.0)){ 
+					if(ix1<sx2){ 
+						image[image_pos][image_min_x +ix1][image_min_y +ix2] 
+								-= -hilbert_der(-x, f1_ud[ia], ddf1_ud[ia], p_ud, sp, lg, termC[ia])/(M_PI*sth*(sp-1));// top-left
+					} 
+					if(ix1<sx2&&ix2<sy2){ 
+						image[image_pos][image_min_x +ix1][image_min_y +sy-ix2-1] 
+								-= -hilbert_der(-x, f_ud[ia], ddf_ud[ia], p_ud, sp, lg, termC[ia])/(M_PI*sth*(sp-1)); // top-right
+					}
+					/*if(ith<ceil(sth/2.0)){ 
 						jth = (int)(ceil(sth/2.0))-ith; 
 						dh[4] -= hilbert_der(-x, f_ud[jth], ddf_ud[jth], p_ud, sp, lg, termC[jth]);
 						dh[5] += hilbert_der(x, f[sth-jth], ddf[sth-jth], p, sp, lg, termC[jth]);
@@ -364,14 +352,14 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 						dh[5] -= hilbert_der(-x, f_ud[sth-jth], ddf_ud[sth-jth], p_ud, sp, lg, termC[jth]);
 						dh[6] += hilbert_der(x, f[sth-jth], ddf[sth-jth], p, sp, lg, termC[jth]);
 						dh[7] -= hilbert_der(-x, f_ud[jth], ddf_ud[jth], p_ud, sp, lg, termC[jth]);
-					}
+					}*/
 					
 				}
 				
 				// Ending the calculation of ff(x1,x2)
 				//ff = pp2*integ(M_PI,sth,hx); 
 				//ff = -dh/(M_PI*sth*(sp-1));
-				dh[0] = -dh[0]/(M_PI*sth*(sp-1));
+				/*dh[0] = -dh[0]/(M_PI*sth*(sp-1));
 				dh[1] = -dh[1]/(M_PI*sth*(sp-1));
 				dh[2] = -dh[2]/(M_PI*sth*(sp-1));
 				dh[3] = -dh[3]/(M_PI*sth*(sp-1));
@@ -379,28 +367,22 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 				dh[4] = -dh[4]/(M_PI*sth*(sp-1));
 				dh[5] = -dh[5]/(M_PI*sth*(sp-1));
 				dh[6] = -dh[6]/(M_PI*sth*(sp-1));
-				dh[7] = -dh[7]/(M_PI*sth*(sp-1));
+				dh[7] = -dh[7]/(M_PI*sth*(sp-1));*/
 				
+				//image[image_pos][image_min_x +sx-ix1-1][image_min_y + ix2] = ff; 
+				/*image[image_pos][image_min_x +sx-ix1-1][image_min_y +ix2] = dh[0]; 
+				image[image_pos][image_min_x +sx-ix1-1][image_min_y +sy-ix2-1] = dh[1]; 
+				image[image_pos][image_min_x +ix1][image_min_y +ix2] = dh[2]; 
+				image[image_pos][image_min_x +ix1][image_min_y +sy-ix2-1] = dh[3]; 
 				
-				#ifdef STIR_OPENMP
-				#pragma omp critical
-				#endif 
-				{
-					//image[image_pos][image_min_x +sx-ix1-1][image_min_y + ix2] = ff; 
-					image[image_pos][image_min_x +sx-ix1-1][image_min_y +ix2] = dh[0]; 
-					image[image_pos][image_min_x +sx-ix1-1][image_min_y +sy-ix2-1] = dh[1]; 
-					image[image_pos][image_min_x +ix1][image_min_y +ix2] = dh[2]; 
-					image[image_pos][image_min_x +ix1][image_min_y +sy-ix2-1] = dh[3]; 
-				
-					image[image_pos][image_min_x +sx-ix2-1][image_min_y +ix1] = dh[4]; 
-					image[image_pos][image_min_x +ix2][image_min_y +ix1] = dh[5]; 
-					image[image_pos][image_min_x +sx-ix2-1][image_min_y +sx-ix1-1] = dh[6]; 
-					image[image_pos][image_min_x +ix2][image_min_y +sx-ix1-1] = dh[7];
-				}
-				
+				image[image_pos][image_min_x +sx-ix2-1][image_min_y +ix1] = dh[4]; 
+				image[image_pos][image_min_x +ix2][image_min_y +ix1] = dh[5]; 
+				image[image_pos][image_min_x +sx-ix2-1][image_min_y +sx-ix1-1] = dh[6]; 
+				image[image_pos][image_min_x +ix2][image_min_y +sx-ix1-1] = dh[7];*/
 			}  
 		} 
 	}
+	//image = -image/(M_PI*sth*(sp-1)); 
 
 	return Succeeded::yes;
 }
