@@ -1,4 +1,4 @@
-/* 
+﻿/*  
 \author Dimitra Kyriakopoulou
 \author Dr Kris Thielemans
 
@@ -240,15 +240,18 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	po_d=2.0*d*d;
 	minus_half_div_d_po_d = minus_half_div_d*po_d;
 
-  rr = 1.0*sx/(sp+1); 
+  rr = 1.0*sx/((sp+1)*zoom); 
+cerr << "sp = " << sp << endl; 
 //-- Creation of the grid
 	for(k1=0; k1<sx; k1++)
-		x1[k1]=-1.0*sx/(sp+1)+2.0*sx/(sp+1)*k1/(sx-1); 
-	//x1[k1]=-91.0/129.0+2.0*91.0/129.0*k1/(sx-1); 
-	//x1[k1]=-1.0+2.0*k1/(sx-1); 
+		//x1[k1]=-1.0*sx/(sp+1)+2.0*sx/(sp+1)*k1/(sx-1); 
+		x1[k1] = -1.0*sx/((sp+1)*zoom) + k1*2.0*sx/((sp+1)*zoom)/(sx-1);
+		//x1[k1] = -1.0*sx/((sp+1)*zoom) + k1*2.0*((sp+1)*zoom)
+		x1[k1]=-1.0+2.0*k1/(sx-1); 
 	for(k2=0; k2<sx; k2++) 
-		x2[k2]=-1.0*sx/(sp+1)+2.0*sx/(sp+1)*k2/(sx-1); 
-	//x2[k2]=-1.0+2.0*k2/(sx-1); 
+		//x2[k2]=-1.0*sx/(sp+1)+2.0*sx/(sp+1)*k2/(sx-1); 
+		x2[k2] = -1.0*sx/((sp+1)*zoom) + k2*2.0*sx/((sp+1)*zoom)/(sx-1);
+		//x2[k2]=-1.0+2.0*k2/(sx-1); 
 
 //-- Starting calculations per slice
 	// 2D algorithm only
@@ -257,7 +260,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 	  std::cerr << "\nSlice " << slc << std::endl;
 	  
 		cns=image.get_min_z() - proj_data_ptr->get_min_axial_pos_num(segment_num) + slc;
-
+		if(cns!=9) continue; 
 //-- Loading the sinograms  
 		sino = proj_data_ptr->get_sinogram(slc, segment_num);      
 		if (do_arc_correction)
@@ -895,6 +898,12 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
 			}  
 		}
 	}	
+image /= zoom; 
+
+const ProjDataInfoCylindrical& proj_data_info_cyl =
+    dynamic_cast<const ProjDataInfoCylindrical&>
+    (*proj_data_ptr->get_proj_data_info_ptr());
+
 
 	return Succeeded::yes;
 } 
