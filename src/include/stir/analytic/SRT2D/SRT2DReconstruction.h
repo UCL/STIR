@@ -49,9 +49,12 @@ vector<double> thres_restr_bound_vector;
   virtual void initialise_keymap();
   virtual bool post_processing();
 
+ float hilbert_der(float x, float f[], float ddf[], float p[], int sp, float lg[], float termC);
  inline void spline(float x[],float y[],int n, float y2[]);
-
-
+ float integ(float dist, int max, float ff[]);
+ 
+ float hilbert_derivative(float rho, float fhat_2D[], float dercoef[], float p[], int sp);
+ float hilbert(float rho, float fhat_2D[], float dercoef[], float p[], int sp);
 };
 
 
