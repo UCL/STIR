@@ -5,20 +5,23 @@
 # Author: Kris Thielemans
 
 # directory with some standard .par files
-: ${par_dir:=~/devel/STIR-UCL-extensions/mMR}
+: ${pardir:=~/devel/STIR/examples/Siemens-mMR}
 
 : ${sino_input:=sinospan11_f1g1d0b0.hs}
-# find norm file (variable used in correct_projdata.par)
+
+# ECAT8 norm file 
+# note: variable name is used in correct_projdata.par
 : ${ECATNORM:=Norm_20130515125744.n.hdr.STIR}
 export ECATNORM
 
+# output (or input if it exists already) for normalisation sinogram
 : ${norm_sino_prefix:=fullnormfactorsspan11}
 
 if [ -r ${norm_sino_prefix}.hs ]; then
   echo "Re-using existing ${norm_sino_prefix}.hs"
 else
   echo "Creating ${norm_sino_prefix}.hs"
-  OUTPUT=${norm_sino_prefix} INPUT=${sino_input} correct_projdata ${par_dir}/correct_projdata.par > ${norm_sino_prefix}.log 2>&1
+  OUTPUT=${norm_sino_prefix} INPUT=${sino_input} correct_projdata ${pardir}/correct_projdata.par > ${norm_sino_prefix}.log 2>&1
 fi
 
 # input files etc
@@ -37,27 +40,28 @@ acf3d=../acf.hs # will be created if it doesn't exist yet
 if [ -r ${mask_image} ]; then
   echo Reusing mask image ${mask_image}
 else
-  FWHMx=20 FWHMz=20 postfilter ${mask_image} ${atnimg} ${par_dir}/postfilter_Gaussian.par
+  FWHMx=20 FWHMz=20 postfilter ${mask_image} ${atnimg} ${pardir}/postfilter_Gaussian.par
   stir_math --accumulate --including-first  --max-threshold .001 ${mask_image}
   stir_math --accumulate --including-first  --add-scalar -.00099 ${mask_image}
   stir_math --accumulate --including-first  --min-threshold 0 ${mask_image}
   stir_math --accumulate --including-first  --times-scalar 100002 ${mask_image}
 fi
 
-# sum atn images
-stir_math summed_atnimg.hv ${atnimg} ${bedcoilatnimg}
-
 # put all output in a subdir
 mkdir -p output
+
+# sum atn images
+stir_math output/summed_atnimg.hv ${atnimg} ${bedcoilatnimg}
+
 # copy image there such that we don't have to worry about names/location
 stir_math output/mask_image.hv ${mask_image}
 cd output
 mask_image=mask_image.hv
-atnimg=../summed_atnimg.hv
+atnimg=summed_atnimg.hv
 
-cp ${par_dir}/scatter.par .
+cp ${pardir}/scatter.par .
 
-scatter_template=${par_dir}/scatter_template.hs
+scatter_template=${pardir}/scatter_template.hs
 num_scat_iters=5
 
 # compute 3D ACFs
@@ -90,7 +94,7 @@ mysinomask=mask2d.hs
 if [ -r ${mysinomask} ]; then 
   echo "Re-using existing ${mysinomask}"
 else
-  forward_project fwd_mask.hs ${mask_image}  ${data2d}  ${par_dir}/forward_projector_ray_tracing.par > fwd_mask.log 2>&1
+  forward_project fwd_mask.hs ${mask_image}  ${data2d}  ${pardir}/forward_projector_ray_tracing.par > fwd_mask.log 2>&1
   # add 1 to be able to use create_tail_mask_from_ACFs (which expects ACFs, so complains if the threshold is too low)
   stir_math -s --add-scalar 1 --including-first  --accumulate fwd_mask.hs
   create_tail_mask_from_ACFs  --safety-margin 2 --ACF-threshold 1.1 --ACF-filename fwd_mask.hs --output-filename ${mysinomask} > ${mysinomask}.log 2>&1
@@ -145,4 +149,4 @@ stir_math -s --mult additive_sino_3d.hs total_background_3d.hs  mult_factors_3d.
 #stir_math -s --mult precorrected_data3d.hs background_corrected_data3d.hs mult_factors_3d.hs
 #ZOOM=.4 INPUT=precorrected_data3d.hs OUTPUT=final_activity_image_3d FBP3DRP FBP3DRP.par
 
-INPUT=${data3d} OUTPUT=final_activity_image_3d NORM=mult_factors_3d.hs ADDSINO=additive_sino_3d.hs SUBSETS=14 SUBITERS=42 SAVEITERS=14 SENS=subset_sens RECOMP_SENS=1 OSMAPOSL ${par_dir}/OSMAPOSLbackground.par > final_activity_image_3d.log 2>&1
+INPUT=${data3d} OUTPUT=final_activity_image_3d NORM=mult_factors_3d.hs ADDSINO=additive_sino_3d.hs SUBSETS=14 SUBITERS=42 SAVEITERS=14 SENS=subset_sens RECOMP_SENS=1 OSMAPOSL ${pardir}/OSMAPOSLbackground.par > final_activity_image_3d.log 2>&1
