@@ -83,6 +83,11 @@ if (HAVE_ECAT)
  )
 endif()
 
+# ECAT8 doesn't need the LLN matrix library
+list(APPEND ${dir_LIB_SOURCES}
+	BinNormalisationFromECAT8
+)
+
 if(STIR_MPI)
 set(${dir_LIB_SOURCES}
      ${${dir_LIB_SOURCES}}

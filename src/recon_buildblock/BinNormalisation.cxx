@@ -107,7 +107,6 @@ apply(ProjData& proj_data,const double start_time, const double end_time,
     // note: older versions of openmp need an int as loop
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
     {
-      std::cerr << "\nVS " << i;
       const ViewSegmentNumbers vs=vs_nums_to_process[i];
       
       RelatedViewgrams<float> viewgrams;

@@ -30,21 +30,23 @@
   \author PARAPET project
       
 */
-
+#include <algorithm>
+// for time(), used as seed for random stuff
+#include <ctime>
+#include <iostream>
+#include <sstream>
 
 #include "stir/recon_buildblock/IterativeReconstruction.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/Succeeded.h"
 #include "stir/shared_ptr.h"
-#include <iostream>
 #include "stir/NumericInfo.h"
 #include "stir/utilities.h"
 #include "stir/is_null_ptr.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
-#include <algorithm>
-// for time(), used as seed for random stuff
-#include <ctime>
+
+#include "stir/TextWriter.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -228,6 +230,14 @@ const DataProcessor<TargetT>&
 IterativeReconstruction<TargetT>::
 get_inter_iteration_filter() const
 { return *this->inter_iteration_filter_ptr; }
+
+template <typename TargetT>
+shared_ptr<DataProcessor<TargetT> >
+IterativeReconstruction<TargetT>::
+get_inter_iteration_filter_sptr()
+{
+	return this->inter_iteration_filter_ptr;
+}
 
 template <typename TargetT>
 const int 
@@ -518,12 +528,13 @@ template <typename TargetT>
 void IterativeReconstruction<TargetT>::
 end_of_iteration_processing(TargetT &current_estimate)
 {
+	std::stringstream cerr;
 
   if (this->report_objective_function_values_interval>0 &&
       (this->subiteration_num%this->report_objective_function_values_interval == 0
        || this->subiteration_num==this->num_subiterations))      
     {
-      std::cerr << "Objective function values (before any additional filtering):\n"
+      /*std::*/cerr << "Objective function values (before any additional filtering):\n"
 		<< this->objective_function_sptr->
 	             get_objective_function_values_report(current_estimate);
     }
@@ -556,7 +567,9 @@ end_of_iteration_processing(TargetT &current_estimate)
        <<    *std::max_element(current_estimate.begin_all(), current_estimate.end_all()) << endl;
   }
   
-    // Save intermediate (or last) iteration      
+  writeText(cerr.str().c_str(), INFORMATION_CHANNEL);
+
+  // Save intermediate (or last) iteration      
   if((!(this->subiteration_num%this->save_interval)) || 
      this->subiteration_num==this->num_subiterations ) 
     {      	         

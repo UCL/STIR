@@ -35,6 +35,9 @@
 #################### list of default parameters starts here
 # note: those that are exported are for use in .par files
 
+# TODO current work-around to avoid bugs in OPENMP FBP and/or estimate_scatter
+export OMP_NUM_THREADS=1
+
 ## suffix for output files
 if [ -z "${suffix}" ]; then suffix=""; fi
 

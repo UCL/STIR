@@ -36,7 +36,8 @@ set(${dir_LIB_SOURCES}
   KeyParser  
   recon_array_functions 
   linear_regression overlap_interpolate 
-  error warning  
+  error warning
+  TextWriter
   DataSymmetriesForViewSegmentNumbers 
   TimeFrameDefinitions 
   ParsingObject 

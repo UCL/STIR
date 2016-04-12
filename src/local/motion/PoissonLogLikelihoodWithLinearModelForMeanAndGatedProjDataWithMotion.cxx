@@ -24,8 +24,8 @@
 
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 #include "local/stir/motion/Transform3DObjectImageProcessor.h"
-#include "local/stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
-#include "local/stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
+#include "stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
+#include "stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
 
 #include "stir/DiscretisedDensity.h"
 // for set_projectors_and_symmetries
@@ -44,8 +44,9 @@
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 #include "stir/IO/OutputFileFormat.h"
 
+#include <string> 
 #include <iostream>
-
+#include <utility>
 
 START_NAMESPACE_STIR
 
@@ -119,7 +120,7 @@ initialise_keymap()
   base_type::initialise_keymap();
   this->parser.add_start_key("PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion Parameters");
   this->parser.add_stop_key("End PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion Parameters");
-  this->parser.add_key("input file",&this->_input_filename);
+  this->parser.add_key("input filename",&this->_input_filename);
 
   this->parser.add_key("maximum absolute segment number to process", &this->max_segment_num_to_process);
   this->parser.add_key("zero end planes of segment 0", &this->zero_seg0_end_planes);
@@ -242,7 +243,7 @@ post_processing()
    else
     {
       // make a single frame starting from 0 to 1.
-      vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
+      std::vector<std::pair<double, double> > frame_times(1, std::pair<double,double>(0,1));
       this->frame_defs = TimeFrameDefinitions(frame_times);
     } 
 
@@ -255,7 +256,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion()
 {
   this->set_defaults();
 }
-
 
 template <typename TargetT>
 TargetT *
@@ -367,9 +367,13 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
     { warning("You need to specify a projector pair"); return Succeeded::no; }
 
   // set projectors to be used for the calculations
-  
+
   this->projector_pair_ptr->set_up(proj_data_info_sptr, 
                                    target_sptr);
+
+  // TODO check compatibility between symmetries for forward and backprojector
+  this->symmetries_sptr.reset(
+	  this->projector_pair_ptr->get_back_projector_sptr()->get_symmetries_used()->clone());
 
   // initialise the objective functions for each gate
   {
@@ -472,7 +476,10 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
             objective_function.
               set_sensitivity_sptr(empty_target_sptr, 0);
           }
-#endif    
+#endif
+          if (objective_function.set_up(empty_target_sptr) != Succeeded::yes)
+            error("Single gate objective functions is not set-up correctly!");
+        
           // TODO dangerous for -1
           this->_functions[gate_num-1] = objective_function;
 
@@ -509,6 +516,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   if (iter == end_iter)
     return;
 
+  // TODO!!!!!!!!
   shared_ptr<TargetT> gradient_this_function_sptr(gradient.get_empty_copy());
 
   while (iter != end_iter)

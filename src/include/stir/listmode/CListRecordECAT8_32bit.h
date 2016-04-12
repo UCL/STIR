@@ -115,9 +115,8 @@ class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDet
 
 };
 
-//! A class for decoding a raw  timing 'event' from a listmode file from the ECAT 8_32bit scanner
+//! A class for decoding a raw events that is neither time or coincidence in a listmode file from the ECAT 8_32bit scanner
 /*! \ingroup listmode
-     This class just provides the bit-field definitions. You should normally use CListTimeECAT8_32bit.
  */
 class CListTimeDataECAT8_32bit
 {
@@ -133,6 +132,33 @@ class CListTimeDataECAT8_32bit
   unsigned    deadtimeetc : 2;  /* extra bits differentiating between timing or other stuff, zero if timing event */
   unsigned    type : 1;    /* 0-coincidence event, 1-time tick */
 #endif
+};
+
+
+class CListDataAnyECAT8_32bit
+{
+public:
+ Succeeded init_from_data_ptr(const void * const ptr)
+    {
+      const char * const data_ptr = reinterpret_cast<const char * const >(ptr);
+      std::copy(data_ptr, data_ptr+sizeof(this->raw), reinterpret_cast<char *>(&this->raw));
+      return Succeeded::yes;
+    }
+  bool is_time() const
+  { return this->data.type == 1U && this->data.deadtimeetc == 0U; }
+  bool is_other() const
+  { return this->data.type == 1U && this->data.deadtimeetc != 0U; }
+  bool is_event() const
+  { return this->data.type == 0U; }
+
+
+ private:
+  BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT8_32bit)==4); 
+  union 
+  {
+    CListTimeDataECAT8_32bit   data;
+    boost::int32_t         raw;
+  };
 };
 
 
@@ -183,13 +209,13 @@ class CListTimeECAT8_32bit : public CListTime
   //public:
 
   bool is_time() const
-  { return this->time_data.is_time(); }
+  { return this->any_data.is_time(); }
   /*
   bool is_gating_input() const
   { return this->is_time(); }
   */
   bool is_event() const
-  { return !this->is_time(); }
+  { return this->any_data.is_event(); }
   virtual CListEventECAT8_32bit&  event() 
     { return this->event_data; }
   virtual const CListEventECAT8_32bit&  event() const
@@ -221,9 +247,11 @@ class CListTimeECAT8_32bit : public CListTime
     std::copy(data_ptr, data_ptr+4, reinterpret_cast<char *>(&raw));
     if (do_byte_swap)
       ByteOrder::swap_order(raw);
-    this->time_data.init_from_data_ptr(&raw);
+    this->any_data.init_from_data_ptr(&raw);
     // should in principle check return value, but it's always Succeeded::yes anyway
-    if (!this->is_time())
+    if (this->any_data.is_time())
+      return this->time_data.init_from_data_ptr(&raw);
+     else if (this->any_data.is_event())
       return this->event_data.init_from_data_ptr(&raw);
     else
       return Succeeded::yes;
@@ -236,6 +264,7 @@ class CListTimeECAT8_32bit : public CListTime
  private:
   CListEventECAT8_32bit  event_data;
   CListTimeECAT8_32bit   time_data; 
+  CListDataAnyECAT8_32bit   any_data; 
   boost::int32_t         raw; // this raw field isn't strictly necessary, get rid of it?
 
 };

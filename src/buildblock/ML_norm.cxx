@@ -355,7 +355,7 @@ void make_geo_data(GeoData& geo_data, const DetPairData& det_pair_data)
             const int new_det_num_a = (crystal_num_a+det_inc)%num_detectors;
             const int new_det_num_b = (det_num_b+det_inc)%num_detectors;
             if (det_pair_data.is_in_data(new_det_num_a,new_det_num_b))
-	      geo_data[crystal_num_a][det_num_b] +=
+	      geo_data[crystal_num_a][det_num_b%num_detectors] +=
 	        work(new_det_num_a,new_det_num_b);
 	  }
       }

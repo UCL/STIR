@@ -110,11 +110,20 @@ option(BUILD_SWIG_MATLAB
 mark_as_advanced(BUILD_SWIG_OCTAVE)
 
 if (BUILD_SWIG_MATLAB)
+  set(CMAKE_POSITION_INDEPENDENT_CODE True)
   FIND_PACKAGE(MATLAB REQUIRED)
   # Add matlab compiler flags to everything
-  # Reason: on linux, mex files need to be compiled with -fPIC, but that means all 
-  # linked libraries need to have been compiled with -fPIC as well.
+  # TODO this is probably not necessary anymore with CMAKE_POSITION_INDEPENDENT_CODE set to true
   add_definitions(${MATLAB_CXXFLAGS})
+
+endif()
+
+if (BUILD_SWIG_PYTHON)
+  set(CMAKE_POSITION_INDEPENDENT_CODE True)
+endif()
+
+if (BUILD_SWIG_OCTAVE)
+  set(CMAKE_POSITION_INDEPENDENT_CODE True)
 endif()
 
 #### Flags for defaults

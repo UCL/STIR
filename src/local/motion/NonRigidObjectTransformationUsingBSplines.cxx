@@ -44,8 +44,8 @@ NonRigidObjectTransformationUsingBSplines<3,float>::registered_name = "BSplines 
 // (shouldn't be in this file)
 static
 Succeeded
-parse_line(const string& deformation_field_from_NCAT_file,
-	   istream& ncat_file, 
+parse_line(const std::string& deformation_field_from_NCAT_file,
+	   std::istream& ncat_file, 
 	   CartesianCoordinate3D<int>& current_voxel,
 	   CartesianCoordinate3D<float>& current_displacement)
 {
@@ -124,7 +124,7 @@ parse_line(const string& deformation_field_from_NCAT_file,
 static  
 Succeeded
 set_deformation_field_from_NCAT_file(DeformationFieldOnCartesianGrid<3,float>& deformation_field,
-				     const string& deformation_field_from_NCAT_file,
+				     const std::string& deformation_field_from_NCAT_file,
 				     const CartesianCoordinate3D<int>& image_size,
 				     const CartesianCoordinate3D<float>& grid_spacing,
 				     const CartesianCoordinate3D<float>& origin)
