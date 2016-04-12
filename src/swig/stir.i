@@ -623,11 +623,16 @@ namespace std {
   {
     Array<3,float> array = create_array_for_proj_data(proj_data);
     Array<3,float>::full_iterator array_iter = array.begin_all();
-    for (int s=proj_data.get_min_segment_num(); s<= proj_data.get_max_segment_num(); ++s)
+    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
       {
         SegmentBySinogram<float> segment=proj_data.get_segment_by_sinogram(s);
         std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
         std::advance(array_iter, segment.size_all());
+        if (s!=0)
+          {
+            segment=proj_data.get_segment_by_sinogram(-s);
+            std::advance(array_iter, segment.size_all());
+          }
       }
     return array;
   }
