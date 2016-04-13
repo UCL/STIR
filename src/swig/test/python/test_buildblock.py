@@ -180,4 +180,26 @@ def test_ProjDataInfo():
     assert sinogram.get_axial_pos_num()==1
     assert sinogram.get_num_views() == projdatainfo.get_num_views()
     assert sinogram.get_proj_data_info() == projdatainfo
-    
+
+def test_ProjData_from_to_Array3D():
+    # define a projection with some dummy data (filled with segment no.)
+    s=Scanner.get_scanner_from_name("ECAT 962")
+    projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,9,8,6)
+    projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
+    for seg_idx in range(projdata.get_min_segment_num(),projdata.get_max_segment_num()+1):
+        segment=projdata.get_empty_segment_by_sinogram(seg_idx)
+        segment.fill(seg_idx)
+        projdata.set_segment(segment)
+
+    # Check we actually put the data in (not just zeros)
+    assert all([all([x==s for x in projdata.get_segment_by_sinogram(s).flat()])
+                for s in range(projdata.get_min_segment_num(),projdata.get_max_segment_num()+1)])
+
+    # convert to Array3D and back again
+    array3D=projdata.to_array()
+    new_projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
+    new_projdata.fill(array3D.flat())
+
+    # assert every data point is equal
+    assert all(a==b for a, b in zip(projdata.to_array().flat(),new_projdata.to_array().flat()))
+
