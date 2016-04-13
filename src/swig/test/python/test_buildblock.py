@@ -19,7 +19,15 @@
 #
 #    See STIR/LICENSE.txt for details
 
-import py.test
+try:
+    import pytest
+except ImportError:
+    # No pytest, try older py.test
+    try:
+        import py.test as pytest
+    except ImportError:
+        raise ImportError('Tests require pytest or py<1.4')
+
 from stir import *
 
 def test_Vector():
@@ -60,7 +68,7 @@ def test_VectorWithOffset():
     v[2]=3
     assert v[2]==3
     #assert v[1]==0 #probably not initialised
-    with py.test.raises(IndexError):
+    with pytest.raises(IndexError):
         v[0] # check index-out-of-range
 
 def test_Array1D():
