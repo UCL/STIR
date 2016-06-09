@@ -112,6 +112,17 @@ ProjDataInfo::get_scanner_ptr() const
     
 }
 
+float
+ProjDataInfo::get_low_energy_thres() const
+{
+    return low_energy_thres;
+}
+
+float
+ProjDataInfo::get_high_energy_thres() const
+{
+    return high_energy_thres;
+}
 
 END_NAMESPACE_STIR
 
