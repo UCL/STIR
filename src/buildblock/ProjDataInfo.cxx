@@ -157,18 +157,6 @@ ProjDataInfo::set_max_tangential_pos_num(const int max_tang_poss)
   max_tangential_pos_num = max_tang_poss;
 }
 
-void
-ProjDataInfo::set_low_energy_thres(const float low_thres)
-{
-    low_energy_thres = low_thres;
-}
-
-void
-ProjDataInfo::set_high_energy_thres(const float high_thres)
-{
-    high_energy_thres = high_thres;
-}
-
 
 ProjDataInfo::ProjDataInfo()
 {}

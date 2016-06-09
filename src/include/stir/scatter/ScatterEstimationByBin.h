@@ -36,8 +36,6 @@
 #include <vector>
 #include "stir/CartesianCoordinate3D.h"
 
-#include "stir/VoxelsOnCartesianGrid.h"
-
 START_NAMESPACE_STIR
 
 class Succeeded;
@@ -165,48 +163,6 @@ class ScatterEstimationByBin : public ParsingObject
   virtual void
     write_log(const double simulation_time, 
 	      const float total_scatter);
-
-
-//  this->attenuation_threshold =  0.01 ;
-//  this->random = true;
-//  this->use_cache = true;
-//  this->energy_resolution = .22 ;
-//  this->reference_energy = 511.F;
-//  this->lower_energy_threshold = 350 ;
-//  this->upper_energy_threshold = 650 ;
-//  this->activity_image_filename = "";
-//  this->density_image_filename = "";
-//  this->density_image_for_scatter_points_filename = "";
-//  this->template_proj_data_filename = "";
-//  this->output_proj_data_filename = "";
-
-  /*! \name functions to set parameters */
-  //@{
-    inline void set_attenuation_threshold(const float& _v);
-
-    inline void set_random_point(const bool& _v);
-
-    inline void set_cache_enabled(const bool& _v);
-
-    inline void set_energy_threshold(const float& _v);
-
-    inline void set_low_energy_threshold(const float& _v);
-
-    inline void set_high_energy_threshold(const float& _v);
-
-    inline void set_activity_image(const VoxelsOnCartesianGrid& _v);
-
-    inline void set_attenuation_image(const VoxelsOnCartesianGrid& _v);
-
-    inline void set_proj_data(const ProjData& _v);
-
-  //@}
-
-  /*! \name functions to get parameters */
-  //@{
-
-
-  //@}
 
  protected:
   void set_defaults();

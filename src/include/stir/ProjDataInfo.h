@@ -186,26 +186,9 @@ public:
   inline int get_min_tangential_pos_num() const;
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num() const;
-
   //@}
 
-  //! \name Functions that return info related on the acquisition settings
-  //@{
-  //! Get the low energy boundary
-  inline float get_low_energy_thres() const;
-  //! Get the high energy boundary
-  inline float get_high_energy_thres() const;
-  //@}
-
-  //! \name Functions that set values related on the acquisition settings
-  //@{
-  //! Set the low energy boundary
-  void set_low_energy_thres(const float low_thres);
-  //! Set the high energy boundary
-  void set_high_energy_thres(const float high_thres);
-  //@}
-
-  //! \name Functions that return geometrical info for a Bin
+  //| \name Functions that return geometrical info for a Bin
   //@{
   //! Get tangent of the co-polar angle of the normal to the projection plane
   /*! theta=0 for 'direct' planes (i.e. projection planes parallel to the scanner axis) */
@@ -346,22 +329,6 @@ public:
   
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
-
-  //!
-  //! \brief low_energy_thres
-  //! \author Nikos Efthimiou
-  //! \details This is the value of low energy threshold of the energy window.
-  //! The units are keV
-  //! This parameter was initially introduced for scatter simulation.
-  float low_energy_thres;
-
-  //!
-  //! \brief high_energy_thres
-  //! \author Nikos Efthimiou
-  //! \details This is the value of high energy threshold of the energy window
-  //! The units are keV
-  //! This parameter was initially introduced for scatter simulation
-  float high_energy_thres;
 
 private:
   shared_ptr<Scanner> scanner_ptr;

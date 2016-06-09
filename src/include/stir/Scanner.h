@@ -347,20 +347,6 @@ private:
   int num_transaxial_crystals_per_singles_unit;
 
 
-  //!
-  //! \brief energy_resolution
-  //! \author Nikos Efthimiou
-  //! \details This is the energy resolution of the system.
-  //! This value is dominated by the material of the scintilation crystal
-  float energy_resolution;
-
-  //!
-  //! \brief reference_energy
-  //! \author Nikos Efthimiou
-  //! \details In PET application this should always be 511 keV.
-  float reference_energy;
-
-
   // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
                   int num_rings_v, 
