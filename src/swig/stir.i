@@ -631,6 +631,7 @@ namespace std {
         if (s!=0)
           {
             segment=proj_data.get_segment_by_sinogram(-s);
+            std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
             std::advance(array_iter, segment.size_all());
           }
       }

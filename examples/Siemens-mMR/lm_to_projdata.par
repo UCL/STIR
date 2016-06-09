@@ -1,0 +1,41 @@
+lm_to_projdata Parameters:=
+
+  input file := ${INPUT}
+  output filename prefix := ${OUTPUT}
+
+  ; parameters that determine the sizes etc of the output
+
+    template_projdata := ${TEMPLATE}
+    ; the next can be used to use a smaller number of segments than given 
+    ; in the template
+    ;maximum absolute segment number to process := 
+
+  ; parameters for saying which events will be stored
+
+    ; time frames (see TimeFrameDefinitions doc for format)
+    frame_definition file := ${FRAMES}
+    ; or a total number of events (if  larger than 0, frame definitions will be ignored)
+    ; note that this normally counts the total of prompts-delayeds (see below)
+   ; num_events_to_store := -1
+
+  ; parameters relating to prompts and delayeds
+
+    ; with the default values, prompts will be added and delayed subtracted
+    ; to give the usual estimate of the trues.
+
+    ; store the prompts (value should be 1 or 0)
+    store prompts := 1  ;default
+    ; what to do if it's a delayed event
+    store delayeds := 0  ;default
+
+  ; miscellaneous parameters
+
+    ; list each event on stdout and do not store any files (use only for testing!)
+    ; has to be 0 or 1
+    List event coordinates := 0
+
+    ; if you're short of RAM (i.e. a single projdata does not fit into memory),
+    ; you can use this to process the list mode data in multiple passes.
+    num_segments_in_memory := -1
+
+End := 

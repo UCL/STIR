@@ -19,7 +19,6 @@
 #
 #    See STIR/LICENSE.txt for details
 
-import py.test
 from stir import *
 import stirextra
 # for Python2 and itertools.zip->zip (as in Python 3) 
