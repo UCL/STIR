@@ -183,7 +183,9 @@ static void find_rmin_rmax(int& rmin, int& rmax,
 }
 
 
-
+const char * const
+FBP3DRPReconstruction::registered_name =
+  "Filtered BackProjection 3D";
 
 void 
 FBP3DRPReconstruction::

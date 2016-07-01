@@ -37,6 +37,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/DataProcessor.h"
 #include "stir/IO/OutputFileFormat.h"
+#include "stir/RegisteredObject.h"
 #include <string>
 
 START_NAMESPACE_STIR
@@ -75,7 +76,10 @@ class Succeeded;
 */
 
 template <typename TargetT>
-class Reconstruction : public TimedObject, public ParsingObject 
+class Reconstruction :
+        public RegisteredObject<Reconstruction < TargetT > >,
+        public TimedObject,
+        public ParsingObject
 {
 public:
   //! virtual destructor

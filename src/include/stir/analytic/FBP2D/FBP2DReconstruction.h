@@ -32,6 +32,7 @@
 
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
+#include "stir/RegisteredParsingObject.h"
 #include <string>
 #include "stir/shared_ptr.h"
 
@@ -85,10 +86,25 @@ end :=
   \endcode
  
 */
-class FBP2DReconstruction : public AnalyticReconstruction
+class FBP2DReconstruction :
+        public
+            RegisteredParsingObject<
+                FBP2DReconstruction,
+                    Reconstruction < DiscretisedDensity < 3,float> >,
+                    AnalyticReconstruction
+                 >
 {
-  typedef AnalyticReconstruction base_type;
+  //typedef AnalyticReconstruction base_type;
+    typedef
+    RegisteredParsingObject<
+        FBP2DReconstruction,
+            Reconstruction < DiscretisedDensity < 3,float> >,
+            AnalyticReconstruction
+         > base_type;
 public:
+    //! Name which will be used when parsing a ProjectorByBinPair object
+    static const char * const registered_name;
+
   //! Default constructor (calls set_defaults())
   FBP2DReconstruction (); 
   /*!

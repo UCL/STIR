@@ -51,6 +51,9 @@
 
 START_NAMESPACE_STIR
 
+const char * const
+FBP2DReconstruction::registered_name =
+  "Filtered BackProjection 2D";
 
 void 
 FBP2DReconstruction::
