@@ -1,67 +1,55 @@
-/*!
+//
+//
+/*
+  Copyright (C) 2004- 2009, Hammersmith Imanet Ltd
+  This file is part of STIR.
 
+  This file is free software; you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as published by
+  the Free Software Foundation; either version 2.1 of the License, or
+  (at your option) any later version.
+
+  This file is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+
+  See STIR/LICENSE.txt for details
+*/
+/*!
   \file
-  \ingroup main_programs
-  \brief main() for Reconstruction
+  \ingroup utilities
+  \ingroup recon_buildblock
+  \brief Realtime reconstruction initialization
 
   \author Nikos Efthimiou
+
+
+  \par Usage:
+  \code
+  Reconstruct_test parfile
+  \endcode
+
 */
 
-#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
-#include "stir/analytic/FBP2D/FBP2DReconstruction.h"
-#include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
-#include "stir/OSSPS/OSSPSReconstruction.h"
-
-#include "stir/DiscretisedDensity.h"
+#include "stir/recon_buildblock/General_Reconstruction.h"
 #include "stir/Succeeded.h"
-#include "stir/CPUTimer.h"
-#include "stir/HighResWallClockTimer.h"
-#include "stir/recon_buildblock/distributable_main.h"
-#include <iostream>
-using std::cerr;
-using std::cout;
-using std::endl;
+/***********************************************************/
 
-#ifdef STIR_MPI
-int stir::distributable_main(int argc, char **argv)
-#else
-int main(int argc, char **argv)
-#endif
+int main(int argc, const char *argv[])
 {
+  stir::General_Reconstruction general_reconstruction;
 
-  USING_NAMESPACE_STIR
+  if (argc==2)
+    {
+      if (general_reconstruction.parse(argv[1]) == false)
+        return EXIT_FAILURE;
+    }
+  else
+    general_reconstruction.ask_parameters();
 
-  HighResWallClockTimer t;
-  t.reset();
-  t.start();
+//  return scatter_estimation.process_data() == stir::Succeeded::yes ?
+//    EXIT_SUCCESS : EXIT_FAILURE;
 
-  int nikos = 0;
-//  shared_ptr<GeneralisedObjectiveFunction<TargetT > >
-//    objective_function_sptr;
-
-  shared_ptr < Reconstruction < DiscretisedDensity <3, float > > >
-          rec_sptr (new Reconstruction < DiscretisedDensity < 3, float > >) ;
-
-
-//  Reconstruction < DiscretisedDensity <3, float> > * nikos;
-
-//      OSMAPOSLReconstruction<DiscretisedDensity<3,float> >
-//        reconstruction_object(argc>1?argv[1]:"");
-
-
-//      //return reconstruction_object.reconstruct() == Succeeded::yes ?
-//      //    EXIT_SUCCESS : EXIT_FAILURE;
-//      if (reconstruction_object.reconstruct() == Succeeded::yes)
-//        {
-//          t.stop();
-//          cout << "Total Wall clock time: " << t.value() << " seconds" << endl;
-//          return EXIT_SUCCESS;
-//        }
-//      else
-//        {
-//          t.stop();
-//          return EXIT_FAILURE;
-//        }
-
-  t.stop();
 }
+

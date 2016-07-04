@@ -68,7 +68,6 @@ Reconstruction<TargetT>::initialise_keymap()
   this->parser.add_parsing_key("output file format type", &this->output_file_format_ptr);
   this->parser.add_parsing_key("post-filter type", &this->post_filter_sptr); 
  
-// this->parser.add_parsing_key("reconstruction method", &this->reconstruction_method);
 //  parser.add_key("END", &KeyParser::stop_parsing);
  
 }
