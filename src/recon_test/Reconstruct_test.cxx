@@ -20,12 +20,12 @@
   \file
   \ingroup utilities
   \ingroup recon_buildblock
-  \brief Realtime reconstruction initialization
+  \brief Demo for Realtime reconstruction initialization
 
   \author Nikos Efthimiou
 
 
-  \par Usage:
+  \par main() for General_Reconstruction demo
   \code
   Reconstruct_test parfile
   \endcode
@@ -48,8 +48,8 @@ int main(int argc, const char *argv[])
   else
     general_reconstruction.ask_parameters();
 
-//  return scatter_estimation.process_data() == stir::Succeeded::yes ?
-//    EXIT_SUCCESS : EXIT_FAILURE;
+  return general_reconstruction.process_data() == stir::Succeeded::yes ?
+    EXIT_SUCCESS : EXIT_FAILURE;
 
 }
 

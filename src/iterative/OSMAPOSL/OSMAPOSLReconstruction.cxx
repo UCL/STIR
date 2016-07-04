@@ -130,7 +130,7 @@ initialise_keymap()
 {
   base_type::initialise_keymap();
   this->parser.add_start_key("OSMAPOSLParameters");
-  this->parser.add_stop_key("End");
+  this->parser.add_stop_key("End OSMAPOSLParameters");
 
   this->parser.add_key("enforce initial positivity condition",&this->enforce_initial_positivity);
   this->parser.add_key("inter-update filter subiteration interval",&this->inter_update_filter_interval);

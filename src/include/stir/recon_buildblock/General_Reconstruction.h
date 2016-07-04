@@ -19,6 +19,8 @@
 
 START_NAMESPACE_STIR
 
+class Succeeded;
+
 class General_Reconstruction : public ParsingObject
 {
 public:
@@ -37,7 +39,7 @@ protected:
 private:
 
     shared_ptr < Reconstruction < DiscretisedDensity < 3, float > > >
-        recon_sptr;
+        reconstruction_method_sptr;
 
 };
 
