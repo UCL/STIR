@@ -30,6 +30,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 set(${dir_INVOLVED_TEST_EXE_SOURCES}
         fwdtest
         bcktest
+        Reconstruct_test
 )
 
 include(stir_test_exe_targets)

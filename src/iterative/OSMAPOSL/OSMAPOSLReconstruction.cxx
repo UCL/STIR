@@ -73,6 +73,11 @@ using std::endl;
 START_NAMESPACE_STIR
 
 template <typename TargetT>
+const char * const
+OSMAPOSLReconstruction <TargetT> ::registered_name =
+  "OS-MAP-OSL reconstruction";
+
+template <typename TargetT>
 PoissonLogLikelihoodWithLinearModelForMean<TargetT >&
 OSMAPOSLReconstruction<TargetT>::
 objective_function()

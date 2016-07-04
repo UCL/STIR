@@ -42,7 +42,6 @@
 #include "stir/shared_ptr.h"
 #include "stir/DataProcessor.h"
 #include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
-#include "stir/RegisteredParsingObject.h"
 
 START_NAMESPACE_STIR
 
@@ -86,26 +85,13 @@ START_NAMESPACE_STIR
  */
 
 template <class TargetT>
-class IterativeReconstruction :
-        public
-            RegisteredParsingObject<
-                IterativeReconstruction< TargetT >,
-                    Reconstruction< TargetT>,
-                    Reconstruction< TargetT >
-                 >
+class IterativeReconstruction : public Reconstruction<TargetT>
 {    
  private:
   typedef
-    RegisteredParsingObject<
-        IterativeReconstruction < TargetT >,
-            Reconstruction< TargetT >,
-            Reconstruction< TargetT >
-         >
+    Reconstruction<TargetT>
     base_type;
 public:
-
-  //! Name which will be used when parsing a ProjectorByBinPair object
-  static const char * const registered_name;
 
   //! accessor for the subiteration counter
   int get_subiteration_num() const

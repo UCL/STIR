@@ -60,25 +60,13 @@ class Succeeded;
   */
 class AnalyticReconstruction :
         public       Reconstruction<DiscretisedDensity<3,float> >
-//            RegisteredParsingObject<
-//                AnalyticReconstruction,
-//                    Reconstruction<DiscretisedDensity<3,float> >,
-//                    Reconstruction<DiscretisedDensity<3,float> >
-//                 >
 {
 public:
   typedef DiscretisedDensity<3,float> TargetT;
 private:
   typedef Reconstruction<TargetT > base_type;
-// typedef
-//    RegisteredParsingObject<
-//       AnalyticReconstruction,
-//       Reconstruction<DiscretisedDensity<3,float> >,
-//       Reconstruction<DiscretisedDensity<3,float> > > base_type;
 public:
-  //! Name which will be used when parsing a ProjectorByBinPair object
-//  static const char * const registered_name;
-  
+
   //! construct an image from parameters set (e.g. during parsing)
   virtual DiscretisedDensity<3,float>*  
     construct_target_image_ptr() const;
