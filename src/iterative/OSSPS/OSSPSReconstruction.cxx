@@ -68,7 +68,7 @@ START_NAMESPACE_STIR
 template <typename TargetT>
 const char * const
 OSSPSReconstruction <TargetT> ::registered_name =
-  "OSSPS reconstruction";
+  "OSSPS";
 
 template <class TargetT>
 void 

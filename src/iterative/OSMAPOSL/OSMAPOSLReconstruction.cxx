@@ -75,7 +75,7 @@ START_NAMESPACE_STIR
 template <typename TargetT>
 const char * const
 OSMAPOSLReconstruction <TargetT> ::registered_name =
-  "OS-MAP-OSL reconstruction";
+  "OSMAPOSL";
 
 template <typename TargetT>
 PoissonLogLikelihoodWithLinearModelForMean<TargetT >&
@@ -130,6 +130,7 @@ initialise_keymap()
 {
   base_type::initialise_keymap();
   this->parser.add_start_key("OSMAPOSLParameters");
+  this->parser.add_stop_key("End");
   this->parser.add_stop_key("End OSMAPOSLParameters");
 
   this->parser.add_key("enforce initial positivity condition",&this->enforce_initial_positivity);
