@@ -69,10 +69,6 @@ class Succeeded;
   output file format :=
   \endverbatim
 
-  \todo Currently reconstruct() always write to an output_file, which is not desirable
-  when running a reconstruction inside some other code. Maybe this should
-  be moved into post_filter_sptr?
-
 */
 
 template <typename TargetT>
@@ -137,6 +133,22 @@ public:
   void set_post_processor_sptr(const shared_ptr<DataProcessor<TargetT> > &);
   //@}
 
+  //!
+  //! \brief set_disable_output
+  //! \param _val
+  //! \author Nikos Efthimiou
+  //! \details This function is called if the user deside to mute any output images.
+  //! The best way to do this is to use the "disable output" key in the par file.
+  //! \warning The "output filename prefix" has to be set.
+  void set_disable_output(bool _val);
+
+  //!
+  //! \brief set_enable_output
+  //! \param _val
+  //! \author Nikos Efthimiou
+  //! \details The counterpart of set_disable_output().
+  void set_enable_output(bool _val);
+
   // parameters
  protected:
 
@@ -182,6 +194,14 @@ protected:
     \c set_post_processor_sptr() ).
   */
   virtual bool post_processing();
+
+  //!
+  //! \brief _disable_output
+  //! \author Nikos Efthimiou
+  //! \details This member mutes the creatation and write into an
+  //! output image. You want to use it if you call for reconstruction
+  //! from within some other code and want to use directly the output image.
+  bool _disable_output;
 
 
 };

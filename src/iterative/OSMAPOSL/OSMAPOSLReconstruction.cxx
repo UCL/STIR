@@ -506,7 +506,7 @@ update_estimate(TargetT &current_image_estimate)
   
   // KT 17/08/2000 limit update
   // TODO move below thresholding?
-  if (this->write_update_image)
+  if (this->write_update_image && !this->_disable_output)
   {
     // allocate space for the filename assuming that
     // we never have more than 10^49 subiterations ...
