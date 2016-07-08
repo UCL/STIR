@@ -81,8 +81,6 @@ public:
 
   int set_num_subsets(const int new_num_subsets);
 
-  virtual void set_input_data(const shared_ptr<ExamInfo> &);
-
 protected:
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,

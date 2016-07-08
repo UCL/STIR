@@ -71,6 +71,8 @@ int main(int argc, const char *argv[])
     shared_ptr < Reconstruction < DiscretisedDensity < 3, float > > >
             reconstruction_method_sptr;
 
+    // NE this line is for test purpose only and should be deleted if
+    // the ExamInfo become a registered object.
     std::string data_file_name = "/home/nikos/Desktop/scatters/my_prompts.hs";
     shared_ptr < ProjData> recon_data_sptr =
             ProjData::read_from_file(data_file_name);

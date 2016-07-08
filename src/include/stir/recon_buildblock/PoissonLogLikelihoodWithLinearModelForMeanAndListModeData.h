@@ -96,6 +96,9 @@ public:
     probably shift this to the derived class.
   */
     TimeFrameDefinitions frame_defs;
+
+    virtual void set_input_data(const shared_ptr<ExamInfo> & _this_data);
+
 protected:
   std::string frame_defs_filename;
 

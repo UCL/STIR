@@ -118,6 +118,14 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
    return false; 
 } 
 
+template <typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+set_input_data(const shared_ptr<ExamInfo> & _this_data)
+{
+    list_mode_data_sptr.reset(dynamic_cast<CListModeData* > (_this_data.get()) );
+}
+
 #if 0
 Succeeded  
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::

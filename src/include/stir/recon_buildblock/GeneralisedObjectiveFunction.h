@@ -271,6 +271,8 @@ public:
   //!
   //! \brief set_input_data
   //! \author Nikos Efthimiou
+  //! \details It can be used to set the data to be reconstucted in
+  //! real-time ( withint some other code ).
   virtual void set_input_data(const shared_ptr< ExamInfo > &) = 0;
 
 protected:

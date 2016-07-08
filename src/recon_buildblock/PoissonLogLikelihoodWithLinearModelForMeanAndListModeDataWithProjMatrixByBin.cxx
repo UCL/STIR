@@ -68,16 +68,6 @@ set_defaults()
   this->PM_sptr.reset(new  ProjMatrixByBinUsingRayTracing()); 
 } 
  
-
-template <typename TargetT>
-void
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-set_input_data(const shared_ptr<ExamInfo> &)
-{
-    error("non implemented yet");
-}
-
-
 template <typename TargetT> 
 void  
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::

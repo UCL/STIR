@@ -230,7 +230,7 @@ void
 AnalyticReconstruction::
 set_input_dataset(shared_ptr<ExamInfo> _this_dataset)
 {
-    error("Not implemented, yet");
+    this->proj_data_ptr.reset(dynamic_cast < ProjData * > (_this_dataset.get()) );
 }
  
 END_NAMESPACE_STIR
