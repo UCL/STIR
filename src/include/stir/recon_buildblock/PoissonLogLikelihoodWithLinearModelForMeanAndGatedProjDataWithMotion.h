@@ -134,6 +134,8 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
   void set_recompute_sensitivity(const bool);
   void set_sensitivity_sptr(const shared_ptr<TargetT>&);
   virtual int set_num_subsets(const int num_subsets);
+
+  virtual void set_input_data(const shared_ptr<ExamInfo> &);
   //@}
  protected:
   //! Filename with input projection data

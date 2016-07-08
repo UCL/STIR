@@ -35,6 +35,8 @@
 #include <iostream>
 //#include <ios>
 
+#include "stir/ExamInfo.h"
+
 START_NAMESPACE_STIR
 
 
@@ -91,7 +93,7 @@ class ExamInfo;
   \warning The arguments 'make_num_tangential_poss_odd' are temporary
   and will be deleted in the next release.
 */
-class ProjData
+class ProjData : public ExamInfo
 {
 public:
   //! A static member to get the projection data from a file

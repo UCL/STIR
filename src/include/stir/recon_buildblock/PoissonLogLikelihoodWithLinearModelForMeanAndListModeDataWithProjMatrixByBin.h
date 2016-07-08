@@ -33,6 +33,8 @@
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h" 
 #include "stir/ProjDataInMemory.h"
+
+#include "stir/ExamInfo.h"
 START_NAMESPACE_STIR
 
 
@@ -78,6 +80,8 @@ public:
   virtual TargetT * construct_target_ptr() const;  
 
   int set_num_subsets(const int new_num_subsets);
+
+  virtual void set_input_data(const shared_ptr<ExamInfo> &);
 
 protected:
   virtual double

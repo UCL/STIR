@@ -40,6 +40,8 @@
 #include "stir/RegisteredObject.h"
 #include <string>
 
+#include "stir/ExamInfo.h"
+
 START_NAMESPACE_STIR
 
 
@@ -131,6 +133,12 @@ public:
 
   //! post-filter
   void set_post_processor_sptr(const shared_ptr<DataProcessor<TargetT> > &);
+
+  //!
+  //! \brief set_input_dataset
+  //! \param _this_dataset
+  //!
+  virtual void set_input_dataset(shared_ptr<ExamInfo> _this_dataset) = 0;
   //@}
 
   //!

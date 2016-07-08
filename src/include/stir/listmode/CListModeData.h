@@ -31,6 +31,8 @@
 #include <string>
 #include <ctime>
 
+#include "stir/ExamInfo.h"
+
 # ifdef BOOST_NO_STDC_NAMESPACE
 namespace std { using ::time_t; }
 #endif
@@ -124,7 +126,7 @@ class ExamInfo;
   make sure that read_from_file<CListModeData> recognises your data. This
   normally involves creating a new InputFileFormat class.
 */
-class CListModeData
+class CListModeData : public ExamInfo
 {
 public:
   //! Use this typedef for save/set_get_position

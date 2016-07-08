@@ -24,6 +24,8 @@
 #include "stir/CPUTimer.h"
 #include "stir/HighResWallClockTimer.h"
 
+#include "stir/ProjData.h"
+
 static void print_usage_and_exit()
 {
     std::cerr<<"This executable is able to reconstruct some data without calling a specific reconstruction method, from the code.\n";
@@ -69,6 +71,10 @@ int main(int argc, const char *argv[])
     shared_ptr < Reconstruction < DiscretisedDensity < 3, float > > >
             reconstruction_method_sptr;
 
+    std::string data_file_name = "/home/nikos/Desktop/scatters/my_prompts.hs";
+    shared_ptr < ProjData> recon_data_sptr =
+            ProjData::read_from_file(data_file_name);
+
     KeyParser parser;
     parser.add_start_key("Reconstruction");
     parser.add_stop_key("End Reconstruction");
@@ -78,6 +84,8 @@ int main(int argc, const char *argv[])
     HighResWallClockTimer t;
     t.reset();
     t.start();
+
+    reconstruction_method_sptr->set_input_dataset(recon_data_sptr);
 
     if (reconstruction_method_sptr->reconstruct() == Succeeded::yes)
     {

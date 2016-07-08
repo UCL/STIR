@@ -34,6 +34,9 @@
 #include "stir/shared_ptr.h"
 #include "stir/recon_buildblock/GeneralisedPrior.h"
 #include <string>
+
+#include <stir/ExamInfo.h>
+
 START_NAMESPACE_STIR
 
 
@@ -264,6 +267,11 @@ public:
   /*! \warning You should call set_up() again after using this function.
    */
   void set_prior_sptr(const shared_ptr<GeneralisedPrior<TargetT> >&);
+
+  //!
+  //! \brief set_input_data
+  //! \author Nikos Efthimiou
+  virtual void set_input_data(const shared_ptr< ExamInfo > &) = 0;
 
 protected:
   int num_subsets;

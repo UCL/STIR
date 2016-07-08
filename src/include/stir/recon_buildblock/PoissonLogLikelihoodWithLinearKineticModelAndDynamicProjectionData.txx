@@ -401,6 +401,15 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
   return Succeeded::yes;
 }
 
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
+set_input_data(const shared_ptr<ExamInfo> &)
+{
+    error("non implemented yet");
+}
+
+
 /*************************************************************************
   functions that compute the value/gradient of the objective function etc
 *************************************************************************/

@@ -196,17 +196,29 @@ post_processing()
   if (base_type::post_processing() == true)
     return true;
 
+    // NE 7/7/2017 The input data can be set alternatively from the set_input_data.
   if (this->input_filename.length() == 0)
-  { warning("You need to specify an input file"); return true; }
+  {
+      warning("You have not specified an input file, \n"
+              "please set one later.");
+//      return true;
+  }
   // KT 20/06/2001 disabled as not functional yet
 #if 0
   if (num_views_to_add!=1 && (num_views_to_add<=0 || num_views_to_add%2 != 0))
   { warning("The 'mash x views' key has an invalid value (must be 1 or even number)"); return true; }
 #endif
  
-  this->proj_data_sptr= ProjData::read_from_file(input_filename);
-  if (is_null_ptr(this->proj_data_sptr))
-    { warning("Failed to read input file %s", input_filename.c_str()); return true; }
+  if (this->input_filename.length() > 0 )
+  {
+    this->proj_data_sptr= ProjData::read_from_file(input_filename);
+
+    if (is_null_ptr(this->proj_data_sptr))
+        {
+            warning("Failed to read input file %s", input_filename.c_str());
+            return true;
+        }
+  }
 
  // image stuff
   if (this->zoom <= 0)
@@ -477,6 +489,14 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
 {
   this->normalisation_sptr = arg;
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+set_input_data(const shared_ptr<ExamInfo> & _this_data)
+{
+    this->proj_data_sptr.reset(dynamic_cast < ProjData * > (_this_data.get()) );
 }
 
 /***************************************************************

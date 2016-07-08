@@ -225,6 +225,13 @@ reconstruct(shared_ptr<TargetT> const& target_image_sptr)
   }
   return success;
 }
+
+void
+AnalyticReconstruction::
+set_input_dataset(shared_ptr<ExamInfo> _this_dataset)
+{
+    error("Not implemented, yet");
+}
  
 END_NAMESPACE_STIR
 

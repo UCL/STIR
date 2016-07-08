@@ -392,11 +392,12 @@ ProjData::fill(const ProjData& proj_data)
 }
 
 ProjData:: ProjData()
+    :ExamInfo()
 {}
 
 ProjData::ProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
 		   const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
-  : exam_info_sptr(exam_info_sptr), proj_data_info_ptr(proj_data_info_sptr)
+  : ExamInfo(), exam_info_sptr(exam_info_sptr), proj_data_info_ptr(proj_data_info_sptr)
 {}
 
 END_NAMESPACE_STIR

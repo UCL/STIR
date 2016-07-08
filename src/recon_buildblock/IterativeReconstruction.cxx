@@ -389,6 +389,7 @@ IterativeReconstruction<TargetT>::get_initial_data_ptr() const
 }
 
 // KT 10122001 new
+// NE Updated to be able to define the dataset to reconstruct.
 template <typename TargetT>
 Succeeded 
 IterativeReconstruction<TargetT>::
@@ -608,6 +609,14 @@ randomly_permute_subset_order() const
 
  return final_array;
 
+}
+
+template <typename TargetT>
+void
+IterativeReconstruction<TargetT>::
+set_input_dataset(shared_ptr<ExamInfo> _this_dataset)
+{
+    this->objective_function_sptr->set_input_data(_this_dataset);
 }
 
 

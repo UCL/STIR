@@ -95,6 +95,11 @@ public:
   virtual Succeeded 
     reconstruct(shared_ptr<TargetT> const& target_image_sptr);
 
+    //!
+    //! \brief set_input_dataset
+    //! \author Nikos Efthimiou
+    void set_input_dataset(shared_ptr<ExamInfo> _this_dataset);
+
   // parameters
  protected:
 

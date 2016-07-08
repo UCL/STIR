@@ -30,7 +30,7 @@
 START_NAMESPACE_STIR
 
 CListModeData::
-CListModeData()
+CListModeData() : ExamInfo()
 {
 }
 

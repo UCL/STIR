@@ -329,6 +329,13 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_time_gate_definitions(const TimeGateDefinitions & time_gate_definitions)
 { this->_time_gate_definitions=time_gate_definitions; }
 
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+set_input_data(const shared_ptr<ExamInfo> &)
+{
+    error("non implemented yet");
+}
 
 /***************************************************************
   set_up()
