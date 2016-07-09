@@ -40,6 +40,7 @@
 #include "stir/recon_buildblock/Reconstruction.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/ProjData.h"
+#include "stir/RegisteredParsingObject.h"
 #include <string>
 
 START_NAMESPACE_STIR
@@ -57,14 +58,15 @@ class Succeeded;
   because of conversion problems with stir::shared_ptr. Maybe it will be
   possible to correct this once we use boost:shared_ptr.
   */
-class AnalyticReconstruction : public Reconstruction<DiscretisedDensity<3,float> >
+class AnalyticReconstruction :
+        public       Reconstruction<DiscretisedDensity<3,float> >
 {
 public:
   typedef DiscretisedDensity<3,float> TargetT;
 private:
   typedef Reconstruction<TargetT > base_type;
 public:
-  
+
   //! construct an image from parameters set (e.g. during parsing)
   virtual DiscretisedDensity<3,float>*  
     construct_target_image_ptr() const;

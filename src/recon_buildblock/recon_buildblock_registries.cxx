@@ -56,6 +56,12 @@
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.h"
 
+#include "stir/analytic/FBP2D/FBP2DReconstruction.h"
+#include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
+
+#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+#include "stir/OSSPS/OSSPSReconstruction.h"
+
 #ifdef HAVE_LLN_MATRIX
 #include "stir/recon_buildblock/BinNormalisationFromECAT7.h"
 #endif
@@ -96,6 +102,12 @@ static BinNormalisationFromProjData::RegisterIt dummy93;
 static BinNormalisationFromAttenuationImage::RegisterIt dummy94;
 static PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<ParametricVoxelsOnCartesianGrid>::RegisterIt Dummyxxx;
 static PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<DiscretisedDensity<3,float> >::RegisterIt Dummyxxxzz;
+
+static FBP2DReconstruction::RegisterIt dummy601;
+static FBP3DRPReconstruction::RegisterIt dummy602;
+
+static OSMAPOSLReconstruction<DiscretisedDensity<3,float> >::RegisterIt dummy603;
+static OSSPSReconstruction<DiscretisedDensity<3, float> >::RegisterIt dummy604;
 
 #ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT
