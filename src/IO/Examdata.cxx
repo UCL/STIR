@@ -1,12 +1,12 @@
  
-#include "stir/IO/Study.h"
+#include "stir/IO/Examdata.h"
 
 
 #include <iostream>
 START_NAMESPACE_STIR
 
-Study::
-Study()
+Examdata::
+Examdata()
 {
     this->set_defaults();
 }

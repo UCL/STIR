@@ -1,10 +1,10 @@
  
-#ifndef __stir_IO_Study_H__
-#define __stir_IO_Study_H__
+#ifndef __stir_IO_Examdata_H__
+#define __stir_IO_Examdata_H__
 /*!
   \file
-  \ingroup recon_buildblock
-  \brief Definition of class stir::General_Reconstruction
+  \ingroup
+  \brief
 
   \author Nikos Efthimiou
 */
@@ -20,13 +20,13 @@ START_NAMESPACE_STIR
 
 class Succeeded;
 
-class Study : public ParsingObject
+class Examdata : public ParsingObject
 {
 public:
 
-    Study();
+    Examdata();
 
-    virtual ~Study();
+    virtual ~Examdata();
 
 protected:
 
