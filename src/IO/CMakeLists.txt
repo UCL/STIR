@@ -24,6 +24,7 @@ set(dir IO)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
+  Study
   OutputFileFormat 
   OutputFileFormat_default 
   InterfileOutputFileFormat
