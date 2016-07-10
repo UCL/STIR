@@ -614,7 +614,7 @@ void FBP3DRPReconstruction::do_2D_reconstruction()
     display(estimated_image(),estimated_image().find_max(), "Image estimate"); 
   }
             
-  if (save_intermediate_files)
+  if (save_intermediate_files && !_disable_output)
     {
       char file[max_filename_length];
       sprintf(file,"%s_estimated",output_filename_prefix.c_str()); 
@@ -718,7 +718,7 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
 		 << " Max = " << image.find_max()
 		 << " Sum = " << image.sum() << endl;
 #ifndef PARALLEL
-	if(save_intermediate_files){ 
+    if(save_intermediate_files && !_disable_output){
 	  char *file = new char[output_filename_prefix.size() + 20];
 	  sprintf(file,"%s_afterseg%d",output_filename_prefix.c_str(),seg_num);
 	  do_save_img(file, image);        

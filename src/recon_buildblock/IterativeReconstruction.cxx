@@ -392,7 +392,7 @@ IterativeReconstruction<TargetT>::get_initial_data_ptr() const
 template <typename TargetT>
 Succeeded 
 IterativeReconstruction<TargetT>::
-reconstruct() 
+reconstruct()
 {
   this->start_timers();
 
@@ -569,9 +569,9 @@ end_of_iteration_processing(TargetT &current_estimate)
   
   writeText(cerr.str().c_str(), INFORMATION_CHANNEL);
 
-  // Save intermediate (or last) iteration      
-  if((!(this->subiteration_num%this->save_interval)) || 
-     this->subiteration_num==this->num_subiterations ) 
+  // Save intermediate (or last) iteration -- if the output is not disabled
+  if((!(this->subiteration_num%this->save_interval) ||
+     this->subiteration_num==this->num_subiterations) && !this->_disable_output)
     {      	         
       this->output_file_format_ptr->
 	write_to_file(this->make_filename_prefix_subiteration_num(), 

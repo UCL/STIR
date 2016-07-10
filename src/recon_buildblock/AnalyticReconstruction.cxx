@@ -199,7 +199,7 @@ reconstruct()
 {
   shared_ptr<DiscretisedDensity<3,float> > target_image_ptr(construct_target_image_ptr());
   const Succeeded success = this->reconstruct(target_image_ptr);
-  if (success == Succeeded::yes)
+  if (success == Succeeded::yes && !_disable_output)
   {
     this->output_file_format_ptr->
       write_to_file(this->output_filename_prefix, *target_image_ptr);
