@@ -103,8 +103,8 @@ post_processing()
 {
 
   if (this->_disable_output)
-  { warning("You have disabled the output. No files will be written in the\n"
-            "disk after or during reconsturction\n"); }
+  { warning("You have disabled the output. No files will be written to "
+            "disk after or during reconstuction"); }
 
   if (this->output_filename_prefix.length() == 0 &&
           !this->_disable_output)// KT 160899 changed name of variable
