@@ -614,9 +614,9 @@ randomly_permute_subset_order() const
 template <typename TargetT>
 void
 IterativeReconstruction<TargetT>::
-set_input_dataset(shared_ptr<ExamInfo> _this_dataset)
+set_input_data(shared_ptr<ExamData> _this_data)
 {
-    this->objective_function_sptr->set_input_data(_this_dataset);
+    this->objective_function_sptr->set_input_data(_this_data);
 }
 
 

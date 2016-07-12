@@ -240,9 +240,9 @@ public:
   void set_report_objective_function_values_interval(const int);
 
   //!
-  //! \brief set_input_dataset
+  //! \brief set_input_data
   //! \author Nikos Efthimiou
-  void set_input_dataset(shared_ptr<ExamInfo> _this_dataset);
+  void set_input_data(shared_ptr<ExamData> _this_data);
   //@}
 
 protected:

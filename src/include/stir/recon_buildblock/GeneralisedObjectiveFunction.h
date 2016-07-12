@@ -35,7 +35,7 @@
 #include "stir/recon_buildblock/GeneralisedPrior.h"
 #include <string>
 
-#include <stir/ExamInfo.h>
+#include <stir/IO/ExamData.h>
 
 START_NAMESPACE_STIR
 
@@ -273,7 +273,7 @@ public:
   //! \author Nikos Efthimiou
   //! \details It can be used to set the data to be reconstucted in
   //! real-time ( withint some other code ).
-  virtual void set_input_data(const shared_ptr< ExamInfo > &) = 0;
+  virtual void set_input_data(const shared_ptr< ExamData > &) = 0;
 
 protected:
   int num_subsets;

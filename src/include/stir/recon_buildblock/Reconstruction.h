@@ -40,7 +40,7 @@
 #include "stir/RegisteredObject.h"
 #include <string>
 
-#include "stir/ExamInfo.h"
+#include "stir/IO/ExamData.h"
 
 START_NAMESPACE_STIR
 
@@ -138,7 +138,7 @@ public:
   //! \brief set_input_dataset
   //! \param _this_dataset
   //!
-  virtual void set_input_dataset(shared_ptr<ExamInfo> _this_dataset) = 0;
+  virtual void set_input_data(shared_ptr<ExamData> _this_data) = 0;
   //@}
 
   //!

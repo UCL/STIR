@@ -31,7 +31,8 @@
 #include <string>
 #include <ctime>
 
-#include "stir/ExamInfo.h"
+#include "stir/IO/ExamData.h"
+#include "stir/RegisteredParsingObject.h"
 
 # ifdef BOOST_NO_STDC_NAMESPACE
 namespace std { using ::time_t; }
@@ -126,9 +127,10 @@ class ExamInfo;
   make sure that read_from_file<CListModeData> recognises your data. This
   normally involves creating a new InputFileFormat class.
 */
-class CListModeData : public ExamInfo
+class CListModeData : public ExamData
 {
 public:
+
   //! Use this typedef for save/set_get_position
   typedef unsigned int SavedPosition;
 
@@ -150,14 +152,14 @@ public:
   virtual std::string
     get_name() const = 0;
 
-  //! Get const pointer to exam info
-  const ExamInfo*
-    get_exam_info_ptr() const;
-  //! Get shared pointer to exam info
-  /*! \warning Use with care. If you modify the object pointer to by a shared ptr, all objects using the same
-    shared pointer will be affected. */
-  shared_ptr<ExamInfo>
-    get_exam_info_sptr() const;
+//  //! Get const pointer to exam info
+//  const ExamInfo*
+//    get_exam_info_ptr() const;
+//  //! Get shared pointer to exam info
+//  /*! \warning Use with care. If you modify the object pointer to by a shared ptr, all objects using the same
+//    shared pointer will be affected. */
+//  shared_ptr<ExamInfo>
+//    get_exam_info_sptr() const;
 
 #if 0
   //! Scan start time
@@ -226,7 +228,7 @@ protected:
   //! Has to be set by the derived class
   shared_ptr<Scanner> scanner_sptr;
   //! Has to be set by the derived class
-  shared_ptr<ExamInfo> exam_info_sptr;
+//  shared_ptr<ExamInfo> exam_info_sptr;
 };
 
 END_NAMESPACE_STIR

@@ -30,7 +30,7 @@
 START_NAMESPACE_STIR
 
 CListModeData::
-CListModeData() : ExamInfo()
+CListModeData()
 {
 }
 
@@ -38,18 +38,18 @@ CListModeData::
 ~CListModeData()
 {}
 
-const ExamInfo*
-CListModeData::get_exam_info_ptr() const
-{
-  assert(!is_null_ptr(exam_info_sptr));
-  return exam_info_sptr.get();
-}
+//const ExamInfo*
+//CListModeData::get_exam_info_ptr() const
+//{
+//  assert(!is_null_ptr(exam_info_sptr));
+//  return exam_info_sptr.get();
+//}
 
-shared_ptr<ExamInfo>
-CListModeData::get_exam_info_sptr() const
-{
-  return exam_info_sptr;
-}
+//shared_ptr<ExamInfo>
+//CListModeData::get_exam_info_sptr() const
+//{
+//  return exam_info_sptr;
+//}
 
 const Scanner* 
 CListModeData::

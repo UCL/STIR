@@ -71,8 +71,9 @@ int main(int argc, const char *argv[])
     shared_ptr < Reconstruction < DiscretisedDensity < 3, float > > >
             reconstruction_method_sptr;
 
-    // NE this line is for test purpose only and should be deleted if
-    // the ExamInfo become a registered object.
+    // N.E: Still no way around this.
+    // Should ExamData be a registered object and ProjDataFromStream be able to
+    // parse?
     std::string data_file_name = "/home/nikos/Desktop/scatters/my_prompts.hs";
     shared_ptr < ProjData> recon_data_sptr =
             ProjData::read_from_file(data_file_name);
@@ -87,7 +88,7 @@ int main(int argc, const char *argv[])
     t.reset();
     t.start();
 
-    reconstruction_method_sptr->set_input_dataset(recon_data_sptr);
+    reconstruction_method_sptr->set_input_data(recon_data_sptr);
 
     if (reconstruction_method_sptr->reconstruct() == Succeeded::yes)
     {

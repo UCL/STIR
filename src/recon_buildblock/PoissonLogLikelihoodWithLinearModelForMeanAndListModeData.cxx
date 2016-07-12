@@ -121,7 +121,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
 template <typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
-set_input_data(const shared_ptr<ExamInfo> & _this_data)
+set_input_data(const shared_ptr<ExamData> & _this_data)
 {
     list_mode_data_sptr.reset(dynamic_cast<CListModeData* > (_this_data.get()) );
 }

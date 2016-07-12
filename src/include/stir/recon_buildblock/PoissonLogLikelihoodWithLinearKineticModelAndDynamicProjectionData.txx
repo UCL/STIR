@@ -404,9 +404,9 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
-set_input_data(const shared_ptr<ExamInfo> &)
+set_input_data(const shared_ptr<ExamData> &)
 {
-    error("non implemented yet");
+    error("not implemented yet");
 }
 
 

@@ -332,7 +332,7 @@ set_time_gate_definitions(const TimeGateDefinitions & time_gate_definitions)
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
-set_input_data(const shared_ptr<ExamInfo> &)
+set_input_data(const shared_ptr<ExamData> &)
 {
     error("non implemented yet");
 }

@@ -92,6 +92,7 @@ START_NAMESPACE_STIR
 
    Developer's note: ideally the return value would be an auto_ptr.
 */
+
 shared_ptr<ProjData> 
 ProjData::
 read_from_file(const string& filename,
@@ -212,11 +213,11 @@ read_from_file(const string& filename,
   return null_ptr;
 }
 
-void
-ProjData::set_exam_info(ExamInfo const& new_exam_info)
-{
-  this->exam_info_sptr.reset(new ExamInfo(new_exam_info));
-}
+//void
+//ProjData::set_exam_info(ExamInfo const& new_exam_info)
+//{
+//  this->exam_info_sptr.reset(new ExamInfo(new_exam_info));
+//}
 
   
 Viewgram<float> 
@@ -392,12 +393,12 @@ ProjData::fill(const ProjData& proj_data)
 }
 
 ProjData:: ProjData()
-    :ExamInfo()
+    :ExamData()
 {}
 
 ProjData::ProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
 		   const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
-  : ExamInfo(), exam_info_sptr(exam_info_sptr), proj_data_info_ptr(proj_data_info_sptr)
+  :ExamData(exam_info_sptr), proj_data_info_ptr(proj_data_info_sptr)
 {}
 
 END_NAMESPACE_STIR

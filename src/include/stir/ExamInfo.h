@@ -55,9 +55,6 @@ public :
     : start_time_in_secs_since_1970(0.)
     {}
 
-  // NE: We need at least one virtual function.
-  virtual ~ExamInfo() {};
-
   std::string originating_system;
   
   ImagingModality imaging_modality;
