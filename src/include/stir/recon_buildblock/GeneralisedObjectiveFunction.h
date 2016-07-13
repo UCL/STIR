@@ -35,7 +35,9 @@
 #include "stir/recon_buildblock/GeneralisedPrior.h"
 #include <string>
 
-#include <stir/IO/ExamData.h>
+#include "stir/IO/ExamData.h"
+#include "stir/ProjData.h"
+#include "stir/recon_buildblock/BinNormalisation.h"
 
 START_NAMESPACE_STIR
 
@@ -275,6 +277,16 @@ public:
   //! real-time ( withint some other code ).
   virtual void set_input_data(const shared_ptr< ExamData > &) = 0;
 
+  //!
+  //! \brief set_additive_proj_data_sptr
+  //!
+   virtual void set_additive_proj_data_sptr(const shared_ptr<ProjData>&) = 0;
+
+  //!
+  //! \brief set_normalisation_sptr
+  //!
+  virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&) = 0;
+
 protected:
   int num_subsets;
 
@@ -332,6 +344,13 @@ protected:
       actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
 								      const TargetT& input,
 								      const int subset_num) const;
+
+  //! points to the additive projection data
+   /*! the projection data in this file is bin-wise added to forward projection results*/
+  shared_ptr<ProjData> additive_proj_data_sptr;
+
+
+  shared_ptr<BinNormalisation> normalisation_sptr;
 };
 
 END_NAMESPACE_STIR

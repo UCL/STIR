@@ -409,6 +409,23 @@ set_input_data(const shared_ptr<ExamData> &)
     error("not implemented yet");
 }
 
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
+set_additive_proj_data_sptr(const shared_ptr<ProjData>& arg)
+{
+
+  this->additive_proj_data_sptr = arg;
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
+set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
+{
+  this->normalisation_sptr = arg;
+}
+
 
 /*************************************************************************
   functions that compute the value/gradient of the objective function etc

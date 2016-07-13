@@ -126,6 +126,23 @@ set_input_data(const shared_ptr<ExamData> & _this_data)
     list_mode_data_sptr.reset(dynamic_cast<CListModeData* > (_this_data.get()) );
 }
 
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+set_additive_proj_data_sptr(const shared_ptr<ProjData>& arg)
+{
+
+  this->additive_proj_data_sptr = arg;
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
+{
+  this->normalisation_sptr = arg;
+}
+
 #if 0
 Succeeded  
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::

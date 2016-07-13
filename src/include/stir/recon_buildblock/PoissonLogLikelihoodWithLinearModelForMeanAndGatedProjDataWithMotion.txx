@@ -337,6 +337,23 @@ set_input_data(const shared_ptr<ExamData> &)
     error("non implemented yet");
 }
 
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+set_additive_proj_data_sptr(const shared_ptr<ProjData>& arg)
+{
+
+  this->additive_proj_data_sptr = arg;
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
+{
+  this->normalisation_sptr = arg;
+}
+
 /***************************************************************
   set_up()
 ***************************************************************/
