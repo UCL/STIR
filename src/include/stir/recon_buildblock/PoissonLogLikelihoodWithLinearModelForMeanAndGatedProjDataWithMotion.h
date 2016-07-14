@@ -136,7 +136,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
   virtual int set_num_subsets(const int num_subsets);
 
   virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
-  virtual void set_additive_proj_data_sptr(const shared_ptr<ProjData>&);
+  virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
 
   virtual void set_input_data(const shared_ptr<ExamData> &);
   //@}

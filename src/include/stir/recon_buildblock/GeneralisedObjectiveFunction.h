@@ -279,12 +279,17 @@ public:
 
   //!
   //! \brief set_additive_proj_data_sptr
+  //! \author Nikos Efthimiou
+  //! \details In the case the reconstruction process is called from another
+  //! piece of code, the user should be able to set any additive sinogram
   //!
-   virtual void set_additive_proj_data_sptr(const shared_ptr<ProjData>&) = 0;
+   virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&) = 0;
 
   //!
   //! \brief set_normalisation_sptr
-  //!
+  //! \author Nikos Efthimiou
+  //! \details In the case the reconstruction process is called from another
+  //! piece of code, the user should be able to set any additive sinogram
   virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&) = 0;
 
 protected:
@@ -344,13 +349,6 @@ protected:
       actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
 								      const TargetT& input,
 								      const int subset_num) const;
-
-  //! points to the additive projection data
-   /*! the projection data in this file is bin-wise added to forward projection results*/
-  shared_ptr<ProjData> additive_proj_data_sptr;
-
-
-  shared_ptr<BinNormalisation> normalisation_sptr;
 };
 
 END_NAMESPACE_STIR

@@ -453,10 +453,9 @@ set_zero_seg0_end_planes(const bool arg)
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-set_additive_proj_data_sptr(const shared_ptr<ProjData>& arg)
+set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
 {
-
-  this->additive_proj_data_sptr = arg;
+  this->additive_proj_data_sptr.reset(dynamic_cast < ProjData * > (arg.get()) );
 }
 
 template<typename TargetT>

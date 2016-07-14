@@ -26,35 +26,37 @@
   \author Kris Thielemans
 */
 #include "stir/ProjData.h"
+#include "stir/IO/ExamData.h"
 #include "stir/shared_ptr.h"
 //#include "stir/Scanner.h"
 #include <vector>
 
 START_NAMESPACE_STIR
 
-class MultipleProjData
+class MultipleProjData : public ExamData
 {
 public:
 
-  MultipleProjData() {};
+  MultipleProjData():ExamData() {};
 
   MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr)
-    : _exam_info_sptr(exam_info_sptr)
+    :ExamData(exam_info_sptr)
   {
   }
-  //! Get a pointer to the exam information
-  const ExamInfo*
-    get_exam_info_ptr() const
-  {
-    return this->_exam_info_sptr.get();
-  }
+  //N.E.14/07/16 Inherited from ExamData
+  // //! Get a pointer to the exam information
+//  const ExamInfo*
+//    get_exam_info_ptr() const
+//  {
+//    return this->_exam_info_sptr.get();
+//  }
 
-  //! Get a shared pointer to the exam information
-  shared_ptr<ExamInfo>
-    get_exam_info_sptr() const
-  {
-    return this->_exam_info_sptr;
-  }
+//  //! Get a shared pointer to the exam information
+//  shared_ptr<ExamInfo>
+//    get_exam_info_sptr() const
+//  {
+//    return this->_exam_info_sptr;
+//  }
 
   unsigned
     get_num_proj_data() const
@@ -122,7 +124,8 @@ protected:
   std::vector<shared_ptr<ProjData > > _proj_datas;
   //shared_ptr<Scanner> _scanner_sptr;
  protected:
-  shared_ptr<ExamInfo> _exam_info_sptr;
+  //N.E:14/07/16 Inherited from ExamData.
+//  shared_ptr<ExamInfo> _exam_info_sptr;
 };
 
 END_NAMESPACE_STIR

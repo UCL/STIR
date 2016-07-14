@@ -207,7 +207,8 @@ public:
   void set_proj_data_sptr(const shared_ptr<ProjData>&);
   void set_max_segment_num_to_process(const int);
   void set_zero_seg0_end_planes(const bool);
-  virtual void set_additive_proj_data_sptr(const shared_ptr<ProjData>&);
+  //N.E. Changed to ExamData
+  virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
   void set_projector_pair_sptr(const shared_ptr<ProjectorByBinPair>&) ;
   void set_frame_num(const int);
   void set_frame_definitions(const TimeFrameDefinitions&);
@@ -316,13 +317,14 @@ protected:
   std::string additive_projection_data_filename;
 
 
+  shared_ptr<ProjData> additive_proj_data_sptr;
+
+  shared_ptr<BinNormalisation> normalisation_sptr;
 
  // TODO doc
   int frame_num;
   std::string frame_definition_filename;
   TimeFrameDefinitions frame_defs;
-
-
 
 //Loglikelihood computation parameters
  // TODO rename and move higher up in the hierarchy 

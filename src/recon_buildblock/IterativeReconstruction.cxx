@@ -614,9 +614,25 @@ randomly_permute_subset_order() const
 template <typename TargetT>
 void
 IterativeReconstruction<TargetT>::
-set_input_data(shared_ptr<ExamData> _this_data)
+set_input_data(const shared_ptr<ExamData> &arg)
 {
-    this->objective_function_sptr->set_input_data(_this_data);
+    this->objective_function_sptr->set_input_data(arg);
+}
+
+template <typename TargetT>
+void
+IterativeReconstruction<TargetT>::
+set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
+{
+    this->objective_function_sptr->set_additive_proj_data_sptr(arg);
+}
+
+template <typename TargetT>
+void
+IterativeReconstruction<TargetT>::
+set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
+{
+    error("Not implemented yet");
 }
 
 

@@ -332,18 +332,17 @@ set_time_gate_definitions(const TimeGateDefinitions & time_gate_definitions)
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
-set_input_data(const shared_ptr<ExamData> &)
+set_input_data(const shared_ptr<ExamData> & arg)
 {
-    error("non implemented yet");
+    this->_gated_proj_data_sptr.reset(dynamic_cast < GatedProjData * > (arg.get()) );
 }
 
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
-set_additive_proj_data_sptr(const shared_ptr<ProjData>& arg)
+set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
 {
-
-  this->additive_proj_data_sptr = arg;
+  this->_additive_gated_proj_data_sptr.reset(dynamic_cast < GatedProjData * > (arg.get()) );
 }
 
 template<typename TargetT>
@@ -351,7 +350,8 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
 {
-  this->normalisation_sptr = arg;
+//  this->normalisation_sptr = arg;
+    error("Not implemeted yet");
 }
 
 /***************************************************************

@@ -20,11 +20,11 @@
 #include "stir/recon_buildblock/Reconstruction.h"
 #include <iostream>
 #include <stdlib.h>
+#include <string>
 #include "stir/Succeeded.h"
 #include "stir/CPUTimer.h"
 #include "stir/HighResWallClockTimer.h"
-
-#include "stir/ProjData.h"
+#include "stir/IO/write_to_file.h"
 
 static void print_usage_and_exit()
 {
@@ -71,13 +71,6 @@ int main(int argc, const char *argv[])
     shared_ptr < Reconstruction < DiscretisedDensity < 3, float > > >
             reconstruction_method_sptr;
 
-    // N.E: Still no way around this.
-    // Should ExamData be a registered object and ProjDataFromStream be able to
-    // parse?
-    std::string data_file_name = "/home/nikos/Desktop/scatters/my_prompts.hs";
-    shared_ptr < ProjData> recon_data_sptr =
-            ProjData::read_from_file(data_file_name);
-
     KeyParser parser;
     parser.add_start_key("Reconstruction");
     parser.add_stop_key("End Reconstruction");
@@ -88,7 +81,6 @@ int main(int argc, const char *argv[])
     t.reset();
     t.start();
 
-    reconstruction_method_sptr->set_input_data(recon_data_sptr);
 
     if (reconstruction_method_sptr->reconstruct() == Succeeded::yes)
     {
@@ -101,6 +93,16 @@ int main(int argc, const char *argv[])
         t.stop();
         return Succeeded::no;
     }
+
+
+    // Get the reconstructed image and save it to the disk
+    std::string output_filename("./output_image");
+    shared_ptr  < DiscretisedDensity < 3, float > > reconstructed_image =
+            reconstruction_method_sptr->get_reconstructed_image();
+
+////    shared_ptr<OutputFileFormat< DiscretisedDensity < 3, float > > > output = reconstructed_image;
+
+    OutputFileFormat<DiscretisedDensity < 3, float > >::default_sptr()->write_to_file(output_filename, *reconstructed_image.get());
 
     return EXIT_SUCCESS;
 }

@@ -98,7 +98,7 @@ public:
     TimeFrameDefinitions frame_defs;
 
     virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
-    virtual void set_additive_proj_data_sptr(const shared_ptr<ProjData>&);
+    virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
 
     virtual void set_input_data(const shared_ptr<ExamData> & _this_data);
 
@@ -107,6 +107,10 @@ protected:
 
   //! Filename with input projection data
   std::string list_mode_filename;
+
+  shared_ptr<ProjData> additive_proj_data_sptr;
+
+  shared_ptr<BinNormalisation> normalisation_sptr;
  
   //! Listmode pointer
   shared_ptr<CListModeData> list_mode_data_sptr; 
