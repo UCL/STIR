@@ -1,0 +1,22 @@
+language: cpp
+
+compiler:
+  - clang
+  - gcc
+
+dist: trusty
+
+sudo: false
+
+addons:
+  apt:
+    packages:
+    - libboost-all-dev
+    - swig
+
+script:
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make -j 8
+  - make test
