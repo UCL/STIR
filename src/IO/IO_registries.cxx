@@ -55,6 +55,8 @@
 #endif
 #include "stir/IO/ECAT8_32bitListmodeInputFileFormat.h"
 
+#include "stir/IO/GESignaListmodeInputFileFormat.h"
+
 #ifdef HAVE_ITK
 #include "stir/IO/ITKOutputFileFormat.h"
 #include "stir/IO/ITKImageInputFileFormat.h"
@@ -105,5 +107,6 @@ static RegisterInputFileFormat<ecat::ecat7::ECAT966ListmodeInputFileFormat> LMdu
 static RegisterInputFileFormat<ecat::ecat7::ECAT962ListmodeInputFileFormat> LMdummyECAT962(5);
 #endif
 static RegisterInputFileFormat<ecat::ECAT8_32bitListmodeInputFileFormat> LMdummyECAT8(6);
+static RegisterInputFileFormat<GESignaListmodeInputFileFormat> LMdummyGESigna(7);
 
 END_NAMESPACE_STIR
