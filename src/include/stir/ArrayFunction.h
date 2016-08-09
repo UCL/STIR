@@ -59,14 +59,25 @@
   KT 06/12/2001
   added apply_array_function_on_1st_index, 
   apply_array_function_on_each_index
+
+  NE 8/09/2016
+  added _create_array_for_proj_data_3D,
+  _create_array_for_proj_data_1D,
+  _get_full_iterator, _projdata_to_array_3D,
+  _projdata_to_array_1D
 */
 
 #ifndef __stir_ArrayFunction_H__
 #define __stir_ArrayFunction_H__
-  
+
+#include "IndexRange3D.h"
+#include "IndexRange2D.h"
+#include "SegmentBySinogram.h"
 #include "stir/Array.h"
 #include "stir/shared_ptr.h"
 #include "stir/ArrayFunctionObject.h"
+#include "stir/ProjData.h"
+#include "stir/IndexRange.h"
 
 START_NAMESPACE_STIR
 
@@ -344,6 +355,20 @@ template <int num_dim, typename elemT>
 inline void 
 transform_array_from_periodic_indices(Array<num_dim, elemT>& out_array, 
 				      const Array<num_dim, elemT>& in_array);
+
+
+static Array <3, float>  _create_3D_array_for_proj_data(const ProjData& proj_data);
+
+static Array <1, float> _create_1D_array_for_proj_data(const ProjData& proj_data);
+
+template < int num_dim, typename elemT >
+static inline
+typename Array< num_dim, elemT>::full_iterator _get_full_iterator( Array<num_dim, elemT> &  array);
+
+// a function for  converting ProjData to a 3D array as that's what is easy to use
+static Array< 3, float > _projdata_to_3D_array(const ProjData& proj_data);
+
+static Array< 1, float> _projdata_to_1D_array(const ProjData& proj_data);
 
 END_NAMESPACE_STIR
 

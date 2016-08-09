@@ -438,6 +438,75 @@ transform_array_from_periodic_indices(Array<num_dimensions, elemT>& out_array,
   while(next(index, out_array));
 }
 
+static Array <3, float> _create_3D_array_for_proj_data(const ProjData& proj_data)
+{
+    int num_sinos=proj_data.get_num_axial_poss(0);
+    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
+    {
+        num_sinos += 2*proj_data.get_num_axial_poss(s);
+    }
+
+    return Array<3,float> (IndexRange3D(num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
+}
+
+static Array <1, float> _create_1D_array_for_proj_data(const ProjData& proj_data)
+{
+    int num_sinos=proj_data.get_num_axial_poss(0);
+    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
+    {
+        num_sinos += 2*proj_data.get_num_axial_poss(s);
+    }
+
+    num_sinos *= proj_data.get_num_views() * proj_data.get_num_tangential_poss();
+    return Array<1,float> (IndexRange<1>(num_sinos));
+}
+
+template < int num_dim, typename elemT >
+static inline
+typename Array< num_dim, elemT>::full_iterator _get_full_iterator( Array<num_dim, elemT> &  array)
+{
+    return array.begin_all();
+}
+
+static Array< 3, float > _projdata_to_3D_array(const ProjData& proj_data)
+  {
+    Array<3,float> array = _create_3D_array_for_proj_data(proj_data);
+    Array<3,float>::full_iterator array_iter = _get_full_iterator<3, float> (array);
+
+    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
+      {
+        SegmentBySinogram<float> segment=proj_data.get_segment_by_sinogram(s);
+        std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+        std::advance(array_iter, segment.size_all());
+        if (s!=0)
+          {
+            segment=proj_data.get_segment_by_sinogram(-s);
+            std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+            std::advance(array_iter, segment.size_all());
+          }
+      }
+    return array;
+  }
+
+static Array< 1, float> _projdata_to_1D_array(const ProjData& proj_data)
+{
+    Array<1,float> array = _create_1D_array_for_proj_data(proj_data);
+    Array<1,float>::full_iterator array_iter = _get_full_iterator<1, float> (array);
+
+    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
+      {
+        SegmentBySinogram<float> segment=proj_data.get_segment_by_sinogram(s);
+        std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+        std::advance(array_iter, segment.size_all());
+        if (s!=0)
+          {
+            segment=proj_data.get_segment_by_sinogram(-s);
+            std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+            std::advance(array_iter, segment.size_all());
+          }
+      }
+    return array;
+}
 
 END_NAMESPACE_STIR
 
