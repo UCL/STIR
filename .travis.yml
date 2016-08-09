@@ -1,19 +1,27 @@
+# Language selection
 language: cpp
 
+# Both clang and gcc can be tested. The more is the better.
 compiler:
   - clang
   - gcc
 
+# Latest supported Ubuntu
 dist: trusty
 
+# No need for sudo
 sudo: false
 
+
+# Compilation dependencies
 addons:
   apt:
     packages:
     - libboost-all-dev
     - swig
 
+# Actual compilation script
+# cmake parameters could be refined
 script:
   - mkdir build
   - cd build
