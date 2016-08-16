@@ -27,6 +27,8 @@
 */
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
+#include "stir/Array.h"
+#include "stir/is_null_ptr.h"
 //#include "stir/Scanner.h"
 #include <vector>
 
@@ -42,6 +44,17 @@ public:
     : _exam_info_sptr(exam_info_sptr)
   {
   }
+
+  //!
+  //! \brief MultipleProjData
+  //! \param exam_info_sptr
+  //! \param num_gates
+  //! \author Nikos Efthimiou
+  //! \details Convinience constructor which sets the number of gates.
+  //! \warning The _proj_datas have been resized, but are still empty.
+  MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
+                  const int num_gates);
+
   //! Get a pointer to the exam information
   const ExamInfo*
     get_exam_info_ptr() const
@@ -116,6 +129,66 @@ public:
   unsigned int get_num_gates() const
   {
     return static_cast<unsigned int>(_proj_datas.size());
+  }
+
+  //!
+  //! \brief get_projData_size
+  //! \return The size of the projdata[0]
+  //!
+  size_t get_projData_size() const
+  {
+    return _proj_datas.at(0)->size_all();
+  }
+
+  //!
+  //! \brief copy_to
+  //! \param full_iterator of some array
+  //! \details Copy all data to an array.
+  //! \warning If the supplied iterator is a full_iterator and the size of the projdata is the
+  //! same with that of a row in the array then each projdata will occupy one row. In
+  //! any other case shifting will appear in the array data.
+  template < typename iterT>
+  void copy_to(iterT array_iter)
+  {
+    long int cur_pos = 0;
+    for ( std::vector<shared_ptr<ProjData> >::iterator it = _proj_datas.begin();
+         it != _proj_datas.end(); ++it)
+    {
+            cur_pos = (*it)->copy_to(array_iter);
+            std::advance(array_iter, cur_pos);
+    }
+  }
+
+  //!
+  //! \brief fill_from
+  //! \param full_iterator of some array
+  //! \details Fills all ProjData from a 2D array.
+  //! \warning If the supplied iterator is a full_iterator and the size of the projdata is the
+  //! same with that of a row in the array then each projdata will occupy one row. In
+  //! any other case shifting will appear in the array data.
+  //!
+  template <typename iterT>
+  void fill_from(iterT array_iter)
+  {
+    long int cur_pos = 0;
+    for (std::vector<shared_ptr<ProjData> >::iterator it = _proj_datas.begin();
+         it != _proj_datas.end(); ++it)
+    {
+        if ( is_null_ptr( *(it)))
+            error("Dynamic ProjData have not been properly allocated.Abort.");
+
+        cur_pos = (*it)->fill_from(array_iter);
+        std::advance(array_iter, cur_pos);
+    }
+  }
+
+  size_t size_all() const
+  {
+      size_t size = 0;
+      for (int i_gate = 0; i_gate < this->get_num_gates(); i_gate++)
+            size += _proj_datas.at(i_gate)->size_all();
+
+       return size;
   }
 
 protected:

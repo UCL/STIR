@@ -64,7 +64,7 @@ class ExamInfo;
   <li> \c view_num : indexes azimuthal angle phi
   <li> \c axial_pos_num : indexes different positions along the scanner axis
           (corresponding to 'z', or different rings)
-  <li> \c tangential_pos_num : indexes different positions in a direction 
+  <li> \c tangential_pos_num : indexes different positions in a direction
         tangential to the scanner cylinder.
         (sometimes called 'bin' or 'element')
   </ul>
@@ -82,7 +82,7 @@ class ExamInfo;
   </ul>
 
   This abstract class provides the general interface for accessing the
-  projection data. This works with get_ and set_ pairs. (Generally, 
+  projection data. This works with get_ and set_ pairs. (Generally,
   the 4D dataset might be too big to be kept in memory.) In addition, there
   are get_empty_ functions that just create the corresponding object
   of appropriate sizes etc. but filled with 0.
@@ -98,11 +98,11 @@ class ProjData
 {
 public:
   //! A static member to get the projection data from a file
-  static shared_ptr<ProjData> 
+  static shared_ptr<ProjData>
     read_from_file(const std::string& filename,
-		   const std::ios::openmode open_mode = std::ios::in);
+           const std::ios::openmode open_mode = std::ios::in);
 
-  //! Empty constructor 
+  //! Empty constructor
   ProjData();
   //! construct by specifying info. Data will be undefined.
   ProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
@@ -117,7 +117,7 @@ public:
   //! Destructor
   virtual ~ProjData() {}
   //! Get proj data info pointer
-  inline const ProjDataInfo* 
+  inline const ProjDataInfo*
     get_proj_data_info_ptr() const;
   //! Get shared pointer to proj data info
   /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
@@ -137,65 +137,65 @@ public:
   void
     set_exam_info(ExamInfo const&);
   //! Get viewgram
-  virtual Viewgram<float> 
+  virtual Viewgram<float>
     get_viewgram(const int view, const int segment_num,const bool make_num_tangential_poss_odd = false) const=0;
   //! Set viewgram
-  virtual Succeeded 
+  virtual Succeeded
     set_viewgram(const Viewgram<float>&) = 0;
   //! Get sinogram
-  virtual Sinogram<float> 
+  virtual Sinogram<float>
     get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd = false) const=0;
   //! Set sinogram
-  virtual Succeeded 
+  virtual Succeeded
     set_sinogram(const Sinogram<float>&) = 0;
 
   //! Get empty viewgram
-  Viewgram<float> get_empty_viewgram(const int view, const int segment_num, 
+  Viewgram<float> get_empty_viewgram(const int view, const int segment_num,
     const bool make_num_tangential_poss_odd = false) const;
-  
+
   //! Get empty_sinogram
-  Sinogram<float> 
+  Sinogram<float>
     get_empty_sinogram(const int ax_pos_num, const int segment_num,
     const bool make_num_tangential_poss_odd = false) const;
 
    //! Get empty segment sino
-  SegmentByView<float> 
-    get_empty_segment_by_view(const int segment_num, 
-		  	   const bool make_num_tangential_poss_odd = false) const;
+  SegmentByView<float>
+    get_empty_segment_by_view(const int segment_num,
+               const bool make_num_tangential_poss_odd = false) const;
   //! Get empty segment view
-  SegmentBySinogram<float> 
-    get_empty_segment_by_sinogram(const int segment_num, 
-				   const bool make_num_tangential_poss_odd = false) const;
+  SegmentBySinogram<float>
+    get_empty_segment_by_sinogram(const int segment_num,
+                   const bool make_num_tangential_poss_odd = false) const;
 
 
   //! Get segment by sinogram
-  virtual SegmentBySinogram<float> 
+  virtual SegmentBySinogram<float>
     get_segment_by_sinogram(const int segment_num) const;
   //! Get segment by view
-  virtual SegmentByView<float> 
+  virtual SegmentByView<float>
     get_segment_by_view(const int segment_num) const;
   //! Set segment by sinogram
-  virtual Succeeded 
+  virtual Succeeded
     set_segment(const SegmentBySinogram<float>&);
-  //! Set segment by view 
-  virtual Succeeded 
+  //! Set segment by view
+  virtual Succeeded
     set_segment(const SegmentByView<float>&);
 
   //! Get related viewgrams
-  virtual RelatedViewgrams<float> 
+  virtual RelatedViewgrams<float>
     get_related_viewgrams(const ViewSegmentNumbers&,
     const shared_ptr<DataSymmetriesForViewSegmentNumbers>&,
     const bool make_num_tangential_poss_odd = false) const;
   //! Set related viewgrams
   virtual Succeeded set_related_viewgrams(const RelatedViewgrams<float>& viewgrams);
-  
+
 
   //! Get empty related viewgrams, where the symmetries_ptr specifies the symmetries to use
-  RelatedViewgrams<float> 
+  RelatedViewgrams<float>
     get_empty_related_viewgrams(const ViewSegmentNumbers& view_segmnet_num,
-    //const int view_num, const int segment_num, 
+    //const int view_num, const int segment_num,
     const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_ptr,
-    const bool make_num_tangential_poss_odd = false) const;   
+    const bool make_num_tangential_poss_odd = false) const;
 
 
   //! set all bins to the same value
@@ -211,23 +211,12 @@ public:
 
   //! set all bins from an array iterator
   template < typename iterT>
-  void fill_from( iterT& array_iter)
+  long int fill_from( iterT array_iter)
   {
       // A type check would be usefull.
 //      BOOST_STATIC_ASSERT((boost::is_same<typename std::iterator_traits<iterT>::value_type, Type>::value));
-      //      int num_sinos=proj_data.get_num_axial_poss(0);
-      //      for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
-      //      {
-      //          num_sinos += 2*proj_data.get_num_axial_poss(s);
-      //      }
-      //      if (array.size() != static_cast<std::size_t>(num_sinos)||
-      //              array[0].size() != static_cast<std::size_t>(proj_data.get_num_views()) ||
-      //              array[0][0].size() != static_cast<std::size_t>(proj_data.get_num_tangential_poss()))
-      //      {
-      //          throw std::runtime_error("Incorrect size for filling this projection data");
-      //      }
-      //      Array<3,float>::const_full_iterator array_iter = array.begin_all();
 
+      iterT init_pos = array_iter;
       for (int s=0; s<= this->get_max_segment_num(); ++s)
       {
           SegmentBySinogram<float> segment = this->get_empty_segment_by_sinogram(s);
@@ -248,12 +237,15 @@ public:
               this->set_segment(segment);
           }
       }
+
+      return std::distance(init_pos, array_iter);
   }
 
   //! Copy all bins to an array, using iterator
   template < typename iterT>
-  void copy_to(iterT& array_iter)
+  long int copy_to(iterT array_iter) const
   {
+      iterT init_pos = array_iter;
       for (int s=0; s<= this->get_max_segment_num(); ++s)
       {
           SegmentBySinogram<float> segment= this->get_segment_by_sinogram(s);
@@ -266,6 +258,8 @@ public:
               std::advance(array_iter, segment.size_all());
           }
       }
+
+      return std::distance(init_pos, array_iter);
   }
 
   //! Get number of segments
@@ -296,9 +290,9 @@ public:
   inline size_t get_num_sinograms() const;
   //! Get the total size of the data
   inline size_t size_all() const;
-  
+
 protected:
-   shared_ptr<ExamInfo> exam_info_sptr;  
+   shared_ptr<ExamInfo> exam_info_sptr;
    shared_ptr<ProjDataInfo> proj_data_info_ptr; // TODO fix name to _sptr
 };
 

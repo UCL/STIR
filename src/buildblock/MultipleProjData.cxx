@@ -26,6 +26,7 @@
 
 #include "stir/MultipleProjData.h"
 #include "stir/is_null_ptr.h"
+#include "stir/ProjDataInMemory.h"
 #include <fstream>
 
 START_NAMESPACE_STIR
@@ -47,6 +48,15 @@ set_proj_data_sptr(const shared_ptr<ProjData >& proj_data_sptr,
 {
   this->_proj_datas[gate_num-1]=proj_data_sptr; 
 }  
+
+
+MultipleProjData::
+MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
+                const int num_gates) :
+    _exam_info_sptr(exam_info_sptr)
+{
+    this->_proj_datas.resize(num_gates);
+}
 
 #if 0
 // currently inline
