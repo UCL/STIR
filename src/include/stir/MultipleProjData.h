@@ -135,7 +135,7 @@ public:
   //! \brief get_projData_size
   //! \return The size of the projdata[0]
   //!
-  size_t get_projData_size() const
+  std::size_t get_projData_size() const
   {
     return _proj_datas.at(0)->size_all();
   }
@@ -182,7 +182,7 @@ public:
     }
   }
 
-  size_t size_all() const
+  std::size_t size_all() const
   {
       size_t size = 0;
       for (int i_gate = 0; i_gate < this->get_num_gates(); i_gate++)

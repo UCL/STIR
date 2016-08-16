@@ -26,7 +26,6 @@
 
 #include "stir/MultipleProjData.h"
 #include "stir/is_null_ptr.h"
-#include "stir/ProjDataInMemory.h"
 #include <fstream>
 
 START_NAMESPACE_STIR

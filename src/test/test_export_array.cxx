@@ -1,18 +1,19 @@
 /*
-  Copyright (C) 2001- 2009, Hammersmith Imanet Ltd
-  This file is part of STIR.
+    Copyright (C) 2016 University College London
 
-  This file is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation; either version 2.0 of the License, or
-  (at your option) any later version.
+    This file is part of STIR.
 
-  This file is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
 
-  See STIR/LICENSE.txt for details
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
 */
 
 /*!
@@ -129,11 +130,10 @@ void ExportArrayTests::test_dynamic_data()
 
     // Get total size
     info("Getting sizes...");
-    unsigned long int total_size = test_dynamic_projData_first_sptr->size_all();
+    std::size_t total_size = test_dynamic_projData_first_sptr->size_all();
+    int total_gates = static_cast<int>(test_dynamic_projData_first_sptr->get_num_proj_data());
+    int projdata_size = static_cast<int>(test_dynamic_projData_first_sptr->get_projData_size());
 
-    unsigned long int total_gates = test_dynamic_projData_first_sptr->get_num_gates();
-
-    unsigned long int projdata_size = test_dynamic_projData_first_sptr->get_projData_size();
     info(boost::format("Total size: %1%, number of gates: %2%, size of projdata %3%") % total_size % total_gates %
          projdata_size);
     // Allocate 2D array to store the data.
@@ -290,7 +290,7 @@ void ExportArrayTests :: test_static_data()
 
     //- Get the total size of the ProjData
 
-    unsigned long int total_size = test_proj_data_ptr->size_all();
+    int total_size = static_cast<int>(test_proj_data_ptr->size_all());
 
     //- Allocate 1D array and get iterator
 

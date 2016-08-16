@@ -38,10 +38,6 @@
 #include "stir/IO/interfile.h"
 #include "stir/ProjDataFromStream.h" // needed for converting ProjDataFromStream* to ProjData*
 
-#include <iterator>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/static_assert.hpp>
-
 #ifndef STIR_USE_GE_IO
 #include "stir/ProjDataGEAdvance.h"
 #else
