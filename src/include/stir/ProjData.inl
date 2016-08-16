@@ -90,9 +90,9 @@ int ProjData::get_min_tangential_pos_num() const
 int ProjData::get_max_tangential_pos_num() const
 { return proj_data_info_ptr->get_max_tangential_pos_num(); }
 
-std::size_t ProjData::get_num_sinograms() const
+int ProjData::get_num_sinograms() const
 {
-    std::size_t num_sinos = proj_data_info_ptr->get_num_axial_poss(0);
+    int num_sinos = proj_data_info_ptr->get_num_axial_poss(0);
     for (int s=1; s<= this->get_max_segment_num(); ++s)
         num_sinos += 2* this->get_num_axial_poss(s);
 
@@ -100,9 +100,7 @@ std::size_t ProjData::get_num_sinograms() const
 }
 
 std::size_t ProjData::size_all() const
-{
-    return this->get_num_sinograms() * this->get_num_views() * this->get_num_tangential_poss();
-}
+{ return this->get_num_sinograms() * this->get_num_views() * this->get_num_tangential_poss(); }
 
 
 END_NAMESPACE_STIR

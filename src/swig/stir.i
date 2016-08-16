@@ -613,7 +613,7 @@ namespace std {
 //      {
 //        num_sinos += 2*proj_data.get_num_axial_poss(s);
 //      }
-      int num_sinos = static_cast<int>(proj_data.get_num_sinograms());
+      int num_sinos = proj_data.get_num_sinograms();
     
     Array<3,float> array(IndexRange3D(num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
     return array;

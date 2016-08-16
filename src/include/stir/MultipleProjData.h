@@ -135,7 +135,7 @@ public:
   //! \brief get_projData_size
   //! \return The size of the projdata[0]
   //!
-  std::size_t get_projData_size() const
+  std::size_t get_proj_data_size() const
   {
     return _proj_datas.at(0)->size_all();
   }
@@ -154,8 +154,11 @@ public:
     for ( std::vector<shared_ptr<ProjData> >::iterator it = _proj_datas.begin();
          it != _proj_datas.end(); ++it)
     {
-            cur_pos = (*it)->copy_to(array_iter);
-            std::advance(array_iter, cur_pos);
+        if ( is_null_ptr( *(it)))
+            error("Dynamic ProjData have not been properly allocated.Abort.");
+
+        cur_pos = (*it)->copy_to(array_iter);
+        std::advance(array_iter, cur_pos);
     }
   }
 

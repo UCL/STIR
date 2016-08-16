@@ -287,7 +287,7 @@ public:
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num() const;
   //! Get the number of sinograms
-  inline std::size_t get_num_sinograms() const;
+  inline int get_num_sinograms() const;
   //! Get the total size of the data
   inline std::size_t size_all() const;
 
