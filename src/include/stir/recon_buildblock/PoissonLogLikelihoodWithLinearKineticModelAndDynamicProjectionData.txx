@@ -401,6 +401,32 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
   return Succeeded::yes;
 }
 
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
+set_input_data(const shared_ptr<ExamData> & arg)
+{
+     this->_dyn_proj_data_sptr.reset(dynamic_cast<DynamicProjData* > (arg.get()) );
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
+set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
+{
+  this->_additive_dyn_proj_data_sptr.reset(dynamic_cast<DynamicProjData* > (arg.get()) );
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
+set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
+{
+//  this->normalisation_sptr = arg;
+    error("Not implemeted yet");
+}
+
+
 /*************************************************************************
   functions that compute the value/gradient of the objective function etc
 *************************************************************************/

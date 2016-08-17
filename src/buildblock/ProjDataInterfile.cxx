@@ -95,7 +95,7 @@ ProjDataInterfile (shared_ptr<ExamInfo> const& exam_info_sptr,
 		     NumericType data_type,
 		     ByteOrder byte_order,  
                      float scale_factor)
-  : ProjDataFromStream(exam_info_sptr, proj_data_info_ptr, shared_ptr<iostream>(), 0, 
+  : ProjDataFromStream(exam_info_sptr, proj_data_info_ptr, shared_ptr<iostream>(), 0,
                      segment_sequence_in_stream, o, data_type, byte_order, scale_factor)
 {
   create_stream(filename, open_mode);
@@ -109,7 +109,7 @@ ProjDataInterfile (shared_ptr<ExamInfo> const& exam_info_sptr,
 		   NumericType data_type,
 		   ByteOrder byte_order,  
                    float scale_factor )
-  : ProjDataFromStream(exam_info_sptr, proj_data_info_ptr, shared_ptr<iostream>(), 0, 
+  : ProjDataFromStream(exam_info_sptr, proj_data_info_ptr, shared_ptr<iostream>(), 0,
                      o, data_type, byte_order, scale_factor)
 {
   create_stream(filename, open_mode);

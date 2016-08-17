@@ -20,6 +20,7 @@
 #include "stir/recon_buildblock/Reconstruction.h"
 #include <iostream>
 #include <stdlib.h>
+#include <string>
 #include "stir/Succeeded.h"
 #include "stir/CPUTimer.h"
 #include "stir/HighResWallClockTimer.h"
@@ -109,6 +110,7 @@ int main(int argc, const char *argv[])
     }
 
     return Succeeded::yes;
+
     return EXIT_SUCCESS;
 }
 

@@ -43,6 +43,8 @@
 #include "stir/RegisteredParsingObject.h"
 #include <string>
 
+#include "stir/IO/ExamData.h"
+
 START_NAMESPACE_STIR
 
 
@@ -94,6 +96,21 @@ public:
   */     
   virtual Succeeded 
     reconstruct(shared_ptr<TargetT> const& target_image_sptr);
+
+    //!
+    //! \brief set_input_data
+    //! \author Nikos Efthimiou
+    void set_input_data(const shared_ptr<ExamData>&);
+
+    //!
+    //! \brief set_additive_proj_data_sptr
+    //! \author Nikos Efthimiou
+     virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
+
+    //!
+    //! \brief set_normalisation_sptr
+    //! \author Nikos Efthimiou
+    virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
 
   // parameters
  protected:
