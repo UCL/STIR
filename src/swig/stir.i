@@ -608,72 +608,75 @@ namespace std {
 #endif
   static Array<3,float> create_array_for_proj_data(const ProjData& proj_data)
   {
-    int num_sinos=proj_data.get_num_axial_poss(0);
-    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
-      {
-        num_sinos += 2*proj_data.get_num_axial_poss(s);
-      }
-    
-    Array<3,float> array(IndexRange3D(num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
-    return array;
+      //    int num_sinos=proj_data.get_num_axial_poss(0);
+      //    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
+      //      {
+      //        num_sinos += 2*proj_data.get_num_axial_poss(s);
+      //      }
+      int num_sinos = proj_data.get_num_sinograms();
+
+      Array<3,float> array(IndexRange3D(num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
+      return array;
   }
 
   // a function for  converting ProjData to a 3D array as that's what is easy to use
   static Array<3,float> projdata_to_3D(const ProjData& proj_data)
   {
-    Array<3,float> array = create_array_for_proj_data(proj_data);
-    Array<3,float>::full_iterator array_iter = array.begin_all();
-    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
-      {
-        SegmentBySinogram<float> segment=proj_data.get_segment_by_sinogram(s);
-        std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
-        std::advance(array_iter, segment.size_all());
-        if (s!=0)
-          {
-            segment=proj_data.get_segment_by_sinogram(-s);
-            std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
-            std::advance(array_iter, segment.size_all());
-          }
-      }
-    return array;
+      Array<3,float> array = create_array_for_proj_data(proj_data);
+      Array<3,float>::full_iterator array_iter = array.begin_all();
+      //    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
+      //      {
+      //        SegmentBySinogram<float> segment=proj_data.get_segment_by_sinogram(s);
+      //        std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+      //        std::advance(array_iter, segment.size_all());
+      //        if (s!=0)
+      //          {
+      //            segment=proj_data.get_segment_by_sinogram(-s);
+      //            std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+      //            std::advance(array_iter, segment.size_all());
+      //          }
+      //      }
+      proj_data.copy_to(array_iter);
+      return array;
   }
 
   // inverse of the above function
   void fill_proj_data_from_3D(ProjData& proj_data, const Array<3,float>& array)
   {
-    int num_sinos=proj_data.get_num_axial_poss(0);
-    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
-      {
-        num_sinos += 2*proj_data.get_num_axial_poss(s);
-      }
-    if (array.size() != static_cast<std::size_t>(num_sinos)||
-        array[0].size() != static_cast<std::size_t>(proj_data.get_num_views()) || 
-        array[0][0].size() != static_cast<std::size_t>(proj_data.get_num_tangential_poss()))
-      {
-        throw std::runtime_error("Incorrect size for filling this projection data");
-      }
-    Array<3,float>::const_full_iterator array_iter = array.begin_all();
-
-    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
-      {
-        SegmentBySinogram<float> segment=proj_data.get_empty_segment_by_sinogram(s);
-        // cannot use std::copy sadly as needs end-iterator for range
-        for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
-             seg_iter != segment.end_all();
-             /*empty*/)
-          *seg_iter++ = *array_iter++;
-        proj_data.set_segment(segment);
-
-        if (s!=0)
-          {
-            segment=proj_data.get_empty_segment_by_sinogram(-s);
-            for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
-                 seg_iter != segment.end_all();
-                 /*empty*/)
-              *seg_iter++ = *array_iter++;
-            proj_data.set_segment(segment);
-          }
-      }
+      //    int num_sinos=proj_data.get_num_axial_poss(0);
+      //    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
+      //      {
+      //        num_sinos += 2*proj_data.get_num_axial_poss(s);
+      //      }
+      //    if (array.size() != static_cast<std::size_t>(num_sinos)||
+      //        array[0].size() != static_cast<std::size_t>(proj_data.get_num_views()) ||
+      //        array[0][0].size() != static_cast<std::size_t>(proj_data.get_num_tangential_poss()))
+      //      {
+      //        throw std::runtime_error("Incorrect size for filling this projection data");
+      //      }
+      Array<3,float>::const_full_iterator array_iter = array.begin_all();
+      //
+      //    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
+      //      {
+      //        SegmentBySinogram<float> segment=proj_data.get_empty_segment_by_sinogram(s);
+      //        // cannot use std::copy sadly as needs end-iterator for range
+      //        for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
+      //             seg_iter != segment.end_all();
+      //             /*empty*/)
+      //          *seg_iter++ = *array_iter++;
+      //        proj_data.set_segment(segment);
+      //
+      //        if (s!=0)
+      //          {
+      //            segment=proj_data.get_empty_segment_by_sinogram(-s);
+      //            for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
+      //                 seg_iter != segment.end_all();
+      //                 /*empty*/)
+      //              *seg_iter++ = *array_iter++;
+      //            proj_data.set_segment(segment);
+      //          }
+      //      }
+      proj_data.fill_from(array_iter);
   }
   
   

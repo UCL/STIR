@@ -55,6 +55,12 @@ public:
   {
   }
 
+  DynamicProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
+                    const int num_gates)
+        : MultipleProjData(exam_info_sptr,
+                    num_gates)
+  {}
+
   //! Return time of start of scan
   /*! \return the time in seconds since 1 Jan 1970 00:00 UTC, i.e. independent
         of your local time zone.

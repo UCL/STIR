@@ -30,8 +30,6 @@
 #include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
 #include "stir/RelatedViewgrams.h"
-#include "stir/SegmentBySinogram.h"
-#include "stir/SegmentByView.h"
 #include "stir/Viewgram.h"
 #include "stir/DataSymmetriesForViewSegmentNumbers.h"
 

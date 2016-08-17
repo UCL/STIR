@@ -28,11 +28,14 @@
 #ifndef __stir_ProjData_H__
 #define __stir_ProjData_H__
 
-
+#include "stir/Array.h"
 #include "stir/shared_ptr.h"
 #include "stir/ProjDataInfo.h"
 #include <string>
 #include <iostream>
+#include "stir/Succeeded.h"
+#include "stir/SegmentBySinogram.h"
+#include "stir/SegmentByView.h"
 //#include <ios>
 
 #include "stir/IO/ExamData.h"
@@ -209,6 +212,57 @@ public:
  */
   void fill(const ProjData&);
 
+  //! set all bins from an array iterator
+  template < typename iterT>
+  long int fill_from( iterT array_iter)
+  {
+      // A type check would be usefull.
+      //      BOOST_STATIC_ASSERT((boost::is_same<typename std::iterator_traits<iterT>::value_type, Type>::value));
+
+      iterT init_pos = array_iter;
+      for (int s=0; s<= this->get_max_segment_num(); ++s)
+      {
+          SegmentBySinogram<float> segment = this->get_empty_segment_by_sinogram(s);
+          // cannot use std::copy sadly as needs end-iterator for range
+          for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
+               seg_iter != segment.end_all();
+               /*empty*/)
+              *seg_iter++ = *array_iter++;
+          this->set_segment(segment);
+
+          if (s!=0)
+          {
+              segment = this->get_empty_segment_by_sinogram(-s);
+              for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
+                   seg_iter != segment.end_all();
+                   /*empty*/)
+                  *seg_iter++ = *array_iter++;
+              this->set_segment(segment);
+          }
+      }
+      return std::distance(init_pos, array_iter);
+  }
+
+  //! Copy all bins to an array, using iterator
+  template < typename iterT>
+  long int copy_to(iterT array_iter) const
+  {
+      iterT init_pos = array_iter;
+      for (int s=0; s<= this->get_max_segment_num(); ++s)
+      {
+          SegmentBySinogram<float> segment= this->get_segment_by_sinogram(s);
+          std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+          std::advance(array_iter, segment.size_all());
+          if (s!=0)
+          {
+              segment=this->get_segment_by_sinogram(-s);
+              std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+              std::advance(array_iter, segment.size_all());
+          }
+      }
+      return std::distance(init_pos, array_iter);
+  }
+
   //! Get number of segments
   inline int get_num_segments() const;
   //! Get number of axial positions per segment
@@ -233,6 +287,10 @@ public:
   inline int get_min_tangential_pos_num() const;
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num() const;
+  //! Get the number of sinograms
+  inline int get_num_sinograms() const;
+  //! Get the total size of the data
+  inline std::size_t size_all() const;
   
 protected:
 //   shared_ptr<ExamInfo> exam_info_sptr;
