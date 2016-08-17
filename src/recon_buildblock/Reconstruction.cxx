@@ -103,8 +103,8 @@ post_processing()
 {
 
   if (this->_disable_output)
-  { warning("You have disabled the output. No files will be written in the\n"
-            "disk after or during reconsturction\n"); }
+  { warning("You have disabled the output. No files will be written to "
+            "disk after or during reconstuction"); }
 
   if (this->output_filename_prefix.length() == 0 &&
           !this->_disable_output)// KT 160899 changed name of variable
@@ -174,6 +174,15 @@ Reconstruction<TargetT>::
 set_enable_output(bool _val)
 {
     this->_disable_output = _val;
+}
+
+template < typename TargetT>
+shared_ptr<TargetT >
+Reconstruction<TargetT>::
+get_target_image()
+{
+    if (!is_null_ptr(target_data_sptr))
+        return target_data_sptr;
 }
 
 template class Reconstruction<DiscretisedDensity<3,float> >; 
