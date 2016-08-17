@@ -36,8 +36,11 @@ START_NAMESPACE_STIR
   \brief a class for storing information about 1 exam (or scan)
   \ingroup buildblock
   \todo this is very incomplete at the moment. Things like bed positions, gating, isotopes etc etc are all missing
+
+  \todo This should be an abtract registered object, in oreder to serve as a complete
+  base function for every input data type.
   */
-class ExamInfo  
+class ExamInfo
 {
 
 public :

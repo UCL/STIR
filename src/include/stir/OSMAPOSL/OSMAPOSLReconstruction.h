@@ -94,7 +94,7 @@ class OSMAPOSLReconstruction:
      > base_type;
 public:
 
-    //! Name which will be used when parsing a ProjectorByBinPair object
+    //! Name which will be used when parsing a OSMAPOSLReconstruction object
     static const char * const registered_name;
 
   //! Default constructor (calling set_defaults())

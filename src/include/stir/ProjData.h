@@ -38,6 +38,8 @@
 #include "stir/Succeeded.h"
 //#include <ios>
 
+#include "stir/IO/ExamData.h"
+
 START_NAMESPACE_STIR
 
 
@@ -49,7 +51,7 @@ template <typename elemT> class Viewgram;
 template <typename elemT> class Sinogram;
 class ViewSegmentNumbers;
 class Succeeded;
-class ExamInfo;
+//class ExamInfo;
 
 /*!
   \ingroup projdata
@@ -94,11 +96,12 @@ class ExamInfo;
   \warning The arguments 'make_num_tangential_poss_odd' are temporary
   and will be deleted in the next release.
 */
-class ProjData
+class ProjData : public ExamData
 {
 public:
-  //! A static member to get the projection data from a file
-  static shared_ptr<ProjData>
+
+   //! A static member to get the projection data from a file
+  static shared_ptr<ProjData> 
     read_from_file(const std::string& filename,
            const std::ios::openmode open_mode = std::ios::in);
 
@@ -124,18 +127,18 @@ public:
     shared pointer will be affected. */
   inline shared_ptr<ProjDataInfo>
     get_proj_data_info_sptr() const;
-  //! Get pointer to exam info
-  inline const ExamInfo*
-    get_exam_info_ptr() const;
-  //! Get shared pointer to exam info
-  /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
-    shared pointer will be affected. */
-  inline shared_ptr<ExamInfo>
-    get_exam_info_sptr() const;
-  //! change exam info
-  /*! This will allocate a new ExamInfo object and copy the data in there. */
-  void
-    set_exam_info(ExamInfo const&);
+//  //! Get pointer to exam info
+//  inline const ExamInfo*
+//    get_exam_info_ptr() const;
+//  //! Get shared pointer to exam info
+//  /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
+//    shared pointer will be affected. */
+//  inline shared_ptr<ExamInfo>
+//    get_exam_info_sptr() const;
+//  //! change exam info
+//  /*! This will allocate a new ExamInfo object and copy the data in there. */
+//  void
+//    set_exam_info(ExamInfo const&);
   //! Get viewgram
   virtual Viewgram<float>
     get_viewgram(const int view, const int segment_num,const bool make_num_tangential_poss_odd = false) const=0;
@@ -292,7 +295,8 @@ public:
   inline std::size_t size_all() const;
 
 protected:
-   shared_ptr<ExamInfo> exam_info_sptr;
+//   shared_ptr<ExamInfo> exam_info_sptr;
+
    shared_ptr<ProjDataInfo> proj_data_info_ptr; // TODO fix name to _sptr
 };
 

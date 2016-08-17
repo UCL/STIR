@@ -42,17 +42,17 @@ ProjData::get_proj_data_info_sptr() const
   return proj_data_info_ptr;
 }
 
-const ExamInfo*
-ProjData::get_exam_info_ptr() const
-{
-  return exam_info_sptr.get();
-}
+//const ExamInfo*
+//ProjData::get_exam_info_ptr() const
+//{
+//  return exam_info_sptr.get();
+//}
 
-shared_ptr<ExamInfo>
-ProjData::get_exam_info_sptr() const
-{
-  return exam_info_sptr;
-}
+//shared_ptr<ExamInfo>
+//ProjData::get_exam_info_sptr() const
+//{
+//  return exam_info_sptr;
+//}
 
 int ProjData::get_num_segments() const
 { return proj_data_info_ptr->get_num_segments(); }

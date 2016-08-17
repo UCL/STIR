@@ -389,6 +389,7 @@ IterativeReconstruction<TargetT>::get_initial_data_ptr() const
 }
 
 // KT 10122001 new
+// NE Updated to be able to define the dataset to reconstruct.
 template <typename TargetT>
 Succeeded 
 IterativeReconstruction<TargetT>::
@@ -608,6 +609,30 @@ randomly_permute_subset_order() const
 
  return final_array;
 
+}
+
+template <typename TargetT>
+void
+IterativeReconstruction<TargetT>::
+set_input_data(const shared_ptr<ExamData> &arg)
+{
+    this->objective_function_sptr->set_input_data(arg);
+}
+
+template <typename TargetT>
+void
+IterativeReconstruction<TargetT>::
+set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
+{
+    this->objective_function_sptr->set_additive_proj_data_sptr(arg);
+}
+
+template <typename TargetT>
+void
+IterativeReconstruction<TargetT>::
+set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
+{
+    error("Not implemented yet");
 }
 
 
