@@ -79,7 +79,7 @@ public:
   ProjDataInMemory (const ProjData& proj_data);
 
   //! destructor deallocates all memory the object owns
-  ~ProjDataInMemory();
+  virtual ~ProjDataInMemory();
 
   //! writes info to a file in Interfile format
   /*! \warning This might change as soon as we have proper output of projdata
