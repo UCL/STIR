@@ -123,7 +123,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 set_input_data(const shared_ptr<ExamData> & arg)
 {
-    this->list_mode_data_sptr = boost::static_pointer_cast<CListModeData>(arg);
+    this->list_mode_data_sptr = boost::dynamic_pointer_cast<CListModeData>(arg);
 }
 
 template<typename TargetT>
@@ -131,7 +131,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
 {
-    this->additive_proj_data_sptr = boost::static_pointer_cast<ProjData>(arg);
+    this->additive_proj_data_sptr = boost::dynamic_pointer_cast<ProjData>(arg);
 }
 
 template<typename TargetT>
