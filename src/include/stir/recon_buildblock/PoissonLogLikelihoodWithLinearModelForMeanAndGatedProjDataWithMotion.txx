@@ -342,7 +342,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
 {
-    this->_additive_gated_proj_data_sptr = boost::dyanmic_pointer_cast<GatedProjData>(arg);
+    this->_additive_gated_proj_data_sptr = boost::dynamic_pointer_cast<GatedProjData>(arg);
 }
 
 template<typename TargetT>
