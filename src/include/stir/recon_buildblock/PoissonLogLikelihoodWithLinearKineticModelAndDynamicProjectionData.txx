@@ -406,7 +406,7 @@ void
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 set_input_data(const shared_ptr<ExamData> & arg)
 {
-     this->_dyn_proj_data_sptr.reset(dynamic_cast<DynamicProjData* > (arg.get()) );
+    this->_dyn_proj_data_sptr = boost::dynamic_pointer_cast<DynamicProjData>(arg);
 }
 
 template<typename TargetT>
@@ -414,7 +414,7 @@ void
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
 {
-  this->_additive_dyn_proj_data_sptr.reset(dynamic_cast<DynamicProjData* > (arg.get()) );
+   this->_additive_dyn_proj_data_sptr = boost::dynamic_pointer_cast<DynamicProjData>(arg);
 }
 
 template<typename TargetT>
