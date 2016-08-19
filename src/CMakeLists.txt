@@ -52,7 +52,7 @@ if(NOT DISABLE_LLN_MATRIX)
 endif()
 
 if(NOT DISABLE_CERN_ROOT_SUPPORT)
-  find_package(ROOT)
+  find_package(CERN_ROOT)
 endif()
 
 if(NOT DISABLE_AVW)

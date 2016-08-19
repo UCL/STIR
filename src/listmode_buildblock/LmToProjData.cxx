@@ -647,8 +647,8 @@ process_data()
          if (record.is_event())
            {
 
-             if (exclude_randoms && record.is_random())
-                 continue;
+//             if (exclude_randoms && record.is_random())
+//                 continue;
              if (exclude_scattered && record.is_scattered())
                  continue;
 
