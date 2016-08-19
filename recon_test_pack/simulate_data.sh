@@ -21,7 +21,10 @@
 # 
 
 # Scripts should exit with error code when a test fails:
-set -e
+if [ -n "$TRAVIS" ]; then
+    # The code runs inside Travis
+    set -e
+fi
 
 if [ $# -ne 3 ]; then
   echo "Usage: `basename $0` emission_image attenuation_image template_sino"

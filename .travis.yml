@@ -44,3 +44,5 @@ script:
   - ./run_test_simulate_and_recon_with_motion.sh
   - ./run_scatter_tests.sh
   - ./run_tests.sh --nointbp
+  - cd $TRAVIS_BUILD_DIR/recon_test_pack/SPECT
+  - ./run_SPECT_tests.sh
