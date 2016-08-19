@@ -20,6 +20,9 @@
 # Author Kris Thielemans
 # 
 
+# Scripts should exit with error code when a test fails:
+set -e
+
 echo This script should work with STIR version 2.3, 2.4 and 3.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.

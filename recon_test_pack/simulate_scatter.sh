@@ -19,6 +19,9 @@
 # Author Kris Thielemans
 # 
 
+# Scripts should exit with error code when a test fails:
+set -e
+
 if [ $# -ne 4 ]; then
   echo "Usage: `basename $0` output_prefix emission_image attenuation_image template_sino"
   exit 1
