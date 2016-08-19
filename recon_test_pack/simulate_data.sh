@@ -20,6 +20,12 @@
 # Author Kris Thielemans
 # 
 
+# Scripts should exit with error code when a test fails:
+if [ -n "$TRAVIS" ]; then
+    # The code runs inside Travis
+    set -e
+fi
+
 if [ $# -ne 3 ]; then
   echo "Usage: `basename $0` emission_image attenuation_image template_sino"
   echo "Creates my_prompts.hs my_randoms.hs my_acfs.hs my_additive_sinogram.hs "
