@@ -6,6 +6,11 @@ compiler:
   - clang
   - gcc
 
+# Cross-operating system test
+os:
+  - linux
+  - osx
+
 # Enviroment variables:
 global:
   - BUILD_FLAGS="-DBUILD_SWIG_PYTHON=1 -DSTIR_MPI=0 -DBUILD_SWIG_MATLAB=0"
