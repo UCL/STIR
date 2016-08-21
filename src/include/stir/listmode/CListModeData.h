@@ -30,7 +30,7 @@
 #include "stir/shared_ptr.h"
 #include <string>
 #include <ctime>
-
+#include "stir/ProjDataInfo.h"
 # ifdef BOOST_NO_STDC_NAMESPACE
 namespace std { using ::time_t; }
 #endif
@@ -157,6 +157,11 @@ public:
   shared_ptr<ExamInfo>
     get_exam_info_sptr() const;
 
+  //! Get shared pointer to projData info
+  shared_ptr<ProjDataInfo>
+    get_proj_data_info_sptr() const
+  { return this->proj_data_info_sptr; }
+
 #if 0
   //! Scan start time
   /*! In secs since midnight (UTC) 1/1/1970 (as returned by std::time()).
@@ -225,6 +230,8 @@ protected:
   shared_ptr<Scanner> scanner_sptr;
   //! Has to be set by the derived class
   shared_ptr<ExamInfo> exam_info_sptr;
+  //! Has to be set by the derived class
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
 };
 
 END_NAMESPACE_STIR

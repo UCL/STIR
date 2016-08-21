@@ -65,7 +65,7 @@ FRAME_BASED_DT_CORR:
 #include "stir/listmode/CListModeData.h"
 #include "stir/ExamInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-
+#include "stir/info.h"
 #include "stir/Scanner.h"
 #ifdef USE_SegmentByView
 #include "stir/ProjDataInterfile.h"
@@ -207,16 +207,33 @@ post_processing()
     }
 
   lm_data_ptr = stir::read_from_file<CListModeData>(input_filename);
-
+    bool omit_template = false;
   if (template_proj_data_name.size()==0)
     {
+      if (lm_data_ptr->get_scanner_ptr()->get_type() != Scanner::User_defined_scanner)
+      {
       warning("You have to specify template_projdata\n");
       return true;
+      }
+      else
+      {
+          info("You have specified a USER_DEFINED scanner, "
+               "Info from the interfile or ROOT header will be used.");
+          omit_template = true;
+      }
     }
+  if (!omit_template)
+  {
   shared_ptr<ProjData> template_proj_data_ptr =
     ProjData::read_from_file(template_proj_data_name);
 
   template_proj_data_info_ptr.reset(template_proj_data_ptr->get_proj_data_info_ptr()->clone());
+  }
+  else
+  {
+      // Get ProjDataInfo from the listmode data.
+      template_proj_data_info_ptr = lm_data_ptr->get_proj_data_info_sptr();
+  }
 
   // initialise segment_num related variables
 

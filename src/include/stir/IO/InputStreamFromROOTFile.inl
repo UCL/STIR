@@ -114,6 +114,8 @@ initialize_root_read_out()
     stream_ptr->SetBranchAddress("comptonPhantom2", &comptonphantom2);
 
     nentries = static_cast<long long int>(stream_ptr->GetEntries());
+    if (nentries == 0)
+        error("The total number of entries in the ROOT file is zero. Abort.");
 }
 
 

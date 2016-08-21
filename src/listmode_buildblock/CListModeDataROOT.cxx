@@ -66,10 +66,9 @@ CListModeDataROOT(const std::string& listmode_filename)
 
     // ProjData related
     this->parser.add_key("%axial_compression", &this->axial_compression);
-    this->parser.add_key("%maximum_ring_difference", &this->maximum_ring_difference);
+    this->parser.add_key("%maximum_absolute_segment_num", &this->number_of_segments);
     this->parser.add_key("%number_of_projections", &this->number_of_projections);
     this->parser.add_key("%number_of_views", &this->number_of_views);
-    this->parser.add_key("%number_of_segments", &this->number_of_segments);
     // endof ProjData
 
     // ROOT related
@@ -122,7 +121,7 @@ CListModeDataROOT(const std::string& listmode_filename)
     this->scanner_sptr.reset(Scanner::get_scanner_from_name(this->originating_system));
     if (this->scanner_sptr->get_type() == Scanner::Unknown_scanner)
     {
-        warning(boost::format("Unknown value for originating_system keyword: '%s"
+        warning(boost::format("Unknown value for originating_system keyword: '%s ."
                               "Trying to figure out from rest input parameters") % originating_system );
 
 
@@ -203,10 +202,12 @@ CListModeDataROOT(const std::string& listmode_filename)
 
     // Display the scanner...
 
-
         this->proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(this->scanner_sptr,
                                                                       this->axial_compression,
-                                                                      this->maximum_ring_difference,
+                                                                      /* max delta */
+                                                                      (this->number_of_segments == -1)?
+                                                                        (this->scanner_sptr->get_num_rings()-1):
+                                                                          this->number_of_segments,
                                                                       this->number_of_views,
                                                                       this->number_of_projections,
                                                                       /* arc_correction*/false));
@@ -336,7 +337,7 @@ open_lm_file()
                                                                     this->number_of_modules_x, this->number_of_modules_y, this->number_of_modules_z,
                                                                     this->number_of_rsectors,
                                                                     this->exclude_scattered, this->exclude_randoms,
-                                                                    this->low_energy_window, this->up_energy_window,
+                                                                    this->low_energy_window*0.001f, this->up_energy_window*0.001f,
                                                                     this->offset_dets));
         t.close();
         return Succeeded::yes;

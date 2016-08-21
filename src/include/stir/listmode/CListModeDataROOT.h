@@ -119,8 +119,6 @@ private:
     // These tell us something about how the listmode is stored.
     //! Span
     int axial_compression;
-    //! Max delta ring
-    int maximum_ring_difference;
     //! S size of the sinogram
     int number_of_projections;
     //! Number of view in the sinogram
@@ -129,7 +127,7 @@ private:
     int number_of_segments;
 
 
-    shared_ptr<ProjDataInfo> proj_data_info_sptr;
+//    shared_ptr<ProjDataInfo> proj_data_info_sptr;
 
     KeyParser parser;
     std::string name_of_input_tchain;
