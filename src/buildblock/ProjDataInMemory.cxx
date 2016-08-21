@@ -140,7 +140,7 @@ ProjDataInMemory::
 write_to_file(const string& output_filename) const
 {
 
-  ProjDataInterfile out_projdata(this->get_exam_info_sptr(),
+  ProjDataInterfile out_projdata(get_exam_info_sptr(),
 				 this->proj_data_info_ptr, output_filename, ios::out); 
   
   Succeeded success=Succeeded::yes;

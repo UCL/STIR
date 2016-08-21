@@ -29,9 +29,9 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
-#include "stir/ProjData.h"
+//#include "stir/ProjData.h"
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
-#include "stir/recon_buildblock/BinNormalisation.h"
+//#include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/TimeFrameDefinitions.h"
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributable.h" // for  RPC_process_related_viewgrams_type
@@ -207,11 +207,14 @@ public:
   void set_proj_data_sptr(const shared_ptr<ProjData>&);
   void set_max_segment_num_to_process(const int);
   void set_zero_seg0_end_planes(const bool);
-  void set_additive_proj_data_sptr(const shared_ptr<ProjData>&);
+  //N.E. Changed to ExamData
+  virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
   void set_projector_pair_sptr(const shared_ptr<ProjectorByBinPair>&) ;
   void set_frame_num(const int);
   void set_frame_definitions(const TimeFrameDefinitions&);
-  void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
+  virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
+
+  virtual void set_input_data(const shared_ptr<ExamData> &);
   //@}
   
   virtual void 
@@ -312,16 +315,16 @@ protected:
 
   //! name of file in which additive projection data are stored
   std::string additive_projection_data_filename;
- //! points to the additive projection data
-  /*! the projection data in this file is bin-wise added to forward projection results*/
- shared_ptr<ProjData> additive_proj_data_sptr;
+
+
+  shared_ptr<ProjData> additive_proj_data_sptr;
+
+  shared_ptr<BinNormalisation> normalisation_sptr;
 
  // TODO doc
   int frame_num;
   std::string frame_definition_filename;
   TimeFrameDefinitions frame_defs;
-  shared_ptr<BinNormalisation> normalisation_sptr;
-
 
 //Loglikelihood computation parameters
  // TODO rename and move higher up in the hierarchy 

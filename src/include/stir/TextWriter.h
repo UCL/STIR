@@ -85,20 +85,20 @@ public:
 	void print_information(const char* text) {
         if (information_channel_)
 			information_channel_->write(text);
-        else
-            std::cout << text;
+		else
+			std::cout << text;
 	}
 	void print_warning(const char* text) {
         if (warning_channel_)
 			warning_channel_->write(text);
-        else
-            std::cerr << text;
+		else
+			std::cerr << text;
 	}
 	void print_error(const char* text) {
         if (error_channel_)
 			error_channel_->write(text);
-        else
-            std::cerr << text;
+		else
+			std::cerr << text;
 	}
 
 private:

@@ -1,0 +1,53 @@
+# Language selection
+language: cpp
+
+# Both clang and gcc can be tested. The more is the better.
+compiler:
+  - clang
+  - gcc
+
+# Cross-operating system test
+os:
+  - linux
+  - osx
+
+# Enviroment variables:
+global:
+  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON=1 -DSTIR_MPI=0 -DBUILD_SWIG_MATLAB=0"
+env:
+  - EXTRA_BUILD_FLAGS="-DSTIR_OPENMP=0"
+# when OpenMP is enabled:
+# - EXTRA_BUILD_FLAGS="-DSTIR_OPENMP=1"
+
+# Ubuntu 14.04 LTS (trusty)
+dist: trusty
+
+# No need for sudo
+sudo: false
+
+
+# Compilation dependencies
+addons:
+  apt:
+    packages:
+      - libboost-all-dev
+      - swig
+      - libgomp1
+
+# Actual compilation script
+
+script:
+  - mkdir build install
+  - cd build
+  - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS ..
+  - make -j 8 all
+  - make test
+  - make DESTDIR=$TRAVIS_BUILD_DIR/install all install
+  - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/usr/local/bin
+  - cd $TRAVIS_BUILD_DIR/recon_test_pack
+  - ./run_test_simulate_and_recon.sh
+  - ./run_test_simulate_and_recon_with_motion.sh
+  - ./run_scatter_tests.sh
+  - ./run_tests.sh --nointbp
+  - cd $TRAVIS_BUILD_DIR/recon_test_pack/SPECT
+  - ./run_SPECT_tests.sh

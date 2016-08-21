@@ -57,6 +57,8 @@ Reconstruction<TargetT>::set_defaults()
     OutputFileFormat<TargetT>::default_sptr();
   this->post_filter_sptr.reset();
 
+  this->_disable_output = false;
+
 }
 
 template <typename TargetT>
@@ -67,7 +69,7 @@ Reconstruction<TargetT>::initialise_keymap()
   this->parser.add_key("output filename prefix",&this->output_filename_prefix);
   this->parser.add_parsing_key("output file format type", &this->output_file_format_ptr);
   this->parser.add_parsing_key("post-filter type", &this->post_filter_sptr); 
- 
+  this->parser.add_key("disable output", &_disable_output);
 //  parser.add_key("END", &KeyParser::stop_parsing);
  
 }
@@ -99,12 +101,18 @@ bool
 Reconstruction<TargetT>::
 post_processing()
 {
-  if (this->output_filename_prefix.length() == 0)// KT 160899 changed name of variable
+
+  if (this->_disable_output)
+  { warning("You have disabled the output. No files will be written to "
+            "disk after or during reconstuction"); }
+
+  if (this->output_filename_prefix.length() == 0 &&
+          !this->_disable_output)// KT 160899 changed name of variable
   { warning("You need to specify an output prefix"); return true; }
 
   if (is_null_ptr(this->output_file_format_ptr))
     { warning("output file format has to be set to valid value"); return true; }
-  
+
   return false;
 }
 
@@ -150,6 +158,31 @@ set_up(shared_ptr<TargetT> const& target_data_sptr)
       }
   }
   return Succeeded::yes;
+}
+
+template <typename TargetT>
+void
+Reconstruction<TargetT>::
+set_disable_output(bool _val)
+{
+    this->_disable_output = _val;
+}
+
+template <typename TargetT>
+void
+Reconstruction<TargetT>::
+set_enable_output(bool _val)
+{
+    this->_disable_output = _val;
+}
+
+template < typename TargetT>
+shared_ptr<TargetT >
+Reconstruction<TargetT>::
+get_target_image()
+{
+    if (!is_null_ptr(target_data_sptr))
+        return target_data_sptr;
 }
 
 template class Reconstruction<DiscretisedDensity<3,float> >; 

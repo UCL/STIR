@@ -39,6 +39,7 @@
 #include "stir/analytic/FBP3DRP/ColsherFilter.h"
 #include "stir/ArcCorrection.h"
 #include "stir/shared_ptr.h"
+#include "stir/RegisteredParsingObject.h"
 
 START_NAMESPACE_STIR
 
@@ -92,10 +93,23 @@ class Succeeded;
      
 
 */
-class FBP3DRPReconstruction: public AnalyticReconstruction
+class FBP3DRPReconstruction: public
+        RegisteredParsingObject<
+            FBP3DRPReconstruction,
+                Reconstruction<DiscretisedDensity<3,float> >,
+                AnalyticReconstruction
+             >
 {
-  typedef AnalyticReconstruction base_type;
+  //typedef AnalyticReconstruction base_type;
+    typedef RegisteredParsingObject<
+        FBP3DRPReconstruction,
+            Reconstruction<DiscretisedDensity<3,float> >,
+            AnalyticReconstruction
+         > base_type;
 public:
+
+    //! Name which will be used when parsing a ProjectorByBinPair object
+    static const char * const registered_name;
 
 
   //! Default constructor (calls set_defaults())

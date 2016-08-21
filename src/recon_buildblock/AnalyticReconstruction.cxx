@@ -199,7 +199,7 @@ reconstruct()
 {
   shared_ptr<DiscretisedDensity<3,float> > target_image_ptr(construct_target_image_ptr());
   const Succeeded success = this->reconstruct(target_image_ptr);
-  if (success == Succeeded::yes)
+  if (success == Succeeded::yes && !_disable_output)
   {
     this->output_file_format_ptr->
       write_to_file(this->output_filename_prefix, *target_image_ptr);
@@ -224,6 +224,27 @@ reconstruct(shared_ptr<TargetT> const& target_image_sptr)
       }
   }
   return success;
+}
+
+void
+AnalyticReconstruction::
+set_input_data(const shared_ptr<ExamData> &arg)
+{
+    this->proj_data_ptr.reset(dynamic_cast < ProjData * > (arg.get()) );
+}
+
+void
+AnalyticReconstruction::
+set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
+{
+    error("Not defined in AnalyticReconstruction");
+}
+
+void
+AnalyticReconstruction::
+set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
+{
+    error("Not implemented yet, please precorrect the projection data");
 }
  
 END_NAMESPACE_STIR

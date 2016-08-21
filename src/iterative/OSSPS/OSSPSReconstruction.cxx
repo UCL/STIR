@@ -65,6 +65,10 @@ START_NAMESPACE_STIR
 
 //*************** parameters *************
 
+template <typename TargetT>
+const char * const
+OSSPSReconstruction <TargetT> ::registered_name =
+  "OSSPS";
 
 template <class TargetT>
 void 

@@ -176,7 +176,7 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
                    const ViewSegmentNumbers& view_segment_num
                    )
 {
-  if (!is_null_ptr(binwise_correction)) 
+  if (!is_null_ptr(binwise_correction))
     {
 #ifdef STIR_OPENMP
 #pragma omp critical(ADDSINO)
@@ -189,7 +189,7 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
       RelatedViewgrams<float> tmp(binwise_correction->
                                   get_related_viewgrams(view_segment_num, symmetries_ptr));
       additive_binwise_correction_viewgrams.reset(new RelatedViewgrams<float>(tmp));
-#endif      
+#endif
     }
                         
   if (read_from_proj_dat)

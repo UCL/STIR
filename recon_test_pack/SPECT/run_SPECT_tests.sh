@@ -20,6 +20,13 @@
 # Author Kris Thielemans
 # 
 
+# Scripts should exit with error code when a test fails:
+
+if [ -n "$TRAVIS" ]; then
+    # The code runs inside Travis
+    set -e
+fi
+
 echo This script should work with STIR version 3.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
@@ -128,7 +135,7 @@ for reconpar in FBP2D OSEM_2DPSF OSEM_3DPSF; do
     output_image=${output_filename}.hv
 
     # horrible way to replace "out" with "org" (as we don't want to rely on bash)
-    org_output_image=out`expr substr ${output_image} 4 100`
+    org_output_image=out`echo ${output_image}|cut -c 4-`
 
     if compare_image ${org_output_image} ${output_image}
     then
