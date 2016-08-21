@@ -234,7 +234,7 @@ protected:
   //! Has to be set by the derived class
   shared_ptr<Scanner> scanner_sptr;
   //! Has to be set by the derived class
-  shared_ptr<ExamInfo> exam_info_sptr;
+//  shared_ptr<ExamInfo> exam_info_sptr;
   //! Has to be set by the derived class
   shared_ptr<ProjDataInfo> proj_data_info_sptr;
 //  shared_ptr<ExamInfo> exam_info_sptr;
