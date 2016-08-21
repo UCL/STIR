@@ -1,5 +1,4 @@
 /*
-    Copyright (C) 2013-2014 Technological Educational Institute of Athens
     Copyright (C) 2015-2016 University of Leeds
     Copyright (C) 2016 UCL
     This file is part of STIR.

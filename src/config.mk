@@ -76,7 +76,7 @@ endif
 #** EXTRA_CFLAGS: for compiler
 # allow the user to get some extra options by using make EXTRA_CFLAGS=bla 
 ifeq ($(CC),gcc)
-EXTRA_CFLAGS =-Wall -Wno-deprecated 
+EXTRA_CFLAGS =-Wall -Wno-deprecated
 endif
 
 #** PARALLEL FLAGS***
@@ -174,7 +174,7 @@ endif
 # if so, we should additionally check on ifeq($(CC),gcc)
 # as -Xlinker is only appropriate for gcc
 ifeq ($(SYSTEM),CC)
-LINKFLAGS=-Xlinker -bbigtoc $(EXTRA_LINKFLAGS) $(EXTRA_LIBS) 
+LINKFLAGS=-Xlinker -bbigtoc $(EXTRA_LINKFLAGS) $(EXTRA_LIBS)
 else
 LINKFLAGS=$(EXTRA_LINKFLAGS) $(EXTRA_LIBS) 
 endif

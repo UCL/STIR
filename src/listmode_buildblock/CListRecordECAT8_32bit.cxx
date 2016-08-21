@@ -17,9 +17,9 @@
 /*!
   \file
   \ingroup listmode
-  \brief Implementation of classes stir::ecat::CListEventECAT8_32bit and stir::ecat::CListRecordECAT8_32bit 
+  \brief Implementation of classes stir::ecat::CListEventECAT8_32bit and stir::ecat::CListRecordECAT8_32bit
   for listmode events for the ECAT8 32bit listmode file format.
-    
+
   \author Kris Thielemans
 */
 
@@ -36,7 +36,7 @@ namespace ecat {
 
 CListEventECAT8_32bit::
 CListEventECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
-  CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(*proj_data_info_sptr->get_scanner_ptr()))) 
+  CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(*proj_data_info_sptr->get_scanner_ptr())))
 {
   const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>(proj_data_info_sptr.get());
@@ -88,10 +88,12 @@ get_detection_position(DetectionPositionPair<>& det_pos) const
         }
     }
   const Bin uncompressed_bin(segment_num, view_num, axial_pos_num,tang_pos_num - (num_tangential_poss/2));
-  this->get_uncompressed_proj_data_info_sptr()->get_det_pos_pair_for_bin(det_pos,uncompressed_bin);  
+  this->get_uncompressed_proj_data_info_sptr()->get_det_pos_pair_for_bin(det_pos,uncompressed_bin);
 }
 
-void CListEventECAT8_32bit::set_detection_position(const DetectionPositionPair<>&)
+void
+CListEventECAT8_32bit::
+set_detection_position(const DetectionPositionPair<>&)
 {
   error("cannot set events yet");
 }
