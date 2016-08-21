@@ -26,8 +26,8 @@
 */
 
 /* Possible compilation switches:
-  
-USE_SegmentByView 
+
+USE_SegmentByView
   Currently our ProjData classes store segments as floats, which is a waste of
   memory and time for simple binning of listmode data. This should be
   remedied at some point by having member template functions to allow different
@@ -39,7 +39,7 @@ USE_SegmentByView
 
 FRAME_BASED_DT_CORR:
    dead-time correction based on the frame, or on the time of the event
-*/   
+*/
 // (Note: can currently NOT be disabled)
 #define USE_SegmentByView
 
@@ -48,7 +48,7 @@ FRAME_BASED_DT_CORR:
 // set elem_type to what you want to use for the sinogram elements
 // we need a signed type, as randoms can be subtracted. However, signed char could do.
 
-#if defined(USE_SegmentByView) 
+#if defined(USE_SegmentByView)
    typedef float elem_type;
 #  define OUTPUTNumericType NumericType::FLOAT
 #else
@@ -115,19 +115,19 @@ typedef SegmentByView<elem_type> segment_type;
 
 
 
-static void 
+static void
 allocate_segments(VectorWithOffset<segment_type *>& segments,
                        const int start_segment_index,
                    const int end_segment_index,
                        const ProjDataInfo* proj_data_info_ptr);
 
-// In the next 2 functions, the 'output' parameter needs to be passed 
+// In the next 2 functions, the 'output' parameter needs to be passed
 // because save_and_delete_segments needs it when we're not using SegmentByView
 
 /* last parameter only used if USE_SegmentByView
    first parameter only used when not USE_SegmentByView
  */
-static void 
+static void
 save_and_delete_segments(shared_ptr<iostream>& output,
                   VectorWithOffset<segment_type *>& segments,
                   const int start_segment_index,
@@ -143,7 +143,7 @@ construct_proj_data(shared_ptr<iostream>& output,
 /**************************************************************
  The 3 parsing functions
 ***************************************************************/
-void 
+void
 LmToProjData::
 set_defaults()
 {
@@ -157,12 +157,9 @@ set_defaults()
   do_pre_normalisation =0;
   num_events_to_store = 0;
 
-  exclude_random = false;
-  exclude_scattered = false;
-
 }
 
-void 
+void
 LmToProjData::
 initialise_keymap()
 {
@@ -177,9 +174,6 @@ initialise_keymap()
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process);
   parser.add_key("do pre normalisation ", &do_pre_normalisation);
   parser.add_key("num_segments_in_memory", &num_segments_in_memory);
-
-  parser.add_key("Exclude scattered events", &exclude_scattered);
-  parser.add_key("Exclude random events", &exclude_random);
 
   //if (lm_data_ptr->has_delayeds()) TODO we haven't read the CListModeData yet, so cannot access has_delayeds() yet
   // one could add the next 2 keywords as part of a callback function for the 'input file' keyword.
@@ -391,7 +385,7 @@ LmToProjData(const char * const par_filename)
 void
 LmToProjData::
 get_bin_from_event(Bin& bin, const CListEvent& event) const
-{  
+{
   if (do_pre_normalisation)
    {
      Bin uncompressed_bin;
@@ -442,12 +436,12 @@ get_bin_from_event(Bin& bin, const CListEvent& event) const
       event.get_bin(bin, *template_proj_data_info_ptr);
     }
 
-} 
+}
 
 /**************************************************************
  Here follows the post_normalisation related stuff.
 ***************************************************************/
-void 
+void
 LmToProjData::
 do_post_normalisation(Bin& bin) const
 {
@@ -521,7 +515,7 @@ start_new_time_frame(const unsigned int)
 void
 LmToProjData::
 process_data()
-{ 
+{
   CPUTimer timer;
   timer.start();
 
@@ -646,12 +640,6 @@ process_data()
          // and there might be a scanner around that has them both combined.
          if (record.is_event())
            {
-
-//             if (exclude_randoms && record.is_random())
-//                 continue;
-             if (exclude_scattered && record.is_scattered())
-                 continue;
-
              assert(start_time <= current_time);
              Bin bin;
              // set value in case the event decoder doesn't touch it
@@ -746,7 +734,7 @@ process_data()
 /************************* Local helper routines *************************/
 
 
-void 
+void
 allocate_segments( VectorWithOffset<segment_type *>& segments,
           const int start_segment_index,
           const int end_segment_index,
@@ -768,7 +756,7 @@ allocate_segments( VectorWithOffset<segment_type *>& segments,
   }
 }
 
-void 
+void
 save_and_delete_segments(shared_ptr<iostream>& output,
              VectorWithOffset<segment_type *>& segments,
              const int start_segment_index,

@@ -1,5 +1,7 @@
 /*
-    Copyright (C) 2013 University College London
+    Copyright (C) 2013-2014 Technological Educational Institute of Athens
+    Copyright (C) 2015-2016 University of Leeds
+    Copyright (C) 2016 UCL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -70,25 +72,19 @@ CListEventROOT(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
 //! \param det_pos
 //! \author Nikos Efthimiou
 //!
-Succeeded
-CListEventROOT::
-get_detection_position(DetectionPositionPair<>& det_pos) const
+void CListEventROOT::get_detection_position(DetectionPositionPair<>& _det_pos) const
 {
 
-    DetectionPosition<> det1(this->data.det1, this->data.ring1, 0);
-    DetectionPosition<> det2(this->data.det2, this->data.ring2, 0);
+    DetectionPosition<> det1(this->det1, this->ring1, 0);
+    DetectionPosition<> det2(this->det2, this->ring2, 0);
 
-    det_pos.pos1() = det1;
-    det_pos.pos2() = det2;
-
-    return Succeeded::yes;
+    _det_pos.pos1() = det1;
+    _det_pos.pos2() = det2;
 }
 
-Succeeded
-CListEventROOT::
-set_detection_position(const DetectionPositionPair<>&)
+void CListEventROOT::set_detection_position(const DetectionPositionPair<>&)
 {
-    error("cannot set events yet");
+    error("Cannot set events in a ROOT file!");
 }
 
 

@@ -87,17 +87,11 @@ class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDet
  public:  
   CListEventECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr);
 
- //! This routine returns the corresponding detector pair   
- //! \date  11/03/16
- //! \author Nikos Efthimiou
- //! \details I changed the return type is Succeeded.
-  virtual Succeeded get_detection_position(DetectionPositionPair<>&) const;
+ //! This routine returns the corresponding detector pair
+  virtual void get_detection_position(DetectionPositionPair<>&) const;
 
   //! This routine sets in a coincidence event from detector "indices"
-  //! \date  11/03/16
-  //! \author Nikos Efthimiou
-  //! \details I changed the return type is Succeeded.
-  virtual Succeeded set_detection_position(const DetectionPositionPair<>&);
+  virtual void set_detection_position(const DetectionPositionPair<>&);
 
   Succeeded init_from_data_ptr(const void * const ptr)
     {
@@ -230,11 +224,6 @@ class CListTimeECAT8_32bit : public CListTime
     { return this->time_data; }
   virtual const CListTimeECAT8_32bit&   time() const
     { return this->time_data; }
-
-  bool is_random() const
-    { return false; }
-  bool is_scattered() const
-    { return false; }
 
   bool operator==(const CListRecord& e2) const
   {

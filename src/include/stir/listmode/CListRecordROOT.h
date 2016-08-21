@@ -1,6 +1,7 @@
 /*
-    Copyright (C) 2003-2011 Hammersmith Imanet Ltd
-    Copyright (C) 2013-2014 University College London
+    Copyright (C) 2013-2014 Technological Educational Institute of Athens
+    Copyright (C) 2015-2016 University of Leeds
+    Copyright (C) 2016 UCL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -39,23 +40,6 @@
 
 START_NAMESPACE_STIR
 
-//! Class for decoding storing and using a raw coincidence event from a listmode file from any ROOT file
-//! \todo More information could be usefull
-class CListEventDataROOT
-{
-public:
-    int ring1;
-    int ring2;
-
-    int det1;
-    int det2;
-
-    bool swap;
-
-    bool random;
-    bool scattered;
-};
-
 //!
 /*! \todo This implementation only works if the list-mode data is stored without axial compression.
   \todo If the target sinogram has the same characteristics as the sinogram encoding used in the list file
@@ -65,44 +49,25 @@ public:
 class CListEventROOT : public CListEventCylindricalScannerWithDiscreteDetectors
 {
 public:
-    typedef CListEventDataROOT DataType;
-    DataType get_data() const {
-        return this->data;
-    }
+//    typedef CListEventDataROOT DataType;
+//    DataType get_data() const {
+//        error("Cannor return datatype");
+////        return this->data;
+//    }
 
     CListEventROOT(const shared_ptr<ProjDataInfo>& proj_data_info_sptr);
 
     //! This routine returns the corresponding detector pair
-    //! \date  11/03/16
-    //! \author Nikos Efthimiou
-    //! \details I changed the return type is Succeeded.
-    virtual Succeeded get_detection_position(DetectionPositionPair<>&) const;
+    virtual void get_detection_position(DetectionPositionPair<>&) const;
 
     //! This routine sets in a coincidence event from detector "indices"
-    //! \date  11/03/16
-    //! \author Nikos Efthimiou
-    //! \details I changed the return type is Succeeded.
-    virtual Succeeded set_detection_position(const DetectionPositionPair<>&);
+    virtual void set_detection_position(const DetectionPositionPair<>&);
 
     bool is_data() const
-    {
-        return true;
-    }
-
-    bool is_random() const
-    {
-        return data.random;
-    }
-
-    bool is_scattered() const
-    {
-        return data.scattered;
-    }
+    { return true; }
 
     bool is_swapped() const
-    {
-        return data.swap;
-    }
+    { return swapped; }
 
     //!
     //! \brief init_from_data
@@ -110,26 +75,16 @@ public:
     //! \param ring2
     //! \param crystal1
     //! \param crystal2
-    //! \param event1
-    //! \param event2
-    //! \param scattered1
-    //! \param scattered2
     //! \return
-    //! \author Nikos Efthimiou
     //! \details This is the main function which transform GATE coordinates to STIR
     //! scanner coordintates
-    Succeeded init_from_data(int ring1, int ring2,
-                             int crystal1, int crystal2,
-                             int event1, int event2,
-                             int scattered1, int scattered2)
+    Succeeded init_from_data(int _ring1, int _ring2,
+                             int crystal1, int crystal2)
     {
-
-
         if  (crystal1 < 0 )
             crystal1 = scanner_sptr->get_num_detectors_per_ring() + crystal1;
         else if ( crystal1 >= scanner_sptr->get_num_detectors_per_ring())
             crystal1 = crystal1 - scanner_sptr->get_num_detectors_per_ring();
-
 
         if  (crystal2 < 0 )
             crystal2 = scanner_sptr->get_num_detectors_per_ring() + crystal2;
@@ -137,43 +92,35 @@ public:
             crystal2 = crystal2 - scanner_sptr->get_num_detectors_per_ring();
 
         // STIR assumes that 0 is on y whill GATE on the x axis
-        data.det1 = crystal1 + (int)(scanner_sptr->get_num_detectors_per_ring()/4)  ;
-        data.det2 = crystal2  + (int)(scanner_sptr->get_num_detectors_per_ring()/4) ;
+        det1 = crystal1 + (int)(scanner_sptr->get_num_detectors_per_ring()/4.f);
+        det2 = crystal2 + (int)(scanner_sptr->get_num_detectors_per_ring()/4.f);
 
-        if  (data.det1 < 0 )
-            data.det1 = scanner_sptr->get_num_detectors_per_ring() + data.det1;
-        else if ( data.det1 >= scanner_sptr->get_num_detectors_per_ring())
-            data.det1 = data.det1 - scanner_sptr->get_num_detectors_per_ring();
+        if  (det1 < 0 )
+            det1 = scanner_sptr->get_num_detectors_per_ring() + det1;
+        else if ( det1 >= scanner_sptr->get_num_detectors_per_ring())
+            det1 = det1 - scanner_sptr->get_num_detectors_per_ring();
 
-        if  (data.det2 < 0 )
-            data.det2 = scanner_sptr->get_num_detectors_per_ring() + data.det2;
-        else if ( data.det2 >= scanner_sptr->get_num_detectors_per_ring())
-            data.det2 = data.det2 - scanner_sptr->get_num_detectors_per_ring();
+        if  (det2 < 0 )
+            det2 = scanner_sptr->get_num_detectors_per_ring() + det2;
+        else if ( det2 >= scanner_sptr->get_num_detectors_per_ring())
+            det2 = det2 - scanner_sptr->get_num_detectors_per_ring();
 
-        if (data.det1 > data.det2)
+        if (det1 > det2)
         {
-            int tmp = data.det1;
-            data.det1 = data.det2;
-            data.det2 = tmp;
+            int tmp = det1;
+            det1 = det2;
+            det2 = tmp;
 
-            data.ring1 = ring2;
-            data.ring2 = ring1;
+            ring1 = _ring2;
+            ring2 = _ring1;
+            swapped = true;
         }
         else
         {
-            data.ring1 = ring1;
-            data.ring2 = ring2;
+            ring1 = _ring1;
+            ring2 = _ring2;
+            swapped = false;
         }
-
-        if (event1 != event2)
-            data.random = true;
-        else
-            data.random = false;
-
-        if (scattered1 > 0 || scattered2 > 0)
-            data.scattered = true;
-        else
-            data.scattered = false;
 
         return Succeeded::yes;
     }
@@ -196,45 +143,18 @@ public:
     }
 
 private:
+    int ring1;
+    int ring2;
 
-    CListEventDataROOT   data;
+    int det1;
+    int det2;
 
+    bool swapped;
 
     std::vector<int> segment_sequence;
     std::vector<int> sizes;
 
 };
-
-//!
-//! \brief The CListTimeDataROOT class
-//! \author Nikos Efthimiou
-//! \details This is the core class to hold the timing data of the event.
-//! In order to provide potential TOF compatibility CListTimeDataROOT holds
-//! the time stamps in picosecods.
-//!
-class CListTimeDataROOT
-{
-public:
-
-    //!
-    //! \brief timeA
-    //! \author Nikos Efthimiou
-    //! \details The detection time of the first of the two photons, in seconds
-    double timeA; // Detection time of the first event
-
-    //!
-    //! \brief timeB
-    //! \author Nikos Efthimiou
-    //! \details The detection time of the second of the two photons
-    double timeB; // Detection time of the second event
-
-    //!
-    //! \brief type
-    //! \warning No actual functionality. I keep it for compatibility with
-    //! ECAT data
-    unsigned    type : 1;    /* 0-coincidence event, 1-time tick */
-};
-
 
 //! A class for storing and using a timing 'event' from a listmode file from the ECAT 8_32bit scanner
 /*! \ingroup listmode
@@ -244,17 +164,13 @@ class CListTimeROOT : public CListTime
 public:
     Succeeded init_from_data(double time1, double time2)
     {
-
-        data.timeA = time1;
-        data.timeB = time2;
-
+        timeA = time1;
+        timeB = time2;
         return Succeeded::yes;
     }
 
     bool is_time() const
-    {
-        return true;
-    }
+    { return true; }
 
     //!
     //! \brief get_time_in_millisecs
@@ -263,7 +179,7 @@ public:
     //!
     inline unsigned long  get_time_in_millisecs() const
     {
-        return this->data.timeA  * 1e3;
+        return timeA  * 1e3;
     }
 
     //!
@@ -273,7 +189,7 @@ public:
     //!
     inline double get_timeA_in_millisecs() const
     {
-        return this->data.timeA * 1e3;
+        return timeA * 1e3;
     }
 
     //!
@@ -284,7 +200,7 @@ public:
     //!
     inline double get_timeB_in_millisecs() const
     {
-        return this->data.timeB * 1e3;
+        return timeB * 1e3;
     }
 
     //!
@@ -294,7 +210,7 @@ public:
     //!
     inline double get_delta_time_in_millisecs() const
     {
-        return (this->data.timeB - this->data.timeA) * 1e3;
+        return (timeB - timeA) * 1e3;
     }
 
     //!
@@ -306,9 +222,7 @@ public:
     //!
     inline  double get_delta_time_in_picosecs() const
     {
-        double delta = (this->data.timeB - this->data.timeA) ;
-        delta *= 1e12;
-        return delta;
+        return (timeB - timeA) * 1e12;
     }
 
     //!
@@ -320,13 +234,20 @@ public:
     //!
     inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
     {
-        //        this->data.time = ((1U<<30)-1) & static_cast<unsigned>(time_in_millisecs);
-        //        // TODO return more useful value
-        //        return Succeeded::yes;
+        error("set_time_in_millisecs: Not implemented for ROOT files. Abort.");
     }
 
 private:
-    CListTimeDataROOT   data;
+
+    //!
+    //! \brief timeA
+    //! \details The detection time of the first of the two photons, in seconds
+    double timeA; // Detection time of the first event
+
+    //!
+    //! \brief timeB
+    //! \details The detection time of the second of the two photons
+    double timeB; // Detection time of the second event
 };
 
 //! A class for a general element of a listmode file for a Siemens scanner using the ROOT files
@@ -346,16 +267,6 @@ class CListRecordROOT : public CListRecord // currently no gating yet
     bool is_event() const
     {
         return this->event_data.is_data();
-    }
-
-    bool is_random() const
-    {
-        return this->event_data.is_random();
-    }
-
-    bool is_scattered() const
-    {
-        return this->event_data.is_scattered();
     }
 
     bool is_full_event()
@@ -396,15 +307,11 @@ public:
 
     virtual Succeeded init_from_data( int ring1, int ring2,
                                       int crystal1, int crystal2,
-                                      double time1, double time2,
-                                      int event1, int event2,
-                                      int scattered1, int scattered2)
+                                      double time1, double time2)
     {
         /// \warning ROOT data are time and event at the same time.
 
-        this->event_data.init_from_data(ring1, ring2, crystal1, crystal2,
-                                        event1, event2,
-                                        scattered1, scattered2);
+        this->event_data.init_from_data(ring1, ring2, crystal1, crystal2);
 
         this->time_data.init_from_data(
                     time1,time2);

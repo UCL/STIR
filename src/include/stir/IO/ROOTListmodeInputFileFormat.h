@@ -1,9 +1,28 @@
+/*
+    Copyright (C) 2013-2014 Technological Educational Institute of Athens
+    Copyright (C) 2015-2016 University of Leeds
+    Copyright (C) 2016 UCL
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 #ifndef __stir_IO_ROOTListmodeInputFileFormat_h__
 #define __stir_IO_ROOTListmodeInputFileFormat_h__
 
 
 #include "stir/IO/InputFileFormat.h"
 #include "stir/listmode/CListModeDataROOT.h"
+#include "stir/interfile_keyword_functions.h"
 
 #include "stir/utilities.h"
 #include <string>
@@ -30,39 +49,19 @@ protected:
     actual_can_read(const FileSignature& signature,
                     std::istream& input) const
     {
-        // TODO need to do check that it's a siemens list file etc
-        // N.E. I keep to check if it is an interfile, but added the check
-        // whether it is has a ROOT input.
-
-        if (is_interfile_signature(signature.get_signature()))
-            return ( has_root_input_file(signature.get_signature()));
-        else
-            return false;
+        return this->is_root_signature(signature.get_signature());
     }
 
-    //!
-    //! \brief has_root_input_file
-    //! \param signature
-    //! \return
-    //! \author Nikos Efthimiou
-    //! \todo This could be written nicer
-    //!
-    bool
-    has_root_input_file(const char* const signature) const
+    bool is_root_signature(const char* const signature) const
     {
-        // checking for ".root" or ".ROOT"
-        bool val = false;
-        std::string str1 = (".root");
-        std::string str2 = (".ROOT");
-
-        std::string sig(signature);
-
-        if ( sig.find(str1) == std::string::npos && sig.find(str2) == std::string::npos)
-            val = false;
-        else
-            val = true;
-
-        return val;
+        // checking for "interfile :"
+        const char * pos_of_colon = strchr(signature, ':');
+        if (pos_of_colon == NULL)
+          return false;
+        std::string keyword(signature, pos_of_colon-signature);
+        return (
+            standardise_interfile_keyword(keyword) ==
+            standardise_interfile_keyword("ROOT header"));
     }
 
 public:

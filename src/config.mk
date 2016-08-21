@@ -109,11 +109,6 @@ EXTRA_LINKFLAGS=
 LLN_INCLUDE_DIR=$(WORKSPACE)/../lln/ecat
 LLN_LIB_DIR=$(LLN_INCLUDE_DIR)
 
-#******** variables used only for ROOT
-# local/config.mk can override these defaults
-ROOT_LIB_DIR=/usr/lib/x86_64-linux-gnu/root5.34
-ROOT_INCLUDE_DIR=/usr/include/root
-
 #******** variables used only for GE RDF IO
 # local/config.mk can override these defaults
 RDF_BASE_DIR=$(WORKSPACE)/../rdf
@@ -155,20 +150,20 @@ EXTRA_LINKFLAGS+=-Xlinker --enable-auto-import
 endif
 
 NONOPTIM_CFLAGS=-g
-DEBUG_CFLAGS=-D_DEBUG -ggdb -g3
+DEBUG_CFLAGS=-D_DEBUG -g
 
 OPTIM_LINKFLAGS=
 NONOPTIM_LINKFLAGS=-g
 DEBUG_LINKFLAGS=-g
 
 ifeq ($(BUILD),debug)
-CFLAGS = $(DEBUG_CFLAGS) $(OPENMP_CFLAGS) $(MPI_CFLAGS) $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) -c`root-config --cflags`
+CFLAGS = $(DEBUG_CFLAGS) $(OPENMP_CFLAGS) $(MPI_CFLAGS) $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
 else 
 ifeq ($(BUILD),nonopt)
-CFLAGS = $(NONOPTIM_CFLAGS)  $(OPENMP_CFLAGS) $(MPI_CFLAGS) $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) -c`root-config --cflags`
+CFLAGS = $(NONOPTIM_CFLAGS)  $(OPENMP_CFLAGS) $(MPI_CFLAGS) $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
 else
 # release version
-CFLAGS = $(OPTIM_CFLAGS)  $(OPENMP_CFLAGS) $(MPI_CFLAGS) $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) -c`root-config --cflags`
+CFLAGS = $(OPTIM_CFLAGS)  $(OPENMP_CFLAGS) $(MPI_CFLAGS) $(EXTRA_CFLAGS)  -I$(INCLUDE_DIR) 
 endif
 endif 
 
@@ -179,7 +174,7 @@ endif
 # if so, we should additionally check on ifeq($(CC),gcc)
 # as -Xlinker is only appropriate for gcc
 ifeq ($(SYSTEM),CC)
-LINKFLAGS=-Xlinker -bbigtoc $(EXTRA_LINKFLAGS) $(EXTRA_LIBS) `root-config --libs`
+LINKFLAGS=-Xlinker -bbigtoc $(EXTRA_LINKFLAGS) $(EXTRA_LIBS) 
 else
 LINKFLAGS=$(EXTRA_LINKFLAGS) $(EXTRA_LIBS) 
 endif

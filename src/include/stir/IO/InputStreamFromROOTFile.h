@@ -4,12 +4,24 @@
   \brief Declaration of class stir::InputStreamWithRecords
 
   \author Nikos Efthimiou
-
 */
 /*
+ *  Copyright (C) 2013, 2014 Technological Educational Institute of Athens
+ *  Copyright (C) 2015, 2106 University of Leeds
+    Copyright (C) 2016, UCL
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
     This file is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
 */
 
 #ifndef __stir_IO_InputStreamFromROOTFile_H__
@@ -47,24 +59,33 @@ public:
     //!
     //! \brief InputStreamFromROOTFile
     //! \param filename
-    //! \param crystal_repeater_x According to GATE crystal repeater x - This would be meaningfull in multilayer arrays
-    //! \param crystal_repeater_y According to GATE crystal repeater y - In PET geometry would be the tangestial axis
-    //! \param crystal_repeater_z According to GATE crystal repeater z - Axial axis
-    //! \param submodule_repeater_x According to GATE submodule repeater x - If none then 1
-    //! \param submodule_repeater_y According to GATE submodule repeater y - If none then 1
-    //! \param submodule_repeater_z According to GATE submodule repeater z - If none then 1
+    //! \param chain_name
+    //! \param crystal_repeater_x
+    //! \param crystal_repeater_y
+    //! \param crystal_repeater_z
+    //! \param submodule_repeater_x
+    //! \param submodule_repeater_y
+    //! \param submodule_repeater_z
     //! \param module_repeater_x
     //! \param module_repeater_y
     //! \param module_repeater_z
     //! \param rsector_repeater
-    //! \author Nikos Efthimiou
-    //! \details The default constructor.
+    //! \param exclude_scattered
+    //! \param exclude_randoms
+    //! \param low_energy_window
+    //! \param up_energy_window
+    //! \param offset_dets
+    //! \details Default constructor
     inline
     InputStreamFromROOTFile(const std::string& filename,
+                            const std::string& chain_name,
                             int crystal_repeater_x, int crystal_repeater_y, int crystal_repeater_z,
                             int submodule_repeater_x, int submodule_repeater_y, int submodule_repeater_z,
                             int module_repeater_x, int module_repeater_y, int module_repeater_z,
-                            int rsector_repeater);
+                            int rsector_repeater,
+                            bool exclude_scattered, bool exclude_randoms,
+                            float low_energy_window, float up_energy_window,
+                            int offset_dets);
 
 
     virtual ~InputStreamFromROOTFile() {}
@@ -153,6 +174,7 @@ private:
     TChain *stream_ptr = NULL;
 
     // Variables to store root information
+    const std::string chain_name;
     Int_t           eventID1, eventID2;
     Int_t           crystalID1, crystalID2;
     Int_t           submoduleID1, submoduleID2;
@@ -175,7 +197,15 @@ private:
     int module_repeater_x;
     int module_repeater_y;
     int module_repeater_z;
-    int rsector_repeater;
+    int rsector_repeater;  
+
+    bool exclude_scattered;
+    bool exclude_randoms;
+
+    float low_energy_window;
+    float up_energy_window;
+
+    int offset_dets;
 };
 
 END_NAMESPACE_STIR

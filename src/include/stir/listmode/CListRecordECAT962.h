@@ -215,12 +215,6 @@ class CListRecordECAT962 : public CListRecordWithGatingInput, public CListTime, 
   virtual const CListGatingInput&  gating_input() const
   { return *this; }
 
-  bool is_random() const
-    { return false; }
-   bool is_scattered() const
-    { return false; }
-
-
   bool operator==(const CListRecord& e2) const
   {
     return dynamic_cast<CListRecordECAT962 const *>(&e2) != 0 &&

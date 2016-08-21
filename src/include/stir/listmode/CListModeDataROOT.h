@@ -1,3 +1,21 @@
+/*
+ *  Copyright (C) 2013, 2014 Technological Educational Institute of Athens
+ *  Copyright (C) 2015, 2106 University of Leeds
+    Copyright (C) 2016, UCL
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 /*!
   \file
   \ingroup listmode
@@ -14,11 +32,9 @@
 #include "stir/IO/InputStreamWithRecords.h"
 #include "stir/IO/InputStreamFromROOTFile.h"
 #include "stir/shared_ptr.h"
-#include "stir/IO/InterfileHeader.h"
-#include <iostream>
+#include "stir/KeyParser.h"
+
 #include <string>
-#include <utility>
-#include <vector>
 
 START_NAMESPACE_STIR
 
@@ -66,28 +82,57 @@ public:
 private:
     typedef CListRecordROOT CListRecordT;
 
-    //!
-    //! \brief check_scanner_consistency
-    //! \return
-    //! \author Nikos Efthimiou
-    //! \details This function performs simple checks to validate that the repeaters,
+    //! This function performs simple checks to validate that the repeaters,
     //! are consistent with the header file.
     Succeeded check_scanner_consistency();
 
+    //! The header file, bad name choise.
     std::string listmode_filename;
-
+    //! The root file
+    std::string input_data_filename;
+    //! Pointer to the listmode data
     shared_ptr<InputStreamFromROOTFile<CListRecordT, bool> > current_lm_data_ptr;
+
+    //! The name of the originating scanner
+    std::string originating_system;
+
+    // Related to the Scanner
+    //! Number of bins
+    int num_bins;
+    //! Bin size
+    float bin_size;
+    //! Physical inner ring radius
+    float inner_ring_radius;
+    //! Average depth of iteration
+    float aver_depth_of_iteraction;
+    //! Ring spacing
+    float ring_spacing;
+    //! Number of detector layers
+    int num_det_layers;
+    //!
+    //! \brief singles_readout_depth
+    //! \details This is a GATE parameters, defined in the digitizer. It
+    //! defines the structure in which the energy summing is done.
+    //! Value 4 means that each crystal is read individually.
+    int singles_readout_depth;
+
+    // These tell us something about how the listmode is stored.
+    //! Span
+    int axial_compression;
+    //! Max delta ring
+    int maximum_ring_difference;
+    //! S size of the sinogram
+    int number_of_projections;
+    //! Number of view in the sinogram
+    int number_of_views;
+    //! Number of segments.
+    int number_of_segments;
+
+
     shared_ptr<ProjDataInfo> proj_data_info_sptr;
 
-    InterfileHeader interfile_parser;
-    // members to store info from the interfile header.
-    // These tell us something about how the listmode is stored.
-    int axial_compression;
-    int maximum_ring_difference;
-    int number_of_projections;
-    int number_of_views;
-    int number_of_segments;
-    char name_of_input_tchain;
+    KeyParser parser;
+    std::string name_of_input_tchain;
 
     //! Number of the rsectors used in the GATE mac file
     int number_of_rsectors;
@@ -110,11 +155,40 @@ private:
     int number_of_crystals_y;
     //! Crystal z repeater in the GATE mac file
     int number_of_crystals_z;
+    //! Number of detectors to rotate, if the user has used default GATE
+    //! geometry, first block in phi = 0, then this should be zero, to
+    //! align with STIR.
+    int offset_dets;
 
-   //! Total number of events in the ROOT file
+    //! Total number of events in the ROOT file
     long long int total_number_of_events;
 
+    //! If set all scattered events will be excluded
+    bool exclude_scattered;
+    //! If set all random event will be excluded
+    bool exclude_randoms;
+
+    //! The low energy window threshold
+    //! \warning When ExamData are merged it will be removed
+    float low_energy_window;
+    //! The upper energy window threshold
+    //! \warning When ExamData are merged it will be removed
+    float up_energy_window;
+
     Succeeded open_lm_file();
+
+    //!
+    //! \brief read_frames_info
+    //! \details This function is stolen from InterfileHeader.cxx
+    void read_frames_info();
+
+     int num_time_frames;
+     double _image_relative_start_times;
+     double _image_durations;
+
+     std::vector<double> image_relative_start_times;
+     std::vector<double> image_durations;
+
 };
 
 

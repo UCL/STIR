@@ -186,24 +186,6 @@ public:
     virtual CListTime&   time() = 0;
     virtual const CListTime&   time() const = 0;
 
-    //!
-    //! \brief is_random
-    //! \return
-    //! \author Nikos Efthimiou
-    //! \details This function is available when the input is a ROOT file.
-    //! In simulations we are perfectly aware of which event is random
-    //! \warning Other listmode inputs return false at all cases.
-    virtual bool is_random() const = 0;
-
-    //!
-    //! \brief is_scattered
-    //! \return
-    //! \author Nikos Efthimiou
-    //! \details This function is available when the input is a ROOT file.
-    //! In simulations we are perfectly aware of which event is random
-    //! \warning Other listmode inputs return false at all cases.
-    virtual bool is_scattered() const = 0;
-
     virtual bool operator==(const CListRecord& e2) const = 0;
     bool operator!=(const CListRecord& e2) const { return !(*this == e2); }
 
