@@ -13,9 +13,11 @@ os:
 
 # Enviroment variables:
 global:
-  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON=1 -DSTIR_MPI=0 -DBUILD_SWIG_MATLAB=0"
+  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON=1 -DSTIR_MPI=0 -DBUILD_SWIG_MATLAB=0 -DSTIR_OPENMP=0"
 env:
-  - EXTRA_BUILD_FLAGS="-DSTIR_OPENMP=0"
+  - EXTRA_BUILD_FLAGS="-DCMAKE_BUILD_TYPE=Debug"
+  - EXTRA_BUILD_FLAGS="-DCMAKE_BUILD_TYPE=Release"
+
 # when OpenMP is enabled:
 # - EXTRA_BUILD_FLAGS="-DSTIR_OPENMP=1"
 
@@ -35,7 +37,6 @@ addons:
       - libgomp1
 
 # Actual compilation script
-
 script:
   - mkdir build install
   - cd build
