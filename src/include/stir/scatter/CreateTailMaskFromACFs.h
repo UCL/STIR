@@ -35,37 +35,11 @@
   a new class CreateTailMaskFromACFs. This made possible to use par file to
   initiliase the process and use it from within some other code.
 
-  In the later case, were the output is to be used from some other code the
-  output file can be omitted, in order to avoid unessery outputs.
+  In the latter case, where the output will be used from some other code the
+  output file can be omitted, in order to avoid unnecessary outputs.
 
   \author Nikos Efthimiou
   \author Kris Thielemans
-
-  \par Usage:
-
-  \verbatim
-   create_tail_mask_from_ACFs --ACF-filename <filename> \\
-        --output-filename <filename> \\
-        [--ACF-threshold <float>] \\
-        [--safety-margin <integer>]
-  \endverbatim
-
-  \par Alternative Usage:
-
-  \verbatim
-    create_tail_mask_from_ACFs <filename.par>
-  \endverbatim
-
-  \par Example of parameter file:
-  \verbatim
-    CreateTailMaskFromACFs :=
-        ACF-filename :=
-        output-filename :=
-        ACF-threshold :=
-        safety-margin :=
-    END CreateTailMaskFromACFs :=
-  \endverbatim
-  ACF-threshold defaults to 1.1 (should be larger than 1), safety-margin to 4
 */
 
 #ifndef __stir_scatter_CreateTailMaskFromACFs_H__
@@ -96,11 +70,11 @@ public:
 
     virtual Succeeded process_data();
 
-    void set_input_projdata(shared_ptr<ProjData> &);
+    void set_input_projdata_sptr(shared_ptr<ProjData> &);
 
     void set_input_projdata(std::string&);
 
-    void set_output_projdata(shared_ptr<ProjData>&);
+    void set_output_projdata_sptr(shared_ptr<ProjData>&);
 
     void set_output_projdata(std::string&);
 
@@ -109,7 +83,7 @@ public:
     //! \return
     //! \details Use this function to return the output
     //! projdata.
-    shared_ptr<ProjData> get_output_projdata();
+    shared_ptr<ProjData> get_output_projdata_sptr();
 
     //!
     //! \brief ACF_threshold

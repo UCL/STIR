@@ -6,7 +6,7 @@ START_NAMESPACE_STIR
 
 void
 CreateTailMaskFromACFs::
-set_input_projdata(shared_ptr<ProjData> & arg)
+set_input_projdata_sptr(shared_ptr<ProjData> & arg)
 {
     this->ACF_sptr = arg;
 }
@@ -21,7 +21,7 @@ set_input_projdata(std::string& arg)
 
 void
 CreateTailMaskFromACFs::
-set_output_projdata(shared_ptr<ProjData>& arg)
+set_output_projdata_sptr(shared_ptr<ProjData>& arg)
 {
     this->mask_proj_data = arg;
 }
@@ -38,7 +38,7 @@ set_output_projdata(std::string& arg)
 
 shared_ptr<ProjData>
 CreateTailMaskFromACFs::
-get_output_projdata()
+get_output_projdata_sptr()
 {
  return this->mask_proj_data;
 }

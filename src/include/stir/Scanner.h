@@ -320,10 +320,12 @@ class Scanner
   // TODO accomodate more complex geometries of singles units.
 
   //@} (end of block/bucket info)
-  //! get the energy resolution of the system
-  inline void set_energy_resolution(const float & new_num);
-  //! get the reference energy of the energy resolution
-  inline void set_reference_energy(const float& new_num);
+  //! set the energy resolution of the system
+  //! A negative value indicates, unknown || not set
+  inline void set_energy_resolution(const float new_num);
+  //! set the reference energy of the energy resolution
+  //! A negative value indicates, unknown || not set
+  inline void set_reference_energy(const float new_num);
   //@} (end of set info)
   //@} (end of set info)
   
@@ -369,6 +371,7 @@ private:
   //! \brief energy_resolution
   //! \author Nikos Efthimiou
   //! \details This is the energy resolution of the system.
+  //! A negative value indicates, unknown.
   //! This value is dominated by the material of the scintilation crystal
   float energy_resolution;
 
@@ -376,6 +379,7 @@ private:
   //! \brief reference_energy
   //! \author Nikos Efthimiou
   //! \details In PET application this should always be 511 keV.
+  //! A negative value indicates, unknown.
   float reference_energy;
 
 

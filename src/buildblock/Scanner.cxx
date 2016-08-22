@@ -784,9 +784,11 @@ Scanner::parameter_info() const
     << get_max_num_non_arccorrected_bins() << '\n'
     << "Default number of arc-corrected bins     := "
     << get_default_num_arccorrected_bins() << '\n';
-
-  s << "Energy resolution := " << get_energy_resolution() << '\n';
-  s << "Reference energy (in keV) := " << get_reference_energy() << '\n';
+  if (get_energy_resolution() >= 0 && get_reference_energy() >= 0)
+  {
+    s << "Energy resolution := " << get_energy_resolution() << '\n';
+    s << "Reference energy (in keV) := " << get_reference_energy() << '\n';
+  }
 
   // block/bucket description
   s << "Number of blocks per bucket in transaxial direction         := "

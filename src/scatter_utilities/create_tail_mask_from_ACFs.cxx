@@ -29,13 +29,29 @@
   \author Nikos Efthimiou
   \author Kris Thielemans
 	
-  \par Usage:   
-  
+  \par Usage:
+
   \verbatim
    create_tail_mask_from_ACFs --ACF-filename <filename> \\
-	    --output-filename <filename> \\
-	    [--ACF-threshold <float>] \\
-	    [--safety-margin <integer>]
+        --output-filename <filename> \\
+        [--ACF-threshold <float>] \\
+        [--safety-margin <integer>]
+  \endverbatim
+
+  \par Alternative Usage:
+
+  \verbatim
+    create_tail_mask_from_ACFs <filename.par>
+  \endverbatim
+
+  \par Example of parameter file:
+  \verbatim
+    CreateTailMaskFromACFs :=
+        ACF-filename :=
+        output-filename :=
+        ACF-threshold :=
+        safety-margin :=
+    END CreateTailMaskFromACFs :=
   \endverbatim
   ACF-threshold defaults to 1.1 (should be larger than 1), safety-margin to 4
 */

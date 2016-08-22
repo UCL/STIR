@@ -107,4 +107,6 @@ public :
 
 END_NAMESPACE_STIR
 
+#include "stir/ExamInfo.inl"
+
 #endif // __stir_ExamInfo_H__
