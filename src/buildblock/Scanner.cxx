@@ -3,7 +3,7 @@
     Copyright (C) 2000 - 2010-07-21, Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
-    Copyright (C) 2013-2014, University College London
+    Copyright (C) 2013-2016, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 
   \brief Implementations for class stir::Scanner
 
+  \author Nikos Efthimiou
   \author Charalampos Tsoumpas
   \author Sanida Mustafovic
   \author Kris Thielemans
@@ -430,7 +431,9 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
                  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
                  int num_axial_crystals_per_singles_unit_v, 
                  int num_transaxial_crystals_per_singles_unit_v,
-                 int num_detector_layers_v)
+                 int num_detector_layers_v,
+                 float energy_resolution_v,
+                 float reference_energy_v)
 {
   set_params(type_v, list_of_names_v, num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -443,7 +446,9 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
              num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
              num_axial_crystals_per_singles_unit_v,
              num_transaxial_crystals_per_singles_unit_v,
-             num_detector_layers_v);
+             num_detector_layers_v,
+             energy_resolution_v,
+             reference_energy_v);
 }
 
 
@@ -458,7 +463,9 @@ Scanner::Scanner(Type type_v, const string& name,
                  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
                  int num_axial_crystals_per_singles_unit_v, 
                  int num_transaxial_crystals_per_singles_unit_v,
-                 int num_detector_layers_v) 
+                 int num_detector_layers_v,
+                 float energy_resolution_v,
+                 float reference_energy_v) 
 {
   set_params(type_v, string_list(name), num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -471,7 +478,9 @@ Scanner::Scanner(Type type_v, const string& name,
              num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
              num_axial_crystals_per_singles_unit_v,
              num_transaxial_crystals_per_singles_unit_v,
-             num_detector_layers_v);
+             num_detector_layers_v,
+             energy_resolution_v,
+             reference_energy_v);
 }
 
 
@@ -494,7 +503,9 @@ set_params(Type type_v,const list<string>& list_of_names_v,
            int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
            int num_axial_crystals_per_singles_unit_v,
            int num_transaxial_crystals_per_singles_unit_v,
-           int num_detector_layers_v)
+           int num_detector_layers_v,
+           float energy_resolution_v,
+           float reference_energy_v)
 {
   set_params(type_v, list_of_names_v, num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -507,7 +518,9 @@ set_params(Type type_v,const list<string>& list_of_names_v,
 	     num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
              num_axial_crystals_per_singles_unit_v, 
              num_transaxial_crystals_per_singles_unit_v,
-	     num_detector_layers_v);
+	     num_detector_layers_v,
+             energy_resolution_v,
+             reference_energy_v);
 }
 
 
@@ -526,7 +539,9 @@ set_params(Type type_v,const list<string>& list_of_names_v,
            int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
            int num_axial_crystals_per_singles_unit_v,
            int num_transaxial_crystals_per_singles_unit_v,
-           int num_detector_layers_v)
+           int num_detector_layers_v,
+           float energy_resolution_v,
+           float reference_energy_v)
 {
   type = type_v;
   list_of_names = list_of_names_v;  
@@ -546,6 +561,9 @@ set_params(Type type_v,const list<string>& list_of_names_v,
   num_axial_crystals_per_singles_unit = num_axial_crystals_per_singles_unit_v;
   num_transaxial_crystals_per_singles_unit = num_transaxial_crystals_per_singles_unit_v;
   num_detector_layers = num_detector_layers_v;
+
+  energy_resolution = energy_resolution_v;
+  reference_energy = reference_energy_v;
 
 }
 
@@ -699,24 +717,29 @@ bool static close_enough(const double a, const double b)
 bool 
 Scanner::operator ==(const Scanner& scanner) const
 {
-// KT 04/02/2003 take floating point rounding into account
-return
-  (num_rings == scanner.num_rings) &&
-  (max_num_non_arccorrected_bins == scanner.max_num_non_arccorrected_bins) &&
-  (default_num_arccorrected_bins == scanner.default_num_arccorrected_bins) &&
-  (num_detectors_per_ring == scanner.num_detectors_per_ring) &&
-  close_enough(inner_ring_radius, scanner.inner_ring_radius) &&
-  close_enough(average_depth_of_interaction, scanner.average_depth_of_interaction) &&
-  close_enough(ring_spacing, scanner.ring_spacing) &&
-  close_enough(bin_size,scanner.bin_size) &&
-  close_enough(intrinsic_tilt,scanner.intrinsic_tilt) &&
-  (num_transaxial_blocks_per_bucket == scanner.num_transaxial_blocks_per_bucket) &&
-  (num_axial_blocks_per_bucket == scanner.num_axial_blocks_per_bucket) &&
-  (num_axial_crystals_per_block == scanner.num_axial_crystals_per_block) &&
-  (num_transaxial_crystals_per_block == scanner.num_transaxial_crystals_per_block) &&
-  (num_detector_layers == scanner.num_detector_layers) &&
-  (num_axial_crystals_per_singles_unit == scanner.num_axial_crystals_per_singles_unit) &&
-  (num_transaxial_crystals_per_singles_unit == scanner.num_transaxial_crystals_per_singles_unit);
+if (!close_enough(energy_resolution, scanner.energy_resolution) &&
+      !close_enough(reference_energy, scanner.reference_energy))
+    warning("The energy resolution of the two scanners is different. \n"
+            " %d opposed to %d"
+            "This only affects scatter simulation. \n", energy_resolution, scanner.energy_resolution);
+
+  return
+      (num_rings == scanner.num_rings) &&
+      (max_num_non_arccorrected_bins == scanner.max_num_non_arccorrected_bins) &&
+      (default_num_arccorrected_bins == scanner.default_num_arccorrected_bins) &&
+      (num_detectors_per_ring == scanner.num_detectors_per_ring) &&
+      close_enough(inner_ring_radius, scanner.inner_ring_radius) &&
+      close_enough(average_depth_of_interaction, scanner.average_depth_of_interaction) &&
+      close_enough(ring_spacing, scanner.ring_spacing) &&
+      close_enough(bin_size,scanner.bin_size) &&
+      close_enough(intrinsic_tilt,scanner.intrinsic_tilt) &&
+      (num_transaxial_blocks_per_bucket == scanner.num_transaxial_blocks_per_bucket) &&
+      (num_axial_blocks_per_bucket == scanner.num_axial_blocks_per_bucket) &&
+      (num_axial_crystals_per_block == scanner.num_axial_crystals_per_block) &&
+      (num_transaxial_crystals_per_block == scanner.num_transaxial_crystals_per_block) &&
+      (num_detector_layers == scanner.num_detector_layers) &&
+      (num_axial_crystals_per_singles_unit == scanner.num_axial_crystals_per_singles_unit) &&
+      (num_transaxial_crystals_per_singles_unit == scanner.num_transaxial_crystals_per_singles_unit);
 
 }
 
@@ -761,6 +784,9 @@ Scanner::parameter_info() const
     << get_max_num_non_arccorrected_bins() << '\n'
     << "Default number of arc-corrected bins     := "
     << get_default_num_arccorrected_bins() << '\n';
+
+  s << "Energy resolution := " << get_energy_resolution() << '\n';
+  s << "Reference energy (in keV) := " << get_reference_energy() << '\n';
 
   // block/bucket description
   s << "Number of blocks per bucket in transaxial direction         := "
@@ -823,8 +849,26 @@ Scanner* Scanner::ask_parameters()
   Scanner* scanner_ptr = 
     get_scanner_from_name(name);
 
+  // N.E: New optional parameters have been added, namely
+  // energy resolution and timing resolution,
+  // lets give users the chance to set these parameters on
+  // old scanners. This should stay here as a transitional step.
   if (scanner_ptr->type != Unknown_scanner && scanner_ptr->type != User_defined_scanner)
-    return scanner_ptr;
+    {
+      float EnergyResolution =
+          ask_num("(Optional) Enter the energy resolution of the scanner : ", 0.0f, 1000.0f, -1.0f);
+
+      float ReferenceEnergy =
+          ask_num("(Optional) Enter the reference energy for the energy resolution (in keV):", 0.0f, 1000.0f, 511.0f);
+
+      if (EnergyResolution > -1.0f)
+        {
+          scanner_ptr->set_energy_resolution(EnergyResolution);
+          scanner_ptr->set_reference_energy(ReferenceEnergy);
+        }
+
+      return scanner_ptr;
+    }
 
   if (scanner_ptr->type == Unknown_scanner)
     cerr << "I didn't recognise the scanner you entered.";
@@ -867,21 +911,40 @@ Scanner* Scanner::ask_parameters()
       int TransaxialCrystalsPerSinglesUnit = 
         ask_num("Enter number of transaxial crystals per singles unit: ", 0, num_detectors_per_ring, 1);
         
+     float EnergyResolution =
+          ask_num("Enter the energy resolution of the scanner : ", 0.0f, 1000.0f, -1.0f);
+
+      float ReferenceEnergy =
+          ask_num("Enter the reference energy for the energy resolution (in keV):", 0.0f, 1000.0f, 511.0f);   
 
       int num_detector_layers =
 	ask_num("Enter number of detector layers per block: ",1,100,1);
       Type type = User_defined_scanner;
   
-      Scanner* scanner_ptr =
-	new Scanner(type, string_list(name),
-		    num_detectors_per_ring,  NoRings, 
-		    NoBins, NoBins, 
-		    InnerRingRadius, AverageDepthOfInteraction,
-                    RingSpacing, BinSize,intrTilt*float(_PI)/180,
-		    AxialBlocksPerBucket,TransBlocksPerBucket,
-		    AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
-                    AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
-                    num_detector_layers );
+      if (EnergyResolution > -1)
+        Scanner* scanner_ptr =
+            new Scanner(type, string_list(name),
+                        num_detectors_per_ring,  NoRings,
+                        NoBins, NoBins,
+                        InnerRingRadius, AverageDepthOfInteraction,
+                        RingSpacing, BinSize,intrTilt*float(_PI)/180,
+                        AxialBlocksPerBucket,TransBlocksPerBucket,
+                        AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
+                        AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
+                        num_detector_layers );
+      else
+        Scanner* scanner_ptr =
+            new Scanner(type, string_list(name),
+                        num_detectors_per_ring,  NoRings,
+                        NoBins, NoBins,
+                        InnerRingRadius, AverageDepthOfInteraction,
+                        RingSpacing, BinSize,intrTilt*float(_PI)/180,
+                        AxialBlocksPerBucket,TransBlocksPerBucket,
+                        AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
+                        AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
+                        num_detector_layers,
+                        EnergyResolution,
+                        ReferenceEnergy);
   
       if (scanner_ptr->check_consistency()==Succeeded::yes ||
 	  !ask("Ask questions again?",true))

@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2016, UCL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -22,6 +23,7 @@
   \ingroup buildblock
   \brief implementation of inline functions of class Scanner
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Long Zhang (set*() functions)
@@ -215,10 +217,17 @@ Scanner::get_num_singles_units  () const
   return get_num_axial_singles_units() * get_num_transaxial_singles_units();
 }
 
+float
+Scanner::get_energy_resolution() const
+{
+    return energy_resolution;
+}
 
-
-
-
+float
+Scanner::get_reference_energy() const
+{
+    return reference_energy;
+}
 
 //************************ set ******************************8
 
@@ -313,8 +322,17 @@ void Scanner::set_num_transaxial_crystals_per_singles_unit(const int& new_num)
   num_transaxial_crystals_per_singles_unit = new_num;
 }
 
+void
+Scanner::set_energy_resolution(const float & new_num)
+{
+    energy_resolution = new_num;
+}
 
-
+void
+Scanner::set_reference_energy(const float& new_num)
+{
+    reference_energy = new_num;
+}
 
 /********    Calculate singles bin index from detection position    *********/
 

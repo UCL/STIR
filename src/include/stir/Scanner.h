@@ -2,6 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2010, Hammersmith Imanet Ltd
     Copyright (C) 2011-2013, King's College London
+    Copyright (C) 2016, UCL
  
     This file is part of STIR.
 
@@ -131,7 +132,9 @@ class Scanner
           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
           int num_axial_crystals_per_singles_unit_v, 
           int num_transaxial_crystals_per_singles_unit_v,
-          int num_detector_layers_v);
+          int num_detector_layers_v,
+          float energy_resolution_v = -1.0f,
+          float reference_energy_v = 511.0f);
 
   //! constructor ( a single name)
   /*! size info is in mm
@@ -148,7 +151,9 @@ class Scanner
           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
           int num_axial_crystals_per_singles_unit_v, 
           int num_transaxial_crystals_per_singles_unit_v,
-          int num_detector_layers_v);
+          int num_detector_layers_v,
+          float energy_resolution_v = -1.0f,
+          float reference_energy_v = 511.0f);
 
 
 
@@ -262,6 +267,16 @@ class Scanner
 
   //@} (end of get geometrical info)
 
+   //! \name Functions to get detector responce info
+  //@{
+
+  //! get the energy resolution of the system
+  inline float get_energy_resolution() const;
+  //! get the reference energy of the energy resolution
+  inline float get_reference_energy() const;
+
+  //@} (end of get detector responce info)
+
   //! \name Functions setting info
   /*! Be careful to keep consistency by setting all relevant parameters*/
   //@{
@@ -305,7 +320,11 @@ class Scanner
   // TODO accomodate more complex geometries of singles units.
 
   //@} (end of block/bucket info)
-
+  //! get the energy resolution of the system
+  inline void set_energy_resolution(const float & new_num);
+  //! get the reference energy of the energy resolution
+  inline void set_reference_energy(const float& new_num);
+  //@} (end of set info)
   //@} (end of set info)
   
   // Calculate a singles bin index from axial and transaxial singles bin coordinates.
@@ -346,6 +365,19 @@ private:
   int num_axial_crystals_per_singles_unit;
   int num_transaxial_crystals_per_singles_unit;
 
+   //!
+  //! \brief energy_resolution
+  //! \author Nikos Efthimiou
+  //! \details This is the energy resolution of the system.
+  //! This value is dominated by the material of the scintilation crystal
+  float energy_resolution;
+
+  //!
+  //! \brief reference_energy
+  //! \author Nikos Efthimiou
+  //! \details In PET application this should always be 511 keV.
+  float reference_energy;
+
 
   // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
@@ -360,7 +392,9 @@ private:
                   int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
-                  int num_detector_layers_v);
+                  int num_detector_layers_v,
+                  float energy_resolution_v = -1.0f,
+                  float reference_energy = 511.0f);
 
   // ! set all parameters
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
@@ -376,7 +410,9 @@ private:
                   int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
-                  int num_detector_layers_v);
+                  int num_detector_layers_v,
+                  float energy_resolution_v = -1.0f,
+                  float reference_energy = 511.0f);
 
 
 };
