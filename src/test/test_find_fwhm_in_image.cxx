@@ -39,7 +39,7 @@
 #include "stir/Coordinate3D.h"
 #include <iostream>
 #include <string>
-#include <strstream>
+#include <sstream>
 #include <list>
 
 #ifndef STIR_NO_NAMESPACES
