@@ -53,7 +53,10 @@ public :
 
   ExamInfo()
     : start_time_in_secs_since_1970(0.)
-    {}
+    {
+      low_energy_thres = -1.f;
+      up_energy_thres = -1.f;
+  }
 
   std::string originating_system;
   
@@ -68,9 +71,9 @@ public :
   //! \name Functions that return info related on the acquisition settings
   //@{
   //! Get the low energy boundary
-  inline float get_low_energy_thres() const; // N.E: Should the reference be const?
+  inline float get_low_energy_thres() const;
   //! Get the high energy boundary
-  inline float get_high_energy_thres() const; // N.E: Should the reference be const?
+  inline float get_high_energy_thres() const;
   //@}
 
   //! \name Functions that set values related on the acquisition settings

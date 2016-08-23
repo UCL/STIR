@@ -286,10 +286,10 @@ Scanner::Scanner(Type scanner_type)
  case DiscoverySTE: 
 
     set_params(DiscoverySTE, string_list("GE Discovery STE", "Discovery STE"), 
-	       24, 329, 293, 2 * 280, 
-               886.2F/2.F, 8.4F, 6.54F, 2.397F, 
+           24, 329, 293, 2 * 280,
+               886.2F/2.F, 8.4F, 6.54F, 2.397F,
 	       static_cast<float>(-4.5490*_PI/180),//sign?
-	       4, 2, 6, 8, 1, 1, 1);// TODO not sure about sign of view_offset
+           4, 2, 6, 8, 1, 1, 1);// TODO not sure about sign of view_offset
     break;
 
  case DiscoveryRX: 
@@ -858,10 +858,10 @@ Scanner* Scanner::ask_parameters()
   if (scanner_ptr->type != Unknown_scanner && scanner_ptr->type != User_defined_scanner)
     {
       float EnergyResolution =
-          ask_num("(Optional) Enter the energy resolution of the scanner : ", 0.0f, 1000.0f, -1.0f);
+          ask_num("(Optional) Enter the energy resolution of the scanner : ", -1.0f, 1000.0f, -1.0f);
 
       float ReferenceEnergy =
-          ask_num("(Optional) Enter the reference energy for the energy resolution (in keV):", 0.0f, 1000.0f, 511.0f);
+          ask_num("(Optional) Enter the reference energy for the energy resolution (in keV):", -1.0f, 1000.0f, -1.0f);
 
       if (EnergyResolution > -1.0f)
         {
@@ -917,24 +917,13 @@ Scanner* Scanner::ask_parameters()
           ask_num("Enter the energy resolution of the scanner : ", 0.0f, 1000.0f, -1.0f);
 
       float ReferenceEnergy =
-          ask_num("Enter the reference energy for the energy resolution (in keV):", 0.0f, 1000.0f, 511.0f);   
+          ask_num("Enter the reference energy for the energy resolution (in keV):", 0.0f, 1000.0f, -1.0f);
 
       int num_detector_layers =
-	ask_num("Enter number of detector layers per block: ",1,100,1);
+    ask_num("Enter number of detector layers per block: ",1,100,1);
       Type type = User_defined_scanner;
   
-      if (EnergyResolution > -1)
-        Scanner* scanner_ptr =
-            new Scanner(type, string_list(name),
-                        num_detectors_per_ring,  NoRings,
-                        NoBins, NoBins,
-                        InnerRingRadius, AverageDepthOfInteraction,
-                        RingSpacing, BinSize,intrTilt*float(_PI)/180,
-                        AxialBlocksPerBucket,TransBlocksPerBucket,
-                        AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
-                        AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
-                        num_detector_layers );
-      else
+      if (EnergyResolution > -1 && ReferenceEnergy > -1)
         Scanner* scanner_ptr =
             new Scanner(type, string_list(name),
                         num_detectors_per_ring,  NoRings,
@@ -946,7 +935,18 @@ Scanner* Scanner::ask_parameters()
                         AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
                         num_detector_layers,
                         EnergyResolution,
-                        ReferenceEnergy);
+                        ReferenceEnergy );
+      else
+        Scanner* scanner_ptr =
+            new Scanner(type, string_list(name),
+                        num_detectors_per_ring,  NoRings,
+                        NoBins, NoBins,
+                        InnerRingRadius, AverageDepthOfInteraction,
+                        RingSpacing, BinSize,intrTilt*float(_PI)/180,
+                        AxialBlocksPerBucket,TransBlocksPerBucket,
+                        AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
+                        AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
+                        num_detector_layers);
   
       if (scanner_ptr->check_consistency()==Succeeded::yes ||
 	  !ask("Ask questions again?",true))

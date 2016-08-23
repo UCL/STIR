@@ -134,7 +134,7 @@ class Scanner
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
           float energy_resolution_v = -1.0f,
-          float reference_energy_v = 511.0f);
+          float reference_energy_v = -1.0f);
 
   //! constructor ( a single name)
   /*! size info is in mm
@@ -153,7 +153,7 @@ class Scanner
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
           float energy_resolution_v = -1.0f,
-          float reference_energy_v = 511.0f);
+          float reference_energy_v = -1.0f);
 
 
 
@@ -398,7 +398,7 @@ private:
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,
                   float energy_resolution_v = -1.0f,
-                  float reference_energy = 511.0f);
+                  float reference_energy = -1.0f);
 
   // ! set all parameters
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
@@ -416,7 +416,7 @@ private:
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,
                   float energy_resolution_v = -1.0f,
-                  float reference_energy = 511.0f);
+                  float reference_energy = -1.0f);
 
 
 };

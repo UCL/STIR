@@ -130,6 +130,8 @@ InterfileHeader::InterfileHeader()
   data_offset_each_dataset.resize(num_time_frames, 0UL);
 
   data_offset = 0UL;
+  lower_en_window_thres = -1.f;
+  upper_en_window_thres = -1.f;
 
   add_key("INTERFILE", 
     KeyArgument::NONE,	&KeyParser::start_parsing);
@@ -207,10 +209,10 @@ InterfileHeader::InterfileHeader()
     KeyArgument::DOUBLE, &lln_quantification_units);
 
   add_key("energy window lower level",
-          &lower_en_window_thres);
+         KeyArgument::FLOAT, &lower_en_window_thres);
 
   add_key("energy window upper level",
-          &upper_en_window_thres);
+         KeyArgument::FLOAT, &upper_en_window_thres);
 
   add_key("END OF INTERFILE", 
     KeyArgument::NONE,	&KeyParser::stop_parsing);
@@ -325,9 +327,11 @@ bool InterfileHeader::post_processing()
                lln_quantification_units);
     }      
   } // lln_quantification_units
-
+    if (upper_en_window_thres > 0 && lower_en_window_thres > 0 )
+    {
   exam_info_sptr->set_high_energy_thres(upper_en_window_thres);
   exam_info_sptr->set_low_energy_thres(lower_en_window_thres);
+    }
 
   exam_info_sptr->time_frame_definitions = 
     TimeFrameDefinitions(image_relative_start_times, image_durations);
@@ -549,7 +553,7 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   energy_resolution = -1.f;
   add_key("Energy resolution",
           &energy_resolution);
-  reference_energy = 511.f;
+  reference_energy = -1.f;
   add_key("Reference energy (in keV)",
           &reference_energy);
 
@@ -1163,18 +1167,25 @@ bool InterfilePDFSHeader::post_processing()
     // a mismatch. I assume that the user will handle this. This is in accordance with the
     // scanner '==' operator, which displays a warning message for these two parameters
     // but continues as usual.
+    if (energy_resolution > 0)
+    {
     if (energy_resolution != guessed_scanner_ptr->get_energy_resolution())
       {
-    warning("Interfile warning: 'energy resolution' (%d) is expected to be %d.\n",
+    warning("Interfile warning: 'energy resolution' (%d) is expected to be %d. "
+            "Currently, the energy resolution and the reference energy, are used only in"
+            " scatter correction.",
         energy_resolution, guessed_scanner_ptr->get_energy_resolution());
 //    mismatch_between_header_and_guess = true;
       }
     if (reference_energy != guessed_scanner_ptr->get_reference_energy())
       {
-    warning("Interfile warning: 'reference energy' (%d) is expected to be %d.\n",
+    warning("Interfile warning: 'reference energy' (%d) is expected to be %d."
+            "Currently, the energy resolution and the reference energy, are used only in"
+            " scatter correction.",
         reference_energy, guessed_scanner_ptr->get_reference_energy());
 //    mismatch_between_header_and_guess = true;
       }
+    }
 
     // end of checks. If they failed, we ignore the guess
     if (mismatch_between_header_and_guess)
