@@ -24,4 +24,3 @@ add_library(${dir} ${${dir_LIB_SOURCES}}    )
 SET_PROPERTY(TARGET ${dir} PROPERTY FOLDER "Libs")
 
 install(TARGETS ${dir} DESTINATION lib)
-

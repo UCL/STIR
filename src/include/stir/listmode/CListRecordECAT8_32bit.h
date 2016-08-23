@@ -19,7 +19,7 @@
   \file
   \ingroup listmode
   \brief Classes for listmode events for the ECAT 8 format
-
+    
   \author Kris Thielemans
 */
 
@@ -54,7 +54,7 @@ namespace ecat {
 class CListEventDataECAT8_32bit
 {
  public:
-
+  
     /* 'random' bit:
         0 if event is Random (it fell in delayed time window) */
 
@@ -73,8 +73,8 @@ class CListEventDataECAT8_32bit
 
 //! Class for storing and using a coincidence event from a listmode file from Siemens scanners using the ECAT 8_32bit format
 /*! \todo This implementation only works if the list-mode data is stored without axial compression.
-  \todo If the target sinogram has the same characteristics as the sinogram encoding used in the list file
-  (via the offset), the code could be sped-up dramatically by using the information.
+  \todo If the target sinogram has the same characteristics as the sinogram encoding used in the list file 
+  (via the offset), the code could be sped-up dramatically by using the information. 
   At present, we go a huge round-about (offset->sinogram->detectors->sinogram->offset)
 */
 class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDetectors
@@ -84,10 +84,10 @@ class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDet
   typedef CListEventDataECAT8_32bit DataType;
   DataType get_data() const { return this->data; }
 
- public:
+ public:  
   CListEventECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr);
 
- //! This routine returns the corresponding detector pair
+ //! This routine returns the corresponding detector pair   
   virtual void get_detection_position(DetectionPositionPair<>&) const;
 
   //! This routine sets in a coincidence event from detector "indices"
@@ -100,12 +100,12 @@ class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDet
       return Succeeded::yes;
     }
   inline bool is_prompt() const { return this->data.delayed == 1; }
-  inline Succeeded set_prompt(const bool prompt = true)
+  inline Succeeded set_prompt(const bool prompt = true) 
   { if (prompt) this->data.delayed=1; else this->data.delayed=0; return Succeeded::yes; }
 
  private:
-  BOOST_STATIC_ASSERT(sizeof(CListEventDataECAT8_32bit)==4);
-  union
+  BOOST_STATIC_ASSERT(sizeof(CListEventDataECAT8_32bit)==4); 
+  union 
   {
     CListEventDataECAT8_32bit   data;
     boost::int32_t         raw;
@@ -153,8 +153,8 @@ public:
 
 
  private:
-  BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT8_32bit)==4);
-  union
+  BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT8_32bit)==4); 
+  union 
   {
     CListTimeDataECAT8_32bit   data;
     boost::int32_t         raw;
@@ -179,15 +179,15 @@ class CListTimeECAT8_32bit : public CListTime
   inline unsigned long get_time_in_millisecs() const
   { return static_cast<unsigned long>(this->data.time);  }
   inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
-  {
-    this->data.time = ((1U<<30)-1) & static_cast<unsigned>(time_in_millisecs);
+  { 
+    this->data.time = ((1U<<30)-1) & static_cast<unsigned>(time_in_millisecs); 
     // TODO return more useful value
     return Succeeded::yes;
   }
 
  private:
-  BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT8_32bit)==4);
-  union
+  BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT8_32bit)==4); 
+  union 
   {
     CListTimeDataECAT8_32bit   data;
     boost::int32_t         raw;
@@ -216,7 +216,7 @@ class CListTimeECAT8_32bit : public CListTime
   */
   bool is_event() const
   { return this->any_data.is_event(); }
-  virtual CListEventECAT8_32bit&  event()
+  virtual CListEventECAT8_32bit&  event() 
     { return this->event_data; }
   virtual const CListEventECAT8_32bit&  event() const
     { return this->event_data; }
@@ -229,14 +229,14 @@ class CListTimeECAT8_32bit : public CListTime
   {
     return dynamic_cast<CListRecordECAT8_32bit const *>(&e2) != 0 &&
       raw == dynamic_cast<CListRecordECAT8_32bit const &>(e2).raw;
-  }
+  }	 
 
- public:
+ public:     
  CListRecordECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
   event_data(proj_data_info_sptr)
     {}
 
-  virtual Succeeded init_from_data_ptr(const char * const data_ptr,
+  virtual Succeeded init_from_data_ptr(const char * const data_ptr, 
                                        const std::size_t
 #ifndef NDEBUG
                                        size // only used within assert, so commented-out otherwise to avoid compiler warnings
@@ -257,14 +257,14 @@ class CListTimeECAT8_32bit : public CListTime
       return Succeeded::yes;
   }
 
-  virtual std::size_t size_of_record_at_ptr(const char * const /*data_ptr*/, const std::size_t /*size*/,
+  virtual std::size_t size_of_record_at_ptr(const char * const /*data_ptr*/, const std::size_t /*size*/, 
                                             const bool /*do_byte_swap*/) const
   { return 4; }
 
  private:
   CListEventECAT8_32bit  event_data;
-  CListTimeECAT8_32bit   time_data;
-  CListDataAnyECAT8_32bit   any_data;
+  CListTimeECAT8_32bit   time_data; 
+  CListDataAnyECAT8_32bit   any_data; 
   boost::int32_t         raw; // this raw field isn't strictly necessary, get rid of it?
 
 };

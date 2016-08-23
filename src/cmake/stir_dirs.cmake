@@ -17,7 +17,7 @@
 #
 # See STIR/LICENSE.txt for details
 
-# cmake helper file for building STIR.
+# cmake helper file for building STIR. 
 # This file is included by CMakeLists.txt and sets variables
 # listing all directories. These variables are then used in CMakeLists.txt.
 
@@ -38,38 +38,38 @@ ${PROJECT_SOURCE_DIR}/src/modelling_buildblock/modelling_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/spatial_transformation_buildblock/spatial_transformation_registries.cxx
 )
 
-SET( STIR_LIBRARIES analytic_FBP3DRP analytic_FBP2D       iterative_OSMAPOSL
+SET( STIR_LIBRARIES analytic_FBP3DRP analytic_FBP2D       iterative_OSMAPOSL  
      iterative_OSSPS
-      scatter_buildblock modelling_buildblock listmode_buildblock recon_buildblock
-      display  IO  data_buildblock numerics_buildblock  buildblock
+      scatter_buildblock modelling_buildblock listmode_buildblock recon_buildblock  
+      display  IO  data_buildblock numerics_buildblock  buildblock 
       spatial_transformation_buildblock
-      Shape_buildblock eval_buildblock
+      Shape_buildblock eval_buildblock 
       # repeat for linking
       numerics_buildblock modelling_buildblock listmode_buildblock)
 
 
 SET( STIR_DIRS
      buildblock
-     numerics_buildblock
-     data_buildblock
-     display
-     recon_buildblock
-     modelling_buildblock
-     listmode_buildblock
-     IO
+     numerics_buildblock 
+     data_buildblock 
+     display 
+     recon_buildblock 
+     modelling_buildblock 
+     listmode_buildblock 
+     IO 
      spatial_transformation_buildblock
-     Shape_buildblock
-     eval_buildblock
+     Shape_buildblock 
+     eval_buildblock 
      scatter_buildblock
-     utilities
+     utilities 
      scatter_utilities
      modelling_utilities
      listmode_utilities
      analytic/FBP2D
      analytic/FBP3DRP
-     iterative/OSMAPOSL
+     iterative/OSMAPOSL  
      iterative/OSSPS
-     iterative/POSMAPOSL
+     iterative/POSMAPOSL  
      iterative/POSSPS
      SimSET
      SimSET/scripts
@@ -82,8 +82,8 @@ endif()
 
 
 SET( STIR_TEST_DIRS
-     recon_test
-     test
+     recon_test  
+     test 
      test/numerics
      test/modelling
 )

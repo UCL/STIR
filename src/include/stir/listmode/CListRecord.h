@@ -5,9 +5,9 @@
   \ingroup listmode
   \brief Declarations of classes stir::CListRecord, stir::CListTime and stir::CListEvent which
   are used for list mode data.
-
+    
   \author Kris Thielemans
-
+      
 */
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
@@ -49,7 +49,7 @@ template <typename coordT> class LORAs2Points;
     energy windows and time-of-flight info. Also, get_bin() would need
     time info or so for rotating scanners.
 
-    \see CListModeData for more info on list mode data.
+    \see CListModeData for more info on list mode data. 
 */
 class CListEvent
 {
@@ -57,7 +57,7 @@ public:
   virtual ~CListEvent() {}
 
   //! Checks if this is a prompt event or a delayed event
-  /*! PET scanners generally have a facility to detect events in a
+  /*! PET scanners generally have a facility to detect events in a 
       'delayed' coincidence window. This is used to estimate the
       number of accidental coincidences (or 'randoms').
   */
@@ -67,7 +67,7 @@ public:
 
   //! Changes the event from prompt to delayed or vice versa
   /*! Default implementation just returns Succeeded::no. */
-  virtual
+  virtual 
     Succeeded
     set_prompt(const bool prompt = true);
 
@@ -75,12 +75,12 @@ public:
   /*! Obviously, these coordinates are only estimates which depend on the
       scanner hardware. For example, Depth-of-Interaction might not be
       taken into account. However, the intention is that this function returns
-      'likely' positions (e.g. not the face of a crystal, but a point somewhere
+      'likely' positions (e.g. not the face of a crystal, but a point somewhere 
       in the middle).
 
       Coordinates are in mm and in the standard STIR coordinate system
       used by ProjDataInfo etc (i.e. origin is in the centre of the scanner).
-
+      
       \todo This function might need time info or so for rotating scanners.
   */
   virtual LORAs2Points<float>
@@ -112,15 +112,15 @@ public:
 
 //! A class for storing and using a timing record from a listmode file
 /*! \ingroup listmode
-    CListTime is used to provide an interface to the 'timing' events
-    in the list mode stream. Usually, the timing event also contains
+    CListTime is used to provide an interface to the 'timing' events 
+    in the list mode stream. Usually, the timing event also contains 
     gating information. For rotating scanners, it could also contain
     angle info.
 
     \todo this is still under development. Things to add are angles
     or so for rotating scanners. Also, some info on the maximum
     (and actual?) number of gates would be useful.
-    \see CListModeData for more info on list mode data.
+    \see CListModeData for more info on list mode data. 
 */
 class CListTime
 {
@@ -133,10 +133,10 @@ public:
 
   virtual Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs) = 0;
   inline Succeeded set_time_in_secs(const double time_in_secs)
-    {
+    { 
       unsigned long time_in_millisecs;
       round_to(time_in_millisecs, time_in_secs/1000.);
-      return set_time_in_millisecs(time_in_millisecs);
+      return set_time_in_millisecs(time_in_millisecs); 
     }
 
 };
@@ -169,8 +169,8 @@ public:
     the Quad-HiDAC puts singles information in the
     list mode file. If you need that information,
     you will have to do casting to e.g. CListRecordQHiDAC.
-
-    \see CListModeData for more info on list mode data.
+    
+    \see CListModeData for more info on list mode data. 
 */
 class CListRecord
 {
@@ -183,8 +183,8 @@ public:
 
   virtual CListEvent&  event() = 0;
   virtual const CListEvent&  event() const = 0;
-  virtual CListTime&   time() = 0;
-  virtual const CListTime&   time() const = 0;
+  virtual CListTime&   time() = 0; 
+  virtual const CListTime&   time() const = 0; 
 
   virtual bool operator==(const CListRecord& e2) const = 0;
   bool operator!=(const CListRecord& e2) const { return !(*this == e2); }
@@ -195,8 +195,8 @@ class CListRecordWithGatingInput : public CListRecord
 {
  public:
   virtual bool is_gating_input() const { return false; }
-  virtual CListGatingInput&  gating_input() = 0;
-  virtual const CListGatingInput&  gating_input() const = 0;
+  virtual CListGatingInput&  gating_input() = 0; 
+  virtual const CListGatingInput&  gating_input() const = 0; 
 };
 
 END_NAMESPACE_STIR

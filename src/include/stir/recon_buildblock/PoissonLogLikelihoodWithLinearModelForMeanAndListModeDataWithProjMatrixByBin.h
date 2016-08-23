@@ -18,7 +18,7 @@
 /*!
   \file
   \ingroup GeneralisedObjectiveFunction
-  \brief Declaration of class
+  \brief Declaration of class 
   stir::PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
 
   \author Kris Thielemans
@@ -31,7 +31,7 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.h"
-#include "stir/recon_buildblock/ProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjMatrixByBin.h" 
 #include "stir/ProjDataInMemory.h"
 
 #include "stir/ExamInfo.h"
@@ -43,7 +43,7 @@ START_NAMESPACE_STIR
   \brief Class for PET list mode data from static images for a scanner with discrete detectors.
 
   If the scanner has discrete (and stationary) detectors, it can be modeled via  ProjMatrixByBin and BinNormalisation.
-
+  
   \see PoissonLogLikelihoodWithLinearModelForMeanAndProjData
 
   If the list mode data is binned (with LmToProjData) without merging
@@ -52,7 +52,7 @@ START_NAMESPACE_STIR
 */
 
 template <typename TargetT>
-class PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin:
+class PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin: 
 public RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>,
                                 GeneralisedObjectiveFunction<TargetT>,
                                 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT> >
@@ -62,22 +62,22 @@ public RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndList
 private:
 typedef RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>,
                                 GeneralisedObjectiveFunction<TargetT>,
-                                PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT> >
+                                PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT> > 
         base_type;
 
 public:
-
- //! Name which will be used when parsing a GeneralisedObjectiveFunction object
-  static const char * const registered_name;
-
-  PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>();
+ 
+ //! Name which will be used when parsing a GeneralisedObjectiveFunction object 
+  static const char * const registered_name; 
+  
+  PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>(); 
 
   //! This should compute the gradient of the objective function at the  current_image_estimate
-  virtual
-  void compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
-                                         const TargetT &current_estimate,
-                                         const int subset_num);
-  virtual TargetT * construct_target_ptr() const;
+  virtual  
+  void compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,  
+                                         const TargetT &current_estimate,  
+                                         const int subset_num);  
+  virtual TargetT * construct_target_ptr() const;  
 
   int set_num_subsets(const int new_num_subsets);
 
@@ -85,21 +85,21 @@ protected:
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
                                                       const int subset_num)
-  { // TODO
+  { // TODO 
     error("compute_objective_function_without_penalty Not implemented yet");
-    return 0;
+    return 0; 
   }
 
-  virtual Succeeded
-    set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr);
-
+  virtual Succeeded 
+    set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr); 
+ 
   // TODO
   virtual void
     add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
   {
     error("add_subset_sensitivity not implemented yet");
   }
-
+  
   //! Maximum ring difference to take into account
   /*! \todo Might be removed */
   int  max_ring_difference_num_to_process;
@@ -107,13 +107,13 @@ protected:
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjMatrixByBin> PM_sptr;
   //shared_ptr<ProjectorByBinPair> projector_by_bin_pair;
-
+  
   //! points to the additive projection data
-  shared_ptr<ProjDataInMemory> additive_proj_data_sptr;
-
-  std::string additive_projection_data_filename ;
+  shared_ptr<ProjDataInMemory> additive_proj_data_sptr; 
+ 
+  std::string additive_projection_data_filename ; 
   //! ProjDataInfo
-  shared_ptr<ProjDataInfo> proj_data_info_cyl_uncompressed_ptr;
+  shared_ptr<ProjDataInfo> proj_data_info_cyl_uncompressed_ptr; 
 
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */
