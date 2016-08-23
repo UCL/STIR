@@ -995,8 +995,8 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
   }
   // Write energy window lower and upper thresholds, if they are not -1
   {
-    if (pdfs.get_exam_info_ptr()->get_high_energy_thres() > -1 &&
-            pdfs.get_exam_info_ptr()->get_low_energy_thres() > -1)
+    if (pdfs.get_exam_info_ptr()->get_high_energy_thres() > 0 &&
+            pdfs.get_exam_info_ptr()->get_low_energy_thres() >= 0)
     {
         output_header << "energy window lower level := " <<
                          pdfs.get_exam_info_ptr()->get_low_energy_thres() << '\n';
