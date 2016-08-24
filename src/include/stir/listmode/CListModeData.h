@@ -19,7 +19,7 @@
   \file
   \ingroup listmode
   \brief Declaration of class stir::CListModeData
-    
+
   \author Kris Thielemans
 */
 
@@ -57,43 +57,43 @@ class ExamInfo;
   that you can possibly get. Which information this is obviously depends
   on the scanner.
 
-  For most (all?) scanners, events are stored in chronological order. 
+  For most (all?) scanners, events are stored in chronological order.
   In addition to events, time flags are inserted into the list mode data.
   So, generally list mode data is a list of 'records', which can be
-  of different types. In STIR, this concept of a 'record' corresponds to 
+  of different types. In STIR, this concept of a 'record' corresponds to
   the CListRecord class and its relatives (see the documentation for
   CListRecord).
 
   \par Usage
-  
+
   For most applications, i.e. when one just wants to go through the list of
   all events, the code would be as follows:
 
   \code
-  shared_ptr<CListModeData> 
+  shared_ptr<CListModeData>
     lm_data_sptr(read_from_file<CListModeData>(filename));
 
-  // get a pointer to a 'template' record that will work for the scanner 
+  // get a pointer to a 'template' record that will work for the scanner
   // from which we're reading data
-  shared_ptr <CListRecord> record_sptr = 
+  shared_ptr <CListRecord> record_sptr =
     lm_data_ptr->get_empty_record_sptr();
   // give the record a simple name to avoid cluttering the code below
   CListRecord& record = *record_sptr;
 
   double current_time = 0;
-  while (lm_data_sptr->get_next_record(record) == Succeeded::yes) 
+  while (lm_data_sptr->get_next_record(record) == Succeeded::yes)
     {
       if (record.is_time())
       {
-	current_time= record.time().get_time_in_secs();
+    current_time= record.time().get_time_in_secs();
       }
       if (record.is_event())
       {
         if (record.event().is_prompt())
-	{ // do something 
+    { // do something
         }
         // ...
-      } 
+      }
     }
   \endcode
 
@@ -120,7 +120,7 @@ class ExamInfo;
   Potentially, we make classes ListModeData etc which would work for SPECT
   (and other count-based modalities?). Alternatively, SPECT can be
   handled by calling all single photon events 'prompts'.
-  
+
   \par Notes for developers
 
   If you want to add a new type of list mode data, you have to make corresponding
@@ -143,11 +143,11 @@ public:
 
   //! Returns the name of the list mode data
   /*! This name is not necessarily unique, and might be empty. However, it is expected
-      (but not guaranteed) that 
-      <code>CListModeData::read_from_file(lm_data_ptr-\>get_name())</code> would read 
+      (but not guaranteed) that
+      <code>CListModeData::read_from_file(lm_data_ptr-\>get_name())</code> would read
       the same list mode data.
 
-      The reason this cannot be guaranteed is largely in case the list mode data is 
+      The reason this cannot be guaranteed is largely in case the list mode data is
       not really on disk, but the object corresponds for instance to a Monte Carlo simulator.
   */
   virtual std::string
@@ -176,7 +176,7 @@ public:
      Use ExamInfo instead.
   */
   virtual
-    std::time_t 
+    std::time_t
     get_scan_start_time_in_secs_since_1970() const;
 #endif
 
@@ -188,26 +188,26 @@ public:
     shared_ptr <CListRecord> get_empty_record_sptr() const = 0;
 
   //! Gets the next record in the listmode sequence
-  virtual 
+  virtual
     Succeeded get_next_record(CListRecord& event) const = 0;
 
   //! Call this function if you want to re-start reading at the beginning.
-  virtual 
+  virtual
     Succeeded reset() = 0;
 
   //! Save the current reading position
   /*!
       Note that the return value is not related to the number of events
-      already read. In particular, you cannot do any arithmetic on it to 
+      already read. In particular, you cannot do any arithmetic on it to
       skip a few events. This is different from e.g. std::streampos.
 
       \warning There is a maximum number of times this function can be called.
       This is determined by the SavedPosition type. Once you save more
-      positions, the first positions will be overwritten. There is currently 
+      positions, the first positions will be overwritten. There is currently
       no way of finding out after how many times this will happen (but it's
       a large number...).
 
-      \warning These saved positions are only valid for the lifetime of the 
+      \warning These saved positions are only valid for the lifetime of the
       CListModeData object.
 
       \warning A derived class might disable this facility. It will/should
@@ -217,12 +217,12 @@ public:
     SavedPosition save_get_position() = 0;
 
   //! Set the position for reading to a previously saved point
-  
+
   virtual
     Succeeded set_get_position(const SavedPosition&) = 0;
 
-  //! Get scanner pointer  
-  /*! Returns a pointer to a scanner object that is appropriate for the 
+  //! Get scanner pointer
+  /*! Returns a pointer to a scanner object that is appropriate for the
       list mode data that is being read.
   */
   const Scanner* get_scanner_ptr() const;

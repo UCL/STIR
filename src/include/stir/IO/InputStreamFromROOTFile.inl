@@ -43,8 +43,8 @@
 
 START_NAMESPACE_STIR
 
-template <class RecordT, class OptionsT>
-        InputStreamFromROOTFile<RecordT, OptionsT>::
+template <class RecordT>
+        InputStreamFromROOTFile<RecordT>::
         InputStreamFromROOTFile(const std::string& filename,
                                 const std::string& chain_name,
                                 int crystal_repeater_x, int crystal_repeater_y, int crystal_repeater_z,
@@ -67,11 +67,14 @@ template <class RecordT, class OptionsT>
 
     reset();
 
+    half_block = module_repeater_y * submodule_repeater_y * crystal_repeater_y / 2.f  - 1;
+    if (half_block < 0 )
+        half_block = 0;
 }
 
-template <class RecordT, class OptionsT>
+template <class RecordT>
 Succeeded
-InputStreamFromROOTFile<RecordT, OptionsT>::
+InputStreamFromROOTFile<RecordT>::
 initialize_root_read_out()
 {
 
@@ -87,28 +90,28 @@ initialize_root_read_out()
     stream_ptr->SetBranchAddress("rsectorID1",&rsectorID1);
     stream_ptr->SetBranchAddress("rsectorID2",&rsectorID2);
 
-//    stream_ptr->SetBranchAddress("globalPosX1",&globalPosX1);
-//    stream_ptr->SetBranchAddress("globalPosX2",&globalPosX2);
-//    stream_ptr->SetBranchAddress("globalPosY1",&globalPosY1);
-//    stream_ptr->SetBranchAddress("globalPosY2",&globalPosY2);
-//    stream_ptr->SetBranchAddress("globalPosZ1",&globalPosZ1);
-//    stream_ptr->SetBranchAddress("globalPosZ2",&globalPosZ2);
-//    stream_ptr->SetBranchAddress("sourcePosX1",&sourcePosX1);
-//    stream_ptr->SetBranchAddress("sourcePosX2",&sourcePosX2);
-//    stream_ptr->SetBranchAddress("sourcePosZ2",&sourcePosZ2);
-//    stream_ptr->SetBranchAddress("sourcePosZ1",&sourcePosZ1);
-//    stream_ptr->SetBranchAddress("sourcePosY1",&sourcePosY1);
-//    stream_ptr->SetBranchAddress("sourcePosY2",&sourcePosY2);
+    //    stream_ptr->SetBranchAddress("globalPosX1",&globalPosX1);
+    //    stream_ptr->SetBranchAddress("globalPosX2",&globalPosX2);
+    //    stream_ptr->SetBranchAddress("globalPosY1",&globalPosY1);
+    //    stream_ptr->SetBranchAddress("globalPosY2",&globalPosY2);
+    //    stream_ptr->SetBranchAddress("globalPosZ1",&globalPosZ1);
+    //    stream_ptr->SetBranchAddress("globalPosZ2",&globalPosZ2);
+    //    stream_ptr->SetBranchAddress("sourcePosX1",&sourcePosX1);
+    //    stream_ptr->SetBranchAddress("sourcePosX2",&sourcePosX2);
+    //    stream_ptr->SetBranchAddress("sourcePosZ2",&sourcePosZ2);
+    //    stream_ptr->SetBranchAddress("sourcePosZ1",&sourcePosZ1);
+    //    stream_ptr->SetBranchAddress("sourcePosY1",&sourcePosY1);
+    //    stream_ptr->SetBranchAddress("sourcePosY2",&sourcePosY2);
     stream_ptr->SetBranchAddress("time1", &time1);
     stream_ptr->SetBranchAddress("time2", &time2);
 
     stream_ptr->SetBranchAddress("eventID1",&eventID1);
     stream_ptr->SetBranchAddress("eventID2",&eventID2);
-//    stream_ptr->SetBranchAddress("rotationAngle",&this->rotationAngle);
+    //    stream_ptr->SetBranchAddress("rotationAngle",&this->rotationAngle);
     stream_ptr->SetBranchAddress("energy1", &energy1);
     stream_ptr->SetBranchAddress("energy2", &energy2);
-//    stream_ptr->SetBranchAddress("sourceID1", &this->sourceid1);
-//    stream_ptr->SetBranchAddress("sourceID2", &this->sourceid2);
+    //    stream_ptr->SetBranchAddress("sourceID1", &this->sourceid1);
+    //    stream_ptr->SetBranchAddress("sourceID2", &this->sourceid2);
     stream_ptr->SetBranchAddress("comptonPhantom1", &comptonphantom1);
     stream_ptr->SetBranchAddress("comptonPhantom2", &comptonphantom2);
 
@@ -118,9 +121,9 @@ initialize_root_read_out()
 }
 
 
-template <class RecordT, class OptionsT>
+template <class RecordT>
 Succeeded
-InputStreamFromROOTFile<RecordT, OptionsT>::
+InputStreamFromROOTFile<RecordT>::
 get_next_record(RecordT& record)
 {
 
@@ -140,23 +143,21 @@ get_next_record(RecordT& record)
         else if ( (eventID1 != eventID2) && exclude_randoms )
             continue;
         else if (energy1 < low_energy_window ||
-                energy1 > up_energy_window ||
-                energy2 < low_energy_window ||
-                energy2 > up_energy_window)
+                 energy1 > up_energy_window ||
+                 energy2 < low_energy_window ||
+                 energy2 > up_energy_window)
             continue;
         else
             break;
     }
 
-    int half_block = (int)(crystal_repeater_y/2);
+    int ring1 = static_cast<int>(crystalID1/crystal_repeater_y)
+            + static_cast<int>(submoduleID1/submodule_repeater_y)*crystal_repeater_z
+            + static_cast<int>(moduleID1/module_repeater_y)*submodule_repeater_z*crystal_repeater_z;
 
-    int ring1 = (int)(crystalID1/crystal_repeater_y)
-            + (int)(submoduleID1/submodule_repeater_y)*crystal_repeater_z
-            + (int)(moduleID1/module_repeater_y)*submodule_repeater_z*crystal_repeater_z;
-
-    int ring2 = (int)(crystalID2/crystal_repeater_y)
-            + (int)(submoduleID2/submodule_repeater_y)*crystal_repeater_z
-            + (int)(moduleID2/module_repeater_y)*submodule_repeater_z*crystal_repeater_z;
+    int ring2 = static_cast<int>(crystalID2/crystal_repeater_y)
+            + static_cast<int>(submoduleID2/submodule_repeater_y)*crystal_repeater_z
+            + static_cast<int>(moduleID2/module_repeater_y)*submodule_repeater_z*crystal_repeater_z;
 
     int crystal1 = rsectorID1  * module_repeater_y * submodule_repeater_y * crystal_repeater_y
             + (moduleID1%module_repeater_y) * submodule_repeater_y * crystal_repeater_y
@@ -180,20 +181,21 @@ get_next_record(RecordT& record)
     return
             record.init_from_data(ring1, ring2,
                                   crystal1, crystal2,
-                                  time1, time2);
+                                  time1, time2,
+                                  eventID1, eventID2);
 }
 
-template <class RecordT, class OptionsT>
+template <class RecordT>
 long long int
-InputStreamFromROOTFile<RecordT, OptionsT>::
+InputStreamFromROOTFile<RecordT>::
 get_total_number_of_events()
 {
     return nentries;
 }
 
-template <class RecordT, class OptionsT>
+template <class RecordT>
 Succeeded
-InputStreamFromROOTFile<RecordT, OptionsT>::
+InputStreamFromROOTFile<RecordT>::
 reset()
 {
     current_position = starting_stream_position;
@@ -201,36 +203,51 @@ reset()
 }
 
 
-template <class RecordT, class OptionsT>
-typename InputStreamFromROOTFile<RecordT, OptionsT>::SavedPosition
-InputStreamFromROOTFile<RecordT, OptionsT>::
+template <class RecordT>
+typename InputStreamFromROOTFile<RecordT>::SavedPosition
+InputStreamFromROOTFile<RecordT>::
 save_get_position()
 {
-    // NOTHING
+    assert(current_position <= nentries);
+
+    if(current_position < nentries)
+        saved_get_positions.push_back(current_position);
+    else
+        saved_get_positions.push_back(-1);
+    return saved_get_positions.size()-1;
 }
 
-template <class RecordT, class OptionsT>
+template <class RecordT>
 Succeeded
-InputStreamFromROOTFile<RecordT, OptionsT>::
-set_get_position(const typename InputStreamFromROOTFile<RecordT, OptionsT>::SavedPosition& pos)
+InputStreamFromROOTFile<RecordT>::
+set_get_position(const typename InputStreamFromROOTFile<RecordT>::SavedPosition& pos)
 {
-    // NOTHING
+    if (current_position == nentries)
+        return Succeeded::no;
+
+    assert(pos < saved_get_positions.size());
+    if (saved_get_positions[pos] == -1)
+        current_position = nentries; // go to eof
+    else
+        current_position = saved_get_positions[pos];
+
+    return Succeeded::yes;
 }
 
-template <class RecordT, class OptionsT>
-std::vector<std::streampos>
-InputStreamFromROOTFile<RecordT, OptionsT>::
+template <class RecordT>
+std::vector<long long int>
+InputStreamFromROOTFile<RecordT>::
 get_saved_get_positions() const
 {
-    // NOTHING
+    return saved_get_positions;
 }
 
-template <class RecordT, class OptionsT>
+template <class RecordT>
 void
-InputStreamFromROOTFile<RecordT, OptionsT>::
-set_saved_get_positions(const std::vector<std::streampos>& poss)
+InputStreamFromROOTFile<RecordT>::
+set_saved_get_positions(const std::vector<long long int>& poss)
 {
-    //    saved_get_positions = poss;
+        saved_get_positions = poss;
 }
 
 END_NAMESPACE_STIR

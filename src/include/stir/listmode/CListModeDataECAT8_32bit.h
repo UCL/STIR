@@ -80,7 +80,7 @@ private:
   typedef CListRecordECAT8_32bit CListRecordT;
   std::string listmode_filename;
   shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;
-//  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
   InterfileHeader interfile_parser;
   // members to store info from the interfile header.
   // These tell us something about how the listmode is stored.

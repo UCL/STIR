@@ -192,6 +192,13 @@ Scanner::Scanner(Type scanner_type)
     // There are 39 rings with 13 axial crystals per block. Two virtual
     // rings are added, but contain counts after applying axial compression.
     break;
+    // Looks like a mMR but with fewer rings.
+  case ROOT_demo_scanner:
+      set_params(ROOT_demo_scanner, string_list("ROOT_demo_scanner", "ROOT"),
+              4, 344, 504,
+              328.0F, 7.0F, 4.0625F, 2.08626F, 0.0F,
+              1, 1, 4, 1, 4, 1, 1);
+      break;
 
   case Siemens_mMR:
     // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction

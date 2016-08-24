@@ -1,84 +1,40 @@
 ROOT header := 
-; Has to be one of the STIR defined scanners, or 
-; custom geometry will be created based on the 
-; repeaters information
-!originating system := USER_DEFINED
 
-;;
-;; Scanner related information
-;;
-Inner ring diameter (cm) := 84.9
-Average depth of interaction (cm) := 0.7
-Distance between rings (cm) := 0.416
-Default bin size (cm) := 0.2
-Maximum number of non-arc-corrected bins := 312
-Number of detector layers := 1
+name of data file := benchmarkPET.root
+originating system := ROOT_demo_scanner
 
-;;
-;; Input ROOT file
-;;
-name of data file := b2b_NEMA_10.root
-
-; Information related to ROOT file
-
-; Name of the input TChain
 name of input TChain := Coincidences
 
 ; As the GATE repeaters. 
-; If you skipped a level in GATE's 
-; cylindical PET hierarchy then use 1 
-; in all axes.  
-number of Rsectors := 48 
+; If you skip a level in GATE's hierarchy, 
+; use 1.
+number of Rsectors := 504 
 number of modules_X := 1 
 number of modules_Y := 1
-number of modules_Z := 4
+number of modules_Z := 1
 number of submodules_X := 1
 number of submodules_Y := 1
 number of submodules_Z := 1
 number of crystals_X := 1
-number of crystals_Y := 13
-number of crystals_Z := 13
+number of crystals_Y := 1
+number of crystals_Z := 4
 
-;; From GATE's online documentation: 
-;; (http://wiki.opengatecollaboration.org/index.php/Users_Guide_V7.2:Digitizer_and_readout_parameters)
-;; [...] the readout depth depends upon how the electronic readout functions.
-;; If one PMT reads the four modules in the axial direction, 
-;; the depth should be set with the command:
-;; /gate/digitizer/Singles/readout/setDepth 1 
 ;
-; In STIR terminology this will be used to define the number of crystals
-; per singles unit. 
-Singles readout depth := 1
-
-; If set the code will check if any Compton iteraction was recorded
+; If set the scattered events will be skipped
 exclude scattered events := 0
-; If set the code will skip if the two photons have different eventID.
+
+;
+; If set the random events will be skipped
 exclude random events := 0 
 
-; STIR will rotate each event from the GATE axis to its native. 
-; In case, in the simulation you have not use the default GATE's axes 
-; set this variable to the number detectors to rotate. 
+; 
+; STIR will try to align the data. 
+; If you have used non standart GATE axes, 
+; rotate using: 
 offset (num of detectors) := 0 
 
 ; If want to deactivate set to [0, 1000]
 low energy window (keV) := 0
 upper energy window (keV):= 1000
-
-; The time frame definitions are not bind to be 
-; the GATE's update geometry frames. It could be used to 
-; each arbitary time frames scheme. In case of a single 
-; time frame set as follows: 
-;;number of time frames := 1
-;;number of time frames := 0.0
-;;image duration (sec) := <total_simulation_time> 
-
-number of time frames := 1
-image duration (sec) := 1
-
-; ProjDataInfo related information
-%axial_compression := 1
-%number of projections := 312
-%number of views := 312
-%maximum_absolute_segment_num := -1
 
 END ROOT header:= 

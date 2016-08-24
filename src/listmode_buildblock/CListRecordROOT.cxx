@@ -25,45 +25,15 @@
 */
 
 #include "stir/listmode/CListRecordROOT.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-#include "stir/Bin.h"
-#include "stir/error.h"
-#include "stir/Succeeded.h"
 
-#include <algorithm>
-#include <iostream>
 START_NAMESPACE_STIR
 
 
 CListEventROOT::
-CListEventROOT(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
-    CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(*proj_data_info_sptr->get_scanner_ptr())))
+CListEventROOT(const shared_ptr<Scanner>& scanner_sptr) :
+    CListEventCylindricalScannerWithDiscreteDetectors(scanner_sptr)
 {
-
-    const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr =
-            dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>(proj_data_info_sptr.get());
-
-    if (proj_data_info_ptr == 0)
-        error("CListEventDataROOT can only be initialised with cylindrical projection data without arc-correction");
-
-    const int num_rings = this->scanner_sptr->get_num_rings();
-    const int max_ring_diff=proj_data_info_ptr->get_max_ring_difference(proj_data_info_ptr->get_max_segment_num());
-
-    if (proj_data_info_ptr->get_max_ring_difference(0) != proj_data_info_ptr->get_min_ring_difference(0))
-        error("CListEventDataROOT can only handle axial compression==1");
-
-    this->segment_sequence.resize(2*max_ring_diff+1);
-    this->sizes.resize(2*max_ring_diff+1);
-    this->segment_sequence[0]=0;
-    this->sizes[0]=num_rings;
-
-    for (int ringdiff=1; ringdiff<=max_ring_diff; ++ringdiff)
-    {
-        this->segment_sequence[2*ringdiff-1]=-ringdiff;
-        this->segment_sequence[2*ringdiff]=ringdiff;
-        this->sizes[2*ringdiff-1]=num_rings-ringdiff;
-        this->sizes[2*ringdiff]=num_rings-ringdiff;
-    }
+    quarter_of_detectors = static_cast<int>(scanner_sptr->get_num_detectors_per_ring()/4.f);
 }
 
 //!
@@ -86,6 +56,53 @@ void CListEventROOT::set_detection_position(const DetectionPositionPair<>&)
     error("Cannot set events in a ROOT file!");
 }
 
+void CListEventROOT::init_from_data(const int& _ring1, const int& _ring2,
+                                    const int& crystal1, const int& crystal2)
+{
+    if  (crystal1 < 0 )
+        det1 = scanner_sptr->get_num_detectors_per_ring() + crystal1;
+    else if ( crystal1 >= scanner_sptr->get_num_detectors_per_ring())
+        det1 = crystal1 - scanner_sptr->get_num_detectors_per_ring();
+    else
+        det1 = crystal1;
 
+    if  (crystal2 < 0 )
+        det2 = scanner_sptr->get_num_detectors_per_ring() + crystal2;
+    else if ( crystal2 >= scanner_sptr->get_num_detectors_per_ring())
+        det2 = crystal2 - scanner_sptr->get_num_detectors_per_ring();
+    else
+        det2 = crystal2;
+
+    // STIR assumes that 0 is on y whill GATE on the x axis
+    det1 += quarter_of_detectors;
+    det2 += quarter_of_detectors;
+
+    if  (det1 < 0 )
+        det1 = scanner_sptr->get_num_detectors_per_ring() + det1;
+    else if ( det1 >= scanner_sptr->get_num_detectors_per_ring())
+        det1 = det1 - scanner_sptr->get_num_detectors_per_ring();
+
+    if  (det2 < 0 )
+        det2 = scanner_sptr->get_num_detectors_per_ring() + det2;
+    else if ( det2 >= scanner_sptr->get_num_detectors_per_ring())
+        det2 = det2 - scanner_sptr->get_num_detectors_per_ring();
+
+    if (det1 > det2)
+    {
+        int tmp = det1;
+        det1 = det2;
+        det2 = tmp;
+
+        ring1 = _ring2;
+        ring2 = _ring1;
+        swapped = true;
+    }
+    else
+    {
+        ring1 = _ring1;
+        ring2 = _ring2;
+        swapped = false;
+    }
+}
 
 END_NAMESPACE_STIR

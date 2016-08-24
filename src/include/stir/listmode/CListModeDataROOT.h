@@ -28,12 +28,9 @@
 
 #include "stir/listmode/CListModeData.h"
 #include "stir/listmode/CListRecordROOT.h"
-#include "stir/IO/InputStreamWithRecords.h"
 #include "stir/IO/InputStreamFromROOTFile.h"
 #include "stir/shared_ptr.h"
 #include "stir/KeyParser.h"
-
-#include <string>
 
 START_NAMESPACE_STIR
 
@@ -69,11 +66,6 @@ public:
     virtual
     bool has_delayeds() const { return true; }
 
-    //!
-    //! \brief get_total_number_of_events
-    //! \return Returns the total number of events in a ROOT file
-    //! \author Nikos Efthimiou
-    //!
     virtual
     long long int
     get_total_number_of_events() const ;
@@ -81,54 +73,18 @@ public:
 private:
     typedef CListRecordROOT CListRecordT;
 
-    //! This function performs simple checks to validate that the repeaters,
-    //! are consistent with the header file.
-    Succeeded check_scanner_consistency();
-
     //! The header file, bad name choise.
     std::string listmode_filename;
     //! The root file
     std::string input_data_filename;
     //! Pointer to the listmode data
-    shared_ptr<InputStreamFromROOTFile<CListRecordT, bool> > current_lm_data_ptr;
+    shared_ptr<InputStreamFromROOTFile<CListRecordT> > current_lm_data_ptr;
 
     //! The name of the originating scanner
     std::string originating_system;
 
-    // Related to the Scanner
-    //! Number of bins
-    int num_bins;
-    //! Bin size
-    float bin_size;
-    //! Physical inner ring radius
-    float inner_ring_radius;
-    //! Average depth of iteration
-    float aver_depth_of_iteraction;
-    //! Ring spacing
-    float ring_spacing;
-    //! Number of detector layers
-    int num_det_layers;
-    //!
-    //! \brief singles_readout_depth
-    //! \details This is a GATE parameters, defined in the digitizer. It
-    //! defines the structure in which the energy summing is done.
-    //! Value 4 means that each crystal is read individually.
-    int singles_readout_depth;
-
-    // These tell us something about how the listmode is stored.
-    //! Span
-    int axial_compression;
-    //! S size of the sinogram
-    int number_of_projections;
-    //! Number of view in the sinogram
-    int number_of_views;
-    //! Number of segments.
-    int number_of_segments;
-
-
-//    shared_ptr<ProjDataInfo> proj_data_info_sptr;
-
     KeyParser parser;
+    //! Name of input chain which is going to be used.
     std::string name_of_input_tchain;
 
     //! Number of the rsectors used in the GATE mac file
@@ -139,7 +95,6 @@ private:
     int number_of_modules_y;
     //! The z axis is the axial
     int number_of_modules_z;
-
     //! Number of submodules x in the GATE mac file
     int number_of_submodules_x;
     //! Submodule y repeater in the GATE mac file
@@ -171,21 +126,8 @@ private:
     //! The upper energy window threshold
     //! \warning When ExamData are merged it will be removed
     float up_energy_window;
-
+    //! Checks if the input file is indeed a root file, and opens it.
     Succeeded open_lm_file();
-
-    //!
-    //! \brief read_frames_info
-    //! \details This function is stolen from InterfileHeader.cxx
-    void read_frames_info();
-
-     int num_time_frames;
-     double _image_relative_start_times;
-     double _image_durations;
-
-     std::vector<double> image_relative_start_times;
-     std::vector<double> image_durations;
-
 };
 
 

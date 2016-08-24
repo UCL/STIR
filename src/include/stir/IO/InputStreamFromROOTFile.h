@@ -49,32 +49,13 @@ START_NAMESPACE_STIR
         \details This class takes as input a root file, and returns the data stored in a meaningfull
         way. The validation of the ROOT input was done with version 5.34.
 */
-template <class RecordT, class OptionsT>
+template <class RecordT>
         class InputStreamFromROOTFile
 {
 public:
-    typedef std::vector<std::streampos>::size_type SavedPosition;
+    typedef std::vector<long long int>::size_type SavedPosition;
 
-    //!
-    //! \brief InputStreamFromROOTFile
-    //! \param filename
-    //! \param chain_name
-    //! \param crystal_repeater_x
-    //! \param crystal_repeater_y
-    //! \param crystal_repeater_z
-    //! \param submodule_repeater_x
-    //! \param submodule_repeater_y
-    //! \param submodule_repeater_z
-    //! \param module_repeater_x
-    //! \param module_repeater_y
-    //! \param module_repeater_z
-    //! \param rsector_repeater
-    //! \param exclude_scattered
-    //! \param exclude_randoms
-    //! \param low_energy_window
-    //! \param up_energy_window
-    //! \param offset_dets
-    //! \details Default constructor
+    //! Default constructor
     inline
     InputStreamFromROOTFile(const std::string& filename,
                             const std::string& chain_name,
@@ -93,81 +74,42 @@ public:
     //! \brief get_next_record
     //! \param record Reference to the Record
     //! \return
-    //! \author Nikos Efthimiou
     //!  \details Returns the next record in the ROOT file.
     //!  The code is adapted from Sadek A. Nehmeh and CR Schmidtlein,
     //! downloaded from <a href="http://www.opengatecollaboration.org/STIR">GATE website</a>
-    inline
-    virtual
+    inline virtual
     Succeeded get_next_record(RecordT& record) ;
-
-
-    //!
-    //! \brief reset
-    //! \return
-    //! \author Nikos Efthimiou
-    //!  \details go back to starting position
-    //!  \warning Has no significant functionality. It sets the current position to the starting position.
-    //!  Is maintained for compatibility.
-    //!
-    inline
-    Succeeded reset();
-
-
-    //!
-    //! \brief save_get_position
-    //! \return
-    //! \author Nikos Efthimiou
-    //! \warning This function currently does nothing.
-    //! I left it for compatibility.
+    //! Go to the first event.
+    inline Succeeded reset();
+    //! Save current position in a vector
     inline
     SavedPosition save_get_position();
-
-    //!
-    //! \brief set_get_position
-    //! \return
-    //! \author Nikos Efthimiou
-    //! \warning This function currently does nothing.
-    //! I left it for compatibility.
+    //! Set current position
     inline
     Succeeded set_get_position(const SavedPosition&);
-
-    //!
-    //! \brief get_saved_get_positions
-    //! \return
-    //! \author Nikos Efthimiou
-    //! \warning This function currently does nothing.
-    //! I left it for compatibility.
+    //! Get the vector with the saved positions
     inline
-    std::vector<std::streampos> get_saved_get_positions() const;
-
-    //!
-    //! \brief set_saved_get_positions
-    //! \author Nikos Efthimiou
-    //! \warning This function currently does nothing.
-    //! I left it for compatibility.
+    std::vector<long long int> get_saved_get_positions() const;
+    //! Set a vector with saved positions
     inline
-    void set_saved_get_positions(const std::vector<std::streampos>& );
-
-    //!
-    //! \brief get_total_number_of_events
-    //! \return Returns the total number of events in the ROOT file.
-    //! \author Nikos Efthimiou
-    inline
-    long long int
+    void set_saved_get_positions(const std::vector<long long int>& );
+    //! Returns the total number of events
+    inline long long int
     get_total_number_of_events();
 
 private:
 
     Succeeded initialize_root_read_out();
-
+    //! Input data file name
     const std::string filename;
-
+    //! The starting position.
     long long int starting_stream_position;
+    //! The total number of entries
     long long int nentries;
+    //! Current get position
     long long int current_position;
-    long long int saved_get_position;
-    OptionsT options;
+    //! A vector with saved position indices.
+    std::vector<long long int> saved_get_positions;
 
     // ROOT chain
     TChain *stream_ptr = NULL;
@@ -203,7 +145,10 @@ private:
 
     float low_energy_window;
     float up_energy_window;
-
+    //! In GATE, inside a block, the indeces start from the lower
+    //! unit counting upwards. Therefore in order to align the
+    //! crystals, between STIR and GATE we have to move half block more.
+    int half_block;
     int offset_dets;
 };
 
