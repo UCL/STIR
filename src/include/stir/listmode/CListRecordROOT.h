@@ -107,7 +107,10 @@ public:
     inline  double get_delta_time_in_picosecs() const
     { return (timeB - timeA) * 1e12; }
     inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
-    { error("set_time_in_millisecs: Not implemented for ROOT files. Abort."); }
+    {
+        warning("set_time_in_millisecs: Not implemented for ROOT files. Abording.");
+        return Succeeded::no;
+    }
 
 private:
 
@@ -180,7 +183,7 @@ public:
 
         // We can make a singature raw based on the two events IDs.
         // It is pretty unique.
-        raw = static_cast<boost::int64_t> (event1 << 32) | event2;
+        raw = static_cast<boost::int64_t> (event1) << 32 | event2;
 
         return Succeeded::yes;
     }

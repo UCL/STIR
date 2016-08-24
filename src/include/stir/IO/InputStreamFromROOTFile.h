@@ -112,7 +112,7 @@ private:
     std::vector<long long int> saved_get_positions;
 
     // ROOT chain
-    TChain *stream_ptr = NULL;
+    TChain *stream_ptr;
 
     // Variables to store root information
     const std::string chain_name;
