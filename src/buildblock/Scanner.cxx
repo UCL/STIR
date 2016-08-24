@@ -37,6 +37,7 @@
 #include "stir/utilities.h"
 #include "stir/Succeeded.h"
 #include "stir/interfile_keyword_functions.h"
+#include "stir/info.h"
 #include <iostream>
 #include <algorithm>
 #ifdef BOOST_NO_STRINGSTREAM
@@ -857,17 +858,9 @@ Scanner* Scanner::ask_parameters()
   // old scanners. This should stay here as a transitional step.
   if (scanner_ptr->type != Unknown_scanner && scanner_ptr->type != User_defined_scanner)
     {
-      float EnergyResolution =
-          ask_num("(Optional) Enter the energy resolution of the scanner : ", -1.0f, 1000.0f, -1.0f);
-
-      float ReferenceEnergy =
-          ask_num("(Optional) Enter the reference energy for the energy resolution (in keV):", -1.0f, 1000.0f, -1.0f);
-
-      if (EnergyResolution > -1.0f)
-        {
-          scanner_ptr->set_energy_resolution(EnergyResolution);
-          scanner_ptr->set_reference_energy(ReferenceEnergy);
-        }
+      info("Two new options are available: (a) Energy Resolution and (b) Reference energy (in keV)."
+           "They are used in Scatter Simulation. In case, you need them, please set them"
+           "manually in your file.");
 
       return scanner_ptr;
     }
