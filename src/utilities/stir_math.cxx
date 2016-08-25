@@ -126,6 +126,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/DynamicDiscretisedDensity.h"
+#include "stir/stir_math.h"
 
 #include <fstream> 
 #include <iostream> 
@@ -147,29 +148,6 @@ using std::vector;
 
 
 USING_NAMESPACE_STIR
-
-// a function object that takes a power of a float, and then multiplies with a float, and finally adds a float
-class pow_times_add: public unary_function<float,float>
-{
-public:
-  pow_times_add(const float add_scalar, const float mult_scalar, const float power, 
-		const float min_threshold, const float max_threshold)
-    : add(add_scalar), mult(mult_scalar), power(power), 
-      min_threshold(min_threshold), max_threshold(max_threshold)
-  {}
-
-  float operator()(float const arg) const
-  {
-    const float value = min(max(arg, min_threshold), max_threshold);
-    return add+mult*(power==1?value : pow(value,power));
-  }
-private:
-  const float add;
-  const float mult;
-  const float power;
-  const float min_threshold;
-  const float max_threshold;
-};
 
 template <class DataT, class FunctionObjectT>
 void process_data(const string& output_file_name,
