@@ -23,8 +23,8 @@
   \author Nikos Efthimiou
 */
 
-
 #include "stir/listmode/CListModeDataROOT.h"
+#include "stir/Scanner.h"
 #include "stir/Succeeded.h"
 #include "stir/info.h"
 #include "stir/warning.h"
@@ -46,9 +46,17 @@ CListModeDataROOT(const std::string& listmode_filename)
 
     // Scanner related & Physical dimentions.
     this->parser.add_key("originating system", &this->originating_system);
+    this->parser.add_key("Number of rings", &this->num_rings);
+    this->parser.add_key("Number of detectors per ring", &this->num_detectors_per_ring);
+    this->parser.add_key("Inner ring diameter (cm)", &this->inner_ring_diameter);
+    this->parser.add_key("Average depth of interaction (cm)", &this->average_depth_of_interaction);
+    this->parser.add_key("Distance between rings (cm)", &this->ring_spacing);
+    this->parser.add_key("Default bin size (cm)", &this->bin_size);
+    this->parser.add_key("Maximum number of non-arc-corrected bins", &this->max_num_non_arccorrected_bins);
     // end Scanner and physical dimentions.
 
     // ROOT related
+    this->parser.add_key("Singles readout depth", &this->singles_readout_depth);
     this->parser.add_key("number of Rsectors", &this->number_of_rsectors);
     this->parser.add_key("number of modules X", &this->number_of_modules_x);
     this->parser.add_key("number of modules Y", &this->number_of_modules_y);
@@ -79,15 +87,89 @@ CListModeDataROOT(const std::string& listmode_filename)
 
     // Only PET scanners supported
     this->exam_info_sptr->imaging_modality = ImagingModality::PT;
-
     this->exam_info_sptr->originating_system = this->originating_system;
 
-
-    this->scanner_sptr.reset(Scanner::get_scanner_from_name(this->originating_system));
-    if (this->scanner_sptr->get_type() == Scanner::Unknown_scanner)
+    if (this->originating_system != "User_defined_scanner")
     {
-        error(boost::format("Unknown value for originating_system keyword: '%s ."
-                              "Trying to figure out from rest input parameters") % originating_system );
+        this->scanner_sptr.reset(Scanner::get_scanner_from_name(this->originating_system));
+        if (this->scanner_sptr->get_type() == Scanner::Unknown_scanner)
+        {
+            error(boost::format("Unknown value for originating_system keyword: '%s. Abort.") % originating_system );
+        }
+    }
+    else
+    {
+        info(boost::format("Trying to figure out the scanner geometry from the information"
+                           "given in the ROOT header file."));
+
+        int axial_crystals_per_singles = 0;
+        int trans_crystals_per_singles = 0;
+
+        if (this->singles_readout_depth == 1) // One PMT per Rsector
+        {
+            axial_crystals_per_singles = this->number_of_crystals_z *
+                    this->number_of_modules_z *
+                    this->number_of_submodules_z;
+            trans_crystals_per_singles = this->number_of_modules_y *
+                    this->number_of_submodules_y *
+                    this->number_of_crystals_y;
+        }
+        else if (this->singles_readout_depth == 2) // One PMT per module
+        {
+            axial_crystals_per_singles = this->number_of_crystals_z *
+                    this->number_of_submodules_z;
+            trans_crystals_per_singles = this->number_of_submodules_y *
+                    this->number_of_crystals_y;
+        }
+        else if (this->singles_readout_depth == 3) // One PMT per submodule
+        {
+            axial_crystals_per_singles = this->number_of_crystals_z;
+            trans_crystals_per_singles = this->number_of_crystals_y;
+        }
+        else if (this->singles_readout_depth == 4) // One PMT per crystal
+        {
+            axial_crystals_per_singles = 1;
+            trans_crystals_per_singles = 1;
+        }
+        else
+            error(boost::format("Singles readout depth (%1%) is invalid") % this->singles_readout_depth);
+
+
+        this->scanner_sptr.reset(new Scanner(Scanner::User_defined_scanner,
+                                             std::string ("ROOT_defined_scanner"),
+                                             /* num dets per ring */
+                                             int(  this->number_of_rsectors * this->number_of_modules_y *
+                                                   this->number_of_submodules_y * this->number_of_crystals_y),
+                                             /* num of rings */
+                                             int( this->number_of_crystals_z * this->number_of_modules_z *
+                                                  this->number_of_submodules_z),
+                                             /* number of non arccor bins */
+                                             this->max_num_non_arccorrected_bins,
+                                             /* number of maximum arccor bins */
+                                             this->max_num_non_arccorrected_bins,
+                                             /* inner ring radius */
+                                             this->inner_ring_diameter/0.2f,
+                                             /* doi */
+                                             this->average_depth_of_interaction * 10.f,
+                                             /* ring spacing */
+                                             this->ring_spacing * 10.f,
+                                             this->bin_size * 10.f,
+                                             /* offset*/
+                                             this->offset_dets,
+                                             /*num_axial_blocks_per_bucket_v */
+                                             this->number_of_modules_z,
+                                             /*num_transaxial_blocks_per_bucket_v*/
+                                             this->number_of_modules_y,
+                                             /*num_axial_crystals_per_block_v*/
+                                             int(this->number_of_crystals_z * this->number_of_submodules_z),
+                                             /*num_transaxial_crystals_per_block_v*/
+                                             int(this->number_of_crystals_y * this->number_of_submodules_y),
+                                             /*num_axial_crystals_per_singles_unit_v*/
+                                             axial_crystals_per_singles,
+                                             /*num_transaxial_crystals_per_singles_unit_v*/
+                                             trans_crystals_per_singles,
+                                             /*num_detector_layers_v*/
+                                             1));
     }
 
     if (this->open_lm_file() == Succeeded::no)
@@ -107,7 +189,7 @@ shared_ptr <CListRecord>
 CListModeDataROOT::
 get_empty_record_sptr() const
 {
-    shared_ptr<CListRecord> sptr(new CListRecordT(this->scanner_sptr));
+    shared_ptr<CListRecord> sptr(new CListRecordROOT(this->scanner_sptr));
     return sptr;
 }
 
@@ -140,15 +222,16 @@ open_lm_file()
         }
 
         current_lm_data_ptr.reset(
-                    new InputStreamFromROOTFile<CListRecordT>(this->input_data_filename,
-                                                                    this->name_of_input_tchain,
-                                                                    this->number_of_crystals_x, this->number_of_crystals_y, this->number_of_crystals_z,
-                                                                    this->number_of_submodules_x, this->number_of_submodules_y, this->number_of_submodules_z,
-                                                                    this->number_of_modules_x, this->number_of_modules_y, this->number_of_modules_z,
-                                                                    this->number_of_rsectors,
-                                                                    this->exclude_scattered, this->exclude_randoms,
-                                                                    this->low_energy_window*0.001f, this->up_energy_window*0.001f,
-                                                                    this->offset_dets));
+                    new InputStreamFromROOTFile(this->input_data_filename,
+                                                this->name_of_input_tchain,
+                                                this->number_of_crystals_x, this->number_of_crystals_y, this->number_of_crystals_z,
+                                                this->number_of_submodules_x, this->number_of_submodules_y, this->number_of_submodules_z,
+                                                this->number_of_modules_x, this->number_of_modules_y, this->number_of_modules_z,
+                                                this->number_of_rsectors,
+                                                this->exclude_scattered, this->exclude_randoms,
+                                                static_cast<float>(this->low_energy_window*0.001f),
+                                                static_cast<float>(this->up_energy_window*0.001f),
+                                                this->offset_dets));
         t.close();
         return Succeeded::yes;
 
@@ -166,7 +249,7 @@ Succeeded
 CListModeDataROOT::
 get_next_record(CListRecord& record_of_general_type) const
 {
-    CListRecordT& record = static_cast<CListRecordT&>(record_of_general_type);
+    CListRecordROOT& record = dynamic_cast<CListRecordROOT&>(record_of_general_type);
     return current_lm_data_ptr->get_next_record(record);
 }
 

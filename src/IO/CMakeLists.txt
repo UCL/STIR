@@ -33,6 +33,7 @@ set(${dir_LIB_SOURCES}
   InterfileDynamicDiscretisedDensityOutputFileFormat 
   InterfileParametricDensityOutputFileFormat
   GIPL_ImageFormat
+  InputStreamFromROOTFile
 ) 
 
 # we can use IO from the itk library

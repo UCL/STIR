@@ -28,6 +28,7 @@
 
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
+#include "stir/listmode/CListRecordROOT.h"
 
 #include <TROOT.h>
 #include <TSystem.h>
@@ -49,16 +50,15 @@ START_NAMESPACE_STIR
         \details This class takes as input a root file, and returns the data stored in a meaningfull
         way. The validation of the ROOT input was done with version 5.34.
 */
-template <class RecordT>
-        class InputStreamFromROOTFile
+
+class InputStreamFromROOTFile
 {
 public:
     typedef std::vector<long long int>::size_type SavedPosition;
 
     //! Default constructor
-    inline
-    InputStreamFromROOTFile(const std::string& filename,
-                            const std::string& chain_name,
+    InputStreamFromROOTFile(std::string filename,
+                            std::string chain_name,
                             int crystal_repeater_x, int crystal_repeater_y, int crystal_repeater_z,
                             int submodule_repeater_x, int submodule_repeater_y, int submodule_repeater_z,
                             int module_repeater_x, int module_repeater_y, int module_repeater_z,
@@ -77,8 +77,8 @@ public:
     //!  \details Returns the next record in the ROOT file.
     //!  The code is adapted from Sadek A. Nehmeh and CR Schmidtlein,
     //! downloaded from <a href="http://www.opengatecollaboration.org/STIR">GATE website</a>
-    inline virtual
-    Succeeded get_next_record(RecordT& record) ;
+    virtual
+    Succeeded get_next_record(CListRecordROOT& record) ;
     //! Go to the first event.
     inline Succeeded reset();
     //! Save current position in a vector
@@ -99,9 +99,9 @@ public:
 
 private:
 
-    Succeeded initialize_root_read_out();
+    virtual Succeeded initialize_root_read_out();
     //! Input data file name
-    const std::string filename;
+    std::string filename;
     //! The starting position.
     long long int starting_stream_position;
     //! The total number of entries
@@ -115,18 +115,18 @@ private:
     TChain *stream_ptr;
 
     // Variables to store root information
-    const std::string chain_name;
+    std::string chain_name;
     Int_t           eventID1, eventID2;
     Int_t           crystalID1, crystalID2;
     Int_t           submoduleID1, submoduleID2;
     Int_t           moduleID1, moduleID2;
     Int_t           rsectorID1, rsectorID2;
-    Int_t           rotationAngle;
-    Float_t         globalPosX1, globalPosX2, sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2;
-    Float_t         globalPosY1, globalPosY2, globalPosZ1, globalPosZ2, sourcePosZ1, sourcePosZ2;
+//    Int_t           rotationAngle;
+//    Float_t         globalPosX1, globalPosX2, sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2;
+//    Float_t         globalPosY1, globalPosY2, globalPosZ1, globalPosZ2, sourcePosZ1, sourcePosZ2;
     Double_t        time1, time2;
     Float_t         energy1, energy2;
-    Int_t           sourceid1, sourceid2;
+//    Int_t           sourceid1, sourceid2;
     Int_t           comptonphantom1, comptonphantom2;
 
     int crystal_repeater_x;
@@ -138,7 +138,7 @@ private:
     int module_repeater_x;
     int module_repeater_y;
     int module_repeater_z;
-    int rsector_repeater;  
+    int rsector_repeater;
 
     bool exclude_scattered;
     bool exclude_randoms;

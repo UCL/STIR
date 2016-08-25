@@ -29,7 +29,6 @@
 #include "stir/listmode/CListModeData.h"
 #include "stir/listmode/CListRecordROOT.h"
 #include "stir/IO/InputStreamFromROOTFile.h"
-#include "stir/shared_ptr.h"
 #include "stir/KeyParser.h"
 
 START_NAMESPACE_STIR
@@ -71,22 +70,31 @@ public:
     get_total_number_of_events() const ;
 
 private:
-    typedef CListRecordROOT CListRecordT;
+//    typedef CListRecordROOT CListRecordT;
 
     //! The header file, bad name choise.
     std::string listmode_filename;
     //! The root file
     std::string input_data_filename;
     //! Pointer to the listmode data
-    shared_ptr<InputStreamFromROOTFile<CListRecordT> > current_lm_data_ptr;
+    shared_ptr<InputStreamFromROOTFile > current_lm_data_ptr;
 
     //! The name of the originating scanner
     std::string originating_system;
+    int num_rings;
+    int num_detectors_per_ring;
+    int max_num_non_arccorrected_bins;
+    float inner_ring_diameter;
+    float average_depth_of_interaction;
+    float ring_spacing;
+    float bin_size;
 
     KeyParser parser;
     //! Name of input chain which is going to be used.
     std::string name_of_input_tchain;
 
+    //!
+    int singles_readout_depth;
     //! Number of the rsectors used in the GATE mac file
     int number_of_rsectors;
     //! The x axis would indicate mupliple layers
