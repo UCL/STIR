@@ -159,7 +159,8 @@ public:
     bool operator==(const CListRecord& e2) const
     {
         return dynamic_cast<CListRecordROOT const *>(&e2) != 0 &&
-                raw == dynamic_cast<CListRecordROOT const &>(e2).raw;
+                raw[0] == dynamic_cast<CListRecordROOT const &>(e2).raw[0] &&
+                raw[1] == dynamic_cast<CListRecordROOT const &>(e2).raw[1];
     }
 
     CListRecordROOT(const shared_ptr<Scanner>& scanner_sptr) :
@@ -183,7 +184,8 @@ public:
 
         // We can make a singature raw based on the two events IDs.
         // It is pretty unique.
-        raw = static_cast<boost::int64_t> (event1) << 32 | event2;
+        raw[0] = event1;
+        raw[1] = event2;
 
         return Succeeded::yes;
     }
@@ -191,7 +193,7 @@ public:
 private:
     CListEventROOT  event_data;
     CListTimeROOT   time_data;
-    boost::int64_t         raw; // this raw field isn't strictly necessary, get rid of it?
+    boost::int32_t raw[2]; // this raw field isn't strictly necessary, get rid of it?
 
 };
 
