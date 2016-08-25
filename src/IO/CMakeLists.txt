@@ -33,7 +33,6 @@ set(${dir_LIB_SOURCES}
   InterfileDynamicDiscretisedDensityOutputFileFormat 
   InterfileParametricDensityOutputFileFormat
   GIPL_ImageFormat
-  InputStreamFromROOTFile
 ) 
 
 # we can use IO from the itk library
@@ -53,6 +52,12 @@ if (LLN_FOUND)
     ECAT7DynamicDiscretisedDensityOutputFileFormat 
     ECAT7DynamicDiscretisedDensityInputFileFormat
     stir_ecat6 ecat6_utils
+ )
+endif()
+
+if (CERN_ROOT_FOUND)
+ list(APPEND ${dir_LIB_SOURCES}
+    InputStreamFromROOTFile
  )
 endif()
 
