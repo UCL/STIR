@@ -108,7 +108,7 @@ public:
     { return (timeB - timeA) * 1e12; }
     inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
     {
-        warning("set_time_in_millisecs: Not implemented for ROOT files. Abording.");
+        warning("set_time_in_millisecs: Not implemented for ROOT files. Aborting.");
         return Succeeded::no;
     }
 
