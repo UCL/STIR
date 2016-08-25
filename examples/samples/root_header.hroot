@@ -28,9 +28,10 @@ exclude scattered events := 0
 exclude random events := 0 
 
 ; 
-; STIR will try to align the data. 
-; If you have used non standart GATE axes, 
-; rotate using: 
+; You can use this to effectively rotate 
+; the GATE scanner,
+; e.g. to put the first crystal
+; at x=0 in STIR coordinates
 offset (num of detectors) := 0 
 
 ; If want to deactivate set to [0, 1000]

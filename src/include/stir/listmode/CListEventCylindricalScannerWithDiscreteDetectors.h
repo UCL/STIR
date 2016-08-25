@@ -48,7 +48,7 @@ public:
   const Scanner * get_scanner_ptr() const
     { return this->scanner_sptr.get(); }
 
-  //! This routine returns the corresponding detector pair
+  //! This routine returns the corresponding detector pair   
   virtual void get_detection_position(DetectionPositionPair<>&) const = 0;
 
   //! This routine sets in a coincidence event from detector "indices"
