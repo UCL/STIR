@@ -106,6 +106,57 @@ namespace detail
 	  retval[i] += m[i][j]*vec[j];
       }
   }
+
+  template <class elemT, class vecT>
+  inline
+  void
+  matrix_matrixT_multiply_help(vecT& retval, const Array<2,elemT>& m, const vecT& vec, vecT& cov)
+  {
+      assert(m.is_regular());
+      if (m.size()==0)
+      { return; }
+
+      const int m_min_row = m.get_min_index();
+      const int m_max_row = m.get_max_index();
+      const int m_min_col = m[m_min_row].get_min_index();
+      const int m_max_col = m[m_min_row].get_max_index();
+      const int dmd = vec.get_min_index();
+      const int dssmd = vec.get_max_index();
+      const int dmdc = cov.get_min_index();
+      const int dssmdc = cov.get_max_index();
+      // make sure matrices are conformable for multiplication
+      assert(vec.get_min_index() == m_min_col);
+      assert(vec.get_max_index() == m_max_col);
+      assert(vec.get_min_index() == cov.get_min_index());
+      assert(vec.get_max_index() == cov.get_max_index());
+
+      float population = 0.1 * (m_max_col);
+      float sd = 0.f;
+
+      for(int i=m_min_row; i<=m_max_col; ++i)
+      {
+          retval[i] = 0.f;
+          for(int j=m_min_col; j<=m_max_col; ++j)
+          {
+              sd = 0.f;
+              for (int k = m_min_row; k<= m_max_row; ++k)
+              {
+                  std::cout << "S: "<< sd << std::endl;
+                  sd +=  m[k][i] * m[k][j];
+                  std::cout << sd << "\t" <<  m[k][i] << "\t" << m[k][j]<<std::endl;
+              }
+
+//              sd /= 3.f;
+              std::cout<< std::endl;
+
+              retval[i] += sd * vec[j];
+          }
+          std::cout<<std::endl;
+      }
+
+
+      int nikos = 0;
+  }
 }
 
 template <class elemT>	
@@ -114,6 +165,16 @@ matrix_multiply(const Array<2,elemT>& m, const Array<1,elemT>& vec)
 {
   Array<1,elemT> ret(m.get_min_index(), m.get_max_index());
   detail::matrix_multiply_help(ret, m, vec);
+  return ret;
+}
+
+template <class elemT>
+inline Array<1,elemT>
+matrix_matrixT_multiply(const Array<2,elemT>& m, const Array<1,elemT>& vec)
+{
+      Array<1,elemT> tmp(vec.size_all());
+  Array<1,elemT> ret(vec.size_all());
+  detail::matrix_matrixT_multiply_help(ret, m, vec, tmp);
   return ret;
 }
 

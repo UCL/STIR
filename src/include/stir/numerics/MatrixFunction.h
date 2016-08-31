@@ -75,6 +75,10 @@ template <class elemT>
 inline Array<1,elemT> 
   matrix_multiply(const Array<2,elemT>& m, const Array<1,elemT>& vec);
 
+template <class elemT>
+inline Array<1,elemT>
+  matrix_matrixT_multiply(const Array<2,elemT>& m, const Array<1,elemT>& vec);
+
 //! matrix multiplication with vector (given as BasicCoordinate) 
 /*! matrix size has to be compatible with \c dimension. Matrix index range has to start from 1.
    All of this is only checked with assert().

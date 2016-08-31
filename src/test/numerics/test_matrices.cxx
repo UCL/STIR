@@ -55,6 +55,7 @@ private:
   void run_tests_1D();
   void run_tests_2D();
   void run_tests_max_eigenvector();
+  void run_tests_max_eigenvector_non_diagonal();
 };
 
 // local function, copied from the Shape library
@@ -85,9 +86,10 @@ MatrixTests::
 run_tests()
 {
   std::cerr << "Testing numerics/MatrixFunction.h functions\n";
-  run_tests_1D();
-  run_tests_2D();
-  run_tests_max_eigenvector();
+//  run_tests_1D();
+//  run_tests_2D();
+//  run_tests_max_eigenvector();
+  run_tests_max_eigenvector_non_diagonal();
 }
 
 void
@@ -361,6 +363,56 @@ run_tests_max_eigenvector()
       check(success == Succeeded::no, 
 	    "abs_max_using_power should have failed (float diagonal matrix with opposite max eigenvalues)");
   }
+}
+
+void
+MatrixTests::
+run_tests_max_eigenvector_non_diagonal()
+{
+    // Initial array
+    Array<2, float> v = make_array(make_1d_array(5.F, 0.F, 3.F, 7.F),
+                                   make_1d_array(1.F, -5.F, 7.F, 3.F),
+                                   make_1d_array(4.F, 9.F, 8.F, 10.F));
+    float mean = v.mean();
+    v -= mean;
+    std::cout<<"ground zero:"<<std::endl;
+    std::cout << v << std::endl;
+
+    // CoV array of the aforementioned array, calculated in matlab.
+
+    Array<2, float> check_cov = make_array(
+                make_1d_array(4.3333F, 8.8333F, -3.0000F, 5.6667F),
+                make_1d_array(8.8333F, 50.3333F, 6.5000F, 24.1667F),
+                make_1d_array(-3.0000F, 6.5000F, 7.0000F, 1.0000F),
+                make_1d_array(5.6667F, 24.1667F, 1.0000F, 12.3333F));
+
+    float chk_max_eigenvalue;
+    Array<1,float> chk_max_eigenvector;
+    Succeeded chk_success =
+            absolute_max_eigenvector_using_power_method(chk_max_eigenvalue,
+                                                        chk_max_eigenvector,
+                                                        check_cov,
+                                                        make_1d_array(1.F,2.F,3.F, 1.F),
+                                                        /*tolerance=*/ .001,
+                                                        1000UL);
+    set_tolerance(.01);
+    float max_eigenvalue;
+    Array<1,float> max_eigenvector;
+
+    Succeeded success =
+            absolute_max_eigenvector_using_power_method(max_eigenvalue,
+                                                        max_eigenvector,
+                                                        v,
+                                                        make_1d_array(1.F,2.F,3.F, 1.F),
+                                                        /*tolerance=*/ .001,
+                                                        1000UL,
+                                                        false);
+    check(success == Succeeded::yes,
+          "abs_max_using_power: succeeded (float diagonal matrix)");
+
+
+    int nikos = 0;
+
 }
 
 END_NAMESPACE_STIR
