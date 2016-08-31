@@ -192,6 +192,14 @@ Array<num_dimensions, elemT>::sum() const
 }
 
 template <int num_dimensions, typename elemT>
+float
+Array<num_dimensions, elemT>::mean() const
+{
+  this->check_state();
+  return static_cast<float>(this->sum()) / this->size_all();
+}
+
+template <int num_dimensions, typename elemT>
 elemT 
 Array<num_dimensions, elemT>::sum_positive() const 
 {
@@ -481,6 +489,16 @@ Array<1, elemT>::sum() const
   return acc; 
 };
 
+template <class elemT>
+float
+Array<1, elemT>::mean() const
+{
+  this->check_state();
+  float acc = 0.f;
+  for(int i=this->get_min_index(); i<=this->get_max_index(); acc+=this->num[i++])
+  {}
+  return static_cast<float>( acc / this->size_all()) ;
+};
 
 template <class elemT>
 elemT

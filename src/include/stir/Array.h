@@ -180,6 +180,9 @@ public:
   
   //! return sum of all elements
   inline elemT sum() const ;
+
+  //! return the mean value of all elements
+  inline float mean() const;
   
   //! return sum of all positive elements
   inline elemT sum_positive() const ;
@@ -344,6 +347,9 @@ public:
   
   //! return sum of all elements
   inline elemT sum() const;
+
+  //! return the mean value of all elements
+  inline float mean() const;
   
   //! add up all positive elemTs in the vector
   inline elemT sum_positive() const;
