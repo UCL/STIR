@@ -32,6 +32,7 @@
 #include "stir/round.h"
 #include "boost/static_assert.hpp"
 #include "stir/DetectionPositionPair.h"
+#include <boost/cstdint.hpp>
 
 START_NAMESPACE_STIR
 
