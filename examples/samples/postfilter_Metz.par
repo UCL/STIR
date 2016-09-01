@@ -1,5 +1,5 @@
 PostFiltering parameters :=
-  Postfilter type :=  Separable Cartesian Metz
+  PostFilter type :=  Separable Cartesian Metz
 Separable Cartesian Metz Filter Parameters :=
 x-dir filter FWHM (in mm):= 5
 y-dir filter FWHM (in mm):= 5
