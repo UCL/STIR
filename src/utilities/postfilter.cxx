@@ -19,24 +19,24 @@
 */
 
 /*!
-  \file 
+  \file
   \ingroup utilities
 
   \brief  This program performs filtering on image data
- 
+
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Matthew Jacobson
   \author PARAPET project
-  
 
-  This program enables calling any ImageProcessor object on input data, 
+
+  This program enables calling any ImageProcessor object on input data,
   and writing it to file. It can take the following command line:
   \verbatim
    postfilter [[-verbose] <output filename > <input header file name> <filter .par filename>
   \endverbatim
-  This is done to make it easy to process a lot of files with the same 
-  ImageProcessor. However, if the number of command line arguments is not 
+  This is done to make it easy to process a lot of files with the same
+  ImageProcessor. However, if the number of command line arguments is not
   correct, appropriate questions will be asked interactively.
 
   If the <tt>--verbose</tt> option is used, the filter-parameters that are going to be
@@ -46,9 +46,9 @@
   (but see stir::MedianImageFilter3D to see if the following example is still correct)
   \verbatim
   PostFilteringParameters :=
-  Postfilter type :=Median   
+  Postfilter type :=Median
   Median Filter Parameters :=
-  mask radius x := 1   
+  mask radius x := 1
   mask radius y := 2
   mask radius z := 3
   End Median Filter Parameters:=
@@ -57,14 +57,13 @@
 
 */
 
+#include "stir/PostFiltering.h"
 #include "stir/utilities.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
-
 #include "stir/Succeeded.h"
-#include "stir/PostFiltering.h"
-#include <iostream> 
+#include <iostream>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -76,14 +75,14 @@ START_NAMESPACE_STIR
 
 DiscretisedDensity<3,float>* ask_image(const char *const input_query)
 {
-  
+
   char filename[max_filename_length];
-  ask_filename_with_extension(filename, 
-				input_query,
-				"");
-  
+  ask_filename_with_extension(filename,
+                input_query,
+                "");
+
   return DiscretisedDensity<3,float>::read_from_file(filename);
-  
+
 }
 
 END_NAMESPACE_STIR
@@ -99,9 +98,10 @@ print_usage()
 int
 main(int argc, char *argv[])
 {
-  
+
   shared_ptr<DiscretisedDensity<3,float> > input_image_ptr;
-  PostFiltering<DiscretisedDensity<3,float> > post_filtering;
+  shared_ptr< PostFiltering<DiscretisedDensity<3,float> > > post_filtering(
+  new PostFiltering<DiscretisedDensity<3,float> >());
   std::string out_filename;
   bool verbose = false;
 
@@ -109,15 +109,15 @@ main(int argc, char *argv[])
   if (argc>1 && argv[1][0] == '-')
     {
       if (strcmp(argv[1], "--verbose") == 0)
-	{
-	  verbose = true;
-	  --argc; ++argv;
-	}
+    {
+      verbose = true;
+      --argc; ++argv;
+    }
       else
-	{
-	  print_usage();
-	  return EXIT_FAILURE;
-	}
+    {
+      print_usage();
+      return EXIT_FAILURE;
+    }
     }
 
   if (argc!=4)
@@ -132,13 +132,13 @@ main(int argc, char *argv[])
     {
       char outfile[max_filename_length];
       ask_filename_with_extension(outfile,
-				  "Output to which file: ", "");
+                  "Output to which file: ", "");
       out_filename = outfile;
     }
   if (argc>2)
     {
-      input_image_ptr = 
-	read_from_file<DiscretisedDensity<3,float> >(argv[2]);
+      input_image_ptr =
+    read_from_file<DiscretisedDensity<3,float> >(argv[2]);
     }
   else
     {
@@ -146,22 +146,22 @@ main(int argc, char *argv[])
     }
   if (argc>3)
     {
-      if (post_filtering.parse(argv[3]) == false)
-	{
-	  warning("postfilter aborting because error in parsing. Not writing any output");
-	  return EXIT_FAILURE;
-	}
+      if (post_filtering->parse(argv[3]) == false)
+    {
+      warning("postfilter aborting because error in parsing. Not writing any output");
+      return EXIT_FAILURE;
+    }
     }
   else
-    {     
+    {
       cerr << "\nI'm going to ask you for the type of filter (or image processor)\n"
-	"Possible values:\n";
+    "Possible values:\n";
       DataProcessor<DiscretisedDensity<3,float> >::list_registered_names(cerr);
-      
-      post_filtering.ask_parameters();
+
+      post_filtering->ask_parameters();
     }
 
-  if (post_filtering.is_filter_null())
+  if (post_filtering->is_filter_null())
     {
       warning("postfilter: No filter set. Not writing any output.\n");
       return EXIT_FAILURE;
@@ -172,14 +172,15 @@ main(int argc, char *argv[])
       warning("postfilter: No input image. Not writing any output.\n");
       return EXIT_FAILURE;
     }
-    
+
   if (verbose)
     {
-      cerr << "PostFilteringParameters:\n" << post_filtering.parameter_info();
+      cerr << "PostFilteringParameters:\n" << post_filtering->parameter_info();
     }
 
-  post_filtering.process_data(*input_image_ptr);
-  
+  if(post_filtering->process_data(*input_image_ptr.get()) == stir::Succeeded::no)
+     return EXIT_FAILURE;
+
   if (OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
       write_to_file(out_filename,*input_image_ptr) == Succeeded::yes)
     return EXIT_SUCCESS;
