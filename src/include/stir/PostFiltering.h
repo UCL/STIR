@@ -34,7 +34,7 @@
 
 START_NAMESPACE_STIR
 
-template<int numT, typename elemT>
+template <class DataT>
 class PostFiltering : public ParsingObject
 {
 public:
@@ -44,7 +44,7 @@ public:
     //! Default constructor
     inline PostFiltering();
 
-    virtual void process_data(DiscretisedDensity< numT, elemT>& arg);
+    virtual void process_data(DataT& arg);
 
     //! Check if filter exists
     bool is_filter_null();
@@ -55,19 +55,19 @@ protected:
     virtual bool post_processing();
 
 private:
-    shared_ptr<DataProcessor<DiscretisedDensity< numT, elemT> > > filter_sptr;
+    shared_ptr<DataProcessor< DataT > > filter_sptr;
 
 };
 
-template<int numT, typename elemT>
-PostFiltering<numT,elemT>::PostFiltering()
+template <class DataT>
+PostFiltering<DataT>::PostFiltering()
 {
 
     set_defaults();
 }
 
-template <int numT, typename elemT>
-PostFiltering<numT,elemT>::PostFiltering(const char * const par_filename)
+template <class DataT>
+PostFiltering<DataT>::PostFiltering(const char * const par_filename)
 {
     set_defaults();
     if (par_filename!=0)
@@ -79,16 +79,16 @@ PostFiltering<numT,elemT>::PostFiltering(const char * const par_filename)
         ask_parameters();
 }
 
-template <int numT, typename elemT>
+template <class DataT>
 void
-PostFiltering<numT,elemT>::set_defaults()
+PostFiltering<DataT>::set_defaults()
 {
     filter_sptr.reset();
 }
 
-template <int numT, typename elemT>
+template <class DataT>
 void
-PostFiltering<numT,elemT>::initialise_keymap()
+PostFiltering<DataT>::initialise_keymap()
 {
     parser.add_start_key("PostFilteringParameters");
     parser.add_start_key("PostFiltering parameters");
@@ -96,21 +96,21 @@ PostFiltering<numT,elemT>::initialise_keymap()
     parser.add_stop_key("END PostFiltering Parameters");
 }
 
-template <int numT, typename elemT>
+template <class DataT>
 bool
-PostFiltering<numT,elemT>::post_processing()
+PostFiltering<DataT>::post_processing()
 {}
 
-template<int numT, typename elemT>
+template <class DataT>
 void
-PostFiltering<numT,elemT>::process_data(DiscretisedDensity< numT, elemT>& arg)
+PostFiltering<DataT>::process_data(DataT& arg)
 {
     filter_sptr->apply(arg);
 }
 
-template<int numT, typename elemT>
+template <class DataT>
 bool
-PostFiltering<numT,elemT>::is_filter_null()
+PostFiltering<DataT>::is_filter_null()
 {
     return is_null_ptr(filter_sptr);
 }

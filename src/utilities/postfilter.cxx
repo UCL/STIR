@@ -101,7 +101,7 @@ main(int argc, char *argv[])
 {
   
   shared_ptr<DiscretisedDensity<3,float> > input_image_ptr;
-  PostFiltering<3,float> post_filtering;
+  PostFiltering<DiscretisedDensity<3,float> > post_filtering;
   std::string out_filename;
   bool verbose = false;
 
