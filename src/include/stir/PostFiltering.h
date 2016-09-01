@@ -44,6 +44,9 @@ public:
     //! Default constructor
     inline PostFiltering();
 
+    virtual ~PostFiltering()
+    {}
+
     virtual void process_data(DataT& arg);
 
     //! Check if filter exists
