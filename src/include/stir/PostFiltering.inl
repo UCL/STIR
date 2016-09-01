@@ -4,20 +4,6 @@ START_NAMESPACE_STIR
 template <class DataT>
 PostFiltering<DataT>::PostFiltering()
 {
-    set_defaults();
-}
-
-template <class DataT>
-PostFiltering<DataT>::PostFiltering(const char * const par_filename)
-{
-    this->set_defaults();
-    if (par_filename!=0)
-    {
-        if (parse(par_filename)==false)
-            error("Exiting\n");
-    }
-    else
-        ask_parameters();
 }
 
 template <class DataT>
@@ -31,6 +17,7 @@ template <class DataT>
 void
 PostFiltering<DataT>::initialise_keymap()
 {
+    filter_sptr.reset();
     parser.add_start_key("PostFilteringParameters");
     parser.add_start_key("PostFiltering parameters");
     parser.add_parsing_key("PostFilter type", &filter_sptr);

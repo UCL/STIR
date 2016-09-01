@@ -39,8 +39,6 @@ template <class DataT>
         class PostFiltering : public ParsingObject
 {
 public:
-    //! Contructor with input filename
-    PostFiltering(const char * const par_filename);
 
     //! Default constructor
     PostFiltering();
