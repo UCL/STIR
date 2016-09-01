@@ -90,7 +90,8 @@ template <int numT, typename elemT>
 void
 PostFiltering<numT,elemT>::initialise_keymap()
 {
-    parser.add_start_key("Postfilter parameters");
+    parser.add_start_key("PostFilteringParameters");
+    parser.add_start_key("PostFiltering parameters");
     parser.add_parsing_key("PostFilter type", &filter_sptr);
     parser.add_stop_key("END PostFiltering Parameters");
 }
