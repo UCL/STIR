@@ -58,12 +58,10 @@
 */
 
 #include "stir/utilities.h"
-#include "stir/KeyParser.h"
 #include "stir/DiscretisedDensity.h"
-#include "stir/DataProcessor.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
-#include "stir/is_null_ptr.h"
+
 #include "stir/Succeeded.h"
 #include "stir/PostFiltering.h"
 #include <iostream> 
@@ -103,7 +101,7 @@ main(int argc, char *argv[])
 {
   
   shared_ptr<DiscretisedDensity<3,float> > input_image_ptr;
-  PostFiltering post_filtering;
+  PostFiltering<3,float> post_filtering;
   std::string out_filename;
   bool verbose = false;
 
@@ -148,7 +146,7 @@ main(int argc, char *argv[])
     }
   if (argc>3)
     {
-      if (post_filtering.parser.parse(argv[3]) == false)
+      if (post_filtering.parse(argv[3]) == false)
 	{
 	  warning("postfilter aborting because error in parsing. Not writing any output");
 	  return EXIT_FAILURE;
@@ -160,10 +158,10 @@ main(int argc, char *argv[])
 	"Possible values:\n";
       DataProcessor<DiscretisedDensity<3,float> >::list_registered_names(cerr);
       
-      post_filtering.parser.ask_parameters();    
+      post_filtering.ask_parameters();
     }
 
-  if (is_null_ptr(post_filtering.filter_ptr))
+  if (post_filtering.is_filter_null())
     {
       warning("postfilter: No filter set. Not writing any output.\n");
       return EXIT_FAILURE;
@@ -177,10 +175,10 @@ main(int argc, char *argv[])
     
   if (verbose)
     {
-      cerr << "PostFilteringParameters:\n" << post_filtering.parser.parameter_info();
+      cerr << "PostFilteringParameters:\n" << post_filtering.parameter_info();
     }
 
-  post_filtering.filter_ptr->apply(*input_image_ptr);
+  post_filtering.process_data(*input_image_ptr);
   
   if (OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
       write_to_file(out_filename,*input_image_ptr) == Succeeded::yes)
