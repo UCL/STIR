@@ -177,7 +177,7 @@ main(int argc, char *argv[])
       cerr << "PostFilteringParameters:\n" << post_filtering.parameter_info();
     }
 
-  if (post_filtering.process_data(*input_image_ptr.get()) == Succeeded::no)
+  if (post_filtering.process_data(*input_image_ptr) == Succeeded::no)
       return EXIT_FAILURE;
   
   if (OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->

@@ -28,7 +28,7 @@ template <class DataT>
 bool
 PostFiltering<DataT>::post_processing()
 {
-    return false;
+    return !is_null_ptr(filter_sptr);
 }
 
 template <class DataT>
