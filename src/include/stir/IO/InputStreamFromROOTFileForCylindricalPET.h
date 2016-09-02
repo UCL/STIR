@@ -1,29 +1,110 @@
+/*!
+  \file
+  \ingroup IO
+  \brief Declaration of class stir::InputStreamFromROOTFileForCylindricalPET
+
+  \author Nikos Efthimiou
+*/
+/*
+ *  Copyright (C) 2015, 2016 University of Leeds
+    Copyright (C) 2016, UCL
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+
 #ifndef __stir_IO_InputStreamFromROOTFileForCylindricalPET_H__
 #define __stir_IO_InputStreamFromROOTFileForCylindricalPET_H__
 
-
 #include "stir/IO/InputStreamFromROOTFile.h"
+#include "stir/RegisteredParsingObject.h"
 
-class InputStreamFromROOTFileForCylindricalPET : public InputStreamFromROOTFile
+START_NAMESPACE_STIR
+
+class InputStreamFromROOTFileForCylindricalPET : public
+        RegisteredParsingObject< InputStreamFromROOTFileForCylindricalPET ,
+        InputStreamFromROOTFile,
+        InputStreamFromROOTFile >
 {
+private:
+    typedef RegisteredParsingObject< InputStreamFromROOTFileForCylindricalPET ,
+    InputStreamFromROOTFile,
+    InputStreamFromROOTFile > base_type;
 
 public:
+
+    //! Name which will be used when parsing a OSMAPOSLReconstruction object
+    static const char * const registered_name;
+
+    //! Default constructor
+    InputStreamFromROOTFileForCylindricalPET();
+
+    InputStreamFromROOTFileForCylindricalPET(std::string filename,
+                                             std::string chain_name,
+                                             int crystal_repeater_x, int crystal_repeater_y, int crystal_repeater_z,
+                                             int submodule_repeater_x, int submodule_repeater_y, int submodule_repeater_z,
+                                             int module_repeater_x, int module_repeater_y, int module_repeater_z,
+                                             int rsector_repeater,
+                                             bool exclude_scattered, bool exclude_randoms,
+                                             float low_energy_window, float up_energy_window,
+                                             int offset_dets);
 
     virtual ~InputStreamFromROOTFileForCylindricalPET() {}
 
     virtual
     Succeeded get_next_record(CListRecordROOT& record);
 
-private:
+    //! gives method information
+    virtual std::string method_info() const;
+
+    inline virtual int get_num_rings() const;
+
+    inline virtual int get_num_dets_per_ring() const;
+
+    //! Get the number of axial modules
+    inline virtual int get_num_axial_blocks_per_bucket_v() const;
+    //! Get the number of transaxial modules
+    inline virtual int get_num_transaxial_blocks_per_bucket_v() const;
+    //! Get the axial number of crystals per module
+    inline virtual int get_num_axial_crystals_per_block_v() const;
+    //! Get the transaxial number of crystals per module
+    inline virtual int get_num_transaxial_crystals_per_block_v() const;
+
+    inline virtual int get_num_axial_crystals_per_singles_unit() const;
+
+    inline virtual int get_num_trans_crystals_per_singles_unit() const;
+
+protected:
+
+    virtual void set_defaults();
+    virtual void initialise_keymap();
+    virtual bool post_processing();
+
+    Int_t crystalID1, crystalID2;
     Int_t submoduleID1, submoduleID2;
     Int_t moduleID1, moduleID2;
+    Int_t rsectorID1, rsectorID2;
 
+    int crystal_repeater_x;
+    int crystal_repeater_y;
+    int crystal_repeater_z;
     int submodule_repeater_x;
     int submodule_repeater_y;
     int submodule_repeater_z;
     int module_repeater_x;
     int module_repeater_y;
     int module_repeater_z;
+    int rsector_repeater;
 
     //! In GATE, inside a block, the indeces start from the lower
     //! unit counting upwards. Therefore in order to align the
@@ -31,67 +112,95 @@ private:
     int half_block;
 };
 
-Succeeded
+int
 InputStreamFromROOTFileForCylindricalPET::
-get_next_record(CListRecordROOT& record)
+get_num_rings() const
 {
-
-    while(true)
-    {
-        if (current_position == nentries)
-            return Succeeded::no;
-
-
-        if (stream_ptr->GetEntry(current_position) == 0 )
-            return Succeeded::no;
-
-        current_position ++ ;
-
-        if ( (comptonphantom1 > 0 && comptonphantom2>0) && exclude_scattered )
-            continue;
-        else if ( (eventID1 != eventID2) && exclude_randoms )
-            continue;
-        else if (energy1 < low_energy_window ||
-                 energy1 > up_energy_window ||
-                 energy2 < low_energy_window ||
-                 energy2 > up_energy_window)
-            continue;
-        else
-            break;
-    }
-
-    int ring1 = static_cast<int>(crystalID1/crystal_repeater_y)
-            + static_cast<int>(submoduleID1/submodule_repeater_y)*crystal_repeater_z
-            + static_cast<int>(moduleID1/module_repeater_y)*submodule_repeater_z*crystal_repeater_z;
-
-    int ring2 = static_cast<int>(crystalID2/crystal_repeater_y)
-            + static_cast<int>(submoduleID2/submodule_repeater_y)*crystal_repeater_z
-            + static_cast<int>(moduleID2/module_repeater_y)*submodule_repeater_z*crystal_repeater_z;
-
-    int crystal1 = rsectorID1  * module_repeater_y * submodule_repeater_y * crystal_repeater_y
-            + (moduleID1%module_repeater_y) * submodule_repeater_y * crystal_repeater_y
-            + (submoduleID1%submodule_repeater_y) * crystal_repeater_y
-            + (crystalID1%crystal_repeater_y);
-
-    int crystal2 = rsectorID2 * module_repeater_y * submodule_repeater_y * crystal_repeater_y
-            + (moduleID2%module_repeater_y) * submodule_repeater_y * crystal_repeater_y
-            + (submoduleID2% submodule_repeater_y) * crystal_repeater_y
-            + (crystalID2%crystal_repeater_y);
-
-    // GATE counts crystal ID =0 the most negative. Therefore
-    // ID = 0 should be negative, in Rsector 0 and the mid crystal ID be 0 .
-    crystal1 -= half_block;
-    crystal2 -= half_block;
-
-    // Add offset
-    crystal1 += offset_dets;
-    crystal2 += offset_dets;
-
-    return
-            record.init_from_data(ring1, ring2,
-                                  crystal1, crystal2,
-                                  time1, time2,
-                                  eventID1, eventID2);
+    return static_cast<int>(this->rsector_repeater * this->module_repeater_y *
+                            this->submodule_repeater_y * this->crystal_repeater_y);
 }
+
+int
+InputStreamFromROOTFileForCylindricalPET::
+get_num_dets_per_ring() const
+{
+    return static_cast<int>( this->crystal_repeater_z * this->module_repeater_z *
+                             this->submodule_repeater_z);
+}
+
+
+int
+InputStreamFromROOTFileForCylindricalPET::
+get_num_axial_blocks_per_bucket_v() const
+{
+    return this->module_repeater_z;
+}
+
+int
+InputStreamFromROOTFileForCylindricalPET::
+get_num_transaxial_blocks_per_bucket_v() const
+{
+    return this->module_repeater_y;
+}
+
+int
+InputStreamFromROOTFileForCylindricalPET::
+get_num_axial_crystals_per_block_v() const
+{
+    return static_cast<int>(this->crystal_repeater_z *
+                            this->module_repeater_z);
+}
+
+int
+InputStreamFromROOTFileForCylindricalPET::
+get_num_transaxial_crystals_per_block_v() const
+{
+    return static_cast<int>(this->crystal_repeater_y *
+                            this->module_repeater_y);
+}
+
+int
+InputStreamFromROOTFileForCylindricalPET::
+get_num_axial_crystals_per_singles_unit() const
+{
+    if (this->singles_readout_depth == 1) // One PMT per Rsector
+        return static_cast<int>(this->crystal_repeater_z *
+                                this->module_repeater_z *
+                                this->submodule_repeater_z);
+    else if (this->singles_readout_depth == 2) // One PMT per module
+        return static_cast<int>(this->crystal_repeater_z *
+                                this->submodule_repeater_z);
+    else if (this->singles_readout_depth == 3) // One PMT per submodule
+        return this->crystal_repeater_z;
+    else if (this->singles_readout_depth == 4) // One PMT per crystal
+        return 1;
+    else
+        error(boost::format("Singles readout depth (%1%) is invalid") % this->singles_readout_depth);
+
+    return 0;
+}
+
+int
+InputStreamFromROOTFileForCylindricalPET::
+get_num_trans_crystals_per_singles_unit() const
+{
+    if (this->singles_readout_depth == 1) // One PMT per Rsector
+        return static_cast<int>(this->module_repeater_y *
+                                this->submodule_repeater_y *
+                                this->crystal_repeater_y);
+    else if (this->singles_readout_depth == 2) // One PMT per module
+        return static_cast<int>(this->submodule_repeater_y *
+                                this->crystal_repeater_y);
+    else if (this->singles_readout_depth == 3) // One PMT per submodule
+        return this->crystal_repeater_y;
+    else if (this->singles_readout_depth == 4) // One PMT per crystal
+        return 1;
+    else
+        error(boost::format("Singles readout depth (%1%) is invalid") % this->singles_readout_depth);
+
+    return 0;
+}
+
+END_NAMESPACE_STIR
 
 #endif

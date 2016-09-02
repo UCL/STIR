@@ -86,4 +86,25 @@ set_saved_get_positions(const std::vector<long long int>& poss)
     saved_get_positions = poss;
 }
 
+float
+InputStreamFromROOTFile::
+get_low_energy_thres() const
+{
+    return low_energy_window;
+}
+
+float
+InputStreamFromROOTFile::
+get_up_energy_thres() const
+{
+    return up_energy_window;
+}
+
+std::string
+InputStreamFromROOTFile::
+get_ROOT_filename() const
+{
+    return this->filename;
+}
+
 END_NAMESPACE_STIR

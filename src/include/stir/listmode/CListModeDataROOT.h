@@ -74,8 +74,7 @@ private:
 
     //! The header file, bad name choise.
     std::string listmode_filename;
-    //! The root file
-    std::string input_data_filename;
+
     //! Pointer to the listmode data
     shared_ptr<InputStreamFromROOTFile > current_lm_data_ptr;
 
@@ -91,50 +90,7 @@ private:
 
     KeyParser parser;
     //! Name of input chain which is going to be used.
-    std::string name_of_input_tchain;
 
-    //!
-    int singles_readout_depth;
-    //! Number of the rsectors used in the GATE mac file
-    int number_of_rsectors;
-    //! The x axis would indicate mupliple layers
-    int number_of_modules_x;
-    //! The y axis indicates the tangestial position
-    int number_of_modules_y;
-    //! The z axis is the axial
-    int number_of_modules_z;
-    //! Number of submodules x in the GATE mac file
-    int number_of_submodules_x;
-    //! Submodule y repeater in the GATE mac file
-    int number_of_submodules_y;
-    //! Submodule z repeater in the GATE mac file
-    int number_of_submodules_z;
-    //! Crystal x repeater in the GATE mac file
-    int number_of_crystals_x;
-    //! Crystla y repeater in the GATE mac file
-    int number_of_crystals_y;
-    //! Crystal z repeater in the GATE mac file
-    int number_of_crystals_z;
-    //! Number of detectors to rotate, if the user has used default GATE
-    //! geometry, first block in phi = 0, then this should be zero, to
-    //! align with STIR.
-    int offset_dets;
-
-    //! Total number of events in the ROOT file
-    long long int total_number_of_events;
-
-    //! If set all scattered events will be excluded
-    bool exclude_scattered;
-    //! If set all random event will be excluded
-    bool exclude_randoms;
-
-    //! The low energy window threshold
-    //! \warning When ExamData are merged it will be removed
-    float low_energy_window;
-    //! The upper energy window threshold
-    //! \warning When ExamData are merged it will be removed
-    float up_energy_window;
-    //! Checks if the input file is indeed a root file, and opens it.
     Succeeded open_lm_file();
 };
 
