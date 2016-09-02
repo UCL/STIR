@@ -55,6 +55,12 @@ if (LLN_FOUND)
  )
 endif()
 
+if (CERN_ROOT_FOUND)
+ list(APPEND ${dir_LIB_SOURCES}
+    InputStreamFromROOTFile
+ )
+endif()
+
 if(AVW_FOUND)
   list(APPEND ${dir_LIB_SOURCES}
     stir_AVW
@@ -65,6 +71,10 @@ include(stir_lib_target)
 
 if (LLN_FOUND)
   target_link_libraries(IO ${LLN_LIBRARIES})
+endif()
+
+if (CERN_ROOT_FOUND)
+  target_link_libraries(IO ${CERN_ROOT_LIBRARIES})
 endif()
 
 if (AVW_FOUND)

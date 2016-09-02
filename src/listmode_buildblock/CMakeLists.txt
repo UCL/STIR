@@ -21,6 +21,14 @@ if (HAVE_ECAT)
   )
 endif()
 
+if (HAVE_CERN_ROOT)
+	list(APPEND ${dir_LIB_SOURCES}
+		CListModeDataROOT
+		CListRecordROOT
+	)
+endif()
+
+
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries
 
 
