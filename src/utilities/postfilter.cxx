@@ -57,13 +57,12 @@
 
 */
 
+#include "stir/PostFiltering.h"
 #include "stir/utilities.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
-
 #include "stir/Succeeded.h"
-#include "stir/PostFiltering.h"
 #include <iostream> 
 
 #ifndef STIR_NO_NAMESPACES
@@ -178,7 +177,8 @@ main(int argc, char *argv[])
       cerr << "PostFilteringParameters:\n" << post_filtering.parameter_info();
     }
 
-  post_filtering.process_data(*input_image_ptr);
+  if (post_filtering.process_data(*input_image_ptr) == Succeeded::no)
+      return EXIT_FAILURE;
   
   if (OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
       write_to_file(out_filename,*input_image_ptr) == Succeeded::yes)
