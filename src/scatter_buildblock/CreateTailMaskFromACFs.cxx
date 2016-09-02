@@ -177,6 +177,7 @@ process_data()
                     return Succeeded::no;
             }
     }
+    return Succeeded::yes;
 }
 
 END_NAMESPACE_STIR
