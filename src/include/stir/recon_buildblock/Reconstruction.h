@@ -41,7 +41,6 @@
 #include <string>
 
 #include "stir/IO/ExamData.h"
-#include "stir/recon_buildblock/BinNormalisation.h"
 
 START_NAMESPACE_STIR
 
