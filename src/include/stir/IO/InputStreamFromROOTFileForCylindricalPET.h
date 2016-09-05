@@ -67,10 +67,10 @@ public:
     //! gives method information
     virtual std::string method_info() const;
 
+    //! Calculate the number of rings based on the crystal, module, submodule repeaters
     inline virtual int get_num_rings() const;
-
+    //! Calculate the number of detectors per ring based on the crystal, module, submodule repeaters
     inline virtual int get_num_dets_per_ring() const;
-
     //! Get the number of axial modules
     inline virtual int get_num_axial_blocks_per_bucket_v() const;
     //! Get the number of transaxial modules
@@ -79,9 +79,9 @@ public:
     inline virtual int get_num_axial_crystals_per_block_v() const;
     //! Get the transaxial number of crystals per module
     inline virtual int get_num_transaxial_crystals_per_block_v() const;
-
+    //! Calculate the number of axial crystals per singles unit based on the repeaters numbers and the readout deptth
     inline virtual int get_num_axial_crystals_per_singles_unit() const;
-
+    //! Calculate the number of trans crystals per singles unit based on the repeaters numbers and the readout deptth
     inline virtual int get_num_trans_crystals_per_singles_unit() const;
 
 protected:
@@ -112,95 +112,6 @@ protected:
     int half_block;
 };
 
-int
-InputStreamFromROOTFileForCylindricalPET::
-get_num_rings() const
-{
-    return static_cast<int>(this->rsector_repeater * this->module_repeater_y *
-                            this->submodule_repeater_y * this->crystal_repeater_y);
-}
-
-int
-InputStreamFromROOTFileForCylindricalPET::
-get_num_dets_per_ring() const
-{
-    return static_cast<int>( this->crystal_repeater_z * this->module_repeater_z *
-                             this->submodule_repeater_z);
-}
-
-
-int
-InputStreamFromROOTFileForCylindricalPET::
-get_num_axial_blocks_per_bucket_v() const
-{
-    return this->module_repeater_z;
-}
-
-int
-InputStreamFromROOTFileForCylindricalPET::
-get_num_transaxial_blocks_per_bucket_v() const
-{
-    return this->module_repeater_y;
-}
-
-int
-InputStreamFromROOTFileForCylindricalPET::
-get_num_axial_crystals_per_block_v() const
-{
-    return static_cast<int>(this->crystal_repeater_z *
-                            this->module_repeater_z);
-}
-
-int
-InputStreamFromROOTFileForCylindricalPET::
-get_num_transaxial_crystals_per_block_v() const
-{
-    return static_cast<int>(this->crystal_repeater_y *
-                            this->module_repeater_y);
-}
-
-int
-InputStreamFromROOTFileForCylindricalPET::
-get_num_axial_crystals_per_singles_unit() const
-{
-    if (this->singles_readout_depth == 1) // One PMT per Rsector
-        return static_cast<int>(this->crystal_repeater_z *
-                                this->module_repeater_z *
-                                this->submodule_repeater_z);
-    else if (this->singles_readout_depth == 2) // One PMT per module
-        return static_cast<int>(this->crystal_repeater_z *
-                                this->submodule_repeater_z);
-    else if (this->singles_readout_depth == 3) // One PMT per submodule
-        return this->crystal_repeater_z;
-    else if (this->singles_readout_depth == 4) // One PMT per crystal
-        return 1;
-    else
-        error(boost::format("Singles readout depth (%1%) is invalid") % this->singles_readout_depth);
-
-    return 0;
-}
-
-int
-InputStreamFromROOTFileForCylindricalPET::
-get_num_trans_crystals_per_singles_unit() const
-{
-    if (this->singles_readout_depth == 1) // One PMT per Rsector
-        return static_cast<int>(this->module_repeater_y *
-                                this->submodule_repeater_y *
-                                this->crystal_repeater_y);
-    else if (this->singles_readout_depth == 2) // One PMT per module
-        return static_cast<int>(this->submodule_repeater_y *
-                                this->crystal_repeater_y);
-    else if (this->singles_readout_depth == 3) // One PMT per submodule
-        return this->crystal_repeater_y;
-    else if (this->singles_readout_depth == 4) // One PMT per crystal
-        return 1;
-    else
-        error(boost::format("Singles readout depth (%1%) is invalid") % this->singles_readout_depth);
-
-    return 0;
-}
-
 END_NAMESPACE_STIR
-
+#include "stir/IO/InputStreamFromROOTFileForCylindricalPET.inl"
 #endif

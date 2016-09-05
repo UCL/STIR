@@ -59,6 +59,7 @@
 #ifdef HAVE_CERN_ROOT
 #include "stir/IO/ROOTListmodeInputFileFormat.h"
 #include "stir/IO/InputStreamFromROOTFileForCylindricalPET.h"
+#include "stir/IO/InputStreamFromROOTFileForECATPET.h"
 #endif
 
 #ifdef HAVE_ITK
@@ -82,6 +83,7 @@ static InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGri
 #ifdef HAVE_CERN_ROOT
 static RegisterInputFileFormat<ROOTListmodeInputFileFormat> LMdummyROOT(6);
 static InputStreamFromROOTFileForCylindricalPET::RegisterIt dummy60606;
+static InputStreamFromROOTFileForECATPET::RegisterIt dummy606062;
 #endif
 
 #ifdef HAVE_LLN_MATRIX

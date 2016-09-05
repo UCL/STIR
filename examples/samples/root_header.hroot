@@ -1,7 +1,5 @@
 ROOT header := 
 
-name of data file := benchmarkPET.root
-
 originating system := User_defined_scanner
 Number of rings                          := 4
 Number of detectors per ring             := 504
@@ -10,6 +8,13 @@ Average depth of interaction (cm)        := 0.7
 Distance between rings (cm)              := 0.40625
 Default bin size (cm)                    := 0.208626
 Maximum number of non-arc-corrected bins := 344
+
+
+
+GATE scanner type := GATE_Cylindrical_PET
+GATE_Cylindrical_PET Parameters :=
+
+name of data file := benchmarkPET.root
 
 name of input TChain := Coincidences
 
@@ -55,5 +60,7 @@ offset (num of detectors) := 0
 ; If want to deactivate set to [0, 1000]
 low energy window (keV) := 0
 upper energy window (keV):= 1000
+
+End GATE_Cylindrical_PET Parameters :=
 
 end ROOT header := 

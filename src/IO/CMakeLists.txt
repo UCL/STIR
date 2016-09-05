@@ -59,6 +59,7 @@ if (CERN_ROOT_FOUND)
  list(APPEND ${dir_LIB_SOURCES}
     InputStreamFromROOTFile
     InputStreamFromROOTFileForCylindricalPET
+    InputStreamFromROOTFileForECATPET
  )
 endif()
 
