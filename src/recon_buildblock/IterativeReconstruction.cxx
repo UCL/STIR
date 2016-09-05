@@ -620,23 +620,6 @@ set_input_data(const shared_ptr<ExamData> &arg)
 }
 
 template <typename TargetT>
-void
-IterativeReconstruction<TargetT>::
-set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
-{
-    this->objective_function_sptr->set_additive_proj_data_sptr(arg);
-}
-
-template <typename TargetT>
-void
-IterativeReconstruction<TargetT>::
-set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
-{
-    error("Not implemented yet");
-}
-
-
-template <typename TargetT>
 int
 IterativeReconstruction<TargetT>::
 get_subset_num()

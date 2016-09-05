@@ -233,19 +233,5 @@ set_input_data(const shared_ptr<ExamData> &arg)
     this->proj_data_ptr.reset(dynamic_cast < ProjData * > (arg.get()) );
 }
 
-void
-AnalyticReconstruction::
-set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
-{
-    error("Not defined in AnalyticReconstruction");
-}
-
-void
-AnalyticReconstruction::
-set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
-{
-    error("Not implemented yet, please precorrect the projection data");
-}
- 
 END_NAMESPACE_STIR
 
