@@ -13,18 +13,16 @@ os:
 
 # Enviroment variables:
 global:
-  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON=1 -DSTIR_MPI=0 -DBUILD_SWIG_MATLAB=0"
+  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON=1 -DSTIR_MPI=0 -DBUILD_SWIG_MATLAB=0 -DSTIR_OPENMP=0 -DCMAKE_BUILD_TYPE=Release"
 env:
-  - EXTRA_BUILD_FLAGS="-DSTIR_OPENMP=0"
-# when OpenMP is enabled:
-# - EXTRA_BUILD_FLAGS="-DSTIR_OPENMP=1"
+  - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0"
+  - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1"
 
 # Ubuntu 14.04 LTS (trusty)
 dist: trusty
 
 # No need for sudo
 sudo: false
-
 
 # Compilation dependencies
 addons:
@@ -33,8 +31,14 @@ addons:
       - libboost-all-dev
       - swig
       - libgomp1
+      - root-system-bin
 
 # Actual compilation script
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew tap homebrew/science; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install --with-cocoa root; fi
 
 script:
   - mkdir build install
