@@ -98,7 +98,7 @@ class CListEventDataGESigna
 }; /*-coincidence event*/
 
 
-//! A class for storing and using a timing 'event' from a GE Dimension listmode file
+//! A class for storing and using a timing 'event' from a GE Signa PET/MR listmode file
 /*! \ingroup listmode
   This class cannot have virtual functions, as it needs to just store the data 8 bytes for CListRecordGESigna to work.
  */
@@ -282,8 +282,10 @@ dynamic_cast<CListRecordGESigna const *>(&e2) != 0 &&
   { 
     // check first 2 bits
     // TODO: byte-swap? or could be data_ptr[1]
-    std::cerr << " Event-size is " << std::size_t(data_ptr[0]&0x3) << std::endl;
-    return std::size_t(data_ptr[0]&0x3);
+//    std::cerr << " Event-size is " << std::size_t(data_ptr[0]&0x80) << std::endl;
+    
+
+    return std::size_t(6); // std::size_t(data_ptr[0]&0x80);
   }
 
   virtual Succeeded init_from_data_ptr(const char * const data_ptr, 
@@ -293,17 +295,23 @@ dynamic_cast<CListRecordGESigna const *>(&e2) != 0 &&
 #endif
                                        , const bool do_byte_swap)
   {
-    assert(size >= 4);
-    std::copy(data_ptr, data_ptr+4, reinterpret_cast<char *>(&this->raw[0]));
+//    std::cout << " Size  =" << size << " \n" ;
+    assert(size >= 6);
+//std::cout << " Got to here \n" ;
+    std::copy(data_ptr, data_ptr+6, reinterpret_cast<char *>(&this->raw[0]));
     // TODO might have to swap raw[0] and raw[1] if byteswap
+
     if (do_byte_swap)
       {
         ByteOrder::swap_order(this->raw[0]);
       }
     if (this->is_event() || this->is_time())
       {
+//	std::cout << "This is an event \n" ;
         assert(size >= 6);
-        std::copy(data_ptr+4, data_ptr+2, reinterpret_cast<char *>(&this->raw[1]));
+	
+        std::copy(data_ptr+6, data_ptr+6, reinterpret_cast<char *>(&this->raw[1]));
+//	std::cout << "after assert an event \n" ;
       }
     if (do_byte_swap)
       {

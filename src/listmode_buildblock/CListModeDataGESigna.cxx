@@ -34,6 +34,7 @@ CListModeDataGESigna(const std::string& listmode_filename)
   if (open_lm_file() == Succeeded::no)
     error(boost::format("CListModeDataGESigna: error opening the first listmode file for filename %s") %
 	  listmode_filename);
+ printf( "\n Success in opening the listmode\n" );
 }
 
 std::string
@@ -69,10 +70,10 @@ open_lm_file()
     {
       return Succeeded::no;
     }
-  stream_ptr->seekg(71168); // TODO get offset from RDF
+  stream_ptr->seekg(12492704); // TODO get offset from RDF. // I got it from the listmode OtB 1/09/16 5872
   current_lm_data_ptr.reset(
                             new InputStreamWithRecords<CListRecordT, bool>(stream_ptr, 
-                                                                           4, 16,
+                                                                           4, 16, 
                                                                            ByteOrder::little_endian != ByteOrder::get_native_order()));
 
   return Succeeded::yes;
