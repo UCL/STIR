@@ -86,9 +86,9 @@ MatrixTests::
 run_tests()
 {
   std::cerr << "Testing numerics/MatrixFunction.h functions\n";
-//  run_tests_1D();
-//  run_tests_2D();
-//  run_tests_max_eigenvector();
+  run_tests_1D();
+  run_tests_2D();
+  run_tests_max_eigenvector();
   run_tests_max_eigenvector_non_diagonal();
 }
 
