@@ -56,6 +56,10 @@
 #include "stir/IO/ECAT8_32bitListmodeInputFileFormat.h"
 
 #include "stir/IO/GESignaListmodeInputFileFormat.h"
+//! Addition for ROOT support - Nikos Efthimiou
+#ifdef HAVE_CERN_ROOT
+#include "stir/IO/ROOTListmodeInputFileFormat.h"
+#endif
 
 #ifdef HAVE_ITK
 #include "stir/IO/ITKOutputFileFormat.h"
@@ -70,6 +74,14 @@ static ITKOutputFileFormat::RegisterIt dummyITK1;
 #endif
 static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfIn;
 static InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfIn;
+
+//!
+//! \brief LMdummyROOT
+//! \author Nikos Efthimiou
+//! \details ROOT support
+#ifdef HAVE_CERN_ROOT
+static RegisterInputFileFormat<ROOTListmodeInputFileFormat> LMdummyROOT(6);
+#endif
 
 #ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT

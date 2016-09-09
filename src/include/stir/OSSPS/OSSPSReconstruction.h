@@ -33,6 +33,7 @@
 #include "stir/recon_buildblock/IterativeReconstruction.h"
 #include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/ProjData.h"
+#include "stir/RegisteredParsingObject.h"
 
 START_NAMESPACE_STIR
 
@@ -91,11 +92,23 @@ START_NAMESPACE_STIR
 */
 template <class TargetT>
 class OSSPSReconstruction: 
-public IterativeReconstruction<TargetT>
+        public
+            RegisteredParsingObject<
+                OSSPSReconstruction <TargetT > ,
+                    Reconstruction < TargetT >,
+                    IterativeReconstruction < TargetT >
+                 >
+//public IterativeReconstruction<TargetT>
 {
  private:
-  typedef IterativeReconstruction<TargetT > base_type;
+  typedef RegisteredParsingObject<
+    OSSPSReconstruction <TargetT > ,
+        Reconstruction < TargetT >,
+        IterativeReconstruction < TargetT >
+     > base_type;
 public:
+    //! Name which will be used when parsing a ProjectorByBinPair object
+    static const char * const registered_name;
 
   //! Default constructor (calls set_defaults())
   OSSPSReconstruction();

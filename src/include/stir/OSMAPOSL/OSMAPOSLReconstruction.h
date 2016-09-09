@@ -33,6 +33,7 @@
 #define __stir_OSMAPOSL_OSMAPOSLReconstruction_h__
 
 #include "stir/recon_buildblock/IterativeReconstruction.h"
+#include "stir/RegisteredParsingObject.h"
 
 START_NAMESPACE_STIR
 
@@ -77,11 +78,24 @@ class PoissonLogLikelihoodWithLinearModelForMean;
 */
 template <typename TargetT>
 class OSMAPOSLReconstruction:
-public IterativeReconstruction<TargetT >
+        public
+            RegisteredParsingObject<
+                OSMAPOSLReconstruction <TargetT > ,
+                    Reconstruction < TargetT >,
+                    IterativeReconstruction < TargetT >
+                 >
+//public IterativeReconstruction<TargetT >
 {
  private:
-  typedef IterativeReconstruction<TargetT > base_type;
+  typedef RegisteredParsingObject<
+    OSMAPOSLReconstruction <TargetT > ,
+        Reconstruction < TargetT >,
+        IterativeReconstruction < TargetT >
+     > base_type;
 public:
+
+    //! Name which will be used when parsing a OSMAPOSLReconstruction object
+    static const char * const registered_name;
 
   //! Default constructor (calling set_defaults())
   OSMAPOSLReconstruction();
@@ -134,9 +148,10 @@ public:
   void set_MAP_model(const std::string&); 
   //@}
 
- protected:
   //! prompts the user to enter parameter values manually
   virtual void ask_parameters();
+
+ protected:
 
   //! determines whether non-positive values in the initial image will be set to small positive ones
   bool enforce_initial_positivity;

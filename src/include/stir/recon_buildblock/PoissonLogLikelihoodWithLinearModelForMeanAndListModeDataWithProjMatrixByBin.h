@@ -33,6 +33,8 @@
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h" 
 #include "stir/ProjDataInMemory.h"
+
+#include "stir/ExamInfo.h"
 START_NAMESPACE_STIR
 
 

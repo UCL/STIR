@@ -83,6 +83,8 @@ These are only minimally documented at the present stage unfortunately.
 <li><tt>lm_generate_headcurve</tt> is a new list mode utility to output total counts.</li>
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
 <li>add Verbosity level (currently only to be set from interactive languages)</li>
+<li>New input: GATE compatibility layer. ROOT files from cylindricalPET scanners can be imported
+as listmode files. </li>
 </ul>
 
 <h3>Changed functionality</h3>
@@ -183,7 +185,9 @@ using the default output file format.</li>
    <li>added <code>get_proj_data_info_sptr()</code> (also to <code>Sinogram</code> et al)</li>
   </ul>
 </li>
-
+<li> Support for Energy Resolution in Scanners, has been added. 
+In order to ensure backwards compatibility, at the moment, it is completely optional.</li>
+<li> Information on energy windows has been added in the ExamInfo. </li>
 </ul>
 
 <h3>Other code changes</h3>
