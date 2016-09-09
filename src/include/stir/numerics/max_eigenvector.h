@@ -29,7 +29,7 @@
 #include "stir/numerics/norm.h"
 #include "stir/more_algorithms.h"
 #include "stir/Succeeded.h"
-
+#include "stir/CPUTimer.h"
 START_NAMESPACE_STIR
 
 /*!
@@ -82,7 +82,7 @@ absolute_max_eigenvector_using_power_method(elemT& max_eigenvalue,
 					    const Array<1,elemT>& start,
 					    const double tolerance = .01,
                         const unsigned long max_num_iterations = 10000UL,
-                                            bool is_cov = true)
+                                            bool is_diagonal = true)
 {
   assert(m.is_regular());
   if (m.size()==0)
@@ -96,10 +96,11 @@ absolute_max_eigenvector_using_power_method(elemT& max_eigenvalue,
   double change;
   do
     {
-      if (is_cov)
+      if (is_diagonal)
           max_eigenvector = matrix_multiply(m, current);
       else
-        max_eigenvector = matrix_matrixT_multiply(m, current);
+          max_eigenvector = matrix_matrixT_multiply(m, current);
+
       const elemT norm_factor = *abs_max_element(max_eigenvector.begin(), max_eigenvector.end());
       max_eigenvector /= norm_factor;
       change = norm_squared(max_eigenvector - current);
@@ -109,7 +110,10 @@ absolute_max_eigenvector_using_power_method(elemT& max_eigenvalue,
   while (change > tolerance_squared && remaining_num_iterations!=0);
   
   current /= static_cast<elemT>(norm(current));
+  if (is_diagonal)
   max_eigenvector = matrix_multiply(m, current);
+  else
+      max_eigenvector = matrix_matrixT_multiply(m, current);
   // compute eigenvalue using Rayleigh quotient
   max_eigenvalue = 
     static_cast<elemT>(inner_product(current,max_eigenvector) /
