@@ -28,9 +28,7 @@
 */
 
 #include "stir/ParsingObject.h"
-#include "stir/Succeeded.h"
 #include "stir/RegisteredObject.h"
-
 #include "stir/ProjData.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -127,7 +125,7 @@ public:
     //!
     //! \brief set_exam_info_sptr
     //! \details Since July 2016, the information for the energy window and energy
-    //! resolution come from the ExamInfo.
+    //! resolution are stored in ExamInfo.
     inline void
     set_exam_info_sptr(const shared_ptr<ExamInfo>&);
 
@@ -138,12 +136,6 @@ public:
     */
     void
     sample_scatter_points();
-
-    /**
-     *
-     * \name functions to set parameters
-     * @{
-     */
 
     inline void
     set_output_proj_data(const std::string&);
@@ -190,8 +182,6 @@ public:
     inline void set_random_point(const bool&);
 
     inline void set_cache_enabled(const bool&);
-
-    /** @}*/
 
     //! \name Compton scatter cross sections
     //@{
@@ -246,14 +236,9 @@ protected:
 
     virtual void set_defaults();
     virtual void initialise_keymap();
-
-    //!
-    //! \brief post_processing
-    //! \return
-    //! \details used to check acceptable parameter ranges, etc...
-    //! It is going to take handle loading directly the proper files
-    //! (subsampled attenuation image and scanner). More complex options
-    //! will be handled at set_up().
+    //! \warning post_processing will set everything that has a file name in
+    //! the par file. The corresponding set functions should be used either
+    //! for files that are not stored in the drive.
     virtual bool post_processing();
 
     enum image_type{act_image_type, att_image_type};

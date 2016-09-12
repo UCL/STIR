@@ -24,17 +24,12 @@
   \author Nikos Efthimiou
 
 */
-#include "stir/scatter/ScatterSimulation.h"
 #include "stir/ProjDataInterfile.h"
-#include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInMemory.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
 #include "stir/error.h"
-
-
 
 START_NAMESPACE_STIR
 
