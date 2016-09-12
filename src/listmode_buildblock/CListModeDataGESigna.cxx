@@ -24,13 +24,6 @@ CListModeDataGESigna::
 CListModeDataGESigna(const std::string& listmode_filename)
   : listmode_filename(listmode_filename)    
 {
-  // initialise scanner_ptr before calling open_lm_file, as it is used in that function
-
-  warning("CListModeDataGESigna: "
-	  "Assuming this is GESigna STE, but couldn't find scan start time etc");
-  this->scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa));
-  this->exam_info_sptr.reset(new ExamInfo);
-
   if (open_lm_file() == Succeeded::no)
     error(boost::format("CListModeDataGESigna: error opening the first listmode file for filename %s") %
 	  listmode_filename);
@@ -65,6 +58,7 @@ CListModeDataGESigna::
 open_lm_file()
 {
   info(boost::format("CListModeDataGESigna: opening file %1%") % listmode_filename);
+#if 0
   shared_ptr<std::istream> stream_ptr(new std::fstream(listmode_filename.c_str(), std::ios::in | std::ios::binary));
   if (!(*stream_ptr))
     {
@@ -75,6 +69,9 @@ open_lm_file()
                             new InputStreamWithRecords<CListRecordT, bool>(stream_ptr, 
                                                                            4, 16, 
                                                                            ByteOrder::little_endian != ByteOrder::get_native_order()));
+#else
+  this->open(listmode_filename);
+#endif
 
   return Succeeded::yes;
 }

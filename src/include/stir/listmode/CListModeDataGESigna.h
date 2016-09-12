@@ -15,6 +15,7 @@
 #include "stir/listmode/CListModeData.h"
 #include "stir/listmode/CListRecordGESigna.h"
 #include "stir/IO/InputStreamWithRecords.h"
+#include "stir/IO/GEHDF5Data.h"
 #include "stir/shared_ptr.h"
 #include <iostream>
 #include <string>
@@ -26,7 +27,7 @@ START_NAMESPACE_STIR
 /*!  \ingroup listmode
     This file format is used by GE Signa PET/MR.
 */
-class CListModeDataGESigna : public CListModeData
+class CListModeDataGESigna : public CListModeData, GEHDF5Data
 {
 public:
   //! Constructor taking a filename
