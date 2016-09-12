@@ -38,7 +38,6 @@
 
 #include "stir/stir_math.h"
 #include "stir/zoom.h"
-#include "stir/ArrayFunction.h"
 #include "stir/NumericInfo.h"
 
 START_NAMESPACE_STIR
@@ -57,7 +56,7 @@ Succeeded
 ScatterSimulation::
 process_data()
 {
-
+    // this is usefull in the scatter estimation process.
     this->output_proj_data_sptr->fill(0.f);
 
     // The activiy image has been changed, from another class.
@@ -188,8 +187,9 @@ ScatterSimulation::set_defaults()
     this->random = true;
     this->use_cache = true;
     this->density_image_filename = "";
+    this->activity_image_filename = "";
     this->density_image_for_scatter_points_filename = "";
-    this->scatter_proj_data_filename = "";
+    this->template_proj_data_filename = "";
     this->remove_cache_for_integrals_over_activity();
     this->remove_cache_for_integrals_over_attenuation();
 }
@@ -198,16 +198,23 @@ void
 ScatterSimulation::
 ask_parameters()
 {
-
+    this->attenuation_threshold = ask_num("attenuation threshold(cm^-1)",0.0f, 5.0f, 0.01f);
+    this->random = ask_num("random points?",0, 1, 1);
+    this->use_cache =  ask_num(" Use cache?",0, 1, 1);
+    this->density_image_filename = ask_string("density image filename", "");
+    this->activity_image_filename = ask_string("activity image filename", "");
+    this->density_image_for_scatter_points_filename = ask_string("density image for scatter points filename", "");
+    this->template_proj_data_filename = ask_string("Scanner ProjData filename", "");
 }
 
 void
 ScatterSimulation::initialise_keymap()
 {
+
     this->parser.add_start_key("Scatter Simulation Parameters");
     this->parser.add_stop_key("end Scatter Simulation Parameters");
-    this->parser.add_key("scatter projdata filename",
-                         &this->scatter_proj_data_filename);
+    this->parser.add_key("template projdata filename",
+                         &this->template_proj_data_filename);
     this->parser.add_key("attenuation image filename",
                          &this->density_image_filename);
     this->parser.add_key("attenuation image for scatter points filename",
@@ -227,8 +234,8 @@ bool
 ScatterSimulation::
 post_processing()
 {
-    if (this->scatter_proj_data_filename.size() > 0)
-        this->set_scatter_proj_data_info(this->scatter_proj_data_filename);
+    if (this->template_proj_data_filename.size() > 0)
+        this->set_template_proj_data_info(this->template_proj_data_filename);
 
     if (this->activity_image_filename.size() > 0)
         this->set_activity_image(this->activity_image_filename);
@@ -236,8 +243,11 @@ post_processing()
     if (this->density_image_filename.size() > 0)
         this->set_density_image(this->density_image_filename);
 
-    if(this->density_image_for_scatter_points_filename.size() > 0 && !this->recompute_sub_atten_image)
+    if(this->density_image_for_scatter_points_filename.size() > 0)
         this->set_density_image_for_scatter_points(this->density_image_for_scatter_points_filename);
+
+    if (this->output_proj_data_filename.size() > 0)
+        this->set_output_proj_data(this->output_proj_data_filename);
 
     return false;
 }

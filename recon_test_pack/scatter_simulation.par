@@ -1,0 +1,23 @@
+Scatter Simulation := 
+Simulation method := Single Scatter Simulation
+
+Scatter Simulation Parameters := 
+
+template projdata filename := ${TEMPLATE}
+
+attenuation image filename := ${ATTEN_IMAGE}
+
+attenuation image for scatter points filename := ${ATTEN_IMAGE}
+
+activity image filename := ${ACTIVITY_IMAGE}
+
+output filename prefix := ${OUTPUT_PREFIX}
+
+scatter level := 1
+attenuation threshold := 0.01 
+random := 1 
+use cache := 1
+
+End Scatter Simulation Parameters := 
+End Scatter Simulation:=
+

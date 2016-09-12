@@ -1,5 +1,3 @@
-#ifndef __stir_scatter_ScatterSimulation_H__
-#define __stir_scatter_ScatterSimulation_H__
 /*
     Copyright (C) 2004 - 2009 Hammersmith Imanet Ltd
     Copyright (C) 2013 - 2016 University College London
@@ -17,6 +15,8 @@
 
     See STIR/LICENSE.txt for details
 */
+#ifndef __stir_scatter_ScatterSimulation_H__
+#define __stir_scatter_ScatterSimulation_H__
 
 /*!
   \file
@@ -106,8 +106,7 @@ public:
 
     virtual ~ScatterSimulation();
 
-    virtual Succeeded
-    process_data();
+    virtual Succeeded process_data();
 
     //! gives method information
     virtual std::string method_info() const = 0;
@@ -157,29 +156,13 @@ public:
     inline void
     get_output_proj_data(shared_ptr<ProjData>&);
 
-
-    //!
-    //! \brief set_template_proj_data_info_sptr
     //! \details Load the scatter template and perform basic checks.
-    inline void set_scatter_proj_data_info_sptr(const shared_ptr<ProjDataInfo>&);
+    inline void set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>&);
 
-    //!
-    //! \brief set_template_proj_data_info
-    //! \param filename
-    //!
-    inline
-    void set_scatter_proj_data_info(const std::string&);
+    inline void set_template_proj_data_info(const std::string&);
 
-
-    //!
-    //! \brief set_activity_image_sptr
-    //!
     inline Succeeded set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 
-    //!
-    //! \brief set_activity_image
-    //! \param filename
-    //!
     inline void set_activity_image(const std::string& filename);
 
     //! create output projection data of same size as template_proj_data_info
@@ -191,14 +174,10 @@ public:
     inline void set_proj_data_from_file(const std::string& filename,
                                         shared_ptr<ProjData>& _this_projdata);
 
-     //! \brief set_density_image_sptr
-    inline void
-    set_density_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
+    inline void set_density_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 
-    inline void
-    set_density_image(const std::string&);
+    inline void set_density_image(const std::string&);
 
-    //! set_density_image_for_scatter_points_sptr
     inline void
     set_density_image_for_scatter_points_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 
@@ -299,66 +278,22 @@ protected:
       when changing the sampling of the detector etc */
     virtual void remove_cache_for_integrals_over_activity();
 
-    /**
-      *
-      * \name Variables retated to the scanner geometry
-      * @{
-      */
+    std::string template_proj_data_filename;
 
-    //!
-    //! \brief template_proj_data_filename
-    //! \details The file name for the Scanner template
-    std::string scatter_proj_data_filename;
-
-    //!
-    //! \brief proj_data_info_ptr
-    //! \details The projection data info of the scanner template
     ProjDataInfoCylindricalNoArcCorr * proj_data_info_ptr;
 
     shared_ptr<ProjDataInfo> proj_data_info_sptr;
 
-    //!
-    //! \brief template_exam_info_sptr
     //! \details Exam info extracted from the scanner template
     shared_ptr<ExamInfo> template_exam_info_sptr;
 
-    /** @}*/
-
-    /**
-      *
-      * \name Variables related to the subsampled attenuation image.
-      * @{
-    */
-
-    //!
-    //! \brief recompute_sub_atten_image
-    bool recompute_sub_atten_image;
-
-    //!
-    //! \brief sub_atten_image_filename
-    //! \details Input or output file name of the subsampled
-    //! attenuation image, depends on the reconmpute_sub_atten_image
     std::string density_image_filename;
 
-    //!
-    //! \brief density_image_for_scatter_points_filename
-    //!
     std::string density_image_for_scatter_points_filename;
 
     shared_ptr< DiscretisedDensity<3, float> > density_image_sptr;
 
-    //!
-    //! \brief atten_image_filename∫
-    //! \details File name of the original attenuation image.
-    std::string orig_atten_image_filename;
-
-    //!
-    //! \brief sub_atten_image_sptr
-    //! \details This is the image with the anatomical information
-    //! \warning Previously density_image_for_scatter_points_sptr
     shared_ptr< DiscretisedDensity<3, float> > density_image_for_scatter_points_sptr;
-
-     /** }@*/
 
     int total_detectors;
 

@@ -168,7 +168,7 @@ get_output_proj_data(shared_ptr<ProjData>& arg)
 
 void
 ScatterSimulation::
-set_scatter_proj_data_info_sptr(const shared_ptr<ProjDataInfo>& arg)
+set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>& arg)
 {
     this->proj_data_info_ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(arg.get());
 
@@ -192,13 +192,14 @@ set_scatter_proj_data_info_sptr(const shared_ptr<ProjDataInfo>& arg)
 
 void
 ScatterSimulation::
-set_scatter_proj_data_info(const std::string& filename)
+set_template_proj_data_info(const std::string& filename)
 {
-    this->scatter_proj_data_filename = filename;
+    this->template_proj_data_filename = filename;
     shared_ptr<ProjData> template_proj_data_sptr =
-            ProjData::read_from_file(this->scatter_proj_data_filename);
+            ProjData::read_from_file(this->template_proj_data_filename);
 
-    this->set_scatter_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone());
+    this->set_template_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone());
+    this->set_exam_info_sptr(template_proj_data_sptr->get_exam_info_ptr()->create_shared_clone());
 }
 
 void
@@ -277,7 +278,7 @@ ScatterSimulation::
 total_Compton_cross_section_relative_to_511keV(const float energy)
 {
     const double a= energy/511.0;
-    static const double prefactor = 9/(-40 + 27*log(3.)); //Klein-Nishina formula for a=1 & devided with 0.75 == (40 - 27*log(3)) / 9
+    static const double prefactor = 9.0/(-40 + 27*log(3.)); //Klein-Nishina formula for a=1 & devided with 0.75 == (40 - 27*log(3)) / 9
 
     return //checked this in Mathematica
             static_cast<float>

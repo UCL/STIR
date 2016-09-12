@@ -19,6 +19,7 @@
   \ingroup buildblock
   \brief  This file declares the class stir::ExamInfo
   \author Kris Thielemans
+  \author Nikos Efthimiou
 */
 
 
@@ -28,6 +29,8 @@
 #include "stir/PatientPosition.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/ImagingModality.h"
+
+#include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -83,6 +86,11 @@ public :
   //! Set the high energy boundary
   inline void set_high_energy_thres(float new_val);
   //@}
+
+  //! Standard trick for a 'virtual copy-constructor'
+  inline ExamInfo* clone() const;
+  //! Like clone() but return a shared_ptr
+  inline shared_ptr<ExamInfo> create_shared_clone() const;
 
   void set_time_frame_definitions(const TimeFrameDefinitions& new_time_frame_definitions)
     {

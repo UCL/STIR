@@ -85,14 +85,6 @@ int main(int argc, const char *argv[])
     parser.add_parsing_key("Simulation method", &simulation_method_sptr);
     parser.parse(argv[1]);
 
-    if (argc==2)
-    {
-        if (simulation_method_sptr->parse(argv[1]) == false)
-            return EXIT_FAILURE;
-    }
-    else
-        simulation_method_sptr->ask_parameters();
-
     if(simulation_method_sptr->process_data() == stir::Succeeded::yes)
     {
         t.stop();
