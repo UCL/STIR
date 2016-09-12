@@ -25,6 +25,7 @@ set(${dir_EXE_SOURCES}
 	estimate_scatter
 	create_tail_mask_from_ACFs
 	upsample_and_fit_single_scatter
+	simulate_scatter
 )
 
 include(stir_exe_targets)

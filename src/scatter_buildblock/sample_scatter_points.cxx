@@ -12,8 +12,8 @@
   This file is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Lesser General Public License for more details. 
-  
+  GNU Lesser General Public License for more details.
+
   See STIR/LICENSE.txt for details
 */
 /*!
@@ -26,7 +26,7 @@
   \author Kris Thielemans
 */
 
-#include "stir/scatter/ScatterEstimationByBin.h"
+#include "stir/scatter/ScatterSimulation.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include <time.h>
 
@@ -43,9 +43,9 @@ static inline float random_point(const float low, const float high)
 }
 
 void
-ScatterEstimationByBin::
+ScatterSimulation::
 sample_scatter_points()
-{ 
+{
 
   const DiscretisedDensityOnCartesianGrid<3,float>& attenuation_map =
     dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float>& >
@@ -54,10 +54,10 @@ sample_scatter_points()
   BasicCoordinate<3,int> min_index, max_index ;
   CartesianCoordinate3D<int> coord;
   if(!this->density_image_for_scatter_points_sptr->get_regular_range(min_index, max_index))
-    error("scatter points sampling works only on regular ranges, at the moment\n");    
+    error("scatter points sampling works only on regular ranges, at the moment\n");
   const VoxelsOnCartesianGrid<float>& image =
     dynamic_cast<const VoxelsOnCartesianGrid<float>&>(attenuation_map);
-  const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();       
+  const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
   CartesianCoordinate3D<float>  origin = image.get_origin();
   // shift origin such that we refer to the middle of the scanner
   // this is to be consistent with projector conventions
@@ -69,19 +69,19 @@ sample_scatter_points()
   this->scatter_volume = voxel_size[1]*voxel_size[2]*voxel_size[3];
 
   if(this->random)
-    { // Initialize Pseudo Random Number generator using time  
+    { // Initialize Pseudo Random Number generator using time
       srand((unsigned)time( NULL ));
     }
   this->scatt_points_vector.resize(0); // make sure we don't keep scatter points from a previous run
-  this->scatt_points_vector.reserve(1000);  
+  this->scatt_points_vector.reserve(1000);
 
-  // coord[] is in voxels units       
+  // coord[] is in voxels units
   for(coord[1]=min_index[1];coord[1]<=max_index[1];++coord[1])
     for(coord[2]=min_index[2];coord[2]<=max_index[2];++coord[2])
-      for(coord[3]=min_index[3];coord[3]<=max_index[3];++coord[3])   
+      for(coord[3]=min_index[3];coord[3]<=max_index[3];++coord[3])
         if(attenuation_map[coord] >= this->attenuation_threshold)
           {
-            ScatterPoint scatter_point;                                 
+            ScatterPoint scatter_point;
             scatter_point.coord = convert_int_to_float(coord);
             if (random)
               scatter_point.coord +=
@@ -96,4 +96,4 @@ sample_scatter_points()
   this->remove_cache_for_integrals_over_activity();
   this->remove_cache_for_integrals_over_attenuation();
 }
-END_NAMESPACE_STIR 
+END_NAMESPACE_STIR
