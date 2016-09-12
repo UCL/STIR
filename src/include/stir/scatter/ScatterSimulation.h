@@ -1,5 +1,22 @@
 #ifndef __stir_scatter_ScatterSimulation_H__
 #define __stir_scatter_ScatterSimulation_H__
+/*
+    Copyright (C) 2004 - 2009 Hammersmith Imanet Ltd
+    Copyright (C) 2013 - 2016 University College London
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 /*!
   \file
@@ -174,25 +191,18 @@ public:
     inline void set_proj_data_from_file(const std::string& filename,
                                         shared_ptr<ProjData>& _this_projdata);
 
-    //!
-    //! \brief set_density_image_sptr
-
+     //! \brief set_density_image_sptr
     inline void
     set_density_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 
     inline void
     set_density_image(const std::string&);
 
-    //!
-    //! \brief set_density_image_for_scatter_points_sptr
-    //!
+    //! set_density_image_for_scatter_points_sptr
     inline void
     set_density_image_for_scatter_points_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 
-    //!
     //! \brief set_density_image_for_scatter_points
-    //! \param filename
-    //!
     inline void
     set_density_image_for_scatter_points(const std::string&);
 
@@ -348,21 +358,7 @@ protected:
     //! \warning Previously density_image_for_scatter_points_sptr
     shared_ptr< DiscretisedDensity<3, float> > density_image_for_scatter_points_sptr;
 
-    //!
-    //! \brief sub_vox_xy
-    //! \details The subsampling of the attenuation image is done,
-    //! in the arbitary zoom factors. This correspond to the zoom in
-    //! the XY plane.
-    float sub_vox_xy;
-
-    //!
-    //! \brief sub_vox_z
-    //! \details The subsampling of the attenuation image is done,
-    //! in the arbitary zoom factors. This correspond to the zoom in
-    //! the Z axis.
-    float sub_vox_z;
-
-    /** }@*/
+     /** }@*/
 
     int total_detectors;
 
@@ -371,11 +367,6 @@ protected:
      * @{
      */
 
-    //!
-    //! \brief detection_efficiency
-    //! \param energy
-    //! \return
-    //! \details energy-dependent detection efficiency (Gaussian model)
     float detection_efficiency(const float energy) const;
 
 
@@ -408,18 +399,8 @@ protected:
 
     //!@}
 
-    /**
-     *
-     * \name Variables related to the subsampled ProjData.
-     * @{
-     */
-
-    //!
-    //! \brief sub_proj_data_info_ptr
-    //!
+    //! Proj_data_info of the subsampled scanner.
     shared_ptr<ProjDataInfo> template_proj_data_info_sptr;
-
-    /** }@*/
 
     virtual double
     scatter_estimate(const unsigned det_num_A,
@@ -473,28 +454,11 @@ protected:
     */
     void initialise_cache_for_scattpoint_det_integrals_over_activity();
 
-    //!
-    //! \brief output_proj_data_filename
-    //!
+    //! Output proj_data fileanme prefix
     std::string output_proj_data_filename;
-
-    //!
-    //! \brief output_proj_data_sptr
-    //!
+    //! Shared ptr to hold the simulated data.
     shared_ptr<ProjData> output_proj_data_sptr;
 
-    //!
-    //! \brief subsample_image
-    //! \param _this_image_sptr The image which will be subsampled
-    //! \param _new_image_sptr The new subsampled image
-    //! \param _sub_vox_xy The zoom factor on the xy plane
-    //! \param _sub_vox_z The zoom factor on the z axis
-    //! \param output_filename If set, the file to store the subsampled image
-    //! \details Replaces the zoom_att_image.sh.
-    void subsample_image(shared_ptr<DiscretisedDensity<3, float> > & _this_image_sptr,
-                         shared_ptr<DiscretisedDensity<3, float> > & _new_image_sptr,
-                         float& _sub_vox_xy, float& _sub_vox_z,
-                         std::string output_filename = "");
 };
 
 END_NAMESPACE_STIR

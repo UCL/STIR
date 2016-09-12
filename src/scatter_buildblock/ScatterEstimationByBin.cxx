@@ -315,9 +315,9 @@ post_processing()
 
     zoom_image(*attenuation_lowres_ptr, *attenuation_image_ptr);
 
-    PostFiltering filter;
-    filter.parser.parse(this->mask_postfilter_filename.c_str());
-    filter.filter_ptr->apply(*attenuation_lowres_ptr);
+    PostFiltering <VoxelsOnCartesianGrid<float> > filter;
+    filter.parse(this->mask_postfilter_filename.c_str());
+    filter.process_data(*attenuation_lowres_ptr);
 
     float scale_att = zoom_xy * zoom_xy * zoom_z;
 
@@ -1119,8 +1119,8 @@ apply_mask_in_place(shared_ptr<DiscretisedDensity<3, float> >& arg,
 {
     // Re-reading every time should not be a problem, as it is
     // just a small txt file.
-    PostFiltering filter;
-    filter.parser.parse(this->mask_postfilter_filename.c_str());
+    PostFiltering<DiscretisedDensity<3, float> > filter;
+    filter.parse(this->mask_postfilter_filename.c_str());
 
     // How to use:
     //  pow_times_add(const float add_scalar,
@@ -1154,7 +1154,7 @@ apply_mask_in_place(shared_ptr<DiscretisedDensity<3, float> >& arg,
                                        _this_mask.max_threshold);
 
     // 1. filter the image
-    filter.filter_ptr->apply(*arg.get());
+    filter.process_data(*arg.get());
 
     // 2. max threshold
     // 3. add scalar

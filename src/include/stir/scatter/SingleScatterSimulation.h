@@ -65,7 +65,7 @@ protected:
     virtual void initialise_keymap();
 
     //! used to check acceptable parameter ranges, etc...
-//    virtual bool post_processing();
+    virtual bool post_processing();
 
 
     //!

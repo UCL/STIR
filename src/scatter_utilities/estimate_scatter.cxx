@@ -39,19 +39,17 @@
 
 int main(int argc, const char *argv[])                                  
 {         
-//  stir::ScatterEstimationByBin scatter_estimation;
+  stir::ScatterEstimationByBin scatter_estimation;
 
-//  if (argc==2)
-//    {
-//      if (scatter_estimation.parse(argv[1]) == false)
-//        return EXIT_FAILURE;
-//    }
-//  else
-//    scatter_estimation.ask_parameters();
+  if (argc==2)
+    {
+      if (scatter_estimation.parse(argv[1]) == false)
+        return EXIT_FAILURE;
+    }
+  else
+    scatter_estimation.ask_parameters();
 
-//  return scatter_estimation.process_data() == stir::Succeeded::yes ?
-//    EXIT_SUCCESS : EXIT_FAILURE;
-
-
+  return scatter_estimation.process_data() == stir::Succeeded::yes ?
+    EXIT_SUCCESS : EXIT_FAILURE;
 }
 

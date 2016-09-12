@@ -1,10 +1,32 @@
+/*
+    Copyright (C) 2004 - 2009 Hammersmith Imanet Ltd
+    Copyright (C) 2013 - 2016 University College London
+    This file is part of STIR.
 
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+/*!
+  \file
+  \ingroup scatter
+  \brief Definition of class stir::ScatterEstimationByBin.
+
+  \author Nikos Efthimiou
+  \author Kris Thielemans
+*/
 #include "stir/scatter/ScatterSimulation.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/Bin.h"
 
-#include "stir/CPUTimer.h"
-#include "stir/HighResWallClockTimer.h"
 #include "stir/Viewgram.h"
 #include "stir/is_null_ptr.h"
 #include "stir/IO/read_from_file.h"
@@ -17,8 +39,6 @@
 #include "stir/stir_math.h"
 #include "stir/zoom.h"
 #include "stir/ArrayFunction.h"
-
-#include "stir/ProjDataInMemory.h"
 #include "stir/NumericInfo.h"
 
 START_NAMESPACE_STIR
@@ -37,38 +57,8 @@ Succeeded
 ScatterSimulation::
 process_data()
 {
-    //    this->times +=1;
-    //    // write after division.
-    //    {
-    //        std::stringstream nikos;
-    //        nikos << "./activity_in_" << this->times ;
-    //        std::string output1= nikos.str();
-    //        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-    //                write_to_file(output1, *this->activity_image_sptr);
-    //    }
-
-    //    // write after division.
-    //    {
-    //        std::string output1= "./density_in_0";
-    //        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-    //                write_to_file(output1, *this->density_image_sptr);
-    //    }
-
-    //    {
-    //        std::string output1= "./density_scat_points_in_0";
-    //        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-    //                write_to_file(output1, *this->density_image_for_scatter_points_sptr);
-    //    }
 
     this->output_proj_data_sptr->fill(0.f);
-
-    //    if (!this->recompute_sub_atten_image && !this->recompute_sub_projdata)
-    //    {
-    //        if (fabs(this->sub_vox_xy -
-    //                 this->sub_proj_data_info_ptr->get_scanner_ptr()->get_ring_spacing()) > 1.E-2)
-    //            error("DataSymmetriesForBins_PET_CartesianGrid can currently only support z-grid spacing "
-    //                  "equal to the ring spacing of the scanner divided by an integer. Sorry\n");
-    //    }
 
     // The activiy image has been changed, from another class.
     this->remove_cache_for_integrals_over_activity();
@@ -76,17 +66,9 @@ process_data()
     this->initialise_cache_for_scattpoint_det_integrals_over_attenuation();
     this->initialise_cache_for_scattpoint_det_integrals_over_activity();
     ViewSegmentNumbers vs_num;
-    /* ////////////////// SCATTER ESTIMATION TIME ////////////////
-   */
-    CPUTimer bin_timer;
-    bin_timer.start();
-    // variables to report (remaining) time
-    HighResWallClockTimer wall_clock_timer;
-    double previous_timer = 0 ;
-    int previous_bin_count = 0 ;
+
     int bin_counter = 0;
     int axial_bins = 0 ;
-    wall_clock_timer.start();
 
     for (vs_num.segment_num() = this->proj_data_info_ptr->get_min_segment_num();
          vs_num.segment_num() <= this->proj_data_info_ptr->get_max_segment_num();
@@ -96,8 +78,6 @@ process_data()
     const int total_bins =
             this->proj_data_info_ptr->get_num_views() * axial_bins *
             this->proj_data_info_ptr->get_num_tangential_poss();
-    /* ////////////////// end SCATTER ESTIMATION TIME ////////////////
-   */
     /* Currently, proj_data_info.find_cartesian_coordinates_of_detection() returns
      coordinate in a coordinate system where z=0 in the first ring of the scanner.
      We want to shift this to a coordinate system where z=0 in the middle
@@ -137,28 +117,8 @@ process_data()
             bin_counter +=
                     this->proj_data_info_ptr->get_num_axial_poss(vs_num.segment_num()) *
                     this->proj_data_info_ptr->get_num_tangential_poss();
-            /* ////////////////// SCATTER ESTIMATION TIME ////////////////
-       */
-            {
-                wall_clock_timer.stop(); // must be stopped before getting the value
-                info(boost::format("%1% bins  Total time elapsed %2% sec "
-                                   "\tTime remaining about %3% minutes")
-                     % bin_counter
-                     % wall_clock_timer.value()
-                     % ((wall_clock_timer.value() - previous_timer)
-                        * (total_bins - bin_counter) / (bin_counter - previous_bin_count) / 60));
-                previous_timer = wall_clock_timer.value() ;
-                previous_bin_count = bin_counter ;
-                wall_clock_timer.start();
-            }
-            /* ////////////////// end SCATTER ESTIMATION TIME ////////////////
-       */
         }
     }
-
-    bin_timer.stop();
-    wall_clock_timer.stop();
-    //    this->write_log(wall_clock_timer.value(), total_scatter);
 
     if (detection_points_vector.size() != static_cast<unsigned int>(total_detectors))
     {
@@ -166,12 +126,6 @@ process_data()
                 total_detectors, detection_points_vector.size());
         return Succeeded::no;
     }
-
-    //    std::string output_filename = "./scatter_estimated_in_0";
-
-    //    ProjDataInMemory* object =
-    //            dynamic_cast<ProjDataInMemory *> (this->output_proj_data_sptr.get());
-    //    object->write_to_file(output_filename);
 
     return Succeeded::yes;
 }
@@ -262,6 +216,8 @@ ScatterSimulation::initialise_keymap()
                          &this->activity_image_filename);
     this->parser.add_key("attenuation threshold",
                          &this->attenuation_threshold);
+    this->parser.add_key("output filename prefix",
+                         &this->output_proj_data_filename);
     this->parser.add_key("random", &this->random);
     this->parser.add_key("use cache", &this->use_cache);
 }

@@ -16,7 +16,8 @@
 #
 #  See STIR/LICENSE.txt for details
 #      
-# Author Kris Thielemans
+# Authors Kris Thielemans
+#         Nikos Efthimiou
 # 
 
 # Scripts should exit with error code when a test fails:
@@ -53,9 +54,9 @@ fi
 
 export OUTPUT_PREFIX ACTIVITY_IMAGE ATTEN_IMAGE TEMPLATE
 
-estimate_scatter scatter.par 2> ${OUTPUT_PREFIX}_stderr.log
+simulate_scatter scatter_simulation.par 2> ${OUTPUT_PREFIX}_stderr.log
 if [ $? -ne 0 ]; then
-  echo "Error running estimate_scatter"
+  echo "Error running simulate_scatter"
   exit 1
 fi
 

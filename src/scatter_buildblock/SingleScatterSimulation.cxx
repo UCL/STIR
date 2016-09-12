@@ -67,6 +67,13 @@ ask_parameters()
 
 }
 
+bool
+SingleScatterSimulation::
+post_processing()
+{
+    base_type::post_processing();
+}
+
 std::string
 SingleScatterSimulation::
 method_info() const
