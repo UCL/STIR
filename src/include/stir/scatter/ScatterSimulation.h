@@ -16,13 +16,9 @@
 
 #include "stir/ProjData.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 
 START_NAMESPACE_STIR
-
-class Succeeded;
-class ProjDataInfoCylindricalNoArcCorr;
-class ViewSegmentNumbers;
-class BinNormalisation;
 
 /*!
   \ingroup scatter
@@ -86,6 +82,8 @@ class ScatterSimulation : public RegisteredObject<ScatterSimulation>,
 
 public:
 
+    //!
+    //! \brief ScatterSimulation
     //! \details Default constructor
     ScatterSimulation();
 
@@ -96,11 +94,17 @@ public:
 
     //! gives method information
     virtual std::string method_info() const = 0;
+
     //! prompts the user to enter parameter values manually
     virtual void ask_parameters();
 
-    //! \details Image which will hold the activity estimates
+    //!
+    //! \brief activity_image_sptr
+    //! \details Pointer to hold the current activity estimation
     shared_ptr<DiscretisedDensity<3,float> > activity_image_sptr;
+
+    //!
+    //! \brief activity_image_filename
     //! \details Filename for the initial activity estimate.
     std::string activity_image_filename;
 
@@ -116,7 +120,8 @@ public:
     /*! This function sets scatt_points_vector and scatter_volume. It will also
         remove any cached integrals as they would be incorrect otherwise.
     */
-    void sample_scatter_points();
+    void
+    sample_scatter_points();
 
     /**
      *
@@ -135,13 +140,29 @@ public:
     inline void
     get_output_proj_data(shared_ptr<ProjData>&);
 
-    //! Load the projection template and perform basic checks.
-    inline void set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>&);
-    //! Load the projection template from file
-    inline void set_template_proj_data_info(const std::string&);
-    //! Set the activity image stpr
-    inline void set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
-    //! Set activity image from file name
+
+    //!
+    //! \brief set_template_proj_data_info_sptr
+    //! \details Load the scatter template and perform basic checks.
+    inline void set_scatter_proj_data_info_sptr(const shared_ptr<ProjDataInfo>&);
+
+    //!
+    //! \brief set_template_proj_data_info
+    //! \param filename
+    //!
+    inline
+    void set_scatter_proj_data_info(const std::string&);
+
+
+    //!
+    //! \brief set_activity_image_sptr
+    //!
+    inline Succeeded set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
+
+    //!
+    //! \brief set_activity_image
+    //! \param filename
+    //!
     inline void set_activity_image(const std::string& filename);
 
     //! create output projection data of same size as template_proj_data_info
@@ -158,22 +179,6 @@ public:
 
     inline void
     set_density_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
-
-    //!
-    //! \brief set_density_image_and_subsampled
-    //! \author Nikos Efthimiou
-    //! \warning This function has to called only if the density_image_for_scatter_points
-    //! has not been set in any other way. Because it is going to erase then and
-    //! recalculate them.
-    void
-    set_density_image_and_subsample(const shared_ptr<DiscretisedDensity<3,float> >&);
-
-    //!
-    //! \brief set_projdata_and_subsample
-    //!
-    void
-    set_projdata_and_subsample(const shared_ptr<ExamInfo> &,
-                               const shared_ptr<ProjDataInfo > &);
 
     inline void
     set_density_image(const std::string&);
@@ -204,7 +209,6 @@ public:
     static
     inline float
     dif_Compton_cross_section(const float cos_theta, float energy);
-
 
     static
     inline float
@@ -317,6 +321,10 @@ protected:
     */
 
     //!
+    //! \brief recompute_sub_atten_image
+    bool recompute_sub_atten_image;
+
+    //!
     //! \brief sub_atten_image_filename
     //! \details Input or output file name of the subsampled
     //! attenuation image, depends on the reconmpute_sub_atten_image
@@ -339,6 +347,20 @@ protected:
     //! \details This is the image with the anatomical information
     //! \warning Previously density_image_for_scatter_points_sptr
     shared_ptr< DiscretisedDensity<3, float> > density_image_for_scatter_points_sptr;
+
+    //!
+    //! \brief sub_vox_xy
+    //! \details The subsampling of the attenuation image is done,
+    //! in the arbitary zoom factors. This correspond to the zoom in
+    //! the XY plane.
+    float sub_vox_xy;
+
+    //!
+    //! \brief sub_vox_z
+    //! \details The subsampling of the attenuation image is done,
+    //! in the arbitary zoom factors. This correspond to the zoom in
+    //! the Z axis.
+    float sub_vox_z;
 
     /** }@*/
 
@@ -396,6 +418,7 @@ protected:
     //! \brief sub_proj_data_info_ptr
     //!
     shared_ptr<ProjDataInfo> template_proj_data_info_sptr;
+
     /** }@*/
 
     virtual double
@@ -406,8 +429,6 @@ protected:
     actual_scatter_estimate(double& scatter_ratio_singles,
                             const unsigned det_num_A,
                             const unsigned det_num_B) = 0;
-
-
 
     //! \name integrating functions
     //@{
@@ -462,8 +483,18 @@ protected:
     //!
     shared_ptr<ProjData> output_proj_data_sptr;
 
-    int times;
-
+    //!
+    //! \brief subsample_image
+    //! \param _this_image_sptr The image which will be subsampled
+    //! \param _new_image_sptr The new subsampled image
+    //! \param _sub_vox_xy The zoom factor on the xy plane
+    //! \param _sub_vox_z The zoom factor on the z axis
+    //! \param output_filename If set, the file to store the subsampled image
+    //! \details Replaces the zoom_att_image.sh.
+    void subsample_image(shared_ptr<DiscretisedDensity<3, float> > & _this_image_sptr,
+                         shared_ptr<DiscretisedDensity<3, float> > & _new_image_sptr,
+                         float& _sub_vox_xy, float& _sub_vox_z,
+                         std::string output_filename = "");
 };
 
 END_NAMESPACE_STIR

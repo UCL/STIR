@@ -1,14 +1,5 @@
 //
 //
-/*!
-
-  \file
-  \ingroup scatter
-
-  \brief Inline implementations for stir::ScatterSimulation
-
-  \author Nikos Efthimiou
-*/
 /*
     Copyright (C) 2016, UCL
     This file is part of STIR.
@@ -25,6 +16,15 @@
 
     See STIR/LICENSE.txt for details
 */
+/*!
+  \file
+  \ingroup scatter
+  \brief inline functions of ScatterSimulation
+
+  \author Nikos Efthimiou
+
+*/
+#include "stir/scatter/ScatterSimulation.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataInMemory.h"
@@ -33,21 +33,27 @@
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
 #include "stir/error.h"
-#include <fstream>
+
 
 
 START_NAMESPACE_STIR
 
 /**************** Functions to set images ****************/
 
-void
+Succeeded
 ScatterSimulation::
 set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >& arg)
 {
     if (is_null_ptr(arg) )
-        error("ScatterSimulation: Unable to set the activity image");
+    {
+        warning("ScatterSimulation: Unable to set the activity image");
+        return Succeeded::no;
+    }
+
     this->activity_image_sptr = arg;
     this->remove_cache_for_integrals_over_activity();
+
+    return Succeeded::yes;
 }
 
 void
@@ -63,7 +69,7 @@ set_activity_image(const std::string& filename)
         error(boost::format("Error reading activity image %s") %
               this->activity_image_filename);
     }
-    this->set_activity_image_sptr(this->activity_image_sptr);
+    this->remove_cache_for_integrals_over_activity();
 }
 
 void
@@ -72,7 +78,7 @@ set_density_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >& arg)
 {
     if (is_null_ptr(arg) )
         error("ScatterSimulation: Unable to set the density image");
-    this->density_image_sptr = arg;
+    this->density_image_sptr=arg;
     this->remove_cache_for_integrals_over_attenuation();
 }
 
@@ -88,7 +94,7 @@ set_density_image(const std::string& filename)
         error(boost::format("Error reading density image %s") %
               this->density_image_filename);
     }
-    this->set_density_image_sptr(this->density_image_sptr);
+    this->remove_cache_for_integrals_over_attenuation();
 }
 
 void
@@ -96,7 +102,7 @@ ScatterSimulation::
 set_density_image_for_scatter_points_sptr(const shared_ptr<DiscretisedDensity<3,float> >& arg)
 {
     if (is_null_ptr(arg) )
-        error("ScatterSimulation: Unable to set the density image for scatter points");
+        error("ScatterSimulation: Unable to set the density image for scatter points.");
     this->density_image_for_scatter_points_sptr = arg;
     this->sample_scatter_points();
     this->remove_cache_for_integrals_over_attenuation();
@@ -109,44 +115,15 @@ set_density_image_for_scatter_points(const std::string& filename)
     this->density_image_for_scatter_points_filename=filename;
     this->density_image_for_scatter_points_sptr=
             read_from_file<DiscretisedDensity<3,float> >(filename);
+
     if (is_null_ptr(this->density_image_for_scatter_points_sptr))
     {
         error(boost::format("Error reading density_for_scatter_points image %s") %
               this->density_image_for_scatter_points_filename);
     }
-    this->set_density_image_for_scatter_points_sptr(this->density_image_for_scatter_points_sptr);
+    this->sample_scatter_points();
+    this->remove_cache_for_integrals_over_attenuation();
 }
-
-/****************** functions to set projection data **********************/
-
-
-void
-ScatterSimulation::
-set_template_proj_data_info(const std::string& filename)
-{
-  this->template_proj_data_filename = filename;
-
-  shared_ptr<ProjData> template_proj_data_sptr =
-    ProjData::read_from_file(this->template_proj_data_filename);
-
-  this->template_exam_info_sptr = template_proj_data_sptr->get_exam_info_sptr();
-
-  this->set_template_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone());
-}
-
-
-//void
-//ScatterSimulation::
-//set_sub_proj_data_info(const std::string& filename)
-//{
-//  this->sub_proj_data_filename = filename;
-
-//  shared_ptr<ProjData> template_proj_data_sptr =
-//    ProjData::read_from_file(this->sub_proj_data_filename);
-
-//   this->sub_proj_data_info_ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr * >
-//          (template_proj_data_sptr->get_proj_data_info_ptr()->clone());
-//}
 
 void
 ScatterSimulation::
@@ -167,8 +144,8 @@ void
 ScatterSimulation::
 set_output_proj_data(const std::string& filename)
 {
-  this->output_proj_data_filename = filename;
-  // TODO get ExamInfo from image
+    this->output_proj_data_filename = filename;
+
     if (is_null_ptr(this->template_exam_info_sptr))
     {
         shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
@@ -180,51 +157,48 @@ set_output_proj_data(const std::string& filename)
         this->output_proj_data_sptr.reset(new ProjDataInterfile(this->template_exam_info_sptr,
                                                                 this->proj_data_info_ptr->create_shared_clone(),
                                                                 this->output_proj_data_filename));
-
-
 }
 
 void
 ScatterSimulation::
 get_output_proj_data(shared_ptr<ProjData>& arg)
 {
- arg = this->output_proj_data_sptr;
+    arg = this->output_proj_data_sptr;
 }
-
 
 void
 ScatterSimulation::
-set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>& new_sptr)
+set_scatter_proj_data_info_sptr(const shared_ptr<ProjDataInfo>& arg)
 {
-    this->proj_data_info_ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(new_sptr->clone());
+    this->proj_data_info_ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(arg.get());
 
-      if (is_null_ptr(this->proj_data_info_ptr))
-        {
-          error("ScatterEstimationByBin can only handle non-arccorrected data");
-        }
+    if (is_null_ptr(this->proj_data_info_ptr))
+        error("ScatterEstimationByBin can only handle non-arccorrected data");
 
-      // find final size of detection_points_vector
-      this->total_detectors =
-        this->proj_data_info_ptr->get_scanner_ptr()->get_num_rings()*
-        this->proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring ();
-      // reserve space to avoid reallocation, but the actual size will grow dynamically
-      this->detection_points_vector.reserve(total_detectors);
+    this->proj_data_info_sptr = arg;
 
-      // remove any cached values as they'd be incorrect if the sizes changes
-      this->remove_cache_for_integrals_over_attenuation();
-      this->remove_cache_for_integrals_over_activity();
+    // find final size of detection_points_vector
+    this->total_detectors =
+            this->proj_data_info_ptr->get_scanner_ptr()->get_num_rings()*
+            this->proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring ();
+
+    // reserve space to avoid reallocation, but the actual size will grow dynamically
+    this->detection_points_vector.reserve(static_cast<std::size_t>(this->total_detectors));
+
+    // remove any cached values as they'd be incorrect if the sizes changes
+    this->remove_cache_for_integrals_over_attenuation();
+    this->remove_cache_for_integrals_over_activity();
 }
-
 
 void
 ScatterSimulation::
-set_template_proj_data_info(const std::string& filename)
+set_scatter_proj_data_info(const std::string& filename)
 {
-    this->template_proj_data_filename = filename;
+    this->scatter_proj_data_filename = filename;
     shared_ptr<ProjData> template_proj_data_sptr =
-            ProjData::read_from_file(this->template_proj_data_filename);
+            ProjData::read_from_file(this->scatter_proj_data_filename);
 
-    this->set_template_proj_data_info_sptr(tmp_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone());
+    this->set_scatter_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone());
 }
 
 void
@@ -269,7 +243,7 @@ dif_Compton_cross_section(const float cos_theta, float energy)
 {
     const double Re = 2.818E-13;   // aktina peristrofis electroniou gia to atomo tou H
     const double sin_theta_2= 1-cos_theta*cos_theta ;
-    const double P= 1/(1+(energy/511.0)*(1-cos_theta));
+    const double P= 1.0/(1.0+(energy/511.0)*(1.0-cos_theta));
     return static_cast<float>( (Re*Re/2) * P * (1 - P * sin_theta_2 + P * P));
 }
 
@@ -284,7 +258,7 @@ float
 ScatterSimulation::
 photon_energy_after_Compton_scatter_511keV(const float cos_theta)
 {
-    return 511.f/(2-cos_theta); // for a given energy, energy := 511 keV
+    return 511.f/(2.f-cos_theta); // for a given energy, energy := 511 keV
 }
 
 float

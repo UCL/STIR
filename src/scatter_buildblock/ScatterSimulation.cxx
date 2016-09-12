@@ -37,7 +37,38 @@ Succeeded
 ScatterSimulation::
 process_data()
 {
+    //    this->times +=1;
+    //    // write after division.
+    //    {
+    //        std::stringstream nikos;
+    //        nikos << "./activity_in_" << this->times ;
+    //        std::string output1= nikos.str();
+    //        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+    //                write_to_file(output1, *this->activity_image_sptr);
+    //    }
+
+    //    // write after division.
+    //    {
+    //        std::string output1= "./density_in_0";
+    //        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+    //                write_to_file(output1, *this->density_image_sptr);
+    //    }
+
+    //    {
+    //        std::string output1= "./density_scat_points_in_0";
+    //        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+    //                write_to_file(output1, *this->density_image_for_scatter_points_sptr);
+    //    }
+
     this->output_proj_data_sptr->fill(0.f);
+
+    //    if (!this->recompute_sub_atten_image && !this->recompute_sub_projdata)
+    //    {
+    //        if (fabs(this->sub_vox_xy -
+    //                 this->sub_proj_data_info_ptr->get_scanner_ptr()->get_ring_spacing()) > 1.E-2)
+    //            error("DataSymmetriesForBins_PET_CartesianGrid can currently only support z-grid spacing "
+    //                  "equal to the ring spacing of the scanner divided by an integer. Sorry\n");
+    //    }
 
     // The activiy image has been changed, from another class.
     this->remove_cache_for_integrals_over_activity();
@@ -136,6 +167,12 @@ process_data()
         return Succeeded::no;
     }
 
+    //    std::string output_filename = "./scatter_estimated_in_0";
+
+    //    ProjDataInMemory* object =
+    //            dynamic_cast<ProjDataInMemory *> (this->output_proj_data_sptr.get());
+    //    object->write_to_file(output_filename);
+
     return Succeeded::yes;
 }
 
@@ -190,20 +227,15 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
     return static_cast<double>(viewgram.sum());
 }
 
-
 void
 ScatterSimulation::set_defaults()
 {
-    this->times = 0;
-
     this->attenuation_threshold =  0.01f ;
     this->random = true;
     this->use_cache = true;
-
     this->density_image_filename = "";
     this->density_image_for_scatter_points_filename = "";
     this->scatter_proj_data_filename = "";
-
     this->remove_cache_for_integrals_over_activity();
     this->remove_cache_for_integrals_over_attenuation();
 }
@@ -220,12 +252,13 @@ ScatterSimulation::initialise_keymap()
 {
     this->parser.add_start_key("Scatter Simulation Parameters");
     this->parser.add_stop_key("end Scatter Simulation Parameters");
-
     this->parser.add_key("scatter projdata filename",
                          &this->scatter_proj_data_filename);
     this->parser.add_key("attenuation image filename",
                          &this->density_image_filename);
-    this->parser.add_key("initial estimate image filename",
+    this->parser.add_key("attenuation image for scatter points filename",
+                         &this->density_image_for_scatter_points_filename);
+    this->parser.add_key("activity image filename",
                          &this->activity_image_filename);
     this->parser.add_key("attenuation threshold",
                          &this->attenuation_threshold);
@@ -238,9 +271,6 @@ bool
 ScatterSimulation::
 post_processing()
 {
-
-    // Handles only direct loads from drive.
-
     if (this->scatter_proj_data_filename.size() > 0)
         this->set_scatter_proj_data_info(this->scatter_proj_data_filename);
 
@@ -250,39 +280,10 @@ post_processing()
     if (this->density_image_filename.size() > 0)
         this->set_density_image(this->density_image_filename);
 
-    if(this->density_image_for_scatter_points_filename.size() > 0)
+    if(this->density_image_for_scatter_points_filename.size() > 0 && !this->recompute_sub_atten_image)
         this->set_density_image_for_scatter_points(this->density_image_for_scatter_points_filename);
-
 
     return false;
 }
 
-void
-ScatterSimulation::
-set_density_image_and_subsample(const shared_ptr<DiscretisedDensity<3,float> >& arg)
-{
-//    // smooth
-//    this->set_density_image_sptr(arg);
-//    this->reduce_voxel_size();
-//    this->set_density_image_for_scatter_points_sptr(this->density_image_for_scatter_points_sptr);
-//    //            this->set_density_image_sptr(this->density_image_for_scatter_points_sptr);
-}
-
-void
-ScatterSimulation::
-set_projdata_and_subsample(const shared_ptr<ExamInfo> & _exam_info_sptr,
-                           const shared_ptr<ProjDataInfo >& _projdata_info_sptr)
-{
-
-//    // Set the original but processs with the subsampled.
-//    this->template_proj_data_info_sptr = _projdata_info_sptr;
-
-//    // Make sure that _exam_info have been initialised.
-//    this->template_exam_info_sptr = _exam_info_sptr;
-//    this->reduce_projdata_detector_num(this->template_proj_data_info_sptr);
-
-//    this->set_output_proj_data_sptr(this->template_exam_info_sptr,
-//                                    this->proj_data_info_sptr,
-//                                    this->output_proj_data_filename);
-}
 END_NAMESPACE_STIR
