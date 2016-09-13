@@ -71,6 +71,22 @@ open_lm_file()
                                                                            ByteOrder::little_endian != ByteOrder::get_native_order()));
 #else
   this->open(listmode_filename);
+H5::H5File file(listmode_filename,H5F_ACC_RDONLY);
+H5::StrType  vlst(0,37);         // vlst(0, H5T_STRING); //VARIABLE
+
+std::string read_str_scanner;
+std::string read_str_manufacturer;
+
+
+H5::DataSet dataset=file.openDataSet("/HeaderData/ExamData/scannerDesc");
+H5::DataSet dataset2=file.openDataSet("/HeaderData/ExamData/manufacturer");
+
+dataset.read(read_str_scanner,vlst);
+std::cout << "\n Scanner :  " << read_str_scanner << "\n\n"; 
+
+dataset2.read(read_str_manufacturer,vlst);
+std::cout << "\n Manufacturer :  " << read_str_manufacturer << "\n\n"; 
+
 #endif
 
   return Succeeded::yes;
