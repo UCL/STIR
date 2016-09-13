@@ -2,8 +2,7 @@
 #define __stir_scatter_ScatterEstimationByBin_H__
 
 /*
-    Copyright (C) 2004 - 2009 Hammersmith Imanet Ltd
-    Copyright (C) 2013 - 2016 University College London
+    Copyright (C) 2016 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -36,6 +35,10 @@
 
 #include "stir/scatter/ScatterSimulation.h"
 #include "stir/recon_buildblock/ChainedBinNormalisation.h"
+
+#include "stir/recon_buildblock/IterativeReconstruction.h"
+#include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
+#include "stir/recon_buildblock/AnalyticReconstruction.h"
 
 START_NAMESPACE_STIR
 
@@ -141,15 +144,17 @@ protected:
     //! </ul>
     bool post_processing();
 
+    Succeeded set_up();
+
     //!
     //! \brief set_up_iterative
     //! \return
-    bool set_up_iterative();
+    Succeeded set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * arg);
 
     //!
     //! \brief set_up_initialise_analytic
     //! \return
-    bool set_up_analytic();
+    Succeeded set_up_analytic();
 
     //!
     //! \brief proj_data_info_2d_ptr
@@ -181,7 +186,9 @@ protected:
     //!
     //! \brief reconstruction_method_sptr
     //! \details The reconsturction which is going to be used for the scatter simulation
-    //! and the intial activity image (if recompute set).
+    //! and the intial activity image (if recompute set). It can be defined in the same
+    //! parameters file as the scatter parameters or to an external via the
+    //! reconstruction_template_par_filename
     shared_ptr < Reconstruction < DiscretisedDensity < 3, float > > >
     reconstruction_template_sptr;
 
@@ -264,17 +271,19 @@ protected:
     //!
     //! \brief _multiplicative_data
     //! \details The multiplicative component of the reconsrtuction process.
-    shared_ptr<BinNormalisation> multiplicative_data_2d;
+//    shared_ptr<BinNormalisation> multiplicative_data_2d;
 
-    shared_ptr<BinNormalisation> only_atten;
+    shared_ptr<BinNormalisation> normalisation_sptr;
+
+//    shared_ptr<BinNormalisation> only_atten;
 
     //!
     //! \brief multiplicative_data_3d
     //! \details The multiplicatice component for the final inverse
     //! SSRB
-    shared_ptr<BinNormalisation> multiplicative_data_3d;
+//    shared_ptr<BinNormalisation> multiplicative_data_3d;
 
-    shared_ptr<BinNormalisation> normalisation_data_3d;
+//    shared_ptr<BinNormalisation> normalisation_data_3d;
 
     /**
     * \name Varianbles realted to the background proj data
