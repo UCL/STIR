@@ -76,6 +76,13 @@ set_defaults()
     base_type::set_defaults();
 }
 
+Succeeded
+SingleScatterSimulation::
+process_data()
+{
+    return base_type::process_data();
+}
+
 void
 SingleScatterSimulation::
 ask_parameters()

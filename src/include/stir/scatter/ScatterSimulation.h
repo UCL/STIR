@@ -97,9 +97,7 @@ class ScatterSimulation : public RegisteredObject<ScatterSimulation>,
 
 public:
 
-    //!
-    //! \brief ScatterSimulation
-    //! \details Default constructor
+    //! Default constructor
     ScatterSimulation();
 
     virtual ~ScatterSimulation();
@@ -112,15 +110,8 @@ public:
     //! prompts the user to enter parameter values manually
     virtual void ask_parameters();
 
-    //!
-    //! \brief activity_image_sptr
-    //! \details Pointer to hold the current activity estimation
+     //! Pointer to hold the current activity estimation
     shared_ptr<DiscretisedDensity<3,float> > activity_image_sptr;
-
-    //!
-    //! \brief activity_image_filename
-    //! \details Filename for the initial activity estimate.
-    std::string activity_image_filename;
 
     //!
     //! \brief set_exam_info_sptr
@@ -149,13 +140,13 @@ public:
     get_output_proj_data(shared_ptr<ProjData>&);
 
     //! \details Load the scatter template and perform basic checks.
-    inline void set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>&);
+    void set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>&);
 
-    inline void set_template_proj_data_info(const std::string&);
+    void set_template_proj_data_info(const std::string&);
 
-    inline Succeeded set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
+    void set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 
-    inline void set_activity_image(const std::string& filename);
+    void set_activity_image(const std::string& filename);
 
     //! create output projection data of same size as template_proj_data_info
     /*! \warning use set_template_proj_data_info() first.
@@ -163,25 +154,23 @@ public:
      Currently always uses Interfile output.
      \warning If the specified file already exists it will be erased.
     */
-    inline void set_proj_data_from_file(const std::string& filename,
+    void set_proj_data_from_file(const std::string& filename,
                                         shared_ptr<ProjData>& _this_projdata);
 
-    inline void set_density_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
+    void set_density_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 
-    inline void set_density_image(const std::string&);
+    void set_density_image(const std::string&);
 
-    inline void
-    set_density_image_for_scatter_points_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
+    void set_density_image_for_scatter_points_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 
     //! \brief set_density_image_for_scatter_points
-    inline void
-    set_density_image_for_scatter_points(const std::string&);
+    void set_density_image_for_scatter_points(const std::string&);
 
-    inline void set_attenuation_threshold(const float&);
+    void set_attenuation_threshold(const float);
 
-    inline void set_random_point(const bool&);
+    void set_random_point(const bool&);
 
-    inline void set_cache_enabled(const bool&);
+    void set_cache_enabled(const bool&);
 
     //! \name Compton scatter cross sections
     //@{
@@ -217,23 +206,6 @@ protected:
     compute_emis_to_det_points_solid_angle_factor(const CartesianCoordinate3D<float>& emis_point,
                                                   const CartesianCoordinate3D<float>& detector_coord) ;
 
-    //! threshold below which a voxel in the attenuation image will not be considered as a candidate scatter point
-    float attenuation_threshold;
-
-    //! boolean to see if we need to move the scatter point randomly within in its voxel
-    /*! This was first recommended by Watson. It is recommended to leave this on, as otherwise
-       discretisation errors are more obvious.
-
-       Note that the random generator is seeded via date/time, so re-running the scatter
-       simulation will give a slightly different result if this boolean is on.
-    */
-    bool random;
-    //! boolean to see if we need to cache the integrals
-    /*! By default, we cache the integrals over the emission and attenuation image. If you run out
-        of memory, you can switch this off, but performance will suffer dramatically.
-    */
-    bool use_cache;
-
     virtual void set_defaults();
     virtual void initialise_keymap();
     //! \warning post_processing will set everything that has a file name in
@@ -262,25 +234,6 @@ protected:
     /*! should be used before recalculating scatter for a new activity image or
       when changing the sampling of the detector etc */
     virtual void remove_cache_for_integrals_over_activity();
-
-    std::string template_proj_data_filename;
-
-    ProjDataInfoCylindricalNoArcCorr * proj_data_info_ptr;
-
-    shared_ptr<ProjDataInfo> proj_data_info_sptr;
-
-    //! \details Exam info extracted from the scanner template
-    shared_ptr<ExamInfo> template_exam_info_sptr;
-
-    std::string density_image_filename;
-
-    std::string density_image_for_scatter_points_filename;
-
-    shared_ptr< DiscretisedDensity<3, float> > density_image_sptr;
-
-    shared_ptr< DiscretisedDensity<3, float> > density_image_for_scatter_points_sptr;
-
-    int total_detectors;
 
     /** \name detection related functions
      *
@@ -360,6 +313,25 @@ protected:
                                                                       const unsigned det_num);
     //@}
 
+    std::string template_proj_data_filename;
+
+    ProjDataInfoCylindricalNoArcCorr * proj_data_info_ptr;
+
+    shared_ptr<ProjDataInfo> proj_data_info_sptr;
+
+    //! \details Exam info extracted from the scanner template
+    shared_ptr<ExamInfo> template_exam_info_sptr;
+
+    std::string density_image_filename;
+
+    std::string density_image_for_scatter_points_filename;
+
+    shared_ptr< DiscretisedDensity<3, float> > density_image_sptr;
+
+    shared_ptr< DiscretisedDensity<3, float> > density_image_for_scatter_points_sptr;
+
+    int total_detectors;
+
     Array<2,float> cached_activity_integral_scattpoint_det;
     Array<2,float> cached_attenuation_integral_scattpoint_det;
 
@@ -378,6 +350,26 @@ protected:
     std::string output_proj_data_filename;
     //! Shared ptr to hold the simulated data.
     shared_ptr<ProjData> output_proj_data_sptr;
+
+    //! threshold below which a voxel in the attenuation image will not be considered as a candidate scatter point
+    float attenuation_threshold;
+
+    //! boolean to see if we need to move the scatter point randomly within in its voxel
+    /*! This was first recommended by Watson. It is recommended to leave this on, as otherwise
+       discretisation errors are more obvious.
+
+       Note that the random generator is seeded via date/time, so re-running the scatter
+       simulation will give a slightly different result if this boolean is on.
+    */
+    bool random;
+    //! boolean to see if we need to cache the integrals
+    /*! By default, we cache the integrals over the emission and attenuation image. If you run out
+        of memory, you can switch this off, but performance will suffer dramatically.
+    */
+    bool use_cache;
+
+    //! Filename for the initial activity estimate.
+    std::string activity_image_filename;
 
 };
 

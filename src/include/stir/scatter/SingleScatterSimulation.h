@@ -45,25 +45,19 @@ private:
     ScatterSimulation > base_type;
 public:
 
-    //! Name which will be used when parsing a OSMAPOSLReconstruction object
+    //! Name which will be used when parsing a ScatterSimulation object
     static const char * const registered_name;
 
-    //!
-    //! \brief ScatterSimulation
-    //! \details Default constructor
+    //! Default constructor
     SingleScatterSimulation();
 
-    //!
-    //! \brief ScatterSimulation
-    //! \param parameter_filename
-    //! \details Constructor with initialisation from parameter file
+    //! Constructor with initialisation from parameter file
     explicit
     SingleScatterSimulation(const std::string& parameter_filename);
 
     virtual ~SingleScatterSimulation();
 
-    //    virtual Succeeded
-    //    process_data();
+    virtual Succeeded process_data();
 
     //! gives method information
     virtual std::string method_info() const;
