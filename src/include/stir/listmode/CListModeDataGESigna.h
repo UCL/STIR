@@ -14,7 +14,7 @@
 
 #include "stir/listmode/CListModeData.h"
 #include "stir/listmode/CListRecordGESigna.h"
-#include "stir/IO/InputStreamWithRecords.h"
+#include "stir/IO/InputStreamWithRecordsFromHDF5.h"
 #include "stir/IO/GEHDF5Data.h"
 #include "stir/shared_ptr.h"
 #include <iostream>
@@ -27,7 +27,7 @@ START_NAMESPACE_STIR
 /*!  \ingroup listmode
     This file format is used by GE Signa PET/MR.
 */
-class CListModeDataGESigna : public CListModeData, GEHDF5Data
+class CListModeDataGESigna : public CListModeData, private GEHDF5Data
 {
 public:
   //! Constructor taking a filename
@@ -61,7 +61,7 @@ public:
 private:
   typedef CListRecordGESigna CListRecordT;
   std::string listmode_filename;
-  shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;
+  shared_ptr<InputStreamWithRecordsFromHDF5<CListRecordT> > current_lm_data_ptr;
   float lm_start_time;
   float lm_duration;
   
