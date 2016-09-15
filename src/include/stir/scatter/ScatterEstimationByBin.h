@@ -176,41 +176,18 @@ protected:
 
     shared_ptr<DiscretisedDensity <3, float> > atten_image_lowres_sptr;
 
-
-    //!
-    //! \brief _multiplicative_data
-    //! \details The multiplicative component of the reconsrtuction process.
-    //    shared_ptr<BinNormalisation> multiplicative_data_2d;
-
-    shared_ptr<BinNormalisation> normalisation_sptr;
-
-    //    shared_ptr<BinNormalisation> only_atten;
-
-    //!
-    //! \brief multiplicative_data_3d
-    //! \details The multiplicatice component for the final inverse
-    //! SSRB
-    //    shared_ptr<BinNormalisation> multiplicative_data_3d;
-
-    //    shared_ptr<BinNormalisation> normalisation_data_3d;
-
-
-    //!
-    //! \brief back_projdata_sptr
-    //! \details In this context the background data are only
-    //! randoms.
-    //  shared_ptr<ProjData> back_projdata_sptr;
+    shared_ptr<ChainedBinNormalisation>  multiplicative_data_2d_sptr;
 
     //! \details shared pointer to projection data info for the 2D data - after SSRB
     shared_ptr < ProjDataInfo > proj_data_info_2d_sptr;
 
     //! The 3D attenuation projdata are used only in
     //! the end of the scatter estimation.
-    shared_ptr< ProjData > atten_projdata_3d_sptr;
+    shared_ptr< ProjData > atten_projdata_sptr;
     //!
     shared_ptr<ProjData> atten_projdata_2d_sptr;
     //! Normalisation proj_data 3D
-    shared_ptr<ProjData> norm_projdata_3d_sptr;
+    shared_ptr<ProjData> norm_projdata_sptr;
     //! Normalisation projdata after SSRB
     shared_ptr<ProjData> norm_projdata_2d_sptr;
     //! Mask proj_data
@@ -219,11 +196,14 @@ protected:
     shared_ptr<ProjData> output_projdata_sptr;
     //! The full 3D projdata are used for the calculation of the 2D
     //! and later for the upsampling back to 3D.
-    shared_ptr<ProjData> input_projdata_3d_sptr;
+    shared_ptr<ProjData> input_projdata_sptr;
     //! The 2D projdata are used for the scatter estimation.
     shared_ptr<ProjData> input_projdata_2d_sptr;
+    //! Original Background projdata
+    shared_ptr<ProjData> back_projdata_sptr;
     //! Background projection data after SSRB
     shared_ptr<ProjData> back_projdata_2d_sptr;
+
 
     //! Filename of the initial activity image.
     std::string initial_activity_image_filename;
@@ -236,7 +216,7 @@ protected:
     //! Filename of background projdata
     std::string back_projdata_filename;
     //! Filename of normalisation factors
-    std::string normalisation_projdata_filename;
+    std::string norm_projdata_filename;
     //! Paraameter file for the tail fitting.
     std::string tail_mask_par_filename;
     //! Filename of the measured emission 3D data.
@@ -244,7 +224,7 @@ protected:
     //! This is the image file name with the anatomic information.
     std::string atten_image_filename;
     //! The filename for the parameters file of the reconstruction method.
-    std::string reconstruction_template_par_filename;
+    std::string recon_template_par_filename;
     //! The file name for the attenuation coefficients.
     //! If they are to be recalculated they will be stored here, if set.
     std::string atten_coeff_filename;
@@ -259,7 +239,7 @@ protected:
 private:
 
     //! \details A helper function to reduce the size of set_up().ß
-    void ffw_project_mask_image();
+    Succeeded ffw_project_mask_image();
     //! \details A helper function to reduce the size of set_up().
     void apply_mask_in_place(shared_ptr<DiscretisedDensity<3, float> >&,
                              const mask_parameters&);
@@ -298,8 +278,6 @@ private:
     float half_filter_width;
     //! Ouput file name prefix
     std::string o_scatter_estimate_prefix;
-
-
 };
 
 END_NAMESPACE_STIR

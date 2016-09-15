@@ -117,7 +117,7 @@ public:
     //! \brief set_exam_info_sptr
     //! \details Since July 2016, the information for the energy window and energy
     //! resolution are stored in ExamInfo.
-    inline void
+    void
     set_exam_info_sptr(const shared_ptr<ExamInfo>&);
 
 
@@ -128,16 +128,16 @@ public:
     void
     sample_scatter_points();
 
-    inline void
+    void
     set_output_proj_data(const std::string&);
 
-    inline void
+    void
     set_output_proj_data_sptr(const shared_ptr<ExamInfo>&,
                               const shared_ptr<ProjDataInfo>&,
                               const std::string &);
 
-    inline void
-    get_output_proj_data(shared_ptr<ProjData>&);
+    void
+    set_output_proj_data_sptr(shared_ptr<ProjData>&);
 
     //! \details Load the scatter template and perform basic checks.
     void set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>&);

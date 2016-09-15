@@ -102,9 +102,6 @@ initialise_keymap()
     this->parser.add_key("mask postfilter filename",
                          &this->mask_postfilter_filename);
     //-> for attenuation
-    this->parser.add_parsing_key("Bin Normalisation type",
-                                 &this->normalisation_sptr);
-
     this->parser.add_key("recompute mask attenuation image",
                          &this->recompute_mask_atten_image);
     this->parser.add_key("mask attenuation max threshold ",
@@ -132,7 +129,7 @@ initialise_keymap()
     this->parser.add_key("background projdata filename",
                          &this->back_projdata_filename);
     this->parser.add_key("normalisation projdata filename",
-                         &this->normalisation_projdata_filename);
+                         &this->norm_projdata_filename);
 
     this->parser.add_key("recompute initial activity image",
                          &this->recompute_initial_activity_image);
@@ -141,7 +138,7 @@ initialise_keymap()
 
     // RECONSTRUCTION RELATED
     this->parser.add_key("reconstruction template file",
-                         &this->reconstruction_template_par_filename);
+                         &this->recon_template_par_filename);
     this->parser.add_parsing_key("reconstruction method",
                                  &this->reconstruction_template_sptr);
     // END RECONSTRUCTION RELATED
@@ -186,14 +183,17 @@ post_processing()
     // Check that the crusial parts have been set.
     info("Loading input projection data");
     if (this->input_projdata_filename.size() == 0)
+    {
+        warning("No input projdata filename is given. Abort ");
         return true;
+    }
 
-    this->input_projdata_3d_sptr =
+    this->input_projdata_sptr =
             ProjData::read_from_file(this->input_projdata_filename);
 
     // If the reconstruction_template_sptr is null then, we need to parse it from another
     // file. I prefer this implementation since makes smaller modular files.
-    if (this->reconstruction_template_par_filename.size() == 0)
+    if (this->recon_template_par_filename.size() == 0)
     {
         warning("Please define a reconstruction method. Abord.");
         return true;
@@ -204,10 +204,10 @@ post_processing()
         local_parser.add_start_key("Reconstruction");
         local_parser.add_stop_key("End Reconstruction");
         local_parser.add_parsing_key("reconstruction method", &this->reconstruction_template_sptr);
-        if (!local_parser.parse(this->reconstruction_template_par_filename.c_str()))
+        if (!local_parser.parse(this->recon_template_par_filename.c_str()))
         {
             warning(boost::format("Error parsing reconstruction parameters file %1%. Abord.")
-                    %this->reconstruction_template_par_filename);
+                    %this->recon_template_par_filename);
             return true;
         }
     }
@@ -222,12 +222,49 @@ post_processing()
         this->atten_image_sptr =
             read_from_file<DiscretisedDensity<3,float> >(this->atten_image_filename);
 
+    if(this->atten_coeff_filename.size() > 0)
+    {
+        if (!this->recompute_atten_projdata)
+        {
+            info("Loading attenuation correction coefficients...");
+            this->atten_projdata_sptr =
+                    ProjData::read_from_file(this->atten_coeff_filename);
+        }
+    }
+
+    if (this->norm_projdata_filename.size() > 0 )
+    {
+        info("Loading normalisation coefficients...");
+        this->norm_projdata_sptr =
+                ProjData::read_from_file(this->norm_projdata_filename);
+    }
+
+    if (this->back_projdata_filename.size() > 0)
+    {
+        info("Loading background projdata...");
+        this->back_projdata_sptr =
+                ProjData::read_from_file(this->back_projdata_filename);
+    }
+
+    if(!this->recompute_initial_activity_image ) // This image can be used as a template
+    {
+        info("Loading initial activity image ...");
+        if(this->initial_activity_image_filename.size() > 0 )
+            this->activity_image_lowres_sptr =
+                read_from_file<DiscretisedDensity<3,float> >(this->initial_activity_image_filename);
+        else
+        {
+            warning("Recompute initial activity image was set to false but"
+                    "no file name was set. Abord.");
+            return true;
+        }
+    }
+
     info ("Initialising mask image ... ");
     if(this->mask_postfilter_filename.size() == 0)
         return true;
     else
     {
-
         this->filter_sptr.reset(new PostFiltering <DiscretisedDensity<3,float> >);
 
         if(!filter_sptr->parse(this->mask_postfilter_filename.c_str()))
@@ -253,7 +290,7 @@ post_processing()
         if (!local_parser.parse(this->scatter_sim_par_filename.c_str()))
         {
             warning(boost::format("Error parsing scatter simulation parameters file %1%. Abord.")
-                    %this->reconstruction_template_par_filename);
+                    %this->recon_template_par_filename);
             return true;
         }
     }
@@ -306,19 +343,19 @@ set_up()
         this->export_scatter_estimates_of_each_iteration = true;
     }
 
-    if (is_null_ptr(this->input_projdata_3d_sptr))
+    if (is_null_ptr(this->input_projdata_sptr))
     {
         warning(boost::format("Input projdata file %1% not found. Abord.") %this->input_projdata_filename );
         return Succeeded::no;
     }
 
     // Load InputProjData and calculate the SSRB
-    if (this->input_projdata_3d_sptr->get_max_segment_num() > 0 )
+    if (this->input_projdata_sptr->get_max_segment_num() > 0 )
     {
         this->proj_data_info_2d_sptr.reset(
                     dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >
-                    (SSRB(*this->input_projdata_3d_sptr->get_proj_data_info_ptr(),
-                          this->input_projdata_3d_sptr->get_max_segment_num())));
+                    (SSRB(*this->input_projdata_sptr->get_proj_data_info_ptr(),
+                          this->input_projdata_sptr->get_max_segment_num())));
 
         if (this->export_2d_projdata)
         {
@@ -326,17 +363,17 @@ set_up()
             std::string rawname = this->input_projdata_filename.substr(0, lastindex);
             std::string out_filename = rawname + "_2d.hs";
 
-            this->input_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_3d_sptr->get_exam_info_sptr(),
+            this->input_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
                                                                      this->proj_data_info_2d_sptr,
                                                                      out_filename,
                                                                      std::ios::in | std::ios::out | std::ios::trunc));
         }
         else
-            this->input_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_3d_sptr->get_exam_info_sptr(),
+            this->input_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
                                                                     this->proj_data_info_2d_sptr));
 
         SSRB(*this->input_projdata_2d_sptr,
-             *input_projdata_3d_sptr,false);
+             *input_projdata_sptr,false);
     }
     else
     {
@@ -385,40 +422,52 @@ set_up()
         if (len_y != len_x)
             error(boost::format("The voxels in the x (%1%) and y (%2%)"
                                 " are different. Cannot zoom...  ") %len_x % len_y );
-
     }
 
     //
     // Zoom the activity image
     // TODO: add option to opt-out
     //
-    info("Zooming activity and attenuation images...");
     {
-        VoxelsOnCartesianGrid<float>* activity_image_ptr =
-                dynamic_cast<VoxelsOnCartesianGrid<float>* >(this->activity_image_sptr.get());
-        VoxelsOnCartesianGrid<float>* attenuation_image_ptr =
-                dynamic_cast<VoxelsOnCartesianGrid<float>* >(this->atten_image_sptr.get());
-
+        int size_xy = 0;
+        int size_z = 0;
         // zoom image
         float zoom_z = 1.0f;
         float zoom_xy = 0.3f;
 
-        int size_xy = static_cast<int>(activity_image_ptr->get_x_size() * zoom_xy + 0.5f);
-        int size_z = static_cast<int>(activity_image_ptr->get_z_size() * zoom_z + 0.5f) ;
+        if(!is_null_ptr(this->activity_image_lowres_sptr))
+        {
+            info("Zooming attenuation image to initial activity image...");
 
-        this->activity_image_lowres_sptr.reset( new VoxelsOnCartesianGrid<float>());
+            VoxelsOnCartesianGrid<float>* tmp_image_ptr =
+                    dynamic_cast<VoxelsOnCartesianGrid<float>* >(this->activity_image_lowres_sptr.get());
 
-        VoxelsOnCartesianGrid<float> activity_lowres =
-                zoom_image(*activity_image_ptr,
-                           CartesianCoordinate3D<float>(zoom_z, zoom_xy, zoom_xy),
-                           CartesianCoordinate3D<float>(0.0f, 0.0f, 0.0f),
-                           CartesianCoordinate3D<int>(size_z, size_xy, size_xy));
+            size_xy = tmp_image_ptr->get_x_size();
+            size_z = tmp_image_ptr->get_z_size();
 
-        this->activity_image_lowres_sptr.reset(activity_lowres.clone());
-        this->activity_image_lowres_sptr->fill(1.f);
+        }
+        else
+        {
+            VoxelsOnCartesianGrid<float>* tmp_image_ptr =
+                    dynamic_cast<VoxelsOnCartesianGrid<float>* >(this->activity_image_sptr.get());
 
-        // zoom the attenuation image to the same size;
-        info("Zooming attenuation image to much the activity image");
+            size_xy = static_cast<int>(tmp_image_ptr->get_x_size() * zoom_xy + 0.5f);
+            size_z = static_cast<int>(tmp_image_ptr->get_z_size() * zoom_z + 0.5f) ;
+
+            VoxelsOnCartesianGrid<float> activity_lowres =
+                    zoom_image(*tmp_image_ptr,
+                               CartesianCoordinate3D<float>(zoom_z, zoom_xy, zoom_xy),
+                               CartesianCoordinate3D<float>(0.0f, 0.0f, 0.0f),
+                               CartesianCoordinate3D<int>(size_z, size_xy, size_xy));
+
+            this->activity_image_lowres_sptr.reset(activity_lowres.clone());
+            this->activity_image_lowres_sptr->fill(1.f);
+        }
+
+        info("Zooming attenuation image to match the activity image");
+
+        VoxelsOnCartesianGrid<float>* attenuation_image_ptr =
+                dynamic_cast<VoxelsOnCartesianGrid<float>* >(this->atten_image_sptr.get());
         shared_ptr< DiscretisedDensity<3, float> > attenuation_lowres(this->activity_image_lowres_sptr->get_empty_copy());
         VoxelsOnCartesianGrid<float>* attenuation_lowres_ptr =
                 dynamic_cast<VoxelsOnCartesianGrid<float>* >(attenuation_lowres.get());
@@ -444,13 +493,19 @@ set_up()
         in_place_apply_function(*attenuation_lowres_ptr, scale_factor);
 
         this->atten_image_lowres_sptr.reset(attenuation_lowres->clone());
+
+        if(is_null_ptr(this->reconstruction_template_sptr))
+        {
+            warning("Reconstruction method has not been initialised. Abord.");
+            return Succeeded::no;
+        }
     }
 
-    if(is_null_ptr(this->reconstruction_template_sptr))
-    {
-        warning("Reconstruction method has not been initialised. Abord.");
-        return Succeeded::no;
-    }
+    // Allocate the output projdata.
+    this->output_projdata_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                          this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
+
+    this->output_projdata_sptr->fill(0.F);
 
     info("Setting up reconstruction method ...");
     {
@@ -475,15 +530,18 @@ set_up()
     }
 
     //
-    // (only after this->set_up[...]
-    // We can call set up reconstuction.
-    //    info("Setting up reconstruction ...");
-    //    this->reconstruction_template_sptr->set_up(this->activity_image_lowres_sptr);
+    // Now, we can call set up reconstuction.
+    if (this->reconstruction_template_sptr->set_up(this->activity_image_lowres_sptr) == Succeeded::no)
+    {
+        warning ("Failure is set_up() of the reconstruction method. Abord.");
+        return Succeeded::no;
+    }
 
     //
     // ScatterSimulation
     //
 
+    info("Setting up Scatter Simulation method ...");
     if(is_null_ptr(this->scatter_simulation_sptr))
     {
         warning("Scatter simulation method has not been initialised. Abord.");
@@ -515,9 +573,9 @@ set_up()
         }
 
         ffw_project_mask_image();
-
     }
 
+    info(">>>>Set up finished successfully!!<<<<");
     return Succeeded::yes;
 }
 
@@ -525,7 +583,8 @@ Succeeded
 ScatterEstimationByBin::
 set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterative_object)
 {
-    this->reconstruction_template_sptr->set_input_data(this->input_projdata_2d_sptr);
+    info("Setting up iterative reconstruction ...");
+    iterative_object->set_input_data(this->input_projdata_2d_sptr);
 
     //
     // Multiplicative projdata
@@ -533,246 +592,176 @@ set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterat
 
     shared_ptr<BinNormalisation> attenuation_correction(new TrivialBinNormalisation());
     shared_ptr<BinNormalisation> normalisation_coeffs(new TrivialBinNormalisation());
-    // local .. because I will be needing them.
-    shared_ptr<BinNormalisation> attenuation_correction_3d(new TrivialBinNormalisation());
-    shared_ptr<BinNormalisation> normalisation_coeffs_3d(new TrivialBinNormalisation());
 
-    // Attenuation projdata --- binnorma
-    //        if (!this->recompute_atten_projdata)
-    //        {
-    //            if  (this->atten_coeff_filename.size() == 0)
-    //                error("No attenuation projdata filename is given. Abort ");
+    if (is_null_ptr(this->atten_projdata_sptr))
+    {
+        warning("No attenuation projdata have been initialised. "
+                "Forward Projecting the attenuation image... ");
 
-    //        // Read ProjData and make them 2D
+        //Project the attenuation imge.
+        shared_ptr<ForwardProjectorByBin> forw_projector_sptr;
+        shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
+        forw_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
+        info(boost::format("\n\nForward projector used for the calculation of\n"
+                           "attenuation coefficients: %1%\n") % forw_projector_sptr->parameter_info());
+        forw_projector_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_ptr()->create_shared_clone(),
+                                    this->atten_image_sptr );
 
-    //        this->atten_projdata_3d_sptr =
-    //                ProjData::read_from_file(this->atten_coeff_filename);
-    //    }
-    //    else
-    //    {
-    //        //Project the attenuation imge.
-    //        shared_ptr<ForwardProjectorByBin> forw_projector_sptr;
-    //        shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
-    //        forw_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
-    //        info(boost::format("\n\nForward projector used for the calculation of\n"
-    //                           "attenuation coefficients: %1%\n") % forw_projector_sptr->parameter_info());
+        // I think I could project directly to 2D ...
+        // - No, I would still need the 3D version at the very end.
+        if (this->atten_coeff_filename.size() > 0)
+            this->atten_projdata_sptr.reset(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                  this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
+                                                                  this->atten_coeff_filename,
+                                                                  std::ios::in | std::ios::out | std::ios::trunc));
+        else
+            this->atten_projdata_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                 this->input_projdata_sptr->get_proj_data_info_ptr()->create_shared_clone()));
+        forw_projector_sptr->forward_project(* this->atten_projdata_sptr, *this->atten_image_sptr);
+    }
 
-    //        forw_projector_sptr->set_up(this->input_projdata_3d_sptr->get_proj_data_info_ptr()->create_shared_clone(),
-    //                                    this->atten_image_sptr );
+    if( this->atten_projdata_sptr->get_max_segment_num() > 0)
+    {
+        info("Running SSRB on attenuation correction coefficients ...");
+        if(this->export_2d_projdata)
+        {
+            size_t lastindex = this->atten_coeff_filename.find_last_of(".");
+            std::string rawname = this->atten_coeff_filename.substr(0, lastindex);
+            std::string out_filename = rawname + "_2d.hs";
 
-    //        // I think I could projec to 2D ...
-    //        // - No, I would still need the 3D version at the very end.
-    //        if (this->atten_coeff_filename.size() > 0)
-    //            this->atten_projdata_3d_sptr.reset(new ProjDataInterfile(this->input_projdata_3d_sptr->get_exam_info_sptr(),
-    //                                                                     this->input_projdata_3d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-    //                                                                     this->atten_coeff_filename,
-    //                                                                     std::ios::in | std::ios::out | std::ios::trunc));
-    //        else
-    //            this->atten_projdata_3d_sptr.reset(new ProjDataInMemory(this->input_projdata_3d_sptr->get_exam_info_sptr(),
-    //                                                                    this->input_projdata_3d_sptr->get_proj_data_info_ptr()->create_shared_clone()));
+            this->atten_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                                     this->proj_data_info_2d_sptr,
+                                                                     out_filename,
+                                                                     std::ios::in | std::ios::out | std::ios::trunc));
+        }
+        else
+            this->atten_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                                    this->proj_data_info_2d_sptr));
 
-    //        forw_projector_sptr->forward_project(* this->atten_projdata_3d_sptr, *this->atten_image_sptr);
-    //    }
+        SSRB(*this->atten_projdata_2d_sptr,
+             *this->atten_projdata_sptr, true);
+    }
+    else
+    {
+        error(boost::format("The attenuation projdata %1% are not 3D") % this->atten_coeff_filename);
+    }
 
+    attenuation_correction.reset(new BinNormalisationFromProjData(this->atten_projdata_2d_sptr));
 
-    //    if( this->atten_projdata_3d_sptr->get_max_segment_num() > 0)
-    //    {
+    //<- End of Attenuation projdata
 
-    //        if(this->export_2d_projdata)
-    //        {
-    //            size_t lastindex = this->atten_coeff_filename.find_last_of(".");
-    //            std::string rawname = this->atten_coeff_filename.substr(0, lastindex);
-    //            std::string out_filename = rawname + "_2d.hs";
+    // Normalisation ProjData
+    if (!is_null_ptr(this->norm_projdata_sptr))
+    {
+        if( this->norm_projdata_sptr->get_max_segment_num() > 0) //If the sinogram is 3D then SSRB it.
+        {
+            info("Performing SSRB on normalisation coefficients ... ");
+            shared_ptr < ProjData> inv_norm_projdata_sptr(new ProjDataInMemory(this->norm_projdata_sptr->get_exam_info_sptr(),
+                                                                               this->norm_projdata_sptr->get_proj_data_info_ptr()->create_shared_clone()));
+            inv_norm_projdata_sptr->fill(0.f);
+            // We need to get norm2d=1/SSRB(1/norm3d))
+            pow_times_add inverse_object(0.0f, 1.0f, -1.0f, NumericInfo<float>().min_value(),
+                                         NumericInfo<float>().max_value());
 
-    //            this->atten_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-    //                                                                     this->proj_data_info_2d_sptr,
-    //                                                                     out_filename,
-    //                                                                     std::ios::in | std::ios::out | std::ios::trunc));
-    //        }
-    //        else
-    //            this->atten_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-    //                                                                    this->proj_data_info_2d_sptr));
+            for (int segment_num = inv_norm_projdata_sptr->get_min_segment_num();
+                 segment_num <= inv_norm_projdata_sptr->get_max_segment_num();
+                 ++segment_num)
+            {
+                SegmentByView<float> segment_by_view =
+                        this->norm_projdata_sptr->get_segment_by_view(segment_num);
 
+                in_place_apply_function(segment_by_view,
+                                        inverse_object);
 
-    //        SSRB(*this->atten_projdata_2d_sptr,
-    //             *this->atten_projdata_3d_sptr, true);
-    //    }
-    //    else
-    //    {
-    //        error(boost::format("The attenuation projdata %1% are not 3D") % this->atten_coeff_filename);
-    //    }
+                if (!(inv_norm_projdata_sptr->set_segment(segment_by_view) == Succeeded::yes))
+                {
+                    warning("Error set_segment %d\n", segment_num);
+                    return Succeeded::no;
+                }
+            }
 
-    //    attenuation_correction.reset(new BinNormalisationFromProjData(this->atten_projdata_2d_sptr));
-    //    attenuation_correction_3d.reset(new BinNormalisationFromProjData(this->atten_projdata_3d_sptr));
+            if (this->export_2d_projdata)
+            {
+                size_t lastindex = this->norm_projdata_filename.find_last_of(".");
+                std::string rawname = this->norm_projdata_filename.substr(0, lastindex);
+                std::string out_filename = rawname + "_2d.hs";
 
-    //    //    else if (this->atten_coeff_filename.size() == 0)
-    //    //    {
-    //    //        attenuation_correction.reset(new BinNormalisationFromAttenuationImage(this->atten_image_lowres_sptr));
-    //    //    }
-    //    //<- End of Attenuation projdata
+                this->norm_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                                        this->proj_data_info_2d_sptr,
+                                                                        out_filename,
+                                                                        std::ios::in | std::ios::out | std::ios::trunc));
+            }
+            else
+                this->norm_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                                       this->proj_data_info_2d_sptr));
 
-    //    // Normalisation ProjData
-    //    if (this->normalisation_projdata_filename.size() > 0 )
-    //    {
-    //        // Read ProjData and make them 2D
+            SSRB(*this->norm_projdata_2d_sptr,
+                 *inv_norm_projdata_sptr,false);
 
-    //        this->norm_projdata_3d_sptr =
-    //                ProjData::read_from_file(this->normalisation_projdata_filename);
+            for (int segment_num = this->norm_projdata_2d_sptr->get_min_segment_num();
+                 segment_num <= this->norm_projdata_2d_sptr->get_max_segment_num();
+                 ++segment_num)
+            {
+                SegmentByView<float> segment_by_view =
+                        this->norm_projdata_2d_sptr->get_segment_by_view(segment_num);
 
-    //        if( this->norm_projdata_3d_sptr->get_max_segment_num() > 0) //If the sinogram is 3D then process it.
-    //        {
+                in_place_apply_function(segment_by_view,
+                                        inverse_object);
 
-    //            shared_ptr < ProjData> inv_norm_projdata_sptr(new ProjDataInMemory(this->norm_projdata_3d_sptr->get_exam_info_sptr(),
-    //                                                                               this->norm_projdata_3d_sptr->get_proj_data_info_ptr()->create_shared_clone()));
+                if (!(this->norm_projdata_2d_sptr->set_segment(segment_by_view) == Succeeded::yes))
+                {
+                    warning("Error set_segment %d\n", segment_num);
+                    return Succeeded::no;
+                }
+            }
+        }
+        else
+        {
+            error(boost::format("The normalisation projdata %1% are not 3D") % this->norm_projdata_filename);
+        }
 
-    //            //            inv_norm_projdata_sptr->fill(*this->norm_projdata_3d_sptr);
-    //            inv_norm_projdata_sptr->fill(0.f);
-    //            // We need to get norm2d=1/SSRB(1/norm3d))
-    //            //1. add_scalar
-    //            //2. mult_scalar
-    //            //3. power
-    //            //4. min_threshold
-    //            //5. max_threshold
+        normalisation_coeffs.reset(new BinNormalisationFromProjData(this->norm_projdata_2d_sptr));
+    }
+    //<- End Normalisation ProjData
 
-    //            pow_times_add pow_times_add_object(0.0f, 1.0f, -1.0f, NumericInfo<float>().min_value(),
-    //                                               NumericInfo<float>().max_value());
+    this->multiplicative_data_2d_sptr.reset(
+                new ChainedBinNormalisation(attenuation_correction, normalisation_coeffs));
 
-    //            for (int segment_num = inv_norm_projdata_sptr->get_min_segment_num();
-    //                 segment_num <= inv_norm_projdata_sptr->get_max_segment_num();
-    //                 ++segment_num)
-    //            {
-    //                SegmentByView<float> segment_by_view =
-    //                        this->norm_projdata_3d_sptr->get_segment_by_view(segment_num);
+    iterative_object->get_objective_function_sptr()->set_normalisation_sptr(multiplicative_data_2d_sptr);
 
-    //                in_place_apply_function(segment_by_view,
-    //                                        pow_times_add_object);
+    //
+    // Set additive (background) projdata
+    //
 
-    //                if (!(inv_norm_projdata_sptr->set_segment(segment_by_view) == Succeeded::yes))
-    //                    warning("Error set_segment %d\n", segment_num);
-    //            }
+    if (!is_null_ptr(this->back_projdata_sptr))
+    {
 
-    //            if (this->export_2d_projdata)
-    //            {
-    //                size_t lastindex = this->normalisation_projdata_filename.find_last_of(".");
-    //                std::string rawname = this->normalisation_projdata_filename.substr(0, lastindex);
-    //                std::string out_filename = rawname + "_2d.hs";
+        if( back_projdata_sptr->get_max_segment_num() > 0)
+        {
+            size_t lastindex = this->back_projdata_filename.find_last_of(".");
+            std::string rawname = this->back_projdata_filename.substr(0, lastindex);
+            std::string out_filename = rawname + "_2d.hs";
 
-    //                this->norm_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-    //                                                                        this->proj_data_info_2d_sptr,
-    //                                                                        out_filename,
-    //                                                                        std::ios::in | std::ios::out | std::ios::trunc));
-    //            }
-    //            else
-    //                this->norm_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-    //                                                                       this->proj_data_info_2d_sptr));
+            this->back_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                                    this->proj_data_info_2d_sptr,
+                                                                    out_filename,
+                                                                    std::ios::in | std::ios::out | std::ios::trunc));
 
-    //            SSRB(*this->norm_projdata_2d_sptr,
-    //                 *inv_norm_projdata_sptr,false);
+            SSRB(*this->back_projdata_2d_sptr,
+                 *back_projdata_sptr, false);
+        }
+        else
+        {
+            this->back_projdata_2d_sptr = back_projdata_sptr;
+        }
 
-    //            for (int segment_num = this->norm_projdata_2d_sptr->get_min_segment_num();
-    //                 segment_num <= this->norm_projdata_2d_sptr->get_max_segment_num();
-    //                 ++segment_num)
-    //            {
-    //                SegmentByView<float> segment_by_view =
-    //                        this->norm_projdata_2d_sptr->get_segment_by_view(segment_num);
+        // Add the additive component to the output sinogram
+        //        iterative_object->set_additive_proj_data_sptr(this->back_projdata_2d_sptr);
+        this->output_projdata_sptr->fill(*this->back_projdata_2d_sptr);
 
-    //                in_place_apply_function(segment_by_view,
-    //                                        pow_times_add_object);
+    }
 
-    //                if (!(this->norm_projdata_2d_sptr->set_segment(segment_by_view) == Succeeded::yes))
-    //                    warning("Error set_segment %d\n", segment_num);
-    //            }
-
-
-    //        }
-    //        else
-    //        {
-    //            error(boost::format("The normalisation projdata %1% are not 3D") % this->normalisation_projdata_filename);
-    //        }
-
-    //        normalisation_coeffs.reset(new BinNormalisationFromProjData(this->norm_projdata_2d_sptr));
-    //        normalisation_coeffs_3d.reset(new BinNormalisationFromProjData(this->norm_projdata_3d_sptr));
-    //    }
-    //    //<- End Normalisation ProjData
-
-    //    // Multiply atten with norm
-
-
-    //    this->multimulti2d.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-    //                                                  this->proj_data_info_2d_sptr));
-
-    //    // ok, we can multiply with the norm
-    //    for (int segment_num = this->atten_projdata_2d_sptr->get_min_segment_num();
-    //         segment_num <= this->atten_projdata_2d_sptr->get_max_segment_num();
-    //         ++segment_num)
-    //    {
-    //        SegmentByView<float> segment_by_view_data =
-    //                this->atten_projdata_2d_sptr->get_segment_by_view(segment_num);
-
-    //        SegmentByView<float> segment_by_view_norm =
-    //                this->norm_projdata_2d_sptr->get_segment_by_view(segment_num);
-
-    //        segment_by_view_data *= segment_by_view_norm;
-
-
-    //        if (!(this->multimulti2d->set_segment(segment_by_view_data) == Succeeded::yes))
-    //            warning("Error set_segment %d\n", segment_num);
-    //    }
-
-
-    //    this->multiplicative_data_2d.reset(new ChainedBinNormalisation(attenuation_correction,
-    //                                                                   normalisation_coeffs));
-
-    //    this->multiplicative_data_3d.reset(new ChainedBinNormalisation(attenuation_correction_3d,
-    //                                                                   normalisation_coeffs_3d));
-
-    //    this->normalisation_data_3d.reset(new BinNormalisationFromProjData(this->norm_projdata_3d_sptr));
-    //    //    this->multiplicative_data_3d.reset(new BinNormalisationFromProjData(this->norm_projdata_3d_sptr));
-    //    //    this->multiplicative_data_3d.reset(new TrivialBinNormalisation());
-
-    //    this->only_atten.reset(new BinNormalisationFromProjData(this->atten_projdata_2d_sptr));
-
-    //    iterative_object->set_normalisation_sptr(this->multiplicative_data_2d);
-
-    //    //
-    //    // Set additive (background) projdata
-    //    //
-
-    //    if (this->back_projdata_filename.size() > 0)
-    //    {
-    //        shared_ptr<ProjData> back_projdata_sptr =
-    //                ProjData::read_from_file(this->back_projdata_filename);
-
-    //        if( back_projdata_sptr->get_max_segment_num() > 0)
-    //        {
-    //            size_t lastindex = this->back_projdata_filename.find_last_of(".");
-    //            std::string rawname = this->back_projdata_filename.substr(0, lastindex);
-    //            std::string out_filename = rawname + "_2d.hs";
-
-    //            this->back_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-    //                                                                    this->proj_data_info_2d_sptr,
-    //                                                                    out_filename,
-    //                                                                    std::ios::in | std::ios::out | std::ios::trunc));
-
-    //            SSRB(*this->back_projdata_2d_sptr,
-    //                 *back_projdata_sptr.get(), false);
-    //        }
-    //        else
-    //        {
-    //            this->back_projdata_2d_sptr = back_projdata_sptr;
-    //        }
-
-    //        iterative_object->set_additive_proj_data_sptr(this->back_projdata_2d_sptr);
-    //    }
-
-    //    iterative_object->set_additive_proj_data_sptr(this->output_projdata_sptr);
-
-    //    // Allocate the output projdata.
-    //    this->output_projdata_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-    //                                                          this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
-
-    //    this->output_projdata_sptr->fill(0.F);
-
+    iterative_object->get_objective_function_sptr()->set_additive_proj_data_sptr(this->output_projdata_sptr);
     return Succeeded::yes;
 }
 
@@ -791,279 +780,267 @@ process_data()
 
     if (this->set_up() == Succeeded::no)
         return Succeeded::no;
-    //        float local_min_scale_value = 0.5f;
-    //        float local_max_scale_value = 0.5f;
 
-    //        stir::BSpline::BSplineType  spline_type = stir::BSpline::linear;
-    //        shared_ptr <ProjData> unscaled;
-    //        shared_ptr<BinNormalisation> empty(new TrivialBinNormalisation());
-    //        shared_ptr<DiscretisedDensity <3,float> > act_image_for_averaging;
+    float local_min_scale_value = 0.5f;
+    float local_max_scale_value = 0.5f;
 
-    //        this->scatter_simulation_sptr->get_output_proj_data(unscaled);
+    stir::BSpline::BSplineType  spline_type = stir::BSpline::linear;
+    shared_ptr <ProjData> unscaled;
+    shared_ptr<BinNormalisation> empty(new TrivialBinNormalisation());
+    shared_ptr<DiscretisedDensity <3,float> > act_image_for_averaging;
 
-    //        if( this->recompute_initial_activity_image )
-    //        {
-    //            if (iterative_method)
-    //                reconstruct_iterative( 0,
-    //                                       this->activity_image_lowres_sptr);
-    //            else
-    //                reconstruct_analytic();
+    this->scatter_simulation_sptr->set_output_proj_data_sptr(unscaled);
 
-    //            if (this->initial_activity_image_filename.size() > 0 )
-    //                OutputFileFormat<DiscretisedDensity < 3, float > >::default_sptr()->
-    //                        write_to_file(this->initial_activity_image_filename, *this->activity_image_lowres_sptr);
-    //        }
-    //        else // load
-    //        {
-    //            this->activity_image_lowres_sptr =
-    //                    read_from_file<DiscretisedDensity<3,float> >(this->initial_activity_image_filename);
-    //        }
+    if( this->recompute_initial_activity_image )
+    {
+        info("Computing initial activity image...");
+        if (iterative_method)
+            reconstruct_iterative( 0,
+                                   this->activity_image_lowres_sptr);
+        else
+            reconstruct_analytic();
 
-    //        if ( this->do_average_at_2)
-    //            act_image_for_averaging.reset(this->activity_image_lowres_sptr->clone());
+        if (this->initial_activity_image_filename.size() > 0 )
+            OutputFileFormat<DiscretisedDensity < 3, float > >::default_sptr()->
+                    write_to_file(this->initial_activity_image_filename, *this->activity_image_lowres_sptr);
+    }
 
-    //        //
-    //        // Begin the estimation process...
-    //        //
-    //        for (int i_scat_iter = 0;
-    //             i_scat_iter < this->num_scatter_iterations;
-    //             i_scat_iter++)
-    //        {
+    if ( this->do_average_at_2)
+        act_image_for_averaging.reset(this->activity_image_lowres_sptr->clone());
 
-    //            if ( this->do_average_at_2)
-    //            {
-    //                if (i_scat_iter == 2) // do average 0 and 1
-    //                {
-    //                    if (is_null_ptr(act_image_for_averaging))
-    //                        error("Storing the first actibity estimate has failed at some point.");
+    //
+    // Begin the estimation process...
+    //
+    for (int i_scat_iter = 0;
+         i_scat_iter < this->num_scatter_iterations;
+         i_scat_iter++)
+    {
 
-    //                    if (this->run_debug_mode)// Write the previous estimate
-    //                    {
-    //                        std::string output1= "./extras/act_image_for_averaging";
-    //                        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-    //                                write_to_file(output1, *act_image_for_averaging);
-    //                    }
-    //                    std::transform(act_image_for_averaging->begin_all(), act_image_for_averaging->end_all(),
-    //                                   this->activity_image_lowres_sptr->begin_all(),
-    //                                   this->activity_image_lowres_sptr->begin_all(),
-    //                                   std::plus<float>());
+        if ( this->do_average_at_2)
+        {
+            if (i_scat_iter == 2) // do average 0 and 1
+            {
+                if (is_null_ptr(act_image_for_averaging))
+                    error("Storing the first actibity estimate has failed at some point.");
 
-    //                    if(this->run_debug_mode)// write after sum
-    //                    {
-    //                        std::string output1= "./extras/summed_for_averaging";
-    //                        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-    //                                write_to_file(output1, *this->activity_image_lowres_sptr);
-    //                    }
+                //                if (this->run_debug_mode)// Write the previous estimate
+                //                {
+                //                    std::string output1= "./extras/act_image_for_averaging";
+                //                    OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+                //                            write_to_file(output1, *act_image_for_averaging);
+                //                }
+                std::transform(act_image_for_averaging->begin_all(), act_image_for_averaging->end_all(),
+                               this->activity_image_lowres_sptr->begin_all(),
+                               this->activity_image_lowres_sptr->begin_all(),
+                               std::plus<float>());
 
-    //                    pow_times_add divide_by_two (0.0f, 0.5f, 1.0f, NumericInfo<float>().min_value(),
-    //                                                 NumericInfo<float>().max_value());
+                //                if(this->run_debug_mode)// write after sum
+                //                {
+                //                    std::string output1= "./extras/summed_for_averaging";
+                //                    OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+                //                            write_to_file(output1, *this->activity_image_lowres_sptr);
+                //                }
 
-    //                    in_place_apply_function(*this->activity_image_lowres_sptr, divide_by_two);
+                pow_times_add divide_by_two (0.0f, 0.5f, 1.0f, NumericInfo<float>().min_value(),
+                                             NumericInfo<float>().max_value());
 
-    //                    if(this->run_debug_mode)// write after division.
-    //                    {
-    //                        std::string output1= "./extras/recon_0_1";
-    //                        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-    //                                write_to_file(output1, *this->activity_image_lowres_sptr);
-    //                    }
+                in_place_apply_function(*this->activity_image_lowres_sptr, divide_by_two);
 
-    //                    // Have averaged ... turn false
-    //                    this->do_average_at_2 = false;
-    //                }
-    //            }
+                //                if(this->run_debug_mode)// write after division.
+                //                {
+                //                    std::string output1= "./extras/recon_0_1";
+                //                    OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+                //                            write_to_file(output1, *this->activity_image_lowres_sptr);
+                //                }
 
-    //            //filter ... if FBP
+                // Have averaged ... turn false
+                this->do_average_at_2 = false;
+            }
+        }
 
-    //            info("Scatter simulation in progress...");
-    //            this->scatter_simulation_sptr->set_activity_image_sptr(this->activity_image_lowres_sptr);
-    //            this->scatter_simulation_sptr->process_data();
-    //            this->scatter_simulation_sptr->get_output_proj_data(unscaled);
+        //TODO: filter ... if FBP
 
-    //            if(this->run_debug_mode) // Write unscaled scatter sinogram
-    //            {
-    //                std::stringstream convert;   // stream used for the conversion
-    //                int lab = i_scat_iter+1;
-    //                convert << "./extras/unscaled_" <<
-    //                           lab;
-    //                std::string output_filename =  convert.str();
+        info("Scatter simulation in progress...");
+        //        this->scatter_simulation_sptr->set_activity_image_sptr(this->activity_image_lowres_sptr);
+        this->scatter_simulation_sptr->process_data();
+        //        this->scatter_simulation_sptr->set_output_proj_data(unscaled);
 
-    //                dynamic_cast<ProjDataInMemory *> (unscaled.get())->write_to_file(output_filename);
-    //            }
+        if(this->run_debug_mode) // Write unscaled scatter sinogram
+        {
+            std::stringstream convert;   // stream used for the conversion
+            int lab = i_scat_iter+1;
+            convert << "./extras/unscaled_" <<
+                       lab;
+            std::string output_filename =  convert.str();
 
-    //            // end simulation
-
-    //            // Set the min and max scale factors
-    //            if (i_scat_iter > 0)
-    //            {
-    //                local_max_scale_value = this->max_scale_value;
-    //                local_min_scale_value = this->min_scale_value;
-    //            }
+            dynamic_cast<ProjDataInMemory *> (unscaled.get())->write_to_file(output_filename);
+        }
 
 
-    //            upsample_and_fit_scatter_estimate(*this->output_projdata_sptr,
-    //                                              *this->input_projdata_2d_sptr,
-    //                                              *unscaled,
-    //                                              *empty,
-    //                                              *this->mask_projdata_sptr,
-    //                                              local_min_scale_value,
-    //                                              local_max_scale_value,
-    //                                              this->half_filter_width,
-    //                                              spline_type,
-    //                                              this->remove_interleaving);
+        // Set the min and max scale factors
+        if (i_scat_iter > 0)
+        {
+            local_max_scale_value = this->max_scale_value;
+            local_min_scale_value = this->min_scale_value;
+        }
 
 
-    //            if(this->run_debug_mode)
-    //            {
-    //                std::stringstream convert;   // stream used for the conversion
-    //                int lab = i_scat_iter+1;
-    //                convert << "./extras/scaled_" <<
-    //                           lab;
-    //                std::string output_filename =  convert.str();
-
-    //                dynamic_cast<ProjDataInMemory *> (this->output_projdata_sptr.get())->write_to_file(output_filename);
-    //            }
-
-    //            if (this->export_scatter_estimates_of_each_iteration ||
-    //                    i_scat_iter == this->num_scatter_iterations -1 )
-    //            {
-
-    //                //this is complicated as the 2d scatter estimate was
-    //                //divided by norm2d, so we need to undo this
-    //                //unfortunately, currently the values in the gaps in the
-    //                //scatter estimate are not quite zero (just very small)
-    //                //so we have to first make sure that they are zero before
-    //                //we do any of this, otherwise the values after normalisation will be garbage
-    //                //we do this by min-thresholding and then subtracting the threshold.
-    //                //as long as the threshold is tiny, this will be ok
-
-    //                // On the same time we are going to save to a temp projdata file
-
-    //                shared_ptr<ProjData> temp_projdata ( new ProjDataInMemory (this->output_projdata_sptr->get_exam_info_sptr(),
-    //                                                                           this->output_projdata_sptr->get_proj_data_info_sptr()));
-    //                temp_projdata->fill(*this->output_projdata_sptr);
-
-    //                pow_times_add min_threshold (0.0f, 1.0f, 1.0f, 1e-9, NumericInfo<float>().max_value());
-
-    //                for (int segment_num = temp_projdata->get_min_segment_num();
-    //                     segment_num <= temp_projdata->get_max_segment_num();
-    //                     ++segment_num)
-    //                {
-    //                    SegmentByView<float> segment_by_view =
-    //                            temp_projdata->get_segment_by_view(segment_num);
-
-    //                    in_place_apply_function(segment_by_view,
-    //                                            min_threshold);
-
-    //                    if (!(temp_projdata->set_segment(segment_by_view) == Succeeded::yes))
-    //                        warning("Error set_segment %d\n", segment_num);
-    //                }
-
-    //                pow_times_add add_scalar(-1e-9, 1.0f, 1.0f, NumericInfo<float>().min_value(),
-    //                                         NumericInfo<float>().max_value());
-
-    //                for (int segment_num = temp_projdata->get_min_segment_num();
-    //                     segment_num <= temp_projdata->get_max_segment_num();
-    //                     ++segment_num)
-    //                {
-    //                    SegmentByView<float> segment_by_view =
-    //                            temp_projdata->get_segment_by_view(segment_num);
-
-    //                    in_place_apply_function(segment_by_view,
-    //                                            add_scalar);
-
-    //                    if (!(temp_projdata->set_segment(segment_by_view) == Succeeded::yes))
-    //                        warning("Error set_segment %d\n", segment_num);
-    //                }
-
-    //                // ok, we can multiply with the norm
-    //                for (int segment_num = temp_projdata->get_min_segment_num();
-    //                     segment_num <= temp_projdata->get_max_segment_num();
-    //                     ++segment_num)
-    //                {
-    //                    SegmentByView<float> segment_by_view_data =
-    //                            temp_projdata->get_segment_by_view(segment_num);
-
-    //                    SegmentByView<float> segment_by_view_norm =
-    //                            this->norm_projdata_2d_sptr->get_segment_by_view(segment_num);
-
-    //                    segment_by_view_data *= segment_by_view_norm;
+        upsample_and_fit_scatter_estimate(*this->output_projdata_sptr, *this->input_projdata_2d_sptr,
+                                          *unscaled, *empty,
+                                          *this->mask_projdata_sptr, local_min_scale_value,
+                                          local_max_scale_value, this->half_filter_width,
+                                          spline_type, this->remove_interleaving);
 
 
-    //                    if (!(temp_projdata->set_segment(segment_by_view_data) == Succeeded::yes))
-    //                        warning("Error set_segment %d\n", segment_num);
-    //                }
+        if(this->run_debug_mode)
+        {
+            std::stringstream convert;   // stream used for the conversion
+            int lab = i_scat_iter+1;
+            convert << "./extras/scaled_" <<
+                       lab;
+            std::string output_filename =  convert.str();
 
-    //                std::stringstream convert;   // stream used for the conversion
-    //                convert << this->o_scatter_estimate_prefix << "_" <<
-    //                           i_scat_iter;
-    //                std::string output_filename =  convert.str();
+            dynamic_cast<ProjDataInMemory *> (this->output_projdata_sptr.get())->write_to_file(output_filename);
+        }
 
-    //                shared_ptr <ProjData> temp_projdata_3d (new ProjDataInterfile(this->input_projdata_3d_sptr->get_exam_info_sptr(),
-    //                                                                              this->input_projdata_3d_sptr->get_proj_data_info_sptr() ,
-    //                                                                              output_filename,
-    //                                                                              std::ios::in | std::ios::out | std::ios::trunc));
+        //            if (this->export_scatter_estimates_of_each_iteration ||
+        //                    i_scat_iter == this->num_scatter_iterations -1 )
+        //            {
 
-    //                upsample_and_fit_scatter_estimate(*temp_projdata_3d,
-    //                                                  *this->input_projdata_3d_sptr,
-    //                                                  *temp_projdata,
-    //                                                  *this->normalisation_data_3d,
-    //                                                  *this->input_projdata_3d_sptr,
-    //                                                  1.0f,
-    //                                                  1.0f,
-    //                                                  1.0f,
-    //                                                  spline_type,
-    //                                                  false);
+        //                //this is complicated as the 2d scatter estimate was
+        //                //divided by norm2d, so we need to undo this
+        //                //unfortunately, currently the values in the gaps in the
+        //                //scatter estimate are not quite zero (just very small)
+        //                //so we have to first make sure that they are zero before
+        //                //we do any of this, otherwise the values after normalisation will be garbage
+        //                //we do this by min-thresholding and then subtracting the threshold.
+        //                //as long as the threshold is tiny, this will be ok
 
-    //                /*const double start_time = 0.0;
-    //                        const double end_time = 1.0;
-    //                        dynamic_cast<ChainedBinNormalisation &>
-    //                                (*this->multiplicative_data_3d).undo(*temp_projdata_3d,
-    //                                                                     start_time,
-    //                                                                     end_time);*/
+        //                // On the same time we are going to save to a temp projdata file
 
-    //                info ("\n\n Multiplying \n\n");
-    //                for (int segment_num = temp_projdata_3d->get_min_segment_num();
-    //                     segment_num <= temp_projdata_3d->get_max_segment_num();
-    //                     ++segment_num)
-    //                {
-    //                    SegmentByView<float> segment_by_view_data =
-    //                            temp_projdata_3d->get_segment_by_view(segment_num);
+        //                shared_ptr<ProjData> temp_projdata ( new ProjDataInMemory (this->output_projdata_sptr->get_exam_info_sptr(),
+        //                                                                           this->output_projdata_sptr->get_proj_data_info_sptr()));
+        //                temp_projdata->fill(*this->output_projdata_sptr);
 
-    //                    SegmentByView<float> segment_by_view_norm =
-    //                            this->norm_projdata_3d_sptr->get_segment_by_view(segment_num);
+        //                pow_times_add min_threshold (0.0f, 1.0f, 1.0f, 1e-9, NumericInfo<float>().max_value());
 
-    //                    SegmentByView<float> segment_by_view_atten =
-    //                            this->atten_projdata_3d_sptr->get_segment_by_view(segment_num);
+        //                for (int segment_num = temp_projdata->get_min_segment_num();
+        //                     segment_num <= temp_projdata->get_max_segment_num();
+        //                     ++segment_num)
+        //                {
+        //                    SegmentByView<float> segment_by_view =
+        //                            temp_projdata->get_segment_by_view(segment_num);
 
-    //                    segment_by_view_data *= segment_by_view_norm;
-    //                    segment_by_view_data *= segment_by_view_atten;
+        //                    in_place_apply_function(segment_by_view,
+        //                                            min_threshold);
+
+        //                    if (!(temp_projdata->set_segment(segment_by_view) == Succeeded::yes))
+        //                        warning("Error set_segment %d\n", segment_num);
+        //                }
+
+        //                pow_times_add add_scalar(-1e-9, 1.0f, 1.0f, NumericInfo<float>().min_value(),
+        //                                         NumericInfo<float>().max_value());
+
+        //                for (int segment_num = temp_projdata->get_min_segment_num();
+        //                     segment_num <= temp_projdata->get_max_segment_num();
+        //                     ++segment_num)
+        //                {
+        //                    SegmentByView<float> segment_by_view =
+        //                            temp_projdata->get_segment_by_view(segment_num);
+
+        //                    in_place_apply_function(segment_by_view,
+        //                                            add_scalar);
+
+        //                    if (!(temp_projdata->set_segment(segment_by_view) == Succeeded::yes))
+        //                        warning("Error set_segment %d\n", segment_num);
+        //                }
+
+        //                // ok, we can multiply with the norm
+        //                for (int segment_num = temp_projdata->get_min_segment_num();
+        //                     segment_num <= temp_projdata->get_max_segment_num();
+        //                     ++segment_num)
+        //                {
+        //                    SegmentByView<float> segment_by_view_data =
+        //                            temp_projdata->get_segment_by_view(segment_num);
+
+        //                    SegmentByView<float> segment_by_view_norm =
+        //                            this->norm_projdata_2d_sptr->get_segment_by_view(segment_num);
+
+        //                    segment_by_view_data *= segment_by_view_norm;
 
 
-    //                    if (!(temp_projdata_3d->set_segment(segment_by_view_data) == Succeeded::yes))
-    //                        warning("Error set_segment %d\n", segment_num);
-    //                }
+        //                    if (!(temp_projdata->set_segment(segment_by_view_data) == Succeeded::yes))
+        //                        warning("Error set_segment %d\n", segment_num);
+        //                }
+
+        //                std::stringstream convert;   // stream used for the conversion
+        //                convert << this->o_scatter_estimate_prefix << "_" <<
+        //                           i_scat_iter;
+        //                std::string output_filename =  convert.str();
+
+        //                shared_ptr <ProjData> temp_projdata_3d (new ProjDataInterfile(this->input_projdata_3d_sptr->get_exam_info_sptr(),
+        //                                                                              this->input_projdata_3d_sptr->get_proj_data_info_sptr() ,
+        //                                                                              output_filename,
+        //                                                                              std::ios::in | std::ios::out | std::ios::trunc));
+
+        //                upsample_and_fit_scatter_estimate(*temp_projdata_3d,
+        //                                                  *this->input_projdata_3d_sptr,
+        //                                                  *temp_projdata,
+        //                                                  *this->normalisation_data_3d,
+        //                                                  *this->input_projdata_3d_sptr,
+        //                                                  1.0f,
+        //                                                  1.0f,
+        //                                                  1.0f,
+        //                                                  spline_type,
+        //                                                  false);
+
+        //                /*const double start_time = 0.0;
+        //                        const double end_time = 1.0;
+        //                        dynamic_cast<ChainedBinNormalisation &>
+        //                                (*this->multiplicative_data_3d).undo(*temp_projdata_3d,
+        //                                                                     start_time,
+        //                                                                     end_time);*/
+
+        //                info ("\n\n Multiplying \n\n");
+        //                for (int segment_num = temp_projdata_3d->get_min_segment_num();
+        //                     segment_num <= temp_projdata_3d->get_max_segment_num();
+        //                     ++segment_num)
+        //                {
+        //                    SegmentByView<float> segment_by_view_data =
+        //                            temp_projdata_3d->get_segment_by_view(segment_num);
+
+        //                    SegmentByView<float> segment_by_view_norm =
+        //                            this->norm_projdata_3d_sptr->get_segment_by_view(segment_num);
+
+        //                    SegmentByView<float> segment_by_view_atten =
+        //                            this->atten_projdata_3d_sptr->get_segment_by_view(segment_num);
+
+        //                    segment_by_view_data *= segment_by_view_norm;
+        //                    segment_by_view_data *= segment_by_view_atten;
 
 
-    //            }
+        //                    if (!(temp_projdata_3d->set_segment(segment_by_view_data) == Succeeded::yes))
+        //                        warning("Error set_segment %d\n", segment_num);
+        //                }
 
-    //            if (iterative_method)
-    //                reconstruct_iterative(i_scat_iter,
-    //                                      this->activity_image_lowres_sptr);
-    //            else
-    //            {
-    //                reconstruct_analytic();
-    //                //TODO: threshold ... to cut the negative values
-    //            }
 
-    //            this->output_projdata_sptr->fill(0.f);
+        //            }
 
-    //        }
+        if (iterative_method)
+            reconstruct_iterative(i_scat_iter,
+                                  this->activity_image_lowres_sptr);
+        else
+        {
+            reconstruct_analytic();
+            //TODO: threshold ... to cut the negative values
+        }
 
-    //        info("\n\n>>>>>>Scatter Estimation finished !!!<<<<<<<<<\n\n");
+        // Reset to the additive factor
+        //        this->output_projdata_sptr->fill(0.f);
 
-    //        // todo: Reconstruct in full 3D, with the last scatter estimation sinogram,
-    //        // or with all.
+    }
 
+    info("\n\n>>>>>>Scatter Estimation finished !!!<<<<<<<<<\n\n");
 
     return Succeeded::yes;
 }
@@ -1079,7 +1056,8 @@ reconstruct_iterative(int _current_iter_num,
             dynamic_cast<IterativeReconstruction<DiscretisedDensity<3, float> > *> (this->reconstruction_template_sptr.get());
 
     iterative_object->set_start_subset_num(1);
-    iterative_object->reconstruct(_current_estimate_sptr);
+//    return iterative_object->reconstruct(this->activity_image_lowres_sptr);
+    iterative_object->reconstruct(this->activity_image_lowres_sptr);
 
     if(this->run_debug_mode)
     {
@@ -1148,11 +1126,20 @@ write_log(const double simulation_time,
     //            << " tangential_bins\n";
 }
 
-void
+Succeeded
 ScatterEstimationByBin::ffw_project_mask_image()
 {
     if (is_null_ptr(this->mask_atten_image_sptr))
-        error("You cannot forward project if you have not set the mask image");
+    {
+        warning("You cannot forward project if you have not set the mask image. Abord.");
+        return Succeeded::no;
+    }
+
+    if (is_null_ptr(this->input_projdata_2d_sptr))
+    {
+        warning("No 2D proj_data have been initialised. Abord.");
+        return Succeeded::no;
+    }
 
     shared_ptr<ForwardProjectorByBin> forw_projector_sptr;
     shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
@@ -1186,7 +1173,10 @@ ScatterEstimationByBin::ffw_project_mask_image()
                                 pow_times_add_object);
 
         if (!(mask_projdata->set_segment(segment_by_view) == Succeeded::yes))
+        {
             warning("Error set_segment %d\n", segment_num);
+            return Succeeded::no;
+        }
     }
 
     if (this->mask_projdata_filename.size() > 0)
@@ -1198,11 +1188,17 @@ ScatterEstimationByBin::ffw_project_mask_image()
                                                             mask_projdata->get_proj_data_info_ptr()->create_shared_clone()));
 
     CreateTailMaskFromACFs create_tail_mask_from_acfs;
-    create_tail_mask_from_acfs.parse(this->tail_mask_par_filename.c_str());
+
+    if(!create_tail_mask_from_acfs.parse(this->tail_mask_par_filename.c_str()) == false)
+    {
+        warning(boost::format("Error parsing parameters file %1%, for creating mask tails from ACFs. Abord.")
+                %this->tail_mask_par_filename);
+        return Succeeded::no;
+    }
 
     create_tail_mask_from_acfs.set_input_projdata_sptr(mask_projdata);
     create_tail_mask_from_acfs.set_output_projdata_sptr(this->mask_projdata_sptr);
-    create_tail_mask_from_acfs.process_data();
+    return create_tail_mask_from_acfs.process_data();
 }
 
 void

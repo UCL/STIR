@@ -368,9 +368,9 @@ set_output_proj_data(const std::string& filename)
 
 void
 ScatterSimulation::
-get_output_proj_data(shared_ptr<ProjData>& arg)
+set_output_proj_data_sptr(shared_ptr<ProjData>& arg)
 {
-    arg = this->output_proj_data_sptr;
+    this->output_proj_data_sptr = arg;
 }
 
 void
