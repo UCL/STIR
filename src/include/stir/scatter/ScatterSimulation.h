@@ -139,6 +139,9 @@ public:
     void
     set_output_proj_data_sptr(shared_ptr<ProjData>&);
 
+    shared_ptr<ProjData>
+    get_output_proj_data_sptr();
+
     //! \details Load the scatter template and perform basic checks.
     void set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>&);
 
@@ -212,6 +215,8 @@ protected:
     //! the par file. The corresponding set functions should be used either
     //! for files that are not stored in the drive.
     virtual bool post_processing();
+
+    virtual Succeeded set_up();
 
     enum image_type{act_image_type, att_image_type};
     struct ScatterPoint

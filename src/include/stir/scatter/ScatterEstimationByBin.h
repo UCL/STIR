@@ -241,7 +241,7 @@ private:
     //! \details A helper function to reduce the size of set_up().ß
     Succeeded ffw_project_mask_image();
     //! \details A helper function to reduce the size of set_up().
-    void apply_mask_in_place(shared_ptr<DiscretisedDensity<3, float> >&,
+    bool apply_mask_in_place(shared_ptr<DiscretisedDensity<3, float> >&,
                              const mask_parameters&);
 
     //! \details Average the two first activity images 0 and 1.
@@ -254,6 +254,15 @@ private:
     bool export_scatter_estimates_of_each_iteration;
     //! Export SSRB sinograms
     bool export_2d_projdata;
+    //! This bool will allow the ScatterEstimation to override the value of
+    //! the initial activity image set in ScatterSimulation par file
+    bool override_initial_activity_image;
+    //! This bool will allow the ScatterEstimation to override the value of
+    //! the density image set in ScatterSimulation par file
+    bool override_density_image;
+    //! This bool will allow the ScatterEstimation to override the value of
+    //! the density image for scatter points set in ScatterSimulation par file
+    bool override_density_image_for_scatter_points;
 
     //! Parameter file for scatter simulation
     //! \warning Values in this file could be overridden.
@@ -275,7 +284,7 @@ private:
     //! Default value = 0.4
     float min_scale_value;
     //!
-    float half_filter_width;
+    unsigned int half_filter_width;
     //! Ouput file name prefix
     std::string o_scatter_estimate_prefix;
 };

@@ -72,6 +72,8 @@ protected:
     virtual void set_defaults();
     virtual void initialise_keymap();
 
+    virtual Succeeded set_up();
+
     //! used to check acceptable parameter ranges, etc...
     virtual bool post_processing();
 

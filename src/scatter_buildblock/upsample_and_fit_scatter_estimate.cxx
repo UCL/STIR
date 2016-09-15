@@ -71,7 +71,7 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
   const TimeFrameDefinitions& time_frame_defs =
     emission_proj_data.get_exam_info_sptr()->time_frame_definitions;
 
-  if (min_scale_factor != 1 || max_scale_factor != 1 || !scatter_normalisation.is_trivial())
+  if (min_scale_factor != 1.f || max_scale_factor != 1.f || !scatter_normalisation.is_trivial())
     {
       ProjDataInMemory interpolated_scatter(emission_proj_data.get_exam_info_sptr(),
                         emission_proj_data.get_proj_data_info_ptr()->create_shared_clone());

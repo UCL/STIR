@@ -59,7 +59,7 @@ process_data()
     // this is usefull in the scatter estimation process.
     this->output_proj_data_sptr->fill(0.f);
 
-    // The activiy image has been changed, from another class.
+    // The activiy image might have been changed, during the estimation process.
     this->remove_cache_for_integrals_over_activity();
 
     this->initialise_cache_for_scattpoint_det_integrals_over_attenuation();
@@ -116,6 +116,7 @@ process_data()
             bin_counter +=
                     this->proj_data_info_ptr->get_num_axial_poss(vs_num.segment_num()) *
                     this->proj_data_info_ptr->get_num_tangential_poss();
+            std::cout<< bin_counter << " / "<< total_bins <<std::endl;
         }
     }
 
@@ -252,6 +253,17 @@ post_processing()
     return false;
 }
 
+Succeeded
+ScatterSimulation::
+set_up()
+{
+//    if (!is_null_ptr())
+//    this->set_template_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone());
+//    //this->set_exam_info_sptr(template_proj_data_sptr->get_exam_info_ptr()->create_shared_clone());
+
+    return Succeeded::yes;
+}
+
 void
 ScatterSimulation::
 set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >& arg)
@@ -345,6 +357,20 @@ set_output_proj_data_sptr(const shared_ptr<ExamInfo>& _exam,
     else
         this->output_proj_data_sptr.reset( new ProjDataInMemory(_exam,
                                                                 _info));
+}
+
+shared_ptr<ProjData>
+ScatterSimulation::
+get_output_proj_data_sptr()
+{
+
+    if(is_null_ptr(this->output_proj_data_sptr))
+    {
+        this->output_proj_data_sptr.reset(new ProjDataInMemory(this->template_exam_info_sptr,
+                                                                this->proj_data_info_ptr->create_shared_clone()));
+    }
+
+    return this->output_proj_data_sptr;
 }
 
 void

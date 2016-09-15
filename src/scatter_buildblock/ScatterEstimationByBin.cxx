@@ -73,11 +73,14 @@ set_defaults()
     this->num_scatter_iterations = 5;
     this->min_scale_value = 0.4f;
     this->max_scale_value = 100.f;
-    this->half_filter_width = 3.f;
+    this->half_filter_width = 3;
     this->iterative_method = true;
     this->do_average_at_2 = true;
     this->export_scatter_estimates_of_each_iteration = false;
     this->run_debug_mode = false;
+    this->override_initial_activity_image = false;
+    this->override_density_image = false;
+    this->override_density_image_for_scatter_points = false;
 }
 
 void
@@ -150,6 +153,13 @@ initialise_keymap()
                                  &this->scatter_simulation_sptr);
     this->parser.add_key("scatter simulation parameters file",
                          &this->scatter_sim_par_filename);
+
+    this->parser.add_parsing_key("over-ride initial activity image",
+                                 &this->override_initial_activity_image);
+    this->parser.add_parsing_key("over-ride density image",
+                                 &this->override_density_image);
+    this->parser.add_parsing_key("over-ride density image for scatter points",
+                                 &this->override_density_image_for_scatter_points);
     // END Scatter simulation
 
     this->parser.add_key("export scatter estimates of each iteration",
@@ -451,8 +461,8 @@ set_up()
             VoxelsOnCartesianGrid<float>* tmp_image_ptr =
                     dynamic_cast<VoxelsOnCartesianGrid<float>* >(this->activity_image_sptr.get());
 
-            size_xy = static_cast<int>(tmp_image_ptr->get_x_size() * zoom_xy + 0.5f);
-            size_z = static_cast<int>(tmp_image_ptr->get_z_size() * zoom_z + 0.5f) ;
+            size_xy = static_cast<int>(tmp_image_ptr->get_x_size() * zoom_xy );
+            size_z = static_cast<int>(tmp_image_ptr->get_z_size() * zoom_z) ;
 
             VoxelsOnCartesianGrid<float> activity_lowres =
                     zoom_image(*tmp_image_ptr,
@@ -550,9 +560,12 @@ set_up()
 
     // The images are passed to the simulation.
     // and it will override anything that the ScatterSimulation.par file has done.
-    this->scatter_simulation_sptr->set_density_image_sptr(this->atten_image_lowres_sptr);
-    this->scatter_simulation_sptr->set_density_image_for_scatter_points_sptr(this->atten_image_lowres_sptr);
-    this->scatter_simulation_sptr->set_activity_image_sptr(this->activity_image_lowres_sptr);
+    if(this->override_density_image)
+        this->scatter_simulation_sptr->set_density_image_sptr(this->atten_image_lowres_sptr);
+    if(this->override_density_image_for_scatter_points)
+        this->scatter_simulation_sptr->set_density_image_for_scatter_points_sptr(this->atten_image_lowres_sptr);
+    if(this->override_initial_activity_image)
+        this->scatter_simulation_sptr->set_activity_image_sptr(this->activity_image_lowres_sptr);
 
     // Check if Load a mask proj_data
 
@@ -564,15 +577,23 @@ set_up()
             // 1. Clone from the original image.
             // 2. Apply to the new clone.
             this->mask_atten_image_sptr.reset(this->atten_image_sptr->clone());
-            this->apply_mask_in_place(this->mask_atten_image_sptr,
-                                      this->mask_attenuation_image);
+            if(this->apply_mask_in_place(this->mask_atten_image_sptr,
+                                      this->mask_attenuation_image) == false)
+            {
+                warning("Error in masking. Abord.");
+                return Succeeded::no;
+            }
 
             if (this->mask_atten_image_filename.size() > 0 )
                 OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
                         write_to_file(this->mask_atten_image_filename, *this->mask_atten_image_sptr.get());
         }
 
-        ffw_project_mask_image();
+        if(ffw_project_mask_image() == Succeeded::no)
+        {
+            warning("Unsuccessfull to fwd project the mask image. Abord.");
+            return Succeeded::no;
+        }
     }
 
     info(">>>>Set up finished successfully!!<<<<");
@@ -785,17 +806,15 @@ process_data()
     float local_max_scale_value = 0.5f;
 
     stir::BSpline::BSplineType  spline_type = stir::BSpline::linear;
-    shared_ptr <ProjData> unscaled;
+    shared_ptr <ProjData> unscaled = this->scatter_simulation_sptr->get_output_proj_data_sptr();
     shared_ptr<BinNormalisation> empty(new TrivialBinNormalisation());
     shared_ptr<DiscretisedDensity <3,float> > act_image_for_averaging;
-
-    this->scatter_simulation_sptr->set_output_proj_data_sptr(unscaled);
 
     if( this->recompute_initial_activity_image )
     {
         info("Computing initial activity image...");
         if (iterative_method)
-            reconstruct_iterative( 0,
+            reconstruct_iterative( -1,
                                    this->activity_image_lowres_sptr);
         else
             reconstruct_analytic();
@@ -869,8 +888,7 @@ process_data()
         {
             std::stringstream convert;   // stream used for the conversion
             int lab = i_scat_iter+1;
-            convert << "./extras/unscaled_" <<
-                       lab;
+            convert << "./extras/unscaled_" << lab;
             std::string output_filename =  convert.str();
 
             dynamic_cast<ProjDataInMemory *> (unscaled.get())->write_to_file(output_filename);
@@ -896,8 +914,7 @@ process_data()
         {
             std::stringstream convert;   // stream used for the conversion
             int lab = i_scat_iter+1;
-            convert << "./extras/scaled_" <<
-                       lab;
+            convert << "./extras/scaled_" << lab;
             std::string output_filename =  convert.str();
 
             dynamic_cast<ProjDataInMemory *> (this->output_projdata_sptr.get())->write_to_file(output_filename);
@@ -1062,7 +1079,7 @@ reconstruct_iterative(int _current_iter_num,
     if(this->run_debug_mode)
     {
         std::stringstream name;
-        int next_iter_num = _current_iter_num + 1;
+        int next_iter_num = _current_iter_num+1;
         name << "./extras/recon_" << next_iter_num;
         std::string output = name.str();
         OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
@@ -1182,14 +1199,15 @@ ScatterEstimationByBin::ffw_project_mask_image()
     if (this->mask_projdata_filename.size() > 0)
         this->mask_projdata_sptr.reset(new ProjDataInterfile(mask_projdata->get_exam_info_sptr(),
                                                              mask_projdata->get_proj_data_info_ptr()->create_shared_clone(),
-                                                             this->mask_projdata_filename));
+                                                             this->mask_projdata_filename,
+                                                             std::ios::in | std::ios::out | std::ios::trunc));
     else
         this->mask_projdata_sptr.reset(new ProjDataInMemory(mask_projdata->get_exam_info_sptr(),
                                                             mask_projdata->get_proj_data_info_ptr()->create_shared_clone()));
 
     CreateTailMaskFromACFs create_tail_mask_from_acfs;
 
-    if(!create_tail_mask_from_acfs.parse(this->tail_mask_par_filename.c_str()) == false)
+    if(!create_tail_mask_from_acfs.parse(this->tail_mask_par_filename.c_str()))
     {
         warning(boost::format("Error parsing parameters file %1%, for creating mask tails from ACFs. Abord.")
                 %this->tail_mask_par_filename);
@@ -1201,7 +1219,7 @@ ScatterEstimationByBin::ffw_project_mask_image()
     return create_tail_mask_from_acfs.process_data();
 }
 
-void
+bool
 ScatterEstimationByBin::
 apply_mask_in_place(shared_ptr<DiscretisedDensity<3, float> >& arg,
                     const mask_parameters& _this_mask)
@@ -1209,12 +1227,19 @@ apply_mask_in_place(shared_ptr<DiscretisedDensity<3, float> >& arg,
     // Re-reading every time should not be a problem, as it is
     // just a small txt file.
     PostFiltering<DiscretisedDensity<3, float> > filter;
-    filter.parse(this->mask_postfilter_filename.c_str());
+
+    if(filter.parse(this->mask_postfilter_filename.c_str()) == false)
+    {
+        warning(boost::format("Error parsing postfilter parameters file %1%. Abord.")
+                %this->mask_postfilter_filename);
+        return false;
+    }
+
 
     //1. add_scalar//2. mult_scalar//3. power//4. min_threshold//5. max_threshold
 
     pow_times_add pow_times_thres_max(0.0f, 1.0f, 1.0f, NumericInfo<float>().min_value(),
-                                      0.001);
+                                      0.001f);
     pow_times_add pow_times_add_scalar( -0.00099f, 1.0f, 1.0f, NumericInfo<float>().min_value(),
                                         NumericInfo<float>().max_value());
 
@@ -1226,7 +1251,7 @@ apply_mask_in_place(shared_ptr<DiscretisedDensity<3, float> >& arg,
 
     pow_times_add pow_times_add_object(_this_mask.add_scalar,
                                        _this_mask.times_scalar,
-                                       1.0,
+                                       1.0f,
                                        _this_mask.min_threshold,
                                        _this_mask.max_threshold);
     // 1. filter the image
@@ -1247,6 +1272,8 @@ apply_mask_in_place(shared_ptr<DiscretisedDensity<3, float> >& arg,
     // 6. Add 1.
     in_place_apply_function(*arg.get(),
                             pow_times_add_object);
+
+    return true;
 }
 
 END_NAMESPACE_STIR

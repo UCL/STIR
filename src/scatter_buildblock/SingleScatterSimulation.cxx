@@ -78,8 +78,17 @@ set_defaults()
 
 Succeeded
 SingleScatterSimulation::
+set_up()
+{
+    return base_type::set_up();
+}
+
+Succeeded
+SingleScatterSimulation::
 process_data()
 {
+    if(this->set_up() == Succeeded::no)
+        return Succeeded::no;
     return base_type::process_data();
 }
 
