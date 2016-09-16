@@ -5,7 +5,7 @@
 # right now randoms stuff only handles single time frame
 
 # directory with some standard .par files
-: ${pardir:=~/devel/STIR/examples/Siemens-mMR}
+: ${pardir:=~/Users/nikos/Desktop/Workspace/stir_dev/github/STIR/examples/Siemens-mMR}
 
 # should get these parameters from command line
 : ${INPUT:=test.hlm}
@@ -14,7 +14,7 @@
 export INPUT FRAMES
 
 # create prompt sinograms
-OUTPUT=sinospan11 TEMPLATE=${pardir}/template_span11.hs lm_to_projdata ${pardir}/lm_to_projdata.par 
+#OUTPUT=sinospan11 TEMPLATE=${pardir}/template_span11.hs lm_to_projdata ${pardir}/lm_to_projdata.par
 
 # create delayed fansums
 OUTPUT=fansums_delayed lm_fansums ${pardir}/lm_fansums_delayed.par 

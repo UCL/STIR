@@ -193,7 +193,7 @@ protected:
     //! Mask proj_data
     shared_ptr<ProjData> mask_projdata_sptr;
     //! Scatter Estimation proj_data
-    shared_ptr<ProjData> output_projdata_sptr;
+    shared_ptr<ProjData> scaled_est_projdata_sptr;
     //! The full 3D projdata are used for the calculation of the 2D
     //! and later for the upsampling back to 3D.
     shared_ptr<ProjData> input_projdata_sptr;
