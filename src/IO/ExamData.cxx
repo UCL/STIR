@@ -21,7 +21,8 @@
 START_NAMESPACE_STIR
 
 ExamData::
-ExamData()
+ExamData() :
+    exam_info_sptr(new ExamInfo())
 {}
 
 

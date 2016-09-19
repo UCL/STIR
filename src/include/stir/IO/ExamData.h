@@ -26,7 +26,6 @@
 
 #include "stir/shared_ptr.h"
 #include <vector>
-
 #include "stir/ExamInfo.h"
 
 START_NAMESPACE_STIR
