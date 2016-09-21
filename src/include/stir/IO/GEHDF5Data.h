@@ -56,6 +56,9 @@ public:
 
     virtual shared_ptr<Scanner> 
       get_scanner_sptr() const;
+
+    H5::H5File& get_file() { return file; }
+
 protected:
 
     shared_ptr<ExamInfo> exam_info_sptr;

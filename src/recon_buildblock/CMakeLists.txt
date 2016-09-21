@@ -88,6 +88,12 @@ list(APPEND ${dir_LIB_SOURCES}
 	BinNormalisationFromECAT8
 )
 
+if (HAVE_HDF5)
+list(APPEND ${dir_LIB_SOURCES}
+         BinNormalisationFromGEHDF5
+ )
+endif()
+
 if(STIR_MPI)
 set(${dir_LIB_SOURCES}
      ${${dir_LIB_SOURCES}}
