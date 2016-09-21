@@ -1,14 +1,8 @@
-
 //
 //
 /*
     Copyright (C) 2016, UCL
     This file is part of STIR.
-
-    Some parts of this file originate in CTI code, distributed as
-    part of the matrix library from Louvain-la-Neuve, and hence carries
-    its restrictive license. Affected parts are the dead-time correction
-    in get_deadtime_efficiency and geo_Z_corr related code.
 
     Most of this file is free software; you can redistribute that part and/or modify
     it under the terms of the GNU Lesser General Public License as published by

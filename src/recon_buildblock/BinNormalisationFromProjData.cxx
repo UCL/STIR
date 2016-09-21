@@ -171,6 +171,12 @@ BinNormalisationFromProjData::get_bin_efficiency(const Bin& bin,const double sta
   return 1;
 
 }
+
+shared_ptr<ProjData>
+BinNormalisationFromProjData::get_norm_proj_data_sptr() const
+{
+  return this->norm_proj_data_ptr;
+}
  
 END_NAMESPACE_STIR
 

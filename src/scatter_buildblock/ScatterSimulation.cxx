@@ -377,6 +377,12 @@ void
 ScatterSimulation::
 set_output_proj_data(const std::string& filename)
 {
+
+    if(is_null_ptr(this->proj_data_info_ptr))
+    {
+        error("Template ProjData has not been set. Abord.");
+    }
+
     this->output_proj_data_filename = filename;
 
     if (is_null_ptr(this->template_exam_info_sptr))
@@ -451,14 +457,14 @@ set_attenuation_threshold(const float arg)
 
 void
 ScatterSimulation::
-set_random_point(const bool& arg)
+set_random_point(const bool arg)
 {
     random = arg;
 }
 
 void
 ScatterSimulation::
-set_cache_enabled(const bool &arg)
+set_cache_enabled(const bool arg)
 {
     use_cache = arg;
 }

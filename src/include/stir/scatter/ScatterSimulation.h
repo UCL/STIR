@@ -128,8 +128,9 @@ public:
     void
     sample_scatter_points();
 
-    void
-    set_output_proj_data(const std::string&);
+    //! This function depends on the ProjDataInfo of the scanner.
+    //! You first have to set that.
+    void set_output_proj_data(const std::string&);
 
     void
     set_output_proj_data_sptr(const shared_ptr<ExamInfo>&,
@@ -166,14 +167,14 @@ public:
 
     void set_density_image_for_scatter_points_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 
-    //! \brief set_density_image_for_scatter_points
+    //! set_density_image_for_scatter_points
     void set_density_image_for_scatter_points(const std::string&);
-
+    //! set the attenuation threshold
     void set_attenuation_threshold(const float);
 
-    void set_random_point(const bool&);
+    void set_random_point(const bool);
 
-    void set_cache_enabled(const bool&);
+    void set_cache_enabled(const bool);
 
     //! \name Compton scatter cross sections
     //@{

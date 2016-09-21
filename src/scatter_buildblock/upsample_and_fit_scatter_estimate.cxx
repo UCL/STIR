@@ -11,7 +11,7 @@
   This file is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Lesser General Public License for more details.
+  GNU Lesser General Public License for more details. 
   
   See STIR/LICENSE.txt for details
 */
@@ -33,7 +33,7 @@
 #include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/interpolate_projdata.h"
 #include "stir/utilities.h"
-#include "stir/IndexRange2D.h"
+#include "stir/IndexRange2D.h" 
 #include "stir/stream.h"
 #include "stir/Succeeded.h"
 #include "stir/thresholding.h"
@@ -46,7 +46,7 @@
 
 START_NAMESPACE_STIR
 
-void
+void 
 ScatterEstimationByBin::
 upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
                                   const  ProjData& emission_proj_data,
@@ -59,39 +59,39 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
                                   BSpline::BSplineType spline_type,
                                   const bool remove_interleaving)
 {
-  shared_ptr<ProjDataInfo>
+  shared_ptr<ProjDataInfo> 
     interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_ptr()->clone());
   interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
 
   std::cout << "Interpolating scatter estimate to size of emission data" << std::endl;
   ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
-                           interpolated_direct_scatter_proj_data_info_sptr);
+					       interpolated_direct_scatter_proj_data_info_sptr);        
   interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, remove_interleaving);
 
   const TimeFrameDefinitions& time_frame_defs =
     emission_proj_data.get_exam_info_sptr()->time_frame_definitions;
 
-  if (min_scale_factor != 1.f || max_scale_factor != 1.f || !scatter_normalisation.is_trivial())
+  if (min_scale_factor != 1 || max_scale_factor != 1 || !scatter_normalisation.is_trivial())
     {
       ProjDataInMemory interpolated_scatter(emission_proj_data.get_exam_info_sptr(),
-                        emission_proj_data.get_proj_data_info_ptr()->create_shared_clone());
+					    emission_proj_data.get_proj_data_info_ptr()->create_shared_clone());
       inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
 
-      scatter_normalisation.undo(interpolated_scatter,
+      scatter_normalisation.undo(interpolated_scatter, 
                                  time_frame_defs.get_start_time(), time_frame_defs.get_end_time());
       Array<2,float> scale_factors;
       
       std::cout << "Finding scale factors by sinogram" << std::endl;
       scale_factors = get_scale_factors_per_sinogram(
-                                                 emission_proj_data,
+                                                 emission_proj_data, 
                                                  interpolated_scatter,
                                                  weights_proj_data);
     
       std::cout << scale_factors;
-      threshold_lower(scale_factors.begin_all(),
+      threshold_lower(scale_factors.begin_all(), 
                       scale_factors.end_all(),
                       min_scale_factor);
-      threshold_upper(scale_factors.begin_all(),
+      threshold_upper(scale_factors.begin_all(), 
                       scale_factors.end_all(),
                       max_scale_factor);
       std::cout << "After thresholding:\n";
@@ -99,13 +99,13 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
       VectorWithOffset<float> kernel(-static_cast<int>(half_filter_width),half_filter_width);
       kernel.fill(1.F/(2*half_filter_width+1));
       ArrayFilter1DUsingConvolution<float> lowpass_filter(kernel, BoundaryConditions::constant);
-      std::for_each(scale_factors.begin(),
+      std::for_each(scale_factors.begin(), 
                     scale_factors.end(),
                     lowpass_filter);
       std::cout << "After filtering:\n";
       std::cout << scale_factors;
       std::cout << "applying scale factors" << std::endl;
-      if (scale_sinograms(scaled_scatter_proj_data,
+      if (scale_sinograms(scaled_scatter_proj_data, 
                           interpolated_scatter,
                           scale_factors) != Succeeded::yes)
         {

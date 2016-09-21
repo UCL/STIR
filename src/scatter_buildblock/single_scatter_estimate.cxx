@@ -1,7 +1,7 @@
 //
 //
-/*
-  Copyright (C) 2004- 2009, Hammersmith Imanet
+/*Copyright (C) 2004- 2009, Hammersmith Imanet
+  Copyright (C) 2016, UCL
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -12,7 +12,7 @@
   This file is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Lesser General Public License for more details.
+  GNU Lesser General Public License for more details. 
 
   See STIR/LICENSE.txt for details
 */
@@ -27,51 +27,48 @@
   \author Kris Thielemans
 
 */
-
-#include "stir/scatter/ScatterSimulation.h"
 #include "stir/scatter/SingleScatterSimulation.h"
-
+#include "stir/scatter/ScatterEstimationByBin.h"
 using namespace std;
 START_NAMESPACE_STIR
-static const float total_Compton_cross_section_511keV =
+static const float total_Compton_cross_section_511keV = 
 ScatterSimulation::
-  total_Compton_cross_section(511.F);
+  total_Compton_cross_section(511.F); 
 
 
 double
 ScatterSimulation::
-scatter_estimate(const unsigned det_num_A,
-         const unsigned det_num_B)
+scatter_estimate(const unsigned det_num_A, 
+		 const unsigned det_num_B)	
 {
-  double scatter_ratio = 0;
+  double scatter_ratio_singles = 0;
 
-  this->actual_scatter_estimate(scatter_ratio,
-                det_num_A,
-                det_num_B);
+  this->actual_scatter_estimate(scatter_ratio_singles,
+				det_num_A, 
+				det_num_B);
 
- return scatter_ratio;
-}
+ return scatter_ratio_singles;
+}      
 
 void
 SingleScatterSimulation::
 actual_scatter_estimate(double& scatter_ratio_singles,
-            const unsigned det_num_A,
-            const unsigned det_num_B)
+			const unsigned det_num_A, 
+			const unsigned det_num_B)
 {
 
-
   scatter_ratio_singles = 0;
-
+		
   for(std::size_t scatter_point_num =0;
       scatter_point_num < this->scatt_points_vector.size();
       ++scatter_point_num)
-    {
-    scatter_ratio_singles +=
+    {	
+	scatter_ratio_singles +=
       simulate_for_one_scatter_point(
-                            scatter_point_num,
-                            det_num_A, det_num_B);
+							scatter_point_num,
+							det_num_A, det_num_B);	
 
-    }
+    }	
 
   // we will divide by the effiency of the detector pair for unscattered photons
   // (computed with the same detection model as used in the scatter code)

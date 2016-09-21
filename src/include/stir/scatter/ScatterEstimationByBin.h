@@ -41,6 +41,7 @@
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
 
 #include "stir/PostFiltering.h"
+#include "stir/stir_math.h"
 
 START_NAMESPACE_STIR
 
@@ -61,6 +62,9 @@ typedef struct mask_parameters
 /*!
   \ingroup scatter
   \brief Estimate the scatter probability using a model-based approach
+
+  \todo The code should throw an error if 2D input data are loaded.
+  It should just deactivate the final upsampling.
 */
 
 class ScatterEstimationByBin : public ParsingObject
@@ -91,24 +95,13 @@ public:
     //! Default constructor (calls set_defaults())
     ScatterEstimationByBin();
 
+    //! Full process_data which performs set_up() before begining
     virtual Succeeded process_data();
 
     virtual Succeeded reconstruct_iterative(int,
                                             shared_ptr<DiscretisedDensity<3, float> >&);
 
     virtual Succeeded reconstruct_analytic();
-
-    // TODO write_log can't be const because parameter_info isn't const
-    virtual void
-    write_log(const double simulation_time,
-              const float total_scatter);
-
-    bool run_debug_mode;
-
-protected:
-    virtual void set_defaults();
-    virtual void initialise_keymap();
-    virtual bool post_processing();
 
     //!
     //! \brief set_up
@@ -129,6 +122,50 @@ protected:
     //! </ul>
     virtual Succeeded set_up();
 
+    // Set functions
+    //! Set the input projdata.
+    void set_input_proj_data_sptr(const shared_ptr<ProjData>);
+    //! Set the reconstruction method for the scatter estimation
+    void set_reconstruction_method_sptr(const shared_ptr<Reconstruction < DiscretisedDensity < 3, float > > >);
+    //! Set the full resolution attenuation image.
+    void set_attenuation_image_sptr(const shared_ptr<DiscretisedDensity<3, float > > );
+    //!
+    void set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData>);
+    //!
+    void set_normalisation_proj_data_sptr(const shared_ptr<ProjData>);
+    //!
+    void set_background_proj_data_sptr(const shared_ptr<ProjData>);
+    //!
+    void set_initial_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >);
+
+    void set_mask_image_sptr(const shared_ptr<DiscretisedDensity<3, float> >);
+    //!
+    void set_mask_proj_data_sptr(const shared_ptr<ProjData>);
+
+    void set_scatter_simulation_method_sptr(const shared_ptr<ScatterSimulation>);
+    //! Set the zoom factor in the XY plane
+    inline void set_zoom_xy(float);
+    //! Set the zoom factor in the Z axis
+    inline void set_zoom_z(float);
+
+
+    // Get functions
+    //! Get the zoom factor in the XY plance
+    inline float get_zoom_xy();
+    //! Get the zoom factor in the Z axis.
+    inline float get_zoom_z();
+
+    // TODO write_log can't be const because parameter_info isn't const
+    virtual void
+    write_log(const double simulation_time,
+              const float total_scatter);
+
+protected:
+    //! All recomputes_** will default true
+    virtual void set_defaults();
+    virtual void initialise_keymap();
+    virtual bool post_processing();
+
     //!
     //! \brief set_up_iterative
     //! \return
@@ -140,7 +177,7 @@ protected:
     Succeeded set_up_analytic();
 
     //! Recompute or load the mask image.
-    bool recompute_mask_atten_image;
+    bool recompute_mask_image;
     //! If set the mask projdata will be recomputed
     bool recompute_mask_projdata;
     //! If set to 1 the attenuation coefficients are going to
@@ -150,65 +187,65 @@ protected:
     //! and stored if a name is provided.
     bool recompute_initial_activity_image;
 
-
-    //!
-    //! \brief reconstruction_method_sptr
-    //! \details The reconsturction which is going to be used for the scatter simulation
-    //! and the intial activity image (if recompute set). It can be defined in the same
-    //! parameters file as the scatter parameters or to an external via the
+    //! This is the reconsturction object which is going to be used for the scatter estimation
+    //! and the calculation of the initial activity image (if recompute set). It can be defined in the same
+    //! parameters file as the scatter parameters or in an external defined in the
     //! reconstruction_template_par_filename
     shared_ptr < Reconstruction < DiscretisedDensity < 3, float > > >
     reconstruction_template_sptr;
-
-    //!
-    //! \brief activity_image_sptr
-    //! \details Initially with is the reconstructed activity image, but during the scatter
-    //! estimation it with actually hold the iterative estimates.
-    //! Therefore the nane might change later.
-    shared_ptr<DiscretisedDensity < 3, float > > activity_image_sptr;
-
-    shared_ptr<DiscretisedDensity < 3, float > > activity_image_lowres_sptr;
-
-    //!
-    //! \brief atten_image_sptr
-    //!
+    //! The current activity estimate.
+    shared_ptr<DiscretisedDensity < 3, float > > current_activity_image_sptr;
+    //! The current activity estimate in low resolution.
+    shared_ptr<DiscretisedDensity < 3, float > > current_activity_image_lowres_sptr;
+    //! Image with attenuation values.
     shared_ptr<DiscretisedDensity < 3, float > > atten_image_sptr;
-
+    //! Low resolution image with attenutation values.
     shared_ptr<DiscretisedDensity <3, float> > atten_image_lowres_sptr;
+    //! ((1/SSRB(1/norm3D)) * SSRB(atten)). Through out the code we set as first the norm
+    //! and second the atten.
+    shared_ptr<ChainedBinNormalisation>  multiplicative_binnorm_2d_sptr;
+    //! (norm * atten) in 3D. Through out the code we set as first the norm
+    //! and second the atten.
+    shared_ptr<ChainedBinNormalisation>  multiplicative_binnorm_3d_sptr;
 
-    shared_ptr<ChainedBinNormalisation>  multiplicative_data_2d_sptr;
+    shared_ptr<BinNormalisation> norm_coeff_sptr;
 
-    //! \details shared pointer to projection data info for the 2D data - after SSRB
+    shared_ptr<BinNormalisation> atten_coeff_3d_sptr;
+
+    //! shared pointer to projection data info for the 2D data - after SSRB
     shared_ptr < ProjDataInfo > proj_data_info_2d_sptr;
 
-    //! The 3D attenuation projdata are used only in
-    //! the end of the scatter estimation.
-    shared_ptr< ProjData > atten_projdata_sptr;
+    //! The 3D attenuation projdata are used only at
+    //! the end of the scatter estimation process, when upsampling the scaled simulated
+    //! projdata.
+//    shared_ptr< ProjData > atten_projdata_sptr;
     //!
-    shared_ptr<ProjData> atten_projdata_2d_sptr;
+//    shared_ptr<ProjData> atten_projdata_2d_sptr;
     //! Normalisation proj_data 3D
-    shared_ptr<ProjData> norm_projdata_sptr;
+//    shared_ptr<ProjData> norm_projdata_sptr;
     //! Normalisation projdata after SSRB
-    shared_ptr<ProjData> norm_projdata_2d_sptr;
+//    shared_ptr<ProjData> norm_projdata_2d_sptr;
     //! Mask proj_data
     shared_ptr<ProjData> mask_projdata_sptr;
     //! Scatter Estimation proj_data
-    shared_ptr<ProjData> scaled_est_projdata_sptr;
+//    shared_ptr<ProjData> scaled_est_projdata_sptr;
     //! The full 3D projdata are used for the calculation of the 2D
     //! and later for the upsampling back to 3D.
     shared_ptr<ProjData> input_projdata_sptr;
     //! The 2D projdata are used for the scatter estimation.
     shared_ptr<ProjData> input_projdata_2d_sptr;
-    //! Original Background projdata
-    shared_ptr<ProjData> back_projdata_sptr;
-    //! Background projection data after SSRB
+    //! Original additive projdata
+    shared_ptr<ProjData> add_projdata_3d_sptr;
+    //! Additive projection data after SSRB -- Randoms
+    shared_ptr<ProjData> add_projdata_2d_sptr;
+    //! (Additive + Scatter Estimate) * Mult in 2D
     shared_ptr<ProjData> back_projdata_2d_sptr;
 
 
     //! Filename of the initial activity image.
     std::string initial_activity_image_filename;
     //! Filename of mask image
-    std::string mask_atten_image_filename;
+    std::string mask_image_filename;
     //! Postfilter parameter file to be used in mask calculation
     std::string mask_postfilter_filename;
     //! Filename of mask's projdata
@@ -216,7 +253,7 @@ protected:
     //! Filename of background projdata
     std::string back_projdata_filename;
     //! Filename of normalisation factors
-    std::string norm_projdata_filename;
+    std::string norm_coeff_filename;
     //! Paraameter file for the tail fitting.
     std::string tail_mask_par_filename;
     //! Filename of the measured emission 3D data.
@@ -230,19 +267,26 @@ protected:
     std::string atten_coeff_filename;
 
     //!
-    shared_ptr < DiscretisedDensity < 3, float >  > mask_atten_image_sptr;
+    shared_ptr < DiscretisedDensity < 3, float >  > mask_image_sptr;
 
     //! \details the set of parameters to mask the attenuation image
-    mask_parameters mask_attenuation_image;
+    mask_parameters mask_image;
 
-    //    std::string output_projdata_filename;
+    //! Zoom factor on plane XY. Defaults on 1.f.
+    float zoom_xy;
+    //! Zoom factor on Z axis. Defaults on 1.f.
+    float zoom_z;
 private:
 
     //! \details A helper function to reduce the size of set_up().ß
     Succeeded ffw_project_mask_image();
     //! \details A helper function to reduce the size of set_up().
-    bool apply_mask_in_place(shared_ptr<DiscretisedDensity<3, float> >&,
+    bool apply_mask_in_place(DiscretisedDensity<3, float> &,
                              const mask_parameters&);
+
+    void add_proj_data(ProjData&, const ProjData&);
+
+    void apply_to_proj_data(ProjData& , const pow_times_add&);
 
     //! \details Average the two first activity images 0 and 1.
     bool do_average_at_2;
@@ -263,6 +307,8 @@ private:
     //! This bool will allow the ScatterEstimation to override the value of
     //! the density image for scatter points set in ScatterSimulation par file
     bool override_density_image_for_scatter_points;
+    //! In debug mode a lot of extra files are going to be saved in the disk.
+    bool run_debug_mode;
 
     //! Parameter file for scatter simulation
     //! \warning Values in this file could be overridden.
@@ -270,8 +316,6 @@ private:
 
     //! \details Class which will implement the scatter simulation.
     shared_ptr < ScatterSimulation > scatter_simulation_sptr;
-
-    shared_ptr<ProjData> multimulti2d;
 
     shared_ptr<PostFiltering <DiscretisedDensity<3,float> > > filter_sptr;
 
@@ -290,4 +334,5 @@ private:
 };
 
 END_NAMESPACE_STIR
+#include "stir/scatter/ScatterEstimationByBin.inl"
 #endif

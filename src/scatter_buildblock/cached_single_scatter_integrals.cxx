@@ -11,7 +11,7 @@
   This file is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Lesser General Public License for more details.
+  GNU Lesser General Public License for more details. 
   See STIR/LICENSE.txt for details
 */
 /*!
@@ -19,7 +19,7 @@
   \ingroup scatter
   \brief Implementations of functions defined in stir::ScatterEstimationByBin
 
-  Functions calculate the integral along LOR in an image (attenuation or emission).
+  Functions calculate the integral along LOR in an image (attenuation or emission). 
   (from scatter point to detector coordinate).
 
   \author Charalampos Tsoumpas
@@ -27,7 +27,7 @@
   \author Kris Thielemans
 */
 #include "stir/scatter/ScatterSimulation.h"
-#include "stir/IndexRange.h"
+#include "stir/IndexRange.h" 
 #include "stir/Coordinate2D.h"
 
 START_NAMESPACE_STIR
@@ -56,7 +56,7 @@ initialise_cache_for_scattpoint_det_integrals_over_attenuation()
   if (!this->use_cache)
     return;
 
-  const IndexRange<2> range (Coordinate2D<int> (0,0),
+  const IndexRange<2> range (Coordinate2D<int> (0,0), 
                              Coordinate2D<int> (static_cast<int>(this->scatt_points_vector.size()-1),
                                                 this->total_detectors-1));
   if (this->cached_attenuation_integral_scattpoint_det.get_index_range() == range)
@@ -73,7 +73,7 @@ initialise_cache_for_scattpoint_det_integrals_over_activity()
   if (!this->use_cache)
     return;
 
-  const IndexRange<2> range (Coordinate2D<int> (0,0),
+  const IndexRange<2> range (Coordinate2D<int> (0,0), 
                              Coordinate2D<int> (static_cast<int>(this->scatt_points_vector.size()-1),
                                                 this->total_detectors-1));
 
@@ -84,12 +84,12 @@ initialise_cache_for_scattpoint_det_integrals_over_activity()
   this->cached_activity_integral_scattpoint_det.fill(cache_init_value);
 }
 
-float
+float 
 ScatterSimulation::
-cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatter_point_num,
+cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatter_point_num, 
                                                            const unsigned det_num)
-{
-  float * location_in_cache =
+{                
+  float * location_in_cache = 
     this->use_cache
     ? &cached_activity_integral_scattpoint_det[scatter_point_num][det_num]
     : 0;
@@ -142,12 +142,12 @@ cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatte
     }
 }
 
-float
+float 
 ScatterSimulation::
-cached_exp_integral_over_attenuation_image_between_scattpoint_det(const unsigned scatter_point_num,
+cached_exp_integral_over_attenuation_image_between_scattpoint_det(const unsigned scatter_point_num, 
                                                                   const unsigned det_num)
 {
-  float * location_in_cache =
+  float * location_in_cache = 
     this->use_cache
     ? &cached_attenuation_integral_scattpoint_det[scatter_point_num][det_num]
     : 0;
@@ -193,5 +193,5 @@ cached_exp_integral_over_attenuation_image_between_scattpoint_det(const unsigned
       return result;
     }
 }
-
+        
 END_NAMESPACE_STIR
