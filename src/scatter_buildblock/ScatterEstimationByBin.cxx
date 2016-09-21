@@ -72,6 +72,7 @@ set_defaults()
     this->override_initial_activity_image = false;
     this->override_density_image = false;
     this->override_density_image_for_scatter_points = false;
+    this->remove_interleaving = true;
     this->initial_activity_image_filename = "";
     this->atten_image_filename = "";
     this->norm_coeff_filename = "";
@@ -731,7 +732,7 @@ set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterat
     //<- End Normalisation ProjData
 
     this->multiplicative_binnorm_2d_sptr.reset(
-                new ChainedBinNormalisation(attenuation_correction_sptr, normalisation_coeffs_2d_sptr));
+                new ChainedBinNormalisation(normalisation_coeffs_2d_sptr, attenuation_correction_sptr));
     this->multiplicative_binnorm_2d_sptr->set_up(this->proj_data_info_2d_sptr->create_shared_clone());
 
     iterative_object->get_objective_function_sptr()->set_normalisation_sptr(multiplicative_binnorm_2d_sptr);
@@ -863,10 +864,11 @@ process_data()
         }
 
         upsample_and_fit_scatter_estimate(*scaled_est_projdata_2d_sptr, *this->input_projdata_2d_sptr,
-                                          *unscaled_est_projdata_2d_sptr, *empty,
+                                          *unscaled_est_projdata_2d_sptr,
+                                          *this->multiplicative_binnorm_2d_sptr->get_first_norm(),
                                           *this->mask_projdata_sptr, local_min_scale_value,
                                           local_max_scale_value, this->half_filter_width,
-                                          spline_type, this->remove_interleaving);
+                                          spline_type, true);
 
         if(this->run_debug_mode)
         {
@@ -897,14 +899,14 @@ process_data()
                                                                        scaled_est_projdata_2d_sptr->get_proj_data_info_sptr()));
             temp_projdata->fill(*scaled_est_projdata_2d_sptr);
             pow_times_add min_threshold (0.0f, 1.0f, 1.0f, 1e-9f, NumericInfo<float>().max_value());
-            pow_times_add add_scalar (1e-9f, 1.0f, 1.0f, NumericInfo<float>().min_value(), NumericInfo<float>().max_value());
+            pow_times_add add_scalar (-1e-9f, 1.0f, 1.0f, NumericInfo<float>().min_value(), NumericInfo<float>().max_value());
 
             apply_to_proj_data(*temp_projdata, min_threshold);
             apply_to_proj_data(*temp_projdata, add_scalar);
 
             // ok, we can multiply with the norm
 
-            this->multiplicative_binnorm_2d_sptr->apply(*temp_projdata, start_time, end_time);
+            this->multiplicative_binnorm_2d_sptr->apply_only_first(*temp_projdata, start_time, end_time);
 
             std::stringstream convert;   // stream used for the conversion
             convert << this->o_scatter_estimate_prefix << "_" <<
@@ -925,7 +927,7 @@ process_data()
                                               *dynamic_cast<BinNormalisationFromProjData*> (
                                                   this->multiplicative_binnorm_3d_sptr->get_first_norm().get()),
                                               *this->input_projdata_sptr,
-                                              1.0f, 1.0f, 1.0f, spline_type,
+                                              1.0f, 1.0f, 1, spline_type,
                                               false);
 
             add_proj_data(*temp_projdata_3d, *this->add_projdata_3d_sptr);
