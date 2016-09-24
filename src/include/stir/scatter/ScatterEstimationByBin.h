@@ -214,21 +214,8 @@ protected:
 
     //! shared pointer to projection data info for the 2D data - after SSRB
     shared_ptr < ProjDataInfo > proj_data_info_2d_sptr;
-
-    //! The 3D attenuation projdata are used only at
-    //! the end of the scatter estimation process, when upsampling the scaled simulated
-    //! projdata.
-//    shared_ptr< ProjData > atten_projdata_sptr;
-    //!
-//    shared_ptr<ProjData> atten_projdata_2d_sptr;
-    //! Normalisation proj_data 3D
-//    shared_ptr<ProjData> norm_projdata_sptr;
-    //! Normalisation projdata after SSRB
-//    shared_ptr<ProjData> norm_projdata_2d_sptr;
     //! Mask proj_data
     shared_ptr<ProjData> mask_projdata_sptr;
-    //! Scatter Estimation proj_data
-//    shared_ptr<ProjData> scaled_est_projdata_sptr;
     //! The full 3D projdata are used for the calculation of the 2D
     //! and later for the upsampling back to 3D.
     shared_ptr<ProjData> input_projdata_sptr;
@@ -285,6 +272,8 @@ private:
                              const mask_parameters&);
 
     void add_proj_data(ProjData&, const ProjData&);
+
+    void subtract_proj_data(ProjData&, const ProjData&);
 
     void apply_to_proj_data(ProjData& , const pow_times_add&);
 

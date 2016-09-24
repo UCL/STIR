@@ -257,6 +257,7 @@ post_processing()
         warning("No normalisation coefficients have been set!!");
 
     this->multiplicative_binnorm_3d_sptr.reset(new ChainedBinNormalisation(normalisation_coeffs_3d_sptr, atten_coeff_3d_sptr));
+    this->multiplicative_binnorm_3d_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
 
     if (this->back_projdata_filename.size() > 0)
     {
@@ -372,7 +373,7 @@ set_up()
         this->proj_data_info_2d_sptr.reset(
                     dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >
                     (SSRB(*this->input_projdata_sptr->get_proj_data_info_ptr(),
-                          this->input_projdata_sptr->get_max_segment_num())));
+                          this->input_projdata_sptr->get_max_segment_num(), 1, false)));
 
         if (this->export_2d_projdata)
         {
@@ -798,9 +799,17 @@ process_data()
     shared_ptr <ProjData> unscaled_est_projdata_2d_sptr = this->scatter_simulation_sptr->get_output_proj_data_sptr();
     shared_ptr<ProjData> scaled_est_projdata_2d_sptr(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                                                           this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
-
     scaled_est_projdata_2d_sptr->fill(0.F);
-    shared_ptr<BinNormalisation> empty(new TrivialBinNormalisation());
+
+    shared_ptr<ProjData> data_to_fit_projdata_2d_sptr(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                                          this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
+
+    //Data to fit = Input_2d - background
+    //Here should be the total_background, not just the randoms.
+    data_to_fit_projdata_2d_sptr->fill(*this->input_projdata_2d_sptr);
+    subtract_proj_data(*data_to_fit_projdata_2d_sptr, *this->add_projdata_2d_sptr);
+
+
     shared_ptr<DiscretisedDensity <3,float> > act_image_for_averaging;
 
     if( this->recompute_initial_activity_image )
@@ -863,7 +872,7 @@ process_data()
             local_min_scale_value = this->min_scale_value;
         }
 
-        upsample_and_fit_scatter_estimate(*scaled_est_projdata_2d_sptr, *this->input_projdata_2d_sptr,
+        upsample_and_fit_scatter_estimate(*scaled_est_projdata_2d_sptr, *data_to_fit_projdata_2d_sptr,
                                           *unscaled_est_projdata_2d_sptr,
                                           *this->multiplicative_binnorm_2d_sptr->get_first_norm(),
                                           *this->mask_projdata_sptr, local_min_scale_value,
@@ -913,8 +922,6 @@ process_data()
                        i_scat_iter+1;
             std::string output_filename = convert.str();
 
-//            BinNormalisationFromProjData normalisation_coeffs(this->norm_projdata_sptr);
-
             shared_ptr <ProjData> temp_projdata_3d (
                         new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
                                               this->input_projdata_sptr->get_proj_data_info_sptr() ,
@@ -924,8 +931,7 @@ process_data()
             upsample_and_fit_scatter_estimate(*temp_projdata_3d,
                                               *this->input_projdata_sptr,
                                               *temp_projdata,
-                                              *dynamic_cast<BinNormalisationFromProjData*> (
-                                                  this->multiplicative_binnorm_3d_sptr->get_first_norm().get()),
+                                              *this->multiplicative_binnorm_3d_sptr->get_first_norm(),
                                               *this->input_projdata_sptr,
                                               1.0f, 1.0f, 1, spline_type,
                                               false);
@@ -1056,6 +1062,31 @@ add_proj_data(ProjData& first_addend, const ProjData& second_addend)
         first_segment_by_view += sec_segment_by_view;
 
         if (!(first_addend.set_segment(first_segment_by_view) == Succeeded::yes))
+        {
+            error("Error set_segment %d\n", segment_num);
+        }
+    }
+}
+
+void
+ScatterEstimationByBin::
+subtract_proj_data(ProjData& minuend, const ProjData& subtracted)
+{
+    assert(minuend.get_min_segment_num() == subtracted.get_min_segment_num());
+    assert(minuend.get_max_segment_num() == subtracted.get_max_segment_num());
+    for (int segment_num = minuend.get_min_segment_num();
+         segment_num <= minuend.get_max_segment_num();
+         ++segment_num)
+    {
+        SegmentByView<float> first_segment_by_view =
+                minuend.get_segment_by_view(segment_num);
+
+        SegmentByView<float> sec_segment_by_view =
+                subtracted.get_segment_by_view(segment_num);
+
+        first_segment_by_view -= sec_segment_by_view;
+
+        if (!(minuend.set_segment(first_segment_by_view) == Succeeded::yes))
         {
             error("Error set_segment %d\n", segment_num);
         }

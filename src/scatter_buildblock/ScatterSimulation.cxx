@@ -61,9 +61,11 @@ process_data()
 
     // The activiy image might have been changed, during the estimation process.
     this->remove_cache_for_integrals_over_activity();
-
+    this->remove_cache_for_integrals_over_attenuation();
+    this->sample_scatter_points();
     this->initialise_cache_for_scattpoint_det_integrals_over_attenuation();
     this->initialise_cache_for_scattpoint_det_integrals_over_activity();
+
     ViewSegmentNumbers vs_num;
 
     int bin_counter = 0;
