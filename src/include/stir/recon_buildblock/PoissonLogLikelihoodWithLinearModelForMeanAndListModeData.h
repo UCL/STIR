@@ -115,7 +115,7 @@ protected:
   //! Listmode pointer
   shared_ptr<CListModeData> list_mode_data_sptr; 
  
-  int current_frame_num;
+  unsigned int current_frame_num;
  
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */

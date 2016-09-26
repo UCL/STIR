@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
-
+    Copyright (C) 2016, UCL
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation; either version 2.1 of the License, or
@@ -21,6 +21,7 @@
   \brief Declaration of class 
   stir::PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
   \author Sanida Mustafovic
 
@@ -81,6 +82,8 @@ public:
 
   int set_num_subsets(const int new_num_subsets);
 
+  virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
+
 protected:
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
@@ -110,6 +113,26 @@ protected:
   
   //! points to the additive projection data
   shared_ptr<ProjDataInMemory> additive_proj_data_sptr; 
+
+  //!
+  //! \brief normalisation_sptr
+  //! \author Nikos Efthimiou
+  //! \details The normalization sinogram. I am going to need it, if I want to be able
+  //! to run listmode reconstruction without any dependencies on sinogram based functions.
+  shared_ptr<BinNormalisation> normalisation_sptr;
+
+  //!
+  //! \brief num_events_to_store
+  //! \author Nikos Efthimiou
+  //! \details This is part of some functionality I transfer from lm_to_projdata.
+  //! The total number of events to be *STORED* not *PROCESSED*.
+  int num_events_to_store;
+
+  //!
+   //! \brief do_time_frame
+   //! \author Nikos Efthimiou
+   //! \details Reconstruct based on time frames?
+   bool do_time_frame;
  
   std::string additive_projection_data_filename ; 
   //! ProjDataInfo
