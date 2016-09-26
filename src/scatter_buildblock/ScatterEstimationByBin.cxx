@@ -816,7 +816,7 @@ process_data()
     {
         info("Computing initial activity image...");
         if (iterative_method)
-            reconstruct_iterative( -1,
+            reconstruct_iterative( 0,
                                    this->current_activity_image_lowres_sptr);
         else
             reconstruct_analytic();
@@ -832,7 +832,7 @@ process_data()
     //
     // Begin the estimation process...
     //
-    for (int i_scat_iter = 0;
+    for (int i_scat_iter = 1;
          i_scat_iter < this->num_scatter_iterations;
          i_scat_iter++)
     {
@@ -858,7 +858,7 @@ process_data()
         if(this->run_debug_mode) // Write unscaled scatter sinogram
         {
             std::stringstream convert;   // stream used for the conversion
-            int lab = i_scat_iter+1;
+            int lab = i_scat_iter;
             convert << "./extras/unscaled_" << lab;
             std::string output_filename =  convert.str();
 
@@ -882,7 +882,7 @@ process_data()
         if(this->run_debug_mode)
         {
             std::stringstream convert;   // stream used for the conversion
-            int lab = i_scat_iter+1;
+            int lab = i_scat_iter;
             convert << "./extras/scaled_" << lab;
             std::string output_filename =  convert.str();
 
@@ -919,7 +919,7 @@ process_data()
 
             std::stringstream convert;   // stream used for the conversion
             convert << this->o_scatter_estimate_prefix << "_" <<
-                       i_scat_iter+1;
+                       i_scat_iter;
             std::string output_filename = convert.str();
 
             shared_ptr <ProjData> temp_projdata_3d (
@@ -940,9 +940,9 @@ process_data()
             this->multiplicative_binnorm_3d_sptr->apply(*temp_projdata_3d, start_time, end_time);
         }
 
-        add_proj_data(*scaled_est_projdata_2d_sptr, *this->add_projdata_2d_sptr);
-        this->multiplicative_binnorm_2d_sptr->apply(*scaled_est_projdata_2d_sptr, start_time, end_time);
         this->back_projdata_2d_sptr->fill(*scaled_est_projdata_2d_sptr);
+        add_proj_data(*back_projdata_2d_sptr, *this->add_projdata_2d_sptr);
+        this->multiplicative_binnorm_2d_sptr->apply(*back_projdata_2d_sptr, start_time, end_time);
 
         if (iterative_method)
             reconstruct_iterative(i_scat_iter,
@@ -973,14 +973,14 @@ reconstruct_iterative(int _current_iter_num,
     IterativeReconstruction <DiscretisedDensity<3, float> > * iterative_object =
             dynamic_cast<IterativeReconstruction<DiscretisedDensity<3, float> > *> (this->reconstruction_template_sptr.get());
 
-    iterative_object->set_start_subset_num(1);
+    iterative_object->set_start_subset_num(0);
     //    return iterative_object->reconstruct(this->activity_image_lowres_sptr);
     iterative_object->reconstruct(this->current_activity_image_lowres_sptr);
 
     if(this->run_debug_mode)
     {
         std::stringstream name;
-        int next_iter_num = _current_iter_num+1;
+        int next_iter_num = _current_iter_num;
         name << "./extras/recon_" << next_iter_num;
         std::string output = name.str();
         OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
@@ -1091,6 +1091,10 @@ subtract_proj_data(ProjData& minuend, const ProjData& subtracted)
             error("Error set_segment %d\n", segment_num);
         }
     }
+
+    // Filter negative values:
+    pow_times_add zero_threshold (0.0f, 1.0f, 1.0f, 0.0f, NumericInfo<float>().max_value());
+    apply_to_proj_data(minuend, zero_threshold);
 }
 
 void

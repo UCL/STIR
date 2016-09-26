@@ -107,15 +107,15 @@ get_scale_factors_per_sinogram(const ProjData& numerator_proj_data,
 	total_in_denominator[bin.segment_num()][bin.axial_pos_num()] = weighted_denominator_sinogram.sum();
 	total_in_numerator[bin.segment_num()][bin.axial_pos_num()] =  weighted_numerator_sinogram.sum();
       
-	if (denominator_sinogram.sum()==0)
+    if (denominator_sinogram.sum()==0.f)
 	  {  
-	    scale_factors[bin.segment_num()][bin.axial_pos_num()] = 0;
+        scale_factors[bin.segment_num()][bin.axial_pos_num()] = 0.f;
 	  }
 	else
 	  {
 	    if (total_in_denominator[bin.segment_num()][bin.axial_pos_num()]<=
 		denominator_sinogram.sum()/
-		(proj_data_info.get_num_views() * proj_data_info.get_num_tangential_poss()) * .001
+        (proj_data_info.get_num_views() * proj_data_info.get_num_tangential_poss()) * .001f
 		)
 	      {
 		error("Problem at segment %d, axial pos %d in finding sinogram scaling factor.\n"
