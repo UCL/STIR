@@ -82,8 +82,6 @@ public:
 
   int set_num_subsets(const int new_num_subsets);
 
-  virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
-
 protected:
   virtual double
     actual_compute_objective_function_without_penalty(const TargetT& current_estimate,
@@ -96,12 +94,8 @@ protected:
   virtual Succeeded 
     set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr); 
  
-  // TODO
   virtual void
-    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
-  {
-    error("add_subset_sensitivity not implemented yet");
-  }
+    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
   
   //! Maximum ring difference to take into account
   /*! \todo Might be removed */
@@ -109,30 +103,9 @@ protected:
 
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjMatrixByBin> PM_sptr;
-  //shared_ptr<ProjectorByBinPair> projector_by_bin_pair;
   
   //! points to the additive projection data
-  shared_ptr<ProjDataInMemory> additive_proj_data_sptr; 
-
-  //!
-  //! \brief normalisation_sptr
-  //! \author Nikos Efthimiou
-  //! \details The normalization sinogram. I am going to need it, if I want to be able
-  //! to run listmode reconstruction without any dependencies on sinogram based functions.
-  shared_ptr<BinNormalisation> normalisation_sptr;
-
-  //!
-  //! \brief num_events_to_store
-  //! \author Nikos Efthimiou
-  //! \details This is part of some functionality I transfer from lm_to_projdata.
-  //! The total number of events to be *STORED* not *PROCESSED*.
-  int num_events_to_store;
-
-  //!
-   //! \brief do_time_frame
-   //! \author Nikos Efthimiou
-   //! \details Reconstruct based on time frames?
-   bool do_time_frame;
+  shared_ptr<ProjDataInMemory> additive_proj_data_sptr;
  
   std::string additive_projection_data_filename ; 
   //! ProjDataInfo
@@ -147,6 +120,8 @@ protected:
   virtual bool post_processing();
 
   virtual bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
+
+  void add_projmatrix_to_sensitivity(TargetT& sensitivity,  Bin& this_basic_bin) const;
 };
 
 END_NAMESPACE_STIR

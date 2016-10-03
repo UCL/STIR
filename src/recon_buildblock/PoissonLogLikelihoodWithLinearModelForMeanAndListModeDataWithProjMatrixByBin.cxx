@@ -68,14 +68,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin()
   this->set_defaults(); 
 } 
 
-template<typename TargetT>
-void
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
-{
-    this->normalisation_sptr = arg;
-}
-
 template <typename TargetT> 
 void  
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
@@ -104,17 +96,13 @@ initialise_keymap()
   this->parser.add_key("additive sinogram",&this->additive_projection_data_filename); 
  
   this->parser.add_key("num_events_to_store",&this->num_events_to_store);
-  this->parser.add_parsing_key("Bin Normalisation type", &this->normalisation_sptr);
-
 } 
 template <typename TargetT> 
 int 
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 set_num_subsets(const int new_num_subsets)
 {
-//  if (new_num_subsets!=1)
-//    warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin currently only supports 1 subset");
-//  this->num_subsets = 1;
+  this->num_subsets = new_num_subsets;
   return this->num_subsets;
 }
 
@@ -264,29 +252,109 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
         scanner_sptr->get_num_rings()-1;
     }
 
-     
-  if (this->additive_projection_data_filename != "0") 
-    { 
+
+  if (this->additive_projection_data_filename != "0")
+    {
       info(boost::format("Reading additive projdata data '%1%'")
            % additive_projection_data_filename  );
-      shared_ptr <ProjData> temp_additive_proj_data_sptr =  
-        ProjData::read_from_file(this->additive_projection_data_filename); 
+      shared_ptr <ProjData> temp_additive_proj_data_sptr =
+        ProjData::read_from_file(this->additive_projection_data_filename);
       this->additive_proj_data_sptr.reset(new ProjDataInMemory(* temp_additive_proj_data_sptr));
-    } 
-  
+    }
+
 
   this->proj_data_info_cyl_uncompressed_ptr.reset(
     dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
-    ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
+    ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
                   1, this->max_ring_difference_num_to_process,
                   scanner_sptr->get_num_detectors_per_ring()/2,
-                  scanner_sptr->get_default_num_arccorrected_bins(), 
-				  false)));
+                  scanner_sptr->get_max_num_non_arccorrected_bins(),
+                  false)));
+
+  if ( this->normalisation_sptr->set_up(proj_data_info_cyl_uncompressed_ptr)
+   != Succeeded::yes)
+  {
+warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin: "
+      "set-up of pre-normalisation failed\n");
+return true;
+    }
+
+
+
    return false; 
 
 } 
  
- 
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
+add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
+{
+    std::cout << "!Nere " <<std::endl;
+    const int min_segment_num = -this->max_ring_difference_num_to_process;
+    const int max_segment_num = this->max_ring_difference_num_to_process;
+
+    std::cout << min_segment_num<<  " "<< max_segment_num <<std::endl;
+
+    for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
+    {
+        std::cout << "here " <<  segment_num <<std::endl;
+        for (int axial_num = this->proj_data_info_cyl_uncompressed_ptr->get_min_axial_pos_num(segment_num);
+             axial_num < this->proj_data_info_cyl_uncompressed_ptr->get_max_axial_pos_num(segment_num);
+             axial_num ++)
+        {
+            // For debugging.
+            std::cout <<segment_num << " "<<  axial_num  << std::endl;
+
+            for (int tang_num= this->proj_data_info_cyl_uncompressed_ptr->get_min_tangential_pos_num();
+                 tang_num < this->proj_data_info_cyl_uncompressed_ptr->get_max_tangential_pos_num();
+                 tang_num ++ )
+            {
+
+                for(int view_num = this->proj_data_info_cyl_uncompressed_ptr->get_min_view_num() + subset_num;
+                    view_num <= this->proj_data_info_cyl_uncompressed_ptr->get_max_view_num();
+                    view_num += this->num_subsets)
+                {
+                    Bin tmp_bin(segment_num,
+                                view_num,
+                                axial_num,
+                                tang_num, 1);
+
+                    if (!this->PM_sptr->get_symmetries_ptr()->is_basic(tmp_bin) )
+                        continue;
+
+                    this->add_projmatrix_to_sensitivity(sensitivity, tmp_bin);
+                }
+            }
+        }
+    }
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
+add_projmatrix_to_sensitivity(TargetT& sensitivity,  Bin & this_basic_bin) const
+{
+    std::vector<Bin>  r_bins;
+    ProjMatrixElemsForOneBin probabilities;
+
+    this->PM_sptr->get_symmetries_ptr()->get_related_bins(r_bins, this_basic_bin);
+
+    for (unsigned int i = 0; i < r_bins.size(); i++)
+        r_bins[i].set_bin_value(1.0);
+
+
+    // find efficiencies
+    {
+        const double start_frame = this->frame_defs.get_start_time(this->current_frame_num);
+        const double end_frame = this->frame_defs.get_end_time(this->current_frame_num);
+//        this->normalisation_sptr->undo(r_bins, this->PM_sptr->get_symmetries_ptr(),
+//                                       start_frame,end_frame);
+    }
+
+    this->PM_sptr->get_proj_matrix_elems_for_one_bin(probabilities, this_basic_bin);
+//    probabilities.back_project(sensitivity, r_bins, this->PM_sptr->get_symmetries_ptr());
+}
  
 template <typename TargetT> 
 TargetT * 
@@ -336,20 +404,24 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 
   shared_ptr<CListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr(); 
   CListRecord& record = *record_sptr; 
-  //  int count_of_events=0;
-  //int in_the_range =0;
 
-  if (num_events_to_store <= 0 )
-          do_time_frame = true;
-      else
-          do_time_frame = false;
-
-      int more_events = 0 ;
-
-      more_events =  do_time_frame? 1 : (num_events_to_store);
+long long int more_events = 0 ;
+  if (this->num_events_to_store <= - 1)
+      more_events = this->list_mode_data_sptr->get_total_number_of_events();
+  else if (this->num_events_to_store == 0 )
+  {
+          this->do_time_frame = true;
+          more_events = 1;
+  }
+  else
+  {
+          this->do_time_frame = false;
+          more_events = this->num_events_to_store;
+  }
 
   while (more_events)//this->list_mode_data_sptr->get_next_record(record) == Succeeded::yes)
   { 
+
       if (this->list_mode_data_sptr->get_next_record(record) == Succeeded::no)
               {
                   info("End of file!");
@@ -360,7 +432,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
       {
         current_time = record.time().get_time_in_secs();
       }
-    if (current_time >= end_time)
+    if (this->do_time_frame && current_time >= end_time)
       {
         break; // get out of while loop
       }
@@ -401,7 +473,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
           }
         float  measured_div_fwd = 0.0f;
 
-        if(!do_time_frame)
+        if(!this->do_time_frame)
              more_events -=1 ;
 
          num_stored_events += 1;
