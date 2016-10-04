@@ -16,9 +16,9 @@ output filename prefix := ${OUT_PROJDATA_FILE}
 ; frame_definition file := frames.fdef
     ; or a total number of events (if  larger than 1, frame definitions will be ignored)
     ; note that this normally counts the total of prompts-delayeds (see below)
-    ; If the num_events_to_store is equal to 1 the algorithm is going
-    ;to find out the number of events . Currently validated only for ROOT files
-    num_events_to_store := 1
+    ; If you don't define nor a time frame definition file or the num_events_to_store
+    ; then the total number of events in the listmode file is used.
+;num_events_to_store := 200
 
   ; parameters relating to prompts and delayeds
 

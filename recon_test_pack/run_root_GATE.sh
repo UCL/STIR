@@ -75,59 +75,54 @@ export INPUT_ROOT_FILE=test_PET_GATE.root
 
 
 echo ------------- Converting ROOT files to ProjData file -------------
-echo ----- Making ProjData for all events
+echo Making ProjData for all events
 echo Running ${INSTALL_DIR}lm_to_projdata for all events
+
 export OUT_PROJDATA_FILE=my_proj_from_lm_all_events
-PROJDATA_FILE_ALL=${OUT_PROJDATA_FILE}
 export EXCLUDE_SCATTERED=0
 export EXCLUDE_RANDOM=0
 
 all_events=$(${INSTALL_DIR}lm_to_projdata ./lm_to_projdata_from_ROOT.par 2>&1 | grep "Number of prompts stored in this time period" | grep -o -E '[0-9]+')
 
-echo ">>>"Stored events: ${all_events}
+echo Number of prompts stored in this time period: ${all_events}
+echo
+echo Reading all values from ROOT file
 
-echo ----- Reading all values from ROOT file ------
-all_root_num=$(root -l ${INPUT_ROOT_FILE} << EOF | grep -o -E '[0-9]+'
+all_root_num=$(root -l ${INPUT_ROOT_FILE} << EOF | grep "Number of prompts stored in this time period" | grep -o -E '[0-9]+'
 Coincidences->Draw(">>eventlist","","goff");
 Int_t N = eventlist->GetN();
-cout<<N<<endl;
+cout<<endl<<"Number of prompts stored in this time period:"<< N<<endl;
 EOF)
 
 echo All events in ROOT file : ${all_root_num}
-
-echo ----- Making ProjData for true events only
+if [ "$all_events" != "$all_root_num" ];then
+ThereWereErrors=1
+fi
+echo
+echo Making ProjData for true events only
 echo Running ${INSTALL_DIR}lm_to_projdata *ONLY* for true events
+
 export OUT_PROJDATA_FILE=my_proj_from_lm_true_events
-PROJDATA_FILE_ALL=${OUT_PROJDATA_FILE}
 export EXCLUDE_SCATTERED=1
 export EXCLUDE_RANDOM=1
 
 true_events=$(${INSTALL_DIR}lm_to_projdata ./lm_to_projdata_from_ROOT.par 2>&1 | grep "Number of prompts stored in this time period" | grep -o -E '[0-9]+')
 
-echo ">>>"Stored events: ${true_events}
+echo Number of prompts stored in this time period: ${true_events}
+echo
+echo Reading true values from ROOT file ...
 
-echo ----- Reading true values from ROOT file ------
-true_root_num=$(root -l ${INPUT_ROOT_FILE} << EOF | grep -o -E '[0-9]+'
-Coincidences->Draw(">>eventlist","","goff");
+true_root_num=$(root -l ${INPUT_ROOT_FILE} << EOF | grep "Number of trues stored in this time period" | grep -o -E '[0-9]+'
+Coincidences->Draw(">>eventlist","eventID1 == eventID2 && comptonPhantom1 == 0 && comptonPhantom2 == 0","goff");
 Int_t N = eventlist->GetN();
-cout<<N<<endl;
+cout<<endl<<"Number of trues stored in this time period:"<< N<<endl;
 EOF)
 
 echo True events in ROOT file : ${true_root_num}
 
-#echo ----- Making Interfile headers for ECAT7
-#echo Running ${INSTALL_DIR}ifheaders_for_ecat7
-#${INSTALL_DIR}ifheaders_for_ecat7  my_Utahscat600k_ca_seg4_ecat7.S < /dev/null 1> ifheaders_for_ecat7.log 2> ifheaders_for_ecat7_stderr.log
-#echo '---- Comparing output of ifheaders_for_ecat7 on conv_to_ecat7 (error should be 0)'
-#echo Running ${INSTALL_DIR}compare_projdata
-#if ${INSTALL_DIR}compare_projdata my_Utahscat600k_ca_seg4_ecat7_S_f1g1d0b0.hs Utahscat600k_ca_seg4.hs 2>compare_projdata_ifheaders_for_ecat7_stderr.log;
-#then
-#echo ---- This test seems to be ok !;
-#else
-#echo There were problems here!;
-#ThereWereErrors=1;
-#fi
-
+if [ "$true_events" != "$true_root_num" ]; then
+ThereWereErrors=1
+fi
 
 echo
 echo '--------------- End of tests -------------'

@@ -72,7 +72,7 @@ get_next_record(CListRecordROOT& record)
 
         current_position ++ ;
 
-        if ( (comptonphantom1 > 0 && comptonphantom2>0) && exclude_scattered )
+        if ( (comptonphantom1 > 0 || comptonphantom2>0) && exclude_scattered )
             continue;
         else if ( (eventID1 != eventID2) && exclude_randoms )
             continue;
