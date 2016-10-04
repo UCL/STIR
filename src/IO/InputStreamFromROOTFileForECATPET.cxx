@@ -146,7 +146,7 @@ post_processing()
     stream_ptr->SetBranchAddress("blockID1",&blockID1);
     stream_ptr->SetBranchAddress("blockID2",&blockID2);
 
-    nentries = static_cast<long long int>(stream_ptr->GetEntries());
+    nentries = static_cast<unsigned long int>(stream_ptr->GetEntries());
     if (nentries == 0)
         error("The total number of entries in the ROOT file is zero. Abort.");
 
