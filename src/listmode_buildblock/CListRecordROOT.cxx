@@ -22,6 +22,7 @@
   for listmode events for the ROOT as listmode file format.
 
   \author Nikos Efthimiou
+  \author Harry Tsoumpas
 */
 
 #include "stir/listmode/CListRecordROOT.h"

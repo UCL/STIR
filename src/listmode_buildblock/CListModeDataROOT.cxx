@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2003-2012 Hammersmith Imanet Ltd
+    Copyright (C) 2015, 2016 University of Leeds
     Copyright (C) 2016 University College London
     This file is part of STIR.
 
@@ -21,6 +21,7 @@
   \brief Implementation of class stir::CListModeDataROOT
 
   \author Nikos Efthimiou
+  \author Harry Tsoumpas
 */
 
 #include "stir/listmode/CListModeDataROOT.h"

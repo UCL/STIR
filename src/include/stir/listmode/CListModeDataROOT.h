@@ -21,6 +21,7 @@
   \brief Declaration of class stir::CListModeDataROOT
 
   \author Nikos Efthimiou
+  \author Harry Tsoumpas
 */
 
 #ifndef __stir_listmode_CListModeDataROOT_H__

@@ -21,6 +21,7 @@
   \brief Implementation of class stir::InputStreamFromROOTFile
 
   \author Nikos Efthimiou
+  \author Harry Tsoumpas
 */
 
 #include "stir/IO/InputStreamFromROOTFile.h"

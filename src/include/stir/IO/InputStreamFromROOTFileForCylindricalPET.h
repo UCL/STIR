@@ -6,7 +6,6 @@
   \author Nikos Efthimiou
 */
 /*
- *  Copyright (C) 2015, 2016 University of Leeds
     Copyright (C) 2016, UCL
     This file is part of STIR.
 

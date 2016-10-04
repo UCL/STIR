@@ -4,6 +4,7 @@
   \brief Declaration of class stir::InputStreamFromROOTFile
 
   \author Nikos Efthimiou
+  \author Harry Tsoumpas
 */
 /*
  *  Copyright (C) 2015, 2016 University of Leeds

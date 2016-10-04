@@ -44,8 +44,10 @@ USING_NAMESPACE_STIR
 int main(int argc, char * argv[])
 {
   
-  if (argc!=1 && argc!=2) {
-    cerr << "Usage: " << argv[0] << " [par_file]\n";
+  if (strcmp(argv[1], "--help") == 0 ||
+          strcmp(argv[1], "-?") == 0) {
+    cerr <<endl<< "Usage: " << argv[0] << " [par_file]\n"
+                                    "Run "<<argv[0]<<" --input-formats to list the supported input formats\n";
     exit(EXIT_FAILURE);
   }
   // Display the supported inputs, we need this in order to know
