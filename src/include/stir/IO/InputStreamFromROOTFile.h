@@ -91,13 +91,13 @@ public:
     Succeeded set_get_position(const SavedPosition&);
     //! Get the vector with the saved positions
     inline
-    std::vector<long long int> get_saved_get_positions() const;
+    std::vector<unsigned long int> get_saved_get_positions() const;
     //! Set a vector with saved positions
     inline
-    void set_saved_get_positions(const std::vector<long long int>& );
+    void set_saved_get_positions(const std::vector<unsigned long int>& );
     //! Returns the total number of events
-    inline long long int
-    get_total_number_of_events();
+    inline virtual unsigned long int
+    get_total_number_of_events() const;
 
     inline std::string get_ROOT_filename() const;
 
@@ -131,13 +131,13 @@ protected:
     //! Input data file name
     std::string filename;
     //! The starting position.
-    long long int starting_stream_position;
+    unsigned long int starting_stream_position;
     //! The total number of entries
-    long long int nentries;
+    unsigned long int nentries;
     //! Current get position
-    long long int current_position;
+    unsigned long int current_position;
     //! A vector with saved position indices.
-    std::vector<long long int> saved_get_positions;
+    std::vector<unsigned long int> saved_get_positions;
 
     // ROOT chain
     TChain *stream_ptr;

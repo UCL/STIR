@@ -167,7 +167,7 @@ post_processing()
     stream_ptr->SetBranchAddress("rsectorID1",&rsectorID1);
     stream_ptr->SetBranchAddress("rsectorID2",&rsectorID2);
 
-    nentries = static_cast<long long int>(stream_ptr->GetEntries());
+    nentries = static_cast<unsigned long int>(stream_ptr->GetEntries());
     if (nentries == 0)
         error("The total number of entries in the ROOT file is zero. Abort.");
 

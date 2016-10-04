@@ -202,9 +202,7 @@ reset()
     return current_lm_data_ptr->reset();
 }
 
-long long int
-CListModeDataROOT::
-get_total_number_of_events() const
+unsigned long CListModeDataROOT::get_total_number_of_events() const
 {
     return current_lm_data_ptr->get_total_number_of_events();
 }

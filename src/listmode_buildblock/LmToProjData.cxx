@@ -327,9 +327,15 @@ post_processing()
     }
 
   // handle time frame definitions etc
-
-  do_time_frame = num_events_to_store<=0;
-
+  // If num_events_to_store == 0, then do_time_frames
+  // If num_events_to_store == -1, then get the the total number of events
+  if(num_events_to_store==0)
+        do_time_frame = true;
+  else if (num_events_to_store == 1)
+  {
+      do_time_frame = false;
+      num_events_to_store = this->lm_data_ptr->get_total_number_of_events();
+  }
   if (do_time_frame && frame_definition_filename.size()==0)
     {
       warning("Have to specify either 'frame_definition_filename' or 'num_events_to_store'\n");

@@ -65,8 +65,8 @@ public:
     virtual
     bool has_delayeds() const { return true; }
 
-    virtual
-    long long int
+    virtual inline
+    unsigned long int
     get_total_number_of_events() const ;
 
 private:
