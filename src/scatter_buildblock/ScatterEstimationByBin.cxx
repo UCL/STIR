@@ -1093,8 +1093,8 @@ subtract_proj_data(ProjData& minuend, const ProjData& subtracted)
     }
 
     // Filter negative values:
-    pow_times_add zero_threshold (0.0f, 1.0f, 1.0f, 0.0f, NumericInfo<float>().max_value());
-    apply_to_proj_data(minuend, zero_threshold);
+//    pow_times_add zero_threshold (0.0f, 1.0f, 1.0f, 0.0f, NumericInfo<float>().max_value());
+//    apply_to_proj_data(minuend, zero_threshold);
 }
 
 void
