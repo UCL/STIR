@@ -55,7 +55,7 @@ done
 
 if ! ${INSTALL_DIR}lm_to_projdata --input-formats 2>&1 | grep -q ROOT; then
 echo GATE support has not been installed in this system. Aborting.
-exit 1;
+exit 0;
 fi
 
 
