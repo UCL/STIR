@@ -53,6 +53,5 @@ script:
   - ./run_test_simulate_and_recon_with_motion.sh
   - ./run_scatter_tests.sh
   - ./run_tests.sh --nointbp
-  -  if [[ $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT_SUPPORT=0"* ]]; then ./run_root_GATE.sh; fi
   - cd $TRAVIS_BUILD_DIR/recon_test_pack/SPECT
   - ./run_SPECT_tests.sh
