@@ -47,7 +47,7 @@ START_NAMESPACE_STIR
   \ingroup projdata
   \brief A class for 2d projection data.
 
-  This represents a subset of the full projection. segment_num and tangential_pos_num 
+  This represents a subset of the full projection. segment_num and view_num 
   are fixed.
   
 */
