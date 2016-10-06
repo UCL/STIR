@@ -53,7 +53,7 @@ if test "$1" = "--help"
 
 done 
 
-if ! ${INSTALL_DIR}lm_to_projdata --input-formats 2>&1 | grep -q ROOT; then
+if ! ${INSTALL_DIR}lm_to_projdata --input-formats 2>&1 | grep ROOT; then
 echo GATE support has not been installed in this system. Aborting.
 exit 1;
 fi
