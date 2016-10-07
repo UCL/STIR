@@ -156,7 +156,7 @@ set_defaults()
   post_normalisation_ptr.reset(new TrivialBinNormalisation);
   do_pre_normalisation =0;
   num_events_to_store = 0;
-  
+
 }
 
 void 
@@ -327,21 +327,19 @@ post_processing()
     }
 
   // handle time frame definitions etc
-
-  do_time_frame = num_events_to_store<=0;
-
-  if (do_time_frame && frame_definition_filename.size()==0)
-    {
-      warning("Have to specify either 'frame_definition_filename' or 'num_events_to_store'\n");
-      return true;
-    }
+  // If num_events_to_store == 0 && frame_definition_filename.size == 0
+  if(num_events_to_store==0 && frame_definition_filename.size() == 0)
+      do_time_frame = true;
 
   if (frame_definition_filename.size()!=0)
+  {
     frame_defs = TimeFrameDefinitions(frame_definition_filename);
+    do_time_frame = true;
+  }
   else
     {
       // make a single frame starting from 0. End value will be ignored.
-      vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
+      vector<pair<double, double> > frame_times(1, pair<double,double>(0,0));
       frame_defs = TimeFrameDefinitions(frame_times);
     }
 
@@ -487,7 +485,7 @@ get_compression_count(const Bin& bin) const
    const ProjDataInfoCylindrical& proj_data_info =
       dynamic_cast<const ProjDataInfoCylindrical&>(*template_proj_data_info_ptr);
 
-    return proj_data_info.get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),bin.axial_pos_num())*
+    return static_cast<int>(proj_data_info.get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),bin.axial_pos_num()))*
 			   proj_data_info.get_view_mashing_factor();
 
 }
@@ -531,7 +529,7 @@ process_data()
 	      template_proj_data_info_ptr->get_max_segment_num());
   
   VectorWithOffset<CListModeData::SavedPosition> 
-    frame_start_positions(1, frame_defs.get_num_frames());
+    frame_start_positions(1, static_cast<int>(frame_defs.get_num_frames()));
   shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
   CListRecord& record = *record_sptr;
 
@@ -590,7 +588,7 @@ process_data()
 	   // When do_time_frame=true, the number of events is irrelevant, so we 
 	   // just set more_events to 1, and never change it
 	   long more_events = 
-	     do_time_frame? 1 : num_events_to_store;
+         do_time_frame? 1 : static_cast<long>(num_events_to_store);
 
 	   if (start_segment_index != proj_data_ptr->get_min_segment_num())
 	     {
@@ -627,7 +625,7 @@ process_data()
 		     // no more events in file for some reason
 		     break; //get out of while loop
 		   }
-		 if (record.is_time())
+         if (record.is_time() && end_time > 0.01) // Direct comparison within doubles is unsafe.
 		   {
 		     current_time = record.time().get_time_in_secs();
 		     if (do_time_frame && current_time >= end_time)

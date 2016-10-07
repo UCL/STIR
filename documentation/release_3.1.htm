@@ -83,8 +83,8 @@ These are only minimally documented at the present stage unfortunately.
 <li><tt>lm_generate_headcurve</tt> is a new list mode utility to output total counts.</li>
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
 <li>add Verbosity level (currently only to be set from interactive languages)</li>
-<li>New input: GATE compatibility layer. ROOT files from cylindricalPET scanners can be imported
-as listmode files. </li>
+<li>New input: GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. </li>
+<li>New header file, with .hroot extension is provided for ROOT files </li> 
 </ul>
 
 <h3>Changed functionality</h3>
@@ -159,6 +159,7 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 <h3>recon_test_pack changes</h3>
 <ul>
 <li>updated version number and added some clarification to the README.txt</li>
+<li>Simple test script for GATE produced ROOT files, has been added.</li>
  </ul>
 
 <h3>Other changes to tests</h3>
@@ -187,7 +188,8 @@ using the default output file format.</li>
 </li>
 <li> Support for Energy Resolution in Scanners, has been added. 
 In order to ensure backwards compatibility, at the moment, it is completely optional.</li>
-<li> Information on energy windows has been added in the ExamInfo. </li>
+<li> Information on energy windows has been added in the <code>ExamInfo</code>. </li>
+<li> <code>ExamData</code> is the base class for <code>ProjData</code> and <code>CListModeData</code> </li>
 </ul>
 
 <h3>Other code changes</h3>

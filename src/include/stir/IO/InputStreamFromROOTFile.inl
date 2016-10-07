@@ -21,6 +21,7 @@
   \brief Implementation of class stir::InputStreamFromROOTFile
 
   \author Nikos Efthimiou
+  \author Harry Tsoumpas
 */
 
 #include "stir/IO/InputStreamFromROOTFile.h"
@@ -28,9 +29,9 @@
 
 START_NAMESPACE_STIR
 
-long long int
+unsigned long int
 InputStreamFromROOTFile::
-get_total_number_of_events()
+get_total_number_of_events() const
 {
     return nentries;
 }
@@ -48,11 +49,7 @@ InputStreamFromROOTFile::
 save_get_position()
 {
     assert(current_position <= nentries);
-
-    if(current_position < nentries)
-        saved_get_positions.push_back(current_position);
-    else
-        saved_get_positions.push_back(-1);
+    saved_get_positions.push_back(current_position);
     return saved_get_positions.size()-1;
 }
 
@@ -64,7 +61,7 @@ set_get_position(const InputStreamFromROOTFile::SavedPosition& pos)
         return Succeeded::no;
 
     assert(pos < saved_get_positions.size());
-    if (saved_get_positions[pos] == -1)
+    if (saved_get_positions[pos] > nentries)
         current_position = nentries; // go to eof
     else
         current_position = saved_get_positions[pos];
@@ -72,7 +69,7 @@ set_get_position(const InputStreamFromROOTFile::SavedPosition& pos)
     return Succeeded::yes;
 }
 
-std::vector<long long int>
+std::vector<unsigned long int>
 InputStreamFromROOTFile::
 get_saved_get_positions() const
 {
@@ -81,9 +78,30 @@ get_saved_get_positions() const
 
 void
 InputStreamFromROOTFile::
-set_saved_get_positions(const std::vector<long long int>& poss)
+set_saved_get_positions(const std::vector<unsigned long> &poss)
 {
     saved_get_positions = poss;
+}
+
+float
+InputStreamFromROOTFile::
+get_low_energy_thres() const
+{
+    return low_energy_window;
+}
+
+float
+InputStreamFromROOTFile::
+get_up_energy_thres() const
+{
+    return up_energy_window;
+}
+
+std::string
+InputStreamFromROOTFile::
+get_ROOT_filename() const
+{
+    return this->filename;
 }
 
 END_NAMESPACE_STIR

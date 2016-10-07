@@ -1,9 +1,10 @@
 /*!
   \file
   \ingroup IO
-  \brief Declaration of class stir::InputStreamWithRecords
+  \brief Declaration of class stir::InputStreamFromROOTFile
 
   \author Nikos Efthimiou
+  \author Harry Tsoumpas
 */
 /*
  *  Copyright (C) 2015, 2016 University of Leeds
@@ -29,6 +30,8 @@
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/listmode/CListRecordROOT.h"
+#include "stir/RegisteredObject.h"
+#include "stir/ParsingObject.h"
 
 #include <TROOT.h>
 #include <TSystem.h>
@@ -51,18 +54,18 @@ START_NAMESPACE_STIR
         way. The validation of the ROOT input was done with version 5.34.
 */
 
-class InputStreamFromROOTFile
+class InputStreamFromROOTFile : public RegisteredObject< InputStreamFromROOTFile > ,
+        public ParsingObject
 {
 public:
     typedef std::vector<long long int>::size_type SavedPosition;
 
     //! Default constructor
+    InputStreamFromROOTFile();
+
+    //! constructor
     InputStreamFromROOTFile(std::string filename,
                             std::string chain_name,
-                            int crystal_repeater_x, int crystal_repeater_y, int crystal_repeater_z,
-                            int submodule_repeater_x, int submodule_repeater_y, int submodule_repeater_z,
-                            int module_repeater_x, int module_repeater_y, int module_repeater_z,
-                            int rsector_repeater,
                             bool exclude_scattered, bool exclude_randoms,
                             float low_energy_window, float up_energy_window,
                             int offset_dets);
@@ -78,7 +81,7 @@ public:
     //!  The code is adapted from Sadek A. Nehmeh and CR Schmidtlein,
     //! downloaded from <a href="http://www.opengatecollaboration.org/STIR">GATE website</a>
     virtual
-    Succeeded get_next_record(CListRecordROOT& record) ;
+    Succeeded get_next_record(CListRecordROOT& record) = 0;
     //! Go to the first event.
     inline Succeeded reset();
     //! Save current position in a vector
@@ -89,27 +92,53 @@ public:
     Succeeded set_get_position(const SavedPosition&);
     //! Get the vector with the saved positions
     inline
-    std::vector<long long int> get_saved_get_positions() const;
+    std::vector<unsigned long int> get_saved_get_positions() const;
     //! Set a vector with saved positions
     inline
-    void set_saved_get_positions(const std::vector<long long int>& );
+    void set_saved_get_positions(const std::vector<unsigned long int>& );
     //! Returns the total number of events
-    inline long long int
-    get_total_number_of_events();
+    inline virtual unsigned long int
+    get_total_number_of_events() const;
 
-private:
+    inline std::string get_ROOT_filename() const;
 
-    virtual Succeeded initialize_root_read_out();
+    //! Get the number of rings as calculated from the number of repeaters
+    inline virtual int get_num_rings() const = 0;
+    //! Get the number of dets per ring as calculated from the number of repeaters
+    inline virtual int get_num_dets_per_ring() const = 0;
+    //! Get the number of axial modules
+    inline virtual int get_num_axial_blocks_per_bucket_v() const = 0;
+    //! Get the number of transaxial modules
+    inline virtual int get_num_transaxial_blocks_per_bucket_v() const = 0;
+    //! Get the axial number of crystals per module
+    inline virtual int get_num_axial_crystals_per_block_v() const = 0;
+    //! Get the transaxial number of crystals per module
+    inline virtual int get_num_transaxial_crystals_per_block_v() const = 0;
+
+    inline virtual int get_num_axial_crystals_per_singles_unit() const = 0;
+
+    inline virtual int get_num_trans_crystals_per_singles_unit() const = 0;
+
+    inline virtual float get_low_energy_thres() const;
+
+    inline virtual float get_up_energy_thres() const;
+
+protected:
+
+    virtual void set_defaults();
+    virtual void initialise_keymap();
+    virtual bool post_processing();
+
     //! Input data file name
     std::string filename;
     //! The starting position.
-    long long int starting_stream_position;
+    unsigned long int starting_stream_position;
     //! The total number of entries
-    long long int nentries;
+    unsigned long int nentries;
     //! Current get position
-    long long int current_position;
+    unsigned long int current_position;
     //! A vector with saved position indices.
-    std::vector<long long int> saved_get_positions;
+    std::vector<unsigned long int> saved_get_positions;
 
     // ROOT chain
     TChain *stream_ptr;
@@ -117,39 +146,18 @@ private:
     // Variables to store root information
     std::string chain_name;
     Int_t           eventID1, eventID2;
-    Int_t           crystalID1, crystalID2;
-    Int_t           submoduleID1, submoduleID2;
-    Int_t           moduleID1, moduleID2;
-    Int_t           rsectorID1, rsectorID2;
-//    Int_t           rotationAngle;
-//    Float_t         globalPosX1, globalPosX2, sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2;
-//    Float_t         globalPosY1, globalPosY2, globalPosZ1, globalPosZ2, sourcePosZ1, sourcePosZ2;
     Double_t        time1, time2;
     Float_t         energy1, energy2;
-//    Int_t           sourceid1, sourceid2;
     Int_t           comptonphantom1, comptonphantom2;
-
-    int crystal_repeater_x;
-    int crystal_repeater_y;
-    int crystal_repeater_z;
-    int submodule_repeater_x;
-    int submodule_repeater_y;
-    int submodule_repeater_z;
-    int module_repeater_x;
-    int module_repeater_y;
-    int module_repeater_z;
-    int rsector_repeater;
 
     bool exclude_scattered;
     bool exclude_randoms;
 
     float low_energy_window;
     float up_energy_window;
-    //! In GATE, inside a block, the indeces start from the lower
-    //! unit counting upwards. Therefore in order to align the
-    //! crystals, between STIR and GATE we have to move half block more.
-    int half_block;
     int offset_dets;
+
+    int singles_readout_depth;
 };
 
 END_NAMESPACE_STIR

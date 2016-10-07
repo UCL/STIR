@@ -21,6 +21,7 @@
   \brief Classes for listmode events for GATE simulated ROOT data
 
   \author Efthimiou Nikos
+  \author Harry Tsoumpas
 */
 
 #ifndef __stir_listmode_CListRecordROOT_H__
