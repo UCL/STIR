@@ -76,6 +76,13 @@ public:
   /*! \todo this might depend on the acquisition parameters */
   virtual bool has_delayeds() const { return true; }
 
+    virtual inline
+    unsigned long int
+    get_total_number_of_events() const
+    {
+        error("Not implemented yet. Abort.");
+    };
+
 private:
   typedef CListRecordECAT8_32bit CListRecordT;
   std::string listmode_filename;
