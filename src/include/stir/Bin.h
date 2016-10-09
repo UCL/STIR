@@ -79,6 +79,12 @@ public:
   
   //! accumulate voxel's contribution during forward projection 
   inline Bin&  operator+=(const float dx);
+  //! multiply bin values during normalisation -- apply()
+  inline Bin& operator*=(const float dx);
+  //! divide bin values during normalisation -- undo()
+  //! \todo It is zero division proof in a similar way to divide<,,>(), though I am
+  //! not sure if it should be.
+  inline Bin& operator/=(const float dx);
   
   //! comparison operators
   inline bool operator==(const Bin&) const;

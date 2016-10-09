@@ -54,6 +54,7 @@ set_defaults()
   this->frame_defs_filename ="";
   this->list_mode_data_sptr.reset(); 
   this->current_frame_num = 1;
+  this->num_events_to_store = 0;
  
   this->output_image_size_xy=-1; 
   this->output_image_size_z=-1; 
@@ -94,13 +95,10 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
   if (this->list_mode_filename.length() == 0) 
   { warning("You need to specify an input file\n"); return true; } 
 
-  do_time_frame = num_events_to_store<=0;
-
-  if (do_time_frame && frame_defs_filename.size()==0)
-    {
-      warning("Have to specify either 'frame_definition_filename' or 'num_events_to_store'\n");
-      return true;
-    }
+  // handle time frame definitions etc
+  // If num_events_to_store == 0 && frame_definition_filename.size == 0
+  if(num_events_to_store==0 && frame_defs_filename.size() == 0)
+      do_time_frame = true;
    
   this->list_mode_data_sptr=
     read_from_file<CListModeData>(this->list_mode_filename); 
@@ -110,7 +108,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
   else
     {
       // make a single frame starting from 0. End value will be ignored.
-      vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
+      vector<pair<double, double> > frame_times(1, pair<double,double>(0,0));
       this->frame_defs = TimeFrameDefinitions(frame_times);
     } 
   // image stuff 

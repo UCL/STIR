@@ -36,6 +36,7 @@
 #include "stir/Succeeded.h"
 #include "stir/SegmentBySinogram.h"
 #include "stir/SegmentByView.h"
+#include "stir/Bin.h"
 //#include <ios>
 
 #include "stir/IO/ExamData.h"

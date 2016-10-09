@@ -587,8 +587,8 @@ process_data()
 	   // ('allowed' independent on the fact of we have its segment in memory or not)
 	   // When do_time_frame=true, the number of events is irrelevant, so we 
 	   // just set more_events to 1, and never change it
-	   long more_events = 
-         do_time_frame? 1 : static_cast<long>(num_events_to_store);
+       unsigned long int more_events =
+         do_time_frame? 1 : num_events_to_store;
 
 	   if (start_segment_index != proj_data_ptr->get_min_segment_num())
 	     {
@@ -666,7 +666,7 @@ process_data()
 			   continue;
             
 			 if (!do_time_frame)
-			   more_events-= event_increment;
+               more_events -= event_increment;
             
 			 // now check if we have its segment in memory
 			 if (bin.segment_num() >= start_segment_index && bin.segment_num()<=end_segment_index)

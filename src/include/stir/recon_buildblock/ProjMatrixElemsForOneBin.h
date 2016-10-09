@@ -37,8 +37,10 @@
 
 
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBinValue.h"
+#include "stir/recon_buildblock/DataSymmetriesForBins.h"
 #include "stir/Bin.h"
 #include <vector>
+#include <boost/shared_ptr.hpp>
 
 START_NAMESPACE_STIR
 
@@ -197,7 +199,13 @@ public:
                       const DiscretisedDensity<3,float>&) const;
  //! back project related bins
   void back_project(DiscretisedDensity<3,float>&,
-                    const RelatedBins&) const; 
+                    const RelatedBins&) const;
+  //! Alternative to back project related bins.
+  //! \warning N.E. I use this function just because I cannot get the
+  //! RelatedBins class to work for me.
+    void back_project(DiscretisedDensity<3,float>&,
+                      const std::vector<Bin>&,
+                      const shared_ptr<DataSymmetriesForBins>&);
   //! forward project related bins
   void forward_project(RelatedBins&,
                        const DiscretisedDensity<3,float>&) const;

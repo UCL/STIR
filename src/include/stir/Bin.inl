@@ -32,6 +32,8 @@
 
 START_NAMESPACE_STIR
 
+const float SMALL_NUM = 0.000001F;
+
 Bin::Bin()
 {}
 
@@ -118,6 +120,27 @@ bool
 Bin::operator!=(const Bin& bin2) const
 { 
   return !(*this==bin2);
+}
+
+Bin&
+Bin::operator*=(const float dx)
+{
+    bin_value*=dx;
+    return *this;
+}
+
+Bin&
+Bin::operator/=(const float dx)
+{
+    float small_value=
+      bin_value * SMALL_NUM;
+
+    if (std::fabs(dx) < small_value)
+        bin_value = 0.0f;
+    else
+        bin_value /= dx;
+
+    return *this;
 }
 
 END_NAMESPACE_STIR

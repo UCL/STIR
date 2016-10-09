@@ -318,7 +318,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
                     Bin tmp_bin(segment_num,
                                 view_num,
                                 axial_num,
-                                tang_num, 1);
+                                tang_num, 1.f);
 
                     if (!this->PM_sptr->get_symmetries_ptr()->is_basic(tmp_bin) )
                         continue;
@@ -336,24 +336,28 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 add_projmatrix_to_sensitivity(TargetT& sensitivity,  Bin & this_basic_bin) const
 {
     std::vector<Bin>  r_bins;
-    ProjMatrixElemsForOneBin probabilities;
+    ProjMatrixElemsForOneBin elem_row;
 
     this->PM_sptr->get_symmetries_ptr()->get_related_bins(r_bins, this_basic_bin);
 
+    if (r_bins.size() == 0 )
+        error("Something went wrong with the symmetries. Abort.");
+
     for (unsigned int i = 0; i < r_bins.size(); i++)
-        r_bins[i].set_bin_value(1.0);
+        r_bins[i].set_bin_value(1.0f);
 
 
     // find efficiencies
     {
         const double start_frame = this->frame_defs.get_start_time(this->current_frame_num);
         const double end_frame = this->frame_defs.get_end_time(this->current_frame_num);
-//        this->normalisation_sptr->undo(r_bins, this->PM_sptr->get_symmetries_ptr(),
-//                                       start_frame,end_frame);
+        this->normalisation_sptr->undo(r_bins, start_frame,end_frame);
     }
 
-    this->PM_sptr->get_proj_matrix_elems_for_one_bin(probabilities, this_basic_bin);
-//    probabilities.back_project(sensitivity, r_bins, this->PM_sptr->get_symmetries_ptr());
+    this->PM_sptr->get_proj_matrix_elems_for_one_bin(elem_row, this_basic_bin);
+    //N.E: I had problems with RelatedBins thats why I use a std::vector<Bin> and
+    // symmetries.
+    elem_row.back_project(sensitivity, r_bins, this->PM_sptr->get_symmetries_sptr());
 }
  
 template <typename TargetT> 
@@ -405,19 +409,8 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   shared_ptr<CListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr(); 
   CListRecord& record = *record_sptr; 
 
-long long int more_events = 0 ;
-  if (this->num_events_to_store <= - 1)
-      more_events = this->list_mode_data_sptr->get_total_number_of_events();
-  else if (this->num_events_to_store == 0 )
-  {
-          this->do_time_frame = true;
-          more_events = 1;
-  }
-  else
-  {
-          this->do_time_frame = false;
-          more_events = this->num_events_to_store;
-  }
+  unsigned long int more_events =
+          this->do_time_frame? 1 : this->num_events_to_store;
 
   while (more_events)//this->list_mode_data_sptr->get_next_record(record) == Succeeded::yes)
   { 
@@ -427,8 +420,8 @@ long long int more_events = 0 ;
                   info("End of file!");
                   break; //get out of while loop
               }
-    //count_of_events++;
-    if(record.is_time())
+
+    if(record.is_time() && end_time > 0.01)
       {
         current_time = record.time().get_time_in_secs();
       }
@@ -486,14 +479,11 @@ long long int more_events = 0 ;
         else
             continue;
 
-//        float  measured_div_fwd = measured_bin.get_bin_value()/fwd_bin.get_bin_value();
         measured_bin.set_bin_value(measured_div_fwd);
         proj_matrix_row.back_project(gradient, measured_bin); 
          
       } 
-  }
-  //  cerr << " The number_of_events " << count_of_events << "   ";
-  //cerr << " The number of events proecessed "  << in_the_range << "  ";
+  } 
     info(boost::format("Number of used events: %1%") % num_stored_events);
 }
 

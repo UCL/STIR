@@ -174,6 +174,33 @@ undo(ProjData& proj_data,const double start_time, const double end_time,
     }
 }
 
+void
+BinNormalisation::
+apply(std::vector<Bin>& bins,
+     const double start_time, const double end_time) const
+{
+
+    for (std::vector<Bin>::iterator iter = bins.begin(); iter !=bins.end(); ++iter)
+        *iter *= this->get_bin_efficiency(*iter, start_time, end_time);
+
+    // TODO: DELETE THE FOLLOWING LINES
+//    std::vector <float> normalization_values = norm_proj_data_ptr->get_related_bin_values(bins, symmetries);
+//    assert(bins.size() == normalization_values.size());
+
+//    for (unsigned int i = 0; i < bins.size(); i++)
+//    {
+//        bins[i].set_bin_value(bins.at(i).get_bin_value() / normalization_values.at(i));
+//    }
+}
+
+void
+BinNormalisation::
+undo(std::vector<Bin>& bins,
+     const double start_time, const double end_time) const
+{
+    for (std::vector<Bin>::iterator iter = bins.begin(); iter !=bins.end(); ++iter)
+        *iter /= this->get_bin_efficiency(*iter, start_time, end_time);
+}
  
 END_NAMESPACE_STIR
 

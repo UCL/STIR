@@ -95,7 +95,7 @@ public:
   BinNormalisationFromECAT7(const std::string& filename);
 
   virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
-  float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
+  virtual float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
 
   bool use_detector_efficiencies() const;
   bool use_dead_time() const;

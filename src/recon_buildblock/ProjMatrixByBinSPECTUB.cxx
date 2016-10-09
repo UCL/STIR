@@ -189,7 +189,7 @@ set_up(
   }
 
 	this->proj_data_info_ptr=proj_data_info_ptr_v;
-	symmetries_ptr.reset( 
+    symmetries_sptr.reset(
 		new TrivialDataSymmetriesForBins(proj_data_info_ptr_v));
 
 	this->densel_range = image_info_ptr->get_index_range();
@@ -205,7 +205,7 @@ set_up(
 	//... fill prj structure from projection data info
 
 	prj.Nbin = this->proj_data_info_ptr->get_num_tangential_poss();
-	prj.szcm = this->proj_data_info_ptr->get_scanner_ptr()->get_default_bin_size()/10.;
+    prj.szcm = this->proj_data_info_ptr->get_scanner_ptr()->get_default_bin_size()/10.f;
 	prj.Nang = this->proj_data_info_ptr->get_num_views();
 
 
@@ -213,24 +213,24 @@ set_up(
 	vol.Ncol = image_info_ptr->get_x_size();  // Image: number of columns 
 	vol.Nrow = image_info_ptr->get_y_size();  // Image: number of rows
 	vol.Nsli = image_info_ptr->get_z_size();  // Image: and projections: number of slices	
-	vol.szcm = image_info_ptr->get_voxel_size().x()/10.;  // Image: voxel size (cm)
-	vol.thcm = image_info_ptr->get_voxel_size().z()/10.;  // Image: slice thickness (cm)
+    vol.szcm = image_info_ptr->get_voxel_size().x()/10.f;  // Image: voxel size (cm)
+    vol.thcm = image_info_ptr->get_voxel_size().z()/10.f;  // Image: slice thickness (cm)
 
 	//..... geometrical and other derived parameters of the volume structure...............	
 	vol.Npix    = vol.Ncol * vol.Nrow;
 	vol.Nvox    = vol.Npix * vol.Nsli;
 
-	vol.Ncold2  = (float)vol.Ncol / (float)2.;  // half of the matrix Nvox (integer or semi-integer)
-	vol.Nrowd2  = (float)vol.Nrow / (float)2.;  // half of the matrix NbOS (integer or semi-integer)
-	vol.Nslid2  = (float)vol.Nsli / (float)2.;  // half of the number of slices (integer or semi-integer)
+    vol.Ncold2  = (float)vol.Ncol / (float)2.f;  // half of the matrix Nvox (integer or semi-integer)
+    vol.Nrowd2  = (float)vol.Nrow / (float)2.f;  // half of the matrix NbOS (integer or semi-integer)
+    vol.Nslid2  = (float)vol.Nsli / (float)2.f;  // half of the number of slices (integer or semi-integer)
 
 	vol.Xcmd2   = vol.Ncold2 * vol.szcm;       // Half of the size of the image volume, dimension x (cm);
 	vol.Ycmd2   = vol.Nrowd2 * vol.szcm;		  // Half of the size of the image volume, dimension y (cm);
 	vol.Zcmd2   = vol.Nslid2 * vol.thcm;		  // Half of the size of the image volume, dimension z (cm);
 
-	vol.x0      = ( (float)0.5 - vol.Ncold2) * vol.szcm;  // coordinate x of the first voxel
-	vol.y0      = ( (float)0.5 - vol.Nrowd2) * vol.szcm;  // coordinate y of the first voxel
-	vol.z0      = ( (float)0.5 - vol.Nslid2) * vol.thcm;  // coordinate z of the first voxel
+    vol.x0      = ( (float)0.5f - vol.Ncold2) * vol.szcm;  // coordinate x of the first voxel
+    vol.y0      = ( (float)0.5f - vol.Nrowd2) * vol.szcm;  // coordinate y of the first voxel
+    vol.z0      = ( (float)0.5f - vol.Nslid2) * vol.thcm;  // coordinate z of the first voxel
 
 	vol.first_sl = 0;   // Image: first slice to take into account (no weight bellow)
 	vol.last_sl  = vol.Nsli;       // Image: last slice to take into account (no weights above)

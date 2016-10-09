@@ -33,6 +33,7 @@
 #include "stir/RegisteredObject.h"
 #include "stir/Bin.h"
 #include "stir/shared_ptr.h"
+#include "DataSymmetriesForBins.h"
 
 START_NAMESPACE_STIR
 
@@ -125,7 +126,17 @@ public:
     The default value for the symmetries means that TrivialDataSymmetriesForBins will be used.
   */
   void undo(ProjData&,const double start_time, const double end_time, 
-            shared_ptr<DataSymmetriesForViewSegmentNumbers> = shared_ptr<DataSymmetriesForViewSegmentNumbers>()) const; 
+            shared_ptr<DataSymmetriesForViewSegmentNumbers> = shared_ptr<DataSymmetriesForViewSegmentNumbers>()) const;
+
+  //! This is the a bin-wise overload for the undo function.
+  //! \todo RelatedBins should be used, instead of a std::vector<Bin>.
+  void apply(std::vector<Bin>& bins,
+                     const double start_time, const double end_time) const;
+
+  //! This is the a bin-wise overload for the apply function.
+  //! \todo RelatedBins should be used, instead of a std::vector<Bin>.
+  void undo(std::vector<Bin>& bins,
+                     const double start_time, const double end_time) const;
 
 };
 

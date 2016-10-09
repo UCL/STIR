@@ -415,6 +415,30 @@ back_project(DiscretisedDensity<3,float>& density,
   }  
 }
 
+void
+ProjMatrixElemsForOneBin::
+back_project(DiscretisedDensity<3,float>& density,
+                  const std::vector<Bin>& r_bins,
+                  const shared_ptr<DataSymmetriesForBins>& symmetries)
+{
+
+    ProjMatrixElemsForOneBin row_copy;
+
+    for (std::vector<Bin>::const_iterator r_bins_iterator =r_bins.begin();
+         r_bins_iterator != r_bins.end(); ++ r_bins_iterator)
+    {
+      row_copy = *this;
+
+      Bin symmetric_bin = *r_bins_iterator;
+      // KT 21/02/2002 added check on 0
+      if (symmetric_bin.get_bin_value() == 0.f)
+        return;
+      auto_ptr<SymmetryOperation> symm_ptr =
+        symmetries->find_symmetry_operation_from_basic_bin(symmetric_bin);
+      symm_ptr->transform_proj_matrix_elems_for_one_bin(row_copy);
+      row_copy.back_project(density,symmetric_bin);
+    }
+}
 
 void  
 ProjMatrixElemsForOneBin::
