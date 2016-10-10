@@ -39,13 +39,18 @@
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/Viewgram.h"
 #include "stir/RelatedViewgrams.h"
-
+#include "stir/ViewSegmentNumbers.h"
 #include "stir/recon_array_functions.h"
 
 #include <iostream>
 #include <algorithm>
 #include <sstream>
 #include "stir/stream.h"
+
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributed_functions.h"
@@ -193,6 +198,14 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
     // set projector to be used for the calculations
     this->PM_sptr->set_up(this->proj_data_info_cyl_uncompressed_ptr->create_shared_clone(),target_sptr);
 
+    shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
+    shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
+
+    this->projector_pair_ptr->set_up(this->proj_data_info_cyl_uncompressed_ptr->create_shared_clone(),target_sptr);
+
+    this->projector_pair_ptr.reset(
+                   new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
+
     if (is_null_ptr(this->normalisation_sptr))
     {
         warning("Invalid normalisation object");
@@ -246,6 +259,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 #endif
   shared_ptr<Scanner> scanner_sptr(new Scanner(*this->list_mode_data_sptr->get_scanner_ptr()));
 
+
   if (this->max_ring_difference_num_to_process == -1)
     {
       this->max_ring_difference_num_to_process = 
@@ -290,45 +304,105 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 {
-    std::cout << "!Nere " <<std::endl;
+//    std::cout << "!Nere " <<std::endl;
+//    const int min_segment_num = -this->max_ring_difference_num_to_process;
+//    const int max_segment_num = this->max_ring_difference_num_to_process;
+
+//    std::cout << min_segment_num<<  " "<< max_segment_num <<std::endl;
+
+//    for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
+//    {
+//        std::cout << "here " <<  segment_num <<std::endl;
+//        for (int axial_num = this->proj_data_info_cyl_uncompressed_ptr->get_min_axial_pos_num(segment_num);
+//             axial_num < this->proj_data_info_cyl_uncompressed_ptr->get_max_axial_pos_num(segment_num);
+//             axial_num ++)
+//        {
+//            // For debugging.
+//            std::cout <<segment_num << " "<<  axial_num  << std::endl;
+
+//            for (int tang_num= this->proj_data_info_cyl_uncompressed_ptr->get_min_tangential_pos_num();
+//                 tang_num < this->proj_data_info_cyl_uncompressed_ptr->get_max_tangential_pos_num();
+//                 tang_num ++ )
+//            {
+
+//                for(int view_num = this->proj_data_info_cyl_uncompressed_ptr->get_min_view_num() + subset_num;
+//                    view_num <= this->proj_data_info_cyl_uncompressed_ptr->get_max_view_num();
+//                    view_num += this->num_subsets)
+//                {
+//                    Bin tmp_bin(segment_num,
+//                                view_num,
+//                                axial_num,
+//                                tang_num, 1.f);
+
+//                    if (!this->PM_sptr->get_symmetries_ptr()->is_basic(tmp_bin) )
+//                        continue;
+
+//                    this->add_projmatrix_to_sensitivity(sensitivity, tmp_bin);
+//                }
+//            }
+//        }
+//    }
+
+
+
     const int min_segment_num = -this->max_ring_difference_num_to_process;
     const int max_segment_num = this->max_ring_difference_num_to_process;
 
-    std::cout << min_segment_num<<  " "<< max_segment_num <<std::endl;
-
+    // warning: has to be same as subset scheme used as in distributable_computation
     for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
     {
-        std::cout << "here " <<  segment_num <<std::endl;
-        for (int axial_num = this->proj_data_info_cyl_uncompressed_ptr->get_min_axial_pos_num(segment_num);
-             axial_num < this->proj_data_info_cyl_uncompressed_ptr->get_max_axial_pos_num(segment_num);
-             axial_num ++)
-        {
-            // For debugging.
-            std::cout <<segment_num << " "<<  axial_num  << std::endl;
+          //CPUTimer timer;
+          //timer.start();
 
-            for (int tang_num= this->proj_data_info_cyl_uncompressed_ptr->get_min_tangential_pos_num();
-                 tang_num < this->proj_data_info_cyl_uncompressed_ptr->get_max_tangential_pos_num();
-                 tang_num ++ )
-            {
+      for (int view = this->proj_data_info_cyl_uncompressed_ptr->get_min_view_num() + subset_num;
+          view <= this->proj_data_info_cyl_uncompressed_ptr->get_max_view_num();
+          view += this->num_subsets)
+      {
+        const ViewSegmentNumbers view_segment_num(view, segment_num);
 
-                for(int view_num = this->proj_data_info_cyl_uncompressed_ptr->get_min_view_num() + subset_num;
-                    view_num <= this->proj_data_info_cyl_uncompressed_ptr->get_max_view_num();
-                    view_num += this->num_subsets)
-                {
-                    Bin tmp_bin(segment_num,
-                                view_num,
-                                axial_num,
-                                tang_num, 1.f);
-
-                    if (!this->PM_sptr->get_symmetries_ptr()->is_basic(tmp_bin) )
-                        continue;
-
-                    this->add_projmatrix_to_sensitivity(sensitivity, tmp_bin);
-                }
-            }
-        }
+        if (! this->projector_pair_ptr->get_symmetries_used()->is_basic(view_segment_num))
+          continue;
+        this->add_view_seg_to_sensitivity(sensitivity, view_segment_num);
+      }
+        //    cerr<<timer.value()<<endl;
     }
 }
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
+add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const
+{
+    shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
+            (this->projector_pair_ptr->get_symmetries_used()->clone());
+
+  RelatedViewgrams<float> viewgrams =
+    this->proj_data_info_cyl_uncompressed_ptr->get_empty_related_viewgrams(view_seg_nums,symmetries_used);
+
+  viewgrams.fill(1.F);
+  // find efficiencies
+  {
+    const double start_frame = this->frame_defs.get_start_time(this->current_frame_num);
+    const double end_frame = this->frame_defs.get_end_time(this->current_frame_num);
+    this->normalisation_sptr->undo(viewgrams,start_frame,end_frame);
+  }
+  // backproject
+  {
+    const int range_to_zero =
+      view_seg_nums.segment_num() == 0
+      ? 1 : 0;
+    const int min_ax_pos_num =
+      viewgrams.get_min_axial_pos_num() + range_to_zero;
+    const int max_ax_pos_num =
+       viewgrams.get_max_axial_pos_num() - range_to_zero;
+
+    this->projector_pair_ptr->get_back_projector_sptr()->
+      back_project(sensitivity, viewgrams,
+                   min_ax_pos_num, max_ax_pos_num);
+  }
+
+}
+
 
 template<typename TargetT>
 void

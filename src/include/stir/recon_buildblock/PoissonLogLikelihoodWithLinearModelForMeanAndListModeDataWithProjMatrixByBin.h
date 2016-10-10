@@ -34,7 +34,7 @@
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h" 
 #include "stir/ProjDataInMemory.h"
-
+#include "stir/recon_buildblock/ProjectorByBinPair.h"
 #include "stir/ExamInfo.h"
 START_NAMESPACE_STIR
 
@@ -103,7 +103,10 @@ protected:
 
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjMatrixByBin> PM_sptr;
-  
+
+  //! Stores the projectors that are used for the computations
+  shared_ptr<ProjectorByBinPair> projector_pair_ptr;
+
   //! points to the additive projection data
   shared_ptr<ProjDataInMemory> additive_proj_data_sptr;
  
@@ -122,6 +125,9 @@ protected:
   virtual bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
 
   void add_projmatrix_to_sensitivity(TargetT& sensitivity,  Bin& this_basic_bin) const;
+
+  void
+    add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const;
 };
 
 END_NAMESPACE_STIR
