@@ -32,8 +32,6 @@
 
 START_NAMESPACE_STIR
 
-const float SMALL_NUM = 0.000001F;
-
 Bin::Bin()
 {}
 
@@ -132,10 +130,7 @@ Bin::operator*=(const float dx)
 Bin&
 Bin::operator/=(const float dx)
 {
-    float small_value=
-      bin_value * SMALL_NUM;
-
-    if (std::fabs(dx) < small_value)
+    if (dx == 0.f)
         bin_value = 0.0f;
     else
         bin_value /= dx;

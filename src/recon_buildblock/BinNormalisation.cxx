@@ -176,30 +176,32 @@ undo(ProjData& proj_data,const double start_time, const double end_time,
 
 void
 BinNormalisation::
-apply(std::vector<Bin>& bins,
+apply(std::vector<Bin>& r_bins,
      const double start_time, const double end_time) const
 {
+    std::vector <float> normalization_values = this->get_related_bins_values(r_bins);
 
-    for (std::vector<Bin>::iterator iter = bins.begin(); iter !=bins.end(); ++iter)
-        *iter *= this->get_bin_efficiency(*iter, start_time, end_time);
+    assert(r_bins.size() == normalization_values.size());
 
-    // TODO: DELETE THE FOLLOWING LINES
-//    std::vector <float> normalization_values = norm_proj_data_ptr->get_related_bin_values(bins, symmetries);
-//    assert(bins.size() == normalization_values.size());
-
-//    for (unsigned int i = 0; i < bins.size(); i++)
-//    {
-//        bins[i].set_bin_value(bins.at(i).get_bin_value() / normalization_values.at(i));
-//    }
+    for (unsigned int i = 0; i < r_bins.size(); i++)
+    {
+        r_bins[i] *= normalization_values.at(i);
+    }
 }
 
 void
 BinNormalisation::
-undo(std::vector<Bin>& bins,
+undo(std::vector<Bin>& r_bins,
      const double start_time, const double end_time) const
 {
-    for (std::vector<Bin>::iterator iter = bins.begin(); iter !=bins.end(); ++iter)
-        *iter /= this->get_bin_efficiency(*iter, start_time, end_time);
+    std::vector <float> normalization_values = this->get_related_bins_values(r_bins);
+
+    assert(r_bins.size() == normalization_values.size());
+
+    for (unsigned int i = 0; i < r_bins.size(); i++)
+    {
+        r_bins[i] /= normalization_values.at(i);
+    }
 }
  
 END_NAMESPACE_STIR

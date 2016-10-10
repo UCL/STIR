@@ -289,6 +289,25 @@ ProjData::get_related_viewgrams(const ViewSegmentNumbers& view_segmnet_num,
   return RelatedViewgrams<float>(viewgrams, symmetries_used);
 }
 
+std::vector<float>
+ProjData::get_related_bin_values(const std::vector<Bin>& r_bins) const
+{
+
+    std::vector<float> values;
+    values.reserve(r_bins.size());
+
+    for (std::vector <Bin>::const_iterator r_bins_iterator = r_bins.begin();
+         r_bins_iterator != r_bins.end(); ++r_bins_iterator)
+    {
+        values.push_back(this->get_bin_value(*r_bins_iterator->segment_num(),
+                                             *r_bins_iterator->axial_pos_num(),
+                                             *r_bins_iterator->view_num(),
+                                             *r_bins_iterator->tangential_pos_num()));
+    }
+
+    return values;
+}
+
 
 Succeeded 
 ProjData::set_related_viewgrams( const RelatedViewgrams<float>& viewgrams) 

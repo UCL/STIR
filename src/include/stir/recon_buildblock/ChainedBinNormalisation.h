@@ -110,7 +110,16 @@ ChainedBinNormalisation(shared_ptr<BinNormalisation> const& apply_first,
   virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
   virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
+    //! Apply for related bins
+    virtual void apply(std::vector<Bin>& bins,
+               const double start_time, const double end_time) const;
+    //! Undo for related bins
+    virtual void undo(std::vector<Bin>& bins,
+               const double start_time, const double end_time) const;
  
+protected:
+virtual
+std::vector<float> get_related_bins_values(const std::vector<Bin>&) const;
 
 private:
   shared_ptr<BinNormalisation> apply_first;

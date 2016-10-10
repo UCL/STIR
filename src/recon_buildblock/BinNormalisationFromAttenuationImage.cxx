@@ -178,6 +178,10 @@ BinNormalisationFromAttenuationImage::get_bin_efficiency(const Bin& bin,const do
   return 1;
 }
 
+std::vector<float> BinNormalisationFromAttenuationImage::get_related_bins_values(const std::vector<Bin>& r_bins) const
+{
+error("Not implemented, yet");
+}
   
 END_NAMESPACE_STIR
 

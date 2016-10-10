@@ -152,6 +152,10 @@ public:
   //! Set sinogram
   virtual Succeeded 
     set_sinogram(const Sinogram<float>&) = 0;
+  //! Get Bin value
+   virtual float get_bin_value(const int view_pos, const int segment_pos, const int axial_pos, const int tang_pos) const = 0;
+  //! Get Bin value
+  virtual float get_bin_value(const Bin& this_bin) const = 0;
 
   //! Get empty viewgram
   Viewgram<float> get_empty_viewgram(const int view, const int segment_num, 
@@ -192,7 +196,9 @@ public:
     const bool make_num_tangential_poss_odd = false) const;
   //! Set related viewgrams
   virtual Succeeded set_related_viewgrams(const RelatedViewgrams<float>& viewgrams);
-  
+  //! Get related bin values
+  //! \todo This function temporaliry has as input a vector<Bin> instead this should be replaced by RelatedBins.
+  std::vector<float> get_related_bin_values(const std::vector<Bin>&) const;
 
   //! Get empty related viewgrams, where the symmetries_ptr specifies the symmetries to use
   RelatedViewgrams<float> 

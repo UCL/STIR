@@ -231,8 +231,8 @@ ProjDataFromStream::get_bin_value(const int segment_num,
         error("ProjDataFromStream::get_viewgram: error after seekg\n");
     }
 
-   Array< 1,  float>  value;
-   value.resize(1);
+   Array< 1,  float>  value(1);
+//   value.resize(1);
     float scale = float(1);
 
     // Now the storage order is not more important. Just read.

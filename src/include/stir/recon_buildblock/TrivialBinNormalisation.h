@@ -48,6 +48,12 @@ public:
 
   virtual inline void apply(RelatedViewgrams<float>&,const double start_time, const double end_time) const {}
   virtual inline void undo(RelatedViewgrams<float>&,const double start_time, const double end_time) const {}
+
+  //! This is the a bin-wise overload for the apply function.
+ virtual void apply(std::vector<Bin>&, const double, const double) const{}
+
+  //! This is the a bin-wise overload for the undo function.
+  virtual void undo(std::vector<Bin>&, const double, const double) const {}
   
   virtual inline float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const { return 1;}
 
@@ -57,6 +63,11 @@ private:
   virtual inline void set_defaults() {}
   virtual inline void initialise_keymap() {}
   
+protected:
+  virtual
+  std::vector<float> get_related_bins_values(const std::vector<Bin>& ) const
+  {}
+
 };
 
 END_NAMESPACE_STIR

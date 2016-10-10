@@ -160,10 +160,11 @@ write_to_file(const string& output_filename) const
 float 
 ProjDataInMemory::get_bin_value(Bin& bin)
 {
-   Viewgram<float> viewgram = get_viewgram(bin.view_num(),bin.segment_num()); 
+   Viewgram<float> viewgram = get_viewgram(bin.view_num(),bin.segment_num());
     
-   return viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]; 
-
+   return viewgram[bin.axial_pos_num()][bin.tangential_pos_num()];
+//    return get_bin_value(bin.segment_num(), bin.axial_pos_num(),
+//                         bin.view_num(), bin.tangential_pos_num());
 }
 END_NAMESPACE_STIR
 
