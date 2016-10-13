@@ -89,13 +89,6 @@ public:
   /*! \todo this might depend on the acquisition parameters */
   virtual bool has_delayeds() const { return true; }
 
-    virtual inline
-    unsigned long int
-    get_total_number_of_events() const
-    {
-        error("Not implemented yet. Abort.");
-    }
-
 private:
   std::string listmode_filename_prefix;
   mutable unsigned int current_lm_file;

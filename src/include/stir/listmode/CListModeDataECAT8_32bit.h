@@ -18,7 +18,7 @@
   \file
   \ingroup listmode
   \brief Declaration of class stir::ecat::CListModeDataECAT8_32bit
-    
+
   \author Kris Thielemans
 */
 
@@ -40,7 +40,7 @@ namespace ecat {
 
 //! A class that reads the listmode data for Siemens scanners
 /*!  \ingroup listmode
-    This file format is currently used by the Siemens Biograph PET/CT and mMR scanners. 
+    This file format is currently used by the Siemens Biograph PET/CT and mMR scanners.
     There's an Interfile-like header and a binary file with the actual list mode data.
     The name of the binary file is given by the value of the "name of data file" keyword
     in the header.
@@ -57,13 +57,13 @@ public:
   virtual std::string
     get_name() const;
 
-  virtual 
+  virtual
     shared_ptr <CListRecord> get_empty_record_sptr() const;
 
-  virtual 
+  virtual
     Succeeded get_next_record(CListRecord& record) const;
 
-  virtual 
+  virtual
     Succeeded reset();
 
   virtual
@@ -81,7 +81,7 @@ public:
     get_total_number_of_events() const
     {
         error("Not implemented yet. Abort.");
-    }
+    };
 
 private:
   typedef CListRecordECAT8_32bit CListRecordT;
