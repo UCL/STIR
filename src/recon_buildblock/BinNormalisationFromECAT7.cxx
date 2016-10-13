@@ -653,7 +653,10 @@ BinNormalisationFromECAT7::get_dead_time_efficiency (const DetectionPosition<>& 
   
 }
 
-
+std::vector<float> BinNormalisationFromECAT7::get_related_bins_values(const std::vector<Bin>& r_bins) const
+{
+error("Not implemented, yet");
+}
 
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT  

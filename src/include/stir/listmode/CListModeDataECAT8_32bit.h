@@ -81,7 +81,7 @@ public:
     get_total_number_of_events() const
     {
         error("Not implemented yet. Abort.");
-    };
+    }
 
 private:
   typedef CListRecordECAT8_32bit CListRecordT;

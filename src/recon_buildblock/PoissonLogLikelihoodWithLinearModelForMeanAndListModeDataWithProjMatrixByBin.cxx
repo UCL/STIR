@@ -35,7 +35,7 @@
 #include "stir/Viewgram.h"
 #include "stir/info.h"
 #include <boost/format.hpp>
-
+#include "stir/HighResWallClockTimer.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
 #include "stir/Viewgram.h"
 #include "stir/RelatedViewgrams.h"
@@ -201,10 +201,11 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
     shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
     shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
 
-    this->projector_pair_ptr->set_up(this->proj_data_info_cyl_uncompressed_ptr->create_shared_clone(),target_sptr);
-
     this->projector_pair_ptr.reset(
                    new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
+
+    this->projector_pair_ptr->set_up(this->proj_data_info_cyl_uncompressed_ptr->create_shared_clone(),target_sptr);
+
 
     if (is_null_ptr(this->normalisation_sptr))
     {
@@ -304,6 +305,9 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 {
+    HighResWallClockTimer t;
+    t.reset();
+    t.start();
 //    std::cout << "!Nere " <<std::endl;
 //    const int min_segment_num = -this->max_ring_difference_num_to_process;
 //    const int max_segment_num = this->max_ring_difference_num_to_process;
@@ -366,6 +370,8 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
       }
         //    cerr<<timer.value()<<endl;
     }
+    t.stop();
+    std::cout << "Total Wall clock time: " << t.value() << " seconds" << std::endl;
 }
 
 template<typename TargetT>

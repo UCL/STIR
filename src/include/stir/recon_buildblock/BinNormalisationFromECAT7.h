@@ -136,6 +136,9 @@ private:
   virtual bool post_processing();
 
   std::string normalisation_ECAT7_filename;
+protected:
+  virtual
+  std::vector<float> get_related_bins_values(const std::vector<Bin>&) const;
 };
 
 END_NAMESPACE_ECAT7
