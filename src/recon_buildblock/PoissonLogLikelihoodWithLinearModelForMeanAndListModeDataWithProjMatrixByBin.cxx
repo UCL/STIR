@@ -425,13 +425,11 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
     if(record.is_time() && end_time > 0.01)
       {
         current_time = record.time().get_time_in_secs();
+        if (this->do_time_frame && current_time >= end_time)
+            break; // get out of while loop
+        if (current_time < start_time)
+          continue;
       }
-    if (this->do_time_frame && current_time >= end_time)
-      {
-        break; // get out of while loop
-      }
-    if (current_time < start_time)
-      continue;
 
     if (record.is_event() && record.event().is_prompt()) 
       { 
@@ -439,6 +437,8 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
         measured_bin.set_bin_value(1.0f);
 
         record.event().get_bin(measured_bin, *proj_data_info_cyl_uncompressed_ptr); 
+        if (std::abs(measured_bin.segment_num()) > this->max_ring_difference_num_to_process )
+            continue;
         // If more than 1 subsets, check if the current bin belongs to
         // the current.
         if (this->num_subsets > 1)

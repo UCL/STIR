@@ -72,7 +72,8 @@ rm -f my_*v my_*s my_*S
 INSTALL_DIR=$1
 ThereWereErrors=0
 export INPUT_ROOT_FILE=test_PET_GATE.root
-
+export INPUT=root_header.hroot
+export TEMPLATE=template_for_ROOT_scanner.hs
 
 echo ------------- Converting ROOT files to ProjData file -------------
 echo Making ProjData for all events

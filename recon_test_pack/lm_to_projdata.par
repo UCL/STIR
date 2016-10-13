@@ -1,11 +1,11 @@
 lm_to_projdata Parameters:=
 
-  input file := root_header.hroot
+  input file := ${INPUT}
 output filename prefix := ${OUT_PROJDATA_FILE}
 
   ; parameters that determine the sizes etc of the output
 
-       template_projdata := template_for_ROOT_scanner.hs
+       template_projdata := ${TEMPLATE}
     ; the next can be used to use a smaller number of segments than given 
     ; in the template
     maximum absolute segment number to process := -1

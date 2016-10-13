@@ -97,7 +97,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
 
   // handle time frame definitions etc
   // If num_events_to_store == 0 && frame_definition_filename.size == 0
-  if(num_events_to_store==0 && frame_defs_filename.size() == 0)
+  if(this->num_events_to_store==0 && this->frame_defs_filename.size() == 0)
       do_time_frame = true;
    
   this->list_mode_data_sptr=

@@ -50,6 +50,7 @@ script:
   - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/usr/local/bin
   - cd $TRAVIS_BUILD_DIR/recon_test_pack
   - ./run_test_simulate_and_recon.sh
+  - ./run_test_listmode_recon.sh
   - ./run_test_simulate_and_recon_with_motion.sh
   - ./run_scatter_tests.sh
   - ./run_tests.sh --nointbp
