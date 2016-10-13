@@ -95,7 +95,7 @@ public:
   BinNormalisationFromECAT7(const std::string& filename);
 
   virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
-  virtual float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
+  float get_bin_efficiency(const Bin& bin, const double start_time, const double end_time) const;
 
   bool use_detector_efficiencies() const;
   bool use_dead_time() const;
@@ -136,9 +136,6 @@ private:
   virtual bool post_processing();
 
   std::string normalisation_ECAT7_filename;
-protected:
-  virtual
-  std::vector<float> get_related_bins_values(const std::vector<Bin>&) const;
 };
 
 END_NAMESPACE_ECAT7

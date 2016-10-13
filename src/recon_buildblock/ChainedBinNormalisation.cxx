@@ -120,35 +120,6 @@ ChainedBinNormalisation:: get_bin_efficiency(const Bin& bin,const double start_t
      : 1);
 }
  
-void
-ChainedBinNormalisation::
-apply(std::vector<Bin>& bins,
-           const double start_time, const double end_time) const
-{
-  if (!is_null_ptr(apply_first))
-    apply_first->apply(bins,start_time,end_time);
-  if (!is_null_ptr(apply_second))
-    apply_second->apply(bins,start_time,end_time);
-}
-
-void
-ChainedBinNormalisation::
-undo(std::vector<Bin>& bins,
-           const double start_time, const double end_time) const
-{
-  if (!is_null_ptr(apply_first))
-    apply_first->undo(bins,start_time,end_time);
-  if (!is_null_ptr(apply_second))
-    apply_second->undo(bins,start_time,end_time);
-}
  
-std::vector<float>
-ChainedBinNormalisation::
-get_related_bins_values(const std::vector<Bin>& r_bins) const
-{
-   error("Not implemented, yet");
-   //Something like BINSnormA * BINSnormB
-}
-
 END_NAMESPACE_STIR
 

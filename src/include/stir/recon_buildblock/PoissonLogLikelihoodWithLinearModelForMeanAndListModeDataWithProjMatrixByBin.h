@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2015, Univ. of Leeds
     Copyright (C) 2016, UCL
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -123,8 +124,6 @@ protected:
   virtual bool post_processing();
 
   virtual bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
-
-  void add_projmatrix_to_sensitivity(TargetT& sensitivity,  Bin& this_basic_bin) const;
 
   void
     add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const;

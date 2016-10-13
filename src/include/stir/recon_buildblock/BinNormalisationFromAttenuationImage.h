@@ -119,10 +119,6 @@ private:
   virtual bool post_processing();
 
   std::string attenuation_image_filename;
-
-protected:
-  virtual
-  std::vector<float> get_related_bins_values(const std::vector<Bin>&) const;
 };
 
 

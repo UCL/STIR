@@ -125,21 +125,7 @@ public:
     The default value for the symmetries means that TrivialDataSymmetriesForBins will be used.
   */
   void undo(ProjData&,const double start_time, const double end_time, 
-            shared_ptr<DataSymmetriesForViewSegmentNumbers> = shared_ptr<DataSymmetriesForViewSegmentNumbers>()) const;
-
-  //! This is the a bin-wise overload for the undo function.
-  //! \todo RelatedBins should be used, instead of a std::vector<Bin>.
- virtual void apply(std::vector<Bin>&, const double, const double) const;
-
-  //! This is the a bin-wise overload for the apply function.
-  //! \todo RelatedBins should be used, instead of a std::vector<Bin>.
-  virtual void undo(std::vector<Bin>&,
-                     const double, const double) const;
-
-protected:
-
-  virtual
-  std::vector<float> get_related_bins_values(const std::vector<Bin>&) const = 0;
+            shared_ptr<DataSymmetriesForViewSegmentNumbers> = shared_ptr<DataSymmetriesForViewSegmentNumbers>()) const; 
 
 };
 

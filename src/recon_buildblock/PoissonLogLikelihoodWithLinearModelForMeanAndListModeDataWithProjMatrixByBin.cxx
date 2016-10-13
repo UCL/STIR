@@ -305,49 +305,6 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 {
-    HighResWallClockTimer t;
-    t.reset();
-    t.start();
-//    std::cout << "!Nere " <<std::endl;
-//    const int min_segment_num = -this->max_ring_difference_num_to_process;
-//    const int max_segment_num = this->max_ring_difference_num_to_process;
-
-//    std::cout << min_segment_num<<  " "<< max_segment_num <<std::endl;
-
-//    for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
-//    {
-//        std::cout << "here " <<  segment_num <<std::endl;
-//        for (int axial_num = this->proj_data_info_cyl_uncompressed_ptr->get_min_axial_pos_num(segment_num);
-//             axial_num < this->proj_data_info_cyl_uncompressed_ptr->get_max_axial_pos_num(segment_num);
-//             axial_num ++)
-//        {
-//            // For debugging.
-//            std::cout <<segment_num << " "<<  axial_num  << std::endl;
-
-//            for (int tang_num= this->proj_data_info_cyl_uncompressed_ptr->get_min_tangential_pos_num();
-//                 tang_num < this->proj_data_info_cyl_uncompressed_ptr->get_max_tangential_pos_num();
-//                 tang_num ++ )
-//            {
-
-//                for(int view_num = this->proj_data_info_cyl_uncompressed_ptr->get_min_view_num() + subset_num;
-//                    view_num <= this->proj_data_info_cyl_uncompressed_ptr->get_max_view_num();
-//                    view_num += this->num_subsets)
-//                {
-//                    Bin tmp_bin(segment_num,
-//                                view_num,
-//                                axial_num,
-//                                tang_num, 1.f);
-
-//                    if (!this->PM_sptr->get_symmetries_ptr()->is_basic(tmp_bin) )
-//                        continue;
-
-//                    this->add_projmatrix_to_sensitivity(sensitivity, tmp_bin);
-//                }
-//            }
-//        }
-//    }
-
-
 
     const int min_segment_num = -this->max_ring_difference_num_to_process;
     const int max_segment_num = this->max_ring_difference_num_to_process;
@@ -355,9 +312,6 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
     // warning: has to be same as subset scheme used as in distributable_computation
     for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
     {
-          //CPUTimer timer;
-          //timer.start();
-
       for (int view = this->proj_data_info_cyl_uncompressed_ptr->get_min_view_num() + subset_num;
           view <= this->proj_data_info_cyl_uncompressed_ptr->get_max_view_num();
           view += this->num_subsets)
@@ -370,8 +324,6 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
       }
         //    cerr<<timer.value()<<endl;
     }
-    t.stop();
-    std::cout << "Total Wall clock time: " << t.value() << " seconds" << std::endl;
 }
 
 template<typename TargetT>
@@ -409,37 +361,6 @@ add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view
 
 }
 
-
-template<typename TargetT>
-void
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-add_projmatrix_to_sensitivity(TargetT& sensitivity,  Bin & this_basic_bin) const
-{
-    std::vector<Bin>  r_bins;
-    ProjMatrixElemsForOneBin elem_row;
-
-    this->PM_sptr->get_symmetries_ptr()->get_related_bins(r_bins, this_basic_bin);
-
-    if (r_bins.size() == 0 )
-        error("Something went wrong with the symmetries. Abort.");
-
-    for (unsigned int i = 0; i < r_bins.size(); i++)
-        r_bins[i].set_bin_value(1.0f);
-
-
-    // find efficiencies
-    {
-        const double start_frame = this->frame_defs.get_start_time(this->current_frame_num);
-        const double end_frame = this->frame_defs.get_end_time(this->current_frame_num);
-        this->normalisation_sptr->undo(r_bins, start_frame,end_frame);
-    }
-
-    this->PM_sptr->get_proj_matrix_elems_for_one_bin(elem_row, this_basic_bin);
-    //N.E: I had problems with RelatedBins thats why I use a std::vector<Bin> and
-    // symmetries.
-    elem_row.back_project(sensitivity, r_bins, this->PM_sptr->get_symmetries_sptr());
-}
- 
 template <typename TargetT> 
 TargetT * 
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>:: 

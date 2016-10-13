@@ -174,35 +174,6 @@ undo(ProjData& proj_data,const double start_time, const double end_time,
     }
 }
 
-void
-BinNormalisation::
-apply(std::vector<Bin>& r_bins,
-     const double start_time, const double end_time) const
-{
-    std::vector <float> normalization_values = this->get_related_bins_values(r_bins);
-
-    assert(r_bins.size() == normalization_values.size());
-
-    for (unsigned int i = 0; i < r_bins.size(); i++)
-    {
-        r_bins[i] *= normalization_values.at(i);
-    }
-}
-
-void
-BinNormalisation::
-undo(std::vector<Bin>& r_bins,
-     const double start_time, const double end_time) const
-{
-    std::vector <float> normalization_values = this->get_related_bins_values(r_bins);
-
-    assert(r_bins.size() == normalization_values.size());
-
-    for (unsigned int i = 0; i < r_bins.size(); i++)
-    {
-        r_bins[i] /= normalization_values.at(i);
-    }
-}
  
 END_NAMESPACE_STIR
 

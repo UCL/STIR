@@ -171,13 +171,6 @@ BinNormalisationFromProjData::get_bin_efficiency(const Bin& bin,const double sta
   return 1;
 
 }
-
-
-std::vector<float>
-BinNormalisationFromProjData::get_related_bins_values(const std::vector<Bin>& r_bins) const
-{
-    return this->norm_proj_data_ptr->get_related_bin_values(r_bins);
-}
  
 END_NAMESPACE_STIR
 
