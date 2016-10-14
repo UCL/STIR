@@ -30,7 +30,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Par
 end PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters:= 
 enforce initial positivity condition:=  1
 number of subsets:= 1
-number of subiterations:= 2
+number of subiterations:= 1
 save estimates at subiteration intervals:= 1
-output filename prefix := my_ouput_t_lm_pr_seg2
+output filename prefix := my_output_t_lm_pr_seg2
 END := 

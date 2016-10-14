@@ -286,15 +286,15 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                   scanner_sptr->get_max_num_non_arccorrected_bins(),
                   false)));
 
+   // If Additive is smaller : Error
+
   if ( this->normalisation_sptr->set_up(proj_data_info_cyl_uncompressed_ptr)
-   != Succeeded::yes)
+   == Succeeded::no)
   {
 warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin: "
       "set-up of pre-normalisation failed\n");
 return true;
     }
-
-
 
    return false; 
 
@@ -306,8 +306,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 {
 
-    const int min_segment_num = -this->max_ring_difference_num_to_process;
-    const int max_segment_num = this->max_ring_difference_num_to_process;
+    const int min_segment_num = this->proj_data_info_cyl_uncompressed_ptr->get_min_segment_num();
+    const int max_segment_num = this->proj_data_info_cyl_uncompressed_ptr->get_max_segment_num();
 
     // warning: has to be same as subset scheme used as in distributable_computation
     for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
@@ -322,7 +322,6 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
           continue;
         this->add_view_seg_to_sensitivity(sensitivity, view_segment_num);
       }
-        //    cerr<<timer.value()<<endl;
     }
 }
 
@@ -435,10 +434,20 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
       { 
         Bin measured_bin; 
         measured_bin.set_bin_value(1.0f);
+        record.event().get_bin(measured_bin, *this->proj_data_info_cyl_uncompressed_ptr);
 
-        record.event().get_bin(measured_bin, *proj_data_info_cyl_uncompressed_ptr); 
-        if (std::abs(measured_bin.segment_num()) > this->max_ring_difference_num_to_process )
+        if (measured_bin.get_bin_value() != 1.0f
+                || measured_bin.segment_num() < this->proj_data_info_cyl_uncompressed_ptr->get_min_segment_num()
+                || measured_bin.segment_num()  > this->proj_data_info_cyl_uncompressed_ptr->get_max_segment_num()
+                || measured_bin.tangential_pos_num() < this->proj_data_info_cyl_uncompressed_ptr->get_min_tangential_pos_num()
+                || measured_bin.tangential_pos_num() > this->proj_data_info_cyl_uncompressed_ptr->get_max_tangential_pos_num()
+                || measured_bin.axial_pos_num() < this->proj_data_info_cyl_uncompressed_ptr->get_min_axial_pos_num(measured_bin.segment_num())
+                || measured_bin.axial_pos_num() > this->proj_data_info_cyl_uncompressed_ptr->get_max_axial_pos_num(measured_bin.segment_num()))
+        {
             continue;
+        }
+
+        measured_bin.set_bin_value(1.0f);
         // If more than 1 subsets, check if the current bin belongs to
         // the current.
         if (this->num_subsets > 1)
@@ -472,8 +481,8 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 
          num_stored_events += 1;
 
-         if (num_stored_events%100000L==0)
-                         info( boost::format("Proccessed events: %1% ") % num_stored_events);
+         if (num_stored_events%200000L==0)
+                         info( boost::format("Stored Events: %1% ") % num_stored_events);
 
         if ( measured_bin.get_bin_value() <= max_quotient *fwd_bin.get_bin_value())
             measured_div_fwd = 1.0f /fwd_bin.get_bin_value();

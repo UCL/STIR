@@ -18,7 +18,7 @@ output filename prefix := ${OUT_PROJDATA_FILE}
     ; note that this normally counts the total of prompts-delayeds (see below)
     ; If you don't define a time frame definition file nor the num_events_to_store
     ; then the total number of events in the listmode file is used.
-;num_events_to_store := 200
+;	num_events_to_store := 10
 
   ; parameters relating to prompts and delayeds
 
