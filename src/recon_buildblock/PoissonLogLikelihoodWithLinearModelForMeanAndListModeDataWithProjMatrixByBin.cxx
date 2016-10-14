@@ -345,13 +345,10 @@ add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view
   }
   // backproject
   {
-    const int range_to_zero =
-      view_seg_nums.segment_num() == 0
-      ? 1 : 0;
     const int min_ax_pos_num =
-      viewgrams.get_min_axial_pos_num() + range_to_zero;
+      viewgrams.get_min_axial_pos_num();
     const int max_ax_pos_num =
-       viewgrams.get_max_axial_pos_num() - range_to_zero;
+       viewgrams.get_max_axial_pos_num();
 
     this->projector_pair_ptr->get_back_projector_sptr()->
       back_project(sensitivity, viewgrams,
