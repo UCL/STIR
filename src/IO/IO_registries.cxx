@@ -55,6 +55,10 @@
 #endif
 #include "stir/IO/ECAT8_32bitListmodeInputFileFormat.h"
 
+//! Addition for SAFIR listmode input file format
+#include "stir/IO/InputFileFormatSAFIR.h"
+
+
 //! Addition for ROOT support - Nikos Efthimiou
 #ifdef HAVE_CERN_ROOT
 #include "stir/IO/ROOTListmodeInputFileFormat.h"
@@ -73,6 +77,10 @@ static ITKOutputFileFormat::RegisterIt dummyITK1;
 #endif
 static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfIn;
 static InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfIn;
+
+//! Support for SAFIR listmode file format
+static RegisterInputFileFormat<SAFIRCListmodeInputFileFormat> LMdummySAFIR(4);
+
 
 //!
 //! \brief LMdummyROOT
