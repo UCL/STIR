@@ -110,8 +110,6 @@ else()
   message(STATUS "ITK support disabled.")
 endif()
 
-## CMake variables to build doxygen documentation
-
 #### Swig related
 option(BUILD_SWIG_PYTHON
        "Use SWIG to generate python bindings for STIR (experimental)" OFF)
@@ -232,6 +230,7 @@ ADD_SUBDIRECTORY(swig)
 # Save library dependencies.
 #EXPORT_LIBRARY_DEPENDENCIES(${STIR_BINARY_DIR}/STIRLibraryDepends.cmake)
 
+## CMake variables to build doxygen documentation
 ## Create html documentation using Doxygen
 ## Has to be at the end such that all variables are filled
 find_package(Doxygen)
