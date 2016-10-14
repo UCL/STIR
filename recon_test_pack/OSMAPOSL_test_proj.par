@@ -27,6 +27,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 	sensitivity filename:=  my_sens_t_proj_seg2.hv
 	zoom :=  1
 
+additive sinogram := my_MLrandoms_f1.hs
 end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:= 
 enforce initial positivity condition:=  1
 number of subsets:= 1

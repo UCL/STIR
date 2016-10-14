@@ -286,9 +286,40 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                   scanner_sptr->get_max_num_non_arccorrected_bins(),
                   false)));
 
-   // If Additive is smaller : Error
+  if (*(this->additive_proj_data_sptr->get_proj_data_info_sptr()) != *proj_data_info_cyl_uncompressed_ptr)
+  {
+    const ProjDataInfo& add_proj = *(this->additive_proj_data_sptr->get_proj_data_info_sptr());
+    const ProjDataInfo& proj = *this->proj_data_info_cyl_uncompressed_ptr;
+    bool ok =
+      typeid(add_proj) == typeid(proj) &&
+      *add_proj.get_scanner_ptr()== *(proj.get_scanner_ptr()) &&
+      (add_proj.get_min_view_num()==proj.get_min_view_num()) &&
+      (add_proj.get_max_view_num()==proj.get_max_view_num()) &&
+      (add_proj.get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
+      (add_proj.get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num()) &&
+      add_proj.get_min_segment_num() <= proj.get_min_segment_num() &&
+      add_proj.get_max_segment_num() >= proj.get_max_segment_num();
 
-  if ( this->normalisation_sptr->set_up(proj_data_info_cyl_uncompressed_ptr)
+    for (int segment_num=proj.get_min_segment_num();
+     ok && segment_num<=proj.get_max_segment_num();
+     ++segment_num)
+      {
+    ok =
+      add_proj.get_min_axial_pos_num(segment_num) == proj.get_min_axial_pos_num(segment_num) &&
+      add_proj.get_max_axial_pos_num(segment_num) == proj.get_max_axial_pos_num(segment_num);
+      }
+    if (ok)
+      return false;
+    else
+      {
+    warning(boost::format("Incompatible additive projection data:\nAdditive projdata info:\n%s\nEmission projdata info:\n%s\n--- (end of incompatible projection data info)---\n")
+        % add_proj.parameter_info()
+        % proj.parameter_info());
+    return true;
+      }
+  }
+
+  if( this->normalisation_sptr->set_up(proj_data_info_cyl_uncompressed_ptr)
    == Succeeded::no)
   {
 warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin: "

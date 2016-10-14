@@ -73,6 +73,22 @@ fi
 # first delete any files remaining from a previous run
 rm -f my_*v my_*s my_*S
 
+echo "=== calculate backround data"
+echo "===== randoms"
+
+echo "====== create delayed fansums"
+INPUT=PET_ACQ_small.l.hdr.STIR OUTPUT=my_fansums_delayed ${INSTALL_DIR}lm_fansums lm_fansums_delayed.par 2>my_fansums.log
+
+echo "====== estimate singles from fansums"
+niters=10
+# Note: the last 2 numbers are specific to the mMR
+${INSTALL_DIR}find_ML_singles_from_delayed -f my_MLsingles_f1 my_fansums_delayed_f1.dat  $niters 2 343 </dev/null
+
+echo " ===== estimate randoms from singles"
+${INSTALL_DIR}construct_randoms_from_singles my_MLrandoms_f1 my_MLsingles_f1 Siemens_mMR_seg2.hs $niters 2>my_construct_randoms_from_singles.log
+
+echo "=== simulate normalisation data"
+
 echo "===  reconstruct listmode data"
 OSMAPOSL OSMAPOSL_test_lmf.par
 echo "===  "
