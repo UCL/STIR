@@ -37,7 +37,7 @@
 #include "stir/NumericType.h"
 #include "stir/ByteOrder.h"
 #include "stir/shared_ptr.h"
-
+#include "stir/Bin.h"
 #include <iostream>
 #include <vector>
 
@@ -138,20 +138,6 @@ public:
   //! Get scale factor
   float get_scale_factor() const;  
 
-  //!
-  //! \brief get_bin_value
-  //! \param segment_num
-  //! \param axial_pos_num
-  //! \param view_num
-  //! \param tang_pos_num
-  //! \return
-  //! \author Nikos Efthimiou
-  //! \details This function return the value of a single bin stored in a sinogram in the
-  //! disk.
-  float get_bin_value(const int segment_num,
-                      const int axial_pos_num,
-                      const int view_num,
-                      const int tang_pos_num) const;
 
   //!
   //! \brief get_bin_value

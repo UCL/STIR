@@ -194,21 +194,18 @@ ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
   return viewgram;    
 }
 
+//float
+//ProjDataFromStream::get_bin_value() const
+//{
+//    return get_bin_value(this_bin.segment_num(),
+//                         this_bin.axial_pos_num(),
+//                         this_bin.view_num(),
+//                         this_bin.tangential_pos_num());
+//}
+
+
 float
 ProjDataFromStream::get_bin_value(const Bin& this_bin) const
-{
-    return get_bin_value(this_bin.segment_num(),
-                         this_bin.axial_pos_num(),
-                         this_bin.view_num(),
-                         this_bin.tangential_pos_num());
-}
-
-
-float
-ProjDataFromStream::get_bin_value(const int segment_num,
-                                  const int axial_pos_num,
-                                  const int view_num,
-                                  const int tang_pos_num) const
 {
     if (sino_stream == 0)
     {
@@ -219,7 +216,8 @@ ProjDataFromStream::get_bin_value(const int segment_num,
         error("ProjDataFromStream::get_viewgram: error in stream state before reading\n");
     }
 
-    vector<streamoff> offsets = get_offsets_bin(segment_num, axial_pos_num, view_num, tang_pos_num);
+    vector<streamoff> offsets = get_offsets_bin(this_bin.segment_num(), this_bin.axial_pos_num(),
+                                                this_bin.view_num(), this_bin.tangential_pos_num());
 
     const streamoff total_offset = offsets[0];
 
@@ -228,7 +226,7 @@ ProjDataFromStream::get_bin_value(const int segment_num,
 
     if (! *sino_stream)
     {
-        error("ProjDataFromStream::get_viewgram: error after seekg\n");
+        error("ProjDataFromStream::get_bin_value: error after seekg.");
     }
 
    Array< 1,  float>  value(1);
