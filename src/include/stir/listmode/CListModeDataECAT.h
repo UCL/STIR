@@ -88,12 +88,6 @@ public:
   //! returns \c true, as ECAT listmode data stores delayed events (and prompts)
   /*! \todo this might depend on the acquisition parameters */
   virtual bool has_delayeds() const { return true; }
-    //! Returns the total number of events in the listmode file
-    virtual inline unsigned long int get_total_number_of_events() const
-    {
-        error("Function get_total_number_of_events() is not supported "
-              "for CListModeDataECAT. Abort.");
-    }
 
 private:
   std::string listmode_filename_prefix;
