@@ -308,11 +308,10 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
       add_proj.get_min_axial_pos_num(segment_num) == proj.get_min_axial_pos_num(segment_num) &&
       add_proj.get_max_axial_pos_num(segment_num) == proj.get_max_axial_pos_num(segment_num);
       }
-    if (ok)
-      return false;
-    else
+    if (!ok)
       {
-    warning(boost::format("Incompatible additive projection data:\nAdditive projdata info:\n%s\nEmission projdata info:\n%s\n--- (end of incompatible projection data info)---\n")
+    warning(boost::format("Incompatible additive projection data:\nAdditive projdata info:\n%s\nEmission projdata info:\n%s\n"
+                          "--- (end of incompatible projection data info)---\n")
         % add_proj.parameter_info()
         % proj.parameter_info());
     return true;
