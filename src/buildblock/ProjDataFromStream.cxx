@@ -194,16 +194,6 @@ ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
   return viewgram;    
 }
 
-//float
-//ProjDataFromStream::get_bin_value() const
-//{
-//    return get_bin_value(this_bin.segment_num(),
-//                         this_bin.axial_pos_num(),
-//                         this_bin.view_num(),
-//                         this_bin.tangential_pos_num());
-//}
-
-
 float
 ProjDataFromStream::get_bin_value(const Bin& this_bin) const
 {
@@ -230,7 +220,6 @@ ProjDataFromStream::get_bin_value(const Bin& this_bin) const
     }
 
    Array< 1,  float>  value(1);
-//   value.resize(1);
     float scale = float(1);
 
     // Now the storage order is not more important. Just read.
@@ -240,43 +229,7 @@ ProjDataFromStream::get_bin_value(const Bin& this_bin) const
     if(scale != 1.f)
         error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
 
-//    if (get_storage_order() == Segment_AxialPos_View_TangPos)
-//    {
-//        for (int ax_pos_num = get_min_axial_pos_num(segment_num); ax_pos_num <= get_max_axial_pos_num(segment_num); ax_pos_num++)
-//        {
-
-//            if (read_data(*sino_stream, viewgram[ax_pos_num], on_disk_data_type, scale, on_disk_byte_order)
-//                    == Succeeded::no)
-//                error("ProjDataFromStream: error reading data\n");
-//            if(scale != 1)
-//                error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
-//            // seek to next line unless it was the last we need to read
-//            if(ax_pos_num != get_max_axial_pos_num(segment_num))
-//                sino_stream->seekg(intra_views_offset, ios::cur);
-//        }
-//    }
-//    else if (get_storage_order() == Segment_View_AxialPos_TangPos)
-//    {
-//        if(read_data(*sino_stream, viewgram, on_disk_data_type, scale, on_disk_byte_order)
-//                == Succeeded::no)
-//            error("ProjDataFromStream: error reading data\n");
-//        if(scale != 1)
-//            error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
-//    }
-
     value *= scale_factor;
-
-    //    if (make_num_tangential_poss_odd &&(get_num_tangential_poss()%2==0))
-    //    {
-    //        const int new_max_tangential_pos = get_max_tangential_pos_num() + 1;
-
-    //        viewgram.grow(
-    //                    IndexRange2D(get_min_axial_pos_num(segment_num),
-    //                                 get_max_axial_pos_num(segment_num),
-
-    //                                 get_min_tangential_pos_num(),
-    //                                 new_max_tangential_pos));
-    //    }
 
     return value[0];
 }

@@ -88,6 +88,19 @@ echo " ===== estimate randoms from singles"
 ${INSTALL_DIR}construct_randoms_from_singles my_MLrandoms_f1 my_MLsingles_f1 Siemens_mMR_seg2.hs $niters 2>my_construct_randoms_from_singles.log
 
 echo "=== simulate normalisation data"
+# For normalisation data we are going to use a cylinder in the center,
+# with water attenuation values
+
+echo "===  make fake emission image"
+${INSTALL_DIR}generate_image  lm_generate_uniform_cylinder.par
+echo "===  use that as template for fake attenuation"
+${INSTALL_DIR}stir_math --including-first --times-scalar .096 my_atten_image.hv my_uniform_cylinder.hv
+
+echo "===  create ACFs"
+${INSTALL_DIR}calculate_attenuation_coefficients --ACF my_acfs.hs my_atten_image.hv Siemens_mMR_seg2.hs > my_create_acfs.log 2>&1
+if [ $? -ne 0 ]; then
+echo "ERROR running calculate_attenuation_coefficients. Check my_create_acfs.log"; exit 1;
+fi
 
 echo "===  reconstruct listmode data"
 OSMAPOSL OSMAPOSL_test_lmf.par

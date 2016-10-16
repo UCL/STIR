@@ -54,10 +54,10 @@ int main(int argc, char * argv[])
   // which listmode files are supported
   if (strcmp(argv[1], "--input-formats")==0)
   {
-      cerr<<endl<<"Supported input file formats:\n";
+      cerr<<"Supported input file formats:\n";
       InputFileFormatRegistry<CListModeData>::default_sptr()->
               list_registered_names(cerr);
-      exit(EXIT_FAILURE);
+      exit(EXIT_SUCCESS);
   }
   LmToProjData application(argc==2 ? argv[1] : 0);
   application.process_data();

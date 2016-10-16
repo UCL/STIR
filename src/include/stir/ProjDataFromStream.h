@@ -6,6 +6,7 @@
   \ingroup projdata
   \brief Declaration of class stir::ProjDataFromStream
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Claire Labbe
@@ -138,13 +139,7 @@ public:
   //! Get scale factor
   float get_scale_factor() const;  
 
-
-  //!
-  //! \brief get_bin_value
-  //! \param this_bin
-  //! \return
-  //! \author Nikos Efthimiou
-  //! \details Overloaded
+  //! Get the value of bin.
   float get_bin_value(const Bin& this_bin) const;
     
 protected:
@@ -179,16 +174,7 @@ private:
   //! Calculate offsets for sinogram data
   std::vector<std::streamoff> get_offsets_sino(const int ax_pos_num, const int segment_num) const;
     
-  //!
-  //! \brief get_offsets_bin
-  //! \param segment_num
-  //! \param axial_pos_num
-  //! \param view_num
-  //! \param tang_pos_num
-  //! \return
-  //! \author Nikos Efthimiou
-  //! \details I could make use of get_offsets and get_offset_sino to extract the final offset of the
-  //! bin, but it would be another one burden in an already slow procedure.
+  //! Calculate the offsets for specific bins.
   std::vector<std::streamoff> get_offsets_bin(const int segment_num,
                                               const int ax_pos_num,
                                               const int view_num,

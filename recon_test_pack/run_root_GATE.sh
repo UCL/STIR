@@ -53,10 +53,14 @@ if test "$1" = "--help"
 
 done 
 
-if ! ${INSTALL_DIR}lm_to_projdata --input-formats 2>&1 | grep ROOT; then
+${INSTALL_DIR}lm_to_projdata --input-formats > my_lm_supported_inputs.log 2>&1
+
+if ! grep "ROOT" my_lm_supported_inputs.log > /dev/null
+then
 echo GATE support has not been installed in this system. Aborting.
 exit 1;
 fi
+
 
 
 
@@ -134,7 +138,4 @@ echo "Check what went wrong. The *.log files might help you."
 else
 echo "Everything seems to be fine !"
 echo 'You could remove all generated files using "rm -f my_* *.log"'
-fi
-
-
-
+#fi

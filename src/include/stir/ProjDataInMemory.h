@@ -1,4 +1,5 @@
 /*
+ *  Copyright (C) 2016, UCL
     Copyright (C) 2002 - 2011-02-23, Hammersmith Imanet Ltd
     This file is part of STIR.
 
@@ -19,6 +20,7 @@
   \ingroup projdata
   \brief Declaration of class stir::ProjDataInMemory
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
 */
 

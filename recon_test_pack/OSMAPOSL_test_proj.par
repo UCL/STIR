@@ -16,11 +16,11 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
   End Ray tracing matrix parameters :=
   End Projector Pair Using Matrix Parameters :=
 
-; You may download this file separately, from STIR website
-       ;Bin Normalisation type := From ProjData
-	;   Bin Normalisation From ProjData :=
-	 ;    normalisation projdata filename:= total_mult.hs
-	 ;End Bin Normalisation From ProjData:=
+
+       Bin Normalisation type := From ProjData
+	   Bin Normalisation From ProjData :=
+	     normalisation projdata filename:= my_acfs.hs
+	 End Bin Normalisation From ProjData:=
 
 	recompute sensitivity := 1
 	use subset sensitivities:= 0
