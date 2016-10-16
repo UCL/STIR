@@ -130,7 +130,9 @@ echo
 if test ${ThereWereErrors} = 1  ; 
 then
 echo "Check what went wrong. The *.log files might help you."
+exit 1
 else
 echo "Everything seems to be fine !"
 echo 'You could remove all generated files using "rm -f my_* *.log"'
+exit 0
 fi
