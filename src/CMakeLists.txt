@@ -234,17 +234,20 @@ ADD_SUBDIRECTORY(swig)
 ## Create html documentation using Doxygen
 ## Has to be at the end such that all variables are filled
 find_package(Doxygen)
-option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
+option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_DOT_FOUND})
 if(BUILD_DOCUMENTATION)
     if(NOT DOXYGEN_FOUND)
         message(FATAL_ERROR "Doxygen is needed to build the documentation.")
+    endif()
+
+    if(NOT DOXYGEN_DOT_FOUND)
+    	message(FATAL_ERROR "Dot is needed for the Doxygen documentation to be generated.")
     endif()
 
     set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
     set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
     get_property(DOX_STRIP_FROM_INC_PATH DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-    message(STATUS ${DOX_STRIP_FROM_INC_PATH})
     string(REPLACE ";" " \\\n\t\t\t\t" DOX_STRIP_FROM_INC_PATH "${DOX_STRIP_FROM_INC_PATH}")
 
     configure_file(${doxyfile_in} ${doxyfile} @ONLY)
