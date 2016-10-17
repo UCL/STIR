@@ -29,8 +29,8 @@
   \author Jannis Fischer
 */
 
-#ifndef __local_SAFIR_CListRecordSAFIR_H__
-#define __local_SAFIR_CListRecordSAFIR_H__
+#ifndef __stir_listmode_CListRecordSAFIR_H__
+#define __stir_listmode_CListRecordSAFIR_H__
 
 #include "stir/listmode/CListRecord.h"
 #include "stir/DetectionPositionPair.h"
@@ -49,15 +49,24 @@ START_NAMESPACE_STIR
 
 /*!
 Provides interface of the record class to STIR by implementing get_LOR(). It uses a map from detector indices to coordinates to specify LORAs2Points from given detection pair indices.
+
+The record has the following format (for little-endian byte order)
+\code
+	unsigned ringA : 8;
+	unsigned ringB : 8;
+	unsigned detA : 16;
+	unsigned detB : 16;
+	unsigned layerA : 4;
+	unsigned layerB : 4;
+	unsigned reserved : 6;
+	unsigned isRandom : 1;
+	unsigned type : 1;
+\endcode
 */
 template <class Derived>
 class CListEventSAFIR : public CListEvent
 {
 public:
-	/*! Default constructor will not work as it does not initialize a map to relate
-	detector indices and space coordinates. Always use other constructor with a map pointer. Or use set_map( shared_ptr<ListEventRecordMapFromFile> new_map ) after default construction.
-	*/
-	inline CListEventSAFIR( ) {}
 	/*! Constructor which initializes map upon construction.
 	*/
 	inline CListEventSAFIR( shared_ptr<ListEventRecordMapFromFile> map ) : map(map) {}
@@ -71,6 +80,11 @@ public:
 	inline void set_map( shared_ptr<ListEventRecordMapFromFile> new_map ) { map = new_map; }
 
 private:
+	friend class CListRecordSAFIR;
+	/*! Default constructor will not work as it does not initialize a map to relate
+	detector indices and space coordinates. Always use other constructor with a map pointer. Or use set_map( shared_ptr<ListEventRecordMapFromFile> new_map ) after default construction.
+	*/
+	inline CListEventSAFIR( ) {}
 	shared_ptr<ListEventRecordMapFromFile> map;
 };
 

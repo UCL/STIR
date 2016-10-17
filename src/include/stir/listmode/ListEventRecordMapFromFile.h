@@ -22,7 +22,7 @@
 
   \file
   \ingroup listmode
-  \brief Declaration of class stir::CListEventRecordMapFromFile
+  \brief Declaration of class stir::ListEventRecordMapFromFile
 
   \author Jannis Fischer
 */
@@ -37,12 +37,17 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/DetectionPosition.h"
 
-#ifndef __local_SAFIR_ListEventRecordMapFromFile_H__
-#define __local_SAFIR_ListEventRecordMapFromFile_H__
+#ifndef __stir_listmode_ListEventRecordMapFromFile_H__
+#define __stir_listmode_ListEventRecordMapFromFile_H__
 
 START_NAMESPACE_STIR
 
-//! Class providing map functionality to convert detector indices to spatial coordinates. 
+/*! Class providing map functionality to convert detector indices to spatial coordinates. 
+	Map files can have 5 or 6 tab- or comma-separated columns. Lines beginning with '#' are ignored. The layer column is optional
+	\par Format:
+	ring,detector,(layer,)x,y,z
+	An empty line will terminate the reading at that line.
+*/
 class ListEventRecordMapFromFile
 {
 public:
@@ -50,12 +55,7 @@ public:
 	ListEventRecordMapFromFile(const std::string& filename)
 		{ read_detectormap_from_file( filename ); }
 
-	/*! Reads map from file and stores it.
-	Map files can have 5 or 6 tab- or comma-separated columns. Lines beginning with '#' are ignored. The layer column is optional
-	\par Format:
-	ring,detector,(layer,)x,y,z
-	An empty line will terminate the reading at that line.
-	*/
+	//! Reads map from file and stores it.
 	void read_detectormap_from_file( const std::string& filename );
 
 	//! Returns a cartesian coordinate given a detection position.

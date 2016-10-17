@@ -28,14 +28,16 @@
   \author Jannis Fischer
 */
 
-#ifndef __local_SAFIR_InputFileFormatSAFIR_H__
-#define __local_SAFIR_InputFileFormatSAFIR_H__
+#ifndef __stir_IO_InputFileFormatSAFIR_H__
+#define __stir_IO_InputFileFormatSAFIR_H__
 
 #include <cstring>
 #include <string>
 #include <iostream>
 
 #include "stir/IO/InputFileFormat.h"
+#include "stir/info.h"
+#include "stir/error.h"
 #include "stir/utilities.h"
 #include "stir/ParsingObject.h"
 
@@ -44,7 +46,25 @@
 
 START_NAMESPACE_STIR
 
-//! Class for reading SAFIR coincidence listmode data.
+/*! Class for reading SAFIR coincidence listmode data.
+
+It reads a parameter file, which refers to 
+  - crystal map containing the mapping between detector index triple and cartesian coordinates of the crystal surfaces (see ListEventRecordMapFromFile)
+  - the binary data file with the coincidence listmode data in SAFIR format (see CListModeDataSAFIR)
+  - a template projection data file, which is used to generate the virtual cylindrical scanner
+
+  An example of such a parameter file would be
+  \code
+	CListModeDataSAFIR Parameters:=
+		listmode data filename:= listmode_input.clm.safir
+		; the following two examples are also default to the key parser
+		crystal map filename:= crystal_map_front.txt 
+		template projection data filename:= safir_20.hs
+	END CListModeDataSAFIR Parameters:=
+  \endcode
+
+  The first 32 bytes of the binary file are interpreted as file signature and matched against the strings "MUPET CListModeData\0" and "SAFIR CListModeData\0". If either is successfull, the class claims it can read the file format. The rest of the file is read as records as specified as template parameter, e.g. CListRecordSAFIR.
+*/
 class SAFIRCListmodeInputFileFormat : public InputFileFormat<CListModeData>, public ParsingObject
 {
 public:
@@ -91,7 +111,7 @@ public:
 	virtual std::auto_ptr<data_type>
 	read_from_file(std::istream& input) const
 	{
-		std::cerr << "InputFileFormatSAFIR: read_from_file(input_ifstream)" << std::endl;
+		info("InputFileFormatSAFIR: read_from_file(input_ifstream)");
 		actual_do_parsing(input);
 		return std::auto_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR>(listmode_filename, crystal_map_filename, template_proj_data_filename));
 	}
@@ -99,17 +119,16 @@ public:
 	virtual std::auto_ptr<data_type> 
 	read_from_file(const std::string& filename) const
 	{
-		std::cerr << "InputFileFormatSAFIR: read_from_file(" << filename << ")" << std::endl;
+		info("InputFileFormatSAFIR: read_from_file(" + std::string(filename) + ")");
 		actual_do_parsing(filename);
 		return std::auto_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR>(listmode_filename, crystal_map_filename, template_proj_data_filename));
 	}
 
-private:
+protected:
 	typedef ParsingObject base_type;
 	mutable std::string listmode_filename;
 	mutable std::string crystal_map_filename;
 	mutable std::string template_proj_data_filename;
-	mutable bool did_parsing;
 
 	void initialise_keymap() {
 		base_type::initialise_keymap();
@@ -123,15 +142,14 @@ private:
 	void set_defaults() {
 		base_type::set_defaults();
 		crystal_map_filename = "crystal_map_front.txt";
-		template_proj_data_filename = "muppet.hs";
+		template_proj_data_filename = "safir_20.hs";
 	}
 
 	void actual_do_parsing(std::istream& input) const {
 		if( did_parsing) return;
 		// Ugly const_casts here, but I don't see an other nice way to use the parser
 		const_cast<SAFIRCListmodeInputFileFormat*>(this)->parse(input);
-		did_parsing = true;
-		std::cerr << const_cast<SAFIRCListmodeInputFileFormat*>(this)->parameter_info();
+		info(const_cast<SAFIRCListmodeInputFileFormat*>(this)->parameter_info());
 	}
 
 	void actual_do_parsing( const std::string& filename) const {
@@ -139,8 +157,29 @@ private:
 		// Ugly const_casts here, but I don't see an other nice way to use the parser
 		const_cast<SAFIRCListmodeInputFileFormat*>(this)->parse(filename.c_str());
 		did_parsing = true;
-		std::cerr << const_cast<SAFIRCListmodeInputFileFormat*>(this)->parameter_info();
+		info(const_cast<SAFIRCListmodeInputFileFormat*>(this)->parameter_info());
 	}
+
+	bool post_processing() {
+		if( !file_exists(listmode_filename) ) error("Could not access " + listmode_filename);
+		else if( !file_exists(crystal_map_filename) ) error("Could not access " + crystal_map_filename);
+		else if( !file_exists(template_proj_data_filename) ) error("Could not access " + template_proj_data_filename);
+		else {
+			did_parsing = true;
+			return false;
+		}
+		return true;
+	}
+		
+
+
+private:
+	mutable bool did_parsing;
+	bool file_exists( const std::string& filename) {
+		std::ifstream infile(filename.c_str());
+		return infile.good();
+	}
+	
 
 };
 END_NAMESPACE_STIR

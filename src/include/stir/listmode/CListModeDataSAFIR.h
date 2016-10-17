@@ -29,8 +29,8 @@
   \author Jannis Fischer
 */
 
-#ifndef __local_SAFIR_CListModeDataSAFIR_H__
-#define __local_SAFIR_CListModeDataSAFIR_H__
+#ifndef __stir_listmode_CListModeDataSAFIR_H__
+#define __stir_listmode_CListModeDataSAFIR_H__
 
 #include <iostream>
 #include <string>
@@ -53,7 +53,7 @@ START_NAMESPACE_STIR
   \brief Class for reading SAFIR listmode data with variable geometry 
   \ingroup listmode
   \par
-  By providing crystal map and template projection data files, the coordinates are read from files and used defining the LOR coordinates. 
+  By providing crystal map and template projection data files, the coordinates are read from files and used defining the LOR coordinates.
 */
 template <class CListRecordT> class CListModeDataSAFIR : public CListModeData
 {
@@ -75,9 +75,9 @@ public:
 	\todo Maybe provide real implementation?
 	*/
 	virtual SavedPosition save_get_position()
-	{ return 0; }
-	virtual Succeeded set_get_position(const SavedPosition&)
-	{ return Succeeded::no; }
+	{ return current_lm_data_ptr->save_get_position(); }
+	virtual Succeeded set_get_position(const SavedPosition& pos)
+	{ return current_lm_data_ptr->set_get_position(pos); }
 
 	/*! 
 	Returns just false in the moment.
