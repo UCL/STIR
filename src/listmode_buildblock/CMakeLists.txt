@@ -12,7 +12,7 @@ set(${dir_LIB_SOURCES}
         CListModeDataECAT8_32bit
         CListRecordECAT8_32bit
 	CListModeDataSAFIR
-	ListEventRecordMapFromFile
+	DetectorCoordinateMapFromFile
 )
 
 if (HAVE_ECAT)

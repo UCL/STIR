@@ -49,7 +49,7 @@ START_NAMESPACE_STIR
 /*! Class for reading SAFIR coincidence listmode data.
 
 It reads a parameter file, which refers to 
-  - crystal map containing the mapping between detector index triple and cartesian coordinates of the crystal surfaces (see ListEventRecordMapFromFile)
+  - crystal map containing the mapping between detector index triple and cartesian coordinates of the crystal surfaces (see DetectorCoordinateMapFromFile)
   - the binary data file with the coincidence listmode data in SAFIR format (see CListModeDataSAFIR)
   - a template projection data file, which is used to generate the virtual cylindrical scanner
 

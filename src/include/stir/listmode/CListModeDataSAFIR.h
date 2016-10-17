@@ -45,7 +45,7 @@
 #include "stir/shared_ptr.h"
 
 #include "stir/listmode/CListRecordSAFIR.h"
-#include "stir/listmode/ListEventRecordMapFromFile.h"
+#include "stir/listmode/DetectorCoordinateMapFromFile.h"
 
 START_NAMESPACE_STIR
 
@@ -90,7 +90,7 @@ private:
 	mutable shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;
 	mutable std::vector< unsigned int> saved_get_positions;
 	Succeeded open_lm_file() const;
-	shared_ptr<ListEventRecordMapFromFile> map;
+	shared_ptr<DetectorCoordinateMapFromFile> map;
 };
 	
 END_NAMESPACE_STIR

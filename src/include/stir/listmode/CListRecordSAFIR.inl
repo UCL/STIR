@@ -41,8 +41,8 @@ CListEventSAFIR<Derived>::get_LOR() const
 
 	if(!map) stir::error("Crystal map not set.");
 
-	lor.p1() = map->get_detector_coordinate(&(det_pos_pair.pos1()));
-	lor.p2() = map->get_detector_coordinate(&(det_pos_pair.pos2()));
+	lor.p1() = map->get_detector_coordinate(det_pos_pair.pos1());
+	lor.p2() = map->get_detector_coordinate(det_pos_pair.pos2());
 
 	return lor;
 }

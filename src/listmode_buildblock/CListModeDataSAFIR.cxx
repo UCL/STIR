@@ -51,19 +51,18 @@ START_NAMESPACE_STIR;
 template <class CListRecordT>
 CListModeDataSAFIR<CListRecordT>::
 CListModeDataSAFIR(const std::string& listmode_filename, const std::string& crystal_map_filename, const std::string& template_proj_data_filename)
-  : listmode_filename(listmode_filename), map(boost::make_shared<ListEventRecordMapFromFile>(crystal_map_filename))
+  : listmode_filename(listmode_filename), map(boost::make_shared<DetectorCoordinateMapFromFile>(crystal_map_filename))
 {
 	this->exam_info_sptr.reset(new ExamInfo);
 
 	// Here we are reading the scanner data from the template projdata
-	shared_ptr<ProjData> template_proj_data_ptr =
-//			ProjData::read_from_file("muppet.hs");
+	shared_ptr<ProjData> template_proj_data_sptr =
 			ProjData::read_from_file(template_proj_data_filename);
-	scanner_sptr = shared_ptr<Scanner>( new Scanner(*template_proj_data_ptr->get_proj_data_info_ptr()->get_scanner_ptr()));
+	scanner_sptr.reset( new Scanner(*template_proj_data_sptr->get_proj_data_info_ptr()->get_scanner_ptr()));
 
 	if( open_lm_file() == Succeeded::no )
 	{
-		error("CListModeDataSAFIR: Could not open listmode file %s\n", listmode_filename.c_str());
+		error("CListModeDataSAFIR: Could not open listmode file " +listmode_filename + "\n");
 	}
 }
 
@@ -115,17 +114,16 @@ open_lm_file() const
 	shared_ptr<istream> stream_ptr(new fstream(listmode_filename.c_str(), ios::in | ios::binary ));
 	if(!(*stream_ptr))
 	{
-		warning("CListModeDataSAFIR: cannot open file %s\n", listmode_filename.c_str());
+		warning("CListModeDataSAFIR: cannot open file " + listmode_filename + "\n");
 		return Succeeded::no;
 	}
-	stream_ptr->seekg(32);
+	stream_ptr->seekg((std::streamoff)32);
 	current_lm_data_ptr.reset(
 			new InputStreamWithRecords<CListRecordT, bool>
 			( stream_ptr, sizeof(CListTimeDataSAFIR),
 					sizeof(CListTimeDataSAFIR),
 					ByteOrder::little_endian !=ByteOrder::get_native_order()));
 	return Succeeded::yes;
-//	else return current_lm_data_ptr->reset();
 }
 	
 template class CListModeDataSAFIR<CListRecordSAFIR>;

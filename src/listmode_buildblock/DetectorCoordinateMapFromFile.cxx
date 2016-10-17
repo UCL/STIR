@@ -1,4 +1,4 @@
-/* ListEventRecordMapFromFile.cxx
+/* DetectorCoordinateMapFromFile.cxx
 
  Read List-Mode Event Data using map from file:  Implementation
  Jannis Fischer
@@ -19,16 +19,17 @@
 	limitations under the License.
 */
 
-#include "stir/listmode/ListEventRecordMapFromFile.h"
+#include "stir/error.h"
+#include "stir/listmode/DetectorCoordinateMapFromFile.h"
 
 START_NAMESPACE_STIR
 	
-void ListEventRecordMapFromFile::read_detectormap_from_file( const std::string& filename )
+void DetectorCoordinateMapFromFile::read_detectormap_from_file( const std::string& filename )
 {
 	std::ifstream myfile(filename.c_str());
 	if( !myfile ) 
 	{
-		std::cerr << "Error opening file " << filename << "." << std::endl;
+		error("Error opening file " + filename + ".\n");
 		return;
 	}
 

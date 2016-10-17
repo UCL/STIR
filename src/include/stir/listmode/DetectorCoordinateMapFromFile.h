@@ -1,4 +1,4 @@
-/* ListEventRecordMapFromFile.h
+/* DetectorCoordinateMapFromFile.h
  Read List-Mode Event Data using map from file: Header File
  Jannis Fischer
  jannis.fischer@cern.ch
@@ -22,7 +22,7 @@
 
   \file
   \ingroup listmode
-  \brief Declaration of class stir::ListEventRecordMapFromFile
+  \brief Declaration of class stir::DetectorCoordinateMapFromFile
 
   \author Jannis Fischer
 */
@@ -37,8 +37,8 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/DetectionPosition.h"
 
-#ifndef __stir_listmode_ListEventRecordMapFromFile_H__
-#define __stir_listmode_ListEventRecordMapFromFile_H__
+#ifndef __stir_listmode_DetectorCoordinateMapFromFile_H__
+#define __stir_listmode_DetectorCoordinateMapFromFile_H__
 
 START_NAMESPACE_STIR
 
@@ -48,19 +48,19 @@ START_NAMESPACE_STIR
 	ring,detector,(layer,)x,y,z
 	An empty line will terminate the reading at that line.
 */
-class ListEventRecordMapFromFile
+class DetectorCoordinateMapFromFile
 {
 public:
 	//! Constructor calls read_detectormap_from_file( filename ).
-	ListEventRecordMapFromFile(const std::string& filename)
+	DetectorCoordinateMapFromFile(const std::string& filename)
 		{ read_detectormap_from_file( filename ); }
 
 	//! Reads map from file and stores it.
 	void read_detectormap_from_file( const std::string& filename );
 
 	//! Returns a cartesian coordinate given a detection position.
-	stir::CartesianCoordinate3D<float> get_detector_coordinate( stir::DetectionPosition<>* det_pos )
-		{ return coord_map.at(*det_pos); }
+	stir::CartesianCoordinate3D<float> get_detector_coordinate( const stir::DetectionPosition<>& det_pos )
+		{ return coord_map.at(det_pos); }
 
 private:
 	struct ihash
