@@ -56,7 +56,7 @@
 #include "stir/IO/ECAT8_32bitListmodeInputFileFormat.h"
 
 //! Addition for SAFIR listmode input file format
-#include "stir/IO/InputFileFormatSAFIR.h"
+#include "stir/IO/SAFIRCListmodeInputFileFormat.h"
 
 
 //! Addition for ROOT support - Nikos Efthimiou

@@ -1,4 +1,4 @@
-/* InputFileFormatSAFIR.h
+/* SAFIRCListmodeInputFileFormat.h
 
  Class defining input file format for coincidence listmode data for SAFIR. 
  Jannis Fischer
@@ -28,8 +28,8 @@
   \author Jannis Fischer
 */
 
-#ifndef __stir_IO_InputFileFormatSAFIR_H__
-#define __stir_IO_InputFileFormatSAFIR_H__
+#ifndef __stir_IO_SAFIRCListmodeInputFileFormat_H__
+#define __stir_IO_SAFIRCListmodeInputFileFormat_H__
 
 #include <cstring>
 #include <string>
@@ -83,11 +83,11 @@ public:
 	//! Checks in binary data file for correct signature (can be either "SAFIR CListModeData" or "MUPET CListModeData").
 	virtual bool can_read( const FileSignature& signature, const std::string& filename) const
 	{
-		actual_do_parsing(filename);
+		bool can_parse = actual_do_parsing(filename);
 		std::ifstream data_file(listmode_filename.c_str(), std::ios::binary);
 		char* buffer = new char[32];
 		data_file.read(buffer, 32);
-		bool cr = !strncmp(buffer, "MUPET CListModeData\0", 20) ||  !strncmp(buffer, "SAFIR CListModeData\0", 20);
+		bool cr = (!strncmp(buffer, "MUPET CListModeData\0", 20) ||  !strncmp(buffer, "SAFIR CListModeData\0", 20)) && can_parse;
 		delete[] buffer;
 		return cr;
 	}
@@ -95,13 +95,13 @@ public:
 protected:
 	virtual bool actual_can_read(const FileSignature& signature, std::istream& input) const
 	{
-		actual_do_parsing(input);
+		bool can_parse = actual_do_parsing(input);
 		std::streampos pos = input.tellg();
 		input.seekg(0, input.beg);
 		char* buffer = new char[32];
 		input.read(buffer, 32);
 		input.seekg(pos);
-		bool cr = !strncmp(buffer, "MUPET CListModeData\0", 20) ||  !strncmp(buffer, "SAFIR CListModeData\0", 20);
+		bool cr = (!strncmp(buffer, "MUPET CListModeData\0", 20) ||  !strncmp(buffer, "SAFIR CListModeData\0", 20)) && can_parse;
 		delete[] buffer;
 		return cr;
 	}
@@ -111,7 +111,7 @@ public:
 	virtual std::auto_ptr<data_type>
 	read_from_file(std::istream& input) const
 	{
-		info("InputFileFormatSAFIR: read_from_file(input_ifstream)");
+		info("SAFIRCListmodeInputFileFormat: read_from_file(input_ifstream)");
 		actual_do_parsing(input);
 		return std::auto_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR>(listmode_filename, crystal_map_filename, template_proj_data_filename));
 	}
@@ -119,7 +119,7 @@ public:
 	virtual std::auto_ptr<data_type> 
 	read_from_file(const std::string& filename) const
 	{
-		info("InputFileFormatSAFIR: read_from_file(" + std::string(filename) + ")");
+		info("SAFIRCListmodeInputFileFormat: read_from_file(" + std::string(filename) + ")");
 		actual_do_parsing(filename);
 		return std::auto_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR>(listmode_filename, crystal_map_filename, template_proj_data_filename));
 	}
@@ -145,25 +145,30 @@ protected:
 		template_proj_data_filename = "safir_20.hs";
 	}
 
-	void actual_do_parsing(std::istream& input) const {
-		if( did_parsing) return;
+	bool actual_do_parsing(std::istream& input) const {
+		if( did_parsing) return true;
 		// Ugly const_casts here, but I don't see an other nice way to use the parser
-		const_cast<SAFIRCListmodeInputFileFormat*>(this)->parse(input);
-		info(const_cast<SAFIRCListmodeInputFileFormat*>(this)->parameter_info());
+		if( const_cast<SAFIRCListmodeInputFileFormat*>(this)->parse(input) ) {
+			info(const_cast<SAFIRCListmodeInputFileFormat*>(this)->parameter_info());
+			return true;
+		}
+		else return false;
 	}
 
-	void actual_do_parsing( const std::string& filename) const {
-		if( did_parsing) return;
+	bool actual_do_parsing( const std::string& filename) const {
+		if( did_parsing) return true;
 		// Ugly const_casts here, but I don't see an other nice way to use the parser
-		const_cast<SAFIRCListmodeInputFileFormat*>(this)->parse(filename.c_str());
-		did_parsing = true;
-		info(const_cast<SAFIRCListmodeInputFileFormat*>(this)->parameter_info());
+		if( const_cast<SAFIRCListmodeInputFileFormat*>(this)->parse(filename.c_str()) ) {
+			info(const_cast<SAFIRCListmodeInputFileFormat*>(this)->parameter_info());
+			return true;
+		}
+		else return false;
 	}
 
 	bool post_processing() {
-		if( !file_exists(listmode_filename) ) error("Could not access " + listmode_filename);
-		else if( !file_exists(crystal_map_filename) ) error("Could not access " + crystal_map_filename);
-		else if( !file_exists(template_proj_data_filename) ) error("Could not access " + template_proj_data_filename);
+		if( !file_exists(listmode_filename) ) return true;
+		else if( !file_exists(crystal_map_filename) ) return true; 
+		else if( !file_exists(template_proj_data_filename) ) return true;
 		else {
 			did_parsing = true;
 			return false;

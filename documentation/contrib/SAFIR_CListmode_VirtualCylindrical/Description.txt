@@ -8,7 +8,7 @@ The contribution enables STIR to
    can be used with all standard reconstruction algorithms available in STIR.
 
 New files
-src/include/stir/IO/InputFileFormatSAFIR.h
+src/include/stir/IO/SAFIRCListmodeInputFileFormat.h
 src/include/stir/listmode/CListModeDataSAFIR.h
 src/include/stir/listmode/CListRecordSAFIR.h
 src/include/stir/listmode/CListRecordSAFIR.inl
