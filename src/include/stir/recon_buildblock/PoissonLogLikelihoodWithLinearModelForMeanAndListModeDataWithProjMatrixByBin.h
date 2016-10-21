@@ -113,7 +113,7 @@ protected:
  
   std::string additive_projection_data_filename ; 
   //! ProjDataInfo
-  shared_ptr<ProjDataInfo> proj_data_info_cyl_uncompressed_ptr; 
+  shared_ptr<ProjDataInfo> proj_data_info_cyl_sptr;
 
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */

@@ -59,6 +59,14 @@ get_scanner_ptr() const
   return this->scanner_sptr.get();
 }
 
+shared_ptr<ProjDataInfo>
+CListModeData::
+get_proj_data_info_sptr() const
+{
+    assert(!is_null_ptr(proj_data_info_sptr));
+    return proj_data_info_sptr;
+}
+
 #if 0
 std::time_t 
 CListModeData::

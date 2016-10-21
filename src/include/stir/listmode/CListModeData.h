@@ -30,7 +30,7 @@
 #include "stir/shared_ptr.h"
 #include <string>
 #include <ctime>
-
+#include "stir/ProjDataInfo.h"
 #include "stir/IO/ExamData.h"
 #include "stir/RegisteredParsingObject.h"
 
@@ -226,11 +226,15 @@ public:
   //! Returns the total number of events in the listmode file
   virtual inline unsigned long int get_total_number_of_events() const = 0;
 
+  shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
+
 protected:
-  //! Has to be set by the derived class
+  //! Has to be initialised by the derived class
   shared_ptr<Scanner> scanner_sptr;
   //! Has to be set by the derived class
 //  shared_ptr<ExamInfo> exam_info_sptr;
+
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
 };
 
 END_NAMESPACE_STIR

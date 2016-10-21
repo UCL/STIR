@@ -9,6 +9,12 @@ Distance between rings (cm)              := 0.40625
 Default bin size (cm)                    := 0.208626
 Maximum number of non-arc-corrected bins := 344
 
+; Acquisition specific params
+%axial_compression := 
+%maximum_ring_difference :=
+%number_of_projections :=
+%number_of_views :=
+%number_of_segments :=
 
 
 GATE scanner type := GATE_Cylindrical_PET

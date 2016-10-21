@@ -43,6 +43,13 @@ CListModeDataROOT(const std::string& listmode_filename)
     this->parser.add_start_key("ROOT header");
     this->parser.add_stop_key("End ROOT header");
 
+    // Set some defaults, in order to know if this parameters have been initialised
+    axial_compression = -1;
+    maximum_ring_difference = -1;
+    number_of_projections = -1;
+    number_of_views = -1;
+    number_of_segments = -1;
+
     // Scanner related & Physical dimentions.
     this->parser.add_key("originating system", &this->originating_system);
     this->parser.add_key("Number of rings", &this->num_rings);
@@ -53,6 +60,14 @@ CListModeDataROOT(const std::string& listmode_filename)
     this->parser.add_key("Default bin size (cm)", &this->bin_size);
     this->parser.add_key("Maximum number of non-arc-corrected bins", &this->max_num_non_arccorrected_bins);
     // end Scanner and physical dimentions.
+
+    // Acquisition related
+    this->parser.add_key("%axial_compression", &axial_compression);
+    this->parser.add_key("%maximum_ring_difference", &maximum_ring_difference);
+    this->parser.add_key("%number_of_projections", &number_of_projections);
+    this->parser.add_key("%number_of_views", &number_of_views);
+    this->parser.add_key("%number_of_segments", &number_of_segments);
+    //
 
     // ROOT related
     this->parser.add_parsing_key("GATE scanner type", &this->current_lm_data_ptr);
@@ -116,6 +131,13 @@ CListModeDataROOT(const std::string& listmode_filename)
     if (this->open_lm_file() == Succeeded::no)
         error("CListModeDataROOT: error opening the first listmode file for filename %s\n",
               listmode_filename.c_str());
+
+    this->proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(this->scanner_sptr,
+                                  std::max(axial_compression, 1),
+                                  std::max(maximum_ring_difference, num_rings),
+                                  std::max(number_of_views, num_detectors_per_ring/2),
+                                  std::max(number_of_projections, max_num_non_arccorrected_bins),
+                                  /* arc_correction*/false));
 }
 
 std::string

@@ -88,11 +88,18 @@ private:
     float average_depth_of_interaction;
     float ring_spacing;
     float bin_size;
+    // These tell us something about how the listmode is stored.
+    int axial_compression;
+    int maximum_ring_difference;
+    int number_of_projections;
+    int number_of_views;
+    int number_of_segments;
 
     KeyParser parser;
     //! Name of input chain which is going to be used.
 
     Succeeded open_lm_file();
+
 };
 
 

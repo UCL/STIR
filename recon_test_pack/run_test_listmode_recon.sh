@@ -73,7 +73,7 @@ fi
 # first delete any files remaining from a previous run
 rm -f my_*v my_*s my_*S
 
-echo "=== calculate backround data"
+echo "=== calculate background data"
 echo "===== randoms"
 
 echo "====== create delayed fansums"
