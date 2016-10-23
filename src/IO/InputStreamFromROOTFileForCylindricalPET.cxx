@@ -67,7 +67,7 @@ get_next_record(CListRecordROOT& record)
             return Succeeded::no;
 
 
-        if (stream_ptr->GetEntry(static_cast<long long int>(current_position)) == 0 )
+        if (stream_ptr->GetEntry(static_cast<Long64_t>(current_position)) == 0 )
             return Succeeded::no;
 
         current_position ++ ;

@@ -81,7 +81,7 @@ export OUT_PROJDATA_FILE=my_proj_from_lm_all_events
 export EXCLUDE_SCATTERED=0
 export EXCLUDE_RANDOM=0
 ${INSTALL_DIR}lm_to_projdata ./lm_to_projdata.par 2>"./my_root_log_all.log"
-all_events=$(awk -F ":" '/Number of prompts/ {print $2}' my_root_log_all.log)
+all_events=`awk -F ":" '/Number of prompts/ {print $2}' my_root_log_all.log`
 echo "Number of prompts stored in this time period:" ${all_events}
 
 echo ""
@@ -92,16 +92,16 @@ export OUT_PROJDATA_FILE=my_proj_from_lm_true_events
 export EXCLUDE_SCATTERED=1
 export EXCLUDE_RANDOM=1
 ${INSTALL_DIR}lm_to_projdata ./lm_to_projdata.par 2>"./my_root_log_trues.log"
-true_events=$(awk -F ":" '/Number of prompts/ {print $2}' my_root_log_trues.log)
+true_events=`awk -F ":" '/Number of prompts/ {print $2}' my_root_log_trues.log`
 echo "Number of prompts stored in this time period:" ${true_events}
 
 echo ""
 echo "Counting all values from ROOT file ..."
-all_root_num=$(root -l ${INPUT_ROOT_FILE} << EOF | grep "Number of prompts stored in this time period" | grep -o -E '[0-9]+'
+all_root_num=`root -l ${INPUT_ROOT_FILE} << EOF | grep "Number of prompts stored in this time period" | grep -o -E '[0-9]+'
 Coincidences->Draw(">>eventlist","","goff");
 Int_t N = eventlist->GetN();
 cout<<endl<<"Number of prompts stored in this time period:"<< N<<endl;
-EOF)
+EOF`
 echo "All events in ROOT file: "${all_root_num}
 if [ "$all_events" -ne "$all_root_num" ]; then
 echo "The total number of events used by STIR did not match the events in the root file. Error. "
@@ -110,11 +110,11 @@ fi
 
 echo ""
 echo "Counting true values from ROOT file ..."
-true_root_num=$(root -l ${INPUT_ROOT_FILE} << EOF | grep "Number" | grep -o -E '[0-9]+'
+true_root_num=`root -l ${INPUT_ROOT_FILE} << EOF | grep "Number" | grep -o -E '[0-9]+'
 Coincidences->Draw(">>eventlist","eventID1 == eventID2 && comptonPhantom1 == 0 && comptonPhantom2 == 0","goff");
 Int_t N = eventlist->GetN();
 cout<<endl<<"Number of trues stored in this time period:"<< N<<endl;
-EOF)
+EOF`
 
 echo "True events in ROOT file :" ${true_root_num}
 if [ "$true_events" -ne "$true_root_num" ]; then
