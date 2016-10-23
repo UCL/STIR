@@ -163,7 +163,6 @@ open_lm_file()
          this->current_lm_data_ptr->get_ROOT_filename());
 
     // Read the 4 bytes to check whether this is a ROOT file
-    std::stringstream ss;
     std::string mem(4,' ');
     std::string sig= "root";
 
