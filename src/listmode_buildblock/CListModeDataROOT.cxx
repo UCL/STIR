@@ -134,7 +134,7 @@ CListModeDataROOT(const std::string& listmode_filename)
 
     this->proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(this->scanner_sptr,
                                   std::max(axial_compression, 1),
-                                  std::max(maximum_ring_difference, num_rings),
+                                  std::max(maximum_ring_difference, num_rings-1),
                                   std::max(number_of_views, num_detectors_per_ring/2),
                                   std::max(number_of_projections, max_num_non_arccorrected_bins),
                                   /* arc_correction*/false));
@@ -162,40 +162,27 @@ open_lm_file()
     info(boost::format("CListModeDataROOT: opening ROOT file %s") %
          this->current_lm_data_ptr->get_ROOT_filename());
 
-    // Read the 4 bytes to check whether this is a ROOT file, indeed.
-    // I could rewrite it in a more sofisticated way ...
+    // Read the 4 bytes to check whether this is a ROOT file
     std::stringstream ss;
-    char mem[4]="\0";
+    std::string mem(4,' ');
     std::string sig= "root";
 
     std::ifstream t;
-    t.open(this->current_lm_data_ptr->get_ROOT_filename().c_str(),  std::ios::in |std::ios::binary);
+    t.open(this->current_lm_data_ptr->get_ROOT_filename().c_str(),  std::ios::in);
 
     if (t.is_open())
     {
 
         t.seekg(0, std::ios::beg);
-        t.read(mem,4);
-        ss << mem;
+        t.read(&mem[0],4);
 
-        if ( !sig.compare(ss.str()) )
+        if (sig.compare(mem) )
         {
             warning("CListModeDataROOT: File '%s is not a ROOT file!!'",
                     this->current_lm_data_ptr->get_ROOT_filename().c_str());
             return Succeeded::no;
         }
 
-//        current_lm_data_ptr.reset(
-//                    new InputStreamFromROOTFile(this->input_data_filename,
-//                                                this->name_of_input_tchain,
-//                                                this->number_of_crystals_x, this->number_of_crystals_y, this->number_of_crystals_z,
-//                                                this->number_of_submodules_x, this->number_of_submodules_y, this->number_of_submodules_z,
-//                                                this->number_of_modules_x, this->number_of_modules_y, this->number_of_modules_z,
-//                                                this->number_of_rsectors,
-//                                                this->exclude_scattered, this->exclude_randoms,
-//                                                static_cast<float>(this->low_energy_window*0.001f),
-//                                                static_cast<float>(this->up_energy_window*0.001f),
-//                                                this->offset_dets));
         t.close();
         return Succeeded::yes;
 
