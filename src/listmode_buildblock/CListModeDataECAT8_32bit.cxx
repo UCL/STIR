@@ -164,5 +164,13 @@ set_get_position(const CListModeDataECAT8_32bit::SavedPosition& pos)
     current_lm_data_ptr->set_get_position(pos);
 }
 
+shared_ptr<ProjDataInfo>
+CListModeDataECAT8_32bit::
+get_proj_data_info_sptr() const
+{
+    assert(!is_null_ptr(proj_data_info_sptr));
+    return proj_data_info_sptr;
+}
+
 } // namespace ecat
 END_NAMESPACE_STIR

@@ -218,6 +218,7 @@ public:
   //! Get scanner pointer  
   /*! Returns a pointer to a scanner object that is appropriate for the 
       list mode data that is being read.
+      \warning This member is obsolete and might be removed soon.
   */
   const Scanner* get_scanner_ptr() const;
 
@@ -226,7 +227,8 @@ public:
   //! Returns the total number of events in the listmode file
   virtual inline unsigned long int get_total_number_of_events() const = 0;
 
-  shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
+  virtual
+  shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const = 0;
 
 protected:
   //! Has to be initialised by the derived class

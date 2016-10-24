@@ -83,6 +83,9 @@ public:
         error("Not implemented yet. Abort.");
     };
 
+    virtual
+    shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const = 0;
+
 private:
   typedef CListRecordECAT8_32bit CListRecordT;
   std::string listmode_filename;

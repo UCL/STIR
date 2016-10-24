@@ -70,6 +70,9 @@ public:
     unsigned long int
     get_total_number_of_events() const ;
 
+    virtual
+    shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
+
 private:
 //    typedef CListRecordROOT CListRecordT;
 
@@ -99,7 +102,6 @@ private:
     //! Name of input chain which is going to be used.
 
     Succeeded open_lm_file();
-
 };
 
 

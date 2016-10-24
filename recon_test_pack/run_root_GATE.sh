@@ -97,11 +97,13 @@ echo "Number of prompts stored in this time period:" ${true_events}
 
 echo ""
 echo "Counting all values from ROOT file ..."
-all_root_num=`root -l ${INPUT_ROOT_FILE} << EOF | grep "Number of prompts stored in this time period" | grep -o -E '[0-9]+'
+cat>my_root.input<<EOF
 Coincidences->Draw(">>eventlist","","goff");
 Int_t N = eventlist->GetN();
-cout<<endl<<"Number of prompts stored in this time period:"<< N<<endl;
-EOF`
+cout<< N<<endl;
+EOF
+all_root_num=`root -l ${INPUT_ROOT_FILE} < my_root.input | sed 's|[^0-9]||g'`
+
 echo "All events in ROOT file: "${all_root_num}
 if [ "$all_events" -ne "$all_root_num" ]; then
 echo "The total number of events used by STIR did not match the events in the root file. Error. "
@@ -110,11 +112,12 @@ fi
 
 echo ""
 echo "Counting true values from ROOT file ..."
-true_root_num=`root -l ${INPUT_ROOT_FILE} << EOF | grep "Number" | grep -o -E '[0-9]+'
+cat>my_root.input<<EOF
 Coincidences->Draw(">>eventlist","eventID1 == eventID2 && comptonPhantom1 == 0 && comptonPhantom2 == 0","goff");
 Int_t N = eventlist->GetN();
-cout<<endl<<"Number of trues stored in this time period:"<< N<<endl;
-EOF`
+cout<< N<<endl;
+EOF
+true_root_num=`root -l ${INPUT_ROOT_FILE} < my_root.input | sed 's|[^0-9]||g'`
 
 echo "True events in ROOT file :" ${true_root_num}
 if [ "$true_events" -ne "$true_root_num" ]; then

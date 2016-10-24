@@ -238,5 +238,13 @@ set_get_position(const CListModeDataROOT::SavedPosition& pos)
     return current_lm_data_ptr->set_get_position(pos);
 }
 
+shared_ptr<ProjDataInfo>
+CListModeDataROOT::
+get_proj_data_info_sptr() const
+{
+    assert(!is_null_ptr(proj_data_info_sptr));
+    return proj_data_info_sptr;
+}
+
 
 END_NAMESPACE_STIR
