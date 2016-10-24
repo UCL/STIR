@@ -84,7 +84,7 @@ public:
     };
 
     virtual
-    shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const = 0;
+    shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
 
 private:
   typedef CListRecordECAT8_32bit CListRecordT;
