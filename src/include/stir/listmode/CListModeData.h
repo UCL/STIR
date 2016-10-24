@@ -224,8 +224,15 @@ public:
 
   //! Return if the file stores delayed events as well (as opposed to prompts)
   virtual bool has_delayeds() const = 0;
-  //! Returns the total number of events in the listmode file
-  virtual inline unsigned long int get_total_number_of_events() const = 0;
+  //! Returns the total number of events in the listmode file.
+  //! \warning This function currently works only with ROOT input files. By default
+  //! it will throw an error.
+  virtual inline unsigned long int get_total_number_of_events() const
+  {
+      error("The function get_total_number_of_events() is currently supported only"
+              "for ROOT input files.");
+      return 0;
+  }
 
   virtual
   shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const = 0;
