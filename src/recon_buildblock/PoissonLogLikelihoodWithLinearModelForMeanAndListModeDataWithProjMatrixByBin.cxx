@@ -289,7 +289,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                                                      max_ring_difference_num_to_process);
    }
 
-  if(!is_null_ptr(this->additive_proj_data_sptr->get_proj_data_info_sptr()))
+  if(!is_null_ptr(this->additive_proj_data_sptr))
       if (*(this->additive_proj_data_sptr->get_proj_data_info_sptr()) != *proj_data_info_cyl_sptr)
       {
           const ProjDataInfo& add_proj = *(this->additive_proj_data_sptr->get_proj_data_info_sptr());
