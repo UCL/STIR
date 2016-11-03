@@ -742,6 +742,29 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
   const int min_segment_num = -this->max_segment_num_to_process;
   const int max_segment_num = this->max_segment_num_to_process;
 
+#ifdef STIR_MPI
+     TargetT* dummy_image_pointer = construct_target_ptr();
+     distributable_sensitivity_computation(this->projector_pair_ptr->get_forward_projector_sptr(), 
+                                 this->projector_pair_ptr->get_back_projector_sptr(), 
+                                 this->symmetries_sptr,
+                                 sensitivity,
+                                 *dummy_image_pointer, 
+                                 //*(VoxelsOnCartesianGrid<float>*) dummy_image_pointer, 
+                                 this->proj_data_sptr, 
+                                 subset_num, 
+                                 this->num_subsets, 
+                                 min_segment_num,
+                                 max_segment_num, 
+                                 this->zero_seg0_end_planes!=0, 
+                                 NULL, 
+                                 this->additive_proj_data_sptr, 
+                                 this->normalisation_sptr, 
+                                 this->get_time_frame_definitions().get_start_time(this->get_time_frame_num()),
+                                 this->get_time_frame_definitions().get_end_time(this->get_time_frame_num()),
+                                 this->caching_info_ptr
+                                 );
+#else
+
   // warning: has to be same as subset scheme used as in distributable_computation
   for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
   {
@@ -760,6 +783,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
     }
       //    cerr<<timer.value()<<endl;
   }
+#endif
 }
 
 
@@ -883,12 +907,19 @@ RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 
 //! Call-back function for accumulate_loglikelihood
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
+
+//! Call-back function for sensitivity_computation
+RPC_process_related_viewgrams_type RPC_process_related_viewgrams_sensitivity_computation;
+
 #else 
 //! Call-back function for compute_gradient
 static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 
 //! Call-back function for accumulate_loglikelihood
 static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
+
+//! Call-back function for sensitivity_computation
+static RPC_process_related_viewgrams_type RPC_process_related_viewgrams_sensitivity_computation;
 #endif
 
 void distributable_compute_gradient(const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
@@ -958,6 +989,45 @@ void distributable_accumulate_loglikelihood(
                                     caching_info_ptr
                                     );
 }
+
+void distributable_sensitivity_computation(
+                                            const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+                                            const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+                                            const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_sptr,
+                                            DiscretisedDensity<3,float>& sensitivity,
+                                            const DiscretisedDensity<3,float>& input_image,
+                                            const shared_ptr<ProjData>& proj_dat,
+                                            int subset_num, int num_subsets,
+                                            int min_segment, int max_segment,
+                                            bool zero_seg0_end_planes,
+                                            double* log_likelihood_ptr,
+                                            shared_ptr<ProjData> const& additive_binwise_correction,
+                                            shared_ptr<BinNormalisation> const& normalisation_sptr,
+                                            const double start_time_of_frame,
+                                            const double end_time_of_frame,
+                                            DistributedCachingInformation* caching_info_ptr
+                                            )
+
+{
+          distributable_computation(forward_projector_sptr,
+                                    back_projector_sptr,
+                                    symmetries_sptr,
+                                    &sensitivity, &input_image,
+                                    proj_dat, false, //i.e. do not read projection data
+                                    subset_num, num_subsets,
+                                    min_segment, max_segment,
+                                    zero_seg0_end_planes,
+                                    log_likelihood_ptr,
+                                    additive_binwise_correction,
+                                    normalisation_sptr,
+                                    start_time_of_frame,
+                                    end_time_of_frame,
+                                    &RPC_process_related_viewgrams_sensitivity_computation,
+                                    caching_info_ptr
+                                    );
+
+}
+
 
 //////////// RPC functions
 
@@ -1063,6 +1133,28 @@ void RPC_process_related_viewgrams_accumulate_loglikelihood(
                              rim_truncation_sino, log_likelihood_ptr);
 };      
 
+void RPC_process_related_viewgrams_sensitivity_computation(
+                                                            const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
+                                                            const shared_ptr<BackProjectorByBin>& back_projector_sptr,
+                                                            DiscretisedDensity<3,float>* output_image_ptr,
+                                                            const DiscretisedDensity<3,float>* input_image_ptr,
+                                                            RelatedViewgrams<float>* measured_viewgrams_ptr,
+                                                            int& count, int& count2, double* log_likelihood_ptr,
+                                                            const RelatedViewgrams<float>* additive_binwise_correction_ptr,
+                                                            const RelatedViewgrams<float>* mult_viewgrams_ptr)
+{
+
+  assert(output_image_ptr != NULL);
+  assert(measured_viewgrams_ptr != NULL);
+
+  RelatedViewgrams<float> viewgrams = measured_viewgrams_ptr->get_empty_copy();
+  if( mult_viewgrams_ptr )
+    viewgrams = *mult_viewgrams_ptr;
+  else
+    viewgrams.fill(1.F);
+
+  back_projector_sptr->back_project(*output_image_ptr, viewgrams);
+}
 
 #  ifdef _MSC_VER
 // prevent warning message on instantiation of abstract class 
