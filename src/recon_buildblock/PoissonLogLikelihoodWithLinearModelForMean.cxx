@@ -29,12 +29,14 @@
 #include "stir/IO/write_to_file.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/Succeeded.h"
+#include "stir/CPUTimer.h"
 #include <algorithm>
 #include <exception>
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
 #include "stir/info.h"
 #include "boost/format.hpp"
+#include "boost/lexical_cast.hpp"
 
 using std::string;
 
@@ -309,11 +311,15 @@ set_up(shared_ptr<TargetT> const& target_sptr)
 
   if(this->recompute_sensitivity)
     {
-      info("Computing sensitivity");      
+      info("Computing sensitivity");
+      CPUTimer sens_timer;
+      sens_timer.start();
       // preallocate one such that compute_sensitivities knows the size
       this->subsensitivity_sptrs[0].reset(target_sptr->get_empty_copy());
       this->compute_sensitivities();
+      sens_timer.stop();
       info("Done computing sensitivity");
+      info("This took " + boost::lexical_cast<std::string>(sens_timer.value()) + " seconds CPU time.");
 
       // write to file
       try
