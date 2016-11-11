@@ -1431,6 +1431,20 @@ namespace stir {
 
 %shared_ptr(stir::Reconstruction<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >);
+
+#define TargetT stir::DiscretisedDensity<3,float>
+%shared_ptr(stir::RegisteredParsingObject<
+	      stir::OSMAPOSLReconstruction <TargetT > ,
+	      stir::Reconstruction < TargetT >,
+	      stir::IterativeReconstruction < TargetT >
+            >)
+%shared_ptr(stir::RegisteredParsingObject<
+	      stir::OSSPSReconstruction <TargetT > ,
+	      stir::Reconstruction < TargetT >,
+	      stir::IterativeReconstruction < TargetT >
+            >)
+#undef TargetT
+
 %shared_ptr(stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::OSSPSReconstruction<stir::DiscretisedDensity<3,float> >);
 %shared_ptr(stir::AnalyticReconstruction);
@@ -1485,6 +1499,21 @@ namespace stir {
 //%template () stir::Reconstruction<stir::DiscretisedDensity<3,float> >;
 %template (IterativeReconstruction3DFloat) stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
 //%template () stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
+
+
+#define TargetT stir::DiscretisedDensity<3,float>
+%template (RPOSMAPOSLReconstruction3DFloat) stir::RegisteredParsingObject<
+	      stir::OSMAPOSLReconstruction <TargetT > ,
+	      stir::Reconstruction < TargetT >,
+	      stir::IterativeReconstruction < TargetT >
+              >;
+%template (RPOSSPSReconstruction) stir::RegisteredParsingObject<
+	      stir::OSSPSReconstruction <TargetT > ,
+	      stir::Reconstruction < TargetT >,
+	      stir::IterativeReconstruction < TargetT >
+            >;
+#undef TargetT
+
 %template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >;
 %template (OSSPSReconstruction3DFloat) stir::OSSPSReconstruction<stir::DiscretisedDensity<3,float> >;
 
