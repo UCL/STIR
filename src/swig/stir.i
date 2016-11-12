@@ -1419,23 +1419,38 @@ namespace stir {
 
  // reconstruction
 #ifdef STIRSWIG_SHARED_PTR
-%shared_ptr(stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >);
-%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMean<stir::DiscretisedDensity<3,float> >);
 #define TargetT stir::DiscretisedDensity<3,float>
+
+%shared_ptr(stir::GeneralisedObjectiveFunction<TargetT >);
+%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT >);
 %shared_ptr(stir::RegisteredParsingObject<stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >,
 	    stir::GeneralisedObjectiveFunction<TargetT >,
 	    stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT > >);
-#undef TargetT
 
-%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<stir::DiscretisedDensity<3,float> >);
+%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >);
 
-%shared_ptr(stir::Reconstruction<stir::DiscretisedDensity<3,float> >);
-%shared_ptr(stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >);
-%shared_ptr(stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >);
-%shared_ptr(stir::OSSPSReconstruction<stir::DiscretisedDensity<3,float> >);
+%shared_ptr(stir::Reconstruction<TargetT >);
+%shared_ptr(stir::IterativeReconstruction<TargetT >);
+
+%shared_ptr(stir::RegisteredParsingObject<
+	      stir::OSMAPOSLReconstruction <TargetT > ,
+	      stir::Reconstruction < TargetT >,
+	      stir::IterativeReconstruction < TargetT >
+            >)
+%shared_ptr(stir::RegisteredParsingObject<
+	      stir::OSSPSReconstruction <TargetT > ,
+	      stir::Reconstruction < TargetT >,
+	      stir::IterativeReconstruction < TargetT >
+            >)
+
+%shared_ptr(stir::OSMAPOSLReconstruction<TargetT >);
+%shared_ptr(stir::OSSPSReconstruction<TargetT >);
 %shared_ptr(stir::AnalyticReconstruction);
 %shared_ptr(stir::FBP2DReconstruction);
 %shared_ptr(stir::FBP3DRPReconstruction);
+
+#undef TargetT
+
 #endif
 
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
@@ -1454,13 +1469,13 @@ namespace stir {
 %include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 %include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
-
-
-%template (GeneralisedObjectiveFunction3DFloat) stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >;
-//%template () stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >;
-%template (PoissonLogLikelihoodWithLinearModelForMean3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMean<stir::DiscretisedDensity<3,float> >;
-
 #define TargetT stir::DiscretisedDensity<3,float>
+
+
+%template (GeneralisedObjectiveFunction3DFloat) stir::GeneralisedObjectiveFunction<TargetT >;
+//%template () stir::GeneralisedObjectiveFunction<TargetT >;
+%template (PoissonLogLikelihoodWithLinearModelForMean3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT >;
+
 // TODO do we really need this name?
 // Without it we don't see the parsing functions in python...
 // Note: we cannot start it with __ as then we we get a run-time error when we're not using the builtin option
@@ -1468,7 +1483,7 @@ namespace stir {
   stir::GeneralisedObjectiveFunction<TargetT >,
   stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT > >;
 
-%template (PoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<stir::DiscretisedDensity<3,float> >;
+%template (PoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >;
 
 %inline %{
   template <class T>
@@ -1478,16 +1493,29 @@ namespace stir {
 }
 %}
 
-%template(ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData<stir::DiscretisedDensity<3,float> >;
+%template(ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >;
 
 
-%template (Reconstruction3DFloat) stir::Reconstruction<stir::DiscretisedDensity<3,float> >;
-//%template () stir::Reconstruction<stir::DiscretisedDensity<3,float> >;
-%template (IterativeReconstruction3DFloat) stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
-//%template () stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
-%template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >;
-%template (OSSPSReconstruction3DFloat) stir::OSSPSReconstruction<stir::DiscretisedDensity<3,float> >;
+%template (Reconstruction3DFloat) stir::Reconstruction<TargetT >;
+//%template () stir::Reconstruction<TargetT >;
+%template (IterativeReconstruction3DFloat) stir::IterativeReconstruction<TargetT >;
+//%template () stir::IterativeReconstruction<TargetT >;
 
+%template (RPOSMAPOSLReconstruction3DFloat) stir::RegisteredParsingObject<
+	      stir::OSMAPOSLReconstruction <TargetT > ,
+	      stir::Reconstruction < TargetT >,
+	      stir::IterativeReconstruction < TargetT >
+              >;
+%template (RPOSSPSReconstruction) stir::RegisteredParsingObject<
+	      stir::OSSPSReconstruction <TargetT > ,
+	      stir::Reconstruction < TargetT >,
+	      stir::IterativeReconstruction < TargetT >
+            >;
+
+%template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<TargetT >;
+%template (OSSPSReconstruction3DFloat) stir::OSSPSReconstruction<TargetT >;
+
+#undef TargetT
 
 /// projectors
 %shared_ptr(stir::ForwardProjectorByBin);

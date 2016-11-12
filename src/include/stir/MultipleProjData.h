@@ -192,7 +192,7 @@ public:
   std::size_t size_all() const
   {
       std::size_t size = 0;
-      for (int i_gate = 0; i_gate < this->get_num_gates(); i_gate++)
+      for (std::size_t i_gate = 0; i_gate < this->get_num_gates(); i_gate++)
           size += _proj_datas.at(i_gate)->size_all();
 
       return size;
