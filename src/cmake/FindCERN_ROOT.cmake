@@ -20,24 +20,24 @@ if (CERN_ROOT_LIBRARIES_DIRS AND CERN_ROOT_INCLUDE_DIRS)
 
     set(CERN_ROOT_LIBRARIES "-L${CERN_ROOT_LIBRARIES_DIRS} -lCore -lCint -lRIO -lNet -lTree")
 else()
-    find_program(HAS_GLOBAL_ROOT "root-config" )
+    find_program(CERN_ROOT_CONFIG "root-config" )
 
-    if (HAS_GLOBAL_ROOT)
+    if (CERN_ROOT_CONFIG)
 
         set (root_incl_arg "--incdir")
         set (root_lib_arg "--libs")
 
-        execute_process(COMMAND ${HAS_GLOBAL_ROOT} ${root_incl_arg} OUTPUT_VARIABLE
+        execute_process(COMMAND ${CERN_ROOT_CONFIG} ${root_incl_arg} OUTPUT_VARIABLE
             CERN_ROOT_INCLUDE_DIRS)
 
-        execute_process(COMMAND ${HAS_GLOBAL_ROOT} ${root_lib_arg} OUTPUT_VARIABLE
+        execute_process(COMMAND ${CERN_ROOT_CONFIG} ${root_lib_arg} OUTPUT_VARIABLE
             TCERN_ROOT_LIBRARIES)
 
         string (STRIP "${TCERN_ROOT_LIBRARIES}" CERN_ROOT_LIBRARIES)
 
         #string (REPLACE " " ";" CERN_ROOT_LIBRARIES ${LCERN_ROOT_LIBRARIES})
 
-    endif(HAS_GLOBAL_ROOT)
+    endif(CERN_ROOT_CONFIG)
 endif()
 
 message(STATUS "AVAILABLE ROOT LIBRARIES:" ${CERN_ROOT_LIBRARIES})

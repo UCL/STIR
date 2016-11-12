@@ -1,0 +1,87 @@
+#  *********************************************************************
+#  * 																   *
+#  * Copyright (C) 2016, UCL										   *
+#  * This file is part of STIR.										   *
+#  * DISCLAIMER                                                        *
+#  *                                                                   *
+#  * This file is free software; you can redistribute it and/or modify *
+#  * it under the terms of the GNU Lesser General Public License as    *
+#  * published by the Free Software Foundation; either version  2.1 of *
+#  * the License, or (at your option) any later version.			   *
+#  *    															   *
+#  *  This file is distributed in the hope that it will be useful,     *
+#  *  but WITHOUT ANY WARRANTY; without even the implied warranty of   *
+#  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the    *
+#  *  GNU Lesser General Public License for more details.              *
+#  *********************************************************************
+#
+#  This macro has been created by
+#  Nikos Efthimiou
+#
+#  This script produces an output for a simple 4-ring PET Scanner. 
+#  Output from this macro is used in the recon_test_pack in STIR. 
+#  01 October 2016
+#
+
+# P E T   S Y S T E M
+/gate/world/daughters/name cylindricalPET
+/gate/world/daughters/insert cylinder
+/gate/cylindricalPET/placement/setTranslation 0.0 0.0 0.0 cm
+/gate/cylindricalPET/geometry/setRmax 35.95 cm
+/gate/cylindricalPET/geometry/setRmin 32.65 cm
+/gate/cylindricalPET/geometry/setHeight 1.6 cm
+/gate/cylindricalPET/setMaterial Air
+/gate/cylindricalPET/vis/forceWireframe
+/gate/cylindricalPET/vis/setColor white
+
+# R S E C T O R
+/gate/cylindricalPET/daughters/name rsector
+/gate/cylindricalPET/daughters/insert box
+/gate/rsector/placement/setTranslation 33.95 0.0 0.0 cm
+/gate/rsector/geometry/setXLength 2.1 cm
+/gate/rsector/geometry/setYLength 0.4 cm
+/gate/rsector/geometry/setZLength 2.1 cm
+/gate/rsector/setMaterial Air
+/gate/rsector/vis/setColor red
+/gate/rsector/vis/forceWireframe
+
+# C R Y S T A L
+/gate/rsector/daughters/name crystal
+/gate/rsector/daughters/insert box
+/gate/crystal/placement/setTranslation 0.0 0.0 0.0 cm
+/gate/crystal/geometry/setXLength 2.0 cm
+/gate/crystal/geometry/setYLength 0.4 cm
+/gate/crystal/geometry/setZLength 0.4 cm
+/gate/crystal/setMaterial Air
+/gate/crystal/vis/forceWireframe
+#/gate/crystal/vis/setColor blue
+
+# C R Y S T A L (LSO)   L A Y E R
+/gate/crystal/daughters/name LSO
+/gate/crystal/daughters/insert box
+/gate/LSO/placement/setTranslation 0.0 0.0 0.0 cm
+/gate/LSO/geometry/setXLength 2.0 cm
+/gate/LSO/geometry/setYLength 0.4 cm
+/gate/LSO/geometry/setZLength 0.4 cm
+/gate/LSO/setMaterial LSO
+/gate/LSO/vis/setColor blue
+/gate/LSO/vis/forceWireframe
+
+# R E P E A T   C R Y S T A L 
+/gate/crystal/repeaters/insert cubicArray
+/gate/crystal/cubicArray/setRepeatNumberX 1
+/gate/crystal/cubicArray/setRepeatNumberY 1
+/gate/crystal/cubicArray/setRepeatNumberZ 4
+/gate/crystal/cubicArray/setRepeatVector 0.0 0.416 0.416 cm
+
+# R E P E A T   R S E C T O R
+/gate/rsector/repeaters/insert ring
+/gate/rsector/ring/setRepeatNumber 504
+
+/gate/LSO/attachPhantomSD
+/gate/LSO/attachCrystalSD
+
+#	A T T A C H    S Y S T E M
+/gate/systems/cylindricalPET/rsector/attach rsector
+/gate/systems/cylindricalPET/crystal/attach crystal
+/gate/systems/cylindricalPET/layer0/attach LSO

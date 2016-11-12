@@ -98,7 +98,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
       (norm_proj.get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
       (norm_proj.get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num()) &&
       norm_proj.get_min_segment_num() <= proj.get_min_segment_num() &&
-      norm_proj.get_max_segment_num() <= proj.get_max_segment_num();
+      norm_proj.get_max_segment_num() >= proj.get_max_segment_num();
     
     for (int segment_num=proj.get_min_segment_num();
 	 ok && segment_num<=proj.get_max_segment_num();
