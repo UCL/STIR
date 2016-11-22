@@ -1,6 +1,6 @@
 //
 // $Id: SRT2DReconstruction.h $
-//
+// 
 #ifndef __stir_analytic_SRT2D_SRT2DReconstruction_H__
 #define __stir_analytic_SRT2D_SRT2DReconstruction_H__
 
@@ -38,10 +38,9 @@ public:
   
  protected: 
 
-string attenuation_filename; 
+
 float thres_restr_bound;
 vector<double> thres_restr_bound_vector; 
-shared_ptr<ProjData> atten_data_ptr;
 
  private:
   Succeeded actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & target_image_ptr);
@@ -49,14 +48,10 @@ shared_ptr<ProjData> atten_data_ptr;
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
-
+float hilbert_der(float x, float f[], float ddf[], float p[], int sp, float lg[], float termC);
+float integ(float dist, int max, float ff[]);
  inline void spline(float x[],float y[],int n, float y2[]);
-	float integ(float dist, int max, float ff[]);
-float splint(float xa[], float ya[], float y2a[], int n, float x);
-float hilbert_node(float x, float f[], float ddf[], float p[], int sp, float fn); 
-float hilbert_derivative(float x, float f[], float ddf[], float p[], int sp);
-void hilbert_der_double(float x, float f[], float ddf[], float f1[], float ddf1[], float p[], int sp, float *dhp, float *dh1p, float lg[]);
-float hilbert(float x, float f[], float ddf[], float p[], int sp, float lg[]);
+
 
 };
 
