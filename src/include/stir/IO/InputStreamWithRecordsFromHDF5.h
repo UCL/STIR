@@ -38,7 +38,7 @@
 
 START_NAMESPACE_STIR
 
-//! A helper class to read data from a (presumably binary) stream 
+//! A helper class to read data from a hdf5 file
 /*! \ingroup IO
     This class is really a helper class for reading different records from a stream.
     It is useful when all types of records have some kind of signature to allow

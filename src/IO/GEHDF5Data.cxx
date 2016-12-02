@@ -21,8 +21,9 @@ GEHDF5Data::open(const std::string& filename)
 
  warning("CListModeDataGESigna: "
 	  "Assuming this is GESigna, but couldn't find scan start time etc");
-  this->scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa));
-  this->exam_info_sptr.reset(new ExamInfo);
+  this->scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa));   // for now we are assuming that the scanner is a PET/MR Signa
+// TODO: read scanner type from the dataset: "/HeaderData/ExamData/scannerDesc"
+  this->exam_info_sptr.reset(new ExamInfo); 
 }
 
 END_NAMESPACE_STIR

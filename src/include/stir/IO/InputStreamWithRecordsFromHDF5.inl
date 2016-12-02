@@ -85,8 +85,6 @@ get_next_record(RecordT& record) const
   dataset_sptr->read( data_ptr, H5::PredType::STD_U8LE, memspace, dataspace );
   current_offset += count[0];
 
-// I deleted the following two lines, the hdf5 dataset does not have the gcount field so it didn't work. I don't know what these
-
 //  if (dataset_sptr->gcount()<static_cast<std::streamsize>(this->size_of_record_signature))
 //    return Succeeded::no; 
   const std::size_t size_of_record = 

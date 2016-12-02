@@ -280,10 +280,7 @@ dynamic_cast<CListRecordGESigna const *>(&e2) != 0 &&
   virtual std::size_t size_of_record_at_ptr(const char * const data_ptr, const std::size_t /*size*/, 
                                             const bool do_byte_swap) const
   { 
-    // check first 2 bits
-    // TODO: byte-swap? or could be data_ptr[1]
-//    std::cerr << " Event-size is " << std::size_t(data_ptr[0]&0x80) << std::endl;
-    
+    // TODO: get size of record from the file, whereas here I have hard-coded as being 6bytes (I know it's the case for the Orsay data) OtB 15/09
 
     return std::size_t(6); // std::size_t(data_ptr[0]&0x80);
   }
