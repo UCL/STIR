@@ -356,11 +356,12 @@ back_project(DiscretisedDensity<3,float>& density,
     if (data == 0)
       return;
     
+    BasicCoordinate<3,int> coords;
     const_iterator element_ptr = 
       begin();
     while (element_ptr != end())
     {
-      const BasicCoordinate<3,int> coords = element_ptr->get_coords();
+      coords = element_ptr->get_coords();
       if (coords[1] >= density.get_min_index() && coords[1] <= density.get_max_index())
         density[coords[1]][coords[2]][coords[3]] += element_ptr->get_value() * data;		
       element_ptr++;            
@@ -376,11 +377,12 @@ forward_project(Bin& single,
 {
   {  
     
+    BasicCoordinate<3,int> coords;
     const_iterator element_ptr = begin();
     
     while (element_ptr != end())
     {
-      const BasicCoordinate<3,int> coords = element_ptr->get_coords();
+      coords = element_ptr->get_coords();
       
       if (coords[1] >= density.get_min_index() && coords[1] <= density.get_max_index())
         single += density[coords[1]][coords[2]][coords[3]] * element_ptr->get_value();
