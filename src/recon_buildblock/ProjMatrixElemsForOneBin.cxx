@@ -46,7 +46,6 @@
 
 #ifndef STIR_NO_NAMESPACES
 using std::copy;
-using std::auto_ptr;
 #endif
 
 START_NAMESPACE_STIR
@@ -410,7 +409,7 @@ back_project(DiscretisedDensity<3,float>& density,
     // KT 21/02/2002 added check on 0
     if (symmetric_bin.get_bin_value() == 0)
       return;
-    auto_ptr<SymmetryOperation> symm_ptr = 
+    std::unique_ptr<SymmetryOperation> symm_ptr = 
       symmetries->find_symmetry_operation_from_basic_bin(symmetric_bin);
     symm_ptr->transform_proj_matrix_elems_for_one_bin(row_copy);
     row_copy.back_project(density,symmetric_bin);
@@ -433,7 +432,7 @@ forward_project(RelatedBins& r_bins,
   {    
     row_copy = *this;
     
-    auto_ptr<SymmetryOperation> symm_op_ptr = 
+    std::unique_ptr<SymmetryOperation> symm_op_ptr = 
       symmetries->find_symmetry_operation_from_basic_bin(*r_bins_iterator);
     symm_op_ptr->transform_proj_matrix_elems_for_one_bin(row_copy);
     row_copy.forward_project(*r_bins_iterator,density);

@@ -12,10 +12,11 @@ os:
   - osx
 
 # Enviroment variables:
+# To avoid too many builds, we mix some options (although independent tests would have been better)
 global:
   - BUILD_FLAGS="-DBUILD_SWIG_PYTHON=1 -DSTIR_MPI=0 -DBUILD_SWIG_MATLAB=0 -DSTIR_OPENMP=0 -DCMAKE_BUILD_TYPE=Release"
 env:
-  - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0"
+  - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -std=c++11"
   - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1"
 
 # Ubuntu 14.04 LTS (trusty)

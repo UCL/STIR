@@ -29,6 +29,7 @@
 #include "stir/IO/InputFileFormat.h"
 #include "stir/utilities.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/error.h"
 #include <fstream>
 #include <string>
 
@@ -69,17 +70,16 @@ public InputFileFormat<DiscretisedDensity<3,float> >
     return true;
   }
 
-  virtual std::auto_ptr<data_type>
+  virtual std::unique_ptr<data_type>
     read_from_file(std::istream& input) const
   {
     //TODO
     error("read_from_file for ECAT7 with istream not implemented %s:%d. Sorry",
 	  __FILE__, __LINE__);
     return
-      std::auto_ptr<data_type>
-      (0);
+      std::unique_ptr<data_type>();
   }
-  virtual std::auto_ptr<data_type>
+  virtual std::unique_ptr<data_type>
     read_from_file(const std::string& filename) const
   {
 
@@ -87,15 +87,15 @@ public InputFileFormat<DiscretisedDensity<3,float> >
       {
 	warning("\nReading frame 1, gate 1, data 0, bed 0 from file %s\n",
 		filename.c_str());
-	return std::auto_ptr<data_type>
+	return std::unique_ptr<data_type>
 	  (
 	   ECAT7_to_VoxelsOnCartesianGrid(filename,
 					  /*frame_num, gate_num, data_num, bed_num*/1,1,0,0));
       }
     else
       {
-	warning("ECAT7 file %s is not an image file", filename.c_str());
-	return std::auto_ptr<data_type>(0);
+	error("ECAT7 file %s is not an image file", filename.c_str());
+	return std::unique_ptr<data_type>();
       }
   }
 };

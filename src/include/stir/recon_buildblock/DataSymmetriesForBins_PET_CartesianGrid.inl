@@ -364,11 +364,11 @@ find_basic_bin(Bin& b) const
 
 
 // TODO, optimise
-std::auto_ptr<SymmetryOperation>
+std::unique_ptr<SymmetryOperation>
 DataSymmetriesForBins_PET_CartesianGrid::
   find_symmetry_operation_from_basic_bin(Bin& b) const
 {
-  std::auto_ptr<SymmetryOperation> 
+  std::unique_ptr<SymmetryOperation> 
     sym_op(
       (b.tangential_pos_num()==0) ?
         find_sym_op_bin0(b.segment_num(), b.view_num(), b.axial_pos_num()) :

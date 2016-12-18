@@ -27,7 +27,7 @@
 */
 #include "stir/IO/FileSignature.h"
 #include "stir/utilities.h"
-#include <memory> // for auto_ptr
+#include <memory> // for unique_ptr
 #include <fstream>
 #include <string>
 
@@ -65,12 +65,12 @@ class InputFileFormat
     return this->actual_can_read(signature, input);
   }
   
-  virtual std::auto_ptr<DataT>
+  virtual std::unique_ptr<DataT>
     read_from_file(std::istream& input) const = 0;
   
   // note: need to have 2 for header-based file-formats which might need directory info
   virtual 
-    std::auto_ptr<DataT>
+    std::unique_ptr<DataT>
     read_from_file(const std::string& filename) const
   {
     std::ifstream input;

@@ -63,11 +63,11 @@ public InputFileFormat<DynamicDiscretisedDensity >
 		    std::istream& input) const;
 
   //! This always fails
-  virtual std::auto_ptr<data_type>
+  virtual std::unique_ptr<data_type>
     read_from_file(std::istream& input) const;
 
   //! read data given a filename
-  virtual std::auto_ptr<data_type>
+  virtual std::unique_ptr<data_type>
     read_from_file(const std::string& filename) const;
 };
 

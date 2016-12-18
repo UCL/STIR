@@ -30,7 +30,6 @@
 #include "stir/ViewSegmentNumbers.h"
 
 using std::vector;
-using std::auto_ptr;
 
 START_NAMESPACE_STIR
 TrivialDataSymmetriesForBins::
@@ -115,18 +114,18 @@ get_related_bins(vector<Bin>& rel_b, const Bin& b,
     }
 }
 
-auto_ptr<SymmetryOperation>
+std::unique_ptr<SymmetryOperation>
 TrivialDataSymmetriesForBins::
 find_symmetry_operation_from_basic_bin(Bin&) const
 {
-  return auto_ptr<SymmetryOperation>(new TrivialSymmetryOperation);
+  return std::unique_ptr<SymmetryOperation>(new TrivialSymmetryOperation);
 }
 
-auto_ptr<SymmetryOperation>
+std::unique_ptr<SymmetryOperation>
 TrivialDataSymmetriesForBins::
 find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers& vs) const
 {
-  return auto_ptr<SymmetryOperation>(new TrivialSymmetryOperation);
+  return std::unique_ptr<SymmetryOperation>(new TrivialSymmetryOperation);
 }
 
 void

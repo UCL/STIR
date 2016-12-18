@@ -64,20 +64,20 @@ protected:
     }
 
 public:
-    virtual std::auto_ptr<data_type>
+    virtual std::unique_ptr<data_type>
     read_from_file(std::istream& input) const
     {
         warning("read_from_file for ROOT listmode data with istream not implemented %s:%s. Sorry",
                 __FILE__, __LINE__);
         return
-                std::auto_ptr<data_type>
+                std::unique_ptr<data_type>
                 (0);
     }
 
-    virtual std::auto_ptr<data_type>
+    virtual std::unique_ptr<data_type>
     read_from_file(const std::string& filename) const
     {
-        return std::auto_ptr<data_type>(new CListModeDataROOT(filename));
+        return std::unique_ptr<data_type>(new CListModeDataROOT(filename));
     }
 
 

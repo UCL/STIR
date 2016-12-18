@@ -88,7 +88,7 @@ START_NAMESPACE_STIR
    <li> ECAT 7 3D sinograms and attenuation files 
    </ul>
 
-   Developer's note: ideally the return value would be an auto_ptr.
+   Developer's note: ideally the return value would be an std::unique_ptr.
 */
 
 shared_ptr<ProjData> 

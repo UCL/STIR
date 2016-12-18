@@ -177,6 +177,27 @@ from the above):</H2>
 <li>see above</li>
 </ul>
 
+<h3>Backward incompatibities</h3>
+<ul>
+  <li>STIR now uses <code>std::unique_ptr</code> as opposed to <code>std::auto_ptr</code>, as recommended for C++-11 and later.
+    This affects calls to
+    <code>read_from_file</code> and <code>DataSymmetriesForBins::find_symmetry_operation_from_basic_bin</code> etc.
+    You should normally just be able to do a simple find-and-replace.<br />
+    Note that if <code>std::unique_ptr</code> is not defined for your compiler (and compilation flags), STIR
+    will internally still use <code>std::auto_ptr</code> anyway via a preprocessor
+    <code>define</code>.<br />
+    <strong>WARNING</strong>: very old compilers with neither <code>std::auto_ptr</code>
+    nor <code>std::unique_ptr</code> are no longer supported.
+  </li>
+<li>Make <code>stir::shared_ptr</code> to be <code>std::shared_ptr</code>
+  (stick to <code>boost::shared_ptr</code> if <code>BOOST_NO_CXX11_SMART_PTR</code>
+  is defined). We now also import <code>dynamic_pointer_cast</code> and
+  <code>static_pointer_cast</code> into the <code>stir</code> namespace
+  such that you can write code that doesn't need to know which <code>shared_ptr</code>
+  is used.
+</li>
+</ul>
+
 <h3>New functionality</h3>
 <ul>
 <li><code>write_to_file</code> is a new addition that makes it easier to write
