@@ -21,6 +21,10 @@
 # to its sources
 
 add_library(${dir} ${${dir_LIB_SOURCES}}    )
+target_include_directories(${dir} PUBLIC 
+  $<BUILD_INTERFACE:${STIR_INCLUDE_DIR}>
+  $<INSTALL_INTERFACE:include>)
+
 SET_PROPERTY(TARGET ${dir} PROPERTY FOLDER "Libs")
 
-install(TARGETS ${dir} DESTINATION lib)
+install(TARGETS ${dir} EXPORT STIRTargets DESTINATION lib)

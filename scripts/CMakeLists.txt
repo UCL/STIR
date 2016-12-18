@@ -35,5 +35,7 @@ set(${dir_scripts}
 
 #include(stir_test_exe_targets)
 
-install(PROGRAMS ${${dir_scripts}} DESTINATION bin)
-
+# only install if executables are installed as well, as the scripts need them
+if (BUILD_EXECUTABLES)
+  install(PROGRAMS ${${dir_scripts}} DESTINATION bin)
+endif()

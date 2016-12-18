@@ -1,0 +1,48 @@
+# The original *cmake.in file is part of STIR.
+#
+# Author: Kris Thielemans
+# Copyright 2016 University College London
+
+@PACKAGE_INIT@ 
+
+include("${CMAKE_CURRENT_LIST_DIR}/STIRTargets.cmake")
+
+#set_and_check(STIR_INCLUDE_DIRS "@PACKAGE_STIR_INCLUDE_DIRS@")
+#set_and_check(STIR_LIBRARY_DIRS "@PACKAGE_STIR_LIBRARY_DIRS@")
+set(STIR_LIBRARIES @STIR_LIBRARIES@)
+set(STIR_REGISTRIES @STIR_REGISTRIES@)
+
+## find external packages
+# we use a trick by Matt McCormick (kitware)
+# to set ITK_DIR etc first before calling find_package
+# to make sure we pick the same version of the external library
+
+#include(CMakeFindDependencyMacro)
+
+if (@BOOST_ROOT@)
+  set(BOOST_ROOT "@BOOST_ROOT@")
+endif()
+set (BOOST_INCLUDEDIR "@Boost_INCLUDE_DIRS@")
+find_package(Boost REQUIRED)
+
+if (@ITK_FOUND@)
+  message(STATUS "ITK support in STIR enabled.")
+  set(ITK_DIR "@ITK_DIR@")
+  find_package(ITK REQUIRED)
+endif()
+
+if (@STIR_MPI@)
+  find_package(MPI REQUIRED)
+endif()
+
+if(@STIR_OPENMP@)
+  find_package(OpenMP REQUIRED)  
+endif()
+
+if (@LLN_FOUND@)
+  set(HAVE_ECAT ON)
+  message(STATUS "ECAT support in STIR enabled.")
+  # need to add these 2 as stir_ecat7.h etc rely on it
+  add_definitions(-D HAVE_LLN_MATRIX)
+  include_directories("@LLN_INCLUDE_DIRS@")
+endif()
