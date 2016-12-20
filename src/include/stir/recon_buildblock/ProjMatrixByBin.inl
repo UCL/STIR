@@ -55,7 +55,7 @@ get_proj_matrix_elems_for_one_bin(
   {
     // find basic bin
     Bin basic_bin = bin;    
-    std::unique_ptr<SymmetryOperation> symm_ptr = 
+    unique_ptr<SymmetryOperation> symm_ptr = 
       symmetries_ptr->find_symmetry_operation_from_basic_bin(basic_bin);
     
     probabilities.set_bin(basic_bin);
@@ -83,7 +83,7 @@ get_proj_matrix_elems_for_one_bin(
     {
       // find basic bin
       Bin basic_bin = bin;  
-      std::unique_ptr<SymmetryOperation> symm_ptr = 
+      unique_ptr<SymmetryOperation> symm_ptr = 
         symmetries_ptr->find_symmetry_operation_from_basic_bin(basic_bin);
 
       probabilities.set_bin(basic_bin);

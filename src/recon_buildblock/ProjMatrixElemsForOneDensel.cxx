@@ -311,7 +311,7 @@ back_project(DiscretisedDensity<3,float>& density,
     row_copy = *this;
     
     Densel symmetric_densel = *r_densels_iterator;
-    std::unique_ptr<SymmetryOperation> symm_ptr = 
+    unique_ptr<SymmetryOperation> symm_ptr = 
       symmetries->find_symmetry_operation_to_basic_densel(symmetric_densel);
     symm_ptr->transform_proj_matrix_elems_for_one_densel(row_copy);
     row_copy.back_project(density,symmetric_densel);
@@ -334,7 +334,7 @@ forward_project(RelatedDensels& r_densels,
   {    
     row_copy = *this;
     
-    std::unique_ptr<SymmetryOperation> symm_op_ptr = 
+    unique_ptr<SymmetryOperation> symm_op_ptr = 
       symmetries->find_symmetry_operation_to_basic_densel(*r_densels_iterator);
     symm_op_ptr->transform_proj_matrix_elems_for_one_densel(row_copy);
     row_copy.forward_project(*r_densels_iterator,density);

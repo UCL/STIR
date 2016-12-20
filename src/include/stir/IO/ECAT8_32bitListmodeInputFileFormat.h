@@ -58,18 +58,18 @@ public InputFileFormat<CListModeData >
     return is_interfile_signature(signature.get_signature());
   }
  public:
-  virtual std::unique_ptr<data_type>
+  virtual unique_ptr<data_type>
     read_from_file(std::istream& input) const
   {
     error("read_from_file for ECAT8_32bit listmode data with istream not implemented %s:%s. Sorry",
 	  __FILE__, __LINE__);
     return
-      std::unique_ptr<data_type>();
+      unique_ptr<data_type>();
   }
-  virtual std::unique_ptr<data_type>
+  virtual unique_ptr<data_type>
     read_from_file(const std::string& filename) const
   {	
-    return std::unique_ptr<data_type>(new CListModeDataECAT8_32bit(filename)); 
+    return unique_ptr<data_type>(new CListModeDataECAT8_32bit(filename)); 
   }
 };
 

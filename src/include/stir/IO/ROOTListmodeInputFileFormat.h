@@ -22,7 +22,7 @@
 #include "stir/IO/InputFileFormat.h"
 #include "stir/listmode/CListModeDataROOT.h"
 #include "stir/interfile_keyword_functions.h"
-
+#include "stir/error.h"
 #include "stir/utilities.h"
 #include <string>
 
@@ -64,20 +64,18 @@ protected:
     }
 
 public:
-    virtual std::unique_ptr<data_type>
+    virtual unique_ptr<data_type>
     read_from_file(std::istream& input) const
     {
-        warning("read_from_file for ROOT listmode data with istream not implemented %s:%s. Sorry",
+        error("read_from_file for ROOT listmode data with istream not implemented %s:%s. Sorry",
                 __FILE__, __LINE__);
-        return
-                std::unique_ptr<data_type>
-                (0);
+        return unique_ptr<data_type>();
     }
 
-    virtual std::unique_ptr<data_type>
+    virtual unique_ptr<data_type>
     read_from_file(const std::string& filename) const
     {
-        return std::unique_ptr<data_type>(new CListModeDataROOT(filename));
+        return unique_ptr<data_type>(new CListModeDataROOT(filename));
     }
 
 

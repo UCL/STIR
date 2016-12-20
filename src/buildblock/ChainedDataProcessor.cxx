@@ -30,6 +30,7 @@
 #include "stir/modelling/KineticParameters.h"  
 #include "stir/is_null_ptr.h"
 #include <memory>
+#include "stir/unique_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -75,7 +76,7 @@ virtual_apply(DataT& out_data,
       if (!is_null_ptr(this->apply_second))
 	{
 	  // a bit complicated because we need a temporary data copy
-	  std::unique_ptr< DataT> temp_data_ptr
+	  unique_ptr< DataT> temp_data_ptr
 	    (in_data.get_empty_copy());      
 	  this->apply_first->apply(*temp_data_ptr, in_data);
 	  this->apply_second->apply(out_data, *temp_data_ptr);

@@ -184,10 +184,8 @@ from the above):</H2>
     <code>read_from_file</code> and <code>DataSymmetriesForBins::find_symmetry_operation_from_basic_bin</code> etc.
     You should normally just be able to do a simple find-and-replace.<br />
     Note that if <code>std::unique_ptr</code> is not defined for your compiler (and compilation flags), STIR
-    will internally still use <code>std::auto_ptr</code> anyway via a preprocessor
-    <code>define</code>.<br />
-    <strong>WARNING</strong>: very old compilers with neither <code>std::auto_ptr</code>
-    nor <code>std::unique_ptr</code> are no longer supported.
+    will try to work-around this (see stir/unique_ptr.h). If those work-arounds fail, upgrade your Boost version (or
+    compiler of course).
   </li>
 <li>Make <code>stir::shared_ptr</code> to be <code>std::shared_ptr</code>
   (stick to <code>boost::shared_ptr</code> if <code>BOOST_NO_CXX11_SMART_PTR</code>

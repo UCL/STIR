@@ -81,7 +81,7 @@ DiscretisedDensity<num_dimensions,elemT>::
 {
 
 #if 1
-  std::unique_ptr<DiscretisedDensity<num_dimensions,elemT> > density_aptr
+  unique_ptr<DiscretisedDensity<num_dimensions,elemT> > density_aptr
     (stir::read_from_file<DiscretisedDensity<num_dimensions,elemT> >(filename));
   return density_aptr.release();
 

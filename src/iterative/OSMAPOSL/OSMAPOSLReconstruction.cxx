@@ -60,11 +60,11 @@
 #include <sstream>
 #endif
 
+#include "stir/unique_ptr.h"
 #include <algorithm>
 using std::min;
 using std::max;
 #ifndef STIR_NO_NAMESPACES
-using std::unique_ptr;
 using std::cerr;
 using std::endl;
 #endif
@@ -406,7 +406,7 @@ update_estimate(TargetT &current_image_estimate)
 #endif // PARALLEL
   
   // TODO make member parameter to avoid reallocation all the time
-  std::unique_ptr< TargetT > multiplicative_update_image_ptr
+  unique_ptr< TargetT > multiplicative_update_image_ptr
     (current_image_estimate.get_empty_copy());
 
   const int subset_num=this->get_subset_num();  
@@ -437,7 +437,7 @@ update_estimate(TargetT &current_image_estimate)
     }
     else
     {
-      std::unique_ptr< TargetT > denominator_ptr
+      unique_ptr< TargetT > denominator_ptr
         (current_image_estimate.get_empty_copy());
       
       

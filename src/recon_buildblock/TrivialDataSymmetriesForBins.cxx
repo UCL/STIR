@@ -114,18 +114,18 @@ get_related_bins(vector<Bin>& rel_b, const Bin& b,
     }
 }
 
-std::unique_ptr<SymmetryOperation>
+unique_ptr<SymmetryOperation>
 TrivialDataSymmetriesForBins::
 find_symmetry_operation_from_basic_bin(Bin&) const
 {
-  return std::unique_ptr<SymmetryOperation>(new TrivialSymmetryOperation);
+  return unique_ptr<SymmetryOperation>(new TrivialSymmetryOperation);
 }
 
-std::unique_ptr<SymmetryOperation>
+unique_ptr<SymmetryOperation>
 TrivialDataSymmetriesForBins::
 find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers& vs) const
 {
-  return std::unique_ptr<SymmetryOperation>(new TrivialSymmetryOperation);
+  return unique_ptr<SymmetryOperation>(new TrivialSymmetryOperation);
 }
 
 void

@@ -209,7 +209,7 @@ ForwardProjectorByBinUsingProjMatrixByBin::
                     axial_pos_tmp,
                     tang_pos_tmp);
             
-            std::unique_ptr<SymmetryOperation> symm_op_ptr = 
+            unique_ptr<SymmetryOperation> symm_op_ptr = 
               symmetries->find_symmetry_operation_from_basic_bin(bin);
             assert(bin == basic_bin);
             

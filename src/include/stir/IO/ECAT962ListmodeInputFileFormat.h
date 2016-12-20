@@ -101,19 +101,19 @@ public InputFileFormat<CListModeData >
     return true;
   }
  public:
-  virtual std::unique_ptr<data_type>
+  virtual unique_ptr<data_type>
     read_from_file(std::istream& input) const
   {
     // cannot do this as need both .sgl and .lm
     error("read_from_file for ECAT962 listmode data with istream not implemented %s:%d. Sorry",
 	  __FILE__, __LINE__);
     return
-      std::unique_ptr<data_type>();
+      unique_ptr<data_type>();
   }
-  virtual std::unique_ptr<data_type>
+  virtual unique_ptr<data_type>
     read_from_file(const std::string& filename) const
   {	
-    return std::unique_ptr<data_type>(new ecat::ecat7::CListModeDataECAT<ecat::ecat7::CListRecordECAT962>(filename)); 
+    return unique_ptr<data_type>(new ecat::ecat7::CListModeDataECAT<ecat::ecat7::CListRecordECAT962>(filename)); 
   }
 };
 

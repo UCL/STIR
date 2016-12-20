@@ -977,7 +977,7 @@ T * operator-> () const;
   // to convert the swigged DiscretisedDensity to a VoxelsOnCartesianGrid
   static stir::VoxelsOnCartesianGrid<elemT> * read_from_file(const std::string& filename)
     {
-      std::unique_ptr<stir::DiscretisedDensity<3,elemT> > 
+      stir::unique_ptr<stir::DiscretisedDensity<3,elemT> > 
 	ret(stir::read_from_file<stir::DiscretisedDensity<3,elemT> >(filename));
       return dynamic_cast<stir::VoxelsOnCartesianGrid<elemT> *>(ret.release());
     }

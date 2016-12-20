@@ -80,7 +80,7 @@ DataSymmetriesForDensels::num_related_densels(const Densel& b) const
 /*! default implementation in terms of find_symmetry_operation_from_basic_densel */
 bool DataSymmetriesForDensels::find_basic_densel(Densel& b) const
 {
-  std::unique_ptr<SymmetryOperation> sym_op =
+  unique_ptr<SymmetryOperation> sym_op =
     find_symmetry_operation_from_basic_densel(b);
   return sym_op->is_trivial();
 }

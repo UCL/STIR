@@ -216,7 +216,7 @@ actual_back_project(DiscretisedDensity<3,float>& density,
   // if zoom==1 there's no need for allocation of a new
   // RelatedViewgrams object, so we do some trickery with a pointer
   const RelatedViewgrams<float>* zoomed_viewgrams_ptr = 0;
-  // to make it exception-proof we need to use an std::unique_ptr or shared_ptr
+  // to make it exception-proof we need to use an unique_ptr or shared_ptr
   shared_ptr<RelatedViewgrams<float> > zoomed_viewgrams_sptr;
   int zoomed_min_tangential_pos_num;
   int zoomed_max_tangential_pos_num;
@@ -242,7 +242,7 @@ actual_back_project(DiscretisedDensity<3,float>& density,
 	min_tangential_pos_num;
       zoomed_max_tangential_pos_num = 
 	max_tangential_pos_num;
-      // we cannot use the std::unique_ptr here, as that would try to free the 
+      // we cannot use the unique_ptr here, as that would try to free the 
       // viewgrams object
       zoomed_viewgrams_ptr = &viewgrams;
     }

@@ -42,7 +42,8 @@
 #include <fstream>
 #include <algorithm>
 #include <math.h>
-#include <memory> // for std::unique_ptr
+#include <memory>
+#include "stir/unique_ptr.h"
 #ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::max;
@@ -347,7 +348,7 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
     input, "Enter filename for input image", ".v", 
     ios::in | ios::binary);
 
-  std::unique_ptr<Scanner> scanner_ptr
+  unique_ptr<Scanner> scanner_ptr
     (Scanner::ask_parameters());
 
 

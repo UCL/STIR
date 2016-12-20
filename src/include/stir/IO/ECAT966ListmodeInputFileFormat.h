@@ -115,19 +115,19 @@ public InputFileFormat<CListModeData >
     return true;
   }
  public:
-  virtual std::unique_ptr<data_type>
+  virtual unique_ptr<data_type>
     read_from_file(std::istream& input) const
   {
     // cannot do this as need both .sgl and .lm
     error("read_from_file for ECAT966 listmode data with istream not implemented %s:%d. Sorry",
 	  __FILE__, __LINE__);
     return
-      std::unique_ptr<data_type>();
+      unique_ptr<data_type>();
   }
   //! read the data via the .sgl file
   /*! We first remove the suffix (either .sgl or _1.sgl) and then call ecat::ecat7::CListModeDataECAT::CListModeDataECAT(const std::string&)
   */
-  virtual std::unique_ptr<data_type>
+  virtual unique_ptr<data_type>
     read_from_file(const std::string& filename) const
   {	
     // filename points to the .sgl file, but we need the prefix
@@ -140,7 +140,7 @@ public InputFileFormat<CListModeData >
     const std::string filename_prefix = filename.substr(0, pos);
     info(boost::format("Reading ECAT listmode file with prefix %1%") % filename_prefix);
 
-    return std::unique_ptr<data_type>(new ecat::ecat7::CListModeDataECAT<ecat::ecat7::CListRecordECAT966>(filename_prefix)); 
+    return unique_ptr<data_type>(new ecat::ecat7::CListModeDataECAT<ecat::ecat7::CListRecordECAT966>(filename_prefix)); 
   }
 };
 

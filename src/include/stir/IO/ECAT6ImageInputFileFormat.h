@@ -70,16 +70,16 @@ public InputFileFormat<DiscretisedDensity<3,float> >
     return is_ECAT6_image_file(filename);
   }
 
-  virtual std::unique_ptr<data_type>
+  virtual unique_ptr<data_type>
     read_from_file(std::istream& input) const
   {
     //TODO
     error("read_from_file for ECAT6 with istream not implemented %s:%d. Sorry",
 	  __FILE__, __LINE__);
     return
-      std::unique_ptr<data_type>();
+      unique_ptr<data_type>();
   }
-  virtual std::unique_ptr<data_type>
+  virtual unique_ptr<data_type>
     read_from_file(const std::string& filename) const
   {
     if (is_ECAT6_image_file(filename))
@@ -99,14 +99,14 @@ public InputFileFormat<DiscretisedDensity<3,float> >
           ECAT6_to_VoxelsOnCartesianGrid(/*frame_num, gate_num, data_num, bed_num*/1,1,0,0,
 					 cti_fptr, mhead);
 	fclose(cti_fptr);
-	return std::unique_ptr<data_type>(tmp);
+	return unique_ptr<data_type>(tmp);
       }
     else
       {
 	error("ECAT6ImageInputFileFormat: file '%s' does not look like an ECAT6 image.",
 	      filename.c_str());
 	// add return to avoid compiler warnings
-	return std::unique_ptr<data_type>();
+	return unique_ptr<data_type>();
       }
 
   }

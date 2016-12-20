@@ -56,8 +56,7 @@
    class B:A { virtual B* f(); }
    \endcode
 
- <LI> defines STIR_NO_UNIQUE_PTR when the compiles has no std::unique_ptr support.
- In that case, we define unique_ptr to auto_ptr
+ <LI> defines STIR_NO_UNIQUE_PTR when the compiler has no std::unique_ptr support.
    
  <LI> preprocessor definitions which attempt to determine the 
    operating system this is going to run on.
@@ -181,13 +180,6 @@
 #if defined(BOOST_NO_CXX11_SMART_PTR) && !defined(STIR_NO_UNIQUE_PTR)
 #  define STIR_NO_UNIQUE_PTR
 #endif
-
-#ifdef STIR_NO_UNIQUE_PTR
-// first include memory, just in case there is a (supposedly flawed) unique_ptr in there
-#include <memory>
-#define unique_ptr auto_ptr
-#endif
-
 
 //*************** overload std::copy for built-in types
 /* If you have an older compiler, chages are that std::copy is 

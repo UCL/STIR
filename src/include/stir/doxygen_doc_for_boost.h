@@ -97,7 +97,7 @@ template <class T, class B = ::boost::detail::empty_base>
     // ok
     shared_ptr<int> i_ptr1(new int (2));
     shared_ptr<int> i_ptr2(i_ptr1);
-    std::unique_ptr<int> a_ptr(new int(3));
+    unique_ptr<int> a_ptr(new int(3));
     shared_ptr<int> i_ptr3(a_ptr);
     // now never use a_ptr anymore
     {
