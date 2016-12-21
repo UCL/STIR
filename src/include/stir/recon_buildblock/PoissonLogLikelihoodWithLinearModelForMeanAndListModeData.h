@@ -115,7 +115,20 @@ protected:
   //! Listmode pointer
   shared_ptr<CListModeData> list_mode_data_sptr; 
  
-  int current_frame_num;
+  unsigned int current_frame_num;
+
+  //!
+  //! \brief num_events_to_store
+  //! \author Nikos Efthimiou
+  //! \details This is part of some functionality I transfer from lm_to_projdata.
+  //! The total number of events to be *STORED* not *PROCESSED*.
+  unsigned long int num_events_to_store;
+
+  //!
+   //! \brief do_time_frame
+   //! \author Nikos Efthimiou
+   //! \details Reconstruct based on time frames?
+   bool do_time_frame;
  
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */

@@ -32,7 +32,7 @@
 #include "stir/error.h"
 #include <boost/format.hpp>
 #include <fstream>
-#include <sstream>
+#include <cstring>
 
 START_NAMESPACE_STIR
 
@@ -42,6 +42,13 @@ CListModeDataROOT(const std::string& listmode_filename)
 {
     this->parser.add_start_key("ROOT header");
     this->parser.add_stop_key("End ROOT header");
+
+    // N.E.: Compression on ROOT listmode data is commented out until further testing is done.
+    //    axial_compression = -1;
+    //    maximum_ring_difference = -1;
+    //    number_of_projections = -1;
+    //    number_of_views = -1;
+    //    number_of_segments = -1;
 
     // Scanner related & Physical dimentions.
     this->parser.add_key("originating system", &this->originating_system);
@@ -54,11 +61,19 @@ CListModeDataROOT(const std::string& listmode_filename)
     this->parser.add_key("Maximum number of non-arc-corrected bins", &this->max_num_non_arccorrected_bins);
     // end Scanner and physical dimentions.
 
+    // Acquisition related
+    // N.E.: Compression on ROOT listmode data has been commented out until further testing is done.
+    //    this->parser.add_key("%axial_compression", &axial_compression);
+    //    this->parser.add_key("%maximum_ring_difference", &maximum_ring_difference);
+    //    this->parser.add_key("%number_of_projections", &number_of_projections);
+    //    this->parser.add_key("%number_of_views", &number_of_views);
+    //    this->parser.add_key("%number_of_segments", &number_of_segments);
+    //
+
     // ROOT related
     this->parser.add_parsing_key("GATE scanner type", &this->current_lm_data_ptr);
     this->parser.parse(listmode_filename.c_str(), false /* no warnings about unrecognised keywords */);
 
-//    this->current_lm_data_ptr->set_up();
     // ExamInfo initialisation
     this->exam_info_sptr.reset(new ExamInfo);
 
@@ -116,6 +131,21 @@ CListModeDataROOT(const std::string& listmode_filename)
     if (this->open_lm_file() == Succeeded::no)
         error("CListModeDataROOT: error opening the first listmode file for filename %s\n",
               listmode_filename.c_str());
+
+    // N.E.: Compression on ROOT listmode data has been commented out until further testing is done.
+    //    this->proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(this->scanner_sptr,
+    //                                  std::max(axial_compression, 1),
+    //                                  std::max(maximum_ring_difference, num_rings-1),
+    //                                  std::max(number_of_views, num_detectors_per_ring/2),
+    //                                  std::max(number_of_projections, max_num_non_arccorrected_bins),
+    //                                  /* arc_correction*/false));
+
+    this->proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(this->scanner_sptr,
+                                  1,
+                                  num_rings-1,
+                                  num_detectors_per_ring/2,
+                                  max_num_non_arccorrected_bins,
+                                  /* arc_correction*/false));
 }
 
 std::string
@@ -140,40 +170,26 @@ open_lm_file()
     info(boost::format("CListModeDataROOT: opening ROOT file %s") %
          this->current_lm_data_ptr->get_ROOT_filename());
 
-    // Read the 4 bytes to check whether this is a ROOT file, indeed.
-    // I could rewrite it in a more sofisticated way ...
-    std::stringstream ss;
-    char mem[4]="\0";
-    std::string sig= "root";
+    // Read the 4 bytes to check whether this is a ROOT file
+    char mem[5]="\0";
+    char sig[5]="root";
 
     std::ifstream t;
-    t.open(this->current_lm_data_ptr->get_ROOT_filename().c_str(),  std::ios::in |std::ios::binary);
+    t.open(this->current_lm_data_ptr->get_ROOT_filename().c_str(),  std::ios::in);
 
     if (t.is_open())
     {
 
         t.seekg(0, std::ios::beg);
         t.read(mem,4);
-        ss << mem;
 
-        if ( !sig.compare(ss.str()) )
+        if (strncmp(sig, mem, 4))
         {
             warning("CListModeDataROOT: File '%s is not a ROOT file!!'",
                     this->current_lm_data_ptr->get_ROOT_filename().c_str());
             return Succeeded::no;
         }
 
-//        current_lm_data_ptr.reset(
-//                    new InputStreamFromROOTFile(this->input_data_filename,
-//                                                this->name_of_input_tchain,
-//                                                this->number_of_crystals_x, this->number_of_crystals_y, this->number_of_crystals_z,
-//                                                this->number_of_submodules_x, this->number_of_submodules_y, this->number_of_submodules_z,
-//                                                this->number_of_modules_x, this->number_of_modules_y, this->number_of_modules_z,
-//                                                this->number_of_rsectors,
-//                                                this->exclude_scattered, this->exclude_randoms,
-//                                                static_cast<float>(this->low_energy_window*0.001f),
-//                                                static_cast<float>(this->up_energy_window*0.001f),
-//                                                this->offset_dets));
         t.close();
         return Succeeded::yes;
 
@@ -220,6 +236,14 @@ CListModeDataROOT::
 set_get_position(const CListModeDataROOT::SavedPosition& pos)
 {
     return current_lm_data_ptr->set_get_position(pos);
+}
+
+shared_ptr<ProjDataInfo>
+CListModeDataROOT::
+get_proj_data_info_sptr() const
+{
+    assert(!is_null_ptr(proj_data_info_sptr));
+    return proj_data_info_sptr;
 }
 
 

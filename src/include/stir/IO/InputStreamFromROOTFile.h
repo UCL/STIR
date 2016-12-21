@@ -145,7 +145,7 @@ protected:
 
     // Variables to store root information
     std::string chain_name;
-    Int_t           eventID1, eventID2;
+    Int_t           event1, event2;
     Double_t        time1, time2;
     Float_t         energy1, energy2;
     Int_t           comptonphantom1, comptonphantom2;

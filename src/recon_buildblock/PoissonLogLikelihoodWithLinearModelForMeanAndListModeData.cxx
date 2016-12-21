@@ -53,7 +53,8 @@ set_defaults()
   this->list_mode_filename =""; 
   this->frame_defs_filename ="";
   this->list_mode_data_sptr.reset(); 
-  this->current_frame_num =0; 
+  this->current_frame_num = 1;
+  this->num_events_to_store = 0;
  
   this->output_image_size_xy=-1; 
   this->output_image_size_z=-1; 
@@ -81,7 +82,7 @@ initialise_keymap()
   this->parser.add_key("time frame definition filename", &this->frame_defs_filename);
   // SM TODO -- later do not parse
   this->parser.add_key("time frame number", &this->current_frame_num);
-     
+       this->parser.add_parsing_key("Bin Normalisation type", &this->normalisation_sptr);
 } 
 
 template <typename TargetT>     
@@ -93,6 +94,11 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
 
   if (this->list_mode_filename.length() == 0) 
   { warning("You need to specify an input file\n"); return true; } 
+
+  // handle time frame definitions etc
+  // If num_events_to_store == 0 && frame_definition_filename.size == 0
+  if(this->num_events_to_store==0 && this->frame_defs_filename.size() == 0)
+      do_time_frame = true;
    
   this->list_mode_data_sptr=
     read_from_file<CListModeData>(this->list_mode_filename); 
@@ -102,7 +108,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
   else
     {
       // make a single frame starting from 0. End value will be ignored.
-      vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
+      vector<pair<double, double> > frame_times(1, pair<double,double>(0,0));
       this->frame_defs = TimeFrameDefinitions(frame_times);
     } 
   // image stuff 
@@ -115,7 +121,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
   { warning("output image size z must be positive (or -1 as default)\n"); return true; } 
    
 
-   return false; 
+   return false;
 } 
 
 template <typename TargetT>

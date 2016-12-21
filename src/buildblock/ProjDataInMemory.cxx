@@ -4,9 +4,11 @@
   \ingroup projdata
   \brief Implementations for non-inline functions of class stir::ProjDataInMemory
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
 */
 /*
+ *  Copyright (C) 2016, UCL
     Copyright (C) 2002 - 2011-02-23, Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
     This file is part of STIR.
@@ -160,10 +162,9 @@ write_to_file(const string& output_filename) const
 float 
 ProjDataInMemory::get_bin_value(Bin& bin)
 {
-   Viewgram<float> viewgram = get_viewgram(bin.view_num(),bin.segment_num()); 
-    
-   return viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]; 
-
+//   Viewgram<float> viewgram = get_viewgram(bin.view_num(),bin.segment_num());
+//   return viewgram[bin.axial_pos_num()][bin.tangential_pos_num()];
+    return ProjDataFromStream::get_bin_value(bin);
 }
 END_NAMESPACE_STIR
 

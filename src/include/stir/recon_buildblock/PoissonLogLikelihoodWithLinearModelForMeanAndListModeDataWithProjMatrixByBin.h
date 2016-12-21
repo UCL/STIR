@@ -2,7 +2,8 @@
 //
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
-
+    Copyright (C) 2015, Univ. of Leeds
+    Copyright (C) 2016, UCL
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation; either version 2.1 of the License, or
@@ -21,6 +22,7 @@
   \brief Declaration of class 
   stir::PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
   \author Sanida Mustafovic
 
@@ -33,7 +35,7 @@
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h" 
 #include "stir/ProjDataInMemory.h"
-
+#include "stir/recon_buildblock/ProjectorByBinPair.h"
 #include "stir/ExamInfo.h"
 START_NAMESPACE_STIR
 
@@ -93,12 +95,8 @@ protected:
   virtual Succeeded 
     set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr); 
  
-  // TODO
   virtual void
-    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
-  {
-    error("add_subset_sensitivity not implemented yet");
-  }
+    add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;
   
   //! Maximum ring difference to take into account
   /*! \todo Might be removed */
@@ -106,14 +104,16 @@ protected:
 
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjMatrixByBin> PM_sptr;
-  //shared_ptr<ProjectorByBinPair> projector_by_bin_pair;
-  
+
+  //! Stores the projectors that are used for the computations
+  shared_ptr<ProjectorByBinPair> projector_pair_ptr;
+
   //! points to the additive projection data
-  shared_ptr<ProjDataInMemory> additive_proj_data_sptr; 
+  shared_ptr<ProjDataInMemory> additive_proj_data_sptr;
  
   std::string additive_projection_data_filename ; 
   //! ProjDataInfo
-  shared_ptr<ProjDataInfo> proj_data_info_cyl_uncompressed_ptr; 
+  shared_ptr<ProjDataInfo> proj_data_info_cyl_sptr;
 
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */
@@ -124,6 +124,9 @@ protected:
   virtual bool post_processing();
 
   virtual bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
+
+  void
+    add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const;
 };
 
 END_NAMESPACE_STIR

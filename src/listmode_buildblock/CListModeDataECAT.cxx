@@ -329,6 +329,14 @@ get_num_records() const
 
 #endif
 
+template <class CListRecordT>
+shared_ptr<ProjDataInfo>
+CListModeDataECAT<CListRecordT>::
+get_proj_data_info_sptr() const
+{
+    assert(!is_null_ptr(proj_data_info_sptr));
+    return proj_data_info_sptr;
+}
 
 // instantiations
 template class CListModeDataECAT<CListRecordECAT966>;

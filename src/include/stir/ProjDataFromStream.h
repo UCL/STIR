@@ -6,6 +6,7 @@
   \ingroup projdata
   \brief Declaration of class stir::ProjDataFromStream
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Claire Labbe
@@ -37,7 +38,7 @@
 #include "stir/NumericType.h"
 #include "stir/ByteOrder.h"
 #include "stir/shared_ptr.h"
-
+#include "stir/Bin.h"
 #include <iostream>
 #include <vector>
 
@@ -138,6 +139,8 @@ public:
   //! Get scale factor
   float get_scale_factor() const;  
 
+  //! Get the value of bin.
+  float get_bin_value(const Bin& this_bin) const;
     
 protected:
   //! the stream with the data
@@ -171,6 +174,11 @@ private:
   //! Calculate offsets for sinogram data
   std::vector<std::streamoff> get_offsets_sino(const int ax_pos_num, const int segment_num) const;
     
+  //! Calculate the offsets for specific bins.
+  std::vector<std::streamoff> get_offsets_bin(const int segment_num,
+                                              const int ax_pos_num,
+                                              const int view_num,
+                                              const int tang_pos_num) const;
   
 };
 

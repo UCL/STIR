@@ -9,8 +9,6 @@ Distance between rings (cm)              := 0.40625
 Default bin size (cm)                    := 0.208626
 Maximum number of non-arc-corrected bins := 344
 
-
-
 GATE scanner type := GATE_Cylindrical_PET
 GATE_Cylindrical_PET Parameters :=
 

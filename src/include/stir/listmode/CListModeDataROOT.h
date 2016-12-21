@@ -70,6 +70,9 @@ public:
     unsigned long int
     get_total_number_of_events() const ;
 
+    virtual
+    shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
+
 private:
 //    typedef CListRecordROOT CListRecordT;
 
@@ -88,6 +91,12 @@ private:
     float average_depth_of_interaction;
     float ring_spacing;
     float bin_size;
+    // Axial compresstion has been commented out, until further testing is done.
+    //    int axial_compression;
+    //    int maximum_ring_difference;
+    //    int number_of_projections;
+    //    int number_of_views;
+    //    int number_of_segments;
 
     KeyParser parser;
     //! Name of input chain which is going to be used.

@@ -30,7 +30,7 @@
 #include "stir/shared_ptr.h"
 #include <string>
 #include <ctime>
-
+#include "stir/ProjDataInfo.h"
 #include "stir/IO/ExamData.h"
 #include "stir/RegisteredParsingObject.h"
 
@@ -218,6 +218,7 @@ public:
   //! Get scanner pointer  
   /*! Returns a pointer to a scanner object that is appropriate for the 
       list mode data that is being read.
+      \warning This member is obsolete and might be removed soon.
   */
   const Scanner* get_scanner_ptr() const;
 
@@ -233,11 +234,16 @@ public:
       return 0;
   }
 
+  virtual
+  shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const = 0;
+
 protected:
-  //! Has to be set by the derived class
+  //! Has to be initialised by the derived class
   shared_ptr<Scanner> scanner_sptr;
   //! Has to be set by the derived class
 //  shared_ptr<ExamInfo> exam_info_sptr;
+
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
 };
 
 END_NAMESPACE_STIR
