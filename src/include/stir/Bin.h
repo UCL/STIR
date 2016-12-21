@@ -7,7 +7,7 @@
 
   \brief Declaration of class stir::Bin
   
-
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Mustapha Sadki
@@ -17,6 +17,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -43,6 +44,17 @@ START_NAMESPACE_STIR
  \brief
  A class for storing coordinates and value of a single projection bin.
 
+ The timing position reflect the detection time difference between the two events.
+ It is a multiple of the delta t of the least significant clock bit.
+
+ \details In order to go around the timing pos which is set only in TOF reconstruction
+ we set it, by default, to zero. If it is zero in both bins then it is omitted from the
+ comparison.
+ \warning Comparison between bin with and without timing position is of high risk!
+
+ \warning Constructors with default values were removed.
+
+ \warning Temporarily the timing_pos_num is not taken into account when comparing two bins.
 */
 
 class Bin
@@ -53,7 +65,16 @@ public:
 
   //!  A constructor : constructs a bin with value (defaulting to 0)
   inline Bin(int segment_num,int view_num, int axial_pos_num,
-    int tangential_pos_num,float bin_value=0);
+    int tangential_pos_num,float bin_value);
+
+  inline Bin(int segment_num, int view_num, int axial_pos_num,
+             int tangential_pos_num);
+
+  inline Bin(int segment_num, int view_num, int axial_pos_num,
+             int tangential_pos_num, int timing_pos_num, float bin_value);
+
+  inline Bin(int segment_num, int view_num, int axial_pos_num,
+             int tangential_pos_num, int timing_pos_num);
   
   //!get axial position number
   inline int axial_pos_num()const;
@@ -63,6 +84,8 @@ public:
   inline int tangential_pos_num()  const; 
   //! get view number
   inline int view_num() const; 
+  //! get timing position number
+  inline int timing_pos_num() const;
   
   inline int& axial_pos_num(); 
   inline int& segment_num(); 
@@ -96,7 +119,8 @@ private :
   int  segment;
   int  view; 
   int  axial_pos; 
-  int  tangential_pos; 
+  int  tangential_pos;
+  int  timing_pos;
   float bin_value;
   
   

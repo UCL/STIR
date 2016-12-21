@@ -9,6 +9,7 @@
 /*
  *  Copyright (C) 2015, 2016 University of Leeds
     Copyright (C) 2016, UCL
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -158,6 +159,10 @@ protected:
     int offset_dets;
 
     int singles_readout_depth;
+
+    // This member will try to give to the continuous time register in GATE
+    // data, a finite least significant bit.
+    double least_significant_clock_bit;
 };
 
 END_NAMESPACE_STIR

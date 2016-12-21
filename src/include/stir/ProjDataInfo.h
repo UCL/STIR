@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,6 +24,7 @@
 
   \brief Declaration of class stir::ProjDataInfo
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author PARAPET project
@@ -103,6 +105,13 @@ public:
 		      const int num_views, 
 		      const int num_tangential_poss);
 
+  //! Overloaded Contructor with TOF initialisation
+  ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr,
+              const VectorWithOffset<int>& num_axial_pos_per_segment,
+              const int num_views,
+              const int num_tangential_poss,
+              const int tof_mash_factor);
+
 
   //! Standard trick for a 'virtual copy-constructor' 
   virtual ProjDataInfo* clone() const = 0;
@@ -158,6 +167,8 @@ public:
   //! Set maximum tangential position number
   /*! This function is virtual in case a derived class needs to know the number changed. */
   virtual void set_max_tangential_pos_num(const int max_tang_poss);
+  //! The the tof mashing factor. Min and Max timing position will be recalculated.
+  virtual void set_tof_mash_factor(const int new_num);
   //@}
 
   //! \name Functions that return info on the data size
@@ -186,6 +197,20 @@ public:
   inline int get_min_tangential_pos_num() const;
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num() const;
+  //! Get number of TOF positions
+  inline int get_num_timing_poss() const;
+  //! Get TOG mash factor
+  inline int get_tof_mash_factor() const;
+  //! Get the index of the first timing position
+  inline int get_min_timing_pos_num() const;
+  //! Get the index of the last timgin position.
+  inline int get_max_timing_pos_num() const;
+  //! Get the coincide window in pico seconds
+  //! \warning Proposed convension: If the scanner is not TOF ready then
+  //! the coincidence windowis in the timing bin size.
+  inline float get_coincidence_window_in_pico_sec() const;
+  //! Get the total width of the coincide window in mm
+  inline float get_coincidence_window_width() const;
   //@}
 
   //| \name Functions that return geometrical info for a Bin
@@ -227,6 +252,10 @@ public:
       normal to the projection plane */
   virtual float get_s(const Bin&) const =0;
 
+  //! Get value ot the timing location along the LOR (in mm)
+  //! k is a line segment connecting the centers of the two detectors.
+  float get_k(const Bin&) const;
+
   //! Get LOR corresponding to a given bin
   /*!
       \see get_bin()
@@ -266,6 +295,9 @@ public:
       \endcode
   */
   virtual float get_sampling_in_s(const Bin&) const;
+
+  //! Get sampling distance in the k \c coordinate
+  float get_sampling_in_k(const Bin&) const;
   //@}
 
 
@@ -326,6 +358,12 @@ public:
   
   //! Return a string describing the object
   virtual std::string parameter_info() const;
+
+  //! Struct which holds two floating numbers
+  struct Float1Float2 { float low_lim; float high_lim; };
+
+  //! Vector which holds the lower and higher boundary for each timing position, for faster access.
+  mutable VectorWithOffset<Float1Float2> timing_bin_boundaries;
   
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
@@ -336,6 +374,14 @@ private:
   int max_view_num;
   int min_tangential_pos_num;
   int max_tangential_pos_num;
+  //! Minimum timing pos
+  int min_timing_pos_num;
+  //! Maximum timing pos
+  int max_timing_pos_num;
+  //! TOF mash factor.
+  int tof_mash_factor;
+  //! Finally (with any mashing factor) timing bin increament.
+  float timing_increament_in_mm;
   VectorWithOffset<int> min_axial_pos_per_seg; 
   VectorWithOffset<int> max_axial_pos_per_seg;
   

@@ -70,6 +70,8 @@ class Succeeded;
   <li> \c tangential_pos_num : indexes different positions in a direction 
         tangential to the scanner cylinder.
         (sometimes called 'bin' or 'element')
+  <li> \c timing_pos_num : indexes different positions in the LOR, based on
+        the photon detection time difference.
   </ul>
 
   The number of axial positions is allowed to depend on segment_num.
@@ -276,6 +278,14 @@ public:
   inline int get_num_views() const;
   //! Get number of tangential positions
   inline int get_num_tangential_poss() const;
+  //! Get number of TOF positions
+  inline int get_num_timing_poss() const;
+  //! Get the index of the first timing position
+  inline int get_min_timing_pos_num() const;
+  //! Get the index of the last timgin position.
+  inline int get_max_timing_pos_num() const;
+  //! Get TOG mash factor
+  inline int get_tof_mash_factor() const;
   //! Get minimum segment number
   inline int get_min_segment_num() const;
   //! Get maximum segment number

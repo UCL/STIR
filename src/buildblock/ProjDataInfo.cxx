@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-05-13, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,6 +24,7 @@
 
   \brief Implementation of non-inline functions of class stir::ProjDataInfo
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author PARAPET project
@@ -56,6 +58,8 @@
 #include <sstream>
 #endif
 
+#include "stir/info.h"
+#include "boost/foreach.hpp"
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
@@ -68,6 +72,24 @@ using std::equal;
 
 START_NAMESPACE_STIR
 
+float
+ProjDataInfo::get_k(const Bin& bin) const
+{
+    if (!get_num_timing_poss()%2)
+        return bin.timing_pos_num() * timing_increament_in_mm;
+    else
+        return (bin.timing_pos_num() * timing_increament_in_mm) - timing_increament_in_mm/2.f;
+}
+
+float
+ProjDataInfo::get_sampling_in_k(const Bin& bin) const
+{
+    return (get_k(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num(),bin.tangential_pos_num(),
+                               bin.timing_pos_num()+1)) -
+            get_k(Bin(bin.segment_num(), bin.view_num(), bin.axial_pos_num(),bin.tangential_pos_num(),
+                               bin.timing_pos_num()-1))
+            )/2.f;
+}
 
 float 
 ProjDataInfo::get_sampling_in_t(const Bin& bin) const
@@ -157,6 +179,89 @@ ProjDataInfo::set_max_tangential_pos_num(const int max_tang_poss)
   max_tangential_pos_num = max_tang_poss;
 }
 
+//! \todo N.E: This function is very ugly and unnessesary complicated. Could be much better.
+void
+ProjDataInfo::set_tof_mash_factor(const int new_num)
+{
+    if (scanner_ptr->is_tof_ready())
+    {
+        if(tof_mash_factor < 0 || tof_mash_factor > scanner_ptr->get_num_max_of_timing_bins())
+            error("ProjDataInfo: TOF mashing factor must be positive and smaller or equal than"
+                  "the scanner's number of max timing bins. Abort.");
+        tof_mash_factor = new_num;
+
+        timing_increament_in_mm = tof_mash_factor * scanner_ptr->get_size_of_timing_bin() * 0.299792458f;
+
+        // limit to the size of the diameter.
+
+        Bin b;
+
+        float lowest_t  = get_min_tangential_pos_num();
+        float highest_t = get_max_tangential_pos_num();
+
+        b.tangential_pos_num() = lowest_t;
+        float k  = get_sampling_in_t(b);
+        b.tangential_pos_num() = highest_t;
+        float l  = get_sampling_in_t(b);
+
+        float lowest_boundary = lowest_t * k;
+        float highest_boundary = highest_t * l;
+
+        int num_tof_positions_in_FOV = static_cast<int>(((highest_boundary - lowest_boundary) / (2.f * timing_increament_in_mm))+0.5);
+
+        min_timing_pos_num = -num_tof_positions_in_FOV/2;
+        max_timing_pos_num = min_timing_pos_num + num_tof_positions_in_FOV;
+
+        // Upper and lower boundaries of the timing poss;
+        timing_bin_boundaries.grow(min_timing_pos_num, max_timing_pos_num);
+
+        for (int i = min_timing_pos_num; i <= max_timing_pos_num; ++i )
+        {
+            Bin bin;
+            bin.timing_pos_num() = i;
+
+            float cur_low = get_k(bin);
+            float cur_high = get_k(bin) + get_sampling_in_k(bin);
+
+            if (cur_low< 0 || cur_high < 0 )
+            {
+                if (cur_low < lowest_boundary && cur_high > lowest_boundary)
+                {
+                    timing_bin_boundaries[i].low_lim = lowest_boundary;
+                    timing_bin_boundaries[i].high_lim = cur_high;
+                }
+                else if (cur_low >= lowest_boundary && cur_high >= lowest_boundary)
+                {
+                    timing_bin_boundaries[i].low_lim = cur_low;
+                    timing_bin_boundaries[i].high_lim = cur_high;
+                }
+            }
+            else
+            {
+                if (cur_high > highest_boundary && cur_low < highest_boundary)
+                {
+                    timing_bin_boundaries[i].low_lim = cur_low;
+                    timing_bin_boundaries[i].high_lim = highest_boundary;
+                }
+                else if (cur_low <= highest_boundary && cur_high <= highest_boundary)
+                {
+                    timing_bin_boundaries[i].low_lim = cur_low;
+                    timing_bin_boundaries[i].high_lim = cur_high;
+                }
+            }
+            float lowt = (timing_bin_boundaries[i].low_lim / 0.299792458f ) ;
+            float hight = ( timing_bin_boundaries[i].high_lim/ 0.299792458f);
+            info(boost::format("Tbin %1%: %2% - %3% mm (%4% - %5% ps) = %6%") %i % timing_bin_boundaries[i].low_lim % timing_bin_boundaries[i].high_lim
+                 % lowt% hight % get_sampling_in_k(bin));
+            // Go to natural coordinates - opted out.
+            //            timing_bin_boundaries[i].low_lim *= r_sqrtdPI_gauss_sigma;
+            //            timing_bin_boundaries[i].high_lim *= r_sqrtdPI_gauss_sigma;
+        }
+    }
+    else
+        error("Not TOF compatible scanner template. Abort.");
+}
+
 
 ProjDataInfo::ProjDataInfo()
 {}
@@ -171,6 +276,26 @@ ProjDataInfo::ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr_v,
 			   :scanner_ptr(scanner_ptr_v)
 
 { 
+  set_num_views(num_views_v);
+  set_num_tangential_poss(num_tangential_poss_v);
+  set_num_axial_poss_per_segment(num_axial_pos_per_segment_v);
+  // Initialise the TOF elements to non-used.
+  min_timing_pos_num = 0;
+  max_timing_pos_num = 0;
+  timing_increament_in_mm = 0.f;
+  tof_mash_factor = 1; // zero?
+}
+
+// TOF version.
+ProjDataInfo::ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr_v,
+                           const VectorWithOffset<int>& num_axial_pos_per_segment_v,
+                           const int num_views_v,
+                           const int num_tangential_poss_v,
+                           const int tof_mash_factor_v)
+               :scanner_ptr(scanner_ptr_v)
+
+{
+  set_tof_mash_factor(tof_mash_factor_v);
   set_num_views(num_views_v);
   set_num_tangential_poss(num_tangential_poss_v);
   set_num_axial_poss_per_segment(num_axial_pos_per_segment_v);

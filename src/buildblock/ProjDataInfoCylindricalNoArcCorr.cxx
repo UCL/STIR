@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000- 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,6 +25,7 @@
   \brief Implementation of non-inline functions of class 
   stir::ProjDataInfoCylindricalNoArcCorr
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
 
 */
@@ -493,6 +495,41 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   coord_2 = lor.p2();
   
 #endif
+}
+
+
+//! \obsolete
+void
+ProjDataInfoCylindricalNoArcCorr::
+find_cartesian_coordinates_given_scanner_coordinates_of_the_front_surface (
+        CartesianCoordinate3D<float>& coord_1,
+        CartesianCoordinate3D<float>& coord_2,
+        const int Ring_A,const int Ring_B,
+        const int det1, const int det2) const
+{
+    const int num_detectors_per_ring =
+            get_scanner_ptr()->get_num_detectors_per_ring();
+
+//    float h_scanner_height = ( (get_scanner_ptr()->get_ring_spacing() -1) * get_scanner_ptr()->get_num_rings())/2.F;
+
+    // although code maybe doesn't really need the following,
+    // asserts in the LOR code will break if these conditions are not satisfied.
+    assert(0<=det1);
+    assert(det1<num_detectors_per_ring);
+    assert(0<=det2);
+    assert(det2<num_detectors_per_ring);
+
+    LORInCylinderCoordinates<float> cyl_coords(get_scanner_ptr()->get_inner_ring_radius());
+
+    cyl_coords.p1().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(det1));
+    cyl_coords.p2().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(det2));
+
+//    cyl_coords.p1().z() = Ring_A*get_scanner_ptr()->get_ring_spacing() - h_scanner_height;
+//    cyl_coords.p2().z() = Ring_B*get_scanner_ptr()->get_ring_spacing() - h_scanner_height;
+
+    LORAs2Points<float> lor(cyl_coords);
+    coord_1 = lor.p1();
+    coord_2 = lor.p2();
 }
 
 
