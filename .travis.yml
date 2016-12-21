@@ -39,7 +39,6 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew tap homebrew/science; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install --with-cocoa root; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then EXTRA_BUILD_FLAGS="$EXTRA_BUILD_FLAGS -stdlib=libc++"; fi
 
 script:
   - mkdir build install
