@@ -4,6 +4,7 @@
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
     Copyright (C) 2013-2016, University College London
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

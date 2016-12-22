@@ -4,7 +4,8 @@
   \ingroup projection
   
   \brief  implementation of the stir::ProjMatrixByBin class 
-    
+
+  \author Nikos Efthimiou
   \author Mustapha Sadki
   \author Kris Thielemans
   \author PARAPET project
@@ -13,6 +14,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
     Copyright (C) 2013, 2015 University College London
+    Copyright (C) 2016, University of Hull
 
     This file is part of STIR.
 
@@ -46,6 +48,8 @@ void ProjMatrixByBin::set_defaults()
 {
   cache_disabled=false;
   cache_stores_only_basic_bins=true;
+  gauss_sigma_in_mm = 0.f;
+  r_sqrt2_gauss_sigma = 0.f;
 }
 
 void 
@@ -70,6 +74,19 @@ void
 ProjMatrixByBin::
 enable_cache(const bool v)
 { cache_disabled = !v;}
+
+void
+ProjMatrixByBin::
+enable_tof(const shared_ptr<ProjDataInfo>& _proj_data_info_sptr, const bool v)
+{
+    if (v)
+    {
+        tof_enabled = true;
+        proj_data_info_sptr = _proj_data_info_sptr;
+        gauss_sigma_in_mm = (proj_data_info_sptr->get_scanner_ptr()->get_timing_resolution() * 0.299792458f) / 2.355f;
+        r_sqrt2_gauss_sigma = 1.0f/ (gauss_sigma_in_mm * static_cast<float>(sqrt(2.0)));
+    }
+}
 
 void 
 ProjMatrixByBin::

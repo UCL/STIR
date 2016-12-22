@@ -6,11 +6,13 @@
   \brief Declarations of classes stir::CListRecord, stir::CListTime and stir::CListEvent which
   are used for list mode data.
     
+  \author Nikos Efthimiou
   \author Kris Thielemans
       
 */
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -139,6 +141,19 @@ public:
       return set_time_in_millisecs(time_in_millisecs); 
     }
 
+  virtual inline int get_timing_bin() const
+  {
+      error("Function CListTime::get_timing_bin() currently is implemented only "
+            "ROOT data. Abort.");
+  }
+
+  //! Get the timing component of the bin.
+  virtual inline void get_bin(Bin&, const ProjDataInfo&) const
+  {
+      error("CListTime::get_bin() currently is implemented only "
+            "ROOT data. Abort.");
+  }
+
 };
 
 //! A class recording external input to the scanner (normally used for gating)
@@ -188,6 +203,12 @@ public:
 
   virtual bool operator==(const CListRecord& e2) const = 0;
   bool operator!=(const CListRecord& e2) const { return !(*this == e2); }
+
+  //! Used in TOF reconstruction to get both the geometric and the timing
+  //!  component of the event
+  virtual void full_event(Bin&, const ProjDataInfo&) const
+  {error("CListRecord::full_event() is implemented only for records which "
+         "hold timing and spatial information.");}
 
 };
 

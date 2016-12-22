@@ -1,6 +1,7 @@
 /*
  *  Copyright (C) 2015, 2016 University of Leeds
     Copyright (C) 2016, UCL
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -97,6 +98,12 @@ private:
     //    int number_of_projections;
     //    int number_of_views;
     //    int number_of_segments;
+
+    int max_num_timing_bins;
+    float size_timing_bin;
+    float timing_resolution;
+
+    int tof_mash_factor;
 
     KeyParser parser;
     //! Name of input chain which is going to be used.

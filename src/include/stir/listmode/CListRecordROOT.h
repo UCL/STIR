@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2015-2016 University of Leeds
     Copyright (C) 2016 UCL
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -81,10 +82,10 @@ private:
 class CListTimeROOT : public CListTime
 {
 public:
-    void init_from_data(double time1, double time2)
+    void init_from_data(float _timeA, float _delta_time)
     {
-        timeA = time1;
-        timeB = time2;
+        timeA = _timeA;
+        delta_time = _delta_time;
     }
 
     //! Returns always true
@@ -96,22 +97,36 @@ public:
     { return timeA * 1e3; }
     //! Get the detection time of the first photon
     //! in milliseconds
-    inline double get_timeA_in_millisecs() const
+    inline unsigned long get_timeA_in_millisecs() const
     { return timeA * 1e3; }
     //! Get the detection time of the second photon
     //! in milliseconds
-    inline double get_timeB_in_millisecs() const
-    { return timeB * 1e3; }
+    inline unsigned long get_timeB_in_millisecs() const
+    { return (delta_time - timeA) * 1e3; }
     //! Get the delta Time between the two events
-    inline double get_delta_time_in_millisecs() const
-    { return (timeB - timeA) * 1e3; }
+    inline unsigned long get_delta_time_in_millisecs() const
+    { return delta_time * 1e3; }
     //! Get delta time in picoseconds
-    inline  double get_delta_time_in_picosecs() const
+    inline unsigned long get_delta_time_in_picosecs() const
     { return (timeB - timeA) * 1e12; }
+
     inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
     {
         warning("set_time_in_millisecs: Not implemented for ROOT files. Aborting.");
         return Succeeded::no;
+    }
+
+    virtual inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
+    {
+        delta_timing_bin > 0 ?
+                    bin.timing_pos_num() = static_cast<int> ( ( delta_timing_bin / proj_data_info.get_tof_mash_factor()) + 0.5)
+                : bin.timing_pos_num() = static_cast<int> ( ( delta_timing_bin / proj_data_info.get_tof_mash_factor()) - 0.5);
+
+        if (bin.timing_pos_num() <  proj_data_info.get_min_timing_pos_num() ||
+                bin.timing_pos_num() > proj_data_info.get_max_timing_pos_num())
+        {
+            bin.set_bin_value(-1.f);
+        }
     }
 
 private:
@@ -119,12 +134,9 @@ private:
     //!
     //! \brief timeA
     //! \details The detection time of the first of the two photons, in seconds
-    double timeA;
+    float timeA;
 
-    //!
-    //! \brief timeB
-    //! \details The detection time of the second of the two photons
-    double timeB;
+    float delta_time;
 };
 
 //! A class for a general element of a listmode file for a Siemens scanner using the ROOT files
@@ -173,7 +185,7 @@ public:
                                       const int& ring2,
                                       const int& crystal1,
                                       const int& crystal2,
-                                      double time1, double time2,
+                                      float time1, float delta_time,
                                       const int& event1, const int& event2)
     {
         /// \warning ROOT data are time and event at the same time.
@@ -181,8 +193,15 @@ public:
         this->event_data.init_from_data(ring1, ring2,
                                         crystal1, crystal2);
 
-        this->time_data.init_from_data(
-                    time1,time2);
+        if(!this->event_data.is_swapped())
+            this->time_data.init_from_data(
+                    time1, delta_timing_bin);
+        else
+        {
+//            delta_timing_bin = -delta_timing_bin;
+            this->time_data.init_from_data(
+                        time1, -delta_timing_bin);
+        }
 
         // We can make a singature raw based on the two events IDs.
         // It is pretty unique.

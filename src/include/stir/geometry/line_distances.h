@@ -6,10 +6,12 @@
   \ingroup geometry
   \brief  A few functions to compute distances between lines etc
   \todo move implementations to .cxx
+  \author Nikos Efthimiou
   \author Kris Thielemans
 */
 /*
     Copyright (C) 2005- 2005, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
 
     This file is part of STIR.
 
@@ -161,6 +163,34 @@ distance_between_line_and_point(
 	  return std::sqrt(distance_squared); // will return NaN
 	}
     }
+}
+
+/*! \ingroup geometry
+  \brief Project a point on a line.
+
+  \author Nikos Efthimiou
+*/
+template <class coordT>
+inline void
+project_point_on_a_line(
+        const CartesianCoordinate3D<coordT>& p1,
+        const CartesianCoordinate3D<coordT>& p2,
+        CartesianCoordinate3D<coordT>& r1 )
+{
+
+    const CartesianCoordinate3D<coordT>& r0 = p1;
+    const CartesianCoordinate3D<coordT> difference = p2 - p1;
+
+    const CartesianCoordinate3D<coordT> r10 = r1-r0;
+
+    float inner_prod = inner_product(difference, difference);
+
+    const coordT u = inner_product(r10,difference) / inner_prod ;
+
+    r1.x() = p1.x() + u * difference.x();
+    r1.y() = p1.y() + u * difference.y();
+    r1.z() = p1.z() + u * difference.z();
+
 }
 
 END_NAMESPACE_STIR

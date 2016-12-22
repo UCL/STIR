@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -21,6 +22,7 @@
   \ingroup GeneralisedObjectiveFunction
   \brief Declaration of class stir::GeneralisedObjectiveFunction
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
   \author Sanida Mustafovic
 
@@ -228,6 +230,8 @@ public:
   //! Return the number of subsets in-use
   int get_num_subsets() const;
 
+  //! Return the status of TOF
+  bool get_tof_status() const;
 
   //! Attempts to change the number of subsets. 
   /*! \return The number of subsets that will be used later, which is not
@@ -294,6 +298,9 @@ public:
 
 protected:
   int num_subsets;
+
+  //! If set TOF information will be taken into account.
+  bool use_tof;
 
   shared_ptr<GeneralisedPrior<TargetT> > prior_sptr;
 

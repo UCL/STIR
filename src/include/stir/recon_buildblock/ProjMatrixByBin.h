@@ -7,6 +7,7 @@
   \ingroup projection 
   \brief declaration of stir::ProjMatrixByBin and its helpers classes
   
+  \author Nikos Efthimiou
   \author Mustapha Sadki
   \author Kris Thielemans
   \author PARAPET project
@@ -15,6 +16,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
     Copyright (C) 2013, 2015 University College London
+    Copyright (C) 2016, University of Hull
 
     This file is part of STIR.
 
@@ -38,6 +40,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/TimedObject.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 #include <boost/cstdint.hpp>
 //#include <map>
 #include <boost/unordered_map.hpp>
@@ -123,6 +126,19 @@ public:
     get_proj_matrix_elems_for_one_bin(
        ProjMatrixElemsForOneBin&,
        const Bin&) STIR_MUTABLE_CONST;
+
+  //! Returns a LOR with elements after application of the TOF
+  //! kernel. The central_point of the LOR is needed in order to
+  //! correlate the physical position of the LOR elements with the
+  //! timing bin dimentions which have as reference the center of the LOR.
+  //! \warning Currently, first it calculates a non-TOF LOR and then
+  //! kernel is applied. Which is slow.
+  inline void
+  get_proj_matrix_elems_for_one_bin_with_tof(
+          ProjMatrixElemsForOneBin&,
+          const Bin&,
+          const CartesianCoordinate3D<float>& point1,
+          const CartesianCoordinate3D<float>& point2) STIR_MUTABLE_CONST;
   
 #if 0
   // TODO
@@ -192,6 +208,8 @@ protected:
 
   bool cache_disabled;  
   bool cache_stores_only_basic_bins;
+  //! If activated TOF reconstruction will be performed.
+  bool tof_enabled;
 
   /*! \brief The method that tries to get data from the cache.
   
@@ -232,7 +250,29 @@ private:
   // KT 15/05/2002 not static anymore as it uses cache_stores_only_basic_bins
   CacheKey cache_key(const Bin& bin) const;
 
-   
+  //! A local copy of the scanner's time resolution in mm.
+  float gauss_sigma_in_mm;
+  //! 1/(2*sigma_in_mm)
+  float r_sqrt2_gauss_sigma;
+
+  //! We need a local copy of the discretised density in order to find the
+  //! cartesian coordinates of each voxel.
+  shared_ptr<const VoxelsOnCartesianGrid<float> > image_info_sptr;
+
+  //! We need a local copy of the proj_data_info to get the integration boundaries.
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+
+  //! The function which actually applies the TOF kernel on the LOR.
+  inline void apply_tof_kernel( ProjMatrixElemsForOneBin& nonTOF_probabilities,
+                                  ProjMatrixElemsForOneBin& tof_probabilities,
+                                  const CartesianCoordinate3D<float>& point1,
+                                  const CartesianCoordinate3D<float>& point2) STIR_MUTABLE_CONST;
+
+
+
+  //! Get the interal value erf(m - v_j) - erf(m -v_j)
+  inline void get_tof_value(float& d1, float& d2, float& val) const;
+
 };
 
 

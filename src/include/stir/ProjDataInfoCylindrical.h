@@ -3,6 +3,7 @@
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
     Copyright (C) 2013, University College London
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,6 +24,7 @@
   \ingroup projdata
   \brief Declaration of class stir::ProjDataInfoCylindrical
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Berta Marti Fuster
@@ -33,6 +35,7 @@
 
 
 #include "stir/ProjDataInfo.h"
+#include "stir/CartesianCoordinate3D.h"
 #include <utility>
 #include <vector>
 
@@ -96,6 +99,20 @@ public:
     get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor,
 	    const Bin& bin) const;
 
+  //! This function returns the two points connecting the two detectors of the LOR.
+  //!  \warning there is not a specific guarantee that these are going to be the two
+  //! central points. This might be in the future a source of error.
+  void
+  get_LOR_as_two_points(CartesianCoordinate3D<float>& coord_1,
+                        CartesianCoordinate3D<float>& coord_2,
+                        const Bin& bin) const;
+
+  //! This function is the same as get_LOR_as_two_points() but should faster.
+  //! \warning More testing needed.
+  void
+  get_LOR_as_two_points_alt(CartesianCoordinate3D<float>& coord_1,
+                        CartesianCoordinate3D<float>& coord_2,
+                        const Bin& bin) const;
  
   void set_azimuthal_angle_sampling(const float angle);
  
@@ -108,6 +125,8 @@ public:
   */
   virtual void
     set_num_views(const int new_num_views);
+
+  virtual void set_tof_mash_factor(const int new_num);
 
   //! Get the azimuthal sampling (in radians)
   inline float get_azimuthal_angle_sampling() const;

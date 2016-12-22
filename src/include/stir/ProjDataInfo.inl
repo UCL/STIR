@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -22,6 +23,7 @@
   \ingroup projdata
   \brief Implementations of inline functions for class stir::ProjDataInfo
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author PARAPET project
@@ -55,7 +57,15 @@ int
 ProjDataInfo::get_num_tangential_poss() const
 { return  max_tangential_pos_num - min_tangential_pos_num + 1; }
 
-int 
+int
+ProjDataInfo::get_num_timing_poss() const
+{ return max_timing_pos_num - min_timing_pos_num +1; }
+
+int
+ProjDataInfo::get_tof_mash_factor() const
+{ return tof_mash_factor; }
+
+int
 ProjDataInfo::get_min_segment_num() const
 { return (max_axial_pos_per_seg.get_min_index()); }
 
@@ -89,6 +99,33 @@ ProjDataInfo::get_min_tangential_pos_num()const
 int 
 ProjDataInfo::get_max_tangential_pos_num()const
 { return max_tangential_pos_num; }
+
+int
+ProjDataInfo::get_min_timing_pos_num() const
+{
+    return min_timing_pos_num;
+}
+
+int
+ProjDataInfo::get_max_timing_pos_num() const
+{
+    return max_timing_pos_num;
+}
+
+float
+ProjDataInfo::get_coincidence_window_in_pico_sec() const
+{
+    return scanner_ptr->is_tof_ready()? (scanner_ptr->get_num_max_of_timing_bins() *
+                                         scanner_ptr->get_size_of_timing_bin())
+                                      :(scanner_ptr->get_size_of_timing_bin());
+}
+
+float
+ProjDataInfo::get_coincidence_window_width() const
+{
+    // Speed of light 0.299792458 mm / psec.
+    return get_coincidence_window_in_pico_sec() * 0.299792458f;
+}
 
 float 
 ProjDataInfo::get_costheta(const Bin& bin) const

@@ -3,6 +3,7 @@
     Copyright (C) 2000-2010, Hammersmith Imanet Ltd
     Copyright (C) 2011-2013, King's College London
     Copyright (C) 2016, UCL
+    Copyright (C) 2016, University of Hull
  
     This file is part of STIR.
 
@@ -25,6 +26,7 @@
 
   \brief Declaration of class stir::Scanner
 
+  \author Nikos Efthimiou
   \author Claire Labbe
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -78,6 +80,8 @@ class Succeeded;
           for which we can get singles rates.
 
       \warning This information is only sensible for discrete detector-based scanners.
+      \warning Currently, in a TOF compatible scanner template, the last three types have to
+                be explicitly defined to avoid ambiguity.
       \todo Some scanners do not have all info filled in at present. Values are then
       set to 0.
 
@@ -109,6 +113,7 @@ class Scanner
      any given parameters.
   */
   enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR, RPT,HiDAC,
+         /*Type_mCT, Type_mCT_TOF, Type_mCT_TOF_100, Type_mCT_TOF_200, Type_mCT_TOF_400,*/
 	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600,
 	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,
 	     Unknown_scanner};
@@ -152,6 +157,43 @@ class Scanner
           int num_axial_crystals_per_singles_unit_v, 
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
+          float energy_resolution_v = -1.0f,
+          float reference_energy_v = -1.0f);
+
+
+  //! TOF constructor -(list of names)
+  Scanner(Type type_v, const std::list<std::string>& list_of_names_v,
+          int num_detectors_per_ring_v, int num_rings_v,
+          int max_num_non_arccorrected_bins_v,
+          int default_num_arccorrected_bins_v,
+          float inner_ring_radius_v, float average_depth_of_interaction_v,
+          float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
+          int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+          int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+          int num_axial_crystals_per_singles_unit_v,
+          int num_transaxial_crystals_per_singles_unit_v,
+          int num_detector_layers_v,
+          int max_num_of_timing_bins,
+          float size_timing_bin,
+          float timing_resolution,
+          float energy_resolution_v = -1.0f,
+          float reference_energy_v = -1.0f);
+
+  //! TOF constructor ( a single name)
+  Scanner(Type type_v, const std::string& name,
+          int num_detectors_per_ring_v, int num_rings_v,
+          int max_num_non_arccorrected_bins_v,
+          int default_num_arccorrected_bins_v,
+          float inner_ring_radius_v, float average_depth_of_interaction_v,
+          float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
+          int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+          int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+          int num_axial_crystals_per_singles_unit_v,
+          int num_transaxial_crystals_per_singles_unit_v,
+          int num_detector_layers_v,
+          int max_num_of_timing_bins,
+          float size_timing_bin,
+          float timing_resolution,
           float energy_resolution_v = -1.0f,
           float reference_energy_v = -1.0f);
 
@@ -261,7 +303,12 @@ class Scanner
   inline int get_num_transaxial_singles_units() const;
   /* inline int get_num_layers_singles_units() const; */
   inline int get_num_singles_units() const;
-
+  //! Get the maximum number of TOF bins.
+  inline int get_num_max_of_timing_bins() const;
+  //! Get the delta t which correspnds to the max number of TOF bins in picosecs.
+  inline float get_size_of_timing_bin() const;
+  //! Get the timing resolution of the scanner.
+  inline float get_timing_resolution() const;
 
   //@} (end of block/bucket info)
 
@@ -326,21 +373,27 @@ class Scanner
   //! set the reference energy of the energy resolution
   //! A negative value indicates, unknown || not set
   inline void set_reference_energy(const float new_num);
+  //! Set the maximum number of TOF bins.
+  inline void set_num_max_of_timing_bins(int new_num);
+  //! Set the delta t which correspnds to the max number of TOF bins.
+  inline void set_size_of_timing_bin(float new_num);
+  //! Set timing resolution
+  inline void set_timing_resolution(float new_num_in_ps);
   //@} (end of set info)
   //@} (end of set info)
   
-  // Calculate a singles bin index from axial and transaxial singles bin coordinates.
+  //! Calculate a singles bin index from axial and transaxial singles bin coordinates.
   inline int get_singles_bin_index(int axial_index, int transaxial_index) const;
 
-  // Method used to calculate a singles bin index from
-  // a detection position.
+  //! Method used to calculate a singles bin index from
+  //! a detection position.
   inline int get_singles_bin_index(const DetectionPosition<>& det_pos) const; 
  
 
-  // Get the axial singles bin coordinate from a singles bin.
+  //! Get the axial singles bin coordinate from a singles bin.
   inline int get_axial_singles_unit(int singles_bin_index) const;
 
-  // Get the transaxial singles bin coordinate from a singles bin.
+  //! Get the transaxial singles bin coordinate from a singles bin.
   inline int get_transaxial_singles_unit(int singles_bin_index) const;
   
 
@@ -367,7 +420,7 @@ private:
   int num_axial_crystals_per_singles_unit;
   int num_transaxial_crystals_per_singles_unit;
 
-   //!
+  //!
   //! \brief energy_resolution
   //! \author Nikos Efthimiou
   //! \details This is the energy resolution of the system.
@@ -382,8 +435,26 @@ private:
   //! A negative value indicates, unknown.
   float reference_energy;
 
+  //!
+  //! \brief timing_resolution
+  //! \author Nikos Efthimiou
+  //! \details The timing resolution of the scanner, in psec.
+  float timing_resolution;
 
-  // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
+  //!
+  //! \brief num_tof_bins
+  //! \author Nikos Efthimiou
+  //! \details The number of TOF bins. Without any mash factors
+  int max_num_of_timing_bins;
+
+  //!
+  //! \brief size_timing_bin
+  //! \author Nikos Efthimiou
+  //! \details This number corresponds the the least significant clock digit.
+  float size_timing_bin;
+
+
+  //! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
                   int num_rings_v, 
                   int max_num_non_arccorrected_bins_v,
@@ -400,7 +471,7 @@ private:
                   float energy_resolution_v = -1.0f,
                   float reference_energy = -1.0f);
 
-  // ! set all parameters
+  //! set all parameters
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
                   int num_rings_v, 
                   int max_num_non_arccorrected_bins_v,

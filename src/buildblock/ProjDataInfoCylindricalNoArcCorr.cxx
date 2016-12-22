@@ -498,7 +498,7 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
 }
 
 
-//! \obsolete
+//! \obsolete I don't see any reason why to keep having this function.
 void
 ProjDataInfoCylindricalNoArcCorr::
 find_cartesian_coordinates_given_scanner_coordinates_of_the_front_surface (

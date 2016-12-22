@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2015, 2016 University of Leeds
     Copyright (C) 2016 University College London
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -50,6 +51,11 @@ CListModeDataROOT(const std::string& listmode_filename)
     //    number_of_views = -1;
     //    number_of_segments = -1;
 
+    max_num_timing_bins = -1;
+    size_timing_bin = -1.f;
+    timing_resolution = -1.f;
+    tof_mash_factor = -1;
+
     // Scanner related & Physical dimentions.
     this->parser.add_key("originating system", &this->originating_system);
     this->parser.add_key("Number of rings", &this->num_rings);
@@ -68,6 +74,12 @@ CListModeDataROOT(const std::string& listmode_filename)
     //    this->parser.add_key("%number_of_projections", &number_of_projections);
     //    this->parser.add_key("%number_of_views", &number_of_views);
     //    this->parser.add_key("%number_of_segments", &number_of_segments);
+
+    this->parser.add_key("number of TOF time bins", &this->max_num_timing_bins);
+    this->parser.add_key("Size of timing bin (in picoseconds)", &this->size_timing_bin);
+    this->parser.add_key("Timing resolution (in picoseconds)", &this->timing_resolution);
+
+    this->parser.add_key("%TOF mashing factor", &this->tof_mash_factor);
     //
 
     // ROOT related
@@ -125,7 +137,10 @@ CListModeDataROOT(const std::string& listmode_filename)
                                              this->current_lm_data_ptr->get_num_axial_crystals_per_singles_unit(),
                                              /*num_transaxial_crystals_per_singles_unit_v*/
                                              this->current_lm_data_ptr->get_num_trans_crystals_per_singles_unit(),
-                                             /*num_detector_layers_v*/ 1 ));
+                                             /*num_detector_layers_v*/ 1,
+                                             max_num_timing_bins,
+                                             size_timing_bin,
+                                             timing_resolution));
     }
 
     if (this->open_lm_file() == Succeeded::no)
@@ -146,6 +161,8 @@ CListModeDataROOT(const std::string& listmode_filename)
                                   num_detectors_per_ring/2,
                                   max_num_non_arccorrected_bins,
                                   /* arc_correction*/false));
+    if (tof_mash_factor > 0)
+        this->proj_data_info_sptr->set_tof_mash_factor(tof_mash_factor);
 }
 
 std::string

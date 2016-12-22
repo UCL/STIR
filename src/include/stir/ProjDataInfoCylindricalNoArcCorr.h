@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000- 2011-06-24, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,6 +24,7 @@
 
   \brief Declaration of class stir::ProjDataInfoCylindricalNoArcCorr
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
 
 */
@@ -270,6 +272,11 @@ public:
   Succeeded find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& ring1, int& ring2,
 					             const CartesianCoordinate3D<float>& c1,
 						     const CartesianCoordinate3D<float>& c2) const;
+
+  void find_cartesian_coordinates_given_scanner_coordinates_of_the_front_surface(CartesianCoordinate3D<float>& coord_1,
+                                                                                 CartesianCoordinate3D<float>& coord_2,
+                                                                                 const int Ring_A,const int Ring_B,
+                                                                                 const int det1, const int det2) const;
   
   void find_cartesian_coordinates_of_detection(CartesianCoordinate3D<float>& coord_1,
 					       CartesianCoordinate3D<float>& coord_2,

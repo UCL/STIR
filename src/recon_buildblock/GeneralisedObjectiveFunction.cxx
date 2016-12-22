@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -21,6 +22,7 @@
   \ingroup GeneralisedObjectiveFunction
   \brief Declaration of class stir::GeneralisedObjectiveFunction
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
   \author Sanida Mustafovic
 
@@ -32,7 +34,7 @@
 #include "stir/Succeeded.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
-
+#include "stir/info.h"
 using std::string;
 
 START_NAMESPACE_STIR
@@ -45,6 +47,7 @@ set_defaults()
   this->prior_sptr.reset();
   // note: cannot use set_num_subsets(1) here, as other parameters (such as projectors) are not set-up yet.
   this->num_subsets = 1;
+  use_tof = false;
 }
 
 template <typename TargetT>
@@ -53,6 +56,7 @@ GeneralisedObjectiveFunction<TargetT>::
 initialise_keymap()
 {
   this->parser.add_parsing_key("prior type", &prior_sptr);
+  this->parser.add_key("Use TOF information", &use_tof);
 }
 
 template <typename TargetT>
@@ -75,6 +79,11 @@ set_up(shared_ptr<TargetT> const& target_data_ptr)
 	      this->num_subsets);
       return Succeeded::no;
     }
+
+  if (use_tof)
+  {
+      info("Time-Of-Flight reconstruction activated!");
+  }
 
   return Succeeded::yes;  
 }
@@ -167,6 +176,14 @@ GeneralisedObjectiveFunction<TargetT>::
 get_num_subsets() const
 {
   return this->num_subsets;
+}
+
+template <typename TargetT>
+bool
+GeneralisedObjectiveFunction<TargetT>::
+get_tof_status() const
+{
+  return this->use_tof;
 }
 
 template <typename TargetT>
