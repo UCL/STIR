@@ -584,7 +584,10 @@ void
 ProjDataInfoCylindrical::
 get_LOR_as_two_points_alt(CartesianCoordinate3D<float>& coord_1,
                           CartesianCoordinate3D<float>& coord_2,
-                          const Bin& bin) const
+                          const int& det1,
+                          const int& det2,
+                          const int& ring1,
+                          const int& ring2) const
 {
     const int num_detectors_per_ring =
             get_scanner_ptr()->get_num_detectors_per_ring();
@@ -603,8 +606,8 @@ get_LOR_as_two_points_alt(CartesianCoordinate3D<float>& coord_1,
     cyl_coords.p1().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(det1));
     cyl_coords.p2().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(det2));
 
-    cyl_coords.p1().z() = Ring_A*get_scanner_ptr()->get_ring_spacing() - h_scanner_height;
-    cyl_coords.p2().z() = Ring_B*get_scanner_ptr()->get_ring_spacing() - h_scanner_height;
+    cyl_coords.p1().z() = ring1*get_scanner_ptr()->get_ring_spacing() - h_scanner_height;
+    cyl_coords.p2().z() = ring2*get_scanner_ptr()->get_ring_spacing() - h_scanner_height;
 
     LORAs2Points<float> lor(cyl_coords);
     coord_1 = lor.p1();

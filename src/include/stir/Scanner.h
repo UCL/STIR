@@ -395,7 +395,9 @@ class Scanner
 
   //! Get the transaxial singles bin coordinate from a singles bin.
   inline int get_transaxial_singles_unit(int singles_bin_index) const;
-  
+
+  //! True if it is TOF compatible.
+  inline bool is_tof_ready() const;
 
 private:
   Type type;

@@ -170,6 +170,10 @@ public:
   //! Remove all elements from the cache
   void clear_cache() STIR_MUTABLE_CONST;
 
+  //! Activates the application of the timing kernel to the LOR
+  //! and performs initial set_up().
+  //! \warning Must be called after set_up()
+  void enable_tof(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,const bool v = true);
   
 protected:
   shared_ptr<DataSymmetriesForBins> symmetries_sptr;

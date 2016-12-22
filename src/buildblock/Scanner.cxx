@@ -486,6 +486,73 @@ Scanner::Scanner(Type type_v, const string& name,
 }
 
 
+Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
+                 int num_detectors_per_ring_v, int num_rings_v,
+                 int max_num_non_arccorrected_bins_v,
+                 int default_num_arccorrected_bins_v,
+                 float inner_ring_radius_v, float average_depth_of_interaction_v,
+                 float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
+                 int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+                 int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+                 int num_axial_crystals_per_singles_unit_v,
+                 int num_transaxial_crystals_per_singles_unit_v,
+                 int num_detector_layers_v,
+                 int max_num_of_timing_bins,
+                 float size_timing_bin,
+                 float timing_resolution,
+                 float energy_resolution_v,
+                 float reference_energy_v)
+{
+//  set_params(type_v, list_of_names_v, num_rings_v,
+//             max_num_non_arccorrected_bins_v,
+//             default_num_arccorrected_bins_v,
+//             num_detectors_per_ring_v,
+//             inner_ring_radius_v,
+//             average_depth_of_interaction_v,
+//             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
+//             num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
+//             num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
+//             num_axial_crystals_per_singles_unit_v,
+//             num_transaxial_crystals_per_singles_unit_v,
+//             num_detector_layers_v,
+//             energy_resolution_v,
+//             reference_energy_v);
+}
+
+
+
+Scanner::Scanner(Type type_v, const string& name,
+                 int num_detectors_per_ring_v, int num_rings_v,
+                 int max_num_non_arccorrected_bins_v,
+                 int default_num_arccorrected_bins_v,
+                 float inner_ring_radius_v, float average_depth_of_interaction_v,
+                 float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
+                 int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+                 int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+                 int num_axial_crystals_per_singles_unit_v,
+                 int num_transaxial_crystals_per_singles_unit_v,
+                 int num_detector_layers_v,
+                 int max_num_of_timing_bins,
+                 float size_timing_bin,
+                 float timing_resolution,
+                 float energy_resolution_v,
+                 float reference_energy_v)
+{
+//  set_params(type_v, string_list(name), num_rings_v,
+//             max_num_non_arccorrected_bins_v,
+//             default_num_arccorrected_bins_v,
+//             num_detectors_per_ring_v,
+//             inner_ring_radius_v,
+//             average_depth_of_interaction_v,
+//             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
+//             num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
+//             num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
+//             num_axial_crystals_per_singles_unit_v,
+//             num_transaxial_crystals_per_singles_unit_v,
+//             num_detector_layers_v,
+//             energy_resolution_v,
+//             reference_energy_v);
+}
 
 
 

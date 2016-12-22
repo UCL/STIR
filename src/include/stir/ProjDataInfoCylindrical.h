@@ -111,8 +111,11 @@ public:
   //! \warning More testing needed.
   void
   get_LOR_as_two_points_alt(CartesianCoordinate3D<float>& coord_1,
-                        CartesianCoordinate3D<float>& coord_2,
-                        const Bin& bin) const;
+                            CartesianCoordinate3D<float>& coord_2,
+                            const int& det1,
+                            const int& det2,
+                            const int& ring1,
+                            const int& ring2) const;
  
   void set_azimuthal_angle_sampling(const float angle);
  

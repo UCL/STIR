@@ -189,7 +189,7 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& nonTOF_probabilities
         voxel_center =
                 image_info_sptr->get_physical_coordinates_for_indices (element_ptr->get_coords());
 
-        project_point_to_a_line_f(point1, point2, voxel_center );
+        project_point_on_a_line(point1, point2, voxel_center );
 
         float d1 = std::sqrt((point1.x() - voxel_center.x()) *(point1.x() - voxel_center.x()) +
                              (point1.y() - voxel_center.y()) *(point1.y() - voxel_center.y()) +

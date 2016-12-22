@@ -60,6 +60,7 @@
 
 #include "stir/info.h"
 #include "boost/foreach.hpp"
+#include "boost/format.hpp"
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;

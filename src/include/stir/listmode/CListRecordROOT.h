@@ -106,9 +106,6 @@ public:
     //! Get the delta Time between the two events
     inline unsigned long get_delta_time_in_millisecs() const
     { return delta_time * 1e3; }
-    //! Get delta time in picoseconds
-    inline unsigned long get_delta_time_in_picosecs() const
-    { return (timeB - timeA) * 1e12; }
 
     inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
     {
@@ -118,9 +115,9 @@ public:
 
     virtual inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
     {
-        delta_timing_bin > 0 ?
-                    bin.timing_pos_num() = static_cast<int> ( ( delta_timing_bin / proj_data_info.get_tof_mash_factor()) + 0.5)
-                : bin.timing_pos_num() = static_cast<int> ( ( delta_timing_bin / proj_data_info.get_tof_mash_factor()) - 0.5);
+        delta_time > 0 ?
+                    bin.timing_pos_num() = static_cast<int> ( ( delta_time / proj_data_info.get_tof_mash_factor()) + 0.5)
+                : bin.timing_pos_num() = static_cast<int> ( ( delta_time / proj_data_info.get_tof_mash_factor()) - 0.5);
 
         if (bin.timing_pos_num() <  proj_data_info.get_min_timing_pos_num() ||
                 bin.timing_pos_num() > proj_data_info.get_max_timing_pos_num())
@@ -193,15 +190,11 @@ public:
         this->event_data.init_from_data(ring1, ring2,
                                         crystal1, crystal2);
 
-        if(!this->event_data.is_swapped())
+        this->event_data.is_swapped() ?
             this->time_data.init_from_data(
-                    time1, delta_timing_bin);
-        else
-        {
-//            delta_timing_bin = -delta_timing_bin;
+                    time1, delta_time) :
             this->time_data.init_from_data(
-                        time1, -delta_timing_bin);
-        }
+                        time1, -delta_time);
 
         // We can make a singature raw based on the two events IDs.
         // It is pretty unique.
