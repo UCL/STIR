@@ -112,10 +112,18 @@ get_next_record(CListRecordROOT& record)
     crystal1 += offset_dets;
     crystal2 += offset_dets;
 
+    short int delta_timing_bin = 0;
+    double delta_time = time2 - time1;
+
+    if (delta_time >=0)
+        delta_timing_bin = static_cast<float>(delta_time * least_significant_clock_bit);
+    else
+        delta_timing_bin = static_cast<float>(delta_time * least_significant_clock_bit);
+
     return
             record.init_from_data(ring1, ring2,
                                   crystal1, crystal2,
-                                  time1, time2,
+                                  time1, delta_timing_bin,
                                   event1, event2);
 }
 
