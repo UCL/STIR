@@ -167,7 +167,7 @@ public:
         return this->time_data;
     }
 
-    virtual void full_event(Bin&, const ProjDataInfo&) const
+    virtual void full_event(Bin& bin, const ProjDataInfo& proj_data_info) const
     {
         event_data.get_bin(bin, proj_data_info);
         time_data.get_bin(bin, proj_data_info);
