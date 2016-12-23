@@ -167,6 +167,12 @@ public:
         return this->time_data;
     }
 
+    virtual void full_event(Bin&, const ProjDataInfo&) const
+    {
+        event_data.get_bin(bin, proj_data_info);
+        time_data.get_bin(bin, proj_data_info);
+    }
+
     bool operator==(const CListRecord& e2) const
     {
         return dynamic_cast<CListRecordROOT const *>(&e2) != 0 &&
