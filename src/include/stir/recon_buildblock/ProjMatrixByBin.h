@@ -225,6 +225,13 @@ protected:
 	 	 ProjMatrixElemsForOneBin&
                  ) const;		
   
+  //! We need a local copy of the discretised density in order to find the
+  //! cartesian coordinates of each voxel.
+  shared_ptr<const VoxelsOnCartesianGrid<float> > image_info_sptr;
+
+  //! We need a local copy of the proj_data_info to get the integration boundaries.
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+
   //! The method to store data in the cache.
   void  cache_proj_matrix_elems_for_one_bin( const ProjMatrixElemsForOneBin&)
     STIR_MUTABLE_CONST;
@@ -258,13 +265,6 @@ private:
   float gauss_sigma_in_mm;
   //! 1/(2*sigma_in_mm)
   float r_sqrt2_gauss_sigma;
-
-  //! We need a local copy of the discretised density in order to find the
-  //! cartesian coordinates of each voxel.
-  shared_ptr<const VoxelsOnCartesianGrid<float> > image_info_sptr;
-
-  //! We need a local copy of the proj_data_info to get the integration boundaries.
-  shared_ptr<ProjDataInfo> proj_data_info_sptr;
 
   //! The function which actually applies the TOF kernel on the LOR.
   inline void apply_tof_kernel( ProjMatrixElemsForOneBin& nonTOF_probabilities,

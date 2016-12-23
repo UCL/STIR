@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2014, 2016, University College London
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -29,6 +30,7 @@
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h" 
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
+#include "stir/LORCoordinates.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjData.h"
 #include "stir/listmode/CListRecord.h"
@@ -197,6 +199,8 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
 
     // set projector to be used for the calculations
     this->PM_sptr->set_up(proj_data_info_cyl_sptr->create_shared_clone(),target_sptr);
+
+    this->PM_sptr->enable_tof(proj_data_info_cyl_sptr->create_shared_clone(), this->use_tof);
 
     shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
     shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
@@ -424,11 +428,18 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   ProjDataInfoCylindricalNoArcCorr* proj_data_no_arc_ptr =
           dynamic_cast<ProjDataInfoCylindricalNoArcCorr *> (proj_data_info_cyl_sptr.get());
 
+  CartesianCoordinate3D<float> lor_point_1, lor_point_2;
+
   const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
   const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
 
   long num_stored_events = 0;
   const float max_quotient = 10000.F;
+
+  // Putting the Bins here I avoid rellocation.
+  Bin measured_bin;
+  Bin fwd_bin;
+  LORAs2Points<float> lor_points;
 
   //go to the beginning of this frame
   //  list_mode_data_sptr->set_get_position(start_time);
@@ -463,17 +474,22 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 
     if (record.is_event() && record.event().is_prompt()) 
       { 
-        Bin measured_bin; 
         measured_bin.set_bin_value(1.0f);
-        record.event().get_bin(measured_bin, *proj_data_info_cyl_sptr);
 
+        this->use_tof ? record.full_event(measured_bin, *proj_data_info_cyl_sptr):
+                    record.event().get_bin(measured_bin, *proj_data_info_cyl_sptr);
+
+        // In theory we have already done all these checks so we can
+        // remove this if statement.
         if (measured_bin.get_bin_value() != 1.0f
                 || measured_bin.segment_num() < proj_data_info_cyl_sptr->get_min_segment_num()
                 || measured_bin.segment_num()  > proj_data_info_cyl_sptr->get_max_segment_num()
                 || measured_bin.tangential_pos_num() < proj_data_info_cyl_sptr->get_min_tangential_pos_num()
                 || measured_bin.tangential_pos_num() > proj_data_info_cyl_sptr->get_max_tangential_pos_num()
                 || measured_bin.axial_pos_num() < proj_data_info_cyl_sptr->get_min_axial_pos_num(measured_bin.segment_num())
-                || measured_bin.axial_pos_num() > proj_data_info_cyl_sptr->get_max_axial_pos_num(measured_bin.segment_num()))
+                || measured_bin.axial_pos_num() > proj_data_info_cyl_sptr->get_max_axial_pos_num(measured_bin.segment_num())
+                || measured_bin.timing_pos_num() < proj_data_info_cyl_sptr->get_min_timing_pos_num()
+                || measured_bin.timing_pos_num() > proj_data_info_cyl_sptr->get_max_timing_pos_num())
         {
             continue;
         }
@@ -493,9 +509,18 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
             }
         }
 
-        this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin); 
+        if(this->use_tof)
+        {
+            //            proj_data_no_arc_ptr->get_LOR_as_two_points(lor_point_1, lor_point_2, measured_bin);
+            lor_points = record.event().get_LOR();
+            this->PM_sptr->get_proj_matrix_elems_for_one_bin_with_tof(proj_matrix_row,
+                                                                      measured_bin,
+                                                                      lor_points.p1(), lor_points.p2());
+        }
+        else
+            this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
+
         //in_the_range++;
-        Bin fwd_bin; 
         fwd_bin.set_bin_value(0.0f);
         proj_matrix_row.forward_project(fwd_bin,current_estimate); 
         // additive sinogram 

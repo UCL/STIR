@@ -208,8 +208,8 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& nonTOF_probabilities
         get_tof_value(low_dist, high_dist, new_value);
         new_value *=  element_ptr->get_value();
 
-        if (new_value <= 0.0001f)
-            continue;
+        //if (new_value <= 0.0001f)
+          //  continue;
         tof_probabilities.push_back(ProjMatrixElemsForOneBin::value_type(element_ptr->get_coords(), new_value));
 
     }
@@ -219,7 +219,7 @@ void
 ProjMatrixByBin::
 get_tof_value(float& d1, float& d2, float& val) const
 {
-    val = ( erf(d2) - erf(d1)) * 0.5;
+    val = ( erf(d2) - erf(d1)) * 0.5f;
 }
 
 END_NAMESPACE_STIR

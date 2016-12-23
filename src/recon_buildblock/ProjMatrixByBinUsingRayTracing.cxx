@@ -2,6 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
     Copyright (C) 2013-2014, University College London
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,6 +24,7 @@
 
   \brief non-inline implementations for stir::ProjMatrixByBinUsingRayTracing
 
+  \author Nikos Efthimiou
   \author Mustapha Sadki
   \author Kris Thielemans
   \author PARAPET project
@@ -267,26 +269,28 @@ static bool is_multiple(const float a, const float b)
 void
 ProjMatrixByBinUsingRayTracing::
 set_up(          
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    const shared_ptr<ProjDataInfo>& proj_data_info_sptr_v,
+    const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr_v // TODO should be Info only
     )
 {
-  ProjMatrixByBin::set_up(proj_data_info_ptr_v, density_info_ptr);
+  ProjMatrixByBin::set_up(proj_data_info_sptr_v, density_info_sptr_v);
 
-  proj_data_info_ptr= proj_data_info_ptr_v; 
-  const VoxelsOnCartesianGrid<float> * image_info_ptr =
-    dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
+  proj_data_info_ptr= proj_data_info_sptr_v;
+  image_info_sptr.reset(
+              dynamic_cast<const VoxelsOnCartesianGrid<float>* > (density_info_sptr_v->clone() ));
+//  const VoxelsOnCartesianGrid<float> * image_info_ptr =
+//    dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
 
-  if (image_info_ptr == NULL)
+  if(is_null_ptr(image_info_sptr))
     error("ProjMatrixByBinUsingRayTracing initialised with a wrong type of DiscretisedDensity\n");
  
-  voxel_size = image_info_ptr->get_voxel_size();
-  origin = image_info_ptr->get_origin();
-  image_info_ptr->get_regular_range(min_index, max_index);
+  voxel_size = image_info_sptr->get_voxel_size();
+  origin = image_info_sptr->get_origin();
+  image_info_sptr->get_regular_range(min_index, max_index);
 
   symmetries_sptr.reset(
     new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
-                                                density_info_ptr,
+                                                density_info_sptr_v,
                                                 do_symmetry_90degrees_min_phi,
                                                 do_symmetry_180degrees_min_phi,
                                                 do_symmetry_swap_segment,

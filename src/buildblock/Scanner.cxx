@@ -206,6 +206,114 @@ Scanner::Scanner(Type scanner_type)
                2, 1, 8, 9, 16, 9, 1 ); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
     break;
 
+  case Type_mCT: // dummy
+      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
+      // Transaxial blocks have 8 physical crystals and a gap at the
+      // 9th crystal where the counts are zero.
+      set_params(Type_mCT, string_list("Type mCT", "tmCT", "t2011"),
+                 52, 312, 624,
+                 424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
+                 1, 48, 52, 13, 13, 13, 1 ); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+      break;
+
+  case Type_mCT_TOF: // dummy
+      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
+      // Transaxial blocks have 8 physical crystals and a gap at the
+      // 9th crystal where the counts are zero.
+      // For TOF scanners the three last types have to be defined to avoid ambiguity.
+      set_params(Type_mCT_TOF, string_list("Type mCT_TOF", "tmCT_TOF", "t2011_tof"),
+                 52, 312, 624,
+                 424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
+                 1, 48, 52, 13, 13, 13, 1,
+                 (short int)(315),
+                 (float)(13.015F),
+                 (float)(600.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+      break;
+
+  case Type_mCT_TOF_400: // dummy
+      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
+      // Transaxial blocks have 8 physical crystals and a gap at the
+      // 9th crystal where the counts are zero.
+      // For TOF scanners the three last types have to be defined to avoid ambiguity.
+      set_params(Type_mCT_TOF_400, string_list("Type mCT_TOF_400", "tmCT_TOF_400", "t2011_tof_400"),
+                 52, 312, 624,
+                 424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
+                 1, 48, 52, 13, 13, 13, 1,
+                 (short int)(315),
+                 (float)(13.015F),
+                 (float)(400.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+      break;
+
+  case Type_mCT_TOF_200: // dummy
+      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
+      // Transaxial blocks have 8 physical crystals and a gap at the
+      // 9th crystal where the counts are zero.
+      // For TOF scanners the three last types have to be defined to avoid ambiguity.
+      set_params(Type_mCT_TOF_200, string_list("Type mCT_TOF_200", "tmCT_TOF_200", "t2011_tof_200"),
+                 52, 312, 624,
+                 424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
+                 1, 48, 52, 13, 13, 13, 1,
+                 (short int)(315),
+                 (float)(13.015F),
+                 (float)(200.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+      break;
+
+  case Type_mCT_TOF_100: // dummy
+      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
+      // Transaxial blocks have 8 physical crystals and a gap at the
+      // 9th crystal where the counts are zero.
+      // For TOF scanners the three last types have to be defined to avoid ambiguity.
+      set_params(Type_mCT_TOF_100, string_list("Type mCT_TOF_100", "tmCT_TOF_100", "t2011_tof_100"),
+                 52, 312, 624,
+                 424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
+                 1, 48, 52, 13, 13, 13, 1,
+                 (short int)(315),
+                 (float)(13.015F),
+                 (float)(100.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+      break;
+
+  case Type_mCT_TOF_50: // dummy
+      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
+      // Transaxial blocks have 8 physical crystals and a gap at the
+      // 9th crystal where the counts are zero.
+      // For TOF scanners the three last types have to be defined to avoid ambiguity.
+      set_params(Type_mCT_TOF_50, string_list("Type mCT_TOF_50", "tmCT_TOF_50", "t2011_tof_50"),
+                 52, 312, 624,
+                 424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
+                 1, 48, 52, 13, 13, 13, 1,
+                 (short int)(315),
+                 (float)(13.015F),
+                 (float)(50.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+      break;
+
+  case Type_mCT_TOF_20: // dummy
+      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
+      // Transaxial blocks have 8 physical crystals and a gap at the
+      // 9th crystal where the counts are zero.
+      // For TOF scanners the three last types have to be defined to avoid ambiguity.
+      set_params(Type_mCT_TOF_20, string_list("Type mCT_TOF_20", "tmCT_TOF_20", "t2011_tof_20"),
+                 52, 312, 624,
+                 424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
+                 1, 48, 52, 13, 13, 13, 1,
+                 (short int)(315),
+                 (float)(13.015F),
+                 (float)(20.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+      break;
+
+  case Type_mCT_TOF_10: // dummy
+      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
+      // Transaxial blocks have 8 physical crystals and a gap at the
+      // 9th crystal where the counts are zero.
+      // For TOF scanners the three last types have to be defined to avoid ambiguity.
+      set_params(Type_mCT_TOF_10, string_list("Type mCT_TOF_10", "tmCT_TOF_10", "t2011_tof_10"),
+                 52, 312, 624,
+                 424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
+                 1, 48, 52, 13, 13, 13, 1,
+                 (short int)(315),
+                 (float)(13.015F),
+                 (float)(10.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+      break;
+
   case RPT:
     
     set_params(RPT, string_list("PRT-1", "RPT"), 
@@ -233,8 +341,8 @@ Scanner::Scanner(Type scanner_type)
     
     set_params(PANDA, string_list("PANDA"), 
                1 /*NumRings*/, 512 /*MaxBinsNonArcCor*/, 512 /*MaxBinsArcCor*/, 2048 /*NumDetPerRing*/, 
-               /*MeanInnerRadius*/ 75.5/2.F, /*AverageDoI*/ 10.F, /*Ring Spacing*/ 3.F, /*BinSize*/ 0.1F, /*IntrinsicTilt*/ 0.F, 
-               1, 1, 1, 1, 0, 0, 1);     
+               /*MeanInnerRadius*/ 75.5/2.F, /*AverageDoI*/ 10.F, /*Ring Spacing*/ 3.F, /*BinSize*/ 0.1F, /*IntrinsicTilt*/ 0.F,
+               1, 1, 1, 1, 0, 0, 1);
     break;
 		  
   case nanoPET:
@@ -424,18 +532,16 @@ Scanner::Scanner(Type scanner_type)
 
 
 Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
-                 int num_detectors_per_ring_v, int num_rings_v, 
+                 int num_detectors_per_ring_v, int num_rings_v,
                  int max_num_non_arccorrected_bins_v,
                  int default_num_arccorrected_bins_v,
-                 float inner_ring_radius_v, float average_depth_of_interaction_v, 
+                 float inner_ring_radius_v, float average_depth_of_interaction_v,
                  float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
                  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
                  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                 int num_axial_crystals_per_singles_unit_v, 
+                 int num_axial_crystals_per_singles_unit_v,
                  int num_transaxial_crystals_per_singles_unit_v,
-                 int num_detector_layers_v,
-                 float energy_resolution_v,
-                 float reference_energy_v)
+                 int num_detector_layers_v)
 {
   set_params(type_v, list_of_names_v, num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -448,43 +554,8 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
              num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
              num_axial_crystals_per_singles_unit_v,
              num_transaxial_crystals_per_singles_unit_v,
-             num_detector_layers_v,
-             energy_resolution_v,
-             reference_energy_v);
+             num_detector_layers_v);
 }
-
-
-
-Scanner::Scanner(Type type_v, const string& name,
-                 int num_detectors_per_ring_v, int num_rings_v, 
-                 int max_num_non_arccorrected_bins_v,
-                 int default_num_arccorrected_bins_v,
-                 float inner_ring_radius_v, float average_depth_of_interaction_v, 
-                 float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
-                 int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-                 int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                 int num_axial_crystals_per_singles_unit_v, 
-                 int num_transaxial_crystals_per_singles_unit_v,
-                 int num_detector_layers_v,
-                 float energy_resolution_v,
-                 float reference_energy_v) 
-{
-  set_params(type_v, string_list(name), num_rings_v,
-             max_num_non_arccorrected_bins_v,
-             default_num_arccorrected_bins_v,
-             num_detectors_per_ring_v,
-             inner_ring_radius_v,
-             average_depth_of_interaction_v,
-             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
-             num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
-             num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
-             num_axial_crystals_per_singles_unit_v,
-             num_transaxial_crystals_per_singles_unit_v,
-             num_detector_layers_v,
-             energy_resolution_v,
-             reference_energy_v);
-}
-
 
 Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
                  int num_detectors_per_ring_v, int num_rings_v,
@@ -497,28 +568,56 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
                  int num_axial_crystals_per_singles_unit_v,
                  int num_transaxial_crystals_per_singles_unit_v,
                  int num_detector_layers_v,
-                 int max_num_of_timing_bins,
-                 float size_timing_bin,
-                 float timing_resolution,
                  float energy_resolution_v,
                  float reference_energy_v)
 {
-//  set_params(type_v, list_of_names_v, num_rings_v,
-//             max_num_non_arccorrected_bins_v,
-//             default_num_arccorrected_bins_v,
-//             num_detectors_per_ring_v,
-//             inner_ring_radius_v,
-//             average_depth_of_interaction_v,
-//             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
-//             num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
-//             num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
-//             num_axial_crystals_per_singles_unit_v,
-//             num_transaxial_crystals_per_singles_unit_v,
-//             num_detector_layers_v,
-//             energy_resolution_v,
-//             reference_energy_v);
+  set_params(type_v, list_of_names_v, num_rings_v,
+             max_num_non_arccorrected_bins_v,
+             default_num_arccorrected_bins_v,
+             num_detectors_per_ring_v,
+             inner_ring_radius_v,
+             average_depth_of_interaction_v,
+             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
+             energy_resolution_v,
+             reference_energy_v,
+             num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
+             num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
+             num_axial_crystals_per_singles_unit_v,
+             num_transaxial_crystals_per_singles_unit_v,
+             num_detector_layers_v);
 }
 
+Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
+                 int num_detectors_per_ring_v, int num_rings_v,
+                 int max_num_non_arccorrected_bins_v,
+                 int default_num_arccorrected_bins_v,
+                 float inner_ring_radius_v, float average_depth_of_interaction_v,
+                 float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
+                 int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+                 int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+                 int num_axial_crystals_per_singles_unit_v,
+                 int num_transaxial_crystals_per_singles_unit_v,
+                 int num_detector_layers_v,
+                 short int max_num_of_timing_bins_v,
+                 float size_timing_bin_v,
+                 float timing_resolution_v)
+{
+    set_params(type_v, list_of_names_v, num_rings_v,
+               max_num_non_arccorrected_bins_v,
+               default_num_arccorrected_bins_v,
+               num_detectors_per_ring_v,
+               inner_ring_radius_v,
+               average_depth_of_interaction_v,
+               ring_spacing_v, bin_size_v, intrinsic_tilt_v,
+               num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
+               num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
+               num_axial_crystals_per_singles_unit_v,
+               num_transaxial_crystals_per_singles_unit_v,
+               num_detector_layers_v,
+               max_num_of_timing_bins_v,
+               size_timing_bin_v,
+               timing_resolution_v);
+}
 
 
 Scanner::Scanner(Type type_v, const string& name,
@@ -531,72 +630,189 @@ Scanner::Scanner(Type type_v, const string& name,
                  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
                  int num_axial_crystals_per_singles_unit_v,
                  int num_transaxial_crystals_per_singles_unit_v,
+                 int num_detector_layers_v)
+{
+  set_params(type_v, string_list(name), num_rings_v,
+             max_num_non_arccorrected_bins_v,
+             default_num_arccorrected_bins_v,
+             num_detectors_per_ring_v,
+             inner_ring_radius_v,
+             average_depth_of_interaction_v,
+             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
+             num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
+             num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
+             num_axial_crystals_per_singles_unit_v,
+             num_transaxial_crystals_per_singles_unit_v,
+             num_detector_layers_v);
+}
+
+Scanner::Scanner(Type type_v, const string& name,
+                 int num_detectors_per_ring_v, int num_rings_v,
+                 int max_num_non_arccorrected_bins_v,
+                 int default_num_arccorrected_bins_v,
+                 float inner_ring_radius_v, float average_depth_of_interaction_v,
+                 float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
+                 int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+                 int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+                 int num_axial_crystals_per_singles_unit_v,
+                 int num_transaxial_crystals_per_singles_unit_v,
                  int num_detector_layers_v,
-                 int max_num_of_timing_bins,
-                 float size_timing_bin,
-                 float timing_resolution,
                  float energy_resolution_v,
                  float reference_energy_v)
 {
-//  set_params(type_v, string_list(name), num_rings_v,
-//             max_num_non_arccorrected_bins_v,
-//             default_num_arccorrected_bins_v,
-//             num_detectors_per_ring_v,
-//             inner_ring_radius_v,
-//             average_depth_of_interaction_v,
-//             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
-//             num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
-//             num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
-//             num_axial_crystals_per_singles_unit_v,
-//             num_transaxial_crystals_per_singles_unit_v,
-//             num_detector_layers_v,
-//             energy_resolution_v,
-//             reference_energy_v);
+  set_params(type_v, string_list(name), num_rings_v,
+             max_num_non_arccorrected_bins_v,
+             default_num_arccorrected_bins_v,
+             num_detectors_per_ring_v,
+             inner_ring_radius_v,
+             average_depth_of_interaction_v,
+             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
+                          energy_resolution_v,
+                          reference_energy_v,
+             num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
+             num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
+             num_axial_crystals_per_singles_unit_v,
+             num_transaxial_crystals_per_singles_unit_v,
+             num_detector_layers_v);
 }
 
-
-
-
+Scanner::Scanner(Type type_v, const string& name,
+                 int num_detectors_per_ring_v, int num_rings_v,
+                 int max_num_non_arccorrected_bins_v,
+                 int default_num_arccorrected_bins_v,
+                 float inner_ring_radius_v, float average_depth_of_interaction_v,
+                 float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
+                 int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+                 int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+                 int num_axial_crystals_per_singles_unit_v,
+                 int num_transaxial_crystals_per_singles_unit_v,
+                 int num_detector_layers_v,
+                 short int max_num_of_timing_bins_v,
+                 float size_timing_bin_v,
+                 float timing_resolution_v
+                 )
+{
+    set_params(type_v, string_list(name), num_rings_v,
+               max_num_non_arccorrected_bins_v,
+               default_num_arccorrected_bins_v,
+               num_detectors_per_ring_v,
+               inner_ring_radius_v,
+               average_depth_of_interaction_v,
+               ring_spacing_v, bin_size_v, intrinsic_tilt_v,
+               num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
+               num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
+               num_axial_crystals_per_singles_unit_v,
+               num_transaxial_crystals_per_singles_unit_v,
+               num_detector_layers_v,
+               max_num_of_timing_bins_v,
+               size_timing_bin_v,
+               timing_resolution_v);
+}
 
 void
 Scanner::
 set_params(Type type_v,const list<string>& list_of_names_v,
-           int num_rings_v, 
+           int num_rings_v,
            int max_num_non_arccorrected_bins_v,
            int num_detectors_per_ring_v,
            float inner_ring_radius_v,
            float average_depth_of_interaction_v,
            float ring_spacing_v,
            float bin_size_v, float intrinsic_tilt_v,
-           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
+           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+           int num_axial_crystals_per_singles_unit_v,
+           int num_transaxial_crystals_per_singles_unit_v,
+           int num_detector_layers_v)
+{
+  set_params(type_v, list_of_names_v, num_rings_v,
+             max_num_non_arccorrected_bins_v,
+         max_num_non_arccorrected_bins_v,
+         num_detectors_per_ring_v,
+         inner_ring_radius_v,
+             average_depth_of_interaction_v,
+             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
+         num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
+         num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
+             num_axial_crystals_per_singles_unit_v,
+             num_transaxial_crystals_per_singles_unit_v,
+         num_detector_layers_v);
+}
+
+void
+Scanner::
+set_params(Type type_v,const list<string>& list_of_names_v,
+           int num_rings_v,
+           int max_num_non_arccorrected_bins_v,
+           int num_detectors_per_ring_v,
+           float inner_ring_radius_v,
+           float average_depth_of_interaction_v,
+           float ring_spacing_v,
+           float bin_size_v, float intrinsic_tilt_v,
+           float energy_resolution_v,
+           float reference_energy_v,
+           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+           int num_axial_crystals_per_singles_unit_v,
+           int num_transaxial_crystals_per_singles_unit_v,
+           int num_detector_layers_v)
+{
+  set_params(type_v, list_of_names_v, num_rings_v,
+             max_num_non_arccorrected_bins_v,
+         max_num_non_arccorrected_bins_v,
+         num_detectors_per_ring_v,
+         inner_ring_radius_v,
+             average_depth_of_interaction_v,
+             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
+             energy_resolution_v,
+             reference_energy_v,
+         num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
+         num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
+             num_axial_crystals_per_singles_unit_v,
+             num_transaxial_crystals_per_singles_unit_v,
+         num_detector_layers_v);
+}
+
+void
+Scanner::
+set_params(Type type_v,const list<string>& list_of_names_v,
+           int num_rings_v,
+           int max_num_non_arccorrected_bins_v,
+           int num_detectors_per_ring_v,
+           float inner_ring_radius_v,
+           float average_depth_of_interaction_v,
+           float ring_spacing_v,
+           float bin_size_v, float intrinsic_tilt_v,
+           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
            int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
            int num_axial_crystals_per_singles_unit_v,
            int num_transaxial_crystals_per_singles_unit_v,
            int num_detector_layers_v,
-           float energy_resolution_v,
-           float reference_energy_v)
+           short int max_num_of_timing_bins_v,
+           float size_timing_bin_v,
+           float timing_resolution_v)
 {
-  set_params(type_v, list_of_names_v, num_rings_v,
-             max_num_non_arccorrected_bins_v,
-	     max_num_non_arccorrected_bins_v,
-	     num_detectors_per_ring_v, 
-	     inner_ring_radius_v, 
-             average_depth_of_interaction_v,
-             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
-	     num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
-	     num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
-             num_axial_crystals_per_singles_unit_v, 
-             num_transaxial_crystals_per_singles_unit_v,
-	     num_detector_layers_v,
-             energy_resolution_v,
-             reference_energy_v);
+    set_params(type_v, list_of_names_v, num_rings_v,
+               max_num_non_arccorrected_bins_v,
+               max_num_non_arccorrected_bins_v,
+               num_detectors_per_ring_v,
+               inner_ring_radius_v,
+               average_depth_of_interaction_v,
+               ring_spacing_v, bin_size_v, intrinsic_tilt_v,
+               num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
+               num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
+               num_axial_crystals_per_singles_unit_v,
+               num_transaxial_crystals_per_singles_unit_v,
+               num_detector_layers_v,
+               max_num_of_timing_bins_v,
+               size_timing_bin_v,
+               timing_resolution_v);
 }
-
 
 void
 Scanner::
-set_params(Type type_v,const list<string>& list_of_names_v, 
-           int num_rings_v, 
+set_params(Type type_v,const list<string>& list_of_names_v,
+           int num_rings_v,
            int max_num_non_arccorrected_bins_v,
            int default_num_arccorrected_bins_v,
            int num_detectors_per_ring_v,
@@ -604,25 +820,69 @@ set_params(Type type_v,const list<string>& list_of_names_v,
            float average_depth_of_interaction_v,
            float ring_spacing_v,
            float bin_size_v, float intrinsic_tilt_v,
-           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v, 
+           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
            int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
            int num_axial_crystals_per_singles_unit_v,
            int num_transaxial_crystals_per_singles_unit_v,
-           int num_detector_layers_v,
-           float energy_resolution_v,
-           float reference_energy_v)
+           int num_detector_layers_v)
 {
   type = type_v;
-  list_of_names = list_of_names_v;  
+  list_of_names = list_of_names_v;
   num_rings =  num_rings_v;
   max_num_non_arccorrected_bins = max_num_non_arccorrected_bins_v;
   default_num_arccorrected_bins = default_num_arccorrected_bins_v;
-  num_detectors_per_ring = num_detectors_per_ring_v;    
+  num_detectors_per_ring = num_detectors_per_ring_v;
   inner_ring_radius =  inner_ring_radius_v;
   average_depth_of_interaction = average_depth_of_interaction_v;
   ring_spacing = ring_spacing_v;
   bin_size = bin_size_v;
-  intrinsic_tilt = intrinsic_tilt_v;	
+  intrinsic_tilt = intrinsic_tilt_v;
+  num_transaxial_blocks_per_bucket = num_transaxial_blocks_per_bucket_v;
+  num_axial_blocks_per_bucket = num_axial_blocks_per_bucket_v;
+  num_axial_crystals_per_block= num_axial_crystals_per_block_v;
+  num_transaxial_crystals_per_block= num_transaxial_crystals_per_block_v;
+  num_axial_crystals_per_singles_unit = num_axial_crystals_per_singles_unit_v;
+  num_transaxial_crystals_per_singles_unit = num_transaxial_crystals_per_singles_unit_v;
+  num_detector_layers = num_detector_layers_v;
+
+  energy_resolution = -1.f;
+  reference_energy = -1.f;
+  max_num_of_timing_bins = -1;
+  size_timing_bin = -1.f;
+  timing_resolution = -1.f;
+
+}
+
+void
+Scanner::
+set_params(Type type_v,const list<string>& list_of_names_v,
+           int num_rings_v,
+           int max_num_non_arccorrected_bins_v,
+           int default_num_arccorrected_bins_v,
+           int num_detectors_per_ring_v,
+           float inner_ring_radius_v,
+           float average_depth_of_interaction_v,
+           float ring_spacing_v,
+           float bin_size_v, float intrinsic_tilt_v,
+           float energy_resolution_v,
+           float reference_energy_v,
+           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+           int num_axial_crystals_per_singles_unit_v,
+           int num_transaxial_crystals_per_singles_unit_v,
+           int num_detector_layers_v)
+{
+  type = type_v;
+  list_of_names = list_of_names_v;
+  num_rings =  num_rings_v;
+  max_num_non_arccorrected_bins = max_num_non_arccorrected_bins_v;
+  default_num_arccorrected_bins = default_num_arccorrected_bins_v;
+  num_detectors_per_ring = num_detectors_per_ring_v;
+  inner_ring_radius =  inner_ring_radius_v;
+  average_depth_of_interaction = average_depth_of_interaction_v;
+  ring_spacing = ring_spacing_v;
+  bin_size = bin_size_v;
+  intrinsic_tilt = intrinsic_tilt_v;
   num_transaxial_blocks_per_bucket = num_transaxial_blocks_per_bucket_v;
   num_axial_blocks_per_bucket = num_axial_blocks_per_bucket_v;
   num_axial_crystals_per_block= num_axial_crystals_per_block_v;
@@ -633,7 +893,57 @@ set_params(Type type_v,const list<string>& list_of_names_v,
 
   energy_resolution = energy_resolution_v;
   reference_energy = reference_energy_v;
+  max_num_of_timing_bins = -1;
+  size_timing_bin = -1.f;
+  timing_resolution = -1.f;
 
+}
+
+
+void
+Scanner::
+set_params(Type type_v,const list<string>& list_of_names_v,
+           int num_rings_v,
+           int max_num_non_arccorrected_bins_v,
+           int default_num_arccorrected_bins_v,
+           int num_detectors_per_ring_v,
+           float inner_ring_radius_v,
+           float average_depth_of_interaction_v,
+           float ring_spacing_v,
+           float bin_size_v, float intrinsic_tilt_v,
+           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+           int num_axial_crystals_per_singles_unit_v,
+           int num_transaxial_crystals_per_singles_unit_v,
+           int num_detector_layers_v,
+           short int max_num_of_timing_bins_v,
+           float size_timing_bin_v,
+           float timing_resolution_v)
+{
+    type = type_v;
+    list_of_names = list_of_names_v;
+    num_rings =  num_rings_v;
+    max_num_non_arccorrected_bins = max_num_non_arccorrected_bins_v;
+    default_num_arccorrected_bins = default_num_arccorrected_bins_v;
+    num_detectors_per_ring = num_detectors_per_ring_v;
+    inner_ring_radius =  inner_ring_radius_v;
+    average_depth_of_interaction = average_depth_of_interaction_v;
+    ring_spacing = ring_spacing_v;
+    bin_size = bin_size_v;
+    intrinsic_tilt = intrinsic_tilt_v;
+    num_transaxial_blocks_per_bucket = num_transaxial_blocks_per_bucket_v;
+    num_axial_blocks_per_bucket = num_axial_blocks_per_bucket_v;
+    num_axial_crystals_per_block= num_axial_crystals_per_block_v;
+    num_transaxial_crystals_per_block= num_transaxial_crystals_per_block_v;
+    num_axial_crystals_per_singles_unit = num_axial_crystals_per_singles_unit_v;
+    num_transaxial_crystals_per_singles_unit = num_transaxial_crystals_per_singles_unit_v;
+    num_detector_layers = num_detector_layers_v;
+
+    max_num_of_timing_bins = max_num_of_timing_bins_v;
+    size_timing_bin = size_timing_bin_v;
+    timing_resolution = timing_resolution_v;
+    energy_resolution = -1.f;
+    reference_energy = -1.f;
 }
 
 
