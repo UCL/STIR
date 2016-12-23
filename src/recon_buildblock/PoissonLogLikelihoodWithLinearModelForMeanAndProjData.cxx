@@ -1147,13 +1147,17 @@ void RPC_process_related_viewgrams_sensitivity_computation(
   assert(output_image_ptr != NULL);
   assert(measured_viewgrams_ptr != NULL);
 
-  RelatedViewgrams<float> viewgrams = measured_viewgrams_ptr->get_empty_copy();
   if( mult_viewgrams_ptr )
-    viewgrams = *mult_viewgrams_ptr;
+  {
+    back_projector_sptr->back_project(*output_image_ptr, *mult_viewgrams_ptr);
+  }
   else
+  {  
+    RelatedViewgrams<float> viewgrams = measured_viewgrams_ptr->get_empty_copy();
     viewgrams.fill(1.F);
+    back_projector_sptr->back_project(*output_image_ptr, viewgrams);
+  }
 
-  back_projector_sptr->back_project(*output_image_ptr, viewgrams);
 }
 
 #  ifdef _MSC_VER
