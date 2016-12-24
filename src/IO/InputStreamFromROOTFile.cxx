@@ -44,7 +44,9 @@ InputStreamFromROOTFile(std::string filename,
 
 void
 InputStreamFromROOTFile::set_defaults()
-{}
+{
+    least_significant_clock_bit = 1.0;
+}
 
 void
 InputStreamFromROOTFile::initialise_keymap()
@@ -57,6 +59,7 @@ InputStreamFromROOTFile::initialise_keymap()
     this->parser.add_key("offset (num of detectors)", &this->offset_dets);
     this->parser.add_key("low energy window (keV)", &this->low_energy_window);
     this->parser.add_key("upper energy window (keV)", &this->up_energy_window);
+    this->parser.add_key("minimum timing step (in picoseconds)", &this->least_significant_clock_bit);
 }
 
 bool
