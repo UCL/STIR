@@ -208,8 +208,6 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& nonTOF_probabilities
         get_tof_value(low_dist, high_dist, new_value);
         new_value *=  element_ptr->get_value();
 
-        //if (new_value <= 0.0001f)
-          //  continue;
         tof_probabilities.push_back(ProjMatrixElemsForOneBin::value_type(element_ptr->get_coords(), new_value));
 
     }

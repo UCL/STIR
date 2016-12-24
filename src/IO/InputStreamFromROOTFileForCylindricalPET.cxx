@@ -112,7 +112,7 @@ get_next_record(CListRecordROOT& record)
     crystal1 += offset_dets;
     crystal2 += offset_dets;
 
-    short int delta_timing_bin = 0;
+    float delta_timing_bin = 0;
     double delta_time = time2 - time1;
 
     if (delta_time >=0)
