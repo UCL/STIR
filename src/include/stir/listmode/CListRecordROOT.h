@@ -167,7 +167,7 @@ public:
         return this->time_data;
     }
 
-    virtual void full_event(Bin& bin, const ProjDataInfo& proj_data_info) const
+    virtual void full_event(Bin& bin, const ProjDataInfo& proj_data_int) const
     {
         event_data.get_bin(bin, proj_data_info);
         time_data.get_bin(bin, proj_data_info);
@@ -198,9 +198,9 @@ public:
 
         this->event_data.is_swapped() ?
             this->time_data.init_from_data(
-                    time1, delta_time) :
+                    time1, -delta_time) :
             this->time_data.init_from_data(
-                        time1, -delta_time);
+                        time1, delta_time);
 
         // We can make a singature raw based on the two events IDs.
         // It is pretty unique.
