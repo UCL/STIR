@@ -74,6 +74,8 @@ InputStreamFromROOTFile::post_processing()
     stream_ptr->SetBranchAddress("energy2", &energy2);
     stream_ptr->SetBranchAddress("comptonPhantom1", &comptonphantom1);
     stream_ptr->SetBranchAddress("comptonPhantom2", &comptonphantom2);
+
+    least_significant_clock_bit = 5.0e+11 / least_significant_clock_bit;
     return false;
 }
 
