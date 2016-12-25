@@ -281,8 +281,8 @@ Scanner::Scanner(Type scanner_type)
                  52, 312, 624,
                  424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
                  1, 48, 52, 13, 13, 13, 1,
-                 (short int)(315),
-                 (float)(13.015F),
+                 (short int)(630),
+                 (float)(6.507),
                  (float)(50.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
       break;
 
@@ -295,8 +295,8 @@ Scanner::Scanner(Type scanner_type)
                  52, 312, 624,
                  424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
                  1, 48, 52, 13, 13, 13, 1,
-                 (short int)(315),
-                 (float)(13.015F),
+                 (short int)(630),
+                 (float)(6.507),
                  (float)(20.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
       break;
 
@@ -309,8 +309,8 @@ Scanner::Scanner(Type scanner_type)
                  52, 312, 624,
                  424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
                  1, 48, 52, 13, 13, 13, 1,
-                 (short int)(315),
-                 (float)(13.015F),
+                 (short int)(630),
+                 (float)(6.507),
                  (float)(10.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
       break;
 
