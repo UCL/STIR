@@ -35,7 +35,8 @@ endif()
 set(VERSION_MAJOR   3   CACHE STRING "Project major version number.")
 set(VERSION_MINOR   1   CACHE STRING "Project minor version number.")
 set(VERSION_PATCH   0   CACHE STRING "Project patch version number.")
-mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
+set(VERSION   030100   CACHE STRING "Project version number.")
+mark_as_advanced(VERSION VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
@@ -105,15 +106,15 @@ WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/STIRConfigVersion.c
 
 set(ConfigPackageLocation lib/cmake/)
 
-# If we'd export STIR_INCLUDE_DIRS, enable next line
-# before exporting such that it will refer to the installed files, not the source.
-#set (STIR_INCLUDE_DIRS "include")
+# Set STIR_INCLUDE_DIRS before exporting such that it will refer to
+# the installed files, not the source.
+set (STIR_INCLUDE_DIRS "include")
 
 CONFIGURE_PACKAGE_CONFIG_FILE(
   src/cmake/STIRConfig.cmake.in
   "${CMAKE_BINARY_DIR}/STIRConfig.cmake"
    INSTALL_DESTINATION "${ConfigPackageLocation}"
-#   PATH_VARS STIR_INCLUDE_DIRS
+   PATH_VARS STIR_INCLUDE_DIRS
 )
 
 # create and install STIRTargets*.cmake for the installation-tree

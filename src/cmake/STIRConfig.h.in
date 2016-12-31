@@ -1,0 +1,21 @@
+
+namespace stir {
+  const int VERSION_MAJOR=@VERSION_MAJOR@;
+  const int VERSION_MINOR=@VERSION_MINOR@;
+  const int VERSION_PATCH=@VERSION_PATCH@;
+  const int VERSION=@VERSION@;
+  const char VERSION_STRING[] = "@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@";
+}
+
+#cmakedefine HAVE_ECAT
+#cmakedefine HAVE_CERN_ROOT
+#cmakedefine HAVE_AVW
+#cmakedefine HAVE_RDF
+#cmakedefine HAVE_ITK
+
+#cmakedefine STIR_OPENMP
+#cmakedefine STIR_MPI
+
+#cmakedefine HAVE_SYSTEM_GETOPT
+
+

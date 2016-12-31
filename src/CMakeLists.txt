@@ -56,6 +56,7 @@ else()
 endif()
 
 if (AVW_FOUND)
+  set(HAVE_AVW ON)
   message(STATUS "AVW library IO added.")
   add_definitions(-D HAVE_AVW)
   include_directories(${AVW_INCLUDE_DIRS})
@@ -192,6 +193,14 @@ endforeach(STIR_DIR)
 
 #### SWIG settings
 ADD_SUBDIRECTORY(swig)
+
+#### Create config.h
+
+CONFIGURE_FILE(
+  cmake/STIRConfig.h.in
+  "${CMAKE_BINARY_DIR}/src/include/stir/config.h"
+)
+INSTALL(FILES "${CMAKE_BINARY_DIR}/src/include/stir/config.h" DESTINATION include/stir)
 
 #### install include files
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/src/include/" DESTINATION include)
