@@ -41,14 +41,20 @@ detailed below.
 for Siemens scanners (warning: tested in Biograph mMR only at present).
 </p>
 
-</p>Of course, there is also the usual code-cleanup and 
+<p>We now support additional list mode file formats (Siemens mMR and CERN ROOT files).
+</p>
+
+<p>The build system now only uses CMake.</p>
+    
+<p>Of course, there is also the usual code-cleanup and 
 improvements to the documentation.
 </p>
 
-<p>This release contains mainly code written by Kris Thielemans, but various bits
+<p>This release contains mainly code written by Kris Thielemans and Nikos Efthimiou (UCL),
+but with some contributions by Jannis Fischer (ETH Zurich). Various bits
 were tested by (in alphabetical order, all UCL except where indicated):
 Ottavia Bertolli, Matthias Ehrhardt, Pawel Markiewicz, Richard Manber,
-Benjamin Thomas (CIRC ASTAR), Yu-jung Tsai, Vesna Cuplov).
+Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
 </p>
 
 <h2> Summary for end users (also to be read by developers)</h2>
@@ -107,7 +113,8 @@ Python (and MATLAB) interface to <code>get_scanner()</code> and <code>get_proj_d
 </li>
 <li> added <code>BUILD_TESTING</code> and <code>BUILD_EXECUTABLES</code> options to reduce build time if you do not need those files</li>
 <li>install include files</li> 
-<li> CMake now has a flag to create the target "doc" for building the Doxygen documentation.
+<li> CMake now has a flag to create the target "doc" for building the Doxygen documentation
+  thanks to Jannis Fischer.
 </li>
 </ul>
 
@@ -166,7 +173,7 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 <h3>recon_test_pack changes</h3>
 <ul>
 <li>updated version number and added some clarification to the README.txt</li>
-<li>Simple test script for GATE produced ROOT files, has been added.</li>
+<li>Simple test script for GATE produced ROOT files has been added.</li>
  </ul>
 
 <h3>Other changes to tests</h3>
@@ -193,10 +200,10 @@ using the default output file format.</li>
    <li>added <code>get_proj_data_info_sptr()</code> (also to <code>Sinogram</code> et al)</li>
   </ul>
 </li>
-<li> Support for Energy Resolution in Scanners, has been added. 
+<li> Support for Energy Resolution and energy windows in Scanners, has been added. 
 In order to ensure backwards compatibility, at the moment, it is completely optional.</li>
 <li> Information on energy windows has been added in the <code>ExamInfo</code>. </li>
-<li> <code>ExamData</code> is the base class for <code>ProjData</code> and <code>CListModeData</code> </li>
+<li><code>ExamData</code> is a new base class for <code>ProjData</code> and <code>CListModeData</code> </li>
 </ul>
 
 <h3>Other code changes</h3>

@@ -39,7 +39,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 3.0}}
+ Version 3.1}}
 \end{center}
 
 \end{spacing}
@@ -114,7 +114,7 @@ compiler tools and the \textit{STIR} reconstruction building blocks.
 Then a brief explanation is given about how to run reconstruction 
 algorithms as well as additional utilities. A description of 
 the reconstruction building block library can be found on our 
-web site (section \textit{documentation}). A short (but out-dated) review of analytic 
+web site (section \textit{documentation}). A short (but very out-dated) review of analytic 
 and iterative reconstruction methods is available in [PAR1.3] 
 (available on the STIR web-site).
 
@@ -139,6 +139,8 @@ always welcome. Please use the stir-users mailing list.
 
 \section{
 Installation}
+This section describes how to install STIR. It is complemented by information on the
+\url{http://sourceforge.net/stir}{STIR Wiki} with information for specific systems etc.
 
 \subsection{
 Installing source files}
@@ -147,7 +149,10 @@ Download the source at the \textit{STIR} site:
 \begin{center}
 \url{http://stir.sourceforge.net }{http://stir.sourceforge.net} 
 \end{center}
-\noindent (Section \textbf{Registered Users}).\\
+\noindent (Section \textbf{Registered Users}).
+Alternatively, if you are feeling adventurous, you can get the most-recent
+developer version (no guarantees!) of STIR from\\
+\url{https://github.com/UCL/STIR}{https://github.com/UCL/STIR}.\\
 Download the source files in the zip format. You can then use unzip from \\
 \url{http://www.info-zip.org/pub/infozip/}{http://www.info-zip.org/pub/infozip/}. 
 Extract using
@@ -188,7 +193,7 @@ C++ Compiler}
 
 In order to compile and run the \textit{STIR} programs, you will need a compiler
 and associated tools. These days, any compiler should work. See the 
-\url{http://sourceforge.net/apps/mediawiki/stir}{STIR Wiki} for more
+\url{http://sourceforge.net/stir}{STIR Wiki} for more
 specific information of which compilers we have tried.
 We would love 
 to hear from any attempts of using another compiler. 
@@ -301,6 +306,7 @@ capabilities of STIR.
 via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.
 \item ITK\_DIR, use IO from \url{http://www.itk.org}{ITK}, a large open source library. Specifying this
  enables NRRD, MetaIO and Nifti IO.
+\item CERN ROOT files used by GEANT and GATE.
 \item GE RDF\texttrademark{} support via \texttt{RDF\_INCLUDE\_DIRS} and \texttt{RDF\_LIBRARIES} (requires the GE proprietary PET Toolbox).
 \end{itemize}
 
@@ -636,14 +642,16 @@ also possible to reconstruct images directly from list mode data, although
 this has not been tested very well yet as of \textit{STIR 2.1}.
 
 Currently supported list mode formats are specific to the ECAT 
-HR+ and ECAT EXACT 3D scanners. There are some unfinished classes
+HR+, ECAT EXACT 3D and Siemens mMR scanners. We also support \textit{CERN ROOT} files
+as output by OpenGATE (when using CylindericalPET or ECAT systems).
+You need to create a text file header for your ROOT file, see
+\texttt{examples/samples/root\_header.hroot}.
+
+There are some unfinished classes
 available on the \textit{STIR} web-site to read \textit{LMF} format files,
 in conjunction with the \textit{LMF} library. However, these might be obsolete
 as the OpenGATE project might be distributing files
 to enable STIR to read \textit{LMF} format files.
-
-See the \textit{STIR} web-site for an independent project that allows reading
-\textit{ROOT} files and convert it to \textit{STIR}-compatible Interfile projection data.
 
 \subsubsection{
 lm\_to\_projdata}
