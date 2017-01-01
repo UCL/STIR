@@ -102,7 +102,9 @@ Python (and MATLAB) interface to <code>get_scanner()</code> and <code>get_proj_d
 <li>provide CMake option to disable ITK usage even if it's found. </li>
 <li>fixes related to OpenMP</li>
 <li>Changes to CMake build files, allowing others to import STIR via
-<code>find_package</code></li>
+  <code>find_package</code>. To allow this, CMake now creates a config.h file which sets
+  preprocessor variables etc (as opposed to passing these on the compiler command line).
+</li>
 <li> added <code>BUILD_TESTING</code> and <code>BUILD_EXECUTABLES</code> options to reduce build time if you do not need those files</li>
 <li>install include files</li> 
 <li> CMake now has a flag to create the target "doc" for building the Doxygen documentation.
@@ -111,10 +113,7 @@ Python (and MATLAB) interface to <code>get_scanner()</code> and <code>get_proj_d
 
 <p><strong>WARNING</strong>: <code>fwdtest</code> and <code>bcktest</code> are now only installed when BUILD_TESTING is ON. Use <code>forward_project</code> and <code>backward_project</code> instead.</p>
 
-<p>Using <a href="http://www.cmake.org">CMake</a> is now highly recommended (see the wiki). Some options
-such as shared libraries, openmp and SWIG support can only be enabled when using CMake. 
-Hand-crafted Unix Makefiles are still there but are no longer supported and
-will no longer be included in the next release.
+<p>Using <a href="http://www.cmake.org">CMake</a> is the only option to build STIR (see the wiki).
 </p>
 
 <h3>Known problems</h3>

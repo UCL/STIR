@@ -63,8 +63,7 @@ endif()
 if (@LLN_FOUND@)
   set(HAVE_ECAT ON)
   message(STATUS "ECAT support in STIR enabled.")
-  # need to add these 2 as stir_ecat7.h etc rely on it
-  add_definitions(-D HAVE_LLN_MATRIX)
+  # need to add this as stir_ecat7.h etc rely on it
   # would be better to add it to STIR_INCLUDE_DIRS (TODO)
   include_directories("@LLN_INCLUDE_DIRS@")
 endif()

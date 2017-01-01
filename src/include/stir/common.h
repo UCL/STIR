@@ -45,8 +45,6 @@
    #defines STIR_NO_NAMESPACES if the compiler does not support namespaces
    #defines START_NAMESPACE_STIR etc.
 
- <LI> includes boost/config.hpp
-
  <LI> #defines STIR_NO_COVARIANT_RETURN_TYPES when the compiler does not
    support virtual functions of a derived class differing only in the return
    type.
@@ -95,18 +93,12 @@
 
 <h3> stir include files included here</H3>
   <UL>
-  <li> <tt>stir/error.h</tt> definiong stir::error</li>
-  <li> <tt>stir/warning.h</tt> definiong stir::warning</li>
+  <li> <tt>stir/config.h</tt> sets various preprocessor defines (generated from STIRConfig.in)</li>
+  <li> <tt>stir/error.h</tt> defining stir::error</li>
+  <li> <tt>stir/warning.h</tt> defining stir::warning</li>
   </UL>
 */
-#if defined(_MSC_VER)
-#include "stir/config/visualc.h"
-#endif
-#if defined(__GNUC__)
-#include "stir/config/gcc.h"
-#endif
-
-#include "boost/config.hpp"
+#include "stir/config.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -327,6 +319,5 @@ END_NAMESPACE_STIR
 // include these such that we don't have to include them all over the place
 #include "stir/error.h"
 #include "stir/warning.h"
-
 
 #endif 

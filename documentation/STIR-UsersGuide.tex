@@ -222,13 +222,13 @@ GE PET Toolbox proprietary package you can ask Kris Thielemans for VOLPET and RD
 support in \textit{STIR}.
 
 \subsection{
-Compilation}
+Building}
+Since version 2.2, \textit{STIR} contains files to build STIR using the platform-independent
+\url{"http://www.cmake.org"}{CMake}. This is now the only to build STIR as
+it is easier for configuration and finding system dependencies.
 \subsubsection{
 Using CMake}
 \label{sec:UsingCMake}
-Since version 2.2, \textit{STIR} contains files to build using the platform-independent
-\url{"http://www.cmake.org"}{CMake}. This is the recommended way to build STIR as
-it is easier for configuration and finding system dependencies.
 
 Normal build procedure on Linux/Unix would be something like\footnote{Point \texttt{CMake} to the main \textbf{STIR}
 directory, not \textbf{STIR/src}.}
