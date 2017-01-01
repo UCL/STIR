@@ -166,7 +166,7 @@ set(CONF_INCLUDE_DIR "${CMAKE_BINARY_DIR}/src/include")
 # add it to the include path
 include_directories("${CONF_INCLUDE_DIR}")
 # create file
-cconfigure_file(
+configure_file(
   cmake/STIRConfig.h.in
   "${CONF_INCLUDE_DIR}/stir/config.h"
   )

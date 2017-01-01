@@ -32,7 +32,6 @@ namespace stir {
     \ingroup buildblock
     Values are set by CMake from the main CMakeLists.txt.
   */
-  */
   //@{
   #define STIR_VERSION @VERSION@
   #define STIR_VERSION_STRING "@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@"
