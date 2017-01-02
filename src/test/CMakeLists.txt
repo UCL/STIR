@@ -35,6 +35,7 @@ Set(${dir_INVOLVED_TEST_EXE_SOURCES}
 	test_OutputFileFormat
 	test_linear_regression
 	test_stir_math
+	test_time_of_flight
         # the next 2 are interactive, so we don't add a test for it, but only compile them
 	test_display
 	test_interpolate
@@ -82,6 +83,7 @@ ADD_TEST(NAME test_stir_math
 )
 set_tests_properties(test_stir_math PROPERTIES DEPENDS stir_math)
 
+ADD_TEST(NAME test_time_of_flight COMMAND test_time_of_flight)
 # Final note: we could use TARGET_FILE to avoid the use of ${CMAKE_CURRENT_BINARY_DIR} in the other tests, but both strategies work fine.
 
 ## add tests for OutputFileFormat
