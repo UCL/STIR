@@ -25,7 +25,15 @@ InputStreamFromROOTFileForCylindricalPET::registered_name =
 InputStreamFromROOTFileForCylindricalPET::
 InputStreamFromROOTFileForCylindricalPET():
     base_type()
-{}
+{
+    filename = "";
+    chain_name = "";
+    exclude_scattered = false;
+    exclude_randoms = false;
+    low_energy_window = 0;
+    up_energy_window = 1000;
+    offset_dets = 0;
+}
 
 InputStreamFromROOTFileForCylindricalPET::
 InputStreamFromROOTFileForCylindricalPET(std::string _filename,
@@ -105,8 +113,9 @@ get_next_record(CListRecordROOT& record)
 
     // GATE counts crystal ID =0 the most negative. Therefore
     // ID = 0 should be negative, in Rsector 0 and the mid crystal ID be 0 .
-    crystal1 -= half_block;
-    crystal2 -= half_block;
+    // Moved to post_processings().
+    //crystal1 -= half_block;
+    //crystal2 -= half_block;
 
     // Add offset
     crystal1 += offset_dets;
@@ -178,6 +187,11 @@ post_processing()
     if (nentries == 0)
         error("The total number of entries in the ROOT file is zero. Abort.");
 
+    half_block = module_repeater_y * submodule_repeater_y * crystal_repeater_y / 2;
+    if (half_block < 0 )
+        half_block = 0;
+
+    offset_dets -= half_block;
     return false;
 }
 
