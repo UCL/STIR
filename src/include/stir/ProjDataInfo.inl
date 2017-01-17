@@ -66,7 +66,7 @@ ProjDataInfo::get_num_tof_poss() const
 { return num_tof_bins; }
 
 int
-ProjDataInfo::get_tof_bin(double& delta) const
+ProjDataInfo::get_tof_bin(const double& delta) const
 {
     for (int i = min_timing_pos_num; i < max_timing_pos_num; i++)
     {
