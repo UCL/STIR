@@ -182,7 +182,7 @@ public:
   //! Get number of tangential positions
   inline int get_num_tangential_poss() const;
   //! Get number of tof bins
-  inline int get_tof_bin(double delta) const;
+  inline int get_tof_bin(double& delta) const;
   //! Get number of TOF bins
   inline int get_num_tof_poss() const;
   //! Get minimum segment number
