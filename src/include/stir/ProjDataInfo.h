@@ -181,6 +181,10 @@ public:
   inline int get_num_views() const;
   //! Get number of tangential positions
   inline int get_num_tangential_poss() const;
+  //! Get number of tof bins
+  inline int get_tof_bin(double delta) const;
+  //! Get number of TOF bins
+  inline int get_num_tof_poss() const;
   //! Get minimum segment number
   inline int get_min_segment_num() const;
   //! Get maximum segment number
@@ -199,9 +203,9 @@ public:
   inline int get_max_tangential_pos_num() const;
   //! Get number of TOF positions
   inline int get_num_timing_poss() const;
-  //! Get TOG mash factor
+  //! Get TOF mash factor
   inline int get_tof_mash_factor() const;
-  //! Get the index of the first timing position
+   //! Get the index of the first timing position
   inline int get_min_timing_pos_num() const;
   //! Get the index of the last timgin position.
   inline int get_max_timing_pos_num() const;
@@ -363,7 +367,9 @@ public:
   struct Float1Float2 { float low_lim; float high_lim; };
 
   //! Vector which holds the lower and higher boundary for each timing position, for faster access.
-  mutable VectorWithOffset<Float1Float2> timing_bin_boundaries;
+  mutable VectorWithOffset<Float1Float2> timing_bin_boundaries_mm;
+
+  mutable VectorWithOffset<Float1Float2> timing_bin_boundaries_ps;
   
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
@@ -382,6 +388,8 @@ private:
   int tof_mash_factor;
   //! Finally (with any mashing factor) timing bin increament.
   float timing_increament_in_mm;
+  //! Number of tof bins (TOF mash factor applied)
+  int num_tof_bins;
   VectorWithOffset<int> min_axial_pos_per_seg; 
   VectorWithOffset<int> max_axial_pos_per_seg;
   

@@ -62,6 +62,21 @@ ProjDataInfo::get_num_timing_poss() const
 { return max_timing_pos_num - min_timing_pos_num +1; }
 
 int
+ProjDataInfo::get_num_tof_poss() const
+{ return num_tof_bins; }
+
+int
+ProjDataInfo::get_tof_bin(double delta) const
+{
+    for (int i = min_timing_pos_num; i < max_timing_pos_num; i++)
+    {
+        if ( delta > timing_bin_boundaries_ps[i].low_lim &&
+             delta < timing_bin_boundaries_ps[i].high_lim)
+            return i;
+    }
+}
+
+int
 ProjDataInfo::get_tof_mash_factor() const
 { return tof_mash_factor; }
 

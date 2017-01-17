@@ -115,15 +115,16 @@ public:
 
     virtual inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
     {
-        delta_time > 0 ?
-                    bin.timing_pos_num() = static_cast<int> ( ( delta_time / proj_data_info.get_tof_mash_factor()) + 0.5)
-                : bin.timing_pos_num() = static_cast<int> ( ( delta_time / proj_data_info.get_tof_mash_factor()) - 0.5);
+//        delta_time >= 0.0 ?
+//                    bin.timing_pos_num() = static_cast<int> ( ( delta_time / proj_data_info.get_num_tof_poss()) + 0.5)
+//                : bin.timing_pos_num() = static_cast<int> ( ( delta_time / proj_data_info.get_num_tof_poss()) - 0.5);
 
-        if (bin.timing_pos_num() <  proj_data_info.get_min_timing_pos_num() ||
-                bin.timing_pos_num() > proj_data_info.get_max_timing_pos_num())
-        {
-            bin.set_bin_value(-1.f);
-        }
+//        if (bin.timing_pos_num() <  proj_data_info.get_min_timing_pos_num() ||
+//                bin.timing_pos_num() > proj_data_info.get_max_timing_pos_num())
+//        {
+//            bin.set_bin_value(-1.f);
+//        }
+        bin.timing_pos_num() = proj_data_info.get_tof_bin(delta_time);
     }
 
 private:
@@ -131,9 +132,9 @@ private:
     //!
     //! \brief timeA
     //! \details The detection time of the first of the two photons, in seconds
-    float timeA;
+    double timeA;
 
-    float delta_time;
+    double delta_time;
 };
 
 //! A class for a general element of a listmode file for a Siemens scanner using the ROOT files
@@ -188,7 +189,7 @@ public:
                                       const int& ring2,
                                       const int& crystal1,
                                       const int& crystal2,
-                                      float time1, float delta_time,
+                                      const double& time1, const double& delta_time,
                                       const int& event1, const int& event2)
     {
         /// \warning ROOT data are time and event at the same time.

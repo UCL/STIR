@@ -1,6 +1,7 @@
 /*
  *  Copyright (C) 2015, 2016 University of Leeds
     Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2017 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -78,7 +79,7 @@ InputStreamFromROOTFile::post_processing()
     stream_ptr->SetBranchAddress("comptonPhantom1", &comptonphantom1);
     stream_ptr->SetBranchAddress("comptonPhantom2", &comptonphantom2);
 
-    least_significant_clock_bit = 5.0e+11 / least_significant_clock_bit;
+    least_significant_clock_bit = 5.0e+11;// / least_significant_clock_bit;
     return false;
 }
 

@@ -191,35 +191,17 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
                   "the scanner's number of max timing bins. Abort.");
         tof_mash_factor = new_num;
 
-        timing_increament_in_mm = tof_mash_factor * scanner_ptr->get_size_of_timing_bin() * 0.299792458f;
-
-        // limit to the size of the diameter.
-
-        Bin b;
-
-        float lowest_t  = get_min_tangential_pos_num();
-        float highest_t = get_max_tangential_pos_num();
-
-        b.tangential_pos_num() = lowest_t;
-        float k  = get_sampling_in_t(b);
-        b.tangential_pos_num() = highest_t;
-        float l  = get_sampling_in_t(b);
-
-        float lowest_boundary = lowest_t * k;
-        float highest_boundary = highest_t * l;
-
-       int num_tof_positions_in_FOV = static_cast<int>(((highest_boundary - lowest_boundary) / ( timing_increament_in_mm)));
+        timing_increament_in_mm = (tof_mash_factor * scanner_ptr->get_size_of_timing_bin() * 0.299792458f);
 
         min_timing_pos_num = - (scanner_ptr->get_num_max_of_timing_bins() / tof_mash_factor)/2;
         max_timing_pos_num = min_timing_pos_num + (scanner_ptr->get_num_max_of_timing_bins() / tof_mash_factor);
-        //min_timing_pos_num = -num_tof_positions_in_FOV/2;
-        //max_timing_pos_num = min_timing_pos_num + num_tof_positions_in_FOV;
 
-        info(boost::format("bound: %1%: %2% - %3% | %4%") %lowest_boundary % highest_boundary %num_tof_positions_in_FOV
-             %timing_increament_in_mm);
+        num_tof_bins = max_timing_pos_num - min_timing_pos_num;
 
         // Upper and lower boundaries of the timing poss;
-        timing_bin_boundaries.grow(min_timing_pos_num, max_timing_pos_num);
+        timing_bin_boundaries_mm.grow(min_timing_pos_num, max_timing_pos_num);
+
+        timing_bin_boundaries_ps.grow(min_timing_pos_num, max_timing_pos_num);
 
         for (int i = min_timing_pos_num; i <= max_timing_pos_num; ++i )
         {
@@ -229,55 +211,12 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
             float cur_low = get_k(bin);
             float cur_high = get_k(bin) + get_sampling_in_k(bin);
 
-//            info(boost::format("tic: %1%: %2%") %cur_low % cur_high);
-
-//            if (cur_low < lowest_boundary)
-//                cur_low = lowest_boundary;
-//            else if (cur_low > highest_boundary)
-//                cur_low = highest_boundary;
-
-//            if (cur_high < lowest_boundary)
-//                cur_high = lowest_boundary;
-//            else if (cur_high > highest_boundary)
-//                    cur_high = highest_boundary;
-
-//            info(boost::format("tac: %1%: %2%") % cur_low % cur_high);
-//            if (cur_low< 0 || cur_high < 0 )
-//            {
-//                if (cur_low < lowest_boundary && cur_high > lowest_boundary)
-//                {
-//                    timing_bin_boundaries[i].low_lim = lowest_boundary;
-//                    timing_bin_boundaries[i].high_lim = cur_high;
-//                }
-//                else if (cur_low >= lowest_boundary && cur_high >= lowest_boundary)
-//                {
-//                    timing_bin_boundaries[i].low_lim = cur_low;
-//                    timing_bin_boundaries[i].high_lim = cur_high;
-//                }
-//            }
-//            else
-//            {
-//                if (cur_high > highest_boundary && cur_low < highest_boundary)
-//                {
-//                    timing_bin_boundaries[i].low_lim = cur_low;
-//                    timing_bin_boundaries[i].high_lim = highest_boundary;
-//                }
-//                else if (cur_low <= highest_boundary && cur_high <= highest_boundary)
-//                {
-//                    timing_bin_boundaries[i].low_lim = cur_low;
-//                    timing_bin_boundaries[i].high_lim = cur_high;
-//                }
-//            }
-
-            timing_bin_boundaries[i].low_lim = cur_low;
-            timing_bin_boundaries[i].high_lim = cur_high;
-            float lowt = (timing_bin_boundaries[i].low_lim / 0.299792458f ) ;
-            float hight = ( timing_bin_boundaries[i].high_lim/ 0.299792458f);
-            info(boost::format("Tbin %1%: %2% - %3% mm (%4% - %5% ps) = %6%") %i % timing_bin_boundaries[i].low_lim % timing_bin_boundaries[i].high_lim
-                 % lowt% hight % get_sampling_in_k(bin));
-            // Go to natural coordinates - opted out.
-            //            timing_bin_boundaries[i].low_lim *= r_sqrtdPI_gauss_sigma;
-            //            timing_bin_boundaries[i].high_lim *= r_sqrtdPI_gauss_sigma;
+            timing_bin_boundaries_mm[i].low_lim = cur_low;
+            timing_bin_boundaries_mm[i].high_lim = cur_high;
+            timing_bin_boundaries_ps[i].low_lim = (timing_bin_boundaries_mm[i].low_lim * 3.33564095198f ) ;
+            timing_bin_boundaries_ps[i].high_lim = ( timing_bin_boundaries_mm[i].high_lim * 3.33564095198f);
+            info(boost::format("Tbin %1%: %2% - %3% mm (%4% - %5% ps) = %6%") %i % timing_bin_boundaries_mm[i].low_lim % timing_bin_boundaries_mm[i].high_lim
+                 % timing_bin_boundaries_ps[i].low_lim % timing_bin_boundaries_ps[i].high_lim % get_sampling_in_k(bin));
         }
     }
     else
