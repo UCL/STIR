@@ -32,6 +32,8 @@
 #ifndef __stir_listmode_CListRecordSAFIR_H__
 #define __stir_listmode_CListRecordSAFIR_H__
 
+#include<cstint>
+
 #include "stir/listmode/CListRecord.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/Succeeded.h"
@@ -151,9 +153,9 @@ private:
 #if STIRIsNativeByteOrderBigEndian
 	unsigned type : 1;
 	unsigned reserved : 15;
-	unsigned long time : 48;
+	uint_least64_t time : 48;
 #else
-	unsigned long time : 48;
+	uint_least64_t time : 48;
 	unsigned reserved : 15;
 	unsigned type : 1;
 #endif
