@@ -194,9 +194,12 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
         timing_increament_in_mm = (tof_mash_factor * scanner_ptr->get_size_of_timing_bin() * 0.299792458f);
 
         min_timing_pos_num = - (scanner_ptr->get_num_max_of_timing_bins() / tof_mash_factor)/2;
-        max_timing_pos_num = min_timing_pos_num + (scanner_ptr->get_num_max_of_timing_bins() / tof_mash_factor);
+        max_timing_pos_num = min_timing_pos_num + (scanner_ptr->get_num_max_of_timing_bins() / tof_mash_factor) -1;
 
-        num_tof_bins = max_timing_pos_num - min_timing_pos_num;
+        num_tof_bins = max_timing_pos_num - min_timing_pos_num +1 ;
+
+        if (num_tof_bins%2 == 0)
+            error("ProjDataInfo: Number of TOF bins should be an odd number. Abort.");
 
         // Upper and lower boundaries of the timing poss;
         timing_bin_boundaries_mm.grow(min_timing_pos_num, max_timing_pos_num);
@@ -413,9 +416,10 @@ ProjDataInfo::get_empty_related_viewgrams(const ViewSegmentNumbers& view_segmnet
 
 ProjDataInfo*
 ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
-			      const int span, const int max_delta, 
-			      const int num_views, const int num_tangential_poss,
-                              const bool arc_corrected)
+                              const int span, const int max_delta,
+                              const int num_views, const int num_tangential_poss,
+                              const bool arc_corrected,
+                              const int tof_mash_factor)
 {
   if (span < 1)
     error("ProjDataInfoCTI: span %d has to be larger than 0\n", span);
@@ -499,23 +503,27 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
                                        num_axial_pos_per_segment,
                                        min_ring_difference, 
                                        max_ring_difference,
-                                       num_views,num_tangential_poss);
+                                       num_views,num_tangential_poss,
+                                       tof_mash_factor);
   else
     return
     new ProjDataInfoCylindricalNoArcCorr(scanner,
                                        num_axial_pos_per_segment,
                                        min_ring_difference, 
                                        max_ring_difference,
-                                       num_views,num_tangential_poss);
+                                       num_views,num_tangential_poss,
+                                         tof_mash_factor);
 
 }
 
 // KT 28/06/2001 added arc_corrected flag
+// NE 28/12/2016 added the tof_mash_factor
 ProjDataInfo*
 ProjDataInfo::ProjDataInfoGE(const shared_ptr<Scanner>& scanner,
-			     const int max_delta,
-			     const int num_views, const int num_tangential_poss,
-                             const bool arc_corrected)
+                             const int max_delta,
+                             const int num_views, const int num_tangential_poss,
+                             const bool arc_corrected,
+                             const int tof_mash_factor)
 	       
 	       
 {
@@ -562,14 +570,16 @@ ProjDataInfo::ProjDataInfoGE(const shared_ptr<Scanner>& scanner,
                                        num_axial_pos_per_segment,
                                        min_ring_difference, 
                                        max_ring_difference,
-                                       num_views,num_tangential_poss);
+                                       num_views,num_tangential_poss,
+                                       tof_mash_factor);
   else
     return
     new ProjDataInfoCylindricalNoArcCorr(scanner,
                                        num_axial_pos_per_segment,
                                        min_ring_difference, 
                                        max_ring_difference,
-                                       num_views,num_tangential_poss);
+                                       num_views,num_tangential_poss,
+                                       tof_mash_factor);
 }
 
 
@@ -588,6 +598,10 @@ ProjDataInfo* ProjDataInfo::ask_parameters()
 
    const int num_views = scanner_ptr->get_max_num_views()/
      ask_num("Mash factor for views",1,16,1);
+
+   const int tof_mash_factor = scanner_ptr->is_tof_ready() ?
+           ask_num("Time-of-flight mash factor (1: No TOF):", 1,
+                   scanner_ptr->get_num_max_of_timing_bins(), 1) : 1;
 
   const bool arc_corrected =
     ask("Is the data arc-corrected?",true);
@@ -615,8 +629,8 @@ ProjDataInfo* ProjDataInfo::ask_parameters()
 
   ProjDataInfo * pdi_ptr =
     span==0
-    ? ProjDataInfoGE(scanner_ptr,max_delta,num_views,num_tangential_poss,arc_corrected)
-    : ProjDataInfoCTI(scanner_ptr,span,max_delta,num_views,num_tangential_poss,arc_corrected);
+    ? ProjDataInfoGE(scanner_ptr,max_delta,num_views,num_tangential_poss,arc_corrected, tof_mash_factor)
+    : ProjDataInfoCTI(scanner_ptr,span,max_delta,num_views,num_tangential_poss,arc_corrected, tof_mash_factor);
 
   cout << pdi_ptr->parameter_info() <<endl;
 

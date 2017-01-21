@@ -87,7 +87,7 @@ protected:
   /*! Initialises a vector with the number of times each event has to be replicated */
   virtual void start_new_time_frame(const unsigned int new_frame_num);
 
-  virtual void get_bin_from_event(Bin& bin, const CListEvent&) const;
+  virtual void get_bin_from_record(Bin& bin, const CListRecord&) const;
 
 
   // \name parsing variables

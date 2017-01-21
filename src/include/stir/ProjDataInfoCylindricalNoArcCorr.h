@@ -108,7 +108,8 @@ public:
     const  VectorWithOffset<int>& num_axial_pos_per_segment,
     const  VectorWithOffset<int>& min_ring_diff_v, 
     const  VectorWithOffset<int>& max_ring_diff_v,
-    const int num_views,const int num_tangential_poss);
+    const int num_views,const int num_tangential_poss,
+    const int tof_mash_factor = 1);
 
   //! Constructor which gets \a ring_radius and \a angular_increment from the scanner
   /*! \a angular_increment is determined as Pi divided by the number of detectors in a ring.
@@ -117,7 +118,8 @@ public:
     const  VectorWithOffset<int>& num_axial_pos_per_segment,
     const  VectorWithOffset<int>& min_ring_diff_v, 
     const  VectorWithOffset<int>& max_ring_diff_v,
-    const int num_views,const int num_tangential_poss);
+    const int num_views,const int num_tangential_poss,
+    const int tof_mash_factor = 1);
 
   ProjDataInfo* clone() const;
 

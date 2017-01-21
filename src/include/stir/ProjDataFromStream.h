@@ -61,7 +61,9 @@ class ProjDataFromStream : public ProjData
 public:
 
   enum StorageOrder {
-    Segment_AxialPos_View_TangPos, Segment_View_AxialPos_TangPos, 
+    Segment_AxialPos_View_TangPos,
+      Segment_View_AxialPos_TangPos,
+      Timing_Segment_View_AxialPos_TangPos,
     Unsupported };
 #if 0    
   static  ProjDataFromStream* ask_parameters(const bool on_disk = true);
@@ -87,20 +89,20 @@ public:
 		      StorageOrder o = Segment_View_AxialPos_TangPos,
 		      NumericType data_type = NumericType::FLOAT,
 		      ByteOrder byte_order = ByteOrder::native,  
-		      float scale_factor = 1 );
+              float scale_factor = 1.f );
 
   //! as above, but with a default value for segment_sequence_in_stream
   /*! The default value for segment_sequence_in_stream is a vector with
     values min_segment_num, min_segment_num+1, ..., max_segment_num
   */
   ProjDataFromStream (shared_ptr<ExamInfo> const& exam_info_sptr,
-		      shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
-		      shared_ptr<std::iostream> const& s, 
-		      const std::streamoff offs = 0, 
-		      StorageOrder o = Segment_View_AxialPos_TangPos,
-		      NumericType data_type = NumericType::FLOAT,
-		      ByteOrder byte_order = ByteOrder::native,  
-		      float scale_factor = 1 );
+              shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
+              shared_ptr<std::iostream> const& s,
+              const std::streamoff offs = 0,
+              StorageOrder o = Segment_View_AxialPos_TangPos,
+              NumericType data_type = NumericType::FLOAT,
+              ByteOrder byte_order = ByteOrder::native,
+              float scale_factor = 1.f);
   //! Obtain the storage order
   inline StorageOrder get_storage_order() const;
     
@@ -116,6 +118,8 @@ public:
     
   //! Get the segment sequence
   inline std::vector<int> get_segment_sequence_in_stream() const;
+  //! Get the timing bins sequence
+  inline std::vector<int> get_timing_poss_sequence_in_stream() const;
     
   //! Get & set viewgram 
   Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const;
@@ -153,6 +157,8 @@ private:
   
   //!the order in which the segments occur in the stream
   std::vector<int> segment_sequence;
+  //!the order in which the timing bins occur in the stream
+  std::vector<int> timing_poss_sequence;
   
   inline int find_segment_index_in_sequence(const int segment_num) const;
   

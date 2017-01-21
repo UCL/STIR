@@ -72,21 +72,25 @@ public:
   ask_parameters();
 
   //! Construct a ProjDataInfo suitable for GE Advance data
+  //! \warning N.E: TOF mash factor, means no TOF
   static ProjDataInfo*  
-  ProjDataInfoGE(const shared_ptr<Scanner>& scanner_ptr, 
-		 const int max_delta,
-		 const int num_views, const int num_tangential_poss, 
-                 const bool arc_corrected = true);
+  ProjDataInfoGE(const shared_ptr<Scanner>& scanner_ptr,
+                 const int max_delta,
+                 const int num_views, const int num_tangential_poss,
+                 const bool arc_corrected = true,
+                 const int tof_mash_factor = 1);
 
   //! Construct a ProjDataInfo suitable for CTI data
   /*! \c span is used to denote the amount of axial compression (see CTI doc).
      It has to be an odd number. 
      */
+  //! \warning N.E: TOF mash factor, means no TOF
   static ProjDataInfo* 
-    ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
-		  const int span, const int max_delta,
-                  const int num_views, const int num_tangential_poss, 
-                  const bool arc_corrected = true);
+  ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
+                  const int span, const int max_delta,
+                  const int num_views, const int num_tangential_poss,
+                  const bool arc_corrected = true,
+                  const int tof_mash_factor = 1);
   
   
   /************ constructors ***********/

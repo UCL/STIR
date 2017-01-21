@@ -1169,6 +1169,13 @@ Scanner::parameter_info() const
     s << "Reference energy (in keV) := " << get_reference_energy() << '\n';
   }
 
+  if (is_tof_ready())
+  {
+    s << "Number of TOF time bins :=" << get_num_max_of_timing_bins() << "\n";
+    s << "Size of timing bin (ps) :=" << get_size_of_timing_bin() << "\n";
+    s << "Timing resolution (ps) :=" << get_timing_resolution() << "\n";
+  }
+
   // block/bucket description
   s << "Number of blocks per bucket in transaxial direction         := "
     << get_num_transaxial_blocks_per_bucket() << '\n'
@@ -1237,8 +1244,9 @@ Scanner* Scanner::ask_parameters()
   if (scanner_ptr->type != Unknown_scanner && scanner_ptr->type != User_defined_scanner)
     {
       info("Two new options are available: (a) Energy Resolution and (b) Reference energy (in keV)."
-           "They are used in Scatter Simulation. In case, you need them, please set them"
-           "manually in your file.");
+           "They are used in Scatter Simulation. In case, you need them, please set them "
+           "manually in your file. More over, the creation of a Time-Of-Flight scanner with energy"
+           "information is not supported. You have to do it manually.");
 
       return scanner_ptr;
     }
@@ -1284,6 +1292,13 @@ Scanner* Scanner::ask_parameters()
       int TransaxialCrystalsPerSinglesUnit =
         ask_num("Enter number of transaxial crystals per singles unit: ", 0, num_detectors_per_ring, 1);
 
+      int Num_TOF_bins =
+              ask_num("Number of TOF time bins :", 0.0f, 800.0f, 0.0f);
+      float Size_TOF_bin =
+              ask_num("Size of timing bin (ps) :", 0.0f, 100.0f, 0.0f);
+      float TOF_resolution =
+              ask_num("Timing resolution (ps) :", 0.0f, 1000.0f, 0.0f);
+
      float EnergyResolution =
           ask_num("Enter the energy resolution of the scanner : ", 0.0f, 1000.0f, -1.0f);
 
@@ -1293,6 +1308,21 @@ Scanner* Scanner::ask_parameters()
       int num_detector_layers =
     ask_num("Enter number of detector layers per block: ",1,100,1);
       Type type = User_defined_scanner;
+
+      bool make_tof_scanner = false;
+      if (Num_TOF_bins > 0 && Size_TOF_bin > 0 && TOF_resolution > 0)
+          make_tof_scanner = true;
+
+          Scanner* scanner_ptr =
+                  new Scanner(type, string_list(name),
+                              num_detectors_per_ring,  NoRings,
+                              NoBins, NoBins,
+                              InnerRingRadius, AverageDepthOfInteraction,
+                              RingSpacing, BinSize,intrTilt*float(_PI)/180,
+                              AxialBlocksPerBucket,TransBlocksPerBucket,
+                              AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
+                              AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
+                              num_detector_layers);
 
       if (EnergyResolution > -1 && ReferenceEnergy > -1)
         Scanner* scanner_ptr =
@@ -1308,16 +1338,27 @@ Scanner* Scanner::ask_parameters()
                         EnergyResolution,
                         ReferenceEnergy );
       else
-        Scanner* scanner_ptr =
-            new Scanner(type, string_list(name),
-                        num_detectors_per_ring,  NoRings,
-                        NoBins, NoBins,
-                        InnerRingRadius, AverageDepthOfInteraction,
-                        RingSpacing, BinSize,intrTilt*float(_PI)/180,
-                        AxialBlocksPerBucket,TransBlocksPerBucket,
-                        AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
-                        AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
-                        num_detector_layers);
+          Scanner* scanner_ptr = make_tof_scanner ? new Scanner(type, string_list(name),
+                                                                num_detectors_per_ring,  NoRings,
+                                                                NoBins, NoBins,
+                                                                InnerRingRadius, AverageDepthOfInteraction,
+                                                                RingSpacing, BinSize,intrTilt*float(_PI)/180,
+                                                                AxialBlocksPerBucket,TransBlocksPerBucket,
+                                                                AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
+                                                                AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
+                                                                num_detector_layers,
+                                                                Num_TOF_bins,
+                                                                Size_TOF_bin,
+                                                                TOF_resolution) :
+                                                    new Scanner(type, string_list(name),
+                                                                num_detectors_per_ring,  NoRings,
+                                                                NoBins, NoBins,
+                                                                InnerRingRadius, AverageDepthOfInteraction,
+                                                                RingSpacing, BinSize,intrTilt*float(_PI)/180,
+                                                                AxialBlocksPerBucket,TransBlocksPerBucket,
+                                                                AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
+                                                                AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
+                                                                num_detector_layers);
 
       if (scanner_ptr->check_consistency()==Succeeded::yes ||
       !ask("Ask questions again?",true))

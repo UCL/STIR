@@ -56,13 +56,18 @@ int main(int argc, char *argv[])
   }
 
 
-  shared_ptr<ProjDataInfo> proj_data_info_ptr(ProjDataInfo::ask_parameters());
+  shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ask_parameters());
   
   const std::string output_file_name = argv[1];
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
   // TODO, Currently all stir::Scanner types are PET.
   exam_info_sptr->imaging_modality = ImagingModality::PT;
-  shared_ptr<ProjData> proj_data_ptr(new ProjDataInterfile(exam_info_sptr, proj_data_info_ptr, output_file_name));
+  // If TOF activated -- No mashing factor will produce surrealistic sinograms
+  if ( proj_data_info_sptr->get_tof_mash_factor() >1)
+      shared_ptr<ProjData> proj_data_sptr(new ProjDataInterfile(exam_info_sptr, proj_data_info_sptr, output_file_name, std::ios::out,
+                                                                ProjDataFromStream::Timing_Segment_View_AxialPos_TangPos));
+  else
+      shared_ptr<ProjData> proj_data_sptr(new ProjDataInterfile(exam_info_sptr, proj_data_info_sptr, output_file_name));
 
   return EXIT_SUCCESS;
 }

@@ -166,7 +166,7 @@ start_new_time_frame(const unsigned int new_frame_num)
 	      // set value in case the event decoder doesn't touch it
 	      // otherwise it would be 0 and all events will be ignored
 	      bin.set_bin_value(1);
-	      base_type::get_bin_from_event(bin, record.event());
+          base_type::get_bin_from_record(bin, record);
 	      // check if it's inside the range we want to store
 	      if (bin.get_bin_value()>0
 		  && bin.tangential_pos_num()>= this->template_proj_data_info_ptr->get_min_tangential_pos_num()
@@ -232,12 +232,12 @@ start_new_time_frame(const unsigned int new_frame_num)
 template <typename LmToProjDataT> 
 void 
 LmToProjDataBootstrap<LmToProjDataT>::
-get_bin_from_event(Bin& bin, const CListEvent& event) const
+get_bin_from_record(Bin& bin, const CListRecord& record) const
 {
   assert(num_times_to_replicate_iter != num_times_to_replicate.end());
   if (*num_times_to_replicate_iter > 0)
     {
-      base_type::get_bin_from_event(bin, event);
+      base_type::get_bin_from_record(bin, record);
       bin.set_bin_value(bin.get_bin_value() * *num_times_to_replicate_iter);
     }
   else

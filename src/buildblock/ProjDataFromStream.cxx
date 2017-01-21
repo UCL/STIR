@@ -119,6 +119,22 @@ ProjDataFromStream::ProjDataFromStream(shared_ptr<ExamInfo> const& exam_info_spt
   {
     segment_sequence[i] =segment_num;
   }
+
+  // In this case lets start a TOF stream - Similar to segments
+  if (storage_order == Timing_Segment_View_AxialPos_TangPos &&
+          proj_data_info_ptr->get_tof_mash_factor() > 1)
+  {
+      timing_poss_sequence.resize(proj_data_info_ptr->get_num_timing_poss());
+      int timing_pos_num;
+
+      for (i= 0, timing_pos_num = proj_data_info_ptr->get_min_timing_pos_num();
+           timing_pos_num<=proj_data_info_ptr->get_max_timing_pos_num();
+           ++i, ++timing_pos_num)
+      {
+        timing_poss_sequence[i] = timing_pos_num;
+      }
+
+  }
 }
 
 Viewgram<float> 

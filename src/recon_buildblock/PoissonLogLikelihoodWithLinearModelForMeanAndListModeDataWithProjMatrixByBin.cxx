@@ -511,7 +511,6 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 
         if(this->use_tof)
         {
-            //            proj_data_no_arc_ptr->get_LOR_as_two_points(lor_point_1, lor_point_2, measured_bin);
             lor_points = record.event().get_LOR();
             this->PM_sptr->get_proj_matrix_elems_for_one_bin_with_tof(proj_matrix_row,
                                                                       measured_bin,

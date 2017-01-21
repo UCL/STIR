@@ -183,11 +183,15 @@ public:
   virtual SegmentByView<float> 
     get_segment_by_view(const int segment_num) const;
   //! Set segment by sinogram
+  //! N.E. Extended to have timging positions.
   virtual Succeeded 
-    set_segment(const SegmentBySinogram<float>&);
+    set_segment(const SegmentBySinogram<float>&,
+                const int& timing_pos = 1);
   //! Set segment by view 
+  //! N.E. Extended to have timing positions.
   virtual Succeeded 
-    set_segment(const SegmentByView<float>&);
+    set_segment(const SegmentByView<float>&,
+                const int& timing_pos = 1);
 
   //! Get related viewgrams
   virtual RelatedViewgrams<float> 

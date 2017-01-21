@@ -557,6 +557,19 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("Reference energy (in keV)",
           &reference_energy);
 
+  tof_mash_factor=-1;
+  add_key("%TOF mashing factor",
+          &tof_mash_factor);
+  max_num_timing_poss = -1;
+  add_key("Number of TOF time bins",
+          &max_num_timing_poss);
+  size_of_timing_pos = -1.f;
+  add_key("Size of timing bin (ps)",
+          &size_of_timing_pos);
+  timing_resolution = -1.f;
+  add_key("Timing resolution (ps)",
+          &timing_resolution);
+
   add_key("end scanner parameters",
 	  KeyArgument::NONE,	&KeyParser::do_nothing);
   
@@ -595,9 +608,10 @@ int InterfilePDFSHeader::find_storage_order()
 
 	}
 */
-  if (num_dimensions != 4)
+  if (num_dimensions != 4 &&
+          num_dimensions != 5)
   { 
-    warning("Interfile error: expecting 4D structure "); 
+    warning("Interfile error: expecting 4D structure or 5D in case of TOF information ");
     stop_parsing();
     return true; 
   }
@@ -614,16 +628,31 @@ int InterfilePDFSHeader::find_storage_order()
   if (matrix_labels[3] == "segment")
   {
     num_segments = matrix_size[3][0];
-    
+
     if (matrix_labels[1] == "axial coordinate" && matrix_labels[2] == "view")
     {
-      storage_order =ProjDataFromStream::Segment_View_AxialPos_TangPos;
-      num_views = matrix_size[2][0];
+        // If TOF information is in there
+        if (matrix_labels.size() > 4)
+        {
+            num_timing_poss = matrix_size[4][0];
+            storage_order =ProjDataFromStream::Timing_Segment_View_AxialPos_TangPos;
+            num_views = matrix_size[2][0];
 #ifdef _MSC_VER
-      num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
+            num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
 #else      
-      num_rings_per_segment = matrix_size[1];
+            num_rings_per_segment = matrix_size[1];
 #endif
+        }
+        else
+        {
+            storage_order =ProjDataFromStream::Segment_View_AxialPos_TangPos;
+            num_views = matrix_size[2][0];
+#ifdef _MSC_VER
+            num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
+#else
+            num_rings_per_segment = matrix_size[1];
+#endif
+        }
     }
     else if (matrix_labels[1] == "view" && matrix_labels[2] == "axial coordinate")
     {
@@ -845,6 +874,7 @@ find_segment_sequence(vector<int>& segment_sequence,
 }	  
 	  
 // MJ 17/05/2000 made bool
+// NE 28/12/2016 Accounts for TOF stuff.
 bool InterfilePDFSHeader::post_processing()
 {
   
@@ -1171,7 +1201,7 @@ bool InterfilePDFSHeader::post_processing()
     {
     if (energy_resolution != guessed_scanner_ptr->get_energy_resolution())
       {
-    warning("Interfile warning: 'energy resolution' (%d) is expected to be %d. "
+    warning("Interfile warning: 'energy resolution' (%f) is expected to be %d. "
             "Currently, the energy resolution and the reference energy, are used only in"
             " scatter correction.",
         energy_resolution, guessed_scanner_ptr->get_energy_resolution());
@@ -1179,12 +1209,34 @@ bool InterfilePDFSHeader::post_processing()
       }
     if (reference_energy != guessed_scanner_ptr->get_reference_energy())
       {
-    warning("Interfile warning: 'reference energy' (%d) is expected to be %d."
+    warning("Interfile warning: 'reference energy' (%f) is expected to be %d."
             "Currently, the energy resolution and the reference energy, are used only in"
             " scatter correction.",
         reference_energy, guessed_scanner_ptr->get_reference_energy());
 //    mismatch_between_header_and_guess = true;
       }
+    }
+
+    if (guessed_scanner_ptr->is_tof_ready())
+    {
+        if (max_num_timing_poss != guessed_scanner_ptr->get_num_max_of_timing_bins())
+        {
+            warning("Interfile warning: 'Number of TOF time bins' (%d) is expected to be %d.",
+                    max_num_timing_poss, guessed_scanner_ptr->get_num_max_of_timing_bins());
+            mismatch_between_header_and_guess = true;
+        }
+        if (size_of_timing_pos != guessed_scanner_ptr->get_size_of_timing_bin())
+        {
+            warning("Interfile warning: 'Size of timing bin (ps)' (%f) is expected to be %f.",
+                    size_of_timing_pos, guessed_scanner_ptr->get_size_of_timing_bin());
+            mismatch_between_header_and_guess = true;
+        }
+        if (timing_resolution != guessed_scanner_ptr->get_timing_resolution())
+        {
+            warning("Interfile warning: 'Timing resolution (ps)' (%f) is expected to be %f.",
+                    timing_resolution, guessed_scanner_ptr->get_timing_resolution());
+            mismatch_between_header_and_guess = true;
+        }
     }
 
     // end of checks. If they failed, we ignore the guess
@@ -1229,86 +1281,117 @@ bool InterfilePDFSHeader::post_processing()
 
   // finally, we construct a new scanner object with
   // data from the Interfile header (or the guessed scanner).
-  shared_ptr<Scanner> scanner_ptr_from_file(
-    new Scanner(guessed_scanner_ptr->get_type(), 
-                get_exam_info_ptr()->originating_system,
-		num_detectors_per_ring, 
-                num_rings, 
-		max_num_non_arccorrected_bins, 
-		default_num_arccorrected_bins,
-		static_cast<float>(inner_ring_diameter_in_cm*10./2),
-                static_cast<float>(average_depth_of_interaction_in_cm*10),
-		static_cast<float>(distance_between_rings_in_cm*10.),
-		static_cast<float>(default_bin_size_in_cm*10),
-		static_cast<float>(view_offset_in_degrees*_PI/180),
-		num_axial_blocks_per_bucket, 
-		num_transaxial_blocks_per_bucket,
-		num_axial_crystals_per_block,
-		num_transaxial_crystals_per_block,
-		num_axial_crystals_per_singles_unit,
-                num_transaxial_crystals_per_singles_unit,
-                num_detector_layers,
-                energy_resolution,
-                reference_energy));
+
+  shared_ptr<Scanner> scanner_sptr_from_file;
+  if (!guessed_scanner_ptr->is_tof_ready())
+  {
+      scanner_sptr_from_file.reset(
+                  new Scanner(guessed_scanner_ptr->get_type(),
+                              get_exam_info_ptr()->originating_system,
+                              num_detectors_per_ring,
+                              num_rings,
+                              max_num_non_arccorrected_bins,
+                              default_num_arccorrected_bins,
+                              static_cast<float>(inner_ring_diameter_in_cm*10./2),
+                              static_cast<float>(average_depth_of_interaction_in_cm*10),
+                              static_cast<float>(distance_between_rings_in_cm*10.),
+                              static_cast<float>(default_bin_size_in_cm*10),
+                              static_cast<float>(view_offset_in_degrees*_PI/180),
+                              num_axial_blocks_per_bucket,
+                              num_transaxial_blocks_per_bucket,
+                              num_axial_crystals_per_block,
+                              num_transaxial_crystals_per_block,
+                              num_axial_crystals_per_singles_unit,
+                              num_transaxial_crystals_per_singles_unit,
+                              num_detector_layers,
+                              energy_resolution,
+                              reference_energy));
+  }
+  else
+  {
+      scanner_sptr_from_file.reset(
+                  new Scanner(guessed_scanner_ptr->get_type(),
+                              get_exam_info_ptr()->originating_system,
+                              num_detectors_per_ring,
+                              num_rings,
+                              max_num_non_arccorrected_bins,
+                              default_num_arccorrected_bins,
+                              static_cast<float>(inner_ring_diameter_in_cm*10./2),
+                              static_cast<float>(average_depth_of_interaction_in_cm*10),
+                              static_cast<float>(distance_between_rings_in_cm*10.),
+                              static_cast<float>(default_bin_size_in_cm*10),
+                              static_cast<float>(view_offset_in_degrees*_PI/180),
+                              num_axial_blocks_per_bucket,
+                              num_transaxial_blocks_per_bucket,
+                              num_axial_crystals_per_block,
+                              num_transaxial_crystals_per_block,
+                              num_axial_crystals_per_singles_unit,
+                              num_transaxial_crystals_per_singles_unit,
+                              num_detector_layers,
+                              max_num_timing_poss,
+                              size_of_timing_pos,
+                              timing_resolution));
+  }
+
 
   bool is_consistent =
-    scanner_ptr_from_file->check_consistency() == Succeeded::yes;
-  if (scanner_ptr_from_file->get_type() == Scanner::Unknown_scanner ||
-      scanner_ptr_from_file->get_type() == Scanner::User_defined_scanner ||
+    scanner_sptr_from_file->check_consistency() == Succeeded::yes;
+  if (scanner_sptr_from_file->get_type() == Scanner::Unknown_scanner ||
+      scanner_sptr_from_file->get_type() == Scanner::User_defined_scanner ||
       mismatch_between_header_and_guess ||
       !is_consistent)
     {
       warning("Interfile parsing ended up with the following scanner:\n%s\n",
-	      scanner_ptr_from_file->parameter_info().c_str());
+          scanner_sptr_from_file->parameter_info().c_str());
     }
  
   
   // float azimuthal_angle_sampling =_PI/num_views;
   
   
-   
+   //TODO: TOF ProjDataInfo
   
   if (is_arccorrected)
     {
       if (effective_central_bin_size_in_cm <= 0)
-	effective_central_bin_size_in_cm =
-	  scanner_ptr_from_file->get_default_bin_size()/10;
-      else if (fabs(effective_central_bin_size_in_cm - 
-		    scanner_ptr_from_file->get_default_bin_size()/10)>.001)	
-	warning("Interfile warning: unexpected effective_central_bin_size_in_cm\n"
-		"Value in header is %g while the default for the scanner is %g\n"
-		"Using value from header.",
-		effective_central_bin_size_in_cm,
-		scanner_ptr_from_file->get_default_bin_size()/10);
+    effective_central_bin_size_in_cm =
+      scanner_sptr_from_file->get_default_bin_size()/10;
+      else if (fabs(effective_central_bin_size_in_cm -
+            scanner_sptr_from_file->get_default_bin_size()/10)>.001)
+    warning("Interfile warning: unexpected effective_central_bin_size_in_cm\n"
+        "Value in header is %g while the default for the scanner is %g\n"
+        "Using value from header.",
+        effective_central_bin_size_in_cm,
+        scanner_sptr_from_file->get_default_bin_size()/10);
       
-      data_info_ptr = 
-	new ProjDataInfoCylindricalArcCorr (
-					    scanner_ptr_from_file,
-					    float(effective_central_bin_size_in_cm*10.),
-					    sorted_num_rings_per_segment,
-					    sorted_min_ring_diff,
-					    sorted_max_ring_diff,
-					    num_views,num_bins);
+      data_info_ptr =
+    new ProjDataInfoCylindricalArcCorr (
+                        scanner_sptr_from_file,
+                        float(effective_central_bin_size_in_cm*10.),
+                        sorted_num_rings_per_segment,
+                        sorted_min_ring_diff,
+                        sorted_max_ring_diff,
+                        num_views,num_bins, tof_mash_factor);
     }
   else
     {
-      data_info_ptr = 
-	new ProjDataInfoCylindricalNoArcCorr (
-					      scanner_ptr_from_file,
-					      sorted_num_rings_per_segment,
-					      sorted_min_ring_diff,
-					      sorted_max_ring_diff,
-					      num_views,num_bins);
+      data_info_ptr =
+    new ProjDataInfoCylindricalNoArcCorr (
+                          scanner_sptr_from_file,
+                          sorted_num_rings_per_segment,
+                          sorted_min_ring_diff,
+                          sorted_max_ring_diff,
+                          num_views,num_bins, tof_mash_factor);
       if (effective_central_bin_size_in_cm>0 &&
-	  fabs(effective_central_bin_size_in_cm - 
-	       data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10.)>.01)
-	{
-	  warning("Interfile warning: inconsistent effective_central_bin_size_in_cm\n"
-		  "Value in header is %g while I expect %g from the inner ring radius etc\n"
-		  "Ignoring value in header",
-		  effective_central_bin_size_in_cm,
-		  data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10.);
-	}
+      fabs(effective_central_bin_size_in_cm -
+           data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10.)>.01)
+    {
+      warning("Interfile warning: inconsistent effective_central_bin_size_in_cm\n"
+          "Value in header is %g while I expect %g from the inner ring radius etc\n"
+          "Ignoring value in header",
+          effective_central_bin_size_in_cm,
+          data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10.);
+    }
     }
   //cerr << data_info_ptr->parameter_info() << endl;
   

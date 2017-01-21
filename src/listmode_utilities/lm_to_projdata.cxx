@@ -50,7 +50,7 @@ int main(int argc, char * argv[])
                                     "Run "<<argv[0]<<" --input-formats to list the supported input formats\n";
     exit(EXIT_FAILURE);
   }
-  // Display the supported inputs, we need this in order to know
+  // N.E: Display the supported inputs, we need this in order to know
   // which listmode files are supported
   if (strcmp(argv[1], "--input-formats")==0)
   {

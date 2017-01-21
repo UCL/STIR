@@ -129,10 +129,10 @@ allocate_segments(VectorWithOffset<segment_type *>& segments,
  */         
 static void 
 save_and_delete_segments(shared_ptr<iostream>& output,
-			      VectorWithOffset<segment_type *>& segments,
-			      const int start_segment_index, 
-			      const int end_segment_index, 
-			      ProjData& proj_data);
+                  VectorWithOffset<segment_type *>& segments,
+                  const int start_segment_index,
+                  const int end_segment_index,
+                  ProjData& proj_data, const int timing_pos = 1);
 static
 shared_ptr<ProjData>
 construct_proj_data(shared_ptr<iostream>& output,
@@ -156,7 +156,7 @@ set_defaults()
   post_normalisation_ptr.reset(new TrivialBinNormalisation);
   do_pre_normalisation =0;
   num_events_to_store = 0;
-
+  use_tof = false;
 }
 
 void 
@@ -379,15 +379,16 @@ LmToProjData(const char * const par_filename)
  Here follows the implementation of get_bin_from_event
 
  this function is complicated because of the normalisation stuff. sorry
+ N.E: Get_bin_from_event became Get_bin_from_record
 ***************************************************************/
 void
 LmToProjData::
-get_bin_from_event(Bin& bin, const CListEvent& event) const
+get_bin_from_record(Bin& bin, const CListRecord& record) const
 {  
   if (do_pre_normalisation)
    {
      Bin uncompressed_bin;
-     event.get_bin(uncompressed_bin, *proj_data_info_cyl_uncompressed_ptr);
+     record.event().get_bin(uncompressed_bin, *proj_data_info_cyl_uncompressed_ptr);
      if (uncompressed_bin.get_bin_value()<=0)
       return; // rejected for some strange reason
 
@@ -410,7 +411,7 @@ get_bin_from_event(Bin& bin, const CListEvent& event) const
 		bin_efficiency,
 		uncompressed_bin.segment_num(), uncompressed_bin.view_num(), 
 		uncompressed_bin.axial_pos_num(), uncompressed_bin.tangential_pos_num());
-	bin.set_bin_value(-1);
+    bin.set_bin_value(-1.f);
 	return;
 	}
      
@@ -418,20 +419,22 @@ get_bin_from_event(Bin& bin, const CListEvent& event) const
     // Also, adjust the normalisation factor according to the number of
     // uncompressed bins in a compressed bin
 
-    const float bin_value = 1/bin_efficiency;
+    const float bin_value = 1.f/bin_efficiency;
     // TODO wasteful: we decode the event twice. replace by something like
     // template_proj_data_info_ptr->get_bin_from_uncompressed(bin, uncompressed_bin);
-    event.get_bin(bin, *template_proj_data_info_ptr);
+
    
-    if (bin.get_bin_value()>0)
-      {
-	bin.set_bin_value(bin_value);
-      }
+    if (use_tof)
+        record.full_event(bin, *template_proj_data_info_ptr);
+    else
+        record.event().get_bin(bin, *template_proj_data_info_ptr);
+
+    bin.set_bin_value(bin_value);
 
   }
   else
     {
-      event.get_bin(bin, *template_proj_data_info_ptr);
+      record.event().get_bin(bin, *template_proj_data_info_ptr);
     }
 
 } 
@@ -510,9 +513,29 @@ start_new_time_frame(const unsigned int)
  It's essentially simple, but is in fact complicated because of the facility
  to store only part of the segments in memory.
 ***************************************************************/
+
 void
 LmToProjData::
 process_data()
+{
+    assert(!is_null_ptr(template_proj_data_info_ptr));
+
+    if (template_proj_data_info_ptr->get_num_tof_poss() > 1)
+    {
+        use_tof = true;
+        actual_process_data_with_tof();
+    }
+    else
+    {
+        use_tof = false;
+        actual_process_data_without_tof();
+    }
+}
+
+
+void
+LmToProjData::
+actual_process_data_without_tof()
 { 
   CPUTimer timer;
   timer.start();
@@ -643,7 +666,7 @@ process_data()
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
-                     get_bin_from_event(bin, record.event());
+                     get_bin_from_record(bin, record);
 		     		       
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
@@ -727,6 +750,236 @@ process_data()
 
 }
 
+void
+LmToProjData::
+actual_process_data_with_tof()
+{
+  CPUTimer timer;
+  timer.start();
+
+  // assume list mode data starts at time 0
+  // we have to do this because the first time tag might occur only after a
+  // few coincidence events (as happens with ECAT scanners)
+  current_time = 0;
+
+  double time_of_last_stored_event = 0;
+  long num_stored_events = 0;
+  VectorWithOffset<segment_type *>
+    segments (template_proj_data_info_ptr->get_min_segment_num(),
+          template_proj_data_info_ptr->get_max_segment_num());
+
+  VectorWithOffset<CListModeData::SavedPosition>
+    frame_start_positions(1, static_cast<int>(frame_defs.get_num_frames()));
+  shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
+  CListRecord& record = *record_sptr;
+
+  /* Here starts the main loop which will store the listmode data. */
+  for (current_frame_num = 1;
+       current_frame_num<=frame_defs.get_num_frames();
+       ++current_frame_num)
+    {
+      start_new_time_frame(current_frame_num);
+
+      // construct ExamInfo appropriate for a single projdata with this time frame
+      ExamInfo this_frame_exam_info(*lm_data_ptr->get_exam_info_ptr());
+      {
+        TimeFrameDefinitions this_time_frame_defs(frame_defs, current_frame_num);
+        this_frame_exam_info.set_time_frame_definitions(this_time_frame_defs);
+      }
+
+      // *********** open output file
+      shared_ptr<iostream> output;
+      shared_ptr<ProjData> proj_data_ptr;
+
+      {
+        char rest[50];
+        sprintf(rest, "_f%dg1d0b0", current_frame_num);
+        const string output_filename = output_filename_prefix + rest;
+
+        proj_data_ptr =
+          construct_proj_data(output, output_filename, this_frame_exam_info, template_proj_data_info_ptr);
+      }
+
+      long num_prompts_in_frame = 0;
+      long num_delayeds_in_frame = 0;
+
+      const double start_time = frame_defs.get_start_time(current_frame_num);
+      const double end_time = frame_defs.get_end_time(current_frame_num);
+
+      for (int current_timing_pos_index = proj_data_ptr->get_min_timing_pos_num();
+           current_timing_pos_index <= proj_data_ptr->get_max_timing_pos_num();
+           current_timing_pos_index += 1)
+      {
+      /*
+     For each start_segment_index, we check which events occur in the
+     segments between start_segment_index and
+     start_segment_index+num_segments_in_memory.
+       */
+       for (int start_segment_index = proj_data_ptr->get_min_segment_num();
+        start_segment_index <= proj_data_ptr->get_max_segment_num();
+        start_segment_index += num_segments_in_memory)
+     {
+
+       const int end_segment_index =
+         min( proj_data_ptr->get_max_segment_num()+1, start_segment_index + num_segments_in_memory) - 1;
+
+       if (!interactive)
+         allocate_segments(segments, start_segment_index, end_segment_index, proj_data_ptr->get_proj_data_info_ptr());
+
+       // the next variable is used to see if there are more events to store for the current segments
+       // num_events_to_store-more_events will be the number of allowed coincidence events currently seen in the file
+       // ('allowed' independent on the fact of we have its segment in memory or not)
+       // When do_time_frame=true, the number of events is irrelevant, so we
+       // just set more_events to 1, and never change it
+       unsigned long int more_events =
+         do_time_frame? 1 : num_events_to_store;
+
+       if (start_segment_index != proj_data_ptr->get_min_segment_num())
+         {
+           // we're going once more through the data (for the next batch of segments)
+           cerr << "\nProcessing next batch of segments\n";
+           // go to the beginning of the listmode data for this frame
+           lm_data_ptr->set_get_position(frame_start_positions[current_frame_num]);
+           current_time = start_time;
+         }
+       else
+         {
+           cerr << "\nProcessing time frame " << current_frame_num << '\n';
+
+           // Note: we already have current_time from previous frame, so don't
+           // need to set it. In fact, setting it to start_time would be wrong
+           // as we first might have to skip some events before we get to start_time.
+           // So, let's do that now.
+           while (current_time < start_time &&
+              lm_data_ptr->get_next_record(record) == Succeeded::yes)
+         {
+           if (record.is_time())
+             current_time = record.time().get_time_in_secs();
+         }
+           // now save position such that we can go back
+           frame_start_positions[current_frame_num] =
+         lm_data_ptr->save_get_position();
+         }
+       {
+         // loop over all events in the listmode file
+         while (more_events)
+           {
+         if (lm_data_ptr->get_next_record(record) == Succeeded::no)
+           {
+             // no more events in file for some reason
+             break; //get out of while loop
+           }
+         if (record.is_time() && end_time > 0.01) // Direct comparison within doubles is unsafe.
+           {
+             current_time = record.time().get_time_in_secs();
+             if (do_time_frame && current_time >= end_time)
+               break; // get out of while loop
+             assert(current_time>=start_time);
+             process_new_time_event(record.time());
+           }
+         // note: could do "else if" here if we would be sure that
+         // a record can never be both timing and coincidence event
+         // and there might be a scanner around that has them both combined.
+         if (record.is_event())
+           {
+             assert(start_time <= current_time);
+             Bin bin;
+             // set value in case the event decoder doesn't touch it
+             // otherwise it would be 0 and all events will be ignored
+             bin.set_bin_value(1.f);
+
+             get_bin_from_record(bin, record);
+
+             // check if it's inside the range we want to store
+             if (bin.get_bin_value()>0
+             && bin.tangential_pos_num()>= proj_data_ptr->get_min_tangential_pos_num()
+             && bin.tangential_pos_num()<= proj_data_ptr->get_max_tangential_pos_num()
+             && bin.axial_pos_num()>=proj_data_ptr->get_min_axial_pos_num(bin.segment_num())
+             && bin.axial_pos_num()<=proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
+             && bin.timing_pos_num()>=proj_data_ptr->get_min_timing_pos_num()
+             && bin.timing_pos_num()<=proj_data_ptr->get_max_timing_pos_num()
+             )
+               {
+             assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
+             assert(bin.view_num()<=proj_data_ptr->get_max_view_num());
+
+             // see if we increment or decrement the value in the sinogram
+             const int event_increment =
+               record.event().is_prompt()
+               ? ( store_prompts ? 1 : 0 ) // it's a prompt
+               :  delayed_increment;//it is a delayed-coincidence event
+
+             if (event_increment==0)
+               continue;
+
+             if (!do_time_frame)
+               more_events -= event_increment;
+
+             if (bin.timing_pos_num() == current_timing_pos_index)
+             {
+             // now check if we have its segment in memory
+             if (bin.segment_num() >= start_segment_index && bin.segment_num()<=end_segment_index)
+               {
+                 do_post_normalisation(bin);
+
+                 num_stored_events += event_increment;
+                 if (record.event().is_prompt())
+                   ++num_prompts_in_frame;
+                 else
+                   ++num_delayeds_in_frame;
+
+                 if (num_stored_events%500000L==0) cout << "\r" << num_stored_events << " events stored" << flush;
+
+                 if (interactive)
+                   printf("TOFbin %4d Seg %4d view %4d ax_pos %4d tang_pos %4d time %8g stored with incr %d \n",
+                      bin.timing_pos_num(),bin.segment_num(),
+                          bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num(),
+                      current_time, event_increment);
+                 else
+                   (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] +=
+                   bin.get_bin_value() *
+                   event_increment;
+             }
+               }
+               }
+             else 	// event is rejected for some reason
+               {
+             if (interactive)
+               printf("TOFbin %4d Seg %4d view %4d ax_pos %4d tang_pos %4d time %8g ignored\n",
+                  bin.timing_pos_num(), bin.segment_num(), bin.view_num(),
+                      bin.axial_pos_num(), bin.tangential_pos_num(), current_time);
+               }
+           } // end of spatial event processing
+           } // end of while loop over all events
+
+         time_of_last_stored_event =
+           max(time_of_last_stored_event,current_time);
+       }
+
+       if (!interactive)
+       save_and_delete_segments(output, segments,
+                    start_segment_index, end_segment_index,
+                    *proj_data_ptr, current_timing_pos_index);
+     } // end of for loop for segment range
+
+      } // end of for loop for timing positions
+       cerr <<  "\nNumber of prompts stored in this time period : " << num_prompts_in_frame
+        <<  "\nNumber of delayeds stored in this time period: " << num_delayeds_in_frame
+        << '\n';
+   } // end of loop over frames
+
+ timer.stop();
+
+ cerr << "Last stored event was recorded before time-tick at " << time_of_last_stored_event << " secs\n";
+ if (!do_time_frame &&
+     (num_stored_events<=0 ||
+      /*static_cast<unsigned long>*/(num_stored_events)<num_events_to_store))
+   cerr << "Early stop due to EOF. " << endl;
+ cerr << "Total number of counts (either prompts/trues/delayeds) stored: " << num_stored_events << endl;
+
+ cerr << "\nThis took " << timer.value() << "s CPU time." << endl;
+
+}
 
 
 /************************* Local helper routines *************************/
@@ -759,14 +1012,15 @@ save_and_delete_segments(shared_ptr<iostream>& output,
 			 VectorWithOffset<segment_type *>& segments,
 			 const int start_segment_index, 
 			 const int end_segment_index, 
-			 ProjData& proj_data)
+             ProjData& proj_data,
+                         const int timing_pos)
 {
   
   for (int seg=start_segment_index; seg<=end_segment_index; seg++)
   {
     {
 #ifdef USE_SegmentByView
-      proj_data.set_segment(*segments[seg]);
+      proj_data.set_segment(*segments[seg], timing_pos);
 #else
       (*segments[seg]).write_data(*output);
 #endif
@@ -786,13 +1040,20 @@ construct_proj_data(shared_ptr<iostream>& output,
                     const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
 {
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo(exam_info));
-
+  shared_ptr<ProjData> proj_data_sptr;
 #ifdef USE_SegmentByView
   // don't need output stream in this case
-  shared_ptr<ProjData> proj_data_sptr(new ProjDataInterfile(exam_info_sptr,
-							    proj_data_info_ptr, output_filename, ios::out, 
-							    ProjDataFromStream::Segment_View_AxialPos_TangPos,
-							    OUTPUTNumericType));
+  if (proj_data_info_ptr->get_tof_mash_factor() == 1)
+      proj_data_sptr.reset(new ProjDataInterfile(exam_info_sptr,
+                                                 proj_data_info_ptr, output_filename, ios::out,
+                                                 ProjDataFromStream::Segment_View_AxialPos_TangPos,
+                                                 OUTPUTNumericType));
+  else
+      proj_data_sptr.reset(new ProjDataInterfile(exam_info_sptr,
+                                                 proj_data_info_ptr, output_filename, ios::out,
+                                                 ProjDataFromStream::Timing_Segment_View_AxialPos_TangPos,
+                                                 OUTPUTNumericType));
+
   return proj_data_sptr;
 #else
   // this code would work for USE_SegmentByView as well, but the above is far simpler...

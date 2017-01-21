@@ -61,7 +61,8 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
 				 const  VectorWithOffset<int>& num_axial_pos_per_segment,
                                  const  VectorWithOffset<int>& min_ring_diff_v, 
                                  const  VectorWithOffset<int>& max_ring_diff_v,
-                                 const int num_views,const int num_tangential_poss)
+                                 const int num_views,const int num_tangential_poss,
+                                 const int tof_mash_factor)
 : ProjDataInfoCylindrical(scanner_ptr,
                           num_axial_pos_per_segment,
                           min_ring_diff_v, max_ring_diff_v,
@@ -71,6 +72,9 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
 {
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
+  // If tof_mash_factor == 1 then there is only tof bin ... effectively no TOF
+  if (tof_mash_factor > 1)
+    set_tof_mash_factor(tof_mash_factor);
   //this->initialise_uncompressed_view_tangpos_to_det1det2();
   //this->initialise_det1det2_to_uncompressed_view_tangpos();
 }
@@ -78,9 +82,10 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
 ProjDataInfoCylindricalNoArcCorr:: 
 ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
                                  const  VectorWithOffset<int>& num_axial_pos_per_segment,
-                                 const  VectorWithOffset<int>& min_ring_diff_v, 
+                                 const  VectorWithOffset<int>& min_ring_diff_v,
                                  const  VectorWithOffset<int>& max_ring_diff_v,
-                                 const int num_views,const int num_tangential_poss)
+                                 const int num_views, const int num_tangential_poss,
+                                 const int tof_mash_factor)
 : ProjDataInfoCylindrical(scanner_ptr,
                           num_axial_pos_per_segment,
                           min_ring_diff_v, max_ring_diff_v,
@@ -91,6 +96,10 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
   angular_increment = static_cast<float>(_PI/scanner_ptr->get_num_detectors_per_ring());
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
+
+  // If tof_mash_factor == 1 then there is only tof bin ... effectively no TOF
+  if (tof_mash_factor > 1)
+        set_tof_mash_factor(tof_mash_factor);
   //this->initialise_uncompressed_view_tangpos_to_det1det2();
   //this->initialise_det1det2_to_uncompressed_view_tangpos();
 }

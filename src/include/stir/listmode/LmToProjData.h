@@ -174,10 +174,16 @@ public:
   LmToProjData();
 
   //! This function does the actual work
+  //! N.E: In order to keep the ToF functions separate from the non-TOF
+  //! STIR this function just call the appropriate actual_process_data_with(out)_tof().
   virtual void process_data();
   
 protected:
 
+  //! This function does the non-TOF work
+  virtual void actual_process_data_without_tof();
+  //! This function does the TOF work
+  virtual void actual_process_data_with_tof();
   
   //! will be called when a new time frame starts
   /*! The frame numbers start from 1. */
@@ -192,7 +198,7 @@ protected:
     (on top of anything done by normalisation_ptr). 
     \todo Would need timing info or so for e.g. time dependent
     normalisation or angle info for a rotating scanner.*/
-  virtual void get_bin_from_event(Bin& bin, const CListEvent&) const;
+  virtual void get_bin_from_record(Bin& bin, const CListRecord&) const;
 
   //! A function that should return the number of uncompressed bins in the current bin
   /*! \todo it is not compatiable with e.g. HiDAC doesn't belong here anyway
@@ -224,6 +230,8 @@ protected:
   bool do_pre_normalisation;
   bool store_prompts;
   bool store_delayeds;
+  //! Use TOF information
+  bool use_tof;
   int num_segments_in_memory;
   // TODO make long (or even unsigned long) but can't do this yet because we can't parse longs yet
   unsigned long int num_events_to_store;

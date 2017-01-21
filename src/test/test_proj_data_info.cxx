@@ -143,7 +143,7 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 		     tangential_pos_num<=proj_data_info.get_max_tangential_pos_num()-1;
 		     tangential_pos_num+=1)
 		  {
-		    const Bin org_bin(segment_num,view_num,axial_pos_num,tangential_pos_num, /* value*/1);
+            const Bin org_bin(segment_num,view_num,axial_pos_num,tangential_pos_num, /* value*/1.f);
 		    LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
 		    proj_data_info.get_LOR(lor, org_bin);
 		    {
@@ -599,10 +599,10 @@ run_tests()
   cerr << "\nTests with proj_data_info with mashing and axial compression\n\n";
   proj_data_info_ptr.reset(
     ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
-				  /*span*/5, scanner_ptr->get_num_rings()-1,
-				  /*views*/ scanner_ptr->get_num_detectors_per_ring()/2/8, 
-				  /*tang_pos*/64, 
-				  /*arc_corrected*/ false));
+                  /*span*/5, scanner_ptr->get_num_rings()-1,
+                  /*views*/ scanner_ptr->get_num_detectors_per_ring()/2/8,
+                  /*tang_pos*/64,
+                  /*arc_corrected*/ false));
     test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr));
 }
 
@@ -724,7 +724,7 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 		// or an LOR parallel to the scanner axis
 		if (det_pos_pair.pos1().tangential_coord() == det_pos_pair.pos2().tangential_coord())
 		  continue;
-		Bin bin;
+        Bin bin(0,0,0,0,0,0.0f);
 		DetectionPositionPair<> new_det_pos_pair;
 		const bool there_is_a_bin =
 		  proj_data_info.get_bin_for_det_pos_pair(bin, det_pos_pair) ==
@@ -754,9 +754,9 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
       cerr << "\n\tTest code for bin -> detector,ring and back conversions. (This might take a while...)";
 
       {
-	Bin bin;
+    Bin bin(0,0,0,0,0,0.0f);
 	// set value for comparison later on
-	bin.set_bin_value(0);
+    bin.set_bin_value(0.f);
 	for (bin.segment_num() = max(-5,proj_data_info.get_min_segment_num()); 
 	     bin.segment_num() <= min(5,proj_data_info.get_max_segment_num()); 
 	     ++bin.segment_num())
@@ -776,7 +776,7 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 		{
                   // set from for-loop variable
                   bin.tangential_pos_num() = tangential_pos_num;
-		  Bin new_bin;
+          Bin new_bin(0,0,0,0,0,0.0f);
 		  // set value for comparison with bin
 		  new_bin.set_bin_value(0);
 		  DetectionPositionPair<> det_pos_pair;
@@ -809,7 +809,7 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
   {
     cerr << "\n\tTest code for bins <-> detectors routines that work with any mashing and axial compression";
 
-    Bin bin;
+    Bin bin(0,0,0,0,0,0.0f);
     // set value for comparison later on
     bin.set_bin_value(0);
     std::vector<DetectionPositionPair<> > det_pos_pairs;
@@ -830,7 +830,7 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 	       ++bin.tangential_pos_num())
 	    {
 	      proj_data_info.get_all_det_pos_pairs_for_bin(det_pos_pairs, bin);
-	      Bin new_bin;
+          Bin new_bin(0,0,0,0,0,0.0f);
 	      // set value for comparison with bin
 	      new_bin.set_bin_value(0);
 	      for (std::vector<DetectionPositionPair<> >::const_iterator det_pos_pair_iter = det_pos_pairs.begin();
