@@ -143,19 +143,19 @@ public:
 	{ return static_cast<unsigned long>(time);  }
 	inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
 	{
-		time = ((1UL<<49)-1) & static_cast<unsigned long>(time_in_millisecs);
+		time = ((boost::uint64_t(1)<<49)-1) & static_cast<boost::uint64_t>(time_in_millisecs);
 		return Succeeded::yes;
 	}
 private:
 	friend class CListRecordSAFIR;
 #if STIRIsNativeByteOrderBigEndian
-	unsigned type : 1;
-	unsigned reserved : 15;
-	unsigned long time : 48;
+	boost::uint64_t type : 1;
+	boost::uint64_t reserved : 15;
+	boost::uint64_t time : 48;
 #else
-	unsigned long time : 48;
-	unsigned reserved : 15;
-	unsigned type : 1;
+	boost::uint64_t time : 48;
+	boost::uint64_t reserved : 15;
+	boost::uint64_t type : 1;
 #endif
 };
 
