@@ -32,8 +32,6 @@
 #ifndef __stir_listmode_CListRecordSAFIR_H__
 #define __stir_listmode_CListRecordSAFIR_H__
 
-#include<cstint>
-
 #include "stir/listmode/CListRecord.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/Succeeded.h"
@@ -145,7 +143,7 @@ public:
 	{ return static_cast<unsigned long>(time);  }
 	inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
 	{
-		time = ((1UL<<49)-1) & static_cast<unsigned long>(time_in_millisecs);
+		time = ((1ULL<<49)-1) & static_cast<unsigned long>(time_in_millisecs);
 		return Succeeded::yes;
 	}
 private:
@@ -153,9 +151,9 @@ private:
 #if STIRIsNativeByteOrderBigEndian
 	unsigned type : 1;
 	unsigned reserved : 15;
-	uint_least64_t time : 48;
+	unsigned long long time : 48;
 #else
-	uint_least64_t time : 48;
+	unsigned long long time : 48;
 	unsigned reserved : 15;
 	unsigned type : 1;
 #endif
