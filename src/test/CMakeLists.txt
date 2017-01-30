@@ -71,6 +71,8 @@ endforeach()
 ### add tests for the "involved" commands
 ### i.e. those that need command line arguments
 
+if (BUILD_TESTING)
+
 ADD_TEST(test_linear_regression
    ${CMAKE_CURRENT_BINARY_DIR}/test_linear_regression ${CMAKE_CURRENT_SOURCE_DIR}/input/test_linear_regression.in
 )
@@ -118,4 +120,4 @@ foreach(file_format ${file_format_tests})
 )
 endforeach()
 
-
+endif(BUILD_TESTING)

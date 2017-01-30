@@ -25,43 +25,16 @@ option(STIR_MPI
 option(STIR_OPENMP 
        "Compile with OpenMP" OFF)
 
+option(BUILD_TESTING 
+       "Build test programs" ON)
+
+option(BUILD_EXECUTABLES
+       "Build executables" ON)
+
 option(BUILD_SHARED_LIBS 
        "Use shared libraries" OFF)
 
-#### we need the boost library from boost.org
-set(BOOST_ROOT CACHE PATH "root of Boost")
-find_package( Boost 1.36.0 REQUIRED )
-include_directories(${Boost_INCLUDE_DIRS})
-
-#### optional external libraries. 
-# Listed here such that we know if we should compile extra utilities
-option(DISABLE_LLN_MATRIX "disable use of LLN library" OFF)
-option(DISABLE_ITK "disable use of ITK library" OFF)
-option(DISABLE_AVW "disable use of AVW library" OFF)
-option(DISABLE_RDF "disable use of GE RDF library" OFF)
-option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
-option(DISABLE_CERN_ROOT_SUPPORT "disable use of Cern ROOT libraries" OFF)
-
-if(NOT DISABLE_ITK)
-   # See if we can find a compiled version of ITK (http://www.itk.org/)
-   find_package(ITK QUIET)
-endif()
-
-if(NOT DISABLE_LLN_MATRIX)
-  find_package(LLN)
-endif()
-
-if(NOT DISABLE_CERN_ROOT_SUPPORT)
-  find_package(CERN_ROOT)
-endif()
-
-if(NOT DISABLE_AVW)
-  find_package(AVW)
-endif()
-
-if(NOT DISABLE_RDF)
-  find_package(RDF)
-endif()
+### Settings for external libraries
 
 if (LLN_FOUND)
   set(HAVE_ECAT ON)
@@ -194,7 +167,6 @@ if(STIR_OPENMP)
     # work-around cmake bug for gcc
     set (OpenMP_EXE_LINKER_FLAGS ${OpenMP_C_FLAGS})
   endif ()
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 
 endif()
 
@@ -221,14 +193,8 @@ endforeach(STIR_DIR)
 #### SWIG settings
 ADD_SUBDIRECTORY(swig)
 
-#### Export settings such that another project can import them.
-# Disabled as no longer deemed safe
-# Save the compiler settings 
-#INCLUDE(${CMAKE_ROOT}/Modules/CMakeExportBuildSettings.cmake)
-#CMAKE_EXPORT_BUILD_SETTINGS(${STIR_BINARY_DIR}/STIRBuildSettings.cmake)
-
-# Save library dependencies.
-#EXPORT_LIBRARY_DEPENDENCIES(${STIR_BINARY_DIR}/STIRLibraryDepends.cmake)
+#### install include files
+install(DIRECTORY "${PROJECT_SOURCE_DIR}/src/include/" DESTINATION include)
 
 ## CMake variables to build doxygen documentation
 ## Create html documentation using Doxygen
@@ -260,11 +226,5 @@ if(BUILD_DOCUMENTATION)
 
 #    install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION share/doc/stir)
 endif()
-
-### Set Version number
-set(VERSION_MAJOR   3   CACHE STRING "Project major version number.")
-set(VERSION_MINOR   1   CACHE STRING "Project minor version number.")
-set(VERSION_PATCH   0   CACHE STRING "Project patch version number.")
-mark_as_advanced(VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 
