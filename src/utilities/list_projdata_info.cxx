@@ -2,6 +2,7 @@
     Copyright (C) 2002 - 2005-06-09, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
     Copyright (C) 2013, University College London
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,6 +31,7 @@
   Add one or more options to print the exam/geometric/min/max/sum information.
   If no option is specified, geometric info is printed.
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
 */
 
@@ -143,39 +145,47 @@ int main(int argc, char *argv[])
   if (print_geom)
     std::cout << proj_data_sptr->get_proj_data_info_ptr()->parameter_info() << std::endl;
 
-  if (print_min || print_max || print_sum)
-    {
+  //if (print_min || print_max || print_sum)
+  {
       const int min_segment_num = proj_data_sptr->get_min_segment_num();
-      const int max_segment_num = proj_data_sptr->get_max_segment_num();     
-      bool accumulators_initialized = false;
-      float accum_min=std::numeric_limits<float>::max(); // initialize to very large in case projdata is empty (although that's unlikely)
-      float accum_max=std::numeric_limits<float>::min();
-      double sum=0.;
-      for (int segment_num = min_segment_num; segment_num<= max_segment_num; ++segment_num) 
-	{
-	    const SegmentByView<float> seg(proj_data_sptr->get_segment_by_view(segment_num));
-	    const float this_max=seg.find_max();
-	    const float this_min=seg.find_min();
-	    sum+=static_cast<double>(seg.sum());
-	    if(!accumulators_initialized) 
-	      {
-		accum_max=this_max;
-		accum_min=this_min;
-		accumulators_initialized=true;
-	      }
-	    else 
-	      {
-		if (accum_max<this_max) accum_max=this_max;
-		if (accum_min>this_min) accum_min=this_min;
-	      }
-	  }
-      if (print_min)
-	std::cout << "\nData min: " << accum_min;
-      if (print_max)
-	std::cout << "\nData max: " << accum_max;
-      if (print_sum)
-	std::cout << "\nData sum: " << sum;
-      std::cout << "\n";
-    }
+      const int max_segment_num = proj_data_sptr->get_max_segment_num();
+      const int min_timing_num = proj_data_sptr->get_min_timing_pos_num();
+      const int max_timing_num = proj_data_sptr->get_max_timing_pos_num();
+      std::cout << "\nTotal number of timing positions: " << proj_data_sptr->get_num_timing_poss();
+
+      for (int timing_num = min_timing_num; timing_num <= max_timing_num; ++timing_num)
+      {
+          std::cout << "\nTiming location: " << timing_num;
+          bool accumulators_initialized = false;
+          float accum_min=std::numeric_limits<float>::max(); // initialize to very large in case projdata is empty (although that's unlikely)
+          float accum_max=std::numeric_limits<float>::min();
+          double sum=0.;
+          for (int segment_num = min_segment_num; segment_num<= max_segment_num; ++segment_num)
+          {
+              const SegmentByView<float> seg(proj_data_sptr->get_segment_by_view(segment_num, timing_num));
+              const float this_max=seg.find_max();
+              const float this_min=seg.find_min();
+              sum+=static_cast<double>(seg.sum());
+              if(!accumulators_initialized)
+              {
+                  accum_max=this_max;
+                  accum_min=this_min;
+                  accumulators_initialized=true;
+              }
+              else
+              {
+                  if (accum_max<this_max) accum_max=this_max;
+                  if (accum_min>this_min) accum_min=this_min;
+              }
+          }
+          if (print_min)
+              std::cout << "\nData min: " << accum_min;
+          if (print_max)
+              std::cout << "\nData max: " << accum_max;
+          if (print_sum)
+              std::cout << "\nData sum: " << sum;
+          std::cout << "\n";
+      }
+  }
   return EXIT_SUCCESS;
 }

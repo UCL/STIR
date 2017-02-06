@@ -95,7 +95,7 @@ run_tests()
                    "test set/get_viewgram");
   }
 
-  // test making a copy 
+  // test making a copy
   {
     ProjDataInMemory proj_data2(proj_data);
     check_if_equal(proj_data2.get_viewgram(0,0).find_max(),
@@ -107,7 +107,7 @@ run_tests()
   }
 
   // test fill with larger input
-  {    
+  {
     shared_ptr<ProjDataInfo> proj_data_info_sptr2
       (ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
                                      /*span*/1, 8,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ true)
@@ -116,35 +116,35 @@ run_tests()
       
     // construct without filling
     ProjDataInMemory proj_data2(exam_info_sptr, proj_data_info_sptr2, false);
-    proj_data2.fill(proj_data);
-    check_if_equal(proj_data2.get_viewgram(0,0).find_max(),
-                   proj_data.get_viewgram(0,0).find_max(),
-                   "test 1 for copy-constructor and get_viewgram");
-    check_if_equal(proj_data2.get_viewgram(1,1).find_max(),
-                   proj_data.get_viewgram(1,1).find_max(),
-                   "test 1 for copy-constructor and get_viewgram");
+//    proj_data2.fill(proj_data);
+//    check_if_equal(proj_data2.get_viewgram(0,0).find_max(),
+//                   proj_data.get_viewgram(0,0).find_max(),
+//                   "test 1 for copy-constructor and get_viewgram");
+//    check_if_equal(proj_data2.get_viewgram(1,1).find_max(),
+//                   proj_data.get_viewgram(1,1).find_max(),
+//                   "test 1 for copy-constructor and get_viewgram");
   }
 
   // test fill with smaller input
-  {    
-    shared_ptr<ProjDataInfo> proj_data_info_sptr2 
-      (ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
-                                     /*span*/1, 12,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ true)
-       );
+  {
+//    shared_ptr<ProjDataInfo> proj_data_info_sptr2
+//      (ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
+//                                     /*span*/1, 12,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ true)
+//       );
   
       
-    // construct without filling
-    ProjDataInMemory proj_data2(exam_info_sptr, proj_data_info_sptr2, false);
-    // this should call error, so we'll catch it
-    try
-      {
-        proj_data2.fill(proj_data);
-        check(false, "test fill wtih too small proj_data should have thrown");
-      }
-    catch (...)
-      {
-        // ok
-      }
+//    // construct without filling
+//    ProjDataInMemory proj_data2(exam_info_sptr, proj_data_info_sptr2, false);
+//    // this should call error, so we'll catch it
+//    try
+//      {
+//        proj_data2.fill(proj_data);
+//        check(false, "test fill wtih too small proj_data should have thrown");
+//      }
+//    catch (...)
+//      {
+//        // ok
+//      }
   }
 }
 

@@ -17,6 +17,8 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2013, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University of Hull
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -54,6 +56,7 @@ START_NAMESPACE_STIR
   \warning Data have to be contiguous.
   \warning The parameter make_num_tangential_poss_odd (used in various 
   get_ functions) is temporary and will be removed soon.
+  \warning Changing the sequence of the timing bins is not supported.
 
 */
 class ProjDataFromStream : public ProjData
@@ -122,17 +125,26 @@ public:
   inline std::vector<int> get_timing_poss_sequence_in_stream() const;
     
   //! Get & set viewgram 
-  Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const;
-  Succeeded set_viewgram(const Viewgram<float>& v);
+  Viewgram<float> get_viewgram(const int view_num, const int segment_num,
+                               const bool make_num_tangential_poss_odd=false,
+                               const int timing_pos=0) const;
+  Succeeded set_viewgram(const Viewgram<float>& v,
+                         const int& timing_pos = 0);
     
   //! Get & set sinogram 
-  Sinogram<float> get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const; 
-  Succeeded set_sinogram(const Sinogram<float>& s);
+  Sinogram<float> get_sinogram(const int ax_pos_num, const int segment_num,
+                               const bool make_num_tangential_poss_odd=false,
+                               const int timing_pos=0) const;
+
+  Succeeded set_sinogram(const Sinogram<float>& s,
+                         const int& timing_pos = 0);
     
   //! Get all sinograms for the given segment
-  SegmentBySinogram<float> get_segment_by_sinogram(const int segment_num) const;
+  SegmentBySinogram<float> get_segment_by_sinogram(const int segment_num,
+                                                   const int timing_num = 0) const;
   //! Get all viewgrams for the given segment
-  SegmentByView<float> get_segment_by_view(const int segment_num) const;
+  SegmentByView<float> get_segment_by_view(const int segment_num,
+                                           const int timing_pos = 0) const;
     
     
   //! Set all sinograms for the given segment
@@ -153,7 +165,9 @@ protected:
 private:
   //! offset of the whole 3d sinogram in the stream
   std::streamoff  offset;
-  
+  //! offset of a complete non-tof sinogram
+  std::streamoff offset_3d_data;
+
   
   //!the order in which the segments occur in the stream
   std::vector<int> segment_sequence;
@@ -171,20 +185,30 @@ private:
   // scale_factor is only used when reading data from file. Data are stored in
   // memory as float, with the scale factor multiplied out
   float scale_factor;
+
+  //! Calculate the offset of the give timing position
+  //! \warning N.E: This function might be one the major components of STIR's speeds
+  std::streamoff get_offset_timing(const int timing_num) const;
   
   //! Calculate the offset for the given segmnet
+  //! \warning This function returns the offset of a segment *WITHING* a timing position
+  //! If you like to get the offset of a segment from different timing positions it has to
+  //! be combined with get_offset_timing().
   std::streamoff get_offset_segment(const int segment_num) const;
   
   //! Calculate offsets for viewgram data  
-  std::vector<std::streamoff> get_offsets(const int view_num, const int segment_num) const;
+  std::vector<std::streamoff> get_offsets(const int view_num, const int segment_num,
+                                          const int timing_num = 0) const;
   //! Calculate offsets for sinogram data
-  std::vector<std::streamoff> get_offsets_sino(const int ax_pos_num, const int segment_num) const;
+  std::vector<std::streamoff> get_offsets_sino(const int ax_pos_num, const int segment_num,
+                                               const int timing_num = 0) const;
     
   //! Calculate the offsets for specific bins.
   std::vector<std::streamoff> get_offsets_bin(const int segment_num,
                                               const int ax_pos_num,
                                               const int view_num,
-                                              const int tang_pos_num) const;
+                                              const int tang_pos_num,
+                                              const int timing_pos_num = 0) const;
   
 };
 

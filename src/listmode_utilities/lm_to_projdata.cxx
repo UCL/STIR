@@ -59,6 +59,19 @@ int main(int argc, char * argv[])
               list_registered_names(cerr);
       exit(EXIT_SUCCESS);
   }
+
+  if (strcmp(argv[1], "--test_timing_positions")==0)
+  {
+      cerr<<"A test function for TOF data which I could not fit anywhere else right now:\n"
+            "It is going to fill every segment with the index number of the respective TOF position \n"
+            "and then stop.\n";
+       std::cout<<argc << std::endl;
+       std::cout << argv[0] << "\n" << argv[1] << "\n" << argv[2] << std::endl;
+      LmToProjData application(argc==3 ? argv[2] : 0);
+      application.run_tof_test_function();
+      exit(EXIT_SUCCESS);
+  }
+
   LmToProjData application(argc==2 ? argv[1] : 0);
   application.process_data();
 

@@ -206,8 +206,9 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& nonTOF_probabilities
         high_dist = (proj_data_info_sptr->timing_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].high_lim - m) * r_sqrt2_gauss_sigma;
 
         // Cut-off really small values.
-        if (abs(low_dist) > 5.5 && abs(high_dist) > 5.5)
-            continue;
+        // Currently deactivate untill I run all the tests.
+        //if (abs(low_dist) > 5.5 && abs(high_dist) > 5.5)
+            //continue;
 
         get_tof_value(low_dist, high_dist, new_value);
         new_value *=  element_ptr->get_value();

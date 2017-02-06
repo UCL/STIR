@@ -2,6 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
     Copyright (C) 2013, 2015, University College London
+    Copyright (C) 2016, 2017, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -21,6 +22,7 @@
   \ingroup projdata
   \brief Declaration of class stir::ProjData
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author PARAPET project
@@ -144,16 +146,22 @@ public:
 //    set_exam_info(ExamInfo const&);
   //! Get viewgram
   virtual Viewgram<float> 
-    get_viewgram(const int view, const int segment_num,const bool make_num_tangential_poss_odd = false) const=0;
+    get_viewgram(const int view, const int segment_num,
+                 const bool make_num_tangential_poss_odd = false,
+                 const int timing_pos = 0) const=0;
   //! Set viewgram
   virtual Succeeded 
-    set_viewgram(const Viewgram<float>&) = 0;
+    set_viewgram(const Viewgram<float>&,
+                 const int& timing_pos = 0) = 0;
   //! Get sinogram
   virtual Sinogram<float> 
-    get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd = false) const=0;
+    get_sinogram(const int ax_pos_num, const int segment_num,
+                 const bool make_num_tangential_poss_odd = false,
+                 const int timing_pos = 0) const=0;
   //! Set sinogram
   virtual Succeeded 
-    set_sinogram(const Sinogram<float>&) = 0;
+    set_sinogram(const Sinogram<float>&,
+                 const int& timing_pos = 0) = 0;
   // //! Get Bin value
   //virtual float get_bin_value(const Bin& this_bin) const = 0;
 
@@ -178,20 +186,22 @@ public:
 
   //! Get segment by sinogram
   virtual SegmentBySinogram<float>
-    get_segment_by_sinogram(const int segment_num) const;
+    get_segment_by_sinogram(const int segment_num,
+                            const int timing_num = 0) const;
   //! Get segment by view
   virtual SegmentByView<float> 
-    get_segment_by_view(const int segment_num) const;
+    get_segment_by_view(const int segment_num,
+                        const int timing_num = 0) const;
   //! Set segment by sinogram
   //! N.E. Extended to have timging positions.
   virtual Succeeded 
     set_segment(const SegmentBySinogram<float>&,
-                const int& timing_pos = 1);
+                const int& timing_pos = 0);
   //! Set segment by view 
   //! N.E. Extended to have timing positions.
   virtual Succeeded 
     set_segment(const SegmentByView<float>&,
-                const int& timing_pos = 1);
+                const int& timing_pos = 0);
 
   //! Get related viewgrams
   virtual RelatedViewgrams<float> 

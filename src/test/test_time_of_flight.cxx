@@ -126,46 +126,46 @@ private:
 void
 TOF_Tests::run_tests()
 {
-    // New Scanner
-    test_scanner_sptr.reset(new Scanner(Scanner::Type_mCT_TOF));
+//    // New Scanner
+//    test_scanner_sptr.reset(new Scanner(Scanner::Type_mCT_TOF_100));
 
-    // New Proj_Data_Info
-    const int test_tof_mashing_factor = 6;
-    test_proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(test_scanner_sptr,
-                                                                 1,test_scanner_sptr->get_num_rings() -1,
-                                                                 test_scanner_sptr->get_num_detectors_per_ring()/2,
-                                                                 test_scanner_sptr->get_max_num_non_arccorrected_bins(),
-                                                                 /* arc_correction*/false));
-    test_proj_data_info_sptr->set_tof_mash_factor(test_tof_mashing_factor);
+//    // New Proj_Data_Info
+//    const int test_tof_mashing_factor = 6;
+//    test_proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(test_scanner_sptr,
+//                                                                 1,test_scanner_sptr->get_num_rings() -1,
+//                                                                 test_scanner_sptr->get_num_detectors_per_ring()/2,
+//                                                                 test_scanner_sptr->get_max_num_non_arccorrected_bins(),
+//                                                                 /* arc_correction*/false));
+//    test_proj_data_info_sptr->set_tof_mash_factor(test_tof_mashing_factor);
 
-    test_tof_proj_data_info();
-//    test_tof_geometry_1();
+//    test_tof_proj_data_info();
+////    test_tof_geometry_1();
 
-    // New Discretised Density
-    test_discretised_density_sptr.reset( new VoxelsOnCartesianGrid<float> (*test_proj_data_info_sptr, 1.f,
-                                                                           CartesianCoordinate3D<float>(0.f, 0.f, 0.f),
-                                                                           CartesianCoordinate3D<int>(-1, -1, -1)));
-    // New ProjMatrix
-    test_proj_matrix_sptr.reset(new ProjMatrixByBinUsingRayTracing());
-    dynamic_cast<ProjMatrixByBinUsingRayTracing*>(test_proj_matrix_sptr.get())->set_num_tangential_LORs(1);
-    dynamic_cast<ProjMatrixByBinUsingRayTracing*>(test_proj_matrix_sptr.get())->set_up(test_proj_data_info_sptr, test_discretised_density_sptr);
-    test_proj_matrix_sptr->enable_tof(test_proj_data_info_sptr);
+//    // New Discretised Density
+//    test_discretised_density_sptr.reset( new VoxelsOnCartesianGrid<float> (*test_proj_data_info_sptr, 1.f,
+//                                                                           CartesianCoordinate3D<float>(0.f, 0.f, 0.f),
+//                                                                           CartesianCoordinate3D<int>(-1, -1, -1)));
+//    // New ProjMatrix
+//    test_proj_matrix_sptr.reset(new ProjMatrixByBinUsingRayTracing());
+//    dynamic_cast<ProjMatrixByBinUsingRayTracing*>(test_proj_matrix_sptr.get())->set_num_tangential_LORs(1);
+//    dynamic_cast<ProjMatrixByBinUsingRayTracing*>(test_proj_matrix_sptr.get())->set_up(test_proj_data_info_sptr, test_discretised_density_sptr);
+//    test_proj_matrix_sptr->enable_tof(test_proj_data_info_sptr);
 
-    shared_ptr<ForwardProjectorByBin> forward_projector_ptr(
-                new ForwardProjectorByBinUsingProjMatrixByBin(test_proj_matrix_sptr));
-    shared_ptr<BackProjectorByBin> back_projector_ptr(
-                new BackProjectorByBinUsingProjMatrixByBin(test_proj_matrix_sptr));
+//    shared_ptr<ForwardProjectorByBin> forward_projector_ptr(
+//                new ForwardProjectorByBinUsingProjMatrixByBin(test_proj_matrix_sptr));
+//    shared_ptr<BackProjectorByBin> back_projector_ptr(
+//                new BackProjectorByBinUsingProjMatrixByBin(test_proj_matrix_sptr));
 
-    projector_pair_sptr.reset(
-                new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
-    projector_pair_sptr->set_up(test_proj_data_info_sptr, test_discretised_density_sptr);
+//    projector_pair_sptr.reset(
+//                new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
+//    projector_pair_sptr->set_up(test_proj_data_info_sptr, test_discretised_density_sptr);
 
-    symmetries_used_sptr.reset(projector_pair_sptr->get_symmetries_used()->clone());
+//    symmetries_used_sptr.reset(projector_pair_sptr->get_symmetries_used()->clone());
 
-    // Deactivated it now because it takes a long time to finish.
-    //        test_cache();
+//    // Deactivated it now because it takes a long time to finish.
+//    //        test_cache();
 
-    test_tof_kernel_application();
+//    test_tof_kernel_application();
 }
 
 void

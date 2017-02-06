@@ -3,6 +3,7 @@
     Copyright (C) 2000 - 2010-10-15, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 -2013, Kris Thielemans
     Copyright (C) 2015, University College London
+    Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,6 +24,7 @@
 
   \brief Implementations for non-inline functions of class stir::ProjData
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
   \author PARAPET project
 */
@@ -330,24 +332,24 @@ ProjData::set_related_viewgrams( const RelatedViewgrams<float>& viewgrams)
 }
 #endif
 
-SegmentBySinogram<float> ProjData::get_segment_by_sinogram(const int segment_num) const
+SegmentBySinogram<float> ProjData::get_segment_by_sinogram(const int segment_num, const int timing_num) const
 {
   SegmentBySinogram<float> segment =
     proj_data_info_ptr->get_empty_segment_by_sinogram(segment_num,false);
   // TODO optimise to get shared proj_data_info_ptr
   for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
-    segment.set_viewgram(get_viewgram(view_num, segment_num, false));
+    segment.set_viewgram(get_viewgram(view_num, segment_num, false, timing_num));
 
   return segment;
 }
 
-SegmentByView<float> ProjData::get_segment_by_view(const int segment_num) const
+SegmentByView<float> ProjData::get_segment_by_view(const int segment_num, const int timing_num) const
 {
   SegmentByView<float> segment =
     proj_data_info_ptr->get_empty_segment_by_view(segment_num,false);
   // TODO optimise to get shared proj_data_info_ptr
   for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
-    segment.set_viewgram(get_viewgram(view_num, segment_num, false));
+    segment.set_viewgram(get_viewgram(view_num, segment_num, false, timing_num));
 
   return segment;
 }
@@ -358,7 +360,7 @@ ProjData::set_segment(const SegmentBySinogram<float>& segment,
 {
   for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
   {
-    if(set_viewgram(segment.get_viewgram(view_num))
+    if(set_viewgram(segment.get_viewgram(view_num), timing_pos)
         == Succeeded::no)
 	return Succeeded::no;
   }
@@ -371,7 +373,7 @@ ProjData::set_segment(const SegmentByView<float>& segment,
 {
   for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); ++view_num)
   {
-    if(set_viewgram(segment.get_viewgram(view_num))
+    if(set_viewgram(segment.get_viewgram(view_num), timing_pos)
         == Succeeded::no)
 	return Succeeded::no;
   }

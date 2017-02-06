@@ -8,12 +8,14 @@
 
   \brief Declaration of the stir::LmToProjData class which is used to bin listmode data to (3d) sinograms
  
+  \author Nikos Efthimiou
   \author Kris Thielemans
   \author Sanida Mustafovic
   
 */
 /*
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2017, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -177,6 +179,12 @@ public:
   //! N.E: In order to keep the ToF functions separate from the non-TOF
   //! STIR this function just call the appropriate actual_process_data_with(out)_tof().
   virtual void process_data();
+
+  //! A test function for time-of-flight data. At this moment we lack a lot of infrastructure in
+  //! order to be able to develope a viable test function of class anywhere else. At a future point
+  //! I should develope a proper test function. This function is going to fill the proj_data with
+  //! the index number of the respective TOF position, for every TOF position.
+  void run_tof_test_function();
   
 protected:
 
@@ -198,6 +206,8 @@ protected:
     (on top of anything done by normalisation_ptr). 
     \todo Would need timing info or so for e.g. time dependent
     normalisation or angle info for a rotating scanner.*/
+  //! \warning N.E: I changed this function _from_event to _from_record, because in
+  //! TOF unlisting we need the timing information which is stored in the record.
   virtual void get_bin_from_record(Bin& bin, const CListRecord&) const;
 
   //! A function that should return the number of uncompressed bins in the current bin

@@ -8,6 +8,11 @@ Average depth of interaction (cm)        := 0.7
 Distance between rings (cm)              := 0.40625
 Default bin size (cm)                    := 0.208626
 Maximum number of non-arc-corrected bins := 344
+Number of TOF time bins := 410
+Size of timing bin (in picoseconds) := 10.00
+Timing resolution (in picoseconds) := 400.0
+
+%TOF mashing factor:= 82
 
 GATE scanner type := GATE_Cylindrical_PET
 GATE_Cylindrical_PET Parameters :=

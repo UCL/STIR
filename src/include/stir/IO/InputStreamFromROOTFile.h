@@ -115,13 +115,13 @@ public:
     inline virtual int get_num_axial_crystals_per_block_v() const = 0;
     //! Get the transaxial number of crystals per module
     inline virtual int get_num_transaxial_crystals_per_block_v() const = 0;
-
+    //! Get number of axial crystals per singles unit.
     inline virtual int get_num_axial_crystals_per_singles_unit() const = 0;
-
+    //! Get number of transaxial crystals per singles unit.
     inline virtual int get_num_trans_crystals_per_singles_unit() const = 0;
-
+    //! Get low energy threshold
     inline virtual float get_low_energy_thres() const;
-
+    //! Get high energy threshold
     inline virtual float get_up_energy_thres() const;
 
 protected:
@@ -151,13 +151,27 @@ protected:
     Float_t         energy1, energy2;
     Int_t           comptonphantom1, comptonphantom2;
 
+    //! If applied all scattered events will be excluded from processing.
+    //! \warning Because the exclusion will take place this early, the processing
+    //! function (e.g. objsective function) will not be aware that the
+    //! events are skipped.
     bool exclude_scattered;
+
+    //! If applied all random events will be excluded from processing.
+    //! \warning Because the exclusion will take place this early, the processing
+    //! function (e.g. objsective function) will not be aware that the
+    //! events are skipped.
     bool exclude_randoms;
 
+    //! Low energy window
     float low_energy_window;
+    //! High energy window
     float up_energy_window;
+
+    //! The number of detectors we need to add to aligh GATE orientation with STIR.
     int offset_dets;
 
+    //! This has an effect on the calculation of the singles units.
     int singles_readout_depth;
 
     // This member will try to give to the continuous time register in GATE

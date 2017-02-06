@@ -144,7 +144,7 @@ ProjDataGEAdvance::ProjDataGEAdvance(iostream* s)
 Viewgram<float>
 ProjDataGEAdvance::
 get_viewgram(const int view_num, const int segment_num,
-             const bool make_num_tangential_poss_odd) const
+             const bool make_num_tangential_poss_odd, const int timing_pos) const
   {
     // --------------------------------------------------------
     // --------------------------------------------------------
@@ -304,7 +304,7 @@ get_viewgram(const int view_num, const int segment_num,
 }
 
 
-Succeeded ProjDataGEAdvance::set_viewgram(const Viewgram<float>& v)
+Succeeded ProjDataGEAdvance::set_viewgram(const Viewgram<float>& v, const int &timing_pos)
 {
   // TODO
   // but this is difficult: how to adjust the scale factors when writing only 1 viewgram ?
@@ -312,13 +312,14 @@ Succeeded ProjDataGEAdvance::set_viewgram(const Viewgram<float>& v)
   return Succeeded::no;
 }
 
-Sinogram<float> ProjDataGEAdvance::get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd) const
+Sinogram<float> ProjDataGEAdvance::get_sinogram(const int ax_pos_num, const int segment_num,
+                                                const bool make_num_tangential_poss_odd, const int timing_pos) const
 { 
   // TODO
   error("ProjDataGEAdvance::get_sinogram not implemented yet\n"); 
   return get_empty_sinogram(ax_pos_num, segment_num);}
 
-Succeeded ProjDataGEAdvance::set_sinogram(const Sinogram<float>& s)
+Succeeded ProjDataGEAdvance::set_sinogram(const Sinogram<float>& s, const int &timing_pos)
 {
   // TODO
   warning("ProjDataGEAdvance::set_sinogram not implemented yet\n");

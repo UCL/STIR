@@ -76,6 +76,8 @@ START_NAMESPACE_STIR
 float
 ProjDataInfo::get_k(const Bin& bin) const
 {
+    // Probably, This condition should be removed, since I have the check odd number in the
+    // set_tof_mash_factor().
     if (!get_num_timing_poss()%2)
         return bin.timing_pos_num() * timing_increament_in_mm;
     else
@@ -198,6 +200,7 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
 
         num_tof_bins = max_timing_pos_num - min_timing_pos_num +1 ;
 
+        // Ensure that we have a central tof bin.
         if (num_tof_bins%2 == 0)
             error("ProjDataInfo: Number of TOF bins should be an odd number. Abort.");
 
@@ -218,6 +221,7 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
             timing_bin_boundaries_mm[i].high_lim = cur_high;
             timing_bin_boundaries_ps[i].low_lim = (timing_bin_boundaries_mm[i].low_lim * 3.33564095198f ) ;
             timing_bin_boundaries_ps[i].high_lim = ( timing_bin_boundaries_mm[i].high_lim * 3.33564095198f);
+            // I could imagine a better printing.
             info(boost::format("Tbin %1%: %2% - %3% mm (%4% - %5% ps) = %6%") %i % timing_bin_boundaries_mm[i].low_lim % timing_bin_boundaries_mm[i].high_lim
                  % timing_bin_boundaries_ps[i].low_lim % timing_bin_boundaries_ps[i].high_lim % get_sampling_in_k(bin));
         }
@@ -247,7 +251,7 @@ ProjDataInfo::ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr_v,
   min_timing_pos_num = 0;
   max_timing_pos_num = 0;
   timing_increament_in_mm = 0.f;
-  tof_mash_factor = 1; // zero?
+  tof_mash_factor = 1;
 }
 
 // TOF version.

@@ -47,14 +47,11 @@ START_NAMESPACE_STIR
  The timing position reflect the detection time difference between the two events.
  It is a multiple of the delta t of the least significant clock bit.
 
- \details In order to go around the timing pos which is set only in TOF reconstruction
- we set it, by default, to zero. If it is zero in both bins then it is omitted from the
- comparison.
- \warning Comparison between bin with and without timing position is of high risk!
+ \warning N.E: Constructors with default values were removed. I faced many problems with ambguity. I had to make
+ changes to all the framework, when one set a float value, it has to be as 'x.f'
 
- \warning Constructors with default values were removed.
-
- \warning Temporarily the timing_pos_num is not taken into account when comparing two bins.
+ \warning Temporarily the timing_pos_num is not taken into account when comparing two bins,
+    Until were are actually able to cache LORs based on timing location this could be let off.
 */
 
 class Bin

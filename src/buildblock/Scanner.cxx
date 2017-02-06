@@ -206,113 +206,16 @@ Scanner::Scanner(Type scanner_type)
                2, 1, 8, 9, 16, 9, 1 ); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
     break;
 
-  case Type_mCT: // dummy
-      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
-      // Transaxial blocks have 8 physical crystals and a gap at the
-      // 9th crystal where the counts are zero.
-      set_params(Type_mCT, string_list("Type mCT", "tmCT", "t2011"),
-                 52, 312, 624,
-                 424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
-                 1, 48, 52, 13, 13, 13, 1 ); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
-      break;
-
-  case Type_mCT_TOF: // dummy
-      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
-      // Transaxial blocks have 8 physical crystals and a gap at the
-      // 9th crystal where the counts are zero.
-      // For TOF scanners the three last types have to be defined to avoid ambiguity.
-      set_params(Type_mCT_TOF, string_list("Type mCT_TOF", "tmCT_TOF", "t2011_tof"),
-                 52, 312, 624,
-                 424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
-                 1, 48, 52, 13, 13, 13, 1,
-                 (short int)(410),
-                 (float)(10.0F),
-                 (float)(600.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
-      break;
-
-  case Type_mCT_TOF_400: // dummy
-      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
-      // Transaxial blocks have 8 physical crystals and a gap at the
-      // 9th crystal where the counts are zero.
-      // For TOF scanners the three last types have to be defined to avoid ambiguity.
-      set_params(Type_mCT_TOF_400, string_list("Type mCT_TOF_400", "tmCT_TOF_400", "t2011_tof_400"),
-                 52, 312, 624,
-                 424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
-                 1, 48, 52, 13, 13, 13, 1,
-                 (short int)(410),
-                 (float)(10.0F),
-                 (float)(400.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
-      break;
-
-  case Type_mCT_TOF_200: // dummy
-      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
-      // Transaxial blocks have 8 physical crystals and a gap at the
-      // 9th crystal where the counts are zero.
-      // For TOF scanners the three last types have to be defined to avoid ambiguity.
-      set_params(Type_mCT_TOF_200, string_list("Type mCT_TOF_200", "tmCT_TOF_200", "t2011_tof_200"),
-                 52, 312, 624,
-                 424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
-                 1, 48, 52, 13, 13, 13, 1,
-                 (short int)(410),
-                 (float)(10.0F),
-                 (float)(200.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
-      break;
-
-  case Type_mCT_TOF_100: // dummy
-      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
-      // Transaxial blocks have 8 physical crystals and a gap at the
-      // 9th crystal where the counts are zero.
-      // For TOF scanners the three last types have to be defined to avoid ambiguity.
-      set_params(Type_mCT_TOF_100, string_list("Type mCT_TOF_100", "tmCT_TOF_100", "t2011_tof_100"),
-                 52, 312, 624,
-                 424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
-                 1, 48, 52, 13, 13, 13, 1,
-                 (short int)(820),
-                 (float)(5.00F),
-                 (float)(100.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
-      break;
-
-  case Type_mCT_TOF_50: // dummy
-      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
-      // Transaxial blocks have 8 physical crystals and a gap at the
-      // 9th crystal where the counts are zero.
-      // For TOF scanners the three last types have to be defined to avoid ambiguity.
-      set_params(Type_mCT_TOF_50, string_list("Type mCT_TOF_50", "tmCT_TOF_50", "t2011_tof_50"),
-                 52, 312, 624,
-                 424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
-                 1, 48, 52, 13, 13, 13, 1,
-                 (short int)(820),
-                 (float)(5.0F),
-                 (float)(50.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
-      break;
-
-  case Type_mCT_TOF_20: // dummy
-      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
-      // Transaxial blocks have 8 physical crystals and a gap at the
-      // 9th crystal where the counts are zero.
-      // For TOF scanners the three last types have to be defined to avoid ambiguity.
-      set_params(Type_mCT_TOF_20, string_list("Type mCT_TOF_20", "tmCT_TOF_20", "t2011_tof_20"),
-                 52, 312, 624,
-                 424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
-                 1, 48, 52, 13, 13, 13, 1,
-                 (short int)(1025),
-                 (float)(1.F),
-                 (float)(20.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
-      break;
-
-  case Type_mCT_TOF_10: // dummy
-      // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
-      // Transaxial blocks have 8 physical crystals and a gap at the
-      // 9th crystal where the counts are zero.
-      // For TOF scanners the three last types have to be defined to avoid ambiguity.
-      set_params(Type_mCT_TOF_10, string_list("Type mCT_TOF_10", "tmCT_TOF_10", "t2011_tof_10"),
-                 52, 312, 624,
-                 424.5F, 7.0F, 4.16F, 2.17242F, 0.0F,
-                 1, 48, 52, 13, 13, 13, 1,
-                 (short int)(1025),
-                 (float)(1.F),
-                 (float)(10.0F)); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
-      break;
+  case test_scanner:
+    // This is a relatively small scanner for test purposes.
+    set_params(test_scanner, string_list("test_scanner"),
+               4, 344, 2*252,
+               328.0F, 7.0F, 4.0625F, 2.08626F, 0.0F,
+               1, 1, 4, 1, 4, 1, 1,
+               (short int)(410),
+               (float)(10.0F),
+               (float)(400.0F) );
+    break;
 
   case RPT:
 

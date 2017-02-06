@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2015-2016 University of Leeds
     Copyright (C) 2016 UCL
+    Copyright (C) 2017, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -60,19 +61,6 @@ void CListEventROOT::set_detection_position(const DetectionPositionPair<>&)
 void CListEventROOT::init_from_data(const int& _ring1, const int& _ring2,
                                     const int& crystal1, const int& crystal2)
 {
-//    if  (crystal1 < 0 )
-//        det1 = scanner_sptr->get_num_detectors_per_ring() + crystal1;
-//    else if ( crystal1 >= scanner_sptr->get_num_detectors_per_ring())
-//        det1 = crystal1 - scanner_sptr->get_num_detectors_per_ring();
-//    else
-//        det1 = crystal1;
-
-//    if  (crystal2 < 0 )
-//        det2 = scanner_sptr->get_num_detectors_per_ring() + crystal2;
-//    else if ( crystal2 >= scanner_sptr->get_num_detectors_per_ring())
-//        det2 = crystal2 - scanner_sptr->get_num_detectors_per_ring();
-//    else
-//        det2 = crystal2;
 
     // STIR assumes that 0 is on y whill GATE on the x axis
     det1 = crystal1 + quarter_of_detectors;

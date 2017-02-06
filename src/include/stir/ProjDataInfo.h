@@ -4,7 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-    Copyright (C) 2016, University of Hull
+    Copyright (C) 2016-17, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -72,7 +72,7 @@ public:
   ask_parameters();
 
   //! Construct a ProjDataInfo suitable for GE Advance data
-  //! \warning N.E: TOF mash factor, means no TOF
+  //! \warning N.E: TOF mash factor = 1, means no TOF
   static ProjDataInfo*  
   ProjDataInfoGE(const shared_ptr<Scanner>& scanner_ptr,
                  const int max_delta,
@@ -84,7 +84,7 @@ public:
   /*! \c span is used to denote the amount of axial compression (see CTI doc).
      It has to be an odd number. 
      */
-  //! \warning N.E: TOF mash factor, means no TOF
+  //! \warning N.E: TOF mash factor = 1, means no TOF
   static ProjDataInfo* 
   ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
                   const int span, const int max_delta,
@@ -370,9 +370,9 @@ public:
   //! Struct which holds two floating numbers
   struct Float1Float2 { float low_lim; float high_lim; };
 
-  //! Vector which holds the lower and higher boundary for each timing position, for faster access.
+  //! Vector which holds the lower and higher boundary for each timing position in mm, for faster access.
   mutable VectorWithOffset<Float1Float2> timing_bin_boundaries_mm;
-
+  //! Vector which holds the lower and higher boundary for each timing position in ps`, for faster access.
   mutable VectorWithOffset<Float1Float2> timing_bin_boundaries_ps;
   
 protected:

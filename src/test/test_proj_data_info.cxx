@@ -604,6 +604,8 @@ run_tests()
                   /*tang_pos*/64,
                   /*arc_corrected*/ false));
     test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr));
+
+  cerr << "\nTests with proj_data_info with time-of-flight\n\n";
 }
 
 void

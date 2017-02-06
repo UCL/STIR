@@ -112,8 +112,7 @@ class Scanner
      to flag up an error and do some guess work in trying to recognise the scanner from 
      any given parameters.
   */
-  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR, RPT,HiDAC,
-         Type_mCT, Type_mCT_TOF, Type_mCT_TOF_10, Type_mCT_TOF_20, Type_mCT_TOF_50, Type_mCT_TOF_100, Type_mCT_TOF_200, Type_mCT_TOF_400,
+  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, test_scanner, Siemens_mMR, RPT,HiDAC,
 	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600,
 	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,
 	     Unknown_scanner};
@@ -237,6 +236,7 @@ class Scanner
   inline Type get_type() const;
   //! checks consistency 
   /*! Calls warning() with diagnostics when there are problems
+   * N.E: Should something check be added for TOF information?
    */
   Succeeded check_consistency() const;
 

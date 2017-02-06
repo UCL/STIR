@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2015-2016 University of Leeds
     Copyright (C) 2016 UCL
-    Copyright (C) 2016, University of Hull
+    Copyright (C) 2016-17, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -113,17 +113,19 @@ public:
         return Succeeded::no;
     }
 
+    //! N.E. Sadly I had to comment the original version of this function. It might had been faster.
+    //! and make more sense under many occations.
     virtual inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
     {
-//        delta_time >= 0.0 ?
-//                    bin.timing_pos_num() = static_cast<int> ( ( delta_time / proj_data_info.get_num_tof_poss()) + 0.5)
-//                : bin.timing_pos_num() = static_cast<int> ( ( delta_time / proj_data_info.get_num_tof_poss()) - 0.5);
+        //        delta_time >= 0.0 ?
+        //                    bin.timing_pos_num() = static_cast<int> ( ( delta_time / proj_data_info.get_num_tof_poss()) + 0.5)
+        //                : bin.timing_pos_num() = static_cast<int> ( ( delta_time / proj_data_info.get_num_tof_poss()) - 0.5);
 
-//        if (bin.timing_pos_num() <  proj_data_info.get_min_timing_pos_num() ||
-//                bin.timing_pos_num() > proj_data_info.get_max_timing_pos_num())
-//        {
-//            bin.set_bin_value(-1.f);
-//        }
+        //        if (bin.timing_pos_num() <  proj_data_info.get_min_timing_pos_num() ||
+        //                bin.timing_pos_num() > proj_data_info.get_max_timing_pos_num())
+        //        {
+        //            bin.set_bin_value(-1.f);
+        //        }
         bin.timing_pos_num() = proj_data_info.get_tof_bin(delta_time);
     }
 
