@@ -13,6 +13,7 @@
 #include "stir/listmode/CListModeDataGESigna.h"
 #include "stir/Succeeded.h"
 #include "stir/ExamInfo.h"
+#include "stir/ProjDataInfo.h"
 #include "stir/info.h"
 #include <boost/format.hpp>
 #include <iostream>
@@ -35,6 +36,13 @@ CListModeDataGESigna::
 get_name() const
 {
   return listmode_filename;
+}
+
+shared_ptr<stir::ProjDataInfo> 
+CListModeDataGESigna::
+get_proj_data_info_sptr() const
+{
+  return this->proj_data_info_sptr;
 }
 
 std::time_t 
@@ -89,6 +97,14 @@ std::cout << "\n Manufacturer :  " << read_str_manufacturer << "\n\n";
 #endif
   CListModeData::scanner_sptr = GEHDF5Data::scanner_sptr;
 
+  this->proj_data_info_sptr.reset(
+      ProjDataInfo::ProjDataInfoCTI(GEHDF5Data::scanner_sptr,
+				    /*span=*/ 1,
+				    GEHDF5Data::scanner_sptr->get_num_rings()-1,
+				    GEHDF5Data::scanner_sptr->get_num_detectors_per_ring()/2,
+				    GEHDF5Data::scanner_sptr->get_max_num_non_arccorrected_bins(),
+				    /*arc_corrected =*/ false,
+				    /*tof_mash_factor = TODO*/  1));
   shared_ptr<H5::DataSet> dataset_list_sptr(new H5::DataSet(this->file.openDataSet("/ListData/listData")));
   
   current_lm_data_ptr.
