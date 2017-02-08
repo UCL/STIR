@@ -58,7 +58,6 @@ int main(int argc, char *argv[])
   bool list_gating=true;
   bool list_unknown=false;
   unsigned long num_events_to_list = 0;
-  int count = 0;
   while (argc>1 && argv[0][0]=='-')
     {
       if (strcmp(argv[0], "--num-events-to-list")==0)
@@ -110,11 +109,9 @@ int main(int argc, char *argv[])
     // loop over all events in the listmode file
     shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
     CListRecord& record = *record_sptr;
-    cout << "Scuccessfully created record_sptr \n\n";
 
     while (num_events_to_list==0 || num_events_to_list!=num_listed_events)
-      { count=count +1;
-//        cout << " Number of event " << count ;
+      {
         bool recognised = false;
         bool listed = false;
 	if (lm_data_ptr->get_next_record(record) == Succeeded::no) 
