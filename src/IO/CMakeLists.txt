@@ -63,6 +63,12 @@ if (CERN_ROOT_FOUND)
  )
 endif()
 
+if (HDF5_FOUND)
+ list(APPEND ${dir_LIB_SOURCES}
+    GEHDF5Data
+ )
+endif()
+
 if(AVW_FOUND)
   list(APPEND ${dir_LIB_SOURCES}
     stir_AVW
@@ -77,6 +83,10 @@ endif()
 
 if (CERN_ROOT_FOUND)
   target_link_libraries(IO ${CERN_ROOT_LIBRARIES})
+endif()
+
+if (HDF5_FOUND)
+  target_link_libraries(IO ${HDF5_CXX_LIBRARIES})
 endif()
 
 if (AVW_FOUND)
