@@ -72,8 +72,7 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
 {
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
-  // If tof_mash_factor == 1 then there is only tof bin ... effectively no TOF
-  if (tof_mash_factor > 1)
+  if(scanner_ptr->is_tof_ready())
     set_tof_mash_factor(tof_mash_factor);
   //this->initialise_uncompressed_view_tangpos_to_det1det2();
   //this->initialise_det1det2_to_uncompressed_view_tangpos();
@@ -97,9 +96,8 @@ ProjDataInfoCylindricalNoArcCorr(const shared_ptr<Scanner> scanner_ptr,
   uncompressed_view_tangpos_to_det1det2_initialised = false;
   det1det2_to_uncompressed_view_tangpos_initialised = false;
 
-  // If tof_mash_factor == 1 then there is only tof bin ... effectively no TOF
-  if (tof_mash_factor > 1)
-        set_tof_mash_factor(tof_mash_factor);
+  if(scanner_ptr->is_tof_ready())
+    set_tof_mash_factor(tof_mash_factor);
   //this->initialise_uncompressed_view_tangpos_to_det1det2();
   //this->initialise_det1det2_to_uncompressed_view_tangpos();
 }

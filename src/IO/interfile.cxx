@@ -934,7 +934,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 
     // IF TOF is supported add this in the header.
     if (pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->is_tof_ready() &&
-            pdfs.get_proj_data_info_ptr()->get_tof_mash_factor() > 1)
+            pdfs.get_proj_data_info_ptr()->get_num_tof_poss() > 1)
     {
         // Moved in scanner section
 //    output_header << "%number of TOF time bins :=" <<

@@ -202,8 +202,8 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& nonTOF_probabilities
         //                                      (point2.z() - voxel_center.z()) *(point2.z() - voxel_center.z()));
 
         float m = (lor_length - d1 - d1) * 0.5f;
-        low_dist = (proj_data_info_sptr->timing_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].low_lim - m) * r_sqrt2_gauss_sigma;
-        high_dist = (proj_data_info_sptr->timing_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].high_lim - m) * r_sqrt2_gauss_sigma;
+        low_dist = (proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].low_lim - m) * r_sqrt2_gauss_sigma;
+        high_dist = (proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].high_lim - m) * r_sqrt2_gauss_sigma;
 
         // Cut-off really small values.
         // Currently deactivate untill I run all the tests.

@@ -59,7 +59,8 @@ void CListEventROOT::set_detection_position(const DetectionPositionPair<>&)
 }
 
 void CListEventROOT::init_from_data(const int& _ring1, const int& _ring2,
-                                    const int& crystal1, const int& crystal2)
+                                    const int& crystal1, const int& crystal2,
+                                    const double& _delta_time)
 {
 
     // STIR assumes that 0 is on y whill GATE on the x axis
@@ -84,12 +85,14 @@ void CListEventROOT::init_from_data(const int& _ring1, const int& _ring2,
 
         ring1 = _ring2;
         ring2 = _ring1;
+        delta_time = -_delta_time;
         swapped = true;
     }
     else
     {
         ring1 = _ring1;
         ring2 = _ring2;
+        delta_time = _delta_time;
         swapped = false;
     }
 }

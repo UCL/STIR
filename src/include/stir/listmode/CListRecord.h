@@ -109,6 +109,11 @@ public:
     void
     get_bin(Bin& bin, const ProjDataInfo&) const;
 
+protected:
+    //! The detection time difference, between the two photons.
+    //! This will work for ROOT files, but not so sure about acquired data.
+    double delta_time;
+
 }; /*-coincidence event*/
 
 
@@ -135,24 +140,11 @@ public:
 
   virtual Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs) = 0;
   inline Succeeded set_time_in_secs(const double time_in_secs)
-    { 
+    {
       unsigned long time_in_millisecs;
       round_to(time_in_millisecs, time_in_secs/1000.);
-      return set_time_in_millisecs(time_in_millisecs); 
+      return set_time_in_millisecs(time_in_millisecs);
     }
-
-  virtual inline int get_timing_bin() const
-  {
-      error("Function CListTime::get_timing_bin() currently is implemented only "
-            "ROOT data. Abort.");
-  }
-
-  //! Get the timing component of the bin.
-  virtual inline void get_bin(Bin&, const ProjDataInfo&) const
-  {
-      error("CListTime::get_bin() currently is implemented only "
-            "ROOT data. Abort.");
-  }
 
 };
 
@@ -203,12 +195,6 @@ public:
 
   virtual bool operator==(const CListRecord& e2) const = 0;
   bool operator!=(const CListRecord& e2) const { return !(*this == e2); }
-
-  //! Used in TOF reconstruction to get both the geometric and the timing
-  //!  component of the event
-  virtual void full_event(Bin&, const ProjDataInfo&) const
-  {error("CListRecord::full_event() is implemented only for records which "
-         "hold timing and spatial information.");}
 
 };
 

@@ -426,9 +426,9 @@ get_bin_from_record(Bin& bin, const CListRecord& record) const
     // template_proj_data_info_ptr->get_bin_from_uncompressed(bin, uncompressed_bin);
 
    
-    if (use_tof)
-        record.full_event(bin, *template_proj_data_info_ptr);
-    else
+//    if (use_tof)
+//        record.full_event(bin, *template_proj_data_info_ptr);
+//    else
         record.event().get_bin(bin, *template_proj_data_info_ptr);
 
     bin.set_bin_value(bin_value);
@@ -808,8 +808,8 @@ actual_process_data_with_tof()
         const double start_time = frame_defs.get_start_time(current_frame_num);
         const double end_time = frame_defs.get_end_time(current_frame_num);
 
-        for (int current_timing_pos_index = proj_data_ptr->get_min_timing_pos_num();
-             current_timing_pos_index <= proj_data_ptr->get_max_timing_pos_num();
+        for (int current_timing_pos_index = proj_data_ptr->get_min_tof_pos_num();
+             current_timing_pos_index <= proj_data_ptr->get_max_tof_pos_num();
              current_timing_pos_index += 1)
         {
             /*
@@ -899,8 +899,8 @@ actual_process_data_with_tof()
                                     && bin.tangential_pos_num()<= proj_data_ptr->get_max_tangential_pos_num()
                                     && bin.axial_pos_num()>=proj_data_ptr->get_min_axial_pos_num(bin.segment_num())
                                     && bin.axial_pos_num()<=proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
-                                    && bin.timing_pos_num()>=proj_data_ptr->get_min_timing_pos_num()
-                                    && bin.timing_pos_num()<=proj_data_ptr->get_max_timing_pos_num()
+                                    && bin.timing_pos_num()>=proj_data_ptr->get_min_tof_pos_num()
+                                    && bin.timing_pos_num()<=proj_data_ptr->get_max_tof_pos_num()
                                     )
                             {
                                 assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
@@ -1012,8 +1012,8 @@ LmToProjData::run_tof_test_function()
                 construct_proj_data(output, output_filename, this_frame_exam_info, template_proj_data_info_ptr);
     }
 
-    for (int current_timing_pos_index = proj_data_ptr->get_min_timing_pos_num();
-         current_timing_pos_index <= proj_data_ptr->get_max_timing_pos_num();
+    for (int current_timing_pos_index = proj_data_ptr->get_min_tof_pos_num();
+         current_timing_pos_index <= proj_data_ptr->get_max_tof_pos_num();
          current_timing_pos_index += 1)
     {
         for (int start_segment_index = proj_data_ptr->get_min_segment_num();

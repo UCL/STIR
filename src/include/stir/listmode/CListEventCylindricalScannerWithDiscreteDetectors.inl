@@ -84,7 +84,11 @@ get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
       get_bin_for_det_pos_pair(bin, det_pos) == Succeeded::no)
     bin.set_bin_value(0);
   else
+  {
     bin.set_bin_value(1);
+    if (proj_data_info.get_num_tof_poss() > 1)
+        bin.timing_pos_num() = proj_data_info.get_tof_bin(delta_time);
+  }
 }
 
 END_NAMESPACE_STIR

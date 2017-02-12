@@ -68,8 +68,8 @@ int ProjData::get_num_views() const
 int ProjData::get_num_tangential_poss() const
 { return proj_data_info_ptr->get_num_tangential_poss(); }
 
-int ProjData::get_num_timing_poss() const
-{ return proj_data_info_ptr->get_num_timing_poss(); }
+int ProjData::get_num_tof_poss() const
+{ return proj_data_info_ptr->get_num_tof_poss(); }
 
 int ProjData::get_tof_mash_factor() const
 { return proj_data_info_ptr->get_tof_mash_factor(); }
@@ -98,11 +98,11 @@ int ProjData::get_min_tangential_pos_num() const
 int ProjData::get_max_tangential_pos_num() const
 { return proj_data_info_ptr->get_max_tangential_pos_num(); }
 
-int ProjData::get_min_timing_pos_num() const
-{ return proj_data_info_ptr->get_min_timing_pos_num(); }
+int ProjData::get_min_tof_pos_num() const
+{ return proj_data_info_ptr->get_min_tof_pos_num(); }
 
-int ProjData::get_max_timing_pos_num() const
-{ return proj_data_info_ptr->get_max_timing_pos_num(); }
+int ProjData::get_max_tof_pos_num() const
+{ return proj_data_info_ptr->get_max_tof_pos_num(); }
 
 int ProjData::get_num_sinograms() const
 {

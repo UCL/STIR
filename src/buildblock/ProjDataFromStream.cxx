@@ -105,13 +105,13 @@ ProjDataFromStream::ProjDataFromStream(shared_ptr<ExamInfo> const& exam_info_spt
 
   // Now, lets initialise a TOF stream - Similarly to segments
   if (storage_order == Timing_Segment_View_AxialPos_TangPos &&
-          proj_data_info_ptr->get_num_timing_poss() > 1)
+          proj_data_info_ptr->get_num_tof_poss() > 1)
   {
-      timing_poss_sequence.resize(proj_data_info_ptr->get_num_timing_poss());
+      timing_poss_sequence.resize(proj_data_info_ptr->get_num_tof_poss());
       int timing_pos_num;
 
-      for (int i= 0, timing_pos_num = proj_data_info_ptr->get_min_timing_pos_num();
-           timing_pos_num<=proj_data_info_ptr->get_max_timing_pos_num();
+      for (int i= 0, timing_pos_num = proj_data_info_ptr->get_min_tof_pos_num();
+           timing_pos_num<=proj_data_info_ptr->get_max_tof_pos_num();
            ++i, ++timing_pos_num)
       {
         timing_poss_sequence[i] = timing_pos_num;
@@ -154,13 +154,13 @@ ProjDataFromStream::ProjDataFromStream(shared_ptr<ExamInfo> const& exam_info_spt
 
   // Now, lets initialise a TOF stream - Similarly to segments
   if (storage_order == Timing_Segment_View_AxialPos_TangPos &&
-          proj_data_info_ptr->get_num_timing_poss() > 1)
+          proj_data_info_ptr->get_num_tof_poss() > 1)
   {
-      timing_poss_sequence.resize(proj_data_info_ptr->get_num_timing_poss());
+      timing_poss_sequence.resize(proj_data_info_ptr->get_num_tof_poss());
       int timing_pos_num;
 
-      for (i= 0, timing_pos_num = proj_data_info_ptr->get_min_timing_pos_num();
-           timing_pos_num<=proj_data_info_ptr->get_max_timing_pos_num();
+      for (i= 0, timing_pos_num = proj_data_info_ptr->get_min_tof_pos_num();
+           timing_pos_num<=proj_data_info_ptr->get_max_tof_pos_num();
            ++i, ++timing_pos_num)
       {
         timing_poss_sequence[i] = timing_pos_num;
@@ -354,8 +354,8 @@ ProjDataFromStream::get_offsets(const int view_num, const int segment_num,
   {
       // The timing offset will be added to the segment offset. This approach we minimise the
       // changes
-      if (!(timing_num >= get_min_timing_pos_num() &&
-            timing_num <=  get_max_timing_pos_num()))
+      if (!(timing_num >= get_min_tof_pos_num() &&
+            timing_num <=  get_max_tof_pos_num()))
           error("ProjDataFromStream::get_offsets: timing_num out of range : %d", timing_num);
 
       const int timing_index = static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), timing_num) -
@@ -589,8 +589,8 @@ ProjDataFromStream::get_offsets_bin(const int segment_num,
     {
         // The timing offset will be added to the segment offset. This approach we minimise the
         // changes
-        if (!(timing_pos_num >= get_min_timing_pos_num() &&
-              timing_pos_num <=  get_max_timing_pos_num()))
+        if (!(timing_pos_num >= get_min_tof_pos_num() &&
+              timing_pos_num <=  get_max_tof_pos_num()))
             error("ProjDataFromStream::get_offsets_bin: timing_num out of range : %d", timing_pos_num);
 
         const int timing_index = static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), timing_pos_num) -
@@ -696,8 +696,8 @@ ProjDataFromStream::get_offsets_sino(const int ax_pos_num, const int segment_num
   {
       // The timing offset will be added to the segment offset. This approach we minimise the
       // changes
-      if (!(timing_num >= get_min_timing_pos_num() &&
-            timing_num <=  get_max_timing_pos_num()))
+      if (!(timing_num >= get_min_tof_pos_num() &&
+            timing_num <=  get_max_tof_pos_num()))
           error("ProjDataFromStream::get_offsets: timing_num out of range : %d", timing_num);
 
       const int timing_index = static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), timing_num) -
@@ -926,8 +926,8 @@ ProjDataFromStream::get_offset_timing(const int timing_num) const
             static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), timing_num) -
                              timing_poss_sequence.begin());
 
-    assert (timing_num >= get_min_timing_pos_num() &&
-            timing_num <= get_max_timing_pos_num());
+    assert (timing_num >= get_min_tof_pos_num() &&
+            timing_num <= get_max_tof_pos_num());
     {
         if(offset_3d_data < 0 ) // Calculate the full 3D sinogram size - Very slow
         {

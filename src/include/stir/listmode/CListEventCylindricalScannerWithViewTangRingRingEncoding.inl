@@ -110,6 +110,8 @@ get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
     get_sinogram_and_ring_coordinates(view_num, tangential_pos_num, ring_a, ring_b);
   sinogram_coordinates_to_bin(bin, view_num, tangential_pos_num, ring_a, ring_b, 
 			      static_cast<const ProjDataInfoCylindrical&>(proj_data_info));
+  if (proj_data_info.get_num_tof_poss() > 1)
+      bin.timing_pos_num() = proj_data_info.get_tof_bin(delta_time);
 }
 
 template <class Derived>
