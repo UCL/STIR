@@ -206,9 +206,7 @@ protected:
     (on top of anything done by normalisation_ptr). 
     \todo Would need timing info or so for e.g. time dependent
     normalisation or angle info for a rotating scanner.*/
-  //! \warning N.E: I changed this function _from_event to _from_record, because in
-  //! TOF unlisting we need the timing information which is stored in the record.
-  virtual void get_bin_from_record(Bin& bin, const CListRecord&) const;
+  virtual void get_bin_from_event(Bin& bin, const CListEvent&) const;
 
   //! A function that should return the number of uncompressed bins in the current bin
   /*! \todo it is not compatiable with e.g. HiDAC doesn't belong here anyway

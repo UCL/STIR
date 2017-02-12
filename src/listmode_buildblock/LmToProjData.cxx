@@ -385,12 +385,12 @@ LmToProjData(const char * const par_filename)
 ***************************************************************/
 void
 LmToProjData::
-get_bin_from_record(Bin& bin, const CListRecord& record) const
+get_bin_from_event(Bin& bin, const CListEvent& event) const
 {  
   if (do_pre_normalisation)
    {
      Bin uncompressed_bin;
-     record.event().get_bin(uncompressed_bin, *proj_data_info_cyl_uncompressed_ptr);
+     event.get_bin(uncompressed_bin, *proj_data_info_cyl_uncompressed_ptr);
      if (uncompressed_bin.get_bin_value()<=0)
       return; // rejected for some strange reason
 
@@ -426,17 +426,14 @@ get_bin_from_record(Bin& bin, const CListRecord& record) const
     // template_proj_data_info_ptr->get_bin_from_uncompressed(bin, uncompressed_bin);
 
    
-//    if (use_tof)
-//        record.full_event(bin, *template_proj_data_info_ptr);
-//    else
-        record.event().get_bin(bin, *template_proj_data_info_ptr);
+    event.get_bin(bin, *template_proj_data_info_ptr);
 
     bin.set_bin_value(bin_value);
 
   }
   else
     {
-      record.event().get_bin(bin, *template_proj_data_info_ptr);
+      event.get_bin(bin, *template_proj_data_info_ptr);
     }
 
 } 
@@ -668,7 +665,7 @@ actual_process_data_without_tof()
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
-                     get_bin_from_record(bin, record);
+                     get_bin_from_event(bin, record.event());
 		     		       
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
@@ -891,7 +888,7 @@ actual_process_data_with_tof()
                             // otherwise it would be 0 and all events will be ignored
                             bin.set_bin_value(1.f);
 
-                            get_bin_from_record(bin, record);
+                            get_bin_from_event(bin, record.event());
 
                             // check if it's inside the range we want to store
                             if (bin.get_bin_value()>0
