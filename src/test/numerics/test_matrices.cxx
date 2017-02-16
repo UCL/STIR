@@ -55,6 +55,7 @@ private:
   void run_tests_1D();
   void run_tests_2D();
   void run_tests_max_eigenvector();
+  void run_tests_max_eigenvector_non_diagonal();
 };
 
 // local function, copied from the Shape library
@@ -88,6 +89,7 @@ run_tests()
   run_tests_1D();
   run_tests_2D();
   run_tests_max_eigenvector();
+  run_tests_max_eigenvector_non_diagonal();
 }
 
 void
@@ -361,6 +363,76 @@ run_tests_max_eigenvector()
       check(success == Succeeded::no, 
 	    "abs_max_using_power should have failed (float diagonal matrix with opposite max eigenvalues)");
   }
+}
+
+void
+MatrixTests::
+run_tests_max_eigenvector_non_diagonal()
+{
+    std::cout << "Eigenvector and eigenvalue calculation without the CoV matrix." << std::endl;
+    set_tolerance(.01);
+
+    // Initial array
+    Array<2, float> v = make_array(make_1d_array(5.F, 0.F, 3.F, 7.F),
+                                   make_1d_array(1.F, -5.F, 7.F, 3.F),
+                                   make_1d_array(4.F, 9.F, 8.F, 10.F));
+
+    const int m_min_row = v.get_min_index();
+    const int m_max_row = v.get_max_index();
+    const int m_min_col = v[m_min_row].get_min_index();
+    const int m_max_col = v[m_min_row].get_max_index();
+
+    // remove the mean value of each column
+    float mean = 0.0f;
+
+    for(int i=m_min_col; i<=m_max_col; ++i)
+    {
+        for (int k = m_min_row; k<= m_max_row; ++k)
+            mean += static_cast<float>(v[k][i]);
+        mean /= static_cast<float>(m_max_row+1);
+
+        for (int k = m_min_row; k<= m_max_row; ++k)
+            v[k][i] -= mean;
+        mean = 0.0f;
+    }
+
+    // CoV array of the aforementioned array as calculated by matlab.
+    Array<2, float> check_cov = make_array(
+                make_1d_array(4.3333F, 8.8333F, -3.0000F, 5.6667F),
+                make_1d_array(8.8333F, 50.3333F, 6.5000F, 24.1667F),
+                make_1d_array(-3.0000F, 6.5000F, 7.0000F, 1.0000F),
+                make_1d_array(5.6667F, 24.1667F, 1.0000F, 12.3333F));
+
+    float chk_max_eigenvalue = 0.f;
+    Array<1,float> chk_max_eigenvector;
+
+    Succeeded chk_eigen_success =
+            absolute_max_eigenvector_using_power_method(chk_max_eigenvalue,
+                                                        chk_max_eigenvector,
+                                                        check_cov,
+                                                        make_1d_array(1.F,1.F,1.F, 1.F),
+                                                        /*tolerance=*/ .001,
+                                                        1000UL);
+
+    check(chk_eigen_success == Succeeded::yes,
+          "absolute_max_eigenvector_using_power_method: succeeded (float diagonal matrix)");
+
+    float max_eigenvalue = 0.f;
+    Array<1,float> max_eigenvector;
+
+    Succeeded eigen_success =
+            absolute_max_eigenvector_using_power_method(max_eigenvalue,
+                                                        max_eigenvector,
+                                                        v,
+                                                        make_1d_array(1.F,1.F,1.F, 1.F),
+                                                        /*tolerance=*/ .001,
+                                                        1000UL,
+                                                        false);
+    check(eigen_success == Succeeded::yes,
+          "absolute_max_eigenvector_using_power_method: succeeded (without float diagonal matrix)");
+
+    check_if_equal(chk_max_eigenvalue, max_eigenvalue, "Eigenvalues do not match");
+    check_if_equal(chk_max_eigenvector, max_eigenvector, "Eigenvectors do not match");
 }
 
 END_NAMESPACE_STIR
