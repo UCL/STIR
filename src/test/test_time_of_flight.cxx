@@ -38,6 +38,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/RunTests.h"
 #include "stir/Scanner.h"
+#include "boost/lexical_cast.hpp"
 
 #include "stir/info.h"
 #include "stir/warning.h"
@@ -380,7 +381,7 @@ export_lor(ProjMatrixElemsForOneBin& probabilities,
            const CartesianCoordinate3D<float>& point2,  int current_id)
 {
      std::ofstream myfile;
-     std::string file_name = "glor_" + std::to_string(current_id) + ".txt";
+     std::string file_name = "glor_" + boost::lexical_cast<std::string>(current_id) + ".txt";
      myfile.open (file_name.c_str());
 
      CartesianCoordinate3D<float> voxel_center;
@@ -435,7 +436,7 @@ export_lor(ProjMatrixElemsForOneBin& probabilities,
            ProjMatrixElemsForOneBin& template_probabilities)
 {
      std::ofstream myfile;
-     std::string file_name = "glor_" + std::to_string(current_id) + ".txt";
+     std::string file_name = "glor_" + boost::lexical_cast<std::string>(current_id) + ".txt";
      myfile.open (file_name.c_str());
 
      CartesianCoordinate3D<float> voxel_center;
