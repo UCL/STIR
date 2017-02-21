@@ -46,6 +46,8 @@ CListEvent::
 get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
 {
   bin = proj_data_info.get_bin(get_LOR());
+  if (proj_data_info.get_num_tof_poss() > 1)
+      bin.timing_pos_num() = proj_data_info.get_tof_bin(delta_time);
 }
 
 END_NAMESPACE_STIR

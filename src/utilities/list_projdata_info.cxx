@@ -145,13 +145,13 @@ int main(int argc, char *argv[])
   if (print_geom)
     std::cout << proj_data_sptr->get_proj_data_info_ptr()->parameter_info() << std::endl;
 
-  //if (print_min || print_max || print_sum)
+  if (print_min || print_max || print_sum)
   {
       const int min_segment_num = proj_data_sptr->get_min_segment_num();
       const int max_segment_num = proj_data_sptr->get_max_segment_num();
-      const int min_timing_num = proj_data_sptr->get_min_timing_pos_num();
-      const int max_timing_num = proj_data_sptr->get_max_timing_pos_num();
-      std::cout << "\nTotal number of timing positions: " << proj_data_sptr->get_num_timing_poss();
+      const int min_timing_num = proj_data_sptr->get_min_tof_pos_num();
+      const int max_timing_num = proj_data_sptr->get_max_tof_pos_num();
+      std::cout << "\nTotal number of TOF positions: " << proj_data_sptr->get_num_tof_poss();
 
       for (int timing_num = min_timing_num; timing_num <= max_timing_num; ++timing_num)
       {

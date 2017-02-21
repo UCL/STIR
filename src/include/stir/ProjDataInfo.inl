@@ -58,20 +58,16 @@ ProjDataInfo::get_num_tangential_poss() const
 { return  max_tangential_pos_num - min_tangential_pos_num + 1; }
 
 int
-ProjDataInfo::get_num_timing_poss() const
-{ return max_timing_pos_num - min_timing_pos_num +1; }
-
-int
 ProjDataInfo::get_num_tof_poss() const
 { return num_tof_bins; }
 
 int
 ProjDataInfo::get_tof_bin(const double& delta) const
 {
-    for (int i = min_timing_pos_num; i < max_timing_pos_num; i++)
+    for (int i = min_tof_pos_num; i < max_tof_pos_num; i++)
     {
-        if ( delta > timing_bin_boundaries_ps[i].low_lim &&
-             delta < timing_bin_boundaries_ps[i].high_lim)
+        if ( delta > tof_bin_boundaries_ps[i].low_lim &&
+             delta < tof_bin_boundaries_ps[i].high_lim)
             return i;
     }
 }
@@ -116,15 +112,15 @@ ProjDataInfo::get_max_tangential_pos_num()const
 { return max_tangential_pos_num; }
 
 int
-ProjDataInfo::get_min_timing_pos_num() const
+ProjDataInfo::get_min_tof_pos_num() const
 {
-    return min_timing_pos_num;
+    return min_tof_pos_num;
 }
 
 int
-ProjDataInfo::get_max_timing_pos_num() const
+ProjDataInfo::get_max_tof_pos_num() const
 {
-    return max_timing_pos_num;
+    return max_tof_pos_num;
 }
 
 float

@@ -72,25 +72,27 @@ public:
   ask_parameters();
 
   //! Construct a ProjDataInfo suitable for GE Advance data
-  //! \warning N.E: TOF mash factor = 1, means no TOF
+  //! \warning N.E: TOF mash factor = 1, means possible many TOF bins
+  //! \warning N.E: TOF mash factor = 0 will produce nonTOF data
   static ProjDataInfo*  
   ProjDataInfoGE(const shared_ptr<Scanner>& scanner_ptr,
                  const int max_delta,
                  const int num_views, const int num_tangential_poss,
                  const bool arc_corrected = true,
-                 const int tof_mash_factor = 1);
+                 const int tof_mash_factor = 0);
 
   //! Construct a ProjDataInfo suitable for CTI data
   /*! \c span is used to denote the amount of axial compression (see CTI doc).
      It has to be an odd number. 
      */
-  //! \warning N.E: TOF mash factor = 1, means no TOF
+  //! \warning N.E: TOF mash factor = 1, means possible many TOF bins
+  //! \warning N.E: TOF mash factor = 0 will produce nonTOF data
   static ProjDataInfo* 
   ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
                   const int span, const int max_delta,
                   const int num_views, const int num_tangential_poss,
                   const bool arc_corrected = true,
-                  const int tof_mash_factor = 1);
+                  const int tof_mash_factor = 0);
   
   
   /************ constructors ***********/
@@ -205,17 +207,15 @@ public:
   inline int get_min_tangential_pos_num() const;
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num() const;
-  //! Get number of TOF positions
-  inline int get_num_timing_poss() const;
   //! Get TOF mash factor
   inline int get_tof_mash_factor() const;
-   //! Get the index of the first timing position
-  inline int get_min_timing_pos_num() const;
+   //! Get the index of the first TOF position
+  inline int get_min_tof_pos_num() const;
   //! Get the index of the last timgin position.
-  inline int get_max_timing_pos_num() const;
+  inline int get_max_tof_pos_num() const;
   //! Get the coincide window in pico seconds
   //! \warning Proposed convension: If the scanner is not TOF ready then
-  //! the coincidence windowis in the timing bin size.
+  //! the coincidence windowis in the TOF bin size.
   inline float get_coincidence_window_in_pico_sec() const;
   //! Get the total width of the coincide window in mm
   inline float get_coincidence_window_width() const;
@@ -260,7 +260,7 @@ public:
       normal to the projection plane */
   virtual float get_s(const Bin&) const =0;
 
-  //! Get value ot the timing location along the LOR (in mm)
+  //! Get value ot the TOF location along the LOR (in mm)
   //! k is a line segment connecting the centers of the two detectors.
   float get_k(const Bin&) const;
 
@@ -370,10 +370,10 @@ public:
   //! Struct which holds two floating numbers
   struct Float1Float2 { float low_lim; float high_lim; };
 
-  //! Vector which holds the lower and higher boundary for each timing position in mm, for faster access.
-  mutable VectorWithOffset<Float1Float2> timing_bin_boundaries_mm;
-  //! Vector which holds the lower and higher boundary for each timing position in ps`, for faster access.
-  mutable VectorWithOffset<Float1Float2> timing_bin_boundaries_ps;
+  //! Vector which holds the lower and higher boundary for each TOF position in mm, for faster access.
+  mutable VectorWithOffset<Float1Float2> tof_bin_boundaries_mm;
+  //! Vector which holds the lower and higher boundary for each TOF position in ps`, for faster access.
+  mutable VectorWithOffset<Float1Float2> tof_bin_boundaries_ps;
   
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
@@ -384,14 +384,14 @@ private:
   int max_view_num;
   int min_tangential_pos_num;
   int max_tangential_pos_num;
-  //! Minimum timing pos
-  int min_timing_pos_num;
-  //! Maximum timing pos
-  int max_timing_pos_num;
+  //! Minimum TOF pos
+  int min_tof_pos_num;
+  //! Maximum TOF pos
+  int max_tof_pos_num;
   //! TOF mash factor.
   int tof_mash_factor;
-  //! Finally (with any mashing factor) timing bin increament.
-  float timing_increament_in_mm;
+  //! Finally (with any mashing factor) TOF bin increament.
+  float tof_increament_in_mm;
   //! Number of tof bins (TOF mash factor applied)
   int num_tof_bins;
   VectorWithOffset<int> min_axial_pos_per_seg; 

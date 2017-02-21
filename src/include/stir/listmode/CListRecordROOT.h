@@ -52,7 +52,8 @@ public:
 
     //! \details This is the main function which transform GATE coordinates to STIR
     void init_from_data(const int &_ring1, const int &_ring2,
-                             const int &crystal1, const int &crystal2);
+                             const int &crystal1, const int &crystal2,
+                        const double& _delta_time);
 
     inline bool is_prompt() const
     { return true; }
@@ -74,6 +75,7 @@ private:
     //! This is the number of detector we have to rotate in order to
     //! align GATE and STIR.
     int quarter_of_detectors;
+
 };
 
 //! A class for storing and using a timing 'event' from a listmode file from the ECAT 8_32bit scanner
@@ -82,10 +84,9 @@ private:
 class CListTimeROOT : public CListTime
 {
 public:
-    void init_from_data(float _timeA, float _delta_time)
+    void init_from_data(double time1)
     {
-        timeA = _timeA;
-        delta_time = _delta_time;
+        timeA = time1;
     }
 
     //! Returns always true
@@ -94,39 +95,11 @@ public:
     //! Returns the detection time of the first photon
     //! in milliseconds.
     inline unsigned long  get_time_in_millisecs() const
-    { return timeA * 1e3; }
-    //! Get the detection time of the first photon
-    //! in milliseconds
-    inline unsigned long get_timeA_in_millisecs() const
-    { return timeA * 1e3; }
-    //! Get the detection time of the second photon
-    //! in milliseconds
-    inline unsigned long get_timeB_in_millisecs() const
-    { return (delta_time - timeA) * 1e3; }
-    //! Get the delta Time between the two events
-    inline unsigned long get_delta_time_in_millisecs() const
-    { return delta_time * 1e3; }
-
+    { return static_cast<unsigned long> (timeA * 1e3); }
     inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
     {
         warning("set_time_in_millisecs: Not implemented for ROOT files. Aborting.");
         return Succeeded::no;
-    }
-
-    //! N.E. Sadly I had to comment the original version of this function. It might had been faster.
-    //! and make more sense under many occations.
-    virtual inline void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
-    {
-        //        delta_time >= 0.0 ?
-        //                    bin.timing_pos_num() = static_cast<int> ( ( delta_time / proj_data_info.get_num_tof_poss()) + 0.5)
-        //                : bin.timing_pos_num() = static_cast<int> ( ( delta_time / proj_data_info.get_num_tof_poss()) - 0.5);
-
-        //        if (bin.timing_pos_num() <  proj_data_info.get_min_timing_pos_num() ||
-        //                bin.timing_pos_num() > proj_data_info.get_max_timing_pos_num())
-        //        {
-        //            bin.set_bin_value(-1.f);
-        //        }
-        bin.timing_pos_num() = proj_data_info.get_tof_bin(delta_time);
     }
 
 private:
@@ -135,8 +108,6 @@ private:
     //! \brief timeA
     //! \details The detection time of the first of the two photons, in seconds
     double timeA;
-
-    double delta_time;
 };
 
 //! A class for a general element of a listmode file for a Siemens scanner using the ROOT files
@@ -147,8 +118,6 @@ public:
     bool inline is_time() const;
     //! Returns always true
     bool inline is_event() const;
-    //! Returns always true
-    bool inline is_full_event() const;
 
     virtual CListEventROOT&  event()
     {
@@ -170,12 +139,6 @@ public:
         return this->time_data;
     }
 
-    virtual void full_event(Bin& bin, const ProjDataInfo& proj_data_info) const
-    {
-        event_data.get_bin(bin, proj_data_info);
-        time_data.get_bin(bin, proj_data_info);
-    }
-
     bool operator==(const CListRecord& e2) const
     {
         return dynamic_cast<CListRecordROOT const *>(&e2) != 0 &&
@@ -191,19 +154,17 @@ public:
                                       const int& ring2,
                                       const int& crystal1,
                                       const int& crystal2,
-                                      const double& time1, const double& delta_time,
+                                      const double& time1,
+                                      const double& delta_time,
                                       const int& event1, const int& event2)
     {
         /// \warning ROOT data are time and event at the same time.
 
         this->event_data.init_from_data(ring1, ring2,
-                                        crystal1, crystal2);
+                                        crystal1, crystal2,
+                                        delta_time);
 
-        this->event_data.is_swapped() ?
-            this->time_data.init_from_data(
-                    time1, -delta_time) :
-            this->time_data.init_from_data(
-                        time1, delta_time);
+        this->time_data.init_from_data(time1);
 
         // We can make a singature raw based on the two events IDs.
         // It is pretty unique.

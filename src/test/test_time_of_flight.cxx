@@ -186,10 +186,10 @@ TOF_Tests::test_tof_proj_data_info()
                    test_proj_data_info_sptr->get_tof_mash_factor(), "Diffent tof mash factor.");
 
     check_if_equal(num_timing_positions,
-                   test_proj_data_info_sptr->get_num_timing_poss(), "Diffent in number of timing positions.");
+                   test_proj_data_info_sptr->get_num_tof_poss(), "Diffent in number of timing positions.");
 
-    for (int timing_num = test_proj_data_info_sptr->get_min_timing_pos_num(), counter = 0;
-         timing_num <= test_proj_data_info_sptr->get_max_timing_pos_num(); ++ timing_num, counter++)
+    for (int timing_num = test_proj_data_info_sptr->get_min_tof_pos_num(), counter = 0;
+         timing_num <= test_proj_data_info_sptr->get_max_tof_pos_num(); ++ timing_num, counter++)
     {
         Bin bin(0, 0, 0, 0, timing_num, 1.f);
 
@@ -199,8 +199,8 @@ TOF_Tests::test_tof_proj_data_info()
                        static_cast<double>(test_proj_data_info_sptr->get_k(bin)), "Error in get_sampling_in_k()");
     }
 
-    float total_width = test_proj_data_info_sptr->get_k(Bin(0,0,0,0,test_proj_data_info_sptr->get_max_timing_pos_num(),1.f))
-            - test_proj_data_info_sptr->get_k(Bin(0,0,0,0,test_proj_data_info_sptr->get_min_timing_pos_num(),1.f))
+    float total_width = test_proj_data_info_sptr->get_k(Bin(0,0,0,0,test_proj_data_info_sptr->get_max_tof_pos_num(),1.f))
+            - test_proj_data_info_sptr->get_k(Bin(0,0,0,0,test_proj_data_info_sptr->get_min_tof_pos_num(),1.f))
             + test_proj_data_info_sptr->get_sampling_in_k(Bin(0,0,0,0,0,1.f));
 
     set_tolerance(static_cast<double>(0.005));
@@ -341,8 +341,8 @@ TOF_Tests::test_tof_kernel_application()
     export_lor(proj_matrix_row,
                lor_point_1, lor_point_2, 5000);
 
-    for (int timing_num = test_proj_data_info_sptr->get_min_timing_pos_num();
-         timing_num <= test_proj_data_info_sptr->get_max_timing_pos_num(); ++ timing_num)
+    for (int timing_num = test_proj_data_info_sptr->get_min_tof_pos_num();
+         timing_num <= test_proj_data_info_sptr->get_max_tof_pos_num(); ++ timing_num)
     {
         ProjMatrixElemsForOneBin new_proj_matrix_row;
         Bin bin(seg_num, view_num, axial_num, tang_num, timing_num, 1.f);

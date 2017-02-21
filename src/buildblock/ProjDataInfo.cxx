@@ -78,10 +78,10 @@ ProjDataInfo::get_k(const Bin& bin) const
 {
     // Probably, This condition should be removed, since I have the check odd number in the
     // set_tof_mash_factor().
-    if (!get_num_timing_poss()%2)
-        return bin.timing_pos_num() * timing_increament_in_mm;
+    if (!num_tof_bins%2)
+        return bin.timing_pos_num() * tof_increament_in_mm;
     else
-        return (bin.timing_pos_num() * timing_increament_in_mm) - timing_increament_in_mm/2.f;
+        return (bin.timing_pos_num() * tof_increament_in_mm) - tof_increament_in_mm/2.f;
 }
 
 float
@@ -186,30 +186,30 @@ ProjDataInfo::set_max_tangential_pos_num(const int max_tang_poss)
 void
 ProjDataInfo::set_tof_mash_factor(const int new_num)
 {
-    if (scanner_ptr->is_tof_ready())
+    if (scanner_ptr->is_tof_ready() && new_num > 0 )
     {
         if(tof_mash_factor < 0 || tof_mash_factor > scanner_ptr->get_num_max_of_timing_bins())
             error("ProjDataInfo: TOF mashing factor must be positive and smaller or equal than"
                   "the scanner's number of max timing bins. Abort.");
         tof_mash_factor = new_num;
 
-        timing_increament_in_mm = (tof_mash_factor * scanner_ptr->get_size_of_timing_bin() * 0.299792458f);
+        tof_increament_in_mm = (tof_mash_factor * scanner_ptr->get_size_of_timing_bin() * 0.299792458f);
 
-        min_timing_pos_num = - (scanner_ptr->get_num_max_of_timing_bins() / tof_mash_factor)/2;
-        max_timing_pos_num = min_timing_pos_num + (scanner_ptr->get_num_max_of_timing_bins() / tof_mash_factor) -1;
+        min_tof_pos_num = - (scanner_ptr->get_num_max_of_timing_bins() / tof_mash_factor)/2;
+        max_tof_pos_num = min_tof_pos_num + (scanner_ptr->get_num_max_of_timing_bins() / tof_mash_factor) -1;
 
-        num_tof_bins = max_timing_pos_num - min_timing_pos_num +1 ;
+        num_tof_bins = max_tof_pos_num - min_tof_pos_num +1 ;
 
         // Ensure that we have a central tof bin.
         if (num_tof_bins%2 == 0)
             error("ProjDataInfo: Number of TOF bins should be an odd number. Abort.");
 
         // Upper and lower boundaries of the timing poss;
-        timing_bin_boundaries_mm.grow(min_timing_pos_num, max_timing_pos_num);
+        tof_bin_boundaries_mm.grow(min_tof_pos_num, max_tof_pos_num);
 
-        timing_bin_boundaries_ps.grow(min_timing_pos_num, max_timing_pos_num);
+        tof_bin_boundaries_ps.grow(min_tof_pos_num, max_tof_pos_num);
 
-        for (int i = min_timing_pos_num; i <= max_timing_pos_num; ++i )
+        for (int i = min_tof_pos_num; i <= max_tof_pos_num; ++i )
         {
             Bin bin;
             bin.timing_pos_num() = i;
@@ -217,14 +217,23 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
             float cur_low = get_k(bin);
             float cur_high = get_k(bin) + get_sampling_in_k(bin);
 
-            timing_bin_boundaries_mm[i].low_lim = cur_low;
-            timing_bin_boundaries_mm[i].high_lim = cur_high;
-            timing_bin_boundaries_ps[i].low_lim = (timing_bin_boundaries_mm[i].low_lim * 3.33564095198f ) ;
-            timing_bin_boundaries_ps[i].high_lim = ( timing_bin_boundaries_mm[i].high_lim * 3.33564095198f);
+            tof_bin_boundaries_mm[i].low_lim = cur_low;
+            tof_bin_boundaries_mm[i].high_lim = cur_high;
+            tof_bin_boundaries_ps[i].low_lim = (tof_bin_boundaries_mm[i].low_lim * 3.33564095198f ) ;
+            tof_bin_boundaries_ps[i].high_lim = ( tof_bin_boundaries_mm[i].high_lim * 3.33564095198f);
             // I could imagine a better printing.
-            info(boost::format("Tbin %1%: %2% - %3% mm (%4% - %5% ps) = %6%") %i % timing_bin_boundaries_mm[i].low_lim % timing_bin_boundaries_mm[i].high_lim
-                 % timing_bin_boundaries_ps[i].low_lim % timing_bin_boundaries_ps[i].high_lim % get_sampling_in_k(bin));
+            info(boost::format("Tbin %1%: %2% - %3% mm (%4% - %5% ps) = %6%") %i % tof_bin_boundaries_mm[i].low_lim % tof_bin_boundaries_mm[i].high_lim
+                 % tof_bin_boundaries_ps[i].low_lim % tof_bin_boundaries_ps[i].high_lim % get_sampling_in_k(bin));
         }
+    }
+    else if (new_num == 0) // Case new_num = 0, will produce non-TOF data for a TOF compatible scanner.
+    {
+        num_tof_bins = 1;
+        tof_mash_factor = 0;
+        min_tof_pos_num = 0;
+        max_tof_pos_num = 0;
+
+        // Should I initialise here and the boundaries?
     }
     else
         error("Not TOF compatible scanner template. Abort.");
@@ -248,10 +257,10 @@ ProjDataInfo::ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr_v,
   set_num_tangential_poss(num_tangential_poss_v);
   set_num_axial_poss_per_segment(num_axial_pos_per_segment_v);
   // Initialise the TOF elements to non-used.
-  min_timing_pos_num = 0;
-  max_timing_pos_num = 0;
-  timing_increament_in_mm = 0.f;
-  tof_mash_factor = 1;
+  min_tof_pos_num = 0;
+  max_tof_pos_num = 0;
+  tof_increament_in_mm = 0.f;
+  tof_mash_factor = 0;
 }
 
 // TOF version.
@@ -604,8 +613,8 @@ ProjDataInfo* ProjDataInfo::ask_parameters()
      ask_num("Mash factor for views",1,16,1);
 
    const int tof_mash_factor = scanner_ptr->is_tof_ready() ?
-           ask_num("Time-of-flight mash factor (1: No TOF):", 1,
-                   scanner_ptr->get_num_max_of_timing_bins(), 1) : 1;
+           ask_num("Time-of-flight mash factor:", 0,
+                   scanner_ptr->get_num_max_of_timing_bins(), 25) : 0;
 
   const bool arc_corrected =
     ask("Is the data arc-corrected?",true);

@@ -293,11 +293,11 @@ public:
   //! Get number of tangential positions
   inline int get_num_tangential_poss() const;
   //! Get number of TOF positions
-  inline int get_num_timing_poss() const;
+  inline int get_num_tof_poss() const;
   //! Get the index of the first timing position
-  inline int get_min_timing_pos_num() const;
+  inline int get_min_tof_pos_num() const;
   //! Get the index of the last timgin position.
-  inline int get_max_timing_pos_num() const;
+  inline int get_max_tof_pos_num() const;
   //! Get TOG mash factor
   inline int get_tof_mash_factor() const;
   //! Get minimum segment number

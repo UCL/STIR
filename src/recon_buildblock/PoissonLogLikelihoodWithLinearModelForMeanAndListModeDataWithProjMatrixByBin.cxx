@@ -476,8 +476,8 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
       { 
         measured_bin.set_bin_value(1.0f);
 
-        this->use_tof ? record.full_event(measured_bin, *proj_data_info_cyl_sptr):
-                    record.event().get_bin(measured_bin, *proj_data_info_cyl_sptr);
+//        this->use_tof ? record.full_event(measured_bin, *proj_data_info_cyl_sptr):
+        record.event().get_bin(measured_bin, *proj_data_info_cyl_sptr);
 
         // In theory we have already done all these checks so we can
         // remove this if statement.
@@ -488,8 +488,8 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
                 || measured_bin.tangential_pos_num() > proj_data_info_cyl_sptr->get_max_tangential_pos_num()
                 || measured_bin.axial_pos_num() < proj_data_info_cyl_sptr->get_min_axial_pos_num(measured_bin.segment_num())
                 || measured_bin.axial_pos_num() > proj_data_info_cyl_sptr->get_max_axial_pos_num(measured_bin.segment_num())
-                || measured_bin.timing_pos_num() < proj_data_info_cyl_sptr->get_min_timing_pos_num()
-                || measured_bin.timing_pos_num() > proj_data_info_cyl_sptr->get_max_timing_pos_num())
+                || measured_bin.timing_pos_num() < proj_data_info_cyl_sptr->get_min_tof_pos_num()
+                || measured_bin.timing_pos_num() > proj_data_info_cyl_sptr->get_max_tof_pos_num())
         {
             continue;
         }
