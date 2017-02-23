@@ -109,10 +109,18 @@ public:
     void
     get_bin(Bin& bin, const ProjDataInfo&) const;
 
+    //! Returns true is the delta_time has been swapped.
+    bool
+    get_swapped() const
+    {return swapped;}
+
 protected:
     //! The detection time difference, between the two photons.
     //! This will work for ROOT files, but not so sure about acquired data.
     double delta_time;
+
+    //! Indicates if the detectors' order has been swapped.
+    bool swapped;
 
 }; /*-coincidence event*/
 
