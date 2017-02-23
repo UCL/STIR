@@ -1113,7 +1113,7 @@ construct_proj_data(shared_ptr<iostream>& output,
   shared_ptr<ProjData> proj_data_sptr;
 #ifdef USE_SegmentByView
   // don't need output stream in this case
-  if (proj_data_info_ptr->get_tof_mash_factor() == 1)
+  if (proj_data_info_ptr->get_num_tof_poss() == 1)
       proj_data_sptr.reset(new ProjDataInterfile(exam_info_sptr,
                                                  proj_data_info_ptr, output_filename, ios::out,
                                                  ProjDataFromStream::Segment_View_AxialPos_TangPos,
