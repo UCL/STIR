@@ -148,19 +148,17 @@ ProjDataFromStream::activate_TOF()
     offset_3d_data = static_cast<streamoff> (sum * on_disk_data_type.size_in_bytes());
 
     // Now, lets initialise a TOF stream - Similarly to segments
-    if (storage_order == Timing_Segment_View_AxialPos_TangPos &&
-            proj_data_info_ptr->get_num_tof_poss() > 1)
-    {
-        timing_poss_sequence.resize(proj_data_info_ptr->get_num_tof_poss());
-        int timing_pos_num;
+    storage_order = Timing_Segment_View_AxialPos_TangPos;
 
-        for (int i= 0, timing_pos_num = proj_data_info_ptr->get_min_tof_pos_num();
-             timing_pos_num<=proj_data_info_ptr->get_max_tof_pos_num();
-             ++i, ++timing_pos_num)
-        {
-          timing_poss_sequence[i] = timing_pos_num;
-        }
+    timing_poss_sequence.resize(proj_data_info_ptr->get_num_tof_poss());
+
+    for (int i= 0, timing_pos_num = proj_data_info_ptr->get_min_tof_pos_num();
+         timing_pos_num<=proj_data_info_ptr->get_max_tof_pos_num();
+         ++i, ++timing_pos_num)
+    {
+        timing_poss_sequence[i] = timing_pos_num;
     }
+
 }
 
 Viewgram<float>
