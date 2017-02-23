@@ -609,7 +609,7 @@ actual_process_data_without_tof()
 	   // ('allowed' independent on the fact of we have its segment in memory or not)
 	   // When do_time_frame=true, the number of events is irrelevant, so we 
 	   // just set more_events to 1, and never change it
-       unsigned long int more_events =
+       long int more_events =
          do_time_frame? 1 : num_events_to_store;
 
 	   if (start_segment_index != proj_data_ptr->get_min_segment_num())
