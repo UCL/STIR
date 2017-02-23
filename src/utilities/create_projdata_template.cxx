@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
   //if ( proj_data_info_sptr->get_num_tof_poss() >1)
     //  shared_ptr<ProjData> proj_data_sptr(new ProjDataInterfile(exam_info_sptr, proj_data_info_sptr, output_file_name, std::ios::out,
       //                                                          ProjDataFromStream::Timing_Segment_View_AxialPos_TangPos));
- // else
+  //else
       shared_ptr<ProjData> proj_data_sptr(new ProjDataInterfile(exam_info_sptr, proj_data_info_sptr, output_file_name));
 
   return EXIT_SUCCESS;

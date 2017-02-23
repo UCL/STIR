@@ -70,8 +70,7 @@ private:
     int det1;
     //! Second detector, in order to detector tangestial index
     int det2;
-    //! Indicates if swap segments
-    bool swapped;
+
     //! This is the number of detector we have to rotate in order to
     //! align GATE and STIR.
     int quarter_of_detectors;
