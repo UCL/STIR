@@ -34,10 +34,6 @@ option(BUILD_EXECUTABLES
 option(BUILD_SHARED_LIBS 
        "Use shared libraries" OFF)
 
-### Settings for external libraries
-
-find_package(HDF5 COMPONENTS CXX)
-
 if (LLN_FOUND)
   set(HAVE_ECAT ON)
   message(STATUS "ECAT support enabled.")
