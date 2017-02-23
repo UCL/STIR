@@ -76,7 +76,10 @@ class CListEventDataGESigna
     { 
       return (eventType==COINC_EVT)/* && eventTypeExt==COINC_COUNT_EVT)*/; 
      } // TODO need to find out how to see if it's a coincidence event
-
+  inline int get_tof_bin() const
+	 {
+		 return static_cast<int>(deltaTime);
+	 }
  private:
 
 #if STIRIsNativeByteOrderBigEndian
@@ -315,6 +318,16 @@ dynamic_cast<CListRecordGESigna const *>(&e2) != 0 &&
 	error("don't know how to byteswap");
         ByteOrder::swap_order(this->raw[1]);
       }
+	  
+	  if (this->is_event())
+	  {
+	    // set TOF info in ps
+	   this->delta_time = this->event_data.get_tof_bin() *
+	        this-> get_scanner_ptr()->get_size_of_timing_bin();
+	  }
+ 
+	  
+	  
     return Succeeded::yes;
   }
 
