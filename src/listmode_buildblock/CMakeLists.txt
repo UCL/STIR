@@ -11,9 +11,14 @@ set(${dir_LIB_SOURCES}
         LmToProjDataBootstrap
         CListModeDataECAT8_32bit
         CListRecordECAT8_32bit
-        CListModeDataGESigna
-#        CListRecordGESigna
 )
+
+if (HAVE_HDF5)
+list(APPEND ${dir_LIB_SOURCES}
+        CListModeDataGESigna
+        # CListRecordGESigna
+)
+endif()
 
 if (HAVE_ECAT)
   list(APPEND ${dir_LIB_SOURCES}
