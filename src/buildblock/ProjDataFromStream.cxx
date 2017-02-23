@@ -93,30 +93,9 @@ ProjDataFromStream::ProjDataFromStream(shared_ptr<ExamInfo> const& exam_info_spt
   assert(storage_order != Unsupported);
   assert(!(data_type == NumericType::UNKNOWN_TYPE));
 
-  int sum = 0;
-  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
-       segment_num<=proj_data_info_ptr->get_max_segment_num();
-       ++segment_num)
-  {
-    sum += get_num_axial_poss(segment_num) * get_num_views() * get_num_tangential_poss();
-  }
+  if (proj_data_info_ptr->get_num_tof_poss() > 1)
+      activate_TOF();
 
-  offset_3d_data = static_cast<streamoff> (sum * on_disk_data_type.size_in_bytes());
-
-  // Now, lets initialise a TOF stream - Similarly to segments
-  if (storage_order == Timing_Segment_View_AxialPos_TangPos &&
-          proj_data_info_ptr->get_num_tof_poss() > 1)
-  {
-      timing_poss_sequence.resize(proj_data_info_ptr->get_num_tof_poss());
-      int timing_pos_num;
-
-      for (int i= 0, timing_pos_num = proj_data_info_ptr->get_min_tof_pos_num();
-           timing_pos_num<=proj_data_info_ptr->get_max_tof_pos_num();
-           ++i, ++timing_pos_num)
-      {
-        timing_poss_sequence[i] = timing_pos_num;
-      }
-  }
 }
 
 ProjDataFromStream::ProjDataFromStream(shared_ptr<ExamInfo> const& exam_info_sptr,
@@ -141,31 +120,47 @@ ProjDataFromStream::ProjDataFromStream(shared_ptr<ExamInfo> const& exam_info_spt
 
   //N.E. Take this opportunity to calculate the size of the complete -full- 3D sinogram.
   // We will need that to skip timing positions
-  int segment_num, i, tmp_add = 0;
+  int segment_num, i;
+
   for (i= 0, segment_num = proj_data_info_ptr->get_min_segment_num();
        segment_num<=proj_data_info_ptr->get_max_segment_num();
        ++i, ++segment_num)
   {
     segment_sequence[i] =segment_num;
-    tmp_add += get_num_axial_poss(segment_num) * get_num_views() * get_num_tangential_poss();
   }
 
-  offset_3d_data = static_cast<streamoff> (tmp_add * on_disk_data_type.size_in_bytes());
+  if (proj_data_info_ptr->get_num_tof_poss() > 1)
+    activate_TOF();
 
-  // Now, lets initialise a TOF stream - Similarly to segments
-  if (storage_order == Timing_Segment_View_AxialPos_TangPos &&
-          proj_data_info_ptr->get_num_tof_poss() > 1)
-  {
-      timing_poss_sequence.resize(proj_data_info_ptr->get_num_tof_poss());
-      int timing_pos_num;
+}
 
-      for (i= 0, timing_pos_num = proj_data_info_ptr->get_min_tof_pos_num();
-           timing_pos_num<=proj_data_info_ptr->get_max_tof_pos_num();
-           ++i, ++timing_pos_num)
-      {
-        timing_poss_sequence[i] = timing_pos_num;
-      }
-  }
+void
+ProjDataFromStream::activate_TOF()
+{
+    int sum = 0;
+    for (int segment_num = proj_data_info_ptr->get_min_segment_num();
+         segment_num<=proj_data_info_ptr->get_max_segment_num();
+         ++segment_num)
+    {
+      sum += get_num_axial_poss(segment_num) * get_num_views() * get_num_tangential_poss();
+    }
+
+    offset_3d_data = static_cast<streamoff> (sum * on_disk_data_type.size_in_bytes());
+
+    // Now, lets initialise a TOF stream - Similarly to segments
+    if (storage_order == Timing_Segment_View_AxialPos_TangPos &&
+            proj_data_info_ptr->get_num_tof_poss() > 1)
+    {
+        timing_poss_sequence.resize(proj_data_info_ptr->get_num_tof_poss());
+        int timing_pos_num;
+
+        for (int i= 0, timing_pos_num = proj_data_info_ptr->get_min_tof_pos_num();
+             timing_pos_num<=proj_data_info_ptr->get_max_tof_pos_num();
+             ++i, ++timing_pos_num)
+        {
+          timing_poss_sequence[i] = timing_pos_num;
+        }
+    }
 }
 
 Viewgram<float>

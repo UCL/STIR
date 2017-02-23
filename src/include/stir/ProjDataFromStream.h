@@ -163,6 +163,8 @@ protected:
   shared_ptr<std::iostream> sino_stream;
 
 private:
+
+  void activate_TOF();
   //! offset of the whole 3d sinogram in the stream
   std::streamoff  offset;
   //! offset of a complete non-tof sinogram
