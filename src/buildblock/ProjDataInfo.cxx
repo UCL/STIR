@@ -226,17 +226,15 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
                  % tof_bin_boundaries_ps[i].low_lim % tof_bin_boundaries_ps[i].high_lim % get_sampling_in_k(bin));
         }
     }
-    else if (new_num == 0) // Case new_num = 0, will produce non-TOF data for a TOF compatible scanner.
+    else if ((scanner_ptr->is_tof_ready() && new_num <= 0)
+    		|| !scanner_ptr->is_tof_ready()) // Case new_num <=, will produce non-TOF data for a TOF compatible scanner
     {
         num_tof_bins = 1;
         tof_mash_factor = 0;
         min_tof_pos_num = 0;
         max_tof_pos_num = 0;
-
-        // Should I initialise here and the boundaries?
+        // we assume TOF mashing factor = 0 means non-TOF and the projecter won't use any boundary conditions
     }
-    else
-        error("Not TOF compatible scanner template. Abort.");
 }
 
 
@@ -261,6 +259,7 @@ ProjDataInfo::ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr_v,
   max_tof_pos_num = 0;
   tof_increament_in_mm = 0.f;
   tof_mash_factor = 0;
+  num_tof_bins = 1;
 }
 
 // TOF version.
