@@ -121,6 +121,12 @@ FourierRebinning::
 rebin()
 {
 
+	if (proj_data_sptr->get_proj_data_info_ptr()->is_tof_data())
+	{
+		error("FORE Rebinning :: Not supported for TOF data. Aborted");
+		return Succeeded::no;
+	}
+
   start_timers();
   CPUTimer timer;
   timer.start();
