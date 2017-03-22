@@ -55,6 +55,8 @@ public:
   PresmoothingForwardProjectorByBin();
 
   ~ PresmoothingForwardProjectorByBin();
+  
+  void update_filtered_density_image(const DiscretisedDensity<3,float>&);
 
   //! Stores all necessary geometric info
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
@@ -75,18 +77,22 @@ public:
   // class has other behaviour).
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
+  ForwardProjectorByBin* get_original_forward_projector_ptr() const;
 
 private:
 
   shared_ptr<ForwardProjectorByBin> original_forward_projector_ptr;
   shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > image_processor_ptr;
 
+  shared_ptr<DiscretisedDensity<3,float> > filtered_density_sptr;
+
   void actual_forward_project(RelatedViewgrams<float>&, 
                               const DiscretisedDensity<3,float>&,
                               const int min_axial_pos_num, const int max_axial_pos_num,
                               const int min_tangential_pos_num, const int max_tangential_pos_num);
 
-
+  void actual_forward_project(Bin&,
+                              const DiscretisedDensity<3,float>&);
 
   virtual void set_defaults();
   virtual void initialise_keymap();

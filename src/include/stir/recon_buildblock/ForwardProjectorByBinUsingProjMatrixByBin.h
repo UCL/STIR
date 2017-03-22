@@ -79,6 +79,7 @@ public:
   
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
+  void enable_tof(const shared_ptr<ProjDataInfo>& _proj_data_info_sptr, const bool v);
   
 private:
   shared_ptr<ProjMatrixByBin>  proj_matrix_ptr;
@@ -88,6 +89,8 @@ private:
 			      const DiscretisedDensity<3,float>& image,
 			      const int min_axial_pos_num, const int max_axial_pos_num,
 			      const int min_tangential_pos_num, const int max_tangential_pos_num);
+
+  void actual_forward_project(Bin&, const DiscretisedDensity<3,float>&);
 
   virtual void set_defaults();
   virtual void initialise_keymap();

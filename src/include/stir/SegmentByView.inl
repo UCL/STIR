@@ -107,7 +107,8 @@ SegmentByView<elemT>::get_viewgram(int view_num) const
 { 
   return Viewgram<elemT>(Array<3,elemT>::operator[](view_num), 
 			 this->proj_data_info_ptr->create_shared_clone(), view_num, 
-			 this->get_segment_num()); }
+			 this->get_segment_num(),
+			 this->get_timing_pos_num()); }
 
 template <typename elemT>
 void 

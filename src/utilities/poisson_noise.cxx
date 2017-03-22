@@ -167,26 +167,31 @@ poisson_noise(ProjData& output_projdata,
        seg<=input_projdata.get_max_segment_num();
        seg++)  
   {
-    SegmentByView<float> seg_input= input_projdata.get_segment_by_view(seg);
-    SegmentByView<float> seg_output= 
-      output_projdata.get_empty_segment_by_view(seg,false);
-  
-    cerr << "Segment " << seg << endl;
+	  for (int timing_pos_num = input_projdata.get_min_tof_pos_num();
+			  timing_pos_num <= input_projdata.get_max_tof_pos_num();
+			  ++timing_pos_num)
+	  {
+		SegmentByView<float> seg_input= input_projdata.get_segment_by_view(seg, timing_pos_num);
+		SegmentByView<float> seg_output=
+		  output_projdata.get_empty_segment_by_view(seg,false, timing_pos_num);
 
-    for(int view=seg_input.get_min_view_num();view<=seg_input.get_max_view_num();view++)    
-      for(int ax_pos=seg_input.get_min_axial_pos_num();ax_pos<=seg_input.get_max_axial_pos_num();ax_pos++)
-        for(int tang_pos=seg_input.get_min_tangential_pos_num();tang_pos<=seg_input.get_max_tangential_pos_num();tang_pos++)
-      { 
-	const float bin = seg_input[view][ax_pos][tang_pos];
-	const int random_poisson = generate_poisson_random(bin*scaling_factor);
-	seg_output[view][ax_pos][tang_pos] = 
-	  preserve_mean ?
-	  random_poisson / scaling_factor
-	  :
-	  static_cast<float>(random_poisson);		
-      }           
-    if (output_projdata.set_segment(seg_output) == Succeeded::no)
-      exit(EXIT_FAILURE);
+		cerr << "Segment " << seg << endl;
+
+		for(int view=seg_input.get_min_view_num();view<=seg_input.get_max_view_num();view++)
+		  for(int ax_pos=seg_input.get_min_axial_pos_num();ax_pos<=seg_input.get_max_axial_pos_num();ax_pos++)
+			for(int tang_pos=seg_input.get_min_tangential_pos_num();tang_pos<=seg_input.get_max_tangential_pos_num();tang_pos++)
+		  {
+		const float bin = seg_input[view][ax_pos][tang_pos];
+		const int random_poisson = generate_poisson_random(bin*scaling_factor);
+		seg_output[view][ax_pos][tang_pos] =
+		  preserve_mean ?
+		  random_poisson / scaling_factor
+		  :
+		  static_cast<float>(random_poisson);
+		  }
+		if (output_projdata.set_segment(seg_output) == Succeeded::no)
+		  exit(EXIT_FAILURE);
+	  }
   }
 }
 

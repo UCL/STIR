@@ -48,11 +48,9 @@ ViewSegmentNumbers::view_num() const
 {
   return view;}
 
-
 int&
 ViewSegmentNumbers::segment_num() 
 {  return segment;}
-
 int& 
 ViewSegmentNumbers::view_num() 
 { return view;}

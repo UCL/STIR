@@ -66,11 +66,11 @@ public:
   //! Constructor that sets the data to a given 3d Array
   SegmentBySinogram(const Array<3,elemT>& v, 
 		    const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
-		    const int segment_num);
+		    const int segment_num, const int timing_pos_num = 0);
   
   //! Constructor that sets sizes via the ProjDataInfo object, initialising data to 0
   SegmentBySinogram(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
-		    const int segment_num);
+		    const int segment_num, const int timing_pos_num = 0);
 
   
   //! Conversion from 1 storage order to the other
@@ -81,7 +81,7 @@ public:
   inline int get_num_axial_poss() const;
   //! Get number of views
   inline int get_num_views() const;
-  //! Get number of tangetial positions
+  //! Get number of tangential positions
   inline int get_num_tangential_poss() const;
   //! Get minimum axial position number
   inline int get_min_axial_pos_num() const;
@@ -96,13 +96,13 @@ public:
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num()  const;
   //! Get sinogram
-  inline Sinogram<elemT> get_sinogram(int axial_pos_num) const;  
+  inline Sinogram<elemT> get_sinogram(int axial_pos_num) const;
   //! Get viewgram
   Viewgram<elemT> get_viewgram(int view_num) const;
   //! Set viewgram
   void set_viewgram(const Viewgram<elemT>&);
   //! Set sinogram
-  inline void set_sinogram(Sinogram<elemT> const &s, int axial_pos_num);  
+  inline void set_sinogram(Sinogram<elemT> const &s, int axial_pos_num);
   inline void set_sinogram(const Sinogram<elemT>& s);
 
   //! Overloading Array::grow

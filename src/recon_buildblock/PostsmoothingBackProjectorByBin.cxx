@@ -71,6 +71,28 @@ PostsmoothingBackProjectorByBin::
   set_defaults();
 }
 
+void PostsmoothingBackProjectorByBin::
+update_filtered_density_image(DiscretisedDensity<3, float> &density)
+{
+        image_processor_ptr->apply(*filtered_density_sptr);
+        density += *filtered_density_sptr;
+        filtered_density_sptr->fill(0.f);
+}
+
+BackProjectorByBin*
+PostsmoothingBackProjectorByBin::get_original_back_projector_ptr() const
+{
+    return original_back_projector_ptr.get();
+}
+
+void PostsmoothingBackProjectorByBin::
+init_filtered_density_image(DiscretisedDensity<3, float> &density)
+{
+    filtered_density_sptr.reset(
+                density.get_empty_discretised_density());
+    assert(density.get_index_range() == filtered_density_sptr->get_index_range());
+}
+
 PostsmoothingBackProjectorByBin::
 PostsmoothingBackProjectorByBin(
                        const shared_ptr<BackProjectorByBin>& original_back_projector_ptr,
@@ -126,7 +148,22 @@ actual_back_project(DiscretisedDensity<3,float>& density,
                                                 min_tangential_pos_num, max_tangential_pos_num);
     }
 }
- 
 
+void
+PostsmoothingBackProjectorByBin::
+actual_back_project(DiscretisedDensity<3, float> &density,
+                    const Bin& bin)
+{
+    if (!is_null_ptr(image_processor_ptr))
+      {
+//
+        original_back_projector_ptr->back_project(*filtered_density_sptr, bin);
+
+      }
+    else
+      {
+        original_back_projector_ptr->back_project(density, bin);
+      }
+}
 
 END_NAMESPACE_STIR

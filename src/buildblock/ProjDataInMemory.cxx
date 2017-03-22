@@ -84,10 +84,14 @@ ProjDataInMemory(shared_ptr<ExamInfo> const& exam_info_sptr,
 
   if (initialise_with_0)
   {
-    for (int segment_num = proj_data_info_ptr->get_min_segment_num();
+  	  for (int timing_pos_num = this->get_min_tof_pos_num();
+  			  timing_pos_num <= this->get_max_tof_pos_num();
+  			  ++timing_pos_num)
+  		  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
          segment_num <= proj_data_info_ptr->get_max_segment_num();
          ++segment_num)
-      set_segment(proj_data_info_ptr->get_empty_segment_by_view(segment_num));
+
+  		  set_segment(proj_data_info_ptr->get_empty_segment_by_view(segment_num, false, timing_pos_num));
   }
 }
 
@@ -115,10 +119,14 @@ ProjDataInMemory(const ProjData& proj_data)
 
   // copy data
   // (note: cannot use fill(projdata) as that uses virtual functions, which won't work in a constructor
-  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
+  for (int timing_pos_num = this->get_min_tof_pos_num();
+		  timing_pos_num <= this->get_max_tof_pos_num();
+		  ++timing_pos_num)
+	  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
        segment_num <= proj_data_info_ptr->get_max_segment_num();
        ++segment_num)
-    set_segment(proj_data.get_segment_by_view(segment_num));
+
+		  set_segment(proj_data.get_segment_by_view(segment_num, timing_pos_num));
 }
 
 size_t
@@ -134,6 +142,7 @@ get_size_of_buffer() const
     num_sinograms * 
     proj_data_info_ptr->get_num_views() *
     proj_data_info_ptr->get_num_tangential_poss() *
+	proj_data_info_ptr->get_num_tof_poss() *
     sizeof(float);
 }
 
@@ -145,17 +154,9 @@ write_to_file(const string& output_filename) const
   ProjDataInterfile out_projdata(get_exam_info_sptr(),
 				 this->proj_data_info_ptr, output_filename, ios::out); 
   
-  Succeeded success=Succeeded::yes;
-  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
-       segment_num <= proj_data_info_ptr->get_max_segment_num();
-       ++segment_num)
-  {
-    Succeeded success_this_segment =
-      out_projdata.set_segment(get_segment_by_view(segment_num));
-    if (success==Succeeded::yes)
-      success = success_this_segment;
-  }
-  return success;
+  out_projdata.fill(*this);
+  // if no exception thrown, it succeeded
+  return Succeeded::yes;
     
 }
 

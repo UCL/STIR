@@ -146,6 +146,9 @@ set_up(
   const int min_segment_num = proj_data_info_sptr->get_min_segment_num();
   const int max_segment_num = proj_data_info_sptr->get_max_segment_num();
 
+  if (proj_data_info_sptr->is_tof_data())
+	  enable_tof(proj_data_info_sptr,true);
+
   this->cache_collection.recycle();
   this->cache_collection.resize(min_view_num, max_view_num);
 #ifdef STIR_OPENMP

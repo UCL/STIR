@@ -68,9 +68,9 @@ get_next_record(RecordT& record) const
   H5::DataSpace dataspace = dataset_sptr->getSpace();
   int rank = dataspace.getSimpleExtentNdims();
 
-  hsize_t dims_out[rank];
-  dataspace.getSimpleExtentDims( dims_out, NULL);
-  uint64_t list_size = dims_out[0];  // should be equal to /HeaderData/ListHeader/sizeOfList
+  std::vector<hsize_t> dims_out(rank); // VS needs a vector
+  dataspace.getSimpleExtentDims(&dims_out[0],NULL);
+  uint64_t list_size = dims_out[0]; // should be equal to /HeaderData/ListHeader/sizeOfList
 
   if (current_offset > (list_size - this->size_of_record_signature))
     return Succeeded::no; 

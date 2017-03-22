@@ -154,7 +154,8 @@ namespace detail_interpolate_projdata
                                const SegmentBySinogram<float>& in_segment)
   {
     SegmentBySinogram<float> out_segment =
-      non_interleaved_proj_data_info.get_empty_segment_by_sinogram(in_segment.get_segment_num());
+      non_interleaved_proj_data_info.get_empty_segment_by_sinogram(in_segment.get_segment_num(),
+    		  in_segment.get_timing_pos_num());
 
     make_non_interleaved_segment(out_segment, in_segment);
     return out_segment;

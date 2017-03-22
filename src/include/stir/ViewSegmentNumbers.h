@@ -49,7 +49,7 @@ public:
   //! an empty constructor (sets everything to 0)
   inline  ViewSegmentNumbers();
   //! constructor taking view and segment number as arguments
-  inline ViewSegmentNumbers( const int view_num,const int segment_num);
+  inline ViewSegmentNumbers( const int view_num, const int segment_num);
 
   //! get segment number for const objects
   inline int segment_num() const;
@@ -60,6 +60,8 @@ public:
   inline int&  segment_num();
   //! get reference to view number
   inline int&  view_num();
+  //! get reference to timing position index
+  inline int& timing_pos_num();
 
  
   //! comparison operator, only useful for sorting

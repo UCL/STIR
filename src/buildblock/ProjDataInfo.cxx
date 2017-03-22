@@ -219,8 +219,8 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
 
             tof_bin_boundaries_mm[i].low_lim = cur_low;
             tof_bin_boundaries_mm[i].high_lim = cur_high;
-            tof_bin_boundaries_ps[i].low_lim = (tof_bin_boundaries_mm[i].low_lim * 3.33564095198f ) ;
-            tof_bin_boundaries_ps[i].high_lim = ( tof_bin_boundaries_mm[i].high_lim * 3.33564095198f);
+            tof_bin_boundaries_ps[i].low_lim = (tof_bin_boundaries_mm[i].low_lim /  0.299792458f ) ;
+            tof_bin_boundaries_ps[i].high_lim = ( tof_bin_boundaries_mm[i].high_lim / 0.299792458f);
             // I could imagine a better printing.
             info(boost::format("Tbin %1%: %2% - %3% mm (%4% - %5% ps) = %6%") %i % tof_bin_boundaries_mm[i].low_lim % tof_bin_boundaries_mm[i].high_lim
                  % tof_bin_boundaries_ps[i].low_lim % tof_bin_boundaries_ps[i].high_lim % get_sampling_in_k(bin));
@@ -332,7 +332,8 @@ reduce_segment_range(const int min_segment_num, const int max_segment_num)
 Viewgram<float> 
 ProjDataInfo::get_empty_viewgram(const int view_num, 
 				 const int segment_num, 
-				 const bool make_num_tangential_poss_odd) const
+				 const bool make_num_tangential_poss_odd,
+				 const int timing_pos_num) const
 {  
   // we can't access the shared ptr, so we have to clone 'this'.
   shared_ptr<ProjDataInfo>  proj_data_info_sptr(this->clone());
@@ -340,7 +341,7 @@ ProjDataInfo::get_empty_viewgram(const int view_num,
   if (make_num_tangential_poss_odd && (get_num_tangential_poss()%2==0))
     proj_data_info_sptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
   
-  Viewgram<float> v(proj_data_info_sptr, view_num, segment_num);
+  Viewgram<float> v(proj_data_info_sptr, view_num, segment_num, timing_pos_num);
    
   return v;
 }
@@ -348,7 +349,8 @@ ProjDataInfo::get_empty_viewgram(const int view_num,
 
 Sinogram<float>
 ProjDataInfo::get_empty_sinogram(const int axial_pos_num, const int segment_num,
-                                      const bool make_num_tangential_poss_odd) const
+                                      const bool make_num_tangential_poss_odd,
+									  const int timing_pos_num) const
 {
   // we can't access the shared ptr, so we have to clone 'this'.
   shared_ptr<ProjDataInfo>  proj_data_info_sptr(this->clone());
@@ -356,14 +358,15 @@ ProjDataInfo::get_empty_sinogram(const int axial_pos_num, const int segment_num,
   if (make_num_tangential_poss_odd && (get_num_tangential_poss()%2==0))
     proj_data_info_sptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
 
-  Sinogram<float> s(proj_data_info_sptr, axial_pos_num, segment_num);
+  Sinogram<float> s(proj_data_info_sptr, axial_pos_num, segment_num, timing_pos_num);
    
   return s;
 }
 
 SegmentBySinogram<float>
 ProjDataInfo::get_empty_segment_by_sinogram(const int segment_num, 
-      const bool make_num_tangential_poss_odd) const
+      const bool make_num_tangential_poss_odd,
+	  const int timing_pos_num) const
 {
   assert(segment_num >= get_min_segment_num());
   assert(segment_num <= get_max_segment_num());
@@ -374,7 +377,7 @@ ProjDataInfo::get_empty_segment_by_sinogram(const int segment_num,
   if (make_num_tangential_poss_odd && (get_num_tangential_poss()%2==0))
     proj_data_info_sptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
 
-  SegmentBySinogram<float> s(proj_data_info_sptr, segment_num);
+  SegmentBySinogram<float> s(proj_data_info_sptr, segment_num, timing_pos_num);
 
   return s;
 }  
@@ -382,7 +385,8 @@ ProjDataInfo::get_empty_segment_by_sinogram(const int segment_num,
 
 SegmentByView<float>
 ProjDataInfo::get_empty_segment_by_view(const int segment_num, 
-				   const bool make_num_tangential_poss_odd) const
+				   const bool make_num_tangential_poss_odd,
+				   const int timing_pos_num) const
 {
   assert(segment_num >= get_min_segment_num());
   assert(segment_num <= get_max_segment_num());
@@ -393,21 +397,22 @@ ProjDataInfo::get_empty_segment_by_view(const int segment_num,
   if (make_num_tangential_poss_odd && (get_num_tangential_poss()%2==0))
     proj_data_info_sptr->set_max_tangential_pos_num(get_max_tangential_pos_num() + 1);
   
-  SegmentByView<float> s(proj_data_info_sptr, segment_num);
+  SegmentByView<float> s(proj_data_info_sptr, segment_num, timing_pos_num);
 
   return s;
 }
 
 RelatedViewgrams<float> 
-ProjDataInfo::get_empty_related_viewgrams(const ViewSegmentNumbers& view_segmnet_num,
+ProjDataInfo::get_empty_related_viewgrams(const ViewSegmentNumbers& view_segment_num,
                    //const int view_num, const int segment_num,
 		   const shared_ptr<DataSymmetriesForViewSegmentNumbers>& symmetries_used,
-		   const bool make_num_tangential_poss_odd) const
+		   const bool make_num_tangential_poss_odd,
+		   const int timing_pos_num) const
 {
   vector<ViewSegmentNumbers> pairs;
   symmetries_used->get_related_view_segment_numbers(
                                                     pairs, 
-                                                    ViewSegmentNumbers(view_segmnet_num.view_num(),view_segmnet_num.segment_num())
+                                                    ViewSegmentNumbers(view_segment_num.view_num(),view_segment_num.segment_num())
     );
 
   vector<Viewgram<float> > viewgrams;
@@ -417,7 +422,9 @@ ProjDataInfo::get_empty_related_viewgrams(const ViewSegmentNumbers& view_segmnet
   {
     // TODO optimise to get shared proj_data_info_ptr
     viewgrams.push_back(get_empty_viewgram(pairs[i].view_num(),
-                                          pairs[i].segment_num(), make_num_tangential_poss_odd));
+                                          pairs[i].segment_num(),
+										  make_num_tangential_poss_odd,
+										  timing_pos_num));
   }
 
   return RelatedViewgrams<float>(viewgrams, symmetries_used);

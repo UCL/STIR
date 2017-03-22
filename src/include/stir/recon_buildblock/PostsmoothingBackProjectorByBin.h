@@ -75,6 +75,11 @@ public:
   // class has other behaviour).
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
+  void update_filtered_density_image(DiscretisedDensity<3, float>&);
+
+  void init_filtered_density_image(DiscretisedDensity<3, float> &);
+
+  BackProjectorByBin* get_original_back_projector_ptr() const;
 
 private:
 
@@ -86,6 +91,10 @@ private:
                            const int min_axial_pos_num, const int max_axial_pos_num,
                            const int min_tangential_pos_num, const int max_tangential_pos_num);
 
+  void actual_back_project(DiscretisedDensity<3,float>& density,
+                                   const Bin& bin);
+
+  shared_ptr<DiscretisedDensity<3,float> > filtered_density_sptr;
 
 
   virtual void set_defaults();

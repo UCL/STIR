@@ -228,6 +228,9 @@ struct ProjDataForIntBP
 		          const int min_axial_pos_num, const int max_axial_pos_num,
 		          const int min_tangential_pos_num, const int max_tangential_pos_num);
 
+ void actual_back_project(DiscretisedDensity<3,float>&,
+                                  const Bin&);
+
 
   virtual void 
    back_project_all_symmetries(  VoxelsOnCartesianGrid<float>& image,

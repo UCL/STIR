@@ -94,11 +94,25 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
     image_processor_ptr->set_up(*image_info_ptr);
 }
 
+ForwardProjectorByBin*
+PresmoothingForwardProjectorByBin::get_original_forward_projector_ptr() const
+{
+    return original_forward_projector_ptr.get();
+}
+
 const DataSymmetriesForViewSegmentNumbers * 
 PresmoothingForwardProjectorByBin::
 get_symmetries_used() const
 {
   return original_forward_projector_ptr->get_symmetries_used();
+}
+
+void PresmoothingForwardProjectorByBin::
+update_filtered_density_image(const DiscretisedDensity<3,float>& density)
+{
+    filtered_density_sptr.reset(density.get_empty_discretised_density());
+    image_processor_ptr->apply(*filtered_density_sptr, density);
+    assert(density.get_index_range() == filtered_density_sptr->get_index_range());
 }
 
 void 
@@ -125,6 +139,19 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
     }
 }
  
-
+void
+PresmoothingForwardProjectorByBin::
+actual_forward_project(Bin& this_bin,
+                       const DiscretisedDensity<3,float>& density)
+{
+    if (!is_null_ptr(image_processor_ptr))
+    {
+        original_forward_projector_ptr->forward_project(this_bin, *filtered_density_sptr);
+    }
+    else
+    {
+        original_forward_projector_ptr->forward_project(this_bin, density);
+    }
+}
 
 END_NAMESPACE_STIR

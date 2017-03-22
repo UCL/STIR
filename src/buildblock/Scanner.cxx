@@ -302,7 +302,10 @@ Scanner::Scanner(Type scanner_type)
            24, 329, 293, 2 * 280,
                886.2F/2.F, 8.4F, 6.54F, 2.397F,
            static_cast<float>(-4.5490*_PI/180),//sign?
-           4, 2, 6, 8, 1, 1, 1);// TODO not sure about sign of view_offset
+           4, 2, 6, 8, 1, 1, 1,
+           (short int)(410),
+           (float)(10.0F),
+           (float)(400.0F) );// TODO not sure about sign of view_offset
     break;
 
  case DiscoveryRX:
@@ -352,7 +355,10 @@ case PETMR_Signa:
 	       static_cast<float>(-5.23*_PI/180),//sign? TODO value
 	       5,
 	       4,
-	       9, 4, 1, 1, 1);
+	       9, 4, 1, 1, 1,
+		   (short int)(351),
+		   (float)(89.0F/13.0F), //TODO
+		   (float)(390.0F) );
     break;
   
   case HZLR:
@@ -426,6 +432,26 @@ case PETMR_Signa:
                0.F, 0.F, 0.F, 0.F, 0.F,
                0, 0, 0, 0, 0, 0, 0);
 
+    break;
+
+  case Discovery690:
+
+    set_params(Discovery690, string_list("GE Discovery 690", "Discovery 690"),
+               24,
+               381,
+               331, // TODO
+               2 * 288,
+               405.1F,
+               9.4F,
+               6.54F,
+               2.1306F,
+               static_cast<float>(-5.021*_PI/180),//sign? TODO value
+               4,
+               2,
+               6, 9, 1, 1, 1,
+			   (short int)(55),
+			   (float)(89.0F),
+			   (float)(550.0F) );
     break;
 
   case User_defined_scanner: // zlong, 08-04-2004, Userdefined support

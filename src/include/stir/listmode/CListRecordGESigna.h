@@ -322,8 +322,7 @@ dynamic_cast<CListRecordGESigna const *>(&e2) != 0 &&
 	  if (this->is_event())
 	  {
 	    // set TOF info in ps
-	   this->delta_time = this->event_data.get_tof_bin() *
-	        this-> get_scanner_ptr()->get_size_of_timing_bin();
+	   this->delta_time = this->event_data.get_tof_bin() *this-> get_scanner_ptr()->get_size_of_timing_bin();
 	  }
  
 	  

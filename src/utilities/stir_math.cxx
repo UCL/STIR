@@ -568,26 +568,32 @@ main(int argc, char **argv)
 	   segment_num <= out_proj_data_ptr->get_max_segment_num();
 	   ++segment_num)
 	{   
-	  if (verbose)
-	    cout << "Processing segment num " << segment_num << " for all files" << endl;
-	  SegmentByView<float> segment_by_view = 
-	    (*all_proj_data[0]).get_segment_by_view(segment_num);
-	  if (!no_math_on_data && !except_first )
-	    in_place_apply_function(segment_by_view, pow_times_add_object);
-	  for (int i=1; i<num_files; ++i)
-	    {
-	      SegmentByView<float> current_segment_by_view = 
-		(*all_proj_data[i]).get_segment_by_view(segment_num);
-	      if (!no_math_on_data)
-		in_place_apply_function(current_segment_by_view, pow_times_add_object);
-	      if(do_add)
-		segment_by_view += current_segment_by_view;
-	      else
-		segment_by_view *= current_segment_by_view;
-	    }
-    
-	  if (!(out_proj_data_ptr->set_segment(segment_by_view) == Succeeded::yes))
-	    warning("Error set_segment %d\n", segment_num);   
+		  if (verbose)
+			cout << "Processing segment num " << segment_num << " for all files" << endl;
+
+          for (int k=out_proj_data_ptr->get_min_tof_pos_num();
+        		  k<=out_proj_data_ptr->get_max_tof_pos_num();
+        		  ++k)
+          {
+			  SegmentByView<float> segment_by_view =
+				(*all_proj_data[0]).get_segment_by_view(segment_num,k);
+			  if (!no_math_on_data && !except_first )
+				in_place_apply_function(segment_by_view, pow_times_add_object);
+			  for (int i=1; i<num_files; ++i)
+				{
+				  SegmentByView<float> current_segment_by_view =
+				(*all_proj_data[i]).get_segment_by_view(segment_num,k);
+				  if (!no_math_on_data)
+				in_place_apply_function(current_segment_by_view, pow_times_add_object);
+				  if(do_add)
+				segment_by_view += current_segment_by_view;
+				  else
+				segment_by_view *= current_segment_by_view;
+				}
+
+			  if (!(out_proj_data_ptr->set_segment(segment_by_view) == Succeeded::yes))
+				warning("Error set_segment %d\n", segment_num);
+          }
 	}
     } 
   return EXIT_SUCCESS;

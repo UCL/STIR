@@ -188,10 +188,10 @@ ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
     error("ProjDataFromStream::get_viewgram: error after seekg\n");
   }
 
-  Viewgram<float> viewgram(proj_data_info_ptr, view_num, segment_num);
+  Viewgram<float> viewgram(proj_data_info_ptr, view_num, segment_num, timing_pos);
   float scale = float(1);
 
-  if (get_storage_order() == Segment_AxialPos_View_TangPos)
+  if (get_storage_order() == Segment_AxialPos_View_TangPos) //|| get_storage_order() == Timing_Segment_AxialPos_View_TangPos)
   {
     for (int ax_pos_num = get_min_axial_pos_num(segment_num); ax_pos_num <= get_max_axial_pos_num(segment_num); ax_pos_num++)
     {
@@ -208,7 +208,7 @@ ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
   }
 
 
-  else if (get_storage_order() == Segment_View_AxialPos_TangPos)
+  else if (get_storage_order() == Segment_View_AxialPos_TangPos || get_storage_order() == Timing_Segment_View_AxialPos_TangPos)
   {
     if(read_data(*sino_stream, viewgram, on_disk_data_type, scale, on_disk_byte_order)
       == Succeeded::no)
@@ -373,7 +373,7 @@ ProjDataFromStream::get_offsets(const int view_num, const int segment_num,
 }
 
 Succeeded
-ProjDataFromStream::set_viewgram(const Viewgram<float>& v, const int &timing_pos)
+ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
 {
   if (sino_stream == 0)
   {
@@ -421,6 +421,7 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v, const int &timing_pos
   }
   int segment_num = v.get_segment_num();
   int view_num = v.get_view_num();
+  int timing_pos = v.get_timing_pos_num();
 
 
   vector<streamoff> offsets = get_offsets(view_num,segment_num, timing_pos);
@@ -747,7 +748,7 @@ ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num,
     error("ProjDataFromStream::get_sinogram: error after seekg\n");
   }
 
-  Sinogram<float> sinogram(proj_data_info_ptr, ax_pos_num, segment_num);
+  Sinogram<float> sinogram(proj_data_info_ptr, ax_pos_num, segment_num, timing_pos);
   float scale = float(1);
 
   if (get_storage_order() == Segment_AxialPos_View_TangPos)
@@ -760,7 +761,7 @@ ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num,
   }
 
 
-  else if (get_storage_order() == Segment_View_AxialPos_TangPos)
+  else if (get_storage_order() == Segment_View_AxialPos_TangPos || get_storage_order() == Timing_Segment_View_AxialPos_TangPos)
   {
    for (int view = get_min_view_num(); view <= get_max_view_num(); view++)
     {
@@ -792,7 +793,7 @@ ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num,
 }
 
 Succeeded
-ProjDataFromStream::set_sinogram(const Sinogram<float>& s, const int &timing_pos)
+ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
 {
   if (sino_stream == 0)
   {
@@ -825,6 +826,7 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s, const int &timing_pos
   }
   int segment_num = s.get_segment_num();
   int ax_pos_num = s.get_axial_pos_num();
+  int timing_pos = s.get_timing_pos_num();
 
 
   vector<streamoff> offsets = get_offsets_sino(ax_pos_num,segment_num, timing_pos);
@@ -859,7 +861,7 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s, const int &timing_pos
       return Succeeded::yes;
     }
 
-    else if (get_storage_order() == Segment_View_AxialPos_TangPos)
+    else if (get_storage_order() == Segment_View_AxialPos_TangPos || get_storage_order() == Timing_Segment_View_AxialPos_TangPos)
     {
       for (int view = get_min_view_num();view <= get_max_view_num(); view++)
       {
@@ -956,6 +958,9 @@ ProjDataFromStream::get_segment_by_sinogram(const int segment_num, const int tim
   }
 
   streamoff segment_offset = get_offset_segment(segment_num);
+  // Go to the right timing full 3D sinogram
+  segment_offset += get_offset_timing(timing_num) ;
+
   sino_stream->seekg(segment_offset, ios::beg);
   if (! *sino_stream)
   {
@@ -964,7 +969,7 @@ ProjDataFromStream::get_segment_by_sinogram(const int segment_num, const int tim
 
   if (get_storage_order() == Segment_AxialPos_View_TangPos)
   {
-    SegmentBySinogram<float> segment(proj_data_info_ptr,segment_num);
+    SegmentBySinogram<float> segment(proj_data_info_ptr,segment_num, timing_num);
     {
       float scale = float(1);
       if(read_data(*sino_stream, segment, on_disk_data_type, scale, on_disk_byte_order)
@@ -982,7 +987,7 @@ ProjDataFromStream::get_segment_by_sinogram(const int segment_num, const int tim
   else
   {
     // TODO rewrite in terms of get_viewgram
-    return SegmentBySinogram<float> (get_segment_by_view(segment_num));
+    return SegmentBySinogram<float> (get_segment_by_view(segment_num, timing_num));
   }
 
 
@@ -1001,10 +1006,12 @@ ProjDataFromStream::get_segment_by_view(const int segment_num, const int timing_
     error("ProjDataFromStream::get_segment_by_view: error in stream state before reading\n");
   }
 
-  if (get_storage_order() == Segment_View_AxialPos_TangPos)
+  if (get_storage_order() == Segment_View_AxialPos_TangPos || get_storage_order() == Timing_Segment_View_AxialPos_TangPos)
   {
 
     streamoff segment_offset = get_offset_segment(segment_num);
+    // Go to the right timing full 3D sinogram
+      segment_offset += get_offset_timing(timing_pos) ;
     sino_stream->seekg(segment_offset, ios::beg);
 
     if (! *sino_stream)
@@ -1012,7 +1019,7 @@ ProjDataFromStream::get_segment_by_view(const int segment_num, const int timing_
       error("ProjDataFromStream::get_segment_by_sinogram: error after seekg\n");
     }
 
-    SegmentByView<float> segment(proj_data_info_ptr,segment_num);
+    SegmentByView<float> segment(proj_data_info_ptr,segment_num, timing_pos);
 
     {
       float scale = float(1.f);
@@ -1027,39 +1034,9 @@ ProjDataFromStream::get_segment_by_view(const int segment_num, const int timing_
 
     return segment;
   }
-  else if (get_storage_order() == Timing_Segment_View_AxialPos_TangPos)
-  {
-      //Get the right segment offset
-      streamoff segment_offset = get_offset_segment(segment_num);
-      // Go to the right timing full 3D sinogram
-      segment_offset += get_offset_timing(timing_pos) ;
-
-      sino_stream->seekg(segment_offset, ios::beg);
-
-      if (! *sino_stream)
-      {
-        error("ProjDataFromStream::get_segment_by_sinogram: error after seekg\n");
-      }
-
-      SegmentByView<float> segment(proj_data_info_ptr,segment_num);
-
-      {
-        float scale = float(1.f);
-        if(read_data(*sino_stream, segment, on_disk_data_type, scale, on_disk_byte_order)
-          == Succeeded::no)
-        error("ProjDataFromStream: error reading data\n");
-        if(scale != 1)
-          error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
-      }
-
-      segment *= scale_factor;
-
-      return segment;
-
-  }
   else
     // TODO rewrite in terms of get_sinogram as this doubles memory temporarily
-    return SegmentByView<float> (get_segment_by_sinogram(segment_num));
+    return SegmentByView<float> (get_segment_by_sinogram(segment_num, timing_pos));
 }
 
 Succeeded
@@ -1087,6 +1064,8 @@ ProjDataFromStream::set_segment(const SegmentBySinogram<float>& segmentbysinogra
 
   int segment_num = segmentbysinogram_v.get_segment_num();
   streamoff segment_offset = get_offset_segment(segment_num);
+  // Go to the right timing full 3D sinogram
+  segment_offset += get_offset_timing(segmentbysinogram_v.get_timing_pos_num()) ;
 
   sino_stream->seekp(segment_offset,ios::beg);
 
@@ -1110,9 +1089,9 @@ ProjDataFromStream::set_segment(const SegmentBySinogram<float>& segmentbysinogra
         == Succeeded::no
           || scale != scale_factor)
       {
-        warning("ProjDataFromStream::set_segment: segment (%d)"
+        warning("ProjDataFromStream::set_segment: segment (%d) tof bin (%d)"
                 " corrupted due to problems with writing or the scale factor \n",
-                segment_num);
+                segment_num, segmentbysinogram_v.get_timing_pos_num());
         return Succeeded::no;
       }
 
@@ -1156,6 +1135,8 @@ ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
 
   int segment_num = segmentbyview_v.get_segment_num();
   streamoff segment_offset = get_offset_segment(segment_num);
+  // Go to the right timing full 3D sinogram
+  segment_offset += get_offset_timing(segmentbyview_v.get_timing_pos_num()) ;
 
   sino_stream->seekp(segment_offset,ios::beg);
 
@@ -1165,7 +1146,7 @@ ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
     return Succeeded::no;
   }
 
-  if (get_storage_order() == Segment_View_AxialPos_TangPos)
+  if (get_storage_order() == Segment_View_AxialPos_TangPos || get_storage_order() == Timing_Segment_View_AxialPos_TangPos)
   {
     // KT 03/07/2001 handle scale_factor appropriately
     if (on_disk_data_type.id != NumericType::FLOAT)
@@ -1179,9 +1160,9 @@ ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
         == Succeeded::no
           || scale != scale_factor)
       {
-        warning("ProjDataFromStream::set_segment: segment (%d)"
+        warning("ProjDataFromStream::set_segment: segment (%d) tof bin (%d)"
                 " corrupted due to problems with writing or the scale factor \n",
-                segment_num);
+                segment_num, segmentbyview_v.get_timing_pos_num());
         return Succeeded::no;
       }
 

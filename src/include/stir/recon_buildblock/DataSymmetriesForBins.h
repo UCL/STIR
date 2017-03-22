@@ -115,7 +115,8 @@ public:
   virtual void
     get_related_bins(std::vector<Bin>&, const Bin& b,
                       const int min_axial_pos_num, const int max_axial_pos_num,
-                      const int min_tangential_pos_num, const int max_tangential_pos_num) const;
+                      const int min_tangential_pos_num, const int max_tangential_pos_num,
+					  const int min_timing_pos_num = 0, const int max_timing_pos_num = 0) const;
 
   //! fills in a vector with the axial and tangential position numbers related to this bin
   /*! range for axial_pos_num and tangential_pos_num is taken from the ProjDataInfo object 

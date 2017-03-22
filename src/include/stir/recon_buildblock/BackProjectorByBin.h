@@ -34,6 +34,8 @@
 #include "stir/RegisteredObject.h"
 #include "stir/TimedObject.h"
 #include "stir/shared_ptr.h"
+#include "stir/Bin.h"
+#include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 
 START_NAMESPACE_STIR
 
@@ -105,6 +107,9 @@ public:
 		   const int min_axial_pos_num, const int max_axial_pos_num,
 		   const int min_tangential_pos_num, const int max_tangential_pos_num);
 
+ void back_project(DiscretisedDensity<3,float>&,
+           const Bin&);
+
 
 protected:
 
@@ -112,13 +117,21 @@ protected:
                                    const RelatedViewgrams<float>&,
 		                   const int min_axial_pos_num, const int max_axial_pos_num,
 		                   const int min_tangential_pos_num, const int max_tangential_pos_num) = 0;
+
+ virtual void actual_back_project(DiscretisedDensity<3,float>&,
+                                  const Bin&) = 0;
+
+ //! True if TOF has been activated.
+ bool tof_enabled;
+
 private:
   void do_segments(DiscretisedDensity<3,float>& image, 
             const ProjData& proj_data_org,
 	    const int start_segment_num, const int end_segment_num,
 	    const int start_axial_pos_num, const int end_axial_pos_num,
 	    const int start_tang_pos_num,const int end_tang_pos_num,
-	    const int start_view, const int end_view);
+	    const int start_view, const int end_view,
+		const int start_timing_pos_num = 0, const int end_timing_pos_num = 0);
 
 
 };

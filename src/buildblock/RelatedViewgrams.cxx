@@ -139,6 +139,16 @@ has_same_characteristics(self_type const& other,
 	    );
       return false;
     }
+  if (this->get_basic_timing_pos_num() !=
+      other.get_basic_timing_pos_num())
+    {
+      explanation =
+	str(format("Differing basic timing position index: %1% vs %2%")
+	    % this->get_basic_timing_pos_num()
+	    % other.get_basic_timing_pos_num()
+	    );
+      return false;
+    }
   return true;
 }
 

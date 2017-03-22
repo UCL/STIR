@@ -61,6 +61,19 @@ get_proj_matrix_elems_for_one_bin(
   // set to empty
   probabilities.erase();
   
+  if (proj_data_info_sptr && proj_data_info_sptr->is_tof_data())
+  {
+    LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
+    proj_data_info_sptr->get_LOR(lor, bin);
+    LORAs2Points<float> lor2(lor);
+    this->get_proj_matrix_elems_for_one_bin_with_tof(
+        probabilities,
+        bin,
+        lor2.p1(),
+        lor2.p2()) ;
+        return;
+  }
+  
   if (cache_stores_only_basic_bins)
   {
     // find basic bin
@@ -128,6 +141,7 @@ get_proj_matrix_elems_for_one_bin_with_tof(
     if (!tof_enabled)
         error("The function get_proj_matrix_elems_for_one_bin_with_tof() needs proper timing "
               "initialisation. Abort.");
+              
   // set to empty
   probabilities.erase();
    ProjMatrixElemsForOneBin tmp_probabilities;

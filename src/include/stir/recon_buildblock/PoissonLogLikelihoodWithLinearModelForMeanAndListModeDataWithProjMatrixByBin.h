@@ -37,6 +37,10 @@
 #include "stir/ProjDataInMemory.h"
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 #include "stir/ExamInfo.h"
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 START_NAMESPACE_STIR
 
 
@@ -69,7 +73,7 @@ typedef RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndLis
 
 public:
  
- //! Name which will be used when parsing a GeneralisedObjectiveFunction object 
+ //! Name which will be 	d when parsing a GeneralisedObjectiveFunction object
   static const char * const registered_name; 
   
   PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>(); 
@@ -101,7 +105,10 @@ protected:
   //! Maximum ring difference to take into account
   /*! \todo Might be removed */
   int  max_ring_difference_num_to_process;
-
+  
+  //! N.E. Since we started offering compatibility for projectors
+  bool use_projectors;
+  
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjMatrixByBin> PM_sptr;
 
@@ -126,7 +133,7 @@ protected:
   virtual bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
 
   void
-    add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const;
+    add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums, const int timing_pos_num = 0) const;
 };
 
 END_NAMESPACE_STIR

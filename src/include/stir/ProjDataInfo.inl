@@ -70,6 +70,7 @@ ProjDataInfo::get_tof_bin(const double& delta) const
              delta < tof_bin_boundaries_ps[i].high_lim)
             return i;
     }
+    return 0;
 }
 
 int
@@ -136,6 +137,26 @@ ProjDataInfo::get_coincidence_window_width() const
 {
     // Speed of light 0.299792458 mm / psec.
     return get_coincidence_window_in_pico_sec() * 0.299792458f;
+}
+
+bool
+ProjDataInfo::is_tof_data() const
+{
+	// First case: if tof_mash_factor == 0, scanner is not tof ready and no tof data
+	if (tof_mash_factor == 0)
+	{
+		if (num_tof_bins != 1)
+		{
+			error("Non-TOF data with inconsistent Time-of-Flight bin number - Aborted operation.");
+		}
+		return false;
+	}
+	// Second case: when tof_mash_factor is strictly positive, it means we have TOF data
+	else if (tof_mash_factor > 0)
+	{
+		return true;
+	}
+	return false;
 }
 
 float 

@@ -79,6 +79,9 @@ public:
 
   shared_ptr<ProjMatrixByBin> proj_matrix_ptr;
 
+  void actual_back_project(DiscretisedDensity<3,float>& image,
+                                   const Bin& bin);
+
 private:
   virtual void set_defaults();
   virtual void initialise_keymap();

@@ -159,6 +159,7 @@ int main(int argc, char *argv[])
                        << ",r:" << det_pos.pos2().axial_coord()
                        << ",l:" << det_pos.pos2().radial_coord()
                        << ")";
+                  cout << " delta time: " << event_ptr->get_delta_time();
                   listed = true; 
                 }
             }

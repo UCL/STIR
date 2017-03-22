@@ -70,16 +70,18 @@ public:
 public:
   //! Construct sinogram from proj_data_info pointer, ring and segment number.  Data are set to 0.
   inline Sinogram(const shared_ptr<ProjDataInfo>& proj_data_info_ptr, 
-                  const int ax_pos_num, const int segment_num); 
+                  const int ax_pos_num, const int segment_num, const int timing_pos_num = 0);
 
   //! Construct sinogram with data set to the array.
   inline Sinogram(const Array<2,elemT>& p,const shared_ptr<ProjDataInfo >& proj_data_info_ptr, 
-                  const int ax_pos_num, const int segment_num); 
+                  const int ax_pos_num, const int segment_num, const int timing_pos_num = 0);
   
   //! Get segment number
   inline int get_segment_num() const; 
   //! Get number of axial positions
   inline int get_axial_pos_num() const;
+  //! Get timing position index
+  inline int get_timing_pos_num() const;
   //! Get minimum view number
   inline int get_min_view_num() const;
   //! Get maximum view number
@@ -145,6 +147,7 @@ private:
   shared_ptr<ProjDataInfo> proj_data_info_ptr; 
   int axial_pos_num;
   int segment_num;
+  int timing_pos_num;
     
 };
 

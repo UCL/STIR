@@ -152,12 +152,18 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
        segment_num <= proj_data_info_ptr->get_max_segment_num();
        ++segment_num)
   {
-    const float num_planes_per_axial_pos =
-      symmetries_ptr->get_num_planes_per_axial_pos(segment_num);
-    if (fabs(round(num_planes_per_axial_pos) - num_planes_per_axial_pos) > 1.E-4)
-      error("ForwardProjectorByBinUsingRayTracing: the number of image planes "
-            "per axial_pos (which is %g for segment %d) should be an integer\n",
-             num_planes_per_axial_pos, segment_num);
+//	  for (int k = proj_data_info_ptr->get_min_tof_pos_num();
+//			  k <= proj_data_info_ptr->get_max_tof_pos_num();
+//			         ++k)
+//	  {
+		  //TODO Check symmetries here, should we add TOF?
+		const float num_planes_per_axial_pos =
+		  symmetries_ptr->get_num_planes_per_axial_pos(segment_num);
+		if (fabs(round(num_planes_per_axial_pos) - num_planes_per_axial_pos) > 1.E-4)
+		  error("ForwardProjectorByBinUsingRayTracing: the number of image planes "
+				"per axial_pos (which is %g for segment %d) should be an integer\n",
+				 num_planes_per_axial_pos, segment_num);
+//	  }
   }
   
 
@@ -1445,5 +1451,12 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
   stop_timers();
 }
 
+void
+ForwardProjectorByBinUsingRayTracing::
+ actual_forward_project(Bin& this_bin,
+                        const DiscretisedDensity<3,float>& density)
+{
+    error("ForwardProjectorByBinUsingRayTracing is not supported for list-mode data. Abort.");
+}
 
 END_NAMESPACE_STIR

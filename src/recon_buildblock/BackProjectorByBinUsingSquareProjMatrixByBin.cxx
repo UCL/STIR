@@ -111,6 +111,13 @@ actual_back_project(DiscretisedDensity<3,float>& image,
   }
 }
 
+void
+BackProjectorByBinUsingSquareProjMatrixByBin::
+actual_back_project(DiscretisedDensity<3, float> &image,
+                    const Bin& bin)
+{
+    error("BackProjectorByBinUsingSquareProjMatrixByBin is not supported for list-mode reconstruction. Abort.");
+}
 
 void
 BackProjectorByBinUsingSquareProjMatrixByBin::

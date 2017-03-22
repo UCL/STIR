@@ -48,6 +48,11 @@ Sinogram<elemT>::get_axial_pos_num() const
 
 template <typename elemT>
 int
+Sinogram<elemT>::get_timing_pos_num() const
+{ return timing_pos_num; }
+
+template <typename elemT>
+int
 Sinogram<elemT>::get_min_view_num() const
   {return this->get_min_index();}
 
@@ -82,7 +87,7 @@ template <typename elemT>
 Sinogram<elemT>
 Sinogram<elemT>::get_empty_copy(void) const
 {
-    Sinogram<elemT> copy(proj_data_info_ptr, get_axial_pos_num(), get_segment_num());
+    Sinogram<elemT> copy(proj_data_info_ptr, get_axial_pos_num(), get_segment_num(), get_timing_pos_num());
     return copy;
 }
 
@@ -105,12 +110,13 @@ template <typename elemT>
 Sinogram<elemT>::
 Sinogram(const Array<2,elemT>& p, 
          const shared_ptr<ProjDataInfo >& pdi_ptr, 
-         const int ax_pos_num, const int s_num) 
+         const int ax_pos_num, const int s_num, const int t_num) 
   :
   Array<2,elemT>(p), 
   proj_data_info_ptr(pdi_ptr),
   axial_pos_num(ax_pos_num), 
-  segment_num(s_num)
+  segment_num(s_num),
+  timing_pos_num(t_num)
 {
   assert(axial_pos_num <= proj_data_info_ptr->get_max_axial_pos_num(segment_num));
   assert(axial_pos_num >= proj_data_info_ptr->get_min_axial_pos_num(segment_num));
@@ -127,7 +133,7 @@ Sinogram(const Array<2,elemT>& p,
 template <typename elemT>
 Sinogram<elemT>::
 Sinogram(const shared_ptr<ProjDataInfo >& pdi_ptr, 
-         const int ax_pos_num, const int s_num) 
+         const int ax_pos_num, const int s_num, const int t_num) 
   :
   Array<2,elemT>(IndexRange2D (pdi_ptr->get_min_view_num(),
 			       pdi_ptr->get_max_view_num(),
@@ -135,7 +141,8 @@ Sinogram(const shared_ptr<ProjDataInfo >& pdi_ptr,
 			       pdi_ptr->get_max_tangential_pos_num())), 
   proj_data_info_ptr(pdi_ptr),
   axial_pos_num(ax_pos_num),
-  segment_num(s_num)
+  segment_num(s_num),
+  timing_pos_num(t_num)
 {
   assert(axial_pos_num <= proj_data_info_ptr->get_max_axial_pos_num(segment_num));
   assert(axial_pos_num >= proj_data_info_ptr->get_min_axial_pos_num(segment_num));

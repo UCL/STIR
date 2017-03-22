@@ -70,17 +70,19 @@ public:
 public:
   //! Construct from proj_data_info pointer, view and segment number. Data are set to 0.
   inline Viewgram(const shared_ptr<ProjDataInfo>& proj_data_info_ptr, 
-                  const int v_num, const int s_num); 
+                  const int v_num, const int s_num, const int t_num = 0);
 
   //! Construct with data set to the array.
   inline Viewgram(const Array<2,elemT>& p,const shared_ptr<ProjDataInfo>& proj_data_info_ptr, 
-                  const int v_num, const int s_num); 
+                  const int v_num, const int s_num, const int t_num = 0);
   
 
   //! Get segment number
   inline int get_segment_num() const; 
   //! Get number of views
   inline int get_view_num() const;
+  //! Get timing position index
+  inline int get_timing_pos_num() const;
   //! Get minimum number of axial positions
   inline int get_min_axial_pos_num() const;
   //! Get maximum number of axial positions 
@@ -143,7 +145,8 @@ private:
   
   shared_ptr<ProjDataInfo> proj_data_info_ptr; 
   int view_num;
-  int segment_num;  
+  int segment_num;
+  int timing_pos_num;
 };
 
 END_NAMESPACE_STIR

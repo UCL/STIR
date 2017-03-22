@@ -49,6 +49,7 @@ START_NAMESPACE_STIR
 
 ForwardProjectorByBin::ForwardProjectorByBin()
 {
+    tof_enabled = false;
 }
 
 ForwardProjectorByBin::~ForwardProjectorByBin()
@@ -62,7 +63,7 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
   
  // this->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
 //			     image_sptr);
-    
+
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(this->get_symmetries_used()->clone());
   
@@ -77,18 +78,24 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
     {
       const ViewSegmentNumbers vs=vs_nums_to_process[i];
-
-      info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num());
-      
-      RelatedViewgrams<float> viewgrams = 
-        proj_data.get_empty_related_viewgrams(vs, symmetries_sptr);
-      forward_project(viewgrams, image);	  
+      for (int k=proj_data.get_proj_data_info_ptr()->get_min_tof_pos_num();
+    		  k<=proj_data.get_proj_data_info_ptr()->get_max_tof_pos_num();
+    		  ++k)
+      {
+    	  if (proj_data.get_proj_data_info_ptr()->is_tof_data())
+    		  info(boost::format("Processing view %1% of segment %2% of TOF bin %3%") % vs.view_num() % vs.segment_num() % k);
+    	  else
+    		  info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num());
+		  RelatedViewgrams<float> viewgrams =
+			proj_data.get_empty_related_viewgrams(vs, symmetries_sptr, false, k);
+		  forward_project(viewgrams, image);
 #ifdef STIR_OPENMP
 #pragma omp critical (FORWARDPROJ_SETVIEWGRAMS)
 #endif
-      {
-        if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
-          error("Error set_related_viewgrams in forward projecting");
+		  {
+			if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
+			  error("Error set_related_viewgrams in forward projecting");
+		  }
       }
     }   
   
@@ -156,5 +163,28 @@ forward_project(RelatedViewgrams<float>& viewgrams,
   stop_timers();
 }
 
+void
+ForwardProjectorByBin::forward_project(Bin& this_bin,
+                                       const DiscretisedDensity<3, float> & this_image)
+{
+    actual_forward_project(this_bin,
+                           this_image);
+}
+
+void
+ForwardProjectorByBin::
+set_tof_data(const CartesianCoordinate3D<float>* _point1,
+             const CartesianCoordinate3D<float>* _point2)
+{
+    point1 = _point1;
+    point2 = _point2;
+}
+
+ProjMatrixElemsForOneBin*
+ForwardProjectorByBin::
+get_tof_row() const
+{
+    return tof_probabilities.get();
+}
 
 END_NAMESPACE_STIR

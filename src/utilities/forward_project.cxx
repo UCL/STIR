@@ -109,7 +109,7 @@ main (int argc, char * argv[])
   ProjDataInterfile output_projdata(template_proj_data_sptr->get_exam_info_sptr(),
                                     template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone(),
                                     output_filename);
-  
+
   forw_projector_sptr->forward_project(output_projdata, *image_density_sptr);
   
   return EXIT_SUCCESS;

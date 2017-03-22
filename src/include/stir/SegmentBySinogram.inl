@@ -109,7 +109,8 @@ SegmentBySinogram<elemT>::
 get_sinogram(int axial_pos_num) const
 { return Sinogram<elemT>(Array<3,elemT>::operator[](axial_pos_num), 
                          Segment<elemT>::proj_data_info_ptr, axial_pos_num, 
-                         Segment<elemT>::get_segment_num()); }
+                         Segment<elemT>::get_segment_num(),
+						 Segment<elemT>::get_timing_pos_num()); }
 
 template <typename elemT>
 void 

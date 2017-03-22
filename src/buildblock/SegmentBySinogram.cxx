@@ -43,9 +43,10 @@ template <typename elemT>
 SegmentBySinogram<elemT> ::
 SegmentBySinogram(const Array<3,elemT>& v, 
 		  const shared_ptr<ProjDataInfo>& pdi_ptr,
-		  const int segment_num)
+		  const int segment_num,
+		  const int timing_pos_num)
   : 
-  Segment<elemT>(pdi_ptr, segment_num), 
+  Segment<elemT>(pdi_ptr, segment_num, timing_pos_num),
   Array<3,elemT>(v)
 {
   assert( get_min_view_num() == pdi_ptr->get_min_view_num());
@@ -59,9 +60,10 @@ SegmentBySinogram(const Array<3,elemT>& v,
 template <typename elemT>  
 SegmentBySinogram<elemT> ::
 SegmentBySinogram(const shared_ptr<ProjDataInfo>& pdi_ptr,
-		  const int segment_num)
+		  const int segment_num,
+		  const int timing_pos_num)
   : 
-  Segment<elemT>(pdi_ptr, segment_num), 
+  Segment<elemT>(pdi_ptr, segment_num, timing_pos_num),
   Array<3,elemT>(IndexRange3D(pdi_ptr->get_min_axial_pos_num(segment_num),
                               pdi_ptr->get_max_axial_pos_num(segment_num),
                               pdi_ptr->get_min_view_num(),
@@ -74,7 +76,7 @@ template <typename elemT>
 SegmentBySinogram<elemT>::
 SegmentBySinogram(const SegmentByView<elemT>& s_v )
   : Segment<elemT>(s_v.get_proj_data_info_ptr()->create_shared_clone(),
-                   s_v.get_segment_num()),	      
+                   s_v.get_segment_num(), s_v.get_timing_pos_num()),
    Array<3,elemT> (IndexRange3D (s_v.get_min_axial_pos_num(), s_v.get_max_axial_pos_num(),
 		                 s_v.get_min_view_num(), s_v.get_max_view_num(),
 		                 s_v.get_min_tangential_pos_num(), s_v.get_max_tangential_pos_num()))
@@ -107,7 +109,7 @@ SegmentBySinogram<elemT>::get_viewgram(int view_num) const
   //KT 9/12 constructed a PETSinogram before...
   // CL&KT 15/12 added ring_difference stuff
   return Viewgram<elemT>(pre_view, this->proj_data_info_ptr->create_shared_clone(), view_num, 
-			 this->get_segment_num());
+			 this->get_segment_num(), this->get_timing_pos_num());
 }
 
 template <typename elemT>
@@ -117,8 +119,6 @@ SegmentBySinogram<elemT>::set_viewgram(const Viewgram<elemT>& viewgram)
   for (int r=get_min_axial_pos_num(); r<= get_max_axial_pos_num(); r++)
     Array<3,elemT>::operator[](r)[viewgram.get_view_num()] = viewgram[r];
 }
-
-
 
 /*!
   This makes sure that the new Array dimensions are the same as those in the

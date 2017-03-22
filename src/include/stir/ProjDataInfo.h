@@ -221,6 +221,9 @@ public:
   inline float get_coincidence_window_width() const;
   //@}
 
+  //! Determine if TOF data from tof_mash_factor and num_tof_bins
+  inline bool is_tof_data() const;
+
   //| \name Functions that return geometrical info for a Bin
   //@{
   //! Get tangent of the co-polar angle of the normal to the projection plane
@@ -340,24 +343,27 @@ public:
 
   //! Get empty viewgram
   Viewgram<float> get_empty_viewgram(const int view_num, const int segment_num, 
-    const bool make_num_tangential_poss_odd = false) const;
+    const bool make_num_tangential_poss_odd = false, const int timing_pos_num = 0) const;
   
   //! Get empty_sinogram
   Sinogram<float> get_empty_sinogram(const int ax_pos_num, const int segment_num,
-    const bool make_num_tangential_poss_odd = false) const;
+    const bool make_num_tangential_poss_odd = false, const int timing_pos_num = 0) const;
 
   //! Get empty segment sino
   SegmentByView<float> get_empty_segment_by_view(const int segment_num, 
-		  	   const bool make_num_tangential_poss_odd = false) const;
+		  	   const bool make_num_tangential_poss_odd = false,
+			   const int timing_pos_num = 0) const;
   //! Get empty segment view
   SegmentBySinogram<float> get_empty_segment_by_sinogram(const int segment_num, 
-				   const bool make_num_tangential_poss_odd = false) const;
+				   const bool make_num_tangential_poss_odd = false,
+				   const int timing_pos_num = 0) const;
 
 
   //! Get empty related viewgrams, where the symmetries_ptr specifies the symmetries to use
   RelatedViewgrams<float> get_empty_related_viewgrams(const ViewSegmentNumbers&,
     const shared_ptr<DataSymmetriesForViewSegmentNumbers>&,
-    const bool make_num_tangential_poss_odd = false) const;   
+    const bool make_num_tangential_poss_odd = false,
+	const int timing_pos_num = 0) const;
   //@}
 
 

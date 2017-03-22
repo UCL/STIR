@@ -80,13 +80,18 @@ BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
     for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
       {
         const ViewSegmentNumbers vs=vs_nums_to_process[i];
+
+        for (int k=proj_data.get_proj_data_info_ptr()->get_min_tof_pos_num();
+      		  k<=proj_data.get_proj_data_info_ptr()->get_max_tof_pos_num();
+      		  ++k)
+        {
 #ifdef STIR_OPENMP
         RelatedViewgrams<float> viewgrams;
 #pragma omp critical (BACKPROJECTORBYBIN_GETVIEWGRAMS)
         viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr);
 #else
         const RelatedViewgrams<float> viewgrams = 
-          proj_data.get_related_viewgrams(vs, symmetries_sptr);
+          proj_data.get_related_viewgrams(vs, symmetries_sptr, false, k);
 #endif
 #ifdef STIR_OPENMP
         const int thread_num=omp_get_thread_num();
@@ -97,6 +102,7 @@ BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
 #else            
         back_project(image, viewgrams);
 #endif
+        }
       }
   }
 #ifdef STIR_OPENMP
@@ -172,5 +178,12 @@ back_project(DiscretisedDensity<3,float>& density,
   stop_timers();
 }
 
+void
+BackProjectorByBin::
+back_project(DiscretisedDensity<3, float>& density,
+         const Bin &bin)
+{
+    actual_back_project(density, bin);
+}
 
 END_NAMESPACE_STIR

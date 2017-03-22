@@ -41,9 +41,10 @@ template <typename elemT>
 SegmentByView<elemT>::
 SegmentByView(const Array<3,elemT>& v,  
               const shared_ptr<ProjDataInfo>& pdi_ptr, 
-              const int segment_num)
+              const int segment_num,
+			  const int timing_pos_num)
   :
-  Segment<elemT>(pdi_ptr, segment_num), 
+  Segment<elemT>(pdi_ptr, segment_num, timing_pos_num),
   Array<3,elemT>(v)
 {
   assert( get_min_view_num() == pdi_ptr->get_min_view_num());
@@ -58,9 +59,10 @@ SegmentByView(const Array<3,elemT>& v,
 template <typename elemT>
 SegmentByView<elemT>::
 SegmentByView(const shared_ptr<ProjDataInfo>& pdi_ptr,
-              const int segment_num)
+              const int segment_num,
+			  const int timing_pos_num)
   :
-  Segment<elemT>(pdi_ptr, segment_num),
+  Segment<elemT>(pdi_ptr, segment_num, timing_pos_num),
   Array<3,elemT>(IndexRange3D(pdi_ptr->get_min_view_num(),
                               pdi_ptr->get_max_view_num(),
 		              pdi_ptr->get_min_axial_pos_num(segment_num),
@@ -72,7 +74,7 @@ SegmentByView(const shared_ptr<ProjDataInfo>& pdi_ptr,
 template <typename elemT>
 SegmentByView<elemT>::SegmentByView(const SegmentBySinogram<elemT>& s_s)
   : Segment<elemT>(s_s.get_proj_data_info_ptr()->create_shared_clone(),
-            s_s.get_segment_num()), 
+            s_s.get_segment_num(),s_s.get_timing_pos_num()),
 	       
     Array<3,elemT> (IndexRange3D(s_s.get_min_view_num(),s_s.get_max_view_num(),
 		                 s_s.get_min_axial_pos_num(),s_s.get_max_axial_pos_num(),
@@ -105,7 +107,7 @@ SegmentByView<elemT>::get_sinogram(int axial_pos_num) const
     pre_sino[v] = Array<3,elemT>::operator[](v)[axial_pos_num];
   
   return Sinogram<elemT>(pre_sino, this->proj_data_info_ptr, axial_pos_num, 
-			 this->get_segment_num());
+			 this->get_segment_num(), this->get_timing_pos_num());
 }
 
 template <typename elemT>

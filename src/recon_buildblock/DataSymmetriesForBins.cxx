@@ -93,7 +93,8 @@ void
 DataSymmetriesForBins::
 get_related_bins(vector<Bin>& rel_b, const Bin& b,
                  const int min_axial_pos_num, const int max_axial_pos_num,
-                 const int min_tangential_pos_num, const int max_tangential_pos_num) const
+                 const int min_tangential_pos_num, const int max_tangential_pos_num,
+				 const int min_timing_pos_num, const int max_timing_pos_num) const
 {
 #ifndef NDEBUG
   Bin bin_copy = b;
@@ -130,8 +131,11 @@ get_related_bins(vector<Bin>& rel_b, const Bin& b,
          ax_tang_pos_ptr != ax_tang_poss.end();
          ++ax_tang_pos_ptr)
     {
-      rel_b.push_back(Bin(view_seg_ptr->segment_num(), view_seg_ptr->view_num(), 
-                          (*ax_tang_pos_ptr)[1], (*ax_tang_pos_ptr)[2]));
+    	for (int k=min_timing_pos_num;k<=max_timing_pos_num;++k)
+        {
+		  rel_b.push_back(Bin(view_seg_ptr->segment_num(), view_seg_ptr->view_num(),
+							  (*ax_tang_pos_ptr)[1], (*ax_tang_pos_ptr)[2],k));
+        }
     }
   }
 }

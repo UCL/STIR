@@ -440,7 +440,13 @@ actual_back_project(DiscretisedDensity<3,float>& density,
 }
 
 
-
+void
+BackProjectorByBinUsingInterpolation::
+actual_back_project(DiscretisedDensity<3,float>&,
+                    const Bin&)
+{
+    error("BackProjectorByBinUsingInterpolation is not supported for list-mode reconstruction. Abort.");
+}
 
 
 #if 0

@@ -99,12 +99,15 @@ void
 TrivialDataSymmetriesForBins::
 get_related_bins(vector<Bin>& rel_b, const Bin& b,
                  const int min_axial_pos_num, const int max_axial_pos_num,
-                 const int min_tangential_pos_num, const int max_tangential_pos_num) const
+                 const int min_tangential_pos_num, const int max_tangential_pos_num,
+				 const int min_timing_pos_num, const int max_timing_pos_num) const
 {
   if (b.axial_pos_num() >= min_axial_pos_num &&
       b.axial_pos_num() <= max_axial_pos_num &&
       b.tangential_pos_num() >= min_tangential_pos_num &&
-      b.tangential_pos_num() <= max_tangential_pos_num)
+      b.tangential_pos_num() <= max_tangential_pos_num &&
+	  b.timing_pos_num() >= min_timing_pos_num &&
+	  b.timing_pos_num() <= max_timing_pos_num)
     {
       rel_b.resize(1);
       rel_b[0] = b;
