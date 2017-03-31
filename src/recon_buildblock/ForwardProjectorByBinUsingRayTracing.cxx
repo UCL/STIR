@@ -152,18 +152,12 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
        segment_num <= proj_data_info_ptr->get_max_segment_num();
        ++segment_num)
   {
-//	  for (int k = proj_data_info_ptr->get_min_tof_pos_num();
-//			  k <= proj_data_info_ptr->get_max_tof_pos_num();
-//			         ++k)
-//	  {
-		  //TODO Check symmetries here, should we add TOF?
 		const float num_planes_per_axial_pos =
 		  symmetries_ptr->get_num_planes_per_axial_pos(segment_num);
 		if (fabs(round(num_planes_per_axial_pos) - num_planes_per_axial_pos) > 1.E-4)
 		  error("ForwardProjectorByBinUsingRayTracing: the number of image planes "
 				"per axial_pos (which is %g for segment %d) should be an integer\n",
 				 num_planes_per_axial_pos, segment_num);
-//	  }
   }
   
 
@@ -427,6 +421,7 @@ forward_project_all_symmetries(
   const int nviews = pos_view.get_proj_data_info_ptr()->get_num_views(); 
   
   const int segment_num = pos_view.get_segment_num();
+  const int timing_pos_num = pos_view.get_timing_pos_num();
   const float delta = proj_data_info_ptr->get_average_ring_difference(segment_num);  
   const int view = pos_view.get_view_num();
 
@@ -460,7 +455,7 @@ forward_project_all_symmetries(
   const float R = proj_data_info_ptr->get_ring_radius();
   
   // a variable which will be used in the loops over tang_pos_num to get s_in_mm
-  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(),min_ax_pos_num,0);    
+  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(),min_ax_pos_num,0,pos_view.get_timing_pos_num());    
 
   // KT 20/06/2001 rewrote using get_phi  
   const float cphi = cos(proj_data_info_ptr->get_phi(bin));
@@ -1130,6 +1125,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
   const int nviews = pos_view.get_proj_data_info_ptr()->get_num_views(); 
   
   const int segment_num = pos_view.get_segment_num();
+  const int timing_pos_num = pos_view.get_timing_pos_num();
   const float delta = proj_data_info_ptr->get_average_ring_difference(segment_num);  
   const int view = pos_view.get_view_num();
 
@@ -1158,7 +1154,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
   const float R = proj_data_info_ptr->get_ring_radius();
 
   // a variable which will be used in the loops over tang_pos_num to get s_in_mm
-  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(),min_axial_pos_num,0);    
+  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(),min_axial_pos_num,0,pos_view.get_timing_pos_num());    
   
   // KT 20/06/2001 rewrote using get_phi  
   const float cphi = cos(proj_data_info_ptr->get_phi(bin));

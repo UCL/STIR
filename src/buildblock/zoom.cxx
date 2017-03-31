@@ -133,7 +133,7 @@ zoom_viewgrams (RelatedViewgrams<float>& in_viewgrams,
     out_viewgrams = 
     new_proj_data_info_arccorr_ptr->
       get_empty_related_viewgrams(in_viewgrams.get_basic_view_segment_num(),
-				  symmetries_sptr);
+				  symmetries_sptr,false,in_viewgrams.get_basic_timing_pos_num());
 
   {
     RelatedViewgrams<float>::iterator out_iter = out_viewgrams.begin();
@@ -176,7 +176,9 @@ zoom_viewgram (Viewgram<float>& in_view,
     out_view = new_proj_data_info_arccorr_ptr->
                      get_empty_viewgram(
 					in_view.get_view_num(),
-					in_view.get_segment_num());
+					in_view.get_segment_num(),
+					false,
+					in_view.get_timing_pos_num());
 
   zoom_viewgram(out_view, in_view,    
 		x_offset_in_mm, y_offset_in_mm);
@@ -196,6 +198,9 @@ zoom_viewgram (Viewgram<float>& out_view,
   assert(in_view.get_proj_data_info_ptr()->get_num_segments() == 
 	 out_view.get_proj_data_info_ptr()->get_num_segments());
   assert(in_view.get_segment_num() == out_view.get_segment_num());
+  assert(in_view.get_proj_data_info_ptr()->get_num_tof_poss() ==
+	  out_view.get_proj_data_info_ptr()->get_num_tof_poss());
+  assert(in_view.get_timing_pos_num() == out_view.get_timing_pos_num());
   assert(in_view.get_min_axial_pos_num() == out_view.get_min_axial_pos_num());
   assert(in_view.get_max_axial_pos_num() == out_view.get_max_axial_pos_num());
 

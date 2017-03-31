@@ -61,6 +61,7 @@ class ArcCorrectionTests: public RunTests
 {
 public:
   void run_tests();
+  void run_tests_tof();
 protected:
   void run_tests_for_specific_proj_data_info(const ArcCorrection&);
 };
@@ -76,24 +77,27 @@ run_tests_for_specific_proj_data_info(const ArcCorrection& arc_correction)
 
   const float sampling_in_s = proj_data_info_arc_corr.get_tangential_sampling();
 
+  for (int timing_pos_num = proj_data_info_noarc_corr.get_min_tof_pos_num();
+	  timing_pos_num <= proj_data_info_noarc_corr.get_max_tof_pos_num();
+	  ++timing_pos_num)
   for (int segment_num=proj_data_info_noarc_corr.get_min_segment_num();
        segment_num<=proj_data_info_noarc_corr.get_max_segment_num();
 	 ++segment_num)
       {
 	const int axial_pos_num = 0;
 	Sinogram<float> noarccorr_sinogram = 
-	      proj_data_info_noarc_corr.get_empty_sinogram(axial_pos_num, segment_num);
+	      proj_data_info_noarc_corr.get_empty_sinogram(axial_pos_num, segment_num, false, timing_pos_num);
 	Sinogram<float> arccorr_sinogram = 
-	      proj_data_info_arc_corr.get_empty_sinogram(axial_pos_num, segment_num);
+	      proj_data_info_arc_corr.get_empty_sinogram(axial_pos_num, segment_num, false, timing_pos_num);
 
 	for (int view_num=proj_data_info_noarc_corr.get_min_view_num();
 	     view_num<=proj_data_info_noarc_corr.get_max_view_num();
 	     view_num+=3)
 	  {
 	    Viewgram<float> noarccorr_viewgram = 
-	      proj_data_info_noarc_corr.get_empty_viewgram(view_num, segment_num);
+	      proj_data_info_noarc_corr.get_empty_viewgram(view_num, segment_num, false, timing_pos_num);
 	    Viewgram<float> arccorr_viewgram = 
-	      proj_data_info_arc_corr.get_empty_viewgram(view_num, segment_num);
+	      proj_data_info_arc_corr.get_empty_viewgram(view_num, segment_num, false, timing_pos_num);
 	    // test geometry by checking if single non-zero value gets put in the right bin
 	    {
 	      for (int tangential_pos_num=proj_data_info_noarc_corr.get_min_tangential_pos_num();
@@ -113,10 +117,10 @@ run_tests_for_specific_proj_data_info(const ArcCorrection& arc_correction)
 		    
 		  const float noarccorr_s = 
 		    proj_data_info_noarc_corr.
-		    get_s(Bin(segment_num,view_num,axial_pos_num,tangential_pos_num));
+		    get_s(Bin(segment_num,view_num,axial_pos_num,tangential_pos_num,timing_pos_num));
 		  const float arccorr_s = 
 		    proj_data_info_arc_corr.
-		    get_s(Bin(segment_num,view_num,axial_pos_num,arccorr_tangential_pos_num_at_max));
+		    get_s(Bin(segment_num,view_num,axial_pos_num,arccorr_tangential_pos_num_at_max,timing_pos_num));
 		  check((arccorr_s - noarccorr_s)/sampling_in_s < 1.1,
 			"correspondence in location of maximum after arc-correction");
 		}
@@ -176,6 +180,31 @@ ArcCorrectionTests::run_tests()
   }
 }
 
+void
+ArcCorrectionTests::run_tests_tof()
+{
+	cerr << "-------- Testing ArcCorrection for TOF scanner --------\n";
+	ArcCorrection arc_correction;
+	shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::PETMR_Signa));
+
+	shared_ptr<ProjDataInfo> proj_data_info_ptr(
+		ProjDataInfo::ProjDataInfoGE(scanner_ptr,
+			/*max_delta*/ 10,/*views*/ 224, /*tang_pos*/ 357, /*arc_corrected*/ false, /*tof_mashing_factor*/ 39));
+
+	cerr << "Using default range and bin-size\n";
+	{
+		arc_correction.set_up(proj_data_info_ptr);
+		run_tests_for_specific_proj_data_info(arc_correction);
+	}
+	cerr << "Using non-default range and bin-size\n";
+	{
+		arc_correction.set_up(proj_data_info_ptr,
+			357,
+			scanner_ptr->get_default_bin_size() * 2);
+		run_tests_for_specific_proj_data_info(arc_correction);
+	}
+}
+
 END_NAMESPACE_STIR
 
 
@@ -185,5 +214,6 @@ int main()
 {
   ArcCorrectionTests tests;
   tests.run_tests();
+  tests.run_tests_tof();
   return tests.main_return_value();
 }

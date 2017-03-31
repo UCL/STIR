@@ -360,8 +360,9 @@ namespace distributed
     viewgram_values[3] = viewgram.get_max_tangential_pos_num();
     viewgram_values[4] = viewgram.get_view_num();
     viewgram_values[5] = viewgram.get_segment_num();
+    viewgram_values[6] = viewgram.get_timing_pos_num();
                 
-    send_int_values(viewgram_values, 6, VIEWGRAM_DIMENSIONS_TAG, destination);
+    send_int_values(viewgram_values, 7, VIEWGRAM_DIMENSIONS_TAG, destination);
                 
     //allocate send-buffer
     int buffer_size=(viewgram_values[1]-viewgram_values[0]+1)*(viewgram_values[3]-viewgram_values[2]+1);
@@ -706,15 +707,16 @@ namespace distributed
 #ifdef STIR_MPI_TIMINGS
     if (test_send_receive_times) {t.reset(); t.start();} 
 #endif
-    //receive dimension of viewgram (vlues 0-3) and view_num + segment_num (values 4-5)
-    int viewgram_values[6];
+    //receive dimension of viewgram (vlues 0-3) and view_num + segment_num (values 4-5) and timing_pos_num (value 6)
+    int viewgram_values[7];
                 
-    status = receive_int_values(viewgram_values, 6, VIEWGRAM_DIMENSIONS_TAG);
+    status = receive_int_values(viewgram_values, 7, VIEWGRAM_DIMENSIONS_TAG);
                 
     const int v_num = viewgram_values[4];
     const int s_num = viewgram_values[5];
+    const int t_num = viewgram_values[6];
                 
-    viewgram_ptr= new stir::Viewgram<float>(proj_data_info_ptr, v_num, s_num);
+    viewgram_ptr= new stir::Viewgram<float>(proj_data_info_ptr, v_num, s_num, t_num);
                 
     //allocate receive-buffer
     const int buffer_size=(viewgram_values[1]-viewgram_values[0]+1)*(viewgram_values[3]-viewgram_values[2]+1);

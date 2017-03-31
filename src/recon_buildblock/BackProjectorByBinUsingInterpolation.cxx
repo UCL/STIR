@@ -677,7 +677,7 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
 
   Array<4, float > Proj2424(IndexRange4D(0, 1, 0, 3, 0, 1, 1, 4));
   // a variable which will be used in the loops over s to get s_in_mm
-  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(),min_axial_pos_num,0);    
+  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(),min_axial_pos_num,pos_view.get_timing_pos_num(),0);    
 
   // KT 20/06/2001 rewrite using get_phi  
   const float cphi = cos(proj_data_info_cyl_ptr->get_phi(bin));
@@ -881,7 +881,7 @@ can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n")
   Array<4, float > Proj2424(IndexRange4D(0, 1, 0, 3, 0, 1, 1, 4));
 
   // a variable which will be used in the loops over s to get s_in_mm
-  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(),min_axial_pos_num,0);    
+  Bin bin(pos_view.get_segment_num(), pos_view.get_view_num(),min_axial_pos_num,0,pos_view.get_timing_pos_num());    
 
   // compute cos(phi) and sin(phi)
   /* KT included special cases for phi=0 and 90 degrees to try to avoid rounding problems

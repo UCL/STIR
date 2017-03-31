@@ -542,6 +542,8 @@ calculate_proj_matrix_elems_for_one_bin(
     }
 
   const Bin bin = lor.get_bin();
+  assert(bin.timing_pos_num() >= proj_data_info_ptr->get_min_tof_pos_num());
+  assert(bin.timing_pos_num() <= proj_data_info_ptr->get_max_tof_pos_num());
   assert(bin.segment_num() >= proj_data_info_ptr->get_min_segment_num());    
   assert(bin.segment_num() <= proj_data_info_ptr->get_max_segment_num());    
 

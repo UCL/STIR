@@ -87,12 +87,13 @@ actual_back_project(DiscretisedDensity<3,float>& image,
     const Viewgram<float>& viewgram = *r_viewgrams_iter;
     const int view_num = viewgram.get_view_num();
     const int segment_num = viewgram.get_segment_num();
+    const int timing_pos_num = viewgram.get_timing_pos_num();
     
     for ( int tang_pos = min_tangential_pos_num ;tang_pos  <= max_tangential_pos_num ;++tang_pos)  
       for ( int ax_pos = min_axial_pos_num; ax_pos <= max_axial_pos_num ;++ax_pos)
       { 
 
-	Bin bin(segment_num, view_num, ax_pos, tang_pos, viewgram[ax_pos][tang_pos]);
+	Bin bin(segment_num, view_num, ax_pos, tang_pos, timing_pos_num, viewgram[ax_pos][tang_pos]);
 	proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
 	ProjMatrixElemsForOneBin::iterator element_ptr = 
 	  proj_matrix_row.begin();

@@ -181,7 +181,8 @@ void distributable_computation(
                                const double start_time_of_frame,
                                const double end_time_of_frame,
                                RPC_process_related_viewgrams_type * RPC_process_related_viewgrams,
-                               DistributedCachingInformation* caching_info_ptr);
+                               DistributedCachingInformation* caching_info_ptr,
+							   int min_timing_pos_num = 0, int max_timing_pos_num = 0);
 
 
   /*! \name Tag-names currently used by stir::distributable_computation and related functions0

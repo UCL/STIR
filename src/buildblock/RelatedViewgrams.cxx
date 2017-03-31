@@ -374,7 +374,7 @@ grow(const IndexRange<2>& range)
   {
     iter->grow(range);
     *iter = Viewgram<elemT>(*iter, pdi_shared_ptr, 
-                            iter->get_view_num(), iter->get_segment_num());
+                            iter->get_view_num(), iter->get_segment_num(),iter->get_timing_pos_num());
   }
 
   check_state();

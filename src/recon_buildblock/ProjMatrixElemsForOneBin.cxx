@@ -128,9 +128,9 @@ Succeeded ProjMatrixElemsForOneBin::check_state() const
   {
     if (value_type::coordinates_equal(*lor_iter, *(lor_iter+1)))
     {
-      warning("ProjMatrixElemsForOneBin: coordinates occur more than once %d,%d,%d for bin s=%d, v=%d, a=%d, t=%d\n",
+      warning("ProjMatrixElemsForOneBin: coordinates occur more than once %d,%d,%d for bin s=%d, tofbin=%d, v=%d, a=%d, t=%d\n",
 	      lor_iter->coord1(), lor_iter->coord2(), lor_iter->coord3(),
-	      bin.segment_num(), bin.view_num(),
+	      bin.segment_num(), bin.timing_pos_num(), bin.view_num(),
 	      bin.axial_pos_num(), bin.tangential_pos_num());
 #if 0
       const_iterator iter = begin();

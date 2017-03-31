@@ -66,8 +66,7 @@ ProjDataInfoCylindricalArcCorr:: ProjDataInfoCylindricalArcCorr(const shared_ptr
 								bin_size(bin_size_v)								
 								
 {
-    // If tof_mash_factor == 1 then there is only tof bin ... effectively no TOF
-    if (tof_mash_factor > 1)
+	if (scanner_ptr->is_tof_ready())
         set_tof_mash_factor(tof_mash_factor);
 }
 

@@ -243,133 +243,133 @@ run() const
 		   :
 		   forward_projector_ptr->get_symmetries_used()->clone()
 		   );
-
-  for (int segment_num = output_projdata.get_min_segment_num(); segment_num <= output_projdata.get_max_segment_num() ; segment_num++)
-  {
-    cerr<<endl<<"Processing segment # "<<segment_num << "(and any related segments)"<<endl;
-    for (int view_num=input_projdata.get_min_view_num(); view_num<=input_projdata.get_max_view_num(); ++view_num)
-    {    
-      const ViewSegmentNumbers view_seg_nums(view_num,segment_num);
-      if (!symmetries_ptr->is_basic(view_seg_nums))
-        continue;
-      
-      // ** first fill in the data **      
-      RelatedViewgrams<float> 
-        viewgrams = input_projdata.get_empty_related_viewgrams(view_seg_nums,
-							       symmetries_ptr);
-      if (use_data_or_set_to_1)
-      {
-        viewgrams += 
-          input_projdata.get_related_viewgrams(view_seg_nums,
-					       symmetries_ptr);
-      }	  
-      else
-      {
-        viewgrams.fill(1.F);
-      }
-      
-      if (do_arc_correction && !apply_or_undo_correction)
-	{
-	  error("Cannot undo arc-correction yet. Sorry.");
-	  // TODO
-	  //arc_correction_sptr->undo_arc_correction(output_viewgrams, viewgrams);
-	}
-
-      if (do_scatter && !apply_or_undo_correction)
-      {
-        viewgrams += 
-          scatter_projdata_ptr->get_related_viewgrams(view_seg_nums,
-	                                              symmetries_ptr);
-      }
-
-      if (do_randoms && apply_or_undo_correction)
-      {
-        viewgrams -= 
-          randoms_projdata_ptr->get_related_viewgrams(view_seg_nums,
-	                                              symmetries_ptr);
-      }
-#if 0
-      if (frame_num==-1)
-      {
-	int num_frames = frame_def.get_num_frames();
-	for ( int i = 1; i<=num_frames; i++)
-	{ 
-	  //cerr << "Doing frame  " << i << endl; 
-	  const double start_frame = frame_def.get_start_time(i);
-	  const double end_frame = frame_def.get_end_time(i);
-	  //cerr << "Start time " << start_frame << endl;
-	  //cerr << " End time " << end_frame << endl;
-	  // ** normalisation **
-	  if (apply_or_undo_correction)
+  for (int timing_pos_num = output_projdata.get_min_tof_pos_num(); timing_pos_num <= output_projdata.get_max_tof_pos_num(); timing_pos_num++)
+	  for (int segment_num = output_projdata.get_min_segment_num(); segment_num <= output_projdata.get_max_segment_num() ; segment_num++)
 	  {
-	    normalisation_ptr->apply(viewgrams,start_frame,end_frame);
-	  }
-	  else
-	  {
-	    normalisation_ptr->undo(viewgrams,start_frame,end_frame);
-	  }
-	}
-      }
-
-
-
-      else
-#endif
-      {      
-	const double start_frame = frame_defs.get_start_time(frame_num);
-	const double end_frame = frame_defs.get_end_time(frame_num);
-	if (apply_or_undo_correction)
-	{
-	  normalisation_ptr->apply(viewgrams,start_frame,end_frame);
-	}
-	else
-	{
-	  normalisation_ptr->undo(viewgrams,start_frame,end_frame);
-	}    
-      }
-      if (do_scatter && apply_or_undo_correction)
-      {
-        viewgrams -= 
-          scatter_projdata_ptr->get_related_viewgrams(view_seg_nums,
-	                                              symmetries_ptr);
-      }
-
-      if (do_randoms && !apply_or_undo_correction)
-      {
-        viewgrams += 
-          randoms_projdata_ptr->get_related_viewgrams(view_seg_nums,
-	                                              symmetries_ptr);
-      }
-
-      if (do_arc_correction && apply_or_undo_correction)
-	{
-	  viewgrams = arc_correction_sptr->do_arc_correction(viewgrams);
-	}
-
-      // output
-      {
-	// Unfortunately, segment range in output_projdata and input_projdata can be
-	// different. 
-	// Hence, output_projdata.set_related_viewgrams(viewgrams) would not work.
-	// So, we need an extra viewgrams object to take this into account.
-	// The trick relies on calling Array::operator+= instead of 
-	// RelatedViewgrams::operator=
-	RelatedViewgrams<float> 
-	  output_viewgrams = 
-	  output_projdata.get_empty_related_viewgrams(view_seg_nums,
-						    symmetries_ptr);
-	  output_viewgrams += viewgrams;
-
-	  if (!(output_projdata.set_related_viewgrams(viewgrams) == Succeeded::yes))
-	    {
-	      warning("CorrectProjData: Error set_related_viewgrams\n");
-	      return Succeeded::no;
-	    }
-      }
+		  cerr<<endl<<"Processing segment # "<<segment_num << "(and any related segments) of timing position index # "<<timing_pos_num <<endl;
+		for (int view_num=input_projdata.get_min_view_num(); view_num<=input_projdata.get_max_view_num(); ++view_num)
+		{    
+		  const ViewSegmentNumbers view_seg_nums(view_num,segment_num);
+		  if (!symmetries_ptr->is_basic(view_seg_nums))
+			continue;
       
-    }
+		  // ** first fill in the data **      
+		  RelatedViewgrams<float> 
+			viewgrams = input_projdata.get_empty_related_viewgrams(view_seg_nums,symmetries_ptr,
+				false,timing_pos_num);
+		  if (use_data_or_set_to_1)
+		  {
+			viewgrams += 
+			  input_projdata.get_related_viewgrams(view_seg_nums,
+							   symmetries_ptr,false,timing_pos_num);
+		  }	  
+		  else
+		  {
+			viewgrams.fill(1.F);
+		  }
+      
+		  if (do_arc_correction && !apply_or_undo_correction)
+		{
+		  error("Cannot undo arc-correction yet. Sorry.");
+		  // TODO
+		  //arc_correction_sptr->undo_arc_correction(output_viewgrams, viewgrams);
+		}
+
+		  if (do_scatter && !apply_or_undo_correction)
+		  {
+			viewgrams += 
+			  scatter_projdata_ptr->get_related_viewgrams(view_seg_nums,
+													  symmetries_ptr,false,timing_pos_num);
+		  }
+
+		  if (do_randoms && apply_or_undo_correction)
+		  {
+			viewgrams -= 
+			  randoms_projdata_ptr->get_related_viewgrams(view_seg_nums,
+													  symmetries_ptr,false,timing_pos_num);
+		  }
+	#if 0
+		  if (frame_num==-1)
+		  {
+		int num_frames = frame_def.get_num_frames();
+		for ( int i = 1; i<=num_frames; i++)
+		{ 
+		  //cerr << "Doing frame  " << i << endl; 
+		  const double start_frame = frame_def.get_start_time(i);
+		  const double end_frame = frame_def.get_end_time(i);
+		  //cerr << "Start time " << start_frame << endl;
+		  //cerr << " End time " << end_frame << endl;
+		  // ** normalisation **
+		  if (apply_or_undo_correction)
+		  {
+			normalisation_ptr->apply(viewgrams,start_frame,end_frame);
+		  }
+		  else
+		  {
+			normalisation_ptr->undo(viewgrams,start_frame,end_frame);
+		  }
+		}
+		  }
+
+
+
+		  else
+	#endif
+		  {      
+		const double start_frame = frame_defs.get_start_time(frame_num);
+		const double end_frame = frame_defs.get_end_time(frame_num);
+		if (apply_or_undo_correction)
+		{
+		  normalisation_ptr->apply(viewgrams,start_frame,end_frame);
+		}
+		else
+		{
+		  normalisation_ptr->undo(viewgrams,start_frame,end_frame);
+		}    
+		  }
+		  if (do_scatter && apply_or_undo_correction)
+		  {
+			viewgrams -= 
+			  scatter_projdata_ptr->get_related_viewgrams(view_seg_nums,
+													  symmetries_ptr,false,timing_pos_num);
+		  }
+
+		  if (do_randoms && !apply_or_undo_correction)
+		  {
+			viewgrams += 
+			  randoms_projdata_ptr->get_related_viewgrams(view_seg_nums,
+													  symmetries_ptr,false,timing_pos_num);
+		  }
+
+		  if (do_arc_correction && apply_or_undo_correction)
+		{
+		  viewgrams = arc_correction_sptr->do_arc_correction(viewgrams);
+		}
+
+		  // output
+		  {
+		// Unfortunately, segment range in output_projdata and input_projdata can be
+		// different. 
+		// Hence, output_projdata.set_related_viewgrams(viewgrams) would not work.
+		// So, we need an extra viewgrams object to take this into account.
+		// The trick relies on calling Array::operator+= instead of 
+		// RelatedViewgrams::operator=
+		RelatedViewgrams<float> 
+		  output_viewgrams = 
+		  output_projdata.get_empty_related_viewgrams(view_seg_nums,
+								symmetries_ptr,false,timing_pos_num);
+		  output_viewgrams += viewgrams;
+
+		  if (!(output_projdata.set_related_viewgrams(viewgrams) == Succeeded::yes))
+			{
+			  warning("CorrectProjData: Error set_related_viewgrams\n");
+			  return Succeeded::no;
+			}
+		  }
+      
+		}
         
-  }
+	  }
   return Succeeded::yes;
 }    
 

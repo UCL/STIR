@@ -191,7 +191,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
     			  timing_pos_num <= proj_data_sptr->get_max_tof_pos_num();
     			  ++timing_pos_num)
     	  {
-			  SegmentByView<float> segment = proj_data_sptr->get_empty_segment_by_view(seg_num);
+			  SegmentByView<float> segment = proj_data_sptr->get_empty_segment_by_view(seg_num,false,timing_pos_num);
 			  // fill in some crazy values
 			  float value=0;
 			  for (SegmentByView<float>::full_iterator iter = segment.begin_all();

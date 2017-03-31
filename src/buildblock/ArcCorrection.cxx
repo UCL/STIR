@@ -251,6 +251,7 @@ do_arc_correction(Sinogram<float>& out, const Sinogram<float>& in) const
   assert(*out.get_proj_data_info_ptr() == *_arc_corr_proj_data_info_sptr);
   assert(out.get_axial_pos_num() == in.get_axial_pos_num());
   assert(out.get_segment_num() == in.get_segment_num());
+  assert(out.get_timing_pos_num() == in.get_timing_pos_num());
   for (int view_num=in.get_min_view_num(); view_num<=in.get_max_view_num(); ++view_num)
     do_arc_correction(out[view_num], in[view_num]);
 }
@@ -261,7 +262,8 @@ do_arc_correction(const Sinogram<float>& in) const
 {
   Sinogram<float> out(_arc_corr_proj_data_info_sptr,
 		      in.get_axial_pos_num(),
-		      in.get_segment_num());
+		      in.get_segment_num(),
+			  in.get_timing_pos_num());
   do_arc_correction(out, in);
   return out;
 }
@@ -274,6 +276,7 @@ do_arc_correction(Viewgram<float>& out, const Viewgram<float>& in) const
   assert(*out.get_proj_data_info_ptr() == *_arc_corr_proj_data_info_sptr);
   assert(out.get_view_num() == in.get_view_num());
   assert(out.get_segment_num() == in.get_segment_num());
+  assert(out.get_timing_pos_num() == in.get_timing_pos_num());
   for (int axial_pos_num=in.get_min_axial_pos_num(); axial_pos_num<=in.get_max_axial_pos_num(); ++axial_pos_num)
     do_arc_correction(out[axial_pos_num], in[axial_pos_num]);
 }
@@ -284,7 +287,8 @@ do_arc_correction(const Viewgram<float>& in) const
 {
   Viewgram<float> out(_arc_corr_proj_data_info_sptr,
 		      in.get_view_num(),
-		      in.get_segment_num());
+		      in.get_segment_num(),
+	          in.get_timing_pos_num());
   do_arc_correction(out, in);
   return out;
 }
@@ -305,7 +309,7 @@ do_arc_correction(const RelatedViewgrams<float>& in) const
 {
   RelatedViewgrams<float> out =
     _arc_corr_proj_data_info_sptr->get_empty_related_viewgrams(in.get_basic_view_segment_num(),
-							       in.get_symmetries_sptr());
+							       in.get_symmetries_sptr(), false, in.get_basic_timing_pos_num());
   do_arc_correction(out, in);
   return out;
 }
@@ -317,6 +321,7 @@ do_arc_correction(SegmentBySinogram<float>& out, const SegmentBySinogram<float>&
   assert(*in.get_proj_data_info_ptr() == *_noarc_corr_proj_data_info_sptr);
   assert(*out.get_proj_data_info_ptr() == *_arc_corr_proj_data_info_sptr);
   assert(out.get_segment_num() == in.get_segment_num());
+  assert(out.get_timing_pos_num() == in.get_timing_pos_num());
   for (int axial_pos_num=in.get_min_axial_pos_num(); axial_pos_num<=in.get_max_axial_pos_num(); ++axial_pos_num)
     for (int view_num=in.get_min_view_num(); view_num<=in.get_max_view_num(); ++view_num)
       do_arc_correction(out[axial_pos_num][view_num], in[axial_pos_num][view_num]);
@@ -327,7 +332,7 @@ ArcCorrection::
 do_arc_correction(const SegmentBySinogram<float>& in) const
 {
   SegmentBySinogram<float> out(_arc_corr_proj_data_info_sptr,
-			       in.get_segment_num());
+			       in.get_segment_num(), in.get_timing_pos_num());
   do_arc_correction(out, in);
   return out;
 }
@@ -340,6 +345,7 @@ do_arc_correction(SegmentByView<float>& out, const SegmentByView<float>& in) con
   assert(*in.get_proj_data_info_ptr() == *_noarc_corr_proj_data_info_sptr);
   assert(*out.get_proj_data_info_ptr() == *_arc_corr_proj_data_info_sptr);
   assert(out.get_segment_num() == in.get_segment_num());
+  assert(out.get_timing_pos_num() == in.get_timing_pos_num());
   for (int view_num=in.get_min_view_num(); view_num<=in.get_max_view_num(); ++view_num)
     for (int axial_pos_num=in.get_min_axial_pos_num(); axial_pos_num<=in.get_max_axial_pos_num(); ++axial_pos_num)
       do_arc_correction(out[view_num][axial_pos_num], in[view_num][axial_pos_num]);
@@ -351,7 +357,7 @@ ArcCorrection::
 do_arc_correction(const SegmentByView<float>& in) const
 {
   SegmentByView<float> out(_arc_corr_proj_data_info_sptr,
-			     in.get_segment_num());
+			     in.get_segment_num(), in.get_timing_pos_num());
   do_arc_correction(out, in);
   return out;
 }
@@ -366,16 +372,17 @@ do_arc_correction(ProjData& out, const ProjData& in) const
   // Declare temporary viewgram out of the loop to avoid reallocation
   // There is no default constructor, so we need to set it to some junk first.
   Viewgram<float> viewgram = 
-    _arc_corr_proj_data_info_sptr->get_empty_viewgram(in.get_min_view_num(), in.get_min_segment_num());
-  for (int segment_num=in.get_min_segment_num(); segment_num<=in.get_max_segment_num(); ++segment_num)
-    for (int view_num=in.get_min_view_num(); view_num<=in.get_max_view_num(); ++view_num)
-      {
-	viewgram = 
-	  _arc_corr_proj_data_info_sptr->get_empty_viewgram(view_num, segment_num);
-	do_arc_correction(viewgram, in.get_viewgram(view_num, segment_num));
-	if (out.set_viewgram(viewgram) == Succeeded::no)
-	  return Succeeded::no;
-      }
+    _arc_corr_proj_data_info_sptr->get_empty_viewgram(in.get_min_view_num(), in.get_min_segment_num(),in.get_min_tof_pos_num());
+  for (int timing_pos_num = in.get_min_tof_pos_num(); timing_pos_num <= in.get_max_tof_pos_num(); ++timing_pos_num)
+	  for (int segment_num=in.get_min_segment_num(); segment_num<=in.get_max_segment_num(); ++segment_num)
+		for (int view_num=in.get_min_view_num(); view_num<=in.get_max_view_num(); ++view_num)
+		  {
+		viewgram = 
+		  _arc_corr_proj_data_info_sptr->get_empty_viewgram(view_num, segment_num, false, timing_pos_num);
+		do_arc_correction(viewgram, in.get_viewgram(view_num, segment_num, false, timing_pos_num));
+		if (out.set_viewgram(viewgram) == Succeeded::no)
+		  return Succeeded::no;
+		  }
   return Succeeded::yes;
 }
 

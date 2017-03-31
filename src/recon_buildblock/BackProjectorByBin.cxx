@@ -88,7 +88,7 @@ BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
 #ifdef STIR_OPENMP
         RelatedViewgrams<float> viewgrams;
 #pragma omp critical (BACKPROJECTORBYBIN_GETVIEWGRAMS)
-        viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr);
+        viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr, false, k);
 #else
         const RelatedViewgrams<float> viewgrams = 
           proj_data.get_related_viewgrams(vs, symmetries_sptr, false, k);

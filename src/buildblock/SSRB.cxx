@@ -192,6 +192,9 @@ SSRB(ProjData& out_proj_data,
      const bool do_norm
      )
 {
+	if (in_proj_data.get_proj_data_info_ptr()->is_tof_data())
+		error("SSRB for TOF data is not currently implemented.\n");
+
   const ProjDataInfoCylindrical * const in_proj_data_info_ptr =
     dynamic_cast<ProjDataInfoCylindrical const * >
     (in_proj_data.get_proj_data_info_ptr());
