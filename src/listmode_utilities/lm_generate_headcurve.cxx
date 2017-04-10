@@ -31,8 +31,7 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char * argv[])
 {
-  
-  if (argc<2 || argc>5) {
+  if (argc<3 || argc>4) {
     std::cerr << "Usage: " << argv[0] << "hc_filename listmode_file [time_interval_in_secs]\n"
 	 << "time_interval_in_secs defaults to 1\n";
     exit(EXIT_FAILURE);
