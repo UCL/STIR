@@ -271,4 +271,11 @@ enable_tof(ProjMatrixElemsForOneBin * for_row)
     tof_enabled = true;
 }
 
+BackProjectorByBinUsingProjMatrixByBin*
+BackProjectorByBinUsingProjMatrixByBin::
+clone() const
+{
+	return new BackProjectorByBinUsingProjMatrixByBin(*this);
+}
+
 END_NAMESPACE_STIR

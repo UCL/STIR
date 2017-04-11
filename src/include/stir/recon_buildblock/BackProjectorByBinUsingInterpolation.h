@@ -180,6 +180,8 @@ public:
   */
   void use_piecewise_linear_interpolation(const bool use_piecewise_linear_interpolation);
 
+  BackProjectorByBinUsingInterpolation* clone() const;
+
 private:
  
   // KT 20/06/2001 changed type to enable use of more methods

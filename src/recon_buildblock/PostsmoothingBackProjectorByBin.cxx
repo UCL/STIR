@@ -85,6 +85,12 @@ PostsmoothingBackProjectorByBin::get_original_back_projector_ptr() const
     return original_back_projector_ptr.get();
 }
 
+PostsmoothingBackProjectorByBin*
+PostsmoothingBackProjectorByBin::clone() const
+{
+	return new PostsmoothingBackProjectorByBin(*this);
+}
+
 void PostsmoothingBackProjectorByBin::
 init_filtered_density_image(DiscretisedDensity<3, float> &density)
 {

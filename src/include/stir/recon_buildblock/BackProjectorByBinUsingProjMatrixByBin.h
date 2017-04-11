@@ -87,10 +87,9 @@ public:
   shared_ptr<ProjMatrixByBin> &
     get_proj_matrix_sptr(){ return proj_matrix_ptr ;} 
 
-
-  BackProjectorByBin* get_original_back_projector() const;
-
   void enable_tof(ProjMatrixElemsForOneBin* );
+
+  BackProjectorByBinUsingProjMatrixByBin* clone() const;
   
 protected:
 

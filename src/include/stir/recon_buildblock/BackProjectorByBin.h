@@ -110,6 +110,8 @@ public:
  void back_project(DiscretisedDensity<3,float>&,
            const Bin&);
 
+ virtual BackProjectorByBin* clone() const =0;
+
 
 protected:
 

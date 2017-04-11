@@ -125,6 +125,9 @@ public:
   //! Like clone() but return a shared_ptr
   inline shared_ptr<ProjDataInfo> create_shared_clone() const;
 
+  //! Similar to create_shared_clone() but returns a non-tof version of ProjDataInfo setting tof mashing factor = 0
+  inline shared_ptr<ProjDataInfo> create_non_tof_clone() const;
+
   //! Destructor
   virtual ~ProjDataInfo() {}
 

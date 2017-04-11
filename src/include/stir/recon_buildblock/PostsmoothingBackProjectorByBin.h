@@ -81,6 +81,8 @@ public:
 
   BackProjectorByBin* get_original_back_projector_ptr() const;
 
+  PostsmoothingBackProjectorByBin* clone() const;
+
 private:
 
   shared_ptr<BackProjectorByBin> original_back_projector_ptr;

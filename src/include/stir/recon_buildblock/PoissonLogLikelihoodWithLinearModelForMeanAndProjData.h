@@ -316,6 +316,9 @@ protected:
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjectorByBinPair> projector_pair_ptr;
 
+  //! Backprojector used for sensitivity computation
+  shared_ptr<BackProjectorByBin> sens_backprojector_sptr;
+
   //! signals whether to zero the data in the end planes of the projection data
   bool zero_seg0_end_planes;
 
@@ -364,7 +367,7 @@ protected:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr;
 
   void
-	  add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums, const int timing_pos_num = 0) const;
+	  add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const;
 };
 
 #ifdef STIR_MPI

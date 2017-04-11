@@ -40,6 +40,15 @@ create_shared_clone() const
   return sptr;
 }
 
+shared_ptr<ProjDataInfo>
+ProjDataInfo::
+create_non_tof_clone() const
+{
+	shared_ptr<ProjDataInfo> sptr(this->clone());
+	sptr->set_tof_mash_factor(0); // tof mashing factor = 0 is a trigger for non-tof data
+	return sptr;
+}
+
 int 
 ProjDataInfo::get_num_segments() const
 { return (max_axial_pos_per_seg.get_length());}

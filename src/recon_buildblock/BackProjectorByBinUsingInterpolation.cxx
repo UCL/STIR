@@ -183,6 +183,12 @@ use_exact_Jacobian(const bool use_exact_Jacobian)
   use_exact_Jacobian_now = use_exact_Jacobian;
 }
 
+BackProjectorByBinUsingInterpolation*
+BackProjectorByBinUsingInterpolation::
+clone() const
+{
+	return new BackProjectorByBinUsingInterpolation(*this);
+}
 
 void
 BackProjectorByBinUsingInterpolation::

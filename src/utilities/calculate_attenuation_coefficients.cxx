@@ -126,11 +126,16 @@ main (int argc, char * argv[])
 
   cerr << "\n\nForward projector used:\n" << forw_projector_ptr->parameter_info();  
 
+  if (template_proj_data_ptr->get_proj_data_info_ptr()->is_tof_data())
+  {
+	  warning("The scanner template provided contains timing information. The calculation of the attenuation coefficients will not take them into consideration.\n");
+  }
+
   const std::string output_file_name = argv[1];
   shared_ptr<ProjData> 
     out_proj_data_ptr(
 		      new ProjDataInterfile(template_proj_data_ptr->get_exam_info_sptr(),// TODO this should possibly come from the image, or say it's an ACF File
-					    template_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
+					    template_proj_data_ptr->get_proj_data_info_ptr()->create_non_tof_clone(),
 					    output_file_name,
                                             std::ios::in|std::ios::out|std::ios::trunc));
 
@@ -143,7 +148,7 @@ main (int argc, char * argv[])
 						  forw_projector_ptr));
   
   if (
-      normalisation_ptr->set_up(template_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone())
+      normalisation_ptr->set_up(template_proj_data_ptr->get_proj_data_info_ptr()->create_non_tof_clone())
       != Succeeded::yes)
     {
       warning("calculate_attenuation_coefficients: set-up of normalisation failed\n");
