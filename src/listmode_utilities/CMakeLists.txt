@@ -27,7 +27,7 @@ set(${dir_EXE_SOURCES}
   lm_to_projdata_bootstrap
   lm_fansums
   list_lm_events
-  lm_generate_headcurve
+  lm_generate_countrates
 )
 
 if (HAVE_ECAT)
