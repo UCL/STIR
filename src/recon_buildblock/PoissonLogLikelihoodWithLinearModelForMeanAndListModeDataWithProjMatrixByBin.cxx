@@ -232,6 +232,10 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
         this->projector_pair_ptr->enable_tof(proj_data_info_cyl_sptr->create_shared_clone(), this->use_tof);
 	}
 
+	// sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
+	this->sens_backprojector_sptr.reset(projector_pair_ptr->get_back_projector_sptr()->clone());
+	this->sens_backprojector_sptr->set_up(proj_data_info_cyl_sptr->create_non_tof_clone(), target_sptr);
+
     if (is_null_ptr(this->normalisation_sptr))
     {
         warning("Invalid normalisation object");
@@ -369,38 +373,33 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 
     const int min_segment_num = proj_data_info_cyl_sptr->get_min_segment_num();
     const int max_segment_num = proj_data_info_cyl_sptr->get_max_segment_num();
-    const int min_timing_pos_num = proj_data_info_cyl_sptr->get_min_tof_pos_num();
-    const int max_timing_pos_num = proj_data_info_cyl_sptr->get_max_tof_pos_num();
 
     // warning: has to be same as subset scheme used as in distributable_computation
-    for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= min_timing_pos_num; ++timing_pos_num)
-    {
-		for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
+	for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
+	{
+		for (int view = proj_data_info_cyl_sptr->get_min_view_num() + subset_num;
+			view <= proj_data_info_cyl_sptr->get_max_view_num();
+			view += this->num_subsets)
 		{
-		  for (int view = proj_data_info_cyl_sptr->get_min_view_num() + subset_num;
-			  view <= proj_data_info_cyl_sptr->get_max_view_num();
-			  view += this->num_subsets)
-		  {
-			const ViewSegmentNumbers view_segment_num(view, segment_num);
+		const ViewSegmentNumbers view_segment_num(view, segment_num);
 
-			if (! this->projector_pair_ptr->get_symmetries_used()->is_basic(view_segment_num))
-			  continue;
-			this->add_view_seg_to_sensitivity(sensitivity, view_segment_num, timing_pos_num);
-		  }
+		if (! this->projector_pair_ptr->get_symmetries_used()->is_basic(view_segment_num))
+			continue;
+		this->add_view_seg_to_sensitivity(sensitivity, view_segment_num);
 		}
-    }
+	}
 }
 
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums, const int timing_pos_num) const
+add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const
 {
     shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
             (this->projector_pair_ptr->get_symmetries_used()->clone());
 
   RelatedViewgrams<float> viewgrams =
-    proj_data_info_cyl_sptr->get_empty_related_viewgrams(view_seg_nums,symmetries_used, false, timing_pos_num);
+    proj_data_info_cyl_sptr->get_empty_related_viewgrams(view_seg_nums,symmetries_used);
 
   viewgrams.fill(1.F);
   // find efficiencies
@@ -416,8 +415,7 @@ add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view
     const int max_ax_pos_num =
        viewgrams.get_max_axial_pos_num();
 
-    this->projector_pair_ptr->get_back_projector_sptr()->
-      back_project(sensitivity, viewgrams,
+    this->sens_backprojector_sptr->back_project(sensitivity, viewgrams,
                    min_ax_pos_num, max_ax_pos_num);
   }
 

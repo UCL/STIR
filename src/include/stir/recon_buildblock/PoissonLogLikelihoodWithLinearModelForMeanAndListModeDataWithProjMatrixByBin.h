@@ -115,6 +115,9 @@ protected:
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjectorByBinPair> projector_pair_ptr;
 
+  //! Backprojector used for sensitivity computation
+  shared_ptr<BackProjectorByBin> sens_backprojector_sptr;
+
   //! points to the additive projection data
   shared_ptr<ProjDataInMemory> additive_proj_data_sptr;
  
@@ -133,7 +136,7 @@ protected:
   virtual bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
 
   void
-    add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums, const int timing_pos_num = 0) const;
+    add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const;
 };
 
 END_NAMESPACE_STIR

@@ -275,7 +275,9 @@ BackProjectorByBinUsingProjMatrixByBin*
 BackProjectorByBinUsingProjMatrixByBin::
 clone() const
 {
-	return new BackProjectorByBinUsingProjMatrixByBin(*this);
+	BackProjectorByBinUsingProjMatrixByBin* sptr(new BackProjectorByBinUsingProjMatrixByBin(*this));
+	sptr->proj_matrix_ptr.reset(this->proj_matrix_ptr->clone());
+	return sptr;
 }
 
 END_NAMESPACE_STIR

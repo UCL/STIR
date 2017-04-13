@@ -275,8 +275,7 @@ set_up(
 {
   ProjMatrixByBin::set_up(proj_data_info_sptr_v, density_info_sptr_v);
 
-  proj_data_info_ptr= proj_data_info_sptr_v;
-  image_info_sptr.reset(
+    image_info_sptr.reset(
               dynamic_cast<const VoxelsOnCartesianGrid<float>* > (density_info_sptr_v->clone() ));
 //  const VoxelsOnCartesianGrid<float> * image_info_ptr =
 //    dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
@@ -289,7 +288,7 @@ set_up(
   image_info_sptr->get_regular_range(min_index, max_index);
 
   symmetries_sptr.reset(
-    new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
+    new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_sptr,
                                                 density_info_sptr_v,
                                                 do_symmetry_90degrees_min_phi,
                                                 do_symmetry_180degrees_min_phi,
@@ -297,7 +296,7 @@ set_up(
                                                 do_symmetry_swap_s,
                                                 do_symmetry_shift_z));
   const float sampling_distance_of_adjacent_LORs_xy =
-    proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
+    proj_data_info_sptr->get_sampling_in_s(Bin(0,0,0,0));
   
   if(sampling_distance_of_adjacent_LORs_xy/num_tangential_LORs > voxel_size.x() + 1.E-3 ||
      sampling_distance_of_adjacent_LORs_xy/num_tangential_LORs > voxel_size.y() + 1.E-3)
@@ -313,7 +312,7 @@ set_up(
   if (use_actual_detector_boundaries)
     {
       const ProjDataInfoCylindricalNoArcCorr * proj_data_info_cyl_ptr =
-        dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());
+        dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_sptr.get());
       if (proj_data_info_cyl_ptr== 0)
         {
           warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
@@ -363,6 +362,12 @@ set_up(
   this->already_setup = true;
   this->clear_cache();
 };
+
+ProjMatrixByBinUsingRayTracing*
+ProjMatrixByBinUsingRayTracing::clone() const
+{
+	return new ProjMatrixByBinUsingRayTracing(*this);
+}
 
 /* this is used when 
    (tantheta==0 && sampling_distance_of_adjacent_LORs_z==2*voxel_size.z())
@@ -542,13 +547,13 @@ calculate_proj_matrix_elems_for_one_bin(
     }
 
   const Bin bin = lor.get_bin();
-  assert(bin.segment_num() >= proj_data_info_ptr->get_min_segment_num());    
-  assert(bin.segment_num() <= proj_data_info_ptr->get_max_segment_num());    
+  assert(bin.segment_num() >= proj_data_info_sptr->get_min_segment_num());    
+  assert(bin.segment_num() <= proj_data_info_sptr->get_max_segment_num());    
 
   assert(lor.size() == 0);
    
   float phi;
-  float s_in_mm = proj_data_info_ptr->get_s(bin);
+  float s_in_mm = proj_data_info_sptr->get_s(bin);
   /* Implementation note.
      KT initialised s_in_mm above instead of in the if because this meant
      that gcc 3.0.1 generated identical results to the previous version of this file.
@@ -562,19 +567,19 @@ calculate_proj_matrix_elems_for_one_bin(
   */
   if (!use_actual_detector_boundaries)
   {
-    phi = proj_data_info_ptr->get_phi(bin);
-    //s_in_mm = proj_data_info_ptr->get_s(bin);
+    phi = proj_data_info_sptr->get_phi(bin);
+    //s_in_mm = proj_data_info_sptr->get_s(bin);
   }
   else
   {
     // can be static_cast later on
     const ProjDataInfoCylindricalNoArcCorr& proj_data_info_noarccor =
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_ptr);
+    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_sptr);
     // TODO check on 180 degrees for views
     const int num_detectors =
-      proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring();
+      proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
     const float ring_radius =
-      proj_data_info_ptr->get_scanner_ptr()->get_effective_ring_radius();
+      proj_data_info_sptr->get_scanner_ptr()->get_effective_ring_radius();
 
     int det_num1=0, det_num2=0;
     proj_data_info_noarccor.
@@ -583,13 +588,13 @@ calculate_proj_matrix_elems_for_one_bin(
                                                  bin.view_num(),
                                                  bin.tangential_pos_num());
     phi = static_cast<float>((det_num1+det_num2)*_PI/num_detectors-_PI/2);
-    const float old_phi=proj_data_info_ptr->get_phi(bin);
+    const float old_phi=proj_data_info_sptr->get_phi(bin);
     if (fabs(phi-old_phi)>2*_PI/num_detectors)
       warning("view %d old_phi %g new_phi %g\n",bin.view_num(), old_phi, phi);
 
     s_in_mm = static_cast<float>(ring_radius*sin((det_num1-det_num2)*_PI/num_detectors+_PI/2));
-    const float old_s_in_mm=proj_data_info_ptr->get_s(bin);
-    if (fabs(s_in_mm-old_s_in_mm)>proj_data_info_ptr->get_sampling_in_s(bin)*.0001)
+    const float old_s_in_mm=proj_data_info_sptr->get_s(bin);
+    if (fabs(s_in_mm-old_s_in_mm)>proj_data_info_sptr->get_sampling_in_s(bin)*.0001)
       warning("tangential_pos_num %d old_s_in_mm %g new_s_in_mm %g\n",bin.tangential_pos_num(), old_s_in_mm, s_in_mm);
 
   }
@@ -597,12 +602,12 @@ calculate_proj_matrix_elems_for_one_bin(
   const float cphi = cos(phi);
   const float sphi = sin(phi);
   
-  const float tantheta = proj_data_info_ptr->get_tantheta(bin);
+  const float tantheta = proj_data_info_sptr->get_tantheta(bin);
   const float costheta = 1/sqrt(1+square(tantheta));
-  const float t_in_mm = proj_data_info_ptr->get_t(bin);
+  const float t_in_mm = proj_data_info_sptr->get_t(bin);
    
   const float sampling_distance_of_adjacent_LORs_z =
-    proj_data_info_ptr->get_sampling_in_t(bin)/costheta;
+    proj_data_info_sptr->get_sampling_in_t(bin)/costheta;
  
 
   // find number of LORs we have to take, such that we don't miss voxels
@@ -697,7 +702,7 @@ calculate_proj_matrix_elems_for_one_bin(
     // interleaved case has a sampling which is twice as high
     const float s_inc = 
        (!use_actual_detector_boundaries ? 1 : 2) *
-        proj_data_info_ptr->get_sampling_in_s(bin)/num_tangential_LORs;
+        proj_data_info_sptr->get_sampling_in_s(bin)/num_tangential_LORs;
     float current_s_in_mm =
         s_in_mm - s_inc*(num_tangential_LORs-1)/2.F;
     for (int s_LOR_num=1; s_LOR_num<=num_tangential_LORs; ++s_LOR_num, current_s_in_mm+=s_inc)

@@ -107,6 +107,8 @@ class ProjMatrixByBinSPECTUB :
                       const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
                       );
 
+  virtual ProjMatrixByBinSPECTUB* clone() const;
+
  private:
 
   // parameters that will be parsed

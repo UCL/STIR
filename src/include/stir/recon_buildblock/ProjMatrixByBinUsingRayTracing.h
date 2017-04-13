@@ -140,6 +140,8 @@ public :
     const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr_v // TODO should be Info only
     );
 
+  virtual ProjMatrixByBinUsingRayTracing* clone() const;
+
   //! \name If a cylindrical FOV or the whole image will be handled
   //!@{
   bool get_restrict_to_cylindrical_FOV() const;
@@ -198,9 +200,6 @@ private:
   CartesianCoordinate3D<float> origin;  
   CartesianCoordinate3D<int> min_index;
   CartesianCoordinate3D<int> max_index;
-
-  shared_ptr<ProjDataInfo> proj_data_info_ptr;
-
 
   virtual void 
     calculate_proj_matrix_elems_for_one_bin(

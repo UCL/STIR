@@ -109,6 +109,8 @@ public:
     const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
   ) = 0;
 
+  virtual ProjMatrixByBin* clone() const = 0;
+
   //! get a pointer to an object encoding all symmetries that are used by this ProjMatrixByBin
   inline const  DataSymmetriesForBins* get_symmetries_ptr() const;
   //! get a shared_ptr to an object encoding all symmetries that are used by this ProjMatrixByBin
@@ -229,7 +231,7 @@ protected:
   //! cartesian coordinates of each voxel.
   shared_ptr<const VoxelsOnCartesianGrid<float> > image_info_sptr;
 
-  //! We need a local copy of the proj_data_info to get the integration boundaries.
+  //! We need a local copy of the proj_data_info to get the integration boundaries and RayTracing
   shared_ptr<ProjDataInfo> proj_data_info_sptr;
 
   //! The method to store data in the cache.

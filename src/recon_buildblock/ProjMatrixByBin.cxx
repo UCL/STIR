@@ -148,7 +148,7 @@ set_up(
 
   if (proj_data_info_sptr->is_tof_data())
 	  enable_tof(proj_data_info_sptr,true);
-  else if (this->tof_enabled) // this case happens when we transform a TOF projector into a non-TOF projector
+  else
   {
 	  tof_enabled = false;
 	  this->proj_data_info_sptr = proj_data_info_sptr;
