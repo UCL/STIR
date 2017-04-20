@@ -75,7 +75,7 @@ DataSymmetriesForDensels::num_related_densels(const Densel& b) const
 {
   vector<Densel> rel_b;
   get_related_densels(rel_b, b);
-  return rel_b.size();
+  return static_cast<int>(rel_b.size());
 }
 
 /*! default implementation in terms of find_symmetry_operation_from_basic_densel */

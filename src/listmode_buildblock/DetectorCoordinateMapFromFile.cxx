@@ -46,9 +46,9 @@ void DetectorCoordinateMapFromFile::read_detectormap_from_file( const std::strin
 		if( !col.size() ) break;
 		else if( col.size() == 5 ) has_layer_index = false;
 		else if( col.size() == 6 ) has_layer_index = true;
-		coord[1] = atof(col[4+has_layer_index].c_str() );
-		coord[2] = atof(col[3+has_layer_index].c_str() );
-		coord[3] = atof(col[2+has_layer_index].c_str() );
+		coord[1] = static_cast<float>(atof(col[4+has_layer_index].c_str() ));
+		coord[2] = static_cast<float>(atof(col[3+has_layer_index].c_str() ));
+		coord[3] = static_cast<float>(atof(col[2+has_layer_index].c_str() ));
 		
 		if( !has_layer_index ) detpos.radial_coord() = 0;
 		else detpos.radial_coord() = atoi(col[2].c_str());
