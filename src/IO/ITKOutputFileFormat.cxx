@@ -141,13 +141,21 @@ actual_write_to_file(std::string& filename,
       spacing[1] = image_ptr.get_voxel_size().y(); // size along Y
       spacing[2] = image_ptr.get_voxel_size().z(); // size along Z
 
+      // ITK orientation
+      ImageType::DirectionType matrix;
+      matrix.Fill(0.F);
+      matrix(0,0) = 1.F;
+      matrix(1,1) = 1.F;
+      matrix(2,2) = -1.F;
+
       ImageType::RegionType region;
       region.SetSize( size );
       region.SetIndex( start );
-	
+
       image->SetSpacing(spacing);
       image->SetRegions( region );
       image->SetOrigin(origin);
+      image->SetDirection( matrix );
       image->Allocate();
 	
       // copy data

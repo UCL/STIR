@@ -34,6 +34,7 @@
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
 #include "itkImageSeriesReader.h"
+#include "itkOrientImageFilter.h"
 
 START_NAMESPACE_STIR
 
@@ -211,11 +212,20 @@ struct removePtr<itk::SmartPointer<Type> >
 };
 
 // Actual conversion function
-// WARNING: COMPLETELY IGNORES ORIENTATION
 template<typename ImageTypePtr>
 VoxelsOnCartesianGrid<float>*
-convert_ITK_to_STIR(const ImageTypePtr itk_image)
-  {
+convert_ITK_to_STIR(const ImageTypePtr itk_image_orig)
+{
+  //typedef typename removePtr<ImageTypePtr>::type ImageType;
+  typedef FinalImageType ImageType;
+  itk::OrientImageFilter<ImageType,ImageType>::Pointer orienter =
+    itk::OrientImageFilter<ImageType,ImageType>::New();
+  orienter->UseImageDirectionOn();
+  orienter->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS);
+  orienter->SetInput(itk_image_orig);
+  orienter->Update();
+  ImageTypePtr itk_image = orienter->GetOutput();
+
   // find voxel size
   CartesianCoordinate3D<float> voxel_size(static_cast<float>(itk_image->GetSpacing()[2]), 
                                           static_cast<float>(itk_image->GetSpacing()[1]), 
@@ -249,7 +259,6 @@ convert_ITK_to_STIR(const ImageTypePtr itk_image)
 
   // copy data
   VoxelsOnCartesianGrid<float>::full_iterator stir_iter = image_ptr->begin_all();
-  typedef typename removePtr<ImageTypePtr>::type ImageType;
   typedef itk::ImageRegionConstIterator< ImageType > IteratorType;
   IteratorType it (itk_image, itk_image->GetLargestPossibleRegion() );
   for ( it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter  )
