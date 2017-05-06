@@ -101,6 +101,7 @@ set_defaults()
   //num_views_to_add=1;  
   this->proj_data_sptr.reset(); //MJ added
   this->zero_seg0_end_planes = 0;
+  this->use_tofsens = false;
 
   this->additive_projection_data_filename = "0";
   this->additive_proj_data_sptr.reset();
@@ -155,6 +156,7 @@ initialise_keymap()
   base_type::initialise_keymap();
   this->parser.add_start_key("PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters");
   this->parser.add_stop_key("End PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters");
+  this->parser.add_key("use time-of-flight sensitivities", &this->use_tofsens);
   this->parser.add_key("input file",&this->input_filename);
   // KT 20/06/2001 disabled
   //parser.add_key("mash x views", &num_views_to_add);
@@ -623,7 +625,8 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 
   // sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
   this->sens_backprojector_sptr.reset(projector_pair_ptr->get_back_projector_sptr()->clone());
-  this->sens_backprojector_sptr->set_up(proj_data_info_sptr->create_non_tof_clone(), target_sptr);
+  if (!this->use_tofsens)
+	  this->sens_backprojector_sptr->set_up(proj_data_info_sptr->create_non_tof_clone(), target_sptr);
                                    
   // TODO check compatibility between symmetries for forward and backprojector
   this->symmetries_sptr.reset(
@@ -796,28 +799,32 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const
 {
-	RelatedViewgrams<float> viewgrams =
-		this->proj_data_sptr->get_empty_related_viewgrams(view_seg_nums,
-			this->symmetries_sptr);
-  viewgrams.fill(1.F);
-  // find efficiencies
-  {      
-    const double start_frame = this->frame_defs.get_start_time(this->frame_num);
-    const double end_frame = this->frame_defs.get_end_time(this->frame_num);
-    this->normalisation_sptr->undo(viewgrams,start_frame,end_frame);
-  }
-  // backproject
-  {
-    const int range_to_zero =
-      view_seg_nums.segment_num() == 0 && this->zero_seg0_end_planes
-      ? 1 : 0;
-    const int min_ax_pos_num = 
-      viewgrams.get_min_axial_pos_num() + range_to_zero;
-    const int max_ax_pos_num = 
-       viewgrams.get_max_axial_pos_num() - range_to_zero;
+	for (int timing_pos_num = -this->max_timing_pos_num_to_process;
+		timing_pos_num <= this->max_timing_pos_num_to_process; ++ timing_pos_num)
+	{
+		RelatedViewgrams<float> viewgrams =
+			this->proj_data_sptr->get_empty_related_viewgrams(view_seg_nums,
+				this->symmetries_sptr, false, timing_pos_num);
+		viewgrams.fill(1.F);
+		// find efficiencies
+		{
+			const double start_frame = this->frame_defs.get_start_time(this->frame_num);
+			const double end_frame = this->frame_defs.get_end_time(this->frame_num);
+			this->normalisation_sptr->undo(viewgrams, start_frame, end_frame);
+		}
+		// backproject
+		{
+			const int range_to_zero =
+				view_seg_nums.segment_num() == 0 && this->zero_seg0_end_planes
+				? 1 : 0;
+			const int min_ax_pos_num =
+				viewgrams.get_min_axial_pos_num() + range_to_zero;
+			const int max_ax_pos_num =
+				viewgrams.get_max_axial_pos_num() - range_to_zero;
 
-	this->sens_backprojector_sptr->back_project(sensitivity, viewgrams, min_ax_pos_num, max_ax_pos_num);
-  }
+			this->sens_backprojector_sptr->back_project(sensitivity, viewgrams, min_ax_pos_num, max_ax_pos_num);
+		}
+	}
   
 }
 

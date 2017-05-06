@@ -91,6 +91,7 @@ set_defaults()
 
   this->normalisation_sptr.reset(new TrivialBinNormalisation);
   this->do_time_frame = false;
+  this->use_tofsens = false;
   this->use_projectors = false;
 } 
  
@@ -102,6 +103,7 @@ initialise_keymap()
   base_type::initialise_keymap(); 
   this->parser.add_start_key("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters"); 
   this->parser.add_stop_key("End PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters"); 
+  this->parser.add_key("use time-of-flight sensitivities", &this->use_tofsens);
   this->parser.add_key("max ring difference num to process", &this->max_ring_difference_num_to_process);
   this->parser.add_parsing_key("Matrix type", &this->PM_sptr);
   this->parser.add_parsing_key("Projector pair type", &this->projector_pair_ptr);
@@ -234,7 +236,8 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
 
 	// sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
 	this->sens_backprojector_sptr.reset(projector_pair_ptr->get_back_projector_sptr()->clone());
-	this->sens_backprojector_sptr->set_up(proj_data_info_cyl_sptr->create_non_tof_clone(), target_sptr);
+	if (!this->use_tofsens)
+		this->sens_backprojector_sptr->set_up(proj_data_info_cyl_sptr->create_non_tof_clone(), target_sptr);
 
     if (is_null_ptr(this->normalisation_sptr))
     {
@@ -395,29 +398,35 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const
 {
-    shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
-            (this->projector_pair_ptr->get_symmetries_used()->clone());
+	for (int timing_pos_num = this->proj_data_info_cyl_sptr->get_min_tof_pos_num();
+		timing_pos_num <= this->proj_data_info_cyl_sptr->get_max_tof_pos_num();
+		++timing_pos_num)
+	{
+		shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
+		(this->projector_pair_ptr->get_symmetries_used()->clone());
 
-  RelatedViewgrams<float> viewgrams =
-    proj_data_info_cyl_sptr->get_empty_related_viewgrams(view_seg_nums,symmetries_used);
+		RelatedViewgrams<float> viewgrams =
+			proj_data_info_cyl_sptr->get_empty_related_viewgrams(
+				view_seg_nums, symmetries_used, false, timing_pos_num);
 
-  viewgrams.fill(1.F);
-  // find efficiencies
-  {
-    const double start_frame = this->frame_defs.get_start_time(this->current_frame_num);
-    const double end_frame = this->frame_defs.get_end_time(this->current_frame_num);
-    this->normalisation_sptr->undo(viewgrams,start_frame,end_frame);
-  }
-  // backproject
-  {
-    const int min_ax_pos_num =
-      viewgrams.get_min_axial_pos_num();
-    const int max_ax_pos_num =
-       viewgrams.get_max_axial_pos_num();
+		viewgrams.fill(1.F);
+		// find efficiencies
+		{
+			const double start_frame = this->frame_defs.get_start_time(this->current_frame_num);
+			const double end_frame = this->frame_defs.get_end_time(this->current_frame_num);
+			this->normalisation_sptr->undo(viewgrams, start_frame, end_frame);
+		}
+		// backproject
+		{
+			const int min_ax_pos_num =
+				viewgrams.get_min_axial_pos_num();
+			const int max_ax_pos_num =
+				viewgrams.get_max_axial_pos_num();
 
-    this->sens_backprojector_sptr->back_project(sensitivity, viewgrams,
-                   min_ax_pos_num, max_ax_pos_num);
-  }
+			this->sens_backprojector_sptr->back_project(sensitivity, viewgrams,
+				min_ax_pos_num, max_ax_pos_num);
+		}
+	}
 
 }
 

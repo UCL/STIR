@@ -175,7 +175,7 @@ poisson_noise(ProjData& output_projdata,
 		SegmentByView<float> seg_output=
 		  output_projdata.get_empty_segment_by_view(seg,false, timing_pos_num);
 
-		cerr << "Segment " << seg << endl;
+		cerr << "Segment " << seg << " Timing position index " << timing_pos_num << endl;
 
 		for(int view=seg_input.get_min_view_num();view<=seg_input.get_max_view_num();view++)
 		  for(int ax_pos=seg_input.get_min_axial_pos_num();ax_pos<=seg_input.get_max_axial_pos_num();ax_pos++)

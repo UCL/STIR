@@ -322,6 +322,9 @@ protected:
   //! signals whether to zero the data in the end planes of the projection data
   bool zero_seg0_end_planes;
 
+  //! Triggers calculation of sensitivity using time-of-flight
+  bool use_tofsens;
+
   //! name of file in which additive projection data are stored
   std::string additive_projection_data_filename;
 

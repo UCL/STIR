@@ -106,6 +106,9 @@ protected:
   /*! \todo Might be removed */
   int  max_ring_difference_num_to_process;
   
+  //! Triggers calculation of sensitivity using time-of-flight
+  bool use_tofsens;
+
   //! N.E. Since we started offering compatibility for projectors
   bool use_projectors;
   
