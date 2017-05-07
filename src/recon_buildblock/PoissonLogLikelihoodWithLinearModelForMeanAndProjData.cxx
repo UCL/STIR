@@ -801,7 +801,7 @@ add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view
 {
 	int min_timing_pos_num = use_tofsens ? -this->max_timing_pos_num_to_process : 0;
 	int max_timing_pos_num = use_tofsens ? this->max_timing_pos_num_to_process : 0;
-	for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= min_timing_pos_num; ++ timing_pos_num)
+	for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
 	{
 		RelatedViewgrams<float> viewgrams =
 			this->proj_data_sptr->get_empty_related_viewgrams(view_seg_nums,
