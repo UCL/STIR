@@ -241,7 +241,8 @@ convert_ITK_to_STIR(const ImageTypePtr itk_image_orig)
     min_indices + make_coordinate(z_size, y_size, x_size) - 1;
 
   // find STIR origin
-  CartesianCoordinate3D<float> origin(static_cast<float>(itk_image->GetOrigin()[2]), 
+  // Note: need to use - for z-coordinate because of different axis conventions
+  CartesianCoordinate3D<float> origin(-static_cast<float>(itk_image->GetOrigin()[2]), 
 				      static_cast<float>(itk_image->GetOrigin()[1]), 
 				      static_cast<float>(itk_image->GetOrigin()[0]));
   {
