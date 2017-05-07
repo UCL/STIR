@@ -398,9 +398,9 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const
 {
-	for (int timing_pos_num = this->proj_data_info_cyl_sptr->get_min_tof_pos_num();
-		timing_pos_num <= this->proj_data_info_cyl_sptr->get_max_tof_pos_num();
-		++timing_pos_num)
+	int min_timing_pos_num = use_tofsens ? this->proj_data_info_cyl_sptr->get_min_tof_pos_num() : 0;
+	int max_timing_pos_num = use_tofsens ? this->proj_data_info_cyl_sptr->get_max_tof_pos_num() : 0;
+	for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
 	{
 		shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
 		(this->projector_pair_ptr->get_symmetries_used()->clone());
