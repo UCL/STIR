@@ -203,8 +203,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
          ((this->get_use_subset_sensitivities() && this->subsensitivity_filenames=="") ||
           (!this->get_use_subset_sensitivities() && this->sensitivity_filename=="")))
         {
-          warning("recompute_sensitivity is set to false, but sensitivity pointer is empty "
-                  "and (sub)sensitivity filename is not set. I will compute the sensitivity anyway.");
+          info("(subset)sensitivity filename(s) not set so I will compute the (subset)sensitivities", 2);
           this->recompute_sensitivity = true;
           // initialisation of pointers will be done below
         }
