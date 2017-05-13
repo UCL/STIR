@@ -196,13 +196,6 @@ post_processing()
   if (base_type::post_processing() == true)
     return true;
 
-    // NE 7/7/2017 The input data can be set alternatively from the set_input_data.
-  if (this->input_filename.length() == 0)
-  {
-      warning("You have not specified an input file, \n"
-              "please set one later.");
-//      return true;
-  }
   // KT 20/06/2001 disabled as not functional yet
 #if 0
   if (num_views_to_add!=1 && (num_views_to_add<=0 || num_views_to_add%2 != 0))
@@ -560,6 +553,9 @@ Succeeded
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 {
+  if (is_null_ptr(this->proj_data_sptr))
+	error("you need to set the input data before calling set_up");
+
   if (this->max_segment_num_to_process==-1)
     this->max_segment_num_to_process =
       this->proj_data_sptr->get_max_segment_num();
