@@ -75,7 +75,7 @@ public:
 	\todo Maybe provide real implementation?
 	*/
 	virtual SavedPosition save_get_position()
-	{ return current_lm_data_ptr->save_get_position(); }
+	{ return static_cast<SavedPosition>(current_lm_data_ptr->save_get_position()); }
 	virtual Succeeded set_get_position(const SavedPosition& pos)
 	{ return current_lm_data_ptr->set_get_position(pos); }
 
