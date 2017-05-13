@@ -17,21 +17,14 @@
 
 # cmake file declaring all tests in this subdirectory
 
-set(dir scripts)
+set(dir scripts_IO)
 
-set(dir_scripts ${dir}_SCRIPTS)
+set(dir_scripts ${dir}_SCRIPTS_IO)
 
 set(${dir_scripts}
-  stir_subtract 
-  stir_divide 
-  count 
-  stir_print_voxel_sizes.sh
-  estimate_scatter.sh
-  zoom_att_image.sh
-  get_num_voxels.sh
+  convertSiemensInterfileToSTIR.sh 
+  dumpSiemensDicomInfo.sh 
 )
-
-
 
 #include(stir_test_exe_targets)
 
@@ -39,5 +32,3 @@ set(${dir_scripts}
 if (BUILD_EXECUTABLES)
   install(PROGRAMS ${${dir_scripts}} DESTINATION bin)
 endif()
-
-add_subdirectory(IO)
