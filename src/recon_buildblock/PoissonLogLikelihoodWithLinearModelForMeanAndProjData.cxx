@@ -208,19 +208,19 @@ post_processing()
 
     if (is_null_ptr(this->proj_data_sptr))
         {
-            warning("Failed to read input file %s", input_filename.c_str());
+            error("Failed to read input file %s", input_filename.c_str());
             return true;
         }
   }
 
  // image stuff
   if (this->zoom <= 0)
-  { warning("zoom should be positive"); return true; }
+  { error("zoom should be positive"); return true; }
   
   if (this->output_image_size_xy!=-1 && this->output_image_size_xy<1) // KT 10122001 appended_xy
-  { warning("output image size xy must be positive (or -1 as default)"); return true; }
+  { error("output image size xy must be positive (or -1 as default)"); return true; }
   if (this->output_image_size_z!=-1 && this->output_image_size_z<1) // KT 10122001 new
-  { warning("output image size z must be positive (or -1 as default)"); return true; }
+  { error("output image size z must be positive (or -1 as default)"); return true; }
 
 
   if (this->additive_projection_data_filename != "0")
@@ -562,7 +562,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 
   if (this->max_segment_num_to_process > this->proj_data_sptr->get_max_segment_num()) 
     { 
-      warning("max_segment_num_to_process (%d) is too large",
+      error("max_segment_num_to_process (%d) is too large",
               this->max_segment_num_to_process); 
       return Succeeded::no;
     }
@@ -574,7 +574,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
                          +this->max_segment_num_to_process);
   
   if (is_null_ptr(this->projector_pair_ptr))
-    { warning("You need to specify a projector pair"); return Succeeded::no; }
+    { error("You need to specify a projector pair"); return Succeeded::no; }
 
   // set projectors to be used for the calculations
 
@@ -606,7 +606,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 
   if (is_null_ptr(this->normalisation_sptr))
   {
-    warning("Invalid normalisation object");
+    error("Invalid normalisation object");
     return Succeeded::no;
   }
 
@@ -615,13 +615,13 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 
   if (frame_num<=0)
     {
-      warning("frame_num should be >= 1");
+      error("frame_num should be >= 1");
       return Succeeded::no;
     }
 
   if (static_cast<unsigned>(frame_num)> frame_defs.get_num_frames())
     {
-      warning("frame_num is %d, but should be less than the number of frames %d.",
+      error("frame_num is %d, but should be less than the number of frames %d.",
               frame_num, frame_defs.get_num_frames());
       return Succeeded::no;
     }
@@ -804,7 +804,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
     if (!input.has_same_characteristics(this->get_sensitivity(), 
                                         explanation))
       {
-        warning("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
+        error("PoissonLogLikelihoodWithLinearModelForMeanAndProjData:\n"
                 "sensitivity and input for add_multiplication_with_approximate_Hessian_without_penalty\n"
                 "should have the same characteristics.\n%s",
                 explanation.c_str());
