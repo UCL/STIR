@@ -29,7 +29,7 @@ if( "${GRAPHICS}" STREQUAL "X")
 
 elseif("${GRAPHICS}" STREQUAL "PGM")
 	ADD_DEFINITIONS(-DSTIR_PGM)
-else()
+#else()
 # TODO
 #ifeq "$(GRAPHICS)" "MATHLINK"
 # this presumably needs a Mathlink library, depends on your system though

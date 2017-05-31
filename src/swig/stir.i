@@ -1291,6 +1291,7 @@ namespace stir {
 %ignore stir::Bin::axial_pos_num();
 %ignore stir::Bin::view_num();
 %ignore stir::Bin::tangential_pos_num();
+%ignore stir::Bin::timing_pos_num();
 %include "stir/Bin.h"
 %newobject stir::ProjDataInfo::ProjDataInfoGE;
 %newobject stir::ProjDataInfo::ProjDataInfoCTI;
