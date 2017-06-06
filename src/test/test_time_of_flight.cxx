@@ -83,7 +83,7 @@ public:
 // Helper class.
 class FloatFloat{
 public:
-    FloatFloat() {}
+    FloatFloat() { float1 = 0f; float2 = 0f;}
     float float1;
     float float2;
 };
@@ -127,66 +127,63 @@ private:
 void
 TOF_Tests::run_tests()
 {
-//    // New Scanner
-//    test_scanner_sptr.reset(new Scanner(Scanner::Type_mCT_TOF_100));
+    // New Scanner
+    test_scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa));
 
-//    // New Proj_Data_Info
-//    const int test_tof_mashing_factor = 6;
-//    test_proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(test_scanner_sptr,
-//                                                                 1,test_scanner_sptr->get_num_rings() -1,
-//                                                                 test_scanner_sptr->get_num_detectors_per_ring()/2,
-//                                                                 test_scanner_sptr->get_max_num_non_arccorrected_bins(),
-//                                                                 /* arc_correction*/false));
-//    test_proj_data_info_sptr->set_tof_mash_factor(test_tof_mashing_factor);
+    // New Proj_Data_Info
+    const int test_tof_mashing_factor = 39; // to have 9 TOF bins (381/39=9)
+    test_proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(test_scanner_sptr,
+                                                                 1,test_scanner_sptr->get_num_rings() -1,
+                                                                 test_scanner_sptr->get_num_detectors_per_ring()/2,
+                                                                 test_scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                                                 /* arc_correction*/false));
+    test_proj_data_info_sptr->set_tof_mash_factor(test_tof_mashing_factor);
 
-//    test_tof_proj_data_info();
-////    test_tof_geometry_1();
+    test_tof_proj_data_info();
+//    test_tof_geometry_1();
 
-//    // New Discretised Density
-//    test_discretised_density_sptr.reset( new VoxelsOnCartesianGrid<float> (*test_proj_data_info_sptr, 1.f,
-//                                                                           CartesianCoordinate3D<float>(0.f, 0.f, 0.f),
-//                                                                           CartesianCoordinate3D<int>(-1, -1, -1)));
-//    // New ProjMatrix
-//    test_proj_matrix_sptr.reset(new ProjMatrixByBinUsingRayTracing());
-//    dynamic_cast<ProjMatrixByBinUsingRayTracing*>(test_proj_matrix_sptr.get())->set_num_tangential_LORs(1);
-//    dynamic_cast<ProjMatrixByBinUsingRayTracing*>(test_proj_matrix_sptr.get())->set_up(test_proj_data_info_sptr, test_discretised_density_sptr);
-//    test_proj_matrix_sptr->enable_tof(test_proj_data_info_sptr);
+    // New Discretised Density
+    test_discretised_density_sptr.reset( new VoxelsOnCartesianGrid<float> (*test_proj_data_info_sptr, 1.f,
+                                                                           CartesianCoordinate3D<float>(0.f, 0.f, 0.f),
+                                                                           CartesianCoordinate3D<int>(-1, -1, -1)));
+    // New ProjMatrix
+    test_proj_matrix_sptr.reset(new ProjMatrixByBinUsingRayTracing());
+    dynamic_cast<ProjMatrixByBinUsingRayTracing*>(test_proj_matrix_sptr.get())->set_num_tangential_LORs(1);
+    dynamic_cast<ProjMatrixByBinUsingRayTracing*>(test_proj_matrix_sptr.get())->set_up(test_proj_data_info_sptr, test_discretised_density_sptr);
+    test_proj_matrix_sptr->enable_tof(test_proj_data_info_sptr);
 
-//    shared_ptr<ForwardProjectorByBin> forward_projector_ptr(
-//                new ForwardProjectorByBinUsingProjMatrixByBin(test_proj_matrix_sptr));
-//    shared_ptr<BackProjectorByBin> back_projector_ptr(
-//                new BackProjectorByBinUsingProjMatrixByBin(test_proj_matrix_sptr));
+    shared_ptr<ForwardProjectorByBin> forward_projector_ptr(
+                new ForwardProjectorByBinUsingProjMatrixByBin(test_proj_matrix_sptr));
+    shared_ptr<BackProjectorByBin> back_projector_ptr(
+                new BackProjectorByBinUsingProjMatrixByBin(test_proj_matrix_sptr));
 
-//    projector_pair_sptr.reset(
-//                new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
-//    projector_pair_sptr->set_up(test_proj_data_info_sptr, test_discretised_density_sptr);
+    projector_pair_sptr.reset(
+                new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
+    projector_pair_sptr->set_up(test_proj_data_info_sptr, test_discretised_density_sptr);
 
-//    symmetries_used_sptr.reset(projector_pair_sptr->get_symmetries_used()->clone());
+    symmetries_used_sptr.reset(projector_pair_sptr->get_symmetries_used()->clone());
 
-//    // Deactivated it now because it takes a long time to finish.
-//    //        test_cache();
+    // Deactivated it now because it takes a long time to finish.
+    //        test_cache();
 
-//    test_tof_kernel_application();
+    test_tof_kernel_application();
 }
 
 void
 TOF_Tests::test_tof_proj_data_info()
 {
-    const int correct_tof_mashing_factor = 13;
-    const int num_timing_positions = 27;
+    const int correct_tof_mashing_factor = 39;
+    const int num_timing_positions = 9;
     float correct_width_of_tof_bin = test_scanner_sptr->get_size_of_timing_bin() *
             test_proj_data_info_sptr->get_tof_mash_factor() * 0.299792458f;
-    float correct_timing_locations[num_timing_positions] = {-683.077f, -632.334f, -581.591f, -530.849f, -480.106f, -429.363f,
-                                          -378.62f, -327.877f, -277.134f, -226.391f, -175.648f,
-                                          -124.906f, -74.1626f, -23.4197f, 27.3231f, 78.066f, 128.809f,
-                                          179.552f, 230.295f, 281.038f, 331.78f, 382.523f, 433.266f, 484.009f,
-                                          534.752f, 585.495f, 636.238f};
+    float correct_timing_locations[num_timing_positions] = {-360.201f, -280.156f, -200.111f, -120.067f, -40.022f, 40.022f,
+                                          120.067f, 200.111f, 280.156f};
 
     check_if_equal(correct_tof_mashing_factor,
-                   test_proj_data_info_sptr->get_tof_mash_factor(), "Diffent tof mash factor.");
+                   test_proj_data_info_sptr->get_tof_mash_factor(), "Different TOF mashing factor.");
 
     check_if_equal(num_timing_positions,
-                   test_proj_data_info_sptr->get_num_tof_poss(), "Diffent in number of timing positions.");
+                   test_proj_data_info_sptr->get_num_tof_poss(), "Different number of timing positions.");
 
     for (int timing_num = test_proj_data_info_sptr->get_min_tof_pos_num(), counter = 0;
          timing_num <= test_proj_data_info_sptr->get_max_tof_pos_num(); ++ timing_num, counter++)
@@ -218,8 +215,8 @@ TOF_Tests::test_tof_geometry_1()
             test_scanner_sptr->get_num_rings() - test_proj_data_info_sptr->get_sampling_in_m(Bin(0,0,0,0,0));
 
     CartesianCoordinate3D<float> ez1_coord0, ez2_coord0, ez3_coord0, ez4_coord0, ez5_coord0;
-    ProjDataInfoCylindrical* proj_data_ptr =
-            dynamic_cast<ProjDataInfoCylindrical*> (test_proj_data_info_sptr.get());
+    //ProjDataInfoCylindrical* proj_data_ptr =
+    //        dynamic_cast<ProjDataInfoCylindrical*> (test_proj_data_info_sptr.get());
 
     int mid_seg = test_proj_data_info_sptr->get_num_segments()/2;
 
@@ -246,31 +243,31 @@ TOF_Tests::test_tof_geometry_1()
     // axial ez1 && ez4 should be -scanner_length/2.f
     check_if_equal(static_cast<double>(ez1_coord0.z()),
                    static_cast<double>(-correct_scanner_length/2.f),
-                   "Min axial possitions of mid-points don't look "
-                   "resonable.");
+                   "Min axial positions of mid-points don't look "
+                   "reasonable.");
 
     check_if_equal(static_cast<double>(ez4_coord0.z()),
                    static_cast<double>(-correct_scanner_length/2.f),
-                   "Min axial possitions of mid-points don't look "
-                   "resonable.");
+                   "Min axial positions of mid-points don't look "
+                   "reasonable.");
 
     // axial ez2 should be -ring_spacing/2
     check_if_equal(static_cast<double>(ez2_coord0.z()),
                    static_cast<double>(-test_scanner_sptr->get_ring_spacing()/2.f),
-                   "[1]Central axial possitions of mid-points don't look "
-                   "resonable.");
+                   "[1]Central axial positions of mid-points don't look "
+                   "reasonable.");
 
     // axial ez3 should be 0
     check_if_equal(static_cast<double>(ez3_coord0.z()),
                    static_cast<double>(-test_proj_data_info_sptr->get_m(Bin(mid_seg,0,0,0,0))),
-                   "[2]Central axial possitions of mid-points don't look "
-                   "resonable.");
+                   "[2]Central axial positions of mid-points don't look "
+                   "reasonable.");
 
     // axial ez5 should be scanner_length/2.f
     check_if_equal(static_cast<double>(ez5_coord0.z()),
                    static_cast<double>(correct_scanner_length/2.f),
-                   "Max axial possitions of mid-points don't look "
-                   "resonable.");
+                   "Max axial positions of mid-points don't look "
+                   "reasonable.");
 
     //TODO: more tests for X and Y
 }
@@ -278,13 +275,13 @@ TOF_Tests::test_tof_geometry_1()
 void
 TOF_Tests::test_tof_geometry_2()
 {
-    float correct_scanner_length = test_scanner_sptr->get_ring_spacing() *
-            test_scanner_sptr->get_num_rings() - test_proj_data_info_sptr->get_sampling_in_m(Bin(0,0,0,0,0));
+    //float correct_scanner_length = test_scanner_sptr->get_ring_spacing() *
+    //        test_scanner_sptr->get_num_rings() - test_proj_data_info_sptr->get_sampling_in_m(Bin(0,0,0,0,0));
 
     CartesianCoordinate3D<float> ez1_coord1, ez2_coord1, ez3_coord1, ez4_coord1, ez5_coord1;
     CartesianCoordinate3D<float> ez1_coord2, ez2_coord2, ez3_coord2, ez4_coord2, ez5_coord2;
-    ProjDataInfoCylindrical* proj_data_ptr =
-            dynamic_cast<ProjDataInfoCylindrical*> (test_proj_data_info_sptr.get());
+    //ProjDataInfoCylindrical* proj_data_ptr =
+    //        dynamic_cast<ProjDataInfoCylindrical*> (test_proj_data_info_sptr.get());
 
     int mid_seg = test_proj_data_info_sptr->get_num_segments()/2;
 

@@ -1,12 +1,12 @@
 /*!
   \file
   \ingroup listmode
-  \brief Utility to generate a headcurve for some listmode data
-  The 'headcurve' is just a list of the total number of prompts and delayeds
+  \brief Utility to generate a count rate curve for some listmode data
+  The count rate curve is just a list of the total number of prompts and delayeds
   in subsequent time intervals.
   The current output is a file with 4 columns:
   \verbatim
-  start_time end_time  num_prompts num_delayeds
+  start_time , end_time , num_prompts , num_delayeds
   \endverbatim
 
   \author Kris Thielemans
@@ -31,8 +31,7 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char * argv[])
 {
-  
-  if (argc<2 || argc>5) {
+  if (argc<3 || argc>4) {
     std::cerr << "Usage: " << argv[0] << "hc_filename listmode_file [time_interval_in_secs]\n"
 	 << "time_interval_in_secs defaults to 1\n";
     exit(EXIT_FAILURE);
@@ -67,10 +66,10 @@ int main(int argc, char * argv[])
 	  const double new_time = record.time().get_time_in_secs();
 	  if (new_time >= current_time+interval) 
 	    {
-	      headcurve << std::setw(10) << current_time
-			<< std::setw(10) << current_time+interval
-			<< std::setw(20) << num_prompts
-			<< std::setw(20) << num_delayeds
+	      headcurve  << current_time
+			<< " , " << current_time+interval
+			<< " , " << num_prompts
+			<< " , " << num_delayeds
 			<< '\n';
 	      num_prompts=0;
 	      num_delayeds=0;

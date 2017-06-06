@@ -556,6 +556,10 @@ actual_process_data_without_tof()
   shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
   CListRecord& record = *record_sptr;
 
+  if (!record.event().is_valid_template(*template_proj_data_info_ptr))
+	  error("The scanner template is not valid for LmToProjData. This might be because of unsupported arc correction.");
+
+
   /* Here starts the main loop which will store the listmode data. */
   for (current_frame_num = 1;
        current_frame_num<=frame_defs.get_num_frames();
@@ -768,6 +772,9 @@ actual_process_data_with_tof()
             frame_start_positions(1, static_cast<int>(frame_defs.get_num_frames()));
     shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
     CListRecord& record = *record_sptr;
+
+    if (!record.event().is_valid_template(*template_proj_data_info_ptr))
+    error("The scanner template is not valid for LmToProjData. This might be because of unsupported arc correction.");
 
     /* Here starts the main loop which will store the listmode data. */
     for (current_frame_num = 1;

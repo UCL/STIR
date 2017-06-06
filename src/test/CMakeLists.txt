@@ -77,6 +77,7 @@ ADD_TEST(test_linear_regression
    ${CMAKE_CURRENT_BINARY_DIR}/test_linear_regression ${CMAKE_CURRENT_SOURCE_DIR}/input/test_linear_regression.in
 )
 
+if (BUILD_EXECUTABLES)
 ## test_stir_math needs to know the location of the stir_math executable
 # Note that we cannot use get_target_property(var stir_math LOCATION) as it doesn't work for Visual Studio.
 # Luckily, the following is simple enough (and in the cmake add_test documentation)
@@ -86,7 +87,10 @@ ADD_TEST(NAME test_stir_math
 set_tests_properties(test_stir_math PROPERTIES DEPENDS stir_math)
 
 ADD_TEST(NAME test_time_of_flight COMMAND test_time_of_flight)
+
 # Final note: we could use TARGET_FILE to avoid the use of ${CMAKE_CURRENT_BINARY_DIR} in the other tests, but both strategies work fine.
+endif()
+
 
 ## add tests for OutputFileFormat
 

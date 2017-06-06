@@ -115,6 +115,17 @@ get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
 }
 
 template <class Derived>
+bool
+CListEventCylindricalScannerWithViewTangRingRingEncoding<Derived>::
+is_valid_template(const ProjDataInfo& proj_data_info) const
+{
+	if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info)!= 0)
+		return true;
+
+	return false;
+}
+
+template <class Derived>
 void 
 CListEventCylindricalScannerWithViewTangRingRingEncoding<Derived>::
 get_uncompressed_bin(Bin& bin) const

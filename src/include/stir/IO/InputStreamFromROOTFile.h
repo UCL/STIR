@@ -106,19 +106,19 @@ public:
     //! Get the number of rings as calculated from the number of repeaters
     inline virtual int get_num_rings() const = 0;
     //! Get the number of dets per ring as calculated from the number of repeaters
-    inline virtual int get_num_dets_per_ring() const = 0;
+    virtual int get_num_dets_per_ring() const = 0;
     //! Get the number of axial modules
-    inline virtual int get_num_axial_blocks_per_bucket_v() const = 0;
+    virtual int get_num_axial_blocks_per_bucket_v() const = 0;
     //! Get the number of transaxial modules
-    inline virtual int get_num_transaxial_blocks_per_bucket_v() const = 0;
+    virtual int get_num_transaxial_blocks_per_bucket_v() const = 0;
     //! Get the axial number of crystals per module
-    inline virtual int get_num_axial_crystals_per_block_v() const = 0;
+    virtual int get_num_axial_crystals_per_block_v() const = 0;
     //! Get the transaxial number of crystals per module
-    inline virtual int get_num_transaxial_crystals_per_block_v() const = 0;
-    //! Get number of axial crystals per singles unit.
-    inline virtual int get_num_axial_crystals_per_singles_unit() const = 0;
-    //! Get number of transaxial crystals per singles unit.
-    inline virtual int get_num_trans_crystals_per_singles_unit() const = 0;
+    virtual int get_num_transaxial_crystals_per_block_v() const = 0;
+    //! Get the number of axial crystals per singles unit
+    virtual int get_num_axial_crystals_per_singles_unit() const = 0;
+    //! Get the number of transaxial crystals per singles unit
+    virtual int get_num_trans_crystals_per_singles_unit() const = 0;
     //! Get low energy threshold
     inline virtual float get_low_energy_thres() const;
     //! Get high energy threshold

@@ -230,8 +230,13 @@ public:
   void fill(const ProjData&);
 
   //! set all bins from an array iterator
+  /*!
+    \return number of bins copied
+  
+    \warning there is no range-check on \a array_iter
+  */
   template < typename iterT>
-  long int fill_from( iterT array_iter)
+  std::size_t fill_from( iterT array_iter)
   {
       // A type check would be usefull.
       //      BOOST_STATIC_ASSERT((boost::is_same<typename std::iterator_traits<iterT>::value_type, Type>::value));
@@ -262,12 +267,17 @@ public:
 			  }
           }
       }
-      return std::distance(init_pos, array_iter);
+      return static_cast<std::size_t>(std::distance(init_pos, array_iter));
   }
 
-  //! Copy all bins to an array, using iterator
+  //! Copy all bins to a range specified by a (forward) iterator
+  /*! 
+    \return number of bins copied
+
+    \warning there is no range-check on \a array_iter
+  */
   template < typename iterT>
-  long int copy_to(iterT array_iter) const
+  std::size_t copy_to(iterT array_iter) const
   {
       iterT init_pos = array_iter;
       for (int s=0; s<= this->get_max_segment_num(); ++s)
@@ -287,7 +297,7 @@ public:
 			  }
           }
       }
-      return std::distance(init_pos, array_iter);
+      return static_cast<std::size_t>(std::distance(init_pos, array_iter));
   }
 
   //! Get number of segments
