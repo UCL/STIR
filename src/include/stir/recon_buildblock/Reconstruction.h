@@ -157,6 +157,13 @@ public:
   //! \details The counterpart of set_disable_output().
   void set_enable_output(bool _val);
 
+  //!
+  //! \brief get_reconstructed_image
+  //! \author Nikos Efthimiou
+  //! \return
+  //!
+  shared_ptr<TargetT > get_target_image();
+
   // parameters
  protected:
 
@@ -202,6 +209,11 @@ protected:
     \c set_post_processor_sptr() ).
   */
   virtual bool post_processing();
+
+  //!
+  //! \brief target_data_sptr
+  //!
+  shared_ptr<TargetT > target_data_sptr;
 
   //!
   //! \brief _disable_output
