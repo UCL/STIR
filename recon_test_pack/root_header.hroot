@@ -1,0 +1,66 @@
+ROOT header := 
+
+originating system := User_defined_scanner
+Number of rings                          := 4
+Number of detectors per ring             := 504
+Inner ring diameter (cm)                 := 65.6
+Average depth of interaction (cm)        := 0.7
+Distance between rings (cm)              := 0.40625
+Default bin size (cm)                    := 0.208626
+Maximum number of non-arc-corrected bins := 344
+
+
+
+GATE scanner type := GATE_Cylindrical_PET
+GATE_Cylindrical_PET Parameters :=
+
+name of data file := ${INPUT_ROOT_FILE}
+
+name of input TChain := Coincidences
+
+; As the GATE repeaters. 
+; If you skip a level in GATE's hierarchy, 
+; use 1.
+number of Rsectors := 504 
+number of modules_X := 1 
+number of modules_Y := 1
+number of modules_Z := 1
+number of submodules_X := 1
+number of submodules_Y := 1
+number of submodules_Z := 1
+number of crystals_X := 1
+number of crystals_Y := 1
+number of crystals_Z := 4
+
+;; From GATE's online documentation: 
+;; (http://wiki.opengatecollaboration.org/index.php/Users_Guide_V7.2:Digitizer_and_readout_parameters)
+;; [...] the readout depth depends upon how the electronic readout functions.
+;; If one PMT reads the four modules in the axial direction, 
+;; the depth should be set with the command:
+;; /gate/digitizer/Singles/readout/setDepth 1 
+;
+; In STIR terminology this will be used to define the number of crystals
+; per singles unit. 
+Singles readout depth := 1
+
+;
+; If set the scattered events will be skipped
+exclude scattered events := ${EXCLUDE_SCATTERED}
+
+;
+; If set the random events will be skipped
+exclude random events := ${EXCLUDE_RANDOM}
+
+; 
+; STIR will try to align the data. 
+; If you have used non standart GATE axes, 
+; rotate using: 
+offset (num of detectors) := 0 
+
+; If want to deactivate set to [0, 10000]
+low energy window (keV) := 0
+upper energy window (keV):= 10000
+
+End GATE_Cylindrical_PET Parameters :=
+
+end ROOT header := 

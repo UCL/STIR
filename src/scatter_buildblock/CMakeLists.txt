@@ -13,7 +13,8 @@ set(${dir_LIB_SOURCES}
         cached_single_scatter_integrals 
 	scatter_estimate_for_one_scatter_point 
 	upsample_and_fit_scatter_estimate 
-	ScatterEstimationByBin 
+	ScatterEstimationByBin
+	CreateTailMaskFromACFs 
 )
 #$(dir)_REGISTRY_SOURCES:= scatter_buildblock_registries
 

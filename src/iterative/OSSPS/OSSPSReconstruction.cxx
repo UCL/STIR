@@ -231,7 +231,7 @@ precompute_denominator_of_conditioner_without_penalty()
 	( precomputed_denominator_ptr->clone());
   std::fill(data_full_of_ones_aptr->begin_all(),
 	    data_full_of_ones_aptr->end_all(),
-	    1);
+	    1.F);
 
   this->objective_function_sptr->
     add_multiplication_with_approximate_Hessian_without_penalty(

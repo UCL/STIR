@@ -176,6 +176,14 @@ set_enable_output(bool _val)
     this->_disable_output = _val;
 }
 
+template < typename TargetT>
+shared_ptr<TargetT >
+Reconstruction<TargetT>::
+get_target_image()
+{
+    return target_data_sptr;
+}
+
 template class Reconstruction<DiscretisedDensity<3,float> >; 
 template class Reconstruction<ParametricVoxelsOnCartesianGrid >; 
 END_NAMESPACE_STIR

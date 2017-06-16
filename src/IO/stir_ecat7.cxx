@@ -32,7 +32,6 @@
     only work on systems where this library works properly.
 */
 
-#ifdef HAVE_LLN_MATRIX
 
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataFromStream.h"
@@ -1585,6 +1584,7 @@ ECAT7_to_VoxelsOnCartesianGrid(const string& ECAT7_filename,
       warning("%s: cannot open %s using C++ ifstream.\n"
 	      "%s",  
 	      warning_prefix, ECAT7_filename.c_str(), warning_suffix); 
+      delete image_ptr;
       return 0;
     }
 
@@ -1595,7 +1595,7 @@ ECAT7_to_VoxelsOnCartesianGrid(const string& ECAT7_filename,
 	      "error seeking to position of data.\n"
 	      "%s",  
 	      warning_prefix, ECAT7_filename.c_str(), warning_suffix); 
-
+      delete image_ptr;
       return 0;
     }
   
@@ -1608,7 +1608,7 @@ ECAT7_to_VoxelsOnCartesianGrid(const string& ECAT7_filename,
 		"error in reading data with convertion to floats.\n",
 		"%s", 
 		warning_prefix, ECAT7_filename.c_str(), warning_suffix); 
-
+	delete image_ptr;
 	return 0;
       }
   }
@@ -2314,5 +2314,3 @@ ProjData_to_ECAT7(ProjData const& proj_data, NumericType output_type,
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
-
-#endif //#ifdef HAVE_LLN_MATRIX

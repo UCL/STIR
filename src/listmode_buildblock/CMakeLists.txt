@@ -11,6 +11,8 @@ set(${dir_LIB_SOURCES}
         LmToProjDataBootstrap
         CListModeDataECAT8_32bit
         CListRecordECAT8_32bit
+	CListModeDataSAFIR
+	DetectorCoordinateMapFromFile
 )
 
 if (HAVE_ECAT)
@@ -20,6 +22,14 @@ if (HAVE_ECAT)
 	CListRecordECAT966 
   )
 endif()
+
+if (HAVE_CERN_ROOT)
+	list(APPEND ${dir_LIB_SOURCES}
+		CListModeDataROOT
+		CListRecordROOT
+	)
+endif()
+
 
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries
 

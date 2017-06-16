@@ -608,72 +608,75 @@ namespace std {
 #endif
   static Array<3,float> create_array_for_proj_data(const ProjData& proj_data)
   {
-    int num_sinos=proj_data.get_num_axial_poss(0);
-    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
-      {
-        num_sinos += 2*proj_data.get_num_axial_poss(s);
-      }
-    
-    Array<3,float> array(IndexRange3D(num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
-    return array;
+      //    int num_sinos=proj_data.get_num_axial_poss(0);
+      //    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
+      //      {
+      //        num_sinos += 2*proj_data.get_num_axial_poss(s);
+      //      }
+      int num_sinos = proj_data.get_num_sinograms();
+
+      Array<3,float> array(IndexRange3D(num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
+      return array;
   }
 
   // a function for  converting ProjData to a 3D array as that's what is easy to use
   static Array<3,float> projdata_to_3D(const ProjData& proj_data)
   {
-    Array<3,float> array = create_array_for_proj_data(proj_data);
-    Array<3,float>::full_iterator array_iter = array.begin_all();
-    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
-      {
-        SegmentBySinogram<float> segment=proj_data.get_segment_by_sinogram(s);
-        std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
-        std::advance(array_iter, segment.size_all());
-        if (s!=0)
-          {
-            segment=proj_data.get_segment_by_sinogram(-s);
-            std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
-            std::advance(array_iter, segment.size_all());
-          }
-      }
-    return array;
+      Array<3,float> array = create_array_for_proj_data(proj_data);
+      Array<3,float>::full_iterator array_iter = array.begin_all();
+      //    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
+      //      {
+      //        SegmentBySinogram<float> segment=proj_data.get_segment_by_sinogram(s);
+      //        std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+      //        std::advance(array_iter, segment.size_all());
+      //        if (s!=0)
+      //          {
+      //            segment=proj_data.get_segment_by_sinogram(-s);
+      //            std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+      //            std::advance(array_iter, segment.size_all());
+      //          }
+      //      }
+      proj_data.copy_to(array_iter);
+      return array;
   }
 
   // inverse of the above function
   void fill_proj_data_from_3D(ProjData& proj_data, const Array<3,float>& array)
   {
-    int num_sinos=proj_data.get_num_axial_poss(0);
-    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
-      {
-        num_sinos += 2*proj_data.get_num_axial_poss(s);
-      }
-    if (array.size() != static_cast<std::size_t>(num_sinos)||
-        array[0].size() != static_cast<std::size_t>(proj_data.get_num_views()) || 
-        array[0][0].size() != static_cast<std::size_t>(proj_data.get_num_tangential_poss()))
-      {
-        throw std::runtime_error("Incorrect size for filling this projection data");
-      }
-    Array<3,float>::const_full_iterator array_iter = array.begin_all();
-
-    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
-      {
-        SegmentBySinogram<float> segment=proj_data.get_empty_segment_by_sinogram(s);
-        // cannot use std::copy sadly as needs end-iterator for range
-        for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
-             seg_iter != segment.end_all();
-             /*empty*/)
-          *seg_iter++ = *array_iter++;
-        proj_data.set_segment(segment);
-
-        if (s!=0)
-          {
-            segment=proj_data.get_empty_segment_by_sinogram(-s);
-            for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
-                 seg_iter != segment.end_all();
-                 /*empty*/)
-              *seg_iter++ = *array_iter++;
-            proj_data.set_segment(segment);
-          }
-      }
+      //    int num_sinos=proj_data.get_num_axial_poss(0);
+      //    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
+      //      {
+      //        num_sinos += 2*proj_data.get_num_axial_poss(s);
+      //      }
+      //    if (array.size() != static_cast<std::size_t>(num_sinos)||
+      //        array[0].size() != static_cast<std::size_t>(proj_data.get_num_views()) ||
+      //        array[0][0].size() != static_cast<std::size_t>(proj_data.get_num_tangential_poss()))
+      //      {
+      //        throw std::runtime_error("Incorrect size for filling this projection data");
+      //      }
+      Array<3,float>::const_full_iterator array_iter = array.begin_all();
+      //
+      //    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
+      //      {
+      //        SegmentBySinogram<float> segment=proj_data.get_empty_segment_by_sinogram(s);
+      //        // cannot use std::copy sadly as needs end-iterator for range
+      //        for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
+      //             seg_iter != segment.end_all();
+      //             /*empty*/)
+      //          *seg_iter++ = *array_iter++;
+      //        proj_data.set_segment(segment);
+      //
+      //        if (s!=0)
+      //          {
+      //            segment=proj_data.get_empty_segment_by_sinogram(-s);
+      //            for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
+      //                 seg_iter != segment.end_all();
+      //                 /*empty*/)
+      //              *seg_iter++ = *array_iter++;
+      //            proj_data.set_segment(segment);
+      //          }
+      //      }
+      proj_data.fill_from(array_iter);
   }
   
   
@@ -1416,23 +1419,38 @@ namespace stir {
 
  // reconstruction
 #ifdef STIRSWIG_SHARED_PTR
-%shared_ptr(stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >);
-%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMean<stir::DiscretisedDensity<3,float> >);
 #define TargetT stir::DiscretisedDensity<3,float>
+
+%shared_ptr(stir::GeneralisedObjectiveFunction<TargetT >);
+%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT >);
 %shared_ptr(stir::RegisteredParsingObject<stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >,
 	    stir::GeneralisedObjectiveFunction<TargetT >,
 	    stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT > >);
-#undef TargetT
 
-%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<stir::DiscretisedDensity<3,float> >);
+%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >);
 
-%shared_ptr(stir::Reconstruction<stir::DiscretisedDensity<3,float> >);
-%shared_ptr(stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >);
-%shared_ptr(stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >);
-%shared_ptr(stir::OSSPSReconstruction<stir::DiscretisedDensity<3,float> >);
+%shared_ptr(stir::Reconstruction<TargetT >);
+%shared_ptr(stir::IterativeReconstruction<TargetT >);
+
+%shared_ptr(stir::RegisteredParsingObject<
+	      stir::OSMAPOSLReconstruction <TargetT > ,
+	      stir::Reconstruction < TargetT >,
+	      stir::IterativeReconstruction < TargetT >
+            >)
+%shared_ptr(stir::RegisteredParsingObject<
+	      stir::OSSPSReconstruction <TargetT > ,
+	      stir::Reconstruction < TargetT >,
+	      stir::IterativeReconstruction < TargetT >
+            >)
+
+%shared_ptr(stir::OSMAPOSLReconstruction<TargetT >);
+%shared_ptr(stir::OSSPSReconstruction<TargetT >);
 %shared_ptr(stir::AnalyticReconstruction);
 %shared_ptr(stir::FBP2DReconstruction);
 %shared_ptr(stir::FBP3DRPReconstruction);
+
+#undef TargetT
+
 #endif
 
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
@@ -1451,13 +1469,13 @@ namespace stir {
 %include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 %include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
-
-
-%template (GeneralisedObjectiveFunction3DFloat) stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >;
-//%template () stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >;
-%template (PoissonLogLikelihoodWithLinearModelForMean3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMean<stir::DiscretisedDensity<3,float> >;
-
 #define TargetT stir::DiscretisedDensity<3,float>
+
+
+%template (GeneralisedObjectiveFunction3DFloat) stir::GeneralisedObjectiveFunction<TargetT >;
+//%template () stir::GeneralisedObjectiveFunction<TargetT >;
+%template (PoissonLogLikelihoodWithLinearModelForMean3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT >;
+
 // TODO do we really need this name?
 // Without it we don't see the parsing functions in python...
 // Note: we cannot start it with __ as then we we get a run-time error when we're not using the builtin option
@@ -1465,7 +1483,7 @@ namespace stir {
   stir::GeneralisedObjectiveFunction<TargetT >,
   stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT > >;
 
-%template (PoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<stir::DiscretisedDensity<3,float> >;
+%template (PoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >;
 
 %inline %{
   template <class T>
@@ -1475,16 +1493,29 @@ namespace stir {
 }
 %}
 
-%template(ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData<stir::DiscretisedDensity<3,float> >;
+%template(ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >;
 
 
-%template (Reconstruction3DFloat) stir::Reconstruction<stir::DiscretisedDensity<3,float> >;
-//%template () stir::Reconstruction<stir::DiscretisedDensity<3,float> >;
-%template (IterativeReconstruction3DFloat) stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
-//%template () stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
-%template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >;
-%template (OSSPSReconstruction3DFloat) stir::OSSPSReconstruction<stir::DiscretisedDensity<3,float> >;
+%template (Reconstruction3DFloat) stir::Reconstruction<TargetT >;
+//%template () stir::Reconstruction<TargetT >;
+%template (IterativeReconstruction3DFloat) stir::IterativeReconstruction<TargetT >;
+//%template () stir::IterativeReconstruction<TargetT >;
 
+%template (RPOSMAPOSLReconstruction3DFloat) stir::RegisteredParsingObject<
+	      stir::OSMAPOSLReconstruction <TargetT > ,
+	      stir::Reconstruction < TargetT >,
+	      stir::IterativeReconstruction < TargetT >
+              >;
+%template (RPOSSPSReconstruction) stir::RegisteredParsingObject<
+	      stir::OSSPSReconstruction <TargetT > ,
+	      stir::Reconstruction < TargetT >,
+	      stir::IterativeReconstruction < TargetT >
+            >;
+
+%template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<TargetT >;
+%template (OSSPSReconstruction3DFloat) stir::OSSPSReconstruction<TargetT >;
+
+#undef TargetT
 
 /// projectors
 %shared_ptr(stir::ForwardProjectorByBin);

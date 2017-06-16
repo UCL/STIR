@@ -6,25 +6,53 @@ compiler:
   - clang
   - gcc
 
-# Latest supported Ubuntu
+# Cross-operating system test
+os:
+  - linux
+  - osx
+
+# Enviroment variables:
+global:
+  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON=1 -DSTIR_MPI=0 -DBUILD_SWIG_MATLAB=0 -DSTIR_OPENMP=0 -DCMAKE_BUILD_TYPE=Release"
+env:
+  - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0"
+  - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1"
+
+# Ubuntu 14.04 LTS (trusty)
 dist: trusty
 
 # No need for sudo
 sudo: false
 
-
 # Compilation dependencies
 addons:
   apt:
     packages:
-    - libboost-all-dev
-    - swig
+      - libboost-all-dev
+      - swig
+      - libgomp1
+      - root-system-bin
 
 # Actual compilation script
-# cmake parameters could be refined
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew tap homebrew/science; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install --with-cocoa root; fi
+
 script:
-  - mkdir build
+  - mkdir build install
   - cd build
-  - cmake ..
-  - make -j 8
+  - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS ..
+  - make -j 8 all
   - make test
+  - make DESTDIR=$TRAVIS_BUILD_DIR/install all install
+  - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/usr/local/bin
+  - cd $TRAVIS_BUILD_DIR/recon_test_pack
+  - ./run_test_simulate_and_recon.sh
+  - ./run_test_simulate_and_recon_with_motion.sh
+  - ./run_scatter_tests.sh
+  - ./run_tests.sh --nointbp
+  -  if [[ "$TRAVIS_OS_NAME" == "osx" && $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT_SUPPORT=0"* ]]; then ./run_root_GATE.sh; fi
+  - cd $TRAVIS_BUILD_DIR/recon_test_pack/SPECT
+  - ./run_SPECT_tests.sh

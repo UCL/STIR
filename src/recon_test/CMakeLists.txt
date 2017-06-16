@@ -38,9 +38,9 @@ include(stir_test_exe_targets)
 # a test that uses MPI
 create_stir_mpi_test(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
 
-# we currently need fwdtest for the recon_test_pack, and it (and bcktest)
-# could be useful on their own, so we'll add them to the installation targets
-
-install(TARGETS fwdtest bcktest DESTINATION bin)
+# fwdtest and bcktest could be useful on their own, so we'll add them to the installation targets
+if (BUILD_TESTING)
+  install(TARGETS fwdtest bcktest DESTINATION bin)
+endif()
 
 # TODO test_modelling.sh

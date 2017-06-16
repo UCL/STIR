@@ -329,6 +329,30 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_time_gate_definitions(const TimeGateDefinitions & time_gate_definitions)
 { this->_time_gate_definitions=time_gate_definitions; }
 
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+set_input_data(const shared_ptr<ExamData> & arg)
+{
+    this->_gated_proj_data_sptr = boost::dynamic_pointer_cast<GatedProjData>(arg);
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
+{
+    this->_additive_gated_proj_data_sptr = boost::dynamic_pointer_cast<GatedProjData>(arg);
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
+{
+//  this->normalisation_sptr = arg;
+    error("Not implemeted yet");
+}
 
 /***************************************************************
   set_up()
@@ -534,7 +558,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
       gated_output[gate_num]*=scale_factor[gate_num];
     } // end of loop over gates
   this->_reverse_motion_vectors.warp_image(output,gated_output);  
-  output/=this->get_time_gate_definitions().get_num_gates(); //Normalizing to get the average value to test if OSSPS works.
+  output/=static_cast<float>(this->get_time_gate_definitions().get_num_gates()); //Normalizing to get the average value to test if OSSPS works.
   return Succeeded::yes;
 }
 

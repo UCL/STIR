@@ -55,6 +55,17 @@
 #endif
 #include "stir/IO/ECAT8_32bitListmodeInputFileFormat.h"
 
+//! Addition for SAFIR listmode input file format
+#include "stir/IO/SAFIRCListmodeInputFileFormat.h"
+
+
+//! Addition for ROOT support - Nikos Efthimiou
+#ifdef HAVE_CERN_ROOT
+#include "stir/IO/ROOTListmodeInputFileFormat.h"
+#include "stir/IO/InputStreamFromROOTFileForCylindricalPET.h"
+#include "stir/IO/InputStreamFromROOTFileForECATPET.h"
+#endif
+
 #ifdef HAVE_ITK
 #include "stir/IO/ITKOutputFileFormat.h"
 #include "stir/IO/ITKImageInputFileFormat.h"
@@ -68,6 +79,20 @@ static ITKOutputFileFormat::RegisterIt dummyITK1;
 #endif
 static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfIn;
 static InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfIn;
+
+//! Support for SAFIR listmode file format
+static RegisterInputFileFormat<SAFIRCListmodeInputFileFormat> LMdummySAFIR(4);
+
+
+//!
+//! \brief LMdummyROOT
+//! \author Nikos Efthimiou
+//! \details ROOT support
+#ifdef HAVE_CERN_ROOT
+static RegisterInputFileFormat<ROOTListmodeInputFileFormat> LMdummyROOT(6);
+static InputStreamFromROOTFileForCylindricalPET::RegisterIt dummy60606;
+static InputStreamFromROOTFileForECATPET::RegisterIt dummy606062;
+#endif
 
 #ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT
