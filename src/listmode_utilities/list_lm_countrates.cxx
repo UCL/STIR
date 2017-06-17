@@ -6,13 +6,14 @@
   in subsequent time intervals.
   The current output is a file with 4 columns:
   \verbatim
-  start_time , end_time , num_prompts , num_delayeds
+  start_time_in_secs , end_time_in_secs , num_prompts , num_delayeds
   \endverbatim
 
   \author Kris Thielemans
 */
 /*
     Copyright (C) 2003- 2012, Hammersmith Imanet Ltd
+    Copyright (C) 2017, University College London
     See STIR/LICENSE.txt for details
 */
 #include "stir/listmode/CListModeData.h"
@@ -32,8 +33,10 @@ USING_NAMESPACE_STIR
 int main(int argc, char * argv[])
 {
   if (argc<3 || argc>4) {
-    std::cerr << "Usage: " << argv[0] << "hc_filename listmode_file [time_interval_in_secs]\n"
-	 << "time_interval_in_secs defaults to 1\n";
+    std::cerr << "Usage: " << argv[0] << "output_filename listmode_file [time_interval_in_secs]\n"
+	 << "time_interval_in_secs defaults to 1\n"
+	 << "Output is a file with the count-rates per time interval in CSV format as in\n"
+	 << "start_time_in_secs , end_time_in_secs , num_prompts , num_delayeds\n";
     exit(EXIT_FAILURE);
   }
   shared_ptr<CListModeData> lm_data_ptr
