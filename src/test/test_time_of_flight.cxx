@@ -83,7 +83,7 @@ public:
 // Helper class.
 class FloatFloat{
 public:
-    FloatFloat() { float1 = 0f; float2 = 0f;}
+    FloatFloat() { float1 = 0.f; float2 = 0.f;}
     float float1;
     float float2;
 };
