@@ -30,6 +30,7 @@
 
 #include "stir/utilities.h"
 #include <string>
+#include "H5Cpp.h"
 
 START_NAMESPACE_STIR
 
@@ -46,13 +47,46 @@ public InputFileFormat<CListModeData >
   {  return "GESigna"; }
 
  protected:
-  virtual 
-    bool 
+
+ virtual 
+ bool 
     actual_can_read(const FileSignature& signature,
 		    std::istream& input) const
   {
-    // TODO need to do check that it's a GE HDF5 list file etc
-    return true;
+    error("Cannot read from stream");
+    return false; 
+  }
+ 
+  virtual bool 
+    can_read(const FileSignature& signature,
+	     const std::string& filename) const
+  {
+    // check that it's a GE HDF5 list file etc
+    try
+      {
+	H5::H5File file;
+	file.openFile( filename, H5F_ACC_RDONLY );
+    /*
+  std::string read_str_scanner;
+std::string read_str_manufacturer;
+
+
+H5::DataSet dataset=this->file.openDataSet("/HeaderData/ExamData/scannerDesc");
+H5::DataSet dataset2=this->file.openDataSet("/HeaderData/ExamData/manufacturer");
+
+dataset.read(read_str_scanner,vlst);
+std::cout << "\n Scanner :  " << read_str_scanner << "\n\n"; 
+
+dataset2.read(read_str_manufacturer,vlst);
+std::cout << "\n Manufacturer :  " << read_str_manufacturer << "\n\n"; 
+    */
+	return true;
+      }
+    catch (...)
+      {
+	// it failed for some reason
+	return false;
+      }
   }
  public:
   virtual std::auto_ptr<data_type>
