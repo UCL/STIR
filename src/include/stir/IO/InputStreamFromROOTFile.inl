@@ -57,9 +57,6 @@ Succeeded
 InputStreamFromROOTFile::
 set_get_position(const InputStreamFromROOTFile::SavedPosition& pos)
 {
-    if (current_position == nentries)
-        return Succeeded::no;
-
     assert(pos < saved_get_positions.size());
     if (saved_get_positions[pos] > nentries)
         current_position = nentries; // go to eof
