@@ -43,7 +43,8 @@ CMakeLists.txt
 Supporting files
 ----------------
 extra_stir_dirs.cmake
-	A sub-cmakefile that needs to be moved to STIR/src/local. This way, it
+	A sub-cmakefile that needs to be moved to STIR/src/local (or at least
+ 	pointed to, see below). This way, it
 	will be picked up by CMake. Its contents simply say
 	that there are extra files in examples/src.
 
@@ -70,13 +71,22 @@ small.*s
 
 How to compile using CMake (on Unix-type systems)
 -----------------------------------------------
+# step 1: tell STIR to use these files. 2 alternatives
+
+# alternative 1: copy extra_stir_dirs.cmake to a default location
 mkdir -p ../src/local
 cp extra_stir_dirs.cmake ../src/local/
 cd your-build-dir
 # reconfigure your project
 ccmake .
+
+# alternative 2: set STIR_LOCAL to this directory
+cd your-build-dir
+# reconfigure your project
+ccmake -DSTIR_LOCAL=/where/ever/the/STIR/source/is/STIR/examples/src  .
+
 # make the examples
-make examples
+make demo1 demo2 demo3
 # optionally install everything, including the demos
 make install
 
@@ -91,7 +101,7 @@ First you need to create some data.
       forward_project sino.hs image.hv  small.hs
 
 # Run the demos.
-EXE_LOC=/whereever/you/built/STIR/examples/src
+EXE_LOC=/whereever/you/built/STIR/src/examples/src
 
 	$EXE_LOC/demo1
 # you can display the output using for instance
