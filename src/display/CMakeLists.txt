@@ -29,9 +29,8 @@ if( "${GRAPHICS}" STREQUAL "X")
 
 elseif("${GRAPHICS}" STREQUAL "PGM")
 	ADD_DEFINITIONS(-DSTIR_PGM)
-#else()
-# TODO
-#ifeq "$(GRAPHICS)" "MATHLINK"
+elseif("$(GRAPHICS)" STREQUAL "MATHLINK")
+  message(FATAL_ERROR "Mathlink (i.e. Mathematica) support needs to be fixed. sorry.")
 # this presumably needs a Mathlink library, depends on your system though
 #GRAPH_LIBS =
 #GRAPHOPT = -DSTIR_MATHLINK

@@ -51,7 +51,7 @@ improvements to the documentation.
 </p>
 
 <p>This release contains mainly code written by Kris Thielemans and Nikos Efthimiou (UCL),
-but with some contributions by Jannis Fischer (ETH Zurich). Various bits
+but with some contributions by Jannis Fischer (ETH Zurich) and Elise Emond (UCL). Various bits
 were tested by (in alphabetical order, all UCL except where indicated):
 Ottavia Bertolli, Matthias Ehrhardt, Pawel Markiewicz, Richard Manber,
 Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
@@ -86,7 +86,7 @@ Please note that you cannot enable both OPENMP and MPI.</li>
 These are only minimally documented at the present stage unfortunately.
 </li>
 <li>We now include a shell script for easier scatter estimation.</li>
-<li><tt>lm_generate_headcurve</tt> is a new list mode utility to output total counts.</li>
+<li><tt>list_lm_countrates</tt> is a new list mode utility to output total counts per specified time interval.</li>
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
 <li>add Verbosity level (currently only to be set from interactive languages)</li>
 <li>New input: GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. </li>
@@ -161,7 +161,9 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 <h3>Minor bug fixes</h3>
 <ul>
 <li>fix HighResWallClockTimer on Linux and Win32 which caused reporting wrong timings in certain situations</li>
-<li>In <code>ProjMatrixByBin.h</code> the name of <code>DataSymmetriesForBins</code> is corrected to <code>symmetries_sptr</code>.</li>
+<li><code>LmToProjData</code> crashed when a template was used which was incompatible with the unlisting (e.g. a arc-corrected template for
+most cylindrical scanners).
+</li>
 </ul>
 
 <h3>Documentation changes</h3>
@@ -222,6 +224,11 @@ In order to ensure backwards compatibility, at the moment, it is completely opti
   In the next version, they will only accept 1 argument. Use <code>boost::format</code>.</li>
 <li><code>get_proj_data_info_ptr()</code> and <code>get_scanner_ptr()</code> should no longer be used as they
 can create problems with the lifetime of objects. Use <code>get..._sptr</code> instead.</li>
+<li><code>ClistEvent::is_valid_template</code> is a new (pure) virtual function
+which is called by <code>LmToProjData</code> to check if the list mode format
+can handle the template.
+All derived classes of <code>CListEvent</code> will need to implement it.
+</li>
 </ul>
 
 </body>
