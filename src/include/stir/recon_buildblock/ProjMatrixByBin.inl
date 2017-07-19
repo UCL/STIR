@@ -193,9 +193,13 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& nonTOF_probabilities
     float low_dist = 0.f;
     float high_dist = 0.f;
 
-    float lor_length = std::sqrt((point1.x() - point2.x()) *(point1.x() - point2.x()) +
+    float lor_length = 1 / (0.5 * std::sqrt((point1.x() - point2.x()) *(point1.x() - point2.x()) +
                                  (point1.y() - point2.y()) *(point1.y() - point2.y()) +
-                                 (point1.z() - point2.z()) *(point1.z() - point2.z()));
+                                 (point1.z() - point2.z()) *(point1.z() - point2.z())));
+
+    // THe direction can be from 1 -> 2 depending on the bin sign.
+    const CartesianCoordinate3D<float> middle = (point1 + point2)/2.f;
+    const CartesianCoordinate3D<float> difference = point2 - middle;
 
     for (ProjMatrixElemsForOneBin::iterator element_ptr = nonTOF_probabilities.begin();
          element_ptr != nonTOF_probabilities.end(); ++element_ptr)
@@ -205,30 +209,22 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& nonTOF_probabilities
 
         project_point_on_a_line(point1, point2, voxel_center );
 
-        float d1 = std::sqrt((point1.x() - voxel_center.x()) *(point1.x() - voxel_center.x()) +
-                             (point1.y() - voxel_center.y()) *(point1.y() - voxel_center.y()) +
-                             (point1.z() - voxel_center.z()) *(point1.z() - voxel_center.z()));
+        CartesianCoordinate3D<float> x = voxel_center - middle;
 
-        // This might be risky.
-        // The advantage is significant speed up.
-        //                float d2 = std::sqrt( (point2.x() - voxel_center.x()) *(point2.x() - voxel_center.x()) +
-        //                                      (point2.y() - voxel_center.y()) *(point2.y() - voxel_center.y()) +
-        //                                      (point2.z() - voxel_center.z()) *(point2.z() - voxel_center.z()));
+        float d1 = - inner_product(x, difference) * lor_length;
 
-        float m = (lor_length - d1 - d1) * 0.5f;
-        low_dist = (proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].low_lim - m) * r_sqrt2_gauss_sigma;
-        high_dist = (proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].high_lim - m) * r_sqrt2_gauss_sigma;
-
-        // Cut-off really small values.
-        // Currently deactivate untill I run all the tests.
-        //if (abs(low_dist) > 5.5 && abs(high_dist) > 5.5)
-            //continue;
+        low_dist = (proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].low_lim -d1) * r_sqrt2_gauss_sigma;
+        high_dist = (proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].high_lim -d1) * r_sqrt2_gauss_sigma;
 
         get_tof_value(low_dist, high_dist, new_value);
+//        std::cout <<d1 << " " <<  new_value << std::endl;
         new_value *=  element_ptr->get_value();
+        //if (new_value <= 0.000001F) // Too small to bother?
+        //    continue;
         tof_probabilities.push_back(ProjMatrixElemsForOneBin::value_type(element_ptr->get_coords(), new_value));
 
     }
+//    int nikos= 0;
 }
 
 void

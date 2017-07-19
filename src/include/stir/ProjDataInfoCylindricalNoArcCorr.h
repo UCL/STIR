@@ -245,8 +245,12 @@ public:
 			 const int timing_pos_num = 0) const;
 
   //! This routine gets the detector pair corresponding to a bin.
-  */
+
   inline void
+  get_det_pair_for_bin(
+               int& det_num1, int& ring_num1,
+               int& det_num2, int& ring_num2,
+               const Bin& bin) const;
 
   //@}
 

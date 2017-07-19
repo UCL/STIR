@@ -168,18 +168,18 @@ get_bin_for_det_pos_pair(Bin& bin,
 void
 ProjDataInfoCylindricalNoArcCorr::
 get_det_pair_for_bin(
-		     int& det_num1, int& ring_num1,
-		     int& det_num2, int& ring_num2,
-		     const Bin& bin) const
+             int& det_num1, int& ring_num1,
+             int& det_num2, int& ring_num2,
+             const Bin& bin) const
 {
   if (bin.timing_pos_num()>=0)
   {
-	get_det_num_pair_for_view_tangential_pos_num(det_num1, det_num2, bin.view_num(), bin.tangential_pos_num());
+    get_det_num_pair_for_view_tangential_pos_num(det_num1, det_num2, bin.view_num(), bin.tangential_pos_num());
     get_ring_pair_for_segment_axial_pos_num( ring_num1, ring_num2, bin.segment_num(), bin.axial_pos_num());
   }
   else
   {
-	get_det_num_pair_for_view_tangential_pos_num(det_num2, det_num1, bin.view_num(), bin.tangential_pos_num());
+    get_det_num_pair_for_view_tangential_pos_num(det_num2, det_num1, bin.view_num(), bin.tangential_pos_num());
     get_ring_pair_for_segment_axial_pos_num( ring_num2, ring_num1, bin.segment_num(), bin.axial_pos_num());
   }
 }
@@ -187,12 +187,12 @@ get_det_pair_for_bin(
 void
 ProjDataInfoCylindricalNoArcCorr::
 get_det_pos_pair_for_bin(
-		     DetectionPositionPair<>& dp,
-		     const Bin& bin) const
+             DetectionPositionPair<>& dp,
+             const Bin& bin) const
 {
   //lousy work around because types don't match TODO remove!
 #if 1
-  int t1=dp.pos1().tangential_coord(), 
+  int t1=dp.pos1().tangential_coord(),
     a1=dp.pos1().axial_coord(),
     t2=dp.pos2().tangential_coord(),
     a2=dp.pos2().axial_coord();
@@ -207,7 +207,7 @@ get_det_pos_pair_for_bin(
 
   get_det_pair_for_bin(dp.pos1().tangential_coord(),
                        dp.pos1().axial_coord(),
-		       dp.pos2().tangential_coord(),
+               dp.pos2().tangential_coord(),
                        dp.pos2().axial_coord(),
                        bin);
 #endif
