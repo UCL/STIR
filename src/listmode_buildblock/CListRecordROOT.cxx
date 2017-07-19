@@ -51,6 +51,7 @@ void CListEventROOT::get_detection_position(DetectionPositionPair<>& _det_pos) c
 
     _det_pos.pos1() = det1;
     _det_pos.pos2() = det2;
+    _det_pos.timing_pos() = this->get_uncompressed_proj_data_info_sptr()->get_tof_bin(delta_time);
 }
 
 void CListEventROOT::set_detection_position(const DetectionPositionPair<>&)
@@ -77,24 +78,10 @@ void CListEventROOT::init_from_data(const int& _ring1, const int& _ring2,
     else if ( det2 >= scanner_sptr->get_num_detectors_per_ring())
         det2 = det2 - scanner_sptr->get_num_detectors_per_ring();
 
-    if (det1 > det2)
-    {
-        int tmp = det1;
-        det1 = det2;
-        det2 = tmp;
-
-        ring1 = _ring2;
-        ring2 = _ring1;
-        delta_time = -_delta_time;
-        swapped = true;
-    }
-    else
-    {
-        ring1 = _ring1;
-        ring2 = _ring2;
-        delta_time = _delta_time;
-        swapped = false;
-    }
+    ring1 = _ring1;
+    ring2 = _ring2;
+    delta_time = _delta_time;
+    swapped = false;
 }
 
 END_NAMESPACE_STIR

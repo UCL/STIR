@@ -331,7 +331,7 @@ public:
   */
   virtual 
     Bin
-    get_bin(const LOR<float>&) const = 0;
+    get_bin(const LOR<float>&,const double delta_time = 0.0) const = 0;
 
   //! \name Equality of ProjDataInfo objects
   //@{

@@ -547,7 +547,8 @@ get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor,
     LORInAxialAndNoArcCorrSinogramCoordinates<float>(z1, z2,
 						     phi,
 						     asin(s_in_mm/get_ring_radius()),
-						     get_ring_radius());
+						     get_ring_radius(),
+							 bin.timing_pos_num()>=0);
 }  
 
 void
@@ -578,16 +579,20 @@ get_LOR_as_two_points(CartesianCoordinate3D<float>& coord_1,
     coord_2.x() = s_in_mm*cos(phi) + max_a*sin(phi);
     coord_2.y() = s_in_mm*sin(phi) - min_a*cos(phi);
     coord_2.z() = m_in_mm - min_a*tantheta;
+
+    if (bin.timing_pos_num()<0)
+    	std::swap(coord_1, coord_2);
 }
 
 void
 ProjDataInfoCylindrical::
 get_LOR_as_two_points_alt(CartesianCoordinate3D<float>& coord_1,
                           CartesianCoordinate3D<float>& coord_2,
-                          const int& det1,
-                          const int& det2,
-                          const int& ring1,
-                          const int& ring2) const
+                          const int det1,
+                          const int det2,
+                          const int ring1,
+                          const int ring2,
+                          const int timing_pos) const
 {
     const int num_detectors_per_ring =
             get_scanner_ptr()->get_num_detectors_per_ring();
@@ -612,6 +617,9 @@ get_LOR_as_two_points_alt(CartesianCoordinate3D<float>& coord_1,
     LORAs2Points<float> lor(cyl_coords);
     coord_1 = lor.p1();
     coord_2 = lor.p2();
+
+	if (timing_pos<0)
+		std::swap(coord_1, coord_2);
 }
 
 string

@@ -54,7 +54,7 @@ CListModeDataROOT(const std::string& listmode_filename)
     max_num_timing_bins = -1;
     size_timing_bin = -1.f;
     timing_resolution = -1.f;
-    tof_mash_factor = -1;
+    tof_mash_factor = 1;
 
     // Scanner related & Physical dimentions.
     this->parser.add_key("originating system", &this->originating_system);
@@ -76,8 +76,8 @@ CListModeDataROOT(const std::string& listmode_filename)
     //    this->parser.add_key("%number_of_segments", &number_of_segments);
 
     this->parser.add_key("number of TOF time bins", &this->max_num_timing_bins);
-    this->parser.add_key("Size of timing bin (in picoseconds)", &this->size_timing_bin);
-    this->parser.add_key("Timing resolution (in picoseconds)", &this->timing_resolution);
+    this->parser.add_key("Size of timing bin (ps)", &this->size_timing_bin);
+    this->parser.add_key("Timing resolution (ps)", &this->timing_resolution);
 
     this->parser.add_key("%TOF mashing factor", &this->tof_mash_factor);
     //
@@ -160,9 +160,11 @@ CListModeDataROOT(const std::string& listmode_filename)
                                   num_rings-1,
                                   num_detectors_per_ring/2,
                                   max_num_non_arccorrected_bins,
-                                  /* arc_correction*/false));
-    if (tof_mash_factor > 0)
-        this->proj_data_info_sptr->set_tof_mash_factor(tof_mash_factor);
+                                  /* arc_correction*/false,
+                                  tof_mash_factor));
+
+    if (tof_mash_factor != 1)
+        error("TOF mashing factor for ROOT different from 1 not implemented yet.");
 }
 
 std::string

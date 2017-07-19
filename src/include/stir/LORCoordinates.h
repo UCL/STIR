@@ -346,7 +346,8 @@ class LORInAxialAndSinogramCoordinates
   coordT& s()           { check_state(); return _s; }
 
   coordT beta() const   { check_state(); return asin(_s/private_base_type::_radius); }
-
+  bool is_swapped() const { check_state(); return _swapped; }
+  bool is_swapped() { check_state(); return _swapped; }
   inline explicit
   LORInAxialAndSinogramCoordinates(const coordT radius = 1);
 
@@ -360,7 +361,8 @@ class LORInAxialAndSinogramCoordinates
 				   const coordT z2,
 				   const coordT phi,
 				   const coordT s,
-				   const coordT radius =1);
+				   const coordT radius =1,
+                   const bool swapped =false);
 
   inline
     LORInAxialAndSinogramCoordinates(const LORInCylinderCoordinates<coordT>&);
@@ -422,6 +424,7 @@ class LORInAxialAndSinogramCoordinates
  private:
   coordT _phi;
   coordT _s;
+  bool _swapped;
 
 };
 
@@ -455,6 +458,8 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
   coordT& phi()         { check_state(); return _phi; }
   coordT beta() const   { check_state(); return _beta; }
   coordT& beta()        { check_state(); return _beta; }
+  bool is_swapped() const { check_state(); return _swapped; }
+  bool is_swapped() { check_state(); return _swapped; }
 
   coordT s() const      { check_state(); return private_base_type::_radius*sin(_beta); }
 
@@ -491,7 +496,8 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
 				   const coordT z2,
 				   const coordT phi,
 				   const coordT beta,
-				   const coordT radius =1);
+				   const coordT radius =1,
+	               const bool swapped =false);
 
   inline
     LORInAxialAndNoArcCorrSinogramCoordinates(const LORInCylinderCoordinates<coordT>&);
@@ -532,6 +538,7 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
  private:
   coordT _phi;
   coordT _beta;
+  bool _swapped;
 };
 
 /*! \ingroup LOR

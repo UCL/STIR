@@ -594,7 +594,7 @@ run_tests()
 				  /*views*/ scanner_ptr->get_num_detectors_per_ring()/2, 
 				  /*tang_pos*/64, 
 				  /*arc_corrected*/ false));
-    test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr));
+  test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr));
 
   cerr << "\nTests with proj_data_info with mashing and axial compression\n\n";
   proj_data_info_ptr.reset(
@@ -603,9 +603,18 @@ run_tests()
                   /*views*/ scanner_ptr->get_num_detectors_per_ring()/2/8,
                   /*tang_pos*/64,
                   /*arc_corrected*/ false));
-    test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr));
+  test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr));
 
   cerr << "\nTests with proj_data_info with time-of-flight\n\n";
+  shared_ptr<Scanner> scanner_tof_ptr(new Scanner(Scanner::PETMR_Signa));
+  proj_data_info_ptr.reset(
+    ProjDataInfo::ProjDataInfoCTI(scanner_tof_ptr,
+                  /*span*/11, scanner_tof_ptr->get_num_rings()-1,
+                  /*views*/ scanner_tof_ptr->get_num_detectors_per_ring()/2,
+                  /*tang_pos*/64,
+                  /*arc_corrected*/ false,
+                  /*tof_mashing*/39));
+    test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr));
 }
 
 void
@@ -759,50 +768,54 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
     Bin bin(0,0,0,0,0,0.0f);
 	// set value for comparison later on
     bin.set_bin_value(0.f);
-	for (bin.segment_num() = max(-5,proj_data_info.get_min_segment_num()); 
-	     bin.segment_num() <= min(5,proj_data_info.get_max_segment_num()); 
-	     ++bin.segment_num())
-	  for (bin.axial_pos_num() = proj_data_info.get_min_axial_pos_num(bin.segment_num());
-	       bin.axial_pos_num() <= proj_data_info.get_max_axial_pos_num(bin.segment_num());
-	       ++bin.axial_pos_num())
+    for (bin.timing_pos_num() = proj_data_info.get_min_tof_pos_num();
+         bin.timing_pos_num() <= proj_data_info.get_max_tof_pos_num();
+         ++bin.timing_pos_num())
+      for (bin.segment_num() = max(-5,proj_data_info.get_min_segment_num());
+           bin.segment_num() <= min(5,proj_data_info.get_max_segment_num());
+           ++bin.segment_num())
+        for (bin.axial_pos_num() = proj_data_info.get_min_axial_pos_num(bin.segment_num());
+             bin.axial_pos_num() <= proj_data_info.get_max_axial_pos_num(bin.segment_num());
+             ++bin.axial_pos_num())
 #ifdef STIR_OPENMP
-            // insert a parallel for here for testing.
-            // we do it at this level to avoid too much overhead for the thread creation, while still having enough jobs to do
-            // Note that the omp construct needs an int loop variable
+              // insert a parallel for here for testing.
+              // we do it at this level to avoid too much overhead for the thread creation, while still having enough jobs to do             // Note that the omp construct needs an int loop variable
 #pragma omp parallel for firstprivate(bin)
 #endif
-            for (int tangential_pos_num = -(num_detectors/2)+1; 
-                 tangential_pos_num < num_detectors/2; 
-                 ++tangential_pos_num)
-              for (bin.view_num() = 0; bin.view_num() < num_detectors/2; ++bin.view_num())
-		{
-                  // set from for-loop variable
-                  bin.tangential_pos_num() = tangential_pos_num;
-          Bin new_bin(0,0,0,0,0,0.0f);
-		  // set value for comparison with bin
-		  new_bin.set_bin_value(0);
-		  DetectionPositionPair<> det_pos_pair;
-		  proj_data_info.get_det_pos_pair_for_bin(det_pos_pair, bin);
-	
-		  const bool there_is_a_bin =
-		    proj_data_info.get_bin_for_det_pos_pair(new_bin, 
-							    det_pos_pair) ==
-		    Succeeded::yes;
-		  if (!check(there_is_a_bin, "checking if there is a bin for this det_pos_pair") ||
-		      !check(bin == new_bin, "checking if we round-trip to the same bin"))
-		    {
-		      cerr << "Problem at  segment = " << bin.segment_num() 
-			   << ", axial pos " << bin.axial_pos_num()
-			   << ", view = " << bin.view_num() 
-			   << ", tangential_pos_num = " << bin.tangential_pos_num() << "\n";
-		      if (there_is_a_bin)
-			cerr  << "  bin -> dets -> bin, gives new numbers:\n\t"
-			      << "segment = " << new_bin.segment_num() 
-			      << ", axial pos " << new_bin.axial_pos_num()
-			      << ", view = " << new_bin.view_num() 
-			      << ", tangential_pos_num = " << new_bin.tangential_pos_num()
-			      << endl;
-		    }
+              for (int tangential_pos_num = -(num_detectors/2)+1;
+                   tangential_pos_num < num_detectors/2;
+                   ++tangential_pos_num)
+                for (bin.view_num() = 0; bin.view_num() < num_detectors/2; ++bin.view_num())
+          {
+                    // set from for-loop variable
+                    bin.tangential_pos_num() = tangential_pos_num;
+            Bin new_bin(0,0,0,0,0,0.0f);
+            // set value for comparison with bin
+            new_bin.set_bin_value(0);
+            DetectionPositionPair<> det_pos_pair;
+            proj_data_info.get_det_pos_pair_for_bin(det_pos_pair, bin);
+
+            const bool there_is_a_bin =
+              proj_data_info.get_bin_for_det_pos_pair(new_bin,
+                                  det_pos_pair) ==
+              Succeeded::yes;
+            if (!check(there_is_a_bin, "checking if there is a bin for this det_pos_pair") ||
+                !check(bin == new_bin, "checking if we round-trip to the same bin"))
+              {
+                cerr << "Problem at  segment = " << bin.segment_num()
+                 << ", axial pos " << bin.axial_pos_num()
+                 << ", view = " << bin.view_num()
+                 << ", tangential_pos_num = " << bin.tangential_pos_num() 
+				 << ", timing pos num = " << bin.timing_pos_num() << "\n";
+                if (there_is_a_bin)
+              cerr  << "  bin -> dets -> bin, gives new numbers:\n\t"
+                    << "segment = " << new_bin.segment_num()
+                    << ", axial pos " << new_bin.axial_pos_num()
+                    << ", view = " << new_bin.view_num()
+                    << ", tangential_pos_num = " << new_bin.tangential_pos_num()
+					<< ", timing pos num = " << new_bin.timing_pos_num()
+                    << endl;
+              }
 	
 		} // end of get_det_pos_pair_for_bin and back code
       }

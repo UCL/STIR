@@ -316,7 +316,8 @@ post_processing()
 											     1, scanner_ptr->get_num_rings()-1,
 											     scanner_ptr->get_num_detectors_per_ring()/2,
 											     scanner_ptr->get_default_num_arccorrected_bins(), 
-											     false)));
+											     false,
+											     1)));
       
       if ( normalisation_ptr->set_up(proj_data_info_cyl_uncompressed_ptr)
 	   != Succeeded::yes)

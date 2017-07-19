@@ -363,6 +363,7 @@ get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
 	  dps[current_dp_num].pos1().axial_coord() = rings_iter->first;
 	  dps[current_dp_num].pos2().tangential_coord() = det2_num;     
 	  dps[current_dp_num].pos2().axial_coord() = rings_iter->second;
+	  dps[current_dp_num].timing_pos() = bin.timing_pos_num();
 	  ++current_dp_num;
 	}
     }
@@ -579,7 +580,7 @@ find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
 
 Bin
 ProjDataInfoCylindricalNoArcCorr::
-get_bin(const LOR<float>& lor) const
+get_bin(const LOR<float>& lor,const double delta_time) const
 {
   Bin bin;
 #ifndef STIR_DEVEL
@@ -607,7 +608,7 @@ get_bin(const LOR<float>& lor) const
   if (ring1 >=0 && ring1<num_rings &&
       ring2 >=0 && ring2<num_rings &&
       get_bin_for_det_pair(bin,
-			   det1, ring1, det2, ring2) == Succeeded::yes &&
+			   det1, ring1, det2, ring2, get_tof_bin(delta_time)) == Succeeded::yes &&
       bin.tangential_pos_num() >= get_min_tangential_pos_num() &&
       bin.tangential_pos_num() <= get_max_tangential_pos_num())
     {
@@ -681,6 +682,10 @@ get_bin(const LOR<float>& lor) const
 #else
   // find nearest segment
   {
+    if (delta_time!=0)
+      {
+        error("TODO TOF");
+      }
     const float delta =
       (swap_direction 
        ? lor_coords.z1()-lor_coords.z2()

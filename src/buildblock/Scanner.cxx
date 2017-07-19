@@ -1064,7 +1064,10 @@ if (!close_enough(energy_resolution, scanner.energy_resolution) &&
       (num_transaxial_crystals_per_block == scanner.num_transaxial_crystals_per_block) &&
       (num_detector_layers == scanner.num_detector_layers) &&
       (num_axial_crystals_per_singles_unit == scanner.num_axial_crystals_per_singles_unit) &&
-      (num_transaxial_crystals_per_singles_unit == scanner.num_transaxial_crystals_per_singles_unit);
+      (num_transaxial_crystals_per_singles_unit == scanner.num_transaxial_crystals_per_singles_unit) &&
+      (max_num_of_timing_bins == scanner.max_num_of_timing_bins) &&
+      close_enough(size_timing_bin, scanner.size_timing_bin) &&
+	  close_enough(timing_resolution, scanner.timing_resolution);
 
 }
 

@@ -30,6 +30,7 @@
 
 #include "stir/Bin.h"
 #include "stir/Succeeded.h"
+#include "stir/round.h"
 #include <math.h>
 
 START_NAMESPACE_STIR
@@ -135,12 +136,19 @@ Succeeded
 ProjDataInfoCylindricalNoArcCorr::
 get_bin_for_det_pair(Bin& bin,
 		     const int det_num1, const int ring_num1,
-		     const int det_num2, const int ring_num2) const
+		     const int det_num2, const int ring_num2,
+			 const int timing_pos_num) const
 {  
   if (get_view_tangential_pos_num_for_det_num_pair(bin.view_num(), bin.tangential_pos_num(), det_num1, det_num2))
-    return get_segment_axial_pos_num_for_ring_pair(bin.segment_num(), bin.axial_pos_num(), ring_num1, ring_num2);
+  {
+	bin.timing_pos_num() = timing_pos_num;
+	return get_segment_axial_pos_num_for_ring_pair(bin.segment_num(), bin.axial_pos_num(), ring_num1, ring_num2);
+  }
   else
+  {
+	bin.timing_pos_num() = -timing_pos_num;
     return get_segment_axial_pos_num_for_ring_pair(bin.segment_num(), bin.axial_pos_num(), ring_num2, ring_num1);
+  }
 }
 
 Succeeded 
@@ -148,12 +156,14 @@ ProjDataInfoCylindricalNoArcCorr::
 get_bin_for_det_pos_pair(Bin& bin,
                          const DetectionPositionPair<>& dp) const
 {
+  assert(this->get_tof_mash_factor()>0);
   return
     get_bin_for_det_pair(bin,
                          dp.pos1().tangential_coord(),
                          dp.pos1().axial_coord(),
-		         dp.pos2().tangential_coord(),
-                         dp.pos2().axial_coord());
+                         dp.pos2().tangential_coord(),
+                         dp.pos2().axial_coord(),
+						 stir::round((float)dp.timing_pos()/this->get_tof_mash_factor()));
 }
 void
 ProjDataInfoCylindricalNoArcCorr::
@@ -162,8 +172,16 @@ get_det_pair_for_bin(
 		     int& det_num2, int& ring_num2,
 		     const Bin& bin) const
 {
-  get_det_num_pair_for_view_tangential_pos_num(det_num1, det_num2, bin.view_num(), bin.tangential_pos_num());
-  get_ring_pair_for_segment_axial_pos_num( ring_num1, ring_num2, bin.segment_num(), bin.axial_pos_num());
+  if (bin.timing_pos_num()>=0)
+  {
+	get_det_num_pair_for_view_tangential_pos_num(det_num1, det_num2, bin.view_num(), bin.tangential_pos_num());
+    get_ring_pair_for_segment_axial_pos_num( ring_num1, ring_num2, bin.segment_num(), bin.axial_pos_num());
+  }
+  else
+  {
+	get_det_num_pair_for_view_tangential_pos_num(det_num2, det_num1, bin.view_num(), bin.tangential_pos_num());
+    get_ring_pair_for_segment_axial_pos_num( ring_num2, ring_num1, bin.segment_num(), bin.axial_pos_num());
+  }
 }
 
 void
@@ -183,6 +201,7 @@ get_det_pos_pair_for_bin(
   dp.pos1().axial_coord()=a1;
   dp.pos2().tangential_coord()=t2;
   dp.pos2().axial_coord()=a2;
+  dp.timing_pos() = std::abs(bin.timing_pos_num())*this->get_tof_mash_factor();
 
 #else
 

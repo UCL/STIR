@@ -79,7 +79,7 @@ public:
 
   virtual 
     Bin
-    get_bin(const LOR<float>&) const;
+    get_bin(const LOR<float>&, const double delta_time = 0.0) const;
 
   virtual std::string parameter_info() const;
 private:

@@ -247,7 +247,7 @@ float Scanner::get_timing_resolution() const
 bool Scanner::is_tof_ready() const
 {
     return (max_num_of_timing_bins > 0
-            && timing_resolution > 0.0f
+            && size_timing_bin > 0.0f
             && timing_resolution > 0.0f);
 }
 

@@ -40,7 +40,8 @@ CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<Scanner>& sca
                                    1, scanner_sptr->get_num_rings()-1,
                                    scanner_sptr->get_num_detectors_per_ring()/2,
                                    scanner_sptr->get_default_num_arccorrected_bins(), 
-                                   false)));
+                                   false,
+                                   /*TOF mashing factor*/1)));
 }
 
 LORAs2Points<float>
@@ -86,8 +87,6 @@ get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
   else
   {
     bin.set_bin_value(1);
-    if (proj_data_info.get_num_tof_poss() > 1)
-        bin.timing_pos_num() = proj_data_info.get_tof_bin(delta_time);
   }
 }
 

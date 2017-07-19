@@ -47,6 +47,7 @@ get_detection_position(DetectionPositionPair<>& det_pos) const
 						 view_num, tangential_pos_num);
   det_pos.pos1().tangential_coord() = det_num_1;
   det_pos.pos2().tangential_coord() = det_num_2;
+  det_pos.timing_pos() = this->get_uncompressed_proj_data_info_sptr()->get_tof_bin(delta_time);
 }
 
 template <class Derived>

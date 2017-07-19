@@ -78,7 +78,7 @@ ProjDataInfo::get_k(const Bin& bin) const
 {
     // Probably, This condition should be removed, since I have the check odd number in the
     // set_tof_mash_factor().
-    if (!num_tof_bins%2)
+    if (!(num_tof_bins%2))
         return bin.timing_pos_num() * tof_increament_in_mm;
     else
         return (bin.timing_pos_num() * tof_increament_in_mm) - tof_increament_in_mm/2.f;

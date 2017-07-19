@@ -124,9 +124,14 @@ ProjDataInfoCylindricalArcCorr::parameter_info()  const
 
 Bin
 ProjDataInfoCylindricalArcCorr::
-get_bin(const LOR<float>& lor) const
+get_bin(const LOR<float>& lor,const double delta_time) const
 
 {
+  if (delta_time != 0)
+    {
+	  error("TODO NO TOF YET");
+    }
+
   Bin bin;
   LORInAxialAndSinogramCoordinates<float> lor_coords;
   if (lor.change_representation(lor_coords, get_ring_radius()) == Succeeded::no)

@@ -67,10 +67,22 @@ class CListEventDataGESigna
   }
   inline void get_detection_position(DetectionPositionPair<>& det_pos) const
   {
-    det_pos.pos1().tangential_coord() = loXtalTransAxID;
-    det_pos.pos1().axial_coord() = loXtalAxialID;
-    det_pos.pos2().tangential_coord() = hiXtalTransAxID;
-    det_pos.pos2().axial_coord() = hiXtalAxialID;
+    if (deltaTime<0)
+    {
+      det_pos.pos1().tangential_coord() = hiXtalTransAxID;
+      det_pos.pos1().axial_coord() = hiXtalAxialID;
+      det_pos.pos2().tangential_coord() = loXtalTransAxID;
+      det_pos.pos2().axial_coord() = loXtalAxialID;
+      det_pos.timing_pos() = -get_tof_bin();
+    }
+    else
+    {
+      det_pos.pos1().tangential_coord() = loXtalTransAxID;
+      det_pos.pos1().axial_coord() = loXtalAxialID;
+      det_pos.pos2().tangential_coord() = hiXtalTransAxID;
+      det_pos.pos2().axial_coord() = hiXtalAxialID;
+      det_pos.timing_pos() = get_tof_bin();
+    }
   }
   inline bool is_event() const
     { 

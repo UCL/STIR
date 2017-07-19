@@ -138,15 +138,16 @@ run_tests_2_proj_matrices_1_bin(const ProjMatrixByBin& proj_matrix_no_symm,
 	  cerr << "Current bin:  segment = " << bin.segment_num() 
 		     << ", axial pos " << bin.axial_pos_num()
 		     << ", view = " << bin.view_num() 
-	       << ", tangential_pos_num = " << bin.tangential_pos_num() << "\n";
+	       << ", tangential_pos_num = " << bin.tangential_pos_num()
+	       << ", timing position index = " << bin.timing_pos_num() << "\n";
 	    ProjMatrixElemsForOneBin::const_iterator no_sym_iter= elems_no_sym.begin(); 
 	    ProjMatrixElemsForOneBin::const_iterator with_sym_iter = elems_with_sym.begin();
 	    while (no_sym_iter!= elems_no_sym.end() || with_sym_iter!=elems_with_sym.end())
-	      {
+	      {	
 		if (no_sym_iter==elems_no_sym.end() ||
 		    with_sym_iter==elems_with_sym.end() ||
 		    no_sym_iter->get_coords()!= with_sym_iter->get_coords() ||
-		    fabs(no_sym_iter->get_value()/with_sym_iter->get_value() -1) > .0002)
+		    fabs(no_sym_iter->get_value()/with_sym_iter->get_value() -1) > .01)
 		  {
 		    bool inc_no_sym_iter = false;
 		    if (no_sym_iter!=elems_no_sym.end() &&
@@ -195,16 +196,19 @@ run_tests_2_proj_matrices(const ProjMatrixByBin& proj_matrix_no_symm,
     for (int v=proj_data_info_sptr->get_min_view_num();
 	 v <= proj_data_info_sptr->get_max_view_num();
 	 ++v)
-      for (int a=proj_data_info_sptr->get_min_axial_pos_num(s);
-	   a <= proj_data_info_sptr->get_max_axial_pos_num(s);
-	   ++a)
-      for (int t=-6; t<=6; t+=3)
-      {
-	const Bin bin(s,v,a,t);
-	//SYM if (proj_matrix_with_symm.get_symmetries_ptr()->is_basic(bin))
-	  run_tests_2_proj_matrices_1_bin(proj_matrix_no_symm,
-					  proj_matrix_with_symm, bin);
-      }
+      for (int timing_pos=proj_data_info_sptr->get_min_tof_pos_num();
+          timing_pos<=proj_data_info_sptr->get_max_tof_pos_num();
+          ++timing_pos)
+        for (int a=proj_data_info_sptr->get_min_axial_pos_num(s);
+         a <= proj_data_info_sptr->get_max_axial_pos_num(s);
+         ++a)
+        for (int t=-6; t<=6; t+=3)
+        {
+      const Bin bin(s,v,a,t,timing_pos);
+      //SYM if (proj_matrix_with_symm.get_symmetries_ptr()->is_basic(bin))
+        run_tests_2_proj_matrices_1_bin(proj_matrix_no_symm,
+                        proj_matrix_with_symm, bin);
+        }
 
 #else
   const int oblique_seg_num = proj_data_info_sptr->get_max_segment_num();
@@ -710,6 +714,23 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests()
   
   
 	run_tests_for_1_projdata(proj_data_info_sptr);
+      }
+      {
+    cerr << "Testing with proj_data_info with time-of-flight";
+    // warning: make sure that parameters are ok such that hard-wired
+    // bins above are fine (e.g. segment 3 should be allowed)
+    shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::PETMR_Signa));
+    proj_data_info_sptr.reset(
+      ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
+                    /*span=*/11,
+                    /*max_delta=*/scanner_sptr->get_num_rings()-1,
+                    /*num_views=*/scanner_sptr->get_num_detectors_per_ring()/8,
+                    /*num_tang_poss=*/64,
+                    /*arc_corrected*/false,
+                    /*tof_mashing*/39));
+
+
+    run_tests_for_1_projdata(proj_data_info_sptr);
       }
     }
   else
