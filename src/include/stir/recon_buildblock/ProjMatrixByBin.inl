@@ -198,7 +198,7 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& nonTOF_probabilities
                                  (point1.z() - point2.z()) *(point1.z() - point2.z())));
 
     // THe direction can be from 1 -> 2 depending on the bin sign.
-    const CartesianCoordinate3D<float> middle = (point1 + point2)/2.f;
+    const CartesianCoordinate3D<float> middle = (point1 + point2)*0.5f;
     const CartesianCoordinate3D<float> difference = point2 - middle;
 
     for (ProjMatrixElemsForOneBin::iterator element_ptr = nonTOF_probabilities.begin();
@@ -217,14 +217,12 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& nonTOF_probabilities
         high_dist = (proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].high_lim -d1) * r_sqrt2_gauss_sigma;
 
         get_tof_value(low_dist, high_dist, new_value);
-//        std::cout <<d1 << " " <<  new_value << std::endl;
+
         new_value *=  element_ptr->get_value();
-        //if (new_value <= 0.000001F) // Too small to bother?
-        //    continue;
+
         tof_probabilities.push_back(ProjMatrixElemsForOneBin::value_type(element_ptr->get_coords(), new_value));
 
     }
-//    int nikos= 0;
 }
 
 void
