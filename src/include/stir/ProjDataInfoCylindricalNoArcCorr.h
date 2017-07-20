@@ -245,8 +245,17 @@ public:
 			 const int timing_pos_num = 0) const;
 
   //! This routine gets the detector pair corresponding to a bin.
+  /*!
+  \see get_det_pair_for_view_tangential_pos_num() for
+  restrictions. In addition, this routine only works for span=1 data,
+  i.e. no axial compression.
+  \obsolete
   */
   inline void
+	  get_det_pair_for_bin(
+		  int& det1_num, int& ring1_num,
+		  int& det2_num, int& ring2_num,
+		  const Bin&) const;
 
   //@}
 
