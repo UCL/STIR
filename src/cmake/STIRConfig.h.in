@@ -64,9 +64,6 @@ namespace stir {
 #cmakedefine HAVE_AVW
 
 #cmakedefine HAVE_RDF
-#ifdef HAVE_RDF
-#define STIR_USE_GE_IO
-#endif
 
 #cmakedefine HAVE_ITK
 
