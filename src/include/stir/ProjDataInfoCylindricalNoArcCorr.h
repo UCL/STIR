@@ -251,11 +251,12 @@ public:
   i.e. no axial compression.
   \obsolete
   */
+
   inline void
-	  get_det_pair_for_bin(
-		  int& det1_num, int& ring1_num,
-		  int& det2_num, int& ring2_num,
-		  const Bin&) const;
+  get_det_pair_for_bin(
+               int& det_num1, int& ring_num1,
+               int& det_num2, int& ring_num2,
+               const Bin& bin) const;
 
   //@}
 
