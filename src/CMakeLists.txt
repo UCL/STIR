@@ -94,11 +94,9 @@ mark_as_advanced(BUILD_SWIG_OCTAVE)
 
 if (BUILD_SWIG_MATLAB)
   set(CMAKE_POSITION_INDEPENDENT_CODE True)
-  FIND_PACKAGE(MATLAB REQUIRED)
-  # Add matlab compiler flags to everything
-  # TODO this is probably not necessary anymore with CMAKE_POSITION_INDEPENDENT_CODE set to true
-  add_definitions(${MATLAB_CXXFLAGS})
-
+  message(STATUS "Trying to find Matlab. This might take a while.")
+  FIND_PACKAGE(Matlab REQUIRED)
+  matlab_get_mex_suffix("${Matlab_ROOT_DIR}" Matlab_MEX_EXT)
 endif()
 
 if (BUILD_SWIG_PYTHON)

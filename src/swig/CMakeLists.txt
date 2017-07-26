@@ -107,12 +107,12 @@ if (BUILD_SWIG_MATLAB)
   SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module ${module_name} -mexname stirMATLAB_wrap)
   SWIG_ADD_MODULE(stirMATLAB matlab stir.i ${STIR_REGISTRIES})
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTIES
-        SUFFIX "_wrap.${MATLAB_MEX_EXT}" PREFIX "${MATLAB_PREFIX}"
-        LINK_FLAGS "${MATLAB_CXXLINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}"
+        SUFFIX "_wrap.${Matlab_MEX_EXT}" PREFIX "${MATLAB_PREFIX}"
+        LINK_FLAGS "${OpenMP_EXE_LINKER_FLAGS}"
         FOLDER "Matlab")  
-  SWIG_LINK_LIBRARIES(stirMATLAB ${STIR_LIBRARIES}  ${MATLAB_LIBRARIES})
+  SWIG_LINK_LIBRARIES(stirMATLAB ${STIR_LIBRARIES}  ${Matlab_LIBRARIES})
 
-  include_directories(${MATLAB_INCLUDE_DIR})
+  include_directories(${Matlab_INCLUDE_DIRS})
   # disabled, as currently set via add_definitions in main CMakeLists.txt
   #SET_SOURCE_FILES_PROPERTIES( ${swig_generated_file_fullname}
   #      PROPERTIES COMPILE_FLAGS "${MATLAB_CXXFLAGS}")

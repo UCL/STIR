@@ -21,7 +21,8 @@ PROJECT(STIR)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 # require 2.8.3 to get FOLDER properties support (without that, we only need cmake 2.6)
-cmake_minimum_required(VERSION 2.8.3)
+# require 3.3 for descent FindMatlab.cmake
+cmake_minimum_required(VERSION 3.3.0)
 
 # add project source to cmake path such that it can use our find_package modules and .cmake files
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/src/cmake)
