@@ -106,9 +106,13 @@ if (BUILD_SWIG_MATLAB)
   set(module_name stir)
   SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module ${module_name} -mexname stirMATLAB_wrap)
   SWIG_ADD_MODULE(stirMATLAB matlab stir.i ${STIR_REGISTRIES})
+  if (WIN32)
+     set (Matlab_CXXLINKER_FLAGS "/EXPORT:mexFunction")
+  endif()
+     
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTIES
-        SUFFIX "_wrap.${Matlab_MEX_EXT}" PREFIX "${MATLAB_PREFIX}"
-        LINK_FLAGS "${OpenMP_EXE_LINKER_FLAGS}"
+        SUFFIX "_wrap.${MATLAB_MEX_EXT}" PREFIX "${MATLAB_PREFIX}"
+        LINK_FLAGS "${Matlab_CXXLINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}"
         FOLDER "Matlab")  
   SWIG_LINK_LIBRARIES(stirMATLAB ${STIR_LIBRARIES}  ${Matlab_LIBRARIES})
 
