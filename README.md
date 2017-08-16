@@ -17,3 +17,4 @@ This software is distributed under an open source license, see LICENSE.txt
 for details.
 
 
+[![Build Status](https://travis-ci.org/UCL/STIR.svg?branch=master)](https://travis-ci.org/UCL/STIR)
