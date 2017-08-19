@@ -71,13 +71,15 @@ endif()
 
 if(NOT DISABLE_CERN_ROOT_SUPPORT)
   find_package(CERN_ROOT)
-  message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}")
-  # Find which major version this is
-  string(REPLACE "." ";" _VERSION_LIST ${CERN_ROOT_VERSION})
-  list(GET _VERSION_LIST 0 CERN_ROOT_VERSION_MAJOR)
-  if (${CERN_ROOT_VERSION_MAJOR} GREATER 5)
-    message(STATUS "This ROOT version needs C++-11, so we will enable this.")
-    UseCXX(11)
+  if (CERN_ROOT_FOUND)
+    message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}")
+    # Find which major version this is
+    string(REPLACE "." ";" _VERSION_LIST ${CERN_ROOT_VERSION})
+    list(GET _VERSION_LIST 0 CERN_ROOT_VERSION_MAJOR)
+    if (${CERN_ROOT_VERSION_MAJOR} GREATER 5)
+      message(STATUS "This ROOT version needs C++-11, so we will enable this.")
+      UseCXX(11)
+    endif()
   endif()
 endif()
 
