@@ -37,6 +37,11 @@ else()
 
         #string (REPLACE " " ";" CERN_ROOT_LIBRARIES ${LCERN_ROOT_LIBRARIES})
 
+	execute_process(
+	    COMMAND ${CERN_ROOT_CONFIG} --version
+	        OUTPUT_VARIABLE CERN_ROOT_VERSION
+		OUTPUT_STRIP_TRAILING_WHITESPACE)
+
     endif(CERN_ROOT_CONFIG)
 endif()
 

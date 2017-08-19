@@ -25,6 +25,7 @@ cmake_minimum_required(VERSION 2.8.3)
 
 # add project source to cmake path such that it can use our find_package modules and .cmake files
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/src/cmake)
+include(src/cmake/SetC++Version.cmake)
 
 # set default build-type to Release
 if(NOT CMAKE_BUILD_TYPE)
@@ -70,6 +71,14 @@ endif()
 
 if(NOT DISABLE_CERN_ROOT_SUPPORT)
   find_package(CERN_ROOT)
+  message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}")
+  # Find which major version this is
+  string(REPLACE "." ";" _VERSION_LIST ${CERN_ROOT_VERSION})
+  list(GET _VERSION_LIST 0 CERN_ROOT_VERSION_MAJOR)
+  if (${CERN_ROOT_VERSION_MAJOR} GREATER 5)
+    message(STATUS "This ROOT version needs C++-11, so we will enable this.")
+    UseCXX(11)
+  endif()
 endif()
 
 if(NOT DISABLE_AVW)
