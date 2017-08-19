@@ -32,12 +32,15 @@ addons:
       - swig
       - libgomp1
       - root-system-bin
+      - libroot-tree-dev
+      - libroot-io-dev
 
 # Actual compilation script
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew tap homebrew/science; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install doxygen; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install --with-cocoa root; fi
 
 script:
