@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 # Shell script for automatic running of the tests
 # see README.txt
 #
