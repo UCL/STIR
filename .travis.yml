@@ -33,6 +33,7 @@ addons:
       - libgomp1
       - root-system-bin
       - libroot-tree-dev
+      - libroot-tree-treeplayer-dev
       - libroot-io-dev
 
 # Actual compilation script
