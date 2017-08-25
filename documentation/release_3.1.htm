@@ -163,6 +163,7 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 <li>fix HighResWallClockTimer on Linux and Win32 which caused reporting wrong timings in certain situations</li>
 <li><code>LmToProjData</code> crashed when a template was used which was incompatible with the unlisting (e.g. a arc-corrected template for
 most cylindrical scanners).
+<li>listmode files could not be re-read when the end of the file was reached. This could have affected cases where the number of segments was limited and all events were read while unlisting the file. (e.g. in <code>lm_to_projdata</code>)</li>
 </li>
 </ul>
 

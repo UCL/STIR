@@ -53,6 +53,7 @@
  #include "stir/SegmentByView.h"
  #include "stir/SegmentBySinogram.h"
  #include "stir/ExamInfo.h"
+ #include "stir/IO/ExamData.h"
  #include "stir/Verbosity.h"
  #include "stir/ProjData.h"
  #include "stir/ProjDataInMemory.h"
@@ -812,6 +813,7 @@ namespace std {
 
 %shared_ptr(stir::TimeFrameDefinitions);
 %shared_ptr(stir::ExamInfo);
+%shared_ptr(stir::ExamData);
 %shared_ptr(stir::Verbosity);
 %shared_ptr(stir::Scanner);
 %shared_ptr(stir::ProjDataInfo);
@@ -1235,6 +1237,14 @@ namespace stir {
 
 } // namespace stir
 
+%rename (get_scanner) *::get_scanner_ptr;
+%ignore *::get_proj_data_info_ptr;
+%rename (get_proj_data_info) *::get_proj_data_info_sptr;
+%ignore *::get_exam_info_ptr;
+%rename (get_exam_info) *::get_exam_info_sptr;
+
+%rename (set_objective_function) *::set_objective_function_sptr;
+
   // Todo need to instantiate with name?
   // TODO Swig doesn't see that Array<2,float> is derived from it anyway becuse of num_dimensions bug
 %template (FloatNumericVectorWithOffset2D) stir::NumericVectorWithOffset<stir::Array<1,float>, float>;
@@ -1285,6 +1295,7 @@ namespace stir {
  */
 %include "stir/TimeFrameDefinitions.h"
 %include "stir/ExamInfo.h"
+%include "stir/IO/ExamData.h"
 %include "stir/Verbosity.h"
 // ignore non-const versions
 %ignore stir::Bin::segment_num();
@@ -1294,14 +1305,6 @@ namespace stir {
 %include "stir/Bin.h"
 %newobject stir::ProjDataInfo::ProjDataInfoGE;
 %newobject stir::ProjDataInfo::ProjDataInfoCTI;
-
-%rename (get_scanner) *::get_scanner_ptr;
-%ignore *::get_proj_data_info_ptr;
-%rename (get_proj_data_info) *::get_proj_data_info_sptr;
-%ignore *::get_exam_info_sptr;
-%rename (get_exam_info) *::get_exam_info_sptr;
-
-%rename (set_objective_function) *::set_objective_function_sptr;
 
 %include "stir/ProjDataInfo.h"
 %include "stir/ProjDataInfoCylindrical.h"
