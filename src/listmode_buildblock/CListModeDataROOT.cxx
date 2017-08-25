@@ -156,7 +156,7 @@ open_lm_file()
         t.read(mem,4);
         ss << mem;
 
-        if ( !sig.compare(ss.str()) )
+        if (sig.compare(ss.str()) )
         {
             warning("CListModeDataROOT: File '%s is not a ROOT file!!'",
                     this->current_lm_data_ptr->get_ROOT_filename().c_str());
