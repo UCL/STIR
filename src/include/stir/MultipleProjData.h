@@ -151,15 +151,14 @@ public:
   template < typename iterT>
   void copy_to(iterT array_iter)
   {
-      long int cur_pos = 0;
       for ( std::vector<shared_ptr<ProjData> >::iterator it = _proj_datas.begin();
             it != _proj_datas.end(); ++it)
       {
           if ( is_null_ptr( *(it)))
               error("Dynamic ProjData have not been properly allocated.Abort.");
 
-          cur_pos = (*it)->copy_to(array_iter);
-          std::advance(array_iter, cur_pos);
+          const std::size_t num_bins = (*it)->copy_to(array_iter);
+          std::advance(array_iter, num_bins);
       }
   }
 

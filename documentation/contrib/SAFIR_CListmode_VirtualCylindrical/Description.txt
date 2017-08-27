@@ -1,0 +1,21 @@
+Description of the work
+
+The contribution enables STIR to
+1) Read coincidence listmode data of the SAFIR format into STIR.
+2) Sort these coincidence events into to a projection data representation of a virtual
+   cylindrical scanner using a crystal map file, which assigns coordinates to crystal indices.
+   The resulting projection data from lm_to_projdata (or listmode data directly) 
+   can be used with all standard reconstruction algorithms available in STIR.
+
+New files
+src/include/stir/IO/SAFIRCListmodeInputFileFormat.h
+src/include/stir/listmode/CListModeDataSAFIR.h
+src/include/stir/listmode/CListRecordSAFIR.h
+src/include/stir/listmode/CListRecordSAFIR.inl
+src/include/stir/listmode/DetectorCoordinateMapFromFile.h
+src/listmode_buildblock/CListModeDataSAFIR.cxx
+src/listmode_buildblock/CMakeLists.txt
+src/listmode_buildblock/DetectorCoordinateMapFromFile.cxx
+
+Contributors:
+Jannis Fischer (ETH Zurich) 

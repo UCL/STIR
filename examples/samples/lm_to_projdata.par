@@ -13,7 +13,7 @@ lm_to_projdata Parameters:=
   ; parameters for saying which events will be stored
 
     ; time frames (see TimeFrameDefinitions doc for format)
-    frame_definition file := frames.fdef
+    frame_definition file := lm_to_projdata_time_frames.fdef
     ; or a total number of events (if  larger than 0, frame definitions will be ignored)
     ; note that this normally counts the total of prompts-delayeds (see below)
     num_events_to_store := -1
