@@ -32,7 +32,6 @@
     only work on systems where this library works properly.
 */
 
-#ifdef HAVE_LLN_MATRIX
 
 #include "stir/ProjDataInfo.h"
 #include "stir/ProjDataFromStream.h"
@@ -2312,5 +2311,3 @@ ProjData_to_ECAT7(ProjData const& proj_data, NumericType output_type,
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
-
-#endif //#ifdef HAVE_LLN_MATRIX

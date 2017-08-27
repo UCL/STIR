@@ -106,6 +106,10 @@ if (STIR_MPI)
   target_link_libraries(recon_buildblock ${MPI_CXX_LIBRARIES})
 endif()
 
+if (STIR_OPENMP)
+  target_link_libraries(recon_buildblock ${OpenMP_EXE_LINKER_FLAGS})
+endif()
+
 # TODO what to do with IO?
 # modelling_buildblock currently needed for ParametricDensity and Patlak (TODO get rid of this somehow?)
 target_link_libraries(recon_buildblock modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )

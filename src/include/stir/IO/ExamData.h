@@ -54,7 +54,7 @@ public:
       get_exam_info_sptr() const;
     //! change exam info
     /*! This will allocate a new ExamInfo object and copy the data in there. */
-    void virtual
+	virtual void
       set_exam_info(ExamInfo const&);
 
 protected:

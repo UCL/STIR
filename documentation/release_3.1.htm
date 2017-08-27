@@ -41,14 +41,20 @@ detailed below.
 for Siemens scanners (warning: tested in Biograph mMR only at present).
 </p>
 
-</p>Of course, there is also the usual code-cleanup and 
+<p>We now support additional list mode file formats (Siemens mMR and CERN ROOT files).
+</p>
+
+<p>The build system now only uses CMake.</p>
+    
+<p>Of course, there is also the usual code-cleanup and 
 improvements to the documentation.
 </p>
 
-<p>This release contains mainly code written by Kris Thielemans, but various bits
+<p>This release contains mainly code written by Kris Thielemans and Nikos Efthimiou (UCL),
+but with some contributions by Jannis Fischer (ETH Zurich) and Elise Emond (UCL). Various bits
 were tested by (in alphabetical order, all UCL except where indicated):
 Ottavia Bertolli, Matthias Ehrhardt, Pawel Markiewicz, Richard Manber,
-Benjamin Thomas (CIRC ASTAR), Yu-jung Tsai, Vesna Cuplov).
+Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
 </p>
 
 <h2> Summary for end users (also to be read by developers)</h2>
@@ -80,7 +86,7 @@ Please note that you cannot enable both OPENMP and MPI.</li>
 These are only minimally documented at the present stage unfortunately.
 </li>
 <li>We now include a shell script for easier scatter estimation.</li>
-<li><tt>lm_generate_headcurve</tt> is a new list mode utility to output total counts.</li>
+<li><tt>list_lm_countrates</tt> is a new list mode utility to output total counts per specified time interval.</li>
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
 <li>add Verbosity level (currently only to be set from interactive languages)</li>
 <li>New input: GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. </li>
@@ -101,15 +107,21 @@ Python (and MATLAB) interface to <code>get_scanner()</code> and <code>get_proj_d
 <ul>
 <li>provide CMake option to disable ITK usage even if it's found. </li>
 <li>fixes related to OpenMP</li>
-<li> 
-Using <a href="http://www.cmake.org">CMake</a> is now highly recommended (see the wiki). Some options
-such as shared libraries, openmp and SWIG support can only be enabled when using CMake. 
-Hand-crafted Unix Makefiles are still there but are no longer supported and
-will no longer be included in the next release.
-<li> CMake now has a flag to create the target "doc" for building the Doxygen documentation.
+<li>Changes to CMake build files, allowing others to import STIR via
+  <code>find_package</code>. To allow this, CMake now creates a config.h file which sets
+  preprocessor variables etc (as opposed to passing these on the compiler command line).
+</li>
+<li> added <code>BUILD_TESTING</code> and <code>BUILD_EXECUTABLES</code> options to reduce build time if you do not need those files</li>
+<li>install include files</li> 
+<li> CMake now has a flag to create the target "doc" for building the Doxygen documentation
+  thanks to Jannis Fischer.
 </li>
 </ul>
 
+<p><strong>WARNING</strong>: <code>fwdtest</code> and <code>bcktest</code> are now only installed when BUILD_TESTING is ON. Use <code>forward_project</code> and <code>backward_project</code> instead.</p>
+
+<p>Using <a href="http://www.cmake.org">CMake</a> is the only option to build STIR (see the wiki).
+</p>
 
 <h3>Known problems</h3>
 <ul>
@@ -149,6 +161,10 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 <h3>Minor bug fixes</h3>
 <ul>
 <li>fix HighResWallClockTimer on Linux and Win32 which caused reporting wrong timings in certain situations</li>
+<li><code>LmToProjData</code> crashed when a template was used which was incompatible with the unlisting (e.g. a arc-corrected template for
+most cylindrical scanners).
+<li>listmode files could not be re-read when the end of the file was reached. This could have affected cases where the number of segments was limited and all events were read while unlisting the file. (e.g. in <code>lm_to_projdata</code>)</li>
+</li>
 </ul>
 
 <h3>Documentation changes</h3>
@@ -161,7 +177,7 @@ We have currently no work-around (aside from using <code>GRAPHICS=PGM</code> or
 <h3>recon_test_pack changes</h3>
 <ul>
 <li>updated version number and added some clarification to the README.txt</li>
-<li>Simple test script for GATE produced ROOT files, has been added.</li>
+<li>Simple test script for GATE produced ROOT files has been added.</li>
  </ul>
 
 <h3>Other changes to tests</h3>
@@ -207,10 +223,10 @@ using the default output file format.</li>
    <li>added <code>get_proj_data_info_sptr()</code> (also to <code>Sinogram</code> et al)</li>
   </ul>
 </li>
-<li> Support for Energy Resolution in Scanners, has been added. 
+<li> Support for Energy Resolution and energy windows in Scanners, has been added. 
 In order to ensure backwards compatibility, at the moment, it is completely optional.</li>
 <li> Information on energy windows has been added in the <code>ExamInfo</code>. </li>
-<li> <code>ExamData</code> is the base class for <code>ProjData</code> and <code>CListModeData</code> </li>
+<li><code>ExamData</code> is a new base class for <code>ProjData</code> and <code>CListModeData</code> </li>
 </ul>
 
 <h3>Other code changes</h3>
@@ -228,6 +244,11 @@ In order to ensure backwards compatibility, at the moment, it is completely opti
   In the next version, they will only accept 1 argument. Use <code>boost::format</code>.</li>
 <li><code>get_proj_data_info_ptr()</code> and <code>get_scanner_ptr()</code> should no longer be used as they
 can create problems with the lifetime of objects. Use <code>get..._sptr</code> instead.</li>
+<li><code>ClistEvent::is_valid_template</code> is a new (pure) virtual function
+which is called by <code>LmToProjData</code> to check if the list mode format
+can handle the template.
+All derived classes of <code>CListEvent</code> will need to implement it.
+</li>
 </ul>
 
 </body>
