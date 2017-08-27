@@ -137,31 +137,9 @@ Succeeded
 CListModeDataROOT::
 open_lm_file()
 {
-    info(boost::format("CListModeDataROOT: opening ROOT file %s") %
+    info(boost::format("CListModeDataROOT: used ROOT file %s") %
          this->current_lm_data_ptr->get_ROOT_filename());
-
-    // Read the 4 bytes to check whether this is a ROOT file, indeed.
-    // I could rewrite it in a more sofisticated way ...
-    std::stringstream ss;
-    char mem[4]="\0";
-    std::string sig= "root";
-
-    std::ifstream t;
-    t.open(this->current_lm_data_ptr->get_ROOT_filename().c_str(),  std::ios::in |std::ios::binary);
-
-    if (t.is_open())
-    {
-
-        t.seekg(0, std::ios::beg);
-        t.read(mem,4);
-        ss << mem;
-
-        if ( !sig.compare(ss.str()) )
-        {
-            warning("CListModeDataROOT: File '%s is not a ROOT file!!'",
-                    this->current_lm_data_ptr->get_ROOT_filename().c_str());
-            return Succeeded::no;
-        }
+    // we actually don't do anything here. It's all done by the parsing above.
 
 //        current_lm_data_ptr.reset(
 //                    new InputStreamFromROOTFile(this->input_data_filename,
@@ -174,16 +152,8 @@ open_lm_file()
 //                                                static_cast<float>(this->low_energy_window*0.001f),
 //                                                static_cast<float>(this->up_energy_window*0.001f),
 //                                                this->offset_dets));
-        t.close();
-        return Succeeded::yes;
 
-    }
-    else
-    {
-        warning("CListModeDataROOT: cannot open file '%s'",
-                this->current_lm_data_ptr->get_ROOT_filename().c_str());
-        return Succeeded::no;
-    }
+    return Succeeded::yes;
 }
 
 
