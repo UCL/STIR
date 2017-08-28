@@ -24,7 +24,6 @@ set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 set(${dir_EXE_SOURCES}
   lm_to_projdata_with_random_rejection
-  lm_generate_headcurve
 )
 
 if (HAVE_ECAT)

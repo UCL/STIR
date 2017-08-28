@@ -334,7 +334,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_input_data(const shared_ptr<ExamData> & arg)
 {
-    this->_gated_proj_data_sptr = boost::dynamic_pointer_cast<GatedProjData>(arg);
+    this->_gated_proj_data_sptr = dynamic_pointer_cast<GatedProjData>(arg);
 }
 
 template<typename TargetT>
@@ -342,7 +342,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
 {
-    this->_additive_gated_proj_data_sptr = boost::dynamic_pointer_cast<GatedProjData>(arg);
+    this->_additive_gated_proj_data_sptr = dynamic_pointer_cast<GatedProjData>(arg);
 }
 
 template<typename TargetT>
@@ -558,7 +558,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
       gated_output[gate_num]*=scale_factor[gate_num];
     } // end of loop over gates
   this->_reverse_motion_vectors.warp_image(output,gated_output);  
-  output/=this->get_time_gate_definitions().get_num_gates(); //Normalizing to get the average value to test if OSSPS works.
+  output/=static_cast<float>(this->get_time_gate_definitions().get_num_gates()); //Normalizing to get the average value to test if OSSPS works.
   return Succeeded::yes;
 }
 

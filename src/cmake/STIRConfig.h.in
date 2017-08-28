@@ -1,0 +1,82 @@
+/*
+    Copyright (C) 2016-2017, University College London
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+#ifndef __stir_config__H__
+#define __stir_config__H__
+/*!
+  \file 
+  \ingroup buildblock 
+  \brief basic configuration include file 
+
+  This file will be used by CMake to create stir/config.h based on local settings and CMake options.
+
+  \author Kris Thielemans
+*/
+
+namespace stir {
+  /*!
+    \name Preprocessor symbols with version information
+    \ingroup buildblock
+    Values are set by CMake from the main CMakeLists.txt.
+  */
+  //@{
+  #define STIR_VERSION @VERSION@
+  #define STIR_VERSION_STRING "@VERSION_MAJOR@.@VERSION_MINOR@.@VERSION_PATCH@"
+  /*! \def STIR_VERSION
+      \brief numerical amalgation of the version info, as in 030100 (for version 3.1.0)
+  */
+  /*! \def STIR_VERSION_STRING
+      \brief a string with the version info, as in "3.1.0" (for version 3.1.0)
+  */
+  
+  //@}
+}
+
+#if defined(_MSC_VER)
+#include "stir/config/visualc.h"
+#endif
+#if defined(__GNUC__)
+#include "stir/config/gcc.h"
+#endif
+
+#include "boost/config.hpp"
+
+#cmakedefine HAVE_ECAT
+#ifdef HAVE_ECAT
+#define HAVE_LLN_MATRIX
+#endif
+
+#cmakedefine HAVE_CERN_ROOT
+
+#cmakedefine HAVE_AVW
+
+#cmakedefine HAVE_RDF
+
+#cmakedefine HAVE_ITK
+
+#cmakedefine STIR_OPENMP
+
+#cmakedefine STIR_MPI
+
+#cmakedefine HAVE_SYSTEM_GETOPT
+
+#cmakedefine STIR_DEFAULT_PROJECTOR_AS_V2
+#ifndef STIR_DEFAULT_PROJECTOR_AS_V2
+#define USE_PMRT
+#endif
+
+
+#endif //  __stir_config__H__

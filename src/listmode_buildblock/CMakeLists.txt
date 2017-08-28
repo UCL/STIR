@@ -11,6 +11,8 @@ set(${dir_LIB_SOURCES}
         LmToProjDataBootstrap
         CListModeDataECAT8_32bit
         CListRecordECAT8_32bit
+	CListModeDataSAFIR
+	DetectorCoordinateMapFromFile
 )
 
 if (HAVE_ECAT)

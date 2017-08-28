@@ -226,7 +226,7 @@ protected:
   bool store_delayeds;
   int num_segments_in_memory;
   // TODO make long (or even unsigned long) but can't do this yet because we can't parse longs yet
-  int num_events_to_store;
+  unsigned long int num_events_to_store;
   int max_segment_num_to_process;
 
   //! Toggle readable output on stdout or actual projdata

@@ -70,6 +70,13 @@ public:
   */
   inline virtual void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const;
 
+  //! This method checks if the template is valid for LmToProjData
+  /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
+   *  Most scanners have listmode data that correspond to non arc-corrected data and
+   *  this check avoids a crash when an unsupported template is used as input.
+   */
+  inline virtual bool is_valid_template(const ProjDataInfo&) const;
+
  protected:
    shared_ptr<ProjDataInfoCylindricalNoArcCorr>
     get_uncompressed_proj_data_info_sptr() const
