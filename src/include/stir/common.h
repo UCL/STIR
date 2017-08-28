@@ -54,8 +54,7 @@
    class B:A { virtual B* f(); }
    \endcode
 
- <LI> #defines STIR_NO_AUTO_PTR when the compiles has no std::auto_ptr support.
- In that case, we #define auto_ptr to shared_ptr
+ <LI> defines STIR_NO_UNIQUE_PTR when the compiler has no std::unique_ptr support.
    
  <LI> preprocessor definitions which attempt to determine the 
    operating system this is going to run on.
@@ -169,20 +168,10 @@
 
 #endif // !defined(__OS_xxx_)
 
-//************** auto_ptr
-#if defined(BOOST_NO_AUTO_PTR) && !defined(STIR_NO_AUTO_PTR)
-#  define STIR_NO_AUTO_PTR
+//************** unique_ptr
+#if defined(BOOST_NO_CXX11_SMART_PTR) && !defined(STIR_NO_UNIQUE_PTR)
+#  define STIR_NO_UNIQUE_PTR
 #endif
-
-#ifdef STIR_NO_AUTO_PTR
-// first include memory, just in case there is a (supposedly flawed) auto_ptr in there
-#include <memory>
-// now include our own shared_ptr (somewhat tricky, as this will 
-// include this file again...)
-#include "stir/shared_ptr.h"
-#define auto_ptr shared_ptr
-#endif
-
 
 //*************** overload std::copy for built-in types
 /* If you have an older compiler, chages are that std::copy is 

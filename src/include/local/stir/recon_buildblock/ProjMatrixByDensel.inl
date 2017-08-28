@@ -32,7 +32,7 @@ get_proj_matrix_elems_for_one_densel(
   // find basic densel
   Densel basic_densel = densel;
     
-  auto_ptr<SymmetryOperation> symm_ptr = 
+  unique_ptr<SymmetryOperation> symm_ptr = 
     get_symmetries_ptr()->find_symmetry_operation_from_basic_densel(basic_densel);
   
   probabilities.set_densel(basic_densel);

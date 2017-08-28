@@ -466,7 +466,7 @@
 %feature("autodoc", "1");
 
 // TODO doesn't work
-%warnfilter(315) std::auto_ptr;
+%warnfilter(315) std::unique_ptr;
 
 // disable warnings about unknown base-class 401
 // disable warnings about "no access specified given for base class" as we use this correctly for private derivation 319
@@ -979,7 +979,7 @@ T * operator-> () const;
   // to convert the swigged DiscretisedDensity to a VoxelsOnCartesianGrid
   static stir::VoxelsOnCartesianGrid<elemT> * read_from_file(const std::string& filename)
     {
-      std::auto_ptr<stir::DiscretisedDensity<3,elemT> > 
+      stir::unique_ptr<stir::DiscretisedDensity<3,elemT> > 
 	ret(stir::read_from_file<stir::DiscretisedDensity<3,elemT> >(filename));
       return dynamic_cast<stir::VoxelsOnCartesianGrid<elemT> *>(ret.release());
     }
