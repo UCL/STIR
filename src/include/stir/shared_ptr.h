@@ -33,10 +33,14 @@
 #include "stir/common.h"
 #if defined(BOOST_NO_CXX11_SMART_PTR)
 #include "boost/shared_ptr.hpp"
+#include "boost/make_shared.hpp"
+#include "boost/pointer_cast.hpp"
 namespace stir {
   using boost::shared_ptr;
   using boost::dynamic_pointer_cast;
   using boost::static_pointer_cast;
+  //! work-around for using std::make_shared on old compilers
+#define MAKE_SHARED boost::make_shared
 }
 #else
 #include <memory>
@@ -44,6 +48,8 @@ namespace stir {
   using std::shared_ptr;
   using std::dynamic_pointer_cast;
   using std::static_pointer_cast;
+  //! work-around for using std::make_shared on old compilers
+#define MAKE_SHARED std::make_shared
 }
 #endif
 
