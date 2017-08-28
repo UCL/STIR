@@ -32,6 +32,12 @@ if(NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "type of build: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
+if((${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang") OR
+   (APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND
+    ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+endif()
+
 ####### Set Version number etc
 set(VERSION_MAJOR   3   CACHE STRING "Project major version number.")
 set(VERSION_MINOR   1   CACHE STRING "Project minor version number.")
