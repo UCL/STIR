@@ -202,7 +202,7 @@ private:
 
           // compare with convert()
           {
-            float newscale = scale;
+            float newscale = static_cast<float>(scale);
             Array<num_dimensions,output_type> origconverted = 
               convert_array(newscale, orig, NumericInfo<output_type>());
             check_if_equal(newscale ,scale, "test read_data <-> convert : scale factor ");

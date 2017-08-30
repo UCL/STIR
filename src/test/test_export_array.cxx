@@ -109,7 +109,7 @@ void ExportArrayTests::test_dynamic_data()
                     test_proj_data_gate_ptr->get_segment_by_view(segment_num);
 
             // 1000 is an arbitary number to distiguish data in different gates.
-            segment_by_view_data.fill(segment_num + (i_gate * 1000));
+            segment_by_view_data.fill(static_cast<float>(segment_num + (i_gate * 1000)));
 
             if (!(test_proj_data_gate_ptr->set_segment(segment_by_view_data) == Succeeded::yes))
                 warning("Error set_segment %d\n", segment_num);
@@ -244,7 +244,7 @@ void ExportArrayTests :: test_static_data()
         SegmentByView<float> segment_by_view_data =
                 test_proj_data_sptr->get_segment_by_view(segment_num);
 
-        segment_by_view_data.fill(segment_num);
+        segment_by_view_data.fill(static_cast<float>(segment_num));
 
         if (!(test_proj_data_sptr->set_segment(segment_by_view_data) == Succeeded::yes))
             warning("Error set_segment %d\n", segment_num);

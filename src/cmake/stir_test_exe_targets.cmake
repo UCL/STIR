@@ -53,25 +53,31 @@
 #### define macros
 
 macro (create_stir_involved_test source  libraries dependencies)
+ if(BUILD_TESTING)
    get_filename_component(executable ${source} NAME_WE)
    add_executable(${executable} ${source} ${dependencies})
    target_link_libraries(${executable} ${libraries})
    SET_PROPERTY(TARGET ${executable} PROPERTY FOLDER "Tests")
+  endif()
 endmacro( create_stir_involved_test)
 
 macro (create_stir_test source  libraries dependencies)
+ if(BUILD_TESTING)
    create_stir_involved_test(${source}  "${libraries}" "${dependencies}")
    ADD_TEST(${executable} ${CMAKE_CURRENT_BINARY_DIR}/${executable})
+ endif()
 endmacro( create_stir_test)
 
 # for executables that use MPI.
 macro (create_stir_mpi_test source  libraries dependencies)
+ if(BUILD_TESTING)
    if(STIR_MPI)
      create_stir_involved_test(${source}  "${libraries}" "${dependencies}")
      ADD_TEST(${executable}  ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS}  ${MPIEXEC_PREFLAGS} ${CMAKE_CURRENT_BINARY_DIR}/${executable} ${MPIEXEC_POSTFLAGS})
    else()
      create_stir_test(${source}  "${libraries}" "${dependencies}")
    endif()
+ endif()
 endmacro( create_stir_mpi_test)
 
 

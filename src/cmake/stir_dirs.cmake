@@ -24,14 +24,21 @@
 
 
 # add the STIR include directory to the search path for the compiler
-include_directories ("${PROJECT_SOURCE_DIR}/src/include")
+SET (STIR_INCLUDE_DIR 
+     "${PROJECT_SOURCE_DIR}/src/include"
+)
 
-SET( STIR_IO_REGISTRIES ${PROJECT_SOURCE_DIR}/src/IO/IO_registries.cxx)
+include_directories ("${STIR_INCLUDE_DIR}")
+
+# registries
+SET (STIR_IO_REGISTRIES
+     ${PROJECT_SOURCE_DIR}/src/IO/IO_registries.cxx
+     )
 
 SET ( STIR_REGISTRIES
 ${PROJECT_SOURCE_DIR}/src/buildblock/buildblock_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/data_buildblock/data_buildblock_registries.cxx
-${STIR_IO_REGISTRIES}
+${PROJECT_SOURCE_DIR}/src/IO/IO_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/recon_buildblock/recon_buildblock_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/Shape_buildblock/Shape_buildblock_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/modelling_buildblock/modelling_registries.cxx
@@ -45,8 +52,12 @@ SET( STIR_LIBRARIES analytic_FBP3DRP analytic_FBP2D       iterative_OSMAPOSL
       spatial_transformation_buildblock
       Shape_buildblock eval_buildblock 
       # repeat for linking
-      numerics_buildblock modelling_buildblock listmode_buildblock)
+      numerics_buildblock modelling_buildblock listmode_buildblock
+)
 
+#copy to PARENT_SCOPE
+SET( STIR_REGISTRIES ${STIR_REGISTRIES} PARENT_SCOPE)
+SET( STIR_LIBRARIES ${STIR_LIBRARIES} PARENT_SCOPE)
 
 SET( STIR_DIRS
      buildblock

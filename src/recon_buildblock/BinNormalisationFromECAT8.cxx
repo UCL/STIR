@@ -50,6 +50,7 @@
 #include <algorithm>
 #include <fstream>
 #include <cctype>
+#include <boost/format.hpp>
 #ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::fstream;
@@ -280,7 +281,7 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   if (/*interfile_parser.*/originating_system == "2008")
     this->scanner_ptr.reset(new Scanner(Scanner::Siemens_mMR));
   else
-    error("Unknown originating_system '%s'", /*interfile_parser.*/originating_system.c_str() );
+    error(boost::format("Unknown originating_system '%s', when parsing file '%s'") % /*interfile_parser.*/originating_system % filename );
 
 
   const std::size_t buf_size = 344*127+9*344+504*64+837+64+64+9+837;

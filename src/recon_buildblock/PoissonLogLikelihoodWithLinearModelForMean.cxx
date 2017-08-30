@@ -205,8 +205,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
          ((this->get_use_subset_sensitivities() && this->subsensitivity_filenames=="") ||
           (!this->get_use_subset_sensitivities() && this->sensitivity_filename=="")))
         {
-          warning("recompute_sensitivity is set to false, but sensitivity pointer is empty "
-                  "and (sub)sensitivity filename is not set. I will compute the sensitivity anyway.");
+          info("(subset)sensitivity filename(s) not set so I will compute the (subset)sensitivities", 2);
           this->recompute_sensitivity = true;
           // initialisation of pointers will be done below
         }
@@ -214,7 +213,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
         {
           if (this->get_use_subset_sensitivities())
             {
-              warning("PoissonLogLikelihoodWithLinearModelForMean limitation:\n"
+              error("PoissonLogLikelihoodWithLinearModelForMean limitation:\n"
                       "currently cannot use subset_sensitivities if sensitivity is forced to 1");
               return Succeeded::no;
             }
@@ -230,7 +229,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
                 {
 		  if (this->subsensitivity_filenames.empty())
 		    {
-		      warning("'subset sensitivity filenames' is empty. You need to set this before using it.");
+		      error("'subset sensitivity filenames' is empty. You need to set this before using it.");
 		      return Succeeded::no;
 		    }
                   // read subsensitivies
@@ -244,7 +243,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
                         }
                       catch (std::exception& e)
                         {
-                          warning(boost::format("Error using 'subset sensitivity filenames' pattern (which is set to '%1%'). "
+                          error(boost::format("Error using 'subset sensitivity filenames' pattern (which is set to '%1%'). "
                                                 "Check syntax for boost::format. Error is:\n%2%") %
                                   this->subsensitivity_filenames % e.what());
                           return Succeeded::no;
@@ -257,7 +256,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
                       if (!target_sptr->has_same_characteristics(*this->subsensitivity_sptrs[subset], 
                                                                  explanation))
                         {
-                          warning("sensitivity and target should have the same characteristics.\n%s",
+                          error("sensitivity and target should have the same characteristics.\n%s",
                                   explanation.c_str());
                           return Succeeded::no;
                         }
@@ -267,7 +266,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
                 {
 		  if (this->sensitivity_filename.empty())
 		    {
-		      warning("'sensitivity filename' is empty. You need to set this before using it.");
+		      error("'sensitivity filename' is empty. You need to set this before using it.");
 		      return Succeeded::no;
 		    }
                   // reading single sensitivity
@@ -280,7 +279,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
                   if (!target_sptr->has_same_characteristics(*this->sensitivity_sptr, 
                                                              explanation))
                     {
-                      warning("sensitivity and target should have the same characteristics.\n%s",
+                      error("sensitivity and target should have the same characteristics.\n%s",
                               explanation.c_str());
                       return Succeeded::no;
                     }
@@ -288,7 +287,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
             }
           catch (std::exception& e)
             {
-              warning("Error reading sensitivity from file:\n%s", e.what());
+              error("Error reading sensitivity from file:\n%s", e.what());
               return Succeeded::no;
             }
           // compute total from subsensitivity or vice versa
@@ -303,7 +302,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
 
   if(!this->subsets_are_approximately_balanced() && !this->get_use_subset_sensitivities())
     {
-      warning("Number of subsets %d is such that subsets will be very unbalanced.\n"
+      error("Number of subsets %d is such that subsets will be very unbalanced.\n"
               "You need to set 'use_subset_sensitivities' to true to handle this.",
               this->num_subsets);
       return Succeeded::no;
@@ -352,7 +351,7 @@ set_up(shared_ptr<TargetT> const& target_sptr)
         }
       catch (std::exception& e)
         {
-          warning("Error writing sensitivity to file:\n%s", e.what());
+          error("Error writing sensitivity to file:\n%s", e.what());
           return Succeeded::no;
         }
     }
