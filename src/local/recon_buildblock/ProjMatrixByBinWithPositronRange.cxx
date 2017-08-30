@@ -159,7 +159,7 @@ calculate_proj_matrix_elems_for_one_bin(
   const Bin bin = lor.get_bin();
 
   assert(lor.size() == 0);
-     
+
   ProjMatrixElemsForOneBin zoomed_lor(bin);
   ProjMatrixElemsForOneBin zoomed_lor(bin);
 
@@ -170,10 +170,9 @@ calculate_proj_matrix_elems_for_one_bin(
        ++iter)
     {
       ProjMatrixElemsForOneBinValue
-      
+    }
 }
 
-         
 
 END_NAMESPACE_STIR
 
