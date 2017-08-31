@@ -85,7 +85,6 @@ private:
   std::string frame_definition_filename;
   bool store_prompts;
   int delayed_increment;
-  int current_frame;
 
   bool interactive;
 
@@ -102,7 +101,6 @@ set_defaults()
   store_prompts = true;
   delayed_increment = -1;
   interactive=false;
-  current_frame=0;
 }
 
 void 
