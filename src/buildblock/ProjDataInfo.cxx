@@ -55,7 +55,7 @@
 #else
 #include <sstream>
 #endif
-
+#include "boost/format.hpp"
 
 #ifndef STIR_NO_NAMESPACES
 using std::string;
@@ -331,21 +331,23 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
 			      const int num_views, const int num_tangential_poss,
                               const bool arc_corrected)
 {
-  if (span < 1)
-    error("ProjDataInfoCTI: span %d has to be larger than 0\n", span);
-  if (max_delta<(span-1)/2)
-    error("ProjDataInfoCTI: max_ring_difference %d has to be at least (span-1)/2, span is %d\n",
-	  max_delta, span);
-  
   const int num_ring = scanner->get_num_rings();
+  if (max_delta > num_ring - 1)
+    error(boost::format("construct_proj_data_info: max_ring_difference %d is too large, number of rings is %d")
+          % max_delta % num_ring);
+	if (span < 1)
+    error(boost::format("construct_proj_data_info: span %d has to be larger than 0") % span);
+  if (span > 2 * num_ring - 1)
+    error(boost::format("construct_proj_data_info: span %d is too large for a scanner with %d rings")
+      % span % num_ring);
+  if (max_delta<(span-1)/2)
+    error(boost::format("construct_proj_data_info: max_ring_difference %d has to be at least (span-1)/2, span is %d")
+	        % max_delta % span);
+
  // Construct first a temporary list of min and max ring diff per segment (0,1,2,3...)
-  
-  // KT changed dimension to num_ring
   vector <int> RDmintmp(num_ring);
   vector <int> RDmaxtmp(num_ring);
   
-  // KT avoid float stuff 
-  // RDmintmp[0]= (int) ceil(-span/2);
   if (span%2 == 1)
     {
       RDmintmp[0] = -((span-1)/2);
@@ -369,11 +371,6 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
     seg_num--;
 
   const int max_seg_num = seg_num;
-  // KT possible modifications
-  // RDmintmp[i] = (i)*span - (span-1)/2;
-  // RDmaxtmp[i] = (i+1)*span - (span-1)/2 -1;
-  
-  
   
   VectorWithOffset<int> num_axial_pos_per_segment(-max_seg_num,max_seg_num);
   VectorWithOffset<int> min_ring_difference(-max_seg_num,max_seg_num);
