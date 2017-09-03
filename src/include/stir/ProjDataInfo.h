@@ -34,6 +34,7 @@
 #include "stir/VectorWithOffset.h"
 #include "stir/Scanner.h"
 #include "stir/shared_ptr.h"
+#include "stir/unique_ptr.h"
 #include <string>
 #include <memory>
 
@@ -95,7 +96,7 @@ public:
   has span 3, while other segments have span 2. We call this span 2.
   As a generalisation, this function supports any even span.
   */
-  static std::unique_ptr<ProjDataInfo>
+  static unique_ptr<ProjDataInfo>
 	  construct_proj_data_info(const shared_ptr<Scanner>& scanner_sptr,
 		  const int span, const int max_delta,
 		  const int num_views, const int num_tangential_poss,

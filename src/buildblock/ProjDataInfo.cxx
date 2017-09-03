@@ -427,13 +427,13 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
 
 }
 
-std::unique_ptr<ProjDataInfo>
+unique_ptr<ProjDataInfo>
 ProjDataInfo::construct_proj_data_info(const shared_ptr<Scanner>& scanner_sptr,
 	const int span, const int max_delta,
 	const int num_views, const int num_tangential_poss,
 	const bool arc_corrected)
 {
-  std::unique_ptr<ProjDataInfo> pdi(ProjDataInfoCTI(scanner_sptr, span, max_delta, num_views, num_tangential_poss, arc_corrected));
+  unique_ptr<ProjDataInfo> pdi(ProjDataInfoCTI(scanner_sptr, span, max_delta, num_views, num_tangential_poss, arc_corrected));
   return pdi;
 }
 
