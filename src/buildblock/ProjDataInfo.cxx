@@ -333,8 +333,6 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
 {
   if (span < 1)
     error("ProjDataInfoCTI: span %d has to be larger than 0\n", span);
-  if (span%2 != 1)
-    warning("ProjDataInfoCTI: span %d is even. Experimental support only!", span);
   if (max_delta<(span-1)/2)
     error("ProjDataInfoCTI: max_ring_difference %d has to be at least (span-1)/2, span is %d\n",
 	  max_delta, span);
@@ -430,6 +428,16 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
                                        max_ring_difference,
                                        num_views,num_tangential_poss);
 
+}
+
+std::unique_ptr<ProjDataInfo>
+ProjDataInfo::construct_proj_data_info(const shared_ptr<Scanner>& scanner_sptr,
+	const int span, const int max_delta,
+	const int num_views, const int num_tangential_poss,
+	const bool arc_corrected)
+{
+  std::unique_ptr<ProjDataInfo> pdi(ProjDataInfoCTI(scanner_sptr, span, max_delta, num_views, num_tangential_poss, arc_corrected));
+  return pdi;
 }
 
 // KT 28/06/2001 added arc_corrected flag
