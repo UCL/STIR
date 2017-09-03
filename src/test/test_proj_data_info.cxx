@@ -547,36 +547,35 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
   // Note: test without axial compression requires that all ring differences 
   // are in some segment, so use maximum ring difference
   shared_ptr<ProjDataInfo> proj_data_info_ptr(
-	  ProjDataInfo::construct_proj_data_info(scanner_ptr,
+	ProjDataInfo::construct_proj_data_info(scanner_ptr,
 				  /*span*/1, scanner_ptr->get_num_rings()-1,
 				  /*views*/ scanner_ptr->get_num_detectors_per_ring()/2, 
 				  /*tang_pos*/64, 
 				  /*arc_corrected*/ true));
-test_cylindrical_proj_data_info(dynamic_cast<ProjDataInfoCylindricalArcCorr &>(*proj_data_info_ptr));
+  test_cylindrical_proj_data_info(dynamic_cast<ProjDataInfoCylindricalArcCorr &>(*proj_data_info_ptr));
 
   cerr << "\nTests with proj_data_info with mashing and axial compression (span 5)\n\n";
-  proj_data_info_ptr.reset(
+  proj_data_info_ptr =
     ProjDataInfo::construct_proj_data_info(scanner_ptr,
 				  /*span*/5, scanner_ptr->get_num_rings()-1,
 				  /*views*/ scanner_ptr->get_num_detectors_per_ring()/2/8, 
 				  /*tang_pos*/64, 
-				  /*arc_corrected*/ true));
-    test_cylindrical_proj_data_info(dynamic_cast<ProjDataInfoCylindricalArcCorr &>(*proj_data_info_ptr));
+				  /*arc_corrected*/ true);
+  test_cylindrical_proj_data_info(dynamic_cast<ProjDataInfoCylindricalArcCorr &>(*proj_data_info_ptr));
 
-	cerr << "\nTests with proj_data_info with mashing and axial compression (span 4)\n\n";
-	proj_data_info_ptr.reset(
+  cerr << "\nTests with proj_data_info with mashing and axial compression (span 4)\n\n";
+  proj_data_info_ptr =
 		ProjDataInfo::construct_proj_data_info(scanner_ptr,
 			/*span*/4, scanner_ptr->get_num_rings() - 1,
 			/*views*/ scanner_ptr->get_num_detectors_per_ring() / 2 / 8,
 			/*tang_pos*/64,
-			/*arc_corrected*/ true));
+			/*arc_corrected*/ true);
 #if 0
 	// disabled to get noninteractive test
 	michelogram(dynamic_cast<ProjDataInfoCylindrical&>(*proj_data_info_ptr));
 	cerr << endl;
 #endif
-
-	test_cylindrical_proj_data_info(dynamic_cast<ProjDataInfoCylindricalArcCorr &>(*proj_data_info_ptr)); 
+  test_cylindrical_proj_data_info(dynamic_cast<ProjDataInfoCylindricalArcCorr &>(*proj_data_info_ptr)); 
 }
 
 
@@ -612,21 +611,21 @@ run_tests()
   test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr));
 
   cerr << "\nTests with proj_data_info with mashing and axial compression (span 5)\n\n";
-  proj_data_info_ptr.reset(
+  proj_data_info_ptr =
     ProjDataInfo::construct_proj_data_info(scanner_ptr,
 				  /*span*/5, scanner_ptr->get_num_rings()-1,
 				  /*views*/ scanner_ptr->get_num_detectors_per_ring()/2/8, 
 				  /*tang_pos*/64, 
-				  /*arc_corrected*/ false));
+				  /*arc_corrected*/ false);
   test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr));
 
   cerr << "\nTests with proj_data_info with mashing and axial compression (span 2)\n\n";
-  proj_data_info_ptr.reset(
+  proj_data_info_ptr =
     ProjDataInfo::construct_proj_data_info(scanner_ptr,
 			/*span*/2, scanner_ptr->get_num_rings() - 7,
 			/*views*/ scanner_ptr->get_num_detectors_per_ring() / 2 / 8,
 			/*tang_pos*/64,
-			/*arc_corrected*/ false));
+			/*arc_corrected*/ false);
   test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr));
 }
 
