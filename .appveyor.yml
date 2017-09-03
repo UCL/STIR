@@ -27,7 +27,9 @@ build_script:
   - cmake.exe .. -DCMAKE_INSTALL_PREFIX="C:\projects\stir\install" -DCMAKE_BUILD_TYPE=%CONFIGURATION%  -DCMAKE_CONFIGURATION_TYPES=%CONFIGURATION% 
   - cmake.exe --build . --config %CONFIGURATION%
   - cmake.exe --build . --target install --config %CONFIGURATION%
-
+  
 test_script:
   - cd C:\projects\stir\build
   - ctest -C %CONFIGURATION%
+  - cd ..\recon_test_pack
+  - run_tests --nointbp "C:\projects\stir\install\bin\"

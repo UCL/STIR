@@ -333,8 +333,6 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
 {
   if (span < 1)
     error("ProjDataInfoCTI: span %d has to be larger than 0\n", span);
-  if (span%2 != 1)
-    error("ProjDataInfoCTI: span %d has to be odd\n", span);
   if (max_delta<(span-1)/2)
     error("ProjDataInfoCTI: max_ring_difference %d has to be at least (span-1)/2, span is %d\n",
 	  max_delta, span);
@@ -348,14 +346,22 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
   
   // KT avoid float stuff 
   // RDmintmp[0]= (int) ceil(-span/2);
-  RDmintmp[0] = -(span-1)/2;
-  RDmaxtmp[0] = RDmintmp[0] + span - 1;
+  if (span%2 == 1)
+    {
+      RDmintmp[0] = -((span-1)/2);
+      RDmaxtmp[0] = RDmintmp[0] + span - 1;
+    }
+  else
+    {
+      RDmintmp[0] = -(span/2);
+      RDmaxtmp[0] = RDmintmp[0] + span;
+    }
 
   int seg_num =0;
   while (RDmaxtmp[seg_num] < max_delta)
   {
     seg_num++;
-    RDmintmp[seg_num] = span + RDmintmp[seg_num-1];
+    RDmintmp[seg_num] = RDmaxtmp[seg_num-1] + 1;
     RDmaxtmp[seg_num] = RDmintmp[seg_num] + span - 1;
   }
   // check if we went one too far
@@ -422,6 +428,16 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
                                        max_ring_difference,
                                        num_views,num_tangential_poss);
 
+}
+
+std::unique_ptr<ProjDataInfo>
+ProjDataInfo::construct_proj_data_info(const shared_ptr<Scanner>& scanner_sptr,
+	const int span, const int max_delta,
+	const int num_views, const int num_tangential_poss,
+	const bool arc_corrected)
+{
+  std::unique_ptr<ProjDataInfo> pdi(ProjDataInfoCTI(scanner_sptr, span, max_delta, num_views, num_tangential_poss, arc_corrected));
+  return pdi;
 }
 
 // KT 28/06/2001 added arc_corrected flag
@@ -501,7 +517,7 @@ ProjDataInfo* ProjDataInfo::ask_parameters()
     is_Advance || is_DiscoveryST;
 
    const int num_views = scanner_ptr->get_max_num_views()/
-     ask_num("Mash factor for views",1,16,1);
+     ask_num("Mash factor for views",1, scanner_ptr->get_max_num_views(),1);
 
   const bool arc_corrected =
     ask("Is the data arc-corrected?",true);
@@ -514,12 +530,9 @@ ProjDataInfo* ProjDataInfo::ask_parameters()
 	     : scanner_ptr->get_max_num_non_arccorrected_bins());
   
    int span = is_GE ? 0 : 1;
-   do
-   {
-     span = 
-       ask_num("Span value (must be odd), but use 0 for mixed-span case of the Advance : ", 0,11,span);
-   }
-   while(span!=0 && span%2==0);
+   span = 
+     ask_num("Span value (use 0 for mixed-span case of the Advance) : ", 0,scanner_ptr->get_num_rings()-1,span);
+
   
    const int max_delta = ask_num("Max. ring difference acquired : ",
     0,
