@@ -67,7 +67,7 @@ public:
   virtual int
     num_related_bins(const Bin& b) const;
 
-  virtual std::auto_ptr<SymmetryOperation>
+  virtual unique_ptr<SymmetryOperation>
     find_symmetry_operation_from_basic_bin(Bin&) const;
 
   virtual bool
@@ -76,7 +76,7 @@ public:
   virtual bool
     is_basic(const Bin& v_s) const;
 
-  virtual std::auto_ptr<SymmetryOperation>
+  virtual unique_ptr<SymmetryOperation>
     find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers&) const;
 
   virtual void

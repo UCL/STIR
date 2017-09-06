@@ -44,7 +44,6 @@
 #include "stir/is_null_ptr.h"
 
 using std::vector;
-using std::auto_ptr;
 
 START_NAMESPACE_STIR
 
@@ -221,7 +220,7 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 				viewgram_iter->get_timing_pos_num(),
 			    (*viewgram_iter)[axial_pos_tmp][tang_pos_tmp]);
 	      
-		    auto_ptr<SymmetryOperation> symm_op_ptr = 
+		    unique_ptr<SymmetryOperation> symm_op_ptr = 
 		      symmetries->find_symmetry_operation_from_basic_bin(bin);
 		    // TODO replace with Bin::compare_coordinates or so
 		    assert(bin.segment_num() == basic_bin.segment_num());

@@ -84,22 +84,21 @@ ITKImageInputFileFormat::can_read(const FileSignature& /*signature*/,
       return false;
     } 
 }
- 
-std::auto_ptr< DiscretisedDensity<3,float> >
+
+unique_ptr< DiscretisedDensity<3,float> >
 ITKImageInputFileFormat::read_from_file(std::istream& input) const
 {
   error("read_from_file for ITK with istream not implemented %s:%d. Sorry",
         __FILE__, __LINE__);
   return
-    std::auto_ptr<DiscretisedDensity<3,float> >
-    (0);
+    unique_ptr<DiscretisedDensity<3,float> >();
 }
 
-std::auto_ptr< DiscretisedDensity<3,float> >
+unique_ptr< DiscretisedDensity<3,float> >
 ITKImageInputFileFormat::read_from_file(const std::string& filename) const
 {
   return
-    std::auto_ptr<DiscretisedDensity<3,float> >
+    unique_ptr<DiscretisedDensity<3,float> >
     (read_file_itk< FinalImageType >(filename));
 }
 

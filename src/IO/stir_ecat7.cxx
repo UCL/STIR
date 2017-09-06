@@ -62,6 +62,7 @@
 #include "stir/IO/read_data.h"
 #include "stir/ExamInfo.h"
 #include "stir/TimeFrameDefinitions.h"
+#include "stir/unique_ptr.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -82,9 +83,6 @@ using std::cerr;
 using std::endl;
 using std::cout;
 using std::copy;
-#ifndef STIR_NO_AUTO_PTR
-using std::auto_ptr;
-#endif
 #endif
 
 START_NAMESPACE_STIR
@@ -1906,8 +1904,7 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
     static_cast<unsigned int>(x_size)*
     static_cast<unsigned int>(y_size)*
     static_cast<unsigned int>(z_size);
-  auto_ptr<float> float_buffer =
-     auto_ptr<float>(new float[buffer_size]);
+  unique_ptr<float> float_buffer(new float[buffer_size]);
   // save_volume7 does a swap in z, so we can't use the following
   //copy(density.begin_all(), density.end_all(), float_buffer.get());
   {

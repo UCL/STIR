@@ -108,20 +108,20 @@ protected:
 	
 public:
 
-	virtual std::auto_ptr<data_type>
+	virtual std::unique_ptr<data_type>
 	read_from_file(std::istream& input) const
 	{
 		info("SAFIRCListmodeInputFileFormat: read_from_file(input_ifstream)");
 		actual_do_parsing(input);
-		return std::auto_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR>(listmode_filename, crystal_map_filename, template_proj_data_filename));
+		return std::unique_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR>(listmode_filename, crystal_map_filename, template_proj_data_filename));
 	}
 
-	virtual std::auto_ptr<data_type> 
+	virtual std::unique_ptr<data_type> 
 	read_from_file(const std::string& filename) const
 	{
 		info("SAFIRCListmodeInputFileFormat: read_from_file(" + std::string(filename) + ")");
 		actual_do_parsing(filename);
-		return std::auto_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR>(listmode_filename, crystal_map_filename, template_proj_data_filename));
+		return std::unique_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR>(listmode_filename, crystal_map_filename, template_proj_data_filename));
 	}
 
 protected:
