@@ -946,9 +946,15 @@ int main()
 {
   set_default_num_threads();
 
-  ProjDataInfoCylindricalArcCorrTests tests;
-  tests.run_tests();
-  ProjDataInfoCylindricalNoArcCorrTests tests1;
-  tests1.run_tests();
-  return tests.main_return_value();
+  {
+    ProjDataInfoCylindricalArcCorrTests tests;
+    tests.run_tests();
+    if (!tests.is_everything_ok())
+      return tests.main_return_value();
+  }
+  {
+    ProjDataInfoCylindricalNoArcCorrTests tests1;
+    tests1.run_tests();
+    return tests1.main_return_value();
+  }
 }
