@@ -28,6 +28,7 @@
 #include "stir/IndexRange.h"
 #include <algorithm>
 #include <math.h>
+#include <boost/static_assert.hpp>
 
 START_NAMESPACE_STIR
 
@@ -156,10 +157,14 @@ ProjMatrixByBinWithPositronRange::
 calculate_proj_matrix_elems_for_one_bin(
                                         ProjMatrixElemsForOneBin& lor) const
 {
+  // This code is incomplete, and should not be used without major revision
+  // and thorough testing. The reason for BOOST_STATIC_ASSERT is to enforce
+  // this revision and testing before it gets used.
+  BOOST_STATIC_ASSERT(false);
   const Bin bin = lor.get_bin();
 
   assert(lor.size() == 0);
-     
+
   ProjMatrixElemsForOneBin zoomed_lor(bin);
   ProjMatrixElemsForOneBin zoomed_lor(bin);
 
@@ -170,10 +175,9 @@ calculate_proj_matrix_elems_for_one_bin(
        ++iter)
     {
       ProjMatrixElemsForOneBinValue
-      
+    }
 }
 
-         
 
 END_NAMESPACE_STIR
 
