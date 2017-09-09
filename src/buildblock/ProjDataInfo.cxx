@@ -75,12 +75,16 @@ START_NAMESPACE_STIR
 float
 ProjDataInfo::get_k(const Bin& bin) const
 {
-    // Probably, This condition should be removed, since I have the check odd number in the
-    // set_tof_mash_factor().
     if (!(num_tof_bins%2))
         return bin.timing_pos_num() * tof_increament_in_mm;
     else
         return (bin.timing_pos_num() * tof_increament_in_mm) - tof_increament_in_mm/2.f;
+}
+
+double
+ProjDataInfo::get_tof_delta_time(const Bin& bin) const
+{
+  return mm_to_tof_delta_time(get_k(bin) + tof_increament_in_mm / 2.f); // get_k gives "left" edge
 }
 
 float
@@ -192,7 +196,7 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
                   "the scanner's number of max timing bins. Abort.");
         tof_mash_factor = new_num;
 
-        tof_increament_in_mm = (tof_mash_factor * scanner_ptr->get_size_of_timing_bin() * 0.299792458f);
+        tof_increament_in_mm = tof_delta_time_to_mm(tof_mash_factor * scanner_ptr->get_size_of_timing_bin());
 
         min_tof_pos_num = - (scanner_ptr->get_num_max_of_timing_bins() / tof_mash_factor)/2;
         max_tof_pos_num = min_tof_pos_num + (scanner_ptr->get_num_max_of_timing_bins() / tof_mash_factor) -1;
@@ -218,8 +222,8 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
 
             tof_bin_boundaries_mm[i].low_lim = cur_low;
             tof_bin_boundaries_mm[i].high_lim = cur_high;
-            tof_bin_boundaries_ps[i].low_lim = (tof_bin_boundaries_mm[i].low_lim /  0.299792458f ) ;
-            tof_bin_boundaries_ps[i].high_lim = ( tof_bin_boundaries_mm[i].high_lim / 0.299792458f);
+            tof_bin_boundaries_ps[i].low_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[i].low_lim));
+            tof_bin_boundaries_ps[i].high_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[i].high_lim));
             // I could imagine a better printing.
             info(boost::format("Tbin %1%: %2% - %3% mm (%4% - %5% ps) = %6%") %i % tof_bin_boundaries_mm[i].low_lim % tof_bin_boundaries_mm[i].high_lim
                  % tof_bin_boundaries_ps[i].low_lim % tof_bin_boundaries_ps[i].high_lim % get_sampling_in_k(bin));

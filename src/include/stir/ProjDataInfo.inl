@@ -5,6 +5,7 @@
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2016, University of Hull
+    Copyright (C) 2017, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,11 +27,24 @@
   \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Elise Emond
   \author PARAPET project
 
 */
 
+#include "boost/format.hpp"
+
 START_NAMESPACE_STIR
+double
+ProjDataInfo::mm_to_tof_delta_time(const float dist)
+{
+  return dist / (0.299792458 / 2);
+}
+float
+ProjDataInfo::tof_delta_time_to_mm(const double delta_time)
+{
+  return static_cast<float>(delta_time * (0.299792458 / 2));
+}
 
 shared_ptr<ProjDataInfo> 
 ProjDataInfo::
@@ -73,13 +87,18 @@ ProjDataInfo::get_num_tof_poss() const
 int
 ProjDataInfo::get_tof_bin(const double& delta) const
 {
-    for (int i = min_tof_pos_num; i < max_tof_pos_num; i++)
-    {
-        if ( delta > tof_bin_boundaries_ps[i].low_lim &&
-             delta < tof_bin_boundaries_ps[i].high_lim)
-            return i;
-    }
+  if (!is_tof_data())
     return 0;
+
+  for (int i = min_tof_pos_num; i <= max_tof_pos_num; i++)
+  {
+    if (delta >= tof_bin_boundaries_ps[i].low_lim &&
+      delta < tof_bin_boundaries_ps[i].high_lim)
+      return i;
+  }
+  // TODO handle differently
+  error(boost::format("TOF delta time %g out of range") % delta);
+  return 0;
 }
 
 int
@@ -144,8 +163,7 @@ ProjDataInfo::get_coincidence_window_in_pico_sec() const
 float
 ProjDataInfo::get_coincidence_window_width() const
 {
-    // Speed of light 0.299792458 mm / psec.
-    return get_coincidence_window_in_pico_sec() * 0.299792458f;
+   return tof_delta_time_to_mm(get_coincidence_window_in_pico_sec());
 }
 
 bool

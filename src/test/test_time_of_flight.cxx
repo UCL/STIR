@@ -175,9 +175,9 @@ TOF_Tests::test_tof_proj_data_info()
     const int correct_tof_mashing_factor = 39;
     const int num_timing_positions = 9;
     float correct_width_of_tof_bin = test_scanner_sptr->get_size_of_timing_bin() *
-            test_proj_data_info_sptr->get_tof_mash_factor() * 0.299792458f;
-    float correct_timing_locations[num_timing_positions] = {-360.201f, -280.156f, -200.111f, -120.067f, -40.022f, 40.022f,
-                                          120.067f, 200.111f, 280.156f};
+            test_proj_data_info_sptr->get_tof_mash_factor() * 0.299792458f/2;
+    float correct_timing_locations[num_timing_positions] = {-360.201f/2, -280.156f/2, -200.111f/2, -120.067f/2, -40.022f/2, 40.022f/2,
+                                          120.067f/2, 200.111f/2, 280.156f/2};
 
     check_if_equal(correct_tof_mashing_factor,
                    test_proj_data_info_sptr->get_tof_mash_factor(), "Different TOF mashing factor.");

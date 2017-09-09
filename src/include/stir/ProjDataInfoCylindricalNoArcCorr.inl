@@ -156,14 +156,15 @@ ProjDataInfoCylindricalNoArcCorr::
 get_bin_for_det_pos_pair(Bin& bin,
                          const DetectionPositionPair<>& dp) const
 {
-  assert(this->get_tof_mash_factor()>0);
   return
     get_bin_for_det_pair(bin,
                          dp.pos1().tangential_coord(),
                          dp.pos1().axial_coord(),
                          dp.pos2().tangential_coord(),
                          dp.pos2().axial_coord(),
-						 stir::round((float)dp.timing_pos()/this->get_tof_mash_factor()));
+                         this->get_tof_mash_factor()==0
+                           ? 0 // use timing_pos==0 in the nonTOF case
+                           : stir::round((float)dp.timing_pos()/this->get_tof_mash_factor()));
 }
 void
 ProjDataInfoCylindricalNoArcCorr::

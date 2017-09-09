@@ -608,7 +608,7 @@ get_bin(const LOR<float>& lor,const double delta_time) const
   if (ring1 >=0 && ring1<num_rings &&
       ring2 >=0 && ring2<num_rings &&
       get_bin_for_det_pair(bin,
-			   det1, ring1, det2, ring2, get_tof_bin(delta_time)) == Succeeded::yes &&
+			   det1, ring1, det2, ring2, (lor.is_swapped() ? -1: 1)*get_tof_bin(delta_time)) == Succeeded::yes &&
       bin.tangential_pos_num() >= get_min_tangential_pos_num() &&
       bin.tangential_pos_num() <= get_max_tangential_pos_num())
     {

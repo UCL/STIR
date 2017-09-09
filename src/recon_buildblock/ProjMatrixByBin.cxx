@@ -83,7 +83,7 @@ enable_tof(const shared_ptr<ProjDataInfo>& _proj_data_info_sptr, const bool v)
     {
         tof_enabled = true;
         proj_data_info_sptr = _proj_data_info_sptr;
-        gauss_sigma_in_mm = (proj_data_info_sptr->get_scanner_ptr()->get_timing_resolution() * 0.299792458f) / 2.355f;
+        gauss_sigma_in_mm = ProjDataInfo::tof_delta_time_to_mm(proj_data_info_sptr->get_scanner_ptr()->get_timing_resolution()) / 2.355f;
         r_sqrt2_gauss_sigma = 1.0f/ (gauss_sigma_in_mm * static_cast<float>(sqrt(2.0)));
     }
 }

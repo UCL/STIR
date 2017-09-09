@@ -28,6 +28,7 @@ InputStreamFromROOTFile()
 {
     starting_stream_position = 0;
     reset();
+    least_significant_clock_bit = 1.0e+12; // TODO remove cst or rename
 }
 
 
@@ -42,13 +43,13 @@ InputStreamFromROOTFile(std::string filename,
       low_energy_window(low_energy_window), up_energy_window(up_energy_window), offset_dets(offset_dets)
 {
     starting_stream_position = 0;
+    least_significant_clock_bit = 1.0e+12;
     reset();
 }
 
 void
 InputStreamFromROOTFile::set_defaults()
 {
-    least_significant_clock_bit = 1.0;
 }
 
 void
@@ -62,7 +63,6 @@ InputStreamFromROOTFile::initialise_keymap()
     this->parser.add_key("offset (num of detectors)", &this->offset_dets);
     this->parser.add_key("low energy window (keV)", &this->low_energy_window);
     this->parser.add_key("upper energy window (keV)", &this->up_energy_window);
-    this->parser.add_key("minimum timing step (in picoseconds)", &this->least_significant_clock_bit);
 }
 
 bool
@@ -88,7 +88,6 @@ InputStreamFromROOTFile::post_processing()
     stream_ptr->SetBranchAddress("comptonPhantom1", &comptonphantom1);
     stream_ptr->SetBranchAddress("comptonPhantom2", &comptonphantom2);
 
-    least_significant_clock_bit = 5.0e+11;// / least_significant_clock_bit;
     return false;
 }
 

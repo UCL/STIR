@@ -5,6 +5,7 @@
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2016-17, University of Hull
+    Copyright (C) 2017, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -27,6 +28,7 @@
   \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Elise Emond
   \author PARAPET project
 
 */
@@ -112,6 +114,14 @@ public:
                              const int num_views, const int num_tangential_poss,
                              const bool arc_corrected = true,
                              const int tof_mash_factor = 0);
+  //! \name Conversion functions between TOF delta_time and mm
+  //@{
+  inline static double
+    mm_to_tof_delta_time(const float dist);
+  inline static float
+    tof_delta_time_to_mm(const double delta_time);
+  //@}
+
   /************ constructors ***********/
   // TODO should probably be protected
 
@@ -283,9 +293,12 @@ public:
       normal to the projection plane */
   virtual float get_s(const Bin&) const =0;
 
-  //! Get value ot the TOF location along the LOR (in mm)
+  //! Get value of the TOF location along the LOR (in mm)
   //! k is a line segment connecting the centers of the two detectors.
   float get_k(const Bin&) const;
+
+  //! Get the value of the TOF timing difference (in ps)
+  double get_tof_delta_time(const Bin&) const;
 
   //! Get LOR corresponding to a given bin
   /*!
