@@ -52,6 +52,8 @@ using std::max;
 using std::size_t;
 #endif
 
+//#define STIR_TOF_DEBUG 1
+
 START_NAMESPACE_STIR
 
 static inline
@@ -154,7 +156,7 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
                         proj_data_info.get_LOR(lor, org_bin);
                         {
                           const Bin new_bin = proj_data_info.get_bin(lor, delta_time);
-#ifdef STIR_TOF_DEBUG
+#if STIR_TOF_DEBUG>1
                           std::cerr << "T:" << org_bin.timing_pos_num() << ", swapped=" << lor.is_swapped()
                             << ", z1=" << lor.z1() << ", z2=" << lor.z2() << ", phi=" << lor.phi() << ", beta=" << lor.beta() << std::endl;
 #endif
@@ -211,7 +213,7 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
                         {
                           LORAs2Points<float> lor_as_points;
                           lor.get_intersections_with_cylinder(lor_as_points, lor.radius());
-#ifdef STIR_TOF_DEBUG
+#if STIR_TOF_DEBUG>1
                           std::cerr
                             << "    z1=" << lor_as_points.p1().z() << ", y1=" << lor_as_points.p1().y() << ", x1=" << lor_as_points.p1().x()
                             << "\n    z2=" << lor_as_points.p2().z() << ", y2=" << lor_as_points.p2().y() << ", x2=" << lor_as_points.p2().x()
@@ -662,14 +664,14 @@ run_tests()
   test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr));
 #endif // STIR_TOF_DEBUG
   cerr << "\nTests with proj_data_info with time-of-flight\n\n";
-  shared_ptr<Scanner> scanner_tof_ptr(new Scanner(Scanner::PETMR_Signa));
+  shared_ptr<Scanner> scanner_tof_ptr(new Scanner(Scanner::Discovery690));
   proj_data_info_ptr =
     ProjDataInfo::construct_proj_data_info(scanner_tof_ptr,
                   /*span*/11, scanner_tof_ptr->get_num_rings()-1,
                   /*views*/ scanner_tof_ptr->get_num_detectors_per_ring()/2,
                   /*tang_pos*/64,
                   /*arc_corrected*/ false,
-                  /*tof_mashing*/39);
+                  /*tof_mashing*/5);
     test_proj_data_info(dynamic_cast<ProjDataInfoCylindricalNoArcCorr &>(*proj_data_info_ptr));
 }
 
@@ -837,7 +839,7 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
            ++bin.segment_num())
         for (bin.axial_pos_num() = proj_data_info.get_min_axial_pos_num(bin.segment_num());
              bin.axial_pos_num() <= proj_data_info.get_max_axial_pos_num(bin.segment_num());
-             ++bin.axial_pos_num())
+             bin.axial_pos_num() += std::min(3, proj_data_info.get_num_axial_poss(bin.segment_num())))
 #ifdef STIR_OPENMP
               // insert a parallel for here for testing.
               // we do it at this level to avoid too much overhead for the thread creation, while still having enough jobs to do             // Note that the omp construct needs an int loop variable
@@ -894,16 +896,16 @@ test_proj_data_info(ProjDataInfoCylindricalNoArcCorr& proj_data_info)
 #endif
     for (bin.segment_num() = proj_data_info.get_min_segment_num(); 
 	 bin.segment_num() <= proj_data_info.get_max_segment_num(); 
-	 ++bin.segment_num())
+	 bin.segment_num() += std::max(1, proj_data_info.get_num_segments()/2))
       for (bin.axial_pos_num() = proj_data_info.get_min_axial_pos_num(bin.segment_num());
 	   bin.axial_pos_num() <= proj_data_info.get_max_axial_pos_num(bin.segment_num());
-	   ++bin.axial_pos_num())
+	   bin.axial_pos_num()+=std::min(3, proj_data_info.get_num_axial_poss(bin.segment_num())))
 	for (bin.view_num() = proj_data_info.get_min_view_num(); 
-	     bin.view_num() <= proj_data_info.get_max_view_num(); 
-	     ++bin.view_num())
+	     bin.view_num() <= proj_data_info.get_max_view_num();
+	     bin.view_num()+= std::min(5, proj_data_info.get_num_views()))
 	  for (bin.tangential_pos_num() = proj_data_info.get_min_tangential_pos_num();
 	       bin.tangential_pos_num() <= proj_data_info.get_max_tangential_pos_num();
-	       ++bin.tangential_pos_num())
+	       bin.tangential_pos_num()+= std::min(7, proj_data_info.get_num_tangential_poss()))
             for (bin.timing_pos_num() = proj_data_info.get_min_tof_pos_num();
                  bin.timing_pos_num() <= proj_data_info.get_max_tof_pos_num();
                  bin.timing_pos_num() += std::max(1,(proj_data_info.get_max_tof_pos_num() - proj_data_info.get_min_tof_pos_num()) / 2))// take 3 or 1 steps, always going through 0)

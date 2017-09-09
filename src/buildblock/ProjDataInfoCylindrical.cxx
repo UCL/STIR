@@ -548,7 +548,7 @@ get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor,
 						     phi,
 						     asin(s_in_mm/get_ring_radius()),
 						     get_ring_radius(),
-							 bin.timing_pos_num()>=0);
+                 false);// needs to set "swapped" to false given above code 
 }  
 
 void

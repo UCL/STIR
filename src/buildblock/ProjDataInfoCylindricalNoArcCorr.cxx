@@ -35,7 +35,7 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/LORCoordinates.h"
 #include "stir/round.h"
-
+#include <algorithm>
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>
 #else
@@ -327,7 +327,8 @@ get_num_det_pos_pairs_for_bin(const Bin& bin) const
   return
     get_num_ring_pairs_for_segment_axial_pos_num(bin.segment_num(),
 						 bin.axial_pos_num())*
-    get_view_mashing_factor();
+    get_view_mashing_factor()*
+    std::max(1,get_tof_mash_factor());
 }
 
 void
@@ -344,7 +345,8 @@ get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
 						 bin.axial_pos_num());
   // not sure how to handle mashing with non-zero view offset...
   assert(get_min_view_num()==0);
-
+  // not sure how to handle even tof mashing
+  assert(!is_tof_data() || (get_tof_mash_factor() % 2 == 1));
   unsigned int current_dp_num=0;
   for (int uncompressed_view_num=bin.view_num()*get_view_mashing_factor();
        uncompressed_view_num<(bin.view_num()+1)*get_view_mashing_factor();
@@ -355,17 +357,31 @@ get_all_det_pos_pairs_for_bin(vector<DetectionPositionPair<> >& dps,
       const int det2_num = 
 	uncompressed_view_tangpos_to_det1det2[uncompressed_view_num][bin.tangential_pos_num()].det2_num;
       for (ProjDataInfoCylindrical::RingNumPairs::const_iterator rings_iter = ring_pairs.begin();
-	   rings_iter != ring_pairs.end();
-	   ++rings_iter)
-	{
-	  assert(current_dp_num < get_num_det_pos_pairs_for_bin(bin));
-	  dps[current_dp_num].pos1().tangential_coord() = det1_num;     
-	  dps[current_dp_num].pos1().axial_coord() = rings_iter->first;
-	  dps[current_dp_num].pos2().tangential_coord() = det2_num;     
-	  dps[current_dp_num].pos2().axial_coord() = rings_iter->second;
-	  dps[current_dp_num].timing_pos() = bin.timing_pos_num();
-	  ++current_dp_num;
-	}
+        rings_iter != ring_pairs.end();
+        ++rings_iter)
+        {
+          for (int uncompressed_timing_pos_num = bin.timing_pos_num()*get_tof_mash_factor() - (get_tof_mash_factor() / 2);
+               uncompressed_timing_pos_num <= bin.timing_pos_num()*get_tof_mash_factor() + (get_tof_mash_factor() / 2);
+               ++uncompressed_timing_pos_num)
+            {
+              assert(current_dp_num < get_num_det_pos_pairs_for_bin(bin));
+              dps[current_dp_num].pos1().tangential_coord() = det1_num;
+              dps[current_dp_num].pos1().axial_coord() = rings_iter->first;
+              dps[current_dp_num].pos2().tangential_coord() = det2_num;
+              dps[current_dp_num].pos2().axial_coord() = rings_iter->second;
+              // need to keep dp.timing_pos positive
+              if (uncompressed_timing_pos_num > 0)
+                {
+                  dps[current_dp_num].timing_pos() = static_cast<unsigned>(uncompressed_timing_pos_num);
+                }
+              else
+                {
+                  std::swap(dps[current_dp_num].pos1(), dps[current_dp_num].pos2());
+                  dps[current_dp_num].timing_pos() = static_cast<unsigned>(-uncompressed_timing_pos_num);
+                }
+              ++current_dp_num;
+            }
+        }
     }
   assert(current_dp_num == get_num_det_pos_pairs_for_bin(bin));
 }
@@ -608,7 +624,7 @@ get_bin(const LOR<float>& lor,const double delta_time) const
   if (ring1 >=0 && ring1<num_rings &&
       ring2 >=0 && ring2<num_rings &&
       get_bin_for_det_pair(bin,
-			   det1, ring1, det2, ring2, (lor.is_swapped() ? -1: 1)*get_tof_bin(delta_time)) == Succeeded::yes &&
+			   det1, ring1, det2, ring2, (cyl_coords.is_swapped() ? -1: 1)*get_tof_bin(delta_time)) == Succeeded::yes &&
       bin.tangential_pos_num() >= get_min_tangential_pos_num() &&
       bin.tangential_pos_num() <= get_max_tangential_pos_num())
     {
