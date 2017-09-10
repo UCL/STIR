@@ -58,12 +58,12 @@
 #include "stir/info.h"
 #include <boost/format.hpp>
 #include <algorithm>
-//#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
 
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributableMPICacheEnabled.h"
 #include "stir/recon_buildblock/distributed_functions.h"
 #include "stir/recon_buildblock/distributed_test_functions.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
 #endif
 #ifdef STIR_OPENMP
 #  ifdef STIR_MPI
@@ -314,6 +314,7 @@ void distributable_computation(
   else
     {
       error("distributable_computation: unknown RPC task");
+      task_id = 0; // avoid compiler warning about "possibly unitialised" when using it
     }
 
   distributed::send_int_value(task_id, -1);
@@ -534,7 +535,7 @@ void distributable_computation(
     while(working_slaves_count>0)
       {
         int int_values[2];
-        const MPI_Status status=distributed::receive_int_values(int_values, 2, AVAILABLE_NOTIFICATION_TAG);
+        distributed::receive_int_values(int_values, 2, AVAILABLE_NOTIFICATION_TAG);
         working_slaves_count--;
             
         //reduce count values

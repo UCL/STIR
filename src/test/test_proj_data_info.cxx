@@ -1007,10 +1007,16 @@ int main()
   set_default_num_threads();
 
 #ifndef STIR_TOF_DEBUG // disable for speed of testing
-  ProjDataInfoCylindricalArcCorrTests tests;
-  tests.run_tests();
+  {
+    ProjDataInfoCylindricalArcCorrTests tests;
+    tests.run_tests();
+    if (!tests.is_everything_ok())
+      return tests.main_return_value();
+  }
 #endif
-  ProjDataInfoCylindricalNoArcCorrTests tests1;
-  tests1.run_tests();
-  return tests1.main_return_value();
+  {
+    ProjDataInfoCylindricalNoArcCorrTests tests1;
+    tests1.run_tests();
+    return tests1.main_return_value();
+  }
 }
