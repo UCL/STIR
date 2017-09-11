@@ -484,6 +484,25 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   const int num_detectors_per_ring = 
     get_scanner_ptr()->get_num_detectors_per_ring();
 
+  int d1, d2, r1, r2;
+
+  this->initialise_det1det2_to_uncompressed_view_tangpos_if_not_done_yet();
+
+  if (!det1det2_to_uncompressed_view_tangpos[det1][det2].swap_detectors)
+  {
+      d1 = det2;
+      d2 = det1;
+      r1 = Ring_B;
+      r2 = Ring_A;
+  }
+  else
+  {
+      d1 = det1;
+      d2 = det2;
+      r1 = Ring_A;
+      r2 = Ring_B;
+  }
+
 #if 0
   const float df1 = (2.*_PI/num_detectors_per_ring)*(det1);
   const float df2 = (2.*_PI/num_detectors_per_ring)*(det2);
@@ -510,10 +529,10 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   assert(det2<num_detectors_per_ring);
 
   LORInCylinderCoordinates<float> cyl_coords(get_scanner_ptr()->get_effective_ring_radius());
-  cyl_coords.p1().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(det1));
-  cyl_coords.p2().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(det2));
-  cyl_coords.p1().z() = Ring_A*get_scanner_ptr()->get_ring_spacing();
-  cyl_coords.p2().z() = Ring_B*get_scanner_ptr()->get_ring_spacing();
+  cyl_coords.p1().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(d1));
+  cyl_coords.p2().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(d2));
+  cyl_coords.p1().z() = r1*get_scanner_ptr()->get_ring_spacing();
+  cyl_coords.p2().z() = r2*get_scanner_ptr()->get_ring_spacing();
   LORAs2Points<float> lor(cyl_coords);  
   coord_1 = lor.p1();
   coord_2 = lor.p2();

@@ -72,7 +72,7 @@ pos2()
 { return p2; }
 
 template <typename coordT>
-coordT&
+int&
 DetectionPositionPair<coordT>::
 timing_pos()
 { return _timing_pos; }

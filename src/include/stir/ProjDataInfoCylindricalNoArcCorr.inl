@@ -173,16 +173,16 @@ get_det_pair_for_bin(
              int& det_num2, int& ring_num2,
              const Bin& bin) const
 {
-  if (bin.timing_pos_num()>=0)
-  {
+  //if (bin.timing_pos_num()>=0)
+ // {
     get_det_num_pair_for_view_tangential_pos_num(det_num1, det_num2, bin.view_num(), bin.tangential_pos_num());
     get_ring_pair_for_segment_axial_pos_num( ring_num1, ring_num2, bin.segment_num(), bin.axial_pos_num());
-  }
-  else
-  {
-    get_det_num_pair_for_view_tangential_pos_num(det_num2, det_num1, bin.view_num(), bin.tangential_pos_num());
-    get_ring_pair_for_segment_axial_pos_num( ring_num2, ring_num1, bin.segment_num(), bin.axial_pos_num());
-  }
+  //}
+  //else
+  //{
+  //  get_det_num_pair_for_view_tangential_pos_num(det_num2, det_num1, bin.view_num(), bin.tangential_pos_num());
+  //  get_ring_pair_for_segment_axial_pos_num( ring_num2, ring_num1, bin.segment_num(), bin.axial_pos_num());
+ // }
 }
 
 void

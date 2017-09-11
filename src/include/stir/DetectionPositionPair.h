@@ -57,7 +57,7 @@ public:
   inline const coordT timing_pos() const;
   inline DetectionPosition<coordT>& pos1();   
   inline DetectionPosition<coordT>& pos2();
-  inline coordT& timing_pos();
+  inline int& timing_pos();
   //! comparison operators
   inline bool operator==(const DetectionPositionPair&) const;
   inline bool operator!=(const DetectionPositionPair&) const;
@@ -65,7 +65,7 @@ public:
 private :
   DetectionPosition<coordT>  p1;
   DetectionPosition<coordT>  p2;   
-  coordT _timing_pos;
+  int _timing_pos;
 };
 
 END_NAMESPACE_STIR
