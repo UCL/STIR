@@ -110,7 +110,8 @@ class CListTime;
     ; if you're short of RAM (i.e. a single projdata does not fit into memory),
     ; you can use this to process the list mode data in multiple passes.
     num_segments_in_memory := -1
-
+    ; same for TOF bins
+    num_TOF_bins_in_memory := 1
   End := 
   \endverbatim
   
@@ -241,6 +242,7 @@ protected:
   //! Use TOF information
   bool use_tof;
   int num_segments_in_memory;
+  int num_timing_poss_in_memory;
   // TODO make long (or even unsigned long) but can't do this yet because we can't parse longs yet
   int num_events_to_store;
   int max_segment_num_to_process;
