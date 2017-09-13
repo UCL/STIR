@@ -41,6 +41,7 @@
 #include "stir/stream.h"//XXX
 #include <iostream>
 #include <algorithm>
+#include <boost/static_assert.hpp>
 
 #ifdef DO_TIMINGS
 #include "stir/CPUTimer.h"
@@ -186,8 +187,8 @@ ArrayFilterTests::run_tests()
       const int kernel_half_length=30;
       const int DFT_kernel_size=256;
       // necessary to avoid aliasing in DFT
-      assert(DFT_kernel_size>=(kernel_half_length*2+1)*2);
-      assert(DFT_kernel_size>=2*size1+3);// note +3 as test grows the array
+      BOOST_STATIC_ASSERT(DFT_kernel_size>=(kernel_half_length*2+1)*2);
+      BOOST_STATIC_ASSERT(DFT_kernel_size>=2*size1+3);// note +3 as test grows the array
       Array<1,float> kernel_for_DFT(IndexRange<1>(0,DFT_kernel_size-1));
       Array<1,float> kernel_for_conv(IndexRange<1>(-kernel_half_length,kernel_half_length));
       for (int i=-kernel_half_length; i<kernel_half_length; ++i)
@@ -341,9 +342,9 @@ ArrayFilterTests::run_tests()
       const int kernel_half_length=14;
       const int DFT_kernel_size=64;
       // necessary to avoid aliasing in DFT
-      assert(DFT_kernel_size>=(kernel_half_length*2+1)*2);
-      assert(DFT_kernel_size>=2*size2+3);// note +3 as test grows the array
-      assert(DFT_kernel_size>=2*size1+3);// note +3 as test grows the array
+      BOOST_STATIC_ASSERT(DFT_kernel_size>=(kernel_half_length*2+1)*2);
+      BOOST_STATIC_ASSERT(DFT_kernel_size>=2*size2+3);// note +3 as test grows the array
+      BOOST_STATIC_ASSERT(DFT_kernel_size>=2*size1+3);// note +3 as test grows the array
       const Coordinate2D<int> sizes(DFT_kernel_size/2,DFT_kernel_size);
       Array<2,float> kernel_for_DFT(IndexRange2D(DFT_kernel_size/2,DFT_kernel_size));
       Array<2,float> kernel_for_conv(IndexRange2D(-(kernel_half_length/2),kernel_half_length/2,
@@ -397,10 +398,10 @@ ArrayFilterTests::run_tests()
       const int kernel_half_length=7;
       const int DFT_kernel_size=32;
       // necessary to avoid aliasing in DFT
-      assert(DFT_kernel_size>=(kernel_half_length*2+1)*2);
-      assert(DFT_kernel_size/2>=2*size1+3);// note +3 as test grows the array
-      assert(DFT_kernel_size>=2*size2+3);// note +3 as test grows the array
-      assert(DFT_kernel_size>=2*size3+3);// note +3 as test grows the array
+      BOOST_STATIC_ASSERT(DFT_kernel_size>=(kernel_half_length*2+1)*2);
+      BOOST_STATIC_ASSERT(DFT_kernel_size/2>=2*size1+3);// note +3 as test grows the array
+      BOOST_STATIC_ASSERT(DFT_kernel_size>=2*size2+3);// note +3 as test grows the array
+      BOOST_STATIC_ASSERT(DFT_kernel_size>=2*size3+3);// note +3 as test grows the array
       const Coordinate3D<int> sizes(DFT_kernel_size/2,DFT_kernel_size,DFT_kernel_size);
       Array<3,float> kernel_for_DFT(IndexRange3D(DFT_kernel_size/2,DFT_kernel_size,DFT_kernel_size));
       Array<3,float> kernel_for_conv(IndexRange3D(-(kernel_half_length/2),kernel_half_length/2,

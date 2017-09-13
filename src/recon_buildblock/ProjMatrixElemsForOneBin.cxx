@@ -466,15 +466,27 @@ operator==(const ProjMatrixElemsForOneBin& lor) const
   const_iterator lor_iter = lor.begin();
   while (this_iter!= end() && lor_iter!=lor.end())
     {
-      // skip small elements
-      if (this_iter->get_value()<tolerance)
-	{ ++this_iter; continue; }
-      if (lor_iter->get_value()<tolerance)
-	{ ++lor_iter; continue; }
-      // compare coordinates and value
-      if (this_iter->get_coords() != lor_iter->get_coords() ||
-	  fabs(this_iter->get_value() - lor_iter->get_value()) > tolerance)
-	return false;
+      if (this_iter->get_coords() == lor_iter->get_coords())
+        {
+          // coordinates are equal, so test for value
+          if (fabs(this_iter->get_value() - lor_iter->get_value()) > tolerance)
+            return false;
+        }
+      else
+        {
+          // coordinates are not equal, so check if value of one of them is small and we should skip it 
+          if (this_iter->get_value() < tolerance)
+            {
+              ++this_iter; continue;
+            }
+          if (lor_iter->get_value() < tolerance)
+            {
+              ++lor_iter; continue;
+            }
+          // either one is not small
+          return false;
+        }
+      // we got here, so comparison was ok
       ++this_iter;
       ++lor_iter;
     }
