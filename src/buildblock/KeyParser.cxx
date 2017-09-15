@@ -363,6 +363,12 @@ KeyParser::add_key(const string& keyword, unsigned int * variable)
   }
 
 void
+KeyParser::add_key(const string& keyword, long int * variable)
+  {
+    add_key(keyword, KeyArgument::LONG, variable);
+  }
+
+void
 KeyParser::add_key(const string& keyword, unsigned long * variable)
   {
     add_key(keyword, KeyArgument::ULONG, variable);
