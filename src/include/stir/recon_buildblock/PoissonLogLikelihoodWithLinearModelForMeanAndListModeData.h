@@ -1,6 +1,8 @@
 //
 //
 /*
+ *  Copyright (C) 2017, University of Hull
+ *  Copyright (C) 2016, University of Leeds
     Copyright (C) 2003- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
@@ -22,6 +24,7 @@
   \brief Declaration of class 
   stir::PoissonLogLikelihoodWithLinearModelForMeanAndListModeData
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
   \author Sanida Mustafovic
 
@@ -122,13 +125,13 @@ protected:
   //! \author Nikos Efthimiou
   //! \details This is part of some functionality I transfer from lm_to_projdata.
   //! The total number of events to be *STORED* not *PROCESSED*.
-  unsigned long int num_events_to_store;
+  long int num_events_to_store;
 
   //!
-   //! \brief do_time_frame
-   //! \author Nikos Efthimiou
-   //! \details Reconstruct based on time frames?
-   bool do_time_frame;
+  //! \brief do_time_frame
+  //! \author Nikos Efthimiou
+  //! \details Reconstruct based on time frames?
+  bool do_time_frame;
  
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */

@@ -52,6 +52,9 @@
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 
+#include "stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
+#include "stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
+
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributed_functions.h"
 #endif
@@ -86,6 +89,7 @@ set_defaults()
 
   this->normalisation_sptr.reset(new TrivialBinNormalisation);
   this->do_time_frame = false;
+  this->use_projectors = false;
 } 
  
 template <typename TargetT> 
@@ -99,7 +103,9 @@ initialise_keymap()
   this->parser.add_key("max ring difference num to process", &this->max_ring_difference_num_to_process);
   this->parser.add_parsing_key("Matrix type", &this->PM_sptr); 
   this->parser.add_key("additive sinogram",&this->additive_projection_data_filename); 
- 
+  this->parser.add_parsing_key("Projector pair type", &this->projector_pair_ptr);
+  this->parser.add_key("use projectors", &use_projectors);
+
   this->parser.add_key("num_events_to_store",&this->num_events_to_store);
 } 
 template <typename TargetT> 
@@ -119,6 +125,9 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
     assert(this->num_subsets>0);
         const DataSymmetriesForBins& symmetries =
                 *this->PM_sptr->get_symmetries_ptr();
+
+        if (this->num_subsets == 1)
+            return true;
 
         Array<1,int> num_bins_in_subset(this->num_subsets);
         num_bins_in_subset.fill(0);
@@ -149,8 +158,12 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
                                               axial_num,
                                               tang_num, 1);
 
-                            if (!this->PM_sptr->get_symmetries_ptr()->is_basic(tmp_bin) )
-                                continue;
+                            if (!use_projectors)
+                                if (!this->PM_sptr->get_symmetries_ptr()->is_basic(tmp_bin) )
+                                    continue;
+                                else
+                                    if (!this->sens_backprojector_sptr->get_symmetries_used()->is_basic(tmp_bin))
+                                        continue;
 
                             num_bins_in_subset[subset_num] +=
                                     symmetries.num_related_bins(tmp_bin);
@@ -195,17 +208,25 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
 #endif
 
 
-    // set projector to be used for the calculations
-    this->PM_sptr->set_up(proj_data_info_cyl_sptr->create_shared_clone(),target_sptr);
+    if (!use_projectors)
+    {
+        // set projector to be used for the calculations
+        this->PM_sptr->set_up(proj_data_info_cyl_sptr->create_shared_clone(),target_sptr);
 
-    shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
-    shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
+        shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
+        shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
 
-    this->projector_pair_ptr.reset(
-                   new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
+        this->projector_pair_ptr.reset(
+                    new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
 
-    this->projector_pair_ptr->set_up(proj_data_info_cyl_sptr->create_shared_clone(),target_sptr);
+        this->projector_pair_ptr->set_up(proj_data_info_cyl_sptr->create_shared_clone(),target_sptr);
+    }
+    else
+    {
+        this->projector_pair_ptr->set_up(proj_data_info_cyl_sptr->create_shared_clone(),target_sptr);
+    }
 
+    this->sens_backprojector_sptr.reset(projector_pair_ptr->get_back_projector_sptr()->clone());
 
     if (is_null_ptr(this->normalisation_sptr))
     {
@@ -384,9 +405,8 @@ add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view
     const int max_ax_pos_num =
        viewgrams.get_max_axial_pos_num();
 
-    this->projector_pair_ptr->get_back_projector_sptr()->
-      back_project(sensitivity, viewgrams,
-                   min_ax_pos_num, max_ax_pos_num);
+    this->sens_backprojector_sptr->back_project(sensitivity, viewgrams,
+        min_ax_pos_num, max_ax_pos_num);
   }
 
 }
@@ -430,6 +450,10 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   long num_stored_events = 0;
   const float max_quotient = 10000.F;
 
+  // Putting the Bins here I avoid rellocation.
+  Bin measured_bin;
+  Bin fwd_bin;
+
   //go to the beginning of this frame
   //  list_mode_data_sptr->set_get_position(start_time);
   // TODO implement function that will do this for a random time
@@ -440,8 +464,26 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   shared_ptr<CListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr(); 
   CListRecord& record = *record_sptr; 
 
-  unsigned long int more_events =
+  long int more_events =
           this->do_time_frame? 1 : this->num_events_to_store;
+
+  //! Update before each iteration
+  if (use_projectors)
+  {
+
+      PresmoothingForwardProjectorByBin* forward=
+              dynamic_cast<PresmoothingForwardProjectorByBin*> (this->projector_pair_ptr->get_forward_projector_sptr().get());
+
+      if (!is_null_ptr(forward))
+          forward->update_filtered_density_image(current_estimate);
+
+      PostsmoothingBackProjectorByBin* back=
+              dynamic_cast<PostsmoothingBackProjectorByBin*> (this->projector_pair_ptr->get_back_projector_sptr().get());
+
+      if (!is_null_ptr(back))
+          back->init_filtered_density_image(gradient);
+
+  }
 
   while (more_events)//this->list_mode_data_sptr->get_next_record(record) == Succeeded::yes)
   { 
@@ -463,7 +505,6 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 
     if (record.is_event() && record.event().is_prompt()) 
       { 
-        Bin measured_bin; 
         measured_bin.set_bin_value(1.0f);
         record.event().get_bin(measured_bin, *proj_data_info_cyl_sptr);
 
@@ -478,7 +519,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
             continue;
         }
 
-        measured_bin.set_bin_value(1.0f);
+        //measured_bin.set_bin_value(1.0f);
         // If more than 1 subsets, check if the current bin belongs to
         // the current.
         if (this->num_subsets > 1)
@@ -493,38 +534,82 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
             }
         }
 
-        this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin); 
-        //in_the_range++;
-        Bin fwd_bin; 
-        fwd_bin.set_bin_value(0.0f);
-        proj_matrix_row.forward_project(fwd_bin,current_estimate); 
-        // additive sinogram 
-        if (!is_null_ptr(this->additive_proj_data_sptr))
-          {
-            float add_value = this->additive_proj_data_sptr->get_bin_value(measured_bin);
-            float value= fwd_bin.get_bin_value()+add_value;         
-            fwd_bin.set_bin_value(value);
-          }
-        float  measured_div_fwd = 0.0f;
+        if (!use_projectors)
+        {
+            this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
+            //in_the_range++;
 
-        if(!this->do_time_frame)
-             more_events -=1 ;
+            fwd_bin.set_bin_value(0.0f);
+            proj_matrix_row.forward_project(fwd_bin,current_estimate);
+            // additive sinogram
+            if (!is_null_ptr(this->additive_proj_data_sptr))
+            {
+                float add_value = this->additive_proj_data_sptr->get_bin_value(measured_bin);
+                float value= fwd_bin.get_bin_value()+add_value;
+                fwd_bin.set_bin_value(value);
+            }
+            float  measured_div_fwd = 0.0f;
 
-         num_stored_events += 1;
+            if(!this->do_time_frame)
+                more_events -=1 ;
 
-         if (num_stored_events%200000L==0)
-                         info( boost::format("Stored Events: %1% ") % num_stored_events);
+            num_stored_events += 1;
 
-        if ( measured_bin.get_bin_value() <= max_quotient *fwd_bin.get_bin_value())
-            measured_div_fwd = 1.0f /fwd_bin.get_bin_value();
+            if (num_stored_events%200000L==0)
+                info( boost::format("Stored Events: %1% ") % num_stored_events);
+
+            if ( measured_bin.get_bin_value() <= max_quotient *fwd_bin.get_bin_value())
+                measured_div_fwd = 1.0f /fwd_bin.get_bin_value();
+            else
+                continue;
+
+            measured_bin.set_bin_value(measured_div_fwd);
+            proj_matrix_row.back_project(gradient, measured_bin);
+        }
         else
-            continue;
+        {
+            measured_bin.set_bin_value(0.0f);
 
-        measured_bin.set_bin_value(measured_div_fwd);
-        proj_matrix_row.back_project(gradient, measured_bin); 
+            projector_pair_ptr->get_forward_projector_sptr()->forward_project(measured_bin,
+                                                                              current_estimate);
+
+            if (!is_null_ptr(this->additive_proj_data_sptr))
+              {
+                float add_value = this->additive_proj_data_sptr->get_bin_value(measured_bin);
+                float value= measured_bin.get_bin_value()+add_value;
+                measured_bin.set_bin_value(value);
+              }
+
+            float  measured_div_fwd = 0.0f;
+
+            if(!this->do_time_frame)
+                 more_events -=1 ;
+
+             num_stored_events += 1;
+
+             if (num_stored_events%200000L==0)
+                             info( boost::format("Stored Events: %1% ") % num_stored_events);
+
+            if ( measured_bin.get_bin_value() <= max_quotient *measured_bin.get_bin_value())
+                measured_div_fwd = 1.0f /measured_bin.get_bin_value();
+            else
+                continue;
+
+            measured_bin.set_bin_value(measured_div_fwd);
+            projector_pair_ptr->get_back_projector_sptr()->back_project(gradient, measured_bin);
+        }
          
       } 
-  } 
+  }
+  if (use_projectors)
+  {
+      PostsmoothingBackProjectorByBin* back=
+              dynamic_cast<PostsmoothingBackProjectorByBin*> (this->projector_pair_ptr->get_back_projector_sptr().get());
+
+      if (!is_null_ptr(back))
+          back->update_filtered_density_image(gradient);
+
+  }
     info(boost::format("Number of used events: %1%") % num_stored_events);
 }
 

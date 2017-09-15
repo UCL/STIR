@@ -1,7 +1,9 @@
 //
-// 
-/* 
-    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+//
+/*
+ *  Copyright (C) 2017, University of Hull
+ *  Copyright (C) 2016, University of Leeds
+    Copyright (C) 2003- 2007, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -13,14 +15,16 @@
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU Lesser General Public License for more details.
-    See STIR/LICENSE.txt for details 
-*/ 
+
+    See STIR/LICENSE.txt for details
+*/
 /*! 
   \file
   \ingroup GeneralisedObjectiveFunction 
   \brief Declaration of class
   stir::PoissonLogLikelihoodWithLinearModelForMeanAndListModeData 
  
+  \author Nikos Efthimiou
   \author Kris Thielemans 
   \author Sanida Mustafovic 
  
