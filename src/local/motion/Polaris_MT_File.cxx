@@ -70,7 +70,7 @@ read_Peter_Bloomfield_mt_file(const std::string& mt_filename, std::istream& mt_s
     int v1, v2;
     char toolkit[MAX_STRING_LENGTH];
     std::tm start_time_tm;
-    if (sscanf(first_line, "%d/%d/%d %d:%d:%d - %d %d %s",
+    if (sscanf(first_line, "%d/%d/%d %d:%d:%d - %d %d %511s",
 	   &start_time_tm.tm_mday,
 	   &start_time_tm.tm_mon,
 	   &start_time_tm.tm_year,

@@ -25,10 +25,17 @@ cmake_minimum_required(VERSION 2.8.3)
 
 # add project source to cmake path such that it can use our find_package modules and .cmake files
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/src/cmake)
+include(src/cmake/SetC++Version.cmake)
 
 # set default build-type to Release
 if(NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "type of build: Debug Release RelWithDebInfo MinSizeRel." FORCE)
+endif()
+
+if((${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang") OR
+   (APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" AND
+    ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang"))
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 endif()
 
 ####### Set Version number etc
@@ -70,6 +77,16 @@ endif()
 
 if(NOT DISABLE_CERN_ROOT_SUPPORT)
   find_package(CERN_ROOT)
+  if (CERN_ROOT_FOUND)
+    message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}")
+    # Find which major version this is
+    string(REPLACE "." ";" _VERSION_LIST ${CERN_ROOT_VERSION})
+    list(GET _VERSION_LIST 0 CERN_ROOT_VERSION_MAJOR)
+    if (${CERN_ROOT_VERSION_MAJOR} GREATER 5)
+      message(STATUS "This ROOT version needs C++-11, so we will enable this.")
+      UseCXX(11)
+    endif()
+  endif()
 endif()
 
 if(NOT DISABLE_AVW)

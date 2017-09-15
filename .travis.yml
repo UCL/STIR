@@ -12,10 +12,11 @@ os:
   - osx
 
 # Enviroment variables:
+# To avoid too many builds, we mix some options (although independent tests would have been better)
 global:
   - BUILD_FLAGS="-DBUILD_SWIG_PYTHON=1 -DSTIR_MPI=0 -DBUILD_SWIG_MATLAB=0 -DSTIR_OPENMP=0 -DCMAKE_BUILD_TYPE=Release"
 env:
-  - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0"
+  - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -std=c++11"
   - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1"
 
 # Ubuntu 14.04 LTS (trusty)
@@ -32,12 +33,16 @@ addons:
       - swig
       - libgomp1
       - root-system-bin
+      - libroot-tree-dev
+      - libroot-tree-treeplayer-dev
+      - libroot-io-dev
 
 # Actual compilation script
 
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew tap homebrew/science; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install doxygen; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install --with-cocoa root; fi
 
 script:
@@ -53,6 +58,6 @@ script:
   - ./run_test_simulate_and_recon_with_motion.sh
   - ./run_scatter_tests.sh
   - ./run_tests.sh --nointbp
-  -  if [[ "$TRAVIS_OS_NAME" == "osx" && $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT_SUPPORT=0"* ]]; then ./run_root_GATE.sh; fi
+  -  if [[ $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT_SUPPORT=0"* ]]; then ./run_root_GATE.sh; fi
   - cd $TRAVIS_BUILD_DIR/recon_test_pack/SPECT
   - ./run_SPECT_tests.sh
