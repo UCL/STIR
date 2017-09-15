@@ -133,6 +133,9 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
         Array<1,int> num_bins_in_subset(this->num_subsets);
         num_bins_in_subset.fill(0);
 
+        if (this->num_subsets == 1)
+            return true;
+
 
         for (int subset_num=0; subset_num<this->num_subsets; ++subset_num)
         {

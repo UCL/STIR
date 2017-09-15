@@ -97,7 +97,7 @@ ProjDataInfo::get_tof_bin(const double& delta) const
       return i;
   }
   // TODO handle differently
-  error(boost::format("TOF delta time %g out of range") % delta);
+  warning(boost::format("TOF delta time %g out of range") % delta);
   return 0;
 }
 
