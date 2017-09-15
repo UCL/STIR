@@ -1283,7 +1283,7 @@ bool InterfilePDFSHeader::post_processing()
   // data from the Interfile header (or the guessed scanner).
 
   shared_ptr<Scanner> scanner_sptr_from_file;
-  if (!guessed_scanner_ptr->is_tof_ready())
+  if (false) // !guessed_scanner_ptr->is_tof_ready())
   {
       scanner_sptr_from_file.reset(
                   new Scanner(guessed_scanner_ptr->get_type(),
@@ -1309,6 +1309,7 @@ bool InterfilePDFSHeader::post_processing()
   }
   else
   {
+    warning("ENERGY WINDOW INFO IGNORED");
       scanner_sptr_from_file.reset(
                   new Scanner(guessed_scanner_ptr->get_type(),
                               get_exam_info_ptr()->originating_system,
