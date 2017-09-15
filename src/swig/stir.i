@@ -53,6 +53,7 @@
  #include "stir/SegmentByView.h"
  #include "stir/SegmentBySinogram.h"
  #include "stir/ExamInfo.h"
+ #include "stir/IO/ExamData.h"
  #include "stir/Verbosity.h"
  #include "stir/ProjData.h"
  #include "stir/ProjDataInMemory.h"
@@ -465,7 +466,7 @@
 %feature("autodoc", "1");
 
 // TODO doesn't work
-%warnfilter(315) std::auto_ptr;
+%warnfilter(315) std::unique_ptr;
 
 // disable warnings about unknown base-class 401
 // disable warnings about "no access specified given for base class" as we use this correctly for private derivation 319
@@ -812,6 +813,7 @@ namespace std {
 
 %shared_ptr(stir::TimeFrameDefinitions);
 %shared_ptr(stir::ExamInfo);
+%shared_ptr(stir::ExamData);
 %shared_ptr(stir::Verbosity);
 %shared_ptr(stir::Scanner);
 %shared_ptr(stir::ProjDataInfo);
@@ -977,7 +979,7 @@ T * operator-> () const;
   // to convert the swigged DiscretisedDensity to a VoxelsOnCartesianGrid
   static stir::VoxelsOnCartesianGrid<elemT> * read_from_file(const std::string& filename)
     {
-      std::auto_ptr<stir::DiscretisedDensity<3,elemT> > 
+      stir::unique_ptr<stir::DiscretisedDensity<3,elemT> > 
 	ret(stir::read_from_file<stir::DiscretisedDensity<3,elemT> >(filename));
       return dynamic_cast<stir::VoxelsOnCartesianGrid<elemT> *>(ret.release());
     }
@@ -1235,6 +1237,14 @@ namespace stir {
 
 } // namespace stir
 
+%rename (get_scanner) *::get_scanner_ptr;
+%ignore *::get_proj_data_info_ptr;
+%rename (get_proj_data_info) *::get_proj_data_info_sptr;
+%ignore *::get_exam_info_ptr;
+%rename (get_exam_info) *::get_exam_info_sptr;
+
+%rename (set_objective_function) *::set_objective_function_sptr;
+
   // Todo need to instantiate with name?
   // TODO Swig doesn't see that Array<2,float> is derived from it anyway becuse of num_dimensions bug
 %template (FloatNumericVectorWithOffset2D) stir::NumericVectorWithOffset<stir::Array<1,float>, float>;
@@ -1285,6 +1295,7 @@ namespace stir {
  */
 %include "stir/TimeFrameDefinitions.h"
 %include "stir/ExamInfo.h"
+%include "stir/IO/ExamData.h"
 %include "stir/Verbosity.h"
 // ignore non-const versions
 %ignore stir::Bin::segment_num();
@@ -1294,14 +1305,6 @@ namespace stir {
 %include "stir/Bin.h"
 %newobject stir::ProjDataInfo::ProjDataInfoGE;
 %newobject stir::ProjDataInfo::ProjDataInfoCTI;
-
-%rename (get_scanner) *::get_scanner_ptr;
-%ignore *::get_proj_data_info_ptr;
-%rename (get_proj_data_info) *::get_proj_data_info_sptr;
-%ignore *::get_exam_info_sptr;
-%rename (get_exam_info) *::get_exam_info_sptr;
-
-%rename (set_objective_function) *::set_objective_function_sptr;
 
 %include "stir/ProjDataInfo.h"
 %include "stir/ProjDataInfoCylindrical.h"
@@ -1419,23 +1422,38 @@ namespace stir {
 
  // reconstruction
 #ifdef STIRSWIG_SHARED_PTR
-%shared_ptr(stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >);
-%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMean<stir::DiscretisedDensity<3,float> >);
 #define TargetT stir::DiscretisedDensity<3,float>
+
+%shared_ptr(stir::GeneralisedObjectiveFunction<TargetT >);
+%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT >);
 %shared_ptr(stir::RegisteredParsingObject<stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >,
 	    stir::GeneralisedObjectiveFunction<TargetT >,
 	    stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT > >);
-#undef TargetT
 
-%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<stir::DiscretisedDensity<3,float> >);
+%shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >);
 
-%shared_ptr(stir::Reconstruction<stir::DiscretisedDensity<3,float> >);
-%shared_ptr(stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >);
-%shared_ptr(stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >);
-%shared_ptr(stir::OSSPSReconstruction<stir::DiscretisedDensity<3,float> >);
+%shared_ptr(stir::Reconstruction<TargetT >);
+%shared_ptr(stir::IterativeReconstruction<TargetT >);
+
+%shared_ptr(stir::RegisteredParsingObject<
+	      stir::OSMAPOSLReconstruction <TargetT > ,
+	      stir::Reconstruction < TargetT >,
+	      stir::IterativeReconstruction < TargetT >
+            >)
+%shared_ptr(stir::RegisteredParsingObject<
+	      stir::OSSPSReconstruction <TargetT > ,
+	      stir::Reconstruction < TargetT >,
+	      stir::IterativeReconstruction < TargetT >
+            >)
+
+%shared_ptr(stir::OSMAPOSLReconstruction<TargetT >);
+%shared_ptr(stir::OSSPSReconstruction<TargetT >);
 %shared_ptr(stir::AnalyticReconstruction);
 %shared_ptr(stir::FBP2DReconstruction);
 %shared_ptr(stir::FBP3DRPReconstruction);
+
+#undef TargetT
+
 #endif
 
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
@@ -1454,13 +1472,13 @@ namespace stir {
 %include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 %include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
-
-
-%template (GeneralisedObjectiveFunction3DFloat) stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >;
-//%template () stir::GeneralisedObjectiveFunction<stir::DiscretisedDensity<3,float> >;
-%template (PoissonLogLikelihoodWithLinearModelForMean3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMean<stir::DiscretisedDensity<3,float> >;
-
 #define TargetT stir::DiscretisedDensity<3,float>
+
+
+%template (GeneralisedObjectiveFunction3DFloat) stir::GeneralisedObjectiveFunction<TargetT >;
+//%template () stir::GeneralisedObjectiveFunction<TargetT >;
+%template (PoissonLogLikelihoodWithLinearModelForMean3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT >;
+
 // TODO do we really need this name?
 // Without it we don't see the parsing functions in python...
 // Note: we cannot start it with __ as then we we get a run-time error when we're not using the builtin option
@@ -1468,7 +1486,7 @@ namespace stir {
   stir::GeneralisedObjectiveFunction<TargetT >,
   stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT > >;
 
-%template (PoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<stir::DiscretisedDensity<3,float> >;
+%template (PoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >;
 
 %inline %{
   template <class T>
@@ -1478,16 +1496,29 @@ namespace stir {
 }
 %}
 
-%template(ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData<stir::DiscretisedDensity<3,float> >;
+%template(ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >;
 
 
-%template (Reconstruction3DFloat) stir::Reconstruction<stir::DiscretisedDensity<3,float> >;
-//%template () stir::Reconstruction<stir::DiscretisedDensity<3,float> >;
-%template (IterativeReconstruction3DFloat) stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
-//%template () stir::IterativeReconstruction<stir::DiscretisedDensity<3,float> >;
-%template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<stir::DiscretisedDensity<3,float> >;
-%template (OSSPSReconstruction3DFloat) stir::OSSPSReconstruction<stir::DiscretisedDensity<3,float> >;
+%template (Reconstruction3DFloat) stir::Reconstruction<TargetT >;
+//%template () stir::Reconstruction<TargetT >;
+%template (IterativeReconstruction3DFloat) stir::IterativeReconstruction<TargetT >;
+//%template () stir::IterativeReconstruction<TargetT >;
 
+%template (RPOSMAPOSLReconstruction3DFloat) stir::RegisteredParsingObject<
+	      stir::OSMAPOSLReconstruction <TargetT > ,
+	      stir::Reconstruction < TargetT >,
+	      stir::IterativeReconstruction < TargetT >
+              >;
+%template (RPOSSPSReconstruction) stir::RegisteredParsingObject<
+	      stir::OSSPSReconstruction <TargetT > ,
+	      stir::Reconstruction < TargetT >,
+	      stir::IterativeReconstruction < TargetT >
+            >;
+
+%template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<TargetT >;
+%template (OSSPSReconstruction3DFloat) stir::OSSPSReconstruction<TargetT >;
+
+#undef TargetT
 
 /// projectors
 %shared_ptr(stir::ForwardProjectorByBin);

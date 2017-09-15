@@ -45,8 +45,6 @@ be surrounded by double quotes (&quot;) when used as a command line argument.
     See STIR/LICENSE.txt for details
 */
 
-#ifdef HAVE_LLN_MATRIX
-
 #include "stir/DiscretisedDensity.h"
 #include "stir/ProjData.h"
 #include "stir/shared_ptr.h"
@@ -308,7 +306,4 @@ int main(int argc, char *argv[])
     }
   }  
 }
-
-
-#endif
 

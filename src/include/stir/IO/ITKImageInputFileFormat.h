@@ -72,11 +72,11 @@ public InputFileFormat<DiscretisedDensity<3,float> >
 		    std::istream& input) const;
 
   //! This function always calls error() as ITK cannot read from istream
-  virtual std::auto_ptr<data_type>
+  virtual unique_ptr<data_type>
     read_from_file(std::istream& input) const;
 
   //! This function uses ITK for reading and does the translation to STIR
-  virtual std::auto_ptr<data_type>
+  virtual unique_ptr<data_type>
     read_from_file(const std::string& filename) const;
 
 };
