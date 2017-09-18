@@ -25,10 +25,6 @@
   \author Kris Thielemans
 */
 
-#ifndef HAVE_LLN_MATRIX
-#error This file can only be compiled when HAVE_LLN_MATRIX is #defined
-#endif
-
 #ifndef __stir_recon_buildblock_BinNormalisationFromECAT7_H__
 #define __stir_recon_buildblock_BinNormalisationFromECAT7_H__
 
@@ -42,6 +38,10 @@
 #include "stir/IO/stir_ecat7.h"
 #include "stir/Array.h"
 #include <string>
+
+#ifndef HAVE_LLN_MATRIX
+#error This file can only be compiled when HAVE_LLN_MATRIX is #defined
+#endif
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT

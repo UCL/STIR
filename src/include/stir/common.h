@@ -45,8 +45,6 @@
    #defines STIR_NO_NAMESPACES if the compiler does not support namespaces
    #defines START_NAMESPACE_STIR etc.
 
- <LI> includes boost/config.hpp
-
  <LI> #defines STIR_NO_COVARIANT_RETURN_TYPES when the compiler does not
    support virtual functions of a derived class differing only in the return
    type.
@@ -56,8 +54,7 @@
    class B:A { virtual B* f(); }
    \endcode
 
- <LI> #defines STIR_NO_AUTO_PTR when the compiles has no std::auto_ptr support.
- In that case, we #define auto_ptr to shared_ptr
+ <LI> defines STIR_NO_UNIQUE_PTR when the compiler has no std::unique_ptr support.
    
  <LI> preprocessor definitions which attempt to determine the 
    operating system this is going to run on.
@@ -95,24 +92,18 @@
 
 <h3> stir include files included here</H3>
   <UL>
-  <li> <tt>stir/error.h</tt> definiong stir::error</li>
-  <li> <tt>stir/warning.h</tt> definiong stir::warning</li>
+  <li> <tt>stir/config.h</tt> sets various preprocessor defines (generated from STIRConfig.in)</li>
+  <li> <tt>stir/error.h</tt> defining stir::error</li>
+  <li> <tt>stir/warning.h</tt> defining stir::warning</li>
   </UL>
 */
-#if defined(_MSC_VER)
-#include "stir/config/visualc.h"
-#endif
-#if defined(__GNUC__)
-#include "stir/config/gcc.h"
-#endif
-
-#include "boost/config.hpp"
+#include "stir/config.h"
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-
+#include <boost/math/constants/constants.hpp>
 
 //*************** namespace macros
 #ifndef STIR_NO_NAMESPACES
@@ -177,20 +168,10 @@
 
 #endif // !defined(__OS_xxx_)
 
-//************** auto_ptr
-#if defined(BOOST_NO_AUTO_PTR) && !defined(STIR_NO_AUTO_PTR)
-#  define STIR_NO_AUTO_PTR
+//************** unique_ptr
+#if defined(BOOST_NO_CXX11_SMART_PTR) && !defined(STIR_NO_UNIQUE_PTR)
+#  define STIR_NO_UNIQUE_PTR
 #endif
-
-#ifdef STIR_NO_AUTO_PTR
-// first include memory, just in case there is a (supposedly flawed) auto_ptr in there
-#include <memory>
-// now include our own shared_ptr (somewhat tricky, as this will 
-// include this file again...)
-#include "stir/shared_ptr.h"
-#define auto_ptr shared_ptr
-#endif
-
 
 //*************** overload std::copy for built-in types
 /* If you have an older compiler, chages are that std::copy is 
@@ -314,7 +295,7 @@ START_NAMESPACE_STIR
 
 //! The constant pi to high precision.
 /*! \ingroup buildblock */
-const double _PI = 3.14159265358979323846264338327950288419716939937510;
+const double _PI = boost::math::constants::pi<double>();
 
 //! returns the square of a number, templated.
 /*! \ingroup buildblock */
@@ -327,6 +308,5 @@ END_NAMESPACE_STIR
 // include these such that we don't have to include them all over the place
 #include "stir/error.h"
 #include "stir/warning.h"
-
 
 #endif 

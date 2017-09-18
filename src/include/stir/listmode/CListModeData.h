@@ -229,8 +229,7 @@ public:
   //! it will throw an error.
   virtual inline unsigned long int get_total_number_of_events() const
   {
-      error("The function get_total_number_of_events() is currently supported only"
-              "for ROOT input files.");
+      error("The function get_total_number_of_events() is currently not supported for this file format.");
       return 0;
   }
 

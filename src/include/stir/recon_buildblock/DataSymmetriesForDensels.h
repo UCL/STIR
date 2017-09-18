@@ -32,7 +32,7 @@
 #include "stir/Densel.h"
 #include <vector>
 #include <memory>
-
+#include "stir/unique_ptr.h"
 #include "stir/Coordinate2D.h"
 
 START_NAMESPACE_STIR
@@ -106,7 +106,7 @@ public:
   sets 'b' to the corresponding 'basic' Densel and returns the symmetry 
   transformation from 'basic' to 'b'.
   */
-  virtual std::auto_ptr<SymmetryOperation>
+  virtual unique_ptr<SymmetryOperation>
     find_symmetry_operation_from_basic_densel(Densel&) const = 0;
 
   /*! \brief given an arbitrary Densel 'b', find the basic Densel
