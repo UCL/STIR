@@ -62,7 +62,7 @@ get_proj_matrix_elems_for_one_bin(
     // find basic bin
     Bin basic_bin = bin;    
     unique_ptr<SymmetryOperation> symm_ptr = 
-      symmetries_ptr->find_symmetry_operation_from_basic_bin(basic_bin);
+      symmetries_sptr->find_symmetry_operation_from_basic_bin(basic_bin);
     
     probabilities.set_bin(basic_bin);
     // check if basic bin is in cache  
@@ -90,7 +90,7 @@ get_proj_matrix_elems_for_one_bin(
       // find basic bin
       Bin basic_bin = bin;  
       unique_ptr<SymmetryOperation> symm_ptr = 
-        symmetries_ptr->find_symmetry_operation_from_basic_bin(basic_bin);
+        symmetries_sptr->find_symmetry_operation_from_basic_bin(basic_bin);
 
       probabilities.set_bin(basic_bin);
       // check if basic bin is in cache
