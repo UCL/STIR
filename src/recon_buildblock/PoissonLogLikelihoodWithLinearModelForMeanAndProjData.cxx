@@ -26,7 +26,6 @@
   \author PARAPET project
 */
 
-
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
@@ -55,6 +54,7 @@
 #endif
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 
+#include "stir/ProjDataInMemory.h"
 
 #include "stir/Viewgram.h"
 #include "stir/recon_array_functions.h"
@@ -740,12 +740,27 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 
 #ifdef STIR_MPI
      shared_ptr<TargetT> sensitivity_this_subset_sptr(sensitivity.clone());
+
+     // have to create a ProjData object filled with 1 here because otherwise zero_seg0_endplanes will not be effective
+     shared_ptr<ProjData> sens_proj_data_sptr(new ProjDataInMemory(this->proj_data_sptr->get_exam_info_sptr(), this->proj_data_sptr->get_proj_data_info_sptr()));
+     for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
+     {
+       for(int view = sens_proj_data_sptr->get_min_view_num();
+         view <= sens_proj_data_sptr->get_max_view_num();
+ 	 view++)
+ 	{
+ 	  Viewgram<float> v = sens_proj_data_sptr->get_viewgram(view, segment_num).get_empty_copy();
+	  v.fill(1.);
+	  sens_proj_data_sptr->set_viewgram(v);
+ 	}
+     }
+
      distributable_sensitivity_computation(this->projector_pair_ptr->get_forward_projector_sptr(), 
                                  this->projector_pair_ptr->get_back_projector_sptr(), 
                                  this->symmetries_sptr,
                                  *sensitivity_this_subset_sptr, 
                                  sensitivity, 
-                                 this->proj_data_sptr, 
+                                 sens_proj_data_sptr, 
                                  subset_num, 
                                  this->num_subsets, 
                                  min_segment_num,
@@ -1013,7 +1028,7 @@ void distributable_sensitivity_computation(
                                     back_projector_sptr,
                                     symmetries_sptr,
                                     &sensitivity, &input_image,
-                                    proj_dat, false, //i.e. do not read projection data
+                                    proj_dat, true, //i.e. do read projection data
                                     subset_num, num_subsets,
                                     min_segment, max_segment,
                                     zero_seg0_end_planes,
@@ -1153,9 +1168,7 @@ void RPC_process_related_viewgrams_sensitivity_computation(
   }
   else
   {  
-    RelatedViewgrams<float> viewgrams = measured_viewgrams_ptr->get_empty_copy();
-    viewgrams.fill(1.F);
-    back_projector_sptr->back_project(*output_image_ptr, viewgrams);
+    back_projector_sptr->back_project(*output_image_ptr, *measured_viewgrams_ptr);
   }
 
 }
