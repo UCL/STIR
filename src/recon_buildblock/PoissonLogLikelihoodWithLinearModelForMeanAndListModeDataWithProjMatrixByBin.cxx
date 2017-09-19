@@ -92,7 +92,6 @@ set_defaults()
   this->normalisation_sptr.reset(new TrivialBinNormalisation);
   this->do_time_frame = false;
   this->use_tofsens = false;
-  this->use_projectors = false;
 } 
  
 template <typename TargetT> 
@@ -106,8 +105,6 @@ initialise_keymap()
   this->parser.add_key("use time-of-flight sensitivities", &this->use_tofsens);
   this->parser.add_key("max ring difference num to process", &this->max_ring_difference_num_to_process);
   this->parser.add_parsing_key("Matrix type", &this->PM_sptr);
-  this->parser.add_parsing_key("Projector pair type", &this->projector_pair_ptr);
-  this->parser.add_key("use projectors", &use_projectors);
   this->parser.add_key("additive sinogram",&this->additive_projection_data_filename);
  
   this->parser.add_key("num_events_to_store",&this->num_events_to_store);
@@ -214,28 +211,18 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
     distributed::send_int_value(100, -1);
 #endif
 
-    // Check if we have listmode projectors
-    if (!use_projectors)
-    {
-		// set projector to be used for the calculations
-		this->PM_sptr->set_up(proj_data_info_cyl_sptr->create_shared_clone(),target_sptr);
+    // set projector to be used for the calculations
+    this->PM_sptr->set_up(proj_data_info_cyl_sptr->create_shared_clone(),target_sptr);
 
-		this->PM_sptr->enable_tof(proj_data_info_cyl_sptr->create_shared_clone(), this->use_tof);
+    this->PM_sptr->enable_tof(proj_data_info_cyl_sptr->create_shared_clone(), this->use_tof);
 
-		shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
-		shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
+    shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
+    shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
 
-		this->projector_pair_ptr.reset(
-					   new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
+    this->projector_pair_ptr.reset(
+                new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
 
-		this->projector_pair_ptr->set_up(proj_data_info_cyl_sptr->create_shared_clone(),target_sptr);
-	}
-	else
-	{
-		this->projector_pair_ptr->set_up(proj_data_info_cyl_sptr->create_shared_clone(),target_sptr);
-
-        this->projector_pair_ptr->enable_tof(proj_data_info_cyl_sptr->create_shared_clone(), this->use_tof);
-	}
+    this->projector_pair_ptr->set_up(proj_data_info_cyl_sptr->create_shared_clone(),target_sptr);
 
 	// sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
 	this->sens_backprojector_sptr.reset(projector_pair_ptr->get_back_projector_sptr()->clone());
@@ -489,30 +476,8 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   shared_ptr<CListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
   CListRecord& record = *record_sptr;
 
-  unsigned long int more_events =
+  long int more_events =
           this->do_time_frame? 1 : (this->num_events_to_store / this->num_subsets);
-
-  if (use_projectors)
-  {
-
-      PresmoothingForwardProjectorByBin* forward=
-              dynamic_cast<PresmoothingForwardProjectorByBin*> (this->projector_pair_ptr->get_forward_projector_sptr().get());
-
-      if (!is_null_ptr(forward))
-          forward->update_filtered_density_image(current_estimate);
-
-      PostsmoothingBackProjectorByBin* back=
-              dynamic_cast<PostsmoothingBackProjectorByBin*> (this->projector_pair_ptr->get_back_projector_sptr().get());
-
-      if (!is_null_ptr(back))
-          back->init_filtered_density_image(gradient);
-
-      if (this->use_tof)
-      {
-          projector_pair_ptr->set_tof_data(&lor_points.p1(), &lor_points.p2());
-      }
-
-  }
 
   while (more_events)//this->list_mode_data_sptr->get_next_record(record) == Succeeded::yes)
   { 
@@ -536,8 +501,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
       {
         measured_bin.set_bin_value(1.0f);
 
-//        this->use_tof ? record.full_event(measured_bin, *proj_data_info_cyl_sptr):
-        		record.event().get_bin(measured_bin, *proj_data_info_cyl_sptr);
+        record.event().get_bin(measured_bin, *proj_data_info_cyl_sptr);
 
         // In theory we have already done all these checks so we can
         // remove this if statement.
@@ -570,94 +534,47 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
             }
         }
 
-		if(!use_projectors)
-		{
-			if(this->use_tof)
-			{
-				lor_points = record.event().get_LOR();
-				this->PM_sptr->get_proj_matrix_elems_for_one_bin_with_tof(proj_matrix_row,
-																		  measured_bin,
-																		  lor_points.p1(), lor_points.p2());
-			}
-			else
-				this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
+        if(this->use_tof)
+        {
+            lor_points = record.event().get_LOR();
+            this->PM_sptr->get_proj_matrix_elems_for_one_bin_with_tof(proj_matrix_row,
+                                                                      measured_bin,
+                                                                      lor_points.p1(), lor_points.p2());
+        }
+        else
+            this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
 
-			//in_the_range++;
-			fwd_bin.set_bin_value(0.0f);
-			proj_matrix_row.forward_project(fwd_bin,current_estimate);
-			// additive sinogram
-			if (!is_null_ptr(this->additive_proj_data_sptr))
-			  {
-				float add_value = this->additive_proj_data_sptr->get_bin_value(measured_bin);
-				float value= fwd_bin.get_bin_value()+add_value;
-				fwd_bin.set_bin_value(value);
-			  }
-			float  measured_div_fwd = 0.0f;
+        //in_the_range++;
+        fwd_bin.set_bin_value(0.0f);
+        proj_matrix_row.forward_project(fwd_bin,current_estimate);
+        // additive sinogram
+        if (!is_null_ptr(this->additive_proj_data_sptr))
+        {
+            float add_value = this->additive_proj_data_sptr->get_bin_value(measured_bin);
+            float value= fwd_bin.get_bin_value()+add_value;
+            fwd_bin.set_bin_value(value);
+        }
+        float  measured_div_fwd = 0.0f;
 
-			if(!this->do_time_frame)
-				 more_events -=1 ;
+        if(!this->do_time_frame)
+            more_events -=1 ;
 
-			 num_stored_events += 1;
+        num_stored_events += 1;
 
-			 if (num_stored_events%200000L==0)
-							 info( boost::format("Stored Events: %1% ") % num_stored_events);
+        if (num_stored_events%200000L==0)
+            info( boost::format("Stored Events: %1% ") % num_stored_events);
 
-			if ( measured_bin.get_bin_value() <= max_quotient *fwd_bin.get_bin_value())
-				measured_div_fwd = 1.0f /fwd_bin.get_bin_value();
-			else
-				continue;
+        if ( measured_bin.get_bin_value() <= max_quotient *fwd_bin.get_bin_value())
+            measured_div_fwd = 1.0f /fwd_bin.get_bin_value();
+        else
+            continue;
 
-			measured_bin.set_bin_value(measured_div_fwd);
-			proj_matrix_row.back_project(gradient, measured_bin);
-		}
-		else
-		{
-			measured_bin.set_bin_value(0.0f);
+        measured_bin.set_bin_value(measured_div_fwd);
+        proj_matrix_row.back_project(gradient, measured_bin);
 
-
-			if(this->use_tof)
-				lor_points = record.event().get_LOR();
-
-			projector_pair_ptr->get_forward_projector_sptr()->forward_project(measured_bin,
-																			  current_estimate);
-
-			if (!is_null_ptr(this->additive_proj_data_sptr))
-			  {
-				float add_value = this->additive_proj_data_sptr->get_bin_value(measured_bin);
-				float value= measured_bin.get_bin_value()+add_value;
-				measured_bin.set_bin_value(value);
-			  }
-
-			float  measured_div_fwd = 0.0f;
-
-			if(!this->do_time_frame)
-				 more_events -=1 ;
-
-			 num_stored_events += 1;
-
-			 if (num_stored_events%200000L==0)
-							 info( boost::format("Stored Events: %1% ") % num_stored_events);
-
-			if ( measured_bin.get_bin_value() <= max_quotient *measured_bin.get_bin_value())
-				measured_div_fwd = 1.0f /measured_bin.get_bin_value();
-			else
-				continue;
-
-			measured_bin.set_bin_value(measured_div_fwd);
-			projector_pair_ptr->get_back_projector_sptr()->back_project(gradient, measured_bin);
-		}
-      }
-  } 
-  if (use_projectors)
-  {
-      PostsmoothingBackProjectorByBin* back=
-              dynamic_cast<PostsmoothingBackProjectorByBin*> (this->projector_pair_ptr->get_back_projector_sptr().get());
-
-      if (!is_null_ptr(back))
-          back->update_filtered_density_image(gradient);
-
+    }
   }
-    info(boost::format("Number of used events: %1%") % num_stored_events);
+  info(boost::format("Number of used events: %1%") % num_stored_events);
 }
 
 #  ifdef _MSC_VER

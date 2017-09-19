@@ -108,9 +108,6 @@ protected:
   
   //! Triggers calculation of sensitivity using time-of-flight
   bool use_tofsens;
-
-  //! N.E. Since we started offering compatibility for projectors
-  bool use_projectors;
   
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjMatrixByBin> PM_sptr;
