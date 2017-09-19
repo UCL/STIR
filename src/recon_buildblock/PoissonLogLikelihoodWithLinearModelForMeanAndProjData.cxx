@@ -744,17 +744,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 
      // have to create a ProjData object filled with 1 here because otherwise zero_seg0_endplanes will not be effective
      shared_ptr<ProjData> sens_proj_data_sptr(new ProjDataInMemory(this->proj_data_sptr->get_exam_info_sptr(), this->proj_data_sptr->get_proj_data_info_sptr()));
-     for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
-     {
-       for(int view = sens_proj_data_sptr->get_min_view_num();
-         view <= sens_proj_data_sptr->get_max_view_num();
- 	 view++)
- 	{
- 	  Viewgram<float> v = sens_proj_data_sptr->get_viewgram(view, segment_num).get_empty_copy();
-	  v.fill(1.);
-	  sens_proj_data_sptr->set_viewgram(v);
- 	}
-     }
+     sens_proj_data_sptr->fill(1.0F);
 
      distributable_sensitivity_computation(this->projector_pair_ptr->get_forward_projector_sptr(), 
                                  this->projector_pair_ptr->get_back_projector_sptr(), 
