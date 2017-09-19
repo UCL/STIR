@@ -739,13 +739,12 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
   const int max_segment_num = this->max_segment_num_to_process;
 
 #ifdef STIR_MPI
-     TargetT* dummy_image_pointer = construct_target_ptr();
+     shared_ptr<TargetT> sensitivity_this_subset_sptr(sensitivity.clone());
      distributable_sensitivity_computation(this->projector_pair_ptr->get_forward_projector_sptr(), 
                                  this->projector_pair_ptr->get_back_projector_sptr(), 
                                  this->symmetries_sptr,
-                                 sensitivity,
-                                 *dummy_image_pointer, 
-                                 //*(VoxelsOnCartesianGrid<float>*) dummy_image_pointer, 
+                                 *sensitivity_this_subset_sptr, 
+                                 sensitivity, 
                                  this->proj_data_sptr, 
                                  subset_num, 
                                  this->num_subsets, 
@@ -759,6 +758,11 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
                                  this->get_time_frame_definitions().get_end_time(this->get_time_frame_num()),
                                  this->caching_info_ptr
                                  );
+  typename TargetT::full_iterator result_iter = sensitivity.begin_all();
+  const typename TargetT::full_iterator end_iter = sensitivity.end_all();
+  typename TargetT::full_iterator this_subset_iter = sensitivity_this_subset_sptr->begin_all();
+  while(result_iter != end_iter)
+    *(result_iter++) += *(this_subset_iter++);
 #else
 
   // warning: has to be same as subset scheme used as in distributable_computation
