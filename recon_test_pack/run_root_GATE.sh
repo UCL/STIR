@@ -96,7 +96,7 @@ all_events=`awk -F ":" '/Number of prompts/ {print $2}' my_root_log_all.log`
 echo "Number of prompts stored in this time period:" ${all_events}
 
 log=lm_to_projdata_from_ROOT_all_events.log
-lm_to_projdata ./lm_to_projdata_from_ROOT.par > ${log} 2>&1 
+lm_to_projdata ./lm_to_projdata.par > ${log} 2>&1 
 if [ $? -ne 0 ]; then
   ThereWereErrors=1
   echo "Error running lm_to_projdata."
@@ -137,7 +137,7 @@ export EXCLUDE_SCATTERED=1
 export EXCLUDE_RANDOM=1
 
 log=lm_to_projdata_from_ROOT_true_events.log
-lm_to_projdata ./lm_to_projdata_from_ROOT.par > ${log} 2>&1 
+lm_to_projdata ./lm_to_projdata.par > ${log} 2>&1 
 if [ $? -ne 0 ]; then
   ThereWereErrors=1
   echo "Error running lm_to_projdata."

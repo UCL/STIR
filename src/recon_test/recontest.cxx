@@ -92,19 +92,6 @@ int main(int argc, const char *argv[])
         return Succeeded::no;
     }
 
-    //
-    // Save the reconstruction output from this location.
-    //
-
-    if (output_filename.length() > 0 )
-    {
-        shared_ptr  < DiscretisedDensity < 3, float > > reconstructed_image =
-                reconstruction_method_sptr->get_target_image();
-
-        OutputFileFormat<DiscretisedDensity < 3, float > >::default_sptr()->
-                write_to_file(output_filename, *reconstructed_image.get());
-    }
-
     return Succeeded::yes;
 
     return EXIT_SUCCESS;
