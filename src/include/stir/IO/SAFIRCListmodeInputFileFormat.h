@@ -31,6 +31,7 @@
 #ifndef __stir_IO_SAFIRCListmodeInputFileFormat_H__
 #define __stir_IO_SAFIRCListmodeInputFileFormat_H__
 
+#include <algorithm>
 #include <cstring>
 #include <string>
 #include <iostream>
@@ -85,18 +86,18 @@ public:
 	//! Checks in binary data file for correct signature (can be either "SAFIR CListModeData" or "MUPET CListModeData").
 	virtual bool can_read( const FileSignature& signature, const std::string& filename) const
 	{
-		char* buffer = new char[20];
-		
-		std::ifstream par_file(filename.c_str(), std::ios::binary);
-		par_file.read(buffer, 20);
-		if( strncmp(buffer, "CListModeDataSAFIR", 18) ) { 
-			delete[] buffer;
+		// Looking for the right key in the parameter file
+		std::ifstream par_file(filename.c_str());
+		std::string key;
+		std::getline(par_file, key, ':');
+		key.erase(std::remove_if(key.begin(), key.end(), is_whitespace), key.end());
+		if( !boost::iequals(key, std::string("CListModeDataSAFIRParameters")) ) { 
 			return false;
 		}
 
 		bool can_parse = actual_do_parsing(filename);
 		std::ifstream data_file(listmode_filename.c_str(), std::ios::binary);
-		buffer = new char[32];
+		char* buffer = new char[32];
 		data_file.read(buffer, 32);
 		bool cr = (!strncmp(buffer, "MUPET CListModeData\0", 20) ||  !strncmp(buffer, "SAFIR CListModeData\0", 20)) && can_parse;
 		
@@ -173,7 +174,10 @@ private:
 		std::ifstream infile(filename.c_str());
 		return infile.good();
 	}
-	
+
+	static const bool is_whitespace( unsigned char const c ) {
+		return std::isspace(c);
+	}
 
 };
 END_NAMESPACE_STIR
