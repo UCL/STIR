@@ -61,6 +61,7 @@
 #include "stir/is_null_ptr.h"
 #include <iostream>
 #include <algorithm>
+#include <functional>
 #include <sstream>
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributed_functions.h"
@@ -738,7 +739,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
   const int min_segment_num = -this->max_segment_num_to_process;
   const int max_segment_num = this->max_segment_num_to_process;
 
-#ifdef STIR_MPI
+#if 1
      shared_ptr<TargetT> sensitivity_this_subset_sptr(sensitivity.clone());
 
      // have to create a ProjData object filled with 1 here because otherwise zero_seg0_endplanes will not be effective
@@ -773,11 +774,9 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
                                  this->get_time_frame_definitions().get_end_time(this->get_time_frame_num()),
                                  this->caching_info_ptr
                                  );
-  typename TargetT::full_iterator result_iter = sensitivity.begin_all();
-  const typename TargetT::full_iterator end_iter = sensitivity.end_all();
-  typename TargetT::full_iterator this_subset_iter = sensitivity_this_subset_sptr->begin_all();
-  while(result_iter != end_iter)
-    *(result_iter++) += *(this_subset_iter++);
+  std::transform(sensitivity.begin_all(), sensitivity.end_all(), 
+                 sensitivity_this_subset_sptr->begin_all(), sensitivity.begin_all(), 
+		 std::plus<typename TargetT::full_value_type>());
 #else
 
   // warning: has to be same as subset scheme used as in distributable_computation
