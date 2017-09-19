@@ -35,6 +35,8 @@
 #include <string>
 #include <iostream>
 
+#include "boost/algorithm/string.hpp"
+
 #include "stir/IO/InputFileFormat.h"
 #include "stir/info.h"
 #include "stir/error.h"
@@ -77,43 +79,36 @@ public:
 	//! Checks in binary data file for correct signature.
 	virtual bool can_read(const FileSignature& signature, std::istream& input ) const
 	{
-		return this->actual_can_read(signature, input);
+		return false; // cannot read from istream
 	}
 
 	//! Checks in binary data file for correct signature (can be either "SAFIR CListModeData" or "MUPET CListModeData").
 	virtual bool can_read( const FileSignature& signature, const std::string& filename) const
 	{
+		char* buffer = new char[20];
+		
+		std::ifstream par_file(filename.c_str(), std::ios::binary);
+		par_file.read(buffer, 20);
+		if( strncmp(buffer, "CListModeDataSAFIR", 18) ) { 
+			delete[] buffer;
+			return false;
+		}
+
 		bool can_parse = actual_do_parsing(filename);
 		std::ifstream data_file(listmode_filename.c_str(), std::ios::binary);
-		char* buffer = new char[32];
+		buffer = new char[32];
 		data_file.read(buffer, 32);
 		bool cr = (!strncmp(buffer, "MUPET CListModeData\0", 20) ||  !strncmp(buffer, "SAFIR CListModeData\0", 20)) && can_parse;
+		
 		delete[] buffer;
 		return cr;
 	}
 	
-protected:
-	virtual bool actual_can_read(const FileSignature& signature, std::istream& input) const
-	{
-		bool can_parse = actual_do_parsing(input);
-		std::streampos pos = input.tellg();
-		input.seekg(0, input.beg);
-		char* buffer = new char[32];
-		input.read(buffer, 32);
-		input.seekg(pos);
-		bool cr = (!strncmp(buffer, "MUPET CListModeData\0", 20) ||  !strncmp(buffer, "SAFIR CListModeData\0", 20)) && can_parse;
-		delete[] buffer;
-		return cr;
-	}
-	
-public:
-
 	virtual std::unique_ptr<data_type>
 	read_from_file(std::istream& input) const
 	{
-		info("SAFIRCListmodeInputFileFormat: read_from_file(input_ifstream)");
-		actual_do_parsing(input);
-		return std::unique_ptr<data_type>(new CListModeDataSAFIR<CListRecordSAFIR>(listmode_filename, crystal_map_filename, template_proj_data_filename));
+		error("read_from_file for SAFIRCListmodeData with istream not implemented %s:%d. Sorry",__FILE__, __LINE__);
+		return unique_ptr<data_type>();
 	}
 
 	virtual std::unique_ptr<data_type> 
@@ -130,6 +125,10 @@ protected:
 	mutable std::string crystal_map_filename;
 	mutable std::string template_proj_data_filename;
 
+	virtual bool actual_can_read(const FileSignature &signature, std::istream &input) const {
+		return false; // cannot read from istream
+	}
+
 	void initialise_keymap() {
 		base_type::initialise_keymap();
 		this->parser.add_start_key("CListModeDataSAFIR Parameters");
@@ -143,16 +142,6 @@ protected:
 		base_type::set_defaults();
 		crystal_map_filename = "crystal_map_front.txt";
 		template_proj_data_filename = "safir_20.hs";
-	}
-
-	bool actual_do_parsing(std::istream& input) const {
-		if( did_parsing) return true;
-		// Ugly const_casts here, but I don't see an other nice way to use the parser
-		if( const_cast<SAFIRCListmodeInputFileFormat*>(this)->parse(input) ) {
-			info(const_cast<SAFIRCListmodeInputFileFormat*>(this)->parameter_info());
-			return true;
-		}
-		else return false;
 	}
 
 	bool actual_do_parsing( const std::string& filename) const {
