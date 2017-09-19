@@ -148,6 +148,12 @@ set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
   this->normalisation_sptr = arg;
 }
 
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+start_new_time_frame(const unsigned int)
+{}
+
 #if 0
 Succeeded  
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::

@@ -138,6 +138,10 @@ protected:
   virtual void initialise_keymap(); 
 
   virtual bool post_processing(); 
+
+   //! will be called when a new time frame starts
+   /*! The frame numbers start from 1. */
+   virtual void start_new_time_frame(const unsigned int new_frame_num);
  
   int output_image_size_xy;  
  
