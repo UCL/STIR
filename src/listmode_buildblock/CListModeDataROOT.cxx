@@ -167,8 +167,8 @@ CListModeDataROOT(const std::string& hroot_filename)
                                   /* arc_correction*/false,
                                   tof_mash_factor));
 
-    if (tof_mash_factor != 1)
-        error("TOF mashing factor for ROOT different from 1 not implemented yet.");
+//    if (tof_mash_factor != 1)
+  //      error("TOF mashing factor for ROOT different from 1 not implemented yet.");
 }
 
 std::string

@@ -109,8 +109,8 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
 	 ++segment_num)
       {
 	ok = 
-	  norm_proj.get_min_axial_pos_num(segment_num) == proj.get_min_axial_pos_num(segment_num) &&
-	  norm_proj.get_max_axial_pos_num(segment_num) == proj.get_max_axial_pos_num(segment_num);
+	  norm_proj.get_min_axial_pos_num(segment_num) <= proj.get_min_axial_pos_num(segment_num) &&
+	  norm_proj.get_max_axial_pos_num(segment_num) >= proj.get_max_axial_pos_num(segment_num);
       }
     if (ok)
       return Succeeded::yes;
