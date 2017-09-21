@@ -91,16 +91,18 @@ public:
 		std::string key;
 		std::getline(par_file, key, ':');
 		key = standardise_interfile_keyword(key);
-		if( key != std::string("clistmodedatasafir parameters")) { 
+		if( key != std::string("clistmodedatasafir parameters")) {
+			warning("SAFIRListModeInputFileFormat tried to read parameters from " + filename + "but it does not start with the correct key." );
 			return false;
 		}
-
-		bool can_parse = actual_do_parsing(filename);
-		if( !can_parse ) return false;
+		if( !actual_do_parsing(filename) ) return false;
 		std::ifstream data_file(listmode_filename.c_str(), std::ios::binary);
 		char* buffer = new char[32];
 		data_file.read(buffer, 32);
 		bool cr = (!strncmp(buffer, "MUPET CListModeData\0", 20) ||  !strncmp(buffer, "SAFIR CListModeData\0", 20));
+		if( !cr ) {
+			warning("SAFIRCListModeInputFileFormat tried to read file " + listmode_filename + " but it seems to have the wrong signature.");
+		}
 		
 		delete[] buffer;
 		return cr;
