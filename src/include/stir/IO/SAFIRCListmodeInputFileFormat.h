@@ -90,16 +90,17 @@ public:
 		std::ifstream par_file(filename.c_str());
 		std::string key;
 		std::getline(par_file, key, ':');
-		key.erase(std::remove_if(key.begin(), key.end(), is_whitespace), key.end());
-		if( !boost::iequals(key, std::string("CListModeDataSAFIRParameters")) ) { 
+		key = standardise_interfile_keyword(key);
+		if( key != std::string("clistmodedatasafir parameters")) { 
 			return false;
 		}
 
 		bool can_parse = actual_do_parsing(filename);
+		if( !can_parse ) return false;
 		std::ifstream data_file(listmode_filename.c_str(), std::ios::binary);
 		char* buffer = new char[32];
 		data_file.read(buffer, 32);
-		bool cr = (!strncmp(buffer, "MUPET CListModeData\0", 20) ||  !strncmp(buffer, "SAFIR CListModeData\0", 20)) && can_parse;
+		bool cr = (!strncmp(buffer, "MUPET CListModeData\0", 20) ||  !strncmp(buffer, "SAFIR CListModeData\0", 20));
 		
 		delete[] buffer;
 		return cr;
@@ -173,10 +174,6 @@ private:
 	bool file_exists( const std::string& filename) {
 		std::ifstream infile(filename.c_str());
 		return infile.good();
-	}
-
-	static const bool is_whitespace( unsigned char const c ) {
-		return std::isspace(c);
 	}
 
 };
