@@ -167,13 +167,15 @@ check_function_exists(getopt HAVE_SYSTEM_GETOPT)
 # Sadly, older versions of CMake failed to take CMAKE_CXX_STANDARD into account, so
 # we have to do this ourselves.
 # Finally, we need to cope with the case where a user passes -std=cxx11 by hand to CMAKE_CXX_FLAGS.
-if (CMAKE_VERSION VERSION_LESS 3.8 AND CMAKE_CXX_STANDARD)
-  set(CMAKE_REQUIRED_DEFINITIONS -std=cxx${CMAKE_CXX_STANDARD} ${CMAKE_CXX_FLAGS})
+set(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_CXX_FLAGS})
+if (CMAKE_VERSION VERSION_LESS 3.8)
+  if (CMAKE_CXX_STANDARD)
+    set(CMAKE_REQUIRED_DEFINITIONS -std=cxx${CMAKE_CXX_STANDARD} ${CMAKE_REQUIRED_DEFINITIONS})
+  endif()
 else()
   # set policy 0067 to let try_compile honor CMAKE_CXX_STANDARD etc
   # Note: need to set this before including CheckCXXSymbolExists
   cmake_policy(SET CMP0067 NEW)
-  set(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_CXX_FLAGS})
 endif()
 set(CMAKE_REQUIRED_INCLUDES ${Boost_INCLUDE_DIRS})
 #set(CMAKE_REQUIRED_QUIET FALSE)
