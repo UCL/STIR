@@ -32,10 +32,10 @@ START_NAMESPACE_STIR
 
 
 CListEventROOT::
-CListEventROOT(const shared_ptr<Scanner>& scanner_sptr) :
-    CListEventCylindricalScannerWithDiscreteDetectors(scanner_sptr)
+CListEventROOT(const shared_ptr<ProjDataInfo> &proj_data_info) :
+    CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info)
 {
-    quarter_of_detectors = static_cast<int>(scanner_sptr->get_num_detectors_per_ring()/4.f);
+    quarter_of_detectors = static_cast<int>(proj_data_info->get_scanner_ptr()->get_num_detectors_per_ring()/4.f);
 }
 
 //!
@@ -70,13 +70,13 @@ void CListEventROOT::init_from_data(const int& _ring1, const int& _ring2,
 
     if  (det1 < 0 )
         det1 = scanner_sptr->get_num_detectors_per_ring() + det1;
-    else if ( det1 >= scanner_sptr->get_num_detectors_per_ring())
-        det1 = det1 - scanner_sptr->get_num_detectors_per_ring();
+    else if ( det1 >= this->uncompressed_proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring())
+        det1 = det1 - this->uncompressed_proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
 
     if  (det2 < 0 )
         det2 = scanner_sptr->get_num_detectors_per_ring() + det2;
-    else if ( det2 >= scanner_sptr->get_num_detectors_per_ring())
-        det2 = det2 - scanner_sptr->get_num_detectors_per_ring();
+    else if ( det2 >= this->uncompressed_proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring())
+        det2 = det2 - this->uncompressed_proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring();
 
     ring1 = _ring1;
     ring2 = _ring2;

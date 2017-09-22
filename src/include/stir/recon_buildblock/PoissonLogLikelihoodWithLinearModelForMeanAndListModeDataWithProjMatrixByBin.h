@@ -125,6 +125,8 @@ protected:
   //! ProjDataInfo
   shared_ptr<ProjDataInfo> proj_data_info_cyl_sptr;
 
+  shared_ptr<CListRecord> record_sptr;
+
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */
   virtual void set_defaults();

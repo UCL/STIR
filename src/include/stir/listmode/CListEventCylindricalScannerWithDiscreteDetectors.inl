@@ -30,18 +30,12 @@
 START_NAMESPACE_STIR
 
 CListEventCylindricalScannerWithDiscreteDetectors::
-CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<Scanner>& scanner_sptr)
-  : scanner_sptr(scanner_sptr)
+CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<ProjDataInfo>& proj_data_info)
 {
   this->uncompressed_proj_data_info_sptr.reset
     (dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>
      (
-     ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
-                                   1, scanner_sptr->get_num_rings()-1,
-                                   scanner_sptr->get_num_detectors_per_ring()/2,
-                                   scanner_sptr->get_default_num_arccorrected_bins(), 
-                                   false,
-                                   /*TOF mashing factor*/1)));
+     proj_data_info.get()));
 }
 
 LORAs2Points<float>

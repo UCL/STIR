@@ -9,7 +9,7 @@
 
   This file is based on GE proprietary information and can therefore not be distributed outside UCL
   without approval from GE.
-    
+
   \author Kris Thielemans
 */
 
@@ -58,11 +58,11 @@ enum ExtendedEvtType
 */
 class CListEventDataGESigna
 {
- public:  
+ public:
   inline bool is_prompt() const { return true; } // TODO
-  inline Succeeded set_prompt(const bool prompt = true) 
-  { 
-    //if (prompt) random=1; else random=0; return Succeeded::yes; 
+  inline Succeeded set_prompt(const bool prompt = true)
+  {
+    //if (prompt) random=1; else random=0; return Succeeded::yes;
     return Succeeded::no;
   }
   inline void get_detection_position(DetectionPositionPair<>& det_pos) const
@@ -85,13 +85,13 @@ class CListEventDataGESigna
     }
   }
   inline bool is_event() const
-    { 
-      return (eventType==COINC_EVT)/* && eventTypeExt==COINC_COUNT_EVT)*/; 
+    {
+      return (eventType==COINC_EVT)/* && eventTypeExt==COINC_COUNT_EVT)*/;
      } // TODO need to find out how to see if it's a coincidence event
   inline int get_tof_bin() const
-	 {
-		 return static_cast<int>(deltaTime);
-	 }
+     {
+         return static_cast<int>(deltaTime);
+     }
  private:
 
 #if STIRIsNativeByteOrderBigEndian
@@ -123,17 +123,17 @@ class CListTimeDataGESigna
   inline unsigned long get_time_in_millisecs() const
     { return (time_hi()<<16) | time_lo(); }
   inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
-    { 
-      data.timeMarkerLS = ((1UL<<16)-1) & (time_in_millisecs); 
-      data.timeMarkerMS = (time_in_millisecs) >> 16; 
+    {
+      data.timeMarkerLS = ((1UL<<16)-1) & (time_in_millisecs);
+      data.timeMarkerMS = (time_in_millisecs) >> 16;
       // TODO return more useful value
       return Succeeded::yes;
     }
   inline bool is_time() const
     { // TODO need to find out how to see if it's a timing event
-	return (data.eventType==EXTENDED_EVT) && (data.eventTypeExt==TIME_MARKER_EVT); 
+    return (data.eventType==EXTENDED_EVT) && (data.eventTypeExt==TIME_MARKER_EVT);
     }// TODO
-      
+
 private:
   typedef union{
     struct {
@@ -151,7 +151,7 @@ private:
     boost::uint16_t timeMarkerLS:16;   /* Least Significant 16 bits of 32-bit Time Marker */
     boost::uint16_t timeMarkerMS:16;   /* Most Significant 16 bits of 32-bitTime Marker */
 #endif
-    };      
+    };
   } data_t;
   data_t data;
 
@@ -173,9 +173,9 @@ class CListGatingDataGESigna
   inline unsigned long get_time_in_millisecs() const
     { return (time_hi()<<24) | time_lo(); }
   inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
-    { 
-      words[0].value = ((1UL<<24)-1) & (time_in_millisecs); 
-      words[1].value = (time_in_millisecs) >> 24; 
+    {
+      words[0].value = ((1UL<<24)-1) & (time_in_millisecs);
+      words[1].value = (time_in_millisecs) >> 24;
       // TODO return more useful value
       return Succeeded::yes;
     }
@@ -184,9 +184,9 @@ class CListGatingDataGESigna
     { return (words[0].signature==21) && (words[1].signature==29); }
   inline unsigned int get_gating() const
     { return words[0].reserved; } // return "reserved" bits. might be something in there
-  inline Succeeded set_gating(unsigned int g) 
+  inline Succeeded set_gating(unsigned int g)
     { words[0].reserved = g&7; return Succeeded::yes; }
-      
+
 private:
   typedef union{
     struct {
@@ -199,7 +199,7 @@ private:
       boost::uint32_t reserved : 3;
       boost::uint32_t signature : 5;
 #endif
-    };      
+    };
     boost::uint32_t raw;
   } oneword_t;
   oneword_t words[2];
@@ -213,7 +213,7 @@ private:
   This class essentially just forwards the work to the "basic" classes.
 
   A complication for GE Dimension data is that not all events are the same size:
-  coincidence events are 4 bytes, and others are 8 bytes. 
+  coincidence events are 4 bytes, and others are 8 bytes.
 
   \todo Currently we always assume the data is from a DSTE. We should really read this from the RDF header.
 */
@@ -224,13 +224,13 @@ class CListRecordGESigna : public CListRecord, public CListTime, // public CList
   typedef CListTimeDataGESigna TimeType;
   //typedef CListGatingDataGESigna GatingType;
 
- public:  
-  CListRecordGESigna() :
-  CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(Scanner::PETMR_Signa)))
+ public:
+  CListRecordGESigna(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
+  CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info_sptr)
     {}
 
   bool is_time() const
-  { 
+  {
    return this->time_data.is_time();
   }
 #if 0
@@ -242,7 +242,7 @@ class CListRecordGESigna : public CListRecord, public CListTime, // public CList
 
   bool is_event() const
   { return this->event_data.is_event(); }
-  virtual CListEvent&  event() 
+  virtual CListEvent&  event()
     { return *this; }
   virtual const CListEvent&  event() const
     { return *this; }
@@ -265,22 +265,22 @@ dynamic_cast<CListRecordGESigna const *>(&e2) != 0 &&
       raw[0] == static_cast<CListRecordGESigna const &>(e2).raw[0] &&
       (this->is_event() || (raw[1] == static_cast<CListRecordGESigna const &>(e2).raw[1]));
 #endif
-  }	    
+  }
 
-  // time 
-  inline unsigned long get_time_in_millisecs() const 
+  // time
+  inline unsigned long get_time_in_millisecs() const
     { return time_data.get_time_in_millisecs(); }
   inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
     { return time_data.set_time_in_millisecs(time_in_millisecs); }
 #if 0
   inline unsigned int get_gating() const
     { return gating_data.get_gating(); }
-  inline Succeeded set_gating(unsigned int g) 
+  inline Succeeded set_gating(unsigned int g)
     { return gating_data.set_gating(g); }
 #endif
   // event
   inline bool is_prompt() const { return event_data.is_prompt(); }
-  inline Succeeded set_prompt(const bool prompt = true) 
+  inline Succeeded set_prompt(const bool prompt = true)
   { return event_data.set_prompt(prompt); }
 
   virtual void get_detection_position(DetectionPositionPair<>& det_pos) const
@@ -292,15 +292,15 @@ dynamic_cast<CListRecordGESigna const *>(&e2) != 0 &&
     error("TODO");
   }
 
-  virtual std::size_t size_of_record_at_ptr(const char * const data_ptr, const std::size_t /*size*/, 
+  virtual std::size_t size_of_record_at_ptr(const char * const data_ptr, const std::size_t /*size*/,
                                             const bool do_byte_swap) const
-  { 
+  {
     // TODO: get size of record from the file, whereas here I have hard-coded as being 6bytes (I know it's the case for the Orsay data) OtB 15/09
 
     return std::size_t(6); // std::size_t(data_ptr[0]&0x80);
   }
 
-  virtual Succeeded init_from_data_ptr(const char * const data_ptr, 
+  virtual Succeeded init_from_data_ptr(const char * const data_ptr,
                                        const std::size_t
 #ifndef NDEBUG
                                        size // only used within assert, so don't define otherwise to avoid compiler warning
@@ -321,38 +321,38 @@ dynamic_cast<CListRecordGESigna const *>(&e2) != 0 &&
       {
 //	std::cout << "This is an event \n" ;
         assert(size >= 6);
-	
+
         std::copy(data_ptr+6, data_ptr+6, reinterpret_cast<char *>(&this->raw[1]));
 //	std::cout << "after assert an event \n" ;
       }
     if (do_byte_swap)
       {
-	error("don't know how to byteswap");
+    error("don't know how to byteswap");
         ByteOrder::swap_order(this->raw[1]);
       }
-	  
-	  if (this->is_event())
-	  {
-	    // set TOF info in ps
-	   this->delta_time = this->event_data.get_tof_bin() *this-> get_scanner_ptr()->get_size_of_timing_bin();
-	  }
- 
-	  
-	  
+
+      if (this->is_event())
+      {
+        // set TOF info in ps
+       this->delta_time = this->event_data.get_tof_bin() *this-> get_scanner_ptr()->get_size_of_timing_bin();
+      }
+
+
+
     return Succeeded::yes;
   }
 
 private:
   union {
     DataType  event_data;
-    TimeType   time_data; 
+    TimeType   time_data;
     //GatingType gating_data;
     boost::int32_t  raw[2];
   };
   BOOST_STATIC_ASSERT(sizeof(boost::int32_t)==4);
-  BOOST_STATIC_ASSERT(sizeof(DataType)==6); 
-  BOOST_STATIC_ASSERT(sizeof(TimeType)==6); 
-  //BOOST_STATIC_ASSERT(sizeof(GatingType)==8); 
+  BOOST_STATIC_ASSERT(sizeof(DataType)==6);
+  BOOST_STATIC_ASSERT(sizeof(TimeType)==6);
+  //BOOST_STATIC_ASSERT(sizeof(GatingType)==8);
 
 };
 

@@ -252,6 +252,8 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
             return Succeeded::no;
         }
 
+    record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
+
     return Succeeded::yes;
 }
 
@@ -473,7 +475,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   double current_time = 0.;
   ProjMatrixElemsForOneBin proj_matrix_row;
 
-  shared_ptr<CListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
+
   CListRecord& record = *record_sptr;
 
   long int more_events =

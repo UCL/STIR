@@ -182,7 +182,7 @@ shared_ptr <CListRecord>
 CListModeDataROOT::
 get_empty_record_sptr() const
 {
-    shared_ptr<CListRecord> sptr(new CListRecordROOT(this->scanner_sptr));
+    shared_ptr<CListRecord> sptr(new CListRecordROOT(this->proj_data_info_sptr));
     return sptr;
 }
 

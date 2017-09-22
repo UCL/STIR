@@ -42,7 +42,7 @@ class CListEventROOT : public CListEventCylindricalScannerWithDiscreteDetectors
 {
 public:
 
-    CListEventROOT(const shared_ptr<Scanner>& scanner_sptr);
+    CListEventROOT(const shared_ptr<ProjDataInfo>& proj_data_info);
 
     //! This routine returns the corresponding detector pair
     virtual void get_detection_position(DetectionPositionPair<>&) const;
@@ -145,8 +145,8 @@ public:
                 raw[1] == dynamic_cast<CListRecordROOT const &>(e2).raw[1];
     }
 
-    CListRecordROOT(const shared_ptr<Scanner>& scanner_sptr) :
-        event_data(scanner_sptr)
+    CListRecordROOT(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
+        event_data(proj_data_info_sptr)
     {}
 
     virtual Succeeded init_from_data( const int& ring1,

@@ -36,16 +36,16 @@ namespace ecat {
 
 CListEventECAT8_32bit::
 CListEventECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
-  CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(*proj_data_info_sptr->get_scanner_ptr()))) 
+  CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info_sptr)
 {
   const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>(proj_data_info_sptr.get());
   if (proj_data_info_ptr == 0)
     error("CListEventECAT8_32bit can only be initialised with cylindrical projection data without arc-correction");
 
-  const int num_rings = this->scanner_sptr->get_num_rings();
-  const int max_ring_diff=proj_data_info_ptr->get_max_ring_difference(proj_data_info_ptr->get_max_segment_num());
-  if (proj_data_info_ptr->get_max_ring_difference(0) != proj_data_info_ptr->get_min_ring_difference(0))
+  const int num_rings = this->uncompressed_proj_data_info_sptr->get_scanner_ptr()->get_num_rings();
+  const int max_ring_diff=this->uncompressed_proj_data_info_sptr->get_max_ring_difference(proj_data_info_ptr->get_max_segment_num());
+  if (this->uncompressed_proj_data_info_sptr->get_max_ring_difference(0) != this->uncompressed_proj_data_info_sptr->get_min_ring_difference(0))
     error("CListEventECAT8_32bit can only handle axial compression==1");
   this->segment_sequence.resize(2*max_ring_diff+1);
   this->sizes.resize(2*max_ring_diff+1);
@@ -65,8 +65,8 @@ CListEventECAT8_32bit::
 get_detection_position(DetectionPositionPair<>& det_pos) const
 {
   /* data is organised by segment, axial coordinate, view, tangential */
-  const int num_tangential_poss = this->scanner_sptr->get_default_num_arccorrected_bins();
-  const int num_views = this->scanner_sptr->get_num_detectors_per_ring()/2;
+  const int num_tangential_poss = this->uncompressed_proj_data_info_sptr->get_scanner_ptr()->get_default_num_arccorrected_bins();
+  const int num_views = this->uncompressed_proj_data_info_sptr->get_scanner_ptr()->get_num_detectors_per_ring()/2;
 
   const int tang_pos_num = this->data.offset % num_tangential_poss;//(this->num_sinograms * this-> num_views);
   const int rest = this->data.offset / num_tangential_poss;
