@@ -19,8 +19,6 @@
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
 
-INCLUDE(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
-
 option(STIR_MPI 
        "Compile with MPI" OFF)
 option(STIR_OPENMP 
@@ -115,12 +113,6 @@ option(STIR_DEFAULT_PROJECTOR_AS_V2
 #mark_as_advanced(STIR_DEFAULT_PROJECTOR_AS_VERSION_2)
 # With default setting, this will #define USE_PMRT (see STIRConfig.h.in)
 
-#### Flags for compatibility between different systems
-
-check_function_exists(getopt HAVE_SYSTEM_GETOPT)
-# always include stir/getopt.h for where a system getopt does not exist.
-# we provide a replacement in buildblock
-
 #### Compiler specific flags for fastest execution etc
 
 # gcc specific stuff
@@ -159,7 +151,46 @@ if(STIR_OPENMP)
 
 endif()
 
+#### Flags for compatibility between different systems
+include(CheckFunctionExists)
+
+check_function_exists(getopt HAVE_SYSTEM_GETOPT)
+# always include stir/getopt.h for where a system getopt does not exist.
+# we provide a replacement in buildblock
+
+# Check for CXX11 smart pointer support.
+# This is far more complicated than it should be, largely because we want to support
+# older compilers (some claim to be C++-11 but are do not have std::unique_ptr for instance).
+# So, we will check BOOST_NO_CXX11_SMART_PTR using check_cxx_symbol_exists.
+# However, we need to do that with the same compilers flags as used for STIR.
+#
+# Sadly, older versions of CMake failed to take CMAKE_CXX_STANDARD into account, so
+# we have to do this ourselves.
+# Finally, we need to cope with the case where a user passes -std=cxx11 by hand to CMAKE_CXX_FLAGS.
+if (CMAKE_VERSION VERSION_LESS 3.8 AND CMAKE_CXX_STANDARD)
+  set(CMAKE_REQUIRED_DEFINITIONS -std=cxx${CMAKE_CXX_STANDARD} ${CMAKE_CXX_FLAGS})
+else()
+  # set policy 0067 to let try_compile honor CMAKE_CXX_STANDARD etc
+  # Note: need to set this before including CheckCXXSymbolExists
+  cmake_policy(SET CMP0067 NEW)
+  set(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_CXX_FLAGS})
+endif()
+set(CMAKE_REQUIRED_INCLUDES ${Boost_INCLUDE_DIRS})
+#set(CMAKE_REQUIRED_QUIET FALSE)
+include(CheckCXXSymbolExists)
+# Finally, do the check!
+check_cxx_symbol_exists(BOOST_NO_CXX11_SMART_PTR boost/config.hpp HAVE_NO_CXX11_SMART_PTR)
+
+# Now we introduce 2 options such that the user can override the default behaviour
+# (not recommended! unless the above failed of course)
+option(STIR_NO_UNIQUE_PTR
+       "Disable use of std::unique_ptr" ${HAVE_NO_CXX11_SMART_PTR})
+option(STIR_USE_BOOST_SHARED_PTR
+       "Use of boost::shared_ptr as opposed to std::shared_ptr" ${HAVE_NO_CXX11_SMART_PTR})
+mark_as_advanced(STIR_NO_UNIQUE_PTR STIR_USE_BOOST_SHARED_PTR)
+
 #### Create stir/config.h
+
 # This has to be written where we build somewhere. We will put it somewhere "natural"
 # (even though there are no other include files there).
 set(CONF_INCLUDE_DIR "${CMAKE_BINARY_DIR}/src/include")
