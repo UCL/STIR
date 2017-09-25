@@ -6,8 +6,8 @@
   
   \brief Import of std::shared_ptr, std::dynamic_pointer_cast and
   std::static_pointer_cast (or corresponding boost versions if 
-  std::shared_ptr doesn't exist) into the stir namespace
-          
+  STIR_USE_BOOST_SHARED_PTR is set, i.e. normally when std::shared_ptr doesn't exist) 
+  into the stir namespace.        
 */         
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
@@ -29,9 +29,8 @@
 #ifndef __stir_SHARED_PTR__
 #define __stir_SHARED_PTR__
 
-// include this as stir/common.h has to be included by any stir .h file
 #include "stir/common.h"
-#if defined(BOOST_NO_CXX11_SMART_PTR)
+#if defined(STIR_USE_BOOST_SHARED_PTR)
 #include "boost/shared_ptr.hpp"
 #include "boost/make_shared.hpp"
 #include "boost/pointer_cast.hpp"

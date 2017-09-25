@@ -304,6 +304,8 @@ void distributable_computation(
     task_id=task_do_distributable_loglikelihood_computation;
   else if (RPC_process_related_viewgrams == &RPC_process_related_viewgrams_gradient)
     task_id=task_do_distributable_gradient_computation;
+  else if (RPC_process_related_viewgrams == &RPC_process_related_viewgrams_sensitivity_computation)
+    task_id=task_do_distributable_sensitivity_computation;
       /* else if (RPC_process_related_viewgrams == &
 	case 
 	task_id=task_do_distributable_sensitivity_computation;break;
