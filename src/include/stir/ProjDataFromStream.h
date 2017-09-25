@@ -178,10 +178,7 @@ private:
   std::vector<std::streamoff> get_offsets_sino(const int ax_pos_num, const int segment_num) const;
     
   //! Calculate the offsets for specific bins.
-  std::vector<std::streamoff> get_offsets_bin(const int segment_num,
-                                              const int ax_pos_num,
-                                              const int view_num,
-                                              const int tang_pos_num) const;
+  std::vector<std::streamoff> get_offsets_bin(const Bin) const;
   
 };
 

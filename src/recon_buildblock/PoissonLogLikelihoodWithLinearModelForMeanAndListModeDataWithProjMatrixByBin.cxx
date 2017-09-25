@@ -100,7 +100,7 @@ initialise_keymap()
   this->parser.add_parsing_key("Matrix type", &this->PM_sptr); 
   this->parser.add_key("additive sinogram",&this->additive_projection_data_filename); 
  
-  this->parser.add_key("num_events_to_store",&this->num_events_to_store);
+  this->parser.add_key("num_events_to_use",&this->num_events_to_use);
 } 
 template <typename TargetT> 
 int 
@@ -434,7 +434,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
     const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
     const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
 
-    long num_stored_events = 0;
+    long num_used_events = 0;
     const float max_quotient = 10000.F;
 
     //go to the beginning of this frame
@@ -458,7 +458,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
         frame_start_positions(1, static_cast<int>(this->frame_defs.get_num_frames()));
 
         unsigned long int more_events =
-                this->do_time_frame? 1 : this->num_events_to_store;
+                this->do_time_frame? 1 : this->num_events_to_use;
 
         // Daniel:  it avoids event out of the frame that one has defined
         while (current_time < start_time &&
@@ -539,10 +539,10 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
                 if(!this->do_time_frame)
                     more_events -=1 ;
 
-                num_stored_events += 1;
+                num_used_events += 1;
 
-                if (num_stored_events%200000L==0)
-                    info( boost::format("Stored Events: %1% ") % num_stored_events);
+                if (num_used_events%200000L==0)
+                    info( boost::format("Stored Events: %1% ") % num_used_events);
 
                 if ( measured_bin.get_bin_value() <= max_quotient *fwd_bin.get_bin_value())
                     measured_div_fwd = 1.0f /fwd_bin.get_bin_value();
@@ -555,7 +555,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
             }
         }
     }
-    info(boost::format("Number of used events: %1%") % num_stored_events);
+    info(boost::format("Number of used events: %1%") % num_used_events);
 }
 
 #  ifdef _MSC_VER

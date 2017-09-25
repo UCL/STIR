@@ -32,8 +32,6 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 #include <boost/format.hpp>
-#include <fstream>
-#include <cstring>
 
 START_NAMESPACE_STIR
 

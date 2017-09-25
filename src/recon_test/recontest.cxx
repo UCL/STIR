@@ -89,10 +89,8 @@ int main(int argc, const char *argv[])
     else
     {
         t.stop();
-        return Succeeded::no;
+        return EXIT_FAILURE;
     }
-
-    return Succeeded::yes;
 
     return EXIT_SUCCESS;
 }

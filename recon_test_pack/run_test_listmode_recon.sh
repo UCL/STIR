@@ -18,7 +18,7 @@
 #
 #  See STIR/LICENSE.txt for details
 #      
-# Author Nikos Efthimiou
+# Author Nikos Efthimiou, Kris Thielemans
 #
 
 # Scripts should exit with error code when a test fails:
@@ -93,8 +93,6 @@ echo "=== simulate normalisation data"
 
 echo "===  make fake emission image"
 ${INSTALL_DIR}generate_image  lm_generate_uniform_cylinder.par
-echo "===  use that as template for fake attenuation"
-${INSTALL_DIR}stir_math --including-first --times-scalar .096 my_atten_image.hv my_uniform_cylinder.hv
 
 echo "===  create ACFs"
 ${INSTALL_DIR}calculate_attenuation_coefficients --ACF my_acfs.hs my_atten_image.hv Siemens_mMR_seg2.hs > my_create_acfs.log 2>&1

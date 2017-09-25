@@ -121,8 +121,7 @@ protected:
   //! \brief num_events_to_store
   //! \author Nikos Efthimiou
   //! \details This is part of some functionality I transfer from lm_to_projdata.
-  //! The total number of events to be *STORED* not *PROCESSED*.
-  unsigned long int num_events_to_store;
+  unsigned long int num_events_to_use;
 
   //!
    //! \brief do_time_frame

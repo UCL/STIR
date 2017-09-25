@@ -73,10 +73,7 @@ public:
     Sinogram<float> get_sinogram(const int ax_pos_num, const int sergment_num,const bool make_num_tangential_poss_odd=false) const; 
     Succeeded set_sinogram(const Sinogram<float>& s);
  
-//    float get_bin_value(const Bin& this_bin) const
-//    {
-//        // Do nothing
-//    }
+    
 private:
   //the file with the data
   //This has to be a reference (or pointer) to a stream, 

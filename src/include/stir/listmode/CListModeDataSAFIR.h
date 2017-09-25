@@ -84,6 +84,9 @@ public:
 	\todo Implement this properly to check for delayed events in LM files.
 	*/
 	virtual bool has_delayeds() const { return false; }
+
+    virtual
+    shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
 	
 private:
 	std::string listmode_filename;
