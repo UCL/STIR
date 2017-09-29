@@ -538,10 +538,13 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 
         if(this->use_tof)
         {
-            lor_points = record.event().get_LOR();
-            this->PM_sptr->get_proj_matrix_elems_for_one_bin_with_tof(proj_matrix_row,
-                                                                      measured_bin,
-                                                                      lor_points.p1(), lor_points.p2());
+//            lor_points = record.event().get_LOR();
+//            this->PM_sptr->get_proj_matrix_elems_for_one_bin_with_tof(proj_matrix_row,
+//                                                                      measured_bin,
+//                                                                      lor_points.p1(), lor_points.p2());
+
+            this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row,
+                                                                      measured_bin);
         }
         else
             this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);

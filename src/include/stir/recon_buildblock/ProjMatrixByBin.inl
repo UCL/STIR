@@ -61,7 +61,8 @@ get_proj_matrix_elems_for_one_bin(
   // set to empty
   probabilities.erase();
   
-  if (proj_data_info_sptr && proj_data_info_sptr->is_tof_data())
+  if (proj_data_info_sptr && (proj_data_info_sptr->is_tof_data() ||
+                              this->tof_enabled))
   {
     LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
     proj_data_info_sptr->get_LOR(lor, bin);
