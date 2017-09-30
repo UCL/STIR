@@ -778,7 +778,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
      sens_proj_data_sptr->fill(1.0F);
 
      distributable_sensitivity_computation(this->projector_pair_ptr->get_forward_projector_sptr(), 
-                                 this->projector_pair_ptr->get_back_projector_sptr(), 
+                                 this->sens_backprojector_sptr,
                                  this->symmetries_sptr,
                                  *sensitivity_this_subset_sptr, 
                                  sensitivity, 
