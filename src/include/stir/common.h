@@ -295,7 +295,9 @@ START_NAMESPACE_STIR
 
 //! The constant pi to high precision.
 /*! \ingroup buildblock */
-const double _PI = boost::math::constants::pi<double>();
+#ifndef _PI
+#define _PI  boost::math::constants::pi<double>()
+#endif
 
 //! returns the square of a number, templated.
 /*! \ingroup buildblock */

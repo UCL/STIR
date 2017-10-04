@@ -116,6 +116,9 @@ Python (and MATLAB) interface to <code>get_scanner()</code> and <code>get_proj_d
 </li>
 <li> added <code>BUILD_TESTING</code> and <code>BUILD_EXECUTABLES</code> options to reduce build time if you do not need those files</li>
 <li>install include files</li> 
+<li>added (advanced) options <code>STIR_USE_BOOST_SHARED_PTR</code> and <code>STIR_NO_UNIQUE_PTR</code>.
+These default to <code>On</code> if you are not using C++11 (or higher), or your compiler has a problem.
+You should normally not have to change these options.</li>
 <li> CMake now has a flag to create the target "doc" for building the Doxygen documentation
   thanks to Jannis Fischer.
 </li>
@@ -198,7 +201,8 @@ from the above):</H2>
 
 <h3>Backward incompatibities</h3>
 <ul>
-  <li>STIR now uses <code>std::unique_ptr</code> as opposed to <code>std::auto_ptr</code>, as recommended for C++-11 and later.
+  <li>STIR now uses <code>std::unique_ptr</code> as opposed to <code>std::auto_ptr</code>, as recommended for C++-11 and 
+    later (unless the CMake option <code>STIR_NO_UNIQUE_PTR</code> is set).
     This affects calls to
     <code>read_from_file</code> and <code>DataSymmetriesForBins::find_symmetry_operation_from_basic_bin</code> etc.
     You should normally just be able to do a simple find-and-replace.<br />
@@ -207,7 +211,8 @@ from the above):</H2>
     tell your compiler to use at least C++11 (normally by adding the -std=c++11 flag).
   </li>
 <li>Make <code>stir::shared_ptr</code> to be <code>std::shared_ptr</code>
-  (stick to <code>boost::shared_ptr</code> if <code>BOOST_NO_CXX11_SMART_PTR</code>
+  (stick to <code>boost::shared_ptr</code> if the CMake option <code>STIR_USE_BOOST_SHARED_PTR</code>
+  is set, i.e. normally when <code>BOOST_NO_CXX11_SMART_PTR</code>
   is defined). We now also import <code>dynamic_pointer_cast</code> and
   <code>static_pointer_cast</code> into the <code>stir</code> namespace
   such that you can write code that doesn't need to know which <code>shared_ptr</code>
