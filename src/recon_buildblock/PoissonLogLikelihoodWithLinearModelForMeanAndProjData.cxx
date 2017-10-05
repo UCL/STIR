@@ -793,8 +793,10 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
                                  this->normalisation_sptr, 
                                  this->get_time_frame_definitions().get_start_time(this->get_time_frame_num()),
                                  this->get_time_frame_definitions().get_end_time(this->get_time_frame_num()),
-                                 this->caching_info_ptr
-                                 );
+                                 this->caching_info_ptr,
+                                 use_tofsens ? sens_proj_data_sptr->get_min_tof_pos_num() : 0,
+                                 use_tofsens ? sens_proj_data_sptr->get_max_tof_pos_num() : 0);
+
   std::transform(sensitivity.begin_all(), sensitivity.end_all(), 
                  sensitivity_this_subset_sptr->begin_all(), sensitivity.begin_all(), 
 		 std::plus<typename TargetT::full_value_type>());
@@ -1052,7 +1054,8 @@ void distributable_sensitivity_computation(
                                             shared_ptr<BinNormalisation> const& normalisation_sptr,
                                             const double start_time_of_frame,
                                             const double end_time_of_frame,
-                                            DistributedCachingInformation* caching_info_ptr
+                                            DistributedCachingInformation* caching_info_ptr,
+                                            int min_timing_pos_num, int max_timing_pos_num
                                             )
 
 {
@@ -1070,7 +1073,8 @@ void distributable_sensitivity_computation(
                                     start_time_of_frame,
                                     end_time_of_frame,
                                     &RPC_process_related_viewgrams_sensitivity_computation,
-                                    caching_info_ptr
+                                    caching_info_ptr,
+                                    min_timing_pos_num, max_timing_pos_num
                                     );
 
 }
