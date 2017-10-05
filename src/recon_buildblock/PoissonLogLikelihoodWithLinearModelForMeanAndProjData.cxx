@@ -794,8 +794,8 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
                                  this->get_time_frame_definitions().get_start_time(this->get_time_frame_num()),
                                  this->get_time_frame_definitions().get_end_time(this->get_time_frame_num()),
                                  this->caching_info_ptr,
-                                 use_tofsens ? sens_proj_data_sptr->get_min_tof_pos_num() : 0,
-                                 use_tofsens ? sens_proj_data_sptr->get_max_tof_pos_num() : 0);
+                                 use_tofsens ? -this->max_timing_pos_num_to_process : 0,
+                                 use_tofsens ? this->max_timing_pos_num_to_process : 0);
 
   std::transform(sensitivity.begin_all(), sensitivity.end_all(), 
                  sensitivity_this_subset_sptr->begin_all(), sensitivity.begin_all(), 
