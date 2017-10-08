@@ -313,12 +313,16 @@ via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.
 Note that you can use e.g. \textit{DISABLE\_LLN\_MATRIX} to \textit{not}
 use the LLN ECAT library, even if cmake found it.
 
-Finally, do not forget to set
+Finally, here are some standard CMake variables
 \begin{itemize}
-\item CMAKE\_BUILD\_TYPE to \texttt{Release}, \texttt{Debug} or \texttt{RelWithDebug},
-\item CMAKE\_INSTALL\_PREFIX to specify where the final installation has to occur. CMake
+\item set CMAKE\_BUILD\_TYPE to \texttt{Release} (default), \texttt{Debug} or \texttt{RelWithDebug}
+\item CMAKE\_INSTALL\_PREFIX specifies where the final installation has to occur. CMake
 provides normally a default in a system location, but you could set it for instance to
 \texttt{./install} to put the files inside your build directory.
+\item CMAKE\_CXX\_STANDARD can be used to tell CMake to add flags to your compiler to use
+a particular version of the C++ standard (if it supports it). It is now recommended to set 
+this to \texttt{11}. This is necessary e.g. for ROOT 6 support. Other possible values are
+\texttt{98}, \texttt{14} and \texttt{17} (not tested yet).
 \end{itemize}
 
 On Windows or MacOSX, the procedure is essentially the same, except that you will likely have 
