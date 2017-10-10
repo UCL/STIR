@@ -58,16 +58,19 @@ int main(int argc, char *argv[])
         int segment_num = ask_num("Which segment number do you want to display", 
                                   s3d->get_min_segment_num(), s3d->get_max_segment_num(), 0);
 
+        int tof_num = ask_num("Which timing pos number do you want to display",
+                                  s3d->get_min_tof_pos_num(), s3d->get_max_tof_pos_num(), 0);
+
         if(ask_num("Display as SegmentByView (0) or BySinogram (1)?", 0,1,0)==0) 
 	  {
-            SegmentByView <float> segment= s3d->get_segment_by_view(segment_num);
+            SegmentByView <float> segment= s3d->get_segment_by_view(segment_num, tof_num);
 	    const float maxi =
 	      ask_num("Maximum in color scale (default is actual max)",0.F,2*segment.find_max(),segment.find_max());
             display(segment,maxi);
 	  }
         else
 	  {
-            SegmentBySinogram<float> segment = s3d->get_segment_by_sinogram(segment_num);  
+            SegmentBySinogram<float> segment = s3d->get_segment_by_sinogram(segment_num, tof_num);
 	    const float maxi =
 	      ask_num("Maximum in color scale (default is actual max)",0.F,2*segment.find_max(),segment.find_max());
             display(segment,maxi);
