@@ -30,12 +30,10 @@
 START_NAMESPACE_STIR
 
 CListEventCylindricalScannerWithDiscreteDetectors::
-CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<ProjDataInfo>& proj_data_info)
+CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
 {
-  this->uncompressed_proj_data_info_sptr.reset
-    (dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>
-     (
-     proj_data_info.get()));
+  this->uncompressed_proj_data_info_sptr =
+    dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(proj_data_info_sptr);
 
     if (is_null_ptr(this->uncompressed_proj_data_info_sptr))
         error("CListEventCylindricalScannerWithDiscreteDetectors takes only ProjDataInfoCylindricalNoArcCorr. Abord.");
