@@ -280,11 +280,11 @@ public:
   std::size_t copy_to(iterT array_iter) const
   {
       iterT init_pos = array_iter;
-      for (int s=0; s<= this->get_max_segment_num(); ++s)
+	  for (int k = this->get_proj_data_info_ptr()->get_min_tof_pos_num();
+		  k <= this->get_proj_data_info_ptr()->get_max_tof_pos_num();
+		  ++k)
       {
-          for (int k=this->get_proj_data_info_ptr()->get_min_tof_pos_num();
-        		  k<=this->get_proj_data_info_ptr()->get_max_tof_pos_num();
-        		  ++k)
+		  for (int s = 0; s <= this->get_max_segment_num(); ++s)
           {
 			  SegmentBySinogram<float> segment= this->get_segment_by_sinogram(s,k);
 			  std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);

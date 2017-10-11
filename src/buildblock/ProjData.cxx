@@ -386,9 +386,9 @@ ProjData::set_segment(const SegmentByView<float>& segment)
 void 
 ProjData::fill(const float value)
 {
-  for (int segment_num = this->get_min_segment_num(); segment_num <= this->get_max_segment_num(); ++segment_num)
+  for (int timing_pos_num = this->get_min_tof_pos_num(); timing_pos_num <= this->get_max_tof_pos_num(); ++timing_pos_num)  
   {
-	  for (int timing_pos_num = this->get_min_tof_pos_num(); timing_pos_num <= this->get_max_tof_pos_num(); ++timing_pos_num)
+	  for (int segment_num = this->get_min_segment_num(); segment_num <= this->get_max_segment_num(); ++segment_num)
 	  {
 		  SegmentByView<float> segment(this->get_empty_segment_by_view(segment_num, false, timing_pos_num));
 		segment.fill(value);

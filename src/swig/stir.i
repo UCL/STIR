@@ -63,6 +63,7 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/IndexRange.h"
 #include "stir/IndexRange3D.h"
+#include "stir/IndexRange4D.h"
 #include "stir/Array.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
@@ -607,7 +608,7 @@ namespace std {
 
 
 #endif
-  static Array<3,float> create_array_for_proj_data(const ProjData& proj_data)
+  static Array<4,float> create_array_for_proj_data(const ProjData& proj_data)
   {
       //    int num_sinos=proj_data.get_num_axial_poss(0);
       //    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
@@ -616,15 +617,15 @@ namespace std {
       //      }
       int num_sinos = proj_data.get_num_sinograms();
 
-      Array<3,float> array(IndexRange3D(num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
+      Array<4,float> array(IndexRange4D(proj_data.get_num_tof_poss(),num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
       return array;
   }
 
-  // a function for  converting ProjData to a 3D array as that's what is easy to use
-  static Array<3,float> projdata_to_3D(const ProjData& proj_data)
+  // a function for  converting ProjData to a 4D array as that's what is easy to use
+  static Array<4,float> projdata_to_4D(const ProjData& proj_data)
   {
-      Array<3,float> array = create_array_for_proj_data(proj_data);
-      Array<3,float>::full_iterator array_iter = array.begin_all();
+      Array<4,float> array = create_array_for_proj_data(proj_data);
+      Array<4,float>::full_iterator array_iter = array.begin_all();
       //    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
       //      {
       //        SegmentBySinogram<float> segment=proj_data.get_segment_by_sinogram(s);
@@ -642,7 +643,7 @@ namespace std {
   }
 
   // inverse of the above function
-  void fill_proj_data_from_3D(ProjData& proj_data, const Array<3,float>& array)
+  void fill_proj_data_from_4D(ProjData& proj_data, const Array<4,float>& array)
   {
       //    int num_sinos=proj_data.get_num_axial_poss(0);
       //    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
@@ -655,7 +656,7 @@ namespace std {
       //      {
       //        throw std::runtime_error("Incorrect size for filling this projection data");
       //      }
-      Array<3,float>::const_full_iterator array_iter = array.begin_all();
+      Array<4,float>::const_full_iterator array_iter = array.begin_all();
       //
       //    for (int s=0; s<= proj_data.get_max_segment_num(); ++s)
       //      {
@@ -828,6 +829,7 @@ namespace std {
 //%shared_ptr(stir::Array<1,float>);
 %shared_ptr(stir::Array<2,float>);
 %shared_ptr(stir::Array<3,float>);
+%shared_ptr(stir::Array<4,float>);
 %shared_ptr(stir::DiscretisedDensity<3,float>);
 %shared_ptr(stir::DiscretisedDensityOnCartesianGrid<3,float>);
 %shared_ptr(stir::VoxelsOnCartesianGrid<float>);
@@ -1109,6 +1111,7 @@ namespace stir {
   %template(IndexRange2D) IndexRange<2>;
   //%template(IndexRange2DVectorWithOffset) VectorWithOffset<IndexRange<2> >;
   %template(IndexRange3D) IndexRange<3>;
+  %template(IndexRange4D) IndexRange<4>;
 
   %ADD_indexaccess(int,T,VectorWithOffset);
   %template(FloatVectorWithOffset) VectorWithOffset<float>;
@@ -1254,6 +1257,7 @@ namespace stir {
   // TODO name
   %template (FloatNumericVectorWithOffset3D) stir::NumericVectorWithOffset<stir::Array<2,float>, float>;
   %template(FloatArray3D) stir::Array<3,float>;
+  %template(FloatArray4D) stir::Array<4,float>;
 #if 0
   %ADD_indexaccess(int,%arg(stir::Array<2,float>),%arg(stir::Array<3,float>));
 #endif
@@ -1351,11 +1355,11 @@ namespace stir {
 %extend ProjData 
   {
 #ifdef SWIGPYTHON
-    %feature("autodoc", "create a stir 3D Array from the projection data (internal)") to_array;
+    %feature("autodoc", "create a stir 4D Array from the projection data (internal)") to_array;
     %newobject to_array;
-    Array<3,float> to_array()
+    Array<4,float> to_array()
     { 
-      Array<3,float> array = swigstir::projdata_to_3D(*$self);
+      Array<4,float> array = swigstir::projdata_to_4D(*$self);
       return array;
     }
 
@@ -1364,9 +1368,9 @@ namespace stir {
     {
       if (PyIter_Check(arg))
       {
-        Array<3,float> array = swigstir::create_array_for_proj_data(*$self);
+        Array<4,float> array = swigstir::create_array_for_proj_data(*$self);
 	swigstir::fill_Array_from_Python_iterator(&array, arg);
-        swigstir::fill_proj_data_from_3D(*$self, array);        
+        swigstir::fill_proj_data_from_4D(*$self, array);        
       }
       else
       {
@@ -1381,15 +1385,15 @@ namespace stir {
     %newobject to_matlab;
     mxArray * to_matlab()
     { 
-      Array<3,float> array = swigstir::projdata_to_3D(*$self);
+      Array<4,float> array = swigstir::projdata_to_4D(*$self);
       return swigstir::Array_to_matlab(array); 
     }
 
     void fill(const mxArray *pm)
     { 
-      Array<3,float> array;
+      Array<4,float> array;
       swigstir::fill_Array_from_matlab(array, pm, true);
-      swigstir::fill_proj_data_from_3D(*$self, array);
+      swigstir::fill_proj_data_from_4D(*$self, array);
     }
 #endif
   }
