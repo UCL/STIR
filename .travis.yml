@@ -14,10 +14,11 @@ os:
 # Enviroment variables:
 # To avoid too many builds, we mix some options (although independent tests would have been better)
 global:
-  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON=1 -DSTIR_MPI=0 -DBUILD_SWIG_MATLAB=0 -DSTIR_OPENMP=0 -DCMAKE_BUILD_TYPE=Release"
+  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON=1 -DSTIR_MPI=0 -DBUILD_SWIG_MATLAB=0 -DCMAKE_BUILD_TYPE=Release"
 env:
-  - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0"
-  - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1"
+  - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP=0"
+  - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP=1"
+  - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1 -DSTIR_OPENMP=0"
 
 # Ubuntu 14.04 LTS (trusty)
 dist: trusty
@@ -49,7 +50,7 @@ script:
   - mkdir build install
   - cd build
   - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS ..
-  - make -j 8 all
+  - make -j 3 all
   - make test
   - make DESTDIR=$TRAVIS_BUILD_DIR/install all install
   - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/usr/local/bin
