@@ -101,10 +101,15 @@ These are only minimally documented at the present stage unfortunately.
 </ul>
 
 <h3>Changed functionality</h3>
+<h4>Python (and MATLAB) interface</h4>
 <ul>
 <li>
-renamed <code>get_scanner_ptr()</code> and <code>get_proj_data_info_ptr()</code> in the 
-Python (and MATLAB) interface to <code>get_scanner()</code> and <code>get_proj_data_info()</code>
+  renamed <code>get_scanner_ptr()</code> and <code>get_proj_data_info_ptr()</code> in the 
+  <code>get_scanner()</code> and <code>get_proj_data_info()</code>
+</li>
+<li>expose <code>Bin</code> member functions as variables (or attributes).    
+  As opposed to <code>bin.view_num()</code>, write <code>bin.view_num</code>. You can now also do
+  <code>bin.view_num=1</code>.
 </li>
 </ul>
 
