@@ -69,6 +69,8 @@
 #include "stir/PixelsOnCartesianGrid.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 
+#include "stir/GeneralisedPoissonNoiseGenerator.h"
+  
 #include "stir/IO/read_from_file.h"
 #include "stir/IO/InterfileOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
@@ -1449,6 +1451,8 @@ namespace stir {
 
 %template(SeparableCartesianMetzImageFilter3DFloat) stir::SeparableCartesianMetzImageFilter<elemT>;
 #undef elemT
+
+%include "stir/GeneralisedPoissonNoiseGenerator.h"
 
  // reconstruction
 #ifdef STIRSWIG_SHARED_PTR
