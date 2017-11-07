@@ -114,11 +114,11 @@ find_basic_densel(Densel& c) const
 
 
 // TODO, optimise
-auto_ptr<SymmetryOperation>
+unique_ptr<SymmetryOperation>
 DataSymmetriesForDensels_PET_CartesianGrid::
   find_symmetry_operation_from_basic_densel(Densel& c) const
 {
-  auto_ptr<SymmetryOperation> 
+  unique_ptr<SymmetryOperation> 
     sym_op(
         find_sym_op_general_densel(c[1], c[2], c[3])
       ); 

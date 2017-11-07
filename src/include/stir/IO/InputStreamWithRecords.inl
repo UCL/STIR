@@ -159,6 +159,7 @@ set_get_position(const typename InputStreamWithRecords<RecordT, OptionsT>::Saved
     return Succeeded::no;
 
   assert(pos < saved_get_positions.size());
+  stream_ptr->clear();
   if (saved_get_positions[pos] == std::streampos(-1))
     stream_ptr->seekg(0, std::ios::end); // go to eof
   else

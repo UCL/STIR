@@ -40,6 +40,8 @@
 #include <sstream>
 #endif
 
+#include <boost/static_assert.hpp>
+
 #ifndef STIR_NO_NAMESPACES
 using std::endl;
 using std::ends;
@@ -141,8 +143,6 @@ ProjDataInfoCylindricalNoArcCorr::parameter_info()  const
 }
 
 /*
-   TODO make compile time assert
-
    Warning:
    this code makes use of an implementation dependent feature:
    bit shifting negative ints to the right.
@@ -151,6 +151,8 @@ ProjDataInfoCylindricalNoArcCorr::parameter_info()  const
    This is ok on SUNs (gcc, but probably SUNs cc as well), Parsytec (gcc),
    Pentium (gcc, VC++) and probably every other system which uses
    the 2-complement convention.
+
+   Update: compile time assert is implemented.
 */
 
 /*!
@@ -173,8 +175,8 @@ void
 ProjDataInfoCylindricalNoArcCorr::
 initialise_uncompressed_view_tangpos_to_det1det2() const
 {
-  assert(-1 >> 1 == -1);
-  assert(-2 >> 1 == -1);
+  BOOST_STATIC_ASSERT(-1 >> 1 == -1);
+  BOOST_STATIC_ASSERT(-2 >> 1 == -1);
 
   const int num_detectors =
     get_scanner_ptr()->get_num_detectors_per_ring();
@@ -220,8 +222,8 @@ void
 ProjDataInfoCylindricalNoArcCorr::
 initialise_det1det2_to_uncompressed_view_tangpos() const
 {
-  assert(-1 >> 1 == -1);
-  assert(-2 >> 1 == -1);
+  BOOST_STATIC_ASSERT(-1 >> 1 == -1);
+  BOOST_STATIC_ASSERT(-2 >> 1 == -1);
 
   const int num_detectors =
     get_scanner_ptr()->get_num_detectors_per_ring();

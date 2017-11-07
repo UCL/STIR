@@ -348,6 +348,9 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
       if(ax_pos_num != get_max_axial_pos_num(segment_num))
         sino_stream->seekp(intra_views_offset, ios::cur);
     }
+
+    // flush the stream, see the class documentation
+    sino_stream->flush();
     return Succeeded::yes;
   }
   else if (get_storage_order() == Segment_View_AxialPos_TangPos)
@@ -361,7 +364,9 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
                 view_num, segment_num);
         return Succeeded::no;
       }
-    return Succeeded::yes;
+	// flush the stream, see the class documentation
+	sino_stream->flush();
+	return Succeeded::yes;
   }
   else
   {
@@ -576,7 +581,8 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
                   ax_pos_num, segment_num);
           return Succeeded::no;
     }
-
+	  // flush the stream, see the class documentation
+	  sino_stream->flush();
       return Succeeded::yes;
     }
     
@@ -597,7 +603,9 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
         if(view != get_max_view_num())
           sino_stream->seekp(intra_ax_pos_offset, ios::cur);
       }
-      return Succeeded::yes;
+	  // flush the stream, see the class documentation
+	  sino_stream->flush();
+	  return Succeeded::yes;
     }
     else
     {
@@ -778,7 +786,8 @@ ProjDataFromStream::set_segment(const SegmentBySinogram<float>& segmentbysinogra
                 segment_num);
         return Succeeded::no;
       }
-
+	// flush the stream, see the class documentation
+	sino_stream->flush();
     return Succeeded::yes;
   }
   else 
@@ -847,7 +856,8 @@ ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
                 segment_num);
         return Succeeded::no;
       }
-
+	// flush the stream, see the class documentation
+	sino_stream->flush();
     return Succeeded::yes;
   }
   else 
