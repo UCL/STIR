@@ -30,6 +30,7 @@
 #include "stir/GeneralisedPoissonNoiseGenerator.h"
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp>
+#include <boost/format.hpp>
 #include <algorithm>
 #include <iostream>
 
