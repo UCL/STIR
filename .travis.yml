@@ -42,6 +42,9 @@ addons:
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew tap homebrew/science; fi
+  # seems to be needed on Travis due to conflicts with gcc otherwise
+  # see https://github.com/travis-ci/travis-ci/issues/8826
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew cask uninstall oclint;fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install doxygen; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install --with-cocoa root; fi
 install:
@@ -64,6 +67,6 @@ script:
   - # if [[ $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT_SUPPORT=0"* ]]; then ./run_root_GATE.sh; fi
   - cd $TRAVIS_BUILD_DIR/recon_test_pack/SPECT
   - #./run_SPECT_tests.sh
-  - cd ../src/swig/test/python
+  - cd $TRAVIS_BUILD_DIR/src/swig/test/python
   - python -m pytest .
   
