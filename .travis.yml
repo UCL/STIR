@@ -47,7 +47,11 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew cask uninstall oclint;fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install doxygen; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install --with-cocoa root; fi
-install:
+  # use Python3 on Mac, not the system Python (which doesn't have pip etc)
+  # from http://blog.fizyk.net.pl/blog/running-python-tests-on-traviss-osx-workers.html
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install python3; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then virtualenv venv -p python3; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then source venv/bin/activate; fi
   - python -m pip install -U pip
   - python -m pip install --user pytest
 
@@ -56,7 +60,7 @@ script:
   - cd build
   - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS ..
   - make -j 8 all
-  - make test
+  - #make test
   - make DESTDIR=$TRAVIS_BUILD_DIR/install all install
   - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/usr/local/bin
   - cd $TRAVIS_BUILD_DIR/recon_test_pack
@@ -67,6 +71,7 @@ script:
   - # if [[ $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT_SUPPORT=0"* ]]; then ./run_root_GATE.sh; fi
   - cd $TRAVIS_BUILD_DIR/recon_test_pack/SPECT
   - #./run_SPECT_tests.sh
-  - cd $TRAVIS_BUILD_DIR/src/swig/test/python
+  - cd $TRAVIS_BUILD_DIR/src
+  # Run Python tests, making sure we're using the correct Python interpreter
   - python -m pytest .
   
