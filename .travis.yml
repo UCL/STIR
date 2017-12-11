@@ -53,17 +53,21 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then virtualenv venv -p python3; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then source venv/bin/activate; fi
   - python -m pip install -U pip
-  - python -m pip install pytest
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
+      python -m pip install pytest
+    else
+      python -m pip install --user pytest
+    fi
 
 script:
   - mkdir build install
   - cd build
-  - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/install ..
-  - make -j 8 all
+  - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/install -DBUILD_EXECUTABLES=OFF ..
+  - make -j 2 all
   - #make test
   - make install
+  - cat CMakeCache.txt
   - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/bin
-  - export PYTHONPATH=$TRAVIS_BUILD_DIR/install/python
   - cd $TRAVIS_BUILD_DIR/recon_test_pack
   - #./run_test_simulate_and_recon.sh
   - #./run_test_simulate_and_recon_with_motion.sh
@@ -74,5 +78,6 @@ script:
   - #./run_SPECT_tests.sh
   - cd $TRAVIS_BUILD_DIR/src
   # Run Python tests, making sure we're using the correct Python interpreter
-  - python -m pytest .
+  - ls $TRAVIS_BUILD_DIR/install/python
+  - PYTHONPATH=$TRAVIS_BUILD_DIR/install/python python -m pytest .
   
