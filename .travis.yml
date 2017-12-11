@@ -11,13 +11,13 @@ os:
   - linux
   - osx
 
-# Enviroment variables:
+# Environment variables:
 # To avoid too many builds, we mix some options (although independent tests would have been better)
-global:
-  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON:BOOL=On -DSTIR_MPI:BOOL=Off -DBUILD_SWIG_MATLAB:BOOL=Off -DSTIR_OPENMP:BOOL=Off -DCMAKE_BUILD_TYPE=Release"
 env:
   - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0"
   - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1"
+  global:
+    - BUILD_FLAGS="-DBUILD_SWIG_PYTHON:BOOL=On -DSTIR_MPI:BOOL=Off -DBUILD_SWIG_MATLAB:BOOL=Off -DSTIR_OPENMP:BOOL=Off -DCMAKE_BUILD_TYPE=Release"
 
 # Ubuntu 14.04 LTS (trusty)
 dist: trusty
@@ -63,7 +63,7 @@ script:
   - mkdir build install
   - cd build
   - echo cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/install -DBUILD_EXECUTABLES=OFF ..
-  - cmake --trace $BUILD_FLAGS $EXTRA_BUILD_FLAGS -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/install -DBUILD_EXECUTABLES=OFF ..
+  - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/install -DBUILD_EXECUTABLES=OFF ..
   - #make -j 2 all
   - #make test
   - #make install
