@@ -18,7 +18,7 @@ env:
   - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0"
   - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1"
   global:
-    - BUILD_FLAGS="-DBUILD_SWIG_PYTHON:BOOL=On -DSTIR_MPI:BOOL=Off -DBUILD_SWIG_MATLAB:BOOL=Off -DSTIR_OPENMP:BOOL=Off -DCMAKE_BUILD_TYPE=Release"
+    - BUILD_FLAGS="-DBUILD_SWIG_PYTHON:BOOL=On -DSTIR_MPI:BOOL=Off -DSTIR_OPENMP:BOOL=Off -DCMAKE_BUILD_TYPE=Release"
 
 # Ubuntu 14.04 LTS (trusty)
 dist: trusty
@@ -63,12 +63,10 @@ before_install:
 script:
   - mkdir build install
   - cd build
-  - echo cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/install -DBUILD_EXECUTABLES=OFF ..
   - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/install -DBUILD_EXECUTABLES=OFF ..
-  - #make -j 2 all
-  - #make test
-  - #make install
-  - cat CMakeCache.txt
+  - make -j 2 all
+  - make test
+  - make install
   - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/bin
   - cd $TRAVIS_BUILD_DIR/recon_test_pack
   - #./run_test_simulate_and_recon.sh
