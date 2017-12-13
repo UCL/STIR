@@ -32,6 +32,12 @@ addons:
     packages:
       - libboost-all-dev
       - swig
+      - python-dev
+      - python3-dev
+      - python-numpy
+      - python3-numpy
+      - python-pytest
+      - python3-pytest
       - libgomp1
       - root-system-bin
       - libroot-tree-dev
@@ -57,14 +63,10 @@ before_install:
       brew install python3;
       virtualenv venv -p python3;
       source venv/bin/activate; 
-    fi
-  - python -m pip install -U pip
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
+      python -m pip install -U pip
       python -m pip install pytest numpy;
-    else
-      python -m pip install --user pytest numpy;
-      python -m pip3 install --user pytest numpy;
     fi
+
 
 script:
   - mkdir build install
