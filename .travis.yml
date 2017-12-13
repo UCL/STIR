@@ -48,16 +48,18 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew cask uninstall oclint;fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install doxygen; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install --with-cocoa root; fi
-  # use Python3 on Mac, not the system Python (which doesn't have pip etc)
-  # from http://blog.fizyk.net.pl/blog/running-python-tests-on-traviss-osx-workers.html
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install python3; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then virtualenv venv -p python3; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then source venv/bin/activate; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
+     # use Python3 on Mac
+     # from http://blog.fizyk.net.pl/blog/running-python-tests-on-traviss-osx-workers.html
+     brew install python3;
+     virtualenv venv -p python3;
+     source venv/bin/activate; 
+    fi
   - python -m pip install -U pip
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
-      python -m pip --only-binary=numpy install pytest numpy;
+      python -m pip install --only-binary=numpy pytest numpy;
     else
-      python -m pip --only-binary=numpy install --user pytest numpy;
+      python -m pip install --only-binary=numpy --user pytest numpy;
     fi
 
 script:
