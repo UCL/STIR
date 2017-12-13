@@ -14,11 +14,11 @@ os:
 # Environment variables:
 # To avoid too many builds, we mix some options (although independent tests would have been better)
 env:
+  global:
+  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON:BOOL=On -DSTIR_MPI:BOOL=Off -DSTIR_OPENMP:BOOL=Off -DCMAKE_BUILD_TYPE=Release"
   matrix:
   - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0"
   - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1"
-  global:
-    - BUILD_FLAGS="-DBUILD_SWIG_PYTHON:BOOL=On -DSTIR_MPI:BOOL=Off -DSTIR_OPENMP:BOOL=Off -DCMAKE_BUILD_TYPE=Release"
 
 # Ubuntu 14.04 LTS (trusty)
 dist: trusty
@@ -55,9 +55,9 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then source venv/bin/activate; fi
   - python -m pip install -U pip
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
-      python -m pip install pytest;
+      python -m pip --only-binary=numpy install pytest numpy;
     else
-      python -m pip install --user pytest;
+      python -m pip --only-binary=numpy install --user pytest numpy;
     fi
 
 script:
@@ -80,4 +80,3 @@ script:
   # Run Python tests, making sure we're using the correct Python interpreter
   - ls $TRAVIS_BUILD_DIR/install/python
   - PYTHONPATH=$TRAVIS_BUILD_DIR/install/python python -m pytest .
-  
