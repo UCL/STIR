@@ -57,9 +57,9 @@ before_install:
     fi
   - python -m pip install -U pip
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
-      python -m pip install --only-binary=numpy pytest numpy;
+      python -m pip install pytest numpy;
     else
-      python -m pip install --only-binary=numpy --user pytest numpy;
+      python -m pip install --user pytest numpy;
     fi
 
 script:
