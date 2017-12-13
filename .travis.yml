@@ -14,6 +14,7 @@ os:
 # Environment variables:
 # To avoid too many builds, we mix some options (although independent tests would have been better)
 env:
+  matrix:
   - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0"
   - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1"
   global:
