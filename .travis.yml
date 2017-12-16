@@ -83,4 +83,5 @@ script:
   - #./run_SPECT_tests.sh
   - cd $TRAVIS_BUILD_DIR/src
   # Run Python tests, making sure we're using the correct Python interpreter
-  - PYTHONPATH=$TRAVIS_BUILD_DIR/install/python python -m pytest .
+  - PYTHON=$(cmake -LA -N .|awk -F= '/PYTHON_EXECUTABLE/ {print $2}')
+  - PYTHONPATH=$TRAVIS_BUILD_DIR/install/python ${PYTHON} -m pytest .
