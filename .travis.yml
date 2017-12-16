@@ -29,7 +29,7 @@ sudo: false
 addons:
   apt:
     packages:
-      - libboost-all-dev
+      - libboost-dev
       - swig
       - libgomp1
       - root-system-bin
@@ -45,14 +45,16 @@ before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install doxygen; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install --with-cocoa root; fi
 
-script:
+install:
   - mkdir build install
   - cd build
-  - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS ..
-  - make -j 8 all
+  - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/install ..
+  - make -j 2 all
+  - make install
+  
+script:
   - make test
-  - make DESTDIR=$TRAVIS_BUILD_DIR/install all install
-  - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/usr/local/bin
+  - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/bin
   - cd $TRAVIS_BUILD_DIR/recon_test_pack
   - ./run_test_simulate_and_recon.sh
   - ./run_test_simulate_and_recon_with_motion.sh
