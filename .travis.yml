@@ -31,7 +31,7 @@ addons:
   apt:
     packages:
       - libboost-all-dev
-      - swig
+      - swig3.0
       - python-dev
       - python3-dev
       - python-numpy
