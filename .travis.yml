@@ -30,13 +30,10 @@ sudo: false
 addons:
   apt:
     packages:
-      - libboost-all-dev
+      - libboost-dev
       - swig3.0
-      - python-dev
       - python3-dev
-      - python-numpy
       - python3-numpy
-      - python-pytest
       - python3-pytest
       - libgomp1
       - root-system-bin
@@ -66,13 +63,15 @@ before_install:
     fi
 
 
-script:
+install:
   - mkdir build install
   - cd build
   - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/install -DBUILD_EXECUTABLES=OFF ..
   - make -j 2 all
-  - make test
   - make install
+  
+script:
+  - make test
   - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/bin
   - cd $TRAVIS_BUILD_DIR/recon_test_pack
   - #./run_test_simulate_and_recon.sh
