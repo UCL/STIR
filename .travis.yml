@@ -71,8 +71,6 @@ install:
   - make install
   
 script:
-  - export PYTHON=$(cmake -LA -N .|awk -F= '/PYTHON_EXECUTABLE/ {print $2}')
-  - echo $PYTHON
   - # make test
   - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/bin
   - cd $TRAVIS_BUILD_DIR/recon_test_pack
@@ -86,4 +84,7 @@ script:
   - cd $TRAVIS_BUILD_DIR/src
   # Run Python tests, making sure we're using the correct Python interpreter
   - export PYTHON=$(cmake -LA -N .|awk -F= '/PYTHON_EXECUTABLE/ {print $2}')
-  - PYTHONPATH=$TRAVIS_BUILD_DIR/install/python ${PYTHON} -m pytest .
+  - echo $PYTHON
+  - export PYTHONPATH=$TRAVIS_BUILD_DIR/install/python
+  - echo ${PYTHON} -m pytest .
+  - ${PYTHON} -m pytest .
