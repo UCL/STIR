@@ -71,20 +71,19 @@ install:
   - make install
   
 script:
-  - # make test
+  - make test
   - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/bin
   - cd $TRAVIS_BUILD_DIR/recon_test_pack
-  - #./run_test_simulate_and_recon.sh
-  - #./run_test_simulate_and_recon_with_motion.sh
-  - #./run_scatter_tests.sh
-  - #./run_tests.sh --nointbp
-  - # if [[ $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT_SUPPORT=0"* ]]; then ./run_root_GATE.sh; fi
+  - ./run_test_simulate_and_recon.sh
+  - ./run_test_simulate_and_recon_with_motion.sh
+  - ./run_scatter_tests.sh
+  - ./run_tests.sh --nointbp
+  - if [[ $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT_SUPPORT=0"* ]]; then ./run_root_GATE.sh; fi
   - cd $TRAVIS_BUILD_DIR/recon_test_pack/SPECT
-  - #./run_SPECT_tests.sh
+  - ./run_SPECT_tests.sh
   - cd $TRAVIS_BUILD_DIR/src
   # Run Python tests, making sure we're using the correct Python interpreter
   - export PYTHON=$(cmake -LA -N $TRAVIS_BUILD_DIR/build |awk -F= '/PYTHON_EXECUTABLE/ {print $2}')
-  - echo $PYTHON
+  - echo Using Python executable "$PYTHON"
   - export PYTHONPATH=$TRAVIS_BUILD_DIR/install/python
-  - echo ${PYTHON} -m pytest .
   - ${PYTHON} -m pytest .
