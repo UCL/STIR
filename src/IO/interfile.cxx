@@ -36,6 +36,7 @@
 #include "stir/IO/interfile.h"
 #include "stir/interfile_keyword_functions.h"
 #include "stir/IO/InterfileHeader.h"
+#include "stir/IO/InterfileHeaderSiemens.h"
 #include "stir/IO/InterfilePDFSHeaderSPECT.h"
 #include "stir/IndexRange3D.h"
 #include "stir/utilities.h"
@@ -614,7 +615,17 @@ read_interfile_PDFS(istream& input,
         input.seekg(offset);
         return read_interfile_PDFS_SPECT(input, directory_for_data, open_mode); 
       }
-  }
+	if (!hdr.siemens_mi_version.empty()) {
+		InterfilePDFSHeaderSiemens smshdr;
+		input.seekg(offset);
+		if (!smshdr.parse(input))
+		{
+			warning("Interfile parsing of Siemens Interfile projection data failed");
+			return 0;
+		}
+	}
+	}
+    
   // if we get here, it's PET
 
   InterfilePDFSHeader hdr;  

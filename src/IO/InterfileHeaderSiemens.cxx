@@ -20,13 +20,13 @@
 /*!
   \file 
   \ingroup InterfileIO 
-  \brief implementations for the stir::InterfileHeader class
+  \brief implementations for the stir::InterfileHeaderSiemens class
 
   \author Kris Thielemans
   \author PARAPET project
 */
 
-#include "stir/IO/InterfileHeader.h"
+#include "stir/IO/InterfileHeaderSiemens.h"
 #include "stir/ExamInfo.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/PatientPosition.h"
@@ -47,24 +47,21 @@ using std::vector;
 #endif
 
 START_NAMESPACE_STIR
-const double
-InterfileHeader::
-double_value_not_set = -12345.60789;
 
 const ExamInfo*
-InterfileHeader::get_exam_info_ptr() const
+InterfileHeaderSiemens::get_exam_info_ptr() const
 {
   return exam_info_sptr.get();
 }
 
 shared_ptr<ExamInfo>
-InterfileHeader::get_exam_info_sptr() const
+InterfileHeaderSiemens::get_exam_info_sptr() const
 {
   return exam_info_sptr;
 }
 
-InterfileHeader::InterfileHeader()
-     : KeyParser()
+InterfileHeaderSiemens::InterfileHeaderSiemens()
+     : InterfileHeader()
 {
   exam_info_sptr.reset(new ExamInfo);
 
@@ -136,7 +133,7 @@ InterfileHeader::InterfileHeader()
   add_key("INTERFILE", 
     KeyArgument::NONE,	&KeyParser::start_parsing);
   add_key("imaging modality",
-          KeyArgument::ASCII, (KeywordProcessor)&InterfileHeader::set_imaging_modality,
+          KeyArgument::ASCII, (KeywordProcessor)&InterfileHeaderSiemens::set_imaging_modality,
           &imaging_modality_as_string);
 
   add_key("version of keys", &version_of_keys);
@@ -151,7 +148,7 @@ InterfileHeader::InterfileHeader()
     KeyArgument::NONE,	&KeyParser::do_nothing);
   add_key("type of data", 
           KeyArgument::ASCIIlist,
-          (KeywordProcessor)&InterfileHeader::set_type_of_data,
+          (KeywordProcessor)&InterfileHeaderSiemens::set_type_of_data,
           &type_of_data_index, 
           &type_of_data_values);
 
@@ -179,7 +176,7 @@ InterfileHeader::InterfileHeader()
   add_key("number of bytes per pixel", 
     KeyArgument::INT,	&bytes_per_pixel);
   add_key("number of dimensions", 
-    KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_matrix_info,&num_dimensions);
+    KeyArgument::INT,	(KeywordProcessor)&InterfileHeaderSiemens::read_matrix_info,&num_dimensions);
   add_key("matrix size", 
     KeyArgument::LIST_OF_INTS,&matrix_size);
   add_key("matrix axis label", 
@@ -187,7 +184,7 @@ InterfileHeader::InterfileHeader()
   add_key("scaling factor (mm/pixel)", 
     KeyArgument::DOUBLE, &pixel_sizes);
   add_key("number of time frames", 
-    KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_frames_info,&num_time_frames);
+    KeyArgument::INT,	(KeywordProcessor)&InterfileHeaderSiemens::read_frames_info,&num_time_frames);
   add_key("image relative start time (sec)",
 	  KeyArgument::DOUBLE, &image_relative_start_times);
   add_key("image duration (sec)",
@@ -213,17 +210,14 @@ InterfileHeader::InterfileHeader()
 
   add_key("energy window upper level",
          KeyArgument::FLOAT, &upper_en_window_thres);
-  
-  // support for siemens interfile
-  add_key("%sms-mi version number",
-	  KeyArgument::ASCII, &siemens_mi_version);
+
   add_key("END OF INTERFILE", 
     KeyArgument::NONE,	&KeyParser::stop_parsing);
 }
 
 
 // MJ 17/05/2000 made bool
-bool InterfileHeader::post_processing()
+bool InterfileHeaderSiemens::post_processing()
 {
   if(type_of_data_index<0)
     {
@@ -343,13 +337,13 @@ bool InterfileHeader::post_processing()
 
 }
 
-void InterfileHeader::set_imaging_modality()
+void InterfileHeaderSiemens::set_imaging_modality()
 {
   set_variable();
   this->exam_info_sptr->imaging_modality = ImagingModality(imaging_modality_as_string);
 }
 
-void InterfileHeader::read_matrix_info()
+void InterfileHeaderSiemens::read_matrix_info()
 {
   set_variable();
 
@@ -359,7 +353,7 @@ void InterfileHeader::read_matrix_info()
   
 }
 
-void InterfileHeader::set_type_of_data()
+void InterfileHeaderSiemens::set_type_of_data()
 {
   set_variable();
   
@@ -410,7 +404,7 @@ void InterfileHeader::set_type_of_data()
     }
 }
 
-void InterfileHeader::read_frames_info()
+void InterfileHeaderSiemens::read_frames_info()
 {
   set_variable();
   image_scaling_factors.resize(num_time_frames);
@@ -421,72 +415,22 @@ void InterfileHeader::read_frames_info()
   image_durations.resize(num_time_frames, 0.);
 }
 
-/***********************************************************************/
-InterfileImageHeader::InterfileImageHeader()
-  : InterfileHeader()
-{
-  add_key("first pixel offset (mm)",
-	   KeyArgument::DOUBLE, &first_pixel_offsets);
-
-}
-
-void 
-InterfileImageHeader::
-read_matrix_info()
-{
-  base_type::read_matrix_info();
-  this->first_pixel_offsets.resize(num_dimensions);
-  std::fill(this->first_pixel_offsets.begin(), this->first_pixel_offsets.end(),
-	    base_type::double_value_not_set);
-}
-
-// MJ 17/05/2000 made bool
-bool InterfileImageHeader::post_processing()
-{
-
-  if (InterfileHeader::post_processing() == true)
-    return true;
-
-  if (PET_data_type_values[PET_data_type_index] != "Image")
-    { warning("Interfile error: expecting an image\n");  return true; }
-  
-  if (num_dimensions != 3)
-    { warning("Interfile error: expecting 3D image\n"); return true; }
-
-  if ( (matrix_size[0].size() != 1) || 
-       (matrix_size[1].size() != 1) ||
-       (matrix_size[2].size() != 1) )
-  { warning("Interfile error: only handling image with homogeneous dimensions\n"); return true; }
-
-  // KT 09/10/98 changed order z,y,x->x,y,z
-  // KT 09/10/98 allow no labels at all
-  if (matrix_labels[0].length()>0 
-      && (matrix_labels[0]!="x" || matrix_labels[1]!="y" ||
-	  matrix_labels[2]!="z"))
-    {
-      warning("Interfile: only supporting x,y,z order of coordinates now.\n");
-      return true; 
-    }
-  std::vector<double>	first_pixel_offsets;
-
-  return false;
-}
 /**********************************************************************/
 
 //KT 26/10/98
 // KT 13/11/98 moved stream arg from constructor to parse()
-InterfilePDFSHeader::InterfilePDFSHeader()
-     : InterfileHeader()
+InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
+     : InterfileHeaderSiemens()
 {
   num_segments = -1;
 
   add_key("minimum ring difference per segment",
     KeyArgument::LIST_OF_INTS, 
-    (KeywordProcessor)&InterfilePDFSHeader::resize_segments_and_set, 
+    (KeywordProcessor)&InterfilePDFSHeaderSiemens::resize_segments_and_set, 
     &min_ring_difference);
   add_key("maximum ring difference per segment",
     KeyArgument::LIST_OF_INTS, 
-    (KeywordProcessor)&InterfilePDFSHeader::resize_segments_and_set, 
+    (KeywordProcessor)&InterfilePDFSHeaderSiemens::resize_segments_and_set, 
     &max_ring_difference);
   
   
@@ -571,7 +515,7 @@ InterfilePDFSHeader::InterfilePDFSHeader()
 
 }
 
-void InterfilePDFSHeader::resize_segments_and_set()
+void InterfilePDFSHeaderSiemens::resize_segments_and_set()
 {
   // find_storage_order returns true if already found (or error)
   if (num_segments < 0 && !find_storage_order())
@@ -586,7 +530,7 @@ void InterfilePDFSHeader::resize_segments_and_set()
   
 }
 
-int InterfilePDFSHeader::find_storage_order()
+int InterfilePDFSHeaderSiemens::find_storage_order()
 {
 
   /*	if(type_of_data_values[type_of_data_index] != "PET")
@@ -681,177 +625,12 @@ public:
     return p1.first < p2.first;
   }
 };
-
-
-// This function assigns segment numbers by sorting the average 
-// ring differences. It returns a list of the segment numbers 
-// in the same order as the min/max_ring_difference vectors
-void
-find_segment_sequence(vector<int>& segment_sequence,
-                      VectorWithOffset<int>& sorted_num_rings_per_segment,
-		      VectorWithOffset<int>& sorted_min_ring_diff,
-		      VectorWithOffset<int>& sorted_max_ring_diff,
-		      vector<int>& num_rings_per_segment,
-		      const vector<int>& min_ring_difference, 
-		      const vector<int>& max_ring_difference)
-{
-  const int num_segments = static_cast<int>(min_ring_difference.size());
-  assert(num_segments%2 == 1);
-  
-  
-  vector< pair<float, int> > sum_and_location(num_segments);
-  for (int i=0; i<num_segments; i++)
-  {
-    sum_and_location[i].first = static_cast<float>(min_ring_difference[i] + max_ring_difference[i]);
-    sum_and_location[i].second = i;
-  }
-#if 0
-  cerr<< "DISPLAY SUM and LOCATION\n"<<endl;
-  
-  cerr<<"SUM\n"<<endl;
-  for(unsigned int i = 0;i<sum_and_location.size();i++)
-  {
-    cerr<< sum_and_location[i].first<<" ";
-  }
-  cerr<<endl;
-  
-  cerr<<"Location\n"<<endl;
-  for(unsigned int i = 0;i<sum_and_location.size();i++)
-  {
-    cerr<< sum_and_location[i].second<<" ";
-  }
-  cerr<<endl;
-#endif  
-  
-  // sort with respect to 'sum'
-  std::sort(sum_and_location.begin(), sum_and_location.end(),  
-    compare_first<float, int>());
-#if 0  
-  cerr<<"display  sum_sorted"<<endl;
-  for(unsigned int i = 0;i<sum_and_location.size();i++)
-  {
-    cerr<< sum_and_location[i].first<<" ";
-  }
-  cerr<<endl;
-#endif  
-  
-  
-  // find number of segment 0
-  int segment_zero_num = 0;
-  while (segment_zero_num < num_segments &&
-    sum_and_location[segment_zero_num].first < -1E-3)
-    segment_zero_num++;
-  
-  if (segment_zero_num == num_segments ||
-    sum_and_location[segment_zero_num].first > 1E-3)
-  {
-  error("This data does not seem to contain segment 0. \n"
-    "We can't handle this at the moment. Sorry.");
-  }
-  
-  vector< pair<int, int> > location_and_segment_num(num_segments);
-  for (int i=0; i<num_segments; i++)
-  {
-    location_and_segment_num[i].first = sum_and_location[i].second;
-    location_and_segment_num[i].second = i - segment_zero_num;
-  }
-
-#if 0
-  cerr<< "display location segment\n"<<endl;
-  for(unsigned int i = 0;i<location_and_segment_num.size();i++)
-  {
-    cerr<< location_and_segment_num[i].first<<" ";
-  }
-  cerr<<endl;
-  
-  cerr<< "display segment\n"<<endl;
-  for(unsigned int i = 0;i<location_and_segment_num.size();i++)
-  {
-    cerr<< location_and_segment_num[i].second<<" ";
-  }
-  cerr<<endl;
-#endif
-  
-  const int min_segment_num = location_and_segment_num[0].second;
-  const int max_segment_num = location_and_segment_num[num_segments-1].second;
-
-  // KT 19/05/2000 replaced limit with min/max_segment_num
-  //int limit = static_cast<int>(ceil(num_segments/2 ));
-  
-  sorted_min_ring_diff = VectorWithOffset<int>(min_segment_num,max_segment_num);
-  sorted_max_ring_diff = VectorWithOffset<int>(min_segment_num,max_segment_num);
-  sorted_num_rings_per_segment= VectorWithOffset<int>(min_segment_num,max_segment_num);
-  
-  
-  for (int i=0; i<num_segments; i++)
-  {
-    sorted_min_ring_diff[(location_and_segment_num[i].second)]
-      = min_ring_difference[(location_and_segment_num[i].first)];
-    
-    sorted_max_ring_diff[(location_and_segment_num[i].second)]
-      = max_ring_difference[(location_and_segment_num[i].first)];
-    
-    sorted_num_rings_per_segment[(location_and_segment_num[i].second)]
-      = num_rings_per_segment[(location_and_segment_num[i].first)];
-    
-    
-  }
-
-#if 0
-  cerr<< "sorted_min_ring_diff\n"<<endl;
-  for( int i =min_segment_num;i<max_segment_num;i++)
-  {
-    cerr<< sorted_min_ring_diff[i]<<" ";
-  }
-
-  cerr<<endl;
-
-  cerr<< "sorted_max_ring_diff\n"<<endl;
-  for( int i =min_segment_num;i<max_segment_num;i++)
-  {
-    cerr<< sorted_max_ring_diff[i]<<" ";
-  }
-  cerr<<endl;
-
-  
-  cerr<< "sorted_num_rings_per_segment\n"<<endl;
-  for( int i =min_segment_num;i<max_segment_num;i++)
-  {
-    cerr<< sorted_num_rings_per_segment[i]<<" ";
-  }
-  cerr<<endl;
-#endif
-
- 
-  // sort back to original location
-  sort(location_and_segment_num.begin(), location_and_segment_num.end(),  
-      compare_first<int, int>());
-   
-
-   segment_sequence.resize(num_segments);  
-    for (int i=0; i<num_segments; i++)
-      segment_sequence[i] = location_and_segment_num[i].second;
-  
-#if 0    
-  cerr<< "segment sequence\n"<<endl;
-  for(unsigned int i =0;i<segment_sequence.size();i++)
-  {
-    cerr<< segment_sequence[i]<<" ";
-  }
-  cerr<<endl;
-#endif
-
-    
-  //}
-	 
-	  
-}	  
 	  
 // MJ 17/05/2000 made bool
-bool InterfilePDFSHeader::post_processing()
+bool InterfilePDFSHeaderSiemens::post_processing()
 {
   
-  if (InterfileHeader::post_processing() == true)
+  if (InterfileHeaderSiemens::post_processing() == true)
     return true;
   
   if (PET_data_type_values[PET_data_type_index] != "Emission")
@@ -910,10 +689,11 @@ bool InterfilePDFSHeader::post_processing()
   VectorWithOffset<int> sorted_max_ring_diff;
   VectorWithOffset<int> sorted_num_rings_per_segment;
   
-  find_segment_sequence( segment_sequence,sorted_num_rings_per_segment,
+  /* TODO find_segment_sequence( segment_sequence,sorted_num_rings_per_segment,
     sorted_min_ring_diff,sorted_max_ring_diff,
     num_rings_per_segment,
     min_ring_difference, max_ring_difference);
+	*/
 #if 0  
   cerr << "PDFS data read inferred header :\n";
   cerr << "Segment sequence :";

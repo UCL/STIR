@@ -18,7 +18,7 @@
 /*! 
   \file
   \ingroup InterfileIO
-  \brief  This file declares the classes stir::InterfileHeader,
+  \brief  This file declares the classes stir::InterfileHeaderSiemens,
           stir::InterfileImageHeader, stir::InterfilePDFSHeader  
 
   \author Kris Thielemans
@@ -30,12 +30,12 @@
 */
 
 
-#ifndef __stir_INTERFILEHEADER_H__
-#define __stir_INTERFILEHEADER_H__
+#ifndef __stir_InterfileHeaderSiemens_H__
+#define __stir_InterfileHeaderSiemens_H__
 
 #include "stir/ByteOrder.h"
 #include "stir/NumericInfo.h"
-#include "stir/KeyParser.h"
+#include "stir/IO/InterfileHeader.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/ExamInfo.h"
 
@@ -48,15 +48,15 @@ class ProjDataInfo;
   all types of data
   \ingroup InterfileIO
   */
-class InterfileHeader : public KeyParser
+class InterfileHeaderSiemens : public InterfileHeader
 {
 public:
   //! A value that can be used to signify that a variable has not been set during parsing.
   static const double double_value_not_set;
 
-  InterfileHeader();
+  InterfileHeaderSiemens();
 
-  virtual ~InterfileHeader() {}
+  virtual ~InterfileHeaderSiemens() {}
 
 protected:
   // Returns false if OK, true if not.
@@ -94,8 +94,6 @@ private:
 
   // Louvain la Neuve style of 'image scaling factors'
   double lln_quantification_units;
-
-  
  protected:
   virtual void read_matrix_info();
   void read_frames_info();
@@ -147,22 +145,20 @@ public :
   //! \details High energy window limit
   float upper_en_window_thres;
   // end acquisition parameters
-  std::string siemens_mi_version;
-  
  protected:
   // version 3.3 had only a single offset. we'll internally replace it with data_offset_each_dataset
   unsigned long data_offset;
 };
 
-
+#if 0 // probably not necessary
 /*!
   \brief a class for Interfile keywords (and parsing) specific to images
   \ingroup InterfileIO
   */
-class InterfileImageHeader : public InterfileHeader
+class InterfileImageHeader : public InterfileHeaderSiemens
 {
  private:
-  typedef InterfileHeader base_type;
+  typedef InterfileHeaderSiemens base_type;
 
 public:
   InterfileImageHeader();
@@ -175,15 +171,17 @@ protected:
 
 };
 
+#endif
+
 /*!
   \brief a class for Interfile keywords (and parsing) specific to 
   projection data (i.e. ProjDataFromStream)
   \ingroup InterfileIO
   */
-class InterfilePDFSHeader : public InterfileHeader
+class InterfilePDFSHeaderSiemens : public InterfileHeaderSiemens
 {
 public:
-  InterfilePDFSHeader();
+	InterfilePDFSHeaderSiemens();
 
 protected:
 
@@ -245,4 +243,4 @@ private:
 
 END_NAMESPACE_STIR
 
-#endif // __stir_INTERFILEHEADER_H__
+#endif // __stir_InterfileHeaderSiemens_H__
