@@ -332,7 +332,7 @@ post_processing()
 
   if (do_time_frame && frame_definition_filename.size()==0)
   {
-      warning("Have to specify either 'frame_definition_filename' or 'num_events_to_store'\n");
+      warning("Have to specify either 'frame_definition_filename' or 'num_events_to_store'");
       return true;
   }
 
