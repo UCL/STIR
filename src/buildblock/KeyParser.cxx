@@ -777,6 +777,7 @@ Succeeded KeyParser::parse_value_in_line(const string& line, const bool write_wa
     case KeyArgument::ULONG :
       keyword_has_a_value = 
     get_any_param_from_string(this->parameter, Type2Type<unsigned long>(), line) == Succeeded::yes;
+        break;
     case KeyArgument::LONG :
       keyword_has_a_value =
     get_any_param_from_string(this->parameter, Type2Type<long int>(), line) == Succeeded::yes;
@@ -983,8 +984,8 @@ void KeyParser::set_variable()
 
 	  KP_case_assign(KeyArgument::INT, int);
 	  KP_case_assign(KeyArgument::UINT,unsigned int);
-	  KP_case_assign(KeyArgument::ULONG,unsigned long);
       KP_case_assign(KeyArgument::LONG,long);
+	  KP_case_assign(KeyArgument::ULONG,unsigned long);
 	  KP_case_assign(KeyArgument::DOUBLE,double);
 	  KP_case_assign(KeyArgument::FLOAT,float);
 	  KP_case_assign(KeyArgument::ASCII, std::string);
