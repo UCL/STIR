@@ -69,6 +69,8 @@
 #include "stir/PixelsOnCartesianGrid.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 
+#include "stir/GeneralisedPoissonNoiseGenerator.h"
+  
 #include "stir/IO/read_from_file.h"
 #include "stir/IO/InterfileOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
@@ -455,6 +457,8 @@
 %fragment("NumPy_Fragments");
 #endif
 
+%include "attribute.i"
+
 %init %{
 #if defined(SWIGPYTHON)
   // numpy support
@@ -466,7 +470,7 @@
 %feature("autodoc", "1");
 
 // TODO doesn't work
-%warnfilter(315) std::auto_ptr;
+%warnfilter(315) std::unique_ptr;
 
 // disable warnings about unknown base-class 401
 // disable warnings about "no access specified given for base class" as we use this correctly for private derivation 319
@@ -979,9 +983,10 @@ T * operator-> () const;
   // to convert the swigged DiscretisedDensity to a VoxelsOnCartesianGrid
   static stir::VoxelsOnCartesianGrid<elemT> * read_from_file(const std::string& filename)
     {
-      std::auto_ptr<stir::DiscretisedDensity<3,elemT> > 
-	ret(stir::read_from_file<stir::DiscretisedDensity<3,elemT> >(filename));
-      return dynamic_cast<stir::VoxelsOnCartesianGrid<elemT> *>(ret.release());
+      using namespace stir;
+      unique_ptr<DiscretisedDensity<3,elemT> > 
+	ret(read_from_file<DiscretisedDensity<3,elemT> >(filename));
+      return dynamic_cast<VoxelsOnCartesianGrid<elemT> *>(ret.release());
     }
  }
 
@@ -1297,16 +1302,43 @@ namespace stir {
 %include "stir/ExamInfo.h"
 %include "stir/IO/ExamData.h"
 %include "stir/Verbosity.h"
-// ignore non-const versions
-%ignore stir::Bin::segment_num();
-%ignore stir::Bin::axial_pos_num();
-%ignore stir::Bin::view_num();
-%ignore stir::Bin::tangential_pos_num();
+
+%attributeref(stir::Bin, int, segment_num);
+%attributeref(stir::Bin, int, axial_pos_num);
+%attributeref(stir::Bin, int, view_num);
+%attributeref(stir::Bin, int, tangential_pos_num);
+%attribute(stir::Bin, float, bin_value, get_bin_value, set_bin_value);
 %include "stir/Bin.h"
+
 %newobject stir::ProjDataInfo::ProjDataInfoGE;
 %newobject stir::ProjDataInfo::ProjDataInfoCTI;
 
+// ignore this to avoid problems with unique_ptr, and add it later
+%ignore stir::ProjDataInfo::construct_proj_data_info;
+
 %include "stir/ProjDataInfo.h"
+%newobject *::construct_proj_data_info;
+
+%extend stir::ProjDataInfo 
+{
+  // work around the current SWIG limitation that it doesn't wrap unique_ptr. 
+  // we do this with the crazy (and ugly) way to let SWIG create a new function
+  // which is the same as the original, but returns a bare pointer.
+  // (This will be wrapped as a shared_ptr in the end).
+  // This work-around is fragile however as it depends on knowledge of the
+  // exact signature of the function.
+  static ProjDataInfo *
+	  construct_proj_data_info(const shared_ptr<Scanner>& scanner_sptr,
+		  const int span, const int max_delta,
+		  const int num_views, const int num_tangential_poss,
+		  const bool arc_corrected = true)
+  {
+    return 
+      construct_proj_data_info(scanner_sptr,
+                               span, max_delta, num_views, num_tangential_poss,
+                               arc_corrected).get();
+  }
+}
 %include "stir/ProjDataInfoCylindrical.h"
 %include "stir/ProjDataInfoCylindricalArcCorr.h"
 %include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -1419,6 +1451,8 @@ namespace stir {
 
 %template(SeparableCartesianMetzImageFilter3DFloat) stir::SeparableCartesianMetzImageFilter<elemT>;
 #undef elemT
+
+%include "stir/GeneralisedPoissonNoiseGenerator.h"
 
  // reconstruction
 #ifdef STIRSWIG_SHARED_PTR

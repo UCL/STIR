@@ -183,7 +183,7 @@ void OutputFileFormatTests::run_tests()
 
 	// now read it back
 	
-	std::auto_ptr<DiscretisedDensity<3,float> >
+	unique_ptr<DiscretisedDensity<3,float> >
 	  density_ptr = read_from_file<DiscretisedDensity<3,float> >(filename);
 	
 	const  VoxelsOnCartesianGrid<float> * image_as_read_ptr =

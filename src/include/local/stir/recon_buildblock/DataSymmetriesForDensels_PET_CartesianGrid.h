@@ -86,7 +86,7 @@ public:
   inline int
     num_related_densels(const Densel& b) const;
 
-  inline auto_ptr<SymmetryOperation>
+  inline unique_ptr<SymmetryOperation>
     find_symmetry_operation_from_basic_densel(Densel&) const;
 
   inline bool

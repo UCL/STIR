@@ -155,8 +155,8 @@ set_defaults()
   normalisation_ptr.reset(new TrivialBinNormalisation);
   post_normalisation_ptr.reset(new TrivialBinNormalisation);
   do_pre_normalisation =0;
-  num_events_to_store = -1;
-
+  num_events_to_store = 0;
+  do_time_frame = false; 
 }
 
 void 
