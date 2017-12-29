@@ -328,13 +328,8 @@ post_processing()
 
   // handle time frame definitions etc
   // If num_events_to_store == 0 && frame_definition_filename.size == 0
-  do_time_frame = num_events_to_store<=0;
-
-  if (do_time_frame && frame_definition_filename.size()==0)
-  {
-      warning("Have to specify either 'frame_definition_filename' or 'num_events_to_store'");
-      return true;
-  }
+  if(num_events_to_store==0 && frame_definition_filename.size() == 0)
+        do_time_frame = true;
 
   if (frame_definition_filename.size()!=0)
   {
