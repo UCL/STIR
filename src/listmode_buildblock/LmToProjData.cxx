@@ -155,9 +155,8 @@ set_defaults()
   normalisation_ptr.reset(new TrivialBinNormalisation);
   post_normalisation_ptr.reset(new TrivialBinNormalisation);
   do_pre_normalisation =0;
-  num_events_to_store = 0;
+  num_events_to_store = 0L;
   do_time_frame = false; 
-
 }
 
 void 
@@ -330,7 +329,7 @@ post_processing()
   // handle time frame definitions etc
   // If num_events_to_store == 0 && frame_definition_filename.size == 0
   if(num_events_to_store==0 && frame_definition_filename.size() == 0)
-      do_time_frame = true;
+        do_time_frame = true;
 
   if (frame_definition_filename.size()!=0)
   {
@@ -593,7 +592,7 @@ process_data()
 	   // When do_time_frame=true, the number of events is irrelevant, so we 
 	   // just set more_events to 1, and never change it
 	   long more_events = 
-         do_time_frame? 1 : static_cast<long>(num_events_to_store);
+         do_time_frame? 1 : num_events_to_store;
 
 	   if (start_segment_index != proj_data_ptr->get_min_segment_num())
 	     {

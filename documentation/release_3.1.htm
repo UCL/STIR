@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 3.1 (dated 20/10/2017)</title>
+    <title>Summary of changes in STIR release 3.1 (dated 31/12/2017)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 3.1 (dated 20/10/2017)</h1>
+    <h1>Summary of changes in STIR release 3.1 (dated 31/12/2017)</h1>
 
 <p>This version is 100% backwards compatible with STIR 3.0 for the user aside from minor changes 
 when using Python (see below). Developers might need to make minor code changes as 
@@ -107,6 +107,9 @@ These are only minimally documented at the present stage unfortunately.
 
 
 <h3>Changed functionality</h3>
+<li>
+  The <code>num_events_to_store</code> variable in <code>LmToProjData</code> has been upgraded to long int. 
+</li>
 <h4>Python (and MATLAB) interface</h4>
 <ul>
 <li>
@@ -253,6 +256,8 @@ In order to ensure backwards compatibility, at the moment, it is completely opti
 <li><code>ExamData</code> is a new base class for <code>ProjData</code> and <code>CListModeData</code> </li>
 <li>Moved functions from the <code>poisson_noise</code> utility to a new class
   <code>GeneralisedPoissonNoiseGenerator</code>.
+  </li>
+ <li>Added the ability to <code>KeyParser</code> to parse <code>long int</code> numbers. 
   </li>
 </ul>
 
