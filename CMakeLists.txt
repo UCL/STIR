@@ -27,6 +27,8 @@ cmake_minimum_required(VERSION 2.8.3)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/src/cmake)
 include(src/cmake/SetC++Version.cmake)
 
+UseCXX("${CMAKE_CXX_STANDARD}")
+
 # set default build-type to Release
 if(NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "type of build: Debug Release RelWithDebInfo MinSizeRel." FORCE)

@@ -69,6 +69,8 @@
 #include "stir/PixelsOnCartesianGrid.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 
+#include "stir/GeneralisedPoissonNoiseGenerator.h"
+  
 #include "stir/IO/read_from_file.h"
 #include "stir/IO/InterfileOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
@@ -454,6 +456,8 @@
 %include "numpy.i"
 %fragment("NumPy_Fragments");
 #endif
+
+%include "attribute.i"
 
 %init %{
 #if defined(SWIGPYTHON)
@@ -1298,12 +1302,14 @@ namespace stir {
 %include "stir/ExamInfo.h"
 %include "stir/IO/ExamData.h"
 %include "stir/Verbosity.h"
-// ignore non-const versions
-%ignore stir::Bin::segment_num();
-%ignore stir::Bin::axial_pos_num();
-%ignore stir::Bin::view_num();
-%ignore stir::Bin::tangential_pos_num();
+
+%attributeref(stir::Bin, int, segment_num);
+%attributeref(stir::Bin, int, axial_pos_num);
+%attributeref(stir::Bin, int, view_num);
+%attributeref(stir::Bin, int, tangential_pos_num);
+%attribute(stir::Bin, float, bin_value, get_bin_value, set_bin_value);
 %include "stir/Bin.h"
+
 %newobject stir::ProjDataInfo::ProjDataInfoGE;
 %newobject stir::ProjDataInfo::ProjDataInfoCTI;
 
@@ -1445,6 +1451,8 @@ namespace stir {
 
 %template(SeparableCartesianMetzImageFilter3DFloat) stir::SeparableCartesianMetzImageFilter<elemT>;
 #undef elemT
+
+%include "stir/GeneralisedPoissonNoiseGenerator.h"
 
  // reconstruction
 #ifdef STIRSWIG_SHARED_PTR
