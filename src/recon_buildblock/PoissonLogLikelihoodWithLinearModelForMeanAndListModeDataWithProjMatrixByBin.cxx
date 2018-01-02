@@ -129,19 +129,19 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
             for (int segment_num = -this->max_ring_difference_num_to_process;
                  segment_num <= this->max_ring_difference_num_to_process; ++segment_num)
             {
-                for (int axial_num = proj_data_info_cyl_sptr->get_min_axial_pos_num(segment_num);
-                     axial_num < proj_data_info_cyl_sptr->get_max_axial_pos_num(segment_num);
+                for (int axial_num = proj_data_info_sptr->get_min_axial_pos_num(segment_num);
+                     axial_num < proj_data_info_sptr->get_max_axial_pos_num(segment_num);
                      axial_num ++)
                 {
                     // For debugging.
                     //                std::cout <<segment_num << " "<<  axial_num  << std::endl;
 
-                    for (int tang_num= proj_data_info_cyl_sptr->get_min_tangential_pos_num();
-                         tang_num < proj_data_info_cyl_sptr->get_max_tangential_pos_num();
+                    for (int tang_num= proj_data_info_sptr->get_min_tangential_pos_num();
+                         tang_num < proj_data_info_sptr->get_max_tangential_pos_num();
                          tang_num ++ )
                     {
-                        for(int view_num = proj_data_info_cyl_sptr->get_min_view_num() + subset_num;
-                            view_num <= proj_data_info_cyl_sptr->get_max_view_num();
+                        for(int view_num = proj_data_info_sptr->get_min_view_num() + subset_num;
+                            view_num <= proj_data_info_sptr->get_max_view_num();
                             view_num += this->num_subsets)
                         {
                             const Bin tmp_bin(segment_num,
@@ -171,11 +171,11 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
                    << num_bins_in_subset
                    << "\nEither reduce the number of symmetries used by the projector, or\n"
                       "change the number of subsets. It usually should be a divisor of\n"
-                   << proj_data_info_cyl_sptr->get_num_views()
+                   << proj_data_info_sptr->get_num_views()
                    << "/4 (or if that's not an integer, a divisor of "
-                   << proj_data_info_cyl_sptr->get_num_views()
+                   << proj_data_info_sptr->get_num_views()
                    << "/2 or "
-                   << proj_data_info_cyl_sptr->get_num_views()
+                   << proj_data_info_sptr->get_num_views()
                    << ").\n";
                 warning_message = str.str();
                 return false;
@@ -194,18 +194,13 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
     distributed::send_int_value(100, -1);
 #endif
 
-
+    if ( base_type::set_up(target_sptr) != Succeeded::yes)
+        return Succeeded::no;
     // set projector to be used for the calculations
-    this->PM_sptr->set_up(proj_data_info_cyl_sptr->create_shared_clone(),target_sptr);
+    this->PM_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
 
-    shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
-    shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
-
-    this->projector_pair_ptr.reset(
-                   new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
-
-    this->projector_pair_ptr->set_up(proj_data_info_cyl_sptr->create_shared_clone(),target_sptr);
-
+     this->projector_pair_ptr.reset(
+                   new ProjectorByBinPairUsingProjMatrixByBin(this->PM_sptr));
 
     if (is_null_ptr(this->normalisation_sptr))
     {
@@ -214,7 +209,7 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
     }
 
     if (this->normalisation_sptr->set_up(
-                proj_data_info_cyl_sptr->create_shared_clone()) == Succeeded::no)
+                proj_data_info_sptr->create_shared_clone()) == Succeeded::no)
         return Succeeded::no;
 
     if (this->current_frame_num<=0)
@@ -275,17 +270,17 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
       this->additive_proj_data_sptr.reset(new ProjDataInMemory(* temp_additive_proj_data_sptr));
     }
 
-   proj_data_info_cyl_sptr = this->list_mode_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
+   proj_data_info_sptr = this->list_mode_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
 
-   if (max_ring_difference_num_to_process > proj_data_info_cyl_sptr->get_max_segment_num())
+   if (max_ring_difference_num_to_process > proj_data_info_sptr->get_max_segment_num())
    {
        warning("In the parameter file, the 'maximum ring difference' is larger than the number of segments"
-               "in the emission header. Abort.");
+               "in the listmode file. Abort.");
        return true;
    }
-   else if (max_ring_difference_num_to_process < proj_data_info_cyl_sptr->get_max_segment_num())
+   else if (max_ring_difference_num_to_process < proj_data_info_sptr->get_max_segment_num())
    {
-       proj_data_info_cyl_sptr->reduce_segment_range(-max_ring_difference_num_to_process,
+       proj_data_info_sptr->reduce_segment_range(-max_ring_difference_num_to_process,
                                                      max_ring_difference_num_to_process);
    }
 
@@ -297,10 +292,10 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
    }
 
   if(!is_null_ptr(this->additive_proj_data_sptr))
-      if (*(this->additive_proj_data_sptr->get_proj_data_info_sptr()) != *proj_data_info_cyl_sptr)
+      if (*(this->additive_proj_data_sptr->get_proj_data_info_sptr()) != *proj_data_info_sptr)
       {
           const ProjDataInfo& add_proj = *(this->additive_proj_data_sptr->get_proj_data_info_sptr());
-          const ProjDataInfo& proj = *this->proj_data_info_cyl_sptr;
+          const ProjDataInfo& proj = *this->proj_data_info_sptr;
           bool ok =
                   typeid(add_proj) == typeid(proj) &&
                   *add_proj.get_scanner_ptr()== *(proj.get_scanner_ptr()) &&
@@ -329,11 +324,11 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
           }
       }
 
-  if( this->normalisation_sptr->set_up(proj_data_info_cyl_sptr)
+  if( this->normalisation_sptr->set_up(proj_data_info_sptr)
    == Succeeded::no)
   {
 warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin: "
-      "set-up of pre-normalisation failed\n");
+      "set-up of normalisation failed.");
 return true;
     }
 
@@ -347,14 +342,14 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 {
 
-    const int min_segment_num = proj_data_info_cyl_sptr->get_min_segment_num();
-    const int max_segment_num = proj_data_info_cyl_sptr->get_max_segment_num();
+    const int min_segment_num = proj_data_info_sptr->get_min_segment_num();
+    const int max_segment_num = proj_data_info_sptr->get_max_segment_num();
 
     // warning: has to be same as subset scheme used as in distributable_computation
     for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
     {
-      for (int view = proj_data_info_cyl_sptr->get_min_view_num() + subset_num;
-          view <= proj_data_info_cyl_sptr->get_max_view_num();
+      for (int view = proj_data_info_sptr->get_min_view_num() + subset_num;
+          view <= proj_data_info_sptr->get_max_view_num();
           view += this->num_subsets)
       {
         const ViewSegmentNumbers view_segment_num(view, segment_num);
@@ -375,7 +370,7 @@ add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view
             (this->projector_pair_ptr->get_symmetries_used()->clone());
 
   RelatedViewgrams<float> viewgrams =
-    proj_data_info_cyl_sptr->get_empty_related_viewgrams(view_seg_nums,symmetries_used);
+    proj_data_info_sptr->get_empty_related_viewgrams(view_seg_nums,symmetries_used);
 
   viewgrams.fill(1.F);
   // find efficiencies
@@ -405,7 +400,7 @@ construct_target_ptr() const
 { 
 
  return 
-      new VoxelsOnCartesianGrid<float> (*proj_data_info_cyl_sptr,
+      new VoxelsOnCartesianGrid<float> (*proj_data_info_sptr,
                                         static_cast<float>(this->zoom), 
                                         CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset), 
                                                                      static_cast<float>(this->Yoffset), 
@@ -427,9 +422,6 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
 
     assert(subset_num>=0);
     assert(subset_num<this->num_subsets);
-
-    ProjDataInfoCylindricalNoArcCorr* proj_data_no_arc_ptr =
-            dynamic_cast<ProjDataInfoCylindricalNoArcCorr *> (proj_data_info_cyl_sptr.get());
 
     const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
     const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
@@ -457,7 +449,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
         VectorWithOffset<CListModeData::SavedPosition>
         frame_start_positions(1, static_cast<int>(this->frame_defs.get_num_frames()));
 
-        unsigned long int more_events =
+        long int more_events =
                 this->do_time_frame? 1 : this->num_events_to_use;
 
         // Daniel:  it avoids event out of the frame that one has defined
@@ -494,15 +486,15 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
             {
                 Bin measured_bin;
                 measured_bin.set_bin_value(1.0f);
-                record.event().get_bin(measured_bin, *proj_data_info_cyl_sptr);
+                record.event().get_bin(measured_bin, *proj_data_info_sptr);
 
                 if (measured_bin.get_bin_value() != 1.0f
-                        || measured_bin.segment_num() < proj_data_info_cyl_sptr->get_min_segment_num()
-                        || measured_bin.segment_num()  > proj_data_info_cyl_sptr->get_max_segment_num()
-                        || measured_bin.tangential_pos_num() < proj_data_info_cyl_sptr->get_min_tangential_pos_num()
-                        || measured_bin.tangential_pos_num() > proj_data_info_cyl_sptr->get_max_tangential_pos_num()
-                        || measured_bin.axial_pos_num() < proj_data_info_cyl_sptr->get_min_axial_pos_num(measured_bin.segment_num())
-                        || measured_bin.axial_pos_num() > proj_data_info_cyl_sptr->get_max_axial_pos_num(measured_bin.segment_num()))
+                        || measured_bin.segment_num() < proj_data_info_sptr->get_min_segment_num()
+                        || measured_bin.segment_num()  > proj_data_info_sptr->get_max_segment_num()
+                        || measured_bin.tangential_pos_num() < proj_data_info_sptr->get_min_tangential_pos_num()
+                        || measured_bin.tangential_pos_num() > proj_data_info_sptr->get_max_tangential_pos_num()
+                        || measured_bin.axial_pos_num() < proj_data_info_sptr->get_min_axial_pos_num(measured_bin.segment_num())
+                        || measured_bin.axial_pos_num() > proj_data_info_sptr->get_max_axial_pos_num(measured_bin.segment_num()))
                 {
                     continue;
                 }
@@ -513,13 +505,9 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
                 if (this->num_subsets > 1)
                 {
                     Bin basic_bin = measured_bin;
-                    if (!this->PM_sptr->get_symmetries_ptr()->is_basic(measured_bin) )
-                        this->PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin);
-
-                    if (subset_num != static_cast<int>(basic_bin.view_num() % this->num_subsets))
-                    {
+                    if (!this->PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin) ||
+                            subset_num != static_cast<int>(basic_bin.view_num() % this->num_subsets))
                         continue;
-                    }
                 }
 
                 this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);

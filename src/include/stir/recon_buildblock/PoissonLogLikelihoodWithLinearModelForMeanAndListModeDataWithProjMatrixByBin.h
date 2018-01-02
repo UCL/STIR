@@ -35,7 +35,7 @@
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h" 
 #include "stir/ProjDataInMemory.h"
-#include "stir/recon_buildblock/ProjectorByBinPair.h"
+#include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/ExamInfo.h"
 START_NAMESPACE_STIR
 
@@ -106,14 +106,14 @@ protected:
   shared_ptr<ProjMatrixByBin> PM_sptr;
 
   //! Stores the projectors that are used for the computations
-  shared_ptr<ProjectorByBinPair> projector_pair_ptr;
+  shared_ptr<ProjectorByBinPairUsingProjMatrixByBin> projector_pair_ptr;
 
   //! points to the additive projection data
   shared_ptr<ProjDataInMemory> additive_proj_data_sptr;
  
   std::string additive_projection_data_filename ; 
   //! ProjDataInfo
-  shared_ptr<ProjDataInfo> proj_data_info_cyl_sptr;
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
 
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */

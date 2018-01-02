@@ -53,21 +53,12 @@ CListModeDataROOT(const std::string& hroot_filename)
     this->parser.add_key("Maximum number of non-arc-corrected bins", &this->max_num_non_arccorrected_bins);
     // end Scanner and physical dimensions.
 
-    // Acquisition related
-    // N.E.: Compression on ROOT listmode data has been commented out until further testing is done.
-    //    this->parser.add_key("%axial_compression", &axial_compression);
-    //    this->parser.add_key("%maximum_ring_difference", &maximum_ring_difference);
-    //    this->parser.add_key("%number_of_projections", &number_of_projections);
-    //    this->parser.add_key("%number_of_views", &number_of_views);
-    //    this->parser.add_key("%number_of_segments", &number_of_segments);
-    //
-
     // ROOT related
     this->parser.add_parsing_key("GATE scanner type", &this->root_file_sptr);
     if(!this->parser.parse(hroot_filename.c_str()))
         error("CListModeDataROOT: error parsing '%s'", hroot_filename.c_str());
 
-//    this->root_file_sptr->set_up();
+    //    this->root_file_sptr->set_up();
     // ExamInfo initialisation
     this->exam_info_sptr.reset(new ExamInfo);
 

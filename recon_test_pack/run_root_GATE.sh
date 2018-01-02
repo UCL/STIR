@@ -83,8 +83,12 @@ export INPUT_ROOT_FILE=test_PET_GATE.root
 export INPUT=root_header.hroot
 export TEMPLATE=template_for_ROOT_scanner.hs
 
-
+#
+# Get the number of events unlisted. 
+#
+echo
 echo ------------- Converting ROOT files to ProjData file -------------
+echo
 echo Making ProjData for all events
 echo Running lm_to_projdata for all events
 
@@ -110,8 +114,13 @@ else
 fi
 echo Reading all values from ROOT file
 
-log=root_output_all_events.log
-root -b -l ${INPUT_ROOT_FILE} >& ${log} << EOF
+#
+# Get the number of events directly from the ROOT file
+#
+echo
+echo ------------- Reading values directly from ROOT file -------------
+echo
+cat << EOF > my_root.input
 Coincidences->Draw(">>eventlist","","goff");
 Int_t N = eventlist->GetN();
 cout<<endl<<"Number of prompts stored in this time period:"<< N<<endl;

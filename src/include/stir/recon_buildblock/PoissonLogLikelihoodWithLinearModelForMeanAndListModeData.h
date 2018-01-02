@@ -81,8 +81,8 @@ public:
  
   //virtual TargetT * construct_target_ptr();  
  
-  //virtual Succeeded 
-    //set_up(shared_ptr <TargetT > const& target_sptr); 
+  virtual Succeeded
+   set_up(shared_ptr <TargetT > const& target_sptr);
  
   virtual  
   void compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,  
@@ -118,9 +118,9 @@ protected:
   unsigned int current_frame_num;
 
   //!
-  //! \brief num_events_to_store
+  //! \brief num_events_to_use
   //! \author Nikos Efthimiou
-  //! \details This is part of some functionality I transfer from lm_to_projdata.
+  //! \details This is part of some functionality I transfer from LmToProjData.
   unsigned long int num_events_to_use;
 
   //!
