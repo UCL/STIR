@@ -194,13 +194,12 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
     distributed::send_int_value(100, -1);
 #endif
 
-    if ( base_type::set_up(target_sptr) != Succeeded::yes)
-        return Succeeded::no;
     // set projector to be used for the calculations
     this->PM_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
 
-     this->projector_pair_ptr.reset(
-                   new ProjectorByBinPairUsingProjMatrixByBin(this->PM_sptr));
+    this->projector_pair_ptr.reset(
+                new ProjectorByBinPairUsingProjMatrixByBin(this->PM_sptr));
+    this->projector_pair_ptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
 
     if (is_null_ptr(this->normalisation_sptr))
     {
@@ -439,108 +438,88 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
     shared_ptr<CListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
     CListRecord& record = *record_sptr;
 
-    // Daniel: look into all the frames defined into the fdef file
-    for (this->current_frame_num = 1;
-         this->current_frame_num<=this->frame_defs.get_num_frames();
-         ++this->current_frame_num)
+    VectorWithOffset<CListModeData::SavedPosition>
+            frame_start_positions(1, static_cast<int>(this->frame_defs.get_num_frames()));
+
+    long int more_events =
+            this->do_time_frame? 1 : this->num_events_to_use;
+
+    while (more_events)//this->list_mode_data_sptr->get_next_record(record) == Succeeded::yes)
     {
-        this->start_new_time_frame(this->current_frame_num);
 
-        VectorWithOffset<CListModeData::SavedPosition>
-        frame_start_positions(1, static_cast<int>(this->frame_defs.get_num_frames()));
-
-        long int more_events =
-                this->do_time_frame? 1 : this->num_events_to_use;
-
-        // Daniel:  it avoids event out of the frame that one has defined
-        while (current_time < start_time &&
-               this->list_mode_data_sptr->get_next_record(record) == Succeeded::yes)
+        if (this->list_mode_data_sptr->get_next_record(record) == Succeeded::no)
         {
-            if (record.is_time())
-                current_time = record.time().get_time_in_secs();
+            info("End of file!");
+            break; //get out of while loop
         }
 
-        // Daniel:  now save position such that we can go back
-        frame_start_positions[this->current_frame_num] =
-                this->list_mode_data_sptr->save_get_position();
-
-        while (more_events)//this->list_mode_data_sptr->get_next_record(record) == Succeeded::yes)
+        if(record.is_time() && end_time > 0.01)
         {
+            current_time = record.time().get_time_in_secs();
+            if (this->do_time_frame && current_time >= end_time)
+                break; // get out of while loop
+            if (current_time < start_time)
+                continue;
+        }
 
-            if (this->list_mode_data_sptr->get_next_record(record) == Succeeded::no)
+        if (record.is_event() && record.event().is_prompt())
+        {
+            Bin measured_bin;
+            measured_bin.set_bin_value(1.0f);
+            record.event().get_bin(measured_bin, *proj_data_info_sptr);
+
+            if (measured_bin.get_bin_value() != 1.0f
+                    || measured_bin.segment_num() < proj_data_info_sptr->get_min_segment_num()
+                    || measured_bin.segment_num()  > proj_data_info_sptr->get_max_segment_num()
+                    || measured_bin.tangential_pos_num() < proj_data_info_sptr->get_min_tangential_pos_num()
+                    || measured_bin.tangential_pos_num() > proj_data_info_sptr->get_max_tangential_pos_num()
+                    || measured_bin.axial_pos_num() < proj_data_info_sptr->get_min_axial_pos_num(measured_bin.segment_num())
+                    || measured_bin.axial_pos_num() > proj_data_info_sptr->get_max_axial_pos_num(measured_bin.segment_num()))
             {
-                info("End of file!");
-                break; //get out of while loop
+                continue;
             }
 
-            if(record.is_time() && end_time > 0.01)
+            measured_bin.set_bin_value(1.0f);
+            // If more than 1 subsets, check if the current bin belongs to
+            // the current.
+            if (this->num_subsets > 1)
             {
-                current_time = record.time().get_time_in_secs();
-                if (this->do_time_frame && current_time >= end_time)
-                    break; // get out of while loop
-                if (current_time < start_time)
+                Bin basic_bin = measured_bin;
+                if (!this->PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin) ||
+                        subset_num != static_cast<int>(basic_bin.view_num() % this->num_subsets))
                     continue;
             }
 
-            if (record.is_event() && record.event().is_prompt())
+            this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
+            //in_the_range++;
+            Bin fwd_bin;
+            fwd_bin.set_bin_value(0.0f);
+            proj_matrix_row.forward_project(fwd_bin,current_estimate);
+            // additive sinogram
+            if (!is_null_ptr(this->additive_proj_data_sptr))
             {
-                Bin measured_bin;
-                measured_bin.set_bin_value(1.0f);
-                record.event().get_bin(measured_bin, *proj_data_info_sptr);
-
-                if (measured_bin.get_bin_value() != 1.0f
-                        || measured_bin.segment_num() < proj_data_info_sptr->get_min_segment_num()
-                        || measured_bin.segment_num()  > proj_data_info_sptr->get_max_segment_num()
-                        || measured_bin.tangential_pos_num() < proj_data_info_sptr->get_min_tangential_pos_num()
-                        || measured_bin.tangential_pos_num() > proj_data_info_sptr->get_max_tangential_pos_num()
-                        || measured_bin.axial_pos_num() < proj_data_info_sptr->get_min_axial_pos_num(measured_bin.segment_num())
-                        || measured_bin.axial_pos_num() > proj_data_info_sptr->get_max_axial_pos_num(measured_bin.segment_num()))
-                {
-                    continue;
-                }
-
-                measured_bin.set_bin_value(1.0f);
-                // If more than 1 subsets, check if the current bin belongs to
-                // the current.
-                if (this->num_subsets > 1)
-                {
-                    Bin basic_bin = measured_bin;
-                    if (!this->PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin) ||
-                            subset_num != static_cast<int>(basic_bin.view_num() % this->num_subsets))
-                        continue;
-                }
-
-                this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
-                //in_the_range++;
-                Bin fwd_bin;
-                fwd_bin.set_bin_value(0.0f);
-                proj_matrix_row.forward_project(fwd_bin,current_estimate);
-                // additive sinogram
-                if (!is_null_ptr(this->additive_proj_data_sptr))
-                {
-                    float add_value = this->additive_proj_data_sptr->get_bin_value(measured_bin);
-                    float value= fwd_bin.get_bin_value()+add_value;
-                    fwd_bin.set_bin_value(value);
-                }
-                float  measured_div_fwd = 0.0f;
-
-                if(!this->do_time_frame)
-                    more_events -=1 ;
-
-                num_used_events += 1;
-
-                if (num_used_events%200000L==0)
-                    info( boost::format("Stored Events: %1% ") % num_used_events);
-
-                if ( measured_bin.get_bin_value() <= max_quotient *fwd_bin.get_bin_value())
-                    measured_div_fwd = 1.0f /fwd_bin.get_bin_value();
-                else
-                    continue;
-
-                measured_bin.set_bin_value(measured_div_fwd);
-                proj_matrix_row.back_project(gradient, measured_bin);
-
+                float add_value = this->additive_proj_data_sptr->get_bin_value(measured_bin);
+                float value= fwd_bin.get_bin_value()+add_value;
+                fwd_bin.set_bin_value(value);
             }
+            float  measured_div_fwd = 0.0f;
+
+            if(!this->do_time_frame)
+                more_events -=1 ;
+
+            num_used_events += 1;
+
+            if (num_used_events%200000L==0)
+                info( boost::format("Stored Events: %1% ") % num_used_events);
+
+            if ( measured_bin.get_bin_value() <= max_quotient *fwd_bin.get_bin_value())
+                measured_div_fwd = 1.0f /fwd_bin.get_bin_value();
+            else
+                continue;
+
+            measured_bin.set_bin_value(measured_div_fwd);
+            proj_matrix_row.back_project(gradient, measured_bin);
+
         }
     }
     info(boost::format("Number of used events: %1%") % num_used_events);

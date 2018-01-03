@@ -101,7 +101,7 @@ echo "ERROR running calculate_attenuation_coefficients. Check my_create_acfs.log
 fi
 
 echo "===  reconstruct listmode data"
-OSMAPOSL OSMAPOSL_test_lmf.par
+OSMAPOSL OSMAPOSL_test_lm.par
 echo "===  "
 # create sinograms
 echo "===  unlist listmode data (for comparison)"

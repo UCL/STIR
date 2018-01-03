@@ -26,6 +26,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Par
 	use subset sensitivities:= 0
 	sensitivity filename:=  my_sens_t_lm_pr_seg2.hv
 	zoom :=  1
+  xy output image size (in pixels) := 180
 
 additive sinogram := my_MLrandoms_f1.hs
 

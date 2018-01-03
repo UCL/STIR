@@ -152,17 +152,17 @@ start_new_time_frame(const unsigned int)
 template<typename TargetT>
 Succeeded
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
-set_up(shared_ptr <TargetT > const& target_sptr) 
-{ 
-  if ( base_type::set_up(target_sptr) != Succeeded::yes) 
-    return Succeeded::no; 
+set_up(shared_ptr <TargetT > const& target_sptr)
+{
+  if ( base_type::set_up(target_sptr) != Succeeded::yes)
+    return Succeeded::no;
 
   // handle time frame definitions etc
     if(this->num_events_to_use==0 && this->frame_defs_filename.size() == 0)
       do_time_frame = true;
  
-    return Succeeded::yes;  
-} 
+    return Succeeded::yes;
+}
 
 #if 0
 template <typename TargetT> 
