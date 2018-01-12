@@ -1,15 +1,14 @@
+
 //
 //
 /*
     Copyright (C) 2000- 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     This file is part of STIR.
-
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation; either version 2.1 of the License, or
     (at your option) any later version.
-
     This file is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -17,15 +16,11 @@
     See STIR/LICENSE.txt for details
 */
 /*!
-
   \file
   \ingroup projdata
-
   \brief Implementation of non-inline functions of class
   stir::ProjDataInfoCylindricalNoArcCorr
-
   \author Kris Thielemans
-
 */
 
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -39,6 +34,8 @@
 #else
 #include <sstream>
 #endif
+
+#include <boost/static_assert.hpp>
 
 #ifndef STIR_NO_NAMESPACES
 using std::endl;
@@ -141,8 +138,6 @@ ProjDataInfoCylindricalNoArcCorr::parameter_info()  const
 }
 
 /*
-   TODO make compile time assert
-
    Warning:
    this code makes use of an implementation dependent feature:
    bit shifting negative ints to the right.
@@ -151,11 +146,11 @@ ProjDataInfoCylindricalNoArcCorr::parameter_info()  const
    This is ok on SUNs (gcc, but probably SUNs cc as well), Parsytec (gcc),
    Pentium (gcc, VC++) and probably every other system which uses
    the 2-complement convention.
+   Update: compile time assert is implemented.
 */
 
 /*!
   Go from sinograms to detectors.
-
   Because sinograms are not arc-corrected, tang_pos_num corresponds
   to an angle as well. Before interleaving we have that
   \verbatim
@@ -164,7 +159,6 @@ ProjDataInfoCylindricalNoArcCorr::parameter_info()  const
   \endverbatim
   (Hint: understand this first at LOR_angle=0, then realise that
   other LOR_angles follow just by rotation)
-
   Code gets slightly intricate because:
   - angles have to be defined modulo 2 Pi (so num_detectors)
   - interleaving
@@ -173,18 +167,16 @@ void
 ProjDataInfoCylindricalNoArcCorr::
 initialise_uncompressed_view_tangpos_to_det1det2() const
 {
-  assert(-1 >> 1 == -1);
-  assert(-2 >> 1 == -1);
+  BOOST_STATIC_ASSERT(-1 >> 1 == -1);
+  BOOST_STATIC_ASSERT(-2 >> 1 == -1);
 
   const int num_detectors =
     get_scanner_ptr()->get_num_detectors_per_ring();
 
   assert(num_detectors%2 == 0);
-  //PW Supports intrinsic tilt.
-  const float intrinsic_tilt= get_scanner_ptr()->get_default_intrinsic_tilt();
   // check views range from 0 to Pi
- assert(fabs(get_phi(Bin(0,0,0,0))-intrinsic_tilt) < 1.E-4);
-  assert(fabs(get_phi(Bin(0,get_num_views(),0,0)) - intrinsic_tilt - _PI) < 1.E-4);
+  assert(fabs(get_phi(Bin(0,0,0,0)) -scanner_ptr->get_default_intrinsic_tilt()) < 1.E-4);
+  assert(fabs(get_phi(Bin(0,get_num_views(),0,0)) - scanner_ptr->get_default_intrinsic_tilt()- _PI) < 1.E-4);
   const int min_tang_pos_num = -(num_detectors/2)+1;
   const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
 
@@ -222,8 +214,8 @@ void
 ProjDataInfoCylindricalNoArcCorr::
 initialise_det1det2_to_uncompressed_view_tangpos() const
 {
-  assert(-1 >> 1 == -1);
-  assert(-2 >> 1 == -1);
+  BOOST_STATIC_ASSERT(-1 >> 1 == -1);
+  BOOST_STATIC_ASSERT(-2 >> 1 == -1);
 
   const int num_detectors =
     get_scanner_ptr()->get_num_detectors_per_ring();
@@ -236,11 +228,10 @@ initialise_det1det2_to_uncompressed_view_tangpos() const
     {
       error("Minimum view number should currently be zero to be able to use get_view_tangential_pos_num_for_det_num_pair()");
     }
-  //PW Supports intrinsic tilt.
-  const float intrinsic_tilt = get_scanner_ptr()->get_default_intrinsic_tilt();
   // check views range from 0 to Pi
+  const float intrinsic_tilt=get_scanner_ptr()->get_default_intrinsic_tilt();
   assert(fabs(get_phi(Bin(0,0,0,0))-intrinsic_tilt) < 1.E-4);
-  assert(fabs(get_phi(Bin(0,get_max_view_num()+1,0,0))- intrinsic_tilt - _PI) < 1.E-4);
+  assert(fabs(get_phi(Bin(0,get_max_view_num()+1,0,0)) - intrinsic_tilt - _PI) < 1.E-4);
   //const int min_tang_pos_num = -(num_detectors/2);
   //const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
   const int max_num_views = num_detectors/2;
@@ -394,14 +385,12 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
   if (argsqrt<=0)
     return Succeeded::no; // LOR is outside detector radius
   const float root = sqrt(argsqrt);
-
   const float l1 = (- (d.x()*c1.x() + d.y()*c1.y())+root)/dxy2;
   const float l2 = (- (d.x()*c1.x() + d.y()*c1.y())-root)/dxy2;
   const CartesianCoordinate3D<float> coord_det1 = d*l1 + c1;
   const CartesianCoordinate3D<float> coord_det2 = d*l2 + c1;
   assert(fabs(square(coord_det1.x())+square(coord_det1.y())-square(ring_radius))<square(ring_radius)*10.E-5);
   assert(fabs(square(coord_det2.x())+square(coord_det2.y())-square(ring_radius))<square(ring_radius)*10.E-5);
-
   det1 = modulo(round(atan2(coord_det1.x(),-coord_det1.y())/(2.*_PI/num_detectors)), num_detectors);
   det2 = modulo(round(atan2(coord_det2.x(),-coord_det2.y())/(2.*_PI/num_detectors)), num_detectors);
   ring1 = round(coord_det1.z()/ring_spacing);
@@ -475,7 +464,6 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   coord_1.z() = z1;
   coord_1.y() = -x1;
   coord_1.x() = y1;
-
   coord_2.z() = z2;
   coord_2.y() = -x2;
   coord_2.x() = y2;
@@ -592,7 +580,7 @@ get_bin(const LOR<float>& lor) const
   // first find view
   // unfortunately, phi ranges from [0,Pi[, but the rounding can
   // map this to a view which corresponds to Pi anyway.
-  bin.view_num() = round(lor_coords.phi() / get_azimuthal_angle_sampling());
+  bin.view_num() = round(lor_coords.phi()-scanner_ptr->get_default_intrinsic_tilt() / get_azimuthal_angle_sampling());
   assert(bin.view_num()>=0);
   assert(bin.view_num()<=get_num_views());
   const bool swap_direction =
@@ -626,7 +614,6 @@ get_bin(const LOR<float>& lor) const
       ring2 = round(lor_coords.z1()/get_ring_spacing() + (num_rings-1)/2.F);
       ring1 = round(lor_coords.z2()/get_ring_spacing() + (num_rings-1)/2.F);
     }
-
   if (!(ring1 >=0 && ring1<get_scanner_ptr()->get_num_rings() &&
     ring2 >=0 && ring2<get_scanner_ptr()->get_num_rings() &&
     get_segment_axial_pos_num_for_ring_pair(bin.segment_num(),
@@ -679,7 +666,6 @@ get_bin(const LOR<float>& lor) const
     // this uses private member of ProjDataInfoCylindrical
     // enable when moved
     initialise_ring_diff_arrays_if_not_done_yet();
-
 #ifndef NDEBUG
     bin.axial_pos_num()=0;
     assert(get_m(bin)==- m_offset[bin.segment_num()]);
@@ -709,4 +695,3 @@ get_bin(const LOR<float>& lor) const
 
 
 END_NAMESPACE_STIR
-

@@ -331,7 +331,7 @@ class LORInAxialAndSinogramCoordinates
     assert(private_base_type::_radius>0);
     assert(_s>-private_base_type::_radius);
     assert(_s<private_base_type::_radius);
-  //  assert(_phi<static_cast<coordT>(_PI));
+    assert(_phi<static_cast<coordT>(_PI));
     assert(_phi>=0);
   }
 
@@ -374,7 +374,7 @@ class LORInAxialAndSinogramCoordinates
 #endif
 
   virtual
-#ifndef STIR_NO_COVARIANT_RETURN_TYPES;;
+#ifndef STIR_NO_COVARIANT_RETURN_TYPES
     self_type* 
 #else
       LOR<coordT>*
@@ -443,7 +443,7 @@ class LORInAxialAndNoArcCorrSinogramCoordinates
     assert(private_base_type::_radius>0);
     assert(_beta>=static_cast<coordT>(-_PI/2));
     assert(_beta<static_cast<coordT>(_PI/2));
- //   assert(_phi<static_cast<coordT>(_PI));
+    assert(_phi<static_cast<coordT>(_PI));
     assert(_phi>=0);
   }
  public:
