@@ -30,6 +30,7 @@
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/KineticParameters.h"
 #include "stir/DataProcessor.h"
+#include "stir/is_null_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -96,7 +97,7 @@ compute_gradient(DataT& prior_gradient,
                  const DataT &current_image_estimate)
 {
   assert(  prior_gradient.get_index_range() == current_image_estimate.get_index_range());  
-  if (this->penalisation_factor==0 || filter_ptr==0)
+  if (this->penalisation_factor==0 || is_null_ptr(filter_ptr))
   {
     std::fill(prior_gradient.begin_all(), prior_gradient.end_all(), 0);
     return;
