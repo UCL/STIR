@@ -50,9 +50,9 @@ CListModeDataSAFIR(const std::string& listmode_filename, const std::string& crys
 	this->exam_info_sptr.reset(new ExamInfo);
 
 	// Here we are reading the scanner data from the template projdata
-	shared_ptr<ProjData> template_proj_data_sptr =
-			ProjData::read_from_file(template_proj_data_filename);
-	scanner_sptr.reset( new Scanner(*template_proj_data_sptr->get_proj_data_info_ptr()->get_scanner_ptr()));
+    shared_ptr<ProjData> template_proj_data_sptr =
+            ProjData::read_from_file(template_proj_data_filename);
+    this->set_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_sptr());
 
 	if( open_lm_file() == Succeeded::no )
 	{
@@ -118,15 +118,6 @@ open_lm_file() const
 					sizeof(CListTimeDataSAFIR),
 					ByteOrder::little_endian !=ByteOrder::get_native_order()));
 	return Succeeded::yes;
-}
-
-template <class CListRecordT>
-shared_ptr<ProjDataInfo>
-CListModeDataSAFIR<CListRecordT>::
-get_proj_data_info_sptr() const
-{
-    assert(!is_null_ptr(proj_data_info_sptr));
-    return proj_data_info_sptr;
 }
 	
 template class CListModeDataSAFIR<CListRecordSAFIR>;

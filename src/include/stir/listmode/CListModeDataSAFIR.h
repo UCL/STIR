@@ -85,9 +85,6 @@ public:
 	*/
 	virtual bool has_delayeds() const { return false; }
 
-    virtual
-    shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
-	
 private:
 	std::string listmode_filename;
 	mutable shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;

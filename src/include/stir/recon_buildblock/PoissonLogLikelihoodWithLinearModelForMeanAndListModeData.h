@@ -121,7 +121,7 @@ protected:
   //! \brief num_events_to_use
   //! \author Nikos Efthimiou
   //! \details This is part of some functionality I transfer from LmToProjData.
-  unsigned long int num_events_to_use;
+  long int num_events_to_use;
 
   //!
    //! \brief do_time_frame

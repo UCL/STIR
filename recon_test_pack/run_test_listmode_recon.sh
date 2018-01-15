@@ -77,25 +77,25 @@ echo "=== calculate background data"
 echo "===== randoms"
 
 echo "====== create delayed fansums"
-INPUT=PET_ACQ_small.l.hdr.STIR OUTPUT=my_fansums_delayed ${INSTALL_DIR}lm_fansums lm_fansums_delayed.par 2>my_fansums.log
+INPUT=PET_ACQ_small.l.hdr.STIR OUTPUT=my_fansums_delayed lm_fansums lm_fansums_delayed.par 2>my_fansums.log
 
 echo "====== estimate singles from fansums"
 niters=10
 # Note: the last 2 numbers are specific to the mMR
-${INSTALL_DIR}find_ML_singles_from_delayed -f my_MLsingles_f1 my_fansums_delayed_f1.dat  $niters 2 343 </dev/null
+find_ML_singles_from_delayed -f my_MLsingles_f1 my_fansums_delayed_f1.dat  $niters 2 343 </dev/null
 
 echo " ===== estimate randoms from singles"
-${INSTALL_DIR}construct_randoms_from_singles my_MLrandoms_f1 my_MLsingles_f1 Siemens_mMR_seg2.hs $niters 2>my_construct_randoms_from_singles.log
+construct_randoms_from_singles my_MLrandoms_f1 my_MLsingles_f1 Siemens_mMR_seg2.hs $niters 2>my_construct_randoms_from_singles.log
 
 echo "=== simulate normalisation data"
 # For normalisation data we are going to use a cylinder in the center,
 # with water attenuation values
 
 echo "===  make fake emission image"
-${INSTALL_DIR}generate_image  lm_generate_atten_cylinder.par
+generate_image  lm_generate_atten_cylinder.par
 
 echo "===  create ACFs"
-${INSTALL_DIR}calculate_attenuation_coefficients --ACF my_acfs.hs my_atten_image.hv Siemens_mMR_seg2.hs > my_create_acfs.log 2>&1
+calculate_attenuation_coefficients --ACF my_acfs.hs my_atten_image.hv Siemens_mMR_seg2.hs > my_create_acfs.log 2>&1
 if [ $? -ne 0 ]; then
 echo "ERROR running calculate_attenuation_coefficients. Check my_create_acfs.log"; exit 1;
 fi
@@ -109,7 +109,7 @@ INPUT=PET_ACQ_small.l.hdr.STIR TEMPLATE=Siemens_mMR_seg2.hs OUT_PROJDATA_FILE=my
 echo "===  reconstruct projection data for comparison"
 OSMAPOSL OSMAPOSL_test_proj.par
 echo "=== compare sensitivity images"
-if ${INSTALL_DIR}compare_image my_sens_t_proj_seg2.hv my_sens_t_lm_pr_seg2.hv 2>my_sens_comparison_stderr.log;
+if compare_image my_sens_t_proj_seg2.hv my_sens_t_lm_pr_seg2.hv 2>my_sens_comparison_stderr.log;
 then
 echo ---- This test seems to be ok !;
 else
@@ -118,7 +118,7 @@ ThereWereErrors=1;
 fi
 
 echo "=== compare reconstructed images"
-if ${INSTALL_DIR}compare_image my_output_t_proj_seg2_1.hv my_output_t_lm_pr_seg2_1.hv 2>my_output_comparison_stderr.log;
+if compare_image my_output_t_proj_seg2_1.hv my_output_t_lm_pr_seg2_1.hv 2>my_output_comparison_stderr.log;
 then
 echo ---- This test seems to be ok !;
 else

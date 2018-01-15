@@ -123,9 +123,6 @@ public:
     unsigned long int
     get_total_number_of_events() const ;
 
-    virtual
-    shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
-
 private:
     //! The header file
     std::string hroot_filename;

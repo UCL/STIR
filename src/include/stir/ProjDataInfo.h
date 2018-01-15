@@ -338,6 +338,9 @@ public:
 
   //! Get scanner pointer  
   inline const Scanner* get_scanner_ptr() const;
+
+  //! Get scanner shared pointer
+  inline shared_ptr<Scanner> get_scanner_sptr() const;
   
   //! Return a string describing the object
   virtual std::string parameter_info() const;

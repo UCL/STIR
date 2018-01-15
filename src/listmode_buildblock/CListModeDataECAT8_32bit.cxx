@@ -74,19 +74,20 @@ CListModeDataECAT8_32bit(const std::string& listmode_filename)
 
   this->interfile_parser.parse(listmode_filename.c_str(), false /* no warnings about unrecognised keywords */);
 
-  this->exam_info_sptr.reset(new ExamInfo(*interfile_parser.get_exam_info_ptr()));
+  //this->exam_info_sptr.reset(new ExamInfo(*interfile_parser.get_exam_info_ptr()));
 
   const std::string originating_system(this->interfile_parser.get_exam_info_ptr()->originating_system);
-  this->scanner_sptr.reset(Scanner::get_scanner_from_name(originating_system));
-  if (this->scanner_sptr->get_type() == Scanner::Unknown_scanner)
+  shared_ptr<Scanner> this_scanner_sptr(Scanner::get_scanner_from_name(originating_system));
+  if (this_scanner_sptr->get_type() == Scanner::Unknown_scanner)
     error(boost::format("Unknown value for originating_system keyword: '%s") % originating_system );
 
-  this->proj_data_info_sptr.reset(ProjDataInfo::ProjDataInfoCTI(this->scanner_sptr, 
+  this->set_proj_data_info_sptr(ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
 								this->axial_compression,
 								this->maximum_ring_difference,
 								this->number_of_views,
 								this->number_of_projections,
-								/* arc_correction*/false));
+                                /* arc_correction*/false)
+                                 );
 
   if (this->open_lm_file() == Succeeded::no)
     error("CListModeDataECAT8_32bit: error opening the first listmode file for filename %s\n",
@@ -105,7 +106,7 @@ shared_ptr <CListRecord>
 CListModeDataECAT8_32bit::
 get_empty_record_sptr() const
 {
-  shared_ptr<CListRecord> sptr(new CListRecordT(this->proj_data_info_sptr));
+  shared_ptr<CListRecord> sptr(new CListRecordT(this->get_proj_data_info_sptr()));
   return sptr;
 }
 
@@ -162,14 +163,6 @@ set_get_position(const CListModeDataECAT8_32bit::SavedPosition& pos)
 {
   return
     current_lm_data_ptr->set_get_position(pos);
-}
-
-shared_ptr<ProjDataInfo>
-CListModeDataECAT8_32bit::
-get_proj_data_info_sptr() const
-{
-    assert(!is_null_ptr(proj_data_info_sptr));
-    return proj_data_info_sptr;
 }
 
 } // namespace ecat

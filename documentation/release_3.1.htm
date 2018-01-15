@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 3.1 (dated 31/12/2017)</title>
+    <title>Summary of changes in STIR release 3.1 (dated 15/01/2018)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 3.1 (dated 31/12/2017)</h1>
+    <h1>Summary of changes in STIR release 3.1 (dated 15/01/2018)</h1>
 
 <p>This version is 100% backwards compatible with STIR 3.0 for the user aside from minor changes 
 when using Python (see below). Developers might need to make minor code changes as 
@@ -42,6 +42,9 @@ for Siemens scanners (warning: tested in Biograph mMR only at present).
 </p>
 
 <p>We now support additional list mode file formats (Siemens mMR and CERN ROOT files).
+</p>
+
+<p>Listmode reconstruction can be performed in this version.
 </p>
 
 <p>The build system now only uses CMake. We recommend to use CMake version 3.1 or later 
@@ -97,6 +100,8 @@ These are only minimally documented at the present stage unfortunately.
 <li>New input: GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. </li>
 <li>New header file, with .hroot extension is provided for ROOT files </li>
 <li><code>CListModeData</code> got a new function <code>get_total_number_of_events()</code>, BUT currently only <code>CListModeDataFromROOT</code> supports it. </li> 
+<li> Reconstruction of listmode data has been corrected. LM-OSEM can be performed but only gometrical subsets are currected supported. 
+  </li>
 <li>Sensitivity calculation parallelized using distributed worker mechanism.</li>
 <li>Python (and MATLAB) interface
   <ul>
@@ -120,6 +125,8 @@ These are only minimally documented at the present stage unfortunately.
   As opposed to <code>bin.view_num()</code>, write <code>bin.view_num</code>. You can now also do
   <code>bin.view_num=1</code>.
 </li>
+<li> <code>CListModeData</code> now need to implement a <code> ProjDataInfo</code> instead of <code>Scanner</code>. Therefore, acquisition information can be used directly in the LM reconstruction. 
+  </li>
 </ul>
 
 
@@ -237,6 +244,7 @@ from the above):</H2>
   is used. Finally, use the preprocessor define <code>MAKE_SHARED</code> as opposed to
   <code>std::make_shared</code>.
 </li>
+<code>CListModeData</code> now need to implement a <code> ProjDataInfo</code> instead of <code>Scanner</code>. This will probably break all related classes. 
 </ul>
 
 <h3>New functionality</h3>

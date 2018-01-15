@@ -197,9 +197,9 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
     // set projector to be used for the calculations
     this->PM_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
 
-    this->projector_pair_ptr.reset(
+    this->projector_pair_sptr.reset(
                 new ProjectorByBinPairUsingProjMatrixByBin(this->PM_sptr));
-    this->projector_pair_ptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
+    this->projector_pair_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
 
     if (is_null_ptr(this->normalisation_sptr))
     {
@@ -353,7 +353,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
       {
         const ViewSegmentNumbers view_segment_num(view, segment_num);
 
-        if (! this->projector_pair_ptr->get_symmetries_used()->is_basic(view_segment_num))
+        if (! this->projector_pair_sptr->get_symmetries_used()->is_basic(view_segment_num))
           continue;
         this->add_view_seg_to_sensitivity(sensitivity, view_segment_num);
       }
@@ -366,7 +366,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
 add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const
 {
     shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
-            (this->projector_pair_ptr->get_symmetries_used()->clone());
+            (this->projector_pair_sptr->get_symmetries_used()->clone());
 
   RelatedViewgrams<float> viewgrams =
     proj_data_info_sptr->get_empty_related_viewgrams(view_seg_nums,symmetries_used);
@@ -385,7 +385,7 @@ add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view
     const int max_ax_pos_num =
        viewgrams.get_max_axial_pos_num();
 
-    this->projector_pair_ptr->get_back_projector_sptr()->
+    this->projector_pair_sptr->get_back_projector_sptr()->
       back_project(sensitivity, viewgrams,
                    min_ax_pos_num, max_ax_pos_num);
   }

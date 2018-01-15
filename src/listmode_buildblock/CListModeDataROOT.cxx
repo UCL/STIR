@@ -68,10 +68,12 @@ CListModeDataROOT(const std::string& hroot_filename)
     this->exam_info_sptr->set_low_energy_thres(this->root_file_sptr->get_low_energy_thres());
     this->exam_info_sptr->set_high_energy_thres(this->root_file_sptr->get_up_energy_thres());
 
+    shared_ptr<Scanner> this_scanner_sptr;
+
     if (this->originating_system != "User_defined_scanner")
     {
-        this->scanner_sptr.reset(Scanner::get_scanner_from_name(this->originating_system));
-        if (this->scanner_sptr->get_type() == Scanner::Unknown_scanner)
+        this_scanner_sptr.reset(Scanner::get_scanner_from_name(this->originating_system));
+        if (this_scanner_sptr->get_type() == Scanner::Unknown_scanner)
         {
             error(boost::format("Unknown value for originating_system keyword: '%s. Abort.") % originating_system );
         }
@@ -83,7 +85,7 @@ CListModeDataROOT(const std::string& hroot_filename)
         info("Trying to figure out the scanner geometry from the information "
              "given in the ROOT header file.");
 
-        this->scanner_sptr.reset(new Scanner(Scanner::User_defined_scanner,
+        this_scanner_sptr.reset(new Scanner(Scanner::User_defined_scanner,
                                              std::string ("ROOT_defined_scanner"),
                                              /* num dets per ring */
                                              this->root_file_sptr->get_num_rings(),
@@ -115,6 +117,14 @@ CListModeDataROOT(const std::string& hroot_filename)
                                              /*num_detector_layers_v*/ 1 ));
     }
 
+    this->set_proj_data_info_sptr(ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
+                                  1,
+                                  this_scanner_sptr->get_num_rings(),
+                                  this_scanner_sptr->get_num_detectors_per_ring()/2,
+                                  this_scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                  /* arc_correction*/false)
+                                   );
+
     if (this->open_lm_file() == Succeeded::no)
         error("CListModeDataROOT: error opening ROOT file for filename '%s'",
               hroot_filename.c_str());
@@ -131,7 +141,7 @@ shared_ptr <CListRecord>
 CListModeDataROOT::
 get_empty_record_sptr() const
 {
-    shared_ptr<CListRecord> sptr(new CListRecordROOT(this->scanner_sptr));
+    shared_ptr<CListRecord> sptr(new CListRecordROOT(this->get_proj_data_info_sptr()->get_scanner_sptr()));
     return sptr;
 }
 
@@ -193,14 +203,5 @@ set_get_position(const CListModeDataROOT::SavedPosition& pos)
 {
     return root_file_sptr->set_get_position(pos);
 }
-
-shared_ptr<ProjDataInfo>
-CListModeDataROOT::
-get_proj_data_info_sptr() const
-{
-    assert(!is_null_ptr(proj_data_info_sptr));
-    return proj_data_info_sptr;
-}
-
 
 END_NAMESPACE_STIR

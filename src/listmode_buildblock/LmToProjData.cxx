@@ -336,7 +336,7 @@ post_processing()
     frame_defs = TimeFrameDefinitions(frame_definition_filename);
     do_time_frame = true;
   }
-  else
+  else if (frame_defs.get_num_frames() < 1)
     {
       // make a single frame starting from 0. End value will be ignored.
       vector<pair<double, double> > frame_times(1, pair<double,double>(0,0));
@@ -670,7 +670,7 @@ process_data()
 			   continue;
             
 			 if (!do_time_frame)
-               more_events -= event_increment;
+			   more_events-= event_increment;
             
 			 // now check if we have its segment in memory
 			 if (bin.segment_num() >= start_segment_index && bin.segment_num()<=end_segment_index)

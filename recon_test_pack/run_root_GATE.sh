@@ -95,7 +95,7 @@ echo Running lm_to_projdata for all events
 export OUT_PROJDATA_FILE=my_proj_from_lm_all_events
 export EXCLUDE_SCATTERED=0
 export EXCLUDE_RANDOM=0
-${INSTALL_DIR}lm_to_projdata ./lm_to_projdata.par 2>"./my_root_log_all.log"
+lm_to_projdata ./lm_to_projdata.par 2>"./my_root_log_all.log"
 all_events=`awk -F ":" '/Number of prompts/ {print $2}' my_root_log_all.log`
 echo "Number of prompts stored in this time period:" ${all_events}
 
