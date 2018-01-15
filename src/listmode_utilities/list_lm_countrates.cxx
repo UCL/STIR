@@ -6,13 +6,14 @@
   in subsequent time intervals.
   The current output is a file with 4 columns:
   \verbatim
-  start_time , end_time , num_prompts , num_delayeds
+  start_time_in_secs , end_time_in_secs , num_prompts , num_delayeds
   \endverbatim
 
   \author Kris Thielemans
 */
 /*
     Copyright (C) 2003- 2012, Hammersmith Imanet Ltd
+    Copyright (C) 2017, University College London
     See STIR/LICENSE.txt for details
 */
 #include "stir/listmode/CListModeData.h"
@@ -32,8 +33,10 @@ USING_NAMESPACE_STIR
 int main(int argc, char * argv[])
 {
   if (argc<3 || argc>4) {
-    std::cerr << "Usage: " << argv[0] << "hc_filename listmode_file [time_interval_in_secs]\n"
-	 << "time_interval_in_secs defaults to 1\n";
+    std::cerr << "Usage: " << argv[0] << " output_filename listmode_file [time_interval_in_secs]\n"
+	 << "time_interval_in_secs defaults to 1\n"
+	 << "Output is a file with the count-rates per time interval in CSV format as in\n"
+	 << "start_time_in_secs , end_time_in_secs , num_prompts , num_delayeds\n";
     exit(EXIT_FAILURE);
   }
   shared_ptr<CListModeData> lm_data_ptr
@@ -52,37 +55,46 @@ int main(int argc, char * argv[])
   CListRecord& record = *record_sptr;
 
   double current_time = 0;
-  unsigned long num_prompts = 0;
-  unsigned long num_delayeds = 0;
+  bool first_timing_event_read=false;
+  unsigned long num_prompts = 0UL;
+  unsigned long num_delayeds = 0UL;
   while (true)
-    {
-      if (lm_data_ptr->get_next_record(record) == Succeeded::no) 
+  {
+    if (lm_data_ptr->get_next_record(record) == Succeeded::no) 
 	{
 	  // no more events in file for some reason
 	  break; //get out of while loop
 	}
-      if (record.is_time())
+    if (record.is_time())
 	{
 	  const double new_time = record.time().get_time_in_secs();
-	  if (new_time >= current_time+interval) 
+	  if (!first_timing_event_read)
 	    {
-	      headcurve  << current_time
+	      current_time = new_time;
+	      num_prompts=0UL;
+	      num_delayeds=0UL;
+	      first_timing_event_read = true;
+	    }
+	  else if (new_time >= current_time+interval) 
+	    {
+	      headcurve <<  std::fixed << std::setprecision(3)
+			<< current_time
 			<< " , " << current_time+interval
 			<< " , " << num_prompts
 			<< " , " << num_delayeds
 			<< '\n';
-	      num_prompts=0;
-	      num_delayeds=0;
+	      num_prompts=0UL;
+	      num_delayeds=0UL;
 	      current_time += interval;
 	    }
 	}
-      else if (record.is_event())
+    if (record.is_event())
 	{
 	  if (record.event() .is_prompt())
 	    ++num_prompts;
 	  else
 	    ++num_delayeds;
 	}
-    }
+  }
   return EXIT_SUCCESS;
 }

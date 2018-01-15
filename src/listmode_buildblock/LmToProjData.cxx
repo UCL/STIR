@@ -156,6 +156,7 @@ set_defaults()
   post_normalisation_ptr.reset(new TrivialBinNormalisation);
   do_pre_normalisation =0;
   num_events_to_store = 0;
+  do_time_frame = false; 
 
 }
 
@@ -336,7 +337,7 @@ post_processing()
     frame_defs = TimeFrameDefinitions(frame_definition_filename);
     do_time_frame = true;
   }
-  else
+  else if (frame_defs.get_num_frames() < 1)
     {
       // make a single frame starting from 0. End value will be ignored.
       vector<pair<double, double> > frame_times(1, pair<double,double>(0,0));
@@ -532,6 +533,10 @@ process_data()
     frame_start_positions(1, static_cast<int>(frame_defs.get_num_frames()));
   shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
   CListRecord& record = *record_sptr;
+
+  if (!record.event().is_valid_template(*template_proj_data_info_ptr))
+	  error("The scanner template is not valid for LmToProjData. This might be because of unsupported arc correction.");
+
 
   /* Here starts the main loop which will store the listmode data. */
   for (current_frame_num = 1;

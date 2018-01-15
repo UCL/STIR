@@ -104,7 +104,7 @@ endif (BUILD_SWIG_OCTAVE)
 if (BUILD_SWIG_MATLAB)
 
   set(module_name stir)
-  SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module ${module_name} -mexname stirMATLAB_wrap)
+  SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module ${module_name} )
   SWIG_ADD_MODULE(stirMATLAB matlab stir.i ${STIR_REGISTRIES})
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTIES
         SUFFIX "_wrap.${MATLAB_MEX_EXT}" PREFIX "${MATLAB_PREFIX}"

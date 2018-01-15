@@ -64,15 +64,16 @@ namespace stir {
 #cmakedefine HAVE_AVW
 
 #cmakedefine HAVE_RDF
-#ifdef HAVE_RDF
-#define STIR_USE_GE_IO
-#endif
 
 #cmakedefine HAVE_ITK
 
 #cmakedefine STIR_OPENMP
 
 #cmakedefine STIR_MPI
+
+#cmakedefine STIR_USE_BOOST_SHARED_PTR
+
+#cmakedefine STIR_NO_UNIQUE_PTR
 
 #cmakedefine HAVE_SYSTEM_GETOPT
 
