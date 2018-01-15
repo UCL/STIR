@@ -265,6 +265,7 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   std::string data_file_name;
   {
     parser.add_start_key("INTERFILE");
+    parser.add_stop_key("END OF INTERFILE"); // add this for safety (even though it isn't always there)
     parser.add_key("originating_system", &originating_system);
     parser.add_key("name_of_data_file", &data_file_name);
     parser.parse(filename.c_str());

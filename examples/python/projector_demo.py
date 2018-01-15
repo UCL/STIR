@@ -75,7 +75,7 @@ pylab.imshow(target_array[10,:,:]);
 pylab.title('Back-projection')
 pylab.subplot(1,2,2)
 pylab.plot(target_array[10,80,:])
-pylab.show().
+pylab.show()
 #%% Let's use more LORs per sinogram bin (which will be a bit slower of course)
 projmatrix.set_num_tangential_LORs(10);
 # Need to call set_up again
