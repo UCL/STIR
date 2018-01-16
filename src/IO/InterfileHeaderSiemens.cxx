@@ -162,7 +162,7 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
 	  &patient_rotation_values);
 
 
-  add_key("imagedata byte order", 
+  add_key("image data byte order", 
     KeyArgument::ASCIIlist,
     &byte_order_index, 
     &byte_order_values);
