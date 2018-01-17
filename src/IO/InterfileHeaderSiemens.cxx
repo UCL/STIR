@@ -181,9 +181,9 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
     KeyArgument::LIST_OF_INTS,&matrix_size);
   add_key("matrix axis label", 
     KeyArgument::ASCII,	&matrix_labels);
-  add_key("scaling factor (mm/pixel)", 
+  add_key("scale factor (mm/pixel)", 
     KeyArgument::DOUBLE, &pixel_sizes);
-  add_key("number of time frames", 
+  add_key("!image duration (sec)", 
     KeyArgument::INT,	(KeywordProcessor)&InterfileHeaderSiemens::read_frames_info,&num_time_frames);
   add_key("image relative start time (sec)",
 	  KeyArgument::DOUBLE, &image_relative_start_times);
@@ -503,6 +503,10 @@ InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
   reference_energy = -1.f;
   add_key("Reference energy (in keV)",
           &reference_energy);
+  add_key("%axial compression", &axial_compression);
+  add_key("%radial arc-correction", &radial_arc_correction);
+  add_key("%axial compression", &axial_compression);
+
 
   add_key("end scanner parameters",
 	  KeyArgument::NONE,	&KeyParser::do_nothing);
