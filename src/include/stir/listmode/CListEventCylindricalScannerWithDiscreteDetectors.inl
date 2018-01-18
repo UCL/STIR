@@ -87,4 +87,14 @@ get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
     bin.set_bin_value(1);
 }
 
+bool
+CListEventCylindricalScannerWithDiscreteDetectors::
+is_valid_template(const ProjDataInfo& proj_data_info) const
+{
+	if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const*>(&proj_data_info)!= 0)
+		return true;
+
+	return false;
+}
+
 END_NAMESPACE_STIR

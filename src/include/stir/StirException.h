@@ -17,7 +17,7 @@ public:
 		memcpy(_file, file, len);
 		_line = line;
 	}
-	virtual ~StirException() {
+	virtual ~StirException() throw() {
 		delete[] _reason;
 		delete[] _file;
 	}
@@ -39,3 +39,4 @@ private:
 };
 
 #endif
+

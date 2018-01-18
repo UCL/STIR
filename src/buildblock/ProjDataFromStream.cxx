@@ -42,6 +42,7 @@
 #include "stir/IO/interfile.h"
 #include "stir/IO/write_data.h"
 #include "stir/IO/read_data.h"
+#include "stir/is_null_ptr.h"
 #include <numeric>
 #include <iostream>
 #include <fstream>
@@ -125,7 +126,7 @@ Viewgram<float>
 ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
                                  const bool make_num_tangential_poss_odd) const
 {
-  if (sino_stream == 0)
+  if (is_null_ptr(sino_stream))
   {
     error("ProjDataFromStream::get_viewgram: stream ptr is 0\n");
   }
@@ -267,7 +268,7 @@ ProjDataFromStream::get_offsets(const int view_num, const int segment_num) const
 Succeeded
 ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
 {
-  if (sino_stream == 0)
+  if (is_null_ptr(sino_stream))
   {
     warning("ProjDataFromStream::set_viewgram: stream ptr is 0\n");
     return Succeeded::no;
@@ -348,6 +349,9 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
       if(ax_pos_num != get_max_axial_pos_num(segment_num))
         sino_stream->seekp(intra_views_offset, ios::cur);
     }
+
+    // flush the stream, see the class documentation
+    sino_stream->flush();
     return Succeeded::yes;
   }
   else if (get_storage_order() == Segment_View_AxialPos_TangPos)
@@ -361,7 +365,9 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
                 view_num, segment_num);
         return Succeeded::no;
       }
-    return Succeeded::yes;
+	// flush the stream, see the class documentation
+	sino_stream->flush();
+	return Succeeded::yes;
   }
   else
   {
@@ -443,7 +449,7 @@ Sinogram<float>
 ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num,
                                  const bool make_num_tangential_poss_odd) const
 {
-  if (sino_stream == 0)
+  if (is_null_ptr(sino_stream))
   {
     error("ProjDataFromStream::get_sinogram: stream ptr is 0\n");
   }
@@ -515,7 +521,7 @@ ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num,
 Succeeded
 ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
 {
-  if (sino_stream == 0)
+  if (is_null_ptr(sino_stream))
   {
     warning("ProjDataFromStream::set_sinogram: stream ptr is 0\n");
     return Succeeded::no;
@@ -576,7 +582,8 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
                   ax_pos_num, segment_num);
           return Succeeded::no;
     }
-
+	  // flush the stream, see the class documentation
+	  sino_stream->flush();
       return Succeeded::yes;
     }
     
@@ -597,7 +604,9 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
         if(view != get_max_view_num())
           sino_stream->seekp(intra_ax_pos_offset, ios::cur);
       }
-      return Succeeded::yes;
+	  // flush the stream, see the class documentation
+	  sino_stream->flush();
+	  return Succeeded::yes;
     }
     else
     {
@@ -639,7 +648,7 @@ ProjDataFromStream::get_offset_segment(const int segment_num) const
 SegmentBySinogram<float>
 ProjDataFromStream::get_segment_by_sinogram(const int segment_num) const
 {
-  if(sino_stream == 0)
+  if(is_null_ptr(sino_stream))
   {
     error("ProjDataFromStream::get_segment_by_sinogram: stream ptr is 0\n");
   }
@@ -685,7 +694,7 @@ SegmentByView<float>
 ProjDataFromStream::get_segment_by_view(const int segment_num) const
 {
   
-  if(sino_stream == 0)
+  if(is_null_ptr(sino_stream))
   {
     error("ProjDataFromStream::get_segment_by_view: stream ptr is 0\n");
   }
@@ -728,7 +737,7 @@ ProjDataFromStream::get_segment_by_view(const int segment_num) const
 Succeeded
 ProjDataFromStream::set_segment(const SegmentBySinogram<float>& segmentbysinogram_v)
 {
-  if(sino_stream == 0)
+  if(is_null_ptr(sino_stream))
   {
     error("ProjDataFromStream::set_segment: stream ptr is 0\n");
   }
@@ -778,7 +787,8 @@ ProjDataFromStream::set_segment(const SegmentBySinogram<float>& segmentbysinogra
                 segment_num);
         return Succeeded::no;
       }
-
+	// flush the stream, see the class documentation
+	sino_stream->flush();
     return Succeeded::yes;
   }
   else 
@@ -796,7 +806,7 @@ ProjDataFromStream::set_segment(const SegmentBySinogram<float>& segmentbysinogra
 Succeeded
 ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
 {
-  if(sino_stream == 0)
+  if(is_null_ptr(sino_stream))
   {
     error("ProjDataFromStream::set_segment: stream ptr is 0\n");
   }
@@ -847,7 +857,8 @@ ProjDataFromStream::set_segment(const SegmentByView<float>& segmentbyview_v)
                 segment_num);
         return Succeeded::no;
       }
-
+	// flush the stream, see the class documentation
+	sino_stream->flush();
     return Succeeded::yes;
   }
   else 

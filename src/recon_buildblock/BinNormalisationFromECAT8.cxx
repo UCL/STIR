@@ -50,6 +50,7 @@
 #include <algorithm>
 #include <fstream>
 #include <cctype>
+#include <boost/format.hpp>
 #ifndef STIR_NO_NAMESPACES
 using std::ofstream;
 using std::fstream;
@@ -264,6 +265,7 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   std::string data_file_name;
   {
     parser.add_start_key("INTERFILE");
+    parser.add_stop_key("END OF INTERFILE"); // add this for safety (even though it isn't always there)
     parser.add_key("originating_system", &originating_system);
     parser.add_key("name_of_data_file", &data_file_name);
     parser.parse(filename.c_str());
@@ -280,15 +282,22 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   if (/*interfile_parser.*/originating_system == "2008")
     this->scanner_ptr.reset(new Scanner(Scanner::Siemens_mMR));
   else
-    error("Unknown originating_system '%s'", /*interfile_parser.*/originating_system.c_str() );
+    error(boost::format("Unknown originating_system '%s', when parsing file '%s'") % /*interfile_parser.*/originating_system % filename );
 
+	char directory_name[max_filename_length];
+	get_directory_name(directory_name, filename.c_str());
+	char full_data_file_name[max_filename_length];
+	strcpy(full_data_file_name, data_file_name.c_str());
+	prepend_directory_name(full_data_file_name, directory_name);
 
   const std::size_t buf_size = 344*127+9*344+504*64+837+64+64+9+837;
   Array<1,float> buffer(buf_size);
   {
-    std::ifstream binary_data(/*interfile_parser.*/data_file_name.c_str(), std::ios::binary|std::ios::in);
-    if (read_data(binary_data, buffer, ByteOrder::little_endian) != Succeeded::yes)
-      error("failed reading '%s'",/*interfile_parser.*/data_file_name.c_str());
+		std::ifstream binary_data(full_data_file_name, std::ios::binary | std::ios::in);
+		//std::ifstream binary_data(/*interfile_parser.*/data_file_name.c_str(), std::ios::binary | std::ios::in);
+		if (read_data(binary_data, buffer, ByteOrder::little_endian) != Succeeded::yes)
+			error("failed reading '%s'", full_data_file_name);
+			///*interfile_parser.*/data_file_name.c_str());
 
   }
   num_transaxial_crystals_per_block = scanner_ptr->get_num_transaxial_crystals_per_block();

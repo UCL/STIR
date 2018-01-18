@@ -39,7 +39,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 3.0}}
+ Version 3.1}}
 \end{center}
 
 \end{spacing}
@@ -114,7 +114,7 @@ compiler tools and the \textit{STIR} reconstruction building blocks.
 Then a brief explanation is given about how to run reconstruction 
 algorithms as well as additional utilities. A description of 
 the reconstruction building block library can be found on our 
-web site (section \textit{documentation}). A short (but out-dated) review of analytic 
+web site (section \textit{documentation}). A short (but very out-dated) review of analytic 
 and iterative reconstruction methods is available in [PAR1.3] 
 (available on the STIR web-site).
 
@@ -139,6 +139,8 @@ always welcome. Please use the stir-users mailing list.
 
 \section{
 Installation}
+This section describes how to install STIR. It is complemented by information on the
+\url{http://sourceforge.net/stir}{STIR Wiki} with information for specific systems etc.
 
 \subsection{
 Installing source files}
@@ -147,7 +149,10 @@ Download the source at the \textit{STIR} site:
 \begin{center}
 \url{http://stir.sourceforge.net }{http://stir.sourceforge.net} 
 \end{center}
-\noindent (Section \textbf{Registered Users}).\\
+\noindent (Section \textbf{Registered Users}).
+Alternatively, if you are feeling adventurous, you can get the most-recent
+developer version (no guarantees!) of STIR from\\
+\url{https://github.com/UCL/STIR}{https://github.com/UCL/STIR}.\\
 Download the source files in the zip format. You can then use unzip from \\
 \url{http://www.info-zip.org/pub/infozip/}{http://www.info-zip.org/pub/infozip/}. 
 Extract using
@@ -188,7 +193,7 @@ C++ Compiler}
 
 In order to compile and run the \textit{STIR} programs, you will need a compiler
 and associated tools. These days, any compiler should work. See the 
-\url{http://sourceforge.net/apps/mediawiki/stir}{STIR Wiki} for more
+\url{http://sourceforge.net/stir}{STIR Wiki} for more
 specific information of which compilers we have tried.
 We would love 
 to hear from any attempts of using another compiler. 
@@ -222,13 +227,13 @@ GE PET Toolbox proprietary package you can ask Kris Thielemans for VOLPET and RD
 support in \textit{STIR}.
 
 \subsection{
-Compilation}
+Building}
+Since version 2.2, \textit{STIR} contains files to build STIR using the platform-independent
+\url{"http://www.cmake.org"}{CMake}. This is now the only to build STIR as
+it is easier for configuration and finding system dependencies.
 \subsubsection{
 Using CMake}
 \label{sec:UsingCMake}
-Since version 2.2, \textit{STIR} contains files to build using the platform-independent
-\url{"http://www.cmake.org"}{CMake}. This is the recommended way to build STIR as
-it is easier for configuration and finding system dependencies.
 
 Normal build procedure on Linux/Unix would be something like\footnote{Point \texttt{CMake} to the main \textbf{STIR}
 directory, not \textbf{STIR/src}.}
@@ -301,18 +306,23 @@ capabilities of STIR.
 via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.
 \item ITK\_DIR, use IO from \url{http://www.itk.org}{ITK}, a large open source library. Specifying this
  enables NRRD, MetaIO and Nifti IO.
+\item CERN ROOT files used by GEANT and GATE.
 \item GE RDF\texttrademark{} support via \texttt{RDF\_INCLUDE\_DIRS} and \texttt{RDF\_LIBRARIES} (requires the GE proprietary PET Toolbox).
 \end{itemize}
 
 Note that you can use e.g. \textit{DISABLE\_LLN\_MATRIX} to \textit{not}
 use the LLN ECAT library, even if cmake found it.
 
-Finally, do not forget to set
+Finally, here are some standard CMake variables
 \begin{itemize}
-\item CMAKE\_BUILD\_TYPE to \texttt{Release}, \texttt{Debug} or \texttt{RelWithDebug},
-\item CMAKE\_INSTALL\_PREFIX to specify where the final installation has to occur. CMake
+\item set CMAKE\_BUILD\_TYPE to \texttt{Release} (default), \texttt{Debug} or \texttt{RelWithDebug}
+\item CMAKE\_INSTALL\_PREFIX specifies where the final installation has to occur. CMake
 provides normally a default in a system location, but you could set it for instance to
 \texttt{./install} to put the files inside your build directory.
+\item CMAKE\_CXX\_STANDARD can be used to tell CMake to add flags to your compiler to use
+a particular version of the C++ standard (if it supports it). It is now recommended to set 
+this to \texttt{11}. This is necessary e.g. for ROOT 6 support. Other possible values are
+\texttt{98}, \texttt{14} and \texttt{17} (not tested yet).
 \end{itemize}
 
 On Windows or MacOSX, the procedure is essentially the same, except that you will likely have 
@@ -626,24 +636,76 @@ other slices belonging to the same series/time frame/gate.
 There are some preliminary files to make it easier to use SimSET and \textit{STIR} together in the
 \textbf{SimSET} directory. See the README.txt in that directory for more info.
 
-\subsection{
-List mode processing}
+\subsubsection{ROOT files as output by OpenGATE}
+You need to create a text file header for your ROOT file
+to specify the scanner (as this information is not stored in the ROOT file).
+We tend to name this header \texttt{something.hroot} but this is not mandatory.
 
-Some scanners produce list mode data, which is essentially a 
-list of events.  \textit{STIR} provides utilities to use
-the list mode files, for example to convert them to sinograms. It is
-also possible to reconstruct images directly from list mode data, although
-this has not been tested very well yet as of \textit{STIR 2.1}.
+\textbf{Warning:} There is currently no check if the scanner information is correct. This
+  is dangerous for the geometry, but can also lead to crashes if the actual number of 
+  blocks/crystals etc is larger than what is specified in the scanner info.
 
-Currently supported list mode formats are specific to the ECAT 
-HR+ and ECAT EXACT 3D scanners. There are some unfinished classes
+We currently support only ROOT output using the CylindricalPET and ECAT systems
+from GATE.
+
+A full example is given in \texttt{examples/samples/root\_header.hroot}. Below are
+2 shorter examples.
+If the scanner is known to \texttt{stir::Scanner}, you can use this
+\begin{verbatim}
+ROOT header := 
+Originating system := Siemens mMR
+
+; specify GATE output format (could be GATE_ECAT_PET as well)
+GATE scanner type := GATE_Cylindrical_PET
+GATE_Cylindrical_PET Parameters :=
+  ; name of the actual ROOT file
+  name of data file := mysim.root
+
+  ; See elsewhere for other parameters
+End GATE_Cylindrical_PET Parameters :=
+
+end ROOT header := 
+\end{verbatim}
+Below is an example using a user-defined scanner. 
+\begin{verbatim}
+ROOT header := 
+Originating system := User_defined_scanner
+Number of rings                          := 4
+Number of detectors per ring             := 504
+Inner ring diameter (cm)                 := 65.6
+Average depth of interaction (cm)        := 0.7
+Distance between rings (cm)              := 0.40625
+Default bin size (cm)                    := 0.208626
+Maximum number of non-arc-corrected bins := 344
+
+GATE scanner type := GATE_Cylindrical_PET
+GATE_Cylindrical_PET Parameters :=
+  ; name of the actual ROOT file
+  name of data file := mysim.root
+
+  ; See elsewhere for other parameters
+End GATE_Cylindrical_PET Parameters :=
+
+end ROOT header := 
+\end{verbatim}
+
+There are some unfinished classes
 available on the \textit{STIR} web-site to read \textit{LMF} format files,
 in conjunction with the \textit{LMF} library. However, these might be obsolete
 as the OpenGATE project might be distributing files
 to enable STIR to read \textit{LMF} format files.
 
-See the \textit{STIR} web-site for an independent project that allows reading
-\textit{ROOT} files and convert it to \textit{STIR}-compatible Interfile projection data.
+\subsection{
+List mode processing}
+
+Some scanners produce list mode data, which is essentially a 
+list of events. \textit{STIR} provides utilities to use
+the list mode files, for example to convert them to sinograms. It is
+also possible to reconstruct images directly from list mode data.
+
+Currently supported list mode formats are specific to the ECAT 
+HR+, ECAT EXACT 3D and Siemens mMR scanners. We also support \textit{CERN ROOT} files
+as output by OpenGATE (see above).
 
 \subsubsection{
 lm\_to\_projdata}
@@ -684,6 +746,15 @@ properly for instance.
 \subsubsection{
 list\_lm\_events}
 Allows inspecting the events in a list mode file. Run without arguments to see a usage message.
+
+\subsubsection{
+list\_lm\_countrates}
+Outputs a text file with (comma separated) colums of count-rates per
+time interval like
+\begin{verbatim}
+start_time_in_secs , end_time_in_secs , num_prompts , num_delayeds
+\end{verbatim}
+Run without arguments to see a usage message.
 
 \subsection{
 Rebinning algorithms}

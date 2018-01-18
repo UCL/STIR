@@ -72,6 +72,7 @@ set(${dir_LIB_SOURCES}
         TimeGateDefinitions
 	ML_norm
         num_threads
+        GeneralisedPoissonNoiseGenerator
 )
 
 if (NOT HAVE_SYSTEM_GETOPT)
@@ -94,3 +95,6 @@ endif()
 # TODO currently needed as filters need fourier
 #target_link_libraries(buildblock numerics_buildblock)
 
+if (STIR_OPENMP)
+  target_link_libraries(buildblock ${OpenMP_EXE_LINKER_FLAGS})
+endif()
