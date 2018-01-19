@@ -167,6 +167,9 @@ public:
 
     void set_density_image_for_scatter_points_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 
+    //! If densitiy image for scatter points not set, then run this on the attenuation image.
+    void subsample_image(const shared_ptr<DiscretisedDensity<3,float> >&);
+
     //! set_density_image_for_scatter_points
     void set_density_image_for_scatter_points(const std::string&);
     //! set the attenuation threshold
@@ -376,6 +379,17 @@ protected:
 
     //! Filename for the initial activity estimate.
     std::string activity_image_filename;
+
+    //! Zoom factor on plane XY. Defaults on 1.f.
+    float zoom_xy;
+    //! Zoom factor on Z axis. Defaults on 1.f.
+    float zoom_z;
+
+    //! If full scanner template is provided then subsample it
+    int subsample_scanner_rings;
+
+    //! If full scanner template is provided then subsample it
+    int subsample_scanner_dets;
 
 };
 

@@ -192,7 +192,7 @@ ScatterEstimationByBin::
 post_processing()
 {
     // Check that the crusial parts have been set.
-    info("Loading input projection data");
+    info("ScatterEstimationByBin: Loading input projection data");
     if (this->input_projdata_filename.size() == 0)
     {
         warning("No input projdata filename is given. Abort ");
@@ -226,7 +226,7 @@ post_processing()
         }
     }
 
-    info("Loading attenuation image...");
+    info("ScatterEstimationByBin: Loading attenuation image...");
     if (this->atten_image_filename.size() == 0)
     {
         warning("Please define an attenuation image. Abort.");
@@ -240,17 +240,17 @@ post_processing()
     {
         if (!this->recompute_atten_projdata)
         {
-            info("Loading attenuation correction coefficients...");
+            info("ScatterEstimationByBin: Loading attenuation correction coefficients...");
             this->atten_coeff_3d_sptr.reset(new BinNormalisationFromProjData(this->atten_coeff_filename));
         }
         else
-            info("No attenuation correction proj_data file name. They are going"
+            info("ScatterEstimationByBin: No attenuation correction proj_data file name. They are going"
                  "to be computed but not saved.");
     }
 
     if (this->norm_coeff_filename.size() > 0  )
     {
-        info("Loading normalisation coefficients...");
+        info("ScatterEstimationByBin: Loading normalisation coefficients...");
         normalisation_coeffs_3d_sptr.reset(new BinNormalisationFromProjData(this->norm_coeff_filename));
     }
     else
@@ -261,14 +261,14 @@ post_processing()
 
     if (this->back_projdata_filename.size() > 0)
     {
-        info("Loading background projdata...");
+        info("ScatterEstimationByBin: Loading background projdata...");
         this->add_projdata_3d_sptr =
                 ProjData::read_from_file(this->back_projdata_filename);
     }
 
     if(!this->recompute_initial_activity_image ) // This image can be used as a template
     {
-        info("Loading initial activity image ...");
+        info("ScatterEstimationByBin: Loading initial activity image ...");
         if(this->initial_activity_image_filename.size() > 0 )
             this->current_activity_image_lowres_sptr =
                 read_from_file<DiscretisedDensity<3,float> >(this->initial_activity_image_filename);
@@ -356,7 +356,7 @@ set_up()
 {
     if (this->run_debug_mode)
     {
-        info("Debugging mode is activated.");
+        info("ScatterEstimationByBin: ScDebugging mode is activated.");
         this->export_2d_projdata = true;
         this->export_scatter_estimates_of_each_iteration = true;
     }
@@ -401,13 +401,13 @@ set_up()
 
     if (!this->recompute_initial_activity_image && this->initial_activity_image_filename.size() > 0 )
     {
-        info("Loading initial activity image ...");
+        info("ScatterEstimationByBin: ScatterEstimationByBin: Loading initial activity image ...");
         this->current_activity_image_sptr =
                 read_from_file<DiscretisedDensity<3,float> >(this->initial_activity_image_filename);
     }
     else
     {
-        info("Initialising empty activity image ... ");
+        info("ScatterEstimationByBin: Initialising empty activity image ... ");
         this->current_activity_image_sptr.reset(new VoxelsOnCartesianGrid<float> ( *this->input_projdata_2d_sptr->get_proj_data_info_sptr() ) );
         this->current_activity_image_sptr->fill(1.F);
     }
@@ -423,9 +423,9 @@ set_up()
             return Succeeded::no;
         }
 
-        info(boost::format("Attenuation image data are supposed to be in units cm^-1\n"
+        info(boost::format("ScatterEstimationByBin: Attenuation image data are supposed to be in units cm^-1\n"
                            "\tReference: water has mu .096 cm^-1\n"
-                           "\tMax in attenuation image: %g\n") %
+                           "\tMax in attenuation image: %g") %
              this->atten_image_sptr->find_max());
 
         int min_z = this->atten_image_sptr->get_min_index();
@@ -448,7 +448,7 @@ set_up()
 
         if(!is_null_ptr(this->current_activity_image_lowres_sptr))
         {
-            info("Zooming attenuation image to initial activity image...");
+            info("ScatterEstimationByBin: Zooming attenuation image to initial activity image...");
 
             VoxelsOnCartesianGrid<float>* tmp_image_ptr =
                     dynamic_cast<VoxelsOnCartesianGrid<float>* >(this->current_activity_image_lowres_sptr.get());
@@ -475,7 +475,7 @@ set_up()
             this->current_activity_image_lowres_sptr->fill(1.f);
         }
 
-        info("Zooming attenuation image to match the low resolution activity image");
+        info("ScatterEstimationByBin: Zooming attenuation image to match the low resolution activity image");
         //TODO: This leads to creation of 2 images, and then throwing one away immediately
         VoxelsOnCartesianGrid<float>* attenuation_image_ptr =
                 dynamic_cast<VoxelsOnCartesianGrid<float>* >(this->atten_image_sptr.get());
@@ -513,7 +513,7 @@ set_up()
 
     this->back_projdata_2d_sptr->fill(0.F);
 
-    info("Setting up reconstruction method ...");
+    info("ScatterEstimationByBin: Setting up reconstruction method ...");
     AnalyticReconstruction* tmp_analytic =
             dynamic_cast<AnalyticReconstruction * >(this->reconstruction_template_sptr.get());
     IterativeReconstruction<DiscretisedDensity<3, float> >* tmp_iterative =
@@ -558,7 +558,7 @@ set_up()
     // ScatterSimulation
     //
 
-    info("Setting up Scatter Simulation method ...");
+    info("ScatterEstimationByBin: Setting up Scatter Simulation method ...");
     if(is_null_ptr(this->scatter_simulation_sptr))
     {
         warning("Scatter simulation method has not been initialised. Abort.");
@@ -603,7 +603,7 @@ set_up()
         }
     }
 
-    info(">>>>Set up finished successfully!!<<<<");
+    info("ScatterEstimationByBin: >>>>Set up finished successfully!!<<<<");
     return Succeeded::yes;
 }
 
@@ -611,7 +611,7 @@ Succeeded
 ScatterEstimationByBin::
 set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterative_object)
 {
-    info("Setting up iterative reconstruction ...");
+    info("ScatterEstimationByBin: Setting up iterative reconstruction ...");
     iterative_object->set_input_data(this->input_projdata_2d_sptr);
 
     const double start_time = 0.0;
@@ -663,7 +663,7 @@ set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterat
 
     if( atten_projdata_3d_sptr->get_max_segment_num() > 0)
     {
-        info("Running SSRB on attenuation correction coefficients ...");
+        info("ScatterEstimationByBin: Running SSRB on attenuation correction coefficients ...");
 
         if(this->export_2d_projdata)
         {
@@ -802,7 +802,7 @@ process_data()
     scaled_est_projdata_2d_sptr->fill(0.F);
 
     shared_ptr<ProjData> data_to_fit_projdata_2d_sptr(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                                                                          this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
+                                                                           this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
 
     //Data to fit = Input_2d - background
     //Here should be the total_background, not just the randoms.
@@ -814,7 +814,7 @@ process_data()
 
     if( this->recompute_initial_activity_image )
     {
-        info("Computing initial activity image...");
+        info("ScatterEstimationByBin: Computing initial activity image...");
         if (iterative_method)
             reconstruct_iterative( 0,
                                    this->current_activity_image_lowres_sptr);
@@ -852,7 +852,7 @@ process_data()
 
         //TODO: filter ... if FBP
 
-        info("Scatter simulation in progress...");
+        info("ScatterEstimationByBin: Scatter simulation in progress...");
         this->scatter_simulation_sptr->process_data();
 
         if(this->run_debug_mode) // Write unscaled scatter sinogram
@@ -959,7 +959,7 @@ process_data()
 
     }
 
-    info("\n\n>>>>>>Scatter Estimation finished !!!<<<<<<<<<\n\n");
+    info("ScatterEstimationByBin: Scatter Estimation finished !!!");
 
     return Succeeded::yes;
 }
@@ -1063,7 +1063,7 @@ add_proj_data(ProjData& first_addend, const ProjData& second_addend)
 
         if (!(first_addend.set_segment(first_segment_by_view) == Succeeded::yes))
         {
-            error("Error set_segment %d\n", segment_num);
+            error("Error set_segment %d", segment_num);
         }
     }
 }
@@ -1088,13 +1088,13 @@ subtract_proj_data(ProjData& minuend, const ProjData& subtracted)
 
         if (!(minuend.set_segment(first_segment_by_view) == Succeeded::yes))
         {
-            error("Error set_segment %d\n", segment_num);
+            error("ScatterEstimationByBin: Error set_segment %d", segment_num);
         }
     }
 
     // Filter negative values:
-//    pow_times_add zero_threshold (0.0f, 1.0f, 1.0f, 0.0f, NumericInfo<float>().max_value());
-//    apply_to_proj_data(minuend, zero_threshold);
+    //    pow_times_add zero_threshold (0.0f, 1.0f, 1.0f, 0.0f, NumericInfo<float>().max_value());
+    //    apply_to_proj_data(minuend, zero_threshold);
 }
 
 void
@@ -1113,7 +1113,7 @@ apply_to_proj_data(ProjData& data, const pow_times_add& func)
 
         if (!(data.set_segment(segment_by_view) == Succeeded::yes))
         {
-            error("Error set_segment %d\n", segment_num);
+            error("ScatterEstimationByBin: Error set_segment %d", segment_num);
         }
     }
 }
@@ -1136,8 +1136,8 @@ ScatterEstimationByBin::ffw_project_mask_image()
     shared_ptr<ForwardProjectorByBin> forw_projector_sptr;
     shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
     forw_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
-    info(boost::format("\n\nForward projector used for the calculation of\n"
-                       "attenuation coefficients: %1%\n") % forw_projector_sptr->parameter_info());
+    info(boost::format("ScatterEstimationByBin: Forward projector used for the calculation of"
+                       "attenuation coefficients: %1%") % forw_projector_sptr->parameter_info());
 
     forw_projector_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_ptr()->create_shared_clone(),
                                 this->mask_image_sptr );
@@ -1166,7 +1166,7 @@ ScatterEstimationByBin::ffw_project_mask_image()
 
         if (!(mask_projdata->set_segment(segment_by_view) == Succeeded::yes))
         {
-            warning("Error set_segment %d\n", segment_num);
+            warning("ScatterEstimationByBin: Error set_segment %d", segment_num);
             return Succeeded::no;
         }
     }
@@ -1248,76 +1248,6 @@ apply_mask_in_place(DiscretisedDensity<3, float>& arg,
                             pow_times_add_object);
 
     return true;
-}
-
-void
-ScatterEstimationByBin::
-set_input_proj_data_sptr(const shared_ptr<ProjData> arg)
-{
-    this->input_projdata_sptr = arg;
-}
-
-void
-ScatterEstimationByBin::
-set_reconstruction_method_sptr(const shared_ptr<Reconstruction < DiscretisedDensity < 3, float > > > arg)
-{
-    this->reconstruction_template_sptr = arg;
-}
-
-void
-ScatterEstimationByBin::
-set_attenuation_image_sptr(const shared_ptr<DiscretisedDensity<3,float> > arg)
-{
-    this->atten_image_sptr = arg;
-}
-
-void
-ScatterEstimationByBin::
-set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData> arg)
-{
-    //this->atten_projdata_sptr = arg;
-}
-
-void
-ScatterEstimationByBin::
-set_normalisation_proj_data_sptr(const shared_ptr<ProjData> arg)
-{
-    //    this->norm_projdata_sptr = arg;
-}
-
-void
-ScatterEstimationByBin::
-set_background_proj_data_sptr(const shared_ptr<ProjData> arg)
-{
-    //    this->back_projdata_sptr = arg;
-}
-
-void
-ScatterEstimationByBin::
-set_initial_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> > arg)
-{
-    this->current_activity_image_sptr = arg;
-}
-
-void
-ScatterEstimationByBin::
-set_mask_image_sptr(const shared_ptr<DiscretisedDensity<3, float> > arg)
-{
-    this->mask_image_sptr = arg;
-}
-
-void
-ScatterEstimationByBin::
-set_mask_proj_data_sptr(const shared_ptr<ProjData> arg)
-{
-    this->mask_projdata_sptr = arg;
-}
-
-void
-ScatterEstimationByBin::
-set_scatter_simulation_method_sptr(const shared_ptr<ScatterSimulation > arg)
-{
-    this->scatter_simulation_sptr = arg;
 }
 
 END_NAMESPACE_STIR

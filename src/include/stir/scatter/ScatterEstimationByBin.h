@@ -124,25 +124,25 @@ public:
 
     // Set functions
     //! Set the input projdata.
-    void set_input_proj_data_sptr(const shared_ptr<ProjData>);
+    inline void set_input_proj_data_sptr(const shared_ptr<ProjData>);
     //! Set the reconstruction method for the scatter estimation
-    void set_reconstruction_method_sptr(const shared_ptr<Reconstruction < DiscretisedDensity < 3, float > > >);
+    inline void set_reconstruction_method_sptr(const shared_ptr<Reconstruction < DiscretisedDensity < 3, float > > >);
     //! Set the full resolution attenuation image.
-    void set_attenuation_image_sptr(const shared_ptr<DiscretisedDensity<3, float > > );
+    inline void set_attenuation_image_sptr(const shared_ptr<DiscretisedDensity<3, float > > );
     //!
-    void set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData>);
+    inline void set_attenuation_correction_proj_data_sptr(const shared_ptr<ProjData>);
     //!
-    void set_normalisation_proj_data_sptr(const shared_ptr<ProjData>);
+    inline void set_normalisation_proj_data_sptr(const shared_ptr<ProjData>);
     //!
-    void set_background_proj_data_sptr(const shared_ptr<ProjData>);
+    inline void set_background_proj_data_sptr(const shared_ptr<ProjData>);
     //!
-    void set_initial_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >);
+    inline void set_initial_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >);
 
-    void set_mask_image_sptr(const shared_ptr<DiscretisedDensity<3, float> >);
+    inline void set_mask_image_sptr(const shared_ptr<DiscretisedDensity<3, float> >);
     //!
-    void set_mask_proj_data_sptr(const shared_ptr<ProjData>);
+    inline void set_mask_proj_data_sptr(const shared_ptr<ProjData>);
 
-    void set_scatter_simulation_method_sptr(const shared_ptr<ScatterSimulation>);
+    inline void set_scatter_simulation_method_sptr(const shared_ptr<ScatterSimulation>);
     //! Set the zoom factor in the XY plane
     inline void set_zoom_xy(float);
     //! Set the zoom factor in the Z axis

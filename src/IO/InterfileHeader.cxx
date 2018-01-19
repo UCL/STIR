@@ -1171,7 +1171,7 @@ bool InterfilePDFSHeader::post_processing()
     {
     if (energy_resolution != guessed_scanner_ptr->get_energy_resolution())
       {
-    warning("Interfile warning: 'energy resolution' (%d) is expected to be %d. "
+    warning("Interfile warning: 'energy resolution' (%4.3f) is expected to be %4.3f. "
             "Currently, the energy resolution and the reference energy, are used only in"
             " scatter correction.",
         energy_resolution, guessed_scanner_ptr->get_energy_resolution());
@@ -1179,7 +1179,7 @@ bool InterfilePDFSHeader::post_processing()
       }
     if (reference_energy != guessed_scanner_ptr->get_reference_energy())
       {
-    warning("Interfile warning: 'reference energy' (%d) is expected to be %d."
+    warning("Interfile warning: 'reference energy' (%4.3f) is expected to be %4.3f."
             "Currently, the energy resolution and the reference energy, are used only in"
             " scatter correction.",
         reference_energy, guessed_scanner_ptr->get_reference_energy());

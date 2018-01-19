@@ -63,7 +63,7 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
     interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_ptr()->clone());
   interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
 
-  std::cout << "Interpolating scatter estimate to size of emission data" << std::endl;
+  info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
   ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
 					       interpolated_direct_scatter_proj_data_info_sptr);        
   interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, remove_interleaving);
@@ -81,7 +81,7 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
                                  time_frame_defs.get_start_time(), time_frame_defs.get_end_time());
       Array<2,float> scale_factors;
       
-      std::cout << "Finding scale factors by sinogram" << std::endl;
+      info("upsample_and_fit_scatter_estimate: Finding scale factors by sinogram");
       scale_factors = get_scale_factors_per_sinogram(
                                                  emission_proj_data, 
                                                  interpolated_scatter,
@@ -94,7 +94,7 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
       threshold_upper(scale_factors.begin_all(), 
                       scale_factors.end_all(),
                       max_scale_factor);
-      std::cout << "After thresholding:\n";
+      info("upsample_and_fit_scatter_estimate: After thresholding:");
       std::cout << scale_factors;
       VectorWithOffset<float> kernel(-static_cast<int>(half_filter_width),half_filter_width);
       kernel.fill(1.F/(2*half_filter_width+1));
@@ -102,14 +102,14 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
       std::for_each(scale_factors.begin(), 
                     scale_factors.end(),
                     lowpass_filter);
-      std::cout << "After filtering:\n";
+      info("upsample_and_fit_scatter_estimate: After filtering:");
       std::cout << scale_factors;
-      std::cout << "applying scale factors" << std::endl;
+      info("upsample_and_fit_scatter_estimate: applying scale factors");
       if (scale_sinograms(scaled_scatter_proj_data, 
                           interpolated_scatter,
                           scale_factors) != Succeeded::yes)
         {
-          error("writing of scaled sinograms failed");
+          error("upsample_and_fit_scatter_estimate: writing of scaled sinograms failed");
         }
     }
   else // min/max_scale_factor equal to 1
