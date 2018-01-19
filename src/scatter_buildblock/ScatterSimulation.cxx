@@ -254,6 +254,7 @@ bool
 ScatterSimulation::
 post_processing()
 {
+
     if (this->template_proj_data_filename.size() > 0)
         this->set_template_proj_data_info(this->template_proj_data_filename);
 

@@ -33,13 +33,13 @@
   of the parameter file.
 */
 
-#include "stir/scatter/ScatterEstimationByBin.h"
+#include "stir/scatter/ScatterEstimation.h"
 #include "stir/Succeeded.h"
 /***********************************************************/     
 
 int main(int argc, const char *argv[])                                  
 {         
-  stir::ScatterEstimationByBin scatter_estimation;
+  stir::ScatterEstimation scatter_estimation;
 
   if (argc==2)
     {

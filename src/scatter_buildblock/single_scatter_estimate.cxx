@@ -28,7 +28,7 @@
 
 */
 #include "stir/scatter/SingleScatterSimulation.h"
-#include "stir/scatter/ScatterEstimationByBin.h"
+#include "stir/scatter/ScatterEstimation.h"
 using namespace std;
 START_NAMESPACE_STIR
 static const float total_Compton_cross_section_511keV = 

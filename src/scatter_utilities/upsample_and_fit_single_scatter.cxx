@@ -54,7 +54,7 @@
 #include "stir/KeyParser.h"
 #include "stir/ProjDataInterfile.h"
 #include "stir/recon_buildblock/TrivialBinNormalisation.h"
-#include "stir/scatter/ScatterEstimationByBin.h"
+#include "stir/scatter/ScatterEstimation.h"
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include <iostream>
@@ -196,7 +196,7 @@ int main(int argc, const char *argv[])
   stir::ProjDataInterfile output_proj_data(data_to_fit_proj_data_sptr->get_exam_info_sptr(),
 					   data_to_fit_proj_data_info_sptr, output_filename);
         
-  stir::ScatterEstimationByBin::
+  stir::ScatterEstimation::
     upsample_and_fit_scatter_estimate(output_proj_data,
                                       *data_to_fit_proj_data_sptr,
                                       *data_to_scale_proj_data_sptr,

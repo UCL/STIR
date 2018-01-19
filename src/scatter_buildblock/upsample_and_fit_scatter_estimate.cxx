@@ -29,7 +29,7 @@
 #include "stir/ProjDataInMemory.h"
 #include "stir/inverse_SSRB.h"
 #include "stir/scale_sinograms.h"
-#include "stir/scatter/ScatterEstimationByBin.h"
+#include "stir/scatter/ScatterEstimation.h"
 #include "stir/recon_buildblock/BinNormalisation.h"
 #include "stir/interpolate_projdata.h"
 #include "stir/utilities.h"
@@ -47,7 +47,7 @@
 START_NAMESPACE_STIR
 
 void 
-ScatterEstimationByBin::
+ScatterEstimation::
 upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
                                   const  ProjData& emission_proj_data,
                                   const ProjData& scatter_proj_data,

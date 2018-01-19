@@ -1,5 +1,5 @@
-#ifndef __stir_scatter_ScatterEstimationByBin_H__
-#define __stir_scatter_ScatterEstimationByBin_H__
+#ifndef __stir_scatter_ScatterEstimation_H__
+#define __stir_scatter_ScatterEstimation_H__
 
 /*
     Copyright (C) 2016 University College London
@@ -20,7 +20,7 @@
 /*!
   \file
   \ingroup scatter
-  \brief Definition of class stir::ScatterEstimationByBin.
+  \brief Definition of class stir::ScatterEstimation.
   
   \author Nikos Efthimiou
   \author Kris Thielemans
@@ -42,6 +42,9 @@
 
 #include "stir/PostFiltering.h"
 #include "stir/stir_math.h"
+
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 
 START_NAMESPACE_STIR
 
@@ -67,7 +70,7 @@ typedef struct mask_parameters
   It should just deactivate the final upsampling.
 */
 
-class ScatterEstimationByBin : public ParsingObject
+class ScatterEstimation: public ParsingObject
 {
 public:
     //! upsample coarse scatter estimate and fit it to tails of the emission data
@@ -93,7 +96,7 @@ public:
 
 
     //! Default constructor (calls set_defaults())
-    ScatterEstimationByBin();
+    ScatterEstimation();
 
     //! Full process_data which performs set_up() before begining
     virtual Succeeded process_data();
@@ -267,7 +270,8 @@ private:
 
     //! \details A helper function to reduce the size of set_up().ß
     Succeeded ffw_project_mask_image();
-    //! \details A helper function to reduce the size of set_up().
+
+    //! \details A complicated function to mask images.
     bool apply_mask_in_place(DiscretisedDensity<3, float> &,
                              const mask_parameters&);
 
@@ -306,6 +310,9 @@ private:
     //! \details Class which will implement the scatter simulation.
     shared_ptr < ScatterSimulation > scatter_simulation_sptr;
 
+    //! This path is used in the debug mode to store all the intermediate files, as they are many.
+    fs::path extras_path;
+
     shared_ptr<PostFiltering <DiscretisedDensity<3,float> > > filter_sptr;
 
     //! \details The number of iterations the scatter estimation will perform.
@@ -323,5 +330,5 @@ private:
 };
 
 END_NAMESPACE_STIR
-#include "stir/scatter/ScatterEstimationByBin.inl"
+#include "stir/scatter/ScatterEstimation.inl"
 #endif
