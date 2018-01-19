@@ -494,7 +494,7 @@ set_template_proj_data_info(const std::string& filename)
     {
         // copy localy.
         info("ScatterSimulator: Subsampling scanner of template info ...");
-        shared_ptr<Scanner> new_scanner_sptr = std::make_shared<Scanner>(*tmp_proj_data_info_sptr->get_scanner_ptr());
+        shared_ptr<Scanner> new_scanner_sptr( new Scanner(*tmp_proj_data_info_sptr->get_scanner_ptr()));
 
         // preserve the lenght of the scanner
         float scanner_lenght = new_scanner_sptr->get_num_rings()* new_scanner_sptr->get_ring_spacing();
