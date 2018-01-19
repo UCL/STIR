@@ -203,6 +203,7 @@ BinNormalisationFromECAT8()
 BinNormalisationFromECAT8::
 BinNormalisationFromECAT8(const string& filename)
 {
+  set_defaults();
   read_norm_data(filename);
 }
 
