@@ -81,25 +81,11 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
   PET_data_type_values.push_back("Normalisation");
   PET_data_type_values.push_back("Image");
   
-  type_of_data_values.push_back("Static");
-  type_of_data_values.push_back("Dynamic");
-  type_of_data_values.push_back("Tomographic");
-  type_of_data_values.push_back("Curve");
-  type_of_data_values.push_back("ROI");
-  type_of_data_values.push_back("PET");
-  type_of_data_values.push_back("Other");
-  
-  patient_orientation_values.push_back("head_in");
-  patient_orientation_values.push_back("feet_in");
-  patient_orientation_values.push_back("other");
-  patient_orientation_values.push_back("unknown"); //default
-
-  patient_rotation_values.push_back("supine");
-  patient_rotation_values.push_back("prone");
-  patient_rotation_values.push_back("right");
-  patient_rotation_values.push_back("left");
-  patient_rotation_values.push_back("other");
-  patient_rotation_values.push_back("unknown"); //default
+  patient_orientation_values.push_back("HFS");
+  patient_orientation_values.push_back("HFP");
+  patient_orientation_values.push_back("FFS");
+  patient_orientation_values.push_back("FFP"); //default
+  patient_orientation_values.push_back("unknown");
 
   // default values
   // KT 07/10/2002 added 2 new ones
@@ -110,15 +96,15 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
 
   // need to default to PET for backwards compatibility
   this->exam_info_sptr->imaging_modality = ImagingModality::PT;
-  type_of_data_index = 6; // PET
+  //type_of_data_index = 6; // PET
   PET_data_type_index = 5; // Image
-  patient_orientation_index = 3; //unknown
-  patient_rotation_index = 5; //unknown
+  patient_orientation_index = patient_orientation_values.size; //unknown
   num_dimensions = 2; // set to 2 to be compatible with Interfile version 3.3 (which doesn't have this keyword)
   matrix_labels.resize(num_dimensions);
   matrix_size.resize(num_dimensions);
   pixel_sizes.resize(num_dimensions, 1.);
   num_time_frames = 1;
+  num_scan_data_types = 1;
   image_scaling_factors.resize(num_time_frames);
   for (int i=0; i<num_time_frames; i++)
     image_scaling_factors[i].resize(1, 1.);
@@ -146,22 +132,17 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
     KeyArgument::NONE,	&KeyParser::do_nothing);
   add_key("GENERAL IMAGE DATA", 
     KeyArgument::NONE,	&KeyParser::do_nothing);
-  add_key("type of data", 
+  /*add_key("type of data", 
           KeyArgument::ASCIIlist,
           (KeywordProcessor)&InterfileHeaderSiemens::set_type_of_data,
           &type_of_data_index, 
-          &type_of_data_values);
+          &type_of_data_values);*/
 
-  add_key("patient orientation",
+  add_key("%patient orientation",
 	  KeyArgument::ASCIIlist,
 	  &patient_orientation_index,
 	  &patient_orientation_values);
-  add_key("patient rotation",
-	  KeyArgument::ASCIIlist,
-	  &patient_rotation_index,
-	  &patient_rotation_values);
-
-
+  
   add_key("image data byte order", 
     KeyArgument::ASCIIlist,
     &byte_order_index, 
@@ -169,22 +150,27 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
   
   add_key("data format", 
     KeyArgument::ASCII,	&KeyParser::do_nothing);
-  add_key("number format", 
-    KeyArgument::ASCIIlist,
-    &number_format_index,
-    &number_format_values);
-  add_key("number of bytes per pixel", 
-    KeyArgument::INT,	&bytes_per_pixel);
-  add_key("number of dimensions", 
-    KeyArgument::INT,	(KeywordProcessor)&InterfileHeaderSiemens::read_matrix_info,&num_dimensions);
-  add_key("matrix size", 
-    KeyArgument::LIST_OF_INTS,&matrix_size);
-  add_key("matrix axis label", 
-    KeyArgument::ASCII,	&matrix_labels);
+  
+  //TODO Remove following
+  //add_key("number format",
+  // KeyArgument::ASCIIlist,
+  // &number_format_index,
+  // &number_format_values);
+  //add_key("number of bytes per pixel", 
+  //  KeyArgument::INT,	&bytes_per_pixel);
+  //add_key("number of dimensions", 
+  //  KeyArgument::INT,	(KeywordProcessor)&InterfileHeaderSiemens::read_matrix_info,&num_dimensions);
+  //add_key("matrix size", 
+  //  KeyArgument::LIST_OF_INTS,&matrix_size);
+  //add_key("matrix axis label", 
+  //  KeyArgument::ASCII,	&matrix_labels);
+  
   add_key("scale factor (mm/pixel)", 
     KeyArgument::DOUBLE, &pixel_sizes);
   add_key("!image duration (sec)", 
     KeyArgument::INT,	(KeywordProcessor)&InterfileHeaderSiemens::read_frames_info,&num_time_frames);
+  add_key("%number of scan data types",
+	  KeyArgument::INT, (KeywordProcessor)&InterfileHeaderSiemens::read_scan_data_types, &num_scan_data_types);
   add_key("image relative start time (sec)",
 	  KeyArgument::DOUBLE, &image_relative_start_times);
   add_key("image duration (sec)",
@@ -219,11 +205,11 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
 // MJ 17/05/2000 made bool
 bool InterfileHeaderSiemens::post_processing()
 {
-  if(type_of_data_index<0)
+  /*if(type_of_data_index<0)
     {
       warning("Interfile Warning: 'type_of_data' keyword required");
       return true;
-    }
+    }*/
 
   if (patient_orientation_index<0 || patient_rotation_index<0)
     return true;
@@ -295,35 +281,6 @@ bool InterfileHeaderSiemens::post_processing()
     }
   }
   
-  // KT 07/10/2002 new
-  // support for non-standard key
-  // TODO as there's currently no way to find out if a key was used in the header, we just rely on the
-  // fact that the default didn't change. This isn't good enough, but it has to do for now.
-  if (lln_quantification_units!=1.)
-  {
-     const bool all_one = image_scaling_factors[0][0] == 1.;
-    for (int frame=0; frame<num_time_frames; frame++)
-      for (unsigned int i=0; i<image_scaling_factors[frame].size(); i++)
-      {
-        // check if all image_scaling_factors are equal to 1 (i.e. the image_scaling_factors keyword 
-        // probably never occured) or lln_quantification_units
-        if ((all_one && image_scaling_factors[frame][i] != 1.) ||
-            (!all_one && image_scaling_factors[frame][i] != lln_quantification_units))
-          {
-            warning("Interfile error: key 'quantification units' can only be used when either "
-                    "image_scaling_factors[] keywords are not present, or have identical values.\n");
-            return true;
-          }
-        // if they're all 1, we set the value to lln_quantification_units
-        if (all_one)
-          image_scaling_factors[frame][i] = lln_quantification_units;
-      }
-    if (all_one)
-    {
-       warning("Interfile warning: non-standard key 'quantification_units' used to set 'image_scaling_factors' to %g\n",
-               lln_quantification_units);
-    }      
-  } // lln_quantification_units
     if (upper_en_window_thres > 0 && lower_en_window_thres > 0 )
     {
   exam_info_sptr->set_high_energy_thres(upper_en_window_thres);
@@ -357,19 +314,13 @@ void InterfileHeaderSiemens::set_type_of_data()
 {
   set_variable();
   
-  if (this->type_of_data_index == -1)
-    error("Interfile parsing: type_of_data needs to be set to supported value");
-
-  const string type_of_data = this->type_of_data_values[this->type_of_data_index];
-
-  if (type_of_data == "PET")
     {
-      add_key("PET STUDY (Emission data)", 
+      /*add_key("PET STUDY (Emission data)", 
               KeyArgument::NONE,	&KeyParser::do_nothing);
       add_key("PET STUDY (Image data)", 
               KeyArgument::NONE,	&KeyParser::do_nothing);
       add_key("PET STUDY (General)", 
-              KeyArgument::NONE,	&KeyParser::do_nothing);
+              KeyArgument::NONE,	&KeyParser::do_nothing);*/
       add_key("PET data type", 
               KeyArgument::ASCIIlist,
               &PET_data_type_index, 
@@ -383,25 +334,7 @@ void InterfileHeaderSiemens::set_type_of_data()
 	      KeyArgument::ULONG,	&data_offset_each_dataset);
 
     }
-  else if (type_of_data == "Tomographic")
-    {
-      add_key("SPECT STUDY (General)" , 
-              KeyArgument::NONE,	&KeyParser::do_nothing);  
-      add_key("SPECT STUDY (acquired data)",
-              KeyArgument::NONE,	&KeyParser::do_nothing);
-
-      process_status_values.push_back("Reconstructed");
-      process_status_values.push_back("Acquired");
-      add_key("process status", 
-              KeyArgument::ASCIIlist,
-              &process_status_index,
-              &process_status_values);
-
-#if 0
-      // overwrite vectored-value, as v3.3 had a scalar
-      add_key("data offset in bytes", &data_offset);
-#endif
-    }
+  
 }
 
 void InterfileHeaderSiemens::read_frames_info()
@@ -424,15 +357,6 @@ InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
 {
   num_segments = -1;
 
-  add_key("minimum ring difference per segment",
-    KeyArgument::LIST_OF_INTS, 
-    (KeywordProcessor)&InterfilePDFSHeaderSiemens::resize_segments_and_set, 
-    &min_ring_difference);
-  add_key("maximum ring difference per segment",
-    KeyArgument::LIST_OF_INTS, 
-    (KeywordProcessor)&InterfilePDFSHeaderSiemens::resize_segments_and_set, 
-    &max_ring_difference);
-  
   
   // warning these keys should match what is in Scanner::parameter_info()
   // TODO get Scanner to parse these
@@ -503,10 +427,20 @@ InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
   reference_energy = -1.f;
   add_key("Reference energy (in keV)",
           &reference_energy);
-  add_key("%axial compression", &axial_compression);
   add_key("%radial arc-correction", &radial_arc_correction);
   add_key("%axial compression", &axial_compression);
-
+  // Add these
+  // %maximum ring difference
+  // %number of segments
+  // %segment table
+  // number of scan data types:=2
+  // scan data type description[1]: = prompts
+  // scan data type description[2] : = randoms
+  // data offset in bytes[1] : = 24504
+  //  data offset in bytes[2] : = 73129037
+  
+  // in post processing 
+  //%total number of sinograms:=4084
 
   add_key("end scanner parameters",
 	  KeyArgument::NONE,	&KeyParser::do_nothing);
@@ -516,24 +450,44 @@ InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
 	  &effective_central_bin_size_in_cm);
   add_key("applied corrections",
     KeyArgument::LIST_OF_ASCII, &applied_corrections);
-
+  
+  
+  add_key("PET data type",
+	  KeyArgument::ASCIIlist,
+	  &PET_data_type_index,
+	  &PET_data_type_values);
+  add_key("process status",
+	  KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("IMAGE DATA DESCRIPTION",
+	  KeyArgument::NONE, &KeyParser::do_nothing);
+  // TODO rename keyword 
+  add_key("data offset in bytes",
+	  KeyArgument::ULONG, &data_offset_each_dataset);
 }
 
-void InterfilePDFSHeaderSiemens::resize_segments_and_set()
+
+void InterfilePDFSHeaderSiemens::read_scan_data_types()
 {
-  // find_storage_order returns true if already found (or error)
-  if (num_segments < 0 && !find_storage_order())
-  {
-    min_ring_difference.resize(num_segments);
-    max_ring_difference.resize(num_segments);
-    
-  }
-  
-  if (num_segments >= 0)
-    set_variable();
-  
+	set_variable();
+
+	scan_data_types.resize(num_scan_data_types);
+	data_offset_each_dataset.resize(num_time_frames*num_scan_data_types, 0UL);
+
 }
 
+
+
+void InterfilePDFSHeaderSiemens::read_frames_info()
+{
+	set_variable();
+	image_scaling_factors.resize(num_time_frames);
+	for (int i = 0; i<num_time_frames; i++)
+		image_scaling_factors[i].resize(1, 1.);
+	data_offset_each_dataset.resize(num_time_frames*num_scan_data_types, 0UL);
+	image_relative_start_times.resize(num_time_frames, 0.);
+	image_durations.resize(num_time_frames, 0.);
+}
+#if 0
 int InterfilePDFSHeaderSiemens::find_storage_order()
 {
 
@@ -616,6 +570,7 @@ int InterfilePDFSHeaderSiemens::find_storage_order()
   
 }
 
+#endif
 // definition for using sort() below.
 // This is a function object that allows comparing the first elements of 2 
 // pairs.
@@ -640,22 +595,7 @@ bool InterfilePDFSHeaderSiemens::post_processing()
   if (PET_data_type_values[PET_data_type_index] != "Emission")
   { warning("Interfile error: expecting emission data\n");  return true; }
   
-  if (min_ring_difference.size()!= static_cast<unsigned int>(num_segments))
-  { 
-    warning("Interfile error: per-segment information is inconsistent: min_ring_difference\n"); 
-    return true;
-  }
-  if (max_ring_difference.size() != static_cast<unsigned int>(num_segments))
-  { 
-    warning("Interfile error: per-segment information is inconsistent: max_ring_difference\n"); 
-    return true;
-  }
-  if (num_rings_per_segment.size()!= static_cast<unsigned int>(num_segments))
-  { 
-    warning("Interfile error: per-segment information is inconsistent: num_rings_per_segment\n"); 
-    return true;
-  }
-  
+	 
   // check for arc-correction
   if (applied_corrections.size() == 0)
   {
@@ -689,42 +629,6 @@ bool InterfilePDFSHeaderSiemens::post_processing()
     
   }
  
-  VectorWithOffset<int> sorted_min_ring_diff;
-  VectorWithOffset<int> sorted_max_ring_diff;
-  VectorWithOffset<int> sorted_num_rings_per_segment;
-  
-  /* TODO find_segment_sequence( segment_sequence,sorted_num_rings_per_segment,
-    sorted_min_ring_diff,sorted_max_ring_diff,
-    num_rings_per_segment,
-    min_ring_difference, max_ring_difference);
-	*/
-#if 0  
-  cerr << "PDFS data read inferred header :\n";
-  cerr << "Segment sequence :";
-  for (unsigned int i=0; i<segment_sequence.size(); i++)
-    cerr << segment_sequence[i] << "  ";
-  cerr << endl;
-  cerr << "RingDiff minimum :";
-  for (int i=sorted_min_ring_diff.get_min_index(); i<=sorted_min_ring_diff.get_max_index(); i++)
-    cerr <<sorted_min_ring_diff[i] << "  ";  cerr << endl;
-  cerr << "RingDiff maximum :";
-  for (int i=sorted_max_ring_diff.get_min_index(); i<=sorted_max_ring_diff.get_max_index(); i++)
-    cerr << sorted_max_ring_diff[i] << "  ";  cerr << endl;
-  cerr << "Nbplanes/segment :";
-  for (int i=sorted_num_rings_per_segment.get_min_index(); i<=sorted_num_rings_per_segment.get_max_index(); i++)
-    cerr << sorted_num_rings_per_segment[i] << "  ";  cerr << endl;
-
-  cerr << "Total number of planes :" 
-    << 
-#ifndef STIR_NO_NAMESPACES // stupid work-around for VC
-    std::accumulate
-#else
-    accumulate
-#endif
-       (num_rings_per_segment.begin(), num_rings_per_segment.end(), 0)
-    << endl;
-#endif
-  
   // handle scanner
 
   shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(get_exam_info_ptr()->originating_system));

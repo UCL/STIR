@@ -236,6 +236,7 @@ private:
   //! Reference energy.
   float reference_energy;
   int axial_compression;
+  float radial_arc_correction;
   // end scanner parameters
 
   double effective_central_bin_size_in_cm;
