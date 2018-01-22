@@ -54,13 +54,13 @@ START_NAMESPACE_STIR
 //! masking.
 //! \todo Maybe It could be moved it to STIR math.
 //!
-typedef struct mask_parameters
+typedef struct
 {
     float max_threshold;
     float add_scalar;
     float min_threshold;
     float times_scalar;
-};
+}mask_parameters;
 
 /*!
   \ingroup scatter
