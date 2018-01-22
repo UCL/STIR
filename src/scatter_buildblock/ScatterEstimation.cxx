@@ -361,9 +361,9 @@ set_up()
         this->export_scatter_estimates_of_each_iteration = true;
 
         // Create extras folder in this location
-        // Create extras folder in this location
         fs::path current_full_path(boost::filesystem::initial_path());
-        extras_path = current_full_path.append("extras");
+        //extras_path = current_full_path.append("extras"); // Introduced in boost v.1.55
+        extras_path = current_full_path / "extras";
 
         if(!fs::exists(extras_path))
             fs::create_directory(extras_path);
