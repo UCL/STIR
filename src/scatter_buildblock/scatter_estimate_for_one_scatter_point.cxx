@@ -53,7 +53,7 @@ SingleScatterSimulation::
 {       
   static const float max_single_scatter_cos_angle=max_cos_angle(this->template_exam_info_sptr->get_low_energy_thres(),
                                                                 2.f,
-                                                                this->proj_data_info_ptr->get_scanner_ptr()->get_energy_resolution());
+                                                                this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution());
 
   //static const float min_energy=energy_lower_limit(lower_energy_threshold,2.,energy_resolution);
 

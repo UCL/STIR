@@ -75,14 +75,14 @@ process_data()
     int bin_counter = 0;
     int axial_bins = 0 ;
 
-    for (vs_num.segment_num() = this->proj_data_info_ptr->get_min_segment_num();
-         vs_num.segment_num() <= this->proj_data_info_ptr->get_max_segment_num();
+    for (vs_num.segment_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_segment_num();
+         vs_num.segment_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
          ++vs_num.segment_num())
-        axial_bins += this->proj_data_info_ptr->get_num_axial_poss(vs_num.segment_num());
+        axial_bins += this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num());
         info(boost::format("ScatterSimulator: Segment number ... %d")% vs_num.segment_num());
     const int total_bins =
-            this->proj_data_info_ptr->get_num_views() * axial_bins *
-            this->proj_data_info_ptr->get_num_tangential_poss();
+            this->proj_data_info_cyl_noarc_cor_sptr->get_num_views() * axial_bins *
+            this->proj_data_info_cyl_noarc_cor_sptr->get_num_tangential_poss();
     /* Currently, proj_data_info.find_cartesian_coordinates_of_detection() returns
      coordinate in a coordinate system where z=0 in the first ring of the scanner.
      We want to shift this to a coordinate system where z=0 in the middle
@@ -94,34 +94,34 @@ process_data()
     {
         CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
         // check above statement
-        this->proj_data_info_ptr->find_cartesian_coordinates_of_detection(
+        this->proj_data_info_cyl_noarc_cor_sptr->find_cartesian_coordinates_of_detection(
                     detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
         assert(detector_coord_A.z() == 0);
         assert(detector_coord_B.z() == 0);
         // check that get_m refers to the middle of the scanner
         const float m_first =
-                this->proj_data_info_ptr->get_m(Bin(0, 0, this->proj_data_info_ptr->get_min_axial_pos_num(0), 0));
+                this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, this->proj_data_info_cyl_noarc_cor_sptr->get_min_axial_pos_num(0), 0));
         const float m_last =
-                this->proj_data_info_ptr->get_m(Bin(0, 0, this->proj_data_info_ptr->get_max_axial_pos_num(0), 0));
+                this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, this->proj_data_info_cyl_noarc_cor_sptr->get_max_axial_pos_num(0), 0));
         assert(fabs(m_last + m_first) < m_last * 10E-4);
     }
 #endif
     this->shift_detector_coordinates_to_origin =
-            CartesianCoordinate3D<float>(this->proj_data_info_ptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
+            CartesianCoordinate3D<float>(this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
     float total_scatter = 0 ;
 
-    for (vs_num.segment_num() = this->proj_data_info_ptr->get_min_segment_num();
-         vs_num.segment_num() <= this->proj_data_info_ptr->get_max_segment_num();
+    for (vs_num.segment_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_segment_num();
+         vs_num.segment_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
          ++vs_num.segment_num())
     {
-        for (vs_num.view_num() = this->proj_data_info_ptr->get_min_view_num();
-             vs_num.view_num() <= this->proj_data_info_ptr->get_max_view_num();
+        for (vs_num.view_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_view_num();
+             vs_num.view_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_view_num();
              ++vs_num.view_num())
         {
             total_scatter += this->process_data_for_view_segment_num(vs_num);
             bin_counter +=
-                    this->proj_data_info_ptr->get_num_axial_poss(vs_num.segment_num()) *
-                    this->proj_data_info_ptr->get_num_tangential_poss();
+                    this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num()) *
+                    this->proj_data_info_cyl_noarc_cor_sptr->get_num_tangential_poss();
             info(boost::format("ScatterSimulator: %d / %d") % bin_counter% total_bins);
         }
     }
@@ -148,12 +148,12 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
     {
         Bin bin(vs_num.segment_num(), vs_num.view_num(), 0, 0);
 
-        for (bin.axial_pos_num() = this->proj_data_info_ptr->get_min_axial_pos_num(bin.segment_num());
-             bin.axial_pos_num() <= this->proj_data_info_ptr->get_max_axial_pos_num(bin.segment_num());
+        for (bin.axial_pos_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_axial_pos_num(bin.segment_num());
+             bin.axial_pos_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_axial_pos_num(bin.segment_num());
              ++bin.axial_pos_num())
         {
-            for (bin.tangential_pos_num() = this->proj_data_info_ptr->get_min_tangential_pos_num();
-                 bin.tangential_pos_num() <= this->proj_data_info_ptr->get_max_tangential_pos_num();
+            for (bin.tangential_pos_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_tangential_pos_num();
+                 bin.tangential_pos_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_tangential_pos_num();
                  ++bin.tangential_pos_num())
             {
                 all_bins.push_back(bin);
@@ -307,7 +307,7 @@ set_activity_image(const std::string& filename)
 
     if (is_null_ptr(this->activity_image_sptr))
     {
-        error(boost::format("Error reading activity image %s") %
+        error(boost::format("ScatterSimulation: Error reading activity image %s") %
               this->activity_image_filename);
     }
     this->remove_cache_for_integrals_over_activity();
@@ -416,7 +416,7 @@ get_output_proj_data_sptr()
     if(is_null_ptr(this->output_proj_data_sptr))
     {
         this->output_proj_data_sptr.reset(new ProjDataInMemory(this->template_exam_info_sptr,
-                                                                this->proj_data_info_ptr->create_shared_clone()));
+                                                                this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone()));
     }
 
     return this->output_proj_data_sptr;
@@ -427,7 +427,7 @@ ScatterSimulation::
 set_output_proj_data(const std::string& filename)
 {
 
-    if(is_null_ptr(this->proj_data_info_ptr))
+    if(is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr))
     {
         error("Template ProjData has not been set. Abord.");
     }
@@ -438,12 +438,12 @@ set_output_proj_data(const std::string& filename)
     {
         shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
         this->output_proj_data_sptr.reset(new ProjDataInterfile(exam_info_sptr,
-                                                                this->proj_data_info_ptr->create_shared_clone(),
+                                                                this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone(),
                                                                 this->output_proj_data_filename));
     }
     else
         this->output_proj_data_sptr.reset(new ProjDataInterfile(this->template_exam_info_sptr,
-                                                                this->proj_data_info_ptr->create_shared_clone(),
+                                                                this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone(),
                                                                 this->output_proj_data_filename));
 }
 
@@ -456,19 +456,29 @@ set_output_proj_data_sptr(shared_ptr<ProjData>& arg)
 
 void
 ScatterSimulation::
-set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>& arg)
+set_template_proj_data_info_sptr(shared_ptr<ProjDataInfo> arg)
 {
-    this->proj_data_info_ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(arg.get());
+    this->proj_data_info_cyl_noarc_cor_sptr = std::dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(arg);
 
-    if (is_null_ptr(this->proj_data_info_ptr))
-        error("ScatterSimulation can only handle non-arccorrected data");
+    if (is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr))
+        error("ScatterSimulation: Can only handle non-arccorrected data");
 
-    this->proj_data_info_sptr = arg;
+    if (subsample_scanner_dets > 1 || subsample_scanner_rings > 1)
+        this->proj_data_info_cyl_noarc_cor_sptr =
+                std::dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(subsample_scanner(proj_data_info_cyl_noarc_cor_sptr));
+
+    if (this->proj_data_info_cyl_noarc_cor_sptr->get_num_segments() > 1) // do SSRB
+    {
+        info("ScatterSimulation: Performing SSRB on template info ...");
+        this->proj_data_info_cyl_noarc_cor_sptr.reset(
+                dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(SSRB(* this->proj_data_info_cyl_noarc_cor_sptr,
+                                                                      this->proj_data_info_cyl_noarc_cor_sptr->get_num_segments(), 1, false)));
+    }
 
     // find final size of detection_points_vector
     this->total_detectors =
-            this->proj_data_info_ptr->get_scanner_ptr()->get_num_rings()*
-            this->proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring ();
+            this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_rings()*
+            this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_detectors_per_ring ();
 
     // reserve space to avoid reallocation, but the actual size will grow dynamically
     this->detection_points_vector.reserve(static_cast<std::size_t>(this->total_detectors));
@@ -486,53 +496,46 @@ set_template_proj_data_info(const std::string& filename)
     shared_ptr<ProjData> template_proj_data_sptr =
             ProjData::read_from_file(this->template_proj_data_filename);
 
+    this->set_exam_info_sptr(template_proj_data_sptr->get_exam_info_sptr());
 
     shared_ptr<ProjDataInfo> tmp_proj_data_info_sptr =
-            template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();
-
-    if (subsample_scanner_dets > 1 || subsample_scanner_rings > 1)
-    {
-        // copy localy.
-        info("ScatterSimulator: Subsampling scanner of template info ...");
-        shared_ptr<Scanner> new_scanner_sptr( new Scanner(*tmp_proj_data_info_sptr->get_scanner_ptr()));
-
-        // preserve the lenght of the scanner
-        float scanner_lenght = new_scanner_sptr->get_num_rings()* new_scanner_sptr->get_ring_spacing();
-
-        new_scanner_sptr->set_num_rings(static_cast<int>(new_scanner_sptr->get_num_rings()/subsample_scanner_rings));
-        new_scanner_sptr->set_num_detectors_per_ring(static_cast<int>(new_scanner_sptr->get_num_detectors_per_ring()/subsample_scanner_dets));
-        new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_lenght/new_scanner_sptr->get_num_rings()));
-
-
-        ProjDataInfo * tmp_proj_data_info_2d_ptr = ProjDataInfo::ProjDataInfoCTI(new_scanner_sptr,
-                                                                                 1, 0,
-                                                                                 new_scanner_sptr->get_num_detectors_per_ring()/2,
-                                                                                 new_scanner_sptr->get_num_detectors_per_ring()/2,
-                                                                                 false);
-
-        tmp_proj_data_info_sptr = tmp_proj_data_info_2d_ptr->create_shared_clone();
-    }
-
-    if (tmp_proj_data_info_sptr->get_num_segments() > 1) // do SSRB
-    {
-        info("Performing SSRB on template info ...");
-        ProjDataInfoCylindricalNoArcCorr * tmp_proj_data_info_2d_sptr =
-                    dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >
-                    ( SSRB(*tmp_proj_data_info_sptr,
-                          tmp_proj_data_info_sptr->get_num_segments(), 1, false));
-
-        tmp_proj_data_info_sptr = tmp_proj_data_info_2d_sptr->create_shared_clone();
-    }
+            template_proj_data_sptr->get_proj_data_info_sptr();
 
     this->set_template_proj_data_info_sptr(tmp_proj_data_info_sptr);
-    this->set_exam_info_sptr(template_proj_data_sptr->get_exam_info_ptr()->create_shared_clone());
+
 }
 
 void
 ScatterSimulation::
-set_exam_info_sptr(const shared_ptr<ExamInfo>& arg)
+set_exam_info_sptr(shared_ptr<ExamInfo> arg)
 {
     this->template_exam_info_sptr = arg;
+}
+
+shared_ptr<ProjDataInfo>
+ScatterSimulation::
+subsample_scanner(shared_ptr<ProjDataInfo> arg)
+{
+
+    // copy localy.
+    info("ScatterSimulator: Subsampling scanner of template info ...");
+    shared_ptr<Scanner> new_scanner_sptr( new Scanner(*arg->get_scanner_ptr()));
+
+    // preserve the lenght of the scanner
+    float scanner_lenght = new_scanner_sptr->get_num_rings()* new_scanner_sptr->get_ring_spacing();
+
+    new_scanner_sptr->set_num_rings(static_cast<int>(new_scanner_sptr->get_num_rings()/subsample_scanner_rings));
+    new_scanner_sptr->set_num_detectors_per_ring(static_cast<int>(new_scanner_sptr->get_num_detectors_per_ring()/subsample_scanner_dets));
+    new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_lenght/new_scanner_sptr->get_num_rings()));
+
+
+    ProjDataInfo * tmp_proj_data_info_2d_ptr = ProjDataInfo::ProjDataInfoCTI(new_scanner_sptr,
+                                                                             1, 0,
+                                                                             new_scanner_sptr->get_num_detectors_per_ring()/2,
+                                                                             new_scanner_sptr->get_num_detectors_per_ring()/2,
+                                                                             false);
+
+    return tmp_proj_data_info_2d_ptr->create_shared_clone();
 }
 
 void

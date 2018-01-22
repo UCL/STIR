@@ -67,7 +67,7 @@ ScatterSimulation::
 find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const
 {
   CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
-  this->proj_data_info_ptr->
+  this->proj_data_info_cyl_noarc_cor_sptr->
     find_cartesian_coordinates_of_detection(
                                             detector_coord_A,detector_coord_B,bin);
   det_num_A =
@@ -101,8 +101,8 @@ detection_efficiency(const float energy) const
 {
   // factor 2.35482 is used to convert FWHM to sigma
   const float sigma_times_sqrt2= 
-    sqrt(2.*energy*this->proj_data_info_ptr->get_scanner_ptr()->get_reference_energy())*
-          this->proj_data_info_ptr->get_scanner_ptr()->get_energy_resolution()/2.35482f;  // 2.35482=2 * sqrt( 2 * ( log(2) )
+    sqrt(2.*energy*this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_reference_energy())*
+          this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution()/2.35482f;  // 2.35482=2 * sqrt( 2 * ( log(2) )
   
   // sigma_times_sqrt2= sqrt(2) * sigma   // resolution proportional to FWHM    
   

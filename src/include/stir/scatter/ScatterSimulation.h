@@ -42,7 +42,7 @@ START_NAMESPACE_STIR
   N.E. : This class is roughly the base class of what used to be the ScatterEstimationByBin.
   Because there are different approaches on the actual simulation process, this base class will
   be in charge of hold projection data and subsample the attenuation image, while more core function
-  will deligate to classes like SignelScatterSimulation.
+  will deligate to classes like SingleScatterSimulation.
 
   This class computes the single Compton scatter estimate for PET data using an analytical
   approximation of an integral. It takes as input an emission image and an attenuation image.
@@ -118,7 +118,7 @@ public:
     //! \details Since July 2016, the information for the energy window and energy
     //! resolution are stored in ExamInfo.
     void
-    set_exam_info_sptr(const shared_ptr<ExamInfo>&);
+    set_exam_info_sptr(shared_ptr<ExamInfo>);
 
 
     //! find scatter points
@@ -144,7 +144,7 @@ public:
     get_output_proj_data_sptr();
 
     //! \details Load the scatter template and perform basic checks.
-    void set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>&);
+    void set_template_proj_data_info_sptr(shared_ptr<ProjDataInfo>);
 
     void set_template_proj_data_info(const std::string&);
 
@@ -211,7 +211,9 @@ protected:
 
     float
     compute_emis_to_det_points_solid_angle_factor(const CartesianCoordinate3D<float>& emis_point,
-                                                  const CartesianCoordinate3D<float>& detector_coord) ;
+                                                  const CartesianCoordinate3D<float>& detector_coord);
+
+    shared_ptr<ProjDataInfo> subsample_scanner(shared_ptr<ProjDataInfo> arg);
 
     virtual void set_defaults();
     virtual void initialise_keymap();
@@ -324,9 +326,7 @@ protected:
 
     std::string template_proj_data_filename;
 
-    ProjDataInfoCylindricalNoArcCorr * proj_data_info_ptr;
-
-    shared_ptr<ProjDataInfo> proj_data_info_sptr;
+    shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_cyl_noarc_cor_sptr;
 
     //! \details Exam info extracted from the scanner template
     shared_ptr<ExamInfo> template_exam_info_sptr;

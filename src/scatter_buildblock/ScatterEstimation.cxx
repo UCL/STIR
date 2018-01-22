@@ -885,7 +885,7 @@ process_data()
         {
             std::stringstream convert;   // stream used for the conversion
             convert << "unscaled_" << i_scat_iter;
-            fs::path tmp = extras_path.append(convert.str());
+            fs::path tmp = extras_path / convert.str();
             dynamic_cast<ProjDataInMemory *> (unscaled_est_projdata_2d_sptr.get())->write_to_file(tmp.string());
         }
 
@@ -907,7 +907,7 @@ process_data()
         {
             std::stringstream convert;   // stream used for the conversion
             convert << "scaled_" << i_scat_iter;
-            fs::path tmp = extras_path.append(convert.str());
+            fs::path tmp = extras_path / convert.str();
             dynamic_cast<ProjDataInMemory *> (scaled_est_projdata_2d_sptr.get())->write_to_file(tmp.string());
         }
 
@@ -1003,7 +1003,7 @@ reconstruct_iterative(int _current_iter_num,
     {
         std::stringstream convert;   // stream used for the conversion
         convert << "recon_" << _current_iter_num;
-        fs::path tmp = extras_path.append(convert.str());
+        fs::path  tmp = extras_path / convert.str();
         OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
                 write_to_file(tmp.string(), *_current_estimate_sptr);
 
