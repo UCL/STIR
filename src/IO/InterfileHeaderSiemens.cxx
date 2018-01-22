@@ -976,7 +976,7 @@ bool InterfilePDFSHeaderSiemens::post_processing()
 	new ProjDataInfoCylindricalArcCorr (
 					    scanner_ptr_from_file,
 					    float(effective_central_bin_size_in_cm*10.),
-					    sorted_num_rings_per_segment,
+					    sorted_num_rings_per_segment, // segment_table, size is num_segments
 					    sorted_min_ring_diff,
 					    sorted_max_ring_diff,
 					    num_views,num_bins);
