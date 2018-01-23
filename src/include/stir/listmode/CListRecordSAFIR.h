@@ -38,7 +38,6 @@
 #include "stir/ByteOrder.h"
 #include "stir/ByteOrderDefine.h"
 
-#include "boost/make_shared.hpp"
 #include "boost/static_assert.hpp"
 #include "boost/cstdint.hpp"
 
@@ -72,6 +71,12 @@ public:
 	inline CListEventSAFIR( shared_ptr<DetectorCoordinateMapFromFile> map ) : map(map) {}
 	//! Returns LOR corresponding to the given event.
 	inline virtual LORAs2Points<float> get_LOR() const;
+  //! This method checks if the template is valid for LmToProjData
+  /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
+   *  Most scanners have listmode data that correspond to non arc-corrected data and
+   *  this check avoids a crash when an unsupported template is used as input.
+   */
+	inline virtual bool is_valid_template(const ProjDataInfo&) const {return true;}
 
 	//! Returns 0 if event is prompt and 1 if random/delayed
 	inline bool is_prompt()

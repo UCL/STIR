@@ -39,3 +39,5 @@ set(${dir_scripts}
 if (BUILD_EXECUTABLES)
   install(PROGRAMS ${${dir_scripts}} DESTINATION bin)
 endif()
+
+add_subdirectory(IO)

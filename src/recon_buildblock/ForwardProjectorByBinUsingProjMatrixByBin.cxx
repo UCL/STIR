@@ -43,7 +43,6 @@
 using std::find;
 using std::vector;
 using std::list;
-using std::auto_ptr;
 #endif
 
 START_NAMESPACE_STIR
@@ -210,7 +209,7 @@ ForwardProjectorByBinUsingProjMatrixByBin::
                     axial_pos_tmp,
                     tang_pos_tmp);
             
-            auto_ptr<SymmetryOperation> symm_op_ptr = 
+            unique_ptr<SymmetryOperation> symm_op_ptr = 
               symmetries->find_symmetry_operation_from_basic_bin(bin);
             assert(bin == basic_bin);
             

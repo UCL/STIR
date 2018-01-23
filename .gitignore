@@ -75,3 +75,11 @@ install_manifest.txt
 *.asv
 *.mex*
 
+# Mac
+.DS_Store
+.cproject
+.project
+.settings
+
+# other stuff
+.cache

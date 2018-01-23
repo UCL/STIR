@@ -135,7 +135,7 @@ main(int argc, char **argv)
 	  if (dot_ptr != NULL)
 	    *dot_ptr = '_';
 	  // now add stuff to say which frame, gate, bed, data this was
-	  sprintf(header_filename+strlen(header_filename), "_f%dg%dd%db%d", 
+	  sprintf(header_filename+strlen(header_filename), "_f%ug%dd%db%d",
 		  volume_num+1, 1, 0, 0);
 	}
 	if (output_file_format_sptr->write_to_file(header_filename, *stir_volume_sptr)

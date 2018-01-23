@@ -1,6 +1,8 @@
 # Language selection
 language: cpp
 
+cache: ccache
+
 # Both clang and gcc can be tested. The more is the better.
 compiler:
   - clang
@@ -11,10 +13,12 @@ os:
   - linux
   - osx
 
-# Enviroment variables:
-global:
-  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON=1 -DSTIR_MPI=0 -DBUILD_SWIG_MATLAB=0 -DSTIR_OPENMP=0 -DCMAKE_BUILD_TYPE=Release"
+# Environment variables:
+# To avoid too many builds, we mix some options (although independent tests would have been better)
 env:
+  global:
+  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON:BOOL=On -DSTIR_MPI:BOOL=Off -DSTIR_OPENMP:BOOL=Off -DCMAKE_BUILD_TYPE=Release"
+  matrix:
   - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0"
   - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1"
 
@@ -28,31 +32,62 @@ sudo: false
 addons:
   apt:
     packages:
-      - libboost-all-dev
-      - swig
+      - libboost-dev
+      - swig3.0
+      - python3-dev
+      - python3-numpy
+      - python3-pytest
       - libgomp1
       - root-system-bin
+      - libroot-tree-dev
+      - libroot-tree-treeplayer-dev
+      - libroot-io-dev
 
 # Actual compilation script
 
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew tap homebrew/science; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install --with-cocoa root; fi
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
+      brew update
+      brew tap homebrew/science
+      # seems to be needed on Travis due to conflicts with gcc otherwise
+      # see https://github.com/travis-ci/travis-ci/issues/8826
+      brew cask uninstall oclint
+      brew install ccache
+      export PATH="/usr/local/opt/ccache/libexec:$PATH"
+      brew install --with-cocoa root
+      brew install swig
+      # use Python3 on Mac
+      # from http://blog.fizyk.net.pl/blog/running-python-tests-on-traviss-osx-workers.html
+      brew install python3
+      virtualenv venv -p python3
+      source venv/bin/activate
+      python -m pip install -U pip
+      python -m pip install pytest numpy
+    fi
 
-script:
+
+install:
   - mkdir build install
   - cd build
-  - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS ..
-  - make -j 8 all
+  - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/install ..
+  - make -j 2 all
+  - make install
+  
+script:
   - make test
-  - make DESTDIR=$TRAVIS_BUILD_DIR/install all install
-  - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/usr/local/bin
+  - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/bin
   - cd $TRAVIS_BUILD_DIR/recon_test_pack
   - ./run_test_simulate_and_recon.sh
   - ./run_test_simulate_and_recon_with_motion.sh
   - ./run_scatter_tests.sh
   - ./run_tests.sh --nointbp
-  -  if [[ "$TRAVIS_OS_NAME" == "osx" && $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT_SUPPORT=0"* ]]; then ./run_root_GATE.sh; fi
+  - if [[ $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT_SUPPORT=0"* ]]; then ./run_root_GATE.sh; fi
   - cd $TRAVIS_BUILD_DIR/recon_test_pack/SPECT
   - ./run_SPECT_tests.sh
+  - cd $TRAVIS_BUILD_DIR/src
+  # Run Python tests, making sure we're using the correct Python interpreter
+  - export PYTHON=$(cmake -LA -N $TRAVIS_BUILD_DIR/build |awk -F= '/PYTHON_EXECUTABLE/ {print $2}')
+  - echo Using Python executable "$PYTHON"
+  - export PYTHONPATH=$TRAVIS_BUILD_DIR/install/python
+  - ${PYTHON} -m pytest .
