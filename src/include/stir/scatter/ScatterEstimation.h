@@ -104,7 +104,8 @@ public:
     virtual Succeeded reconstruct_iterative(int,
                                             shared_ptr<DiscretisedDensity<3, float> >&);
 
-    virtual Succeeded reconstruct_analytic();
+    virtual Succeeded reconstruct_analytic(int,
+                                           shared_ptr<DiscretisedDensity<3, float> > &);
 
     //!
     //! \brief set_up
@@ -158,7 +159,11 @@ public:
     //! Get the zoom factor in the Z axis.
     inline float get_zoom_z();
 
-    // TODO write_log can't be const because parameter_info isn't const
+    //!
+    //! \brief write_log
+    //! \param simulation_time
+    //! \param total_scatter
+    //! \deprecated
     virtual void
     write_log(const double simulation_time,
               const float total_scatter);

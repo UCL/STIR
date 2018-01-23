@@ -118,7 +118,7 @@ public:
     //! \details Since July 2016, the information for the energy window and energy
     //! resolution are stored in ExamInfo.
     void
-    set_exam_info_sptr(shared_ptr<ExamInfo>);
+    set_exam_info_sptr(const shared_ptr<ExamInfo>&);
 
 
     //! find scatter points
@@ -144,7 +144,7 @@ public:
     get_output_proj_data_sptr();
 
     //! \details Load the scatter template and perform basic checks.
-    void set_template_proj_data_info_sptr(shared_ptr<ProjDataInfo>);
+    void set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>&);
 
     void set_template_proj_data_info(const std::string&);
 
@@ -283,9 +283,6 @@ protected:
 
     //!@}
 
-    //! Proj_data_info of the subsampled scanner.
-    shared_ptr<ProjDataInfo> template_proj_data_info_sptr;
-
     virtual double
     scatter_estimate(const unsigned det_num_A,
                      const unsigned det_num_B);
@@ -335,9 +332,12 @@ protected:
 
     std::string density_image_for_scatter_points_filename;
 
+    std::string density_image_for_scatter_points_output_filename;
+
     shared_ptr< DiscretisedDensity<3, float> > density_image_sptr;
 
     shared_ptr< DiscretisedDensity<3, float> > density_image_for_scatter_points_sptr;
+
 
     int total_detectors;
 
@@ -384,6 +384,10 @@ protected:
     float zoom_xy;
     //! Zoom factor on Z axis. Defaults on 1.f.
     float zoom_z;
+    //! Optional to the zoom_xy the final size of the image can be set
+    int size_xy;
+    //! Optional to the zoom_z the final size of the image can be set
+    int size_z;
 
     //! If full scanner template is provided then subsample it
     int subsample_scanner_rings;

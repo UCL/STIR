@@ -845,7 +845,7 @@ process_data()
             reconstruct_iterative( 0,
                                    this->current_activity_image_lowres_sptr);
         else
-            reconstruct_analytic();
+            reconstruct_analytic(0, this->current_activity_image_lowres_sptr);
 
         if (this->initial_activity_image_filename.size() > 0 )
             OutputFileFormat<DiscretisedDensity < 3, float > >::default_sptr()->
@@ -876,7 +876,10 @@ process_data()
             }
         }
 
-        //TODO: filter ... if FBP
+        if (!iterative_method)
+        {
+            // Threshold
+        }
 
         info("ScatterEstimation: Scatter simulation in progress...");
         this->scatter_simulation_sptr->process_data();
@@ -966,14 +969,10 @@ process_data()
         add_proj_data(*back_projdata_2d_sptr, *this->add_projdata_2d_sptr);
         this->multiplicative_binnorm_2d_sptr->apply(*back_projdata_2d_sptr, start_time, end_time);
 
-        if (iterative_method)
-            reconstruct_iterative(i_scat_iter,
-                                  this->current_activity_image_lowres_sptr);
-        else
-        {
-            reconstruct_analytic();
-            //TODO: threshold ... to cut the negative values
-        }
+        iterative_method ? reconstruct_iterative(i_scat_iter,
+                                                 this->current_activity_image_lowres_sptr):
+                           reconstruct_analytic(i_scat_iter, this->current_activity_image_lowres_sptr);
+
 
         // Reset to the additive factor
         //                this->scaled_est_projdata_sptr->fill(*this->back_projdata_sptr);
@@ -1012,9 +1011,24 @@ reconstruct_iterative(int _current_iter_num,
 
 Succeeded
 ScatterEstimation::
-reconstruct_analytic()
+reconstruct_analytic(int _current_iter_num,
+        shared_ptr<DiscretisedDensity<3, float> > & _current_estimate_sptr)
 {
-    //TODO
+    AnalyticReconstruction* analytic_object =
+            dynamic_cast<AnalyticReconstruction* > (this->reconstruction_template_sptr.get());
+    analytic_object->reconstruct(this->current_activity_image_lowres_sptr);
+
+    if(this->run_debug_mode)
+    {
+        std::stringstream convert;   // stream used for the conversion
+        convert << "recon_analytic_"<< _current_iter_num;
+        fs::path  tmp = extras_path / convert.str();
+        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+                write_to_file(tmp.string(), *_current_estimate_sptr);
+
+    }
+
+    //TODO: threshold ... to cut the negative values
 }
 
 /****************** functions to help **********************/
