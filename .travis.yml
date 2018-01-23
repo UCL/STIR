@@ -33,6 +33,8 @@ addons:
   apt:
     packages:
       - libboost-dev
+      - libboost-filesystem1.54-dev
+      - libboost-system1.54-dev
       - swig3.0
       - python3-dev
       - python3-numpy
