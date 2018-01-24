@@ -98,7 +98,7 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
   this->exam_info_sptr->imaging_modality = ImagingModality::PT;
   //type_of_data_index = 6; // PET
   PET_data_type_index = 5; // Image
-  patient_orientation_index = patient_orientation_values.size; //unknown
+  patient_orientation_index = patient_orientation_values.size(); //unknown
   num_dimensions = 2; // set to 2 to be compatible with Interfile version 3.3 (which doesn't have this keyword)
   matrix_labels.resize(num_dimensions);
   matrix_size.resize(num_dimensions);
@@ -165,6 +165,7 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
   //add_key("matrix axis label", 
   //  KeyArgument::ASCII,	&matrix_labels);
   
+
   add_key("scale factor (mm/pixel)", 
     KeyArgument::DOUBLE, &pixel_sizes);
   add_key("!image duration (sec)", 
@@ -348,6 +349,17 @@ void InterfileHeaderSiemens::read_frames_info()
   image_durations.resize(num_time_frames, 0.);
 }
 
+void InterfileHeaderSiemens::read_scan_data_types()
+{
+	set_variable();
+	scan_data_types.resize(num_scan_data_types);
+	for (int i = 0; i<num_scan_data_types; i++)
+		scan_data_types[i].resize(1, 1.);
+	
+	data_offset_in_bytes.resize(num_scan_data_types, 0UL);
+	
+}
+
 /**********************************************************************/
 
 //KT 26/10/98
@@ -431,16 +443,29 @@ InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
   add_key("%axial compression", &axial_compression);
   // Add these
   // %maximum ring difference
+  add_key("%maximum ring difference", &maximum_ring_difference);
   // %number of segments
+  
+  add_key("%number of segments",
+	  KeyArgument::INT, (KeywordProcessor)&InterfilePDFSHeaderSiemens::read_segment_table, &num_of_segments);
   // %segment table
+  //add_key("%segment table", &segment_table);
+  add_key("%segment table",
+	  KeyArgument::LIST_OF_INTS, &segment_table);
   // number of scan data types:=2
+  add_key("number of scan data types", &num_of_scan_data_types);
+  // scan data type size depends on the previous field
   // scan data type description[1]: = prompts
   // scan data type description[2] : = randoms
+  
+  // scan data type size depends on the previous field
   // data offset in bytes[1] : = 24504
   //  data offset in bytes[2] : = 73129037
   
   // in post processing 
   //%total number of sinograms:=4084
+  add_key("%total number of sinograms", &total_num_of_sinograms);
+
 
   add_key("end scanner parameters",
 	  KeyArgument::NONE,	&KeyParser::do_nothing);
@@ -471,12 +496,20 @@ void InterfilePDFSHeaderSiemens::read_scan_data_types()
 	set_variable();
 
 	scan_data_types.resize(num_scan_data_types);
-	data_offset_each_dataset.resize(num_time_frames*num_scan_data_types, 0UL);
+	data_offset_in_bytes.resize(num_scan_data_types);
+	
+}
+
+void InterfilePDFSHeaderSiemens::read_segment_table()
+{
+	set_variable();
+
+	scan_data_types.resize(num_scan_data_types);
+	data_offset_in_bytes.resize(num_scan_data_types);
 
 }
 
-
-
+#if 0
 void InterfilePDFSHeaderSiemens::read_frames_info()
 {
 	set_variable();
@@ -484,10 +517,10 @@ void InterfilePDFSHeaderSiemens::read_frames_info()
 	for (int i = 0; i<num_time_frames; i++)
 		image_scaling_factors[i].resize(1, 1.);
 	data_offset_each_dataset.resize(num_time_frames*num_scan_data_types, 0UL);
-	image_relative_start_times.resize(num_time_frames, 0.);
-	image_durations.resize(num_time_frames, 0.);
+	//image_relative_start_times.resize(num_time_frames, 0.);
+	//image_durations.resize(num_time_frames, 0.);
 }
-#if 0
+
 int InterfilePDFSHeaderSiemens::find_storage_order()
 {
 
@@ -958,7 +991,7 @@ bool InterfilePDFSHeaderSiemens::post_processing()
   
   
    
-  
+  /*************
   if (is_arccorrected)
     {
       if (effective_central_bin_size_in_cm <= 0)
@@ -1002,7 +1035,7 @@ bool InterfilePDFSHeaderSiemens::post_processing()
 	}
     }
   //cerr << data_info_ptr->parameter_info() << endl;
-  
+  ************/
   return false;
 }
 

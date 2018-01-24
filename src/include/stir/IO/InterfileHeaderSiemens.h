@@ -86,10 +86,13 @@ private:
 
   void set_type_of_data();
 
-  int			num_time_frames;
+  int num_time_frames;
+  int num_scan_data_types;
   std::vector<double> image_relative_start_times;
   std::vector<double> image_durations;
-
+  std::vector<std::string> scan_data_types;
+  std::vector<long> data_offset_in_bytes;
+  std::vector<int> segment_table_data;
   int bytes_per_pixel;
 
   // Louvain la Neuve style of 'image scaling factors'
@@ -97,6 +100,7 @@ private:
  protected:
   virtual void read_matrix_info();
   void read_frames_info();
+  void read_scan_data_types();
 
 public :
   //! Get a pointer to the exam information
@@ -195,6 +199,11 @@ public:
   std::vector<int> max_ring_difference; 
   std::vector<int> num_rings_per_segment;
 
+  std::vector<int> scan_data_types;
+  std::vector<int> data_offset_in_bytes;  
+  std::vector<int> segment_table;
+
+
   std::vector<std::string> applied_corrections;
  
   // derived values
@@ -206,6 +215,10 @@ public:
 
 private:
   void resize_segments_and_set();
+  void read_scan_data_types();
+  void read_segment_table();
+  //void read_frames_info();
+
   int find_storage_order();
 
   // members that will be used to set Scanner
@@ -237,6 +250,11 @@ private:
   float reference_energy;
   int axial_compression;
   float radial_arc_correction;
+  int maximum_ring_difference;
+  int num_of_segments;
+  int num_scan_data_types;
+  int total_num_of_sinograms;
+  int num_of_scan_data_types;
   // end scanner parameters
 
   double effective_central_bin_size_in_cm;
