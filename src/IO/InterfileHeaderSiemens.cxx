@@ -504,9 +504,8 @@ void InterfilePDFSHeaderSiemens::read_segment_table()
 {
 	set_variable();
 
-	scan_data_types.resize(num_scan_data_types);
-	data_offset_in_bytes.resize(num_scan_data_types);
-
+	segment_table_data.resize(num_of_segments);
+	
 }
 
 #if 0
@@ -991,7 +990,7 @@ bool InterfilePDFSHeaderSiemens::post_processing()
   
   
    
-  /*************
+
   if (is_arccorrected)
     {
       if (effective_central_bin_size_in_cm <= 0)
@@ -1035,7 +1034,7 @@ bool InterfilePDFSHeaderSiemens::post_processing()
 	}
     }
   //cerr << data_info_ptr->parameter_info() << endl;
-  ************/
+  
   return false;
 }
 
