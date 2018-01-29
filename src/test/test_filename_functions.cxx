@@ -27,6 +27,7 @@
 */
 #include "stir/utilities.h"
 #include "stir/RunTests.h"
+#include "stir/Path.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -322,6 +323,66 @@ void FilenameTests::run_tests()
 	  ==  "filename.v");
 
   }
+
+  {
+    // same checks with Path class
+    Path filename_with_directory("dir.name/filename", false);
+
+    check( filename_with_directory.getPath()  == "dir.name/");
+
+    filename_with_directory.addExtension(".img");
+    check(filename_with_directory ==  "dir.name/filename.img");
+
+    filename_with_directory =  "dir.name/filename.v";
+    check(filename_with_directory == "dir.name/filename.v");
+
+    filename_with_directory.addExtension(".img");
+
+    check(filename_with_directory ==  "dir.name/filename.v");
+
+    // N.E: Not sure about this. Set again in case of failure of the
+    // previous test?
+    filename_with_directory =  "dir.name/filename.v";
+    check(filename_with_directory.getFileName() == "filename.v");
+
+    filename_with_directory =  "filename.v";
+    check(filename_with_directory.getFileName() == "filename.v");
+
+  }
+    // Finished the old tests;
+{
+      // No checks again because it will throw error.
+    Path fake_directory("dir.name/filename", false);
+    check (fake_directory.exist() == false);
+
+    Path current_directory(get_current_dir_name());
+    check(current_directory.exist() == true);
+    check(current_directory.isDirectory() == true);
+    check(current_directory.isWritable() == true);
+
+    // False, because not yet created.
+    Path path_to_append("test_a", false);
+
+    Path newly_created_path = current_directory.append(path_to_append);
+
+    check(newly_created_path.exist() == true);
+    check(newly_created_path.isDirectory() == true);
+    check(newly_created_path.isWritable() == true);
+
+    // Construct path without parent
+    // If multiple paths are to be created with one call
+    // The final separator MUST be included.
+    Path mult_paths_to_append("test_b/test_c/");
+
+    Path newly_created_path_from_mult = newly_created_path.append(mult_paths_to_append);
+
+    string string_to_path_append = "test_a/test_b/";
+
+
+
+    int nikos = 0;
+}
+
 
   check(is_absolute_pathname("/bladi/bla.v") == true);
   check(is_absolute_pathname("bladi/bla.v") == false);
