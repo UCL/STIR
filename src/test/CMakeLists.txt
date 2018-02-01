@@ -64,7 +64,7 @@ set(buildblock_simple_tests
 include(stir_test_exe_targets)
 
 foreach(source ${buildblock_simple_tests})
-  create_stir_test(${source} "buildblock;IO;buildblock;numerics_buildblock;display" "")
+  create_stir_test(${source} "buildblock;IO;buildblock;numerics_buildblock;display;IO" "")
 endforeach()
 #
 
