@@ -114,8 +114,8 @@ protected:
   int			num_time_frames;
   std::vector<double> image_relative_start_times;
   std::vector<double> image_durations;
-private:
   int bytes_per_pixel;
+private:
 
   // Louvain la Neuve style of 'image scaling factors'
   double lln_quantification_units;

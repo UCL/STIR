@@ -81,16 +81,6 @@ private:
  protected:
   void read_scan_data_types();
 
-public :
-  
-  ASCIIlist_type type_of_data_values;
-  int type_of_data_index;
-
-  ASCIIlist_type PET_data_type_values;	
-  int PET_data_type_index;
-
-  ASCIIlist_type process_status_values;
-  int process_status_index;
 
 };
 
@@ -118,61 +108,109 @@ protected:
 #endif
 
 /*!
-  \brief a class for Interfile keywords (and parsing) specific to 
-  projection data (i.e. ProjDataFromStream)
-  \ingroup InterfileIO
-  */
-class InterfilePDFSHeaderSiemens : public InterfileHeaderSiemens
-{
-public:
-	InterfilePDFSHeaderSiemens();
+\brief a class for Interfile keywords (and parsing) specific to
+Siemens PET projection or list mode data
+\ingroup InterfileIO
+*/
+class InterfileRawDataHeaderSiemens : public InterfileHeaderSiemens
+  {
+  public:
+    InterfileRawDataHeaderSiemens();
 
-protected:
+  protected:
 
-  //! Returns false if OK, true if not.
-  virtual bool post_processing();
+    //! Returns false if OK, true if not.
+    virtual bool post_processing();
+    // need this to be false for the listmode data
+    bool is_arccorrected;
+  public:
 
-public:
+    ProjDataFromStream::StorageOrder storage_order;
+    std::vector<int> segment_sequence;
+    shared_ptr<ProjDataInfo> data_info_ptr;
 
-  std::vector<int> scan_data_types;
-  ProjDataFromStream::StorageOrder storage_order;
-  std::vector<int> segment_sequence;
-  shared_ptr<ProjDataInfo> data_info_ptr;
+  private:
+    void resize_segments_and_set();
+    //void read_frames_info();
+    void read_num_energy_windows();
 
-  std::vector<std::string> applied_corrections;
-  bool compression;
+    //int find_storage_order();
 
-private:
-  void resize_segments_and_set();
-  void read_scan_data_types();
-  //void read_frames_info();
-  void read_num_energy_windows();
+    int axial_compression;
+    int maximum_ring_difference;
+    int num_energy_windows;
+    std::vector<float> lower_en_window_thresholds;
+    std::vector<float> upper_en_window_thresholds;
 
-  int find_storage_order();
+  protected:
+    std::vector<int> segment_table;
+    int num_segments;
+    int num_rings;
+    int num_views;
+    int num_bins;
+    int num_tof_bins;
+  };
 
 
-  int axial_compression;
-  int maximum_ring_difference;
-  int num_scan_data_types;
-  int total_num_sinograms;
-  int num_energy_windows;
-  std::vector<float> lower_en_window_thresholds;
-  std::vector<float> upper_en_window_thresholds;
+/*!
+\brief a class for Interfile keywords (and parsing) specific to
+projection data (i.e. ProjDataFromStream)
+\ingroup InterfileIO
+*/
+class InterfilePDFSHeaderSiemens : public InterfileRawDataHeaderSiemens
+  {
+  public:
+    InterfilePDFSHeaderSiemens();
 
-  std::vector<int> segment_table;
-  int num_segments;
-  int num_rings;
-  int num_views;
-  int num_bins;
-  int num_tof_bins;
-  std::string compression_as_string;
+  protected:
 
-  int num_buckets;
-  std::vector<int> bucket_singles_rates;
-  void read_bucket_singles_rates();
+    //! Returns false if OK, true if not.
+    virtual bool post_processing();
 
-  bool is_arccorrected;
-};
+  public:
+
+    std::vector<std::string> applied_corrections;
+    bool compression;
+
+  private:
+    void resize_segments_and_set();
+
+    int find_storage_order();
+
+    int num_scan_data_types;
+    std::vector<std::string> scan_data_types;
+    void read_scan_data_types();
+    int total_num_sinograms;
+    std::string compression_as_string;
+
+    int num_buckets;
+    std::vector<int> bucket_singles_rates;
+    void read_bucket_singles_rates();
+  };
+
+/*!
+\brief a class for Interfile keywords (and parsing) specific to
+Siemesn listmode data (in PETLINK format)
+\ingroup InterfileIO
+*/
+class InterfileListmodeHeaderSiemens : public InterfileRawDataHeaderSiemens
+  {
+  public:
+    InterfileListmodeHeaderSiemens();
+
+  protected:
+
+    //! Returns false if OK, true if not.
+    virtual bool post_processing();
+
+  public:
+
+ 
+  private:
+
+    int find_storage_order();
+
+  };
 
 END_NAMESPACE_STIR
 
