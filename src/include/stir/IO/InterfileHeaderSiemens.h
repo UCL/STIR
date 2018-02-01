@@ -78,10 +78,6 @@ private:
 
   void set_type_of_data();
 
-  // will always be of size 1
-  std::vector<double> image_relative_start_times;
-  std::vector<double> image_durations;
-
  protected:
   void read_scan_data_types();
 
@@ -140,6 +136,7 @@ public:
 
   std::vector<int> scan_data_types;
   ProjDataFromStream::StorageOrder storage_order;
+  std::vector<int> segment_sequence;
   shared_ptr<ProjDataInfo> data_info_ptr;
 
   std::vector<std::string> applied_corrections;
@@ -161,6 +158,7 @@ private:
   int num_segments;
   int num_rings;
   int num_views;
+  int num_bins;
 
   int num_buckets;
   std::vector<int> bucket_singles_rates;

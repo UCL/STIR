@@ -111,17 +111,19 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
 
   // only a single time frame supported by Siemens currently
   num_time_frames = 1;
-  image_relative_start_times.resize(1);
+  image_relative_start_times.resize(1, 0.);
   // already added in InterfileHeader
   // add_key("image relative start time (sec)", &image_relative_start_times[0]);
-  image_durations.resize(1);
+  image_durations.resize(1, 0.);
   // add_key("image duration (sec)", &image_durations[0]);
 }
 
-
-// MJ 17/05/2000 made bool
 bool InterfileHeaderSiemens::post_processing()
 {
+
+  if (InterfileHeader::post_processing() == true)
+    return true;
+
   /*if(type_of_data_index<0)
     {
       warning("Interfile Warning: 'type_of_data' keyword required");
@@ -131,7 +133,8 @@ bool InterfileHeaderSiemens::post_processing()
   if (patient_position_index<0 )
     return true;
 #if 0
-  XXX
+  XXX set from patient_position############
+    // note: has to be done after InterfileHeader::post_processing as that sets it as well
   exam_info_sptr->patient_position.set_rotation(static_cast<PatientPosition::RotationValue>(patient_rotation_index));
   exam_info_sptr->patient_position.set_orientation(static_cast<PatientPosition::OrientationValue>(patient_orientation_index));
 #endif
@@ -147,9 +150,6 @@ bool InterfileHeaderSiemens::post_processing()
   exam_info_sptr->set_low_energy_thres(lower_en_window_thres);
     }
 
-
-  exam_info_sptr->time_frame_definitions =
-    TimeFrameDefinitions(image_relative_start_times, image_durations);
 #endif
   return false;
 
@@ -160,12 +160,6 @@ void InterfileHeaderSiemens::set_type_of_data()
   set_variable();
   
     {
-      /*add_key("PET STUDY (Emission data)", 
-              KeyArgument::NONE,	&KeyParser::do_nothing);
-      add_key("PET STUDY (Image data)", 
-              KeyArgument::NONE,	&KeyParser::do_nothing);
-      add_key("PET STUDY (General)", 
-              KeyArgument::NONE,	&KeyParser::do_nothing);*/
       add_key("PET data type", 
               KeyArgument::ASCIIlist,
               &PET_data_type_index, 
@@ -253,81 +247,32 @@ void InterfilePDFSHeaderSiemens::read_bucket_singles_rates()
 
   bucket_singles_rates.resize(num_buckets);
 }
-#if 0
-
 
 int InterfilePDFSHeaderSiemens::find_storage_order()
 {
 
-  /*	if(type_of_data_values[type_of_data_index] != "PET")
-	{
-		
-	warning("Interfile error: expecting PET study ");
-	stop_parsing();
-	return true; 
-
-	}
-*/
-  if (num_dimensions != 4)
+  if (num_dimensions != 3)
   { 
-    warning("Interfile error: expecting 4D structure "); 
+    warning("Interfile error: expecting 3D structure "); 
     stop_parsing();
     return true; 
   }
 
-  if (matrix_labels[0] != "tangential coordinate")
-  { 
+  if (matrix_labels[0] != "bin")
+  {
     // use error message with index [1] as that is what the user sees.
-    warning("Interfile error: expecting 'matrix axis label[1] := tangential coordinate'\n"); 
+    warning("Interfile error: expecting 'matrix axis label[1] := bin'\n"); 
     stop_parsing();
     return true; 
   }
   num_bins = matrix_size[0][0];
   
-  if (matrix_labels[3] == "segment")
-  {
-    num_segments = matrix_size[3][0];
-    
-    if (matrix_labels[1] == "axial coordinate" && matrix_labels[2] == "view")
-    {
-      storage_order =ProjDataFromStream::Segment_View_AxialPos_TangPos;
-      num_views = matrix_size[2][0];
-#ifdef _MSC_VER
-      num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
-#else      
-      num_rings_per_segment = matrix_size[1];
-#endif
-    }
-    else if (matrix_labels[1] == "view" && matrix_labels[2] == "axial coordinate")
-    {
-      storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
-      num_views = matrix_size[1][0];
-#ifdef _MSC_VER
-      
-      num_rings_per_segment.assign(matrix_size[2].begin(), matrix_size[2].end());
-      
-#else
-      num_rings_per_segment = matrix_size[2];
-#endif
-    }
-    
-  }
-  /*
-  else if (matrix_labels[3] == "view" && 
-  matrix_labels[2] == "segment" && matrix_labels[1] == "axial coordinate")
-  {
-  storage_order = ProjDataFromStream::View_Segment_AxialPos_TangPos;
-  num_segments = matrix_size[2][0];
-  num_views = matrix_size[3][0];
-  #ifdef _MSC_VER
-  num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
-  #else
-  num_rings_per_segment = matrix_size[1];
-  #endif
-  
+ if (matrix_labels[1] == "projection" && matrix_labels[2] == "plane")
+   {
+     storage_order = ProjDataFromStream::Segment_AxialPos_View_TangPos;
+     num_views = matrix_size[1][0];
    }
-  */
-  else
+ else
   { 
     warning("Interfile error: matrix labels not in expected (or supported) format\n"); 
     stop_parsing();
@@ -338,13 +283,10 @@ int InterfilePDFSHeaderSiemens::find_storage_order()
   
 }
 
-#endif
-
 	  
 // MJ 17/05/2000 made bool
 bool InterfilePDFSHeaderSiemens::post_processing()
 {
-  
   if (InterfileHeaderSiemens::post_processing() == true)
     return true;
   
@@ -396,12 +338,10 @@ bool InterfilePDFSHeaderSiemens::post_processing()
     {
       error("Interfile error: strange values for the matrix_size keyword(s)");
     }
-  if (matrix_labels[0] != "bin" || matrix_labels[1] != "projection" || matrix_labels[2] != "plane")
+  if (find_storage_order())
     {
-      error("Interfile error: unsupported order/values for the matrix_axis_label keyword(s)");
+      error("Interfile error determining storage order");
     }
-  const int num_views = matrix_size[1][0];
-  const int num_tangential_poss = matrix_size[0][0];
  
   // handle scanner
 
@@ -410,23 +350,36 @@ bool InterfilePDFSHeaderSiemens::post_processing()
     {
       error("scanner not recognised from originating system");
     }
-    // consistency check with values of the guessed_scanner_ptr we guessed above
-    if (num_rings != scanner_sptr->get_num_rings())
-      {
-        error("Interfile warning: 'number of rings' (%d) is expected to be %d.\n",
-              num_rings, scanner_sptr->get_num_rings());
-      }
-    if (num_segments != segment_table.size())
-      {
-        error("Interfile warning: 'number of segments' and length of 'segment table' are not consistent");
-      }
+  // consistency check with values of the scanner
+  if (num_rings != scanner_sptr->get_num_rings())
+    {
+      error("Interfile warning: 'number of rings' (%d) is expected to be %d.\n",
+            num_rings, scanner_sptr->get_num_rings());
+    }
+  if (num_segments != segment_table.size())
+    {
+      error("Interfile warning: 'number of segments' and length of 'segment table' are not consistent");
+    }
    
-    data_info_ptr = 
-      ProjDataInfo::construct_proj_data_info(scanner_sptr,
-        axial_compression, maximum_ring_difference,
-        num_views, num_tangential_poss,
-        is_arccorrected);
+  data_info_ptr = 
+    ProjDataInfo::construct_proj_data_info(scanner_sptr,
+      axial_compression, maximum_ring_difference,
+      num_views, num_bins,
+      is_arccorrected);
 
+  // handle segments
+  {
+    // same order as in stir_ecat7
+    // Siemens always stores segments as 0, -1, +1, ...
+    segment_sequence.resize(num_segments);
+    segment_sequence[0] = 0;
+    for (int segment_num = 1; segment_num <= num_segments/2; ++segment_num)
+      {
+        segment_sequence[2 * segment_num - 1] = -segment_num;
+        segment_sequence[2 * segment_num] = segment_num;
+      }
+    //XXX check if order here and segment_table are consistent
+  }
   cerr << data_info_ptr->parameter_info() << endl;
   
   return false;
