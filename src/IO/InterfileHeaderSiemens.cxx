@@ -48,28 +48,11 @@ using std::vector;
 
 START_NAMESPACE_STIR
 
-const ExamInfo*
-InterfileHeaderSiemens::get_exam_info_ptr() const
-{
-  return exam_info_sptr.get();
-}
-
-shared_ptr<ExamInfo>
-InterfileHeaderSiemens::get_exam_info_sptr() const
-{
-  return exam_info_sptr;
-}
-
 InterfileHeaderSiemens::InterfileHeaderSiemens()
      : InterfileHeader()
 {
-  exam_info_sptr.reset(new ExamInfo);
-
-  number_format_values.push_back("bit");
-  number_format_values.push_back("ascii");
-  number_format_values.push_back("signed integer");
-  number_format_values.push_back("unsigned integer");
-  number_format_values.push_back("float");
+  // always PET
+  exam_info_sptr->imaging_modality = ImagingModality::PT;
   
   byte_order_values.push_back("LITTLEENDIAN");
   byte_order_values.push_back("BIGENDIAN");
@@ -81,57 +64,29 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
   PET_data_type_values.push_back("Normalisation");
   PET_data_type_values.push_back("Image");
   
-  patient_orientation_values.push_back("HFS");
-  patient_orientation_values.push_back("HFP");
-  patient_orientation_values.push_back("FFS");
-  patient_orientation_values.push_back("FFP"); //default
-  patient_orientation_values.push_back("unknown");
+  patient_position_values.push_back("HFS"); 
+  patient_position_values.push_back("HFP");
+  patient_position_values.push_back("FFS");
+  patient_position_values.push_back("FFP"); 
+  patient_position_values.push_back("unknown"); //default
 
-  // default values
-  // KT 07/10/2002 added 2 new ones
-  number_format_index = 3; // unsigned integer
-  bytes_per_pixel = -1; // standard does not provide a default
-  // KT 02/11/98 set default for correct variable
-  byte_order_index = 1;//  file_byte_order = ByteOrder::big_endian;
+   byte_order_index = 1;//  file_byte_order = ByteOrder::big_endian;
 
   // need to default to PET for backwards compatibility
   this->exam_info_sptr->imaging_modality = ImagingModality::PT;
   //type_of_data_index = 6; // PET
   PET_data_type_index = 5; // Image
-  patient_orientation_index = patient_orientation_values.size(); //unknown
+  patient_position_index = static_cast<int>(patient_position_values.size()); //unknown
   num_dimensions = 2; // set to 2 to be compatible with Interfile version 3.3 (which doesn't have this keyword)
   matrix_labels.resize(num_dimensions);
   matrix_size.resize(num_dimensions);
   pixel_sizes.resize(num_dimensions, 1.);
-  num_time_frames = 1;
-  num_scan_data_types = 1;
-  image_scaling_factors.resize(num_time_frames);
-  for (int i=0; i<num_time_frames; i++)
-    image_scaling_factors[i].resize(1, 1.);
-  lln_quantification_units = 1.;
 
-  data_offset_each_dataset.resize(num_time_frames, 0UL);
+  data_offset_each_dataset.resize(1, 0UL);
 
   data_offset = 0UL;
-  lower_en_window_thres = -1.f;
-  upper_en_window_thres = -1.f;
 
-  add_key("INTERFILE", 
-    KeyArgument::NONE,	&KeyParser::start_parsing);
-  add_key("imaging modality",
-          KeyArgument::ASCII, (KeywordProcessor)&InterfileHeaderSiemens::set_imaging_modality,
-          &imaging_modality_as_string);
 
-  add_key("version of keys", &version_of_keys);
- 
-  add_key("name of data file", 
-    KeyArgument::ASCII,	&data_file_name);
-  add_key("originating system",
-    KeyArgument::ASCII, &exam_info_sptr->originating_system);
-  add_key("GENERAL DATA", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
-  add_key("GENERAL IMAGE DATA", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
   /*add_key("type of data", 
           KeyArgument::ASCIIlist,
           (KeywordProcessor)&InterfileHeaderSiemens::set_type_of_data,
@@ -140,8 +95,8 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
 
   add_key("%patient orientation",
 	  KeyArgument::ASCIIlist,
-	  &patient_orientation_index,
-	  &patient_orientation_values);
+	  &patient_position_index,
+	  &patient_position_values);
   
   add_key("image data byte order", 
     KeyArgument::ASCIIlist,
@@ -150,56 +105,17 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
   
   add_key("data format", 
     KeyArgument::ASCII,	&KeyParser::do_nothing);
-  
-  //TODO Remove following
-  //add_key("number format",
-  // KeyArgument::ASCIIlist,
-  // &number_format_index,
-  // &number_format_values);
-  //add_key("number of bytes per pixel", 
-  //  KeyArgument::INT,	&bytes_per_pixel);
-  //add_key("number of dimensions", 
-  //  KeyArgument::INT,	(KeywordProcessor)&InterfileHeaderSiemens::read_matrix_info,&num_dimensions);
-  //add_key("matrix size", 
-  //  KeyArgument::LIST_OF_INTS,&matrix_size);
-  //add_key("matrix axis label", 
-  //  KeyArgument::ASCII,	&matrix_labels);
-  
 
   add_key("scale factor (mm/pixel)", 
     KeyArgument::DOUBLE, &pixel_sizes);
-  add_key("!image duration (sec)", 
-    KeyArgument::INT,	(KeywordProcessor)&InterfileHeaderSiemens::read_frames_info,&num_time_frames);
-  add_key("%number of scan data types",
-	  KeyArgument::INT, (KeywordProcessor)&InterfileHeaderSiemens::read_scan_data_types, &num_scan_data_types);
-  add_key("image relative start time (sec)",
-	  KeyArgument::DOUBLE, &image_relative_start_times);
-  add_key("image duration (sec)",
-	  KeyArgument::DOUBLE, &image_durations);
-    //image start time[<f>] := <TimeFormat>
 
-  // ignore these as we'll never use them
-  add_key("maximum pixel count", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
-  add_key("minimum pixel count", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
-
-  // TODO move to PET?
-  add_key("image scaling factor", 
-    KeyArgument::LIST_OF_DOUBLES, &image_scaling_factors);
-
-  // support for Louvain la Neuve's extension of 3.3
-  add_key("quantification units",
-    KeyArgument::DOUBLE, &lln_quantification_units);
-
-  add_key("energy window lower level",
-         KeyArgument::FLOAT, &lower_en_window_thres);
-
-  add_key("energy window upper level",
-         KeyArgument::FLOAT, &upper_en_window_thres);
-
-  add_key("END OF INTERFILE", 
-    KeyArgument::NONE,	&KeyParser::stop_parsing);
+  // only a single time frame supported by Siemens currently
+  num_time_frames = 1;
+  image_relative_start_times.resize(1);
+  // already added in InterfileHeader
+  // add_key("image relative start time (sec)", &image_relative_start_times[0]);
+  image_durations.resize(1);
+  // add_key("image duration (sec)", &image_durations[0]);
 }
 
 
@@ -212,103 +128,31 @@ bool InterfileHeaderSiemens::post_processing()
       return true;
     }*/
 
-  if (patient_orientation_index<0 || patient_rotation_index<0)
+  if (patient_position_index<0 )
     return true;
-  // warning: relies on index taking same values as enums in PatientPosition
+#if 0
+  XXX
   exam_info_sptr->patient_position.set_rotation(static_cast<PatientPosition::RotationValue>(patient_rotation_index));
   exam_info_sptr->patient_position.set_orientation(static_cast<PatientPosition::OrientationValue>(patient_orientation_index));
+#endif
 
-  if (number_format_index<0 || 
-      static_cast<ASCIIlist_type::size_type>(number_format_index)>=number_format_values.size())
-  {
-    warning("Interfile internal error: 'number_format_index' out of range\n");
-    return true;
-  }
-  // KT 07/10/2002 new
-  // check if bytes_per_pixel is set if the data type is not 'bit'
-  if (number_format_index!=0 && bytes_per_pixel<=0)
-  {
-    warning("Interfile error: 'number of bytes per pixel' keyword should be set\n to a number > 0");
-    return true;
-  }
-
-  type_of_numbers = NumericType(number_format_values[number_format_index], bytes_per_pixel);
-  
   file_byte_order = byte_order_index==0 ? 
     ByteOrder::little_endian : ByteOrder::big_endian;
-  
-  // KT 07/10/2002 more extensive error checking for matrix_size keyword
-  if (matrix_size.size()==0)
-  {
-    warning("Interfile error: no matrix size keywords present\n");
-    return true;
-  }
-  if (matrix_size[matrix_size.size()-1].size()!=1)
-  {
-    warning("Interfile error: last dimension (%d) of 'matrix size' cannot be a list of numbers\n",
-      matrix_size[matrix_size.size()-1].size());
-    return true;
-  }
-  for (unsigned int dim=0; dim != matrix_size.size(); ++dim)
-  {
-    if (matrix_size[dim].size()==0)
-    {
-      warning("Interfile error: dimension (%d) of 'matrix size' not present\n", dim);
-      return true;
-    }
-    for (unsigned int i=0; i != matrix_size[dim].size(); ++i)
-    {
-      if (matrix_size[dim][i]<=0)
-      {
-        warning("Interfile error: dimension (%d) of 'matrix size' has a number <= 0 at position\n", dim, i);
-        return true;
-      }
-    }
-  }
+#if 0
 
-  for (int frame=0; frame<num_time_frames; frame++)
-  {
-    if (image_scaling_factors[frame].size() == 1)
-    {
-      // use the only value for every scaling factor
-      image_scaling_factors[frame].resize(matrix_size[matrix_size.size()-1][0]);
-      for (unsigned int i=1; i<image_scaling_factors[frame].size(); i++)
-	image_scaling_factors[frame][i] = image_scaling_factors[frame][0];
-    } 
-    else if (static_cast<int>(image_scaling_factors[frame].size()) !=  matrix_size[matrix_size.size()-1][0])
-    {
-      warning("Interfile error: wrong number of image scaling factors\n");
-      return true;
-    }
-  }
-  
+//XXX  
     if (upper_en_window_thres > 0 && lower_en_window_thres > 0 )
     {
   exam_info_sptr->set_high_energy_thres(upper_en_window_thres);
   exam_info_sptr->set_low_energy_thres(lower_en_window_thres);
     }
 
-  exam_info_sptr->time_frame_definitions = 
-    TimeFrameDefinitions(image_relative_start_times, image_durations);
 
+  exam_info_sptr->time_frame_definitions =
+    TimeFrameDefinitions(image_relative_start_times, image_durations);
+#endif
   return false;
 
-}
-
-void InterfileHeaderSiemens::set_imaging_modality()
-{
-  set_variable();
-  this->exam_info_sptr->imaging_modality = ImagingModality(imaging_modality_as_string);
-}
-
-void InterfileHeaderSiemens::read_matrix_info()
-{
-  set_variable();
-
-  matrix_labels.resize(num_dimensions);
-  matrix_size.resize(num_dimensions);
-  pixel_sizes.resize(num_dimensions, 1.);
-  
 }
 
 void InterfileHeaderSiemens::set_type_of_data()
@@ -338,27 +182,6 @@ void InterfileHeaderSiemens::set_type_of_data()
   
 }
 
-void InterfileHeaderSiemens::read_frames_info()
-{
-  set_variable();
-  image_scaling_factors.resize(num_time_frames);
-  for (int i=0; i<num_time_frames; i++)
-    image_scaling_factors[i].resize(1, 1.);
-  data_offset_each_dataset.resize(num_time_frames, 0UL);
-  image_relative_start_times.resize(num_time_frames, 0.);
-  image_durations.resize(num_time_frames, 0.);
-}
-
-void InterfileHeaderSiemens::read_scan_data_types()
-{
-	set_variable();
-	scan_data_types.resize(num_scan_data_types);
-	for (int i = 0; i<num_scan_data_types; i++)
-		scan_data_types[i].resize(1, 1.);
-	
-	data_offset_in_bytes.resize(num_scan_data_types, 0UL);
-	
-}
 
 /**********************************************************************/
 
@@ -368,92 +191,19 @@ InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
      : InterfileHeaderSiemens()
 {
   num_segments = -1;
-
-  
-  // warning these keys should match what is in Scanner::parameter_info()
-  // TODO get Scanner to parse these
-  add_key("Scanner parameters",
-	  KeyArgument::NONE,	&KeyParser::do_nothing);
-  // this is currently ignored (use "originating system" instead)
-  add_key("Scanner type",
-	  KeyArgument::NONE,	&KeyParser::do_nothing);
-
   // first set to some crazy values
   num_rings = -1;
   add_key("number of rings", 
 	  &num_rings);
-  num_detectors_per_ring = -1;
-  add_key("number of detectors per ring", 
-	  &num_detectors_per_ring);
-  transaxial_FOV_diameter_in_cm = -1;
-  add_key("transaxial FOV diameter (cm)",
-	  &transaxial_FOV_diameter_in_cm);
-  inner_ring_diameter_in_cm = -1;
-  add_key("inner ring diameter (cm)",
-	   &inner_ring_diameter_in_cm);
-  average_depth_of_interaction_in_cm = -1;
-  add_key("average depth of interaction (cm)",
-	  &average_depth_of_interaction_in_cm);
-  distance_between_rings_in_cm = -1;
-  add_key("distance between rings (cm)",
-	  &distance_between_rings_in_cm);
-  default_bin_size_in_cm = -1;
-  add_key("default bin size (cm)",
-	  &default_bin_size_in_cm);
-  // this is a good default value
-  view_offset_in_degrees = 0;
-  add_key("view offset (degrees)",
-	  &view_offset_in_degrees);
-  max_num_non_arccorrected_bins=0;
-  default_num_arccorrected_bins=0;
-  add_key("Maximum number of non-arc-corrected bins",
-	  &max_num_non_arccorrected_bins);
-  add_key("Default number of arc-corrected bins",
-	  &default_num_arccorrected_bins);
 
-  num_axial_blocks_per_bucket = 0;
-  add_key("number of blocks_per_bucket in axial direction",
-	  &num_axial_blocks_per_bucket);
-  num_transaxial_blocks_per_bucket = 0;
-  add_key("number of blocks_per_bucket in transaxial direction",
-	  &num_transaxial_blocks_per_bucket);
-  num_axial_crystals_per_block = 0;
-  add_key("number of crystals_per_block in axial direction",
-	  &num_axial_crystals_per_block);
-  num_transaxial_crystals_per_block = 0;
-  add_key("number of crystals_per_block in transaxial direction",
-	  &num_transaxial_crystals_per_block);
-  num_axial_crystals_per_singles_unit = -1;
-  add_key("number of crystals_per_singles_unit in axial direction",
-	  &num_axial_crystals_per_singles_unit);
-  num_transaxial_crystals_per_singles_unit = -1;
-  add_key("number of crystals_per_singles_unit in transaxial direction",
-	  &num_transaxial_crystals_per_singles_unit);
-  // sensible default
-  num_detector_layers = 1;
-  add_key("number of detector layers",
-	  &num_detector_layers);
-  energy_resolution = -1.f;
-  add_key("Energy resolution",
-          &energy_resolution);
-  reference_energy = -1.f;
-  add_key("Reference energy (in keV)",
-          &reference_energy);
-  add_key("%radial arc-correction", &radial_arc_correction);
+  //add_key("%radial arc-correction", &radial_arc_correction);
   add_key("%axial compression", &axial_compression);
-  // Add these
-  // %maximum ring difference
-  add_key("%maximum ring difference", &maximum_ring_difference);
-  // %number of segments
-  
-  add_key("%number of segments",
-	  KeyArgument::INT, (KeywordProcessor)&InterfilePDFSHeaderSiemens::read_segment_table, &num_of_segments);
-  // %segment table
-  //add_key("%segment table", &segment_table);
-  add_key("%segment table",
-	  KeyArgument::LIST_OF_INTS, &segment_table);
+  add_key("%maximum ring difference", &maximum_ring_difference);  
+  add_key("%number of segments", &num_segments);
+  add_key("%segment table", KeyArgument::LIST_OF_INTS, &segment_table);
   // number of scan data types:=2
-  add_key("number of scan data types", &num_of_scan_data_types);
+  add_key("number of scan data types",
+    KeyArgument::INT, (KeywordProcessor)&InterfilePDFSHeaderSiemens::read_scan_data_types, &num_scan_data_types);
   // scan data type size depends on the previous field
   // scan data type description[1]: = prompts
   // scan data type description[2] : = randoms
@@ -464,15 +214,8 @@ InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
   
   // in post processing 
   //%total number of sinograms:=4084
-  add_key("%total number of sinograms", &total_num_of_sinograms);
+  add_key("%total number of sinograms", &total_num_sinograms);
 
-
-  add_key("end scanner parameters",
-	  KeyArgument::NONE,	&KeyParser::do_nothing);
-  
-  effective_central_bin_size_in_cm = -1;
-  add_key("effective central bin size (cm)",
-	  &effective_central_bin_size_in_cm);
   add_key("applied corrections",
     KeyArgument::LIST_OF_ASCII, &applied_corrections);
   
@@ -485,9 +228,13 @@ InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
 	  KeyArgument::NONE, &KeyParser::do_nothing);
   add_key("IMAGE DATA DESCRIPTION",
 	  KeyArgument::NONE, &KeyParser::do_nothing);
-  // TODO rename keyword 
   add_key("data offset in bytes",
 	  KeyArgument::ULONG, &data_offset_each_dataset);
+
+  add_key("%number of buckets", 
+    KeyArgument::INT, (KeywordProcessor)&InterfilePDFSHeaderSiemens::read_bucket_singles_rates, &num_buckets);
+  add_key("%bucket singles rate", KeyArgument::INT, &bucket_singles_rates);
+
 }
 
 
@@ -496,29 +243,18 @@ void InterfilePDFSHeaderSiemens::read_scan_data_types()
 	set_variable();
 
 	scan_data_types.resize(num_scan_data_types);
-	data_offset_in_bytes.resize(num_scan_data_types);
+  data_offset_each_dataset.resize(num_scan_data_types);
 	
 }
 
-void InterfilePDFSHeaderSiemens::read_segment_table()
+void InterfilePDFSHeaderSiemens::read_bucket_singles_rates()
 {
-	set_variable();
+  set_variable();
 
-	segment_table_data.resize(num_of_segments);
-	
+  bucket_singles_rates.resize(num_buckets);
 }
-
 #if 0
-void InterfilePDFSHeaderSiemens::read_frames_info()
-{
-	set_variable();
-	image_scaling_factors.resize(num_time_frames);
-	for (int i = 0; i<num_time_frames; i++)
-		image_scaling_factors[i].resize(1, 1.);
-	data_offset_each_dataset.resize(num_time_frames*num_scan_data_types, 0UL);
-	//image_relative_start_times.resize(num_time_frames, 0.);
-	//image_durations.resize(num_time_frames, 0.);
-}
+
 
 int InterfilePDFSHeaderSiemens::find_storage_order()
 {
@@ -603,19 +339,7 @@ int InterfilePDFSHeaderSiemens::find_storage_order()
 }
 
 #endif
-// definition for using sort() below.
-// This is a function object that allows comparing the first elements of 2 
-// pairs.
-template <class T1, class T2>
-class compare_first :
-public binary_function<T1, T1, bool> 
-{
-public:
-  bool operator()(const pair<T1, T2>& p1, const pair<T1, T2>& p2)  const
-  {
-    return p1.first < p2.first;
-  }
-};
+
 	  
 // MJ 17/05/2000 made bool
 bool InterfilePDFSHeaderSiemens::post_processing()
@@ -632,8 +356,8 @@ bool InterfilePDFSHeaderSiemens::post_processing()
   if (applied_corrections.size() == 0)
   {
     warning("\nParsing Interfile header for projection data: \n"
-            "\t'applied corrections' keyword not found. Assuming arc-corrected data\n");
-    is_arccorrected = true;
+            "\t'applied corrections' keyword not found. Assuming non-arc-corrected data\n");
+    is_arccorrected = false;
   }
   else
   {
@@ -660,380 +384,50 @@ bool InterfilePDFSHeaderSiemens::post_processing()
     }
     
   }
+
+  if (num_dimensions != 3)
+    {
+    error("Interfile error: expecting 3D data");
+    }
+
+  if ((matrix_size[0].size() != 1) ||
+    (matrix_size[1].size() != 1) ||
+    (matrix_size[2].size() != 1))
+    {
+      error("Interfile error: strange values for the matrix_size keyword(s)");
+    }
+  if (matrix_labels[0] != "bin" || matrix_labels[1] != "projection" || matrix_labels[2] != "plane")
+    {
+      error("Interfile error: unsupported order/values for the matrix_axis_label keyword(s)");
+    }
+  const int num_views = matrix_size[1][0];
+  const int num_tangential_poss = matrix_size[0][0];
  
   // handle scanner
 
-  shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(get_exam_info_ptr()->originating_system));
-  bool originating_system_was_recognised = 
-    guessed_scanner_ptr->get_type() != Scanner::Unknown_scanner;
-  if (!originating_system_was_recognised)
-  {
-    // feable attempt to guess the system by checking the num_views etc
-
-    char const * warning_msg = 0;
-    if (num_detectors_per_ring < 1)
+  shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(get_exam_info_ptr()->originating_system));
+  if (scanner_sptr->get_type() == Scanner::Unknown_scanner)
     {
-      num_detectors_per_ring = num_views*2;
-      warning_msg = "\nInterfile warning: I don't recognise 'originating system' value.\n"
-	"\tI guessed %s from 'num_views' (note: this guess is wrong for mashed data)\n"
-	" and 'number of rings'\n";
+      error("scanner not recognised from originating system");
     }
-    else
-    {
-      warning_msg = "\nInterfile warning: I don't recognise 'originating system' value.\n"
-	"I guessed %s from 'number of detectors per ring' and 'number of rings'\n";
-    }
-    
-    
-    switch (num_detectors_per_ring)
-    {
-    case 192*2:
-      guessed_scanner_ptr.reset(new Scanner( Scanner::E953));
-      warning(warning_msg, "ECAT 953");
-      break;
-    case 336*2:
-      guessed_scanner_ptr.reset(new Scanner( Scanner::Advance));
-      warning(warning_msg, "Advance");
-      break;
-    case 288*2:
-      if(num_rings == 104) 
-      { //added by Dylan Togane
- 	guessed_scanner_ptr.reset(new Scanner( Scanner::HRRT));
-	warning(warning_msg, "HRRT");
-      }
-      else if (num_rings == 48)
-      {
-	guessed_scanner_ptr.reset(new Scanner( Scanner::E966));
-	warning(warning_msg, "ECAT 966");
-      }
-      else if (num_rings == 32)
-      {
-	guessed_scanner_ptr.reset(new Scanner( Scanner::E962));
-	warning(warning_msg, "ECAT 962");
-      }
-      break; // Dylan Togane [dtogane@camhpet.on.ca] 30/07/2002 bug fix: added break
-    case 256*2:
-      guessed_scanner_ptr.reset(new Scanner( Scanner::E951));
-      warning(warning_msg, "ECAT 951");
-      break;
-    }
-
-    if (guessed_scanner_ptr->get_type() == Scanner::Unknown_scanner)
-      warning("\nInterfile warning: I did not recognise the scanner neither from \n"
-	      "'originating_system' or 'number of detectors per ring' and 'number of rings'.\n");    
-  }
-
-  bool mismatch_between_header_and_guess = false;
- 
-  if (guessed_scanner_ptr->get_type() != Scanner::Unknown_scanner &&
-      guessed_scanner_ptr->get_type() != Scanner::User_defined_scanner)
-  {
-     // fill in values which are not in the Interfile header
-    
-    if (num_rings < 1)
-      num_rings = guessed_scanner_ptr->get_num_rings();
-    if (num_detectors_per_ring < 1)
-      num_detectors_per_ring = guessed_scanner_ptr->get_max_num_views()*2;
-#if 0
-    if (transaxial_FOV_diameter_in_cm < 0)
-      transaxial_FOV_diameter_in_cm = guessed_scanner_ptr->FOV_radius*2/10.;
-#endif
-    if (inner_ring_diameter_in_cm < 0)
-      inner_ring_diameter_in_cm = guessed_scanner_ptr->get_inner_ring_radius()*2/10.;
-    if (average_depth_of_interaction_in_cm < 0)
-      average_depth_of_interaction_in_cm = guessed_scanner_ptr->get_average_depth_of_interaction()/10;
-    if (distance_between_rings_in_cm < 0)
-      distance_between_rings_in_cm = guessed_scanner_ptr->get_ring_spacing()/10;
-    if (default_bin_size_in_cm < 0)
-      default_bin_size_in_cm = 
-         guessed_scanner_ptr->get_default_bin_size()/10;
-    if (max_num_non_arccorrected_bins <= 0)
-      max_num_non_arccorrected_bins = guessed_scanner_ptr->get_max_num_non_arccorrected_bins();
-    if (default_num_arccorrected_bins <= 0)
-      default_num_arccorrected_bins = guessed_scanner_ptr->get_default_num_arccorrected_bins();
-
-
-    if (num_axial_blocks_per_bucket<=0)
-      num_axial_blocks_per_bucket = guessed_scanner_ptr->get_num_axial_blocks_per_bucket();
-    if (num_transaxial_blocks_per_bucket<=0)
-      num_transaxial_blocks_per_bucket = guessed_scanner_ptr->get_num_transaxial_blocks_per_bucket();
-    if (num_axial_crystals_per_block<=0)
-      num_axial_crystals_per_block = guessed_scanner_ptr->get_num_axial_crystals_per_block();
-    if (num_transaxial_crystals_per_block<=0)
-      num_transaxial_crystals_per_block = guessed_scanner_ptr->get_num_transaxial_crystals_per_block();
-    if (num_axial_crystals_per_singles_unit < 0) 
-      num_axial_crystals_per_singles_unit = 
-        guessed_scanner_ptr->get_num_axial_crystals_per_singles_unit();
-    if (num_transaxial_crystals_per_singles_unit < 0) 
-      num_transaxial_crystals_per_singles_unit = 
-        guessed_scanner_ptr->get_num_transaxial_crystals_per_singles_unit();
-    if (num_detector_layers<=0)
-      num_detector_layers = guessed_scanner_ptr->get_num_detector_layers();
-    if (energy_resolution < 0)
-        energy_resolution = guessed_scanner_ptr->get_energy_resolution();
-    if (reference_energy < 0)
-        reference_energy = guessed_scanner_ptr->get_reference_energy();
-    
     // consistency check with values of the guessed_scanner_ptr we guessed above
-
-    if (num_rings != guessed_scanner_ptr->get_num_rings())
+    if (num_rings != scanner_sptr->get_num_rings())
       {
-	warning("Interfile warning: 'number of rings' (%d) is expected to be %d.\n",
-		num_rings, guessed_scanner_ptr->get_num_rings());
-	mismatch_between_header_and_guess = true;
+        error("Interfile warning: 'number of rings' (%d) is expected to be %d.\n",
+              num_rings, scanner_sptr->get_num_rings());
       }
-    if (num_detectors_per_ring != guessed_scanner_ptr->get_num_detectors_per_ring())
+    if (num_segments != segment_table.size())
       {
-	warning("Interfile warning: 'number of detectors per ring' (%d) is expected to be %d.\n",
-		num_detectors_per_ring, guessed_scanner_ptr->get_num_detectors_per_ring());
-	mismatch_between_header_and_guess = true;
+        error("Interfile warning: 'number of segments' and length of 'segment table' are not consistent");
       }
-    if (fabs(inner_ring_diameter_in_cm - guessed_scanner_ptr->get_inner_ring_radius()*2/10.) > .001)
-      {
-	warning("Interfile warning: 'inner ring diameter (cm)' (%f) is expected to be %f.\n",
-		inner_ring_diameter_in_cm, guessed_scanner_ptr->get_inner_ring_radius()*2/10.);
-	mismatch_between_header_and_guess = true;
-      }
-    if (fabs(average_depth_of_interaction_in_cm - 
-             guessed_scanner_ptr->get_average_depth_of_interaction()/10) > .001)
-      {
-	warning("Interfile warning: 'average depth of interaction (cm)' (%f) is expected to be %f.\n",
-		average_depth_of_interaction_in_cm, 
-                guessed_scanner_ptr->get_average_depth_of_interaction()/10);
-	mismatch_between_header_and_guess = true;
-      }
-    if (fabs(distance_between_rings_in_cm-guessed_scanner_ptr->get_ring_spacing()/10) > .001)
-      {
-	warning("Interfile warning: 'distance between rings (cm)' (%f) is expected to be %f.\n",
-		distance_between_rings_in_cm, guessed_scanner_ptr->get_ring_spacing()/10);
-	mismatch_between_header_and_guess = true;
-      }
-    if (fabs(default_bin_size_in_cm-guessed_scanner_ptr->get_default_bin_size()/10) > .001)
-      {
-	warning("Interfile warning: 'default bin size (cm)' (%f) is expected to be %f.\n",
-		default_bin_size_in_cm, guessed_scanner_ptr->get_default_bin_size()/10);
-	mismatch_between_header_and_guess = true;
-      }
-    if (max_num_non_arccorrected_bins - guessed_scanner_ptr->get_max_num_non_arccorrected_bins())
-      {
-	warning("Interfile warning: 'max_num_non_arccorrected_bins' (%d) is expected to be %d",
-		max_num_non_arccorrected_bins, guessed_scanner_ptr->get_max_num_non_arccorrected_bins());
-	mismatch_between_header_and_guess = true;
-      }
-    if (default_num_arccorrected_bins - guessed_scanner_ptr->get_default_num_arccorrected_bins())
-      {
-	warning("Interfile warning: 'default_num_arccorrected_bins' (%d) is expected to be %d",
-		default_num_arccorrected_bins, guessed_scanner_ptr->get_default_num_arccorrected_bins());
-	mismatch_between_header_and_guess = true;
-      }
-    if (
-	guessed_scanner_ptr->get_num_transaxial_blocks_per_bucket()>0 &&
-	num_transaxial_blocks_per_bucket != guessed_scanner_ptr->get_num_transaxial_blocks_per_bucket())
-      {
-	warning("Interfile warning: num_transaxial_blocks_per_bucket (%d) is expected to be %d.\n",
-		num_transaxial_blocks_per_bucket, guessed_scanner_ptr->get_num_transaxial_blocks_per_bucket());
-	mismatch_between_header_and_guess = true;
-      }
-    if (
-	guessed_scanner_ptr->get_num_axial_blocks_per_bucket()>0 &&
-	num_axial_blocks_per_bucket != guessed_scanner_ptr->get_num_axial_blocks_per_bucket())
-      {
-	warning("Interfile warning: num_axial_blocks_per_bucket (%d) is expected to be %d.\n",
-		num_axial_blocks_per_bucket, guessed_scanner_ptr->get_num_axial_blocks_per_bucket());
-	mismatch_between_header_and_guess = true;
-      }
-    if (
-	guessed_scanner_ptr->get_num_axial_crystals_per_block()>0 &&
-	num_axial_crystals_per_block!= guessed_scanner_ptr->get_num_axial_crystals_per_block())
-      {
-	warning("Interfile warning: num_axial_crystals_per_block (%d) is expected to be %d.\n",
-		num_axial_crystals_per_block, guessed_scanner_ptr->get_num_axial_crystals_per_block());
-      	mismatch_between_header_and_guess = true;
-      }
-    if (
-	guessed_scanner_ptr->get_num_transaxial_crystals_per_block()>0 &&
-	num_transaxial_crystals_per_block!= guessed_scanner_ptr->get_num_transaxial_crystals_per_block())
-      {
-	warning("Interfile warning: num_transaxial_crystals_per_block (%d) is expected to be %d.\n",
-		num_transaxial_crystals_per_block, guessed_scanner_ptr->get_num_transaxial_crystals_per_block());
-	mismatch_between_header_and_guess = true;
-      }
-    if ( guessed_scanner_ptr->get_num_axial_crystals_per_singles_unit() > 0 &&
-         num_axial_crystals_per_singles_unit != 
-         guessed_scanner_ptr->get_num_axial_crystals_per_singles_unit() ) 
-      {
-        warning("Interfile warning: axial crystals per singles unit (%d) is expected to be %d.\n",
-		num_axial_crystals_per_singles_unit, 
-                guessed_scanner_ptr->get_num_axial_crystals_per_singles_unit());
-	mismatch_between_header_and_guess = true;
-      }
-    if ( guessed_scanner_ptr->get_num_transaxial_crystals_per_singles_unit() > 0 &&
-         num_transaxial_crystals_per_singles_unit != 
-         guessed_scanner_ptr->get_num_transaxial_crystals_per_singles_unit() ) 
-      {
-        warning("Interfile warning: transaxial crystals per singles unit (%d) is expected to be %d.\n",
-		num_transaxial_crystals_per_singles_unit, 
-                guessed_scanner_ptr->get_num_transaxial_crystals_per_singles_unit());
-	mismatch_between_header_and_guess = true;
-      }
-    if (
-	guessed_scanner_ptr->get_num_detector_layers()>0 &&
-	num_detector_layers != guessed_scanner_ptr->get_num_detector_layers())
-      {
-	warning("Interfile warning: num_detector_layers (%d) is expected to be %d.\n",
-		num_detector_layers, guessed_scanner_ptr->get_num_detector_layers());
-	mismatch_between_header_and_guess = true;
-      }
-    //
-    // 06/16: N.E: Currently, the energy resolution and the reference energy, are used only in the
-    // scatter correction. Therefore a waring is displayed but they don't trigger
-    // a mismatch. I assume that the user will handle this. This is in accordance with the
-    // scanner '==' operator, which displays a warning message for these two parameters
-    // but continues as usual.
-    if (energy_resolution > 0)
-    {
-    if (energy_resolution != guessed_scanner_ptr->get_energy_resolution())
-      {
-    warning("Interfile warning: 'energy resolution' (%d) is expected to be %d. "
-            "Currently, the energy resolution and the reference energy, are used only in"
-            " scatter correction.",
-        energy_resolution, guessed_scanner_ptr->get_energy_resolution());
-//    mismatch_between_header_and_guess = true;
-      }
-    if (reference_energy != guessed_scanner_ptr->get_reference_energy())
-      {
-    warning("Interfile warning: 'reference energy' (%d) is expected to be %d."
-            "Currently, the energy resolution and the reference energy, are used only in"
-            " scatter correction.",
-        reference_energy, guessed_scanner_ptr->get_reference_energy());
-//    mismatch_between_header_and_guess = true;
-      }
-    }
-
-    // end of checks. If they failed, we ignore the guess
-    if (mismatch_between_header_and_guess)
-      {
-	warning("Interfile warning: I have used all explicit settings for the scanner\n"
-		"\tfrom the Interfile header, and remaining fields set from the\n"
-		"\t%s model.\n",
-		guessed_scanner_ptr->get_name().c_str());
-	if (!originating_system_was_recognised)
-	  guessed_scanner_ptr.reset(new Scanner( Scanner::Unknown_scanner));
-      }
-    }
-
-  if (guessed_scanner_ptr->get_type() == Scanner::Unknown_scanner ||
-      guessed_scanner_ptr->get_type() == Scanner::User_defined_scanner)
-  {
-    // warn if the Interfile header does not provide enough info
-
-    if (num_rings < 1)
-      warning("Interfile warning: 'number of rings' invalid.\n");
-    if (num_detectors_per_ring < 1)
-      warning("Interfile warning: 'num_detectors_per_ring' invalid.\n");
-#if 0
-    if (transaxial_FOV_diameter_in_cm < 0)
-      warning("Interfile warning: 'transaxial FOV diameter (cm)' invalid.\n");
-#endif
-    if (inner_ring_diameter_in_cm <= 0)
-      warning("Interfile warning: 'inner ring diameter (cm)' invalid. This might disastrous\n");
-    if (average_depth_of_interaction_in_cm <= 0)
-      warning("Interfile warning: 'average depth of interaction (cm)' invalid. This might be disastrous.\n");
-    if (distance_between_rings_in_cm <= 0)
-      warning("Interfile warning: 'distance between rings (cm)' invalid.\n");
-    if (default_bin_size_in_cm <= 0)
-      warning("Interfile warning: 'default_bin size (cm)' invalid.\n");
-    if (num_axial_crystals_per_singles_unit <= 0)
-      warning("Interfile warning: 'axial crystals per singles unit' invalid.\n");
-    if (num_transaxial_crystals_per_singles_unit <= 0)
-      warning("Interfile warning: 'transaxial crystals per singles unit' invalid.\n");
-
-  }
-
-  // finally, we construct a new scanner object with
-  // data from the Interfile header (or the guessed scanner).
-  shared_ptr<Scanner> scanner_ptr_from_file(
-    new Scanner(guessed_scanner_ptr->get_type(), 
-                get_exam_info_ptr()->originating_system,
-		num_detectors_per_ring, 
-                num_rings, 
-		max_num_non_arccorrected_bins, 
-		default_num_arccorrected_bins,
-		static_cast<float>(inner_ring_diameter_in_cm*10./2),
-                static_cast<float>(average_depth_of_interaction_in_cm*10),
-		static_cast<float>(distance_between_rings_in_cm*10.),
-		static_cast<float>(default_bin_size_in_cm*10),
-		static_cast<float>(view_offset_in_degrees*_PI/180),
-		num_axial_blocks_per_bucket, 
-		num_transaxial_blocks_per_bucket,
-		num_axial_crystals_per_block,
-		num_transaxial_crystals_per_block,
-		num_axial_crystals_per_singles_unit,
-                num_transaxial_crystals_per_singles_unit,
-                num_detector_layers,
-                energy_resolution,
-                reference_energy));
-
-  bool is_consistent =
-    scanner_ptr_from_file->check_consistency() == Succeeded::yes;
-  if (scanner_ptr_from_file->get_type() == Scanner::Unknown_scanner ||
-      scanner_ptr_from_file->get_type() == Scanner::User_defined_scanner ||
-      mismatch_between_header_and_guess ||
-      !is_consistent)
-    {
-      warning("Interfile parsing ended up with the following scanner:\n%s\n",
-	      scanner_ptr_from_file->parameter_info().c_str());
-    }
- 
-  
-  // float azimuthal_angle_sampling =_PI/num_views;
-  
-  
    
+    data_info_ptr = 
+      ProjDataInfo::construct_proj_data_info(scanner_sptr,
+        axial_compression, maximum_ring_difference,
+        num_views, num_tangential_poss,
+        is_arccorrected);
 
-  if (is_arccorrected)
-    {
-      if (effective_central_bin_size_in_cm <= 0)
-	effective_central_bin_size_in_cm =
-	  scanner_ptr_from_file->get_default_bin_size()/10;
-      else if (fabs(effective_central_bin_size_in_cm - 
-		    scanner_ptr_from_file->get_default_bin_size()/10)>.001)	
-	warning("Interfile warning: unexpected effective_central_bin_size_in_cm\n"
-		"Value in header is %g while the default for the scanner is %g\n"
-		"Using value from header.",
-		effective_central_bin_size_in_cm,
-		scanner_ptr_from_file->get_default_bin_size()/10);
-      
-      data_info_ptr = 
-	new ProjDataInfoCylindricalArcCorr (
-					    scanner_ptr_from_file,
-					    float(effective_central_bin_size_in_cm*10.),
-					    sorted_num_rings_per_segment, // segment_table, size is num_segments
-					    sorted_min_ring_diff,
-					    sorted_max_ring_diff,
-					    num_views,num_bins);
-    }
-  else
-    {
-      data_info_ptr = 
-	new ProjDataInfoCylindricalNoArcCorr (
-					      scanner_ptr_from_file,
-					      sorted_num_rings_per_segment,
-					      sorted_min_ring_diff,
-					      sorted_max_ring_diff,
-					      num_views,num_bins);
-      if (effective_central_bin_size_in_cm>0 &&
-	  fabs(effective_central_bin_size_in_cm - 
-	       data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10.)>.01)
-	{
-	  warning("Interfile warning: inconsistent effective_central_bin_size_in_cm\n"
-		  "Value in header is %g while I expect %g from the inner ring radius etc\n"
-		  "Ignoring value in header",
-		  effective_central_bin_size_in_cm,
-		  data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10.);
-	}
-    }
-  //cerr << data_info_ptr->parameter_info() << endl;
+  cerr << data_info_ptr->parameter_info() << endl;
   
   return false;
 }

@@ -44,25 +44,54 @@ START_NAMESPACE_STIR
 class ProjDataInfo;
 
 /*!
-  \brief a class for Interfile keywords (and parsing) common to 
+  \brief a minimal class for Interfile keywords (and parsing) common to 
   all types of data
+
+  This class is only used to select which version of Interfile to use.
+
   \ingroup InterfileIO
   */
-class InterfileHeader : public KeyParser
+class MinimalInterfileHeader : public KeyParser
+  {
+  public:
+    //! A value that can be used to signify that a variable has not been set during parsing.
+    static const double double_value_not_set;
+    MinimalInterfileHeader();
+
+    virtual ~MinimalInterfileHeader() {}
+  protected:
+    shared_ptr<ExamInfo> exam_info_sptr;
+
+  private:
+    std::string imaging_modality_as_string;
+    void set_imaging_modality();
+  
+  public:
+    //! Get a pointer to the exam information
+    const ExamInfo*
+      get_exam_info_ptr() const;
+
+    //! Get a shared pointer to the exam information
+    shared_ptr<ExamInfo>
+      get_exam_info_sptr() const;
+
+    std::string version_of_keys;
+
+    std::string siemens_mi_version;
+  };
+
+/*!
+\brief a class for Interfile keywords (and parsing) common to
+all types of data
+
+\ingroup InterfileIO
+*/
+class InterfileHeader : public MinimalInterfileHeader
 {
 public:
-  //! A value that can be used to signify that a variable has not been set during parsing.
-  static const double double_value_not_set;
-
   InterfileHeader();
-
-  virtual ~InterfileHeader() {}
-
-protected:
   // Returns false if OK, true if not.
   virtual bool post_processing();
-
-  shared_ptr<ExamInfo> exam_info_sptr;
 
 private:
 
@@ -80,16 +109,12 @@ private:
   int patient_orientation_index;
   int patient_rotation_index;
 
-  // Extra private variables which will be translated to something more useful
-  std::string imaging_modality_as_string;
-  void set_imaging_modality();
-
   void set_type_of_data();
-
+protected:
   int			num_time_frames;
   std::vector<double> image_relative_start_times;
   std::vector<double> image_durations;
-
+private:
   int bytes_per_pixel;
 
   // Louvain la Neuve style of 'image scaling factors'
@@ -101,16 +126,7 @@ private:
   void read_frames_info();
 
 public :
-  //! Get a pointer to the exam information
-  const ExamInfo*
-    get_exam_info_ptr() const;
 
-  //! Get a shared pointer to the exam information
-  shared_ptr<ExamInfo>
-    get_exam_info_sptr() const;
-
-  std::string version_of_keys;
-  
   ASCIIlist_type type_of_data_values;
   int type_of_data_index;
 
@@ -147,7 +163,6 @@ public :
   //! \details High energy window limit
   float upper_en_window_thres;
   // end acquisition parameters
-  std::string siemens_mi_version;
   
  protected:
   // version 3.3 had only a single offset. we'll internally replace it with data_offset_each_dataset

@@ -600,7 +600,7 @@ read_interfile_PDFS(istream& input,
 {
   
   {
-    InterfileHeader hdr;  
+    MinimalInterfileHeader hdr;  
     std::ios::off_type offset = input.tellg();
     if (!hdr.parse(input, false)) // parse without warnings
       {

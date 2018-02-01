@@ -48,26 +48,52 @@ using std::vector;
 
 START_NAMESPACE_STIR
 const double
-InterfileHeader::
+MinimalInterfileHeader::
 double_value_not_set = -12345.60789;
 
 const ExamInfo*
-InterfileHeader::get_exam_info_ptr() const
+MinimalInterfileHeader::get_exam_info_ptr() const
 {
   return exam_info_sptr.get();
 }
 
 shared_ptr<ExamInfo>
-InterfileHeader::get_exam_info_sptr() const
+MinimalInterfileHeader::get_exam_info_sptr() const
 {
   return exam_info_sptr;
 }
 
-InterfileHeader::InterfileHeader()
-     : KeyParser()
+MinimalInterfileHeader::MinimalInterfileHeader()
+  : KeyParser()
 {
   exam_info_sptr.reset(new ExamInfo);
+  // need to default to PET for backwards compatibility
+  this->exam_info_sptr->imaging_modality = ImagingModality::PT;
 
+  add_start_key("INTERFILE");
+  add_key("imaging modality",
+    KeyArgument::ASCII, (KeywordProcessor)&InterfileHeader::set_imaging_modality,
+    &imaging_modality_as_string);
+
+  add_key("version of keys", &version_of_keys);
+
+  // support for siemens interfile
+  add_key("%sms-mi version number",
+    KeyArgument::ASCII, &siemens_mi_version);
+  add_stop_key("END OF INTERFILE");
+}
+
+
+
+void MinimalInterfileHeader::set_imaging_modality()
+{
+  set_variable();
+  this->exam_info_sptr->imaging_modality = ImagingModality(imaging_modality_as_string);
+}
+
+InterfileHeader::InterfileHeader()
+  : MinimalInterfileHeader()
+{
   number_format_values.push_back("bit");
   number_format_values.push_back("ascii");
   number_format_values.push_back("signed integer");
@@ -111,8 +137,6 @@ InterfileHeader::InterfileHeader()
   // KT 02/11/98 set default for correct variable
   byte_order_index = 1;//  file_byte_order = ByteOrder::big_endian;
 
-  // need to default to PET for backwards compatibility
-  this->exam_info_sptr->imaging_modality = ImagingModality::PT;
   type_of_data_index = 6; // PET
   PET_data_type_index = 5; // Image
   patient_orientation_index = 3; //unknown
@@ -133,14 +157,6 @@ InterfileHeader::InterfileHeader()
   lower_en_window_thres = -1.f;
   upper_en_window_thres = -1.f;
 
-  add_key("INTERFILE", 
-    KeyArgument::NONE,	&KeyParser::start_parsing);
-  add_key("imaging modality",
-          KeyArgument::ASCII, (KeywordProcessor)&InterfileHeader::set_imaging_modality,
-          &imaging_modality_as_string);
-
-  add_key("version of keys", &version_of_keys);
- 
   add_key("name of data file", 
     KeyArgument::ASCII,	&data_file_name);
   add_key("originating system",
@@ -213,12 +229,6 @@ InterfileHeader::InterfileHeader()
 
   add_key("energy window upper level",
          KeyArgument::FLOAT, &upper_en_window_thres);
-  
-  // support for siemens interfile
-  add_key("%sms-mi version number",
-	  KeyArgument::ASCII, &siemens_mi_version);
-  add_key("END OF INTERFILE", 
-    KeyArgument::NONE,	&KeyParser::stop_parsing);
 }
 
 
@@ -341,12 +351,6 @@ bool InterfileHeader::post_processing()
 
   return false;
 
-}
-
-void InterfileHeader::set_imaging_modality()
-{
-  set_variable();
-  this->exam_info_sptr->imaging_modality = ImagingModality(imaging_modality_as_string);
 }
 
 void InterfileHeader::read_matrix_info()
