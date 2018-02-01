@@ -618,6 +618,9 @@ read_interfile_PDFS_Siemens(istream& input,
     return 0;
     }
 
+  if (hdr.compression)
+    warning("Siemens projection data is compressed. Reading of raw data will fail.");
+
   return new ProjDataFromStream(hdr.get_exam_info_sptr(),
     hdr.data_info_ptr->create_shared_clone(),
     data_in,

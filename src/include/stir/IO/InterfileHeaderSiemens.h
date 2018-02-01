@@ -140,11 +140,13 @@ public:
   shared_ptr<ProjDataInfo> data_info_ptr;
 
   std::vector<std::string> applied_corrections;
+  bool compression;
 
 private:
   void resize_segments_and_set();
   void read_scan_data_types();
   //void read_frames_info();
+  void read_num_energy_windows();
 
   int find_storage_order();
 
@@ -153,12 +155,17 @@ private:
   int maximum_ring_difference;
   int num_scan_data_types;
   int total_num_sinograms;
+  int num_energy_windows;
+  std::vector<float> lower_en_window_thresholds;
+  std::vector<float> upper_en_window_thresholds;
 
   std::vector<int> segment_table;
   int num_segments;
   int num_rings;
   int num_views;
   int num_bins;
+  int num_tof_bins;
+  std::string compression_as_string;
 
   int num_buckets;
   std::vector<int> bucket_singles_rates;

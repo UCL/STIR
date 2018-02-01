@@ -64,19 +64,19 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
   PET_data_type_values.push_back("Normalisation");
   PET_data_type_values.push_back("Image");
   
-  patient_position_values.push_back("HFS"); 
-  patient_position_values.push_back("HFP");
-  patient_position_values.push_back("FFS");
-  patient_position_values.push_back("FFP"); 
-  patient_position_values.push_back("unknown"); //default
-
-   byte_order_index = 1;//  file_byte_order = ByteOrder::big_endian;
+  for (int patient_position_index = 0; patient_position_index <= PatientPosition::PositionValue::unknown_position; ++patient_position_index)
+    {
+      PatientPosition pos((PatientPosition::PositionValue)patient_position_index);
+      patient_position_values.push_back(pos.get_position_as_string());
+    }
+  patient_position_index = static_cast<int>(patient_position_values.size()); //unknown
+  byte_order_index = 1;//  file_byte_order = ByteOrder::big_endian;
 
   // need to default to PET for backwards compatibility
   this->exam_info_sptr->imaging_modality = ImagingModality::PT;
   //type_of_data_index = 6; // PET
   PET_data_type_index = 5; // Image
-  patient_position_index = static_cast<int>(patient_position_values.size()); //unknown
+
   num_dimensions = 2; // set to 2 to be compatible with Interfile version 3.3 (which doesn't have this keyword)
   matrix_labels.resize(num_dimensions);
   matrix_size.resize(num_dimensions);
@@ -103,19 +103,17 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
     &byte_order_index, 
     &byte_order_values);
   
-  add_key("data format", 
-    KeyArgument::ASCII,	&KeyParser::do_nothing);
-
   add_key("scale factor (mm/pixel)", 
     KeyArgument::DOUBLE, &pixel_sizes);
 
   // only a single time frame supported by Siemens currently
   num_time_frames = 1;
   image_relative_start_times.resize(1, 0.);
-  // already added in InterfileHeader
-  // add_key("image relative start time (sec)", &image_relative_start_times[0]);
+  // already added in InterfileHeader but need to override as Siemens doesn't use the "vectored" keys
+  // i.e. image duration (sec)[1]
+  add_key("image relative start time (sec)", &image_relative_start_times[0]);
   image_durations.resize(1, 0.);
-  // add_key("image duration (sec)", &image_durations[0]);
+  add_key("image duration (sec)", &image_durations[0]);
 }
 
 bool InterfileHeaderSiemens::post_processing()
@@ -132,27 +130,14 @@ bool InterfileHeaderSiemens::post_processing()
 
   if (patient_position_index<0 )
     return true;
-#if 0
-  XXX set from patient_position############
-    // note: has to be done after InterfileHeader::post_processing as that sets it as well
-  exam_info_sptr->patient_position.set_rotation(static_cast<PatientPosition::RotationValue>(patient_rotation_index));
-  exam_info_sptr->patient_position.set_orientation(static_cast<PatientPosition::OrientationValue>(patient_orientation_index));
-#endif
+
+  // note: has to be done after InterfileHeader::post_processing as that sets it as well
+  exam_info_sptr->patient_position = PatientPosition((PatientPosition::PositionValue)patient_position_index);
 
   file_byte_order = byte_order_index==0 ? 
     ByteOrder::little_endian : ByteOrder::big_endian;
-#if 0
 
-//XXX  
-    if (upper_en_window_thres > 0 && lower_en_window_thres > 0 )
-    {
-  exam_info_sptr->set_high_energy_thres(upper_en_window_thres);
-  exam_info_sptr->set_low_energy_thres(lower_en_window_thres);
-    }
-
-#endif
   return false;
-
 }
 
 void InterfileHeaderSiemens::set_type_of_data()
@@ -184,11 +169,12 @@ void InterfileHeaderSiemens::set_type_of_data()
 InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
      : InterfileHeaderSiemens()
 {
-  num_segments = -1;
   // first set to some crazy values
+  num_segments = -1;
   num_rings = -1;
-  add_key("number of rings", 
-	  &num_rings);
+  maximum_ring_difference = -1;
+  axial_compression = -1;
+  add_key("number of rings", &num_rings);
 
   //add_key("%radial arc-correction", &radial_arc_correction);
   add_key("%axial compression", &axial_compression);
@@ -209,11 +195,20 @@ InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
   // in post processing 
   //%total number of sinograms:=4084
   add_key("%total number of sinograms", &total_num_sinograms);
-
+  add_key("%number of tof time bins", &num_tof_bins);
+  add_key("%compression", &compression_as_string);
   add_key("applied corrections",
     KeyArgument::LIST_OF_ASCII, &applied_corrections);
   
-  
+  num_energy_windows = -1;
+  add_key("number of energy windows",
+    KeyArgument::INT, (KeywordProcessor)&InterfilePDFSHeaderSiemens::read_num_energy_windows, &num_energy_windows);
+  add_key("%energy window lower level (keV)",
+    KeyArgument::FLOAT, &lower_en_window_thresholds);
+
+  add_key("%energy window upper level (keV)",
+    KeyArgument::FLOAT, &upper_en_window_thresholds);
+
   add_key("PET data type",
 	  KeyArgument::ASCIIlist,
 	  &PET_data_type_index,
@@ -241,6 +236,14 @@ void InterfilePDFSHeaderSiemens::read_scan_data_types()
 	
 }
 
+void InterfilePDFSHeaderSiemens::read_num_energy_windows()
+{
+  set_variable();
+
+  lower_en_window_thresholds.resize(num_energy_windows, -1.);
+  upper_en_window_thresholds.resize(num_energy_windows, -1.);
+}
+
 void InterfilePDFSHeaderSiemens::read_bucket_singles_rates()
 {
   set_variable();
@@ -253,11 +256,17 @@ int InterfilePDFSHeaderSiemens::find_storage_order()
 
   if (num_dimensions != 3)
   { 
-    warning("Interfile error: expecting 3D structure "); 
+    warning("Interfile error: expecting 3D data "); 
     stop_parsing();
     return true; 
   }
 
+  if ((matrix_size[0].size() != 1) ||
+    (matrix_size[1].size() != 1) ||
+    (matrix_size[2].size() != 1))
+    {
+    error("Interfile error: strange values for the matrix_size keyword(s)");
+    }
   if (matrix_labels[0] != "bin")
   {
     // use error message with index [1] as that is what the user sees.
@@ -327,22 +336,18 @@ bool InterfilePDFSHeaderSiemens::post_processing()
     
   }
 
-  if (num_dimensions != 3)
-    {
-    error("Interfile error: expecting 3D data");
-    }
-
-  if ((matrix_size[0].size() != 1) ||
-    (matrix_size[1].size() != 1) ||
-    (matrix_size[2].size() != 1))
-    {
-      error("Interfile error: strange values for the matrix_size keyword(s)");
-    }
   if (find_storage_order())
     {
       error("Interfile error determining storage order");
     }
- 
+
+  if (num_energy_windows >= 1)
+    {
+    // TODO support more energy windows
+    exam_info_sptr->set_high_energy_thres(upper_en_window_thresholds[0]);
+    exam_info_sptr->set_low_energy_thres(lower_en_window_thresholds[0]);
+    }
+
   // handle scanner
 
   shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(get_exam_info_ptr()->originating_system));
@@ -356,10 +361,6 @@ bool InterfilePDFSHeaderSiemens::post_processing()
       error("Interfile warning: 'number of rings' (%d) is expected to be %d.\n",
             num_rings, scanner_sptr->get_num_rings());
     }
-  if (num_segments != segment_table.size())
-    {
-      error("Interfile warning: 'number of segments' and length of 'segment table' are not consistent");
-    }
    
   data_info_ptr = 
     ProjDataInfo::construct_proj_data_info(scanner_sptr,
@@ -369,6 +370,10 @@ bool InterfilePDFSHeaderSiemens::post_processing()
 
   // handle segments
   {
+    if (num_segments != segment_table.size())
+      {
+        error("Interfile warning: 'number of segments' and length of 'segment table' are not consistent");
+      }
     // same order as in stir_ecat7
     // Siemens always stores segments as 0, -1, +1, ...
     segment_sequence.resize(num_segments);
@@ -380,8 +385,9 @@ bool InterfilePDFSHeaderSiemens::post_processing()
       }
     //XXX check if order here and segment_table are consistent
   }
-  cerr << data_info_ptr->parameter_info() << endl;
-  
+
+  compression = (standardise_interfile_keyword(compression_as_string) == "on");
+
   return false;
 }
 
