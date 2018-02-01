@@ -64,9 +64,9 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
   PET_data_type_values.push_back("Normalisation");
   PET_data_type_values.push_back("Image");
   
-  for (int patient_position_index = 0; patient_position_index <= PatientPosition::PositionValue::unknown_position; ++patient_position_index)
+  for (int patient_position_idx = 0; patient_position_idx <= PatientPosition::PositionValue::unknown_position; ++patient_position_idx)
     {
-      PatientPosition pos((PatientPosition::PositionValue)patient_position_index);
+      PatientPosition pos((PatientPosition::PositionValue)patient_position_idx);
       patient_position_values.push_back(pos.get_position_as_string());
     }
   patient_position_index = static_cast<int>(patient_position_values.size()); //unknown
