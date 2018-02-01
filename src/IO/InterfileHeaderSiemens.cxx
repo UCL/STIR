@@ -359,9 +359,6 @@ int InterfilePDFSHeaderSiemens::find_storage_order()
 
 bool InterfilePDFSHeaderSiemens::post_processing()
 {
-  if (InterfileRawDataHeaderSiemens::post_processing() == true)
-    return true;
-
   // check for arc-correction
   if (applied_corrections.size() == 0)
     {
@@ -394,6 +391,10 @@ bool InterfilePDFSHeaderSiemens::post_processing()
     {
       error("Interfile error determining storage order");
     }
+
+  // can only do this now after the previous things were set
+  if (InterfileRawDataHeaderSiemens::post_processing() == true)
+    return true;
 
   compression = (standardise_interfile_keyword(compression_as_string) == "on");
 
@@ -448,6 +449,9 @@ InterfileListmodeHeaderSiemens::InterfileListmodeHeaderSiemens()
 
   add_key("%number of projections", &num_bins);
   add_key("%number of views", &num_views);
+  // override as listmode uses the non-vectored key
+  data_offset_each_dataset.resize(1, 0UL);
+  add_key("data offset in bytes", &data_offset_each_dataset[0]);
   }
 
 int InterfileListmodeHeaderSiemens::find_storage_order()
@@ -462,13 +466,14 @@ int InterfileListmodeHeaderSiemens::find_storage_order()
 
 bool InterfileListmodeHeaderSiemens::post_processing()
 {
-  if (InterfileRawDataHeaderSiemens::post_processing() == true)
-    return true;
-
   if (find_storage_order())
     {
       error("Interfile error determining storage order");
     }
+
+  // can only do this now after the previous things were set
+  if (InterfileRawDataHeaderSiemens::post_processing() == true)
+    return true;
 
   return false;
 }
