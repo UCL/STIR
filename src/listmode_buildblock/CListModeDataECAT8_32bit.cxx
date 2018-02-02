@@ -114,8 +114,17 @@ Succeeded
 CListModeDataECAT8_32bit::
 open_lm_file()
 {
-  const std::string filename = interfile_parser.data_file_name;
-  info(boost::format("CListModeDataECAT8_32bit: opening file %1%") % filename);
+	//const std::string filename = interfile_parser.data_file_name;
+	std::string filename = interfile_parser.data_file_name;
+
+	char directory_name[max_filename_length];
+	get_directory_name(directory_name, listmode_filename.c_str());
+	char full_data_file_name[max_filename_length];
+	strcpy(full_data_file_name, filename.c_str());
+	prepend_directory_name(full_data_file_name, directory_name);
+	filename = std::string(full_data_file_name);
+
+	info(boost::format("CListModeDataECAT8_32bit: opening file %1%") % filename);
   shared_ptr<std::istream> stream_ptr(new std::fstream(filename.c_str(), std::ios::in | std::ios::binary));
   if (!(*stream_ptr))
     {

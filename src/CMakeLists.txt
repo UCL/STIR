@@ -236,7 +236,7 @@ ADD_SUBDIRECTORY(swig)
 ## Create html documentation using Doxygen
 ## Has to be at the end such that all variables are filled
 find_package(Doxygen)
-option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_DOT_FOUND})
+option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
 if(BUILD_DOCUMENTATION)
     if(NOT DOXYGEN_FOUND)
         message(FATAL_ERROR "Doxygen is needed to build the documentation.")

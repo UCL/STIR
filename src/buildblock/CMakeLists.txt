@@ -72,6 +72,7 @@ set(${dir_LIB_SOURCES}
         TimeGateDefinitions
 	ML_norm
         num_threads
+        GeneralisedPoissonNoiseGenerator
 )
 
 if (NOT HAVE_SYSTEM_GETOPT)

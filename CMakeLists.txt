@@ -17,6 +17,13 @@
 # avoid warning about WIN32 no longer defined in CYGWIN
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) 
 
+# enable ccache https://ccache.samba.org/
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+  message(STATUS "ccache found, so we will use this.")
+endif()
+
 PROJECT(STIR)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
