@@ -1,0 +1,62 @@
+OSMAPOSLParameters :=
+
+
+objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+input file := ${prompts}
+
+projector pair type := Matrix
+  Projector Pair Using Matrix Parameters :=
+  Matrix type := Ray Tracing
+  Ray tracing matrix parameters :=
+   number of rays in tangential direction to trace for each bin := 10
+ do symmetry 90degrees min phi := 1
+do_symmetry_180degrees_min_phi:= 1
+		do_symmetry_swap_s:= 1
+		do_symmetry_swap_segment:= 1
+		do_symmetry_shift_z:= 1
+  End Ray tracing matrix parameters :=
+  End Projector Pair Using Matrix Parameters :=
+
+  ; additive projection data to handle randoms etc
+additive sinogram := ${addittive_sino} 
+
+; norm and acf
+Bin Normalisation type := From ProjData
+  Bin Normalisation From ProjData :=
+   normalisation projdata filename:= ${multifactor}
+  End Bin Normalisation From ProjData:=
+
+; if the next parameters are enabled, 
+; the sensitivity will be computed and saved
+; use %d where you want the subset-number (a la printf)
+; we do this here for illustration, but also for re-use later on (to save some time)
+; CAREFUL: use correct number of subsets in name to avoid confusion
+
+subset sensitivity filenames:= ${sensitivity}
+recompute sensitivity := 1
+
+xy output image size (in pixels) := 256
+; here comes the QP stuff
+	prior type := PLS
+  	PLS Prior Parameters:=
+  	 penalisation factor :=1
+	scale_par:=1
+	smooth_par:=1
+        anatomical_filename:=${MRfilename}
+	only_2D:=1
+  	END PLS Prior Parameters:=
+
+
+end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+;if you want to continue from a particular image
+;initial estimate:= reconML.hv
+; Number of subsets should usually be a divisor of num_views/8
+output filename prefix := ${output}
+number of subsets:= 21
+number of subiterations:= 210
+save estimates at subiteration intervals:= 21
+
+END :=
