@@ -27,7 +27,7 @@
 */
 #include "stir/utilities.h"
 #include "stir/RunTests.h"
-#include "stir/Path.h"
+#include "stir/FilePath.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -323,83 +323,129 @@ void FilenameTests::run_tests()
 	  ==  "filename.v");
 
   }
-
+     // N.E: same checks with Path class
   {
-    // same checks with Path class
-    Path filename_with_directory("dir.name/filename", false);
 
-    check( filename_with_directory.getPath()  == "dir.name/");
+    FilePath filename_with_directory("dir.name/filename", false);
 
-    filename_with_directory.addExtension(".img");
+    check( filename_with_directory.get_path()  == "dir.name/");
+
+    filename_with_directory.add_extension(".img");
     check(filename_with_directory ==  "dir.name/filename.img");
 
     filename_with_directory =  "dir.name/filename.v";
     check(filename_with_directory == "dir.name/filename.v");
 
-    filename_with_directory.addExtension(".img");
+    filename_with_directory.add_extension(".img");
 
+    // check no change made
     check(filename_with_directory ==  "dir.name/filename.v");
+
+    // Replace is the proper action
+    filename_with_directory.replace_extension(".img");
+    check(filename_with_directory ==  "dir.name/filename.img");
 
     // N.E: Not sure about this. Set again in case of failure of the
     // previous test?
     filename_with_directory =  "dir.name/filename.v";
-    check(filename_with_directory.getFileName() == "filename.v");
+    check(filename_with_directory.get_filename() == "filename.v");
 
     filename_with_directory =  "filename.v";
-    check(filename_with_directory.getFileName() == "filename.v");
+    check(filename_with_directory.get_filename() == "filename.v");
 
   }
-    // Finished the old tests;
-{
+    // N.E: Finished the old tests with the new FilePath;
+
+  // Directory tests old tests
+  {
+      check(is_absolute_pathname("/bladi/bla.v") == true);
+      check(is_absolute_pathname("bladi/bla.v") == false);
+      check(is_absolute_pathname("bla.v") == false);
+
+      strcpy(filename_with_directory, "b/c.v");
+      check(strcmp(prepend_directory_name(filename_with_directory, "a"),
+                   "a/b/c.v") == 0);
+      strcpy(filename_with_directory, "b/c.v");
+      check(strcmp(prepend_directory_name(filename_with_directory, "a/"),
+                   "a/b/c.v") == 0);
+      strcpy(filename_with_directory, "c.v");
+      check(strcmp(prepend_directory_name(filename_with_directory, "a/b"),
+                   "a/b/c.v") == 0);
+      strcpy(filename_with_directory, "/b/c.v");
+      check(strcmp(prepend_directory_name(filename_with_directory, "a"),
+                   "/b/c.v") == 0);
+  }
+
+  // Directory tests new tests
+  {
+      check(FilePath::is_absolute("/bladi/bla.v") == true);
+      check(FilePath::is_absolute("bladi/bla.v") == false);
+      check(FilePath::is_absolute("bla.v") == false);
+
+      FilePath filename_with_directory("b/c.v", false);
+
+      filename_with_directory.prepend_directory_name("a");
+      check( filename_with_directory == "a/b/c.v");
+
+      filename_with_directory = "b/c.v";
+      filename_with_directory.prepend_directory_name("a/");
+      check( filename_with_directory == "a/b/c.v");
+
+      filename_with_directory = "c.v";
+      filename_with_directory.prepend_directory_name("a/b");
+      check( filename_with_directory == "a/b/c.v");
+
+      filename_with_directory = "/b/c.v";
+      filename_with_directory.prepend_directory_name("a");
+      check( filename_with_directory == "/b/c.v");
+  }
+
+
+  //N.E: New directory tests.
+  {
       // No checks again because it will throw error.
-    Path fake_directory("dir.name/filename", false);
-    check (fake_directory.exist() == false);
+      FilePath fake_directory("dir.name/filename", false);
 
-    Path current_directory(get_current_dir_name());
-    check(current_directory.exist() == true);
-    check(current_directory.isDirectory() == true);
-    check(current_directory.isWritable() == true);
+     check (FilePath::exist(fake_directory.get_path()) == false);
 
-    // False, because not yet created.
-    Path path_to_append("test_a", false);
+      FilePath current_directory(get_current_dir_name());
+      check (FilePath::exist(current_directory.get_path()) == true);
+      check(current_directory.is_directory() == true);
+      check(current_directory.is_writable() == true);
 
-    Path newly_created_path = current_directory.append(path_to_append);
+      {
+          // Test create Path from Path.
+          // This is a bit of paradox so we have to set the first the
+          // checks to false.
+          // False, because not yet created.
+          FilePath path_to_append("my_test_folder_a", false);
 
-    check(newly_created_path.exist() == true);
-    check(newly_created_path.isDirectory() == true);
-    check(newly_created_path.isWritable() == true);
+          FilePath newly_created_path = current_directory.append(path_to_append);
 
-    // Construct path without parent
-    // If multiple paths are to be created with one call
-    // The final separator MUST be included.
-    Path mult_paths_to_append("test_b/test_c/");
+          check(newly_created_path.is_directory() == true);
+          check(newly_created_path.is_writable() == true);
 
-    Path newly_created_path_from_mult = newly_created_path.append(mult_paths_to_append);
+          check (FilePath::exist(path_to_append.get_path()) == true);
+      }
 
-    string string_to_path_append = "test_a/test_b/";
+      {
+      // Test create Path from String.
+      string path_to_append("my_test_folder_b");
 
+      FilePath newly_created_path = current_directory.append(path_to_append);
 
+      check(newly_created_path.is_directory() == true);
+      check(newly_created_path.is_writable() == true);
 
-    int nikos = 0;
-}
+      // test for recrussive creation
+      string paths_to_append("my_test_folder_c/my_test_folder_d");
+      FilePath newly_created_subfolder = newly_created_path.append(paths_to_append);
 
+      check(newly_created_subfolder.is_directory() == true);
+      check(newly_created_subfolder.is_writable() == true);
+      }
+  }
 
-  check(is_absolute_pathname("/bladi/bla.v") == true);
-  check(is_absolute_pathname("bladi/bla.v") == false);
-  check(is_absolute_pathname("bla.v") == false);
-
-  strcpy(filename_with_directory, "b/c.v");
-  check(strcmp(prepend_directory_name(filename_with_directory, "a"),
-         "a/b/c.v") == 0);
-  strcpy(filename_with_directory, "b/c.v");
-  check(strcmp(prepend_directory_name(filename_with_directory, "a/"),
-         "a/b/c.v") == 0);
-  strcpy(filename_with_directory, "c.v");
-  check(strcmp(prepend_directory_name(filename_with_directory, "a/b"),
-         "a/b/c.v") == 0);
-  strcpy(filename_with_directory, "/b/c.v");
-  check(strcmp(prepend_directory_name(filename_with_directory, "a"),
-         "/b/c.v") == 0);
 #endif /* Unix */  
 }
 

@@ -14,8 +14,8 @@
     See STIR/LICENSE.txt for details
 */
 
-#ifndef __stir_buildblock_PATH_H__
-#define __stir_buildblock_PATH_H__
+#ifndef __stir_FILEPATH_H__
+#define __stir_FILEPATH_H__
 
 /*!
   \file
@@ -37,40 +37,49 @@
 
 START_NAMESPACE_STIR
 
-class Path
+class FilePath
 {
 public:
-    Path();
+    FilePath();
 
-    Path(const std::string &__str, bool _check = true);
+    FilePath(const std::string &__str, bool _check = true);
 
-    ~Path()
+    ~FilePath()
     {}
 
-    bool isDirectory() const;
+    bool is_directory() const;
 
-    bool isRegFile() const;
+    bool is_regfile() const;
 
-    bool isWritable() const;
+    bool is_writable() const;
 
-    bool exist() const;
+    static bool is_absolute(const std::string _filename_with_directory);
 
-    Path append(Path p);
+    static bool exist(std::string s);
+
+    FilePath append(FilePath p);
+
+    FilePath append(std::string p);
+
+    void prepend_directory_name(std::string p);
 
     //! Append extension if none is present
     void
-    addExtension(const std::string e);
+    add_extension(const std::string e);
+
+    void
+    replace_extension(const std::string e);
 
     std::string
-    getPath() const;
+    get_path() const;
 
     std::string
-    getFileName() const;
+    get_filename() const;
 
     std::string
-    getFileExtension() const ;
+    get_extension() const ;
 
-    inline bool operator==(const Path& other) {
+    inline bool operator==(const FilePath& other) {
            if (this->my_string==other.my_string)
               return true;
            else
@@ -84,7 +93,7 @@ public:
               return false;
         }
 
-    inline void operator=(const Path& other) {
+    inline void operator=(const FilePath& other) {
         this->my_string = other.my_string;
         this->separator = other.separator;
         }
@@ -101,6 +110,8 @@ private:
 
     const std::vector<std::string> split(const std::string& s, const char* c);
 
+    std::string merge(std::string first, std::string sec);
+
     inline void initSeparator()
     {
 #if defined(__OS_WIN__)
@@ -115,6 +126,7 @@ private:
 
     std::string::size_type
     find_pos_of_extension() const;
+
 protected:
        std::string my_string;
        std::string separator;

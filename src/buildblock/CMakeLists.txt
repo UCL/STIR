@@ -73,7 +73,7 @@ set(${dir_LIB_SOURCES}
 	ML_norm
         num_threads
         GeneralisedPoissonNoiseGenerator
-        Path
+        FilePath
 )
 
 if (NOT HAVE_SYSTEM_GETOPT)
