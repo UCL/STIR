@@ -78,6 +78,8 @@ public:
     static bool is_absolute(const std::string _filename_with_directory);
     //! Returns true if the path already exists
     static bool exist(std::string s);
+
+    static std::string get_current_dirname();
     //! Create a new folder,by FilePath, and return its path
     FilePath append(FilePath p);
     //! Create a new folder,by string, and return its path
@@ -126,13 +128,15 @@ public:
     }
 
 private:
-
+    //! Checks on wether the path exits, is writable and accessible.
     void checks() const;
+    //! Split the path on char c. If c not defined then default on the current separator.
+    const std::vector<std::string> split(const std::string& s, const char* c ="");
 
-    const std::vector<std::string> split(const std::string& s, const char* c);
-
+    //! Merge two strings using the correct OS separator
     std::string merge(std::string first, std::string sec);
 
+    //! Initialize the separator based on the current OS
     inline void initSeparator()
     {
 #if defined(__OS_VAX__)
@@ -145,9 +149,9 @@ private:
         separator = "/" ;
 #endif
     }
-
+    //! Return the position of the filename, which is the string after the last separator
     std::string::size_type find_pos_of_filename(std::string _s = "") const;
-
+    //! Find the position of the extension, if exists
     std::string::size_type find_pos_of_extension() const;
 
 protected:
@@ -155,7 +159,6 @@ protected:
     std::string my_string;
     //! The separator for the current OS.
     std::string separator;
-
 };
 
 END_NAMESPACE_STIR

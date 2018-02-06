@@ -192,10 +192,23 @@ void FilePath::checks() const
     }
 }
 
+std::string FilePath::get_current_dirname()
+{
+    char buffer[100];
+    char *ptr = getcwd(buffer, sizeof(buffer));
+    std::string s_cwd;
+    if (ptr)
+        s_cwd = ptr;
+    return s_cwd;
+}
+
 const std::vector<std::string> FilePath::split(const std::string& s, const char* c)
 {
     std::string buff = "";
     std::vector<std::string> v;
+
+    if (strlen(c) == 0)
+        c = separator.c_str();
 
     for(unsigned int i = 0; i < s.size(); i++)
     {
