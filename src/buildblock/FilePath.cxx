@@ -31,8 +31,8 @@ bool FilePath::is_directory() const
         error(boost::format("FilePath: Cannot access %1%.")%my_string);
     else if( info.st_mode & S_IFDIR )
         return true;
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -101,22 +101,11 @@ FilePath FilePath::append(std::string p)
     }
 
     // try to accomondate multiple sub paths
-    std::vector<std::string> v{split(p, separator.c_str())};
+    std::vector<std::string> v = split(p, separator.c_str());
 
     for (int i = 0; i < v.size(); i++)
     {
-        {
-            char* end_of_root_name = &new_path.back();
-            if (separator.compare(end_of_root_name))
-                new_path.append(separator);
-        }
-        new_path.append(v.at(i));
-
-        {
-            char* end_of_root_name = &new_path.back();
-            if (separator.compare(end_of_root_name))
-                new_path.append(separator);
-        }
+        merge(new_path, v.at(i));
 
         if (FilePath::exist(new_path) == true)
         {
@@ -307,12 +296,12 @@ void FilePath::prepend_directory_name(std::string p)
 
 #if defined(__OS_VAX__)
     // relative names either contain no '[', or have '[.'
-    if (my_string.first() != '[' ||
-            p.back() != ']')
+    if (my_string[0] != '[' ||
+            p[p.length()] != ']')
     else
     {
         // peel of the ][ pair
-        p.pop_back();
+        p.erase[p.length()];
     }
      new_name = p + separator + my_string;
 #elif defined(__OS_WIN__)
@@ -323,10 +312,10 @@ void FilePath::prepend_directory_name(std::string p)
 #elif defined(__OS_MAC__)
     // relative names either have no ':' or do not start with ':'
     // append : if necessary
-    if (p.back() != ':')
+    if (p[p.length()] != ':')
         p.push_back(":");
     // do not copy starting ':' of filename
-    if (my_string.front() == ':')
+    if (my_string[0] == ':')
         my_string.erase(0);
     new_name = p + separator + my_string;
 #else // defined(__OS_UNIX__)
@@ -338,19 +327,33 @@ void FilePath::prepend_directory_name(std::string p)
 
 std::string FilePath::merge(std::string first, std::string sec)
 {
-    if (first.back() == *separator.c_str() && sec.front() == *separator.c_str())
+    // Just append a separator
+    if (sec.size() == 0)
+        return first + separator;
+
+    if (first[first.length()] == *separator.c_str() && sec[0] == *separator.c_str())
     {
-        first.pop_back();
+        first.resize(first.length()-1);
+
+        if (sec[sec.length()] == *separator.c_str())
+            return first + sec + separator;
+
         return first + sec;
     }
-    else if ((first.back() == *separator.c_str() && sec.front() != *separator.c_str()) ||
-             (first.back() != *separator.c_str() && sec.front() == *separator.c_str()))
+    else if ((first[first.length()] == *separator.c_str() && sec[0] != *separator.c_str()) ||
+             (first[first.length()] != *separator.c_str() && sec[0] == *separator.c_str()))
     {
+        if (sec[sec.length()] == *separator.c_str())
+            return first + sec + separator;
+
         return first + sec;
     }
     else /*( (first.back() != separator
                && sec.front() != separator))*/
     {
+        if (sec[sec.length()] == *separator.c_str())
+            return first + sec + separator;
+
         return first + separator + sec;
     }
 }
