@@ -105,7 +105,8 @@ FilePath FilePath::append(std::string p)
 
     for (unsigned int i = 0; i < v.size(); i++)
     {
-        merge(new_path, v.at(i));
+        new_path = merge(new_path, v.at(i));
+        FilePath::append_separator(new_path);
 
         if (FilePath::exist(new_path) == true)
         {
@@ -209,24 +210,25 @@ const std::vector<std::string> FilePath::split(const std::string& s, const char*
 }
 
 std::string::size_type
-FilePath::find_pos_of_filename() const
+FilePath::find_pos_of_filename(std::string _s) const
 {
     std::string::size_type pos;
+
+    if (_s.size() == 0)
+        _s = my_string;
 
 #if defined(__OS_VAX__)
     pos = my_string.find_last_of( ']');
     if (pos==std::string::npos)
-        pos = my_string.find_last_of( ':');
+        pos = _s.find_last_of(separator);
 #elif defined(__OS_WIN__)
     pos = my_string.find_last_of( '\\');
     if (pos==std::string::npos)
-        pos = my_string.find_last_of( '/');
+        pos = _s.find_last_of( '/');
     if (pos==std::string::npos)
-        pos = my_string.find_last_of( ':');
-#elif defined(__OS_MAC__)
-    pos = my_string.find_last_of( ':');
-#else // defined(__OS_UNIX__)
-    pos = my_string.find_last_of( '/');
+        pos = _s.find_last_of( ':');
+#else
+    pos = _s.find_last_of(separator);
 #endif
     if (pos != std::string::npos)
         return pos+1;
@@ -246,6 +248,21 @@ FilePath::find_pos_of_extension() const
     return pos_of_dot;
   else
     return std::string::npos;
+}
+
+void FilePath::append_separator(std::string& s)
+{
+    std::string separator;
+
+#if defined(__OS_VAX__)
+        s += ":";
+#elif defined(__OS_WIN__)
+        s += "\\";
+#elif defined(__OS_MAC__)
+        s += ":" ;
+#else // defined(__OS_UNIX__)
+        s += "/" ;
+#endif
 }
 
 bool
@@ -337,25 +354,16 @@ std::string FilePath::merge(std::string first, std::string sec)
     {
         first.resize(first.length()-1);
 
-        if (sec[sec.length()-1] == *separator.c_str())
-            return first + sec + separator;
-
         return first + sec;
     }
     else if ((first[first.length()-1] == *separator.c_str() && sec[0] != *separator.c_str()) ||
              (first[first.length()-1] != *separator.c_str() && sec[0] == *separator.c_str()))
     {
-        if (sec[sec.length()-1] == *separator.c_str())
-            return first + sec + separator;
-
         return first + sec;
     }
     else /*( (first.back() != separator
                && sec.front() != separator))*/
     {
-        if (sec[sec.length()-1] == *separator.c_str())
-            return first + separator+ sec + separator;
-
         return first + separator + sec;
     }
 }
