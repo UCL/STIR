@@ -126,7 +126,7 @@ FilePath FilePath::append(std::string p)
 }
 
 void
-FilePath::add_extension(const std::string e)
+FilePath::add_extension(const std::string &e)
 {
     std::string::size_type pos = find_pos_of_extension();
     if (pos == std::string::npos)
@@ -134,7 +134,7 @@ FilePath::add_extension(const std::string e)
 }
 
 void
-FilePath::replace_extension(const std::string e)
+FilePath::replace_extension(const std::string& e)
 {
     std::string::size_type pos = find_pos_of_extension();
     if (pos != std::string::npos)
@@ -265,8 +265,6 @@ FilePath::find_pos_of_extension() const
 
 void FilePath::append_separator(std::string& s)
 {
-    std::string separator;
-
 #if defined(__OS_VAX__)
         s += ":";
 #elif defined(__OS_WIN__)
@@ -279,7 +277,7 @@ void FilePath::append_separator(std::string& s)
 }
 
 bool
-FilePath::is_absolute(const std::string _filename_with_directory)
+FilePath::is_absolute(const std::string& _filename_with_directory)
 {
     const char* filename_with_directory = _filename_with_directory.c_str();
 #if defined(__OS_VAX__)
@@ -320,10 +318,6 @@ void FilePath::prepend_directory_name(std::string p)
             p.size() == 0)
         return;
 
-//    char * new_name =
-//            new char[strlen(filename_with_directory) + strlen(directory_name) + 4];
-//    strcpy(new_name, directory_name);
-//    char * end_of_new_name = new_name + strlen(directory_name)-1;
     std::string new_name;
 
 #if defined(__OS_VAX__)

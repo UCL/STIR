@@ -78,7 +78,7 @@ public:
     //! Returns true if the path is writable
     bool is_writable() const;
     //! Returns true if the path is absolute
-    static bool is_absolute(const std::string _filename_with_directory);
+    static bool is_absolute(const std::string& _filename_with_directory);
     //! Returns true if the path already exists
     static bool exist(std::string s);
 
@@ -93,9 +93,9 @@ public:
     void prepend_directory_name(std::string p);
 
     //! Append extension if none is present
-    void add_extension(const std::string e);
+    void add_extension(const std::string& e);
     //! Replace extension
-    void replace_extension(const std::string e);
+    void replace_extension(const std::string& e);
     //! Get path from string
     std::string get_path() const;
 
