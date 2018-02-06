@@ -50,10 +50,14 @@ bool FilePath::is_regfile() const
 
 bool FilePath::is_writable() const
 {
+#if defined(__OS_WIN__)
+	return true; 
+#else	
     if( access(my_string.c_str(), 0) == 0 )
         return true;
     else
         return false;
+#endif
 }
 
 bool FilePath::exist(std::string s)
@@ -113,10 +117,14 @@ FilePath FilePath::append(std::string p)
             warning(boost::format("FilePath: Path %1% already exists.")%new_path);
             continue;
         }
+		int nError;
+#if defined(__OS_WIN__)
+		nError = _mkdir(new_path.c_str());
+#else
+		nError = mkdir(new_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+#endif
 
-        const int dir_err = mkdir(new_path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-
-        if (-1 == dir_err)
+        if (-1 == nError)
         {
             printf("Error creating directory!n");
             exit(1);

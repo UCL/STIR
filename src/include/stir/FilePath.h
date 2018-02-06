@@ -34,12 +34,14 @@
 #include <string>
 #include <boost/format.hpp>
 
-#include <sys/stat.h>
-#include <unistd.h>
 #if defined(__OS_WIN__)
-#include <windows.h>
-#define mkdir(dir, mode) _mkdir(dir)
+	#include <windows.h>
+	 #include<sys/types.h> // required for stat.h
+	#include<direct.h>
+#else
+	#include <unistd.h>
 #endif
+#include <sys/stat.h>
 START_NAMESPACE_STIR
 
 /*!
@@ -75,7 +77,8 @@ public:
     bool is_directory() const;
     //! Returns true if my_string points to a regular file
     bool is_regfile() const;
-    //! Returns true if the path is writable
+    //! Returns true if the path is writable. 
+	//! \warning As far as I understand is only a *NIX feature. Write permissions do not exist in this level at Windows. 
     bool is_writable() const;
     //! Returns true if the path is absolute
     static bool is_absolute(const std::string& _filename_with_directory);
