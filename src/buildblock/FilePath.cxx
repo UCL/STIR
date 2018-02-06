@@ -103,7 +103,7 @@ FilePath FilePath::append(std::string p)
     // try to accomondate multiple sub paths
     std::vector<std::string> v = split(p, separator.c_str());
 
-    for (int i = 0; i < v.size(); i++)
+    for (unsigned int i = 0; i < v.size(); i++)
     {
         merge(new_path, v.at(i));
 
@@ -193,13 +193,13 @@ void FilePath::checks() const
 
 const std::vector<std::string> FilePath::split(const std::string& s, const char* c)
 {
-    std::string buff{""};
-     std::vector<std::string> v;
+    std::string buff = "";
+    std::vector<std::string> v;
 
-    for(auto n:s)
+    for(char n:s)
     {
         if(n != *c) buff+=n; else
-        if(n == *c && buff != "") { v.push_back(buff); buff = ""; }
+            if(n == *c && buff != "") { v.push_back(buff); buff = ""; }
     }
     if(buff != "") v.push_back(buff);
 
@@ -292,27 +292,27 @@ void FilePath::prepend_directory_name(std::string p)
 //            new char[strlen(filename_with_directory) + strlen(directory_name) + 4];
 //    strcpy(new_name, directory_name);
 //    char * end_of_new_name = new_name + strlen(directory_name)-1;
-    std::string new_name;// = p + separator + my_string;
+    std::string new_name;
 
 #if defined(__OS_VAX__)
     // relative names either contain no '[', or have '[.'
     if (my_string[0] != '[' ||
-            p[p.length()] != ']')
-    else
+            p[p.length()-1] != ']')
+        else
     {
         // peel of the ][ pair
-        p.erase[p.length()];
+        p.erase[p.length()-1];
     }
-     new_name = p + separator + my_string;
+    new_name = p + separator + my_string;
 #elif defined(__OS_WIN__)
     // append \ if necessary
-//    if (p.back() != ':' && p.back() != '\\' &&
-//            *p.back() != '/')
-        new_name = merge(p, my_string);
+    //    if (p.back() != ':' && p.back() != '\\' &&
+    //            *p.back() != '/')
+    new_name = merge(p, my_string);
 #elif defined(__OS_MAC__)
     // relative names either have no ':' or do not start with ':'
     // append : if necessary
-    if (p[p.length()] != ':')
+    if (p[p.length()-1] != ':')
         p.push_back(":");
     // do not copy starting ':' of filename
     if (my_string[0] == ':')
@@ -320,9 +320,9 @@ void FilePath::prepend_directory_name(std::string p)
     new_name = p + separator + my_string;
 #else // defined(__OS_UNIX__)
     // append / if necessary
-        new_name = merge(p, my_string);
+    new_name = merge(p, my_string);
 #endif
-        my_string = new_name;
+    my_string = new_name;
 }
 
 std::string FilePath::merge(std::string first, std::string sec)
@@ -331,19 +331,19 @@ std::string FilePath::merge(std::string first, std::string sec)
     if (sec.size() == 0)
         return first + separator;
 
-    if (first[first.length()] == *separator.c_str() && sec[0] == *separator.c_str())
+    if (first[first.length()-1] == *separator.c_str() && sec[0] == *separator.c_str())
     {
         first.resize(first.length()-1);
 
-        if (sec[sec.length()] == *separator.c_str())
+        if (sec[sec.length()-1] == *separator.c_str())
             return first + sec + separator;
 
         return first + sec;
     }
-    else if ((first[first.length()] == *separator.c_str() && sec[0] != *separator.c_str()) ||
-             (first[first.length()] != *separator.c_str() && sec[0] == *separator.c_str()))
+    else if ((first[first.length()-1] == *separator.c_str() && sec[0] != *separator.c_str()) ||
+             (first[first.length()-1] != *separator.c_str() && sec[0] == *separator.c_str()))
     {
-        if (sec[sec.length()] == *separator.c_str())
+        if (sec[sec.length()-1] == *separator.c_str())
             return first + sec + separator;
 
         return first + sec;
@@ -351,8 +351,8 @@ std::string FilePath::merge(std::string first, std::string sec)
     else /*( (first.back() != separator
                && sec.front() != separator))*/
     {
-        if (sec[sec.length()] == *separator.c_str())
-            return first + sec + separator;
+        if (sec[sec.length()-1] == *separator.c_str())
+            return first + separator+ sec + separator;
 
         return first + separator + sec;
     }
