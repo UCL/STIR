@@ -178,6 +178,8 @@ void FilenameTests::run_tests()
                      string::npos)
       ==  "filename.v");
   }
+
+  {
   check(is_absolute_pathname("\\bladi\\bla.v") == true);
   check(is_absolute_pathname("a:\\bladi\\bla.v") == true);
   check(is_absolute_pathname("bladi\\bla.v") == false);
@@ -216,7 +218,54 @@ void FilenameTests::run_tests()
   strcpy(filename_with_directory, "/b/c.v");
   check(strcmp(prepend_directory_name(filename_with_directory, "a"),
          "/b/c.v") == 0);
+  }
+   // Directory tests new tests
+  {
+      check(FilePath::is_absolute("\\bladi\\bla.v") == true);
+      check(FilePath::is_absolute("bladi\\bla.v") == false);
+      check(FilePath::is_absolute("/bladi/bla.v") == true);
+      check(FilePath::is_absolute("a:/bladi/bla.v") == true);
+      check(FilePath::is_absolute("bladi/bla.v") == false);
+      check(FilePath::is_absolute("bla.v") == false);
 
+      FilePath filename_with_directory("b\\c.v", false);
+
+      filename_with_directory.prepend_directory_name("a");
+      check( filename_with_directory == "a\\b\\c.v");
+
+      filename_with_directory = "b\\c.v";
+      filename_with_directory.prepend_directory_name("a\\");
+      check( filename_with_directory == "a\\b\\c.v");
+
+      filename_with_directory = "b\\c.v";
+      filename_with_directory.prepend_directory_name("a:");
+      check( filename_with_directory == "a:b\\c.v");
+
+      filename_with_directory = "c.v";
+      filename_with_directory.prepend_directory_name("a\\b");
+      check( filename_with_directory == "a\\b\\c.v");
+
+      filename_with_directory = "\\b\\c.v";
+      filename_with_directory.prepend_directory_name("a");
+      check( filename_with_directory == "\\b\\c.v");
+
+      filename_with_directory = "b\\c.v";
+      filename_with_directory.prepend_directory_name("a/");
+      check( filename_with_directory == "a/b/c.v");
+
+      filename_with_directory = "b\\c.v";
+      filename_with_directory.prepend_directory_name("a:");
+      check( filename_with_directory == "a:b/c.v");
+
+      filename_with_directory = "c.v";
+      filename_with_directory.prepend_directory_name("a/b");
+      check( filename_with_directory == "a/b\\c.v");
+
+      filename_with_directory = "/b/c.v";
+      filename_with_directory.prepend_directory_name("a");
+      check( filename_with_directory == "/b/c.v");
+
+  }
 
 #elif defined(__OS_MAC__)
 

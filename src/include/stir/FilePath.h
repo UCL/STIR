@@ -36,7 +36,10 @@
 
 #include <sys/stat.h>
 #include <unistd.h>
-
+#if defined(__OS_WIN__)
+#include <windows.h>
+#define mkdir(dir, mode) _mkdir(dir)
+#endif
 START_NAMESPACE_STIR
 
 /*!
@@ -121,7 +124,7 @@ public:
         this->separator = other.separator;
     }
 
-    //! Possibly dangerous... when real paths are used.
+    //! \warning Possibly dangerous... when real paths are used.
     inline void operator=(const std::string& other) {
         this->my_string = other;
         this->initSeparator();
