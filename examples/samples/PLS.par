@@ -37,13 +37,22 @@ Bin Normalisation type := From ProjData
 subset sensitivity filenames:= ${sensitivity}
 recompute sensitivity := 1
 
-xy output image size (in pixels) := 256
-; here comes the QP stuff
+xy output image size (in pixels) := -1
+; here comes the PLS stuff
 	prior type := PLS
   	PLS Prior Parameters:=
   	 penalisation factor :=1
-	scale_par:=1
-	smooth_par:=1
+
+; the following parameter is to avoid division by zero
+; The value depends on the scale of the emission image. 
+
+	eta:=1
+
+; the following parameter controls the edge-preservation property of PLS. 
+; The value depends on the scale of the emission image. 
+
+	alpha:=1
+
         anatomical_filename:=${MRfilename}
 	only_2D:=1
   	END PLS Prior Parameters:=
@@ -55,7 +64,7 @@ end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 ;initial estimate:= reconML.hv
 ; Number of subsets should usually be a divisor of num_views/8
 output filename prefix := ${output}
-number of subsets:= 21
+number of subsets:= 1
 number of subiterations:= 210
 save estimates at subiteration intervals:= 21
 
