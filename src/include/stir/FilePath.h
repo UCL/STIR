@@ -34,6 +34,7 @@
 #include <string>
 #include <boost/format.hpp>
 
+
 #if defined(__OS_WIN__)
 	#include <windows.h>
 	 #include<sys/types.h> // required for stat.h
@@ -41,6 +42,7 @@
 #else
 	#include <unistd.h>
 #endif
+
 #include <sys/stat.h>
 START_NAMESPACE_STIR
 
