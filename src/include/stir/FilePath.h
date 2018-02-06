@@ -35,10 +35,11 @@
 #include <boost/format.hpp>
 
 #include <sys/stat.h>
-#include <unistd.h>
 #if defined(__OS_WIN__)
 #include <windows.h>
 #define mkdir(dir, mode) _mkdir(dir)
+#else
+#include <unistd.h>
 #endif
 START_NAMESPACE_STIR
 
