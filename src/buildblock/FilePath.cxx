@@ -196,8 +196,10 @@ const std::vector<std::string> FilePath::split(const std::string& s, const char*
     std::string buff = "";
     std::vector<std::string> v;
 
-    for(char n:s)
+    for(unsigned int i = 0; i < s.size(); i++)
     {
+        char n = s.at(i);
+
         if(n != *c) buff+=n; else
             if(n == *c && buff != "") { v.push_back(buff); buff = ""; }
     }
