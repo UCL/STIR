@@ -15,6 +15,28 @@
     See STIR/LICENSE.txt for details
 */
 
+/*
+ *  For the code transfered from the utilites.h / .cxx
+ *
+ *
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000-2010, Hammersmith Imanet Ltd
+    Copyright (C) 2014, University College London
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+
 #ifndef __stir_FILEPATH_H__
 #define __stir_FILEPATH_H__
 
@@ -23,8 +45,14 @@
   \ingroup buildblock
 
   \brief Declaration of class stir::FilePath
+  This is a class implementing basic filesytem functionality. Parts of this class were
+  copied from Functions for filename manipulations.
+
+  Maximum effort was put in order to be cross platform.
 
   \author Nikos Efthimiou
+  \author Kris Thielemans
+  \author PARAPET project
 
 */
 
@@ -78,62 +106,49 @@ public:
     //! Returns true if my_string points to a directory
     bool is_directory() const;
     //! Returns true if my_string points to a regular file
-    bool is_regfile() const;
     //! Returns true if the path is writable. 
 	//! \warning As far as I understand is only a *NIX feature. Write permissions do not exist in this level at Windows. 
+    bool is_regular_file() const;
     bool is_writable() const;
     //! Returns true if the path is absolute
+    //! This funtion has been copied from the Functions for filename manipulations
     static bool is_absolute(const std::string& _filename_with_directory);
     //! Returns true if the path already exists
     static bool exist(std::string s);
-
+    //! Returns the current / working directory
     static std::string get_current_dirname();
     //! Create a new folder,by FilePath, and return its path
-    FilePath append(FilePath p);
-    //! Create a new folder,by string, and return its path
-    FilePath append(std::string p);
+    FilePath append(const FilePath& p);
+    //! \brief Create a new folder,by string, and return its path
+    //! \details
+    FilePath append(const std::string& p);
     //! Append the separator
     static void append_separator(std::string& s);
     //! If path is no absolute then prepend the p string
+    //! This funtion has been copied from the Functions for filename manipulations
     void prepend_directory_name(std::string p);
-
     //! Append extension if none is present
+    //! This funtion has been copied from the Functions for filename manipulations
     void add_extension(const std::string& e);
     //! Replace extension
+    //! This funtion has been copied from the Functions for filename manipulations
     void replace_extension(const std::string& e);
     //! Get path from string
     std::string get_path() const;
+    //! Get only the filename
+    std::string get_filename() const;
+    //! Get the extension of the filename.
+    //! This function will return the the bit that is after the last dot.
+    std::string get_extension() const ;
 
-    std::string
-    get_filename() const;
+    inline bool operator==(const FilePath& other);
 
-    std::string
-    get_extension() const ;
+    inline bool operator==(const std::string& other);
 
-    inline bool operator==(const FilePath& other) {
-        if (this->my_string==other.my_string)
-            return true;
-        else
-            return false;
-    }
-
-    inline bool operator==(const std::string& other) {
-        if (this->my_string==other)
-            return true;
-        else
-            return false;
-    }
-
-    inline void operator=(const FilePath& other) {
-        this->my_string = other.my_string;
-        this->separator = other.separator;
-    }
+    inline void operator=(const FilePath& other);
 
     //! \warning Possibly dangerous... when real paths are used.
-    inline void operator=(const std::string& other) {
-        this->my_string = other;
-        this->initSeparator();
-    }
+    inline void operator=(const std::string& other);
 
 private:
     //! Checks on wether the path exits, is writable and accessible.
@@ -145,21 +160,13 @@ private:
     std::string merge(std::string first, std::string sec);
 
     //! Initialize the separator based on the current OS
-    inline void initSeparator()
-    {
-#if defined(__OS_VAX__)
-        separator = ":";
-#elif defined(__OS_WIN__)
-        separator = "\\";
-#elif defined(__OS_MAC__)
-        separator = ":" ;
-#else // defined(__OS_UNIX__)
-        separator = "/" ;
-#endif
-    }
+    inline void initSeparator();
+
     //! Return the position of the filename, which is the string after the last separator
+    //! This funtion has been copied from the Functions for filename manipulations
     std::string::size_type find_pos_of_filename(std::string _s = "") const;
     //! Find the position of the extension, if exists
+    //! This funtion has been copied from the Functions for filename manipulations
     std::string::size_type find_pos_of_extension() const;
 
 protected:
@@ -170,6 +177,8 @@ protected:
 };
 
 END_NAMESPACE_STIR
+
+#include "stir/FilePath.inl"
 
 #endif
 

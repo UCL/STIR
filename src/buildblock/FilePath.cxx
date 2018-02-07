@@ -36,7 +36,7 @@ bool FilePath::is_directory() const
 }
 
 
-bool FilePath::is_regfile() const
+bool FilePath::is_regular_file() const
 {
     struct stat info;
 
@@ -71,30 +71,25 @@ bool FilePath::exist(std::string s)
         else
             return true;
     }
-
-    //    if( stat( my_string.c_str(), &info ) != 0 )
-    //        return false;
-    //    else
-    //        return true;
-
 }
 
-FilePath FilePath::append(FilePath p)
+FilePath FilePath::append(const FilePath &p)
 {
     return append(p.get_path());
 }
 
-FilePath FilePath::append(std::string p)
+FilePath FilePath::append(const std::string &p)
 {
     // Check permissions
     if (!is_writable())
        error(boost::format("FilePath: %1% is not writable.")%my_string);
 
     std::string new_path = my_string;
-    //Check is directory
+
+    //Check if this a directory or it contains a filename, too
     if(!is_directory())
     {
-        if(!is_regfile())
+        if(!is_regular_file())
         {
             error(boost::format("FilePath: Cannot find a directory in %1%.")%my_string);
         }
@@ -104,14 +99,17 @@ FilePath FilePath::append(std::string p)
         }
     }
 
-    // try to accomondate multiple sub paths
+    // Try to accomondate multiple sub paths
+    // Find if string p has more than one levels and store them in a vector.
     std::vector<std::string> v = split(p, separator.c_str());
 
+    // Run over the vector creating the subfolders recrusively.
     for (unsigned int i = 0; i < v.size(); i++)
     {
         new_path = merge(new_path, v.at(i));
         FilePath::append_separator(new_path);
 
+        // if current level already exists move to the next.
         if (FilePath::exist(new_path) == true)
         {
             warning(boost::format("FilePath: Path %1% already exists.")%new_path);
@@ -157,7 +155,8 @@ std::string
 FilePath::get_path() const
 {
     std::size_t i = my_string.rfind(separator, my_string.length());
-    if ((i) != std::string::npos) {
+    if (i != std::string::npos)
+    {
         return(my_string.substr(0, i+1));
     }
 
@@ -167,17 +166,21 @@ FilePath::get_path() const
 std::string
 FilePath::get_filename() const
 {
-   std::size_t i = my_string.rfind(separator, my_string.length());
-   if (i != std::string::npos) {
-       return(my_string.substr(i+1, my_string.length() - i));
-   }
-   return(my_string);
+    std::size_t i = my_string.rfind(separator, my_string.length());
+
+    if (i != std::string::npos)
+    {
+        return(my_string.substr(i+1, my_string.length() - i));
+    }
+    return(my_string);
 }
 
 std::string
-FilePath::get_extension() const {
+FilePath::get_extension() const
+{
     std::size_t i = find_pos_of_extension();
-    if (i != std::string::npos) {
+    if (i != std::string::npos)
+    {
         return(my_string.substr(i+1, my_string.length() - i));
     }
     return("");
