@@ -107,14 +107,14 @@ public:
     bool is_directory() const;
     //! Returns true if my_string points to a regular file
     //! Returns true if the path is writable. 
-	//! \warning As far as I understand is only a *NIX feature. Write permissions do not exist in this level at Windows. 
+	//! \warning N.E: As far as I understand is only a *NIX feature. Write permissions do not exist in this level at Windows. 
     bool is_regular_file() const;
     bool is_writable() const;
     //! Returns true if the path is absolute
-    //! This funtion has been copied from the Functions for filename manipulations
+    // This funtion has been copied from the Functions for filename manipulations
     static bool is_absolute(const std::string& _filename_with_directory);
     //! Returns true if the path already exists
-    static bool exist(std::string s);
+    static bool exist(const std::string& s);
     //! Returns the current / working directory
     static std::string get_current_working_directory();
     //! Create a new folder,by FilePath, and return its path
@@ -127,20 +127,21 @@ public:
     //! Append the separator
     static void append_separator(std::string& s);
     //! If path is no absolute then prepend the p string
-    //! This funtion has been copied from the Functions for filename manipulations
+    // This funtion has been copied from the Functions for filename manipulations
     void prepend_directory_name(const std::string& p);
     //! Append extension if none is present
-    //! This funtion has been copied from the Functions for filename manipulations
+    // This funtion has been copied from the Functions for filename manipulations
     void add_extension(const std::string& e);
     //! Replace extension
-    //! This funtion has been copied from the Functions for filename manipulations
+    // This funtion has been copied from the Functions for filename manipulations
     void replace_extension(const std::string& e);
     //! Get path from string
     std::string get_path() const;
     //! Get only the filename
+	//! An inherent functionality from utilities is that on Windows all separators will be checked.
     std::string get_filename() const;
     //! Get the extension of the filename.
-    //! This function will return the the bit that is after the last dot.
+    // This function will return the the bit that is after the last dot.
     std::string get_extension() const ;
 
     inline bool operator==(const FilePath& other);
@@ -149,7 +150,11 @@ public:
 
     inline void operator=(const FilePath& other);
 
-    //! \warning Possibly dangerous... when real paths are used.
+    //! \warning Possibly dangerous.
+	//! When the object has been initialized with a existing path and
+	//! then string in the assigment is an arbitary string this can lead to 
+	//! unexpented behaviour. Hopefully, we guard sufficiently by 
+	//! by performing checks again before crusial functions. 
     inline void operator=(const std::string& other);
 
 private:
@@ -165,10 +170,10 @@ private:
     inline void initSeparator();
 
     //! Return the position of the filename, which is the string after the last separator
-    //! This funtion has been copied from the Functions for filename manipulations
+    // This funtion has been copied from the Functions for filename manipulations
     std::string::size_type find_pos_of_filename() const;
     //! Find the position of the extension, if exists
-    //! This funtion has been copied from the Functions for filename manipulations
+    // This funtion has been copied from the Functions for filename manipulations
     std::string::size_type find_pos_of_extension() const;
 
 protected:

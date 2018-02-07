@@ -44,8 +44,8 @@ bool FilePath::is_regular_file() const
         error(boost::format("FilePath: Cannot access %1%.")%my_string);
     else if( info.st_mode & S_IFREG )
         return true;
-    else
-        return false;
+    
+	return false;
 }
 
 bool FilePath::is_writable() const
@@ -60,7 +60,7 @@ bool FilePath::is_writable() const
 #endif
 }
 
-bool FilePath::exist(std::string s)
+bool FilePath::exist(const std::string& s)
 {
     struct stat info;
 
@@ -124,8 +124,7 @@ FilePath FilePath::append(const std::string &p)
 
         if (-1 == nError)
         {
-            printf("Error creating directory!n");
-            exit(1);
+			error("FilePath: Error creating directory!");
         }
     }
     return FilePath(new_path);
@@ -166,7 +165,16 @@ FilePath::get_path() const
 std::string
 FilePath::get_filename() const
 {
-    std::size_t i = my_string.rfind(separator, my_string.length());
+	std::size_t i = 0; 
+#if defined(__OS_WIN__)
+	i = my_string.rfind(separator, my_string.length());
+	if (i == std::string::npos)
+		i = my_string.rfind('/', my_string.length());
+	if (i == std::string::npos)
+		i = my_string.rfind(':', my_string.length());
+#else
+    i = my_string.rfind(separator, my_string.length());
+#endif
 
     if (i != std::string::npos)
     {
@@ -339,9 +347,6 @@ void FilePath::prepend_directory_name(const std::string &p)
     }
     new_name = p + separator + my_string;
 #elif defined(__OS_WIN__)
-    // append \ if necessary
-    //    if (p.back() != ':' && p.back() != '\\' &&
-    //            *p.back() != '/')
     new_name = merge(p, my_string);
 #elif defined(__OS_MAC__)
     // relative names either have no ':' or do not start with ':'
@@ -361,23 +366,45 @@ void FilePath::prepend_directory_name(const std::string &p)
 
 std::string FilePath::merge(const std::string &first, const std::string &sec)
 {
+	std::string sep = separator; 
+
+#if defined(__OS_WIN__)
+	//Check for the appropriate separator.
+	// Again, in utilies when windows all separators are checked. 
+	if (first[first.length() - 1] != *sep.c_str())
+	{
+		if (first[first.length() - 1] == '/')
+			sep = '/';
+		if (first[first.length() - 1] == ':')
+			sep = ':';
+	}
+
+	if (sec[0] != *sep.c_str())
+	{
+		if (sec[0] == '/')
+			sep = '/';
+		if (sec[0] == ':')
+			sep = ':';
+	}
+#endif
+
     // Just append a separator
     if (sec.size() == 0)
-        return first + separator;
+        return first + sep;
 
-    if (first[first.length()-1] == *separator.c_str() && sec[0] == *separator.c_str())
+    if (first[first.length()-1] == *sep.c_str() && sec[0] == *sep.c_str())
     {
         return first.substr(0, first.length()-1) + sec;
     }
-    else if ((first[first.length()-1] == *separator.c_str() && sec[0] != *separator.c_str()) ||
-             (first[first.length()-1] != *separator.c_str() && sec[0] == *separator.c_str()))
+    else if ((first[first.length()-1] == *sep.c_str() && sec[0] != *sep.c_str()) ||
+             (first[first.length()-1] != *sep.c_str() && sec[0] == *sep.c_str()))
     {
         return first + sec;
     }
     else /*( (first.back() != separator
                && sec.front() != separator))*/
     {
-        return first + separator + sec;
+        return first + sep + sec;
     }
 }
 

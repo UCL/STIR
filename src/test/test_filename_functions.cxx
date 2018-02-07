@@ -135,7 +135,20 @@ void FilenameTests::run_tests()
   check(strcmp(find_filename(filename_with_directory), "filename.v") == 0);
   strcpy(filename_with_directory, "filename.v");
   check(strcmp(find_filename(filename_with_directory), "filename.v") == 0);
+  { // The same with the new FilePath class. 
+	  FilePath filename_with_directory("dir.name\\filename.v", false);
 
+	  check(filename_with_directory.get_filename() == "filename.v");
+
+	  filename_with_directory = "dir.name/filename.v"; 
+	  check(filename_with_directory.get_filename() == "filename.v");
+
+	  filename_with_directory = "a:filename.v";
+	  check(filename_with_directory.get_filename() == "filename.v");
+
+	  filename_with_directory = "filename.v";
+	  check(filename_with_directory.get_filename() == "filename.v");
+  }
   {
     // same checks with string versions
     string filename_with_directory =  "dir.name\\filename";
@@ -179,7 +192,7 @@ void FilenameTests::run_tests()
       ==  "filename.v");
   }
 
-  {
+    {
   check(is_absolute_pathname("\\bladi\\bla.v") == true);
   check(is_absolute_pathname("a:\\bladi\\bla.v") == true);
   check(is_absolute_pathname("bladi\\bla.v") == false);
@@ -249,13 +262,13 @@ void FilenameTests::run_tests()
       filename_with_directory.prepend_directory_name("a");
       check( filename_with_directory == "\\b\\c.v");
 
-      filename_with_directory = "b\\c.v";
+      filename_with_directory = "b/c.v";
       filename_with_directory.prepend_directory_name("a/");
       check( filename_with_directory == "a/b/c.v");
 
       filename_with_directory = "b\\c.v";
       filename_with_directory.prepend_directory_name("a:");
-      check( filename_with_directory == "a:b/c.v");
+      check( filename_with_directory == "a:b\\c.v");
 
       filename_with_directory = "c.v";
       filename_with_directory.prepend_directory_name("a/b");
@@ -265,6 +278,50 @@ void FilenameTests::run_tests()
       filename_with_directory.prepend_directory_name("a");
       check( filename_with_directory == "/b/c.v");
 
+  }
+
+  //N.E: New directory tests.
+  {
+	  // No checks again because it will throw error.
+	  FilePath fake_directory("dir.name\\filename", false);
+	  check(FilePath::exist(fake_directory.get_path()) == false);
+
+	  FilePath current_directory(FilePath::get_current_working_directory());
+	  check(FilePath::exist(current_directory.get_path()) == true);
+	  check(current_directory.is_directory() == true);
+	  check(current_directory.is_writable() == true);
+
+	  {
+		  // Test create Path from Path.
+		  // This is a bit of paradox so we have to set the first the
+		  // checks to false.
+		  // False, because not yet created.
+		  FilePath path_to_append("my_test_folder_a", false);
+
+		  FilePath newly_created_path = current_directory.append(path_to_append);
+
+		  check(newly_created_path.is_directory() == true);
+		  check(newly_created_path.is_writable() == true);
+
+		  check(FilePath::exist(path_to_append.get_path()) == true);
+	  }
+
+	  {
+		  // Test create Path from String.
+		  string path_to_append("my_test_folder_b");
+
+		  FilePath newly_created_path = current_directory.append(path_to_append);
+
+		  check(newly_created_path.is_directory() == true);
+		  check(newly_created_path.is_writable() == true);
+
+		  // test for recrussive creation
+		  string paths_to_append("my_test_folder_c\\my_test_folder_d");
+		  FilePath newly_created_subfolder = newly_created_path.append(paths_to_append);
+
+		  check(newly_created_subfolder.is_directory() == true);
+		  check(newly_created_subfolder.is_writable() == true);
+	  }
   }
 
 #elif defined(__OS_MAC__)
