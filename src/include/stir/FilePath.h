@@ -116,17 +116,19 @@ public:
     //! Returns true if the path already exists
     static bool exist(std::string s);
     //! Returns the current / working directory
-    static std::string get_current_dirname();
+    static std::string get_current_working_directory();
     //! Create a new folder,by FilePath, and return its path
     FilePath append(const FilePath& p);
     //! \brief Create a new folder,by string, and return its path
-    //! \details
+    //! \details This functions creates appends path p to my_string.
+    //! It supports multiple new folder levels.It will try to avoid
+    //! errors as permissions and non existing root path.
     FilePath append(const std::string& p);
     //! Append the separator
     static void append_separator(std::string& s);
     //! If path is no absolute then prepend the p string
     //! This funtion has been copied from the Functions for filename manipulations
-    void prepend_directory_name(std::string p);
+    void prepend_directory_name(const std::string& p);
     //! Append extension if none is present
     //! This funtion has been copied from the Functions for filename manipulations
     void add_extension(const std::string& e);
@@ -157,14 +159,14 @@ private:
     const std::vector<std::string> split(const std::string& s, const char* c ="");
 
     //! Merge two strings using the correct OS separator
-    std::string merge(std::string first, std::string sec);
+    std::string merge(const std::string& first, const std::string& sec);
 
     //! Initialize the separator based on the current OS
     inline void initSeparator();
 
     //! Return the position of the filename, which is the string after the last separator
     //! This funtion has been copied from the Functions for filename manipulations
-    std::string::size_type find_pos_of_filename(std::string _s = "") const;
+    std::string::size_type find_pos_of_filename() const;
     //! Find the position of the extension, if exists
     //! This funtion has been copied from the Functions for filename manipulations
     std::string::size_type find_pos_of_extension() const;

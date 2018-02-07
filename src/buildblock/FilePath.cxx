@@ -203,7 +203,7 @@ void FilePath::checks() const
     }
 }
 
-std::string FilePath::get_current_dirname()
+std::string FilePath::get_current_working_directory()
 {
     char buffer[100];
     char *ptr = getcwd(buffer, sizeof(buffer));
@@ -234,25 +234,22 @@ const std::vector<std::string> FilePath::split(const std::string& s, const char*
 }
 
 std::string::size_type
-FilePath::find_pos_of_filename(std::string _s) const
+FilePath::find_pos_of_filename() const
 {
     std::string::size_type pos;
-
-    if (_s.size() == 0)
-        _s = my_string;
 
 #if defined(__OS_VAX__)
     pos = my_string.find_last_of( ']');
     if (pos==std::string::npos)
-        pos = _s.find_last_of(separator);
+        pos = my_string.find_last_of(separator);
 #elif defined(__OS_WIN__)
     pos = my_string.find_last_of( '\\');
     if (pos==std::string::npos)
-        pos = _s.find_last_of( '/');
+        pos = my_string.find_last_of( '/');
     if (pos==std::string::npos)
-        pos = _s.find_last_of( ':');
+        pos = my_string.find_last_of( ':');
 #else
-    pos = _s.find_last_of(separator);
+    pos = my_string.find_last_of(separator);
 #endif
     if (pos != std::string::npos)
         return pos+1;
@@ -322,7 +319,7 @@ FilePath::is_absolute(const std::string& _filename_with_directory)
 #endif
 }
 
-void FilePath::prepend_directory_name(std::string p)
+void FilePath::prepend_directory_name(const std::string &p)
 {
 
     if (FilePath::is_absolute(my_string) ||
@@ -362,7 +359,7 @@ void FilePath::prepend_directory_name(std::string p)
     my_string = new_name;
 }
 
-std::string FilePath::merge(std::string first, std::string sec)
+std::string FilePath::merge(const std::string &first, const std::string &sec)
 {
     // Just append a separator
     if (sec.size() == 0)
@@ -370,9 +367,7 @@ std::string FilePath::merge(std::string first, std::string sec)
 
     if (first[first.length()-1] == *separator.c_str() && sec[0] == *separator.c_str())
     {
-        first.resize(first.length()-1);
-
-        return first + sec;
+        return first.substr(0, first.length()-1) + sec;
     }
     else if ((first[first.length()-1] == *separator.c_str() && sec[0] != *separator.c_str()) ||
              (first[first.length()-1] != *separator.c_str() && sec[0] == *separator.c_str()))

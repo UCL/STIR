@@ -392,7 +392,7 @@ void FilenameTests::run_tests()
 
      check (FilePath::exist(fake_directory.get_path()) == false);
 
-      FilePath current_directory(FilePath::get_current_dirname());
+      FilePath current_directory(FilePath::get_current_working_directory());
       check (FilePath::exist(current_directory.get_path()) == true);
       check(current_directory.is_directory() == true);
       check(current_directory.is_writable() == true);
@@ -555,7 +555,7 @@ void FilenameTests::run_tests()
       FilePath fake_directory("dir.name/filename", false);
       check (FilePath::exist(fake_directory.get_path()) == false);
 
-      FilePath current_directory(FilePath::get_current_dirname());
+      FilePath current_directory(FilePath::get_current_working_directory());
       check (FilePath::exist(current_directory.get_path()) == true);
       check(current_directory.is_directory() == true);
       check(current_directory.is_writable() == true);
