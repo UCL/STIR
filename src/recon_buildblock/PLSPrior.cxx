@@ -23,7 +23,7 @@
   \brief  implementation of the stir::PLSPrior class
 
   \author Daniel Deidda
-  \author Tsai Yu Jung
+  \author Tsai Yu-Jung
 
 */
 
@@ -55,11 +55,34 @@ PLSPrior<elemT>::initialise_keymap()
   this->parser.add_key("alpha", &alpha);
   this->parser.add_key("kappa filename", &kappa_filename);
   this->parser.add_key("anatomical_filename", &anatomical_filename);
-  this->parser.add_key("weights", &weights);
   this->parser.add_key("gradient filename prefix", &gradient_filename_prefix);
   this->parser.add_stop_key("END PLS Prior Parameters");
 }
 
+
+template <typename elemT>
+Succeeded
+PLSPrior<elemT>::set_up ()
+{
+    shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_z_sptr(this->anatomical_sptr->get_empty_copy ());
+    shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_y_sptr(this->anatomical_sptr->get_empty_copy ());
+    shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_x_sptr(this->anatomical_sptr->get_empty_copy ());
+    shared_ptr<DiscretisedDensity<3,elemT> > norm_sptr(this->anatomical_sptr->get_empty_copy ());
+
+    compute_image_gradient_element ((*anatomical_im_grad_z_sptr),0,*this->anatomical_sptr);
+
+    compute_image_gradient_element (*anatomical_im_grad_y_sptr,1,*this->anatomical_sptr);
+    compute_image_gradient_element (*anatomical_im_grad_x_sptr,2,*this->anatomical_sptr);
+
+    this->set_anatomical_grad_sptr (anatomical_im_grad_z_sptr,0);
+    this->set_anatomical_grad_sptr (anatomical_im_grad_y_sptr,1);
+    this->set_anatomical_grad_sptr (anatomical_im_grad_x_sptr,2);
+
+    compute_normalisation_anatomical_gradient (*norm_sptr,*anatomical_im_grad_x_sptr,*anatomical_im_grad_y_sptr,*anatomical_im_grad_z_sptr );
+
+    this->set_anatomical_grad_norm_sptr (shared_ptr<DiscretisedDensity<3,elemT> >(norm_sptr));
+return Succeeded::yes;
+}
 
 template <typename elemT>
 bool
@@ -71,77 +94,14 @@ PLSPrior<elemT>::post_processing()
     this->kappa_ptr = read_from_file<DiscretisedDensity<3,elemT> >(kappa_filename);
 
   if (anatomical_filename.size() != 0){
-    this->anatomical_sptr = read_from_file<DiscretisedDensity<3,elemT> >(anatomical_filename);}
+    this->anatomical_sptr = read_from_file<DiscretisedDensity<3,elemT> >(anatomical_filename);
+      info(boost::format("Reading anatomical data '%1%'") % anatomical_filename  );}
   else{
       this->anatomical_sptr->fill (0);
   }
+   set_up ();
 
 
-  if (this->anatomical_filename != "0"){
-      info(boost::format("Reading MR data '%1%'")
-           % anatomical_filename  );}
-
-  bool warn_about_even_size = false;
-
-  shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_z_sptr(this->anatomical_sptr->get_empty_copy ());
-  shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_y_sptr(this->anatomical_sptr->get_empty_copy ());
-  shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_x_sptr(this->anatomical_sptr->get_empty_copy ());
-  shared_ptr<DiscretisedDensity<3,elemT> > norm_sptr(this->anatomical_sptr->get_empty_copy ());
-
-  compute_image_gradient_element ((*anatomical_im_grad_z_sptr),0,*this->anatomical_sptr);
-//  std::cout<<"calc gradz ="<<std::endl;
-  compute_image_gradient_element (*anatomical_im_grad_y_sptr,1,*this->anatomical_sptr);
-  compute_image_gradient_element (*anatomical_im_grad_x_sptr,2,*this->anatomical_sptr);
-
-  this->set_anatomical_grad_sptr (shared_ptr<DiscretisedDensity<3,elemT> >(anatomical_im_grad_z_sptr->clone()),0);
-  this->set_anatomical_grad_sptr (shared_ptr<DiscretisedDensity<3,elemT> >(anatomical_im_grad_y_sptr->clone()),1);
-  this->set_anatomical_grad_sptr (shared_ptr<DiscretisedDensity<3,elemT> >(anatomical_im_grad_x_sptr->clone()),2);
-  //write_to_file("agrady", anatomical_im_grad_y);
-  //write_to_file("agradx", anatomical_im_grad_x);
-  compute_normalisation_anatomical_gradient (*norm_sptr,*anatomical_im_grad_x_sptr,*anatomical_im_grad_y_sptr,*anatomical_im_grad_z_sptr );
- //write_to_file("norm", norm);
-  this->set_anatomical_grad_norm_sptr (shared_ptr<DiscretisedDensity<3,elemT> >(norm_sptr->clone()));
-
-
-  if (this->weights.size() ==0)
-    {
-      // will call compute_weights() to fill it in
-    }
-  else
-    {
-      if (!this->weights.is_regular())
-        {
-          warning("Sorry. PLSPrior currently only supports regular arrays for the weights");
-          return true;
-        }
-
-      const unsigned int size_z = this->weights.size();
-      if (size_z%2==0)
-        warn_about_even_size = true;
-      const int min_index_z = -static_cast<int>(size_z/2);
-      this->weights.set_min_index(min_index_z);
-
-      for (int z = min_index_z; z<= this->weights.get_max_index(); ++z)
-        {
-          const unsigned int size_y = this->weights[z].size();
-          if (size_y%2==0)
-            warn_about_even_size = true;
-          const int min_index_y = -static_cast<int>(size_y/2);
-          this->weights[z].set_min_index(min_index_y);
-          for (int y = min_index_y; y<= this->weights[z].get_max_index(); ++y)
-            {
-              const unsigned int size_x = this->weights[z][y].size();
-              if (size_x%2==0)
-                warn_about_even_size = true;
-              const int min_index_x = -static_cast<int>(size_x/2);
-              this->weights[z][y].set_min_index(min_index_x);
-            }
-        }
-    }
-
-  if (warn_about_even_size)
-    warning("Parsing PLSPrior: even number of weights occured in either x,y or z dimension.\n"
-            "I'll (effectively) make this odd by appending a 0 at the end.");
   return false;
 
 }
@@ -155,7 +115,6 @@ PLSPrior<elemT>::set_defaults()
   this->alpha=1;
   this->eta=1;
   this->kappa_ptr.reset();
-  this->weights.recycle();
 }
 
 template <>
@@ -174,16 +133,9 @@ template <typename elemT>
 PLSPrior<elemT>::PLSPrior(const bool only_2D_v, float penalisation_factor_v)
   :  only_2D(only_2D_v)
 {
+  set_defaults();
   this->penalisation_factor = penalisation_factor_v;
 }
-
-
-  //! get penalty weights for the neigbourhood
-template <typename elemT>
-Array<3,float>
-PLSPrior<elemT>::
-get_weights() const
-{ return this->weights; }
 
 template <typename elemT>
 shared_ptr<DiscretisedDensity<3,elemT> >
@@ -207,12 +159,45 @@ PLSPrior<elemT>::
 get_norm_sptr () const{
 return this->norm_sptr;
 }
-//! set penalty weights for the neigbourhood
+
+template <typename elemT>
+shared_ptr<DiscretisedDensity<3,elemT> >
+PLSPrior<elemT>::
+get_anatomical_image_sptr() const{
+return this->anatomical_sptr;
+}
+
+template <typename elemT>
+double
+PLSPrior<elemT>::
+get_eta() const{
+return this->eta;
+}
+
+template <typename elemT>
+double
+PLSPrior<elemT>::
+get_alpha() const{
+return this->alpha;
+}
+
 template <typename elemT>
 void
 PLSPrior<elemT>::
-set_weights(const Array<3,float>& w)
-{ this->weights = w; }
+set_anatomical_image_sptr (const shared_ptr<DiscretisedDensity<3,elemT> >& arg)
+{ this->anatomical_sptr = arg; }
+
+template <typename elemT>
+void
+PLSPrior<elemT>::
+set_eta (const double& arg)
+{ this->eta = arg; }
+
+template <typename elemT>
+void
+PLSPrior<elemT>::
+set_alpha (const double& arg)
+{ this->alpha = arg; }
 
 template <typename elemT>
 void
@@ -255,38 +240,6 @@ set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >& k)
 { this->kappa_ptr = k; }
 
 
-// TODO move to set_up
-// initialise to 1/Euclidean distance
-static void
-compute_weights(Array<3,float>& weights, const CartesianCoordinate3D<float>& grid_spacing, const bool only_2D)
-{
-  int min_dz, max_dz;
-  if (only_2D)
-    {
-      min_dz = max_dz = 0;
-    }
-  else
-    {
-      min_dz = -1;
-      max_dz = 1;
-    }
-  weights = Array<3,float>(IndexRange3D(min_dz,max_dz,-1,1,-1,1));
-  for (int z=min_dz;z<=max_dz;++z)
-    for (int y=-1;y<=1;++y)
-      for (int x=-1;x<=1;++x)
-        {
-          if (z==0 && y==0 && x==0)
-            weights[0][0][0] = 0;
-          else
-            {
-              weights[z][y][x] =
-                grid_spacing.x()/
-                sqrt(square(x*grid_spacing.x())+
-                     square(y*grid_spacing.y())+
-                     square(z*grid_spacing.z()));
-            }
-        }
-}
 
 template <typename elemT>
 void PLSPrior<elemT>::compute_image_gradient_element(DiscretisedDensity<3,elemT> & image_gradient_elem, int direction, const DiscretisedDensity<3,elemT> & image ){
@@ -385,11 +338,7 @@ compute_inner_product_and_penalty(DiscretisedDensity<3,elemT> &inner_product,
                       const DiscretisedDensity<3,elemT> &pet_image){
 
 
-    shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_z_sptr(this->get_anatomical_grad_sptr (0));
-    shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_y_sptr(this->get_anatomical_grad_sptr (1));
-    shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_x_sptr(this->get_anatomical_grad_sptr (2));
 
-    DiscretisedDensity<3,elemT> &norm=*this->anatomical_sptr.get ()->get_empty_copy ();
 
     compute_image_gradient_element (pet_im_grad_z,0,pet_image);
     compute_image_gradient_element (pet_im_grad_y,1,pet_image);
@@ -418,9 +367,9 @@ compute_inner_product_and_penalty(DiscretisedDensity<3,elemT> &inner_product,
 
                     for (int x=min_x;x<= max_x;x++)
                     {
-                     inner_product[z][y][x]   = ((pet_im_grad_z[z][y][x]*(*anatomical_im_grad_z_sptr)[z][y][x]/(*get_norm_sptr())[z][y][x]) +
-                                                 (pet_im_grad_y[z][y][x]*(*anatomical_im_grad_y_sptr)[z][y][x]/(*get_norm_sptr())[z][y][x]) +
-                                                 (pet_im_grad_x[z][y][x]*(*anatomical_im_grad_x_sptr)[z][y][x]/(*get_norm_sptr())[z][y][x]));
+                     inner_product[z][y][x]   = ((pet_im_grad_z[z][y][x]*(*anatomical_grad_z_sptr)[z][y][x]/(*get_norm_sptr())[z][y][x]) +
+                                                 (pet_im_grad_y[z][y][x]*(*anatomical_grad_y_sptr)[z][y][x]/(*get_norm_sptr())[z][y][x]) +
+                                                 (pet_im_grad_x[z][y][x]*(*anatomical_grad_x_sptr)[z][y][x]/(*get_norm_sptr())[z][y][x]));
 
                      penalty[z][y][x]= sqrt (this->alpha*this->alpha + pet_im_grad_z[z][y][x]*pet_im_grad_z[z][y][x] +
                                                                        pet_im_grad_y[z][y][x]*pet_im_grad_y[z][y][x] +
@@ -518,11 +467,6 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
   shared_ptr<DiscretisedDensity<3,elemT> > pet_im_grad_y_sptr(this->anatomical_sptr->get_empty_copy ());
   shared_ptr<DiscretisedDensity<3,elemT> > pet_im_grad_x_sptr(this->anatomical_sptr->get_empty_copy ());
 
-  shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_z_sptr(this->get_anatomical_grad_sptr (0));
-  shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_y_sptr(this->get_anatomical_grad_sptr (1));
-  shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_x_sptr(this->get_anatomical_grad_sptr (2));
-//  shared_ptr<DiscretisedDensity<3,elemT> > norm(this->get_norm_sptr ());
-
   shared_ptr<DiscretisedDensity<3,elemT> > inner_product_sptr(this->anatomical_sptr->get_empty_copy ());
   shared_ptr<DiscretisedDensity<3,elemT> > penalty_sptr(this->anatomical_sptr->get_empty_copy ());
 
@@ -574,34 +518,34 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 
               if(only_2D==1){
                   (*gradientx_sptr)[z][y][x+1] =
-                     (((*pet_im_grad_x_sptr)[z][y][x+1]-(*anatomical_im_grad_x_sptr)[z][y][x+1]*(*inner_product_sptr)[z][y][x+1]/
+                     (((*pet_im_grad_x_sptr)[z][y][x+1]-(*anatomical_grad_x_sptr)[z][y][x+1]*(*inner_product_sptr)[z][y][x+1]/
                           (*get_norm_sptr ())[z][y][x+1])/(*penalty_sptr)[z][y][x+1] -
-                     (((*pet_im_grad_x_sptr)[z][y][x]-(*anatomical_im_grad_x_sptr)[z][y][x]*(*inner_product_sptr)[z][y][x]/(*get_norm_sptr ())[z][y][x])/
+                     (((*pet_im_grad_x_sptr)[z][y][x]-(*anatomical_grad_x_sptr)[z][y][x]*(*inner_product_sptr)[z][y][x]/(*get_norm_sptr ())[z][y][x])/
                       (*penalty_sptr)[z][y][x]) );
 
                   (*gradienty_sptr)[z][y+1][x] =
-                      (((*pet_im_grad_y_sptr)[z][y+1][x]-(*anatomical_im_grad_y_sptr)[z][y+1][x]*(*inner_product_sptr)[z][y+1][x]/
+                      (((*pet_im_grad_y_sptr)[z][y+1][x]-(*anatomical_grad_y_sptr)[z][y+1][x]*(*inner_product_sptr)[z][y+1][x]/
                           (*get_norm_sptr ())[z][y+1][x])/(*penalty_sptr)[z][y+1][x] -
-                      (((*pet_im_grad_y_sptr)[z][y][x]-(*anatomical_im_grad_y_sptr)[z][y][x]*(*inner_product_sptr)[z][y][x]/(*get_norm_sptr ())[z][y][x])/
+                      (((*pet_im_grad_y_sptr)[z][y][x]-(*anatomical_grad_y_sptr)[z][y][x]*(*inner_product_sptr)[z][y][x]/(*get_norm_sptr ())[z][y][x])/
                        (*penalty_sptr)[z][y][x]) );
               }
               else{
 
                   (*gradientx_sptr)[z][y][x+1] =
-                          (((*pet_im_grad_x_sptr)[z][y][x+1]-(*anatomical_im_grad_x_sptr)[z][y][x+1]*(*inner_product_sptr)[z][y][x+1]/(*get_norm_sptr ())[z][y][x+1])/
+                          (((*pet_im_grad_x_sptr)[z][y][x+1]-(*anatomical_grad_x_sptr)[z][y][x+1]*(*inner_product_sptr)[z][y][x+1]/(*get_norm_sptr ())[z][y][x+1])/
                           (*penalty_sptr)[z][y][x+1] -
-                          ((*pet_im_grad_x_sptr)[z][y][x]-(*anatomical_im_grad_x_sptr)[z][y][x]*(*inner_product_sptr)[z][y][x]/(*get_norm_sptr ())[z][y][x])/
+                          ((*pet_im_grad_x_sptr)[z][y][x]-(*anatomical_grad_x_sptr)[z][y][x]*(*inner_product_sptr)[z][y][x]/(*get_norm_sptr ())[z][y][x])/
                           (*penalty_sptr)[z][y][x]);
 
                   (*gradienty_sptr)[z][y+1][x] =
-                          (((*pet_im_grad_y_sptr)[z][y+1][x]-(*anatomical_im_grad_y_sptr)[z][y+1][x]*(*inner_product_sptr)[z][y+1][x]/
+                          (((*pet_im_grad_y_sptr)[z][y+1][x]-(*anatomical_grad_y_sptr)[z][y+1][x]*(*inner_product_sptr)[z][y+1][x]/
                           (*get_norm_sptr ())[z][y+1][x])/(*penalty_sptr)[z][y+1][x] -
-                          (((*pet_im_grad_y_sptr)[z][y][x]-(*anatomical_im_grad_y_sptr)[z][y][x]*(*inner_product_sptr)[z][y][x]/(*get_norm_sptr ())[z][y][x])/(*penalty_sptr)[z][y][x]) );
+                          (((*pet_im_grad_y_sptr)[z][y][x]-(*anatomical_grad_y_sptr)[z][y][x]*(*inner_product_sptr)[z][y][x]/(*get_norm_sptr ())[z][y][x])/(*penalty_sptr)[z][y][x]) );
 
                   (*gradientz_sptr)[z+1][y][x] =
-                      (((*pet_im_grad_z_sptr)[z+1][y][x]-(*anatomical_im_grad_z_sptr)[z+1][y][x]*(*inner_product_sptr)[z+1][y][x]/
+                      (((*pet_im_grad_z_sptr)[z+1][y][x]-(*anatomical_grad_z_sptr)[z+1][y][x]*(*inner_product_sptr)[z+1][y][x]/
                           (*get_norm_sptr ())[z][y+1][x])/(*penalty_sptr)[z+1][y][x] -
-                          (((*pet_im_grad_y_sptr)[z][y][x]-(*anatomical_im_grad_y_sptr)[z][y][x]*(*inner_product_sptr)[z][y][x]/(*get_norm_sptr ())[z][y][x])/(*penalty_sptr)[z][y][x]) );
+                          (((*pet_im_grad_y_sptr)[z][y][x]-(*anatomical_grad_z_sptr)[z][y][x]*(*inner_product_sptr)[z][y][x]/(*get_norm_sptr ())[z][y][x])/(*penalty_sptr)[z][y][x]) );
               }
               }}}
 
@@ -644,7 +588,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
     {
       char *filename = new char[gradient_filename_prefix.size()+100];
       sprintf(filename, "%s%d.v", gradient_filename_prefix.c_str(), count);
-      //write_to_file(filename, prior_gradient);
+      write_to_file(filename, prior_gradient);
       delete[] filename;
     }
 }

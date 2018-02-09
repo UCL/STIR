@@ -66,6 +66,7 @@ set(${dir_LIB_SOURCES}
 	GeneralisedPrior 
 	ProjDataRebinning 
 	FourierRebinning
+	PLSPrior
 	QuadraticPrior 
 	FilterRootPrior 
 	GeneralisedObjectiveFunction 

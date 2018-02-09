@@ -23,7 +23,7 @@
   \brief Declaration of class stir::PLSPrior
 
   \author Daniel Deidda
-  \author Tsai Yu Jung
+  \author Tsai Yu-Jung
   */
 
 
@@ -54,7 +54,7 @@ START_NAMESPACE_STIR
   \f[
   \phi(f) = \sqrt{\alpha^2 + |\nabla v|^2 - {\langle\nabla f,\xi\rangle}^2}
   \f]
-  where \f$ f f$ is the PET image and \f$ \alpha \f$ is a parameter that controls the edge-preservation property of PLS.
+  where \f$ f \f$ is the PET image and \f$ \alpha \f$ is a parameter that controls the edge-preservation property of PLS.
 
   The \f$ \xi \f$ is the normalised gradient calculated as follows:
 
@@ -62,7 +62,7 @@ START_NAMESPACE_STIR
   \xi = \frac{\nabla v}{\sqrt{|\nabla v|^2 + \eta^2}}
   \f]
 
-  where \f$ v f$ is the MR image and \f$ \eta \f$ is a parameter for preventing the division by zero problem.
+  where \f$ v f$ is the anatomical image and \f$ \eta \f$ is a parameter for preventing the division by zero problem.
 
 
   A \f$\kappa\f$ image can be used to have spatially-varying penalties such as in
@@ -84,10 +84,10 @@ START_NAMESPACE_STIR
                    dimension should be the same as that of the emission image.
 
   eta :=    ; A parameter for preventing the division by zero problem. The value dependes
-                   on the scale of the anatomical image.
+              on the scale of the anatomical image.
 
-  alpha :=   ; A parameter that controls the edge-preservation property of PLS. The value
-                   depends on the scale of the emission image.
+  alpha :=  ; A parameter that controls the edge-preservation property of PLS. The value
+              depends on the scale of the emission image.
 
   ; use next parameter to specify an image with penalisation factors (a la Fessler)
   ; see class documentation for more info
@@ -133,12 +133,6 @@ class PLSPrior:  public
   void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                         const DiscretisedDensity<3,elemT> &current_image_estimate);
 
-  //! get penalty weights for the neigbourhood
-  Array<3,float> get_weights() const;
-
-  //! set penalty weights for the neigbourhood
-  void set_weights(const Array<3,float>&);
-
   //! get current kappa image
   /*! \warning As this function returns a shared_ptr, this is dangerous. You should not
       modify the image by manipulating the image refered to by this pointer.
@@ -148,15 +142,19 @@ class PLSPrior:  public
   shared_ptr<DiscretisedDensity<3,elemT> > get_anatomical_grad_sptr(int direction) const;
   shared_ptr<DiscretisedDensity<3,elemT> > get_norm_sptr() const;
 
+  //!get eta and alpha parameters
+  double get_eta() const;
+  double get_alpha() const;
+
   //! set kappa image
   void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
 
-  //! set anatomical pointers
-  void set_anatomical_grad_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&, int);
-  void set_anatomical_grad_norm_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+  //! set/get anatomical pointers
+  void set_anatomical_image_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+  shared_ptr<DiscretisedDensity<3,elemT> > get_anatomical_image_sptr() const;
 
 protected:
-  //! can be set during parsing to restrict the weights to the 2D case
+  //! can be set during parsing to restrict the gradient calculation to the 2D case
   bool only_2D;
   //! filename prefix for outputing the gradient whenever compute_gradient() is called.
   /*! An internal counter is used to keep track of the number of times the
@@ -165,12 +163,6 @@ protected:
   */
   std::string gradient_filename_prefix;
 
-  //! penalty weights
-  /*!
-     \todo This member is mutable at present because some const functions initialise it.
-     That initialisation should be moved to a new set_up() function.
-  */
-  mutable Array<3,float> weights;
   //! Filename for the \f$\kappa\f$ image that will be read by post_processing()
   std::string kappa_filename;
   std::string anatomical_filename;
@@ -181,6 +173,9 @@ protected:
   virtual void initialise_keymap();
   virtual bool post_processing();
  private:
+
+   virtual Succeeded set_up();
+
   //! compute the component x, y or z of the image gradient using forward difference
   static void compute_image_gradient_element(DiscretisedDensity<3,elemT> & image_gradient_elem,
                                       int direction,
@@ -205,6 +200,10 @@ protected:
   shared_ptr<DiscretisedDensity<3,elemT> > anatomical_sptr;
   shared_ptr<DiscretisedDensity<3,elemT> > norm_sptr;
   shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
+  void set_anatomical_grad_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&, int);
+  void set_anatomical_grad_norm_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+  void set_eta(const double&);
+  void set_alpha(const double&);
   };
 
 

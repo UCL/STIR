@@ -1,0 +1,677 @@
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2017.8.30)  9 FEB 2018 09:54
+entering extended mode
+ restricted \write18 enabled.
+ %&-line parsing enabled.
+**STIR-UsersGuide.tex
+(./STIR-UsersGuide.tex
+LaTeX2e <2011/06/27>
+Babel <3.9h> and hyphenation patterns for 78 languages loaded.
+
+(/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
+(/usr/share/texlive/texmf-dist/tex/latex/base/size10.clo
+File: size10.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count79
+\c@section=\count80
+\c@subsection=\count81
+\c@subsubsection=\count82
+\c@paragraph=\count83
+\c@subparagraph=\count84
+\c@figure=\count85
+\c@table=\count86
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+) (/usr/share/texlive/texmf-dist/tex/latex/geometry/geometry.sty
+Package: geometry 2010/09/12 v5.6 Page Geometry
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks14
+) (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ifpdf.sty
+Package: ifpdf 2011/01/30 v2.3 Provides the ifpdf switch (HO)
+Package ifpdf Info: pdfTeX in PDF mode is detected.
+) (/usr/share/texlive/texmf-dist/tex/generic/oberdiek/ifvtex.sty
+Package: ifvtex 2010/03/01 v1.5 Detect VTeX and its facilities (HO)
+Package ifvtex Info: VTeX not detected.
+) (/usr/share/texlive/texmf-dist/tex/generic/ifxetex/ifxetex.sty
+Package: ifxetex 2010/09/12 v0.6 Provides ifxetex conditional
+)
+\Gm@cnth=\count87
+\Gm@cntv=\count88
+\c@Gm@tempcnt=\count89
+\Gm@bindingoffset=\dimen103
+\Gm@wd@mp=\dimen104
+\Gm@odd@mp=\dimen105
+\Gm@even@mp=\dimen106
+\Gm@layoutwidth=\dimen107
+\Gm@layoutheight=\dimen108
+\Gm@layouthoffset=\dimen109
+\Gm@layoutvoffset=\dimen110
+\Gm@dimlist=\toks15
+) (/usr/share/texlive/texmf-dist/tex/latex/setspace/setspace.sty
+Package: setspace 2011/12/19 v6.7a set line spacing
+) (/usr/share/texlive/texmf-dist/tex/latex/tools/longtable.sty
+Package: longtable 2004/02/01 v4.11 Multi-page Table package (DPC)
+\LTleft=\skip43
+\LTright=\skip44
+\LTpre=\skip45
+\LTpost=\skip46
+\LTchunksize=\count90
+\LTcapwidth=\dimen111
+\LT@head=\box26
+\LT@firsthead=\box27
+\LT@foot=\box28
+\LT@lastfoot=\box29
+\LT@cols=\count91
+\LT@rows=\count92
+\c@LT@tables=\count93
+\c@LT@chunks=\count94
+\LT@p@ftn=\toks16
+) (/usr/share/texlive/texmf-dist/tex/latex/hyperref/hyperref.sty
+Package: hyperref 2012/11/06 v6.83m Hypertext links for LaTeX
+(/usr/share/texlive/texmf-dist/tex/generic/oberdiek/hobsub-hyperref.sty
+Package: hobsub-hyperref 2012/05/28 v1.13 Bundle oberdiek, subset hyperref (HO)
+
+(/usr/share/texlive/texmf-dist/tex/generic/oberdiek/hobsub-generic.sty
+Package: hobsub-generic 2012/05/28 v1.13 Bundle oberdiek, subset generic (HO)
+Package: hobsub 2012/05/28 v1.13 Construct package bundles (HO)
+Package: infwarerr 2010/04/08 v1.3 Providing info/warning/error messages (HO)
+Package: ltxcmds 2011/11/09 v1.22 LaTeX kernel commands for general use (HO)
+Package: ifluatex 2010/03/01 v1.3 Provides the ifluatex switch (HO)
+Package ifluatex Info: LuaTeX not detected.
+Package hobsub Info: Skipping package `ifvtex' (already loaded).
+Package: intcalc 2007/09/27 v1.1 Expandable calculations with integers (HO)
+Package hobsub Info: Skipping package `ifpdf' (already loaded).
+Package: etexcmds 2011/02/16 v1.5 Avoid name clashes with e-TeX commands (HO)
+Package etexcmds Info: Could not find \expanded.
+(etexcmds)             That can mean that you are not using pdfTeX 1.50 or
+(etexcmds)             that some package has redefined \expanded.
+(etexcmds)             In the latter case, load this package earlier.
+Package: kvsetkeys 2012/04/25 v1.16 Key value parser (HO)
+Package: kvdefinekeys 2011/04/07 v1.3 Define keys (HO)
+Package: pdftexcmds 2011/11/29 v0.20 Utility functions of pdfTeX for LuaTeX (HO
+)
+Package pdftexcmds Info: LuaTeX not detected.
+Package pdftexcmds Info: \pdf@primitive is available.
+Package pdftexcmds Info: \pdf@ifprimitive is available.
+Package pdftexcmds Info: \pdfdraftmode found.
+Package: pdfescape 2011/11/25 v1.13 Implements pdfTeX's escape features (HO)
+Package: bigintcalc 2012/04/08 v1.3 Expandable calculations on big integers (HO
+)
+Package: bitset 2011/01/30 v1.1 Handle bit-vector datatype (HO)
+Package: uniquecounter 2011/01/30 v1.2 Provide unlimited unique counter (HO)
+)
+Package hobsub Info: Skipping package `hobsub' (already loaded).
+Package: letltxmacro 2010/09/02 v1.4 Let assignment for LaTeX macros (HO)
+Package: hopatch 2012/05/28 v1.2 Wrapper for package hooks (HO)
+Package: xcolor-patch 2011/01/30 xcolor patch
+Package: atveryend 2011/06/30 v1.8 Hooks at the very end of document (HO)
+Package atveryend Info: \enddocument detected (standard20110627).
+Package: atbegshi 2011/10/05 v1.16 At begin shipout hook (HO)
+Package: refcount 2011/10/16 v3.4 Data extraction from label references (HO)
+Package: hycolor 2011/01/30 v1.7 Color options for hyperref/bookmark (HO)
+) (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/auxhook.sty
+Package: auxhook 2011/03/04 v1.3 Hooks for auxiliary files (HO)
+) (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/kvoptions.sty
+Package: kvoptions 2011/06/30 v3.11 Key value format for package options (HO)
+)
+\@linkdim=\dimen112
+\Hy@linkcounter=\count95
+\Hy@pagecounter=\count96
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/pd1enc.def
+File: pd1enc.def 2012/11/06 v6.83m Hyperref: PDFDocEncoding definition (HO)
+)
+\Hy@SavedSpaceFactor=\count97
+(/usr/share/texlive/texmf-dist/tex/latex/latexconfig/hyperref.cfg
+File: hyperref.cfg 2002/06/06 v1.2 hyperref configuration of TeXLive
+)
+Package hyperref Info: Hyper figures OFF on input line 4443.
+Package hyperref Info: Link nesting OFF on input line 4448.
+Package hyperref Info: Hyper index ON on input line 4451.
+Package hyperref Info: Plain pages OFF on input line 4458.
+Package hyperref Info: Backreferencing OFF on input line 4463.
+Package hyperref Info: Implicit mode ON; LaTeX internals redefined.
+Package hyperref Info: Bookmarks ON on input line 4688.
+\c@Hy@tempcnt=\count98
+(/usr/share/texlive/texmf-dist/tex/latex/url/url.sty
+\Urlmuskip=\muskip10
+Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
+)
+LaTeX Info: Redefining \url on input line 5041.
+\XeTeXLinkMargin=\dimen113
+\Fld@menulength=\count99
+\Field@Width=\dimen114
+\Fld@charsize=\dimen115
+Package hyperref Info: Hyper figures OFF on input line 6295.
+Package hyperref Info: Link nesting OFF on input line 6300.
+Package hyperref Info: Hyper index ON on input line 6303.
+Package hyperref Info: backreferencing OFF on input line 6310.
+Package hyperref Info: Link coloring OFF on input line 6315.
+Package hyperref Info: Link coloring with OCG OFF on input line 6320.
+Package hyperref Info: PDF/A mode OFF on input line 6325.
+LaTeX Info: Redefining \ref on input line 6365.
+LaTeX Info: Redefining \pageref on input line 6369.
+\Hy@abspage=\count100
+\c@Item=\count101
+\c@Hfootnote=\count102
+)
+
+Package hyperref Message: Driver (autodetected): hpdftex.
+
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/hpdftex.def
+File: hpdftex.def 2012/11/06 v6.83m Hyperref driver for pdfTeX
+\Fld@listcount=\count103
+\c@bookmark@seq@number=\count104
+(/usr/share/texlive/texmf-dist/tex/latex/oberdiek/rerunfilecheck.sty
+Package: rerunfilecheck 2011/04/15 v1.7 Rerun checks for auxiliary files (HO)
+Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
+82.
+)
+\Hy@SectionHShift=\skip47
+) (./STIR-UsersGuide.aux)
+\openout1 = `STIR-UsersGuide.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: <default>
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(56.9055pt, 500.484pt, 56.9055pt)
+* v-part:(T,H,B)=(56.9055pt, 681.15898pt, 56.9055pt)
+* \paperwidth=614.295pt
+* \paperheight=794.96999pt
+* \textwidth=500.484pt
+* \textheight=681.15898pt
+* \oddsidemargin=-15.36449pt
+* \evensidemargin=-15.36449pt
+* \topmargin=-52.36449pt
+* \headheight=12.0pt
+* \headsep=25.0pt
+* \topskip=10.0pt
+* \footskip=30.0pt
+* \marginparwidth=65.0pt
+* \marginparsep=11.0pt
+* \columnsep=10.0pt
+* \skip\footins=9.0pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+\AtBeginShipoutBox=\box30
+Package hyperref Info: Link coloring OFF on input line 28.
+(/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
+Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
+(/usr/share/texlive/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
+Package: gettitlestring 2010/12/03 v1.4 Cleanup title references (HO)
+)
+\c@section@level=\count105
+)
+LaTeX Info: Redefining \ref on input line 28.
+LaTeX Info: Redefining \pageref on input line 28.
+LaTeX Info: Redefining \nameref on input line 28.
+(./STIR-UsersGuide.out) (./STIR-UsersGuide.out)
+\@outlinefile=\write3
+\openout3 = `STIR-UsersGuide.out'.
+
+[1
+
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./STIR-UsersGuide.toc
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <12> on input line 4.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 4.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 4.
+[2] [3] [4])
+\tf@toc=\write4
+\openout4 = `STIR-UsersGuide.toc'.
+
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 127.
+
+(/usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
+File: omscmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 127.
+[5]
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 203.
+[6]
+\MakeTableFirstCol=\skip48
+\MakeTableSecondCol=\skip49
+
+Overfull \hbox (24.0pt too wide) in alignment at lines 253--293
+ [] [] 
+ []
+
+
+Underfull \vbox (badness 10000) detected at line 293
+ []
+
+[7]
+Underfull \hbox (badness 10000) in paragraph at lines 328--330
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 333--335
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 340--342
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 352--354
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 362--364
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 369--371
+
+ []
+
+[8]
+LaTeX Font Info:    Try loading font information for OMS+cmtt on input line 440
+.
+(/usr/share/texmf/tex/latex/R/tex/latex/omscmtt.fd
+File: omscmtt.fd 
+)
+LaTeX Font Info:    Font shape `OMS/cmtt/m/n' in size <12> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 440.
+[9] [10] [11] [12] [13] [14] [15] [16] [17]
+Overfull \hbox (1.42006pt too wide) in paragraph at lines 1065--1069
+\OT1/cmr/m/n/12 this in-di-cates that the re-con-struc-tion will be car-ried ou
+t us-ing seg-ment num-bers -\OT1/cmr/m/it/12 num[]segments
+ []
+
+[18]
+LaTeX Font Info:    Font shape `OMS/cmr/bx/n' in size <12> not available
+(Font)              Font shape `OMS/cmsy/b/n' tried instead on input line 1178.
+
+[19] [20] [21]
+Underfull \hbox (badness 10000) in paragraph at lines 1391--1393
+
+ []
+
+[22] [23] [24] [25]
+Underfull \hbox (badness 10000) in paragraph at lines 1659--1660
+
+ []
+
+[26]
+Underfull \hbox (badness 10000) in paragraph at lines 1697--1715
+
+ []
+
+[27] [28] [29] [30] [31] [32]
+Underfull \hbox (badness 10000) in paragraph at lines 2022--2023
+
+ []
+
+[33]
+Underfull \hbox (badness 10000) in paragraph at lines 2050--2052
+
+ []
+
+[34]
+Overfull \hbox (31.76236pt too wide) in paragraph at lines 2168--2176
+\OT1/cmr/bx/n/12 find[]maxima[]in[]image \OT1/cmr/m/n/12 for im-age data and \O
+T1/cmr/bx/n/12 ma-nip[]projdata\OT1/cmr/m/n/12 , \OT1/cmr/bx/n/12 dis-play[]pro
+jdata\OT1/cmr/m/n/12 , \OT1/cmr/bx/n/12 ex-tract[]segments\OT1/cmr/m/n/12 ,
+ []
+
+[35]
+Underfull \hbox (badness 10000) in paragraph at lines 2195--2197
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2201--2203
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2208--2210
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2235--2237
+
+ []
+
+[36]
+Underfull \hbox (badness 10000) in paragraph at lines 2267--2269
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2274--2276
+
+ []
+
+
+Overfull \hbox (12.92296pt too wide) in paragraph at lines 2277--2281
+[]\OT1/cmr/m/n/12 A util-ity that lists size info of the pro-jec-tion data on s
+td-out. Op-tion-ally it also prints min/max/sum
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2282--2284
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2299--2301
+
+ []
+
+[37]
+Underfull \hbox (badness 10000) in paragraph at lines 2330--2332
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2336--2338
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2342--2344
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2348--2350
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2356--2358
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2362--2364
+
+ []
+
+[38]
+Underfull \hbox (badness 10000) in paragraph at lines 2385--2387
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2393--2395
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2418--2420
+
+ []
+
+[39]
+Underfull \hbox (badness 10000) in paragraph at lines 2507--2508
+
+ []
+
+[40]
+Underfull \hbox (badness 10000) in paragraph at lines 2588--2590
+
+ []
+
+[41] [42] [43] [44]
+Underfull \hbox (badness 10000) in paragraph at lines 2909--2912
+
+ []
+
+[45] [46] [47] [48] [49]
+Underfull \hbox (badness 10000) in paragraph at lines 3276--3278
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 3287--3289
+
+ []
+
+[50]
+Overfull \hbox (5.61389pt too wide) in paragraph at lines 3345--3354
+\OT1/cmr/m/n/12 dlim-its the con-tin-u-ous fil-ter to the hy-poth-e-sized Nyqui
+st fre-quency of the im-age (i.e. 1/(2*voxel[]size)
+ []
+
+[51]
+Overfull \hbox (6.18312pt too wide) in paragraph at lines 3451--3461
+[]\OT1/cmr/m/n/12 Since strict pos-i-tiv-ity is a pre-ferred prop-erty of im-ag
+es in many cir-cum-stances, a post-thresholding
+ []
+
+[52] [53]
+Overfull \hbox (12.04126pt too wide) in paragraph at lines 3605--3605
+[]  \OT1/cmtt/m/n/12 ; next can be used to set weights explicitly. Needs to be 
+a 3D array (of floats).[] 
+ []
+
+
+Overfull \hbox (12.04126pt too wide) in paragraph at lines 3605--3605
+[]  \OT1/cmtt/m/n/12 ; use next parameter to specify an image with penalisation
+ factors (a la Fessler)[] 
+ []
+
+[54]
+Underfull \hbox (badness 10000) in paragraph at lines 3673--3675
+
+ []
+
+[55]
+Underfull \hbox (badness 10000) in paragraph at lines 3693--3695
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 3726--3728
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 3748--3750
+
+ []
+
+[56]
+Underfull \hbox (badness 10000) in paragraph at lines 3765--3767
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 3786--3788
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 3808--3810
+
+ []
+
+[57]
+Underfull \hbox (badness 10000) in paragraph at lines 3845--3847
+
+ []
+
+[58] [59] [60]
+Underfull \hbox (badness 10000) in paragraph at lines 4082--4084
+
+ []
+
+[61] [62] [63]
+Underfull \hbox (badness 10000) in paragraph at lines 4277--4279
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 4297--4299
+
+ []
+
+[64]
+Underfull \hbox (badness 10000) in paragraph at lines 4327--4329
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 4350--4352
+
+ []
+
+[65]
+Overfull \hbox (5.86626pt too wide) in paragraph at lines 4387--4387
+[]     \OT1/cmtt/m/n/12 ; values below are give a rotation around y for 90 degr
+ees (swapping x and z)[] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 4395--4397
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 4413--4415
+
+ []
+
+[66]
+Underfull \hbox (badness 10000) in paragraph at lines 4432--4433
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 4448--4450
+
+ []
+
+[67] [68]
+Overfull \hbox (4.48366pt too wide) in paragraph at lines 4601--4603
+[]\OT1/cmr/m/n/12 Extending the par-al-leli-sa-tion of OSMA-POSL and OS-SPS to 
+FBP3DRP etc, or us-ing OPEMMP 
+ []
+
+[69]
+Overfull \hbox (53.7348pt too wide) in paragraph at lines 4624--4628
+\OT1/cmr/m/n/12 ram-e-ters. \OT1/cmr/m/it/12 Com-put-er-ized Med-i-cal Imag-ing
+ and Graph-ics\OT1/cmr/m/n/12 , 35:407-416, \OT1/cmr/m/it/12 doi:10.1016/j.comp
+medimag.2011.01.002 
+ []
+
+[70]
+Overfull \hbox (97.23697pt too wide) in paragraph at lines 4707--4711
+\OT1/cmr/m/n/12 SPECT mod-el-ing into the open-source STIR frame-work, \OT1/cmr
+/m/it/12 Med. Phys. 40\OT1/cmr/m/n/12 , 092502; http://dx.doi.org/10.1118/1.481
+6676 
+ []
+
+
+Overfull \hbox (1.606pt too wide) in paragraph at lines 4761--4764
+[]\OT1/cmr/m/n/12 [Lan90] Lang K \OT1/cmr/bx/n/12 (1990) \OT1/cmr/m/n/12 Con-ve
+r-gence of EM Im-age re-con-struc-tion al-go-rithms with Gibbs smooth-
+ []
+
+[71]
+Overfull \hbox (0.8143pt too wide) in paragraph at lines 4796--4800
+[]\OT1/cmr/m/n/12 [Mus02] Mustafovic S and Thiele-mans K, \OT1/cmr/m/it/12 , \O
+T1/cmr/bx/n/12 (2002) \OT1/cmr/m/n/12 Com-par-i-son of Un-con-ven-tional Inter-
+Filtering
+ []
+
+
+Overfull \hbox (20.18625pt too wide) in paragraph at lines 4829--4834
+\OT1/cmr/m/n/12 meth-ods for mo-tion cor-rec-tion in PET imag-ing \OT1/cmr/m/it
+/12 Med Phys \OT1/cmr/m/n/12 vol. 39, 3586-3590, []. 
+ []
+
+[72]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 4914.
+[73]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 4914.
+(./STIR-UsersGuide.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 4914.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 4914.
+
+Package rerunfilecheck Info: File `STIR-UsersGuide.out' has not changed.
+(rerunfilecheck)             Checksum: 10D2885DEB304999537905AC5ABD5B72;12391.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 4914.
+ )
+(\end occurred inside a group at level 1)
+
+### simple group (level 1) entered at line 4911 ({)
+### bottom level 
+Here is how much of TeX's memory you used:
+ 5377 strings out of 493304
+ 81103 string characters out of 6139871
+ 168228 words of memory out of 5000000
+ 8517 multiletter control sequences out of 15000+600000
+ 13033 words of font info for 46 fonts, out of 8000000 for 9000
+ 957 hyphenation exceptions out of 8191
+ 29i,11n,29p,460b,477s stack positions out of 5000i,500n,10000p,200000b,80000s
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/c
+mbsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10
+.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><
+/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb></usr/sh
+are/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbxti10.pfb></usr/share/
+texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></usr/share/texli
+ve/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/tex
+mf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texlive/texmf-dis
+t/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts
+/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/
+public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfont
+s/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr
+8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></
+usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/sh
+are/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/share/tex
+live/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texlive/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb></usr/share/texlive/texmf-di
+st/fonts/type1/public/amsfonts/cm/cmti8.pfb></usr/share/texlive/texmf-dist/font
+s/type1/public/amsfonts/cm/cmti9.pfb></usr/share/texlive/texmf-dist/fonts/type1
+/public/amsfonts/cm/cmtt12.pfb></usr/share/texlive/texmf-dist/fonts/type1/publi
+c/amsfonts/cm/cmtt8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfo
+nts/cm/cmtt9.pfb>
+Output written on STIR-UsersGuide.pdf (73 pages, 554307 bytes).
+PDF statistics:
+ 1441 PDF objects out of 1728 (max. 8388607)
+ 1328 compressed objects within 14 object streams
+ 303 named destinations out of 1000 (max. 500000)
+ 1209 words of extra memory for PDF output out of 10000 (max. 10000000)
+

@@ -3565,6 +3565,7 @@ These are the keywords that can be used in addition to the ones listed in \ref{s
   END FilterRootPrior Parameters :=
  \end{verbatim}
 
+
 { \subsubsubsection{Quadratic}
 }
 This implements a quadratic Gibbs prior. The gradient of the prior is computed as follows:
@@ -3602,7 +3603,43 @@ This implements a quadratic Gibbs prior. The gradient of the prior is computed a
   gradient filename prefix:= 
   END Quadratic Prior Parameters:=
   \end{verbatim}
+  
+{ \subsubsubsection{Parallel Level Sets}
+This implements the  anatomical penalty function, Parallel Level Sets (PLS),  proposed by Matthias J. Ehrhardt et. al [Ehr16]. Note that
+  PLS becomes smoothed TV when no anatomical information is available.  The prior function is the following:
 
+  \[
+  \phi(f) = \sqrt{\alpha^2 + |\nabla v|^2 - {\langle\nabla f,\xi\rangle}^2}
+  \]
+  where $ f $ is the PET image and $ \alpha $ is a parameter that controls the edge-preservation property of PLS.  The $ \xi $ is the normalised gradient calculated as follows:
+
+  \[
+  \xi = \frac{\nabla v}{\sqrt{|\nabla v|^2 + \eta^2}}
+  \]
+where $ v $ is the anatomical image and $ \eta $ is a parameter for preventing the division by zero problem.
+}
+{ \subsubsubsubsection{Parameters}
+}
+  These are the keywords that can be used in addition to the ones listed in \ref{sec:priors}..
+  \begin{verbatim}
+  prior type := PLS
+  PLS Prior Parameters:=
+  penalisation factor :=1
+
+; the following parameter is to avoid division by zero
+; The value depends on the scale of the emission image. 
+
+  eta:=1
+
+; the following parameter controls the edge-preservation property of PLS. 
+; The value depends on the scale of the emission image. 
+
+  alpha:=1
+
+  anatomical_filename:=${filename}
+  only_2D:=0
+  END PLS Prior Parameters:=
+  \end{verbatim}
 \subsubsection{
 Selecting different projector pairs}
 \label{sec:projectorpairs}
@@ -4870,5 +4907,8 @@ Advances in scatter correction for 3D PET/CT. \textit { IEEE Nucl Sci Symp Med I
 {[}Wer02{]} Werling A, Bublitz O, Doll J, Adam L E, and Brix G\textbf{(2002)}, 
 Fast implementation of the single scatter simulation algorithm and its use in iterative image 
 reconstruction of PET data. \textit { Phys Med Biol } 47(16): 2947-2960.
+
+{[}Ehr16{]} {Ehrhardt M J, Markiewicz P, Liljeroth M, Barnes A, Kolehmainen V, Duncan J, Pizarro L, Atkinson D, Hutton B F, Ourselin S, and others\textbf{(2016)}, 
+PET reconstruction with an anatomical MRI prior using parallel level sets. \textit { IEEE Trans Med Imaging } 35(9): 2189-2195.
 
 \end{document}
