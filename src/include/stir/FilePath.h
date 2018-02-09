@@ -109,12 +109,13 @@ public:
     //! Returns true if the path is writable. 
 	//! \warning N.E: As far as I understand is only a *NIX feature. Write permissions do not exist in this level at Windows. 
     bool is_regular_file() const;
+	//! On Windows the attribute INVALID_FILE_ATTRIBUTES is used. Which is not quite the same. 
     bool is_writable() const;
     //! Returns true if the path is absolute
     // This funtion has been copied from the Functions for filename manipulations
     static bool is_absolute(const std::string& _filename_with_directory);
     //! Returns true if the path already exists
-    static bool exist(const std::string& s);
+    static bool exist(std::string s);
     //! Returns the current / working directory
     static std::string get_current_working_directory();
     //! Create a new folder,by FilePath, and return its path

@@ -25,33 +25,49 @@ FilePath::FilePath(const std::string &__str, bool _check)
 
 bool FilePath::is_directory() const
 {
+#if defined(__OS_WIN__)
+	DWORD dwAttrib = GetFileAttributes(my_string.c_str());
+
+	return 	(dwAttrib != INVALID_FILE_ATTRIBUTES && 
+		dwAttrib & FILE_ATTRIBUTE_DIRECTORY);
+#else
     struct stat info;
 
     if( stat( my_string.c_str(), &info ) != 0 )
         error(boost::format("FilePath: Cannot access %1%.")%my_string);
     else if( info.st_mode & S_IFDIR )
         return true;
-
+#endif
     return false;
 }
 
 
 bool FilePath::is_regular_file() const
 {
+
+#if defined(__OS_WIN__)
+	DWORD dwAttrib = GetFileAttributes(my_string.c_str());
+
+	return (dwAttrib != INVALID_FILE_ATTRIBUTES && 
+		(dwAttrib & FILE_ATTRIBUTE_NORMAL));
+#else
+
     struct stat info;
 
     if( stat( my_string.c_str(), &info ) != 0 )
         error(boost::format("FilePath: Cannot access %1%.")%my_string);
     else if( info.st_mode & S_IFREG )
         return true;
-    
+#endif
 	return false;
 }
 
 bool FilePath::is_writable() const
 {
 #if defined(__OS_WIN__)
-	return true; 
+	DWORD dwAttrib = GetFileAttributes(my_string.c_str());
+
+	return (dwAttrib != INVALID_FILE_ATTRIBUTES);
 #else	
     if( access(my_string.c_str(), 0) == 0 )
         return true;
@@ -60,17 +76,24 @@ bool FilePath::is_writable() const
 #endif
 }
 
-bool FilePath::exist(const std::string& s)
+bool FilePath::exist(std::string s)
 {
-    struct stat info;
+#if defined(__OS_WIN__)
+	DWORD dwAttrib = GetFileAttributes(s.c_str());
 
-    if (s.size()>0)
-    {
-        if( stat( s.c_str(), &info ) != 0 )
-            return false;
-        else
-            return true;
-    }
+	return (dwAttrib != INVALID_FILE_ATTRIBUTES);
+
+#else
+	struct stat info;
+
+	if (s.size()>0)
+	{
+		if (stat(s.c_str(), &info) != 0)
+			return false;
+		else
+			return true;
+	}
+#endif
 }
 
 FilePath FilePath::append(const FilePath &p)
@@ -196,6 +219,16 @@ FilePath::get_extension() const
 
 void FilePath::checks() const
 {
+#if defined(__OS_WIN__)
+	DWORD dwAttrib = GetFileAttributes(my_string.c_str());
+
+	if (dwAttrib != INVALID_FILE_ATTRIBUTES &&
+		!(dwAttrib & FILE_ATTRIBUTE_DIRECTORY))
+	{
+		error(boost::format("FilePath: File %1% is neither a directory nor a file")%my_string);
+	}
+
+#else
     struct stat s;
     if( stat(my_string.c_str(),&s) == 0 )
     {
@@ -209,6 +242,7 @@ void FilePath::checks() const
     {
         error(boost::format("FilePath: Maybe %1% does not exist?")%my_string);
     }
+#endif
 }
 
 std::string FilePath::get_current_working_directory()

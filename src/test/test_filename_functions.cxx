@@ -5,6 +5,7 @@
 
   \brief Test program for filename functions defined in utility.h
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
   \author PARAPET project
 */
