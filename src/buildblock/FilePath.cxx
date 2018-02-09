@@ -1,3 +1,42 @@
+/*
+    Copyright (C) 2018, University of Hull
+
+    This file is part of STIR.
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+
+/*
+ *  For the code transfered from the utilites.cxx
+ *
+ *
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000-2010, Hammersmith Imanet Ltd
+    Copyright (C) 2014, University College London
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
+
 #include "stir/FilePath.h"
 
 START_NAMESPACE_STIR
@@ -245,13 +284,15 @@ void FilePath::checks() const
 #endif
 }
 
+//On Windows there's GetCurrentDirectory
 std::string FilePath::get_current_working_directory()
 {
-    char buffer[100];
+    char buffer[max_filename_length];
     char *ptr = getcwd(buffer, sizeof(buffer));
     std::string s_cwd;
-    if (ptr)
+    if (ptr) 
         s_cwd = ptr;
+
     return s_cwd;
 }
 

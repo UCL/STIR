@@ -15,28 +15,6 @@
     See STIR/LICENSE.txt for details
 */
 
-/*
- *  For the code transfered from the utilites.h / .cxx
- *
- *
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000-2010, Hammersmith Imanet Ltd
-    Copyright (C) 2014, University College London
-    This file is part of STIR.
-
-    This file is free software; you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 2.1 of the License, or
-    (at your option) any later version.
-
-    This file is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
-
-    See STIR/LICENSE.txt for details
-*/
-
 #ifndef __stir_FILEPATH_H__
 #define __stir_FILEPATH_H__
 
@@ -51,8 +29,6 @@
   Maximum effort was put in order to be cross platform.
 
   \author Nikos Efthimiou
-  \author Kris Thielemans
-  \author PARAPET project
 
 */
 
@@ -61,7 +37,8 @@
 #include <iostream>
 #include <string>
 #include <boost/format.hpp>
-
+// N.E: Not sure I want this here. Included for the max_filename_length.
+#include "stir/utilities.h"
 
 #if defined(__OS_WIN__)
 	#include <windows.h>
