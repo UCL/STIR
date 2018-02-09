@@ -285,10 +285,10 @@ void FilenameTests::run_tests()
   {
 	  // No checks again because it will throw error.
 	  FilePath fake_directory("dir.name\\filename", false);
-	  check(FilePath::exist(fake_directory.get_path()) == false);
+      check(FilePath::exists(fake_directory.get_path()) == false);
 
 	  FilePath current_directory(FilePath::get_current_working_directory());
-	  check(FilePath::exist(current_directory.get_path()) == true);
+      check(FilePath::exists(current_directory.get_path()) == true);
 	  check(current_directory.is_directory() == true);
 	  check(current_directory.is_writable() == true);
 
@@ -304,7 +304,7 @@ void FilenameTests::run_tests()
 		  check(newly_created_path.is_directory() == true);
 		  check(newly_created_path.is_writable() == true);
 
-		  check(FilePath::exist(path_to_append.get_path()) == true);
+          check(FilePath::exists(path_to_append.get_path()) == true);
 	  }
 
 	  {
@@ -448,10 +448,10 @@ void FilenameTests::run_tests()
       // No checks again because it will throw error.
       FilePath fake_directory("dir.name:filename", false);
 
-     check (FilePath::exist(fake_directory.get_path()) == false);
+     check (FilePath::exists(fake_directory.get_path()) == false);
 
       FilePath current_directory(FilePath::get_current_working_directory());
-      check (FilePath::exist(current_directory.get_path()) == true);
+      check (FilePath::exists(current_directory.get_path()) == true);
       check(current_directory.is_directory() == true);
       check(current_directory.is_writable() == true);
 
@@ -467,7 +467,7 @@ void FilenameTests::run_tests()
           check(newly_created_path.is_directory() == true);
           check(newly_created_path.is_writable() == true);
 
-          check (FilePath::exist(path_to_append.get_path()) == true);
+          check (FilePath::exists(path_to_append.get_path()) == true);
       }
 
       {
@@ -611,10 +611,10 @@ void FilenameTests::run_tests()
   {
       // No checks again because it will throw error.
       FilePath fake_directory("dir.name/filename", false);
-      check (FilePath::exist(fake_directory.get_path()) == false);
+      check (FilePath::exists(fake_directory.get_path()) == false);
 
       FilePath current_directory(FilePath::get_current_working_directory());
-      check (FilePath::exist(current_directory.get_path()) == true);
+      check (FilePath::exists(current_directory.get_path()) == true);
       check(current_directory.is_directory() == true);
       check(current_directory.is_writable() == true);
 
@@ -630,7 +630,7 @@ void FilenameTests::run_tests()
           check(newly_created_path.is_directory() == true);
           check(newly_created_path.is_writable() == true);
 
-          check (FilePath::exist(path_to_append.get_path()) == true);
+          check (FilePath::exists(path_to_append.get_path()) == true);
       }
 
       {

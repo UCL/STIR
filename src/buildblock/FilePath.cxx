@@ -115,7 +115,7 @@ bool FilePath::is_writable() const
 #endif
 }
 
-bool FilePath::exist(std::string s)
+bool FilePath::exists(const std::string& s)
 {
 #if defined(__OS_WIN__)
 	DWORD dwAttrib = GetFileAttributes(s.c_str());
@@ -172,7 +172,7 @@ FilePath FilePath::append(const std::string &p)
         FilePath::append_separator(new_path);
 
         // if current level already exists move to the next.
-        if (FilePath::exist(new_path) == true)
+        if (FilePath::exists(new_path) == true)
         {
             warning(boost::format("FilePath: Path %1% already exists.")%new_path);
             continue;

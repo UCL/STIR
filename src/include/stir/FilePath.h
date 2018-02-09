@@ -92,7 +92,7 @@ public:
     // This funtion has been copied from the Functions for filename manipulations
     static bool is_absolute(const std::string& _filename_with_directory);
     //! Returns true if the path already exists
-    static bool exist(std::string s);
+    static bool exists(const std::string& s);
     //! Returns the current / working directory
     static std::string get_current_working_directory();
     //! Create a new folder,by FilePath, and return its path
