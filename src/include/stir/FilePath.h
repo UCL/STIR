@@ -37,18 +37,7 @@
 #include <iostream>
 #include <string>
 #include <boost/format.hpp>
-// N.E: Not sure I want this here. Included for the max_filename_length.
-#include "stir/utilities.h"
 
-#if defined(__OS_WIN__)
-	#include <windows.h>
-	 #include<sys/types.h> // required for stat.h
-	#include<direct.h>
-#else
-	#include <unistd.h>
-#endif
-
-#include <sys/stat.h>
 START_NAMESPACE_STIR
 
 /*!
@@ -69,45 +58,42 @@ public:
 
     //!
     //! \brief FilePath
-    //! \param __str Name of path
-    //! \param _check Perform checks to the __str
-    //!
     //! If the initial path exists in the disk _check should be left true.
-    //! It will check that the path is writtable
-    //! If you want to initialize to an arbitary string then set _check false.
-    FilePath(const std::string &__str, bool _check = true);
+    //! It will check that the path is writable
+    //! If you want to initialize to an arbitary string then set \p _run_checks false.
+    FilePath(const std::string &__str, bool _run_checks = true);
 
     ~FilePath()
     {}
 
     //! Returns true if my_string points to a directory
     bool is_directory() const;
-    //! Returns true if my_string points to a regular file
+    //! Returns true if \p my_string points to a regular file
     //! Returns true if the path is writable. 
 	//! \warning N.E: As far as I understand is only a *NIX feature. Write permissions do not exist in this level at Windows. 
     bool is_regular_file() const;
 	//! On Windows the attribute INVALID_FILE_ATTRIBUTES is used. Which is not quite the same. 
     bool is_writable() const;
-    //! Returns true if the path is absolute
+    //! Returns true if the \p _filename_with_directory is an absolute path
     // This funtion has been copied from the Functions for filename manipulations
     static bool is_absolute(const std::string& _filename_with_directory);
-    //! Returns true if the path already exists
+    //! Returns true if the path \p s already exists
     static bool exists(const std::string& s);
     //! Returns the current / working directory
     static std::string get_current_working_directory();
-    //! Create a new folder,by FilePath, and return its path
+    //! Create a new folder,by FilePath, and return its path as FilePath
     FilePath append(const FilePath& p);
     //! \brief Create a new folder,by string, and return its path
-    //! \details This functions creates appends path p to my_string.
+    //! \details This functions creates appends path \p p to \p my_string.
     //! It supports multiple new folder levels.It will try to avoid
     //! errors as permissions and non existing root path.
     FilePath append(const std::string& p);
     //! Append the separator
     static void append_separator(std::string& s);
-    //! If path is no absolute then prepend the p string
+    //! If path is no absolute then prepend the \p p string
     // This funtion has been copied from the Functions for filename manipulations
     void prepend_directory_name(const std::string& p);
-    //! Append extension if none is present
+    //! Append extension \p e if none is present
     // This funtion has been copied from the Functions for filename manipulations
     void add_extension(const std::string& e);
     //! Replace extension
@@ -138,7 +124,7 @@ public:
 private:
     //! Checks on wether the path exits, is writable and accessible.
     void checks() const;
-    //! Split the path on char c. If c not defined then default on the current separator.
+    //! Split the path on char \p c. If \p c not defined then default on the current separator.
     const std::vector<std::string> split(const std::string& s, const char* c ="");
 
     //! Merge two strings using the correct OS separator
@@ -159,6 +145,9 @@ protected:
     std::string my_string;
     //! The separator for the current OS.
     std::string separator;
+    //! Run checks on the my_string on various occations.
+    //! You want this when you operate on existing paths.
+    bool run_checks;
 };
 
 END_NAMESPACE_STIR

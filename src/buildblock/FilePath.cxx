@@ -38,6 +38,17 @@
 */
 
 #include "stir/FilePath.h"
+#include "stir/utilities.h"
+
+#if defined(__OS_WIN__)
+    #include <windows.h>
+     #include<sys/types.h> // required for stat.h
+    #include<direct.h>
+#else
+    #include <unistd.h>
+#endif
+
+#include <sys/stat.h>
 
 START_NAMESPACE_STIR
 
@@ -45,7 +56,7 @@ FilePath::FilePath(){
     initSeparator();
 }
 
-FilePath::FilePath(const std::string &__str, bool _check)
+FilePath::FilePath(const std::string &__str, bool _run_checks)
 {
     if(__str.size() == 0)
         error(boost::format("FilePath: Cannot initialise empty path."));
@@ -54,12 +65,10 @@ FilePath::FilePath(const std::string &__str, bool _check)
 
     initSeparator();
 
-    if (!_check)
-        return;
+    run_checks = _run_checks;
 
     // Checks
     checks();
-    // Check permissions
 }
 
 bool FilePath::is_directory() const
@@ -258,6 +267,9 @@ FilePath::get_extension() const
 
 void FilePath::checks() const
 {
+    if (!run_checks)
+        return;
+
 #if defined(__OS_WIN__)
 	DWORD dwAttrib = GetFileAttributes(my_string.c_str());
 
