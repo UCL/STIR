@@ -3,27 +3,43 @@ language: cpp
 
 cache: ccache
 
-# Both clang and gcc can be tested. The more is the better.
-compiler:
-  - clang
-  - gcc
-
-# Cross-operating system test
-os:
-  - linux
-  - osx
-
-osx_image: xcode9
-
 # Environment variables:
 # To avoid too many builds, we mix some options (although independent tests would have been better)
+matrix:
+ include:
+   #### linux
+ - os: linux
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-5 CXX=g++-5
+ - os: linux
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-5 CXX=g++-5
+ - os: linux
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP:BOOL=ON" CC=gcc-5 CXX=g++-5
+ - os: linux
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1 -DSTIR_OPENMP:BOOL=OFF" CC=clang-5.0 CXX=clang++-5.0
+   # note: cannot use OpenMP yet with Clang on Travis apparently. See https://github.com/travis-ci/travis-ci/issues/8613
+
+   ####  osx
+   # note: cannot use OpenMP on OSX yet, see https://github.com/UCL/STIR/issues/117
+ - os: osx
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
+ - os: osx
+   osx_image: xcode9 # need that for ROOT
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
+ - os: osx
+   osx_image: xcode9  # need that for ROOT
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP:BOOL=OFF" CC=clang CXX=clang++
+
 env:
   global:
-  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON:BOOL=On -DCMAKE_BUILD_TYPE=Release"
-  matrix:
-  - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP=0"
-  - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP=1"
-  - EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1 -DSTIR_OPENMP=0"
+  - BUILD_FLAGS="-DBUILD_SWIG_PYTHON:BOOL=On -DSTIR_MPI:BOOL=Off -DCMAKE_BUILD_TYPE=Release"
+
 
 # Ubuntu 14.04 LTS (trusty)
 dist: trusty
@@ -34,6 +50,8 @@ sudo: false
 # Compilation dependencies
 addons:
   apt:
+    sources:
+      - llvm-toolchain-trusty-5.0
     packages:
       - libboost-dev
       - swig3.0
@@ -41,6 +59,7 @@ addons:
       - python3-numpy
       - python3-pytest
       - libgomp1
+      - clang-5.0
       - root-system-bin
       - libroot-tree-dev
       - libroot-tree-treeplayer-dev
@@ -52,14 +71,13 @@ before_install:
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
       brew update
-      brew upgrade
       brew tap homebrew/science
       # seems to be needed on Travis due to conflicts with gcc otherwise
       # see https://github.com/travis-ci/travis-ci/issues/8826
       brew cask uninstall oclint
       brew install ccache
       export PATH="/usr/local/opt/ccache/libexec:$PATH"
-      brew install root
+      brew install --with-cocoa root
       brew install swig
       # use Python3 on Mac
       # from http://blog.fizyk.net.pl/blog/running-python-tests-on-traviss-osx-workers.html
