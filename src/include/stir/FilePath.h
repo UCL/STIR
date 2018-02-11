@@ -33,10 +33,7 @@
 */
 
 #include "stir/common.h"
-#include <stdio.h>
-#include <iostream>
 #include <string>
-#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 

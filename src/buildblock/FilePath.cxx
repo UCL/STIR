@@ -40,6 +40,8 @@
 #include "stir/FilePath.h"
 #include "stir/utilities.h"
 
+#include <boost/format.hpp>
+
 #if defined(__OS_WIN__)
     #include <windows.h>
      #include<sys/types.h> // required for stat.h

@@ -22,9 +22,6 @@
   \brief Implementations of inline functions for class stir::FilePath
 
   \author Nikos Efthimiou
-  \author Kris Thielemans
-  \author PARAPET project
-
 */
 START_NAMESPACE_STIR
 
