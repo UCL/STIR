@@ -28,9 +28,11 @@ matrix:
    python: 3
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
  - os: osx
+   osx_image: xcode9 # need that for ROOT
    python: 3
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
  - os: osx
+   osx_image: xcode9  # need that for ROOT
    python: 3
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP:BOOL=OFF" CC=clang CXX=clang++
 
