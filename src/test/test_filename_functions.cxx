@@ -10,6 +10,7 @@
   \author PARAPET project
 */
 /*
+    Copyright (C) 2018, University of Hull
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2009, Hammersmith Imanet Ltd
     This file is part of STIR.
