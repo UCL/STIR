@@ -34,6 +34,7 @@
 
 #include "stir/common.h"
 #include <string>
+#include <vector>
 
 START_NAMESPACE_STIR
 
