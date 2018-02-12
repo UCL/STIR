@@ -3604,9 +3604,9 @@ This implements a quadratic Gibbs prior. The gradient of the prior is computed a
   END Quadratic Prior Parameters:=
   \end{verbatim}
   
-{ \subsubsubsection{Parallel Level Sets}
+{ \subsubsubsection{PLS}
 This implements the  anatomical penalty function, Parallel Level Sets (PLS),  proposed by Matthias J. Ehrhardt et. al [Ehr16]. Note that
-  PLS becomes smoothed TV when no anatomical information is available.  The prior function is the following:
+  PLS becomes smoothed TV when an uniform anatomical image is provided.  The prior function is the following:
 
   \[
   \phi(f) = \sqrt{\alpha^2 + |\nabla v|^2 - {\langle\nabla f,\xi\rangle}^2}
