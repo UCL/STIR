@@ -202,6 +202,48 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
 	  KeyArgument::NONE, &KeyParser::do_nothing);
   add_key("data offset in bytes",
 	  KeyArgument::ULONG, &data_offset_each_dataset);
+
+  add_key("%comment", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%sms-mi header name space", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%listmode header file", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%listmode data file", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%compressor version", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%study date (yyyy", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%study time (hh", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("isotope name", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("isotope gamma halflife (sec)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("isotope branching factor", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("radiopharmaceutical", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%tracer injection date (yyyy", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%tracer injection time (hh", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("relative time of tracer injection (sec)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("tracer activity at time of injection (bq)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("injected volume (ml)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("horizontal bed translation", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("start horizontal bed position (mm)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("end horizontal bed position (mm)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("start vertical bed position (mm)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%coincidence window width (ns)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("gantry tilt angle (degrees)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("method of attenuation correction", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("method of scatter correction", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%method of random correction", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%decay correction", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%decay correction reference date (yyyy", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%decay correction reference time (hh", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("decay correction factor", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("scatter fraction (%)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("scan data type description", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("total prompts events", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("total prompts", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%total randoms", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%total net trues", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%image duration from timing tags (msec)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%gim loss fraction", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%pdr loss fraction", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%detector block singles", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%total uncorrected singles rate", KeyArgument::NONE, &KeyParser::do_nothing);
+
 }
 
 
@@ -295,7 +337,8 @@ InterfilePDFSHeaderSiemens::InterfilePDFSHeaderSiemens()
   add_key("%number of buckets",
     KeyArgument::INT, (KeywordProcessor)&InterfilePDFSHeaderSiemens::read_bucket_singles_rates, &num_buckets);
   add_key("%bucket singles rate", KeyArgument::INT, &bucket_singles_rates);
-
+  
+  
 }
 
 
@@ -452,6 +495,28 @@ InterfileListmodeHeaderSiemens::InterfileListmodeHeaderSiemens()
   // override as listmode uses the non-vectored key
   data_offset_each_dataset.resize(1, 0UL);
   add_key("data offset in bytes", &data_offset_each_dataset[0]);
+
+  add_key("%bed zero offset (mm)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("pet scanner type", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("transaxial fov diameter (cm)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("distance between rings (cm)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("gantry crystal radius (cm)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("bin size (cm)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("septa state", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%tof mashing factor", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%preset type", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%preset value", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%preset unit", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%total listmode word counts", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%coincidence list data", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%lm event and tag words format (bits)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%timing tagwords interval (msec)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%singles polling method", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%singles polling interval (sec)", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%singles scale factor", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%total number of singles blocks", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%time sync", KeyArgument::NONE, &KeyParser::do_nothing);
+  add_key("%comment", KeyArgument::NONE, &KeyParser::do_nothing);
   }
 
 int InterfileListmodeHeaderSiemens::find_storage_order()
