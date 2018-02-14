@@ -7,8 +7,9 @@
   <body>
     <h1>Summary of changes in STIR release 3.1 (dated 31/12/2017)</h1>
 
-<p>This version is 100% backwards compatible with STIR 3.0 for the user aside from minor changes 
-when using Python (see below). Developers might need to make minor code changes as 
+<p>This version is 95% backwards compatible with STIR 3.0 for the user aside from minor changes 
+when using Python/MATLAB and when changed image orientation when reading/writing images via ITK (see below).
+Developers might need to make minor code changes as 
 detailed below.
 </p>
 <h2>Overall summary</h2>
@@ -45,18 +46,19 @@ for Siemens scanners (warning: tested in Biograph mMR only at present).
 </p>
 
 <p>The build system now only uses CMake. We recommend to use CMake version 3.1 or later 
-on Linux/MacOSX and 3.9 or later on Windows, but we try to accomodate older versions of CMake.
+on Linux/MacOSX and 3.10.2 or later on Windows, but we try to accomodate older versions of CMake.
 </p>
     
+<p>We now support the parsing of SIEMENS Interfile files natively.</p>
+ 
 <p>Of course, there is also the usual code-cleanup and 
 improvements to the documentation.
 </p>
 
 <p>This release contains mainly code written by Kris Thielemans and Nikos Efthimiou (UCL),
-but with contributions by Jannis Fischer (ETH Zurich) and Elise Emond (UCL),
-and some code clean-up by David Volgyes. Various bits
+but with contributions by Jannis Fischer (ETH Zurich), Elise Emond (UCL), Edoardo Pasca (STFC) and some code clean-up by David Volgyes. Various bits
 were tested by (in alphabetical order, all UCL except where indicated):
-Ottavia Bertolli, Matthias Ehrhardt, Pawel Markiewicz, Richard Manber,
+Ottavia Bertolli, Matthias Ehrhardt, Pawel Markiewicz, Richard Manber, Alaleh Rashidnasab,
 Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
 </p>
 
@@ -107,9 +109,16 @@ These are only minimally documented at the present stage unfortunately.
 
 
 <h3>Changed functionality</h3>
+<ul>
 <li>
-  The <code>num_events_to_store</code> variable in <code>LmToProjData</code> has been upgraded to long int. 
+  The <code>num_events_to_store</code> variable in <code>LmToProjData</code> has been upgraded to long int
+  allow processing of more events in list mode files.
 </li>
+<li>
+The orientation of images read/written via ITK has changed. It should now be correct if the patient
+was in HFS position. This is currently not checked (and for many file formats, never can be checked).
+</li>
+</ul>
 <h4>Python (and MATLAB) interface</h4>
 <ul>
 <li>
@@ -243,6 +252,7 @@ from the above):</H2>
 <ul>
 <li><code>write_to_file</code> is a new addition that makes it easier to write
 using the default output file format.</li>
+<li><code>FilePath</code> is a new addition that provides a thin cross-platform layer for file and folder operations. In addition to the features already found in utilities it can create new paths and perform checks on paths about accessibility and writting permissions.</li>
 <li>Added apply/undo methods to <code>BinNormalisation</code> to process whole <code>ProjData</code></li>
 <li>extra functionality for <code>ProjData</code>:
   <ul>

@@ -598,6 +598,11 @@ where \textit{projdata\_filename.hs} is the header text file and \textit{projdat
 is the data file. Please read section \ref{sec:outputinterfile} for info regarding 
 images written by \textit{STIR} in Interfile.
 
+\subsubsection{Siemens interfile-like}
+Siemens PET/CT and PET/MR scanners use a file format that is based on the mentioned
+proposed Interfile standard but with some variations. We read this since STIR 4.0,
+but do not write it.
+
 \subsubsection{VOLPET sinograms}
 
 The GE VOLPET sinogram format is supported for reading, but for
@@ -628,7 +633,10 @@ See the \texttt{conv\_AVW} utility (section \ref{sec:convAVW}).
 If you compiled \textit{STIR} such that it could find the \textit{ITK} library, you will be read
 all image formats supported by \textit{ITK}, see \url{http://www.itk.org/Wiki/ITK/File_Formats}{the ITK Wiki}
 for some information. However, many file formats do not specify geometric information (e.g jpg). For those
-that do, \textit{STIR} currently ignores orientation, offset and timing.
+that do, \textit{STIR} currently timing. However, \textbf{orientation and offset code
+assumes the patient is in HFS position}. This is currently not checked (and in fact
+cannot be checked when reading most file formats).
+
 Note that as DICOM files often store only a single slice, \textit{STIR} attempts to find
 other slices belonging to the same series/time frame/gate.
 

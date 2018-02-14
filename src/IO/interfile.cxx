@@ -36,6 +36,7 @@
 #include "stir/IO/interfile.h"
 #include "stir/interfile_keyword_functions.h"
 #include "stir/IO/InterfileHeader.h"
+#include "stir/IO/InterfileHeaderSiemens.h"
 #include "stir/IO/InterfilePDFSHeaderSPECT.h"
 #include "stir/IndexRange3D.h"
 #include "stir/utilities.h"
@@ -592,6 +593,46 @@ read_interfile_PDFS_SPECT(istream& input,
 }
 
 
+ProjDataFromStream*
+read_interfile_PDFS_Siemens(istream& input,
+  const string& directory_for_data,
+  const ios::openmode open_mode)
+{
+  InterfilePDFSHeaderSiemens hdr;
+  if (!hdr.parse(input))
+    {
+      warning("Interfile parsing of Siemens Interfile projection data failed");
+      return 0;
+    }
+  // KT 14/01/2000 added directory capability
+  // prepend directory_for_data to the data_file_name from the header
+
+  char full_data_file_name[max_filename_length];
+  strcpy(full_data_file_name, hdr.data_file_name.c_str());
+  prepend_directory_name(full_data_file_name, directory_for_data.c_str());
+
+  shared_ptr<iostream> data_in(new fstream(full_data_file_name, open_mode | ios::binary));
+  if (!data_in->good())
+    {
+    warning("interfile parsing: error opening file %s", full_data_file_name);
+    return 0;
+    }
+
+  if (hdr.compression)
+    warning("Siemens projection data is compressed. Reading of raw data will fail.");
+
+  return new ProjDataFromStream(hdr.get_exam_info_sptr(),
+    hdr.data_info_ptr->create_shared_clone(),
+    data_in,
+    hdr.data_offset_each_dataset[0],
+    hdr.segment_sequence,
+    hdr.storage_order,
+    hdr.type_of_numbers,
+    hdr.file_byte_order,
+    1.);
+
+}
+
 ProjDataFromStream* 
 read_interfile_PDFS(istream& input,
 		    const string& directory_for_data,
@@ -599,7 +640,7 @@ read_interfile_PDFS(istream& input,
 {
   
   {
-    InterfileHeader hdr;  
+    MinimalInterfileHeader hdr;  
     std::ios::off_type offset = input.tellg();
     if (!hdr.parse(input, false)) // parse without warnings
       {
@@ -614,7 +655,13 @@ read_interfile_PDFS(istream& input,
         input.seekg(offset);
         return read_interfile_PDFS_SPECT(input, directory_for_data, open_mode); 
       }
-  }
+	  if (!hdr.siemens_mi_version.empty())
+      {
+		     input.seekg(offset);
+         return read_interfile_PDFS_Siemens(input, directory_for_data, open_mode);
+      }
+	}
+    
   // if we get here, it's PET
 
   InterfilePDFSHeader hdr;  
