@@ -598,6 +598,11 @@ where \textit{projdata\_filename.hs} is the header text file and \textit{projdat
 is the data file. Please read section \ref{sec:outputinterfile} for info regarding 
 images written by \textit{STIR} in Interfile.
 
+\subsubsection{Siemens interfile-like}
+Siemens PET/CT and PET/MR scanners use a file format that is based on the mentioned
+proposed Interfile standard but with some variations. We read this since STIR 4.0,
+but do not write it.
+
 \subsubsection{VOLPET sinograms}
 
 The GE VOLPET sinogram format is supported for reading, but for
