@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2018 University of Leeds and University College of London
-                  2000- 2011, Hammersmith Imanet Ltd
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
   \brief Declaration of class stir::PLSPrior
 
   \author Daniel Deidda
-  \author Tsai Yu-Jung
+  \author Yu-Jung Tsai
   */
 
 
@@ -47,7 +47,7 @@ START_NAMESPACE_STIR
   A class in the GeneralisedPrior hierarchy. This implements the  anatomical penalty function, Parallel Level Sets (PLS),
   proposed by Matthias J. Ehrhardt et. al in "PET Reconstruction With an Anatomical MRI
   Prior Using Parallel Level Sets", IEEE Trans. med. Imag., vol. 35, no. 9, Sept. 2016. Note that
-  PLS becomes smoothed TV when no anatomical information is available.
+  PLS becomes smoothed TV when an uniform anatomical image is provided.
 
   The prior is computed as follows:
 
@@ -84,10 +84,10 @@ START_NAMESPACE_STIR
                    dimension should be the same as that of the emission image.
 
   eta :=    ; A parameter for preventing the division by zero problem. The value dependes
-              on the scale of the anatomical image.
+                   on the scale of the anatomical image.
 
-  alpha :=  ; A parameter that controls the edge-preservation property of PLS. The value
-              depends on the scale of the emission image.
+  alpha :=   ; A parameter that controls the edge-preservation property of PLS. The value
+                   depends on the scale of the emission image.
 
   ; use next parameter to specify an image with penalisation factors (a la Fessler)
   ; see class documentation for more info
@@ -171,9 +171,12 @@ protected:
 
   virtual void set_defaults();
   virtual void initialise_keymap();
+
+  //! the parsing will only override any exixting kappa-image or anatomical-image if the relevant keyword is present
   virtual bool post_processing();
  private:
 
+    /*! \todo set the anatomical image to zero if not defined */
    virtual Succeeded set_up();
 
   //! compute the component x, y or z of the image gradient using forward difference
