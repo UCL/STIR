@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2018 University of Leeds and University College of London
-                  2000- 2011, Hammersmith Imanet Ltd
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
   \brief  implementation of the stir::PLSPrior class
 
   \author Daniel Deidda
-  \author Tsai Yu-Jung
+  \author Yu-Jung Tsai
 
 */
 
@@ -64,23 +64,38 @@ template <typename elemT>
 Succeeded
 PLSPrior<elemT>::set_up ()
 {
-    shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_z_sptr(this->anatomical_sptr->get_empty_copy ());
+
+    if (is_null_ptr( this->anatomical_sptr))
+    {
+       error("PLS prior needs an anatomical image");
+      return Succeeded::no;
+    }
+
+    shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_z_sptr;
+    if (!only_2D)
+    anatomical_im_grad_z_sptr.reset(this->anatomical_sptr->get_empty_copy ());
+
     shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_y_sptr(this->anatomical_sptr->get_empty_copy ());
     shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_x_sptr(this->anatomical_sptr->get_empty_copy ());
     shared_ptr<DiscretisedDensity<3,elemT> > norm_sptr(this->anatomical_sptr->get_empty_copy ());
 
+    if (!only_2D)
     compute_image_gradient_element ((*anatomical_im_grad_z_sptr),0,*this->anatomical_sptr);
 
     compute_image_gradient_element (*anatomical_im_grad_y_sptr,1,*this->anatomical_sptr);
     compute_image_gradient_element (*anatomical_im_grad_x_sptr,2,*this->anatomical_sptr);
 
+    if (!only_2D)
     this->set_anatomical_grad_sptr (anatomical_im_grad_z_sptr,0);
+
     this->set_anatomical_grad_sptr (anatomical_im_grad_y_sptr,1);
     this->set_anatomical_grad_sptr (anatomical_im_grad_x_sptr,2);
 
-    compute_normalisation_anatomical_gradient (*norm_sptr,*anatomical_im_grad_x_sptr,*anatomical_im_grad_y_sptr,*anatomical_im_grad_z_sptr );
+    compute_normalisation_anatomical_gradient (*norm_sptr,*anatomical_im_grad_z_sptr,*anatomical_im_grad_y_sptr,*anatomical_im_grad_x_sptr );
 
     this->set_anatomical_grad_norm_sptr (shared_ptr<DiscretisedDensity<3,elemT> >(norm_sptr));
+
+
 return Succeeded::yes;
 }
 
@@ -96,9 +111,10 @@ PLSPrior<elemT>::post_processing()
   if (anatomical_filename.size() != 0){
     this->anatomical_sptr = read_from_file<DiscretisedDensity<3,elemT> >(anatomical_filename);
       info(boost::format("Reading anatomical data '%1%'") % anatomical_filename  );}
-  else{
-      this->anatomical_sptr->fill (0);
-  }
+
+//  else if (!is_null_ptr( this->anatomical_sptr)){
+//      this->anatomical_sptr->fill (0);
+//  }
    set_up ();
 
 
@@ -321,8 +337,15 @@ PLSPrior<elemT>::compute_normalisation_anatomical_gradient(DiscretisedDensity<3,
 
                     for (int x=min_x;x<= max_x;x++)
                     {
-                     norm_im_grad[z][y][x]   = sqrt (square(image_grad_z[z][y][x]) + square(image_grad_y[z][y][x]) + square(image_grad_x[z][y][x]) + square(this->eta));
+                        if(only_2D==1){
+                     norm_im_grad[z][y][x]   = sqrt (square(image_grad_y[z][y][x]) + square(image_grad_x[z][y][x]) + square(this->eta));}
+                        else{
+                            norm_im_grad[z][y][x]   = sqrt (square(image_grad_z[z][y][x]) + square(image_grad_y[z][y][x]) +
+                                                            square(image_grad_x[z][y][x]) + square(this->eta));
+
+                        }
                     }
+
                  }
           }
 }
@@ -339,8 +362,9 @@ compute_inner_product_and_penalty(DiscretisedDensity<3,elemT> &inner_product,
 
 
 
-
+    if(only_2D==0)
     compute_image_gradient_element (pet_im_grad_z,0,pet_image);
+
     compute_image_gradient_element (pet_im_grad_y,1,pet_image);
     compute_image_gradient_element (pet_im_grad_x,2,pet_image);
 
@@ -367,14 +391,24 @@ compute_inner_product_and_penalty(DiscretisedDensity<3,elemT> &inner_product,
 
                     for (int x=min_x;x<= max_x;x++)
                     {
-                     inner_product[z][y][x]   = ((pet_im_grad_z[z][y][x]*(*anatomical_grad_z_sptr)[z][y][x]/(*get_norm_sptr())[z][y][x]) +
-                                                 (pet_im_grad_y[z][y][x]*(*anatomical_grad_y_sptr)[z][y][x]/(*get_norm_sptr())[z][y][x]) +
-                                                 (pet_im_grad_x[z][y][x]*(*anatomical_grad_x_sptr)[z][y][x]/(*get_norm_sptr())[z][y][x]));
+                        if(only_2D==1){
+                            inner_product[z][y][x]   = ((pet_im_grad_y[z][y][x]*(*anatomical_grad_y_sptr)[z][y][x]/(*get_norm_sptr())[z][y][x]) +
+                                                        (pet_im_grad_x[z][y][x]*(*anatomical_grad_x_sptr)[z][y][x]/(*get_norm_sptr())[z][y][x]));
 
-                     penalty[z][y][x]= sqrt (this->alpha*this->alpha + pet_im_grad_z[z][y][x]*pet_im_grad_z[z][y][x] +
-                                                                       pet_im_grad_y[z][y][x]*pet_im_grad_y[z][y][x] +
-                                                                       pet_im_grad_x[z][y][x]*pet_im_grad_x[z][y][x] -
-                                                                       inner_product[z][y][x]*inner_product[z][y][x]);
+                            penalty[z][y][x]= sqrt (square(this->alpha) + square(pet_im_grad_y[z][y][x]) +
+                                                                              square(pet_im_grad_x[z][y][x]) -
+                                                                              square(inner_product[z][y][x]));
+                        }
+                        else{
+                     inner_product[z][y][x]   = (pet_im_grad_z[z][y][x]*(*anatomical_grad_z_sptr)[z][y][x] +
+                                                 pet_im_grad_y[z][y][x]*(*anatomical_grad_y_sptr)[z][y][x] +
+                                                 pet_im_grad_x[z][y][x]*(*anatomical_grad_x_sptr)[z][y][x])/(*get_norm_sptr())[z][y][x];
+
+                     penalty[z][y][x]= sqrt (square(this->alpha) + square(pet_im_grad_z[z][y][x]) +
+                                                                       square(pet_im_grad_y[z][y][x]) +
+                                                                       square(pet_im_grad_x[z][y][x]) -
+                                                                       square(inner_product[z][y][x]));
+                        }
                     }
                  }
           }
@@ -391,8 +425,13 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
     return 0.;
   }
 
+  if (!this->anatomical_sptr->has_same_characteristics(current_image_estimate))
+    error("The anatomical image must have the same charateristics as the PET image");
 
-  shared_ptr<DiscretisedDensity<3,elemT> > pet_im_grad_z_sptr(this->anatomical_sptr->get_empty_copy ());
+  shared_ptr<DiscretisedDensity<3,elemT> > pet_im_grad_z_sptr;
+  if(only_2D==0)
+  pet_im_grad_z_sptr.reset(this->anatomical_sptr->get_empty_copy ());
+
   shared_ptr<DiscretisedDensity<3,elemT> > pet_im_grad_y_sptr(this->anatomical_sptr->get_empty_copy ());
   shared_ptr<DiscretisedDensity<3,elemT> > pet_im_grad_x_sptr(this->anatomical_sptr->get_empty_copy ());
 
@@ -456,21 +495,30 @@ PLSPrior<elemT>::
 compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                  const DiscretisedDensity<3,elemT> &current_image_estimate)
 {
-  assert(  prior_gradient.has_same_characteristics(current_image_estimate));
+
+  if (!this->anatomical_sptr->has_same_characteristics(current_image_estimate))
+      error("The gradient should have same charateristics as the PET image");
+
   if (this->penalisation_factor==0)
   {
     prior_gradient.fill(0);
     return;
   }
 
-  shared_ptr<DiscretisedDensity<3,elemT> > pet_im_grad_z_sptr(this->anatomical_sptr->get_empty_copy ());
+  shared_ptr<DiscretisedDensity<3,elemT> > pet_im_grad_z_sptr;
+  shared_ptr<DiscretisedDensity<3,elemT> > gradientz_sptr;
+
+  if(only_2D==0){
+  pet_im_grad_z_sptr.reset(this->anatomical_sptr->get_empty_copy ());
+  gradientz_sptr.reset(this->anatomical_sptr->get_empty_copy ());
+  }
+
   shared_ptr<DiscretisedDensity<3,elemT> > pet_im_grad_y_sptr(this->anatomical_sptr->get_empty_copy ());
   shared_ptr<DiscretisedDensity<3,elemT> > pet_im_grad_x_sptr(this->anatomical_sptr->get_empty_copy ());
 
   shared_ptr<DiscretisedDensity<3,elemT> > inner_product_sptr(this->anatomical_sptr->get_empty_copy ());
   shared_ptr<DiscretisedDensity<3,elemT> > penalty_sptr(this->anatomical_sptr->get_empty_copy ());
 
-  shared_ptr<DiscretisedDensity<3,elemT> > gradientz_sptr(this->anatomical_sptr->get_empty_copy ());
   shared_ptr<DiscretisedDensity<3,elemT> > gradienty_sptr(this->anatomical_sptr->get_empty_copy ());
   shared_ptr<DiscretisedDensity<3,elemT> > gradientx_sptr(this->anatomical_sptr->get_empty_copy ());
 
@@ -481,8 +529,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                                      *pet_im_grad_x_sptr,
                                      current_image_estimate);
 
-//write_to_file("pgradx", pet_im_grad_x);
-//write_to_file("current", current_image_estimate);
+
   const bool do_kappa = !is_null_ptr(kappa_ptr);
   if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
     error("PLSPrior: kappa image has not the same index range as the reconstructed image\n");
@@ -540,12 +587,14 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                   (*gradienty_sptr)[z][y+1][x] =
                           (((*pet_im_grad_y_sptr)[z][y+1][x]-(*anatomical_grad_y_sptr)[z][y+1][x]*(*inner_product_sptr)[z][y+1][x]/
                           (*get_norm_sptr ())[z][y+1][x])/(*penalty_sptr)[z][y+1][x] -
-                          (((*pet_im_grad_y_sptr)[z][y][x]-(*anatomical_grad_y_sptr)[z][y][x]*(*inner_product_sptr)[z][y][x]/(*get_norm_sptr ())[z][y][x])/(*penalty_sptr)[z][y][x]) );
+                          (((*pet_im_grad_y_sptr)[z][y][x]-(*anatomical_grad_y_sptr)[z][y][x]*(*inner_product_sptr)[z][y][x]/
+                            (*get_norm_sptr ())[z][y][x])/(*penalty_sptr)[z][y][x]) );
 
                   (*gradientz_sptr)[z+1][y][x] =
                       (((*pet_im_grad_z_sptr)[z+1][y][x]-(*anatomical_grad_z_sptr)[z+1][y][x]*(*inner_product_sptr)[z+1][y][x]/
-                          (*get_norm_sptr ())[z][y+1][x])/(*penalty_sptr)[z+1][y][x] -
-                          (((*pet_im_grad_y_sptr)[z][y][x]-(*anatomical_grad_z_sptr)[z][y][x]*(*inner_product_sptr)[z][y][x]/(*get_norm_sptr ())[z][y][x])/(*penalty_sptr)[z][y][x]) );
+                          (*get_norm_sptr ())[z+1][y][x])/(*penalty_sptr)[z+1][y][x] -
+                          (((*pet_im_grad_z_sptr)[z][y][x]-(*anatomical_grad_z_sptr)[z][y][x]*(*inner_product_sptr)[z][y][x]/
+                            (*get_norm_sptr ())[z][y][x])/(*penalty_sptr)[z][y][x]) );
               }
               }}}
 
@@ -564,10 +613,16 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 
           for (int x=min_x;x<= max_x;x++)
             {
+              if(only_2D==1){
+
+              (*gradient_sptr)[z][y][x] = -((*gradienty_sptr)[z][y][x] + (*gradientx_sptr)[z][y][x]);
+
+              }
+              else{
 
               (*gradient_sptr)[z][y][x] = -((*gradientz_sptr)[z][y][x] + (*gradienty_sptr)[z][y][x] + (*gradientx_sptr)[z][y][x]);
 
-//                        std::cout<<"grad ="<<gradient[z][y][x]<<std::endl;
+              }
 
               if (do_kappa)
                   (*gradient_sptr)[z][y][x] *=
@@ -577,8 +632,6 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 
                         prior_gradient[z][y][x]= (*gradient_sptr)[z][y][x] * this->penalisation_factor;
             }}}
-
-//write_to_file("pgrad", prior_gradient);
 
   info(boost::format("Prior gradient max %1%, min %2%\n") % prior_gradient.find_max() % prior_gradient.find_min());
 
