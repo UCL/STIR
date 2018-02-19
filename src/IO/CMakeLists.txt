@@ -24,10 +24,12 @@ set(dir IO)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
+  ExamData
   OutputFileFormat 
   OutputFileFormat_default 
   InterfileOutputFileFormat
   interfile InterfileHeader InterfilePDFSHeaderSPECT
+  InterfileHeaderSiemens
   InputFileFormatRegistry 
   InterfileDynamicDiscretisedDensityOutputFileFormat 
   InterfileParametricDensityOutputFileFormat
@@ -54,6 +56,14 @@ if (LLN_FOUND)
  )
 endif()
 
+if (CERN_ROOT_FOUND)
+ list(APPEND ${dir_LIB_SOURCES}
+    InputStreamFromROOTFile
+    InputStreamFromROOTFileForCylindricalPET
+    InputStreamFromROOTFileForECATPET
+ )
+endif()
+
 if(AVW_FOUND)
   list(APPEND ${dir_LIB_SOURCES}
     stir_AVW
@@ -64,6 +74,10 @@ include(stir_lib_target)
 
 if (LLN_FOUND)
   target_link_libraries(IO ${LLN_LIBRARIES})
+endif()
+
+if (CERN_ROOT_FOUND)
+  target_link_libraries(IO ${CERN_ROOT_LIBRARIES})
 endif()
 
 if (AVW_FOUND)

@@ -62,7 +62,7 @@ actual_can_read(const FileSignature& signature,
   return true;
 }
 
-std::auto_ptr<ECAT7DynamicDiscretisedDensityInputFileFormat::data_type>
+unique_ptr<ECAT7DynamicDiscretisedDensityInputFileFormat::data_type>
 ECAT7DynamicDiscretisedDensityInputFileFormat::
 read_from_file(std::istream& input) const
 {
@@ -70,11 +70,10 @@ read_from_file(std::istream& input) const
   error("read_from_file for ECAT7 with istream not implemented %s:%s. Sorry",
 	__FILE__, __LINE__);
   return
-    std::auto_ptr<data_type>
-    (0);
+    unique_ptr<data_type>();
 }
 
-std::auto_ptr<ECAT7DynamicDiscretisedDensityInputFileFormat::data_type>
+unique_ptr<ECAT7DynamicDiscretisedDensityInputFileFormat::data_type>
 ECAT7DynamicDiscretisedDensityInputFileFormat::
 read_from_file(const std::string& filename) const
 {
@@ -83,14 +82,14 @@ read_from_file(const std::string& filename) const
       Main_header mhead;
       if (read_ECAT7_main_header(mhead, filename) == Succeeded::no)
 	{
-	  warning("ECAT7DynamicDiscretisedDensityInputFileFormat::read_from_file cannot read %s as ECAT7 (failed to read main header)", filename.c_str());
-	  return std::auto_ptr<data_type>(0);
+	  error("ECAT7DynamicDiscretisedDensityInputFileFormat::read_from_file cannot read %s as ECAT7 (failed to read main header)", filename.c_str());
+	  return unique_ptr<data_type>();
 	}
 
       TimeFrameDefinitions time_frame_definitions(filename);
       shared_ptr<Scanner> scanner_sptr(find_scanner_from_ECAT_system_type(mhead.system_type));
 
-      std::auto_ptr<data_type> 
+      unique_ptr<data_type> 
 	dynamic_image_ptr
 	(new DynamicDiscretisedDensity(time_frame_definitions,
 				       static_cast<double>(mhead.scan_start_time),
@@ -123,7 +122,7 @@ read_from_file(const std::string& filename) const
     {
       error("read_from_file for DynamicDiscretisedDensity: ECAT7 file %s is not an image file", filename.c_str());
       // return something to satisfy compilers
-      return std::auto_ptr<data_type>(0);
+      return unique_ptr<data_type>();
     }
 }
 

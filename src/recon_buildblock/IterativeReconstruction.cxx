@@ -389,15 +389,16 @@ IterativeReconstruction<TargetT>::get_initial_data_ptr() const
 }
 
 // KT 10122001 new
+// NE Updated to be able to define the dataset to reconstruct.
 template <typename TargetT>
 Succeeded 
 IterativeReconstruction<TargetT>::
-reconstruct() 
+reconstruct()
 {
   this->start_timers();
 
-  shared_ptr<TargetT > target_data_sptr(this->get_initial_data_ptr());
-  if (this->set_up(target_data_sptr) == Succeeded::no)
+  this->target_data_sptr.reset(this->get_initial_data_ptr());
+  if (this->set_up(this->target_data_sptr) == Succeeded::no)
     {
       this->stop_timers();
       return Succeeded::no;
@@ -405,7 +406,7 @@ reconstruct()
 
   this->stop_timers();
 
-  return this->reconstruct(target_data_sptr);
+  return this->reconstruct(this->target_data_sptr);
 }
 
 template <typename TargetT>
@@ -569,9 +570,9 @@ end_of_iteration_processing(TargetT &current_estimate)
   
   writeText(cerr.str().c_str(), INFORMATION_CHANNEL);
 
-  // Save intermediate (or last) iteration      
-  if((!(this->subiteration_num%this->save_interval)) || 
-     this->subiteration_num==this->num_subiterations ) 
+  // Save intermediate (or last) iteration -- if the output is not disabled
+  if((!(this->subiteration_num%this->save_interval) ||
+     this->subiteration_num==this->num_subiterations) && !this->_disable_output)
     {      	         
       this->output_file_format_ptr->
 	write_to_file(this->make_filename_prefix_subiteration_num(), 
@@ -610,6 +611,13 @@ randomly_permute_subset_order() const
 
 }
 
+template <typename TargetT>
+void
+IterativeReconstruction<TargetT>::
+set_input_data(const shared_ptr<ExamData> &arg)
+{
+    this->objective_function_sptr->set_input_data(arg);
+}
 
 template <typename TargetT>
 int

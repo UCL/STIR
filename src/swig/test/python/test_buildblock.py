@@ -19,7 +19,15 @@
 #
 #    See STIR/LICENSE.txt for details
 
-import py.test
+try:
+    import pytest
+except ImportError:
+    # No pytest, try older py.test
+    try:
+        import py.test as pytest
+    except ImportError:
+        raise ImportError('Tests require pytest or py<1.4')
+
 from stir import *
 
 def test_Vector():
@@ -60,7 +68,7 @@ def test_VectorWithOffset():
     v[2]=3
     assert v[2]==3
     #assert v[1]==0 #probably not initialised
-    with py.test.raises(IndexError):
+    with pytest.raises(IndexError):
         v[0] # check index-out-of-range
 
 def test_Array1D():
@@ -157,6 +165,25 @@ def test_Scanner():
     #for a in l:
     #    print a
 
+def test_Bin():
+    segment_num=1;
+    view_num=2;
+    axial_pos_num=3;
+    tangential_pos_num=4;
+    bin=Bin(segment_num, view_num, axial_pos_num, tangential_pos_num);
+    assert bin.bin_value==0;
+    assert bin.segment_num==segment_num;
+    assert bin.view_num==view_num;
+    assert bin.axial_pos_num==axial_pos_num;
+    assert bin.tangential_pos_num==tangential_pos_num;
+    bin.segment_num=5;
+    assert bin.segment_num==5;
+    bin_value=0.3;
+    bin.bin_value=bin_value;
+    assert abs(bin.bin_value-bin_value)<.01;
+    bin=Bin(segment_num, view_num, axial_pos_num, tangential_pos_num, bin_value);
+    assert abs(bin.bin_value-bin_value)<.01;
+    
 def test_ProjDataInfo():
     s=Scanner.get_scanner_from_name("ECAT 962")
     #ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
@@ -172,4 +199,26 @@ def test_ProjDataInfo():
     assert sinogram.get_axial_pos_num()==1
     assert sinogram.get_num_views() == projdatainfo.get_num_views()
     assert sinogram.get_proj_data_info() == projdatainfo
-    
+
+def test_ProjData_from_to_Array3D():
+    # define a projection with some dummy data (filled with segment no.)
+    s=Scanner.get_scanner_from_name("ECAT 962")
+    projdatainfo=ProjDataInfo.ProjDataInfoCTI(s,3,9,8,6)
+    projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
+    for seg_idx in range(projdata.get_min_segment_num(),projdata.get_max_segment_num()+1):
+        segment=projdata.get_empty_segment_by_sinogram(seg_idx)
+        segment.fill(seg_idx)
+        projdata.set_segment(segment)
+
+    # Check we actually put the data in (not just zeros)
+    assert all([all([x==s for x in projdata.get_segment_by_sinogram(s).flat()])
+                for s in range(projdata.get_min_segment_num(),projdata.get_max_segment_num()+1)])
+
+    # convert to Array3D and back again
+    array3D=projdata.to_array()
+    new_projdata=ProjDataInMemory(ExamInfo(),projdatainfo)
+    new_projdata.fill(array3D.flat())
+
+    # assert every data point is equal
+    assert all(a==b for a, b in zip(projdata.to_array().flat(),new_projdata.to_array().flat()))
+

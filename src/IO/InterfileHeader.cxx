@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2016 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -48,26 +48,52 @@ using std::vector;
 
 START_NAMESPACE_STIR
 const double
-InterfileHeader::
+MinimalInterfileHeader::
 double_value_not_set = -12345.60789;
 
 const ExamInfo*
-InterfileHeader::get_exam_info_ptr() const
+MinimalInterfileHeader::get_exam_info_ptr() const
 {
   return exam_info_sptr.get();
 }
 
 shared_ptr<ExamInfo>
-InterfileHeader::get_exam_info_sptr() const
+MinimalInterfileHeader::get_exam_info_sptr() const
 {
   return exam_info_sptr;
 }
 
-InterfileHeader::InterfileHeader()
-     : KeyParser()
+MinimalInterfileHeader::MinimalInterfileHeader()
+  : KeyParser()
 {
   exam_info_sptr.reset(new ExamInfo);
+  // need to default to PET for backwards compatibility
+  this->exam_info_sptr->imaging_modality = ImagingModality::PT;
 
+  add_start_key("INTERFILE");
+  add_key("imaging modality",
+    KeyArgument::ASCII, (KeywordProcessor)&InterfileHeader::set_imaging_modality,
+    &imaging_modality_as_string);
+
+  add_key("version of keys", &version_of_keys);
+
+  // support for siemens interfile
+  add_key("%sms-mi version number",
+    KeyArgument::ASCII, &siemens_mi_version);
+  add_stop_key("END OF INTERFILE");
+}
+
+
+
+void MinimalInterfileHeader::set_imaging_modality()
+{
+  set_variable();
+  this->exam_info_sptr->imaging_modality = ImagingModality(imaging_modality_as_string);
+}
+
+InterfileHeader::InterfileHeader()
+  : MinimalInterfileHeader()
+{
   number_format_values.push_back("bit");
   number_format_values.push_back("ascii");
   number_format_values.push_back("signed integer");
@@ -111,8 +137,6 @@ InterfileHeader::InterfileHeader()
   // KT 02/11/98 set default for correct variable
   byte_order_index = 1;//  file_byte_order = ByteOrder::big_endian;
 
-  // need to default to PET for backwards compatibility
-  this->exam_info_sptr->imaging_modality = ImagingModality::PT;
   type_of_data_index = 6; // PET
   PET_data_type_index = 5; // Image
   patient_orientation_index = 3; //unknown
@@ -130,15 +154,9 @@ InterfileHeader::InterfileHeader()
   data_offset_each_dataset.resize(num_time_frames, 0UL);
 
   data_offset = 0UL;
+  lower_en_window_thres = -1.f;
+  upper_en_window_thres = -1.f;
 
-  add_key("INTERFILE", 
-    KeyArgument::NONE,	&KeyParser::start_parsing);
-  add_key("imaging modality",
-          KeyArgument::ASCII, (KeywordProcessor)&InterfileHeader::set_imaging_modality,
-          &imaging_modality_as_string);
-
-  add_key("version of keys", &version_of_keys);
- 
   add_key("name of data file", 
     KeyArgument::ASCII,	&data_file_name);
   add_key("originating system",
@@ -206,8 +224,11 @@ InterfileHeader::InterfileHeader()
   add_key("quantification units",
     KeyArgument::DOUBLE, &lln_quantification_units);
 
-  add_key("END OF INTERFILE", 
-    KeyArgument::NONE,	&KeyParser::stop_parsing);
+  add_key("energy window lower level",
+         KeyArgument::FLOAT, &lower_en_window_thres);
+
+  add_key("energy window upper level",
+         KeyArgument::FLOAT, &upper_en_window_thres);
 }
 
 
@@ -319,19 +340,17 @@ bool InterfileHeader::post_processing()
                lln_quantification_units);
     }      
   } // lln_quantification_units
-
+    if (upper_en_window_thres > 0 && lower_en_window_thres > 0 )
+    {
+  exam_info_sptr->set_high_energy_thres(upper_en_window_thres);
+  exam_info_sptr->set_low_energy_thres(lower_en_window_thres);
+    }
 
   exam_info_sptr->time_frame_definitions = 
     TimeFrameDefinitions(image_relative_start_times, image_durations);
 
   return false;
 
-}
-
-void InterfileHeader::set_imaging_modality()
-{
-  set_variable();
-  this->exam_info_sptr->imaging_modality = ImagingModality(imaging_modality_as_string);
 }
 
 void InterfileHeader::read_matrix_info()
@@ -538,6 +557,12 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   num_detector_layers = 1;
   add_key("number of detector layers",
 	  &num_detector_layers);
+  energy_resolution = -1.f;
+  add_key("Energy resolution",
+          &energy_resolution);
+  reference_energy = -1.f;
+  add_key("Reference energy (in keV)",
+          &reference_energy);
 
   add_key("end scanner parameters",
 	  KeyArgument::NONE,	&KeyParser::do_nothing);
@@ -1028,6 +1053,10 @@ bool InterfilePDFSHeader::post_processing()
         guessed_scanner_ptr->get_num_transaxial_crystals_per_singles_unit();
     if (num_detector_layers<=0)
       num_detector_layers = guessed_scanner_ptr->get_num_detector_layers();
+    if (energy_resolution < 0)
+        energy_resolution = guessed_scanner_ptr->get_energy_resolution();
+    if (reference_energy < 0)
+        reference_energy = guessed_scanner_ptr->get_reference_energy();
     
     // consistency check with values of the guessed_scanner_ptr we guessed above
 
@@ -1139,6 +1168,31 @@ bool InterfilePDFSHeader::post_processing()
 		num_detector_layers, guessed_scanner_ptr->get_num_detector_layers());
 	mismatch_between_header_and_guess = true;
       }
+    //
+    // 06/16: N.E: Currently, the energy resolution and the reference energy, are used only in the
+    // scatter correction. Therefore a waring is displayed but they don't trigger
+    // a mismatch. I assume that the user will handle this. This is in accordance with the
+    // scanner '==' operator, which displays a warning message for these two parameters
+    // but continues as usual.
+    if (energy_resolution > 0)
+    {
+    if (energy_resolution != guessed_scanner_ptr->get_energy_resolution())
+      {
+    warning("Interfile warning: 'energy resolution' (%d) is expected to be %d. "
+            "Currently, the energy resolution and the reference energy, are used only in"
+            " scatter correction.",
+        energy_resolution, guessed_scanner_ptr->get_energy_resolution());
+//    mismatch_between_header_and_guess = true;
+      }
+    if (reference_energy != guessed_scanner_ptr->get_reference_energy())
+      {
+    warning("Interfile warning: 'reference energy' (%d) is expected to be %d."
+            "Currently, the energy resolution and the reference energy, are used only in"
+            " scatter correction.",
+        reference_energy, guessed_scanner_ptr->get_reference_energy());
+//    mismatch_between_header_and_guess = true;
+      }
+    }
 
     // end of checks. If they failed, we ignore the guess
     if (mismatch_between_header_and_guess)
@@ -1200,7 +1254,9 @@ bool InterfilePDFSHeader::post_processing()
 		num_transaxial_crystals_per_block,
 		num_axial_crystals_per_singles_unit,
                 num_transaxial_crystals_per_singles_unit,
-                num_detector_layers));
+                num_detector_layers,
+                energy_resolution,
+                reference_energy));
 
   bool is_consistent =
     scanner_ptr_from_file->check_consistency() == Succeeded::yes;

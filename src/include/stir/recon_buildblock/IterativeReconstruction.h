@@ -238,6 +238,12 @@ public:
 
   //! subiteration interval at which to report the values of the objective function
   void set_report_objective_function_values_interval(const int);
+
+  //!
+  //! \brief set_input_data
+  //! \author Nikos Efthimiou
+  void set_input_data(const shared_ptr<ExamData>& arg);
+
   //@}
 
 protected:

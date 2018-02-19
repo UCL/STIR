@@ -25,8 +25,6 @@
 
 */
 
-#ifdef HAVE_LLN_MATRIX
-
 #include "local/stir/IO/ECAT7DynamicDiscretisedDensityOutputFileFormat.h"
 #include "local/stir/DynamicDiscretisedDensity.h"
 #include "stir/NumericType.h"
@@ -140,5 +138,3 @@ ECAT7DynamicDiscretisedDensityOutputFileFormat::
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 END_NAMESPACE_STIR
-
-#endif // #ifdef HAVE_LLN_MATRIX

@@ -1,0 +1,40 @@
+#  *********************************************************************
+#  * 																   *
+#  * Copyright (C) 2016, UCL										   *
+#  * This file is part of STIR.										   *
+#  * DISCLAIMER                                                        *
+#  *                                                                   *
+#  * This file is free software; you can redistribute it and/or modify *
+#  * it under the terms of the GNU Lesser General Public License as    *
+#  * published by the Free Software Foundation; either version  2.1 of *
+#  * the License, or (at your option) any later version.			   *
+#  *    															   *
+#  *  This file is distributed in the hope that it will be useful,     *
+#  *  but WITHOUT ANY WARRANTY; without even the implied warranty of   *
+#  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the    *
+#  *  GNU Lesser General Public License for more details.              *
+#  *********************************************************************
+#
+#  This macro has been created by
+#  Nikos Efthimiou
+#
+#  This script produces an output for a simple 4-ring PET Scanner. 
+#  Output from this macro is used in the recon_test_pack in STIR. 
+#  01 October 2016
+#
+
+#	D I G I T I Z E R 
+/gate/digitizer/Singles/insert adder
+/gate/digitizer/Singles/insert readout
+/gate/digitizer/Singles/readout/setDepth 1
+/gate/digitizer/Singles/insert blurring
+/gate/digitizer/Singles/blurring/setResolution 0.25
+/gate/digitizer/Singles/blurring/setEnergyOfReference 511. keV
+/gate/digitizer/Singles/insert thresholder
+/gate/digitizer/Singles/thresholder/setThreshold 450. keV
+/gate/digitizer/Singles/insert upholder
+/gate/digitizer/Singles/upholder/setUphold 650. keV
+
+#	C O I N C I    S O R T E R 
+/gate/digitizer/Coincidences/setWindow 120. ns
+/gate/digitizer/Coincidences/MultiplesPolicy  takeWinnerOfGoods

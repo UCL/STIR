@@ -1,0 +1,15 @@
+PostFilteringParameters :=
+  Postfilter type :=  Separable Cartesian Metz
+Separable Cartesian Metz Filter Parameters :=
+x-dir filter FWHM (in mm):= ${FWHMxy}
+y-dir filter FWHM (in mm):= ${FWHMxy}
+z-dir filter FWHM (in mm):= ${FWHMz}
+x-dir filter Metz power:= 0
+y-dir filter Metz power:= 0
+z-dir filter Metz power:=0
+; optionally restrict kernel sizes
+; x-dir maximum kernel size := 129
+; y-dir maximum kernel size := 129
+; z-dir maximum kernel size := 31
+END Separable Cartesian Metz Filter Parameters :=
+End PostFiltering Parameters:=

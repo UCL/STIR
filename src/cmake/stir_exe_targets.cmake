@@ -21,10 +21,44 @@
 # set dir_EXE_SOURCES to a list of executables that need to
 # be compiled and installed
 
+#
+# NIKOS EFTHIMIOU
+# The following code has been modified in order to display .h and .inl files in Qt-Creator
+# The MACRO is an adaptation from https://cmake.org/pipermail/cmake/2012-June/050674.html
+#
+
+set(HEADER_DIR "${PROJECT_SOURCE_DIR}/src/include/stir")
+
+MACRO(HEADER_DIRECTORIES return_h_list return_i_list)
+    FILE(GLOB_RECURSE new_list "${HEADER_DIR}")
+    FILE(GLOB_RECURSE h_list "${HEADER_DIR}/*.h")
+    FILE(GLOB_RECURSE i_list "${HEADER_DIR}/*.inl")
+
+    SET(dir_list "")
+    FOREACH(file_path ${new_list})
+        GET_FILENAME_COMPONENT(dir_path ${file_path} PATH)
+        SET(dir_list ${dir_list} ${dir_path})
+        FILE(GLOB_RECURSE h_list "${dir_path}/*.h")
+        FILE(GLOB_RECURSE i_list "${dir_path}/*.inl")
+    ENDFOREACH()
+
+    LIST(REMOVE_DUPLICATES h_list)
+    LIST(REMOVE_DUPLICATES i_list)
+
+    SET(${return_h_list} ${h_list})
+    SET(${return_i_list} ${i_list})
+ENDMACRO()
+
+HEADER_DIRECTORIES(ALL_HEADERS ALL_INLINES)
+
 foreach(executable ${${dir_EXE_SOURCES}})
-   add_executable(${executable} ${executable} ${STIR_REGISTRIES})
+ if(BUILD_EXECUTABLES)
+   add_executable(${executable} ${ALL_HEADERS} ${ALL_INLINES} ${executable} ${STIR_REGISTRIES})
    target_link_libraries(${executable} ${STIR_LIBRARIES})
    SET_PROPERTY(TARGET ${executable} PROPERTY FOLDER "Executables")
+  endif()
 endforeach()
 
-install(TARGETS ${${dir_EXE_SOURCES}} DESTINATION bin)
+if(BUILD_EXECUTABLES)
+ install(TARGETS ${${dir_EXE_SOURCES}} DESTINATION bin)
+endif()

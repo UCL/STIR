@@ -1,6 +1,7 @@
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
 # Copyright 2011-07-01 - 2012 Kris Thielemans
-# Copyright 2013 University College London
+# Copyright 2016 ETH Zurich
+# Copyright 2013, 2014, 2016, 2017 University College London
 
 # This file is part of STIR.
 #
@@ -18,59 +19,41 @@
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
 
-INCLUDE(${CMAKE_ROOT}/Modules/CheckFunctionExists.cmake)
-
 option(STIR_MPI 
        "Compile with MPI" OFF)
 option(STIR_OPENMP 
        "Compile with OpenMP" OFF)
 
+option(BUILD_TESTING 
+       "Build test programs" ON)
+
+option(BUILD_EXECUTABLES
+       "Build executables" ON)
+
 option(BUILD_SHARED_LIBS 
        "Use shared libraries" OFF)
 
-#### we need the boost library from boost.org
-set(BOOST_ROOT CACHE PATH "root of Boost")
-find_package( Boost 1.36.0 REQUIRED )
-include_directories(${Boost_INCLUDE_DIRS})
-
-#### optional external libraries. 
-# Listed here such that we know if we should compile extra utilities
-option(DISABLE_LLN_MATRIX "disable use of LLN library" OFF)
-option(DISABLE_ITK "disable use of ITK library" OFF)
-option(DISABLE_AVW "disable use of AVW library" OFF)
-option(DISABLE_RDF "disable use of GE RDF library" OFF)
-option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
-
-if(NOT DISABLE_ITK)
-   # See if we can find a compiled version of ITK (http://www.itk.org/)
-   find_package(ITK QUIET)
-endif()
-
-if(NOT DISABLE_LLN_MATRIX)
-  find_package(LLN)
-endif()
-
-if(NOT DISABLE_AVW)
-  find_package(AVW)
-endif()
-
-if(NOT DISABLE_RDF)
-  find_package(RDF)
-endif()
+### Settings for external libraries
 
 if (LLN_FOUND)
   set(HAVE_ECAT ON)
   message(STATUS "ECAT support enabled.")
-  add_definitions(-D HAVE_LLN_MATRIX)
   include_directories(${LLN_INCLUDE_DIRS})
-
 else()
   message(STATUS "ECAT support disabled.")
 endif()
 
+if (CERN_ROOT_FOUND)
+        set(HAVE_CERN_ROOT ON)
+        message(STATUS "CERN ROOT support enabled.")
+        include_directories(${CERN_ROOT_INCLUDE_DIRS})
+else()
+    message(STATUS "CERN ROOT support disabled.")
+endif()
+
 if (AVW_FOUND)
+  set(HAVE_AVW ON)
   message(STATUS "AVW library IO added.")
-  add_definitions(-D HAVE_AVW)
   include_directories(${AVW_INCLUDE_DIRS})
 else()
   message(STATUS "AVW IO library not used.")
@@ -79,7 +62,6 @@ endif()
 if (RDF_FOUND)
   set(HAVE_RDF ON)
   message(STATUS "GE RDF support enabled.")
-  add_definitions(-D HAVE_RDF -D STIR_USE_GE_IO)
   include_directories(${RDF_INCLUDE_DIRS})
 
 else()
@@ -90,7 +72,6 @@ endif()
 if (ITK_FOUND) 
   message(STATUS "ITK libraries added.")
   set(HAVE_ITK ON)
-  add_definitions(-DHAVE_ITK)
   include(${ITK_USE_FILE})
 else()
   message(STATUS "ITK support disabled.")
@@ -130,20 +111,7 @@ endif()
 option(STIR_DEFAULT_PROJECTOR_AS_V2
        "Use same default projectors as STIR 1.x and 2.x (not recommended)" OFF)
 #mark_as_advanced(STIR_DEFAULT_PROJECTOR_AS_VERSION_2)
-
-if (STIR_DEFAULT_PROJECTOR_AS_V2)
- # nothing
-else()
-  add_definitions(-D USE_PMRT)
-endif()
-
-#### Flags for compatibility between different systems
-
-check_function_exists(getopt HAVE_SYSTEM_GETOPT)
-if (HAVE_SYSTEM_GETOPT)
-  add_definitions(-D HAVE_SYSTEM_GETOPT)
-  # buildblock will have a replacement for it as long as you include stir/getopt.h
-endif()
+# With default setting, this will #define USE_PMRT (see STIRConfig.h.in)
 
 #### Compiler specific flags for fastest execution etc
 
@@ -164,7 +132,7 @@ if (STIR_MPI)
   find_package(MPI REQUIRED)
   include_directories(${MPI_CXX_INCLUDE_PATH})  
   # we add MPI_CXX_COMPILE_FLAGS for all files
-  add_definitions(${MPI_CXX_COMPILE_FLAGS} -DMPICH_IGNORE_CXX_SEEK -DSTIR_MPI)
+  add_definitions(${MPI_CXX_COMPILE_FLAGS} -DMPICH_IGNORE_CXX_SEEK)
   # However, currently we decide to add  MPI_CXX_LINK_FLAGS only to those programs that need it,
   # just in case these flags would make normal executables unexecutable without mpi-specific things
   option(STIR_MPI_TIMINGS "Enable timings for MPI code" OFF)
@@ -175,14 +143,69 @@ endif()
 
 if(STIR_OPENMP)
   find_package(OpenMP REQUIRED)  
-  add_definitions(${OpenMP_CXX_FLAGS} -DSTIR_OPENMP)
-  if ("${OpenMP_C_FLAGS}" STREQUAL "-fopenmp")
-    # work-around cmake bug for gcc
-    set (OpenMP_EXE_LINKER_FLAGS ${OpenMP_C_FLAGS})
-  endif ()
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-
+  add_definitions(${OpenMP_CXX_FLAGS})
+  # need to explicitly set his. Definitely for gcc, hopefully also for other systems.
+  # See https://gitlab.kitware.com/cmake/cmake/issues/15392
+  set (OpenMP_EXE_LINKER_FLAGS ${OpenMP_CXX_FLAGS})
 endif()
+
+#### Flags for compatibility between different systems
+include(CheckFunctionExists)
+
+check_function_exists(getopt HAVE_SYSTEM_GETOPT)
+# always include stir/getopt.h for where a system getopt does not exist.
+# we provide a replacement in buildblock
+
+# Check for CXX11 smart pointer support.
+# This is far more complicated than it should be, largely because we want to support
+# older compilers (some claim to be C++-11 but are do not have std::unique_ptr for instance).
+# So, we will check BOOST_NO_CXX11_SMART_PTR using check_cxx_symbol_exists.
+# However, we need to do that with the same compilers flags as used for STIR.
+#
+# Sadly, older versions of CMake failed to take CMAKE_CXX_STANDARD into account, so
+# we have to do this ourselves.
+# Finally, we need to cope with the case where a user passes -std=cxx11 by hand to CMAKE_CXX_FLAGS.
+set(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_CXX_FLAGS})
+if (CMAKE_VERSION VERSION_LESS 3.8)
+  if (CMAKE_CXX_STANDARD)
+    set(CMAKE_REQUIRED_DEFINITIONS -std=cxx${CMAKE_CXX_STANDARD} ${CMAKE_REQUIRED_DEFINITIONS})
+  endif()
+else()
+  # set policy 0067 to let try_compile honor CMAKE_CXX_STANDARD etc
+  # Note: need to set this before including CheckCXXSymbolExists
+  cmake_policy(SET CMP0067 NEW)
+endif()
+set(CMAKE_REQUIRED_INCLUDES ${Boost_INCLUDE_DIRS})
+#set(CMAKE_REQUIRED_QUIET FALSE)
+include(CheckCXXSymbolExists)
+# Finally, do the check!
+check_cxx_symbol_exists(BOOST_NO_CXX11_SMART_PTR boost/config.hpp HAVE_NO_CXX11_SMART_PTR)
+
+# Now we introduce 2 options such that the user can override the default behaviour
+# (not recommended! unless the above failed of course)
+option(STIR_NO_UNIQUE_PTR
+       "Disable use of std::unique_ptr" ${HAVE_NO_CXX11_SMART_PTR})
+option(STIR_USE_BOOST_SHARED_PTR
+       "Use of boost::shared_ptr as opposed to std::shared_ptr" ${HAVE_NO_CXX11_SMART_PTR})
+mark_as_advanced(STIR_NO_UNIQUE_PTR STIR_USE_BOOST_SHARED_PTR)
+
+#### Create stir/config.h
+
+# This has to be written where we build somewhere. We will put it somewhere "natural"
+# (even though there are no other include files there).
+set(CONF_INCLUDE_DIR "${CMAKE_BINARY_DIR}/src/include")
+# add it to the include path
+include_directories("${CONF_INCLUDE_DIR}")
+# create file
+configure_file(
+  cmake/STIRConfig.h.in
+  "${CONF_INCLUDE_DIR}/stir/config.h"
+  )
+# add it to the install target
+install(FILES "${CONF_INCLUDE_DIR}/stir/config.h" DESTINATION include/stir)
+
+#### install include files
+install(DIRECTORY "${PROJECT_SOURCE_DIR}/src/include/" DESTINATION include)
 
 #### STIR library
 include(stir_dirs)
@@ -207,12 +230,35 @@ endforeach(STIR_DIR)
 #### SWIG settings
 ADD_SUBDIRECTORY(swig)
 
-#### Export settings such that another project can import them.
-# Disabled as no longer deemed safe
-# Save the compiler settings 
-#INCLUDE(${CMAKE_ROOT}/Modules/CMakeExportBuildSettings.cmake)
-#CMAKE_EXPORT_BUILD_SETTINGS(${STIR_BINARY_DIR}/STIRBuildSettings.cmake)
+## CMake variables to build doxygen documentation
+## Create html documentation using Doxygen
+## Has to be at the end such that all variables are filled
+find_package(Doxygen)
+option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
+if(BUILD_DOCUMENTATION)
+    if(NOT DOXYGEN_FOUND)
+        message(FATAL_ERROR "Doxygen is needed to build the documentation.")
+    endif()
 
-# Save library dependencies.
-#EXPORT_LIBRARY_DEPENDENCIES(${STIR_BINARY_DIR}/STIRLibraryDepends.cmake)
+    if(NOT DOXYGEN_DOT_FOUND)
+    	message(FATAL_ERROR "Dot is needed for the Doxygen documentation to be generated.")
+    endif()
+
+    set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
+    set(doxyfile ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+    get_property(DOX_STRIP_FROM_INC_PATH DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+    string(REPLACE ";" " \\\n\t\t\t\t" DOX_STRIP_FROM_INC_PATH "${DOX_STRIP_FROM_INC_PATH}")
+
+    configure_file(${doxyfile_in} ${doxyfile} @ONLY)
+
+    add_custom_target(doc
+        COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM)
+
+#    install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION share/doc/stir)
+endif()
+
 

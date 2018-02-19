@@ -36,8 +36,11 @@ START_NAMESPACE_STIR
   \brief a class for storing information about 1 exam (or scan)
   \ingroup buildblock
   \todo this is very incomplete at the moment. Things like bed positions, gating, isotopes etc etc are all missing
+
+  \todo This should be an abtract registered object, in oreder to serve as a complete
+  base function for every input data type.
   */
-class ExamInfo  
+class ExamInfo
 {
 
 public :
@@ -50,7 +53,10 @@ public :
 
   ExamInfo()
     : start_time_in_secs_since_1970(0.)
-    {}
+    {
+      low_energy_thres = -1.f;
+      up_energy_thres = -1.f;
+  }
 
   std::string originating_system;
   
@@ -62,13 +68,48 @@ public :
 
   double start_time_in_secs_since_1970;
 
+  //! \name Functions that return info related on the acquisition settings
+  //@{
+  //! Get the low energy boundary
+  inline float get_low_energy_thres() const;
+  //! Get the high energy boundary
+  inline float get_high_energy_thres() const;
+  //@}
+
+  //! \name Functions that set values related on the acquisition settings
+  //@{
+  //! Set the low energy boundary
+  inline void set_low_energy_thres(float new_val);
+  //! Set the high energy boundary
+  inline void set_high_energy_thres(float new_val);
+  //@}
 
   void set_time_frame_definitions(const TimeFrameDefinitions& new_time_frame_definitions)
     {
       time_frame_definitions = new_time_frame_definitions;
     }
+  private:
+     //!
+  //! \brief low_energy_thres
+  //! \author Nikos Efthimiou
+  //! \details This is the value of low energy threshold of the energy window.
+  //! The units are keV
+  //! This parameter was initially introduced for scatter simulation.
+  //! If scatter simulation is not needed, can default to -1
+  float low_energy_thres;
+
+  //!
+  //! \brief up_energy_thres
+  //! \author Nikos Efthimiou
+  //! \details This is the value of high energy threshold of the energy window
+  //! The units are keV
+  //! This parameter was initially introduced for scatter simulation
+  //! If scatter simulation is not needed, can default to -1
+  float up_energy_thres;
 };
 
 END_NAMESPACE_STIR
+
+#include "stir/ExamInfo.inl"
 
 #endif // __stir_ExamInfo_H__

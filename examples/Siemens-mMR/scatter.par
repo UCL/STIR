@@ -1,0 +1,21 @@
+Scatter Estimation Parameters:=
+
+attenuation_threshold :=.01
+random :=1
+use_cache :=1
+; parameters appropriate for mMR?
+energy_resolution :=.14
+lower_energy_threshold :=430
+upper_energy_threshold :=610
+
+activity_image_filename := ${ACTIVITY_IMAGE}
+density_image_filename := ${DENSITY_IMAGE}
+density_image_for_scatter_points_filename := ${DENSITY_IMAGE}
+template_proj_data_filename :=  ${TEMPLATE}
+
+; output filename without extension
+; files will be called "out".hs and "out".log
+output_filename_prefix :=${OUTPUT_PREFIX}
+
+
+End Scatter Estimation Parameters:=

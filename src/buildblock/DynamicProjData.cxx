@@ -67,8 +67,8 @@ set_start_time_in_secs_since_1970(const double start_time)
 { 
   // reset local pointer to a new one (with the same info) to avoid changing
   // other objects that happen to use the same shared_ptr
-  this->_exam_info_sptr.reset(new ExamInfo(*this->_exam_info_sptr));
-  this->_exam_info_sptr->start_time_in_secs_since_1970=start_time; 
+  this->exam_info_sptr.reset(new ExamInfo(*this->exam_info_sptr));
+  this->exam_info_sptr->start_time_in_secs_since_1970=start_time;
 }
 
 void
@@ -77,14 +77,14 @@ set_time_frame_definitions(const TimeFrameDefinitions& time_frame_definitions)
 { 
   // reset local pointer to a new one (with the same info) to avoid changing
   // other objects that happen to use the same shared_ptr
-  this->_exam_info_sptr.reset(new ExamInfo(*this->_exam_info_sptr));
-  this->_exam_info_sptr->time_frame_definitions=time_frame_definitions; 
+  this->exam_info_sptr.reset(new ExamInfo(*this->exam_info_sptr));
+  this->exam_info_sptr->time_frame_definitions=time_frame_definitions;
 }
 
 const TimeFrameDefinitions& 
 DynamicProjData::
 get_time_frame_definitions() const
-{   return this->_exam_info_sptr->time_frame_definitions;    }
+{   return this->exam_info_sptr->time_frame_definitions;    }
 
 DynamicProjData*
 DynamicProjData::

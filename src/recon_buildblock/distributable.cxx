@@ -58,12 +58,12 @@
 #include "stir/info.h"
 #include <boost/format.hpp>
 #include <algorithm>
-//#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
 
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributableMPICacheEnabled.h"
 #include "stir/recon_buildblock/distributed_functions.h"
 #include "stir/recon_buildblock/distributed_test_functions.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
 #endif
 #ifdef STIR_OPENMP
 #  ifdef STIR_MPI
@@ -176,7 +176,7 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
                    const ViewSegmentNumbers& view_segment_num
                    )
 {
-  if (!is_null_ptr(binwise_correction)) 
+  if (!is_null_ptr(binwise_correction))
     {
 #ifdef STIR_OPENMP
 #pragma omp critical(ADDSINO)
@@ -189,7 +189,7 @@ void get_viewgrams(shared_ptr<RelatedViewgrams<float> >& y,
       RelatedViewgrams<float> tmp(binwise_correction->
                                   get_related_viewgrams(view_segment_num, symmetries_ptr));
       additive_binwise_correction_viewgrams.reset(new RelatedViewgrams<float>(tmp));
-#endif      
+#endif
     }
                         
   if (read_from_proj_dat)
@@ -304,6 +304,8 @@ void distributable_computation(
     task_id=task_do_distributable_loglikelihood_computation;
   else if (RPC_process_related_viewgrams == &RPC_process_related_viewgrams_gradient)
     task_id=task_do_distributable_gradient_computation;
+  else if (RPC_process_related_viewgrams == &RPC_process_related_viewgrams_sensitivity_computation)
+    task_id=task_do_distributable_sensitivity_computation;
       /* else if (RPC_process_related_viewgrams == &
 	case 
 	task_id=task_do_distributable_sensitivity_computation;break;
@@ -311,6 +313,7 @@ void distributable_computation(
   else
     {
       error("distributable_computation: unknown RPC task");
+      task_id = 0; // avoid compiler warning about "possibly unitialised" when using it
     }
 
   distributed::send_int_value(task_id, -1);
@@ -525,7 +528,7 @@ void distributable_computation(
     while(working_slaves_count>0)
       {
         int int_values[2];
-        const MPI_Status status=distributed::receive_int_values(int_values, 2, AVAILABLE_NOTIFICATION_TAG);
+        distributed::receive_int_values(int_values, 2, AVAILABLE_NOTIFICATION_TAG);
         working_slaves_count--;
             
         //reduce count values

@@ -1,0 +1,10 @@
+lm_fansums Parameters:=
+input file := test.hlm
+frame definition file := frames.fdef
+output filename prefix := fansums        
+tangential fan size := -1
+maximum absolute segment number to process := 
+store 'prompts' := 1
+increment to use for 'delayeds' := 0
+list event coordinates := 0
+end:=

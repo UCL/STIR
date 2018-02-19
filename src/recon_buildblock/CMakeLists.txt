@@ -84,6 +84,11 @@ if (HAVE_ECAT)
  )
 endif()
 
+# ECAT8 doesn't need the LLN matrix library
+list(APPEND ${dir_LIB_SOURCES}
+	BinNormalisationFromECAT8
+)
+
 if(STIR_MPI)
 set(${dir_LIB_SOURCES}
      ${${dir_LIB_SOURCES}}
@@ -100,6 +105,10 @@ include(stir_lib_target)
 
 if (STIR_MPI)
   target_link_libraries(recon_buildblock ${MPI_CXX_LIBRARIES})
+endif()
+
+if (STIR_OPENMP)
+  target_link_libraries(recon_buildblock ${OpenMP_EXE_LINKER_FLAGS})
 endif()
 
 # TODO what to do with IO?
