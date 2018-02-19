@@ -337,7 +337,7 @@ PLSPrior<elemT>::compute_normalisation_anatomical_gradient(DiscretisedDensity<3,
 
                     for (int x=min_x;x<= max_x;x++)
                     {
-                        if(only_2D==1){
+                        if(only_2D){
                      norm_im_grad[z][y][x]   = sqrt (square(image_grad_y[z][y][x]) + square(image_grad_x[z][y][x]) + square(this->eta));}
                         else{
                             norm_im_grad[z][y][x]   = sqrt (square(image_grad_z[z][y][x]) + square(image_grad_y[z][y][x]) +
@@ -362,7 +362,7 @@ compute_inner_product_and_penalty(DiscretisedDensity<3,elemT> &inner_product,
 
 
 
-    if(only_2D==0)
+    if(!only_2D)
     compute_image_gradient_element (pet_im_grad_z,0,pet_image);
 
     compute_image_gradient_element (pet_im_grad_y,1,pet_image);
@@ -391,7 +391,7 @@ compute_inner_product_and_penalty(DiscretisedDensity<3,elemT> &inner_product,
 
                     for (int x=min_x;x<= max_x;x++)
                     {
-                        if(only_2D==1){
+                        if(only_2D){
                             inner_product[z][y][x]   = ((pet_im_grad_y[z][y][x]*(*anatomical_grad_y_sptr)[z][y][x]/(*get_norm_sptr())[z][y][x]) +
                                                         (pet_im_grad_x[z][y][x]*(*anatomical_grad_x_sptr)[z][y][x]/(*get_norm_sptr())[z][y][x]));
 
@@ -429,7 +429,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
     error("The anatomical image must have the same charateristics as the PET image");
 
   shared_ptr<DiscretisedDensity<3,elemT> > pet_im_grad_z_sptr;
-  if(only_2D==0)
+  if(!only_2D)
   pet_im_grad_z_sptr.reset(this->anatomical_sptr->get_empty_copy ());
 
   shared_ptr<DiscretisedDensity<3,elemT> > pet_im_grad_y_sptr(this->anatomical_sptr->get_empty_copy ());
@@ -508,7 +508,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
   shared_ptr<DiscretisedDensity<3,elemT> > pet_im_grad_z_sptr;
   shared_ptr<DiscretisedDensity<3,elemT> > gradientz_sptr;
 
-  if(only_2D==0){
+  if(!only_2D){
   pet_im_grad_z_sptr.reset(this->anatomical_sptr->get_empty_copy ());
   gradientz_sptr.reset(this->anatomical_sptr->get_empty_copy ());
   }
@@ -554,7 +554,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
           for (int x=min_x;x<= max_x;x++)
             {
 
-              if(x+1>max_x || y+1>max_y ||(z+1>max_z && only_2D==0))
+              if(x+1>max_x || y+1>max_y ||(z+1>max_z && !only_2D))
                   continue;
 
                 /* formula:
@@ -563,7 +563,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                    (*kappa_ptr)[z][y][x] /penalty[z][y][x];
                 */
 
-              if(only_2D==1){
+              if(only_2D){
                   (*gradientx_sptr)[z][y][x+1] =
                      (((*pet_im_grad_x_sptr)[z][y][x+1]-(*anatomical_grad_x_sptr)[z][y][x+1]*(*inner_product_sptr)[z][y][x+1]/
                           (*get_norm_sptr ())[z][y][x+1])/(*penalty_sptr)[z][y][x+1] -
@@ -613,7 +613,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
 
           for (int x=min_x;x<= max_x;x++)
             {
-              if(only_2D==1){
+              if(only_2D){
 
               (*gradient_sptr)[z][y][x] = -((*gradienty_sptr)[z][y][x] + (*gradientx_sptr)[z][y][x]);
 
