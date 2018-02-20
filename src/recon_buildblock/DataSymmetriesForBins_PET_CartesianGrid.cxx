@@ -198,7 +198,6 @@ DataSymmetriesForBins_PET_CartesianGrid
   //PW Disabling some symmetries due to phi offset.
   if (fabs(proj_data_info_ptr->get_phi(Bin(0,0,0,0)))>1.E-4F)
   {
-
        warning("Disabling symmetries as image is rotated due to phi offset of the scanner.");
        do_symmetry_90degrees_min_phi = false;
        do_symmetry_180degrees_min_phi = false;
