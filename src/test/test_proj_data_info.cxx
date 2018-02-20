@@ -108,12 +108,12 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
   int max_diff_view_num=0;
   int max_diff_axial_pos_num=0;
   int max_diff_tangential_pos_num=0;
-#ifdef STIR_OPENMP
-#pragma omp parallel for schedule(dynamic)
-#endif
   float view_offset=proj_data_info.get_scanner_ptr()->get_default_intrinsic_tilt();
   if (view_offset==0)
   {
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(dynamic)
+#endif
   for (int segment_num=proj_data_info.get_min_segment_num();
        segment_num<=proj_data_info.get_max_segment_num();
 	 ++segment_num)
@@ -152,8 +152,7 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 		    {
 		      const Bin new_bin = proj_data_info.get_bin(lor);
 #if 1
-
-              const int diff_segment_num =
+		      const int diff_segment_num =
 			intabs(org_bin.segment_num() - new_bin.segment_num());
 		      const int diff_view_num = 
 			intabs(org_bin.view_num() - new_bin.view_num());
@@ -172,11 +171,11 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 			  if (diff_tangential_pos_num>max_diff_tangential_pos_num)
 			    max_diff_tangential_pos_num=diff_tangential_pos_num;
 			}
-              if (!check(org_bin.get_bin_value() == new_bin.get_bin_value(), "round-trip get_LOR then get_bin: value") ||
-              !check(diff_segment_num<=0, "round-trip get_LOR then get_bin: segment") ||
-              !check(diff_view_num<=1, "round-trip get_LOR then get_bin: view") ||
-              !check(diff_axial_pos_num<=1, "round-trip get_LOR then get_bin: axial_pos") ||
-              !check(diff_tangential_pos_num<=1, "round-trip get_LOR then get_bin: tangential_pos"))
+		      if (!check(org_bin.get_bin_value() == new_bin.get_bin_value(), "round-trip get_LOR then get_bin: value") ||
+			  !check(diff_segment_num<=0, "round-trip get_LOR then get_bin: segment") ||
+			  !check(diff_view_num<=1, "round-trip get_LOR then get_bin: view") ||
+			  !check(diff_axial_pos_num<=1, "round-trip get_LOR then get_bin: axial_pos") ||
+			  !check(diff_tangential_pos_num<=1, "round-trip get_LOR then get_bin: tangential_pos"))
 
 #else
 		      if (!check(org_bin == new_bin, "round-trip get_LOR then get_bin"))
@@ -184,7 +183,7 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 			{
 			  cerr << "\tProblem at    segment = " << org_bin.segment_num() 
 			       << ", axial pos " << org_bin.axial_pos_num()
-                   << ", view = " << org_bin.view_num()
+			       << ", view = " << org_bin.view_num() 
 			       << ", tangential_pos_num = " << org_bin.tangential_pos_num() << "\n";
 			  if (new_bin.get_bin_value()>0)
 			    cerr << "\tround-trip to segment = " << new_bin.segment_num() 
@@ -219,11 +218,11 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 			  if (diff_tangential_pos_num>max_diff_tangential_pos_num)
 			    max_diff_tangential_pos_num=diff_tangential_pos_num;
 			}
-              if (!check(org_bin.get_bin_value() == new_bin.get_bin_value(), "round-trip get_LOR then get_bin (LORAs2Points): value") ||
-              !check(diff_segment_num<=0, "round-trip get_LOR then get_bin (LORAs2Points): segment") ||
-              !check(diff_view_num<=1, "round-trip get_LOR then get_bin (LORAs2Points): view") ||
-              !check(diff_axial_pos_num<=1, "round-trip get_LOR then get_bin (LORAs2Points): axial_pos") ||
-              !check(diff_tangential_pos_num<=1, "round-trip get_LOR then get_bin (LORAs2Points): tangential_pos"))
+		      if (!check(org_bin.get_bin_value() == new_bin.get_bin_value(), "round-trip get_LOR then get_bin (LORAs2Points): value") ||
+			  !check(diff_segment_num<=0, "round-trip get_LOR then get_bin (LORAs2Points): segment") ||
+			  !check(diff_view_num<=1, "round-trip get_LOR then get_bin (LORAs2Points): view") ||
+			  !check(diff_axial_pos_num<=1, "round-trip get_LOR then get_bin (LORAs2Points): axial_pos") ||
+			  !check(diff_tangential_pos_num<=1, "round-trip get_LOR then get_bin (LORAs2Points): tangential_pos"))
 			
 #else
 		      if (!check(org_bin == new_bin, "round-trip get_LOR then get_bin"))
@@ -248,11 +247,9 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
     cerr << "Max Deviation:  segment = " << max_diff_segment_num 
 	 << ", axial pos " << max_diff_axial_pos_num
 	 << ", view = " << max_diff_view_num 
-     << ", tangential_pos_num = " << max_diff_tangential_pos_num << "\n";
+	 << ", tangential_pos_num = " << max_diff_tangential_pos_num << "\n";
 }
-
 }
-
 
 /*!
   \ingroup test

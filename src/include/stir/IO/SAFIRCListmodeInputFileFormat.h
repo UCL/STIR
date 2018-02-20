@@ -92,7 +92,6 @@ public:
 		std::getline(par_file, key, ':');
 		key = standardise_interfile_keyword(key);
 		if( key != std::string("clistmodedatasafir parameters")) {
-			warning("SAFIRListModeInputFileFormat tried to read parameters from " + filename + "but it does not start with the correct key." );
 			return false;
 		}
 		if( !actual_do_parsing(filename) ) return false;

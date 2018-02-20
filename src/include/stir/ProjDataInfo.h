@@ -344,10 +344,10 @@ public:
   
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
-  //PW Shifted scanner_ptr from private to protected as it is being used in the derived class to accomodate for intrinsic tilt.
+//PW Shifted scanner_ptr from private to protected as it is being used in the derived class to accomodate for intrinsic tilt.
   shared_ptr<Scanner> scanner_ptr;
-private:
 
+private:
   int min_view_num;
   int max_view_num;
   int min_tangential_pos_num;
