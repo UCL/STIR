@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000- 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2018, Palak Wadhwa and University of Leeds
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

@@ -3,6 +3,7 @@
     Copyright (C) 2000-2003, Hammersmith Imanet Ltd
     Copyright (C) 2013, University College London
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
+    Copyright (C) 2018, Palak Wadhwa and University of Leeds
 
     This file is part of STIR.
 
