@@ -1,14 +1,15 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 3.1 (dated 20/10/2017)</title>
+    <title>Summary of changes in STIR release 3.1 (dated 31/12/2017)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 3.1 (dated 20/10/2017)</h1>
+    <h1>Summary of changes in STIR release 3.1 (dated 31/12/2017)</h1>
 
-<p>This version is 100% backwards compatible with STIR 3.0 for the user aside from minor changes 
-when using Python (see below). Developers might need to make minor code changes as 
+<p>This version is 95% backwards compatible with STIR 3.0 for the user aside from minor changes 
+when using Python/MATLAB and when changed image orientation when reading/writing images via ITK (see below).
+Developers might need to make minor code changes as 
 detailed below.
 </p>
 <h2>Overall summary</h2>
@@ -45,18 +46,19 @@ for Siemens scanners (warning: tested in Biograph mMR only at present).
 </p>
 
 <p>The build system now only uses CMake. We recommend to use CMake version 3.1 or later 
-on Linux/MacOSX and 3.9 or later on Windows, but we try to accomodate older versions of CMake.
+on Linux/MacOSX and 3.10.2 or later on Windows, but we try to accomodate older versions of CMake.
 </p>
     
+<p>We now support the parsing of SIEMENS Interfile files natively.</p>
+ 
 <p>Of course, there is also the usual code-cleanup and 
 improvements to the documentation.
 </p>
 
 <p>This release contains mainly code written by Kris Thielemans and Nikos Efthimiou (UCL),
-but with contributions by Jannis Fischer (ETH Zurich) and Elise Emond (UCL),
-and some code clean-up by David Volgyes. Various bits
+but with contributions by Jannis Fischer (ETH Zurich), Elise Emond (UCL), Edoardo Pasca (STFC) and some code clean-up by David Volgyes. Various bits
 were tested by (in alphabetical order, all UCL except where indicated):
-Ottavia Bertolli, Matthias Ehrhardt, Pawel Markiewicz, Richard Manber,
+Ottavia Bertolli, Matthias Ehrhardt, Pawel Markiewicz, Richard Manber, Alaleh Rashidnasab,
 Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
 </p>
 
@@ -93,7 +95,9 @@ These are only minimally documented at the present stage unfortunately.
 <li>We now include a shell script for easier scatter estimation.</li>
 <li><tt>list_lm_countrates</tt> is a new list mode utility to output total counts per specified time interval.</li>
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
-<li>add Verbosity level (currently only to be set from interactive languages)</li>
+<li>add Verbosity level (currently only to be set from interactive languages)</li
+<li>Added the anatomical parallel level sets (PLS) prior. If an uniform anatomical image is provided it will work as a (smoothed) total variation (TV) prior </li>
+======
 <li>New input: GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. </li>
 <li>New header file, with .hroot extension is provided for ROOT files </li>
 <li><code>CListModeData</code> got a new function <code>get_total_number_of_events()</code>, BUT currently only <code>CListModeDataFromROOT</code> supports it. </li> 
@@ -107,8 +111,21 @@ These are only minimally documented at the present stage unfortunately.
 
 
 <h3>Changed functionality</h3>
+
 View Offset Support enabled for the scanners with intrinsic tilt angle. 
 <p><strong>WARNING</strong>:For the scanners that have non-zero view-offset, images will now get rotated. Backward compatibility achieved by disabling the CMake View Offset option.</p>
+
+<ul>
+<li>
+  The <code>num_events_to_store</code> variable in <code>LmToProjData</code> has been upgraded to long int
+  allow processing of more events in list mode files.
+</li>
+<li>
+The orientation of images read/written via ITK has changed. It should now be correct if the patient
+was in HFS position. This is currently not checked (and for many file formats, never can be checked).
+</li>
+</ul>
+
 <h4>Python (and MATLAB) interface</h4>
 <ul>
 <li>
@@ -242,6 +259,7 @@ from the above):</H2>
 <ul>
 <li><code>write_to_file</code> is a new addition that makes it easier to write
 using the default output file format.</li>
+<li><code>FilePath</code> is a new addition that provides a thin cross-platform layer for file and folder operations. In addition to the features already found in utilities it can create new paths and perform checks on paths about accessibility and writting permissions.</li>
 <li>Added apply/undo methods to <code>BinNormalisation</code> to process whole <code>ProjData</code></li>
 <li>extra functionality for <code>ProjData</code>:
   <ul>
@@ -255,6 +273,8 @@ In order to ensure backwards compatibility, at the moment, it is completely opti
 <li><code>ExamData</code> is a new base class for <code>ProjData</code> and <code>CListModeData</code> </li>
 <li>Moved functions from the <code>poisson_noise</code> utility to a new class
   <code>GeneralisedPoissonNoiseGenerator</code>.
+  </li>
+ <li>Added the ability to <code>KeyParser</code> to parse <code>long int</code> numbers. 
   </li>
 </ul>
 
