@@ -42,9 +42,7 @@
 
 #include "stir/PostFiltering.h"
 #include "stir/stir_math.h"
-
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+#include "stir/FilePath.h"
 
 START_NAMESPACE_STIR
 
@@ -316,7 +314,7 @@ private:
     shared_ptr < ScatterSimulation > scatter_simulation_sptr;
 
     //! This path is used in the debug mode to store all the intermediate files, as they are many.
-    fs::path extras_path;
+    FilePath extras_path;
 
     shared_ptr<PostFiltering <DiscretisedDensity<3,float> > > filter_sptr;
 

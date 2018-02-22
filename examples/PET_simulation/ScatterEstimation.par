@@ -1,0 +1,95 @@
+Scatter Estimation Parameters :=
+
+;Run in debug mode
+;; A new folder called extras will be created, in which many 
+;; extra files will be stored 
+run in debug mode := 1
+
+;; 
+;; initialisation 
+;; 
+
+; If name is provided and recomputation == true
+; the file will be saved in the disk 
+
+recompute initial activity image := 1
+initial activity image filename := 
+
+; Smoothing for activity and attenuation images 
+zoom xy := 
+zoom z := 
+
+; Measured data
+input file := 
+
+; Multuplicative data 
+
+; Attenuation data
+recompute attenuation projdata := 
+attenuation projdata filename := 
+attenuation image filename := 
+
+; Normalisation coefficients
+normalisation coefficients filename :=
+
+; Mask 
+; If !recompute mask projdata then the filename must be set.
+recompute mask projdata := 
+mask projdata filename := 
+
+; Input or output filename - depends on recompute  
+;; If recompute is set, fwd will be performed automatically
+recompute mask image := 
+mask image filename := 
+
+mask max threshold := 
+mask add scaler := 
+mask min threshold := 
+mask times scalar :=
+mask prostfilter filename := 
+; End of Mask
+
+;Parameter file for the tail fitting of the mask image.
+tail fitting par filename := 
+
+;Backgroud data
+background projdata filename := 
+; export SSRB sinograms
+; export 2d projdata := 
+
+; ScatterSimulation Stuff 
+scatter simulation parameter file :=
+
+; Over-ride the values set in the scatter simulation parameteres file
+over-ride initial activity image := 
+over-ride density image :=  
+over-ride density image for scatter points := 
+
+reconstruction template file := 
+
+;
+; This is the number of times which the Scatter Estimation will
+; iterate. Default is 5
+
+number of scatter iterations := 
+
+; Average the first two activity images
+do average at 2 := 
+
+; Export scatter estimates of each iteration 
+export scatter estimates of each iteration := 
+
+output scatter estimate name prefix := 
+
+; If provided it will be given to the ScatterSimulation 
+; subsampled attenuation imagw filename :=
+
+max scale value := 
+min scale value :=
+
+;Upsample and fit 
+; defaults to 3.
+half filter width := 
+remove interleaving := 
+
+End Scatter Estimation Parameters :=

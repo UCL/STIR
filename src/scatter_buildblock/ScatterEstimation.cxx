@@ -361,30 +361,11 @@ set_up()
         this->export_scatter_estimates_of_each_iteration = true;
 
         // Create extras folder in this location
-        fs::path current_full_path(boost::filesystem::initial_path());
-        //extras_path = current_full_path.append("extras"); // Introduced in boost v.1.55
-        extras_path = current_full_path / "extras";
+        FilePath current_full_path(FilePath::get_current_working_directory());
 
-        if(!fs::exists(extras_path))
-            fs::create_directory(extras_path);
-        else //empty the  folder
-        {
-            fs::directory_iterator end;
-            for(fs::directory_iterator it(extras_path); it != end; ++it)
-            {
-                try
-                {
-                    if(fs::is_regular_file(it->status()))
-                    {
-                        fs::remove(it->path());
-                    }
-                }
-                catch(const std::exception &ex)
-                {
-                    ex;
-                }
-            }
-        }
+        extras_path = current_full_path.append("extras");
+
+        // N.E: It would be desirable to have here a function to clean up this folder.
     }
 
     if (is_null_ptr(this->input_projdata_sptr))
@@ -886,10 +867,10 @@ process_data()
 
         if(this->run_debug_mode) // Write unscaled scatter sinogram
         {
-            std::stringstream convert;   // stream used for the conversion
-            convert << "unscaled_" << i_scat_iter;
-            fs::path tmp = extras_path / convert.str();
-            dynamic_cast<ProjDataInMemory *> (unscaled_est_projdata_2d_sptr.get())->write_to_file(tmp.string());
+//            std::stringstream convert;   // stream used for the conversion
+//            convert << "unscaled_" << i_scat_iter;
+//            FilePath tmp = extras_path / convert.str();
+//            dynamic_cast<ProjDataInMemory *> (unscaled_est_projdata_2d_sptr.get())->write_to_file(tmp.string());
         }
 
         // Set the min and max scale factors
@@ -908,10 +889,10 @@ process_data()
 
         if(this->run_debug_mode)
         {
-            std::stringstream convert;   // stream used for the conversion
-            convert << "scaled_" << i_scat_iter;
-            fs::path tmp = extras_path / convert.str();
-            dynamic_cast<ProjDataInMemory *> (scaled_est_projdata_2d_sptr.get())->write_to_file(tmp.string());
+//            std::stringstream convert;   // stream used for the conversion
+//            convert << "scaled_" << i_scat_iter;
+//            fs::path tmp = extras_path / convert.str();
+//            dynamic_cast<ProjDataInMemory *> (scaled_est_projdata_2d_sptr.get())->write_to_file(tmp.string());
         }
 
         if (this->export_scatter_estimates_of_each_iteration ||
@@ -1000,11 +981,11 @@ reconstruct_iterative(int _current_iter_num,
 
     if(this->run_debug_mode)
     {
-        std::stringstream convert;   // stream used for the conversion
-        convert << "recon_" << _current_iter_num;
-        fs::path  tmp = extras_path / convert.str();
-        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-                write_to_file(tmp.string(), *_current_estimate_sptr);
+//        std::stringstream convert;   // stream used for the conversion
+//        convert << "recon_" << _current_iter_num;
+//        fs::path  tmp = extras_path / convert.str();
+//        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+//                write_to_file(tmp.string(), *_current_estimate_sptr);
 
     }
 }
@@ -1020,11 +1001,11 @@ reconstruct_analytic(int _current_iter_num,
 
     if(this->run_debug_mode)
     {
-        std::stringstream convert;   // stream used for the conversion
-        convert << "recon_analytic_"<< _current_iter_num;
-        fs::path  tmp = extras_path / convert.str();
-        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-                write_to_file(tmp.string(), *_current_estimate_sptr);
+//        std::stringstream convert;   // stream used for the conversion
+//        convert << "recon_analytic_"<< _current_iter_num;
+//        fs::path  tmp = extras_path / convert.str();
+//        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+//                write_to_file(tmp.string(), *_current_estimate_sptr);
 
     }
 
