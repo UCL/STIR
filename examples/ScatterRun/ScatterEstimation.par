@@ -18,9 +18,9 @@ initial activity image filename := ./produced_data/initial_image.hv
 ; Downsampling for activity (and eventually) attenuation images 
 ;; This is not the subsampled attenuation image used for SSS. 
 ;; Unless, appropriate over-ride is set. 
-zoom XY for activity image := 0.3
+zoom XY for activity image := 0.25
 ;size XY for activity image := 33
-zoom Z for activity image := 1.0
+zoom Z for activity image := 1.0 
 ;size Z for activity image := 8
 
 ; Measured data
@@ -67,7 +67,7 @@ scatter simulation parameters file := ./par_files/scatter_simulation.par
 ; Over-ride the values set in the scatter simulation parameteres file
 over-ride initial activity image := 1
 over-ride density image := 1 
-over-ride density image for scatter points := 0 
+over-ride density image for scatter points := 1
 
 reconstruction template file := ./par_files/run_reconstruction.par 
 

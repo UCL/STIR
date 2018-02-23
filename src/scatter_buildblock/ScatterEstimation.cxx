@@ -488,16 +488,36 @@ set_up()
                                CartesianCoordinate3D<float>(0.0f, 0.0f, 0.0f),
                                CartesianCoordinate3D<int>(new_z, new_xy, new_xy)).clone());
 
+            //Shift origin
+            BasicCoordinate<3,float> mod_grid = dynamic_cast<VoxelsOnCartesianGrid<float>* >(current_activity_image_lowres_sptr.get())->get_grid_spacing();
+            mod_grid[2]=0.0;
+            mod_grid[3]=0.0;
+
+            this->current_activity_image_lowres_sptr->set_origin(mod_grid);
+
             this->current_activity_image_lowres_sptr->fill(1.f);
         }
 
         if (new_xy > -1 && new_z > -1)
         {
+//            this->atten_image_lowres_sptr.reset(dynamic_cast<VoxelsOnCartesianGrid<float>* > (this->atten_image_sptr.get())->clone());
 
-            this->atten_image_lowres_sptr.reset(current_activity_image_lowres_sptr->get_empty_copy());
+//            zoom_image(*(dynamic_cast<VoxelsOnCartesianGrid<float>* > (this->atten_image_lowres_sptr.get())),
+//                       *(dynamic_cast<VoxelsOnCartesianGrid<float>* > (this->current_activity_image_lowres_sptr.get())));
 
-            BasicCoordinate<3,float> orig_grid = dynamic_cast<VoxelsOnCartesianGrid<float>* >(atten_image_sptr.get())->get_grid_spacing();
-            BasicCoordinate<3,float> new_grid = dynamic_cast<VoxelsOnCartesianGrid<float>* >(atten_image_lowres_sptr.get())->get_grid_spacing();
+            //TODO: This leads to creation of 2 images, and then throwing one away immediately
+            VoxelsOnCartesianGrid<float>* attenuation_image_ptr =
+                    dynamic_cast<VoxelsOnCartesianGrid<float>* >(this->atten_image_sptr.get());
+
+            this->atten_image_lowres_sptr.reset(this->current_activity_image_lowres_sptr->clone());
+
+            VoxelsOnCartesianGrid<float>* attenuation_lowres_ptr =
+                    dynamic_cast<VoxelsOnCartesianGrid<float>* >(atten_image_lowres_sptr.get());
+
+            zoom_image(*attenuation_lowres_ptr, *attenuation_image_ptr);
+
+            BasicCoordinate<3,float> orig_grid = dynamic_cast<VoxelsOnCartesianGrid<float>* >(this->atten_image_sptr.get())->get_grid_spacing();
+            BasicCoordinate<3,float> new_grid = dynamic_cast<VoxelsOnCartesianGrid<float>* >(this->atten_image_lowres_sptr.get())->get_grid_spacing();
 
             // SCALE = ZOOM_xy * ZOOM_xy * ZOOM_xy
             float scale_att = (orig_grid[3]/new_grid[3]) * (orig_grid[2]/new_grid[2]) * (orig_grid[1]/new_grid[1]);
@@ -1244,9 +1264,11 @@ ScatterEstimation::ffw_project_mask_image()
 
     if(!create_tail_mask_from_acfs.parse(this->tail_mask_par_filename.c_str()))
     {
-        warning(boost::format("Error parsing parameters file %1%, for creating mask tails from ACFs. Abort.")
+        warning(boost::format("Error parsing parameters file %1%, for creating mask tails from ACFs. Setting up to default.")
                 %this->tail_mask_par_filename);
-        return Succeeded::no;
+        //return Succeeded::no;
+        create_tail_mask_from_acfs.ACF_threshold = 1.1;
+        create_tail_mask_from_acfs.safety_margin = 4;
     }
 
     create_tail_mask_from_acfs.set_input_projdata_sptr(mask_projdata);

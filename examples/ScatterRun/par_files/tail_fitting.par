@@ -1,0 +1,4 @@
+ CreateTailMaskFromACFs :=
+        ACF-threshold := 1.1
+        safety-margin := 4
+END CreateTailMaskFromACFs := 
