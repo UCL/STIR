@@ -22,4 +22,4 @@ set(${dir_LIB_SOURCES}
 
 
 include(stir_lib_target)
-target_link_libraries(scatter_buildblock recon_buildblock -lboost_system -lboost_filesystem)
+target_link_libraries(scatter_buildblock recon_buildblock)
