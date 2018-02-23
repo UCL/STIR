@@ -65,6 +65,7 @@ export 2d projdata := 1
 scatter simulation parameters file := ./par_files/scatter_simulation.par 
 
 ; Over-ride the values set in the scatter simulation parameteres file
+over-ride scanner template := 1
 over-ride initial activity image := 1
 over-ride density image := 1 
 over-ride density image for scatter points := 1

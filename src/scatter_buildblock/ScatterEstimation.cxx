@@ -170,6 +170,9 @@ initialise_keymap()
                          &this->override_density_image);
     this->parser.add_key("over-ride density image for scatter points",
                          &this->override_density_image_for_scatter_points);
+    this->parser.add_key("over-ride scanner template",
+                         &this->override_scanner_template);
+
     // END Scatter simulation
 
     this->parser.add_key("export scatter estimates of each iteration",
@@ -620,6 +623,12 @@ set_up()
         this->scatter_simulation_sptr->set_activity_image_sptr(this->current_activity_image_lowres_sptr);
     }
 
+    if(this->override_scanner_template)
+    {
+        info("ScatterEstimation: Over-riding the scanner template! (The file and settings set in the simulation par file are discarded)");
+        this->scatter_simulation_sptr->set_template_proj_data_info_sptr(this->input_projdata_2d_sptr->get_proj_data_info_sptr());
+    }
+
     // Check if Load a mask proj_data
 
     if(is_null_ptr(this->mask_projdata_sptr))
@@ -831,6 +840,7 @@ set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterat
         else
         {
             this->add_projdata_2d_sptr = add_projdata_3d_sptr;
+
         }
 
         // Add the additive component to the output sinogram

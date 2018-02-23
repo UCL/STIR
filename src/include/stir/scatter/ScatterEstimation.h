@@ -307,6 +307,8 @@ private:
     //! This bool will allow the ScatterEstimation to override the value of
     //! the density image for scatter points set in ScatterSimulation par file
     bool override_density_image_for_scatter_points;
+    //! This will over-ride the scanner template in scatter sinogram simulation.
+    bool override_scanner_template;
     //! In debug mode a lot of extra files are going to be saved in the disk.
     bool run_debug_mode;
 
