@@ -56,31 +56,6 @@ generate_image  generate_uniform_cylinder.par
 echo "===  use that as template for attenuation"
 stir_math --including-first --times-scalar .096 my_atten_image.hv my_uniform_cylinder.hv
 
-echo "===  run scatter simulation (old)"
-./simulate_scatter.sh my_scatter_cylinder my_uniform_cylinder.hv my_atten_image.hv scatter_cylinder.hs > my_simulate_scatter.log
-if [ $? -ne 0 ]; then
-  echo "Error running scatter simulation"
-  error_log_files="${error_log_files} my_simulate_scatter.log my_scatter_cylinder*.log"
-  echo "Check ${error_log_files}"
-  exit 1
-fi
-
-echo "===  compare result"
-# we need a fairly large threshold (4%) as scatter points are chosen randomly
-compare_projdata -t .04 my_scatter_cylinder.hs scatter_cylinder.hs > my_scatter_compare_projdata.log 2>&1
-if [ $? -ne 0 ]; then
-  echo "Error comparing scatter output."
-  error_log_files="${error_log_files} my_scatter_compare_projdata.log"
-fi
-
-### Need to export again here
-OUTPUT_PREFIX=my_scatter_cylinder
-ACTIVITY_IMAGE=my_uniform_cylinder.hv
-org_atten_image=my_atten_image.hv
-TEMPLATE=scatter_cylinder.hs
-ATTEN_IMAGE=my_zoomed_${org_atten_image}
-export OUTPUT_PREFIX ACTIVITY_IMAGE ATTEN_IMAGE TEMPLATE org_atten_image
-
 echo "===  run scatter simulation (new)"
 simulate_scatter scatter_simulation_new.par > my_simulate_scatter_new.log
 if [ $? -ne 0 ]; then
