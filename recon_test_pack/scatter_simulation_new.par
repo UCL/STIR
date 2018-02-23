@@ -10,11 +10,11 @@ Scatter Simulation :=
 		;reduce number of detectors per ring by := 5
 		;reduce number of rings by := 5
 
-		attenuation image filename := zoomed_my_atten_image.hv
+		attenuation image filename := ${ATTEN_IMAGE}
 
 		;; We will not set it in this example and 
 		;; try to zoom the attenuation image. 
-		attenuation image for scatter points filename := zoomed_my_atten_image.hv
+		attenuation image for scatter points filename := ${ATTEN_IMAGE}
 		;zoom XY for attenuation image for scatter points := 0.25
 		;size XY for attenuation image for scatter points := 33
 
@@ -23,7 +23,7 @@ Scatter Simulation :=
 
 		;; If subsample attenuation image during Scatter simulation 
 		;; then output the zoomed image here
-		;ttenuation image for scatter points output filename :=zoomed_my_atten_image.hv
+		;ttenuation image for scatter points output filename := ${ATTEN_IMAGE}
 
 		activity image filename := my_uniform_cylinder.hv
 

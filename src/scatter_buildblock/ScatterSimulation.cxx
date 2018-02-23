@@ -389,8 +389,6 @@ subsample_image(shared_ptr<DiscretisedDensity<3, float> > arg,
                 bool scale)
 {
     int new_xy, new_z;
-    float scale_value;
-
     VoxelsOnCartesianGrid<float>* tmp_image_ptr =
             dynamic_cast<VoxelsOnCartesianGrid<float>* >(arg->clone());
 
@@ -411,7 +409,7 @@ subsample_image(shared_ptr<DiscretisedDensity<3, float> > arg,
     // Scale values.
     if(scale)
     {
-        scale_value = this->zoom_xy * this->zoom_xy * this->zoom_z;
+        float scale_value = this->zoom_xy * this->zoom_xy * this->zoom_z;
         *tmp_image_lowres_sptr *= scale_value;
     }
 

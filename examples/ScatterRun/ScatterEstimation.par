@@ -79,7 +79,7 @@ reconstruction template file := ./par_files/run_reconstruction.par
 number of scatter iterations := 3 
 
 ; Average the first two activity images
-do average at 2 := 0
+do average at 2 := 1
 
 ; Export scatter estimates of each iteration 
 export scatter estimates of each iteration := 1
