@@ -1,0 +1,99 @@
+Scatter Estimation Parameters :=
+
+;Run in debug mode
+;; A new folder called extras will be created, in which many 
+;; extra files will be stored 
+run in debug mode := 1
+
+;; 
+;; initialisation 
+;; 
+
+; If name is provided and recomputation == true
+; the file will be saved in the disk 
+
+recompute initial activity image := 1
+initial activity image filename := ./produced_data/initial_image.hv
+
+; Downsampling for activity (and eventually) attenuation images 
+;; This is not the subsampled attenuation image used for SSS. 
+;; Unless, appropriate over-ride is set. 
+zoom XY for activity image := 0.3
+;size XY for activity image := 33
+zoom Z for activity image := 1.0
+;size Z for activity image := 8
+
+; Measured data
+input file := ./data/sinospan11_f1g1d0b0.hs
+
+; Multuplicative data 
+
+; Attenuation data
+recompute attenuation projdata := 1
+attenuation projdata filename := ./produced_data/attensinoACF.hs 
+attenuation image filename := ./data/JOBR-LM-00-umap-mlaa_000.v.hdr.STIR
+
+; Normalisation coefficients
+normalisation coefficients filename := ./data/normsino.hs
+
+; Mask 
+; If !recompute mask projdata then the filename must be set.
+recompute mask projdata := 1 
+mask projdata filename := ./produced_data/mask_projdata.hs 
+
+; Input or output filename - depends on recompute  
+;; If recompute is set, fwd will be performed automatically
+recompute mask image := 1
+mask attenuation image filename := ./produced_data/mask.hv
+
+mask max threshold := 0.001
+mask add scalar := -0.00099 
+mask min threshold := 0.0
+mask times scalar := 100002
+mask postfilter filename := ./par_files/postfilter_Gaussian.par
+;End of Mask
+
+;Parameter file for the tail fitting of the mask image.
+tail fitting par filename := ./par_files/tail_fitting.par
+
+;Backgroud data
+background projdata filename := ./data/total_background_3d.hs
+; export SSRB sinograms
+export 2d projdata := 1
+
+; ScatterSimulation Stuff 
+scatter simulation parameters file := ./par_files/scatter_simulation.par 
+
+; Over-ride the values set in the scatter simulation parameteres file
+over-ride initial activity image := 1
+over-ride density image := 1 
+over-ride density image for scatter points := 0 
+
+reconstruction template file := ./par_files/run_reconstruction.par 
+
+;
+; This is the number of times which the Scatter Estimation will
+; iterate. Default is 5
+
+number of scatter iterations := 3 
+
+; Average the first two activity images
+do average at 2 := 0
+
+; Export scatter estimates of each iteration 
+export scatter estimates of each iteration := 1
+
+output scatter estimate name prefix := ./produced_data/total_back
+
+; If provided it will be given to the ScatterSimulation 
+; subsampled attenuation imagw filename := sub_atten.hv
+
+max scale value := 2 ;10
+min scale value := 0.4 ;0.1
+
+;Upsample and fit 
+; defaults to 3.
+half filter width := 3
+remove interleaving := 1
+
+End Scatter Estimation Parameters :=

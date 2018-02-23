@@ -275,8 +275,15 @@ post_processing()
 
     if(this->density_image_for_scatter_points_filename.size() > 0)
         this->set_density_image_for_scatter_points(this->density_image_for_scatter_points_filename);
-    else
-        this->subsample_image(this->density_image_sptr);
+    else if(!is_null_ptr(density_image_sptr))
+    {
+        this->set_density_image_for_scatter_points_sptr(subsample_image(this->density_image_sptr));
+
+        if(this->density_image_for_scatter_points_output_filename.size()>0)
+            OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+                    write_to_file(density_image_for_scatter_points_output_filename,
+                                  *this->density_image_for_scatter_points_sptr);
+    }
 
     if (this->output_proj_data_filename.size() > 0)
         this->set_output_proj_data(this->output_proj_data_filename);
@@ -375,18 +382,16 @@ set_density_image_for_scatter_points(const std::string& filename)
     this->remove_cache_for_integrals_over_attenuation();
 }
 
-void
+shared_ptr<DiscretisedDensity<3, float> >
 ScatterSimulation::
-subsample_image(const shared_ptr<DiscretisedDensity<3, float> >& arg)
+subsample_image(shared_ptr<DiscretisedDensity<3, float> > arg,
+                bool scale)
 {
     int new_xy, new_z;
     float scale_value;
 
-    if(is_null_ptr(density_image_sptr))
-            error(boost::format("Attenuation image not set. Abort."));
-
     VoxelsOnCartesianGrid<float>* tmp_image_ptr =
-            dynamic_cast<VoxelsOnCartesianGrid<float>* >(this->density_image_sptr->clone());
+            dynamic_cast<VoxelsOnCartesianGrid<float>* >(arg->clone());
 
     new_xy = this->size_xy < 0 ? static_cast<int>(tmp_image_ptr->get_x_size() * zoom_xy ):
                                  size_xy;
@@ -394,24 +399,22 @@ subsample_image(const shared_ptr<DiscretisedDensity<3, float> >& arg)
     new_z = this->size_z < 0 ?  static_cast<int>(tmp_image_ptr->get_z_size() * zoom_z):
                                 size_z;
 
-    VoxelsOnCartesianGrid<float> tmp_image_lowres =
+    shared_ptr<VoxelsOnCartesianGrid<float> > tmp_image_lowres_sptr(new VoxelsOnCartesianGrid<float>());
+
+    *tmp_image_lowres_sptr =
             zoom_image(*tmp_image_ptr,
                        CartesianCoordinate3D<float>(zoom_z, zoom_xy, zoom_xy),
                        CartesianCoordinate3D<float>(0.0f, 0.0f, 0.0f),
                        CartesianCoordinate3D<int>(new_z, new_xy, new_xy));
 
-    this->density_image_for_scatter_points_sptr.reset(tmp_image_lowres.clone());
     // Scale values.
-    scale_value = this->zoom_xy * this->zoom_xy * this->zoom_z;
-    *this->density_image_for_scatter_points_sptr *= scale_value;
+    if(scale)
+    {
+        scale_value = this->zoom_xy * this->zoom_xy * this->zoom_z;
+        *tmp_image_lowres_sptr *= scale_value;
+    }
 
-    if(this->density_image_for_scatter_points_output_filename.size()>0)
-        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-            write_to_file(density_image_for_scatter_points_output_filename,
-                          *this->density_image_for_scatter_points_sptr);
-
-    this->sample_scatter_points();
-    this->remove_cache_for_integrals_over_attenuation();
+    return tmp_image_lowres_sptr;
 }
 
 void

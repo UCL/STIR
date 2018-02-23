@@ -168,7 +168,8 @@ public:
     void set_density_image_for_scatter_points_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 
     //! If densitiy image for scatter points not set, then run this on the attenuation image.
-    void subsample_image(const shared_ptr<DiscretisedDensity<3,float> >&);
+    shared_ptr<DiscretisedDensity<3, float> >
+    subsample_image(shared_ptr<DiscretisedDensity<3,float> >, bool scale = true);
 
     //! set_density_image_for_scatter_points
     void set_density_image_for_scatter_points(const std::string&);

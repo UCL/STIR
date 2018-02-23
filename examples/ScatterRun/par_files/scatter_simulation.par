@@ -1,0 +1,34 @@
+Scatter Simulation := 
+	Simulation method := Single Scatter Simulation
+		Scatter Simulation Parameters := 
+
+		;; Use either already subsampled ProjDataInfo
+		;; or subsample bellow. 
+		template projdata filename := ./data/sinospan11_f1g1d0b0.hs
+
+		;; The scatter_cylinder has already been reduced. 
+		reduce number of detectors per ring by := 5
+		reduce number of rings by := 5
+
+		attenuation image filename := ./data/JOBR-LM-00-umap-mlaa_000.v.hdr.STIR
+
+		;; We will not set it in this example and 
+		;; try to zoom the attenuation imageS. 
+		attenuation image for scatter points filename := ./data/JOBR-LM-00-umap-mlaa_000.v.hdr.STIR
+		zoom XY for attenuation image for scatter points := 0.25
+		size XY for attenuation image for scatter points := 33
+
+		zoom Z for attenuation image for scatter points := 0.17
+		size Z for attenuation image for scatter points := 8
+
+		;; If subsample attenuation image during Scatter simulation 
+		;; then output the zoomed image here
+		;; attenuation image for scatter points output filename := my_zoomed_my_atten_image
+		
+		attenuation threshold := 0.01 
+		random := 1 
+		use cache := 1
+
+	End Scatter Simulation Parameters := 
+End Scatter Simulation:=
+

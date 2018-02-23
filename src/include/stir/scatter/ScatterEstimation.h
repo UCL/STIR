@@ -269,6 +269,10 @@ protected:
     float zoom_xy;
     //! Zoom factor on Z axis. Defaults on 1.f.
     float zoom_z;
+    //! Optional to the zoom_xy the final size of the image can be set
+    int size_xy;
+    //! Optional to the zoom_z the final size of the image can be set
+    int size_z;
 private:
 
     //! \details A helper function to reduce the size of set_up().ß
