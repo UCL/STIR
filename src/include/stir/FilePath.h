@@ -106,6 +106,8 @@ public:
     // This function will return the the bit that is after the last dot.
     std::string get_extension() const ;
 
+    inline std::string get_string() const;
+
     inline bool operator==(const FilePath& other);
 
     inline bool operator==(const std::string& other);

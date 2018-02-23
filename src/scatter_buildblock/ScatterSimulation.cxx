@@ -273,9 +273,10 @@ post_processing()
     if (this->density_image_filename.size() > 0)
         this->set_density_image(this->density_image_filename);
 
-    if(this->density_image_for_scatter_points_filename.size() > 0)
+    if(this->density_image_for_scatter_points_filename.size() > 0 &&
+            (zoom_xy==1 || zoom_z == 1))
         this->set_density_image_for_scatter_points(this->density_image_for_scatter_points_filename);
-    else if(!is_null_ptr(density_image_sptr))
+    else
     {
         this->set_density_image_for_scatter_points_sptr(subsample_image(this->density_image_sptr));
 

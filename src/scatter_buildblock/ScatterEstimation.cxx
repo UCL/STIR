@@ -940,10 +940,11 @@ process_data()
 
         if(this->run_debug_mode) // Write unscaled scatter sinogram
         {
-//            std::stringstream convert;   // stream used for the conversion
-//            convert << "unscaled_" << i_scat_iter;
-//            FilePath tmp = extras_path / convert.str();
-//            dynamic_cast<ProjDataInMemory *> (unscaled_est_projdata_2d_sptr.get())->write_to_file(tmp.string());
+            std::stringstream convert;   // stream used for the conversion
+            convert << "unscaled_" << i_scat_iter;
+            FilePath tmp(convert.str(),false);
+            tmp.prepend_directory_name(extras_path.get_path());
+            dynamic_cast<ProjDataInMemory *> (unscaled_est_projdata_2d_sptr.get())->write_to_file(tmp.get_string());
         }
 
         // Set the min and max scale factors
@@ -962,26 +963,27 @@ process_data()
 
         if(this->run_debug_mode)
         {
-//            std::stringstream convert;   // stream used for the conversion
-//            convert << "scaled_" << i_scat_iter;
-//            fs::path tmp = extras_path / convert.str();
-//            dynamic_cast<ProjDataInMemory *> (scaled_est_projdata_2d_sptr.get())->write_to_file(tmp.string());
+            std::stringstream convert;   // stream used for the conversion
+            convert << "scaled_" << i_scat_iter;
+            FilePath tmp(convert.str(),false);
+            tmp.prepend_directory_name(extras_path.get_path());
+            dynamic_cast<ProjDataInMemory *> (scaled_est_projdata_2d_sptr.get())->write_to_file(tmp.get_string());
         }
 
         if (this->export_scatter_estimates_of_each_iteration ||
                 i_scat_iter == this->num_scatter_iterations -1 )
         {
 
-            //            //this is complicated as the 2d scatter estimate was
-            //            //divided by norm2d, so we need to undo this
-            //            //unfortunately, currently the values in the gaps in the
-            //            //scatter estimate are not quite zero (just very small)
-            //            //so we have to first make sure that they are zero before
-            //            //we do any of this, otherwise the values after normalisation will be garbage
-            //            //we do this by min-thresholding and then subtracting the threshold.
-            //            //as long as the threshold is tiny, this will be ok
+            //this is complicated as the 2d scatter estimate was
+            //divided by norm2d, so we need to undo this
+            //unfortunately, currently the values in the gaps in the
+            //scatter estimate are not quite zero (just very small)
+            //so we have to first make sure that they are zero before
+            //we do any of this, otherwise the values after normalisation will be garbage
+            //we do this by min-thresholding and then subtracting the threshold.
+            //as long as the threshold is tiny, this will be ok
 
-            //            // On the same time we are going to save to a temp projdata file
+            // On the same time we are going to save to a temp projdata file
 
             shared_ptr<ProjData> temp_projdata ( new ProjDataInMemory (scaled_est_projdata_2d_sptr->get_exam_info_sptr(),
                                                                        scaled_est_projdata_2d_sptr->get_proj_data_info_sptr()));
@@ -1054,11 +1056,12 @@ reconstruct_iterative(int _current_iter_num,
 
     if(this->run_debug_mode)
     {
-//        std::stringstream convert;   // stream used for the conversion
-//        convert << "recon_" << _current_iter_num;
-//        fs::path  tmp = extras_path / convert.str();
-//        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-//                write_to_file(tmp.string(), *_current_estimate_sptr);
+        std::stringstream convert;   // stream used for the conversion
+        convert << "recon_" << _current_iter_num;
+        FilePath tmp(convert.str(),false);
+        tmp.prepend_directory_name(extras_path.get_path());
+        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+                write_to_file(tmp.get_string(), *_current_estimate_sptr);
 
     }
 }
@@ -1074,11 +1077,12 @@ reconstruct_analytic(int _current_iter_num,
 
     if(this->run_debug_mode)
     {
-//        std::stringstream convert;   // stream used for the conversion
-//        convert << "recon_analytic_"<< _current_iter_num;
-//        fs::path  tmp = extras_path / convert.str();
-//        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-//                write_to_file(tmp.string(), *_current_estimate_sptr);
+        std::stringstream convert;   // stream used for the conversion
+        convert << "recon_analytic_"<< _current_iter_num;
+        FilePath tmp(convert.str(),false);
+        tmp.prepend_directory_name(extras_path.get_path());
+        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+                write_to_file(tmp.get_string(), *_current_estimate_sptr);
 
     }
 

@@ -64,4 +64,7 @@ inline void FilePath::initSeparator()
 #endif
 }
 
+inline std::string FilePath::get_string() const
+{return my_string;}
+
 END_NAMESPACE_STIR
