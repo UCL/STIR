@@ -99,11 +99,11 @@ public:
     //! Full process_data which performs set_up() before begining
     virtual Succeeded process_data();
 
-    virtual Succeeded reconstruct_iterative(int,
-                                            shared_ptr<DiscretisedDensity<3, float> >&);
+    virtual void reconstruct_iterative(int,
+                                       shared_ptr<DiscretisedDensity<3, float> >&);
 
-    virtual Succeeded reconstruct_analytic(int,
-                                           shared_ptr<DiscretisedDensity<3, float> > &);
+    virtual void reconstruct_analytic(int,
+                                      shared_ptr<DiscretisedDensity<3, float> > &);
 
     //!
     //! \brief set_up

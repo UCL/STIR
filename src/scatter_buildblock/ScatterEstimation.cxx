@@ -1041,7 +1041,7 @@ process_data()
     return Succeeded::yes;
 }
 
-Succeeded
+void
 ScatterEstimation::
 reconstruct_iterative(int _current_iter_num,
                       shared_ptr<DiscretisedDensity<3, float> > & _current_estimate_sptr)
@@ -1066,7 +1066,7 @@ reconstruct_iterative(int _current_iter_num,
     }
 }
 
-Succeeded
+void
 ScatterEstimation::
 reconstruct_analytic(int _current_iter_num,
         shared_ptr<DiscretisedDensity<3, float> > & _current_estimate_sptr)
