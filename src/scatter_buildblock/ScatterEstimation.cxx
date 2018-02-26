@@ -627,6 +627,8 @@ set_up()
     {
         info("ScatterEstimation: Over-riding the scanner template! (The file and settings set in the simulation par file are discarded)");
         this->scatter_simulation_sptr->set_template_proj_data_info_sptr(this->input_projdata_2d_sptr->get_proj_data_info_sptr());
+
+        this->scatter_simulation_sptr->set_exam_info_sptr(this->input_projdata_2d_sptr->get_exam_info_sptr());
     }
 
     // Check if Load a mask proj_data
@@ -672,7 +674,6 @@ set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterat
     const double start_time = 0.0;
     const double end_time = 0.0;
 
-    shared_ptr<ProjData> atten_projdata_3d_sptr;
 
     //
     // Multiplicative projdata
@@ -707,6 +708,9 @@ set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterat
         }
 
         {
+            shared_ptr<ProjData> atten_projdata_3d_sptr;
+
+            this->atten_coeff_3d_sptr.reset(new BinNormalisationFromProjData(this->atten_coeff_filename));
             if (this->atten_coeff_filename.size() > 0 )
                 atten_projdata_3d_sptr.reset(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
                                                                                     this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
@@ -721,16 +725,21 @@ set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterat
             if (attenuation_correction_sptr->set_up(atten_projdata_3d_sptr->get_proj_data_info_ptr()->create_shared_clone())
                     != Succeeded::yes)
             {
-                warning("ScatterEstimation: Error in calculating the attenuation correction sinogram");
+
                 return Succeeded::no;
             }
 
             shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(forw_projector_sptr->get_symmetries_used()->clone());
-            // GET ACF
+            info("ScatterEstimation: Calculating the attenuation projection data...");
             attenuation_correction_sptr->apply(*atten_projdata_3d_sptr, start_time, end_time, symmetries_sptr);
             this->atten_coeff_3d_sptr.reset(new BinNormalisationFromProjData(atten_projdata_3d_sptr));
         }
     }
+
+    // Check if it is a BinNormFromProjData -- it should but you never know
+    // Take the projdata
+    shared_ptr<ProjData> atten_projdata_3d_sptr =
+            dynamic_cast<BinNormalisationFromProjData*> (this->multiplicative_binnorm_3d_sptr->get_second_norm().get())->get_norm_proj_data_sptr();
 
     if(is_null_ptr(atten_projdata_3d_sptr))
         error("ScatterEstimation: No attenuation projdata has been initialised.");
@@ -808,8 +817,6 @@ set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterat
         normalisation_coeffs_2d_sptr->set_up(this->proj_data_info_2d_sptr->create_shared_clone());
     }
     //<- End Normalisation ProjData
-
-
 
     this->multiplicative_binnorm_2d_sptr.reset(
                 new ChainedBinNormalisation(normalisation_coeffs_2d_sptr, attenuation_correction_sptr));
@@ -937,6 +944,7 @@ process_data()
 
         info("ScatterEstimation: Scatter simulation in progress...");
         this->scatter_simulation_sptr->process_data();
+        info("ScatterEstimation: Scatter simulation in progress...");
 
         if(this->run_debug_mode) // Write unscaled scatter sinogram
         {
@@ -1230,8 +1238,8 @@ ScatterEstimation::ffw_project_mask_image()
     shared_ptr<ForwardProjectorByBin> forw_projector_sptr;
     shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
     forw_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
-    info(boost::format("ScatterEstimation: Forward projector used for the calculation of"
-                       "attenuation coefficients: %1%") % forw_projector_sptr->parameter_info());
+    info(boost::format("ScatterEstimation: Forward projector used for the calculation of "
+                       "the tail mask: %1%") % forw_projector_sptr->parameter_info());
 
     forw_projector_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_ptr()->create_shared_clone(),
                                 this->mask_image_sptr );

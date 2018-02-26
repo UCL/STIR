@@ -110,6 +110,8 @@ process_data()
             CartesianCoordinate3D<float>(this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
     float total_scatter = 0 ;
 
+    info("ScatterSimulator: Initialization finished ...");
+
     for (vs_num.segment_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_segment_num();
          vs_num.segment_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
          ++vs_num.segment_num())
@@ -273,10 +275,8 @@ post_processing()
     if (this->density_image_filename.size() > 0)
         this->set_density_image(this->density_image_filename);
 
-    if(this->density_image_for_scatter_points_filename.size() > 0 &&
-            (zoom_xy==1 || zoom_z == 1))
-        this->set_density_image_for_scatter_points(this->density_image_for_scatter_points_filename);
-    else
+    if ((zoom_xy!=1 || zoom_z != 1) &&
+            this->density_image_filename.size()>0)
     {
         this->set_density_image_for_scatter_points_sptr(subsample_image(this->density_image_sptr));
 
@@ -285,6 +285,8 @@ post_processing()
                     write_to_file(density_image_for_scatter_points_output_filename,
                                   *this->density_image_for_scatter_points_sptr);
     }
+    else if(this->density_image_for_scatter_points_filename.size() > 0)
+        this->set_density_image_for_scatter_points(this->density_image_for_scatter_points_filename);
 
     if (this->output_proj_data_filename.size() > 0)
         this->set_output_proj_data(this->output_proj_data_filename);

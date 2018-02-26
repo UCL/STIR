@@ -23,7 +23,7 @@ Scatter Simulation :=
 
 		;; If subsample attenuation image during Scatter simulation 
 		;; then output the zoomed image here
-		;ttenuation image for scatter points output filename := ${ATTEN_IMAGE}
+		;attenuation image for scatter points output filename := ${ATTEN_IMAGE}
 
 		activity image filename := my_uniform_cylinder.hv
 

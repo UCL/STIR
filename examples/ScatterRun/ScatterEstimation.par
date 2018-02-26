@@ -12,24 +12,24 @@ run in debug mode := 1
 ; If name is provided and recomputation == true
 ; the file will be saved in the disk 
 
-recompute initial activity image := 1
+recompute initial activity image := 0
 initial activity image filename := ./produced_data/initial_image.hv
 
 ; Downsampling for activity (and eventually) attenuation images 
 ;; This is not the subsampled attenuation image used for SSS. 
 ;; Unless, appropriate over-ride is set. 
-zoom XY for activity image := 0.25
-;size XY for activity image := 33
-zoom Z for activity image := 1.0 
-;size Z for activity image := 8
+zoom XY for activity image := 0.26
+size XY for activity image := 30
+zoom Z for activity image :=0.16666667
+size Z for activity image :=22
 
 ; Measured data
 input file := ./data/sinospan11_f1g1d0b0.hs
 
-; Multuplicative data 
+;;;; Multuplicative data ;;;;
 
 ; Attenuation data
-recompute attenuation projdata := 1
+recompute attenuation projdata := 0
 attenuation projdata filename := ./produced_data/attensinoACF.hs 
 attenuation image filename := ./data/JOBR-LM-00-umap-mlaa_000.v.hdr.STIR
 
@@ -67,8 +67,8 @@ scatter simulation parameters file := ./par_files/scatter_simulation.par
 ; Over-ride the values set in the scatter simulation parameteres file
 over-ride scanner template := 1
 over-ride initial activity image := 1
-over-ride density image := 1 
-over-ride density image for scatter points := 1
+over-ride density image := 1
+over-ride density image for scatter points := 0
 
 reconstruction template file := ./par_files/run_reconstruction.par 
 
@@ -76,7 +76,7 @@ reconstruction template file := ./par_files/run_reconstruction.par
 ; This is the number of times which the Scatter Estimation will
 ; iterate. Default is 5
 
-number of scatter iterations := 3 
+number of scatter iterations := 4 
 
 ; Average the first two activity images
 do average at 2 := 1
