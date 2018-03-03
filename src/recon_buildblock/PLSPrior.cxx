@@ -167,6 +167,9 @@ get_anatomical_grad_sptr(int direction) const{
         return this->anatomical_grad_z_sptr;
     }
     error(boost::format("PLSPrior::get_anatomical_grad_sptr called with out-of-range argument: %1%") % direction);
+    // will never get here, but this avoids a compiler warning
+    shared_ptr<DiscretisedDensity<3,elemT> > dummy;
+    return dummy;
 }
 
 template <typename elemT>
