@@ -111,8 +111,10 @@ InterfileHeaderSiemens::InterfileHeaderSiemens()
   image_relative_start_times.resize(1, 0.);
   // already added in InterfileHeader but need to override as Siemens doesn't use the "vectored" keys
   // i.e. image duration (sec)[1]
+  remove_key("image relative start time (sec)");
   add_key("image relative start time (sec)", &image_relative_start_times[0]);
   image_durations.resize(1, 0.);
+  remove_key("image duration (sec)");
   add_key("image duration (sec)", &image_durations[0]);
 }
 
@@ -190,16 +192,20 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   add_key("%energy window upper level (keV)",
     KeyArgument::FLOAT, &upper_en_window_thresholds);
 
+  remove_key("PET data type");
   add_key("PET data type",
 	  KeyArgument::ASCIIlist,
 	  &PET_data_type_index,
 	  &PET_data_type_values);
 
   // TODO should add data format:=CoincidenceList|sinogram and then check its value
+  remove_key("process status");
   add_key("process status",
 	  KeyArgument::NONE, &KeyParser::do_nothing);
+  remove_key("IMAGE DATA DESCRIPTION");
   add_key("IMAGE DATA DESCRIPTION",
 	  KeyArgument::NONE, &KeyParser::do_nothing);
+  remove_key("data offset in bytes");
   add_key("data offset in bytes",
 	  KeyArgument::ULONG, &data_offset_each_dataset);
 
