@@ -11,6 +11,7 @@
 */
 /*
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -65,6 +66,8 @@ ProjectorByBinPairUsingProjMatrixByBin::post_processing()
     return true;
   if (is_null_ptr(proj_matrix_sptr))
     { warning("No valid projection matrix is defined\n"); return true; }
+  this->forward_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(proj_matrix_sptr));
+  this->back_projector_sptr.reset(new BackProjectorByBinUsingProjMatrixByBin(proj_matrix_sptr));
   return false;
 }
 
@@ -76,19 +79,16 @@ ProjectorByBinPairUsingProjMatrixByBin()
 
 ProjectorByBinPairUsingProjMatrixByBin::
 ProjectorByBinPairUsingProjMatrixByBin(  
-    const shared_ptr<ProjMatrixByBin>& proj_matrix_sptr)	   
-    : proj_matrix_sptr(proj_matrix_sptr)
-{}
+    const shared_ptr<ProjMatrixByBin>& proj_matrix_sptr_) 
+{
+  this->set_proj_matrix_sptr(proj_matrix_sptr_);
+}
 
 Succeeded
 ProjectorByBinPairUsingProjMatrixByBin::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
        const shared_ptr<DiscretisedDensity<3,float> >& image_info_sptr)
 {    	 
-
-  this->forward_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(proj_matrix_sptr));
-  this->back_projector_sptr.reset(new BackProjectorByBinUsingProjMatrixByBin(proj_matrix_sptr));
-
   // proj_matrix_sptr->set_up()  not needed as the projection matrix will be set_up indirectly by
   // the forward_projector->set_up (which is called in the base class)
   // proj_matrix_sptr->set_up(proj_data_info_sptr, image_info_sptr);
@@ -117,7 +117,9 @@ void
 ProjectorByBinPairUsingProjMatrixByBin::
 set_proj_matrix_sptr(const shared_ptr<ProjMatrixByBin>& sptr)
 {
-	proj_matrix_sptr = sptr;
+  this->proj_matrix_sptr = sptr;
+  this->forward_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(this->proj_matrix_sptr));
+  this->back_projector_sptr.reset(new BackProjectorByBinUsingProjMatrixByBin(this->proj_matrix_sptr));
 }
 
 END_NAMESPACE_STIR
