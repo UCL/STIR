@@ -42,7 +42,7 @@ detailed below.
 for Siemens scanners (warning: tested in Biograph mMR only at present).
 </p>
 
-<p>We now support additional list mode file formats (Siemens mMR and CERN ROOT files).
+<p>We now support additional list mode file formats (Siemens mMR, SAFIR and CERN ROOT files).
 </p>
 
 <p>The build system now only uses CMake. We recommend to use CMake version 3.1 or later 
@@ -56,7 +56,9 @@ improvements to the documentation.
 </p>
 
 <p>This release contains mainly code written by Kris Thielemans and Nikos Efthimiou (UCL),
-but with contributions by Jannis Fischer (ETH Zurich), Elise Emond (UCL), Edoardo Pasca (STFC) and some code clean-up by David Volgyes. Various bits
+  but with contributions by Jannis Fischer (ETH Zurich) for SAFIR support,
+  Elise Emond for IO fixes (UCL), Edoardo Pasca (STFC) for Siemens interfile support,
+  Daniel Deida (Leeds) for the PLS prior, and some code clean-up by David Volgyes. Various bits
 were tested by (in alphabetical order, all UCL except where indicated):
 Ottavia Bertolli, Matthias Ehrhardt, Pawel Markiewicz, Richard Manber, Alaleh Rashidnasab,
 Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
@@ -269,7 +271,7 @@ In order to ensure backwards compatibility, at the moment, it is completely opti
 <li>Moved functions from the <code>poisson_noise</code> utility to a new class
   <code>GeneralisedPoissonNoiseGenerator</code>.
   </li>
- <li>Added the ability to <code>KeyParser</code> to parse <code>long int</code> numbers. 
+ <li>Added the ability to <code>KeyParser</code> to parse <code>long int</code> numbers. Also add <code>remove_key</code>.
   </li>
 </ul>
 
