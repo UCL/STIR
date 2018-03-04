@@ -84,6 +84,8 @@ Succeeded
 BinNormalisationFromProjData::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
 {
+  BinNormalisation::set_up(proj_data_info_ptr);
+
   if (*(norm_proj_data_ptr->get_proj_data_info_ptr()) == *proj_data_info_ptr)
     return Succeeded::yes;
   else
@@ -146,6 +148,7 @@ is_trivial() const
 void 
 BinNormalisationFromProjData::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
   {
+    this->check(*viewgrams.get_proj_data_info_sptr());
     const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
     shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(viewgrams.get_symmetries_ptr()->clone());
     viewgrams *= 
@@ -156,6 +159,7 @@ void
 BinNormalisationFromProjData::
 undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
   {
+    this->check(*viewgrams.get_proj_data_info_sptr());
     const ViewSegmentNumbers vs_num=viewgrams.get_basic_view_segment_num();
     shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(viewgrams.get_symmetries_ptr()->clone());
     viewgrams /= 

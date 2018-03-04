@@ -16,7 +16,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011 Hammersmith Imanet Ltd
     Copyright (C) 2013 Kris Thielemans
-    Copyright (C) 2015, University College London
+    Copyright (C) 2015, 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -48,12 +48,36 @@ START_NAMESPACE_STIR
 
 
 ForwardProjectorByBin::ForwardProjectorByBin()
+  :   _already_set_up(false)
 {
 }
 
 ForwardProjectorByBin::~ForwardProjectorByBin()
 {
 }
+
+void
+ForwardProjectorByBin::
+set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr, 
+       const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr)
+{
+  _already_set_up = true;
+  _proj_data_info_sptr = proj_data_info_sptr->create_shared_clone();
+  _density_info_sptr = density_info_sptr;
+}
+
+void
+ForwardProjectorByBin::
+check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& density_info) const
+{
+  if (!this->_already_set_up)
+    error("ForwardProjectorByBin method called without calling set_up first.");
+  if (*this->_proj_data_info_sptr!= proj_data_info)
+    error(boost::format("ForwardProjectorByBin set-up with different geometry for projection data.\nSet_up was with\n%1%\nCalled with\n%2%")
+          % this->_proj_data_info_sptr->parameter_info() % proj_data_info.parameter_info());
+  if (! this->_density_info_sptr->has_same_characteristics(density_info))
+    error("ForwardProjectorByBin set-up with different geometry for density or volume data.");
+}  
 
 void 
 ForwardProjectorByBin::forward_project(ProjData& proj_data, 
@@ -62,7 +86,8 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
   
  // this->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
 //			     image_sptr);
-    
+
+  check(*proj_data.get_proj_data_info_sptr(), image);
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(this->get_symmetries_used()->clone());
   
@@ -127,7 +152,7 @@ forward_project(RelatedViewgrams<float>& viewgrams,
 {
   if (viewgrams.get_num_viewgrams()==0)
     return;
-
+  check(*viewgrams.get_proj_data_info_sptr(), density);
   start_timers();
 
   // first check symmetries    

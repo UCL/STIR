@@ -211,6 +211,8 @@ Succeeded
 BinNormalisationFromECAT8::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
 {
+  BinNormalisation::set_up(proj_data_info_ptr_v);
+
   proj_data_info_ptr = proj_data_info_ptr_v;
   proj_data_info_cyl_ptr =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());

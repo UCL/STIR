@@ -99,7 +99,6 @@ These are only minimally documented at the present stage unfortunately.
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
 <li>add Verbosity level (currently only to be set from interactive languages)</li
 <li>Added the anatomical parallel level sets (PLS) prior. If an uniform anatomical image is provided it will work as a (smoothed) total variation (TV) prior </li>
-======
 <li>New input: GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. </li>
 <li>New header file, with .hroot extension is provided for ROOT files </li>
 <li><code>CListModeData</code> got a new function <code>get_total_number_of_events()</code>, BUT currently only <code>CListModeDataFromROOT</code> supports it. </li> 
@@ -109,6 +108,10 @@ These are only minimally documented at the present stage unfortunately.
     <li>added GeneralisedPoissonNoiseGenerator</li>
   </ul>
 </li>
+<li>Projection- and normalisation-related classes have had changes to make them much safer to use in an interactive
+  environment such as Python. The methods will now check if <code>set_up()</code> has been called
+  and if the images/projection data have the same characteristics as those used when the object was set-up.
+  </li>
 </ul>
 
 
@@ -250,6 +253,9 @@ from the above):</H2>
   is used. Finally, use the preprocessor define <code>MAKE_SHARED</code> as opposed to
   <code>std::make_shared</code>.
 </li>
+<li>Projection- and BinNormalisation-related derived classes now have to call <code>set_up()</code> of their base
+  class. Otherwise, you will get run-time errors saying that <code>set_up()</code> was not called.
+  </li>
 </ul>
 
 <h3>New functionality</h3>
