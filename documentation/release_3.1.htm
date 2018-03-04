@@ -66,16 +66,22 @@ Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
 
 <h2> Summary for end users (also to be read by developers)</h2>
 
-<h3>Important bug fixes</h3>
+<h3>Bbug fixes</h3>
 <ul>
 <li>bug fixed in writing of SPECT interfile headers: "direction of rotation" was set incorrect. This 
 affected output of forward_project (and stir_math -s). Reconstruction was not affected though.
 </li>
-<li>fix conversion from raw GATE (it was using the wrong segment-order and data-type).</li>
+<li>fix conversion from raw GATE using
+  <tt>conv_GATE_raw_ECAT_projdata_to_interfile</tt>(it was using the wrong segment-order and data-type).</li>
 <li>the function value of the quadratic prior value was inconsistent with its gradient. It is now
 divided by 2. This bug did not affect OSMAPOSL nor OSSPS, but did affect the value of the 
 objective function being printed out. This bug would cause major problems if you developed your
-own reconstruction algorithms that used the objective function value. (bug found by Yu-Jung Tsai).</li>
+  own reconstruction algorithms that used the objective function value. (bug found by Yu-Jung Tsai).</li>
+<li>minor bug fix in FBP3DRP. The determination of the rmin/rmax of the missing data was incorrect for 
+negative delta (the range was too narrow). In principle, this could
+have caused problems, but only when a projector was used where the
+segment symmetry is switched off.
+</li>
 </ul>
 
 <h3>New functionality</h3>
