@@ -65,7 +65,7 @@ check(const ProjDataInfo& proj_data_info) const
 {
   if (!this->_already_set_up)
     error("BinNormalisation method called without calling set_up first.");
-  if (*this->_proj_data_info_sptr!= proj_data_info)
+  if (!(*this->_proj_data_info_sptr >= proj_data_info))
     error(boost::format("BinNormalisation set-up with different geometry for projection data.\nSet_up was with\n%1%\nCalled with\n%2%")
           % this->_proj_data_info_sptr->parameter_info() % proj_data_info.parameter_info());
 }
