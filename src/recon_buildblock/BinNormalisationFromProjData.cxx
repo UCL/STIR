@@ -93,14 +93,9 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
     const ProjDataInfo& norm_proj = *(norm_proj_data_ptr->get_proj_data_info_ptr());
     const ProjDataInfo& proj = *proj_data_info_ptr;
     bool ok = 
-      typeid(norm_proj) == typeid(proj) &&
-      *norm_proj.get_scanner_ptr()== *(proj.get_scanner_ptr()) &&
-      (norm_proj.get_min_view_num()==proj.get_min_view_num()) &&
-      (norm_proj.get_max_view_num()==proj.get_max_view_num()) &&
+      (norm_proj >= proj) &&
       (norm_proj.get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
-      (norm_proj.get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num()) &&
-      norm_proj.get_min_segment_num() <= proj.get_min_segment_num() &&
-      norm_proj.get_max_segment_num() >= proj.get_max_segment_num();
+      (norm_proj.get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num());
     
     for (int segment_num=proj.get_min_segment_num();
 	 ok && segment_num<=proj.get_max_segment_num();

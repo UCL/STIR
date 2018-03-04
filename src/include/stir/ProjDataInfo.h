@@ -307,7 +307,17 @@ public:
   //! check equality
   bool operator ==(const ProjDataInfo& proj) const; 
   
-  bool operator !=(const ProjDataInfo& proj) const; 
+  bool operator !=(const ProjDataInfo& proj) const;
+
+  //! Check if \c *this contains \c proj
+  /*!
+    \return \c true only if the types are the same, they are equal, or the range for the 
+       segments and tangential positions is at least as large.
+
+     \warning Currently axial positions have to be identical (for the same segments).
+  */
+  virtual bool operator>=(const ProjDataInfo& proj) const;
+
   //@}
 
   //! \name Functions that return sinograms etc (filled with 0)

@@ -584,6 +584,31 @@ operator !=(const root_type& that) const
   return !((*this) == that);
 }
 
+bool
+ProjDataInfo::
+operator>=(const ProjDataInfo& proj_data_info) const
+{
+  if (typeid(*this) != typeid(proj_data_info))
+    return false;
+
+  const ProjDataInfo& larger_proj_data_info = *this;
+
+  if (larger_proj_data_info == proj_data_info)
+    return true;
+
+  if (proj_data_info.get_max_segment_num() > larger_proj_data_info.get_max_segment_num() ||
+      proj_data_info.get_min_segment_num() < larger_proj_data_info.get_min_segment_num() ||
+      proj_data_info.get_max_tangential_pos_num() > larger_proj_data_info.get_max_tangential_pos_num() ||
+      proj_data_info.get_min_tangential_pos_num() < larger_proj_data_info.get_min_tangential_pos_num())
+    return false;
+
+  shared_ptr<ProjDataInfo> smaller_proj_data_info_sptr(larger_proj_data_info.clone());
+  smaller_proj_data_info_sptr->reduce_segment_range(proj_data_info.get_min_segment_num(), proj_data_info.get_max_segment_num());  
+  smaller_proj_data_info_sptr->set_min_tangential_pos_num(proj_data_info.get_min_tangential_pos_num());
+  smaller_proj_data_info_sptr->set_max_tangential_pos_num(proj_data_info.get_max_tangential_pos_num());
+
+  return (proj_data_info == *smaller_proj_data_info_sptr);
+}
 
 END_NAMESPACE_STIR
 
