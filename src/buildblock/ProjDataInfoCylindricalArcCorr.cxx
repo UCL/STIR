@@ -87,7 +87,7 @@ operator==(const self_type& that) const
   if (!base_type::blindly_equals(&that))
     return false;
   return
-    this->bin_size == that.bin_size;
+    fabs(this->bin_size - that.bin_size) > 0.05F;
 }
 
 bool

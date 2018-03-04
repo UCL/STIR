@@ -293,10 +293,10 @@ blindly_equals(const root_type * const that) const
 
   const self_type& proj_data_info = static_cast<const self_type&>(*that);
   return
-    this->azimuthal_angle_sampling == proj_data_info.azimuthal_angle_sampling &&
-    this->ring_radius == proj_data_info.ring_radius &&
-    this->sampling_corresponds_to_physical_rings == proj_data_info.sampling_corresponds_to_physical_rings &&
-    this->ring_spacing == proj_data_info.ring_spacing &&
+    fabs(this->azimuthal_angle_sampling - proj_data_info.azimuthal_angle_sampling)> 0.05F &&
+    fabs(this->ring_radius - proj_data_info.ring_radius)> 0.05F &&
+    fabs(this->sampling_corresponds_to_physical_rings - proj_data_info.sampling_corresponds_to_physical_rings) > 0.05F &&
+    fabs(this->ring_spacing - proj_data_info.ring_spacing) > 0.05F &&
     this->min_ring_diff == proj_data_info.min_ring_diff &&
     this->max_ring_diff == proj_data_info.max_ring_diff;
 }

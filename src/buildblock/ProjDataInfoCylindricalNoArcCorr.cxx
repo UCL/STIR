@@ -111,8 +111,8 @@ operator==(const self_type& that) const
   if (!base_type::blindly_equals(&that))
     return false;
   return
-    this->ring_radius == that.ring_radius &&
-    this->angular_increment == that.angular_increment;
+    fabs(this->ring_radius - that.ring_radius) > 0.05F &&
+    fabs(this->angular_increment - that.angular_increment) > 0.05F;
 }
 
 bool
