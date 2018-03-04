@@ -15,6 +15,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -252,10 +253,19 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
       check(proj_data_info >= *smaller, "check on operator>= and equal objects");
       smaller->set_min_tangential_pos_num(0);
       check(proj_data_info >= *smaller, "check on tangential_pos and operator>=");
+      smaller->set_min_axial_pos_num(4, 0);
+      check(proj_data_info >= *smaller, "check on axial_pos and operator>=");
+
       smaller->reduce_segment_range(0,0);
       check(proj_data_info >= *smaller, "check on reduce_segment_range and operator>=");
+      // make one range larger, so should now fail
       smaller->set_min_tangential_pos_num(proj_data_info.get_min_tangential_pos_num() - 4);
-      check(!(proj_data_info >= *smaller), "check on mixed case and operator>=");
+      check(!(proj_data_info >= *smaller), "check on mixed case with tangential_pos_num and operator>=");
+      // reset and do the same for axial pos
+      smaller->set_min_tangential_pos_num(proj_data_info.get_min_tangential_pos_num() + 4);
+      check(proj_data_info >= *smaller, "check on reduced segments and tangential_pos and operator>=");
+      smaller->set_max_axial_pos_num(proj_data_info.get_max_axial_pos_num(0)+4, 0);
+      check(!(proj_data_info >= *smaller), "check on mixed case with axial_pos_num and operator>=");
     }
 }
 
