@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-10-18 Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2018, University College London
 
     This file is part of STIR.
 
@@ -296,10 +296,10 @@ blindly_equals(const root_type * const that) const
   const self_type& proj_data_info = static_cast<const self_type&>(*that);
   const Array<1,float> tmp(this->ring_radius - proj_data_info.ring_radius);
   return
-    fabs(this->azimuthal_angle_sampling - proj_data_info.azimuthal_angle_sampling)> 0.05F &&
-    fabs(norm(tmp))> 0.05F &&
+    fabs(this->azimuthal_angle_sampling - proj_data_info.azimuthal_angle_sampling) < 0.05F &&
+    norm(tmp) < 0.05F &&
     this->sampling_corresponds_to_physical_rings == proj_data_info.sampling_corresponds_to_physical_rings &&
-    fabs(this->ring_spacing - proj_data_info.ring_spacing) > 0.05F &&
+    fabs(this->ring_spacing - proj_data_info.ring_spacing) < 0.05F &&
     this->min_ring_diff == proj_data_info.min_ring_diff &&
     this->max_ring_diff == proj_data_info.max_ring_diff;
 }
