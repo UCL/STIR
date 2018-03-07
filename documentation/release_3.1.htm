@@ -1,14 +1,15 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 3.1 (dated 25/08/2015)</title>
+    <title>Summary of changes in STIR release 3.1 (dated 31/12/2017)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 3.1 (dated 25/08/2015)</h1>
+    <h1>Summary of changes in STIR release 3.1 (dated 31/12/2017)</h1>
 
-<p>This version is 100% backwards compatible with STIR 3.0 for the user aside from minor changes 
-when using Python (see below). Developers might need to make minor code changes as 
+<p>This version is 95% backwards compatible with STIR 3.0 for the user aside from minor changes 
+when using Python/MATLAB and when changed image orientation when reading/writing images via ITK (see below).
+Developers might need to make minor code changes as 
 detailed below.
 </p>
 <h2>Overall summary</h2>
@@ -41,34 +42,46 @@ detailed below.
 for Siemens scanners (warning: tested in Biograph mMR only at present).
 </p>
 
-<p>We now support additional list mode file formats (Siemens mMR and CERN ROOT files).
+<p>We now support additional list mode file formats (Siemens mMR, SAFIR and CERN ROOT files).
 </p>
 
-<p>The build system now only uses CMake.</p>
+<p>The build system now only uses CMake. We recommend to use CMake version 3.1 or later 
+on Linux/MacOSX and 3.10.2 or later on Windows, but we try to accomodate older versions of CMake.
+</p>
     
+<p>We now support the parsing of SIEMENS Interfile files natively.</p>
+ 
 <p>Of course, there is also the usual code-cleanup and 
 improvements to the documentation.
 </p>
 
 <p>This release contains mainly code written by Kris Thielemans and Nikos Efthimiou (UCL),
-but with some contributions by Jannis Fischer (ETH Zurich) and Elise Emond (UCL). Various bits
+  but with contributions by Jannis Fischer (ETH Zurich) for SAFIR support,
+  Elise Emond for IO fixes (UCL), Edoardo Pasca (STFC) for Siemens interfile support,
+  Daniel Deida (Leeds) for the PLS prior, and some code clean-up by David Volgyes. Various bits
 were tested by (in alphabetical order, all UCL except where indicated):
-Ottavia Bertolli, Matthias Ehrhardt, Pawel Markiewicz, Richard Manber,
+Ottavia Bertolli, Matthias Ehrhardt, Pawel Markiewicz, Richard Manber, Alaleh Rashidnasab,
 Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
 </p>
 
 <h2> Summary for end users (also to be read by developers)</h2>
 
-<h3>Important bug fixes</h3>
+<h3>Bbug fixes</h3>
 <ul>
 <li>bug fixed in writing of SPECT interfile headers: "direction of rotation" was set incorrect. This 
 affected output of forward_project (and stir_math -s). Reconstruction was not affected though.
 </li>
-<li>fix conversion from raw GATE (it was using the wrong segment-order and data-type).</li>
+<li>fix conversion from raw GATE using
+  <tt>conv_GATE_raw_ECAT_projdata_to_interfile</tt>(it was using the wrong segment-order and data-type).</li>
 <li>the function value of the quadratic prior value was inconsistent with its gradient. It is now
 divided by 2. This bug did not affect OSMAPOSL nor OSSPS, but did affect the value of the 
 objective function being printed out. This bug would cause major problems if you developed your
-own reconstruction algorithms that used the objective function value. (bug found by Yu-Jung Tsai).</li>
+  own reconstruction algorithms that used the objective function value. (bug found by Yu-Jung Tsai).</li>
+<li>minor bug fix in FBP3DRP. The determination of the rmin/rmax of the missing data was incorrect for 
+negative delta (the range was too narrow). In principle, this could
+have caused problems, but only when a projector was used where the
+segment symmetry is switched off.
+</li>
 </ul>
 
 <h3>New functionality</h3>
@@ -90,24 +103,56 @@ These are only minimally documented at the present stage unfortunately.
 <li>We now include a shell script for easier scatter estimation.</li>
 <li><tt>list_lm_countrates</tt> is a new list mode utility to output total counts per specified time interval.</li>
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
-<li>add Verbosity level (currently only to be set from interactive languages)</li>
+<li>add Verbosity level (currently only to be set from interactive languages)</li
+<li>Added the anatomical parallel level sets (PLS) prior. If an uniform anatomical image is provided it will work as a (smoothed) total variation (TV) prior </li>
 <li>New input: GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. </li>
 <li>New header file, with .hroot extension is provided for ROOT files </li>
 <li><code>CListModeData</code> got a new function <code>get_total_number_of_events()</code>, BUT currently only <code>CListModeDataFromROOT</code> supports it. </li> 
 <li>Sensitivity calculation parallelized using distributed worker mechanism.</li>
+<li>Python (and MATLAB) interface
+  <ul>
+    <li>added GeneralisedPoissonNoiseGenerator</li>
+  </ul>
+</li>
+<li>Projection- and normalisation-related classes have had changes to make them much safer to use in an interactive
+  environment such as Python. The methods will now check if <code>set_up()</code> has been called
+  and if the images/projection data have the same characteristics as those used when the object was set-up.
+  (Actually, projection data can be &quote;smaller&quote;, e.g. less segments).
+  </li>
 </ul>
+
 
 <h3>Changed functionality</h3>
 <ul>
 <li>
-renamed <code>get_scanner_ptr()</code> and <code>get_proj_data_info_ptr()</code> in the 
-Python (and MATLAB) interface to <code>get_scanner()</code> and <code>get_proj_data_info()</code>
+  The <code>num_events_to_store</code> variable in <code>LmToProjData</code> has been upgraded to long int
+  allow processing of more events in list mode files.
+</li>
+<li>
+The orientation of images read/written via ITK has changed. It should now be correct if the patient
+was in HFS position. This is currently not checked (and for many file formats, never can be checked).
+</li>
+</ul>
+<h4>Python (and MATLAB) interface</h4>
+<ul>
+<li>
+  renamed <code>get_scanner_ptr()</code> and <code>get_proj_data_info_ptr()</code> in the 
+  <code>get_scanner()</code> and <code>get_proj_data_info()</code>
+</li>
+<li>expose <code>Bin</code> member functions as variables (or attributes).    
+  As opposed to <code>bin.view_num()</code>, write <code>bin.view_num</code>. You can now also do
+  <code>bin.view_num=1</code>.
 </li>
 </ul>
 
 
 <h3>Build system</h3>
 <ul>
+<li>added (advanced) options <code>STIR_USE_BOOST_SHARED_PTR</code> and <code>STIR_NO_UNIQUE_PTR</code>.
+These default to <code>Off</code> unless Boost believes that your compiler does not have a working
+<code>std::shared_ptr</code> or <code>std::unique_ptr</code> (and in particular
+if you didn't enable C++11 or higher).
+You should normally not have to change these options.</li>
 <li>provide CMake option to disable ITK usage even if it's found. </li>
 <li>fixes related to OpenMP</li>
 <li>Changes to CMake build files, allowing others to import STIR via
@@ -116,9 +161,6 @@ Python (and MATLAB) interface to <code>get_scanner()</code> and <code>get_proj_d
 </li>
 <li> added <code>BUILD_TESTING</code> and <code>BUILD_EXECUTABLES</code> options to reduce build time if you do not need those files</li>
 <li>install include files</li> 
-<li>added (advanced) options <code>STIR_USE_BOOST_SHARED_PTR</code> and <code>STIR_NO_UNIQUE_PTR</code>.
-These default to <code>On</code> if you are not using C++11 (or higher), or your compiler has a problem.
-You should normally not have to change these options.</li>
 <li> CMake now has a flag to create the target "doc" for building the Doxygen documentation
   thanks to Jannis Fischer.
 </li>
@@ -207,8 +249,7 @@ from the above):</H2>
     <code>read_from_file</code> and <code>DataSymmetriesForBins::find_symmetry_operation_from_basic_bin</code> etc.
     You should normally just be able to do a simple find-and-replace.<br />
     Note that if <code>std::unique_ptr</code> is not defined for your compiler (and compilation flags), STIR
-    will try to work-around this (see src/include/stir/unique_ptr.h). If that work-around fails,
-    tell your compiler to use at least C++11 (normally by adding the -std=c++11 flag).
+    will try to work-around this (see src/include/stir/unique_ptr.h). 
   </li>
 <li>Make <code>stir::shared_ptr</code> to be <code>std::shared_ptr</code>
   (stick to <code>boost::shared_ptr</code> if the CMake option <code>STIR_USE_BOOST_SHARED_PTR</code>
@@ -219,12 +260,16 @@ from the above):</H2>
   is used. Finally, use the preprocessor define <code>MAKE_SHARED</code> as opposed to
   <code>std::make_shared</code>.
 </li>
+<li>Projection- and BinNormalisation-related derived classes now have to call <code>set_up()</code> of their base
+  class. Otherwise, you will get run-time errors saying that <code>set_up()</code> was not called.
+  </li>
 </ul>
 
 <h3>New functionality</h3>
 <ul>
 <li><code>write_to_file</code> is a new addition that makes it easier to write
 using the default output file format.</li>
+<li><code>FilePath</code> is a new addition that provides a thin cross-platform layer for file and folder operations. In addition to the features already found in utilities it can create new paths and perform checks on paths about accessibility and writting permissions.</li>
 <li>Added apply/undo methods to <code>BinNormalisation</code> to process whole <code>ProjData</code></li>
 <li>extra functionality for <code>ProjData</code>:
   <ul>
@@ -236,6 +281,12 @@ using the default output file format.</li>
 In order to ensure backwards compatibility, at the moment, it is completely optional.</li>
 <li> Information on energy windows has been added in the <code>ExamInfo</code>. </li>
 <li><code>ExamData</code> is a new base class for <code>ProjData</code> and <code>CListModeData</code> </li>
+<li>Moved functions from the <code>poisson_noise</code> utility to a new class
+  <code>GeneralisedPoissonNoiseGenerator</code>.
+  </li>
+ <li>Added the ability to <code>KeyParser</code> to parse <code>long int</code> numbers. Also add <code>remove_key</code>.
+ </li>
+ <li>Introduce <code>operator&gt;=</code> for <code>ProjDataInfo</code>.</li>
 </ul>
 
 <h3>Other code changes</h3>

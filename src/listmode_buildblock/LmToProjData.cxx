@@ -162,8 +162,9 @@ set_defaults()
   normalisation_ptr.reset(new TrivialBinNormalisation);
   post_normalisation_ptr.reset(new TrivialBinNormalisation);
   do_pre_normalisation =0;
-  num_events_to_store = 0;
+  num_events_to_store = 0L;
   use_tof = false;
+  do_time_frame = false;
 }
 
 void 
@@ -338,14 +339,14 @@ post_processing()
   // handle time frame definitions etc
   // If num_events_to_store == 0 && frame_definition_filename.size == 0
   if(num_events_to_store==0 && frame_definition_filename.size() == 0)
-      do_time_frame = true;
+        do_time_frame = true;
 
   if (frame_definition_filename.size()!=0)
   {
     frame_defs = TimeFrameDefinitions(frame_definition_filename);
     do_time_frame = true;
   }
-  else
+  else if (frame_defs.get_num_frames() < 1)
     {
       // make a single frame starting from 0. End value will be ignored.
       vector<pair<double, double> > frame_times(1, pair<double,double>(0,0));
@@ -623,7 +624,7 @@ actual_process_data_without_tof()
 	   // ('allowed' independent on the fact of we have its segment in memory or not)
 	   // When do_time_frame=true, the number of events is irrelevant, so we 
 	   // just set more_events to 1, and never change it
-       long int more_events =
+	   long more_events =
          do_time_frame? 1 : num_events_to_store;
 
 	   if (start_segment_index != proj_data_ptr->get_min_segment_num())

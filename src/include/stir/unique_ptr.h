@@ -76,6 +76,10 @@ namespace stir {
 #include <sstream>
 #include <algorithm>
 #include <deque>
+#include <boost/functional/hash/extensions.hpp>
+#include <boost/get_pointer.hpp>
+#include <boost/smart_ptr/detail/shared_count.hpp>
+#include <boost/smart_ptr/shared_ptr.hpp>
 
 #define unique_ptr auto_ptr
 using std::auto_ptr;

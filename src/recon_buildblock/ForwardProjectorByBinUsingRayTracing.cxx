@@ -117,6 +117,8 @@ ForwardProjectorByBinUsingRayTracing::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
        const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr)
 {
+  ForwardProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);
+  
   if (proj_data_info_ptr->get_num_views()%2 != 0)
     {
       error("The on-the-fly Ray tracing forward projector cannot handle data with odd number of views. Use another projector. Sorry.");
@@ -174,6 +176,8 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
 const DataSymmetriesForViewSegmentNumbers * 
 ForwardProjectorByBinUsingRayTracing::get_symmetries_used() const
 {
+  if (!this->_already_set_up)
+    error("ForwardProjectorByBin method called without calling set_up first.");
   return symmetries_ptr.get(); 
 }
 

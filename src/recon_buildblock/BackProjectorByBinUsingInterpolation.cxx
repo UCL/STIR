@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -102,7 +103,11 @@ initialise_keymap()
 
 const DataSymmetriesForViewSegmentNumbers *
  BackProjectorByBinUsingInterpolation::get_symmetries_used() const
-{ return symmetries_ptr.get(); }
+{
+  if (!this->_already_set_up)
+    error("BackProjectorByBin method called without calling set_up first.");
+  return symmetries_ptr.get();
+}
 
 BackProjectorByBinUsingInterpolation::
 BackProjectorByBinUsingInterpolation(const bool use_piecewise_linear_interpolation,
@@ -129,6 +134,7 @@ void
 BackProjectorByBinUsingInterpolation::set_up(shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
 				     shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr)
 {
+  BackProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);
   this->symmetries_ptr.
     reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr,
 						      do_symmetry_90degrees_min_phi,

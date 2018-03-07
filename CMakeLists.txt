@@ -17,6 +17,13 @@
 # avoid warning about WIN32 no longer defined in CYGWIN
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) 
 
+# enable ccache https://ccache.samba.org/
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+  message(STATUS "ccache found, so we will use this.")
+endif()
+
 PROJECT(STIR)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -26,6 +33,8 @@ cmake_minimum_required(VERSION 2.8.3)
 # add project source to cmake path such that it can use our find_package modules and .cmake files
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/src/cmake)
 include(src/cmake/SetC++Version.cmake)
+
+UseCXX("${CMAKE_CXX_STANDARD}")
 
 # set default build-type to Release
 if(NOT CMAKE_BUILD_TYPE)

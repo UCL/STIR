@@ -368,7 +368,11 @@ public:
   //! check equality
   bool operator ==(const ProjDataInfo& proj) const; 
   
-  bool operator !=(const ProjDataInfo& proj) const; 
+  bool operator !=(const ProjDataInfo& proj) const;
+
+  //! Check if \c *this contains \c proj
+  virtual bool operator>=(const ProjDataInfo& proj) const;
+
   //@}
 
   //! \name Functions that return sinograms etc (filled with 0)

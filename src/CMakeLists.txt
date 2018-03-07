@@ -152,11 +152,9 @@ endif()
 if(STIR_OPENMP)
   find_package(OpenMP REQUIRED)  
   add_definitions(${OpenMP_CXX_FLAGS})
-  if ("${OpenMP_C_FLAGS}" STREQUAL "-fopenmp")
-    # work-around cmake bug for gcc
-    set (OpenMP_EXE_LINKER_FLAGS ${OpenMP_C_FLAGS})
-  endif ()
-
+  # need to explicitly set his. Definitely for gcc, hopefully also for other systems.
+  # See https://gitlab.kitware.com/cmake/cmake/issues/15392
+  set (OpenMP_EXE_LINKER_FLAGS ${OpenMP_CXX_FLAGS})
 endif()
 
 #### Flags for compatibility between different systems
@@ -244,7 +242,7 @@ ADD_SUBDIRECTORY(swig)
 ## Create html documentation using Doxygen
 ## Has to be at the end such that all variables are filled
 find_package(Doxygen)
-option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_DOT_FOUND})
+option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
 if(BUILD_DOCUMENTATION)
     if(NOT DOXYGEN_FOUND)
         message(FATAL_ERROR "Doxygen is needed to build the documentation.")

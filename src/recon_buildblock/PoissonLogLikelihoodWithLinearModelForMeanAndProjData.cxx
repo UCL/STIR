@@ -588,11 +588,12 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
       this->proj_data_sptr->get_max_tof_pos_num();
 
   shared_ptr<ProjDataInfo> proj_data_info_sptr(this->proj_data_sptr->get_proj_data_info_ptr()->clone());
-
+#if 0
+  // KT 4/3/2017 disabled this. It isn't necessary and resolves modyfing the projectors in unexpected ways.
   proj_data_info_sptr->
     reduce_segment_range(-this->max_segment_num_to_process,
                          +this->max_segment_num_to_process);
-
+#endif
   if (is_null_ptr(this->projector_pair_ptr))
     { error("You need to specify a projector pair"); return Succeeded::no; }
 

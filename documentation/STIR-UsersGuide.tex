@@ -313,12 +313,16 @@ via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.
 Note that you can use e.g. \textit{DISABLE\_LLN\_MATRIX} to \textit{not}
 use the LLN ECAT library, even if cmake found it.
 
-Finally, do not forget to set
+Finally, here are some standard CMake variables
 \begin{itemize}
-\item CMAKE\_BUILD\_TYPE to \texttt{Release}, \texttt{Debug} or \texttt{RelWithDebug},
-\item CMAKE\_INSTALL\_PREFIX to specify where the final installation has to occur. CMake
+\item set CMAKE\_BUILD\_TYPE to \texttt{Release} (default), \texttt{Debug} or \texttt{RelWithDebug}
+\item CMAKE\_INSTALL\_PREFIX specifies where the final installation has to occur. CMake
 provides normally a default in a system location, but you could set it for instance to
 \texttt{./install} to put the files inside your build directory.
+\item CMAKE\_CXX\_STANDARD can be used to tell CMake to add flags to your compiler to use
+a particular version of the C++ standard (if it supports it). It is now recommended to set 
+this to \texttt{11}. This is necessary e.g. for ROOT 6 support. Other possible values are
+\texttt{98}, \texttt{14} and \texttt{17} (not tested yet).
 \end{itemize}
 
 On Windows or MacOSX, the procedure is essentially the same, except that you will likely have 
@@ -594,6 +598,11 @@ where \textit{projdata\_filename.hs} is the header text file and \textit{projdat
 is the data file. Please read section \ref{sec:outputinterfile} for info regarding 
 images written by \textit{STIR} in Interfile.
 
+\subsubsection{Siemens interfile-like}
+Siemens PET/CT and PET/MR scanners use a file format that is based on the mentioned
+proposed Interfile standard but with some variations. We read this since STIR 4.0,
+but do not write it.
+
 \subsubsection{VOLPET sinograms}
 
 The GE VOLPET sinogram format is supported for reading, but for
@@ -624,7 +633,10 @@ See the \texttt{conv\_AVW} utility (section \ref{sec:convAVW}).
 If you compiled \textit{STIR} such that it could find the \textit{ITK} library, you will be read
 all image formats supported by \textit{ITK}, see \url{http://www.itk.org/Wiki/ITK/File_Formats}{the ITK Wiki}
 for some information. However, many file formats do not specify geometric information (e.g jpg). For those
-that do, \textit{STIR} currently ignores orientation, offset and timing.
+that do, \textit{STIR} currently timing. However, \textbf{orientation and offset code
+assumes the patient is in HFS position}. This is currently not checked (and in fact
+cannot be checked when reading most file formats).
+
 Note that as DICOM files often store only a single slice, \textit{STIR} attempts to find
 other slices belonging to the same series/time frame/gate.
 
@@ -3668,6 +3680,7 @@ These are the keywords that can be used in addition to the ones listed in \ref{s
   END FilterRootPrior Parameters :=
  \end{verbatim}
 
+
 { \subsubsubsection{Quadratic}
 }
 This implements a quadratic Gibbs prior. The gradient of the prior is computed as follows:
@@ -3705,7 +3718,43 @@ This implements a quadratic Gibbs prior. The gradient of the prior is computed a
   gradient filename prefix:= 
   END Quadratic Prior Parameters:=
   \end{verbatim}
+  
+{ \subsubsubsection{PLS}
+This implements the  anatomical penalty function, Parallel Level Sets (PLS),  proposed by Matthias J. Ehrhardt et. al [Ehr16]. Note that
+  PLS becomes smoothed TV when an uniform anatomical image is provided.  The prior function is the following:
 
+  \[
+  \phi(f) = \sqrt{\alpha^2 + |\nabla v|^2 - {\langle\nabla f,\xi\rangle}^2}
+  \]
+  where $ f $ is the PET image and $ \alpha $ is a parameter that controls the edge-preservation property of PLS.  The $ \xi $ is the normalised gradient calculated as follows:
+
+  \[
+  \xi = \frac{\nabla v}{\sqrt{|\nabla v|^2 + \eta^2}}
+  \]
+where $ v $ is the anatomical image and $ \eta $ is a parameter for preventing the division by zero problem.
+}
+{ \subsubsubsubsection{Parameters}
+}
+  These are the keywords that can be used in addition to the ones listed in \ref{sec:priors}..
+  \begin{verbatim}
+  prior type := PLS
+  PLS Prior Parameters:=
+  penalisation factor :=1
+
+; the following parameter is to avoid division by zero
+; The value depends on the scale of the emission image. 
+
+  eta:=1
+
+; the following parameter controls the edge-preservation property of PLS. 
+; The value depends on the scale of the emission image. 
+
+  alpha:=1
+
+  anatomical_filename:=${filename}
+  only_2D:=0
+  END PLS Prior Parameters:=
+  \end{verbatim}
 \subsubsection{
 Selecting different projector pairs}
 \label{sec:projectorpairs}
@@ -4973,5 +5022,8 @@ Advances in scatter correction for 3D PET/CT. \textit { IEEE Nucl Sci Symp Med I
 {[}Wer02{]} Werling A, Bublitz O, Doll J, Adam L E, and Brix G\textbf{(2002)}, 
 Fast implementation of the single scatter simulation algorithm and its use in iterative image 
 reconstruction of PET data. \textit { Phys Med Biol } 47(16): 2947-2960.
+
+{[}Ehr16{]} {Ehrhardt M J, Markiewicz P, Liljeroth M, Barnes A, Kolehmainen V, Duncan J, Pizarro L, Atkinson D, Hutton B F, Ourselin S, and others\textbf{(2016)}, 
+PET reconstruction with an anatomical MRI prior using parallel level sets. \textit { IEEE Trans Med Imaging } 35(9): 2189-2195.
 
 \end{document}

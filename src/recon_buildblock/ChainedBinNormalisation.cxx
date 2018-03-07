@@ -78,6 +78,7 @@ Succeeded
 ChainedBinNormalisation::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
 {
+  BinNormalisation::set_up(proj_data_info_ptr);
   if (!is_null_ptr(apply_first))
     if (apply_first->set_up(proj_data_info_ptr) == Succeeded::no)
       return  Succeeded::no;

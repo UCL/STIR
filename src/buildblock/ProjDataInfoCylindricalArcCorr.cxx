@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -91,7 +92,7 @@ operator==(const self_type& that) const
   if (!base_type::blindly_equals(&that))
     return false;
   return
-    this->bin_size == that.bin_size;
+    fabs(this->bin_size - that.bin_size) < 0.05F;
 }
 
 bool

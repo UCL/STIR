@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2007, Hammersmith Imanet Ltd
-    Copyright (C) 2014, University College London
+    Copyright (C) 2014, 2018 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -35,8 +35,16 @@
 #include "stir/ProjData.h"
 #include "stir/is_null_ptr.h"
 #include "stir/Succeeded.h"
+#include "stir/error.h"
+#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
+
+BinNormalisation::
+BinNormalisation()
+  :   _already_set_up(false)
+{
+}
 
 BinNormalisation::
 ~BinNormalisation()
@@ -44,17 +52,31 @@ BinNormalisation::
 
 Succeeded
 BinNormalisation::
-set_up(const shared_ptr<ProjDataInfo>& )
+set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
 {
+  _already_set_up = true;
+  _proj_data_info_sptr = proj_data_info_sptr->create_shared_clone();
   return Succeeded::yes;  
 }
 
+void
+BinNormalisation::
+check(const ProjDataInfo& proj_data_info) const
+{
+  if (!this->_already_set_up)
+    error("BinNormalisation method called without calling set_up first.");
+  if (!(*this->_proj_data_info_sptr >= proj_data_info))
+    error(boost::format("BinNormalisation set-up with different geometry for projection data.\nSet_up was with\n%1%\nCalled with\n%2%")
+          % this->_proj_data_info_sptr->parameter_info() % proj_data_info.parameter_info());
+}
+  
 // TODO remove duplication between apply and undo by just having 1 functino that does the loops
 
 void 
 BinNormalisation::apply(RelatedViewgrams<float>& viewgrams,
 			const double start_time, const double end_time) const 
 {
+  this->check(*viewgrams.get_proj_data_info_sptr());
   for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter)
   {
     Bin bin(iter->get_segment_num(),iter->get_view_num(), 0,0,iter->get_timing_pos_num());
@@ -73,6 +95,7 @@ void
 BinNormalisation::
 undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
 {
+  this->check(*viewgrams.get_proj_data_info_sptr());
   for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter)
   {
     Bin bin(iter->get_segment_num(),iter->get_view_num(), 0,0,iter->get_timing_pos_num());
@@ -93,6 +116,7 @@ BinNormalisation::
 apply(ProjData& proj_data,const double start_time, const double end_time, 
       shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr) const
 {
+  this->check(*proj_data.get_proj_data_info_sptr());
   if (is_null_ptr(symmetries_sptr))
     symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_ptr()->create_shared_clone()));
 
@@ -144,6 +168,7 @@ BinNormalisation::
 undo(ProjData& proj_data,const double start_time, const double end_time, 
      shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr) const
 {
+  this->check(*proj_data.get_proj_data_info_sptr());
   if (is_null_ptr(symmetries_sptr))
     symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data.get_proj_data_info_ptr()->create_shared_clone()));
 
