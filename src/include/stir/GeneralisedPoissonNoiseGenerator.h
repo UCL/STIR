@@ -28,6 +28,7 @@
 #include <boost/random/variate_generator.hpp>
 #include <algorithm>
 #include <boost/bind.hpp>
+#include <boost/serialization/array_wrapper.hpp>
 
 START_NAMESPACE_STIR
 
