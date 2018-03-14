@@ -28,7 +28,10 @@
 #include <boost/random/variate_generator.hpp>
 #include <algorithm>
 #include <boost/bind.hpp>
+// boost::serialization::make_array was moved in boost 1.64
+#if BOOST_VERSION == 106400
 #include <boost/serialization/array_wrapper.hpp>
+#endif
 
 START_NAMESPACE_STIR
 
