@@ -46,6 +46,7 @@ template <typename TargetT>
 void
 GeneralisedPrior<TargetT>::set_defaults()
 {
+  _already_set_up = false;
   this->penalisation_factor = 0;  
 }
 
@@ -54,6 +55,7 @@ Succeeded
 GeneralisedPrior<TargetT>::
 set_up(shared_ptr<TargetT> const&)
 {
+  _already_set_up = true;
   return Succeeded::yes;
 }
 

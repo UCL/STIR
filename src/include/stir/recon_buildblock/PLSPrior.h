@@ -124,6 +124,8 @@ class PLSPrior:  public
   //! Constructs it explicitly
   PLSPrior(const bool only_2D, float penalization_factor);
 
+  /*! \todo set the anatomical image to zero if not defined */
+  virtual Succeeded set_up(shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr);
 
   //! compute the value of the function
   double
@@ -153,6 +155,21 @@ class PLSPrior:  public
   void set_anatomical_image_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
   shared_ptr<DiscretisedDensity<3,elemT> > get_anatomical_image_sptr() const;
 
+  /// Set kappa filename
+  void set_kappa_filename(const std::string& filename) { kappa_filename = filename; }
+  /// Get kappa filename
+  std::string get_kappa_filename() const { return kappa_filename; }
+
+  /// Set anatomical filename
+  void set_anatomical_filename(const std::string& filename) { anatomical_filename = filename; }
+  /// Get anatomical filename
+  std::string get_anatomical_filename() const { return anatomical_filename; }
+
+  /// Set only 2D
+  void set_only_2D(const bool arg) { only_2D = arg; }
+  /// Get only 2D
+  bool get_only_2D() { return only_2D; }
+
 protected:
   //! can be set during parsing to restrict the gradient calculation to the 2D case
   bool only_2D;
@@ -175,9 +192,6 @@ protected:
   //! the parsing will only override any exixting kappa-image or anatomical-image if the relevant keyword is present
   virtual bool post_processing();
  private:
-
-    /*! \todo set the anatomical image to zero if not defined */
-   virtual Succeeded set_up();
 
   //! compute the component x, y or z of the image gradient using forward difference
   static void compute_image_gradient_element(DiscretisedDensity<3,elemT> & image_gradient_elem,

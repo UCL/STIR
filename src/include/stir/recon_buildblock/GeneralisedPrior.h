@@ -93,6 +93,7 @@ protected:
   /*! Has to be called by initialise_keymap in the leaf-class */
   virtual void initialise_keymap();
 
+  bool _already_set_up;
 };
 
 END_NAMESPACE_STIR

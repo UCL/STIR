@@ -62,8 +62,16 @@ PLSPrior<elemT>::initialise_keymap()
 
 template <typename elemT>
 Succeeded
-PLSPrior<elemT>::set_up ()
+PLSPrior<elemT>::set_up (shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr)
 {
+    base_type::set_up(target_sptr);
+
+    if (kappa_filename.size() != 0)
+      this->kappa_ptr = read_from_file<DiscretisedDensity<3,elemT> >(kappa_filename);
+
+    if (anatomical_filename.size() != 0){
+      this->anatomical_sptr = read_from_file<DiscretisedDensity<3,elemT> >(anatomical_filename);
+        info(boost::format("Reading anatomical data '%1%'") % anatomical_filename  );}
 
     if (is_null_ptr( this->anatomical_sptr))
     {
@@ -95,7 +103,6 @@ PLSPrior<elemT>::set_up ()
 
     this->set_anatomical_grad_norm_sptr (shared_ptr<DiscretisedDensity<3,elemT> >(norm_sptr));
 
-
 return Succeeded::yes;
 }
 
@@ -105,17 +112,10 @@ PLSPrior<elemT>::post_processing()
 {
   if (base_type::post_processing()==true)
     return true;
-  if (kappa_filename.size() != 0)
-    this->kappa_ptr = read_from_file<DiscretisedDensity<3,elemT> >(kappa_filename);
-
-  if (anatomical_filename.size() != 0){
-    this->anatomical_sptr = read_from_file<DiscretisedDensity<3,elemT> >(anatomical_filename);
-      info(boost::format("Reading anatomical data '%1%'") % anatomical_filename  );}
 
 //  else if (!is_null_ptr( this->anatomical_sptr)){
 //      this->anatomical_sptr->fill (0);
 //  }
-   set_up ();
 
 
   return false;
@@ -498,7 +498,6 @@ PLSPrior<elemT>::
 compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                  const DiscretisedDensity<3,elemT> &current_image_estimate)
 {
-
   if (!this->anatomical_sptr->has_same_characteristics(current_image_estimate))
       error("The gradient should have same charateristics as the PET image");
 
