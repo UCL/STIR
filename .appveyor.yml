@@ -30,4 +30,6 @@ build_script:
 
 test_script:
   - cd C:\projects\stir\build
-  - ctest -C %CONFIGURATION%
+  - ctest -VV -C %CONFIGURATION%
+  - cd ..\recon_test_pack
+  - run_tests --nointbp "C:\projects\stir\install\bin\"

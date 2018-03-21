@@ -385,7 +385,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
         this->_single_frame_obj_funcs[frame_num].set_proj_data_sptr(this->_dyn_proj_data_sptr->get_proj_data_sptr(frame_num));
         this->_single_frame_obj_funcs[frame_num].set_max_segment_num_to_process(this->_max_segment_num_to_process);
         this->_single_frame_obj_funcs[frame_num].set_zero_seg0_end_planes(this->_zero_seg0_end_planes!=0);
-        if(this->_additive_dyn_proj_data_sptr!=NULL)
+        if(!is_null_ptr(this->_additive_dyn_proj_data_sptr))
           this->_single_frame_obj_funcs[frame_num].set_additive_proj_data_sptr(this->_additive_dyn_proj_data_sptr->get_proj_data_sptr(frame_num));
         this->_single_frame_obj_funcs[frame_num].set_num_subsets(this->num_subsets);
         this->_single_frame_obj_funcs[frame_num].set_frame_num(frame_num);
@@ -406,7 +406,7 @@ void
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 set_input_data(const shared_ptr<ExamData> & arg)
 {
-    this->_dyn_proj_data_sptr = boost::dynamic_pointer_cast<DynamicProjData>(arg);
+    this->_dyn_proj_data_sptr = dynamic_pointer_cast<DynamicProjData>(arg);
 }
 
 template<typename TargetT>
@@ -414,7 +414,7 @@ void
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
 {
-   this->_additive_dyn_proj_data_sptr = boost::dynamic_pointer_cast<DynamicProjData>(arg);
+   this->_additive_dyn_proj_data_sptr = dynamic_pointer_cast<DynamicProjData>(arg);
 }
 
 template<typename TargetT>
