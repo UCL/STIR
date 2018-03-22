@@ -106,7 +106,7 @@ public:
   void compute_gradient(DataT& prior_gradient, 
 			const DataT &current_estimate);
 
-  /*! \todo set the anatomical image to zero if not defined */
+  //! Has to be called before using this object
   virtual Succeeded set_up(shared_ptr<DataT> const& target_sptr);
   
 protected:

@@ -124,6 +124,7 @@ class PLSPrior:  public
   //! Constructs it explicitly
   PLSPrior(const bool only_2D, float penalization_factor);
 
+  //! Has to be called before using this object
   /*! \todo set the anatomical image to zero if not defined */
   virtual Succeeded set_up(shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr);
 
