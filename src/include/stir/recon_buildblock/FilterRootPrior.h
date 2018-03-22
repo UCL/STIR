@@ -105,7 +105,14 @@ public:
   //! compute gradient by applying the filter
   void compute_gradient(DataT& prior_gradient, 
 			const DataT &current_estimate);
+
+  /*! \todo set the anatomical image to zero if not defined */
+  virtual Succeeded set_up(shared_ptr<DataT> const& target_sptr);
   
+protected:
+
+  //! Check that the prior is ready to be used
+  virtual void check(DataT const& current_image_estimate) const;
   
 private:  
    shared_ptr<DataProcessor<DataT> > filter_ptr;   

@@ -156,12 +156,12 @@ class PLSPrior:  public
   shared_ptr<DiscretisedDensity<3,elemT> > get_anatomical_image_sptr() const;
 
   /// Set kappa filename
-  void set_kappa_filename(const std::string& filename) { kappa_filename = filename; }
+  void set_kappa_filename(const std::string& filename);
   /// Get kappa filename
   std::string get_kappa_filename() const { return kappa_filename; }
 
   /// Set anatomical filename
-  void set_anatomical_filename(const std::string& filename) { anatomical_filename = filename; }
+  void set_anatomical_filename(const std::string& filename);
   /// Get anatomical filename
   std::string get_anatomical_filename() const { return anatomical_filename; }
 
@@ -191,6 +191,10 @@ protected:
 
   //! the parsing will only override any exixting kappa-image or anatomical-image if the relevant keyword is present
   virtual bool post_processing();
+
+  //! Check that the prior is ready to be used
+  virtual void check(DiscretisedDensity<3,elemT> const& current_image_estimate) const;
+
  private:
 
   //! compute the component x, y or z of the image gradient using forward difference

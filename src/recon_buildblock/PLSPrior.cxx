@@ -66,13 +66,6 @@ PLSPrior<elemT>::set_up (shared_ptr<DiscretisedDensity<3,elemT> > const& target_
 {
     base_type::set_up(target_sptr);
 
-    if (kappa_filename.size() != 0)
-      this->kappa_ptr = read_from_file<DiscretisedDensity<3,elemT> >(kappa_filename);
-
-    if (anatomical_filename.size() != 0){
-      this->anatomical_sptr = read_from_file<DiscretisedDensity<3,elemT> >(anatomical_filename);
-        info(boost::format("Reading anatomical data '%1%'") % anatomical_filename  );}
-
     if (is_null_ptr( this->anatomical_sptr))
     {
        error("PLS prior needs an anatomical image");
@@ -113,13 +106,26 @@ PLSPrior<elemT>::post_processing()
   if (base_type::post_processing()==true)
     return true;
 
+  if (kappa_filename.size() != 0)
+    this->set_kappa_filename(kappa_filename);
+
 //  else if (!is_null_ptr( this->anatomical_sptr)){
 //      this->anatomical_sptr->fill (0);
 //  }
 
-
   return false;
 
+}
+
+template <typename elemT>
+void PLSPrior<elemT>::check(DiscretisedDensity<3,elemT> const& current_image_estimate) const
+{
+  // Do base-class check
+  base_type::check(current_image_estimate);
+
+  // Check anatomical and current image have same characteristics
+  if (!this->anatomical_sptr->has_same_characteristics(current_image_estimate))
+    error("The anatomical image must have the same charateristics as the PET image");
 }
 
 template <typename elemT>
@@ -258,7 +264,21 @@ PLSPrior<elemT>::
 set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >& k)
 { this->kappa_ptr = k; }
 
+//! Set kappa filename
+template <typename elemT> void PLSPrior<elemT>::set_kappa_filename(const std::string& filename)
+{
+  kappa_filename  = filename;
+  this->kappa_ptr = read_from_file<DiscretisedDensity<3,elemT> >(kappa_filename);
+  info(boost::format("Reading kappa data '%1%'") % kappa_filename  );
+}
 
+//! Set anatomical filename
+template <typename elemT> void PLSPrior<elemT>::set_anatomical_filename(const std::string& filename)
+{
+  anatomical_filename  = filename;
+  this->anatomical_sptr = read_from_file<DiscretisedDensity<3,elemT> >(anatomical_filename);
+  info(boost::format("Reading anatomical data '%1%'") % anatomical_filename  );
+}
 
 template <typename elemT>
 void PLSPrior<elemT>::compute_image_gradient_element(DiscretisedDensity<3,elemT> & image_gradient_elem, int direction, const DiscretisedDensity<3,elemT> & image ){
@@ -428,8 +448,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
     return 0.;
   }
 
-  if (!this->anatomical_sptr->has_same_characteristics(current_image_estimate))
-    error("The anatomical image must have the same charateristics as the PET image");
+  this->check(current_image_estimate);
 
   shared_ptr<DiscretisedDensity<3,elemT> > pet_im_grad_z_sptr;
   if(!only_2D)
@@ -498,8 +517,7 @@ PLSPrior<elemT>::
 compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                  const DiscretisedDensity<3,elemT> &current_image_estimate)
 {
-  if (!this->anatomical_sptr->has_same_characteristics(current_image_estimate))
-      error("The gradient should have same charateristics as the PET image");
+  this->check(current_image_estimate);
 
   if (this->penalisation_factor==0)
   {
