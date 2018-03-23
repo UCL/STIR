@@ -82,6 +82,8 @@ negative delta (the range was too narrow). In principle, this could
 have caused problems, but only when a projector was used where the
 segment symmetry is switched off.
 </li>
+<li>minor fix for even span particularly for GE scanners: The number and axial positions, maximum and minimum ring differences were one too less than required. The projection data will now have accurate number of axial positions.
+</li>
 </ul>
 
 <h3>New functionality</h3>
@@ -263,6 +265,8 @@ from the above):</H2>
 <li>Projection- and BinNormalisation-related derived classes now have to call <code>set_up()</code> of their base
   class. Otherwise, you will get run-time errors saying that <code>set_up()</code> was not called.
   </li>
+<li>\texttt{create\_projdata\_template} now requires accurate value of "Max. ring difference acquired :". If wrong maximum ring difference is given as an input, you will get incorrect segment values.
+</li>
 </ul>
 
 <h3>New functionality</h3>

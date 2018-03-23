@@ -370,7 +370,7 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
   // check if we went one too far
   if (RDmaxtmp[seg_num] > max_delta)
   {
-      RDmintmp[seg_num] = -max_delta;
+      RDmintmp[seg_num] = max_delta;
       RDmaxtmp[seg_num] = max_delta;
   }
 
