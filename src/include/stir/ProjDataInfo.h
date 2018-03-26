@@ -35,9 +35,7 @@
 #include "stir/VectorWithOffset.h"
 #include "stir/Scanner.h"
 #include "stir/shared_ptr.h"
-#include "stir/unique_ptr.h"
 #include <string>
-#include <memory>
 
 START_NAMESPACE_STIR
 
@@ -72,37 +70,24 @@ public:
   static ProjDataInfo* 
   ask_parameters();
 
-  //! Construct a ProjDataInfo with span=3 for segment 0, but span=1 for others.
-  /*! This function implements our old understanding of GE data. An alternative is to use
-      construct_proj_data_info() with \c span=2.*/
+  //! Construct a ProjDataInfo suitable for GE Advance data
   static ProjDataInfo*  
   ProjDataInfoGE(const shared_ptr<Scanner>& scanner_ptr, 
 		 const int max_delta,
 		 const int num_views, const int num_tangential_poss, 
                  const bool arc_corrected = true);
 
-  //! Old name for construct_proj_data_info()
-  /*! \deprecated
+  //! Construct a ProjDataInfo suitable for CTI data
+  /*! \c span is used to denote the amount of axial compression (see CTI doc).
+     It has to be an odd number. 
      */
   static ProjDataInfo* 
     ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
 		  const int span, const int max_delta,
                   const int num_views, const int num_tangential_poss, 
                   const bool arc_corrected = true);
-
-  //! Construct a ProjDataInfo suitable with a given span
-  /*! \c span is used to denote the amount of axial compression (see the STIR glossary).
-  Higher span, more axial compression. Span 1 means no axial compression.
-  Siemens/CTI currently uses odd span. GE scanners use a mixed case where segment 0
-  has span 3, while other segments have span 2. We call this span 2.
-  As a generalisation, this function supports any even span.
-  */
-  static unique_ptr<ProjDataInfo>
-	  construct_proj_data_info(const shared_ptr<Scanner>& scanner_sptr,
-		  const int span, const int max_delta,
-		  const int num_views, const int num_tangential_poss,
-		  const bool arc_corrected = true);
-
+  
+  
   /************ constructors ***********/
   // TODO should probably be protected
 

@@ -57,7 +57,7 @@ int main(int argc,char **argv)
     "argv[7]  range on Z value in cm as given to simset binning module\n",
     "argv[8]  STIR scanner name\n",
     "argv[9]  maximum ring difference to use for writing\n",
-    "argv[10]  index of 3d-sinogram in file (0-based)\n",
+    "argv[10]  index of 3d-sinogram in file (0-based)\n"
     "argv[11] STIR file name\n"
   };
   if (argc!=NUMARG){

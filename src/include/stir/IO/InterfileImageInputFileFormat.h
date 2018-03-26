@@ -58,20 +58,20 @@ public InputFileFormat<DiscretisedDensity<3,float> >
     return is_interfile_signature(signature.get_signature());
   }
 
-  virtual unique_ptr<data_type>
+  virtual std::auto_ptr<data_type>
     read_from_file(std::istream& input) const
   {
-    unique_ptr<data_type> ret(read_interfile_image(input));
+    std::auto_ptr<data_type> ret(read_interfile_image(input));
     if (is_null_ptr(ret))
       {
 	error("failed to read an Interfile image from stream");
       }
     return ret;
   }
-  virtual unique_ptr<data_type>
+  virtual std::auto_ptr<data_type>
     read_from_file(const std::string& filename) const
   {
-    unique_ptr<data_type> ret(read_interfile_image(filename));
+    std::auto_ptr<data_type> ret(read_interfile_image(filename));
     if (is_null_ptr(ret))
       {
 	error("failed to read an Interfile image from file \"%s\"", filename.c_str());

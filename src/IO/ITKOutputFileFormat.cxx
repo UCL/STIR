@@ -127,8 +127,7 @@ actual_write_to_file(std::string& filename,
       CartesianCoordinate3D<float> stir_offset = density.get_physical_coordinates_for_indices(min_indices);
       origin[0] = stir_offset.x();
       origin[1] = stir_offset.y();
-      // Note: need to use - for z-coordinate because of different axis conventions
-      origin[2] = -stir_offset.z();
+      origin[2] = stir_offset.z();
       
       // find ITK size
       ImageType::SizeType size;
@@ -142,21 +141,13 @@ actual_write_to_file(std::string& filename,
       spacing[1] = image_ptr.get_voxel_size().y(); // size along Y
       spacing[2] = image_ptr.get_voxel_size().z(); // size along Z
 
-      // ITK orientation (RAI)
-      ImageType::DirectionType matrix;
-      matrix.Fill(0.F);
-      matrix(0,0) = 1.F;
-      matrix(1,1) = 1.F;
-      matrix(2,2) = -1.F;
-
       ImageType::RegionType region;
       region.SetSize( size );
       region.SetIndex( start );
-
+	
       image->SetSpacing(spacing);
       image->SetRegions( region );
       image->SetOrigin(origin);
-      image->SetDirection( matrix );
       image->Allocate();
 	
       // copy data

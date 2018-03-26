@@ -58,13 +58,12 @@ set(buildblock_simple_tests
 	test_proj_data_info
 	test_proj_data_in_memory
 	test_export_array
-        test_GeneralisedPoissonNoiseGenerator
 )
 
 include(stir_test_exe_targets)
 
 foreach(source ${buildblock_simple_tests})
-  create_stir_test(${source} "buildblock;IO;buildblock;numerics_buildblock;display;IO" "")
+  create_stir_test(${source} "buildblock;IO;buildblock;numerics_buildblock;display" "")
 endforeach()
 #
 

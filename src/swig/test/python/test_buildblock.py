@@ -165,25 +165,6 @@ def test_Scanner():
     #for a in l:
     #    print a
 
-def test_Bin():
-    segment_num=1;
-    view_num=2;
-    axial_pos_num=3;
-    tangential_pos_num=4;
-    bin=Bin(segment_num, view_num, axial_pos_num, tangential_pos_num);
-    assert bin.bin_value==0;
-    assert bin.segment_num==segment_num;
-    assert bin.view_num==view_num;
-    assert bin.axial_pos_num==axial_pos_num;
-    assert bin.tangential_pos_num==tangential_pos_num;
-    bin.segment_num=5;
-    assert bin.segment_num==5;
-    bin_value=0.3;
-    bin.bin_value=bin_value;
-    assert abs(bin.bin_value-bin_value)<.01;
-    bin=Bin(segment_num, view_num, axial_pos_num, tangential_pos_num, bin_value);
-    assert abs(bin.bin_value-bin_value)<.01;
-    
 def test_ProjDataInfo():
     s=Scanner.get_scanner_from_name("ECAT 962")
     #ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,

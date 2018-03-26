@@ -304,7 +304,7 @@ int main(int argc, char *argv[])
         bool buffer_opened=false;
         char output_buffer_header[max_filename_length];
 
-        if (is_null_ptr(first_operand)) 
+        if (first_operand==NULL) 
 	  {
 
 	    if (reload)  

@@ -27,7 +27,6 @@
 #include <boost/math/special_functions/fpclassify.hpp>
 #include "stir/error.h"
 #include <boost/format.hpp>
-#include <boost/math/constants/constants.hpp>
 
 using namespace std;
 //using std::string;
@@ -49,6 +48,10 @@ namespace SPECTUB {
 #define minim(a,b) ((a)<=(b)?(a):(b))
 #define abs(a) ((a)>=0?(a):(-a))
 #define SIGN(a) (a<-EPSILON?-1:(a>EPSILON?1:0))
+ 
+#ifndef M_PI
+#define M_PI 3.14159265
+#endif
 
 #define DELIMITER1 '#' //delimiter character in input parameter text file
 #define DELIMITER2 '%' //delimiter character in input parameter text file
@@ -558,7 +561,7 @@ float calc_sigma_v( voxel_type	vox, collim_type COL)
 void fill_ang ( angle_type *ang )
 {
 	float DX    = (float) 0.5 / wmh.psfres ;
-	float dg2rd = boost::math::constants::pi<float>() / (float)180. ;
+	float dg2rd = (float)M_PI / (float)180. ;
 	
 	for ( int i = 0; i < wmh.prj.Nang ; i++ ){
 		

@@ -30,7 +30,6 @@
 //#include "stir/listmode/CListRecordECAT8_32bit.h"
 
 #include "stir/utilities.h"
-#include "stir/error.h"
 #include <string>
 
 START_NAMESPACE_STIR
@@ -58,18 +57,19 @@ public InputFileFormat<CListModeData >
     return is_interfile_signature(signature.get_signature());
   }
  public:
-  virtual unique_ptr<data_type>
+  virtual std::auto_ptr<data_type>
     read_from_file(std::istream& input) const
   {
-    error("read_from_file for ECAT8_32bit listmode data with istream not implemented %s:%s. Sorry",
+    warning("read_from_file for ECAT8_32bit listmode data with istream not implemented %s:%s. Sorry",
 	  __FILE__, __LINE__);
     return
-      unique_ptr<data_type>();
+      std::auto_ptr<data_type>
+      (0);
   }
-  virtual unique_ptr<data_type>
+  virtual std::auto_ptr<data_type>
     read_from_file(const std::string& filename) const
   {	
-    return unique_ptr<data_type>(new CListModeDataECAT8_32bit(filename)); 
+    return std::auto_ptr<data_type>(new CListModeDataECAT8_32bit(filename)); 
   }
 };
 

@@ -36,6 +36,7 @@
 #include "stir/recon_buildblock/SymmetryOperation.h"
 
 using std::vector;
+using std::auto_ptr;
 
 START_NAMESPACE_STIR
 
@@ -73,7 +74,7 @@ DataSymmetriesForBins::num_related_bins(const Bin& b) const
 /*! default implementation in terms of find_symmetry_operation_from_basic_bin */
 bool DataSymmetriesForBins::find_basic_bin(Bin& b) const
 {
-  unique_ptr<SymmetryOperation> sym_op =
+  auto_ptr<SymmetryOperation> sym_op =
     find_symmetry_operation_from_basic_bin(b);
   return sym_op->is_trivial();
 }
@@ -135,7 +136,7 @@ get_related_bins(vector<Bin>& rel_b, const Bin& b,
   }
 }
 
-unique_ptr<SymmetryOperation>
+auto_ptr<SymmetryOperation>
 DataSymmetriesForBins::
 find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers& vs) const
 {
@@ -144,7 +145,7 @@ find_symmetry_operation_from_basic_view_segment_numbers(ViewSegmentNumbers& vs) 
   Bin bin_copy = bin;
 #endif
 
-  unique_ptr<SymmetryOperation> sym_op =
+  auto_ptr<SymmetryOperation> sym_op =
     find_symmetry_operation_from_basic_bin(bin);
   vs.segment_num() = bin.segment_num();
   vs.view_num() = bin.view_num();

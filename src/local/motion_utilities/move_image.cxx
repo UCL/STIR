@@ -180,7 +180,7 @@ process_data()
 
       {
 	char rest[50];
-	sprintf(rest, "_f%ug1d0b0", current_frame_num);
+	sprintf(rest, "_f%dg1d0b0", current_frame_num);
 	const string output_filename = output_filename_prefix + rest;
 	if (output_file_format_sptr->write_to_file(output_filename, *out_density_sptr)
 	    == Succeeded::no)

@@ -63,7 +63,7 @@ class KeyParser;
 class KeyArgument
 {
 public:
-  enum type {NONE,ASCII,LIST_OF_ASCII,ASCIIlist,UINT, ULONG, LONG,INT,
+  enum type {NONE,ASCII,LIST_OF_ASCII,ASCIIlist,UINT, ULONG,INT,
     LIST_OF_INTS,DOUBLE, LIST_OF_DOUBLES, listASCIIlist,
     ARRAY2D_OF_FLOATS,
     ARRAY3D_OF_FLOATS,
@@ -178,9 +178,6 @@ public:
 
   //! add a keyword. When parsing, parse its value as a int and put it in *variable_ptr
   void add_key(const std::string& keyword, int * variable_ptr);
-
-  //! add a keyword. When parsing, parse its value as a int and put it in *variable_ptr
-  void add_key(const std::string& keyword, long int * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a int and put it in *variable_ptr
   void add_key(const std::string& keyword, unsigned int * variable_ptr);

@@ -144,6 +144,10 @@ int main(int argc, char **argv)
       {
 	error("Can only process not arc-corrected data\n");
       }
+    const int half_fan_size = 
+      std::min(proj_data_info_ptr->get_max_tangential_pos_num(),
+          -proj_data_info_ptr->get_min_tangential_pos_num());
+    const int fan_size = 2*half_fan_size+1;
     const int max_ring_diff = 
       proj_data_info_ptr->get_max_ring_difference
       (proj_data_info_ptr->get_max_segment_num());
@@ -152,16 +156,14 @@ int main(int argc, char **argv)
       proj_data_info_ptr->get_view_mashing_factor();
 
     shared_ptr<Scanner> scanner_sptr(new Scanner(*proj_data_info_ptr->get_scanner_ptr()));
-    unique_ptr<ProjDataInfo> uncompressed_proj_data_info_uptr
-    (ProjDataInfo::construct_proj_data_info(scanner_sptr,
-      /*span=*/1, max_ring_diff,
-      /*num_views=*/num_detectors_per_ring / 2,
-      scanner_sptr->get_max_num_non_arccorrected_bins(),
-      /*arccorrection=*/false));
-    const ProjDataInfoCylindricalNoArcCorr * const
-      uncompressed_proj_data_info_ptr =
+    const ProjDataInfoCylindricalNoArcCorr * const uncompressed_proj_data_info_ptr = 
       dynamic_cast<const ProjDataInfoCylindricalNoArcCorr * const>
-      (uncompressed_proj_data_info_uptr.get());
+      (ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
+				    /*span=*/1, max_ring_diff,
+				    /*num_views=*/num_detectors_per_ring/2, 
+				    fan_size,
+				    /*arccorrection=*/false));
+
 
     
     Bin bin;
@@ -207,8 +209,8 @@ int main(int argc, char **argv)
 			 ++ bin.view_num())
 		      {
 
-			for (bin.tangential_pos_num() = proj_data_info_ptr->get_min_tangential_pos_num();
-			     bin.tangential_pos_num() <= proj_data_info_ptr->get_max_tangential_pos_num();
+			for (bin.tangential_pos_num() = -half_fan_size;
+			     bin.tangential_pos_num() <= half_fan_size;
 			     ++bin.tangential_pos_num())
 			  {
 			    uncompressed_bin.tangential_pos_num() =

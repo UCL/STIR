@@ -159,7 +159,7 @@ void process_data(const string& output_file_name,
 		  const FunctionObjectT& pow_times_add_object,
 		  const OutputFileFormat<DataT>& output_format)
 {
-  unique_ptr< DataT >  image_ptr = 
+  std::auto_ptr< DataT >  image_ptr = 
     read_from_file<DataT>(*argv);
   if (!no_math_on_data && !except_first )
     in_place_apply_function(*image_ptr, pow_times_add_object);

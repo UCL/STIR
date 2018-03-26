@@ -71,10 +71,6 @@ namespace stir {
 
 #cmakedefine STIR_MPI
 
-#cmakedefine STIR_USE_BOOST_SHARED_PTR
-
-#cmakedefine STIR_NO_UNIQUE_PTR
-
 #cmakedefine HAVE_SYSTEM_GETOPT
 
 #cmakedefine STIR_DEFAULT_PROJECTOR_AS_V2

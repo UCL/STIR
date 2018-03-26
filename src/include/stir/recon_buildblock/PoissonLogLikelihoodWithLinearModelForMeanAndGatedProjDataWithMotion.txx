@@ -31,7 +31,6 @@
 #include "stir/Succeeded.h"
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 #include "stir/info.h"
-#include "stir/is_null_ptr.h"
 
 // include the following to set defaults
 #ifndef USE_PMRT
@@ -335,7 +334,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_input_data(const shared_ptr<ExamData> & arg)
 {
-    this->_gated_proj_data_sptr = dynamic_pointer_cast<GatedProjData>(arg);
+    this->_gated_proj_data_sptr = boost::dynamic_pointer_cast<GatedProjData>(arg);
 }
 
 template<typename TargetT>
@@ -343,7 +342,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
 {
-    this->_additive_gated_proj_data_sptr = dynamic_pointer_cast<GatedProjData>(arg);
+    this->_additive_gated_proj_data_sptr = boost::dynamic_pointer_cast<GatedProjData>(arg);
 }
 
 template<typename TargetT>
@@ -408,7 +407,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
 	this->_single_gate_obj_funcs[gate_num].set_proj_data_sptr(this->_gated_proj_data_sptr->get_proj_data_sptr(gate_num));
 	this->_single_gate_obj_funcs[gate_num].set_max_segment_num_to_process(this->_max_segment_num_to_process);
 	this->_single_gate_obj_funcs[gate_num].set_zero_seg0_end_planes(this->_zero_seg0_end_planes!=0);
-	if(!is_null_ptr(this->_additive_gated_proj_data_sptr))
+	if(this->_additive_gated_proj_data_sptr!=NULL)
 	  this->_single_gate_obj_funcs[gate_num].set_additive_proj_data_sptr(this->_additive_gated_proj_data_sptr->get_proj_data_sptr(gate_num));
 	this->_single_gate_obj_funcs[gate_num].set_num_subsets(this->num_subsets);
 	this->_single_gate_obj_funcs[gate_num].set_frame_num(1);//This should be gate...

@@ -29,7 +29,6 @@ set(${dir_LIB_SOURCES}
   OutputFileFormat_default 
   InterfileOutputFileFormat
   interfile InterfileHeader InterfilePDFSHeaderSPECT
-  InterfileHeaderSiemens
   InputFileFormatRegistry 
   InterfileDynamicDiscretisedDensityOutputFileFormat 
   InterfileParametricDensityOutputFileFormat
