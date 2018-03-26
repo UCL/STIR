@@ -118,7 +118,7 @@ public:
 
   //! A static member to read an image from file
   static DiscretisedDensity * read_from_file(const std::string& filename);
-  
+
   //! Construct an empty DiscretisedDensity
   inline DiscretisedDensity();
   

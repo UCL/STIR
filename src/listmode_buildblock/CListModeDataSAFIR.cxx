@@ -25,10 +25,16 @@ jannis.fischer@cern.ch
 
 #include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
+#include "stir/is_null_ptr.h"
 
-//#include "boost/static_assert.hpp"
+#include "boost/static_assert.hpp"
+#include "boost/pointer_cast.hpp"
 
 #include "stir/listmode/CListModeDataSAFIR.h"
+
+
+//#include "stir/ExamInfo.h"
+
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -45,7 +51,7 @@ START_NAMESPACE_STIR;
 template <class CListRecordT>
 CListModeDataSAFIR<CListRecordT>::
 CListModeDataSAFIR(const std::string& listmode_filename, const std::string& crystal_map_filename, const std::string& template_proj_data_filename)
-  : listmode_filename(listmode_filename), map(MAKE_SHARED<DetectorCoordinateMapFromFile>(crystal_map_filename))
+  : listmode_filename(listmode_filename), map(boost::make_shared<DetectorCoordinateMapFromFile>(crystal_map_filename))
 {
 	this->exam_info_sptr.reset(new ExamInfo);
 
@@ -74,9 +80,9 @@ shared_ptr <CListRecord>
 CListModeDataSAFIR<CListRecordT>::
 get_empty_record_sptr() const
 {
-	shared_ptr<CListRecordSAFIR> sptr(new CListRecordSAFIR);
+	boost::shared_ptr<CListRecordSAFIR> sptr(new CListRecordSAFIR);
 	sptr->event_SAFIR().set_map(map);
-	return static_pointer_cast<CListRecord>(sptr);
+	return boost::static_pointer_cast<CListRecord>(sptr);
 }
 
 template <class CListRecordT>

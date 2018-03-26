@@ -1061,7 +1061,7 @@ the file formats supported by STIR are stored in registries (see section \ref{se
 Currently recommended way to read an image is as follows:
 \begin{verbatim}
     typedef DiscretisedDensity<3,float> DataType ;
-    std::unique_ptr<DataType> density_aptr = read_from_file<DataType>(filename);
+    std::auto_ptr<DataType> density_aptr = read_from_file<DataType>(filename);
 \end{verbatim}
 You will have to include \texttt{stir/IO/read\_from\_file.h} for this to work. The function
 \texttt{read\_from\_file} will open the file, read an initial block of data, check

@@ -192,7 +192,7 @@ process_data()
       set_frame_num_to_process(current_frame_num);
       {
 	char rest[50];
-	sprintf(rest, "_f%ug1d0b0", current_frame_num);
+	sprintf(rest, "_f%dg1d0b0", current_frame_num);
 	const string output_filename = output_filename_prefix + rest;
 	out_proj_data_sptr.
 	  reset(new ProjDataInterfile (in_proj_data_sptr->get_exam_info_sptr(), proj_data_info_ptr, output_filename, ios::out)); 

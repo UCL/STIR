@@ -48,14 +48,11 @@ START_NAMESPACE_STIR
   \ingroup projdata
   \brief A class which reads/writes projection data from/to a (binary) stream.
 
-  At tehe end of every write (i.e., \ set_*) operation, the stream is flushed such that 
-  subsequent read operations from the same file will be able this data even if the 
-  stream isn't closed yet. This is important in an interactive context, as the object
-  owning the stream might not be deleted yet before we try to read the file again.
+  Mainly useful for Interfile data.
 
   \warning Data have to be contiguous.
-  \warning The parameter \c make_num_tangential_poss_odd (used in various 
-  \c get_ functions) is temporary and will be removed soon.
+  \warning The parameter make_num_tangential_poss_odd (used in various 
+  get_ functions) is temporary and will be removed soon.
 
 */
 class ProjDataFromStream : public ProjData

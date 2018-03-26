@@ -208,8 +208,29 @@ set_up(
   /* do consistency checks on projection data.
      It's safe as long as the stored range is larger than what we need.
   */
-  if (!( *this->proj_data_info_ptr >= *proj_data_info_ptr_v))
-    error("ProjMatrixByBinFromFile set-up with proj data with wrong characteristics");
+  {
+    boost::scoped_ptr<ProjDataInfo> smaller_proj_data_info_sptr(this->proj_data_info_ptr->clone());
+    // first reduce to input segment-range
+    {
+      const int new_max = std::min(proj_data_info_ptr_v->get_max_segment_num(),
+				   this->proj_data_info_ptr->get_max_segment_num());
+      const int new_min = std::max(proj_data_info_ptr_v->get_min_segment_num(),
+				   this->proj_data_info_ptr->get_min_segment_num());
+      smaller_proj_data_info_sptr->reduce_segment_range(new_min, new_max);
+    }
+    // same for tangential_pos range
+    {
+      const int new_max = std::min(proj_data_info_ptr_v->get_max_tangential_pos_num(),
+				   this->proj_data_info_ptr->get_max_tangential_pos_num());
+      const int new_min = std::max(proj_data_info_ptr_v->get_min_tangential_pos_num(),
+				   this->proj_data_info_ptr->get_min_tangential_pos_num());
+      smaller_proj_data_info_sptr->set_min_tangential_pos_num(new_min);
+      smaller_proj_data_info_sptr->set_max_tangential_pos_num(new_max);
+    }
+
+    if (*proj_data_info_ptr_v != *smaller_proj_data_info_sptr)
+      error("ProjMatrixByBinFromFile set-up with proj data with wrong characteristics");
+  }
 
   // note: currently setting up with proj_data_info stored in the file
   // even though it's potentially larger. This is because we currently store

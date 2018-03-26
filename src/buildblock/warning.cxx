@@ -53,7 +53,6 @@ void warning(const char *const s, ...)
   char tmp[size];
   const int returned_size= vsnprintf(tmp,size, s, ap);
   std::stringstream ss;
-  va_end(ap);
   if (returned_size < 0)
 	  ss << "\nWARNING: error formatting warning message" << std::endl;
   else

@@ -51,9 +51,9 @@
 #endif
 #include <algorithm>
 #include "boost/lambda/lambda.hpp"
-#include "stir/unique_ptr.h"
 
 #ifndef STIR_NO_NAMESPACES
+using std::auto_ptr;
 using std::cerr;
 using std::endl;
 using boost::lambda::_1;
@@ -225,8 +225,10 @@ precompute_denominator_of_conditioner_without_penalty()
   assert(*std::max_element(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all()) == 0);
   assert(*std::min_element(precomputed_denominator_ptr->begin_all(), precomputed_denominator_ptr->end_all()) == 0);
 
-  unique_ptr<TargetT > data_full_of_ones_aptr
-    ( precomputed_denominator_ptr->clone());
+  // TODO replace by boost::scoped_ptr
+  std::auto_ptr<TargetT > data_full_of_ones_aptr =
+	std::auto_ptr<TargetT >
+	( precomputed_denominator_ptr->clone());
   std::fill(data_full_of_ones_aptr->begin_all(),
 	    data_full_of_ones_aptr->end_all(),
 	    1.F);
@@ -350,8 +352,8 @@ update_estimate(TargetT &current_image_estimate)
   info(boost::format("Now processing subset #: %1%") % subset_num);
     
   // TODO make member or static parameter to avoid reallocation all the time
-  unique_ptr< TargetT > numerator_ptr
-    (current_image_estimate.get_empty_copy());
+  auto_ptr< TargetT > numerator_ptr =
+    auto_ptr< TargetT >(current_image_estimate.get_empty_copy());
 
   this->objective_function_sptr->compute_sub_gradient(*numerator_ptr, current_image_estimate, subset_num);
   //*numerator_ptr *= this->num_subsets;
@@ -367,8 +369,8 @@ update_estimate(TargetT &current_image_estimate)
   if (recompute_penalty_term_in_denominator || 
       (this->get_subiteration_num() == this->get_start_subiteration_num()))
     {
-      unique_ptr< TargetT > work_image_ptr
-	(current_image_estimate.get_empty_copy());
+      auto_ptr< TargetT > work_image_ptr = 
+	auto_ptr< TargetT >(current_image_estimate.get_empty_copy());
       
       // avoid work (or crash) when penalty is 0
       if (!this->objective_function_sptr->prior_is_zero())

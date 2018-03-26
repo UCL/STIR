@@ -3,7 +3,6 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -46,6 +45,10 @@
 #include <algorithm>
 using std::min;
 using std::max;
+
+#ifndef STIR_NAMESPACES
+using std::auto_ptr;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -103,11 +106,7 @@ initialise_keymap()
 
 const DataSymmetriesForViewSegmentNumbers *
  BackProjectorByBinUsingInterpolation::get_symmetries_used() const
-{
-  if (!this->_already_set_up)
-    error("BackProjectorByBin method called without calling set_up first.");
-  return symmetries_ptr.get();
-}
+{ return symmetries_ptr.get(); }
 
 BackProjectorByBinUsingInterpolation::
 BackProjectorByBinUsingInterpolation(const bool use_piecewise_linear_interpolation,
@@ -134,7 +133,6 @@ void
 BackProjectorByBinUsingInterpolation::set_up(shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
 				     shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr)
 {
-  BackProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);
   this->symmetries_ptr.
     reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr, image_info_ptr,
 						      do_symmetry_90degrees_min_phi,
@@ -222,7 +220,7 @@ actual_back_project(DiscretisedDensity<3,float>& density,
   // if zoom==1 there's no need for allocation of a new
   // RelatedViewgrams object, so we do some trickery with a pointer
   const RelatedViewgrams<float>* zoomed_viewgrams_ptr = 0;
-  // to make it exception-proof we need to use an unique_ptr or shared_ptr
+  // to make it exception-proof we need to use an auto_ptr or shared_ptr
   shared_ptr<RelatedViewgrams<float> > zoomed_viewgrams_sptr;
   int zoomed_min_tangential_pos_num;
   int zoomed_max_tangential_pos_num;
@@ -248,7 +246,7 @@ actual_back_project(DiscretisedDensity<3,float>& density,
 	min_tangential_pos_num;
       zoomed_max_tangential_pos_num = 
 	max_tangential_pos_num;
-      // we cannot use the unique_ptr here, as that would try to free the 
+      // we cannot use the auto_ptr here, as that would try to free the 
       // viewgrams object
       zoomed_viewgrams_ptr = &viewgrams;
     }

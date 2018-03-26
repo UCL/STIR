@@ -3,7 +3,7 @@
 \documentclass{article}
 \usepackage{graphicx}
 \usepackage{hyperref}
-\usepackage{caption}
+
 \newcommand{\tab}{\hspace{5mm}}
 
 \begin{document}
@@ -159,17 +159,11 @@ have been added 2 by 2 to form only one \textbf{view}.
 \item[Axial compression (Span)] 
 Reduction of the number of \textbf{sinograms} at different \textbf{ring 
 differences} as shown in Annex 1. \textbf{Span} is a number used by 
-Siemens/CTI to say how much axial compression has been used. 
-Higher span, more axial compression. Span 1 means 
-no axial compression. See the Annex for more information.
-Siemens/CTI always uses odd span. 
-Note that GE scanners uses mixed data, 
-where segment $0$ has span $3$, while other segments have span $2$. 
-In \textbf{STIR}, we call this \textit{span 2}. As a generalisation,
-\textbf{STIR} supports any even span (where segment $0$ has effective
-$\mathrm{span}+1$).
-Finally, for historical reasons \textbf{STIR} also support a different mixed
-format where segment $0$ has span $3$ but higher segments have span $1$.
+Siemens/CTI to say how much axial compression has been used. It is always 
+an odd number. Higher span, more axial compression. Span 1 means 
+no axial compression. Note that GE scanners uses mixed data, 
+where segment 0 has span 3, while other segments have span 1 (or 2, depending on how you look at it, 
+see the Annex).
 \end{description}
 
 \section*{Terms used in quantitative PET reconstruction}
@@ -246,30 +240,36 @@ Incorporates motion information after reconstruction to obtain a motion-free ima
 \newpage
  \section*{ ANNEX 1 :Michelogram}
 
-Figure 1 shows the michelogram of data for the ART scanner with a maximum \textbf{ring 
+Michelogram of data for the ART scanner with a maximum \textbf{ring 
 difference} of 17 and a \textbf{span} of 7. \\
 Segment 0 is on the diagonal. \\
 Each dot would correspond to a single sinogram if no axial compression 
 would be used. Axial compression consists in adding sinograms 
 together whose central LORs intersect the scanner axis 
 in the same point. This can be seen as a generalization of the 
-Single Slice Rebinning Algorithm (\textbf{STIR}'s \textbf{SSRB} supports any span). 
-In the drawing below, the diagonal 
+Single Slice Rebinning Algorithm. In the drawing below, the diagonal 
 lines connecting the dots indicate the sinograms that are added 
 together. The illustration is for \textbf{span} 7=4+3 (this terminology 
 was introduced because for some axial positions, 4 sinograms 
 are added, while for others only 3. Note that \textbf{span} is always 
-odd.).
-
+odd.).\\
+Note that STIR supports data with different \textbf{span} for each \textbf{segment}. 
+In particular, STIR currently interpretes the (3D) data organisation of the
+GE Advance and GE Discovery scanners as using segment 0 with span=3, while 
+other segments are span=1. Another interpretation of GE data is that segment 0 uses
+span=3, while other segments use span=2 (i.e. segment 1 contains ring differences +2 and +3), 
+see the slide on p.7 of [Fay2004].
 
 \begin{figure}[htbp]
 \begin{center}
 \includegraphics[width=6.in, height=6in]{graphics/STIR-glossaryFig1}
-\captionsetup{singlelinecheck=off}
-\caption[Fig:span7]{Michelogram with span=7. \textbf{Warning}: due to historical 
+\caption{Michelogram with span=7. \textbf{Warning}: due to historical 
 reasons, the axis labels are wrong. The horizontal axis corresponds to
-\textit{ringB}.
-\\
+\textit{ringB}.}
+\end{center}
+\end{figure}
+
+
 Legend: 
 \begin{description}
 \item[rdmin] the minimum ring difference
@@ -277,25 +277,11 @@ Legend:
 \item[average\_delta] the averaged ring difference. This is equal 
 to segment\_num*span if the span is the same for each segment.
 \end{description}
-}
-
-\end{center}
-\end{figure}
-
-
-
-\begin{figure}[htbp]
-\begin{center}
-\includegraphics[width=6.in, height=6in]{graphics/STIR-glossary-Fig-span4}
-\caption{Michelogram with span=4.}
-\end{center}
-\end{figure}
 
 \section*{References}
-\noindent
+
 [Fah2002] FH Fahey, "Data Acquisition in PET Imaging", J Nucl Med Technol 2002; 30:39, 49.
 
-\noindent
 [Fah2004] FH Fahey, 2004 SNM Mid-Winter Educational Symposium slides, online at
 \url{http://interactive.snm.org/docs/Fahey%20presentation.pdf}
 \end{document}

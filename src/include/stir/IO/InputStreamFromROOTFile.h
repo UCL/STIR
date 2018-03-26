@@ -36,6 +36,7 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TChain.h>
+#include <TH2D.h>
 #include <TDirectory.h>
 #include <TList.h>
 #include <TChainElement.h>

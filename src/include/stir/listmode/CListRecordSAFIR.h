@@ -38,6 +38,7 @@
 #include "stir/ByteOrder.h"
 #include "stir/ByteOrderDefine.h"
 
+#include "boost/make_shared.hpp"
 #include "boost/static_assert.hpp"
 #include "boost/cstdint.hpp"
 

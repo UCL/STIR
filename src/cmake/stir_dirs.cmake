@@ -28,9 +28,7 @@ SET (STIR_INCLUDE_DIR
      "${PROJECT_SOURCE_DIR}/src/include"
 )
 
-# add STIR include directories before existing include paths such that
-# files there are used, as opposed to an existing STIR installation elsewhere
-include_directories (BEFORE "${STIR_INCLUDE_DIR}")
+include_directories ("${STIR_INCLUDE_DIR}")
 
 # registries
 SET (STIR_IO_REGISTRIES

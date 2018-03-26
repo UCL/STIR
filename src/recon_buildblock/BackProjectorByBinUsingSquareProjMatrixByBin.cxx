@@ -66,8 +66,6 @@ BackProjectorByBinUsingSquareProjMatrixByBin(
 const DataSymmetriesForViewSegmentNumbers *
 BackProjectorByBinUsingSquareProjMatrixByBin::get_symmetries_used() const
 {
-  if (!this->_already_set_up)
-    error("BackProjectorByBin method called without calling set_up first.");
   return proj_matrix_ptr->get_symmetries_ptr();
 }
 
@@ -135,8 +133,7 @@ BackProjectorByBinUsingSquareProjMatrixByBin::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
        const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr)
 
-{
-  BackProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);
+{    	   
   proj_matrix_ptr->set_up(proj_data_info_ptr, image_info_ptr);
 }
 

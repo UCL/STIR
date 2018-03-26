@@ -66,7 +66,6 @@ public:
 
   Derived classes can assume that the projectors  will be called
   with input corresponding to the arguments of the last call to set_up(). 
-  \warning Derived classes have to call set_up from the base class.
   */
   virtual Succeeded
     set_up(		 
@@ -102,19 +101,6 @@ protected:
   shared_ptr<ForwardProjectorByBin> forward_projector_sptr;
   shared_ptr<BackProjectorByBin> back_projector_sptr;
 
-  //! check if the argument is the same as what was used for set_up()
-  /*! calls error() if anything is wrong.
-
-      If overriding this function in a derived class, you need to call this one.
-   */
-  virtual void check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& density_info) const;
-  bool _already_set_up;
-
- private:
-  shared_ptr<ProjDataInfo> _proj_data_info_sptr;
-  //! The density ptr set with set_up()
-  /*! \todo it is wasteful to have to store the whole image as this uses memory that we don't need. */
-  shared_ptr<DiscretisedDensity<3,float> > _density_info_sptr;
 };
 
 END_NAMESPACE_STIR

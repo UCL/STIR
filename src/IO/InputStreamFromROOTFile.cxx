@@ -17,8 +17,6 @@
 */
 
 #include "stir/IO/InputStreamFromROOTFile.h"
-#include "stir/IO/FileSignature.h"
-#include "stir/error.h"
 
 START_NAMESPACE_STIR
 
@@ -64,13 +62,6 @@ InputStreamFromROOTFile::initialise_keymap()
 bool
 InputStreamFromROOTFile::post_processing()
 {
-    // Read the 4 bytes to check whether this is a ROOT file, indeed.
-    FileSignature signature(filename.c_str());
-    if ( strncmp(signature.get_signature(), "root", 4) != 0)
-      {
-	error("InputStreamFromROOTFile: File '%s' is not a ROOT file! (first 4 bytes should say 'root')",
-	      filename.c_str());
-      }
     stream_ptr = new TChain(this->chain_name.c_str());
     stream_ptr->Add(this->filename.c_str());
 

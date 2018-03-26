@@ -4,10 +4,8 @@
   \file
   \ingroup buildblock
   
-  \brief Import of std::shared_ptr, std::dynamic_pointer_cast and
-  std::static_pointer_cast (or corresponding boost versions if 
-  STIR_USE_BOOST_SHARED_PTR is set, i.e. normally when std::shared_ptr doesn't exist) 
-  into the stir namespace.        
+  \brief Import of boost::shared_ptr into stir namespace
+          
 */         
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
@@ -29,27 +27,11 @@
 #ifndef __stir_SHARED_PTR__
 #define __stir_SHARED_PTR__
 
+// include this as stir/common.h has to be included by any stir .h file
 #include "stir/common.h"
-#if defined(STIR_USE_BOOST_SHARED_PTR)
 #include "boost/shared_ptr.hpp"
-#include "boost/make_shared.hpp"
-#include "boost/pointer_cast.hpp"
 namespace stir {
-  using boost::shared_ptr;
-  using boost::dynamic_pointer_cast;
-  using boost::static_pointer_cast;
-  //! work-around for using std::make_shared on old compilers
-#define MAKE_SHARED boost::make_shared
+using boost::shared_ptr;
 }
-#else
-#include <memory>
-namespace stir {
-  using std::shared_ptr;
-  using std::dynamic_pointer_cast;
-  using std::static_pointer_cast;
-  //! work-around for using std::make_shared on old compilers
-#define MAKE_SHARED std::make_shared
-}
-#endif
 
 #endif

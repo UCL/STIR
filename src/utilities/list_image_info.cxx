@@ -31,7 +31,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/stream.h"
 #include "stir/Succeeded.h"
-#include "stir/unique_ptr.h"
+
 #include <memory>
 #include <iostream>
 USING_NAMESPACE_STIR
@@ -43,7 +43,8 @@ int main(int argc, char *argv[])
       std::cerr<<"\nUsage: list_image_info image_filename";
       return EXIT_FAILURE;
     }
-  unique_ptr<VoxelsOnCartesianGrid<float> >image_aptr
+  std::auto_ptr<VoxelsOnCartesianGrid<float> >image_aptr =
+    std::auto_ptr<VoxelsOnCartesianGrid<float> >
     (dynamic_cast<VoxelsOnCartesianGrid<float> *>(
 	DiscretisedDensity<3,float>::read_from_file(argv[1]))
     );
