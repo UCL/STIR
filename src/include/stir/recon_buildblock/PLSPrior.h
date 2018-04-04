@@ -149,22 +149,19 @@ class PLSPrior:  public
   double get_eta() const;
   double get_alpha() const;
 
-  //! set kappa image
-  void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
 
-  //! set/get anatomical pointers
+  //! set anatomical pointer
   void set_anatomical_image_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+  //! get anatomical pointer
   shared_ptr<DiscretisedDensity<3,elemT> > get_anatomical_image_sptr() const;
-
-  /// Set kappa filename
-  void set_kappa_filename(const std::string& filename);
-  /// Get kappa filename
-  std::string get_kappa_filename() const { return kappa_filename; }
-
   /// Set anatomical filename
   void set_anatomical_filename(const std::string& filename);
-  /// Get anatomical filename
-  std::string get_anatomical_filename() const { return anatomical_filename; }
+
+  //! set kappa image
+  void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+  /// Set kappa filename
+  void set_kappa_filename(const std::string& filename);
+
 
   /// Set only 2D
   void set_only_2D(const bool arg) { only_2D = arg; }

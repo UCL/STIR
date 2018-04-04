@@ -109,9 +109,8 @@ PLSPrior<elemT>::post_processing()
   if (kappa_filename.size() != 0)
     this->set_kappa_filename(kappa_filename);
 
-//  else if (!is_null_ptr( this->anatomical_sptr)){
-//      this->anatomical_sptr->fill (0);
-//  }
+  if (anatomical_filename.size() != 0)
+      this->set_anatomical_filename(anatomical_filename);
 
   return false;
 
@@ -257,7 +256,7 @@ PLSPrior<elemT>::
 get_kappa_sptr() const
 { return this->kappa_ptr; }
 
-  //! set kappa image
+//! set kappa image
 template <typename elemT>
 void
 PLSPrior<elemT>::
@@ -270,6 +269,7 @@ template <typename elemT> void PLSPrior<elemT>::set_kappa_filename(const std::st
   kappa_filename  = filename;
   this->kappa_ptr = read_from_file<DiscretisedDensity<3,elemT> >(kappa_filename);
   info(boost::format("Reading kappa data '%1%'") % kappa_filename  );
+  kappa_filename = ""; // Clear at end
 }
 
 //! Set anatomical filename
@@ -278,6 +278,7 @@ template <typename elemT> void PLSPrior<elemT>::set_anatomical_filename(const st
   anatomical_filename  = filename;
   this->anatomical_sptr = read_from_file<DiscretisedDensity<3,elemT> >(anatomical_filename);
   info(boost::format("Reading anatomical data '%1%'") % anatomical_filename  );
+  anatomical_filename = ""; // Clear at end
 }
 
 template <typename elemT>
