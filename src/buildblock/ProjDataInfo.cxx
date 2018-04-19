@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-05-13, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -584,6 +585,59 @@ operator !=(const root_type& that) const
   return !((*this) == that);
 }
 
+/*!
+  \return
+     \c true only if the types are the same, they are equal, or the range for the
+     segments, axial and tangential positions is at least as large.
+
+  \warning Currently view ranges have to be identical.
+*/
+bool
+ProjDataInfo::
+operator>=(const ProjDataInfo& proj_data_info) const
+{
+  if (typeid(*this) != typeid(proj_data_info))
+    return false;
+
+  const ProjDataInfo& larger_proj_data_info = *this;
+
+  if (larger_proj_data_info == proj_data_info)
+    return true;
+
+  if (proj_data_info.get_max_segment_num() > larger_proj_data_info.get_max_segment_num() ||
+      proj_data_info.get_min_segment_num() < larger_proj_data_info.get_min_segment_num() ||
+      proj_data_info.get_max_tangential_pos_num() > larger_proj_data_info.get_max_tangential_pos_num() ||
+      proj_data_info.get_min_tangential_pos_num() < larger_proj_data_info.get_min_tangential_pos_num())
+    return false;
+
+  for (int segment_num=proj_data_info.get_min_segment_num();
+       segment_num<=proj_data_info.get_max_segment_num();
+       ++segment_num)
+    {
+      if (proj_data_info.get_max_axial_pos_num(segment_num) > larger_proj_data_info.get_max_axial_pos_num(segment_num) ||
+          proj_data_info.get_min_axial_pos_num(segment_num) < larger_proj_data_info.get_min_axial_pos_num(segment_num))
+        return false;
+    }
+
+  // now check all the rest. That's a bit hard, so what we'll do is reduce the sizes of the larger one
+  // to the ones from proj_data_info (which we can safely do as we've checked that they're smaller)
+  // and then check for equality.
+  // This will check stuff like scanners etc etc...
+  shared_ptr<ProjDataInfo> smaller_proj_data_info_sptr(larger_proj_data_info.clone());
+  smaller_proj_data_info_sptr->reduce_segment_range(proj_data_info.get_min_segment_num(), proj_data_info.get_max_segment_num());  
+  smaller_proj_data_info_sptr->set_min_tangential_pos_num(proj_data_info.get_min_tangential_pos_num());
+  smaller_proj_data_info_sptr->set_max_tangential_pos_num(proj_data_info.get_max_tangential_pos_num());
+
+  for (int segment_num=proj_data_info.get_min_segment_num();
+       segment_num<=proj_data_info.get_max_segment_num();
+       ++segment_num)
+    {
+      smaller_proj_data_info_sptr->set_min_axial_pos_num(proj_data_info.get_min_axial_pos_num(segment_num), segment_num);
+      smaller_proj_data_info_sptr->set_max_axial_pos_num(proj_data_info.get_max_axial_pos_num(segment_num), segment_num);
+    }
+
+  return (proj_data_info == *smaller_proj_data_info_sptr);
+}
 
 END_NAMESPACE_STIR
 
