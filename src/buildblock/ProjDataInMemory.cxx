@@ -65,7 +65,7 @@ ProjDataInMemory(shared_ptr<ExamInfo> const& exam_info_sptr,
   
 #ifdef STIR_USE_OLD_STRSTREAM
   const size_t buffer_size = get_size_of_buffer();
-  //buffer = auto_ptr<char>(new char[buffer_size]);
+  //buffer = unique_ptr<char>(new char[buffer_size]);
   buffer.reset(new char[buffer_size]);
   sino_stream.reset(new strstream(buffer.get(), buffer_size, ios::in | ios::out | ios::trunc | ios::binary));
 #else
@@ -96,7 +96,7 @@ ProjDataInMemory(const ProjData& proj_data)
 {
 #ifdef STIR_USE_OLD_STRSTREAM
   const size_t buffer_size = get_size_of_buffer();
-  //buffer = auto_ptr<char>(new char[buffer_size]);
+  //buffer = unique_ptr<char>(new char[buffer_size]);
   buffer.reset(new char[buffer_size]);
   sino_stream.reset(new strstream(buffer.get(), buffer_size, ios::in | ios::out | ios::binary));
 #else
@@ -140,7 +140,7 @@ ProjDataInMemory::
 write_to_file(const string& output_filename) const
 {
 
-  ProjDataInterfile out_projdata(this->get_exam_info_sptr(),
+  ProjDataInterfile out_projdata(get_exam_info_sptr(),
 				 this->proj_data_info_ptr, output_filename, ios::out); 
   
   Succeeded success=Succeeded::yes;

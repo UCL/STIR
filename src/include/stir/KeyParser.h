@@ -63,7 +63,7 @@ class KeyParser;
 class KeyArgument
 {
 public:
-  enum type {NONE,ASCII,LIST_OF_ASCII,ASCIIlist,UINT, ULONG,INT,
+  enum type {NONE,ASCII,LIST_OF_ASCII,ASCIIlist,UINT, ULONG, LONG,INT,
     LIST_OF_INTS,DOUBLE, LIST_OF_DOUBLES, listASCIIlist,
     ARRAY2D_OF_FLOATS,
     ARRAY3D_OF_FLOATS,
@@ -178,6 +178,9 @@ public:
 
   //! add a keyword. When parsing, parse its value as a int and put it in *variable_ptr
   void add_key(const std::string& keyword, int * variable_ptr);
+
+  //! add a keyword. When parsing, parse its value as a int and put it in *variable_ptr
+  void add_key(const std::string& keyword, long int * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a int and put it in *variable_ptr
   void add_key(const std::string& keyword, unsigned int * variable_ptr);
@@ -369,10 +372,13 @@ protected :
   void add_key(const std::string& keyword, KeyArgument::type t, 
 	      void* variable, const ASCIIlist_type * const list = 0);
 
-  ////// predefined call_back functions
-
+  //! Removes a key from the kep map
+  /*! \return \c true if it was found, \c false otherwise */
+  bool remove_key(const std::string& keyword);
+  
 
 public:
+  ////// predefined call_back functions
   //! callback function to start parsing, has to be set by first keyword
   void start_parsing();
   //! to stop parsing

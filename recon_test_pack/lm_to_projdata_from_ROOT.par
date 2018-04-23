@@ -1,0 +1,44 @@
+lm_to_projdata Parameters:=
+
+  input file := root_header.hroot
+output filename prefix := ${OUT_PROJDATA_FILE}
+
+  ; parameters that determine the sizes etc of the output
+
+       template_projdata := template_for_ROOT_scanner.hs
+    ; the next can be used to use a smaller number of segments than given 
+    ; in the template
+    maximum absolute segment number to process := -1
+
+  ; parameters for saying which events will be stored
+
+    ; time frames (see TimeFrameDefinitions doc for format)
+; frame_definition file := frames.fdef
+    ; or a total number of events (if  larger than 1, frame definitions will be ignored)
+    ; note that this normally counts the total of prompts-delayeds (see below)
+    ; If you don't define a time frame definition file nor the num_events_to_store
+    ; then the total number of events in the listmode file is used.
+num_events_to_store := 0
+
+  ; parameters relating to prompts and delayeds
+
+    ; with the default values, prompts will be added and delayed subtracted
+    ; to give the usual estimate of the trues.
+
+    ; store the prompts (value should be 1 or 0)
+    store prompts := 1  ;default
+    ; what to do if it's a delayed event
+    store delayeds := 0  ;default
+
+
+  ; miscellaneous parameters
+
+    ; list each event on stdout and do not store any files (use only for testing!)
+    ; has to be 0 or 1
+    List event coordinates := 0
+
+    ; if you're short of RAM (i.e. a single projdata does not fit into memory),
+    ; you can use this to process the list mode data in multiple passes.
+    num_segments_in_memory := -1
+
+End := 

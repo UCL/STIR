@@ -28,12 +28,17 @@
 #ifndef __stir_ProjData_H__
 #define __stir_ProjData_H__
 
-
+#include "stir/Array.h"
 #include "stir/shared_ptr.h"
 #include "stir/ProjDataInfo.h"
 #include <string>
 #include <iostream>
+#include "stir/Succeeded.h"
+#include "stir/SegmentBySinogram.h"
+#include "stir/SegmentByView.h"
 //#include <ios>
+
+#include "stir/IO/ExamData.h"
 
 START_NAMESPACE_STIR
 
@@ -46,7 +51,7 @@ template <typename elemT> class Viewgram;
 template <typename elemT> class Sinogram;
 class ViewSegmentNumbers;
 class Succeeded;
-class ExamInfo;
+//class ExamInfo;
 
 /*!
   \ingroup projdata
@@ -91,10 +96,11 @@ class ExamInfo;
   \warning The arguments 'make_num_tangential_poss_odd' are temporary
   and will be deleted in the next release.
 */
-class ProjData
+class ProjData : public ExamData
 {
 public:
-  //! A static member to get the projection data from a file
+
+   //! A static member to get the projection data from a file
   static shared_ptr<ProjData> 
     read_from_file(const std::string& filename,
 		   const std::ios::openmode open_mode = std::ios::in);
@@ -121,18 +127,18 @@ public:
     shared pointer will be affected. */
   inline shared_ptr<ProjDataInfo>
     get_proj_data_info_sptr() const;
-  //! Get pointer to exam info
-  inline const ExamInfo*
-    get_exam_info_ptr() const;
-  //! Get shared pointer to exam info
-  /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
-    shared pointer will be affected. */
-  inline shared_ptr<ExamInfo>
-    get_exam_info_sptr() const;
-  //! change exam info
-  /*! This will allocate a new ExamInfo object and copy the data in there. */
-  void
-    set_exam_info(ExamInfo const&);
+//  //! Get pointer to exam info
+//  inline const ExamInfo*
+//    get_exam_info_ptr() const;
+//  //! Get shared pointer to exam info
+//  /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
+//    shared pointer will be affected. */
+//  inline shared_ptr<ExamInfo>
+//    get_exam_info_sptr() const;
+//  //! change exam info
+//  /*! This will allocate a new ExamInfo object and copy the data in there. */
+//  void
+//    set_exam_info(ExamInfo const&);
   //! Get viewgram
   virtual Viewgram<float> 
     get_viewgram(const int view, const int segment_num,const bool make_num_tangential_poss_odd = false) const=0;
@@ -166,7 +172,7 @@ public:
 
 
   //! Get segment by sinogram
-  virtual SegmentBySinogram<float> 
+  virtual SegmentBySinogram<float>
     get_segment_by_sinogram(const int segment_num) const;
   //! Get segment by view
   virtual SegmentByView<float> 
@@ -206,6 +212,67 @@ public:
  */
   void fill(const ProjData&);
 
+  //! set all bins from an array iterator
+  /*!
+    \return number of bins copied
+  
+    \warning there is no range-check on \a array_iter
+  */
+  template < typename iterT>
+  std::size_t fill_from( iterT array_iter)
+  {
+      // A type check would be usefull.
+      //      BOOST_STATIC_ASSERT((boost::is_same<typename std::iterator_traits<iterT>::value_type, Type>::value));
+
+      iterT init_pos = array_iter;
+      for (int s=0; s<= this->get_max_segment_num(); ++s)
+      {
+          SegmentBySinogram<float> segment = this->get_empty_segment_by_sinogram(s);
+          // cannot use std::copy sadly as needs end-iterator for range
+          for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
+               seg_iter != segment.end_all();
+               /*empty*/)
+              *seg_iter++ = *array_iter++;
+          this->set_segment(segment);
+
+          if (s!=0)
+          {
+              segment = this->get_empty_segment_by_sinogram(-s);
+              for (SegmentBySinogram<float>::full_iterator seg_iter = segment.begin_all();
+                   seg_iter != segment.end_all();
+                   /*empty*/)
+                  *seg_iter++ = *array_iter++;
+              this->set_segment(segment);
+          }
+      }
+      return static_cast<std::size_t>(std::distance(init_pos, array_iter));
+  }
+
+  //! Copy all bins to a range specified by a (forward) iterator
+  /*! 
+    \return number of bins copied
+
+    \warning there is no range-check on \a array_iter
+  */
+  template < typename iterT>
+  std::size_t copy_to(iterT array_iter) const
+  {
+      iterT init_pos = array_iter;
+      for (int s=0; s<= this->get_max_segment_num(); ++s)
+      {
+          SegmentBySinogram<float> segment= this->get_segment_by_sinogram(s);
+          std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+          std::advance(array_iter, segment.size_all());
+          if (s!=0)
+          {
+              segment=this->get_segment_by_sinogram(-s);
+              std::copy(segment.begin_all_const(), segment.end_all_const(), array_iter);
+              std::advance(array_iter, segment.size_all());
+          }
+      }
+      return static_cast<std::size_t>(std::distance(init_pos, array_iter));
+  }
+
   //! Get number of segments
   inline int get_num_segments() const;
   //! Get number of axial positions per segment
@@ -230,9 +297,14 @@ public:
   inline int get_min_tangential_pos_num() const;
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num() const;
+  //! Get the number of sinograms
+  inline int get_num_sinograms() const;
+  //! Get the total size of the data
+  inline std::size_t size_all() const;
   
 protected:
-   shared_ptr<ExamInfo> exam_info_sptr;  
+//   shared_ptr<ExamInfo> exam_info_sptr;
+
    shared_ptr<ProjDataInfo> proj_data_info_ptr; // TODO fix name to _sptr
 };
 

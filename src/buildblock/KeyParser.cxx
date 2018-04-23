@@ -113,9 +113,9 @@ static void read_line(istream& input, string& line,
           buf[0]='\0';        
           input.getline(buf,buf_size);
           thisline += buf;
-          if (input.fail() && !input.bad())
+          if (input.fail() && !input.bad() && !input.eof())
           { 
-            // either no characters (end-of-line somehow) or buf_size-1
+            // either no characters (end-of-line somehow) or buf_size-1 or end-of-file
             input.clear();
             more_chars = strlen(buf)==buf_size-1;        
           }  
@@ -324,6 +324,23 @@ map_element* KeyParser::find_in_keymap(const string& keyword)
   return 0;
 }
 
+bool
+KeyParser::remove_key(const string& keyword)
+{
+  for (Keymap::iterator iter = kmap.begin();
+       iter != kmap.end();
+       ++iter)
+  {
+     if (iter->first == keyword)
+       {
+         kmap.erase(iter);
+         return true;
+       }
+  }
+  // it wasn't there
+  return false;
+}
+
 void 
 KeyParser::add_in_keymap(const string& keyword, const map_element& new_element)
 {
@@ -360,6 +377,12 @@ void
 KeyParser::add_key(const string& keyword, unsigned int * variable)
   {
     add_key(keyword, KeyArgument::UINT, variable);
+  }
+
+void
+KeyParser::add_key(const string& keyword, long int * variable)
+  {
+    add_key(keyword, KeyArgument::LONG, variable);
   }
 
 void
@@ -501,8 +524,12 @@ Succeeded KeyParser::parse_header(const bool write_warning)
   while(status==parsing)
     {
     if(read_and_parse_line(write_warning) == Succeeded::yes)	
-	process_key();    
-    }
+		process_key();    
+	if (input->eof()) {
+		status = end_parsing;
+	}
+  }
+    
   
   return Succeeded::yes;
   
@@ -526,6 +553,9 @@ Succeeded KeyParser::read_and_parse_line(const bool write_warning)
       std::size_t pos = line.find_first_not_of(" \t");
       if ( pos != string::npos)
         break;
+	  // check if empty line
+	  if (line.size() == 0)
+		  break;
     }
 
   // gets keyword
@@ -770,7 +800,11 @@ Succeeded KeyParser::parse_value_in_line(const string& line, const bool write_wa
       break;
     case KeyArgument::ULONG :
       keyword_has_a_value = 
-	get_any_param_from_string(this->parameter, Type2Type<unsigned long>(), line) == Succeeded::yes; 
+    get_any_param_from_string(this->parameter, Type2Type<unsigned long>(), line) == Succeeded::yes;
+        break;
+    case KeyArgument::LONG :
+      keyword_has_a_value =
+    get_any_param_from_string(this->parameter, Type2Type<long int>(), line) == Succeeded::yes;
       break;
     case KeyArgument::DOUBLE :
       keyword_has_a_value = 
@@ -918,6 +952,7 @@ void KeyParser::set_variable()
 	  KP_case_assign(KeyArgument::INT, int);
 	  KP_case_assign(KeyArgument::UINT, unsigned int);
 	  KP_case_assign(KeyArgument::ULONG,unsigned long);
+      KP_case_assign(KeyArgument::LONG,long);
 	  KP_case_assign(KeyArgument::DOUBLE,double);
 	  KP_case_assign(KeyArgument::FLOAT,float);
 	  KP_case_assign(KeyArgument::ASCII, std::string);
@@ -973,6 +1008,7 @@ void KeyParser::set_variable()
 
 	  KP_case_assign(KeyArgument::INT, int);
 	  KP_case_assign(KeyArgument::UINT,unsigned int);
+      KP_case_assign(KeyArgument::LONG,long);
 	  KP_case_assign(KeyArgument::ULONG,unsigned long);
 	  KP_case_assign(KeyArgument::DOUBLE,double);
 	  KP_case_assign(KeyArgument::FLOAT,float);
@@ -1127,6 +1163,8 @@ string KeyParser::parameter_info() const
         s << *reinterpret_cast<unsigned int*>(i->second.p_object_variable); break;
       case KeyArgument::ULONG:
         s << *reinterpret_cast<unsigned long*>(i->second.p_object_variable); break;
+      case KeyArgument::LONG:
+        s << *reinterpret_cast<long*>(i->second.p_object_variable); break;
       case KeyArgument::NONE:
         break;
       case KeyArgument::ASCII :

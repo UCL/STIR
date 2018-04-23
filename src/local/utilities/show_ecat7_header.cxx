@@ -195,11 +195,11 @@ dump_subheader(MatrixFile * mptr,
 
 int main(int argc, char *argv[])
 {
-  char cti_name[1000];
+  std::string cti_name;
   
   if(argc==2)
   {
-    strcpy(cti_name, argv[1]);
+    cti_name=argv[1];
   }  
   else 
   {
@@ -207,15 +207,14 @@ int main(int argc, char *argv[])
         << "Usage: \n"
 	<< "\t" << argv[0] << "  ECAT7_name \n\n"
 	<< "I will now ask you the same info interactively...\n\n";
-    ask_filename_with_extension(cti_name,"Name of the ECAT7 file? ",
-        ".scn");
+    cti_name=ask_filename_with_extension("Name of the ECAT7 file? ", ".scn");
   }
 
 
   MatrixFile *mptr=
-    matrix_open( cti_name, MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
+    matrix_open( cti_name.c_str(), MAT_READ_ONLY, MAT_UNKNOWN_FTYPE);
   if (!mptr) {
-    matrix_perror(cti_name);
+    matrix_perror(cti_name.c_str());
     exit(EXIT_FAILURE);
   }
   

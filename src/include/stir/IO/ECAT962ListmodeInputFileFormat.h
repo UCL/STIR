@@ -30,6 +30,7 @@
 #include "stir/listmode/CListModeDataECAT.h"
 #include "stir/listmode/CListRecordECAT962.h"
 
+#include "stir/error.h"
 #include "stir/utilities.h"
 #include <string>
 
@@ -100,20 +101,19 @@ public InputFileFormat<CListModeData >
     return true;
   }
  public:
-  virtual std::auto_ptr<data_type>
+  virtual unique_ptr<data_type>
     read_from_file(std::istream& input) const
   {
     // cannot do this as need both .sgl and .lm
-    warning("read_from_file for ECAT962 listmode data with istream not implemented %s:%d. Sorry",
+    error("read_from_file for ECAT962 listmode data with istream not implemented %s:%d. Sorry",
 	  __FILE__, __LINE__);
     return
-      std::auto_ptr<data_type>
-      (0);
+      unique_ptr<data_type>();
   }
-  virtual std::auto_ptr<data_type>
+  virtual unique_ptr<data_type>
     read_from_file(const std::string& filename) const
   {	
-    return std::auto_ptr<data_type>(new ecat::ecat7::CListModeDataECAT<ecat::ecat7::CListRecordECAT962>(filename)); 
+    return unique_ptr<data_type>(new ecat::ecat7::CListModeDataECAT<ecat::ecat7::CListRecordECAT962>(filename)); 
   }
 };
 

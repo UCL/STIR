@@ -164,7 +164,7 @@ static void find_rmin_rmax(int& rmin, int& rmax,
   // (i.e. y=0, x=-ring_radius)
   // use image coordinates first
   float z_in_image_coordinates =
-    -delta*num_planes_per_virtual_ring*num_virtual_rings_per_physical_ring*
+    -fabs(delta)*num_planes_per_virtual_ring*num_virtual_rings_per_physical_ring*
     (fovrad + proj_data_info_cyl.get_ring_radius())/(2*proj_data_info_cyl.get_ring_radius());
   // now shift it to the edge of the FOV 
   // (taking into account that z==get_min_z() is in the middle of the voxel)
@@ -183,7 +183,9 @@ static void find_rmin_rmax(int& rmin, int& rmax,
 }
 
 
-
+const char * const
+FBP3DRPReconstruction::registered_name =
+  "FBP3DRP";
 
 void 
 FBP3DRPReconstruction::
@@ -612,7 +614,7 @@ void FBP3DRPReconstruction::do_2D_reconstruction()
     display(estimated_image(),estimated_image().find_max(), "Image estimate"); 
   }
             
-  if (save_intermediate_files)
+  if (save_intermediate_files && !_disable_output)
     {
       char file[max_filename_length];
       sprintf(file,"%s_estimated",output_filename_prefix.c_str()); 
@@ -716,7 +718,7 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
 		 << " Max = " << image.find_max()
 		 << " Sum = " << image.sum() << endl;
 #ifndef PARALLEL
-	if(save_intermediate_files){ 
+    if(save_intermediate_files && !_disable_output){
 	  char *file = new char[output_filename_prefix.size() + 20];
 	  sprintf(file,"%s_afterseg%d",output_filename_prefix.c_str(),seg_num);
 	  do_save_img(file, image);        

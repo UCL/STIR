@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2002-2007, Hammersmith Imanet Ltd
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2016 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -44,25 +44,54 @@ START_NAMESPACE_STIR
 class ProjDataInfo;
 
 /*!
-  \brief a class for Interfile keywords (and parsing) common to 
+  \brief a minimal class for Interfile keywords (and parsing) common to 
   all types of data
+
+  This class is only used to select which version of Interfile to use.
+
   \ingroup InterfileIO
   */
-class InterfileHeader : public KeyParser
+class MinimalInterfileHeader : public KeyParser
+  {
+  public:
+    //! A value that can be used to signify that a variable has not been set during parsing.
+    static const double double_value_not_set;
+    MinimalInterfileHeader();
+
+    virtual ~MinimalInterfileHeader() {}
+  protected:
+    shared_ptr<ExamInfo> exam_info_sptr;
+
+  private:
+    std::string imaging_modality_as_string;
+    void set_imaging_modality();
+  
+  public:
+    //! Get a pointer to the exam information
+    const ExamInfo*
+      get_exam_info_ptr() const;
+
+    //! Get a shared pointer to the exam information
+    shared_ptr<ExamInfo>
+      get_exam_info_sptr() const;
+
+    std::string version_of_keys;
+
+    std::string siemens_mi_version;
+  };
+
+/*!
+\brief a class for Interfile keywords (and parsing) common to
+all types of data
+
+\ingroup InterfileIO
+*/
+class InterfileHeader : public MinimalInterfileHeader
 {
 public:
-  //! A value that can be used to signify that a variable has not been set during parsing.
-  static const double double_value_not_set;
-
   InterfileHeader();
-
-  virtual ~InterfileHeader() {}
-
-protected:
   // Returns false if OK, true if not.
   virtual bool post_processing();
-
-  shared_ptr<ExamInfo> exam_info_sptr;
 
 private:
 
@@ -80,35 +109,24 @@ private:
   int patient_orientation_index;
   int patient_rotation_index;
 
-  // Extra private variables which will be translated to something more useful
-  std::string imaging_modality_as_string;
-  void set_imaging_modality();
-
   void set_type_of_data();
-
+protected:
   int			num_time_frames;
   std::vector<double> image_relative_start_times;
   std::vector<double> image_durations;
-
   int bytes_per_pixel;
+private:
 
   // Louvain la Neuve style of 'image scaling factors'
   double lln_quantification_units;
+
+  
  protected:
   virtual void read_matrix_info();
   void read_frames_info();
 
 public :
-  //! Get a pointer to the exam information
-  const ExamInfo*
-    get_exam_info_ptr() const;
 
-  //! Get a shared pointer to the exam information
-  shared_ptr<ExamInfo>
-    get_exam_info_sptr() const;
-
-  std::string version_of_keys;
-  
   ASCIIlist_type type_of_data_values;
   int type_of_data_index;
 
@@ -133,6 +151,19 @@ public :
   std::vector<double>	pixel_sizes;
   std::vector<std::vector<double> > image_scaling_factors;
   std::vector<unsigned long> data_offset_each_dataset;
+
+  // Acquisition parameters
+  //!
+  //! \brief lower_en_window_thres
+  //! \details Low energy window limit
+  float lower_en_window_thres;
+
+  //!
+  //! \brief upper_en_window_thres
+  //! \details High energy window limit
+  float upper_en_window_thres;
+  // end acquisition parameters
+  
  protected:
   // version 3.3 had only a single offset. we'll internally replace it with data_offset_each_dataset
   unsigned long data_offset;
@@ -217,6 +248,10 @@ private:
   int num_axial_crystals_per_singles_unit;
   int num_transaxial_crystals_per_singles_unit;
   int num_detector_layers;
+  //! Energy resolution of the system in keV.
+  float energy_resolution;
+  //! Reference energy.
+  float reference_energy;
   // end scanner parameters
 
   double effective_central_bin_size_in_cm;

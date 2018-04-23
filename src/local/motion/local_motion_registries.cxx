@@ -14,7 +14,7 @@
 */
 
 
-//#include "local/stir/motion/RigidObject3DMotionFromPolaris.h"
+// #include "local/stir/motion/RigidObject3DMotionFromPolaris.h"
 #include "local/stir/motion/Transform3DObjectImageProcessor.h"
 #include "local/stir/motion/NonRigidObjectTransformationUsingBSplines.h"
 
@@ -22,10 +22,10 @@
 // TODO remove next. artefact of current shared_ptr
 //#include "stir/DataSymmetriesForViewSegmentNumbers.h"
 
-#include "local/stir/motion/PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.h"
+// #include "local/stir/motion/PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion.h"
 START_NAMESPACE_STIR
 
-//static RigidObject3DMotionFromPolaris::RegisterIt dummy100;
+// static RigidObject3DMotionFromPolaris::RegisterIt dummy100;
 
 static Transform3DObjectImageProcessor<float>::RegisterIt dummy1000;
 

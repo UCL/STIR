@@ -48,7 +48,7 @@ RelatedBins::RelatedBins(const std::vector< Bin>& related_bins_v,
 int
 RelatedBins::get_num_related_bins() const
 {
-  return related_bins.size();
+  return static_cast<int>(related_bins.size());
 }
 
 Bin
