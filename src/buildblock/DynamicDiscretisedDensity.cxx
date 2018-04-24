@@ -10,6 +10,7 @@
 */
 /*
     Copyright (C) 2005- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -56,7 +57,7 @@ DynamicDiscretisedDensity&
 DynamicDiscretisedDensity::
 operator=(const DynamicDiscretisedDensity& argument)
 {
-  this->_time_frame_definitions = argument._time_frame_definitions;
+  this->set_exam_info(*argument.get_exam_info_sptr());
   this->_densities.resize(argument._densities.size());
   for (unsigned int i=0; i<argument._densities.size(); ++i)
     this->_densities[i].reset(argument._densities[i]->clone());
@@ -64,8 +65,7 @@ operator=(const DynamicDiscretisedDensity& argument)
   this->_scanner_sptr = argument._scanner_sptr;
   this->_calibration_factor = argument._calibration_factor;
   this->_isotope_halflife = argument._isotope_halflife;
-  this->_is_decay_corrected = argument._is_decay_corrected; 
-  this->_start_time_in_secs_since_1970 = argument._start_time_in_secs_since_1970;
+  this->_is_decay_corrected = argument._is_decay_corrected;
   return *this;
 }
 
@@ -108,12 +108,13 @@ get_calibration_factor() const
 const TimeFrameDefinitions & 
 DynamicDiscretisedDensity::
 get_time_frame_definitions() const
-{ return this->_time_frame_definitions; }
+{ return this->get_exam_info().get_time_frame_definitions(); }
+
 
 const double
 DynamicDiscretisedDensity::
 get_start_time_in_secs_since_1970() const
-{ return this->_start_time_in_secs_since_1970; }
+{ return this->get_exam_info().start_time_in_secs_since_1970; }
 
 DynamicDiscretisedDensity*
 DynamicDiscretisedDensity::
@@ -135,7 +136,7 @@ write_to_ecat7(const string& filename) const
 
   Main_header mhead;
   ecat::ecat7::make_ECAT7_main_header(mhead, *_scanner_sptr, filename, get_density(1) );
-  mhead.num_frames = (_time_frame_definitions).get_num_frames();
+  mhead.num_frames = get_time_frame_definitions().get_num_frames();
   mhead.acquisition_type =
     mhead.num_frames>1 ? DynamicEmission : StaticEmission;
   mhead.calibration_factor=_calibration_factor;
@@ -147,7 +148,7 @@ write_to_ecat7(const string& filename) const
       warning("DynamicDiscretisedDensity::write_to_ecat7 cannot write output file %s\n", filename.c_str());
       return Succeeded::no;
     }
-  for (  unsigned int frame_num = 1 ; frame_num<=(_time_frame_definitions).get_num_frames() ;  ++frame_num ) 
+  for (  unsigned int frame_num = 1 ; frame_num<=get_time_frame_definitions().get_num_frames() ;  ++frame_num ) 
     {
       if (ecat::ecat7::DiscretisedDensity_to_ECAT7(mptr,
                                                    get_density(frame_num),
@@ -166,7 +167,7 @@ write_to_ecat7(const string& filename) const
  void DynamicDiscretisedDensity::
  calibrate_frames() const 
 {
-  for (  unsigned int frame_num = 1 ; frame_num<=(_time_frame_definitions).get_num_frames() ;  ++frame_num ) 
+  for (  unsigned int frame_num = 1 ; frame_num<=get_time_frame_definitions().get_num_frames() ;  ++frame_num ) 
     {
       *(_densities[frame_num-1])*=_calibration_factor;
     }
@@ -191,10 +192,10 @@ set_isotope_halflife(const float isotope_halflife)
     warning("DynamicDiscretisedDensity is already decay corrected");
   else
     {
-      for (  unsigned int frame_num = 1 ; frame_num<=(_time_frame_definitions).get_num_frames() ;  ++frame_num ) 
+      for (  unsigned int frame_num = 1 ; frame_num<=get_time_frame_definitions().get_num_frames() ;  ++frame_num ) 
         { 
           *(_densities[frame_num-1])*=
-            static_cast<float>(decay_correction_factor(_isotope_halflife,_time_frame_definitions.get_start_time(frame_num),_time_frame_definitions.get_end_time(frame_num)));
+            static_cast<float>(decay_correction_factor(_isotope_halflife,get_time_frame_definitions().get_start_time(frame_num),get_time_frame_definitions().get_end_time(frame_num)));
         }
       _is_decay_corrected=true;
     }

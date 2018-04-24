@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2014, University College London
+    Copyright (C) 2014, 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -181,7 +181,8 @@ construct_target_ptr() const
 { 
 
  return 
-      new VoxelsOnCartesianGrid<float> (*this->proj_data_info_cyl_uncompressed_ptr, 
+      new VoxelsOnCartesianGrid<float> (this->get_input_data().get_exam_info_sptr(),
+                                        *this->proj_data_info_cyl_uncompressed_ptr, 
                                         static_cast<float>(this->zoom), 
                                         CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset), 
                                                                      static_cast<float>(this->Yoffset), 

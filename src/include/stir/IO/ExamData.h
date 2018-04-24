@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2016 University College London
+    Copyright (C) 2016, 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -44,6 +44,8 @@ public:
 
     virtual ~ExamData();
 
+    inline virtual const ExamInfo&
+      get_exam_info() const;
     //! Get pointer to exam info
     inline virtual const ExamInfo*
       get_exam_info_ptr() const;

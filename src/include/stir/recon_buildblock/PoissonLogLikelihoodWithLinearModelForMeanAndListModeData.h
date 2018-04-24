@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -101,7 +102,7 @@ public:
     virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
 
     virtual void set_input_data(const shared_ptr<ExamData> &);
-
+    virtual const CListModeData& get_input_data() const;
 protected:
   std::string frame_defs_filename;
 

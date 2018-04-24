@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2006- 2013, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
 
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -131,6 +132,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
 
   virtual void set_input_data(const shared_ptr<ExamData> &);
+  virtual const DynamicProjData& get_input_data() const;
   //@}
  protected:
   //! Filename with input projection data

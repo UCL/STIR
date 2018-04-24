@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -178,7 +179,8 @@ read_from_file(const std::string& filename)
     static_cast<const VoxelsOnCartesianGrid<float> *>(&(*multi_sptr)[1])->get_grid_spacing();
   // TODO this will only work for VoxelsOnCartesianGrid
   ParamDiscDensity * parametric_density_ptr =
-    new ParamDiscDensity(DiscDensityT((*multi_sptr)[1].get_index_range(),
+    new ParamDiscDensity(DiscDensityT((*multi_sptr)[1].get_exam_info_sptr(),
+                                      (*multi_sptr)[1].get_index_range(),
                                       (*multi_sptr)[1].get_origin(), 
                                       grid_spacing));
   
@@ -248,7 +250,8 @@ construct_single_density_using_function(KPFunctionObject f) const
 {
   // TODO this will only work for VoxelsOnCartesianGrid
   SingleDiscretisedDensityType
-    density(this->get_index_range(),
+    density(this->get_exam_info_sptr(),
+            this->get_index_range(),
             this->get_origin(), 
             this->get_grid_spacing());
   this->construct_single_density_using_function(density, f);
@@ -300,7 +303,8 @@ construct_single_density_using_function(KPFunctionObject f)
 {
   // TODO this will only work for VoxelsOnCartesianGrid
   SingleDiscretisedDensityType
-    density(this->get_index_range(),
+    density(this->get_exam_info_sptr(),
+            this->get_index_range(),
             this->get_origin(), 
             this->get_grid_spacing());
   this->construct_single_density_using_function(density, f);
