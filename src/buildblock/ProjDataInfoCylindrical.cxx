@@ -506,10 +506,22 @@ ProjDataInfoCylindrical::
 get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>& lor,
 	const Bin& bin) const
 {
-  const float s_in_mm = get_s(bin);
-  const float m_in_mm = get_m(bin);
-  const float tantheta = get_tantheta(bin);
-  const float phi = get_phi(bin);
+    Bin tmpBin = bin;
+    float phi = get_phi(tmpBin);
+    // N.E: Move within range ... if tilt is applied.
+    if (phi<0)
+    {
+        phi += _PI;
+    }
+    else if (phi>_PI)
+    {
+        phi -= _PI;
+    }
+
+  const float s_in_mm = get_s(tmpBin);
+  const float m_in_mm = get_m(tmpBin);
+  const float tantheta = get_tantheta(tmpBin);
+
   /* parametrisation of LOR is
      X= s*cphi + a*sphi, 
      Y= s*sphi - a*cphi, 

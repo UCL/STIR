@@ -110,7 +110,7 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
   int max_diff_axial_pos_num=0;
   int max_diff_tangential_pos_num=0;
   float view_offset=proj_data_info.get_scanner_ptr()->get_default_intrinsic_tilt();
-  if (view_offset==0)
+  //if (view_offset==0)
   {
 #ifdef STIR_OPENMP
 #pragma omp parallel for schedule(dynamic)
