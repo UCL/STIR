@@ -3,8 +3,12 @@
 /*
     Copyright (C) 2000- 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+
     Copyright (C) 2018, Palak Wadhwa and University of Leeds
     Copyright (C) 2018, Univ. of Hull
+
+
+    Copyright (C) 2018, University College London
 
     This file is part of STIR.
 
@@ -115,8 +119,8 @@ operator==(const self_type& that) const
   if (!base_type::blindly_equals(&that))
     return false;
   return
-    this->ring_radius == that.ring_radius &&
-    this->angular_increment == that.angular_increment;
+    fabs(this->ring_radius - that.ring_radius) < 0.05F &&
+    fabs(this->angular_increment - that.angular_increment) < 0.05F;
 }
 
 bool

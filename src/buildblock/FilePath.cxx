@@ -143,6 +143,7 @@ bool FilePath::exists(const std::string& s)
 		else
 			return true;
 	}
+	return false;
 #endif
 }
 

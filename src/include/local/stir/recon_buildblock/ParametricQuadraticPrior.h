@@ -155,6 +155,9 @@ class ParametricQuadraticPrior:  public
 
   //! set kappa image
   void set_kappa_sptr(const shared_ptr<TargetT >&);
+
+  //! Has to be called before using this object
+  virtual Succeeded set_up(shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr);
   
 protected:
   //! can be set during parsing to restrict the weights to the 2D case
@@ -174,6 +177,9 @@ protected:
   mutable Array<3,float> weights;
   //! Filename for the \f$\kappa\f$ image that will be read by post_processing()
   std::string kappa_filename; 	  //CHECK IF THERE IS A CONFILCT WHEN GIVING A KAPPA FILE...// THINK IF IT IS BETTER TO ESTIMATE KAPPA FILE IN THE CODE...
+
+  //! Check that the prior is ready to be used
+  virtual void check(DiscretisedDensity<3,elemT> const& current_image_estimate) const;
 
   virtual void set_defaults();
   virtual void initialise_keymap();

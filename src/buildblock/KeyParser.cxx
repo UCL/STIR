@@ -324,6 +324,23 @@ map_element* KeyParser::find_in_keymap(const string& keyword)
   return 0;
 }
 
+bool
+KeyParser::remove_key(const string& keyword)
+{
+  for (Keymap::iterator iter = kmap.begin();
+       iter != kmap.end();
+       ++iter)
+  {
+     if (iter->first == keyword)
+       {
+         kmap.erase(iter);
+         return true;
+       }
+  }
+  // it wasn't there
+  return false;
+}
+
 void 
 KeyParser::add_in_keymap(const string& keyword, const map_element& new_element)
 {
