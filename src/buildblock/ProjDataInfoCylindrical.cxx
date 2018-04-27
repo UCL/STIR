@@ -3,6 +3,7 @@
     Copyright (C) 2000 - 2009-10-18 Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2013, University College London
+    Copyright (C) 2018, Univ. of Hull
 
     This file is part of STIR.
 
@@ -25,6 +26,7 @@
 
   \brief Non-inline implementations of stir::ProjDataInfoCylindrical
 
+ \author Nikos Efthimiou
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project

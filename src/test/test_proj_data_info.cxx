@@ -7,6 +7,7 @@
 
   \brief Test program for stir::ProjDataInfo hierarchy
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author PARAPET project
@@ -16,6 +17,8 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2018, Palak Wadhwa and University of Leeds
+    Copyright (C) 2018, Univ. of Hull
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

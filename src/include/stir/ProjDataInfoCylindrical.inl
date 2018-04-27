@@ -4,6 +4,8 @@
     Copyright (C) 2013, University College London
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
     Copyright (C) 2018, Palak Wadhwa and University of Leeds
+    Copyright (C) 2018, Univ. of Hull
+
 
     This file is part of STIR.
 
@@ -26,6 +28,7 @@
 
   \brief Implementation of inline functions of class stir::ProjDataInfoCylindrical
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Berta Marti Fuster
