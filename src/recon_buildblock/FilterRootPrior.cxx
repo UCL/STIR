@@ -101,6 +101,8 @@ compute_gradient(DataT& prior_gradient,
     std::fill(prior_gradient.begin_all(), prior_gradient.end_all(), 0);
     return;
   }
+
+  this->check(current_image_estimate);
   
 
   // first store filtered image in prior_gradient
@@ -156,6 +158,22 @@ FilterRootPrior<DataT>::set_defaults()
 {
   base_type::set_defaults();
   filter_ptr.reset();
+}
+
+template <typename DataT>
+Succeeded
+FilterRootPrior<DataT>::set_up (shared_ptr<DataT> const& target_sptr)
+{
+  base_type::set_up(target_sptr);
+
+  return Succeeded::yes;
+}
+
+template <typename DataT>
+void FilterRootPrior<DataT>::check(DataT const& current_image_estimate) const
+{
+  // Do base-class check
+  base_type::check(current_image_estimate);
 }
 
 template <typename DataT>
