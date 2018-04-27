@@ -7,6 +7,7 @@
 
   \brief Test program for stir::ProjDataInfo hierarchy
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author PARAPET project
@@ -16,6 +17,8 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2018, Palak Wadhwa and University of Leeds
+    Copyright (C) 2018, Univ. of Hull
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -110,7 +113,7 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
   int max_diff_axial_pos_num=0;
   int max_diff_tangential_pos_num=0;
   float view_offset=proj_data_info.get_scanner_ptr()->get_default_intrinsic_tilt();
-  if (view_offset==0)
+  //if (view_offset==0)
   {
 #ifdef STIR_OPENMP
 #pragma omp parallel for schedule(dynamic)

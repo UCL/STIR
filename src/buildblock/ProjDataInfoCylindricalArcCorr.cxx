@@ -4,6 +4,8 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     Copyright (C) 2018, Palak Wadhwa and University of Leeds
+    Copyright (C) 2018, Univ. of Hull
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,6 +28,7 @@
   \brief Implementation of non-inline functions of class 
   stir::ProjDataInfoCylindricalArcCorr
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author PARAPET project
@@ -132,17 +135,33 @@ get_bin(const LOR<float>& lor) const
       return bin;
     }
 
+  bool swap_direction = false;
   // first find view 
   // unfortunately, phi ranges from [0,Pi[, but the rounding can
   // map this to a view which corresponds to Pi anyway.
   //PW phi-intrinsic tilt included to get the accurate view_num
   bin.view_num() = round((lor_coords.phi()-scanner_ptr->get_default_intrinsic_tilt()) / get_azimuthal_angle_sampling());
-  assert(bin.view_num()>=0);
-  assert(bin.view_num()<=get_num_views());
-  const bool swap_direction =
-    bin.view_num() > get_max_view_num();
-  if (swap_direction)
-    bin.view_num()-=get_num_views();
+
+  // N.E:Moved these check before the assertion, to support tilting.
+  // It is not exactly as the test after the assertion ...
+  // But to be honest not sure that it was doing there as the assertion
+  // would have prevent it.
+  if (bin.view_num() < get_min_view_num())
+  {
+      bin.view_num() += get_num_views();
+  }
+  else if (bin.view_num() > get_max_view_num())
+  {
+      bin.view_num() -= get_num_views();
+  }
+
+  assert(bin.view_num()>=get_min_view_num());
+  assert(bin.view_num()<=get_max_view_num());
+
+//  const bool swap_direction =
+//    bin.view_num() > get_max_view_num();
+//  if (swap_direction)
+//    bin.view_num()-=get_num_views();
 
   bin.tangential_pos_num() = round(lor_coords.s() / get_tangential_sampling());
   if (swap_direction)
