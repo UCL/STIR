@@ -505,7 +505,7 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
       float s = ob2.get_s(bin);
       
       check_if_equal( theta, 0.F,"test on get_tantheta, seg 0");
-      check_if_equal( phi, 10*ob2.get_azimuthal_angle_sampling(), " get_phi , seg 0");
+      check_if_equal( phi, 10*ob2.get_azimuthal_angle_sampling()+ scanner_ptr->get_default_intrinsic_tilt(), " get_phi , seg 0");
       // KT 25/10/2000 adjust to new convention
       const float ax_pos_origin =
 	(ob2.get_min_axial_pos_num(0) + ob2.get_max_axial_pos_num(0))/2.F;
@@ -525,7 +525,7 @@ ProjDataInfoCylindricalArcCorrTests::run_tests()
       float thetatest = 2*ob2.get_axial_sampling(1)/(2*sqrt(square(scanner_ptr->get_effective_ring_radius())-square(s)));
       
       check_if_equal( theta, thetatest,"test on get_tantheta, seg 1");
-      check_if_equal( phi, 10*ob2.get_azimuthal_angle_sampling(), " get_phi , seg 1");
+      check_if_equal( phi, 10*ob2.get_azimuthal_angle_sampling()+ scanner_ptr->get_default_intrinsic_tilt(), " get_phi , seg 1");
       // KT 25/10/2000 adjust to new convention
       const float ax_pos_origin =
 	(ob2.get_min_axial_pos_num(1) + ob2.get_max_axial_pos_num(1))/2.F;
