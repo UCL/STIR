@@ -4,6 +4,7 @@
     Copyright (C) 2000- 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2018, University College London
+    Copyright (C) 2018, University of Leeds
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,6 +27,7 @@
   stir::ProjDataInfoCylindricalNoArcCorr
 
   \author Kris Thielemans
+  \author Palak Wadhwa
 
 */
 
@@ -184,8 +186,10 @@ initialise_uncompressed_view_tangpos_to_det1det2() const
 
   assert(num_detectors%2 == 0);
   // check views range from 0 to Pi
-  assert(fabs(get_phi(Bin(0,0,0,0))) < 1.E-4);
-  assert(fabs(get_phi(Bin(0,get_num_views(),0,0)) - _PI) < 1.E-4);
+  //PW Supports intrinsic tilt.
+  const float intrinsic_tilt = get_scanner_ptr()->get_default_intrinsic_tilt();
+  assert(fabs(get_phi(Bin(0,0,0,0))-intrinsic_tilt) < 1.E-4);
+  assert(fabs(get_phi(Bin(0,get_num_views(),0,0)) - intrinsic_tilt - _PI) < 1.E-4);
   const int min_tang_pos_num = -(num_detectors/2)+1;
   const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
   
@@ -238,8 +242,10 @@ initialise_det1det2_to_uncompressed_view_tangpos() const
       error("Minimum view number should currently be zero to be able to use get_view_tangential_pos_num_for_det_num_pair()");
     }
   // check views range from 0 to Pi
-  assert(fabs(get_phi(Bin(0,0,0,0))) < 1.E-4);
-  assert(fabs(get_phi(Bin(0,get_max_view_num()+1,0,0)) - _PI) < 1.E-4);
+  //PW Supports intrinsic tilt.
+  const float intrinsic_tilt = get_scanner_ptr()->get_default_intrinsic_tilt();
+  assert(fabs(get_phi(Bin(0,0,0,0)) - intrinsic_tilt) < 1.E-4);
+  assert(fabs(get_phi(Bin(0,get_max_view_num()+1,0,0)) -intrinsic_tilt - _PI) < 1.E-4);
   //const int min_tang_pos_num = -(num_detectors/2);
   //const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
   const int max_num_views = num_detectors/2;
@@ -591,7 +597,8 @@ get_bin(const LOR<float>& lor) const
   // first find view 
   // unfortunately, phi ranges from [0,Pi[, but the rounding can
   // map this to a view which corresponds to Pi anyway.
-  bin.view_num() = round(lor_coords.phi() / get_azimuthal_angle_sampling());
+  //PW Accurate bin view number = phi - intrinsic_tilt.
+  bin.view_num() = round((lor_coords.phi() - scanner_ptr->get_default_intrinsic_tilt()) / get_azimuthal_angle_sampling());
   assert(bin.view_num()>=0);
   assert(bin.view_num()<=get_num_views());
   const bool swap_direction =

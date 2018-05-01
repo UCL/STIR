@@ -129,6 +129,9 @@ These are only minimally documented at the present stage unfortunately.
   allow processing of more events in list mode files.
 </li>
 <li>
+View Offset Support enabled for the scanners with intrinsic tilt angle. 
+<p><strong>WARNING</strong>:For the scanners that have non-zero view-offset, images will now get rotated. Backward compatibility achieved by disabling the CMAKE View Offset option. </p>
+<li>
 The orientation of images read/written via ITK has changed. It should now be correct if the patient
 was in HFS position. This is currently not checked (and for many file formats, never can be checked).
 </li>

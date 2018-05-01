@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-10-14, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2018 University of Leeds
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,6 +26,7 @@
 
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Palak Wadhwa
   \author PARAPET project
 
 */
@@ -348,9 +350,10 @@ public:
   
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
+//PW Shifted scanner_ptr from private to protected as it is being used in derived class for intrinsic tilt.
+  shared_ptr<Scanner> scanner_ptr;
 
 private:
-  shared_ptr<Scanner> scanner_ptr;
   int min_view_num;
   int max_view_num;
   int min_tangential_pos_num;
