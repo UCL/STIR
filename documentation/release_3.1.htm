@@ -82,13 +82,11 @@ negative delta (the range was too narrow). In principle, this could
 have caused problems, but only when a projector was used where the
 segment symmetry is switched off.
 </li>
-<li>minor fix for even span particularly for GE scanners: The number and axial positions, maximum and minimum ring differences were one too less than required. The projection data will now have accurate number of axial positions.
-</li>
 </ul>
 
 <h3>New functionality</h3>
 <ul>
-<li>\texttt{create\_projdata\_template} now allows even span. In particular,
+  <li><tt>create_projdata_template</tt> now allows even span. In particular,
 span 2 corresponds to how GE stores data. See the STIR glossary for more information.</li>
 <li>As mentioned above, many operations are now multi-threaded when you built with OPENMP support.
 By default, we use about 90% of your cores, but you can change that by setting the OMP_NUM_THREADS
