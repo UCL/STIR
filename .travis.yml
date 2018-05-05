@@ -80,19 +80,23 @@ before_install:
       brew install swig
       # use Python3 on Mac
       # from http://blog.fizyk.net.pl/blog/running-python-tests-on-traviss-osx-workers.html
-      brew install python3
+      brew install python
       #pip install --upgrade virtualenv
       #virtualenv venv -p python3
       #python3 -m venv `pwd`/venv
       #ls -lR venv
       #source venv/bin/activate
-      which python
+      which python3
+      ls -1L `which python3`
+      brew --prefix
       PY_EXE=`which python3`
-      find `brew --prefix` -name pyth\*dylib
+      PY_EXE=`ls -1L ${PY_EXE}`
+      find `brew --prefix` -name libpyth\*
       find `brew --prefix` -name python3
-      find `brew --prefix` -name python
       find `brew --prefix` -name Python.h
-      PY_INST=`echo /usr/local/Frameworks/Python.framework/Versions/3.*`
+      PY_INST=`echo /usr/local/Cellar/python/3.*/Frameworks/Python.framework/Versions/3.*`
+      ls -l $PY_INST/lib/
+      ls -l $PY_INST/lib/3.*
       PY_LIB=`echo $PY_INST/lib/3.*/Python`
       set |grep PY_
       #export PY_EXE=$PYINST/$PYMVER.6/bin/python3.6
