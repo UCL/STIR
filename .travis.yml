@@ -88,10 +88,12 @@ before_install:
       #source venv/bin/activate
       which python
       PY_EXE=`which python3`
-      find /usr/local/Cellar/python3 -name \*dylib
-      find /usr/local/Cellar/python3 -name \*.h
-      PY_INST=`echo /usr/local/Cellar/python3/3.*/Frameworks/Python.framework/Versions`
-      PY_LIB=`echo $PY_INST/3.*/Python`
+      find `brew --prefix` -name pyth\*dylib
+      find `brew --prefix` -name python3
+      find `brew --prefix` -name python
+      find `brew --prefix` -name Python.h
+      PY_INST=`echo /usr/local/Frameworks/Python.framework/Versions/3.*`
+      PY_LIB=`echo $PY_INST/lib/3.*/Python`
       set |grep PY_
       #export PY_EXE=$PYINST/$PYMVER.6/bin/python3.6
       export BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_LIBRARY=$PYLIB"
