@@ -132,6 +132,13 @@ These are only minimally documented at the present stage unfortunately.
 The orientation of images read/written via ITK has changed. It should now be correct if the patient
 was in HFS position. This is currently not checked (and for many file formats, never can be checked).
 </li>
+<li><tt>calculate_attenuation_coefficients</tt> now defaults to using the ray-tracing matrix as
+  projector. Results should be identical though. This means it will not automatically handle
+  cases where there are less symmetries in the data, e.g. for scanners with odd number of
+  views.<br />
+  It has a new switch <tt>--NOPMRT</tt> which reverts to the previous behaviour (i.e. using
+  the old ray tracer on-the-fly projector).
+  </li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>
 <ul>
