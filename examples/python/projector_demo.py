@@ -51,6 +51,7 @@ projdataout=stir.ProjDataInMemory(projdata.get_exam_info(), projdata.get_proj_da
 #  projdataout=stir.ProjDataInterfile(projdata.get_exam_info(), projdata.get_proj_data_info(), 'my_test_python_projection.hs',inout);
 #%% forward project an image. Here just some uniform data
 target.fill(2);
+forwardprojector.set_up(projdataout.get_proj_data_info(), target);
 forwardprojector.forward_project(projdataout, target);
 #%% display
 seg=projdataout.get_segment_by_sinogram(0);
@@ -65,6 +66,7 @@ pylab.show()
 #%% backproject this projection data
 # we need to set the target to zero first, otherwise it will add to existing numbers.
 target.fill(0)
+backprojector.set_up(projdataout.get_proj_data_info(), target);
 backprojector.back_project(target, projdataout);
 #%% display
 # This shows a beautiful pattern, a well-known feature of a ray-tracing matrix
