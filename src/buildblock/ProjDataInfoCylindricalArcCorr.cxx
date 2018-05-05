@@ -136,7 +136,7 @@ get_bin(const LOR<float>& lor) const
 
   // first find view 
   //PW phi-intrinsic_tilt included to get the accurate bin.view_number.
-  bin.view_num() = round(to_0_2pi(lor_coords.phi()-scanner_ptr->get_default_intrinsic_tilt()) / get_azimuthal_angle_sampling());
+  bin.view_num() = round(to_0_2pi(lor_coords.phi()-get_scanner_ptr()->get_default_intrinsic_tilt()) / get_azimuthal_angle_sampling());
   assert(bin.view_num()>=0);
   const bool swap_direction =
     bin.view_num() > get_max_view_num();
