@@ -84,22 +84,19 @@ before_install:
       #pip install --upgrade virtualenv
       #virtualenv venv -p python3
       #python3 -m venv `pwd`/venv
-      #ls -lR venv
       #source venv/bin/activate
       PY_EXE=`which python3`
-      ls -l $PY_EXE
       PY_EXE=`ls -1L ${PY_EXE}`
       find `brew --prefix` -name libpyth\*
       find `brew --prefix` -name Python.h
       PY_INST=`echo /usr/local/Cellar/python/3.*/Frameworks/Python.framework/Versions/3.*`
       PY_EXE=$PY_INST/bin/python3
-      PY_LIB=`echo $PY_INST/3.*/Python`
-      PY_INC=`echo $PY_INST/3.*/include/python3.*m`
-      export BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_LIBRARY=$PY_LIB"
-      export BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_INCLUDE_DIR=$PY_INC"
+      PY_LIB=`echo $PY_INST/Python`
+      PY_INC=`echo $PY_INST/Headers`
+      #export BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_LIBRARY=$PY_LIB"
+      #export BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_INCLUDE_DIR=$PY_INC"
       ls -l $PY_INST/
-      ls -l $PY_INST/lib/
-      ls -l $PY_INST/lib/*3.*
+      ls -l $PY_INST/lib
       set |grep PY_
       #export PY_EXE=$PYINST/$PYMVER.6/bin/python3.6
       python3 -m pip install -U pip
