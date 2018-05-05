@@ -290,6 +290,9 @@ private:
   float ring_radius;
   float angular_increment;
 
+  //! get offset in psi for first detector (i.e. angle along the scanner ring)
+  float get_psi_offset() const;
+
   // used in get_view_tangential_pos_num_for_det_num_pair()
   struct Det1Det2 { int det1_num; int det2_num; };
   mutable VectorWithOffset< VectorWithOffset<Det1Det2> > uncompressed_view_tangpos_to_det1det2;

@@ -158,6 +158,13 @@ ProjDataInfoCylindricalNoArcCorr::parameter_info()  const
    Update: compile time assert is implemented.
 */
 
+float
+ProjDataInfoCylindricalNoArcCorr::
+get_psi_offset() const
+{
+  return this->get_scanner_ptr()->get_default_intrinsic_tilt();
+}
+
 /*!
   Go from sinograms to detectors.
 
@@ -185,11 +192,13 @@ initialise_uncompressed_view_tangpos_to_det1det2() const
     get_scanner_ptr()->get_num_detectors_per_ring();
 
   assert(num_detectors%2 == 0);
+#ifndef NDEBUG
   // check views range from 0 to Pi
   //PW Supports intrinsic tilt.
   const float intrinsic_tilt = get_scanner_ptr()->get_default_intrinsic_tilt();
   assert(fabs(get_phi(Bin(0,0,0,0))-intrinsic_tilt) < 1.E-4);
   assert(fabs(get_phi(Bin(0,get_num_views(),0,0)) - intrinsic_tilt - _PI) < 1.E-4);
+#endif
   const int min_tang_pos_num = -(num_detectors/2)+1;
   const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
   
@@ -241,11 +250,13 @@ initialise_det1det2_to_uncompressed_view_tangpos() const
     {
       error("Minimum view number should currently be zero to be able to use get_view_tangential_pos_num_for_det_num_pair()");
     }
+#ifndef NDEBUG
   // check views range from 0 to Pi
   //PW Supports intrinsic tilt.
   const float intrinsic_tilt = get_scanner_ptr()->get_default_intrinsic_tilt();
   assert(fabs(get_phi(Bin(0,0,0,0)) - intrinsic_tilt) < 1.E-4);
   assert(fabs(get_phi(Bin(0,get_max_view_num()+1,0,0)) -intrinsic_tilt - _PI) < 1.E-4);
+#endif
   //const int min_tang_pos_num = -(num_detectors/2);
   //const int max_tang_pos_num = -(num_detectors/2)+num_detectors;
   const int max_num_views = num_detectors/2;
@@ -419,8 +430,8 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
       == Succeeded::no)
     return Succeeded::no;
 
-  det1 = modulo(round(cyl_coords.p1().psi()/(2.*_PI/num_detectors)), num_detectors);
-  det2 = modulo(round(cyl_coords.p2().psi()/(2.*_PI/num_detectors)), num_detectors);
+  det1 = modulo(round((cyl_coords.p1().psi()-this->get_psi_offset())/(2.*_PI/num_detectors)), num_detectors);
+  det2 = modulo(round((cyl_coords.p2().psi()-this->get_psi_offset())/(2.*_PI/num_detectors)), num_detectors);
   ring1 = round(cyl_coords.p1().z()/ring_spacing);
   ring2 = round(cyl_coords.p2().z()/ring_spacing);
 
@@ -485,16 +496,9 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   coord_2.y() = -x2;
   coord_2.x() = y2; 
 #else
-  // although code maybe doesn't really need the following, 
-  // asserts in the LOR code will break if these conditions are not satisfied.
-  assert(0<=det1);
-  assert(det1<num_detectors_per_ring);
-  assert(0<=det2);
-  assert(det2<num_detectors_per_ring);
-
   LORInCylinderCoordinates<float> cyl_coords(get_scanner_ptr()->get_effective_ring_radius());
-  cyl_coords.p1().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(det1));
-  cyl_coords.p2().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(det2));
+  cyl_coords.p1().psi() = to_0_2pi(static_cast<float>((2.*_PI/num_detectors_per_ring)*(det1)) + this->get_psi_offset());
+  cyl_coords.p2().psi() = to_0_2pi(static_cast<float>((2.*_PI/num_detectors_per_ring)*(det2)) + this->get_psi_offset());
   cyl_coords.p1().z() = Ring_A*get_scanner_ptr()->get_ring_spacing();
   cyl_coords.p2().z() = Ring_B*get_scanner_ptr()->get_ring_spacing();
   LORAs2Points<float> lor(cyl_coords);  
@@ -560,8 +564,8 @@ get_bin(const LOR<float>& lor) const
   const int num_rings = 
     get_scanner_ptr()->get_num_rings();
 
-  const int det1 = modulo(round(cyl_coords.p1().psi()/(2.*_PI/num_detectors_per_ring)),num_detectors_per_ring);
-  const int det2 = modulo(round(cyl_coords.p2().psi()/(2.*_PI/num_detectors_per_ring)),num_detectors_per_ring);
+  const int det1 = modulo(round((cyl_coords.p1().psi()-this->get_psi_offset())/(2.*_PI/num_detectors_per_ring)),num_detectors_per_ring);
+  const int det2 = modulo(round((cyl_coords.p2().psi()-this->get_psi_offset())/(2.*_PI/num_detectors_per_ring)),num_detectors_per_ring);
   // TODO WARNING LOR coordinates are w.r.t. centre of scanner, but the rings are numbered with the first ring at 0
   const int ring1 = round(cyl_coords.p1().z()/get_ring_spacing() + (num_rings-1)/2.F);
   const int ring2 = round(cyl_coords.p2().z()/get_ring_spacing() + (num_rings-1)/2.F);
