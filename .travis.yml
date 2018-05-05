@@ -77,12 +77,14 @@ before_install:
       brew cask uninstall oclint
       brew install ccache
       export PATH="/usr/local/opt/ccache/libexec:$PATH"
-      brew install --with-cocoa root
+      brew install root
       brew install swig
       # use Python3 on Mac
       # from http://blog.fizyk.net.pl/blog/running-python-tests-on-traviss-osx-workers.html
       brew install python3
-      virtualenv venv -p python3
+      #pip install --upgrade virtualenv
+      #virtualenv venv -p python3
+      python3 -m venv
       source venv/bin/activate
       python -m pip install -U pip
       python -m pip install pytest numpy
