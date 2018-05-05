@@ -71,7 +71,6 @@ before_install:
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
       brew update
-      brew tap homebrew/science
       # seems to be needed on Travis due to conflicts with gcc otherwise
       # see https://github.com/travis-ci/travis-ci/issues/8826
       brew cask uninstall oclint
@@ -89,8 +88,10 @@ before_install:
       #source venv/bin/activate
       which python
       PY_EXE=`which python3`
-      PYINST=`echo /usr/local/Cellar/python3/3.*/Frameworks/Python.framework/Versions`
-      PY_LIB=`echo $PYINST/3.*/Python`
+      find /usr/local/Cellar/python3 -name \*dylib
+      find /usr/local/Cellar/python3 -name \*.h
+      PY_INST=`echo /usr/local/Cellar/python3/3.*/Frameworks/Python.framework/Versions`
+      PY_LIB=`echo $PY_INST/3.*/Python`
       set |grep PY_
       #export PY_EXE=$PYINST/$PYMVER.6/bin/python3.6
       export BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_LIBRARY=$PYLIB"
