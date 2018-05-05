@@ -77,7 +77,7 @@ before_install:
       brew install ccache
       export PATH="/usr/local/opt/ccache/libexec:$PATH"
       brew upgrade python
-      #brew install root
+      brew install root
       brew install swig
       # use Python3 on Mac
       # from http://blog.fizyk.net.pl/blog/running-python-tests-on-traviss-osx-workers.html
