@@ -8,18 +8,18 @@ cache: ccache
 matrix:
  include:
    #### linux
- #- os: linux
- #  python: 3
- #  env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-5 CXX=g++-5
- #- os: linux
- #  python: 3
- #  env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-5 CXX=g++-5
- #- os: linux
- #  python: 3
- #  env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP:BOOL=ON" CC=gcc-5 CXX=g++-5
- #- os: linux
- #  python: 3
- #  env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1 -DSTIR_OPENMP:BOOL=OFF" CC=clang-5.0 CXX=clang++-5.0
+ - os: linux
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-5 CXX=g++-5
+ - os: linux
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-5 CXX=g++-5
+ - os: linux
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP:BOOL=ON" CC=gcc-5 CXX=g++-5
+ - os: linux
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1 -DSTIR_OPENMP:BOOL=OFF" CC=clang-5.0 CXX=clang++-5.0
    # note: cannot use OpenMP yet with Clang on Travis apparently. See https://github.com/travis-ci/travis-ci/issues/8613
 
    ####  osx
@@ -76,40 +76,28 @@ before_install:
       brew cask uninstall oclint
       brew install ccache
       export PATH="/usr/local/opt/ccache/libexec:$PATH"
+      # use Python3 on Mac
       brew upgrade python
       brew install root
       brew install swig
-      # use Python3 on Mac
-      # from http://blog.fizyk.net.pl/blog/running-python-tests-on-traviss-osx-workers.html
-      #pip install --upgrade virtualenv
-      #virtualenv venv -p python3
-      #python3 -m venv `pwd`/venv
-      #source venv/bin/activate
-      PY_EXE=`which python3`
-      PY_EXE=`ls -1L ${PY_EXE}`
-      find `brew --prefix` -name libpyth\*
-      find `brew --prefix` -name Python.h
+      # find exact location of Python executable to pass to CMake
       PY_INST=`echo /usr/local/Cellar/python/3.*/Frameworks/Python.framework/Versions/3.*`
       PY_EXE=$PY_INST/bin/python3
-      PY_LIB=`echo $PY_INST/Python`
-      PY_INC=`echo $PY_INST/Headers`
-      #export BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_LIBRARY=$PY_LIB"
-      #export BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_INCLUDE_DIR=$PY_INC"
-      ls -l $PY_INST/
-      ls -l $PY_INST/lib
-      set |grep PY_
-      #export PY_EXE=$PYINST/$PYMVER.6/bin/python3.6
+      PY_LIB=$PY_INST/Python
+      PY_INC=$PY_INST/Headers
+      # This is not necessary if we give the actual path for the executable
+      # BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_LIBRARY=$PY_LIB -DPYTHON_INCLUDE_DIR=$PY_INC"
       python3 -m pip install -U pip
       python3 -m pip install pytest numpy
     else
-      PY_EXE=`which python3`
+      PY_EXE=`which python`
     fi
      
 
 install:
   - mkdir build install
   - cd build
-  - echo "PY ${PY_EXE}"
+  - echo "Python executable: ${PY_EXE}"
   - ${PY_EXE} --version  
   - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS -DPYTHON_EXECUTABLE="${PY_EXE}" -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/install ..
   - make -j 2 all
