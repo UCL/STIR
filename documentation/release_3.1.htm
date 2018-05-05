@@ -124,6 +124,10 @@ These are only minimally documented at the present stage unfortunately.
 
 <h3>Changed functionality</h3>
 <ul>
+<li><tt>create_projdata_template</tt> 
+    now returns an extra segment pair if the maximum ring difference does not coincide with a &quot;full&quot; segment.
+    This changes was to accomodate how GE uses even span.
+</li>
 <li>
   The <code>num_events_to_store</code> variable in <code>LmToProjData</code> has been upgraded to long int
   allow processing of more events in list mode files.
@@ -263,7 +267,9 @@ from the above):</H2>
 <li>Projection- and BinNormalisation-related derived classes now have to call <code>set_up()</code> of their base
   class. Otherwise, you will get run-time errors saying that <code>set_up()</code> was not called.
   </li>
-<li>\texttt{create\_projdata\_template} now requires accurate value of "Max. ring difference acquired :". If wrong maximum ring difference is given as an input, you will get incorrect segment values.
+  <li><code>ProjDataInfo::ProjDataInfoCTI</code> (superseded by <code>ProjDataInfo::construct_proj_data_info</code>)
+    now returns an extra segment pair if the maximum ring difference does not coincide with a &quot;full&quot; segment.
+    This changes was to accomodate how GE uses even span.
 </li>
 </ul>
 
