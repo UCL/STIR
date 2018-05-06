@@ -85,20 +85,19 @@ before_install:
       PY_EXE=$PY_INST/bin/python3
       PY_LIB=$PY_INST/Python
       PY_INC=$PY_INST/Headers
+      ${PY_EXE} --version  
+      BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_EXECUTABLE=${PY_EXE}"
       # This is not necessary if we give the actual path for the executable
       # BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_LIBRARY=$PY_LIB -DPYTHON_INCLUDE_DIR=$PY_INC"
-      python3 -m pip install -U pip
-      python3 -m pip install pytest numpy
-    else
-      PY_EXE=`which python`
+      ${PY_EXE} -m pip install -U pip
+      ${PY_EXE} -m pip install pytest numpy
     fi
-     
+
 
 install:
   - mkdir build install
   - cd build
-  - ${PY_EXE} --version  
-  - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS -DPYTHON_EXECUTABLE="${PY_EXE}" -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/install ..
+  - cmake $BUILD_FLAGS $EXTRA_BUILD_FLAGS -DCMAKE_INSTALL_PREFIX=$TRAVIS_BUILD_DIR/install ..
   - make -j 2 all
   - make install
   
