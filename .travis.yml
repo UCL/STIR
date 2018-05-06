@@ -85,13 +85,16 @@ before_install:
       PY_EXE=$PY_INST/bin/python3
       PY_LIB=$PY_INST/Python
       PY_INC=$PY_INST/Headers
-      ${PY_EXE} --version  
-      BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_EXECUTABLE=${PY_EXE}"
       # This is not necessary if we give the actual path for the executable
       # BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_LIBRARY=$PY_LIB -DPYTHON_INCLUDE_DIR=$PY_INC"
       ${PY_EXE} -m pip install -U pip
       ${PY_EXE} -m pip install pytest numpy
+    else
+      PY_EXE=`which python3`
     fi
+    ${PY_EXE} --version  
+    BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_EXECUTABLE=${PY_EXE}"
+      
 
 
 install:
