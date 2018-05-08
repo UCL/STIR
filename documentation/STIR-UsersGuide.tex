@@ -241,14 +241,25 @@ directory, not \textbf{STIR/src}.}
 \cmdline{cd /somewhere/nice/STIRbuild/Release}
 \cmdline{cmake-gui /somewhere/else/STIR\&}
 
-This will bring up a basic interface where you might to have to choose your prefered
+This will bring up a basic interface where you might to have to choose your preferred
 build system (i.e. \texttt{make} on Linux/Unix) and do an initial configuration. Then 
-you specify build variables. You can press \texttt{c} to do additional configurations, \texttt{g} for generating
-your build files, \texttt{q} to quit. After this step, you will have to run your build system (e.g.\ on Linux etc,
+you specify build variables. You can press \texttt{Configure} to do additional configurations,
+possibly repeatedly and finally \texttt{Generate} for generating your build files\footnote{
+When using \texttt{ccmake} as opposed to \texttt{cmake-gui}, the key presses are:
+\texttt{c} to do additional configurations, \texttt{g} for generating
+your build files, \texttt{q} to quit}. After this step, you will have to run your build system (e.g.\ on Linux etc,
 type \texttt{make}, then \texttt{make test}, then \texttt{make install}).
+
+On Windows or MacOSX, the procedure is essentially the same, except that you will likely have
+to specify more locations. When using Visual Studio, XCode or other IDEs as  your build system,
+you do not need to specify the Build Type, as you will be able to select that in
+your IDE.
+
 More information on using CMake is on the STIR Wiki.
 
-For example, if CMake cannot find \textit{boost}, you will have to set \texttt{BOOST\_ROOT}. 
+{\subsubsubsection{CMake configuration variables}
+}
+
 \newlength{\MakeTableFirstCol}
 \newlength{\MakeTableSecondCol}
 \setlength{\MakeTableFirstCol}{1.5in}
@@ -313,24 +324,28 @@ via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.
 Note that you can use e.g. \textit{DISABLE\_LLN\_MATRIX} to \textit{not}
 use the LLN ECAT library, even if cmake found it.
 
-Finally, here are some standard CMake variables
+Here are some standard CMake variables that might be useful.
 \begin{itemize}
-\item set CMAKE\_BUILD\_TYPE to \texttt{Release} (default), \texttt{Debug} or \texttt{RelWithDebug}
-\item CMAKE\_INSTALL\_PREFIX specifies where the final installation has to occur. CMake
+\item set \textit{CMAKE\_BUILD\_TYPE} to \texttt{Release} (default), \texttt{Debug} or \texttt{RelWithDebug}.
+(This is ignored when using Visual Studio or XCode).
+\item \textit{CMAKE\_INSTALL\_PREFIX} specifies where the final installation has to occur. CMake
 provides normally a default in a system location, but you could set it for instance to
 \texttt{./install} to put the files inside your build directory.
-\item CMAKE\_CXX\_STANDARD can be used to tell CMake to add flags to your compiler to use
+\item \textit{{CMAKE\_CXX\_STANDARD} can be used to tell CMake to add flags to your compiler to use
 a particular version of the C++ standard (if it supports it). It is now recommended to set 
 this to \texttt{11}. This is necessary e.g. for ROOT 6 support. Other possible values are
 \texttt{98}, \texttt{14} and \texttt{17} (not tested yet).
 \end{itemize}
 
-On Windows or MacOSX, the procedure is essentially the same, except that you will likely have 
-to specify more locations When using Visual Studio, XCode or other IDEs as  your build system,
-you do not need to specify the Build Type, as you will be able to select that in 
-your IDE.
+When building the Python code, and you have multiple versions of Python installed,
+it is often necessary to specify the correct Python executable that you want, together with
+the libraries. You can use the \texttt{PYTHON\_EXECUTABLE} variable for this. If you
+specify the full path to the actual executable, this should be sufficient. If not, set
+\texttt{PYTHON\_LIBRARY} as well.
 
-
+There are various other variables that can be set, some of which are only visible if you toggled
+the display of \textt{Advanced} variables on. They should only be set by advanced users, or if a package
+cannot be found. For example, if CMake cannot find \textit{boost}, you will have to set \texttt{BOOST\_ROOT}.
 
 \subsubsection{
 Operating system specifics}
