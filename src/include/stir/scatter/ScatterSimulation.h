@@ -41,7 +41,7 @@ START_NAMESPACE_STIR
 
   N.E. : This class is roughly the base class of what used to be the ScatterEstimationByBin.
   Because there are different approaches on the actual simulation process, this base class will
-  be in charge of hold projection data and subsample the attenuation image, while more core function
+  be in charge of hold projection data and downsample the attenuation image, while more core function
   will deligate to classes like SingleScatterSimulation.
 
   This class computes the single Compton scatter estimate for PET data using an analytical
@@ -169,7 +169,7 @@ public:
 
     //! If densitiy image for scatter points not set, then run this on the attenuation image.
     shared_ptr<DiscretisedDensity<3, float> >
-    subsample_image(shared_ptr<DiscretisedDensity<3,float> >, bool scale = true);
+    downsample_image(shared_ptr<DiscretisedDensity<3,float> >, bool scale = true);
 
     //! set_density_image_for_scatter_points
     void set_density_image_for_scatter_points(const std::string&);
@@ -214,7 +214,7 @@ protected:
     compute_emis_to_det_points_solid_angle_factor(const CartesianCoordinate3D<float>& emis_point,
                                                   const CartesianCoordinate3D<float>& detector_coord);
 
-    shared_ptr<ProjDataInfo> subsample_scanner(shared_ptr<ProjDataInfo> arg);
+    shared_ptr<ProjDataInfo> downsample_scanner(shared_ptr<ProjDataInfo> arg);
 
     virtual void set_defaults();
     virtual void initialise_keymap();
@@ -390,11 +390,11 @@ protected:
     //! Optional to the zoom_z the final size of the image can be set
     int size_z;
 
-    //! If full scanner template is provided then subsample it
-    int subsample_scanner_rings;
+    //! If full scanner template is provided then downsample it
+    int downsample_scanner_rings;
 
-    //! If full scanner template is provided then subsample it
-    int subsample_scanner_dets;
+    //! If full scanner template is provided then downsample it
+    int downsample_scanner_dets;
 
 };
 

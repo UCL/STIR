@@ -116,17 +116,17 @@ initialise_keymap()
     // MASK parameters
     this->parser.add_key("mask attenuation image filename",
                          &this->mask_image_filename);
-    this->parser.add_key("mask postfilter filename",
+    this->parser.add_key("mask image postfilter filename",
                          &this->mask_postfilter_filename);
     this->parser.add_key("recompute mask image",
                          &this->recompute_mask_image);
-    this->parser.add_key("mask max threshold ",
+    this->parser.add_key("mask image max threshold ",
                          &this->mask_image.max_threshold);
-    this->parser.add_key("mask add scalar",
+    this->parser.add_key("mask image additive scalar",
                          &this->mask_image.add_scalar);
-    this->parser.add_key("mask min threshold",
+    this->parser.add_key("mask image min threshold",
                          &this->mask_image.min_threshold);
-    this->parser.add_key("mask times scalar",
+    this->parser.add_key("mask image times scalar",
                          &this->mask_image.times_scalar);
     this->parser.add_key("recompute mask projdata",
                          &this->recompute_mask_projdata);
@@ -150,7 +150,7 @@ initialise_keymap()
                          &this->initial_activity_image_filename);
 
     // RECONSTRUCTION RELATED
-    this->parser.add_key("reconstruction template file",
+    this->parser.add_key("reconstruction parameter template file",
                          &this->recon_template_par_filename);
     this->parser.add_parsing_key("reconstruction method",
                                  &this->reconstruction_template_sptr);
@@ -164,13 +164,13 @@ initialise_keymap()
     this->parser.add_key("scatter simulation parameters file",
                          &this->scatter_sim_par_filename);
 
-    this->parser.add_key("over-ride initial activity image",
+    this->parser.add_key("override initial activity image",
                          &this->override_initial_activity_image);
-    this->parser.add_key("over-ride density image",
+    this->parser.add_key("override density image",
                          &this->override_density_image);
-    this->parser.add_key("over-ride density image for scatter points",
+    this->parser.add_key("override density image for scatter points",
                          &this->override_density_image_for_scatter_points);
-    this->parser.add_key("over-ride scanner template",
+    this->parser.add_key("override scanner template",
                          &this->override_scanner_template);
 
     // END Scatter simulation
@@ -181,9 +181,9 @@ initialise_keymap()
                          &this->o_scatter_estimate_prefix);
     this->parser.add_key("do average at 2",
                          &this->do_average_at_2);
-    this->parser.add_key("max scale value",
+    this->parser.add_key("maximum scale value",
                          &this->max_scale_value);
-    this->parser.add_key("min scale value",
+    this->parser.add_key("minimum scale value",
                          &this->min_scale_value);
     this->parser.add_key("half filter width",
                          &this->half_filter_width);
@@ -459,7 +459,7 @@ set_up()
 
         info(boost::format("ScatterEstimation: Attenuation image data are supposed to be in units cm^-1\n"
                            "\tReference: water has mu .096 cm^-1\n"
-                           "\tMax in attenuation image: %g") %
+                           "\tMaximum in attenuation image: %g") %
              this->atten_image_sptr->find_max());
 
         int min_z = this->atten_image_sptr->get_min_index();

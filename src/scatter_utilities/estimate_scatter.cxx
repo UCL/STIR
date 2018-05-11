@@ -57,6 +57,18 @@ static void print_usage_and_exit()
                "recompute attenuation projdata := 0\n"
                "αttenuation projdata filename := \n"
                "attenuation image filename := \n"
+
+               ";Upsample and fit \n"
+               "; defaults to 3.\n"
+               "half filter width := \n"
+               "remove interleaving := \n"
+
+               "; If provided it will be given to the ScatterSimulation \n"
+               "; subsampled attenuation imagw filename := \n"
+
+               "maximum scale value := \n"
+               "minimum scale value := \n"
+
                "normalisation coefficients filename := \n"
                "recompute mask projdata := \n "
                "mask projdata filename := \n "
@@ -64,11 +76,11 @@ static void print_usage_and_exit()
                "recompute mask image :=\n "
                "mask image filename := \n"
 
-               "mask max threshold :=\n"
-               "mask add scaler := \n "
-               "mask min threshold :=\n"
-               "mask times scalar := \n"
-               "mask prostfilter filename :=\n"
+               "mask image prostfilter filename := "
+               "mask image max threshold := "
+               "mask image additive scalar := "
+               "mask image min threshold := "
+               "mask image times scalar :="
                "; End of Mask\n"
 
                "tail fitting par filename :=\n "
@@ -81,12 +93,12 @@ static void print_usage_and_exit()
                "; ScatterSimulation Stuff \n"
                "scatter simulation parameter file :=\n"
 
-               "; Over-ride the values set in the scatter simulation parameteres file\n"
-               "over-ride initial activity image := \n"
-               "over-ride density image := \n "
-               "over-ride density image for scatter points := \n"
+               "; Override the values set in the scatter simulation parameteres file\n"
+               "override initial activity image := \n"
+               "override density image := \n "
+               "override density image for scatter points := \n"
 
-               "reconstruction template file := \n"
+               "reconstruction parameter template file := \n"
                "; This is the number of times which the Scatter Estimation will\n"
                "; iterate. Default is 5\n"
 
@@ -99,17 +111,6 @@ static void print_usage_and_exit()
                "export scatter estimates of each iteration := \n"
 
                "output scatter estimate name prefix := \n"
-
-               "; If provided it will be given to the ScatterSimulation \n"
-               "; subsampled attenuation imagw filename := \n"
-
-               "max scale value := \n"
-               "min scale value := \n"
-
-               ";Upsample and fit \n"
-               "; defaults to 3.\n"
-               "half filter width := \n"
-               "remove interleaving := \n"
 
                "End Scatter Estimation Parameters :=" << std::endl;
                exit(EXIT_FAILURE);

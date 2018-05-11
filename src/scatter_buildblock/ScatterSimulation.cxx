@@ -120,6 +120,7 @@ process_data()
              vs_num.view_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_view_num();
              ++vs_num.view_num())
         {
+            info(boost::format("ScatterSimulator: %d / %d") % bin_counter% total_bins);
             total_scatter += this->process_data_for_view_segment_num(vs_num);
             bin_counter +=
                     this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num()) *
@@ -199,8 +200,8 @@ ScatterSimulation::set_defaults()
     this->zoom_z = 1.f;
     this->size_xy = -1;
     this->size_z = -1;
-    this->subsample_scanner_dets = 0;
-    this->subsample_scanner_rings = 0;
+    this->downsample_scanner_dets = 0;
+    this->downsample_scanner_rings = 0;
     this->density_image_filename = "";
     this->activity_image_filename = "";
     this->density_image_for_scatter_points_output_filename ="";
@@ -247,9 +248,9 @@ ScatterSimulation::initialise_keymap()
     this->parser.add_key("attenuation image for scatter points output filename",
                          &this->density_image_for_scatter_points_output_filename);
     this->parser.add_key("reduce number of detectors per ring by",
-                         &this->subsample_scanner_dets);
+                         &this->downsample_scanner_dets);
     this->parser.add_key("reduce number of rings by",
-                         &this->subsample_scanner_rings);
+                         &this->downsample_scanner_rings);
     this->parser.add_key("activity image filename",
                          &this->activity_image_filename);
     this->parser.add_key("attenuation threshold",
@@ -278,7 +279,7 @@ post_processing()
     if ((zoom_xy!=1 || zoom_z != 1) &&
             this->density_image_filename.size()>0)
     {
-        this->set_density_image_for_scatter_points_sptr(subsample_image(this->density_image_sptr));
+        this->set_density_image_for_scatter_points_sptr(downsample_image(this->density_image_sptr));
 
         if(this->density_image_for_scatter_points_output_filename.size()>0)
             OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
@@ -387,7 +388,7 @@ set_density_image_for_scatter_points(const std::string& filename)
 
 shared_ptr<DiscretisedDensity<3, float> >
 ScatterSimulation::
-subsample_image(shared_ptr<DiscretisedDensity<3, float> > arg,
+downsample_image(shared_ptr<DiscretisedDensity<3, float> > arg,
                 bool scale)
 {
     int new_xy, new_z;
@@ -488,9 +489,9 @@ set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>& arg)
     if (is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr))
         error("ScatterSimulation: Can only handle non-arccorrected data");
 
-    if (subsample_scanner_dets > 1 || subsample_scanner_rings > 1)
+    if (downsample_scanner_dets > 1 || downsample_scanner_rings > 1)
         this->proj_data_info_cyl_noarc_cor_sptr.reset(
-                dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(subsample_scanner(proj_data_info_cyl_noarc_cor_sptr)->clone()) );
+                dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(downsample_scanner(proj_data_info_cyl_noarc_cor_sptr)->clone()) );
 
 
     if (this->proj_data_info_cyl_noarc_cor_sptr->get_num_segments() > 1) // do SSRB
@@ -540,18 +541,18 @@ set_exam_info_sptr(const shared_ptr<ExamInfo>& arg)
 
 shared_ptr<ProjDataInfo>
 ScatterSimulation::
-subsample_scanner(shared_ptr<ProjDataInfo> arg)
+downsample_scanner(shared_ptr<ProjDataInfo> arg)
 {
 
     // copy localy.
-    info("ScatterSimulator: Subsampling scanner of template info ...");
+    info("ScatterSimulator: Downsampling scanner of template info ...");
     shared_ptr<Scanner> new_scanner_sptr( new Scanner(*arg->get_scanner_ptr()));
 
     // preserve the lenght of the scanner
     float scanner_lenght = new_scanner_sptr->get_num_rings()* new_scanner_sptr->get_ring_spacing();
 
-    new_scanner_sptr->set_num_rings(static_cast<int>(new_scanner_sptr->get_num_rings()/subsample_scanner_rings));
-    new_scanner_sptr->set_num_detectors_per_ring(static_cast<int>(new_scanner_sptr->get_num_detectors_per_ring()/subsample_scanner_dets));
+    new_scanner_sptr->set_num_rings(static_cast<int>(new_scanner_sptr->get_num_rings()/downsample_scanner_rings));
+    new_scanner_sptr->set_num_detectors_per_ring(static_cast<int>(new_scanner_sptr->get_num_detectors_per_ring()/downsample_scanner_dets));
     new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_lenght/new_scanner_sptr->get_num_rings()));
 
 
