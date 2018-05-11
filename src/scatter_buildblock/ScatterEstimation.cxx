@@ -258,6 +258,12 @@ post_processing()
         else
         {
             info("ScatterEstimation: No attenuation correction proj_data file name. The attenuation correction sinogram will be recomputed.");
+//            //! TODO.
+//            shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
+//            shared_ptr<ForwardProjectorByBin> forw_projector_ptr();
+//            forw_projector_ptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
+//            cerr << "\n\nForward projector used:\n" << forw_projector_ptr->parameter_info();
+
         }
     }
 
@@ -420,11 +426,18 @@ set_up()
         return Succeeded::no;
     }
 
-    if (!this->recompute_initial_activity_image && this->initial_activity_image_filename.size() > 0 )
+    if (!this->recompute_initial_activity_image  )
     {
-        info("ScatterEstimation: ScatterEstimation: Loading initial activity image ...");
-        this->current_activity_image_sptr =
-                read_from_file<DiscretisedDensity<3,float> >(this->initial_activity_image_filename);
+        if(this->initial_activity_image_filename.size() > 0)
+        {
+            info("ScatterEstimation: ScatterEstimation: Loading initial activity image ...");
+            this->current_activity_image_sptr =
+                    read_from_file<DiscretisedDensity<3,float> >(this->initial_activity_image_filename);
+        }
+        else
+        {
+            error("ScatterEstimation: ScatterEstimation: No initial activity image, please set to recompute. Abort.");
+        }
     }
     else
     {
@@ -499,6 +512,12 @@ set_up()
             this->current_activity_image_lowres_sptr->set_origin(mod_grid);
 
             this->current_activity_image_lowres_sptr->fill(1.f);
+        }
+        else if (zoom_xy == 1 || zoom_z ==1)
+        {
+            // The case that no low res image are used.
+            this->current_activity_image_lowres_sptr = this->current_activity_image_sptr;
+            this->atten_image_lowres_sptr = this->atten_image_sptr;
         }
 
         if (new_xy > -1 && new_z > -1)
@@ -775,9 +794,7 @@ set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterat
     }
 
     // Set the 2d.
-    attenuation_correction_sptr.reset(new BinNormalisationFromProjData(atten_projdata_2d_sptr));
-
-    //<- End of Attenuation projdata
+       //<- End of Attenuation projdata
 
     // Normalisation ProjData
 
@@ -855,7 +872,18 @@ set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterat
         this->back_projdata_2d_sptr->fill(*this->add_projdata_2d_sptr);
         this->multiplicative_binnorm_2d_sptr->apply(*this->back_projdata_2d_sptr, start_time, end_time);
     }
+    else
+    {
+        size_t lastindex = this->back_projdata_filename.find_last_of(".");
+        std::string rawname = this->back_projdata_filename.substr(0, lastindex);
+        std::string out_filename = rawname + "_2d.hs";
 
+        this->add_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                               this->proj_data_info_2d_sptr->create_shared_clone(),
+                                                               out_filename,
+                                                               std::ios::in | std::ios::out | std::ios::trunc));
+        this->add_projdata_2d_sptr->fill(0.0f);
+    }
     iterative_object->get_objective_function_sptr()->set_additive_proj_data_sptr(this->back_projdata_2d_sptr);
     return Succeeded::yes;
 }
@@ -874,7 +902,10 @@ process_data()
 {
 
     if (this->set_up() == Succeeded::no)
-        return Succeeded::no;
+    {
+        info("ScatterEstimation: Unsuccessfull set up!");
+       return Succeeded::no;
+    }
 
     const double start_time = 0.0;
     const double end_time = 0.0;
@@ -887,16 +918,16 @@ process_data()
     shared_ptr<ProjData> scaled_est_projdata_2d_sptr(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                                                           this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
     scaled_est_projdata_2d_sptr->fill(0.F);
-
     shared_ptr<ProjData> data_to_fit_projdata_2d_sptr(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                                                            this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
 
     //Data to fit = Input_2d - background
     //Here should be the total_background, not just the randoms.
     data_to_fit_projdata_2d_sptr->fill(*this->input_projdata_2d_sptr);
-    subtract_proj_data(*data_to_fit_projdata_2d_sptr, *this->add_projdata_2d_sptr);
+    if (!is_null_ptr(add_projdata_2d_sptr))
+        subtract_proj_data(*data_to_fit_projdata_2d_sptr, *this->add_projdata_2d_sptr);
 
-
+    info("ScatterEstimation: Start processing...");
     shared_ptr<DiscretisedDensity <3,float> > act_image_for_averaging;
 
     if( this->recompute_initial_activity_image )
@@ -919,6 +950,7 @@ process_data()
     //
     // Begin the estimation process...
     //
+    info("ScatterEstimation: Begin the estimation process...");
     for (int i_scat_iter = 1;
          i_scat_iter < this->num_scatter_iterations;
          i_scat_iter++)
