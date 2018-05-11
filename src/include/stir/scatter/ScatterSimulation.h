@@ -94,7 +94,6 @@ START_NAMESPACE_STIR
 class ScatterSimulation : public RegisteredObject<ScatterSimulation>,
         public ParsingObject
 {
-
 public:
 
     //! Default constructor

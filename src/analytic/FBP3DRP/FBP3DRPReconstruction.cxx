@@ -164,7 +164,7 @@ static void find_rmin_rmax(int& rmin, int& rmax,
   // (i.e. y=0, x=-ring_radius)
   // use image coordinates first
   float z_in_image_coordinates =
-    -delta*num_planes_per_virtual_ring*num_virtual_rings_per_physical_ring*
+    -fabs(delta)*num_planes_per_virtual_ring*num_virtual_rings_per_physical_ring*
     (fovrad + proj_data_info_cyl.get_ring_radius())/(2*proj_data_info_cyl.get_ring_radius());
   // now shift it to the edge of the FOV 
   // (taking into account that z==get_min_z() is in the middle of the voxel)

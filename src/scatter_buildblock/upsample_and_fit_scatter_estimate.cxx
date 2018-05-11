@@ -51,7 +51,7 @@ ScatterEstimation::
 upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
                                   const  ProjData& emission_proj_data,
                                   const ProjData& scatter_proj_data,
-                                  const BinNormalisation& scatter_normalisation,
+                                  BinNormalisation& scatter_normalisation,
                                   const ProjData& weights_proj_data,
                                   const float min_scale_factor,
                                   const float max_scale_factor,
@@ -77,6 +77,7 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
 					    emission_proj_data.get_proj_data_info_ptr()->create_shared_clone());
       inverse_SSRB(interpolated_scatter, interpolated_direct_scatter);
 
+      scatter_normalisation.set_up(emission_proj_data.get_proj_data_info_ptr()->create_shared_clone());
       scatter_normalisation.undo(interpolated_scatter, 
                                  time_frame_defs.get_start_time(), time_frame_defs.get_end_time());
       Array<2,float> scale_factors;

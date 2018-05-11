@@ -32,9 +32,10 @@ endif()
 
 if(BUILD_SWIG_PYTHON)
 
+  # find Python interpreter. Needed for tests, and best to enforce consistency anyway.
+  find_package(PythonInterp)
   # find libraries and include files
   # TODO would be better to use target_include_directories
-
   FIND_PACKAGE(PythonLibs REQUIRED)
   INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
   FIND_PACKAGE(Numpy REQUIRED)

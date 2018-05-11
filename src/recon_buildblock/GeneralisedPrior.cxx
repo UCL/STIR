@@ -46,6 +46,7 @@ template <typename TargetT>
 void
 GeneralisedPrior<TargetT>::set_defaults()
 {
+  _already_set_up = false;
   this->penalisation_factor = 0;  
 }
 
@@ -54,6 +55,7 @@ Succeeded
 GeneralisedPrior<TargetT>::
 set_up(shared_ptr<TargetT> const&)
 {
+  _already_set_up = true;
   return Succeeded::yes;
 }
 
@@ -61,11 +63,18 @@ template <typename TargetT>
 Succeeded 
 GeneralisedPrior<TargetT>::
 add_multiplication_with_approximate_Hessian(TargetT& output,
-					    const TargetT& input) const
+              const TargetT& input) const
 {
   error("GeneralisedPrior:\n"
-	"add_multiplication_with_approximate_Hessian implementation is not overloaded by your prior.");
+  "add_multiplication_with_approximate_Hessian implementation is not overloaded by your prior.");
   return Succeeded::no;
+}
+
+template <typename TargetT> 
+void GeneralisedPrior<TargetT>::check(TargetT const& current_estimate) const
+{
+  if (!_already_set_up) 
+    error("The prior should already be set-up, but it's not.");
 }
 
 #  ifdef _MSC_VER

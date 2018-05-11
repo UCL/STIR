@@ -42,7 +42,7 @@ detailed below.
 for Siemens scanners (warning: tested in Biograph mMR only at present).
 </p>
 
-<p>We now support additional list mode file formats (Siemens mMR and CERN ROOT files).
+<p>We now support additional list mode file formats (Siemens mMR, SAFIR and CERN ROOT files).
 </p>
 
 <p>The build system now only uses CMake. We recommend to use CMake version 3.1 or later 
@@ -56,7 +56,9 @@ improvements to the documentation.
 </p>
 
 <p>This release contains mainly code written by Kris Thielemans and Nikos Efthimiou (UCL),
-but with contributions by Jannis Fischer (ETH Zurich), Elise Emond (UCL), Edoardo Pasca (STFC) and some code clean-up by David Volgyes. Various bits
+  but with contributions by Jannis Fischer (ETH Zurich) for SAFIR support,
+  Elise Emond for IO fixes (UCL), Edoardo Pasca (STFC) for Siemens interfile support,
+  Daniel Deida (Leeds) for the PLS prior, and some code clean-up by David Volgyes. Various bits
 were tested by (in alphabetical order, all UCL except where indicated):
 Ottavia Bertolli, Matthias Ehrhardt, Pawel Markiewicz, Richard Manber, Alaleh Rashidnasab,
 Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
@@ -64,16 +66,22 @@ Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
 
 <h2> Summary for end users (also to be read by developers)</h2>
 
-<h3>Important bug fixes</h3>
+<h3>Bbug fixes</h3>
 <ul>
 <li>bug fixed in writing of SPECT interfile headers: "direction of rotation" was set incorrect. This 
 affected output of forward_project (and stir_math -s). Reconstruction was not affected though.
 </li>
-<li>fix conversion from raw GATE (it was using the wrong segment-order and data-type).</li>
+<li>fix conversion from raw GATE using
+  <tt>conv_GATE_raw_ECAT_projdata_to_interfile</tt>(it was using the wrong segment-order and data-type).</li>
 <li>the function value of the quadratic prior value was inconsistent with its gradient. It is now
 divided by 2. This bug did not affect OSMAPOSL nor OSSPS, but did affect the value of the 
 objective function being printed out. This bug would cause major problems if you developed your
-own reconstruction algorithms that used the objective function value. (bug found by Yu-Jung Tsai).</li>
+  own reconstruction algorithms that used the objective function value. (bug found by Yu-Jung Tsai).</li>
+<li>minor bug fix in FBP3DRP. The determination of the rmin/rmax of the missing data was incorrect for 
+negative delta (the range was too narrow). In principle, this could
+have caused problems, but only when a projector was used where the
+segment symmetry is switched off.
+</li>
 </ul>
 
 <h3>New functionality</h3>
@@ -97,7 +105,6 @@ These are only minimally documented at the present stage unfortunately.
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
 <li>add Verbosity level (currently only to be set from interactive languages)</li
 <li>Added the anatomical parallel level sets (PLS) prior. If an uniform anatomical image is provided it will work as a (smoothed) total variation (TV) prior </li>
-======
 <li>New input: GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. </li>
 <li>New header file, with .hroot extension is provided for ROOT files </li>
 <li><code>CListModeData</code> got a new function <code>get_total_number_of_events()</code>, BUT currently only <code>CListModeDataFromROOT</code> supports it. </li> 
@@ -107,6 +114,11 @@ These are only minimally documented at the present stage unfortunately.
     <li>added GeneralisedPoissonNoiseGenerator</li>
   </ul>
 </li>
+<li>Projection- and normalisation-related classes have had changes to make them much safer to use in an interactive
+  environment such as Python. The methods will now check if <code>set_up()</code> has been called
+  and if the images/projection data have the same characteristics as those used when the object was set-up.
+  (Actually, projection data can be &quote;smaller&quote;, e.g. less segments).
+  </li>
 </ul>
 
 
@@ -120,6 +132,13 @@ These are only minimally documented at the present stage unfortunately.
 The orientation of images read/written via ITK has changed. It should now be correct if the patient
 was in HFS position. This is currently not checked (and for many file formats, never can be checked).
 </li>
+<li><tt>calculate_attenuation_coefficients</tt> now defaults to using the ray-tracing matrix as
+  projector. Results should be identical though. This means it will not automatically handle
+  cases where there are less symmetries in the data, e.g. for scanners with odd number of
+  views.<br />
+  It has a new switch <tt>--NOPMRT</tt> which reverts to the previous behaviour (i.e. using
+  the old ray tracer on-the-fly projector).
+  </li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>
 <ul>
@@ -136,6 +155,8 @@ was in HFS position. This is currently not checked (and for many file formats, n
 
 <h3>Build system</h3>
 <ul>
+<li>Also find the Python executable. This allows specifying your python version by
+defining <code>PYTHON_EXECUTABLE</code> when running CMake.</li>
 <li>added (advanced) options <code>STIR_USE_BOOST_SHARED_PTR</code> and <code>STIR_NO_UNIQUE_PTR</code>.
 These default to <code>Off</code> unless Boost believes that your compiler does not have a working
 <code>std::shared_ptr</code> or <code>std::unique_ptr</code> (and in particular
@@ -248,6 +269,9 @@ from the above):</H2>
   is used. Finally, use the preprocessor define <code>MAKE_SHARED</code> as opposed to
   <code>std::make_shared</code>.
 </li>
+<li>Projection- and BinNormalisation-related derived classes now have to call <code>set_up()</code> of their base
+  class. Otherwise, you will get run-time errors saying that <code>set_up()</code> was not called.
+  </li>
 </ul>
 
 <h3>New functionality</h3>
@@ -269,8 +293,9 @@ In order to ensure backwards compatibility, at the moment, it is completely opti
 <li>Moved functions from the <code>poisson_noise</code> utility to a new class
   <code>GeneralisedPoissonNoiseGenerator</code>.
   </li>
- <li>Added the ability to <code>KeyParser</code> to parse <code>long int</code> numbers. 
-  </li>
+ <li>Added the ability to <code>KeyParser</code> to parse <code>long int</code> numbers. Also add <code>remove_key</code>.
+ </li>
+ <li>Introduce <code>operator&gt;=</code> for <code>ProjDataInfo</code>.</li>
 </ul>
 
 <h3>Other code changes</h3>
