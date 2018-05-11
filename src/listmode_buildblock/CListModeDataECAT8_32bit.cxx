@@ -52,10 +52,10 @@ CListModeDataECAT8_32bit(const std::string& listmode_filename)
     error(boost::format("Unknown value for originating_system keyword: '%s") % originating_system );
 
   this->set_proj_data_info_sptr(ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
-								this->axial_compression,
-								this->maximum_ring_difference,
-								this->number_of_views,
-								this->number_of_projections,
+                                this->interfile_parser.get_axial_compression(),
+                                this->interfile_parser.get_maximum_ring_difference(),
+                                this->interfile_parser.get_num_views(),
+                                this->interfile_parser.get_num_projections(),
                                 /* arc_correction*/false)
                                  );
 

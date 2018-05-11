@@ -83,7 +83,7 @@ private:
   shared_ptr<ProjDataInfo> proj_data_info_sptr;
   //moved at CListModeData
 //  shared_ptr<ProjDataInfo> proj_data_info_sptr;
-  InterfilePDFSHeader interfile_parser;
+  InterfileListmodeHeaderSiemens interfile_parser;
   // members to store info from the interfile header.
   // These tell us something about how the listmode is stored.
   int axial_compression;
