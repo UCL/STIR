@@ -1,0 +1,47 @@
+Reconstruction :=
+reconstruction method := OSMAPOSL
+
+OSMAPOSLParameters := 
+
+objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+
+maximum absolute segment number to process := -1
+
+projector pair type := Matrix
+  Projector Pair Using Matrix Parameters :=
+  Matrix type := Ray Tracing
+  Ray tracing matrix parameters :=
+   ; use multiple (almost) parallel LORs for every bin in the sinogram 
+   ; to avoid discretisation artefacts
+   number of rays in tangential direction to trace for each bin:= 1
+   ; you could disable some symmetries if you have enough memory
+   ; this would for instance allow you to increase the number of subsets
+   ; do_symmetry_90degrees_min_phi:=0
+  End Ray tracing matrix parameters :=
+  End Projector Pair Using Matrix Parameters :=
+
+
+
+recompute sensitivity :=1 
+zoom := 1
+
+end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+enforce initial positivity condition:=1
+
+number of subsets:= 1
+number of subiterations:= 1
+save estimates at subiteration intervals:= 1
+
+;
+; Disable output
+;
+disable output := 1
+
+End OSMAPOSLParameters :=
+
+End reconstruction :=
+
