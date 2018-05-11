@@ -113,9 +113,9 @@ static void read_line(istream& input, string& line,
           buf[0]='\0';        
           input.getline(buf,buf_size);
           thisline += buf;
-          if (input.fail() && !input.bad())
+          if (input.fail() && !input.bad() && !input.eof())
           { 
-            // either no characters (end-of-line somehow) or buf_size-1
+            // either no characters (end-of-line somehow) or buf_size-1 or end-of-file
             input.clear();
             more_chars = strlen(buf)==buf_size-1;        
           }  
@@ -324,6 +324,23 @@ map_element* KeyParser::find_in_keymap(const string& keyword)
   return 0;
 }
 
+bool
+KeyParser::remove_key(const string& keyword)
+{
+  for (Keymap::iterator iter = kmap.begin();
+       iter != kmap.end();
+       ++iter)
+  {
+     if (iter->first == keyword)
+       {
+         kmap.erase(iter);
+         return true;
+       }
+  }
+  // it wasn't there
+  return false;
+}
+
 void 
 KeyParser::add_in_keymap(const string& keyword, const map_element& new_element)
 {
@@ -507,8 +524,12 @@ Succeeded KeyParser::parse_header(const bool write_warning)
   while(status==parsing)
     {
     if(read_and_parse_line(write_warning) == Succeeded::yes)	
-	process_key();    
-    }
+		process_key();    
+	if (input->eof()) {
+		status = end_parsing;
+	}
+  }
+    
   
   return Succeeded::yes;
   
@@ -532,6 +553,9 @@ Succeeded KeyParser::read_and_parse_line(const bool write_warning)
       std::size_t pos = line.find_first_not_of(" \t");
       if ( pos != string::npos)
         break;
+	  // check if empty line
+	  if (line.size() == 0)
+		  break;
     }
 
   // gets keyword

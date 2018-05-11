@@ -75,6 +75,22 @@ ParametricQuadraticPrior<TargetT>::post_processing()
 }
 
 template <typename TargetT>
+Succeeded
+ParametricQuadraticPrior<TargetT>::set_up (shared_ptr<DiscretisedDensity<3,TargetT> > const& target_sptr)
+{
+  base_type::set_up(target_sptr);
+
+  return Succeeded::yes;
+}
+
+template <typename TargetT>
+void ParametricQuadraticPrior<elemT>::check(DiscretisedDensity<3,TargetT> const& current_image_estimate) const
+{
+  // Do base-class check
+  base_type::check(current_image_estimate);
+}
+
+template <typename TargetT>
 void
 ParametricQuadraticPrior<TargetT>::set_defaults()
 {
@@ -148,6 +164,7 @@ double
 ParametricQuadraticPrior<TargetT>::
 compute_value(const TargetT &current_image_estimate)
 {
+  this->check(current_image_estimate);
   double sum=0.; // At the moment I will have equal weights... so it is the sum (or the mean???) value of the two methods
   for (unsigned int param_num=1; param_num<=TargetT::get_num_params(); ++param_num)
     sum+=this->_single_quadratic_priors[param_num].compute_value(current_image_estimate.construct_single_density(param_num));  
@@ -160,6 +177,7 @@ ParametricQuadraticPrior<TargetT>::
 compute_gradient(TargetT& prior_gradient, 
 		 const TargetT &current_image_estimate)
 {
+  this->check(current_image_estimate);
   for (unsigned int param_num=1; param_num<=TargetT::get_num_params(); ++param_num)
     {
       typename TargetT::SingleDiscretisedDensityType single_density = prior_gradient.construct_single_density(param_num);
@@ -206,6 +224,7 @@ void
 ParametricQuadraticPrior<TargetT>::parabolic_surrogate_curvature(TargetT& parabolic_surrogate_curvature, 
 			const TargetT &current_image_estimate)
 {
+  this->check(current_image_estimate);
   for (unsigned int param_num=1; param_num<=TargetT::get_num_params(); ++param_num)
     {
       typename TargetT::SingleDiscretisedDensityType single_density = parabolic_surrogate_curvature.construct_single_density(param_num);
@@ -220,6 +239,7 @@ ParametricQuadraticPrior<TargetT>::
 add_multiplication_with_approximate_Hessian(TargetT& output,
 					    const TargetT& input) const
 {
+  this->check(input);
   for (unsigned int param_num=1; param_num<=TargetT::get_num_params(); ++param_num)
     {
       typename TargetT::SingleDiscretisedDensityType single_density = output.construct_single_density(param_num);

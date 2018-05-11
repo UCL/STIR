@@ -29,7 +29,7 @@
 #include "stir/listmode/CListRecordECAT8_32bit.h"
 #include "stir/IO/InputStreamWithRecords.h"
 #include "stir/shared_ptr.h"
-#include "stir/IO/InterfileHeader.h"
+#include "stir/IO/InterfileHeaderSiemens.h"
 #include <iostream>
 #include <string>
 #include <utility>
@@ -80,6 +80,7 @@ private:
   typedef CListRecordECAT8_32bit CListRecordT;
   std::string listmode_filename;
   shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
   //moved at CListModeData
 //  shared_ptr<ProjDataInfo> proj_data_info_sptr;
   InterfilePDFSHeader interfile_parser;
