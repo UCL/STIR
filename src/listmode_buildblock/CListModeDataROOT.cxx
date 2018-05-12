@@ -117,13 +117,15 @@ CListModeDataROOT(const std::string& hroot_filename)
                                              /*num_detector_layers_v*/ 1 ));
     }
 
-    this->set_proj_data_info_sptr(ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
-                                  1,
-                                  this_scanner_sptr->get_num_rings(),
-                                  this_scanner_sptr->get_num_detectors_per_ring()/2,
-                                  this_scanner_sptr->get_max_num_non_arccorrected_bins(),
-                                  /* arc_correction*/false)
-                                   );
+    std::unique_ptr<ProjDataInfo> tmp_unique(ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
+                                                                                    1,
+                                                                                    this_scanner_sptr->get_num_rings(),
+                                                                                    this_scanner_sptr->get_num_detectors_per_ring()/2,
+                                                                                    this_scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                                                                    /* arc_correction*/false));
+      shared_ptr<ProjDataInfo> tmp(tmp_unique.release());
+
+    this->set_proj_data_info_sptr(tmp);
 
     if (this->open_lm_file() == Succeeded::no)
         error("CListModeDataROOT: error opening ROOT file for filename '%s'",
