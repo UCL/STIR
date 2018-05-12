@@ -917,7 +917,7 @@ Scanner* Scanner::ask_parameters()
       Type type = User_defined_scanner;
   
       if (EnergyResolution > -1 && ReferenceEnergy > -1)
-        Scanner* scanner_ptr =
+        scanner_ptr =
             new Scanner(type, string_list(name),
                         num_detectors_per_ring,  NoRings,
                         NoBins, NoBins,
@@ -930,7 +930,7 @@ Scanner* Scanner::ask_parameters()
                         EnergyResolution,
                         ReferenceEnergy );
       else
-        Scanner* scanner_ptr =
+       scanner_ptr =
             new Scanner(type, string_list(name),
                         num_detectors_per_ring,  NoRings,
                         NoBins, NoBins,
