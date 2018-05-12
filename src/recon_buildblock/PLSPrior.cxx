@@ -62,8 +62,9 @@ PLSPrior<elemT>::initialise_keymap()
 
 template <typename elemT>
 Succeeded
-PLSPrior<elemT>::set_up ()
+PLSPrior<elemT>::set_up (shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr)
 {
+    base_type::set_up(target_sptr);
 
     if (is_null_ptr( this->anatomical_sptr))
     {
@@ -95,7 +96,6 @@ PLSPrior<elemT>::set_up ()
 
     this->set_anatomical_grad_norm_sptr (shared_ptr<DiscretisedDensity<3,elemT> >(norm_sptr));
 
-
 return Succeeded::yes;
 }
 
@@ -105,21 +105,26 @@ PLSPrior<elemT>::post_processing()
 {
   if (base_type::post_processing()==true)
     return true;
+
   if (kappa_filename.size() != 0)
-    this->kappa_ptr = read_from_file<DiscretisedDensity<3,elemT> >(kappa_filename);
+    this->set_kappa_filename(kappa_filename);
 
-  if (anatomical_filename.size() != 0){
-    this->anatomical_sptr = read_from_file<DiscretisedDensity<3,elemT> >(anatomical_filename);
-      info(boost::format("Reading anatomical data '%1%'") % anatomical_filename  );}
-
-//  else if (!is_null_ptr( this->anatomical_sptr)){
-//      this->anatomical_sptr->fill (0);
-//  }
-   set_up ();
-
+  if (anatomical_filename.size() != 0)
+      this->set_anatomical_filename(anatomical_filename);
 
   return false;
 
+}
+
+template <typename elemT>
+void PLSPrior<elemT>::check(DiscretisedDensity<3,elemT> const& current_image_estimate) const
+{
+  // Do base-class check
+  base_type::check(current_image_estimate);
+
+  // Check anatomical and current image have same characteristics
+  if (!this->anatomical_sptr->has_same_characteristics(current_image_estimate))
+    error("The anatomical image must have the same charateristics as the PET image");
 }
 
 template <typename elemT>
@@ -204,7 +209,10 @@ template <typename elemT>
 void
 PLSPrior<elemT>::
 set_anatomical_image_sptr (const shared_ptr<DiscretisedDensity<3,elemT> >& arg)
-{ this->anatomical_sptr = arg; }
+{
+    this->anatomical_sptr = arg;
+    this->anatomical_filename = ""; // Clear filename in case it was set.
+}
 
 template <typename elemT>
 void
@@ -251,14 +259,31 @@ PLSPrior<elemT>::
 get_kappa_sptr() const
 { return this->kappa_ptr; }
 
-  //! set kappa image
+//! set kappa image
 template <typename elemT>
 void
 PLSPrior<elemT>::
 set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >& k)
-{ this->kappa_ptr = k; }
+{
+    this->kappa_ptr = k;
+    kappa_filename = ""; // Clear filename in case it was set.
+}
 
+//! Set kappa filename
+template <typename elemT> void PLSPrior<elemT>::set_kappa_filename(const std::string& filename)
+{
+  kappa_filename  = filename;
+  this->kappa_ptr = read_from_file<DiscretisedDensity<3,elemT> >(kappa_filename);
+  info(boost::format("Reading kappa data '%1%'") % kappa_filename  );
+}
 
+//! Set anatomical filename
+template <typename elemT> void PLSPrior<elemT>::set_anatomical_filename(const std::string& filename)
+{
+  anatomical_filename  = filename;
+  this->anatomical_sptr = read_from_file<DiscretisedDensity<3,elemT> >(anatomical_filename);
+  info(boost::format("Reading anatomical data '%1%'") % anatomical_filename  );
+}
 
 template <typename elemT>
 void PLSPrior<elemT>::compute_image_gradient_element(DiscretisedDensity<3,elemT> & image_gradient_elem, int direction, const DiscretisedDensity<3,elemT> & image ){
@@ -428,8 +453,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
     return 0.;
   }
 
-  if (!this->anatomical_sptr->has_same_characteristics(current_image_estimate))
-    error("The anatomical image must have the same charateristics as the PET image");
+  this->check(current_image_estimate);
 
   shared_ptr<DiscretisedDensity<3,elemT> > pet_im_grad_z_sptr;
   if(!only_2D)
@@ -498,9 +522,7 @@ PLSPrior<elemT>::
 compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                  const DiscretisedDensity<3,elemT> &current_image_estimate)
 {
-
-  if (!this->anatomical_sptr->has_same_characteristics(current_image_estimate))
-      error("The gradient should have same charateristics as the PET image");
+  this->check(current_image_estimate);
 
   if (this->penalisation_factor==0)
   {

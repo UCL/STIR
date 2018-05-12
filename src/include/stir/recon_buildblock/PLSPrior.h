@@ -124,6 +124,9 @@ class PLSPrior:  public
   //! Constructs it explicitly
   PLSPrior(const bool only_2D, float penalization_factor);
 
+  //! Has to be called before using this object
+  /*! \todo set the anatomical image to zero if not defined */
+  virtual Succeeded set_up(shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr);
 
   //! compute the value of the function
   double
@@ -146,12 +149,24 @@ class PLSPrior:  public
   double get_eta() const;
   double get_alpha() const;
 
+
+  //! set anatomical pointer
+  void set_anatomical_image_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+  //! get anatomical pointer
+  shared_ptr<DiscretisedDensity<3,elemT> > get_anatomical_image_sptr() const;
+  /// Set anatomical filename
+  void set_anatomical_filename(const std::string& filename);
+
   //! set kappa image
   void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+  /// Set kappa filename
+  void set_kappa_filename(const std::string& filename);
 
-  //! set/get anatomical pointers
-  void set_anatomical_image_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
-  shared_ptr<DiscretisedDensity<3,elemT> > get_anatomical_image_sptr() const;
+
+  /// Set only 2D
+  void set_only_2D(const bool arg) { only_2D = arg; }
+  /// Get only 2D
+  bool get_only_2D() { return only_2D; }
 
 protected:
   //! can be set during parsing to restrict the gradient calculation to the 2D case
@@ -174,10 +189,11 @@ protected:
 
   //! the parsing will only override any exixting kappa-image or anatomical-image if the relevant keyword is present
   virtual bool post_processing();
- private:
 
-    /*! \todo set the anatomical image to zero if not defined */
-   virtual Succeeded set_up();
+  //! Check that the prior is ready to be used
+  virtual void check(DiscretisedDensity<3,elemT> const& current_image_estimate) const;
+
+ private:
 
   //! compute the component x, y or z of the image gradient using forward difference
   static void compute_image_gradient_element(DiscretisedDensity<3,elemT> & image_gradient_elem,
