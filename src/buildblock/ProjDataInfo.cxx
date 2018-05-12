@@ -5,6 +5,7 @@
     Copyright (C) 2000 - 2009-05-13, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2018, University College London
+    Copyright (C) 2018, University of Leeds
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -370,8 +371,12 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
   // check if we went one too far
   if (RDmaxtmp[seg_num] > max_delta)
   {
-      RDmintmp[seg_num] = max_delta;
-      RDmaxtmp[seg_num] = max_delta;
+    if (max_delta < num_ring-1)
+      warning(boost::format("Creation of ProjDataInfo with span=%1% and max_delta=%2% leads to a 'smaller' last segment than the others (did you mean to set max_delta=%3%?).\n"
+                            "This is fine, but note that in previous versions of STIR this last segment was dropped.")
+              % span % max_delta % RDmaxtmp[seg_num]);
+    // Palak Wadwha changed this to max_delta to accomodate GE scanners, it is more general anyway.
+    RDmaxtmp[seg_num] = max_delta;
   }
 
   const int max_seg_num = seg_num;
