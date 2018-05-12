@@ -119,7 +119,7 @@ CListModeDataROOT(const std::string& hroot_filename)
 
     std::unique_ptr<ProjDataInfo> tmp_unique(ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
                                                                                     1,
-                                                                                    this_scanner_sptr->get_num_rings(),
+                                                                                    this_scanner_sptr->get_num_rings()-1,
                                                                                     this_scanner_sptr->get_num_detectors_per_ring()/2,
                                                                                     this_scanner_sptr->get_max_num_non_arccorrected_bins(),
                                                                                     /* arc_correction*/false));
