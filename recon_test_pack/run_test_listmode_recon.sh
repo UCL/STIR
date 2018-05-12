@@ -77,15 +77,15 @@ echo "=== calculate background data"
 echo "===== randoms"
 
 echo "====== create delayed fansums"
-INPUT=PET_ACQ_small.l.hdr.STIR OUTPUT=my_fansums_delayed lm_fansums lm_fansums_delayed.par 2>my_fansums.log
+INPUT=PET_ACQ_small.l.hdr.STIR OUTPUT=my_fansums_delayed lm_fansums lm_fansums_delayed.par > my_fansums.log 2>&1
 
 echo "====== estimate singles from fansums"
 niters=10
 # Note: the last 2 numbers are specific to the mMR
-find_ML_singles_from_delayed -f my_MLsingles_f1 my_fansums_delayed_f1.dat  $niters 2 343 </dev/null
+find_ML_singles_from_delayed -f my_MLsingles_f1 my_fansums_delayed_f1.dat  $niters 2 343 > find_ML_singles_from_delayed.log 2>&1
 
 echo " ===== estimate randoms from singles"
-construct_randoms_from_singles my_MLrandoms_f1 my_MLsingles_f1 Siemens_mMR_seg2.hs $niters 2>my_construct_randoms_from_singles.log
+construct_randoms_from_singles my_MLrandoms_f1 my_MLsingles_f1 Siemens_mMR_seg2.hs $niters > my_construct_randoms_from_singles.log 2>&1
 
 echo "=== simulate normalisation data"
 # For normalisation data we are going to use a cylinder in the center,
@@ -101,13 +101,13 @@ echo "ERROR running calculate_attenuation_coefficients. Check my_create_acfs.log
 fi
 
 echo "===  reconstruct listmode data"
-OSMAPOSL OSMAPOSL_test_lm.par
+OSMAPOSL OSMAPOSL_test_lm.par > OSMAPOSL_test_lm.log 2>&1
 echo "===  "
 # create sinograms
 echo "===  unlist listmode data (for comparison)"
 INPUT=PET_ACQ_small.l.hdr.STIR TEMPLATE=Siemens_mMR_seg2.hs OUT_PROJDATA_FILE=my_sinogram lm_to_projdata  lm_to_projdata.par
 echo "===  reconstruct projection data for comparison"
-OSMAPOSL OSMAPOSL_test_proj.par
+OSMAPOSL OSMAPOSL_test_proj.par > OSMAPOSL_test_proj.log 2>&1
 echo "=== compare sensitivity images"
 if compare_image my_sens_t_proj_seg2.hv my_sens_t_lm_pr_seg2.hv 2>my_sens_comparison_stderr.log;
 then
