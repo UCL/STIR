@@ -117,16 +117,9 @@ protected:
  
   unsigned int current_frame_num;
 
-  //!
-  //! \brief num_events_to_use
-  //! \author Nikos Efthimiou
-  //! \details This is part of some functionality I transfer from LmToProjData.
+  //! This is part of some functionality I transfer from LmToProjData.
   long int num_events_to_use;
-
-  //!
-   //! \brief do_time_frame
-   //! \author Nikos Efthimiou
-   //! \details Reconstruct based on time frames?
+   //! Reconstruct based on time frames
    bool do_time_frame;
  
   //! sets any default values
