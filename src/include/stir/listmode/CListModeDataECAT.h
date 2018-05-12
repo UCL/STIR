@@ -89,9 +89,6 @@ public:
   /*! \todo this might depend on the acquisition parameters */
   virtual bool has_delayeds() const { return true; }
 
-    virtual
-    shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
-
 private:
   std::string listmode_filename_prefix;
   mutable unsigned int current_lm_file;
@@ -100,10 +97,11 @@ private:
   mutable std::vector<std::vector<std::streampos> > saved_get_positions_for_each_lm_data;
   typedef std::pair<unsigned int, SavedPosition> GetPosition;
   std::vector<GetPosition > saved_get_positions;
-  
+
   // const as it modifies only mutable elements
   // It has to be const as e.g. get_next_record calls it
   Succeeded open_lm_file(unsigned int) const; 
+  shared_ptr<Scanner> scanner_sptr;
 };
 
 END_NAMESPACE_ECAT7

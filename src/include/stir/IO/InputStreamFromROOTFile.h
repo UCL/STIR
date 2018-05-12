@@ -102,7 +102,7 @@ public:
     inline std::string get_ROOT_filename() const;
 
     //! Get the number of rings as calculated from the number of repeaters
-    inline virtual int get_num_rings() const = 0;
+    virtual int get_num_rings() const = 0;
     //! Get the number of dets per ring as calculated from the number of repeaters
     virtual int get_num_dets_per_ring() const = 0;
     //! Get the number of axial modules

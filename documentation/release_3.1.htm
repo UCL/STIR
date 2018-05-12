@@ -111,7 +111,7 @@ These are only minimally documented at the present stage unfortunately.
 <li>New input: GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. </li>
 <li>New header file, with .hroot extension is provided for ROOT files </li>
 <li><code>CListModeData</code> got a new function <code>get_total_number_of_events()</code>, BUT currently only <code>CListModeDataFromROOT</code> supports it. </li> 
-<li> Reconstruction of listmode data has been corrected. LM-OSEM can be performed but only gometrical subsets are currected supported. 
+<li> Reconstruction of listmode data has been corrected. LM-OSEM can be performed but only gometrical subsets are currently supported. 
   </li>
 <li>Sensitivity calculation parallelized using distributed worker mechanism.</li>
 <li>Python (and MATLAB) interface
@@ -155,7 +155,7 @@ was in HFS position. This is currently not checked (and for many file formats, n
   As opposed to <code>bin.view_num()</code>, write <code>bin.view_num</code>. You can now also do
   <code>bin.view_num=1</code>.
 </li>
-<li> <code>CListModeData</code> now need to implement a <code> ProjDataInfo</code> instead of <code>Scanner</code>. Therefore, acquisition information can be used directly in the LM reconstruction. 
+<li> <code>CListModeData</code> now need to implement a <code> ProjDataInfo</code> instead of <code>Scanner</code>. 
   </li>
 </ul>
 
