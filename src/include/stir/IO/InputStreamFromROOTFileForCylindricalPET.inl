@@ -21,16 +21,17 @@ int
 InputStreamFromROOTFileForCylindricalPET::
 get_num_rings() const
 {
-    return static_cast<int>(this->rsector_repeater * this->module_repeater_y *
-                            this->submodule_repeater_y * this->crystal_repeater_y);
+
+    return static_cast<int>( this->crystal_repeater_z * this->module_repeater_z *
+                             this->submodule_repeater_z);
 }
 
 int
 InputStreamFromROOTFileForCylindricalPET::
 get_num_dets_per_ring() const
 {
-    return static_cast<int>( this->crystal_repeater_z * this->module_repeater_z *
-                             this->submodule_repeater_z);
+    return static_cast<int>(this->rsector_repeater * this->module_repeater_y *
+                            this->submodule_repeater_y * this->crystal_repeater_y);
 }
 
 
