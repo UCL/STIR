@@ -58,5 +58,10 @@ void CListEventROOT::set_detection_position(const DetectionPositionPair<>&)
     error("Cannot set events in a ROOT file!");
 }
 
+bool CListEventROOT::is_prompt() const
+{
+    return true;
+}
+
 END_NAMESPACE_STIR
 

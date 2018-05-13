@@ -48,8 +48,7 @@ public:
     inline void init_from_data(const int &_ring1, const int &_ring2,
                              const int &crystal1, const int &crystal2);
 
-    inline bool is_prompt() const
-    { return true; }
+    bool is_prompt() const;
 
     bool inline is_swapped() const
     { return swapped; }
