@@ -15,23 +15,8 @@
 
     See STIR/LICENSE.txt for details
 */
-/*!
-  \file
-  \ingroup IO
-  \brief Implementation of class stir::InputStreamFromROOTFile
-
-  \author Nikos Efthimiou
-*/
-
-#include "stir/listmode/CListRecord.h"
 
 START_NAMESPACE_STIR
-
-bool CListRecordROOT::is_time() const
-{ return true; }
-
-bool CListRecordROOT::is_event() const
-{ return true; }
 
 bool CListRecordROOT::is_full_event() const
 { return true; }

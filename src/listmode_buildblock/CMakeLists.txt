@@ -25,6 +25,7 @@ endif()
 
 if (HAVE_CERN_ROOT)
 	list(APPEND ${dir_LIB_SOURCES}
+		CListEventROOT
 		CListModeDataROOT
 		CListRecordROOT
 	)

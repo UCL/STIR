@@ -27,7 +27,7 @@
 #ifndef __stir_listmode_CListEventCylindricalScannerWithDiscreteDetectors_H__
 #define __stir_listmode_CListEventCylindricalScannerWithDiscreteDetectors_H__
 
-#include "stir/Succeeded.h"
+#include "stir/listmode/CListEvent.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 

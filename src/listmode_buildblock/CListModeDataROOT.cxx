@@ -25,6 +25,7 @@
   \author Kris Thielemans
 */
 
+#include "stir/listmode/CListRecordROOT.h"
 #include "stir/listmode/CListModeDataROOT.h"
 #include "stir/Scanner.h"
 #include "stir/Succeeded.h"
@@ -32,8 +33,6 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 #include <boost/format.hpp>
-#include <fstream>
-#include <sstream>
 
 START_NAMESPACE_STIR
 

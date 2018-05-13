@@ -29,7 +29,6 @@
 #define __stir_listmode_CListModeDataROOT_H__
 
 #include "stir/listmode/CListModeData.h"
-#include "stir/listmode/CListRecordROOT.h"
 #include "stir/IO/InputStreamFromROOTFile.h"
 #include "stir/KeyParser.h"
 
