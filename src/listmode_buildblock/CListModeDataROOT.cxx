@@ -74,22 +74,25 @@ CListModeDataROOT(const std::string& hroot_filename)
     this->exam_info_sptr->set_high_energy_thres(this->root_file_sptr->get_up_energy_thres());
 
     // If the user set Scanner::User_defined_scanner then the local geometry valiables must be set.
-
+    bool give_it_a_try = false;
     if (this->originating_system != "User_defined_scanner") //
     {
         this->scanner_sptr.reset(Scanner::get_scanner_from_name(this->originating_system));
         if (this->scanner_sptr->get_type() == Scanner::Unknown_scanner)
         {
-            error(boost::format("Unknown value for originating_system keyword: '%s. Abort.") % originating_system );
+            warning(boost::format("CListModeDataROOT: Unknown value for originating_system keyword: '%s.\n WIll try to "
+                                  "figure out the scanner's geometry from the parameters") % originating_system );
+            give_it_a_try = true;
         }
-
-        warning("I've set the scanner from STIR settings and ignored values in the hroot header.");
+        else
+            info("CListModeDataROOT: I've set the scanner from STIR settings and ignored values in the hroot header.");
     }
     // If the user provide a Scanner name then, the local variables will be ignored and the Scanner
     // will be the selected.
-    else
+    else if (this->originating_system == "User_defined_scanner" ||
+             give_it_a_try)
     {
-        info("Trying to figure out the scanner geometry from the information "
+        info("CListModeDataROOT: Trying to figure out the scanner geometry from the information "
              "given in the ROOT header file.");
         std::string error_str;
 
@@ -219,7 +222,7 @@ Succeeded
 CListModeDataROOT::
 check_scanner_match_geometry(std::string& ret)
 {
-    std::ostringstream stream("The Scanner does not match the GATE geometry. Check: ");
+    std::ostringstream stream("CListModeDataROOT: The Scanner does not match the GATE geometry. Check: ");
     bool ok = true;
 
     if (scanner_sptr->get_num_rings() != root_file_sptr->get_num_rings())
@@ -291,7 +294,7 @@ check_scanner_definition(std::string& ret)
          ring_spacing == -.1f ||
          bin_size == -1.f )
     {
-       std::ostringstream stream("The User_defined_scanner has not been fully described.\nPlease include in the hroot:\n");
+       std::ostringstream stream("CListModeDataROOT: The User_defined_scanner has not been fully described.\nPlease include in the hroot:\n");
 
        if (num_rings == -1)
            stream << "Number of rings := \n";
