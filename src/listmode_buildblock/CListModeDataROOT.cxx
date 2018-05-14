@@ -219,7 +219,7 @@ Succeeded
 CListModeDataROOT::
 check_scanner_match_geometry(std::string& ret)
 {
-    std::ostringstream stream{"The Scanner does not match the GATE geometry. Check: "};
+    std::ostringstream stream("The Scanner does not match the GATE geometry. Check: ");
     bool ok = true;
 
     if (scanner_sptr->get_num_rings() != root_file_sptr->get_num_rings())
@@ -291,8 +291,7 @@ check_scanner_definition(std::string& ret)
          ring_spacing == -.1f ||
          bin_size == -1.f )
     {
-       std::ostringstream stream{"The User_defined_scanner has not been fully described.\n"
-                                 "Please include in the hroot:\n"};
+       std::ostringstream stream("The User_defined_scanner has not been fully described.\nPlease include in the hroot:\n");
 
        if (num_rings == -1)
            stream << "Number of rings := \n";
