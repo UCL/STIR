@@ -29,7 +29,6 @@
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/SegmentByView.h"
-#include "stir/ProjDataInterfile.h"
 #include "stir/Bin.h"
 #include <fstream>
 
@@ -135,27 +134,27 @@ get_size_of_buffer() const
     sizeof(float);
 }
 
-Succeeded
-ProjDataInMemory::
-write_to_file(const string& output_filename) const
-{
+//Succeeded
+//ProjDataInMemory::
+//write_to_file(const string& output_filename) const
+//{
 
-  ProjDataInterfile out_projdata(get_exam_info_sptr(),
-				 this->proj_data_info_ptr, output_filename, ios::out); 
+//  ProjDataInterfile out_projdata(get_exam_info_sptr(),
+//				 this->proj_data_info_ptr, output_filename, ios::out);
   
-  Succeeded success=Succeeded::yes;
-  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
-       segment_num <= proj_data_info_ptr->get_max_segment_num();
-       ++segment_num)
-  {
-    Succeeded success_this_segment =
-      out_projdata.set_segment(get_segment_by_view(segment_num));
-    if (success==Succeeded::yes)
-      success = success_this_segment;
-  }
-  return success;
+//  Succeeded success=Succeeded::yes;
+//  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
+//       segment_num <= proj_data_info_ptr->get_max_segment_num();
+//       ++segment_num)
+//  {
+//    Succeeded success_this_segment =
+//      out_projdata.set_segment(get_segment_by_view(segment_num));
+//    if (success==Succeeded::yes)
+//      success = success_this_segment;
+//  }
+//  return success;
     
-}
+//}
 
 float 
 ProjDataInMemory::get_bin_value(Bin& bin)

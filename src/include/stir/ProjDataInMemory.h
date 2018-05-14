@@ -84,8 +84,8 @@ public:
   //! writes info to a file in Interfile format
   /*! \warning This might change as soon as we have proper output of projdata
   */
-  Succeeded
-    write_to_file(const std::string& filename) const;
+//  Succeeded
+//    write_to_file(const std::string& filename) const;
  
   //! Returns a  value of a bin
   float get_bin_value(Bin& bin);
