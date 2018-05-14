@@ -1,10 +1,3 @@
-/*!
-  \file
-  \ingroup IO
-  \brief Declaration of class stir::InputStreamFromROOTFileForCylindricalPET
-
-  \author Nikos Efthimiou
-*/
 /*
     Copyright (C) 2016, UCL
     This file is part of STIR.
@@ -30,6 +23,52 @@
 
 START_NAMESPACE_STIR
 
+/*!
+  \file
+  \ingroup IO
+  \brief Declaration of class stir::InputStreamFromROOTFileForCylindricalPET
+  \details From (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defining_a_system#CylindricalPET">here</a> ) a cylindrical PET scanner has
+  five levels
+    * rsector
+    * module
+    * submodule
+    * crystal
+    * layer
+
+    The geometry is defined through the repeaters. In the example header file found below.
+    The values in the repeaters must match the values in the simulation macro file.
+    \warning In case that in the simulation a level is skipped then the repeater has to
+    be set to 1.
+
+    \verbatim
+    GATE scanner type := GATE_Cylindrical_PET
+        GATE_Cylindrical_PET Parameters :=
+        name of data file := ${INPUT_ROOT_FILE}
+        name of input TChain := Coincidences
+
+        number of Rsectors := 504
+        number of modules_X := 1
+        number of modules_Y := 1
+        number of modules_Z := 1
+        number of submodules_X := 1
+        number of submodules_Y := 1
+        number of submodules_Z := 1
+        number of crystals_X := 1
+        number of crystals_Y := 1
+        number of crystals_Z := 4
+
+        Singles readout depth := 1
+        exclude scattered events := ${EXCLUDE_SCATTERED}
+        exclude random events := ${EXCLUDE_RANDOM}
+        offset (num of detectors) := 0
+        low energy window (keV) := 0
+        upper energy window (keV):= 10000
+
+    End GATE_Cylindrical_PET Parameters :=
+    \endverbatim
+
+  \author Nikos Efthimiou
+*/
 class InputStreamFromROOTFileForCylindricalPET : public
         RegisteredParsingObject< InputStreamFromROOTFileForCylindricalPET ,
         InputStreamFromROOTFile,

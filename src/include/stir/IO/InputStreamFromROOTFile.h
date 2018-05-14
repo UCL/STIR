@@ -49,8 +49,31 @@ START_NAMESPACE_STIR
 /*! \ingroup IO
         \author Nikos Efthimiou
 
-        \details This class takes as input a root file, and returns the data stored in a meaningfull
-        way. The validation of the ROOT input was done with version 5.34.
+        \details This is an abstract base class for inputs from ROOT files.
+        Primarily, information not related to the scanner's geometry is held here.
+        * InputStreamFromROOTFileForCylindricalPET is for cylindrical PET scanners
+        (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defining_a_system#CylindricalPET">here</a> ) and
+        * InputStreamFromROOTFileForECAT is for ECAT PET scanners
+          (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defining_a_system#Ecat">here</a> ).
+
+       The follow bit of the header file refers to members stored here.
+       For appropriate values please check your simulation macro file.
+       For the singles_readout_depth from GATE's online documentation:
+       (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide_V7.2:Digitizer_and_readout_parameters">here</a> )
+       > the readout depth depends upon how the electronic readout functions.
+
+       \verbatim
+        name of data file := ${INPUT_ROOT_FILE}
+        name of input TChain := Coincidences
+        Singles readout depth := 1
+        exclude scattered events := ${EXCLUDE_SCATTERED}
+        exclude random events := ${EXCLUDE_RANDOM}
+        offset (num of detectors) := 0
+        low energy window (keV) := 0
+        upper energy window (keV):= 10000
+       \endverbatim
+
+        \warning The initial validation of the ROOT input was done with version 5.34.
 */
 
 class InputStreamFromROOTFile : public RegisteredObject< InputStreamFromROOTFile > ,
@@ -71,14 +94,9 @@ public:
 
 
     virtual ~InputStreamFromROOTFile() {}
-
-    //!
-    //! \brief get_next_record
-    //! \param record Reference to the Record
-    //! \return
     //!  \details Returns the next record in the ROOT file.
     //!  The code is adapted from Sadek A. Nehmeh and CR Schmidtlein,
-    //! downloaded from <a href="http://www.opengatecollaboration.org/STIR">GATE website</a>
+    //! downloaded from <a href="http://www.opengatecollaboration.org/STIR">here</a>
     virtual
     Succeeded get_next_record(CListRecordROOT& record) = 0;
     //! Go to the first event.
@@ -96,13 +114,13 @@ public:
     inline
     void set_saved_get_positions(const std::vector<unsigned long int>& );
     //! Returns the total number of events
-    inline virtual unsigned long int
+    inline unsigned long int
     get_total_number_of_events() const;
 
     inline std::string get_ROOT_filename() const;
 
     //! Get the number of rings as calculated from the number of repeaters
-    inline virtual int get_num_rings() const = 0;
+    virtual int get_num_rings() const = 0;
     //! Get the number of dets per ring as calculated from the number of repeaters
     virtual int get_num_dets_per_ring() const = 0;
     //! Get the number of axial modules
@@ -117,10 +135,10 @@ public:
     virtual int get_num_axial_crystals_per_singles_unit() const = 0;
 
     virtual int get_num_trans_crystals_per_singles_unit() const = 0;
-
-    inline virtual float get_low_energy_thres() const;
-
-    inline virtual float get_up_energy_thres() const;
+    //! Lower energy threshold
+    inline float get_low_energy_thres() const;
+    //! Upper energy threshold
+    inline float get_up_energy_thres() const;
 
 protected:
 
@@ -138,24 +156,30 @@ protected:
     unsigned long int current_position;
     //! A vector with saved position indices.
     std::vector<unsigned long int> saved_get_positions;
-
     // ROOT chain
     TChain *stream_ptr;
 
     // Variables to store root information
     std::string chain_name;
-    Int_t           eventID1, eventID2;
-    Double_t        time1, time2;
-    Float_t         energy1, energy2;
-    Int_t           comptonphantom1, comptonphantom2;
-
+    Int_t eventID1, eventID2, runID, sourceID1, sourceID2;
+    Double_t time1, time2;
+    Float_t energy1, energy2, rotation_angle, sinogramS, sinogramTheta, axialPos;
+    Int_t comptonphantom1, comptonphantom2;
+    Float_t globalPosX1, globalPosX2, globalPosY1, globalPosY2, globalPosZ1, globalPosZ2;
+    Float_t sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2, sourcePosZ1, sourcePosZ2;
+    //! Skip scattered events (comptonphantom1 > 0 && comptonphantom2 > 0)
     bool exclude_scattered;
+    //! Skip random events (eventID1 != eventID2)
     bool exclude_randoms;
-
+    //! Lower energy threshold
     float low_energy_window;
+    //! Upper energy threshold
     float up_energy_window;
+    //! This value will apply a rotation on the detectors' id in the same ring.
     int offset_dets;
-
+    //!For the singles_readout_depth from GATE's online documentation:
+    //! (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide_V7.2:Digitizer_and_readout_parameters">here</a> )
+    //! > the readout depth depends upon how the electronic readout functions.
     int singles_readout_depth;
 };
 

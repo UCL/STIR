@@ -21,7 +21,6 @@ int
 InputStreamFromROOTFileForCylindricalPET::
 get_num_rings() const
 {
-
     return static_cast<int>( this->crystal_repeater_z * this->module_repeater_z *
                              this->submodule_repeater_z);
 }

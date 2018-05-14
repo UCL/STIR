@@ -94,7 +94,6 @@ CListModeDataROOT(const std::string& hroot_filename)
     {
         info("CListModeDataROOT: Trying to figure out the scanner geometry from the information "
              "given in the ROOT header file.");
-        std::string error_str;
 
         if (check_scanner_definition(error_str) == Succeeded::no)
         {

@@ -76,13 +76,32 @@ InputStreamFromROOTFile::post_processing()
 
     stream_ptr->SetBranchAddress("time1", &time1);
     stream_ptr->SetBranchAddress("time2", &time2);
-
+    stream_ptr->SetBranchAddress("axialPos",&axialPos);
     stream_ptr->SetBranchAddress("eventID1",&eventID1);
     stream_ptr->SetBranchAddress("eventID2",&eventID2);
     stream_ptr->SetBranchAddress("energy1", &energy1);
     stream_ptr->SetBranchAddress("energy2", &energy2);
     stream_ptr->SetBranchAddress("comptonPhantom1", &comptonphantom1);
     stream_ptr->SetBranchAddress("comptonPhantom2", &comptonphantom2);
+    stream_ptr->SetBranchAddress("globalPosX1",&globalPosX1);
+    stream_ptr->SetBranchAddress("globalPosX2",&globalPosX2);
+    stream_ptr->SetBranchAddress("globalPosY1",&globalPosY1);
+    stream_ptr->SetBranchAddress("globalPosY2",&globalPosY2);
+    stream_ptr->SetBranchAddress("globalPosZ1",&globalPosZ1);
+    stream_ptr->SetBranchAddress("globalPosZ2",&globalPosZ2);
+    stream_ptr->SetBranchAddress("rotationAngle",&rotation_angle);
+    stream_ptr->SetBranchAddress("runID",&runID);
+    stream_ptr->SetBranchAddress("sinogramS",&sinogramS);
+    stream_ptr->SetBranchAddress("sinogramTheta",&sinogramTheta);
+    stream_ptr->SetBranchAddress("sourceID1",&sourceID1);
+    stream_ptr->SetBranchAddress("sourceID2",&sourceID2);
+    stream_ptr->SetBranchAddress("sourcePosX1",&sourcePosX1);
+    stream_ptr->SetBranchAddress("sourcePosX2",&sourcePosX2);
+    stream_ptr->SetBranchAddress("sourcePosY1",&sourcePosY1);
+    stream_ptr->SetBranchAddress("sourcePosY2",&sourcePosY2);
+    stream_ptr->SetBranchAddress("sourcePosZ1",&sourcePosZ1);
+    stream_ptr->SetBranchAddress("sourcePosZ2",&sourcePosZ2);
+
     return false;
 }
 
