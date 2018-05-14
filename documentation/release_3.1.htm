@@ -89,7 +89,7 @@ segment symmetry is switched off.
 
 <h3>New functionality</h3>
 <ul>
-<li>\texttt{create\_projdata\_template} now allows even span. In particular,
+  <li><tt>create_projdata_template</tt> now allows even span. In particular,
 span 2 corresponds to how GE stores data. See the STIR glossary for more information.</li>
 <li>As mentioned above, many operations are now multi-threaded when you built with OPENMP support.
 By default, we use about 90% of your cores, but you can change that by setting the OMP_NUM_THREADS
@@ -129,6 +129,10 @@ These are only minimally documented at the present stage unfortunately.
 
 <h3>Changed functionality</h3>
 <ul>
+<li><tt>create_projdata_template</tt> 
+    now returns an extra segment pair if the maximum ring difference does not coincide with a &quot;full&quot; segment.
+    This change was to accomodate how GE uses even span.
+</li>
 <li>
   The <code>num_events_to_store</code> variable in <code>LmToProjData</code> has been upgraded to long int
   allow processing of more events in list mode files.
@@ -279,6 +283,10 @@ from the above):</H2>
 <li>Projection- and BinNormalisation-related derived classes now have to call <code>set_up()</code> of their base
   class. Otherwise, you will get run-time errors saying that <code>set_up()</code> was not called.
   </li>
+  <li><code>ProjDataInfo::ProjDataInfoCTI</code> (superseded by <code>ProjDataInfo::construct_proj_data_info</code>)
+    now returns an extra segment pair if the maximum ring difference does not coincide with a &quot;full&quot; segment.
+    This change was to accomodate how GE uses even span.
+</li>
 <code>CListModeData</code> now need to implement a <code> ProjDataInfo</code> instead of <code>Scanner</code>. This will probably break all related classes. 
 </ul>
 
