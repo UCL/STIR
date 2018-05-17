@@ -82,6 +82,11 @@ negative delta (the range was too narrow). In principle, this could
 have caused problems, but only when a projector was used where the
 segment symmetry is switched off.
 </li>
+<li>When using the <code>inNormalisationFromAttenuationImage</code>  constructor that takes
+  an image, the code would rescale the image of the caller.<br />
+This bug did not affect command line utilities, but did affected
+python/matlab or use of the C++ library.
+</li>
 </ul>
 
 <h3>New functionality</h3>
