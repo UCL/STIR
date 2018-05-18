@@ -353,8 +353,15 @@ bool RunTests::check(const bool result, const std::string& str)
 bool
 RunTests::check_if_equal(const double a, const double b, const std::string& str)
 {
-  if ((fabs(b)>tolerance && fabs(a/b-1) > tolerance)
-      || (fabs(b)<=tolerance && fabs(a-b) > tolerance))
+    double diff = fabs(b-a);
+    if (diff <= tolerance)
+            return true;
+
+    double _a = fabs(a);
+    double _b = fabs(b);
+    float largest = (_b > _a) ? _b : _a;
+
+  if ( diff > tolerance*largest)
   {
     std::cerr << "Error : unequal values are " << a << " and " << b 
          << ". " << str<< std::endl;
