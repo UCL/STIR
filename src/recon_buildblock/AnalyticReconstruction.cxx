@@ -232,7 +232,7 @@ void
 AnalyticReconstruction::
 set_input_data(const shared_ptr<ExamData> &arg)
 {
-    this->proj_data_ptr.reset(dynamic_cast < ProjData * > (arg.get()) );
+	this->proj_data_ptr = dynamic_pointer_cast < ProjData >(arg);
 }
 
 const ProjData&

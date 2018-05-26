@@ -20,7 +20,7 @@
 /*!
   \file
   \ingroup utilities
-  \brief Multiplies Dynamic Images with the Model Matrix creating image in the Parametric Space
+  \brief Write the Model Matrix for the Patlak plot (e.g., for debugging)
   \author Charalampos Tsoumpas
 
 
@@ -35,14 +35,10 @@
 
 */
 
-#include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/modelling/PatlakPlot.h"
-#include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
-#include "stir/IO/OutputFileFormat.h"
 #include <string>
 #include <iostream>
-#include <iomanip>
 
 int main(int argc, char *argv[])
 { 
