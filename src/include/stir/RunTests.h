@@ -3,6 +3,7 @@
     Copyright (C) 2000-2005, Hammersmith Imanet Ltd
     Copyright (C) 2013, Kris Thielemans
     Copyright (C) 2013, University College London
+    Copyright (C) 2018, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,6 +24,7 @@
   \ingroup buildblock 
   \brief defines the stir::RunTests class
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
   \author PARAPET project
 */
@@ -344,22 +346,28 @@ bool RunTests::check(const bool result, const std::string& str)
 }
 
 
-/*! tolerance is used to account for floating point rounding error. Equality is checked using
+/*! tolerance is used to account for floating point rounding error. First the absolute difference
+ * is checked and afterwards the relative.
 \code
-((fabs(b)>tolerance && fabs(a/b-1) > tolerance)
-      || (fabs(b)<=tolerance && fabs(a-b) > tolerance))
+    const double diff = fabs(b-a);
+    if (diff <= tolerance)
+            return true;
+
+    const double largest = (std::max(fabs(b), fabs(a)));
+    if ( diff > tolerance*largest)
+        return false;
+    else
+        return true;
 \endcode
 */
 bool
 RunTests::check_if_equal(const double a, const double b, const std::string& str)
 {
-    double diff = fabs(b-a);
+    const double diff = fabs(b-a);
     if (diff <= tolerance)
             return true;
 
-    double _a = fabs(a);
-    double _b = fabs(b);
-    float largest = (_b > _a) ? _b : _a;
+    const double largest = (std::max(fabs(b), fabs(a)));
 
   if ( diff > tolerance*largest)
   {
