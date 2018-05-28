@@ -155,6 +155,8 @@ InputStreamFromROOTFileForCylindricalPET::initialise_keymap()
 bool InputStreamFromROOTFileForCylindricalPET::
 post_processing()
 {
+    if (base_type::post_processing())
+        return true;
     return false;
 }
 

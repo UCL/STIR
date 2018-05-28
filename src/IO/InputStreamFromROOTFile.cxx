@@ -71,12 +71,12 @@ InputStreamFromROOTFile::post_processing()
 Succeeded
 InputStreamFromROOTFile::set_up(const std::string & header_path)
 {
-    // Read the 4 bytes to check whether this is a ROOT file, indeed.
+
     FilePath f(filename,false);
     f.prepend_directory_name(header_path);
 
-    std::string fullfilename = f.get_as_string();
-
+    const std::string fullfilename = f.get_as_string();
+    // Read the 4 bytes to check whether this is a ROOT file.
     FileSignature signature(fullfilename.c_str());
     if ( strncmp(signature.get_signature(), "root", 4) != 0)
     {

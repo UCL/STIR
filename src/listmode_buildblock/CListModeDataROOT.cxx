@@ -62,7 +62,8 @@ CListModeDataROOT(const std::string& hroot_filename)
         error("CListModeDataROOT: error parsing '%s'", hroot_filename.c_str());
 
     FilePath f(hroot_filename);
-    root_file_sptr->set_up( f.get_path_only());
+    if (root_file_sptr->set_up( f.get_path_only()) == Succeeded::no)
+        error("CListModeDataROOT: Unable to set_up() from the input Header file (.hroot).");
 
 //    this->root_file_sptr->set_up();
     // ExamInfo initialisation
