@@ -1,3 +1,10 @@
+/*!
+\file
+\ingroup IO
+\brief Declaration of class stir::InputStreamFromROOTFileForECATPET
+
+\author Nikos Efthimiou
+*/
 /*
     Copyright (C) 2016, UCL
     This file is part of STIR.
@@ -23,7 +30,6 @@
 START_NAMESPACE_STIR
 
 /*!
-  \file
   \ingroup IO
   \brief Declaration of class stir::InputStreamFromROOTFileForECATPET
 

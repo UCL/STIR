@@ -1,3 +1,10 @@
+/*!
+\file
+\ingroup IO
+\brief Declaration of class stir::InputStreamFromROOTFileForCylindricalPET
+
+\author Nikos Efthimiou
+*/
 /*
     Copyright (C) 2016, UCL
     This file is part of STIR.
@@ -24,7 +31,6 @@
 START_NAMESPACE_STIR
 
 /*!
-  \file
   \ingroup IO
   \brief Declaration of class stir::InputStreamFromROOTFileForCylindricalPET
   \details From (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defining_a_system#CylindricalPET">here</a> ) a cylindrical PET scanner has

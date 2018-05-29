@@ -61,8 +61,8 @@ START_NAMESPACE_STIR
   (which will initialise the InputStreamFromROOTFile.
   And of course, match the Scanner used by other parts of STIR (e.g. ProjDataInfo e.t.c).
 
-  Finally, in the case that Scanner::Unknown_scanner the algorithm will use the flag
-  give_it_a_try and will try to create the scanner from the members. Subject to concistency
+  Finally, in the case that Scanner::Unknown_scanner the algorithm will
+  try to create the scanner from the members. Subject to concistency
   checks, of course.
 
   \par Example headers

@@ -92,7 +92,7 @@ CListModeDataROOT(const std::string& hroot_filename)
     else if (this->originating_system == "User_defined_scanner" ||
              give_it_a_try)
     {
-        info("CListModeDataROOT: Trying to figure out the scanner geometry from the information "
+        warning("CListModeDataROOT: Trying to figure out the scanner geometry from the information "
              "given in the ROOT header file.");
 
         if (check_scanner_definition(error_str) == Succeeded::no)
