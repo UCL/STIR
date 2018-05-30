@@ -186,12 +186,10 @@ void build_metz(VectorWithOffset<elemT>& kernel,
     
     for (int i=0;i<=Res-(Res/2);i++) {
       fftdata[i].real(filter[Res/2-1+i]);
-      fftdata[i].imag(0.0);
     }
     
     for (int i=1;i<(Res/2);i++) {
       fftdata[Res-(Res/2)+i].real(filter[i-1]);
-      fftdata[Res-(Res/2)+i].imag(0.0);
     }
 
     /* FFT to frequency space */
