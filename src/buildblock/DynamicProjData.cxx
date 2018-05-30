@@ -42,6 +42,7 @@
 #include "stir/IO/FileSignature.h"
 #include "stir/IO/InterfileHeader.h"
 #include "stir/IO/interfile.h"
+#include "stir/MultipleDataSetHeader.h"
 #include <boost/format.hpp>
 #include <fstream>
 #include <math.h>
@@ -86,7 +87,7 @@ DynamicProjData::
 get_time_frame_definitions() const
 {   return this->exam_info_sptr->time_frame_definitions;    }
 
-DynamicProjData*
+shared_ptr<DynamicProjData>
 DynamicProjData::
 read_from_file(const string& filename) // The written projection data is read in respect to its center as origin!!!
 {
@@ -99,7 +100,7 @@ read_from_file(const string& filename) // The written projection data is read in
 #ifndef NDEBUG
     info(boost::format("DynamicProjData::read_from_file trying to read %s as Interfile") % filename);
 #endif
-    DynamicProjData* ptr(read_interfile_DPDFS(filename, std::ios::in));
+    shared_ptr<DynamicProjData> ptr(read_interfile_DPDFS(filename, std::ios::in));
     if (!is_null_ptr(ptr))
       return ptr;
     else
@@ -162,10 +163,20 @@ read_from_file(const string& filename) // The written projection data is read in
     }
 #endif // end of HAVE_LLN_MATRIX
 
+  if (strncmp(signature, "Multi", 5) == 0) {
+
+#ifndef NDEBUG
+        info(boost::format("DynamicProjData::read_from_file trying to read %s as a Multi file.") % filename);
+#endif
+
+      shared_ptr<DynamicProjData> dynamic_proj_data(new DynamicProjData(*MultipleProjData::read_from_file(filename)));
+      dynamic_proj_data->set_time_frame_definitions(dynamic_proj_data->get_exam_info_sptr()->time_frame_definitions);
+      return dynamic_proj_data;
+  }
   
   // return a zero pointer if we get here
   warning(boost::format("DynamicProjData::read_from_file cannot read '%s'. Unsupported file format?") % filename);
-  return 0;
+  return shared_ptr<DynamicProjData>();
 }
 
 Succeeded 
