@@ -30,6 +30,7 @@
 #include "stir/DynamicDiscretisedDensity.h" 
 #include "stir/NumericType.h"
 #include "stir/Succeeded.h"
+#include "stir/IO/interfile.h"
 
 START_NAMESPACE_STIR
 
@@ -91,11 +92,15 @@ InterfileDynamicDiscretisedDensityOutputFileFormat::
 actual_write_to_file(std::string& filename, 
 		     const DynamicDiscretisedDensity & density) const
 {
-  // TODO modify write_basic_interfile to return filename
-  
-  error("InterfileDynamicDiscretisedDensityOutputFileFormat TODO");
-  return Succeeded::no;
-};
+    // TODO modify write_basic_interfile to return filename
+    Succeeded success =
+        write_basic_interfile(filename, density,
+                  this->type_of_numbers, this->scale_to_write_data,
+                  this->file_byte_order);
+    if (success == Succeeded::yes)
+        replace_extension(filename, ".hv");
+    return success;
+}
 
 
 
