@@ -331,6 +331,7 @@ can create problems with the lifetime of objects. Use <code>get..._sptr</code> i
 which is called by <code>LmToProjData</code> to check if the list mode format
 can handle the template.
 All derived classes of <code>CListEvent</code> will need to implement it.
+<li>We removed <code>SeparableMetzArrayFilter::discrete_fourier_transform()</code>. Now <code>stir::fourier</code> is used. No need to comply with the Licence of "Numerical Recipies" anymore.</li>
 </li>
 </ul>
 
