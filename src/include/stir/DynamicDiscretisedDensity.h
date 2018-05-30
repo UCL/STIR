@@ -69,6 +69,8 @@ class DynamicDiscretisedDensity
     DynamicDiscretisedDensity*
     read_from_file(const std::string& filename);
 
+  void read_from_file_multi(const std::string&, const std::string&);
+
   DynamicDiscretisedDensity() {}
 
   DynamicDiscretisedDensity(const DynamicDiscretisedDensity&argument);

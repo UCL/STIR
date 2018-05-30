@@ -26,6 +26,8 @@
 
 #include "stir/MultipleProjData.h"
 #include "stir/is_null_ptr.h"
+#include "stir/KeyParser.h"
+#include "stir/MultipleDataSetHeader.h"
 #include <fstream>
 
 START_NAMESPACE_STIR
@@ -54,6 +56,37 @@ MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
     ExamData(exam_info_sptr)
 {
     this->_proj_datas.resize(num_gates);
+}
+
+shared_ptr<MultipleProjData>
+MultipleProjData::
+read_from_file(std::string parameter_file)
+{
+   MultipleDataSetHeader header;
+
+    if (header.parse(parameter_file.c_str()) == false)
+        error("MultipleProjData:::read_from_file: Error parsing %s", parameter_file.c_str());
+
+    int num_data_sets = header.get_num_data_sets();
+
+    // Create the multiple proj data
+    shared_ptr<MultipleProjData> multiple_proj_data( new MultipleProjData );
+
+    // Read the projdata
+    for (int i=0; i<num_data_sets; ++i) {
+        std::cerr<<" Reading " << header.get_filename(i)<<'\n';
+        // Create each of the individual proj datas
+        multiple_proj_data->_proj_datas.push_back(ProjData::read_from_file(header.get_filename(i)));
+    }
+
+    // Update the time definitions based on each individual frame
+    multiple_proj_data->get_exam_info_sptr()->time_frame_definitions.set_num_time_frames(num_data_sets);
+    for (int i=0; i<num_data_sets; ++i) {
+        const TimeFrameDefinitions &tdef = multiple_proj_data->_proj_datas[i]->get_exam_info_ptr()->time_frame_definitions;
+        multiple_proj_data->get_exam_info_sptr()->time_frame_definitions.set_time_frame(i, tdef.get_start_time(1), tdef.get_duration(1));
+    }
+
+    return multiple_proj_data;
 }
 
 #if 0

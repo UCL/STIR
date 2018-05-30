@@ -56,6 +56,10 @@ public:
   MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
                    const int num_gates);
 
+  static
+  shared_ptr<MultipleProjData>
+  read_from_file(std::string parameter_file);
+
   //N.E.14/07/16 Inherited from ExamData
   // //! Get a pointer to the exam information
 //  const ExamInfo*

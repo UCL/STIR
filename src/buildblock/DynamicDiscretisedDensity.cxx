@@ -37,6 +37,9 @@
 #include <fstream>
 #include "stir/IO/interfile.h"
 
+#include "stir/DynamicProjData.h"
+#include "stir/MultipleDataSetHeader.h"
+
 
 #ifndef STIR_NO_NAMESPACES
 using std::fstream;
@@ -120,6 +123,32 @@ DynamicDiscretisedDensity::
 read_from_file(const string& filename) // The written image is read in respect to its center as origin!!!
 {
   return stir::read_from_file<DynamicDiscretisedDensity>(filename).get();
+}
+
+void
+DynamicDiscretisedDensity::
+read_from_file_multi(const string& proj_data_multi, const string& densities_multi)
+{
+    shared_ptr<DynamicProjData> proj;
+    proj = DynamicProjData::read_from_file(proj_data_multi);
+    MultipleDataSetHeader header;
+
+    if (header.parse(densities_multi.c_str()) == false)
+         error("MultipleProjData:::read_from_file: Error parsing %s", densities_multi.c_str());
+
+    int num_data_sets = header.get_num_data_sets();
+    this->_densities.resize(num_data_sets);
+    for (int i=0; i<num_data_sets; ++i) {
+        singleDiscDensT *t = singleDiscDensT::read_from_file(header.get_filename(i));
+        this->_densities[i].reset( t->clone() );
+    }
+
+    this->_scanner_sptr.reset( new Scanner(*proj->get_proj_data_info_ptr()->get_scanner_ptr()));
+    this->_time_frame_definitions = proj->get_time_frame_definitions();
+    this->_calibration_factor = 1.;
+    this->_isotope_halflife = 6586.2;
+    this->_is_decay_corrected = 1;
+    this->_start_time_in_secs_since_1970 = proj->get_start_time_in_secs_since_1970();
 }
 
 //Warning write_time_frame_definitions() is not yet implemented, so time information is missing.
