@@ -31,7 +31,6 @@
 #define __stir_SeparableMetzArrayFilter_H__
 
 #include "stir/SeparableArrayFunctionObject.h"
-#include "stir/BasicCoordinate.h"
 #include "stir/VectorWithOffset.h"
 
 START_NAMESPACE_STIR

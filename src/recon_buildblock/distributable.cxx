@@ -522,8 +522,7 @@ void distributable_computation(
     if (log_likelihood_ptr != NULL)
       {
         for (int i=0; i<static_cast<int>(local_log_likelihoods.size()); ++i)
-	  if(!is_null_ptr(local_output_image_sptrs[i])) // only accumulate if a thread filled something in
-	    *log_likelihood_ptr += local_log_likelihoods[i];
+          *log_likelihood_ptr += local_log_likelihoods[i]; // accumulate all (as they were initialised to zero)
       }
     count += std::accumulate(local_counts.begin(), local_counts.end(), 0);
     count2 += std::accumulate(local_count2s.begin(), local_count2s.end(), 0);

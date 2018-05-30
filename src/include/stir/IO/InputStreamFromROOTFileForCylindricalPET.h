@@ -63,6 +63,8 @@ public:
 
     virtual
     Succeeded get_next_record(CListRecordROOT& record);
+    //! Must be called before calling for the first event.
+    virtual Succeeded set_up(const std::string & header_path);
 
     //! gives method information
     virtual std::string method_info() const;

@@ -39,6 +39,7 @@
 // for read_from_file
 #include "stir/IO/FileSignature.h"
 #include "stir/IO/interfile.h"
+#include "stir/ProjDataInterfile.h"
 #include "stir/ProjDataFromStream.h" // needed for converting ProjDataFromStream* to ProjData*
 
 #ifndef STIR_USE_GE_IO
@@ -426,5 +427,27 @@ ProjData::ProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
 		   const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
   :ExamData(exam_info_sptr), proj_data_info_ptr(proj_data_info_sptr)
 {}
+
+Succeeded
+ProjData::
+write_to_file(const string& output_filename) const
+{
+
+  ProjDataInterfile out_projdata(get_exam_info_sptr(),
+                 this->proj_data_info_ptr, output_filename, ios::out);
+
+  Succeeded success=Succeeded::yes;
+  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
+       segment_num <= proj_data_info_ptr->get_max_segment_num();
+       ++segment_num)
+  {
+    Succeeded success_this_segment =
+      out_projdata.set_segment(get_segment_by_view(segment_num));
+    if (success==Succeeded::yes)
+      success = success_this_segment;
+  }
+  return success;
+
+}
 
 END_NAMESPACE_STIR

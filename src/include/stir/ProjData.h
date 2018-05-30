@@ -336,7 +336,9 @@ public:
   inline int get_num_sinograms() const;
   //! Get the total size of the data
   inline std::size_t size_all() const;
-  
+  //! writes data to a file in Interfile format
+  Succeeded write_to_file(const std::string& filename) const;
+
 protected:
 //   shared_ptr<ExamInfo> exam_info_sptr;
 

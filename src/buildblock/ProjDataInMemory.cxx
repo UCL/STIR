@@ -31,7 +31,6 @@
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/SegmentByView.h"
-#include "stir/ProjDataInterfile.h"
 #include "stir/Bin.h"
 #include <fstream>
 
@@ -144,20 +143,6 @@ get_size_of_buffer() const
     proj_data_info_ptr->get_num_tangential_poss() *
 	proj_data_info_ptr->get_num_tof_poss() *
     sizeof(float);
-}
-
-Succeeded
-ProjDataInMemory::
-write_to_file(const string& output_filename) const
-{
-
-  ProjDataInterfile out_projdata(get_exam_info_sptr(),
-				 this->proj_data_info_ptr, output_filename, ios::out); 
-  
-  out_projdata.fill(*this);
-  // if no exception thrown, it succeeded
-  return Succeeded::yes;
-    
 }
 
 float 

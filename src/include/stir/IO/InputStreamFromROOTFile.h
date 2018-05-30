@@ -84,6 +84,8 @@ public:
     Succeeded get_next_record(CListRecordROOT& record) = 0;
     //! Go to the first event.
     inline Succeeded reset();
+    //! Must be called before calling for the first event.
+    virtual Succeeded set_up(const std::string& header_path);
     //! Save current position in a vector
     inline
     SavedPosition save_get_position();

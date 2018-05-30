@@ -10,31 +10,31 @@ matrix:
    #### linux
  - os: linux
    python: 3
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-5 CXX=g++-5
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-5 CXX=g++-5
  - os: linux
    python: 3
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-5 CXX=g++-5
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-5 CXX=g++-5
  - os: linux
    python: 3
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP:BOOL=ON" CC=gcc-5 CXX=g++-5
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON" CC=gcc-5 CXX=g++-5
  - os: linux
    python: 3
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1 -DSTIR_OPENMP:BOOL=OFF" CC=clang-5.0 CXX=clang++-5.0
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CC=clang-5.0 CXX=clang++-5.0
    # note: cannot use OpenMP yet with Clang on Travis apparently. See https://github.com/travis-ci/travis-ci/issues/8613
 
    ####  osx
    # note: cannot use OpenMP on OSX yet, see https://github.com/UCL/STIR/issues/117
  - os: osx
    python: 3
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
  - os: osx
    osx_image: xcode9 # need that for ROOT
    python: 3
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc CXX=g++
  - os: osx
    osx_image: xcode9  # need that for ROOT
    python: 3
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT_SUPPORT=0 -DSTIR_OPENMP:BOOL=OFF" CC=clang CXX=clang++
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=OFF" CC=clang CXX=clang++
 
 env:
   global:
@@ -71,22 +71,30 @@ before_install:
   - |
     if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
       brew update
-      brew tap homebrew/science
       # seems to be needed on Travis due to conflicts with gcc otherwise
       # see https://github.com/travis-ci/travis-ci/issues/8826
       brew cask uninstall oclint
       brew install ccache
       export PATH="/usr/local/opt/ccache/libexec:$PATH"
-      brew install --with-cocoa root
-      brew install swig
       # use Python3 on Mac
-      # from http://blog.fizyk.net.pl/blog/running-python-tests-on-traviss-osx-workers.html
-      brew install python3
-      virtualenv venv -p python3
-      source venv/bin/activate
-      python -m pip install -U pip
-      python -m pip install pytest numpy
+      brew upgrade python
+      brew install root
+      brew install swig
+      # find exact location of Python executable to pass to CMake
+      PY_INST=`echo /usr/local/Cellar/python/3.*/Frameworks/Python.framework/Versions/3.*`
+      PY_EXE=$PY_INST/bin/python3
+      PY_LIB=$PY_INST/Python
+      PY_INC=$PY_INST/Headers
+      # This is not necessary if we give the actual path for the executable
+      # BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_LIBRARY=$PY_LIB -DPYTHON_INCLUDE_DIR=$PY_INC"
+      ${PY_EXE} -m pip install -U pip
+      ${PY_EXE} -m pip install pytest numpy
+    else
+      PY_EXE=`which python3`
     fi
+    ${PY_EXE} --version  
+    BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_EXECUTABLE=${PY_EXE}"
+      
 
 
 install:
@@ -105,7 +113,7 @@ script:
   - ./run_test_simulate_and_recon_with_motion.sh
   - ./run_scatter_tests.sh
   - ./run_tests.sh --nointbp
-  - if [[ $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT_SUPPORT=0"* ]]; then ./run_root_GATE.sh; fi
+  - if [[ $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT=0"* ]]; then ./run_root_GATE.sh; fi
   - cd $TRAVIS_BUILD_DIR/recon_test_pack/SPECT
   - ./run_SPECT_tests.sh
   - cd $TRAVIS_BUILD_DIR/src

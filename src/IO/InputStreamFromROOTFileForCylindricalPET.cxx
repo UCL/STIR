@@ -168,6 +168,15 @@ post_processing()
 {
     if (base_type::post_processing())
         return true;
+    return false;
+}
+
+Succeeded
+InputStreamFromROOTFileForCylindricalPET::
+set_up(const std::string & header_path)
+{
+    if (base_type::set_up(header_path) == Succeeded::no)
+        return  Succeeded::no;
     stream_ptr->SetBranchAddress("crystalID1",&crystalID1);
     stream_ptr->SetBranchAddress("crystalID2",&crystalID2);
     stream_ptr->SetBranchAddress("submoduleID1",&submoduleID1);
@@ -181,12 +190,14 @@ post_processing()
     if (nentries == 0)
         error("The total number of entries in the ROOT file is zero. Abort.");
 
+    return Succeeded::yes;
     half_block = static_cast<int>( (module_repeater_y * submodule_repeater_y * crystal_repeater_y) / 2);
     if (half_block < 0 )
         half_block = 0;
 
     offset_dets -= half_block;
-    return false;
+
+    return Succeeded::yes;
 }
 
 END_NAMESPACE_STIR
