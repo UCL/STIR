@@ -35,8 +35,6 @@
 
 #include "stir/SeparableMetzArrayFilter.h"
 #include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
-#include "stir/Array_complex_numbers.h"
-#include "stir/VectorWithOffset.h"
 #include "stir/info.h"
 #include "stir/numerics/fourier.h"
 #include <boost/format.hpp>
@@ -165,25 +163,15 @@ void build_metz(VectorWithOffset<elemT>& kernel,
     
     /* allocate memory to metz arrays */
     VectorWithOffset<elemT> filter(Res);
-    
-    //MJ 05/03/2000 padded 1 more element to fftdata and pre-increment
+    filter.fill(0.0);
     //The former technique was illegal.
    Array<1,std::complex<elemT> > fftdata(0,Res-1);
-    for (int i=0;i<Res ;i++ )
-    {
-        filter[i]=0.0;
-        fftdata[i]=0.0;
-    }
-    
+   fftdata.fill(0.0);
     
     /* build gaussian */
-    
     build_gauss(filter,Res,s2,sampling_interval);
-    
-    
-    
-    /* Build the fft array, odd coefficients are the imaginary part */
-    
+
+    /* Build the fft array*/
     for (int i=0;i<=Res-(Res/2);i++) {
       fftdata[i].real(filter[Res/2-1+i]);
     }
@@ -193,7 +181,7 @@ void build_metz(VectorWithOffset<elemT>& kernel,
     }
 
     /* FFT to frequency space */
-    fourier< stir::Array<1,std::complex<elemT> > >(fftdata);
+    fourier(fftdata);
 
     /* Build Metz */                       
     N++;
@@ -229,7 +217,7 @@ void build_metz(VectorWithOffset<elemT>& kernel,
              
     }
     /* return to the spatial space */
-    inverse_fourier< Array<1,std::complex<elemT> > >(fftdata);
+    inverse_fourier(fftdata);
 
     /* collect the results, normalize*/
     
