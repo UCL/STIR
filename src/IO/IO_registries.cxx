@@ -33,6 +33,8 @@
 #include "stir/IO/InterfileOutputFileFormat.h"
 #include "stir/IO/ITKOutputFileFormat.h"
 #include "stir/IO/InterfileDynamicDiscretisedDensityOutputFileFormat.h"
+#include "stir/IO/InterfileDynamicDiscretisedDensityInputFileFormat.h"
+#include "stir/IO/InterfileParametricDiscretisedDensityInputFileFormat.h"
 #include "stir/IO/InterfileParametricDensityOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ECAT6OutputFileFormat.h"
@@ -122,6 +124,9 @@ static RegisterInputFileFormat<ecat::ecat7::ECAT7DynamicDiscretisedDensityInputF
 // This is because we translate the ITK info currently incompletely.
 static RegisterInputFileFormat<ITKImageInputFileFormat> idummy8(10000);
 #endif
+static RegisterInputFileFormat<InterfileDynamicDiscretisedDensityInputFileFormat> dyndummy_intf(1);
+static RegisterInputFileFormat<InterfileParametricDiscretisedDensityInputFileFormat> paradummy_intf(1);
+
 
 
 /*************************** listmode data **********************/

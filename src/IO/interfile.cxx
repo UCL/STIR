@@ -52,6 +52,8 @@
 #include "stir/Bin.h"
 #include "stir/stream.h"
 #include "stir/error.h"
+#include "stir/DynamicDiscretisedDensity.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
 #include <boost/format.hpp>
 #include <fstream>
 #include <algorithm>
@@ -86,24 +88,23 @@ is_interfile_signature(const char * const signature)
 }
 
 
-
-VoxelsOnCartesianGrid<float>* 
-read_interfile_image(istream& input, 
-		     const string&  directory_for_data)
+// help function
+static
+VoxelsOnCartesianGrid<float> *
+create_image_and_header_from(InterfileImageHeader& hdr,
+                             char * full_data_file_name, // preallocated
+                             istream& input, 
+                             const string&  directory_for_data)
 {
-  InterfileImageHeader hdr;
   if (!hdr.parse(input))
   {
       return 0; //KT 10/12/2001 do not call ask_parameters anymore 
     }
   
   // prepend directory_for_data to the data_file_name from the header
-  char full_data_file_name[max_filename_length];
   strcpy(full_data_file_name, hdr.data_file_name.c_str());
   prepend_directory_name(full_data_file_name, directory_for_data.c_str());  
   
-  ifstream data_in;
-  open_read_binary(data_in, full_data_file_name);
     
   CartesianCoordinate3D<float> voxel_size(static_cast<float>(hdr.pixel_sizes[2]), 
 					  static_cast<float>(hdr.pixel_sizes[1]), 
@@ -129,30 +130,101 @@ read_interfile_image(istream& input,
 	- voxel_size * BasicCoordinate<3,float>(min_indices);
     }
 
-  VoxelsOnCartesianGrid<float>* image_ptr =
+  return
     new VoxelsOnCartesianGrid<float>
     (IndexRange<3>(min_indices, max_indices),
      origin,
      voxel_size);
+}
+
+VoxelsOnCartesianGrid<float> *
+read_interfile_image(istream& input,
+		     const string&  directory_for_data)
+{
+  InterfileImageHeader hdr;
+  char full_data_file_name[max_filename_length];
+  VoxelsOnCartesianGrid<float> * image_ptr =
+    create_image_and_header_from(hdr,
+                                 full_data_file_name,
+                                 input,
+                                 directory_for_data);
   
+  ifstream data_in;
+  open_read_binary(data_in, full_data_file_name);
+
   data_in.seekg(hdr.data_offset_each_dataset[0]);
-  
+
+  if (hdr.data_offset_each_dataset[0]>0)
+    data_in.seekg(hdr.data_offset_each_dataset[0]);
+
+  // read into image_sptr first
   float scale = float(1);
   if (read_data(data_in, *image_ptr, hdr.type_of_numbers, scale, hdr.file_byte_order)
-    == Succeeded::no
-    || scale != 1)
-  {
-    warning("read_interfile_image: error reading data or scale factor returned by read_data not equal to 1\n");
-    return 0;
-  }
+      == Succeeded::no
+      || scale != 1)
+    {
+      warning("read_interfile_image: error reading data or scale factor returned by read_data not equal to 1\n");
+      return 0;
+    }
   
   for (int i=0; i< hdr.matrix_size[2][0]; i++)
     if (hdr.image_scaling_factors[0][i]!= 1)
       (*image_ptr)[i] *= static_cast<float>(hdr.image_scaling_factors[0][i]);
-    
+
   return image_ptr;
 }
 
+DynamicDiscretisedDensity*
+read_interfile_dynamic_image(istream& input,
+                             const string&  directory_for_data)
+{
+  InterfileImageHeader hdr;
+  char full_data_file_name[max_filename_length];
+  shared_ptr<DiscretisedDensity<3,float> >
+    image_sptr(create_image_and_header_from(hdr,
+                                            full_data_file_name,
+                                            input,
+                                            directory_for_data));
+  if (is_null_ptr(image_sptr))
+    error("Error parsing dynamic image");
+
+  shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(hdr.get_exam_info_sptr()->originating_system));
+
+  DynamicDiscretisedDensity * dynamic_dens_ptr =
+    new DynamicDiscretisedDensity(hdr.get_exam_info_sptr()->time_frame_definitions,
+                                  hdr.get_exam_info_sptr()->start_time_in_secs_since_1970,
+                                  scanner_sptr,
+                                  image_sptr);
+
+  ifstream data_in;
+  open_read_binary(data_in, full_data_file_name);
+
+  data_in.seekg(hdr.data_offset_each_dataset[0]);
+
+  for (unsigned int frame_num=1; frame_num <= dynamic_dens_ptr->get_num_time_frames(); ++frame_num)
+    {
+      if (hdr.data_offset_each_dataset[frame_num-1]>0)
+        data_in.seekg(hdr.data_offset_each_dataset[frame_num-1]);
+
+      // read into image_sptr first
+      float scale = float(1);
+      if (read_data(data_in, *image_sptr, hdr.type_of_numbers, scale, hdr.file_byte_order)
+          == Succeeded::no
+          || scale != 1)
+        {
+          warning("read_interfile_dynamic_image: error reading data or scale factor returned by read_data not equal to 1");
+          return 0;
+        }
+
+      for (int i=0; i< hdr.matrix_size[2][0]; i++)
+        if (hdr.image_scaling_factors[frame_num-1][i]!= 1)
+          (*image_sptr)[i] *= static_cast<float>(hdr.image_scaling_factors[frame_num-1][i]);
+
+      // now stick into the dynamic image
+      dynamic_dens_ptr->get_density(frame_num) = *image_sptr;
+    }
+  return dynamic_dens_ptr;
+}
 
 VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename)
 {
@@ -166,6 +238,20 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename)
   get_directory_name(directory_name, filename.c_str());
   
   return read_interfile_image(image_stream, directory_name);
+}
+
+DynamicDiscretisedDensity* read_interfile_dynamic_image(const string& filename)
+{
+  ifstream image_stream(filename.c_str());
+  if (!image_stream)
+    {
+      error("read_interfile_dynamic_image: couldn't open file %s\n", filename.c_str());
+    }
+
+  char directory_name[max_filename_length];
+  get_directory_name(directory_name, filename.c_str());
+
+  return read_interfile_dynamic_image(image_stream, directory_name);
 }
 
 #if 0
@@ -445,71 +531,57 @@ write_basic_interfile(const string& filename,
 #undef elemT 
 #endif
 
-template <class NUMBER>
-Succeeded write_basic_interfile(const string&  filename, 
-				const Array<3,NUMBER>& image,
-				const CartesianCoordinate3D<float>& voxel_size,
-				const CartesianCoordinate3D<float>& origin,
-				const NumericType output_type,
-				const float scale,
-				const ByteOrder byte_order)
+void interfile_create_filenames(const std::string& filename, std::string& data_name, std::string& header_name)
 {
+  data_name=filename;
+  string::size_type pos=find_pos_of_extension(filename);
+  if (pos!=string::npos && filename.substr(pos)==".hv")
+    replace_extension(data_name, ".v");
+  else
+    add_extension(data_name, ".v");
 
-#if 1
-  string data_name=filename;
-  {
-    string::size_type pos=find_pos_of_extension(filename);
-    if (pos!=string::npos && filename.substr(pos)==".hv")
-      replace_extension(data_name, ".v");
-    else
-      add_extension(data_name, ".v");
-  }
-  string header_name=filename;
-#else
-  char * data_name = new char[filename.size() + 5];
-  char * header_name = new char[filename.size() + 5];
-
-  strcpy(data_name, filename.c_str());
-  // KT 29/06/2001 make sure that a filename ending on .hv is treated correctly
-  {
-   const char * const extension = strchr(find_filename(data_name),'.');
-   if (extension!=NULL && strcmp(extension, ".hv")==0)
-     replace_extension(data_name, ".v");
-   else
-     add_extension(data_name, ".v");
-  }
-  strcpy(header_name, data_name);
-#endif
+  header_name=filename;
   replace_extension(header_name, ".hv");
+}
 
-  ofstream output_data;
-  open_write_binary(output_data, data_name.c_str());
+template <class NUMBER>
+Succeeded write_basic_interfile(const string&  filename,
+                const Array<3,NUMBER>& image,
+                const CartesianCoordinate3D<float>& voxel_size,
+                const CartesianCoordinate3D<float>& origin,
+                const NumericType output_type,
+                const float scale,
+                const ByteOrder byte_order)
+{
+    std::string data_name, header_name;
+    interfile_create_filenames(filename, data_name, header_name);
 
-  float scale_to_use = scale;
-  write_data(output_data, image, output_type, scale_to_use,
-	     byte_order);
+    ofstream output_data;
+    open_write_binary(output_data, data_name.c_str());
 
-  VectorWithOffset<float> scaling_factors(1);
-  scaling_factors[0] = scale_to_use;
-  VectorWithOffset<unsigned long> file_offsets(1);
-  file_offsets.fill(0);
+    float scale_to_use = scale;
+    write_data(output_data, image, output_type, scale_to_use,
+              byte_order);
+    VectorWithOffset<float> scaling_factors(1);
+    scaling_factors.fill(scale_to_use);
+    VectorWithOffset<unsigned long> file_offsets(1);
+    file_offsets.fill(0);
 
-
-  const Succeeded success =
-    write_basic_interfile_image_header(header_name,
-				       data_name,
-				       image.get_index_range(), 
-				       voxel_size,
-				       origin,
-				       output_type,
-				       byte_order,
-				       scaling_factors,
-				       file_offsets);
-#if 0
-  delete[] header_name;
-  delete[] data_name;
-#endif
-  return success;
+    const Succeeded success =
+      write_basic_interfile_image_header(header_name,
+                         data_name,
+                         image.get_index_range(),
+                         voxel_size,
+                         origin,
+                         output_type,
+                         byte_order,
+                         scaling_factors,
+                         file_offsets);
+  #if 0
+    delete[] header_name;
+    delete[] data_name;
+  #endif
+    return success;
 }
 
 Succeeded
@@ -544,6 +616,86 @@ write_basic_interfile(const string& filename,
 			  scale, byte_order);
 }
 
+Succeeded
+write_basic_interfile(const string& filename,
+              const ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<2,float> > > &image,
+              const NumericType output_type,
+              const float scale,
+              const ByteOrder byte_order)
+{
+
+    std::string data_name, header_name;
+    interfile_create_filenames(filename, data_name, header_name);
+
+    ofstream output_data;
+    open_write_binary(output_data, data_name.c_str());
+
+    float scale_to_use = scale;
+    for (int i=1; i<=image.get_num_params(); i++)
+        write_data(output_data, image.construct_single_density(i), output_type, scale_to_use,
+                  byte_order);
+    VectorWithOffset<float> scaling_factors(image.get_num_params());
+    scaling_factors.fill(scale_to_use);
+    VectorWithOffset<unsigned long> file_offsets(image.get_num_params());
+    file_offsets.fill(0);
+
+    const Succeeded success =
+      write_basic_interfile_image_header(header_name,
+                         data_name,
+                         image.get_index_range(),
+                         image.get_voxel_size(),
+                         image.get_origin(),
+                         output_type,
+                         byte_order,
+                         scaling_factors,
+                         file_offsets);
+  #if 0
+    delete[] header_name;
+    delete[] data_name;
+  #endif
+    return success;
+}
+
+
+Succeeded
+write_basic_interfile(const string& filename,
+              const DynamicDiscretisedDensity &image,
+              const NumericType output_type,
+              const float scale,
+              const ByteOrder byte_order)
+{
+
+    std::string data_name, header_name;
+    interfile_create_filenames(filename, data_name, header_name);
+
+    ofstream output_data;
+    open_write_binary(output_data, data_name.c_str());
+
+    float scale_to_use = scale;
+    for (int i=1; i<=image.get_num_time_frames(); i++)
+        write_data(output_data, image.get_density(i), output_type, scale_to_use,
+                  byte_order);
+    VectorWithOffset<float> scaling_factors(image.get_num_time_frames());
+    scaling_factors.fill(scale_to_use);
+    VectorWithOffset<unsigned long> file_offsets(image.get_num_time_frames());
+    file_offsets.fill(0);
+
+    const Succeeded success =
+      write_basic_interfile_image_header(header_name,
+                         data_name,
+                         image.get_density(1).get_index_range(),
+                         dynamic_cast<const VoxelsOnCartesianGrid<float>& >(image.get_density(1)).get_grid_spacing(),
+                         image.get_density(1).get_origin(),
+                         output_type,
+                         byte_order,
+                         scaling_factors,
+                         file_offsets);
+  #if 0
+    delete[] header_name;
+    delete[] data_name;
+  #endif
+    return success;
+}
 
 static ProjDataFromStream* 
 read_interfile_PDFS_SPECT(istream& input,

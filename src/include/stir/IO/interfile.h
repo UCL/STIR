@@ -50,6 +50,10 @@ template <typename elemT> class CartesianCoordinate3D;
 template <typename elemT> class Coordinate3D;
 template <typename elemT> class VoxelsOnCartesianGrid;
 class ProjDataFromStream;
+class DynamicDiscretisedDensity;
+template <typename elemT> class ParametricDiscretisedDensity;
+template <typename elemT> class VoxelsOnCartesianGrid;
+template <int num_dimensions, typename elemT> class KineticParameters;
 
 //! Checks if the signature corresponds to the start of an interfile header 
 /*! 
@@ -93,6 +97,12 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(std::istream& input,
   This should normally never be used. Use read_from_file<DiscretisedDensity<3,float> >() instead.
 */
 VoxelsOnCartesianGrid<float>* read_interfile_image(const std::string& filename);
+
+DynamicDiscretisedDensity*
+read_interfile_dynamic_image(std::istream& input,
+                             const std::string&  directory_for_data);
+
+DynamicDiscretisedDensity* read_interfile_dynamic_image(const std::string& filename);
 
 //! This outputs an Interfile header for an image.
 /*!
@@ -192,6 +202,8 @@ write_basic_interfile(const std::string& filename,
 		      const float scale= 0,
 		      const ByteOrder byte_order=ByteOrder::native);
 
+/// Create data filename from the given path
+void interfile_create_filenames(const std::string &, std::string&, std::string&);
 
 //! This outputs an Interfile header and data for a DiscretisedDensity<3,float> object
 /*!
@@ -208,6 +220,20 @@ write_basic_interfile(const std::string& filename,
 		      const NumericType output_type = NumericType::FLOAT,
 		      const float scale= 0,
 		      const ByteOrder byte_order=ByteOrder::native);
+
+Succeeded
+write_basic_interfile(const std::string& filename,
+              const ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<2,float> > >& image,
+              const NumericType output_type = NumericType::FLOAT,
+              const float scale= 0,
+              const ByteOrder byte_order=ByteOrder::native);
+
+Succeeded
+write_basic_interfile(const std::string& filename,
+              const DynamicDiscretisedDensity& image,
+              const NumericType output_type = NumericType::FLOAT,
+              const float scale= 0,
+              const ByteOrder byte_order=ByteOrder::native);
 
 //! This reads the first 3D sinogram from an Interfile header, given as a stream
 /*!
