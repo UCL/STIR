@@ -7,6 +7,7 @@
 
   \brief Implementations for class stir::SeparableMetzArrayFilter
 
+  \author Nikos Efthimiou
   \author Matthew Jacobson
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -15,6 +16,7 @@
 /*
     Copyright (C) 2000 - 2009-06-22, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2018, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -33,8 +35,10 @@
 
 #include "stir/SeparableMetzArrayFilter.h"
 #include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
+#include "stir/Array_complex_numbers.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/info.h"
+#include "stir/numerics/fourier.h"
 #include <boost/format.hpp>
 #include <iostream>
 
@@ -48,21 +52,11 @@ START_NAMESPACE_STIR
 
 const float ZERO_TOL= 0.000001F; //MJ 12/05/98 Made consistent with other files
 const double TPI=6.28318530717958647692;
-const int  FORWARDFFT=1;
-const int INVERSEFFT=-1;
-
-// TODO get rid of this #defines
-#define SWAP(a,b) tempr=(a);(a)=(b);(b)=tempr
-#define REALC(a) 2*(a)
-#define IMGC(a) 2*(a)+1
 
 // build Gaussian kernel according to the full width half maximum 
 template <typename elemT>
 static void build_gauss(VectorWithOffset<elemT>&kernel, 
 			int res,float s2, float sampling_interval);
-
-template <typename elemT>
-static void discrete_fourier_transform(VectorWithOffset<elemT>&data, unsigned int nn, int isign);
 
 template <typename elemT>
 static void build_metz(VectorWithOffset<elemT>&kernel,
@@ -103,54 +97,6 @@ SeparableMetzArrayFilter
       
   }
 }
-
-
-template <typename elemT>
-void discrete_fourier_transform(VectorWithOffset<elemT>&data, unsigned int nn, int isign)
-{
-  unsigned int n,mmax,m,j,istep,i;
-  double wtemp,wr,wpr,wpi,wi,theta;
-  elemT tempr,tempi;
-  n=nn << 1;
-  j=1;
-  for (i=1;i<n;i+=2) {
-    if (j > i) {
-      SWAP(data[j],data[i]);
-      SWAP(data[j+1],data[i+1]);
-    }
-    m=n >> 1;
-    while (m >= 2 && j > m) {
-      j -= m;
-      m >>= 1;
-    }
-    j += m;
-  }
-  mmax=2;
-  while (n > mmax) {
-    istep=mmax << 1;
-    theta=isign*(TPI/mmax);
-    wtemp=sin(0.5*theta);
-    wpr = -2.0*wtemp*wtemp;
-    wpi=sin(theta);
-    wr=1.0;
-    wi=0.0;
-    for (m=1;m<mmax;m+=2) {
-      for (i=m;i<=n;i+=istep) {
-        j=i+mmax;
-        tempr=static_cast<elemT>(wr*data[j]-wi*data[j+1]);
-        tempi=static_cast<elemT>(wr*data[j+1]+wi*data[j]);
-        data[j]=data[i]-tempr;
-        data[j+1]=data[i+1]-tempi;
-        data[i] += tempr;
-        data[i+1] += tempi;
-      }
-      wr=(wtemp=wr)*wpr-wi*wpi+wr;
-      wi=wi*wpr+wtemp*wpi+wi;
-    }
-    mmax=istep;
-  }
-}
-
 
 template <typename elemT>
 void build_gauss(VectorWithOffset<elemT>&kernel, int res,float s2,  float sampling_interval)
@@ -194,12 +140,7 @@ void build_metz(VectorWithOffset<elemT>& kernel,
   
   int kernel_length = 0;
   
-  if(fwhm>0.0F){
-    
-    
-    // KT 30/05/2000 dropped unsigned
-    int i;
-    elemT xreal,ximg,zabs2;                                        
+  if(fwhm>0.0F){                                
     
     //MJ 12/05/98 compute parameters relevant to DFT/IDFT
     
@@ -227,9 +168,12 @@ void build_metz(VectorWithOffset<elemT>& kernel,
     
     //MJ 05/03/2000 padded 1 more element to fftdata and pre-increment
     //The former technique was illegal.
-    VectorWithOffset<elemT> fftdata(0,2*Res);
-    for (i=0;i<Res ;i++ ) filter[i]=0.0;
-    for (i=0;i<2*Res ; i++ ) fftdata[i]=0.0;     
+   Array<1,std::complex<elemT> > fftdata(0,Res-1);
+    for (int i=0;i<Res ;i++ )
+    {
+        filter[i]=0.0;
+        fftdata[i]=0.0;
+    }
     
     
     /* build gaussian */
@@ -240,38 +184,31 @@ void build_metz(VectorWithOffset<elemT>& kernel,
     
     /* Build the fft array, odd coefficients are the imaginary part */
     
-    for (i=0;i<=Res-(Res/2);i++) {
-      fftdata[REALC(i)]=filter[Res/2-1+i];
-      fftdata[IMGC(i)] = 0.0;
+    for (int i=0;i<=Res-(Res/2);i++) {
+      fftdata[i].real(filter[Res/2-1+i]);
+      fftdata[i].imag(0.0);
     }
     
-    for (i=1;i<(Res/2);i++) {
-      fftdata[REALC(Res-(Res/2)+i)]=filter[i-1];
-      fftdata[IMGC(Res-(Res/2)+i)] = 0.0;
+    for (int i=1;i<(Res/2);i++) {
+      fftdata[Res-(Res/2)+i].real(filter[i-1]);
+      fftdata[Res-(Res/2)+i].imag(0.0);
     }
-    
-    
+
     /* FFT to frequency space */
-    fftdata.set_offset(1);
-    discrete_fourier_transform(fftdata/*-1*/,Res,FORWARDFFT); 
-    fftdata.set_offset(0);
-    
-    
-    
+    fourier< stir::Array<1,std::complex<elemT> > >(fftdata);
+
     /* Build Metz */                       
     N++;
-    
-    
+        
     int cutoff=(int) (sampling_interval*Res/(2*MmPerVox));
     //cerr<<endl<<"The cutoff was at: "<<cutoff<<endl;
     
     
-    for (i=0;i<Res;i++) {
-      
-      
-      xreal = fftdata[REALC(i)];
-      ximg  = fftdata[IMGC(i)]; 
-      zabs2= xreal*xreal+ximg*ximg;
+    for (int i=0;i<Res;i++)
+    {
+     elemT xreal = fftdata[i].real();
+     elemT ximg  = fftdata[i].imag();
+     elemT zabs2= xreal*xreal+ximg*ximg;
 	     filter[i]=0.0; // use this loop to clear the array for later
              
              
@@ -282,36 +219,26 @@ void build_metz(VectorWithOffset<elemT>& kernel,
                
              }
              
-             if (zabs2>1) zabs2=(elemT) (1-ZERO_TOL);
+             if (zabs2>1) zabs2=static_cast<elemT> (1-ZERO_TOL);
              if (zabs2>0) {
                // if (zabs2>=1) cerr<<endl<<"zabs2 is "<<zabs2<<" and N is "<<N<<endl;
-               fftdata[REALC(i)]=(1-pow((1-zabs2),N))*(xreal/zabs2);
-               fftdata[IMGC(i)]=(1-pow((1-zabs2),N))*(-ximg/zabs2);
+               fftdata[i].real((1-pow((1-zabs2),N))*(xreal/zabs2));
+               fftdata[i].imag((1-pow((1-zabs2),N))*(-ximg/zabs2));
              }
-             else {
-               
-               fftdata[REALC(i)]= 0.0;
-               fftdata[IMGC(i)]= 0.0;
+             else {              
+               fftdata[i]= 0.0;
              }
              
     }
-    /* return to the spatial space */               
-    
-    fftdata.set_offset(1);
-    discrete_fourier_transform(fftdata/*-1*/,Res,INVERSEFFT); 
-    fftdata.set_offset(0);
-    
-    
-    
-    
-    
-    
+    /* return to the spatial space */
+    inverse_fourier< Array<1,std::complex<elemT> > >(fftdata);
+
     /* collect the results, normalize*/
     
-    for (i=0;i<=Res/2;i++) {
+    for (int i=0;i<=Res/2;i++) {
       if (i%samples_per_voxel==0){
         int j=i/samples_per_voxel;
-        filter[j] = (fftdata[REALC(i)]*MmPerVox)/(Res*sampling_interval);
+        filter[j] = (fftdata[i].real()*MmPerVox)/(Res*sampling_interval);
       }
       
     }
@@ -322,7 +249,7 @@ void build_metz(VectorWithOffset<elemT>& kernel,
     // KT 01/06/2001 added kernel_length stuff
     kernel_length=Res; 
     
-    for (i=Res-1;i>=0;i--){
+    for (int i=Res-1;i>=0;i--){
       if (fabs((double) filter[i])>=(0.0001)*filter[0]) break;
       else (kernel_length)--;
       
@@ -343,7 +270,7 @@ void build_metz(VectorWithOffset<elemT>& kernel,
     //VectorWithOffset<elemT> kernel(kernel_length);//=new elemT[(kernel_length)];
     kernel.grow(0,kernel_length-1);
     
-    for (i=0;i<(kernel_length);i++) kernel[i]=filter[i];
+    for (int i=0;i<(kernel_length);i++) kernel[i]=filter[i];
     
     //return kernel;
   }
