@@ -237,6 +237,20 @@ FilePath::get_path() const
 }
 
 std::string
+FilePath::get_path_only() const
+{
+    std::size_t i = my_string.rfind(separator, my_string.length());
+    if (i != std::string::npos)
+    {
+        return(my_string.substr(0, i+1));
+    }
+
+    std::string empty;
+    return empty;
+}
+
+
+std::string
 FilePath::get_filename() const
 {
 	std::size_t i = 0; 
@@ -266,6 +280,12 @@ FilePath::get_extension() const
         return(my_string.substr(i+1, my_string.length() - i));
     }
     return("");
+}
+
+std::string
+FilePath::get_as_string() const
+{
+    return my_string;
 }
 
 void FilePath::checks() const

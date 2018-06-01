@@ -138,8 +138,14 @@ InputStreamFromROOTFileForECATPET::initialise_keymap()
 bool InputStreamFromROOTFileForECATPET::
 post_processing()
 {
-    if (base_type::post_processing())
-        return true;
+    return false;
+}
+
+Succeeded InputStreamFromROOTFileForECATPET::
+set_up(const std::string & header_path )
+{
+    if (base_type::set_up(header_path) == Succeeded::no)
+        return Succeeded::no;
     stream_ptr->SetBranchAddress("crystalID1",&crystalID1);
     stream_ptr->SetBranchAddress("crystalID2",&crystalID2);
     stream_ptr->SetBranchAddress("blockID1",&blockID1);
@@ -149,7 +155,7 @@ post_processing()
     if (nentries == 0)
         error("The total number of entries in the ROOT file is zero. Abort.");
 
-    return false;
+    return Succeeded::yes;
 }
 
 END_NAMESPACE_STIR
