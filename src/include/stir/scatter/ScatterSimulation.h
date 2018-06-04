@@ -251,7 +251,7 @@ protected:
      * @{
      */
 
-    float detection_efficiency(const float energy) const;
+    float detection_efficiency(const float energy, int en_window = 0) const;
 
 
     //! maximum angle to consider above which detection after Compton scatter is considered too small
@@ -276,7 +276,7 @@ protected:
     //! average detection efficiency of unscattered counts
     double
     detection_efficiency_no_scatter(const unsigned det_num_A,
-                                    const unsigned det_num_B) const;
+                                    const unsigned det_num_B, int en_window) const;
 
     // next needs to be mutable because find_in_detection_points_vector is const
     mutable std::vector<CartesianCoordinate3D<float> > detection_points_vector;

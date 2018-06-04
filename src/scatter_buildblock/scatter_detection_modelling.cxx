@@ -97,7 +97,7 @@ compute_emis_to_det_points_solid_angle_factor(
 
 float
 ScatterSimulation::
-detection_efficiency(const float energy) const
+detection_efficiency(const float energy,int en_window) const
 {
   // factor 2.35482 is used to convert FWHM to sigma
   const float sigma_times_sqrt2= 
@@ -107,8 +107,8 @@ detection_efficiency(const float energy) const
   // sigma_times_sqrt2= sqrt(2) * sigma   // resolution proportional to FWHM    
   
   const float efficiency =
-    0.5f*( erf((this->template_exam_info_sptr->get_high_energy_thres()-energy)/sigma_times_sqrt2)
-          - erf((this->template_exam_info_sptr->get_low_energy_thres()-energy)/sigma_times_sqrt2 ));
+    0.5f*( erf((this->template_exam_info_sptr->get_high_energy_thres(en_window)-energy)/sigma_times_sqrt2)
+          - erf((this->template_exam_info_sptr->get_low_energy_thres(en_window)-energy)/sigma_times_sqrt2 ));
   /* Maximum efficiency is 1.*/
   return efficiency;
 }
@@ -134,13 +134,13 @@ energy_lower_limit(const float low, const float approx, const float resolution_a
 double
 ScatterSimulation::
 detection_efficiency_no_scatter(const unsigned det_num_A, 
-                                const unsigned det_num_B) const
+                                const unsigned det_num_B, int en_window) const
 {
   // TODO: slightly dangerous to use a static here
   // it would give wrong results when the energy_thresholds are changed...
   static const float detector_efficiency_no_scatter =
-    detection_efficiency(511.F) > 0 
-    ? detection_efficiency(511.F)
+    detection_efficiency(511.F, en_window) > 0
+    ? detection_efficiency(511.F, en_window)
     : (info("Zero detection efficiency for 511. Will normalise to 1"), 1.F);
 
   const CartesianCoordinate3D<float>& detector_coord_A =
@@ -163,7 +163,7 @@ detection_efficiency_no_scatter(const unsigned det_num_A,
   return
     1./(  0.75/2./_PI *
     rAB_squared
-    /detector_efficiency_no_scatter/
+    /pow(detector_efficiency_no_scatter,2.0)/
     (cos_incident_angle_A*
      cos_incident_angle_B));
 }

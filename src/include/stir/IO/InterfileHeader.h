@@ -123,6 +123,8 @@ private:
   
  protected:
   virtual void read_matrix_info();
+  virtual void read_num_energy_windows();
+  virtual void en_window_pair_set();
   void read_frames_info();
 
 public :
@@ -146,6 +148,7 @@ public :
   ByteOrder file_byte_order;
 	
   int			num_dimensions;
+  int			num_energy_windows;
   std::vector<std::string>	matrix_labels;
   std::vector<std::vector<int> > matrix_size; 
   std::vector<double>	pixel_sizes;
@@ -156,12 +159,14 @@ public :
   //!
   //! \brief lower_en_window_thres
   //! \details Low energy window limit
-  float lower_en_window_thres;
+  std::vector<float> lower_en_window_thres;
 
   //!
   //! \brief upper_en_window_thres
   //! \details High energy window limit
-  float upper_en_window_thres;
+  std::vector<float> upper_en_window_thres;
+
+  std::vector<int> energy_window_pair;
   // end acquisition parameters
   
  protected:
@@ -209,7 +214,7 @@ public:
  
   std::vector<int> segment_sequence;
   std::vector<int> min_ring_difference; 
-  std::vector<int> max_ring_difference; 
+  std::vector<int> max_ring_difference;
   std::vector<int> num_rings_per_segment;
 
   std::vector<std::string> applied_corrections;

@@ -57,9 +57,19 @@ public :
   ExamInfo()
     : start_time_in_secs_since_1970(0.)
     {
-      low_energy_thres = -1.f;
-      up_energy_thres = -1.f;
-  }
+
+      num_windows = 1;
+      low_energy_thres.resize(num_windows);
+      up_energy_thres.resize(num_windows);
+      en_win_pair.resize(2);
+      low_energy_thres[0]=-1.F;
+      up_energy_thres[0]=-1.F;
+      en_win_pair[0]=-1.F;
+      en_win_pair[1]=-1.F;
+
+   }
+
+
 
   std::string originating_system;
   
@@ -74,17 +84,24 @@ public :
   //! \name Functions that return info related on the acquisition settings
   //@{
   //! Get the low energy boundary
-  inline float get_low_energy_thres() const;
+  inline float  get_low_energy_thres(int en_window = 0) const;
   //! Get the high energy boundary
-  inline float get_high_energy_thres() const;
+  inline float  get_high_energy_thres(int en_window = 0) const;
+  //! Get the number of energy windows
+  inline int  get_num_energy_windows() const;
+  inline std::pair<int,int> get_energy_window_pair() const;
   //@}
+
 
   //! \name Functions that set values related on the acquisition settings
   //@{
   //! Set the low energy boundary
-  inline void set_low_energy_thres(float new_val);
+  inline void set_low_energy_thres(float new_val,int en_window = 0);
   //! Set the high energy boundary
-  inline void set_high_energy_thres(float new_val);
+  inline void set_high_energy_thres(float new_val,int en_window = 0);
+  //! Set the number of energy windows
+  inline void set_num_energy_windows(int n_win);
+  inline void set_energy_window_pair(std::vector<int> val,int n_win);
   //@}
 
   //! Standard trick for a 'virtual copy-constructor'
@@ -104,7 +121,9 @@ public :
   //! The units are keV
   //! This parameter was initially introduced for scatter simulation.
   //! If scatter simulation is not needed, can default to -1
-  float low_energy_thres;
+
+  int num_windows;
+  std::vector<float> low_energy_thres;
 
   //!
   //! \brief up_energy_thres
@@ -113,7 +132,10 @@ public :
   //! The units are keV
   //! This parameter was initially introduced for scatter simulation
   //! If scatter simulation is not needed, can default to -1
-  float up_energy_thres;
+  std::vector<float> up_energy_thres;
+
+  std::vector<int> en_win_pair;
+
 };
 
 END_NAMESPACE_STIR

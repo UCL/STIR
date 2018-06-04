@@ -78,8 +78,27 @@ actual_scatter_estimate(double& scatter_ratio_singles,
   // is an approximation for the integral over the scatter point.
 
   // the factors total_Compton_cross_section_511keV should probably be moved to the scatter_computation code
+
+
+ // currently the scatter simulation is normalised w.r.t. the detection efficiency in the photopeak window
+  //TODO: check that the selected windows don't overcome the max number of windows
+// TODO: add error if there is one window
+
+  int index = 0;
+
+  if (this->template_exam_info_sptr->get_num_energy_windows()>1)
+  {
+      //search for the photopeak window (max window)
+          index = 0 ;
+
+     // }
+}
+
+
+  //find the highest window with a for loop
+
   const double common_factor =
-    1/detection_efficiency_no_scatter(det_num_A, det_num_B) *
+    1/detection_efficiency_no_scatter(det_num_A, det_num_B, index) *
     scatter_volume/total_Compton_cross_section_511keV;
 
   scatter_ratio_singles *= common_factor;

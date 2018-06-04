@@ -85,6 +85,10 @@ class map_element
 {
 public :
   KeyArgument::type type;
+#if 0
+  trilian is_vectored;
+#endif
+
   void (KeyParser::*p_object_member)();	// pointer to a member function
   //TODO void (*p_object_member)();
   void *p_object_variable;		// pointer to a variable 
@@ -96,7 +100,7 @@ public :
   map_element();
 
   map_element(KeyArgument::type t, void (KeyParser::*pom)(),
-	      void* pov= 0, const ASCIIlist_type *list_of_valid_keywords = 0);
+          void* pov= 0, const ASCIIlist_type *list_of_valid_keywords = 0/*, trilian is_vectored = trilian ::unknwon*/);
   map_element(void (KeyParser::*pom)(),
 	      Object** pov, 
               Parser *);

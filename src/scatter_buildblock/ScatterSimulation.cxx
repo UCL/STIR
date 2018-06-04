@@ -61,6 +61,25 @@ process_data()
 {
     // this is usefull in the scatter estimation process.
     this->output_proj_data_sptr->fill(0.f);
+    //show energy window information
+
+    std::cerr << "number of energy windows:= "<<  this->template_exam_info_sptr->get_num_energy_windows() << '\n';
+
+if(this->template_exam_info_sptr->get_energy_window_pair().first!= -1 &&
+     this->template_exam_info_sptr->get_energy_window_pair().second!= -1 )
+{
+    std::cerr << "energy window pair :="<<" {"<<  this->template_exam_info_sptr->get_energy_window_pair().first  << ',' <<  this->template_exam_info_sptr->get_energy_window_pair().second <<"}\n";
+
+}
+
+
+    for (int i = 0; i < this->template_exam_info_sptr->get_num_energy_windows(); ++i)
+    {
+        std::cerr << "energy window lower level"<<"["<<i+1<<"] := "<< this->template_exam_info_sptr->get_low_energy_thres(i) << '\n';
+        std::cerr << "energy window upper level"<<"["<<i+1<<"] := "<<  this->template_exam_info_sptr->get_high_energy_thres(i) << '\n';
+    }
+
+
     info("ScatterSimulator: Running Scatter Simulation ...");
     info("ScatterSimulator: Initialising ...");
     // The activiy image might have been changed, during the estimation process.
@@ -126,6 +145,9 @@ process_data()
                     this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num()) *
                     this->proj_data_info_cyl_noarc_cor_sptr->get_num_tangential_poss();
             info(boost::format("ScatterSimulator: %d / %d") % bin_counter% total_bins);
+
+
+
         }
     }
 
@@ -136,6 +158,8 @@ process_data()
         return Succeeded::no;
     }
 
+
+    std::cerr << "TOTAL SCATTER:= " << total_scatter << '\n';
     return Succeeded::yes;
 }
 
@@ -182,6 +206,9 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
         viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
                 static_cast<float>(scatter_ratio);
         total_scatter += scatter_ratio;
+
+
+
     } // end loop over bins
 
     if (this->output_proj_data_sptr->set_viewgram(viewgram) == Succeeded::no)
