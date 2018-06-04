@@ -24,7 +24,7 @@ set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_ROIs
         test_warp_image
-	test_DynamicDiscretisedDensity  
+	test_DynamicDiscretisedDensity
 )
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
@@ -33,6 +33,9 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
 
 Set(${dir_INVOLVED_TEST_EXE_SOURCES}
 	test_OutputFileFormat
+	IO/test_IO_DiscretisedDensity
+	IO/test_IO_DynamicDiscretisedDensity
+	IO/test_IO_ParametricDiscretisedDensity
 	test_linear_regression
 	test_stir_math
         # the next 2 are interactive, so we don't add a test for it, but only compile them
@@ -94,8 +97,8 @@ endif()
 
 # we first construct a list of all input files
 set(file_format_tests
-	test_InterfileOutputFileFormat.in 
-	test_InterfileOutputFileFormat_short.in 
+	test_InterfileOutputFileFormat.in
+	test_InterfileOutputFileFormat_short.in
 )
 
 if (HAVE_ECAT)
@@ -116,10 +119,25 @@ endif()
 
 # now for each of these, add a test
 foreach(file_format ${file_format_tests})
-  set(test_name test_OutputFileFormat_${file_format})
+	set(test_name test_IO_DiscretisedDensity_${file_format})
   ADD_TEST(${test_name}
-    ${CMAKE_CURRENT_BINARY_DIR}/test_OutputFileFormat ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format}
+		${CMAKE_CURRENT_BINARY_DIR}/test_IO_DiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format})
+endforeach()
+
+# Test the dynamic and parametric IO
+set(file_formats_for_dynamic_and_parametric
+		test_InterfileOutputFileFormat.in
+		test_InterfileOutputFileFormat_short.in
 )
+foreach(file_format ${file_formats_for_dynamic_and_parametric})
+	set(test_name test_IO_DynamicDiscretisedDensity_${file_format})
+  ADD_TEST(${test_name}
+		${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format})
+endforeach()
+foreach(file_format ${file_formats_for_dynamic_and_parametric})
+	set(test_name test_IO_ParametricDiscretisedDensity_${file_format})
+  ADD_TEST(${test_name}
+		${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format})
 endforeach()
 
 endif(BUILD_TESTING)

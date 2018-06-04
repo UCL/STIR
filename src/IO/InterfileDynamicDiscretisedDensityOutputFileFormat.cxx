@@ -57,8 +57,8 @@ void
 InterfileDynamicDiscretisedDensityOutputFileFormat::
 initialise_keymap()
 {
-  this->parser.add_start_key("Interfile Output File Format");
-  this->parser.add_stop_key("End Interfile Output File Format");
+  this->parser.add_start_key("Interfile Output File Format Parameters");
+  this->parser.add_stop_key("End Interfile Output File Format Parameters");
   base_type::initialise_keymap();
 }
 

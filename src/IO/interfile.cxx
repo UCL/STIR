@@ -203,8 +203,7 @@ read_interfile_dynamic_image(istream& input,
 
   for (unsigned int frame_num=1; frame_num <= dynamic_dens_ptr->get_num_time_frames(); ++frame_num)
     {
-      if (hdr.data_offset_each_dataset[frame_num-1]>0)
-        data_in.seekg(hdr.data_offset_each_dataset[frame_num-1]);
+      data_in.seekg(hdr.data_offset_each_dataset[frame_num-1]);
 
       // read into image_sptr first
       float scale = float(1);
@@ -630,14 +629,15 @@ write_basic_interfile(const string& filename,
     ofstream output_data;
     open_write_binary(output_data, data_name.c_str());
 
-    float scale_to_use = scale;
-    for (int i=1; i<=image.get_num_params(); i++)
+    VectorWithOffset<unsigned long> file_offsets(image.get_num_params());
+    VectorWithOffset<float> scaling_factors(image.get_num_params());
+    for (int i=1; i<=image.get_num_params(); i++) {
+        float scale_to_use = scale;
+        file_offsets[i-1] = output_data.tellp();
         write_data(output_data, image.construct_single_density(i), output_type, scale_to_use,
                   byte_order);
-    VectorWithOffset<float> scaling_factors(image.get_num_params());
-    scaling_factors.fill(scale_to_use);
-    VectorWithOffset<unsigned long> file_offsets(image.get_num_params());
-    file_offsets.fill(0);
+        scaling_factors[i-1]=(scale_to_use);
+    }
 
     const Succeeded success =
       write_basic_interfile_image_header(header_name,
@@ -671,14 +671,16 @@ write_basic_interfile(const string& filename,
     ofstream output_data;
     open_write_binary(output_data, data_name.c_str());
 
-    float scale_to_use = scale;
+    VectorWithOffset<unsigned long> file_offsets(image.get_num_time_frames());
+    VectorWithOffset<float> scaling_factors(image.get_num_time_frames());
     for (int i=1; i<=image.get_num_time_frames(); i++)
+{
+        float scale_to_use = scale;
+        file_offsets[i-1] = output_data.tellp();
         write_data(output_data, image.get_density(i), output_type, scale_to_use,
                   byte_order);
-    VectorWithOffset<float> scaling_factors(image.get_num_time_frames());
-    scaling_factors.fill(scale_to_use);
-    VectorWithOffset<unsigned long> file_offsets(image.get_num_time_frames());
-    file_offsets.fill(0);
+        scaling_factors[i-1]=(scale_to_use);
+}
 
     const Succeeded success =
       write_basic_interfile_image_header(header_name,
