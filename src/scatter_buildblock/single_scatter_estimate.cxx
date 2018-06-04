@@ -81,25 +81,29 @@ actual_scatter_estimate(double& scatter_ratio_singles,
 
 
  // currently the scatter simulation is normalised w.r.t. the detection efficiency in the photopeak window
-  //TODO: check that the selected windows don't overcome the max number of windows
-// TODO: add error if there is one window
+  //find the window that contains 511 keV
 
-  int index = 0;
+  int index = 0; //default for one energy window
 
   if (this->template_exam_info_sptr->get_num_energy_windows()>1)
   {
-      //search for the photopeak window (max window)
-          index = 0 ;
+     for (int i = 0 ; i < this->template_exam_info_sptr->get_num_energy_windows() ; ++i)
+     {
+            if( this->template_exam_info_sptr->get_high_energy_thres(i) >= 511.F &&  this->template_exam_info_sptr->get_low_energy_thres(i) <= 511.F)
 
-     // }
-}
+            {
 
+                 index = i;
+              }
 
-  //find the highest window with a for loop
+     }
+   }
 
-  const double common_factor =
-    1/detection_efficiency_no_scatter(det_num_A, det_num_B, index) *
-    scatter_volume/total_Compton_cross_section_511keV;
+//normalisation factor between trues and scattered counts
+
+    const double common_factor =
+        1/detection_efficiency_no_scatter(det_num_A, det_num_B, index) *
+        scatter_volume/total_Compton_cross_section_511keV;
 
   scatter_ratio_singles *= common_factor;
 }

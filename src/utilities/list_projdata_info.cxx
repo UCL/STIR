@@ -139,6 +139,7 @@ int main(int argc, char *argv[])
 		    << exam_info.time_frame_definitions.get_duration(1)
 		    << ")\n";
 	}
+
     }
   if (print_geom)
     std::cout << proj_data_sptr->get_proj_data_info_ptr()->parameter_info() << std::endl;

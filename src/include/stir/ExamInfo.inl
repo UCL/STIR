@@ -42,6 +42,7 @@ void
 ExamInfo::set_low_energy_thres(float new_val,int en_window)
 {
     low_energy_thres[en_window] = new_val;
+
 }
 
 void
@@ -54,6 +55,7 @@ void
 ExamInfo::set_num_energy_windows(int n_win)
 {
     num_windows = n_win;
+
 }
 
 
@@ -62,13 +64,8 @@ ExamInfo::set_energy_window_pair(std::vector<int> val,int n_win)
 {
 
 
-   en_win_pair=val;
 
-   for (int i = 0 ; i <= 1 ; ++i)
-   {
-   if (en_win_pair[i] >= n_win)
-     error("The selected pair (%d) exceeds the number of energy windows (%d): it needs to be set to supported value",en_win_pair[i],n_win);
-    }
+   en_win_pair=val;
 
 }
 
@@ -80,6 +77,7 @@ float
 ExamInfo::get_low_energy_thres(int en_window) const
 {
     return low_energy_thres[en_window];
+
 }
 
 //Get the high energy boundary for all the energy windows. en_window is set to 0 by default

@@ -250,7 +250,6 @@ InterfileHeader::InterfileHeader()
 bool InterfileHeader::post_processing()
 {
 
-
   if(type_of_data_index<0)
     {
       warning("Interfile Warning: 'type_of_data' keyword required");
@@ -359,23 +358,39 @@ bool InterfileHeader::post_processing()
 
 
  //set the lower and the higher energy thresholds for all the energy windows available. Default: 1.
+
+  //set the number of energy windows and pair
+
+  exam_info_sptr->set_num_energy_windows(num_energy_windows);
+
+  if (energy_window_pair.size() > 0) {
+
+      if (energy_window_pair.size() != 2)
+          error("should have two.");
+      if (energy_window_pair[0] < 0)
+          error("first window should be >= 0.");
+      if (energy_window_pair[1] < 0)
+          error("second window should be >= 0.");
+      if (energy_window_pair[0] > num_energy_windows)
+          error("The selected window %d exceeds the  number of energy windows %d.\n",energy_window_pair[0],num_energy_windows);
+      if (energy_window_pair[1] > num_energy_windows)
+          error("The selected window %d exceeds the  number of energy windows %d.\n",energy_window_pair[1],num_energy_windows);
+
+      exam_info_sptr->set_energy_window_pair(energy_window_pair,num_energy_windows);
+  }
+
+    //set the high and low energy window threshold
+
       for (int i = 0; i < num_energy_windows; ++i)
       {
-            if (upper_en_window_thres[i] > 0 && lower_en_window_thres[i] > 0 )
+
+          if (upper_en_window_thres[i] >0 && lower_en_window_thres[i] >0)
             {
-          exam_info_sptr->set_high_energy_thres(upper_en_window_thres[i],i);
-          exam_info_sptr->set_low_energy_thres(lower_en_window_thres[i],i);
-            }
-        }
+              exam_info_sptr->set_high_energy_thres(upper_en_window_thres[i],i);
+              exam_info_sptr->set_low_energy_thres(lower_en_window_thres[i],i);
 
-
-//set the number of energy windows and pair
-
-
-
-        exam_info_sptr->set_energy_window_pair(energy_window_pair,num_energy_windows);
-        exam_info_sptr->set_num_energy_windows(num_energy_windows);
-
+             }
+       }
 
 
   exam_info_sptr->time_frame_definitions = 
@@ -398,10 +413,13 @@ void InterfileHeader::read_matrix_info()
 
 void InterfileHeader::read_num_energy_windows()
 {
+
+
   set_variable();
 
-  upper_en_window_thres.resize(num_energy_windows);
-  lower_en_window_thres.resize(num_energy_windows);
+  upper_en_window_thres.resize(num_energy_windows,-1.);
+  lower_en_window_thres.resize(num_energy_windows,-1.);
+
 
 }
 
@@ -412,6 +430,10 @@ void InterfileHeader::en_window_pair_set()
     energy_window_pair.resize(2);
     set_variable();
 
+    /*std::cerr << "\nI'm here2\n";
+    std::cerr << "\nenergywindow pair size = " << energy_window_pair.size() << "\n";
+    for (int i=0; i<energy_window_pair.size(); i++) {
+        std::cerr << "\nenergywindow pair[" << i << "] = " << energy_window_pair[i] << "\n";*/
 }
 
 
@@ -503,7 +525,6 @@ bool InterfileImageHeader::post_processing()
 
   if (InterfileHeader::post_processing() == true)
     return true;
-
 
 
   if (PET_data_type_values[PET_data_type_index] != "Image")
@@ -1329,6 +1350,7 @@ bool InterfilePDFSHeader::post_processing()
  
 
   // float azimuthal_angle_sampling =_PI/num_views;
+
 
 
 

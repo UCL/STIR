@@ -81,14 +81,12 @@ int main(int argc, const char *argv[])
 
     if (argc!=2)
         print_usage_and_exit();
-
     shared_ptr < ScatterSimulation >
             simulation_method_sptr;
-
     KeyParser parser;
     parser.add_start_key("Scatter Simulation");
     parser.add_stop_key("End Scatter Simulation");
-    parser.add_parsing_key("Simulation method", &simulation_method_sptr);
+    parser.add_parsing_key("Simulation method", &simulation_method_sptr);;
     parser.parse(argv[1]);
 
     if(simulation_method_sptr->process_data() == stir::Succeeded::yes)
