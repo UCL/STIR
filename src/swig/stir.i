@@ -96,6 +96,7 @@
     
 #include "stir/scatter/ScatterSimulation.h"
 #include "stir/scatter/SingleScatterSimulation.h"
+#include "stir/scatter/SingleScatterLikelihoodAndGradient.h"
 
    // TODO need this (bug in swig)
    // this bug occurs (only?) when using "%template(name) someclass;" inside the namespace
@@ -1606,6 +1607,7 @@ namespace stir {
 
 //scatter
 %shared_ptr(stir::ScatterSimulation);
+
 %shared_ptr(stir::RegisteredParsingObject<
             stir::SingleScatterSimulation,
             stir::ScatterSimulation,
@@ -1614,6 +1616,13 @@ namespace stir {
 %shared_ptr(stir::SingleScatterSimulation);
 
 
+%shared_ptr(stir::RegisteredParsingObject<
+            stir::SingleScatterLikelihoodAndGradient,
+            stir::SingleScatterSimulation,
+            stir::SingleScatterSimulation
+            >);
+%shared_ptr(stir::SingleScatterSimulation);
+%shared_ptr(stir::SingleScatterLikelihoodAndGradient);
 
 %include "stir/scatter/ScatterSimulation.h"
 
@@ -1624,4 +1633,13 @@ stir::ScatterSimulation,
 stir::ScatterSimulation
 >;
 
+
+%template (internalRPSingleScatterSimulation) stir::RegisteredParsingObject<
+stir::SingleScatterLikelihoodAndGradient,
+stir::SingleScatterSimulation,
+stir::SingleScatterSimulation
+>;
+
+
 %include "stir/scatter/SingleScatterSimulation.h"
+%include "stir/scatter/SingleScatterLikelihoodAndGradient.h"
