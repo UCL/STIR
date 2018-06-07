@@ -17,6 +17,10 @@ set(${dir_LIB_SOURCES}
 	CreateTailMaskFromACFs 
 	ScatterSimulation
 	SingleScatterSimulation
+	SingleScatterLikelihoodAndGradient
+	L_G_estimate_for_one_scatter_point
+	L_G_estimate
+	L_G_simulation
 )
 #$(dir)_REGISTRY_SOURCES:= scatter_buildblock_registries
 

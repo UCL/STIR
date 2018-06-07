@@ -93,6 +93,9 @@
 #include <boost/iterator/reverse_iterator.hpp>
 #include <boost/format.hpp>
 #include <stdexcept>
+    
+#include "stir/scatter/ScatterSimulation.h"
+#include "stir/scatter/SingleScatterSimulation.h"
 
    // TODO need this (bug in swig)
    // this bug occurs (only?) when using "%template(name) someclass;" inside the namespace
@@ -1599,3 +1602,26 @@ namespace stir {
   stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
      stir::BackProjectorByBin>;
 %include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+
+
+//scatter
+%shared_ptr(stir::ScatterSimulation);
+%shared_ptr(stir::RegisteredParsingObject<
+            stir::SingleScatterSimulation,
+            stir::ScatterSimulation,
+            stir::ScatterSimulation
+            >);
+%shared_ptr(stir::SingleScatterSimulation);
+
+
+
+%include "stir/scatter/ScatterSimulation.h"
+
+
+%template (internalRPSingleScatterSimulation) stir::RegisteredParsingObject<
+stir::SingleScatterSimulation,
+stir::ScatterSimulation,
+stir::ScatterSimulation
+>;
+
+%include "stir/scatter/SingleScatterSimulation.h"

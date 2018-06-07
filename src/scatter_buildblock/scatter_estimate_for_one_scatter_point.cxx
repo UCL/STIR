@@ -130,7 +130,8 @@ std::vector<float>detection_efficiency_unscattered;
     }
 
 
- //compute the probability of detection for two given energy windows X and Y
+
+//Set the probability of detection for one energy window (Default)
 
     int index0 = 0;
     int index1 = 0;
@@ -147,8 +148,8 @@ std::vector<float>detection_efficiency_unscattered;
 
     }
 
- //Set the probability of detection for one energy window (Default)
 
+    //compute the probability of detection for two given energy windows X and Y
     float detection_probability_XY=detection_efficiency_scattered[index0]*detection_efficiency_unscattered[index1];
     float detection_probability_YX=detection_efficiency_scattered[index1]*detection_efficiency_unscattered[index0];
 
@@ -209,6 +210,43 @@ std::vector<float>detection_efficiency_unscattered;
   }
 #endif
 
+
+  // we will divide by the effiency of the detector pair for unscattered photons
+  // (computed with the same detection model as used in the scatter code)
+  // This way, the scatter estimate will correspond to a 'normalised' scatter estimate.
+
+  // there is a scatter_volume factor for every scatter point, as the sum over scatter points
+  // is an approximation for the integral over the scatter point.
+
+  // the factors total_Compton_cross_section_511keV should probably be moved to the scatter_computation code
+
+
+ // currently the scatter simulation is normalised w.r.t. the detection efficiency in the photopeak window
+  //find the window that contains 511 keV
+
+  int index_photopeak = 0; //default for one energy window
+
+  if (this->template_exam_info_sptr->get_num_energy_windows()>1)
+  {
+     for (int i = 0 ; i < this->template_exam_info_sptr->get_num_energy_windows() ; ++i)
+     {
+            if( this->template_exam_info_sptr->get_high_energy_thres(i) >= 511.F &&  this->template_exam_info_sptr->get_low_energy_thres(i) <= 511.F)
+
+            {
+
+                 index_photopeak = i;
+              }
+
+     }
+   }
+
+  //normalisation factor between trues and scattered counts
+
+    const double common_factor =
+        1/detection_efficiency_no_scatter(det_num_A, det_num_B, index_photopeak) *
+        scatter_volume/total_Compton_cross_section_511keV;
+
+
   float scatter_ratio=0 ;
 
 
@@ -220,7 +258,8 @@ std::vector<float>detection_efficiency_unscattered;
            *scatter_point_mu
            *cos_incident_angle_AS
            *cos_incident_angle_BS
-           *dif_Compton_cross_section_value;
+           *dif_Compton_cross_section_value
+           *common_factor;
 
 
   return scatter_ratio;
