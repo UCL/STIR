@@ -698,6 +698,8 @@ ProjDataFromStream::get_offset_segment(const int segment_num) const
 SegmentBySinogram<float>
 ProjDataFromStream::get_segment_by_sinogram(const int segment_num) const
 {
+
+
   if(is_null_ptr(sino_stream))
   {
     error("ProjDataFromStream::get_segment_by_sinogram: stream ptr is 0\n");
@@ -728,6 +730,7 @@ ProjDataFromStream::get_segment_by_sinogram(const int segment_num) const
             succeeded = read_data(*sino_stream, segment, on_disk_data_type, scale, on_disk_byte_order);
           }
       } // end of critical section
+
     if (succeeded == Succeeded::no)
       error("ProjDataFromStream: error reading data\n");
     if(scale != 1)
@@ -764,6 +767,7 @@ ProjDataFromStream::get_segment_by_view(const int segment_num) const
 #ifdef STIR_OPENMP
 #pragma omp critical(PROJDATAFROMSTREAMIO)
 #endif
+
     {
       sino_stream->seekg(segment_offset, ios::beg); 
       if (! *sino_stream)

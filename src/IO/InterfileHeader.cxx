@@ -430,10 +430,7 @@ void InterfileHeader::en_window_pair_set()
     energy_window_pair.resize(2);
     set_variable();
 
-    /*std::cerr << "\nI'm here2\n";
-    std::cerr << "\nenergywindow pair size = " << energy_window_pair.size() << "\n";
-    for (int i=0; i<energy_window_pair.size(); i++) {
-        std::cerr << "\nenergywindow pair[" << i << "] = " << energy_window_pair[i] << "\n";*/
+
 }
 
 

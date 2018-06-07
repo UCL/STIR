@@ -714,15 +714,19 @@ read_interfile_PDFS(const string& filename,
 		    const ios::openmode open_mode)
 {
   ifstream image_stream(filename.c_str());
+
+
   if (!image_stream)
     { 
       error("read_interfile_PDFS: couldn't open file %s\n", filename.c_str());
     }
   
   char directory_name[max_filename_length];
+
   get_directory_name(directory_name, filename.c_str());
-  
+
   return read_interfile_PDFS(image_stream, directory_name, open_mode);
+
 }
 
 
@@ -1060,6 +1064,10 @@ if (pdfs.get_exam_info_ptr()->get_num_energy_windows() > 1)
       // TODO something here
     }
 
+
+
+   //output_header << "energy resolution :="<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_energy_resolution()<< "\n";
+   //output_header << "Reference energy (in keV) :="<< pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_reference_energy()<< "\n";
 
 
   // write time frame info

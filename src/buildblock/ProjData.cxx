@@ -96,6 +96,8 @@ ProjData::
 read_from_file(const string& filename,
 	       const std::ios::openmode openmode)
 {
+
+
   std::string actual_filename = filename;
   // parse filename to see if it's like filename,options
   {
@@ -109,7 +111,6 @@ read_from_file(const string& filename,
   fstream * input = new fstream(actual_filename.c_str(), openmode | ios::binary);
   if (! *input)
     error("ProjData::read_from_file: error opening file %s", actual_filename.c_str());
-
   const FileSignature file_signature(actual_filename);
   const char * signature = file_signature.get_signature();
 
@@ -184,7 +185,9 @@ read_from_file(const string& filename,
 #ifndef NDEBUG
     warning("ProjData::read_from_file trying to read %s as Interfile", filename.c_str());
 #endif
+
     shared_ptr<ProjData> ptr(read_interfile_PDFS(filename, openmode));
+
     if (!is_null_ptr(ptr))
       return ptr;
   }

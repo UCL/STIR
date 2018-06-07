@@ -150,10 +150,12 @@ initialise_keymap()
                          &this->initial_activity_image_filename);
 
     // RECONSTRUCTION RELATED
-    this->parser.add_key("reconstruction parameter template file",
-                         &this->recon_template_par_filename);
     this->parser.add_parsing_key("reconstruction method",
                                  &this->reconstruction_template_sptr);
+
+    this->parser.add_key("reconstruction parameter template file",
+                         &this->recon_template_par_filename);
+
     // END RECONSTRUCTION RELATED
 
     this->parser.add_key("number of scatter iterations",
@@ -227,6 +229,7 @@ post_processing()
     else
     {
         KeyParser local_parser;
+
         local_parser.add_start_key("Reconstruction");
         local_parser.add_stop_key("End Reconstruction");
         local_parser.add_parsing_key("reconstruction method", &this->reconstruction_template_sptr);
@@ -236,6 +239,8 @@ post_processing()
                     %this->recon_template_par_filename);
             return true;
         }
+        //std::cerr << "print"<< local_parser.parameter_info()<< '\n';
+
     }
 
     info("ScatterEstimation: Loading attenuation image...");
@@ -571,6 +576,8 @@ set_up()
         return Succeeded::no;
     }
 
+
+
     AnalyticReconstruction* tmp_analytic =
             dynamic_cast<AnalyticReconstruction * >(this->reconstruction_template_sptr.get());
     IterativeReconstruction<DiscretisedDensity<3, float> >* tmp_iterative =
@@ -735,6 +742,7 @@ set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterat
                                                                                     this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
                                                                                     this->atten_coeff_filename,
                                                                                     std::ios::in | std::ios::out | std::ios::trunc));
+
             else
                atten_projdata_3d_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
                                                                                   this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone()));
@@ -757,6 +765,8 @@ set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterat
 
     // Check if it is a BinNormFromProjData -- it should but you never know
     // Take the projdata
+
+
     shared_ptr<ProjData> atten_projdata_3d_sptr =
             dynamic_cast<BinNormalisationFromProjData*> (this->multiplicative_binnorm_3d_sptr->get_second_norm().get())->get_norm_proj_data_sptr();
 
@@ -976,6 +986,7 @@ process_data()
 
         info("ScatterEstimation: Scatter simulation in progress...");
         this->scatter_simulation_sptr->process_data();
+
         info("ScatterEstimation: Scatter simulation in progress...");
 
         if(this->run_debug_mode) // Write unscaled scatter sinogram
@@ -994,12 +1005,15 @@ process_data()
             local_min_scale_value = this->min_scale_value;
         }
 
+
+
         upsample_and_fit_scatter_estimate(*scaled_est_projdata_2d_sptr, *data_to_fit_projdata_2d_sptr,
                                           *unscaled_est_projdata_2d_sptr,
                                           *this->multiplicative_binnorm_2d_sptr->get_first_norm(),
                                           *this->mask_projdata_sptr, local_min_scale_value,
                                           local_max_scale_value, this->half_filter_width,
                                           spline_type, true);
+
 
         if(this->run_debug_mode)
         {
@@ -1009,6 +1023,7 @@ process_data()
             tmp.prepend_directory_name(extras_path.get_path());
             dynamic_cast<ProjDataInMemory *> (scaled_est_projdata_2d_sptr.get())->write_to_file(tmp.get_string());
         }
+
 
         if (this->export_scatter_estimates_of_each_iteration ||
                 i_scat_iter == this->num_scatter_iterations -1 )
@@ -1061,6 +1076,7 @@ process_data()
             this->multiplicative_binnorm_3d_sptr->apply(*temp_projdata_3d, start_time, end_time);
         }
 
+
         this->back_projdata_2d_sptr->fill(*scaled_est_projdata_2d_sptr);
         add_proj_data(*back_projdata_2d_sptr, *this->add_projdata_2d_sptr);
         this->multiplicative_binnorm_2d_sptr->apply(*back_projdata_2d_sptr, start_time, end_time);
@@ -1070,11 +1086,13 @@ process_data()
                            reconstruct_analytic(i_scat_iter, this->current_activity_image_lowres_sptr);
 
 
+
         // Reset to the additive factor
         //                this->scaled_est_projdata_sptr->fill(*this->back_projdata_sptr);
         //        scaled_est_projdata_2d_sptr->fill(0.0f);
 
     }
+
 
     info("ScatterEstimation: Scatter Estimation finished !!!");
 

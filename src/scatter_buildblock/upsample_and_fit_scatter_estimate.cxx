@@ -63,10 +63,13 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
     interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_ptr()->clone());
   interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
 
+
   info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
   ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
 					       interpolated_direct_scatter_proj_data_info_sptr);        
+
   interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, remove_interleaving);
+
 
   const TimeFrameDefinitions& time_frame_defs =
     emission_proj_data.get_exam_info_sptr()->time_frame_definitions;

@@ -54,7 +54,7 @@ static void print_usage_and_exit()
                "zoom xy := 0.3\n"
                "zoom z := 1.0\n"
                "input file := \n"
-               "recompute attenuation projdata := 0\n"
+               "recompute 5attenuation projdata := 0\n"
                "αttenuation projdata filename := \n"
                "attenuation image filename := \n"
 
@@ -91,7 +91,7 @@ static void print_usage_and_exit()
                "; export 2d projdata := \n"
 
                "; ScatterSimulation Stuff \n"
-               "scatter simulation parameter file :=\n"
+               "scatter simulation parameters file :=\n"
 
                "; Override the values set in the scatter simulation parameteres file\n"
                "override initial activity image := \n"

@@ -208,7 +208,6 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
         total_scatter += scatter_ratio;
 
 
-
     } // end loop over bins
 
     if (this->output_proj_data_sptr->set_viewgram(viewgram) == Succeeded::no)
@@ -306,7 +305,8 @@ post_processing()
     if ((zoom_xy!=1 || zoom_z != 1) &&
             this->density_image_filename.size()>0)
     {
-        this->set_density_image_for_scatter_points_sptr(downsample_image(this->density_image_sptr));
+
+         this->set_density_image_for_scatter_points_sptr(downsample_image(this->density_image_sptr));
 
         if(this->density_image_for_scatter_points_output_filename.size()>0)
             OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->

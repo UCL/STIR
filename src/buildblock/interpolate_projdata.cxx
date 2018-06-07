@@ -153,10 +153,12 @@ namespace detail_interpolate_projdata
   make_non_interleaved_segment(const ProjDataInfo& non_interleaved_proj_data_info,
                                const SegmentBySinogram<float>& in_segment)
   {
+
     SegmentBySinogram<float> out_segment =
       non_interleaved_proj_data_info.get_empty_segment_by_sinogram(in_segment.get_segment_num());
 
     make_non_interleaved_segment(out_segment, in_segment);
+
     return out_segment;
   }     
 
@@ -165,25 +167,32 @@ namespace detail_interpolate_projdata
 
 using namespace detail_interpolate_projdata;
   
-Succeeded 
+Succeeded
 interpolate_projdata(ProjData& proj_data_out,
                      const ProjData& proj_data_in, const BSpline::BSplineType these_types,
                      const bool remove_interleaving,
                      const bool use_view_offset)
 {
+
   BasicCoordinate<3, BSpline::BSplineType> these_types_3; 
+
   these_types_3[1]=these_types_3[2]=these_types_3[3]=these_types;
+
   interpolate_projdata(proj_data_out,proj_data_in,these_types_3, remove_interleaving, use_view_offset);
+
+
   return Succeeded::yes;
 }
 
-Succeeded 
+Succeeded
 interpolate_projdata(ProjData& proj_data_out,
                      const ProjData& proj_data_in,
                      const BasicCoordinate<3, BSpline::BSplineType> & these_types,
                      const bool remove_interleaving,
                      const bool use_view_offset)
 {
+
+
 
   if (use_view_offset)
     warning("interpolate_projdata with use_view_offset is EXPERIMENTAL and NOT TESTED.");
@@ -210,8 +219,9 @@ interpolate_projdata(ProjData& proj_data_out,
 
 
   BSpline::BSplinesRegularGrid<3, float, float> proj_data_interpolator(these_types);
+
   BasicCoordinate<3, double>  offset,  step  ;
-        
+
   // find relation between out_index and in_index such that they correspond to the same physical position
   // out_index * m_zoom + m_offset = in_index
   const float in_sampling_m = proj_data_in_info.get_sampling_in_m(Bin(0,0,0,0));
@@ -253,7 +263,10 @@ interpolate_projdata(ProjData& proj_data_out,
         
   // initialise interpolator
   if (remove_interleaving)
+
   {
+
+
     shared_ptr<ProjDataInfo> non_interleaved_proj_data_info_sptr =
       make_non_interleaved_proj_data_info(proj_data_in_info);
 
@@ -261,6 +274,7 @@ interpolate_projdata(ProjData& proj_data_out,
       make_non_interleaved_segment(*non_interleaved_proj_data_info_sptr,
                                            proj_data_in.get_segment_by_sinogram(0));
     //    display(non_interleaved_segment, non_interleaved_segment.find_max(),"non-inter");
+
     Array<3,float> extended = 
       extend_segment_in_views(non_interleaved_segment, 2, 2);
     for (int z=extended.get_min_index(); z<= extended.get_max_index(); ++z)
@@ -294,11 +308,13 @@ interpolate_projdata(ProjData& proj_data_out,
     proj_data_interpolator.set_coef(extended);
   }
         
-  // now do interpolation               
+  // now do interpolation
+
   SegmentBySinogram<float> sino_3D_out = proj_data_out.get_empty_segment_by_sinogram(0) ;
   sample_function_on_regular_grid(sino_3D_out, proj_data_interpolator, offset, step);
 
   proj_data_out.set_segment(sino_3D_out);
+
   if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
     return Succeeded::no;          
   return Succeeded::yes;
