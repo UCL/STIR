@@ -37,13 +37,13 @@ class SingleScatterLikelihoodAndGradient : public
         RegisteredParsingObject<
         SingleScatterLikelihoodAndGradient,
         SingleScatterSimulation,
-        SingleScatterSimulation >
+        SingleScatterSimulation>
 {
 private:
     typedef RegisteredParsingObject<
     SingleScatterLikelihoodAndGradient,
     SingleScatterSimulation,
-    SingleScatterSimulation > base_type;
+    SingleScatterSimulation> base_type;
 public:
 
     //! Name which will be used when parsing a ScatterSimulation object
@@ -60,7 +60,7 @@ public:
 
 
 
-    virtual double L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image,const float scale_factor = 1, bool isgradient = true);
+    virtual double L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const float scale , bool isgradient = true);
 
     protected:
 
@@ -78,15 +78,15 @@ public:
     L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
              const std::size_t scatter_point_num,
              const unsigned det_num_A,
-             const unsigned det_num_B);
+             const unsigned det_num_B, bool isgradient);
 
-    virtual double L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,const Bin bin);
+    virtual double L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,const Bin bin, bool isgradient);
 
     virtual void
     actual_L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,
     		double& scatter_ratio_singles,
     			const unsigned det_num_A,
-    			const unsigned det_num_B ) = 0;
+                const unsigned det_num_B, bool isgradient);
 
 
     virtual double L_G_for_view_segment_number(ProjData&data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float scale_factor, bool isgradient);

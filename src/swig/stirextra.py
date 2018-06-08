@@ -24,8 +24,8 @@ if sys.version_info < (3,):
 
 def get_bounding_box_indices(image):
     """
-    return [min,max] tuple with indices of first and last voxel in a STIR image
-    """
+        return [min,max] tuple with indices of first and last voxel in a STIR image
+        """
     num_dims = image.get_num_dimensions();
     if num_dims == 2:
         minind=stir.Int2BasicCoordinate()
@@ -35,14 +35,14 @@ def get_bounding_box_indices(image):
         maxind=stir.Int3BasicCoordinate()
     else:
         raise exceptions.NotImplementedError('need to handle dimensions different from 2 and 3')
-
+    
     image.get_regular_range(minind, maxind);
     return [minind, maxind]
 
 def get_physical_coordinates_for_bounding_box(image):
     """
-    return physical coordinates (in mm) for the first and last voxel in a STIR image
-    """
+        return physical coordinates (in mm) for the first and last voxel in a STIR image
+        """
     [minind,maxind]=get_bounding_box_indices(image);
     minphys=image.get_physical_coordinates_for_indices(minind);
     maxphys=image.get_physical_coordinates_for_indices(maxind);
@@ -50,8 +50,8 @@ def get_physical_coordinates_for_bounding_box(image):
 
 def get_physical_coordinates_for_grid(image):
     """
-    return [z,y,x] tuple of grid coordinates for a STIR image
-    """
+        return [z,y,x] tuple of grid coordinates for a STIR image
+        """
     [minind,maxind]=get_bounding_box_indices(image);
     sizes=maxind-minind+1;
     minphys=image.get_physical_coordinates_for_indices(minind);
@@ -68,8 +68,8 @@ def get_physical_coordinates_for_grid(image):
 
 def to_numpy(stirdata):
     """
-    return the data in a STIR image or other Array as a numpy array
-    """
+        return the data in a STIR image or other Array as a numpy array
+        """
     # construct a numpy array using the "flat" STIR iterator
     try:
         npstirdata=numpy.fromiter(stirdata.flat(), dtype=numpy.float32);

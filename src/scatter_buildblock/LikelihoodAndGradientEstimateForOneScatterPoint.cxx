@@ -50,7 +50,7 @@ SingleScatterLikelihoodAndGradient::
 L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
 		const std::size_t scatter_point_num,
 		const unsigned det_num_A,
-		const unsigned det_num_B)
+        const unsigned det_num_B, bool isgradient)
 {
 
 	// The code now supports more than one energy window: the low energy threshold has to correspond to lowest window.
@@ -293,6 +293,9 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
 
 	//Fill gradient image along [A,S], [B,S] and in [S]
 
+    if (isgradient)
+
+    {
 	line_contribution(gradient,rescale,scatter_point,
 			detector_coord_B,contribution_BS);
 
@@ -302,6 +305,7 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
 	s_contribution(gradient,scatter_point,
 			contribution_S);
 
+    }
 	return scatter_ratio;
 
 }

@@ -157,8 +157,8 @@ public:
      Currently always uses Interfile output.
      \warning If the specified file already exists it will be erased.
     */
-    void set_proj_data_from_file(const std::string& filename,
-                                        shared_ptr<ProjData>& _this_projdata);
+    //void set_proj_data_from_file(const std::string& filename,
+                                 //       shared_ptr<ProjData>& _this_projdata);
 
     void set_density_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 
