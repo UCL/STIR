@@ -45,14 +45,25 @@ L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,const Bin bin, boo
     
     this->find_detectors(det_num_A, det_num_B,bin);
     
-    this->actual_L_G_estimate(gradient_image_bin, scatter_ratio_singles,
-                              det_num_A,
-                              det_num_B, isgradient);
+    for(std::size_t scatter_point_num =0;
+        scatter_point_num < this->scatt_points_vector.size();
+        ++scatter_point_num)
+    {
+
+
+
+
+        scatter_ratio_singles +=
+        L_G_for_one_scatter_point(gradient_image_bin,
+                                  scatter_point_num,
+                                  det_num_A, det_num_B, isgradient);
+
+    }
     
     return scatter_ratio_singles;
 }
 
-void
+/*void
 SingleScatterLikelihoodAndGradient::
 actual_L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,
                     double& scatter_ratio_singles,
@@ -79,7 +90,7 @@ actual_L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,
         
     }
     
-}
+}*/
 
 
 END_NAMESPACE_STIR

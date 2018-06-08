@@ -122,4 +122,37 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
     }
 }
 
+
+void
+ScatterEstimation::
+upsample_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                  const  ProjData& emission_proj_data,
+                                  const ProjData& scatter_proj_data,
+                                  //BinNormalisation& scatter_normalisation,
+                                   // const ProjData& weights_proj_data,
+                                  //const float min_scale_factor,
+                                  //const float max_scale_factor,
+                                  //const unsigned half_filter_width,
+                                  //BSpline::BSplineType spline_type,
+                                  const bool remove_interleaving)
+{
+    stir::BSpline::BSplineType  spline_type = stir::BSpline::linear;
+    shared_ptr<ProjDataInfo>
+    interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_ptr()->clone());
+  interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
+
+
+  info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
+  ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
+                           interpolated_direct_scatter_proj_data_info_sptr);
+
+  interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, remove_interleaving);
+
+
+
+  inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);
+
+}
+
+
 END_NAMESPACE_STIR

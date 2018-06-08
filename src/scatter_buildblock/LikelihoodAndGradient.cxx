@@ -86,6 +86,7 @@ L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const 
     
     int bin_counter = 0;
     int axial_bins = 0 ;
+    double sum = 0;
     
     for (vs_num.segment_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_segment_num();
          vs_num.segment_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
@@ -120,7 +121,6 @@ L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const 
 #endif
     this->shift_detector_coordinates_to_origin =
     CartesianCoordinate3D<float>(this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
-    float sum = 0 ;
     
     info("ScatterSimulator: Initialization finished ...");
     
@@ -132,28 +132,20 @@ L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const 
              vs_num.view_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_view_num();
              ++vs_num.view_num())
         {
-            info(boost::format("ScatterSimulator: %d / %d") % bin_counter% total_bins);
+            //info(boost::format("ScatterSimulator: %d / %d") % bin_counter% total_bins);
             sum+=this->L_G_for_view_segment_number(data, gradient_image,vs_num,rescale,isgradient);
             bin_counter +=
             this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num()) *
             this->proj_data_info_cyl_noarc_cor_sptr->get_num_tangential_poss();
-            info(boost::format("ScatterSimulator: %d / %d") % bin_counter% total_bins);
+            //info(boost::format("ScatterSimulator: %d / %d") % bin_counter% total_bins);
             
-            
+            std::cout<< bin_counter << " / "<< total_bins <<std::endl;
             
         }
     }
     
-    if (detection_points_vector.size() != static_cast<unsigned int>(total_detectors))
-    {
-        warning("Expected num detectors: %d, but found %d\n",
-                total_detectors, detection_points_vector.size());
-        return Succeeded::no;
-    }
-    
-    
     std::cerr << "LIKELIHOOD:= " << sum << '\n';
-    return Succeeded::yes;
+    return sum;
 }
 
 double
@@ -196,7 +188,7 @@ L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartes
     }
     // now compute scatter for all bins
 
-       double sum =0;
+       double sum = 0;
 
 
        VoxelsOnCartesianGrid<float> tmp_gradient_image(gradient_image);

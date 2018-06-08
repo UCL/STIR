@@ -246,50 +246,51 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
 
 	float scatter_ratio=0;
 
-	scatter_ratio=
-	(detection_probability_XY*emiss_to_detA*(1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1)
-			+detection_probability_YX*emiss_to_detB*(1.F/rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1))
-	*atten_to_detB
-	*atten_to_detA
-	*scatter_point_mu
-	*cos_incident_angle_AS
-	*cos_incident_angle_BS
-	*dif_Compton_cross_section_value
-	*common_factor;
+    scatter_ratio= (detection_probability_XY*emiss_to_detA*(1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1)
+                    +detection_probability_YX*emiss_to_detB*(1.F/rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1))
+                    *atten_to_detB
+                    *atten_to_detA
+                    *scatter_point_mu
+                    *cos_incident_angle_AS
+                    *cos_incident_angle_BS
+                    *dif_Compton_cross_section_value
+                    *common_factor;
 
 	/*Single Scatter Forward model Jacobian:
 	 * The derivative is given by three term, respectively in [A,S], [B,S] and [S] */
 
 	float contribution_AS = (detection_probability_XY*emiss_to_detA*(1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1)
-			+detection_probability_YX*emiss_to_detB*(1.F/rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1)*
-			total_Compton_cross_section_relative_to_511keV(new_energy))
-	*atten_to_detB
-	*atten_to_detA
-	*scatter_point_mu
-	*cos_incident_angle_AS
-	*cos_incident_angle_BS
-	*dif_Compton_cross_section_value
-	*common_factor;
+                            +detection_probability_YX*emiss_to_detB*(1.F/rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1)*
+                            total_Compton_cross_section_relative_to_511keV(new_energy))
+                            *atten_to_detB
+                            *atten_to_detA
+                            *scatter_point_mu
+                            *cos_incident_angle_AS
+                            *cos_incident_angle_BS
+                            *dif_Compton_cross_section_value
+                            *common_factor;
 
-	float contribution_BS = (detection_probability_XY*emiss_to_detA*(1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1)*
-			(total_Compton_cross_section_relative_to_511keV(new_energy))
-			+detection_probability_YX*emiss_to_detB*(1.F/rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1))
-	*atten_to_detB
-	*atten_to_detA
-	*scatter_point_mu
-	*cos_incident_angle_AS
-	*cos_incident_angle_BS
-	*dif_Compton_cross_section_value
-	*common_factor;
+    float contribution_BS = (detection_probability_XY*emiss_to_detA*
+                            (1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1)*
+                            (total_Compton_cross_section_relative_to_511keV(new_energy))
+                            +detection_probability_YX*emiss_to_detB*(1.F/rA_squared)*
+                             pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1))
+                            *atten_to_detB
+                            *atten_to_detA
+                            *scatter_point_mu
+                            *cos_incident_angle_AS
+                            *cos_incident_angle_BS
+                            *dif_Compton_cross_section_value
+                            *common_factor;
 
 	float contribution_S = (detection_probability_XY*emiss_to_detA*(1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1)
-			+detection_probability_YX*emiss_to_detB*(1.F/rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1))
-	*atten_to_detB
-	*atten_to_detA
-	*cos_incident_angle_AS
-	*cos_incident_angle_BS
-	*dif_Compton_cross_section_value
-	*common_factor;
+                            +detection_probability_YX*emiss_to_detB*(1.F/rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1))
+                            *atten_to_detB
+                            *atten_to_detA
+                            *cos_incident_angle_AS
+                            *cos_incident_angle_BS
+                            *dif_Compton_cross_section_value
+                            *common_factor;
 
 	//Fill gradient image along [A,S], [B,S] and in [S]
 

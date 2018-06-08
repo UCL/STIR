@@ -65,7 +65,7 @@ public:
     //! prompts the user to enter parameter values manually
     virtual void ask_parameters();
 
-protected:
+
 
     void initialise(const std::string& parameter_filename);
 
@@ -77,6 +77,7 @@ protected:
     //! used to check acceptable parameter ranges, etc...
     virtual bool post_processing();
 
+protected:
 
     //!
     //! \brief simulate_for_one_scatter_point
