@@ -3,14 +3,16 @@
 /*!
   \file
   \ingroup listmode
-  \brief Declarations of classes stir::CListEvent which
+  \brief Definition of class stir::CListEvent which
   is used for list mode data.
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
 
 */
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -31,16 +33,18 @@
 
 #include "stir/round.h"
 #include "stir/Succeeded.h"
+#include "stir/Bin.h"
+#include "stir/ProjDataInfo.h"
+#include "stir/CartesianCoordinate3D.h"
+#include "stir/LORCoordinates.h"
 
 START_NAMESPACE_STIR
-class Bin;
-class ProjDataInfo;
-class Succeeded;
-template <typename coordT> class CartesianCoordinate3D;
-template <typename coordT> class LORAs2Points;
 
-//! Class for storing and using a coincidence event from a list mode file
-/*! \ingroup listmode
+/*!
+  \class
+  \ingroup listmode
+  \brief Class for storing and using a coincidence event from a list mode file
+
     CListEvent is used to provide an interface to the actual events (i.e.
     detected counts) in the list mode stream.
 
@@ -49,6 +53,8 @@ template <typename coordT> class LORAs2Points;
     time info or so for rotating scanners.
 
     \see CListModeData for more info on list mode data.
+
+    \author Kris Thielemans
 */
 class CListEvent
 {

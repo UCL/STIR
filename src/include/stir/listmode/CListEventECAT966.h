@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -37,6 +38,7 @@ START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 
 //! Class for storing and using a coincidence event from a listmode file from the ECAT 966 scanner
+//! \author Kris Thielemans
 class CListEventECAT966 : public CListEventCylindricalScannerWithViewTangRingRingEncoding<CListEventECAT966>
 {
  private:

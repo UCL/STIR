@@ -6,11 +6,13 @@
   \brief Declarations of classes stir::CListRecordWithGatingInput which
   is used for list mode data.
     
+  \author Nikos Efthimiou
   \author Kris Thielemans
       
 */
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -34,6 +36,10 @@
 
 START_NAMESPACE_STIR
 
+//!
+//! \class
+//! \brief The CListRecordWithGatingInput class
+//! \author Kris  Thielemans
 class CListRecordWithGatingInput : public CListRecord
 {
  public:

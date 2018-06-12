@@ -3,7 +3,7 @@
 /*!
   \file
   \ingroup listmode
-  \brief Declarations of classes stir::CListGatingInput which
+  \brief Class stir::CListGatingInput which
   is used for list mode data.
     
   \author Nikos Efthimiou
@@ -12,6 +12,7 @@
 */
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

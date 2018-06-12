@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2013 University College London
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -13,15 +14,6 @@
     GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
-*/
-/*!
-  \file
-  \ingroup listmode
-  \brief Implementation of classes stir::ecat::CListEventECAT8_32bit
-  for listmode events for the ECAT8 32bit listmode file format.
-    
-  \author Nikos Efthimiou
-  \author Kris Thielemans
 */
 
 #include "stir/listmode/CListEventECAT8_32bit.h"

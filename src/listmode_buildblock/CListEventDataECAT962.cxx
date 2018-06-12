@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 1998- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -19,7 +20,7 @@
 /*!
   \file
   \ingroup listmode
-  \brief Implementation of classes CListEventECAT962 and CListRecordECAT962
+  \brief Implementation of classes CListEventDataECAT962
   for listmode events for the  ECAT 962 (aka Exact HR+).
     
   \author Nikos Efthimiou
@@ -33,12 +34,13 @@ START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 
-
 /*	Global Definitions */
 static const int  MAXPROJBIN = 512;
 /* data for the 962 scanner */
 static const int CRYSTALRINGSPERDETECTOR = 8;
 //TODO NK check
+
+
 void
 CListEventDataECAT962::
 get_sinogram_and_ring_coordinates(

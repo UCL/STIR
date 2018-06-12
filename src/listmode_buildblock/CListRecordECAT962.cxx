@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -15,15 +16,6 @@
     GNU Lesser General Public License for more details.
 
     See STIR/LICENSE.txt for details
-*/
-/*!
-  \file
-  \ingroup listmode
-  \brief Classes for listmode events for the ECAT 962 (aka Exact HR+)
-
-  \author Nikos Efthimiou
-  \author Kris Thielemans
-
 */
 
 #include "stir/listmode/CListRecordECAT962.h"

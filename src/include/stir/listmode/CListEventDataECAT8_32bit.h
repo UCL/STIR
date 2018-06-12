@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2003-2011 Hammersmith Imanet Ltd
     Copyright (C) 2013-2014 University College London
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -33,9 +34,9 @@ START_NAMESPACE_STIR
 namespace ecat {
 
 /*!
- * \class
- * \brief Class for decoding storing and using a raw coincidence event from a listmode file from the ECAT 966 scanner
- * \ingroup listmode
+ \class
+ \brief Class for decoding storing and using a raw coincidence event from a listmode file from the ECAT 966 scanner
+ \ingroup listmode
 
      This class is based on Siemens information on the PETLINK protocol, available at
      http://usa.healthcare.siemens.com/siemens_hwem-hwem_ssxa_websites-context-root/wcm/idc/groups/public/@us/@imaging/@molecular/documents/download/mdax/mjky/~edisp/petlink_guideline_j1-00672485.pdf

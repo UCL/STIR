@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -35,8 +36,10 @@ START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 
-//! Class for decoding storing and using a raw coincidence event from a listmode file from the ECAT 966 scanner
-/*! \ingroup listmode
+/*!
+ * \class
+ * \ingroup listmode
+ * \brief Class for decoding storing and using a raw coincidence event from a listmode file from the ECAT 966 scanner
 
      This class just provides the bit-field definitions. You should normally use CListEventECAT966.
 
@@ -46,6 +49,7 @@ START_NAMESPACE_ECAT7
      Both bin and view use 9 bits, so their maximum range is
      512 values, which is fine for the 966 (which needs only 288).
 
+     \author Kris Thielemans
 */
 class CListEventDataECAT966
 {

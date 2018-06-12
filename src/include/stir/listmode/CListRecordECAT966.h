@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -21,6 +22,7 @@
   \ingroup listmode
   \brief Classes for listmode events for the ECAT 966 (aka Exact 3d)
     
+  \author Nikos Efthimiou
   \author Kris Thielemans
       
 */
@@ -41,10 +43,14 @@ START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 
+/*!
+ * \class
+ * \ingroup listmode
+ * \brief A class for a general element of a listmode file
+   For the 966 it's either a coincidence event, or a timing flag.
 
-//! A class for a general element of a listmode file
-/*! \ingroup listmode
-   For the 966 it's either a coincidence event, or a timing flag.*/
+   \author Kris Thielemans
+*/
 class CListRecordECAT966 : public CListRecordWithGatingInput
 {
 

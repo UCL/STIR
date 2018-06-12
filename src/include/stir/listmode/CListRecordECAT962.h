@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -38,7 +39,6 @@
 #include "stir/listmode/CListGatingInput.h"
 
 #include "stir/IO/stir_ecat_common.h" // for namespace macros
-#include "stir/Succeeded.h"
 #include "boost/static_assert.hpp"
 #include "boost/cstdint.hpp"
 
@@ -46,9 +46,14 @@ START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 
-//! A class for a general element of a listmode file
-/*! \ingroup listmode
-   For the 962 it's either a coincidence event, or a timing flag.*/
+/*!
+ * \class
+ * \ingroup listmode
+ * \brief A class for a general element of a listmode file
+   For the 962 it's either a coincidence event, or a timing flag.
+
+   \author Kris Thielemans
+*/
 class CListRecordECAT962 : public CListRecordWithGatingInput, public CListTime, public CListGatingInput,
     public  CListEventCylindricalScannerWithViewTangRingRingEncoding<CListRecordECAT962>
 {

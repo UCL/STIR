@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 1998- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -22,6 +23,7 @@
   \brief Implementation of classes CListEventECAT966 and CListRecordECAT966 
   for listmode events for the ECAT 966 (aka Exact 3d).
     
+  \author Nikos Efthimiou
   \author Kris Thielemans
       
 */

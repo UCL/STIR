@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2003-2011 Hammersmith Imanet Ltd
     Copyright (C) 2013-2014 University College London
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -20,19 +21,22 @@
   \ingroup listmode
   \brief Classes for listmode events for the ECAT 8 format
     
+  \author Nikos Efthimiou
   \author Kris Thielemans
 */
 
 #ifndef __stir_listmode_CListTimeDataECAT8_32bit_H__
 #define __stir_listmode_CListTimeDataECAT8_32bit_H__
 
+#include "stir/common.h"
 
 START_NAMESPACE_STIR
 namespace ecat {
 
-//! A class for decoding a raw events that is neither time or coincidence in a listmode file from the ECAT 8_32bit scanner
-/*! \ingroup listmode
- */
+    //! \class
+    //! \brief  A class for decoding a raw events that is neither time or coincidence in a listmode file from the ECAT 8_32bit scanner
+    //! \ingroup listmode
+    //! \author Kris Thielemans
 class CListTimeDataECAT8_32bit
 {
  public:

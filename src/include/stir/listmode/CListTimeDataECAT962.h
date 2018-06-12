@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -35,9 +36,10 @@ START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 
-//! A class for storing and using a timing 'event' from a listmode file
-/*! \ingroup listmode
- */
+//! \class
+//! \brief A class for storing and using a timing 'event' from a listmode file
+//! \author Kris Thielemans
+//! \ingroup listmode
 class CListTimeDataECAT962
 {
  public:

@@ -33,8 +33,11 @@
 
 START_NAMESPACE_STIR
 
-//! Class for storing and using a coincidence event from a list mode file for a cylindrical single layer scanner
-/*! \ingroup listmode
+/*!
+  \class
+  \ingroup listmode
+  \brief Class for storing and using a coincidence event from a list mode file for a cylindrical single layer scanner
+
     For scanners with discrete detectors, the list mode events usually store detector indices
     in some way. This class provides access mechanisms to those detection positions, and
     also provides more efficient implementations of some virtual members of CListEvent.

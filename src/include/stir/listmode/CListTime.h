@@ -3,14 +3,16 @@
 /*!
   \file
   \ingroup listmode
-  \brief Declarations of classes stir::CListTime which
+  \brief Declaration of class stir::CListTime which
   is used for list mode data.
 
+  \author Nikos Efthimiou
   \author Kris Thielemans
 
 */
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -34,8 +36,10 @@
 
 START_NAMESPACE_STIR
 
-//! A class for storing and using a timing record from a listmode file
-/*! \ingroup listmode
+/*!
+\class
+ \brief A class for storing and using a timing record from a listmode file
+ \ingroup listmode
     CListTime is used to provide an interface to the 'timing' events
     in the list mode stream. Usually, the timing event also contains
     gating information. For rotating scanners, it could also contain
@@ -45,6 +49,8 @@ START_NAMESPACE_STIR
     or so for rotating scanners. Also, some info on the maximum
     (and actual?) number of gates would be useful.
     \see CListModeData for more info on list mode data.
+
+    \author Kris Thielemans
 */
 class CListTime
 {
