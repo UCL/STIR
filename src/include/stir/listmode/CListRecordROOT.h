@@ -32,7 +32,7 @@
 #include "stir/listmode/CListTimeROOT.h"
 #include "stir/Succeeded.h"
 #include "stir/Scanner.h"
-#include <boost/shared_ptr.hpp>
+#include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -49,12 +49,12 @@ public:
     //! Returns always true
      inline bool is_full_event() const;
 
-    virtual CListEvent&  event()
+    virtual CListEventROOT&  event()
     {
         return *this->event_data;
     }
 
-    virtual const CListEvent& event() const
+    virtual const CListEventROOT& event() const
     {
         return *event_data;
     }
@@ -85,8 +85,8 @@ public:
                                       double time1, double time2,
                                       const int& event1, const int& event2);
 private:
-    CListEventROOT*  event_data;
-    CListTimeROOT*  time_data;
+    CListEventROOT  event_data;
+    CListTimeROOT  time_data;
     boost::int32_t raw[2]; // this raw field isn't strictly necessary, get rid of it?
 
 };

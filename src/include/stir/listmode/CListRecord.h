@@ -3,8 +3,8 @@
 /*!
   \file
   \ingroup listmode
-  \brief Declarations of classes stir::CListRecord, stir::CListTime and stir::CListEvent which
-  are used for list mode data.
+  \brief Declarations of classes stir::CListRecord which
+  is used for list mode data.
     
   \author Kris Thielemans
       
@@ -33,25 +33,6 @@
 #include "stir/listmode/CListTime.h"
 
 START_NAMESPACE_STIR
-
-//! A class recording external input to the scanner (normally used for gating)
-/*! For some scanners, the state of some external measurements can be recorded in the
-   list file, such as ECG triggers etc. We currently assume that these take discrete values.
-
-   If your scanner has more data available, you can provide it in the derived class.
-*/
-class CListGatingInput
-{
-public:
-  virtual ~CListGatingInput() {}
-
-  //! get gating-related info
-  /*! Generally, gates are numbered from 0 to some maximum value.
-   */
-  virtual unsigned int get_gating() const = 0;
-
-  virtual Succeeded set_gating(unsigned int) = 0;
-};
 
 //! A class for a general element of a list mode file
 /*! \ingroup listmode
@@ -82,14 +63,6 @@ public:
   virtual bool operator==(const CListRecord& e2) const = 0;
   bool operator!=(const CListRecord& e2) const { return !(*this == e2); }
 
-};
-
-class CListRecordWithGatingInput : public CListRecord
-{
- public:
-  virtual bool is_gating_input() const { return false; }
-  virtual CListGatingInput&  gating_input() = 0; 
-  virtual const CListGatingInput&  gating_input() const = 0; 
 };
 
 END_NAMESPACE_STIR

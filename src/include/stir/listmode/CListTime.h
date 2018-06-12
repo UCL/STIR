@@ -4,7 +4,7 @@
   \file
   \ingroup listmode
   \brief Declarations of classes stir::CListTime which
-  are used for list mode data.
+  is used for list mode data.
 
   \author Kris Thielemans
 

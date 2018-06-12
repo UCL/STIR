@@ -3,8 +3,8 @@
 /*!
   \file
   \ingroup listmode
-  \brief Declarations of classes stir::CListRecord, stir::CListTime and stir::CListEvent which
-  are used for list mode data.
+  \brief Declarations of classes stir::CListEvent which
+  is used for list mode data.
 
   \author Kris Thielemans
 
@@ -28,7 +28,6 @@
 
 #ifndef __stir_listmode_CListEvent_H__
 #define __stir_listmode_CListEvent_H__
-
 
 #include "stir/round.h"
 #include "stir/Succeeded.h"

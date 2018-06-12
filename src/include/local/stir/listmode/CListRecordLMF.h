@@ -20,6 +20,7 @@
 #define __stir_listmode_CListRecordLMF_H__
 
 #include "stir/listmode/CListRecord.h"
+#include "local/stir/listmode/CListEventDataLMF.h"
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Succeeded.h"
@@ -28,32 +29,7 @@ START_NAMESPACE_STIR
 
 class CListModeDataLMF;
 
-//! Class for storing and using a coincidence event from a listmode file
-/*! \ingroup ClearPET_utilities
- */
-class CListEventDataLMF 
-{
- public:  
-  inline bool is_prompt() const { return true; } // TODO
-  inline Succeeded set_prompt(const bool prompt = true) // TODO
-  { return Succeeded::no; }
-  
-  inline LORAs2Points<float> get_LOR() const
-    { return this->lor; }
 
-
-  CartesianCoordinate3D<float> pos1() const
-    { return lor.p1(); }
-  CartesianCoordinate3D<float>& pos1()
-    { return lor.p1(); }
-  CartesianCoordinate3D<float> pos2() const
-    { return lor.p2(); }
-  CartesianCoordinate3D<float>& pos2()
-    { return lor.p1(); }
-
- private:
-  LORAs2Points<float> lor;
-}; /*-coincidence event*/
 
 class CListRecordLMF;
 

@@ -26,6 +26,7 @@
 
 
 #include "stir/listmode/CListRecord.h"
+#include "stir/listmode/CListRecordWithGatingInput.h"
 #include "stir/listmode/CListModeData.h"
 #include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.h"
 #include "stir/Succeeded.h"

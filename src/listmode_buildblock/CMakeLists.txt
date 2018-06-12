@@ -10,7 +10,7 @@ set(${dir_LIB_SOURCES}
 	LmToProjData 
         LmToProjDataBootstrap
         CListModeDataECAT8_32bit
-        CListRecordECAT8_32bit
+        CListEventECAT8_32bit
 	CListModeDataSAFIR
 	DetectorCoordinateMapFromFile
 )
