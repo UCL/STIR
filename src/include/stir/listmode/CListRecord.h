@@ -6,6 +6,7 @@
   \brief Declarations of classes stir::CListRecord which
   is used for list mode data.
     
+  \author Nikos Efthimiou
   \author Kris Thielemans
       
 */
@@ -32,6 +33,7 @@
 #include "stir/listmode/CListEvent.h"
 #include "stir/listmode/CListTime.h"
 
+
 START_NAMESPACE_STIR
 
 //! A class for a general element of a list mode file
@@ -45,6 +47,8 @@ START_NAMESPACE_STIR
     you will have to do casting to e.g. CListRecordQHiDAC.
     
     \see CListModeData for more info on list mode data. 
+
+    \author Kris Thielemans
 */
 class CListRecord
 {

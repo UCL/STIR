@@ -31,11 +31,8 @@ START_NAMESPACE_STIR
 
 CListRecordROOT::
 CListRecordROOT(const shared_ptr<Scanner> &scanner_sptr) :
-    CListRecord()
-{
-    event_data = new CListEventROOT(scanner_sptr);
-    time_data = new CListTimeROOT();
-}
+    event_data(scanner_sptr)
+{}
 
 Succeeded
 CListRecordROOT::init_from_data( const int& ring1,
@@ -47,10 +44,10 @@ CListRecordROOT::init_from_data( const int& ring1,
 {
     /// \warning ROOT data are time and event at the same time.
 
-    event_data->init_from_data(ring1, ring2,
+    event_data.init_from_data(ring1, ring2,
                                     crystal1, crystal2);
 
-     time_data->init_from_data(
+     time_data.init_from_data(
                 time1,time2);
 
     // We can make a singature raw based on the two events IDs.
@@ -66,6 +63,30 @@ bool CListRecordROOT::is_time() const
 
 bool CListRecordROOT::is_event() const
 { return true; }
+
+CListEventROOT&
+CListRecordROOT::event()
+{
+    return event_data;
+}
+
+const CListEventROOT&
+CListRecordROOT::event() const
+{
+    return event_data;
+}
+
+CListTimeROOT&
+CListRecordROOT::time()
+{
+    return time_data;
+}
+
+const CListTimeROOT&
+CListRecordROOT::time() const
+{
+    return time_data;
+}
 
 
 END_NAMESPACE_STIR

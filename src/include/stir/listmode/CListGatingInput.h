@@ -6,6 +6,7 @@
   \brief Declarations of classes stir::CListGatingInput which
   is used for list mode data.
     
+  \author Nikos Efthimiou
   \author Kris Thielemans
       
 */
@@ -32,12 +33,19 @@
 
 START_NAMESPACE_STIR
 
+/*!
+  \class
+  \ingroup listmode
+  \brief Declarations of classes stir::CListGatingInput which
+  is used for list mode data for recording external input to the scanner (normally used for gating)
 
-//! A class recording external input to the scanner (normally used for gating)
-/*! For some scanners, the state of some external measurements can be recorded in the
+     For some scanners, the state of some external measurements can be recorded in the
    list file, such as ECG triggers etc. We currently assume that these take discrete values.
 
    If your scanner has more data available, you can provide it in the derived class.
+
+  \author Kris Thielemans
+
 */
 class CListGatingInput
 {

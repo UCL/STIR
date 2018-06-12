@@ -1,7 +1,7 @@
 //
 //
 /*
-    Copyright (C) 1998- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -19,72 +19,74 @@
 /*!
   \file
   \ingroup listmode
-  \brief Implementation of classes CListEventECAT962 and CListRecordECAT962
-  for listmode events for the  ECAT 962 (aka Exact HR+).
-    
+  \brief Classes for listmode events for the ECAT 962 (aka Exact HR+)
+
+  \author Nikos Efthimiou
   \author Kris Thielemans
-      
+
 */
 
 #include "stir/listmode/CListRecordECAT962.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-#include "stir/Bin.h"
-#include "stir/Succeeded.h"
+#include "stir/ByteOrder.h"
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 
+CListRecordECAT962::CListRecordECAT962() :
+CListEventCylindricalScannerWithViewTangRingRingEncoding<CListRecordECAT962>(shared_ptr<Scanner>(new Scanner(Scanner::E962)))
+  {}
 
-/*	Global Definitions */
-static const int  MAXPROJBIN = 512;
-/* data for the 962 scanner */
-static const int CRYSTALRINGSPERDETECTOR = 8;
-//TODO NK check
-void
-CListEventDataECAT962::
-get_sinogram_and_ring_coordinates(
-		   int& view_num, int& tangential_pos_num, unsigned int& ring_a, unsigned int& ring_b) const
+bool
+CListRecordECAT962::is_time() const
+{ return time_data.type == 1U; }
+
+bool
+CListRecordECAT962::is_gating_input() const
+{ return this->is_time(); }
+
+bool
+CListRecordECAT962::is_event() const
+{ return time_data.type == 0U; }
+
+CListEvent&
+CListRecordECAT962::event()
+  { return *this; }
+
+const CListEvent&
+CListRecordECAT962::event() const
+  { return *this; }
+
+CListTime&
+CListRecordECAT962::time()
+  { return *this; }
+
+const CListTime&
+CListRecordECAT962::time() const
+  { return *this; }
+
+CListGatingInput&
+CListRecordECAT962::gating_input()
+  { return *this; }
+
+const CListGatingInput&
+CListRecordECAT962::gating_input() const
+{ return *this; }
+
+Succeeded
+CListRecordECAT962::init_from_data_ptr(const char * const data_ptr,
+                                     const std::size_t
+#ifndef NDEBUG
+                                     size // only used within assert, so don't define otherwise to avoid compiler warning
+#endif
+                                     , const bool do_byte_swap)
 {
-  const int NumProjBins = MAXPROJBIN;
-  const int NumProjBinsBy2 = MAXPROJBIN / 2;
-
-  view_num = view;
-  tangential_pos_num = bin;
-  /* KT 31/05/98 use >= in comparison now */
-  if ( tangential_pos_num >= NumProjBinsBy2 )
-      tangential_pos_num -= NumProjBins ;
-
-  ring_a = ( (block_A_ring_bit0 + 2*block_A_ring_bit1) 
-	     * CRYSTALRINGSPERDETECTOR ) +  block_A_detector ;
-  ring_b = ( (block_B_ring_bit0 + 2*block_B_ring_bit1)
-	     * CRYSTALRINGSPERDETECTOR ) +  block_B_detector ;
+  assert(size >= 4);
+  std::copy(data_ptr, data_ptr+4, reinterpret_cast<char *>(&raw));// TODO necessary for operator==
+  if (do_byte_swap)
+    ByteOrder::swap_order(raw);
+  return Succeeded::yes;
 }
-
-void 
-CListEventDataECAT962::
-set_sinogram_and_ring_coordinates(
-			const int view_num, const int tangential_pos_num, 
-			const unsigned int ring_a, const unsigned int ring_b)
-{
-  const int NumProjBins = MAXPROJBIN;
-  type = 0;
-  const unsigned int block_A_ring     = ring_a / CRYSTALRINGSPERDETECTOR;
-  block_A_detector = ring_a % CRYSTALRINGSPERDETECTOR;
-  const unsigned int block_B_ring     = ring_b / CRYSTALRINGSPERDETECTOR;
-  block_B_detector = ring_b % CRYSTALRINGSPERDETECTOR;
-
-  assert(block_A_ring<4);
-  block_A_ring_bit0 = block_A_ring | 0x1;
-  block_A_ring_bit1 = block_A_ring/2;
-  assert(block_B_ring<4);
-  block_B_ring_bit0 = block_B_ring | 0x1;
-  block_B_ring_bit1 = block_B_ring/2;
-  
-  bin = tangential_pos_num < 0 ? tangential_pos_num + NumProjBins : tangential_pos_num;
-  view = view_num;
-}
-
 
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT

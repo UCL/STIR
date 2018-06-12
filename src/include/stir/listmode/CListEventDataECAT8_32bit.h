@@ -20,6 +20,7 @@
   \ingroup listmode
   \brief Definition of CListEventDataECAT8_32bit
     
+  \author Nikos Efthimiou
   \author Kris Thielemans
 */
 
@@ -31,8 +32,10 @@
 START_NAMESPACE_STIR
 namespace ecat {
 
-//! Class for decoding storing and using a raw coincidence event from a listmode file from the ECAT 966 scanner
-/*! \ingroup listmode
+/*!
+ * \class
+ * \brief Class for decoding storing and using a raw coincidence event from a listmode file from the ECAT 966 scanner
+ * \ingroup listmode
 
      This class is based on Siemens information on the PETLINK protocol, available at
      http://usa.healthcare.siemens.com/siemens_hwem-hwem_ssxa_websites-context-root/wcm/idc/groups/public/@us/@imaging/@molecular/documents/download/mdax/mjky/~edisp/petlink_guideline_j1-00672485.pdf
@@ -41,6 +44,8 @@ namespace ecat {
 
      In the 32-bit event format, the listmode data just stores on offset into a (3D) sinogram. Its
      characteristics are given in the Interfile header.
+
+     \author Kris Thielemans
 */
 class CListEventDataECAT8_32bit
 {

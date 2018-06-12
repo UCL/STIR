@@ -27,57 +27,37 @@
 */
 
 #include "stir/listmode/CListRecordECAT966.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-#include "stir/Bin.h"
-#include "stir/Succeeded.h"
-
-#include <algorithm>
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT7
 
-// static members
-/*	Global Definitions */
-static const int  MAXPROJBIN = 512;
-/* data for the 966 scanner */
-static const int CRYSTALRINGSPERDETECTOR = 8;
+bool CListRecordECAT966::is_time() const
+{ return this->time_data.is_time(); }
 
-void
-CListEventDataECAT966::
-get_sinogram_and_ring_coordinates(
-		   int& view_num, int& tangential_pos_num, unsigned int& ring_a, unsigned int& ring_b) const
-{
-  const int NumProjBins = MAXPROJBIN;
-  const int NumProjBinsBy2 = MAXPROJBIN / 2;
+bool CListRecordECAT966::is_gating_input() const
+{ return this->is_time(); }
 
-  view_num = view;
-  tangential_pos_num = bin;
-  /* KT 31/05/98 use >= in comparison now */
-  if ( tangential_pos_num >= NumProjBinsBy2 )
-      tangential_pos_num -= NumProjBins ;
+bool CListRecordECAT966::is_event() const
+{ return !this->is_time(); }
 
-  ring_a = ( block_A_ring * CRYSTALRINGSPERDETECTOR ) +  block_A_detector ;
-  ring_b = ( block_B_ring * CRYSTALRINGSPERDETECTOR ) +  block_B_detector ;
-}
+CListEventECAT966&  CListRecordECAT966::event()
+  { return this->event_data; }
 
-void 
-CListEventDataECAT966::
-set_sinogram_and_ring_coordinates(
-			const int view_num, const int tangential_pos_num, 
-			const int ring_a, const int ring_b)
-{
-  const int NumProjBins = MAXPROJBIN;
-  type = 0;
-  block_A_ring     = ring_a / CRYSTALRINGSPERDETECTOR;
-  block_A_detector = ring_a % CRYSTALRINGSPERDETECTOR;
-  block_B_ring     = ring_b / CRYSTALRINGSPERDETECTOR;
-  block_B_detector = ring_b % CRYSTALRINGSPERDETECTOR;
+const CListEventECAT966&  CListRecordECAT966::event() const
+  { return this->event_data; }
 
-  bin = tangential_pos_num < 0 ? tangential_pos_num + NumProjBins : tangential_pos_num;
-  view = view_num;
-}
+CListTimeECAT966&   CListRecordECAT966::time()
+  { return this->time_data; }
 
+const CListTimeECAT966&  CListRecordECAT966::time() const
+  { return this->time_data; }
+
+CListTimeECAT966&  CListRecordECAT966::gating_input()
+  { return this->time_data; }
+
+const CListTimeECAT966&  CListRecordECAT966::gating_input() const
+{ return this->time_data; }
 
 
 END_NAMESPACE_ECAT7

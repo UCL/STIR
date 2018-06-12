@@ -30,7 +30,6 @@
 #include "stir/listmode/CListRecord.h"
 #include "stir/listmode/CListEventROOT.h"
 #include "stir/listmode/CListTimeROOT.h"
-#include "stir/Succeeded.h"
 #include "stir/Scanner.h"
 #include "stir/shared_ptr.h"
 
@@ -47,27 +46,15 @@ public:
     //! Returns always true
     bool is_event() const;
     //! Returns always true
-     inline bool is_full_event() const;
+    inline bool is_full_event() const;
 
-    virtual CListEventROOT&  event()
-    {
-        return *this->event_data;
-    }
+    virtual CListEventROOT&  event();
 
-    virtual const CListEventROOT& event() const
-    {
-        return *event_data;
-    }
+    virtual const CListEventROOT& event() const;
 
-    virtual CListTime& time()
-    {
-        return *time_data;
-    }
+    virtual CListTimeROOT& time();
 
-    virtual const CListTime& time() const
-    {
-        return *time_data;
-    }
+    virtual const CListTimeROOT& time() const;
 
     bool operator==(const CListRecord& e2) const
     {

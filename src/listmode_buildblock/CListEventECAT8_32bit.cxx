@@ -17,9 +17,10 @@
 /*!
   \file
   \ingroup listmode
-  \brief Implementation of classes stir::ecat::CListEventECAT8_32bit and stir::ecat::CListRecordECAT8_32bit 
+  \brief Implementation of classes stir::ecat::CListEventECAT8_32bit
   for listmode events for the ECAT8 32bit listmode file format.
     
+  \author Nikos Efthimiou
   \author Kris Thielemans
 */
 

@@ -20,6 +20,7 @@
   \ingroup listmode
   \brief Classes for listmode events for the ECAT 8 format
     
+  \author Nikos Efthimiou
   \author Kris Thielemans
 */
 
@@ -31,42 +32,38 @@
 #include "stir/listmode/CListDataAnyECAT8_32bit.h"
 #include "stir/listmode/CListTimeECAT8_32bit.h"
 
-#include "stir/ByteOrder.h"
-
 START_NAMESPACE_STIR
 namespace ecat {
 
+    /*!
+      \class
+      \ingroup listmode
+      \brief  A class for a general element of a listmode file for a Siemens scanner using the ECAT8 32bit format.
 
-//! A class for a general element of a listmode file for a Siemens scanner using the ECAT8 32bit format.
-/*! \ingroup listmode
    We currently only support coincidence events and  a timing flag.
    Here we only support the 32bit version specified by the PETLINK protocol.
 
    This class is based on Siemens information on the PETLINK protocol, available at
    http://usa.healthcare.siemens.com/siemens_hwem-hwem_ssxa_websites-context-root/wcm/idc/groups/public/@us/@imaging/@molecular/documents/download/mdax/mjky/~edisp/petlink_guideline_j1-00672485.pdf
 
-*/
- class CListRecordECAT8_32bit : public CListRecord // currently no gating yet
+      \author Kris Thielemans
+    */
+
+class CListRecordECAT8_32bit : public CListRecord // currently no gating yet
 {
 
   //public:
 
-  bool is_time() const
-  { return this->any_data.is_time(); }
+  bool is_time() const;
   /*
   bool is_gating_input() const
   { return this->is_time(); }
   */
-  bool is_event() const
-  { return this->any_data.is_event(); }
-  virtual CListEventECAT8_32bit&  event() 
-    { return this->event_data; }
-  virtual const CListEventECAT8_32bit&  event() const
-    { return this->event_data; }
-  virtual CListTimeECAT8_32bit&   time()
-    { return this->time_data; }
-  virtual const CListTimeECAT8_32bit&   time() const
-    { return this->time_data; }
+  bool is_event() const;
+  virtual CListEventECAT8_32bit&  event();
+  virtual const CListEventECAT8_32bit&  event() const;
+  virtual CListTimeECAT8_32bit&   time();
+  virtual const CListTimeECAT8_32bit&   time() const;
 
   bool operator==(const CListRecord& e2) const
   {
@@ -75,30 +72,14 @@ namespace ecat {
   }	 
 
  public:     
- CListRecordECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
-  event_data(proj_data_info_sptr)
-    {}
+ CListRecordECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr);
 
   virtual Succeeded init_from_data_ptr(const char * const data_ptr, 
                                        const std::size_t
 #ifndef NDEBUG
                                        size // only used within assert, so commented-out otherwise to avoid compiler warnings
 #endif
-                                       , const bool do_byte_swap)
-  {
-    assert(size >= 4);
-    std::copy(data_ptr, data_ptr+4, reinterpret_cast<char *>(&raw));
-    if (do_byte_swap)
-      ByteOrder::swap_order(raw);
-    this->any_data.init_from_data_ptr(&raw);
-    // should in principle check return value, but it's always Succeeded::yes anyway
-    if (this->any_data.is_time())
-      return this->time_data.init_from_data_ptr(&raw);
-     else if (this->any_data.is_event())
-      return this->event_data.init_from_data_ptr(&raw);
-    else
-      return Succeeded::yes;
-  }
+                                       , const bool do_byte_swap);
 
   virtual std::size_t size_of_record_at_ptr(const char * const /*data_ptr*/, const std::size_t /*size*/, 
                                             const bool /*do_byte_swap*/) const

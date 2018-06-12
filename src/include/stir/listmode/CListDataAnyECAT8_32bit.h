@@ -18,8 +18,9 @@
 /*!
   \file
   \ingroup listmode
-  \brief Classes for listmode events for the ECAT 8 format
+  \brief Definition of CListDataAnyECAT8_32bit for listmode events for the ECAT 8 format
     
+  \author Nikos Efthimiou
   \author Kris Thielemans
 */
 
@@ -32,7 +33,13 @@
 START_NAMESPACE_STIR
 namespace ecat {
 
-    
+    /*!
+      \class
+      \ingroup listmode
+      \brief Definition of CListDataAnyECAT8_32bit for listmode events for the ECAT 8 format
+
+      \author Kris Thielemans
+    */
 class CListDataAnyECAT8_32bit
 {
 public:

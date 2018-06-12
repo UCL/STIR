@@ -20,6 +20,7 @@
   \ingroup listmode
   \brief Classes for listmode events for the ECAT 8 format
     
+  \author Nikos Efthimiou
   \author Kris Thielemans
 */
 
@@ -33,15 +34,20 @@
 START_NAMESPACE_STIR
 namespace ecat {
     
-//! Class for storing and using a coincidence event from a listmode file from Siemens scanners using the ECAT 8_32bit format
-/*! \todo This implementation only works if the list-mode data is stored without axial compression.
+
+/*!
+ * \class
+ * \brief Class for storing and using a coincidence event from a listmode file from Siemens scanners using the ECAT 8_32bit format
+ * \todo This implementation only works if the list-mode data is stored without axial compression.
   \todo If the target sinogram has the same characteristics as the sinogram encoding used in the list file 
   (via the offset), the code could be sped-up dramatically by using the information. 
   At present, we go a huge round-about (offset->sinogram->detectors->sinogram->offset)
+
+  \author Kris Thielemans
 */
 class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDetectors
 {
- private:
+
  public:
   typedef CListEventDataECAT8_32bit DataType;
   DataType get_data() const { return this->data; }
