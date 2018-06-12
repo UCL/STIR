@@ -26,8 +26,6 @@
 #ifndef __stir_listmode_CListModeData_H__
 #define __stir_listmode_CListModeData_H__
 
-#include "stir/Scanner.h"
-#include "stir/shared_ptr.h"
 #include <string>
 #include <ctime>
 #include "stir/ProjDataInfo.h"

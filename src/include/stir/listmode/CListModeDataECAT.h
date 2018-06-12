@@ -28,15 +28,12 @@
 
 #include "stir/listmode/CListModeData.h"
 #include "stir/IO/InputStreamWithRecords.h"
-#include "stir/shared_ptr.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/stir_ecat7.h"
 #else
 #include "stir/IO/stir_ecat_common.h" // for namespace macros
 #endif
 #include <iostream>
-#include <string>
-#include <utility>
 #include <vector>
 
 START_NAMESPACE_STIR
@@ -101,7 +98,7 @@ private:
   // const as it modifies only mutable elements
   // It has to be const as e.g. get_next_record calls it
   Succeeded open_lm_file(unsigned int) const; 
-  shared_ptr<Scanner> scanner_sptr;
+  //shared_ptr<Scanner> scanner_sptr;
 };
 
 END_NAMESPACE_ECAT7

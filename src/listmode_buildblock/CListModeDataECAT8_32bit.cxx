@@ -26,14 +26,12 @@
 
 #include "stir/listmode/CListModeDataECAT8_32bit.h"
 #include "stir/listmode/CListRecordECAT8_32bit.h"
-#include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
 #include <boost/format.hpp>
-#include <iostream>
-#include <fstream>
+
 
 START_NAMESPACE_STIR
 namespace ecat {

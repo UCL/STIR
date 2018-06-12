@@ -27,9 +27,6 @@
 #include "stir/listmode/CListModeDataECAT.h"
 #include "stir/listmode/CListRecordECAT966.h"
 #include "stir/listmode/CListRecordECAT962.h"
-#include "stir/ExamInfo.h"
-#include "stir/Succeeded.h"
-#include "stir/is_null_ptr.h"
 #include "stir/info.h"
 #include <boost/format.hpp>
 #ifdef HAVE_LLN_MATRIX
@@ -38,9 +35,6 @@
 #error Need HAVE_LLN_MATRIX
 #endif
 #include "boost/static_assert.hpp"
-#include <iostream>
-#include <fstream>
-#include <typeinfo>
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
 using std::endl;
@@ -78,7 +72,8 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
     if (!singles_file)
       {
 	warning("CListModeDataECAT: Couldn't read main_header from %s. We forge ahead anyway (assuming this is ECAT 962 data).", singles_filename.c_str());
-	scanner_sptr.reset(new Scanner(Scanner::E962));
+    // This should have been handled by the projdatainfo.
+    //scanner_sptr.reset(new Scanner(Scanner::E962));
 	// TODO invalidate other fields in singles header
       }
     else
@@ -87,7 +82,8 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
 	singles_file.read(buffer,
 			  sizeof(singles_main_header));
 	unmap_main_header(buffer, &singles_main_header);
-	ecat::ecat7::find_scanner(scanner_sptr, singles_main_header);
+    // This should have been handled by the projdatainfo.
+    //ecat::ecat7::find_scanner(scanner_sptr, singles_main_header);
 
         exam_info.start_time_in_secs_since_1970 = double(singles_main_header.scan_start_time);
 
@@ -116,13 +112,13 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
       }
   }
 
-  if ((scanner_sptr->get_type() == Scanner::E966 && typeid(CListRecordT) != typeid(CListRecordECAT966)) ||
-      (scanner_sptr->get_type() == Scanner::E962 && typeid(CListRecordT) != typeid(CListRecordECAT962)))
+  if ((get_proj_data_info_sptr()->get_scanner_ptr()->get_type() == Scanner::E966 && typeid(CListRecordT) != typeid(CListRecordECAT966)) ||
+      (get_proj_data_info_sptr()->get_scanner_ptr()->get_type() == Scanner::E962 && typeid(CListRecordT) != typeid(CListRecordECAT962)))
     {
       error("Data in %s is from a %s scanner, but reading with wrong type of CListModeData", 
-            listmode_filename_prefix.c_str(), scanner_sptr->get_name().c_str());
+            listmode_filename_prefix.c_str(), get_proj_data_info_sptr()->get_scanner_ptr()->get_name().c_str());
     }
-  else if (scanner_sptr->get_type() != Scanner::E966 && scanner_sptr->get_type() != Scanner::E962)
+  else if (get_proj_data_info_sptr()->get_scanner_ptr()->get_type() != Scanner::E966 && get_proj_data_info_sptr()->get_scanner_ptr()->get_type() != Scanner::E962)
     {
       error("CListModeDataECAT: Unsupported scanner in %s", listmode_filename_prefix.c_str());
     }
@@ -328,6 +324,7 @@ get_num_records() const
 }
 
 #endif
+
 
 // instantiations
 template class CListModeDataECAT<CListRecordECAT966>;

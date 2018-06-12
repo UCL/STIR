@@ -31,8 +31,6 @@
 #include "stir/shared_ptr.h"
 #include "stir/IO/InterfileHeaderSiemens.h"
 #include <iostream>
-#include <string>
-#include <utility>
 #include <vector>
 
 START_NAMESPACE_STIR
@@ -82,13 +80,7 @@ private:
   shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;
 
   InterfileListmodeHeaderSiemens interfile_parser;
-  // members to store info from the interfile header.
-  // These tell us something about how the listmode is stored.
-  int axial_compression;
-  int maximum_ring_difference;
-  int number_of_projections;
-  int number_of_views;
-  int number_of_segments;
+
   // std::vector<int> segment_table;
 
   Succeeded open_lm_file();
