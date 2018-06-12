@@ -36,12 +36,6 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TChain.h>
-#include <TDirectory.h>
-#include <TList.h>
-#include <TChainElement.h>
-#include <TTree.h>
-#include <TFile.h>
-#include <TVersionCheck.h>
 
 START_NAMESPACE_STIR
 
@@ -101,6 +95,8 @@ public:
     Succeeded get_next_record(CListRecordROOT& record) = 0;
     //! Go to the first event.
     inline Succeeded reset();
+    //! Must be called before calling for the first event.
+    virtual Succeeded set_up(const std::string& header_path);
     //! Save current position in a vector
     inline
     SavedPosition save_get_position();
@@ -140,6 +136,25 @@ public:
     //! Upper energy threshold
     inline float get_up_energy_thres() const;
 
+    //! Set singles_readout_depth
+    inline void set_singles_readout_depth(int&);
+
+    inline void set_input_filename(std::string&);
+
+    inline void set_chain_name(std::string&);
+
+    inline void set_exclude_scattered_events(bool&);
+
+    inline void set_exclude_random_events(bool&);
+
+    inline void set_detectors_offset(int&);
+
+    inline void set_low_energy_window(float&);
+
+    inline void set_upper_energy_window(float&);
+    //! Set the read_optional_root_fields flag
+    inline void set_optional_ROOT_fields(bool&);
+
 protected:
 
     virtual void set_defaults();
@@ -156,17 +171,26 @@ protected:
     unsigned long int current_position;
     //! A vector with saved position indices.
     std::vector<unsigned long int> saved_get_positions;
-    // ROOT chain
-    TChain *stream_ptr;
-
-    // Variables to store root information
+    //! The name of the ROOT chain to be read
     std::string chain_name;
+    //! This variable can be used to setBranchAddress to ROOT fields that currently
+    //! are not used by STIR. Because they might be related to medical image reconstruction
+    //! or because STIR does not support a relevant use. Of course, just activating this
+    //! flag does not mean that something meaningfull will happen. Please edit get_next_record()
+    //! function accordingly.
+    bool read_optional_root_fields;
+
+    //! \name Variables to hold data from each entry.
+    //@{
+    TChain *stream_ptr;
     Int_t eventID1, eventID2, runID, sourceID1, sourceID2;
     Double_t time1, time2;
     Float_t energy1, energy2, rotation_angle, sinogramS, sinogramTheta, axialPos;
     Int_t comptonphantom1, comptonphantom2;
     Float_t globalPosX1, globalPosX2, globalPosY1, globalPosY2, globalPosZ1, globalPosZ2;
     Float_t sourcePosX1, sourcePosX2, sourcePosY1, sourcePosY2, sourcePosZ1, sourcePosZ2;
+     //@}
+
     //! Skip scattered events (comptonphantom1 > 0 && comptonphantom2 > 0)
     bool exclude_scattered;
     //! Skip random events (eventID1 != eventID2)

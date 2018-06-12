@@ -19,13 +19,14 @@
 #include "stir/IO/InputStreamFromROOTFile.h"
 #include "stir/IO/FileSignature.h"
 #include "stir/error.h"
+#include "stir/FilePath.h"
 
 START_NAMESPACE_STIR
 
 InputStreamFromROOTFile::
 InputStreamFromROOTFile()
 {
-    starting_stream_position = 0;
+    set_defaults();
     reset();
 }
 
@@ -40,13 +41,17 @@ InputStreamFromROOTFile(std::string filename,
       exclude_scattered(exclude_scattered), exclude_randoms(exclude_randoms),
       low_energy_window(low_energy_window), up_energy_window(up_energy_window), offset_dets(offset_dets)
 {
-    starting_stream_position = 0;
+    set_defaults();
     reset();
 }
 
 void
 InputStreamFromROOTFile::set_defaults()
-{}
+{
+    starting_stream_position = 0;
+    singles_readout_depth=1;
+    read_optional_root_fields=false;
+}
 
 void
 InputStreamFromROOTFile::initialise_keymap()
@@ -59,20 +64,33 @@ InputStreamFromROOTFile::initialise_keymap()
     this->parser.add_key("offset (num of detectors)", &this->offset_dets);
     this->parser.add_key("low energy window (keV)", &this->low_energy_window);
     this->parser.add_key("upper energy window (keV)", &this->up_energy_window);
+    this->parser.add_key("read optional ROOT fields", &this->read_optional_root_fields);
 }
 
 bool
 InputStreamFromROOTFile::post_processing()
 {
-    // Read the 4 bytes to check whether this is a ROOT file, indeed.
-    FileSignature signature(filename.c_str());
+    return false;
+}
+
+Succeeded
+InputStreamFromROOTFile::set_up(const std::string & header_path)
+{
+
+    FilePath f(filename,false);
+    f.prepend_directory_name(header_path);
+
+    const std::string fullfilename = f.get_as_string();
+    // Read the 4 bytes to check whether this is a ROOT file.
+    FileSignature signature(fullfilename.c_str());
     if ( strncmp(signature.get_signature(), "root", 4) != 0)
-      {
-	error("InputStreamFromROOTFile: File '%s' is not a ROOT file! (first 4 bytes should say 'root')",
-	      filename.c_str());
-      }
+    {
+        error("InputStreamFromROOTFile: File '%s' is not a ROOT file! (first 4 bytes should say 'root')",
+              filename.c_str());
+    }
+
     stream_ptr = new TChain(this->chain_name.c_str());
-    stream_ptr->Add(this->filename.c_str());
+    stream_ptr->Add(fullfilename.c_str());
 
     stream_ptr->SetBranchAddress("time1", &time1);
     stream_ptr->SetBranchAddress("time2", &time2);
@@ -83,26 +101,30 @@ InputStreamFromROOTFile::post_processing()
     stream_ptr->SetBranchAddress("energy2", &energy2);
     stream_ptr->SetBranchAddress("comptonPhantom1", &comptonphantom1);
     stream_ptr->SetBranchAddress("comptonPhantom2", &comptonphantom2);
-    stream_ptr->SetBranchAddress("globalPosX1",&globalPosX1);
-    stream_ptr->SetBranchAddress("globalPosX2",&globalPosX2);
-    stream_ptr->SetBranchAddress("globalPosY1",&globalPosY1);
-    stream_ptr->SetBranchAddress("globalPosY2",&globalPosY2);
-    stream_ptr->SetBranchAddress("globalPosZ1",&globalPosZ1);
-    stream_ptr->SetBranchAddress("globalPosZ2",&globalPosZ2);
-    stream_ptr->SetBranchAddress("rotationAngle",&rotation_angle);
-    stream_ptr->SetBranchAddress("runID",&runID);
-    stream_ptr->SetBranchAddress("sinogramS",&sinogramS);
-    stream_ptr->SetBranchAddress("sinogramTheta",&sinogramTheta);
-    stream_ptr->SetBranchAddress("sourceID1",&sourceID1);
-    stream_ptr->SetBranchAddress("sourceID2",&sourceID2);
-    stream_ptr->SetBranchAddress("sourcePosX1",&sourcePosX1);
-    stream_ptr->SetBranchAddress("sourcePosX2",&sourcePosX2);
-    stream_ptr->SetBranchAddress("sourcePosY1",&sourcePosY1);
-    stream_ptr->SetBranchAddress("sourcePosY2",&sourcePosY2);
-    stream_ptr->SetBranchAddress("sourcePosZ1",&sourcePosZ1);
-    stream_ptr->SetBranchAddress("sourcePosZ2",&sourcePosZ2);
 
-    return false;
+    if (read_optional_root_fields)
+    {
+        stream_ptr->SetBranchAddress("globalPosX1",&globalPosX1);
+        stream_ptr->SetBranchAddress("globalPosX2",&globalPosX2);
+        stream_ptr->SetBranchAddress("globalPosY1",&globalPosY1);
+        stream_ptr->SetBranchAddress("globalPosY2",&globalPosY2);
+        stream_ptr->SetBranchAddress("globalPosZ1",&globalPosZ1);
+        stream_ptr->SetBranchAddress("globalPosZ2",&globalPosZ2);
+        stream_ptr->SetBranchAddress("rotationAngle",&rotation_angle);
+        stream_ptr->SetBranchAddress("runID",&runID);
+        stream_ptr->SetBranchAddress("sinogramS",&sinogramS);
+        stream_ptr->SetBranchAddress("sinogramTheta",&sinogramTheta);
+        stream_ptr->SetBranchAddress("sourceID1",&sourceID1);
+        stream_ptr->SetBranchAddress("sourceID2",&sourceID2);
+        stream_ptr->SetBranchAddress("sourcePosX1",&sourcePosX1);
+        stream_ptr->SetBranchAddress("sourcePosX2",&sourcePosX2);
+        stream_ptr->SetBranchAddress("sourcePosY1",&sourcePosY1);
+        stream_ptr->SetBranchAddress("sourcePosY2",&sourcePosY2);
+        stream_ptr->SetBranchAddress("sourcePosZ1",&sourcePosZ1);
+        stream_ptr->SetBranchAddress("sourcePosZ2",&sourcePosZ2);
+    }
+
+    return Succeeded::yes;
 }
 
 END_NAMESPACE_STIR

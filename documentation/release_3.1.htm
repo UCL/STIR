@@ -82,6 +82,11 @@ negative delta (the range was too narrow). In principle, this could
 have caused problems, but only when a projector was used where the
 segment symmetry is switched off.
 </li>
+<li>When using the <code>inNormalisationFromAttenuationImage</code>  constructor that takes
+  an image, the code would rescale the image of the caller.<br />
+This bug did not affect command line utilities, but did affected
+python/matlab or use of the C++ library.
+</li>
 </ul>
 
 <h3>New functionality</h3>
@@ -292,6 +297,7 @@ using the default output file format.</li>
   <ul>
    <li>added <code>fill()</code> functions (with float or with another <code>ProjData</code>)</li>
    <li>added <code>get_proj_data_info_sptr()</code> (also to <code>Sinogram</code> et al)</li>
+   <li><code>write_to_file</code> moved from <code>ProjDataInMemory</code> to <code>ProjData</code></li>
   </ul>
 </li>
 <li> Support for Energy Resolution and energy windows in Scanners, has been added. 
@@ -325,6 +331,7 @@ can create problems with the lifetime of objects. Use <code>get..._sptr</code> i
 which is called by <code>LmToProjData</code> to check if the list mode format
 can handle the template.
 All derived classes of <code>CListEvent</code> will need to implement it.
+<li>We removed <code>SeparableMetzArrayFilter::discrete_fourier_transform()</code>. Now <code>stir::fourier</code> is used. No need to comply with the Licence of "Numerical Recipies" anymore.</li>
 </li>
 </ul>
 

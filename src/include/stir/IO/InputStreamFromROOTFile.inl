@@ -25,7 +25,6 @@
 */
 
 #include "stir/IO/InputStreamFromROOTFile.h"
-#include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 
@@ -99,6 +98,60 @@ InputStreamFromROOTFile::
 get_ROOT_filename() const
 {
     return this->filename;
+}
+
+void
+InputStreamFromROOTFile::set_singles_readout_depth(int& val)
+{
+    singles_readout_depth = val;
+}
+
+void
+InputStreamFromROOTFile::set_input_filename(std::string& val)
+{
+    filename = val;
+}
+
+void
+InputStreamFromROOTFile::set_chain_name(std::string& val)
+{
+    chain_name = val;
+}
+
+void
+InputStreamFromROOTFile::set_exclude_scattered_events(bool& val)
+{
+    exclude_scattered = val;
+}
+
+void
+InputStreamFromROOTFile::set_exclude_random_events(bool& val)
+{
+    exclude_randoms = val;
+}
+
+void
+InputStreamFromROOTFile::set_detectors_offset(int& val)
+{
+    offset_dets = val;
+}
+
+void
+InputStreamFromROOTFile::set_low_energy_window(float& val)
+{
+    low_energy_window = val;
+}
+
+void
+InputStreamFromROOTFile::set_upper_energy_window(float& val)
+{
+    up_energy_window = val;
+}
+
+void
+InputStreamFromROOTFile::set_optional_ROOT_fields(bool& val)
+{
+    read_optional_root_fields = val;
 }
 
 END_NAMESPACE_STIR
