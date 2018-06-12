@@ -18,9 +18,6 @@ set(${dir_LIB_SOURCES}
 	ScatterSimulation
 	SingleScatterSimulation
 	SingleScatterLikelihoodAndGradient
-	LikelihoodAndGradientEstimateForOneScatterPoint
-	LikelihoodAndGradientEstimate
-	LikelihoodAndGradient
 )
 #$(dir)_REGISTRY_SOURCES:= scatter_buildblock_registries
 

@@ -66,7 +66,7 @@ public:
 
 
 
-    void initialise(const std::string& parameter_filename);
+    //void initialise(const std::string& parameter_filename);
 
 
 
