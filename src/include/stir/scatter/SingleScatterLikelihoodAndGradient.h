@@ -46,6 +46,8 @@ private:
     SingleScatterSimulation> base_type;
 public:
 
+
+
     //! Name which will be used when parsing a ScatterSimulation object
     static const char * const registered_name;
 
@@ -60,19 +62,12 @@ public:
 
 
 
-    virtual double L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale , bool isgradient = true);
+    double L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale , bool isgradient = true);
 
 
 
     void initialise(const std::string& parameter_filename);
 
-    virtual void set_defaults();
-    virtual void initialise_keymap();
-    virtual void ask_parameters();
-    virtual Succeeded set_up();
-
-    //! used to check acceptable parameter ranges, etc...
-    virtual bool post_processing();
 
 
     protected:
@@ -93,7 +88,7 @@ public:
              const unsigned det_num_A,
              const unsigned det_num_B, bool isgradient);
 
-    virtual double L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,const Bin bin, bool isgradient);
+    double L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,const Bin bin, bool isgradient);
 
     /*virtual void
     actual_L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,
@@ -102,9 +97,9 @@ public:
                 const unsigned det_num_B, bool isgradient);*/
 
 
-    virtual double L_G_for_view_segment_number(ProjData&data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float rescale, bool isgradient);
+    double L_G_for_view_segment_number(ProjData&data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float rescale, bool isgradient);
 
-    virtual double L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale, bool isgradient);
+    double L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale, bool isgradient);
 
 
 

@@ -73,9 +73,16 @@ SingleScatterSimulation::
         {
              low = first_window;
         }
+        else if(this->template_exam_info_sptr->get_low_energy_thres(first_window) >= this->template_exam_info_sptr->get_low_energy_thres(second_window) )
 
+        {
+             low = second_window;
+        }
+        //std::cerr << "low:= "<< low<< '\n';
 
     }
+
+
 
   static const float max_single_scatter_cos_angle=max_cos_angle(this->template_exam_info_sptr->get_low_energy_thres(low),
                                                                 2.f,

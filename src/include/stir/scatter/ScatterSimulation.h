@@ -103,6 +103,7 @@ public:
 
     virtual Succeeded process_data();
 
+
     //! gives method information
     virtual std::string method_info() const = 0;
 

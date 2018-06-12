@@ -52,6 +52,8 @@ double
 SingleScatterLikelihoodAndGradient::
 L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale, bool isgradient)
 {
+
+
     // this is usefull in the scatter estimation process.
     this->output_proj_data_sptr->fill(0.f);
     //show energy window information
@@ -133,7 +135,10 @@ L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const 
              ++vs_num.view_num())
         {
             //info(boost::format("ScatterSimulator: %d / %d") % bin_counter% total_bins);
+
+
             sum+=this->L_G_for_view_segment_number(data, gradient_image,vs_num,rescale,isgradient);
+
             bin_counter +=
             this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num()) *
             this->proj_data_info_cyl_noarc_cor_sptr->get_num_tangential_poss();
@@ -152,6 +157,7 @@ double
 SingleScatterLikelihoodAndGradient::
 L_G_for_view_segment_number(ProjData&data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float rescale, bool isgradient)
 {
+
     Viewgram<float> viewgram=data.get_viewgram(vs_num.view_num(), vs_num.segment_num(),false);
     Viewgram<float> v_est= this->proj_data_info_cyl_noarc_cor_sptr->get_empty_viewgram(vs_num.view_num(), vs_num.segment_num());
     
@@ -221,6 +227,7 @@ L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartes
 
        return sum;
 }
+
 
 
 END_NAMESPACE_STIR
