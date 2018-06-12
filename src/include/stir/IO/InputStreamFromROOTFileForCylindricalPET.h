@@ -130,6 +130,17 @@ public:
     //! Calculate the number of trans crystals per singles unit based on the repeaters numbers and the readout deptth
     inline virtual int get_num_trans_crystals_per_singles_unit() const;
 
+    inline void set_crystal_repeater_x(int&);
+    inline void set_crystal_repeater_y(int&);
+    inline void set_crystal_repeater_z(int&);
+    inline void set_submodule_repeater_x(int&);
+    inline void set_submodule_repeater_y(int&);
+    inline void set_submodule_repeater_z(int&);
+    inline void set_module_repeater_x(int&);
+    inline void set_module_repeater_y(int&);
+    inline void set_module_repeater_z(int&);
+    inline void set_rsector_repeater(int&);
+
 protected:
 
     virtual void set_defaults();
@@ -156,6 +167,9 @@ protected:
     //! unit counting upwards. Therefore in order to align the
     //! crystals, between STIR and GATE we have to move half block more.
     int half_block;
+
+private:
+    bool check_all_required_keyword_are_set(std::string& ret);
 };
 
 END_NAMESPACE_STIR

@@ -49,7 +49,11 @@ void
 InputStreamFromROOTFile::set_defaults()
 {
     starting_stream_position = 0;
-    singles_readout_depth=1;
+    singles_readout_depth = -1;
+    exclude_scattered = false;
+    exclude_randoms = false;
+    low_energy_window = 0.f;
+    up_energy_window = 1000.f;
     read_optional_root_fields=false;
 }
 

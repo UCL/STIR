@@ -123,6 +123,12 @@ public:
     //! Get the number of crystals per block
     inline virtual int get_num_trans_crystals_per_singles_unit() const;
 
+    inline void set_crystal_repeater_x(int&);
+    inline void set_crystal_repeater_y(int&);
+    inline void set_crystal_repeater_z(int&);
+    inline void set_block_repeater(int&);
+
+
 protected:
 
     virtual void set_defaults();
@@ -142,6 +148,8 @@ protected:
     //! crystals, between STIR and GATE we have to move half block more.
     int half_block;
 
+private:
+    bool check_all_required_keyword_are_set(std::string& ret);
 
 };
 END_NAMESPACE_STIR

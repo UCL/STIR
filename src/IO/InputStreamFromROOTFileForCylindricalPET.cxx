@@ -25,7 +25,9 @@ InputStreamFromROOTFileForCylindricalPET::registered_name =
 InputStreamFromROOTFileForCylindricalPET::
 InputStreamFromROOTFileForCylindricalPET():
     base_type()
-{}
+{
+    set_defaults();
+}
 
 InputStreamFromROOTFileForCylindricalPET::
 InputStreamFromROOTFileForCylindricalPET(std::string _filename,
@@ -43,6 +45,8 @@ InputStreamFromROOTFileForCylindricalPET(std::string _filename,
     module_repeater_x(module_repeater_x), module_repeater_y(module_repeater_y), module_repeater_z(module_repeater_z),
     rsector_repeater(rsector_repeater)
 {
+    set_defaults();
+
     filename = _filename;
     chain_name = _chain_name;
     exclude_scattered = _exclude_scattered;
@@ -130,7 +134,19 @@ method_info() const
 
 void
 InputStreamFromROOTFileForCylindricalPET::set_defaults()
-{}
+{
+    base_type::set_defaults();
+    crystal_repeater_x = -1;
+    crystal_repeater_y = -1;
+    crystal_repeater_z = -1;
+    submodule_repeater_x = -1;
+    submodule_repeater_y = -1;
+    submodule_repeater_z = -1;
+    module_repeater_x = -1;
+    module_repeater_y = -1;
+    module_repeater_z = -1;
+    rsector_repeater = -1;
+}
 
 void
 InputStreamFromROOTFileForCylindricalPET::initialise_keymap()
@@ -166,6 +182,14 @@ set_up(const std::string & header_path)
 {
     if (base_type::set_up(header_path) == Succeeded::no)
         return  Succeeded::no;
+
+    std::string missing_keywords;
+    if(!check_all_required_keyword_are_set(missing_keywords))
+    {
+        warning(missing_keywords.c_str());
+        return Succeeded::no;
+    }
+
     stream_ptr->SetBranchAddress("crystalID1",&crystalID1);
     stream_ptr->SetBranchAddress("crystalID2",&crystalID2);
     stream_ptr->SetBranchAddress("submoduleID1",&submoduleID1);
@@ -181,5 +205,78 @@ set_up(const std::string & header_path)
 
     return Succeeded::yes;
 }
+
+bool InputStreamFromROOTFileForCylindricalPET::
+check_all_required_keyword_are_set(std::string& ret)
+{
+    std::ostringstream stream("InputStreamFromROOTFileForCylindricalPET: Required keywords are missing! Check: ");
+    bool ok = true;
+
+    if (crystal_repeater_x == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (crystal_repeater_y == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (crystal_repeater_z == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (submodule_repeater_x == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (submodule_repeater_y == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (submodule_repeater_z == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (module_repeater_x == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (module_repeater_y == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (module_repeater_z == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (rsector_repeater == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (!ok)
+        ret = stream.str();
+
+    return ok;
+}
+
 
 END_NAMESPACE_STIR
