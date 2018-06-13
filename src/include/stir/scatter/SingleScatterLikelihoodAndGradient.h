@@ -55,6 +55,7 @@ public:
     SingleScatterLikelihoodAndGradient();
 
     //! Constructor with initialisation from parameter file
+
     explicit
     SingleScatterLikelihoodAndGradient(const std::string& parameter_filename);
 
@@ -63,10 +64,6 @@ public:
 
 
     double L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale , bool isgradient = true);
-
-
-
-    //void initialise(const std::string& parameter_filename);
 
 
 
@@ -89,12 +86,6 @@ public:
              const unsigned det_num_B, bool isgradient);
 
     double L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,const Bin bin, bool isgradient);
-
-    /*virtual void
-    actual_L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,
-    		double& scatter_ratio_singles,
-    			const unsigned det_num_A,
-                const unsigned det_num_B, bool isgradient);*/
 
 
     double L_G_for_view_segment_number(ProjData&data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float rescale, bool isgradient);

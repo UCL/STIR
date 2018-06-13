@@ -71,9 +71,8 @@ L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const 
 {
 
 
-    // this is usefull in the scatter estimation process.
     this->output_proj_data_sptr->fill(0.f);
-    //show energy window information
+
 
     std::cerr << "number of energy windows:= "<<  this->template_exam_info_sptr->get_num_energy_windows() << '\n';
 
@@ -166,7 +165,14 @@ L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const 
         }
     }
 
+    int max_x = gradient_image.get_max_x();
+    int min_x = gradient_image.get_min_x();
+
     std::cerr << "LIKELIHOOD:= " << sum << '\n';
+
+    std::cerr << "MIN_GRADIENT_X:= " << min_x << '\n';
+    std::cerr << "MAX_GRADIENT_X:= " << max_x << '\n';
+
     return sum;
 }
 
@@ -298,6 +304,12 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
 
         {
             low = first_window;
+        }
+
+        else if(this->template_exam_info_sptr->get_low_energy_thres(first_window) >= this->template_exam_info_sptr->get_low_energy_thres(second_window) )
+
+        {
+             low = second_window;
         }
 
     }

@@ -139,7 +139,7 @@ detection_efficiency_no_scatter(const unsigned det_num_A,
   // TODO: slightly dangerous to use a static here
   // it would give wrong results when the energy_thresholds are changed...
     static const float detector_efficiency_no_scatter = 1 ;
-    /*detection_efficiency(511.F, en_window) > 0
+   /*detection_efficiency(511.F, en_window) > 0
     ? detection_efficiency(511.F, en_window)
     : (info("Zero detection efficiency for 511. Will normalise to 1"), 1.F);*/
 

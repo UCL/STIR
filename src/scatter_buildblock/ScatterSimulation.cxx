@@ -139,14 +139,14 @@ if(this->template_exam_info_sptr->get_energy_window_pair().first!= -1 &&
              vs_num.view_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_view_num();
              ++vs_num.view_num())
         {
-            info(boost::format("ScatterSimulator: %d / %d") % bin_counter% total_bins);
+
             total_scatter += this->process_data_for_view_segment_num(vs_num);
             bin_counter +=
                     this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num()) *
                     this->proj_data_info_cyl_noarc_cor_sptr->get_num_tangential_poss();
-            info(boost::format("ScatterSimulator: %d / %d") % bin_counter% total_bins);
+           // info(boost::format("ScatterSimulator: %d / %d") % bin_counter% total_bins);
 
-
+            std::cout<< bin_counter << " / "<< total_bins <<std::endl;
 
         }
     }
