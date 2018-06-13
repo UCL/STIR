@@ -24,7 +24,7 @@
 
   \file
   \ingroup listmode
-  \brief Declaration of class stir::CListEventSAFIR and stir::CListRecordSAFIR with supporting classes
+  \brief Declaration of class stir::CListRecordSAFIR with supporting class
 
   \author Jannis Fischer
 */
@@ -33,136 +33,19 @@
 #define __stir_listmode_CListRecordSAFIR_H__
 
 #include "stir/listmode/CListRecord.h"
-#include "stir/DetectionPositionPair.h"
+#include "stir/listmode/CListEventSAFIR.h"
+#include "stir/listmode/CListEventDataSAFIR.h"
+#include "stir/listmode/CListTimeDataSAFIR.h"
+
 #include "stir/Succeeded.h"
 #include "stir/ByteOrder.h"
-#include "stir/ByteOrderDefine.h"
 
 #include "boost/static_assert.hpp"
 #include "boost/cstdint.hpp"
 
-#include "stir/listmode/DetectorCoordinateMapFromFile.h"
-
 
 START_NAMESPACE_STIR
 
-/*!
-Provides interface of the record class to STIR by implementing get_LOR(). It uses a map from detector indices to coordinates to specify LORAs2Points from given detection pair indices.
-
-The record has the following format (for little-endian byte order)
-\code
-	unsigned ringA : 8;
-	unsigned ringB : 8;
-	unsigned detA : 16;
-	unsigned detB : 16;
-	unsigned layerA : 4;
-	unsigned layerB : 4;
-	unsigned reserved : 6;
-	unsigned isRandom : 1;
-	unsigned type : 1;
-\endcode
-*/
-template <class Derived>
-class CListEventSAFIR : public CListEvent
-{
-public:
-	/*! Constructor which initializes map upon construction.
-	*/
-	inline CListEventSAFIR( shared_ptr<DetectorCoordinateMapFromFile> map ) : map(map) {}
-	//! Returns LOR corresponding to the given event.
-	inline virtual LORAs2Points<float> get_LOR() const;
-  //! This method checks if the template is valid for LmToProjData
-  /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
-   *  Most scanners have listmode data that correspond to non arc-corrected data and
-   *  this check avoids a crash when an unsupported template is used as input.
-   */
-	inline virtual bool is_valid_template(const ProjDataInfo&) const {return true;}
-
-	//! Returns 0 if event is prompt and 1 if random/delayed
-	inline bool is_prompt()
-		const { return !(static_cast<const Derived*>(this)->is_prompt()); }
-	//! Function to set map for detector indices to coordinates.
-	inline void set_map( shared_ptr<DetectorCoordinateMapFromFile> new_map ) { map = new_map; }
-
-private:
-	friend class CListRecordSAFIR;
-	/*! Default constructor will not work as it does not initialize a map to relate
-	detector indices and space coordinates. Always use other constructor with a map pointer. Or use set_map( shared_ptr<DetectorCoordinateMapFromFile> new_map ) after default construction.
-	*/
-	inline CListEventSAFIR( ) {}
-	shared_ptr<DetectorCoordinateMapFromFile> map;
-};
-
-
-
-//! Class for record with coincidence data
-class CListEventDataSAFIR
-{
-public:
-	//! Writes detection position pair to reference given as argument.
-	inline void get_detection_position_pair(DetectionPositionPair<>& det_pos_pair);
-
-	//! Returns 0 if event is prompt and 1 if random/delayed
-	inline bool is_prompt()
-		const { return !isRandom; }
-
-	//! Can be used to set "promptness" of event.
-	inline Succeeded set_prompt( const bool prompt = true ) { 
-		isRandom = !prompt;
-		return Succeeded::yes; 
-	}
-
-
-private:
-	friend class CListRecordSAFIR;
-
-#if STIRIsNativeByteOrderBigEndian
-	unsigned type : 1;
-	unsigned isRandom : 1;
-	unsigned reserved : 6;
-	unsigned layerB : 4;
-	unsigned layerA : 4;
-	unsigned detB : 16;
-	unsigned detA : 16;
-	unsigned ringB : 8;
-	unsigned ringA : 8;
-#else
-	unsigned ringA : 8;
-	unsigned ringB : 8;
-	unsigned detA : 16;
-	unsigned detB : 16;
-	unsigned layerA : 4;
-	unsigned layerB : 4;
-	unsigned reserved : 6;
-	unsigned isRandom : 1;
-	unsigned type : 1;
-#endif
-};
-
-
-//! Class for record with time data
-class CListTimeDataSAFIR
-{
-public:
-	inline unsigned long get_time_in_millisecs() const
-	{ return static_cast<unsigned long>(time);  }
-	inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
-	{
-		time = ((boost::uint64_t(1)<<49)-1) & static_cast<boost::uint64_t>(time_in_millisecs);
-		return Succeeded::yes;
-	}
-private:
-	friend class CListRecordSAFIR;
-#if STIRIsNativeByteOrderBigEndian
-	boost::uint64_t type : 1;
-	boost::uint64_t reserved : 15;
-	boost::uint64_t time : 48;
-#else
-	boost::uint64_t time : 48;
-	boost::uint64_t reserved : 15;
-	boost::uint64_t type : 1;
-#endif
-};
 
 //! Class for general record, containing a union of data, time and raw record and providing access to certain elements.
 class CListRecordSAFIR : public CListRecord, public CListTime, public CListEventSAFIR<CListRecordSAFIR>
