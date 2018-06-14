@@ -242,7 +242,7 @@ ScatterSimulation::
 ask_parameters()
 {
     this->attenuation_threshold = ask_num("attenuation threshold(cm^-1)",0.0f, 5.0f, 0.01f);
-    this->random = ask_num("random points?",0, 1, 1);
+    this->random = ask_num("random points?",0, 0, 0);
     this->use_cache =  ask_num(" Use cache?",0, 1, 1);
     this->density_image_filename = ask_string("density image filename", "");
     this->activity_image_filename = ask_string("activity image filename", "");
