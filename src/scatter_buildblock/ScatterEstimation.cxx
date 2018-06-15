@@ -962,7 +962,7 @@ process_data()
     //
     info("ScatterEstimation: Begin the estimation process...");
     for (int i_scat_iter = 1;
-         i_scat_iter < this->num_scatter_iterations;
+         i_scat_iter <= this->num_scatter_iterations;
          i_scat_iter++)
     {
 
