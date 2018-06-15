@@ -73,11 +73,12 @@ if(this->template_exam_info_sptr->get_energy_window_pair().first!= -1 &&
 }
 
 
-    for (int i = 0; i < this->template_exam_info_sptr->get_num_energy_windows(); ++i)
+    for (int i = 1; i <= this->template_exam_info_sptr->get_num_energy_windows(); ++i)
     {
-        std::cerr << "energy window lower level"<<"["<<i+1<<"] := "<< this->template_exam_info_sptr->get_low_energy_thres(i) << '\n';
-        std::cerr << "energy window upper level"<<"["<<i+1<<"] := "<<  this->template_exam_info_sptr->get_high_energy_thres(i) << '\n';
+        std::cerr << "energy window lower level"<<"["<<i<<"] := "<< this->template_exam_info_sptr->get_low_energy_thres(i-1) << '\n';
+        std::cerr << "energy window upper level"<<"["<<i<<"] := "<<  this->template_exam_info_sptr->get_high_energy_thres(i-1) << '\n';
     }
+
 
 
     info("ScatterSimulator: Running Scatter Simulation ...");

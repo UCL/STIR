@@ -1029,19 +1029,19 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 
 
 
-        for (unsigned int num_windows=0; num_windows<=exam_info_ptr->get_num_energy_windows()-1; ++num_windows)
-          {
-
-            if (pdfs.get_exam_info_ptr()->get_high_energy_thres(num_windows) > 0 &&
-                    pdfs.get_exam_info_ptr()->get_low_energy_thres(num_windows) >= 0)
-            {
-                output_header << "energy window lower level [" << num_windows +1 << "] := " <<
-                                 pdfs.get_exam_info_ptr()->get_low_energy_thres(num_windows) << '\n';
-                output_header << "energy window upper level [" << num_windows +1<< "] := " <<
-                                 pdfs.get_exam_info_ptr()->get_high_energy_thres(num_windows) << '\n';
-            }
-
-          }
+         for (unsigned int num_windows = 0; num_windows <  exam_info_ptr->get_num_energy_windows(); ++num_windows)
+         {
+             
+             if (pdfs.get_exam_info_ptr()->get_high_energy_thres(num_windows ) >= 0 &&
+                 pdfs.get_exam_info_ptr()->get_low_energy_thres(num_windows ) >= 0)
+             {
+                 output_header << "energy window lower level [" << num_windows +1  << "] := " <<
+                 pdfs.get_exam_info_ptr()->get_low_energy_thres(num_windows) << '\n';
+                 output_header << "energy window upper level [" << num_windows +1  << "] := " <<
+                 pdfs.get_exam_info_ptr()->get_high_energy_thres(num_windows) << '\n';
+             }
+             
+         }
 
 
         //just for en_win>1
