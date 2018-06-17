@@ -164,7 +164,9 @@ was in HFS position. This is currently not checked (and for many file formats, n
   As opposed to <code>bin.view_num()</code>, write <code>bin.view_num</code>. You can now also do
   <code>bin.view_num=1</code>.
 </li>
-<li> <code>CListModeData</code> now need to implement a <code> ProjDataInfo</code> instead of <code>Scanner</code>. 
+<li> <code>CListModeData</code> now need to have a <code> ProjDataInfo</code> instead of <code>Scanner</code>. 
+  </li>
+  <li> <code>ProjMatrixByBin</code> now uses <code>get_symmetries_sptr()</code>. 
   </li>
 </ul>
 
