@@ -122,13 +122,18 @@ CListModeDataROOT(const std::string& hroot_filename)
                                              /*num_detector_layers_v*/ 1 ));
     }
 
-    std::unique_ptr<ProjDataInfo> tmp_unique(ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
+    unique_ptr<ProjDataInfo> tmp_unique(ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
                                                                                     1,
                                                                                     this_scanner_sptr->get_num_rings()-1,
                                                                                     this_scanner_sptr->get_num_detectors_per_ring()/2,
                                                                                     this_scanner_sptr->get_max_num_non_arccorrected_bins(),
                                                                                     /* arc_correction*/false));
-      shared_ptr<ProjDataInfo> tmp(tmp_unique.release());
+
+#if !defined(STIR_NO_UNIQUE_PTR) || defined(STIR_USE_BOOST_SHARED_PTR)
+    shared_ptr<ProjDataInfo> tmp(move(tmp_unique));
+#else
+    shared_ptr<ProjDataInfo> tmp(tmp_unique);
+#endif
 
     this->set_proj_data_info_sptr(tmp);
 

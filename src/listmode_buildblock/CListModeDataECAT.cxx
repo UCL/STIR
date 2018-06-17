@@ -60,10 +60,10 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
   : listmode_filename_prefix(listmode_filename_prefix)    
 {
   // initialise scanner_ptr before calling open_lm_file, as it is used in that function
-
+ shared_ptr<Scanner> scanner_sptr;
   this->exam_info_sptr.reset(new ExamInfo);
-  ExamInfo& exam_info(*exam_info_sptr);
-  exam_info.imaging_modality = ImagingModality::PT;
+//  ExamInfo& exam_info(*exam_info_sptr);
+   this->exam_info_sptr->imaging_modality = ImagingModality::PT;
   // attempt to read the .sgl file
   {
     const std::string singles_filename = listmode_filename_prefix + "_1.sgl";
@@ -73,8 +73,9 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
       {
 	warning("CListModeDataECAT: Couldn't read main_header from %s. We forge ahead anyway (assuming this is ECAT 962 data).", singles_filename.c_str());
     // This should have been handled by the projdatainfo.
-    //scanner_sptr.reset(new Scanner(Scanner::E962));
-	// TODO invalidate other fields in singles header
+    scanner_sptr.reset(new Scanner(Scanner::E962));
+
+    // TODO invalidate other fields in singles header
       }
     else
       {
@@ -83,34 +84,48 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
 			  sizeof(singles_main_header));
 	unmap_main_header(buffer, &singles_main_header);
     // This should have been handled by the projdatainfo.
-    //ecat::ecat7::find_scanner(scanner_sptr, singles_main_header);
+    ecat::ecat7::find_scanner(scanner_sptr, singles_main_header);
 
-        exam_info.start_time_in_secs_since_1970 = double(singles_main_header.scan_start_time);
+         this->exam_info_sptr->start_time_in_secs_since_1970 = double(singles_main_header.scan_start_time);
 
         switch(singles_main_header.patient_orientation)
           {
           case FeetFirstProne:
-            exam_info.patient_position = PatientPosition(PatientPosition::FFP); break;
+            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::FFP); break;
           case HeadFirstProne:
-            exam_info.patient_position = PatientPosition(PatientPosition::HFP); break;
+            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::HFP); break;
           case FeetFirstSupine:
-            exam_info.patient_position = PatientPosition(PatientPosition::FFS); break;
+            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::FFS); break;
           case HeadFirstSupine:
-            exam_info.patient_position = PatientPosition(PatientPosition::HFS); break;
+            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::HFS); break;
           case FeetFirstRight:
-            exam_info.patient_position = PatientPosition(PatientPosition::FFDR); break;
+            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::FFDR); break;
           case HeadFirstRight:
-            exam_info.patient_position = PatientPosition(PatientPosition::HFDR); break;
+            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::HFDR); break;
           case FeetFirstLeft:
-            exam_info.patient_position = PatientPosition(PatientPosition::FFDL); break;
+            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::FFDL); break;
           case HeadFirstLeft:
-            exam_info.patient_position = PatientPosition(PatientPosition::HFDL); break;
+            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::HFDL); break;
           case UnknownOrientation:
           default:
-            exam_info.patient_position = PatientPosition(PatientPosition::unknown_position); break;
+            this->exam_info_sptr->patient_position = PatientPosition(PatientPosition::unknown_position); break;
           }
       }
   }
+
+    unique_ptr<ProjDataInfo> tmp_unique( ProjDataInfo::construct_proj_data_info(scanner_sptr,
+                                                                           1,
+                                                                           scanner_sptr->get_num_rings() - 1,
+                                                                           scanner_sptr->get_max_num_views(),
+                                                                           scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                                                           /* arc_correction*/false));
+
+#if !defined(STIR_NO_UNIQUE_PTR) || defined(STIR_USE_BOOST_SHARED_PTR)
+    shared_ptr<ProjDataInfo> tmp(move(tmp_unique));
+#else
+    shared_ptr<ProjDataInfo> tmp(tmp_unique);
+#endif
+   this->set_proj_data_info_sptr( tmp );
 
   if ((get_proj_data_info_sptr()->get_scanner_ptr()->get_type() == Scanner::E966 && typeid(CListRecordT) != typeid(CListRecordECAT966)) ||
       (get_proj_data_info_sptr()->get_scanner_ptr()->get_type() == Scanner::E962 && typeid(CListRecordT) != typeid(CListRecordECAT962)))

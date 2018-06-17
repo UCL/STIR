@@ -85,13 +85,13 @@ echo "ERROR running calculate_attenuation_coefficients. Check my_create_acfs.log
 fi
 
 echo "=== Reconstruct listmode data"
-OSMAPOSL OSMAPOSL_test_lm.par > OSMAPOSL_test_lm.log 2>&1
+${MPIRUN} OSMAPOSL OSMAPOSL_test_lm.par > OSMAPOSL_test_lm.log 2>&1
 echo "=== "
 # create sinograms
 echo "=== Unlist listmode data (for comparison)"
 INPUT=PET_ACQ_small.l.hdr.STIR TEMPLATE=Siemens_mMR_seg2.hs OUT_PROJDATA_FILE=my_sinogram lm_to_projdata  lm_to_projdata.par
 echo "=== Reconstruct projection data for comparison"
-OSMAPOSL OSMAPOSL_test_proj.par > OSMAPOSL_test_proj.log 2>&1
+${MPIRUN} OSMAPOSL OSMAPOSL_test_proj.par > OSMAPOSL_test_proj.log 2>&1
 echo "=== Compare sensitivity images"
 if compare_image my_sens_t_proj_seg2.hv my_sens_t_lm_pr_seg2.hv 2>my_sens_comparison_stderr.log;
 then
