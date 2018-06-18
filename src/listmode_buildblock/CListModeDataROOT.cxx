@@ -129,8 +129,8 @@ CListModeDataROOT(const std::string& hroot_filename)
                                                                                     this_scanner_sptr->get_max_num_non_arccorrected_bins(),
                                                                                     /* arc_correction*/false));
 
-#if !defined(STIR_NO_UNIQUE_PTR) || defined(STIR_USE_BOOST_SHARED_PTR)
-    shared_ptr<ProjDataInfo> tmp(tmp_unique.release());
+#if !defined(STIR_NO_UNIQUE_PTR)
+    shared_ptr<ProjDataInfo> tmp(std::move(tmp_unique));
 #else
     shared_ptr<ProjDataInfo> tmp(tmp_unique);
 #endif
