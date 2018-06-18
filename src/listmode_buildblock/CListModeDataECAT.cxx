@@ -113,18 +113,12 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
       }
   }
 
-    unique_ptr<ProjDataInfo> tmp_unique( ProjDataInfo::construct_proj_data_info(scanner_sptr,
-                                                                           1,
-                                                                           scanner_sptr->get_num_rings() - 1,
-                                                                           scanner_sptr->get_max_num_views(),
-                                                                           scanner_sptr->get_max_num_non_arccorrected_bins(),
-                                                                           /* arc_correction*/false));
-
-#if !defined(STIR_NO_UNIQUE_PTR) || defined(STIR_USE_BOOST_SHARED_PTR)
-    shared_ptr<ProjDataInfo> tmp(std::move(tmp_unique));
-#else
-    shared_ptr<ProjDataInfo> tmp(tmp_unique);
-#endif
+    shared_ptr<ProjDataInfo> tmp(ProjDataInfo::construct_proj_data_info(scanner_sptr,
+                                                                        1,
+                                                                        scanner_sptr->get_num_rings() - 1,
+                                                                        scanner_sptr->get_max_num_views(),
+                                                                        scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                                                        /* arc_correction*/false));
    this->set_proj_data_info_sptr( tmp );
 
   if ((get_proj_data_info_sptr()->get_scanner_ptr()->get_type() == Scanner::E966 && typeid(CListRecordT) != typeid(CListRecordECAT966)) ||

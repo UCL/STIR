@@ -49,18 +49,12 @@ CListModeDataECAT8_32bit(const std::string& listmode_filename)
   if (this_scanner_sptr->get_type() == Scanner::Unknown_scanner)
     error(boost::format("Unknown value for originating_system keyword: '%s") % originating_system );
 
-  unique_ptr<ProjDataInfo> tmp_unique( ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
+    shared_ptr<ProjDataInfo> tmp( ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
                                                                          this->interfile_parser.get_axial_compression(),
                                                                          this->interfile_parser.get_maximum_ring_difference(),
                                                                          this->interfile_parser.get_num_views(),
                                                                          this->interfile_parser.get_num_projections(),
                                                                          /* arc_correction*/false));
-
-#if !defined(STIR_NO_UNIQUE_PTR)
-    shared_ptr<ProjDataInfo> tmp(std::move(tmp_unique));
-#else
-    shared_ptr<ProjDataInfo> tmp(tmp_unique);
-#endif
    this->set_proj_data_info_sptr( tmp );
   if (this->open_lm_file() == Succeeded::no)
     error("CListModeDataECAT8_32bit: error opening the first listmode file for filename %s\n",
