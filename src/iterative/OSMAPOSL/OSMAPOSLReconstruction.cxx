@@ -60,11 +60,11 @@
 #include <sstream>
 #endif
 
+#include "stir/unique_ptr.h"
 #include <algorithm>
 using std::min;
 using std::max;
 #ifndef STIR_NO_NAMESPACES
-using std::auto_ptr;
 using std::cerr;
 using std::endl;
 #endif
@@ -199,7 +199,7 @@ post_processing()
     // TODO MAP_model really should be an ASCIIlist, without automatic checking on values
     if (MAP_model != "additive" && MAP_model != "multiplicative")
     {
-      warning("MAP model should have as value 'additive' or 'multiplicative', while it is '%s'",
+      error("MAP model should have as value 'additive' or 'multiplicative', while it is '%s'",
         MAP_model.c_str());
       return true;
     }
@@ -317,14 +317,14 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
 
   if (is_null_ptr(dynamic_cast<PoissonLogLikelihoodWithLinearModelForMean<TargetT > const *>
                   (this->objective_function_sptr.get())))
-    { warning("OSMAPOSL can only work with an objective function of type PoissonLogLikelihoodWithLinearModelForMean"); return Succeeded::no; }
+    { error("OSMAPOSL can only work with an objective function of type PoissonLogLikelihoodWithLinearModelForMean"); return Succeeded::no; }
 
   // check subset balancing
   {
     std::string warning_message = "OSMAPOSL\n";
     if (!this->objective_function().subsets_are_approximately_balanced(warning_message))
       {
-        warning("%s\nOSMAPOSL cannot handle this.",
+        error("%s\nOSMAPOSL cannot handle this.",
                 warning_message.c_str());
         return Succeeded::no;
       }
@@ -337,7 +337,7 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
                                           small_num);
 
   if (this->inter_update_filter_interval<0)
-    { warning("Range error in inter-update filter interval"); return Succeeded::no; }
+    { error("Range error in inter-update filter interval"); return Succeeded::no; }
 
   if(this->inter_update_filter_interval>0 && 
      !is_null_ptr(this->inter_update_filter_ptr))
@@ -356,7 +356,7 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
       if (this->inter_update_filter_ptr->set_up(*target_image_ptr)
           == Succeeded::no)
         {
-          warning("Error building inter-update filter");
+          error("Error building inter-update filter");
           return Succeeded::no;
         }
 
@@ -377,7 +377,7 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
       if (this->inter_iteration_filter_ptr->set_up(*target_image_ptr)
           == Succeeded::no)
         {
-          warning("Error building inter iteration filter");
+          error("Error building inter iteration filter");
           return Succeeded::no;
         }
 
@@ -406,8 +406,8 @@ update_estimate(TargetT &current_image_estimate)
 #endif // PARALLEL
   
   // TODO make member parameter to avoid reallocation all the time
-  auto_ptr< TargetT > multiplicative_update_image_ptr =
-    auto_ptr< TargetT >(current_image_estimate.get_empty_copy());
+  unique_ptr< TargetT > multiplicative_update_image_ptr
+    (current_image_estimate.get_empty_copy());
 
   const int subset_num=this->get_subset_num();  
   info(boost::format("Now processing subset #: %1%") % subset_num);
@@ -437,8 +437,8 @@ update_estimate(TargetT &current_image_estimate)
     }
     else
     {
-      auto_ptr< TargetT > denominator_ptr = 
-        auto_ptr< TargetT >(current_image_estimate.get_empty_copy());
+      unique_ptr< TargetT > denominator_ptr
+        (current_image_estimate.get_empty_copy());
       
       
       this->objective_function_sptr->

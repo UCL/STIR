@@ -21,11 +21,6 @@ Some files are in addition covered by the PARAPET license
 (see PARAPETLICENSE.txt). This is always indicated in the file, but
 a complete list is also given at the end of this file.
 
-SeparableMetzArrayFilter.cxx uses a (modified) fft routine from
-Numerical Recipes. If you use this file, you need to comply with 
-their license policy (which requires you to buy the book).  
-We hope to replace this routine soon.
-
 
 Explicit list of files that carry the PARAPET license
 ----------------------------------------------------

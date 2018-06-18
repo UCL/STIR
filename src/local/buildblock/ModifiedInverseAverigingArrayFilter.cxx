@@ -134,9 +134,10 @@ kapa0_over_kapa1(kapa0_over_kapa1_v)
 	break;
       case 512:
 	fft_filter_1D_array_ptr = &fft_filter_1D_array_512;
-	break; 
+	break;
       case 1024:
 	fft_filter_1D_array_ptr = &fft_filter_1D_array_1024;
+	break; 
       case 2048:
 	fft_filter_1D_array_ptr = &fft_filter_1D_array_2048;
 	break;

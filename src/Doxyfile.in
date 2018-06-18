@@ -323,7 +323,7 @@ SIP_SUPPORT            = NO
 # should set this option to NO.
 # The default value is: YES.
 
-IDL_PROPERTY_SUPPORT   = YES
+IDL_PROPERTY_SUPPORT   = NO
 
 # If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC
 # tag is set to YES, then doxygen will reuse the documentation of the first
@@ -1981,6 +1981,7 @@ PREDEFINED             = __GNUC__=4 \
                          HAVE_LLN_MATRIX \
                          HAVE_AVW \
                          USE_PMRT \
+                         HAVE_CERN_ROOT \
                          "USING_NAMESPACE_STIR=using namespace stir;" \
                          "START_NAMESPACE_STIR=namespace stir {" \
                          "END_NAMESPACE_STIR= }" \
