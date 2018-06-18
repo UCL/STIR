@@ -57,6 +57,9 @@ class DataSymmetriesForViewSegmentNumbers;
 class BinNormalisation : public RegisteredObject<BinNormalisation>
 {
 public:
+
+  BinNormalisation();
+
   virtual ~BinNormalisation();
 
   //! check if we would be multiplying with 1 (i.e. do nothing)
@@ -127,6 +130,16 @@ public:
   void undo(ProjData&,const double start_time, const double end_time, 
             shared_ptr<DataSymmetriesForViewSegmentNumbers> = shared_ptr<DataSymmetriesForViewSegmentNumbers>()) const; 
 
+ protected:
+  //! check if the argument is the same as what was used for set_up()
+  /*! calls error() if anything is wrong.
+
+      If overriding this function in a derived class, you need to call this one.
+   */
+  virtual void check(const ProjDataInfo& proj_data_info) const;
+  bool _already_set_up;
+private:
+  shared_ptr<ProjDataInfo> _proj_data_info_sptr;
 };
 
 END_NAMESPACE_STIR

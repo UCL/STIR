@@ -58,6 +58,9 @@
 #ifdef HAVE_HDF5
 #include "stir/IO/GESignaListmodeInputFileFormat.h"
 #endif
+//! Addition for SAFIR listmode input file format
+#include "stir/IO/SAFIRCListmodeInputFileFormat.h"
+
 
 //! Addition for ROOT support - Nikos Efthimiou
 #ifdef HAVE_CERN_ROOT
@@ -79,6 +82,10 @@ static ITKOutputFileFormat::RegisterIt dummyITK1;
 #endif
 static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfIn;
 static InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfIn;
+
+//! Support for SAFIR listmode file format
+static RegisterInputFileFormat<SAFIRCListmodeInputFileFormat> LMdummySAFIR(4);
+
 
 //!
 //! \brief LMdummyROOT

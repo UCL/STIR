@@ -118,9 +118,9 @@ BinNormalisationFromAttenuationImage(const std::string& filename,
 }
 
 BinNormalisationFromAttenuationImage::
-BinNormalisationFromAttenuationImage(shared_ptr<DiscretisedDensity<3,float> > const& attenuation_image_ptr,
+BinNormalisationFromAttenuationImage(shared_ptr<DiscretisedDensity<3,float> > const& attenuation_image_ptr_v,
                                      shared_ptr<ForwardProjectorByBin> const& forward_projector_ptr)
-  : attenuation_image_ptr(attenuation_image_ptr),
+  : attenuation_image_ptr(attenuation_image_ptr_v->clone()), // need a clone as it guarantees we won't be affected by the caller, and vice versa
     forward_projector_ptr(forward_projector_ptr)
 {
   post_processing();
@@ -130,6 +130,7 @@ Succeeded
 BinNormalisationFromAttenuationImage::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
 {
+  BinNormalisation::set_up(proj_data_info_ptr);
   forward_projector_ptr->set_up(proj_data_info_ptr, attenuation_image_ptr);
   return Succeeded::yes;
 }
@@ -138,6 +139,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
 void 
 BinNormalisationFromAttenuationImage::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
 {
+  this->check(*viewgrams.get_proj_data_info_sptr());
   RelatedViewgrams<float> attenuation_viewgrams = viewgrams.get_empty_copy();
   forward_projector_ptr->forward_project(attenuation_viewgrams, *attenuation_image_ptr);
 	
@@ -156,6 +158,7 @@ void
 BinNormalisationFromAttenuationImage::
 undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const 
 {
+  this->check(*viewgrams.get_proj_data_info_sptr());
   RelatedViewgrams<float> attenuation_viewgrams = viewgrams.get_empty_copy();
   forward_projector_ptr->forward_project(attenuation_viewgrams, *attenuation_image_ptr);
 	

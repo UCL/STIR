@@ -66,6 +66,7 @@ set(${dir_LIB_SOURCES}
 	GeneralisedPrior 
 	ProjDataRebinning 
 	FourierRebinning
+	PLSPrior
 	QuadraticPrior 
 	FilterRootPrior 
 	GeneralisedObjectiveFunction 
@@ -110,6 +111,10 @@ include(stir_lib_target)
 
 if (STIR_MPI)
   target_link_libraries(recon_buildblock ${MPI_CXX_LIBRARIES})
+endif()
+
+if (STIR_OPENMP)
+  target_link_libraries(recon_buildblock ${OpenMP_EXE_LINKER_FLAGS})
 endif()
 
 # TODO what to do with IO?

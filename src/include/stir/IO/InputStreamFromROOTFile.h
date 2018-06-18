@@ -36,7 +36,6 @@
 #include <TROOT.h>
 #include <TSystem.h>
 #include <TChain.h>
-#include <TH2D.h>
 #include <TDirectory.h>
 #include <TList.h>
 #include <TChainElement.h>
@@ -84,6 +83,8 @@ public:
     Succeeded get_next_record(CListRecordROOT& record) = 0;
     //! Go to the first event.
     inline Succeeded reset();
+    //! Must be called before calling for the first event.
+    virtual Succeeded set_up(const std::string& header_path);
     //! Save current position in a vector
     inline
     SavedPosition save_get_position();
@@ -105,19 +106,19 @@ public:
     //! Get the number of rings as calculated from the number of repeaters
     inline virtual int get_num_rings() const = 0;
     //! Get the number of dets per ring as calculated from the number of repeaters
-    inline virtual int get_num_dets_per_ring() const = 0;
+    virtual int get_num_dets_per_ring() const = 0;
     //! Get the number of axial modules
-    inline virtual int get_num_axial_blocks_per_bucket_v() const = 0;
+    virtual int get_num_axial_blocks_per_bucket_v() const = 0;
     //! Get the number of transaxial modules
-    inline virtual int get_num_transaxial_blocks_per_bucket_v() const = 0;
+    virtual int get_num_transaxial_blocks_per_bucket_v() const = 0;
     //! Get the axial number of crystals per module
-    inline virtual int get_num_axial_crystals_per_block_v() const = 0;
+    virtual int get_num_axial_crystals_per_block_v() const = 0;
     //! Get the transaxial number of crystals per module
-    inline virtual int get_num_transaxial_crystals_per_block_v() const = 0;
+    virtual int get_num_transaxial_crystals_per_block_v() const = 0;
 
-    inline virtual int get_num_axial_crystals_per_singles_unit() const = 0;
+    virtual int get_num_axial_crystals_per_singles_unit() const = 0;
 
-    inline virtual int get_num_trans_crystals_per_singles_unit() const = 0;
+    virtual int get_num_trans_crystals_per_singles_unit() const = 0;
 
     inline virtual float get_low_energy_thres() const;
 
