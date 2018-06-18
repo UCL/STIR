@@ -57,7 +57,7 @@ CListModeDataECAT8_32bit(const std::string& listmode_filename)
                                                                          /* arc_correction*/false));
 
 #if !defined(STIR_NO_UNIQUE_PTR) || defined(STIR_USE_BOOST_SHARED_PTR)
-    shared_ptr<ProjDataInfo> tmp(move(tmp_unique));
+    shared_ptr<ProjDataInfo> tmp(tmp_unique.release());
 #else
     shared_ptr<ProjDataInfo> tmp(tmp_unique);
 #endif
