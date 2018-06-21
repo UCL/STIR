@@ -20,7 +20,7 @@ set(dir swig)
 
 if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
 
-  FIND_PACKAGE(SWIG REQUIRED)
+  FIND_PACKAGE(SWIG 3.0 REQUIRED)
   INCLUDE("${SWIG_USE_FILE}")
 
   SET(CMAKE_SWIG_FLAGS -DSTART_NAMESPACE_STIR=\"namespace stir {\" -DEND_NAMESPACE_STIR=\"}\")
@@ -32,9 +32,10 @@ endif()
 
 if(BUILD_SWIG_PYTHON)
 
+  # find Python interpreter. Needed for tests, and best to enforce consistency anyway.
+  find_package(PythonInterp)
   # find libraries and include files
   # TODO would be better to use target_include_directories
-
   FIND_PACKAGE(PythonLibs REQUIRED)
   INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
   FIND_PACKAGE(Numpy REQUIRED)
@@ -43,7 +44,11 @@ if(BUILD_SWIG_PYTHON)
   # TODO -builtin option only appropriate for python
   # while the next statement sets it for all modules called stir
   SET(SWIG_MODULE_stir_EXTRA_FLAGS -builtin)
-  SWIG_ADD_MODULE(stir python stir.i ${STIR_REGISTRIES})
+  if (CMAKE_VERSION VERSION_LESS "3.8")
+    SWIG_ADD_MODULE(stir python stir.i ${STIR_REGISTRIES})
+  else()
+    SWIG_ADD_LIBRARY(stir LANGUAGE python TYPE MODULE SOURCES stir.i ${STIR_REGISTRIES})
+  endif()
   SWIG_LINK_LIBRARIES(stir ${STIR_LIBRARIES} ${PYTHON_LIBRARIES})
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stir_REAL_NAME} PROPERTIES
         LINK_FLAGS "${OpenMP_EXE_LINKER_FLAGS}")  
@@ -86,7 +91,11 @@ if (BUILD_SWIG_OCTAVE)
   SET(OCTAVE_PREFIX "")
 
   SET(SWIG_MODULE_stiroct_EXTRA_FLAGS -module stiroct)
-  SWIG_ADD_MODULE(stiroct octave stir.i ${STIR_REGISTRIES})
+  if (CMAKE_VERSION VERSION_LESS "3.8")
+    SWIG_ADD_MODULE(stiroct octave stir.i ${STIR_REGISTRIES})
+  else()
+    SWIG_ADD_LIBRARY(stiroct LANGUAGE octave TYPE MODULE SOURCES stir.i ${STIR_REGISTRIES})
+  endif()
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stiroct_REAL_NAME} PROPERTIES SUFFIX ${OCTAVE_SUFFIX} PREFIX "${OCTAVE_PREFIX}")
   SWIG_LINK_LIBRARIES(stiroct ${STIR_LIBRARIES} ${OCTAVE_LIBRARIES})
 
@@ -104,8 +113,12 @@ endif (BUILD_SWIG_OCTAVE)
 if (BUILD_SWIG_MATLAB)
 
   set(module_name stir)
-  SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module ${module_name} -mexname stirMATLAB_wrap)
-  SWIG_ADD_MODULE(stirMATLAB matlab stir.i ${STIR_REGISTRIES})
+  SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module ${module_name} )
+  if (CMAKE_VERSION VERSION_LESS "3.8")
+    SWIG_ADD_MODULE(stirMATLAB matlab stir.i ${STIR_REGISTRIES})
+  else()
+    SWIG_ADD_LIBRARY(stirMATLAB LANGUAGE matlab TYPE MODULE SOURCES stir.i ${STIR_REGISTRIES})
+  endif()
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTIES
         SUFFIX "_wrap.${MATLAB_MEX_EXT}" PREFIX "${MATLAB_PREFIX}"
         LINK_FLAGS "${MATLAB_CXXLINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}"

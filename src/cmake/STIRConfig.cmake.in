@@ -1,0 +1,90 @@
+# The original *cmake.in file is part of STIR.
+#
+# Author: Kris Thielemans
+# Copyright 2016 University College London
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0.txt
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+
+# This file sets STIR_INCLUDE_DIRS, STIR_LIBRARIES and STIR_REGISTRIES.
+# It also finds the packages that were used to build STIR as you need those
+# to link against etc. It should normally not be required that you know about
+# these, as they should be automatically added to the dependencies of the STIR
+# libraries. Therefore, if you make a target that depends on ${STIR_LIBRARIES},
+# its include_directories and linkage should automagically be ok.
+#
+# At this point in time, you do need to add
+#  include_directories("${STIR_INCLUDE_DIRS}")
+# to your CMake file to get the STIR_REGISTRIES to compile.
+
+@PACKAGE_INIT@ 
+
+# add folder where this file resides to the cmake path such that it can use our find_package modules and .cmake files
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+
+include("${CMAKE_CURRENT_LIST_DIR}/STIRTargets.cmake")
+
+set_and_check(STIR_INCLUDE_DIRS "@PACKAGE_STIR_INCLUDE_DIRS@")
+#set_and_check(STIR_LIBRARY_DIRS "@PACKAGE_STIR_LIBRARY_DIRS@")
+set(STIR_LIBRARIES @STIR_LIBRARIES@)
+set(STIR_REGISTRIES @STIR_REGISTRIES@)
+
+## find external packages
+# we use a trick by Matt McCormick (kitware)
+# to set ITK_DIR etc first before calling find_package
+# to make sure we pick the same version of the external library
+
+if (@BOOST_ROOT@)
+  set(BOOST_ROOT "@BOOST_ROOT@")
+endif()
+set (BOOST_INCLUDEDIR "@Boost_INCLUDE_DIRS@")
+find_package(Boost REQUIRED)
+
+if (@ITK_FOUND@)
+  message(STATUS "ITK support in STIR enabled.")
+  set(ITK_DIR "@ITK_DIR@")
+  find_package(ITK REQUIRED)
+endif()
+
+if (@LLN_FOUND@)
+  set(HAVE_ECAT ON)
+  message(STATUS "ECAT support in STIR enabled.")
+  # need to add this as stir_ecat7.h etc rely on it
+  # would be better to add it to STIR_INCLUDE_DIRS (TODO)
+  include_directories("@LLN_INCLUDE_DIRS@")
+endif()
+
+if (@CERN_ROOT_FOUND@)
+  set(CERN_ROOT_CONFIG @CERN_ROOT_CONFIG@)
+  find_package(CERN_ROOT REQUIRED)
+  message(STATUS "CERN ROOT support in STIR enabled.")
+  # need to add this as registries rely on it
+  # would be better to add it to STIR_INCLUDE_DIRS (TODO)
+  include_directories(${CERN_ROOT_INCLUDE_DIRS})
+endif()
+
+if (@AVW_FOUND@)
+  set(AVW_ROOT_DIR @AVW_ROOT_DIR@)
+  find_package(AVW REQUIRED)
+  message(STATUS "AVW support in STIR enabled.")
+  # need to add this as registries rely on it
+  # would be better to add it to STIR_INCLUDE_DIRS (TODO)
+  include_directories(${AVW_INCLUDE_DIRS})
+endif()
+
+if (@STIR_MPI@)
+  find_package(MPI REQUIRED)
+endif()
+
+if(@STIR_OPENMP@)
+  find_package(OpenMP REQUIRED)  
+endif()

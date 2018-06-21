@@ -62,6 +62,8 @@ public:
 
     //! gives method information
     virtual std::string method_info() const;
+    //! Must be called before calling for the first event.
+    virtual Succeeded set_up(const std::string & header_path);
 
     //! Calculate the number of rings based on the crystals and blocks
     inline virtual int get_num_rings() const;

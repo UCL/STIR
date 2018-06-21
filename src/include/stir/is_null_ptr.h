@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2013, Hammersmith Imanet Ltd
+    Copyright (C) 2016, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,7 +29,8 @@
 #define __stir_is_null_ptr_H__
 
 #include "stir/shared_ptr.h"
-#include <memory> // for auto_ptr
+#include <memory>
+#include "stir/unique_ptr.h"
 START_NAMESPACE_STIR
 /*! \ingroup buildblock
   \name testing of (smart) pointers
@@ -41,7 +43,13 @@ template <typename T>
 inline 
 bool 
 is_null_ptr(T const * const ptr)
-{ return ptr==0; }
+{
+#ifdef BOOST_NO_CXX11_NULLPTR
+  return ptr==0;
+#else
+  return ptr==nullptr;
+#endif
+}
 
 template <typename T>
 inline 
@@ -52,8 +60,17 @@ is_null_ptr(shared_ptr<T> const& sptr)
 template <typename T>
 inline 
 bool 
-is_null_ptr(std::auto_ptr<T> const& aptr)
+is_null_ptr(unique_ptr<T> const& aptr)
 { return is_null_ptr(aptr.get()); }
+
+#ifndef BOOST_NO_CXX11_NULLPTR
+inline 
+bool 
+is_null_ptr(const std::nullptr_t)
+{
+  return true;
+}
+#endif
 
 //@}
 
