@@ -721,7 +721,7 @@ Scanner::operator ==(const Scanner& scanner) const
 if (!close_enough(energy_resolution, scanner.energy_resolution) &&
       !close_enough(reference_energy, scanner.reference_energy))
     warning("The energy resolution of the two scanners is different. \n"
-            " %d opposed to %d"
+            " %f opposed to %f"
             "This only affects scatter simulation. \n", energy_resolution, scanner.energy_resolution);
 
   return
