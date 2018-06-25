@@ -65,18 +65,26 @@ process_data()
 
     std::cerr << "number of energy windows:= "<<  this->template_exam_info_sptr->get_num_energy_windows() << '\n';
 
-if(this->template_exam_info_sptr->get_energy_window_pair().first!= -1 &&
-     this->template_exam_info_sptr->get_energy_window_pair().second!= -1 )
-{
-    std::cerr << "energy window pair :="<<" {"<<  this->template_exam_info_sptr->get_energy_window_pair().first  << ',' <<  this->template_exam_info_sptr->get_energy_window_pair().second <<"}\n";
+    if(this->template_exam_info_sptr->get_energy_window_pair().first!= -1 &&
+         this->template_exam_info_sptr->get_energy_window_pair().second!= -1 )
+    {
+        std::cerr << "energy window pair :="<<" {"<<  this->template_exam_info_sptr->get_energy_window_pair().first  << ',' <<  this->template_exam_info_sptr->get_energy_window_pair().second <<"}\n";
 
-}
+    }
 
 
     for (int i = 1; i <= this->template_exam_info_sptr->get_num_energy_windows(); ++i)
     {
         std::cerr << "energy window lower level"<<"["<<i<<"] := "<< this->template_exam_info_sptr->get_low_energy_thres(i-1) << '\n';
         std::cerr << "energy window upper level"<<"["<<i<<"] := "<<  this->template_exam_info_sptr->get_high_energy_thres(i-1) << '\n';
+
+        if (this->template_exam_info_sptr->get_low_energy_thres(i-1) == -1.F || this->template_exam_info_sptr->get_high_energy_thres(i-1) == -1.F)
+
+            {
+                std::cerr << "Not enough input arguments. The energy window thresholds have to be specified for all the energy windows.\n" << '\n';
+                return Succeeded::no;
+            }
+
     }
 
 
