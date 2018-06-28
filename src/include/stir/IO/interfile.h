@@ -203,7 +203,7 @@ write_basic_interfile(const std::string& filename,
 		      const ByteOrder byte_order=ByteOrder::native);
 
 /// Create data filename from the given path
-void interfile_create_filenames(const std::string &, std::string&, std::string&);
+void interfile_create_filenames(const std::string& filename, std::string& data_name, std::string& header_name);
 
 //! This outputs an Interfile header and data for a DiscretisedDensity<3,float> object
 /*!

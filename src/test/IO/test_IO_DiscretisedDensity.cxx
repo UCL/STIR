@@ -109,7 +109,7 @@ void IOTests_DiscretisedDensity::check_result()
     VoxelsOnCartesianGrid<float> *image_to_write_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *>(_image_to_write_sptr.get());
     VoxelsOnCartesianGrid<float> *image_to_read_ptr  = dynamic_cast<VoxelsOnCartesianGrid<float> *>(_image_to_read_sptr.get());
 
-    compare_images(image_to_write_ptr, image_to_read_ptr);
+    compare_images(*image_to_write_ptr, *image_to_read_ptr);
 }
 
 END_NAMESPACE_STIR

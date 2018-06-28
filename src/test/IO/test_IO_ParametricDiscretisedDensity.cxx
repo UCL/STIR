@@ -24,6 +24,7 @@
 */
 /*
     Copyright (C) 2002- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
 
     This file is part of STIR.
 
@@ -123,13 +124,13 @@ void IOTests_ParametricDiscretisedDensity::check_result()
 
     for (int i=1; i<=_image_to_read_sptr->get_num_params(); i++) {
 
-        VoxelsOnCartesianGrid<float> image_to_write =
+        const VoxelsOnCartesianGrid<float> &image_to_write =
                 _image_to_write_sptr->construct_single_density(i);
 
-        VoxelsOnCartesianGrid<float> image_to_read =
+        const VoxelsOnCartesianGrid<float> &image_to_read =
                 _image_to_read_sptr->construct_single_density(i);
 
-        compare_images(&image_to_write, &image_to_read);
+        compare_images(image_to_write, image_to_read);
     }
 }
 

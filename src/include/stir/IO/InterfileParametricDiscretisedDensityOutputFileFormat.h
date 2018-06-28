@@ -20,14 +20,14 @@
 
   \file
   \ingroup InterfileIO
-  \brief Declaration of class stir::InterfileParametricDensityOutputFileFormat
+  \brief Declaration of class stir::InterfileParametricDiscretisedDensityOutputFileFormat
 
   \author Kris Thielemans
 
 */
 
-#ifndef __stir_IO_InterfileParametricDensityOutputFileFormat_H__
-#define __stir_IO_InterfileParametricDensityOutputFileFormat_H__
+#ifndef __stir_IO_InterfileParametricDiscretisedDensityOutputFileFormat_H__
+#define __stir_IO_InterfileParametricDiscretisedDensityOutputFileFormat_H__
 
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/RegisteredParsingObject.h"
@@ -44,16 +44,16 @@ template <typename DiscDensityT> class ParametricDiscretisedDensity;
  */
 #if 0
 template <int num_dimensions, typename elemT>
-class InterfileParametricDensityOutputFileFormat : 
+class InterfileParametricDiscretisedDensityOutputFileFormat : 
   public RegisteredParsingObject<
-        InterfileParametricDensityOutputFileFormat<num_dimensions, elemT>,
+        InterfileParametricDiscretisedDensityOutputFileFormat<num_dimensions, elemT>,
         OutputFileFormat<ParametricDiscretisedDensity<num_dimensions, elemT> >,
         OutputFileFormat<ParametricDiscretisedDensity<num_dimensions, elemT> > >
 #else
 template <typename DiscDensityT>
-class InterfileParametricDensityOutputFileFormat : 
+class InterfileParametricDiscretisedDensityOutputFileFormat : 
   public RegisteredParsingObject<
-        InterfileParametricDensityOutputFileFormat<DiscDensityT>,
+        InterfileParametricDiscretisedDensityOutputFileFormat<DiscDensityT>,
         OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT> >,
         OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT> > >
 #endif
@@ -62,12 +62,12 @@ class InterfileParametricDensityOutputFileFormat :
   typedef 
 #if 0
      RegisteredParsingObject<
-        InterfileParametricDensityOutputFileFormat<num_dimensions, elemT>,
+        InterfileParametricDiscretisedDensityOutputFileFormat<num_dimensions, elemT>,
         OutputFileFormat<ParametricDiscretisedDensity<num_dimensions, elemT> >,
         OutputFileFormat<ParametricDiscretisedDensity<num_dimensions, elemT> > >
 #else
      RegisteredParsingObject<
-        InterfileParametricDensityOutputFileFormat<DiscDensityT>,
+        InterfileParametricDiscretisedDensityOutputFileFormat<DiscDensityT>,
         OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT> >,
         OutputFileFormat<ParametricDiscretisedDensity<DiscDensityT> > >
 #endif
@@ -76,7 +76,7 @@ public :
     //! Name which will be used when parsing an OutputFileFormat object
   static const char * const registered_name;
 
-  InterfileParametricDensityOutputFileFormat(const NumericType& = NumericType::FLOAT, 
+  InterfileParametricDiscretisedDensityOutputFileFormat(const NumericType& = NumericType::FLOAT, 
                    const ByteOrder& = ByteOrder::native);
 
 

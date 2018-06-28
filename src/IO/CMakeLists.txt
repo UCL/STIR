@@ -32,7 +32,7 @@ set(${dir_LIB_SOURCES}
   InterfileHeaderSiemens
   InputFileFormatRegistry 
   InterfileDynamicDiscretisedDensityOutputFileFormat 
-  InterfileParametricDensityOutputFileFormat
+  InterfileParametricDiscretisedDensityOutputFileFormat
   GIPL_ImageFormat
 ) 
 

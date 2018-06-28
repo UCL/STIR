@@ -24,6 +24,7 @@
 */
 /*
     Copyright (C) 2002- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018- , University College London
 
     This file is part of STIR.
 
@@ -97,8 +98,8 @@ protected:
     virtual void write_image();
     virtual void read_image();
     virtual void check_result() = 0;
-    void         compare_images(VoxelsOnCartesianGrid<float> *im_1_ptr,
-                                VoxelsOnCartesianGrid<float> *im_2_ptr);
+    void         compare_images(const VoxelsOnCartesianGrid<float> &im_1,
+                                const VoxelsOnCartesianGrid<float> &im_2);
 
     std::istream&                               _in;
     shared_ptr<OutputFileFormat<A> >            _output_file_format_sptr;
@@ -203,42 +204,42 @@ void IOTests<A>::read_image()
 }
 
 template <class A>
-void IOTests<A>::compare_images(VoxelsOnCartesianGrid<float> *im_1_ptr,
-                                VoxelsOnCartesianGrid<float> *im_2_ptr)
+void IOTests<A>::compare_images(const VoxelsOnCartesianGrid<float> &im_1,
+                                const VoxelsOnCartesianGrid<float> &im_2)
 {
     set_tolerance(.000001);
 
-    check_if_equal(im_1_ptr->get_grid_spacing(), im_2_ptr->get_grid_spacing(), "test on read and written file via image grid spacing ");
+    check_if_equal(im_1.get_grid_spacing(), im_2.get_grid_spacing(), "test on read and written file via image grid spacing ");
 
     if (_output_file_format_sptr->get_type_of_numbers().integer_type()) {
-        set_tolerance(10.*im_1_ptr->find_max()/
+        set_tolerance(10.*im_1.find_max()/
                   pow(2.,static_cast<double>(_output_file_format_sptr->get_type_of_numbers().size_in_bits())));
     }
 
-    check_if_equal(im_1_ptr->get_voxel_size(), im_2_ptr->get_voxel_size(), "test on read and written file via image voxel size");
-    check_if_equal(im_1_ptr->get_length(), im_2_ptr->get_length(), "test on read and written file via image length");
-    check_if_equal(im_1_ptr->get_lengths(), im_2_ptr->get_lengths(), "test on read and written file via image lengths");
-    check_if_equal(im_1_ptr->get_max_index(), im_2_ptr->get_max_index(), "test on read and written file via image max index");
-    check_if_equal(im_1_ptr->get_max_indices(), im_2_ptr->get_max_indices(), "test on read and written file via image max indices");
-    check_if_equal(im_1_ptr->get_max_x(), im_2_ptr->get_max_x(), "test on read and written file via image max x");
-    check_if_equal(im_1_ptr->get_max_y(), im_2_ptr->get_max_y(), "test on read and written file via image max y");
-    check_if_equal(im_1_ptr->get_max_z(), im_2_ptr->get_max_z(), "test on read and written file via image max z");
-    check_if_equal(im_1_ptr->get_min_index(), im_2_ptr->get_min_index(), "test on read and written file via image min index");
-    check_if_equal(im_1_ptr->get_min_indices(), im_2_ptr->get_min_indices(), "test on read and written file via image min indices");
-    check_if_equal(im_1_ptr->get_min_x(), im_2_ptr->get_min_x(), "test on read and written file via image min x");
-    check_if_equal(im_1_ptr->get_min_y(), im_2_ptr->get_min_y(), "test on read and written file via image min y");
-    check_if_equal(im_1_ptr->get_min_z(), im_2_ptr->get_min_z(), "test on read and written file via image min z");
-    check_if_equal(im_1_ptr->get_x_size(), im_2_ptr->get_x_size(), "test on read and written file via image x size");
-    check_if_equal(im_1_ptr->get_y_size(), im_2_ptr->get_y_size(), "test on read and written file via image y size");
-    check_if_equal(im_1_ptr->get_z_size(), im_2_ptr->get_z_size(), "test on read and written file via image z size");
-    check_if_equal(im_1_ptr->find_max(), im_2_ptr->find_max(), "test on read and written file via image max");
-    check_if_equal(im_1_ptr->find_min(), im_2_ptr->find_min(), "test on read and written file via image min");
+    check_if_equal(im_1.get_voxel_size(), im_2.get_voxel_size(), "test on read and written file via image voxel size");
+    check_if_equal(im_1.get_length(), im_2.get_length(), "test on read and written file via image length");
+    check_if_equal(im_1.get_lengths(), im_2.get_lengths(), "test on read and written file via image lengths");
+    check_if_equal(im_1.get_max_index(), im_2.get_max_index(), "test on read and written file via image max index");
+    check_if_equal(im_1.get_max_indices(), im_2.get_max_indices(), "test on read and written file via image max indices");
+    check_if_equal(im_1.get_max_x(), im_2.get_max_x(), "test on read and written file via image max x");
+    check_if_equal(im_1.get_max_y(), im_2.get_max_y(), "test on read and written file via image max y");
+    check_if_equal(im_1.get_max_z(), im_2.get_max_z(), "test on read and written file via image max z");
+    check_if_equal(im_1.get_min_index(), im_2.get_min_index(), "test on read and written file via image min index");
+    check_if_equal(im_1.get_min_indices(), im_2.get_min_indices(), "test on read and written file via image min indices");
+    check_if_equal(im_1.get_min_x(), im_2.get_min_x(), "test on read and written file via image min x");
+    check_if_equal(im_1.get_min_y(), im_2.get_min_y(), "test on read and written file via image min y");
+    check_if_equal(im_1.get_min_z(), im_2.get_min_z(), "test on read and written file via image min z");
+    check_if_equal(im_1.get_x_size(), im_2.get_x_size(), "test on read and written file via image x size");
+    check_if_equal(im_1.get_y_size(), im_2.get_y_size(), "test on read and written file via image y size");
+    check_if_equal(im_1.get_z_size(), im_2.get_z_size(), "test on read and written file via image z size");
+    check_if_equal(im_1.find_max(), im_2.find_max(), "test on read and written file via image max");
+    check_if_equal(im_1.find_min(), im_2.find_min(), "test on read and written file via image min");
 
-    check_if_equal(*im_1_ptr, *im_2_ptr, "test on read and written file");
+    check_if_equal(im_1, im_2, "test on read and written file");
 
     set_tolerance(.00001);
 
-    check_if_equal(im_1_ptr->get_origin(), im_2_ptr->get_origin(), "test on read and written file via image origin");
+    check_if_equal(im_1.get_origin(), im_2.get_origin(), "test on read and written file via image origin");
 
 }
 

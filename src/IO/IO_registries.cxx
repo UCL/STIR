@@ -35,7 +35,7 @@
 #include "stir/IO/InterfileDynamicDiscretisedDensityOutputFileFormat.h"
 #include "stir/IO/InterfileDynamicDiscretisedDensityInputFileFormat.h"
 #include "stir/IO/InterfileParametricDiscretisedDensityInputFileFormat.h"
-#include "stir/IO/InterfileParametricDensityOutputFileFormat.h"
+#include "stir/IO/InterfileParametricDiscretisedDensityOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ECAT6OutputFileFormat.h"
 #include "stir/IO/ECAT7OutputFileFormat.h"
@@ -80,7 +80,7 @@ static InterfileOutputFileFormat::RegisterIt dummy1;
 static ITKOutputFileFormat::RegisterIt dummyITK1;
 #endif
 static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfIn;
-static InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfIn;
+static InterfileParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfIn;
 
 //! Support for SAFIR listmode file format
 static RegisterInputFileFormat<SAFIRCListmodeInputFileFormat> LMdummySAFIR(4);

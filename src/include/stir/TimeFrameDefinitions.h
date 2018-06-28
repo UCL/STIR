@@ -102,6 +102,12 @@ public:
    */
     unsigned int get_time_frame_num(const double start_time, const double end_time) const;
 
+    //! Set number of time frames
+    void set_num_time_frames(int num_time_frames) { frame_times.resize(num_time_frames); }
+
+    //! Set time frame
+    void set_time_frame(int frame, double start, double duration) { frame_times[frame].first = start; frame_times[frame].second = duration; }
+
 private:
   //! Stores start and end time for each frame
   std::vector<std::pair<double, double> > frame_times;

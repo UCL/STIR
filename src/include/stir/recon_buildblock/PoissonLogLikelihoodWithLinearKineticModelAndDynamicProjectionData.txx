@@ -159,7 +159,7 @@ post_processing()
     { warning("The 'mash x views' key has an invalid value (must be 1 or even number)"); return true; }
 #endif
  
-  this->_dyn_proj_data_sptr.reset(DynamicProjData::read_from_file(_input_filename));
+  this->_dyn_proj_data_sptr = DynamicProjData::read_from_file(_input_filename);
   if (is_null_ptr(this->_dyn_proj_data_sptr))
     { warning("Error reading input file %s", _input_filename.c_str()); return true; }
   // image stuff
@@ -175,7 +175,7 @@ post_processing()
   if (this->_additive_dyn_proj_data_filename != "0")
     {
       info(boost::format("Reading additive projdata data %1%") % this->_additive_dyn_proj_data_filename);
-      this->_additive_dyn_proj_data_sptr.reset(DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename));
+      this->_additive_dyn_proj_data_sptr = DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename);
       if (is_null_ptr(this->_additive_dyn_proj_data_sptr))
 	{ warning("Error reading additive input file %s", _additive_dyn_proj_data_filename.c_str()); return true; }
 
