@@ -54,7 +54,8 @@ set_defaults()
   this->list_mode_filename =""; 
   this->frame_defs_filename ="";
   this->list_mode_data_sptr.reset(); 
-  this->current_frame_num =0; 
+  this->current_frame_num = 1;
+  this->num_events_to_use = 0L;
  
   this->output_image_size_xy=-1; 
   this->output_image_size_z=-1; 
@@ -82,7 +83,7 @@ initialise_keymap()
   this->parser.add_key("time frame definition filename", &this->frame_defs_filename);
   // SM TODO -- later do not parse
   this->parser.add_key("time frame number", &this->current_frame_num);
-     
+       this->parser.add_parsing_key("Bin Normalisation type", &this->normalisation_sptr);
 } 
 
 template <typename TargetT>     
@@ -94,7 +95,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
 
   if (this->list_mode_filename.length() == 0) 
   { warning("You need to specify an input file\n"); return true; } 
-   
+
   this->list_mode_data_sptr=
     read_from_file<CListModeData>(this->list_mode_filename); 
 
@@ -103,7 +104,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
   else
     {
       // make a single frame starting from 0. End value will be ignored.
-      vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
+      vector<pair<double, double> > frame_times(1, pair<double,double>(0,0));
       this->frame_defs = TimeFrameDefinitions(frame_times);
     } 
   // image stuff 
@@ -116,7 +117,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
   { warning("output image size z must be positive (or -1 as default)\n"); return true; } 
    
 
-   return false; 
+   return false;
 } 
 
 template <typename TargetT>
@@ -151,19 +152,28 @@ set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
   this->normalisation_sptr = arg;
 }
 
-#if 0
-Succeeded  
+template<typename TargetT>
+void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
-set_up(shared_ptr <TargetT > const& target_sptr) 
-{ 
-  if ( base_type::set_up(target_sptr) != Succeeded::yes) 
-    return Succeeded::no; 
+start_new_time_frame(const unsigned int)
+{}
+
+template<typename TargetT>
+Succeeded
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+set_up(shared_ptr <TargetT > const& target_sptr)
+{
+  if ( base_type::set_up(target_sptr) != Succeeded::yes)
+    return Succeeded::no;
+
+  // handle time frame definitions etc
+    if(this->num_events_to_use==0 && this->frame_defs_filename.size() == 0)
+      do_time_frame = true;
  
-    return Succeeded::yes; 
- 
- 
-} 
- 
+    return Succeeded::yes;
+}
+
+#if 0
 template <typename TargetT> 
 TargetT * 
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>:: 

@@ -82,8 +82,8 @@ public:
  
   //virtual TargetT * construct_target_ptr();  
  
-  //virtual Succeeded 
-    //set_up(shared_ptr <TargetT > const& target_sptr); 
+  virtual Succeeded
+   set_up(shared_ptr <TargetT > const& target_sptr);
  
   virtual  
   void compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,  
@@ -116,7 +116,12 @@ protected:
   //! Listmode pointer
   shared_ptr<CListModeData> list_mode_data_sptr; 
  
-  int current_frame_num;
+  unsigned int current_frame_num;
+
+  //! This is part of some functionality I transfer from LmToProjData.
+  long int num_events_to_use;
+   //! Reconstruct based on time frames
+   bool do_time_frame;
  
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */
@@ -126,6 +131,10 @@ protected:
   virtual void initialise_keymap(); 
 
   virtual bool post_processing(); 
+
+   //! will be called when a new time frame starts
+   /*! The frame numbers start from 1. */
+   virtual void start_new_time_frame(const unsigned int new_frame_num);
  
   int output_image_size_xy;  
  

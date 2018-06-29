@@ -19,6 +19,7 @@
 #include "stir/IO/InputStreamFromROOTFile.h"
 #include "stir/IO/FileSignature.h"
 #include "stir/error.h"
+#include "stir/FilePath.h"
 
 START_NAMESPACE_STIR
 
@@ -64,26 +65,39 @@ InputStreamFromROOTFile::initialise_keymap()
 bool
 InputStreamFromROOTFile::post_processing()
 {
-    // Read the 4 bytes to check whether this is a ROOT file, indeed.
-    FileSignature signature(filename.c_str());
+    return false;
+}
+
+Succeeded
+InputStreamFromROOTFile::set_up(const std::string & header_path)
+{
+
+    FilePath f(filename,false);
+    f.prepend_directory_name(header_path);
+
+    const std::string fullfilename = f.get_as_string();
+    // Read the 4 bytes to check whether this is a ROOT file.
+    FileSignature signature(fullfilename.c_str());
     if ( strncmp(signature.get_signature(), "root", 4) != 0)
-      {
-	error("InputStreamFromROOTFile: File '%s' is not a ROOT file! (first 4 bytes should say 'root')",
-	      filename.c_str());
-      }
+    {
+        error("InputStreamFromROOTFile: File '%s' is not a ROOT file! (first 4 bytes should say 'root')",
+              filename.c_str());
+    }
+
     stream_ptr = new TChain(this->chain_name.c_str());
-    stream_ptr->Add(this->filename.c_str());
+    stream_ptr->Add(fullfilename.c_str());
 
     stream_ptr->SetBranchAddress("time1", &time1);
     stream_ptr->SetBranchAddress("time2", &time2);
 
-    stream_ptr->SetBranchAddress("eventID1",&eventID1);
-    stream_ptr->SetBranchAddress("eventID2",&eventID2);
+    stream_ptr->SetBranchAddress("eventID1",&event1);
+    stream_ptr->SetBranchAddress("eventID2",&event2);
     stream_ptr->SetBranchAddress("energy1", &energy1);
     stream_ptr->SetBranchAddress("energy2", &energy2);
     stream_ptr->SetBranchAddress("comptonPhantom1", &comptonphantom1);
     stream_ptr->SetBranchAddress("comptonPhantom2", &comptonphantom2);
-    return false;
+
+    return Succeeded::yes;
 }
 
 END_NAMESPACE_STIR

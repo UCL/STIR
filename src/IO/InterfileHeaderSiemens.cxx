@@ -533,6 +533,14 @@ int InterfileListmodeHeaderSiemens::find_storage_order()
   return false;
 }
 
+int InterfileListmodeHeaderSiemens::get_axial_compression() const
+{return axial_compression;}
+int InterfileListmodeHeaderSiemens::get_maximum_ring_difference() const
+{return maximum_ring_difference;}
+int InterfileListmodeHeaderSiemens::get_num_views() const
+{return num_views;}
+int InterfileListmodeHeaderSiemens::get_num_projections() const
+{return num_bins;}
 
 
 bool InterfileListmodeHeaderSiemens::post_processing()

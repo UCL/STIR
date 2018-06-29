@@ -68,17 +68,17 @@ get_next_record(CListRecordROOT& record)
 
         current_position ++ ;
 
-        if ( (comptonphantom1 > 0 && comptonphantom2>0) && exclude_scattered )
+        if ( (comptonphantom1 > 0 || comptonphantom2 > 0) && exclude_scattered )
             continue;
-        else if ( (eventID1 != eventID2) && exclude_randoms )
+        if ( event1 != event2 && exclude_randoms )
             continue;
-        else if (energy1 < low_energy_window ||
+        if (energy1 < low_energy_window ||
                  energy1 > up_energy_window ||
                  energy2 < low_energy_window ||
                  energy2 > up_energy_window)
             continue;
-        else
-            break;
+
+        break;
     }
 
     int ring1 = static_cast<Int_t>(crystalID1/crystal_repeater_z)
@@ -106,7 +106,7 @@ get_next_record(CListRecordROOT& record)
             record.init_from_data(ring1, ring2,
                                   crystal1, crystal2,
                                   time1, time2,
-                                  eventID1, eventID2);
+                                  event1, event2);
 }
 
 std::string
@@ -138,8 +138,14 @@ InputStreamFromROOTFileForECATPET::initialise_keymap()
 bool InputStreamFromROOTFileForECATPET::
 post_processing()
 {
-    if (base_type::post_processing())
-        return true;
+    return false;
+}
+
+Succeeded InputStreamFromROOTFileForECATPET::
+set_up(const std::string & header_path )
+{
+    if (base_type::set_up(header_path) == Succeeded::no)
+        return Succeeded::no;
     stream_ptr->SetBranchAddress("crystalID1",&crystalID1);
     stream_ptr->SetBranchAddress("crystalID2",&crystalID2);
     stream_ptr->SetBranchAddress("blockID1",&blockID1);
@@ -149,7 +155,7 @@ post_processing()
     if (nentries == 0)
         error("The total number of entries in the ROOT file is zero. Abort.");
 
-    return false;
+    return Succeeded::yes;
 }
 
 END_NAMESPACE_STIR

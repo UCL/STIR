@@ -108,7 +108,8 @@ public:
 
   //! get a pointer to an object encoding all symmetries that are used by this ProjMatrixByBin
   inline const  DataSymmetriesForBins* get_symmetries_ptr() const;
-  
+  //! get a shared_ptr to an object encoding all symmetries that are used by this ProjMatrixByBin
+  inline const shared_ptr<DataSymmetriesForBins> get_symmetries_sptr() const;
   
   //! The main method for getting a row of the matrix.
   /*! 
@@ -155,7 +156,7 @@ public:
 
   
 protected:
-  shared_ptr<DataSymmetriesForBins> symmetries_ptr;
+  shared_ptr<DataSymmetriesForBins> symmetries_sptr;
   
   //! default ctor (calls set_defaults())
   /*! Note that due to the C++ definition (and some good reasons), 
