@@ -1,5 +1,7 @@
 generate_image Parameters :=
 output filename:=my_test_object_g1
+image duration (sec) := 20
+image relative start time (sec) := 0
 X output image size (in pixels):=101
 Y output image size (in pixels):=101
 Z output image size (in pixels):=47

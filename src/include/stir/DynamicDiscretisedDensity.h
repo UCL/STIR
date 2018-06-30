@@ -11,6 +11,7 @@
 /*
     Copyright (C) 2005 - 2011-01-12, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -47,7 +48,7 @@ class Succeeded;
 
   \todo template in \c elemT and numDimensions?
  */
-class DynamicDiscretisedDensity
+class DynamicDiscretisedDensity: public ExamData
 {
  public:
   //! A typedef that can be used what the base of the hierarchy is
@@ -78,8 +79,8 @@ class DynamicDiscretisedDensity
                             const shared_ptr<Scanner>& scanner_sptr)
     {
       _densities.resize(time_frame_definitions.get_num_frames());
-      _time_frame_definitions=time_frame_definitions;
-      _start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
+      exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
+      exam_info_sptr->start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
       _calibration_factor=-1.F;
       _isotope_halflife=-1.F;
       _scanner_sptr=scanner_sptr;
@@ -91,8 +92,8 @@ class DynamicDiscretisedDensity
                             const shared_ptr<singleDiscDensT >& density_sptr)
     {  
       _densities.resize(time_frame_definitions.get_num_frames());
-      _time_frame_definitions=time_frame_definitions;
-      _start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
+      exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
+      exam_info_sptr->start_time_in_secs_since_1970=scan_start_time_in_secs_since_1970;
       _calibration_factor=-1.F;
       _isotope_halflife=-1.F;
       _scanner_sptr=scanner_sptr;
@@ -168,7 +169,7 @@ class DynamicDiscretisedDensity
   const float get_scanner_default_bin_size() const;
 
   void set_time_frame_definitions(const TimeFrameDefinitions& time_frame_definitions) 
-  {this->_time_frame_definitions=time_frame_definitions;}
+  {this->exam_info_sptr->set_time_frame_definitions(time_frame_definitions);}
 
   const TimeFrameDefinitions & 
     get_time_frame_definitions() const ;
@@ -195,13 +196,13 @@ class DynamicDiscretisedDensity
   void set_calibration_factor(const float calibration_factor) ;
  private:
   // warning: if adding any new members, you have to change the copy constructor as well.
-  TimeFrameDefinitions _time_frame_definitions;
+  //TimeFrameDefinitions _time_frame_definitions;
   DensitiesT _densities;
   shared_ptr<Scanner> _scanner_sptr;
   float _calibration_factor;
   float _isotope_halflife;
   bool _is_decay_corrected; 
-  double _start_time_in_secs_since_1970;
+  //double _start_time_in_secs_since_1970;
 };
 
 END_NAMESPACE_STIR

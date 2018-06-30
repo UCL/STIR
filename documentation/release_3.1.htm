@@ -53,7 +53,12 @@ on Linux/MacOSX and 3.10.2 or later on Windows, but we try to accomodate older v
 </p>
     
 <p>We now support the parsing of SIEMENS Interfile files natively.</p>
- 
+
+<p>Finally, we now keep track of time frames and patient orientation for images, in particular
+   making sure that reconstructions initialise this information from the projection data (if it
+   was present there).
+</p>
+
 <p>Of course, there is also the usual code-cleanup and 
 improvements to the documentation.
 </p>
@@ -109,6 +114,7 @@ Please note that you cannot enable both OPENMP and MPI.</li>
 These are only minimally documented at the present stage unfortunately.
 </li>
 <li>We now include a shell script for easier scatter estimation.</li>
+<li><tt>list_image_info</tt> now has options to list exam info, or only part of the information (as <tt>list_projdata_info</tt>).</li>
 <li><tt>list_lm_countrates</tt> is a new list mode utility to output total counts per specified time interval.</li>
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
 <li>add Verbosity level (currently only to be set from interactive languages)</li
@@ -314,7 +320,8 @@ using the default output file format.</li>
 <li> Support for Energy Resolution and energy windows in Scanners, has been added. 
 In order to ensure backwards compatibility, at the moment, it is completely optional.</li>
 <li> Information on energy windows has been added in the <code>ExamInfo</code>. </li>
-<li><code>ExamData</code> is a new base class for <code>ProjData</code> and <code>CListModeData</code> </li>
+<li><code>ExamData</code> is a new base class for <code>ProjData</code>, <code>CListModeData</code>,
+<code>DiscretisedDensity</code> and the dynamic/gated variations.</li>
 <li>Moved functions from the <code>poisson_noise</code> utility to a new class
   <code>GeneralisedPoissonNoiseGenerator</code>.
   </li>

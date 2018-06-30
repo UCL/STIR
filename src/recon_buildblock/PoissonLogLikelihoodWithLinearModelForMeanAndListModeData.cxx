@@ -2,6 +2,7 @@
 // 
 /* 
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -127,6 +128,14 @@ set_input_data(const shared_ptr<ExamData> & arg)
     this->list_mode_data_sptr = dynamic_pointer_cast<CListModeData>(arg);
 }
 
+template <typename TargetT>
+const CListModeData&
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+get_input_data() const
+{
+  return *this->list_mode_data_sptr;
+}
+
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
@@ -171,7 +180,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 construct_target_ptr() const 
 { 
   return 
-      new VoxelsOnCartesianGrid<float> (*this->proj_data_sptr->get_proj_data_info_ptr(), 
+    new VoxelsOnCartesianGrid<float> (this->get_input_data().get_exam_info_sptr(),
+                                      *this->proj_data_sptr->get_proj_data_info_ptr(),
 					this->zoom, 
 					CartesianCoordinate3D<float>(this->Zoffset, 
 								     this->Yoffset, 

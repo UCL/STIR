@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -383,8 +384,10 @@ IterativeReconstruction<TargetT>::get_initial_data_ptr() const
   }
   else
     {
-      return 
+      TargetT * target_ptr =
         TargetT::read_from_file(this->initial_data_filename);
+      target_ptr->set_exam_info(*this->get_input_data().get_exam_info_sptr());
+      return target_ptr;
     }
 }
 
@@ -618,6 +621,15 @@ set_input_data(const shared_ptr<ExamData> &arg)
 {
     this->objective_function_sptr->set_input_data(arg);
 }
+
+template <typename TargetT>
+const ExamData&
+IterativeReconstruction<TargetT>::
+get_input_data() const
+{
+  return this->objective_function_sptr->get_input_data();
+}
+
 
 template <typename TargetT>
 int
