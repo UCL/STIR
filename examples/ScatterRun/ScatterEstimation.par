@@ -46,11 +46,11 @@ mask projdata filename := ./produced_data/mask_projdata.hs
 recompute mask image := 1
 mask attenuation image filename := ./produced_data/mask.hv
 
-mask max threshold := 0.001
-mask add scalar := -0.00099 
-mask min threshold := 0.0
-mask times scalar := 100002
-mask postfilter filename := ./par_files/postfilter_Gaussian.par
+mask image max threshold  := 0.001
+mask image additive scalarr := -0.00099 
+mask image min threshold := 0.0
+mask image times scalar := 100002
+mask image postfilter filename := ./par_files/postfilter_Gaussian.par
 ;End of Mask
 
 ;Parameter file for the tail fitting of the mask image.
@@ -65,12 +65,12 @@ export 2d projdata := 1
 scatter simulation parameters file := ./par_files/scatter_simulation.par 
 
 ; Over-ride the values set in the scatter simulation parameteres file
-over-ride scanner template := 1
-over-ride initial activity image := 1
-over-ride density image := 1
-over-ride density image for scatter points := 0
+override scanner template := 1
+override initial activity image := 1
+override density image := 1
+override density image for scatter points := 0
 
-reconstruction template file := ./par_files/run_reconstruction.par 
+reconstruction parameter template file := ./par_files/run_reconstruction.par 
 
 ;
 ; This is the number of times which the Scatter Estimation will
@@ -89,8 +89,8 @@ output scatter estimate name prefix := ./produced_data/total_back
 ; If provided it will be given to the ScatterSimulation 
 ; subsampled attenuation imagw filename := sub_atten.hv
 
-max scale value := 2 ;10
-min scale value := 0.4 ;0.1
+maximum scale value := 2 ;10
+minimum scale value := 0.4 ;0.1
 
 ;Upsample and fit 
 ; defaults to 3.
