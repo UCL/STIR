@@ -4,6 +4,7 @@
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
     Copyright (C) 2013-2016, University College London
+    Copyright (C) 2017-2018, University of Leeds
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,6 +31,7 @@
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Claire Labbe
+  \author Palak Wadhwa
   \author PARAPET project
 */
 
@@ -333,10 +335,10 @@ case PETMR_Signa:
 	       357, 
 	       331, // TODO
 	       2 * 224,
-               317.0F, 
+               311.9F,
 	       9.4F,  
-	       5.55F,
-	       2.1306F, // TO CHECK
+           5.56F,
+           2.01565F, // TO CHECK
 	       static_cast<float>(-5.23*_PI/180),//sign? TODO value
 	       5,
 	       4,
