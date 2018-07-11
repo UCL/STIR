@@ -231,7 +231,6 @@ int main(int argc, char **argv)
                 int rb = 0, b = 0;
                 SinglesRatesFromGEHDF5 singles;
                 int num_slices = singles.get_num_time_slices();
-                std::cout<<"This is the number of slices"<<num_slices<<std::endl;
                 uncompressed_proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb,
                                               uncompressed_bin);
 

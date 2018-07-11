@@ -356,7 +356,6 @@ Calculate number of time slices from the length of the data (file size minus hea
 
   while ( slice < _num_time_slices) {
 
-std::cout<<"Now processing sample"<< slice+1 <<std::endl;
 
 //PW Open the dataset from that file here.	
  char datasetname[300];
@@ -376,20 +375,16 @@ const int    RANK_OUT = 2;
 
       if( type_class == H5T_INTEGER )
       {
-     std::cout << "Data set has INTEGER type" << std::endl;
-	
 //PW Get the integer type
 
      H5::IntType intype = dataset.getIntType();
      
 	H5std_string order_string;
          H5T_order_t order = intype.getOrder( order_string );
-        std::cout << order_string << std::endl;
 
           //PW Get size of the data element stored in file and print it.
  
          size_t size = intype.getSize();
-         std::cout << "Data size is " << size << std::endl;
       }
 
 //PW Get dataspace of the dataset.   
@@ -402,9 +397,6 @@ const int    RANK_OUT = 2;
       
       hsize_t dims_out[2];
       int ndims = dataspace.getSimpleExtentDims( dims_out, NULL);
-      std::cout << "rank " << rank << ", dimensions " <<
-          (unsigned long)(dims_out[0]) << " x " <<
-          (unsigned long)(dims_out[1]) << std::endl;
 
 //PW Define hyperslab in the dataset; implicitly giving strike and block NULL.
   
