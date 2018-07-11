@@ -5,11 +5,13 @@
 
   \brief Construct randoms as a product of singles estimates
 
+  \author Palak Wadhwa
   \author Kris Thielemans
 
 */
 /*
   Copyright (C) 2001- 2012, Hammersmith Imanet Ltd
+  Copyright (C) 2017- 2018, University of Leeds
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -235,7 +237,7 @@ int main(int argc, char **argv)
 
                 /*(*segment_ptr)[bin.axial_pos_num()]*/
                 sinogram[bin.view_num()][bin.tangential_pos_num()] +=
-                num_slices*0.00000000457*efficiencies[ra][a]*efficiencies[rb][b%num_detectors_per_ring];
+                num_slices*0.00000000457*efficiencies[44-ra][a]*efficiencies[44-rb][b%num_detectors_per_ring];
                   }
               }
               }

@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2003-2007, Hammersmith Imanet Ltd
+    Copyright (C) 2017-2018, University of Leeds
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -20,8 +21,8 @@
   \ingroup singles_buildblock
   \brief Implementation of SinglesRatesFromGEHDF5
 
+  \author Palak Wadhwa
   \author Kris Thielemans
-  \author Sanida Mustafovic
 */
 
 #include "stir/DetectionPosition.h"
