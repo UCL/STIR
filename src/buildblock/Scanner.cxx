@@ -335,7 +335,7 @@ case PETMR_Signa:
 	       357, 
 	       331, // TODO
 	       2 * 224,
-               311.9F,
+           311.9F,
 	       9.4F,  
            5.56F,
            2.01565F, // TO CHECK

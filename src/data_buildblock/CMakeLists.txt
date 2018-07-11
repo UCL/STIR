@@ -33,6 +33,11 @@ if (HAVE_ECAT)
 	SinglesRatesFromECAT7  
   )
 endif()
+if (HAVE_HDF5)
+    list (APPEND  ${dir_LIB_SOURCES}
+        SinglesRatesFromGEHDF5
+  )
+endif()
 
 include(stir_lib_target)
 

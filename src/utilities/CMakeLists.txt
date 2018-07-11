@@ -66,6 +66,7 @@ set(${dir_EXE_SOURCES}
 	apply_normfactors3D
 	apply_normfactors
 	construct_randoms_from_singles
+	construct_randoms_from_GEsingles
 	find_ML_normfactors3D
 	find_ML_normfactors
 	find_ML_singles_from_delayed
