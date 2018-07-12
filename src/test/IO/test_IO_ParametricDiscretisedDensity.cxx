@@ -75,7 +75,7 @@ START_NAMESPACE_STIR
 class IOTests_ParametricDiscretisedDensity : public IOTests<ParametricVoxelsOnCartesianGrid>
 {
 public:
-    IOTests_ParametricDiscretisedDensity(istream& in) : IOTests(in) {}
+    explicit IOTests_ParametricDiscretisedDensity(istream& in) : IOTests(in) {}
 
 protected:
     void create_image();

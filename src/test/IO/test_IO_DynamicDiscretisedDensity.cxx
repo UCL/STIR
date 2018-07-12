@@ -73,7 +73,7 @@ START_NAMESPACE_STIR
 class IOTests_DynamicDiscretisedDensity : public IOTests<DynamicDiscretisedDensity>
 {
 public:
-    IOTests_DynamicDiscretisedDensity(istream& in) : IOTests(in) {}
+    explicit IOTests_DynamicDiscretisedDensity(istream& in) : IOTests(in) {}
 
 protected:
 

@@ -72,7 +72,7 @@ START_NAMESPACE_STIR
 class IOTests_DiscretisedDensity : public IOTests<DiscretisedDensity<3,float> >
 {
 public:
-    IOTests_DiscretisedDensity(istream& in) : IOTests(in) {}
+    explicit IOTests_DiscretisedDensity(istream& in) : IOTests(in) {}
 
 protected:
 
