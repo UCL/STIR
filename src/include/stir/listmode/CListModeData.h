@@ -26,11 +26,9 @@
 #ifndef __stir_listmode_CListModeData_H__
 #define __stir_listmode_CListModeData_H__
 
-#include "stir/Scanner.h"
-#include "stir/shared_ptr.h"
 #include <string>
 #include <ctime>
-
+#include "stir/ProjDataInfo.h"
 #include "stir/IO/ExamData.h"
 #include "stir/RegisteredParsingObject.h"
 
@@ -218,6 +216,7 @@ public:
   //! Get scanner pointer  
   /*! Returns a pointer to a scanner object that is appropriate for the 
       list mode data that is being read.
+      \warning This member is obsolete and might be removed soon.
   */
   const Scanner* get_scanner_ptr() const;
 
@@ -228,15 +227,20 @@ public:
   //! it will throw an error.
   virtual inline unsigned long int get_total_number_of_events() const
   {
-      error("The function get_total_number_of_events() is currently not supported for this file format.");
+      error("CListModeData: The function get_total_number_of_events() is currently not supported for this file format.");
       return 0;
   }
 
+  virtual shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
+
 protected:
+
+  void set_proj_data_info_sptr(shared_ptr<ProjDataInfo>);
   //! Has to be set by the derived class
-  shared_ptr<Scanner> scanner_sptr;
-  //! Has to be set by the derived class
-//  shared_ptr<ExamInfo> exam_info_sptr;
+  //  shared_ptr<ExamInfo> exam_info_sptr;
+private:
+  //! Has to be initialised by the derived class
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
 };
 
 END_NAMESPACE_STIR

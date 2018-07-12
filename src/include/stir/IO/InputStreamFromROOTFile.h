@@ -104,7 +104,7 @@ public:
     inline std::string get_ROOT_filename() const;
 
     //! Get the number of rings as calculated from the number of repeaters
-    inline virtual int get_num_rings() const = 0;
+    virtual int get_num_rings() const = 0;
     //! Get the number of dets per ring as calculated from the number of repeaters
     virtual int get_num_dets_per_ring() const = 0;
     //! Get the number of axial modules
@@ -146,7 +146,7 @@ protected:
 
     // Variables to store root information
     std::string chain_name;
-    Int_t           eventID1, eventID2;
+    Int_t           event1, event2;
     Double_t        time1, time2;
     Float_t         energy1, energy2;
     Int_t           comptonphantom1, comptonphantom2;

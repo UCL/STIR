@@ -1,14 +1,11 @@
 generate_image Parameters :=
-output filename:=my_uniform_cylinder
-image duration (sec) := 20
-image relative start time (sec) := 0
-
+output filename:=my_atten_image
 X output image size (in pixels):=111
 Y output image size (in pixels):=111
-Z output image size (in pixels):=47
+Z output image size (in pixels):=65
 X voxel size (in mm):= 3
 Y voxel size (in mm):= 3
-Z voxel size (in mm) :=3.27
+Z voxel size (in mm) := 0.40625
 
   Z number of samples to take per voxel := 1
   Y number of samples to take per voxel := 1
@@ -21,6 +18,6 @@ Ellipsoidal Cylinder Parameters:=
    length-z (in mm):=110
    origin (in mm):={70,10,20}
    END:=
-value :=1
+value := 0.096
 
 END:=

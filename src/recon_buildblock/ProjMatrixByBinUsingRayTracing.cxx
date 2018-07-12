@@ -284,7 +284,7 @@ set_up(
   origin = image_info_ptr->get_origin();
   image_info_ptr->get_regular_range(min_index, max_index);
 
-  symmetries_ptr.reset(
+  symmetries_sptr.reset(
     new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
                                                 density_info_ptr,
                                                 do_symmetry_90degrees_min_phi,

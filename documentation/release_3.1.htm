@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 3.1 (dated 31/12/2017)</title>
+    <title>Summary of changes in STIR release 3.1 (dated 15/01/2018)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 3.1 (dated 31/12/2017)</h1>
+    <h1>Summary of changes in STIR release 3.1 (dated 15/01/2018)</h1>
 
 <p>This version is 95% backwards compatible with STIR 3.0 for the user aside from minor changes 
 when using Python/MATLAB and when changed image orientation when reading/writing images via ITK (see below).
@@ -45,12 +45,20 @@ for Siemens scanners (warning: tested in Biograph mMR only at present).
 <p>We now support additional list mode file formats (Siemens mMR, SAFIR and CERN ROOT files).
 </p>
 
+<p>Listmode reconstruction can be performed in this version.
+</p>
+
 <p>The build system now only uses CMake. We recommend to use CMake version 3.1 or later 
 on Linux/MacOSX and 3.10.2 or later on Windows, but we try to accomodate older versions of CMake.
 </p>
     
 <p>We now support the parsing of SIEMENS Interfile files natively.</p>
- 
+
+<p>Finally, we now keep track of time frames and patient orientation for images, in particular
+   making sure that reconstructions initialise this information from the projection data (if it
+   was present there).
+</p>
+
 <p>Of course, there is also the usual code-cleanup and 
 improvements to the documentation.
 </p>
@@ -106,6 +114,7 @@ Please note that you cannot enable both OPENMP and MPI.</li>
 These are only minimally documented at the present stage unfortunately.
 </li>
 <li>We now include a shell script for easier scatter estimation.</li>
+<li><tt>list_image_info</tt> now has options to list exam info, or only part of the information (as <tt>list_projdata_info</tt>).</li>
 <li><tt>list_lm_countrates</tt> is a new list mode utility to output total counts per specified time interval.</li>
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
 <li>add Verbosity level (currently only to be set from interactive languages)</li
@@ -113,6 +122,8 @@ These are only minimally documented at the present stage unfortunately.
 <li>New input: GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. </li>
 <li>New header file, with .hroot extension is provided for ROOT files </li>
 <li><code>CListModeData</code> got a new function <code>get_total_number_of_events()</code>, BUT currently only <code>CListModeDataFromROOT</code> supports it. </li> 
+<li> Reconstruction of listmode data has been corrected. LM-OSEM can be performed but only gometrical subsets are currently supported. 
+  </li>
 <li>Sensitivity calculation parallelized using distributed worker mechanism.</li>
 <li>Python (and MATLAB) interface
   <ul>
@@ -285,6 +296,12 @@ from the above):</H2>
     now returns an extra segment pair if the maximum ring difference does not coincide with a &quot;full&quot; segment.
     This change was to accomodate how GE uses even span.
 </li>
+<li>Classes derived from <code>CListModeData</code> now need to call <code>set_proj_data_info_sptr</code> and can then use 
+  <code>get_proj_data_info_sptr()</code>. This replaces the <code>scanner_sptr</code> protected member (which no longer exists). 
+  This will break all derived classes.
+  </li>
+<li> <code>ProjMatrixByBin</code> now uses <code>get_symmetries_sptr()</code> (replaces <code>get_symmetries_ptr()</code>).
+  </li>
 </ul>
 
 <h3>New functionality</h3>
@@ -303,7 +320,8 @@ using the default output file format.</li>
 <li> Support for Energy Resolution and energy windows in Scanners, has been added. 
 In order to ensure backwards compatibility, at the moment, it is completely optional.</li>
 <li> Information on energy windows has been added in the <code>ExamInfo</code>. </li>
-<li><code>ExamData</code> is a new base class for <code>ProjData</code> and <code>CListModeData</code> </li>
+<li><code>ExamData</code> is a new base class for <code>ProjData</code>, <code>CListModeData</code>,
+<code>DiscretisedDensity</code> and the dynamic/gated variations.</li>
 <li>Moved functions from the <code>poisson_noise</code> utility to a new class
   <code>GeneralisedPoissonNoiseGenerator</code>.
   </li>
@@ -330,7 +348,7 @@ can create problems with the lifetime of objects. Use <code>get..._sptr</code> i
 <li><code>ClistEvent::is_valid_template</code> is a new (pure) virtual function
 which is called by <code>LmToProjData</code> to check if the list mode format
 can handle the template.
-All derived classes of <code>CListEvent</code> will need to implement it.
+  All derived classes of <code>CListEvent</code> will need to implement it.</li>
 <li>We removed <code>SeparableMetzArrayFilter::discrete_fourier_transform()</code>. Now <code>stir::fourier</code> is used. No need to comply with the Licence of "Numerical Recipies" anymore.</li>
 </li>
 </ul>

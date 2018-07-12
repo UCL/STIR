@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -132,7 +132,8 @@ create_image_and_header_from(InterfileImageHeader& hdr,
 
   return
     new VoxelsOnCartesianGrid<float>
-    (IndexRange<3>(min_indices, max_indices),
+    (hdr.get_exam_info_sptr(),
+     IndexRange<3>(min_indices, max_indices),
      origin,
      voxel_size);
 }
@@ -302,10 +303,92 @@ interfile_get_data_file_name_in_header(const string& header_file_name,
       return data_file_name;
     }
 }
- 
+
+//// some static helper functions for writing
+// probably should be moved to InterfileHeader
+static void write_interfile_patient_position(std::ostream& output_header, const ExamInfo& exam_info)
+{
+  string orientation;
+  switch (exam_info.patient_position.get_orientation())
+    {
+    case PatientPosition::head_in: orientation="head_in";break;
+    case PatientPosition::feet_in: orientation="feet_in";break;
+    case PatientPosition::other_orientation: orientation="other";break;
+    default: orientation="unknown"; break;
+    }
+  string rotation;
+  switch (exam_info.patient_position.get_rotation())
+    {
+    case PatientPosition::prone: rotation="prone";break;
+    case PatientPosition::supine: rotation="supine";break;
+    case PatientPosition::other_rotation:
+    case PatientPosition::left:
+    case PatientPosition::right:
+      rotation="other";break;
+    default: rotation="unknown"; break;
+    }
+  if (orientation!="unknown")
+    output_header << "patient orientation := " << orientation << '\n';
+  if (rotation!="unknown")
+    output_header << "patient rotation := " << rotation << '\n';
+}
+
+static void write_interfile_time_frame_definitions(std::ostream& output_header, const ExamInfo& exam_info)
+  // TODO this is according to the proposed interfile standard for PET. Interfile 3.3 is different
+{
+  const TimeFrameDefinitions& frame_defs(exam_info.time_frame_definitions);
+  if (frame_defs.get_num_time_frames()>0)
+    {
+      output_header << "number of time frames := " << frame_defs.get_num_time_frames() << '\n';
+      for (unsigned int frame_num=1; frame_num<=frame_defs.get_num_time_frames(); ++frame_num)
+        {
+          if (frame_defs.get_duration(frame_num)>0)
+            {
+              output_header << "image duration (sec)[" << frame_num << "] := "
+                            << frame_defs.get_duration(frame_num) << '\n';
+              output_header << "image relative start time (sec)[" << frame_num << "] := "
+                            << frame_defs.get_start_time(frame_num) << '\n';
+            }
+        }
+    }
+  else
+    {
+      // need to write this anyway to allow vectored keys below
+      output_header << "number of time frames := 1\n";
+    }
+}
+
+// Write energy window lower and upper thresholds, if they are not -1
+static void write_interfile_energy_windows(std::ostream& output_header, const ExamInfo& exam_info)
+{
+  if (exam_info.get_high_energy_thres() > 0 &&
+      exam_info.get_low_energy_thres() >= 0)
+    {
+      output_header << "energy window lower level := " <<
+        exam_info.get_low_energy_thres() << '\n';
+      output_header << "energy window upper level :=  " <<
+        exam_info.get_high_energy_thres() << '\n';
+    }
+}
+
+static void  write_interfile_modality(std::ostream& output_header, const ExamInfo& exam_info)
+{
+  /*
+  // default modality is PET
+  ImagingModality imaging_modality(ImagingModality::PT);
+  if (!is_null_ptr(exam_info_ptr))
+    imaging_modality=exam_info_ptr->imaging_modality;
+  */
+  if (exam_info.
+      imaging_modality.get_modality() != ImagingModality::Unknown)
+    output_header << "!imaging modality := " << exam_info.imaging_modality.get_name() << '\n';
+}
+////// end static functions
+
 Succeeded 
 write_basic_interfile_image_header(const string& header_file_name,
 				   const string& image_file_name,
+                                   const ExamInfo& exam_info,
 				   const IndexRange<3>& index_range,
 				   const CartesianCoordinate3D<float>& voxel_size,
 				   const CartesianCoordinate3D<float>& origin,
@@ -339,6 +422,11 @@ write_basic_interfile_image_header(const string& header_file_name,
   output_header << "!INTERFILE  :=\n";
   output_header << "name of data file := " << data_file_name_in_header << endl;
   output_header << "!GENERAL DATA :=\n";
+  if (!exam_info.originating_system.empty())
+    output_header << "originating system := "
+                  << exam_info.originating_system << endl;
+  write_interfile_modality(output_header, exam_info);
+  write_interfile_patient_position(output_header, exam_info);
   output_header << "!GENERAL IMAGE DATA :=\n";
   output_header << "!type of data := PET\n";
   output_header << "imagedata byte order := " <<
@@ -347,6 +435,8 @@ write_basic_interfile_image_header(const string& header_file_name,
      : "BIGENDIAN")
 		<< endl;
   output_header << "!PET STUDY (General) :=\n";
+  write_interfile_time_frame_definitions(output_header, exam_info);
+  write_interfile_energy_windows(output_header, exam_info);
   output_header << "!PET data type := Image\n";
   output_header << "process status := Reconstructed\n";
 
@@ -388,8 +478,6 @@ write_basic_interfile_image_header(const string& header_file_name,
       output_header << "first pixel offset (mm) [3] := " 
 		    << first_pixel_offsets.z() << '\n';
     }
-
-  output_header << "number of time frames := " << scaling_factors.get_length() << endl;
   
   for (int i=1; i<=scaling_factors.get_length();i++)
     {
@@ -545,6 +633,7 @@ void interfile_create_filenames(const std::string& filename, std::string& data_n
 
 template <class NUMBER>
 Succeeded write_basic_interfile(const string&  filename,
+                const ExamInfo& exam_info,
                 const Array<3,NUMBER>& image,
                 const CartesianCoordinate3D<float>& voxel_size,
                 const CartesianCoordinate3D<float>& origin,
@@ -569,6 +658,7 @@ Succeeded write_basic_interfile(const string&  filename,
     const Succeeded success =
       write_basic_interfile_image_header(header_name,
                          data_name,
+                         exam_info,
                          image.get_index_range(),
                          voxel_size,
                          origin,
@@ -583,6 +673,26 @@ Succeeded write_basic_interfile(const string&  filename,
     return success;
 }
 
+template <class NUMBER>
+Succeeded write_basic_interfile(const string&  filename, 
+				const Array<3,NUMBER>& image,
+				const CartesianCoordinate3D<float>& voxel_size,
+				const CartesianCoordinate3D<float>& origin,
+				const NumericType output_type,
+				const float scale,
+				const ByteOrder byte_order)
+{
+
+  return write_basic_interfile(filename,
+                               ExamInfo(),
+                               image,
+                               voxel_size,
+                               origin,
+                               output_type,
+                               scale,
+                               byte_order);
+}
+
 Succeeded
 write_basic_interfile(const string&  filename, 
 		      const VoxelsOnCartesianGrid<float>& image,
@@ -591,7 +701,8 @@ write_basic_interfile(const string&  filename,
 		      const ByteOrder byte_order)
 {
   return
-    write_basic_interfile(filename, 
+    write_basic_interfile(filename,
+                          image.get_exam_info(),
 			  image, // use automatic reference to base class
 			  image.get_grid_spacing(), 
 			  image.get_origin(),
@@ -642,6 +753,7 @@ write_basic_interfile(const string& filename,
     const Succeeded success =
       write_basic_interfile_image_header(header_name,
                          data_name,
+                         image.get_exam_info(),
                          image.get_index_range(),
                          image.get_voxel_size(),
                          image.get_origin(),
@@ -685,6 +797,7 @@ write_basic_interfile(const string& filename,
     const Succeeded success =
       write_basic_interfile_image_header(header_name,
                          data_name,
+                         image.get_exam_info(),
                          image.get_density(1).get_index_range(),
                          dynamic_cast<const VoxelsOnCartesianGrid<float>& >(image.get_density(1)).get_grid_spacing(),
                          image.get_density(1).get_origin(),
@@ -879,7 +992,6 @@ read_interfile_PDFS(const string& filename,
   return read_interfile_PDFS(image_stream, directory_name, open_mode);
 }
 
-
 Succeeded 
 write_basic_interfile_PDFS_header(const string& header_file_name,
 				  const string& data_file_name,
@@ -914,15 +1026,11 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
     (pdfs.get_proj_data_info_ptr()->get_phi(Bin(0,1,0,0)) -
      pdfs.get_proj_data_info_ptr()->get_phi(Bin(0,0,0,0))) * float(180/_PI);
 
-  const ExamInfo * exam_info_ptr = pdfs.get_exam_info_ptr();
-  // default modality is PET
-  ImagingModality imaging_modality(ImagingModality::PT);
-  if (!is_null_ptr(exam_info_ptr))
-    imaging_modality=exam_info_ptr->imaging_modality;
-  const bool is_spect = imaging_modality.get_modality() == ImagingModality::NM;
- 
   output_header << "!INTERFILE  :=\n";
-  output_header << "!imaging modality := " << imaging_modality.get_name() << '\n';
+
+  const bool is_spect = pdfs.get_exam_info().imaging_modality.get_modality() == ImagingModality::NM;
+
+  write_interfile_modality(output_header, pdfs.get_exam_info());
 
   output_header << "name of data file := " << data_file_name_in_header << endl;
 
@@ -941,31 +1049,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
   // output patient position
   // note: strictly speaking this should come after "!SPECT STUDY (general)" but 
   // that's strange as these keys would be useful for all other cases as well
-  {
-    string orientation;
-    switch (pdfs.get_exam_info_ptr()->patient_position.get_orientation())
-      {
-      case PatientPosition::head_in: orientation="head_in";break;
-      case PatientPosition::feet_in: orientation="feet_in";break;
-      case PatientPosition::other_orientation: orientation="other";break;
-      default: orientation="unknown"; break;
-      }
-    string rotation;
-    switch (pdfs.get_exam_info_ptr()->patient_position.get_rotation())
-      {
-      case PatientPosition::prone: rotation="prone";break;
-      case PatientPosition::supine: rotation="supine";break;
-      case PatientPosition::other_rotation:
-      case PatientPosition::left:
-      case PatientPosition::right:
-	rotation="other";break;
-      default: rotation="unknown"; break;
-      }
-    if (orientation!="unknown")
-      output_header << "patient orientation := " << orientation << '\n';
-    if (rotation!="unknown")
-      output_header << "patient rotation := " << rotation << '\n';
-  }
+  write_interfile_patient_position(output_header, pdfs.get_exam_info());
 
   output_header << "imagedata byte order := " <<
     (pdfs.get_byte_order_in_stream() == ByteOrder::little_endian 
@@ -1170,41 +1254,10 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
     }
 
 
-  // write time frame info
-  // TODO this is according to the proposed interfile standard for PET. Interfile 3.3 is different
-  {
-    const TimeFrameDefinitions& frame_defs(pdfs.get_exam_info_ptr()->time_frame_definitions);
-    if (frame_defs.get_num_time_frames()>0)
-      {
-	output_header << "number of time frames := " << frame_defs.get_num_time_frames() << '\n';
-	for (unsigned int frame_num=1; frame_num<=frame_defs.get_num_time_frames(); ++frame_num)
-	  {
-	    if (frame_defs.get_duration(frame_num)>0)
-	      {
-		output_header << "image duration (sec)[" << frame_num << "] := "
-			      << frame_defs.get_duration(frame_num) << '\n';
-		output_header << "image relative start time (sec)[" << frame_num << "] := "
-			      << frame_defs.get_start_time(frame_num) << '\n';
-	      }
-	  }
-      }
-    else
-      {
-	// need to write this anyway to allow vectored keys below
-	output_header << "number of time frames := 1\n";
-      }
-  }
-  // Write energy window lower and upper thresholds, if they are not -1
-  {
-    if (pdfs.get_exam_info_ptr()->get_high_energy_thres() > 0 &&
-            pdfs.get_exam_info_ptr()->get_low_energy_thres() >= 0)
-    {
-        output_header << "energy window lower level := " <<
-                         pdfs.get_exam_info_ptr()->get_low_energy_thres() << '\n';
-        output_header << "energy window upper level :=  " <<
-                         pdfs.get_exam_info_ptr()->get_high_energy_thres() << '\n';
-    }
-  }
+   // write time frame info and energy windows
+   write_interfile_time_frame_definitions(output_header, pdfs.get_exam_info());
+   write_interfile_energy_windows(output_header, pdfs.get_exam_info());
+
   if (pdfs.get_scale_factor()!=1.F)
  output_header <<"image scaling factor[1] := "
 		<<pdfs.get_scale_factor()<<endl;

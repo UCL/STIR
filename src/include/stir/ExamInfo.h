@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -65,6 +65,11 @@ public :
   PatientPosition patient_position;
 
   TimeFrameDefinitions time_frame_definitions;
+
+  const TimeFrameDefinitions& get_time_frame_definitions() const
+  { return time_frame_definitions; }
+  TimeFrameDefinitions& get_time_frame_definitions()
+  { return time_frame_definitions; }
 
   double start_time_in_secs_since_1970;
 

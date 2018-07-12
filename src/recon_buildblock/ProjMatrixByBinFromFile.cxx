@@ -161,7 +161,7 @@ ProjMatrixByBinFromFile::post_processing()
 
   if (this->symmetries_type == standardise_interfile_keyword("PET_CartesianGrid"))
     {
-      symmetries_ptr.reset( 
+      symmetries_sptr.reset(
                            new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
                                                                        density_info_sptr,
                                                                        do_symmetry_90degrees_min_phi,
@@ -172,7 +172,7 @@ ProjMatrixByBinFromFile::post_processing()
     }
   else if (this->symmetries_type == "none")
     {
-      symmetries_ptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_ptr));
+      symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_ptr));
     }
   else
     {

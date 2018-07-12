@@ -4,7 +4,7 @@
 /*
   Copyright (C) 2006 - 2011-01-14 Hammersmith Imanet Ltd
   Copyright (C) 2011 Kris Thielemans
-  Copyright (C) 2013 University College London
+  Copyright (C) 2013m 2018, University College London
 
   This file is part of STIR.
 
@@ -197,6 +197,7 @@ construct_target_ptr() const
 {  
   return
     new ParametricVoxelsOnCartesianGrid(ParametricVoxelsOnCartesianGridBaseType(
+                                                                                this->get_input_data().get_exam_info_sptr(),
                                                                                 *(this->_dyn_proj_data_sptr->get_proj_data_info_ptr()),
                                                                                 static_cast<float>(this->_zoom),
                                                                                 CartesianCoordinate3D<float>(static_cast<float>(this->_Zoffset),
@@ -407,6 +408,14 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 set_input_data(const shared_ptr<ExamData> & arg)
 {
     this->_dyn_proj_data_sptr = dynamic_pointer_cast<DynamicProjData>(arg);
+}
+
+template<typename TargetT>
+const DynamicProjData&
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
+get_input_data() const
+{
+  return *this->_dyn_proj_data_sptr;
 }
 
 template<typename TargetT>

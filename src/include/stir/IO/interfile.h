@@ -6,6 +6,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -54,6 +55,8 @@ class DynamicDiscretisedDensity;
 template <typename elemT> class ParametricDiscretisedDensity;
 template <typename elemT> class VoxelsOnCartesianGrid;
 template <int num_dimensions, typename elemT> class KineticParameters;
+
+class ExamInfo;
 
 //! Checks if the signature corresponds to the start of an interfile header 
 /*! 
@@ -126,7 +129,8 @@ DynamicDiscretisedDensity* read_interfile_dynamic_image(const std::string& filen
 Succeeded 
 write_basic_interfile_image_header(const std::string& header_file_name,
 				   const std::string& image_file_name,
-				   const IndexRange<3>& index_range,
+				   const ExamInfo& exam_info,
+                                   const IndexRange<3>& index_range,
 				   const CartesianCoordinate3D<float>& voxel_size,
 				   const CartesianCoordinate3D<float>& origin,
 				   const NumericType output_type,
@@ -156,6 +160,24 @@ compute_file_offsets(int number_of_time_frames,
 template <class elemT>
 Succeeded 
 write_basic_interfile(const std::string&filename, 
+		      const Array<3,elemT>& image,
+		      const CartesianCoordinate3D<float>& voxel_size,
+		      const CartesianCoordinate3D<float>& origin,
+		      const NumericType output_type = NumericType::FLOAT,
+		      const float scale= 0,
+		      const ByteOrder byte_order=ByteOrder::native);
+
+//! This outputs an Interfile header and data for a Array<3,elemT> object.
+/*!
+  \ingroup InterfileIO
+ Extension .v will be added to the parameter 'filename' (if no extension present).
+ Extensions .hv (and .ahv) will be used for the header filename. 
+*/
+
+template <class elemT>
+Succeeded 
+write_basic_interfile(const std::string&filename, 
+                      const ExamInfo& exam_info,
 		      const Array<3,elemT>& image,
 		      const CartesianCoordinate3D<float>& voxel_size,
 		      const CartesianCoordinate3D<float>& origin,

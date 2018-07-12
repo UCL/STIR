@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -54,6 +55,17 @@ DiscretisedDensityOnCartesianGrid
  const CartesianCoordinate3D<float>& origin_v,
  const BasicCoordinate<num_dimensions,float>& grid_spacing_v)
   : DiscretisedDensity<num_dimensions, elemT>(range_v,origin_v),
+    grid_spacing(grid_spacing_v)
+{}
+
+template<int num_dimensions, typename elemT>
+DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>::
+DiscretisedDensityOnCartesianGrid
+(const shared_ptr < ExamInfo > & exam_info_sptr,
+ const IndexRange<num_dimensions>& range_v,
+ const CartesianCoordinate3D<float>& origin_v,
+ const BasicCoordinate<num_dimensions,float>& grid_spacing_v)
+  : DiscretisedDensity<num_dimensions, elemT>(exam_info_sptr,range_v,origin_v),
     grid_spacing(grid_spacing_v)
 {}
 

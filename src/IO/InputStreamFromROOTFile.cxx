@@ -90,8 +90,8 @@ InputStreamFromROOTFile::set_up(const std::string & header_path)
     stream_ptr->SetBranchAddress("time1", &time1);
     stream_ptr->SetBranchAddress("time2", &time2);
 
-    stream_ptr->SetBranchAddress("eventID1",&eventID1);
-    stream_ptr->SetBranchAddress("eventID2",&eventID2);
+    stream_ptr->SetBranchAddress("eventID1",&event1);
+    stream_ptr->SetBranchAddress("eventID2",&event2);
     stream_ptr->SetBranchAddress("energy1", &energy1);
     stream_ptr->SetBranchAddress("energy2", &energy2);
     stream_ptr->SetBranchAddress("comptonPhantom1", &comptonphantom1);

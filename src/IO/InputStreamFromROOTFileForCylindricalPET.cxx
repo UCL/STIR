@@ -67,22 +67,22 @@ get_next_record(CListRecordROOT& record)
             return Succeeded::no;
 
 
-        if (stream_ptr->GetEntry(current_position) == 0 )
+        if (stream_ptr->GetEntry(static_cast<Long64_t>(current_position)) == 0 )
             return Succeeded::no;
 
         current_position ++ ;
 
-        if ( (comptonphantom1 > 0 || comptonphantom2>0) && exclude_scattered )
+        if ( (this->comptonphantom1 > 0 || this->comptonphantom2 > 0) && this->exclude_scattered )
             continue;
-        else if ( (eventID1 != eventID2) && exclude_randoms )
+        if ( this->event1 != this->event2 && this->exclude_randoms)
             continue;
-        else if (energy1 < low_energy_window ||
-                 energy1 > up_energy_window ||
-                 energy2 < low_energy_window ||
-                 energy2 > up_energy_window)
+        if (this->energy1 < this->low_energy_window ||
+                 this->energy1 > this->up_energy_window ||
+                 this->energy2 < this->low_energy_window ||
+                 this->energy2 > this->up_energy_window)
             continue;
-        else
-            break;
+
+        break;
     }
 
     int ring1 = static_cast<int>(crystalID1/crystal_repeater_y)
@@ -116,7 +116,7 @@ get_next_record(CListRecordROOT& record)
             record.init_from_data(ring1, ring2,
                                   crystal1, crystal2,
                                   time1, time2,
-                                  eventID1, eventID2);
+                                  event1, event2);
 }
 
 std::string
