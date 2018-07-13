@@ -82,6 +82,9 @@ read_from_file(const std::string &parameter_file)
         multiple_proj_data->_proj_datas.push_back(ProjData::read_from_file(header.get_filename(i)));
     }
 
+    // Get the exam info (from the first ProjData)
+    multiple_proj_data->set_exam_info(multiple_proj_data->_proj_datas[0]->get_exam_info());
+
     // Update the time definitions based on each individual frame
     multiple_proj_data->get_exam_info_sptr()->time_frame_definitions.set_num_time_frames(num_data_sets);
     for (int i=0; i<num_data_sets; ++i) {
