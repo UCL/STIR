@@ -70,6 +70,7 @@ class DynamicDiscretisedDensity: public ExamData
     DynamicDiscretisedDensity*
     read_from_file(const std::string& filename);
 
+  //! Temporary workaround that will be removed
   void read_from_file_multi(const std::string& proj_data_multi, const std::string& densities_multi);
 
   DynamicDiscretisedDensity() {}

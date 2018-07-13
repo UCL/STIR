@@ -40,6 +40,7 @@
 #include "stir/RunTests.h"
 #include "stir/MultipleProjData.h"
 #include "stir/ProjDataInMemory.h"
+#include <fstream>
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
