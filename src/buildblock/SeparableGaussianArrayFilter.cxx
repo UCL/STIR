@@ -24,7 +24,7 @@ START_NAMESPACE_STIR
 template <int num_dimensions, typename elemT>
 SeparableGaussianArrayFilter<num_dimensions,elemT>::
 SeparableGaussianArrayFilter()
-:standard_deviation(0),number_of_coefficients(0)
+//:standard_deviation(0),number_of_coefficients(0)
 {
 
  for (int i=1;i<=num_dimensions;i++)
@@ -37,14 +37,19 @@ SeparableGaussianArrayFilter()
 
 template <int num_dimensions, typename elemT> 
 SeparableGaussianArrayFilter<num_dimensions,elemT>::
-SeparableGaussianArrayFilter(const float standard_deviation_v, 
-                             const int number_of_coefficients_v)
+SeparableGaussianArrayFilter(const BasicCoordinate< num_dimensions,float>& standard_deviation_v,
+                             const BasicCoordinate< num_dimensions,int>& number_of_coefficients_v, bool normalise)
 
 
 {
-    standard_deviation = standard_deviation_v;
-    number_of_coefficients = number_of_coefficients_v;
-    bool normalise;
+
+for (int i = 1; i<=num_dimensions;i++)
+    {
+            standard_deviation[i]=standard_deviation_v[i];
+            number_of_coefficients[i]=number_of_coefficients_v[i];
+
+    }
+
     construct_filter(normalise);
 }
 
@@ -54,40 +59,16 @@ SeparableGaussianArrayFilter<num_dimensions,elemT>::
 construct_filter(bool normalise)
 {
  VectorWithOffset<elemT> filter_coefficients;
- calculate_coefficients(filter_coefficients, number_of_coefficients,
-             standard_deviation);
- 
- info("Printing filter coefficients - nonrescaled");
-  for (int i =filter_coefficients.get_min_index();i<=filter_coefficients.get_max_index();i++)    
-    info(boost::format("%1%   %2%   ") % i % filter_coefficients[i]);
+ for (int i = 1; i<=number_of_coefficients.size();i++)
+ {
+ calculate_coefficients(filter_coefficients, number_of_coefficients[i],
+             standard_deviation[i]);
 
-  // rescaled to dc =1
- /* float sum =0.F;  
-   for (int i =filter_coefficients.get_min_index();i<=filter_coefficients.get_max_index();i++)    
-  { 
-    sum +=double (filter_coefficients[i]);
-  }
-    
-  cerr << " SUM IS " << sum << endl;
 
-  for (int i =filter_coefficients.get_min_index();i<=filter_coefficients.get_max_index();i++)    
-  { 
-   filter_coefficients[i] /= sum;
-  }
-
-  cerr << " here  - rescaled" << endl;
-   cerr << "Printing filter coefficients" << endl;
-  for (int i =filter_coefficients.get_min_index();i<=filter_coefficients.get_max_index();i++)    
-    cerr  << i<<"   "<< filter_coefficients[i] <<"   " << endl;
- */
-  this->all_1d_array_filters[2].
+  this->all_1d_array_filters[i].
     reset(new ArrayFilter1DUsingConvolution<float>(filter_coefficients));
-  this->all_1d_array_filters[0].
-    reset(new ArrayFilter1DUsingConvolution<float>());
-  this->all_1d_array_filters[1].
-    reset(new ArrayFilter1DUsingConvolution<float>(filter_coefficients));
-  
 
+   }
 }
 template <int num_dimensions, typename elemT> 
 void

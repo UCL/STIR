@@ -40,8 +40,9 @@ public:
   //! Default constructor
   SeparableGaussianArrayFilter();  
   
-  SeparableGaussianArrayFilter(const float standard_deviation, 
-                               const int number_of_coefficients);
+  SeparableGaussianArrayFilter(const BasicCoordinate< num_dimensions,float>&  standard_deviation,
+                               const BasicCoordinate< num_dimensions,int>&  number_of_coefficients,
+                               bool normalise = false);
   
   
 private:
@@ -49,8 +50,9 @@ private:
 				const int number_of_coefficients,
 				const float standard_deviation);	
   void construct_filter(bool normalise = false);
-  float standard_deviation; 
-  int number_of_coefficients;
+
+  BasicCoordinate< num_dimensions,float> standard_deviation;
+  BasicCoordinate< num_dimensions,int> number_of_coefficients;
  
 };
 
