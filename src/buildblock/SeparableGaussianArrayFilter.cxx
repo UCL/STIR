@@ -44,6 +44,7 @@ SeparableGaussianArrayFilter(const BasicCoordinate< num_dimensions,float>& stand
 {
 
 for (int i = 1; i<=num_dimensions;i++)
+
     {
             standard_deviation[i]=standard_deviation_v[i];
             number_of_coefficients[i]=number_of_coefficients_v[i];

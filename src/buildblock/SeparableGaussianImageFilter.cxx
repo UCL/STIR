@@ -33,6 +33,11 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
       return Succeeded::no;
     }
 
+
+  const float rescale = dynamic_cast<const VoxelsOnCartesianGrid<float>*>(&density)->get_grid_spacing()[3]/10;
+
+
+
    /*gaussian_filter =
     SeparableGaussianArrayFilter<3,elemT>(standard_deviation,     
                     number_of_coefficients);  */
