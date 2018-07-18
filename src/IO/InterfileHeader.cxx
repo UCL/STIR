@@ -359,10 +359,11 @@ bool InterfileHeader::post_processing()
 
  //set the lower and the higher energy thresholds for all the energy windows available. Default: 1.
 
-  //set the number of energy windows and pair
+  //set the number of energy windows
 
   exam_info_sptr->set_num_energy_windows(num_energy_windows);
 
+   //set the number of energy window pair
   if (energy_window_pair.size() > 0) {
 
       if (energy_window_pair.size() != 2)

@@ -192,7 +192,7 @@ zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
 */
 void 
 zoom_image(VoxelsOnCartesianGrid<float> &image_out, 
-	   const VoxelsOnCartesianGrid<float> &image_in);
+       const VoxelsOnCartesianGrid<float> &image_in, bool rescale = false);
 
 //------------------ 2D zooms---------------------
 

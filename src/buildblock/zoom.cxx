@@ -365,7 +365,7 @@ zoom_image(const VoxelsOnCartesianGrid<float> &image,
 
 void 
 zoom_image(VoxelsOnCartesianGrid<float> &image_out, 
-	   const VoxelsOnCartesianGrid<float> &image_in)
+       const VoxelsOnCartesianGrid<float> &image_in, bool rescale)
 {
 
 /*
@@ -411,7 +411,7 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
     (image_out.get_origin().z() - image_in.get_origin().z()) 
     / image_in.get_voxel_size().z();
 
-  
+
   if(zoom_x==1.0F && zoom_y==1.0F && zoom_z==1.0F &&
      x_offset == 0.F && y_offset == 0.F && z_offset == 0.F &&
      image_in.get_index_range() == image_out.get_index_range()
@@ -441,6 +441,19 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
   temp.recycle();
 
   overlap_interpolate(image_out, temp2, zoom_z, z_offset);
+
+
+  //rescaling the image
+
+  if (rescale)
+
+  {
+      BasicCoordinate<3,float> orig_grid = image_in.get_grid_spacing();
+      BasicCoordinate<3,float> new_grid = image_out.get_grid_spacing();
+      float scale_att = (orig_grid[3]/new_grid[3]) * (orig_grid[2]/new_grid[2]) * (orig_grid[1]/new_grid[1]);
+
+      image_out*= scale_att;
+  }
 
 }
 

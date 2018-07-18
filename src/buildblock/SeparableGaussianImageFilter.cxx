@@ -33,9 +33,9 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
       return Succeeded::no;
     }
 
-   gaussian_filter = 
+   /*gaussian_filter =
     SeparableGaussianArrayFilter<3,elemT>(standard_deviation,     
-					number_of_coefficients);  
+                    number_of_coefficients);  */
   return Succeeded::yes;
   
 }
@@ -69,8 +69,8 @@ void
 SeparableGaussianImageFilter<elemT>::
 set_defaults()
 {
-  standard_deviation =0 ;
-  number_of_coefficients = 0;
+  //standard_deviation =0 ;
+  //number_of_coefficients =0;
     
 }
 

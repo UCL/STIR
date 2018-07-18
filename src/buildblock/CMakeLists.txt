@@ -54,7 +54,9 @@ set(${dir_LIB_SOURCES}
 	ThresholdMinToSmallPositiveValueDataProcessor 
 	ChainedDataProcessor 
 	ArrayFilter1DUsingConvolution 
-	SeparableConvolutionImageFilter 
+	SeparableConvolutionImageFilter
+  SeparableGaussianImageFilter
+  SeparableGaussianArrayFilter
 	NonseparableConvolutionUsingRealDFTImageFilter 
 	SSRB 
 	inverse_SSRB 
