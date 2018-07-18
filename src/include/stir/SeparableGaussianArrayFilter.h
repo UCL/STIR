@@ -48,6 +48,7 @@ private:
   void calculate_coefficients(VectorWithOffset<elemT>& filter_coefficients,
 				const int number_of_coefficients,
 				const float standard_deviation);	
+  void construct_filter(bool normalise = false);
   float standard_deviation; 
   int number_of_coefficients;
  

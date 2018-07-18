@@ -1,5 +1,5 @@
 
-#include "local/stir/SeparableGaussianImageFilter.h"
+#include "stir/SeparableGaussianImageFilter.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 
 START_NAMESPACE_STIR

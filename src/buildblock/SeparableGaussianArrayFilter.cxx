@@ -1,5 +1,5 @@
 
-#include "local/stir/SeparableGaussianArrayFilter.h"
+#include "stir/SeparableGaussianArrayFilter.h"
 #include "stir/ArrayFilter1DUsingConvolution.h"
 #include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
 #include "stir/info.h"
@@ -39,14 +39,23 @@ template <int num_dimensions, typename elemT>
 SeparableGaussianArrayFilter<num_dimensions,elemT>::
 SeparableGaussianArrayFilter(const float standard_deviation_v, 
                              const int number_of_coefficients_v)
-			     :standard_deviation(standard_deviation_v),
-			     number_of_coefficients(number_of_coefficients_v)
+
 
 {
- 
+    standard_deviation = standard_deviation_v;
+    number_of_coefficients = number_of_coefficients_v;
+    bool normalise;
+    construct_filter(normalise);
+}
+
+template <int num_dimensions, typename elemT>
+void
+SeparableGaussianArrayFilter<num_dimensions,elemT>::
+construct_filter(bool normalise)
+{
  VectorWithOffset<elemT> filter_coefficients;
- calculate_coefficients(filter_coefficients, number_of_coefficients_v,
-			 standard_deviation_v);
+ calculate_coefficients(filter_coefficients, number_of_coefficients,
+             standard_deviation);
  
  info("Printing filter coefficients - nonrescaled");
   for (int i =filter_coefficients.get_min_index();i<=filter_coefficients.get_max_index();i++)    
