@@ -97,9 +97,9 @@ void IOTests_ParametricDiscretisedDensity::create_image()
     const float zoom=1.F;
 
     const CartesianCoordinate3D<int> sizes (
-                _single_image_sptr->get_x_size(),
+                _single_image_sptr->get_z_size(),
                 _single_image_sptr->get_y_size(),
-                _single_image_sptr->get_z_size());
+                _single_image_sptr->get_x_size());
 
     ProjDataInfoCylindricalNoArcCorr proj_data_info(scanner_sptr,num_axial_pos_per_segment,min_ring_diff,max_ring_diff,num_views,num_tangential_poss);
 
