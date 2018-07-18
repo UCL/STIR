@@ -132,7 +132,7 @@ void IOTests<A>::set_up()
     if (!check(_parser.parse(_in), "parsing failed"))
         return;
 
-    if (!check(_output_file_format_sptr,
+    if (!check(!is_null_ptr(_output_file_format_sptr),
                "parsing failed to set _output_file_format_sptr"))
         return;
 }
