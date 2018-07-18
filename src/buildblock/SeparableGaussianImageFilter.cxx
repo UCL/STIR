@@ -69,8 +69,8 @@ void
 SeparableGaussianImageFilter<elemT>::
 set_defaults()
 {
-  //standard_deviation =0 ;
-  //number_of_coefficients =0;
+  standard_deviation =0 ;
+  number_of_coefficients =0;
     
 }
 
