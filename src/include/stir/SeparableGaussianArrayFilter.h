@@ -46,10 +46,13 @@ public:
   
   
 private:
+
+  void construct_filter(bool normalise = false);
+
   void calculate_coefficients(VectorWithOffset<elemT>& filter_coefficients,
 				const int number_of_coefficients,
-				const float standard_deviation);	
-  void construct_filter(bool normalise = false);
+                const float standard_deviation, bool normalise);
+
 
   BasicCoordinate< num_dimensions,float> standard_deviation;
   BasicCoordinate< num_dimensions,int> number_of_coefficients;
