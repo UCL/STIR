@@ -13,11 +13,19 @@ SeparableGaussianImageFilter()
 }
 
 template <typename elemT>
-float
+VectorWithOffset<float>
 SeparableGaussianImageFilter<elemT>::
-get_standard_deviation()
+get_fwhms()
 {
-  return standard_deviation;
+  return fwhms;
+}
+
+template <typename elemT>
+VectorWithOffset<int>
+SeparableGaussianImageFilter<elemT>::
+get_max_kernel_sizes()
+{
+  return max_kernel_sizes;
 }
   
 template <typename elemT>
@@ -35,10 +43,14 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 
   //const float rescale = dynamic_cast<const VoxelsOnCartesianGrid<float>*>(&density)->get_grid_spacing();
 
+  const VoxelsOnCartesianGrid<float>& image =
+    dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
 
-   gaussian_filter =
-    SeparableGaussianArrayFilter<3,elemT>(standard_deviation,
-                    number_of_coefficients);
+  // gaussian_filter =
+  /*  SeparableGaussianArrayFilter<3,elemT>(get_metz_fwhms(),
+                                          image.get_voxel_size(),
+                                          get_max_kernel_sizes());*/
+
   return Succeeded::yes;
   
 }
@@ -74,8 +86,8 @@ void
 SeparableGaussianImageFilter<elemT>::
 set_defaults()
 {
-  standard_deviation =0 ;
-  number_of_coefficients =0;
+    fwhms.fill(0);
+    max_kernel_sizes.fill(-1);
     
 }
 
@@ -85,27 +97,17 @@ SeparableGaussianImageFilter<elemT>::
 initialise_keymap()
 {
   this->parser.add_start_key("Separable Gaussian Filter Parameters");
-  this->parser.add_key ("standard_deviation", &standard_deviation);
-  this->parser.add_key ("number_of_coefficients", &number_of_coefficients);
+    this->parser.add_key("x-dir filter FWHM (in mm)", &fwhms[3]);
+    this->parser.add_key("y-dir filter FWHM (in mm)", &fwhms[2]);
+    this->parser.add_key("z-dir filter FWHM (in mm)", &fwhms[1]);
+
+    this->parser.add_key("x-dir maximum kernel size", &max_kernel_sizes[3]);
+    this->parser.add_key("y-dir maximum kernel size", &max_kernel_sizes[2]);
+    this->parser.add_key("z-dir maximum kernel size", &max_kernel_sizes[1]);
+
   this->parser.add_stop_key("END Separable Gaussian Filter Parameters");
 
 }
-
-template <typename elemT>
-bool 
-SeparableGaussianImageFilter<elemT>::
-post_processing()
-{
-  return false;
-  /*const unsigned int size = filter_coefficients_for_parsing.size();
-  const int min_index = -(size/2);
-  filter_coefficients.grow(min_index, min_index + size - 1);
-  for (int i = min_index; i<= filter_coefficients.get_max_index(); ++i)
-    filter_coefficients[i] = 
-      static_cast<float>(filter_coefficients_for_parsing[i-min_index]);
-  return false;*/
-}
-
 
 
 template<>

@@ -51,7 +51,7 @@ SeparableGaussianArrayFilter<num_dimensions,elemT>::
 SeparableGaussianArrayFilter(const BasicCoordinate< num_dimensions,float>& standard_deviation_v,
                              const BasicCoordinate< num_dimensions,int>& number_of_coefficients_v, bool normalise)
 
-:standard_deviation(standard_deviation_v),number_of_coefficients(0)
+:standard_deviation(standard_deviation_v),number_of_coefficients(number_of_coefficients_v)
 {
 //normalisation to 1 is optinal
 

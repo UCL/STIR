@@ -54,12 +54,12 @@ public:
   //! Default constructor
   SeparableGaussianImageFilter();
 
-  float get_standard_deviation();
-  
+  VectorWithOffset<float> get_fwhms();
+  VectorWithOffset<int> get_max_kernel_sizes();
   
 private:
-  float standard_deviation;
-  int number_of_coefficients;
+  VectorWithOffset<float> fwhms;
+  VectorWithOffset<int> max_kernel_sizes;
   
   SeparableGaussianArrayFilter<num_dimensions,elemT> gaussian_filter;
 
