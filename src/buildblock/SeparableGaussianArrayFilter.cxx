@@ -27,6 +27,15 @@ SeparableGaussianArrayFilter()
 //:standard_deviation(0),number_of_coefficients(0)
 {
 
+    for (int i = 1; i<=num_dimensions;i++)
+
+        {
+                standard_deviation[i] = 0;
+                number_of_coefficients[i]= 0;
+
+        }
+
+
  for (int i=1;i<=num_dimensions;i++)
   {
     this->all_1d_array_filters[i-1].
