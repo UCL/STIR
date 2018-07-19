@@ -90,6 +90,8 @@
 */
 
 #include "stir/common.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/DataProcessor.h"
 
 START_NAMESPACE_STIR
 
@@ -99,7 +101,6 @@ template <typename elemT> class VoxelsOnCartesianGrid;
 template <typename elemT> class PixelsOnCartesianGrid;
 template <typename elemT> class CartesianCoordinate3D;
 template <int num_dimensions, typename elemT> class BasicCoordinate;
-
 /*!
  \ingroup buildblock
   \name Functions for interpolating data to new pixel/bin sizes
@@ -190,9 +191,14 @@ zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
   DiscretisedDensity\<3,float\>::get_physical_coordinates_for_indices)
   remain the same.
 */
+
 void 
 zoom_image(VoxelsOnCartesianGrid<float> &image_out, 
-       const VoxelsOnCartesianGrid<float> &image_in, bool rescale = false, bool filter = false);
+       const VoxelsOnCartesianGrid<float> &image_in, bool rescale , bool apply_filter, shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > filter_ptr);
+
+void
+zoom_image(VoxelsOnCartesianGrid<float> &image_out,
+       const VoxelsOnCartesianGrid<float> &image_in);
 
 //------------------ 2D zooms---------------------
 

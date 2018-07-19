@@ -1,8 +1,13 @@
 
 #include "stir/SeparableGaussianImageFilter.h"
+#include "stir/SeparableGaussianArrayFilter.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 
 START_NAMESPACE_STIR
+
+//TODO remove define
+
+#define num_dimensions 3
 
 template <typename elemT>
 SeparableGaussianImageFilter<elemT>::
@@ -12,21 +17,33 @@ SeparableGaussianImageFilter()
     set_defaults();
 }
 
+
 template <typename elemT>
-VectorWithOffset<float>
+BasicCoordinate< num_dimensions,float>
 SeparableGaussianImageFilter<elemT>::
 get_fwhms()
 {
   return fwhms;
 }
 
+
 template <typename elemT>
-VectorWithOffset<int>
+BasicCoordinate< num_dimensions,int>
 SeparableGaussianImageFilter<elemT>::
 get_max_kernel_sizes()
 {
   return max_kernel_sizes;
 }
+
+
+template <typename elemT>
+bool
+SeparableGaussianImageFilter<elemT>::
+get_normalised_filter()
+{
+    return normalise;
+}
+
   
 template <typename elemT>
 Succeeded
@@ -41,15 +58,11 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
       return Succeeded::no;
     }
 
-  //const float rescale = dynamic_cast<const VoxelsOnCartesianGrid<float>*>(&density)->get_grid_spacing();
 
-  const VoxelsOnCartesianGrid<float>& image =
-    dynamic_cast<const VoxelsOnCartesianGrid<float>&>(density);
+  const BasicCoordinate< num_dimensions,float> rescale = dynamic_cast<const VoxelsOnCartesianGrid<float>*>(&density)->get_grid_spacing();
 
-  // gaussian_filter =
-  /*  SeparableGaussianArrayFilter<3,elemT>(get_metz_fwhms(),
-                                          image.get_voxel_size(),
-                                          get_max_kernel_sizes());*/
+
+  gaussian_filter = SeparableGaussianArrayFilter<num_dimensions,elemT>(get_fwhms(),get_max_kernel_sizes(),get_normalised_filter());
 
   return Succeeded::yes;
   
@@ -76,7 +89,6 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density,
 	  const DiscretisedDensity<3,elemT>& in_density) const
 {
   
-
   gaussian_filter(out_density,in_density);
 }
 
@@ -86,8 +98,9 @@ void
 SeparableGaussianImageFilter<elemT>::
 set_defaults()
 {
-    fwhms.fill(0);
-    max_kernel_sizes.fill(-1);
+   fwhms.fill(0);
+   max_kernel_sizes.fill(-1);
+   normalise = false;
     
 }
 
@@ -104,6 +117,8 @@ initialise_keymap()
     this->parser.add_key("x-dir maximum kernel size", &max_kernel_sizes[3]);
     this->parser.add_key("y-dir maximum kernel size", &max_kernel_sizes[2]);
     this->parser.add_key("z-dir maximum kernel size", &max_kernel_sizes[1]);
+
+    this->parser.add_key("Normalise filter to 1", &normalise);
 
   this->parser.add_stop_key("END Separable Gaussian Filter Parameters");
 

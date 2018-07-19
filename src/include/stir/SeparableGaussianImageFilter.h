@@ -19,7 +19,7 @@
 #define __stir_SeparableGaussianImageFilter_H__
 
 
-#include "local/stir/SeparableGaussianArrayFilter.h"
+#include "stir/SeparableGaussianArrayFilter.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/DataProcessor.h"
 #include "stir/DiscretisedDensity.h"
@@ -54,12 +54,14 @@ public:
   //! Default constructor
   SeparableGaussianImageFilter();
 
-  VectorWithOffset<float> get_fwhms();
-  VectorWithOffset<int> get_max_kernel_sizes();
+  BasicCoordinate< num_dimensions,float> get_fwhms();
+  BasicCoordinate< num_dimensions,int> get_max_kernel_sizes();
+  bool get_normalised_filter();
   
 private:
-  VectorWithOffset<float> fwhms;
-  VectorWithOffset<int> max_kernel_sizes;
+  BasicCoordinate< num_dimensions,float> fwhms;
+  BasicCoordinate< num_dimensions,int> max_kernel_sizes;
+  bool normalise;
   
   SeparableGaussianArrayFilter<num_dimensions,elemT> gaussian_filter;
 

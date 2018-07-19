@@ -25,6 +25,7 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/SeparableArrayFunctionObject.h"
 #include "stir/Array.h"
+#include "stir/BasicCoordinate.h"
 
 #include <vector>
 
@@ -40,24 +41,24 @@ public:
   //! Default constructor
   SeparableGaussianArrayFilter();  
   
-  SeparableGaussianArrayFilter(const BasicCoordinate< num_dimensions,float>&  standard_deviation,
-                               const BasicCoordinate< num_dimensions,int>&  number_of_coefficients,
+  SeparableGaussianArrayFilter(const BasicCoordinate< num_dimensions,float>&  fwhm,
+                               const BasicCoordinate< num_dimensions,int>&  max_kernel_sizes,
                                bool normalise = false);
   
-  SeparableGaussianArrayFilter(const float standard_deviation,
-                               const float  number_of_coefficients,
+  SeparableGaussianArrayFilter(const float fwhm,
+                               const float  max_kernel_sizes,
                                bool normalise = false);
 private:
 
   void construct_filter(bool normalise = false);
 
   void calculate_coefficients(VectorWithOffset<elemT>& filter_coefficients,
-				const int number_of_coefficients,
-                const float standard_deviation, bool normalise);
+                const int max_kernel_sizes,
+                const float fwhm, bool normalise);
 
 
-  BasicCoordinate< num_dimensions,float> standard_deviation;
-  BasicCoordinate< num_dimensions,int> number_of_coefficients;
+  BasicCoordinate< num_dimensions,float> fwhm;
+  BasicCoordinate< num_dimensions,int> max_kernel_sizes;
  
 };
 
