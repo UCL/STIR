@@ -24,17 +24,8 @@ START_NAMESPACE_STIR
 template <int num_dimensions, typename elemT>
 SeparableGaussianArrayFilter<num_dimensions,elemT>::
 SeparableGaussianArrayFilter()
-//:standard_deviation(0),number_of_coefficients(0)
+:standard_deviation(0),number_of_coefficients(0)
 {
-
-    for (int i = 1; i<=num_dimensions;i++)
-
-        {
-                standard_deviation[i] = 0;
-                number_of_coefficients[i]= 0;
-
-        }
-
 
  for (int i=1;i<=num_dimensions;i++)
   {
@@ -43,22 +34,26 @@ SeparableGaussianArrayFilter()
   }
 }
 
+template <int num_dimensions, typename elemT>
+SeparableGaussianArrayFilter<num_dimensions,elemT>::
+SeparableGaussianArrayFilter(const float standard_deviation_v,const float number_of_coefficients_v,  bool normalise)
+:standard_deviation(standard_deviation_v),number_of_coefficients(number_of_coefficients_v)
+    {
+
+    //normalisation to 1 is optinal
+
+        construct_filter(normalise);
+    }
+
 
 template <int num_dimensions, typename elemT> 
 SeparableGaussianArrayFilter<num_dimensions,elemT>::
 SeparableGaussianArrayFilter(const BasicCoordinate< num_dimensions,float>& standard_deviation_v,
                              const BasicCoordinate< num_dimensions,int>& number_of_coefficients_v, bool normalise)
 
-
+:standard_deviation(standard_deviation_v),number_of_coefficients(0)
 {
-
-for (int i = 1; i<=num_dimensions;i++)
-
-    {
-            standard_deviation[i]=standard_deviation_v[i];
-            number_of_coefficients[i]=number_of_coefficients_v[i];
-
-    }
+//normalisation to 1 is optinal
 
     construct_filter(normalise);
 }
@@ -90,7 +85,11 @@ calculate_coefficients(VectorWithOffset<elemT>& filter_coefficients, const int n
             const float standard_deviation, bool normalise)
 
 {
-
+  if (standard_deviation==0)
+  {
+      filter_coefficients.recycle();
+      return;
+  }
   filter_coefficients.grow(-number_of_coefficients,number_of_coefficients);
   filter_coefficients[0] = 1/sqrt(2*square(standard_deviation)*_PI);
 

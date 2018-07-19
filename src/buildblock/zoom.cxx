@@ -46,6 +46,7 @@
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/IndexRange3D.h"
 #include "stir/IndexRange2D.h"
+#include "local/stir/SeparableGaussianImageFilter.h"
 #include <cmath>
 
 START_NAMESPACE_STIR
@@ -365,7 +366,7 @@ zoom_image(const VoxelsOnCartesianGrid<float> &image,
 
 void 
 zoom_image(VoxelsOnCartesianGrid<float> &image_out, 
-       const VoxelsOnCartesianGrid<float> &image_in, bool rescale)
+       const VoxelsOnCartesianGrid<float> &image_in, bool rescale, bool filter)
 {
 
 /*
@@ -450,10 +451,15 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
   {
       BasicCoordinate<3,float> orig_grid = image_in.get_grid_spacing();
       BasicCoordinate<3,float> new_grid = image_out.get_grid_spacing();
-      float scale_att = (orig_grid[3]/new_grid[3]) * (orig_grid[2]/new_grid[2]) * (orig_grid[1]/new_grid[1]);
+      float scale_image = (orig_grid[3]/new_grid[3]) * (orig_grid[2]/new_grid[2]) * (orig_grid[1]/new_grid[1]);
 
-      image_out*= scale_att;
+      image_out*= scale_image;
   }
+
+
+    //apply filter
+//  if (filter)
+
 
 }
 

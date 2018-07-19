@@ -44,7 +44,9 @@ public:
                                const BasicCoordinate< num_dimensions,int>&  number_of_coefficients,
                                bool normalise = false);
   
-  
+  SeparableGaussianArrayFilter(const float standard_deviation,
+                               const float  number_of_coefficients,
+                               bool normalise = false);
 private:
 
   void construct_filter(bool normalise = false);
