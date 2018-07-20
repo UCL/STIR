@@ -4,13 +4,12 @@
 /*!
 
   \file
-  \ingroup local/buildblock  
-  \brief 
-   
-    
+  \ingroup ImageProcessor
+  \brief Declaration of class stir::SeparableGaussianArrayFilter
+
   \author Sanida Mustafovic
   \author Kris Thielemans
-      
+
    $Date: 
    $Revision: 
 */
@@ -41,6 +40,7 @@ public:
   //! Default constructor
   SeparableGaussianArrayFilter();  
   
+
   SeparableGaussianArrayFilter(const BasicCoordinate< num_dimensions,float>&  fwhm,
                                const BasicCoordinate< num_dimensions,int>&  max_kernel_sizes,
                                bool normalise = false);

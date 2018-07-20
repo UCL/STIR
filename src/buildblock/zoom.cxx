@@ -372,82 +372,9 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
        const VoxelsOnCartesianGrid<float> &image_in, bool rescale, bool apply_filter, shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > filter_ptr)
 {
 
-/*
-     interpolation routine uses the following relation:
-         x_in_index = x_out_index/zoom  + offset
+    zoom_image(image_out, image_in);
 
-     compare to 'physical' coordinates
-         x_phys = (x_index) * voxel_size.x + origin.x
-       
-     as x_in_phys == x_out_phys, we find
-         (x_in_index)* voxel_size_in.x + origin_in.x ==
-           (x_out_index )* voxel_size_out.x + origin_out.x
-        <=>
-         x_in_index = (x_out_index * voxel_size_out.x 
-	                + origin_out.x - origin_in.x) 
-		      / voxel_size_in.x
-
-     so, zoom= voxel_size_in.x/ voxel_size_out.x
-         offset = (origin_out.x - origin_in.x)/ voxel_size_in.x
-
-  */
-  // check relation between indices and physical coordinates
-  {
-    const BasicCoordinate<3,int> indices = make_coordinate(1,2,3);
-    if (norm(image_in.get_physical_coordinates_for_indices(indices)
-	     - (image_in.get_voxel_size() * BasicCoordinate<3,float>(indices) + image_in.get_origin())
-	     ) > 2.F)
-      error("zoom_image is confused about the relation between indices and physical coordinates");
-  }
-  const float zoom_x = 
-    image_in.get_voxel_size().x() / image_out.get_voxel_size().x();
-  const float zoom_y = 
-    image_in.get_voxel_size().y() / image_out.get_voxel_size().y();
-  const float zoom_z = 
-    image_in.get_voxel_size().z() / image_out.get_voxel_size().z();
-  const float x_offset = 
-    (image_out.get_origin().x() - image_in.get_origin().x()) 
-     / image_in.get_voxel_size().x();
-  const float y_offset = 
-    (image_out.get_origin().y() - image_in.get_origin().y()) 
-    / image_in.get_voxel_size().y();
-  const float z_offset = 
-    (image_out.get_origin().z() - image_in.get_origin().z()) 
-    / image_in.get_voxel_size().z();
-
-
-  if(zoom_x==1.0F && zoom_y==1.0F && zoom_z==1.0F &&
-     x_offset == 0.F && y_offset == 0.F && z_offset == 0.F &&
-     image_in.get_index_range() == image_out.get_index_range()
-     )
-    {
-      image_out = image_in;
-      return;
-    }
-
-  // TODO creating a lot of new images here...
-  Array<3,float> 
-    temp(IndexRange3D(image_in.get_min_z(), image_in.get_max_z(),
-		      image_in.get_min_y(), image_in.get_max_y(),
-		      image_out.get_min_x(), image_out.get_max_x()));
-
-  for (int z=image_in.get_min_z(); z<=image_in.get_max_z(); z++)
-    for (int y=image_in.get_min_y(); y<=image_in.get_max_y(); y++)
-      overlap_interpolate(temp[z][y], image_in[z][y], zoom_x, x_offset);
-
-  Array<3,float> temp2(IndexRange3D(image_in.get_min_z(), image_in.get_max_z(),
-				    image_out.get_min_y(), image_out.get_max_y(),
-				    image_out.get_min_x(), image_out.get_max_x()));
-
-  for (int z=image_in.get_min_z(); z<=image_in.get_max_z(); z++)
-    overlap_interpolate(temp2[z], temp[z], zoom_y, y_offset);
-
-  temp.recycle();
-
-  overlap_interpolate(image_out, temp2, zoom_z, z_offset);
-
-
-  //rescaling the image
+//The image is rescaled to preserve the voxel values
 
   if (rescale)
 
@@ -460,7 +387,7 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
   }
 
 
-    //apply filter
+//Filter output image
 
       if (apply_filter)
     {

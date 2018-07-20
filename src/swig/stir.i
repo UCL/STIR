@@ -79,7 +79,8 @@
 
 #include "stir/ChainedDataProcessor.h"
 #include "stir/SeparableCartesianMetzImageFilter.h"
-
+#include "stir/SeparableGaussianImageFilter.h"
+    
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/OSSPS/OSSPSReconstruction.h"
@@ -1440,12 +1441,18 @@ namespace stir {
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> >,
 	    stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
 %shared_ptr(stir::SeparableCartesianMetzImageFilter<elemT>)
+
+%shared_ptr(stir::RegisteredParsingObject<stir::SeparableGaussianImageFilter<elemT>,
+            stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+            stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
+%shared_ptr(stir::SeparableGaussianImageFilter<elemT>)
 #undef elemT
 #endif
 
 %include "stir/DataProcessor.h"
 %include "stir/ChainedDataProcessor.h"
 %include "stir/SeparableCartesianMetzImageFilter.h"
+%include "stir/SeparableGaussianImageFilter.h"
 
 #define elemT float
 %template(DataProcessor3DFloat) stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >;
@@ -1460,6 +1467,15 @@ namespace stir {
              stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
 
 %template(SeparableCartesianMetzImageFilter3DFloat) stir::SeparableCartesianMetzImageFilter<elemT>;
+
+%template(RPSeparableGaussianImageFilter3DFloat) stir::RegisteredParsingObject<
+                      stir::SeparableGaussianImageFilter<elemT>,
+                      stir::DataProcessor<DiscretisedDensity<3,elemT> >,
+                      stir::DataProcessor<DiscretisedDensity<3,elemT> > >;
+
+%template(SeparableGaussianImageFilter3DFloat) stir::SeparableGaussianImageFilter<elemT>;
+
+
 #undef elemT
 
 %include "stir/GeneralisedPoissonNoiseGenerator.h"
