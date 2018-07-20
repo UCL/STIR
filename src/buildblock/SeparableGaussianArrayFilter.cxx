@@ -2,6 +2,7 @@
 #include "stir/SeparableGaussianArrayFilter.h"
 #include "stir/ArrayFilter1DUsingConvolution.h"
 #include "stir/ArrayFilter1DUsingConvolutionSymmetricKernel.h"
+#include "stir/VectorWithOffset.h"
 #include "stir/info.h"
 #include <boost/format.hpp>
 
@@ -24,8 +25,9 @@ START_NAMESPACE_STIR
 template <int num_dimensions, typename elemT>
 SeparableGaussianArrayFilter<num_dimensions,elemT>::
 SeparableGaussianArrayFilter()
-:fwhm(0),max_kernel_sizes(0)
+:fwhms(0),max_kernel_sizes(0)
 {
+
 
  for (int i=1;i<=num_dimensions;i++)
   {
@@ -36,8 +38,8 @@ SeparableGaussianArrayFilter()
 
 template <int num_dimensions, typename elemT>
 SeparableGaussianArrayFilter<num_dimensions,elemT>::
-SeparableGaussianArrayFilter(const float fwhm_v,const float max_kernel_sizes_v,  bool normalise)
-:fwhm(fwhm_v),max_kernel_sizes(max_kernel_sizes_v)
+SeparableGaussianArrayFilter(const float fwhms_v,const float max_kernel_sizes_v,  bool normalise)
+:fwhms(fwhms_v),max_kernel_sizes(max_kernel_sizes_v)
     {
 
     //normalisation to 1 is optinal
@@ -48,10 +50,10 @@ SeparableGaussianArrayFilter(const float fwhm_v,const float max_kernel_sizes_v, 
 
 template <int num_dimensions, typename elemT> 
 SeparableGaussianArrayFilter<num_dimensions,elemT>::
-SeparableGaussianArrayFilter(const BasicCoordinate< num_dimensions,float>& fwhm_v,
+SeparableGaussianArrayFilter(const BasicCoordinate< num_dimensions,float>& fwhms_v,
                              const BasicCoordinate< num_dimensions,int>& max_kernel_sizes_v, bool normalise)
 
-:fwhm(fwhm_v),max_kernel_sizes(max_kernel_sizes_v)
+:fwhms(fwhms_v),max_kernel_sizes(max_kernel_sizes_v)
 {
 //normalisation to 1 is optinal
 
@@ -65,14 +67,14 @@ SeparableGaussianArrayFilter<num_dimensions,elemT>::
 construct_filter(bool normalise)
 {
  VectorWithOffset<elemT> filter_coefficients;
- for (int i = 1; i<=max_kernel_sizes.size();i++)
+ for (int i = 1; i<=num_dimensions;i++)
 
  {
     calculate_coefficients(filter_coefficients, max_kernel_sizes[i],
-             fwhm[i],normalise);
+             fwhms[i],normalise);
 
 
-    this->all_1d_array_filters[i].
+    this->all_1d_array_filters[i-1].
     reset(new ArrayFilter1DUsingConvolution<float>(filter_coefficients));
 
    }
@@ -82,11 +84,11 @@ template <int num_dimensions, typename elemT>
 void
 SeparableGaussianArrayFilter<num_dimensions,elemT>:: 
 calculate_coefficients(VectorWithOffset<elemT>& filter_coefficients, const int max_kernel_sizes,
-            const float fwhm, bool normalise)
+            const float fwhms, bool normalise)
 
 {
 
-  float standard_deviation = sqrt(fwhm*fwhm/(8*log(2.F)));
+  float standard_deviation = sqrt(fwhms*fwhms/(8*log(2.F)));
 
   if (standard_deviation==0)
   {
@@ -132,11 +134,13 @@ if (normalise)
         }
 
         cerr << " here  - rescaled" << endl;
-        cerr << "Printing filter coefficients" << endl;
-        for (int i =filter_coefficients.get_min_index();i<=filter_coefficients.get_max_index();i++)
-         cerr  << i<<"   "<< filter_coefficients[i] <<"   " << endl;
+
+      /*  cerr << "Printing filter coefficients" << endl;
+          for (int i =filter_coefficients.get_min_index();i<=filter_coefficients.get_max_index();i++)
+          cerr  << i<<"   "<< filter_coefficients[i] <<"   " << endl;*/
 
     }
+
 }
 
 

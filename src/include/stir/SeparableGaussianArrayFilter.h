@@ -57,7 +57,7 @@ private:
                 const float fwhm, bool normalise);
 
 
-  BasicCoordinate< num_dimensions,float> fwhm;
+  BasicCoordinate< num_dimensions,float> fwhms;
   BasicCoordinate< num_dimensions,int> max_kernel_sizes;
  
 };
