@@ -207,6 +207,12 @@ InterfileHeader::InterfileHeader()
     KeyArgument::DOUBLE, &pixel_sizes);
   add_key("number of time frames", 
     KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_frames_info,&num_time_frames);
+  add_key("number of image data types", 
+    KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_image_data_types,&num_image_data_types);
+  add_key("index nesting level", 
+    KeyArgument::LIST_OF_ASCII,	&index_nesting_level);
+  add_key("image data type description", 
+    KeyArgument::ASCII,	&image_data_type_description);
   add_key("image relative start time (sec)",
 	  KeyArgument::DOUBLE, &image_relative_start_times);
   add_key("image duration (sec)",
