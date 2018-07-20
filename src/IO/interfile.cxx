@@ -272,7 +272,7 @@ read_interfile_parametric_image(istream& input,
           || scale != 1)
         {
           warning("read_interfile_parametric_image: error reading data or scale factor returned by read_data not equal to 1");
-          return nullptr;
+          return 0;
         }
 
       for (int i=0; i< hdr.matrix_size[2][0]; i++)
@@ -280,7 +280,7 @@ read_interfile_parametric_image(istream& input,
           (*image_sptr)[i] *= static_cast<float>(hdr.image_scaling_factors[kin_param-1][i]);
 
       // Check that we're dealing with VoxelsOnCartesianGrid
-      if (dynamic_cast<const VoxelsOnCartesianGrid<float> * >(image_sptr.get())==nullptr)
+      if (dynamic_cast<const VoxelsOnCartesianGrid<float> * >(image_sptr.get())==0)
         error("ParametricDiscretisedDensity::read_from_file only supports VoxelsOnCartesianGrid");
 
       // Set the image for the given kinetic parameter
