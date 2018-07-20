@@ -72,7 +72,7 @@ public InputFileFormat<ParametricVoxelsOnCartesianGrid>
   virtual unique_ptr<data_type>
     read_from_file(const std::string& filename) const
   {
-    unique_ptr<data_type> ret(data_type::read_from_file(filename));
+    unique_ptr<data_type> ret(read_interfile_parametric_image(filename));
     if (is_null_ptr(ret))
       {
 	error("failed to read an Interfile image from file \"%s\"", filename.c_str());

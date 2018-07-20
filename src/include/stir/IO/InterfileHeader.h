@@ -124,6 +124,7 @@ private:
  protected:
   virtual void read_matrix_info();
   void read_frames_info();
+  void read_image_data_types();
 
 public :
 
@@ -151,6 +152,9 @@ public :
   std::vector<double>	pixel_sizes;
   std::vector<std::vector<double> > image_scaling_factors;
   std::vector<unsigned long> data_offset_each_dataset;
+  int num_image_data_types;
+  std::vector<std::string> index_nesting_level;
+  std::vector<std::string> image_data_type_description;
 
   // Acquisition parameters
   //!

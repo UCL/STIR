@@ -226,6 +226,81 @@ read_interfile_dynamic_image(istream& input,
   return dynamic_dens_ptr;
 }
 
+ParametricVoxelsOnCartesianGrid*
+read_interfile_parametric_image(istream& input,
+                             const string&  directory_for_data)
+{
+  InterfileImageHeader hdr;
+  char full_data_file_name[max_filename_length];
+  shared_ptr<DiscretisedDensity<3,float> >
+    image_sptr(create_image_and_header_from(hdr,
+                                            full_data_file_name,
+                                            input,
+                                            directory_for_data));
+  if (is_null_ptr(image_sptr))
+    error("Error parsing parametric image");
+
+  shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(hdr.get_exam_info_sptr()->originating_system));
+
+  BasicCoordinate<3,float> voxel_size;
+  voxel_size[1] = hdr.pixel_sizes[2];
+  voxel_size[2] = hdr.pixel_sizes[1];
+  voxel_size[3] = hdr.pixel_sizes[0];
+
+  ParametricVoxelsOnCartesianGrid* parametric_dens_ptr =
+          new ParametricVoxelsOnCartesianGrid(
+              ParametricVoxelsOnCartesianGridBaseType(
+                  hdr.get_exam_info_sptr(),
+                  image_sptr->get_index_range(),
+                  image_sptr->get_origin(),
+                  voxel_size));
+
+  ifstream data_in;
+  open_read_binary(data_in, full_data_file_name);
+
+  data_in.seekg(hdr.data_offset_each_dataset[0]);
+
+  // loop over each of the parametric image types (e.g., slope, intercept)
+  for (int kin_param=1; kin_param<=hdr.num_image_data_types; kin_param++) {
+
+      data_in.seekg(hdr.data_offset_each_dataset[kin_param-1]);
+
+      // read into image_sptr first
+      float scale = float(1);
+      if (read_data(data_in, *image_sptr, hdr.type_of_numbers, scale, hdr.file_byte_order)
+          == Succeeded::no
+          || scale != 1)
+        {
+          warning("read_interfile_parametric_image: error reading data or scale factor returned by read_data not equal to 1");
+          return nullptr;
+        }
+
+      for (int i=0; i< hdr.matrix_size[2][0]; i++)
+        if (hdr.image_scaling_factors[kin_param-1][i]!= 1)
+          (*image_sptr)[i] *= static_cast<float>(hdr.image_scaling_factors[kin_param-1][i]);
+
+      // Check that we're dealing with VoxelsOnCartesianGrid
+      if (dynamic_cast<const VoxelsOnCartesianGrid<float> * >(image_sptr.get())==nullptr)
+        error("ParametricDiscretisedDensity::read_from_file only supports VoxelsOnCartesianGrid");
+
+      // Set the image for the given kinetic parameter
+      ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType::const_full_iterator single_density_iter =
+        image_sptr->begin_all();
+      ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType::const_full_iterator end_single_density_iter =
+        image_sptr->end_all();
+      ParametricVoxelsOnCartesianGrid::full_densel_iterator parametric_density_iter =
+        parametric_dens_ptr->begin_all_densel();
+
+      while (single_density_iter!=end_single_density_iter)
+        {
+          (*parametric_density_iter)[kin_param] = *single_density_iter;
+          ++single_density_iter; ++parametric_density_iter;
+        }
+  }
+
+  return parametric_dens_ptr;
+}
+
 VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename)
 {
   ifstream image_stream(filename.c_str());
@@ -252,6 +327,21 @@ DynamicDiscretisedDensity* read_interfile_dynamic_image(const string& filename)
   get_directory_name(directory_name, filename.c_str());
 
   return read_interfile_dynamic_image(image_stream, directory_name);
+}
+
+ParametricVoxelsOnCartesianGrid*
+read_interfile_parametric_image(const string& filename)
+{
+  ifstream image_stream(filename.c_str());
+  if (!image_stream)
+    {
+      error("read_interfile_parametric_image: couldn't open file %s\n", filename.c_str());
+    }
+
+  char directory_name[max_filename_length];
+  get_directory_name(directory_name, filename.c_str());
+
+  return read_interfile_parametric_image(image_stream, directory_name);
 }
 
 #if 0
@@ -371,6 +461,17 @@ static void write_interfile_energy_windows(std::ostream& output_header, const Ex
     }
 }
 
+// Write data type descriptions (if there are any)
+static void write_interfile_image_data_descriptions(std::ostream& output_header, const std::vector<std::string>& data_type_descriptions)
+{
+    if (data_type_descriptions.size() == 0) return;
+
+    output_header << "number of image data types := " << data_type_descriptions.size() << '\n';
+    output_header << "index nesting level := {data type}\n";
+    for (int i=0; i<data_type_descriptions.size(); i++)
+        output_header << "image data type description[" << i+1 << "] := " << data_type_descriptions[i] << "\n";
+}
+
 static void  write_interfile_modality(std::ostream& output_header, const ExamInfo& exam_info)
 {
   /*
@@ -395,7 +496,8 @@ write_basic_interfile_image_header(const string& header_file_name,
 				   const NumericType output_type,
 				   const ByteOrder byte_order,
 				   const VectorWithOffset<float>& scaling_factors,
-				   const VectorWithOffset<unsigned long>& file_offsets)
+				   const VectorWithOffset<unsigned long>& file_offsets,
+                   const std::vector<std::string>& data_type_descriptions)
 {
   CartesianCoordinate3D<int> min_indices;
   CartesianCoordinate3D<int> max_indices;
@@ -437,6 +539,7 @@ write_basic_interfile_image_header(const string& header_file_name,
   output_header << "!PET STUDY (General) :=\n";
   write_interfile_time_frame_definitions(output_header, exam_info);
   write_interfile_energy_windows(output_header, exam_info);
+  write_interfile_image_data_descriptions(output_header, data_type_descriptions);
   output_header << "!PET data type := Image\n";
   output_header << "process status := Reconstructed\n";
 
@@ -728,7 +831,7 @@ write_basic_interfile(const string& filename,
 
 Succeeded
 write_basic_interfile(const string& filename,
-              const ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<2,float> > > &image,
+              const ParametricVoxelsOnCartesianGrid &image,
               const NumericType output_type,
               const float scale,
               const ByteOrder byte_order)
@@ -750,6 +853,11 @@ write_basic_interfile(const string& filename,
         scaling_factors[i-1]=(scale_to_use);
     }
 
+    // Tell it what the different kinetic parameters mean
+    std::vector<std::string> data_type_descriptions;
+    data_type_descriptions.push_back("slope");
+    data_type_descriptions.push_back("intercept");
+
     const Succeeded success =
       write_basic_interfile_image_header(header_name,
                          data_name,
@@ -760,7 +868,8 @@ write_basic_interfile(const string& filename,
                          output_type,
                          byte_order,
                          scaling_factors,
-                         file_offsets);
+                         file_offsets,
+                         data_type_descriptions);
   #if 0
     delete[] header_name;
     delete[] data_name;

@@ -101,11 +101,22 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(std::istream& input,
 */
 VoxelsOnCartesianGrid<float>* read_interfile_image(const std::string& filename);
 
+/// Read dynamic image
 DynamicDiscretisedDensity*
 read_interfile_dynamic_image(std::istream& input,
                              const std::string&  directory_for_data);
 
+/// Read dynamic image
 DynamicDiscretisedDensity* read_interfile_dynamic_image(const std::string& filename);
+
+/// Read parametric image
+ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<2,float> > >*
+read_interfile_parametric_image(std::istream& input,
+                             const std::string&  directory_for_data);
+
+/// Read parametric image
+ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<2,float> > >*
+read_interfile_parametric_image(const std::string& filename);
 
 //! This outputs an Interfile header for an image.
 /*!
@@ -136,7 +147,8 @@ write_basic_interfile_image_header(const std::string& header_file_name,
 				   const NumericType output_type,
 				   const ByteOrder byte_order,
 				   const VectorWithOffset<float>& scaling_factors,
-				   const VectorWithOffset<unsigned long>& file_offsets);
+                   const VectorWithOffset<unsigned long>& file_offsets,
+                   const std::vector<std::string>& data_type_descriptions = std::vector<std::string>());
 
 
 //! a utility function that computes the file offsets of subsequent images

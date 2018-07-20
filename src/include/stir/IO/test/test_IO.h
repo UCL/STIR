@@ -209,8 +209,6 @@ void IOTests<A>::compare_images(const VoxelsOnCartesianGrid<float> &im_1,
 {
     set_tolerance(.000001);
 
-    check_if_equal(im_1.get_grid_spacing(), im_2.get_grid_spacing(), "test on read and written file via image grid spacing ");
-
     if (_output_file_format_sptr->get_type_of_numbers().integer_type()) {
         set_tolerance(10.*im_1.find_max()/
                   pow(2.,static_cast<double>(_output_file_format_sptr->get_type_of_numbers().size_in_bits())));

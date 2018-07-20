@@ -150,6 +150,9 @@ InterfileHeader::InterfileHeader()
   for (int i=0; i<num_time_frames; i++)
     image_scaling_factors[i].resize(1, 1.);
   lln_quantification_units = 1.;
+  num_image_data_types = 1;
+  index_nesting_level.resize(num_image_data_types, "");
+  image_data_type_description.resize(num_image_data_types, "");
 
   data_offset_each_dataset.resize(num_time_frames, 0UL);
 
@@ -295,7 +298,8 @@ bool InterfileHeader::post_processing()
     }
   }
 
-  for (int frame=0; frame<num_time_frames; frame++)
+  int num_image_scaling_factors = std::max(num_time_frames,num_image_data_types);
+  for (int frame=0; frame<num_image_scaling_factors; frame++)
   {
     if (image_scaling_factors[frame].size() == 1)
     {
@@ -318,7 +322,7 @@ bool InterfileHeader::post_processing()
   if (lln_quantification_units!=1.)
   {
      const bool all_one = image_scaling_factors[0][0] == 1.;
-    for (int frame=0; frame<num_time_frames; frame++)
+    for (int frame=0; frame<num_image_scaling_factors; frame++)
       for (unsigned int i=0; i<image_scaling_factors[frame].size(); i++)
       {
         // check if all image_scaling_factors are equal to 1 (i.e. the image_scaling_factors keyword 
@@ -423,6 +427,17 @@ void InterfileHeader::read_frames_info()
   data_offset_each_dataset.resize(num_time_frames, 0UL);
   image_relative_start_times.resize(num_time_frames, 0.);
   image_durations.resize(num_time_frames, 0.);
+}
+
+void InterfileHeader::read_image_data_types()
+{
+  set_variable();
+  image_scaling_factors.resize(num_image_data_types);
+  for (int i=0; i<num_image_data_types; i++)
+    image_scaling_factors[i].resize(1, 1.);
+  data_offset_each_dataset.resize(num_image_data_types, 0UL);
+  index_nesting_level.resize(num_image_data_types,"");
+  image_data_type_description.resize(num_image_data_types,"");
 }
 
 /***********************************************************************/

@@ -124,6 +124,8 @@ void IOTests_ParametricDiscretisedDensity::check_result()
 
     for (int i=1; i<=_image_to_read_sptr->get_num_params(); i++) {
 
+        std::cerr << "\tChecking kinetic parameter " << i << "...\n";
+
         const VoxelsOnCartesianGrid<float> &image_to_write =
                 _image_to_write_sptr->construct_single_density(i);
 
