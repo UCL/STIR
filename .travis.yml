@@ -105,7 +105,6 @@ install:
   - make install
   
 script:
-  - ctest --verbose
   - make test
   - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/bin
   - cd $TRAVIS_BUILD_DIR/recon_test_pack
