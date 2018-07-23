@@ -23,6 +23,7 @@
   \brief Implementation of class stir::InterfileParametricDiscretisedDensityOutputFileFormat
 
   \author Kris Thielemans
+  \author Richard Brown
 
 */
 

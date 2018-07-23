@@ -484,6 +484,20 @@ static void  write_interfile_modality(std::ostream& output_header, const ExamInf
       imaging_modality.get_modality() != ImagingModality::Unknown)
     output_header << "!imaging modality := " << exam_info.imaging_modality.get_name() << '\n';
 }
+
+static void interfile_create_filenames(const std::string& filename, std::string& data_name, std::string& header_name)
+{
+  data_name=filename;
+  string::size_type pos=find_pos_of_extension(filename);
+  if (pos!=string::npos && filename.substr(pos)==".hv")
+    replace_extension(data_name, ".v");
+  else
+    add_extension(data_name, ".v");
+
+  header_name=filename;
+  replace_extension(header_name, ".hv");
+}
+
 ////// end static functions
 
 Succeeded 
@@ -720,19 +734,6 @@ write_basic_interfile(const string& filename,
 #if defined(_MSC_VER) && (_MSC_VER <= 1300)
 #undef elemT 
 #endif
-
-void interfile_create_filenames(const std::string& filename, std::string& data_name, std::string& header_name)
-{
-  data_name=filename;
-  string::size_type pos=find_pos_of_extension(filename);
-  if (pos!=string::npos && filename.substr(pos)==".hv")
-    replace_extension(data_name, ".v");
-  else
-    add_extension(data_name, ".v");
-
-  header_name=filename;
-  replace_extension(header_name, ".hv");
-}
 
 template <class NUMBER>
 Succeeded write_basic_interfile(const string&  filename,

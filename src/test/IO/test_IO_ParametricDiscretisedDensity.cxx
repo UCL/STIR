@@ -3,7 +3,7 @@
 /*!
 
   \file
-  \ingroup test
+  \ingroup IO
 
   \brief A simple program to test the stir::OutputFileFormat function.
 

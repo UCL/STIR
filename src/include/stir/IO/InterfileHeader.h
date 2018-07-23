@@ -124,7 +124,7 @@ private:
  protected:
   virtual void read_matrix_info();
   void read_frames_info();
-  void read_image_data_types();
+  virtual int get_num_data_types() { return num_time_frames; }
 
 public :
 
@@ -152,9 +152,6 @@ public :
   std::vector<double>	pixel_sizes;
   std::vector<std::vector<double> > image_scaling_factors;
   std::vector<unsigned long> data_offset_each_dataset;
-  int num_image_data_types;
-  std::vector<std::string> index_nesting_level;
-  std::vector<std::string> image_data_type_description;
 
   // Acquisition parameters
   //!
@@ -186,11 +183,17 @@ class InterfileImageHeader : public InterfileHeader
 public:
   InterfileImageHeader();
   std::vector<double>	first_pixel_offsets;
+  int num_image_data_types;
+  std::vector<std::string> index_nesting_level;
+  std::vector<std::string> image_data_type_description;
 
 protected:
   virtual void read_matrix_info();
   //! Returns false if OK, true if not.
   virtual bool post_processing();
+  /// Read image data types
+  void read_image_data_types();
+  virtual int get_num_data_types() { return num_time_frames*num_image_data_types; }
 
 };
 

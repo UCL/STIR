@@ -74,7 +74,7 @@ Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
 
 <h2> Summary for end users (also to be read by developers)</h2>
 
-<h3>Bbug fixes</h3>
+<h3>Bug fixes</h3>
 <ul>
 <li>bug fixed in writing of SPECT interfile headers: "direction of rotation" was set incorrect. This 
 affected output of forward_project (and stir_math -s). Reconstruction was not affected though.
@@ -135,6 +135,7 @@ These are only minimally documented at the present stage unfortunately.
   and if the images/projection data have the same characteristics as those used when the object was set-up.
   (Actually, projection data can be &quote;smaller&quote;, e.g. less segments).
   </li>
+  <li>Ability to read dynamic and parametric interfiles with <tt>InterfileDynamicDiscretisedDensityInputFileFormat</tt> and <tt>InterfileParametricDiscretisedDensityInputFileFormat</tt>, respectively.
 </ul>
 
 
@@ -158,6 +159,12 @@ was in HFS position. This is currently not checked (and for many file formats, n
   views.<br />
   It has a new switch <tt>--NOPMRT</tt> which reverts to the previous behaviour (i.e. using
   the old ray tracer on-the-fly projector).
+  </li>
+  <li><tt>InterfileDynamicDiscretisedDensityOutputFileFormat::</tt> changed start/end key from <tt>Interfile Output File Format</tt> to <tt>Interfile Output File Format Parameters</tt> to match other Interfile types.
+  </li>
+  <li>Renamed <tt>InterfileParametricDensityOutputFileFormat</tt> to <tt>InterfileParametricDiscretisedDensityOutputFileFormat</tt> and the corresponding keys.
+  </li>
+  <li>Changed the return value of <tt>DynamicProjData::read_from_file</tt> from a raw ptr to a shared_ptr.
   </li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>
