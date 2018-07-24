@@ -1450,15 +1450,29 @@ namespace stir {
             stir::DataProcessor<DiscretisedDensity<3,elemT> >,
             stir::DataProcessor<DiscretisedDensity<3,elemT> > >)
 %shared_ptr(stir::SeparableGaussianImageFilter<elemT>)
+
+
+%shared_ptr(stir::PostFiltering<stir::DiscretisedDensity<3,elemT> >);
+
 #undef elemT
 #endif
+
+/*#define elemT float
+extend stir::DataProcessor {
+    stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >* ptr() const {
+        return this; }}
+#undef elemT*/
 
 %include "stir/DataProcessor.h"
 %include "stir/ChainedDataProcessor.h"
 %include "stir/SeparableCartesianMetzImageFilter.h"
 %include "stir/SeparableGaussianImageFilter.h"
+%include "stir/PostFiltering.h"
+
 
 #define elemT float
+
+
 %template(DataProcessor3DFloat) stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >;
 %template(RPChainedDataProcessor3DFloat) stir::RegisteredParsingObject<
              stir::ChainedDataProcessor<stir::DiscretisedDensity<3,elemT> >,
@@ -1479,13 +1493,10 @@ namespace stir {
 
 %template(SeparableGaussianImageFilter3DFloat) stir::SeparableGaussianImageFilter<elemT>;
 
-
-%extend stir::DataProcessor {
+%template(PostFiltering3DFloat) stir::PostFiltering<stir::DiscretisedDensity<3,elemT> >;
+/*%extend stir::DataProcessor {
     stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >* ptr() const {
-        return this;
-    }
-}
-    
+        return this; }}*/
 
 #undef elemT
 
