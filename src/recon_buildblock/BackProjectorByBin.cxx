@@ -79,7 +79,7 @@ check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& den
 
 void 
 BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
-				 const ProjData& proj_data)
+const ProjData& proj_data, int subset_num, int num_subsets)
 {
   check(*proj_data.get_proj_data_info_sptr(), image);
     
@@ -89,7 +89,7 @@ BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
   const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
     detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
                                          proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
-                                         0, 1/*subset_num, num_subsets*/);
+                                         subset_num, num_subsets);
 
 #ifdef STIR_OPENMP
   std::vector< shared_ptr<DiscretisedDensity<3,float> > > local_output_image_sptrs;

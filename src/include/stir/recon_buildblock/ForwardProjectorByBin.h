@@ -87,7 +87,7 @@ virtual void set_up(
   //! project the volume into the whole proj_data
   /*! it overwrites the data already present in the projection data */
     void forward_project(ProjData&, 
-			 const DiscretisedDensity<3,float>& );
+			 const DiscretisedDensity<3,float>&, int subset_num = 0, int num_subsets = 1);
 
    //! project the volume into the viewgrams
    /*! it overwrites the data already present in the viewgram */
