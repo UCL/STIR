@@ -81,7 +81,13 @@ void
 BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
 const ProjData& proj_data, int subset_num, int num_subsets)
 {
-  check(*proj_data.get_proj_data_info_sptr(), image);
+	if (subset_num < 0)
+		error(boost::format("forward_project: wrong subset number %1%") % subset_num);
+	if (subset_num > num_subsets - 1)
+		error(boost::format("forward_project: wrong subset number %1% (must be less than the number of subsets %2%)")
+		% subset_num % num_subsets);
+	
+	check(*proj_data.get_proj_data_info_sptr(), image);
     
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(this->get_symmetries_used()->clone());  
