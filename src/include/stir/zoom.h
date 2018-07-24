@@ -91,6 +91,7 @@
 
 #include "stir/common.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/PostFiltering.h"
 #include "stir/DataProcessor.h"
 #include "stir/SeparableGaussianImageFilter.h"
 
@@ -197,9 +198,13 @@ zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
 zoom_image(VoxelsOnCartesianGrid<float> &image_out, 
        const VoxelsOnCartesianGrid<float> &image_in, bool rescale , bool apply_filter, shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > filter_ptr);*/
 
+/*void
+zoom_image_and_filter(VoxelsOnCartesianGrid<float> &image_out,
+       const VoxelsOnCartesianGrid<float> &image_in, DataProcessor<DiscretisedDensity<3,float> > &filter, bool rescale = false);*/
+
 void
 zoom_image_and_filter(VoxelsOnCartesianGrid<float> &image_out,
-       const VoxelsOnCartesianGrid<float> &image_in, DataProcessor<DiscretisedDensity<3,float> > &filter, bool rescale = false);
+       const VoxelsOnCartesianGrid<float> &image_in, const std::string& filter_parameter_filename, bool rescale = false);
 void
 zoom_image(VoxelsOnCartesianGrid<float> &image_out,
        const VoxelsOnCartesianGrid<float> &image_in, bool rescale = false);

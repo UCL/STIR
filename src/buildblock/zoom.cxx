@@ -398,8 +398,25 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
 }*/
 
 
-
 void
+zoom_image_and_filter(VoxelsOnCartesianGrid<float> &image_out,
+       const VoxelsOnCartesianGrid<float> &image_in, const std::string& filter_parameter_filename, bool rescale)
+{
+
+
+    zoom_image(image_out, image_in,rescale);
+
+    //apply filter
+    shared_ptr<PostFiltering <DiscretisedDensity<3,float> > > filter_sptr;
+    filter_sptr.reset(new PostFiltering <DiscretisedDensity<3,float> >);
+    filter_sptr->parse(filter_parameter_filename.c_str());
+    filter_sptr->process_data(image_out);
+
+}
+
+
+
+/*void
 zoom_image_and_filter(VoxelsOnCartesianGrid<float> &image_out,
        const VoxelsOnCartesianGrid<float> &image_in, DataProcessor<DiscretisedDensity<3,float> > &filter, bool rescale)
 {
@@ -409,7 +426,7 @@ zoom_image_and_filter(VoxelsOnCartesianGrid<float> &image_out,
     //apply filter
     filter.apply(image_out);
 
-}
+}*/
 
 
 void

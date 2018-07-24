@@ -1493,7 +1493,9 @@ extend stir::DataProcessor {
 
 %template(SeparableGaussianImageFilter3DFloat) stir::SeparableGaussianImageFilter<elemT>;
 
+
 %template(PostFiltering3DFloat) stir::PostFiltering<stir::DiscretisedDensity<3,elemT> >;
+
 /*%extend stir::DataProcessor {
     stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >* ptr() const {
         return this; }}*/
