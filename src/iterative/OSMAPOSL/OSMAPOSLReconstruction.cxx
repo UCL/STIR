@@ -384,6 +384,10 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
         }
 
     }
+
+  // initialise mutliplicative update to zeros
+  multiplicative_update_image_ptr = unique_ptr<TargetT>(target_image_ptr->get_empty_copy());
+
   return Succeeded::yes;
 }
 
@@ -443,10 +447,6 @@ update_estimate(TargetT &current_image_estimate)
   PTimer timerSubset;
   timerSubset.Start();
 #endif // PARALLEL
-
-  // TODO make member parameter to avoid reallocation all the time
-  unique_ptr< TargetT > multiplicative_update_image_ptr
-    (current_image_estimate.get_empty_copy());
 
   const int subset_num=this->get_subset_num();
   info(boost::format("Now processing subset #: %1%") % subset_num);

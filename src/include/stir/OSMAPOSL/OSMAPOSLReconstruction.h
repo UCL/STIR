@@ -214,6 +214,8 @@ private:
 
   PoissonLogLikelihoodWithLinearModelForMean<TargetT > const&
     objective_function() const;
+
+  unique_ptr<TargetT> multiplicative_update_image_ptr;
 };
 
 END_NAMESPACE_STIR
