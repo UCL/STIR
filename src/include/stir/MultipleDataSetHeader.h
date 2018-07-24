@@ -22,6 +22,14 @@
   \ingroup data_buildblock
   \brief Declaration of class stir::MultipleDataSetHeader
   \author Richard Brown
+  
+  Give a txt file with the names of the individual filenames, e.g.,:
+
+  Multi :=
+    total number of data sets := 2
+    data set[1] := sinogram_1.hs
+    data set[2] := sinogram_2.hs
+  end :=
 */
 
 #include "stir/KeyParser.h"
