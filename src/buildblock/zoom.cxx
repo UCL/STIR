@@ -39,6 +39,7 @@
    
 #include "stir/interpolate.h"
 #include "stir/zoom.h"
+#include "stir/PostFiltering.h"
 #include "stir/DataProcessor.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h" 
@@ -367,7 +368,7 @@ zoom_image(const VoxelsOnCartesianGrid<float> &image,
 }
 
 
-void 
+/*void
 zoom_image(VoxelsOnCartesianGrid<float> &image_out, 
        const VoxelsOnCartesianGrid<float> &image_in, bool rescale, bool apply_filter, shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > filter_ptr)
 {
@@ -393,11 +394,27 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
     {
         filter_ptr->apply(image_out);
      }
+
+}*/
+
+
+
+void
+zoom_image_and_filter(VoxelsOnCartesianGrid<float> &image_out,
+       const VoxelsOnCartesianGrid<float> &image_in, DataProcessor<DiscretisedDensity<3,float> > &filter, bool rescale)
+{
+
+    zoom_image(image_out, image_in,rescale);
+
+    //apply filter
+    filter.apply(image_out);
+
 }
+
 
 void
 zoom_image(VoxelsOnCartesianGrid<float> &image_out,
-       const VoxelsOnCartesianGrid<float> &image_in)
+       const VoxelsOnCartesianGrid<float> &image_in, bool rescale)
 {
 
 /*
@@ -474,6 +491,16 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
 
   overlap_interpolate(image_out, temp2, zoom_z, z_offset);
 
+
+  if (rescale)
+
+  {
+      BasicCoordinate<3,float> orig_grid = image_in.get_grid_spacing();
+      BasicCoordinate<3,float> new_grid = image_out.get_grid_spacing();
+      float scale_image = (orig_grid[3]/new_grid[3]) * (orig_grid[2]/new_grid[2]) * (orig_grid[1]/new_grid[1]);
+
+      image_out*= scale_image;
+  }
 
 }
 

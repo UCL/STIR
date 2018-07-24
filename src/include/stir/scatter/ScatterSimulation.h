@@ -28,6 +28,7 @@
 */
 
 #include "stir/ParsingObject.h"
+#include "stir/DataProcessor.h"
 #include "stir/RegisteredObject.h"
 #include "stir/ProjData.h"
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -202,6 +203,7 @@ public:
     inline float
     total_Compton_cross_section_relative_to_511keV(const float energy);
     //@}
+
 
 protected:
 

@@ -621,6 +621,16 @@ set_cache_enabled(const bool arg)
 }
 
 
+/*void
+ScatterSimulation::
+upsample_and_apply_filter(VoxelsOnCartesianGrid<float> &image_out,
+       const VoxelsOnCartesianGrid<float> &image_in, bool rescale, bool apply_filter, shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > filter_ptr)
+{
+   // shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > filter_ptr;
 
+
+    zoom_image(image_out, image_in, rescale, apply_filter, filter_ptr);
+
+}*/
 
 END_NAMESPACE_STIR

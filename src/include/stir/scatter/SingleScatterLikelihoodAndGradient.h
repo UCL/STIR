@@ -29,7 +29,7 @@
 #include "stir/scatter/ScatterSimulation.h"
 #include "stir/scatter/SingleScatterSimulation.h"
 #include "stir/RegisteredParsingObject.h"
-
+#include "stir/zoom.h"
 
 START_NAMESPACE_STIR
 

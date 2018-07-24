@@ -80,7 +80,7 @@
 #include "stir/ChainedDataProcessor.h"
 #include "stir/SeparableCartesianMetzImageFilter.h"
 #include "stir/SeparableGaussianImageFilter.h"
-    
+#include "stir/PostFiltering.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
 #include "stir/OSSPS/OSSPSReconstruction.h"
@@ -1280,6 +1280,7 @@ namespace stir {
 %include "stir/IO/write_to_file.h"
 %template(write_image_to_file) stir::write_to_file<DiscretisedDensity<3, float> >;
 
+%include "stir/zoom.h"
 #ifdef STIRSWIG_SHARED_PTR
 #define DataT stir::DiscretisedDensity<3,float>
 %shared_ptr(stir::OutputFileFormat<stir::DiscretisedDensity<3,float> >);
@@ -1292,6 +1293,8 @@ namespace stir {
 %shared_ptr(stir::ecat::ecat7::ECAT7OutputFileFormat);
 #endif
 #endif
+
+%template(write_image_to_file) stir::write_to_file<DiscretisedDensity<3, float> >;
 
 %include "stir/IO/OutputFileFormat.h"
 
@@ -1310,6 +1313,7 @@ namespace stir {
  /* Now do ProjDataInfo, Sinogram et al
  */
 %include "stir/TimeFrameDefinitions.h"
+%include "stir/zoom.h"
 %include "stir/ExamInfo.h"
 %include "stir/IO/ExamData.h"
 %include "stir/Verbosity.h"
@@ -1475,6 +1479,13 @@ namespace stir {
 
 %template(SeparableGaussianImageFilter3DFloat) stir::SeparableGaussianImageFilter<elemT>;
 
+
+%extend stir::DataProcessor {
+    stir::DataProcessor<stir::DiscretisedDensity<3,elemT> >* ptr() const {
+        return this;
+    }
+}
+    
 
 #undef elemT
 
@@ -1666,3 +1677,7 @@ stir::ScatterSimulation
 
 
 %include "stir/scatter/SingleScatterLikelihoodAndGradient.h"
+
+
+
+

@@ -92,6 +92,7 @@
 #include "stir/common.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/DataProcessor.h"
+#include "stir/SeparableGaussianImageFilter.h"
 
 START_NAMESPACE_STIR
 
@@ -192,13 +193,17 @@ zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
   remain the same.
 */
 
-void 
+/*void
 zoom_image(VoxelsOnCartesianGrid<float> &image_out, 
-       const VoxelsOnCartesianGrid<float> &image_in, bool rescale , bool apply_filter, shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > filter_ptr);
+       const VoxelsOnCartesianGrid<float> &image_in, bool rescale , bool apply_filter, shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > filter_ptr);*/
 
 void
+zoom_image_and_filter(VoxelsOnCartesianGrid<float> &image_out,
+       const VoxelsOnCartesianGrid<float> &image_in, DataProcessor<DiscretisedDensity<3,float> > &filter, bool rescale = false);
+void
 zoom_image(VoxelsOnCartesianGrid<float> &image_out,
-       const VoxelsOnCartesianGrid<float> &image_in);
+       const VoxelsOnCartesianGrid<float> &image_in, bool rescale = false);
+
 
 //------------------ 2D zooms---------------------
 

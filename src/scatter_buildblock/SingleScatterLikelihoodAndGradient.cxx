@@ -32,7 +32,6 @@
 #include "stir/SSRB.h"
 
 #include "stir/stir_math.h"
-#include "stir/zoom.h"
 #include "stir/NumericInfo.h"
 
 START_NAMESPACE_STIR
