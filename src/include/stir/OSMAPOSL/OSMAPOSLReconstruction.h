@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2012-06-05 - 2012, Kris Thielemans
+    Copyright (C) 2018 Commonwealth Scientific and Industrial Research Organisation
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,6 +26,8 @@
 
   \author Matthew Jacobson
   \author Kris Thielemans
+  \author Ashley Gillman
+  \author Daniel Deidda
   \author PARAPET project
 
 */
@@ -190,6 +193,14 @@ public:
 
  
 private:
+  void compute_sub_gradient_without_penalty_plus_sensitivity(
+    TargetT& gradient, const TargetT &current_estimate, const int subset_num);
+
+  const TargetT& get_subset_sensitivity(const int subset_num);
+
+  void apply_multiplicative_update(
+    TargetT& current_image_estimate, const TargetT& multiplicative_update_image);
+
   friend void do_sensitivity(const char * const par_filename);
 
   //! operations prior to the iterations

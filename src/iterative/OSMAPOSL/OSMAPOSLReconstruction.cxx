@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2011-12-31, Hammersmith Imanet Ltd
     Copyright (C) 2012-06-05 - 2012, Kris Thielemans
+    Copyright (C) 2018 Commonwealth Scientific and Industrial Research Organisation
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -21,15 +22,16 @@
 
 /*!
   \file
-  \ingroup OSMAPOSL  
+  \ingroup OSMAPOSL
   \ingroup reconstructors
-  \brief  implementation of the stir::OSMAPOSLReconstruction class 
-    
+  \brief  implementation of the stir::OSMAPOSLReconstruction class
+
   \author Matthew Jacobson
   \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Ashley Gillman
+  \author Daniel Deidda
   \author PARAPET project
-      
 */
 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
@@ -386,6 +388,43 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
 }
 
 
+template <typename TargetT>
+void
+OSMAPOSLReconstruction<TargetT>::
+compute_sub_gradient_without_penalty_plus_sensitivity(
+  TargetT& gradient, const TargetT& current_estimate, const int subset_num)
+{
+  this->objective_function().compute_sub_gradient_without_penalty_plus_sensitivity(
+      gradient, current_estimate, subset_num);
+};
+
+
+template <typename TargetT>
+const TargetT&
+OSMAPOSLReconstruction<TargetT>::get_subset_sensitivity(const int subset_num)
+{
+  return this->objective_function().get_subset_sensitivity(subset_num);
+};
+
+
+template <typename TargetT>
+void
+OSMAPOSLReconstruction<TargetT>::apply_multiplicative_update(
+  TargetT& current_image_estimate, const TargetT& multiplicative_update_image)
+{
+  typename TargetT::const_full_iterator multiplicative_update_image_iter =
+    multiplicative_update_image.begin_all_const();
+  const typename TargetT::const_full_iterator end_multiplicative_update_image_iter =
+    multiplicative_update_image.end_all_const();
+  typename TargetT::full_iterator current_image_estimate_iter =
+    current_image_estimate.begin_all();
+  while (multiplicative_update_image_iter != end_multiplicative_update_image_iter)
+  {
+    *current_image_estimate_iter *= (*multiplicative_update_image_iter);
+    ++current_image_estimate_iter;
+    ++multiplicative_update_image_iter;
+  }
+}
 
 
 template <typename TargetT>
@@ -404,24 +443,20 @@ update_estimate(TargetT &current_image_estimate)
   PTimer timerSubset;
   timerSubset.Start();
 #endif // PARALLEL
-  
+
   // TODO make member parameter to avoid reallocation all the time
   unique_ptr< TargetT > multiplicative_update_image_ptr
     (current_image_estimate.get_empty_copy());
 
-  const int subset_num=this->get_subset_num();  
+  const int subset_num=this->get_subset_num();
   info(boost::format("Now processing subset #: %1%") % subset_num);
 
-  this->objective_function().
-    compute_sub_gradient_without_penalty_plus_sensitivity(*multiplicative_update_image_ptr,
-                                                          current_image_estimate,
-                                                          subset_num); 
-  
-  // divide by subset sensitivity  
-  {
-    const TargetT& sensitivity =
-      this->objective_function().get_subset_sensitivity(subset_num);
+  this->compute_sub_gradient_without_penalty_plus_sensitivity(
+      *multiplicative_update_image_ptr, current_image_estimate, subset_num);
 
+  // divide by subset sensitivity
+  {
+    const TargetT& sensitivity = this->get_subset_sensitivity(subset_num);
 
     int count = 0;
     
@@ -433,7 +468,6 @@ update_estimate(TargetT &current_image_estimate)
              multiplicative_update_image_ptr->end_all(), 
              sensitivity.begin_all(),
              small_num);
-        
     }
     else
     {
@@ -535,34 +569,19 @@ update_estimate(TargetT &current_image_estimate)
 
       threshold_upper_lower(multiplicative_update_image_ptr->begin_all(),
                             multiplicative_update_image_ptr->end_all(), 
-                            new_min, new_max);      
-    }  
+                            new_min, new_max);
+    }
 
-  //current_image_estimate *= *multiplicative_update_image_ptr; 
-  {
-    typename TargetT::const_full_iterator multiplicative_update_image_iter = multiplicative_update_image_ptr->begin_all_const(); 
-    const typename TargetT::const_full_iterator end_multiplicative_update_image_iter = multiplicative_update_image_ptr->end_all_const(); 
-    typename TargetT::full_iterator current_image_estimate_iter = current_image_estimate.begin_all(); 
-    while (multiplicative_update_image_iter!=end_multiplicative_update_image_iter) 
-      { 
-        *current_image_estimate_iter *= (*multiplicative_update_image_iter); 
-        ++current_image_estimate_iter; ++multiplicative_update_image_iter; 
-      } 
-  }
-  
-#ifndef PARALLEL
-  //cerr << "Subset : " << subset_timer.value() << "secs " <<endl;
-#else // PARALLEL
+  //current_image_estimate *= *multiplicative_update_image_ptr;
+  apply_multiplicative_update(current_image_estimate, *multiplicative_update_image_ptr);
+
+#ifdef PARALLEL
   timerSubset.Stop();
   info(boost::format("Subset: %1%secs") % timerSubset.GetTime());
 #endif
-  
 }
 
 template class OSMAPOSLReconstruction<DiscretisedDensity<3,float> >;
 template class OSMAPOSLReconstruction<ParametricVoxelsOnCartesianGrid >; 
 
-
 END_NAMESPACE_STIR
-
-
