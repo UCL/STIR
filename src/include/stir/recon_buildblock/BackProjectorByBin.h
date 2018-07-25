@@ -85,7 +85,12 @@ public:
 
  
   //! project whole proj_data into the volume
-  /*! it overwrites the data already present in the volume */
+  /*! it overwrites the data already present in the volume.
+  
+      The optional arguments can be used to back-project only a subset of the data. 
+      Subsets are determined as per detail::find_basic_vs_nums_in_subset(). However,
+      this usage will likely be phased out at later stage.
+    */
   void back_project(DiscretisedDensity<3,float>&,
 		const ProjData&, int subset_num = 0, int num_subsets = 1);
 
