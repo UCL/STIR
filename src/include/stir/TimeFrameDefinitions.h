@@ -106,7 +106,7 @@ public:
     void set_num_time_frames(int num_time_frames) { frame_times.resize(num_time_frames); }
 
     //! Set time frame
-    void set_time_frame(int frame, double start, double end) { frame_times[frame].first = start; frame_times[frame].second = end; }
+    void set_time_frame(const int &frame_num, const double &start, const double &end);
 
 private:
   //! Stores start and end time for each frame

@@ -172,7 +172,6 @@ read_from_file(const string& filename) // The written projection data is read in
       unique_ptr<MultipleProjData> multi_proj_data(MultipleProjData::read_from_file(filename).get());
       shared_ptr<DynamicProjData> dynamic_proj_data = MAKE_SHARED<DynamicProjData>(*multi_proj_data);
 
-      dynamic_proj_data->set_time_frame_definitions(dynamic_proj_data->get_exam_info_sptr()->time_frame_definitions);
       return dynamic_proj_data;
   }
   

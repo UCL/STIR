@@ -50,16 +50,6 @@
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ECAT6OutputFileFormat.h" // need this for test on pixel_size
 #endif
-/*
-#include "stir/KeyParser.h"
-
-#include "stir/CartesianCoordinate3D.h"
-#include "stir/IndexRange3D.h"
-
-#include <iostream>
-#include <memory>
-#include <math.h>
-*/
 #include <fstream>
 
 START_NAMESPACE_STIR
@@ -185,7 +175,7 @@ shared_ptr<VoxelsOnCartesianGrid<float> > IOTests<A>::create_single_image()
     
     shared_ptr<ExamInfo> exam_info_sptr = single_image.get_exam_info_sptr();
     exam_info_sptr->time_frame_definitions.set_num_time_frames(1);
-    exam_info_sptr->time_frame_definitions.set_time_frame(0,10,100);
+    exam_info_sptr->time_frame_definitions.set_time_frame(1,10,100);
     exam_info_sptr->start_time_in_secs_since_1970 = double(1277478034);
     exam_info_sptr->set_high_energy_thres(100.);
     exam_info_sptr->set_low_energy_thres(5.);

@@ -96,7 +96,7 @@ public InputFileFormat<DynamicDiscretisedDensity>
         dyn_disc_den_ptr->set_density_sptr(t,i+1);
         double start = t->get_exam_info().get_time_frame_definitions().get_start_time(1);
         double end = t->get_exam_info().get_time_frame_definitions().get_end_time(1);
-        time_frames.set_time_frame(i, start, end);
+        time_frames.set_time_frame(i+1, start, end);
         
         // Set some info on the first frame
         if (i==0) {

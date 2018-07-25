@@ -89,7 +89,7 @@ read_from_file(const std::string &parameter_file)
     multiple_proj_data->get_exam_info_sptr()->time_frame_definitions.set_num_time_frames(num_data_sets);
     for (int i=0; i<num_data_sets; ++i) {
         const TimeFrameDefinitions &tdef = multiple_proj_data->_proj_datas[i]->get_exam_info_ptr()->time_frame_definitions;
-        multiple_proj_data->get_exam_info_sptr()->time_frame_definitions.set_time_frame(i, tdef.get_start_time(1), tdef.get_duration(1));
+        multiple_proj_data->get_exam_info_sptr()->time_frame_definitions.set_time_frame(i+1, tdef.get_start_time(1), tdef.get_end_time(1));
     }
 
     return multiple_proj_data;

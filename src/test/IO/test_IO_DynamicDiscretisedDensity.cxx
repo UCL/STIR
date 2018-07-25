@@ -95,16 +95,16 @@ void IOTests_DynamicDiscretisedDensity::create_image()
     
     dyn_im_1_sptr->fill(2.);
     dyn_im_2_sptr->fill(1.);
-    dyn_im_1_sptr->get_exam_info_sptr()->time_frame_definitions.set_time_frame(0,im_1_start, im_1_end);
-    dyn_im_2_sptr->get_exam_info_sptr()->time_frame_definitions.set_time_frame(0,im_2_start, im_2_end);
+    dyn_im_1_sptr->get_exam_info_sptr()->time_frame_definitions.set_time_frame(1,im_1_start, im_1_end);
+    dyn_im_2_sptr->get_exam_info_sptr()->time_frame_definitions.set_time_frame(1,im_2_start, im_2_end);
     
     // Create a scanner (any will do)
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Advance));
     
     TimeFrameDefinitions tdefs;
     tdefs.set_num_time_frames(2);
-    tdefs.set_time_frame(0,im_1_start,im_1_end);
-    tdefs.set_time_frame(1,im_2_start,im_2_end);
+    tdefs.set_time_frame(1,im_1_start,im_1_end);
+    tdefs.set_time_frame(2,im_2_start,im_2_end);
 
     _image_to_write_sptr.reset(new DynamicDiscretisedDensity(tdefs,dummy_im_sptr->get_exam_info_sptr()->start_time_in_secs_since_1970,scanner_sptr,dummy_im_sptr));
     _image_to_write_sptr->set_density_sptr(dyn_im_1_sptr,1);

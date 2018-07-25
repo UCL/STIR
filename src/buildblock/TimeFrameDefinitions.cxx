@@ -271,4 +271,14 @@ TimeFrameDefinitions(const TimeFrameDefinitions& org_frame_defs, unsigned int fr
   this->frame_times.push_back(make_pair(org_frame_defs.get_start_time(frame_num), org_frame_defs.get_end_time(frame_num)));
 }
 
+void
+TimeFrameDefinitions::
+set_time_frame(const int &frame_num, const double &start, const double &end)
+{
+    assert(frame_num>=1);
+    assert(frame_num<=get_num_frames());
+    frame_times[frame_num-1].first = start;
+    frame_times[frame_num-1].second = end;
+}
+
 END_NAMESPACE_STIR
