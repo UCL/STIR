@@ -82,13 +82,15 @@ check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& den
 void 
 ForwardProjectorByBin::forward_project(ProjData& proj_data, 
 				       const DiscretisedDensity<3,float>& image,
-							 int subset_num, int num_subsets)
+							 int subset_num, int num_subsets, bool zero)
 {
 	if (subset_num < 0)
 		error(boost::format("forward_project: wrong subset number %1%") % subset_num);
 	if (subset_num > num_subsets - 1)
 		error(boost::format("forward_project: wrong subset number %1% (must be less than the number of subsets %2%)") 
 		% subset_num % num_subsets);
+	if (zero && num_subsets > 1)
+		proj_data.fill(0.0);
 	// this->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
 //			     image_sptr);
 
