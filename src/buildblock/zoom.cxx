@@ -371,8 +371,25 @@ zoom_image(const VoxelsOnCartesianGrid<float> &image,
 
 
 void
+zoom_image_matlab(VoxelsOnCartesianGrid<float> &image_out,
+       const VoxelsOnCartesianGrid<float> &image_in, const std::string& postfilter_parameter_filename, const int &zoom_option)
+{
+    ZoomOptions::ZO zo = ZoomOptions::ZO(zoom_option);
+    zoom_image(image_out, image_in, postfilter_parameter_filename, zo);
+}
+
+void
+zoom_image_matlab(VoxelsOnCartesianGrid<float> &image_out,
+       const VoxelsOnCartesianGrid<float> &image_in, const int &zoom_option)
+{
+    ZoomOptions::ZO zo = ZoomOptions::ZO(zoom_option);
+    zoom_image(image_out, image_in, zo);
+}
+
+
+void
 zoom_image(VoxelsOnCartesianGrid<float> &image_out,
-       const VoxelsOnCartesianGrid<float> &image_in, const std::string& postfilter_parameter_filename, const ZoomOptions::ZO zo)
+       const VoxelsOnCartesianGrid<float> &image_in, const std::string& postfilter_parameter_filename, const ZoomOptions::ZO &zo)
 {
     zoom_image(image_out, image_in, zo);
 
@@ -387,7 +404,7 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
 
 void
 zoom_image(VoxelsOnCartesianGrid<float> &image_out,
-       const VoxelsOnCartesianGrid<float> &image_in, const ZoomOptions::ZO zo)
+       const VoxelsOnCartesianGrid<float> &image_in, const ZoomOptions::ZO &zo)
 {
 
 

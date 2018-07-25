@@ -198,14 +198,23 @@ zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
 
 void
 zoom_image(VoxelsOnCartesianGrid<float> &image_out,
-       const VoxelsOnCartesianGrid<float> &image_in, const std::string& postfilter_parameter_filename, const ZoomOptions::ZO zo = ZoomOptions::preserve_sum);
+       const VoxelsOnCartesianGrid<float> &image_in, const std::string& postfilter_parameter_filename, const ZoomOptions::ZO &zo = ZoomOptions::preserve_sum);
 
 
 void
 zoom_image(VoxelsOnCartesianGrid<float> &image_out,
-       const VoxelsOnCartesianGrid<float> &image_in, const ZoomOptions::ZO zo = ZoomOptions::preserve_sum);
+       const VoxelsOnCartesianGrid<float> &image_in, const ZoomOptions::ZO &zo = ZoomOptions::preserve_sum);
 
 
+
+void
+zoom_image_matlab(VoxelsOnCartesianGrid<float> &image_out,
+       const VoxelsOnCartesianGrid<float> &image_in, const std::string& postfilter_parameter_filename, const int &zoom_option = 0);
+
+
+void
+zoom_image_matlab(VoxelsOnCartesianGrid<float> &image_out,
+       const VoxelsOnCartesianGrid<float> &image_in, const int &zoom_option = 0);
 //------------------ 2D zooms---------------------
 
 /*! 
