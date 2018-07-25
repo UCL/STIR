@@ -50,6 +50,7 @@
 #include "stir/IndexRange3D.h"
 #include "stir/IndexRange2D.h"
 #include "stir/SeparableGaussianImageFilter.h"
+#include "stir/ZoomOptions.h"
 #include <cmath>
 
 START_NAMESPACE_STIR
@@ -368,71 +369,27 @@ zoom_image(const VoxelsOnCartesianGrid<float> &image,
 }
 
 
-/*void
-zoom_image(VoxelsOnCartesianGrid<float> &image_out, 
-       const VoxelsOnCartesianGrid<float> &image_in, bool rescale, bool apply_filter, shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > filter_ptr)
-{
-
-    zoom_image(image_out, image_in);
-
-//The image is rescaled to preserve the voxel values
-
-  if (rescale)
-
-  {
-      BasicCoordinate<3,float> orig_grid = image_in.get_grid_spacing();
-      BasicCoordinate<3,float> new_grid = image_out.get_grid_spacing();
-      float scale_image = (orig_grid[3]/new_grid[3]) * (orig_grid[2]/new_grid[2]) * (orig_grid[1]/new_grid[1]);
-
-      image_out*= scale_image;
-  }
-
-
-//Filter output image
-
-      if (apply_filter)
-    {
-        filter_ptr->apply(image_out);
-     }
-
-}*/
-
 
 void
-zoom_image_and_filter(VoxelsOnCartesianGrid<float> &image_out,
-       const VoxelsOnCartesianGrid<float> &image_in, const std::string& filter_parameter_filename, bool rescale)
+zoom_image(VoxelsOnCartesianGrid<float> &image_out,
+       const VoxelsOnCartesianGrid<float> &image_in, const std::string& postfilter_parameter_filename, const ZoomOptions::ZO zo)
 {
-
-
-    zoom_image(image_out, image_in,rescale);
+    zoom_image(image_out, image_in, zo);
 
     //apply filter
-    shared_ptr<PostFiltering <DiscretisedDensity<3,float> > > filter_sptr;
-    filter_sptr.reset(new PostFiltering <DiscretisedDensity<3,float> >);
-    filter_sptr->parse(filter_parameter_filename.c_str());
-    filter_sptr->process_data(image_out);
+    PostFiltering <DiscretisedDensity<3,float> > filter;
+    filter.parse(postfilter_parameter_filename.c_str());
+    filter.process_data(image_out);
 
 }
 
 
 
-/*void
-zoom_image_and_filter(VoxelsOnCartesianGrid<float> &image_out,
-       const VoxelsOnCartesianGrid<float> &image_in, DataProcessor<DiscretisedDensity<3,float> > &filter, bool rescale)
-{
-
-    zoom_image(image_out, image_in,rescale);
-
-    //apply filter
-    filter.apply(image_out);
-
-}*/
-
-
 void
 zoom_image(VoxelsOnCartesianGrid<float> &image_out,
-       const VoxelsOnCartesianGrid<float> &image_in, bool rescale)
+       const VoxelsOnCartesianGrid<float> &image_in, const ZoomOptions::ZO zo)
 {
+
 
 /*
      interpolation routine uses the following relation:
@@ -509,15 +466,44 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
   overlap_interpolate(image_out, temp2, zoom_z, z_offset);
 
 
-  if (rescale)
+  /* The code provides for three possible rescaling options:
+   * preserving the image values,
+   * preserving the image projectors,
+   * preserving the image sum
+
+    DEFAULT: Preserve image sum*/
+
+  float scale_image = 1.F;
+
+    switch (zo)
+  {
+  case ZoomOptions::preserve_values:
+  {
+      std::cerr << "Zoom - Rescaling Factor: preserve values\n";
+
+      scale_image =  zoom_x*zoom_y*zoom_z;
+      break;
+  }
+
+  case ZoomOptions::preserve_projections:
 
   {
-      BasicCoordinate<3,float> orig_grid = image_in.get_grid_spacing();
-      BasicCoordinate<3,float> new_grid = image_out.get_grid_spacing();
-      float scale_image = (orig_grid[3]/new_grid[3]) * (orig_grid[2]/new_grid[2]) * (orig_grid[1]/new_grid[1]);
+      std::cerr << "Zoom - Rescaling Factor: preserve projectors\n";
 
-      image_out*= scale_image;
+      scale_image =  zoom_y*zoom_z;
+      break;
   }
+
+  case ZoomOptions::preserve_sum:
+  {
+     std::cerr << "Zoom - Rescaling Factor: preserve sum\n";
+      return; // no need to scale
+  }
+
+    }
+
+
+   image_out*= scale_image;
 
 }
 

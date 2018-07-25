@@ -94,6 +94,7 @@
 #include "stir/PostFiltering.h"
 #include "stir/DataProcessor.h"
 #include "stir/SeparableGaussianImageFilter.h"
+#include "stir/ZoomOptions.h"
 
 START_NAMESPACE_STIR
 
@@ -194,20 +195,15 @@ zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
   remain the same.
 */
 
-/*void
-zoom_image(VoxelsOnCartesianGrid<float> &image_out, 
-       const VoxelsOnCartesianGrid<float> &image_in, bool rescale , bool apply_filter, shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > filter_ptr);*/
 
-/*void
-zoom_image_and_filter(VoxelsOnCartesianGrid<float> &image_out,
-       const VoxelsOnCartesianGrid<float> &image_in, DataProcessor<DiscretisedDensity<3,float> > &filter, bool rescale = false);*/
-
-void
-zoom_image_and_filter(VoxelsOnCartesianGrid<float> &image_out,
-       const VoxelsOnCartesianGrid<float> &image_in, const std::string& filter_parameter_filename, bool rescale = false);
 void
 zoom_image(VoxelsOnCartesianGrid<float> &image_out,
-       const VoxelsOnCartesianGrid<float> &image_in, bool rescale = false);
+       const VoxelsOnCartesianGrid<float> &image_in, const std::string& postfilter_parameter_filename, const ZoomOptions::ZO zo = ZoomOptions::preserve_sum);
+
+
+void
+zoom_image(VoxelsOnCartesianGrid<float> &image_out,
+       const VoxelsOnCartesianGrid<float> &image_in, const ZoomOptions::ZO zo = ZoomOptions::preserve_sum);
 
 
 //------------------ 2D zooms---------------------

@@ -1281,6 +1281,7 @@ namespace stir {
 %template(write_image_to_file) stir::write_to_file<DiscretisedDensity<3, float> >;
 
 %include "stir/zoom.h"
+%include "stir/ZoomOptions.h"
 #ifdef STIRSWIG_SHARED_PTR
 #define DataT stir::DiscretisedDensity<3,float>
 %shared_ptr(stir::OutputFileFormat<stir::DiscretisedDensity<3,float> >);
@@ -1314,6 +1315,7 @@ namespace stir {
  */
 %include "stir/TimeFrameDefinitions.h"
 %include "stir/zoom.h"
+%include "stir/ZoomOptions.h"
 %include "stir/ExamInfo.h"
 %include "stir/IO/ExamData.h"
 %include "stir/Verbosity.h"
