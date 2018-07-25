@@ -2,6 +2,7 @@
 //
 /*
   Copyright (C) 2006-2009, Hammersmith Imanet Ltd
+  Copyright (C) 2018, University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -23,6 +24,7 @@
 
 \author Kris Thielemans
 \author Charalampos Tsoumpas
+\author Richard Brown
 
 */
 

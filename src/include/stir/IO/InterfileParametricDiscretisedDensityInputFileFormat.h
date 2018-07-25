@@ -25,6 +25,7 @@
   \brief Declaration of class stir::InterfileParametricDiscretisedDensityInputFileFormat
 
   \author Kris Thielemans
+  \author Richard Brown
 
 */
 #include "stir/IO/InputFileFormat.h"

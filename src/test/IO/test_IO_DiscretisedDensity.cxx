@@ -24,6 +24,7 @@
 */
 /*
     Copyright (C) 2002- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018- , University College London
 
     This file is part of STIR.
 
