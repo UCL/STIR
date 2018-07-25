@@ -126,32 +126,6 @@ read_from_file(const string& filename) // The written image is read in respect t
   return stir::read_from_file<DynamicDiscretisedDensity>(filename).get();
 }
 
-void
-DynamicDiscretisedDensity::
-read_from_file_multi(const string& proj_data_multi, const string& densities_multi)
-{
-    shared_ptr<DynamicProjData> proj;
-    proj = DynamicProjData::read_from_file(proj_data_multi);
-    MultipleDataSetHeader header;
-
-    if (header.parse(densities_multi.c_str()) == false)
-         error("MultipleProjData:::read_from_file: Error parsing %s", densities_multi.c_str());
-
-    int num_data_sets = header.get_num_data_sets();
-    this->_densities.resize(num_data_sets);
-    for (int i=0; i<num_data_sets; ++i) {
-        singleDiscDensT *t = singleDiscDensT::read_from_file(header.get_filename(i));
-        this->_densities[i].reset( t->clone() );
-    }
-
-    this->_scanner_sptr.reset( new Scanner(*proj->get_proj_data_info_ptr()->get_scanner_ptr()));
-    this->exam_info_sptr->time_frame_definitions = proj->get_time_frame_definitions();
-    this->_calibration_factor = 1.;
-    this->_isotope_halflife = 6586.2;
-    this->_is_decay_corrected = 1;
-    this->exam_info_sptr->start_time_in_secs_since_1970 = proj->get_start_time_in_secs_since_1970();
-}
-
 //Warning write_time_frame_definitions() is not yet implemented, so time information is missing.
 /*          sheader_ptr->frame_start_time=this->get_start_time(frame_num)*1000.;  //Start Time in Milliseconds
             sheader_ptr->frame_duration=this->get_duration(frame_num)*1000.;        //Duration in Milliseconds */

@@ -36,6 +36,7 @@
 #include "stir/modelling/KineticParameters.h"  
 #include "stir/IO/InterfileParametricDiscretisedDensityOutputFileFormat.h" 
 #include "stir/IO/InterfileDynamicDiscretisedDensityOutputFileFormat.h" 
+#include "stir/IO/MultiDynamicDiscretisedDensityOutputFileFormat.h"
 #endif
 
 START_NAMESPACE_STIR

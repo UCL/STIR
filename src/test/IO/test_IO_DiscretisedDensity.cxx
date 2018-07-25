@@ -83,7 +83,7 @@ protected:
 
 void IOTests_DiscretisedDensity::create_image()
 {
-    _image_to_write_sptr = _single_image_sptr;
+    _image_to_write_sptr = create_single_image();
 }
 
 void IOTests_DiscretisedDensity::read_image()
@@ -110,6 +110,10 @@ void IOTests_DiscretisedDensity::check_result()
     VoxelsOnCartesianGrid<float> *image_to_read_ptr  = dynamic_cast<VoxelsOnCartesianGrid<float> *>(_image_to_read_sptr.get());
 
     compare_images(*image_to_write_ptr, *image_to_read_ptr);
+
+    // Check TimeFrameDefinitions in ExamInfo. Not all formats support this. Skip if ITK
+    if (_output_file_format_sptr->get_registered_name() != "ITK")
+        check_exam_info(image_to_write_ptr->get_exam_info(), image_to_read_ptr->get_exam_info());
 }
 
 END_NAMESPACE_STIR

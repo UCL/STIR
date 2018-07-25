@@ -80,12 +80,13 @@ public:
 protected:
     void create_image();
     void check_result();
-
-    shared_ptr<VoxelsOnCartesianGrid<float> > _param_1_sptr;
-    shared_ptr<VoxelsOnCartesianGrid<float> > _param_2_sptr;
 };
 void IOTests_ParametricDiscretisedDensity::create_image()
 {
+    shared_ptr<VoxelsOnCartesianGrid<float> > param_1_sptr  = create_single_image();
+    shared_ptr<VoxelsOnCartesianGrid<float> > param_2_sptr  = create_single_image();
+    shared_ptr<VoxelsOnCartesianGrid<float> > dummy_im_sptr = create_single_image();
+
     //! Setup the scanner details first
     const Scanner::Type test_scanner=Scanner::E966;
     const shared_ptr<Scanner> scanner_sptr(new Scanner(test_scanner));
@@ -97,22 +98,24 @@ void IOTests_ParametricDiscretisedDensity::create_image()
     const float zoom=1.F;
 
     const CartesianCoordinate3D<int> sizes (
-                _single_image_sptr->get_z_size(),
-                _single_image_sptr->get_y_size(),
-                _single_image_sptr->get_x_size());
+                dummy_im_sptr->get_z_size(),
+                dummy_im_sptr->get_y_size(),
+                dummy_im_sptr->get_x_size());
 
     ProjDataInfoCylindricalNoArcCorr proj_data_info(scanner_sptr,num_axial_pos_per_segment,min_ring_diff,max_ring_diff,num_views,num_tangential_poss);
 
-    _image_to_write_sptr.reset(new ParametricVoxelsOnCartesianGrid(ParametricVoxelsOnCartesianGridBaseType(proj_data_info,zoom,_single_image_sptr->get_grid_spacing(),sizes)));
+    _image_to_write_sptr.reset(new ParametricVoxelsOnCartesianGrid(ParametricVoxelsOnCartesianGridBaseType(proj_data_info,zoom,dummy_im_sptr->get_grid_spacing(),sizes)));
 
     // Fill the first param
-    _param_1_sptr.reset(_single_image_sptr->clone());
-    _image_to_write_sptr->update_parametric_image(*_param_1_sptr,1);
+    param_2_sptr->fill(2.F);
+    _image_to_write_sptr->update_parametric_image(*param_1_sptr,1);
 
     // Fill the second param with 1's
-    _param_2_sptr.reset(_single_image_sptr->clone());
-    _param_2_sptr->fill(1.F);
-    _image_to_write_sptr->update_parametric_image(*_param_2_sptr,2);
+    param_2_sptr->fill(1.F);
+    _image_to_write_sptr->update_parametric_image(*param_2_sptr,2);
+
+    // Set the time definitions
+    _image_to_write_sptr->get_exam_info_sptr()->time_frame_definitions = dummy_im_sptr->get_exam_info_sptr()->time_frame_definitions;
 }
 
 void IOTests_ParametricDiscretisedDensity::check_result()
@@ -122,9 +125,13 @@ void IOTests_ParametricDiscretisedDensity::check_result()
     if(!check_if_equal(_image_to_read_sptr->get_num_params(),_image_to_write_sptr->get_num_params(), "test number of dynamic images"))
         return;
 
+    // Check the exam info
+    std::cerr << "\tChecking the exam info...\n";
+    check_exam_info(_image_to_write_sptr->get_exam_info(),_image_to_read_sptr->get_exam_info());
+
     for (int i=1; i<=_image_to_read_sptr->get_num_params(); i++) {
 
-        std::cerr << "\tChecking kinetic parameter " << i << "...\n";
+        std::cerr << "\t\tChecking kinetic parameter " << i << "...\n";
 
         const VoxelsOnCartesianGrid<float> &image_to_write =
                 _image_to_write_sptr->construct_single_density(i);

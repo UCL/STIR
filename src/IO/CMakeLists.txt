@@ -33,6 +33,8 @@ set(${dir_LIB_SOURCES}
   InputFileFormatRegistry 
   InterfileDynamicDiscretisedDensityOutputFileFormat 
   InterfileParametricDiscretisedDensityOutputFileFormat
+  MultiDynamicDiscretisedDensityOutputFileFormat
+
   GIPL_ImageFormat
 ) 
 

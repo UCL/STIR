@@ -124,20 +124,18 @@ foreach(file_format ${file_format_tests})
 		${CMAKE_CURRENT_BINARY_DIR}/test_IO_DiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format})
 endforeach()
 
-# Test the dynamic and parametric IO
-set(file_formats_for_dynamic_and_parametric
-		test_InterfileOutputFileFormat.in
-		test_InterfileOutputFileFormat_short.in
-)
-foreach(file_format ${file_formats_for_dynamic_and_parametric})
-	set(test_name test_IO_DynamicDiscretisedDensity_${file_format})
-  ADD_TEST(${test_name}
-		${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format})
-endforeach()
-foreach(file_format ${file_formats_for_dynamic_and_parametric})
-	set(test_name test_IO_ParametricDiscretisedDensity_${file_format})
-  ADD_TEST(${test_name}
-		${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format})
-endforeach()
+# Parametric tests
+ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile 
+	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat.in)
+ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile_short
+	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat_short.in)
+
+# Dynamic tests
+ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile 
+	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat.in)
+ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile_short
+	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat_short.in)
+ADD_TEST(test_IO_DynamicDiscretisedDensity_Multi
+	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_MultiOutputFileFormat.in)
 
 endif(BUILD_TESTING)

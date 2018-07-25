@@ -83,23 +83,33 @@ protected:
 
 void IOTests_DynamicDiscretisedDensity::create_image()
 {
-    // Create time definitions
-    std::vector<double> starts, durations;
-    starts.push_back(1);
-    starts.push_back(2);
-    durations.push_back(1);
-    durations.push_back(1);
-    TimeFrameDefinitions time_defs(starts,durations);
+    double im_1_start = 20;
+    double im_1_end   = 45;
+    double im_2_start = 50;
+    double im_2_end   = 93;
 
-     // Scan time somewhere in June 2010...
-    const double scan_start = double(1277478034);
-
+    shared_ptr<VoxelsOnCartesianGrid<float> > dyn_im_1_sptr = create_single_image();
+    shared_ptr<VoxelsOnCartesianGrid<float> > dyn_im_2_sptr = create_single_image();
+    shared_ptr<VoxelsOnCartesianGrid<float> > dummy_im_sptr = create_single_image();
+    
+    dyn_im_1_sptr->fill(2.);
+    dyn_im_2_sptr->fill(1.);
+    dyn_im_1_sptr->get_exam_info_sptr()->time_frame_definitions.set_time_frame(0,im_1_start, im_1_end);
+    dyn_im_2_sptr->get_exam_info_sptr()->time_frame_definitions.set_time_frame(0,im_2_start, im_2_end);
+    
     // Create a scanner (any will do)
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Advance));
+    
+    TimeFrameDefinitions tdefs;
+    tdefs.set_num_time_frames(2);
+    tdefs.set_time_frame(0,im_1_start,im_1_end);
+    tdefs.set_time_frame(1,im_2_start,im_2_end);
 
-    _image_to_write_sptr.reset(new DynamicDiscretisedDensity(time_defs,scan_start,scanner_sptr,_single_image_sptr));
-    _image_to_write_sptr->set_density_sptr(_single_image_sptr,1);
-    _image_to_write_sptr->set_density_sptr(_single_image_sptr,2);
+    _image_to_write_sptr.reset(new DynamicDiscretisedDensity(tdefs,dummy_im_sptr->get_exam_info_sptr()->start_time_in_secs_since_1970,scanner_sptr,dummy_im_sptr));
+    _image_to_write_sptr->set_density_sptr(dyn_im_1_sptr,1);
+    _image_to_write_sptr->set_density_sptr(dyn_im_2_sptr,2);
+    _image_to_write_sptr->get_exam_info_sptr()->set_high_energy_thres(dummy_im_sptr->get_exam_info_sptr()->get_high_energy_thres());
+    _image_to_write_sptr->get_exam_info_sptr()->set_low_energy_thres(dummy_im_sptr->get_exam_info_sptr()->get_low_energy_thres());
 }
 
 void IOTests_DynamicDiscretisedDensity::check_result()
@@ -107,9 +117,15 @@ void IOTests_DynamicDiscretisedDensity::check_result()
     set_tolerance(.00001);
 
     check_if_equal(_image_to_read_sptr->get_densities().size(),_image_to_write_sptr->get_densities().size(), "test number of dynamic images");
+    
+    // Check the exam info
+    std::cerr << "\tChecking the exam info...\n";
+    check_exam_info(_image_to_write_sptr->get_exam_info(),_image_to_read_sptr->get_exam_info());
 
     for (int i=1; i<=_image_to_read_sptr->get_densities().size(); i++) {
 
+        std::cerr << "\t\tChecking dynamic image " << i << "...\n";
+        
         // Cast the discretised density to voxels on cartesian grids to check grid spacing
         VoxelsOnCartesianGrid<float> *image_to_write_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> *>(&_image_to_write_sptr->get_density(i));
         VoxelsOnCartesianGrid<float> *image_to_read_ptr  = dynamic_cast<VoxelsOnCartesianGrid<float> *>(&_image_to_read_sptr->get_density(i));

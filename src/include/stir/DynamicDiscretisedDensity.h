@@ -70,9 +70,6 @@ class DynamicDiscretisedDensity: public ExamData
     DynamicDiscretisedDensity*
     read_from_file(const std::string& filename);
 
-  //! Temporary workaround that will be removed
-  void read_from_file_multi(const std::string& proj_data_multi, const std::string& densities_multi);
-
   DynamicDiscretisedDensity() {}
 
   DynamicDiscretisedDensity(const DynamicDiscretisedDensity&argument);
@@ -174,6 +171,9 @@ class DynamicDiscretisedDensity: public ExamData
   void set_time_frame_definitions(const TimeFrameDefinitions& time_frame_definitions) 
   {this->exam_info_sptr->set_time_frame_definitions(time_frame_definitions);}
 
+  void set_scanner(const shared_ptr<Scanner> scanner_sptr)
+  {this->_scanner_sptr = scanner_sptr;}
+
   const TimeFrameDefinitions & 
     get_time_frame_definitions() const ;
 
@@ -197,6 +197,8 @@ class DynamicDiscretisedDensity: public ExamData
   void set_if_decay_corrected(const bool is_decay_corrected)  ;
   void set_isotope_halflife(const float isotope_halflife);
   void set_calibration_factor(const float calibration_factor) ;
+  void set_num_densities(const int num_densities)
+  { _densities.resize(num_densities); }
  private:
   // warning: if adding any new members, you have to change the copy constructor as well.
   //TimeFrameDefinitions _time_frame_definitions;

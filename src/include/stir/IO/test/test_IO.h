@@ -93,19 +93,20 @@ public:
 protected:
 
     void         set_up();
-    void         create_single_image();
     virtual void create_image() = 0;
     virtual void write_image();
     virtual void read_image();
     virtual void check_result() = 0;
+    shared_ptr<VoxelsOnCartesianGrid<float> > create_single_image();
     void         compare_images(const VoxelsOnCartesianGrid<float> &im_1,
                                 const VoxelsOnCartesianGrid<float> &im_2);
+    void         check_exam_info(const ExamInfo &exm_inf_1,
+                                 const ExamInfo &exm_inf_2);
 
     std::istream&                               _in;
     shared_ptr<OutputFileFormat<A> >            _output_file_format_sptr;
     KeyParser                                   _parser;
     std::string                                 _filename;
-    shared_ptr<VoxelsOnCartesianGrid<float> >   _single_image_sptr;
     shared_ptr<A>                               _image_to_write_sptr;
     shared_ptr<A>                               _image_to_read_sptr;
 };
@@ -138,7 +139,7 @@ void IOTests<A>::set_up()
 }
 
 template <class A>
-void IOTests<A>::create_single_image()
+shared_ptr<VoxelsOnCartesianGrid<float> > IOTests<A>::create_single_image()
 {
     // construct density image
 #ifdef HAVE_LLN_MATRIX
@@ -181,8 +182,17 @@ void IOTests<A>::create_single_image()
                     3*sin(static_cast<float>(x*_PI)/single_image.get_max_x())
                     *sin(static_cast<float>(y+10*_PI)/single_image.get_max_y())
                     *cos(static_cast<float>(z*_PI/3)/single_image.get_max_z());
-
-    _single_image_sptr.reset(new VoxelsOnCartesianGrid<float>(single_image));
+    
+    shared_ptr<ExamInfo> exam_info_sptr = single_image.get_exam_info_sptr();
+    exam_info_sptr->time_frame_definitions.set_num_time_frames(1);
+    exam_info_sptr->time_frame_definitions.set_time_frame(0,10,100);
+    exam_info_sptr->start_time_in_secs_since_1970 = double(1277478034);
+    exam_info_sptr->set_high_energy_thres(100.);
+    exam_info_sptr->set_low_energy_thres(5.);
+    
+    shared_ptr<VoxelsOnCartesianGrid<float> > single_image_sptr;
+    single_image_sptr.reset(new VoxelsOnCartesianGrid<float>(single_image));
+    return single_image_sptr;
 }
 
 template <class A>
@@ -232,13 +242,34 @@ void IOTests<A>::compare_images(const VoxelsOnCartesianGrid<float> &im_1,
     check_if_equal(im_1.get_z_size(), im_2.get_z_size(), "test on read and written file via image z size");
     check_if_equal(im_1.find_max(), im_2.find_max(), "test on read and written file via image max");
     check_if_equal(im_1.find_min(), im_2.find_min(), "test on read and written file via image min");
-
+    
     check_if_equal(im_1, im_2, "test on read and written file");
 
     set_tolerance(.00001);
 
     check_if_equal(im_1.get_origin(), im_2.get_origin(), "test on read and written file via image origin");
+}
 
+template <class A>
+void IOTests<A>::check_exam_info(const ExamInfo &exm_inf_1, const ExamInfo &exm_inf_2)
+{
+    // Start time isn't currently written or read, so can't check it...
+    //check_if_equal(exm_inf_1.get_high_energy_thres(), exm_inf_2.get_high_energy_thres(), "test on read and written file via ExamInfo::get_high_energy_thresh");
+    //check_if_equal(exm_inf_1.get_low_energy_thres(), exm_inf_2.get_low_energy_thres(), "test on read and written file via ExamInfo::get_low_energy_thres");
+    //check_if_equal(exm_inf_1.start_time_in_secs_since_1970, exm_inf_2.start_time_in_secs_since_1970, "test on read and written file via ExamInfo::start_time_in_secs_since_1970");
+    
+    // Check time frames
+    const TimeFrameDefinitions &im_1_time_frames = exm_inf_1.get_time_frame_definitions();
+    const TimeFrameDefinitions &im_2_time_frames = exm_inf_2.get_time_frame_definitions();
+    if(!check_if_equal(im_1_time_frames.get_num_time_frames(), im_2_time_frames.get_num_time_frames(), "test on read and written file via TimeFrameDefinitions::get_num_time_frames"))
+        return;
+
+    // Loop over each one and compare them
+    for (int i=1; i<=im_1_time_frames.get_num_frames(); i++) {
+        check_if_equal(im_1_time_frames.get_duration(i),   im_2_time_frames.get_duration(i),        "test on read and written file via TimeFrameDefinitions::get_duration");
+        check_if_equal(im_1_time_frames.get_end_time(i),   im_2_time_frames.get_end_time(i),        "test on read and written file via TimeFrameDefinitions::get_end_time");
+        check_if_equal(im_1_time_frames.get_start_time(i), im_2_time_frames.get_start_time(i),      "test on read and written file via TimeFrameDefinitions::get_start_time");
+    }
 }
 
 template <class A>
