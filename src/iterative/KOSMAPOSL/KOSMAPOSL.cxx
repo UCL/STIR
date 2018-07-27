@@ -1,9 +1,10 @@
 //
 //
 /*
-    Copyright (C) 2018 University of Leeds
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2012 Hammersmith Imanet Ltd
+    Copyright (C) 2018 Commonwealth Scientific and Industrial Research Organisation
+    Copyright (C) 2018 University of Leeds
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,6 +25,7 @@
   \brief main() for KOSMAPOSLReconstruction
 
   \author Daniel Deidda
+  \author Ashley Gillman
   \author Matthew Jacobson
   \author Kris Thielemans
   \author PARAPET project
