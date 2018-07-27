@@ -61,6 +61,7 @@
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
 #include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+#include "stir/KOSMAPOSL/KOSMAPOSLReconstruction.h"
 #include "stir/OSSPS/OSSPSReconstruction.h"
 
 #ifdef HAVE_LLN_MATRIX
@@ -109,6 +110,7 @@ static FBP2DReconstruction::RegisterIt dummy601;
 static FBP3DRPReconstruction::RegisterIt dummy602;
 
 static OSMAPOSLReconstruction<DiscretisedDensity<3,float> >::RegisterIt dummy603;
+static KOSMAPOSLReconstruction<DiscretisedDensity<3,float> >::RegisterIt dummyK ;
 static OSSPSReconstruction<DiscretisedDensity<3, float> >::RegisterIt dummy604;
 
 #ifdef HAVE_LLN_MATRIX

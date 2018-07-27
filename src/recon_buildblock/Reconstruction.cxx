@@ -102,7 +102,11 @@ Reconstruction<TargetT>::
 post_processing()
 {
 
-  if (this->_disable_output)
+  if ((this->_disable_output) & (this->get_registered_name ()=="KOSMAPOSL") )
+  { warning("You have disabled the alpha coefficient output. Onle PET image files will be written to "
+            "disk after or during reconstuction"); }
+
+  else if (this->_disable_output)
   { warning("You have disabled the output. No files will be written to "
             "disk after or during reconstuction"); }
 

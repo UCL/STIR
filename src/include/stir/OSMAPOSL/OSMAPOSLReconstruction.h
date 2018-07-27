@@ -156,6 +156,9 @@ public:
 
  protected:
 
+  //! operations prior to the iterations
+  virtual Succeeded set_up(shared_ptr <TargetT > const& target_image_ptr);
+
   //! determines whether non-positive values in the initial image will be set to small positive ones
   bool enforce_initial_positivity;
 
@@ -191,8 +194,6 @@ public:
   //! used to check acceptable parameter ranges, etc...
   virtual bool post_processing();
 
- 
-private:
   void compute_sub_gradient_without_penalty_plus_sensitivity(
     TargetT& gradient, const TargetT &current_estimate, const int subset_num);
 
@@ -200,12 +201,12 @@ private:
 
   void apply_multiplicative_update(
     TargetT& current_image_estimate, const TargetT& multiplicative_update_image);
+ 
+private:
 
   friend void do_sensitivity(const char * const par_filename);
 
-  //! operations prior to the iterations
-  virtual Succeeded set_up(shared_ptr <TargetT > const& target_image_ptr);
- 
+
   //! the principal operations for updating the image iterates at each iteration
   virtual void update_estimate (TargetT& current_image_estimate);
 

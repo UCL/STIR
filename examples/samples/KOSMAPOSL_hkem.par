@@ -1,0 +1,106 @@
+KOSMAPOSLParameters :=
+; Example file for using [Hybrid] Kernelized Expectation Maximisation (HKEM or KEM).
+; See documentation of KOSMAPOSLreconstruction
+; for more info.
+
+;the following disable the alpha coefficient output:
+disable output :=1
+
+
+; here we have the possibility to choose the parameters which define the kernel
+; matrix and the name of the anatomical image. the following are the defaults values:
+
+; 1 (default): use hybrid kernel (prior from MR and PET estimate)
+; OR
+; 0 kernel is MR-only
+hybrid:=1
+
+; Gaussian scaling parameter for the anatomical prior (units of image intensity)
+; It controls the edge preservation from the anatomical image, the bigger the stronger
+; default: 1
+sigma_m:= 1
+
+; Gaussian scaling parameter for the PET estimate (units of PET image intensity)
+; It controls the edge preservation from the functional image, the bigger the stronger
+; default: 1
+sigma_p:=1
+
+
+; NB: sigma_dm and sigma_dp should be the same 
+; Spatial Gaussian scaling parameter for the anatomical prior (mm)
+; default: 1 (usual range 1-5)
+sigma_dm:=5
+
+; Spatial Gaussian scaling parameter for the PET prior (mm)
+; default: 1 (usual range 1-5)
+sigma_dp:=5	
+
+; Number of neigbouring voxels to compare: (num_neighbours X num_neighbours X num_neighbours)
+; default: 3
+number of neighbours:= 3
+
+; Number of non-zero elements in the feature vectors
+; default: 1
+number of non-zero feature elements:=1
+
+; this is the file name of the anatomical image
+anatomical image filename:= MRbrain.hv
+
+; the following should be 1 if you want to reconstruct 2D data
+only_2D:=1
+
+; the following is the output prefix of the PET reconstructed image
+kernelised output filename prefix :=KOSMAPOSL
+
+objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+input file := my_noisy_prompts_1ax_pos.hs
+
+; Daniel: here we have the possibility to choose the parameters which define the kernel matrix and the name of the MR image.
+
+projector pair type := Matrix
+Projector Pair Using Matrix Parameters :=
+Matrix type := Ray Tracing
+Ray tracing matrix parameters :=
+number of rays in tangential direction to trace for each bin := 10
+do symmetry 90degrees min phi := 1
+do_symmetry_180degrees_min_phi:= 1
+do_symmetry_swap_s:= 1
+do_symmetry_swap_segment:= 1
+do_symmetry_shift_z:= 1
+End Ray tracing matrix parameters :=
+End Projector Pair Using Matrix Parameters :=
+
+; additive projection data to handle randoms etc
+additive sinogram := my_additive_sinogram_1ax_pos.hs 
+
+; norm and acf
+Bin Normalisation type := From ProjData
+Bin Normalisation From ProjData :=
+normalisation projdata filename:= my_multfactors_1ax_pos.hs
+End Bin Normalisation From ProjData:=
+
+; if the next parameters are enabled, 
+; the sensitivity will be computed and saved
+; use %d where you want the subset-number (a la printf)
+; we do this here for illustration, but also for re-use later on (to save some time)
+; CAREFUL: use correct number of subsets in name to avoid confusion
+
+subset sensitivity filenames:= sens_%d.hv
+recompute sensitivity := 1
+
+xy output image size (in pixels) := -1
+end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+
+; if you want to continue from a particular image
+; initial estimate:= reconML.hv
+
+; Number of subsets should usually be a divisor of num_views/8
+; the following is an example for the Siemens mMR
+number of subsets:= 21
+number of subiterations:= 210
+save estimates at subiteration intervals:= 21
+
+END KOSMAPOSLParameters:=
