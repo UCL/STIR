@@ -213,6 +213,7 @@ public:
   std::vector<int> num_rings_per_segment;
 
   std::vector<std::string> applied_corrections;
+  float bed_offset;
  
   // derived values
   int num_segments;

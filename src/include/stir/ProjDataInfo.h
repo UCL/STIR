@@ -348,6 +348,12 @@ public:
   
   //! Return a string describing the object
   virtual std::string parameter_info() const;
+
+  //! Set bed offset
+  void set_bed_offset(float &bed_offset_arg) { std::cerr << "\n\nsetting bed offset!\n\n";bed_offset = bed_offset_arg; }
+
+  //! Get bed offset
+  float get_bed_offset() const { return bed_offset; }
   
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
@@ -360,6 +366,7 @@ private:
   int max_tangential_pos_num;
   VectorWithOffset<int> min_axial_pos_per_seg; 
   VectorWithOffset<int> max_axial_pos_per_seg;
+  float bed_offset;
   
 };
 

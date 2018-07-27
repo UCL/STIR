@@ -112,9 +112,7 @@ VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr,
 
 */
 VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info_ptr,
-		      const float zoom = 1.F,
-		      const CartesianCoordinate3D<float>& origin = CartesianCoordinate3D<float>(0.F,0.F,0.F), 
-		      const CartesianCoordinate3D<int>& sizes = CartesianCoordinate3D<int>(-1,-1,-1));
+              const float zoom = 1.F);
 
 //! Constructor from exam_info and proj_data_info
 /*! \see VoxelsOnCartesianGrid(const ProjDataInfo&,
@@ -124,10 +122,30 @@ VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info_ptr,
 */
 VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr,
                       const ProjDataInfo& proj_data_info,
-		      const float zoom = 1.F,
-		      const CartesianCoordinate3D<float>& origin = CartesianCoordinate3D<float>(0.F,0.F,0.F),
-		      const CartesianCoordinate3D<int>& sizes = CartesianCoordinate3D<int>(-1,-1,-1));
+              const float zoom = 1.F);
 
+//! Constructor from proj_data_info
+/*! \see VoxelsOnCartesianGrid(const ProjDataInfo&,
+              const float zoom,
+              const CartesianCoordinate3D<float>&,
+              const CartesianCoordinate3D<int>& );
+*/
+VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info_ptr,
+              const float zoom,
+              const CartesianCoordinate3D<float>& origin,
+              const CartesianCoordinate3D<int>& sizes = CartesianCoordinate3D<int>(-1,-1,-1));
+
+//! Constructor from exam_info and proj_data_info
+/*! \see VoxelsOnCartesianGrid(const ProjDataInfo&,
+              const float zoom,
+              const CartesianCoordinate3D<float>&,
+              const CartesianCoordinate3D<int>& );
+*/
+VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr,
+                      const ProjDataInfo& proj_data_info,
+              const float zoom,
+              const CartesianCoordinate3D<float>& origin,
+              const CartesianCoordinate3D<int>& sizes = CartesianCoordinate3D<int>(-1,-1,-1));
 
 //! Definition of the pure virtual defined in DiscretisedDensity
 #ifdef STIR_NO_COVARIANT_RETURN_TYPES
@@ -189,6 +207,13 @@ void grow_z_range(const int min_z, const int max_z);
   BasicCoordinate<3,int> get_max_indices() const;
 
   //@}
+protected:
+
+  //! Set up voxels on cartesian grid (avoids code repetition, will be redundant in C++11, as constructors can call different constructors)
+  void set_up_voxels_on_cartesian_grid(const ProjDataInfo& proj_data_info,
+                                       const float zoom,
+                                       const CartesianCoordinate3D<float>& origin,
+                                       const CartesianCoordinate3D<int>& sizes);
 
 };
 

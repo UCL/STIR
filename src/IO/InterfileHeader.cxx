@@ -573,6 +573,8 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("applied corrections",
     KeyArgument::LIST_OF_ASCII, &applied_corrections);
 
+  bed_offset = 0.F;
+  add_key("%bed zero offset (mm)", &bed_offset);
 }
 
 void InterfilePDFSHeader::resize_segments_and_set()
@@ -1318,7 +1320,11 @@ bool InterfilePDFSHeader::post_processing()
 	}
     }
   //cerr << data_info_ptr->parameter_info() << endl;
-  
+
+  // If there is a non-zero bed offset, set it
+  if (bed_offset != 0.F)
+    data_info_ptr->set_bed_offset(bed_offset);
+
   return false;
 }
 
