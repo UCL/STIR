@@ -296,10 +296,83 @@ read_norm_data(const string& filename)
    const int min_tang_pos_num = -(scanner_ptr->get_max_num_non_arccorrected_bins())/2;
    const int max_tang_pos_num = min_tang_pos_num +scanner_ptr->get_max_num_non_arccorrected_bins()- 1;
 
-   //geometric_factors = 
-   //  Array<2,float>(IndexRange2D(0,127-1, //XXXXnrm_subheader_ptr->num_geo_corr_planes-1,
-   //                             min_tang_pos_num, max_tang_pos_num));
-  efficiency_factors =
+    geometric_factors =
+    Array<3,float>(IndexRange3D(0,15, 0,1981-1, //XXXXnrm_subheader_ptr->num_geo_corr_planes-1,
+                                 min_tang_pos_num, max_tang_pos_num));
+
+   {
+         using namespace H5;
+         using namespace std;
+         int slice = 0;
+
+     while ( slice < _num_time_slices) {
+
+       std::cout<<"Now processing view"<< slice+1 <<std::endl;
+
+       //PW Open the dataset from that file here.
+        DataSet dataset = this->h5data.get_file().openDataSet("/SegmentData/Segment4/3D_Norm_Correction/slice%d", slice+1);
+
+       /*
+         * Get dataspace of the dataset.
+         */
+      DataSpace dataspace = dataset.getSpace();
+        /*
+         * Get the number of dimensions in the dataspace.
+         */
+       int rank = dataspace.getSimpleExtentNdims();
+        /*
+         * Get the dimension size of each dimension in the dataspace and
+         * display them.
+         */
+       hsize_t dims_out[3];
+        dataspace.getSimpleExtentDims( dims_out, NULL);
+        /*
+         * Define hyperslab in the dataset; implicitly giving strike and
+         * block NULL.
+         */
+        hsize_t      offset[3];   // hyperslab offset in the file
+        hsize_t      count[3];    // size of the hyperslab in the file
+        offset[0] = 0;
+        offset[1] = 0;
+        offset[2] = 0;
+        count[0]  = dims_out[0];
+        count[1]  = dims_out[1];
+        count[2]  = dims_out[2];
+        dataspace.selectHyperslab( H5S_SELECT_SET, count, offset );
+
+        /*
+         * Define the memory dataspace.
+         */
+        hsize_t     dimsm[3];
+        dimsm[0] = dims_out[0];
+        dimsm[1] = dims_out[1];
+        dimsm[2] = dims_out[2];
+        DataSpace memspace( 3, dimsm );
+
+       //PW Read data from hyperslab in the file into the hyperslab in memory.
+
+        Array<1,int> buffer(dimsm[0]*dimsm[1]*dimsm[2]);
+        dataset.read( buffer.get_data_ptr(), H5::PredType::NATIVE_INT, memspace, dataspace );
+        buffer.release_data_ptr();
+
+        std::copy(buffer.begin(), b7uffer.end(), tof_data.begin_all());
+        Array<1,float> data();
+        dataset.read( data[slice].get_data_ptr(), PredType::NATIVE_FLOAT, memspace, dataspace);
+        data[slice].release_data_ptr();
+
+        // Increment the slice index.
+           ++slice;
+  }
+           for (int i = 0; i<= 15; i++)
+           {
+              geometric_factors[i][]
+           }
+            std::copy(data[slice].begin(), data[slice].end(), geometric_factors.begin_all());
+                                  min_tang_pos_num, max_tang_pos_num));
+    }
+
+
+    efficiency_factors =
     Array<2,float>(IndexRange2D(0,scanner_ptr->get_num_rings()-1,
 		   0, scanner_ptr->get_num_detectors_per_ring()-1));
   

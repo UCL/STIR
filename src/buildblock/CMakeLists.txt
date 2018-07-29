@@ -13,7 +13,8 @@ set(${dir_LIB_SOURCES}
   ProjDataInfoCylindricalNoArcCorr 
   ArcCorrection 
   ProjDataFromStream 
-  ProjDataGEAdvance 
+  ProjDataFromGEHDF5 
+  ProjDataGEAdvance
   ProjDataInMemory 
   ProjDataInterfile 
   Scanner 
