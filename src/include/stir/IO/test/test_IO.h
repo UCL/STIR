@@ -180,8 +180,8 @@ shared_ptr<VoxelsOnCartesianGrid<float> > IOTests<A>::create_single_image()
     exam_info_sptr->set_high_energy_thres(100.);
     exam_info_sptr->set_low_energy_thres(5.);
     
-    shared_ptr<VoxelsOnCartesianGrid<float> > single_image_sptr;
-    single_image_sptr.reset(new VoxelsOnCartesianGrid<float>(single_image));
+    shared_ptr<VoxelsOnCartesianGrid<float> > single_image_sptr(
+                new VoxelsOnCartesianGrid<float>(single_image));
     return single_image_sptr;
 }
 
@@ -256,7 +256,6 @@ void IOTests<A>::check_exam_info(const ExamInfo &exm_inf_1, const ExamInfo &exm_
 
     // Loop over each one and compare them
     for (int i=1; i<=im_1_time_frames.get_num_frames(); i++) {
-        check_if_equal(im_1_time_frames.get_duration(i),   im_2_time_frames.get_duration(i),        "test on read and written file via TimeFrameDefinitions::get_duration");
         check_if_equal(im_1_time_frames.get_end_time(i),   im_2_time_frames.get_end_time(i),        "test on read and written file via TimeFrameDefinitions::get_end_time");
         check_if_equal(im_1_time_frames.get_start_time(i), im_2_time_frames.get_start_time(i),      "test on read and written file via TimeFrameDefinitions::get_start_time");
     }

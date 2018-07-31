@@ -295,7 +295,7 @@ VoxelsOnCartesianGrid<elemT>*
 VoxelsOnCartesianGrid<elemT>::get_empty_voxels_on_cartesian_grid() const
 
 {
-  return new VoxelsOnCartesianGrid(this->get_exam_info_sptr(),
+  return new VoxelsOnCartesianGrid(this->get_exam_info_sptr()->create_shared_clone(),
                                    this->get_index_range(),
                                    this->get_origin(), 
                                    this->get_grid_spacing());

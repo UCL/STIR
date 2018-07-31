@@ -50,7 +50,7 @@ public:
     int get_num_data_sets() const { return _num_data_sets; }
 
     //! Get ith filename
-    const std::string get_filename(int i) const { return _filenames[i]; }
+    std::string get_filename(int i) const { return _filenames.at(i); }
 
 protected:
 

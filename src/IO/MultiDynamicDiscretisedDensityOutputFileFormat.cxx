@@ -96,13 +96,13 @@ actual_write_to_file(std::string& filename,
 		     const DynamicDiscretisedDensity & density) const
 {
     // Create all the filenames
-    VectorWithOffset<std::string> individual_filenames(1,density.get_num_time_frames());
-    for (int i=1; i<=density.get_num_time_frames(); i++)
+    VectorWithOffset<std::string> individual_filenames(1,int(density.get_num_time_frames()));
+    for (int i=1; i<=int(density.get_num_time_frames()); i++)
         individual_filenames[i] = filename + "_" + std::to_string(i);
     
     // Write each individual image
-    for (int i=1; i<=density.get_num_time_frames(); i++) {
-        Succeeded success = individual_output_type_sptr->write_to_file(individual_filenames[i],density.get_density(i));
+    for (int i=1; i<=int(density.get_num_time_frames()); i++) {
+        Succeeded success = individual_output_type_sptr->write_to_file(individual_filenames[i],density.get_density(unsigned(i)));
         if (success != Succeeded::yes)
             warning("MultiDynamicDiscretisedDensity error: Failed to write \"" + individual_filenames[i] + "\".\n");
     }
@@ -116,7 +116,7 @@ actual_write_to_file(std::string& filename,
     }
     multi_file << "Multi :=\n";
     multi_file << "\ttotal number of data sets := " << density.get_num_time_frames() << "\n";
-    for (int i=1; i<=density.get_num_time_frames(); i++)
+    for (int i=1; i<=int(density.get_num_time_frames()); i++)
         multi_file << "\tdata set["<<i<<"] := "<<individual_filenames[i]<<"\n";
     multi_file << "end :=\n";
     multi_file.close();

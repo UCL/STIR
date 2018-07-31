@@ -74,9 +74,29 @@ operator=(const DynamicDiscretisedDensity& argument)
 
 void 
 DynamicDiscretisedDensity::
-set_density_sptr(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr, 
+set_density(const DiscretisedDensity<3,float>& density,
                  const unsigned int frame_num)
-{  this->_densities[frame_num-1]=density_sptr; }  
+{
+    // The added density should only contain 1 time frame
+    if(density.get_exam_info().time_frame_definitions.get_num_time_frames() != 1)
+        error("DynamicDiscretisedDensity::set_density: Density should contain 1 time frame");
+    if(this->get_exam_info_sptr()->time_frame_definitions.get_num_time_frames() < frame_num)
+        error("DynamicDiscretisedDensity::set_density: Set DynamicDiscretisedDensity time frame definition before using set_density");
+
+    // Check the starts and ends match
+    double dyn_start    = this->exam_info_sptr->time_frame_definitions.get_start_time(frame_num);
+    double dis_start    = density.get_exam_info().time_frame_definitions.get_start_time(1);
+    double dyn_end      = this->exam_info_sptr->time_frame_definitions.get_end_time(frame_num);
+    double dis_end      = density.get_exam_info().time_frame_definitions.get_end_time(1);
+
+    if (fabs(dyn_start - dis_start) > 1e-10)
+        error("DynamicDiscretisedDensity::set_density: Time frame start should match");
+
+    if (fabs(dyn_end - dis_end) > 1e-10)
+        error("DynamicDiscretisedDensity::set_density: Time frame end should match");
+
+    this->_densities.at(frame_num-1).reset(density.clone());
+}
 
 const std::vector<shared_ptr<DiscretisedDensity<3,float> > > &
 DynamicDiscretisedDensity::

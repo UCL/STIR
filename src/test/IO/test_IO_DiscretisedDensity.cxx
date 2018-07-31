@@ -96,9 +96,7 @@ void IOTests_DiscretisedDensity::read_image()
     if(!check(!is_null_ptr(density_ptr), "failed reading"))
         return;
 
-    _image_to_read_sptr.reset(
-                new VoxelsOnCartesianGrid<float>(
-                    *dynamic_cast< VoxelsOnCartesianGrid<float> *>(density_ptr.get())));
+    _image_to_read_sptr.reset(density_ptr->clone());
 
     if(!check(!is_null_ptr(_image_to_read_sptr), "failed reading"))
         return;

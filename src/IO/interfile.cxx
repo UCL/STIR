@@ -197,6 +197,9 @@ read_interfile_dynamic_image(istream& input,
                                   scanner_sptr,
                                   image_sptr);
 
+  // Copy the exam info (currently hdr and image_sptr share the same one and this will cause problems)
+  image_sptr->set_exam_info(*image_sptr->get_exam_info_sptr());
+
   ifstream data_in;
   open_read_binary(data_in, full_data_file_name);
 
@@ -210,18 +213,23 @@ read_interfile_dynamic_image(istream& input,
       float scale = float(1);
       if (read_data(data_in, *image_sptr, hdr.type_of_numbers, scale, hdr.file_byte_order)
           == Succeeded::no
-          || scale != 1)
+          || fabs(scale-float(1))>float(1e-10))
         {
           warning("read_interfile_dynamic_image: error reading data or scale factor returned by read_data not equal to 1");
           return 0;
         }
 
       for (int i=0; i< hdr.matrix_size[2][0]; i++)
-        if (hdr.image_scaling_factors[frame_num-1][i]!= 1)
+        if (fabs(hdr.image_scaling_factors[frame_num-1][i]-double(1))>double(1e-10))
           (*image_sptr)[i] *= static_cast<float>(hdr.image_scaling_factors[frame_num-1][i]);
 
+      // Set the time frame of the individual frame
+      image_sptr->get_exam_info_sptr()->time_frame_definitions =
+              TimeFrameDefinitions(hdr.get_exam_info_ptr()->time_frame_definitions,frame_num);
+
       // now stick into the dynamic image
-      dynamic_dens_ptr->get_density(frame_num) = *image_sptr;
+      dynamic_dens_ptr->set_density(*image_sptr,frame_num);
+
     }
   return dynamic_dens_ptr;
 }

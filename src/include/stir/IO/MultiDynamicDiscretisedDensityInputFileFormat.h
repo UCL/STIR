@@ -55,7 +55,7 @@ public InputFileFormat<DynamicDiscretisedDensity>
   virtual 
     bool 
     actual_can_read(const FileSignature& signature,
-		    std::istream& input) const
+		    std::istream&) const
   {
     //. todo should check if it's an image
     // checking for "multi :"
@@ -69,7 +69,7 @@ public InputFileFormat<DynamicDiscretisedDensity>
   }
 
   virtual unique_ptr<data_type>
-    read_from_file(std::istream& input) const
+    read_from_file(std::istream&) const
   {
     // needs more arguments, so we just give up (TODO?)
     unique_ptr<data_type> ret;
@@ -85,19 +85,16 @@ public InputFileFormat<DynamicDiscretisedDensity>
     MultipleDataSetHeader header;
     if (header.parse(filename.c_str()) == false)
          error("MultiDynamicDiscretisedDensity:::read_from_file: Error parsing %s", filename.c_str());
-    
     DynamicDiscretisedDensity* dyn_disc_den_ptr = new DynamicDiscretisedDensity;
     dyn_disc_den_ptr->set_num_densities(header.get_num_data_sets());
-    TimeFrameDefinitions time_frames;
-    time_frames.set_num_time_frames(header.get_num_data_sets());
-    
+    dyn_disc_den_ptr->get_exam_info_sptr()->time_frame_definitions.set_num_time_frames(header.get_num_data_sets());
+
     for (int i=0; i<header.get_num_data_sets(); ++i) {   
         shared_ptr<DiscretisedDensity<3,float> > t(DiscretisedDensity<3,float>::read_from_file(header.get_filename(i)));
-        dyn_disc_den_ptr->set_density_sptr(t,i+1);
         double start = t->get_exam_info().get_time_frame_definitions().get_start_time(1);
         double end = t->get_exam_info().get_time_frame_definitions().get_end_time(1);
-        time_frames.set_time_frame(i+1, start, end);
-        
+        dyn_disc_den_ptr->get_exam_info_sptr()->time_frame_definitions.set_time_frame(i+1, start, end);
+        dyn_disc_den_ptr->set_density(*t,i+1);
         // Set some info on the first frame
         if (i==0) {
             dyn_disc_den_ptr->get_exam_info_sptr()->start_time_in_secs_since_1970 = 
@@ -106,12 +103,10 @@ public InputFileFormat<DynamicDiscretisedDensity>
             dyn_disc_den_ptr->set_scanner(scanner_sptr);
         }
     }    
-    
-    dyn_disc_den_ptr->set_time_frame_definitions(time_frames);
     // Hard wire some stuff for now (TODO?)
     dyn_disc_den_ptr->set_calibration_factor(1.);
     dyn_disc_den_ptr->set_if_decay_corrected(1.);
-    dyn_disc_den_ptr->set_isotope_halflife(6586.2);
+    dyn_disc_den_ptr->set_isotope_halflife(6586.2F);
     
     return unique_ptr<data_type>(dyn_disc_den_ptr);
   }

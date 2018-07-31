@@ -53,14 +53,14 @@ public InputFileFormat<ParametricVoxelsOnCartesianGrid>
   virtual 
     bool 
     actual_can_read(const FileSignature& signature,
-		    std::istream& input) const
+		    std::istream&) const
   {
     //. todo should check if it's an image
     return is_interfile_signature(signature.get_signature());
   }
 
   virtual unique_ptr<data_type>
-    read_from_file(std::istream& input) const
+    read_from_file(std::istream&) const
   {
     // needs more arguments, so we just give up (TODO?)
     unique_ptr<data_type> ret;//(read_interfile_dynamic_image(input));

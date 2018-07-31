@@ -39,7 +39,7 @@ class MultipleProjData : public ExamData
 {
 public:
 
-  MultipleProjData():ExamData() {};
+  MultipleProjData():ExamData() {}
 
   MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr)
     :ExamData(exam_info_sptr)

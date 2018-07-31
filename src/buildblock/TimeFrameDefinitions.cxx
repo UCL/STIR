@@ -61,7 +61,7 @@ get_start_time(unsigned int frame_num) const
 {
   assert(frame_num>=1);
   assert(frame_num<=get_num_frames());
-  return frame_times[frame_num-1].first;
+  return frame_times.at(frame_num-1).first;
 }
 
 double
@@ -70,7 +70,7 @@ get_end_time(unsigned int frame_num) const
 {
   assert(frame_num>=1);
   assert(frame_num<=get_num_frames());
-  return frame_times[frame_num-1].second;
+  return frame_times.at(frame_num-1).second;
 }
 
 double
@@ -273,7 +273,7 @@ TimeFrameDefinitions(const TimeFrameDefinitions& org_frame_defs, unsigned int fr
 
 void
 TimeFrameDefinitions::
-set_time_frame(const int &frame_num, const double &start, const double &end)
+set_time_frame(const int frame_num, const double start, const double end)
 {
     assert(frame_num>=1);
     assert(frame_num<=get_num_frames());

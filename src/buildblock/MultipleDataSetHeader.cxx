@@ -54,7 +54,7 @@ initialise_keymap()
 
     this->add_key("total number of data sets",
                   KeyArgument::INT,
-                  (KeywordProcessor)&MultipleDataSetHeader::read_num_data_sets,
+                  static_cast<KeywordProcessor>(&MultipleDataSetHeader::read_num_data_sets),
                   &_num_data_sets);
     this->add_key("data set",
                   KeyArgument::ASCII,
@@ -66,7 +66,7 @@ post_processing()
 {
     bool empty_filenames = false;
     for (int i=0; i<_num_data_sets; ++i) {
-        if (_filenames[i] == "") {
+        if (_filenames[i].size() == unsigned(0)) {
           warning(boost::format("MultipleDataSetHeader: Data set[%1%] is empty.") % i);
             empty_filenames = true;
         }
