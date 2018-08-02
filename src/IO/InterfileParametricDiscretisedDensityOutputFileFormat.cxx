@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2002-2009, Hammersmith Imanet Ltd
+    Copyright (C) 2018 - , Univeristy College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

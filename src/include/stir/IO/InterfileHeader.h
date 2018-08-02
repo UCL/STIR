@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2002-2007, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2016 University College London
+    Copyright (C) 2013, 2016, 2018 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
+  \author Richard Brown
 
   See http://stir.sourceforge.net for a description of the full
   proposal for Interfile headers for 3D PET.

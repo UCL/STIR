@@ -6,6 +6,7 @@
   \brief Declaration of class stir::DynamicDiscretisedDensity
   \author Kris Thielemans
   \author Charalampos Tsoumpas
+  \author Richard Brown
   
 */
 /*

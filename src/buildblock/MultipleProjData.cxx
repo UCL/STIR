@@ -22,6 +22,7 @@
   \ingroup data_buildblock
   \brief Implementation of class stir::MultipleProjData
   \author Kris Thielemans
+  \author Richard Brown
   
 */
 

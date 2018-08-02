@@ -25,6 +25,7 @@
   \author Kris Thielemans 
   \author Sanida Mustafovic
   \author PARAPET project
+  \author Richard Brown
 */
 //   Pretty horrible implementations at the moment...
 

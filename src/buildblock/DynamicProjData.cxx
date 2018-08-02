@@ -22,6 +22,7 @@
   \brief Implementation of class stir::DynamicProjData
   \author Kris Thielemans
   \author Charalampos Tsoumpas
+  \author Richard Brown
 */
 
 #include "stir/DynamicProjData.h"

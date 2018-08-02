@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2016 University College London
+    Copyright (C) 2013, 2016, 2018 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 
   \author Kris Thielemans
   \author PARAPET project
+  \author Richard Brown
 */
 
 #include "stir/IO/InterfileHeader.h"
