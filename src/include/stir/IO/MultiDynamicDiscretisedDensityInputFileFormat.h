@@ -100,7 +100,7 @@ public InputFileFormat<DynamicDiscretisedDensity>
             dyn_disc_den_ptr->get_exam_info_sptr()->start_time_in_secs_since_1970 = 
                     t->get_exam_info().start_time_in_secs_since_1970;
             shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(t->get_exam_info_sptr()->originating_system));
-            dyn_disc_den_ptr->set_scanner(scanner_sptr);
+            dyn_disc_den_ptr->set_scanner(*scanner_sptr);
         }
     }    
     // Hard wire some stuff for now (TODO?)

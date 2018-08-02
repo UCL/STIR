@@ -178,8 +178,8 @@ class DynamicDiscretisedDensity: public ExamData
   void set_time_frame_definitions(const TimeFrameDefinitions& time_frame_definitions) 
   {this->exam_info_sptr->set_time_frame_definitions(time_frame_definitions);}
 
-  void set_scanner(const shared_ptr<Scanner> scanner_sptr)
-  {this->_scanner_sptr = scanner_sptr;}
+  void set_scanner(const Scanner& scanner)
+  { this->_scanner_sptr.reset(new Scanner(scanner)); }
 
   const TimeFrameDefinitions & 
     get_time_frame_definitions() const ;
