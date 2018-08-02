@@ -45,7 +45,7 @@ class DynamicProjData :
 {
 public:
   static
-  shared_ptr<DynamicProjData>
+  unique_ptr<DynamicProjData>
     read_from_file(const std::string& filename);
 
   DynamicProjData() {}

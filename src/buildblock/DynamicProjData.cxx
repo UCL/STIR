@@ -88,7 +88,7 @@ DynamicProjData::
 get_time_frame_definitions() const
 {   return this->exam_info_sptr->time_frame_definitions;    }
 
-shared_ptr<DynamicProjData>
+unique_ptr<DynamicProjData>
 DynamicProjData::
 read_from_file(const string& filename) // The written projection data is read in respect to its center as origin!!!
 {
@@ -101,7 +101,7 @@ read_from_file(const string& filename) // The written projection data is read in
 #ifndef NDEBUG
     info(boost::format("DynamicProjData::read_from_file trying to read %s as Interfile") % filename);
 #endif
-    shared_ptr<DynamicProjData> ptr(read_interfile_DPDFS(filename, std::ios::in));
+    unique_ptr<DynamicProjData> ptr(read_interfile_DPDFS(filename, std::ios::in));
     if (!is_null_ptr(ptr))
       return ptr;
     else
@@ -171,14 +171,14 @@ read_from_file(const string& filename) // The written projection data is read in
 #endif
 
       unique_ptr<MultipleProjData> multi_proj_data(MultipleProjData::read_from_file(filename).get());
-      shared_ptr<DynamicProjData> dynamic_proj_data = MAKE_SHARED<DynamicProjData>(*multi_proj_data);
+      unique_ptr<DynamicProjData> dynamic_proj_data(new DynamicProjData(*multi_proj_data));
 
       return dynamic_proj_data;
   }
   
   // return a zero pointer if we get here
   warning(boost::format("DynamicProjData::read_from_file cannot read '%s'. Unsupported file format?") % filename);
-  return shared_ptr<DynamicProjData>();
+  return unique_ptr<DynamicProjData>();
 }
 
 Succeeded 

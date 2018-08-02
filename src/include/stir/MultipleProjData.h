@@ -57,7 +57,7 @@ public:
                    const int num_gates);
 
   static
-  shared_ptr<MultipleProjData>
+  unique_ptr<MultipleProjData>
   read_from_file(const std::string &parameter_file);
 
   //N.E.14/07/16 Inherited from ExamData

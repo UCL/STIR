@@ -62,7 +62,7 @@ MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
     this->_proj_datas.resize(num_gates);
 }
 
-shared_ptr<MultipleProjData>
+unique_ptr<MultipleProjData>
 MultipleProjData::
 read_from_file(const std::string &parameter_file)
 {
@@ -74,7 +74,7 @@ read_from_file(const std::string &parameter_file)
     int num_data_sets = header.get_num_data_sets();
 
     // Create the multiple proj data
-    shared_ptr<MultipleProjData> multiple_proj_data( new MultipleProjData );
+    unique_ptr<MultipleProjData> multiple_proj_data( new MultipleProjData );
 
     // Read the projdata
     for (int i=0; i<num_data_sets; ++i) {
