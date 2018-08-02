@@ -9,7 +9,7 @@
 
 <p>This version is 95% backwards compatible with STIR 3.0 for the user aside from minor changes 
 when using Python/MATLAB and when changed image orientation when reading/writing images via ITK (see below).
-Developers might need to make minor code changes as 
+Developers might need to make code changes as 
 detailed below.
 </p>
 <h2>Overall summary</h2>
@@ -63,7 +63,8 @@ on Linux/MacOSX and 3.10.2 or later on Windows, but we try to accomodate older v
 improvements to the documentation.
 </p>
 
-<p>This release contains mainly code written by Kris Thielemans and Nikos Efthimiou (UCL),
+<p>This release contains mainly code written by Kris Thielemans (UCL), Nikos Efthimiou (UCL and Hull)
+  and Richard Brown (UCL)
   but with contributions by Jannis Fischer (ETH Zurich) for SAFIR support,
   Elise Emond for IO fixes (UCL), Edoardo Pasca (STFC) for Siemens interfile support,
   Daniel Deida (Leeds) for the PLS prior, and some code clean-up by David Volgyes. Various bits
@@ -74,7 +75,7 @@ Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
 
 <h2> Summary for end users (also to be read by developers)</h2>
 
-<h3>Bbug fixes</h3>
+<h3>Bug fixes</h3>
 <ul>
 <li>bug fixed in writing of SPECT interfile headers: "direction of rotation" was set incorrect. This 
 affected output of forward_project (and stir_math -s). Reconstruction was not affected though.
@@ -92,7 +93,7 @@ segment symmetry is switched off.
 </li>
 <li>When using the <code>inNormalisationFromAttenuationImage</code>  constructor that takes
   an image, the code would rescale the image of the caller.<br />
-This bug did not affect command line utilities, but did affected
+This bug did not affect command line utilities, but did affect
 python/matlab or use of the C++ library.
 </li>
 </ul>
@@ -119,9 +120,17 @@ These are only minimally documented at the present stage unfortunately.
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
 <li>add Verbosity level (currently only to be set from interactive languages)</li
 <li>Added the anatomical parallel level sets (PLS) prior. If an uniform anatomical image is provided it will work as a (smoothed) total variation (TV) prior </li>
-<li>New input: GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. </li>
-<li>New header file, with .hroot extension is provided for ROOT files </li>
-<li><code>CListModeData</code> got a new function <code>get_total_number_of_events()</code>, BUT currently only <code>CListModeDataFromROOT</code> supports it. </li> 
+<li>New IO:
+  <ul>
+    <li>GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. </li>
+    <li>New header file, with .hroot extension is provided for ROOT files </li>
+    <li>Ability to read dynamic and parametric interfiles with <tt>InterfileDynamicDiscretisedDensityInputFileFormat</tt> and 
+      <tt>InterfileParametricDiscretisedDensityInputFileFormat</tt>, respectively.
+    <li>The creation of <tt>MultipleDataSetHeader</tt>. This enables the user to read a set of filenames from a text file, referred to as a <tt>multi</tt> file. See <tt>examples/samples/multi_file.txt</tt> for an example.
+  </li>
+  </ul>
+  </li>
+    <li><code>CListModeData</code> got a new function <code>get_total_number_of_events()</code>, BUT currently only <code>CListModeDataFromROOT</code> supports it. </li> 
 <li> Reconstruction of listmode data has been corrected. LM-OSEM can be performed but only gometrical subsets are currently supported. 
   </li>
 <li>Sensitivity calculation parallelized using distributed worker mechanism.</li>
@@ -135,7 +144,7 @@ These are only minimally documented at the present stage unfortunately.
   and if the images/projection data have the same characteristics as those used when the object was set-up.
   (Actually, projection data can be &quote;smaller&quote;, e.g. less segments).
   </li>
-</ul>
+  </ul>
 
 
 <h3>Changed functionality</h3>
@@ -158,6 +167,12 @@ was in HFS position. This is currently not checked (and for many file formats, n
   views.<br />
   It has a new switch <tt>--NOPMRT</tt> which reverts to the previous behaviour (i.e. using
   the old ray tracer on-the-fly projector).
+  </li>
+  <li><tt>InterfileDynamicDiscretisedDensityOutputFileFormat::</tt> changed start/end key from <tt>Interfile Output File Format</tt> to <tt>Interfile Output File Format Parameters</tt> to match other Interfile types.
+  </li>
+  <li>Renamed <tt>InterfileParametricDensityOutputFileFormat</tt> to <tt>InterfileParametricDiscretisedDensityOutputFileFormat</tt> and the corresponding keys.
+  </li>
+  <li>Changed the return value of <tt>DynamicProjData::read_from_file</tt> from a raw ptr to a <tt>unique_ptr</tt>.
   </li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>
@@ -259,7 +274,7 @@ most cylindrical scanners).
 
 <h3>Other changes to tests</h3>
 <ul>
-<li>added tests for the ITK IO routines</li>
+<li>added tests for the ITK IO routines and Interfile reading of dynamic/parametric images/projection data</li>
 </ul>
 
 <H2>What's new for developers (aside from what should be obvious

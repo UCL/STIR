@@ -15,4 +15,4 @@ set(${dir_LIB_SOURCES}
 
 include(stir_lib_target)
 
-target_link_libraries(modelling_buildblock buildblock)
+target_link_libraries(modelling_buildblock buildblock IO)

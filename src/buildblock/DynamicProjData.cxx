@@ -22,6 +22,7 @@
   \brief Implementation of class stir::DynamicProjData
   \author Kris Thielemans
   \author Charalampos Tsoumpas
+  \author Richard Brown
 */
 
 #include "stir/DynamicProjData.h"
@@ -42,6 +43,7 @@
 #include "stir/IO/FileSignature.h"
 #include "stir/IO/InterfileHeader.h"
 #include "stir/IO/interfile.h"
+#include "stir/MultipleDataSetHeader.h"
 #include <boost/format.hpp>
 #include <fstream>
 #include <math.h>
@@ -86,7 +88,7 @@ DynamicProjData::
 get_time_frame_definitions() const
 {   return this->exam_info_sptr->time_frame_definitions;    }
 
-DynamicProjData*
+unique_ptr<DynamicProjData>
 DynamicProjData::
 read_from_file(const string& filename) // The written projection data is read in respect to its center as origin!!!
 {
@@ -99,7 +101,7 @@ read_from_file(const string& filename) // The written projection data is read in
 #ifndef NDEBUG
     info(boost::format("DynamicProjData::read_from_file trying to read %s as Interfile") % filename);
 #endif
-    DynamicProjData* ptr(read_interfile_DPDFS(filename, std::ios::in));
+    unique_ptr<DynamicProjData> ptr(read_interfile_DPDFS(filename, std::ios::in));
     if (!is_null_ptr(ptr))
       return ptr;
     else
@@ -162,10 +164,21 @@ read_from_file(const string& filename) // The written projection data is read in
     }
 #endif // end of HAVE_LLN_MATRIX
 
+  if (strncmp(signature, "Multi", 5) == 0) {
+
+#ifndef NDEBUG
+        info(boost::format("DynamicProjData::read_from_file trying to read %s as a Multi file.") % filename);
+#endif
+
+      unique_ptr<MultipleProjData> multi_proj_data(MultipleProjData::read_from_file(filename).get());
+      unique_ptr<DynamicProjData> dynamic_proj_data(new DynamicProjData(*multi_proj_data));
+
+      return dynamic_proj_data;
+  }
   
   // return a zero pointer if we get here
   warning(boost::format("DynamicProjData::read_from_file cannot read '%s'. Unsupported file format?") % filename);
-  return 0;
+  return unique_ptr<DynamicProjData>();
 }
 
 Succeeded 
