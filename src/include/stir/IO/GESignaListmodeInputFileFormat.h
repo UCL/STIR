@@ -89,7 +89,7 @@ std::cout << "\n Manufacturer :  " << read_str_manufacturer << "\n\n";
       }
   }
  public:
-  virtual std::auto_ptr<data_type>
+  virtual unique_ptr<data_type>
     read_from_file(std::istream& input) const
   {
     warning("read_from_file for GESigna listmode data with istream not implemented %s:%s. Sorry",
@@ -98,7 +98,7 @@ std::cout << "\n Manufacturer :  " << read_str_manufacturer << "\n\n";
       std::auto_ptr<data_type>
       (0);
   }
-  virtual std::auto_ptr<data_type>
+  virtual unique_ptr<data_type>
     read_from_file(const std::string& filename) const
   {	
     return std::auto_ptr<data_type>(new CListModeDataGESigna(filename)); 

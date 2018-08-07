@@ -14,8 +14,8 @@
 
     See STIR/LICENSE.txt for details
 */
-#ifndef __stir_IO_GEHDF5Data_H__
-#define __stir_IO_GEHDF5Data_H__
+#ifndef __stir_IO_HDF5Wrapper_H__
+#define __stir_IO_HDF5Wrapper_H__
 /*!
   \file
   \ingroup
@@ -24,50 +24,57 @@
 */
 
 #include "stir/shared_ptr.h"
-
 #include "stir/ExamInfo.h"
 #include "stir/Scanner.h"
+#include "stir/Succeeded.h"
+
 #include "H5Cpp.h"
+
 #include <string>
 
 START_NAMESPACE_STIR
 
-class Succeeded;
-
-class GEHDF5Data
+class HDF5Wrapper
 {
 public:
     //!
     //! \brief GEHDF5Data
     //! \details Default constructor
-    GEHDF5Data() {}
+    explicit HDF5Wrapper();
 
-    //GEHDF5Data(const std::string& filename);
+    explicit HDF5Wrapper(const std::string& filename);
 
-    void open(const std::string& filename);
+    Succeeded open(const std::string& filename);
 
-    virtual ~GEHDF5Data() {};
+    static bool check_GE_signature(const std::string filename);
+
+    ~HDF5Wrapper() {}
 
     //! Get shared pointer to exam info
     /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
       shared pointer will be affected. */
-    virtual shared_ptr<ExamInfo>
-      get_exam_info_sptr() const;
+    shared_ptr<ExamInfo>
+    get_exam_info_sptr() const;
 
-    virtual shared_ptr<Scanner> 
-      get_scanner_sptr() const;
+    shared_ptr<Scanner>
+    get_scanner_sptr() const;
 
-    H5::H5File& get_file() { return file; }
+    //! \obsolete
+    inline const H5::H5File& get_file() const
+    { return file; }
 
 protected:
 
-    shared_ptr<ExamInfo> exam_info_sptr;
-    shared_ptr<Scanner> scanner_sptr;
-    H5::H5File file;
+    //    shared_ptr<ExamInfo> exam_info_sptr;
 
+    Succeeded initialise_scanner_from_HDF5();
+
+    shared_ptr<Scanner> scanner_sptr;
 private:
 
+    H5::H5File file;
 
+    bool is_signa = false;
 
 };
 

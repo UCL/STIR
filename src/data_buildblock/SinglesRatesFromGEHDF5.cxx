@@ -31,7 +31,7 @@
 #include "stir/data/SinglesRatesFromGEHDF5.h"
 #include "stir/round.h"
 #include "stir/stream.h"
-#include "stir/IO/GEHDF5Data.h"
+#include "stir/IO/HDF5Wrapper.h"
 #include "stir/listmode/CListModeDataGESigna.h"
 #include "H5Cpp.h"
 

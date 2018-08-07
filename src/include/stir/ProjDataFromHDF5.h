@@ -30,13 +30,13 @@
 
     See STIR/LICENSE.txt for details
 */
-#ifndef __ProjDataFromGEHDF5_H__
-#define __ProjDataFromGEHDF5_H__
+#ifndef __ProjDataFromHDF5_H__
+#define __ProjDataFromHDF5_H__
 
 #include "stir/ProjData.h" 
 #include "stir/NumericType.h"
 #include "stir/ByteOrder.h"
-#include "stir/IO/GEHDF5Data.h"
+#include "stir/IO/HDF5Wrapper.h"
 #include "stir/Array.h"
 
 #include <iostream>
@@ -57,21 +57,26 @@ START_NAMESPACE_STIR
   No writing yet.
 
 */
-class ProjDataFromGEHDF5 : public ProjData,  public GEHDF5Data
+class ProjDataFromHDF5 : public ProjData
 {
 public:
     
-    static  ProjDataFromGEHDF5* ask_parameters(const bool on_disk = true);
-   
+    static ProjDataFromHDF5* ask_parameters(const bool on_disk = true);
     
-    ProjDataFromGEHDF5 (const std::string& sinogram_filename);
+    explicit ProjDataFromHDF5 (const std::string& sinogram_filename);
+
+    explicit ProjDataFromHDF5 (const std::string& sinogram_filename);
+
+    explicit ProjDataFromHDF5 (const std::string& sinogram_filename);
   
-    //! Get & set viewgram 
+    //! Get Viewgram<float> 
     Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const;
+    //! Set Viewgram<float>
     Succeeded set_viewgram(const Viewgram<float>& v);
     
-    //! Get & set sinogram 
+    //! Get Sinogram<float> 
     Sinogram<float> get_sinogram(const int ax_pos_num, const int sergment_num,const bool make_num_tangential_poss_odd=false) const; 
+    //! Set Sinogram<float>
     Succeeded set_sinogram(const Sinogram<float>& s);
  
     
@@ -84,18 +89,22 @@ private:
   //offset of the whole 3d sinogram in the stream
   std::streamoff  offset;
   
-  
+  HDF5Wrapper* input;
+
   NumericType on_disk_data_type;
   
   ByteOrder on_disk_byte_order;
-   std::string _sinogram_filename;
+
   int segment_offset;
   // view_scaling_factor is only used when reading data from file. Data are stored in
   // memory as float, with the scale factor multiplied out
  
   Array<1,float> buffer;
-   Array<3, float> tof_data;
+
+  Array<3, float> tof_data;
+  
   std::vector<int> num_rings_orig;
+
   std::vector<int> segment_sequence_orig;
 
 

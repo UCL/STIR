@@ -37,10 +37,8 @@
 #include "stir/Scanner.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/read_data.h"
-#include "stir/IO/GEHDF5Data.h"
 #include "stir/IndexRange.h"
 #include "stir/IndexRange3D.h"
-#include "H5Cpp.h"
 
 #include <vector>
 #include <algorithm>
@@ -58,7 +56,7 @@ using std::streamoff;
 
 START_NAMESPACE_STIR
 
-ProjDataFromGEHDF5::ProjDataFromGEHDF5(const std::string& sinogram_filename)
+ProjDataFromHDF5::ProjDataFromHDF5(const std::string& sinogram_filename)
   :
   sino_stream(s),
   offset(0),
@@ -70,7 +68,7 @@ ProjDataFromGEHDF5::ProjDataFromGEHDF5(const std::string& sinogram_filename)
 }
   
 Viewgram<float>
-ProjDataFromGEHDF5::
+ProjDataFromHDF5::
 get_viewgram(const int view_num, const int segment_num,
              const bool make_num_tangential_poss_odd) const
   {
@@ -176,7 +174,7 @@ Viewgram<float> viewgram = get_empty_viewgram(view_num,segment_num,make_num_tang
 }
 
 
-Succeeded ProjDataFromGEHDF5::set_viewgram(const Viewgram<float>& v)
+Succeeded ProjDataFromHDF5::set_viewgram(const Viewgram<float>& v)
 {
   // TODO
   // but this is difficult: how to adjust the scale factors when writing only 1 viewgram ?
@@ -184,16 +182,16 @@ Succeeded ProjDataFromGEHDF5::set_viewgram(const Viewgram<float>& v)
   return Succeeded::no;
 }
 
-Sinogram<float> ProjDataFromGEHDF5::get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd) const
+Sinogram<float> ProjDataFromHDF5::get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd) const
 { 
   // TODO
   error("ProjDataGEAdvance::get_sinogram not implemented yet\n"); 
   return get_empty_sinogram(ax_pos_num, segment_num);}
 
-Succeeded ProjDataFromGEHDF5::set_sinogram(const Sinogram<float>& s)
+Succeeded ProjDataFromHDF5::set_sinogram(const Sinogram<float>& s)
 {
   // TODO
-  warning("ProjDataFromGEHDF5::set_sinogram not implemented yet\n");
+  warning("ProjDataFromHDF5::set_sinogram not implemented yet\n");
   return Succeeded::no;
 }
 

@@ -33,7 +33,7 @@
 #include "stir/data/SinglesRates.h"
 #include "stir/Array.h"
 #include "stir/RegisteredParsingObject.h"
-#include "stir/IO/GEHDF5Data.h"
+#include "stir/IO/HDF5Wrapper.h"
 
 
 START_NAMESPACE_STIR
