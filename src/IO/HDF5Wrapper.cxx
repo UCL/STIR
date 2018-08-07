@@ -47,6 +47,16 @@ HDF5Wrapper::get_exam_info_sptr() const
 //    return this->exam_info_sptr;
 }
 
+H5::DataSet* HDF5Wrapper::get_listmode_data_ptr() const
+{
+    return dataset_list_sptr.get();
+}
+
+int HDF5Wrapper::get_listmode_size() const
+{
+    return m_list_size;
+}
+
 Succeeded
 HDF5Wrapper::open(const std::string& filename)
 {
@@ -102,4 +112,117 @@ Succeeded HDF5Wrapper::initialise_scanner_from_HDF5()
     return Succeeded::yes;
 }
 
+Succeeded HDF5Wrapper::initialise_listmode_data(const std::string &path)
+{
+    if(path.size() == 0)
+    {
+        if(is_signa)
+        {
+            m_listmode_address = "/ListData/listData";
+            m_size_of_record_signature = 4;
+            m_max_size_of_record = 16;
+        }
+        else
+            return Succeeded::no;
+    }
+    else
+        m_listmode_address = path;
+
+    dataset_list_sptr.reset(new H5::DataSet(file.openDataSet(m_listmode_address)));
+
+    m_dataspace = dataset_list_sptr->getSpace();
+    int dataset_list_Ndims = m_dataspace.getSimpleExtentNdims();
+
+    hsize_t dims_out[dataset_list_Ndims];
+    m_dataspace.getSimpleExtentDims( dims_out, NULL);
+
+    const long long unsigned int tmp_size_of_record_signature = m_size_of_record_signature;
+    m_memspace_ptr = new H5::DataSpace( dataset_list_Ndims,
+                            &tmp_size_of_record_signature);
+
+
+    return Succeeded::yes;
+}
+
+
+void HDF5Wrapper::get_next_listmode(hsize_t& current_offset, shared_ptr<char>& data_sptr)
+{
+
+    m_dataspace.selectHyperslab( H5S_SELECT_SET, &m_size_of_record_signature, &current_offset );
+    dataset_list_sptr->read( data_sptr.get(), H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace );
+    current_offset += m_size_of_record_signature;
+
+    ////  if (dataset_sptr->gcount()<static_cast<std::streamsize>(this->size_of_record_signature))
+    ////    return Succeeded::no;
+    //  const std::size_t size_of_record =data_sptr
+    //	record.size_of_record_at_ptr(data_ptr, this->size_of_record_signature, false);
+    //  assert(size_of_record <= this->max_size_of_record);
+    //  if (size_of_record > this->size_of_record_signature)
+    //  {
+    //    offset[0] = current_offset;
+    //    count[0]= size_of_record - this->size_of_record_signature;
+    //    H5::DataSpace memspace( rank, &count[0] );
+    //    dataspace.selectHyperslab( H5S_SELECT_SET, count, offset );
+    //    dataset_sptr->read( data_ptr + this->size_of_record_signature,
+    //                        H5::PredType::STD_U8LE, memspace, dataspace );
+    //    current_offset += count[0];
+    //  }
+    //  // TODO error checking
+
+
+}
+
+//stir::Array<2, float>* data_sptr;
+//shared_ptr<char> HDF5Wrapper::get_next_viewgram()
+//{
+
+//}
+
+//stir::Array<2, float>* data_sptr;
+//shared_ptr<char> HDF5Wrapper::get_next_sinogram()
+//{
+
+//}
+
+//stir::Array<3, float>* data_sptr;
+//shared_ptr<char> HDF5Wrapper::get_next_segment_by_sinogram()
+//{
+
+//}
+
+//stir::Array<3, float>* data_sptr;
+//shared_ptr<char> HDF5Wrapper::get_next_segment_by_viewgram()
+//{
+
+//}
+
+// initialise_singles
+// Can be used for normalisation, too.
+// Can be used for nonTOF sinograms.
+//Succeeded HDF5Wrapper::initialise_list_2D_arrays(const std::string &path)
+//{
+//    if(path.size() == 0)
+//    {
+//        if(is_signa)
+//        {
+//            m_listmode_address = "/ListData/listData";
+//        }
+//        else
+//            return Succeeded::no;
+//    }
+//    else
+//        m_listmode_address = path;
+
+//    dataset_list_sptr.reset(new H5::DataSet(file.openDataSet(m_listmode_address)));
+
+//    H5::DataSpace dataspace = dataset_list_sptr->getSpace();
+//    dataset_list_Ndims = dataspace.getSimpleExtentNdims() ;
+
+
+//    return Succeeded::yes;
+//}
+
+
+
 END_NAMESPACE_STIR
+

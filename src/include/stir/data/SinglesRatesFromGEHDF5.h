@@ -47,7 +47,7 @@ START_NAMESPACE_STIR
   .BLF files are generated as a result of PET scan by GE SIGNA PET/MR scanners.
 */
 class SinglesRatesFromGEHDF5 : 
-public RegisteredParsingObject<SinglesRatesFromGEHDF5, SinglesRates>, public GEHDF5Data
+public RegisteredParsingObject<SinglesRatesFromGEHDF5, SinglesRates>
 
 { 
 public:

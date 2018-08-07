@@ -28,10 +28,11 @@
 #include "stir/Succeeded.h"
 #include "stir/is_null_ptr.h"
 #include "stir/shared_ptr.h"
-#include "boost/shared_array.hpp"
+
 #include <fstream>
 
 START_NAMESPACE_STIR
+
 template <class RecordT>
 InputStreamWithRecordsFromHDF5<RecordT>::
 InputStreamWithRecordsFromHDF5(const shared_ptr<H5::DataSet>& dataset_sptr_v,
@@ -50,59 +51,55 @@ InputStreamWithRecordsFromHDF5(const shared_ptr<H5::DataSet>& dataset_sptr_v,
   //  error("InputStreamWithRecordsFromHDF5: error in tellg()\n");
 }
 
+template <class RecordT>
+InputStreamWithRecordsFromHDF5<RecordT>::
+InputStreamWithRecordsFromHDF5(const std::string filename,
+                               const std::size_t size_of_record_signature,
+                               const std::size_t max_size_of_record)
+  : m_filename(filename),
+    size_of_record_signature(size_of_record_signature),
+    max_size_of_record(max_size_of_record)
+{
+    assert(size_of_record_signature<=max_size_of_record);
+    //  if (is_null_ptr(dataset_sptr))
+    //    return;
+    starting_stream_position = 0;
+    current_offset = 0;
+    //  //if (!dataset_sptr->good())
+    //  //  error("InputStreamWithRecordsFromHDF5: error in tellg()\n");
+
+    set_up();
+}
 
 template <class RecordT>
 Succeeded
 InputStreamWithRecordsFromHDF5<RecordT>::
-get_next_record(RecordT& record) const
+set_up()
 {
-  if (is_null_ptr(dataset_sptr))
-    return Succeeded::no;
+    input_sptr.reset(new HDF5Wrapper(m_filename));
+    data_sptr.reset(new char[this->max_size_of_record]);
 
-  // rely on file caching by the C++ library or the OS
-  assert(this->size_of_record_signature <= this->max_size_of_record);
-  boost::shared_array<char> data_sptr(new char[this->max_size_of_record]);
-  char * data_ptr = data_sptr.get();
+    input_sptr->initialise_listmode_data();
+    //! \todo edit
+    m_list_size = input_sptr->get_listmode_size() - this->size_of_record_signature;
+    //! \todo remove from here
+    count[0] = this->size_of_record_signature;
+    return Succeeded::yes;
+}
 
+template <class RecordT>
+Succeeded
+InputStreamWithRecordsFromHDF5<RecordT>::
+get_next_record(RecordT& record)
+{
 
-  H5::DataSpace dataspace = dataset_sptr->getSpace();
-  int rank = dataspace.getSimpleExtentNdims();
+  if (current_offset > m_list_size)
+      return Succeeded::no;
 
-  hsize_t dims_out[rank];
-  dataspace.getSimpleExtentDims( dims_out, NULL);
-  uint64_t list_size = dims_out[0];  // should be equal to /HeaderData/ListHeader/sizeOfList
+  wrapper.get_next_listmode(current_offset, data_sptr);
 
-  if (current_offset > (list_size - this->size_of_record_signature))
-    return Succeeded::no; 
-
-  hsize_t      offset[1];   // hyperslab offset in the file
-  hsize_t      count[1];    // size of the hyperslab in the file
-  offset[0] = current_offset;
-  count[0]  = this->size_of_record_signature;
-
-  H5::DataSpace memspace( rank, &count[0] );
-  dataspace.selectHyperslab( H5S_SELECT_SET, count, offset );
-  dataset_sptr->read( data_ptr, H5::PredType::STD_U8LE, memspace, dataspace );
-  current_offset += count[0];
-
-//  if (dataset_sptr->gcount()<static_cast<std::streamsize>(this->size_of_record_signature))
-//    return Succeeded::no; 
-  const std::size_t size_of_record = 
-	record.size_of_record_at_ptr(data_ptr, this->size_of_record_signature, false);
-  assert(size_of_record <= this->max_size_of_record);
-  if (size_of_record > this->size_of_record_signature)
-  {
-    offset[0] = current_offset;
-    count[0]= size_of_record - this->size_of_record_signature;
-    H5::DataSpace memspace( rank, &count[0] );
-    dataspace.selectHyperslab( H5S_SELECT_SET, count, offset );
-    dataset_sptr->read( data_ptr + this->size_of_record_signature,
-                        H5::PredType::STD_U8LE, memspace, dataspace );
-    current_offset += count[0];
-  }
-  // TODO error checking
-  return 
-    record.init_from_data_ptr(data_ptr, size_of_record,false);
+  return
+    record.init_from_data_ptr(data_sptr.get(), size_of_record,false);
 }
 
 

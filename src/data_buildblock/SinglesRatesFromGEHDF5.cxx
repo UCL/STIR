@@ -323,135 +323,135 @@ SinglesRatesFromGEHDF5::
 read_singles_from_listmode_file(const std::string& _listmode_filename)
 {
 
-  int slice = 0;
+//  int slice = 0;
 
-  //PW Open the list mode file here.
-      this->open( _listmode_filename );
-
-
-  SinglesRates::scanner_sptr = GEHDF5Data::scanner_sptr;
-   // Get total number of bins for this type of scanner.
-  const int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
-
-//PW Get the total number of time slices from the HDF5 file format.
-
-H5::DataSet dataset2=this->file.openDataSet("/HeaderData/SinglesHeader/numValidSamples");
-
-dataset2.read(&_num_time_slices,H5::PredType::NATIVE_INT);
-std::cout << "\n Number of time slices :  " << _num_time_slices << "\n\n"; 
+//  //PW Open the list mode file here.
+//      this->open( _listmode_filename );
 
 
-  /* PW Modifies this bit to get th time slices from GE HDF5 instead of Sgl.
-Calculate number of time slices from the length of the data (file size minus header).
-  _num_time_slices =  
-    static_cast<int>((end_stream_position - static_cast<streampos>(512)) /
-                     SIZE_OF_SINGLES_RECORD);
-*/
+//  SinglesRates::scanner_sptr = GEHDF5Data::scanner_sptr;
+//   // Get total number of bins for this type of scanner.
+//  const int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
 
-   // Allocate the main array.
-  _singles = Array<2, int>(IndexRange2D(0, _num_time_slices - 1, 0, total_singles_units - 1));
+////PW Get the total number of time slices from the HDF5 file format.
+
+//H5::DataSet dataset2=this->file.openDataSet("/HeaderData/SinglesHeader/numValidSamples");
+
+//dataset2.read(&_num_time_slices,H5::PredType::NATIVE_INT);
+//std::cout << "\n Number of time slices :  " << _num_time_slices << "\n\n";
+
+
+//  /* PW Modifies this bit to get th time slices from GE HDF5 instead of Sgl.
+//Calculate number of time slices from the length of the data (file size minus header).
+//  _num_time_slices =
+//    static_cast<int>((end_stream_position - static_cast<streampos>(512)) /
+//                     SIZE_OF_SINGLES_RECORD);
+//*/
+
+//   // Allocate the main array.
+//  _singles = Array<2, int>(IndexRange2D(0, _num_time_slices - 1, 0, total_singles_units - 1));
     
 
 
 
-  while ( slice < _num_time_slices) {
+//  while ( slice < _num_time_slices) {
 
 
-//PW Open the dataset from that file here.	
- char datasetname[300];
- sprintf(datasetname,"/Singles/CrystalSingles/sample%d", slice+1 );
-H5::DataSet dataset=this->file.openDataSet(datasetname);
+////PW Open the dataset from that file here.
+// char datasetname[300];
+// sprintf(datasetname,"/Singles/CrystalSingles/sample%d", slice+1 );
+//H5::DataSet dataset=this->file.openDataSet(datasetname);
 
-const int    NX_SUB = 45;    // hyperslab dimensions
-const int    NY_SUB = 448;
-const int    NX = 45;        // output buffer dimensions
-const int    NY = 448;
-const int    RANK_OUT = 2;
+//const int    NX_SUB = 45;    // hyperslab dimensions
+//const int    NY_SUB = 448;
+//const int    NX = 45;        // output buffer dimensions
+//const int    NY = 448;
+//const int    RANK_OUT = 2;
 
-//PW Now find out the type of this dataset.
-      H5T_class_t type_class = dataset.getTypeClass();
+////PW Now find out the type of this dataset.
+//      H5T_class_t type_class = dataset.getTypeClass();
 
-//PW Get datatype class and print it out.
+////PW Get datatype class and print it out.
 
-      if( type_class == H5T_INTEGER )
-      {
-//PW Get the integer type
+//      if( type_class == H5T_INTEGER )
+//      {
+////PW Get the integer type
 
-     H5::IntType intype = dataset.getIntType();
+//     H5::IntType intype = dataset.getIntType();
      
-	H5std_string order_string;
-         H5T_order_t order = intype.getOrder( order_string );
+//	H5std_string order_string;
+//         H5T_order_t order = intype.getOrder( order_string );
 
-          //PW Get size of the data element stored in file and print it.
+//          //PW Get size of the data element stored in file and print it.
  
-         size_t size = intype.getSize();
-      }
+//         size_t size = intype.getSize();
+//      }
 
-//PW Get dataspace of the dataset.   
-      H5::DataSpace dataspace = dataset.getSpace();
+////PW Get dataspace of the dataset.
+//      H5::DataSpace dataspace = dataset.getSpace();
 
-//PW Get the number of dimensions in the dataspace.
-      int rank = dataspace.getSimpleExtentNdims();
+////PW Get the number of dimensions in the dataspace.
+//      int rank = dataspace.getSimpleExtentNdims();
 
-//PW Get the dimension size of each dimension in the dataspace and display them.
+////PW Get the dimension size of each dimension in the dataspace and display them.
       
-      hsize_t dims_out[2];
-      int ndims = dataspace.getSimpleExtentDims( dims_out, NULL);
+//      hsize_t dims_out[2];
+//      int ndims = dataspace.getSimpleExtentDims( dims_out, NULL);
 
-//PW Define hyperslab in the dataset; implicitly giving strike and block NULL.
+////PW Define hyperslab in the dataset; implicitly giving strike and block NULL.
   
-      hsize_t offset[2];   // TODO hyperslab offset in the file
-      hsize_t count[2];    // TODO size of the hyperslab in the file
-      offset[0] = 0;
-      offset[1] = 0;
-      count[0]  = NX_SUB;
-      count[1]  = NY_SUB;
-      dataspace.selectHyperslab( H5S_SELECT_SET, count, offset );
-//PW Define the memory dataspace.
-      hsize_t dimsm[2];              /* TODO memory space dimensions */
-      dimsm[0] = NX;
-      dimsm[1] = NY;
-      H5::DataSpace memspace( RANK_OUT, dimsm );
+//      hsize_t offset[2];   // TODO hyperslab offset in the file
+//      hsize_t count[2];    // TODO size of the hyperslab in the file
+//      offset[0] = 0;
+//      offset[1] = 0;
+//      count[0]  = NX_SUB;
+//      count[1]  = NY_SUB;
+//      dataspace.selectHyperslab( H5S_SELECT_SET, count, offset );
+////PW Define the memory dataspace.
+//      hsize_t dimsm[2];              /* TODO memory space dimensions */
+//      dimsm[0] = NX;
+//      dimsm[1] = NY;
+//      H5::DataSpace memspace( RANK_OUT, dimsm );
      
-//PW Define memory hyperslab.
+////PW Define memory hyperslab.
 
-      hsize_t      offset_out[2];   // hyperslab offset in memory
-      hsize_t      count_out[2];    // size of the hyperslab in memory
-      offset_out[0] = 0;
-      offset_out[1] = 0;
-      count_out[0]  = NX_SUB;
-      count_out[1]  = NY_SUB;
-      memspace.selectHyperslab( H5S_SELECT_SET, count_out, offset_out );
-//PW Read data from hyperslab in the file into the hyperslab in memory.
+//      hsize_t      offset_out[2];   // hyperslab offset in memory
+//      hsize_t      count_out[2];    // size of the hyperslab in memory
+//      offset_out[0] = 0;
+//      offset_out[1] = 0;
+//      count_out[0]  = NX_SUB;
+//      count_out[1]  = NY_SUB;
+//      memspace.selectHyperslab( H5S_SELECT_SET, count_out, offset_out );
+////PW Read data from hyperslab in the file into the hyperslab in memory.
 
-      dataset.read( _singles[slice].get_data_ptr(), H5::PredType::NATIVE_INT, memspace, dataspace );
-      _singles[slice].release_data_ptr();
+//      dataset.read( _singles[slice].get_data_ptr(), H5::PredType::NATIVE_INT, memspace, dataspace );
+//      _singles[slice].release_data_ptr();
 
 
- // Increment the slice index.
-    ++slice;
+// // Increment the slice index.
+//    ++slice;
     
-  }
+//  }
 
 
-  //PW Modify this bit of code too.
-  if (slice != _num_time_slices)
-  {
-    error("\nSinglesRatesFromGEHDF5: Couldn't read all records in the file. Read %d of %d. Exiting\n",
-     slice, _num_time_slices);
-    //TODO resize singles to return array with new sizes
-  }
+//  //PW Modify this bit of code too.
+//  if (slice != _num_time_slices)
+//  {
+//    error("\nSinglesRatesFromGEHDF5: Couldn't read all records in the file. Read %d of %d. Exiting\n",
+//     slice, _num_time_slices);
+//    //TODO resize singles to return array with new sizes
+//  }
 
-  _times = std::vector<double>(_num_time_slices);
-   for(int slice = 0;slice < _num_time_slices;++slice)
-    _times[slice] = slice+1.0;
+//  _times = std::vector<double>(_num_time_slices);
+//   for(int slice = 0;slice < _num_time_slices;++slice)
+//    _times[slice] = slice+1.0;
 
-  assert(_times.size()!=0);
-  _singles_time_interval = _times[1] - _times[0];
+//  assert(_times.size()!=0);
+//  _singles_time_interval = _times[1] - _times[0];
 
 
-  // Return number of time slices read.
-  return slice; 
+//  // Return number of time slices read.
+//  return slice;
     
 }
 

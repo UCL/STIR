@@ -239,240 +239,240 @@ BinNormalisationFromGEHDF5::
 read_norm_data(const string& filename)
 {
   
-  this->h5data.open(filename);
-  this->scanner_ptr = this->h5data.get_scanner_sptr();
+//  this->h5data.open(filename);
+//  this->scanner_ptr = this->h5data.get_scanner_sptr();
 
-  num_transaxial_crystals_per_block = scanner_ptr->get_num_transaxial_crystals_per_block();
-  // Calculate the number of axial blocks per singles unit and 
-  // total number of blocks per singles unit.
-  int axial_crystals_per_singles_unit = 
-    scanner_ptr->get_num_axial_crystals_per_singles_unit();
+//  num_transaxial_crystals_per_block = scanner_ptr->get_num_transaxial_crystals_per_block();
+//  // Calculate the number of axial blocks per singles unit and
+//  // total number of blocks per singles unit.
+//  int axial_crystals_per_singles_unit =
+//    scanner_ptr->get_num_axial_crystals_per_singles_unit();
   
-  int transaxial_crystals_per_singles_unit =
-    scanner_ptr->get_num_transaxial_crystals_per_singles_unit();
+//  int transaxial_crystals_per_singles_unit =
+//    scanner_ptr->get_num_transaxial_crystals_per_singles_unit();
   
-  int axial_crystals_per_block = 
-    scanner_ptr->get_num_axial_crystals_per_block();
+//  int axial_crystals_per_block =
+//    scanner_ptr->get_num_axial_crystals_per_block();
 
-  int transaxial_crystals_per_block =
-    scanner_ptr->get_num_transaxial_crystals_per_block();
+//  int transaxial_crystals_per_block =
+//    scanner_ptr->get_num_transaxial_crystals_per_block();
   
-  // Axial blocks.
-  num_axial_blocks_per_singles_unit = 
-    axial_crystals_per_singles_unit / axial_crystals_per_block;
+//  // Axial blocks.
+//  num_axial_blocks_per_singles_unit =
+//    axial_crystals_per_singles_unit / axial_crystals_per_block;
   
-  int transaxial_blocks_per_singles_unit = 
-    transaxial_crystals_per_singles_unit / transaxial_crystals_per_block;
+//  int transaxial_blocks_per_singles_unit =
+//    transaxial_crystals_per_singles_unit / transaxial_crystals_per_block;
   
-  // Total blocks.
-  num_blocks_per_singles_unit = 
-    num_axial_blocks_per_singles_unit * transaxial_blocks_per_singles_unit;
-  
-
-#if 0
-  if (scanner_ptr->get_num_rings() != nrm_subheader_ptr->num_crystal_rings)
-    error("BinNormalisationFromGEHDF5: "
-          "number of rings determined from subheader is %d, while the scanner object says it is %d\n",
-           nrm_subheader_ptr->num_crystal_rings, scanner_ptr->get_num_rings());
-  if (scanner_ptr->get_num_detectors_per_ring() != nrm_subheader_ptr->crystals_per_ring)
-    error("BinNormalisationFromGEHDF5: "
-          "number of detectors per ring determined from subheader is %d, while the scanner object says it is %d\n",
-           nrm_subheader_ptr->crystals_per_ring, scanner_ptr->get_num_detectors_per_ring());
-#endif
-  proj_data_info_cyl_uncompressed_ptr.reset(
-    dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
-    ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
-                  /*span=*/1, scanner_ptr->get_num_rings()-1,
-                  /*num_views,=*/scanner_ptr->get_num_detectors_per_ring()/2,
-				  /*num_tangential_poss=*/scanner_ptr->get_max_num_non_arccorrected_bins(), 
-                  /*arc_corrected =*/false)
-						     ));
-  
-  /*
-    Extract geometrical & crystal interference, and crystal efficiencies from the
-    normalisation data.    
-  */
-
-   const int min_tang_pos_num = -(scanner_ptr->get_max_num_non_arccorrected_bins())/2;
-   const int max_tang_pos_num = min_tang_pos_num +scanner_ptr->get_max_num_non_arccorrected_bins()- 1;
-
-    geometric_factors =
-    Array<3,float>(IndexRange3D(0,15, 0,1981-1, //XXXXnrm_subheader_ptr->num_geo_corr_planes-1,
-                                 min_tang_pos_num, max_tang_pos_num));
-
-   {
-         using namespace H5;
-         using namespace std;
-         int slice = 0;
-
-     while ( slice < _num_time_slices) {
-
-       std::cout<<"Now processing view"<< slice+1 <<std::endl;
-
-       //PW Open the dataset from that file here.
-        DataSet dataset = this->h5data.get_file().openDataSet("/SegmentData/Segment4/3D_Norm_Correction/slice%d", slice+1);
-
-       /*
-         * Get dataspace of the dataset.
-         */
-      DataSpace dataspace = dataset.getSpace();
-        /*
-         * Get the number of dimensions in the dataspace.
-         */
-       int rank = dataspace.getSimpleExtentNdims();
-        /*
-         * Get the dimension size of each dimension in the dataspace and
-         * display them.
-         */
-       hsize_t dims_out[3];
-        dataspace.getSimpleExtentDims( dims_out, NULL);
-        /*
-         * Define hyperslab in the dataset; implicitly giving strike and
-         * block NULL.
-         */
-        hsize_t      offset[3];   // hyperslab offset in the file
-        hsize_t      count[3];    // size of the hyperslab in the file
-        offset[0] = 0;
-        offset[1] = 0;
-        offset[2] = 0;
-        count[0]  = dims_out[0];
-        count[1]  = dims_out[1];
-        count[2]  = dims_out[2];
-        dataspace.selectHyperslab( H5S_SELECT_SET, count, offset );
-
-        /*
-         * Define the memory dataspace.
-         */
-        hsize_t     dimsm[3];
-        dimsm[0] = dims_out[0];
-        dimsm[1] = dims_out[1];
-        dimsm[2] = dims_out[2];
-        DataSpace memspace( 3, dimsm );
-
-       //PW Read data from hyperslab in the file into the hyperslab in memory.
-
-        Array<1,int> buffer(dimsm[0]*dimsm[1]*dimsm[2]);
-        dataset.read( buffer.get_data_ptr(), H5::PredType::NATIVE_INT, memspace, dataspace );
-        buffer.release_data_ptr();
-
-        std::copy(buffer.begin(), b7uffer.end(), tof_data.begin_all());
-        Array<1,float> data();
-        dataset.read( data[slice].get_data_ptr(), PredType::NATIVE_FLOAT, memspace, dataspace);
-        data[slice].release_data_ptr();
-
-        // Increment the slice index.
-           ++slice;
-  }
-           for (int i = 0; i<= 15; i++)
-           {
-              geometric_factors[i][]
-           }
-            std::copy(data[slice].begin(), data[slice].end(), geometric_factors.begin_all());
-                                  min_tang_pos_num, max_tang_pos_num));
-    }
-
-
-    efficiency_factors =
-    Array<2,float>(IndexRange2D(0,scanner_ptr->get_num_rings()-1,
-		   0, scanner_ptr->get_num_detectors_per_ring()-1));
+//  // Total blocks.
+//  num_blocks_per_singles_unit =
+//    num_axial_blocks_per_singles_unit * transaxial_blocks_per_singles_unit;
   
 
-  {
-    using namespace H5;
-    using namespace std;
+//#if 0
+//  if (scanner_ptr->get_num_rings() != nrm_subheader_ptr->num_crystal_rings)
+//    error("BinNormalisationFromGEHDF5: "
+//          "number of rings determined from subheader is %d, while the scanner object says it is %d\n",
+//           nrm_subheader_ptr->num_crystal_rings, scanner_ptr->get_num_rings());
+//  if (scanner_ptr->get_num_detectors_per_ring() != nrm_subheader_ptr->crystals_per_ring)
+//    error("BinNormalisationFromGEHDF5: "
+//          "number of detectors per ring determined from subheader is %d, while the scanner object says it is %d\n",
+//           nrm_subheader_ptr->crystals_per_ring, scanner_ptr->get_num_detectors_per_ring());
+//#endif
+//  proj_data_info_cyl_uncompressed_ptr.reset(
+//    dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(
+//    ProjDataInfo::ProjDataInfoCTI(scanner_ptr,
+//                  /*span=*/1, scanner_ptr->get_num_rings()-1,
+//                  /*num_views,=*/scanner_ptr->get_num_detectors_per_ring()/2,
+//				  /*num_tangential_poss=*/scanner_ptr->get_max_num_non_arccorrected_bins(),
+//                  /*arc_corrected =*/false)
+//						     ));
+  
+//  /*
+//    Extract geometrical & crystal interference, and crystal efficiencies from the
+//    normalisation data.
+//  */
 
-    DataSet dataset = this->h5data.get_file().openDataSet("/3DCrystalEfficiency/crystalEfficiency");
-     /*
-       * Get dataspace of the dataset.
-       */
-      DataSpace dataspace = dataset.getSpace();
-      /*
-       * Get the number of dimensions in the dataspace.
-       */
-      int rank = dataspace.getSimpleExtentNdims();
-      /*
-       * Get the dimension size of each dimension in the dataspace and
-       * display them.
-       */
-      hsize_t dims_out[2];
-      dataspace.getSimpleExtentDims( dims_out, NULL);
-      cout << "rank " << rank << ", dimensions " <<
-          (unsigned long)(dims_out[0]) << " x " <<
-          (unsigned long)(dims_out[1]) << endl;
-      /*
-       * Define hyperslab in the dataset; implicitly giving strike and
-       * block NULL.
-       */
-      hsize_t      offset[2];   // hyperslab offset in the file
-      hsize_t      count[2];    // size of the hyperslab in the file
-      offset[0] = 0;
-      offset[1] = 0;
-      count[0]  = dims_out[0];
-      count[1]  = dims_out[1]/2;
-      dataspace.selectHyperslab( H5S_SELECT_SET, count, offset );
+//   const int min_tang_pos_num = -(scanner_ptr->get_max_num_non_arccorrected_bins())/2;
+//   const int max_tang_pos_num = min_tang_pos_num +scanner_ptr->get_max_num_non_arccorrected_bins()- 1;
 
-      /*
-       * Define the memory dataspace.
-       */
-      hsize_t     dimsm[2];              /* memory space dimensions */
-      dimsm[0] = dims_out[0];
-      dimsm[1] = dims_out[1]/2;
-      DataSpace memspace( 2, dimsm );
-      /*
-       * Read data from hyperslab in the file into the hyperslab in
-       * memory and display the data.
-       */
-      Array<1,float> data(dimsm[0]*dimsm[1]);
-      dataset.read( data.get_data_ptr(), PredType::NATIVE_FLOAT, memspace, dataspace);
-      data.release_data_ptr();
-      std::copy(data.begin(), data.end(), efficiency_factors.begin_all());
-  }
+//    geometric_factors =
+//    Array<3,float>(IndexRange3D(0,15, 0,1981-1, //XXXXnrm_subheader_ptr->num_geo_corr_planes-1,
+//                                 min_tang_pos_num, max_tang_pos_num));
+
+//   {
+//         using namespace H5;
+//         using namespace std;
+//         int slice = 0;
+
+//     while ( slice < _num_time_slices) {
+
+//       std::cout<<"Now processing view"<< slice+1 <<std::endl;
+
+//       //PW Open the dataset from that file here.
+//        DataSet dataset = this->h5data.get_file().openDataSet("/SegmentData/Segment4/3D_Norm_Correction/slice%d", slice+1);
+
+//       /*
+//         * Get dataspace of the dataset.
+//         */
+//      DataSpace dataspace = dataset.getSpace();
+//        /*
+//         * Get the number of dimensions in the dataspace.
+//         */
+//       int rank = dataspace.getSimpleExtentNdims();
+//        /*
+//         * Get the dimension size of each dimension in the dataspace and
+//         * display them.
+//         */
+//       hsize_t dims_out[3];
+//        dataspace.getSimpleExtentDims( dims_out, NULL);
+//        /*
+//         * Define hyperslab in the dataset; implicitly giving strike and
+//         * block NULL.
+//         */
+//        hsize_t      offset[3];   // hyperslab offset in the file
+//        hsize_t      count[3];    // size of the hyperslab in the file
+//        offset[0] = 0;
+//        offset[1] = 0;
+//        offset[2] = 0;
+//        count[0]  = dims_out[0];
+//        count[1]  = dims_out[1];
+//        count[2]  = dims_out[2];
+//        dataspace.selectHyperslab( H5S_SELECT_SET, count, offset );
+
+//        /*
+//         * Define the memory dataspace.
+//         */
+//        hsize_t     dimsm[3];
+//        dimsm[0] = dims_out[0];
+//        dimsm[1] = dims_out[1];
+//        dimsm[2] = dims_out[2];
+//        DataSpace memspace( 3, dimsm );
+
+//       //PW Read data from hyperslab in the file into the hyperslab in memory.
+
+//        Array<1,int> buffer(dimsm[0]*dimsm[1]*dimsm[2]);
+//        dataset.read( buffer.get_data_ptr(), H5::PredType::NATIVE_INT, memspace, dataspace );
+//        buffer.release_data_ptr();
+
+//        std::copy(buffer.begin(), b7uffer.end(), tof_data.begin_all());
+//        Array<1,float> data();
+//        dataset.read( data[slice].get_data_ptr(), PredType::NATIVE_FLOAT, memspace, dataspace);
+//        data[slice].release_data_ptr();
+
+//        // Increment the slice index.
+//           ++slice;
+//  }
+//           for (int i = 0; i<= 15; i++)
+//           {
+//              geometric_factors[i][]
+//           }
+//            std::copy(data[slice].begin(), data[slice].end(), geometric_factors.begin_all());
+//                                  min_tang_pos_num, max_tang_pos_num));
+//    }
+
+
+//    efficiency_factors =
+//    Array<2,float>(IndexRange2D(0,scanner_ptr->get_num_rings()-1,
+//		   0, scanner_ptr->get_num_detectors_per_ring()-1));
+  
+
+//  {
+//    using namespace H5;
+//    using namespace std;
+
+//    DataSet dataset = this->h5data.get_file().openDataSet("/3DCrystalEfficiency/crystalEfficiency");
+//     /*
+//       * Get dataspace of the dataset.
+//       */
+//      DataSpace dataspace = dataset.getSpace();
+//      /*
+//       * Get the number of dimensions in the dataspace.
+//       */
+//      int rank = dataspace.getSimpleExtentNdims();
+//      /*
+//       * Get the dimension size of each dimension in the dataspace and
+//       * display them.
+//       */
+//      hsize_t dims_out[2];
+//      dataspace.getSimpleExtentDims( dims_out, NULL);
+//      cout << "rank " << rank << ", dimensions " <<
+//          (unsigned long)(dims_out[0]) << " x " <<
+//          (unsigned long)(dims_out[1]) << endl;
+//      /*
+//       * Define hyperslab in the dataset; implicitly giving strike and
+//       * block NULL.
+//       */
+//      hsize_t      offset[2];   // hyperslab offset in the file
+//      hsize_t      count[2];    // size of the hyperslab in the file
+//      offset[0] = 0;
+//      offset[1] = 0;
+//      count[0]  = dims_out[0];
+//      count[1]  = dims_out[1]/2;
+//      dataspace.selectHyperslab( H5S_SELECT_SET, count, offset );
+
+//      /*
+//       * Define the memory dataspace.
+//       */
+//      hsize_t     dimsm[2];              /* memory space dimensions */
+//      dimsm[0] = dims_out[0];
+//      dimsm[1] = dims_out[1]/2;
+//      DataSpace memspace( 2, dimsm );
+//      /*
+//       * Read data from hyperslab in the file into the hyperslab in
+//       * memory and display the data.
+//       */
+//      Array<1,float> data(dimsm[0]*dimsm[1]);
+//      dataset.read( data.get_data_ptr(), PredType::NATIVE_FLOAT, memspace, dataspace);
+//      data.release_data_ptr();
+//      std::copy(data.begin(), data.end(), efficiency_factors.begin_all());
+//  }
 
   
-#if 1
-   // to test pipe the obtained values into file
-    ofstream out_geom;
-    ofstream out_inter;
-    ofstream out_eff;
-    out_geom.open("geom_out.txt",ios::out);
-    out_inter.open("inter_out.txt",ios::out);
-    out_eff.open("eff_out.txt",ios::out);
+//#if 1
+//   // to test pipe the obtained values into file
+//    ofstream out_geom;
+//    ofstream out_inter;
+//    ofstream out_eff;
+//    out_geom.open("geom_out.txt",ios::out);
+//    out_inter.open("inter_out.txt",ios::out);
+//    out_eff.open("eff_out.txt",ios::out);
 
-    for ( int i = geometric_factors.get_min_index(); i<=geometric_factors.get_max_index();i++)
-    {
-      for ( int j =geometric_factors[i].get_min_index(); j <=geometric_factors[i].get_max_index(); j++)
-      {
-	 out_geom << geometric_factors[i][j] << "   " ;
-      }
-      out_geom << std::endl;
-    }
+//    for ( int i = geometric_factors.get_min_index(); i<=geometric_factors.get_max_index();i++)
+//    {
+//      for ( int j =geometric_factors[i].get_min_index(); j <=geometric_factors[i].get_max_index(); j++)
+//      {
+//	 out_geom << geometric_factors[i][j] << "   " ;
+//      }
+//      out_geom << std::endl;
+//    }
 
 
-   for ( int i = crystal_interference_factors.get_min_index(); i<=crystal_interference_factors.get_max_index();i++)
-   {
-      for ( int j =crystal_interference_factors[i].get_min_index(); j <=crystal_interference_factors[i].get_max_index(); j++)
-      {
-	 out_inter << crystal_interference_factors[i][j] << "   " ;
-      }
-      out_inter << std::endl;
-   }
+//   for ( int i = crystal_interference_factors.get_min_index(); i<=crystal_interference_factors.get_max_index();i++)
+//   {
+//      for ( int j =crystal_interference_factors[i].get_min_index(); j <=crystal_interference_factors[i].get_max_index(); j++)
+//      {
+//	 out_inter << crystal_interference_factors[i][j] << "   " ;
+//      }
+//      out_inter << std::endl;
+//   }
 
-   for ( int i = efficiency_factors.get_min_index(); i<=efficiency_factors.get_max_index();i++)
-   {
-      for ( int j =efficiency_factors[i].get_min_index(); j <=efficiency_factors[i].get_max_index(); j++)
-      {
-	 out_eff << efficiency_factors[i][j] << "   " ;
-      }
-      out_eff << std::endl<< std::endl;
-   }
+//   for ( int i = efficiency_factors.get_min_index(); i<=efficiency_factors.get_max_index();i++)
+//   {
+//      for ( int j =efficiency_factors[i].get_min_index(); j <=efficiency_factors[i].get_max_index(); j++)
+//      {
+//	 out_eff << efficiency_factors[i][j] << "   " ;
+//      }
+//      out_eff << std::endl<< std::endl;
+//   }
 
-#endif
+//#endif
 
-#if 0
-  display(geometric_factors, "geo");
-  display(efficiency_factors, "eff");
-  display(crystal_interference_factors, "crystal_interference_factors");
-#endif
+//#if 0
+//  display(geometric_factors, "geo");
+//  display(efficiency_factors, "eff");
+//  display(crystal_interference_factors, "crystal_interference_factors");
+//#endif
 }
 
 bool 

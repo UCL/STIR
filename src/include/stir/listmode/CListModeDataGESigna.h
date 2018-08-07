@@ -15,7 +15,6 @@
 #include "stir/listmode/CListModeData.h"
 #include "stir/listmode/CListRecordGESigna.h"
 #include "stir/IO/InputStreamWithRecordsFromHDF5.h"
-#include "stir/IO/HDF5Wrapper.h"
 #include "stir/shared_ptr.h"
 #include <iostream>
 #include <string>
@@ -60,7 +59,7 @@ public:
 
 private:
 
-  shared_ptr<HDF5Wrapper> input_sptr;
+//  shared_ptr<HDF5Wrapper> input_sptr;
 
   typedef CListRecordGESigna CListRecordT;
   std::string listmode_filename;
