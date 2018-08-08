@@ -14,6 +14,7 @@
 #include "stir/Succeeded.h"
 #include "stir/ExamInfo.h"
 #include "stir/info.h"
+#include "stir/IO/HDF5Wrapper.h"
 #include <boost/format.hpp>
 #include <iostream>
 #include <fstream>
@@ -76,17 +77,19 @@ open_lm_file()
      return Succeeded::no;
   }
 
-  input_sptr.reset( new HDF5Wrapper(listmode_filename));
+//  input_sptr.reset( new HDF5Wrapper(listmode_filename));
 
 
 #endif
-  CListModeData::scanner_sptr = input->get_scanner_sptr();
 
-  shared_ptr<H5::DataSet> dataset_list_sptr(new H5::DataSet(input->openDataSet("/ListData/listData")));
+  //! \todo N.E: Probably can do without the HDF5Wrapper here.
+  HDF5Wrapper inputFile(listmode_filename);
+  CListModeData::scanner_sptr = inputFile.get_scanner_sptr();
   
+  //! \todo N.E: Remove hard-coded sizes;
   current_lm_data_ptr.
   reset(
-        new InputStreamWithRecordsFromHDF5<CListRecordT>(dataset_list_sptr, 
+        new InputStreamWithRecordsFromHDF5<CListRecordT>(listmode_filename,
                                                                4, 16));
 
   return Succeeded::yes;

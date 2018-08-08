@@ -37,18 +37,22 @@ START_NAMESPACE_STIR
 class HDF5Wrapper
 {
 public:
-    //!
-    //! \brief GEHDF5Data
-    //! \details Default constructor
+
+    static bool check_GE_signature(const std::string filename);
+
     explicit HDF5Wrapper();
 
     explicit HDF5Wrapper(const std::string& filename);
 
     Succeeded open(const std::string& filename);
 
-    static bool check_GE_signature(const std::string filename);
+    Succeeded initialise_listmode_data(const std::string& path = "");
 
-    ~HDF5Wrapper() {}
+    void get_next_listmode(hsize_t &current_offset, shared_ptr<char>& data_sptr);
+
+    H5::DataSet* get_listmode_data_ptr() const;
+
+    int get_listmode_size() const;
 
     //! Get shared pointer to exam info
     /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
@@ -63,6 +67,8 @@ public:
     inline const H5::H5File& get_file() const
     { return file; }
 
+    ~HDF5Wrapper() {}
+
 protected:
 
     //    shared_ptr<ExamInfo> exam_info_sptr;
@@ -74,7 +80,39 @@ private:
 
     H5::H5File file;
 
+    shared_ptr<H5::DataSet> dataset_list_sptr;
+
+    H5::DataSpace m_dataspace;
+
+    H5::DataSpace* m_memspace_ptr;
+
+    uint64_t m_list_size = 0;
+
+    //    shared_ptr<H5::DataSet> dataset_norm_sptr;
+
+    //    shared_ptr<H5::DataSet> dataset_projdata_sptr;
+
+    //    shared_ptr<H5::DataSet> dataset_singles_sptr;
+
+    //    int dataset_singles_Ndims = 0;
+
+    //    int dataset_projdata_Ndims = 0;
+
+    //    int dataset_norm_Ndims = 0;
+
+    std::string m_listmode_address;
+
+    std::string m_singles_address;
+
+    std::string m_projdata_address;
+
+    std::string m_norm_address;
+
     bool is_signa = false;
+
+    hsize_t m_size_of_record_signature = 0;
+
+    hsize_t m_max_size_of_record = 0;
 
 };
 
