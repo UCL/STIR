@@ -92,9 +92,28 @@ Succeeded HDF5Wrapper::initialise_scanner_from_HDF5()
     H5::DataSet str_radial_modules_per_system = file.openDataSet("/HeaderData/SystemGeometry/radialModulesPerSystem");
 
     //! \todo P.W: Find the crystal gaps and other info missing.
+    H5::DataSet str_detector_axial_size = file.openDataSet("/HeaderData/SystemGeometry/detectorAxialSize");
+    H5::DataSet str_intrinsic_tilt = file.openDataSet("/HeaderData/SystemGeometry/transaxial_crystal_0_offset");
+    H5::DataSet str_max_number_of_non_arc_corrected_bins = file.openDataSet("/HeaderData/Sorter/dimension1Size");
 
     //! \todo Convert to numbers.
 
+    const int radial_blocks_per_module;
+    int radial_blocks_per_module =
+
+    int radial_blocks_per_module =  str_radial_blocks_per_module.read(& ,  H5::PredType::NATIVE_INT, )
+    int num_detectors_per_ring_v , int num_rings_v,
+    int max_num_non_arccorrected_bins_v,
+    int default_num_arccorrected_bins_v,
+    float inner_ring_radius_v, float average_depth_of_interaction_v,
+    float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
+    int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+    int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+            int num_axial_crystals_per_singles_unit_v,
+            int num_transaxial_crystals_per_singles_unit_v,
+            int num_detector_layers_v,
+            float energy_resolution_v,
+            float reference_energy_v
 //    scanner_sptr.reset(new Scanner(
 //                           ));
 
