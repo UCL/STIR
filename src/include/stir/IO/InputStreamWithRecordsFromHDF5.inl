@@ -94,12 +94,12 @@ get_next_record(RecordT& record)
   input_sptr->get_next(current_offset, data_sptr);
 
     // NE: Is this really meaningful?
-  {
+
   const std::size_t size_of_record =
     record.size_of_record_at_ptr(data_sptr.get(), this->size_of_record_signature, false);
 
   assert(size_of_record <= this->max_size_of_record);
-  }
+
 
   return
     record.init_from_data_ptr(data_sptr.get(), size_of_record,false);
