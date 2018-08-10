@@ -207,7 +207,7 @@ Succeeded HDF5Wrapper::initialise_listmode_data(const std::string &path)
 
     hsize_t dims_out[dataset_list_Ndims];
     m_dataspace.getSimpleExtentDims( dims_out, NULL);
-
+    m_list_size=dims_out[0];
     const long long unsigned int tmp_size_of_record_signature = m_size_of_record_signature;
     m_memspace_ptr = new H5::DataSpace( dataset_list_Ndims,
                             &tmp_size_of_record_signature);
