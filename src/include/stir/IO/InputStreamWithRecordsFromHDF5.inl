@@ -33,40 +33,36 @@
 
 START_NAMESPACE_STIR
 
-template <class RecordT>
-InputStreamWithRecordsFromHDF5<RecordT>::
-InputStreamWithRecordsFromHDF5(const shared_ptr<H5::DataSet>& dataset_sptr_v,
-                       const std::size_t size_of_record_signature,
-                       const std::size_t max_size_of_record)
-  : dataset_sptr(dataset_sptr_v),
-    size_of_record_signature(size_of_record_signature),
-    max_size_of_record(max_size_of_record)
-{
-  assert(size_of_record_signature<=max_size_of_record);
-  if (is_null_ptr(dataset_sptr))
-    return;
-  starting_stream_position = 0;
-  current_offset = 0;
-  //if (!dataset_sptr->good())
-  //  error("InputStreamWithRecordsFromHDF5: error in tellg()\n");
-}
+//template <class RecordT>
+//InputStreamWithRecordsFromHDF5<RecordT>::
+//InputStreamWithRecordsFromHDF5(const shared_ptr<H5::DataSet>& dataset_sptr_v,
+//                       const std::size_t size_of_record_signature,
+//                       const std::size_t max_size_of_record)
+//  : dataset_sptr(dataset_sptr_v),
+//    size_of_record_signature(size_of_record_signature),
+//    max_size_of_record(max_size_of_record)
+//{
+//  assert(size_of_record_signature<=max_size_of_record);
+//  if (is_null_ptr(dataset_sptr))
+//    return;
+//  starting_stream_position = 0;
+//  current_offset = 0;
+//  //if (!dataset_sptr->good())
+//  //  error("InputStreamWithRecordsFromHDF5: error in tellg()\n");
+//}
 
 template <class RecordT>
-InputStreamWithRecordsFromHDF5<RecordT>::
-InputStreamWithRecordsFromHDF5(const std::string filename,
-                               const std::size_t size_of_record_signature,
-                               const std::size_t max_size_of_record)
-  : m_filename(filename),
+        InputStreamWithRecordsFromHDF5<RecordT>::
+        InputStreamWithRecordsFromHDF5(const std::string filename,
+                                       const std::size_t size_of_record_signature,
+                                       const std::size_t max_size_of_record):
+    m_filename(filename),
     size_of_record_signature(size_of_record_signature),
     max_size_of_record(max_size_of_record)
 {
     assert(size_of_record_signature<=max_size_of_record);
-    //  if (is_null_ptr(dataset_sptr))
-    //    return;
     starting_stream_position = 0;
     current_offset = 0;
-    //  //if (!dataset_sptr->good())
-    //  //  error("InputStreamWithRecordsFromHDF5: error in tellg()\n");
 
     set_up();
 }
@@ -82,8 +78,7 @@ set_up()
     input_sptr->initialise_listmode_data();
     //! \todo edit
     m_list_size = input_sptr->get_listmode_size() - this->size_of_record_signature;
-    //! \todo remove from here
-    count[0] = this->size_of_record_signature;
+
     return Succeeded::yes;
 }
 
@@ -96,7 +91,15 @@ get_next_record(RecordT& record)
   if (current_offset > m_list_size)
       return Succeeded::no;
 
-  wrapper.get_next_listmode(current_offset, data_sptr);
+  input_sptr->get_next(current_offset, data_sptr);
+
+    // NE: Is this really meaningful?
+  {
+  const std::size_t size_of_record =
+    record.size_of_record_at_ptr(data_sptr.get(), this->size_of_record_signature, false);
+
+  assert(size_of_record <= this->max_size_of_record);
+  }
 
   return
     record.init_from_data_ptr(data_sptr.get(), size_of_record,false);
@@ -109,7 +112,7 @@ Succeeded
 InputStreamWithRecordsFromHDF5<RecordT>::
 reset()
 {
-  if (is_null_ptr(dataset_sptr))
+  if (is_null_ptr(input_sptr))
     return Succeeded::no;
 
   current_offset = 0;
@@ -122,7 +125,7 @@ typename InputStreamWithRecordsFromHDF5<RecordT>::SavedPosition
 InputStreamWithRecordsFromHDF5<RecordT>::
 save_get_position() 
 {
-  assert(!is_null_ptr(dataset_sptr));
+  assert(!is_null_ptr(input_sptr));
   // TODO should somehow check if tellg() worked and return an error if it didn't
 
   saved_get_positions.push_back(current_offset);
@@ -134,7 +137,7 @@ Succeeded
 InputStreamWithRecordsFromHDF5<RecordT>::
 set_get_position(const typename InputStreamWithRecordsFromHDF5<RecordT>::SavedPosition& pos)
 {
-  if (is_null_ptr(dataset_sptr))
+  if (is_null_ptr(input_sptr))
     return Succeeded::no;
 
   assert(pos < saved_get_positions.size());

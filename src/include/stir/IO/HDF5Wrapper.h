@@ -48,11 +48,11 @@ public:
 
     Succeeded initialise_listmode_data(const std::string& path = "");
 
-    void get_next_listmode(hsize_t &current_offset, shared_ptr<char>& data_sptr);
+    Succeeded get_next(std::streampos &current_offset, shared_ptr<char>& data_sptr);
 
     H5::DataSet* get_listmode_data_ptr() const;
 
-    int get_listmode_size() const;
+    hsize_t get_listmode_size() const;
 
     //! Get shared pointer to exam info
     /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
@@ -71,11 +71,13 @@ public:
 
 protected:
 
-    //    shared_ptr<ExamInfo> exam_info_sptr;
-
     Succeeded initialise_scanner_from_HDF5();
 
+    Succeeded initialise_exam_info();
+
     shared_ptr<Scanner> scanner_sptr;
+
+    shared_ptr<ExamInfo> exam_info_sptr;
 private:
 
     H5::H5File file;

@@ -71,10 +71,10 @@ public:
   //! Constructor taking a stream
   /*! Data will be assumed to start at the start of the DataSet.
       If reset() is used, it will go back to this starting position.*/ 
-  explicit
-    InputStreamWithRecordsFromHDF5(const shared_ptr<H5::DataSet>& ,
-                           const std::size_t size_of_record_signature,
-                           const std::size_t max_size_of_record);
+//  explicit
+//    InputStreamWithRecordsFromHDF5(const shared_ptr<H5::DataSet>& ,
+//                           const std::size_t size_of_record_signature,
+//                           const std::size_t max_size_of_record);
 
   explicit
     InputStreamWithRecordsFromHDF5(const std::string filename,
@@ -123,16 +123,11 @@ public:
 
 private:
 
-  shared_ptr<H5::DataSet> dataset_sptr;
-
   shared_ptr<HDF5Wrapper> input_sptr;
 
   shared_ptr<char> data_sptr;
 
   uint64_t m_list_size = 0 ;
-
-  hsize_t offset[1];   // hyperslab offset in the file
-  hsize_t count[1];    // size of the hyperslab in the file
 
   std::streampos starting_stream_position;
   mutable std::streampos current_offset;
