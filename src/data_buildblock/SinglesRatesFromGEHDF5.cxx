@@ -32,11 +32,8 @@
 #include "stir/round.h"
 #include "stir/stream.h"
 #include "stir/IO/HDF5Wrapper.h"
-#include "stir/listmode/CListModeDataGESigna.h"
-#include "H5Cpp.h"
 
 #include <vector>
-
 #include <fstream>
 #include <algorithm>
 #include <string>
@@ -121,8 +118,8 @@ get_end_time_slice_index(double t) const {
     slice_index = static_cast<int>(floor(t / _singles_time_interval));
   }
 
-  if ( slice_index >= _num_time_slices ) {
-    slice_index = _num_time_slices - 1;
+  if ( slice_index >= m_num_time_slices ) {
+    slice_index = m_num_time_slices - 1;
   } 
 
 
@@ -133,7 +130,7 @@ get_end_time_slice_index(double t) const {
   if ( _times[slice_index] < t ) {
     
     // Check forwards.
-    while( slice_index < _num_time_slices - 1 &&
+    while( slice_index < m_num_time_slices - 1 &&
            _times[slice_index] < t ) {
       slice_index++;
     }
@@ -166,8 +163,8 @@ get_start_time_slice_index(double t) const {
     slice_index = static_cast<int>(floor(t / _singles_time_interval));
   }
 
-  if ( slice_index >= _num_time_slices ) {
-    slice_index = _num_time_slices - 1;
+  if ( slice_index >= m_num_time_slices ) {
+    slice_index = m_num_time_slices - 1;
   } 
 
 
@@ -178,7 +175,7 @@ get_start_time_slice_index(double t) const {
   if ( _times[slice_index] < t ) {
     
     // Check forwards.
-    while( slice_index < _num_time_slices - 1 &&
+    while( slice_index < m_num_time_slices - 1 &&
            _times[slice_index] <= t ) {
       slice_index++;
     }
@@ -209,10 +206,10 @@ get_singles_rate(int singles_bin_index, int time_slice) const {
   int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
   
   if ( singles_bin_index < 0 || singles_bin_index >= total_singles_units ||
-       time_slice < 0 || time_slice >= _num_time_slices ) {
+       time_slice < 0 || time_slice >= m_num_time_slices ) {
     return(0);
   } else {
-    return _singles[time_slice][singles_bin_index];
+    return (*m_singles_sptr)[time_slice][singles_bin_index];
   }
 
 }
@@ -227,23 +224,21 @@ set_singles_rate(int singles_bin_index, int time_slice, int new_rate) {
   int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
   
   if ( singles_bin_index >= 0 && singles_bin_index < total_singles_units &&
-       time_slice >= 0 && time_slice < _num_time_slices ) {
-    _singles[time_slice][singles_bin_index] = new_rate;
+       time_slice >= 0 && time_slice < m_num_time_slices ) {
+    (*m_singles_sptr)[time_slice][singles_bin_index] = new_rate;
   }
 }
 
 
 
 
-int 
-SinglesRatesFromGEHDF5::
-rebin(std::vector<double>& new_end_times) {
+unsigned int SinglesRatesFromGEHDF5::rebin(std::vector<double>& new_end_times) {
 
   const int num_new_slices = new_end_times.size();
   const int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
   
   // Create the new array of singles data.
-  Array<2, int> new_singles = Array<2, int>(IndexRange2D(0, num_new_slices - 1, 
+  Array<2, unsigned int> new_singles = Array<2, unsigned int>(IndexRange2D(0, num_new_slices - 1,
                                                          0, total_singles_units - 1));
   
   
@@ -261,7 +256,7 @@ rebin(std::vector<double>& new_end_times) {
     double end_time = new_end_times[new_slice];
 
     // If start time is beyond last end time in original data, then use zeros.
-    if ( start_time > _times[_num_time_slices - 1] ) {
+    if ( start_time > _times[m_num_time_slices - 1] ) {
       for(int singles_bin = 0 ; singles_bin < total_singles_units ; ++singles_bin) {
         new_singles[new_slice][singles_bin] = 0;
       }
@@ -282,11 +277,11 @@ rebin(std::vector<double>& new_end_times) {
   
   
   // Set the singles and times using the new sets.
-  _singles = new_singles;
+  m_singles_sptr.reset(new Array<2, unsigned int>(new_singles));
   _times = new_end_times;
-  _num_time_slices = _times.size();
+  m_num_time_slices = _times.size();
   
-  return(_num_time_slices);
+  return(m_num_time_slices);
 }
 
 
@@ -300,10 +295,10 @@ SinglesRatesFromGEHDF5::get_times() const
 
 
 
-int
+unsigned int
 SinglesRatesFromGEHDF5:: 
 get_num_time_slices() const {
-  return(_num_time_slices);
+  return(m_num_time_slices);
 }
 
 
@@ -318,140 +313,53 @@ get_singles_time_interval() const {
 
 
 
-int
+unsigned int
 SinglesRatesFromGEHDF5::
 read_singles_from_listmode_file(const std::string& _listmode_filename)
 {
 
-//  int slice = 0;
+    unsigned int slice = 1;
 
-//  //PW Open the list mode file here.
-//      this->open( _listmode_filename );
-
-
-//  SinglesRates::scanner_sptr = GEHDF5Data::scanner_sptr;
-//   // Get total number of bins for this type of scanner.
-//  const int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
-
-////PW Get the total number of time slices from the HDF5 file format.
-
-//H5::DataSet dataset2=this->file.openDataSet("/HeaderData/SinglesHeader/numValidSamples");
-
-//dataset2.read(&_num_time_slices,H5::PredType::NATIVE_INT);
-//std::cout << "\n Number of time slices :  " << _num_time_slices << "\n\n";
+    //PW Open the list mode file here.
+    m_input_sptr.reset(new HDF5Wrapper(_listmode_filename));
 
 
-//  /* PW Modifies this bit to get th time slices from GE HDF5 instead of Sgl.
-//Calculate number of time slices from the length of the data (file size minus header).
-//  _num_time_slices =
-//    static_cast<int>((end_stream_position - static_cast<streampos>(512)) /
-//                     SIZE_OF_SINGLES_RECORD);
-//*/
+    SinglesRates::scanner_sptr = m_input_sptr->get_scanner_sptr();
+    // Get total number of bins for this type of scanner.
+    const int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
 
-//   // Allocate the main array.
-//  _singles = Array<2, int>(IndexRange2D(0, _num_time_slices - 1, 0, total_singles_units - 1));
+
+    m_num_time_slices = m_input_sptr->get_timefreme_definitions()->get_num_frames();
+
+    // Allocate the main array.
+    m_singles_sptr.reset(new Array<2, unsigned int>(IndexRange2D(0, m_num_time_slices - 1, 0, total_singles_units - 1)));
+
+    m_input_sptr->initialise_singles_data();
     
+    while ( slice < m_num_time_slices)
+    {
+        m_input_sptr->get_dataspace(slice, m_singles_sptr);
+        // Increment the slice index.
+        ++slice;
+    }
 
+    //PW Modify this bit of code too.
+    if (slice != m_num_time_slices)
+    {
+        error("\nSinglesRatesFromGEHDF5: Couldn't read all records in the file. Read %d of %d. Exiting\n",
+              slice, m_num_time_slices);
+        //TODO resize singles to return array with new sizes
+    }
 
+    _times = std::vector<double>(m_num_time_slices);
+    for(unsigned int slice = 0;slice < m_num_time_slices;++slice)
+        _times[slice] = slice+1.0;
 
-//  while ( slice < _num_time_slices) {
+    assert(_times.size()!=0);
+    _singles_time_interval = _times[1] - _times[0];
 
-
-////PW Open the dataset from that file here.
-// char datasetname[300];
-// sprintf(datasetname,"/Singles/CrystalSingles/sample%d", slice+1 );
-//H5::DataSet dataset=this->file.openDataSet(datasetname);
-
-//const int    NX_SUB = 45;    // hyperslab dimensions
-//const int    NY_SUB = 448;
-//const int    NX = 45;        // output buffer dimensions
-//const int    NY = 448;
-//const int    RANK_OUT = 2;
-
-////PW Now find out the type of this dataset.
-//      H5T_class_t type_class = dataset.getTypeClass();
-
-////PW Get datatype class and print it out.
-
-//      if( type_class == H5T_INTEGER )
-//      {
-////PW Get the integer type
-
-//     H5::IntType intype = dataset.getIntType();
-     
-//	H5std_string order_string;
-//         H5T_order_t order = intype.getOrder( order_string );
-
-//          //PW Get size of the data element stored in file and print it.
- 
-//         size_t size = intype.getSize();
-//      }
-
-////PW Get dataspace of the dataset.
-//      H5::DataSpace dataspace = dataset.getSpace();
-
-////PW Get the number of dimensions in the dataspace.
-//      int rank = dataspace.getSimpleExtentNdims();
-
-////PW Get the dimension size of each dimension in the dataspace and display them.
-      
-//      hsize_t dims_out[2];
-//      int ndims = dataspace.getSimpleExtentDims( dims_out, NULL);
-
-////PW Define hyperslab in the dataset; implicitly giving strike and block NULL.
-  
-//      hsize_t offset[2];   // TODO hyperslab offset in the file
-//      hsize_t count[2];    // TODO size of the hyperslab in the file
-//      offset[0] = 0;
-//      offset[1] = 0;
-//      count[0]  = NX_SUB;
-//      count[1]  = NY_SUB;
-//      dataspace.selectHyperslab( H5S_SELECT_SET, count, offset );
-////PW Define the memory dataspace.
-//      hsize_t dimsm[2];              /* TODO memory space dimensions */
-//      dimsm[0] = NX;
-//      dimsm[1] = NY;
-//      H5::DataSpace memspace( RANK_OUT, dimsm );
-     
-////PW Define memory hyperslab.
-
-//      hsize_t      offset_out[2];   // hyperslab offset in memory
-//      hsize_t      count_out[2];    // size of the hyperslab in memory
-//      offset_out[0] = 0;
-//      offset_out[1] = 0;
-//      count_out[0]  = NX_SUB;
-//      count_out[1]  = NY_SUB;
-//      memspace.selectHyperslab( H5S_SELECT_SET, count_out, offset_out );
-////PW Read data from hyperslab in the file into the hyperslab in memory.
-
-//      dataset.read( _singles[slice].get_data_ptr(), H5::PredType::NATIVE_INT, memspace, dataspace );
-//      _singles[slice].release_data_ptr();
-
-
-// // Increment the slice index.
-//    ++slice;
-    
-//  }
-
-
-//  //PW Modify this bit of code too.
-//  if (slice != _num_time_slices)
-//  {
-//    error("\nSinglesRatesFromGEHDF5: Couldn't read all records in the file. Read %d of %d. Exiting\n",
-//     slice, _num_time_slices);
-//    //TODO resize singles to return array with new sizes
-//  }
-
-//  _times = std::vector<double>(_num_time_slices);
-//   for(int slice = 0;slice < _num_time_slices;++slice)
-//    _times[slice] = slice+1.0;
-
-//  assert(_times.size()!=0);
-//  _singles_time_interval = _times[1] - _times[0];
-
-
-//  // Return number of time slices read.
-//  return slice;
+    // Return number of time slices read.
+    return slice;
     
 }
 
@@ -463,7 +371,7 @@ read_singles_from_listmode_file(const std::string& _listmode_filename)
 std::ostream& 
 SinglesRatesFromGEHDF5::write(std::ostream& output) {
 
-  output << _singles << std::endl;
+  output << (*m_singles_sptr) << std::endl;
 
   return output;
 }
@@ -488,7 +396,7 @@ get_singles_rate(const int singles_bin_index,
 
   if ( start_slice == end_slice ) {
     // If the start and end slices are the same then just use that time slice.
-    total_singles = static_cast<double>(_singles[start_slice][singles_bin_index]);
+    total_singles = static_cast<double>((*m_singles_sptr)[start_slice][singles_bin_index]);
   } else {
     
     // Start and end times for starting and ending slices.
@@ -518,7 +426,7 @@ get_singles_rate(const int singles_bin_index,
     total_slices = fraction;
     
     // Set the total singles so far to be the fraction of the bin.
-    total_singles = fraction * _singles[start_slice][singles_bin_index];
+    total_singles = fraction * (*m_singles_sptr)[start_slice][singles_bin_index];
     
     
     
@@ -535,12 +443,12 @@ get_singles_rate(const int singles_bin_index,
     total_slices += fraction;
     
     // Add the fraction of the bin to the running total.
-    total_singles += fraction * _singles[end_slice][singles_bin_index];
+    total_singles += fraction * (*m_singles_sptr)[end_slice][singles_bin_index];
  
     
     // Add all intervening slices.
     for(int slice = start_slice + 1; slice < end_slice ; ++slice, total_slices += 1.0) {
-      total_singles += _singles[slice][singles_bin_index];
+      total_singles += (*m_singles_sptr)[slice][singles_bin_index];
     }
     
     
@@ -612,8 +520,8 @@ double
 SinglesRatesFromGEHDF5::
 get_slice_start(int slice_index) const {
 
-  if ( slice_index >= _num_time_slices ) {
-    slice_index = _num_time_slices - 1;
+  if ( slice_index >= m_num_time_slices ) {
+    slice_index = m_num_time_slices - 1;
   }
   
   if ( slice_index == 0 ) {

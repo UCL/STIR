@@ -77,7 +77,7 @@ set_up()
 
     input_sptr->initialise_listmode_data();
     //! \todo edit
-    m_list_size = input_sptr->get_listmode_size() - this->size_of_record_signature;
+    m_list_size = input_sptr->get_dataset_size() - this->size_of_record_signature;
 
     return Succeeded::yes;
 }
@@ -91,7 +91,7 @@ get_next_record(RecordT& record)
   if (current_offset > m_list_size)
       return Succeeded::no;
 
-  input_sptr->get_next(current_offset, data_sptr);
+  input_sptr->get_from_dataspace(current_offset, data_sptr);
 
     // NE: Is this really meaningful?
 

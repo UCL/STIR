@@ -27,6 +27,7 @@
 #include "stir/ExamInfo.h"
 #include "stir/Scanner.h"
 #include "stir/Succeeded.h"
+#include "stir/Array.h"
 
 #include "H5Cpp.h"
 
@@ -48,11 +49,18 @@ public:
 
     Succeeded initialise_listmode_data(const std::string& path = "");
 
-    Succeeded get_next(std::streampos &current_offset, shared_ptr<char>& data_sptr);
+    Succeeded initialise_singles_data(const std::string& path = "");
 
-    H5::DataSet* get_listmode_data_ptr() const;
+    Succeeded get_from_dataspace(std::streampos &current_offset, shared_ptr<char>& data_sptr);
 
-    hsize_t get_listmode_size() const;
+    Succeeded get_dataspace(const unsigned int current_id,
+                                         shared_ptr<Array<2, unsigned int> > &data_sptr);
+
+    H5::DataSet* get_dataset_ptr() const;
+
+    hsize_t get_dataset_size() const;
+
+    TimeFrameDefinitions* get_timefreme_definitions() const;
 
     //! Get shared pointer to exam info
     /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
@@ -82,7 +90,7 @@ private:
 
     H5::H5File file;
 
-    shared_ptr<H5::DataSet> dataset_list_sptr;
+    shared_ptr<H5::DataSet> m_dataset_sptr;
 
     H5::DataSpace m_dataspace;
 
@@ -102,19 +110,18 @@ private:
 
     //    int dataset_norm_Ndims = 0;
 
-    std::string m_listmode_address;
-
-    std::string m_singles_address;
-
-    std::string m_projdata_address;
-
-    std::string m_norm_address;
+    std::string m_address;
 
     bool is_signa = false;
 
     hsize_t m_size_of_record_signature = 0;
 
     hsize_t m_max_size_of_record = 0;
+
+    int m_NX_SUB = 0;    // hyperslab dimensions
+    int m_NY_SUB = 0;
+    int m_NX = 0;        // output buffer dimensions
+    int m_NY = 0;
 
 };
 

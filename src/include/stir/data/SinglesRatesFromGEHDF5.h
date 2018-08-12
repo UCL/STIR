@@ -57,7 +57,7 @@ public:
 
 //PW Would not touch this.
  //! Default constructor 
- SinglesRatesFromGEHDF5();
+ explicit SinglesRatesFromGEHDF5();
 
  // implementation of pure virtual in SinglesRates
  virtual float
@@ -136,7 +136,7 @@ public:
  //! Rebin the .BLF slices into a different set of consecutive slices.
  //
  // Returns the number of new bins.
- int rebin(std::vector<double>& new_end_times);
+ unsigned int rebin(std::vector<double>& new_end_times);
  
   
  //! Get the vector of time values for each time slice index.
@@ -146,7 +146,7 @@ public:
  // Some inspectors
 
  //! Return the number of time slices.
- int get_num_time_slices() const;
+ unsigned int get_num_time_slices() const;
 
  
  //! Return the time interval per slice of singles data.
@@ -156,7 +156,7 @@ public:
  // IO Methods
 //PW Reading singles from .sgl changed to .BLF file format. Adapt from GE HDF5 listmode file read.
  //! The function that reads singles from *.sgl file.
- int read_singles_from_listmode_file(const std::string& _listmode_filename);
+ unsigned int read_singles_from_listmode_file(const std::string& _listmode_filename);
 
  /*!
   * \brief Write the SinglesRatesFromGEHDF5 object to a stream.
@@ -170,7 +170,9 @@ public:
 private:
  
  // Indexed by time slice and singles bin index.
- Array<2, int> _singles;
+ shared_ptr<Array<2, unsigned int> > m_singles_sptr;
+
+ shared_ptr<HDF5Wrapper> m_input_sptr;
  
  std::vector<double> _times;
  std::vector<int> _total_prompts;
@@ -181,7 +183,7 @@ private:
  Main_header _singles_main_header;
 #endif
 
- int _num_time_slices;
+ unsigned int m_num_time_slices = 0;
 
  // A value of zero for _singles_time_interval indicates that the time slices
  // are of different lengths.

@@ -1,4 +1,5 @@
 #include "stir/IO/HDF5Wrapper.h"
+#include <sstream>
 
 START_NAMESPACE_STIR
 
@@ -44,17 +45,23 @@ HDF5Wrapper::get_scanner_sptr() const
 shared_ptr<ExamInfo>
 HDF5Wrapper::get_exam_info_sptr() const
 {
-//    return this->exam_info_sptr;
+    return this->exam_info_sptr;
 }
 
-H5::DataSet* HDF5Wrapper::get_listmode_data_ptr() const
+H5::DataSet* HDF5Wrapper::get_dataset_ptr() const
 {
-    return dataset_list_sptr.get();
+    return m_dataset_sptr.get();
 }
 
-hsize_t HDF5Wrapper::get_listmode_size() const
+hsize_t HDF5Wrapper::get_dataset_size() const
 {
     return m_list_size;
+}
+
+TimeFrameDefinitions* HDF5Wrapper::get_timefreme_definitions() const
+{
+    //! \todo For examInfo get timeframe definitions
+    return &exam_info_sptr->time_frame_definitions;
 }
 
 Succeeded
@@ -120,20 +127,20 @@ Succeeded HDF5Wrapper::initialise_scanner_from_HDF5()
     H5::DataSet str_radial_crystals_per_block = file.openDataSet("/HeaderData/SystemGeometry/radialCrystalsPerBlock");
     //! \todo Convert to numbers.
 
-    str_radial_blocks_per_module.read(&num_transaxial_blocks_per_bucket, H5T_INTEGER);
-    str_axial_blocks_per_module.read(&num_axial_blocks_per_bucket, H5T_INTEGER);
-    str_axial_blocks_per_unit.read(&axial_blocks_per_unit, H5T_INTEGER);
-    str_radial_blocks_per_unit.read(&radial_blocks_per_unit, H5T_INTEGER);
-    str_axial_units_per_module.read(&axial_units_per_module, H5T_INTEGER);
-    str_radial_units_per_module.read(&radial_units_per_module, H5T_INTEGER);
-    str_axial_modules_per_system.read(&axial_modules_per_system, H5T_INTEGER);
-    str_radial_modules_per_system.read(&radial_modules_per_system, H5T_INTEGER);
-    str_inner_ring_diameter.read(&inner_ring_diameter, H5T_FLOAT);
-    str_detector_axial_size.read(&detector_axial_size, H5T_FLOAT);
-    str_intrinsic_tilt.read(&intrinsic_tilt, H5T_FLOAT);
-    str_max_number_of_non_arc_corrected_bins.read(&max_num_non_arccorrected_bins, H5T_INTEGER);
-    str_radial_crystals_per_block.read(&num_transaxial_crystals_per_block, H5T_INTEGER);
-    str_axial_crystals_per_block.read(&num_axial_crystals_per_block, H5T_INTEGER);
+    str_radial_blocks_per_module.read(&num_transaxial_blocks_per_bucket, H5::PredType::NATIVE_UINT32);
+    str_axial_blocks_per_module.read(&num_axial_blocks_per_bucket, H5::PredType::NATIVE_UINT32);
+    str_axial_blocks_per_unit.read(&axial_blocks_per_unit, H5::PredType::NATIVE_UINT32);
+    str_radial_blocks_per_unit.read(&radial_blocks_per_unit, H5::PredType::NATIVE_UINT32);
+    str_axial_units_per_module.read(&axial_units_per_module, H5::PredType::NATIVE_UINT32);
+    str_radial_units_per_module.read(&radial_units_per_module, H5::PredType::NATIVE_UINT32);
+    str_axial_modules_per_system.read(&axial_modules_per_system, H5::PredType::NATIVE_UINT32);
+    str_radial_modules_per_system.read(&radial_modules_per_system, H5::PredType::NATIVE_UINT32);
+    str_inner_ring_diameter.read(&inner_ring_diameter, H5::PredType::NATIVE_FLOAT);
+    str_detector_axial_size.read(&detector_axial_size, H5::PredType::NATIVE_FLOAT);
+    str_intrinsic_tilt.read(&intrinsic_tilt, H5::PredType::NATIVE_FLOAT);
+    str_max_number_of_non_arc_corrected_bins.read(&max_num_non_arccorrected_bins, H5::PredType::NATIVE_UINT32);
+    str_radial_crystals_per_block.read(&num_transaxial_crystals_per_block, H5::PredType::NATIVE_UINT32);
+    str_axial_crystals_per_block.read(&num_axial_crystals_per_block, H5::PredType::NATIVE_UINT32);
 
     int num_rings  = num_axial_blocks_per_bucket*num_axial_crystals_per_block*axial_modules_per_system;
     int num_detectors_per_ring = num_transaxial_blocks_per_bucket*num_transaxial_crystals_per_block*radial_modules_per_system;
@@ -176,7 +183,24 @@ Succeeded HDF5Wrapper::initialise_exam_info()
 //    exam_info_sptr->set_high_energy_thres();
 //    exam_info_sptr->set_low_energy_thres();
 
-//    exam_info_sptr->set_time_frame_definitions();
+
+    //! \todo convert time slices to timeFrameDefinitions
+    //NE Copied from SignesRatesFromGEHDF5:
+    //PW Get the total number of time slices from the HDF5 file format.
+
+    unsigned int num_time_slices = 0;
+    H5::DataSet timeframe_dataspace = file.openDataSet("/HeaderData/SinglesHeader/numValidSamples");
+    timeframe_dataspace.read(&num_time_slices, H5::PredType::NATIVE_UINT32);
+    std::vector<std::pair<double, double> >tf(num_time_slices);
+
+    for (int i = 0; i < num_time_slices; ++i)
+    {
+        tf[i].first = i;
+        tf[i].second = i + 1;
+    }
+
+    TimeFrameDefinitions tm(tf);
+    exam_info_sptr->set_time_frame_definitions(tm);
 
     return Succeeded::yes;
 }
@@ -187,7 +211,7 @@ Succeeded HDF5Wrapper::initialise_listmode_data(const std::string &path)
     {
         if(is_signa)
         {
-            m_listmode_address = "/ListData/listData";
+            m_address = "/ListData/listData";
             //! \todo Get these numbers from the HDF5 file
             {
             m_size_of_record_signature = 6;
@@ -198,11 +222,11 @@ Succeeded HDF5Wrapper::initialise_listmode_data(const std::string &path)
             return Succeeded::no;
     }
     else
-        m_listmode_address = path;
+        m_address = path;
 
-    dataset_list_sptr.reset(new H5::DataSet(file.openDataSet(m_listmode_address)));
+    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(m_address)));
 
-    m_dataspace = dataset_list_sptr->getSpace();
+    m_dataspace = m_dataset_sptr->getSpace();
     int dataset_list_Ndims = m_dataspace.getSimpleExtentNdims();
 
     hsize_t dims_out[dataset_list_Ndims];
@@ -216,14 +240,52 @@ Succeeded HDF5Wrapper::initialise_listmode_data(const std::string &path)
     return Succeeded::yes;
 }
 
+Succeeded HDF5Wrapper::initialise_singles_data(const std::string &path)
+{
+    if(path.size() == 0)
+    {
+        if(is_signa)
+        {
+            m_address = "/Singles/CrystalSingles/sample";
+            //! \todo Get these numbers from the HDF5 file
+            {
+                m_NX_SUB = 45;    // hyperslab dimensions
+                m_NY_SUB = 448;
+                m_NX = 45;        // output buffer dimensions
+                m_NY = 448;
+            }
+        }
+        else
+            return Succeeded::no;
+    }
+    else
+        m_address = path;
 
-Succeeded HDF5Wrapper::get_next(std::streampos& current_offset, shared_ptr<char>& data_sptr)
+    return Succeeded::yes;
+}
+
+
+Succeeded HDF5Wrapper::get_from_dataspace(std::streampos& current_offset, shared_ptr<char>& data_sptr)
 {
 
     hsize_t pos = static_cast<hsize_t>(current_offset);
     m_dataspace.selectHyperslab( H5S_SELECT_SET, &m_size_of_record_signature, &pos );
-    dataset_list_sptr->read( data_sptr.get(), H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace );
+    m_dataset_sptr->read( data_sptr.get(), H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace );
     current_offset += static_cast<std::streampos>(m_size_of_record_signature);
+
+    //  // TODO error checking
+    return Succeeded::yes;
+}
+
+Succeeded HDF5Wrapper::get_dataspace(const unsigned int current_id,
+                                     shared_ptr<Array<2, unsigned int> >& data_sptr)
+{
+    std::ostringstream datasetname;
+    datasetname << m_address << current_id;
+    std::string rm = datasetname.str();
+    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
+    m_dataset_sptr->read( (*data_sptr)[current_id].get_data_ptr(), H5::PredType::NATIVE_UINT32);
+    (*data_sptr)[current_id].release_data_ptr();
 
     //  // TODO error checking
     return Succeeded::yes;
