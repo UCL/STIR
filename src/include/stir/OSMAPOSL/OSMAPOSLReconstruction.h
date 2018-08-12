@@ -194,12 +194,12 @@ public:
   //! used to check acceptable parameter ranges, etc...
   virtual bool post_processing();
 
-  void compute_sub_gradient_without_penalty_plus_sensitivity(
+  virtual void compute_sub_gradient_without_penalty_plus_sensitivity(
     TargetT& gradient, const TargetT &current_estimate, const int subset_num);
 
-  const TargetT& get_subset_sensitivity(const int subset_num);
+  virtual const TargetT& get_subset_sensitivity(const int subset_num);
 
-  void apply_multiplicative_update(
+  virtual void apply_multiplicative_update(
     TargetT& current_image_estimate, const TargetT& multiplicative_update_image);
  
 private:
