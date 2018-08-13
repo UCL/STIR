@@ -5,17 +5,18 @@
   \file
   \ingroup projdata
 
-  \brief Declaration of class stir::ProjDataGEAdvance
+  \brief Declaration of class stir::ProjDataFromGEHDF5
 
-  \author Damiano Belluzzo
+  \author Palak Wadhwa
+  \author Nikos Efthimiou
   \author Kris Thielemans
-  \author PARAPET project
 
 
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2018 University of Leeds
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,10 +31,10 @@
 
     See STIR/LICENSE.txt for details
 */
-#ifndef __ProjDataFromHDF5_H__
-#define __ProjDataFromHDF5_H__
+#ifndef __ProjDataFromGEHDF5_H__
+#define __ProjDataFromGEHDF5_H__
 
-#include "stir/ProjData.h" 
+#include "stir/ProjData.h"
 #include "stir/NumericType.h"
 #include "stir/ByteOrder.h"
 #include "stir/IO/HDF5Wrapper.h"
@@ -47,27 +48,23 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup projdata
-  \brief A class which reads projection data from a GE Advance
+  \brief A class which reads projection data from a GE HDF5
   sinogram file.
 
-  \warning support is still very basic. It assumes max_ring_diff == 11 and arc-corrected data.
-  The sinogram has to be extracted from the database using the "official" GE BREAKPOINT strategy.
-  (the file should contain 281 bins x 265 segments x 336 views.)
-
-  No writing yet.
+  \warning support is still very basic.
 
 */
-class ProjDataFromHDF5 : public ProjData
+class ProjDataFromHDF5 : public ProjData, public HDF5Wrapper
 {
 public:
     
     static ProjDataFromHDF5* ask_parameters(const bool on_disk = true);
     
-    explicit ProjDataFromHDF5 (const std::string& sinogram_filename);
+    explicit   ProjDataFromHDF5 (const shared_ptr<ExamInfo> &exam_info_sptr, const shared_ptr<ProjDataInfo> &proj_data_info_ptr, HDF5Wrapper* s);
 
-    explicit ProjDataFromHDF5 (const std::string& sinogram_filename);
+//    explicit ProjDataFromHDF5 (const std::string& sinogram_filename);
 
-    explicit ProjDataFromHDF5 (const std::string& sinogram_filename);
+//    explicit ProjDataFromHDF5 (const std::string& sinogram_filename);
   
     //! Get Viewgram<float> 
     Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const;
@@ -89,6 +86,8 @@ private:
   //offset of the whole 3d sinogram in the stream
   std::streamoff  offset;
   
+  const std::string _sinogram_filename;
+
   HDF5Wrapper* input;
 
   NumericType on_disk_data_type;

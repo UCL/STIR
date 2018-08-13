@@ -6,6 +6,7 @@
   \brief Implementations for class stir::ProjDataGEAdvance
 
   \author Palak Wadhwa
+  \author Nikos Efthimiou
   \author Kris Thielemans
 
 */
@@ -30,7 +31,7 @@
 
 
 
-#include "stir/ProjDataFromGEHDF5.h"
+#include "stir/ProjDataFromHDF5.h"
 #include "stir/Succeeded.h"
 #include "stir/Viewgram.h"
 #include "stir/Sinogram.h"
@@ -39,6 +40,8 @@
 #include "stir/IO/read_data.h"
 #include "stir/IndexRange.h"
 #include "stir/IndexRange3D.h"
+#include "stir/IO/HDF5Wrapper.h"
+#include "H5Cpp.h"
 
 #include <vector>
 #include <algorithm>
@@ -56,15 +59,13 @@ using std::streamoff;
 
 START_NAMESPACE_STIR
 
-ProjDataFromHDF5::ProjDataFromHDF5(const std::string& sinogram_filename)
+ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ExamInfo> const& exam_info_sptr,
+                                   shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
+                                   HDF5Wrapper* s)
   :
-  sino_stream(s),
-  offset(0),
-  on_disk_data_type(NumericType::SHORT),
-  on_disk_byte_order(ByteOrder::big_endian)
+   ProjData(exam_info_sptr, proj_data_info_ptr), input()
 {  
-    _sinogram_filename=sinogram_filename;
-
+     shared_ptr<ExamInfo> exam_info_ptr=s->get_exam_info_sptr();
 }
   
 Viewgram<float>
@@ -72,6 +73,11 @@ ProjDataFromHDF5::
 get_viewgram(const int view_num, const int segment_num,
              const bool make_num_tangential_poss_odd) const
   {
+
+    this->input->open(_sinogram_filename);
+
+    using namespace H5;
+    using namespace std;
 
 Viewgram<float> viewgram = get_empty_viewgram(view_num,segment_num,make_num_tangential_poss_odd);
       /* PW Modifies this bit to get th time slices from GE HDF5 instead of Sgl.
@@ -81,15 +87,14 @@ Viewgram<float> viewgram = get_empty_viewgram(view_num,segment_num,make_num_tang
                          SIZE_OF_SINGLES_RECORD);
     */
        // Allocate the main array.
-    
+
 
      // while ( slice < _num_time_slices) {
-
-    this->open(&_sinogram_filename);
     //PW Open the dataset from that file here.
      char datasetname[300];
      sprintf(datasetname,"/SegmentData/Segment2/3D_TOF_Sinogram/view%d", viewgram.get_view_num() );
-   H5::DataSet dataset=this->file.openDataSet(datasetname);
+
+   H5::DataSet dataset=this->input->get_file().openDataSet(datasetname);
 
    const int    NX_SUB = 1981;    // hyperslab dimensions
     const int    NY_SUB = 27;
@@ -166,11 +171,26 @@ Viewgram<float> viewgram = get_empty_viewgram(view_num,segment_num,make_num_tang
           buffer.release_data_ptr();
 
           std::copy(buffer.begin(), buffer.end(), tof_data.begin_all());
-          for (int ax_pos= viewgram.get_min_axial_pos_num();ax_pos = viewgram.get_max_axial_pos_num();ax_pos++)
-    {
-              viewgram[ax_pos] = tof_data[ax_pos - viewgram.get_min_axial_pos_num()].sum();
-}
 
+      for (int tangential_pos = viewgram.get_min_tangential_pos_num(); tangential_pos = viewgram.get_max_tangential_pos_num();tangential_pos++)
+      for (int ax_pos= viewgram.get_min_axial_pos_num();ax_pos = viewgram.get_max_axial_pos_num();ax_pos++)
+    {
+              viewgram[ax_pos][tangential_pos] = tof_data[ax_pos - viewgram.get_min_axial_pos_num()].sum();
+}
+              ofstream write_tof_data;
+              write_tof_data.open("uncompressed_sino_tof_data.txt",ios::out);
+              for ( int i =tof_data.get_min_index(); i<=tof_data.get_max_index();i++)
+              {
+                 for ( int j =tof_data[i].get_min_index(); j <=tof_data[i].get_max_index(); j++)
+                 {
+                     for(int k =tof_data[i][j].get_min_index(); k <=tof_data[i][j].get_max_index(); k++)
+                 {
+                         write_tof_data << tof_data[i][j][k] << "   " ;
+                 }
+                 write_tof_data << std::endl;
+              }
+}
+      return viewgram;
 }
 
 

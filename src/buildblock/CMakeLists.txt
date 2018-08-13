@@ -14,6 +14,7 @@ set(${dir_LIB_SOURCES}
   ArcCorrection 
   ProjDataFromStream  
   ProjDataGEAdvance
+  ProjDataFromHDF5
   ProjDataInMemory 
   ProjDataInterfile 
   Scanner 

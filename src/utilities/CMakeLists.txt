@@ -56,6 +56,7 @@ set(${dir_EXE_SOURCES}
 	calculate_attenuation_coefficients 
 	attenuation_coefficients_to_projections 
         conv_GATE_raw_ECAT_projdata_to_interfile
+	conv_GEHDF5_to_interfile
         conv_gipl_to_interfile
         conv_interfile_to_gipl
         shift_image
