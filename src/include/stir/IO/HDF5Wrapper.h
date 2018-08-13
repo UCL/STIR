@@ -51,7 +51,12 @@ public:
 
     Succeeded initialise_singles_data(const std::string& path = "");
 
+    Succeeded initialise_proj_data_data(const std::string& path = "");
+
     Succeeded get_from_dataspace(std::streampos &current_offset, shared_ptr<char>& data_sptr);
+
+    Succeeded get_dataspace(const unsigned int current_id,
+                                         Array<1, unsigned int> &data_ptr);
 
     Succeeded get_dataspace(const unsigned int current_id,
                                          shared_ptr<Array<2, unsigned int> > &data_sptr);

@@ -318,7 +318,7 @@ SinglesRatesFromGEHDF5::
 read_singles_from_listmode_file(const std::string& _listmode_filename)
 {
 
-    unsigned int slice = 1;
+    unsigned int slice = 0;
 
     //PW Open the list mode file here.
     m_input_sptr.reset(new HDF5Wrapper(_listmode_filename));
@@ -338,8 +338,7 @@ read_singles_from_listmode_file(const std::string& _listmode_filename)
     
     while ( slice < m_num_time_slices)
     {
-        m_input_sptr->get_dataspace(slice, m_singles_sptr);
-        // Increment the slice index.
+        m_input_sptr->get_dataspace(slice+1, (*m_singles_sptr)[slice] );
         ++slice;
     }
 
