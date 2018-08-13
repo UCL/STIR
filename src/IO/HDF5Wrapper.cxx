@@ -158,23 +158,27 @@ Succeeded HDF5Wrapper::initialise_scanner_from_HDF5()
     int num_axial_crystals_per_singles_unit =1;
     int num_transaxial_crystals_per_singles_unit =1;
 
-
-
-//    scanner_sptr.reset(new Scanner(  ,
-//    int num_rings,
-//    int max_num_non_arccorrected_bins,
-//    int num_detectors_per_ring,
-//    float inner_ring_radius,
-//    float average_depth_of_interaction,
-//    float ring_spacing,
-//    float bin_size, float intrinsic_tilt,
-//    int num_axial_blocks_per_bucket, int num_transaxial_blocks_per_bucket,
-//    int num_axial_crystals_per_block, int num_transaxial_crystals_per_block,
-//    int num_axial_crystals_per_singles_unit,
-//    int num_transaxial_crystals_per_singles_unit,
-//    int num_detector_layers,
-//    float energy_resolution = -1.0f,
-//    float reference_energy = -1.0f));
+    //PW Not sure what to put for scanner here.
+    this->scanner_sptr.reset(new Scanner(Scanner::User_defined_scanner));
+    scanner_sptr->set_num_rings(num_rings);
+    scanner_sptr->set_max_num_non_arccorrected_bins(max_num_non_arccorrected_bins);
+    scanner_sptr->set_default_num_arccorrected_bins(default_num_arccorrected_bins);
+    scanner_sptr->set_num_detectors_per_ring(num_detectors_per_ring);
+    scanner_sptr->set_inner_ring_radius(inner_ring_radius);
+    scanner_sptr->set_average_depth_of_interaction(average_depth_of_interaction);
+    scanner_sptr->set_ring_spacing(ring_spacing);
+    scanner_sptr->set_default_bin_size(bin_size);
+    scanner_sptr->set_default_intrinsic_tilt(intrinsic_tilt);
+    scanner_sptr->set_num_axial_blocks_per_bucket(num_axial_blocks_per_bucket);
+    scanner_sptr->set_num_transaxial_blocks_per_bucket(num_transaxial_blocks_per_bucket);
+    scanner_sptr->set_ring_spacing(ring_spacing);
+    scanner_sptr->set_num_axial_crystals_per_block(num_axial_crystals_per_block);
+    scanner_sptr->set_num_transaxial_crystals_per_block(num_transaxial_crystals_per_block);
+    scanner_sptr->set_num_axial_crystals_per_singles_unit(num_axial_crystals_per_singles_unit);
+    scanner_sptr->set_num_transaxial_crystals_per_singles_unit(num_transaxial_crystals_per_singles_unit);
+    scanner_sptr->set_num_detector_layers(num_detector_layers);
+    scanner_sptr->set_energy_resolution(energy_resolution);
+    scanner_sptr->set_reference_energy(reference_energy);
 
 
     return Succeeded::yes;
@@ -184,9 +188,22 @@ Succeeded HDF5Wrapper::initialise_exam_info()
 {
     this->exam_info_sptr.reset(new ExamInfo());
 
-//    exam_info_sptr->set_high_energy_thres();
-//    exam_info_sptr->set_low_energy_thres();
+    // PW Get the high and low energy threshold values from HDF5 header.
+    int low_energy_thres = 0;
+    int high_energy_thres = 0;
 
+    H5::DataSet str_low_energy_thres = file.openDataSet("/HeaderData/AcqParameters/EDCATParameters/lower_energy_limit");
+    H5::DataSet str_high_energy_thres = file.openDataSet("/HeaderData/AcqParameters/EDCATParameters/upper_energy_limit");
+
+    str_low_energy_thres.read(&low_energy_thres, H5::PredType::NATIVE_UINT32);
+    str_high_energy_thres.read(&high_energy_thres, H5::PredType::NATIVE_UINT32);
+
+    float low_energy_thres_f = static_cast<float>(low_energy_thres);
+    float high_energy_thres_f = static_cast<float>(high_energy_thres);
+
+    // PW Set these values in exam_info_sptr.
+    exam_info_sptr->set_high_energy_thres(high_energy_thres_f);
+    exam_info_sptr->set_low_energy_thres(low_energy_thres_f);
 
     //! \todo convert time slices to timeFrameDefinitions
     //NE Copied from SignesRatesFromGEHDF5:
