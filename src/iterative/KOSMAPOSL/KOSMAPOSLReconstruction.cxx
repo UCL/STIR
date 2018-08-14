@@ -664,8 +664,9 @@ void KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(d
 
 template<typename TargetT>
 void KOSMAPOSLReconstruction<TargetT>::
-full_compute_kernelised_image (TargetT& kernelised_image_out, const TargetT& image_to_kernelise,
-                               const TargetT& current_alpha_estimate)
+full_compute_kernelised_image(TargetT& kernelised_image_out,
+                              const TargetT& image_to_kernelise,
+                              const TargetT& current_alpha_estimate)
 {
   // Something very weird happens here if I do not get_empty_copy()
   // KImage elements will be all nan
@@ -808,10 +809,10 @@ full_compute_kernelised_image (TargetT& kernelised_image_out, const TargetT& ima
 
 
 template<typename TargetT>
-void KOSMAPOSLReconstruction<TargetT>::compact_compute_kernelised_image(
-                         TargetT& kernelised_image_out,
-                         const TargetT& image_to_kernelise,
-                         const TargetT& current_alpha_estimate)
+void KOSMAPOSLReconstruction<TargetT>::
+compact_compute_kernelised_image(TargetT& kernelised_image_out,
+                                 const TargetT& image_to_kernelise,
+                                 const TargetT& current_alpha_estimate)
 {
   // Something very weird happens here if I do not get_empty_copy()
   // KImage elements will be all nan
