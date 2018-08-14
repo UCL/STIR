@@ -32,188 +32,168 @@
 
 
 #include "stir/ProjDataFromHDF5.h"
-#include "stir/Succeeded.h"
-#include "stir/Viewgram.h"
-#include "stir/Sinogram.h"
-#include "stir/Scanner.h"
-#include "stir/Succeeded.h"
-#include "stir/IO/read_data.h"
 #include "stir/IndexRange.h"
 #include "stir/IndexRange3D.h"
 #include "stir/IO/HDF5Wrapper.h"
-#include "H5Cpp.h"
-
-#include <vector>
-#include <algorithm>
-#include <numeric>
-#include <iostream>
-
-#ifndef STIR_NO_NAMESPACES
-using std::vector;
-using std::ios;
-using std::accumulate;
-using std::find;
-using std::iostream;
-using std::streamoff;
-#endif
 
 START_NAMESPACE_STIR
 
-ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ExamInfo> const& exam_info_sptr,
-                                   shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
-                                   HDF5Wrapper* s)
-  :
-   ProjData(exam_info_sptr, proj_data_info_ptr), input()
-{  
-     shared_ptr<ExamInfo> exam_info_ptr=s->get_exam_info_sptr();
+ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
+                                   const std::string& input_filename) :
+    ProjData()
+{
+    m_input_hdf5_sptr.reset(new HDF5Wrapper(input_filename));
+    exam_info_sptr = m_input_hdf5_sptr->get_exam_info_sptr();
+    proj_data_info_ptr = input_proj_data_info_sptr;
+
+    initialise_segment_sequence();
+    initialise_ax_pos_offset();
 }
-  
+
+ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
+                                   shared_ptr<HDF5Wrapper> input_hdf5) :
+    ProjData(input_hdf5->get_exam_info_sptr(), input_proj_data_info_sptr)
+{
+    m_input_hdf5_sptr = input_hdf5;
+
+    initialise_segment_sequence();
+    initialise_ax_pos_offset();
+}
+
+ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ExamInfo> input_exam_info_sptr,
+                                   shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
+                                   shared_ptr<HDF5Wrapper> input_hdf5) :
+    ProjData(input_exam_info_sptr, input_proj_data_info_sptr)
+{  
+    m_input_hdf5_sptr = input_hdf5;
+
+    initialise_segment_sequence();
+    initialise_ax_pos_offset();
+}
+
+void ProjDataFromHDF5::initialise_segment_sequence()
+{
+    segment_sequence.resize(2*get_max_segment_num()+1);
+    segment_sequence[0] = 0;
+
+    for (int segment_num = 1; segment_num<=get_max_segment_num(); ++segment_num)
+    {
+        segment_sequence[2*segment_num-1] = -segment_num;
+        segment_sequence[2*segment_num] = segment_num;
+    }
+}
+
+void ProjDataFromHDF5::initialise_ax_pos_offset()
+{
+  seg_ax_offset.resize(get_num_segments());
+
+  seg_ax_offset[0] = 0;
+
+  unsigned int previous_value = 0;
+
+  for (unsigned int i_seg = 1; i_seg < get_num_segments(); ++i_seg)
+  {
+      int segment_num = segment_sequence[i_seg-1];
+
+      seg_ax_offset[i_seg] = static_cast<unsigned int>(get_num_axial_poss(segment_num)) +
+                                                       previous_value;
+      previous_value = seg_ax_offset[i_seg];
+  }
+}
+
 Viewgram<float>
 ProjDataFromHDF5::
 get_viewgram(const int view_num, const int segment_num,
              const bool make_num_tangential_poss_odd) const
-  {
+{
 
-    this->input->open(_sinogram_filename);
+    Viewgram<float> ret_viewgram = get_empty_viewgram(view_num, segment_num, make_num_tangential_poss_odd);
+    ret_viewgram.fill(0.0);
+    //! \todo NE: Get the number of tof positions from the proj_data_info_ptr
+    const unsigned int num_tof_poss = 27;
 
-    using namespace H5;
-    using namespace std;
+    m_input_hdf5_sptr->initialise_proj_data_data("", view_num + 1);
 
-Viewgram<float> viewgram = get_empty_viewgram(view_num,segment_num,make_num_tangential_poss_odd);
-      /* PW Modifies this bit to get th time slices from GE HDF5 instead of Sgl.
-    Calculate number of time slices from the length of the data (file size minus header).
-      _num_time_slices =
-        static_cast<int>((end_stream_position - static_cast<streampos>(512)) /
-                         SIZE_OF_SINGLES_RECORD);
-    */
-       // Allocate the main array.
+    std::array<unsigned long long int, 3> stride = {1, 1, 1};
+    const std::array<unsigned long long int, 3> count  =
+    {static_cast<unsigned long long int>(get_num_axial_poss(segment_num)), num_tof_poss,
+     static_cast<unsigned long long int>(get_num_tangential_poss())};
 
+    std::array<unsigned long long int, 3> offset = {seg_ax_offset[find_segment_index_in_sequence(segment_num)], 0, 0};
+    std::array<unsigned long long int, 3> block = {1, 1, 1};
+    unsigned int total_size = get_num_tangential_poss() * num_tof_poss * get_num_axial_poss(segment_num);
 
-     // while ( slice < _num_time_slices) {
-    //PW Open the dataset from that file here.
-     char datasetname[300];
-     sprintf(datasetname,"/SegmentData/Segment2/3D_TOF_Sinogram/view%d", viewgram.get_view_num() );
+    stir::Array<1, unsigned char> tmp(0, total_size);
 
-   H5::DataSet dataset=this->input->get_file().openDataSet(datasetname);
+    m_input_hdf5_sptr->get_from_dataset(offset, count, stride, block, tmp);
 
-   const int    NX_SUB = 1981;    // hyperslab dimensions
-    const int    NY_SUB = 27;
-    const int    NZ_SUB = 357;
-    const int    NX = 1981;        // output buffer dimensions
-    const int    NY = 27;
-    const int    NZ = 357;
-    const int    RANK_OUT = 3;
-
-    //PW Now find out the type of this dataset.
-          H5T_class_t type_class = dataset.getTypeClass();
-
-    //PW Get datatype class and print it out.
-
-          if( type_class == H5T_INTEGER )
-          {
-    //PW Get the integer type
-
-         H5::IntType intype = dataset.getIntType();
-
-        H5std_string order_string;
-             H5T_order_t order = intype.getOrder( order_string );
-
-              //PW Get size of the data element stored in file and print it.
-
-             size_t size = intype.getSize();
-          }
-
-    //PW Get dataspace of the dataset.
-         H5::DataSpace dataspace = dataset.getSpace();
-
-    //PW Get the number of dimensions in the dataspace.
-          int rank = dataspace.getSimpleExtentNdims();
-
-    //PW Get the dimension size of each dimension in the dataspace and display them.
-
-          hsize_t dims_out[3];
-          int ndims = dataspace.getSimpleExtentDims( dims_out, NULL);
-
-    //PW Define hyperslab in the dataset; implicitly giving strike and block NULL.
-
-          hsize_t offset[3];   // TODO hyperslab offset in the file
-          hsize_t count[3];    // TODO size of the hyperslab in the file
-          offset[0] = 0;
-          offset[1] = 0;
-          offset[2] = 0;
-          count[0]  = NX_SUB;
-          count[1]  = NY_SUB;
-          count[2]  = NZ_SUB;
-          dataspace.selectHyperslab( H5S_SELECT_SET, count, offset );
-    //PW Define the memory dataspace.
-          hsize_t dimsm[3];              /* TODO memory space dimensions */
-          dimsm[0] = viewgram.get_num_axial_poss();
-          dimsm[1] = 27;
-          dimsm[2] = viewgram.get_num_tangential_poss();
-          H5::DataSpace memspace( RANK_OUT, dimsm );
-
-    //PW Define memory hyperslab.
-
-          hsize_t      offset_out[3];   // hyperslab offset in memory
-          hsize_t      count_out[3];    // size of the hyperslab in memory
-          offset_out[0] = segment_offset;
-          offset_out[1] = 0;
-          offset_out[2] = 0;
-          count_out[0]  = NX_SUB;
-          count_out[1]  = NY_SUB;
-          count_out[2]  = NZ_SUB;
-          memspace.selectHyperslab( H5S_SELECT_SET, count_out, offset_out );
-    //PW Read data from hyperslab in the file into the hyperslab in memory.
-
-          Array<3,float> tof_data(IndexRange3D(dimsm[0],dimsm[1],dimsm[2]));
-          Array<1,int> buffer(dimsm[0]*dimsm[1]*dimsm[2]);
-          dataset.read( buffer.get_data_ptr(), H5::PredType::NATIVE_INT, memspace, dataspace );
-          buffer.release_data_ptr();
-
-          std::copy(buffer.begin(), buffer.end(), tof_data.begin_all());
-
-      for (int tangential_pos = viewgram.get_min_tangential_pos_num(); tangential_pos = viewgram.get_max_tangential_pos_num();tangential_pos++)
-      for (int ax_pos= viewgram.get_min_axial_pos_num();ax_pos = viewgram.get_max_axial_pos_num();ax_pos++)
+    // Flatten the TOF poss
+    for(int axial_pos = ret_viewgram.get_min_axial_pos_num(), i_axial = 0; axial_pos <= ret_viewgram.get_max_axial_pos_num(); ++axial_pos, ++i_axial)
     {
-              viewgram[ax_pos][tangential_pos] = tof_data[ax_pos - viewgram.get_min_axial_pos_num()].sum();
-}
-              ofstream write_tof_data;
-              write_tof_data.open("uncompressed_sino_tof_data.txt",ios::out);
-              for ( int i =tof_data.get_min_index(); i<=tof_data.get_max_index();i++)
-              {
-                 for ( int j =tof_data[i].get_min_index(); j <=tof_data[i].get_max_index(); j++)
-                 {
-                     for(int k =tof_data[i][j].get_min_index(); k <=tof_data[i][j].get_max_index(); k++)
-                 {
-                         write_tof_data << tof_data[i][j][k] << "   " ;
-                 }
-                 write_tof_data << std::endl;
-              }
-}
-      return viewgram;
+        unsigned int ii = i_axial * get_num_tangential_poss() * num_tof_poss;
+        for(unsigned int i_tof = 0; i_tof < num_tof_poss; ++i_tof)
+        {
+            unsigned int jj = get_num_tangential_poss() * i_tof;
+            for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(), i_tang = 0; tang_pos <= ret_viewgram.get_max_tangential_pos_num(); ++tang_pos, ++i_tang)
+            {
+                ret_viewgram[axial_pos][tang_pos] += static_cast<float>(tmp[i_tang + jj + ii]);
+            }
+        }
+    }
+
+    return ret_viewgram;
 }
 
 
 Succeeded ProjDataFromHDF5::set_viewgram(const Viewgram<float>& v)
 {
-  // TODO
-  // but this is difficult: how to adjust the scale factors when writing only 1 viewgram ?
-  warning("ProjDataFromGEHDF5::set_viewgram not implemented yet\n");
-  return Succeeded::no;
+    // but this is difficult: how to adjust the scale factors when writing only 1 viewgram ?
+    error("ProjDataFromGEHDF5::set_viewgram not implemented yet\n");
+    return Succeeded::no;
 }
 
 Sinogram<float> ProjDataFromHDF5::get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd) const
 { 
-  // TODO
-  error("ProjDataGEAdvance::get_sinogram not implemented yet\n"); 
-  return get_empty_sinogram(ax_pos_num, segment_num);}
+    // TODO
+    warning("ProjDataGEAdvance::get_sinogram not implemented yet\n");
+    return get_empty_sinogram(ax_pos_num, segment_num);
+}
 
 Succeeded ProjDataFromHDF5::set_sinogram(const Sinogram<float>& s)
 {
-  // TODO
-  warning("ProjDataFromHDF5::set_sinogram not implemented yet\n");
-  return Succeeded::no;
+    error("ProjDataFromHDF5::set_sinogram not implemented yet\n");
+    return Succeeded::no;
 }
+
+
+
+//! \todo move inlines in seprate file.
+/*
+ *
+ *  INLINES
+ *
+ *
+ */
+
+unsigned int
+ProjDataFromHDF5::find_segment_index_in_sequence(const int segment_num) const
+{
+#ifndef STIR_NO_NAMESPACES
+  std::vector<int>::const_iterator iter =
+    std::find(segment_sequence.begin(), segment_sequence.end(), segment_num);
+#else
+  vector<int>::const_iterator iter =
+    find(segment_sequence.begin(), segment_sequence.end(), segment_num);
+#endif
+  // TODO do some proper error handling here
+  assert(iter !=  segment_sequence.end());
+  return static_cast<int>(iter - segment_sequence.begin());
+}
+
+std::vector<int>
+ProjDataFromHDF5::get_segment_sequence_in_hdf5() const
+{ return segment_sequence; }
+
 
 END_NAMESPACE_STIR
 

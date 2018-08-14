@@ -56,7 +56,6 @@ set(${dir_EXE_SOURCES}
 	calculate_attenuation_coefficients 
 	attenuation_coefficients_to_projections 
         conv_GATE_raw_ECAT_projdata_to_interfile
-	conv_GEHDF5_to_interfile
         conv_gipl_to_interfile
         conv_interfile_to_gipl
         shift_image
@@ -68,7 +67,6 @@ set(${dir_EXE_SOURCES}
 	apply_normfactors3D
 	apply_normfactors
 	construct_randoms_from_singles
-	construct_randoms_from_GEsingles
 	find_ML_normfactors3D
 	find_ML_normfactors
 	find_ML_singles_from_delayed
@@ -76,6 +74,13 @@ set(${dir_EXE_SOURCES}
 
 if (AVW_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  conv_AVW)
+endif()
+
+if (HDF5_FOUND)
+ list(APPEND ${dir_EXE_SOURCES}
+    conv_GEHDF5_to_interfile
+    construct_randoms_from_GEsingles
+ )
 endif()
 
 include(stir_exe_targets)

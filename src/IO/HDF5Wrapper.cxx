@@ -31,47 +31,25 @@ bool HDF5Wrapper::check_GE_signature(const std::string filename)
 
 HDF5Wrapper::HDF5Wrapper()
 {
-
+    // Not much.
 }
 
 HDF5Wrapper::HDF5Wrapper(const std::string& filename)
 {
-    open(filename);
+    if(!file.isHdf5(filename))
+        error("HDF5Wrapper: The input file is not HDF5! Abort.");
 
-}
-
-shared_ptr<Scanner>
-HDF5Wrapper::get_scanner_sptr() const
-{
-    return this->scanner_sptr;
-}
-
-shared_ptr<ExamInfo>
-HDF5Wrapper::get_exam_info_sptr() const
-{
-    return this->exam_info_sptr;
-}
-
-H5::DataSet* HDF5Wrapper::get_dataset_ptr() const
-{
-    return m_dataset_sptr.get();
-}
-
-hsize_t HDF5Wrapper::get_dataset_size() const
-{
-    return m_list_size;
-}
-
-TimeFrameDefinitions* HDF5Wrapper::get_timefreme_definitions() const
-{
-    //! \todo For examInfo get timeframe definitions
-    return &exam_info_sptr->time_frame_definitions;
+    if(open(filename) == Succeeded::no)
+        error("HDF5Wrapper: Error opening HDF5 file. Abort.");
 }
 
 Succeeded
 HDF5Wrapper::open(const std::string& filename)
 {
-    file.openFile( filename, H5F_ACC_RDONLY );
+    if(!file.isHdf5(filename))
+        error("HDF5Wrapper: The input file is not HDF5! Abort.");
+
+    file.openFile(filename, H5F_ACC_RDONLY);
 
     initialise_exam_info();
 
@@ -154,32 +132,30 @@ Succeeded HDF5Wrapper::initialise_scanner_from_HDF5()
     float ring_spacing = detector_axial_size/num_rings;
 
     //! \todo : bin_size
-    float bin_size = max_num_non_arccorrected_bins/inner_ring_radius;
-    int num_axial_crystals_per_singles_unit =1;
-    int num_transaxial_crystals_per_singles_unit =1;
+    float bin_size = static_cast<float>(max_num_non_arccorrected_bins)/inner_ring_radius;
+    int num_axial_crystals_per_singles_unit = 1;
+    int num_transaxial_crystals_per_singles_unit = 1;
 
     //PW Not sure what to put for scanner here.
-    this->scanner_sptr.reset(new Scanner(Scanner::User_defined_scanner));
-    scanner_sptr->set_num_rings(num_rings);
-    scanner_sptr->set_max_num_non_arccorrected_bins(max_num_non_arccorrected_bins);
-    scanner_sptr->set_default_num_arccorrected_bins(default_num_arccorrected_bins);
-    scanner_sptr->set_num_detectors_per_ring(num_detectors_per_ring);
-    scanner_sptr->set_inner_ring_radius(inner_ring_radius);
-    scanner_sptr->set_average_depth_of_interaction(average_depth_of_interaction);
-    scanner_sptr->set_ring_spacing(ring_spacing);
-    scanner_sptr->set_default_bin_size(bin_size);
-    scanner_sptr->set_default_intrinsic_tilt(intrinsic_tilt);
-    scanner_sptr->set_num_axial_blocks_per_bucket(num_axial_blocks_per_bucket);
-    scanner_sptr->set_num_transaxial_blocks_per_bucket(num_transaxial_blocks_per_bucket);
-    scanner_sptr->set_ring_spacing(ring_spacing);
-    scanner_sptr->set_num_axial_crystals_per_block(num_axial_crystals_per_block);
-    scanner_sptr->set_num_transaxial_crystals_per_block(num_transaxial_crystals_per_block);
-    scanner_sptr->set_num_axial_crystals_per_singles_unit(num_axial_crystals_per_singles_unit);
-    scanner_sptr->set_num_transaxial_crystals_per_singles_unit(num_transaxial_crystals_per_singles_unit);
-    scanner_sptr->set_num_detector_layers(num_detector_layers);
-    scanner_sptr->set_energy_resolution(energy_resolution);
-    scanner_sptr->set_reference_energy(reference_energy);
-
+    this->scanner_sptr.reset(new Scanner(Scanner::User_defined_scanner,
+                                         "", num_detectors_per_ring,
+                                         num_rings,
+                                         max_num_non_arccorrected_bins,
+                                         default_num_arccorrected_bins,
+                                         inner_ring_diameter,
+                                         average_depth_of_interaction,
+                                         ring_spacing,
+                                         bin_size,
+                                         intrinsic_tilt,
+                                         num_axial_blocks_per_bucket,
+                                         num_transaxial_blocks_per_bucket,
+                                         num_axial_crystals_per_block,
+                                         num_transaxial_crystals_per_block,
+                                         num_axial_crystals_per_singles_unit,
+                                         num_transaxial_crystals_per_singles_unit,
+                                         num_detector_layers,
+                                         energy_resolution,
+                                         reference_energy));
 
     return Succeeded::yes;
 }
@@ -189,8 +165,8 @@ Succeeded HDF5Wrapper::initialise_exam_info()
     this->exam_info_sptr.reset(new ExamInfo());
 
     // PW Get the high and low energy threshold values from HDF5 header.
-    int low_energy_thres = 0;
-    int high_energy_thres = 0;
+    unsigned int low_energy_thres = 0;
+    unsigned int high_energy_thres = 0;
 
     H5::DataSet str_low_energy_thres = file.openDataSet("/HeaderData/AcqParameters/EDCATParameters/lower_energy_limit");
     H5::DataSet str_high_energy_thres = file.openDataSet("/HeaderData/AcqParameters/EDCATParameters/upper_energy_limit");
@@ -198,12 +174,9 @@ Succeeded HDF5Wrapper::initialise_exam_info()
     str_low_energy_thres.read(&low_energy_thres, H5::PredType::NATIVE_UINT32);
     str_high_energy_thres.read(&high_energy_thres, H5::PredType::NATIVE_UINT32);
 
-    float low_energy_thres_f = static_cast<float>(low_energy_thres);
-    float high_energy_thres_f = static_cast<float>(high_energy_thres);
-
     // PW Set these values in exam_info_sptr.
-    exam_info_sptr->set_high_energy_thres(high_energy_thres_f);
-    exam_info_sptr->set_low_energy_thres(low_energy_thres_f);
+    exam_info_sptr->set_high_energy_thres(static_cast<float>(low_energy_thres));
+    exam_info_sptr->set_low_energy_thres(static_cast<float>(high_energy_thres));
 
     //! \todo convert time slices to timeFrameDefinitions
     //NE Copied from SignesRatesFromGEHDF5:
@@ -272,8 +245,10 @@ Succeeded HDF5Wrapper::initialise_singles_data(const std::string &path)
             {
                 m_NX_SUB = 45;    // hyperslab dimensions
                 m_NY_SUB = 448;
+                m_NZ_SUB = 1;
                 m_NX = 45;        // output buffer dimensions
                 m_NY = 448;
+                m_NZ = 1;
             }
         }
         else
@@ -285,44 +260,123 @@ Succeeded HDF5Wrapper::initialise_singles_data(const std::string &path)
     return Succeeded::yes;
 }
 
-
-Succeeded HDF5Wrapper::get_from_dataspace(std::streampos& current_offset, shared_ptr<char>& data_sptr)
+Succeeded HDF5Wrapper::initialise_proj_data_data(const std::string& path,
+                                                 const unsigned int view_num)
 {
+    if(path.size() == 0)
+    {
+        if(is_signa)
+        {
+            m_address = "/SegmentData/Segment2/3D_TOF_Sinogram/view";
+            if(view_num > 0)
+            {
+                std::ostringstream datasetname;
+                datasetname << m_address << view_num;
+                m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
+                m_dataspace = m_dataset_sptr->getSpace();
 
+//                m_memspace_ptr = new H5::DataSpace()
+            }
+            //! \todo Get these numbers from the HDF5 file
+            {
+                m_NX_SUB = 1981;    // hyperslab dimensions
+                m_NY_SUB = 27;
+                m_NZ_SUB = 357;
+                m_NX = 45;        // output buffer dimensions
+                m_NY = 448;
+                m_NZ = 357;
+            }
+        }
+        else
+            return Succeeded::no;
+    }
+    else
+        m_address = path;
+
+    return Succeeded::yes;
+}
+
+// Developed for listmode access
+Succeeded HDF5Wrapper::get_from_dataspace(std::streampos& current_offset, shared_ptr<char>& output)
+{
     hsize_t pos = static_cast<hsize_t>(current_offset);
     m_dataspace.selectHyperslab( H5S_SELECT_SET, &m_size_of_record_signature, &pos );
-    m_dataset_sptr->read( data_sptr.get(), H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace );
+    m_dataset_sptr->read( output.get(), H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace );
     current_offset += static_cast<std::streampos>(m_size_of_record_signature);
 
     //  // TODO error checking
     return Succeeded::yes;
 }
 
-Succeeded HDF5Wrapper::get_dataspace(const unsigned int current_id,
-                                     Array<1, unsigned int>& data_ptr)
+// Developed for ProjData
+Succeeded HDF5Wrapper::get_from_dataset(const std::array<unsigned long long int, 3>& offset,
+                                        const std::array<unsigned long long int, 3>& count,
+                                        const std::array<unsigned long long int, 3>& stride,
+                                        const std::array<unsigned long long int, 3>& block,
+                                        Array<1, unsigned char> &output)
 {
-    std::ostringstream datasetname;
-    datasetname << m_address << current_id;
-    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
-    m_dataset_sptr->read( data_ptr.get_data_ptr(), H5::PredType::NATIVE_UINT32);
-    data_ptr.release_data_ptr();
+    m_dataspace.selectHyperslab(H5S_SELECT_SET, count.data(), offset.data());
+    m_memspace_ptr= new H5::DataSpace(3, count.data());
+    m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace);
+    output.release_data_ptr();
 
     //  // TODO error checking
     return Succeeded::yes;
 }
 
+// Developed for Singles
 Succeeded HDF5Wrapper::get_dataspace(const unsigned int current_id,
-                                     shared_ptr<Array<2, unsigned int> >& data_sptr)
+                                     Array<1, unsigned int>& output)
 {
     std::ostringstream datasetname;
     datasetname << m_address << current_id;
     m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
-    m_dataset_sptr->read( (*data_sptr)[current_id].get_data_ptr(), H5::PredType::NATIVE_UINT32);
-    (*data_sptr)[current_id].release_data_ptr();
+    m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_UINT32);
+    output.release_data_ptr();
 
     //  // TODO error checking
     return Succeeded::yes;
 }
+
+// Developed for Singles
+Succeeded HDF5Wrapper::get_dataspace(const unsigned int current_id,
+                                     shared_ptr<Array<2, unsigned int> >& output)
+{
+    std::ostringstream datasetname;
+    datasetname << m_address << current_id;
+    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
+    m_dataset_sptr->read( (*output)[current_id].get_data_ptr(), H5::PredType::NATIVE_UINT32);
+    (*output)[current_id].release_data_ptr();
+
+    //  // TODO error checking
+    return Succeeded::yes;
+}
+
+//Succeeded HDF5Wrapper::get_row(const unsigned int row_id,
+//                                     Array<1, unsigned int>& data_ptr)
+//{
+//    std::ostringstream datasetname;
+//    datasetname << m_address << current_id;
+//    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
+//    m_dataset_sptr->read( data_ptr.get_data_ptr(), H5::PredType::NATIVE_UINT32);
+//    data_ptr.release_data_ptr();
+
+//    //  // TODO error checking
+//    return Succeeded::yes;
+//}
+
+//Succeeded HDF5Wrapper::get_column(const unsigned int col_id,
+//                                     Array<1, unsigned int>& data_ptr)
+//{
+//    std::ostringstream datasetname;
+//    datasetname << m_address << current_id;
+//    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
+//    m_dataset_sptr->read( data_ptr.get_data_ptr(), H5::PredType::NATIVE_UINT32);
+//    data_ptr.release_data_ptr();
+
+//    //  // TODO error checking
+//    return Succeeded::yes;
+//}
 
 //stir::Array<2, float>* data_sptr;
 //shared_ptr<char> HDF5Wrapper::get_next_viewgram()

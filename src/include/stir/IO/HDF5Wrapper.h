@@ -51,34 +51,41 @@ public:
 
     Succeeded initialise_singles_data(const std::string& path = "");
 
-    Succeeded initialise_proj_data_data(const std::string& path = "");
+    Succeeded initialise_proj_data_data(const std::string& path = "",
+                                        const unsigned int view_num = 0);
 
-    Succeeded get_from_dataspace(std::streampos &current_offset, shared_ptr<char>& data_sptr);
+    Succeeded get_from_dataspace(std::streampos &current_offset,
+                                 shared_ptr<char>& output);
 
     Succeeded get_dataspace(const unsigned int current_id,
-                                         Array<1, unsigned int> &data_ptr);
+                            Array<1, unsigned int> &output);
 
     Succeeded get_dataspace(const unsigned int current_id,
-                                         shared_ptr<Array<2, unsigned int> > &data_sptr);
+                            shared_ptr<Array<2, unsigned int> > &output);
 
-    H5::DataSet* get_dataset_ptr() const;
+    Succeeded get_from_dataset(const std::array<unsigned long long, 3> &offset,
+                                 const std::array<unsigned long long, 3> &count,
+                                 const std::array<unsigned long long, 3> &stride,
+                                 const std::array<unsigned long long, 3> &block,
+                                 Array<1, unsigned char> &output);
 
-    hsize_t get_dataset_size() const;
+    inline H5::DataSet* get_dataset_ptr() const;
 
-    TimeFrameDefinitions* get_timefreme_definitions() const;
+    inline hsize_t get_dataset_size() const;
+
+    inline TimeFrameDefinitions* get_timeframe_definitions() const;
 
     //! Get shared pointer to exam info
     /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
       shared pointer will be affected. */
-    shared_ptr<ExamInfo>
+    inline shared_ptr<ExamInfo>
     get_exam_info_sptr() const;
 
-    shared_ptr<Scanner>
+    inline shared_ptr<Scanner>
     get_scanner_sptr() const;
 
     //! \obsolete
-    inline const H5::H5File& get_file() const
-    { return file; }
+    inline const H5::H5File& get_file() const;
 
     ~HDF5Wrapper() {}
 
@@ -91,6 +98,7 @@ protected:
     shared_ptr<Scanner> scanner_sptr;
 
     shared_ptr<ExamInfo> exam_info_sptr;
+
 private:
 
     H5::H5File file;
@@ -125,11 +133,15 @@ private:
 
     int m_NX_SUB = 0;    // hyperslab dimensions
     int m_NY_SUB = 0;
+    int m_NZ_SUB = 0;
     int m_NX = 0;        // output buffer dimensions
     int m_NY = 0;
+    int m_NZ = 0;
 
 };
 
 END_NAMESPACE_STIR
+
+#include "stir/IO/HDF5Wrapper.inl"
 
 #endif
