@@ -900,10 +900,11 @@ void KOSMAPOSLReconstruction<TargetT>::compact_compute_kernelised_image(
                           = exp(-square((current_alpha_estimate[z][y][x]
                                          - current_alpha_estimate[z+dz][y+dy][x+dx])
                                         / current_alpha_estimate[z][y][x]
-                                        * get_sigma_p())
+                                        / get_sigma_p())
                                 / 2)
                           * exp(-square(distance[dz][dy][dx] / grid_spacing.x())
                                 / (2 * square(get_sigma_dp())));
+
                       }
                       else{
                         kPET=1;
@@ -915,7 +916,8 @@ void KOSMAPOSLReconstruction<TargetT>::compact_compute_kernelised_image(
                       kanatomical
                         = exp(-square(((*anatomical_sptr)[z][y][x]
                                        - (*anatomical_sptr)[z+dz][y+dy][x+dx])
-                                      / anatomical_sd*sigma_m)
+                                      / anatomical_sd
+                                      / sigma_m)
                               / 2)
                         * exp(-square(distance[dz][dy][dx] / grid_spacing.x())
                               / (2 * square(sigma_dm)));
