@@ -82,6 +82,70 @@ using std::endl;
 
 START_NAMESPACE_STIR
 
+
+// worker functions
+
+
+namespace { // priave namespace for internal functions
+
+unsigned int ravel_index(int x, int y, int z,
+                         int min_x, int min_y, int min_z,
+                         int max_x, int max_y, int max_z) {
+  unsigned int ravelled_index
+    = (z-min_z)*(max_x-min_x +1)*(max_y-min_y +1)
+    + (y-min_y)*(max_x-min_x +1)
+    + (x-min_x);
+  return ravelled_index;
+}
+
+
+double gaussian_kernel_already_sq(double distance_sq, double sigma) {
+  // std::cout << "gaussian_kernel(" << distance_sq << ", " << sigma << ")" << std::endl;
+  return exp(-distance_sq / (2 * sigma*sigma));
+}
+double gaussian_kernel(double distance, double sigma) {
+  // std::cout << "gaussian_kernel(" << distance_sq << ", " << sigma << ")" << std::endl;
+  return exp(-distance*distance / (2 * sigma*sigma));
+}
+
+
+Array<3, float>
+precalculate_patch_euclidean_distances(int num_neighbours, bool only_2D,
+                                       const CartesianCoordinate3D<float>& grid_spacing) {
+  int min_dx, max_dx, min_dy, max_dy, min_dz, max_dz;
+
+  if (only_2D) {
+    min_dz = max_dz = 0;
+  }
+  else {
+    min_dz = -(num_neighbours-1)/2;
+    max_dz = (num_neighbours-1)/2;
+  }
+  min_dy = -(num_neighbours-1)/2;
+  max_dy = (num_neighbours-1)/2;
+  min_dx = -(num_neighbours-1)/2;
+  max_dx = (num_neighbours-1)/2;
+
+  Array<3,float> distance =
+    Array<3,float>(IndexRange3D(min_dz, max_dz, min_dy, max_dy, min_dx, max_dx));
+
+  for (int z=min_dz; z<=max_dz; ++z) {
+    for (int y=min_dy; y<=max_dy; ++y) {
+      for (int x=min_dx; x<=max_dx; ++x) {
+        distance[z][y][x] =
+          sqrt(square(x * grid_spacing.x())
+                + square(y * grid_spacing.y())
+                + square(z * grid_spacing.z()));
+      }
+    }
+  }
+
+  return distance;
+}
+
+}
+
+
 template <typename TargetT>
 const char * const
 KOSMAPOSLReconstruction <TargetT> ::registered_name =
@@ -662,284 +726,319 @@ void KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(d
 
 
 
-template<typename TargetT>
-void KOSMAPOSLReconstruction<TargetT>::
-full_compute_kernelised_image(TargetT& kernelised_image_out,
-                              const TargetT& image_to_kernelise,
-                              const TargetT& current_alpha_estimate)
-{
-  // Something very weird happens here if I do not get_empty_copy()
-  // KImage elements will be all nan
-  unique_ptr<TargetT> kImage_uptr(current_alpha_estimate.get_empty_copy());
-  kernelised_image_out = *kImage_uptr;
+// template<typename TargetT>
+// void KOSMAPOSLReconstruction<TargetT>::
+// full_compute_kernelised_image(TargetT& kernelised_image_out,
+//                               const TargetT& image_to_kernelise,
+//                               const TargetT& current_alpha_estimate)
+// {
+//   // Something very weird happens here if I do not get_empty_copy()
+//   // KImage elements will be all nan
+//   unique_ptr<TargetT> kImage_uptr(current_alpha_estimate.get_empty_copy());
+//   kernelised_image_out = *kImage_uptr;
 
-  const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
-    dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> *>
-      (this->get_anatomical_sptr ().get());
-  const CartesianCoordinate3D<float>& grid_spacing =
-    current_anatomical_cast->get_grid_spacing();
+//   const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
+//     dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> *>
+//       (this->get_anatomical_sptr ().get());
+//   const CartesianCoordinate3D<float>& grid_spacing =
+//     current_anatomical_cast->get_grid_spacing();
 
-  double kPET=0;
-  int min_dz, max_dz,min_dx,max_dx, min_dy,max_dy;
+//   double kPET=0;
+//   int min_dz, max_dz,min_dx,max_dx, min_dy,max_dy;
 
-  //Daniel: compute distance for voxel in the neighbourhood from anatomical
-  if (only_2D) {
-    min_dz = max_dz = 0;
-  }
-  else {
-    min_dz = -(num_neighbours-1)/2;
-    max_dz = (num_neighbours-1)/2;
-  }
-  min_dy = -(num_neighbours-1)/2;
-  max_dy = (num_neighbours-1)/2;
-  min_dx = -(num_neighbours-1)/2;
-  max_dx = (num_neighbours-1)/2;
+//   //Daniel: compute distance for voxel in the neighbourhood from anatomical
+//   if (only_2D) {
+//     min_dz = max_dz = 0;
+//   }
+//   else {
+//     min_dz = -(num_neighbours-1)/2;
+//     max_dz = (num_neighbours-1)/2;
+//   }
+//   min_dy = -(num_neighbours-1)/2;
+//   max_dy = (num_neighbours-1)/2;
+//   min_dx = -(num_neighbours-1)/2;
+//   max_dx = (num_neighbours-1)/2;
 
-  Array<3,float> distance = Array<3,float>(IndexRange3D(min_dz, max_dz,
-                                                        min_dy, max_dy,
-                                                        min_dx, max_dx));
+//   Array<3,float> distance = Array<3,float>(IndexRange3D(min_dz, max_dz,
+//                                                         min_dy, max_dy,
+//                                                         min_dx, max_dx));
 
-  for (int z=min_dz;z<=max_dz;++z)
-    for (int y=min_dy;y<=max_dy;++y)
-      for (int x=min_dx;x<=max_dx;++x)
-        { // the distance is the euclidean distance:
-          //at the moment is used only for the definition of the neighbourhood
+//   for (int z=min_dz;z<=max_dz;++z)
+//     for (int y=min_dy;y<=max_dy;++y)
+//       for (int x=min_dx;x<=max_dx;++x)
+//         { // the distance is the euclidean distance:
+//           //at the moment is used only for the definition of the neighbourhood
 
-          distance[z][y][x] =
+//           distance[z][y][x] =
 
-            sqrt(square(x*grid_spacing.x())+
-                 square(y*grid_spacing.y())+
-                 square(z*grid_spacing.z()));
-        }
-
-
-  int l=0,m=0, dimf_row=0;
-  int dimf_col = this->num_non_zero_feat-1;
-
-  dimf_row=this->num_voxels;
-
-  if(this->get_hybrid()){
-    calculate_norm_matrix (*this->kpnorm_sptr, dimf_row, dimf_col,
-                           current_alpha_estimate, distance);
-  }
-
-  //     calculate kernelised image
-
-  const int min_z = current_alpha_estimate.get_min_index();
-  const int max_z = current_alpha_estimate.get_max_index();
-
-  for (int z=min_z; z<=max_z; z++)
-    {
-      double pnkernel=0, kanatomical=0;
-      const int min_dz = max(distance.get_min_index(), min_z-z);
-      const int max_dz = min(distance.get_max_index(), max_z-z);
-
-      const int min_y = current_alpha_estimate[z].get_min_index();
-      const int max_y = current_alpha_estimate[z].get_max_index();
+//             sqrt(square(x*grid_spacing.x())+
+//                  square(y*grid_spacing.y())+
+//                  square(z*grid_spacing.z()));
+//         }
 
 
-      for (int y=min_y;y<= max_y;y++)
-        {
-          const int min_dy = max(distance[0].get_min_index(), min_y-y);
-          const int max_dy = min(distance[0].get_max_index(), max_y-y);
+//   int l=0,m=0, dimf_row=0;
+//   int dimf_col = this->num_non_zero_feat-1;
 
-          const int min_x = current_alpha_estimate[z][y].get_min_index();
-          const int max_x = current_alpha_estimate[z][y].get_max_index();
+//   dimf_row=this->num_voxels;
 
+//   if(this->get_hybrid()){
+//     calculate_norm_matrix (*this->kpnorm_sptr, dimf_row, dimf_col,
+//                            current_alpha_estimate, distance);
+//   }
 
-          for (int x=min_x;x<= max_x;x++)
-            {
-              const int min_dx = max(distance[0][0].get_min_index(), min_x-x);
-              const int max_dx = min(distance[0][0].get_max_index(), max_x-x);
+//   //     calculate kernelised image
 
-              l = (z-min_z)*(max_x-min_x +1)*(max_y-min_y +1)
-                + (y-min_y)*(max_x-min_x +1)
-                + (x-min_x);
+//   const int min_z = current_alpha_estimate.get_min_index();
+//   const int max_z = current_alpha_estimate.get_max_index();
 
-              for (int dz=min_dz;dz<=max_dz;++dz)
-                for (int dy=min_dy;dy<=max_dy;++dy)
-                  for (int dx=min_dx;dx<=max_dx;++dx)
-                    {
-                      m = (dz-min_dz)*(max_dx-min_dx +1)*(max_dy-min_dy +1)
-                        + (dy-min_dy)*(max_dx-min_dx +1)
-                        + (dx-min_dx);
+//   for (int z=min_z; z<=max_z; z++)
+//     {
+//       double pnkernel=0, kanatomical=0;
+//       const int min_dz = max(distance.get_min_index(), min_z-z);
+//       const int max_dz = min(distance.get_max_index(), max_z-z);
 
-                      if (get_hybrid()){
-                        if(current_alpha_estimate[z][y][x]==0){
-                          continue;
-                        }
-
-                        kPET
-                          = exp(-(*this->kpnorm_sptr)[0][l][m]
-                                / square(current_alpha_estimate[z][y][x] * get_sigma_p())
-                                / 2)
-                          * exp(-square(distance[dz][dy][dx] / grid_spacing.x())
-                                / (2 * square(get_sigma_dp())));
-                      }
-                      else {
-                        kPET = 1;
-                      }
-
-                      kanatomical
-                        = exp(-(*this->kmnorm_sptr)[0][l][m]
-                              / square(anatomical_sd * sigma_m)
-                              / 2)
-                        * exp(-square(distance[dz][dy][dx] / grid_spacing.x())
-                              / (2 * square(sigma_dm)));
-
-                      kernelised_image_out[z][y][x]
-                        += kanatomical*kPET*image_to_kernelise[z+dz][y+dy][x+dx];
-
-                      pnkernel += kanatomical*kPET;
-                    }
-
-              if(current_alpha_estimate[z][y][x]==0){
-                continue;
-              }
-
-              kernelised_image_out[z][y][x]
-                = kernelised_image_out[z][y][x] / pnkernel;
-              pnkernel=0;
+//       const int min_y = current_alpha_estimate[z].get_min_index();
+//       const int max_y = current_alpha_estimate[z].get_max_index();
 
 
-            }
-        }
-    }
-}
+//       for (int y=min_y;y<= max_y;y++)
+//         {
+//           const int min_dy = max(distance[0].get_min_index(), min_y-y);
+//           const int max_dy = min(distance[0].get_max_index(), max_y-y);
+
+//           const int min_x = current_alpha_estimate[z][y].get_min_index();
+//           const int max_x = current_alpha_estimate[z][y].get_max_index();
 
 
-template<typename TargetT>
-void KOSMAPOSLReconstruction<TargetT>::
-compact_compute_kernelised_image(TargetT& kernelised_image_out,
-                                 const TargetT& image_to_kernelise,
-                                 const TargetT& current_alpha_estimate)
-{
-  // Something very weird happens here if I do not get_empty_copy()
-  // KImage elements will be all nan
-  unique_ptr<TargetT> kImage_uptr(current_alpha_estimate.get_empty_copy());
-  kernelised_image_out = *kImage_uptr;
+//           for (int x=min_x;x<= max_x;x++)
+//             {
+//               const int min_dx = max(distance[0][0].get_min_index(), min_x-x);
+//               const int max_dx = min(distance[0][0].get_max_index(), max_x-x);
 
-  const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
-    dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> *>
-      (this->get_anatomical_sptr ().get());
-  const CartesianCoordinate3D<float>& grid_spacing =
-    current_anatomical_cast->get_grid_spacing();
+//               l = (z-min_z)*(max_x-min_x +1)*(max_y-min_y +1)
+//                 + (y-min_y)*(max_x-min_x +1)
+//                 + (x-min_x);
 
-  double kPET =0;
-  int min_dz, max_dz,min_dx,max_dx, min_dy,max_dy;
+//               for (int dz=min_dz;dz<=max_dz;++dz)
+//                 for (int dy=min_dy;dy<=max_dy;++dy)
+//                   for (int dx=min_dx;dx<=max_dx;++dx)
+//                     {
+//                       m = (dz-min_dz)*(max_dx-min_dx +1)*(max_dy-min_dy +1)
+//                         + (dy-min_dy)*(max_dx-min_dx +1)
+//                         + (dx-min_dx);
 
-  if (only_2D) {
-    min_dz = max_dz = 0;
-  }
-  else {
-    min_dz = -(num_neighbours-1)/2;
-    max_dz = (num_neighbours-1)/2;
-  }
-  min_dy = -(num_neighbours-1)/2;
-  max_dy = (num_neighbours-1)/2;
-  min_dx = -(num_neighbours-1)/2;
-  max_dx = (num_neighbours-1)/2;
+//                       if (get_hybrid()){
+//                         if(current_alpha_estimate[z][y][x]==0){
+//                           continue;
+//                         }
 
-  Array<3,float> distance = Array<3,float>(IndexRange3D(min_dz, max_dz,
-                                                        min_dy, max_dy,
-                                                        min_dx, max_dx));
+//                         kPET
+//                           = exp(-(*this->kpnorm_sptr)[0][l][m]
+//                                 / square(current_alpha_estimate[z][y][x] * get_sigma_p())
+//                                 / 2)
+//                           * exp(-square(distance[dz][dy][dx] / grid_spacing.x())
+//                                 / (2 * square(get_sigma_dp())));
+//                       }
+//                       else {
+//                         kPET = 1;
+//                       }
 
-  for (int z=min_dz;z<=max_dz;++z)
-    for (int y=min_dy;y<=max_dy;++y)
-      for (int x=min_dx;x<=max_dx;++x)
-        { // the distance is the euclidean distance:
-          //at the moment is used only for the definition of the neighbourhood
-          distance[z][y][x] =
-            sqrt(square(x*grid_spacing.x())+
-                 square(y*grid_spacing.y())+
-                 square(z*grid_spacing.z()));
-        }
+//                       kanatomical
+//                         = exp(-(*this->kmnorm_sptr)[0][l][m]
+//                               / square(anatomical_sd * sigma_m)
+//                               / 2)
+//                         * exp(-square(distance[dz][dy][dx] / grid_spacing.x())
+//                               / (2 * square(sigma_dm)));
 
-  // get anatomical standard deviation over all voxels
+//                       kernelised_image_out[z][y][x]
+//                         += kanatomical*kPET*image_to_kernelise[z+dz][y+dy][x+dx];
 
-  // calculate kernelised image
+//                       pnkernel += kanatomical*kPET;
+//                     }
 
-  const int min_z = (*anatomical_sptr).get_min_index();
-  const int max_z = (*anatomical_sptr).get_max_index();
+//               if(current_alpha_estimate[z][y][x]==0){
+//                 continue;
+//               }
 
-  for (int z=min_z; z<=max_z; z++)
-    {
-      const int min_dz = max(distance.get_min_index(), min_z-z);
-      const int max_dz = min(distance.get_max_index(), max_z-z);
-
-      const int min_y = (*anatomical_sptr)[z].get_min_index();
-      const int max_y = (*anatomical_sptr)[z].get_max_index();
-
-      for (int y=min_y;y<= max_y;y++)
-        {
-          const int min_dy = max(distance[0].get_min_index(), min_y-y);
-          const int max_dy = min(distance[0].get_max_index(), max_y-y);
-
-          const int min_x = (*anatomical_sptr)[z][y].get_min_index();
-          const int max_x = (*anatomical_sptr)[z][y].get_max_index();
+//               kernelised_image_out[z][y][x]
+//                 = kernelised_image_out[z][y][x] / pnkernel;
+//               pnkernel=0;
 
 
-          for (int x=min_x;x<= max_x;x++)
-            {
-              const int min_dx = max(distance[0][0].get_min_index(), min_x-x);
-              const int max_dx = min(distance[0][0].get_max_index(), max_x-x);
+//             }
+//         }
+//     }
+// }
 
-              double pnkernel=0, kanatomical=0;
 
-              for (int dz=min_dz;dz<=max_dz;++dz)
-                for (int dy=min_dy;dy<=max_dy;++dy)
-                  for (int dx=min_dx;dx<=max_dx;++dx)
-                    {
-                      if (get_hybrid()){
+// template<typename TargetT>
+// void KOSMAPOSLReconstruction<TargetT>::
+// compact_compute_kernelised_image(TargetT& kernelised_image_out,
+//                                  const TargetT& image_to_kernelise,
+//                                  const TargetT& current_alpha_estimate)
+// {
+//   // Something very weird happens here if I do not get_empty_copy()
+//   // KImage elements will be all nan
+//   unique_ptr<TargetT> kImage_uptr(current_alpha_estimate.get_empty_copy());
+//   kernelised_image_out = *kImage_uptr;
 
-                        if(current_alpha_estimate[z][y][x]==0){
-                          continue;
+//   const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
+//     dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> *>
+//       (this->get_anatomical_sptr ().get());
+//   const CartesianCoordinate3D<float>& grid_spacing =
+//     current_anatomical_cast->get_grid_spacing();
 
-                        }
+//   double kPET =0;
+//   int min_dz, max_dz,min_dx,max_dx, min_dy,max_dy;
 
-                        kPET
-                          = exp(-square((current_alpha_estimate[z][y][x]
-                                         - current_alpha_estimate[z+dz][y+dy][x+dx])
-                                        / current_alpha_estimate[z][y][x]
-                                        / get_sigma_p())
-                                / 2)
-                          * exp(-square(distance[dz][dy][dx] / grid_spacing.x())
-                                / (2 * square(get_sigma_dp())));
+//   if (only_2D) {
+//     min_dz = max_dz = 0;
+//   }
+//   else {
+//     min_dz = -(num_neighbours-1)/2;
+//     max_dz = (num_neighbours-1)/2;
+//   }
+//   min_dy = -(num_neighbours-1)/2;
+//   max_dy = (num_neighbours-1)/2;
+//   min_dx = -(num_neighbours-1)/2;
+//   max_dx = (num_neighbours-1)/2;
 
-                      }
-                      else{
-                        kPET=1;
+//   Array<3,float> distance = Array<3,float>(IndexRange3D(min_dz, max_dz,
+//                                                         min_dy, max_dy,
+//                                                         min_dx, max_dx));
 
-                      }
+//   for (int z=min_dz;z<=max_dz;++z)
+//     for (int y=min_dy;y<=max_dy;++y)
+//       for (int x=min_dx;x<=max_dx;++x)
+//         { // the distance is the euclidean distance:
+//           //at the moment is used only for the definition of the neighbourhood
+//           distance[z][y][x] =
+//             sqrt(square(x*grid_spacing.x())+
+//                  square(y*grid_spacing.y())+
+//                  square(z*grid_spacing.z()));
+//         }
 
-                      // the following "pnkernel" is the normalisation of the kernel
+//   // get anatomical standard deviation over all voxels
 
-                      kanatomical
-                        = exp(-square(((*anatomical_sptr)[z][y][x]
-                                       - (*anatomical_sptr)[z+dz][y+dy][x+dx])
-                                      / anatomical_sd
-                                      / sigma_m)
-                              / 2)
-                        * exp(-square(distance[dz][dy][dx] / grid_spacing.x())
-                              / (2 * square(sigma_dm)));
+//   // calculate kernelised image
 
-                      pnkernel += kPET*kanatomical;
+//   const int min_z = (*anatomical_sptr).get_min_index();
+//   const int max_z = (*anatomical_sptr).get_max_index();
 
-                      kernelised_image_out[z][y][x]
-                        += kanatomical*kPET*image_to_kernelise[z+dz][y+dy][x+dx];
-                    }
+//   for (int z=min_z; z<=max_z; z++)
+//     {
+//       const int min_dz = max(distance.get_min_index(), min_z-z);
+//       const int max_dz = min(distance.get_max_index(), max_z-z);
 
-              if (current_alpha_estimate[z][y][x]==0) {
-                continue;
-              }
+//       const int min_y = (*anatomical_sptr)[z].get_min_index();
+//       const int max_y = (*anatomical_sptr)[z].get_max_index();
 
-              kernelised_image_out[z][y][x]
-                = kernelised_image_out[z][y][x] / pnkernel;
-            }
-        }
-    }
+//       for (int y=min_y;y<= max_y;y++)
+//         {
+//           const int min_dy = max(distance[0].get_min_index(), min_y-y);
+//           const int max_dy = min(distance[0].get_max_index(), max_y-y);
 
-}
+//           const int min_x = (*anatomical_sptr)[z][y].get_min_index();
+//           const int max_x = (*anatomical_sptr)[z][y].get_max_index();
+
+
+//           for (int x=min_x;x<= max_x;x++)
+//             {
+//               const int min_dx = max(distance[0][0].get_min_index(), min_x-x);
+//               const int max_dx = min(distance[0][0].get_max_index(), max_x-x);
+
+//               double pnkernel=0, kanatomical=0;
+
+//               for (int dz=min_dz;dz<=max_dz;++dz)
+//                 for (int dy=min_dy;dy<=max_dy;++dy)
+//                   for (int dx=min_dx;dx<=max_dx;++dx)
+//                     {
+//                       if (get_hybrid()){
+
+//                         if(current_alpha_estimate[z][y][x]==0){
+//                           continue;
+
+//                         }
+
+//                         kPET
+//                           = exp(-square((current_alpha_estimate[z][y][x]
+//                                          - current_alpha_estimate[z+dz][y+dy][x+dx])
+//                                         / current_alpha_estimate[z][y][x]
+//                                         / get_sigma_p())
+//                                 / 2)
+//                           * exp(-square(distance[dz][dy][dx] / grid_spacing.x())
+//                                 / (2 * square(get_sigma_dp())));
+
+//                         // std::cout << square((current_alpha_estimate[z][y][x]
+//                         //                  - current_alpha_estimate[z+dz][y+dy][x+dx])
+//                         //                     / current_alpha_estimate[z][y][x])
+//                         //           << " ";
+//                         // std::cout << exp(-square((current_alpha_estimate[z][y][x]
+//                         //                  - current_alpha_estimate[z+dz][y+dy][x+dx])
+//                         //                 / current_alpha_estimate[z][y][x]
+//                         //                 / get_sigma_p())
+//                         //                  / 2)
+//                         //           << " "
+//                         //           << exp(-square(distance[dz][dy][dx] / grid_spacing.x())
+//                         //                  / (2 * square(get_sigma_dp())))
+//                         //           << std::endl;
+
+//                         // kPET = calc_pet_kernel(
+//                         //   x, y, z, min_x, min_y, min_z, max_x, max_y, max_z,
+//                         //   dx, dy, dz, min_dx, min_dy, min_dz, max_dx, max_dy, max_dz,
+//                         //   current_alpha_estimate, true, grid_spacing, distance);
+//                         // if (kPET - pet_kernel > 1e-3) {
+//                         //   std::cout << "x: " << x << ", y: " << y << ", z: " << z << std::endl;
+//                         //   std::cout << "dx: " << dx << ", dy: " << dy << ", dz: " << dz << std::endl;
+//                         //   std::cout << "kPET: " << kPET;
+//                         //   std::cout << ", pet_kernel; " << pet_kernel << std::endl;
+//                         // }
+//                       }
+//                       else{
+//                         kPET=1;
+
+//                       }
+
+//                       // the following "pnkernel" is the normalisation of the kernel
+
+//                       kanatomical
+//                         = exp(-square(((*anatomical_sptr)[z][y][x]
+//                                        - (*anatomical_sptr)[z+dz][y+dy][x+dx])
+//                                       / anatomical_sd
+//                                       / sigma_m)
+//                               / 2)
+//                         * exp(-square(distance[dz][dy][dx] / grid_spacing.x())
+//                               / (2 * square(sigma_dm)));
+
+//                       // double anatomical_kernel = calc_anatomical_kernel(
+//                       //   x, y, z, min_x, min_y, min_z, max_x, max_y, max_z,
+//                       //   dx, dy, dz, min_dx, min_dy, min_dz, max_dx, max_dy, max_dz,
+//                       //   true, grid_spacing, distance);
+//                       // if (kanatomical - anatomical_kernel > 1e-3) {
+//                       //   std::cout << "x: " << x << ", y: " << y << ", z: " << z << std::endl;
+//                       //   std::cout << "dx: " << dx << ", dy: " << dy << ", dz: " << dz << std::endl;
+//                       //   std::cout << "kanatomical: " << kanatomical;
+//                       //   std::cout << ", anatomical_kernel; " << anatomical_kernel << std::endl;
+//                       // }
+
+//                       pnkernel += kPET*kanatomical;
+
+//                       kernelised_image_out[z][y][x]
+//                         += kanatomical*kPET*image_to_kernelise[z+dz][y+dy][x+dx];
+//                     }
+
+//               if (current_alpha_estimate[z][y][x]==0) {
+//                 continue;
+//               }
+
+//               kernelised_image_out[z][y][x]
+//                 = kernelised_image_out[z][y][x] / pnkernel;
+//             }
+//         }
+//     }
+
+// }
 
 template<typename TargetT>
 void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
@@ -947,13 +1046,244 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
                          const TargetT& image_to_kernelise,
                          const TargetT& current_alpha_estimate)
 {
-  if (this->num_non_zero_feat==1) {
-    compact_compute_kernelised_image(kernelised_image_out, image_to_kernelise, current_alpha_estimate);
+  // if (this->num_non_zero_feat==1) {
+  //   compact_compute_kernelised_image(kernelised_image_out, image_to_kernelise, current_alpha_estimate);
+  // }
+  // else {
+  //   full_compute_kernelised_image(kernelised_image_out, image_to_kernelise, current_alpha_estimate);
+  // }
+  // return;
+
+  bool use_compact_implementation = this->num_non_zero_feat == 1;
+
+  // Something very weird happens here if I do not get_empty_copy()
+  // KImage elements will be all nan
+  unique_ptr<TargetT> kImage_uptr(current_alpha_estimate.get_empty_copy());
+  kernelised_image_out = *kImage_uptr;
+
+  const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
+    dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> *>
+      (this->get_anatomical_sptr ().get());
+  // TODO - which spacing to use? Need both?
+  const CartesianCoordinate3D<float>& grid_spacing =
+    current_anatomical_cast->get_grid_spacing();
+
+  // std::cout << "a" << std::endl;
+  Array<3, float> distance
+    = precalculate_patch_euclidean_distances(num_neighbours, only_2D, grid_spacing);
+  // std::cout << "b" << std::endl;
+
+  if (!use_compact_implementation && this->get_hybrid()) {
+    // Going to need the full PET regional normalised differences
+    int dimf_row = this->num_voxels;
+    int dimf_col = this->num_non_zero_feat-1;
+    calculate_norm_matrix(*this->kpnorm_sptr, dimf_row, dimf_col,
+                          current_alpha_estimate, distance);
   }
-  else {
-    full_compute_kernelised_image(kernelised_image_out, image_to_kernelise, current_alpha_estimate);
+
+  //     calculate kernelised image
+
+
+  // std::cout << current_alpha_estimate.get_min_index() << std::endl;
+  // std::cout << (*anatomical_sptr).get_min_index() << std::endl;
+  // std::cout << current_alpha_estimate.get_max_index() << std::endl;
+  // std::cout << (*anatomical_sptr).get_max_index() << std::endl;
+  // std::cout << current_alpha_estimate[min_z].get_min_index() << std::endl;
+  // std::cout << (*anatomical_sptr)[min_z].get_min_index() << std::endl;
+  // std::cout << current_alpha_estimate[min_z].get_max_index() << std::endl;
+  // std::cout << (*anatomical_sptr)[min_z].get_max_index() << std::endl;
+  // std::cout << current_alpha_estimate[min_z][min_y].get_max_index() << std::endl;
+  // std::cout << (*anatomical_sptr)[min_z][min_y].get_min_index() << std::endl;
+  // std::cout << current_alpha_estimate[min_z][min_y].get_min_index() << std::endl;
+  // std::cout << (*anatomical_sptr)[min_z][min_y].get_max_index() << std::endl;
+  // const int min_z = current_alpha_estimate.get_min_index();
+  // const int max_z = current_alpha_estimate.get_max_index();
+  // const int min_y = current_alpha_estimate[min_z].get_min_index();
+  // const int max_y = current_alpha_estimate[min_z].get_max_index();
+  // const int min_x = current_alpha_estimate[min_z][min_y].get_min_index();
+  // const int max_x = current_alpha_estimate[min_z][min_y].get_max_index();
+  int min_z, max_z, min_y, max_y, min_x, max_x;
+  if (use_compact_implementation) {
+    min_z = (*anatomical_sptr).get_min_index();
+    max_z = (*anatomical_sptr).get_max_index();
+    min_y = (*anatomical_sptr)[min_z].get_min_index();
+    max_y = (*anatomical_sptr)[min_z].get_max_index();
+    min_x = (*anatomical_sptr)[min_z][min_y].get_min_index();
+    max_x = (*anatomical_sptr)[min_z][min_y].get_max_index();
+  } else {
+    min_z = current_alpha_estimate.get_min_index();
+    max_z = current_alpha_estimate.get_max_index();
+    min_y = current_alpha_estimate[min_z].get_min_index();
+    max_y = current_alpha_estimate[min_z].get_max_index();
+    min_x = current_alpha_estimate[min_z][min_y].get_min_index();
+    max_x = current_alpha_estimate[min_z][min_y].get_max_index();
+  }
+
+  // Iterate over the image
+  for (int z=min_z; z<=max_z; z++) {
+    const int min_dz = max(distance.get_min_index(), min_z-z);
+    const int max_dz = min(distance.get_max_index(), max_z-z);
+    for (int y=min_y; y<= max_y; y++) {
+      const int min_dy = max(distance[0].get_min_index(), min_y-y);
+      const int max_dy = min(distance[0].get_max_index(), max_y-y);
+      for (int x=min_x; x<= max_x; x++) {
+        // std::cout << "c" << std::endl;
+        const int min_dx = max(distance[0][0].get_min_index(), min_x-x);
+        const int max_dx = min(distance[0][0].get_max_index(), max_x-x);
+
+        // Iterate over the kernel patch, centered at the current voxel
+        double kernel_sum = 0;
+        for (int dz=min_dz; dz<=max_dz; ++dz) {
+          for (int dy=min_dy; dy<=max_dy; ++dy) {
+            for (int dx=min_dx; dx<=max_dx; ++dx) {
+              // std::cout << "d" << std::endl;
+
+              // Calculate the PET kernel
+              double pet_kernel;
+              if (get_hybrid()) {
+                if(current_alpha_estimate[z][y][x]==0){
+                  continue;
+                }
+
+                pet_kernel = calc_pet_kernel(
+                  x, y, z, min_x, min_y, min_z, max_x, max_y, max_z,
+                  dx, dy, dz, min_dx, min_dy, min_dz, max_dx, max_dy, max_dz,
+                  current_alpha_estimate, use_compact_implementation, grid_spacing, distance);
+              }
+              else {
+                pet_kernel = 1;
+              }
+
+              // Calculate the anatomical kernel
+              const double anatomical_kernel = calc_anatomical_kernel(
+                x, y, z, min_x, min_y, min_z, max_x, max_y, max_z,
+                dx, dy, dz, min_dx, min_dy, min_dz, max_dx, max_dy, max_dz,
+                true, grid_spacing, distance);
+
+              const double kernel = anatomical_kernel * pet_kernel;
+
+              kernelised_image_out[z][y][x]
+                += kernel * image_to_kernelise[z+dz][y+dy][x+dx];
+
+              kernel_sum += kernel;
+              // std::cout << "i" << std::endl;
+            }
+          }
+        }
+
+        if (current_alpha_estimate[z][y][x] == 0) {
+          continue;
+        }
+
+        kernelised_image_out[z][y][x] /= kernel_sum;
+      }
+    }
   }
 }
+
+
+template <typename TargetT>
+double
+KOSMAPOSLReconstruction<TargetT>::
+calc_pet_kernel(int x, int y, int z,
+                int min_x, int min_y, int min_z, int max_x, int max_y, int max_z,
+                int dx, int dy, int dz,
+                int min_dx, int min_dy, int min_dz, int max_dx, int max_dy, int max_dz,
+                const TargetT& current_alpha_estimate, bool use_compact_implementation,
+                const CartesianCoordinate3D<float>& grid_spacing,
+                Array<3, float> distance) {
+  const double pet_intensity_kernel =
+    use_compact_implementation
+    ? calc_intensity_kernel_compact(
+        x, y, z, dx, dy, dz, current_alpha_estimate, sigma_p,
+        current_alpha_estimate[z][y][x])
+    : calc_kernel_from_precalculated(
+        x, y, z, min_x, min_y, min_z, max_x, max_y, max_z,
+        dx, dy, dz, min_dx, min_dy, min_dz, max_dx, max_dy, max_dz,
+        // current_alpha_estimate,
+        *kpnorm_sptr, sigma_p,
+        square(current_alpha_estimate[z][y][x]));
+  const double pet_distance_kernel =
+    gaussian_kernel(distance[dz][dy][dx] / grid_spacing.x(),
+                    sigma_dp);
+  // std::cout << pet_intensity_kernel << " " << pet_distance_kernel << std:: endl;
+  const double pet_kernel = pet_intensity_kernel * pet_distance_kernel;
+  return pet_kernel;
+}
+
+
+
+template <typename TargetT>
+double
+KOSMAPOSLReconstruction<TargetT>::
+calc_anatomical_kernel(int x, int y, int z,
+                       int min_x, int min_y, int min_z, int max_x, int max_y, int max_z,
+                       int dx, int dy, int dz,
+                       int min_dx, int min_dy, int min_dz, int max_dx, int max_dy, int max_dz,
+                       bool use_compact_implementation,
+                       const CartesianCoordinate3D<float>& grid_spacing,
+                       Array<3, float> distance) {
+  const double anatomical_intensity_kernel =
+    use_compact_implementation
+    ? calc_intensity_kernel_compact(
+        x, y, z, dx, dy, dz, *anatomical_sptr, sigma_m, anatomical_sd)
+    : calc_kernel_from_precalculated(
+        x, y, z, min_x, min_y, min_z, max_x, max_y, max_z,
+        dx, dy, dz, min_dx, min_dy, min_dz, max_dx, max_dy, max_dz,
+        // current_alpha_estimate,
+        *kmnorm_sptr, sigma_m, anatomical_sd);
+  const double anatomical_distance_kernel =
+    gaussian_kernel(distance[dz][dy][dx] / grid_spacing.x(),
+                    sigma_dm);
+  const double anatomical_kernel =
+    anatomical_intensity_kernel * anatomical_distance_kernel;
+  return anatomical_kernel;
+}
+
+
+template <typename TargetT>
+double
+KOSMAPOSLReconstruction<TargetT>::
+calc_kernel_from_precalculated(int x, int y, int z,
+                               int min_x, int min_y, int min_z,
+                               int max_x, int max_y, int max_z,
+                               int dx, int dy, int dz,
+                               int min_dx, int min_dy, int min_dz,
+                               int max_dx, int max_dy, int max_dz,
+                               //const TargetT& current_alpha_estimate,
+                               const TargetT& precalculated_norm, double sigma,
+                               double precalc_denom) {
+  // if (precalc_denom == 0) {
+  //   precalc_denom = square(current_alpha_estimate[z][y][x]);
+  // };
+  const int current_ravelled_idx
+    = ravel_index(x, y, z, min_x, min_y, min_z, max_x, max_y, max_z);
+  const int delta_ravelled_idx
+    = ravel_index(dx, dy, dz, min_dx, min_dy, min_dz, max_dx, max_dy, max_dz);
+  const double norm_distance_sq
+    = precalculated_norm[0][current_ravelled_idx][delta_ravelled_idx]
+    / precalc_denom;
+  return gaussian_kernel_already_sq(norm_distance_sq, sigma);
+}
+
+
+template <typename TargetT>
+double
+KOSMAPOSLReconstruction<TargetT>::
+calc_intensity_kernel_compact(int x, int y, int z,
+                              int dx, int dy, int dz,
+                              const TargetT& prior_image, double sigma,
+                              double precalc_denom) {
+  if (precalc_denom == 0) {
+    precalc_denom = prior_image[z][y][x];
+  };
+  const double norm_distance_sq
+    = (prior_image[z][y][x] - prior_image[z+dz][y+dy][x+dx])
+       / precalc_denom;
+  //std::cout << norm_distance_sq << " ";
+  return gaussian_kernel(norm_distance_sq, sigma);
+}
+
 
 template <typename TargetT>
 void 
