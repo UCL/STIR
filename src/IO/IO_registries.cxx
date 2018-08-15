@@ -125,7 +125,8 @@ static RegisterInputFileFormat<ecat::ecat7::ECAT7DynamicDiscretisedDensityInputF
 #ifdef HAVE_ITK
 // we'll put it at low priority such that it is tried (almost) last, i.e. after STIR specific input routines
 // This is because we translate the ITK info currently incompletely.
-static RegisterInputFileFormat<ITKImageInputFileFormat> idummy8(10000);
+static RegisterInputFileFormat<ITKImageInputFileFormat<DiscretisedDensity<3,float> > > idummy6(10000);
+static RegisterInputFileFormat<ITKImageInputFileFormat<VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > > > idummy7(10000);
 #endif
 static RegisterInputFileFormat<InterfileDynamicDiscretisedDensityInputFileFormat> dyndummy_intf(1);
 static RegisterInputFileFormat<InterfileParametricDiscretisedDensityInputFileFormat> paradummy_intf(1);

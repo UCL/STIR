@@ -70,6 +70,7 @@ public:
   inline CartesianCoordinate3D(const coordT&, const coordT&, const coordT&);
   inline CartesianCoordinate3D(const BasicCoordinate<3, coordT>& c);
   inline CartesianCoordinate3D& operator=(const BasicCoordinate<3, coordT>& c);
+  inline CartesianCoordinate3D& operator=(const coordT& c);
 #ifdef OLDDESIGN
   inline CartesianCoordinate3D(const Point3D& p);
 #endif

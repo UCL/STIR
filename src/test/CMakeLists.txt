@@ -36,6 +36,7 @@ Set(${dir_INVOLVED_TEST_EXE_SOURCES}
 	IO/test_IO_DiscretisedDensity
 	IO/test_IO_DynamicDiscretisedDensity
 	IO/test_IO_ParametricDiscretisedDensity
+	IO/test_IO_ITKMulticomponent
 	test_linear_regression
 	test_stir_math
         # the next 2 are interactive, so we don't add a test for it, but only compile them
@@ -123,6 +124,8 @@ foreach(file_format ${file_format_tests})
   ADD_TEST(${test_name}
 		${CMAKE_CURRENT_BINARY_DIR}/test_IO_DiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format})
 endforeach()
+ADD_TEST(test_IO_ITKMulticomponent
+${CMAKE_CURRENT_BINARY_DIR}/test_IO_ITKMulticomponent disp.nii)
 
 # Parametric tests
 ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile 

@@ -504,6 +504,7 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
  instantiations
  **********************************************/
 template class VoxelsOnCartesianGrid<float>;
+template class VoxelsOnCartesianGrid<CartesianCoordinate3D<float> >;
 
 END_NAMESPACE_STIR
 
