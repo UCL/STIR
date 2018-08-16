@@ -158,9 +158,10 @@ public:
   const bool get_only_2D() const;
   bool get_hybrid();
 
-   shared_ptr<TargetT>& get_kpnorm_sptr();
-   shared_ptr<TargetT>& get_kmnorm_sptr();
-   shared_ptr<TargetT>& get_anatomical_sptr();
+   // shared_ptr<TargetT>& get_kpnorm_sptr();
+   // shared_ptr<TargetT>& get_kmnorm_sptr();
+   shared_ptr<TargetT>& get_pet_prior_sptr();
+   shared_ptr<TargetT>& get_anatomical_prior_sptr();
 
     /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
@@ -168,9 +169,10 @@ public:
    one place, all objects that use the shared pointer will be affected.
   */
 
-  void set_kpnorm_sptr(shared_ptr<TargetT>&);
-  void set_kmnorm_sptr(shared_ptr<TargetT>&);
-  void set_anatomical_sptr(shared_ptr<TargetT>&);
+  // void set_kpnorm_sptr(shared_ptr<TargetT>&);
+  // void set_kmnorm_sptr(shared_ptr<TargetT>&);
+  void set_pet_prior_sptr(shared_ptr<TargetT>&);
+  void set_anatomical_prior_sptr(shared_ptr<TargetT>&);
 
 
   //! boolean value to determine if the update images have to be written to disk
@@ -188,7 +190,19 @@ public:
 
   //! Anatomical image filename
   std::string anatomical_image_filename;
-  shared_ptr<TargetT> anatomical_sptr;
+
+  //! PET image used to calculate PET kernel
+  shared_ptr<const TargetT> pet_prior_sptr;
+
+  //! Anatomical image used to calculate PET kernel
+  shared_ptr<TargetT> anatomical_prior_sptr;
+
+  /*! Internal pointers to norms for PET and MR respectively.
+
+      Note that although these are type TargetT, they are used as 2D
+      images. The penultimate dimension is the number voxels in the
+      image, and the final dimension is the number of voxels in the kernel.
+  */
   shared_ptr<TargetT> kpnorm_sptr,kmnorm_sptr;
  //kernel parameters
   int num_neighbours,num_non_zero_feat,num_elem_neighbourhood,num_voxels,dimz,dimy,dimx;
