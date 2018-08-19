@@ -336,6 +336,16 @@ BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>:
 }
 
 
+template <int num_dimensions, class coordT>
+BasicCoordinate<num_dimensions, coordT> BasicCoordinate<num_dimensions, coordT>::
+operator-() const
+{
+  BasicCoordinate<num_dimensions, coordT> tmp(0);
+  tmp -= (*this);
+  return tmp;
+}
+
+
 
 /*
    External functions
