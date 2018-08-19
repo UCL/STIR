@@ -172,8 +172,9 @@ http://groups.google.com/group/comp.lang.c%2B%2B.moderated/browse_thread/thread/
   //@{
   inline BasicCoordinate operator+ (const coordT& a) const;
   inline BasicCoordinate operator- (const coordT& a) const;
-  inline BasicCoordinate operator* (const coordT& a) const;	      
+  inline BasicCoordinate operator* (const coordT& a) const;
   inline BasicCoordinate operator/ (const coordT& a) const;
+  inline BasicCoordinate operator- () const;
   //@}
 
   //! \name basic iterator support
