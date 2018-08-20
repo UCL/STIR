@@ -199,7 +199,18 @@ VoxelsOnCartesianGridTests::run_tests()
                                                 scanner_ptr->get_default_bin_size()/zoom,
                                                 scanner_ptr->get_default_bin_size()/zoom),
                    "test on grid spacing");
-    check_if_equal(ob5.get_origin(), origin);
+    check_if_equal(// image centre
+                   ob5.get_origin()
+                   + CartesianCoordinate3D<float>((z_size-1)
+                                                  * ob5.get_grid_spacing()[1] / 2,
+                                                  0, 0),
+                   // gantry cenre
+                   origin
+                   + CartesianCoordinate3D<float>((scanner_ptr->get_num_rings() - 1)
+                                                  * scanner_ptr->get_ring_spacing()
+                                                  / 2,
+                                                  0, 0),
+                   "test on origin");
     
     {
       cerr << "Tests get_empty_voxels_on_cartesian_grid\n";
