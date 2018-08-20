@@ -4,6 +4,8 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
     Copyright (C) 2018, University College London
+    Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
+                        Australian eHealth Research Centre
 
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -25,6 +27,7 @@
   \author Sanida Mustafovic 
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
+  \author Ashley Gillman
 
 
 */
@@ -246,15 +249,24 @@ init_from_proj_data_info(const ProjDataInfo& proj_data_info,
   if (y_size_used == 0)
     warning("VoxelsOnCartesianGrid: constructed image with y_size 0\n");
 
-  // Origin is -'ve of the location of the vendor frame of reference
-  // in this space.
+  /* we want centre_of_gantry + offset
+           = origin_in_gantry_space + origin + image_centre_in_image_space
+
+     NB: The following is only valid because we want gantry and image
+     space have same axes direction. Otherwise vectors in image and
+     gantry space couln't be added directly.
+  */
+
   // TODO: is there something weird happens if {x,y}_size is even?
-  CartesianCoordinate3D<float> centre_of_gantry
-    = CartesianCoordinate3D<float>(z_size * z_sampling / 2.F, 0, 0);
-  this->set_origin(
-    -(centre_of_gantry
-      + proj_data_info.get_location_of_vendor_frame_of_reference_in_gantry_space())
-    + offset);
+  CartesianCoordinate3D<float> image_centre_in_image_space
+    = CartesianCoordinate3D<float>((z_size - 1) * z_sampling / 2.F, 0, 0);
+  CartesianCoordinate3D<float> origin_in_gantry_space
+    = proj_data_info.get_location_of_vendor_frame_of_reference_in_gantry_space();
+
+  std::cout << "zsize: " << z_size
+            << ", zsample: " << z_sampling << std::endl;
+  this->set_origin(-(origin_in_gantry_space + image_centre_in_image_space)
+                   + offset);
 
   IndexRange3D range(0, z_size-1,
                      -(y_size_used/2), -(y_size_used/2) + y_size_used-1,
