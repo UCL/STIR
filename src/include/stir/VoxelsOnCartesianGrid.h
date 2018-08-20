@@ -86,9 +86,11 @@ VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr,
 		      const CartesianCoordinate3D<float>& origin, 
 		      const BasicCoordinate<3,float>& grid_spacing);
 
-  // KT 10/12/2001 replace 2 constructors with the more general one below
-//! use ProjDataInfo to obtain the size information
+//! use ProjDataInfo to obtain the size and origin information
 /*!
+   The resulting FOV will be centered around the middle of the gantry,
+   with some specified offset.
+
    When sizes.x() is -1, a default size in x is found by taking the diameter 
    of the FOV spanned by the projection data. Similar for sizes.y().
 
@@ -101,7 +103,7 @@ VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr,
 
    Actual index ranges start from 0 for z, but from -(x_size_used/2) for x (and similar for y).
 
-   x,y grid spacing are set to the 
+   x,y grid spacing are set to the
    <code>proj_data_info_ptr-\>get_scanner_ptr()-\>get_default_bin_size()/zoom</code>.
    This is to make sure that the voxel size is independent on if arc-correction is used or not.
    If the default bin size is 0, the sampling distance in s (for bin 0) is used.
@@ -109,11 +111,10 @@ VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr,
    z grid spacing is set to half the scanner ring distance.
 
    All voxel values are set 0.
-
 */
 VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info_ptr,
 		      const float zoom = 1.F,
-		      const CartesianCoordinate3D<float>& origin = CartesianCoordinate3D<float>(0.F,0.F,0.F), 
+		      const CartesianCoordinate3D<float>& offset = CartesianCoordinate3D<float>(0.F,0.F,0.F),
 		      const CartesianCoordinate3D<int>& sizes = CartesianCoordinate3D<int>(-1,-1,-1));
 
 //! Constructor from exam_info and proj_data_info
@@ -125,7 +126,7 @@ VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info_ptr,
 VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr,
                       const ProjDataInfo& proj_data_info,
 		      const float zoom = 1.F,
-		      const CartesianCoordinate3D<float>& origin = CartesianCoordinate3D<float>(0.F,0.F,0.F),
+		      const CartesianCoordinate3D<float>& offset = CartesianCoordinate3D<float>(0.F,0.F,0.F),
 		      const CartesianCoordinate3D<int>& sizes = CartesianCoordinate3D<int>(-1,-1,-1));
 
 
@@ -190,6 +191,12 @@ void grow_z_range(const int min_z, const int max_z);
 
   //@}
 
+private:
+  void
+  init_from_proj_data_info(const ProjDataInfo& proj_data_info,
+                           const float zoom,
+                           const CartesianCoordinate3D<float>& offset,
+                           const CartesianCoordinate3D<int>& sizes);
 };
 
 
@@ -197,15 +204,3 @@ END_NAMESPACE_STIR
 
 #include "stir/VoxelsOnCartesianGrid.inl"
 #endif
-
-
-
-
-
-
-
-
-
-
-
-

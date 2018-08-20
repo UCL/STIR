@@ -170,7 +170,7 @@ VoxelsOnCartesianGridTests::run_tests()
                                                 scanner_ptr->get_default_bin_size()/zoom,
                                                 scanner_ptr->get_default_bin_size()/zoom),
                    "test on grid spacing");
-    check_if_equal(ob4.get_origin(), origin);
+    check_if_equal(ob4.get_origin(), origin, "test on origin");
   }
   {
     
