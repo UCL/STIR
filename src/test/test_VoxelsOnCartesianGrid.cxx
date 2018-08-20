@@ -204,7 +204,7 @@ VoxelsOnCartesianGridTests::run_tests()
                    + CartesianCoordinate3D<float>((z_size-1)
                                                   * ob5.get_grid_spacing()[1] / 2,
                                                   0, 0),
-                   // gantry cenre
+                   // offset from gantry centre
                    origin
                    + CartesianCoordinate3D<float>((scanner_ptr->get_num_rings() - 1)
                                                   * scanner_ptr->get_ring_spacing()
