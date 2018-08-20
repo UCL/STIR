@@ -74,6 +74,9 @@ set(${dir_LIB_SOURCES}
         num_threads
         GeneralisedPoissonNoiseGenerator
         FilePath
+        GeometryBlocksOnCylindrical
+        ProjDataInfoBlocksOnCylindrical
+        ProjDataInfoBlocksOnCylindricalNoArcCorr
 )
 
 if (NOT HAVE_SYSTEM_GETOPT)

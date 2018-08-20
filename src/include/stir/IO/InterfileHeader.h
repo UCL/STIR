@@ -24,6 +24,7 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
+  \author Parisa Khateri
 
   See http://stir.sourceforge.net for a description of the full
   proposal for Interfile headers for 3D PET.
@@ -252,6 +253,15 @@ private:
   float energy_resolution;
   //! Reference energy.
   float reference_energy;
+  
+  //! new variables for block geometry
+  std::string scanner_orientation;
+  std::string scanner_geometry;
+  float axial_distance_between_crystals_in_cm;
+  float transaxial_distance_between_crystals_in_cm;
+  float axial_distance_between_blocks_in_cm;
+  float transaxial_distance_between_blocks_in_cm;
+
   // end scanner parameters
 
   double effective_central_bin_size_in_cm;

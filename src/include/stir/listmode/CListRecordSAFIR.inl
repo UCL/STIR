@@ -28,6 +28,10 @@
 #include "stir/LORCoordinates.h"
 #include "stir/Succeeded.h"
 
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
+#include "stir/CartesianCoordinate3D.h"
+
 START_NAMESPACE_STIR
 
 template <class Derived>
@@ -45,6 +49,67 @@ CListEventSAFIR<Derived>::get_LOR() const
 	lor.p2() = map->get_detector_coordinate(det_pos_pair.pos2());
 
 	return lor;
+}
+
+//! author Parisa Khateri
+//! Overrides the default implementation to use get_detection_position() which should be faster.
+template <class Derived>
+void
+CListEventSAFIR<Derived>::
+get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
+{
+	DetectionPositionPair<> det_pos_pair;
+	static_cast<const Derived*>(this)->get_data().get_detection_position_pair(det_pos_pair);
+
+	//check aligned detectors
+  if (det_pos_pair.pos1().tangential_coord() == det_pos_pair.pos2().tangential_coord())
+  {
+		/*std::cerr<<"WARNING: aligned detectors: det1="<<det_pos_pair.pos1().tangential_coord()
+              	<<"\tdet2="<<det_pos_pair.pos2().tangential_coord()
+                <<"\tring1="<<det_pos_pair.pos1().axial_coord()
+                <<"\tring2="<<det_pos_pair.pos2().axial_coord()<<"\n";*/
+		bin.set_bin_value(-1);
+  }
+	
+	if(!map) stir::error("Crystal map not set.");
+
+  stir::CartesianCoordinate3D<float> c1 = map->get_detector_coordinate(det_pos_pair.pos1());
+  stir::CartesianCoordinate3D<float> c2 = map->get_detector_coordinate(det_pos_pair.pos2());
+  int det1, det2, ring1, ring2;
+
+  if(proj_data_info.get_scanner_ptr()->get_scanner_geometry() == "Cylindrical"
+                       && bin.get_bin_value()!=-1)
+  {
+     //const ProjDataInfoCylindricalNoArcCorr& proj_data_info_cyl =
+      //         dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info);
+               
+     LORAs2Points<float> lor;
+   	 lor.p1() = c1;
+     lor.p2() = c2;
+     bin = proj_data_info.get_bin(lor);
+  }
+  else if(proj_data_info.get_scanner_ptr()->get_scanner_geometry() == "BlocksOnCylindrical"
+               				&& bin.get_bin_value()!=-1)
+  {
+		const ProjDataInfoBlocksOnCylindricalNoArcCorr& proj_data_info_blk =
+                dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr&>(proj_data_info);
+
+    if (proj_data_info_blk.find_scanner_coordinates_given_cartesian_coordinates(det1, det2, ring1, ring2, c1, c2) == Succeeded::no)
+    		bin.set_bin_value(-1);
+    else
+    {
+			assert(!(ring1<0 ||
+               ring1>=proj_data_info_blk.get_scanner_ptr()->get_num_rings() ||
+							 ring2<0 ||
+							 ring2>=proj_data_info_blk.get_scanner_ptr()->get_num_rings())
+						 );
+      
+			if(proj_data_info_blk.get_bin_for_det_pair(bin, det1, ring1, det2, ring2)==Succeeded::yes)
+					bin.set_bin_value(1);
+      else
+					bin.set_bin_value(-1);
+     }
+  }
 }
 
 void CListEventDataSAFIR::get_detection_position_pair(DetectionPositionPair<>& det_pos_pair)

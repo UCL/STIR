@@ -24,6 +24,8 @@
 
   \author Kris Thielemans
   \author PARAPET project
+  \author Parisa Khateri
+
 
 */
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
@@ -33,6 +35,8 @@
 #include "stir/round.h"
 #include <typeinfo>
 #include <algorithm>
+#include "stir/ProjDataInfoBlocksOnCylindrical.h"
+
 using std::min;
 using std::max;
 
@@ -110,6 +114,74 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
   }
 }
 
+//overload for block geometry
+static void
+find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
+                                         VectorWithOffset<int>& num_planes_per_axial_pos,
+                                         VectorWithOffset<float>& axial_pos_to_z_offset,
+                                         const ProjDataInfoBlocksOnCylindrical* proj_data_info_blk_ptr,
+                                         const DiscretisedDensityOnCartesianGrid<3,float> *  cartesian_grid_info_ptr)
+
+{
+  const int min_segment_num = proj_data_info_blk_ptr->get_min_segment_num();
+  const int max_segment_num = proj_data_info_blk_ptr->get_max_segment_num();
+
+  num_planes_per_axial_pos = VectorWithOffset<int>(min_segment_num, max_segment_num);
+  axial_pos_to_z_offset = VectorWithOffset<float>(min_segment_num, max_segment_num);
+
+  // TODO and WARNING: get_grid_spacing()[1] is z()
+  const float image_plane_spacing = cartesian_grid_info_ptr->get_grid_spacing()[1];
+
+  {
+    const float num_planes_per_scanner_ring_float =
+      proj_data_info_blk_ptr->get_ring_spacing() / image_plane_spacing;
+
+    num_planes_per_scanner_ring = round(num_planes_per_scanner_ring_float);
+    //parisa: temporarily comment
+    /*if (fabs(num_planes_per_scanner_ring_float - num_planes_per_scanner_ring) > 1.E-2)
+      error("DataSymmetriesForBins_PET_CartesianGrid can currently only support z-grid spacing "
+           "equal to the ring spacing of the scanner divided by an integer. Sorry\n");*/
+  }
+
+  /* disabled as we support this now
+  if (fabs( cartesian_grid_info_ptr->get_origin().x()) > 1.E-2)
+    error("DataSymmetriesForBins_PET_CartesianGrid can currently only support x-origin = 0 "
+         "Sorry\n");
+  if (fabs( cartesian_grid_info_ptr->get_origin().y()) > 1.E-2)
+    error("DataSymmetriesForBins_PET_CartesianGrid can currently only support y-origin = 0 "
+         "Sorry\n");
+  */
+
+  for (int segment_num=min_segment_num; segment_num<=max_segment_num; ++segment_num)
+  {
+    {
+      const float
+        num_planes_per_axial_pos_float =
+        proj_data_info_blk_ptr->get_axial_sampling(segment_num)/image_plane_spacing;
+
+      num_planes_per_axial_pos[segment_num] = round(num_planes_per_axial_pos_float);
+      //parisa: temporarily comment
+      /*if (fabs(num_planes_per_axial_pos_float - num_planes_per_axial_pos[segment_num]) > 1.E-5)
+        error("DataSymmetriesForBins_PET_CartesianGrid can currently only support z-grid spacing "
+             "equal to the axial sampling in the projection data divided by an integer. Sorry\n");*/
+
+    }
+
+    const float delta = proj_data_info_blk_ptr->get_average_ring_difference(segment_num);
+
+    // KT 20/06/2001 take origin.z() into account
+    axial_pos_to_z_offset[segment_num] =
+      (cartesian_grid_info_ptr->get_max_index() + cartesian_grid_info_ptr->get_min_index())/2.F
+      - cartesian_grid_info_ptr->get_origin().z()/image_plane_spacing
+      -
+      (num_planes_per_axial_pos[segment_num]
+       *(proj_data_info_blk_ptr->get_max_axial_pos_num(segment_num)
+         + proj_data_info_blk_ptr->get_min_axial_pos_num(segment_num))
+       + num_planes_per_scanner_ring*delta)/2;
+  }
+}
+
+
 /*! The DiscretisedDensity pointer has to point to an object of 
   type  DiscretisedDensityOnCartesianGrid (or a derived type).
   
@@ -134,6 +206,9 @@ DataSymmetriesForBins_PET_CartesianGrid
     do_symmetry_swap_s(do_symmetry_swap_s_v),
     do_symmetry_shift_z(do_symmetry_shift_z)
 {
+    //Cylindrical implementation
+    if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="Cylindrical")
+    {
   if(dynamic_cast<ProjDataInfoCylindrical *>(proj_data_info_ptr.get()) == NULL)
     error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
           "(can only handle projection data corresponding to a cylinder)\n",
@@ -215,6 +290,54 @@ DataSymmetriesForBins_PET_CartesianGrid
                                          axial_pos_to_z_offset,
                                          static_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get()),
                                          cartesian_grid_info_ptr);
+    }
+  //Block implementation
+  if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="BlocksOnCylindrical")
+  {
+    if (dynamic_cast<ProjDataInfoBlocksOnCylindrical *>(proj_data_info_ptr.get()) == NULL)
+      error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
+            "(can only handle projection data corresponding to blocks on a cylinder)\n",
+            typeid(*proj_data_info_ptr).name());
+
+    const DiscretisedDensityOnCartesianGrid<3,float> *
+      cartesian_grid_info_ptr =
+       dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float> *>
+        (image_info_ptr.get());
+
+    if (cartesian_grid_info_ptr == NULL)
+      error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: %s\n",
+        typeid(*image_info_ptr).name());
+
+    // WARNING get_grid_spacing()[1] == z
+    //note: origin by default is (0,0,0)
+    const float z_origin_in_planes =
+      image_info_ptr->get_origin().z()/cartesian_grid_info_ptr->get_grid_spacing()[1];
+    // z_origin_in_planes should be an integer
+    if (fabs(round(z_origin_in_planes) - z_origin_in_planes) > 1.E-3F)
+      error("DataSymmetriesForBins_PET_CartesianGrid: the shift in the "
+            "z-direction of the origin (which is %g) should be a multiple of the plane "
+            "separation (%g)\n",
+            image_info_ptr->get_origin().z(), cartesian_grid_info_ptr->get_grid_spacing()[1]);
+
+    if (this->do_symmetry_90degrees_min_phi||
+        this->do_symmetry_180degrees_min_phi||
+        this->do_symmetry_swap_segment||
+        this->do_symmetry_swap_s)
+     {
+       warning("Disabling all symmetries except for symmtery_z since they are not implemented in block geometry yet.");
+       this->do_symmetry_90degrees_min_phi =
+       this->do_symmetry_180degrees_min_phi =
+       this->do_symmetry_swap_segment =
+       this->do_symmetry_swap_s = false;
+     }
+
+    find_relation_between_coordinate_systems(
+            num_planes_per_scanner_ring,
+            num_planes_per_axial_pos,
+            axial_pos_to_z_offset,
+            static_cast<const ProjDataInfoBlocksOnCylindrical *>(proj_data_info_ptr.get()),
+            cartesian_grid_info_ptr);
+  }
 }
 
 

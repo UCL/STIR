@@ -26,6 +26,7 @@
   \author Mustapha Sadki
   \author Kris Thielemans
   \author PARAPET project
+  \author Parisa Khateri
 */
 
 /* History
@@ -58,6 +59,7 @@
 #include <algorithm>
 #include <math.h>
 #include <boost/format.hpp>
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
 
 #ifndef STIR_NO_NAMESPACE
 using std::min;
@@ -308,6 +310,8 @@ set_up(
 
   if (use_actual_detector_boundaries)
     {
+  if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()== "Cylindrical")
+    {
       const ProjDataInfoCylindricalNoArcCorr * proj_data_info_cyl_ptr =
         dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(proj_data_info_ptr.get());
       if (proj_data_info_cyl_ptr== 0)
@@ -334,7 +338,38 @@ set_up(
               use_actual_detector_boundaries = false;
             }
         }
+      }
+      else
+      {
+      const ProjDataInfoBlocksOnCylindricalNoArcCorr * proj_data_info_blk_ptr =
+        dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr *>(proj_data_info_ptr.get());
 
+      if (proj_data_info_blk_ptr== 0)
+      {
+        warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
+                " is reset to false as the projection data should be non-arccorected.\n");
+        use_actual_detector_boundaries = false;
+      }
+      else
+      {
+        bool nocompression =
+          proj_data_info_blk_ptr->get_view_mashing_factor()==1;
+        for (int segment_num=proj_data_info_blk_ptr->get_min_segment_num();
+             nocompression && segment_num <= proj_data_info_blk_ptr->get_max_segment_num();
+             ++segment_num)
+          nocompression=
+            proj_data_info_blk_ptr->get_min_ring_difference(segment_num) ==
+            proj_data_info_blk_ptr->get_max_ring_difference(segment_num);
+
+        if (!nocompression)
+         {
+          warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
+                    " is reset to false as the projection data as either mashed or uses axial compression\n");
+            use_actual_detector_boundaries = false;
+         }
+      }
+        }
+ 
       if (use_actual_detector_boundaries)
         warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries==true\n");
 
@@ -563,6 +598,8 @@ calculate_proj_matrix_elems_for_one_bin(
   }
   else
   {
+    if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()== "Cylindrical")
+    {
     // can be static_cast later on
     const ProjDataInfoCylindricalNoArcCorr& proj_data_info_noarccor =
     dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_ptr);
@@ -587,6 +624,16 @@ calculate_proj_matrix_elems_for_one_bin(
     const float old_s_in_mm=proj_data_info_ptr->get_s(bin);
     if (fabs(s_in_mm-old_s_in_mm)>proj_data_info_ptr->get_sampling_in_s(bin)*.0001)
       warning("tangential_pos_num %d old_s_in_mm %g new_s_in_mm %g\n",bin.tangential_pos_num(), old_s_in_mm, s_in_mm);
+    }
+    else
+    {
+      // can be static_cast later on
+      const ProjDataInfoBlocksOnCylindricalNoArcCorr& proj_data_info_noarccor =
+      dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr&>(*proj_data_info_ptr);
+
+      phi = proj_data_info_noarccor.get_phi(bin);
+      s_in_mm = proj_data_info_noarccor.get_s(bin);
+   }
 
   }
   
@@ -778,8 +825,11 @@ add_adjacent_z(ProjMatrixElemsForOneBin& lor,
   assert(z_of_first_voxel-.5<=right_edge_of_TOR);
   // first reserve enough memory for the whole vector
   // this speeds things up.
-  const int num_overlapping_voxels =
-    round(ceil(right_edge_of_TOR-z_of_first_voxel+.5));
+  // !author Parisa Khateri: modify to take into account voxels before the first LOR in raytracing.
+  const int num_overlapping_voxels = z_of_first_voxel > 0.5?
+           round(ceil(right_edge_of_TOR-z_of_first_voxel+.5)) + 1:
+           round(ceil(right_edge_of_TOR-z_of_first_voxel+.5));
+
   lor.reserve(lor.size() * num_overlapping_voxels);
   
   // point to end of original LOR, i.e. first plane
@@ -837,6 +887,47 @@ add_adjacent_z(ProjMatrixElemsForOneBin& lor,
             }
         }
     } // loop over z_index
+    
+    // !author Parisa Khateri: modify to take into account voxels before the first LOR in raytracing.
+    if (z_of_first_voxel > 0.5)
+    {
+      int z_index= -1;
+      const float overlap_of_voxel_with_TOR = z_of_first_voxel - .5F;
+      assert(num_overlapping_voxels>=z_index);
+      assert(overlap_of_voxel_with_TOR < 1.0001);
+      const int new_z = lor.begin()->coord1()+z_index;
+      if (overlap_of_voxel_with_TOR>.9999) // test if it is 1
+      {
+        // just copy the value
+        std::size_t count = 0; // counter for elements in original LOR
+        for (  ProjMatrixElemsForOneBin::const_iterator element_ptr = lor.begin();
+               count != org_size; //element_ptr != element_end;
+               ++element_ptr, ++count)
+        {
+          assert(lor.size()+1 <= lor.capacity()); // not really necessary now, but check on reserve()  best for performance
+          assert(new_z == element_ptr->coord1()+z_index);
+          lor.push_back(ProjMatrixElemsForOneBin::value_type(
+                        Coordinate3D<int>(new_z, element_ptr->coord2(), element_ptr->coord3()),
+                        element_ptr->get_value()));
+        }
+      }
+      else
+      {
+        // multiply the value with the overlap
+        std::size_t count = 0; // counter for elements in original LOR
+        for (  ProjMatrixElemsForOneBin::const_iterator element_ptr = lor.begin();
+               count != org_size; //element_ptr != element_end;
+               ++element_ptr, ++count)
+        {
+          assert(lor.size()+1 <= lor.capacity());
+          assert(new_z == element_ptr->coord1()+z_index);
+          lor.push_back(ProjMatrixElemsForOneBin::value_type(
+                        Coordinate3D<int>(new_z, element_ptr->coord2(), element_ptr->coord3()),
+                        element_ptr->get_value()*overlap_of_voxel_with_TOR));
+        }
+      }
+    
+    }//Parisa end
 
   // now check original z
   {

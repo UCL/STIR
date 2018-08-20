@@ -28,6 +28,7 @@
   \author Kris Thielemans
   \author Long Zhang (set*() functions)
   \author PARAPET project
+  \author Parisa Khateri
 
 
 */
@@ -229,6 +230,42 @@ Scanner::get_reference_energy() const
     return reference_energy;
 }
 
+std::string
+Scanner::get_scanner_orientation() const
+{
+  return scanner_orientation;
+}
+
+std::string
+Scanner::get_scanner_geometry() const
+{
+  return scanner_geometry;
+}
+
+float
+Scanner::get_axial_crystal_spacing() const
+{
+       return axial_crystal_spacing;
+}
+
+float
+Scanner::get_transaxial_crystal_spacing() const
+{
+       return transaxial_crystal_spacing;
+}
+
+float
+Scanner::get_transaxial_block_spacing() const
+{
+       return transaxial_block_spacing;
+}
+
+float
+Scanner::get_axial_block_spacing() const
+{
+       return axial_block_spacing;
+}
+
 //************************ set ******************************8
 
 void Scanner::set_type(const Type & new_type)
@@ -332,6 +369,36 @@ void
 Scanner::set_reference_energy(const float new_num)
 {
     reference_energy = new_num;
+}
+
+void Scanner::set_scanner_orientation(const std::string& new_scanner_orientation)
+{
+  scanner_orientation = new_scanner_orientation;
+}
+
+void Scanner::set_scanner_geometry(const std::string& new_scanner_geometry)
+{
+  scanner_geometry = new_scanner_geometry;
+}
+
+void Scanner::set_axial_crystal_spacing(const float&  new_spacing)
+{
+  axial_crystal_spacing = new_spacing;
+}
+
+void Scanner::set_transaxial_crystal_spacing(const float&  new_spacing)
+{
+  transaxial_crystal_spacing = new_spacing;
+}
+
+void Scanner::set_transaxial_block_spacing(const float&  new_spacing)
+{
+  transaxial_block_spacing = new_spacing;
+}
+
+void Scanner::set_axial_block_spacing(const float&  new_spacing)
+{
+  axial_block_spacing = new_spacing;
 }
 
 /********    Calculate singles bin index from detection position    *********/

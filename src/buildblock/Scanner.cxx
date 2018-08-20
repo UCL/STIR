@@ -31,6 +31,7 @@
   \author Kris Thielemans
   \author Claire Labbe
   \author PARAPET project
+  \author Parisa Khateri
 */
 
 #include "stir/Scanner.h"
@@ -434,7 +435,13 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
                  int num_transaxial_crystals_per_singles_unit_v,
                  int num_detector_layers_v,
                  float energy_resolution_v,
-                 float reference_energy_v)
+                 float reference_energy_v,
+                 const string& scanner_orientation_v,
+                 const string& scanner_geometry_v,
+                 float axial_crystal_spacing_v,
+                 float transaxial_crystal_spacing_v,
+                 float axial_block_spacing_v,
+                 float transaxial_block_spacing_v)
 {
   set_params(type_v, list_of_names_v, num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -449,7 +456,13 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
              num_transaxial_crystals_per_singles_unit_v,
              num_detector_layers_v,
              energy_resolution_v,
-             reference_energy_v);
+             reference_energy_v,
+             scanner_orientation_v,
+             scanner_geometry_v,
+             axial_crystal_spacing_v,
+             transaxial_crystal_spacing_v,
+             axial_block_spacing_v,
+             transaxial_block_spacing_v);
 }
 
 
@@ -466,7 +479,13 @@ Scanner::Scanner(Type type_v, const string& name,
                  int num_transaxial_crystals_per_singles_unit_v,
                  int num_detector_layers_v,
                  float energy_resolution_v,
-                 float reference_energy_v) 
+                 float reference_energy_v,
+                 const string& scanner_orientation_v,
+                 const string& scanner_geometry_v,
+                 float axial_crystal_spacing_v,
+                 float transaxial_crystal_spacing_v,
+                 float axial_block_spacing_v,
+                 float transaxial_block_spacing_v) 
 {
   set_params(type_v, string_list(name), num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -481,7 +500,13 @@ Scanner::Scanner(Type type_v, const string& name,
              num_transaxial_crystals_per_singles_unit_v,
              num_detector_layers_v,
              energy_resolution_v,
-             reference_energy_v);
+             reference_energy_v,
+             scanner_orientation_v,
+             scanner_geometry_v,
+             axial_crystal_spacing_v,
+             transaxial_crystal_spacing_v,
+             axial_block_spacing_v,
+             transaxial_block_spacing_v);
 }
 
 
@@ -506,7 +531,13 @@ set_params(Type type_v,const list<string>& list_of_names_v,
            int num_transaxial_crystals_per_singles_unit_v,
            int num_detector_layers_v,
            float energy_resolution_v,
-           float reference_energy_v)
+           float reference_energy_v,
+           const string& scanner_orientation_v,
+           const string& scanner_geometry_v,
+           float axial_crystal_spacing_v,
+           float transaxial_crystal_spacing_v,
+           float axial_block_spacing_v,
+           float transaxial_block_spacing_v)
 {
   set_params(type_v, list_of_names_v, num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -521,7 +552,13 @@ set_params(Type type_v,const list<string>& list_of_names_v,
              num_transaxial_crystals_per_singles_unit_v,
 	     num_detector_layers_v,
              energy_resolution_v,
-             reference_energy_v);
+             reference_energy_v,
+             scanner_orientation_v,
+             scanner_geometry_v,
+             axial_crystal_spacing_v,
+             transaxial_crystal_spacing_v,
+             axial_block_spacing_v,
+             transaxial_block_spacing_v);
 }
 
 
@@ -542,7 +579,13 @@ set_params(Type type_v,const list<string>& list_of_names_v,
            int num_transaxial_crystals_per_singles_unit_v,
            int num_detector_layers_v,
            float energy_resolution_v,
-           float reference_energy_v)
+           float reference_energy_v,
+           const string& scanner_orientation_v,
+           const string& scanner_geometry_v,
+           float axial_crystal_spacing_v,
+           float transaxial_crystal_spacing_v,
+           float axial_block_spacing_v,
+           float transaxial_block_spacing_v)
 {
   type = type_v;
   list_of_names = list_of_names_v;  
@@ -565,6 +608,13 @@ set_params(Type type_v,const list<string>& list_of_names_v,
 
   energy_resolution = energy_resolution_v;
   reference_energy = reference_energy_v;
+  
+  scanner_orientation = scanner_orientation_v;
+  scanner_geometry = scanner_geometry_v;
+  axial_crystal_spacing = axial_crystal_spacing_v;
+  transaxial_crystal_spacing = transaxial_crystal_spacing_v;
+  axial_block_spacing = axial_block_spacing_v;
+  transaxial_block_spacing = transaxial_block_spacing_v;
 
 }
 
@@ -699,6 +749,37 @@ check_consistency() const
 	  }
       }
   }
+  
+  if (get_scanner_geometry() == "BlocksOnCylindrical")
+  {//! Check consistency of axial and transaxial spacing for block geometry
+      if (get_axial_crystal_spacing()*get_num_axial_crystals_per_block() > get_axial_block_spacing())
+      {
+         warning("Scanner %s: inconsistent axial spacing:\n"
+              "\taxial_crystal_spacing %f muliplied by num_axial_crystals_per_block %d should fit into axial_block_spacing %f",
+                 this->get_name().c_str(),
+           get_axial_crystal_spacing(), get_num_axial_crystals_per_block(), get_axial_block_spacing());
+         return Succeeded::no;
+        }
+        if (get_transaxial_crystal_spacing()*get_num_transaxial_crystals_per_block() > get_transaxial_block_spacing())
+        {
+          warning("Scanner %s: inconsistent transaxial spacing:\n"
+                "\ttransaxial_crystal_spacing %f muliplied by num_transaxial_crystals_per_block %d should fit into transaxial_block_spacing %f",
+              this->get_name().c_str(),
+              get_transaxial_crystal_spacing(), get_num_transaxial_crystals_per_block(), get_transaxial_block_spacing());
+          return Succeeded::no;
+        }
+  
+        if (get_transaxial_block_spacing()*get_num_transaxial_blocks_per_bucket()
+            < 2*inner_ring_radius*tan(_PI/get_num_transaxial_blocks()/get_num_transaxial_blocks_per_bucket()))
+      {
+         warning("Scanner %s: inconsistent transaxial spacing:\n"
+              "\ttransaxial_block_spacing %f muliplied by num_transaxial_blocks_per_bucket %d should fit into a polygon that encircles a cylinder with inner_ring_radius %f",
+                 this->get_name().c_str(),
+                 get_transaxial_block_spacing(), get_num_transaxial_blocks_per_bucket(), get_inner_ring_radius());
+         return Succeeded::no;
+      }
+  
+  }
 
   return Succeeded::yes;
 }
@@ -734,6 +815,10 @@ if (!close_enough(energy_resolution, scanner.energy_resolution) &&
       close_enough(ring_spacing, scanner.ring_spacing) &&
       close_enough(bin_size,scanner.bin_size) &&
       close_enough(intrinsic_tilt,scanner.intrinsic_tilt) &&
+      close_enough(axial_crystal_spacing, scanner.axial_crystal_spacing) &&
+      close_enough(transaxial_crystal_spacing, scanner.transaxial_crystal_spacing) &&
+      close_enough(axial_block_spacing, scanner.axial_block_spacing) &&
+      close_enough(transaxial_block_spacing, scanner.transaxial_block_spacing) &&
       (num_transaxial_blocks_per_bucket == scanner.num_transaxial_blocks_per_bucket) &&
       (num_axial_blocks_per_bucket == scanner.num_axial_blocks_per_bucket) &&
       (num_axial_crystals_per_block == scanner.num_axial_crystals_per_block) &&
@@ -807,6 +892,27 @@ Scanner::parameter_info() const
     << "Number of crystals per singles unit in transaxial direction := "
     << get_num_transaxial_crystals_per_singles_unit() << '\n';
   
+  //block geometry description
+  if (get_scanner_orientation() != "" && get_scanner_geometry() != "")
+  {
+    s << "Scanner orientation (X or Y)                                := "
+      <<get_scanner_orientation() << '\n'
+      << "Scanner geometry (BlocksOnCylindrical/Cylindrical)          := "
+      <<get_scanner_geometry() << '\n';
+  }
+  if (get_axial_crystal_spacing() >=0)
+    s << "Distance between crystals in axial direction (cm)           := "
+      << get_axial_crystal_spacing()/10 << '\n';
+  if (get_transaxial_crystal_spacing() >=0)
+    s << "Distance between crystals in transaxial direction (cm)      := "
+      << get_transaxial_crystal_spacing()/10 << '\n';
+  if (get_axial_block_spacing() >=0)
+    s << "Distance between blocks in axial direction (cm)             := "
+      << get_axial_block_spacing()/10 << '\n';
+  if (get_transaxial_block_spacing() >=0)
+    s << "Distance between blocks in transaxial direction (cm)        := "
+      << get_transaxial_block_spacing()/10 << '\n';
+
   s << "end scanner parameters:=\n";
 
   return s.str();
@@ -914,32 +1020,40 @@ Scanner* Scanner::ask_parameters()
 
       int num_detector_layers =
     ask_num("Enter number of detector layers per block: ",1,100,1);
+    
+      const string ScannerOrientation =
+  ask_string("Enter the scanner orientation, i.e. which axis passes through two opposite blocks ('X' or 'Y')", "Y");
+      const string ScannerGeometry =
+  ask_string("Enter the scanner geometry (BlocksOnCylindrical/Cylindrical) :", "Cylindrical");
+      float AxialCrystalSpacing=
+  ask_num("Enter crystal spacing in axial direction (in mm): ",0.F,30.F,6.75F);
+      float TransaxialCrystalSpacing=
+  ask_num("Enter crystal spacing in transaxial direction (in mm): ",0.F,30.F,6.75F);
+      float AxialBlockSpacing=
+  ask_num("Enter block spacing in axial direction (in mm): ",0.F,360.F,54.F);
+      float TransaxialBlockSpacing=
+  ask_num("Enter block spacing in transaxial direction (in mm): ",0.F,360.F,54.F);
+  
       Type type = User_defined_scanner;
   
-      if (EnergyResolution > -1 && ReferenceEnergy > -1)
-        Scanner* scanner_ptr =
-            new Scanner(type, string_list(name),
-                        num_detectors_per_ring,  NoRings,
-                        NoBins, NoBins,
-                        InnerRingRadius, AverageDepthOfInteraction,
-                        RingSpacing, BinSize,intrTilt*float(_PI)/180,
-                        AxialBlocksPerBucket,TransBlocksPerBucket,
-                        AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
-                        AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
-                        num_detector_layers,
-                        EnergyResolution,
-                        ReferenceEnergy );
-      else
-        Scanner* scanner_ptr =
-            new Scanner(type, string_list(name),
-                        num_detectors_per_ring,  NoRings,
-                        NoBins, NoBins,
-                        InnerRingRadius, AverageDepthOfInteraction,
-                        RingSpacing, BinSize,intrTilt*float(_PI)/180,
-                        AxialBlocksPerBucket,TransBlocksPerBucket,
-                        AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
-                        AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
-                        num_detector_layers);
+      scanner_ptr =
+          new Scanner(type, string_list(name),
+                      num_detectors_per_ring,  NoRings,
+                      NoBins, NoBins,
+                      InnerRingRadius, AverageDepthOfInteraction,
+                      RingSpacing, BinSize,intrTilt*float(_PI)/180,
+                      AxialBlocksPerBucket,TransBlocksPerBucket,
+                      AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
+                      AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
+                      num_detector_layers,
+                      EnergyResolution,
+                      ReferenceEnergy,
+                      ScannerOrientation,
+                      ScannerGeometry,
+                      TransaxialCrystalSpacing,
+                      AxialCrystalSpacing,
+                      AxialBlockSpacing,
+                      TransaxialBlockSpacing);
   
       if (scanner_ptr->check_consistency()==Succeeded::yes ||
 	  !ask("Ask questions again?",true))

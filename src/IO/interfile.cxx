@@ -25,6 +25,7 @@
   \author Kris Thielemans 
   \author Sanida Mustafovic
   \author PARAPET project
+  \author Parisa Khateri
 */
 //   Pretty horrible implementations at the moment...
 
@@ -55,6 +56,8 @@
 #include <boost/format.hpp>
 #include <fstream>
 #include <algorithm>
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
+
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -1012,7 +1015,55 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
      } // end of cylindrical scanner
   else
     {
-      // TODO something here
+      // !author Parisa Khateri
+      const  ProjDataInfoBlocksOnCylindrical* proj_data_info_ptr =
+        dynamic_cast< const  ProjDataInfoBlocksOnCylindrical*> (pdfs.get_proj_data_info_ptr());
+
+      if (proj_data_info_ptr!=NULL)
+      {
+        // BlocksOncylindrical scanners
+        output_header << "minimum ring difference per segment := ";
+            {
+        std::vector<int>::const_iterator seg = segment_sequence.begin();
+        output_header << "{ " << proj_data_info_ptr->get_min_ring_difference(*seg);
+        for (seg++; seg != segment_sequence.end(); seg++)
+          output_header << "," <<proj_data_info_ptr->get_min_ring_difference(*seg);
+        output_header << "}\n";
+            }
+
+        output_header << "maximum ring difference per segment := ";
+            {
+        std::vector<int>::const_iterator seg = segment_sequence.begin();
+        output_header << "{ " <<proj_data_info_ptr->get_max_ring_difference(*seg);
+        for (seg++; seg != segment_sequence.end(); seg++)
+          output_header << "," <<proj_data_info_ptr->get_max_ring_difference(*seg);
+        output_header << "}\n";
+            }
+
+        const Scanner& scanner = *proj_data_info_ptr->get_scanner_ptr();
+          if (fabs(proj_data_info_ptr->get_ring_radius()-
+        scanner.get_effective_ring_radius()) > .1)
+      warning("write_basic_interfile_PDFS_header: inconsistent effective ring radius:\n"
+         "\tproj_data_info has %g, scanner has %g.\n"
+         "\tThis really should not happen and signifies a bug.\n"
+         "\tYou will have a problem reading this data back in.",
+         proj_data_info_ptr->get_ring_radius(),
+         scanner.get_effective_ring_radius());
+          if (fabs(proj_data_info_ptr->get_ring_spacing()-
+        scanner.get_ring_spacing()) > .1)
+       warning("write_basic_interfile_PDFS_header: inconsistent ring spacing:\n"
+         "\tproj_data_info has %g, scanner has %g.\n"
+         "\tThis really should not happen and signifies a bug.\n"
+         "\tYou will have a problem reading this data back in.",
+         proj_data_info_ptr->get_ring_spacing(),
+         scanner.get_ring_spacing());
+
+          output_header << scanner.parameter_info();
+
+          output_header << "effective central bin size (cm) := "
+              << proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10. << endl;
+
+      }// end of BlocksOnCylindrical scanner
     }
 
 

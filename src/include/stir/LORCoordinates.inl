@@ -7,7 +7,7 @@
   \brief Implementations for LORCoordinates.h
   \warning This is all preliminary and likely to change.
   \author Kris Thielemans
-
+  \author Parisa Khateri
 
 */
 /*
@@ -441,6 +441,40 @@ get_intersections_with_cylinder(LORAs2Points<coordT>& lor,
                                 const double radius) const
 {
   return find_LOR_intersections_with_cylinder(lor, *this, radius);
+}
+
+template <class coordT>
+Succeeded
+LORAs2Points<coordT>::
+change_representation_for_block(LORInAxialAndNoArcCorrSinogramCoordinates<coordT>& lor,
+                              const double radius) const
+{
+  const CartesianCoordinate3D<coordT>& c1 = this->p1();
+  const CartesianCoordinate3D<coordT>& c2 = this->p2();
+
+  //To check if LOR is inside the detector
+  const CartesianCoordinate3D<coordT> d = c2 - c1;
+  const double dxy2 = (square(d.x())+square(d.y()));
+  const double argsqrt=
+      (square(radius)*dxy2-square(d.x()*c1.y()-d.y()*c1.x()));
+
+  LORInCylinderCoordinates<coordT> cyl_coords;
+  cyl_coords.reset(static_cast<float>(radius));
+
+  cyl_coords.p1().psi() =
+    from_min_pi_plus_pi_to_0_2pi(static_cast<coordT>(atan2(c1.x(),-c1.y())));
+  cyl_coords.p2().psi() =
+    from_min_pi_plus_pi_to_0_2pi(static_cast<coordT>(atan2(c2.x(),-c2.y())));
+  cyl_coords.p1().z() =
+    static_cast<coordT>(c1.z());
+  cyl_coords.p2().z() =
+    static_cast<coordT>(c2.z());
+  lor = cyl_coords;
+
+  if (argsqrt<=0)
+    return Succeeded::no; // LOR is outside detector radius
+  else
+    return Succeeded::yes;
 }
 
 #define DEFINE_LOR_GET_FUNCTIONS(TYPE)                                       \

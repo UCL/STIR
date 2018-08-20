@@ -24,6 +24,7 @@
   \author Sanida Mustafovic 
   \author Kris Thielemans (with help from Alexey Zverovich)
   \author PARAPET project
+  \author Parisa Khateri
 
 
 */
@@ -44,6 +45,8 @@
 #include <math.h>
 #include <memory>
 #include "stir/unique_ptr.h"
+#include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
+
 #ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::max;
@@ -85,6 +88,28 @@ static void find_sampling_and_z_size(
         proj_data_info_cyl_ptr->get_min_ring_difference(0)
         ? proj_data_info_cyl_ptr->get_num_axial_poss(0)
         : 2*proj_data_info_cyl_ptr->get_num_axial_poss(0) - 1;
+  }
+  else if (const ProjDataInfoBlocksOnCylindrical*
+        proj_data_info_blk_ptr =
+        dynamic_cast<const ProjDataInfoBlocksOnCylindrical*>(proj_data_info_ptr))
+  {
+    // the case of BlocksOnCylindrical data
+
+    z_sampling = proj_data_info_blk_ptr->get_ring_spacing()/2;
+
+    // for 'span>1' case, we take z_size = number of sinograms in segment 0
+    // for 'span==1' case, we take 2*num_rings-1
+
+    // first check if we have segment 0
+    assert(proj_data_info_blk_ptr->get_min_segment_num() <= 0);
+    assert(proj_data_info_blk_ptr->get_max_segment_num() >= 0);
+
+    if (z_size<0)
+      z_size =
+        proj_data_info_blk_ptr->get_max_ring_difference(0) >
+        proj_data_info_blk_ptr->get_min_ring_difference(0)
+        ? proj_data_info_blk_ptr->get_num_axial_poss(0)
+        : 2*proj_data_info_blk_ptr->get_num_axial_poss(0) - 1;
   }
   else
   {
