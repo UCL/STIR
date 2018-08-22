@@ -2,6 +2,7 @@
 //
 /*
   Copyright (C) 2005- 2011, Hammersmith Imanet Ltd
+  Copyright (C) 2018, University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -22,6 +23,7 @@
   \ingroup utilities
   \brief Multiplies Parametric Images with the Model Matrix creating Dynamic Images
   \author Charalampos Tsoumpas  
+  \author Richard Brown
 
   \par Usage:
   \code 
@@ -75,29 +77,27 @@ int main(int argc, char *argv[])
   else
     {  
       shared_ptr<ParametricVoxelsOnCartesianGrid> 
-	par_image_sptr(ParametricVoxelsOnCartesianGrid::read_from_file(argv[2]));
-      const ParametricVoxelsOnCartesianGrid & par_image = *par_image_sptr;
-#if 1
-      shared_ptr<DynamicDiscretisedDensity> 
-	dyn_image_sptr(read_from_file<DynamicDiscretisedDensity>(argv[1]));
-      DynamicDiscretisedDensity & dyn_image= *dyn_image_sptr;
-#else
-      // At the moment it is impossible to have the scanner information without extra prior information.
-      const shared_ptr<DiscretisedDensity<3,float> > density_template_sptr((par_image_sptr->construct_single_density(1)).clone());
-      DynamicDiscretisedDensity dyn_image=DynamicDiscretisedDensity(patlak_plot.get_time_frame_definitions(), scanner_sptr, density_template_sptr);
-#endif      
-      //ToDo: Assertion for the dyn-par images, sizes I have to create from one to the other image, so then it should be OK...      
-      assert(patlak_plot.get_time_frame_definitions().get_num_frames()==dyn_image.get_time_frame_definitions().get_num_frames());
-#ifndef NDEBUG
-      const DiscretisedDensityOnCartesianGrid <3,float>* cartesian_ptr =
-	dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*> (&dyn_image[1]);
-      assert(par_image.get_voxel_size()==cartesian_ptr->get_grid_spacing());
-#endif
-      patlak_plot.get_dynamic_image_from_parametric_image(dyn_image,par_image);
+        par_image_sptr(ParametricVoxelsOnCartesianGrid::read_from_file(argv[2]));
+
+      // Get all the info we need
+      const ExamInfo                            exam_info       = par_image_sptr->get_exam_info();
+      const TimeFrameDefinitions                tdefs           = patlak_plot.get_time_frame_definitions();
+      const double                              time_since_1970 = exam_info.start_time_in_secs_since_1970;
+      shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(par_image_sptr->get_exam_info().originating_system));
+      shared_ptr<VoxelsOnCartesianGrid<float> > voxels_sptr(par_image_sptr->construct_single_density(1).clone());
+
+      // Construct the dynamic image
+      DynamicDiscretisedDensity dyn_image(tdefs,
+                                          time_since_1970,
+                                          scanner_sptr,
+                                          voxels_sptr);
+
+      patlak_plot.get_dynamic_image_from_parametric_image(dyn_image,*par_image_sptr);
 
   // Writing image 
   std::cerr << "Writing dynamic-image in '"<< argv[1] << "'\n";
-  Succeeded writing_succeeded=dyn_image.write_to_ecat7(argv[1]);
+
+  Succeeded writing_succeeded = OutputFileFormat<DynamicDiscretisedDensity>::default_sptr()->write_to_file(argv[1], dyn_image);
 
   if(writing_succeeded==Succeeded::yes)
     return EXIT_SUCCESS ;
