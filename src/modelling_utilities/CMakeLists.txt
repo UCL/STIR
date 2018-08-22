@@ -26,6 +26,7 @@ set(${dir_EXE_SOURCES}
 	apply_patlak_to_images
 	get_dynamic_images_from_parametric_images
 	make_parametric_image_from_components
+	split_dynamic_images
 	mult_model_with_dyn_images
 	write_patlak_matrix
 	mult_image_parameters
