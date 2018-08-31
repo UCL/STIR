@@ -77,6 +77,8 @@ set(${dir_LIB_SOURCES}
         GeometryBlocksOnCylindrical
         ProjDataInfoBlocksOnCylindrical
         ProjDataInfoBlocksOnCylindricalNoArcCorr
+        ProjDataInfoGeneric
+        ProjDataInfoGenericNoArcCorr
 )
 
 if (NOT HAVE_SYSTEM_GETOPT)

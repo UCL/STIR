@@ -37,6 +37,7 @@
 #include <numeric>
 #include <functional>
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoGenericNoArcCorr.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::binary_function;
@@ -572,7 +573,7 @@ InterfilePDFSHeader::InterfilePDFSHeader()
           KeyArgument::ASCII, &scanner_orientation);
 
   scanner_geometry = "None";
-  add_key("Scanner geometry (BlocksOnCylindrical/Cylindrical)",
+  add_key("Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)",
           KeyArgument::ASCII, &scanner_geometry);
 
   axial_distance_between_crystals_in_cm = -1;
@@ -591,6 +592,10 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("distance between blocks in transaxial direction (cm)",
         &transaxial_distance_between_blocks_in_cm);
   // end of new keys for block geometry
+  //new keys for generic geometry
+  crystal_map = "";
+  add_key("name of crystal map", &crystal_map);
+  //end of new keys for generic geometry
 
   add_key("end scanner parameters",
 	  KeyArgument::NONE,	&KeyParser::do_nothing);
@@ -1336,6 +1341,7 @@ bool InterfilePDFSHeader::post_processing()
                 num_detector_layers,
                 energy_resolution,
                 reference_energy,
+                crystal_map,
                 scanner_orientation,
                 scanner_geometry,
                 static_cast<float>(axial_distance_between_crystals_in_cm*10.),
@@ -1405,7 +1411,7 @@ bool InterfilePDFSHeader::post_processing()
 	}
     }
       }
-    else // if block geometry
+    else if(scanner_geometry == "BlocksOnCylindrical")// if block geometry
       {
         data_info_ptr =
           new ProjDataInfoBlocksOnCylindricalNoArcCorr (
@@ -1425,6 +1431,26 @@ bool InterfilePDFSHeader::post_processing()
         data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10.);
         }    
       }
+      else  // if generic geometry
+        {
+            data_info_ptr =
+        new ProjDataInfoGenericNoArcCorr (
+                      scanner_ptr_from_file,
+                      sorted_num_rings_per_segment,
+                      sorted_min_ring_diff,
+                      sorted_max_ring_diff,
+                      num_views,num_bins);
+            if (effective_central_bin_size_in_cm>0 &&
+                    fabs(effective_central_bin_size_in_cm -
+                    data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10.)>.01)
+            {
+                warning("Interfile warning: inconsistent effective_central_bin_size_in_cm\n"
+                "Value in header is %g while I expect %g from the inner ring radius etc\n"
+                "Ignoring value in header",
+                effective_central_bin_size_in_cm,
+                data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10.);
+            }
+        }
   //cerr << data_info_ptr->parameter_info() << endl;
   
   return false;

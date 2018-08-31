@@ -445,7 +445,16 @@ Scanner::get_transaxial_singles_unit(int singles_bin_index) const {
   return(singles_bin_index % get_num_transaxial_singles_units());
 }
 
-
+// For retrieving the coordinates / detector, ring id from the scanner
+stir::DetectionPosition<>
+Scanner::get_detpos_from_id(const stir::DetectionPosition<> det_pos) const{
+    return input_index_to_stir_index.at(det_pos);
+}
+// Attention, this uses the stir coordinate, not the one from listmode
+stir::CartesianCoordinate3D<float>
+Scanner::get_coords_from_detpos(const stir::DetectionPosition<> det_pos) const{
+    return input_index_to_coord.at(det_pos);
+}
 
 END_NAMESPACE_STIR
 

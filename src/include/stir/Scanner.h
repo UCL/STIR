@@ -37,8 +37,15 @@
 #define __stir_buildblock_SCANNER_H__
 
 #include "stir/DetectionPosition.h"
+#include "stir/CartesianCoordinate3D.h"
 #include <string>
 #include <list>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+#include <fstream>
+#include <boost/algorithm/string.hpp>
+#include <boost/unordered_map.hpp>
 
 START_NAMESPACE_STIR
 
@@ -137,6 +144,7 @@ class Scanner
           int num_detector_layers_v,
           float energy_resolution_v = -1.0f,
           float reference_energy_v = -1.0f,
+          const std::string& crystal_map_file_name = "",
           const std::string& scanner_orientation_v = "",
           const std::string& scanner_geometry_v = "",
           float axial_crystal_spacing_v = -1.0f,
@@ -162,6 +170,7 @@ class Scanner
           int num_detector_layers_v,
           float energy_resolution_v = -1.0f,
           float reference_energy_v = -1.0f,
+          const std::string& crystal_map_file_name = "",
           const std::string& scanner_orientation_v = "",
           const std::string& scanner_geometry_v = "",
           float axial_crystal_spacing_v = -1.0f,
@@ -386,6 +395,9 @@ class Scanner
   // Get the transaxial singles bin coordinate from a singles bin.
   inline int get_transaxial_singles_unit(int singles_bin_index) const;
   
+  // Functions to retrieve the coordinates and the stir_id out of the scanner
+  inline stir::DetectionPosition<> get_detpos_from_id(const stir::DetectionPosition<> det_pos) const;
+  inline stir::CartesianCoordinate3D<float> get_coords_from_detpos(const stir::DetectionPosition<> det_pos) const;
 
 private:
   Type type;
@@ -435,6 +447,28 @@ private:
   float transaxial_crystal_spacing;      /*! crystal pitch in transaxial direction in mm*/
   float axial_block_spacing;             /*! block pitch in axial direction in mm*/
   float transaxial_block_spacing;        /*! block pitch in transaxial direction in mm*/
+  
+  //!
+  //!\brief map and hash function for saving the coords in generic geometry
+  //!\author Michael Roethlisberger
+  struct ihash
+    : std::unary_function<stir::DetectionPosition<> , std::size_t>
+  {
+    std::size_t operator()(stir::DetectionPosition<>  const& detpos) const
+    {
+        std::size_t seed = 0;
+        boost::hash_combine(seed, detpos.axial_coord());
+        boost::hash_combine(seed, detpos.radial_coord());
+        boost::hash_combine(seed, detpos.tangential_coord());
+        return seed;
+    }
+  };
+  boost::unordered_map<stir::DetectionPosition<>, stir::DetectionPosition<>, ihash> input_index_to_stir_index;
+  boost::unordered_map<stir::DetectionPosition<>, stir::CartesianCoordinate3D<float>, ihash> input_index_to_coord;
+  std::string crystal_map_file_name;
+
+  // function to create the maps
+  void read_detectormap_from_file( const std::string& filename );
 
 
   // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
@@ -453,6 +487,7 @@ private:
                   int num_detector_layers_v,
                   float energy_resolution_v = -1.0f,
                   float reference_energy = -1.0f,
+                  const std::string& crystal_map_file_name = "",
                   const std::string& scanner_orientation_v = "",
                   const std::string& scanner_geometry_v = "",
                   float axial_crystal_spacing_v = -1.0f,
@@ -477,6 +512,7 @@ private:
                   int num_detector_layers_v,
                   float energy_resolution_v = -1.0f,
                   float reference_energy = -1.0f,
+                  const std::string& crystal_map_file_name = "",
                   const std::string& scanner_orientation_v = "",
                   const std::string& scanner_geometry_v = "",
                   float axial_crystal_spacing_v = -1.0f,

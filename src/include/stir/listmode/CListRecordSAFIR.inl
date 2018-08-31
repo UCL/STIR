@@ -30,6 +30,7 @@
 
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjDataInfoBlocksOnCylindricalNoArcCorr.h"
+#include "stir/ProjDataInfoGenericNoArcCorr.h"
 #include "stir/CartesianCoordinate3D.h"
 
 START_NAMESPACE_STIR
@@ -70,45 +71,63 @@ get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
                 <<"\tring2="<<det_pos_pair.pos2().axial_coord()<<"\n";*/
 		bin.set_bin_value(-1);
   }
-	
-	if(!map) stir::error("Crystal map not set.");
-
-  stir::CartesianCoordinate3D<float> c1 = map->get_detector_coordinate(det_pos_pair.pos1());
-  stir::CartesianCoordinate3D<float> c2 = map->get_detector_coordinate(det_pos_pair.pos2());
-  int det1, det2, ring1, ring2;
-
-  if(proj_data_info.get_scanner_ptr()->get_scanner_geometry() == "Cylindrical"
-                       && bin.get_bin_value()!=-1)
+  // Case for generic scanner
+  if(proj_data_info.get_scanner_ptr()->get_scanner_geometry() == "Generic" && bin.get_bin_value() != -1)
   {
-     //const ProjDataInfoCylindricalNoArcCorr& proj_data_info_cyl =
-      //         dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info);
-               
-     LORAs2Points<float> lor;
-   	 lor.p1() = c1;
-     lor.p2() = c2;
-     bin = proj_data_info.get_bin(lor);
-  }
-  else if(proj_data_info.get_scanner_ptr()->get_scanner_geometry() == "BlocksOnCylindrical"
-               				&& bin.get_bin_value()!=-1)
-  {
-		const ProjDataInfoBlocksOnCylindricalNoArcCorr& proj_data_info_blk =
-                dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr&>(proj_data_info);
+      const ProjDataInfoGenericNoArcCorr& proj_data_info_gen =
+                  dynamic_cast<const ProjDataInfoGenericNoArcCorr&>(proj_data_info);
+      //transform det_pos_pair into stir coordinates
+      DetectionPosition<> pos1 = det_pos_pair.pos1();
+      DetectionPosition<> pos2 = det_pos_pair.pos2();
+      det_pos_pair.pos1() = proj_data_info_gen.get_scanner_ptr()->get_detpos_from_id(pos1);
+      det_pos_pair.pos2() = proj_data_info_gen.get_scanner_ptr()->get_detpos_from_id(pos2);
 
-    if (proj_data_info_blk.find_scanner_coordinates_given_cartesian_coordinates(det1, det2, ring1, ring2, c1, c2) == Succeeded::no)
-    		bin.set_bin_value(-1);
-    else
-    {
-			assert(!(ring1<0 ||
-               ring1>=proj_data_info_blk.get_scanner_ptr()->get_num_rings() ||
-							 ring2<0 ||
-							 ring2>=proj_data_info_blk.get_scanner_ptr()->get_num_rings())
-						 );
-      
-			if(proj_data_info_blk.get_bin_for_det_pair(bin, det1, ring1, det2, ring2)==Succeeded::yes)
-					bin.set_bin_value(1);
+      if (proj_data_info_gen.get_bin_for_det_pos_pair(bin, det_pos_pair) == Succeeded::yes)
+         bin.set_bin_value(1);
       else
-					bin.set_bin_value(-1);
-     }
+         bin.set_bin_value(-1);
+  }
+  else
+  {
+	  if(!map) stir::error("Crystal map not set.");
+
+      stir::CartesianCoordinate3D<float> c1 = map->get_detector_coordinate(det_pos_pair.pos1());
+      stir::CartesianCoordinate3D<float> c2 = map->get_detector_coordinate(det_pos_pair.pos2());
+      int det1, det2, ring1, ring2;
+
+      if(proj_data_info.get_scanner_ptr()->get_scanner_geometry() == "Cylindrical"
+                           && bin.get_bin_value()!=-1)
+      {
+         //const ProjDataInfoCylindricalNoArcCorr& proj_data_info_cyl =
+          //         dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(proj_data_info);
+                   
+         LORAs2Points<float> lor;
+       	 lor.p1() = c1;
+         lor.p2() = c2;
+         bin = proj_data_info.get_bin(lor);
+      }
+      else if(proj_data_info.get_scanner_ptr()->get_scanner_geometry() == "BlocksOnCylindrical"
+                   				&& bin.get_bin_value()!=-1)
+      {
+    		const ProjDataInfoBlocksOnCylindricalNoArcCorr& proj_data_info_blk =
+                    dynamic_cast<const ProjDataInfoBlocksOnCylindricalNoArcCorr&>(proj_data_info);
+
+        if (proj_data_info_blk.find_scanner_coordinates_given_cartesian_coordinates(det1, det2, ring1, ring2, c1, c2) == Succeeded::no)
+        		bin.set_bin_value(-1);
+        else
+        {
+    			assert(!(ring1<0 ||
+                   ring1>=proj_data_info_blk.get_scanner_ptr()->get_num_rings() ||
+    							 ring2<0 ||
+    							 ring2>=proj_data_info_blk.get_scanner_ptr()->get_num_rings())
+    						 );
+          
+    			if(proj_data_info_blk.get_bin_for_det_pair(bin, det1, ring1, det2, ring2)==Succeeded::yes)
+    					bin.set_bin_value(1);
+          else
+    					bin.set_bin_value(-1);
+         }
+      }
   }
 }
 

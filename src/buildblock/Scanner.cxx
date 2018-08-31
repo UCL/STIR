@@ -39,6 +39,7 @@
 #include "stir/Succeeded.h"
 #include "stir/interfile_keyword_functions.h"
 #include "stir/info.h"
+#include "stir/modulo.h"
 #include <iostream>
 #include <algorithm>
 #ifdef BOOST_NO_STRINGSTREAM
@@ -436,6 +437,7 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
                  int num_detector_layers_v,
                  float energy_resolution_v,
                  float reference_energy_v,
+                 const std::string& crystal_map_file_name_v,
                  const string& scanner_orientation_v,
                  const string& scanner_geometry_v,
                  float axial_crystal_spacing_v,
@@ -457,6 +459,7 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
              num_detector_layers_v,
              energy_resolution_v,
              reference_energy_v,
+             crystal_map_file_name_v,
              scanner_orientation_v,
              scanner_geometry_v,
              axial_crystal_spacing_v,
@@ -480,6 +483,7 @@ Scanner::Scanner(Type type_v, const string& name,
                  int num_detector_layers_v,
                  float energy_resolution_v,
                  float reference_energy_v,
+                 const std::string& crystal_map_file_name_v,
                  const string& scanner_orientation_v,
                  const string& scanner_geometry_v,
                  float axial_crystal_spacing_v,
@@ -501,6 +505,7 @@ Scanner::Scanner(Type type_v, const string& name,
              num_detector_layers_v,
              energy_resolution_v,
              reference_energy_v,
+             crystal_map_file_name_v,
              scanner_orientation_v,
              scanner_geometry_v,
              axial_crystal_spacing_v,
@@ -532,6 +537,7 @@ set_params(Type type_v,const list<string>& list_of_names_v,
            int num_detector_layers_v,
            float energy_resolution_v,
            float reference_energy_v,
+           const std::string& crystal_map_file_name_v,
            const string& scanner_orientation_v,
            const string& scanner_geometry_v,
            float axial_crystal_spacing_v,
@@ -553,6 +559,7 @@ set_params(Type type_v,const list<string>& list_of_names_v,
 	     num_detector_layers_v,
              energy_resolution_v,
              reference_energy_v,
+             crystal_map_file_name_v,
              scanner_orientation_v,
              scanner_geometry_v,
              axial_crystal_spacing_v,
@@ -580,6 +587,7 @@ set_params(Type type_v,const list<string>& list_of_names_v,
            int num_detector_layers_v,
            float energy_resolution_v,
            float reference_energy_v,
+           const std::string& crystal_map_file_name_v,
            const string& scanner_orientation_v,
            const string& scanner_geometry_v,
            float axial_crystal_spacing_v,
@@ -615,7 +623,84 @@ set_params(Type type_v,const list<string>& list_of_names_v,
   transaxial_crystal_spacing = transaxial_crystal_spacing_v;
   axial_block_spacing = axial_block_spacing_v;
   transaxial_block_spacing = transaxial_block_spacing_v;
+  
+  crystal_map_file_name = crystal_map_file_name_v;
+  if (crystal_map_file_name != "")
+  {
+    read_detectormap_from_file(crystal_map_file_name);
+  }
+}
 
+// creates maps to convert between stir and 3d coordinates
+void
+Scanner::
+read_detectormap_from_file( const std::string& filename )
+{
+    std::ifstream myfile(filename.c_str());
+    if( !myfile )
+    {
+        std::cerr << "Error opening file " << filename << "." << std::endl;
+        return;
+    }
+    std::string line;
+    //map containing the crystal map from the input file (safir -> coords)
+    boost::unordered_map<stir::DetectionPosition<>, stir::CartesianCoordinate3D<float>, ihash> coord_map;
+    // read in the file save the content in a map
+    while( std::getline( myfile, line))
+    {
+        if( line.size() && line[0] == '#' ) continue;
+        bool has_layer_index = false;
+        stir::CartesianCoordinate3D<float> coord;
+        stir::DetectionPosition<> detpos;
+        std::vector<std::string> col;
+        boost::split(col, line, boost::is_any_of("\t,"));
+        if( !col.size() ) break;
+        else if( col.size() == 5 ) has_layer_index = false;
+        else if( col.size() == 6 ) has_layer_index = true;
+        coord[1] = atof(col[4+has_layer_index].c_str() );
+        coord[2] = atof(col[3+has_layer_index].c_str() );
+        coord[3] = atof(col[2+has_layer_index].c_str() );
+
+        if( !has_layer_index ) detpos.radial_coord() = 0;
+        else detpos.radial_coord() = atoi(col[2].c_str());
+        detpos.axial_coord() = atoi(col[0].c_str());
+        detpos.tangential_coord() = atoi(col[1].c_str());
+
+        coord_map[detpos] = coord;
+    }
+
+    std::vector<double> coords_to_be_sorted;
+    boost::unordered_map<double, stir::DetectionPosition<> > map_for_sorting_coordinates;
+    coords_to_be_sorted.reserve(coord_map.size());
+    //TODO: change it to be backwards compatible
+    for(auto it : coord_map)
+    {
+        double coord_sorter = it.second[1] * 100 + from_min_pi_plus_pi_to_0_2pi(std::atan2(it.second[3], -it.second[2]));
+        coords_to_be_sorted.push_back(coord_sorter);
+        map_for_sorting_coordinates[coord_sorter] = it.first;
+    }
+    std::sort(coords_to_be_sorted.begin(), coords_to_be_sorted.end());
+    int ring = 0;
+    int det = 0;
+    for(std::vector<double>::iterator it = coords_to_be_sorted.begin(); it != coords_to_be_sorted.end();++it)
+    {
+        stir::DetectionPosition<> detpos;
+        detpos.axial_coord() = ring;
+        detpos.tangential_coord() = det;
+        detpos.radial_coord() = 0;
+        input_index_to_stir_index[map_for_sorting_coordinates[*it]] = detpos;
+        input_index_to_coord[detpos] = coord_map[map_for_sorting_coordinates[*it]];
+        det++;
+        if (det == num_detectors_per_ring)
+        {
+            ring++;
+            det = 0;
+            if (ring == num_rings && it != --coords_to_be_sorted.end())
+            {
+                stir::error("Detector and RingNumber of the crystal map and ProjData are not the same!");
+            }
+        }
+    }
 }
 
 
@@ -638,7 +723,7 @@ check_consistency() const
 	const int dets_per_ring =
 	  get_num_transaxial_blocks() *
 	  get_num_transaxial_crystals_per_block();
-	if ( dets_per_ring != get_num_detectors_per_ring())
+	if ( dets_per_ring != get_num_detectors_per_ring() && scanner_orientation != "Generic")
 	  { 
 	    warning("Scanner %s: inconsistent transaxial block info",
 		    this->get_name().c_str()); 
@@ -891,13 +976,17 @@ Scanner::parameter_info() const
     << get_num_axial_crystals_per_singles_unit() << '\n'
     << "Number of crystals per singles unit in transaxial direction := "
     << get_num_transaxial_crystals_per_singles_unit() << '\n';
+  //crystal map 
+  if (crystal_map_file_name != "")
+    s << "name of crystal map                                         := "
+      << crystal_map_file_name << '\n';
   
   //block geometry description
   if (get_scanner_orientation() != "" && get_scanner_geometry() != "")
   {
     s << "Scanner orientation (X or Y)                                := "
       <<get_scanner_orientation() << '\n'
-      << "Scanner geometry (BlocksOnCylindrical/Cylindrical)          := "
+      << "Scanner geometry (BlocksOnCylindrical/Cylindrical/Generic)  := "
       <<get_scanner_geometry() << '\n';
   }
   if (get_axial_crystal_spacing() >=0)
@@ -1021,10 +1110,12 @@ Scanner* Scanner::ask_parameters()
       int num_detector_layers =
     ask_num("Enter number of detector layers per block: ",1,100,1);
     
+      const string crystal_map_file_name =
+  ask_string("Enter the path to the crystal map: ", "");        
       const string ScannerOrientation =
   ask_string("Enter the scanner orientation, i.e. which axis passes through two opposite blocks ('X' or 'Y')", "Y");
       const string ScannerGeometry =
-  ask_string("Enter the scanner geometry (BlocksOnCylindrical/Cylindrical) :", "Cylindrical");
+  ask_string("Enter the scanner geometry ( BlocksOnCylindrical / Cylindrical / Generic ) :", "Cylindrical");
       float AxialCrystalSpacing=
   ask_num("Enter crystal spacing in axial direction (in mm): ",0.F,30.F,6.75F);
       float TransaxialCrystalSpacing=
@@ -1048,6 +1139,7 @@ Scanner* Scanner::ask_parameters()
                       num_detector_layers,
                       EnergyResolution,
                       ReferenceEnergy,
+                      crystal_map_file_name,
                       ScannerOrientation,
                       ScannerGeometry,
                       TransaxialCrystalSpacing,

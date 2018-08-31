@@ -35,6 +35,7 @@
 #include "stir/ProjDataInfoCylindrical.h"
 #include "stir/recon_buildblock/SymmetryOperations_PET_CartesianGrid.h"
 #include "stir/ProjDataInfoBlocksOnCylindrical.h"
+#include "stir/ProjDataInfoGeneric.h"
 
 START_NAMESPACE_STIR
 
@@ -121,7 +122,29 @@ find_transform_z(
 
     }
       }
-  return transform_z;
+    // generic implementation
+    else
+    {
+        ProjDataInfoGeneric* proj_data_info_blk_ptr =
+        static_cast<ProjDataInfoGeneric *>(proj_data_info_ptr.get());
+
+        const float delta = proj_data_info_blk_ptr->get_average_ring_difference(segment_num);
+
+        // Find symmetric value in Z by 'mirroring' it around the centre z of the LOR:
+        // Z+Q = 2*centre_of_LOR_in_image_coordinates == transform_z
+        {
+            // first compute it as floating point (although it has to be an int really)
+            const float transform_z_float = (2*num_planes_per_axial_pos[segment_num]*(axial_pos_num)
+                + num_planes_per_scanner_ring*delta
+                + 2*axial_pos_to_z_offset[segment_num]);
+            // now use rounding to be safe
+            int transform_z = (int)floor(transform_z_float + 0.5);
+            assert(fabs(transform_z-transform_z_float) < 10E-4);
+
+            return transform_z;
+        }
+    }
+    return transform_z;
 }
 
 SymmetryOperation*
@@ -227,6 +250,11 @@ find_sym_op_bin0(
       return new TrivialSymmetryOperation();
   }
 
+    }
+    if(proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="Generic")
+    {
+        // No symmetry is implemented for generic scanner
+        return new TrivialSymmetryOperation();
     }
 }
 
@@ -404,6 +432,11 @@ find_sym_op_general_bin(
       return new TrivialSymmetryOperation();
     }
   }
+  if(proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="Generic")
+  {
+      // No symmetry is implemented for generic scanner
+      return new TrivialSymmetryOperation();
+  }
 
 }
 
@@ -559,7 +592,83 @@ find_basic_bin(int &segment_num, int &view_num, int &axial_pos_num, int &tangent
       }
     }
   }
-   return change;
+    if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="Generic")
+    { //same procedure as for the block implementation above
+        ProjDataInfoGeneric* proj_data_info_gen_ptr =
+            static_cast<ProjDataInfoGeneric *>(proj_data_info_ptr.get());
+        if (do_symmetry_shift_z)
+        {
+            int ring1, ring2;
+            proj_data_info_gen_ptr->get_ring_pair_for_segment_axial_pos_num (ring1, ring2, segment_num, axial_pos_num);
+
+            int axial_crys_diff = ring2 - ring1;
+            int num_axial_crys_per_block = proj_data_info_ptr->get_scanner_ptr()->get_num_axial_crystals_per_block();
+            int axial_blk_diff = ring2/num_axial_crys_per_block - ring1/num_axial_crys_per_block;
+
+            if (axial_crys_diff >=0)
+            { // seg_num > 0
+                if (axial_crys_diff%num_axial_crys_per_block == 0)
+                { // axial block difference can be only axial_crys_diff/num_axial_crys_per_block. So we only have one type of related bins
+                    // basic bin will be the first lor from the corresponding group
+                    ring1= (ring1/num_axial_crys_per_block)*num_axial_crys_per_block;
+                    ring2= ring1 + axial_crys_diff;
+                }
+                else
+                {  /* axial block difference can be axial_crys_diff/num_axial_crys_per_block
+                    or one less.
+                    So we can have two types of of related bins*/
+                    if (axial_blk_diff == axial_crys_diff/num_axial_crys_per_block)
+                    {// basic bin will be the first lor from the corresponding group
+                        ring1= (ring1/num_axial_crys_per_block)*num_axial_crys_per_block;
+                        ring2= ring1 + axial_crys_diff;
+                    }
+                    else if (axial_blk_diff > axial_crys_diff/num_axial_crys_per_block)
+                    {// basic bin will be the last lor from the corresponding group
+                        ring1= (ring1/num_axial_crys_per_block)*num_axial_crys_per_block + num_axial_crys_per_block-1;
+                        ring2= ring1 + axial_crys_diff;
+                    }
+                }
+            }
+            else if (axial_crys_diff <0)
+            { // seg_num < 0
+                if (abs(axial_crys_diff)%num_axial_crys_per_block == 0)
+                { // axial block difference can be only axial_crys_diff/num_axial_crys_per_block. So we only have one type of related bins
+                    // basic bin will be the first lor from the corresponding group
+                    ring2= (ring2/num_axial_crys_per_block)*num_axial_crys_per_block;
+                    ring1= ring2 - axial_crys_diff;
+                }
+                else
+                {  /* axial block difference can be axial_crys_diff/num_axial_crys_per_block
+                    or one less.
+                    So we can have two types of of related bins*/
+                    if (abs(axial_blk_diff) == abs(axial_crys_diff)/num_axial_crys_per_block)
+                    {// basic bin will be the first lor from the corresponding group
+                        ring2= (ring2/num_axial_crys_per_block)*num_axial_crys_per_block;
+                        ring1= ring2 - axial_crys_diff;
+                    }
+                    else if (abs(axial_blk_diff) > abs(axial_crys_diff)/num_axial_crys_per_block)
+                    {// basic bin will be the last lor from the corresponding group
+                        ring2= (ring2/num_axial_crys_per_block)*num_axial_crys_per_block + num_axial_crys_per_block-1;
+                        ring1= ring2 - axial_crys_diff;
+                    }
+                }
+            }
+
+            int segment_num_temp, axial_pos_num_temp;
+            proj_data_info_gen_ptr->
+                get_segment_axial_pos_num_for_ring_pair(segment_num_temp, axial_pos_num_temp, ring1, ring2);
+             
+            if (segment_num_temp != segment_num)
+                error("segment number shouldn't change in basic bin when implementing only symmetry in z.\n"
+                "segment_num = %d while segment_num_temp = %d \n", segment_num, segment_num_temp);
+            else if (axial_pos_num_temp != axial_pos_num)
+            {
+                axial_pos_num = axial_pos_num_temp;
+                change = true;
+            }
+        }
+    }
+    return change;
 }
 
 bool  
@@ -646,6 +755,11 @@ num_related_bins(const Bin& b) const
       }
     }
   }
+  //generic implementation
+  if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="Generic")
+  {
+      num = 1;
+  }
 
   return num;
 }
@@ -693,6 +807,24 @@ get_related_bins_factorised(std::vector<AxTangPosNumbers>& ax_tang_poss, const B
        }
      }
   }
+  if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="Generic")
+   {
+     for (int axial_pos_num=do_symmetry_shift_z?min_axial_pos_num:b.axial_pos_num();
+          axial_pos_num <= (do_symmetry_shift_z?max_axial_pos_num:b.axial_pos_num());
+          ++axial_pos_num)
+     {
+        if (b.tangential_pos_num() >= min_tangential_pos_num &&
+            b.tangential_pos_num() <= max_tangential_pos_num)
+        {
+          Bin basic_bin(b);
+          find_basic_bin(basic_bin);
+          Bin bin_temp(b.segment_num(), b.view_num(), axial_pos_num, b.tangential_pos_num());
+          find_basic_bin(bin_temp);
+          if (basic_bin == bin_temp)
+             ax_tang_poss.push_back(AxTangPosNumbers(axial_pos_num, b.tangential_pos_num()));
+        }
+     }
+   }
 
 }
     
