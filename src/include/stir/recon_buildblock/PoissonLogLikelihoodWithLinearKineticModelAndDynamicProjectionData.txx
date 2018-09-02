@@ -4,7 +4,7 @@
 /*
   Copyright (C) 2006 - 2011-01-14 Hammersmith Imanet Ltd
   Copyright (C) 2011 Kris Thielemans
-  Copyright (C) 2013 University College London
+  Copyright (C) 2013m 2018, University College London
 
   This file is part of STIR.
 
@@ -159,7 +159,7 @@ post_processing()
     { warning("The 'mash x views' key has an invalid value (must be 1 or even number)"); return true; }
 #endif
  
-  this->_dyn_proj_data_sptr.reset(DynamicProjData::read_from_file(_input_filename));
+  this->_dyn_proj_data_sptr = DynamicProjData::read_from_file(_input_filename);
   if (is_null_ptr(this->_dyn_proj_data_sptr))
     { warning("Error reading input file %s", _input_filename.c_str()); return true; }
   // image stuff
@@ -175,7 +175,7 @@ post_processing()
   if (this->_additive_dyn_proj_data_filename != "0")
     {
       info(boost::format("Reading additive projdata data %1%") % this->_additive_dyn_proj_data_filename);
-      this->_additive_dyn_proj_data_sptr.reset(DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename));
+      this->_additive_dyn_proj_data_sptr = DynamicProjData::read_from_file(this->_additive_dyn_proj_data_filename);
       if (is_null_ptr(this->_additive_dyn_proj_data_sptr))
 	{ warning("Error reading additive input file %s", _additive_dyn_proj_data_filename.c_str()); return true; }
 
@@ -197,6 +197,7 @@ construct_target_ptr() const
 {  
   return
     new ParametricVoxelsOnCartesianGrid(ParametricVoxelsOnCartesianGridBaseType(
+                                                                                this->get_input_data().get_exam_info_sptr(),
                                                                                 *(this->_dyn_proj_data_sptr->get_proj_data_info_ptr()),
                                                                                 static_cast<float>(this->_zoom),
                                                                                 CartesianCoordinate3D<float>(static_cast<float>(this->_Zoffset),
@@ -407,6 +408,14 @@ PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
 set_input_data(const shared_ptr<ExamData> & arg)
 {
     this->_dyn_proj_data_sptr = dynamic_pointer_cast<DynamicProjData>(arg);
+}
+
+template<typename TargetT>
+const DynamicProjData&
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
+get_input_data() const
+{
+  return *this->_dyn_proj_data_sptr;
 }
 
 template<typename TargetT>

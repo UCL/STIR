@@ -6,6 +6,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -28,6 +29,7 @@
   \author Kris Thielemans 
   \author Sanida Mustafovic
   \author PARAPET project
+  \author Richard Brown
 
 */
 
@@ -50,6 +52,12 @@ template <typename elemT> class CartesianCoordinate3D;
 template <typename elemT> class Coordinate3D;
 template <typename elemT> class VoxelsOnCartesianGrid;
 class ProjDataFromStream;
+class DynamicDiscretisedDensity;
+template <typename elemT> class ParametricDiscretisedDensity;
+template <typename elemT> class VoxelsOnCartesianGrid;
+template <int num_dimensions, typename elemT> class KineticParameters;
+
+class ExamInfo;
 
 //! Checks if the signature corresponds to the start of an interfile header 
 /*! 
@@ -94,6 +102,23 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(std::istream& input,
 */
 VoxelsOnCartesianGrid<float>* read_interfile_image(const std::string& filename);
 
+/// Read dynamic image
+DynamicDiscretisedDensity*
+read_interfile_dynamic_image(std::istream& input,
+                             const std::string&  directory_for_data);
+
+/// Read dynamic image
+DynamicDiscretisedDensity* read_interfile_dynamic_image(const std::string& filename);
+
+/// Read parametric image
+ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<2,float> > >*
+read_interfile_parametric_image(std::istream& input,
+                             const std::string&  directory_for_data);
+
+/// Read parametric image
+ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<2,float> > >*
+read_interfile_parametric_image(const std::string& filename);
+
 //! This outputs an Interfile header for an image.
 /*!
   \ingroup InterfileIO
@@ -116,13 +141,15 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(const std::string& filename);
 Succeeded 
 write_basic_interfile_image_header(const std::string& header_file_name,
 				   const std::string& image_file_name,
-				   const IndexRange<3>& index_range,
+				   const ExamInfo& exam_info,
+                                   const IndexRange<3>& index_range,
 				   const CartesianCoordinate3D<float>& voxel_size,
 				   const CartesianCoordinate3D<float>& origin,
 				   const NumericType output_type,
 				   const ByteOrder byte_order,
 				   const VectorWithOffset<float>& scaling_factors,
-				   const VectorWithOffset<unsigned long>& file_offsets);
+                   const VectorWithOffset<unsigned long>& file_offsets,
+                   const std::vector<std::string>& data_type_descriptions = std::vector<std::string>());
 
 
 //! a utility function that computes the file offsets of subsequent images
@@ -146,6 +173,24 @@ compute_file_offsets(int number_of_time_frames,
 template <class elemT>
 Succeeded 
 write_basic_interfile(const std::string&filename, 
+		      const Array<3,elemT>& image,
+		      const CartesianCoordinate3D<float>& voxel_size,
+		      const CartesianCoordinate3D<float>& origin,
+		      const NumericType output_type = NumericType::FLOAT,
+		      const float scale= 0,
+		      const ByteOrder byte_order=ByteOrder::native);
+
+//! This outputs an Interfile header and data for a Array<3,elemT> object.
+/*!
+  \ingroup InterfileIO
+ Extension .v will be added to the parameter 'filename' (if no extension present).
+ Extensions .hv (and .ahv) will be used for the header filename. 
+*/
+
+template <class elemT>
+Succeeded 
+write_basic_interfile(const std::string&filename, 
+                      const ExamInfo& exam_info,
 		      const Array<3,elemT>& image,
 		      const CartesianCoordinate3D<float>& voxel_size,
 		      const CartesianCoordinate3D<float>& origin,
@@ -192,7 +237,6 @@ write_basic_interfile(const std::string& filename,
 		      const float scale= 0,
 		      const ByteOrder byte_order=ByteOrder::native);
 
-
 //! This outputs an Interfile header and data for a DiscretisedDensity<3,float> object
 /*!
   \ingroup InterfileIO
@@ -208,6 +252,20 @@ write_basic_interfile(const std::string& filename,
 		      const NumericType output_type = NumericType::FLOAT,
 		      const float scale= 0,
 		      const ByteOrder byte_order=ByteOrder::native);
+
+Succeeded
+write_basic_interfile(const std::string& filename,
+              const ParametricDiscretisedDensity<VoxelsOnCartesianGrid<KineticParameters<2,float> > >& image,
+              const NumericType output_type = NumericType::FLOAT,
+              const float scale= 0,
+              const ByteOrder byte_order=ByteOrder::native);
+
+Succeeded
+write_basic_interfile(const std::string& filename,
+              const DynamicDiscretisedDensity& image,
+              const NumericType output_type = NumericType::FLOAT,
+              const float scale= 0,
+              const ByteOrder byte_order=ByteOrder::native);
 
 //! This reads the first 3D sinogram from an Interfile header, given as a stream
 /*!

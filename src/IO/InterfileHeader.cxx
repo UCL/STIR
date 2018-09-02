@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2016 University College London
+    Copyright (C) 2013, 2016, 2018 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 
   \author Kris Thielemans
   \author PARAPET project
+  \author Richard Brown
 */
 
 #include "stir/IO/InterfileHeader.h"
@@ -295,7 +296,7 @@ bool InterfileHeader::post_processing()
     }
   }
 
-  for (int frame=0; frame<num_time_frames; frame++)
+  for (int frame=0; frame<this->get_num_data_types(); frame++)
   {
     if (image_scaling_factors[frame].size() == 1)
     {
@@ -318,7 +319,7 @@ bool InterfileHeader::post_processing()
   if (lln_quantification_units!=1.)
   {
      const bool all_one = image_scaling_factors[0][0] == 1.;
-    for (int frame=0; frame<num_time_frames; frame++)
+    for (int frame=0; frame<this->get_num_data_types(); frame++)
       for (unsigned int i=0; i<image_scaling_factors[frame].size(); i++)
       {
         // check if all image_scaling_factors are equal to 1 (i.e. the image_scaling_factors keyword 
@@ -429,9 +430,29 @@ void InterfileHeader::read_frames_info()
 InterfileImageHeader::InterfileImageHeader()
   : InterfileHeader()
 {
+  num_image_data_types = 1;
+  index_nesting_level.resize(num_image_data_types, "");
+  image_data_type_description.resize(num_image_data_types, "");
+    
   add_key("first pixel offset (mm)",
 	   KeyArgument::DOUBLE, &first_pixel_offsets);
+  add_key("number of image data types", 
+    KeyArgument::INT,	(KeywordProcessor)&InterfileImageHeader::read_image_data_types,&num_image_data_types);
+  add_key("index nesting level", 
+    KeyArgument::LIST_OF_ASCII,	&index_nesting_level);
+  add_key("image data type description", 
+    KeyArgument::ASCII,	&image_data_type_description);
+}
 
+void InterfileImageHeader::read_image_data_types()
+{
+  set_variable();
+  image_scaling_factors.resize(num_image_data_types);
+  for (int i=0; i<num_image_data_types; i++)
+    image_scaling_factors[i].resize(1, 1.);
+  data_offset_each_dataset.resize(num_image_data_types, 0UL);
+  index_nesting_level.resize(num_image_data_types,"");
+  image_data_type_description.resize(num_image_data_types,"");
 }
 
 void 
@@ -472,6 +493,12 @@ bool InterfileImageHeader::post_processing()
       return true; 
     }
   std::vector<double>	first_pixel_offsets;
+  
+  if (num_time_frames > 1 && num_image_data_types > 1)
+    { 
+      warning("Interfile error: only supporting num_time_frames OR num_image_data_types > 1 for now\n"); 
+      return true; 
+    }
 
   return false;
 }

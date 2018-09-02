@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2002-2009, Hammersmith Imanet Ltd
+    Copyright (C) 2018 - , Univeristy College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -20,34 +21,36 @@
 
   \file
   \ingroup InterfileIO
-  \brief Implementation of class stir::InterfileParametricDensityOutputFileFormat
+  \brief Implementation of class stir::InterfileParametricDiscretisedDensityOutputFileFormat
 
   \author Kris Thielemans
+  \author Richard Brown
 
 */
 
-#include "stir/IO/InterfileParametricDensityOutputFileFormat.h"
-#include "stir/modelling/KineticParameters.h" 
-#include "stir/modelling/ParametricDiscretisedDensity.h" 
+#include "stir/IO/InterfileParametricDiscretisedDensityOutputFileFormat.h"
+#include "stir/modelling/KineticParameters.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/NumericType.h"
 #include "stir/Succeeded.h"
+#include "stir/IO/interfile.h"
 
 START_NAMESPACE_STIR
 
 //#define TEMPLATE template <int num_dimensions, typename elemT>
 #define TEMPLATE template <typename DiscDensityT>
-//#define InterfileParamDiscDensity InterfileParametricDensityOutputFileFormat<num_dimensions,elemT>
-#define InterfileParamDiscDensity InterfileParametricDensityOutputFileFormat<DiscDensityT>
+//#define InterfileParamDiscDensity InterfileParametricDiscretisedDensityOutputFileFormat<num_dimensions,elemT>
+#define InterfileParamDiscDensity InterfileParametricDiscretisedDensityOutputFileFormat<DiscDensityT>
 
 
 TEMPLATE
-const char * const 
+const char * const
 InterfileParamDiscDensity::registered_name = "Interfile";
 
 TEMPLATE
 InterfileParamDiscDensity::
-InterfileParametricDensityOutputFileFormat(const NumericType& type, 
-					   const ByteOrder& byte_order) 
+InterfileParametricDiscretisedDensityOutputFileFormat(const NumericType& type,
+					   const ByteOrder& byte_order)
 {
   base_type::set_defaults();
   this->set_type_of_numbers(type);
@@ -55,7 +58,7 @@ InterfileParametricDensityOutputFileFormat(const NumericType& type,
 }
 
 TEMPLATE
-void 
+void
 InterfileParamDiscDensity::
 set_defaults()
 {
@@ -63,7 +66,7 @@ set_defaults()
 }
 
 TEMPLATE
-void 
+void
 InterfileParamDiscDensity::
 initialise_keymap()
 {
@@ -73,7 +76,7 @@ initialise_keymap()
 }
 
 TEMPLATE
-bool 
+bool
 InterfileParamDiscDensity::
 post_processing()
 {
@@ -84,14 +87,14 @@ post_processing()
 
 
 TEMPLATE
-ByteOrder 
+ByteOrder
 InterfileParamDiscDensity::
 set_byte_order(const ByteOrder& new_byte_order, const bool warn)
 {
   if (!new_byte_order.is_native_order())
   {
     if (warn)
-      warning("InterfileParametricDensityOutputFileFormat: byte_order is currently fixed to the native format\n");
+      warning("InterfileParametricDiscretisedDensityOutputFileFormat: byte_order is currently fixed to the native format\n");
      this->file_byte_order = ByteOrder::native;
   }
   else
@@ -102,21 +105,25 @@ set_byte_order(const ByteOrder& new_byte_order, const bool warn)
 
 
 TEMPLATE
-Succeeded  
+Succeeded
 InterfileParamDiscDensity::
-actual_write_to_file(std::string& filename, 
+actual_write_to_file(std::string& filename,
 		     const ParametricDiscretisedDensity<DiscDensityT>& density) const
 {
   // TODO modify write_basic_interfile to return filename
-  
-  error("InterfileParametricDensityOutputFileFormat TODO");
-  return Succeeded::no;
-};
+  Succeeded success =
+      write_basic_interfile(filename, density,
+                this->type_of_numbers, this->scale_to_write_data,
+                this->file_byte_order);
+  if (success == Succeeded::yes)
+      replace_extension(filename, ".hv");
+  return success;
+}
 
 #undef ParamDiscDensity
 #undef TEMPLATE
 
-template class InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>;  
+template class InterfileParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>;
 
 
 END_NAMESPACE_STIR

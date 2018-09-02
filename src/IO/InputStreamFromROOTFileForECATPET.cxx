@@ -72,17 +72,17 @@ get_next_record(CListRecordROOT& record)
 
         current_position ++ ;
 
-        if ( (comptonphantom1 > 0 && comptonphantom2>0) && exclude_scattered )
+        if ( (comptonphantom1 > 0 || comptonphantom2 > 0) && exclude_scattered )
             continue;
-        else if ( (eventID1 != eventID2) && exclude_randoms )
+        if ( eventID1 != eventID2 && exclude_randoms )
             continue;
-        else if (energy1 < low_energy_window ||
+        if (energy1 < low_energy_window ||
                  energy1 > up_energy_window ||
                  energy2 < low_energy_window ||
                  energy2 > up_energy_window)
             continue;
-        else
-            break;
+
+        break;
     }
 
     int ring1 = static_cast<Int_t>(crystalID1/crystal_repeater_z)

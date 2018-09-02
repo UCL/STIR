@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -243,7 +244,7 @@ public:
   //! \brief set_input_data
   //! \author Nikos Efthimiou
   void set_input_data(const shared_ptr<ExamData>& arg);
-
+  virtual const ExamData& get_input_data() const;
   //@}
 
 protected:

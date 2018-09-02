@@ -143,7 +143,7 @@ private:
     //! Check if the hroot contains a full scanner description
     Succeeded check_scanner_definition(std::string& ret);
     //! Check if the scanner_sptr matches the geometry in root_file_sptr
-    Succeeded check_scanner_match_geometry(std::string& ret);
+    Succeeded check_scanner_match_geometry(std::string& ret, const shared_ptr<Scanner>& scanner_sptr);
 
     //! The header file
     std::string hroot_filename;

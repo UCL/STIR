@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009-07-08, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -37,6 +38,7 @@
 
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Array.h"
+#include "stir/IO/ExamData.h"
 #include "stir/shared_ptr.h"
 #include <string>
 
@@ -95,8 +97,7 @@ START_NAMESPACE_STIR
 */
 
 template<int num_dimensions, typename elemT>
-class DiscretisedDensity : public Array<num_dimensions,elemT>
-
+  class DiscretisedDensity : public ExamData, public Array<num_dimensions,elemT>
 { 
 #ifdef SWIG
   // work-around swig problem. It gets confused when using a private (or protected)
@@ -122,10 +123,15 @@ public:
   //! Construct an empty DiscretisedDensity
   inline DiscretisedDensity();
   
-  //! Construct DiscretisedDensity of a given range of indices & origin
+  //! Construct DiscretisedDensity from a given range of indices & origin
   inline DiscretisedDensity(const IndexRange<num_dimensions>& range,
     const CartesianCoordinate3D<float>& origin);	
-  
+
+    //! Construct DiscretisedDensity from ExamInfo and a given range of indices & origin
+  inline DiscretisedDensity(const shared_ptr < ExamInfo > & exam_info_sptr,
+                            const IndexRange<num_dimensions>& range,
+                            const CartesianCoordinate3D<float>& origin);
+
   //! Return the origin 
   inline const CartesianCoordinate3D<float>& get_origin()  const;
 

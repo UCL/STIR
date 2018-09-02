@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
   \author Kris Thielemans 
   \author Sanida Mustafovic
   \author PARAPET project
+  \author Richard Brown
 */
 //   Pretty horrible implementations at the moment...
 
@@ -52,6 +53,8 @@
 #include "stir/Bin.h"
 #include "stir/stream.h"
 #include "stir/error.h"
+#include "stir/DynamicDiscretisedDensity.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
 #include <boost/format.hpp>
 #include <fstream>
 #include <algorithm>
@@ -86,24 +89,23 @@ is_interfile_signature(const char * const signature)
 }
 
 
-
-VoxelsOnCartesianGrid<float>* 
-read_interfile_image(istream& input, 
-		     const string&  directory_for_data)
+// help function
+static
+VoxelsOnCartesianGrid<float> *
+create_image_and_header_from(InterfileImageHeader& hdr,
+                             char * full_data_file_name, // preallocated
+                             istream& input, 
+                             const string&  directory_for_data)
 {
-  InterfileImageHeader hdr;
   if (!hdr.parse(input))
   {
       return 0; //KT 10/12/2001 do not call ask_parameters anymore 
     }
   
   // prepend directory_for_data to the data_file_name from the header
-  char full_data_file_name[max_filename_length];
   strcpy(full_data_file_name, hdr.data_file_name.c_str());
   prepend_directory_name(full_data_file_name, directory_for_data.c_str());  
   
-  ifstream data_in;
-  open_read_binary(data_in, full_data_file_name);
     
   CartesianCoordinate3D<float> voxel_size(static_cast<float>(hdr.pixel_sizes[2]), 
 					  static_cast<float>(hdr.pixel_sizes[1]), 
@@ -129,30 +131,184 @@ read_interfile_image(istream& input,
 	- voxel_size * BasicCoordinate<3,float>(min_indices);
     }
 
-  VoxelsOnCartesianGrid<float>* image_ptr =
+  return
     new VoxelsOnCartesianGrid<float>
-    (IndexRange<3>(min_indices, max_indices),
+    (hdr.get_exam_info_sptr(),
+     IndexRange<3>(min_indices, max_indices),
      origin,
      voxel_size);
+}
+
+VoxelsOnCartesianGrid<float> *
+read_interfile_image(istream& input,
+		     const string&  directory_for_data)
+{
+  InterfileImageHeader hdr;
+  char full_data_file_name[max_filename_length];
+  VoxelsOnCartesianGrid<float> * image_ptr =
+    create_image_and_header_from(hdr,
+                                 full_data_file_name,
+                                 input,
+                                 directory_for_data);
   
+  ifstream data_in;
+  open_read_binary(data_in, full_data_file_name);
+
   data_in.seekg(hdr.data_offset_each_dataset[0]);
-  
+
+  if (hdr.data_offset_each_dataset[0]>0)
+    data_in.seekg(hdr.data_offset_each_dataset[0]);
+
+  // read into image_sptr first
   float scale = float(1);
   if (read_data(data_in, *image_ptr, hdr.type_of_numbers, scale, hdr.file_byte_order)
-    == Succeeded::no
-    || scale != 1)
-  {
-    warning("read_interfile_image: error reading data or scale factor returned by read_data not equal to 1\n");
-    return 0;
-  }
+      == Succeeded::no
+      || scale != 1)
+    {
+      warning("read_interfile_image: error reading data or scale factor returned by read_data not equal to 1\n");
+      return 0;
+    }
   
   for (int i=0; i< hdr.matrix_size[2][0]; i++)
     if (hdr.image_scaling_factors[0][i]!= 1)
       (*image_ptr)[i] *= static_cast<float>(hdr.image_scaling_factors[0][i]);
-    
+
   return image_ptr;
 }
 
+DynamicDiscretisedDensity*
+read_interfile_dynamic_image(istream& input,
+                             const string&  directory_for_data)
+{
+  InterfileImageHeader hdr;
+  char full_data_file_name[max_filename_length];
+  shared_ptr<DiscretisedDensity<3,float> >
+    image_sptr(create_image_and_header_from(hdr,
+                                            full_data_file_name,
+                                            input,
+                                            directory_for_data));
+  if (is_null_ptr(image_sptr))
+    error("Error parsing dynamic image");
+
+  shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(hdr.get_exam_info_sptr()->originating_system));
+
+  DynamicDiscretisedDensity * dynamic_dens_ptr =
+    new DynamicDiscretisedDensity(hdr.get_exam_info_sptr()->time_frame_definitions,
+                                  hdr.get_exam_info_sptr()->start_time_in_secs_since_1970,
+                                  scanner_sptr,
+                                  image_sptr);
+
+  // Copy the exam info (currently hdr and image_sptr share the same one and this will cause problems)
+  image_sptr->set_exam_info(*image_sptr->get_exam_info_sptr());
+
+  ifstream data_in;
+  open_read_binary(data_in, full_data_file_name);
+
+  data_in.seekg(hdr.data_offset_each_dataset[0]);
+
+  for (unsigned int frame_num=1; frame_num <= dynamic_dens_ptr->get_num_time_frames(); ++frame_num)
+    {
+      data_in.seekg(hdr.data_offset_each_dataset[frame_num-1]);
+
+      // read into image_sptr first
+      float scale = float(1);
+      if (read_data(data_in, *image_sptr, hdr.type_of_numbers, scale, hdr.file_byte_order)
+          == Succeeded::no
+          || fabs(scale-float(1))>float(1e-10))
+        {
+          warning("read_interfile_dynamic_image: error reading data or scale factor returned by read_data not equal to 1");
+          return 0;
+        }
+
+      for (int i=0; i< hdr.matrix_size[2][0]; i++)
+        if (fabs(hdr.image_scaling_factors[frame_num-1][i]-double(1))>double(1e-10))
+          (*image_sptr)[i] *= static_cast<float>(hdr.image_scaling_factors[frame_num-1][i]);
+
+      // Set the time frame of the individual frame
+      image_sptr->get_exam_info_sptr()->time_frame_definitions =
+              TimeFrameDefinitions(hdr.get_exam_info_ptr()->time_frame_definitions,frame_num);
+
+      // now stick into the dynamic image
+      dynamic_dens_ptr->set_density(*image_sptr,frame_num);
+
+    }
+  return dynamic_dens_ptr;
+}
+
+ParametricVoxelsOnCartesianGrid*
+read_interfile_parametric_image(istream& input,
+                             const string&  directory_for_data)
+{
+  InterfileImageHeader hdr;
+  char full_data_file_name[max_filename_length];
+  shared_ptr<DiscretisedDensity<3,float> >
+    image_sptr(create_image_and_header_from(hdr,
+                                            full_data_file_name,
+                                            input,
+                                            directory_for_data));
+  if (is_null_ptr(image_sptr))
+    error("Error parsing parametric image");
+
+  shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(hdr.get_exam_info_sptr()->originating_system));
+
+  BasicCoordinate<3,float> voxel_size;
+  voxel_size[1] = hdr.pixel_sizes[2];
+  voxel_size[2] = hdr.pixel_sizes[1];
+  voxel_size[3] = hdr.pixel_sizes[0];
+
+  ParametricVoxelsOnCartesianGrid* parametric_dens_ptr =
+          new ParametricVoxelsOnCartesianGrid(
+              ParametricVoxelsOnCartesianGridBaseType(
+                  hdr.get_exam_info_sptr(),
+                  image_sptr->get_index_range(),
+                  image_sptr->get_origin(),
+                  voxel_size));
+
+  ifstream data_in;
+  open_read_binary(data_in, full_data_file_name);
+
+  data_in.seekg(hdr.data_offset_each_dataset[0]);
+
+  // loop over each of the parametric image types (e.g., slope, intercept)
+  for (int kin_param=1; kin_param<=hdr.num_image_data_types; kin_param++) {
+
+      data_in.seekg(hdr.data_offset_each_dataset[kin_param-1]);
+
+      // read into image_sptr first
+      float scale = float(1);
+      if (read_data(data_in, *image_sptr, hdr.type_of_numbers, scale, hdr.file_byte_order)
+          == Succeeded::no
+          || scale != 1)
+        {
+          warning("read_interfile_parametric_image: error reading data or scale factor returned by read_data not equal to 1");
+          return 0;
+        }
+
+      for (int i=0; i< hdr.matrix_size[2][0]; i++)
+        if (hdr.image_scaling_factors[kin_param-1][i]!= 1)
+          (*image_sptr)[i] *= static_cast<float>(hdr.image_scaling_factors[kin_param-1][i]);
+
+      // Check that we're dealing with VoxelsOnCartesianGrid
+      if (dynamic_cast<const VoxelsOnCartesianGrid<float> * >(image_sptr.get())==0)
+        error("ParametricDiscretisedDensity::read_from_file only supports VoxelsOnCartesianGrid");
+
+      // Set the image for the given kinetic parameter
+      ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType::const_full_iterator single_density_iter =
+        image_sptr->begin_all();
+      ParametricVoxelsOnCartesianGrid::SingleDiscretisedDensityType::const_full_iterator end_single_density_iter =
+        image_sptr->end_all();
+      ParametricVoxelsOnCartesianGrid::full_densel_iterator parametric_density_iter =
+        parametric_dens_ptr->begin_all_densel();
+
+      while (single_density_iter!=end_single_density_iter)
+        {
+          (*parametric_density_iter)[kin_param] = *single_density_iter;
+          ++single_density_iter; ++parametric_density_iter;
+        }
+  }
+
+  return parametric_dens_ptr;
+}
 
 VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename)
 {
@@ -166,6 +322,35 @@ VoxelsOnCartesianGrid<float>* read_interfile_image(const string& filename)
   get_directory_name(directory_name, filename.c_str());
   
   return read_interfile_image(image_stream, directory_name);
+}
+
+DynamicDiscretisedDensity* read_interfile_dynamic_image(const string& filename)
+{
+  ifstream image_stream(filename.c_str());
+  if (!image_stream)
+    {
+      error("read_interfile_dynamic_image: couldn't open file %s\n", filename.c_str());
+    }
+
+  char directory_name[max_filename_length];
+  get_directory_name(directory_name, filename.c_str());
+
+  return read_interfile_dynamic_image(image_stream, directory_name);
+}
+
+ParametricVoxelsOnCartesianGrid*
+read_interfile_parametric_image(const string& filename)
+{
+  ifstream image_stream(filename.c_str());
+  if (!image_stream)
+    {
+      error("read_interfile_parametric_image: couldn't open file %s\n", filename.c_str());
+    }
+
+  char directory_name[max_filename_length];
+  get_directory_name(directory_name, filename.c_str());
+
+  return read_interfile_parametric_image(image_stream, directory_name);
 }
 
 #if 0
@@ -217,17 +402,125 @@ interfile_get_data_file_name_in_header(const string& header_file_name,
       return data_file_name;
     }
 }
- 
+
+//// some static helper functions for writing
+// probably should be moved to InterfileHeader
+static void write_interfile_patient_position(std::ostream& output_header, const ExamInfo& exam_info)
+{
+  string orientation;
+  switch (exam_info.patient_position.get_orientation())
+    {
+    case PatientPosition::head_in: orientation="head_in";break;
+    case PatientPosition::feet_in: orientation="feet_in";break;
+    case PatientPosition::other_orientation: orientation="other";break;
+    default: orientation="unknown"; break;
+    }
+  string rotation;
+  switch (exam_info.patient_position.get_rotation())
+    {
+    case PatientPosition::prone: rotation="prone";break;
+    case PatientPosition::supine: rotation="supine";break;
+    case PatientPosition::other_rotation:
+    case PatientPosition::left:
+    case PatientPosition::right:
+      rotation="other";break;
+    default: rotation="unknown"; break;
+    }
+  if (orientation!="unknown")
+    output_header << "patient orientation := " << orientation << '\n';
+  if (rotation!="unknown")
+    output_header << "patient rotation := " << rotation << '\n';
+}
+
+static void write_interfile_time_frame_definitions(std::ostream& output_header, const ExamInfo& exam_info)
+  // TODO this is according to the proposed interfile standard for PET. Interfile 3.3 is different
+{
+  const TimeFrameDefinitions& frame_defs(exam_info.time_frame_definitions);
+  if (frame_defs.get_num_time_frames()>0)
+    {
+      output_header << "number of time frames := " << frame_defs.get_num_time_frames() << '\n';
+      for (unsigned int frame_num=1; frame_num<=frame_defs.get_num_time_frames(); ++frame_num)
+        {
+          if (frame_defs.get_duration(frame_num)>0)
+            {
+              output_header << "image duration (sec)[" << frame_num << "] := "
+                            << frame_defs.get_duration(frame_num) << '\n';
+              output_header << "image relative start time (sec)[" << frame_num << "] := "
+                            << frame_defs.get_start_time(frame_num) << '\n';
+            }
+        }
+    }
+  else
+    {
+      // need to write this anyway to allow vectored keys below
+      output_header << "number of time frames := 1\n";
+    }
+}
+
+// Write energy window lower and upper thresholds, if they are not -1
+static void write_interfile_energy_windows(std::ostream& output_header, const ExamInfo& exam_info)
+{
+  if (exam_info.get_high_energy_thres() > 0 &&
+      exam_info.get_low_energy_thres() >= 0)
+    {
+      output_header << "energy window lower level := " <<
+        exam_info.get_low_energy_thres() << '\n';
+      output_header << "energy window upper level :=  " <<
+        exam_info.get_high_energy_thres() << '\n';
+    }
+}
+
+// Write data type descriptions (if there are any)
+static void write_interfile_image_data_descriptions(std::ostream& output_header, const std::vector<std::string>& data_type_descriptions)
+{
+    if (data_type_descriptions.size() == 0) return;
+
+    output_header << "number of image data types := " << data_type_descriptions.size() << '\n';
+    output_header << "index nesting level := {data type}\n";
+    for (int i=0; i<data_type_descriptions.size(); i++)
+        output_header << "image data type description[" << i+1 << "] := " << data_type_descriptions[i] << "\n";
+}
+
+static void  write_interfile_modality(std::ostream& output_header, const ExamInfo& exam_info)
+{
+  /*
+  // default modality is PET
+  ImagingModality imaging_modality(ImagingModality::PT);
+  if (!is_null_ptr(exam_info_ptr))
+    imaging_modality=exam_info_ptr->imaging_modality;
+  */
+  if (exam_info.
+      imaging_modality.get_modality() != ImagingModality::Unknown)
+    output_header << "!imaging modality := " << exam_info.imaging_modality.get_name() << '\n';
+}
+
+static void interfile_create_filenames(const std::string& filename, std::string& data_name, std::string& header_name)
+{
+  data_name=filename;
+  string::size_type pos=find_pos_of_extension(filename);
+  if (pos!=string::npos && filename.substr(pos)==".hv")
+    replace_extension(data_name, ".v");
+  else
+    add_extension(data_name, ".v");
+
+  header_name=filename;
+  replace_extension(header_name, ".hv");
+}
+
+////// end static functions
+
 Succeeded 
 write_basic_interfile_image_header(const string& header_file_name,
 				   const string& image_file_name,
+                                   const ExamInfo& exam_info,
 				   const IndexRange<3>& index_range,
 				   const CartesianCoordinate3D<float>& voxel_size,
 				   const CartesianCoordinate3D<float>& origin,
 				   const NumericType output_type,
 				   const ByteOrder byte_order,
 				   const VectorWithOffset<float>& scaling_factors,
-				   const VectorWithOffset<unsigned long>& file_offsets)
+				   const VectorWithOffset<unsigned long>& file_offsets,
+                   const std::vector<std::string>& data_type_descriptions)
 {
   CartesianCoordinate3D<int> min_indices;
   CartesianCoordinate3D<int> max_indices;
@@ -254,6 +547,11 @@ write_basic_interfile_image_header(const string& header_file_name,
   output_header << "!INTERFILE  :=\n";
   output_header << "name of data file := " << data_file_name_in_header << endl;
   output_header << "!GENERAL DATA :=\n";
+  if (!exam_info.originating_system.empty())
+    output_header << "originating system := "
+                  << exam_info.originating_system << endl;
+  write_interfile_modality(output_header, exam_info);
+  write_interfile_patient_position(output_header, exam_info);
   output_header << "!GENERAL IMAGE DATA :=\n";
   output_header << "!type of data := PET\n";
   output_header << "imagedata byte order := " <<
@@ -262,6 +560,9 @@ write_basic_interfile_image_header(const string& header_file_name,
      : "BIGENDIAN")
 		<< endl;
   output_header << "!PET STUDY (General) :=\n";
+  write_interfile_time_frame_definitions(output_header, exam_info);
+  write_interfile_energy_windows(output_header, exam_info);
+  write_interfile_image_data_descriptions(output_header, data_type_descriptions);
   output_header << "!PET data type := Image\n";
   output_header << "process status := Reconstructed\n";
 
@@ -303,8 +604,6 @@ write_basic_interfile_image_header(const string& header_file_name,
       output_header << "first pixel offset (mm) [3] := " 
 		    << first_pixel_offsets.z() << '\n';
     }
-
-  output_header << "number of time frames := " << scaling_factors.get_length() << endl;
   
   for (int i=1; i<=scaling_factors.get_length();i++)
     {
@@ -446,6 +745,48 @@ write_basic_interfile(const string& filename,
 #endif
 
 template <class NUMBER>
+Succeeded write_basic_interfile(const string&  filename,
+                const ExamInfo& exam_info,
+                const Array<3,NUMBER>& image,
+                const CartesianCoordinate3D<float>& voxel_size,
+                const CartesianCoordinate3D<float>& origin,
+                const NumericType output_type,
+                const float scale,
+                const ByteOrder byte_order)
+{
+    std::string data_name, header_name;
+    interfile_create_filenames(filename, data_name, header_name);
+
+    ofstream output_data;
+    open_write_binary(output_data, data_name.c_str());
+
+    float scale_to_use = scale;
+    write_data(output_data, image, output_type, scale_to_use,
+              byte_order);
+    VectorWithOffset<float> scaling_factors(1);
+    scaling_factors.fill(scale_to_use);
+    VectorWithOffset<unsigned long> file_offsets(1);
+    file_offsets.fill(0);
+
+    const Succeeded success =
+      write_basic_interfile_image_header(header_name,
+                         data_name,
+                         exam_info,
+                         image.get_index_range(),
+                         voxel_size,
+                         origin,
+                         output_type,
+                         byte_order,
+                         scaling_factors,
+                         file_offsets);
+  #if 0
+    delete[] header_name;
+    delete[] data_name;
+  #endif
+    return success;
+}
+
+template <class NUMBER>
 Succeeded write_basic_interfile(const string&  filename, 
 				const Array<3,NUMBER>& image,
 				const CartesianCoordinate3D<float>& voxel_size,
@@ -455,61 +796,14 @@ Succeeded write_basic_interfile(const string&  filename,
 				const ByteOrder byte_order)
 {
 
-#if 1
-  string data_name=filename;
-  {
-    string::size_type pos=find_pos_of_extension(filename);
-    if (pos!=string::npos && filename.substr(pos)==".hv")
-      replace_extension(data_name, ".v");
-    else
-      add_extension(data_name, ".v");
-  }
-  string header_name=filename;
-#else
-  char * data_name = new char[filename.size() + 5];
-  char * header_name = new char[filename.size() + 5];
-
-  strcpy(data_name, filename.c_str());
-  // KT 29/06/2001 make sure that a filename ending on .hv is treated correctly
-  {
-   const char * const extension = strchr(find_filename(data_name),'.');
-   if (extension!=NULL && strcmp(extension, ".hv")==0)
-     replace_extension(data_name, ".v");
-   else
-     add_extension(data_name, ".v");
-  }
-  strcpy(header_name, data_name);
-#endif
-  replace_extension(header_name, ".hv");
-
-  ofstream output_data;
-  open_write_binary(output_data, data_name.c_str());
-
-  float scale_to_use = scale;
-  write_data(output_data, image, output_type, scale_to_use,
-	     byte_order);
-
-  VectorWithOffset<float> scaling_factors(1);
-  scaling_factors[0] = scale_to_use;
-  VectorWithOffset<unsigned long> file_offsets(1);
-  file_offsets.fill(0);
-
-
-  const Succeeded success =
-    write_basic_interfile_image_header(header_name,
-				       data_name,
-				       image.get_index_range(), 
-				       voxel_size,
-				       origin,
-				       output_type,
-				       byte_order,
-				       scaling_factors,
-				       file_offsets);
-#if 0
-  delete[] header_name;
-  delete[] data_name;
-#endif
-  return success;
+  return write_basic_interfile(filename,
+                               ExamInfo(),
+                               image,
+                               voxel_size,
+                               origin,
+                               output_type,
+                               scale,
+                               byte_order);
 }
 
 Succeeded
@@ -520,7 +814,8 @@ write_basic_interfile(const string&  filename,
 		      const ByteOrder byte_order)
 {
   return
-    write_basic_interfile(filename, 
+    write_basic_interfile(filename,
+                          image.get_exam_info(),
 			  image, // use automatic reference to base class
 			  image.get_grid_spacing(), 
 			  image.get_origin(),
@@ -544,6 +839,97 @@ write_basic_interfile(const string& filename,
 			  scale, byte_order);
 }
 
+Succeeded
+write_basic_interfile(const string& filename,
+              const ParametricVoxelsOnCartesianGrid &image,
+              const NumericType output_type,
+              const float scale,
+              const ByteOrder byte_order)
+{
+
+    std::string data_name, header_name;
+    interfile_create_filenames(filename, data_name, header_name);
+
+    ofstream output_data;
+    open_write_binary(output_data, data_name.c_str());
+
+    VectorWithOffset<unsigned long> file_offsets(image.get_num_params());
+    VectorWithOffset<float> scaling_factors(image.get_num_params());
+    for (int i=1; i<=image.get_num_params(); i++) {
+        float scale_to_use = scale;
+        file_offsets[i-1] = output_data.tellp();
+        write_data(output_data, image.construct_single_density(i), output_type, scale_to_use,
+                  byte_order);
+        scaling_factors[i-1]=(scale_to_use);
+    }
+
+    // Tell it what the different kinetic parameters mean
+    std::vector<std::string> data_type_descriptions;
+    data_type_descriptions.push_back("slope");
+    data_type_descriptions.push_back("intercept");
+
+    const Succeeded success =
+      write_basic_interfile_image_header(header_name,
+                         data_name,
+                         image.get_exam_info(),
+                         image.get_index_range(),
+                         image.get_voxel_size(),
+                         image.get_origin(),
+                         output_type,
+                         byte_order,
+                         scaling_factors,
+                         file_offsets,
+                         data_type_descriptions);
+  #if 0
+    delete[] header_name;
+    delete[] data_name;
+  #endif
+    return success;
+}
+
+
+Succeeded
+write_basic_interfile(const string& filename,
+              const DynamicDiscretisedDensity &image,
+              const NumericType output_type,
+              const float scale,
+              const ByteOrder byte_order)
+{
+
+    std::string data_name, header_name;
+    interfile_create_filenames(filename, data_name, header_name);
+
+    ofstream output_data;
+    open_write_binary(output_data, data_name.c_str());
+
+    VectorWithOffset<unsigned long> file_offsets(image.get_num_time_frames());
+    VectorWithOffset<float> scaling_factors(image.get_num_time_frames());
+    for (int i=1; i<=image.get_num_time_frames(); i++)
+{
+        float scale_to_use = scale;
+        file_offsets[i-1] = output_data.tellp();
+        write_data(output_data, image.get_density(i), output_type, scale_to_use,
+                  byte_order);
+        scaling_factors[i-1]=(scale_to_use);
+}
+
+    const Succeeded success =
+      write_basic_interfile_image_header(header_name,
+                         data_name,
+                         image.get_exam_info(),
+                         image.get_density(1).get_index_range(),
+                         dynamic_cast<const VoxelsOnCartesianGrid<float>& >(image.get_density(1)).get_grid_spacing(),
+                         image.get_density(1).get_origin(),
+                         output_type,
+                         byte_order,
+                         scaling_factors,
+                         file_offsets);
+  #if 0
+    delete[] header_name;
+    delete[] data_name;
+  #endif
+    return success;
+}
 
 static ProjDataFromStream* 
 read_interfile_PDFS_SPECT(istream& input,
@@ -725,7 +1111,6 @@ read_interfile_PDFS(const string& filename,
   return read_interfile_PDFS(image_stream, directory_name, open_mode);
 }
 
-
 Succeeded 
 write_basic_interfile_PDFS_header(const string& header_file_name,
 				  const string& data_file_name,
@@ -760,15 +1145,11 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
     (pdfs.get_proj_data_info_ptr()->get_phi(Bin(0,1,0,0)) -
      pdfs.get_proj_data_info_ptr()->get_phi(Bin(0,0,0,0))) * float(180/_PI);
 
-  const ExamInfo * exam_info_ptr = pdfs.get_exam_info_ptr();
-  // default modality is PET
-  ImagingModality imaging_modality(ImagingModality::PT);
-  if (!is_null_ptr(exam_info_ptr))
-    imaging_modality=exam_info_ptr->imaging_modality;
-  const bool is_spect = imaging_modality.get_modality() == ImagingModality::NM;
- 
   output_header << "!INTERFILE  :=\n";
-  output_header << "!imaging modality := " << imaging_modality.get_name() << '\n';
+
+  const bool is_spect = pdfs.get_exam_info().imaging_modality.get_modality() == ImagingModality::NM;
+
+  write_interfile_modality(output_header, pdfs.get_exam_info());
 
   output_header << "name of data file := " << data_file_name_in_header << endl;
 
@@ -787,31 +1168,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
   // output patient position
   // note: strictly speaking this should come after "!SPECT STUDY (general)" but 
   // that's strange as these keys would be useful for all other cases as well
-  {
-    string orientation;
-    switch (pdfs.get_exam_info_ptr()->patient_position.get_orientation())
-      {
-      case PatientPosition::head_in: orientation="head_in";break;
-      case PatientPosition::feet_in: orientation="feet_in";break;
-      case PatientPosition::other_orientation: orientation="other";break;
-      default: orientation="unknown"; break;
-      }
-    string rotation;
-    switch (pdfs.get_exam_info_ptr()->patient_position.get_rotation())
-      {
-      case PatientPosition::prone: rotation="prone";break;
-      case PatientPosition::supine: rotation="supine";break;
-      case PatientPosition::other_rotation:
-      case PatientPosition::left:
-      case PatientPosition::right:
-	rotation="other";break;
-      default: rotation="unknown"; break;
-      }
-    if (orientation!="unknown")
-      output_header << "patient orientation := " << orientation << '\n';
-    if (rotation!="unknown")
-      output_header << "patient rotation := " << rotation << '\n';
-  }
+  write_interfile_patient_position(output_header, pdfs.get_exam_info());
 
   output_header << "imagedata byte order := " <<
     (pdfs.get_byte_order_in_stream() == ByteOrder::little_endian 
@@ -1016,41 +1373,10 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
     }
 
 
-  // write time frame info
-  // TODO this is according to the proposed interfile standard for PET. Interfile 3.3 is different
-  {
-    const TimeFrameDefinitions& frame_defs(pdfs.get_exam_info_ptr()->time_frame_definitions);
-    if (frame_defs.get_num_time_frames()>0)
-      {
-	output_header << "number of time frames := " << frame_defs.get_num_time_frames() << '\n';
-	for (unsigned int frame_num=1; frame_num<=frame_defs.get_num_time_frames(); ++frame_num)
-	  {
-	    if (frame_defs.get_duration(frame_num)>0)
-	      {
-		output_header << "image duration (sec)[" << frame_num << "] := "
-			      << frame_defs.get_duration(frame_num) << '\n';
-		output_header << "image relative start time (sec)[" << frame_num << "] := "
-			      << frame_defs.get_start_time(frame_num) << '\n';
-	      }
-	  }
-      }
-    else
-      {
-	// need to write this anyway to allow vectored keys below
-	output_header << "number of time frames := 1\n";
-      }
-  }
-  // Write energy window lower and upper thresholds, if they are not -1
-  {
-    if (pdfs.get_exam_info_ptr()->get_high_energy_thres() > 0 &&
-            pdfs.get_exam_info_ptr()->get_low_energy_thres() >= 0)
-    {
-        output_header << "energy window lower level := " <<
-                         pdfs.get_exam_info_ptr()->get_low_energy_thres() << '\n';
-        output_header << "energy window upper level :=  " <<
-                         pdfs.get_exam_info_ptr()->get_high_energy_thres() << '\n';
-    }
-  }
+   // write time frame info and energy windows
+   write_interfile_time_frame_definitions(output_header, pdfs.get_exam_info());
+   write_interfile_energy_windows(output_header, pdfs.get_exam_info());
+
   if (pdfs.get_scale_factor()!=1.F)
  output_header <<"image scaling factor[1] := "
 		<<pdfs.get_scale_factor()<<endl;

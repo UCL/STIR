@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2009-07-08, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -46,6 +47,16 @@ DiscretisedDensity(const IndexRange<num_dimensions>& range_v,
 		   const CartesianCoordinate3D<float>& origin_v)
   : Array<num_dimensions,elemT>(range_v),
     origin(origin_v)    
+{}
+
+template<int num_dimensions, typename elemT>
+DiscretisedDensity<num_dimensions, elemT>::
+DiscretisedDensity(const shared_ptr < ExamInfo > & exam_info_sptr,
+                   const IndexRange<num_dimensions>& range_v,
+                   const CartesianCoordinate3D<float>& origin_v)
+  : ExamData(exam_info_sptr),
+    Array<num_dimensions,elemT>(range_v),
+    origin(origin_v)
 {}
 
 template<int num_dimensions, typename elemT>

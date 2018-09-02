@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2015, 2016 University of Leeds
     Copyright (C) 2016, 2017 University College London
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -33,8 +34,6 @@
 #include "stir/warning.h"
 #include "stir/error.h"
 #include <boost/format.hpp>
-#include <fstream>
-#include <sstream>
 
 START_NAMESPACE_STIR
 
@@ -78,12 +77,14 @@ CListModeDataROOT(const std::string& hroot_filename)
     this->exam_info_sptr->set_low_energy_thres(this->root_file_sptr->get_low_energy_thres());
     this->exam_info_sptr->set_high_energy_thres(this->root_file_sptr->get_up_energy_thres());
 
+    shared_ptr<Scanner> this_scanner_sptr;
+
     // If the user set Scanner::User_defined_scanner then the local geometry valiables must be set.
     bool give_it_a_try = false;
     if (this->originating_system != "User_defined_scanner") //
     {
-        this->scanner_sptr.reset(Scanner::get_scanner_from_name(this->originating_system));
-        if (this->scanner_sptr->get_type() == Scanner::Unknown_scanner)
+        this_scanner_sptr.reset(Scanner::get_scanner_from_name(this->originating_system));
+        if (this_scanner_sptr->get_type() == Scanner::Unknown_scanner)
         {
             warning(boost::format("CListModeDataROOT: Unknown value for originating_system keyword: '%s.\n WIll try to "
                                   "figure out the scanner's geometry from the parameters") % originating_system );
@@ -105,7 +106,7 @@ CListModeDataROOT(const std::string& hroot_filename)
             error(error_str.c_str());
         }
 
-        this->scanner_sptr.reset(new Scanner(Scanner::User_defined_scanner,
+        this_scanner_sptr.reset(new Scanner(Scanner::User_defined_scanner,
                                              std::string ("ROOT_defined_scanner"),
                                              /* num dets per ring */
                                              this->num_detectors_per_ring,
@@ -138,11 +139,18 @@ CListModeDataROOT(const std::string& hroot_filename)
     }
 
     // Compare with InputStreamFromROOTFile scanner generated geometry and throw error if wrong.
-    if (check_scanner_match_geometry(error_str) == Succeeded::no)
+    if (check_scanner_match_geometry(error_str, this_scanner_sptr) == Succeeded::no)
     {
         error(error_str.c_str());
     }
 
+    shared_ptr<ProjDataInfo> tmp( ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
+                                                                         1,
+                                                                         this_scanner_sptr->get_num_rings()-1,
+                                                                         this_scanner_sptr->get_num_detectors_per_ring()/2,
+                                                                         this_scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                                                         /* arc_correction*/false));
+    this->set_proj_data_info_sptr(tmp);
 
     if (this->open_lm_file() == Succeeded::no)
         error("CListModeDataROOT: error opening ROOT file for filename '%s'",
@@ -160,7 +168,7 @@ shared_ptr <CListRecord>
 CListModeDataROOT::
 get_empty_record_sptr() const
 {
-    shared_ptr<CListRecord> sptr(new CListRecordROOT(this->scanner_sptr));
+    shared_ptr<CListRecord> sptr(new CListRecordROOT(this->get_proj_data_info_sptr()->get_scanner_sptr()));
     return sptr;
 }
 
@@ -224,7 +232,7 @@ set_defaults()
 
 Succeeded
 CListModeDataROOT::
-check_scanner_match_geometry(std::string& ret)
+check_scanner_match_geometry(std::string& ret, const shared_ptr<Scanner>& scanner_sptr)
 {
     std::ostringstream stream("CListModeDataROOT: The Scanner does not match the GATE geometry. Check: ");
     bool ok = true;

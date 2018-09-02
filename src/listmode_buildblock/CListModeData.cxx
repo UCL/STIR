@@ -51,12 +51,28 @@ CListModeData::
 //  return exam_info_sptr;
 //}
 
-const Scanner* 
+const Scanner*
 CListModeData::
 get_scanner_ptr() const
 {
-  assert(!is_null_ptr(scanner_sptr));
-  return this->scanner_sptr.get();
+    if(is_null_ptr(proj_data_info_sptr))
+        error("CListModeData: ProjDataInfo has not been set.");
+  return proj_data_info_sptr->get_scanner_ptr();
+}
+
+void
+CListModeData::
+set_proj_data_info_sptr(shared_ptr<ProjDataInfo> new_proj_data_info_sptr)
+{
+    proj_data_info_sptr = new_proj_data_info_sptr;
+}
+
+shared_ptr<ProjDataInfo>
+CListModeData::get_proj_data_info_sptr() const
+{
+    if(is_null_ptr(proj_data_info_sptr))
+        error("CListModeData: ProjDataInfo has not been set.");
+    return proj_data_info_sptr;
 }
 
 #if 0

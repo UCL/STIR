@@ -89,6 +89,7 @@ PresmoothingForwardProjectorByBin::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
        const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr)
 {
+  ForwardProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);
   original_forward_projector_ptr->set_up(proj_data_info_ptr, image_info_ptr);
   if (!is_null_ptr(image_processor_ptr))
     image_processor_ptr->set_up(*image_info_ptr);
