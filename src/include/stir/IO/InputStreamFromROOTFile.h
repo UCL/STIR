@@ -138,23 +138,23 @@ public:
     inline float get_up_energy_thres() const;
 
     //! Set singles_readout_depth
-    inline void set_singles_readout_depth(int&);
+    inline void set_singles_readout_depth(int);
 
-    inline void set_input_filename(std::string&);
+    inline void set_input_filename(const std::string&);
 
-    inline void set_chain_name(std::string&);
+    inline void set_chain_name(const std::string&);
 
-    inline void set_exclude_scattered_events(bool&);
+    inline void set_exclude_scattered_events(bool);
 
-    inline void set_exclude_random_events(bool&);
+    inline void set_exclude_random_events(bool);
 
-    inline void set_detectors_offset(int&);
+    inline void set_detectors_offset(int);
 
-    inline void set_low_energy_window(float&);
+    inline void set_low_energy_window(float);
 
-    inline void set_upper_energy_window(float&);
+    inline void set_upper_energy_window(float);
     //! Set the read_optional_root_fields flag
-    inline void set_optional_ROOT_fields(bool&);
+    inline void set_optional_ROOT_fields(bool);
 
 protected:
 
