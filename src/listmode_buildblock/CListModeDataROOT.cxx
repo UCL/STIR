@@ -91,7 +91,7 @@ CListModeDataROOT(const std::string& hroot_filename)
             give_it_a_try = true;
         }
         else
-            info("CListModeDataROOT: I've set the scanner from STIR settings and ignored values in the hroot header.");
+            warning("CListModeDataROOT: I've set the scanner from STIR settings and ignored values in the hroot header.");
     }
     // If the user provide a Scanner name then, the local variables will be ignored and the Scanner
     // will be the selected.
