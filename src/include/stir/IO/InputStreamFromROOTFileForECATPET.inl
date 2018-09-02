@@ -75,25 +75,25 @@ get_num_trans_crystals_per_singles_unit() const
 }
 
 void
-InputStreamFromROOTFileForECATPET::set_crystal_repeater_x(int& val)
+InputStreamFromROOTFileForECATPET::set_crystal_repeater_x(int val)
 {
     crystal_repeater_x = val;
 }
 
 void
-InputStreamFromROOTFileForECATPET::set_crystal_repeater_y(int& val)
+InputStreamFromROOTFileForECATPET::set_crystal_repeater_y(int val)
 {
     crystal_repeater_y = val;
 }
 
 void
-InputStreamFromROOTFileForECATPET::set_crystal_repeater_z(int& val)
+InputStreamFromROOTFileForECATPET::set_crystal_repeater_z(int val)
 {
     crystal_repeater_z = val;
 }
 
 void
-InputStreamFromROOTFileForECATPET::set_block_repeater(int& val)
+InputStreamFromROOTFileForECATPET::set_block_repeater(int val)
 {
     block_repeater = val;
 }

@@ -107,61 +107,61 @@ get_num_trans_crystals_per_singles_unit() const
 }
 
 void
-InputStreamFromROOTFileForCylindricalPET::set_crystal_repeater_x(int& val)
+InputStreamFromROOTFileForCylindricalPET::set_crystal_repeater_x(int val)
 {
     crystal_repeater_x = val;
 }
 
 void
-InputStreamFromROOTFileForCylindricalPET::set_crystal_repeater_y(int& val)
+InputStreamFromROOTFileForCylindricalPET::set_crystal_repeater_y(int val)
 {
     crystal_repeater_y = val;
 }
 
 void
-InputStreamFromROOTFileForCylindricalPET::set_crystal_repeater_z(int& val)
+InputStreamFromROOTFileForCylindricalPET::set_crystal_repeater_z(int val)
 {
     crystal_repeater_z = val;
 }
 
 void
-InputStreamFromROOTFileForCylindricalPET::set_submodule_repeater_x(int& val)
+InputStreamFromROOTFileForCylindricalPET::set_submodule_repeater_x(int val)
 {
     submodule_repeater_x = val;
 }
 
 void
-InputStreamFromROOTFileForCylindricalPET::set_submodule_repeater_y(int& val)
+InputStreamFromROOTFileForCylindricalPET::set_submodule_repeater_y(int val)
 {
     submodule_repeater_y = val;
 }
 
 void
-InputStreamFromROOTFileForCylindricalPET::set_submodule_repeater_z(int& val)
+InputStreamFromROOTFileForCylindricalPET::set_submodule_repeater_z(int val)
 {
     submodule_repeater_z = val;
 }
 
 void
-InputStreamFromROOTFileForCylindricalPET::set_module_repeater_x(int& val)
+InputStreamFromROOTFileForCylindricalPET::set_module_repeater_x(int val)
 {
     module_repeater_x = val;
 }
 
 void
-InputStreamFromROOTFileForCylindricalPET::set_module_repeater_y(int& val)
+InputStreamFromROOTFileForCylindricalPET::set_module_repeater_y(int val)
 {
     module_repeater_y = val;
 }
 
 void
-InputStreamFromROOTFileForCylindricalPET::set_module_repeater_z(int& val)
+InputStreamFromROOTFileForCylindricalPET::set_module_repeater_z(int val)
 {
     module_repeater_z = val;
 }
 
 void
-InputStreamFromROOTFileForCylindricalPET::set_rsector_repeater(int& val)
+InputStreamFromROOTFileForCylindricalPET::set_rsector_repeater(int val)
 {
     rsector_repeater = val;
 }

@@ -131,16 +131,16 @@ public:
     //! Calculate the number of trans crystals per singles unit based on the repeaters numbers and the readout deptth
     inline virtual int get_num_trans_crystals_per_singles_unit() const;
 
-    inline void set_crystal_repeater_x(int&);
-    inline void set_crystal_repeater_y(int&);
-    inline void set_crystal_repeater_z(int&);
-    inline void set_submodule_repeater_x(int&);
-    inline void set_submodule_repeater_y(int&);
-    inline void set_submodule_repeater_z(int&);
-    inline void set_module_repeater_x(int&);
-    inline void set_module_repeater_y(int&);
-    inline void set_module_repeater_z(int&);
-    inline void set_rsector_repeater(int&);
+    inline void set_crystal_repeater_x(int);
+    inline void set_crystal_repeater_y(int);
+    inline void set_crystal_repeater_z(int);
+    inline void set_submodule_repeater_x(int);
+    inline void set_submodule_repeater_y(int);
+    inline void set_submodule_repeater_z(int);
+    inline void set_module_repeater_x(int);
+    inline void set_module_repeater_y(int);
+    inline void set_module_repeater_z(int);
+    inline void set_rsector_repeater(int);
 
 protected:
 

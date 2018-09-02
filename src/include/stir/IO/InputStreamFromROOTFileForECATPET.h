@@ -124,10 +124,10 @@ public:
     //! Get the number of crystals per block
     inline virtual int get_num_trans_crystals_per_singles_unit() const;
 
-    inline void set_crystal_repeater_x(int&);
-    inline void set_crystal_repeater_y(int&);
-    inline void set_crystal_repeater_z(int&);
-    inline void set_block_repeater(int&);
+    inline void set_crystal_repeater_x(int);
+    inline void set_crystal_repeater_y(int);
+    inline void set_crystal_repeater_z(int);
+    inline void set_block_repeater(int);
 
 
 protected:
