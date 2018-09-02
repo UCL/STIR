@@ -170,7 +170,7 @@ protected:
     int half_block;
 
 private:
-    bool check_all_required_keyword_are_set(std::string& ret);
+    bool check_all_required_keywords_are_set(std::string& ret) const;
 };
 
 END_NAMESPACE_STIR

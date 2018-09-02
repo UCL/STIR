@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2016, UCL
+    Copyright (C) 2018, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -158,7 +159,7 @@ set_up(const std::string & header_path )
         return Succeeded::no;
 
     std::string missing_keywords;
-    if(!check_all_required_keyword_are_set(missing_keywords))
+    if(!check_all_required_keywords_are_set(missing_keywords))
     {
         warning(missing_keywords.c_str());
         return Succeeded::no;
@@ -177,7 +178,7 @@ set_up(const std::string & header_path )
 }
 
 bool InputStreamFromROOTFileForECATPET::
-check_all_required_keyword_are_set(std::string& ret)
+check_all_required_keywords_are_set(std::string& ret) const
 {
     std::ostringstream stream("InputStreamFromROOTFileForCylindricalPET: Required keywords are missing! Check: ");
     bool ok = true;
