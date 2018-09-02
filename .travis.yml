@@ -78,7 +78,13 @@ before_install:
       export PATH="/usr/local/opt/ccache/libexec:$PATH"
       # use Python3 on Mac
       brew upgrade python
-      brew install root
+      # Install ROOT, unless disabled
+      case "$EXTRA_BUILD_FLAGS" in
+          *DISABLE_CERN_ROOT=1*)
+              echo "Not installing ROOT to save some time (and potential time-outs)";;
+          *)
+              brew install root;;
+      esac
       brew install swig
       # find exact location of Python executable to pass to CMake
       PY_INST=`echo /usr/local/Cellar/python/3.*/Frameworks/Python.framework/Versions/3.*`
