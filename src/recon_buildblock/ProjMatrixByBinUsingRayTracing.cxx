@@ -391,7 +391,7 @@ static void
 ray_trace_one_lor(ProjMatrixElemsForOneBin& lor, 
                   const float s_in_mm, const float m_in_mm, 
                   const float cphi, const float sphi, 
-                  const float costheta, const float tantheta, 
+                  const float tantheta, 
                   const float offset_in_z,
                   const float fovrad_in_mm,
                   const CartesianCoordinate3D<float>& voxel_size,
@@ -668,7 +668,7 @@ calculate_proj_matrix_elems_for_one_bin(
   if (num_tangential_LORs == 1)
   {
     ray_trace_one_lor(lor, s_in_mm, m_in_mm,
-                        cphi, sphi, costheta, tantheta, 
+                        cphi, sphi, tantheta,
                         offset_in_z, fovrad_in_mm, 
                         voxel_size,
                         restrict_to_cylindrical_FOV,
@@ -689,7 +689,7 @@ calculate_proj_matrix_elems_for_one_bin(
     {
       ray_traced_lor.erase();
       ray_trace_one_lor(ray_traced_lor, current_s_in_mm, m_in_mm,
-                          cphi, sphi, costheta, tantheta, 
+                          cphi, sphi, tantheta,
                           offset_in_z, fovrad_in_mm, 
                           voxel_size,
                           restrict_to_cylindrical_FOV,
