@@ -2,6 +2,8 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
     Copyright (C) 2013-2014, University College London
+    Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
+                        Australian eHealth Research Centre
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,6 +25,7 @@
 
   \brief non-inline implementations for stir::ProjMatrixByBinUsingRayTracing
 
+  \author Ashley GIllman
   \author Mustapha Sadki
   \author Kris Thielemans
   \author PARAPET project
@@ -52,6 +55,7 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/LORCoordinates.h"
 #include "stir/round.h"
 #include "stir/modulo.h"
 #include "stir/stream.h"
@@ -583,7 +587,30 @@ calculate_proj_matrix_elems_for_one_bin(
   const float tantheta = proj_data_info_ptr->get_tantheta(bin);
   const float costheta = 1/sqrt(1+square(tantheta));
   const float m_in_mm = proj_data_info_ptr->get_m(bin);
-   
+
+  {
+    LORInAxialAndNoArcCorrSinogramCoordinates<float> axial_no_arc_corr_sino_lor;
+    proj_data_info_ptr->get_LOR(axial_no_arc_corr_sino_lor, bin);
+    LORAs2Points<float> cyl_lor(axial_no_arc_corr_sino_lor);
+
+    float alt_phi = cyl_lor.get_phi();
+    if (!((fabs(alt_phi - phi) < 0.0001)
+          | (fabs(alt_phi - phi - _PI) < 0.0001)))
+      std::cerr << "x phi " << phi << " " << alt_phi << std::endl;
+
+    float alt_s = cyl_lor.get_s();
+    if (fabs(alt_s - s_in_mm) > 0.0001)
+      std::cerr << "x s " << s_in_mm << " " << alt_s << std::endl;
+
+    float alt_m = cyl_lor.get_m();
+    if (fabs(alt_m - m_in_mm) > 0.0001)
+      std::cerr << "x m " << m_in_mm << " " << alt_m << std::endl;
+
+    float alt_tantheta = cyl_lor.get_tantheta();
+    if (fabs(alt_tantheta - tantheta) > 0.0001)
+      std::cerr << "x tantheta " << tantheta << " " << alt_tantheta << std::endl;
+  }
+
   const float sampling_distance_of_adjacent_LORs_z =
     proj_data_info_ptr->get_sampling_in_t(bin)/costheta;
  

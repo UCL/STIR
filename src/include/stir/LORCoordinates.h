@@ -9,12 +9,15 @@
   \brief defines various classes for specifying a line in 3 dimensions
   \warning This is all preliminary and likely to change.
   \author Kris Thielemans
+  \author Ashley GIllman
 
 
 */
 /*
     Copyright (C) 2004 - 2009-06-22, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2013, Kris Thielemans
+    Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
+                        Australian eHealth Research Centre
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -308,6 +311,11 @@ class LORAs2Points : public LOR<coordT>
     Succeeded
     get_intersections_with_cylinder(LORAs2Points<coordT>&,
 				    const double radius) const;
+
+  float get_s() const;
+  float get_phi() const;
+  float get_m() const;
+  float get_tantheta() const;
 
  private:
   CartesianCoordinate3D<coordT> _p1;
