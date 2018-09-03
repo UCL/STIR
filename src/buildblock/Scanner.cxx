@@ -4,6 +4,8 @@
     Copyright (C) 2011, Kris Thielemans
     Copyright (C) 2010-2013, King's College London
     Copyright (C) 2013-2016, University College London
+    Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
+                        Australian eHealth Research Centre
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,6 +27,7 @@
 
   \brief Implementations for class stir::Scanner
 
+  \author Ashley Gillman
   \author Nikos Efthimiou
   \author Charalampos Tsoumpas
   \author Sanida Mustafovic
@@ -98,6 +101,7 @@ Scanner::Scanner(Type scanner_type)
   //            int num_axial_crystals_per_singles_unit_v,
   //            int num_transaxial_crystals_per_singles_unit_v,
   //            int num_detector_layers_v
+  // (optional) VendorReferenceOrigin reference_origin
   //
 
   
@@ -202,7 +206,9 @@ Scanner::Scanner(Type scanner_type)
     set_params(Siemens_mMR, string_list("Siemens mMR", "mMR", "2008"),
                64, 344, 2* 252,
                328.0F, 7.0F, 4.0625F, 2.08626F, 0.0F,
-               2, 1, 8, 9, 16, 9, 1 ); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+               2, 1, 8, 9, 16, 9, 1, // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+               -1.F, -1.F,
+               Scanner::VendorReferenceOrigin::Middle);
     break;
 
   case RPT:
@@ -434,7 +440,8 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
                  int num_transaxial_crystals_per_singles_unit_v,
                  int num_detector_layers_v,
                  float energy_resolution_v,
-                 float reference_energy_v)
+                 float reference_energy_v,
+                 Scanner::VendorReferenceOrigin reference_origin_v)
 {
   set_params(type_v, list_of_names_v, num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -449,7 +456,8 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
              num_transaxial_crystals_per_singles_unit_v,
              num_detector_layers_v,
              energy_resolution_v,
-             reference_energy_v);
+             reference_energy_v,
+             reference_origin_v);
 }
 
 
@@ -466,7 +474,8 @@ Scanner::Scanner(Type type_v, const string& name,
                  int num_transaxial_crystals_per_singles_unit_v,
                  int num_detector_layers_v,
                  float energy_resolution_v,
-                 float reference_energy_v) 
+                 float reference_energy_v,
+                 Scanner::VendorReferenceOrigin reference_origin_v)
 {
   set_params(type_v, string_list(name), num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -481,7 +490,8 @@ Scanner::Scanner(Type type_v, const string& name,
              num_transaxial_crystals_per_singles_unit_v,
              num_detector_layers_v,
              energy_resolution_v,
-             reference_energy_v);
+             reference_energy_v,
+             reference_origin_v);
 }
 
 
@@ -506,7 +516,8 @@ set_params(Type type_v,const list<string>& list_of_names_v,
            int num_transaxial_crystals_per_singles_unit_v,
            int num_detector_layers_v,
            float energy_resolution_v,
-           float reference_energy_v)
+           float reference_energy_v,
+           Scanner::VendorReferenceOrigin reference_origin_v)
 {
   set_params(type_v, list_of_names_v, num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -521,7 +532,8 @@ set_params(Type type_v,const list<string>& list_of_names_v,
              num_transaxial_crystals_per_singles_unit_v,
 	     num_detector_layers_v,
              energy_resolution_v,
-             reference_energy_v);
+             reference_energy_v,
+             reference_origin_v);
 }
 
 
@@ -542,7 +554,8 @@ set_params(Type type_v,const list<string>& list_of_names_v,
            int num_transaxial_crystals_per_singles_unit_v,
            int num_detector_layers_v,
            float energy_resolution_v,
-           float reference_energy_v)
+           float reference_energy_v,
+           Scanner::VendorReferenceOrigin reference_origin_v)
 {
   type = type_v;
   list_of_names = list_of_names_v;  
@@ -562,10 +575,16 @@ set_params(Type type_v,const list<string>& list_of_names_v,
   num_axial_crystals_per_singles_unit = num_axial_crystals_per_singles_unit_v;
   num_transaxial_crystals_per_singles_unit = num_transaxial_crystals_per_singles_unit_v;
   num_detector_layers = num_detector_layers_v;
-
   energy_resolution = energy_resolution_v;
   reference_energy = reference_energy_v;
-
+  if (reference_origin_v == Scanner::VendorReferenceOrigin::Unknown) {
+    if (type != Scanner::Type::Unknown_scanner) {
+      warning("Vendor origin unknown. "
+              "Defaulting to STIR legacy, middle of first ring.");
+    }
+    reference_origin_v = Scanner::VendorReferenceOrigin::FirstRing;
+  }
+  reference_origin = reference_origin_v;
 }
 
 

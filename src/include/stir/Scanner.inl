@@ -4,6 +4,8 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     Copyright (C) 2016, UCL
+    Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
+                        Australian eHealth Research Centre
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,12 +25,12 @@
   \ingroup buildblock
   \brief implementation of inline functions of class Scanner
 
+  \author Ashley Gillman
   \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Long Zhang (set*() functions)
   \author PARAPET project
-
 
 */
 
@@ -229,6 +231,12 @@ Scanner::get_reference_energy() const
     return reference_energy;
 }
 
+Scanner::VendorReferenceOrigin
+Scanner::get_reference_origin() const
+{
+    return reference_origin;
+}
+
 //************************ set ******************************8
 
 void Scanner::set_type(const Type & new_type)
@@ -332,6 +340,12 @@ void
 Scanner::set_reference_energy(const float new_num)
 {
     reference_energy = new_num;
+}
+
+void
+Scanner::set_reference_origin(const VendorReferenceOrigin new_reference_origin)
+{
+  reference_origin = new_reference_origin;
 }
 
 /********    Calculate singles bin index from detection position    *********/
