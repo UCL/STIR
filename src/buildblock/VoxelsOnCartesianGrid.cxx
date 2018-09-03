@@ -263,8 +263,6 @@ init_from_proj_data_info(const ProjDataInfo& proj_data_info,
   CartesianCoordinate3D<float> origin_in_gantry_space
     = proj_data_info.get_location_of_vendor_frame_of_reference_in_gantry_space();
 
-  std::cout << "zsize: " << z_size
-            << ", zsample: " << z_sampling << std::endl;
   this->set_origin(-(origin_in_gantry_space + image_centre_in_image_space)
                    + offset);
 
