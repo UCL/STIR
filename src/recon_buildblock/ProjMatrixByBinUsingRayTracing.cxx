@@ -545,25 +545,10 @@ calculate_proj_matrix_elems_for_one_bin(
 
   assert(lor.size() == 0);
    
-  float phi;
+  float phi = proj_data_info_ptr->get_phi(bin);
   float s_in_mm = proj_data_info_ptr->get_s(bin);
-  /* Implementation note.
-     KT initialised s_in_mm above instead of in the if because this meant
-     that gcc 3.0.1 generated identical results to the previous version of this file.
-     Otherwise, some pixels at the boundary appear to be treated differently
-     (probably due to different floating point rounding errors), at least
-     on Linux on x86.
-     A bit of a mistery that.
 
-     TODO this is maybe solved now by having more decent handling of 
-     start and end voxels.
-  */
-  if (!use_actual_detector_boundaries)
-  {
-    phi = proj_data_info_ptr->get_phi(bin);
-    //s_in_mm = proj_data_info_ptr->get_s(bin);
-  }
-  else
+  if (use_actual_detector_boundaries)
   {
     // can be static_cast later on
     const ProjDataInfoCylindricalNoArcCorr& proj_data_info_noarccor =
@@ -580,16 +565,16 @@ calculate_proj_matrix_elems_for_one_bin(
                                                  det_num2,
                                                  bin.view_num(),
                                                  bin.tangential_pos_num());
+
+    const float old_phi = phi;
     phi = static_cast<float>((det_num1+det_num2)*_PI/num_detectors-_PI/2);
-    const float old_phi=proj_data_info_ptr->get_phi(bin);
     if (fabs(phi-old_phi)>2*_PI/num_detectors)
       warning("view %d old_phi %g new_phi %g\n",bin.view_num(), old_phi, phi);
 
+    const float old_s_in_mm = s_in_mm;
     s_in_mm = static_cast<float>(ring_radius*sin((det_num1-det_num2)*_PI/num_detectors+_PI/2));
-    const float old_s_in_mm=proj_data_info_ptr->get_s(bin);
     if (fabs(s_in_mm-old_s_in_mm)>proj_data_info_ptr->get_sampling_in_s(bin)*.0001)
       warning("tangential_pos_num %d old_s_in_mm %g new_s_in_mm %g\n",bin.tangential_pos_num(), old_s_in_mm, s_in_mm);
-
   }
   
   const float cphi = cos(phi);
