@@ -1283,7 +1283,8 @@ bool InterfilePDFSHeader::post_processing()
                 num_transaxial_crystals_per_singles_unit,
                 num_detector_layers,
                 energy_resolution,
-                reference_energy));
+                reference_energy,
+                guessed_scanner_ptr->get_reference_origin()));
 
   bool is_consistent =
     scanner_ptr_from_file->check_consistency() == Succeeded::yes;

@@ -650,13 +650,19 @@ operator>=(const ProjDataInfo& proj_data_info) const
 const CartesianCoordinate3D<float>
 ProjDataInfo::
 get_location_of_vendor_frame_of_reference_in_gantry_space() const {
-  warning("Vendor origin unknown. Defaulting to STIR legacy, middle of first ring.");
   double gantry_length
     = (scanner_ptr->get_num_rings() - 1) * scanner_ptr->get_ring_spacing();
-  std::cout << "nring: " << scanner_ptr->get_num_rings()
-            << ", spacing: " << scanner_ptr->get_ring_spacing() << std::endl;
-  return CartesianCoordinate3D<float>(-gantry_length / 2.F, 0, 0);
+
+  switch (scanner_ptr->get_reference_origin()) {
+  case Scanner::VendorReferenceOrigin::FirstRing:
+    return CartesianCoordinate3D<float>(-gantry_length / 2.F, 0, 0);
+
+  case Scanner::VendorReferenceOrigin::Middle:
+    return CartesianCoordinate3D<float>(0, 0, 0);
+
+  default:
+    throw std::runtime_error("Unknown reference origin.");
+  }
 }
 
 END_NAMESPACE_STIR
-
