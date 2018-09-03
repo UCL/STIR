@@ -96,10 +96,8 @@ InputStreamFromROOTFile::set_up(const std::string & header_path)
 
     stream_ptr = new TChain(this->chain_name.c_str());
     stream_ptr->Add(fullfilename.c_str());
-
     stream_ptr->SetBranchAddress("time1", &time1);
     stream_ptr->SetBranchAddress("time2", &time2);
-    stream_ptr->SetBranchAddress("axialPos",&axialPos);
     stream_ptr->SetBranchAddress("eventID1",&eventID1);
     stream_ptr->SetBranchAddress("eventID2",&eventID2);
     stream_ptr->SetBranchAddress("energy1", &energy1);
@@ -109,6 +107,7 @@ InputStreamFromROOTFile::set_up(const std::string & header_path)
 
     if (read_optional_root_fields)
     {
+        stream_ptr->SetBranchAddress("axialPos",&axialPos);
         stream_ptr->SetBranchAddress("globalPosX1",&globalPosX1);
         stream_ptr->SetBranchAddress("globalPosX2",&globalPosX2);
         stream_ptr->SetBranchAddress("globalPosY1",&globalPosY1);
