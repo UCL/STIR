@@ -32,6 +32,7 @@
 #include "stir/SinogramIndices.h"
 #include "stir/VectorWithOffset.h"
 #include "stir/Scanner.h"
+#include "stir/CartesianCoordinate3D.h"
 #include "stir/shared_ptr.h"
 #include "stir/unique_ptr.h"
 #include <string>
@@ -332,6 +333,18 @@ public:
   virtual void get_LOR(LORInAxialAndNoArcCorrSinogramCoordinates<float>&, const Bin&) const = 0;
   //@}
 
+  //! Get a point in gantry space along an LOR
+  /*!
+    The point is parameterised by s, a, m, cos(phi), sin(phi) and tan(theta).
+    Gantry space is defined w.r.t. the center of the gantry.
+  */
+  virtual CartesianCoordinate3D<float> get_point_on_lor_in_gantry_coordinates(const float s_in_mm,
+                                                                              const float m_in_mm,
+                                                                              const float a_in_mm,
+                                                                              const float cphi,
+                                                                              const float sphi,
+                                                                              const float tantheta) const;
+
   //! \name Functions that return info on the sampling in the different coordinates
   //@{
   //! Get sampling distance in the \c t coordinate
@@ -496,8 +509,18 @@ public:
     return scanner_ptr->has_energy_information();
   }
 
+  //! Vector represention bed position in 3D
+  CartesianCoordinate3D<float> get_bed_position() const;
+
+  // Convert coordinates from a sinogram-based
+  inline CartesianCoordinate3D<float>
+  get_physical_coordinates_for_gantry_coordinates(const CartesianCoordinate3D<float>& coords) const;
+
 protected:
   virtual bool blindly_equals(const root_type* const) const = 0;
+
+  //! Vector from image frame of reference (centre of first ring) to gantry centre
+  CartesianCoordinate3D<float> get_vector_centre_of_first_ring_to_centre_of_gantry() const;
 
 private:
   shared_ptr<Scanner> scanner_ptr;

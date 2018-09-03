@@ -145,8 +145,7 @@ ProjDataInfoCylindrical::initialise_ring_diff_arrays() const
     m_offset = VectorWithOffset<float>(get_min_segment_num(), get_max_segment_num());
 
     /* m_offsets are found by requiring
-    get_m(..., min_axial_pos_num,...) == - get_m(..., max_axial_pos_num,...),
-    and then shift from the centre to first ring and account for bed position
+    get_m(..., min_axial_pos_num,...) == - get_m(..., max_axial_pos_num,...)
     */
 
     for (int segment_num = get_min_segment_num(); segment_num <= get_max_segment_num(); ++segment_num)

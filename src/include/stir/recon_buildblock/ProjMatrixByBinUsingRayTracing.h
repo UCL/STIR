@@ -189,6 +189,9 @@ private:
 
   void calculate_proj_matrix_elems_for_one_bin(ProjMatrixElemsForOneBin&) const override;
 
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
+  shared_ptr<const DiscretisedDensity<3, float>> density_info_sptr;
+
   void set_defaults() override;
   void initialise_keymap() override;
   bool post_processing() override;

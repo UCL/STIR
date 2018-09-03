@@ -31,6 +31,7 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Array.h"
 #include "stir/ExamData.h"
+#include "stir/ProjDataInfo.h"
 #include "stir/shared_ptr.h"
 #include <string>
 
