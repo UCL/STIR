@@ -123,7 +123,7 @@ get_viewgram(const int view_num, const int segment_num,
     std::array<unsigned long long int, 3> block = {1, 1, 1};
     unsigned int total_size = get_num_tangential_poss() * num_tof_poss * get_num_axial_poss(segment_num);
 
-    stir::Array<1, unsigned char> tmp(0, total_size);
+    stir::Array<1, unsigned char> tmp(0, total_size-1);
 
     m_input_hdf5_sptr->get_from_dataset(offset, count, stride, block, tmp);
 
