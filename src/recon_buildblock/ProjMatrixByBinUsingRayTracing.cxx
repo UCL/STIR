@@ -387,7 +387,7 @@ static inline int sign(const T& t)
 // just do 1 LOR, returns true if lor is not empty
 static void
 ray_trace_one_lor(ProjMatrixElemsForOneBin& lor, 
-                  const float s_in_mm, const float t_in_mm, 
+                  const float s_in_mm, const float m_in_mm, 
                   const float cphi, const float sphi, 
                   const float costheta, const float tantheta, 
                   const float offset_in_z,
@@ -458,12 +458,14 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
       
     } //!restrict_to_cylindrical_FOV
     
+
+    // start and stop point in voxel coordinates
     start_point.x() = (s_in_mm*cphi + max_a*sphi)/voxel_size.x();
-    start_point.y() = (s_in_mm*sphi - max_a*cphi)/voxel_size.y(); 
-    start_point.z() = (t_in_mm/costheta+offset_in_z - max_a*tantheta)/voxel_size.z();
+    start_point.y() = (s_in_mm*sphi - max_a*cphi)/voxel_size.y();
+    start_point.z() = (m_in_mm+offset_in_z - max_a*tantheta)/voxel_size.z();
     stop_point.x() = (s_in_mm*cphi + min_a*sphi)/voxel_size.x();
-    stop_point.y() = (s_in_mm*sphi - min_a*cphi)/voxel_size.y(); 
-    stop_point.z() = (t_in_mm/costheta+offset_in_z - min_a*tantheta)/voxel_size.z();
+    stop_point.y() = (s_in_mm*sphi - min_a*cphi)/voxel_size.y();
+    stop_point.z() = (m_in_mm+offset_in_z - min_a*tantheta)/voxel_size.z();
 
 #if 0
     // KT 18/05/2005 this is no longer necessary
@@ -595,7 +597,7 @@ calculate_proj_matrix_elems_for_one_bin(
   
   const float tantheta = proj_data_info_ptr->get_tantheta(bin);
   const float costheta = 1/sqrt(1+square(tantheta));
-  const float t_in_mm = proj_data_info_ptr->get_t(bin);
+  const float m_in_mm = proj_data_info_ptr->get_m(bin);
    
   const float sampling_distance_of_adjacent_LORs_z =
     proj_data_info_ptr->get_sampling_in_t(bin)/costheta;
@@ -656,10 +658,10 @@ calculate_proj_matrix_elems_for_one_bin(
     {
       // make sure we don't ray-trace exactly between 2 planes
       // z-coordinate (in voxel units) will be
-      //  (t_in_mm+offset_in_z)/voxel_size.z();
+      //  (m_in_mm+offset_in_z)/voxel_size.z();
       // if so, we ray trace first to the voxels at smaller z, but will add the 
       // other plane later (in add_adjacent_z)
-      if (fabs(modulo((t_in_mm+offset_in_z)/voxel_size.z(),1.F)-.5)<.001)
+      if (fabs(modulo((m_in_mm+offset_in_z)/voxel_size.z(),1.F)-.5)<.001)
         offset_in_z -= .1F*voxel_size.z();
     }
 
@@ -678,7 +680,7 @@ calculate_proj_matrix_elems_for_one_bin(
 
   if (num_tangential_LORs == 1)
   {
-    ray_trace_one_lor(lor, s_in_mm, t_in_mm, 
+    ray_trace_one_lor(lor, s_in_mm, m_in_mm,
                         cphi, sphi, costheta, tantheta, 
                         offset_in_z, fovrad_in_mm, 
                         voxel_size,
@@ -699,7 +701,7 @@ calculate_proj_matrix_elems_for_one_bin(
     for (int s_LOR_num=1; s_LOR_num<=num_tangential_LORs; ++s_LOR_num, current_s_in_mm+=s_inc)
     {
       ray_traced_lor.erase();
-      ray_trace_one_lor(ray_traced_lor, current_s_in_mm, t_in_mm, 
+      ray_trace_one_lor(ray_traced_lor, current_s_in_mm, m_in_mm,
                           cphi, sphi, costheta, tantheta, 
                           offset_in_z, fovrad_in_mm, 
                           voxel_size,
@@ -720,10 +722,10 @@ calculate_proj_matrix_elems_for_one_bin(
           origin.z()/voxel_size.z() -
           (max_index.z() + min_index.z())/2.F;
         const float left_edge_of_TOR =
-          (t_in_mm - sampling_distance_of_adjacent_LORs_z/2
+          (m_in_mm - sampling_distance_of_adjacent_LORs_z/2
            )/voxel_size.z();
         const float right_edge_of_TOR =
-          (t_in_mm + sampling_distance_of_adjacent_LORs_z/2
+          (m_in_mm + sampling_distance_of_adjacent_LORs_z/2
            )/voxel_size.z();
 
         add_adjacent_z(lor, z_of_first_voxel - left_edge_of_TOR, right_edge_of_TOR -left_edge_of_TOR);
