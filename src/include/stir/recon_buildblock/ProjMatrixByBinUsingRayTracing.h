@@ -199,7 +199,8 @@ private:
   CartesianCoordinate3D<int> min_index;
   CartesianCoordinate3D<int> max_index;
 
-  shared_ptr<const ProjDataInfo> proj_data_info_ptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
+  shared_ptr<const  DiscretisedDensity<3,float> > density_info_sptr;
 
 
   virtual void 
