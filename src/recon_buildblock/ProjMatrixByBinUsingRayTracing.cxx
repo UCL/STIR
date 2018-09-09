@@ -272,12 +272,14 @@ void
 ProjMatrixByBinUsingRayTracing::
 set_up(          
     const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr_v // TODO should be Info only
     )
 {
-  ProjMatrixByBin::set_up(proj_data_info_ptr_v, density_info_ptr);
+  ProjMatrixByBin::set_up(proj_data_info_ptr_v, density_info_ptr_v);
 
-  proj_data_info_ptr= proj_data_info_ptr_v; 
+  proj_data_info_ptr = proj_data_info_ptr_v;
+  density_info_ptr = density_info_ptr_v;
+
   const VoxelsOnCartesianGrid<float> * image_info_ptr =
     dynamic_cast<const VoxelsOnCartesianGrid<float>*> (density_info_ptr.get());
 
@@ -348,6 +350,7 @@ set_up(
   // test if our 2D code does not have problems
   {
     // currently 2D code relies on the LOR falling in the middle of a voxel (in z-direction)
+    // If reactivated, update to use proper index -> physical space conversion
     const float z_shift = - origin.z()/voxel_size.z()
       +(max_index.z()+min_index.z())/2.F;
     if (fabs(z_shift - round(z_shift)) > .01)
@@ -398,7 +401,9 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
                   const float fovrad_in_mm,
                   const CartesianCoordinate3D<float>& voxel_size,
                   const bool restrict_to_cylindrical_FOV,
-                  const int num_LORs)
+                  const int num_LORs,
+                  const shared_ptr< DiscretisedDensity<3,float> >&
+                    density_info_ptr)
 {
   assert(lor.size() == 0);
 
@@ -456,6 +461,7 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
                     (fovrad_in_mm*sign(cphi) + s_in_mm*sphi)/cphi);
         min_a = max((-fovrad_in_mm*sign(sphi) - s_in_mm*cphi)/sphi,
                     (-fovrad_in_mm*sign(cphi) + s_in_mm*sphi)/cphi);
+
         if (min_a > max_a - 1.E-3*voxel_size.x())
           return;
       }
@@ -463,13 +469,35 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
     } //!restrict_to_cylindrical_FOV
     
 
-    // start and stop point in voxel coordinates
-    start_point.x() = (s_in_mm*cphi + max_a*sphi)/voxel_size.x();
-    start_point.y() = (s_in_mm*sphi - max_a*cphi)/voxel_size.y();
-    start_point.z() = (m_in_mm+offset_in_z - max_a*tantheta)/voxel_size.z();
-    stop_point.x() = (s_in_mm*cphi + min_a*sphi)/voxel_size.x();
-    stop_point.y() = (s_in_mm*sphi - min_a*cphi)/voxel_size.y();
-    stop_point.z() = (m_in_mm+offset_in_z - min_a*tantheta)/voxel_size.z();
+    // start_point_gantry = (s_in_mm*cphi + max_a*sphi);
+    // start_point_bed = tx_gantry_to_bed(start_point_gantry);
+    // start_point_vx = tx_bed_to_idx(start_point_bed);
+
+
+    // start and stop point in gantry relative coordinates
+    start_point.x() = s_in_mm*cphi + max_a*sphi;
+    start_point.y() = s_in_mm*sphi - max_a*cphi;
+    start_point.z() = m_in_mm+offset_in_z - max_a*tantheta;
+    stop_point.x() = s_in_mm*cphi + min_a*sphi;
+    stop_point.y() = s_in_mm*sphi - min_a*cphi;
+    stop_point.z() = m_in_mm+offset_in_z - min_a*tantheta;
+    // std::cerr << "relative " << start_point << std::endl;
+
+    // GEOMTODO: get physical?
+    start_point = density_info_ptr
+      ->get_index_coordinates_for_relative_coordinates(start_point);
+    stop_point = density_info_ptr
+      ->get_index_coordinates_for_relative_coordinates(stop_point);
+    // std::cerr << "index " << start_point << std::endl;
+
+    // // start and stop point in voxel coordinates
+    // start_point.x() = (s_in_mm*cphi + max_a*sphi)/voxel_size.x();
+    // start_point.y() = (s_in_mm*sphi - max_a*cphi)/voxel_size.y();
+    // start_point.z() = (m_in_mm+offset_in_z - max_a*tantheta)/voxel_size.z();
+    // stop_point.x() = (s_in_mm*cphi + min_a*sphi)/voxel_size.x();
+    // stop_point.y() = (s_in_mm*sphi - min_a*cphi)/voxel_size.y();
+    // stop_point.z() = (m_in_mm+offset_in_z - min_a*tantheta)/voxel_size.z();
+    // std::cerr << "reference " << start_point << std::endl;
 
 #if 0
     // KT 18/05/2005 this is no longer necessary
@@ -548,72 +576,57 @@ calculate_proj_matrix_elems_for_one_bin(
   assert(bin.segment_num() <= proj_data_info_ptr->get_max_segment_num());    
 
   assert(lor.size() == 0);
-   
-  float phi = proj_data_info_ptr->get_phi(bin);
-  float s_in_mm = proj_data_info_ptr->get_s(bin);
 
-  if (use_actual_detector_boundaries)
-  {
-    // can be static_cast later on
-    const ProjDataInfoCylindricalNoArcCorr& proj_data_info_noarccor =
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_ptr);
-    // TODO check on 180 degrees for views
-    const int num_detectors =
-      proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring();
-    const float ring_radius =
-      proj_data_info_ptr->get_scanner_ptr()->get_effective_ring_radius();
+  // // GEOMTODO: Not sure what to do about here...
+  // if (use_actual_detector_boundaries)
+  // {
+  //   // can be static_cast later on
+  //   const ProjDataInfoCylindricalNoArcCorr& proj_data_info_noarccor =
+  //   dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_ptr);
+  //   // TODO check on 180 degrees for views
+  //   const int num_detectors =
+  //     proj_data_info_ptr->get_scanner_ptr()->get_num_detectors_per_ring();
+  //   const float ring_radius =
+  //     proj_data_info_ptr->get_scanner_ptr()->get_effective_ring_radius();
 
-    int det_num1=0, det_num2=0;
-    proj_data_info_noarccor.
-      get_det_num_pair_for_view_tangential_pos_num(det_num1,
-                                                 det_num2,
-                                                 bin.view_num(),
-                                                 bin.tangential_pos_num());
+  //   int det_num1=0, det_num2=0;
+  //   proj_data_info_noarccor.
+  //     get_det_num_pair_for_view_tangential_pos_num(det_num1,
+  //                                                det_num2,
+  //                                                bin.view_num(),
+  //                                                bin.tangential_pos_num());
 
-    const float old_phi = phi;
-    phi = static_cast<float>((det_num1+det_num2)*_PI/num_detectors-_PI/2);
-    if (fabs(phi-old_phi)>2*_PI/num_detectors)
-      warning("view %d old_phi %g new_phi %g\n",bin.view_num(), old_phi, phi);
+  //   const float old_phi = phi;
+  //   phi = static_cast<float>((det_num1+det_num2)*_PI/num_detectors-_PI/2);
+  //   if (fabs(phi-old_phi)>2*_PI/num_detectors)
+  //     warning("view %d old_phi %g new_phi %g\n",bin.view_num(), old_phi, phi);
 
-    const float old_s_in_mm = s_in_mm;
-    s_in_mm = static_cast<float>(ring_radius*sin((det_num1-det_num2)*_PI/num_detectors+_PI/2));
-    if (fabs(s_in_mm-old_s_in_mm)>proj_data_info_ptr->get_sampling_in_s(bin)*.0001)
-      warning("tangential_pos_num %d old_s_in_mm %g new_s_in_mm %g\n",bin.tangential_pos_num(), old_s_in_mm, s_in_mm);
-  }
-  
+  //   const float old_s_in_mm = s_in_mm;
+  //   s_in_mm = static_cast<float>(ring_radius*sin((det_num1-det_num2)*_PI/num_detectors+_PI/2));
+  //   if (fabs(s_in_mm-old_s_in_mm)>proj_data_info_ptr->get_sampling_in_s(bin)*.0001)
+  //     warning("tangential_pos_num %d old_s_in_mm %g new_s_in_mm %g\n",bin.tangential_pos_num(), old_s_in_mm, s_in_mm);
+  // }
+
+  LORInAxialAndNoArcCorrSinogramCoordinates<float> axial_no_arc_corr_sino_lor;
+  proj_data_info_ptr->get_LOR(axial_no_arc_corr_sino_lor, bin);
+  LORAs2Points<float> cyl_lor(axial_no_arc_corr_sino_lor);
+
+  // apply transform to lor for bed
+  // cyl_lor.p1.z() += (max_index.z()+min_index.z())/2.F * voxel_size.z();
+  // cyl_lor.p2.z() += (max_index.z()+min_index.z())/2.F * voxel_size.z();
+  // GEOMTODO: ^ this must go
+
+  const float phi = cyl_lor.get_phi();
+  const float s_in_mm = cyl_lor.get_s();
+  const float m_in_mm = cyl_lor.get_m();
+  const float tantheta = cyl_lor.get_tantheta();
+
   const float cphi = cos(phi);
   const float sphi = sin(phi);
-  
-  const float tantheta = proj_data_info_ptr->get_tantheta(bin);
   const float costheta = 1/sqrt(1+square(tantheta));
-  const float m_in_mm = proj_data_info_ptr->get_m(bin);
-
-  {
-    LORInAxialAndNoArcCorrSinogramCoordinates<float> axial_no_arc_corr_sino_lor;
-    proj_data_info_ptr->get_LOR(axial_no_arc_corr_sino_lor, bin);
-    LORAs2Points<float> cyl_lor(axial_no_arc_corr_sino_lor);
-
-    float alt_phi = cyl_lor.get_phi();
-    if (!((fabs(alt_phi - phi) < 0.0001)
-          | (fabs(alt_phi - phi - _PI) < 0.0001)))
-      std::cerr << "x phi " << phi << " " << alt_phi << std::endl;
-
-    float alt_s = cyl_lor.get_s();
-    if (fabs(alt_s - s_in_mm) > 0.0001)
-      std::cerr << "x s " << s_in_mm << " " << alt_s << std::endl;
-
-    float alt_m = cyl_lor.get_m();
-    if (fabs(alt_m - m_in_mm) > 0.0001)
-      std::cerr << "x m " << m_in_mm << " " << alt_m << std::endl;
-
-    float alt_tantheta = cyl_lor.get_tantheta();
-    if (fabs(alt_tantheta - tantheta) > 0.0001)
-      std::cerr << "x tantheta " << tantheta << " " << alt_tantheta << std::endl;
-  }
 
   const float sampling_distance_of_adjacent_LORs_z =
     proj_data_info_ptr->get_sampling_in_t(bin)/costheta;
- 
 
   // find number of LORs we have to take, such that we don't miss voxels
   // we have to subtract a tiny amount from the quotient, to avoid having too many LORs
@@ -662,9 +675,9 @@ calculate_proj_matrix_elems_for_one_bin(
     (-sampling_distance_of_adjacent_LORs_z/(2*num_lors_per_axial_pos)*
       (num_lors_per_axial_pos-1))
     - origin.z();
-  float offset_in_z = 
-    z_position_of_first_LOR_wrt_centre_of_TOR
-    +(max_index.z()+min_index.z())/2.F * voxel_size.z();
+  float offset_in_z = z_position_of_first_LOR_wrt_centre_of_TOR
+    + (max_index.z()+min_index.z())/2.F * voxel_size.z();
+  // ^^ GEOMTODO
 
   if (tantheta==0)
     {
@@ -681,23 +694,32 @@ calculate_proj_matrix_elems_for_one_bin(
   // use FOV which is slightly 'inside' the image to avoid
   // index out of range
 #ifdef STIR_PMRT_LARGER_FOV
-  const float fovrad_in_mm = 
-    min((min(max_index.x(), -min_index.x())+.45F)*voxel_size.x(),
-        (min(max_index.y(), -min_index.y())+.45F)*voxel_size.y()); 
+  CartesianCoordinate3D<float> max_pos =
+    density_info_ptr
+      ->get_relative_coordinates_for_indices(max_index + 0.45F);
+  CartesianCoordinate3D<float> min_pos =
+    density_info_ptr
+      ->get_relative_coordinates_for_indices(min_index - 0.45F);
 #else
-  const float fovrad_in_mm = 
-    min((min(max_index.x(), -min_index.x()))*voxel_size.x(),
-        (min(max_index.y(), -min_index.y()))*voxel_size.y()); 
+  CartesianCoordinate3D<float> max_pos =
+    density_info_ptr
+      ->get_relative_coordinates_for_indices(max_index);
+  CartesianCoordinate3D<float> min_pos =
+    density_info_ptr
+      ->get_relative_coordinates_for_indices(min_index);
 #endif
+  const float fovrad_in_mm =
+    min(min(max_pos.x(), -min_pos.x()),
+        min(max_pos.y(), -min_pos.y()));
 
   if (num_tangential_LORs == 1)
   {
     ray_trace_one_lor(lor, s_in_mm, m_in_mm,
-                        cphi, sphi, tantheta,
-                        offset_in_z, fovrad_in_mm, 
-                        voxel_size,
-                        restrict_to_cylindrical_FOV,
-                        num_lors_per_axial_pos);    
+                      cphi, sphi, tantheta,
+                      offset_in_z, fovrad_in_mm,
+                      voxel_size,
+                      restrict_to_cylindrical_FOV,
+                      num_lors_per_axial_pos, density_info_ptr);
   }
   else
   {
@@ -714,11 +736,12 @@ calculate_proj_matrix_elems_for_one_bin(
     {
       ray_traced_lor.erase();
       ray_trace_one_lor(ray_traced_lor, current_s_in_mm, m_in_mm,
-                          cphi, sphi, tantheta,
-                          offset_in_z, fovrad_in_mm, 
-                          voxel_size,
-                          restrict_to_cylindrical_FOV,
-                          num_lors_per_axial_pos*num_tangential_LORs);
+                        cphi, sphi, tantheta,
+                        offset_in_z, fovrad_in_mm,
+                        voxel_size,
+                        restrict_to_cylindrical_FOV,
+                        num_lors_per_axial_pos*num_tangential_LORs,
+                        density_info_ptr);
       //std::cerr << "ray traced size " << ray_traced_lor.size() << std::endl;
       lor.merge(ray_traced_lor);
     }
@@ -728,11 +751,16 @@ calculate_proj_matrix_elems_for_one_bin(
   if (lor.size()>0)
   {          
     if (tantheta==0 ) 
-      { 
+      {
+        // GEOMTODO: physical
+        CartesianCoordinate3D<float> origin_in_index_coords = density_info_ptr
+            ->get_index_coordinates_for_relative_coordinates(origin);
         const float z_of_first_voxel=
           lor.begin()->coord1() +
-          origin.z()/voxel_size.z() -
+          origin_in_index_coords.z() -
           (max_index.z() + min_index.z())/2.F;
+        // GEOMTODO: ^
+        // vv Not sure how to modify this
         const float left_edge_of_TOR =
           (m_in_mm - sampling_distance_of_adjacent_LORs_z/2
            )/voxel_size.z();
