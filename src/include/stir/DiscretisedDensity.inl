@@ -304,4 +304,29 @@ get_indices_closest_to_LPS_coordinates(const CartesianCoordinate3D<float>& coord
   return round(this->get_index_coordinates_for_LPS_coordinates(coords));
 }
 
+template<int num_dimensions, typename elemT>
+CartesianCoordinate3D<float>
+DiscretisedDensity<num_dimensions, elemT>::
+get_relative_coordinates_for_gantry_coordinates
+(const CartesianCoordinate3D<float>& coords,
+ const shared_ptr<ProjDataInfo> proj_data_info_ptr) const
+{
+  // gantry coordinates are like relative coordinates, but the (0, 0, 0)
+  // point is at the center of the gantry
+  return coords
+      + proj_data_info_ptr->get_centre_of_gantry_vector_in_relative_coordinates();
+}
+
+template<int num_dimensions, typename elemT>
+BasicCoordinate<num_dimensions,float>
+DiscretisedDensity<num_dimensions, elemT>::
+get_index_coordinates_for_gantry_coordinates
+(const CartesianCoordinate3D<float>& coords,
+ const shared_ptr<ProjDataInfo> proj_data_info_ptr) const
+{
+  return this->get_index_coordinates_for_relative_coordinates
+    (this->get_relative_coordinates_for_gantry_coordinates
+     (coords, proj_data_info_ptr));
+}
+
 END_NAMESPACE_STIR

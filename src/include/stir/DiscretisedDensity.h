@@ -42,6 +42,7 @@
 #include "stir/CartesianCoordinate3D.h"
 #include "stir/Array.h"
 #include "stir/ExamData.h"
+#include "stir/ProjDataInfo.h"
 #include "stir/shared_ptr.h"
 #include <string>
 
@@ -253,6 +254,16 @@ public:
   //! Translation from LPS coordinates to indices.
   inline BasicCoordinate<num_dimensions,int>
   get_indices_closest_to_LPS_coordinates(const CartesianCoordinate3D<float>& coords) const;
+
+  inline CartesianCoordinate3D<float>
+  get_relative_coordinates_for_gantry_coordinates
+  (const CartesianCoordinate3D<float>& coords,
+   const shared_ptr<ProjDataInfo> proj_data_info_sptr) const;
+
+  inline BasicCoordinate<num_dimensions, float>
+  get_index_coordinates_for_gantry_coordinates
+  (const CartesianCoordinate3D<float>& coords,
+   const shared_ptr<ProjDataInfo> proj_data_info_sptr) const;
 
   //@}
 

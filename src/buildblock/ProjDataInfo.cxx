@@ -652,5 +652,22 @@ operator>=(const ProjDataInfo& proj_data_info) const
   return (proj_data_info == *smaller_proj_data_info_sptr);
 }
 
+CartesianCoordinate3D<float>
+ProjDataInfo::
+get_bed_position() const
+{
+  return CartesianCoordinate3D<float>
+    (bed_position_horizontal, bed_position_vertical, 0);
+}
+
+CartesianCoordinate3D<float>
+ProjDataInfo::
+get_centre_of_gantry_vector_in_relative_coordinates() const
+{
+  double middle_of_first_ring_to_middle_of_last
+    = (scanner_ptr->get_num_rings() - 1) * scanner_ptr->get_ring_spacing();
+  return CartesianCoordinate3D<float>(middle_of_first_ring_to_middle_of_last / 2.F, 0, 0);
+}
+
 END_NAMESPACE_STIR
 
