@@ -60,21 +60,21 @@ int main(int argc, char *argv[])
         for (int i=2; i<=argc; ++i) {
 
             // Read
-            shared_ptr<DiscretisedDensity<3,float> > im(read_from_file<DiscretisedDensity<3,float> >(argv[2]));
+            shared_ptr<DiscretisedDensity<3,float> > im(read_from_file<DiscretisedDensity<3,float> >(argv[i]));
             // Check
-            if (is_null_ptr(im)) throw std::runtime_error("Failed to read file: " + std::string(argv[2]) + ".");
+            if (is_null_ptr(im)) throw std::runtime_error("Failed to read file: " + std::string(argv[i]) + ".");
 
             // Convert to VoxelsOnCartesianGrid
             if (is_null_ptr(dynamic_cast<VoxelsOnCartesianGrid<float>*>(im.get())))
                 throw std::runtime_error("Failed to convert parameter to VoxelsOnCartesianGrid.");
 
-            VoxelsOnCartesianGrid<float> param = *dynamic_cast<VoxelsOnCartesianGrid<float>*>(im.get());
+            VoxelsOnCartesianGrid<float> *param = dynamic_cast<VoxelsOnCartesianGrid<float>*>(im.get());
 
-            params.push_back(param);
+            params.push_back(*param);
 
             // Check characteristics match (compare new with first)
             std::string explanation;
-            if (!param.has_same_characteristics(params.at(0),explanation))
+            if (!param->has_same_characteristics(params.at(0),explanation))
                 throw std::runtime_error("Kinetic images do not have same characteristics (" + std::string(explanation) + ").");
         }
 
@@ -93,6 +93,11 @@ int main(int argc, char *argv[])
             if (success == Succeeded::no)
                 throw std::runtime_error("Failed writing.");
         }
+        else {
+            std::cerr << "\ncurrently only implemented for 2 kinetic parameters. Exiting...\n";
+            return EXIT_FAILURE;
+        }
+
 
         // If all is good, exit
         return EXIT_SUCCESS;
