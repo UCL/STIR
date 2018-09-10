@@ -47,45 +47,52 @@ int main(int argc, char *argv[])
     USING_NAMESPACE_STIR
 
     if (argc != 4) {
-        std::cerr << "\nUsage: make_parametric_image_from_components output_parametric_image slope intercept\n\n";
+        std::cerr << "\nUsage: make_parametric_image_from_components output_parametric_image param1 param2 param3...\n\n";
+        std::cerr << "\tCurrently only implemented for 2 kinetic parameters. E.g., for Patlak, slope followed by intercept.\n";
         return EXIT_FAILURE;
     }
 
     try {
 
-        // Read images
-        shared_ptr<DiscretisedDensity<3,float> > disc_1(read_from_file<DiscretisedDensity<3,float> >(argv[2]));
-        shared_ptr<DiscretisedDensity<3,float> > disc_2(read_from_file<DiscretisedDensity<3,float> >(argv[3]));
-        if (is_null_ptr(disc_1))
-            throw std::runtime_error("Failed to read dynamic image 1 (" + std::string(argv[2]) + ").");
-        if (is_null_ptr(disc_2))
-            throw std::runtime_error("Failed to read dynamic image 2 (" + std::string(argv[3]) + ").");
+        std::vector<VoxelsOnCartesianGrid<float> > params;
 
-        // Convert them to VoxelsOnCartesianGrid
-        if (is_null_ptr(dynamic_cast<VoxelsOnCartesianGrid<float>*>(disc_1.get())))
-            throw std::runtime_error("Failed to convert dynamic image 1 to VoxelsOnCartesianGrid.");
-        if (is_null_ptr(dynamic_cast<VoxelsOnCartesianGrid<float>*>(disc_2.get())))
-            throw std::runtime_error("Failed to convert dynamic image 2 to VoxelsOnCartesianGrid.");
-        VoxelsOnCartesianGrid<float> param_1 = *dynamic_cast<VoxelsOnCartesianGrid<float>*>(disc_1.get());
-        VoxelsOnCartesianGrid<float> param_2 = *dynamic_cast<VoxelsOnCartesianGrid<float>*>(disc_2.get());
+        // Loop over all parameters
+        for (int i=2; i<=argc; ++i) {
 
-        // Check their characteristics match
-        std::string explanation;
-        if (!param_1.has_same_characteristics(param_2,explanation))
-            throw std::runtime_error("Dynamic images do not have same characteristics (" + std::string(explanation) + ").");
+            // Read
+            shared_ptr<DiscretisedDensity<3,float> > im(read_from_file<DiscretisedDensity<3,float> >(argv[2]));
+            // Check
+            if (is_null_ptr(im)) throw std::runtime_error("Failed to read file: " + std::string(argv[2]) + ".");
 
-        // Construct the parametric image
-        ParametricVoxelsOnCartesianGridBaseType base_type(param_1.get_index_range(),param_1.get_origin(),param_1.get_grid_spacing());
-        ParametricVoxelsOnCartesianGrid param_im(base_type);
+            // Convert to VoxelsOnCartesianGrid
+            if (is_null_ptr(dynamic_cast<VoxelsOnCartesianGrid<float>*>(im.get())))
+                throw std::runtime_error("Failed to convert parameter to VoxelsOnCartesianGrid.");
 
-        // Set data
-        param_im.update_parametric_image(param_1,1);
-        param_im.update_parametric_image(param_2,2);
+            VoxelsOnCartesianGrid<float> param = *dynamic_cast<VoxelsOnCartesianGrid<float>*>(im.get());
 
-        // Write it to file
-        const Succeeded success = OutputFileFormat<ParametricVoxelsOnCartesianGrid>::default_sptr()->write_to_file(argv[1], param_im);
-        if (success == Succeeded::no)
-            throw std::runtime_error("Failed writing.");
+            params.push_back(param);
+
+            // Check characteristics match (compare new with first)
+            std::string explanation;
+            if (!param.has_same_characteristics(params.at(0),explanation))
+                throw std::runtime_error("Kinetic images do not have same characteristics (" + std::string(explanation) + ").");
+        }
+
+        // At the moment, only implemented for 2 parameters
+        if (params.size() == 2) {
+            // Construct the parametric image
+            ParametricVoxelsOnCartesianGridBaseType base_type(params[0].get_index_range(),params[0].get_origin(),params[0].get_grid_spacing());
+            ParametricVoxelsOnCartesianGrid param_im(base_type);
+
+            // Set data
+            param_im.update_parametric_image(params[0],1);
+            param_im.update_parametric_image(params[1],2);
+
+            // Write it to file
+            const Succeeded success = OutputFileFormat<ParametricVoxelsOnCartesianGrid>::default_sptr()->write_to_file(argv[1], param_im);
+            if (success == Succeeded::no)
+                throw std::runtime_error("Failed writing.");
+        }
 
         // If all is good, exit
         return EXIT_SUCCESS;
