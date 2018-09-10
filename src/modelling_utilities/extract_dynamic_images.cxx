@@ -25,7 +25,20 @@
 
   \par Usage:
   \code 
-  split_dynamic_images output_prefix input output_format
+  split_dynamic_images output_filename input output_parameter_file
+
+  The output filename should look something like this: dyn_im_%s,
+  so that we can use boost format.
+
+  An example of an output parameter file is as follows:
+    OutputFileFormat Parameters:=
+    output file format type := interfile
+    interfile Output File Format Parameters:=
+    number format := float
+    number_of_bytes_per_pixel:=4
+    End Interfile Output File Format Parameters:=
+    End:=
+
   \endcode
 
 */
@@ -42,8 +55,7 @@ int main(int argc, char *argv[])
     USING_NAMESPACE_STIR
 
     if (argc != 4) {
-        std::cerr <<"\n\nnum args = " << argc << "\n\n\n";
-        std::cerr << "\nUsage: split_dynamic_images output_prefix input output_format\n\n";
+        std::cerr << "\nUsage: split_dynamic_images output_filename input output_parameter_file\n\n";
         return EXIT_FAILURE;
     }
 
@@ -59,13 +71,11 @@ int main(int argc, char *argv[])
         // Set up the output type
         shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
         KeyParser parser;
-        parser.add_start_key("Test OutputFileFormat Parameters");
+        parser.add_start_key("OutputFileFormat Parameters");
         parser.add_parsing_key("output file format type", &output_file_format_sptr);
         parser.add_stop_key("END");
         std::ifstream in(argv[3]);
-        if (!parser.parse(in))
-            throw std::runtime_error("Failed to parse output format file (" + std::string(argv[3]) + ").");
-        if (is_null_ptr(output_file_format_sptr))
+        if (!parser.parse(in) || is_null_ptr(output_file_format_sptr))
             throw std::runtime_error("Failed to parse output format file (" + std::string(argv[3]) + ").");
 
         // Loop over each image
@@ -73,12 +83,17 @@ int main(int argc, char *argv[])
 
             DiscretisedDensity<3,float> &disc = dyn_im_sptr->get_density(i);
 
-            // Get filename
-            std::ostringstream filename;
-            filename << argv[1] << "_" << i;
+            std::string current_filename;
+            try {
+                current_filename = boost::str(boost::format(argv[1]) % i);
+            } catch (std::exception& e) {
+                error(boost::format("Error using 'output_filename' pattern (which is set to '%1%'). "
+                                      "Check syntax for boost::format. Error is:\n%2%") % argv[1] % e.what());
+                return EXIT_FAILURE;
+            }
 
             // Write to file
-            const Succeeded success = output_file_format_sptr->write_to_file(filename.str(),disc);
+            const Succeeded success = output_file_format_sptr->write_to_file(current_filename,disc);
             if (success == Succeeded::no)
                 throw std::runtime_error("Failed writing.");
         }
