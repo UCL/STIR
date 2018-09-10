@@ -210,9 +210,6 @@ template<>
 STIRImageSingle*
 read_file_itk(std::string filename)
 {
-#ifndef NDEBUG
-  info(boost::format("Opening a single image: %1%") % filename);
-#endif
   typedef itk::GDCMImageIO       ImageIOType;
   ImageIOType::Pointer dicomIO = ImageIOType::New();
   try
@@ -221,7 +218,7 @@ read_file_itk(std::string filename)
         {
           // Not a DICOM file, so we just read a single image
           typedef itk::ImageFileReader<ITKImageSingle> ReaderType;
-          ReaderType::Pointer reader = ReaderType::New();
+          typename ReaderType::Pointer reader = ReaderType::New();
 
           reader->SetFileName(filename);
           reader->Update();
@@ -246,7 +243,7 @@ read_file_itk(std::string filename)
           // \item[0028 0010] Rows
           // \item[0028 0011] Columns
           typedef itk::GDCMSeriesFileNames NamesGeneratorType;
-          NamesGeneratorType::Pointer nameGenerator = NamesGeneratorType::New();
+          typename NamesGeneratorType::Pointer nameGenerator = NamesGeneratorType::New();
           nameGenerator->SetUseSeriesDetails( true );
           // Make sure we read only data from a single frame and gate
           nameGenerator->AddSeriesRestriction("0008|0022" ); // AcquisitionDate
@@ -298,22 +295,10 @@ template<>
 STIRImageMulti*
 read_file_itk(std::string filename)
 {
-#ifndef NDEBUG
-  info(boost::format("Opening a multi image: %1%") % filename);
-#endif
-
   typedef itk::GDCMImageIO       ImageIOType;
-  ImageIOType::Pointer dicomIO = ImageIOType::New();
 
   try
     {
-      // We can't deal with DICOMs
-      if (dicomIO->CanReadFile(filename.c_str())) {
-          error("read_file_itk: multicomponent DICOM not implemented %s:%d.",
-                __FILE__, __LINE__);
-          return NULL;
-      }
-
       // Not a DICOM file, so we just read a single image
       typedef itk::ImageFileReader<ITKImageMulti> ReaderType;
       ReaderType::Pointer reader = ReaderType::New();
@@ -346,6 +331,7 @@ orient_ITK_image(typename ITKImageType::Pointer &itk_image,
                  CartesianCoordinate3D<float> &origin,
                  const typename ITKImageType::Pointer itk_image_orig)
 {
+    // Only works for HFS!
     typedef itk::OrientImageFilter<ITKImageType,ITKImageType> OrienterType;
     typename OrienterType::Pointer orienter = OrienterType::New();
     orienter->UseImageDirectionOn();
@@ -409,6 +395,7 @@ ITK_coordinates_to_STIR(
 {
   // find STIR origin
   // Note: need to use - for z-coordinate because of different axis conventions
+  // Only works for HFS!
   CartesianCoordinate3D<float> stir_coord(-static_cast<float>(itk_coord[2]),
                                            static_cast<float>(itk_coord[1]),
                                            static_cast<float>(itk_coord[0]));

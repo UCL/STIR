@@ -5,7 +5,7 @@
   \file
   \ingroup test
 
-  \brief A simple program to test the stir::OutputFileFormat function.
+  \brief A simple program to test the reading of multicomponent images with ITK.
 
   \author Kris Thielemans
   \author Richard Brown
@@ -13,17 +13,8 @@
 
 
   To run the test, you should use a command line argument with the name of a file.
-  This should contain a test par file.
-  See stir::OutputFileFormatTests class documentation for file contents.
-
-  \warning Overwrites files STIRtmp.* in the current directory
-
-  \todo The current implementation requires that the output file format as also
-  readable by stir::read_from_file. At least we should provide a
-  run-time switch to not run that part of the tests.
 */
 /*
-    Copyright (C) 2002- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2018-, University College London
 
     This file is part of STIR.
@@ -43,45 +34,23 @@
 
 #include "stir/IO/test/test_IO.h"
 
-#ifndef STIR_NO_NAMESPACES
-using std::cerr;
-using std::endl;
-using std::ifstream;
-using std::istream;
-using std::string;
-#endif
-
 START_NAMESPACE_STIR
 
 /*!
   \ingroup test
-  \brief A simple class to test the OutputFileFormat function.
-
-  The class reads input from a stream, whose contents should be as
-  follows:
-
-  \verbatim
-  Test OutputFileFormat Parameters:=
-  output file format type :=
-  ; here are parameters specific for the file format
-  End:=
-  \endverbatim
-
-  \warning Overwrites files STIRtmp.* in the current directory
-  \todo Delete STIRtmp.* files, but that's a bit difficult as we don't know which ones
-  are written.
+  \brief A simple class to test the reading of multicomponent ITK images.
 */
 class IOTests_ITKMulticomponent : public RunTests
 {
 public:
-    IOTests_ITKMulticomponent(string multi)
+    IOTests_ITKMulticomponent(std::string multi)
     { _multi = multi; }
 
     void run_tests();
 
 protected:
 
-    string _multi;
+    std::string _multi;
 };
 void IOTests_ITKMulticomponent::run_tests()
 {
@@ -95,8 +64,16 @@ void IOTests_ITKMulticomponent::run_tests()
 
         check(!is_null_ptr(voxels_coords), "failed reading %s");
 
-        cerr << "\nMinimal checks currently implemented. However, if you're seeing this "
-                "then it seems that the multi-component ITK file was opened without any errors.\n";
+        // Check sizes
+        check_if_equal<size_t>(voxels_coords->size(),                  17);
+        check_if_equal<size_t>(voxels_coords->at(0).size(),             9);
+        check_if_equal<size_t>(voxels_coords->at(0).at(0).size(),      27);
+        check_if_equal<size_t>(voxels_coords->at(0).at(0).at(0).size(), 3);
+
+        // Check voxel sizes
+        check_if_equal<float>(voxels_coords->get_voxel_size()[1], 2.03125F);
+        check_if_equal<float>(voxels_coords->get_voxel_size()[2], 2.08626F);
+        check_if_equal<float>(voxels_coords->get_voxel_size()[3], 2.08626F);
 
     } catch(...) {
         everything_ok = false;
@@ -109,14 +86,8 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-    cerr << "\nTesting multi-component ITK reading is currently impossible since "
-            "STIR can only read multicomponent ITK files, it cannot write them.\n"
-         << "This could be resolved by adding a multi-component .nii image to STIR's"
-            "sample data.\nUntil then, skip this ctest and return success.\n";
-    return EXIT_SUCCESS;
-    
     if (argc != 2) {
-        cerr << "Usage : " << argv[0] << " filename\n";
+        std::cerr << "Usage : " << argv[0] << " filename\n";
         return EXIT_FAILURE;
     }
 
