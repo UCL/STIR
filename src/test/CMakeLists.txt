@@ -125,7 +125,7 @@ foreach(file_format ${file_format_tests})
 		${CMAKE_CURRENT_BINARY_DIR}/test_IO_DiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format})
 endforeach()
 ADD_TEST(test_IO_ITKMulticomponent
-${CMAKE_CURRENT_BINARY_DIR}/test_IO_ITKMulticomponent disp.nii)
+${CMAKE_CURRENT_BINARY_DIR}/test_IO_ITKMulticomponent ${CMAKE_SOURCE_DIR}/examples/samples/multicomponent_nifti.nii)
 
 # Parametric tests
 ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile 
