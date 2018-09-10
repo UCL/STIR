@@ -144,7 +144,9 @@ DynamicDiscretisedDensity*
 DynamicDiscretisedDensity::
 read_from_file(const string& filename) // The written image is read in respect to its center as origin!!!
 {
-  return stir::read_from_file<DynamicDiscretisedDensity>(filename).get();
+  unique_ptr<DynamicDiscretisedDensity> dyn_sptr
+    (stir::read_from_file<DynamicDiscretisedDensity>(filename));
+  return dyn_sptr.release();
 }
 
 //Warning write_time_frame_definitions() is not yet implemented, so time information is missing.
