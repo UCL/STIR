@@ -60,6 +60,7 @@ STIRImageMulti*
 convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image);
 
 template<typename STIRImageType>
+static
 STIRImageType *
 read_file_itk(std::string filename);
   
