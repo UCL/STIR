@@ -27,7 +27,7 @@
 
   \par Usage:
   \code 
-  get_dynamic_images_from_parametric_images output_parametric_image input_dynamic_image [par_file] [output_format_par_file]
+  get_dynamic_images_from_parametric_images output_parametric_image input_dynamic_image [par_file [output_format_par_file]]
   \endcode
   
   \par
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
     }
   if (argc!=3 && argc!=4 && argc!=5)
     {
-      std::cerr << "Usage:" << argv[0] << " output_dynamic_image input_parametric_image [par_file] [output_format_par_file]\n";
+      std::cerr << "Usage:" << argv[0] << " output_dynamic_image input_parametric_image [par_file [output_format_par_file]]\n";
       return EXIT_FAILURE;
     }
   if (argc==3)
