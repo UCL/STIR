@@ -62,7 +62,7 @@ convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image);
 template<typename STIRImageType>
 static
 STIRImageType *
-read_file_itk(std::string filename);
+read_file_itk(const std::string &filename);
   
 CartesianCoordinate3D<float>
 ITK_coordinates_to_STIR(const itk::ImageBase<3>::PointType &itk_coord,
@@ -209,7 +209,7 @@ convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image_orig)
 //To read any file format via ITK
 template<>
 STIRImageSingle*
-read_file_itk(std::string filename)
+read_file_itk(const std::string &filename)
 {
   typedef itk::GDCMImageIO       ImageIOType;
   ImageIOType::Pointer dicomIO = ImageIOType::New();
@@ -294,7 +294,7 @@ read_file_itk(std::string filename)
 //To read any file format via ITK
 template<>
 STIRImageMulti*
-read_file_itk(std::string filename)
+read_file_itk(const std::string &filename)
 {
   typedef itk::GDCMImageIO       ImageIOType;
 
