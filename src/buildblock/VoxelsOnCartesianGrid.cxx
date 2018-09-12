@@ -341,7 +341,9 @@ VoxelsOnCartesianGrid<elemT>*
 #endif
 VoxelsOnCartesianGrid<elemT>::clone() const
 {
-  return new VoxelsOnCartesianGrid(*this);
+  VoxelsOnCartesianGrid *temp = new VoxelsOnCartesianGrid(*this);
+  temp->set_exam_info(*temp->get_exam_info_sptr()->create_shared_clone());
+  return temp;
 }
 
 template<class elemT>

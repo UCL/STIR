@@ -153,7 +153,9 @@ ParamDiscDensity *
 ParamDiscDensity::
 read_from_file(const std::string& filename) // The written image is read in respect to its center as origin!!!
 {
-  return stir::read_from_file<ParamDiscDensity>(filename).get();
+  unique_ptr<ParamDiscDensity> param_sptr
+    (stir::read_from_file<ParamDiscDensity>(filename));
+  return param_sptr.release();
 }
 
 TEMPLATE
