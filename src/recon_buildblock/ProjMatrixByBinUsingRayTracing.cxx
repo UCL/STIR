@@ -469,22 +469,10 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
     } //!restrict_to_cylindrical_FOV
     
 
-    // start_point_gantry = (s_in_mm*cphi + max_a*sphi);
-    // start_point_bed = tx_gantry_to_bed(start_point_gantry);
-    // start_point_vx = tx_bed_to_idx(start_point_bed);
 
 
     CartesianCoordinate3D<float> start_point;
     CartesianCoordinate3D<float> stop_point;
-
-    // // start and stop point in voxel coordinates
-    // start_point.x() = (s_in_mm*cphi + max_a*sphi)/voxel_size.x();
-    // start_point.y() = (s_in_mm*sphi - max_a*cphi)/voxel_size.y();
-    // start_point.z() = (m_in_mm+offset_in_z - max_a*tantheta)/voxel_size.z();
-    // stop_point.x() = (s_in_mm*cphi + min_a*sphi)/voxel_size.x();
-    // stop_point.y() = (s_in_mm*sphi - min_a*cphi)/voxel_size.y();
-    // stop_point.z() = (m_in_mm+offset_in_z - min_a*tantheta)/voxel_size.z();
-    // std::cerr << "LOR reference " << start_point << "->" << stop_point << std::endl;
 
     // start and stop point in gantry coordinates
     start_point.x() = s_in_mm*cphi + max_a*sphi;
@@ -493,21 +481,20 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
     stop_point.x() = s_in_mm*cphi + min_a*sphi;
     stop_point.y() = s_in_mm*sphi - min_a*cphi;
     stop_point.z() = m_in_mm+offset_in_z - min_a*tantheta;
-    // std::cerr << "LOR gantry " << start_point << "->" << stop_point << std::endl;
 
     // Shift to bed coordinates
+    // GEOMTODO: something like:
+    // start_point = proj_data_info_sptr->transfrom_gantry_to_bed(start_point);
     start_point -= proj_data_info_sptr
       ->get_location_of_vendor_frame_of_reference_in_gantry_space();
     stop_point -= proj_data_info_sptr
       ->get_location_of_vendor_frame_of_reference_in_gantry_space();
-    // std::cerr << "LOR bedpos " << start_point << "->" << stop_point << std::endl;
 
     // Shift to Image Index coordinates
     start_point = density_info_sptr
       ->get_index_coordinates_for_physical_coordinates(start_point);
     stop_point = density_info_sptr
       ->get_index_coordinates_for_physical_coordinates(stop_point);
-    // std::cerr << "LOR index  " << start_point << "->" << stop_point << std::endl;
 
 #if 0
     // KT 18/05/2005 this is no longer necessary
@@ -621,10 +608,7 @@ calculate_proj_matrix_elems_for_one_bin(
   proj_data_info_sptr->get_LOR(axial_no_arc_corr_sino_lor, bin);
   LORAs2Points<float> cyl_lor(axial_no_arc_corr_sino_lor);
 
-  // apply transform to lor for bed
-  // cyl_lor.p1.z() += (max_index.z()+min_index.z())/2.F * voxel_size.z();
-  // cyl_lor.p2.z() += (max_index.z()+min_index.z())/2.F * voxel_size.z();
-  // GEOMTODO: ^ this must go
+  // GEOMTODO: apply transform to lor for bed?
 
   const float phi = cyl_lor.get_phi();
   const float s_in_mm = cyl_lor.get_s();
@@ -655,13 +639,7 @@ calculate_proj_matrix_elems_for_one_bin(
 
 
   // find offset in z, taking into account if there are 1 or more LORs
-  // KT 20/06/2001 take origin.z() into account
-  // KT 15/05/2002 move +(max_index.z()+min_index.z())/2.F offset here instead of in formulas for Z1f,Z2f
   /* Here is how we find the offset of the first ray:
-     for only 1 ray, it is simply found by refering to the middle of the image
-     minus the origin.z().
-     For multiple rays, the following reasoning is followed.
-
      First we look at oblique rays.
      All rays should be the same distance from eachother, which is
      dz = sampling_distance_of_adjacent_LORs_z/num_lors_per_axial_pos.
@@ -685,13 +663,6 @@ calculate_proj_matrix_elems_for_one_bin(
     (-sampling_distance_of_adjacent_LORs_z/(2*num_lors_per_axial_pos)*
      (num_lors_per_axial_pos-1));
   float offset_in_z = z_position_of_first_LOR_wrt_centre_of_TOR;
-  //+ (max_index.z()+min_index.z())/2.F * voxel_size.z();
-  float old_offset_in_z = z_position_of_first_LOR_wrt_centre_of_TOR
-    + (max_index.z()+min_index.z())/2.F * voxel_size.z();
-  // std::cerr << "old offset_in_z = " << old_offset_in_z
-  //           << ", new offset_in_z = " << offset_in_z
-  //           << "    (delta: " << offset_in_z - old_offset_in_z << ")"
-  //           << std::endl;
 
   if (tantheta==0)
     {
@@ -770,7 +741,6 @@ calculate_proj_matrix_elems_for_one_bin(
           first_point_of_first_lor(lor.begin()->coord1(),
                                    lor.begin()->coord2(),
                                    lor.begin()->coord3());
-        // std::cerr << "first_point_of_first_lor: " << first_point_of_first_lor << std::endl;
         const float z_of_first_voxel_in_index_space
           = first_point_of_first_lor.z();
 
@@ -802,34 +772,6 @@ calculate_proj_matrix_elems_for_one_bin(
         const float end_of_tor_relative_to_tor
           = end_of_tor_projected_to_axis_without_offset.z()
           - start_of_tor_projected_to_axis_without_offset.z();
-
-        // std::cerr << "z_of_first_voxel_in_index_space: "
-        //           << z_of_first_voxel_in_index_space
-        //           << ", start_of_adjacency: " << first_lor_relative_to_tor
-        //           << ", end_of_adjacency: " << end_of_tor_relative_to_tor
-        //           << std::endl;
-
-        // const float old_z_of_first_voxel=
-        //   lor.begin()->coord1() +
-        //   origin.z()/voxel_size.z() -
-        //   (max_index.z() + min_index.z())/2.F;
-        // const float old_left_edge_of_TOR =
-        //   (m_in_mm - sampling_distance_of_adjacent_LORs_z/2
-        //    )/voxel_size.z();
-        // const float old_right_edge_of_TOR =
-        //   (m_in_mm + sampling_distance_of_adjacent_LORs_z/2
-        //    )/voxel_size.z();
-
-        // std::cerr << "old_z_of_first_voxel: " << old_z_of_first_voxel
-        //           << ", old_left_edge_of_TOR: " << old_left_edge_of_TOR
-        //           << ", old_right_edge_of_TOR: " << old_right_edge_of_TOR
-        //           << std::endl;
-
-        // std::cerr << ", old start_of_adjacency: "
-        //           << old_z_of_first_voxel - old_left_edge_of_TOR
-        //           << ", old end_of_adjacency: "
-        //           << old_right_edge_of_TOR - old_left_edge_of_TOR
-        //           << std::endl;
 
         add_adjacent_z(lor, first_lor_relative_to_tor, end_of_tor_relative_to_tor);
       }
@@ -948,7 +890,6 @@ add_adjacent_z(ProjMatrixElemsForOneBin& lor,
     const float overlap_of_voxel_with_TOR =
       std::min(right_edge_of_TOR, z_of_first_voxel + .5F) -
       std::max(0.F, z_of_first_voxel - .5F);
-    // std::cerr << "overlap_of_voxel_with_TOR: " << overlap_of_voxel_with_TOR << std::endl;
     assert (overlap_of_voxel_with_TOR>0);
     assert(overlap_of_voxel_with_TOR < 1.0001);
     if (overlap_of_voxel_with_TOR<.9999) // test if it is 1
