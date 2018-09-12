@@ -502,7 +502,8 @@ InterfileListmodeHeaderSiemens::InterfileListmodeHeaderSiemens()
   data_offset_each_dataset.resize(1, 0UL);
   add_key("data offset in bytes", &data_offset_each_dataset[0]);
 
-  add_key("%bed zero offset (mm)", KeyArgument::NONE, &KeyParser::do_nothing);
+  // TODO RB: Need to add offset in
+  //add_key("%bed zero offset (mm)", &bed_offset);
   add_key("pet scanner type", KeyArgument::NONE, &KeyParser::do_nothing);
   add_key("transaxial fov diameter (cm)", KeyArgument::NONE, &KeyParser::do_nothing);
   add_key("distance between rings (cm)", KeyArgument::NONE, &KeyParser::do_nothing);

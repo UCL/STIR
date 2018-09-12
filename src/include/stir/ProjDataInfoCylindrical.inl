@@ -77,7 +77,7 @@ ProjDataInfoCylindrical::get_m(const Bin& bin) const
   this->initialise_ring_diff_arrays_if_not_done_yet();
   return 
     bin.axial_pos_num()*get_axial_sampling(bin.segment_num())
-    - m_offset[bin.segment_num()];
+    - m_offset[bin.segment_num()] + this->get_bed_offset();
 }
 
 float
