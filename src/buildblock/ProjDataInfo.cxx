@@ -654,10 +654,10 @@ get_location_of_vendor_frame_of_reference_in_gantry_space() const {
     = (scanner_ptr->get_num_rings() - 1) * scanner_ptr->get_ring_spacing();
 
   switch (scanner_ptr->get_reference_origin()) {
-  case Scanner::VendorReferenceOrigin::FirstRing:
+  case Scanner::FirstRing:
     return CartesianCoordinate3D<float>(-gantry_length / 2.F, 0, 0);
 
-  case Scanner::VendorReferenceOrigin::Middle:
+  case Scanner::Middle:
     return CartesianCoordinate3D<float>(0, 0, 0);
 
   default:
