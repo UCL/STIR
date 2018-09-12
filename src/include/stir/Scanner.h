@@ -145,7 +145,7 @@ class Scanner
           int num_detector_layers_v,
           float energy_resolution_v = -1.0f,
           float reference_energy_v = -1.0f,
-          VendorReferenceOrigin reference_origin_v = VendorReferenceOrigin::Unknown);
+          VendorReferenceOrigin reference_origin_v = Unknown);
 
   //! constructor ( a single name)
   /*! size info is in mm
@@ -165,7 +165,7 @@ class Scanner
           int num_detector_layers_v,
           float energy_resolution_v = -1.0f,
           float reference_energy_v = -1.0f,
-          VendorReferenceOrigin reference_origin_v = VendorReferenceOrigin::Unknown);
+          VendorReferenceOrigin reference_origin_v = Unknown);
 
 
 
@@ -418,7 +418,7 @@ private:
                   int num_detector_layers_v,
                   float energy_resolution_v = -1.0f,
                   float reference_energy = -1.0f,
-                  VendorReferenceOrigin reference_origin = VendorReferenceOrigin::Unknown);
+                  VendorReferenceOrigin reference_origin = Unknown);
 
   // ! set all parameters
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
@@ -437,7 +437,7 @@ private:
                   int num_detector_layers_v,
                   float energy_resolution_v = -1.0f,
                   float reference_energy = -1.0f,
-                  VendorReferenceOrigin reference_origin = VendorReferenceOrigin::Unknown);
+                  VendorReferenceOrigin reference_origin = Unknown);
 
 };
 
