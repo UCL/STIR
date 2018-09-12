@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,12 +29,13 @@
   \author Kris Thielemans
   \author Matthew Jacobson
   \author PARAPET project
+  \author Richard Brown
   
 
   This program enables calling any ImageProcessor object on input data, 
   and writing it to file. It can take the following command line:
   \verbatim
-   postfilter [[-verbose] <output filename > <input header file name> <filter .par filename>
+   postfilter [[-verbose] <output filename > <input header file name> <filter .par filename> <dynamic image (0/1, default: 0)>
   \endverbatim
   This is done to make it easy to process a lot of files with the same 
   ImageProcessor. However, if the number of command line arguments is not 
@@ -60,6 +62,7 @@
 #include "stir/PostFiltering.h"
 #include "stir/utilities.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/DynamicDiscretisedDensity.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/Succeeded.h"
@@ -73,7 +76,7 @@ using std::endl;
 
 START_NAMESPACE_STIR
 
-DiscretisedDensity<3,float>* ask_image(const char *const input_query)
+DiscretisedDensity<3,float> * ask_image_single(const char *const input_query)
 {
   
   char filename[max_filename_length];
@@ -85,6 +88,18 @@ DiscretisedDensity<3,float>* ask_image(const char *const input_query)
   
 }
 
+DynamicDiscretisedDensity* ask_image_dynamic(const char *const input_query)
+{
+
+  char filename[max_filename_length];
+  ask_filename_with_extension(filename,
+                input_query,
+                "");
+
+  return DynamicDiscretisedDensity::read_from_file(filename);
+
+}
+
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
@@ -92,14 +107,15 @@ USING_NAMESPACE_STIR
 static void
 print_usage()
 {
-  cerr<<"\nUsage: postfilter [--verbose] <output filename > <input header file name> <filter .par filename>\n"<<endl;
+  cerr<<"\nUsage: postfilter [--verbose] <output filename > <input header file name> <filter .par filename> <dynamic image (0/1, default: 0)>\n"<<endl;
 }
 
 int
 main(int argc, char *argv[])
 {
-  
-  shared_ptr<DiscretisedDensity<3,float> > input_image_ptr;
+  bool dynamic_image = false;
+  shared_ptr<DiscretisedDensity<3,float> > input_image_single_ptr;
+  shared_ptr<DynamicDiscretisedDensity>    input_image_dynamic_ptr;
   PostFiltering<DiscretisedDensity<3,float> > post_filtering;
   std::string out_filename;
   bool verbose = false;
@@ -119,9 +135,14 @@ main(int argc, char *argv[])
 	}
     }
 
-  if (argc!=4)
+  if (argc<4 || argc>5)
     {
       print_usage();
+    }
+  if (argc>4)
+    {
+      if (strcmp(argv[4], "1") == 0)
+          dynamic_image = true;
     }
   if (argc>1)
     {
@@ -136,12 +157,19 @@ main(int argc, char *argv[])
     }
   if (argc>2)
     {
-      input_image_ptr = 
-	read_from_file<DiscretisedDensity<3,float> >(argv[2]);
+      if (!dynamic_image)
+        input_image_single_ptr =
+            read_from_file<DiscretisedDensity<3,float> >(argv[2]);
+      else
+          input_image_dynamic_ptr =
+              read_from_file<DynamicDiscretisedDensity>(argv[2]);
     }
   else
     {
-      input_image_ptr.reset(ask_image("Image to process?"));
+      if (!dynamic_image)
+        input_image_single_ptr.reset(ask_image_single("Image to process?"));
+      else
+        input_image_dynamic_ptr.reset(ask_image_dynamic("Image to process?"));
     }
   if (argc>3)
     {
@@ -166,7 +194,7 @@ main(int argc, char *argv[])
       return EXIT_FAILURE;
     }
 
-  if (is_null_ptr(input_image_ptr))
+  if (is_null_ptr(input_image_single_ptr) && is_null_ptr(input_image_dynamic_ptr))
     {
       warning("postfilter: No input image. Not writing any output.\n");
       return EXIT_FAILURE;
@@ -177,14 +205,26 @@ main(int argc, char *argv[])
       cerr << "PostFilteringParameters:\n" << post_filtering.parameter_info();
     }
 
-  if (post_filtering.process_data(*input_image_ptr) == Succeeded::no)
-      return EXIT_FAILURE;
-  
-  if (OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-      write_to_file(out_filename,*input_image_ptr) == Succeeded::yes)
-    return EXIT_SUCCESS;
-  else
-    return EXIT_FAILURE;
+  if (!dynamic_image) {
+    if (post_filtering.process_data(*input_image_single_ptr) == Succeeded::no)
+        return EXIT_FAILURE;
+
+    if (OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+            write_to_file(out_filename,*input_image_single_ptr) == Succeeded::no)
+        return EXIT_FAILURE;
+  }
+  else {
+
+      for (unsigned i=1; i<=input_image_dynamic_ptr->get_num_time_frames(); i++) {
+          if (post_filtering.process_data(input_image_dynamic_ptr->get_density(i)) == Succeeded::no)
+              return EXIT_FAILURE;
+      }
+
+      if (OutputFileFormat<DynamicDiscretisedDensity>::default_sptr()->
+          write_to_file(out_filename,*input_image_dynamic_ptr) == Succeeded::no)
+          return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
 }
 
 
