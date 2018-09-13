@@ -99,7 +99,7 @@ actual_write_to_file(std::string& filename,
     {
       add_extension(filename, this->default_extension);
 
-      const VoxelsOnCartesianGrid<float> image_ptr =
+      const VoxelsOnCartesianGrid<float> image =
         dynamic_cast<const VoxelsOnCartesianGrid<float>& >(density);
       CartesianCoordinate3D<int> min_indices;
       CartesianCoordinate3D<int> max_indices;
@@ -112,9 +112,6 @@ actual_write_to_file(std::string& filename,
       typedef itk::Image< float, 3> ImageType;
       typedef itk::ImageFileWriter<ImageType> WriterType;
       WriterType::Pointer writer = WriterType::New();
-
-      //Creating the image
-      ImageType::Pointer image = ImageType::New();
       
       // use 0 start indices in ITK
       ImageType::IndexType start;
@@ -127,41 +124,51 @@ actual_write_to_file(std::string& filename,
       CartesianCoordinate3D<float> stir_offset = density.get_physical_coordinates_for_indices(min_indices);
       origin[0] = stir_offset.x();
       origin[1] = stir_offset.y();
-      // Note: need to use - for z-coordinate because of different axis conventions
-      origin[2] = -stir_offset.z();
-      
+      origin[2] = stir_offset.z();
+
       // find ITK size
       ImageType::SizeType size;
-      size[0] = image_ptr.get_x_size(); // size along X
-      size[1] = image_ptr.get_y_size(); // size along Y
-      size[2] = image_ptr.get_z_size(); // size along Z
+      size[0] = image.get_x_size(); // size along X
+      size[1] = image.get_y_size(); // size along Y
+      size[2] = image.get_z_size(); // size along Z
 
       // find ITK voxel size
       ImageType::SpacingType spacing;
-      spacing[0] = image_ptr.get_voxel_size().x(); // size along X
-      spacing[1] = image_ptr.get_voxel_size().y(); // size along Y
-      spacing[2] = image_ptr.get_voxel_size().z(); // size along Z
+      spacing[0] = image.get_voxel_size().x(); // size along X
+      spacing[1] = image.get_voxel_size().y(); // size along Y
+      spacing[2] = image.get_voxel_size().z(); // size along Z
 
       // ITK orientation (RAI)
+      // NB: ITK Matrix is in row, column order
+      // In ITK Direction matrix, each column is a direction vector for each
+      // axis
       ImageType::DirectionType matrix;
-      matrix.Fill(0.F);
-      matrix(0,0) = 1.F;
-      matrix(1,1) = 1.F;
-      matrix(2,2) = -1.F;
+      for (unsigned int axis=0; axis<3; ++axis) {
+        for (unsigned int dim=0; dim<3; ++dim) {
+          CartesianCoordinate3D<int> next_idx_along_this_dim(min_indices);
+          next_idx_along_this_dim[dim] += 1;
+          CartesianCoordinate3D<float> next_coord_along_this_dim
+            = density.get_physical_coordinates_for_indices(next_idx_along_this_dim);
+          matrix(axis, dim) = stir_offset[dim] - next_coord_along_this_dim[dim];
+        }
+      }
 
       ImageType::RegionType region;
       region.SetSize( size );
       region.SetIndex( start );
 
-      image->SetSpacing(spacing);
-      image->SetRegions( region );
-      image->SetOrigin(origin);
-      image->SetDirection( matrix );
-      image->Allocate();
+      //Creating the image
+      ImageType::Pointer itk_image = ImageType::New();
+
+      itk_image->SetSpacing(spacing);
+      itk_image->SetRegions( region );
+      itk_image->SetOrigin(origin);
+      itk_image->SetDirection( matrix );
+      itk_image->Allocate();
 	
       // copy data
       typedef itk::ImageRegionIterator< ImageType >	IteratorType;
-      IteratorType it (image, image->GetLargestPossibleRegion() );	
+      IteratorType it (itk_image, itk_image->GetLargestPossibleRegion() );	
       DiscretisedDensity<3,float>::const_full_iterator stir_iter = density.begin_all_const();
       for ( it = it.Begin(); !it.IsAtEnd(); ++it, ++stir_iter  ){
 
@@ -169,7 +176,7 @@ actual_write_to_file(std::string& filename,
       }
 
       // write it!
-      writer->SetInput(image);
+      writer->SetInput(itk_image);
       writer->SetFileName(filename);
       writer->Update();
 
