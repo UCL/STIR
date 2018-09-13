@@ -35,7 +35,7 @@
   This program enables calling any ImageProcessor object on input data, 
   and writing it to file. It can take the following command line:
   \verbatim
-   postfilter [[-verbose] <output filename > <input header file name> <filter .par filename> <dynamic image (0/1, default: 0)>
+   postfilter [[-verbose] <output filename > <input header file name> <filter .par filename> [--dynamic]
   \endverbatim
   This is done to make it easy to process a lot of files with the same 
   ImageProcessor. However, if the number of command line arguments is not 
@@ -76,7 +76,8 @@ using std::endl;
 
 START_NAMESPACE_STIR
 
-DiscretisedDensity<3,float> * ask_image_single(const char *const input_query)
+template<typename STIRImageType>
+STIRImageType * ask_image(const char *const input_query)
 {
   
   char filename[max_filename_length];
@@ -84,20 +85,8 @@ DiscretisedDensity<3,float> * ask_image_single(const char *const input_query)
 				input_query,
 				"");
   
-  return DiscretisedDensity<3,float>::read_from_file(filename);
+  return STIRImageType::read_from_file(filename);
   
-}
-
-DynamicDiscretisedDensity* ask_image_dynamic(const char *const input_query)
-{
-
-  char filename[max_filename_length];
-  ask_filename_with_extension(filename,
-                input_query,
-                "");
-
-  return DynamicDiscretisedDensity::read_from_file(filename);
-
 }
 
 END_NAMESPACE_STIR
@@ -107,7 +96,7 @@ USING_NAMESPACE_STIR
 static void
 print_usage()
 {
-  cerr<<"\nUsage: postfilter [--verbose] <output filename > <input header file name> <filter .par filename> <dynamic image (0/1, default: 0)>\n"<<endl;
+  cerr<<"\nUsage: postfilter [--verbose] <output filename > <input header file name> <filter .par filename> [--dynamic]\n"<<endl;
 }
 
 int
@@ -141,7 +130,7 @@ main(int argc, char *argv[])
     }
   if (argc>4)
     {
-      if (strcmp(argv[4], "1") == 0)
+      if (strcmp(argv[4], "--dynamic") == 0)
           dynamic_image = true;
     }
   if (argc>1)
@@ -167,9 +156,9 @@ main(int argc, char *argv[])
   else
     {
       if (!dynamic_image)
-        input_image_single_ptr.reset(ask_image_single("Image to process?"));
+        input_image_single_ptr.reset(ask_image<DiscretisedDensity<3,float> >("Image to process?"));
       else
-        input_image_dynamic_ptr.reset(ask_image_dynamic("Image to process?"));
+        input_image_dynamic_ptr.reset(ask_image<DynamicDiscretisedDensity>("Image to process?"));
     }
   if (argc>3)
     {
