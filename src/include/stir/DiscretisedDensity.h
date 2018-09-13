@@ -175,6 +175,12 @@ public:
     CartesianCoordinate3D<float>
     get_physical_coordinates_for_indices(const BasicCoordinate<num_dimensions,float>& indices) const;
 
+  inline CartesianCoordinate3D<float>
+  get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions,int>& indices) const;
+
+  inline CartesianCoordinate3D<float>
+  get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions,float>& indices) const;
+
   //! Return the relative coordinates of the centre of the basis-function corresponding to \c indices.
   /*! Implementation uses actual_get_relative_coordinates_for_indices
   */
