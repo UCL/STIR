@@ -77,7 +77,8 @@ orient_ITK_image(typename ITKImageType::Pointer &itk_image,
                  BasicCoordinate<3,int> &min_indices,
                  BasicCoordinate<3,int> &max_indices,
                  CartesianCoordinate3D<float> &origin,
-                 const typename ITKImageType::Pointer itk_image_orig);
+                 const typename ITKImageType::Pointer itk_image_orig,
+                 int flip_axes[3] = nullptr);
 
 template <typename STIRImageType>
 bool 
@@ -174,10 +175,11 @@ convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image_orig)
     CartesianCoordinate3D<float> voxel_size;
     BasicCoordinate<3,int> min_indices, max_indices;
     CartesianCoordinate3D<float> origin;
+    int flip_axes[3];
 
     // orientate the ITK image
     orient_ITK_image<ITKImageMulti>(
-                itk_image, voxel_size, min_indices, max_indices, origin, itk_image_orig);
+                itk_image, voxel_size, min_indices, max_indices, origin, itk_image_orig, flip_axes);
 
     // create STIR image
     STIRImageMulti* image_ptr =
@@ -192,9 +194,15 @@ convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image_orig)
     IteratorType it (itk_image, itk_image->GetLargestPossibleRegion() );
     for ( it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter) {
         itk::Point<double,3U> itk_coord;
-        itk_coord[0] = -it.Get()[0]; // Seems we need an extra flip in the x-axis. don't know why...
-        itk_coord[1] = -it.Get()[1]; // Seems we need an extra flip in the y-axis. don't know why...
-        itk_coord[2] =  it.Get()[2];
+
+        // If we need to flip each axis, do it
+        for (unsigned axis; axis<3; ++axis) {
+            if (flip_axes[axis] == 0)
+                itk_coord[axis] = double(it.Get()[axis]);
+            else
+                itk_coord[axis] = -double(it.Get()[axis]);
+        }
+
         *stir_iter =
             ITK_coordinates_to_STIR(
                 itk_coord,
@@ -330,7 +338,8 @@ orient_ITK_image(typename ITKImageType::Pointer &itk_image,
                  BasicCoordinate<3,int> &min_indices,
                  BasicCoordinate<3,int> &max_indices,
                  CartesianCoordinate3D<float> &origin,
-                 const typename ITKImageType::Pointer itk_image_orig)
+                 const typename ITKImageType::Pointer itk_image_orig,
+                 int flip_axes[3])
 {
     // Only works for HFS!
     typedef itk::OrientImageFilter<ITKImageType,ITKImageType> OrienterType;
@@ -340,6 +349,12 @@ orient_ITK_image(typename ITKImageType::Pointer &itk_image,
     orienter->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS);
     orienter->Update();
     itk_image = orienter->GetOutput();
+
+    if (flip_axes != nullptr) {
+        flip_axes[0] = orienter->GetFlipAxes()[0];
+        flip_axes[1] = orienter->GetFlipAxes()[1];
+        flip_axes[2] = orienter->GetFlipAxes()[2];
+    }
 
     // find voxel size
     voxel_size = CartesianCoordinate3D<float>(static_cast<float>(itk_image->GetSpacing()[2]),
