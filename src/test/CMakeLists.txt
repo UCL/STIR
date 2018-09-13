@@ -116,6 +116,8 @@ if (HAVE_ITK)
 	test_ITKDefaultOutputFileFormat.in
 	test_ITKNiftiOutputFileFormat.in
     )
+    ADD_TEST(test_IO_ITKMulticomponent
+    	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ITKMulticomponent ${CMAKE_SOURCE_DIR}/examples/samples/multicomponent_nifti.nii)
 endif()
 
 # now for each of these, add a test
@@ -124,8 +126,6 @@ foreach(file_format ${file_format_tests})
   ADD_TEST(${test_name}
 		${CMAKE_CURRENT_BINARY_DIR}/test_IO_DiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format})
 endforeach()
-ADD_TEST(test_IO_ITKMulticomponent
-${CMAKE_CURRENT_BINARY_DIR}/test_IO_ITKMulticomponent ${CMAKE_SOURCE_DIR}/examples/samples/multicomponent_nifti.nii)
 
 # Parametric tests
 ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile 

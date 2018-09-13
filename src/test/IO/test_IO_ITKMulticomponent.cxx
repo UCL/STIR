@@ -43,8 +43,8 @@ START_NAMESPACE_STIR
 class IOTests_ITKMulticomponent : public RunTests
 {
 public:
-    IOTests_ITKMulticomponent(const std::string &multi)
-    { _multi = multi; }
+    IOTests_ITKMulticomponent(const std::string &multi) :
+        _multi(multi) {}
 
     void run_tests();
 
