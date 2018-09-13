@@ -210,4 +210,56 @@ get_indices_closest_to_physical_coordinates(const CartesianCoordinate3D<float>& 
     this->get_indices_closest_to_relative_coordinates(coords - this->get_origin());
 }
 
+template<int num_dimensions, typename elemT>
+CartesianCoordinate3D<float>
+DiscretisedDensity<num_dimensions, elemT>::
+get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions, float>& indices) const
+{
+  CartesianCoordinate3D<float> coordinates
+    = this->get_physical_coordinates_for_indices(indices);
+  const PatientPosition::PositionValue patient_position
+    = this->get_exam_info().patient_position.get_position();
+
+  switch (patient_position) {
+  case PatientPosition::unknown_position:
+    // If unknown, assume HFS
+  case PatientPosition::HFS:
+    // HFS means currently in LAS
+    coordinates.y() *= -1;
+    break;
+
+  case PatientPosition::HFP:
+    // HFP means currently in RPS
+    coordinates.x() *= -1;
+    break;
+
+  case PatientPosition::FFS:
+    // FFS means currently in RAI
+    coordinates.x() *= -1;
+    coordinates.y() *= -1;
+    coordinates.z() *= -1;
+    break;
+
+  case PatientPosition::FFP:
+    // FFP means currently in LPI
+    coordinates.z() *= -1;
+    break;
+
+  // We can do
+
+  default:
+    throw std::runtime_error("Unsupported patient position, can't convert to LPS.");
+  }
+
+  return coordinates;
+}
+
+template<int num_dimensions, typename elemT>
+CartesianCoordinate3D<float>
+DiscretisedDensity<num_dimensions, elemT>::
+get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions, int>& indices) const
+{
+  return get_LPS_coordinates_for_indices(BasicCoordinate<num_dimensions, float>(indices));
+}
+
 END_NAMESPACE_STIR
