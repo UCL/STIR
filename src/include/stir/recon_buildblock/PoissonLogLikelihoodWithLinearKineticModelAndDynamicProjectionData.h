@@ -25,6 +25,7 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author Charalampos Tsoumpas
+  \author Richard Brown
 
 */
 
@@ -150,6 +151,14 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   ParseAndCreateFrom<TargetT, DynamicProjData> target_parameter_parser;
 
   /********************************/
+  /// Displacement field image filenames
+  std::vector<std::string> _disp_field_filenames;
+  /// Projector pairs (for when displacement field images are present)
+  std::vector<shared_ptr<ProjectorByBinPair> > _projector_pairs_sptr;
+  /// B spline order for motion correction
+  int _bspline_order;
+
+  /********************************/
   //! name of file in which additive projection data are stored
   std::string _additive_dyn_proj_data_filename;
  //! points to the additive projection data
@@ -157,6 +166,10 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   shared_ptr<DynamicProjData> _additive_dyn_proj_data_sptr;
   /*! the normalisation or/and attenuation data */
   shared_ptr<BinNormalisation> _normalisation_sptr;
+  /*! Multiple normalisation and/or attenuation data */
+  std::vector<shared_ptr<BinNormalisation> > _normalisations_sptr;
+  //! Dynamic normalisation filenames
+  std::string _normalisations_filename;
   //! Stores the projectors that are used for the computations
   shared_ptr<ProjectorByBinPair> _projector_pair_ptr;
   //! signals whether to zero the data in the end planes of the projection data
@@ -177,6 +190,8 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearKineticModelAndDyn
   virtual void initialise_keymap();
   virtual bool post_processing();
 
+  /// Set up motion
+  void set_up_motion();
 };
 
 END_NAMESPACE_STIR
