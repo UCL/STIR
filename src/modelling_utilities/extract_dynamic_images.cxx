@@ -25,10 +25,11 @@
 
   \par Usage:
   \code 
-  split_dynamic_images output_filename input output_parameter_file
+  split_dynamic_images output_filename_pattern input_header_filename output_format_parameter_file
 
-  The output filename should look something like this: dyn_im_%s,
-  so that we can use boost format.
+  The output filename should look something like this: dyn_im_%d_output.file_extension,
+  so that we can use boost format. In this fashion, you can can specify the output file extension
+  should you wish.
 
   An example of an output parameter file is as follows:
     OutputFileFormat Parameters:=
@@ -55,7 +56,7 @@ int main(int argc, char *argv[])
     USING_NAMESPACE_STIR
 
     if (argc != 4) {
-        std::cerr << "\nUsage: split_dynamic_images output_filename input output_parameter_file\n\n";
+        std::cerr << "\nUsage: split_dynamic_images output_filename_pattern input_header_filename output_format_parameter_file\n\n";
         return EXIT_FAILURE;
     }
 
