@@ -35,7 +35,7 @@
   This program enables calling any ImageProcessor object on input data, 
   and writing it to file. It can take the following command line:
   \verbatim
-   postfilter [[-verbose] <output filename > <input header file name> <filter .par filename> [--dynamic]
+   postfilter [[-verbose] <output filename> <input header file name> <filter .par filename> [--dynamic]
   \endverbatim
   This is done to make it easy to process a lot of files with the same 
   ImageProcessor. However, if the number of command line arguments is not 
@@ -56,6 +56,15 @@
   End Median Filter Parameters:=
   End PostFiltering Parameters:=
   \endverbatim
+
+  An optional output file format parameter file can also be given. An example for this might be:
+    output file format parameters :=
+    output file format type := Interfile
+    interfile Output File Format Parameters:=
+    number format := float
+    number_of_bytes_per_pixel:=4
+    End Interfile Output File Format Parameters:=
+    end :=
 
 */
 
@@ -79,14 +88,31 @@ START_NAMESPACE_STIR
 template<typename STIRImageType>
 STIRImageType * ask_image(const char *const input_query)
 {
-  
   char filename[max_filename_length];
   ask_filename_with_extension(filename, 
 				input_query,
 				"");
   
   return STIRImageType::read_from_file(filename);
+}
   
+template<typename STIRImageType>
+shared_ptr<OutputFileFormat<STIRImageType> > set_up_output_format(const std::string &filename)
+{
+    shared_ptr<OutputFileFormat<STIRImageType> > output =
+            OutputFileFormat<STIRImageType>::default_sptr();
+     if (filename.size() != 0) {
+         std::istringstream is(filename);
+         KeyParser parser;
+         parser.add_start_key("output file format parameters");
+         parser.add_parsing_key("output file format type", &output);
+         parser.add_stop_key("END");
+         if (parser.parse(filename.c_str()) == false || is_null_ptr(output)) {
+            warning("Error parsing output file format. Using default format.");
+            output = OutputFileFormat<STIRImageType>::default_sptr();
+        }
+    }
+    return output;
 }
 
 END_NAMESPACE_STIR
@@ -96,7 +122,7 @@ USING_NAMESPACE_STIR
 static void
 print_usage()
 {
-  cerr<<"\nUsage: postfilter [--verbose] <output filename > <input header file name> <filter .par filename> [--dynamic]\n"<<endl;
+  cerr<<"\nUsage: postfilter [--verbose] [--dynamic] <output filename> <input header file name> <filter .par filename> [output_format_par_file]\n"<<endl;
 }
 
 int
@@ -106,32 +132,31 @@ main(int argc, char *argv[])
   shared_ptr<DiscretisedDensity<3,float> > input_image_single_ptr;
   shared_ptr<DynamicDiscretisedDensity>    input_image_dynamic_ptr;
   PostFiltering<DiscretisedDensity<3,float> > post_filtering;
-  std::string out_filename;
+  std::string out_filename, output_file_format_par = "";
   bool verbose = false;
 
   // option processing
-  if (argc>1 && argv[1][0] == '-')
+  while (argc>1 && argv[1][0]=='-')
     {
       if (strcmp(argv[1], "--verbose") == 0)
 	{
 	  verbose = true;
 	  --argc; ++argv;
 	}
+      else if (strcmp(argv[1], "--dynamic") == 0)
+    {
+      dynamic_image = true;
+      --argc; ++argv;
+    }
       else
 	{
 	  print_usage();
 	  return EXIT_FAILURE;
 	}
     }
-
-  if (argc<4 || argc>5)
+  if (argc<5 || argc>6)
     {
       print_usage();
-    }
-  if (argc>4)
-    {
-      if (strcmp(argv[4], "--dynamic") == 0)
-          dynamic_image = true;
     }
   if (argc>1)
     {
@@ -176,6 +201,10 @@ main(int argc, char *argv[])
       
       post_filtering.ask_parameters();
     }
+  if (argc>4)
+    {
+      output_file_format_par = argv[4];
+    }
 
   if (post_filtering.is_filter_null())
     {
@@ -198,6 +227,11 @@ main(int argc, char *argv[])
     if (post_filtering.process_data(*input_image_single_ptr) == Succeeded::no)
         return EXIT_FAILURE;
 
+    shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format =
+      set_up_output_format<DiscretisedDensity<3,float> >(output_file_format_par);
+    if (output_file_format->write_to_file(out_filename,*input_image_single_ptr) == Succeeded::no)
+        return EXIT_FAILURE;
+
     if (OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
             write_to_file(out_filename,*input_image_single_ptr) == Succeeded::no)
         return EXIT_FAILURE;
@@ -209,8 +243,9 @@ main(int argc, char *argv[])
               return EXIT_FAILURE;
       }
 
-      if (OutputFileFormat<DynamicDiscretisedDensity>::default_sptr()->
-          write_to_file(out_filename,*input_image_dynamic_ptr) == Succeeded::no)
+      shared_ptr<OutputFileFormat<DynamicDiscretisedDensity> > output_file_format =
+        set_up_output_format<DynamicDiscretisedDensity>(output_file_format_par);
+      if (output_file_format->write_to_file(out_filename,*input_image_dynamic_ptr) == Succeeded::no)
           return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
