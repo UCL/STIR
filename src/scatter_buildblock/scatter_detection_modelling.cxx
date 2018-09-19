@@ -82,7 +82,9 @@ ScatterSimulation::find_detectors(unsigned& det_num_A, unsigned& det_num_B, cons
           error("wrong type of projection data for scatter simulation");
         }
     }
+
   det_num_A = this->find_in_detection_points_vector(detector_coord_A + this->shift_detector_coordinates_to_origin);
+  // ORIGINTODO: ^
   det_num_B = this->find_in_detection_points_vector(detector_coord_B + this->shift_detector_coordinates_to_origin);
 }
 

@@ -184,6 +184,7 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
        *(proj_data_info_blk_ptr->get_max_axial_pos_num(segment_num)
          + proj_data_info_blk_ptr->get_min_axial_pos_num(segment_num))
        + num_planes_per_scanner_ring*delta)/2;
+    // ORIGINTODO: ^
   }
 }
 #endif

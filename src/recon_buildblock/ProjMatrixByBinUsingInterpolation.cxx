@@ -109,7 +109,9 @@ ProjMatrixByBinUsingInterpolation::set_up(
   densel_range = image_info_ptr->get_index_range();
   voxel_size = image_info_ptr->get_voxel_size();
   origin = image_info_ptr->get_origin();
+
   const float z_to_middle = (densel_range.get_max_index() + densel_range.get_min_index()) * voxel_size.z() / 2.F;
+  // ORIGINTODO: ^
   origin.z() -= z_to_middle;
 
   symmetries_sptr.reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,

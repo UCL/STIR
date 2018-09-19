@@ -407,6 +407,7 @@ ProjDataInfoCylindricalNoArcCorr::find_scanner_coordinates_given_cartesian_coord
   det2 = modulo(round((cyl_coords.p2().psi() - this->get_psi_offset()) / (2. * _PI / num_detectors)), num_detectors);
   ring1 = round(cyl_coords.p1().z() / ring_spacing);
   ring2 = round(cyl_coords.p2().z() / ring_spacing);
+  // ORIGINTODO: ^
 
 #endif
 
@@ -496,7 +497,9 @@ ProjDataInfoCylindricalNoArcCorr::find_cartesian_coordinates_given_scanner_coord
   cyl_coords.p2().psi() = to_0_2pi(static_cast<float>((2. * _PI / num_detectors_per_ring) * (d2)) + this->get_psi_offset());
   cyl_coords.p1().z() = r1 * get_scanner_ptr()->get_ring_spacing();
   cyl_coords.p2().z() = r2 * get_scanner_ptr()->get_ring_spacing();
+  // ORIGINTODO: ^
   LORAs2Points<float> lor(cyl_coords);
+
   coord_1 = lor.p1();
   coord_2 = lor.p2();
 

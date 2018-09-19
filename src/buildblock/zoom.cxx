@@ -249,6 +249,7 @@ construct_new_image_from_zoom_parameters(const VoxelsOnCartesianGrid<float>& ima
                                                / 2;
   // now make sure that these are shifted as required
   new_image.set_origin(offsets_in_mm + middle - new_middle);
+  // ORIGINTODO: ^
   // check
   {
     const BasicCoordinate<3, float> final_middle = (new_image.get_physical_coordinates_for_indices(new_min_indices)
