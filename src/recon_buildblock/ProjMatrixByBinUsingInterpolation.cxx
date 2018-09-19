@@ -127,6 +127,7 @@ set_up(
   origin = image_info_ptr->get_origin();
   const float z_to_middle =
     (densel_range.get_max_index() + densel_range.get_min_index())*voxel_size.z()/2.F;
+  // ORIGINTODO: ^
   origin.z() -= z_to_middle;
 
   symmetries_sptr.reset(

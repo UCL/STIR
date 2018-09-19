@@ -166,7 +166,7 @@ zoom_image(const VoxelsOnCartesianGrid<float> &image,
 
   The index range of the new image is according to the standard STIR
   conventions (z starts from 0, but x and y from -(new_size/2)).
-  The origin is then chosen such that the geometric centres of the
+  The origin is then chosen such that the geometric centres of the // ORIGINTODO
   images satisfy
   \verbatim
   offsets_in_mm == new_middle - old_middle
