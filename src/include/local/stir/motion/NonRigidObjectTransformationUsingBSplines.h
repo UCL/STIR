@@ -57,10 +57,10 @@ public:
   NonRigidObjectTransformationUsingBSplines();
 
   // Give x, y and z components of the deformation field images separately
-  NonRigidObjectTransformationUsingBSplines(const std::string, const std::string, const std::string, int &bspline_order);
+  NonRigidObjectTransformationUsingBSplines(const std::string&, const std::string&, const std::string&, const int bspline_order);
 
   // Give x, y and z components of the deformation field images together (e.g., multicomponent nifti)
-  NonRigidObjectTransformationUsingBSplines(const std::string, int &bspline_order);
+  NonRigidObjectTransformationUsingBSplines(const std::string&, const int bspline_order);
 
   //! Transform point 
   virtual
@@ -68,9 +68,6 @@ public:
     transform_point(const BasicCoordinate<num_dimensions,elemT>& point) const;
 
   float jacobian(const BasicCoordinate<num_dimensions,elemT>& point) const;
-
-  /// Set deformation field (dimension=1,2,3 for x,y,z)
-  Succeeded set_deformation_field(const std::string &filename, const int &dimension);
 
   virtual void set_defaults();
   virtual void initialise_keymap();

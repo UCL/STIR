@@ -18,18 +18,20 @@
 /*!
 
   \file
-  \ingroup recon_test
+  \ingroup motion_test
 
-  \brief Test program for stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+  \brief Test program for transformations with NonRigidObjectTransformationUsingBSplines
 
   \par Usage
 
   <pre>
-  test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData [proj_data_filename [ density_filename ] ]
-  </pre>
-  where the 2 arguments are optional. See the class documentation for more info.
+  test_Transformations output_forward_transformation output_transpose_transformation image_to_deform forward_displacement_multicomponent
+  OR
+  test_Transformations output_forward_transformation output_transpose_transformation image_to_deform forward_displacement_x forward_displacement_y  forward_displacement_z
 
-  \author Kris Thielemans
+  </pre>
+
+  \author Richard Brown
 */
 
 #include "stir/RunTests.h"
@@ -71,18 +73,18 @@ protected:
 
 public:
   /// Set inputs
-  void set_inputs(string fwrd_output,
-                  string back_output,
-                  string to_transform,
-                  string disp_field_x,
-                  string disp_field_y,
-                  string disp_field_z);
+  void set_inputs(const string &fwrd_output,
+                  const string &back_output,
+                  const string &to_transform,
+                  const string &disp_field_x,
+                  const string &disp_field_y,
+                  const string &disp_field_z);
 
   /// Set inputs
-  void set_inputs(string fwrd_output,
-                  string back_output,
-                  string to_transform,
-                  string disp_field_multi_component);
+  void set_inputs(const string &fwrd_output,
+                  const string &back_output,
+                  const string &to_transform,
+                  const string &disp_field_multi_component);
 };
 
 TransformationTests::
@@ -93,7 +95,7 @@ TransformationTests()
 
 void
 TransformationTests::
-set_inputs(string fwrd_output, string back_output, string to_transform, string disp_field_x, string disp_field_y, string disp_field_z)
+set_inputs(const string &fwrd_output, const string &back_output, const string &to_transform, const string &disp_field_x, const string &disp_field_y, const string &disp_field_z)
 {
     _disp_field_multi_component = "";
     _disp_field_x = disp_field_x;
@@ -106,7 +108,7 @@ set_inputs(string fwrd_output, string back_output, string to_transform, string d
 
 void
 TransformationTests::
-set_inputs(string fwrd_output, string back_output, string to_transform, string disp_field_multi_component)
+set_inputs(const string &fwrd_output, const string &back_output, const string &to_transform, const string &disp_field_multi_component)
 {
     _disp_field_multi_component = disp_field_multi_component;
     _disp_field_x = "";
@@ -153,14 +155,14 @@ run_test_motion_fwrd_and_back()
     fwrd_transform->apply(*forward);
     output_file_format.write_to_file(_fwrd_output, *forward);
     cerr << "OK!\n";
-/*
+
     cerr << "\ndoing the transpose transformation...\n";
     shared_ptr<DiscretisedDensity<3,float> > transpose;
     transpose.reset(forward->clone());
     back_transform->apply(*transpose);
     output_file_format.write_to_file(_back_output, *transpose);
     cerr << "OK!\n";
-*/
+
     t.stop();
     cout << "Total Wall clock time: " << t.value() << " seconds" << endl;
 }
@@ -183,11 +185,7 @@ END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
-#ifdef STIR_MPI
-int stir::distributable_main(int argc, char **argv)
-#else
 int main(int argc, char **argv)
-#endif
 {
     if (argc != 5 && argc != 7) {
 
