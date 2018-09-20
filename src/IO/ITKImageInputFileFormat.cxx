@@ -196,7 +196,7 @@ convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image_orig)
         itk::Point<double,3U> itk_coord;
 
         // If we need to flip each axis, do it
-        for (unsigned axis; axis<3; ++axis) {
+        for (unsigned axis=0U; axis<3U; ++axis) {
             if (flip_axes[axis] == 0)
                 itk_coord[axis] = double(it.Get()[axis]);
             else
