@@ -600,6 +600,8 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("applied corrections",
     KeyArgument::LIST_OF_ASCII, &applied_corrections);
 
+  bed_offset = 0.F;
+  add_key("%bed zero offset (mm)", &bed_offset);
 }
 
 void InterfilePDFSHeader::resize_segments_and_set()
@@ -1283,7 +1285,8 @@ bool InterfilePDFSHeader::post_processing()
                 num_transaxial_crystals_per_singles_unit,
                 num_detector_layers,
                 energy_resolution,
-                reference_energy));
+                reference_energy,
+                guessed_scanner_ptr->get_reference_origin()));
 
   bool is_consistent =
     scanner_ptr_from_file->check_consistency() == Succeeded::yes;
@@ -1345,7 +1348,11 @@ bool InterfilePDFSHeader::post_processing()
 	}
     }
   //cerr << data_info_ptr->parameter_info() << endl;
-  
+
+  // If there is a non-zero bed offset, set it
+  if (bed_offset != 0.F)
+    data_info_ptr->set_bed_offset(bed_offset);
+
   return false;
 }
 

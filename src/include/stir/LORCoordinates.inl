@@ -7,11 +7,14 @@
   \brief Implementations for LORCoordinates.h
   \warning This is all preliminary and likely to change.
   \author Kris Thielemans
+  \author Ashley GIllman
 
 
 */
 /*
     Copyright (C) 2004- 2013, Hammersmith Imanet Ltd
+    Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
+                        Australian eHealth Research Centre
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -305,6 +308,54 @@ LORAs2Points<coordT>::
 LORAs2Points(const LORInAxialAndNoArcCorrSinogramCoordinates<coordT>& coords)
 {
   *this = LORInCylinderCoordinates<coordT>(coords);
+}
+
+
+template <class coordT>
+float
+LORAs2Points<coordT>::
+get_s() const
+{
+  // TODO - can this be done more generally? It assumes that points lie on
+  // gantry radius
+  float s = sqrt(square(_p1.x() + _p2.x()) + square(_p1.y() + _p2.y())) / 2;
+  assert(s >= 0);
+  return s;
+}
+
+
+template <class coordT>
+float
+LORAs2Points<coordT>::
+get_phi() const
+{
+  float phi = to_0_pi(-atan2(_p2.x() - _p1.x(), _p2.y() - _p1.y()));
+  assert(phi >= 0);
+  assert(phi < _PI);
+  return phi;
+}
+
+
+template <class coordT>
+float
+LORAs2Points<coordT>::
+get_m() const
+{
+  float m = (_p1.z() + _p2.z()) / 2;
+  return m;
+}
+
+
+template <class coordT>
+float
+LORAs2Points<coordT>::
+get_tantheta() const
+{
+  // TODO: should check which order these should be. But how?
+  float axial_diff = (_p2.z() - _p1.z());
+  float transaxial_diff = sqrt(square(_p2.x() - _p1.x())
+                               + square(_p2.y() - _p1.y()));
+  return axial_diff / transaxial_diff;
 }
 
 

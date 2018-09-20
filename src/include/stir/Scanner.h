@@ -3,6 +3,8 @@
     Copyright (C) 2000-2010, Hammersmith Imanet Ltd
     Copyright (C) 2011-2013, King's College London
     Copyright (C) 2016, UCL
+    Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
+                        Australian eHealth Research Centre
  
     This file is part of STIR.
 
@@ -25,6 +27,7 @@
 
   \brief Declaration of class stir::Scanner
 
+  \author Ashley Gillman
   \author Claire Labbe
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -112,7 +115,14 @@ class Scanner
 	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600,
 	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,
 	     Unknown_scanner};
-  
+
+  /*! The reference location for the vendor origin. Currenly allowed:
+      \li Unknown - Defaults FirstRing with warning.
+      \li FirstRing - Middle of the first ring, nearest the bed.
+      \li Middle - Middle of the whole gantry.
+  */
+  enum VendorReferenceOrigin {Unknown, FirstRing, Middle};
+
   //! constructor that takes scanner type as an input argument
   Scanner(Type scanner_type);
 
@@ -134,7 +144,8 @@ class Scanner
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
           float energy_resolution_v = -1.0f,
-          float reference_energy_v = -1.0f);
+          float reference_energy_v = -1.0f,
+          VendorReferenceOrigin reference_origin_v = Unknown);
 
   //! constructor ( a single name)
   /*! size info is in mm
@@ -153,7 +164,8 @@ class Scanner
           int num_transaxial_crystals_per_singles_unit_v,
           int num_detector_layers_v,
           float energy_resolution_v = -1.0f,
-          float reference_energy_v = -1.0f);
+          float reference_energy_v = -1.0f,
+          VendorReferenceOrigin reference_origin_v = Unknown);
 
 
 
@@ -275,6 +287,9 @@ class Scanner
   //! get the reference energy of the energy resolution
   inline float get_reference_energy() const;
 
+  //! get the reference origin positon of the scanner
+  inline VendorReferenceOrigin get_reference_origin() const;
+
   //@} (end of get detector responce info)
 
   //! \name Functions setting info
@@ -328,7 +343,10 @@ class Scanner
   inline void set_reference_energy(const float new_num);
   //@} (end of set info)
   //@} (end of set info)
-  
+
+  //! set the reference origin positon of the scanner
+  inline void set_reference_origin(const VendorReferenceOrigin new_reference_origin);
+
   // Calculate a singles bin index from axial and transaxial singles bin coordinates.
   inline int get_singles_bin_index(int axial_index, int transaxial_index) const;
 
@@ -342,7 +360,6 @@ class Scanner
 
   // Get the transaxial singles bin coordinate from a singles bin.
   inline int get_transaxial_singles_unit(int singles_bin_index) const;
-  
 
 private:
   Type type;
@@ -382,6 +399,8 @@ private:
   //! A negative value indicates, unknown.
   float reference_energy;
 
+  VendorReferenceOrigin reference_origin;
+
 
   // ! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
@@ -398,7 +417,8 @@ private:
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,
                   float energy_resolution_v = -1.0f,
-                  float reference_energy = -1.0f);
+                  float reference_energy = -1.0f,
+                  VendorReferenceOrigin reference_origin = Unknown);
 
   // ! set all parameters
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
@@ -416,8 +436,8 @@ private:
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,
                   float energy_resolution_v = -1.0f,
-                  float reference_energy = -1.0f);
-
+                  float reference_energy = -1.0f,
+                  VendorReferenceOrigin reference_origin = Unknown);
 
 };
 

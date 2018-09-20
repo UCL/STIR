@@ -33,6 +33,7 @@
 
 #include "stir/VectorWithOffset.h"
 #include "stir/Scanner.h"
+#include "stir/CartesianCoordinate3D.h"
 #include "stir/shared_ptr.h"
 #include "stir/unique_ptr.h"
 #include <string>
@@ -348,7 +349,21 @@ public:
   
   //! Return a string describing the object
   virtual std::string parameter_info() const;
-  
+
+  //! Get the location of the scanners frame-of-reference in mm from
+  //! center of gantry.
+  const CartesianCoordinate3D<float>
+  get_location_of_vendor_frame_of_reference_in_gantry_space() const;
+
+  //! Set bed offset
+  void set_bed_offset(float &bed_offset_arg) {
+    //std::cerr << "\n\nsetting bed offset!\n\n";
+    bed_offset = bed_offset_arg;
+  }
+
+  //! Get bed offset
+  float get_bed_offset() const { return bed_offset; }
+
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
 
@@ -360,6 +375,7 @@ private:
   int max_tangential_pos_num;
   VectorWithOffset<int> min_axial_pos_per_seg; 
   VectorWithOffset<int> max_axial_pos_per_seg;
+  float bed_offset;
   
 };
 

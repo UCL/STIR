@@ -154,6 +154,16 @@ to_0_2pi(const FloatOrDouble phi)
   return modulo(phi, static_cast<FloatOrDouble>(2*_PI));
 }
 
+//! Convert angle to standard range when period is 180 degrees
+/*! Identical to <tt>modulo(phi, static_cast<FloatOrDouble>(_PI))</tt> */
+template <typename FloatOrDouble>
+inline
+FloatOrDouble
+to_0_pi(const FloatOrDouble phi)
+{
+  return modulo(phi, static_cast<FloatOrDouble>(_PI));
+}
+
 //@}
 
 END_NAMESPACE_STIR
