@@ -39,6 +39,7 @@
 #include "itkImageSeriesReader.h"
 #include "itkOrientImageFilter.h"
 #include "stir/info.h"
+#include "boost/format.hpp"
 
 START_NAMESPACE_STIR
 
@@ -68,6 +69,7 @@ CartesianCoordinate3D<float>
 ITK_coordinates_to_STIR(const itk::ImageBase<3>::PointType &itk_coord,
         CartesianCoordinate3D<float> &voxel_size,
         const BasicCoordinate<3,int> &min_indices,
+        int flip_axes[3],
         bool is_displacement_field = false);
 
 template<typename ITKImageType>
@@ -144,10 +146,11 @@ convert_ITK_to_STIR(const ITKImageSingle::Pointer itk_image_orig)
     CartesianCoordinate3D<float> voxel_size;
     BasicCoordinate<3,int> min_indices, max_indices;
     CartesianCoordinate3D<float> origin;
+    int flip_axes[3];
 
     // orientate the ITK image
     orient_ITK_image<ITKImageSingle>(
-                itk_image, voxel_size, min_indices, max_indices, origin, itk_image_orig);
+                itk_image, voxel_size, min_indices, max_indices, origin, itk_image_orig, flip_axes);
 
     // create STIR image
     VoxelsOnCartesianGrid<float>* image_ptr =
@@ -195,19 +198,15 @@ convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image_orig)
     for ( it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter) {
         itk::Point<double,3U> itk_coord;
 
-        // If we need to flip each axis, do it
-        for (unsigned axis=0U; axis<3U; ++axis) {
-            if (flip_axes[axis] == 0)
-                itk_coord[axis] = double(it.Get()[axis]);
-            else
-                itk_coord[axis] = -double(it.Get()[axis]);
-        }
+        for (unsigned axis=0U; axis<3U; ++axis)
+            itk_coord[axis] = double(it.Get()[axis]);
 
         *stir_iter =
             ITK_coordinates_to_STIR(
                 itk_coord,
                 voxel_size,
                 min_indices,
+                flip_axes,
                 true);
     }
 
@@ -227,7 +226,7 @@ read_file_itk(const std::string &filename)
         {
           // Not a DICOM file, so we just read a single image
           typedef itk::ImageFileReader<ITKImageSingle> ReaderType;
-          typename ReaderType::Pointer reader = ReaderType::New();
+          ReaderType::Pointer reader = ReaderType::New();
 
           reader->SetFileName(filename);
           reader->Update();
@@ -373,7 +372,8 @@ orient_ITK_image(typename ITKImageType::Pointer &itk_image,
                 ITK_coordinates_to_STIR(
                     itk_image->GetOrigin(),
                     voxel_size,
-                    min_indices));
+                    min_indices,
+                    flip_axes));
 #ifndef NDEBUG
   info(boost::format("ITK image origin: %1%") % itk_image->GetOrigin());
   info(boost::format("STIR image origin: [%1%, %2%, %3%]") % origin[1] % origin[2] % origin[3]);
@@ -407,21 +407,26 @@ ITK_coordinates_to_STIR(
         const itk::ImageBase<3>::PointType &itk_coord,
         CartesianCoordinate3D<float> &voxel_size,
         const BasicCoordinate<3,int> &min_indices,
+        int flip_axes[3],
         bool is_displacement_field)
 {
   // find STIR origin
   // Note: need to use - for z-coordinate because of different axis conventions
   // Only works for HFS!
-  CartesianCoordinate3D<float> stir_coord(-static_cast<float>(itk_coord[2]),
-                                           static_cast<float>(itk_coord[1]),
-                                           static_cast<float>(itk_coord[0]));
+  CartesianCoordinate3D<float> stir_coord(static_cast<float>(itk_coord[2]),
+                                          static_cast<float>(itk_coord[1]),
+                                          static_cast<float>(itk_coord[0]));
+
+  for (int i=1; i<=3; ++i)
+      if (flip_axes[i-1] == 1)
+          stir_coord[i] = -stir_coord[i];
 
   // The following is not required for displacement field images
   if (!is_displacement_field)
   {
     // make sure that origin is such that
     // first_pixel_offsets =  min_indices*voxel_size + origin
-    stir_coord -= voxel_size * BasicCoordinate<3,float>(min_indices);
+    stir_coord += voxel_size * BasicCoordinate<3,float>(min_indices);
   }
 
   return stir_coord;

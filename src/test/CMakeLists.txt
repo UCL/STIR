@@ -117,7 +117,7 @@ if (HAVE_ITK)
 	test_ITKNiftiOutputFileFormat.in
     )
     ADD_TEST(test_IO_ITKMulticomponent
-    	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ITKMulticomponent ${CMAKE_SOURCE_DIR}/examples/samples/multicomponent_nifti.nii)
+    	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ITKMulticomponent ${CMAKE_SOURCE_DIR}/examples/nifti/disp_4D.nii)
 endif()
 
 # now for each of these, add a test
