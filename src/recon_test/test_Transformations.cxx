@@ -42,7 +42,7 @@
 #include "local/stir/motion/NonRigidObjectTransformationUsingBSplines.h"
 #include "local/stir/motion/Transform3DObjectImageProcessor.h"
 #include "stir/HighResWallClockTimer.h"
-#include "stir/IO/OutputFileFormat.h"
+#include "stir/is_null_ptr.h"
 #ifdef HAVE_ITK
 #include "stir/IO/ITKOutputFileFormat.h"
 #endif
@@ -60,65 +60,78 @@ class TransformationTests : public RunTests
 {
 public:
   //! Constructor that can take some input data to run the test with
-  TransformationTests();
+  TransformationTests(const string &to_transform,
+                      const string &ground_truth,
+                      const string &disp_x,
+                      const string &disp_y,
+                      const string &disp_z,
+                      const string &disp_4D);
 
   void run_tests();
 protected:
 
   int _bspline_order;
-  string _disp_field_multi_component, _disp_field_x, _disp_field_y, _disp_field_z;
-  string _to_transform, _fwrd_output, _back_output;
+  string _to_transform, _ground_truth, _disp_x, _disp_y, _disp_z, _disp_4D;
 
   //! run the test
   /*! Note that this function is not specific to PoissonLogLikelihoodWithLinearModelForMeanAndProjData */
   void run_test_motion_fwrd_and_back();
-
-public:
-  /// Set inputs
-  void set_inputs(const string &fwrd_output,
-                  const string &back_output,
-                  const string &to_transform,
-                  const string &disp_field_x,
-                  const string &disp_field_y,
-                  const string &disp_field_z);
-
-  /// Set inputs
-  void set_inputs(const string &fwrd_output,
-                  const string &back_output,
-                  const string &to_transform,
-                  const string &disp_field_multi_component);
 };
 
 TransformationTests::
-TransformationTests()
+TransformationTests(const string &to_transform,
+                    const string &ground_truth,
+                    const string &disp_x,
+                    const string &disp_y,
+                    const string &disp_z,
+                    const string &disp_4D) :
+    _to_transform(to_transform),
+    _ground_truth(ground_truth),
+    _disp_x(disp_x),
+    _disp_y(disp_y),
+    _disp_z(disp_z),
+    _disp_4D(disp_4D)
 {
-    _bspline_order = 3;
+    if (_to_transform.size() == 0) everything_ok = false;
+    if (_disp_x.size() == 0)       everything_ok = false;
+    if (_disp_y.size() == 0)       everything_ok = false;
+    if (_disp_z.size() == 0)       everything_ok = false;
+    if (_disp_4D.size() == 0)      everything_ok = false;
+    _bspline_order = 1;
 }
 
+static
 void
-TransformationTests::
-set_inputs(const string &fwrd_output, const string &back_output, const string &to_transform, const string &disp_field_x, const string &disp_field_y, const string &disp_field_z)
+do_fwrd_back_transformation(shared_ptr<DiscretisedDensity<3,float> > &fwrd,
+                            shared_ptr<DiscretisedDensity<3,float> > &back,
+                            shared_ptr<DiscretisedDensity<3,float> > &to_transform,
+                            const int bspline_order,
+                            const string &disp_x,
+                            const string &disp_y,
+                            const string &disp_z,
+                            const string &disp_4D)
 {
-    _disp_field_multi_component = "";
-    _disp_field_x = disp_field_x;
-    _disp_field_y = disp_field_y;
-    _disp_field_z = disp_field_z;
-    _to_transform = to_transform;
-    _fwrd_output  = fwrd_output;
-    _back_output  = back_output;
-}
+    shared_ptr<NonRigidObjectTransformationUsingBSplines<3,float> > fwrd_non_rigid;
+    // 4D or 3D
+    if (disp_x.size()==0)
+        fwrd_non_rigid.reset(new NonRigidObjectTransformationUsingBSplines<3,float>(disp_4D,bspline_order));
+    else
+        fwrd_non_rigid.reset(new NonRigidObjectTransformationUsingBSplines<3,float>(disp_x, disp_y, disp_z, bspline_order));
 
-void
-TransformationTests::
-set_inputs(const string &fwrd_output, const string &back_output, const string &to_transform, const string &disp_field_multi_component)
-{
-    _disp_field_multi_component = disp_field_multi_component;
-    _disp_field_x = "";
-    _disp_field_y = "";
-    _disp_field_z = "";
-    _to_transform = to_transform;
-    _fwrd_output  = fwrd_output;
-    _back_output  = back_output;
+    // Image processors
+    shared_ptr<Transform3DObjectImageProcessor<float> > fwrd_transform
+            ( new Transform3DObjectImageProcessor<float>(fwrd_non_rigid));
+    shared_ptr<Transform3DObjectImageProcessor<float> > back_transform
+            ( new Transform3DObjectImageProcessor<float>(*fwrd_transform));
+    back_transform->set_do_transpose(!fwrd_transform->get_do_transpose());
+
+    std::cout << "\n\tDoing forward transformation...\n";
+    fwrd.reset(to_transform->clone());
+    fwrd_transform->apply(*fwrd);
+
+    std::cout << "\n\tDoing backward transformation...\n";
+    back.reset(fwrd->clone());
+    back_transform->apply(*back);
 }
 
 void
@@ -126,49 +139,52 @@ TransformationTests::
 run_test_motion_fwrd_and_back()
 {
     // Open image
-    shared_ptr<DiscretisedDensity<3,float> > input;
     std::cerr << "\nabout to read the image to transform...\n";
-    input.reset( DiscretisedDensity<3,float>::read_from_file(_to_transform));
-
-    // Create non rigid transformations
-    shared_ptr<NonRigidObjectTransformationUsingBSplines<3,float> > fwrd_non_rigid;
-    if (_disp_field_multi_component != "") {
-        fwrd_non_rigid.reset(new NonRigidObjectTransformationUsingBSplines<3,float>(_disp_field_multi_component,_bspline_order));
+    shared_ptr<DiscretisedDensity<3,float> > input(
+                DiscretisedDensity<3,float>::read_from_file(_to_transform));
+    if(is_null_ptr(input)) {
+        std::cerr << "\nError reading image to transform.\n";
+        everything_ok = false;
+        return;
     }
-    else if (_disp_field_x != "" && _disp_field_y != "" && _disp_field_z != "")
-        fwrd_non_rigid.reset(new NonRigidObjectTransformationUsingBSplines<3,float>(_disp_field_x,_disp_field_y,_disp_field_z,_bspline_order));
 
-    // Create image processors
-    shared_ptr<Transform3DObjectImageProcessor<float> > fwrd_transform, back_transform;
-    fwrd_transform.reset( new Transform3DObjectImageProcessor<float>(fwrd_non_rigid) );
-    back_transform.reset( new Transform3DObjectImageProcessor<float>(*fwrd_transform) );
-    back_transform->set_do_transpose(!fwrd_transform->get_do_transpose());
+    // Open ground truth
+    std::cerr << "\nabout to read the ground truth image...\n";
+    shared_ptr<DiscretisedDensity<3,float> > ground_truth(
+                DiscretisedDensity<3,float>::read_from_file(_ground_truth));
+    if(is_null_ptr(ground_truth)) {
+        std::cerr << "\nError reading ground truth image.\n";
+        everything_ok = false;
+        return;
+    }
 
-    // Start the timer
-    HighResWallClockTimer t;
-    t.reset();
-    t.start();
+    shared_ptr<DiscretisedDensity<3,float> > fwrd_4D, fwrd_3D, back_4D, back_3D;
 
-    shared_ptr<DiscretisedDensity<3,float> > forward;
-    forward.reset(input->clone());
-    fwrd_transform->apply(*forward);
-    cerr << "OK!\n";
+    std::cout << "\nDoing 4D transformation...\n";
+    do_fwrd_back_transformation(fwrd_4D, back_4D, input, _bspline_order, "", "", "", _disp_4D);
 
-    cerr << "\ndoing the transpose transformation...\n";
-    shared_ptr<DiscretisedDensity<3,float> > transpose;
-    transpose.reset(forward->clone());
-    back_transform->apply(*transpose);
-    cerr << "OK!\n";
+    std::cout << "\nDoing 3D transformation...\n";
+    do_fwrd_back_transformation(fwrd_3D, back_3D, input, _bspline_order, _disp_x, _disp_y, _disp_z, "");
 
+    set_tolerance(0.1);
+    check_if_equal(*ground_truth, *fwrd_4D,  "4D forward transformation does not equal ground truth");
+    check_if_equal(*ground_truth, *fwrd_3D,  "3D forward transformation does not equal ground truth");
+
+    // Some information is lost by transforming part of the image out of the FOV.
+    // When we move it back, it's blank, so we can't do comparison.
+    //check_if_equal(*input, *back_3D, "3D: fwrd->back should equal original input. doesn't.");
+    //check_if_equal(*input, *back_4D, "4D: fwrd->back should equal original input. doesn't.");
+
+    // Only write if ITK is present (since you want 3d and 4d in same format, but it's hassle to
+    // check that the format supports both 3d and 4d writing.
 #ifdef HAVE_ITK
     ITKOutputFileFormat output_file_format;
     output_file_format.default_extension = ".nii";
-    output_file_format.write_to_file(_fwrd_output, *forward);
-    output_file_format.write_to_file(_back_output, *transpose);
+    output_file_format.write_to_file("STIRtmp_fwrd_4D", *fwrd_4D);
+    output_file_format.write_to_file("STIRtmp_back_4D", *back_4D);
+    output_file_format.write_to_file("STIRtmp_fwrd_3D", *fwrd_3D);
+    output_file_format.write_to_file("STIRtmp_back_3D", *back_3D);
 #endif
-
-    t.stop();
-    cout << "Total Wall clock time: " << t.value() << " seconds" << endl;
 }
 
 void
@@ -191,35 +207,23 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-    if (argc != 5 && argc != 7) {
-
-        cerr << "\n\tUsage: " << argv[0] << " <1> <2> <3> <4>\n";
-        cerr << "\t<1>: Output of forward transformation\n";
-        cerr << "\t<2>: Output of transpose transformation\n";
-        cerr << "\t<3>: Image to deform\n";
-        cerr << "\t<4>: Forward displacement field image multi-component\n";
-
-        cerr << "\n\t\t\tOR\n";
-
+    if (argc != 7) {
         cerr << "\n\tUsage: " << argv[0] << " <1> <2> <3> <4> <5> <6>\n";
-        cerr << "\t<1>: Output of forward transformation\n";
-        cerr << "\t<2>: Output of transpose transformation\n";
-        cerr << "\t<3>: Image to deform\n";
-        cerr << "\t<4>: Forward displacement field x component\n";
-        cerr << "\t<5>: Forward displacement field y component\n";
-        cerr << "\t<6>: Forward displacement field z component\n";
-
-        return EXIT_FAILURE;
+        cerr << "\t\t<1>: Image to deform\n";
+        cerr << "\t\t<2>: Forward transformed result (ground truth)\n";
+        cerr << "\t\t<3>: Forward displacement field x component\n";
+        cerr << "\t\t<4>: Forward displacement field y component\n";
+        cerr << "\t\t<5>: Forward displacement field z component\n";
+        cerr << "\t\t<6>: Forward displacement field image multi-component\n";
+        return EXIT_SUCCESS;
     }
 
     set_default_num_threads();
 
-    TransformationTests tests;
-    if (argc == 5)
-        tests.set_inputs(argv[1], argv[2], argv[3], argv[4]);
-    else
-        tests.set_inputs(argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
-    tests.run_tests();
+    TransformationTests tests(argv[1], argv[2], argv[3], argv[4], argv[5], argv[6]);
+
+    if (tests.is_everything_ok())
+        tests.run_tests();
 
     return tests.main_return_value();
 }

@@ -24,7 +24,6 @@ set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_DataSymmetriesForBins_PET_CartesianGrid
-	test_Transformations
 )
 
 
@@ -32,6 +31,7 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
         fwdtest
         bcktest
         recontest
+        test_Transformations
 )
 
 include(stir_test_exe_targets)
@@ -42,6 +42,16 @@ create_stir_mpi_test(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData.
 # fwdtest and bcktest could be useful on their own, so we'll add them to the installation targets
 if (BUILD_TESTING)
   install(TARGETS fwdtest bcktest DESTINATION bin)
+  if (ITK_FOUND)
+	ADD_TEST(test_Transformations 
+	  ${CMAKE_CURRENT_BINARY_DIR}/test_Transformations 
+		${CMAKE_SOURCE_DIR}/examples/nifti/to_transform.nii
+		${CMAKE_SOURCE_DIR}/examples/nifti/fwrd_nifti.nii
+		${CMAKE_SOURCE_DIR}/examples/nifti/disp_x.nii
+		${CMAKE_SOURCE_DIR}/examples/nifti/disp_y.nii
+		${CMAKE_SOURCE_DIR}/examples/nifti/disp_z.nii
+		${CMAKE_SOURCE_DIR}/examples/nifti/disp_4D.nii)
+  endif()
 endif()
 
 # TODO test_modelling.sh
