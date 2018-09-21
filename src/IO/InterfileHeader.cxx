@@ -600,8 +600,10 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("applied corrections",
     KeyArgument::LIST_OF_ASCII, &applied_corrections);
 
-  bed_position = 0.F;
-  add_key("start horizontal bed position (mm)", &bed_position);
+  bed_position_horizontal = 0.F;
+  add_key("start horizontal bed position (mm)", &bed_position_horizontal);
+  bed_position_vertical = 0.F;
+  add_key("start vertical bed position (mm)", &bed_position_vertical);
 }
 
 void InterfilePDFSHeader::resize_segments_and_set()
@@ -1349,8 +1351,10 @@ bool InterfilePDFSHeader::post_processing()
   //cerr << data_info_ptr->parameter_info() << endl;
   
   // If there is a non-zero bed position, set it
-  if (bed_position != 0.F)
-    data_info_ptr->set_bed_position(bed_position);
+  if (bed_position_horizontal != 0.F)
+    data_info_ptr->set_bed_position_horizontal(bed_position_horizontal);
+  if (bed_position_vertical != 0.F)
+    data_info_ptr->set_bed_position_vertical(bed_position_vertical);
 
   return false;
 }

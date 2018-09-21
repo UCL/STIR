@@ -225,7 +225,8 @@ public:
   std::vector<int> num_rings_per_segment;
 
   std::vector<std::string> applied_corrections;
-  float bed_position;
+  float bed_position_horizontal;
+  float bed_position_vertical;
  
   // derived values
   int num_segments;

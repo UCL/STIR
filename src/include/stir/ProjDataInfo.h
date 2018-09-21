@@ -349,11 +349,19 @@ public:
   //! Return a string describing the object
   virtual std::string parameter_info() const;
   
-  //! Set bed position
-  void set_bed_position(float &bed_position_arg) { bed_position = bed_position_arg; }
+  //! Set horizontal bed position
+  void set_bed_position_horizontal(float &bed_position_horizontal_arg)
+  { bed_position_horizontal = bed_position_horizontal_arg; }
 
-  //! Get bed position
-  float get_bed_position() const { return bed_position; }
+  //! Get horizontal bed position
+  float get_bed_position_horizontal() const { return bed_position_horizontal; }
+
+  //! Set vertical bed position
+  void set_bed_position_vertical(float &bed_position_vertical_arg)
+  { bed_position_vertical = bed_position_vertical_arg; }
+
+  //! Get vertical bed position
+  float get_bed_position_vertical() const { return bed_position_vertical; }
   
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
@@ -366,7 +374,8 @@ private:
   int max_tangential_pos_num;
   VectorWithOffset<int> min_axial_pos_per_seg; 
   VectorWithOffset<int> max_axial_pos_per_seg;
-  float bed_position;
+  float bed_position_horizontal;
+  float bed_position_vertical;
   
 };
 
