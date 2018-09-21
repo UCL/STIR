@@ -185,17 +185,17 @@ set_deformation_field_from_NCAT_file(DeformationFieldOnCartesianGrid<3,float>& d
 static 
 Succeeded
 set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deformation_field,
+                                CartesianCoordinate3D<float>& grid_spacing,
+                                CartesianCoordinate3D<float>& origin,
 				const std::string& deformation_field_from_file_x,
 				const std::string& deformation_field_from_file_y,
-				const std::string& deformation_field_from_file_z,
-				CartesianCoordinate3D<float>& grid_spacing,
-				CartesianCoordinate3D<float>& origin)
+                                const std::string& deformation_field_from_file_z)
 {
   shared_ptr<DiscretisedDensity<3,float> > 
     image_sptr(read_from_file<DiscretisedDensity<3,float> >(deformation_field_from_file_z));
   if (is_null_ptr(image_sptr))
     {
-      error("Error reading %s", deformation_field_from_file_z.c_str());
+      error(boost::format("Error reading %1%") % deformation_field_from_file_z.c_str());
       return Succeeded::no;
     }
   VoxelsOnCartesianGrid<float> const * voxels_ptr =
@@ -213,7 +213,7 @@ set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deform
     read_from_file<DiscretisedDensity<3,float> >(deformation_field_from_file_y);
   if (is_null_ptr(image_sptr))
     {
-      error("Error reading %s", deformation_field_from_file_y.c_str());
+      error(boost::format("Error reading %1%") % deformation_field_from_file_y.c_str());
       return Succeeded::no;
     }
   deformation_field[2] = *image_sptr;
@@ -222,7 +222,7 @@ set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deform
     read_from_file<DiscretisedDensity<3,float> >(deformation_field_from_file_x);
   if (is_null_ptr(image_sptr))
     {
-      error("Error reading %s", deformation_field_from_file_x.c_str());
+      error(boost::format("Error reading %1%") % deformation_field_from_file_x.c_str());
       return Succeeded::no;
     }
   deformation_field[3] = *image_sptr;
@@ -233,9 +233,9 @@ set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deform
 static
 Succeeded
 set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deformation_field,
-                const std::string& deformation_field_multicomponent_filename,
-                CartesianCoordinate3D<float>& grid_spacing,
-                CartesianCoordinate3D<float>& origin)
+                                CartesianCoordinate3D<float>& grid_spacing,
+                                CartesianCoordinate3D<float>& origin,
+                                const std::string& deformation_field_multicomponent_filename)
 {
     // Read the multicomponent image as a single image to create deformation image of correct size
     shared_ptr<DiscretisedDensity<3,float> > single_discretised_sptr
@@ -348,9 +348,9 @@ post_processing()
           else
             {
               if (set_deformation_field_from_file(*(this->deformation_field_sptr),
-                              this->_deformation_field_multicomponent_filename,
-                              this->_grid_spacing,
-                              this->_origin)
+                                                  this->_grid_spacing,
+                                                  this->_origin,
+                              this->_deformation_field_multicomponent_filename)
               == Succeeded::no)
               return true;
             }
@@ -358,11 +358,11 @@ post_processing()
 	  else
 	    {
 	      if (set_deformation_field_from_file(*(this->deformation_field_sptr),
+                                                  this->_grid_spacing,
+                                                  this->_origin,
 						  this->_deformation_field_from_file_x,
 						  this->_deformation_field_from_file_y,
-						  this->_deformation_field_from_file_z,
-						  this->_grid_spacing,
-						  this->_origin) 
+                                                  this->_deformation_field_from_file_z)
 		  == Succeeded::no)
 		return true;
 	}
@@ -429,6 +429,7 @@ NonRigidObjectTransformationUsingBSplines(const std::string &filename_x, const s
     this->_deformation_field_from_file_x = filename_x;
     this->_deformation_field_from_file_y = filename_y;
     this->_deformation_field_from_file_z = filename_z;
+    this->_deformation_field_multicomponent_filename = "";
 
     this->_bspline_order = bspline_order;
 
@@ -442,6 +443,9 @@ NonRigidObjectTransformationUsingBSplines(const std::string &filename, const int
     this->set_defaults();
 
     this->_deformation_field_multicomponent_filename = filename;
+    this->_deformation_field_from_file_x = "";
+    this->_deformation_field_from_file_y = "";
+    this->_deformation_field_from_file_z = "";
     this->_bspline_order = bspline_order;
 
     this->post_processing();

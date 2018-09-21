@@ -18,7 +18,7 @@
 /*!
 
   \file
-  \ingroup motion_test
+  \ingroup stir::motion_test
 
   \brief Test program for transformations with NonRigidObjectTransformationUsingBSplines
 
@@ -42,8 +42,10 @@
 #include "local/stir/motion/NonRigidObjectTransformationUsingBSplines.h"
 #include "local/stir/motion/Transform3DObjectImageProcessor.h"
 #include "stir/HighResWallClockTimer.h"
-#include "stir/IO/ITKOutputFileFormat.h"
 #include "stir/IO/OutputFileFormat.h"
+#ifdef HAVE_ITK
+#include "stir/IO/ITKOutputFileFormat.h"
+#endif
 
 START_NAMESPACE_STIR
 
@@ -123,9 +125,6 @@ void
 TransformationTests::
 run_test_motion_fwrd_and_back()
 {
-    ITKOutputFileFormat output_file_format;
-    output_file_format.default_extension = ".nii";
-
     // Open image
     shared_ptr<DiscretisedDensity<3,float> > input;
     std::cerr << "\nabout to read the image to transform...\n";
@@ -153,15 +152,20 @@ run_test_motion_fwrd_and_back()
     shared_ptr<DiscretisedDensity<3,float> > forward;
     forward.reset(input->clone());
     fwrd_transform->apply(*forward);
-    output_file_format.write_to_file(_fwrd_output, *forward);
     cerr << "OK!\n";
 
     cerr << "\ndoing the transpose transformation...\n";
     shared_ptr<DiscretisedDensity<3,float> > transpose;
     transpose.reset(forward->clone());
     back_transform->apply(*transpose);
-    output_file_format.write_to_file(_back_output, *transpose);
     cerr << "OK!\n";
+
+#ifdef HAVE_ITK
+    ITKOutputFileFormat output_file_format;
+    output_file_format.default_extension = ".nii";
+    output_file_format.write_to_file(_fwrd_output, *forward);
+    output_file_format.write_to_file(_back_output, *transpose);
+#endif
 
     t.stop();
     cout << "Total Wall clock time: " << t.value() << " seconds" << endl;
