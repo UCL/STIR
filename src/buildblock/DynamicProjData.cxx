@@ -170,8 +170,8 @@ read_from_file(const string& filename) // The written projection data is read in
         info(boost::format("DynamicProjData::read_from_file trying to read %s as a Multi file.") % filename);
 #endif
 
-      unique_ptr<MultipleProjData> multi_proj_data(MultipleProjData::read_from_file(filename).get());
-      unique_ptr<DynamicProjData> dynamic_proj_data(new DynamicProjData(*multi_proj_data));
+      const MultipleProjData &temp = *MultipleProjData::read_from_file(filename);
+      unique_ptr<DynamicProjData> dynamic_proj_data(new DynamicProjData(temp));
 
       return dynamic_proj_data;
   }
