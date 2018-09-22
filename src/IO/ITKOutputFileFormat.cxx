@@ -121,7 +121,8 @@ actual_write_to_file(std::string& filename,
 
       // find ITK origin (i.e. coordinates of first voxel)
       ImageType::PointType origin;
-      CartesianCoordinate3D<float> stir_offset = density.get_physical_coordinates_for_indices(min_indices);
+      CartesianCoordinate3D<float> stir_offset
+        = density.get_LPS_coordinates_for_indices(min_indices);
       origin[0] = stir_offset.x();
       origin[1] = stir_offset.y();
       origin[2] = stir_offset.z();
@@ -138,18 +139,18 @@ actual_write_to_file(std::string& filename,
       spacing[1] = image.get_voxel_size().y(); // size along Y
       spacing[2] = image.get_voxel_size().z(); // size along Z
 
-      // ITK orientation (RAI)
+      // ITK Direction Matrix columns are unit vectors in axes LPS direction.
       // NB: ITK Matrix is in row, column order
-      // In ITK Direction matrix, each column is a direction vector for each
-      // axis
       ImageType::DirectionType matrix;
-      for (unsigned int axis=0; axis<3; ++axis) {
-        for (unsigned int dim=0; dim<3; ++dim) {
-          CartesianCoordinate3D<int> next_idx_along_this_dim(min_indices);
-          next_idx_along_this_dim[dim] += 1;
-          CartesianCoordinate3D<float> next_coord_along_this_dim
-            = density.get_physical_coordinates_for_indices(next_idx_along_this_dim);
-          matrix(axis, dim) = stir_offset[dim] - next_coord_along_this_dim[dim];
+      for (unsigned int axis=1; axis<=3; ++axis) {
+        CartesianCoordinate3D<int> next_idx_along_this_axis(min_indices);
+        next_idx_along_this_axis[axis] += 1;
+        const CartesianCoordinate3D<float> next_coord_along_this_dim
+          = density.get_LPS_coordinates_for_indices(next_idx_along_this_axis);
+        const CartesianCoordinate3D<float> axis_direction
+          = next_coord_along_this_dim - stir_offset;
+        for (unsigned int dim=1; dim<=3; ++dim) {
+          matrix(axis-1, dim-1) = axis_direction[dim] / norm(axis_direction);
         }
       }
 
