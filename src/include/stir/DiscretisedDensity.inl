@@ -211,16 +211,13 @@ get_indices_closest_to_physical_coordinates(const CartesianCoordinate3D<float>& 
 }
 
 template<int num_dimensions, typename elemT>
-CartesianCoordinate3D<float>
+void
 DiscretisedDensity<num_dimensions, elemT>::
-get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions, float>& indices) const
+swap_axes_based_on_orientation(CartesianCoordinate3D<float>& coordinates,
+                               const PatientPosition patient_position) const
 {
-  CartesianCoordinate3D<float> coordinates
-    = this->get_physical_coordinates_for_indices(indices);
-  const PatientPosition::PositionValue patient_position
-    = this->get_exam_info().patient_position.get_position();
-
-  switch (patient_position) {
+  // std::cerr << patient_position.get_position_as_string() << std::endl;
+  switch (patient_position.get_position()) {
   case PatientPosition::unknown_position:
     // If unknown, assume HFS
   case PatientPosition::HFS:
@@ -245,12 +242,21 @@ get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions, float>& in
     coordinates.z() *= -1;
     break;
 
-  // We can do
-
   default:
     throw std::runtime_error("Unsupported patient position, can't convert to LPS.");
   }
+}
 
+template<int num_dimensions, typename elemT>
+CartesianCoordinate3D<float>
+DiscretisedDensity<num_dimensions, elemT>::
+get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions, float>& indices) const
+{
+  CartesianCoordinate3D<float> coordinates
+    = this->get_physical_coordinates_for_indices(indices);
+  const PatientPosition patient_position = this->get_exam_info().patient_position;
+
+  swap_axes_based_on_orientation(coordinates, patient_position);
   return coordinates;
 }
 
@@ -260,6 +266,28 @@ DiscretisedDensity<num_dimensions, elemT>::
 get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions, int>& indices) const
 {
   return get_LPS_coordinates_for_indices(BasicCoordinate<num_dimensions, float>(indices));
+}
+
+template<int num_dimensions, typename elemT>
+BasicCoordinate<num_dimensions, float>
+DiscretisedDensity<num_dimensions, elemT>::
+get_index_coordinates_for_LPS_coordinates(const CartesianCoordinate3D<float>& coords) const
+{
+  CartesianCoordinate3D<float> flip_coords = CartesianCoordinate3D<float>(coords);
+  const PatientPosition patient_position = this->get_exam_info().patient_position;
+  swap_axes_based_on_orientation(flip_coords, patient_position);
+
+  CartesianCoordinate3D<float> indices
+    = this->get_index_coordinates_for_physical_coordinates(flip_coords);
+  return indices;
+}
+
+template<int num_dimensions, typename elemT>
+BasicCoordinate<num_dimensions, int>
+DiscretisedDensity<num_dimensions, elemT>::
+get_indices_closest_to_LPS_coordinates(const CartesianCoordinate3D<float>& coords) const
+{
+  return round(this->get_index_coordinates_for_LPS_coordinates(coords));
 }
 
 END_NAMESPACE_STIR
