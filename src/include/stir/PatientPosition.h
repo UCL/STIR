@@ -52,10 +52,10 @@ class PatientPosition
     HFP, //!< Head First-Prone 	
     HFDR, //!< Head First-Decubitus Right 	
     HFDL, //!< Head First-Decubitus Left
-    FFDR, //!< Feet First-Decubitus Right 	
+    FFS, //!< Feet First-Supine
+    FFP, //!< Feet First-Prone
+    FFDR, //!< Feet First-Decubitus Right
     FFDL, //!< Feet First-Decubitus Left
-    FFP, //!< Feet First-Prone 	
-    FFS, //!< Feet First-Supine 
     unknown_position
   };
 
