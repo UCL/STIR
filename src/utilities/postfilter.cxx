@@ -102,7 +102,6 @@ shared_ptr<OutputFileFormat<STIRImageType> > set_up_output_format(const std::str
     shared_ptr<OutputFileFormat<STIRImageType> > output =
             OutputFileFormat<STIRImageType>::default_sptr();
      if (filename.size() != 0) {
-         std::istringstream is(filename);
          KeyParser parser;
          parser.add_start_key("output file format parameters");
          parser.add_parsing_key("output file format type", &output);
@@ -230,10 +229,6 @@ main(int argc, char *argv[])
     shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format =
       set_up_output_format<DiscretisedDensity<3,float> >(output_file_format_par);
     if (output_file_format->write_to_file(out_filename,*input_image_single_ptr) == Succeeded::no)
-        return EXIT_FAILURE;
-
-    if (OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-            write_to_file(out_filename,*input_image_single_ptr) == Succeeded::no)
         return EXIT_FAILURE;
   }
   else {
