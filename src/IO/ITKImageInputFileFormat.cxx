@@ -54,9 +54,11 @@ typedef itk::VectorImage<float, 3>                           ITKImageMulti;
 typedef DiscretisedDensity<3,float>                          STIRImageSingle;
 typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > STIRImageMulti;
 
+static
 STIRImageSingle*
 convert_ITK_to_STIR(const ITKImageSingle::Pointer itk_image);
 
+static
 STIRImageMulti*
 convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image);
 
@@ -65,6 +67,7 @@ static
 STIRImageType *
 read_file_itk(const std::string &filename);
   
+static
 CartesianCoordinate3D<float>
 ITK_coordinates_to_STIR(const itk::ImageBase<3>::PointType &itk_coord,
         CartesianCoordinate3D<float> &voxel_size,
@@ -72,6 +75,7 @@ ITK_coordinates_to_STIR(const itk::ImageBase<3>::PointType &itk_coord,
         bool is_displacement_field = false);
 
 template<typename ITKImageType>
+static
 void
 orient_ITK_image(typename ITKImageType::Pointer &itk_image,
                  CartesianCoordinate3D<float> &voxel_size,
@@ -210,6 +214,7 @@ convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image_orig)
 
 //To read any file format via ITK
 template<>
+static
 STIRImageSingle*
 read_file_itk(const std::string &filename)
 {
@@ -295,6 +300,7 @@ read_file_itk(const std::string &filename)
 
 //To read any file format via ITK
 template<>
+static
 STIRImageMulti*
 read_file_itk(const std::string &filename)
 {
