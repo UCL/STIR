@@ -69,7 +69,6 @@ CartesianCoordinate3D<float>
 ITK_coordinates_to_STIR(const itk::ImageBase<3>::PointType &itk_coord,
         CartesianCoordinate3D<float> &voxel_size,
         const BasicCoordinate<3,int> &min_indices,
-        int flip_axes[3],
         bool is_displacement_field = false);
 
 template<typename ITKImageType>
@@ -79,8 +78,7 @@ orient_ITK_image(typename ITKImageType::Pointer &itk_image,
                  BasicCoordinate<3,int> &min_indices,
                  BasicCoordinate<3,int> &max_indices,
                  CartesianCoordinate3D<float> &origin,
-                 const typename ITKImageType::Pointer itk_image_orig,
-                 int flip_axes[3] = nullptr);
+                 const typename ITKImageType::Pointer itk_image_orig);
 
 template <typename STIRImageType>
 bool 
@@ -146,11 +144,10 @@ convert_ITK_to_STIR(const ITKImageSingle::Pointer itk_image_orig)
     CartesianCoordinate3D<float> voxel_size;
     BasicCoordinate<3,int> min_indices, max_indices;
     CartesianCoordinate3D<float> origin;
-    int flip_axes[3];
 
     // orientate the ITK image
     orient_ITK_image<ITKImageSingle>(
-                itk_image, voxel_size, min_indices, max_indices, origin, itk_image_orig, flip_axes);
+                itk_image, voxel_size, min_indices, max_indices, origin, itk_image_orig);
 
     // create STIR image
     VoxelsOnCartesianGrid<float>* image_ptr =
@@ -178,11 +175,10 @@ convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image_orig)
     CartesianCoordinate3D<float> voxel_size;
     BasicCoordinate<3,int> min_indices, max_indices;
     CartesianCoordinate3D<float> origin;
-    int flip_axes[3];
 
     // orientate the ITK image
     orient_ITK_image<ITKImageMulti>(
-                itk_image, voxel_size, min_indices, max_indices, origin, itk_image_orig, flip_axes);
+                itk_image, voxel_size, min_indices, max_indices, origin, itk_image_orig);
 
     // create STIR image
     STIRImageMulti* image_ptr =
@@ -198,18 +194,17 @@ convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image_orig)
     for ( it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter) {
         itk::Point<double,3U> itk_coord;
 
-        for (unsigned axis=0U; axis<3U; ++axis)
-            itk_coord[axis] = double(it.Get()[axis]);
+        itk_coord[0] = -double(it.Get()[0]);
+        itk_coord[1] = -double(it.Get()[1]);
+        itk_coord[2] =  double(it.Get()[2]);
 
         *stir_iter =
-            ITK_coordinates_to_STIR(
-                itk_coord,
-                voxel_size,
-                min_indices,
-                flip_axes,
-                true);
+                ITK_coordinates_to_STIR(
+                    itk_coord,
+                    voxel_size,
+                    min_indices,
+                    true);
     }
-
     return image_ptr;
 }
 
@@ -313,6 +308,12 @@ read_file_itk(const std::string &filename)
       reader->SetFileName(filename);
       reader->Update();
 
+      // Only support Nifti for now
+      if (strcmp(reader->GetImageIO()->GetNameOfClass(), "NiftiImageIO") != 0) {
+          error("read_file_itk: Only Nifti images are currently support for multicomponent images %s:%d.",
+                __FILE__, __LINE__);
+          return NULL; }
+
       if (reader->GetImageIO()->GetPixelType() != itk::ImageIOBase::VECTOR) {
           error("read_file_itk: Image type should be vector %s:%d.",
                 __FILE__, __LINE__);
@@ -337,9 +338,9 @@ orient_ITK_image(typename ITKImageType::Pointer &itk_image,
                  BasicCoordinate<3,int> &min_indices,
                  BasicCoordinate<3,int> &max_indices,
                  CartesianCoordinate3D<float> &origin,
-                 const typename ITKImageType::Pointer itk_image_orig,
-                 int flip_axes[3])
+                 const typename ITKImageType::Pointer itk_image_orig)
 {
+
     // Only works for HFS!
     typedef itk::OrientImageFilter<ITKImageType,ITKImageType> OrienterType;
     typename OrienterType::Pointer orienter = OrienterType::New();
@@ -348,12 +349,6 @@ orient_ITK_image(typename ITKImageType::Pointer &itk_image,
     orienter->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS);
     orienter->Update();
     itk_image = orienter->GetOutput();
-
-    if (flip_axes != nullptr) {
-        flip_axes[0] = orienter->GetFlipAxes()[0];
-        flip_axes[1] = orienter->GetFlipAxes()[1];
-        flip_axes[2] = orienter->GetFlipAxes()[2];
-    }
 
     // find voxel size
     voxel_size = CartesianCoordinate3D<float>(static_cast<float>(itk_image->GetSpacing()[2]),
@@ -372,8 +367,7 @@ orient_ITK_image(typename ITKImageType::Pointer &itk_image,
                 ITK_coordinates_to_STIR(
                     itk_image->GetOrigin(),
                     voxel_size,
-                    min_indices,
-                    flip_axes));
+                    min_indices));
 #ifndef NDEBUG
   info(boost::format("ITK image origin: %1%") % itk_image->GetOrigin());
   info(boost::format("STIR image origin: [%1%, %2%, %3%]") % origin[1] % origin[2] % origin[3]);
@@ -407,26 +401,21 @@ ITK_coordinates_to_STIR(
         const itk::ImageBase<3>::PointType &itk_coord,
         CartesianCoordinate3D<float> &voxel_size,
         const BasicCoordinate<3,int> &min_indices,
-        int flip_axes[3],
         bool is_displacement_field)
 {
   // find STIR origin
   // Note: need to use - for z-coordinate because of different axis conventions
   // Only works for HFS!
-  CartesianCoordinate3D<float> stir_coord(static_cast<float>(itk_coord[2]),
-                                          static_cast<float>(itk_coord[1]),
-                                          static_cast<float>(itk_coord[0]));
-
-  for (int i=1; i<=3; ++i)
-      if (flip_axes[i-1] == 1)
-          stir_coord[i] = -stir_coord[i];
+  CartesianCoordinate3D<float> stir_coord(-static_cast<float>(itk_coord[2]),
+                                           static_cast<float>(itk_coord[1]),
+                                           static_cast<float>(itk_coord[0]));
 
   // The following is not required for displacement field images
   if (!is_displacement_field)
   {
     // make sure that origin is such that
     // first_pixel_offsets =  min_indices*voxel_size + origin
-    stir_coord += voxel_size * BasicCoordinate<3,float>(min_indices);
+    stir_coord -= voxel_size * BasicCoordinate<3,float>(min_indices);
   }
 
   return stir_coord;
