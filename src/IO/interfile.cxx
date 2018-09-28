@@ -1385,6 +1385,14 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
     output_header<<"data offset in bytes[1] := "
                  <<pdfs.get_offset_in_stream()<<endl;
     
+  // Write bed position
+  if(fabs(pdfs.get_proj_data_info_sptr()->get_bed_position_vertical()) > 1.e-5F)
+      output_header<<"start vertical bed position (mm) := "
+                   <<pdfs.get_proj_data_info_sptr()->get_bed_position_vertical()<<endl;
+  if(fabs(pdfs.get_proj_data_info_sptr()->get_bed_position_horizontal()) > 1.e-5F)
+      output_header<<"start horizontal bed position (mm) := "
+                   <<pdfs.get_proj_data_info_sptr()->get_bed_position_horizontal()<<endl;
+    
    output_header << "!END OF INTERFILE :=\n";
 
   return Succeeded::yes;
