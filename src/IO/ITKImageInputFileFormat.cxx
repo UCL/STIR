@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
     Copyright (C) 2013-2014, University College London
+    Copyright (C) 2018, University College London
 
     This file is part of STIR.
     This file is free software; you can redistribute it and/or modify
@@ -22,10 +23,12 @@
 
   \author Berta Marti Fuster
   \author Kris Thielemans
+  \author Richard Brown
 */
 
 #include "stir/IO/ITKImageInputFileFormat.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/utilities.h"
 
 #include "itkImage.h"
@@ -35,6 +38,8 @@
 #include "itkGDCMSeriesFileNames.h"
 #include "itkImageSeriesReader.h"
 #include "itkOrientImageFilter.h"
+#include "stir/info.h"
+#include "boost/format.hpp"
 
 START_NAMESPACE_STIR
 
@@ -44,34 +49,63 @@ START_NAMESPACE_STIR
 
 */
 
-typedef itk::Image<float, 3>		FinalImageType;
+typedef itk::Image<float, 3>                                 ITKImageSingle;
+typedef itk::VectorImage<float, 3>                           ITKImageMulti;
+typedef DiscretisedDensity<3,float>                          STIRImageSingle;
+typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > STIRImageMulti;
 
-template<typename ImageTypePtr>
-VoxelsOnCartesianGrid<float>*
-convert_ITK_to_STIR(const ImageTypePtr itk_image);
+static
+STIRImageSingle*
+convert_ITK_to_STIR(const ITKImageSingle::Pointer itk_image);
 
-template<typename TImageType> VoxelsOnCartesianGrid<float>*
-read_file_itk(std::string filename);
+static
+STIRImageMulti*
+convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image);
+
+template<typename STIRImageType>
+static
+STIRImageType *
+read_file_itk(const std::string &filename);
   
+static
+CartesianCoordinate3D<float>
+ITK_coordinates_to_STIR(const itk::ImageBase<3>::PointType &itk_coord,
+        CartesianCoordinate3D<float> &voxel_size,
+        const BasicCoordinate<3,int> &min_indices,
+        bool is_displacement_field = false);
+
+template<typename ITKImageType>
+static
+void
+orient_ITK_image(typename ITKImageType::Pointer &itk_image,
+                 CartesianCoordinate3D<float> &voxel_size,
+                 BasicCoordinate<3,int> &min_indices,
+                 BasicCoordinate<3,int> &max_indices,
+                 CartesianCoordinate3D<float> &origin,
+                 const typename ITKImageType::Pointer itk_image_orig);
+
+template <typename STIRImageType>
 bool 
-ITKImageInputFileFormat::actual_can_read(const FileSignature& signature,
+ITKImageInputFileFormat<STIRImageType>::actual_can_read(const FileSignature& signature,
                                          std::istream& input) const
 {
   return false;
 }
 
+template <typename STIRImageType>
 bool
-ITKImageInputFileFormat::can_read(const FileSignature& signature,
+ITKImageInputFileFormat<STIRImageType>::can_read(const FileSignature& signature,
                                   std::istream& input) const
 {
   return this->actual_can_read(signature, input);
 }
 
+template <typename STIRImageType>
 bool 
-ITKImageInputFileFormat::can_read(const FileSignature& /*signature*/,
+ITKImageInputFileFormat<STIRImageType>::can_read(const FileSignature& /*signature*/,
                                   const std::string& filename) const
 {
-  typedef itk::ImageFileReader<FinalImageType> ReaderType;
+  typedef itk::ImageFileReader<ITKImageSingle> ReaderType;
   ReaderType::Pointer reader = ReaderType::New();
   reader->SetFileName(filename);
   try 
@@ -81,32 +115,108 @@ ITKImageInputFileFormat::can_read(const FileSignature& /*signature*/,
     } 
   catch( itk::ExceptionObject & /*err*/ ) 
     { 
-		
+  
       return false;
     } 
 }
 
-unique_ptr< DiscretisedDensity<3,float> >
-ITKImageInputFileFormat::read_from_file(std::istream& input) const
+template <typename STIRImageType>
+unique_ptr<STIRImageType>
+ITKImageInputFileFormat<STIRImageType>::read_from_file(std::istream& input) const
 {
   error("read_from_file for ITK with istream not implemented %s:%d. Sorry",
         __FILE__, __LINE__);
   return
-    unique_ptr<DiscretisedDensity<3,float> >();
+    unique_ptr<STIRImageType>();
 }
 
-unique_ptr< DiscretisedDensity<3,float> >
-ITKImageInputFileFormat::read_from_file(const std::string& filename) const
+template<typename STIRImageType>
+unique_ptr<STIRImageType>
+ITKImageInputFileFormat<STIRImageType>::
+read_from_file(const std::string& filename) const
 {
   return
-    unique_ptr<DiscretisedDensity<3,float> >
-    (read_file_itk< FinalImageType >(filename));
+    unique_ptr<STIRImageType>
+    (read_file_itk< STIRImageType >(filename));
 }
 
+// Actual conversion function
+STIRImageSingle*
+convert_ITK_to_STIR(const ITKImageSingle::Pointer itk_image_orig)
+{
+    ITKImageSingle::Pointer itk_image;
+    CartesianCoordinate3D<float> voxel_size;
+    BasicCoordinate<3,int> min_indices, max_indices;
+    CartesianCoordinate3D<float> origin;
+
+    // orientate the ITK image
+    orient_ITK_image<ITKImageSingle>(
+                itk_image, voxel_size, min_indices, max_indices, origin, itk_image_orig);
+
+    // create STIR image
+    VoxelsOnCartesianGrid<float>* image_ptr =
+        new VoxelsOnCartesianGrid<float>
+            (IndexRange<3>(min_indices, max_indices),
+            origin,
+            voxel_size);
+
+    // copy data
+    VoxelsOnCartesianGrid<float>::full_iterator stir_iter = image_ptr->begin_all();
+    typedef itk::ImageRegionConstIterator< ITKImageSingle > IteratorType;
+    IteratorType it (itk_image, itk_image->GetLargestPossibleRegion() );
+    for ( it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter  ) {
+        *stir_iter = static_cast<float>(it.Get());
+    }
+
+    return image_ptr;
+}
+
+// Actual conversion function
+STIRImageMulti*
+convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image_orig)
+{
+    ITKImageMulti::Pointer itk_image;
+    CartesianCoordinate3D<float> voxel_size;
+    BasicCoordinate<3,int> min_indices, max_indices;
+    CartesianCoordinate3D<float> origin;
+
+    // orientate the ITK image
+    orient_ITK_image<ITKImageMulti>(
+                itk_image, voxel_size, min_indices, max_indices, origin, itk_image_orig);
+
+    // create STIR image
+    STIRImageMulti* image_ptr =
+        new STIRImageMulti
+            (IndexRange<3>(min_indices, max_indices),
+             origin,
+             voxel_size);
+
+    // copy data
+    STIRImageMulti::full_iterator stir_iter = image_ptr->begin_all();
+    typedef itk::ImageRegionConstIterator< ITKImageMulti > IteratorType;
+    IteratorType it (itk_image, itk_image->GetLargestPossibleRegion() );
+    for ( it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter) {
+        itk::Point<double,3U> itk_coord;
+
+        itk_coord[0] = -double(it.Get()[0]);
+        itk_coord[1] = -double(it.Get()[1]);
+        itk_coord[2] =  double(it.Get()[2]);
+
+        *stir_iter =
+                ITK_coordinates_to_STIR(
+                    itk_coord,
+                    voxel_size,
+                    min_indices,
+                    true);
+    }
+    return image_ptr;
+}
 
 //To read any file format via ITK
-template<typename TImageType> VoxelsOnCartesianGrid<float>*
-read_file_itk(std::string filename)
+template<>
+static
+STIRImageSingle*
+read_file_itk(const std::string &filename)
 {
   typedef itk::GDCMImageIO       ImageIOType;
   ImageIOType::Pointer dicomIO = ImageIOType::New();
@@ -115,12 +225,13 @@ read_file_itk(std::string filename)
       if (!dicomIO->CanReadFile(filename.c_str()))
         {
           // Not a DICOM file, so we just read a single image
-          typedef itk::ImageFileReader<TImageType> ReaderType;
-          typename ReaderType::Pointer reader = ReaderType::New();
+          typedef itk::ImageFileReader<ITKImageSingle> ReaderType;
+          ReaderType::Pointer reader = ReaderType::New();
 
           reader->SetFileName(filename);
           reader->Update();
-          typename TImageType::Pointer itk_image = reader->GetOutput();
+          ITKImageSingle::Pointer itk_image = reader->GetOutput();
+
           return convert_ITK_to_STIR(itk_image);
         }
       else
@@ -167,13 +278,13 @@ read_file_itk(std::string filename)
             }
           
           // ok. we know which filenames are in the same "series", so let's read them
-          typedef itk::ImageSeriesReader< TImageType > ReaderType;
-          typename ReaderType::Pointer reader = ReaderType::New();
+          typedef itk::ImageSeriesReader< ITKImageSingle > ReaderType;
+          ReaderType::Pointer reader = ReaderType::New();
 
           reader->SetImageIO( dicomIO );
           reader->SetFileNames( fileNames );
           reader->Update();
-          typename TImageType::Pointer itk_image = reader->GetOutput();
+          ITKImageSingle::Pointer itk_image = reader->GetOutput();
 
           // Finally, convert to STIR!
           return convert_ITK_to_STIR(itk_image);
@@ -185,7 +296,88 @@ read_file_itk(std::string filename)
       error(ex.what());
       return 0;
     }
+}
 
+//To read any file format via ITK
+template<>
+static
+STIRImageMulti*
+read_file_itk(const std::string &filename)
+{
+  typedef itk::GDCMImageIO       ImageIOType;
+
+  try
+    {
+      // Not a DICOM file, so we just read a single image
+      typedef itk::ImageFileReader<ITKImageMulti> ReaderType;
+      ReaderType::Pointer reader = ReaderType::New();
+      reader->SetFileName(filename);
+      reader->Update();
+
+      // Only support Nifti for now
+      if (strcmp(reader->GetImageIO()->GetNameOfClass(), "NiftiImageIO") != 0) {
+          error("read_file_itk: Only Nifti images are currently support for multicomponent images %s:%d.",
+                __FILE__, __LINE__);
+          return NULL; }
+
+      if (reader->GetImageIO()->GetPixelType() != itk::ImageIOBase::VECTOR) {
+          error("read_file_itk: Image type should be vector %s:%d.",
+                __FILE__, __LINE__);
+          return NULL; }
+
+      ITKImageMulti::Pointer itk_image = reader->GetOutput();
+
+      return convert_ITK_to_STIR(itk_image);
+
+    }
+  catch (std::exception &ex)
+    {
+      error(ex.what());
+      return 0;
+    }
+}
+
+template<typename ITKImageType>
+void
+orient_ITK_image(typename ITKImageType::Pointer &itk_image,
+                 CartesianCoordinate3D<float> &voxel_size,
+                 BasicCoordinate<3,int> &min_indices,
+                 BasicCoordinate<3,int> &max_indices,
+                 CartesianCoordinate3D<float> &origin,
+                 const typename ITKImageType::Pointer itk_image_orig)
+{
+
+    // Only works for HFS!
+    typedef itk::OrientImageFilter<ITKImageType,ITKImageType> OrienterType;
+    typename OrienterType::Pointer orienter = OrienterType::New();
+    orienter->UseImageDirectionOn();
+    orienter->SetInput(itk_image_orig);
+    orienter->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS);
+    orienter->Update();
+    itk_image = orienter->GetOutput();
+
+    // find voxel size
+    voxel_size = CartesianCoordinate3D<float>(static_cast<float>(itk_image->GetSpacing()[2]),
+        static_cast<float>(itk_image->GetSpacing()[1]),
+        static_cast<float>(itk_image->GetSpacing()[0]));
+
+    // find index range in usual STIR convention
+    const int z_size =  itk_image->GetLargestPossibleRegion().GetSize()[2];
+    const int y_size =  itk_image->GetLargestPossibleRegion().GetSize()[1];
+    const int x_size =  itk_image->GetLargestPossibleRegion().GetSize()[0];
+    min_indices = BasicCoordinate<3,int>(make_coordinate(0, -y_size/2, -x_size/2));
+    max_indices = min_indices + make_coordinate(z_size, y_size, x_size) - 1;
+
+    // find STIR origin
+    origin = CartesianCoordinate3D<float>(
+                ITK_coordinates_to_STIR(
+                    itk_image->GetOrigin(),
+                    voxel_size,
+                    min_indices));
+#ifndef NDEBUG
+  info(boost::format("ITK image origin: %1%") % itk_image->GetOrigin());
+  info(boost::format("STIR image origin: [%1%, %2%, %3%]") % origin[1] % origin[2] % origin[3]);
+#endif
 }
 
 // Helper class to be able to work-around ITK's Pointer stuff
@@ -210,66 +402,33 @@ struct removePtr<itk::SmartPointer<Type> >
   typedef Type type;
 };
 
-// Actual conversion function
-template<typename ImageTypePtr>
-VoxelsOnCartesianGrid<float>*
-convert_ITK_to_STIR(const ImageTypePtr itk_image_orig)
+CartesianCoordinate3D<float>
+ITK_coordinates_to_STIR(
+        const itk::ImageBase<3>::PointType &itk_coord,
+        CartesianCoordinate3D<float> &voxel_size,
+        const BasicCoordinate<3,int> &min_indices,
+        bool is_displacement_field)
 {
-  //typedef typename removePtr<ImageTypePtr>::type ImageType;
-  typedef FinalImageType ImageType;
-  itk::OrientImageFilter<ImageType,ImageType>::Pointer orienter =
-    itk::OrientImageFilter<ImageType,ImageType>::New();
-  orienter->UseImageDirectionOn();
-  orienter->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS);
-  orienter->SetInput(itk_image_orig);
-  orienter->Update();
-  ImageTypePtr itk_image = orienter->GetOutput();
-
-  // find voxel size
-  CartesianCoordinate3D<float> voxel_size(static_cast<float>(itk_image->GetSpacing()[2]), 
-                                          static_cast<float>(itk_image->GetSpacing()[1]), 
-                                          static_cast<float>(itk_image->GetSpacing()[0]));
-
-  // find index range in usual STIR convention
-  const int z_size =  itk_image->GetLargestPossibleRegion().GetSize()[2];
-  const int y_size =  itk_image->GetLargestPossibleRegion().GetSize()[1];
-  const int x_size =  itk_image->GetLargestPossibleRegion().GetSize()[0];
-  const BasicCoordinate<3,int> min_indices = 
-    make_coordinate(0, -y_size/2, -x_size/2);
-  const BasicCoordinate<3,int> max_indices = 
-    min_indices + make_coordinate(z_size, y_size, x_size) - 1;
-
   // find STIR origin
   // Note: need to use - for z-coordinate because of different axis conventions
-  CartesianCoordinate3D<float> origin(-static_cast<float>(itk_image->GetOrigin()[2]), 
-				      static_cast<float>(itk_image->GetOrigin()[1]), 
-				      static_cast<float>(itk_image->GetOrigin()[0]));
+  // Only works for HFS!
+  CartesianCoordinate3D<float> stir_coord(-static_cast<float>(itk_coord[2]),
+                                           static_cast<float>(itk_coord[1]),
+                                           static_cast<float>(itk_coord[0]));
+
+  // The following is not required for displacement field images
+  if (!is_displacement_field)
   {
-    // make sure that origin is such that 
+    // make sure that origin is such that
     // first_pixel_offsets =  min_indices*voxel_size + origin
-    origin -= voxel_size * BasicCoordinate<3,float>(min_indices);
+    stir_coord -= voxel_size * BasicCoordinate<3,float>(min_indices);
   }
 
-  // create STIR image
-  VoxelsOnCartesianGrid<float>* image_ptr =
-    new VoxelsOnCartesianGrid<float>
-    (IndexRange<3>(min_indices, max_indices),
-     origin,
-     voxel_size);
-
-  // copy data
-  VoxelsOnCartesianGrid<float>::full_iterator stir_iter = image_ptr->begin_all();
-  typedef itk::ImageRegionConstIterator< ImageType > IteratorType;
-  IteratorType it (itk_image, itk_image->GetLargestPossibleRegion() );
-  for ( it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter  )
-    {
-      *stir_iter = static_cast<float>(it.Get());
-    }
-
-  return image_ptr;
+  return stir_coord;
 }
 
-
+// explicit instantiations
+template class ITKImageInputFileFormat<STIRImageSingle>;
+template class ITKImageInputFileFormat<STIRImageMulti>;
 
 END_NAMESPACE_STIR
-

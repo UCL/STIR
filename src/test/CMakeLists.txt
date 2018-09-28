@@ -36,6 +36,7 @@ Set(${dir_INVOLVED_TEST_EXE_SOURCES}
 	IO/test_IO_DiscretisedDensity
 	IO/test_IO_DynamicDiscretisedDensity
 	IO/test_IO_ParametricDiscretisedDensity
+	IO/test_IO_ITKMulticomponent
 	test_linear_regression
 	test_stir_math
         # the next 2 are interactive, so we don't add a test for it, but only compile them
@@ -115,6 +116,8 @@ if (HAVE_ITK)
 	test_ITKDefaultOutputFileFormat.in
 	test_ITKNiftiOutputFileFormat.in
     )
+    ADD_TEST(test_IO_ITKMulticomponent
+    	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ITKMulticomponent ${CMAKE_SOURCE_DIR}/examples/nifti/disp_4D.nii)
 endif()
 
 # now for each of these, add a test
