@@ -350,14 +350,14 @@ public:
   virtual std::string parameter_info() const;
   
   //! Set horizontal bed position
-  void set_bed_position_horizontal(float &bed_position_horizontal_arg)
+  void set_bed_position_horizontal(const float bed_position_horizontal_arg)
   { bed_position_horizontal = bed_position_horizontal_arg; }
 
   //! Get horizontal bed position
   float get_bed_position_horizontal() const { return bed_position_horizontal; }
 
   //! Set vertical bed position
-  void set_bed_position_vertical(float &bed_position_vertical_arg)
+  void set_bed_position_vertical(const float bed_position_vertical_arg)
   { bed_position_vertical = bed_position_vertical_arg; }
 
   //! Get vertical bed position

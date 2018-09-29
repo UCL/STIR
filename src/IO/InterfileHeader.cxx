@@ -1350,11 +1350,9 @@ bool InterfilePDFSHeader::post_processing()
     }
   //cerr << data_info_ptr->parameter_info() << endl;
   
-  // If there is a non-zero bed position, set it
-  if (bed_position_horizontal != 0.F)
-    data_info_ptr->set_bed_position_horizontal(bed_position_horizontal);
-  if (bed_position_vertical != 0.F)
-    data_info_ptr->set_bed_position_vertical(bed_position_vertical);
+  // Set the bed position
+  data_info_ptr->set_bed_position_horizontal(bed_position_horizontal);
+  data_info_ptr->set_bed_position_vertical(bed_position_vertical);
 
   return false;
 }
