@@ -65,9 +65,9 @@ int main(int argc, char *argv[])
     try {
 
         // Read all the input info
-        std::string output_filename =  argv[1];
-        std::string input_filename  =  argv[2];
-        int         bspline_order   =  atoi(argv[3]);
+        const std::string output_filename =  argv[1];
+        const std::string input_filename  =  argv[2];
+        const int         bspline_order   =  atoi(argv[3]);
         std::string disp_4d="", disp_x="", disp_y="", disp_z="";
         if (argc <= 6)
             disp_4d = argv[4];
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
         std::cerr << "\nCreating transform...\n";
         shared_ptr<NonRigidObjectTransformationUsingBSplines<3,float> > fwrd_non_rigid;
         // If 4D
-        if (disp_4d.size() != 0)
+        if (!disp_4d.empty())
             fwrd_non_rigid.reset(new NonRigidObjectTransformationUsingBSplines<3,float>(disp_4d,bspline_order));
         else
             fwrd_non_rigid.reset(new NonRigidObjectTransformationUsingBSplines<3,float>(disp_x,disp_y,disp_z,bspline_order));
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
         std::cerr << "\nSaving result to file (" << output_filename << ")...\n";
         shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format =
                 OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
-         if (output_file_format_param.size() != 0) {
+         if (!output_file_format_param.empty()) {
              KeyParser parser;
              parser.add_start_key("output file format parameters");
              parser.add_parsing_key("output file format type", &output_file_format);
@@ -118,11 +118,6 @@ int main(int argc, char *argv[])
             }
          }
          if (output_file_format->write_to_file(output_filename,*to_transform_sptr) == Succeeded::no)
-             throw std::runtime_error("Failed to save to file.");
-
-         // TODO delete this bit
-         output_file_format = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
-         if (output_file_format->write_to_file(argv[1],*to_transform_sptr) == Succeeded::no)
              throw std::runtime_error("Failed to save to file.");
 
         // If all is good, exit

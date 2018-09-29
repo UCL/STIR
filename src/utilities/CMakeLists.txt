@@ -69,6 +69,7 @@ set(${dir_EXE_SOURCES}
 	find_ML_normfactors3D
 	find_ML_normfactors
 	find_ML_singles_from_delayed
+	non_rigid_transform
 )
 
 if (AVW_FOUND)

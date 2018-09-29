@@ -30,7 +30,6 @@ set(${dir_EXE_SOURCES}
 	mult_model_with_dyn_images
 	write_patlak_matrix
 	mult_image_parameters
-	non_rigid_transform
 )
 
 include(stir_exe_targets)
