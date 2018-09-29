@@ -169,6 +169,9 @@ public :
  protected:
   // version 3.3 had only a single offset. we'll internally replace it with data_offset_each_dataset
   unsigned long data_offset;
+
+  float bed_position_horizontal;
+  float bed_position_vertical;
 };
 
 

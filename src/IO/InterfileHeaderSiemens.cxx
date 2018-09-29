@@ -226,9 +226,7 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   add_key("tracer activity at time of injection (bq)", KeyArgument::NONE, &KeyParser::do_nothing);
   add_key("injected volume (ml)", KeyArgument::NONE, &KeyParser::do_nothing);
   add_key("horizontal bed translation", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("start horizontal bed position (mm)", KeyArgument::NONE, &KeyParser::do_nothing);
   add_key("end horizontal bed position (mm)", KeyArgument::NONE, &KeyParser::do_nothing);
-  add_key("start vertical bed position (mm)", KeyArgument::NONE, &KeyParser::do_nothing);
   add_key("%coincidence window width (ns)", KeyArgument::NONE, &KeyParser::do_nothing);
   add_key("gantry tilt angle (degrees)", KeyArgument::NONE, &KeyParser::do_nothing);
   add_key("method of attenuation correction", KeyArgument::NONE, &KeyParser::do_nothing);
@@ -313,6 +311,10 @@ bool InterfileRawDataHeaderSiemens::post_processing()
       }
     //XXX check if order here and segment_table are consistent
   }
+
+  // Set the bed position
+  data_info_ptr->set_bed_position_horizontal(bed_position_horizontal);
+  data_info_ptr->set_bed_position_vertical(bed_position_vertical);
 
   return false;
 }

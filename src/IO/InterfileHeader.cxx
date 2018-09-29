@@ -230,6 +230,11 @@ InterfileHeader::InterfileHeader()
 
   add_key("energy window upper level",
          KeyArgument::FLOAT, &upper_en_window_thres);
+
+  bed_position_horizontal = 0.F;
+  add_key("start horizontal bed position (mm)", &bed_position_horizontal);
+  bed_position_vertical = 0.F;
+  add_key("start vertical bed position (mm)", &bed_position_vertical);
 }
 
 
@@ -599,7 +604,6 @@ InterfilePDFSHeader::InterfilePDFSHeader()
 	  &effective_central_bin_size_in_cm);
   add_key("applied corrections",
     KeyArgument::LIST_OF_ASCII, &applied_corrections);
-
 }
 
 void InterfilePDFSHeader::resize_segments_and_set()
@@ -1346,6 +1350,10 @@ bool InterfilePDFSHeader::post_processing()
     }
   //cerr << data_info_ptr->parameter_info() << endl;
   
+  // Set the bed position
+  data_info_ptr->set_bed_position_horizontal(bed_position_horizontal);
+  data_info_ptr->set_bed_position_vertical(bed_position_vertical);
+
   return false;
 }
 
