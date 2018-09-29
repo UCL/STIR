@@ -57,6 +57,8 @@ class PMessage;
   \brief An (abstract base) class that contains information on the 
   projection data.
 
+  This class supports a fixed horizontal and vertical bed position. Both are set to zero
+  by default. Continuous bed motion is not supported.
 */
 class ProjDataInfo
 {
