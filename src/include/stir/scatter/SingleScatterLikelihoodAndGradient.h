@@ -65,6 +65,8 @@ public:
 
     double L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale , bool isgradient = true);
 
+    double L_G_function_from_est_data(ProjData& data,ProjData& est_data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale);
+
 
 
     protected:
@@ -92,6 +94,10 @@ public:
 
     double L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale, bool isgradient);
 
+
+    double L_G_for_view_segment_number_from_est_data(ProjData&data,ProjData&est_data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float rescale);
+
+    double L_G_for_viewgram_from_est_data(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale);
 
 
 };

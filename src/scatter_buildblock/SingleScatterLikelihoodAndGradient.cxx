@@ -69,6 +69,10 @@ SingleScatterLikelihoodAndGradient::
 L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale, bool isgradient)
 {
 
+if (isgradient)
+     std::cerr <<"IS GRADIENT"<< "\n";
+
+else  std::cerr <<"IS JACOBIAN"<< "\n";
 
     this->output_proj_data_sptr->fill(0.f);
 
@@ -242,13 +246,206 @@ L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartes
 
 
            if (isgradient)
-               gradient_image += tmp_gradient_image*(viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]/(v_est[bin.axial_pos_num()][bin.tangential_pos_num()]+0.000000000000000000001)-1);
+           {
 
+               gradient_image += tmp_gradient_image*(viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]/(v_est[bin.axial_pos_num()][bin.tangential_pos_num()]+0.000000000000000000001)-1);
+            }
+           else
+               {
+
+               gradient_image += tmp_gradient_image;
+                }
+       }
+
+       return sum;
+}
+
+
+double
+SingleScatterLikelihoodAndGradient::
+L_G_function_from_est_data(ProjData& data,ProjData& est_data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale)
+{
+
+
+    this->output_proj_data_sptr->fill(0.f);
+
+
+    std::cerr << "number of energy windows:= "<<  this->template_exam_info_sptr->get_num_energy_windows() << '\n';
+
+    if(this->template_exam_info_sptr->get_energy_window_pair().first!= -1 &&
+       this->template_exam_info_sptr->get_energy_window_pair().second!= -1 )
+    {
+        std::cerr << "energy window pair :="<<" {"<<  this->template_exam_info_sptr->get_energy_window_pair().first  << ',' <<  this->template_exam_info_sptr->get_energy_window_pair().second <<"}\n";
+
+    }
+
+
+    for (int i = 0; i < this->template_exam_info_sptr->get_num_energy_windows(); ++i)
+    {
+        std::cerr << "energy window lower level"<<"["<<i+1<<"] := "<< this->template_exam_info_sptr->get_low_energy_thres(i) << '\n';
+        std::cerr << "energy window upper level"<<"["<<i+1<<"] := "<<  this->template_exam_info_sptr->get_high_energy_thres(i) << '\n';
+    }
+
+
+    info("ScatterSimulator: Running Scatter Simulation ...");
+    info("ScatterSimulator: Initialising ...");
+    // The activiy image might have been changed, during the estimation process.
+    this->remove_cache_for_integrals_over_activity();
+    this->remove_cache_for_integrals_over_attenuation();
+    this->sample_scatter_points();
+    this->initialise_cache_for_scattpoint_det_integrals_over_attenuation();
+    this->initialise_cache_for_scattpoint_det_integrals_over_activity();
+
+    ViewSegmentNumbers vs_num;
+
+    int bin_counter = 0;
+    int axial_bins = 0 ;
+    double sum = 0;
+
+    for (vs_num.segment_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_segment_num();
+         vs_num.segment_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
+         ++vs_num.segment_num())
+        axial_bins += this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num());
+
+    const int total_bins =
+    this->proj_data_info_cyl_noarc_cor_sptr->get_num_views() * axial_bins *
+    this->proj_data_info_cyl_noarc_cor_sptr->get_num_tangential_poss();
+    /* Currently, proj_data_info.find_cartesian_coordinates_of_detection() returns
+     coordinate in a coordinate system where z=0 in the first ring of the scanner.
+     We want to shift this to a coordinate system where z=0 in the middle
+     of the scanner.
+     We can use get_m() as that uses the 'middle of the scanner' system.
+     (sorry)
+     */
+#ifndef NDEBUG
+    {
+        CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
+        // check above statement
+        this->proj_data_info_cyl_noarc_cor_sptr->find_cartesian_coordinates_of_detection(
+                                                                                         detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
+        assert(detector_coord_A.z() == 0);
+        assert(detector_coord_B.z() == 0);
+        // check that get_m refers to the middle of the scanner
+        const float m_first =
+        this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, this->proj_data_info_cyl_noarc_cor_sptr->get_min_axial_pos_num(0), 0));
+        const float m_last =
+        this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, this->proj_data_info_cyl_noarc_cor_sptr->get_max_axial_pos_num(0), 0));
+        assert(fabs(m_last + m_first) < m_last * 10E-4);
+    }
+#endif
+    this->shift_detector_coordinates_to_origin =
+    CartesianCoordinate3D<float>(this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
+
+    info("ScatterSimulator: Initialization finished ...");
+
+    for (vs_num.segment_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_segment_num();
+         vs_num.segment_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
+         ++vs_num.segment_num())
+    {
+        for (vs_num.view_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_view_num();
+             vs_num.view_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_view_num();
+             ++vs_num.view_num())
+        {
+            //info(boost::format("ScatterSimulator: %d / %d") % bin_counter% total_bins);
+
+
+            sum+=this->L_G_for_view_segment_number_from_est_data(data, est_data,gradient_image,vs_num,rescale);
+
+            bin_counter +=
+            this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num()) *
+            this->proj_data_info_cyl_noarc_cor_sptr->get_num_tangential_poss();
+            //info(boost::format("ScatterSimulator: %d / %d") % bin_counter% total_bins);
+
+            std::cout<< bin_counter << " / "<< total_bins <<std::endl;
+
+        }
+    }
+
+    int max_x = gradient_image.get_max_x();
+    int min_x = gradient_image.get_min_x();
+
+    std::cerr << "LIKELIHOOD:= " << sum << '\n';
+
+    std::cerr << "MIN_GRADIENT_X:= " << min_x << '\n';
+    std::cerr << "MAX_GRADIENT_X:= " << max_x << '\n';
+
+    return sum;
+}
+
+double
+SingleScatterLikelihoodAndGradient::
+L_G_for_view_segment_number_from_est_data(ProjData&data,ProjData&est_data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float rescale)
+{
+
+    Viewgram<float> viewgram=data.get_viewgram(vs_num.view_num(), vs_num.segment_num(),false);
+    Viewgram<float> v_est= est_data.get_viewgram(vs_num.view_num(), vs_num.segment_num(),false);
+
+    double sum = L_G_for_viewgram_from_est_data(viewgram,v_est,gradient_image, rescale);
+
+    return sum;
+
+}
+double
+SingleScatterLikelihoodAndGradient::
+L_G_for_viewgram_from_est_data(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale)
+{
+
+    const ViewSegmentNumbers vs_num(viewgram.get_view_num(),viewgram.get_segment_num());
+
+    // First construct a vector of all bins that we'll process.
+    // The reason for making this list before the actual calculation is that we can then parallelise over all bins
+    // without having to think about double loops.
+    std::vector<Bin> all_bins;
+    {
+        Bin bin(vs_num.segment_num(), vs_num.view_num(), 0, 0);
+
+        for (bin.axial_pos_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_axial_pos_num(bin.segment_num());
+             bin.axial_pos_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_axial_pos_num(bin.segment_num());
+             ++bin.axial_pos_num())
+        {
+            for (bin.tangential_pos_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_tangential_pos_num();
+                 bin.tangential_pos_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_tangential_pos_num();
+                 ++bin.tangential_pos_num())
+            {
+                all_bins.push_back(bin);
+            }
+        }
+    }
+    // now compute scatter for all bins
+
+       double sum = 0;
+
+
+       VoxelsOnCartesianGrid<float> tmp_gradient_image(gradient_image);
+
+#ifdef STIR_OPENMP
+#pragma omp parallel for reduction(+:total_scatter) schedule(dynamic)
+#endif
+
+       for (int i = 0; i < static_cast<int>(all_bins.size()); ++i)
+       {
+    //creates a template image to fill
+           tmp_gradient_image.fill(0);
+
+           const Bin bin = all_bins[i];
+
+    //forward model
+           const double y = L_G_estimate(tmp_gradient_image,bin,true);
+
+
+
+           sum+=viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]*log(v_est[bin.axial_pos_num()][bin.tangential_pos_num()])- v_est[bin.axial_pos_num()][bin.tangential_pos_num()];
+
+
+
+
+               gradient_image += tmp_gradient_image*(viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]/(v_est[bin.axial_pos_num()][bin.tangential_pos_num()])-1);
 
        }
 
        return sum;
 }
+
 
 double
 SingleScatterLikelihoodAndGradient::
@@ -535,9 +732,7 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
 
     //Fill gradient image along [A,S], [B,S] and in [S]
 
-    if (isgradient)
 
-    {
     line_contribution(gradient,rescale,scatter_point,
             detector_coord_B,contribution_BS);
 
@@ -547,7 +742,7 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
     s_contribution(gradient,scatter_point,
             contribution_S);
 
-    }
+
     return scatter_ratio;
 
 }
