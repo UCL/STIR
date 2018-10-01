@@ -149,6 +149,10 @@ class PLSPrior:  public
   double get_eta() const;
   double get_alpha() const;
 
+  //!set eta parameter
+  void set_eta(const double);
+  //!set alpha parameter
+  void set_alpha(const double);
 
   //! set anatomical pointer
   void set_anatomical_image_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
@@ -221,8 +225,6 @@ protected:
   shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
   void set_anatomical_grad_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&, int);
   void set_anatomical_grad_norm_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
-  void set_eta(const double&);
-  void set_alpha(const double&);
   };
 
 

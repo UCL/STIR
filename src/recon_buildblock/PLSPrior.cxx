@@ -217,13 +217,13 @@ set_anatomical_image_sptr (const shared_ptr<DiscretisedDensity<3,elemT> >& arg)
 template <typename elemT>
 void
 PLSPrior<elemT>::
-set_eta (const double& arg)
+set_eta (const double arg)
 { this->eta = arg; }
 
 template <typename elemT>
 void
 PLSPrior<elemT>::
-set_alpha (const double& arg)
+set_alpha (const double arg)
 { this->alpha = arg; }
 
 template <typename elemT>
