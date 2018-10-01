@@ -149,8 +149,9 @@ class PLSPrior:  public
   double get_eta() const;
   double get_alpha() const;
 
-  //!set eta and alpha parameters
+  //!set eta parameter
   void set_eta(const double);
+  //!set alpha parameter
   void set_alpha(const double);
 
   //! set anatomical pointer
