@@ -1109,14 +1109,19 @@ Scanner* Scanner::ask_parameters()
 
       int num_detector_layers =
     ask_num("Enter number of detector layers per block: ",1,100,1);
-    
-      const string crystal_map_file_name =
-  ask_string("Enter the path to the crystal map: ", "");        
+           
       const string ScannerOrientation =
   ask_string("Enter the scanner orientation, i.e. which axis passes through two opposite blocks ('X' or 'Y')", "Y");
       const string ScannerGeometry =
   ask_string("Enter the scanner geometry ( BlocksOnCylindrical / Cylindrical / Generic ) :", "Cylindrical");
-      float AxialCrystalSpacing=
+      
+      string crystal_map_file_name = "";
+      if (ScannerGeometry == "Generic") {
+          crystal_map_file_name =
+            ask_string("Enter the name of the crystal map: ", "");
+      }
+      
+      float AxialCrystalSpacing=      
   ask_num("Enter crystal spacing in axial direction (in mm): ",0.F,30.F,6.75F);
       float TransaxialCrystalSpacing=
   ask_num("Enter crystal spacing in transaxial direction (in mm): ",0.F,30.F,6.75F);
