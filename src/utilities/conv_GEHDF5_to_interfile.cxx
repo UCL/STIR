@@ -58,32 +58,18 @@ int main(int argc,char **argv)
     shared_ptr<ProjDataInfo> template_projdata_info_sptr =
             ProjData::read_from_file(argv[3])->get_proj_data_info_sptr();
 
-//    ProjDataInterfile proj_data(template_projdata_ptr->get_exam_info_sptr(), template_projdata_ptr->get_proj_data_info_sptr(),
-//                                output_filename, std::ios::out);
+    shared_ptr<ProjData> template_projdata_ptr = ProjData::read_from_file(argv[3]);
+    ProjDataInterfile proj_data(template_projdata_ptr->get_exam_info_sptr(), template_projdata_ptr->get_proj_data_info_sptr(),
+                                output_filename, std::ios::out);
 
     ProjDataFromHDF5 projDataGE(template_projdata_info_sptr, rdf_filename);
 
-   //for (int i_seg = projDataGE.get_min_segment_num(); i_seg <= projDataGE.get_max_segment_num(); ++i_seg)
-     //   for(int i_view = projDataGE.get_min_view_num(); i_view <= projDataGE.get_max_view_num(); ++i_view)
-       // {
-    int i_view = 0;
-    int i_seg = 1;
-    Viewgram<float> ret_viewgram = projDataGE.get_viewgram(i_view, i_seg);
-
-           // for(int i_axial = ret_viewgram.get_min_axial_pos_num(); i_axial <= ret_viewgram.get_max_axial_pos_num(); ++i_axial)
-            //{
-              //  std::cout << std::endl;
-              //  for (int i_tang = ret_viewgram.get_min_tangential_pos_num(); i_tang <= ret_viewgram.get_max_tangential_pos_num(); ++i_tang)
-              //  {
-              //      std::cout << ret_viewgram.at(i_axial).at(i_tang) << " ";
-              //  }
-           // }
-      //  }
-
-//    for (int segment_num= template_projdata_ptr->get_min_segment_num(); segment_num <= template_projdata_ptr->get_max_segment_num(); segment_num++) {
-//        Viewgram<float> view = projDataGE.get_viewgram(1, segment_num, false);
-//        proj_data.set_viewgram(view);
-//    }
+   for (int i_seg = projDataGE.get_min_segment_num(); i_seg <= projDataGE.get_max_segment_num(); ++i_seg)
+        for(int i_view = projDataGE.get_min_view_num(); i_view <= projDataGE.get_max_view_num(); ++i_view)
+        {
+            Viewgram<float> ret_viewgram = projDataGE.get_viewgram(i_view, i_seg);
+            proj_data.set_viewgram(ret_viewgram);
+        }
 
     return EXIT_SUCCESS;
 }

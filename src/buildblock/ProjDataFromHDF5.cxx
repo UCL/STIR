@@ -144,8 +144,7 @@ get_viewgram(const int view_num, const int segment_num,
              {
                  non_tof_data[axial_pos][tang_pos] += tof_data[tang_pos][tof_poss][axial_pos];
              }
-// PW This loop only works for segment 0 currently. This piece of code needs to be modified
-         // so that axial_pos> 0 can be accessed and copied in return_vi
+
          for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(), i_tang = 0; tang_pos <= ret_viewgram.get_max_tangential_pos_num(), i_tang<=static_cast<unsigned long long int>(get_num_tangential_poss())-1; ++tang_pos, ++i_tang)
             for(int i_axial=0, axial_pos = seg_ax_offset[find_segment_index_in_sequence(segment_num)]; i_axial<=static_cast<unsigned long long int>(get_num_axial_poss(segment_num))-1 , axial_pos <= seg_ax_offset[find_segment_index_in_sequence(segment_num)]+static_cast<unsigned long long int>(get_num_axial_poss(segment_num))-1; i_axial++, axial_pos++)
                   {
