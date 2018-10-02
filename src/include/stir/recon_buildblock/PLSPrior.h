@@ -46,17 +46,18 @@ START_NAMESPACE_STIR
   \brief
   A class in the GeneralisedPrior hierarchy. This implements the  anatomical penalty function, Parallel Level Sets (PLS),
   proposed by Matthias J. Ehrhardt et. al in "PET Reconstruction With an Anatomical MRI
-  Prior Using Parallel Level Sets", IEEE Trans. med. Imag., vol. 35, no. 9, Sept. 2016. Note that
-  PLS becomes smoothed TV when an uniform anatomical image is provided.
+  Prior Using Parallel Level Sets", IEEE Trans. med. Imag., vol. 35, no. 9, Sept. 2016.
+  https://doi.org/10.1109/TMI.2016.2549601
+  Note that PLS becomes smoothed TV when an uniform anatomical image is provided.
 
   The prior is computed as follows:
 
   \f[
-  \phi(f) = \sqrt{\alpha^2 + |\nabla v|^2 - {\langle\nabla f,\xi\rangle}^2}
+  \phi(f) = \sqrt{\alpha^2 + |\nabla f|^2 - {\langle\nabla f,\xi\rangle}^2}
   \f]
   where \f$ f \f$ is the PET image and \f$ \alpha \f$ is a parameter that controls the edge-preservation property of PLS.
 
-  The \f$ \xi \f$ is the normalised gradient calculated as follows:
+  The \f$ \xi \f$ is the normalised gradient of the anatomical image calculated as follows:
 
   \f[
   \xi = \frac{\nabla v}{\sqrt{|\nabla v|^2 + \eta^2}}
@@ -83,7 +84,7 @@ START_NAMESPACE_STIR
   anatomical_filename:= file.hv; Image that provides anatomical information (i.e. CT or MR image). The
                    dimension should be the same as that of the emission image.
 
-  eta :=    ; A parameter for preventing the division by zero problem. The value dependes
+  eta :=    ; A parameter for preventing the division by zero problem. The value depends
                    on the scale of the anatomical image.
 
   alpha :=   ; A parameter that controls the edge-preservation property of PLS. The value
