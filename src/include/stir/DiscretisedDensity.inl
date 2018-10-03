@@ -214,7 +214,7 @@ template<int num_dimensions, typename elemT>
 void
 DiscretisedDensity<num_dimensions, elemT>::
 swap_axes_based_on_orientation(CartesianCoordinate3D<float>& coordinates,
-                               const PatientPosition patient_position) const
+                               const PatientPosition patient_position)
 {
   // std::cerr << patient_position.get_position_as_string() << std::endl;
   switch (patient_position.get_position()) {
