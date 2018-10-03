@@ -214,7 +214,6 @@ convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image_orig)
 
 //To read any file format via ITK
 template<>
-static
 STIRImageSingle*
 read_file_itk(const std::string &filename)
 {
@@ -300,7 +299,6 @@ read_file_itk(const std::string &filename)
 
 //To read any file format via ITK
 template<>
-static
 STIRImageMulti*
 read_file_itk(const std::string &filename)
 {
