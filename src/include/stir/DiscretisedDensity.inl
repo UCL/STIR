@@ -216,30 +216,35 @@ DiscretisedDensity<num_dimensions, elemT>::
 swap_axes_based_on_orientation(CartesianCoordinate3D<float>& coordinates,
                                const PatientPosition patient_position)
 {
+  // STIR coordinates run:
+  // x: left to right as you face the scanner (as seen from the bed side)
+  // y: top to bottom of the scanner
+  // z: running from deep in the scanner out along the bed (as seen from the bed
+  //    side)
   // std::cerr << patient_position.get_position_as_string() << std::endl;
   switch (patient_position.get_position()) {
   case PatientPosition::unknown_position:
     // If unknown, assume HFS
   case PatientPosition::HFS:
-    // HFS means currently in LAS
-    coordinates.y() *= -1;
+    // HFS means currently in patient LPI
+    coordinates.z() *= -1;
     break;
 
   case PatientPosition::HFP:
-    // HFP means currently in RPS
-    coordinates.x() *= -1;
-    break;
-
-  case PatientPosition::FFS:
-    // FFS means currently in RAI
+    // HFP means currently in patient RAI
     coordinates.x() *= -1;
     coordinates.y() *= -1;
     coordinates.z() *= -1;
     break;
 
+  case PatientPosition::FFS:
+    // FFS means currently in patient RPS
+    coordinates.x() *= -1;
+    break;
+
   case PatientPosition::FFP:
-    // FFP means currently in LPI
-    coordinates.z() *= -1;
+    // FFP means currently in patient LAS
+    coordinates.y() *= -1;
     break;
 
   default:
