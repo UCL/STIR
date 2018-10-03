@@ -142,17 +142,18 @@ actual_write_to_file(std::string& filename,
       // ITK Direction Matrix columns are unit vectors in axes LPS direction.
       // NB: ITK Matrix is in row, column order
       ImageType::DirectionType matrix;
-      for (unsigned int axis=1; axis<=3; ++axis) {
+      for (unsigned int axis = 0; axis < 3; ++axis) {
         CartesianCoordinate3D<int> next_idx_along_this_axis(min_indices);
-        next_idx_along_this_axis[axis] += 1;
+        next_idx_along_this_axis[3 - axis] += 1;
         const CartesianCoordinate3D<float> next_coord_along_this_dim
           = density.get_LPS_coordinates_for_indices(next_idx_along_this_axis);
         const CartesianCoordinate3D<float> axis_direction
           = next_coord_along_this_dim - stir_offset;
-        for (unsigned int dim=1; dim<=3; ++dim) {
-          matrix(axis-1, dim-1) = axis_direction[dim] / norm(axis_direction);
+        for (unsigned int dim = 0; dim < 3; ++dim) {
+          matrix(axis, dim) = axis_direction[3 - dim] / norm(axis_direction);
         }
       }
+      //matrix(2, 2) = -matrix(2, 2);
 
       ImageType::RegionType region;
       region.SetSize( size );
@@ -166,7 +167,30 @@ actual_write_to_file(std::string& filename,
       itk_image->SetOrigin(origin);
       itk_image->SetDirection( matrix );
       itk_image->Allocate();
-	
+
+      // std::cerr << "ITK Origin: "
+      //           << itk_image->GetOrigin()
+      //           << std::endl;
+      // std::cerr << "ITK Direction: "
+      //           << itk_image->GetDirection()
+      //           << std::endl;
+      // std::cerr << "orig STIR origin: "
+      //           << density.get_origin().x() << ", "
+      //           << density.get_origin().y() << ", "
+      //           << density.get_origin().z()
+      //           << std::endl;
+      // std::cerr << "orig STIR min: "
+      //           << density.get_LPS_coordinates_for_indices(min_indices).x() << ", "
+      //           << density.get_LPS_coordinates_for_indices(min_indices).y() << ", "
+      //           << density.get_LPS_coordinates_for_indices(min_indices).z()
+      //           << std::endl;
+      // std::cerr << "orig STIR max: "
+      //           << density.get_LPS_coordinates_for_indices(max_indices).x() << ", "
+      //           << density.get_LPS_coordinates_for_indices(max_indices).y() << ", "
+      //           << density.get_LPS_coordinates_for_indices(max_indices).z()
+      //           << std::endl;
+      // std::cerr << filename << std::endl;
+
       // copy data
       typedef itk::ImageRegionIterator< ImageType >	IteratorType;
       IteratorType it (itk_image, itk_image->GetLargestPossibleRegion() );	

@@ -51,8 +51,11 @@ START_NAMESPACE_STIR
 
 typedef itk::Image<float, 3>                                 ITKImageSingle;
 typedef itk::VectorImage<float, 3>                           ITKImageMulti;
-typedef DiscretisedDensity<3,float>                          STIRImageSingle;
+typedef DiscretisedDensity<3, float>                         STIRImageSingle;
+typedef VoxelsOnCartesianGrid<float>                         STIRImageSingleConcrete;
 typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > STIRImageMulti;
+// typedef DiscretisedDensity<3, CartesianCoordinate3D<float> > STIRImageMulti;
+// typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > STIRImageMultiConcrete;
 
 static
 STIRImageSingle*
@@ -76,12 +79,8 @@ ITK_coordinates_to_STIR(const itk::ImageBase<3>::PointType &itk_coord,
 
 template<typename ITKImageType>
 static
-void
-orient_ITK_image(typename ITKImageType::Pointer &itk_image,
-                 CartesianCoordinate3D<float> &voxel_size,
-                 BasicCoordinate<3,int> &min_indices,
-                 BasicCoordinate<3,int> &max_indices,
-                 CartesianCoordinate3D<float> &origin,
+typename ITKImageType::Pointer
+orient_ITK_image(shared_ptr<ExamInfo> exam_info_sptr,
                  const typename ITKImageType::Pointer itk_image_orig);
 
 template <typename STIRImageType>
@@ -140,76 +139,125 @@ read_from_file(const std::string& filename) const
     (read_file_itk< STIRImageType >(filename));
 }
 
+template<typename ITKImageType>
+static
+void
+calc_stir_min_max_indices(BasicCoordinate<3, int> &min_indices,
+                          BasicCoordinate<3, int> &max_indices,
+                          const typename ITKImageType::Pointer itk_image)
+{
+  // find index range in usual STIR convention
+  const int z_size = itk_image->GetLargestPossibleRegion().GetSize()[2];
+  const int y_size = itk_image->GetLargestPossibleRegion().GetSize()[1];
+  const int x_size = itk_image->GetLargestPossibleRegion().GetSize()[0];
+  min_indices = BasicCoordinate<3,int>(make_coordinate(0, -y_size/2, -x_size/2));
+  max_indices = min_indices + make_coordinate(z_size, y_size, x_size) - 1;
+}
+
+template<typename ITKImageType>
+static
+const CartesianCoordinate3D<float>
+calc_stir_origin(CartesianCoordinate3D<float> voxel_size,
+                 BasicCoordinate<3, int> min_indices, BasicCoordinate<3, int> &max_indices,
+                 const typename ITKImageType::Pointer itk_image)
+{
+  // dummy image that has minumum to be able to find ITK -> STIR origin vector
+  const VoxelsOnCartesianGrid<float> dummy_image =
+    VoxelsOnCartesianGrid<float>(IndexRange<3>(min_indices, max_indices),
+                                 CartesianCoordinate3D<float>(0, 0, 0),
+                                 voxel_size);
+  const CartesianCoordinate3D<float> itk_origin
+    = dummy_image.get_physical_coordinates_for_LPS_coordinates
+      (CartesianCoordinate3D<float>(static_cast<float>(itk_image->GetOrigin()[2]),
+                                    static_cast<float>(itk_image->GetOrigin()[1]),
+                                    static_cast<float>(itk_image->GetOrigin()[0])));
+  const CartesianCoordinate3D<float> stir_origin_wrt_itk_origin
+    = -dummy_image.get_relative_coordinates_for_indices(min_indices);
+  const CartesianCoordinate3D<float> stir_origin
+    = stir_origin_wrt_itk_origin + itk_origin;
+  return stir_origin;
+}
+
 // Actual conversion function
 STIRImageSingle*
 convert_ITK_to_STIR(const ITKImageSingle::Pointer itk_image_orig)
 {
-    ITKImageSingle::Pointer itk_image;
-    CartesianCoordinate3D<float> voxel_size;
-    BasicCoordinate<3,int> min_indices, max_indices;
-    CartesianCoordinate3D<float> origin;
+  // GEOMTODO: Need to get patient postion if DICOM
+  shared_ptr<ExamInfo> exam_info_sptr = shared_ptr<ExamInfo>(new ExamInfo());
+  exam_info_sptr->patient_position.set_orientation(PatientPosition::unknown_orientation);
+  exam_info_sptr->patient_position.set_rotation(PatientPosition::unknown_rotation);
 
-    // orientate the ITK image
-    orient_ITK_image<ITKImageSingle>(
-                itk_image, voxel_size, min_indices, max_indices, origin, itk_image_orig);
+  // orientate the ITK image
+  ITKImageSingle::Pointer itk_image = orient_ITK_image<ITKImageSingle>(exam_info_sptr, itk_image_orig);
 
-    // create STIR image
-    VoxelsOnCartesianGrid<float>* image_ptr =
-        new VoxelsOnCartesianGrid<float>
-            (IndexRange<3>(min_indices, max_indices),
-            origin,
-            voxel_size);
+  // find voxel size
+  CartesianCoordinate3D<float> voxel_size(static_cast<float>(itk_image->GetSpacing()[2]),
+                                          static_cast<float>(itk_image->GetSpacing()[1]),
+                                          static_cast<float>(itk_image->GetSpacing()[0]));
 
-    // copy data
-    VoxelsOnCartesianGrid<float>::full_iterator stir_iter = image_ptr->begin_all();
-    typedef itk::ImageRegionConstIterator< ITKImageSingle > IteratorType;
-    IteratorType it (itk_image, itk_image->GetLargestPossibleRegion() );
-    for ( it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter  ) {
-        *stir_iter = static_cast<float>(it.Get());
-    }
+  // find info STIR image geometrical metadata
+  BasicCoordinate<3,int> min_indices, max_indices;
+  calc_stir_min_max_indices<ITKImageSingle>(min_indices, max_indices, itk_image);
+  const CartesianCoordinate3D<float> stir_origin = calc_stir_origin<ITKImageSingle>
+    (voxel_size, min_indices, max_indices, itk_image);
 
-    return image_ptr;
+  // create STIR image
+  STIRImageSingle* image_ptr = new STIRImageSingleConcrete
+    (exam_info_sptr, IndexRange<3>(min_indices, max_indices), stir_origin, voxel_size);
+
+  // copy data
+  VoxelsOnCartesianGrid<float>::full_iterator stir_iter = image_ptr->begin_all();
+  typedef itk::ImageRegionConstIterator<ITKImageSingle> IteratorType;
+  IteratorType it (itk_image, itk_image->GetLargestPossibleRegion());
+  for (it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter)
+  {
+    *stir_iter = static_cast<float>(it.Get());
+  }
+  return image_ptr;
 }
 
 // Actual conversion function
 STIRImageMulti*
 convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image_orig)
 {
-    ITKImageMulti::Pointer itk_image;
-    CartesianCoordinate3D<float> voxel_size;
-    BasicCoordinate<3,int> min_indices, max_indices;
-    CartesianCoordinate3D<float> origin;
+  // GEOMTODO: Need to get patient postion if DICOM
+  shared_ptr<ExamInfo> exam_info_sptr = shared_ptr<ExamInfo>(new ExamInfo());
+  exam_info_sptr->patient_position.set_orientation(PatientPosition::unknown_orientation);
+  exam_info_sptr->patient_position.set_rotation(PatientPosition::unknown_rotation);
 
-    // orientate the ITK image
-    orient_ITK_image<ITKImageMulti>(
-                itk_image, voxel_size, min_indices, max_indices, origin, itk_image_orig);
+  // orientate the ITK image
+  ITKImageMulti::Pointer itk_image = orient_ITK_image<ITKImageMulti>(exam_info_sptr, itk_image_orig);
 
-    // create STIR image
-    STIRImageMulti* image_ptr =
-        new STIRImageMulti
-            (IndexRange<3>(min_indices, max_indices),
-             origin,
-             voxel_size);
+  // find voxel size
+  CartesianCoordinate3D<float> voxel_size(static_cast<float>(itk_image->GetSpacing()[2]),
+                                          static_cast<float>(itk_image->GetSpacing()[1]),
+                                          static_cast<float>(itk_image->GetSpacing()[0]));
 
-    // copy data
-    STIRImageMulti::full_iterator stir_iter = image_ptr->begin_all();
-    typedef itk::ImageRegionConstIterator< ITKImageMulti > IteratorType;
-    IteratorType it (itk_image, itk_image->GetLargestPossibleRegion() );
-    for ( it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter) {
-        itk::Point<double,3U> itk_coord;
+  // find info STIR image geometrical metadata
+  BasicCoordinate<3,int> min_indices, max_indices;
+  calc_stir_min_max_indices<ITKImageMulti>(min_indices, max_indices, itk_image);
+  const CartesianCoordinate3D<float> stir_origin = calc_stir_origin<ITKImageMulti>
+    (voxel_size, min_indices, max_indices, itk_image);
 
-        itk_coord[0] = -double(it.Get()[0]);
-        itk_coord[1] = -double(it.Get()[1]);
-        itk_coord[2] =  double(it.Get()[2]);
+  // create STIR image
+  STIRImageMulti* image_ptr = new STIRImageMulti
+    (exam_info_sptr, IndexRange<3>(min_indices, max_indices), stir_origin, voxel_size);
 
-        *stir_iter =
-                ITK_coordinates_to_STIR(
-                    itk_coord,
-                    voxel_size,
-                    min_indices,
-                    true);
-    }
-    return image_ptr;
+  // copy data
+  STIRImageMulti::full_iterator stir_iter = image_ptr->begin_all();
+  typedef itk::ImageRegionConstIterator<ITKImageMulti> IteratorType;
+  IteratorType it (itk_image, itk_image->GetLargestPossibleRegion() );
+  for ( it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter) {
+      itk::Point<double,3U> itk_coord;
+
+      itk_coord[0] = -double(it.Get()[0]);
+      itk_coord[1] = -double(it.Get()[1]);
+      itk_coord[2] =  double(it.Get()[2]);
+
+      *stir_iter = ITK_coordinates_to_STIR
+        (itk_coord, voxel_size, min_indices, true);
+  }
+  return image_ptr;
 }
 
 //To read any file format via ITK
@@ -336,46 +384,55 @@ read_file_itk(const std::string &filename)
 }
 
 template<typename ITKImageType>
-void
-orient_ITK_image(typename ITKImageType::Pointer &itk_image,
-                 CartesianCoordinate3D<float> &voxel_size,
-                 BasicCoordinate<3,int> &min_indices,
-                 BasicCoordinate<3,int> &max_indices,
-                 CartesianCoordinate3D<float> &origin,
+typename ITKImageType::Pointer
+orient_ITK_image(shared_ptr<ExamInfo> exam_info_sptr,
                  const typename ITKImageType::Pointer itk_image_orig)
 {
+  typedef itk::OrientImageFilter<ITKImageType,ITKImageType> OrienterType;
+  typename OrienterType::Pointer orienter = OrienterType::New();
+  orienter->UseImageDirectionOn();
+  orienter->SetInput(itk_image_orig);
 
-    // Only works for HFS!
-    typedef itk::OrientImageFilter<ITKImageType,ITKImageType> OrienterType;
-    typename OrienterType::Pointer orienter = OrienterType::New();
-    orienter->UseImageDirectionOn();
-    orienter->SetInput(itk_image_orig);
-    orienter->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS);
-    orienter->Update();
-    itk_image = orienter->GetOutput();
+  // We need the origin to be in the minimum x, y, z corner. This
+  // depends on the patient position
+  switch (exam_info_sptr->patient_position.get_position()) {
+  case PatientPosition::unknown_position:
+    // If unknown, assume HFS
+    // TODO: warning?
+  case PatientPosition::HFS:
+    // HFS means currently in LPI
+    // So origin is in RAS direction
+    orienter
+      ->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAS);
+    break;
 
-    // find voxel size
-    voxel_size = CartesianCoordinate3D<float>(static_cast<float>(itk_image->GetSpacing()[2]),
-        static_cast<float>(itk_image->GetSpacing()[1]),
-        static_cast<float>(itk_image->GetSpacing()[0]));
+  case PatientPosition::HFP:
+    // HFP means currently in RAI
+    // So origin is in LPS direction
+    orienter
+      ->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LPS);
+    break;
 
-    // find index range in usual STIR convention
-    const int z_size =  itk_image->GetLargestPossibleRegion().GetSize()[2];
-    const int y_size =  itk_image->GetLargestPossibleRegion().GetSize()[1];
-    const int x_size =  itk_image->GetLargestPossibleRegion().GetSize()[0];
-    min_indices = BasicCoordinate<3,int>(make_coordinate(0, -y_size/2, -x_size/2));
-    max_indices = min_indices + make_coordinate(z_size, y_size, x_size) - 1;
+  case PatientPosition::FFS:
+    // FFS means currently in RPS
+    // So origin is in LAI direction
+    orienter
+      ->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_LAI);
+    break;
 
-    // find STIR origin
-    origin = CartesianCoordinate3D<float>(
-                ITK_coordinates_to_STIR(
-                    itk_image->GetOrigin(),
-                    voxel_size,
-                    min_indices));
-#ifndef NDEBUG
-  info(boost::format("ITK image origin: %1%") % itk_image->GetOrigin());
-  info(boost::format("STIR image origin: [%1%, %2%, %3%]") % origin[1] % origin[2] % origin[3]);
-#endif
+  case PatientPosition::FFP:
+    // FFP means currently in LAS
+    // So origin is in RPI direction
+    orienter
+      ->SetDesiredCoordinateOrientation(itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RPI);
+    break;
+
+  default:
+    throw std::runtime_error("Unsupported patient position, not sure how to read.");
+  }
+
+  orienter->Update();
+  return orienter->GetOutput();
 }
 
 // Helper class to be able to work-around ITK's Pointer stuff
@@ -410,9 +467,9 @@ ITK_coordinates_to_STIR(
   // find STIR origin
   // Note: need to use - for z-coordinate because of different axis conventions
   // Only works for HFS!
-  CartesianCoordinate3D<float> stir_coord(-static_cast<float>(itk_coord[2]),
-                                           static_cast<float>(itk_coord[1]),
-                                           static_cast<float>(itk_coord[0]));
+  CartesianCoordinate3D<float> stir_coord(static_cast<float>(itk_coord[2]),
+                                          static_cast<float>(itk_coord[1]),
+                                          static_cast<float>(itk_coord[0]));
 
   // The following is not required for displacement field images
   if (!is_displacement_field)
