@@ -284,31 +284,45 @@ VoxelsOnCartesianGridTests::run_tests()
     const BasicCoordinate<3,int> indices = make_coordinate(1,2,3);
 
     // Check some known relations
-    check_if_equal(hfs_image.get_LPS_coordinates_for_indices(indices).z(),
-                   hfp_image.get_LPS_coordinates_for_indices(indices).z(),
-                   "head in (suppine/prone) have same z");
     check_if_equal(hfs_image.get_LPS_coordinates_for_indices(indices).x(),
                    -hfp_image.get_LPS_coordinates_for_indices(indices).x(),
                    "head in (suppine/prone) have opposite x");
     check_if_equal(hfs_image.get_LPS_coordinates_for_indices(indices).y(),
                    -hfp_image.get_LPS_coordinates_for_indices(indices).y(),
                    "head in (suppine/prone) have opposite y");
-    check_if_equal(ffs_image.get_LPS_coordinates_for_indices(indices).z(),
-                   ffp_image.get_LPS_coordinates_for_indices(indices).z(),
-                   "feet in (suppine/prone) have same z");
+    check_if_equal(hfs_image.get_LPS_coordinates_for_indices(indices).z(),
+                   hfp_image.get_LPS_coordinates_for_indices(indices).z(),
+                   "head in (suppine/prone) have same z");
+
     check_if_equal(ffs_image.get_LPS_coordinates_for_indices(indices).x(),
                    -ffp_image.get_LPS_coordinates_for_indices(indices).x(),
                    "feet in (suppine/prone) have opposite x");
     check_if_equal(ffs_image.get_LPS_coordinates_for_indices(indices).y(),
                    -ffp_image.get_LPS_coordinates_for_indices(indices).y(),
                    "feet in (suppine/prone) have opposite y");
+    check_if_equal(ffs_image.get_LPS_coordinates_for_indices(indices).z(),
+                   ffp_image.get_LPS_coordinates_for_indices(indices).z(),
+                   "feet in (suppine/prone) have same z");
 
+    check_if_equal(hfs_image.get_LPS_coordinates_for_indices(indices).x(),
+                   -ffs_image.get_LPS_coordinates_for_indices(indices).x(),
+                   "(head/feet) in suppine have opposite x");
     check_if_equal(hfs_image.get_LPS_coordinates_for_indices(indices).y(),
                    ffs_image.get_LPS_coordinates_for_indices(indices).y(),
                    "(head/feet) in suppine have same y");
+    check_if_equal(hfs_image.get_LPS_coordinates_for_indices(indices).z(),
+                   -ffs_image.get_LPS_coordinates_for_indices(indices).z(),
+                   "(head/feet) in suppine have opposite z");
+
+    check_if_equal(hfp_image.get_LPS_coordinates_for_indices(indices).x(),
+                   -ffp_image.get_LPS_coordinates_for_indices(indices).x(),
+                   "(head/feet) in prone have opposite x");
     check_if_equal(hfp_image.get_LPS_coordinates_for_indices(indices).y(),
                    ffp_image.get_LPS_coordinates_for_indices(indices).y(),
                    "(head/feet) in prone have same y");
+    check_if_equal(hfp_image.get_LPS_coordinates_for_indices(indices).z(),
+                   -ffp_image.get_LPS_coordinates_for_indices(indices).z(),
+                   "(head/feet) in prone have opposite z");
 
     // Check inverse consistency
     check_if_equal(indices,
