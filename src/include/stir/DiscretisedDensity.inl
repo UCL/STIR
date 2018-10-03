@@ -250,14 +250,21 @@ swap_axes_based_on_orientation(CartesianCoordinate3D<float>& coordinates,
 template<int num_dimensions, typename elemT>
 CartesianCoordinate3D<float>
 DiscretisedDensity<num_dimensions, elemT>::
+get_LPS_coordinates_for_physical_coordinates(const CartesianCoordinate3D<float>& coords) const
+{
+  CartesianCoordinate3D<float> flip_coords = coords;
+  const PatientPosition patient_position = this->get_exam_info().patient_position;
+  swap_axes_based_on_orientation(flip_coords, patient_position);
+  return flip_coords;
+}
+
+template<int num_dimensions, typename elemT>
+CartesianCoordinate3D<float>
+DiscretisedDensity<num_dimensions, elemT>::
 get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions, float>& indices) const
 {
-  CartesianCoordinate3D<float> coordinates
-    = this->get_physical_coordinates_for_indices(indices);
-  const PatientPosition patient_position = this->get_exam_info().patient_position;
-
-  swap_axes_based_on_orientation(coordinates, patient_position);
-  return coordinates;
+  return this->get_LPS_coordinates_for_physical_coordinates
+    (this->get_physical_coordinates_for_indices(indices));
 }
 
 template<int num_dimensions, typename elemT>
@@ -269,17 +276,21 @@ get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions, int>& indi
 }
 
 template<int num_dimensions, typename elemT>
-BasicCoordinate<num_dimensions, float>
+CartesianCoordinate3D<float>
+DiscretisedDensity<num_dimensions, elemT>::
+get_physical_coordinates_for_LPS_coordinates(const CartesianCoordinate3D<float>& coords) const
+{
+  // operation is symmetric
+  return this->get_LPS_coordinates_for_physical_coordinates(coords);
+}
+
+template<int num_dimensions, typename elemT>
+BasicCoordinate<num_dimensions,float>
 DiscretisedDensity<num_dimensions, elemT>::
 get_index_coordinates_for_LPS_coordinates(const CartesianCoordinate3D<float>& coords) const
 {
-  CartesianCoordinate3D<float> flip_coords = CartesianCoordinate3D<float>(coords);
-  const PatientPosition patient_position = this->get_exam_info().patient_position;
-  swap_axes_based_on_orientation(flip_coords, patient_position);
-
-  CartesianCoordinate3D<float> indices
-    = this->get_index_coordinates_for_physical_coordinates(flip_coords);
-  return indices;
+  return this->get_index_coordinates_for_physical_coordinates
+    (this->get_physical_coordinates_for_LPS_coordinates(coords));
 }
 
 template<int num_dimensions, typename elemT>
