@@ -185,24 +185,24 @@ set_deformation_field_from_NCAT_file(DeformationFieldOnCartesianGrid<3,float>& d
 static 
 Succeeded
 set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deformation_field,
+                                CartesianCoordinate3D<float>& grid_spacing,
+                                CartesianCoordinate3D<float>& origin,
 				const std::string& deformation_field_from_file_x,
 				const std::string& deformation_field_from_file_y,
-				const std::string& deformation_field_from_file_z,
-				CartesianCoordinate3D<float>& grid_spacing,
-				CartesianCoordinate3D<float>& origin)
+                                const std::string& deformation_field_from_file_z)
 {
   shared_ptr<DiscretisedDensity<3,float> > 
     image_sptr(read_from_file<DiscretisedDensity<3,float> >(deformation_field_from_file_z));
   if (is_null_ptr(image_sptr))
     {
-      warning("Error reading %s", deformation_field_from_file_z.c_str());
+      error(boost::format("Error reading %1%") % deformation_field_from_file_z);
       return Succeeded::no;
     }
   VoxelsOnCartesianGrid<float> const * voxels_ptr =
     dynamic_cast<VoxelsOnCartesianGrid<float> const *>(image_sptr.get());
   if (is_null_ptr(voxels_ptr))
     {
-      warning("Error reading %s: should be of type VoxelsOnCartesianGrid", deformation_field_from_file_z.c_str());
+      error(boost::format("Error reading %1%: should be of type VoxelsOnCartesianGrid") % deformation_field_from_file_z);
       return Succeeded::no;
     }
   deformation_field[1] = *image_sptr;
@@ -213,7 +213,7 @@ set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deform
     read_from_file<DiscretisedDensity<3,float> >(deformation_field_from_file_y);
   if (is_null_ptr(image_sptr))
     {
-      warning("Error reading %s", deformation_field_from_file_y.c_str());
+      error(boost::format("Error reading %1%") % deformation_field_from_file_y.c_str());
       return Succeeded::no;
     }
   deformation_field[2] = *image_sptr;
@@ -222,10 +222,43 @@ set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deform
     read_from_file<DiscretisedDensity<3,float> >(deformation_field_from_file_x);
   if (is_null_ptr(image_sptr))
     {
-      warning("Error reading %s", deformation_field_from_file_x.c_str());
+      error(boost::format("Error reading %1%") % deformation_field_from_file_x.c_str());
       return Succeeded::no;
     }
   deformation_field[3] = *image_sptr;
+
+  return Succeeded::yes;
+}
+
+static
+Succeeded
+set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deformation_field,
+                                CartesianCoordinate3D<float>& grid_spacing,
+                                CartesianCoordinate3D<float>& origin,
+                                const std::string& deformation_field_multicomponent_filename)
+{
+    // Read the multicomponent image
+    unique_ptr<VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > > uptr =
+            read_from_file<VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > >(
+                deformation_field_multicomponent_filename);
+
+    const VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > &voxel_coords(*uptr);
+
+    deformation_field[1] = Array<3,float>(voxel_coords.get_index_range());
+    deformation_field[2] = Array<3,float>(voxel_coords.get_index_range());
+    deformation_field[3] = Array<3,float>(voxel_coords.get_index_range());
+
+    // Loop over z, y and x
+    for (int k=voxel_coords.get_min_z(); k<=voxel_coords.get_max_z(); k++)
+        for (int j=voxel_coords.get_min_y(); j<=voxel_coords.get_max_y(); j++)
+            for (int i=voxel_coords.get_min_x(); i<=voxel_coords.get_max_x(); i++)
+                // Loop over the 3 dimensions
+                // (as there are different x, y and z images)
+                for (int a=1; a<=3; a++)
+                        deformation_field[a][k][j][i] = voxel_coords[k][j][i][a];
+
+    grid_spacing = voxel_coords.get_grid_spacing();
+    origin       = voxel_coords.get_origin();
 
   return Succeeded::yes;
 }
@@ -235,6 +268,7 @@ void
 NonRigidObjectTransformationUsingBSplines<num_dimensions,elemT>::
 set_defaults()
 {
+  this->deformation_field_sptr.reset(new DeformationFieldOnCartesianGrid<num_dimensions,elemT>);
   this->_bspline_type = BSpline::cubic;
   this->_origin = make_coordinate(0.F,0.F,0.F);
 }
@@ -245,10 +279,10 @@ void
 NonRigidObjectTransformationUsingBSplines<num_dimensions,elemT>::
 initialise_keymap()
 {
-  this->deformation_field_sptr.reset(new DeformationFieldOnCartesianGrid<num_dimensions,elemT>);
   this->parser.add_key("grid spacing", &this->_grid_spacing);
   this->parser.add_key("origin", &this->_origin);
   this->parser.add_key("deformation field", this->deformation_field_sptr.get());
+  this->parser.add_key("deformation field multicomponent filename", &this->_deformation_field_multicomponent_filename);
   this->parser.add_key("deformation field from NCAT file", &this->_deformation_field_from_NCAT_file);
   this->parser.add_key("deformation field from NCAT x-size", &this->_deformation_field_from_NCAT_size.x());
   this->parser.add_key("deformation field from NCAT y-size", &this->_deformation_field_from_NCAT_size.y());
@@ -289,18 +323,31 @@ post_processing()
 	{
 	  if (this->_deformation_field_from_file_z.size() == 0)
 	    {
+          if (this->_deformation_field_multicomponent_filename.size() == 0)
+            {
 	      warning("NonRigidObjectTransformationUsingBSplines:\n"
-		      "you need to set either deformation_field or deformation_field_from_NCAT_file");
-	      return true;
+                  "you need to set either deformation_field, "
+                  "deformation_field_from_NCAT_file or deformation multicomponent filename");
+              return true;
+            }
+          else
+            {
+              if (set_deformation_field_from_file(*(this->deformation_field_sptr),
+                                                  this->_grid_spacing,
+                                                  this->_origin,
+                              this->_deformation_field_multicomponent_filename)
+              == Succeeded::no)
+              return true;
+            }
 	    }
 	  else
 	    {
 	      if (set_deformation_field_from_file(*(this->deformation_field_sptr),
+                                                  this->_grid_spacing,
+                                                  this->_origin,
 						  this->_deformation_field_from_file_x,
 						  this->_deformation_field_from_file_y,
-						  this->_deformation_field_from_file_z,
-						  this->_grid_spacing,
-						  this->_origin) 
+                                                  this->_deformation_field_from_file_z)
 		  == Succeeded::no)
 		return true;
 	}
@@ -318,11 +365,15 @@ post_processing()
 	}
     }
 
+#ifndef NDEBUG
   info("Starting to compute interpolators");
+#endif
   for (int i=1; i<=num_dimensions; ++i)
     this->interpolator[i] = 
       BSpline::BSplinesRegularGrid<num_dimensions,elemT,elemT>((*this->deformation_field_sptr)[i],this->_bspline_type);
+#ifndef NDEBUG
   info("Done computing interpolators");
+#endif
   // deallocate data for deformation field
   // at present, have to do this by assigning an object as opposed to 0
   // in case we want to parse twice
@@ -340,6 +391,50 @@ NonRigidObjectTransformationUsingBSplines()
   this->set_defaults();
 }
 
+template <int num_dimensions, class elemT>
+NonRigidObjectTransformationUsingBSplines<num_dimensions,elemT>::
+NonRigidObjectTransformationUsingBSplines(const std::string &filename_x, const std::string &filename_y, const std::string &filename_z, const int bspline_order)
+{
+    this->set_defaults();
+
+    // Get the origin and spacing from the x and assume it's the same for y and z
+    shared_ptr<DiscretisedDensity<3,float> > image_sptr(read_from_file<DiscretisedDensity<3,float> >(filename_x));
+
+    if (is_null_ptr(image_sptr))
+        error("Error reading %s", filename_x.c_str());
+
+    VoxelsOnCartesianGrid<float> const * voxels_ptr = dynamic_cast<VoxelsOnCartesianGrid<float> const *>(image_sptr.get());
+
+    if (is_null_ptr(voxels_ptr))
+        error(boost::format("Error reading %1%: should be of type VoxelsOnCartesianGrid") % filename_x);
+
+    this->_origin       = image_sptr->get_origin();
+    this->_grid_spacing = voxels_ptr->get_grid_spacing();
+
+    this->_deformation_field_from_file_x = filename_x;
+    this->_deformation_field_from_file_y = filename_y;
+    this->_deformation_field_from_file_z = filename_z;
+    this->_deformation_field_multicomponent_filename = "";
+
+    this->_bspline_order = bspline_order;
+
+    this->post_processing();
+}
+
+template <int num_dimensions, class elemT>
+NonRigidObjectTransformationUsingBSplines<num_dimensions,elemT>::
+NonRigidObjectTransformationUsingBSplines(const std::string &filename, const int bspline_order)
+{
+    this->set_defaults();
+
+    this->_deformation_field_multicomponent_filename = filename;
+    this->_deformation_field_from_file_x = "";
+    this->_deformation_field_from_file_y = "";
+    this->_deformation_field_from_file_z = "";
+    this->_bspline_order = bspline_order;
+
+    this->post_processing();
+}
 
 template <int num_dimensions, class elemT>
 BasicCoordinate<num_dimensions,elemT>
