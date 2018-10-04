@@ -176,9 +176,9 @@ calc_stir_origin(CartesianCoordinate3D<float> voxel_size,
     (itk_image->GetOrigin(), dummy_image);
 }
 
-// Actual conversion function
-STIRImageSingle*
-convert_ITK_to_STIR(const ITKImageSingle::Pointer itk_image_orig)
+template<typename ITKImageType, typename STIRImageType, typename STIRConcreteType>
+STIRImageType*
+construct_empty_stir_image_and_orient_itk_image(typename ITKImageType::Pointer itk_image)
 {
   // GEOMTODO: Need to get patient postion if DICOM
   shared_ptr<ExamInfo> exam_info_sptr = shared_ptr<ExamInfo>(new ExamInfo());
@@ -186,7 +186,7 @@ convert_ITK_to_STIR(const ITKImageSingle::Pointer itk_image_orig)
   exam_info_sptr->patient_position.set_rotation(PatientPosition::unknown_rotation);
 
   // orientate the ITK image
-  ITKImageSingle::Pointer itk_image = orient_ITK_image<ITKImageSingle>(exam_info_sptr, itk_image_orig);
+  itk_image = orient_ITK_image<ITKImageType>(exam_info_sptr, itk_image);
 
   // find voxel size
   CartesianCoordinate3D<float> voxel_size(static_cast<float>(itk_image->GetSpacing()[2]),
@@ -194,13 +194,23 @@ convert_ITK_to_STIR(const ITKImageSingle::Pointer itk_image_orig)
                                           static_cast<float>(itk_image->GetSpacing()[0]));
 
   // find info STIR image geometrical metadata
-  IndexRange<3> index_range = calc_stir_index_range<ITKImageSingle>(itk_image);
-  const CartesianCoordinate3D<float> stir_origin = calc_stir_origin<ITKImageSingle>
+  IndexRange<3> index_range = calc_stir_index_range<ITKImageType>(itk_image);
+  const CartesianCoordinate3D<float> stir_origin = calc_stir_origin<ITKImageType>
     (voxel_size, index_range, itk_image);
 
   // create STIR image
-  STIRImageSingle* image_ptr = new STIRImageSingleConcrete
+  STIRImageType* image_ptr = new STIRConcreteType
     (exam_info_sptr, index_range, stir_origin, voxel_size);
+  return image_ptr;
+}
+
+// Actual conversion function
+STIRImageSingle*
+convert_ITK_to_STIR(const ITKImageSingle::Pointer itk_image_orig)
+{
+  ITKImageSingle::Pointer itk_image = itk_image_orig->Clone();
+  STIRImageSingle* image_ptr = construct_empty_stir_image_and_orient_itk_image
+    <ITKImageSingle, STIRImageSingle, STIRImageSingleConcrete>(itk_image);
 
   // copy data
   VoxelsOnCartesianGrid<float>::full_iterator stir_iter = image_ptr->begin_all();
@@ -217,29 +227,9 @@ convert_ITK_to_STIR(const ITKImageSingle::Pointer itk_image_orig)
 STIRImageMulti*
 convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image_orig)
 {
-  // GEOMTODO: Need to get patient postion if DICOM
-  shared_ptr<ExamInfo> exam_info_sptr = shared_ptr<ExamInfo>(new ExamInfo());
-  exam_info_sptr->patient_position.set_orientation(PatientPosition::unknown_orientation);
-  exam_info_sptr->patient_position.set_rotation(PatientPosition::unknown_rotation);
-
-  // orientate the ITK image
-  ITKImageMulti::Pointer itk_image = orient_ITK_image<ITKImageMulti>(exam_info_sptr, itk_image_orig);
-
-  // find voxel size
-  CartesianCoordinate3D<float> voxel_size(static_cast<float>(itk_image->GetSpacing()[2]),
-                                          static_cast<float>(itk_image->GetSpacing()[1]),
-                                          static_cast<float>(itk_image->GetSpacing()[0]));
-
-  // find info STIR image geometrical metadata
-  IndexRange<3> index_range = calc_stir_index_range<ITKImageMulti>(itk_image);
-  BasicCoordinate<3, int> min_indices, max_indices;
-  index_range.get_regular_range(min_indices, max_indices);
-  const CartesianCoordinate3D<float> stir_origin = calc_stir_origin<ITKImageMulti>
-    (voxel_size, index_range, itk_image);
-
-  // create STIR image
-  STIRImageMulti* image_ptr = new STIRImageMulti
-    (exam_info_sptr, index_range, stir_origin, voxel_size);
+  ITKImageMulti::Pointer itk_image = itk_image_orig->Clone();
+  STIRImageMulti* image_ptr = construct_empty_stir_image_and_orient_itk_image
+    <ITKImageMulti, STIRImageMulti, STIRImageMulti>(itk_image);
 
   // copy data
   STIRImageMulti::full_iterator stir_iter = image_ptr->begin_all();
