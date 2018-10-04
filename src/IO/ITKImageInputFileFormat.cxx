@@ -77,7 +77,7 @@ template<typename STIRImageType>
 static
 CartesianCoordinate3D<float>
 ITK_coordinates_to_STIR(const itk::ImageBase<3>::PointType &itk_coord,
-                        const STIRImageType stir_image,
+                        const STIRImageType &stir_image,
                         bool is_displacement_field = false);
 
 template<typename ITKImageType>
@@ -185,6 +185,8 @@ construct_empty_stir_image_and_orient_itk_image(typename ITKImageType::Pointer i
 {
   // GEOMTODO: Need to get patient postion if DICOM
   shared_ptr<ExamInfo> exam_info_sptr = shared_ptr<ExamInfo>(new ExamInfo());
+  warning("Unable to determine patient position. "
+          "Internally this will generally be handled by assuming HFS");
   exam_info_sptr->patient_position.set_orientation(PatientPosition::unknown_orientation);
   exam_info_sptr->patient_position.set_rotation(PatientPosition::unknown_rotation);
 
@@ -239,9 +241,9 @@ convert_ITK_to_STIR(ITKImageMulti::Pointer itk_image)
   for ( it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter) {
       itk::Point<double,3U> itk_coord;
 
-      itk_coord[0] = -double(it.Get()[0]);
-      itk_coord[1] = -double(it.Get()[1]);
-      itk_coord[2] =  double(it.Get()[2]);
+      itk_coord[0] = double(it.Get()[0]);
+      itk_coord[1] = double(it.Get()[1]);
+      itk_coord[2] = double(it.Get()[2]);
 
       *stir_iter = ITK_coordinates_to_STIR<STIRImageMulti>
         (itk_coord, *image_ptr, true);
@@ -387,7 +389,6 @@ orient_ITK_image(shared_ptr<ExamInfo> exam_info_sptr,
   switch (exam_info_sptr->patient_position.get_position()) {
   case PatientPosition::unknown_position:
     // If unknown, assume HFS
-    // TODO: warning?
   case PatientPosition::HFS:
     // HFS means currently in LPI
     // So origin is in RAS direction
@@ -449,7 +450,7 @@ struct removePtr<itk::SmartPointer<Type> >
 template<typename STIRImageType>
 CartesianCoordinate3D<float>
 ITK_coordinates_to_STIR(const itk::ImageBase<3>::PointType &itk_coord,
-                        const STIRImageType stir_image,
+                        const STIRImageType &stir_image,
                         bool is_displacement_field)
 {
   // find STIR origin
