@@ -5,6 +5,7 @@
     Copyright (C) 2000- 2009-07-08, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2018, University College London
+    Copyright (C) 2018, CSIRO
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,7 +26,8 @@
   \brief  inline implementation for stir::DiscretisedDensity
 
   \author Sanida Mustafovic 
-  \author Kris Thielemans 
+  \author Kris Thielemans
+  \author Ashley Gillman
   \author (help from Alexey Zverovich)
   \author PARAPET project
 
