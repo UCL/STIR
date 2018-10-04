@@ -90,9 +90,8 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
 {
   BackProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);
   original_back_projector_ptr->set_up(proj_data_info_ptr, image_info_ptr);
-  // don't do set_up as image sizes might change
-  //if (!is_null_ptr(image_processor_ptr))
-  //   image_processor_ptr->set_up(*image_info_ptr);
+  if (!is_null_ptr(image_processor_ptr))
+     image_processor_ptr->set_up(*image_info_ptr);
 }
 
 const DataSymmetriesForViewSegmentNumbers * 
@@ -128,6 +127,25 @@ actual_back_project(DiscretisedDensity<3,float>& density,
     }
 }
  
+void
+PostsmoothingBackProjectorByBin::
+actual_back_project(const RelatedViewgrams<float>& viewgrams,
+                    const int min_axial_pos_num, const int max_axial_pos_num,
+                    const int min_tangential_pos_num, const int max_tangential_pos_num)
+{
+      original_back_projector_ptr->back_project(*_density_sptr, viewgrams,
+                                                min_axial_pos_num, max_axial_pos_num,
+                                                min_tangential_pos_num, max_tangential_pos_num);
+}
+
+void
+PostsmoothingBackProjectorByBin::
+get_output(DiscretisedDensity<3,float> &density) const
+{
+    BackProjectorByBin::get_output(density);
+    if (!is_null_ptr(image_processor_ptr))
+        image_processor_ptr->apply(density);
+}
 
 
 END_NAMESPACE_STIR

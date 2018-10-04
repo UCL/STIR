@@ -41,12 +41,22 @@ template <typename DataT> class DataProcessor;
 /*!
   \brief A very preliminary class that first smooths the image, then back projects.
 
+  \warning. It assumes that the DataProcessor does not change
+  the size of the image.
 */
 class PostsmoothingBackProjectorByBin : 
   public 
     RegisteredParsingObject<PostsmoothingBackProjectorByBin,
                             BackProjectorByBin>
 {
+#ifdef SWIG
+  // work-around swig problem. It gets confused when using a private (or protected)
+  // typedef in a definition of a public typedef/member
+public:
+#else
+ private:
+#endif
+  typedef BackProjectorByBin base_type;
 public:
   //! Name which will be used when parsing a PostsmoothingBackProjectorByBin object
   static const char * const registered_name; 
@@ -75,6 +85,8 @@ public:
   // class has other behaviour).
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
+  /// Get output
+  virtual void get_output(DiscretisedDensity<3,float> &) const;
 
 private:
 
@@ -86,6 +98,9 @@ private:
                            const int min_axial_pos_num, const int max_axial_pos_num,
                            const int min_tangential_pos_num, const int max_tangential_pos_num);
 
+  void actual_back_project(const RelatedViewgrams<float>&,
+                           const int min_axial_pos_num, const int max_axial_pos_num,
+                           const int min_tangential_pos_num, const int max_tangential_pos_num);
 
 
   virtual void set_defaults();
