@@ -425,28 +425,6 @@ orient_ITK_image(shared_ptr<ExamInfo> exam_info_sptr,
   return orienter->GetOutput();
 }
 
-// Helper class to be able to work-around ITK's Pointer stuff
-// We will need to find the type of the object pointed to. I don't know how to do this
-// in ITK, so we do it using the usual way to get rid of pointers, but now including itk::SmartPointer
-// (we might only need the latter, but I'm not sure)
-template <class PtrType>
-struct removePtr
-{
-  typedef PtrType type;
-};
-
-template <class Type>
-struct removePtr<Type *>
-{
-  typedef Type type;
-};
-
-template <class Type>
-struct removePtr<itk::SmartPointer<Type> >
-{
-  typedef Type type;
-};
-
 template<typename STIRImageType>
 CartesianCoordinate3D<float>
 ITK_coordinates_to_STIR(const itk::ImageBase<3>::PointType &itk_coord,
