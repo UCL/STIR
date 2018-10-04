@@ -96,8 +96,6 @@ void end_distributable_computation();
 typedef  void RPC_process_related_viewgrams_type (
                                                   const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                                   const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-                                                  DiscretisedDensity<3,float>* output_image_ptr, 
-                                                  const DiscretisedDensity<3,float>* input_image_ptr, 
                                                   RelatedViewgrams<float>* measured_viewgrams_ptr,
                                                   int& count, int& count2, double* log_likelihood_ptr,
                                                   const RelatedViewgrams<float>* additive_binwise_correction_ptr,

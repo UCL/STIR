@@ -108,7 +108,28 @@ virtual void set_up(
 		  const int min_axial_pos_num, const int max_axial_pos_num,
 		  const int min_tangential_pos_num, const int max_tangential_pos_num);
 
+   //! project the volume into the whole proj_data
+   /*! it overwrites the data already present in the projection data */
+    void forward_project(ProjData&);
+
+   //! project the volume into the viewgrams
+   /*! it overwrites the data already present in the viewgram */
+    void forward_project(RelatedViewgrams<float>&);
+
+    void forward_project(RelatedViewgrams<float>&,
+          const int min_axial_pos_num, const int max_axial_pos_num);
+
+    void forward_project(RelatedViewgrams<float>&,
+          const int min_axial_pos_num, const int max_axial_pos_num,
+          const int min_tangential_pos_num, const int max_tangential_pos_num);
+
     virtual ~ForwardProjectorByBin();
+
+    /// Set input
+    virtual void set_input(const shared_ptr<DiscretisedDensity<3,float> >&);
+
+    /// Set input
+    void set_input(const DiscretisedDensity<3,float>*);
 
 protected:
   //! This virtual function has to be implemented by the derived class.
@@ -116,6 +137,10 @@ protected:
 		  const DiscretisedDensity<3,float>&,
 		  const int min_axial_pos_num, const int max_axial_pos_num,
 		  const int min_tangential_pos_num, const int max_tangential_pos_num) = 0;
+
+  virtual void actual_forward_project(RelatedViewgrams<float>& viewgrams,
+          const int min_axial_pos_num, const int max_axial_pos_num,
+          const int min_tangential_pos_num, const int max_tangential_pos_num);
 
   //! check if the argument is the same as what was used for set_up()
   /*! calls error() if anything is wrong.
@@ -125,11 +150,11 @@ protected:
   virtual void check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& density_info) const;
   bool _already_set_up;
 
+  //! The density ptr set with set_up()
+  shared_ptr<DiscretisedDensity<3,float> > _density_sptr;
+
 private:
   shared_ptr<ProjDataInfo> _proj_data_info_sptr;
-  //! The density ptr set with set_up()
-  /*! \todo it is wasteful to have to store the whole image as this uses memory that we don't need. */
-  shared_ptr<DiscretisedDensity<3,float> > _density_info_sptr;
 };
 
 END_NAMESPACE_STIR
