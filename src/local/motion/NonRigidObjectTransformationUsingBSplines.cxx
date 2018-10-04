@@ -195,7 +195,7 @@ set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deform
     image_sptr(read_from_file<DiscretisedDensity<3,float> >(deformation_field_from_file_z));
   if (is_null_ptr(image_sptr))
     {
-      error(boost::format("Error reading %1%") % deformation_field_from_file_z.c_str());
+      error(boost::format("Error reading %1%") % deformation_field_from_file_z);
       return Succeeded::no;
     }
   VoxelsOnCartesianGrid<float> const * voxels_ptr =
@@ -237,31 +237,16 @@ set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deform
                                 CartesianCoordinate3D<float>& origin,
                                 const std::string& deformation_field_multicomponent_filename)
 {
-    // Read the multicomponent image as a single image to create deformation image of correct size
-    shared_ptr<DiscretisedDensity<3,float> > single_discretised_sptr
-            (read_from_file<DiscretisedDensity<3,float> >(deformation_field_multicomponent_filename));
-    if (is_null_ptr(single_discretised_sptr)) {
-        error(boost::format("Error reading %1%") % deformation_field_multicomponent_filename);
-        return Succeeded::no;
-    }
-
-    VoxelsOnCartesianGrid<float> const * single_voxels_ptr =
-      dynamic_cast<VoxelsOnCartesianGrid<float> const *>(single_discretised_sptr.get());
-    if (is_null_ptr(single_voxels_ptr)) {
-        error(boost::format("Error reading %1%: should be of type VoxelsOnCartesianGrid") % deformation_field_multicomponent_filename);
-        return Succeeded::no;
-    }
-
-    deformation_field[1] = *single_voxels_ptr;
-    deformation_field[2] = *single_voxels_ptr;
-    deformation_field[3] = *single_voxels_ptr;
-
     // Read the multicomponent image
     unique_ptr<VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > > uptr =
             read_from_file<VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > >(
                 deformation_field_multicomponent_filename);
 
     const VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > &voxel_coords(*uptr);
+
+    deformation_field[1] = Array<3,float>(voxel_coords.get_index_range());
+    deformation_field[2] = Array<3,float>(voxel_coords.get_index_range());
+    deformation_field[3] = Array<3,float>(voxel_coords.get_index_range());
 
     // Loop over z, y and x
     for (int k=voxel_coords.get_min_z(); k<=voxel_coords.get_max_z(); k++)
@@ -273,7 +258,7 @@ set_deformation_field_from_file(DeformationFieldOnCartesianGrid<3,float>& deform
                         deformation_field[a][k][j][i] = voxel_coords[k][j][i][a];
 
     grid_spacing = voxel_coords.get_grid_spacing();
-    origin       = single_voxels_ptr->get_origin();
+    origin       = voxel_coords.get_origin();
 
   return Succeeded::yes;
 }

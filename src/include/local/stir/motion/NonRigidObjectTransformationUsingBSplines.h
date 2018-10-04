@@ -56,11 +56,12 @@ public:
   // Default constructor
   NonRigidObjectTransformationUsingBSplines();
 
-  // Give x, y and z components of the deformation field images separately
-  NonRigidObjectTransformationUsingBSplines(const std::string&, const std::string&, const std::string&, const int bspline_order);
+  /// Give x, y and z components of the deformation field images separately.
+  /// N.B., this will only work if the three components are in STIR orientation.
+  NonRigidObjectTransformationUsingBSplines(const std::string &filename_x, const std::string &filename_y, const std::string &filename_z, const int bspline_order);
 
-  // Give x, y and z components of the deformation field images together (e.g., multicomponent nifti)
-  NonRigidObjectTransformationUsingBSplines(const std::string&, const int bspline_order);
+  /// Give x, y and z components of the deformation field images together (e.g., multicomponent nifti)
+  NonRigidObjectTransformationUsingBSplines(const std::string& filename, const int bspline_order);
 
   //! Transform point 
   virtual
