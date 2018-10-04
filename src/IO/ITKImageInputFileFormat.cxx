@@ -69,13 +69,13 @@ template<typename STIRImageType>
 static
 STIRImageType *
 read_file_itk(const std::string &filename);
-  
+
+template<typename STIRImageType>
 static
 CartesianCoordinate3D<float>
 ITK_coordinates_to_STIR(const itk::ImageBase<3>::PointType &itk_coord,
-        CartesianCoordinate3D<float> &voxel_size,
-        const BasicCoordinate<3,int> &min_indices,
-        bool is_displacement_field = false);
+                        const STIRImageType stir_image,
+                        bool is_displacement_field = false);
 
 template<typename ITKImageType>
 static
@@ -141,41 +141,39 @@ read_from_file(const std::string& filename) const
 
 template<typename ITKImageType>
 static
-void
-calc_stir_min_max_indices(BasicCoordinate<3, int> &min_indices,
-                          BasicCoordinate<3, int> &max_indices,
-                          const typename ITKImageType::Pointer itk_image)
+IndexRange<3>
+calc_stir_index_range(const typename ITKImageType::Pointer itk_image)
 {
   // find index range in usual STIR convention
   const int z_size = itk_image->GetLargestPossibleRegion().GetSize()[2];
   const int y_size = itk_image->GetLargestPossibleRegion().GetSize()[1];
   const int x_size = itk_image->GetLargestPossibleRegion().GetSize()[0];
-  min_indices = BasicCoordinate<3,int>(make_coordinate(0, -y_size/2, -x_size/2));
-  max_indices = min_indices + make_coordinate(z_size, y_size, x_size) - 1;
+  BasicCoordinate<3, int> min_indices
+    = BasicCoordinate<3,int>(make_coordinate(0, -y_size/2, -x_size/2));
+  BasicCoordinate<3, int> max_indices
+    = min_indices + make_coordinate(z_size, y_size, x_size) - 1;
+  return IndexRange<3>(min_indices, max_indices);
 }
 
 template<typename ITKImageType>
 static
 const CartesianCoordinate3D<float>
 calc_stir_origin(CartesianCoordinate3D<float> voxel_size,
-                 BasicCoordinate<3, int> min_indices, BasicCoordinate<3, int> &max_indices,
+                 IndexRange<3> index_range,
                  const typename ITKImageType::Pointer itk_image)
 {
   // dummy image that has minumum to be able to find ITK -> STIR origin vector
+  CartesianCoordinate3D<float> stir_origin_index(0, 0, 0);
   const VoxelsOnCartesianGrid<float> dummy_image =
-    VoxelsOnCartesianGrid<float>(IndexRange<3>(min_indices, max_indices),
-                                 CartesianCoordinate3D<float>(0, 0, 0),
+    VoxelsOnCartesianGrid<float>(index_range,
+                                 stir_origin_index,
                                  voxel_size);
-  const CartesianCoordinate3D<float> itk_origin
-    = dummy_image.get_physical_coordinates_for_LPS_coordinates
-      (CartesianCoordinate3D<float>(static_cast<float>(itk_image->GetOrigin()[2]),
-                                    static_cast<float>(itk_image->GetOrigin()[1]),
-                                    static_cast<float>(itk_image->GetOrigin()[0])));
-  const CartesianCoordinate3D<float> stir_origin_wrt_itk_origin
-    = -dummy_image.get_relative_coordinates_for_indices(min_indices);
-  const CartesianCoordinate3D<float> stir_origin
-    = stir_origin_wrt_itk_origin + itk_origin;
-  return stir_origin;
+
+  // return ITK_coordinates_to_STIR<VoxelsOnCartesianGrid<float> >
+  //   (itk_origin, dummy_image);
+
+  return ITK_coordinates_to_STIR<VoxelsOnCartesianGrid<float> >
+    (itk_image->GetOrigin(), dummy_image);
 }
 
 // Actual conversion function
@@ -196,14 +194,13 @@ convert_ITK_to_STIR(const ITKImageSingle::Pointer itk_image_orig)
                                           static_cast<float>(itk_image->GetSpacing()[0]));
 
   // find info STIR image geometrical metadata
-  BasicCoordinate<3,int> min_indices, max_indices;
-  calc_stir_min_max_indices<ITKImageSingle>(min_indices, max_indices, itk_image);
+  IndexRange<3> index_range = calc_stir_index_range<ITKImageSingle>(itk_image);
   const CartesianCoordinate3D<float> stir_origin = calc_stir_origin<ITKImageSingle>
-    (voxel_size, min_indices, max_indices, itk_image);
+    (voxel_size, index_range, itk_image);
 
   // create STIR image
   STIRImageSingle* image_ptr = new STIRImageSingleConcrete
-    (exam_info_sptr, IndexRange<3>(min_indices, max_indices), stir_origin, voxel_size);
+    (exam_info_sptr, index_range, stir_origin, voxel_size);
 
   // copy data
   VoxelsOnCartesianGrid<float>::full_iterator stir_iter = image_ptr->begin_all();
@@ -234,14 +231,15 @@ convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image_orig)
                                           static_cast<float>(itk_image->GetSpacing()[0]));
 
   // find info STIR image geometrical metadata
-  BasicCoordinate<3,int> min_indices, max_indices;
-  calc_stir_min_max_indices<ITKImageMulti>(min_indices, max_indices, itk_image);
+  IndexRange<3> index_range = calc_stir_index_range<ITKImageMulti>(itk_image);
+  BasicCoordinate<3, int> min_indices, max_indices;
+  index_range.get_regular_range(min_indices, max_indices);
   const CartesianCoordinate3D<float> stir_origin = calc_stir_origin<ITKImageMulti>
-    (voxel_size, min_indices, max_indices, itk_image);
+    (voxel_size, index_range, itk_image);
 
   // create STIR image
   STIRImageMulti* image_ptr = new STIRImageMulti
-    (exam_info_sptr, IndexRange<3>(min_indices, max_indices), stir_origin, voxel_size);
+    (exam_info_sptr, index_range, stir_origin, voxel_size);
 
   // copy data
   STIRImageMulti::full_iterator stir_iter = image_ptr->begin_all();
@@ -254,8 +252,8 @@ convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image_orig)
       itk_coord[1] = -double(it.Get()[1]);
       itk_coord[2] =  double(it.Get()[2]);
 
-      *stir_iter = ITK_coordinates_to_STIR
-        (itk_coord, voxel_size, min_indices, true);
+      *stir_iter = ITK_coordinates_to_STIR<STIRImageMulti>
+        (itk_coord, *image_ptr, true);
   }
   return image_ptr;
 }
@@ -350,7 +348,7 @@ template<>
 STIRImageMulti*
 read_file_itk(const std::string &filename)
 {
-  typedef itk::GDCMImageIO       ImageIOType;
+  //typedef itk::GDCMImageIO       ImageIOType;
 
   try
     {
@@ -457,26 +455,33 @@ struct removePtr<itk::SmartPointer<Type> >
   typedef Type type;
 };
 
+template<typename STIRImageType>
 CartesianCoordinate3D<float>
-ITK_coordinates_to_STIR(
-        const itk::ImageBase<3>::PointType &itk_coord,
-        CartesianCoordinate3D<float> &voxel_size,
-        const BasicCoordinate<3,int> &min_indices,
-        bool is_displacement_field)
+ITK_coordinates_to_STIR(const itk::ImageBase<3>::PointType &itk_coord,
+                        const STIRImageType stir_image,
+                        bool is_displacement_field)
 {
   // find STIR origin
   // Note: need to use - for z-coordinate because of different axis conventions
-  // Only works for HFS!
-  CartesianCoordinate3D<float> stir_coord(static_cast<float>(itk_coord[2]),
-                                          static_cast<float>(itk_coord[1]),
-                                          static_cast<float>(itk_coord[0]));
+  CartesianCoordinate3D<float> stir_coord
+    = stir_image.get_physical_coordinates_for_LPS_coordinates
+      (CartesianCoordinate3D<float>(static_cast<float>(itk_coord[2]),
+                                    static_cast<float>(itk_coord[1]),
+                                    static_cast<float>(itk_coord[0])));
 
   // The following is not required for displacement field images
   if (!is_displacement_field)
   {
-    // make sure that origin is such that
-    // first_pixel_offsets =  min_indices*voxel_size + origin
-    stir_coord -= voxel_size * BasicCoordinate<3,float>(min_indices);
+    // dummy image that has minumum to be able to find ITK -> STIR origin vector
+    CartesianCoordinate3D<float> stir_origin_index(0, 0, 0);
+
+    // assuming we previously oriented the ITK image, min_indices is the
+    // index where ITK origin points to in physical space
+    const CartesianCoordinate3D<float> stir_origin_wrt_itk_origin
+      = stir_image.get_physical_coordinates_for_indices(stir_origin_index)
+      - stir_image.get_physical_coordinates_for_indices(stir_image.get_min_indices());
+
+    stir_coord += stir_origin_wrt_itk_origin;
   }
 
   return stir_coord;
