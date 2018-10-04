@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
 #ifndef NDEBUG
       const DiscretisedDensityOnCartesianGrid <3,float>* cartesian_ptr =
     dynamic_cast< DiscretisedDensityOnCartesianGrid<3,float>*> (&dyn_image[1]);
-      assert(par_image.get_voxel_size()==cartesian_ptr->get_grid_spacing());
+      assert(par_image_sptr->get_voxel_size()==cartesian_ptr->get_grid_spacing());
 #endif
       }
 
