@@ -77,10 +77,10 @@ public:
     Succeeded set_viewgram(const Viewgram<float>& v);
     //! Set Sinogram<float>
     Succeeded set_sinogram(const Sinogram<float>& s);
-     
-private:
-    inline unsigned int find_segment_index_in_sequence(const int segment_num) const;
+        std::vector< unsigned int > seg_ax_offset;
+        inline unsigned int find_segment_index_in_sequence(const int segment_num) const;
 
+private:
     inline unsigned int find_segment_offset(const int segment_num) const;
 
     //! Cache the segment sequence of the GE data.
@@ -93,8 +93,6 @@ private:
     shared_ptr<HDF5Wrapper> m_input_hdf5_sptr;
 
     std::vector< int > segment_sequence;
-
-    std::vector< unsigned int > seg_ax_offset;
 
 };
 

@@ -296,6 +296,49 @@ Succeeded HDF5Wrapper::initialise_proj_data_data(const std::string& path,
     return Succeeded::yes;
 }
 
+// PW The geo factors are stored in geo3d file under the file path called /SegmentData/Segment4/3D_Norm_correction/slice%d where
+// slice numbers go from 1 to 16. Here this path is initialised, along with the output buffer and hyperslab.
+//
+Succeeded HDF5Wrapper::initialise_geo_factors_data(const std::string& path,
+                                                 const unsigned int slice_num)
+{
+    if(path.size() == 0)
+    {
+        if(is_signa)
+        {
+            m_address = "/SegmentData/Segment4/3D_Norm_Correction/slice";
+            if(slice_num > 0)
+            {
+                std::ostringstream datasetname;
+                datasetname << m_address << slice_num;
+                m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
+                m_dataspace = m_dataset_sptr->getSpace();
+// PW here I output the dataspace dimensions and order to be correctly translated in the main code.
+                int rank = m_dataspace.getSimpleExtentNdims();
+                hsize_t dims_out[2];
+                int ndims = m_dataspace.getSimpleExtentDims( dims_out, NULL);
+                     std::cout << "rank " << rank << ", dimensions " <<
+                         (unsigned long)(dims_out[0]) << " x " <<
+                         (unsigned long)(dims_out[1]) << std::endl;
+//                m_memspace_ptr = new H5::DataSpace()
+            }
+            //! \todo Get these numbers from the HDF5 file
+            {
+                m_NX_SUB = 1981;    // hyperslab dimensions
+                m_NY_SUB = 357;
+                m_NX = 1981;        // output buffer dimensions
+                m_NY = 357;
+            }
+        }
+        else
+            return Succeeded::no;
+    }
+    else
+        m_address = path;
+
+    return Succeeded::yes;
+}
+
 // Developed for listmode access
 Succeeded HDF5Wrapper::get_from_dataspace(std::streampos& current_offset, shared_ptr<char>& output)
 {
@@ -317,6 +360,22 @@ Succeeded HDF5Wrapper::get_from_dataset(const std::array<unsigned long long int,
 {
     m_dataspace.selectHyperslab(H5S_SELECT_SET, count.data(), offset.data());
     m_memspace_ptr= new H5::DataSpace(3, count.data());
+    m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace);
+    output.release_data_ptr();
+
+    //  // TODO error checking
+    return Succeeded::yes;
+}
+
+//PW Developed for Geometric Correction Factors
+Succeeded HDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long int, 2>& offset,
+                                        const std::array<unsigned long long int, 2>& count,
+                                        const std::array<unsigned long long int, 2>& stride,
+                                        const std::array<unsigned long long int, 2>& block,
+                                        Array<1, unsigned char> &output)
+{
+    m_dataspace.selectHyperslab(H5S_SELECT_SET, count.data(), offset.data());
+    m_memspace_ptr= new H5::DataSpace(2, count.data());
     m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace);
     output.release_data_ptr();
 

@@ -53,6 +53,10 @@ public:
 
     Succeeded initialise_proj_data_data(const std::string& path = "",
                                         const unsigned int view_num = 0);
+    //PW Here I added the geo_factors_data_initialisation. This should initialise the factors for
+    // specific path and slice_num.
+    Succeeded initialise_geo_factors_data(const std::string& path = "",
+                                          const unsigned int slice_num=0);
 
     Succeeded get_from_dataspace(std::streampos &current_offset,
                                  shared_ptr<char>& output);
@@ -67,6 +71,15 @@ public:
                                  const std::array<unsigned long long, 3> &count,
                                  const std::array<unsigned long long, 3> &stride,
                                  const std::array<unsigned long long, 3> &block,
+                                 Array<1, unsigned char> &output);
+
+    //PW Here I added the get_from_2d_dataset which must read the hyperslab and memory space for 2D array
+    // with specific offset, count, stride and block. This dataset that is read from this memory space,
+    // is then read into a 1D output array.
+    Succeeded get_from_2d_dataset(const std::array<unsigned long long, 2> &offset,
+                                 const std::array<unsigned long long, 2> &count,
+                                 const std::array<unsigned long long, 2> &stride,
+                                 const std::array<unsigned long long, 2> &block,
                                  Array<1, unsigned char> &output);
 
     inline H5::DataSet* get_dataset_ptr() const;

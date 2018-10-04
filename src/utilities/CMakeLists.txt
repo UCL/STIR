@@ -60,6 +60,7 @@ set(${dir_EXE_SOURCES}
         conv_interfile_to_gipl
         shift_image
         shift_image_origin
+        read_geo_factors
         warp_and_accumulate_gated_images
         warp_image
 	read_write_singles
