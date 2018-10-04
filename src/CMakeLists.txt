@@ -219,7 +219,7 @@ if(NOT DISABLE_STIR_LOCAL)
 endif()
 
 # Include the experimental code
-if (ENABLE_STIR_EXPERIMENTAL)
+if (STIR_ENABLE_EXPERIMENTAL)
   ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/local)
 endif()
 
