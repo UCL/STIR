@@ -57,13 +57,16 @@ typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > STIRImageMulti;
 // typedef DiscretisedDensity<3, CartesianCoordinate3D<float> > STIRImageMulti;
 // typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > STIRImageMultiConcrete;
 
+/* Convert an ITK image into an internal STIR one.
+   warning: modifies itk_image.
+*/
 static
 STIRImageSingle*
-convert_ITK_to_STIR(const ITKImageSingle::Pointer itk_image);
+convert_ITK_to_STIR(ITKImageSingle::Pointer itk_image);
 
 static
 STIRImageMulti*
-convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image);
+convert_ITK_to_STIR(ITKImageMulti::Pointer itk_image);
 
 template<typename STIRImageType>
 static
@@ -206,9 +209,8 @@ construct_empty_stir_image_and_orient_itk_image(typename ITKImageType::Pointer i
 
 // Actual conversion function
 STIRImageSingle*
-convert_ITK_to_STIR(const ITKImageSingle::Pointer itk_image_orig)
+convert_ITK_to_STIR(ITKImageSingle::Pointer itk_image)
 {
-  ITKImageSingle::Pointer itk_image = itk_image_orig->Clone();
   STIRImageSingle* image_ptr = construct_empty_stir_image_and_orient_itk_image
     <ITKImageSingle, STIRImageSingle, STIRImageSingleConcrete>(itk_image);
 
@@ -225,9 +227,8 @@ convert_ITK_to_STIR(const ITKImageSingle::Pointer itk_image_orig)
 
 // Actual conversion function
 STIRImageMulti*
-convert_ITK_to_STIR(const ITKImageMulti::Pointer itk_image_orig)
+convert_ITK_to_STIR(ITKImageMulti::Pointer itk_image)
 {
-  ITKImageMulti::Pointer itk_image = itk_image_orig->Clone();
   STIRImageMulti* image_ptr = construct_empty_stir_image_and_orient_itk_image
     <ITKImageMulti, STIRImageMulti, STIRImageMulti>(itk_image);
 
