@@ -211,45 +211,43 @@ get_indices_closest_to_physical_coordinates(const CartesianCoordinate3D<float>& 
 }
 
 template<int num_dimensions, typename elemT>
-void
+CartesianCoordinate3D<float>
 DiscretisedDensity<num_dimensions, elemT>::
-swap_axes_based_on_orientation(CartesianCoordinate3D<float>& coordinates,
+swap_axes_based_on_orientation(const CartesianCoordinate3D<float>& coords,
                                const PatientPosition patient_position)
 {
+  CartesianCoordinate3D<float> flip_coords = coords;
   // STIR coordinates run:
   // x: left to right as you face the scanner (as seen from the bed side)
   // y: top to bottom of the scanner
   // z: running from deep in the scanner out along the bed (as seen from the bed
   //    side)
-  // std::cerr << patient_position.get_position_as_string() << std::endl;
-  switch (patient_position.get_position()) {
-  case PatientPosition::unknown_position:
-    // If unknown, assume HFS
-  case PatientPosition::HFS:
-    // HFS means currently in patient LPI
-    coordinates.z() *= -1;
-    break;
+  // ITK coordinates are defined w.r.t LPS
+  switch (patient_position.get_position())
+    {
+    case PatientPosition::unknown_position: // If unknown, assume HFS
+    case PatientPosition::HFS:              // HFS means currently in patient LPI
+      flip_coords.z() *= -1;
+      break;
 
-  case PatientPosition::HFP:
-    // HFP means currently in patient RAI
-    coordinates.x() *= -1;
-    coordinates.y() *= -1;
-    coordinates.z() *= -1;
-    break;
+    case PatientPosition::HFP:              // HFP means currently in patient RAI
+      flip_coords.x() *= -1;
+      flip_coords.y() *= -1;
+      flip_coords.z() *= -1;
+      break;
 
-  case PatientPosition::FFS:
-    // FFS means currently in patient RPS
-    coordinates.x() *= -1;
-    break;
+    case PatientPosition::FFS:              // FFS means currently in patient RPS
+      flip_coords.x() *= -1;
+      break;
 
-  case PatientPosition::FFP:
-    // FFP means currently in patient LAS
-    coordinates.y() *= -1;
-    break;
+    case PatientPosition::FFP:              // FFP means currently in patient LAS
+      flip_coords.y() *= -1;
+      break;
 
-  default:
-    throw std::runtime_error("Unsupported patient position, can't convert to LPS.");
-  }
+    default:
+      throw std::runtime_error("Unsupported patient position, can't convert to LPS.");
+    }
+  return flip_coords;
 }
 
 template<int num_dimensions, typename elemT>
@@ -257,10 +255,8 @@ CartesianCoordinate3D<float>
 DiscretisedDensity<num_dimensions, elemT>::
 get_LPS_coordinates_for_physical_coordinates(const CartesianCoordinate3D<float>& coords) const
 {
-  CartesianCoordinate3D<float> flip_coords = coords;
-  const PatientPosition patient_position = this->get_exam_info().patient_position;
-  swap_axes_based_on_orientation(flip_coords, patient_position);
-  return flip_coords;
+  return swap_axes_based_on_orientation
+    (coords, this->get_exam_info().patient_position);
 }
 
 template<int num_dimensions, typename elemT>

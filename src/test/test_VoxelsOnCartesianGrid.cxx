@@ -257,25 +257,25 @@ VoxelsOnCartesianGridTests::run_tests()
   {
     cerr << "Test LPS with different orientations:" << std::endl;
 
-    shared_ptr<ExamInfo> hfs_exam_info_sptr = shared_ptr<ExamInfo>(new ExamInfo());
+    shared_ptr<ExamInfo> hfs_exam_info_sptr(new ExamInfo());
     hfs_exam_info_sptr->patient_position.set_orientation(PatientPosition::head_in);
     hfs_exam_info_sptr->patient_position.set_rotation(PatientPosition::supine);
     VoxelsOnCartesianGrid<float> hfs_image(hfs_exam_info_sptr,
                                            range, origin, grid_spacing);
 
-    shared_ptr<ExamInfo> ffs_exam_info_sptr = shared_ptr<ExamInfo>(new ExamInfo());
+    shared_ptr<ExamInfo> ffs_exam_info_sptr(new ExamInfo());
     ffs_exam_info_sptr->patient_position.set_orientation(PatientPosition::feet_in);
     ffs_exam_info_sptr->patient_position.set_rotation(PatientPosition::supine);
     VoxelsOnCartesianGrid<float> ffs_image(ffs_exam_info_sptr,
                                            range, origin, grid_spacing);
 
-    shared_ptr<ExamInfo> hfp_exam_info_sptr = shared_ptr<ExamInfo>(new ExamInfo());
+    shared_ptr<ExamInfo> hfp_exam_info_sptr(new ExamInfo());
     hfp_exam_info_sptr->patient_position.set_orientation(PatientPosition::head_in);
     hfp_exam_info_sptr->patient_position.set_rotation(PatientPosition::prone);
     VoxelsOnCartesianGrid<float> hfp_image(hfp_exam_info_sptr,
                                            range, origin, grid_spacing);
 
-    shared_ptr<ExamInfo> ffp_exam_info_sptr = shared_ptr<ExamInfo>(new ExamInfo());
+    shared_ptr<ExamInfo> ffp_exam_info_sptr(new ExamInfo());
     ffp_exam_info_sptr->patient_position.set_orientation(PatientPosition::feet_in);
     ffp_exam_info_sptr->patient_position.set_rotation(PatientPosition::prone);
     VoxelsOnCartesianGrid<float> ffp_image(ffp_exam_info_sptr,

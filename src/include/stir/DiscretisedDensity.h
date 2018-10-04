@@ -321,8 +321,9 @@ public:
 private:
   CartesianCoordinate3D<float> origin;
 
-  static void swap_axes_based_on_orientation(CartesianCoordinate3D<float>& coordinates,
-                                             const PatientPosition patient_position);
+  static inline CartesianCoordinate3D<float>
+  swap_axes_based_on_orientation(const CartesianCoordinate3D<float>& coordinates,
+                                 const PatientPosition patient_position);
 };
 
 END_NAMESPACE_STIR
