@@ -1,6 +1,8 @@
 /*
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
     Copyright (C) 2013, University College London
+    Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
+                        Australian eHealth Research Centre
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -22,6 +24,7 @@
 
   \author Berta Marti Fuster
   \author Kris Thielemans
+  \author Ashley Gillman
 */
 #include "stir/VoxelsOnCartesianGrid.h"
 
