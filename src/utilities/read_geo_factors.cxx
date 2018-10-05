@@ -105,7 +105,7 @@ int main(int argc,char **argv)
                  // PW HDF5 Wrapper is initialised here and the address of the data is read subsequently.
                  shared_ptr<HDF5Wrapper> m_input_hdf5_sptr;
                  m_input_hdf5_sptr.reset(new HDF5Wrapper(rdf_filename));
-                 m_input_hdf5_sptr->initialise_geo_factors_data("");
+                 m_input_hdf5_sptr->initialise_geo_factors_data("",modulo(i_view,16));
 
                  // PW Here the data is read from the HDF5 array.
                  std::array<unsigned long long int, 2> stride = {1, 1};
