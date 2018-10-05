@@ -24,6 +24,7 @@ set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 set(${dir_EXE_SOURCES}
   rigid_object_transform_projdata
   rigid_object_transform_image
+  non_rigid_transform
 )
 
 #include(stir_exe_targets)
