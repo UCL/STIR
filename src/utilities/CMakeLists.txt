@@ -63,7 +63,6 @@ set(${dir_EXE_SOURCES}
         read_geo_factors
         warp_and_accumulate_gated_images
         warp_image
-	read_write_singles
         zeropad_planes
 	apply_normfactors3D
 	apply_normfactors
