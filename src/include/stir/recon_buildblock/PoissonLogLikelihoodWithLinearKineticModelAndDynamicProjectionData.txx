@@ -516,9 +516,6 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
         this->_single_frame_obj_funcs[frame_num].set_frame_definitions(this->_patlak_plot_sptr->get_time_frame_definitions());
         this->_single_frame_obj_funcs[frame_num].set_recompute_sensitivity(this->get_recompute_sensitivity());
         this->_single_frame_obj_funcs[frame_num].set_use_subset_sensitivities(this->get_use_subset_sensitivities());
-        this->_single_frame_obj_funcs[frame_num].set_sensitivity_filename(this->get_sensitivity_filename());
-        if (this->get_subsensitivity_filenames() != "")
-            this->_single_frame_obj_funcs[frame_num].set_subsensitivity_filenames(this->get_subsensitivity_filenames());
 
         // Set the BinNormalisation (if there's 1 set that, if there are multiple set the relevant one)
         if (this->_normalisations_sptr.size() == 1)
