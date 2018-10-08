@@ -313,7 +313,7 @@ Succeeded HDF5Wrapper::initialise_geo_factors_data(const std::string& path,
                 datasetname << m_address << slice_num;
                 m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
                 m_dataspace = m_dataset_sptr->getSpace();
-// PW here I output the dataspace dimensions and order to be correctly translated in the main code.
+                // PW here I output the dataspace dimensions and order to be correctly translated in the main code.
                 int rank = m_dataspace.getSimpleExtentNdims();
                 hsize_t dims_out[2];
                 int ndims = m_dataspace.getSimpleExtentDims( dims_out, NULL);
@@ -372,11 +372,11 @@ Succeeded HDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long i
                                         const std::array<unsigned long long int, 2>& count,
                                         const std::array<unsigned long long int, 2>& stride,
                                         const std::array<unsigned long long int, 2>& block,
-                                        Array<1, unsigned char> &output)
+                                        Array<1, unsigned int> &output)
 {
     m_dataspace.selectHyperslab(H5S_SELECT_SET, count.data(), offset.data());
     m_memspace_ptr= new H5::DataSpace(2, count.data());
-    m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace);
+    m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_UINT32, *m_memspace_ptr, m_dataspace);
     output.release_data_ptr();
 
     //  // TODO error checking

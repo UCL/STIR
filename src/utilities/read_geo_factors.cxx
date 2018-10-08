@@ -84,76 +84,37 @@ int main(int argc,char **argv)
                                 output_filename, std::ios::out);
 
     ProjDataFromHDF5 projDataGE(template_projdata_info_sptr, rdf_filename);
-  //  for (int i_seg = projDataGE.get_min_segment_num(); i_seg <= projDataGE.get_max_segment_num(); ++i_seg)
-    //        for(int i_view = projDataGE.get_min_view_num(); i_view <= projDataGE.get_max_view_num(); ++i_view)
-      //      {
-    // PW For initial testing segment and view number are assumed to be 0. The commented piece of code
-    // will be used after the testing.
-
-    int i_seg = 0;
-    int i_view = 0;
+    for (int i_seg = projDataGE.get_min_segment_num(); i_seg <= projDataGE.get_max_segment_num(); ++i_seg)
+            for(int i_view = projDataGE.get_min_view_num(); i_view <= projDataGE.get_max_view_num(); ++i_view)
+            {
     // PW Viewgram and geometric correction factors are initialised.
                  Viewgram<float> ret_viewgram = proj_data.get_empty_viewgram(i_view,i_seg);
                  ret_viewgram.fill(0.0);
-                 Array<2,float> geometric_factors;
-                 geometric_factors = Array<2,float>(IndexRange2D(1981,357));
-//               geometric_factors = Array<2,float>(IndexRange2D(projDataGE.get_num_tangential_poss(),static_cast<unsigned long long int>(projDataGE.get_num_axial_poss(i_seg))));
-                 std::cout<<"This is the number of axial positions "<<static_cast<unsigned long long int>(projDataGE.get_num_axial_poss(i_seg))<<std::endl;
-                 std::cout<<"This is the axial offset "<<projDataGE.seg_ax_offset[projDataGE.find_segment_index_in_sequence(i_seg)]<<std::endl;
-                 std::cout<<projDataGE.get_num_tangential_poss()<<std::endl;
 
                  // PW HDF5 Wrapper is initialised here and the address of the data is read subsequently.
                  shared_ptr<HDF5Wrapper> m_input_hdf5_sptr;
                  m_input_hdf5_sptr.reset(new HDF5Wrapper(rdf_filename));
-                 m_input_hdf5_sptr->initialise_geo_factors_data("",modulo(i_view,16));
+                 m_input_hdf5_sptr->initialise_geo_factors_data("",modulo(i_view,16)+1);
 
                  // PW Here the data is read from the HDF5 array.
                  std::array<unsigned long long int, 2> stride = {1, 1};
-                // std::array<unsigned long long int, 2> count = {static_cast<unsigned long long int>(projDataGE.get_num_axial_poss(i_seg)),
-                 // static_cast<unsigned long long int>(projDataGE.get_num_tangential_poss())};
+                 std::array<unsigned long long int, 2> count = {static_cast<unsigned long long int>(projDataGE.get_num_axial_poss(i_seg)),
+                  static_cast<unsigned long long int>(projDataGE.get_num_tangential_poss())};
 
-                 std::array<unsigned long long int, 2> count = {1981,357};
                  std::array<unsigned long long int, 2> offset = {0, 0};
                  std::array<unsigned long long int, 2> block = {1, 1};
-                 unsigned int total_size = projDataGE.get_num_tangential_poss() * 1981;
 
-             //    unsigned int total_size = projDataGE.get_num_tangential_poss() * static_cast<unsigned long long int>(projDataGE.get_num_axial_poss(i_seg));
-                 stir::Array<1, unsigned char> tmp(0, total_size-1);
+                 unsigned int total_size = projDataGE.get_num_tangential_poss() * static_cast<unsigned long long int>(projDataGE.get_num_axial_poss(i_seg));
+                 stir::Array<1, unsigned int> tmp(0, total_size-1);
 
                  m_input_hdf5_sptr->get_from_2d_dataset(offset, count, stride, block, tmp);
-// PW The tmp array data is copied into 2D array of geometric correction factors of size 357x1981.
-                 std::copy(tmp.begin(),tmp.end(),geometric_factors.begin_all());
 
-                //for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(), i_tang = 0; tang_pos <= ret_viewgram.get_max_tangential_pos_num(),
-                  //   i_tang<=static_cast<unsigned long long int>(projDataGE.get_num_tangential_poss())-1; ++tang_pos, ++i_tang)
-                // for(int i_axial=0, axial_pos = projDataGE.seg_ax_offset[projDataGE.find_segment_index_in_sequence(i_seg)]; i_axial<=static_cast<unsigned long long int>(projDataGE.get_num_axial_poss(i_seg))-1 ,
-                   //  axial_pos <= projDataGE.seg_ax_offset[projDataGE.find_segment_index_in_sequence(i_seg)]+static_cast<unsigned long long int>(projDataGE.get_num_axial_poss(i_seg))-1; i_axial++, axial_pos++)
-                   // {
-                   //      ret_viewgram[i_axial][tang_pos] = geometric_factors[i_tang][axial_pos];
-                   // }
-
-// The geometric correction factors data from first 89 positions i.e. segment 0 are copied into ret_viewgram.
-                     for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(), i_tang = 0;
-                                             tang_pos <= ret_viewgram.get_max_tangential_pos_num(), i_tang<=356;
-                                             ++tang_pos, ++i_tang)
-                                            for(int i_axial=0, axial_pos = 0;
-                                                i_axial<=88, axial_pos <= 88;
-                                                i_axial++, axial_pos++)
-                                            {
-                                                ret_viewgram[i_axial][tang_pos] = geometric_factors[axial_pos][i_tang];
-                                            }
+                 std::copy(tmp.begin(),tmp.end(),ret_viewgram.begin_all());
+                 //PW Currently the scale factors are hardcorded.
+                   //! \todo Get these from HDF5 file.
+                 ret_viewgram = 2.2110049e-4*ret_viewgram;
                    // This is now saved in STIR viewgrams.
                      proj_data.set_viewgram(ret_viewgram);
-
-                  //  ofstream write_geo;
-                // write_geo.open("uncompressed_buffer_data.txt",ios::out);
-                // for ( int i =buffer.get_min_index(); i<=buffer.get_max_index();i++)
-                  // {
-
-                    //  write_geo << buffer[i] << "   " ;
-                      //  }
-                        //       write_geo << std::endl;
-
-                 //   }
+            }
     return EXIT_SUCCESS;
 }

@@ -80,7 +80,7 @@ public:
                                  const std::array<unsigned long long, 2> &count,
                                  const std::array<unsigned long long, 2> &stride,
                                  const std::array<unsigned long long, 2> &block,
-                                 Array<1, unsigned char> &output);
+                                 Array<1, unsigned int> &output);
 
     inline H5::DataSet* get_dataset_ptr() const;
 
