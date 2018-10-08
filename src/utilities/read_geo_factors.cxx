@@ -112,7 +112,7 @@ int main(int argc,char **argv)
                  std::copy(tmp.begin(),tmp.end(),ret_viewgram.begin_all());
                  //PW Currently the scale factors are hardcorded.
                    //! \todo Get these from HDF5 file.
-                 ret_viewgram = 2.2110049e-4*ret_viewgram;
+                 ret_viewgram *= 2.2110049e-4;
                    // This is now saved in STIR viewgrams.
                      proj_data.set_viewgram(ret_viewgram);
             }
