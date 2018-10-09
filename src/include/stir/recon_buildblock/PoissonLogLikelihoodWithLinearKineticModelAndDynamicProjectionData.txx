@@ -537,6 +537,15 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
       }
   }//_single_frame_obj_funcs[frame_num]
 
+  // The output parametric image should have 1 time frame that goes from the
+  // start to the end of the patlak analysis.
+  TimeFrameDefinitions tdefs = this->get_input_data().get_exam_info().get_time_frame_definitions();
+  const double start = this->_patlak_plot_sptr->get_time_frame_definitions().get_start_time();
+  const double end   = this->_patlak_plot_sptr->get_time_frame_definitions().get_end_time();
+  tdefs.set_num_time_frames(1);
+  tdefs.set_time_frame(1,start,end);
+  target_sptr->get_exam_info_sptr()->set_time_frame_definitions(tdefs);
+
   return Succeeded::yes;
 }
 
