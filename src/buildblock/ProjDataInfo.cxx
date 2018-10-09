@@ -678,5 +678,11 @@ ProjDataInfo::get_bed_position() const
     (bed_position_horizontal, bed_position_vertical, 0);
 }
 
+const CartesianCoordinate3D<float>
+ProjDataInfo::
+get_location_of_vendor_frame_of_reference_in_physical_coordinates() const {
+  return get_vector_centre_of_first_ring_to_centre_of_gantry();
+}
+
 END_NAMESPACE_STIR
 

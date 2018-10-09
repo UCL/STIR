@@ -384,6 +384,10 @@ public:
   get_relative_coordinates_for_gantry_coordinates
   (const CartesianCoordinate3D<float>& coords) const;
 
+  //! Get the location of the scanners frame-of-reference
+  const CartesianCoordinate3D<float>
+  get_location_of_vendor_frame_of_reference_in_physical_coordinates() const;
+
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
 

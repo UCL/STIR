@@ -185,63 +185,29 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_dat
                                                     const CartesianCoordinate3D<int>& sizes)
                                                     
 {
-  this->set_origin(origin);
-
-  int z_size = sizes.z();
-  // initialise to 0 to prevent compiler warnings
-  //int z_size = 0;
-  float z_sampling = 0;
-  float s_sampling = 0;
-  find_sampling_and_z_size(z_sampling, s_sampling, z_size, &proj_data_info);
-  
-  this->set_grid_spacing(
-      CartesianCoordinate3D<float>(z_sampling, s_sampling/zoom, s_sampling/zoom)
-      );
-  int x_size_used = sizes.x();
-  int y_size_used = sizes.y();
-
-  if (sizes.x()==-1 || sizes.y()==-1)
-    {
-      // default it to cover full FOV by taking image_size>=2*FOVradius_in_pixs+1
-      const float FOVradius_in_mm = 
-        max(proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_max_tangential_pos_num())),
-            -proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_min_tangential_pos_num())));
-      if (sizes.x()==-1)
-        x_size_used = 2*static_cast<int>(ceil(FOVradius_in_mm / get_voxel_size().x())) + 1;
-      if (sizes.y()==-1)
-        y_size_used = 2*static_cast<int>(ceil(FOVradius_in_mm / get_voxel_size().y())) + 1;        
-    }
-  if (x_size_used<0)
-    error("VoxelsOnCartesianGrid: attempt to construct image with negative x_size %d\n", 
-          x_size_used);
-  if (x_size_used==0)
-    warning("VoxelsOnCartesianGrid: constructed image with x_size 0\n");
-  if (y_size_used<0)
-    error("VoxelsOnCartesianGrid: attempt to construct image with negative y_size %d\n", 
-          y_size_used);
-  if (y_size_used==0)
-    warning("VoxelsOnCartesianGrid: constructed image with y_size 0\n");
-
-  IndexRange3D range (0, z_size-1, 
-                      -(y_size_used/2), -(y_size_used/2) + y_size_used-1,
-                      -(x_size_used/2), -(x_size_used/2) + x_size_used-1);
-
-
-  this->grow(range);
+  init_from_proj_data_info(proj_data_info, zoom, origin, sizes);
 }
 
 template<class elemT>                                                 
-VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr_v,
-                                                    const ProjDataInfo& proj_data_info,
-                                                    const float zoom, 
-                                                    const CartesianCoordinate3D<float>& origin,
-                                                    const CartesianCoordinate3D<int>& sizes)
+VoxelsOnCartesianGrid<elemT>::
+VoxelsOnCartesianGrid(const shared_ptr<ExamInfo>& exam_info_sptr_v,
+                      const ProjDataInfo& proj_data_info,
+                      const float zoom,
+                      const CartesianCoordinate3D<float>& origin,
+                      const CartesianCoordinate3D<int>& sizes)
 {
   this->exam_info_sptr = exam_info_sptr_v;
-  // sadly, this code is a complete copy of the above
-  // probably avoidable in C++11
-  this->set_origin(origin);
+  init_from_proj_data_info(proj_data_info, zoom, origin, sizes);
+}
 
+template<class elemT>
+void
+VoxelsOnCartesianGrid<elemT>::
+init_from_proj_data_info(const ProjDataInfo& proj_data_info,
+                         const float zoom,
+                         const CartesianCoordinate3D<float>& origin,
+                         const CartesianCoordinate3D<int>& sizes)
+{
   int z_size = sizes.z();
   // initialise to 0 to prevent compiler warnings
   //int z_size = 0;
@@ -281,6 +247,11 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr < ExamInfo 
                       -(y_size_used/2), -(y_size_used/2) + y_size_used-1,
                       -(x_size_used/2), -(x_size_used/2) + x_size_used-1);
 
+  this->set_origin(origin);
+  this->set_vendor_origin
+    (origin
+     + (proj_data_info
+        .get_location_of_vendor_frame_of_reference_in_physical_coordinates()));
 
   this->grow(range);
 }

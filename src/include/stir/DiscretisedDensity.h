@@ -135,11 +135,19 @@ public:
                             const IndexRange<num_dimensions>& range,
                             const CartesianCoordinate3D<float>& origin);
 
-  //! Return the origin 
+  //! Return the origin in physical coordinates
   inline const CartesianCoordinate3D<float>& get_origin()  const;
 
-  //! Set the origin
+  //! Set the origin, in physical coordinates
   inline void set_origin(const CartesianCoordinate3D<float> &origin);
+
+  //! Return the vendor-defined origin in physical coordinates. Defaults to origin if unset.
+  // NB: could be in LPS, would this make more sense?
+  inline const CartesianCoordinate3D<float>& get_vendor_origin() const;
+
+  //! Set the vendor-defined origin, in physical coordinates
+  // NB: could be in LPS, would this make more sense?
+  inline void set_vendor_origin(const CartesianCoordinate3D<float> &vendor_origin);
 
   //! \name Translation between indices and physical coordinates
   /*! We distinguish between physical coordinates, relative coordinates (which are
@@ -324,6 +332,9 @@ public:
 
 private:
   CartesianCoordinate3D<float> origin;
+
+  bool vendor_origin_set = false;
+  CartesianCoordinate3D<float> vendor_origin;
 
   static inline CartesianCoordinate3D<float>
   swap_axes_based_on_orientation(const CartesianCoordinate3D<float>& coordinates,

@@ -75,6 +75,21 @@ DiscretisedDensity<num_dimensions, elemT>::
 get_origin()  const 
 { return origin; }
 
+template<int num_dimensions, typename elemT>
+void
+DiscretisedDensity<num_dimensions, elemT>::
+set_vendor_origin(const CartesianCoordinate3D<float> &vendor_origin_v)
+{
+  vendor_origin = vendor_origin_v;
+  vendor_origin_set = true;
+}
+
+template<int num_dimensions, typename elemT>
+const CartesianCoordinate3D<float>&
+DiscretisedDensity<num_dimensions, elemT>::get_vendor_origin() const
+{ return vendor_origin_set ? vendor_origin : origin; }
+
+
 
 template<int num_dimensions, typename elemT>
 bool
@@ -252,39 +267,17 @@ swap_axes_based_on_orientation(const CartesianCoordinate3D<float>& coords,
   return flip_coords;
 }
 
+// The following two functions are the only ones that do actual novel work
+
 template<int num_dimensions, typename elemT>
 CartesianCoordinate3D<float>
 DiscretisedDensity<num_dimensions, elemT>::
-get_LPS_coordinates_for_physical_coordinates(const CartesianCoordinate3D<float>& coords) const
+get_LPS_coordinates_for_indices
+(const BasicCoordinate<num_dimensions, float>& indices) const
 {
   return swap_axes_based_on_orientation
-    (coords, this->get_exam_info().patient_position);
-}
-
-template<int num_dimensions, typename elemT>
-CartesianCoordinate3D<float>
-DiscretisedDensity<num_dimensions, elemT>::
-get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions, float>& indices) const
-{
-  return this->get_LPS_coordinates_for_physical_coordinates
-    (this->get_physical_coordinates_for_indices(indices));
-}
-
-template<int num_dimensions, typename elemT>
-CartesianCoordinate3D<float>
-DiscretisedDensity<num_dimensions, elemT>::
-get_LPS_coordinates_for_indices(const BasicCoordinate<num_dimensions, int>& indices) const
-{
-  return get_LPS_coordinates_for_indices(BasicCoordinate<num_dimensions, float>(indices));
-}
-
-template<int num_dimensions, typename elemT>
-CartesianCoordinate3D<float>
-DiscretisedDensity<num_dimensions, elemT>::
-get_physical_coordinates_for_LPS_coordinates(const CartesianCoordinate3D<float>& coords) const
-{
-  // operation is symmetric
-  return this->get_LPS_coordinates_for_physical_coordinates(coords);
+    (get_relative_coordinates_for_indices(indices) + get_vendor_origin(),
+     get_exam_info().patient_position);
 }
 
 template<int num_dimensions, typename elemT>
@@ -292,8 +285,45 @@ BasicCoordinate<num_dimensions,float>
 DiscretisedDensity<num_dimensions, elemT>::
 get_index_coordinates_for_LPS_coordinates(const CartesianCoordinate3D<float>& coords) const
 {
-  return this->get_index_coordinates_for_physical_coordinates
-    (this->get_physical_coordinates_for_LPS_coordinates(coords));
+  return
+    this->actual_get_index_coordinates_for_relative_coordinates
+    (swap_axes_based_on_orientation(coords, get_exam_info().patient_position)
+     - this->get_vendor_origin());
+}
+
+// The rest of the LPS functions just leverage the last two
+
+template<int num_dimensions, typename elemT>
+CartesianCoordinate3D<float>
+DiscretisedDensity<num_dimensions, elemT>::
+get_LPS_coordinates_for_indices
+(const BasicCoordinate<num_dimensions, int>& indices) const
+{
+  return get_LPS_coordinates_for_indices(BasicCoordinate<num_dimensions, float>(indices));
+}
+
+template<int num_dimensions, typename elemT>
+CartesianCoordinate3D<float>
+DiscretisedDensity<num_dimensions, elemT>::
+get_LPS_coordinates_for_physical_coordinates
+(const CartesianCoordinate3D<float>& coords) const
+{
+  // this could also be done by adding/subtracting origins and swapping
+  // but this is simpler to comprehend and means we only implement once above
+  return get_LPS_coordinates_for_indices
+    (get_index_coordinates_for_physical_coordinates(coords));
+}
+
+template<int num_dimensions, typename elemT>
+CartesianCoordinate3D<float>
+DiscretisedDensity<num_dimensions, elemT>::
+get_physical_coordinates_for_LPS_coordinates
+(const CartesianCoordinate3D<float>& coords) const
+{
+  // this could also be done by adding/subtracting origins and swapping
+  // but this is simpler to comprehend and means we only implement once above
+  return get_physical_coordinates_for_indices
+    (get_index_coordinates_for_LPS_coordinates(coords));
 }
 
 template<int num_dimensions, typename elemT>
