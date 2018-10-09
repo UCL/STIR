@@ -53,8 +53,8 @@
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
 #include "stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
 #include "stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
-#include "local/stir/motion/Transform3DObjectImageProcessor.h"
-#include "local/stir/motion/NonRigidObjectTransformationUsingBSplines.h"
+#include "stir_experimental/motion/Transform3DObjectImageProcessor.h"
+#include "stir_experimental/motion/NonRigidObjectTransformationUsingBSplines.h"
 
 #include <algorithm>
 #include <string> 
