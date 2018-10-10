@@ -176,8 +176,9 @@ was in HFS position. This is currently not checked (and for many file formats, n
   </li>
   <li>Changed the return value of <tt>DynamicProjData::read_from_file</tt> from a raw ptr to a <tt>unique_ptr</tt>.
   </li>
-  </li>
   <li>Output template for <tt>get_dynamic_images_from_parametric_images</tt> is now optional. Writing of the output is no longer restricted to ecat7.
+  </li>
+  <li>Code that was hosted in <tt>src/local</tt> and <tt>include/local/stir</tt> is now in <tt>src/experimental</tt> and <tt>include/stir_experimental</tt>, respectively. An extra CMake parameter has also been added, <tt>STIR_ENABLE_EXPERIMENTAL</tt>, which is <tt>OFF</tt> by default. Enabling this parameter will include the experimental code in the build.
   </li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>

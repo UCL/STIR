@@ -220,7 +220,7 @@ endif()
 
 # Include the experimental code
 if (STIR_ENABLE_EXPERIMENTAL)
-  ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/local)
+  ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/experimental)
 endif()
 
 # go and look for CMakeLists.txt files in all those directories
