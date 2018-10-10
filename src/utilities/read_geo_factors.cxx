@@ -94,7 +94,7 @@ int main(int argc,char **argv)
                  // PW HDF5 Wrapper is initialised here and the address of the data is read subsequently.
                  shared_ptr<HDF5Wrapper> m_input_hdf5_sptr;
                  m_input_hdf5_sptr.reset(new HDF5Wrapper(rdf_filename));
-                 m_input_hdf5_sptr->initialise_geo_factors_data("",modulo(i_view,16)+1);
+                 m_input_hdf5_sptr->initialise_geo_factors_data("",16-modulo(i_view,16)+1);
 
                  // PW Here the data is read from the HDF5 array.
                  std::array<unsigned long long int, 2> stride = {1, 1};
@@ -110,6 +110,12 @@ int main(int argc,char **argv)
                  m_input_hdf5_sptr->get_from_2d_dataset(offset, count, stride, block, tmp);
 
                  std::copy(tmp.begin(),tmp.end(),ret_viewgram.begin_all());
+                 //PW Flip tangential positions here .
+                 for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(); tang_pos <= ret_viewgram.get_max_tangential_pos_num(); ++tang_pos)
+                 for(int axial_pos = ret_viewgram.get_min_axial_pos_num(); axial_pos <= ret_viewgram.get_max_axial_pos_num(); axial_pos++)
+                      {
+                              ret_viewgram[axial_pos][-tang_pos] = ret_viewgram[axial_pos][tang_pos];
+                      }
                  //PW Currently the scale factors are hardcorded.
                    //! \todo Get these from HDF5 file.
                  ret_viewgram *= 2.2110049e-4;

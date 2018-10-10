@@ -236,7 +236,7 @@ int main(int argc, char **argv)
 
                 /*(*segment_ptr)[bin.axial_pos_num()]*/
                 sinogram[bin.view_num()][bin.tangential_pos_num()] +=
-                num_slices*0.00000000457*efficiencies[44-ra][447-a]*efficiencies[44-rb][447-b%num_detectors_per_ring];
+                num_slices*0.00000000457*efficiencies[ra][447-a]*efficiencies[rb][447-b%num_detectors_per_ring];
                   }
               }
               }

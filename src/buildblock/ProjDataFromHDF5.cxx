@@ -3,7 +3,7 @@
   \file
   \ingroup projdata
 
-  \brief Implementations for class stir::ProjDataGEAdvance
+  \brief Implementations for class stir::ProjDataGEHDF5
 
   \author Palak Wadhwa
   \author Nikos Efthimiou
@@ -34,7 +34,16 @@
 #include "stir/ProjDataFromHDF5.h"
 #include "stir/IndexRange.h"
 #include "stir/IndexRange3D.h"
+#include "stir/IndexRange4D.h"
 #include "stir/IO/HDF5Wrapper.h"
+#include "stir/display.h"
+#include "stir/CPUTimer.h"
+#include "stir/HighResWallClockTimer.h"
+#ifndef STIR_NO_NAMESPACES
+using std::ofstream;
+using std::fstream;
+using std::ios;
+#endif
 
 START_NAMESPACE_STIR
 
@@ -48,6 +57,7 @@ ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info
 
     initialise_segment_sequence();
     initialise_ax_pos_offset();
+    initialise_viewgram_buffer();
 }
 
 ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
@@ -58,28 +68,62 @@ ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info
 
     initialise_segment_sequence();
     initialise_ax_pos_offset();
+    initialise_viewgram_buffer();
 }
 
 ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ExamInfo> input_exam_info_sptr,
                                    shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
                                    shared_ptr<HDF5Wrapper> input_hdf5) :
     ProjData(input_exam_info_sptr, input_proj_data_info_sptr)
-{  
+{
     m_input_hdf5_sptr = input_hdf5;
 
     initialise_segment_sequence();
     initialise_ax_pos_offset();
+    initialise_viewgram_buffer();
+}
+
+void ProjDataFromHDF5::initialise_viewgram_buffer()
+{
+//! \todo NE: Get the number of tof positions from the proj_data_info_ptr
+const unsigned int num_tof_poss = 27;
+const unsigned int max_num_axial_poss = 1981;
+const unsigned int get_num_viewgrams = 224;
+unsigned int total_size = get_num_tangential_poss() * num_tof_poss * max_num_axial_poss;
+
+//stir::Array<1, unsigned char> tmp(0, total_size-1);
+this->tof_data.resize(IndexRange4D(get_num_viewgrams, get_num_tangential_poss(), num_tof_poss, max_num_axial_poss));
+
+Array<1,unsigned char> buffer(total_size);
+
+ for (int view_num = get_min_view_num(); view_num <= get_max_view_num(); view_num++)
+{
+    m_input_hdf5_sptr->initialise_proj_data_data("", view_num + 1);
+
+    std::array<unsigned long long int, 3> stride = {1, 1, 1};
+    const std::array<unsigned long long int, 3> count  = {max_num_axial_poss, num_tof_poss,static_cast<unsigned long long int>(get_num_tangential_poss())};
+//    {static_cast<unsigned long long int>(get_num_axial_poss(segment_num)), num_tof_poss,
+//     static_cast<unsigned long long int>(get_num_tangential_poss())};
+
+    std::array<unsigned long long int, 3> offset = {0,0,0};
+//    {seg_ax_offset[find_segment_index_in_sequence(segment_num)], 0, 0};
+    std::array<unsigned long long int, 3> block = {1, 1, 1};
+
+m_input_hdf5_sptr->get_from_dataset(offset, count, stride, block, buffer);
+std::copy(buffer.begin(), buffer.end(), tof_data[view_num].begin_all());
+}
+
 }
 
 void ProjDataFromHDF5::initialise_segment_sequence()
 {
     segment_sequence.resize(2*get_max_segment_num()+1);
     segment_sequence[0] = 0;
-
+// PW Flipped the segments, segment sequence is now as: 0,1,-1 and so on.
     for (int segment_num = 1; segment_num<=get_max_segment_num(); ++segment_num)
     {
-        segment_sequence[2*segment_num-1] = -segment_num;
-        segment_sequence[2*segment_num] = segment_num;
+        segment_sequence[2*segment_num-1] = segment_num;
+        segment_sequence[2*segment_num] = -segment_num;
     }
 }
 
@@ -106,51 +150,45 @@ ProjDataFromHDF5::
 get_viewgram(const int view_num, const int segment_num,
              const bool make_num_tangential_poss_odd) const
 {
-
+    std::cout<<"Now processing segment "<<segment_num<<"for view "<<view_num<<std::endl;
     Viewgram<float> ret_viewgram = get_empty_viewgram(view_num, segment_num, make_num_tangential_poss_odd);
     ret_viewgram.fill(0.0);
     //! \todo NE: Get the number of tof positions from the proj_data_info_ptr
     const unsigned int num_tof_poss = 27;
     const unsigned int max_num_axial_poss = 1981;
-    m_input_hdf5_sptr->initialise_proj_data_data("", view_num + 1);
 
-    std::array<unsigned long long int, 3> stride = {1, 1, 1};
-    const std::array<unsigned long long int, 3> count  =
-    {max_num_axial_poss, num_tof_poss,
-     static_cast<unsigned long long int>(get_num_tangential_poss())};
+    // PW Attempt to flip the tangential and view numbers.
+   for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(), i_tang = 0; tang_pos <= ret_viewgram.get_max_tangential_pos_num(), i_tang<=static_cast<unsigned long long int>(get_num_tangential_poss())-1; ++tang_pos, ++i_tang)
+      for(int i_axial=0, axial_pos = seg_ax_offset[find_segment_index_in_sequence(segment_num)]; i_axial<=static_cast<unsigned long long int>(get_num_axial_poss(segment_num))-1 , axial_pos <= seg_ax_offset[find_segment_index_in_sequence(segment_num)]+static_cast<unsigned long long int>(get_num_axial_poss(segment_num))-1; i_axial++, axial_pos++)
+        for (int tof_poss = 0; tof_poss <= num_tof_poss-1; tof_poss++)
+      {
+                ret_viewgram[i_axial][-tang_pos] += static_cast<float> (tof_data[223-view_num][i_tang][tof_poss][axial_pos]);
+            }
 
-    std::array<unsigned long long int, 3> offset = {0, 0, 0};
-    std::array<unsigned long long int, 3> block = {1, 1, 1};
-    unsigned int total_size = max_num_axial_poss * num_tof_poss *  static_cast<unsigned long long int>(get_num_tangential_poss());
+#if 0
+    ofstream write_tof_data;
+    write_tof_data.open("uncompressed_sino_tof_data.txt",ios::out);
+    for ( int i =tof_data.get_min_index(); i<=tof_data.get_max_index();i++)
+      {
+        for ( int j =tof_data[i].get_min_index(); j <=tof_data[i].get_max_index(); j++)
+           {
+            for(int k = tof_data[i][j].get_min_index(); k <=tof_data[i][j].get_max_index(); k++)
+         write_tof_data << tof_data[i][j][k] << "   " ;
+           }
+                  write_tof_data << std::endl;
+           }
 
-    stir::Array<1, unsigned char> tmp(0, total_size-1);
-// PW I changed the number of axial positions from segment based axial positions to entire range from
-// 0 to 1981. This was done because the tof PET data itself read from HDF5 is not saved in C++ as it is
-// I am unable to point why the data is reorganised as 357x27x1981. But for convenience, I read the entire
-// data as 1d array and then fill it in 3D array called tof_data.
-    m_input_hdf5_sptr->get_from_dataset(offset, count, stride, block, tmp);
-
-    Array<3,float> tof_data;
-       tof_data = Array<3,float>(IndexRange3D(0,get_num_tangential_poss()-1, 0,num_tof_poss-1, 0,max_num_axial_poss-1));
-       std::copy(tmp.begin(), tmp.end(), tof_data.begin_all());
-
-    // Flatten the TOF poss
-       Array<2,float> non_tof_data;
-         non_tof_data = Array<2,float>(IndexRange2D(max_num_axial_poss,static_cast<unsigned long long int>(get_num_tangential_poss())));
-
-         for(int axial_pos = 0; axial_pos <= max_num_axial_poss-1; axial_pos++)
-         for(int tang_pos = 0; tang_pos <=static_cast<unsigned long long int>(get_num_tangential_poss())-1; tang_pos++)
-         for (int tof_poss = 0; tof_poss <= num_tof_poss-1; tof_poss++)
-             {
-                 non_tof_data[axial_pos][tang_pos] += tof_data[tang_pos][tof_poss][axial_pos];
-             }
-
-         for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(), i_tang = 0; tang_pos <= ret_viewgram.get_max_tangential_pos_num(), i_tang<=static_cast<unsigned long long int>(get_num_tangential_poss())-1; ++tang_pos, ++i_tang)
-            for(int i_axial=0, axial_pos = seg_ax_offset[find_segment_index_in_sequence(segment_num)]; i_axial<=static_cast<unsigned long long int>(get_num_axial_poss(segment_num))-1 , axial_pos <= seg_ax_offset[find_segment_index_in_sequence(segment_num)]+static_cast<unsigned long long int>(get_num_axial_poss(segment_num))-1; i_axial++, axial_pos++)
-                  {
-                      ret_viewgram[i_axial][tang_pos] = non_tof_data[axial_pos][i_tang];
-                  }
-
+    ofstream write_ret_viewgram_data;
+    write_ret_viewgram_data.open("uncompressed_sino_ret_viewgram_data.txt",ios::out);
+    for ( int i =ret_viewgram.get_min_index(); i<=ret_viewgram.get_max_index();i++)
+      {
+        for ( int j =ret_viewgram[i].get_min_index(); j <=ret_viewgram[i].get_max_index(); j++)
+           {
+         write_ret_viewgram_data << ret_viewgram[i][j] << "   " ;
+           }
+                  write_ret_viewgram_data << std::endl;
+           }
+#endif
     return ret_viewgram;
 }
 
@@ -163,7 +201,7 @@ Succeeded ProjDataFromHDF5::set_viewgram(const Viewgram<float>& v)
 }
 
 Sinogram<float> ProjDataFromHDF5::get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd) const
-{ 
+{
     // TODO
     warning("ProjDataGEAdvance::get_sinogram not implemented yet\n");
     return get_empty_sinogram(ax_pos_num, segment_num);
@@ -206,4 +244,3 @@ ProjDataFromHDF5::get_segment_sequence_in_hdf5() const
 
 
 END_NAMESPACE_STIR
-

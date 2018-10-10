@@ -70,10 +70,10 @@ class CListEventDataGESigna
   inline void get_detection_position(DetectionPositionPair<>& det_pos) const
   {
     det_pos.pos1().tangential_coord() = 447 - loXtalTransAxID;
-    det_pos.pos1().axial_coord() = 44-loXtalAxialID;
+    det_pos.pos1().axial_coord() = loXtalAxialID;
     det_pos.pos2().tangential_coord() = 447 - hiXtalTransAxID;
 //    std::cout << hiXtalTransAxID << " "  << loXtalTransAxID << std::endl;
-    det_pos.pos2().axial_coord() = 44-hiXtalAxialID;
+    det_pos.pos2().axial_coord() = hiXtalAxialID;
   }
   inline bool is_event() const
     { 
