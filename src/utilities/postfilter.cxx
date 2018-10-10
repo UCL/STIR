@@ -32,10 +32,10 @@
   \author Richard Brown
   
 
-  This program enables calling any ImageProcessor object on input data, 
+  This program enables calling any stir::DataProcessor object on input data, 
   and writing it to file. It can take the following command line:
   \verbatim
-  spostfilter [--verbose] [--dynamic/--parametric] <output filename> <input header filename> <filter .par filename> [output_format_par_file]
+  postfilter [--verbose] [--dynamic|--parametric] <output filename> <input header filename> <filter .par filename> [output_format_par_file]
   \endverbatim
   This is done to make it easy to process a lot of files with the same 
   ImageProcessor. However, if the number of command line arguments is not 
@@ -125,7 +125,7 @@ shared_ptr<STIRImageType> read_image(const std::string &filename)
     else
         output.reset(ask_image<STIRImageType>("Image to process?"));
     if (is_null_ptr(output))
-        error("postfilter: No input image. Not writing any output.\n");
+        error("postfilter: No input image. Not writing any output.");
 
     return output;
 }
@@ -138,7 +138,7 @@ void save_image(shared_ptr<STIRImageType> image, const std::string &filename, co
             set_up_output_format<STIRImageType>(par);
 
     if (output_file_format->write_to_file(filename,*image) == Succeeded::no)
-        error("postfilter: Saving image failed.\n");
+        error("postfilter: Saving image failed.");
 }
 
 
@@ -149,7 +149,7 @@ USING_NAMESPACE_STIR
 static void
 print_usage()
 {
-  cerr<<"\nUsage: postfilter [--verbose] [--dynamic/--parametric] <output filename> <input header filename> <filter .par filename> [output_format_par_file]\n"<<endl;
+  cerr<<"\nUsage: postfilter [--verbose] [--dynamic|--parametric] <output filename> <input header filename> <filter .par filename> [output_format_par_file]\n"<<endl;
 }
 
 int
@@ -174,15 +174,15 @@ main(int argc, char *argv[])
 	  --argc; ++argv;
 	}
       else if (strcmp(argv[1], "--dynamic") == 0)
-    {
-      image_type = dynamic;
-      --argc; ++argv;
-    }
+        {
+          image_type = dynamic;
+          --argc; ++argv;
+        }
       else if (strcmp(argv[1], "--parametric") == 0)
-    {
-      image_type = parametric;
-      --argc; ++argv;
-    }
+        {
+          image_type = parametric;
+          --argc; ++argv;
+        }
       else
 	{
 	  print_usage();
