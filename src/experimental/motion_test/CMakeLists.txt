@@ -23,9 +23,8 @@ set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 
 Set(${dir_INVOLVED_TEST_EXE_SOURCES}
     test_BSpline_transformations
+    test_ProjectorsWithMotion
 )
-
-# create_stir_involved_test (test_BSpline_transformations.cxx "${STIR_LIBRARIES}" "${STIR_REGISTRIES}")
 
 if (BUILD_TESTING)
 	if (HAVE_ITK)
@@ -34,6 +33,13 @@ if (BUILD_TESTING)
 				${CMAKE_CURRENT_SOURCE_DIR}/input/to_transform.nii.gz
 				${CMAKE_CURRENT_SOURCE_DIR}/input/ground_truth.nii.gz
 				${CMAKE_SOURCE_DIR}/examples/nifti/disp_4D.nii.gz)
+
+		ADD_TEST(test_ProjectorsWithMotion 
+			${CMAKE_CURRENT_BINARY_DIR}/test_ProjectorsWithMotion
+				/Users/rich/Documents/Data/Kjell-patlak/Output/09_Movement/1_LR/dyn_im_LR_4.nii
+				/Users/rich/Documents/Data/Kjell-patlak/Output/13_Prompts/1_LR/prompts_LR_4.hs
+				/Users/rich/Documents/Data/Kjell-patlak/Output/10_DispFields/disp_LR.nii
+				${CMAKE_CURRENT_SOURCE_DIR}/input/projector_pair.par)
 	endif()
 endif(BUILD_TESTING)
 
