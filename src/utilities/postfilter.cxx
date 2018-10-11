@@ -32,10 +32,10 @@
   \author Richard Brown
   
 
-  This program enables calling any ImageProcessor object on input data, 
+  This program enables calling any stir::DataProcessor object on input data, 
   and writing it to file. It can take the following command line:
   \verbatim
-   postfilter [[-verbose] <output filename> <input header file name> <filter .par filename> [--dynamic]
+  postfilter [--verbose] [--dynamic|--parametric] <output filename> <input header filename> <filter .par filename> [output_format_par_file]
   \endverbatim
   This is done to make it easy to process a lot of files with the same 
   ImageProcessor. However, if the number of command line arguments is not 
@@ -72,6 +72,7 @@
 #include "stir/utilities.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/DynamicDiscretisedDensity.h"
+#include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/Succeeded.h"
@@ -114,6 +115,33 @@ shared_ptr<OutputFileFormat<STIRImageType> > set_up_output_format(const std::str
     return output;
 }
 
+template<typename STIRImageType>
+static
+shared_ptr<STIRImageType> read_image(const std::string &filename)
+{
+    shared_ptr<STIRImageType> output;
+    if (!filename.empty())
+        output = read_from_file<STIRImageType>(filename);
+    else
+        output.reset(ask_image<STIRImageType>("Image to process?"));
+    if (is_null_ptr(output))
+        error("postfilter: No input image. Not writing any output.");
+
+    return output;
+}
+
+template<typename STIRImageType>
+static
+void save_image(shared_ptr<STIRImageType> image, const std::string &filename, const std::string &par)
+{
+    shared_ptr<OutputFileFormat<STIRImageType> > output_file_format =
+            set_up_output_format<STIRImageType>(par);
+
+    if (output_file_format->write_to_file(filename,*image) == Succeeded::no)
+        error("postfilter: Saving image failed.");
+}
+
+
 END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
@@ -121,17 +149,20 @@ USING_NAMESPACE_STIR
 static void
 print_usage()
 {
-  cerr<<"\nUsage: postfilter [--verbose] [--dynamic] <output filename> <input header file name> <filter .par filename> [output_format_par_file]\n"<<endl;
+  cerr<<"\nUsage: postfilter [--verbose] [--dynamic|--parametric] <output filename> <input header filename> <filter .par filename> [output_format_par_file]\n"<<endl;
 }
 
 int
 main(int argc, char *argv[])
 {
-  bool dynamic_image = false;
+  enum ImageType { normal, dynamic, parametric };
+  ImageType image_type = normal;
+
   shared_ptr<DiscretisedDensity<3,float> > input_image_single_ptr;
   shared_ptr<DynamicDiscretisedDensity>    input_image_dynamic_ptr;
+  shared_ptr<ParametricVoxelsOnCartesianGrid> input_image_parametric_ptr;
   PostFiltering<DiscretisedDensity<3,float> > post_filtering;
-  std::string out_filename, output_file_format_par = "";
+  std::string out_filename, output_file_format_par = "", input_filename = "";
   bool verbose = false;
 
   // option processing
@@ -143,10 +174,15 @@ main(int argc, char *argv[])
 	  --argc; ++argv;
 	}
       else if (strcmp(argv[1], "--dynamic") == 0)
-    {
-      dynamic_image = true;
-      --argc; ++argv;
-    }
+        {
+          image_type = dynamic;
+          --argc; ++argv;
+        }
+      else if (strcmp(argv[1], "--parametric") == 0)
+        {
+          image_type = parametric;
+          --argc; ++argv;
+        }
       else
 	{
 	  print_usage();
@@ -170,20 +206,9 @@ main(int argc, char *argv[])
     }
   if (argc>2)
     {
-      if (!dynamic_image)
-        input_image_single_ptr =
-            read_from_file<DiscretisedDensity<3,float> >(argv[2]);
-      else
-          input_image_dynamic_ptr =
-              read_from_file<DynamicDiscretisedDensity>(argv[2]);
+      input_filename = argv[2];
     }
-  else
-    {
-      if (!dynamic_image)
-        input_image_single_ptr.reset(ask_image<DiscretisedDensity<3,float> >("Image to process?"));
-      else
-        input_image_dynamic_ptr.reset(ask_image<DynamicDiscretisedDensity>("Image to process?"));
-    }
+
   if (argc>3)
     {
       if (post_filtering.parse(argv[3]) == false)
@@ -211,38 +236,56 @@ main(int argc, char *argv[])
       return EXIT_FAILURE;
     }
 
-  if (is_null_ptr(input_image_single_ptr) && is_null_ptr(input_image_dynamic_ptr))
-    {
-      warning("postfilter: No input image. Not writing any output.\n");
-      return EXIT_FAILURE;
-    }
-    
+  // Read image
+  if (image_type == normal)
+    input_image_single_ptr =
+            read_image<DiscretisedDensity<3,float> >(input_filename);
+  else if (image_type == dynamic)
+      input_image_dynamic_ptr =
+              read_image<DynamicDiscretisedDensity>(input_filename);
+  else /*if (image_type == parametric)*/
+      input_image_parametric_ptr =
+              read_image<ParametricVoxelsOnCartesianGrid>(input_filename);
+
   if (verbose)
     {
       cerr << "PostFilteringParameters:\n" << post_filtering.parameter_info();
     }
 
-  if (!dynamic_image) {
-    if (post_filtering.process_data(*input_image_single_ptr) == Succeeded::no)
-        return EXIT_FAILURE;
-
-    shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format =
-      set_up_output_format<DiscretisedDensity<3,float> >(output_file_format_par);
-    if (output_file_format->write_to_file(out_filename,*input_image_single_ptr) == Succeeded::no)
-        return EXIT_FAILURE;
-  }
-  else {
-
+  // Post filter!
+  stir::Succeeded success(Succeeded::yes);
+  if (image_type == normal)
+      success = post_filtering.process_data(*input_image_single_ptr);
+  else if (image_type == dynamic) {
       for (unsigned i=1; i<=input_image_dynamic_ptr->get_num_time_frames(); i++) {
-          if (post_filtering.process_data(input_image_dynamic_ptr->get_density(i)) == Succeeded::no)
-              return EXIT_FAILURE;
+          if (post_filtering.process_data(input_image_dynamic_ptr->get_density(i)) == Succeeded::no) {
+              success = Succeeded::no;
+              break;
+          }
       }
-
-      shared_ptr<OutputFileFormat<DynamicDiscretisedDensity> > output_file_format =
-        set_up_output_format<DynamicDiscretisedDensity>(output_file_format_par);
-      if (output_file_format->write_to_file(out_filename,*input_image_dynamic_ptr) == Succeeded::no)
-          return EXIT_FAILURE;
   }
+  else /*if (image_type == parametric)*/ {
+      for (unsigned i=1; i<=input_image_parametric_ptr->get_num_params(); i++) {
+          VoxelsOnCartesianGrid<float> single_parametric_param =
+                  input_image_parametric_ptr->construct_single_density(int(i));
+          if (post_filtering.process_data(single_parametric_param) == Succeeded::no) {
+              success = Succeeded::no;
+              break;
+          }
+          input_image_parametric_ptr->update_parametric_image(single_parametric_param,i);
+      }
+  }
+  if (success == Succeeded::no)
+      error("Postfiltering failed.");
+
+  // Save to file
+  if (image_type == normal)
+    save_image(input_image_single_ptr, out_filename, output_file_format_par);
+  else if (image_type == dynamic)
+    save_image(input_image_dynamic_ptr, out_filename, output_file_format_par);
+  else /*if (image_type == parametric)*/
+    save_image(input_image_parametric_ptr, out_filename, output_file_format_par);
+
   return EXIT_SUCCESS;
 }
 
