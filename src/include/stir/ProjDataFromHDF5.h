@@ -52,7 +52,7 @@ START_NAMESPACE_STIR
 class ProjDataFromHDF5 : public ProjData
 {
 public:
-    
+
     static ProjDataFromHDF5* ask_parameters(const bool on_disk = true);
 
     explicit ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
@@ -60,15 +60,15 @@ public:
 
     explicit ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
                               shared_ptr<HDF5Wrapper> input_hdf5_sptr);
-    
+
     explicit ProjDataFromHDF5(shared_ptr<ExamInfo> input_exam_info_sptr,
                               shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
                               shared_ptr<HDF5Wrapper> input_hdf5);
 
     //! Get the segment sequence
     inline std::vector<int> get_segment_sequence_in_hdf5() const;
-  
-    //! Get Viewgram<float> 
+
+    //! Get Viewgram<float>
     Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const;
     //! Get Sinogram<float>
     Sinogram<float> get_sinogram(const int ax_pos_num, const int sergment_num,const bool make_num_tangential_poss_odd=false) const;
@@ -89,11 +89,12 @@ private:
 
     void initialise_ax_pos_offset();
 
+    void initialise_viewgram_buffer();
     //! Handler of the HDF5 input data and header
     shared_ptr<HDF5Wrapper> m_input_hdf5_sptr;
 
     std::vector< int > segment_sequence;
-
+    Array<4, unsigned char> tof_data;
 };
 
 END_NAMESPACE_STIR
