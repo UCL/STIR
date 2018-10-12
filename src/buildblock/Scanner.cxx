@@ -863,6 +863,23 @@ check_consistency() const
                  get_transaxial_block_spacing(), get_num_transaxial_blocks_per_bucket(), get_inner_ring_radius());
          return Succeeded::no;
       }
+    else if (get_scannner_geometry() == "Generic")
+    { //! Check if the crystal map is correct and given
+      if (get_crystal_map() == "")
+      {
+        warning("No crystal map is provided. The scanner geometry Generic needs it! Please provide one.");
+        return Succeeded::no;
+      }
+      else
+      {
+        std::ifstream crystal_map(get_crystal_map());
+        if( !crystal_map)
+        {
+          warning("No correct crystal map provided. Please check the file name.");
+          return Succeeded::no;
+        }
+      }
+    }
   
   }
 
@@ -978,8 +995,8 @@ Scanner::parameter_info() const
     << get_num_transaxial_crystals_per_singles_unit() << '\n';
   //crystal map 
   if (crystal_map_file_name != "")
-    s << "name of crystal map                                         := "
-      << crystal_map_file_name << '\n';
+    s << "Name of crystal map                                         := "
+      << get_crystal_map() << '\n';
   
   //block geometry description
   if (get_scanner_orientation() != "" && get_scanner_geometry() != "")

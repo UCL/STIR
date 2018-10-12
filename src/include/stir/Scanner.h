@@ -300,7 +300,11 @@ class Scanner
   //! get block spacing in transaxial direction
   inline float get_transaxial_block_spacing() const;
   //@} (end of get block geometry info)
-
+  
+  //! \name functions to get generic geometry info
+  //! get scanner orientation
+  inline std::string get_crystal_map() const;
+  
   //@} (end of block/bucket info)
 
   //@} (end of get geometrical info)

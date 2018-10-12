@@ -266,6 +266,12 @@ Scanner::get_axial_block_spacing() const
        return axial_block_spacing;
 }
 
+std::string
+Scanner::get_crystal_map() const
+{
+  return crystal_map_file_name;
+}
+
 //************************ set ******************************8
 
 void Scanner::set_type(const Type & new_type)

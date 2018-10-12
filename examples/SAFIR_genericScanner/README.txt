@@ -23,11 +23,12 @@ found in the online documentation of STIR and another example file can be found
 in 'example/samples/lm_to_projdata.par'.
 
 The projdata template file can be created with the utility 
-'create_projdata_template'. The new entries for this implementation are 'name of 
+'create_projdata_template'. The new entries for this implementation are 'Name of 
 crystal map' which defines the name of the file which contains all coordinates 
 of the detectors like the example file 'DualRingPrototype_crystal_map.txt' and 
-the new 'Scanner geometry' option 'Generic'. For the other entries please check 
-the online documentation.
+it contains as well the new 'Scanner geometry' option 'Generic'. The 'crystal map'
+file should be in the same folder as the template file. For the other entries 
+please check the online documentation.
 
 'forward_project' and 'backproject' are the utilities that convert the sinogram 
  data into an image and vice versa.
