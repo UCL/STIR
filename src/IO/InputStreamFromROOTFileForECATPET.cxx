@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2016, UCL
+    Copyright (C) 2018, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,7 +27,9 @@ InputStreamFromROOTFileForECATPET::registered_name =
 InputStreamFromROOTFileForECATPET::
 InputStreamFromROOTFileForECATPET():
     base_type()
-{}
+{
+    set_defaults();
+}
 
 InputStreamFromROOTFileForECATPET::
 InputStreamFromROOTFileForECATPET(std::string _filename,
@@ -40,6 +43,8 @@ InputStreamFromROOTFileForECATPET(std::string _filename,
     crystal_repeater_x(crystal_repeater_x), crystal_repeater_y(crystal_repeater_y), crystal_repeater_z(crystal_repeater_z),
     block_repeater(block_repeater)
 {
+    set_defaults();
+
     filename = _filename;
     chain_name = _chain_name;
     exclude_scattered = _exclude_scattered;
@@ -70,7 +75,7 @@ get_next_record(CListRecordROOT& record)
 
         if ( (comptonphantom1 > 0 || comptonphantom2 > 0) && exclude_scattered )
             continue;
-        if ( event1 != event2 && exclude_randoms )
+        if ( eventID1 != eventID2 && exclude_randoms )
             continue;
         if (energy1 < low_energy_window ||
                  energy1 > up_energy_window ||
@@ -122,7 +127,13 @@ method_info() const
 
 void
 InputStreamFromROOTFileForECATPET::set_defaults()
-{}
+{
+    base_type::set_defaults();
+    crystal_repeater_x = -1;
+    crystal_repeater_y = -1;
+    crystal_repeater_z = -1;
+    block_repeater = -1;
+}
 
 void
 InputStreamFromROOTFileForECATPET::initialise_keymap()
@@ -148,6 +159,14 @@ set_up(const std::string & header_path )
 {
     if (base_type::set_up(header_path) == Succeeded::no)
         return Succeeded::no;
+
+    std::string missing_keywords;
+    if(!check_all_required_keywords_are_set(missing_keywords))
+    {
+        warning(missing_keywords.c_str());
+        return Succeeded::no;
+    }
+
     stream_ptr->SetBranchAddress("crystalID1",&crystalID1);
     stream_ptr->SetBranchAddress("crystalID2",&crystalID2);
     stream_ptr->SetBranchAddress("blockID1",&blockID1);
@@ -158,6 +177,42 @@ set_up(const std::string & header_path )
         error("The total number of entries in the ROOT file is zero. Abort.");
 
     return Succeeded::yes;
+}
+
+bool InputStreamFromROOTFileForECATPET::
+check_all_required_keywords_are_set(std::string& ret) const
+{
+    std::ostringstream stream("InputStreamFromROOTFileForCylindricalPET: Required keywords are missing! Check: ");
+    bool ok = true;
+
+    if (crystal_repeater_x == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (crystal_repeater_y == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (crystal_repeater_z == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (block_repeater == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (!ok)
+        ret = stream.str();
+
+    return ok;
 }
 
 END_NAMESPACE_STIR

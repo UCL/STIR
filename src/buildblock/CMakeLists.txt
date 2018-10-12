@@ -62,6 +62,7 @@ set(${dir_LIB_SOURCES}
 	DynamicDiscretisedDensity 
 	DynamicProjData 
 	MultipleProjData 
+  MultipleDataSetHeader
 	GatedProjData 
 	ArrayFilter2DUsingConvolution 
 	ArrayFilter3DUsingConvolution 

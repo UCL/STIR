@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2016, UCL
+    Copyright (C) 2018, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,13 +27,7 @@ InputStreamFromROOTFileForCylindricalPET::
 InputStreamFromROOTFileForCylindricalPET():
     base_type()
 {
-    filename = "";
-    chain_name = "";
-    exclude_scattered = false;
-    exclude_randoms = false;
-    low_energy_window = 0;
-    up_energy_window = 1000;
-    offset_dets = 0;
+    set_defaults();
 }
 
 InputStreamFromROOTFileForCylindricalPET::
@@ -51,6 +46,8 @@ InputStreamFromROOTFileForCylindricalPET(std::string _filename,
     module_repeater_x(module_repeater_x), module_repeater_y(module_repeater_y), module_repeater_z(module_repeater_z),
     rsector_repeater(rsector_repeater)
 {
+    set_defaults();
+
     filename = _filename;
     chain_name = _chain_name;
     exclude_scattered = _exclude_scattered;
@@ -82,7 +79,7 @@ get_next_record(CListRecordROOT& record)
 
         if ( (this->comptonphantom1 > 0 || this->comptonphantom2 > 0) && this->exclude_scattered )
             continue;
-        if ( this->event1 != this->event2 && this->exclude_randoms)
+        if ( (this->eventID1 != this->eventID2) && this->exclude_randoms)
             continue;
         if (this->energy1 < this->low_energy_window ||
                  this->energy1 > this->up_energy_window ||
@@ -141,7 +138,19 @@ method_info() const
 
 void
 InputStreamFromROOTFileForCylindricalPET::set_defaults()
-{}
+{
+    base_type::set_defaults();
+    crystal_repeater_x = -1;
+    crystal_repeater_y = -1;
+    crystal_repeater_z = -1;
+    submodule_repeater_x = -1;
+    submodule_repeater_y = -1;
+    submodule_repeater_z = -1;
+    module_repeater_x = -1;
+    module_repeater_y = -1;
+    module_repeater_z = -1;
+    rsector_repeater = -1;
+}
 
 void
 InputStreamFromROOTFileForCylindricalPET::initialise_keymap()
@@ -177,6 +186,14 @@ set_up(const std::string & header_path)
 {
     if (base_type::set_up(header_path) == Succeeded::no)
         return  Succeeded::no;
+
+    std::string missing_keywords;
+    if(!check_all_required_keywords_are_set(missing_keywords))
+    {
+        warning(missing_keywords.c_str());
+        return Succeeded::no;
+    }
+
     stream_ptr->SetBranchAddress("crystalID1",&crystalID1);
     stream_ptr->SetBranchAddress("crystalID2",&crystalID2);
     stream_ptr->SetBranchAddress("submoduleID1",&submoduleID1);
@@ -188,7 +205,7 @@ set_up(const std::string & header_path)
 
     nentries = static_cast<unsigned long int>(stream_ptr->GetEntries());
     if (nentries == 0)
-        error("The total number of entries in the ROOT file is zero. Abort.");
+        error("InputStreamFromROOTFileForCylindricalPET: The total number of entries in the ROOT file is zero. Abort.");
 
     return Succeeded::yes;
     half_block = static_cast<int>( (module_repeater_y * submodule_repeater_y * crystal_repeater_y) / 2);
@@ -199,5 +216,78 @@ set_up(const std::string & header_path)
 
     return Succeeded::yes;
 }
+
+bool InputStreamFromROOTFileForCylindricalPET::
+check_all_required_keywords_are_set(std::string& ret) const
+{
+    std::ostringstream stream("InputStreamFromROOTFileForCylindricalPET: Required keywords are missing! Check: ");
+    bool ok = true;
+
+    if (crystal_repeater_x == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (crystal_repeater_y == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (crystal_repeater_z == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (submodule_repeater_x == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (submodule_repeater_y == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (submodule_repeater_z == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (module_repeater_x == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (module_repeater_y == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (module_repeater_z == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (rsector_repeater == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (!ok)
+        ret = stream.str();
+
+    return ok;
+}
+
 
 END_NAMESPACE_STIR

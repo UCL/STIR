@@ -26,14 +26,12 @@
 
 #include "stir/listmode/CListModeDataECAT8_32bit.h"
 #include "stir/listmode/CListRecordECAT8_32bit.h"
-#include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
 #include "stir/info.h"
 #include "stir/warning.h"
 #include "stir/error.h"
 #include <boost/format.hpp>
-#include <iostream>
-#include <fstream>
+
 
 START_NAMESPACE_STIR
 namespace ecat {
@@ -46,10 +44,18 @@ CListModeDataECAT8_32bit(const std::string& listmode_filename)
 
   this->exam_info_sptr.reset(new ExamInfo(*interfile_parser.get_exam_info_ptr()));
 
+  const std::string originating_system(this->interfile_parser.get_exam_info_ptr()->originating_system);
+  shared_ptr<Scanner> this_scanner_sptr(Scanner::get_scanner_from_name(originating_system));
+  if (this_scanner_sptr->get_type() == Scanner::Unknown_scanner)
+    error(boost::format("Unknown value for originating_system keyword: '%s") % originating_system );
 
-  this->proj_data_info_sptr = interfile_parser.data_info_ptr;
-  this->scanner_sptr.reset( new Scanner(*this->proj_data_info_sptr->get_scanner_ptr()));
-
+    shared_ptr<ProjDataInfo> tmp( ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
+                                                                         this->interfile_parser.get_axial_compression(),
+                                                                         this->interfile_parser.get_maximum_ring_difference(),
+                                                                         this->interfile_parser.get_num_views(),
+                                                                         this->interfile_parser.get_num_projections(),
+                                                                         /* arc_correction*/false));
+   this->set_proj_data_info_sptr( tmp );
   if (this->open_lm_file() == Succeeded::no)
     error("CListModeDataECAT8_32bit: error opening the first listmode file for filename %s\n",
 	  listmode_filename.c_str());
@@ -67,7 +73,7 @@ shared_ptr <CListRecord>
 CListModeDataECAT8_32bit::
 get_empty_record_sptr() const
 {
-  shared_ptr<CListRecord> sptr(new CListRecordT(this->proj_data_info_sptr));
+  shared_ptr<CListRecord> sptr(new CListRecordT(this->get_proj_data_info_sptr()));
   return sptr;
 }
 

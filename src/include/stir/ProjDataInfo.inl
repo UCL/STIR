@@ -205,7 +205,12 @@ Scanner*
 ProjDataInfo::get_scanner_ptr() const
 { 
   return scanner_ptr.get();
-    
+}
+
+shared_ptr<Scanner>
+ProjDataInfo::get_scanner_sptr() const
+{
+  return scanner_ptr;
 }
 
 

@@ -2,6 +2,7 @@
 // 
 /* 
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -54,7 +55,7 @@ set_defaults()
   this->frame_defs_filename ="";
   this->list_mode_data_sptr.reset(); 
   this->current_frame_num = 1;
-  this->num_events_to_store = 0;
+  this->num_events_to_use = 0L;
  
   this->output_image_size_xy=-1; 
   this->output_image_size_z=-1; 
@@ -95,11 +96,6 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
   if (this->list_mode_filename.length() == 0) 
   { warning("You need to specify an input file\n"); return true; } 
 
-  // handle time frame definitions etc
-  // If num_events_to_store == 0 && frame_definition_filename.size == 0
-  if(this->num_events_to_store==0 && this->frame_defs_filename.size() == 0)
-      do_time_frame = true;
-   
   this->list_mode_data_sptr=
     read_from_file<CListModeData>(this->list_mode_filename); 
 
@@ -132,6 +128,14 @@ set_input_data(const shared_ptr<ExamData> & arg)
     this->list_mode_data_sptr = dynamic_pointer_cast<CListModeData>(arg);
 }
 
+template <typename TargetT>
+const CListModeData&
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+get_input_data() const
+{
+  return *this->list_mode_data_sptr;
+}
+
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
@@ -148,26 +152,36 @@ set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
   this->normalisation_sptr = arg;
 }
 
-#if 0
-Succeeded  
+template<typename TargetT>
+void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
-set_up(shared_ptr <TargetT > const& target_sptr) 
-{ 
-  if ( base_type::set_up(target_sptr) != Succeeded::yes) 
-    return Succeeded::no; 
+start_new_time_frame(const unsigned int)
+{}
+
+template<typename TargetT>
+Succeeded
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+set_up(shared_ptr <TargetT > const& target_sptr)
+{
+  if ( base_type::set_up(target_sptr) != Succeeded::yes)
+    return Succeeded::no;
+
+  // handle time frame definitions etc
+    if(this->num_events_to_use==0 && this->frame_defs_filename.size() == 0)
+      do_time_frame = true;
  
-    return Succeeded::yes; 
- 
- 
-} 
- 
+    return Succeeded::yes;
+}
+
+#if 0
 template <typename TargetT> 
 TargetT * 
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>:: 
 construct_target_ptr() const 
 { 
   return 
-      new VoxelsOnCartesianGrid<float> (*this->proj_data_sptr->get_proj_data_info_ptr(), 
+    new VoxelsOnCartesianGrid<float> (this->get_input_data().get_exam_info_sptr(),
+                                      *this->proj_data_sptr->get_proj_data_info_ptr(),
 					this->zoom, 
 					CartesianCoordinate3D<float>(this->Zoffset, 
 								     this->Yoffset, 

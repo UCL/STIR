@@ -24,7 +24,7 @@ set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_ROIs
         test_warp_image
-	test_DynamicDiscretisedDensity  
+	test_DynamicDiscretisedDensity
 )
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
@@ -33,6 +33,10 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
 
 Set(${dir_INVOLVED_TEST_EXE_SOURCES}
 	test_OutputFileFormat
+	IO/test_IO_DiscretisedDensity
+	IO/test_IO_DynamicDiscretisedDensity
+	IO/test_IO_ParametricDiscretisedDensity
+	IO/test_IO_ITKMulticomponent
 	test_linear_regression
 	test_stir_math
 	test_time_of_flight
@@ -60,6 +64,7 @@ set(buildblock_simple_tests
 	test_proj_data_in_memory
 	test_export_array
         test_GeneralisedPoissonNoiseGenerator
+	test_multiple_proj_data
 )
 
 include(stir_test_exe_targets)
@@ -97,8 +102,8 @@ endif()
 
 # we first construct a list of all input files
 set(file_format_tests
-	test_InterfileOutputFileFormat.in 
-	test_InterfileOutputFileFormat_short.in 
+	test_InterfileOutputFileFormat.in
+	test_InterfileOutputFileFormat_short.in
 )
 
 if (HAVE_ECAT)
@@ -115,14 +120,29 @@ if (HAVE_ITK)
 	test_ITKDefaultOutputFileFormat.in
 	test_ITKNiftiOutputFileFormat.in
     )
+    ADD_TEST(test_IO_ITKMulticomponent
+    	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ITKMulticomponent ${CMAKE_SOURCE_DIR}/examples/nifti/disp_4D.nii.gz)
 endif()
 
 # now for each of these, add a test
 foreach(file_format ${file_format_tests})
-  set(test_name test_OutputFileFormat_${file_format})
+	set(test_name test_IO_DiscretisedDensity_${file_format})
   ADD_TEST(${test_name}
-    ${CMAKE_CURRENT_BINARY_DIR}/test_OutputFileFormat ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format}
-)
+		${CMAKE_CURRENT_BINARY_DIR}/test_IO_DiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/${file_format})
 endforeach()
+
+# Parametric tests
+ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile 
+	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat.in)
+ADD_TEST(test_IO_ParametricDiscretisedDensity_Interfile_short
+	${CMAKE_CURRENT_BINARY_DIR}/test_IO_ParametricDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat_short.in)
+
+# Dynamic tests
+ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile 
+	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat.in)
+ADD_TEST(test_IO_DynamicDiscretisedDensity_Interfile_short
+	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_InterfileOutputFileFormat_short.in)
+ADD_TEST(test_IO_DynamicDiscretisedDensity_Multi
+	${CMAKE_CURRENT_BINARY_DIR}/test_IO_DynamicDiscretisedDensity ${CMAKE_CURRENT_SOURCE_DIR}/input/test_MultiOutputFileFormat.in)
 
 endif(BUILD_TESTING)

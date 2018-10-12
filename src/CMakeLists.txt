@@ -226,7 +226,10 @@ if(NOT DISABLE_STIR_LOCAL)
   endif()
 endif()
 
-
+# Include the experimental code
+if (STIR_ENABLE_EXPERIMENTAL)
+  ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/local)
+endif()
 
 # go and look for CMakeLists.txt files in all those directories
 foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})

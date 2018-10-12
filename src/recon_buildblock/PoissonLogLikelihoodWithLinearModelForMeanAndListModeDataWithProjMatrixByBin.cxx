@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2014, 2016, University College London
+    Copyright (C) 2014, 2016, 2018, University College London
     Copyright (C) 2016, University of Hull
     This file is part of STIR.
 
@@ -56,7 +56,6 @@
 
 #include "stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
 #include "stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
-
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributed_functions.h"
 #endif
@@ -107,7 +106,7 @@ initialise_keymap()
   this->parser.add_parsing_key("Matrix type", &this->PM_sptr);
   this->parser.add_key("additive sinogram",&this->additive_projection_data_filename);
  
-  this->parser.add_key("num_events_to_store",&this->num_events_to_store);
+  this->parser.add_key("num_events_to_use",&this->num_events_to_use);
 } 
 template <typename TargetT> 
 int 
@@ -212,17 +211,16 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
 #endif
 
     // set projector to be used for the calculations
-    this->PM_sptr->set_up(proj_data_info_cyl_sptr->create_shared_clone(),target_sptr);
+    this->PM_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
 
     this->PM_sptr->enable_tof(proj_data_info_cyl_sptr->create_shared_clone(), this->use_tof);
-
     shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
     shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
 
-    this->projector_pair_ptr.reset(
+    this->projector_pair_sptr.reset(
                 new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
 
-    this->projector_pair_ptr->set_up(proj_data_info_cyl_sptr->create_shared_clone(),target_sptr);
+    this->projector_pair_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
 
 	// sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
 	this->sens_backprojector_sptr.reset(projector_pair_ptr->get_back_projector_sptr()->clone());
@@ -236,7 +234,7 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
     }
 
     if (this->normalisation_sptr->set_up(
-                proj_data_info_cyl_sptr->create_shared_clone()) == Succeeded::no)
+                proj_data_info_sptr->create_shared_clone()) == Succeeded::no)
         return Succeeded::no;
 
     if (this->current_frame_num<=0)
@@ -255,11 +253,11 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
     record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
 
     return Succeeded::yes;
-}
-
-
-template <typename TargetT>
-bool
+} 
+ 
+ 
+template <typename TargetT>  
+bool  
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::post_processing() 
 {
 
@@ -299,25 +297,32 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
       this->additive_proj_data_sptr.reset(new ProjDataInMemory(* temp_additive_proj_data_sptr));
     }
 
-   proj_data_info_cyl_sptr = this->list_mode_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
+   proj_data_info_sptr = this->list_mode_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
 
-   if (max_ring_difference_num_to_process > proj_data_info_cyl_sptr->get_max_segment_num())
+   if (max_ring_difference_num_to_process > proj_data_info_sptr->get_max_segment_num())
    {
        warning("In the parameter file, the 'maximum ring difference' is larger than the number of segments"
-               "in the emission header. Abort.");
+               "in the listmode file. Abort.");
        return true;
    }
-   else if (max_ring_difference_num_to_process < proj_data_info_cyl_sptr->get_max_segment_num())
+   else if (max_ring_difference_num_to_process < proj_data_info_sptr->get_max_segment_num())
    {
-       proj_data_info_cyl_sptr->reduce_segment_range(-max_ring_difference_num_to_process,
+       proj_data_info_sptr->reduce_segment_range(-max_ring_difference_num_to_process,
                                                      max_ring_difference_num_to_process);
    }
 
+   // Daniel: abilitate do_time_frame if there is a fdef file
+      if (this->frame_defs_filename.size()!=0)
+          {
+            this->frame_defs = TimeFrameDefinitions(this->frame_defs_filename);
+            this->do_time_frame = true;
+   }
+
   if(!is_null_ptr(this->additive_proj_data_sptr))
-      if (*(this->additive_proj_data_sptr->get_proj_data_info_sptr()) != *proj_data_info_cyl_sptr)
+      if (*(this->additive_proj_data_sptr->get_proj_data_info_sptr()) != *proj_data_info_sptr)
       {
           const ProjDataInfo& add_proj = *(this->additive_proj_data_sptr->get_proj_data_info_sptr());
-          const ProjDataInfo& proj = *this->proj_data_info_cyl_sptr;
+          const ProjDataInfo& proj = *this->proj_data_info_sptr;
           bool ok =
                   typeid(add_proj) == typeid(proj) &&
                   *add_proj.get_scanner_ptr()== *(proj.get_scanner_ptr()) &&
@@ -327,9 +332,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                   (add_proj.get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num()) &&
                   add_proj.get_min_segment_num() <= proj.get_min_segment_num()  &&
                   add_proj.get_max_segment_num() >= proj.get_max_segment_num() &&
-				  add_proj.get_min_tof_pos_num() <= proj.get_min_tof_pos_num() &&
-				  add_proj.get_max_tof_pos_num() >= proj.get_max_tof_pos_num() ;
-
+                  add_proj.get_min_tof_pos_num() <= proj.get_min_tof_pos_num() &&
+                  add_proj.get_max_tof_pos_num() >= proj.get_max_tof_pos_num();
           for (int segment_num=proj.get_min_segment_num();
                ok && segment_num<=proj.get_max_segment_num();
                ++segment_num)
@@ -348,41 +352,41 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
           }
       }
 
-  if( this->normalisation_sptr->set_up(proj_data_info_cyl_sptr)
+  if( this->normalisation_sptr->set_up(proj_data_info_sptr)
    == Succeeded::no)
   {
 warning("PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin: "
-      "set-up of pre-normalisation failed\n");
+      "set-up of normalisation failed.");
 return true;
     }
 
-   return false;
+   return false; 
 
-}
-
+} 
+ 
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 {
 
-    const int min_segment_num = proj_data_info_cyl_sptr->get_min_segment_num();
-    const int max_segment_num = proj_data_info_cyl_sptr->get_max_segment_num();
+    const int min_segment_num = proj_data_info_sptr->get_min_segment_num();
+    const int max_segment_num = proj_data_info_sptr->get_max_segment_num();
 
     // warning: has to be same as subset scheme used as in distributable_computation
-	for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
-	{
-		for (int view = proj_data_info_cyl_sptr->get_min_view_num() + subset_num;
-			view <= proj_data_info_cyl_sptr->get_max_view_num();
-			view += this->num_subsets)
-		{
-		const ViewSegmentNumbers view_segment_num(view, segment_num);
+    for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
+    {
+      for (int view = proj_data_info_sptr->get_min_view_num() + subset_num;
+          view <= proj_data_info_sptr->get_max_view_num();
+          view += this->num_subsets)
+      {
+        const ViewSegmentNumbers view_segment_num(view, segment_num);
 
-		if (! this->projector_pair_ptr->get_symmetries_used()->is_basic(view_segment_num))
-			continue;
-		this->add_view_seg_to_sensitivity(sensitivity, view_segment_num);
-		}
-	}
+        if (! this->projector_pair_sptr->get_symmetries_used()->is_basic(view_segment_num))
+          continue;
+        this->add_view_seg_to_sensitivity(sensitivity, view_segment_num);
+      }
+    }
 }
 
 template<typename TargetT>
@@ -440,7 +444,7 @@ construct_target_ptr() const
                                        );
 
 }
-
+ 
 template <typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
@@ -452,11 +456,6 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   assert(subset_num>=0);
   assert(subset_num<this->num_subsets);
 
-  ProjDataInfoCylindricalNoArcCorr* proj_data_no_arc_ptr =
-          dynamic_cast<ProjDataInfoCylindricalNoArcCorr *> (proj_data_info_cyl_sptr.get());
-
-  CartesianCoordinate3D<float> lor_point_1, lor_point_2;
-
   const double start_time = this->frame_defs.get_start_time(this->current_frame_num);
   const double end_time = this->frame_defs.get_end_time(this->current_frame_num);
 
@@ -466,7 +465,6 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   // Putting the Bins here I avoid rellocation.
   Bin measured_bin;
   Bin fwd_bin;
-  LORAs2Points<float> lor_points;
 
   //go to the beginning of this frame
   //  list_mode_data_sptr->set_get_position(start_time);
@@ -474,7 +472,6 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   this->list_mode_data_sptr->reset();
   double current_time = 0.;
   ProjMatrixElemsForOneBin proj_matrix_row;
-
 
   CListRecord& record = *record_sptr;
 
@@ -537,15 +534,8 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
         }
 
         if(this->use_tof)
-        {
-//            lor_points = record.event().get_LOR();
-//            this->PM_sptr->get_proj_matrix_elems_for_one_bin_with_tof(proj_matrix_row,
-//                                                                      measured_bin,
-//                                                                      lor_points.p1(), lor_points.p2());
-
             this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row,
                                                                       measured_bin);
-        }
         else
             this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
 

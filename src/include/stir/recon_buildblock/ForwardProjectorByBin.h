@@ -86,10 +86,15 @@ virtual void set_up(
    */
   virtual  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const = 0;
 
-  //! project the volume into the whole proj_data
-  /*! it overwrites the data already present in the projection data */
+  //! project the volume into the whole or a subset of proj_data, optionally zeroing the rest
+  /*! it overwrites the data already present in the projection data.
+  
+      The optional arguments can be used to project only a subset of the data. 
+      Subsets are determined as per detail::find_basic_vs_nums_in_subset(). However,
+      this usage will likely be phased out at later stage.*/
     void forward_project(ProjData&, 
-			 const DiscretisedDensity<3,float>& );
+			 const DiscretisedDensity<3,float>&, 
+			 int subset_num = 0, int num_subsets = 1, bool zero = true);
 
    //! project the volume into the viewgrams
    /*! it overwrites the data already present in the viewgram */

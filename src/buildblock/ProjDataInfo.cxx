@@ -244,6 +244,7 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
 
 
 ProjDataInfo::ProjDataInfo()
+  : bed_position_horizontal(0.F), bed_position_vertical(0.F)
 {}
 
 
@@ -253,8 +254,7 @@ ProjDataInfo::ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr_v,
                            const VectorWithOffset<int>& num_axial_pos_per_segment_v, 
                            const int num_views_v, 
                            const int num_tangential_poss_v)
-			   :scanner_ptr(scanner_ptr_v)
-
+	: scanner_ptr(scanner_ptr_v), bed_position_horizontal(0.F), bed_position_vertical(0.F)
 { 
   set_num_views(num_views_v);
   set_num_tangential_poss(num_tangential_poss_v);
@@ -294,7 +294,11 @@ ProjDataInfo::parameter_info()  const
   std::ostringstream s;
 #endif
   s << scanner_ptr->parameter_info();
-
+  s << "\n";
+  s << "start vertical bed position (mm) := "
+    << get_bed_position_vertical() << endl;
+  s << "start horizontal bed position (mm) := "
+    << get_bed_position_horizontal() << endl;
   s << "\nSegment_num range:           ("
       << get_min_segment_num()
       << ", " <<  get_max_segment_num() << ")\n";
@@ -304,7 +308,6 @@ ProjDataInfo::parameter_info()  const
     s << get_num_axial_poss(seg_num) << " ";
   s << "}\n";
   s << "Number of tangential positions: " << get_num_tangential_poss() << endl;
-
   return s.str();
 
 }
@@ -695,7 +698,9 @@ blindly_equals(const root_type * const that) const
    (get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num())&&
    equal(min_axial_pos_per_seg.begin(), min_axial_pos_per_seg.end(), proj.min_axial_pos_per_seg.begin())&&
    equal(max_axial_pos_per_seg.begin(), max_axial_pos_per_seg.end(), proj.max_axial_pos_per_seg.begin())&&
-   (*get_scanner_ptr()== *(proj.get_scanner_ptr()));
+   (*get_scanner_ptr()== *(proj.get_scanner_ptr()))&&
+   (get_bed_position_horizontal()==proj.get_bed_position_horizontal())&&
+   (get_bed_position_vertical()==proj.get_bed_position_vertical());
 }
 
 bool

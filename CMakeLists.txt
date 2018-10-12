@@ -74,7 +74,7 @@ option(DISABLE_AVW "disable use of AVW library" OFF)
 option(DISABLE_RDF "disable use of GE RDF library" OFF)
 option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
 option(DISABLE_CERN_ROOT "disable use of Cern ROOT libraries" OFF)
-option(DISABLE_HDF5_SUPPORT "disable use of HDF5 libraries" OFF)
+option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # disable by default
 
 if(NOT DISABLE_ITK)
    # See if we can find a compiled version of ITK (http://www.itk.org/)

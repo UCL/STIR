@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2003 - 2011-02-23, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -217,7 +218,8 @@ public:
   virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
 
   virtual void set_input_data(const shared_ptr<ExamData> &);
-  //@}
+  virtual const ProjData& get_input_data() const;
+//@}
   
   virtual void 
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 

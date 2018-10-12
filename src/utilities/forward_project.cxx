@@ -106,7 +106,7 @@ main (int argc, char * argv[])
   forw_projector_sptr->set_up(template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone(),
                              image_density_sptr );
 
-  ProjDataInterfile output_projdata(template_proj_data_sptr->get_exam_info_sptr(),
+  ProjDataInterfile output_projdata(image_density_sptr->get_exam_info_sptr(),
                                     template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone(),
                                     output_filename);
 

@@ -116,6 +116,7 @@ PostsmoothingBackProjectorByBin::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
        const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr)
 {
+  BackProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);
   original_back_projector_ptr->set_up(proj_data_info_ptr, image_info_ptr);
   // don't do set_up as image sizes might change
   //if (!is_null_ptr(image_processor_ptr))

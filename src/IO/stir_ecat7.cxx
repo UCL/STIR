@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2002 - 2011-12-31, Hammersmith Imanet Ltd
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -1440,7 +1440,8 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
 
 static
 Succeeded
-get_ECAT7_image_info(CartesianCoordinate3D<int>& dimensions,
+get_ECAT7_image_info(shared_ptr<ExamInfo>& exam_info_sptr,
+                     CartesianCoordinate3D<int>& dimensions,
 		     CartesianCoordinate3D<float>& voxel_size,
 		     Coordinate3D<float>& origin,
 		     float& scale_factor,      
@@ -1493,9 +1494,15 @@ get_ECAT7_image_info(CartesianCoordinate3D<int>& dimensions,
       return Succeeded::no;
     }  
 
+  exam_info_sptr = read_ECAT7_exam_info(mptr);
+  {
+    TimeFrameDefinitions time_frame_defs(exam_info_sptr->get_time_frame_definitions(), frame_num);
+    exam_info_sptr->set_time_frame_definitions(time_frame_defs);
+  }
+
   Image_subheader const * const sub_header_ptr=
     reinterpret_cast<Image_subheader const* const>(matrix->shptr);
-    
+
   if(sub_header_ptr->num_dimensions != 3)
     warning("%s: while reading matrix \"%d,1,%d,%d,%d\" in file %s:\n"
 	    "Expected subheader_ptr->num_dimensions==3. Continuing\n",
@@ -1549,6 +1556,7 @@ ECAT7_to_VoxelsOnCartesianGrid(const string& ECAT7_filename,
   const char * const warning_prefix = "ECAT7_to_VoxelsOnCartesianGrid";
   const char * const warning_suffix =  "I'm not reading any data...\n";
 
+  shared_ptr<ExamInfo> exam_info_sptr;
   CartesianCoordinate3D<int> dimensions;
   CartesianCoordinate3D<float> voxel_size;
   Coordinate3D<float> origin;
@@ -1556,7 +1564,8 @@ ECAT7_to_VoxelsOnCartesianGrid(const string& ECAT7_filename,
   NumericType type_of_numbers;
   ByteOrder byte_order;
   long offset_in_file;
-  if (get_ECAT7_image_info(dimensions, voxel_size, origin,
+  if (get_ECAT7_image_info(exam_info_sptr,
+                           dimensions, voxel_size, origin,
 			   scale_factor, type_of_numbers, byte_order, offset_in_file,
 
 			   ECAT7_filename,
@@ -1574,7 +1583,7 @@ ECAT7_to_VoxelsOnCartesianGrid(const string& ECAT7_filename,
 			       -dimensions.y()/2,(-dimensions.y()/2)+dimensions.y()-1,
 			       -dimensions.x()/2,(-dimensions.x()/2)+dimensions.x()-1);
   VoxelsOnCartesianGrid<float>* image_ptr =
-    new VoxelsOnCartesianGrid<float> (range_3D, origin, voxel_size);
+    new VoxelsOnCartesianGrid<float> (exam_info_sptr, range_3D, origin, voxel_size);
   
   std::ifstream data_in(ECAT7_filename.c_str(), ios::in | ios::binary);
   if (!data_in)
@@ -1699,6 +1708,7 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
   case ByteVolume:
   case PetVolume:
     {
+      shared_ptr<ExamInfo> exam_info_sptr;
       CartesianCoordinate3D<int> dimensions;
       CartesianCoordinate3D<float> voxel_size;
       Coordinate3D<float> origin;
@@ -1706,7 +1716,8 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
       NumericType type_of_numbers;
       ByteOrder byte_order;
       long offset_in_file;
-      if (get_ECAT7_image_info(dimensions, voxel_size, origin,
+      if (get_ECAT7_image_info(exam_info_sptr,
+                               dimensions, voxel_size, origin,
 			       scale_factor, type_of_numbers, byte_order, offset_in_file,
 
 			       ECAT7_filename,
@@ -1731,7 +1742,8 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
 				   -dimensions.y()/2,(-dimensions.y()/2)+dimensions.y()-1,
 				   -dimensions.x()/2,(-dimensions.x()/2)+dimensions.x()-1);
       write_basic_interfile_image_header(header_filename, ECAT7_filename,
-					 range_3D, voxel_size, origin,
+					 exam_info,
+                                         range_3D, voxel_size, origin,
 					 type_of_numbers, byte_order,
 					 scaling_factors,
 					 file_offsets);

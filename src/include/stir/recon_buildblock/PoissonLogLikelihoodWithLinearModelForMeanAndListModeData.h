@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -81,8 +82,8 @@ public:
  
   //virtual TargetT * construct_target_ptr();  
  
-  //virtual Succeeded 
-    //set_up(shared_ptr <TargetT > const& target_sptr); 
+  virtual Succeeded
+   set_up(shared_ptr <TargetT > const& target_sptr);
  
   virtual  
   void compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,  
@@ -101,7 +102,7 @@ public:
     virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
 
     virtual void set_input_data(const shared_ptr<ExamData> &);
-
+    virtual const CListModeData& get_input_data() const;
 protected:
   std::string frame_defs_filename;
 
@@ -117,17 +118,9 @@ protected:
  
   unsigned int current_frame_num;
 
-  //!
-  //! \brief num_events_to_store
-  //! \author Nikos Efthimiou
-  //! \details This is part of some functionality I transfer from lm_to_projdata.
-  //! The total number of events to be *STORED* not *PROCESSED*.
-  int num_events_to_store;
-
-  //!
-   //! \brief do_time_frame
-   //! \author Nikos Efthimiou
-   //! \details Reconstruct based on time frames?
+  //! This is part of some functionality I transfer from LmToProjData.
+  long int num_events_to_use;
+   //! Reconstruct based on time frames
    bool do_time_frame;
  
   //! sets any default values
@@ -138,6 +131,10 @@ protected:
   virtual void initialise_keymap(); 
 
   virtual bool post_processing(); 
+
+   //! will be called when a new time frame starts
+   /*! The frame numbers start from 1. */
+   virtual void start_new_time_frame(const unsigned int new_frame_num);
  
   int output_image_size_xy;  
  
