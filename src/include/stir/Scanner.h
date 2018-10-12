@@ -399,8 +399,9 @@ class Scanner
   // Get the transaxial singles bin coordinate from a singles bin.
   inline int get_transaxial_singles_unit(int singles_bin_index) const;
   
-  // Functions to retrieve the coordinates and the stir_id out of the scanner
+  // Get the STIR detection position (det#, ring#, layer#) from the input detection position
   inline stir::DetectionPosition<> get_detpos_from_id(const stir::DetectionPosition<> det_pos) const;
+  // Get the coordinates (x,y,z) from a crystal detector from the STIR detection position (det#, ring#, layer#)
   inline stir::CartesianCoordinate3D<float> get_coords_from_detpos(const stir::DetectionPosition<> det_pos) const;
 
 private:
@@ -468,7 +469,7 @@ private:
     }
   };
   boost::unordered_map<stir::DetectionPosition<>, stir::DetectionPosition<>, ihash> input_index_to_stir_index;
-  boost::unordered_map<stir::DetectionPosition<>, stir::CartesianCoordinate3D<float>, ihash> input_index_to_coord;
+  boost::unordered_map<stir::DetectionPosition<>, stir::CartesianCoordinate3D<float>, ihash> stir_index_to_coord;
   std::string crystal_map_file_name;
 
   // function to create the maps

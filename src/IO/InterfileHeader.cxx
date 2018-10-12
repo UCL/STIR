@@ -594,7 +594,7 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   // end of new keys for block geometry
   //new keys for generic geometry
   crystal_map = "";
-  add_key("name of crystal map", &crystal_map);
+  add_key("Name of crystal map", &crystal_map);
   //end of new keys for generic geometry
 
   add_key("end scanner parameters",

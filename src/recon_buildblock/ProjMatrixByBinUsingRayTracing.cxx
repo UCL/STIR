@@ -369,44 +369,44 @@ set_up(
             use_actual_detector_boundaries = false;
          }
       }
+    }
+    else
+    {
+        const ProjDataInfoGenericNoArcCorr * proj_data_info_blk_ptr =
+          dynamic_cast<const ProjDataInfoGenericNoArcCorr *>(proj_data_info_ptr.get());
+          
+        if (proj_data_info_blk_ptr== 0)
+        {
+          warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
+                  " is reset to false as the projection data should be non-arccorected.\n");
+          use_actual_detector_boundaries = false;
         }
         else
-          {
-              const ProjDataInfoGenericNoArcCorr * proj_data_info_blk_ptr =
-                  dynamic_cast<const ProjDataInfoGenericNoArcCorr *>(proj_data_info_ptr.get());
-                  
-              if (proj_data_info_blk_ptr== 0)
-                {
-                  warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
-                          " is reset to false as the projection data should be non-arccorected.\n");
-                  use_actual_detector_boundaries = false;
-                }
-              else
-                {
-                  bool nocompression =
-                    proj_data_info_blk_ptr->get_view_mashing_factor()==1;
-                  for (int segment_num=proj_data_info_blk_ptr->get_min_segment_num();
-                       nocompression && segment_num <= proj_data_info_blk_ptr->get_max_segment_num();
-                       ++segment_num)
-                    nocompression=
-                      proj_data_info_blk_ptr->get_min_ring_difference(segment_num) ==
-                      proj_data_info_blk_ptr->get_max_ring_difference(segment_num);
+        {
+          bool nocompression =
+            proj_data_info_blk_ptr->get_view_mashing_factor()==1;
+          for (int segment_num=proj_data_info_blk_ptr->get_min_segment_num();
+               nocompression && segment_num <= proj_data_info_blk_ptr->get_max_segment_num();
+               ++segment_num)
+            nocompression=
+              proj_data_info_blk_ptr->get_min_ring_difference(segment_num) ==
+              proj_data_info_blk_ptr->get_max_ring_difference(segment_num);
 
-                  if (!nocompression)
-                    {
-                      warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
-                              " is reset to false as the projection data as either mashed or uses axial compression\n");
-                      use_actual_detector_boundaries = false;
-                    }
-                }
+          if (!nocompression)
+          {
+            warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries"
+                      " is reset to false as the projection data as either mashed or uses axial compression\n");
+            use_actual_detector_boundaries = false;
           }
+        }
+    }
  
-      if (use_actual_detector_boundaries)
+    if (use_actual_detector_boundaries)
         warning("ProjMatrixByBinUsingRayTracing: use_actual_detector_boundaries==true\n");
 
-    }  
+  }  
 
-#if 0
+  #if 0
   // test if our 2D code does not have problems
   {
     // currently 2D code relies on the LOR falling in the middle of a voxel (in z-direction)
@@ -419,7 +419,7 @@ set_up(
             "- or an even number of planes and z_origin=(n+1/2)*z_voxel_size\n"
             "(for some integer n).\n");
   }
-#endif
+  #endif
 
 
   this->already_setup = true;
@@ -664,14 +664,14 @@ calculate_proj_matrix_elems_for_one_bin(
 
       phi = proj_data_info_noarccor.get_phi(bin);
       s_in_mm = proj_data_info_noarccor.get_s(bin);
-   }
-   else
+    }
+    else
     {
-        const ProjDataInfoGenericNoArcCorr& proj_data_info_noarccor =
-        dynamic_cast<const ProjDataInfoGenericNoArcCorr&>(*proj_data_info_ptr);
+      const ProjDataInfoGenericNoArcCorr& proj_data_info_noarccor =
+      dynamic_cast<const ProjDataInfoGenericNoArcCorr&>(*proj_data_info_ptr);
 
-        phi = proj_data_info_noarccor.get_phi(bin);
-        s_in_mm = proj_data_info_noarccor.get_s(bin);
+      phi = proj_data_info_noarccor.get_phi(bin);
+      s_in_mm = proj_data_info_noarccor.get_s(bin);
     }
 
   }

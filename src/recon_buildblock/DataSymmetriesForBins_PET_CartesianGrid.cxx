@@ -380,52 +380,52 @@ DataSymmetriesForBins_PET_CartesianGrid
             cartesian_grid_info_ptr);
   }
     // generic implementation
-    if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="Generic")
+  if (proj_data_info_ptr->get_scanner_ptr()->get_scanner_geometry()=="Generic")
+  {
+    if (dynamic_cast<ProjDataInfoGeneric *>(proj_data_info_ptr.get()) == NULL)
+        error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
+        "(can only handle projection data corresponding to blocks on a cylinder)\n",
+        typeid(*proj_data_info_ptr).name());
+
+    const DiscretisedDensityOnCartesianGrid<3,float> *
+        cartesian_grid_info_ptr =
+        dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float> *>
+        (image_info_ptr.get());
+
+    if (cartesian_grid_info_ptr == NULL)
+        error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: %s\n",
+        typeid(*image_info_ptr).name());
+
+    // WARNING get_grid_spacing()[1] == z
+    const float z_origin_in_planes =
+    image_info_ptr->get_origin().z()/cartesian_grid_info_ptr->get_grid_spacing()[1];
+    // z_origin_in_planes should be an integer
+    if (fabs(round(z_origin_in_planes) - z_origin_in_planes) > 1.E-3F)
+        error("DataSymmetriesForBins_PET_CartesianGrid: the shift in the "
+          "z-direction of the origin (which is %g) should be a multiple of the plane "
+          "separation (%g)\n",
+          image_info_ptr->get_origin().z(), cartesian_grid_info_ptr->get_grid_spacing()[1]);
+
+    if (this->do_symmetry_90degrees_min_phi||
+        this->do_symmetry_180degrees_min_phi||
+        this->do_symmetry_swap_segment||
+        this->do_symmetry_swap_s||
+        this->do_symmetry_shift_z)
     {
-        if (dynamic_cast<ProjDataInfoGeneric *>(proj_data_info_ptr.get()) == NULL)
-            error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
-            "(can only handle projection data corresponding to blocks on a cylinder)\n",
-            typeid(*proj_data_info_ptr).name());
+        warning("Disabling all symmetries since they are not implemented in generic geometry.");
+        this->do_symmetry_90degrees_min_phi =
+        this->do_symmetry_180degrees_min_phi =
+        this->do_symmetry_swap_segment =
+        this->do_symmetry_swap_s =
+        this->do_symmetry_shift_z = false;
+    }
 
-        const DiscretisedDensityOnCartesianGrid<3,float> *
-            cartesian_grid_info_ptr =
-            dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float> *>
-            (image_info_ptr.get());
-
-        if (cartesian_grid_info_ptr == NULL)
-            error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: %s\n",
-            typeid(*image_info_ptr).name());
-
-        // WARNING get_grid_spacing()[1] == z
-        const float z_origin_in_planes =
-        image_info_ptr->get_origin().z()/cartesian_grid_info_ptr->get_grid_spacing()[1];
-        // z_origin_in_planes should be an integer
-        if (fabs(round(z_origin_in_planes) - z_origin_in_planes) > 1.E-3F)
-            error("DataSymmetriesForBins_PET_CartesianGrid: the shift in the "
-              "z-direction of the origin (which is %g) should be a multiple of the plane "
-              "separation (%g)\n",
-              image_info_ptr->get_origin().z(), cartesian_grid_info_ptr->get_grid_spacing()[1]);
-
-        if (this->do_symmetry_90degrees_min_phi||
-            this->do_symmetry_180degrees_min_phi||
-            this->do_symmetry_swap_segment||
-            this->do_symmetry_swap_s||
-            this->do_symmetry_shift_z)
-        {
-            warning("Disabling all symmetries since they are not implemented in generic geometry.");
-            this->do_symmetry_90degrees_min_phi =
-            this->do_symmetry_180degrees_min_phi =
-            this->do_symmetry_swap_segment =
-            this->do_symmetry_swap_s =
-            this->do_symmetry_shift_z = false;
-        }
-
-        find_relation_between_coordinate_systems(
-              num_planes_per_scanner_ring,
-              num_planes_per_axial_pos,
-              axial_pos_to_z_offset,
-              static_cast<const ProjDataInfoGeneric *>(proj_data_info_ptr.get()),
-              cartesian_grid_info_ptr);
+    find_relation_between_coordinate_systems(
+          num_planes_per_scanner_ring,
+          num_planes_per_axial_pos,
+          axial_pos_to_z_offset,
+          static_cast<const ProjDataInfoGeneric *>(proj_data_info_ptr.get()),
+          cartesian_grid_info_ptr);
     }
 }
 

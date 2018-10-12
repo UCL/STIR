@@ -634,45 +634,56 @@ set_params(Type type_v,const list<string>& list_of_names_v,
 // creates maps to convert between stir and 3d coordinates
 void
 Scanner::
-read_detectormap_from_file( const std::string& filename )
+read_detectormap_from_file( const std::string& crystal_map_name )
 {
-    std::ifstream myfile(filename.c_str());
-    if( !myfile )
+    std::ifstream crystal_map_file(crystal_map_name.c_str());
+    if( !crystal_map_file )
     {
-        std::cerr << "Error opening file " << filename << "." << std::endl;
+        std::cerr << "Error opening file " << crystal_map_name << "." << std::endl;
         return;
     }
     std::string line;
     //map containing the crystal map from the input file (safir -> coords)
     boost::unordered_map<stir::DetectionPosition<>, stir::CartesianCoordinate3D<float>, ihash> coord_map;
     // read in the file save the content in a map
-    while( std::getline( myfile, line))
+    while( std::getline( crystal_map_file, line))
     {
         if( line.size() && line[0] == '#' ) continue;
         bool has_layer_index = false;
         stir::CartesianCoordinate3D<float> coord;
         stir::DetectionPosition<> detpos;
-        std::vector<std::string> col;
-        boost::split(col, line, boost::is_any_of("\t,"));
-        if( !col.size() ) break;
-        else if( col.size() == 5 ) has_layer_index = false;
-        else if( col.size() == 6 ) has_layer_index = true;
-        coord[1] = atof(col[4+has_layer_index].c_str() );
-        coord[2] = atof(col[3+has_layer_index].c_str() );
-        coord[3] = atof(col[2+has_layer_index].c_str() );
+        std::vector<std::string> entry;
+        boost::split(entry, line, boost::is_any_of("\t,"));
+        if( !entry.size() ) break;
+        else if( entry.size() == 5 ) has_layer_index = false;
+        else if( entry.size() == 6 ) has_layer_index = true;
+        coord[1] = atof(entry[4+has_layer_index].c_str() );
+        coord[2] = atof(entry[3+has_layer_index].c_str() );
+        coord[3] = atof(entry[2+has_layer_index].c_str() );
 
         if( !has_layer_index ) detpos.radial_coord() = 0;
-        else detpos.radial_coord() = atoi(col[2].c_str());
-        detpos.axial_coord() = atoi(col[0].c_str());
-        detpos.tangential_coord() = atoi(col[1].c_str());
+        else detpos.radial_coord() = atoi(entry[2].c_str());
+        detpos.axial_coord() = atoi(entry[0].c_str());
+        detpos.tangential_coord() = atoi(entry[1].c_str());
 
         coord_map[detpos] = coord;
     }
 
+    // The detector crystal coordinates are now saved in coord_map the following way:
+    // (detector#, ring#, 1)[(x,y,z)]
+    // the detector# and ring# are determined outside of STIR (later given in input)
+    // In order to fulfill the STIR convention we have to give the coordinates  
+    // detector# and ring# defined by ourself so that the start (0,0) goes to the 
+    // coordinate with the smallest z and smallest y and the detector# is  
+    // counterclockwise rising.
+    // To achieve this, we assign each coordinate the value 'coord_sorter' which
+    // is the assigned value of the criteria mentioned above. With it we sort the 
+    // coordinates and fill the to maps 'input_index_to_stir_index' and 
+    // 'stir_index_to_coord'.
     std::vector<double> coords_to_be_sorted;
     boost::unordered_map<double, stir::DetectionPosition<> > map_for_sorting_coordinates;
     coords_to_be_sorted.reserve(coord_map.size());
-    //TODO: change it to be backwards compatible
+
     for(auto it : coord_map)
     {
         double coord_sorter = it.second[1] * 100 + from_min_pi_plus_pi_to_0_2pi(std::atan2(it.second[3], -it.second[2]));
@@ -689,7 +700,7 @@ read_detectormap_from_file( const std::string& filename )
         detpos.tangential_coord() = det;
         detpos.radial_coord() = 0;
         input_index_to_stir_index[map_for_sorting_coordinates[*it]] = detpos;
-        input_index_to_coord[detpos] = coord_map[map_for_sorting_coordinates[*it]];
+        stir_index_to_coord[detpos] = coord_map[map_for_sorting_coordinates[*it]];
         det++;
         if (det == num_detectors_per_ring)
         {
@@ -723,6 +734,7 @@ check_consistency() const
 	const int dets_per_ring =
 	  get_num_transaxial_blocks() *
 	  get_num_transaxial_crystals_per_block();
+    // exclusion of generic as 'get_num_transaxial_crystals_per_block()' is sometimes false for asymmetric detectors and not important for generic
 	if ( dets_per_ring != get_num_detectors_per_ring() && scanner_orientation != "Generic")
 	  { 
 	    warning("Scanner %s: inconsistent transaxial block info",
@@ -741,7 +753,8 @@ check_consistency() const
 	const int blocks_per_ring =
 	  get_num_transaxial_buckets() *
 	  get_num_transaxial_blocks_per_bucket();
-	if ( blocks_per_ring != get_num_transaxial_blocks())
+    // exclusion of generic as 'get_num_transaxial_blocks_per_bucket()' is sometimes false for asymmetric detectors and not important for generic
+	if ( blocks_per_ring != get_num_transaxial_blocks() && scanner_orientation != "Generic")
 	  { 
 	    warning("Scanner %s: inconsistent transaxial block/bucket info",
 		    this->get_name().c_str()); 
@@ -759,7 +772,8 @@ check_consistency() const
 	const int dets_axial =
 	  get_num_axial_blocks() *
 	  get_num_axial_crystals_per_block();
-	if ( dets_axial != get_num_rings())
+    // exclusion of generic as 'get_num_axial_crystals_per_block()' is sometimes false for asymmetric detectors and not important for generic
+	if ( dets_axial != get_num_rings() && scanner_orientation != "Generic")
 	  { 
 	    warning("Scanner %s: inconsistent axial block info",
 		    this->get_name().c_str()); 
@@ -777,7 +791,8 @@ check_consistency() const
 	const int blocks_axial =
 	  get_num_axial_buckets() *
 	  get_num_axial_blocks_per_bucket();
-	if ( blocks_axial != get_num_axial_blocks())
+    // exclusion of generic as 'get_num_axial_blocks_per_bucket()' is sometimes false for asymmetric detectors and not important for generic
+	if ( blocks_axial != get_num_axial_blocks() && scanner_orientation != "Generic")
 	  { 
 	    warning("Scanner %s: inconsistent axial block/bucket info",
 		    this->get_name().c_str()); 
@@ -863,7 +878,7 @@ check_consistency() const
                  get_transaxial_block_spacing(), get_num_transaxial_blocks_per_bucket(), get_inner_ring_radius());
          return Succeeded::no;
       }
-    else if (get_scannner_geometry() == "Generic")
+    else if (get_scanner_geometry() == "Generic")
     { //! Check if the crystal map is correct and given
       if (get_crystal_map() == "")
       {
@@ -993,12 +1008,11 @@ Scanner::parameter_info() const
     << get_num_axial_crystals_per_singles_unit() << '\n'
     << "Number of crystals per singles unit in transaxial direction := "
     << get_num_transaxial_crystals_per_singles_unit() << '\n';
-  //crystal map 
+  
+  //block and generic geometry description
   if (crystal_map_file_name != "")
     s << "Name of crystal map                                         := "
       << get_crystal_map() << '\n';
-  
-  //block geometry description
   if (get_scanner_orientation() != "" && get_scanner_geometry() != "")
   {
     s << "Scanner orientation (X or Y)                                := "
@@ -1132,12 +1146,6 @@ Scanner* Scanner::ask_parameters()
       const string ScannerGeometry =
   ask_string("Enter the scanner geometry ( BlocksOnCylindrical / Cylindrical / Generic ) :", "Cylindrical");
       
-      string crystal_map_file_name = "";
-      if (ScannerGeometry == "Generic") {
-          crystal_map_file_name =
-            ask_string("Enter the name of the crystal map: ", "");
-      }
-      
       float AxialCrystalSpacing=      
   ask_num("Enter crystal spacing in axial direction (in mm): ",0.F,30.F,6.75F);
       float TransaxialCrystalSpacing=
@@ -1146,6 +1154,12 @@ Scanner* Scanner::ask_parameters()
   ask_num("Enter block spacing in axial direction (in mm): ",0.F,360.F,54.F);
       float TransaxialBlockSpacing=
   ask_num("Enter block spacing in transaxial direction (in mm): ",0.F,360.F,54.F);
+  
+  string crystal_map_file_name = "";
+  if (ScannerGeometry == "Generic") {
+      crystal_map_file_name =
+        ask_string("Enter the name of the crystal map: ", "");
+  }
   
       Type type = User_defined_scanner;
   

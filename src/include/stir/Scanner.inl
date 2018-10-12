@@ -459,13 +459,12 @@ Scanner::get_detpos_from_id(const stir::DetectionPosition<> det_pos) const{
     }
     return input_index_to_stir_index.at(det_pos);
 }
-// Attention, this uses the stir coordinate, not the one from listmode
 stir::CartesianCoordinate3D<float>
 Scanner::get_coords_from_detpos(const stir::DetectionPosition<> det_pos) const{
     if (crystal_map_file_name == ""){
         stir::error("Crystal Map not defined!");
     }
-    return input_index_to_coord.at(det_pos);
+    return stir_index_to_coord.at(det_pos);
 }
 
 END_NAMESPACE_STIR
