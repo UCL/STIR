@@ -173,6 +173,10 @@ read_interfile_image(istream& input,
     if (hdr.image_scaling_factors[0][i]!= 1)
       (*image_ptr)[i] *= static_cast<float>(hdr.image_scaling_factors[0][i]);
 
+  // Check number of time frames
+  if (image_ptr->get_exam_info().get_time_frame_definitions().get_num_frames() != 1)
+      warning(str(boost::format("Discretised density should contain 1 time frame, but this image contains %1%.") % image_ptr->get_exam_info().get_time_frame_definitions().get_num_frames()));
+
   return image_ptr;
 }
 
