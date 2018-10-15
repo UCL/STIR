@@ -542,7 +542,7 @@ ProjDataFromStream::get_offsets_bin(const Bin this_bin) const
         num_axial_pos_offset +=
                 get_num_axial_poss(segment_sequence[i]);
 
-    const streamoff segment_offset =
+    streamoff segment_offset =
             offset +
             static_cast<streamoff>(num_axial_pos_offset*
                                    get_num_tangential_poss() *
@@ -606,11 +606,11 @@ ProjDataFromStream::get_offsets_bin(const Bin this_bin) const
     {
         // The timing offset will be added to the segment offset. This approach we minimise the
         // changes
-        if (!(timing_pos_num >= get_min_tof_pos_num() &&
-              timing_pos_num <=  get_max_tof_pos_num()))
-            error("ProjDataFromStream::get_offsets_bin: timing_num out of range : %d", timing_pos_num);
+        if (!(this_bin.timing_pos_num() >= get_min_tof_pos_num() &&
+              this_bin.timing_pos_num() <=  get_max_tof_pos_num()))
+            error("ProjDataFromStream::get_offsets_bin: timing_num out of range : %d", this_bin.timing_pos_num());
 
-        const int timing_index = static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), timing_pos_num) -
+        const int timing_index = static_cast<int>(FIND(timing_poss_sequence.begin(), timing_poss_sequence.end(), this_bin.timing_pos_num()) -
                                                   timing_poss_sequence.begin());
 
         assert(offset_3d_data > 0);
@@ -618,21 +618,21 @@ ProjDataFromStream::get_offsets_bin(const Bin this_bin) const
 
         // Skip views
         const streamoff view_offset =
-                (view_num - get_min_view_num())*
-                get_num_axial_poss(segment_num) *
+                (this_bin.view_num() - get_min_view_num())*
+                get_num_axial_poss(this_bin.segment_num()) *
                 get_num_tangential_poss()*
                 on_disk_data_type.size_in_bytes();
 
 
         // find axial pos
         const streamoff ax_pos_offset =
-                (ax_pos_num - get_min_axial_pos_num(segment_num)) *
+                (this_bin.axial_pos_num() - get_min_axial_pos_num(this_bin.segment_num())) *
                 get_num_tangential_poss()*
                 on_disk_data_type.size_in_bytes();
 
         // find tang pos
         const streamoff tang_offset =
-                (tang_pos_num - get_min_tangential_pos_num()) * on_disk_data_type.size_in_bytes();
+                (this_bin.tangential_pos_num() - get_min_tangential_pos_num()) * on_disk_data_type.size_in_bytes();
 
         vector<streamoff> temp(1);
         temp[0] = segment_offset + ax_pos_offset +view_offset + tang_offset;

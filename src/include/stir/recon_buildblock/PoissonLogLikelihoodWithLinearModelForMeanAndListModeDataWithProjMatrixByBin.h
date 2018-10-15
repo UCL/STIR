@@ -35,12 +35,9 @@
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndListModeData.h"
 #include "stir/recon_buildblock/ProjMatrixByBin.h" 
 #include "stir/ProjDataInMemory.h"
-#include "stir/recon_buildblock/ProjectorByBinPair.h"
+#include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/ExamInfo.h"
-#include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
-#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
-#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
-#include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
+
 START_NAMESPACE_STIR
 
 
@@ -113,7 +110,7 @@ protected:
   shared_ptr<ProjMatrixByBin> PM_sptr;
 
   //! Stores the projectors that are used for the computations
-  shared_ptr<ProjectorByBinPair> projector_pair_ptr;
+  shared_ptr<ProjectorByBinPair> projector_pair_sptr;
 
   //! Backprojector used for sensitivity computation
   shared_ptr<BackProjectorByBin> sens_backprojector_sptr;
@@ -123,7 +120,7 @@ protected:
  
   std::string additive_projection_data_filename ; 
   //! ProjDataInfo
-  shared_ptr<ProjDataInfo> proj_data_info_cyl_sptr;
+  shared_ptr<ProjDataInfo> proj_data_info_sptr;
 
   shared_ptr<CListRecord> record_sptr;
 

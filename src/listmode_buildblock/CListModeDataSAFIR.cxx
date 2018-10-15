@@ -119,15 +119,6 @@ open_lm_file() const
 					ByteOrder::little_endian !=ByteOrder::get_native_order()));
 	return Succeeded::yes;
 }
-
-template <class CListRecordT>
-shared_ptr<ProjDataInfo>
-CListModeDataSAFIR<CListRecordT>::
-get_proj_data_info_sptr() const
-{
-    assert(!is_null_ptr(proj_data_info_sptr));
-    return proj_data_info_sptr;
-}
 	
 template class CListModeDataSAFIR<CListRecordSAFIR>;
 

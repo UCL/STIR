@@ -175,11 +175,13 @@ private:
     float ring_spacing;
     //! Bin size, set in the hroot file (optional)
     float bin_size;
-//@}
 
     int max_num_timing_bins;
+
     float size_timing_bin;
+
     float timing_resolution;
+//@}
 
     int tof_mash_factor;
 

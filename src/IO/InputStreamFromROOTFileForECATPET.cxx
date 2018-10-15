@@ -113,7 +113,7 @@ get_next_record(CListRecordROOT& record)
             record.init_from_data(ring1, ring2,
                                   crystal1, crystal2,
                                   time1, delta_timing_bin,
-                                  event1, event2);
+                                  eventID1, eventID2);
 }
 
 std::string

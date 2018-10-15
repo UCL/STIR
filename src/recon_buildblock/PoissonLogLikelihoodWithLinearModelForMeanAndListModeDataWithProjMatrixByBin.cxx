@@ -135,26 +135,26 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
 
         for (int subset_num=0; subset_num<this->num_subsets; ++subset_num)
         {
-        	for (int timing_pos_num = proj_data_info_cyl_sptr->get_min_tof_pos_num();
-        			timing_pos_num <= proj_data_info_cyl_sptr->get_max_tof_pos_num();
+            for (int timing_pos_num = proj_data_info_sptr->get_min_tof_pos_num();
+                    timing_pos_num <= proj_data_info_sptr->get_max_tof_pos_num();
         			++timing_pos_num)
         	{
 				for (int segment_num = -this->max_ring_difference_num_to_process;
 					 segment_num <= this->max_ring_difference_num_to_process; ++segment_num)
 				{
-					for (int axial_num = proj_data_info_cyl_sptr->get_min_axial_pos_num(segment_num);
-						 axial_num < proj_data_info_cyl_sptr->get_max_axial_pos_num(segment_num);
+                    for (int axial_num = proj_data_info_sptr->get_min_axial_pos_num(segment_num);
+                         axial_num < proj_data_info_sptr->get_max_axial_pos_num(segment_num);
 						 axial_num ++)
 					{
 						// For debugging.
 						//                std::cout <<segment_num << " "<<  axial_num  << std::endl;
 
-						for (int tang_num= proj_data_info_cyl_sptr->get_min_tangential_pos_num();
-							 tang_num < proj_data_info_cyl_sptr->get_max_tangential_pos_num();
+                        for (int tang_num= proj_data_info_sptr->get_min_tangential_pos_num();
+                             tang_num < proj_data_info_sptr->get_max_tangential_pos_num();
 							 tang_num ++ )
 						{
-							for(int view_num = proj_data_info_cyl_sptr->get_min_view_num() + subset_num;
-								view_num <= proj_data_info_cyl_sptr->get_max_view_num();
+                            for(int view_num = proj_data_info_sptr->get_min_view_num() + subset_num;
+                                view_num <= proj_data_info_sptr->get_max_view_num();
 								view_num += this->num_subsets)
 							{
 								const Bin tmp_bin(segment_num,
@@ -187,11 +187,11 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
                    << num_bins_in_subset
                    << "\nEither reduce the number of symmetries used by the projector, or\n"
                       "change the number of subsets. It usually should be a divisor of\n"
-                   << proj_data_info_cyl_sptr->get_num_views()
+                   << proj_data_info_sptr->get_num_views()
                    << "/4 (or if that's not an integer, a divisor of "
-                   << proj_data_info_cyl_sptr->get_num_views()
+                   << proj_data_info_sptr->get_num_views()
                    << "/2 or "
-                   << proj_data_info_cyl_sptr->get_num_views()
+                   << proj_data_info_sptr->get_num_views()
                    << ").\n";
                 warning_message = str.str();
                 return false;
@@ -213,7 +213,7 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
     // set projector to be used for the calculations
     this->PM_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
 
-    this->PM_sptr->enable_tof(proj_data_info_cyl_sptr->create_shared_clone(), this->use_tof);
+    this->PM_sptr->enable_tof(proj_data_info_sptr->create_shared_clone(), this->use_tof);
     shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
     shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
 
@@ -223,9 +223,9 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
     this->projector_pair_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
 
 	// sets non-tof backprojector for sensitivity calculation (clone of the back_projector + set projdatainfo to non-tof)
-	this->sens_backprojector_sptr.reset(projector_pair_ptr->get_back_projector_sptr()->clone());
+    this->sens_backprojector_sptr.reset(projector_pair_sptr->get_back_projector_sptr()->clone());
 	if (!this->use_tofsens)
-		this->sens_backprojector_sptr->set_up(proj_data_info_cyl_sptr->create_non_tof_clone(), target_sptr);
+        this->sens_backprojector_sptr->set_up(proj_data_info_sptr->create_non_tof_clone(), target_sptr);
 
     if (is_null_ptr(this->normalisation_sptr))
     {
@@ -394,15 +394,15 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
 add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const
 {
-	int min_timing_pos_num = use_tofsens ? this->proj_data_info_cyl_sptr->get_min_tof_pos_num() : 0;
-	int max_timing_pos_num = use_tofsens ? this->proj_data_info_cyl_sptr->get_max_tof_pos_num() : 0;
+    int min_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_min_tof_pos_num() : 0;
+    int max_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_max_tof_pos_num() : 0;
 	for (int timing_pos_num = min_timing_pos_num; timing_pos_num <= max_timing_pos_num; ++timing_pos_num)
 	{
 		shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
-		(this->projector_pair_ptr->get_symmetries_used()->clone());
+        (this->projector_pair_sptr->get_symmetries_used()->clone());
 
 		RelatedViewgrams<float> viewgrams =
-			proj_data_info_cyl_sptr->get_empty_related_viewgrams(
+            proj_data_info_sptr->get_empty_related_viewgrams(
 				view_seg_nums, symmetries_used, false, timing_pos_num);
 
 		viewgrams.fill(1.F);
@@ -433,7 +433,7 @@ construct_target_ptr() const
 { 
 
  return
-      new VoxelsOnCartesianGrid<float> (*proj_data_info_cyl_sptr,
+      new VoxelsOnCartesianGrid<float> (*proj_data_info_sptr,
                                         static_cast<float>(this->zoom),
                                         CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset),
                                                                      static_cast<float>(this->Yoffset),
@@ -476,7 +476,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   CListRecord& record = *record_sptr;
 
   long int more_events =
-          this->do_time_frame? 1 : (this->num_events_to_store / this->num_subsets);
+          this->do_time_frame? 1 : (this->num_events_to_use / this->num_subsets);
 
   while (more_events)//this->list_mode_data_sptr->get_next_record(record) == Succeeded::yes)
   { 
@@ -500,19 +500,19 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
       {
         measured_bin.set_bin_value(1.0f);
 
-        record.event().get_bin(measured_bin, *proj_data_info_cyl_sptr);
+        record.event().get_bin(measured_bin, *proj_data_info_sptr);
 
         // In theory we have already done all these checks so we can
         // remove this if statement.
         if (measured_bin.get_bin_value() != 1.0f
-                || measured_bin.segment_num() < proj_data_info_cyl_sptr->get_min_segment_num()
-                || measured_bin.segment_num()  > proj_data_info_cyl_sptr->get_max_segment_num()
-                || measured_bin.tangential_pos_num() < proj_data_info_cyl_sptr->get_min_tangential_pos_num()
-                || measured_bin.tangential_pos_num() > proj_data_info_cyl_sptr->get_max_tangential_pos_num()
-                || measured_bin.axial_pos_num() < proj_data_info_cyl_sptr->get_min_axial_pos_num(measured_bin.segment_num())
-                || measured_bin.axial_pos_num() > proj_data_info_cyl_sptr->get_max_axial_pos_num(measured_bin.segment_num())
-                || measured_bin.timing_pos_num() < proj_data_info_cyl_sptr->get_min_tof_pos_num()
-                || measured_bin.timing_pos_num() > proj_data_info_cyl_sptr->get_max_tof_pos_num())
+                || measured_bin.segment_num() < proj_data_info_sptr->get_min_segment_num()
+                || measured_bin.segment_num()  > proj_data_info_sptr->get_max_segment_num()
+                || measured_bin.tangential_pos_num() < proj_data_info_sptr->get_min_tangential_pos_num()
+                || measured_bin.tangential_pos_num() > proj_data_info_sptr->get_max_tangential_pos_num()
+                || measured_bin.axial_pos_num() < proj_data_info_sptr->get_min_axial_pos_num(measured_bin.segment_num())
+                || measured_bin.axial_pos_num() > proj_data_info_sptr->get_max_axial_pos_num(measured_bin.segment_num())
+                || measured_bin.timing_pos_num() < proj_data_info_sptr->get_min_tof_pos_num()
+                || measured_bin.timing_pos_num() > proj_data_info_sptr->get_max_tof_pos_num())
         {
             continue;
         }
