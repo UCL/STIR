@@ -150,7 +150,7 @@ get_proj_matrix_elems_for_one_bin_with_tof(
   {
     // find basic bin
     Bin basic_bin = bin;
-    shared_ptr<SymmetryOperation> symm_ptr =
+    unique_ptr<SymmetryOperation> symm_ptr =
       symmetries_sptr->find_symmetry_operation_from_basic_bin(basic_bin);
 
     probabilities.set_bin(basic_bin);
@@ -169,8 +169,7 @@ get_proj_matrix_elems_for_one_bin_with_tof(
     // now transform to original bin
     // NE: I moved this operation in the apply_tof_kernel. This should increase the speed
     //symm_ptr->transform_proj_matrix_elems_for_one_bin(tmp_probabilities);
-    apply_tof_kernel(probabilities, point1, point2,
-                     symm_ptr);
+    apply_tof_kernel(probabilities, point1, point2);
   }
   else // !cache_stores_only_basic_bins
   {
@@ -182,9 +181,11 @@ get_proj_matrix_elems_for_one_bin_with_tof(
 void
 ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& tof_probabilities,
                                   const CartesianCoordinate3D<float>& point1,
-                                  const CartesianCoordinate3D<float>& point2,
-                                  const shared_ptr<SymmetryOperation> symm_ptr)  STIR_MUTABLE_CONST
+                                  const CartesianCoordinate3D<float>& point2)  STIR_MUTABLE_CONST
 {
+
+    unique_ptr<SymmetryOperation> symm_ptr =
+      symmetries_sptr->find_symmetry_operation_from_basic_bin(basic_bin);
 
     CartesianCoordinate3D<float> voxel_center;
     float new_value = 0.f;
