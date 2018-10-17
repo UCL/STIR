@@ -140,9 +140,6 @@ public:
     unsigned long int
     get_total_number_of_events() const ;
 
-    virtual
-    shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
-
 private:
     //! Check if the hroot contains a full scanner description
     Succeeded check_scanner_definition(std::string& ret);

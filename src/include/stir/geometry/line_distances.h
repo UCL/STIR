@@ -178,14 +178,13 @@ project_point_on_a_line(
         CartesianCoordinate3D<coordT>& r1 )
 {
 
-    const CartesianCoordinate3D<coordT>& r0 = p1;
     const CartesianCoordinate3D<coordT> difference = p2 - p1;
 
-    const CartesianCoordinate3D<coordT> r10 = r1-r0;
+    const CartesianCoordinate3D<coordT> r10 = r1 - p1;
 
     float inner_prod = inner_product(difference, difference);
 
-    const coordT u = inner_product(r10,difference) / inner_prod ;
+    const float u = inner_product(r10, difference) / inner_prod ;
 
     r1.x() = p1.x() + u * difference.x();
     r1.y() = p1.y() + u * difference.y();

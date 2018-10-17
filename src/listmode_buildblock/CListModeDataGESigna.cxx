@@ -95,7 +95,6 @@ dataset2.read(read_str_manufacturer,vlst);
 std::cout << "\n Manufacturer :  " << read_str_manufacturer << "\n\n"; 
 
 #endif
-  CListModeData::scanner_sptr = GEHDF5Data::scanner_sptr;
 
   this->proj_data_info_sptr.reset(
       ProjDataInfo::ProjDataInfoCTI(GEHDF5Data::scanner_sptr,

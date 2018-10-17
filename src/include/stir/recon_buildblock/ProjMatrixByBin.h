@@ -269,10 +269,10 @@ private:
   float r_sqrt2_gauss_sigma;
 
   //! The function which actually applies the TOF kernel on the LOR.
-  inline void apply_tof_kernel( ProjMatrixElemsForOneBin& nonTOF_probabilities,
-                                  ProjMatrixElemsForOneBin& tof_probabilities,
+  inline void apply_tof_kernel(   ProjMatrixElemsForOneBin& tof_probabilities,
                                   const CartesianCoordinate3D<float>& point1,
-                                  const CartesianCoordinate3D<float>& point2) STIR_MUTABLE_CONST;
+                                  const CartesianCoordinate3D<float>& point2,
+                                  const shared_ptr<SymmetryOperation> symm_ptr) STIR_MUTABLE_CONST;
 
 
 
