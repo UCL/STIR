@@ -85,6 +85,17 @@ enable_tof(const shared_ptr<ProjDataInfo>& _proj_data_info_sptr, const bool v)
         proj_data_info_sptr = _proj_data_info_sptr;
         gauss_sigma_in_mm = ProjDataInfo::tof_delta_time_to_mm(proj_data_info_sptr->get_scanner_ptr()->get_timing_resolution()) / 2.355f;
         r_sqrt2_gauss_sigma = 1.0f/ (gauss_sigma_in_mm * static_cast<float>(sqrt(2.0)));
+
+        cache_erf.resize(0, 100000);
+
+        float step = 8.f / 100000.f;
+        // cache erf with reasonable sampling
+        for (int i = 0 ;i < 100000; ++i)
+        {
+            float d = -4.0f + i * step;
+            cache_erf[i] = 0.5f * erf(d);
+            int nikos = 0;
+        }
     }
 }
 

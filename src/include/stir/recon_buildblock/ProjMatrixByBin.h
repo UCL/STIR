@@ -268,6 +268,8 @@ private:
   //! 1/(2*sigma_in_mm)
   float r_sqrt2_gauss_sigma;
 
+  Array<1, float> cache_erf;
+
   //! The function which actually applies the TOF kernel on the LOR.
   inline void apply_tof_kernel(   ProjMatrixElemsForOneBin& tof_probabilities,
                                   const CartesianCoordinate3D<float>& point1,
@@ -277,7 +279,7 @@ private:
 
 
   //! Get the interal value erf(m - v_j) - erf(m -v_j)
-  inline void get_tof_value(float& d1, float& d2, float& val) const;
+  inline void get_tof_value(const float& d1, const float& d2, float& val) const;
 
 };
 

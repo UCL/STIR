@@ -192,4 +192,27 @@ project_point_on_a_line(
 
 }
 
+template <class coordT>
+inline void
+project_point_on_a_line2(
+        const CartesianCoordinate3D<coordT>& p1,
+        const CartesianCoordinate3D<coordT>& p2,
+        CartesianCoordinate3D<coordT>& r1,
+        bool& sign)
+{
+
+    const CartesianCoordinate3D<coordT> difference = p2 - p1;
+
+    const CartesianCoordinate3D<coordT> r10 = r1 - p1;
+
+    const float u = inner_product(r10, difference) /
+            inner_product(difference, difference);
+
+    r1[3] = u * difference[3];
+    r1[2] = u * difference[2];
+    r1[1] = u * difference[1];
+
+    sign = u > 0 ? true : false;
+}
+
 END_NAMESPACE_STIR
