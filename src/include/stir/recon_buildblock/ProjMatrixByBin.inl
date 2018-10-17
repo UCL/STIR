@@ -188,16 +188,17 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& tof_probabilities,
 
     CartesianCoordinate3D<float> voxel_center;
     float new_value = 0.f;
-    float low_dist = 0.f;
-    float high_dist = 0.f;
+    //float low_dist = 0.f;
+    //float high_dist = 0.f;
 
-    bool neg_sgn;
     float d1;
-    float step =  100000.f / 8.f;
+    float step =  1000.f / 8.f;
+    int p1, p2;
 
     // THe direction can be from 1 -> 2 depending on the bin sign.
     const CartesianCoordinate3D<float> middle = (point1 + point2)*0.5f;
-    //    const CartesianCoordinate3D<float> difference = point2 - middle;
+    const CartesianCoordinate3D<float> difference = point2 - middle;
+    const float denom = 1.f / inner_product(difference, difference);
     //    float lor_length = 2.f / (std::sqrt((point1.x() - point2.x()) *(point1.x() - point2.x()) +
     //                                 (point1.y() - point2.y()) *(point1.y() - point2.y()) +
     //                                 (point1.z() - point2.z()) *(point1.z() - point2.z())));
@@ -223,10 +224,15 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& tof_probabilities,
 
         // The following is the optimisation of the previous:
         {
-            project_point_on_a_line2(middle, point2, voxel_center,
-                                     neg_sgn);
+            const CartesianCoordinate3D<float> r10 = voxel_center - middle;
 
-            if(neg_sgn)
+            const float u = inner_product(r10, difference) * denom;
+
+            voxel_center[3] = u * difference[3];
+            voxel_center[2] = u * difference[2];
+            voxel_center[1] = u * difference[1];
+
+            if(u < 0.f)
                 d1 = - sqrt(voxel_center.x()*voxel_center.x() +
                             voxel_center.y()*voxel_center.y() +
                             voxel_center.z()*voxel_center.z() );
@@ -236,22 +242,21 @@ ProjMatrixByBin::apply_tof_kernel(ProjMatrixElemsForOneBin& tof_probabilities,
                           voxel_center.z()*voxel_center.z() );
         }
 
-        low_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d1) * r_sqrt2_gauss_sigma) + 4.f;
-        high_dist =((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].high_lim - d1) * r_sqrt2_gauss_sigma) + 4.f;
+        //low_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d1) * r_sqrt2_gauss_sigma) + 4.f;
+        //high_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].high_lim - d1) * r_sqrt2_gauss_sigma) + 4.f;
 
-        int p1 = low_dist * step;
-        int p2 = high_dist * step;
+        p1 = (((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d1) * r_sqrt2_gauss_sigma) + 4.f) * step;
+        p2 = (((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].high_lim - d1) * r_sqrt2_gauss_sigma) + 4.f) * step;
 
         if (p1 < 0 || p2 < 0 ||
-                p1 > 100000 || p2 > 100000)
+                p1 > 1000 || p2 > 1000)
         {
             *element_ptr = ProjMatrixElemsForOneBin::value_type(c, 0.0);
             continue;
         }
 
         //get_tof_value(low_dist, high_dist, new_value);
-        new_value = cache_erf[p2] - cache_erf[p1];
-        new_value *=  element_ptr->get_value();
+        new_value = (cache_erf[p2] - cache_erf[p1]) * element_ptr->get_value();
         *element_ptr = ProjMatrixElemsForOneBin::value_type(c, new_value);
     }
 }
