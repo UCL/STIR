@@ -188,11 +188,6 @@ public:
   void run_tof_test_function();
   
 protected:
-
-  //! This function does the non-TOF work
-  virtual void actual_process_data_without_tof();
-  //! This function does the TOF work
-  virtual void actual_process_data_with_tof();
   
   //! will be called when a new time frame starts
   /*! The frame numbers start from 1. */
@@ -239,8 +234,7 @@ protected:
   bool do_pre_normalisation;
   bool store_prompts;
   bool store_delayeds;
-  //! Use TOF information
-  bool use_tof;
+
   int num_segments_in_memory;
   int num_timing_poss_in_memory;
   long int num_events_to_store;

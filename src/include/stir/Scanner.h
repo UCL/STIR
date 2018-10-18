@@ -165,8 +165,8 @@ class Scanner
                 int num_axial_crystals_per_singles_unit_v,
                 int num_transaxial_crystals_per_singles_unit_v,
                 int num_detector_layers_v,
-                short int max_num_of_timing_bins,
-                float size_timing_bin,
+                short int max_num_of_timing_poss,
+                float size_timing_pos,
                 float timing_resolution);
 
     //! constructor ( a single name)
@@ -213,8 +213,8 @@ class Scanner
                 int num_axial_crystals_per_singles_unit_v,
                 int num_transaxial_crystals_per_singles_unit_v,
                 int num_detector_layers_v,
-                short int max_num_of_timing_bins,
-                float size_timing_bin,
+                short int max_num_of_timing_poss,
+                float size_timing_pos,
                 float timing_resolution);
 
 
@@ -325,9 +325,9 @@ class Scanner
   /* inline int get_num_layers_singles_units() const; */
   inline int get_num_singles_units() const;
   //! Get the maximum number of TOF bins.
-  inline int get_num_max_of_timing_bins() const;
+  inline int get_num_max_of_timing_poss() const;
   //! Get the delta t which correspnds to the max number of TOF bins in picosecs.
-  inline float get_size_of_timing_bin() const;
+  inline float get_size_of_timing_pos() const;
   //! Get the timing resolution of the scanner.
   inline float get_timing_resolution() const;
 
@@ -395,9 +395,9 @@ class Scanner
   //! A negative value indicates, unknown || not set
   inline void set_reference_energy(const float new_num);
   //! Set the maximum number of TOF bins.
-  inline void set_num_max_of_timing_bins(int new_num);
+  inline void set_num_max_of_timing_poss(int new_num);
   //! Set the delta t which correspnds to the max number of TOF bins.
-  inline void set_size_of_timing_bin(float new_num);
+  inline void set_size_of_timing_poss(float new_num);
   //! Set timing resolution
   inline void set_timing_resolution(float new_num_in_ps);
   //@} (end of set info)
@@ -443,38 +443,19 @@ private:
   int num_axial_crystals_per_singles_unit;
   int num_transaxial_crystals_per_singles_unit;
 
-  //!
-  //! \brief energy_resolution
-  //! \author Nikos Efthimiou
-  //! \details This is the energy resolution of the system.
+  //! This is the energy resolution of the system.
   //! A negative value indicates, unknown.
   //! This value is dominated by the material of the scintilation crystal
   float energy_resolution;
-
-  //!
-  //! \brief reference_energy
-  //! \author Nikos Efthimiou
-  //! \details In PET application this should always be 511 keV.
+  //! In PET application this should always be 511 keV.
   //! A negative value indicates, unknown.
   float reference_energy;
-
-  //!
-  //! \brief timing_resolution
-  //! \author Nikos Efthimiou
-  //! \details The timing resolution of the scanner, in psec.
+  //! The timing resolution of the scanner, in psec.
   float timing_resolution;
-
-  //!
-  //! \brief num_tof_bins
-  //! \author Nikos Efthimiou
-  //! \details The number of TOF bins. Without any mash factors
-  int max_num_of_timing_bins;
-
-  //!
-  //! \brief size_timing_bin
-  //! \author Nikos Efthimiou
-  //! \details This number corresponds the the least significant clock digit.
-  float size_timing_bin;
+  //! The number of TOF bins. Without any mash factors
+  int max_num_of_timing_poss;
+  //! This number corresponds the the least significant clock digit.
+  float size_timing_pos;
 
 
   //! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
@@ -522,8 +503,8 @@ private:
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,
-                  short int max_num_of_timing_bins_v,
-                  float size_timing_bin_v,
+                  short int max_num_of_timing_poss_v,
+                  float size_timing_pos_v,
                   float timing_resolution_v);
 
   // ! set all parameters
@@ -574,8 +555,8 @@ private:
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,
-                  short int max_num_of_timing_bins_v,
-                  float size_timing_bin_v,
+                  short int max_num_of_timing_poss_v,
+                  float size_timing_pos_v,
                   float timing_resolution_v);
 
 

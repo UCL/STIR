@@ -229,14 +229,14 @@ Scanner::get_reference_energy() const
     return reference_energy;
 }
 
-int Scanner::get_num_max_of_timing_bins() const
+int Scanner::get_num_max_of_timing_poss() const
 {
-    return max_num_of_timing_bins;
+    return max_num_of_timing_poss;
 }
 
-float Scanner::get_size_of_timing_bin() const
+float Scanner::get_size_of_timing_pos() const
 {
-    return size_timing_bin;
+    return size_timing_pos;
 }
 
 float Scanner::get_timing_resolution() const
@@ -246,8 +246,8 @@ float Scanner::get_timing_resolution() const
 
 bool Scanner::is_tof_ready() const
 {
-    return (max_num_of_timing_bins > 0
-            && size_timing_bin > 0.0f
+    return (max_num_of_timing_poss > 0
+            && size_timing_pos > 0.0f
             && timing_resolution > 0.0f);
 }
 
@@ -356,14 +356,14 @@ Scanner::set_reference_energy(const float new_num)
     reference_energy = new_num;
 }
 
-void Scanner::set_num_max_of_timing_bins(const int new_num)
+void Scanner::set_num_max_of_timing_poss(const int new_num)
 {
-    max_num_of_timing_bins = new_num;
+    max_num_of_timing_poss = new_num;
 }
 
-void Scanner::set_size_of_timing_bin(const float new_num)
+void Scanner::set_size_of_timing_poss(const float new_num)
 {
-    size_timing_bin = new_num;
+    size_timing_pos = new_num;
 }
 
 void Scanner::set_timing_resolution(const float new_num_in_ps)

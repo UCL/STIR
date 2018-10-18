@@ -114,17 +114,6 @@ virtual void set_up(
     void forward_project(Bin&,
                          const DiscretisedDensity<3,float>&);
 
-    //! This is a really ungly way to sort the extra bit of information which are needed for
-    //! the TOF reconstruction. In this base class we are going to store a pointer the the current
-    //! ProjMatrixElements row and the two detection points. Which the are going to be accessed by the
-    //! child class in case that tof_enabled.
-    //! The common ProjMatrixElems row will provide a 'bridge' between forward and back projection as,
-    //! we'll be able to keep it and not calculate it again.
-    void set_tof_data(const CartesianCoordinate3D<float>*,
-                      const CartesianCoordinate3D<float>*);
-
-    ProjMatrixElemsForOneBin* get_tof_row() const;
-
     virtual ~ForwardProjectorByBin();
 
 protected:
@@ -137,13 +126,6 @@ protected:
     //! This virtual function has to be implemented by the derived class.
     virtual void actual_forward_project(Bin&,
                                         const DiscretisedDensity<3,float>&) = 0;
-
-    //! True if TOF has been activated.
-    bool tof_enabled;
-
-    shared_ptr<ProjMatrixElemsForOneBin> tof_probabilities;
-    const CartesianCoordinate3D<float>* point1;
-    const CartesianCoordinate3D<float>* point2;
 
   //! check if the argument is the same as what was used for set_up()
   /*! calls error() if anything is wrong.

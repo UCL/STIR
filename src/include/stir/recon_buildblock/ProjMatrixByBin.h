@@ -123,25 +123,15 @@ public:
   
   The implementation is inline as it just gets it in
   terms of the cached_proj_matrix_elems_for_one_bin or 
-  calculate_proj_matrix_elems_for_one_bin.*/
+  calculate_proj_matrix_elems_for_one_bin.
+
+  N.E: Updated to accomondate TOF information.
+*/
   inline void 
     get_proj_matrix_elems_for_one_bin(
        ProjMatrixElemsForOneBin&,
        const Bin&) STIR_MUTABLE_CONST;
 
-  //! Returns a LOR with elements after application of the TOF
-  //! kernel. The central_point of the LOR is needed in order to
-  //! correlate the physical position of the LOR elements with the
-  //! timing bin dimentions which have as reference the center of the LOR.
-  //! \warning Currently, first it calculates a non-TOF LOR and then
-  //! kernel is applied. Which is slow.
-  inline void
-  get_proj_matrix_elems_for_one_bin_with_tof(
-          ProjMatrixElemsForOneBin&,
-          const Bin&,
-          const CartesianCoordinate3D<float>& point1,
-          const CartesianCoordinate3D<float>& point2) STIR_MUTABLE_CONST;
-  
 #if 0
   // TODO
   /*! \brief Facility to write the 'independent' part of the matrix to file.
@@ -171,11 +161,6 @@ public:
   // void reserve_num_elements_in_cache(const std::size_t);
   //! Remove all elements from the cache
   void clear_cache() STIR_MUTABLE_CONST;
-
-  //! Activates the application of the timing kernel to the LOR
-  //! and performs initial set_up().
-  //! \warning Must be called after set_up()
-  void enable_tof(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,const bool v = true);
   
 protected:
   shared_ptr<DataSymmetriesForBins> symmetries_sptr;
@@ -263,6 +248,11 @@ private:
   // KT 15/05/2002 not static anymore as it uses cache_stores_only_basic_bins
   CacheKey cache_key(const Bin& bin) const;
 
+  //! Activates the application of the timing kernel to the LOR
+  //! and performs initial set_up().
+  //! \warning Must be called after set_up()
+  void enable_tof(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,const bool v = true);
+
   //! A local copy of the scanner's time resolution in mm.
   float gauss_sigma_in_mm;
   //! 1/(2*sigma_in_mm)
@@ -271,9 +261,10 @@ private:
   Array<1, float> cache_erf;
 
   //! The function which actually applies the TOF kernel on the LOR.
-  inline void apply_tof_kernel(ProjMatrixElemsForOneBin& tof_probabilities,
+  inline void apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneBin& tof_probabilities,
                                const CartesianCoordinate3D<float>& point1,
-                               const CartesianCoordinate3D<float>& point2) STIR_MUTABLE_CONST;
+                               const CartesianCoordinate3D<float>& point2,
+                               const unique_ptr<SymmetryOperation>& symm_ptr) STIR_MUTABLE_CONST;
 
 
 

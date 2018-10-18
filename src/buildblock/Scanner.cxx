@@ -544,8 +544,8 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
                  int num_axial_crystals_per_singles_unit_v,
                  int num_transaxial_crystals_per_singles_unit_v,
                  int num_detector_layers_v,
-                 short int max_num_of_timing_bins_v,
-                 float size_timing_bin_v,
+                 short int max_num_of_timing_poss_v,
+                 float size_timing_pos_v,
                  float timing_resolution_v)
 {
     set_params(type_v, list_of_names_v, num_rings_v,
@@ -560,8 +560,8 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
                num_axial_crystals_per_singles_unit_v,
                num_transaxial_crystals_per_singles_unit_v,
                num_detector_layers_v,
-               max_num_of_timing_bins_v,
-               size_timing_bin_v,
+               max_num_of_timing_poss_v,
+               size_timing_pos_v,
                timing_resolution_v);
 }
 
@@ -633,8 +633,8 @@ Scanner::Scanner(Type type_v, const string& name,
                  int num_axial_crystals_per_singles_unit_v,
                  int num_transaxial_crystals_per_singles_unit_v,
                  int num_detector_layers_v,
-                 short int max_num_of_timing_bins_v,
-                 float size_timing_bin_v,
+                 short int max_num_of_timing_poss_v,
+                 float size_timing_pos_v,
                  float timing_resolution_v
                  )
 {
@@ -650,8 +650,8 @@ Scanner::Scanner(Type type_v, const string& name,
                num_axial_crystals_per_singles_unit_v,
                num_transaxial_crystals_per_singles_unit_v,
                num_detector_layers_v,
-               max_num_of_timing_bins_v,
-               size_timing_bin_v,
+               max_num_of_timing_poss_v,
+               size_timing_pos_v,
                timing_resolution_v);
 }
 
@@ -734,8 +734,8 @@ set_params(Type type_v,const list<string>& list_of_names_v,
            int num_axial_crystals_per_singles_unit_v,
            int num_transaxial_crystals_per_singles_unit_v,
            int num_detector_layers_v,
-           short int max_num_of_timing_bins_v,
-           float size_timing_bin_v,
+           short int max_num_of_timing_poss_v,
+           float size_timing_pos_v,
            float timing_resolution_v)
 {
     set_params(type_v, list_of_names_v, num_rings_v,
@@ -750,8 +750,8 @@ set_params(Type type_v,const list<string>& list_of_names_v,
                num_axial_crystals_per_singles_unit_v,
                num_transaxial_crystals_per_singles_unit_v,
                num_detector_layers_v,
-               max_num_of_timing_bins_v,
-               size_timing_bin_v,
+               max_num_of_timing_poss_v,
+               size_timing_pos_v,
                timing_resolution_v);
 }
 
@@ -793,8 +793,8 @@ set_params(Type type_v,const list<string>& list_of_names_v,
 
   energy_resolution = -1.f;
   reference_energy = -1.f;
-  max_num_of_timing_bins = -1;
-  size_timing_bin = -1.f;
+  max_num_of_timing_poss = -1;
+  size_timing_pos = -1.f;
   timing_resolution = -1.f;
 
 }
@@ -839,8 +839,8 @@ set_params(Type type_v,const list<string>& list_of_names_v,
 
   energy_resolution = energy_resolution_v;
   reference_energy = reference_energy_v;
-  max_num_of_timing_bins = -1;
-  size_timing_bin = -1.f;
+  max_num_of_timing_poss = -1;
+  size_timing_pos = -1.f;
   timing_resolution = -1.f;
 
 }
@@ -862,8 +862,8 @@ set_params(Type type_v,const list<string>& list_of_names_v,
            int num_axial_crystals_per_singles_unit_v,
            int num_transaxial_crystals_per_singles_unit_v,
            int num_detector_layers_v,
-           short int max_num_of_timing_bins_v,
-           float size_timing_bin_v,
+           short int max_num_of_timing_poss_v,
+           float size_timing_pos_v,
            float timing_resolution_v)
 {
     type = type_v;
@@ -885,8 +885,8 @@ set_params(Type type_v,const list<string>& list_of_names_v,
     num_transaxial_crystals_per_singles_unit = num_transaxial_crystals_per_singles_unit_v;
     num_detector_layers = num_detector_layers_v;
 
-    max_num_of_timing_bins = max_num_of_timing_bins_v;
-    size_timing_bin = size_timing_bin_v;
+    max_num_of_timing_poss = max_num_of_timing_poss_v;
+    size_timing_pos = size_timing_pos_v;
     timing_resolution = timing_resolution_v;
     energy_resolution = -1.f;
     reference_energy = -1.f;
@@ -1065,8 +1065,8 @@ if (!close_enough(energy_resolution, scanner.energy_resolution) &&
       (num_detector_layers == scanner.num_detector_layers) &&
       (num_axial_crystals_per_singles_unit == scanner.num_axial_crystals_per_singles_unit) &&
       (num_transaxial_crystals_per_singles_unit == scanner.num_transaxial_crystals_per_singles_unit) &&
-      (max_num_of_timing_bins == scanner.max_num_of_timing_bins) &&
-      close_enough(size_timing_bin, scanner.size_timing_bin) &&
+      (max_num_of_timing_poss == scanner.max_num_of_timing_poss) &&
+      close_enough(size_timing_pos, scanner.size_timing_pos) &&
 	  close_enough(timing_resolution, scanner.timing_resolution);
 
 }
@@ -1120,8 +1120,8 @@ Scanner::parameter_info() const
 
   if (is_tof_ready())
   {
-    s << "Number of TOF time bins :=" << get_num_max_of_timing_bins() << "\n";
-    s << "Size of timing bin (ps) :=" << get_size_of_timing_bin() << "\n";
+    s << "Number of TOF time bins :=" << get_num_max_of_timing_poss() << "\n";
+    s << "Size of timing bin (ps) :=" << get_size_of_timing_pos() << "\n";
     s << "Timing resolution (ps) :=" << get_timing_resolution() << "\n";
   }
 

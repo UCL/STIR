@@ -213,7 +213,7 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
     // set projector to be used for the calculations
     this->PM_sptr->set_up(proj_data_info_sptr->create_shared_clone(),target_sptr);
 
-    this->PM_sptr->enable_tof(proj_data_info_sptr->create_shared_clone(), this->use_tof);
+    //this->PM_sptr->enable_tof(proj_data_info_sptr->create_shared_clone(), this->use_tof);
     shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
     shared_ptr<BackProjectorByBin> back_projector_ptr(new BackProjectorByBinUsingProjMatrixByBin(this->PM_sptr));
 
@@ -533,11 +533,8 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
             }
         }
 
-        if(this->use_tof)
             this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row,
                                                                       measured_bin);
-        else
-            this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
 
         //in_the_range++;
         fwd_bin.set_bin_value(0.0f);

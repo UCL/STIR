@@ -50,7 +50,6 @@ START_NAMESPACE_STIR
 ForwardProjectorByBin::ForwardProjectorByBin()
   :   _already_set_up(false)
 {
-    tof_enabled = false;
 }
 
 ForwardProjectorByBin::~ForwardProjectorByBin()
@@ -201,22 +200,6 @@ ForwardProjectorByBin::forward_project(Bin& this_bin,
 {
     actual_forward_project(this_bin,
                            this_image);
-}
-
-void
-ForwardProjectorByBin::
-set_tof_data(const CartesianCoordinate3D<float>* _point1,
-             const CartesianCoordinate3D<float>* _point2)
-{
-    point1 = _point1;
-    point2 = _point2;
-}
-
-ProjMatrixElemsForOneBin*
-ForwardProjectorByBin::
-get_tof_row() const
-{
-    return tof_probabilities.get();
 }
 
 END_NAMESPACE_STIR

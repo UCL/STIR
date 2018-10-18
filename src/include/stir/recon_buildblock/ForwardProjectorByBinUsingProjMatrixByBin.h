@@ -79,8 +79,6 @@ public:
   
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
-  void enable_tof(const shared_ptr<ProjDataInfo>& _proj_data_info_sptr, const bool v);
-  
 private:
   shared_ptr<ProjMatrixByBin>  proj_matrix_ptr;
   

@@ -150,7 +150,7 @@ TOF_Tests::run_tests()
     test_proj_matrix_sptr.reset(new ProjMatrixByBinUsingRayTracing());
     dynamic_cast<ProjMatrixByBinUsingRayTracing*>(test_proj_matrix_sptr.get())->set_num_tangential_LORs(1);
     dynamic_cast<ProjMatrixByBinUsingRayTracing*>(test_proj_matrix_sptr.get())->set_up(test_proj_data_info_sptr, test_discretised_density_sptr);
-    test_proj_matrix_sptr->enable_tof(test_proj_data_info_sptr);
+//    test_proj_matrix_sptr->enable_tof(test_proj_data_info_sptr);
 
     shared_ptr<ForwardProjectorByBin> forward_projector_ptr(
                 new ForwardProjectorByBinUsingProjMatrixByBin(test_proj_matrix_sptr));
@@ -174,7 +174,7 @@ TOF_Tests::test_tof_proj_data_info()
 {
     const int correct_tof_mashing_factor = 39;
     const int num_timing_positions = 9;
-    float correct_width_of_tof_bin = test_scanner_sptr->get_size_of_timing_bin() *
+    float correct_width_of_tof_bin = test_scanner_sptr->get_size_of_timing_pos() *
             test_proj_data_info_sptr->get_tof_mash_factor() * 0.299792458f/2;
     float correct_timing_locations[num_timing_positions] = {-360.201f/2, -280.156f/2, -200.111f/2, -120.067f/2, -40.022f/2, 40.022f/2,
                                           120.067f/2, 200.111f/2, 280.156f/2};
@@ -317,7 +317,7 @@ TOF_Tests::test_tof_kernel_application()
     int view_num = 0;
     int axial_num = 0;
     int tang_num = 0;
-    CartesianCoordinate3D<float> lor_point_1, lor_point_2;
+
     ProjMatrixElemsForOneBin proj_matrix_row;
     HighResWallClockTimer t;
     std::vector<double> times_of_tofing;
@@ -326,17 +326,13 @@ TOF_Tests::test_tof_kernel_application()
             dynamic_cast<ProjDataInfoCylindrical*> (test_proj_data_info_sptr.get());
 
     Bin this_bin(seg_num, view_num, axial_num, tang_num, 1.f);
-    proj_data_ptr->get_LOR_as_two_points(lor_point_1, lor_point_2, this_bin);
-
-    std::cerr<< lor_point_1.x() << " " << lor_point_1.y() << " " << lor_point_1.z() << " " <<
-                lor_point_2.x() << " " << lor_point_2.y() << " " << lor_point_2.z() << std::endl;
 
     t.reset(); t.start();
     test_proj_matrix_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, this_bin);
     t.stop();
     std::cerr<<"Execution time for nonTOF: "<<t.value() << std::endl;
-    export_lor(proj_matrix_row,
-               lor_point_1, lor_point_2, 5000);
+//    export_lor(proj_matrix_row,
+//               lor_point_1, lor_point_2, 5000);
 
     for (int timing_num = test_proj_data_info_sptr->get_min_tof_pos_num();
          timing_num <= test_proj_data_info_sptr->get_max_tof_pos_num(); ++ timing_num)
@@ -345,14 +341,13 @@ TOF_Tests::test_tof_kernel_application()
         Bin bin(seg_num, view_num, axial_num, tang_num, timing_num, 1.f);
 
         t.reset(); t.start();
-        test_proj_matrix_sptr->get_proj_matrix_elems_for_one_bin_with_tof(new_proj_matrix_row,
-                                                                          bin,
-                                                                          lor_point_1, lor_point_2);
+        test_proj_matrix_sptr->get_proj_matrix_elems_for_one_bin(new_proj_matrix_row,
+                                                                          bin);
         t.stop();
         times_of_tofing.push_back(t.value());
-        export_lor(new_proj_matrix_row,
-                   lor_point_1, lor_point_2, timing_num,
-                   proj_matrix_row);
+//        export_lor(new_proj_matrix_row,
+//                   lor_point_1, lor_point_2, timing_num,
+//                   proj_matrix_row);
     }
 
     double mean = 0.0;

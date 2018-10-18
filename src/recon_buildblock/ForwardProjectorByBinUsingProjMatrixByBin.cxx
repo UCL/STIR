@@ -239,29 +239,15 @@ ForwardProjectorByBinUsingProjMatrixByBin::
                         const DiscretisedDensity<3, float> &density)
 {
 
-    if (proj_matrix_ptr->is_cache_enabled() && !tof_enabled)
+    if (proj_matrix_ptr->is_cache_enabled())
     {
         ProjMatrixElemsForOneBin proj_matrix_row;
 
         proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, this_bin);
         proj_matrix_row.forward_project(this_bin,density);
     }
-    else if (proj_matrix_ptr->is_cache_enabled() && tof_enabled)
-    {
-        proj_matrix_ptr->get_proj_matrix_elems_for_one_bin_with_tof(*tof_probabilities, this_bin, *point1, *point2);
-        tof_probabilities->forward_project(this_bin,density);
-    }
     else
         error("ForwardProjectorByBinUsingProjMatrixByBin: Symmetries should be handled by ProjMatrix. Abort. ");
-}
-
-void
-ForwardProjectorByBinUsingProjMatrixByBin::
-enable_tof(const shared_ptr<ProjDataInfo>& _proj_data_info_sptr, const bool v)
-{
-    proj_matrix_ptr->enable_tof(_proj_data_info_sptr, v);
-    tof_enabled = v;
-    tof_probabilities.reset(new ProjMatrixElemsForOneBin());
 }
 
 END_NAMESPACE_STIR

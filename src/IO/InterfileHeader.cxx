@@ -1257,16 +1257,16 @@ bool InterfilePDFSHeader::post_processing()
 
     if (guessed_scanner_ptr->is_tof_ready())
     {
-        if (max_num_timing_poss != guessed_scanner_ptr->get_num_max_of_timing_bins())
+        if (max_num_timing_poss != guessed_scanner_ptr->get_num_max_of_timing_poss())
         {
             warning("Interfile warning: 'Number of TOF time bins' (%d) is expected to be %d.",
-                    max_num_timing_poss, guessed_scanner_ptr->get_num_max_of_timing_bins());
+                    max_num_timing_poss, guessed_scanner_ptr->get_num_max_of_timing_poss());
             mismatch_between_header_and_guess = true;
         }
-        if (size_of_timing_pos != guessed_scanner_ptr->get_size_of_timing_bin())
+        if (size_of_timing_pos != guessed_scanner_ptr->get_size_of_timing_pos())
         {
             warning("Interfile warning: 'Size of timing bin (ps)' (%f) is expected to be %f.",
-                    size_of_timing_pos, guessed_scanner_ptr->get_size_of_timing_bin());
+                    size_of_timing_pos, guessed_scanner_ptr->get_size_of_timing_pos());
             mismatch_between_header_and_guess = true;
         }
         if (timing_resolution != guessed_scanner_ptr->get_timing_resolution())
