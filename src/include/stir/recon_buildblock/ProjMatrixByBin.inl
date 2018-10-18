@@ -195,13 +195,13 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
             voxel_center[1] = u * difference[1];
 
             if(u < 0.f)
-                d1 = - sqrt(voxel_center.x()*voxel_center.x() +
-                            voxel_center.y()*voxel_center.y() +
-                            voxel_center.z()*voxel_center.z() );
+                d1 = - sqrt( voxel_center[3] * voxel_center[3] +
+                            voxel_center[2] * voxel_center[2] +
+                            voxel_center[1] * voxel_center[1]);
             else
-                d1 = sqrt(voxel_center.x()*voxel_center.x() +
-                          voxel_center.y()*voxel_center.y() +
-                          voxel_center.z()*voxel_center.z() );
+                d1 = sqrt( voxel_center[3] * voxel_center[3] +
+                        voxel_center[2] * voxel_center[2] +
+                        voxel_center[1] * voxel_center[1]);
         }
 
         //low_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d1) * r_sqrt2_gauss_sigma) + 4.f;

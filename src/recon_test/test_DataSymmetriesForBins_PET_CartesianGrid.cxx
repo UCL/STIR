@@ -727,7 +727,7 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests()
                     /*num_views=*/scanner_sptr->get_num_detectors_per_ring()/8,
                     /*num_tang_poss=*/64,
                     /*arc_corrected*/false,
-                    /*tof_mashing*/39));
+                    /*tof_mashing*/100));
 
 
     run_tests_for_1_projdata(proj_data_info_sptr);
