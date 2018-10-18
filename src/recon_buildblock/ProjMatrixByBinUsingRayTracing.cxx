@@ -384,6 +384,19 @@ static inline int sign(const T& t)
   return t<0 ? -1 : 1;
 }
 
+CartesianCoordinate3D<float>
+get_point_on_lor_in_index_coordinates
+(const float s_in_mm, const float m_in_mm, const float a_in_mm,
+ const float cphi, const float sphi, const float tantheta,
+ const DiscretisedDensity<3, float>& density_info,
+ const ProjDataInfo& proj_data_info)
+{
+  return density_info.get_index_coordinates_for_relative_coordinates
+    (proj_data_info.get_relative_coordinates_for_gantry_coordinates
+     (proj_data_info.get_point_on_lor_in_gantry_coordinates
+      (s_in_mm, m_in_mm, a_in_mm, cphi, sphi, tantheta)));
+}
+
 // just do 1 LOR, returns true if lor is not empty
 static void
 ray_trace_one_lor(ProjMatrixElemsForOneBin& lor, 
@@ -605,11 +618,9 @@ calculate_proj_matrix_elems_for_one_bin(
 
 
   // find offset in z, taking into account if there are 1 or more LORs
-  // KT 20/06/2001 take origin.z() into account
-  // KT 15/05/2002 move +(max_index.z()+min_index.z())/2.F offset here instead of in formulas for Z1f,Z2f
   /* Here is how we find the offset of the first ray:
-     for only 1 ray, it is simply found by refering to the middle of the image
-     minus the origin.z().
+     for only 1 ray, it is 0.
+
      For multiple rays, the following reasoning is followed.
 
      First we look at oblique rays.
@@ -666,11 +677,11 @@ calculate_proj_matrix_elems_for_one_bin(
   if (num_tangential_LORs == 1)
   {
     ray_trace_one_lor(lor, s_in_mm, m_in_mm,
-                        cphi, sphi, tantheta,
-                        offset_in_z, fovrad_in_mm, 
-                        voxel_size,
-                        restrict_to_cylindrical_FOV,
-                        num_lors_per_axial_pos);    
+                      cphi, sphi, tantheta,
+                      offset_in_z, fovrad_in_mm,
+                      voxel_size,
+                      restrict_to_cylindrical_FOV,
+                      num_lors_per_axial_pos);
   }
   else
   {
@@ -687,11 +698,11 @@ calculate_proj_matrix_elems_for_one_bin(
     {
       ray_traced_lor.erase();
       ray_trace_one_lor(ray_traced_lor, current_s_in_mm, m_in_mm,
-                          cphi, sphi, tantheta,
-                          offset_in_z, fovrad_in_mm, 
-                          voxel_size,
-                          restrict_to_cylindrical_FOV,
-                          num_lors_per_axial_pos*num_tangential_LORs);
+                        cphi, sphi, tantheta,
+                        offset_in_z, fovrad_in_mm,
+                        voxel_size,
+                        restrict_to_cylindrical_FOV,
+                        num_lors_per_axial_pos*num_tangential_LORs);
       //std::cerr << "ray traced size " << ray_traced_lor.size() << std::endl;
       lor.merge(ray_traced_lor);
     }

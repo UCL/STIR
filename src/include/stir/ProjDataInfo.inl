@@ -117,6 +117,15 @@ ProjDataInfo::get_scanner_sptr() const
   return scanner_ptr;
 }
 
+CartesianCoordinate3D<float>
+ProjDataInfo::
+get_relative_coordinates_for_gantry_coordinates
+(const CartesianCoordinate3D<float>& coords) const
+{
+  // TODO: bed postion
+  return coords + get_vector_centre_of_first_ring_to_centre_of_gantry();
+}
+
 
 END_NAMESPACE_STIR
 
