@@ -25,7 +25,7 @@
 
   \par Usage:
   \code 
-  split_dynamic_images output_filename_pattern input_header_filename output_format_parameter_file
+  extract_dynamic_images output_filename_pattern input_header_filename output_format_parameter_file
 
   The output filename should look something like this: dyn_im_%d_output.file_extension,
   so that we can use boost format. In this fashion, you can can specify the output file extension
@@ -55,8 +55,8 @@ int main(int argc, char *argv[])
 {
     USING_NAMESPACE_STIR
 
-    if (argc != 4) {
-        std::cerr << "\nUsage: split_dynamic_images output_filename_pattern input_header_filename output_format_parameter_file\n\n";
+    if (argc != 3 && argc != 4) {
+        std::cerr << "\nUsage: extract_dynamic_images output_filename_pattern input_header_filename [output_format_parameter_file]\n\n";
         return EXIT_FAILURE;
     }
 
@@ -71,13 +71,17 @@ int main(int argc, char *argv[])
 
         // Set up the output type
         shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
-        KeyParser parser;
-        parser.add_start_key("OutputFileFormat Parameters");
-        parser.add_parsing_key("output file format type", &output_file_format_sptr);
-        parser.add_stop_key("END");
-        std::ifstream in(argv[3]);
-        if (!parser.parse(in) || is_null_ptr(output_file_format_sptr))
-            throw std::runtime_error("Failed to parse output format file (" + std::string(argv[3]) + ").");
+        if (argc == 3)
+            output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
+        else {
+            KeyParser parser;
+            parser.add_start_key("OutputFileFormat Parameters");
+            parser.add_parsing_key("output file format type", &output_file_format_sptr);
+            parser.add_stop_key("END");
+            std::ifstream in(argv[3]);
+            if (!parser.parse(in) || is_null_ptr(output_file_format_sptr))
+                throw std::runtime_error("Failed to parse output format file (" + std::string(argv[3]) + ").");
+        }
 
         // Loop over each image
         for (unsigned i=1; i<=dyn_im_sptr->get_num_time_frames(); ++i) {
