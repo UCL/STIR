@@ -268,6 +268,16 @@ public:
 	    const Bin&) const = 0;
   //@}
 
+  //! Get a point in gantry space along an LOR
+  /*!
+    The point is parameterised by s, a, m, cos(phi), sin(phi) and tan(theta).
+    Gantry space is defined w.r.t. the center of the gantry.
+  */
+  virtual CartesianCoordinate3D<float>
+  get_point_on_lor_in_gantry_coordinates
+  (const float s_in_mm, const float m_in_mm, const float a_in_mm,
+   const float cphi, const float sphi, const float tantheta) const;
+
   //! \name Functions that return info on the sampling in the different coordinates
   //@{
   //! Get sampling distance in the \c t coordinate
@@ -386,9 +396,10 @@ public:
   //! Vector represention bed position in 3D
   CartesianCoordinate3D<float> get_bed_position() const;
 
-  //! Vector from image frame of reference (centre of first ring) to gantry centre
-  CartesianCoordinate3D<float>
-  get_centre_of_gantry_vector_in_relative_coordinates() const;
+  // Convert coordinates from a sinogram-based
+  inline CartesianCoordinate3D<float>
+  get_relative_coordinates_for_gantry_coordinates
+  (const CartesianCoordinate3D<float>& coords) const;
 
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
@@ -403,7 +414,10 @@ private:
   VectorWithOffset<int> max_axial_pos_per_seg;
   float bed_position_horizontal;
   float bed_position_vertical;
-  
+
+  //! Vector from image frame of reference (centre of first ring) to gantry centre
+  CartesianCoordinate3D<float>
+  get_vector_centre_of_first_ring_to_centre_of_gantry() const;
 };
 
 END_NAMESPACE_STIR

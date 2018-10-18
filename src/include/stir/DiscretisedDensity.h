@@ -255,16 +255,6 @@ public:
   inline BasicCoordinate<num_dimensions,int>
   get_indices_closest_to_LPS_coordinates(const CartesianCoordinate3D<float>& coords) const;
 
-  inline CartesianCoordinate3D<float>
-  get_relative_coordinates_for_gantry_coordinates
-  (const CartesianCoordinate3D<float>& coords,
-   const shared_ptr<const ProjDataInfo> proj_data_info_sptr) const;
-
-  inline BasicCoordinate<num_dimensions, float>
-  get_index_coordinates_for_gantry_coordinates
-  (const CartesianCoordinate3D<float>& coords,
-   const shared_ptr<const ProjDataInfo> proj_data_info_sptr) const;
-
   //@}
 
   //! Allocate a new DiscretisedDensity object with same characteristics as the current one.

@@ -390,6 +390,19 @@ static inline int sign(const T& t)
   return t<0 ? -1 : 1;
 }
 
+CartesianCoordinate3D<float>
+get_point_on_lor_in_index_coordinates
+(const float s_in_mm, const float m_in_mm, const float a_in_mm,
+ const float cphi, const float sphi, const float tantheta,
+ const DiscretisedDensity<3, float>& density_info,
+ const ProjDataInfo& proj_data_info)
+{
+  return density_info.get_index_coordinates_for_relative_coordinates
+    (proj_data_info.get_relative_coordinates_for_gantry_coordinates
+     (proj_data_info.get_point_on_lor_in_gantry_coordinates
+      (s_in_mm, m_in_mm, a_in_mm, cphi, sphi, tantheta)));
+}
+
 // just do 1 LOR, returns true if lor is not empty
 static void
 ray_trace_one_lor(ProjMatrixElemsForOneBin& lor, 
@@ -401,9 +414,8 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
                   const CartesianCoordinate3D<float>& voxel_size,
                   const bool restrict_to_cylindrical_FOV,
                   const int num_LORs,
-                  const shared_ptr<const DiscretisedDensity<3,float> >&
-                    density_info_sptr,
-                  const shared_ptr<const ProjDataInfo> proj_data_info_sptr)
+                  const DiscretisedDensity<3, float>& density_info,
+                  const ProjDataInfo& proj_data_info)
 {
   assert(lor.size() == 0);
 
@@ -472,41 +484,14 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
     // start_point_vx = tx_bed_to_idx(start_point_bed);
 
 
-    CartesianCoordinate3D<float> start_point;
-    CartesianCoordinate3D<float> stop_point;
-
-    // // start and stop point in voxel coordinates
-    // start_point.x() = (s_in_mm*cphi + max_a*sphi)/voxel_size.x();
-    // start_point.y() = (s_in_mm*sphi - max_a*cphi)/voxel_size.y();
-    // start_point.z() = (m_in_mm+offset_in_z - max_a*tantheta)/voxel_size.z();
-    // stop_point.x() = (s_in_mm*cphi + min_a*sphi)/voxel_size.x();
-    // stop_point.y() = (s_in_mm*sphi - min_a*cphi)/voxel_size.y();
-    // stop_point.z() = (m_in_mm+offset_in_z - min_a*tantheta)/voxel_size.z();
-    // std::cerr << "LOR reference " << start_point << "->" << stop_point << std::endl;
-
-    // start and stop point in gantry coordinates
-    // These are in mm, where (0, 0, 0) is the centre of the gantry
-    start_point.x() = s_in_mm*cphi + max_a*sphi;
-    start_point.y() = s_in_mm*sphi - max_a*cphi;
-    start_point.z() = m_in_mm+offset_in_z - max_a*tantheta;
-    stop_point.x() = s_in_mm*cphi + min_a*sphi;
-    stop_point.y() = s_in_mm*sphi - min_a*cphi;
-    stop_point.z() = m_in_mm+offset_in_z - min_a*tantheta;
-    // std::cerr << "LOR gantry " << start_point << "->" << stop_point << std::endl;
-
-    // Shift to bed coordinates
-    start_point = density_info_sptr
-      ->get_index_coordinates_for_gantry_coordinates(start_point, proj_data_info_sptr);
-    stop_point = density_info_sptr
-      ->get_index_coordinates_for_gantry_coordinates(stop_point, proj_data_info_sptr);
-    // std::cerr << "LOR bedpos " << start_point << "->" << stop_point << std::endl;
-
-    // // Shift to Image Index coordinates
-    // start_point = density_info_sptr
-    //   ->get_index_coordinates_for_physical_coordinates(start_point);
-    // stop_point = density_info_sptr
-    //   ->get_index_coordinates_for_physical_coordinates(stop_point);
-    // // std::cerr << "LOR index  " << start_point << "->" << stop_point << std::endl;
+    CartesianCoordinate3D<float> start_point
+      = get_point_on_lor_in_index_coordinates
+      (s_in_mm, m_in_mm+offset_in_z, max_a, cphi, sphi, tantheta,
+       density_info, proj_data_info);
+    CartesianCoordinate3D<float> stop_point
+      = get_point_on_lor_in_index_coordinates
+      (s_in_mm, m_in_mm+offset_in_z, min_a, cphi, sphi, tantheta,
+       density_info, proj_data_info);
 
 #if 0
     // KT 18/05/2005 this is no longer necessary
@@ -645,11 +630,9 @@ calculate_proj_matrix_elems_for_one_bin(
 
 
   // find offset in z, taking into account if there are 1 or more LORs
-  // KT 20/06/2001 take origin.z() into account
-  // KT 15/05/2002 move +(max_index.z()+min_index.z())/2.F offset here instead of in formulas for Z1f,Z2f
   /* Here is how we find the offset of the first ray:
-     for only 1 ray, it is simply found by refering to the middle of the image
-     minus the origin.z().
+     for only 1 ray, it is 0.
+
      For multiple rays, the following reasoning is followed.
 
      First we look at oblique rays.
@@ -716,7 +699,8 @@ calculate_proj_matrix_elems_for_one_bin(
                       offset_in_z, fovrad_in_mm,
                       voxel_size,
                       restrict_to_cylindrical_FOV,
-                      num_lors_per_axial_pos, density_info_sptr, proj_data_info_sptr);
+                      num_lors_per_axial_pos,
+                      *density_info_sptr, *proj_data_info_sptr);
   }
   else
   {
@@ -738,7 +722,7 @@ calculate_proj_matrix_elems_for_one_bin(
                         voxel_size,
                         restrict_to_cylindrical_FOV,
                         num_lors_per_axial_pos*num_tangential_LORs,
-                        density_info_sptr, proj_data_info_sptr);
+                        *density_info_sptr, *proj_data_info_sptr);
       //std::cerr << "ray traced size " << ray_traced_lor.size() << std::endl;
       lor.merge(ray_traced_lor);
     }
@@ -749,37 +733,37 @@ calculate_proj_matrix_elems_for_one_bin(
   {          
     if (tantheta==0 ) 
       {
-        CartesianCoordinate3D<float>
-          first_point_of_first_lor(lor.begin()->coord1(),
-                                   lor.begin()->coord2(),
-                                   lor.begin()->coord3());
-        // std::cerr << "first_point_of_first_lor: " << first_point_of_first_lor << std::endl;
-        const float z_of_first_voxel_in_index_space
-          = first_point_of_first_lor.z();
+        // we want to use add_adjacent_z to fill in mutliple lines
+        // within the TOR, leveraging our traced LOR
 
-        // In gantry space
-        CartesianCoordinate3D<float>
-          start_of_tor_projected_to_axis_without_offset
-            (m_in_mm - sampling_distance_of_adjacent_LORs_z/2, 0, 0);
-        CartesianCoordinate3D<float>
-          end_of_tor_projected_to_axis_without_offset
-            (m_in_mm + sampling_distance_of_adjacent_LORs_z/2, 0, 0);
-        // Shift to Image Index coordinates
-        start_of_tor_projected_to_axis_without_offset = density_info_sptr
-          ->get_index_coordinates_for_gantry_coordinates
-            (start_of_tor_projected_to_axis_without_offset, proj_data_info_sptr);
-        end_of_tor_projected_to_axis_without_offset = density_info_sptr
-          ->get_index_coordinates_for_gantry_coordinates
-            (end_of_tor_projected_to_axis_without_offset, proj_data_info_sptr);
+        // since tantheta==0, z is constant
+        const float z_of_traced_lor
+          = static_cast<float>(lor.begin()->coord1());
 
-        const float first_lor_relative_to_tor
-          = z_of_first_voxel_in_index_space
-          - start_of_tor_projected_to_axis_without_offset.z();
-        const float end_of_tor_relative_to_tor
-          = end_of_tor_projected_to_axis_without_offset.z()
-          - start_of_tor_projected_to_axis_without_offset.z();
+        // We want the z limits for the TOR. We set s and a to 0.
+        // Since tantheta==0, they will not affect the z coordinate.
+        // (actually, as stated above, the LOR has a constant z, and
+        // so does the TOR)
+        float z_of_start_of_tor
+          = get_point_on_lor_in_index_coordinates
+          (0, m_in_mm - sampling_distance_of_adjacent_LORs_z/2, 0,
+           cphi, sphi, tantheta,
+           *density_info_sptr, *proj_data_info_sptr)
+          .z();
+        float z_of_end_of_tor
+          = get_point_on_lor_in_index_coordinates
+          (0, m_in_mm + sampling_distance_of_adjacent_LORs_z/2, 0,
+           cphi, sphi, tantheta,
+           *density_info_sptr, *proj_data_info_sptr)
+          .z();
 
-        add_adjacent_z(lor, first_lor_relative_to_tor, end_of_tor_relative_to_tor);
+        const float z_of_traced_lor_relative_to_start_of_tor
+          = z_of_traced_lor - z_of_start_of_tor;
+        const float z_of_end_of_tor_relative_to_start_of_tor
+          = z_of_end_of_tor - z_of_start_of_tor;
+
+        add_adjacent_z(lor, z_of_traced_lor_relative_to_start_of_tor,
+                       z_of_end_of_tor_relative_to_start_of_tor);
       }
     else if (num_lors_per_axial_pos>1)
       {

@@ -417,7 +417,6 @@ find_scanner_coordinates_given_cartesian_coordinates(int& det1, int& det2, int& 
   det2 = modulo(round(cyl_coords.p2().psi()/(2.*_PI/num_detectors)), num_detectors);
   ring1 = round(cyl_coords.p1().z()/ring_spacing);
   ring2 = round(cyl_coords.p2().z()/ring_spacing);
-  // ORIGINTODO: ^
 
 #endif
 
@@ -490,7 +489,7 @@ find_cartesian_coordinates_given_scanner_coordinates (CartesianCoordinate3D<floa
   LORInCylinderCoordinates<float> cyl_coords(get_scanner_ptr()->get_effective_ring_radius());
   cyl_coords.p1().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(det1));
   cyl_coords.p2().psi() = static_cast<float>((2.*_PI/num_detectors_per_ring)*(det2));
-  cyl_coords.p1().z() = Ring_A*get_scanner_ptr()->get_ring_spacing(); 
+  cyl_coords.p1().z() = Ring_A*get_scanner_ptr()->get_ring_spacing();
   cyl_coords.p2().z() = Ring_B*get_scanner_ptr()->get_ring_spacing();
   // ORIGINTODO: ^
   LORAs2Points<float> lor(cyl_coords);  
