@@ -269,7 +269,7 @@ private:
 
 
   //! Get the interal value erf(m - v_j) - erf(m -v_j)
-  inline void get_tof_value(const float& d1, const float& d2, float& val) const;
+  inline void get_tof_value(const float d1, const float d2, float& val) const;
 
 };
 

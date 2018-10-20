@@ -86,6 +86,10 @@ get_proj_matrix_elems_for_one_bin(
         proj_data_info_sptr->get_LOR(lor, bin);
         LORAs2Points<float> lor2(lor);
 
+        Bin fbin = probabilities.get_bin();
+        symm_ptr->transform_bin_coordinates(fbin);
+        probabilities.set_bin(fbin);
+
         // now apply TOF kernel and transform to original bin
         apply_tof_kernel_and_symm_transformation(probabilities, lor2.p1(), lor2.p2(), symm_ptr);
     }
@@ -127,6 +131,10 @@ get_proj_matrix_elems_for_one_bin(
           LORAs2Points<float> lor2(lor);
 
           // now apply TOF kernel and transform to original bin
+
+          Bin fbin = probabilities.get_bin();
+          symm_ptr->transform_bin_coordinates(fbin);
+          probabilities.set_bin(fbin);
           apply_tof_kernel_and_symm_transformation(probabilities, lor2.p1(), lor2.p2(), symm_ptr);
       }
       else
@@ -154,7 +162,7 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
 
     float d1;
     //float step =  100000.f / 8.f;
-    int p1, p2;
+    //int p1, p2;
 
     // THe direction can be from 1 -> 2 depending on the bin sign.
     const CartesianCoordinate3D<float> middle = (point1 + point2)*0.5f;
@@ -223,8 +231,8 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
             continue;
         }
 
-        get_tof_value(low_dist, high_dist, new_value);
-        new_value *= element_ptr->get_value();//*(cache_erf[p2] - cache_erf[p1]); //
+//        get_tof_value(low_dist, high_dist, new_value);
+        new_value = element_ptr->get_value() * 0.5f * (erf(high_dist) - erf(low_dist));//*(cache_erf[p2] - cache_erf[p1]); //
         *element_ptr = ProjMatrixElemsForOneBin::value_type(c, new_value);
     }
 }
@@ -232,7 +240,7 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
 void
 ProjMatrixByBin::
 //get_tof_value(const float& d1, const float& d2, float& val) const
-get_tof_value(const float& d1, const float& d2, float& val) const
+get_tof_value(const float d1, const float d2, float& val) const
 {
     val = 0.5f * (erf(d2) - erf(d1));
 }
