@@ -34,7 +34,6 @@
 #include "stir/Succeeded.h"
 #include "stir/recon_buildblock/SymmetryOperation.h"
 #include "stir/geometry/line_distances.h"
-//#include "stir/numerics/erf.h"
 
 START_NAMESPACE_STIR
 
@@ -154,7 +153,7 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
     //float high_dist = 0.f;
 
     float d1;
-    float step =  1000.f / 8.f;
+    //float step =  100000.f / 8.f;
     int p1, p2;
 
     // THe direction can be from 1 -> 2 depending on the bin sign.
@@ -195,30 +194,37 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
             voxel_center[1] = u * difference[1];
 
             if(u < 0.f)
-                d1 = - sqrt( voxel_center[3] * voxel_center[3] +
+                d1 =  std::sqrt( voxel_center[3] * voxel_center[3] +
                             voxel_center[2] * voxel_center[2] +
                             voxel_center[1] * voxel_center[1]);
             else
-                d1 = sqrt( voxel_center[3] * voxel_center[3] +
+                d1 = -std::sqrt( voxel_center[3] * voxel_center[3] +
                         voxel_center[2] * voxel_center[2] +
                         voxel_center[1] * voxel_center[1]);
         }
 
-        //low_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d1) * r_sqrt2_gauss_sigma) + 4.f;
-        //high_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].high_lim - d1) * r_sqrt2_gauss_sigma) + 4.f;
+        float low_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d1) * r_sqrt2_gauss_sigma);
+        float high_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].high_lim - d1) * r_sqrt2_gauss_sigma);
 
-        p1 = (((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d1) * r_sqrt2_gauss_sigma) + 4.f) * step;
-        p2 = (((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].high_lim - d1) * r_sqrt2_gauss_sigma) + 4.f) * step;
+        //p1 = (((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d1) * r_sqrt2_gauss_sigma) + 4.f) * step;
+        //p2 = (((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].high_lim - d1) * r_sqrt2_gauss_sigma) + 4.f) * step;
 
-        if (p1 < 0 || p2 < 0 ||
-                p1 > 1000 || p2 > 1000)
+//        if (p1 < 0 || p2 < 0 ||
+//                p1 >= 100000 || p2 >= 100000)
+//        {
+//            *element_ptr = ProjMatrixElemsForOneBin::value_type(c, 0.0f);
+//            continue;
+//        }
+
+        if (low_dist >= 4.f || high_dist >= 4.f ||
+                low_dist <= -4.f || high_dist <= -4.f)
         {
-            *element_ptr = ProjMatrixElemsForOneBin::value_type(c, 0.0);
+            *element_ptr = ProjMatrixElemsForOneBin::value_type(c, 0.0f);
             continue;
         }
 
-        //get_tof_value(low_dist, high_dist, new_value);
-        new_value = (cache_erf[p2] - cache_erf[p1]) * element_ptr->get_value();
+        get_tof_value(low_dist, high_dist, new_value);
+        new_value *= element_ptr->get_value();//*(cache_erf[p2] - cache_erf[p1]); //
         *element_ptr = ProjMatrixElemsForOneBin::value_type(c, new_value);
     }
 }

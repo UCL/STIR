@@ -746,7 +746,7 @@ operator>=(const ProjDataInfo& proj_data_info) const
       proj_data_info.get_min_tangential_pos_num() < larger_proj_data_info.get_min_tangential_pos_num() ||
 	  ((proj_data_info.get_min_tof_pos_num() < larger_proj_data_info.get_min_tof_pos_num() ||
 	      proj_data_info.get_max_tof_pos_num() > larger_proj_data_info.get_max_tof_pos_num())  &&
-		  proj_data_info.is_tof_data()))
+          (proj_data_info.is_tof_data() && larger_proj_data_info.is_tof_data())))
     return false;
 
   for (int segment_num=proj_data_info.get_min_segment_num();
