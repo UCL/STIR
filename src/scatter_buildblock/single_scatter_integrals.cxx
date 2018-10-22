@@ -145,12 +145,13 @@ integral_between_2_points(const DiscretisedDensity<3,float>& density,
 }
 
 
+
 void
 SingleScatterLikelihoodAndGradient::
 line_contribution(VoxelsOnCartesianGrid<float>& gradient_image,const float rescale,
                           const CartesianCoordinate3D<float>& scatter_point,
                           const CartesianCoordinate3D<float>& detector_coord,
-						  const float C)
+                          const float C)
 {
 
 
@@ -214,6 +215,8 @@ line_contribution(VoxelsOnCartesianGrid<float>& gradient_image,const float resca
 
 
 
+
+
 void
 SingleScatterLikelihoodAndGradient::
 s_contribution(VoxelsOnCartesianGrid<float>& gradient_image,
@@ -248,6 +251,28 @@ gradient_image[coords] += D;
 
 
 }
+
+
+void
+SingleScatterLikelihoodAndGradient::
+line_contribution_act(VoxelsOnCartesianGrid<float>& gradient_image,
+                      const CartesianCoordinate3D<float>& scatter_point,
+                      const CartesianCoordinate3D<float>& detector_coord,
+                      const float C)
+{
+
+    const CartesianCoordinate3D<float> dist_vector = scatter_point - detector_coord ;
+    const float dist_sp1_det_squared = norm_squared(dist_vector);
+    const float solid_angle_factor =
+      std::min(static_cast<float>(_PI/2), 1.F  / dist_sp1_det_squared) ;
+
+    line_contribution(gradient_image,solid_angle_factor,
+                              scatter_point,
+                              detector_coord,
+                               -C);
+
+}
+
 
 END_NAMESPACE_STIR
 

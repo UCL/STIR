@@ -66,13 +66,13 @@ total_Compton_cross_section(511.F);
 
 double
 SingleScatterLikelihoodAndGradient::
-L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale, bool isgradient)
+L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale,bool compute_gradient, bool isgradient_mu)
 {
 
-if (isgradient)
-     std::cerr <<"IS GRADIENT"<< "\n";
+if (isgradient_mu)
+     std::cerr <<"IS GRADIENT W.R.T. ATTENUATION"<< "\n";
 
-else  std::cerr <<"IS JACOBIAN"<< "\n";
+else  std::cerr <<"IS GRADIENT W.R.T. ACTIVITY"<< "\n";
 
     this->output_proj_data_sptr->fill(0.f);
 
@@ -156,7 +156,7 @@ else  std::cerr <<"IS JACOBIAN"<< "\n";
             //info(boost::format("ScatterSimulator: %d / %d") % bin_counter% total_bins);
 
 
-            sum+=this->L_G_for_view_segment_number(data, gradient_image,vs_num,rescale,isgradient);
+            sum+=this->L_G_for_view_segment_number(data, gradient_image,vs_num,rescale,compute_gradient,isgradient_mu);
 
             bin_counter +=
             this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num()) *
@@ -168,33 +168,30 @@ else  std::cerr <<"IS JACOBIAN"<< "\n";
         }
     }
 
-    int max_x = gradient_image.get_max_x();
-    int min_x = gradient_image.get_min_x();
+
 
     std::cerr << "LIKELIHOOD:= " << sum << '\n';
 
-    std::cerr << "MIN_GRADIENT_X:= " << min_x << '\n';
-    std::cerr << "MAX_GRADIENT_X:= " << max_x << '\n';
 
     return sum;
 }
 
 double
 SingleScatterLikelihoodAndGradient::
-L_G_for_view_segment_number(ProjData&data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float rescale, bool isgradient)
+L_G_for_view_segment_number(ProjData&data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float rescale,bool compute_gradient,bool isgradient_mu)
 {
 
     Viewgram<float> viewgram=data.get_viewgram(vs_num.view_num(), vs_num.segment_num(),false);
     Viewgram<float> v_est= this->proj_data_info_cyl_noarc_cor_sptr->get_empty_viewgram(vs_num.view_num(), vs_num.segment_num());
 
-    double sum = L_G_for_viewgram(viewgram,v_est,gradient_image, rescale, isgradient);
+    double sum = L_G_for_viewgram(viewgram,v_est,gradient_image, rescale, compute_gradient,isgradient_mu);
 
     return sum;
 
 }
 double
 SingleScatterLikelihoodAndGradient::
-L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale, bool isgradient)
+L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale,bool compute_gradient, bool isgradient_mu)
 {
 
     const ViewSegmentNumbers vs_num(viewgram.get_view_num(),viewgram.get_segment_num());
@@ -237,7 +234,7 @@ L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartes
            const Bin bin = all_bins[i];
 
     //forward model
-           const double y = L_G_estimate(tmp_gradient_image,bin,isgradient);
+           const double y = L_G_estimate(tmp_gradient_image,bin,compute_gradient,isgradient_mu);
 
            v_est[bin.axial_pos_num()][bin.tangential_pos_num()] = static_cast<float>(rescale*y);
 
@@ -245,16 +242,10 @@ L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartes
            sum+=viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]*log(v_est[bin.axial_pos_num()][bin.tangential_pos_num()]+0.000000000000000000001)- v_est[bin.axial_pos_num()][bin.tangential_pos_num()]-0.000000000000000000001;
 
 
-           if (isgradient)
-           {
 
-               gradient_image += tmp_gradient_image*(viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]/(v_est[bin.axial_pos_num()][bin.tangential_pos_num()]+0.000000000000000000001)-1);
-            }
-           else
-               {
 
-               gradient_image += tmp_gradient_image;
-                }
+          gradient_image += tmp_gradient_image*(viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]/(v_est[bin.axial_pos_num()][bin.tangential_pos_num()]+0.000000000000000000001)-1);
+
        }
 
        return sum;
@@ -430,7 +421,7 @@ L_G_for_viewgram_from_est_data(Viewgram<float>& viewgram,Viewgram<float>& v_est,
            const Bin bin = all_bins[i];
 
     //forward model
-           const double y = L_G_estimate(tmp_gradient_image,bin,true);
+           const double y = L_G_estimate(tmp_gradient_image,bin,true,true);
 
 
 
@@ -449,7 +440,7 @@ L_G_for_viewgram_from_est_data(Viewgram<float>& viewgram,Viewgram<float>& v_est,
 
 double
 SingleScatterLikelihoodAndGradient::
-L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,const Bin bin, bool isgradient)
+L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,const Bin bin, bool compute_gradient,bool isgradient_mu)
 {
     double scatter_ratio_singles = 0;
     unsigned det_num_B=0;
@@ -468,7 +459,7 @@ L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,const Bin bin, boo
         scatter_ratio_singles +=
         L_G_for_one_scatter_point(gradient_image_bin,
                                   scatter_point_num,
-                                  det_num_A, det_num_B, isgradient);
+                                  det_num_A, det_num_B,compute_gradient, isgradient_mu);
 
     }
 
@@ -482,7 +473,7 @@ SingleScatterLikelihoodAndGradient::
 L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
         const std::size_t scatter_point_num,
         const unsigned det_num_A,
-        const unsigned det_num_B, bool isgradient)
+        const unsigned det_num_B, bool compute_gradient,bool isgradient_mu)
 {
 
     // The code now supports more than one energy window: the low energy threshold has to correspond to lowest window.
@@ -552,10 +543,9 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
         detection_efficiency_scattered[i] = detection_efficiency(new_energy,i);
         detection_efficiency_unscattered[i] = detection_efficiency(511.F,i);
 
-        if (detection_efficiency_scattered[i]==0)
-        return 0;
-        if (detection_efficiency_unscattered[i]==0)
-        return 0;
+        //if (detection_efficiency_scattered[i]==0&&detection_efficiency_unscattered[i]==0)
+        //return 0;
+
     }
 
     //compute the probability of detection for two given energy windows X and Y
@@ -694,10 +684,10 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
                     *dif_Compton_cross_section_value
                     *common_factor;
 
-    /*Single Scatter Forward model Jacobian:
-     * The derivative is given by three term, respectively in [A,S], [B,S] and [S] */
+    /*Single Scatter Forward model Jacobian w.r.t. attenuation:
+     * The derivative is given by three terms, respectively in [A,S], [B,S] and [S] */
 
-    float contribution_AS = (detection_probability_XY*emiss_to_detA*(1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1)
+    float contribution_AS_mu = (detection_probability_XY*emiss_to_detA*(1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1)
                             +detection_probability_YX*emiss_to_detB*(1.F/rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1)*
                             total_Compton_cross_section_relative_to_511keV(new_energy))
                             *atten_to_detB
@@ -708,7 +698,7 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
                             *dif_Compton_cross_section_value
                             *common_factor;
 
-    float contribution_BS = (detection_probability_XY*emiss_to_detA*
+    float contribution_BS_mu = (detection_probability_XY*emiss_to_detA*
                             (1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1)*
                             (total_Compton_cross_section_relative_to_511keV(new_energy))
                             +detection_probability_YX*emiss_to_detB*(1.F/rA_squared)*
@@ -730,17 +720,63 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
                             *dif_Compton_cross_section_value
                             *common_factor;
 
+
+    /*Single Scatter Forward model Jacobian w.r.t. activity:
+     *
+     * The derivative is given by two terms, respectively in [A,S] and [B,S]  */
+
+
+    float contribution_AS_act = (detection_probability_XY*(1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1))
+                                 *atten_to_detB
+                                 *atten_to_detA
+                                 *scatter_point_mu
+                                 *cos_incident_angle_AS
+                                 *cos_incident_angle_BS
+                                 *dif_Compton_cross_section_value
+                                 *common_factor;
+
+    float contribution_BS_act = (detection_probability_YX*(1.F/rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1))
+                                 *atten_to_detB
+                                 *atten_to_detA
+                                 *scatter_point_mu
+                                 *cos_incident_angle_AS
+                                 *cos_incident_angle_BS
+                                 *dif_Compton_cross_section_value
+                                 *common_factor;
+
+
     //Fill gradient image along [A,S], [B,S] and in [S]
 
 
-    line_contribution(gradient,rescale,scatter_point,
-            detector_coord_B,contribution_BS);
+if(compute_gradient)
+{
+    if (isgradient_mu)
 
-    line_contribution(gradient,rescale,scatter_point,
-            detector_coord_A,contribution_AS);
+        {
+        line_contribution(gradient,rescale,scatter_point,
+                detector_coord_B,contribution_BS_mu);
 
-    s_contribution(gradient,scatter_point,
-            contribution_S);
+        line_contribution(gradient,rescale,scatter_point,
+                detector_coord_A,contribution_AS_mu);
+
+        s_contribution(gradient,scatter_point,
+                contribution_S);
+
+        }
+
+    else
+
+        {
+
+        line_contribution_act(gradient,scatter_point,
+                detector_coord_B,contribution_BS_act);
+
+        line_contribution_act(gradient,scatter_point,
+                detector_coord_A,contribution_AS_act);
+        }
+
+}
+
 
 
     return scatter_ratio;

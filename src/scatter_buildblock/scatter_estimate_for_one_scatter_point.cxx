@@ -103,7 +103,7 @@ SingleScatterSimulation::
   // note: costheta is identical for scatter to A or scatter to B
   // Hence, the Compton_cross_section and energy are identical for both cases as well.
   if(max_single_scatter_cos_angle>costheta)
-    return 0;
+   return 0;
   const float new_energy =
     photon_energy_after_Compton_scatter_511keV(costheta);
 
@@ -125,16 +125,13 @@ std::vector<float>detection_efficiency_unscattered;
     }
 
 
-    for (int i = 0; i < this->template_exam_info_sptr->get_num_energy_windows(); ++i)
-    {
-        detection_efficiency_scattered[i] = detection_efficiency(new_energy,i);
-        detection_efficiency_unscattered[i] = detection_efficiency(511.F,i);
-
-        if (detection_efficiency_scattered[i]==0)
-          return 0;
-        if (detection_efficiency_unscattered[i]==0)
-          return 0;
-    }
+  for (int i = 0; i < this->template_exam_info_sptr->get_num_energy_windows(); ++i)
+  {
+      detection_efficiency_scattered[i] = detection_efficiency(new_energy,i);
+      detection_efficiency_unscattered[i] = detection_efficiency(511.F,i);
+  //    if (detection_efficiency_scattered[i]==0&&detection_efficiency_unscattered[i]==0)
+     //return 0;
+  }
 
 
 

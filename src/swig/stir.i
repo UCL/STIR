@@ -87,7 +87,7 @@
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
-
+#include "stir/recon_buildblock/QuadraticPrior.h"
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
@@ -1695,4 +1695,7 @@ stir::ScatterSimulation
 
 
 
+%include "stir/recon_buildblock/QuadraticPrior.h"
 
+#define elemT float
+%template (QuadraticPrior3DFloat) stir::QuadraticPrior<elemT >;
