@@ -27,7 +27,7 @@
 
   \par Usage:
   \code 
-  get_dynamic_images_from_parametric_images output_parametric_image input_dynamic_image [par_file [output_format_par_file]]
+  extract_dynamic_images_from_parametric_images output_parametric_image input_dynamic_image [par_file [output_format_par_file]]
   \endcode
   
   \par

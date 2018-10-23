@@ -25,7 +25,7 @@
 
   \par Usage:
   \code 
-  extract_dynamic_images output_filename_pattern input_header_filename output_format_parameter_file
+  extract_single_images_from_dynamic_images output_filename_pattern input_header_filename output_format_parameter_file
 
   The output filename should look something like this: dyn_im_%d_output.file_extension,
   so that we can use boost format. In this fashion, you can can specify the output file extension
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     USING_NAMESPACE_STIR
 
     if (argc != 3 && argc != 4) {
-        std::cerr << "\nUsage: extract_dynamic_images output_filename_pattern input_header_filename [output_format_parameter_file]\n\n";
+        std::cerr << "\nUsage: extract_single_images_from_dynamic_images output_filename_pattern input_header_filename [output_format_parameter_file]\n\n";
         return EXIT_FAILURE;
     }
 
