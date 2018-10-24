@@ -59,7 +59,7 @@ get_proj_matrix_elems_for_one_bin(
   
   // set to empty
   probabilities.erase();
-  
+
   if (cache_stores_only_basic_bins)
   {
     // find basic bin
@@ -77,7 +77,7 @@ get_proj_matrix_elems_for_one_bin(
 #ifndef NDEBUG
       probabilities.check_state();
 #endif
-      cache_proj_matrix_elems_for_one_bin(probabilities);		
+      cache_proj_matrix_elems_for_one_bin(probabilities);
     }
     if ( proj_data_info_sptr->is_tof_data() &&
                                  this->tof_enabled)
@@ -85,11 +85,7 @@ get_proj_matrix_elems_for_one_bin(
         LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
         proj_data_info_sptr->get_LOR(lor, bin);
         LORAs2Points<float> lor2(lor);
-
-        Bin fbin = probabilities.get_bin();
-        symm_ptr->transform_bin_coordinates(fbin);
-        probabilities.set_bin(fbin);
-
+        probabilities.set_bin(bin);
         // now apply TOF kernel and transform to original bin
         apply_tof_kernel_and_symm_transformation(probabilities, lor2.p1(), lor2.p2(), symm_ptr);
     }
@@ -129,13 +125,10 @@ get_proj_matrix_elems_for_one_bin(
           LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
           proj_data_info_sptr->get_LOR(lor, bin);
           LORAs2Points<float> lor2(lor);
-
+          probabilities.set_bin(bin);
           // now apply TOF kernel and transform to original bin
-
-          Bin fbin = probabilities.get_bin();
-          symm_ptr->transform_bin_coordinates(fbin);
-          probabilities.set_bin(fbin);
           apply_tof_kernel_and_symm_transformation(probabilities, lor2.p1(), lor2.p2(), symm_ptr);
+
       }
       else
       {
@@ -149,7 +142,7 @@ get_proj_matrix_elems_for_one_bin(
 }
 
 void
-ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneBin& tof_probabilities,
+ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneBin& probabilities,
                                   const CartesianCoordinate3D<float>& point1,
                                   const CartesianCoordinate3D<float>& point2,
                                   const unique_ptr<SymmetryOperation>& symm_ptr)  STIR_MUTABLE_CONST
@@ -157,8 +150,8 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
 
     CartesianCoordinate3D<float> voxel_center;
     float new_value = 0.f;
-    //float low_dist = 0.f;
-    //float high_dist = 0.f;
+    float low_dist = 0.f;
+    float high_dist = 0.f;
 
     float d1;
     //float step =  100000.f / 8.f;
@@ -166,53 +159,53 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
 
     // THe direction can be from 1 -> 2 depending on the bin sign.
     const CartesianCoordinate3D<float> middle = (point1 + point2)*0.5f;
-    const CartesianCoordinate3D<float> difference = point2 - middle;
-    const float denom = 1.f / inner_product(difference, difference);
-    //    float lor_length = 2.f / (std::sqrt((point1.x() - point2.x()) *(point1.x() - point2.x()) +
-    //                                 (point1.y() - point2.y()) *(point1.y() - point2.y()) +
-    //                                 (point1.z() - point2.z()) *(point1.z() - point2.z())));
+    const CartesianCoordinate3D<float> difference = point2 - point1;
 
-    for (ProjMatrixElemsForOneBin::iterator element_ptr = tof_probabilities.begin();
-         element_ptr != tof_probabilities.end(); ++element_ptr)
+//    const CartesianCoordinate3D<float> diff = point2 - middle;
+
+    const float denom = 1.f / inner_product(difference, difference);
+
+    const float lor_length = 1.f / (std::sqrt(difference.x() * difference.x() +
+                                        difference.y() * difference.y() +
+                                        difference.z() * difference.z()));
+
+    for (ProjMatrixElemsForOneBin::iterator element_ptr = probabilities.begin();
+         element_ptr != probabilities.end(); ++element_ptr)
     {
         Coordinate3D<int> c(element_ptr->get_coords());
         symm_ptr->transform_image_coordinates(c);
 
-        voxel_center =
-                image_info_sptr->get_physical_coordinates_for_indices (c);
+//        voxel_center =
+//                image_info_sptr->get_physical_coordinates_for_indices (c);
 
-        /*
-         * Original method:
-         *
-        project_point_on_a_line(point1, point2, voxel_center);
+//        project_point_on_a_line(point1, point2, voxel_center);
 
-        const CartesianCoordinate3D<float> x = voxel_center - middle;
+//        const CartesianCoordinate3D<float> x = voxel_center - middle;
 
-        const float d1 = inner_product(x, difference) * lor_length;
-        */
+//        const float d2 = -inner_product(x, diff) * lor_length;
+
 
         // The following is the optimisation of the previous:
         {
-            const CartesianCoordinate3D<float> r10 = voxel_center - middle;
+            voxel_center =
+                    image_info_sptr->get_physical_coordinates_for_indices (c);
 
-            const float u = inner_product(r10, difference) * denom;
+            const CartesianCoordinate3D<float> x =  point2 - voxel_center;
 
-            voxel_center[3] = u * difference[3];
-            voxel_center[2] = u * difference[2];
-            voxel_center[1] = u * difference[1];
+            const float u = inner_product(x, difference) * denom;
 
-            if(u < 0.f)
-                d1 =  std::sqrt( voxel_center[3] * voxel_center[3] +
-                            voxel_center[2] * voxel_center[2] +
-                            voxel_center[1] * voxel_center[1]);
-            else
-                d1 = -std::sqrt( voxel_center[3] * voxel_center[3] +
-                        voxel_center[2] * voxel_center[2] +
-                        voxel_center[1] * voxel_center[1]);
+            voxel_center[3] = point1[3] + u * difference[3];
+            voxel_center[2] = point1[2] + u * difference[2];
+            voxel_center[1] = point1[1] + u * difference[1];
+
+            const CartesianCoordinate3D<float> x_dim = voxel_center - middle;
+
+            d1 = inner_product(x_dim, difference) * lor_length;
+
         }
 
-        float low_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d1) * r_sqrt2_gauss_sigma);
-        float high_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].high_lim - d1) * r_sqrt2_gauss_sigma);
+        low_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d1) * r_sqrt2_gauss_sigma);
+        high_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin_ptr()->timing_pos_num()].high_lim - d1) * r_sqrt2_gauss_sigma);
 
         //p1 = (((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d1) * r_sqrt2_gauss_sigma) + 4.f) * step;
         //p2 = (((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].high_lim - d1) * r_sqrt2_gauss_sigma) + 4.f) * step;
@@ -239,7 +232,6 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
 
 void
 ProjMatrixByBin::
-//get_tof_value(const float& d1, const float& d2, float& val) const
 get_tof_value(const float d1, const float d2, float& val) const
 {
     val = 0.5f * (erf(d2) - erf(d1));
