@@ -153,10 +153,9 @@ actual_write_to_file(std::string& filename,
         const CartesianCoordinate3D<float> axis_direction
           = next_coord_along_this_dim - stir_offset;
         for (unsigned int dim = 0; dim < 3; ++dim) {
-          matrix(axis, dim) = axis_direction[3 - dim] / norm(axis_direction);
+          matrix(dim, axis) = axis_direction[3 - dim] / norm(axis_direction);
         }
       }
-      //matrix(2, 2) = -matrix(2, 2);
 
       ImageType::RegionType region;
       region.SetSize( size );
