@@ -189,9 +189,10 @@ main(int argc, char *argv[])
 	  return EXIT_FAILURE;
 	}
     }
-  if (argc<5 || argc>6)
+  if (argc<4 || argc>5)
     {
       print_usage();
+      return EXIT_FAILURE;
     }
   if (argc>1)
     {
