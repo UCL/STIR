@@ -60,6 +60,8 @@ typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > STIRImageMulti;
 // typedef DiscretisedDensity<3, CartesianCoordinate3D<float> > STIRImageMulti;
 // typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > STIRImageMultiConcrete;
 
+using MetaDataStringType = itk::MetaDataObject< std::string >;
+
 /* Convert an ITK image into an internal STIR one.
    warning: modifies itk_image.
 */
@@ -182,16 +184,56 @@ calc_stir_origin(CartesianCoordinate3D<float> voxel_size,
     (itk_image->GetOrigin(), dummy_image);
 }
 
+shared_ptr<ExamInfo>
+construct_exam_info_from_metadata_dictionary(itk::MetaDataDictionary dictionary)
+{
+  shared_ptr<ExamInfo> exam_info_sptr = shared_ptr<ExamInfo>(new ExamInfo());
+
+  // Patient Position
+  PatientPosition patient_position = PatientPosition(PatientPosition::unknown_position);
+  std::string patient_position_str = "";
+  std::string patient_position_tag = "0018|5100";
+  itk::MetaDataDictionary::ConstIterator maybe_patient_position_iter
+    = dictionary.Find(patient_position_tag);
+  // Did we actually find it?
+  if (maybe_patient_position_iter != dictionary.End()) {
+    MetaDataStringType::ConstPointer maybe_patient_position_data
+      = dynamic_cast<const MetaDataStringType*>
+      (maybe_patient_position_iter->second.GetPointer());
+    // Is it actually a string value?
+    if(maybe_patient_position_data) {
+      patient_position_str = maybe_patient_position_data->GetMetaDataObjectValue();
+    }
+  }
+  // Now patient_positon_str is empty or the value, but is it a valid value?
+  // If so, update patient_position
+  for (unsigned int position_idx = 0;
+       (position_idx < PatientPosition::unknown_position)
+         && (patient_position.get_position() == PatientPosition::unknown_position);
+       ++position_idx) {
+    PatientPosition possible_position
+      (static_cast<PatientPosition::PositionValue>(position_idx));
+    if (patient_position_str.find(possible_position.get_position_as_string())
+        != std::string::npos) {
+      patient_position = possible_position;
+    }
+  }
+  // warn if we got nothing
+  if (patient_position.get_position() == PatientPosition::unknown_position) {
+    warning("Unable to determine patient position. "
+            "Internally this will generally be handled by assuming HFS");
+  }
+  exam_info_sptr->patient_position = patient_position;
+
+  return exam_info_sptr;
+}
+
 template<typename ITKImageType, typename STIRImageType, typename STIRConcreteType>
 STIRImageType*
 construct_empty_stir_image_and_orient_itk_image(typename ITKImageType::Pointer& itk_image)
 {
-  // GEOMTODO: Need to get patient postion if DICOM
-  shared_ptr<ExamInfo> exam_info_sptr = shared_ptr<ExamInfo>(new ExamInfo());
-  warning("Unable to determine patient position. "
-          "Internally this will generally be handled by assuming HFS");
-  exam_info_sptr->patient_position.set_orientation(PatientPosition::unknown_orientation);
-  exam_info_sptr->patient_position.set_rotation(PatientPosition::unknown_rotation);
+  shared_ptr<ExamInfo> exam_info_sptr
+    = construct_exam_info_from_metadata_dictionary(itk_image->GetMetaDataDictionary());
 
   // orientate the ITK image
   itk_image = orient_ITK_image<ITKImageType>(exam_info_sptr, itk_image);
@@ -326,6 +368,9 @@ read_file_itk(const std::string &filename)
           reader->SetFileNames( fileNames );
           reader->Update();
           ITKImageSingle::Pointer itk_image = reader->GetOutput();
+
+          // Update custom patient position tag in metadata
+          itk_image->SetMetaDataDictionary(dicomIO->GetMetaDataDictionary());
 
           // Finally, convert to STIR!
           return convert_ITK_to_STIR(itk_image);
