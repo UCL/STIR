@@ -184,7 +184,7 @@ calc_stir_origin(CartesianCoordinate3D<float> voxel_size,
 
 template<typename ITKImageType, typename STIRImageType, typename STIRConcreteType>
 STIRImageType*
-construct_empty_stir_image_and_orient_itk_image(typename ITKImageType::Pointer itk_image)
+construct_empty_stir_image_and_orient_itk_image(typename ITKImageType::Pointer& itk_image)
 {
   // GEOMTODO: Need to get patient postion if DICOM
   shared_ptr<ExamInfo> exam_info_sptr = shared_ptr<ExamInfo>(new ExamInfo());
