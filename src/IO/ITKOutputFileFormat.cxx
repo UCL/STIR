@@ -102,7 +102,7 @@ actual_write_to_file(std::string& filename,
     {
       add_extension(filename, this->default_extension);
 
-      const VoxelsOnCartesianGrid<float> image =
+      const VoxelsOnCartesianGrid<float>& image =
         dynamic_cast<const VoxelsOnCartesianGrid<float>& >(density);
       CartesianCoordinate3D<int> min_indices;
       CartesianCoordinate3D<int> max_indices;
@@ -169,29 +169,6 @@ actual_write_to_file(std::string& filename,
       itk_image->SetOrigin(origin);
       itk_image->SetDirection( matrix );
       itk_image->Allocate();
-
-      // std::cerr << "ITK Origin: "
-      //           << itk_image->GetOrigin()
-      //           << std::endl;
-      // std::cerr << "ITK Direction: "
-      //           << itk_image->GetDirection()
-      //           << std::endl;
-      // std::cerr << "orig STIR origin: "
-      //           << density.get_origin().x() << ", "
-      //           << density.get_origin().y() << ", "
-      //           << density.get_origin().z()
-      //           << std::endl;
-      // std::cerr << "orig STIR min: "
-      //           << density.get_LPS_coordinates_for_indices(min_indices).x() << ", "
-      //           << density.get_LPS_coordinates_for_indices(min_indices).y() << ", "
-      //           << density.get_LPS_coordinates_for_indices(min_indices).z()
-      //           << std::endl;
-      // std::cerr << "orig STIR max: "
-      //           << density.get_LPS_coordinates_for_indices(max_indices).x() << ", "
-      //           << density.get_LPS_coordinates_for_indices(max_indices).y() << ", "
-      //           << density.get_LPS_coordinates_for_indices(max_indices).z()
-      //           << std::endl;
-      // std::cerr << filename << std::endl;
 
       // copy data
       typedef itk::ImageRegionIterator< ImageType >	IteratorType;
