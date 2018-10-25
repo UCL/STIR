@@ -24,7 +24,7 @@ set(dir_EXE_SOURCES ${dir}_EXE_SOURCES)
 
 set(${dir_EXE_SOURCES}
 	apply_patlak_to_images
-	extract_dynamic_images_from_parametric_images
+	get_dynamic_images_from_parametric_images
 	make_parametric_image_from_components
 	extract_single_images_from_dynamic_images
 	mult_model_with_dyn_images
