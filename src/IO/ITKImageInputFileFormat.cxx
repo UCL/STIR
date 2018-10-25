@@ -57,10 +57,7 @@ typedef itk::VectorImage<float, 3>                           ITKImageMulti;
 typedef DiscretisedDensity<3, float>                         STIRImageSingle;
 typedef VoxelsOnCartesianGrid<float>                         STIRImageSingleConcrete;
 typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > STIRImageMulti;
-// typedef DiscretisedDensity<3, CartesianCoordinate3D<float> > STIRImageMulti;
-// typedef VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > STIRImageMultiConcrete;
-
-using MetaDataStringType = itk::MetaDataObject< std::string >;
+typedef itk::MetaDataObject< std::string >                   MetaDataStringType;
 
 template<typename STIRImageType>
 static
@@ -123,7 +120,6 @@ read_from_file(const std::string& filename) const
     (read_file_itk< STIRImageType >(filename));
 }
 
-
 /* Convert ITK (LPS) coordinates into STIR physical coordinates and
    accounting for the change of origin by default.
 
@@ -149,7 +145,6 @@ ITK_coordinates_to_STIR_physical_coordinates
   // the coordinates are relative.
   if (!is_displacement_field)
   {
-    // dummy image that has minumum to be able to find ITK -> STIR origin vector
     CartesianCoordinate3D<float> stir_origin_index(0, 0, 0);
 
     // assuming we previously oriented the ITK image, min_indices is the
@@ -196,7 +191,7 @@ calc_stir_origin(CartesianCoordinate3D<float> voxel_size,
   const VoxelsOnCartesianGrid<float> dummy_image
     (index_range, stir_origin_index, voxel_size);
 
-  return ITK_coordinates_to_STIR<ITKImageType, VoxelsOnCartesianGrid<float> >
+  return ITK_coordinates_to_STIR_physical_coordinates<ITKImageType, VoxelsOnCartesianGrid<float> >
     (itk_image->GetOrigin(), dummy_image);
 }
 
@@ -281,7 +276,7 @@ construct_empty_stir_image(typename ITKImageType::Pointer itk_image,
 void copy_ITK_data_to_STIR_image(const ITKImageSingle::Pointer itk_image,
                                  STIRImageSingle* stir_image_ptr)
 {
-  VoxelsOnCartesianGrid<float>::full_iterator stir_iter = stir_image_ptr->begin_all();
+  STIRImageSingle::full_iterator stir_iter = stir_image_ptr->begin_all();
   typedef itk::ImageRegionConstIterator<ITKImageSingle> IteratorType;
   IteratorType it (itk_image, itk_image->GetLargestPossibleRegion());
   for (it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter)
@@ -306,7 +301,7 @@ void copy_ITK_data_to_STIR_image(const ITKImageMulti::Pointer itk_image,
     itk_coord[0] = it.Get()[0];
     itk_coord[1] = it.Get()[1];
     itk_coord[2] = it.Get()[2];
-    *stir_iter = ITK_coordinates_to_STIR<ITKImageMulti, STIRImageMulti>
+    *stir_iter = ITK_coordinates_to_STIR_physical_coordinates<ITKImageMulti, STIRImageMulti>
       (itk_coord, *stir_image_ptr, true);
   }
 }
