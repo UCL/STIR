@@ -505,6 +505,10 @@ read_file_itk(const std::string &filename)
                 __FILE__, __LINE__);
           return NULL; }
 
+      warning("Only displacement fields are currently supported in STIR (not deformations). "
+              "There is no way of verifying this from the nifti_image metadata, so you need to "
+              "make sure that the image you are supplying is a displacement field image.");
+
       ITKImageMulti::Pointer itk_image = reader->GetOutput();
 
       return convert_ITK_to_STIR<ITKImageMulti, STIRImageMulti>
