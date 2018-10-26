@@ -159,6 +159,36 @@ ITK_coordinates_to_STIR_physical_coordinates
   return stir_coord;
 }
 
+/* Convert an ITK Pixel (i.e., float) to a STIR Pixel. */
+typename STIRImageSingle::pixel_type
+ITK_pixel_to_STIR_pixel(typename ITKImageSingle::PixelType itk_pixel,
+                        const STIRImageSingle &stir_image,
+                        bool is_displacement_field=false)
+{
+  return static_cast<typename STIRImageSingle::pixel_type>(itk_pixel);
+}
+
+/* Specialisation if the pixel is a vector and we want a multi-image */
+typename STIRImageMulti::pixel_type
+ITK_pixel_to_STIR_pixel(typename ITKImageMulti::PixelType itk_pixel,
+                        const STIRImageMulti &stir_image,
+                        bool is_displacement_field=false)
+{
+  // ITK VariableLengthVector to ITK FixedArray
+  // We know it is length 3
+  // TODO: currently this is only for deformation/displacement images
+  //       However, dynamic images may be other lengths.
+  typename ITKImageMulti::PointType itk_coord;
+  for (unsigned int i=0; i<3; ++i)
+    itk_coord[i] = itk_pixel[i];
+  return ITK_coordinates_to_STIR_physical_coordinates
+    <ITKImageMulti, STIRImageMulti>(itk_coord, stir_image, is_displacement_field);
+}
+
+// void test(STIRImageMulti stir, ITKImageMulti itk, ITKImageMulti::IndexType idx) {
+//   STIRImageMulti::pixel_type m = ITK_pixel_to_STIR_pixel2(itk.GetPixel(idx), stir, false);
+// }
+
 /* Calculate the STIR index range from an ITK image. */
 template<typename ITKImageType>
 static
@@ -273,39 +303,20 @@ construct_empty_stir_image(typename ITKImageType::Pointer itk_image,
    This method expects that itk_image is already oriented to be consistent with
    STIR x, y, z axes.
 */
-void copy_ITK_data_to_STIR_image(const ITKImageSingle::Pointer itk_image,
-                                 STIRImageSingle* stir_image_ptr)
+template<typename ITKImageType, typename STIRImageType>
+void copy_ITK_data_to_STIR_image(const typename ITKImageType::Pointer itk_image,
+                                 STIRImageType* stir_image_ptr,
+                                 bool is_displacement_field=false)
 {
-  STIRImageSingle::full_iterator stir_iter = stir_image_ptr->begin_all();
-  typedef itk::ImageRegionConstIterator<ITKImageSingle> IteratorType;
+  typename STIRImageType::full_iterator stir_iter = stir_image_ptr->begin_all();
+  typedef itk::ImageRegionConstIterator<ITKImageType> IteratorType;
   IteratorType it (itk_image, itk_image->GetLargestPossibleRegion());
   for (it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter)
   {
-    *stir_iter = static_cast<float>(it.Get());
+    *stir_iter = ITK_pixel_to_STIR_pixel
+      (it.Get(), *stir_image_ptr, is_displacement_field);
   }
 }
-
-/* Copy a multi ITK Image to a multi STIR Image.
-   This method expects that itk_image is already oriented to be consistent with
-   STIR x, y, z axes.
-*/
-void copy_ITK_data_to_STIR_image(const ITKImageMulti::Pointer itk_image,
-                                 STIRImageMulti* stir_image_ptr)
-{
-  STIRImageMulti::full_iterator stir_iter = stir_image_ptr->begin_all();
-  typedef itk::ImageRegionConstIterator<ITKImageMulti> IteratorType;
-  IteratorType it (itk_image, itk_image->GetLargestPossibleRegion() );
-  for ( it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter) {
-    // Need to do this because ITK VectorImage pixels are VariableLengthVectors
-    typename ITKImageMulti::PointType itk_coord;
-    itk_coord[0] = it.Get()[0];
-    itk_coord[1] = it.Get()[1];
-    itk_coord[2] = it.Get()[2];
-    *stir_iter = ITK_coordinates_to_STIR_physical_coordinates<ITKImageMulti, STIRImageMulti>
-      (itk_coord, *stir_image_ptr, true);
-  }
-}
-
 
 template<typename ITKImageType>
 typename ITKImageType::Pointer
@@ -373,7 +384,8 @@ convert_ITK_to_STIR(const typename ITKImageType::Pointer itk_image)
   STIRImageType* stir_image_ptr = construct_empty_stir_image
     <ITKImageType, STIRImageType, STIRConcreteType>(reor_itk_image, exam_info_sptr);
   // Copy the ITK image data into the STIR Image
-  copy_ITK_data_to_STIR_image(reor_itk_image, stir_image_ptr);
+  copy_ITK_data_to_STIR_image<ITKImageType, STIRImageType>
+    (reor_itk_image, stir_image_ptr, false);
   return stir_image_ptr;
 }
 

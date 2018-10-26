@@ -112,6 +112,8 @@ template<int num_dimensions, typename elemT>
   typedef Array<num_dimensions,elemT> base_type;
   typedef DiscretisedDensity<num_dimensions,elemT> self_type;
 public:
+  typedef elemT pixel_type;
+
   //! A typedef that can be used what the base of the hierarchy is
   /*! For these purposes, we don't use Array (even though it's the base_type)
       as DiscretisedDensity is used in STIR as the type for any image.
