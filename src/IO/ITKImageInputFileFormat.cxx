@@ -277,7 +277,7 @@ construct_exam_info_from_metadata_dictionary(itk::MetaDataDictionary dictionary)
    This method expects that itk_image is already oriented to be consistent with
    STIR x, y, z axes.
  */
-template<typename ITKImageType, typename STIRImageType, typename STIRConcreteType>
+template<typename ITKImageType, typename STIRImageType>
 STIRImageType*
 construct_empty_stir_image(typename ITKImageType::Pointer itk_image,
                            shared_ptr<ExamInfo> exam_info_sptr)
@@ -294,7 +294,7 @@ construct_empty_stir_image(typename ITKImageType::Pointer itk_image,
     (voxel_size, index_range, itk_image);
 
   // create STIR image
-  STIRImageType* image_ptr = new STIRConcreteType
+  STIRImageType* image_ptr = new STIRImageType
     (exam_info_sptr, index_range, stir_origin, voxel_size);
   return image_ptr;
 }
@@ -370,7 +370,7 @@ orient_ITK_image(const typename ITKImageType::Pointer itk_image_orig,
 }
 
 /* Convert an ITK image into an internal STIR one. */
-template<typename ITKImageType, typename STIRImageType, typename STIRConcreteType>
+template<typename ITKImageType, typename STIRImageType>
 STIRImageType*
 convert_ITK_to_STIR(const typename ITKImageType::Pointer itk_image)
 {
@@ -382,7 +382,7 @@ convert_ITK_to_STIR(const typename ITKImageType::Pointer itk_image)
     = orient_ITK_image<ITKImageType>(itk_image, exam_info_sptr);
   // Make the STIR Image
   STIRImageType* stir_image_ptr = construct_empty_stir_image
-    <ITKImageType, STIRImageType, STIRConcreteType>(reor_itk_image, exam_info_sptr);
+    <ITKImageType, STIRImageType>(reor_itk_image, exam_info_sptr);
   // Copy the ITK image data into the STIR Image
   copy_ITK_data_to_STIR_image<ITKImageType, STIRImageType>
     (reor_itk_image, stir_image_ptr, false);
@@ -409,7 +409,7 @@ read_file_itk(const std::string &filename)
           ITKImageSingle::Pointer itk_image = reader->GetOutput();
 
           return convert_ITK_to_STIR
-            <ITKImageSingle, STIRImageSingle, STIRImageSingleConcrete>
+            <ITKImageSingle, STIRImageSingleConcrete>
             (itk_image);
         }
       else
@@ -469,7 +469,7 @@ read_file_itk(const std::string &filename)
 
           // Finally, convert to STIR!
           return convert_ITK_to_STIR
-            <ITKImageSingle, STIRImageSingle, STIRImageSingleConcrete>
+            <ITKImageSingle, STIRImageSingleConcrete>
             (itk_image);
      
         }
@@ -507,7 +507,7 @@ read_file_itk(const std::string &filename)
 
       ITKImageMulti::Pointer itk_image = reader->GetOutput();
 
-      return convert_ITK_to_STIR<ITKImageMulti, STIRImageMulti, STIRImageMulti>
+      return convert_ITK_to_STIR<ITKImageMulti, STIRImageMulti>
         (itk_image);
 
     }
