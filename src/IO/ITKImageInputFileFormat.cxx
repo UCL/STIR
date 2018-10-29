@@ -127,10 +127,10 @@ read_from_file(const std::string& filename) const
    interpreted as being displacement vectors and hence the change of
    origin is ignored.
  */
-template<typename ITKImageType, typename STIRImageType>
+template<typename ITKPointType, typename STIRImageType>
 CartesianCoordinate3D<float>
 ITK_coordinates_to_STIR_physical_coordinates
-(const typename ITKImageType::PointType &itk_coord,
+(const ITKPointType &itk_coord,
  const STIRImageType &stir_image, bool is_displacement_field = false)
 {
   // find STIR origin
@@ -182,7 +182,7 @@ ITK_pixel_to_STIR_pixel(typename ITKImageMulti::PixelType itk_pixel,
   for (unsigned int i=0; i<3; ++i)
     itk_coord[i] = itk_pixel[i];
   return ITK_coordinates_to_STIR_physical_coordinates
-    <ITKImageMulti, STIRImageMulti>(itk_coord, stir_image, is_displacement_field);
+    (itk_coord, stir_image, is_displacement_field);
 }
 
 // void test(STIRImageMulti stir, ITKImageMulti itk, ITKImageMulti::IndexType idx) {
@@ -190,10 +190,10 @@ ITK_pixel_to_STIR_pixel(typename ITKImageMulti::PixelType itk_pixel,
 // }
 
 /* Calculate the STIR index range from an ITK image. */
-template<typename ITKImageType>
+template<typename ITKImagePtrType>
 static
 IndexRange<3>
-calc_stir_index_range(const typename ITKImageType::Pointer itk_image)
+calc_stir_index_range(const ITKImagePtrType itk_image)
 {
   // find index range in usual STIR convention
   const int z_size = itk_image->GetLargestPossibleRegion().GetSize()[2];
@@ -209,19 +209,19 @@ calc_stir_index_range(const typename ITKImageType::Pointer itk_image)
 /* Calculate the STIR origin for a given voxel_size and index_range from an ITK
    image.
  */
-template<typename ITKImageType>
+template<typename ITKImagePtrType>
 static
 const CartesianCoordinate3D<float>
 calc_stir_origin(CartesianCoordinate3D<float> voxel_size,
                  IndexRange<3> index_range,
-                 const typename ITKImageType::Pointer itk_image)
+                 const ITKImagePtrType itk_image)
 {
   const CartesianCoordinate3D<float> stir_origin_index(0, 0, 0);
   // dummy image that has minumum to be able to find ITK -> STIR origin vector
   const VoxelsOnCartesianGrid<float> dummy_image
     (index_range, stir_origin_index, voxel_size);
 
-  return ITK_coordinates_to_STIR_physical_coordinates<ITKImageType, VoxelsOnCartesianGrid<float> >
+  return ITK_coordinates_to_STIR_physical_coordinates
     (itk_image->GetOrigin(), dummy_image);
 }
 
@@ -277,9 +277,9 @@ construct_exam_info_from_metadata_dictionary(itk::MetaDataDictionary dictionary)
    This method expects that itk_image is already oriented to be consistent with
    STIR x, y, z axes.
  */
-template<typename ITKImageType, typename STIRImageType>
+template<typename ITKImagePtrType, typename STIRImageType>
 STIRImageType*
-construct_empty_stir_image(typename ITKImageType::Pointer itk_image,
+construct_empty_stir_image(const ITKImagePtrType itk_image,
                            shared_ptr<ExamInfo> exam_info_sptr)
 {
   // find voxel size
@@ -289,8 +289,8 @@ construct_empty_stir_image(typename ITKImageType::Pointer itk_image,
      static_cast<float>(itk_image->GetSpacing()[0]));
 
   // find info STIR image geometrical metadata
-  IndexRange<3> index_range = calc_stir_index_range<ITKImageType>(itk_image);
-  const CartesianCoordinate3D<float> stir_origin = calc_stir_origin<ITKImageType>
+  IndexRange<3> index_range = calc_stir_index_range(itk_image);
+  const CartesianCoordinate3D<float> stir_origin = calc_stir_origin
     (voxel_size, index_range, itk_image);
 
   // create STIR image
@@ -382,7 +382,7 @@ convert_ITK_to_STIR(const typename ITKImageType::Pointer itk_image)
     = orient_ITK_image<ITKImageType>(itk_image, exam_info_sptr);
   // Make the STIR Image
   STIRImageType* stir_image_ptr = construct_empty_stir_image
-    <ITKImageType, STIRImageType>(reor_itk_image, exam_info_sptr);
+    <typename ITKImageType::Pointer, STIRImageType>(reor_itk_image, exam_info_sptr);
   // Copy the ITK image data into the STIR Image
   copy_ITK_data_to_STIR_image<ITKImageType, STIRImageType>
     (reor_itk_image, stir_image_ptr, false);
