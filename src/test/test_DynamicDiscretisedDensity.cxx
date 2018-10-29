@@ -91,7 +91,8 @@ START_NAMESPACE_STIR
   Scanner::Type test_scanner=Scanner::E966;
   shared_ptr<Scanner> scanner_sptr(new Scanner(test_scanner));
   DynamicDiscretisedDensity dynamic_image(time_frame_definitions, scan_start_time_in_secs_since_1970, scanner_sptr); 
-  dynamic_image.set_density_sptr(frame1_sptr, 1);
+  frame1_sptr->get_exam_info_sptr()->set_time_frame_definitions(time_frame_definitions);
+  dynamic_image.set_density(*frame1_sptr, 1);
   check_if_equal(dynamic_image[1][0][0][0],1.F,"check DynamicDiscretisedDensity class implementation");
   }
   {
@@ -141,8 +142,10 @@ START_NAMESPACE_STIR
   DynamicDiscretisedDensity dynamic_image(time_frame_definitions,
                                           scan_start_time_in_secs_since_1970,
                                           scanner_sptr); 
-  dynamic_image.set_density_sptr(frame1_2_sptr, 1);
-  dynamic_image.set_density_sptr(frame2_2_sptr, 2);
+  frame1_2_sptr->get_exam_info_sptr()->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,1));
+  frame2_2_sptr->get_exam_info_sptr()->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,2));
+  dynamic_image.set_density(*frame1_2_sptr, 1);
+  dynamic_image.set_density(*frame2_2_sptr, 2);
 
   string string_test("STIRtmp_dyn2f.img");
   string string_empty_test("STIRtmp_dyn2f_empty.img");
@@ -201,9 +204,12 @@ START_NAMESPACE_STIR
   DynamicDiscretisedDensity dynamic_image(time_frame_definitions,
                                           scan_start_time_in_secs_since_1970,
                                           scanner_sptr); 
-  dynamic_image.set_density_sptr(frame1_3_sptr, 1);
-  dynamic_image.set_density_sptr(frame2_3_sptr, 2);
-  dynamic_image.set_density_sptr(frame3_3_sptr, 3);
+  frame1_3_sptr->get_exam_info_sptr()->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,1));
+  frame2_3_sptr->get_exam_info_sptr()->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,2));
+  frame3_3_sptr->get_exam_info_sptr()->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,3));
+  dynamic_image.set_density(*frame1_3_sptr, 1);
+  dynamic_image.set_density(*frame2_3_sptr, 2);
+  dynamic_image.set_density(*frame3_3_sptr, 3);
 
   // testing full iterators
   {

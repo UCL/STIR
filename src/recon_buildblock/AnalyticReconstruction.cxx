@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2006,  Hammersmith Imanet Ltd 
+    Copyright (C) 2018, University College London
     This file is part of STIR. 
  
     This file is free software; you can redistribute it and/or modify 
@@ -180,7 +181,8 @@ AnalyticReconstruction::
 construct_target_image_ptr() const
 {
   return
-      new VoxelsOnCartesianGrid<float> (*this->proj_data_ptr->get_proj_data_info_ptr(),
+      new VoxelsOnCartesianGrid<float> (this->get_input_data().get_exam_info_sptr(),
+                                        *this->proj_data_ptr->get_proj_data_info_ptr(),
 					static_cast<float>(this->zoom),
 					CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset),
 								     static_cast<float>(this->Yoffset),
@@ -233,5 +235,12 @@ set_input_data(const shared_ptr<ExamData> &arg)
 	this->proj_data_ptr = dynamic_pointer_cast < ProjData >(arg);
 }
 
+const ProjData&
+AnalyticReconstruction::
+get_input_data() const
+{
+  return *this->proj_data_ptr;
+}
+ 
 END_NAMESPACE_STIR
 

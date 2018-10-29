@@ -64,6 +64,8 @@ echo GATE support has not been installed in this system. Aborting.
 echo '"lm_to_proj_projdata --input_formats" reported'
 cat ${log}
 exit 1;
+else
+echo "GATE support detected!"
 fi
 
 
@@ -78,18 +80,27 @@ rm -f my_proj*s lm_to_projdata*.log root*.log
 
 ThereWereErrors=0
 export INPUT_ROOT_FILE=test_PET_GATE.root
+export INPUT=root_header.hroot
+export TEMPLATE=template_for_ROOT_scanner.hs
 
-
+#
+# Get the number of events unlisted. 
+#
+echo
 echo ------------- Converting ROOT files to ProjData file -------------
+echo
 echo Making ProjData for all events
 echo Running lm_to_projdata for all events
 
 export OUT_PROJDATA_FILE=my_proj_from_lm_all_events
 export EXCLUDE_SCATTERED=0
 export EXCLUDE_RANDOM=0
+lm_to_projdata ./lm_to_projdata.par 2>"./my_root_log_all.log"
+all_events=`awk -F ":" '/Number of prompts/ {print $2}' my_root_log_all.log`
+echo "Number of prompts stored in this time period:" ${all_events}
 
 log=lm_to_projdata_from_ROOT_all_events.log
-lm_to_projdata ./lm_to_projdata_from_ROOT.par > ${log} 2>&1 
+lm_to_projdata ./lm_to_projdata.par > ${log} 2>&1 
 if [ $? -ne 0 ]; then
   ThereWereErrors=1
   echo "Error running lm_to_projdata."
@@ -103,8 +114,13 @@ else
 fi
 echo Reading all values from ROOT file
 
-log=root_output_all_events.log
-root -b -l ${INPUT_ROOT_FILE} >& ${log} << EOF
+#
+# Get the number of events directly from the ROOT file
+#
+echo
+echo ------------- Reading values directly from ROOT file -------------
+echo
+cat << EOF > my_root.input
 Coincidences->Draw(">>eventlist","","goff");
 Int_t N = eventlist->GetN();
 cout<<endl<<"Number of prompts stored in this time period:"<< N<<endl;
@@ -130,7 +146,7 @@ export EXCLUDE_SCATTERED=1
 export EXCLUDE_RANDOM=1
 
 log=lm_to_projdata_from_ROOT_true_events.log
-lm_to_projdata ./lm_to_projdata_from_ROOT.par > ${log} 2>&1 
+lm_to_projdata ./lm_to_projdata.par > ${log} 2>&1 
 if [ $? -ne 0 ]; then
   ThereWereErrors=1
   echo "Error running lm_to_projdata."
@@ -181,6 +197,3 @@ else
   echo "Everything seems to be fine !"
   echo 'You could remove all generated files using "rm -f my_* *.log"'
 fi
-
-
-

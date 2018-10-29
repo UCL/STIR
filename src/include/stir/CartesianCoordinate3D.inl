@@ -63,6 +63,16 @@ CartesianCoordinate3D<coordT>:: operator=(const BasicCoordinate<3, coordT>& c)
   return *this;
 }
 
+template <class coordT> 
+CartesianCoordinate3D<coordT>&
+CartesianCoordinate3D<coordT>:: operator=(const coordT& c)
+{
+  x() = c;
+  y() = c;
+  z() = c;
+  return *this;
+}
+
 #ifdef OLDDESIGN
 template <class coordT>
 CartesianCoordinate3D<coordT> ::CartesianCoordinate3D(const Point3D& p)

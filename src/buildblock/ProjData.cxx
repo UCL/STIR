@@ -43,14 +43,14 @@
 #ifndef STIR_USE_GE_IO
 #include "stir/ProjDataGEAdvance.h"
 #else
-#include "local/stir/IO/GE/ProjDataVOLPET.h"
+#include "stir_experimental/IO/GE/ProjDataVOLPET.h"
 #ifdef HAVE_RDF
-#include "local/stir/IO/GE/stir_RDF.h"
-#include "local/stir/IO/GE/ProjDataRDF.h"
+#include "stir_experimental/IO/GE/stir_RDF.h"
+#include "stir_experimental/IO/GE/ProjDataRDF.h"
 #endif
 #endif // STIR_USE_GE_IO
 #ifdef HAVE_IE
-#include "local/stir/IO/GE/ProjDataIE.h"
+#include "stir_experimental/IO/GE/ProjDataIE.h"
 #endif
 #include "stir/IO/stir_ecat7.h"
 #include "stir/ViewSegmentNumbers.h"

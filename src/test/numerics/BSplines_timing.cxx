@@ -32,7 +32,7 @@
 #include "stir/IndexRange3D.h"
 #include "stir/IndexRange4D.h"
 
-#include "local/stir/numerics/more_interpolators.h"
+#include "stir_experimental/numerics/more_interpolators.h"
 
 #include "stir/numerics/BSplines.h"
 #include "stir/numerics/BSplinesRegularGrid.h"

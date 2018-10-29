@@ -202,7 +202,7 @@ get_cached_proj_matrix_elems_for_one_bin(
   {
     // Check that this is a 'basic' coordinate
     Bin bin_copy = bin; 
-    assert ( symmetries_ptr->find_basic_bin(bin_copy) == 0);     
+    assert ( symmetries_sptr->find_basic_bin(bin_copy) == 0);
   }
 #endif         
   

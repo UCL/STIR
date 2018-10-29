@@ -17,4 +17,4 @@ set(${dir_LIB_SOURCES}
 
 include(stir_lib_target)
 
-target_link_libraries(Shape_buildblock buildblock IO )
+target_link_libraries(Shape_buildblock buildblock IO numerics_buildblock )

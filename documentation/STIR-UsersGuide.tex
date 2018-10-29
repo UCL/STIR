@@ -249,6 +249,12 @@ When using \texttt{ccmake} as opposed to \texttt{cmake-gui}, the key presses are
 \texttt{c} to do additional configurations, \texttt{g} for generating
 your build files, \texttt{q} to quit}. After this step, you will have to run your build system (e.g.\ on Linux etc,
 type \texttt{make}, then \texttt{make test}, then \texttt{make install}).
+A helpful note: You can specify just to make a single ``target'',
+using \texttt{make <target>}. All executable names are targets that
+make just the required executable (e.g., \texttt{make FBP2D}). A
+useful target for developers is to just make the tests, using
+\texttt{make tests}. So \texttt{make tests && make test} would build
+then run the tests.
 
 On Windows or MacOSX, the procedure is essentially the same, except that you will likely have
 to specify more locations. When using Visual Studio, XCode or other IDEs as  your build system,
@@ -303,8 +309,12 @@ See section \ref{sec:RunningWithOPENMP} for information on how to run programs u
 \hline
 % ROW 
 {\raggedright \textit{STIR\_LOCAL}} & 
-{\raggedright Specify location of directy with your own extensions to STIR. See
+{\raggedright Specify location of directory with your own extensions to STIR. See
 the developer's guide.}\\
+\hline
+% ROW 
+{\raggedright \textit{STIR\_ENABLE\_EXPERIMENTAL}} & 
+{\raggedright Toggles between ON, OFF. Enable to use experimental features in \textit{STIR}.}\\
 \hline
 \end{longtable}
 
@@ -2551,6 +2561,14 @@ some options to select which data to print.
 This is a test-release of a program that can be used to find 
 ROI values for an image. See the online documentation generated 
 by doxygen for more info.
+
+{ \subsubsubsection{extract\_dynamic\_images}
+}
+
+This executable can be used to get the individual components of a 
+dynamic image as separate images. 
+To use it, simply give the pattern of the output filename, the input filename, and optionally
+supply a parameter file for saving the output images.
 
 
 \subsubsection{

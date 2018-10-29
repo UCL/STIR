@@ -8,6 +8,7 @@
   \brief Implementations of non-inline functions of class stir::DiscretisedDensity
 
   \author Kris Thielemans 
+  \author Ashley Gillman
   \author PARAPET project
 
 
@@ -15,6 +16,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2008, Hammersmith Imanet Ltd
+    Copyright (C) 2018, CSIRO
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -42,7 +44,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/is_null_ptr.h"
 #ifdef STIR_USE_GE_IO
-#include "local/stir/IO/GE/niff.h"
+#include "stir_experimental/IO/GE/niff.h"
 #endif
 #endif
 
