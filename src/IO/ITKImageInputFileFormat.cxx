@@ -123,7 +123,7 @@ read_from_file(const std::string& filename) const
 /* Convert ITK (LPS) coordinates into STIR physical coordinates and
    accounting for the change of origin by default.
 
-   However, if `is_displacement_field` is true, coordinates are
+   However, if `is_relative_coordinate` is true, coordinates are
    interpreted as being displacement vectors and hence the change of
    origin is ignored.
  */
@@ -132,7 +132,7 @@ static inline
 CartesianCoordinate3D<float>
 ITK_coordinates_to_STIR_physical_coordinates
 (const ITKPointType &itk_coord,
- const STIRImageType &stir_image, bool is_displacement_field = false)
+ const STIRImageType &stir_image, bool is_relative_coordinate=false)
 {
   // find STIR origin
   // Note: need to use - for z-coordinate because of different axis conventions
@@ -142,9 +142,9 @@ ITK_coordinates_to_STIR_physical_coordinates
                                     static_cast<float>(itk_coord[1]),
                                     static_cast<float>(itk_coord[0])));
 
-  // The following is not required for displacement field images, as
+  // The following is not required for displacement vectors, such as a displacement field, as
   // the coordinates are relative.
-  if (!is_displacement_field)
+  if (!is_relative_coordinate)
   {
     CartesianCoordinate3D<float> stir_origin_index(0, 0, 0);
 
@@ -379,7 +379,8 @@ orient_ITK_image(const typename ITKImageType::Pointer itk_image_orig,
 template<typename ITKImageType, typename STIRImageType>
 static inline
 STIRImageType*
-convert_ITK_to_STIR(const typename ITKImageType::Pointer itk_image, bool is_displacement=false)
+convert_ITK_to_STIR(const typename ITKImageType::Pointer itk_image,
+                    bool is_displacement_field=false)
 {
   // Construct extra metadata
   const shared_ptr<ExamInfo> exam_info_sptr
@@ -392,7 +393,7 @@ convert_ITK_to_STIR(const typename ITKImageType::Pointer itk_image, bool is_disp
     <typename ITKImageType::Pointer, STIRImageType>(reor_itk_image, exam_info_sptr);
   // Copy the ITK image data into the STIR Image
   copy_ITK_data_to_STIR_image<ITKImageType, STIRImageType>
-    (reor_itk_image, *stir_image_ptr, is_displacement);
+    (reor_itk_image, *stir_image_ptr, is_displacement_field);
   return stir_image_ptr;
 }
 
