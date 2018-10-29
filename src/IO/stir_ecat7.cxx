@@ -1742,7 +1742,7 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
 				   -dimensions.y()/2,(-dimensions.y()/2)+dimensions.y()-1,
 				   -dimensions.x()/2,(-dimensions.x()/2)+dimensions.x()-1);
       write_basic_interfile_image_header(header_filename, ECAT7_filename,
-					 exam_info,
+					 *exam_info_sptr,
                                          range_3D, voxel_size, origin,
 					 type_of_numbers, byte_order,
 					 scaling_factors,

@@ -123,10 +123,10 @@ read_from_file(const string& filename) // The written projection data is read in
       if (read_ECAT7_main_header(mhead, filename) == Succeeded::no)
         {
           warning("DynamicProjData::read_from_file cannot read '%s' as ECAT7", filename.c_str());
-          return 0;
+          return unique_ptr<DynamicProjData>();
         }
       shared_ptr<ExamInfo> exam_info_sptr(read_ECAT7_exam_info(filename));
-      DynamicProjData * dynamic_proj_data_ptr = new DynamicProjData(exam_info_sptr);
+      unique_ptr<DynamicProjData> dynamic_proj_data_ptr(new DynamicProjData(exam_info_sptr));
 
       // we no longer have a _scanner_sptr member, so next lines are commented out
       //dynamic_proj_data_ptr->_scanner_sptr.reset(
@@ -146,6 +146,7 @@ read_from_file(const string& filename) // The written projection data is read in
         }
       if (is_null_ptr(dynamic_proj_data_ptr->_proj_datas[0]))
               error("DynamicProjData: No frame available\n");
+
       return dynamic_proj_data_ptr;
     }
     else
@@ -153,14 +154,14 @@ read_from_file(const string& filename) // The written projection data is read in
       if (is_ECAT7_file(filename))
         {
           warning("DynamicProjData::read_from_file ECAT7 file '%s' should be projection data.", filename.c_str());
-          return 0;
+          return unique_ptr<DynamicProjData>();
         }
     }
   }
   else 
     {
       warning("DynamicProjData::read_from_file '%s' seems to correspond to ECAT projection data, but not ECAT7. I cannot read this.", filename.c_str());
-      return 0;
+      return unique_ptr<DynamicProjData>();
     }
 #endif // end of HAVE_LLN_MATRIX
 
