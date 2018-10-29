@@ -293,7 +293,7 @@ construct_empty_stir_image(const ITKImagePtrType itk_image,
      static_cast<float>(itk_image->GetSpacing()[0]));
 
   // find info STIR image geometrical metadata
-  IndexRange<3> index_range = calc_stir_index_range(itk_image);
+  const IndexRange<3> index_range = calc_stir_index_range(itk_image);
   const CartesianCoordinate3D<float> stir_origin = calc_stir_origin
     (voxel_size, index_range, itk_image);
 
