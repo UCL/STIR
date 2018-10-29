@@ -311,7 +311,7 @@ template<typename ITKImageType, typename STIRImageType>
 static inline
 void copy_ITK_data_to_STIR_image(const typename ITKImageType::Pointer itk_image,
                                  STIRImageType& stir_image,
-                                 bool is_displacement_field=false)
+                                 bool is_displacement_field)
 {
   typename STIRImageType::full_iterator stir_iter = stir_image.begin_all();
   typedef itk::ImageRegionConstIterator<ITKImageType> IteratorType;
@@ -379,7 +379,7 @@ orient_ITK_image(const typename ITKImageType::Pointer itk_image_orig,
 template<typename ITKImageType, typename STIRImageType>
 static inline
 STIRImageType*
-convert_ITK_to_STIR(const typename ITKImageType::Pointer itk_image)
+convert_ITK_to_STIR(const typename ITKImageType::Pointer itk_image, bool is_displacement=false)
 {
   // Construct extra metadata
   const shared_ptr<ExamInfo> exam_info_sptr
@@ -392,7 +392,7 @@ convert_ITK_to_STIR(const typename ITKImageType::Pointer itk_image)
     <typename ITKImageType::Pointer, STIRImageType>(reor_itk_image, exam_info_sptr);
   // Copy the ITK image data into the STIR Image
   copy_ITK_data_to_STIR_image<ITKImageType, STIRImageType>
-    (reor_itk_image, *stir_image_ptr, false);
+    (reor_itk_image, *stir_image_ptr, is_displacement);
   return stir_image_ptr;
 }
 
@@ -521,7 +521,7 @@ read_file_itk(const std::string &filename)
       ITKImageMulti::Pointer itk_image = reader->GetOutput();
 
       return convert_ITK_to_STIR<ITKImageMulti, STIRImageMulti>
-        (itk_image);
+        (itk_image, true);
 
     }
   catch (std::exception &ex)
