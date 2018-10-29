@@ -128,6 +128,7 @@ read_from_file(const std::string& filename) const
    origin is ignored.
  */
 template<typename ITKPointType, typename STIRImageType>
+static inline
 CartesianCoordinate3D<float>
 ITK_coordinates_to_STIR_physical_coordinates
 (const ITKPointType &itk_coord,
@@ -160,22 +161,27 @@ ITK_coordinates_to_STIR_physical_coordinates
 }
 
 /* Convert an ITK Pixel (i.e., float) to a STIR Pixel. */
-typename STIRImageSingle::pixel_type
-ITK_pixel_to_STIR_pixel(typename ITKImageSingle::PixelType itk_pixel,
-                        const STIRImageSingle &stir_image,
-                        bool is_displacement_field=false)
+template<typename STIRPixelType, typename ITKPixelType, typename STIRImageType>
+static inline
+STIRPixelType
+ITK_pixel_to_STIR_pixel(ITKPixelType itk_pixel,
+                        const STIRImageType &stir_image,
+                        bool)
 {
-  return static_cast<typename STIRImageSingle::pixel_type>(itk_pixel);
+  return static_cast<STIRPixelType>(itk_pixel);
 }
 
 /* Specialisation if the pixel is a vector and we want a multi-image */
-typename STIRImageMulti::pixel_type
+template<>
+inline
+typename STIRImageMulti::full_value_type
 ITK_pixel_to_STIR_pixel(typename ITKImageMulti::PixelType itk_pixel,
                         const STIRImageMulti &stir_image,
-                        bool is_displacement_field=false)
+                        bool is_displacement_field)
 {
   // ITK VariableLengthVector to ITK FixedArray
   // We know it is length 3
+  assert(itk_pixel.GetSize() == 3);
   // TODO: currently this is only for deformation/displacement images
   //       However, dynamic images may be other lengths.
   typename ITKImageMulti::PointType itk_coord;
@@ -185,13 +191,9 @@ ITK_pixel_to_STIR_pixel(typename ITKImageMulti::PixelType itk_pixel,
     (itk_coord, stir_image, is_displacement_field);
 }
 
-// void test(STIRImageMulti stir, ITKImageMulti itk, ITKImageMulti::IndexType idx) {
-//   STIRImageMulti::pixel_type m = ITK_pixel_to_STIR_pixel2(itk.GetPixel(idx), stir, false);
-// }
-
 /* Calculate the STIR index range from an ITK image. */
 template<typename ITKImagePtrType>
-static
+static inline
 IndexRange<3>
 calc_stir_index_range(const ITKImagePtrType itk_image)
 {
@@ -210,7 +212,7 @@ calc_stir_index_range(const ITKImagePtrType itk_image)
    image.
  */
 template<typename ITKImagePtrType>
-static
+static inline
 const CartesianCoordinate3D<float>
 calc_stir_origin(CartesianCoordinate3D<float> voxel_size,
                  IndexRange<3> index_range,
@@ -229,6 +231,7 @@ calc_stir_origin(CartesianCoordinate3D<float> voxel_size,
    Uses fields:
    - (0018, 5100) Patient Position
  */
+static inline
 shared_ptr<ExamInfo>
 construct_exam_info_from_metadata_dictionary(itk::MetaDataDictionary dictionary)
 {
@@ -278,6 +281,7 @@ construct_exam_info_from_metadata_dictionary(itk::MetaDataDictionary dictionary)
    STIR x, y, z axes.
  */
 template<typename ITKImagePtrType, typename STIRImageType>
+static inline
 STIRImageType*
 construct_empty_stir_image(const ITKImagePtrType itk_image,
                            shared_ptr<ExamInfo> exam_info_sptr)
@@ -304,17 +308,19 @@ construct_empty_stir_image(const ITKImagePtrType itk_image,
    STIR x, y, z axes.
 */
 template<typename ITKImageType, typename STIRImageType>
+static inline
 void copy_ITK_data_to_STIR_image(const typename ITKImageType::Pointer itk_image,
-                                 STIRImageType* stir_image_ptr,
+                                 STIRImageType& stir_image,
                                  bool is_displacement_field=false)
 {
-  typename STIRImageType::full_iterator stir_iter = stir_image_ptr->begin_all();
+  typename STIRImageType::full_iterator stir_iter = stir_image.begin_all();
   typedef itk::ImageRegionConstIterator<ITKImageType> IteratorType;
   IteratorType it (itk_image, itk_image->GetLargestPossibleRegion());
   for (it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter)
   {
     *stir_iter = ITK_pixel_to_STIR_pixel
-      (it.Get(), *stir_image_ptr, is_displacement_field);
+      <typename STIRImageType::full_value_type, typename ITKImageType::PixelType, STIRImageType>
+      (it.Get(), stir_image, is_displacement_field);
   }
 }
 
@@ -371,6 +377,7 @@ orient_ITK_image(const typename ITKImageType::Pointer itk_image_orig,
 
 /* Convert an ITK image into an internal STIR one. */
 template<typename ITKImageType, typename STIRImageType>
+static inline
 STIRImageType*
 convert_ITK_to_STIR(const typename ITKImageType::Pointer itk_image)
 {
@@ -385,12 +392,13 @@ convert_ITK_to_STIR(const typename ITKImageType::Pointer itk_image)
     <typename ITKImageType::Pointer, STIRImageType>(reor_itk_image, exam_info_sptr);
   // Copy the ITK image data into the STIR Image
   copy_ITK_data_to_STIR_image<ITKImageType, STIRImageType>
-    (reor_itk_image, stir_image_ptr, false);
+    (reor_itk_image, *stir_image_ptr, false);
   return stir_image_ptr;
 }
 
 //To read any file format via ITK
 template<>
+inline
 STIRImageSingle*
 read_file_itk(const std::string &filename)
 {
@@ -483,6 +491,7 @@ read_file_itk(const std::string &filename)
 
 //To read any file format via ITK
 template<>
+inline
 STIRImageMulti*
 read_file_itk(const std::string &filename)
 {

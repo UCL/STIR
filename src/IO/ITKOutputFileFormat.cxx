@@ -174,8 +174,7 @@ actual_write_to_file(std::string& filename,
       typedef itk::ImageRegionIterator< ImageType >	IteratorType;
       IteratorType it (itk_image, itk_image->GetLargestPossibleRegion() );	
       DiscretisedDensity<3,float>::const_full_iterator stir_iter = density.begin_all_const();
-      for ( it = it.Begin(); !it.IsAtEnd(); ++it, ++stir_iter  ){
-
+      for ( it.GoToBegin(); !it.IsAtEnd(); ++it, ++stir_iter  ){
         it.Set(*stir_iter);
       }
 
