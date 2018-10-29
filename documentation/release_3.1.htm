@@ -162,8 +162,9 @@ These are only minimally documented at the present stage unfortunately.
 </li>
 <li>
 The orientation of images read/written via ITK has changed. It should now be correct if the patient
-was in HFS position for NIfTI (this can't be verified due to lack of metadata in the format), or if
-in DICOM format for any of HFS, FFS, HFP or FFP if the DICOM containts the correct metadata.
+was in HFS position. Unfortunately, for most file formats (such as NifTI) this can't be verified due to lack of metadata in the format.
+If the files are in DICOM format, as long as the file contains the correct metadata, other patient positions are supported (currently
+HFS, FFS, HFP or FFP).
 </li>
 <li><tt>calculate_attenuation_coefficients</tt> now defaults to using the ray-tracing matrix as
   projector. Results should be identical though. This means it will not automatically handle
