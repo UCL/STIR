@@ -648,9 +648,9 @@ See the \texttt{conv\_AVW} utility (section \ref{sec:convAVW}).
 If you compiled \textit{STIR} such that it could find the \textit{ITK} library, you will be read
 all image formats supported by \textit{ITK}, see \url{http://www.itk.org/Wiki/ITK/File_Formats}{the ITK Wiki}
 for some information. However, many file formats do not specify geometric information (e.g jpg). For those
-that do, \textit{STIR} currently timing. However, \textbf{orientation and offset code
-assumes the patient is in HFS position}. This is currently not checked (and in fact
-cannot be checked when reading most file formats).
+that do, \textit{STIR} currently timing. Except for DICOM, \textbf{orientation and offset code
+assumes the patient is in HFS position}. Only if DICOM is used and the correct DICOM codes are set
+(0018, 5100) will the orientation be correct.
 
 Note that as DICOM files often store only a single slice, \textit{STIR} attempts to find
 other slices belonging to the same series/time frame/gate.
