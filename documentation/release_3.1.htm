@@ -67,7 +67,8 @@ improvements to the documentation.
   and Richard Brown (UCL)
   but with contributions by Jannis Fischer (ETH Zurich) for SAFIR support,
   Elise Emond for IO fixes (UCL), Edoardo Pasca (STFC) for Siemens interfile support,
-  Daniel Deida (Leeds) for the PLS prior, and some code clean-up by David Volgyes. Various bits
+  Daniel Deida (Leeds) for the PLS prior, Ashley Gillman (CSIRO AeHRC) for patient orientation and
+  geometrical support, and some code clean-up by David Volgyes. Various bits
 were tested by (in alphabetical order, all UCL except where indicated):
 Ottavia Bertolli, Matthias Ehrhardt, Pawel Markiewicz, Richard Manber, Alaleh Rashidnasab,
 Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
@@ -161,7 +162,9 @@ These are only minimally documented at the present stage unfortunately.
 </li>
 <li>
 The orientation of images read/written via ITK has changed. It should now be correct if the patient
-was in HFS position. This is currently not checked (and for many file formats, never can be checked).
+was in HFS position. Unfortunately, for most file formats (such as NifTI) this can't be verified due to lack of metadata in the format.
+If the files are in DICOM format, as long as the file contains the correct metadata, other patient positions are supported (currently
+HFS, FFS, HFP or FFP).
 </li>
 <li><tt>calculate_attenuation_coefficients</tt> now defaults to using the ray-tracing matrix as
   projector. Results should be identical though. This means it will not automatically handle

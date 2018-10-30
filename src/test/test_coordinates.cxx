@@ -110,6 +110,12 @@ coordinateTests::run_tests()
     {
       BasicCoordinate<3, float> a1;
       a1 = b;
+      check_if_zero(norm(a1 + -a1), "testing unary operator-");
+    }
+
+    {
+      BasicCoordinate<3, float> a1;
+      a1 = b;
       a1 *= 3;
       a1 += a;
       a1 -= 4;
