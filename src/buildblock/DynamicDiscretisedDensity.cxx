@@ -149,9 +149,6 @@ read_from_file(const string& filename) // The written image is read in respect t
   return dyn_sptr.release();
 }
 
-//Warning write_time_frame_definitions() is not yet implemented, so time information is missing.
-/*          sheader_ptr->frame_start_time=this->get_start_time(frame_num)*1000.;  //Start Time in Milliseconds
-            sheader_ptr->frame_duration=this->get_duration(frame_num)*1000.;        //Duration in Milliseconds */
 Succeeded 
 DynamicDiscretisedDensity::
 write_to_ecat7(const string& filename) const 

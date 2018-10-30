@@ -188,7 +188,8 @@ read_ECAT7_exam_info(const std::string& filename);
 */
 void make_ECAT7_main_header(Main_header&, 
 			    const Scanner&,
-                            const std::string& orig_name                     
+                            const std::string& orig_name,
+                            ExamInfo const& exam_info
                             );
 
 //! Fill in most of the main header given a Scanner object and orig_name and an image

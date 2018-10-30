@@ -641,7 +641,8 @@ read_ECAT7_exam_info(const string& filename)
 
 void make_ECAT7_main_header(Main_header& mhead,
 			    Scanner const& scanner,
-                            const string& orig_name                     
+                            const string& orig_name,
+                            ExamInfo const& exam_info
                             )
 {
   // first set to default (sometimes nonsensical) values
@@ -725,6 +726,32 @@ void make_ECAT7_main_header(Main_header& mhead,
   
   mhead.distance_scanned=
     mhead.plane_separation * scanner.get_num_rings()*2;
+
+  mhead.num_frames = exam_info.time_frame_definitions.get_num_frames();
+  mhead.scan_start_time = static_cast<boost::uint32_t>(floor(exam_info.start_time_in_secs_since_1970));
+
+  switch(exam_info.patient_position.get_position())
+    {
+    case PatientPosition::FFP:
+      mhead.patient_orientation = FeetFirstProne; break;
+    case PatientPosition::HFP:
+      mhead.patient_orientation = HeadFirstProne; break;
+    case PatientPosition::FFS:
+      mhead.patient_orientation = FeetFirstSupine; break;
+    case PatientPosition::HFS:
+      mhead.patient_orientation = HeadFirstSupine; break;
+    case PatientPosition::FFDR:
+      mhead.patient_orientation = FeetFirstRight; break;
+    case PatientPosition::HFDR:
+      mhead.patient_orientation = HeadFirstRight; break;
+    case PatientPosition::FFDL:
+      mhead.patient_orientation = FeetFirstLeft; break;
+    case PatientPosition::HFDL:
+      mhead.patient_orientation = HeadFirstLeft; break;
+    default:
+      mhead.patient_orientation = UnknownOrientation; break;
+    }
+
 }
 
 void make_ECAT7_main_header(Main_header& mhead,
@@ -733,7 +760,7 @@ void make_ECAT7_main_header(Main_header& mhead,
                             DiscretisedDensity<3,float> const & density
                             )
 {
-  make_ECAT7_main_header(mhead, scanner, orig_name);
+  make_ECAT7_main_header(mhead, scanner, orig_name, density.get_exam_info());
   
   DiscretisedDensityOnCartesianGrid<3,float> const & image =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const&>(density);
@@ -819,35 +846,10 @@ make_ECAT7_main_header(Main_header& mhead,
 		       )
 {
   
-  make_ECAT7_main_header(mhead, *proj_data_info.get_scanner_ptr(), orig_name);
+  make_ECAT7_main_header(mhead, *proj_data_info.get_scanner_ptr(), orig_name, exam_info);
   
-  mhead.num_frames = exam_info.time_frame_definitions.get_num_frames();
   mhead.acquisition_type =
     mhead.num_frames>1 ? DynamicEmission : StaticEmission;
-
-  mhead.scan_start_time = static_cast<boost::uint32_t>(floor(exam_info.start_time_in_secs_since_1970));
-
-  switch(exam_info.patient_position.get_position())
-    {
-    case PatientPosition::FFP:
-      mhead.patient_orientation = FeetFirstProne; break;
-    case PatientPosition::HFP:
-      mhead.patient_orientation = HeadFirstProne; break;
-    case PatientPosition::FFS:
-      mhead.patient_orientation = FeetFirstSupine; break;
-    case PatientPosition::HFS:
-      mhead.patient_orientation = HeadFirstSupine; break;
-    case PatientPosition::FFDR:
-      mhead.patient_orientation = FeetFirstRight; break;
-    case PatientPosition::HFDR:
-      mhead.patient_orientation = HeadFirstRight; break;
-    case PatientPosition::FFDL:
-      mhead.patient_orientation = FeetFirstLeft; break;
-    case PatientPosition::HFDL:
-      mhead.patient_orientation = HeadFirstLeft; break;
-    default:
-      mhead.patient_orientation = UnknownOrientation; break;
-    }
 
   // extra main parameters that depend on data type
   
@@ -1065,6 +1067,33 @@ void img_subheader_zero_fill(Image_subheader & ihead)
   fill_string(ihead.annotation, 40);  
 }
 
+//! A utility function to set time frame info in a subheader
+/*!
+  \internal 
+
+  Names of the variables for time frame info in the subheaders are the same.
+  So, instead of writing essentially the same function twice, we
+  use a templated version. Note that this takes care of the
+  different locations of the information in the subheaders,
+  as only the name is used.
+
+  Note: frame_num is the frame in the exam_info (which might be different from the frame
+  where the subheader is written).
+*/
+template <typename SUBHEADERPTR>
+static void set_time_frame_info(SUBHEADERPTR sub_header_ptr,
+                                const Main_header& mhead,
+                                const ExamInfo& exam_info,
+                                const unsigned frame_num)
+{
+  const double frame_start_time = 
+    exam_info.get_time_frame_definitions().get_start_time(frame_num)
+    + exam_info.start_time_in_secs_since_1970 - mhead.scan_start_time;
+  const double frame_duration = 
+    exam_info.get_time_frame_definitions().get_duration(frame_num);
+  sub_header_ptr->frame_start_time = static_cast<unsigned int>(round(frame_start_time*1000.));
+  sub_header_ptr->frame_duration = static_cast<unsigned int>(round(frame_duration*1000.));
+}
 
 
 //! A utility function only called by make_subheader_for_ECAT7(..., ProjDataInfo&)
@@ -1881,6 +1910,9 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
 
   ihead.decay_corr_fctr= 1;
 
+  // set frame info (using the first frame in exam_info as we're writing that single image)
+  set_time_frame_info(&ihead, mhead, density.get_exam_info(), 1U);
+
 #if 0  
   // attempt to write this ourselves, but we'd need to write the subheader, and we 
   // don't have neat functions for written Arrays to FILE anyway (only to streams)
@@ -2146,18 +2178,8 @@ ByteOrder::big_endian;
       }
     else
       {
-	const ExamInfo& exam_info = *proj_data.get_exam_info_ptr();
-	if (exam_info.time_frame_definitions.get_num_time_frames()==1)
-	  {
-	    // note: always use frame 1 for proj_data
-	    const double frame_start_time = 
-	      exam_info.time_frame_definitions.get_start_time(1U)
-	      + exam_info.start_time_in_secs_since_1970 - mhead.scan_start_time;
-	    const double frame_duration = 
-	      exam_info.time_frame_definitions.get_duration(1U);
-	    scan3d_shead.frame_start_time = static_cast<unsigned int>(round(frame_start_time*1000.));
-	    scan3d_shead.frame_duration = static_cast<unsigned int>(round(frame_duration*1000.));
-	  }
+        // set frame info (using the first frame in exam_info as we're writing that single proj_data)
+        set_time_frame_info(&scan3d_shead, mhead, proj_data.get_exam_info(), 1U);
       }
   }
 
