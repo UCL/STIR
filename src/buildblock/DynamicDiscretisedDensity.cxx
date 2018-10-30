@@ -78,6 +78,10 @@ DynamicDiscretisedDensity::
 set_density(const DiscretisedDensity<3,float>& density,
                  const unsigned int frame_num)
 {
+    // scan start should be the same
+    if (fabs(this->get_exam_info().start_time_in_secs_since_1970 - 
+             density.get_exam_info().start_time_in_secs_since_1970) > .5)
+      error("DynamicDiscretisedDensity::set_density: Density should have same start_time_secs");
     // The added density should only contain 1 time frame
     if(density.get_exam_info().time_frame_definitions.get_num_time_frames() != 1)
         error("DynamicDiscretisedDensity::set_density: Density should contain 1 time frame");
