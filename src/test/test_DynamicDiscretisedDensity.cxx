@@ -92,6 +92,7 @@ START_NAMESPACE_STIR
   shared_ptr<Scanner> scanner_sptr(new Scanner(test_scanner));
   DynamicDiscretisedDensity dynamic_image(time_frame_definitions, scan_start_time_in_secs_since_1970, scanner_sptr); 
   frame1_sptr->get_exam_info_sptr()->set_time_frame_definitions(time_frame_definitions);
+  frame1_sptr->get_exam_info_sptr()->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
   dynamic_image.set_density(*frame1_sptr, 1);
   check_if_equal(dynamic_image[1][0][0][0],1.F,"check DynamicDiscretisedDensity class implementation");
   }
@@ -143,7 +144,9 @@ START_NAMESPACE_STIR
                                           scan_start_time_in_secs_since_1970,
                                           scanner_sptr); 
   frame1_2_sptr->get_exam_info_sptr()->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,1));
+  frame1_2_sptr->get_exam_info_sptr()->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
   frame2_2_sptr->get_exam_info_sptr()->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,2));
+  frame2_2_sptr->get_exam_info_sptr()->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
   dynamic_image.set_density(*frame1_2_sptr, 1);
   dynamic_image.set_density(*frame2_2_sptr, 2);
 
@@ -205,8 +208,11 @@ START_NAMESPACE_STIR
                                           scan_start_time_in_secs_since_1970,
                                           scanner_sptr); 
   frame1_3_sptr->get_exam_info_sptr()->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,1));
+  frame1_3_sptr->get_exam_info_sptr()->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
   frame2_3_sptr->get_exam_info_sptr()->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,2));
+  frame2_3_sptr->get_exam_info_sptr()->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
   frame3_3_sptr->get_exam_info_sptr()->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,3));
+  frame3_3_sptr->get_exam_info_sptr()->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
   dynamic_image.set_density(*frame1_3_sptr, 1);
   dynamic_image.set_density(*frame2_3_sptr, 2);
   dynamic_image.set_density(*frame3_3_sptr, 3);
@@ -264,14 +270,13 @@ START_NAMESPACE_STIR
     check_if_equal((dynamic_image.get_time_frame_definitions()).get_start_time(2),3.,"check DynamicDiscretisedDensity class implementation");
     check_if_equal((dynamic_image.get_time_frame_definitions()).get_end_time(3),7.,"check DynamicDiscretisedDensity class implementation");
     check_if_equal((dynamic_image.get_time_frame_definitions()).get_start_time(3),6.5,"check DynamicDiscretisedDensity class implementation");
-    /* To be tested when write_time_frame_definitions() will be implemented.
+    // test if info read is ok
     check_if_equal((dyn_image_read_test.get_time_frame_definitions()).get_end_time(1),3.,"check DynamicDiscretisedDensity class implementation");
     check_if_equal((dyn_image_read_test.get_time_frame_definitions()).get_start_time(1),1.,"check DynamicDiscretisedDensity class implementation");
     check_if_equal((dyn_image_read_test.get_time_frame_definitions()).get_end_time(2),6.,"check DynamicDiscretisedDensity class implementation");
     check_if_equal((dyn_image_read_test.get_time_frame_definitions()).get_start_time(2),3.,"check DynamicDiscretisedDensity class implementation");
     check_if_equal((dyn_image_read_test.get_time_frame_definitions()).get_end_time(3),7.,"check DynamicDiscretisedDensity class implementation");
     check_if_equal((dyn_image_read_test.get_time_frame_definitions()).get_start_time(3),6.5,"check DynamicDiscretisedDensity class implementation");
-    */
 #endif
    }  
 }
