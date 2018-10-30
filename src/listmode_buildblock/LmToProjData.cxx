@@ -218,6 +218,12 @@ post_processing()
 
   template_proj_data_info_ptr.reset(template_proj_data_ptr->get_proj_data_info_ptr()->clone());
 
+  // propagate relevant metadata
+  template_proj_data_info_ptr->set_bed_position_horizontal
+    (lm_data_ptr->get_proj_data_info_sptr()->get_bed_position_horizontal());
+  template_proj_data_info_ptr->set_bed_position_vertical
+    (lm_data_ptr->get_proj_data_info_sptr()->get_bed_position_vertical());
+
   // initialise segment_num related variables
 
   if (max_segment_num_to_process==-1)
