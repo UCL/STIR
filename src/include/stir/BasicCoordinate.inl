@@ -612,6 +612,19 @@ operator<(const BasicCoordinate<num_dimensions, coordT>& c1,const BasicCoordinat
 					   c1, c); \
 }
 
+
+template <int num_dimensions, class coordT>
+std::ostream &operator<<(std::ostream &os, const BasicCoordinate<num_dimensions, coordT>& c) {
+{
+  os << "[";
+  for (int i=1; i<=num_dimensions; i++) {
+    os << c[i];
+    if (i<num_dimensions)
+      os << ",";
+  }
+  return os << "]";
+}
+
 DEFINE_OPERATOR_LESS(2)
 DEFINE_OPERATOR_LESS(3)
 DEFINE_OPERATOR_LESS(4)

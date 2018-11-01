@@ -84,6 +84,9 @@ public:
 
 };
 
+template <class coordT>
+std::ostream &operator<<(std::ostream &os, const CartesianCoordinate3D<coordT> &coord);
+
 END_NAMESPACE_STIR
 
 #include "stir/CartesianCoordinate3D.inl"

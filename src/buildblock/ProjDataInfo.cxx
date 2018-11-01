@@ -681,7 +681,9 @@ ProjDataInfo::get_bed_position() const
 const CartesianCoordinate3D<float>
 ProjDataInfo::
 get_location_of_vendor_frame_of_reference_in_physical_coordinates() const {
-  return get_vector_centre_of_first_ring_to_centre_of_gantry();
+  std::cerr << "bed possition: " << get_bed_position() << std::endl;
+  return get_vector_centre_of_first_ring_to_centre_of_gantry()
+    + get_bed_position();
 }
 
 END_NAMESPACE_STIR
