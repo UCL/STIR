@@ -187,6 +187,7 @@ class InterfileImageHeader : public InterfileHeader
 public:
   InterfileImageHeader();
   std::vector<double>	first_pixel_offsets;
+  std::vector<double>	first_pixel_vendor_offsets;
   int num_image_data_types;
   std::vector<std::string> index_nesting_level;
   std::vector<std::string> image_data_type_description;

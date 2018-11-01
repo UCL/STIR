@@ -441,6 +441,8 @@ InterfileImageHeader::InterfileImageHeader()
     
   add_key("first pixel offset (mm)",
 	   KeyArgument::DOUBLE, &first_pixel_offsets);
+  add_key("first pixel vendor offset (mm)",
+	   KeyArgument::DOUBLE, &first_pixel_vendor_offsets);
   add_key("number of image data types", 
     KeyArgument::INT,	(KeywordProcessor)&InterfileImageHeader::read_image_data_types,&num_image_data_types);
   add_key("index nesting level", 
@@ -466,7 +468,10 @@ read_matrix_info()
 {
   base_type::read_matrix_info();
   this->first_pixel_offsets.resize(num_dimensions);
+  this->first_pixel_vendor_offsets.resize(num_dimensions);
   std::fill(this->first_pixel_offsets.begin(), this->first_pixel_offsets.end(),
+	    base_type::double_value_not_set);
+  std::fill(this->first_pixel_vendor_offsets.begin(), this->first_pixel_vendor_offsets.end(),
 	    base_type::double_value_not_set);
 }
 
@@ -498,6 +503,7 @@ bool InterfileImageHeader::post_processing()
       return true; 
     }
   std::vector<double>	first_pixel_offsets;
+  std::vector<double>	first_pixel_vendor_offsets;
   
   if (num_time_frames > 1 && num_image_data_types > 1)
     { 

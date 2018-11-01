@@ -39,10 +39,16 @@
 // has to include Succeeded.h (even if it doesn't use the return value).
 #include "stir/Succeeded.h"
 #include "stir/ByteOrder.h"
+#include "stir/IO/InterfileHeader.h"
 #include <iostream>
 #include <string>
 
 START_NAMESPACE_STIR
+
+#define CARTESIANCOORDINATE_NOTSET CartesianCoordinate3D<float> \
+  (InterfileHeader::double_value_not_set, \
+   InterfileHeader::double_value_not_set, \
+   InterfileHeader::double_value_not_set)
 
 template <int num_dimensions> class IndexRange;
 template <int num_dimensions, typename elemT> class Array;
@@ -149,7 +155,9 @@ write_basic_interfile_image_header(const std::string& header_file_name,
 				   const ByteOrder byte_order,
 				   const VectorWithOffset<float>& scaling_factors,
                    const VectorWithOffset<unsigned long>& file_offsets,
-                   const std::vector<std::string>& data_type_descriptions = std::vector<std::string>());
+				   const CartesianCoordinate3D<float>& vendor_origin = CARTESIANCOORDINATE_NOTSET,
+                                   const std::vector<std::string>& data_type_descriptions = std::vector<std::string>()
+                                   );
 
 
 //! a utility function that computes the file offsets of subsequent images
@@ -176,6 +184,7 @@ write_basic_interfile(const std::string&filename,
 		      const Array<3,elemT>& image,
 		      const CartesianCoordinate3D<float>& voxel_size,
 		      const CartesianCoordinate3D<float>& origin,
+		      const CartesianCoordinate3D<float>& vendor_origin = CARTESIANCOORDINATE_NOTSET,
 		      const NumericType output_type = NumericType::FLOAT,
 		      const float scale= 0,
 		      const ByteOrder byte_order=ByteOrder::native);
@@ -194,6 +203,7 @@ write_basic_interfile(const std::string&filename,
 		      const Array<3,elemT>& image,
 		      const CartesianCoordinate3D<float>& voxel_size,
 		      const CartesianCoordinate3D<float>& origin,
+		      const CartesianCoordinate3D<float>& vendor_origin = CARTESIANCOORDINATE_NOTSET,
 		      const NumericType output_type = NumericType::FLOAT,
 		      const float scale= 0,
 		      const ByteOrder byte_order=ByteOrder::native);

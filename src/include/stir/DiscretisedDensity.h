@@ -142,11 +142,9 @@ public:
   inline void set_origin(const CartesianCoordinate3D<float> &origin);
 
   //! Return the vendor-defined origin in physical coordinates. Defaults to origin if unset.
-  // NB: could be in LPS, would this make more sense?
   inline const CartesianCoordinate3D<float>& get_vendor_origin() const;
 
   //! Set the vendor-defined origin, in physical coordinates
-  // NB: could be in LPS, would this make more sense?
   inline void set_vendor_origin(const CartesianCoordinate3D<float> &vendor_origin);
 
   //! \name Translation between indices and physical coordinates
