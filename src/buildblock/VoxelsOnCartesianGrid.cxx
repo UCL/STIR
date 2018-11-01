@@ -250,7 +250,7 @@ init_from_proj_data_info(const ProjDataInfo& proj_data_info,
   this->set_origin(origin);
   this->set_vendor_origin
     (origin
-     + (proj_data_info
+     - (proj_data_info
         .get_location_of_vendor_frame_of_reference_in_physical_coordinates()));
 
   this->grow(range);

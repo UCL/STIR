@@ -675,14 +675,21 @@ CartesianCoordinate3D<float>
 ProjDataInfo::get_bed_position() const
 {
   return CartesianCoordinate3D<float>
-    (bed_position_horizontal, bed_position_vertical, 0);
+    (/*z=*/bed_position_horizontal, /*y=*/bed_position_vertical, /*x=*/0);
 }
 
 const CartesianCoordinate3D<float>
 ProjDataInfo::
 get_location_of_vendor_frame_of_reference_in_physical_coordinates() const {
-  std::cerr << "bed possition: " << get_bed_position() << std::endl;
-  return get_vector_centre_of_first_ring_to_centre_of_gantry()
+  std::cerr
+    << "vector_centre_of_first_ring_to_centre_of_gantry: "
+    << get_vector_centre_of_first_ring_to_centre_of_gantry() << std::endl
+    << "bed position: "
+    << get_bed_position() << std::endl;
+  return
+    // vendor FoR is from the centre of the gantry, STIR is from first ring
+    get_vector_centre_of_first_ring_to_centre_of_gantry()
+    // vendor FoR is bed-based
     + get_bed_position();
 }
 
