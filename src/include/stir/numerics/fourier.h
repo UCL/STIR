@@ -67,7 +67,7 @@ inline void inverse_fourier(T& c, const int sign=1)
   // disable warning about conversion
   #pragma warning(disable:4244)
 #endif
-  c /= c.size_all();
+  //c /= c.size_all();
 #ifdef _MSC_VER
   // disable warning about conversion
   #pragma warning(default:4244)
