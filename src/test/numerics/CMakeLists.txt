@@ -30,6 +30,7 @@ create_stir_test (test_erf.cxx "" "")
 create_stir_test (test_matrices.cxx "buildblock;IO;numerics_buildblock;buildblock;numerics_buildblock;display" "")
 create_stir_test (test_overlap_interpolate.cxx "buildblock;IO;buildblock;numerics_buildblock;display" "")
 create_stir_test (test_integrate_discrete_function.cxx "buildblock;IO;numerics_buildblock;display" "")
+create_stir_test (test_Fourier.cxx "buildblock;IO;buildblock;numerics_buildblock;display" "")
 
 
 include(stir_test_exe_targets)

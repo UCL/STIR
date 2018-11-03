@@ -119,7 +119,7 @@ install:
   - make install
   
 script:
-  - make test
+  - ctest --output-on-failure
   - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/bin
   - cd $TRAVIS_BUILD_DIR/recon_test_pack
   - ./run_test_simulate_and_recon.sh
