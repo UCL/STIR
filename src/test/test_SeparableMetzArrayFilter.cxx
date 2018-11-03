@@ -80,27 +80,30 @@ SeparableMetzArrayFilterTests::run_tests()
 #endif
     {
 
-      VectorWithOffset<float> fwhms(3);
-      fwhms[0]=9.F; fwhms[1]=7.4F; fwhms[2]=3.4F;
-      VectorWithOffset<float> metz_powers(3);
+      VectorWithOffset<float> fwhms(1,3);
+      fwhms[1]=9.F; fwhms[2]=7.4F; fwhms[3]=5.4F;
+      VectorWithOffset<float> metz_powers(1,3);
       BasicCoordinate<3,float> sampling_distances = make_coordinate(3.1F, 2.F, 2.5F);
-      VectorWithOffset<int> max_kernel_sizes(3);
-      max_kernel_sizes.fill(-1);
+      VectorWithOffset<int> max_kernel_sizes(1,3);
+      max_kernel_sizes[1]=19; max_kernel_sizes[2]=19; max_kernel_sizes[3]=29;
       
       {
-        metz_powers[0]=0.F; metz_powers[1]=0.F; metz_powers[2]=0.F;
+        metz_powers[1]=0.F; metz_powers[2]=0.F; metz_powers[3]=0.F;
         SeparableMetzArrayFilter<3,float> filter(fwhms, metz_powers, sampling_distances, max_kernel_sizes);
 
         filter(test);
         check_if_equal(1.F, test.sum(), "test if Gaussian kernel is normalised to 1");
-        check(test.find_min() >= -0.001F, "test if Gaussian kernel is almost non-negative");
+        check(test.find_min() >= -0.005F, "test if Gaussian kernel is almost non-negative");
       }
       {
-        metz_powers[0]=1.F; metz_powers[1]=2.F; metz_powers[2]=1.F;
+        metz_powers[1]=1.F; metz_powers[2]=2.F; metz_powers[3]=1.F;
         SeparableMetzArrayFilter<3,float> filter(fwhms, metz_powers, sampling_distances, max_kernel_sizes);
 
         filter(test);
+        double old_tol = get_tolerance();
+        set_tolerance(.01);
         check_if_equal(1.F, test.sum(), "test if Metz kernel is normalised to 1");
+        set_tolerance(old_tol);
       }
     }
   }  
