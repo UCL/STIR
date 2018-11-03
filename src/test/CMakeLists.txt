@@ -47,6 +47,7 @@ Set(${dir_INVOLVED_TEST_EXE_SOURCES}
 set(buildblock_simple_tests
         test_Array
         test_ArrayFilter
+        test_SeparableMetzArrayFilter
         test_NestedIterator
         test_VectorWithOffset
         test_convert_array
