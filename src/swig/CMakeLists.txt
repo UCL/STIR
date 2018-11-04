@@ -37,7 +37,7 @@ if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
       OUTPUT STIR_DOXY2SWIG.i
       DEPENDS doc
       COMMAND ${PYTHON_EXECUTABLE}
-          ${CMAKE_SOURCE_DIR}/external_helpers/doxy2swig/doxy2swig.py
+          ${CMAKE_SOURCE_DIR}/external_helpers/doxy2swig/doxy2swig.py -c
           ${CMAKE_BINARY_DIR}/xml/index.xml
           STIR_DOXY2SWIG.i
     )
