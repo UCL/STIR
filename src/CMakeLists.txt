@@ -1,7 +1,7 @@
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
 # Copyright 2011-07-01 - 2012 Kris Thielemans
 # Copyright 2016 ETH Zurich
-# Copyright 2013, 2014, 2016, 2017 University College London
+# Copyright 2013, 2014, 2016, 2017, 2018 University College London
 
 # This file is part of STIR.
 #
@@ -230,12 +230,8 @@ foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})
 endforeach(STIR_DIR)
 
 
-#### SWIG settings
-ADD_SUBDIRECTORY(swig)
-
-## CMake variables to build doxygen documentation
-## Create html documentation using Doxygen
-## Has to be at the end such that all variables are filled
+## Build doxygen documentation
+# Has to be after previous things such that all variables are filled
 find_package(Doxygen)
 option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
 if(BUILD_DOCUMENTATION)
@@ -255,13 +251,31 @@ if(BUILD_DOCUMENTATION)
 
     configure_file(${doxyfile_in} ${doxyfile} @ONLY)
 
-    add_custom_target(doc
+    # The following lines are modifications of Jannis Fischer's original. The modifications were inspired by
+    # https://samthursfield.wordpress.com/2015/11/21/cmake-dependencies-between-targets-and-files-and-custom-commands/
+
+    # Add a custom command that does everything, but also generates a doxygen.stamp file.
+    # This should prevent doxygen being re-run when not needed.
+    # TODO This should depnd on all .h files really
+    add_custom_command(
+        OUTPUT doxygen.stamp
+        DEPENDS ${doxyfile}
         COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
+        COMMAND cmake -E touch doxygen.stamp
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM)
+      # Now add a custom target that depends on the doxygen.stamp.
+      # We add this target to the dependency list of "ALL" to make sure it always gets run.
+    add_custom_target(
+        doc ALL
+        DEPENDS doxygen.stamp)
 
 #    install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION share/doc/stir)
 endif()
+
+#### SWIG settings
+# Needs to be added after running doxygen as we use its xml output for swig
+ADD_SUBDIRECTORY(swig)
 
 
