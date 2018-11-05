@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013 University College London
+    Copyright (C) 2013, 2018 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 
 %module stir
 %{
+#define SWIG_DOC_DOXYGEN_STYLE
 #define SWIG_FILE_WITH_INIT
 
  /* Include the following headers in the wrapper code */
@@ -77,6 +78,10 @@
 #include "stir/IO/ECAT7OutputFileFormat.h"
 #endif
 
+#include "stir/Shape/Ellipsoid.h"
+#include "stir/Shape/EllipsoidalCylinder.h"
+#include "stir/Shape/Box3D.h"
+
 #include "stir/ChainedDataProcessor.h"
 #include "stir/SeparableCartesianMetzImageFilter.h"
 
@@ -86,6 +91,8 @@
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#include "stir/recon_buildblock/QuadraticPrior.h"
+#include "stir/recon_buildblock/PLSPrior.h"
 
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
@@ -494,9 +501,10 @@
 %newobject *::clone;
 %newobject *::get_empty_copy;
 %newobject *::read_from_file;
-%newobject *::ask_parameters;
 
+%ignore *::ask_parameters;
 %ignore *::create_shared_clone;
+%ignore *::read_from_stream;
 
 #if defined(SWIGPYTHON)
 %rename(__assign__) *::operator=; 
@@ -505,12 +513,19 @@
 // include standard swig support for some bits of the STL (i.e. standard C++ lib)
 %include <stl.i>
 %include <std_list.i>
+ // ignore iterators, as they don't make sense in the target language
 %ignore *::begin;
+%ignore *::rbegin;
 %ignore *::begin_all;
+%ignore *::rbegin_all;
 %ignore *::end;
+%ignore *::rend;
 %ignore *::end_all;
+%ignore *::rend_all;
 %ignore *::begin_all_const;
+%ignore *::rbegin_all_const;
 %ignore *::end_all_const;
+%ignore *::rend_all_const;
 
 // always ignore these as they are unsafe in out-of-range index access (use at() instead)
 %ignore *::operator[];
@@ -1246,7 +1261,7 @@ namespace stir {
 %ignore *::get_proj_data_info_ptr;
 %rename (get_proj_data_info) *::get_proj_data_info_sptr;
 %ignore *::get_exam_info_ptr;
-%rename (get_exam_info) *::get_exam_info_sptr;
+%ignore *::get_exam_info_sptr; // we do have get_exam_info in C++
 
 %rename (set_objective_function) *::set_objective_function_sptr;
 
@@ -1300,6 +1315,7 @@ namespace stir {
  */
 %include "stir/TimeFrameDefinitions.h"
 %include "stir/ExamInfo.h"
+
 %include "stir/IO/ExamData.h"
 %include "stir/Verbosity.h"
 
@@ -1417,6 +1433,25 @@ namespace stir {
 
 }
 
+// shapes
+%shared_ptr(stir::Shape3D)
+%shared_ptr(stir::Shape3DWithOrientation)
+%shared_ptr(stir::RegisteredParsingObject<stir::Ellipsoid, stir::Shape3D, stir::Shape3DWithOrientation>)
+%shared_ptr(stir::Ellipsoid)
+%shared_ptr(stir::RegisteredParsingObject<stir::EllipsoidalCylinder, stir::Shape3D, stir::Shape3DWithOrientation>)
+%shared_ptr(stir::EllipsoidalCylinder)
+%shared_ptr(stir::RegisteredParsingObject<stir::Box3D, stir::Shape3D, stir::Shape3DWithOrientation>)
+%shared_ptr(stir::Box3D)
+
+%include "stir/Shape/Shape3D.h"
+%include "stir/Shape/Shape3DWithOrientation.h"
+%template(RPEllipsoid) stir::RegisteredParsingObject<stir::Ellipsoid, stir::Shape3D, stir::Shape3DWithOrientation>;
+%template(RPEllipsoidalCylinder) stir::RegisteredParsingObject<stir::EllipsoidalCylinder, stir::Shape3D, stir::Shape3DWithOrientation>;
+%template(RPBox3D) stir::RegisteredParsingObject<stir::Box3D, stir::Shape3D, stir::Shape3DWithOrientation>;
+%include "stir/Shape/Ellipsoid.h"
+%include "stir/Shape/EllipsoidalCylinder.h"
+%include "stir/Shape/Box3D.h"
+
 // filters
 #ifdef STIRSWIG_SHARED_PTR
 #define elemT float
@@ -1457,6 +1492,7 @@ namespace stir {
  // reconstruction
 #ifdef STIRSWIG_SHARED_PTR
 #define TargetT stir::DiscretisedDensity<3,float>
+#define elemT float
 
 %shared_ptr(stir::GeneralisedObjectiveFunction<TargetT >);
 %shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT >);
@@ -1465,6 +1501,17 @@ namespace stir {
 	    stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT > >);
 
 %shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >);
+
+%shared_ptr(stir::GeneralisedPrior<TargetT >);
+%shared_ptr(stir::PriorWithParabolicSurrogate<TargetT >);
+%shared_ptr(stir::RegisteredParsingObject< stir::QuadraticPrior<elemT>,
+            stir::GeneralisedPrior<TargetT >,
+            stir::PriorWithParabolicSurrogate<TargetT  > >);
+%shared_ptr(stir::QuadraticPrior<elemT>);
+%shared_ptr(stir::RegisteredParsingObject< stir::PLSPrior<elemT>,
+            stir::GeneralisedPrior<TargetT >,
+            stir::GeneralisedPrior<TargetT > >);
+%shared_ptr(stir::PLSPrior<elemT>);
 
 %shared_ptr(stir::Reconstruction<TargetT >);
 %shared_ptr(stir::IterativeReconstruction<TargetT >);
@@ -1487,13 +1534,18 @@ namespace stir {
 %shared_ptr(stir::FBP3DRPReconstruction);
 
 #undef TargetT
-
+#undef elemT
 #endif
 
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 %include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 %include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
+
+%include "stir/recon_buildblock/GeneralisedPrior.h"
+%include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
+%include "stir/recon_buildblock/QuadraticPrior.h"
+%include "stir/recon_buildblock/PLSPrior.h"
 
 %include "stir/recon_buildblock/Reconstruction.h"
  // there's a get_objective_function, so we'll ignore the sptr version
@@ -1507,7 +1559,7 @@ namespace stir {
 %include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
 #define TargetT stir::DiscretisedDensity<3,float>
-
+#define elemT float
 
 %template (GeneralisedObjectiveFunction3DFloat) stir::GeneralisedObjectiveFunction<TargetT >;
 //%template () stir::GeneralisedObjectiveFunction<TargetT >;
@@ -1532,6 +1584,18 @@ namespace stir {
 
 %template(ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >;
 
+%template (GeneralisedPrior3DFloat) stir::GeneralisedPrior<TargetT >;
+%template (PriorWithParabolicSurrogate3DFloat) stir::PriorWithParabolicSurrogate<TargetT >;
+%template (RPQuadraticPrior3DFloat)
+  stir::RegisteredParsingObject< stir::QuadraticPrior<elemT>,
+      stir::GeneralisedPrior<TargetT >,
+      stir::PriorWithParabolicSurrogate<TargetT  > >;
+%template (QuadraticPrior3DFloat) stir::QuadraticPrior<elemT>;
+%template (RPPLSPrior3DFloat)
+  stir::RegisteredParsingObject< stir::PLSPrior<elemT>,
+      stir::GeneralisedPrior<TargetT >,
+      stir::GeneralisedPrior<TargetT > >;
+%template (PLSPrior3DFloat) stir::PLSPrior<elemT>;
 
 %template (Reconstruction3DFloat) stir::Reconstruction<TargetT >;
 //%template () stir::Reconstruction<TargetT >;
@@ -1552,6 +1616,7 @@ namespace stir {
 %template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<TargetT >;
 %template (OSSPSReconstruction3DFloat) stir::OSSPSReconstruction<TargetT >;
 
+#undef elemT
 #undef TargetT
 
 /// projectors
