@@ -282,10 +282,13 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
   s.erase( std::remove_if( s.begin(), s.end(), isspace ), s.end() );
   /*interfile_parser.*/data_file_name=s;
   
-  if (/*interfile_parser.*/originating_system == "2008")
+  if (/*interfile_parser.*/originating_system == "2008"
+      or originating_system == "SiemensmMR" // we stripped the space
+      or originating_system == "mMR")
     this->scanner_ptr.reset(new Scanner(Scanner::Siemens_mMR));
   else
-    error(boost::format("Unknown originating_system '%s', when parsing file '%s'") % /*interfile_parser.*/originating_system % filename );
+    error(boost::format("Incompatible originating_system '%s' for ECAT8, when parsing file '%s'")
+          % /*interfile_parser.*/originating_system % filename );
 
 	char directory_name[max_filename_length];
 	get_directory_name(directory_name, filename.c_str());
