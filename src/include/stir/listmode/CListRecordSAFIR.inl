@@ -79,8 +79,8 @@ get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
       //transform det_pos_pair into stir coordinates
       DetectionPosition<> pos1 = det_pos_pair.pos1();
       DetectionPosition<> pos2 = det_pos_pair.pos2();
-      det_pos_pair.pos1() = proj_data_info_gen.get_scanner_ptr()->get_detpos_from_id(pos1);
-      det_pos_pair.pos2() = proj_data_info_gen.get_scanner_ptr()->get_detpos_from_id(pos2);
+      det_pos_pair.pos1() = proj_data_info_gen.get_scanner_ptr()->get_detpos_given_id(pos1);
+      det_pos_pair.pos2() = proj_data_info_gen.get_scanner_ptr()->get_detpos_given_id(pos2);
 
       if (proj_data_info_gen.get_bin_for_det_pos_pair(bin, det_pos_pair) == Succeeded::yes)
          bin.set_bin_value(1);

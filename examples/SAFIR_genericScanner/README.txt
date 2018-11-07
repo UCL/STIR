@@ -1,11 +1,17 @@
-The PET scanner prototype of the SAFIR project does not consists of symmetric 
-detector blocks. This led to the need for a new scanner geometry in STIR. It 
-is implemented named generic geometry. In short it uses the coordinates 
-provided by an external text file instead of the ones computed internally by 
-STIR itself (based on the symmetry of the detector).
+The PET scanner prototype of the SAFIR project has a high requirement for 
+precision. Therefore the simplification of projecting all detectors on a cylinder 
+(cylindric geometry) for the reconstruction instead of the real scanner form of 
+a dodecagon leads to a not sufficient spatial resolution. The block geometry 
+projects the detectors on a polygon, but the modules have the restriction of 
+consisting of equally sized blocks. The newest design of SAFIR does not fulfill 
+this condition. Therefore a third geometry (generic geometry) was implemented.
+It computes the position of the detectors used for the reconstruction based on 
+an external text file and hence is not dependent on the design of the detector.
+It requires the availability of the coordinates in an external file and that the
+rings consist of an constant number of detectors.
 
-The files in this directory are to test the new implementation, to understand 
-the changes and as model for later usage. 
+The files in this directory are to test the new 'generic' implementation, to
+understand the changes and as model for later usage. 
 
 The bash script 'test.sh' runs the methods 'lm_to_projdata', 'backproject', 
 'forward_project' and 'OSMAPOSL' to test the functionality with the new scanner 

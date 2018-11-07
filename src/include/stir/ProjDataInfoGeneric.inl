@@ -33,7 +33,7 @@ ProjDataInfoGeneric::get_phi(const Bin& bin)const
 	return lor.phi();
 }
 
-/*! warning In block geometry m is calculated directly from lor while in
+/*! warning In generic geometry m is calculated directly from lor while in
 	cylindrical geometry m is calculated using m_offset and axial_sampling
 */
 float
@@ -56,7 +56,7 @@ ProjDataInfoGeneric::get_t(const Bin& bin) const
 	tan (theta) = dz/sqrt(dx2+dy2)
 	cylindrical geometry:
 		delta_z = delta_ring * ring spacing
-	Block geometry:
+	generic geometry:
 		delta_z is calculated from lor
 */
 float

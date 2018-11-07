@@ -390,8 +390,8 @@ find_cartesian_coordinates_given_scanner_coordinates(CartesianCoordinate3D<float
   det_pos1.axial_coord() = Ring_A;
   det_pos2.axial_coord() = Ring_B;
 
-  coord_1 = get_scanner_ptr()->get_coords_from_detpos(det_pos1);
-  coord_2 = get_scanner_ptr()->get_coords_from_detpos(det_pos2);
+  coord_1 = get_scanner_ptr()->get_coords_given_detpos(det_pos1);
+  coord_2 = get_scanner_ptr()->get_coords_given_detpos(det_pos2);
 }
 
 

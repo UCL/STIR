@@ -267,7 +267,7 @@ Scanner::get_axial_block_spacing() const
 }
 
 std::string
-Scanner::get_crystal_map() const
+Scanner::get_crystal_map_file_name() const
 {
   return crystal_map_file_name;
 }
@@ -453,14 +453,14 @@ Scanner::get_transaxial_singles_unit(int singles_bin_index) const {
 
 // For retrieving the coordinates / detector, ring id from the scanner
 stir::DetectionPosition<>
-Scanner::get_detpos_from_id(const stir::DetectionPosition<> det_pos) const{
+Scanner::get_detpos_given_id(const stir::DetectionPosition<> det_pos) const{
     if (crystal_map_file_name == ""){
         stir::error("Crystal Map not defined!");
     }
     return input_index_to_stir_index.at(det_pos);
 }
 stir::CartesianCoordinate3D<float>
-Scanner::get_coords_from_detpos(const stir::DetectionPosition<> det_pos) const{
+Scanner::get_coords_given_detpos(const stir::DetectionPosition<> det_pos) const{
     if (crystal_map_file_name == ""){
         stir::error("Crystal Map not defined!");
     }

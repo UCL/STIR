@@ -437,13 +437,13 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
                  int num_detector_layers_v,
                  float energy_resolution_v,
                  float reference_energy_v,
-                 const std::string& crystal_map_file_name_v,
                  const string& scanner_orientation_v,
                  const string& scanner_geometry_v,
                  float axial_crystal_spacing_v,
                  float transaxial_crystal_spacing_v,
                  float axial_block_spacing_v,
-                 float transaxial_block_spacing_v)
+                 float transaxial_block_spacing_v,
+                 const std::string& crystal_map_file_name_v)
 {
   set_params(type_v, list_of_names_v, num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -459,13 +459,13 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
              num_detector_layers_v,
              energy_resolution_v,
              reference_energy_v,
-             crystal_map_file_name_v,
              scanner_orientation_v,
              scanner_geometry_v,
              axial_crystal_spacing_v,
              transaxial_crystal_spacing_v,
              axial_block_spacing_v,
-             transaxial_block_spacing_v);
+             transaxial_block_spacing_v,
+             crystal_map_file_name_v);
 }
 
 
@@ -483,13 +483,13 @@ Scanner::Scanner(Type type_v, const string& name,
                  int num_detector_layers_v,
                  float energy_resolution_v,
                  float reference_energy_v,
-                 const std::string& crystal_map_file_name_v,
                  const string& scanner_orientation_v,
                  const string& scanner_geometry_v,
                  float axial_crystal_spacing_v,
                  float transaxial_crystal_spacing_v,
                  float axial_block_spacing_v,
-                 float transaxial_block_spacing_v) 
+                 float transaxial_block_spacing_v,
+                 const std::string& crystal_map_file_name_v)
 {
   set_params(type_v, string_list(name), num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -505,13 +505,13 @@ Scanner::Scanner(Type type_v, const string& name,
              num_detector_layers_v,
              energy_resolution_v,
              reference_energy_v,
-             crystal_map_file_name_v,
              scanner_orientation_v,
              scanner_geometry_v,
              axial_crystal_spacing_v,
              transaxial_crystal_spacing_v,
              axial_block_spacing_v,
-             transaxial_block_spacing_v);
+             transaxial_block_spacing_v,
+             crystal_map_file_name_v);
 }
 
 
@@ -537,13 +537,13 @@ set_params(Type type_v,const list<string>& list_of_names_v,
            int num_detector_layers_v,
            float energy_resolution_v,
            float reference_energy_v,
-           const std::string& crystal_map_file_name_v,
            const string& scanner_orientation_v,
            const string& scanner_geometry_v,
            float axial_crystal_spacing_v,
            float transaxial_crystal_spacing_v,
            float axial_block_spacing_v,
-           float transaxial_block_spacing_v)
+           float transaxial_block_spacing_v,
+           const std::string& crystal_map_file_name_v)
 {
   set_params(type_v, list_of_names_v, num_rings_v,
              max_num_non_arccorrected_bins_v,
@@ -559,13 +559,13 @@ set_params(Type type_v,const list<string>& list_of_names_v,
 	     num_detector_layers_v,
              energy_resolution_v,
              reference_energy_v,
-             crystal_map_file_name_v,
              scanner_orientation_v,
              scanner_geometry_v,
              axial_crystal_spacing_v,
              transaxial_crystal_spacing_v,
              axial_block_spacing_v,
-             transaxial_block_spacing_v);
+             transaxial_block_spacing_v,
+             crystal_map_file_name_v);
 }
 
 
@@ -587,13 +587,13 @@ set_params(Type type_v,const list<string>& list_of_names_v,
            int num_detector_layers_v,
            float energy_resolution_v,
            float reference_energy_v,
-           const std::string& crystal_map_file_name_v,
            const string& scanner_orientation_v,
            const string& scanner_geometry_v,
            float axial_crystal_spacing_v,
            float transaxial_crystal_spacing_v,
            float axial_block_spacing_v,
-           float transaxial_block_spacing_v)
+           float transaxial_block_spacing_v,
+           const std::string& crystal_map_file_name_v)
 {
   type = type_v;
   list_of_names = list_of_names_v;  
@@ -880,14 +880,14 @@ check_consistency() const
       }
     else if (get_scanner_geometry() == "Generic")
     { //! Check if the crystal map is correct and given
-      if (get_crystal_map() == "")
+      if (get_crystal_map_file_name() == "")
       {
         warning("No crystal map is provided. The scanner geometry Generic needs it! Please provide one.");
         return Succeeded::no;
       }
       else
       {
-        std::ifstream crystal_map(get_crystal_map());
+        std::ifstream crystal_map(get_crystal_map_file_name());
         if( !crystal_map)
         {
           warning("No correct crystal map provided. Please check the file name.");
@@ -1012,7 +1012,7 @@ Scanner::parameter_info() const
   //block and generic geometry description
   if (crystal_map_file_name != "")
     s << "Name of crystal map                                         := "
-      << get_crystal_map() << '\n';
+      << get_crystal_map_file_name() << '\n';
   if (get_scanner_orientation() != "" && get_scanner_geometry() != "")
   {
     s << "Scanner orientation (X or Y)                                := "
@@ -1175,13 +1175,13 @@ Scanner* Scanner::ask_parameters()
                       num_detector_layers,
                       EnergyResolution,
                       ReferenceEnergy,
-                      crystal_map_file_name,
                       ScannerOrientation,
                       ScannerGeometry,
                       TransaxialCrystalSpacing,
                       AxialCrystalSpacing,
                       AxialBlockSpacing,
-                      TransaxialBlockSpacing);
+                      TransaxialBlockSpacing,
+                      crystal_map_file_name);
   
       if (scanner_ptr->check_consistency()==Succeeded::yes ||
 	  !ask("Ask questions again?",true))

@@ -29,7 +29,7 @@ template <typename coordT> class CartesianCoordinate3D;
 /*!
   \ingroup projdata
   \brief projection data info for data corresponding to a
-  'Blocks-on-cylindrical' sampling.
+  'Generic' sampling.
 */
 
 class ProjDataInfoGeneric: public ProjDataInfo
@@ -254,7 +254,7 @@ private:
 
   //! This member stores the offsets used in get_m()
   /*
-  //! warning This is not used in block geometry. m is found directly from lors.
+  //! warning This is not used in generic geometry. m is found directly from lors.
   mutable VectorWithOffset<float> m_offset;
   */
 

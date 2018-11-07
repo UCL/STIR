@@ -1341,13 +1341,13 @@ bool InterfilePDFSHeader::post_processing()
                 num_detector_layers,
                 energy_resolution,
                 reference_energy,
-                crystal_map,
                 scanner_orientation,
                 scanner_geometry,
                 static_cast<float>(axial_distance_between_crystals_in_cm*10.),
                 static_cast<float>(transaxial_distance_between_crystals_in_cm*10.),
                 static_cast<float>(axial_distance_between_blocks_in_cm*10.),
-                static_cast<float>(transaxial_distance_between_blocks_in_cm*10.)
+                static_cast<float>(transaxial_distance_between_blocks_in_cm*10.),
+                crystal_map
                 ));
 
   bool is_consistent =
