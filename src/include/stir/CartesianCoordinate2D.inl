@@ -92,5 +92,10 @@ CartesianCoordinate2D<coordT>::x() const
   return this->operator[](2);
 }
 
+template <class coordT>
+std::ostream &operator<<(std::ostream &os, const CartesianCoordinate2D<coordT> &coord) {
+  return os << "(x=" << coord.x()
+            << ",y=" << coord.y() << ")";
+}
 
 END_NAMESPACE_STIR

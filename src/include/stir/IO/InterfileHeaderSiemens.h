@@ -97,6 +97,7 @@ class InterfileImageHeader : public InterfileHeaderSiemens
 public:
   InterfileImageHeader();
   std::vector<double>	first_pixel_offsets;
+  std::vector<double> first_pixel_vendor_offsets;
 
 protected:
   virtual void read_matrix_info();

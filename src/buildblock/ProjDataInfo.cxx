@@ -652,5 +652,46 @@ operator>=(const ProjDataInfo& proj_data_info) const
   return (proj_data_info == *smaller_proj_data_info_sptr);
 }
 
+CartesianCoordinate3D<float>
+ProjDataInfo::get_point_on_lor_in_gantry_coordinates
+(const float s_in_mm, const float m_in_mm, const float a_in_mm,
+ const float cphi, const float sphi, const float tantheta) const
+{
+  return CartesianCoordinate3D<float>(m_in_mm      - a_in_mm*tantheta, // z
+                                      s_in_mm*sphi - a_in_mm*cphi,     // y
+                                      s_in_mm*cphi + a_in_mm*sphi);    // x
+}
+
+CartesianCoordinate3D<float>
+ProjDataInfo::
+get_vector_centre_of_first_ring_to_centre_of_gantry() const
+{
+  float middle_of_first_ring_to_middle_of_last
+    = (scanner_ptr->get_num_rings() - 1) * scanner_ptr->get_ring_spacing();
+  return CartesianCoordinate3D<float>(middle_of_first_ring_to_middle_of_last / 2.F, 0, 0);
+}
+
+CartesianCoordinate3D<float>
+ProjDataInfo::get_bed_position() const
+{
+  return CartesianCoordinate3D<float>
+    (/*z=*/bed_position_horizontal, /*y=*/bed_position_vertical, /*x=*/0);
+}
+
+const CartesianCoordinate3D<float>
+ProjDataInfo::
+get_location_of_vendor_frame_of_reference_in_physical_coordinates() const {
+  std::cerr
+    << "vector_centre_of_first_ring_to_centre_of_gantry: "
+    << get_vector_centre_of_first_ring_to_centre_of_gantry() << std::endl
+    << "bed position: "
+    << get_bed_position() << std::endl;
+  return
+    // vendor FoR is from the centre of the gantry, STIR is from first ring
+    get_vector_centre_of_first_ring_to_centre_of_gantry()
+    // vendor FoR is bed-based
+    + get_bed_position();
+}
+
 END_NAMESPACE_STIR
 

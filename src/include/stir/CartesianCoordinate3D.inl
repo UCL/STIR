@@ -131,5 +131,11 @@ CartesianCoordinate3D<coordT>::x() const
   return this->operator[](3);
 }
 
+template <class coordT>
+std::ostream &operator<<(std::ostream &os, const CartesianCoordinate3D<coordT> &coord) {
+  return os << "(x=" << coord.x()
+            << ",y=" << coord.y()
+            << ",z=" << coord.z() << ")";
+}
 
 END_NAMESPACE_STIR

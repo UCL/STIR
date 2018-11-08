@@ -131,12 +131,25 @@ create_image_and_header_from(InterfileImageHeader& hdr,
 	- voxel_size * BasicCoordinate<3,float>(min_indices);
     }
 
-  return
+  VoxelsOnCartesianGrid<float>* image =
     new VoxelsOnCartesianGrid<float>
     (hdr.get_exam_info_sptr(),
      IndexRange<3>(min_indices, max_indices),
      origin,
      voxel_size);
+
+  if (hdr.first_pixel_vendor_offsets[2] != InterfileHeader::double_value_not_set)
+    {
+      // make sure that origin is such that 
+      // first_pixel_offsets =  min_indices*voxel_size + origin
+      image->set_vendor_origin
+        (make_coordinate(float(hdr.first_pixel_vendor_offsets[2]),
+                         float(hdr.first_pixel_vendor_offsets[1]),
+                         float(hdr.first_pixel_vendor_offsets[0]))
+         - voxel_size * BasicCoordinate<3,float>(min_indices));
+    }
+
+  return image;
 }
 
 VoxelsOnCartesianGrid<float> *
@@ -531,7 +544,8 @@ write_basic_interfile_image_header(const string& header_file_name,
 				   const ByteOrder byte_order,
 				   const VectorWithOffset<float>& scaling_factors,
 				   const VectorWithOffset<unsigned long>& file_offsets,
-                   const std::vector<std::string>& data_type_descriptions)
+				   const CartesianCoordinate3D<float>& vendor_origin,
+				   const std::vector<std::string>& data_type_descriptions)
 {
   CartesianCoordinate3D<int> min_indices;
   CartesianCoordinate3D<int> max_indices;
@@ -614,6 +628,18 @@ write_basic_interfile_image_header(const string& header_file_name,
 		    << first_pixel_offsets.y() << '\n';
       output_header << "first pixel offset (mm) [3] := " 
 		    << first_pixel_offsets.z() << '\n';
+    }
+
+  if (vendor_origin.z() != InterfileHeader::double_value_not_set)
+    {
+      const CartesianCoordinate3D<float> first_pixel_vendor_offsets =
+	voxel_size * BasicCoordinate<3,float>(min_indices) + vendor_origin;
+      output_header << "first pixel vendor offset (mm) [1] := " 
+		    << first_pixel_vendor_offsets.x() << '\n';
+      output_header << "first pixel vendor offset (mm) [2] := " 
+		    << first_pixel_vendor_offsets.y() << '\n';
+      output_header << "first pixel vendor offset (mm) [3] := " 
+		    << first_pixel_vendor_offsets.z() << '\n';
     }
   
   for (int i=1; i<=scaling_factors.get_length();i++)
@@ -742,11 +768,14 @@ write_basic_interfile(const string& filename,
 {
   CartesianCoordinate3D<float> origin;
   origin.fill(static_cast<float>(InterfileHeader::double_value_not_set));
+  CartesianCoordinate3D<float> vendor_origin;
+  vendor_origin.fill(static_cast<float>(InterfileHeader::double_value_not_set));
   return
     write_basic_interfile(filename, 
 			  image, 
 			  CartesianCoordinate3D<float>(1,1,1), 
 			  origin,
+			  vendor_origin,
 			  output_type,
 			  scale,
 			  byte_order);
@@ -761,6 +790,7 @@ Succeeded write_basic_interfile(const string&  filename,
                 const Array<3,NUMBER>& image,
                 const CartesianCoordinate3D<float>& voxel_size,
                 const CartesianCoordinate3D<float>& origin,
+                const CartesianCoordinate3D<float>& vendor_origin,
                 const NumericType output_type,
                 const float scale,
                 const ByteOrder byte_order)
@@ -789,7 +819,8 @@ Succeeded write_basic_interfile(const string&  filename,
                          output_type,
                          byte_order,
                          scaling_factors,
-                         file_offsets);
+                         file_offsets,
+                         vendor_origin);
   #if 0
     delete[] header_name;
     delete[] data_name;
@@ -802,6 +833,7 @@ Succeeded write_basic_interfile(const string&  filename,
 				const Array<3,NUMBER>& image,
 				const CartesianCoordinate3D<float>& voxel_size,
 				const CartesianCoordinate3D<float>& origin,
+				const CartesianCoordinate3D<float>& vendor_origin,
 				const NumericType output_type,
 				const float scale,
 				const ByteOrder byte_order)
@@ -812,6 +844,7 @@ Succeeded write_basic_interfile(const string&  filename,
                                image,
                                voxel_size,
                                origin,
+                               vendor_origin,
                                output_type,
                                scale,
                                byte_order);
@@ -830,6 +863,7 @@ write_basic_interfile(const string&  filename,
 			  image, // use automatic reference to base class
 			  image.get_grid_spacing(), 
 			  image.get_origin(),
+			  image.get_vendor_origin(),
 			  output_type,
 			  scale,
 			  byte_order);
@@ -890,6 +924,7 @@ write_basic_interfile(const string& filename,
                          byte_order,
                          scaling_factors,
                          file_offsets,
+                         image.get_vendor_origin(),
                          data_type_descriptions);
   #if 0
     delete[] header_name;
@@ -934,7 +969,8 @@ write_basic_interfile(const string& filename,
                          output_type,
                          byte_order,
                          scaling_factors,
-                         file_offsets);
+                         file_offsets,
+                         image.get_density(1).get_vendor_origin());
   #if 0
     delete[] header_name;
     delete[] data_name;
@@ -1456,6 +1492,7 @@ write_basic_interfile<>(const string&  filename,
 			const Array<3,signed short>&,
 			const CartesianCoordinate3D<float>& voxel_size,
 			const CartesianCoordinate3D<float>& origin,
+			const CartesianCoordinate3D<float>& vendor_origin,
 			const NumericType output_type,
 			const float scale,
 			const ByteOrder byte_order);
@@ -1465,6 +1502,7 @@ write_basic_interfile<>(const string&  filename,
 			const Array<3,unsigned short>&,
 			const CartesianCoordinate3D<float>& voxel_size,
 			const CartesianCoordinate3D<float>& origin,
+			const CartesianCoordinate3D<float>& vendor_origin,
 			const NumericType output_type,
 			const float scale,
 			const ByteOrder byte_order);
@@ -1475,6 +1513,7 @@ write_basic_interfile<>(const string&  filename,
 			const Array<3,float>&,
 			const CartesianCoordinate3D<float>& voxel_size,
 			const CartesianCoordinate3D<float>& origin,
+			const CartesianCoordinate3D<float>& vendor_origin,
 			const NumericType output_type,
 			const float scale,
 			const ByteOrder byte_order);

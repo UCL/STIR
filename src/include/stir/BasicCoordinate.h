@@ -310,6 +310,11 @@ inline
 BasicCoordinate<num_dimensions,float> 
 convert_int_to_float(const BasicCoordinate<num_dimensions,int>& cint);
 
+//! BasicCoordinate can be converted to a string stream "[x1,x2,x3]"
+/*! \ingroup Coordinate */
+template <int num_dimensions, class coordT>
+std::ostream &operator<<(std::ostream &os, const BasicCoordinate<num_dimensions, coordT>& c);
+
 
 END_NAMESPACE_STIR
 

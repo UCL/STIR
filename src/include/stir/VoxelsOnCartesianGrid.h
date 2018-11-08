@@ -190,6 +190,12 @@ void grow_z_range(const int min_z, const int max_z);
 
   //@}
 
+private:
+  void
+  init_from_proj_data_info(const ProjDataInfo& proj_data_info,
+                           const float zoom,
+                           const CartesianCoordinate3D<float>& offset,
+                           const CartesianCoordinate3D<int>& sizes);
 };
 
 

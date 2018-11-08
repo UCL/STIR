@@ -384,12 +384,25 @@ static inline int sign(const T& t)
   return t<0 ? -1 : 1;
 }
 
+CartesianCoordinate3D<float>
+get_point_on_lor_in_index_coordinates
+(const float s_in_mm, const float m_in_mm, const float a_in_mm,
+ const float cphi, const float sphi, const float tantheta,
+ const DiscretisedDensity<3, float>& density_info,
+ const ProjDataInfo& proj_data_info)
+{
+  return density_info.get_index_coordinates_for_relative_coordinates
+    (proj_data_info.get_relative_coordinates_for_gantry_coordinates
+     (proj_data_info.get_point_on_lor_in_gantry_coordinates
+      (s_in_mm, m_in_mm, a_in_mm, cphi, sphi, tantheta)));
+}
+
 // just do 1 LOR, returns true if lor is not empty
 static void
 ray_trace_one_lor(ProjMatrixElemsForOneBin& lor, 
-                  const float s_in_mm, const float t_in_mm, 
+                  const float s_in_mm, const float m_in_mm, 
                   const float cphi, const float sphi, 
-                  const float costheta, const float tantheta, 
+                  const float tantheta, 
                   const float offset_in_z,
                   const float fovrad_in_mm,
                   const CartesianCoordinate3D<float>& voxel_size,
@@ -458,12 +471,14 @@ ray_trace_one_lor(ProjMatrixElemsForOneBin& lor,
       
     } //!restrict_to_cylindrical_FOV
     
+
+    // start and stop point in voxel coordinates
     start_point.x() = (s_in_mm*cphi + max_a*sphi)/voxel_size.x();
-    start_point.y() = (s_in_mm*sphi - max_a*cphi)/voxel_size.y(); 
-    start_point.z() = (t_in_mm/costheta+offset_in_z - max_a*tantheta)/voxel_size.z();
+    start_point.y() = (s_in_mm*sphi - max_a*cphi)/voxel_size.y();
+    start_point.z() = (m_in_mm+offset_in_z - max_a*tantheta)/voxel_size.z();
     stop_point.x() = (s_in_mm*cphi + min_a*sphi)/voxel_size.x();
-    stop_point.y() = (s_in_mm*sphi - min_a*cphi)/voxel_size.y(); 
-    stop_point.z() = (t_in_mm/costheta+offset_in_z - min_a*tantheta)/voxel_size.z();
+    stop_point.y() = (s_in_mm*sphi - min_a*cphi)/voxel_size.y();
+    stop_point.z() = (m_in_mm+offset_in_z - min_a*tantheta)/voxel_size.z();
 
 #if 0
     // KT 18/05/2005 this is no longer necessary
@@ -543,25 +558,10 @@ calculate_proj_matrix_elems_for_one_bin(
 
   assert(lor.size() == 0);
    
-  float phi;
+  float phi = proj_data_info_ptr->get_phi(bin);
   float s_in_mm = proj_data_info_ptr->get_s(bin);
-  /* Implementation note.
-     KT initialised s_in_mm above instead of in the if because this meant
-     that gcc 3.0.1 generated identical results to the previous version of this file.
-     Otherwise, some pixels at the boundary appear to be treated differently
-     (probably due to different floating point rounding errors), at least
-     on Linux on x86.
-     A bit of a mistery that.
 
-     TODO this is maybe solved now by having more decent handling of 
-     start and end voxels.
-  */
-  if (!use_actual_detector_boundaries)
-  {
-    phi = proj_data_info_ptr->get_phi(bin);
-    //s_in_mm = proj_data_info_ptr->get_s(bin);
-  }
-  else
+  if (use_actual_detector_boundaries)
   {
     // can be static_cast later on
     const ProjDataInfoCylindricalNoArcCorr& proj_data_info_noarccor =
@@ -578,16 +578,16 @@ calculate_proj_matrix_elems_for_one_bin(
                                                  det_num2,
                                                  bin.view_num(),
                                                  bin.tangential_pos_num());
+
+    const float old_phi = phi;
     phi = static_cast<float>((det_num1+det_num2)*_PI/num_detectors-_PI/2);
-    const float old_phi=proj_data_info_ptr->get_phi(bin);
     if (fabs(phi-old_phi)>2*_PI/num_detectors)
       warning("view %d old_phi %g new_phi %g\n",bin.view_num(), old_phi, phi);
 
+    const float old_s_in_mm = s_in_mm;
     s_in_mm = static_cast<float>(ring_radius*sin((det_num1-det_num2)*_PI/num_detectors+_PI/2));
-    const float old_s_in_mm=proj_data_info_ptr->get_s(bin);
     if (fabs(s_in_mm-old_s_in_mm)>proj_data_info_ptr->get_sampling_in_s(bin)*.0001)
       warning("tangential_pos_num %d old_s_in_mm %g new_s_in_mm %g\n",bin.tangential_pos_num(), old_s_in_mm, s_in_mm);
-
   }
   
   const float cphi = cos(phi);
@@ -595,7 +595,7 @@ calculate_proj_matrix_elems_for_one_bin(
   
   const float tantheta = proj_data_info_ptr->get_tantheta(bin);
   const float costheta = 1/sqrt(1+square(tantheta));
-  const float t_in_mm = proj_data_info_ptr->get_t(bin);
+  const float m_in_mm = proj_data_info_ptr->get_m(bin);
    
   const float sampling_distance_of_adjacent_LORs_z =
     proj_data_info_ptr->get_sampling_in_t(bin)/costheta;
@@ -618,11 +618,9 @@ calculate_proj_matrix_elems_for_one_bin(
 
 
   // find offset in z, taking into account if there are 1 or more LORs
-  // KT 20/06/2001 take origin.z() into account
-  // KT 15/05/2002 move +(max_index.z()+min_index.z())/2.F offset here instead of in formulas for Z1f,Z2f
   /* Here is how we find the offset of the first ray:
-     for only 1 ray, it is simply found by refering to the middle of the image
-     minus the origin.z().
+     for only 1 ray, it is 0.
+
      For multiple rays, the following reasoning is followed.
 
      First we look at oblique rays.
@@ -656,10 +654,10 @@ calculate_proj_matrix_elems_for_one_bin(
     {
       // make sure we don't ray-trace exactly between 2 planes
       // z-coordinate (in voxel units) will be
-      //  (t_in_mm+offset_in_z)/voxel_size.z();
+      //  (m_in_mm+offset_in_z)/voxel_size.z();
       // if so, we ray trace first to the voxels at smaller z, but will add the 
       // other plane later (in add_adjacent_z)
-      if (fabs(modulo((t_in_mm+offset_in_z)/voxel_size.z(),1.F)-.5)<.001)
+      if (fabs(modulo((m_in_mm+offset_in_z)/voxel_size.z(),1.F)-.5)<.001)
         offset_in_z -= .1F*voxel_size.z();
     }
 
@@ -678,12 +676,12 @@ calculate_proj_matrix_elems_for_one_bin(
 
   if (num_tangential_LORs == 1)
   {
-    ray_trace_one_lor(lor, s_in_mm, t_in_mm, 
-                        cphi, sphi, costheta, tantheta, 
-                        offset_in_z, fovrad_in_mm, 
-                        voxel_size,
-                        restrict_to_cylindrical_FOV,
-                        num_lors_per_axial_pos);    
+    ray_trace_one_lor(lor, s_in_mm, m_in_mm,
+                      cphi, sphi, tantheta,
+                      offset_in_z, fovrad_in_mm,
+                      voxel_size,
+                      restrict_to_cylindrical_FOV,
+                      num_lors_per_axial_pos);
   }
   else
   {
@@ -699,12 +697,12 @@ calculate_proj_matrix_elems_for_one_bin(
     for (int s_LOR_num=1; s_LOR_num<=num_tangential_LORs; ++s_LOR_num, current_s_in_mm+=s_inc)
     {
       ray_traced_lor.erase();
-      ray_trace_one_lor(ray_traced_lor, current_s_in_mm, t_in_mm, 
-                          cphi, sphi, costheta, tantheta, 
-                          offset_in_z, fovrad_in_mm, 
-                          voxel_size,
-                          restrict_to_cylindrical_FOV,
-                          num_lors_per_axial_pos*num_tangential_LORs);
+      ray_trace_one_lor(ray_traced_lor, current_s_in_mm, m_in_mm,
+                        cphi, sphi, tantheta,
+                        offset_in_z, fovrad_in_mm,
+                        voxel_size,
+                        restrict_to_cylindrical_FOV,
+                        num_lors_per_axial_pos*num_tangential_LORs);
       //std::cerr << "ray traced size " << ray_traced_lor.size() << std::endl;
       lor.merge(ray_traced_lor);
     }
@@ -720,10 +718,10 @@ calculate_proj_matrix_elems_for_one_bin(
           origin.z()/voxel_size.z() -
           (max_index.z() + min_index.z())/2.F;
         const float left_edge_of_TOR =
-          (t_in_mm - sampling_distance_of_adjacent_LORs_z/2
+          (m_in_mm - sampling_distance_of_adjacent_LORs_z/2
            )/voxel_size.z();
         const float right_edge_of_TOR =
-          (t_in_mm + sampling_distance_of_adjacent_LORs_z/2
+          (m_in_mm + sampling_distance_of_adjacent_LORs_z/2
            )/voxel_size.z();
 
         add_adjacent_z(lor, z_of_first_voxel - left_edge_of_TOR, right_edge_of_TOR -left_edge_of_TOR);
