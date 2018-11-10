@@ -99,12 +99,16 @@ public:
     void replace_extension(const std::string& e);
     //! Get path from string
     std::string get_path() const;
+    //! Get the path from string. If no path in string returns empty string.
+    std::string get_path_only() const;
     //! Get only the filename
 	//! An inherent functionality from utilities is that on Windows all separators will be checked.
     std::string get_filename() const;
     //! Get the extension of the filename.
     // This function will return the the bit that is after the last dot.
     std::string get_extension() const ;
+    //! Return the current full string
+    std::string get_as_string() const;
 
     inline bool operator==(const FilePath& other);
 

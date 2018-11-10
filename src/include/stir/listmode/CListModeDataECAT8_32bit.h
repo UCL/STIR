@@ -31,8 +31,6 @@
 #include "stir/shared_ptr.h"
 #include "stir/IO/InterfileHeaderSiemens.h"
 #include <iostream>
-#include <string>
-#include <utility>
 #include <vector>
 
 START_NAMESPACE_STIR
@@ -80,8 +78,10 @@ private:
   typedef CListRecordECAT8_32bit CListRecordT;
   std::string listmode_filename;
   shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;
-  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+
   InterfileListmodeHeaderSiemens interfile_parser;
+
+  // std::vector<int> segment_table;
 
   Succeeded open_lm_file();
 

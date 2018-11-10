@@ -1,6 +1,7 @@
 /*
  Copyright (C) 2006- 2009, Hammersmith Imanet Ltd
  Copyright (C) 2011 - 2013, King's College London
+ Copyright (C) 2018, University College London
  This file is part of STIR.
  
  This file is free software; you can redistribute it and/or modify
@@ -201,7 +202,8 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 construct_target_ptr() const
 {  
   return 
-    new VoxelsOnCartesianGrid<float> (*this->_gated_proj_data_sptr->get_proj_data_info_ptr(),
+    new VoxelsOnCartesianGrid<float> (this->get_input_data().get_exam_info_sptr(),
+                                      *this->_gated_proj_data_sptr->get_proj_data_info_ptr(),
                                       static_cast<float>(this->_zoom), 
                                       CartesianCoordinate3D<float>(static_cast<float>(this->_Zoffset), 
                                                                    static_cast<float>(this->_Yoffset), 
@@ -336,6 +338,14 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 set_input_data(const shared_ptr<ExamData> & arg)
 {
     this->_gated_proj_data_sptr = dynamic_pointer_cast<GatedProjData>(arg);
+}
+
+template<typename TargetT>
+const GatedProjData&
+PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
+get_input_data() const
+{
+  return *this->_gated_proj_data_sptr;
 }
 
 template<typename TargetT>

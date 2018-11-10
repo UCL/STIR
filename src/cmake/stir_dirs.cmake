@@ -55,6 +55,7 @@ SET( STIR_LIBRARIES analytic_FBP3DRP analytic_FBP2D       iterative_OSMAPOSL
       Shape_buildblock eval_buildblock 
       # repeat for linking
       numerics_buildblock modelling_buildblock listmode_buildblock
+      IO modelling_buildblock IO buildblock
 )
 
 #copy to PARENT_SCOPE

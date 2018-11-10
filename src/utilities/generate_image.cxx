@@ -1,5 +1,6 @@
 /*
   Copyright (C) 2003-2011, Hammersmith Imanet Ltd
+  Copyright (C) 2018, University College London
   This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -35,6 +36,10 @@
     ; range of the output type
     scale_to_write_data:= 1
   End Interfile Output File Format Parameters:=
+
+  ; optional keywords to set image timing
+  image duration (sec) := 20 ; defaults to -1 (i.e. unknown)
+  image relative start time (sec) := 0 ; defaults to zero
 
 
   X output image size (in pixels):= 13
@@ -125,6 +130,9 @@ private:
   float output_voxel_size_z;
 
   CartesianCoordinate3D<int> num_samples;
+
+  double image_duration;
+  double rel_start_time;
 };
 
 
@@ -152,6 +160,8 @@ set_defaults()
   num_samples = CartesianCoordinate3D<int>(5,5,5);
   shape_ptrs.resize(0);
   values.resize(0);
+  image_duration = -1.0;
+  rel_start_time = 0;
   output_filename.resize(0);
   output_file_format_sptr = 
     OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
@@ -174,7 +184,10 @@ initialise_keymap()
   add_key("Z number of samples to take per voxel", &num_samples.z());
   add_key("Y number of samples to take per voxel", &num_samples.y());
   add_key("X number of samples to take per voxel", &num_samples.x());
-  
+
+  add_key("image duration (sec)", &image_duration);
+  add_key("image relative start time (sec)", &rel_start_time);
+
   add_parsing_key("shape type", &current_shape_ptr);
   add_key("value", &current_value);
   add_key("next shape", KeyArgument::NONE,
@@ -297,8 +310,22 @@ compute()
     dynamic_cast<VoxelsOnCartesianGrid<float>& >(*density_ptr);
 
 #else
+
+  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+  if (image_duration>0.0)
+    {
+      std::vector<double> start_times(1, rel_start_time);
+      std::vector<double> durations(1, image_duration);
+      TimeFrameDefinitions frame_defs(start_times, durations);
+      exam_info_sptr->set_time_frame_definitions(frame_defs);
+    }
+  else
+    {
+      warning("image duration not set, so time frame definitions will not be initialised");
+    }
   VoxelsOnCartesianGrid<float> 
-    current_image(IndexRange3D(0,output_image_size_z-1,
+    current_image(exam_info_sptr,
+                  IndexRange3D(0,output_image_size_z-1,
 			       -(output_image_size_y/2),
 			       -(output_image_size_y/2)+output_image_size_y-1,
 			       -(output_image_size_x/2),

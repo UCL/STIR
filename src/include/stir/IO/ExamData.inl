@@ -8,6 +8,12 @@ ExamData::get_exam_info_ptr() const
   return exam_info_sptr.get();
 }
 
+const ExamInfo&
+ExamData::get_exam_info() const
+{
+  return *exam_info_sptr.get();
+}
+
 shared_ptr<ExamInfo>
 ExamData::get_exam_info_sptr() const
 {

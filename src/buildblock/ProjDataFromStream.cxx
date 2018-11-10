@@ -211,6 +211,46 @@ ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
   return viewgram;    
 }
 
+float
+ProjDataFromStream::get_bin_value(const Bin& this_bin) const
+{
+    if (sino_stream == 0)
+    {
+        error("ProjDataFromStream::get_viewgram: stream ptr is 0\n");
+    }
+    if (! *sino_stream)
+    {
+        error("ProjDataFromStream::get_viewgram: error in stream state before reading\n");
+    }
+
+    vector<streamoff> offsets = get_offsets_bin(this_bin);
+
+    const streamoff total_offset = offsets[0];
+
+    sino_stream->seekg(0 , ios::beg); // reset file
+    sino_stream->seekg(total_offset, ios::cur); // start of view within segment
+
+    if (! *sino_stream)
+    {
+        error("ProjDataFromStream::get_bin_value: error after seekg.");
+    }
+
+   Array< 1,  float>  value(1);
+    float scale = float(1);
+
+    // Now the storage order is not more important. Just read.
+    if (read_data(*sino_stream, value, on_disk_data_type, scale, on_disk_byte_order)
+            == Succeeded::no)
+        error("ProjDataFromStream: error reading data\n");
+    if(scale != 1.f)
+        error("ProjDataFromStream: error reading data: scale factor returned by read_data should be 1\n");
+
+    value *= scale_factor;
+
+    return value[0];
+}
+
+
 vector<streamoff>
 ProjDataFromStream::get_offsets(const int view_num, const int segment_num) const
 
@@ -399,6 +439,90 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
 }
 
 
+std::vector<std::streamoff>
+ProjDataFromStream::get_offsets_bin(const Bin this_bin) const
+{
+
+    if (!(this_bin.segment_num() >= get_min_segment_num() &&
+              this_bin.segment_num() <=  get_max_segment_num()))
+            error("ProjDataFromStream::get_offsets: segment_num out of range : %d", this_bin.segment_num());
+
+    if (!(this_bin.axial_pos_num() >= get_min_axial_pos_num(this_bin.segment_num()) &&
+              this_bin.axial_pos_num() <=  get_max_axial_pos_num(this_bin.segment_num())))
+            error("ProjDataFromStream::get_offsets: axial_pos_num out of range : %d", this_bin.axial_pos_num());
+
+
+    const int index =
+            static_cast<int>(FIND(segment_sequence.begin(), segment_sequence.end(), this_bin.segment_num()) -
+                             segment_sequence.begin());
+
+    streamoff num_axial_pos_offset = 0;
+
+    for (int i=0; i<index; i++)
+        num_axial_pos_offset +=
+                get_num_axial_poss(segment_sequence[i]);
+
+    const streamoff segment_offset =
+            offset +
+            static_cast<streamoff>(num_axial_pos_offset*
+                                   get_num_tangential_poss() *
+                                   get_num_views() *
+                                   on_disk_data_type.size_in_bytes());
+
+    // Now we are just in front of  the correct segment
+    if (get_storage_order() == Segment_AxialPos_View_TangPos)
+    {
+        // skip axial positions
+        const streamoff ax_pos_offset =
+                (this_bin.axial_pos_num() - get_min_axial_pos_num(this_bin.segment_num()))*
+                get_num_views() *
+                get_num_tangential_poss()*
+                on_disk_data_type.size_in_bytes();
+
+        // sinogram location
+
+        //find view
+        const streamoff view_offset =
+                (this_bin.view_num() - get_min_view_num())
+                * get_num_tangential_poss()
+                * on_disk_data_type.size_in_bytes();
+
+        // find tang pos
+        const streamoff tang_offset =
+                (this_bin.tangential_pos_num() - get_min_tangential_pos_num()) * on_disk_data_type.size_in_bytes();
+
+        vector<streamoff> temp(1);
+        temp[0] = segment_offset + ax_pos_offset + view_offset +tang_offset;
+
+        return temp;
+    }
+    else  //if (get_storage_order() == Segment_View_AxialPos_TangPos)
+    {
+
+        // Skip views
+        const streamoff view_offset =
+                (this_bin.view_num() - get_min_view_num())*
+                get_num_axial_poss(this_bin.segment_num()) *
+                get_num_tangential_poss()*
+                on_disk_data_type.size_in_bytes();
+
+
+        // find axial pos
+        const streamoff ax_pos_offset =
+                (this_bin.axial_pos_num() - get_min_axial_pos_num(this_bin.segment_num())) *
+                get_num_tangential_poss()*
+                on_disk_data_type.size_in_bytes();
+
+        // find tang pos
+        const streamoff tang_offset =
+                (this_bin.tangential_pos_num() - get_min_tangential_pos_num()) * on_disk_data_type.size_in_bytes();
+
+        vector<streamoff> temp(1);
+        temp[0] = segment_offset + ax_pos_offset +view_offset + tang_offset;
+
+        return temp;
+    }
+}
 
 // get offsets for the sino data
 vector<streamoff>

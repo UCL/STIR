@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
 
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -153,6 +154,29 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
                        (range,origin,grid_spacing)
 {}
 
+template<class elemT>
+VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
+                      (const shared_ptr < ExamInfo > & exam_info_sptr,
+                       const Array<3,elemT>& v,
+                       const CartesianCoordinate3D<float>& origin,
+                       const BasicCoordinate<3,float>& grid_spacing)
+                       :DiscretisedDensityOnCartesianGrid<3,elemT>
+                       (exam_info_sptr,v.get_index_range(),origin,grid_spacing)
+{
+  Array<3,elemT>::operator=(v);
+}
+
+
+template<class elemT>
+VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
+                      (const shared_ptr < ExamInfo > & exam_info_sptr,
+                       const IndexRange<3>& range, 
+                       const CartesianCoordinate3D<float>& origin,
+                       const BasicCoordinate<3,float>& grid_spacing)
+                       :DiscretisedDensityOnCartesianGrid<3,elemT>
+                        (exam_info_sptr,range,origin,grid_spacing)
+{}
+
 // KT 10/12/2001 use new format of args for the constructor, and remove the make_xy_size_odd constructor
 template<class elemT>                                                 
 VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info,
@@ -161,6 +185,61 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_dat
                                                     const CartesianCoordinate3D<int>& sizes)
                                                     
 {
+  this->set_origin(origin);
+
+  int z_size = sizes.z();
+  // initialise to 0 to prevent compiler warnings
+  //int z_size = 0;
+  float z_sampling = 0;
+  float s_sampling = 0;
+  find_sampling_and_z_size(z_sampling, s_sampling, z_size, &proj_data_info);
+  
+  this->set_grid_spacing(
+      CartesianCoordinate3D<float>(z_sampling, s_sampling/zoom, s_sampling/zoom)
+      );
+  int x_size_used = sizes.x();
+  int y_size_used = sizes.y();
+
+  if (sizes.x()==-1 || sizes.y()==-1)
+    {
+      // default it to cover full FOV by taking image_size>=2*FOVradius_in_pixs+1
+      const float FOVradius_in_mm = 
+        max(proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_max_tangential_pos_num())),
+            -proj_data_info.get_s(Bin(0,0,0,proj_data_info.get_min_tangential_pos_num())));
+      if (sizes.x()==-1)
+        x_size_used = 2*static_cast<int>(ceil(FOVradius_in_mm / get_voxel_size().x())) + 1;
+      if (sizes.y()==-1)
+        y_size_used = 2*static_cast<int>(ceil(FOVradius_in_mm / get_voxel_size().y())) + 1;        
+    }
+  if (x_size_used<0)
+    error("VoxelsOnCartesianGrid: attempt to construct image with negative x_size %d\n", 
+          x_size_used);
+  if (x_size_used==0)
+    warning("VoxelsOnCartesianGrid: constructed image with x_size 0\n");
+  if (y_size_used<0)
+    error("VoxelsOnCartesianGrid: attempt to construct image with negative y_size %d\n", 
+          y_size_used);
+  if (y_size_used==0)
+    warning("VoxelsOnCartesianGrid: constructed image with y_size 0\n");
+
+  IndexRange3D range (0, z_size-1, 
+                      -(y_size_used/2), -(y_size_used/2) + y_size_used-1,
+                      -(x_size_used/2), -(x_size_used/2) + x_size_used-1);
+
+
+  this->grow(range);
+}
+
+template<class elemT>                                                 
+VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr_v,
+                                                    const ProjDataInfo& proj_data_info,
+                                                    const float zoom, 
+                                                    const CartesianCoordinate3D<float>& origin,
+                                                    const CartesianCoordinate3D<int>& sizes)
+{
+  this->exam_info_sptr = exam_info_sptr_v;
+  // sadly, this code is a complete copy of the above
+  // probably avoidable in C++11
   this->set_origin(origin);
 
   int z_size = sizes.z();
@@ -216,7 +295,8 @@ VoxelsOnCartesianGrid<elemT>*
 VoxelsOnCartesianGrid<elemT>::get_empty_voxels_on_cartesian_grid() const
 
 {
-  return new VoxelsOnCartesianGrid(this->get_index_range(),
+  return new VoxelsOnCartesianGrid(this->get_exam_info_sptr()->create_shared_clone(),
+                                   this->get_index_range(),
                                    this->get_origin(), 
                                    this->get_grid_spacing());
 }
@@ -241,7 +321,9 @@ VoxelsOnCartesianGrid<elemT>*
 #endif
 VoxelsOnCartesianGrid<elemT>::clone() const
 {
-  return new VoxelsOnCartesianGrid(*this);
+  VoxelsOnCartesianGrid *temp = new VoxelsOnCartesianGrid(*this);
+  temp->set_exam_info(*temp->get_exam_info_sptr()->create_shared_clone());
+  return temp;
 }
 
 template<class elemT>
@@ -422,6 +504,7 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
  instantiations
  **********************************************/
 template class VoxelsOnCartesianGrid<float>;
+template class VoxelsOnCartesianGrid<CartesianCoordinate3D<float> >;
 
 END_NAMESPACE_STIR
 

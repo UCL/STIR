@@ -89,6 +89,18 @@ USING_NAMESPACE_STIR
 #else
       ParametricVoxelsOnCartesianGrid par_image(dyn_image[1]);
 #endif
+
+      // Get exam info from input. Input is dynamic with multiple time frames. The
+      // output parametric image is going to be a single time frame that goes from
+      // the start of the first dynamic image to the end of the last.
+      TimeFrameDefinitions tdefs = dyn_image.get_exam_info().get_time_frame_definitions();
+      const double start = tdefs.get_start_time();
+      const double end   = tdefs.get_end_time();
+      tdefs.set_num_time_frames(1);
+      tdefs.set_time_frame(1,start,end);
+      // Set the time frame defintions
+      par_image.get_exam_info_sptr()->set_time_frame_definitions(tdefs);
+
       //ToDo: Assertion for the dyn-par images, sizes I have to create from one to the other image, so then it should be OK...      
       assert(indirect_patlak.get_time_frame_definitions().get_num_frames()==dyn_image.get_time_frame_definitions().get_num_frames());
       indirect_patlak.apply_linear_regression(par_image,dyn_image);

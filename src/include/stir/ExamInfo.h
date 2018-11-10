@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 #include "stir/PatientPosition.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/ImagingModality.h"
+#include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -66,6 +67,11 @@ public :
 
   TimeFrameDefinitions time_frame_definitions;
 
+  const TimeFrameDefinitions& get_time_frame_definitions() const
+  { return time_frame_definitions; }
+  TimeFrameDefinitions& get_time_frame_definitions()
+  { return time_frame_definitions; }
+
   double start_time_in_secs_since_1970;
 
   //! \name Functions that return info related on the acquisition settings
@@ -88,6 +94,13 @@ public :
     {
       time_frame_definitions = new_time_frame_definitions;
     }
+
+  //! Clone and create shared_ptr of the copy
+  shared_ptr<ExamInfo> create_shared_clone()
+  {
+      return shared_ptr<ExamInfo>(new ExamInfo(*this));
+  }
+
   private:
      //!
   //! \brief low_energy_thres
