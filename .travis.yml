@@ -34,7 +34,7 @@ matrix:
  - os: osx
    osx_image: xcode9  # need that for ROOT
    python: 3
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=OFF" CC=clang CXX=clang++
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=OFF -DSTIR_ENABLE_EXPERIMENTAL:BOOL=ON" CC=clang CXX=clang++
 
 env:
   global:
@@ -119,7 +119,7 @@ install:
   - make install
   
 script:
-  - make test
+  - ctest --output-on-failure
   - export PATH=$PATH:$TRAVIS_BUILD_DIR/install/bin
   - cd $TRAVIS_BUILD_DIR/recon_test_pack
   - ./run_test_simulate_and_recon.sh

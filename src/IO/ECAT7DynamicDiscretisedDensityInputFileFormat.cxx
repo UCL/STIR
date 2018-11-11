@@ -114,7 +114,7 @@ read_from_file(const std::string& filename) const
 	     );
 	  if (is_null_ptr(dens_sptr))
 	    error("read_from_file for DynamicDiscretisedDensity: No frame %d available", frame_num);
-	  dynamic_image_ptr->set_density_sptr(dens_sptr, frame_num );
+	  dynamic_image_ptr->set_density(*dens_sptr, frame_num );
 	}
       return dynamic_image_ptr;
     }

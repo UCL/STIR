@@ -44,7 +44,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/is_null_ptr.h"
 #ifdef STIR_USE_GE_IO
-#include "local/stir/IO/GE/niff.h"
+#include "stir_experimental/IO/GE/niff.h"
 #endif
 #endif
 

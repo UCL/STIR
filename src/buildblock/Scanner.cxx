@@ -360,6 +360,31 @@ case PETMR_Signa:
 		   (float)(89.0F/13.0F), //TODO
 		   (float)(390.0F) );
     break;
+
+  case Discovery690:
+    // same as 710
+    set_params(Discovery690, string_list("GE Discovery 690", "Discovery 690",
+                                         "GE Discovery 710", "Discovery 710"),
+               24,
+               381,
+               331, // TODO
+               2 * 288,
+               405.1F,
+               9.4F,
+               6.54F,
+               2.1306F,
+               static_cast<float>(-5.021*_PI/180),//sign? TODO value
+               4,
+               2,
+               6, 9, 1, 1, 1
+#ifdef STIR_TOF
+               ,
+			   (short int)(55),
+			   (float)(89.0F),
+			   (float)(550.0F)
+#endif
+);
+    break;
   
   case HZLR:
 
@@ -432,26 +457,6 @@ case PETMR_Signa:
                0.F, 0.F, 0.F, 0.F, 0.F,
                0, 0, 0, 0, 0, 0, 0);
 
-    break;
-
-  case Discovery690:
-
-    set_params(Discovery690, string_list("GE Discovery 690", "Discovery 690"),
-               24,
-               381,
-               331, // TODO
-               2 * 288,
-               405.1F,
-               9.4F,
-               6.54F,
-               2.1306F,
-               static_cast<float>(-5.021*_PI/180),//sign? TODO value
-               4,
-               2,
-               6, 9, 1, 1, 1,
-			   (short int)(55),
-			   (float)(89.0F),
-			   (float)(550.0F) );
     break;
 
   case User_defined_scanner: // zlong, 08-04-2004, Userdefined support

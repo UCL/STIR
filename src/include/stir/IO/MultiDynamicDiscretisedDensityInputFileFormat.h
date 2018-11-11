@@ -36,6 +36,7 @@
 #include "stir/is_null_ptr.h"
 #include "stir/MultipleDataSetHeader.h"
 #include "stir/DiscretisedDensity.h"
+#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
@@ -89,14 +90,18 @@ public InputFileFormat<DynamicDiscretisedDensity>
     dyn_disc_den_ptr->set_num_densities(header.get_num_data_sets());
     dyn_disc_den_ptr->get_exam_info_sptr()->time_frame_definitions.set_num_time_frames(header.get_num_data_sets());
 
-    for (int i=0; i<header.get_num_data_sets(); ++i) {   
-        shared_ptr<DiscretisedDensity<3,float> > t(DiscretisedDensity<3,float>::read_from_file(header.get_filename(i)));
+    for (int i=1; i<=header.get_num_data_sets(); ++i) {
+        unique_ptr<DiscretisedDensity<3,float> > t(DiscretisedDensity<3,float>::read_from_file(header.get_filename(i-1)));
+
+        // Check that there is time frame information
+        if (t->get_exam_info().get_time_frame_definitions().get_num_frames() != 1)
+            error(str(boost::format("The individual components of a dynamic image should contain 1 time frame, but image %1% contains %2%.") % i % t->get_exam_info().get_time_frame_definitions().get_num_frames()));
         double start = t->get_exam_info().get_time_frame_definitions().get_start_time(1);
         double end = t->get_exam_info().get_time_frame_definitions().get_end_time(1);
-        dyn_disc_den_ptr->get_exam_info_sptr()->time_frame_definitions.set_time_frame(i+1, start, end);
-        dyn_disc_den_ptr->set_density(*t,i+1);
+        dyn_disc_den_ptr->get_exam_info_sptr()->time_frame_definitions.set_time_frame(i, start, end);
+        dyn_disc_den_ptr->set_density(*t,i);
         // Set some info on the first frame
-        if (i==0) {
+        if (i==1) {
             dyn_disc_den_ptr->get_exam_info_sptr()->start_time_in_secs_since_1970 = 
                     t->get_exam_info().start_time_in_secs_since_1970;
             shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(t->get_exam_info_sptr()->originating_system));
