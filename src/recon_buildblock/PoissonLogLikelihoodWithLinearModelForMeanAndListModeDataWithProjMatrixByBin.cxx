@@ -250,8 +250,6 @@ set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr)
             return Succeeded::no;
         }
 
-    record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
-
     return Succeeded::yes;
 } 
  
@@ -473,7 +471,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   double current_time = 0.;
   ProjMatrixElemsForOneBin proj_matrix_row;
 
-  CListRecord& record = *record_sptr;
+  shared_ptr<CListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
 
   long int more_events =
           this->do_time_frame? 1 : (this->num_events_to_use / this->num_subsets);
@@ -481,26 +479,26 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   while (more_events)//this->list_mode_data_sptr->get_next_record(record) == Succeeded::yes)
   { 
 
-      if (this->list_mode_data_sptr->get_next_record(record) == Succeeded::no)
+      if (this->list_mode_data_sptr->get_next_record(*record_sptr) == Succeeded::no)
               {
                   info("End of file!");
                   break; //get out of while loop
               }
 
-    if(record.is_time() && end_time > 0.01)
+    if(record_sptr->is_time() && end_time > 0.01)
       {
-        current_time = record.time().get_time_in_secs();
+        current_time = record_sptr->time().get_time_in_secs();
         if (this->do_time_frame && current_time >= end_time)
             break; // get out of while loop
         if (current_time < start_time)
           continue;
       }
 
-    if (record.is_event() && record.event().is_prompt())
+    if (record_sptr->is_event() && record_sptr->event().is_prompt())
       {
         measured_bin.set_bin_value(1.0f);
 
-        record.event().get_bin(measured_bin, *proj_data_info_sptr);
+        record_sptr->event().get_bin(measured_bin, *proj_data_info_sptr);
 
         // In theory we have already done all these checks so we can
         // remove this if statement.

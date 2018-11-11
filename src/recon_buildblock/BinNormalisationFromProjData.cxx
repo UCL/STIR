@@ -113,6 +113,10 @@ bool
 BinNormalisationFromProjData::
 is_trivial() const
 {
+    for (int tof_pos = this->norm_proj_data_ptr->get_min_tof_pos_num();
+         tof_pos <= this->norm_proj_data_ptr->get_max_tof_pos_num();
+         ++tof_pos)
+    {
   // check if all data is 1 (up to a tolerance of 1e-4)
   for (int segment_num = this->norm_proj_data_ptr->get_min_segment_num(); 
        segment_num <= this->norm_proj_data_ptr->get_max_segment_num(); 
@@ -123,10 +127,11 @@ is_trivial() const
            ++view_num)
         {
           const Viewgram<float> viewgram =
-            this->norm_proj_data_ptr->get_viewgram(view_num, segment_num);
+            this->norm_proj_data_ptr->get_viewgram(view_num, segment_num, tof_pos);
           if (fabs(viewgram.find_min()-1)>.0001 || fabs(viewgram.find_max()-1)>.0001)
             return false; // return from function as we know not all data is 1
         }
+    }
     }
   // if we get here. they were all 1
   return true;

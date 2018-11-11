@@ -165,7 +165,7 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
 
     const float denom = 1.f / inner_product(difference, difference);
 
-    const float lor_length = 1.f / (std::sqrt(difference.x() * difference.x() +
+    const float lor_length = 2.f / (std::sqrt(difference.x() * difference.x() +
                                         difference.y() * difference.y() +
                                         difference.z() * difference.z()));
 
@@ -200,7 +200,7 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
 
             const CartesianCoordinate3D<float> x_dim = voxel_center - middle;
 
-            d1 = inner_product(x_dim, difference) * lor_length;
+            d1 = -inner_product(x_dim, difference) * lor_length;
 
         }
 
@@ -224,8 +224,8 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
             continue;
         }
 
-//        get_tof_value(low_dist, high_dist, new_value);
-        new_value = element_ptr->get_value() * 0.5f * (erf(high_dist) - erf(low_dist));//*(cache_erf[p2] - cache_erf[p1]); //
+        get_tof_value(low_dist, high_dist, new_value);
+        //new_value = element_ptr->get_value() *(cache_erf[p2] - cache_erf[p1]);
         *element_ptr = ProjMatrixElemsForOneBin::value_type(c, new_value);
     }
 }

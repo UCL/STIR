@@ -78,15 +78,15 @@ float
 ProjDataInfo::get_k(const Bin& bin) const
 {
     if (!(num_tof_bins%2))
-        return bin.timing_pos_num() * tof_increament_in_mm;
+        return bin.timing_pos_num() * tof_increament_in_mm + tof_increament_in_mm / 2.f;
     else
-        return (bin.timing_pos_num() * tof_increament_in_mm) - tof_increament_in_mm/2.f;
+        return (bin.timing_pos_num() * tof_increament_in_mm);
 }
 
 double
 ProjDataInfo::get_tof_delta_time(const Bin& bin) const
 {
-  return mm_to_tof_delta_time(get_k(bin) + tof_increament_in_mm / 2.f); // get_k gives "left" edge
+  return mm_to_tof_delta_time(get_k(bin)); // get_k gives "left" edge N.E: corrected returns the center.
 }
 
 float
@@ -214,21 +214,21 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
 
         tof_bin_boundaries_ps.grow(min_tof_pos_num, max_tof_pos_num);
 
-        for (int i = min_tof_pos_num; i <= max_tof_pos_num; ++i )
+        for (int k = min_tof_pos_num; k <= max_tof_pos_num; ++k )
         {
             Bin bin;
-            bin.timing_pos_num() = i;
+            bin.timing_pos_num() = k;
 
-            float cur_low = get_k(bin);
-            float cur_high = get_k(bin) + get_sampling_in_k(bin);
+            float cur_low = get_k(bin) - get_sampling_in_k(bin)/2.f;
+            float cur_high = get_k(bin) + get_sampling_in_k(bin)/2.f;
 
-            tof_bin_boundaries_mm[i].low_lim = cur_low;
-            tof_bin_boundaries_mm[i].high_lim = cur_high;
-            tof_bin_boundaries_ps[i].low_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[i].low_lim));
-            tof_bin_boundaries_ps[i].high_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[i].high_lim));
+            tof_bin_boundaries_mm[k].low_lim = cur_low;
+            tof_bin_boundaries_mm[k].high_lim = cur_high;
+            tof_bin_boundaries_ps[k].low_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[k].low_lim));
+            tof_bin_boundaries_ps[k].high_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[k].high_lim));
             // I could imagine a better printing.
-            info(boost::format("Tbin %1%: %2% - %3% mm (%4% - %5% ps) = %6%") %i % tof_bin_boundaries_mm[i].low_lim % tof_bin_boundaries_mm[i].high_lim
-                 % tof_bin_boundaries_ps[i].low_lim % tof_bin_boundaries_ps[i].high_lim % get_sampling_in_k(bin));
+            info(boost::format("Tbin %1%: %2% - %3% mm (%4% - %5% ps) = %6%") %k % tof_bin_boundaries_mm[k].low_lim % tof_bin_boundaries_mm[k].high_lim
+                 % tof_bin_boundaries_ps[k].low_lim % tof_bin_boundaries_ps[k].high_lim % get_sampling_in_k(bin));
         }
     }
     else if ((scanner_ptr->is_tof_ready() && new_num <= 0)
