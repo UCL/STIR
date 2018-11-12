@@ -120,9 +120,11 @@ Scanner::Scanner(Type scanner_type)
 
     // KT 25/01/2002 corrected ring_spacing
     set_params(E931, string_list("ECAT 931"),
-               8, 192, 2 * 256,
+               8, 192, 2 * 256, 2*256,
                510.0F, 7.0F, 13.5F, 3.129F, 0.0F,
-               2, 4, 4, 8, 4, 8 * 4, 1);
+               2, 4, 4, 8, 4, 8 * 4, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
     // 16 BUCKETS per ring in TWO rings - i.e. 32 buckets in total
 
     break;
@@ -130,66 +132,82 @@ Scanner::Scanner(Type scanner_type)
   case E951:
 
     set_params(E951, string_list("ECAT 951"),
-               16, 192, 2 * 256,
+               16, 192, 2 * 256, 2*256,
                510.0F, 7.0F, 6.75F, 3.12932F, 0.0F,
-               1, 4, 8, 8, 8, 8 * 4, 1);
+               1, 4, 8, 8, 8, 8 * 4, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
     break;
 
   case E953:
 
     set_params(E953, string_list("ECAT 953"),
-               16, 160, 2 * 192,
+               16, 160, 2 * 192, 2*192,
                382.5F, 7.0F, 6.75F, 3.12932F, static_cast<float>(15.*_PI/180),
-               1, 4, 8, 8, 8, 8 * 4, 1);
+               1, 4, 8, 8, 8, 8 * 4, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
     break;
 
   case E921:
 
     set_params(E921, string_list("ECAT 921", "ECAT EXACT", "EXACT"),
-               24, 192, 2* 192,
+               24, 192, 2* 192, 2 * 192,
                412.5F, 7.0F, 6.75F, 3.375F, static_cast<float>(15.*_PI/180),
-               1, 4, 8, 8, 8, 8 * 4, 1);
+               1, 4, 8, 8, 8, 8 * 4, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
     break;
 
   case E925:
 
     set_params(E925, string_list("ECAT 925", "ECAT ART"),
-               24, 192, 2* 192,
+               24, 192, 2* 192, 2* 192,
                412.5F, 7.0F, 6.75F, 3.375F, static_cast<float>(15.*_PI/180),
-               3, 4, 8, 8, 8, 8 * 4, 1);
+               3, 4, 8, 8, 8, 8 * 4, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
     break;
 
 
   case E961:
 
     set_params(E961,string_list("ECAT 961", "ECAT HR"),
-               24, 336, 2* 392,
+               24, 336, 2* 392, 2*392,
                412.0F, 7.0F, 6.25F, 1.650F, static_cast<float>(13.*_PI/180),
-               1, 8, 8, 7, 8, 7 * 8, 1);
+               1, 8, 8, 7, 8, 7 * 8, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
     break;
 
   case E962:
 
     set_params(E962,string_list("ECAT 962","ECAT HR+"),
-               32, 288, 2* 288,
+               32, 288, 2* 288, 2*288,
                412.0F, 7.0F, 4.85F, 2.25F,  0.0F,
-               4, 3, 8, 8, 8, 8 * 3, 1);
+               4, 3, 8, 8, 8, 8 * 3, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
     break;
 
   case E966:
 
     set_params(E966, string_list("ECAT EXACT 3D", "EXACT 3D", "ECAT HR++","ECAT 966"),
-               48, 288, 2* 288,
+               48, 288, 2* 288, 2*288,
                412.0F, 7.0F, 4.850F, 2.250F, 0.0,
-               6, 2, 8, 8, 2 * 8, 8 * 2, 1);
+               6, 2, 8, 8, 2 * 8, 8 * 2, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
     break;
 
   case E1080:
     // data added by Robert Barnett, Westmead Hospital, Sydney
     set_params(E1080, string_list("ECAT 1080", "Biograph 16", "1080"),
-               41, 336, 2* 336,
+               41, 336, 2* 336, 2*336,
                412.0F, 7.0F, 4.0F, 2.000F, 0.0F,
-               1, 2, 41, 14, 41, 14, 1);
+               1, 2, 41, 14, 41, 14, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
     // Transaxial blocks have 13 physical crystals and a gap at the
     // 140th crystal where the counts are zero.
     // There are 39 rings with 13 axial crystals per block. Two virtual
@@ -201,17 +219,20 @@ Scanner::Scanner(Type scanner_type)
     // Transaxial blocks have 8 physical crystals and a gap at the
     // 9th crystal where the counts are zero.
     set_params(Siemens_mMR, string_list("Siemens mMR", "mMR", "2008"),
-               64, 344, 2* 252,
+               64, 344, 2* 252, 2*252,
                328.0F, 7.0F, 4.0625F, 2.08626F, 0.0F,
-               2, 1, 8, 9, 16, 9, 1 ); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+               2, 1, 8, 9, 16, 9, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F ); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
     break;
 
   case test_scanner:
     // This is a relatively small scanner for test purposes.
     set_params(test_scanner, string_list("test_scanner"),
-               4, 344, 2*252,
+               4, 344, 2*252,2*252,
                328.0F, 7.0F, 4.0625F, 2.08626F, 0.0F,
                1, 1, 4, 1, 4, 1, 1,
+               0.0F, 511.F,
                (short int)(410),
                (float)(10.0F),
                (float)(400.0F) );
@@ -220,9 +241,11 @@ Scanner::Scanner(Type scanner_type)
   case RPT:
 
     set_params(RPT, string_list("PRT-1", "RPT"),
-               16, 128, 2 * 192,
+               16, 128, 2 * 192, 2*192,
                380.0F - 7.0F, 7.0F, 6.75F, 3.1088F, 0.0F,
-               1, 4, 8, 8, 8, 32, 1);
+               1, 4, 8, 8, 8, 32, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
 
     // Default 7.0mm average interaction depth.
     // This 7mm taken off the inner ring radius so that the effective radius remains 380mm
@@ -231,9 +254,11 @@ Scanner::Scanner(Type scanner_type)
   case RATPET:
 
     set_params(RATPET, string_list("RATPET"),
-               8, 56, 2 * 56,
+               8, 56, 2 * 56, 2*56,
                115 / 2.F,  7.0F, 6.25F, 1.65F, 0.0F,
-               1, 16, 8, 7, 8, 0, 1); // HR block, 4 buckets per ring
+               1, 16, 8, 7, 8, 0, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F); // HR block, 4 buckets per ring
 
     // Default 7.0mm average interaction depth.
     // 8 x 0 crystals per singles unit because not known
@@ -245,7 +270,9 @@ Scanner::Scanner(Type scanner_type)
     set_params(PANDA, string_list("PANDA"),
                1 /*NumRings*/, 512 /*MaxBinsNonArcCor*/, 512 /*MaxBinsArcCor*/, 2048 /*NumDetPerRing*/,
                /*MeanInnerRadius*/ 75.5/2.F, /*AverageDoI*/ 10.F, /*Ring Spacing*/ 3.F, /*BinSize*/ 0.1F, /*IntrinsicTilt*/ 0.F,
-               1, 1, 1, 1, 0, 0, 1);
+               1, 1, 1, 1, 0, 0, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
     break;
 
   case nanoPET:
@@ -254,7 +281,9 @@ Scanner::Scanner(Type scanner_type)
                  81, 39*3, /* We could also model gaps in the future as one detector so 39->39+1, while 1 (point source), 3 (mouse) or 5 (rats) */
                  39*3, /* Just put the same with NonArcCor for now*/
                  12 * 39, 174.F,  5.0F, 1.17F, 1.17F, /* Actual size is 1.12 and 0.05 is the thickness of the optical reflector */ 0.0F, /* not sure for this */
-                 0,0,0,0,0,0, 1);
+                 0,0,0,0,0,0, 1,
+                 0.0F, 511.F,
+                 1, 1.F, 1.F);
       break;
 
   case HYPERimage:
@@ -262,7 +291,9 @@ Scanner::Scanner(Type scanner_type)
       set_params(HYPERimage, string_list("HYPERimage"), /*Modelling the gap with one fake crystal */
                  22, 239, 245,
                  490, 103.97F, 3.0F, 1.4F, 1.4F, /* Actual size is 1.3667 and assume 0.0333 is the thickness of the optical reflector */  0.F,
-                 0,0,0,0,0,0,1);
+                 0,0,0,0,0,0,1,
+                 0.0F, 511.F,
+                 1, 1.F, 1.F);
       break;
 
 
@@ -274,7 +305,9 @@ Scanner::Scanner(Type scanner_type)
     set_params(Advance, string_list("GE Advance", "Advance"),
                18, 283, 281, 2 * 336,
                471.875F - 8.4F, 8.4F, 8.5F, 1.970177F, 0.0F, //TODO view offset shouldn't be zero
-               3, 2, 6, 6, 1, 1, 1);
+               3, 2, 6, 6, 1, 1, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
     break;
 
   case DiscoveryLS:
@@ -282,7 +315,9 @@ Scanner::Scanner(Type scanner_type)
     set_params(DiscoveryLS, string_list("GE Discovery LS", "Discovery LS"),
                18, 283, 281, 2 * 336,
                471.875F - 8.4F, 8.4F, 8.5F, 1.970177F, 0.0F, //TODO view offset shouldn't be zero
-               3, 2, 6, 6, 1, 1, 1);
+               3, 2, 6, 6, 1, 1, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
     break;
   case DiscoveryST:
 
@@ -293,7 +328,9 @@ Scanner::Scanner(Type scanner_type)
            24, 249, 221, 2 * 210,
                886.2F/2.F, 8.4F, 6.54F, 3.195F,
            static_cast<float>(-4.54224*_PI/180),//sign?
-           4, 2, 6, 6, 1, 1, 1);// TODO not sure about sign of view_offset
+           4, 2, 6, 6, 1, 1, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);// TODO not sure about sign of view_offset
     break;
 
  case DiscoverySTE:
@@ -303,6 +340,7 @@ Scanner::Scanner(Type scanner_type)
                886.2F/2.F, 8.4F, 6.54F, 2.397F,
            static_cast<float>(-4.5490*_PI/180),//sign?
            4, 2, 6, 8, 1, 1, 1,
+               0.0F, 511.F,
            (short int)(410),
            (float)(10.0F),
            (float)(400.0F) );// TODO not sure about sign of view_offset
@@ -321,7 +359,9 @@ Scanner::Scanner(Type scanner_type)
            static_cast<float>(-4.5950*_PI/180),//sign?
            4,
            2,
-           6, 9, 1, 1, 1);// TODO not sure about sign of view_offset
+           6, 9, 1, 1, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);// TODO not sure about sign of view_offset
     break;
 
  case Discovery600:
@@ -338,7 +378,9 @@ Scanner::Scanner(Type scanner_type)
            static_cast<float>(-4.5490*_PI/180),//sign? TODO value
            4,
            2,
-           6, 8, 1, 1, 1);
+           6, 8, 1, 1, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
     break;
 
 case PETMR_Signa: 
@@ -355,7 +397,8 @@ case PETMR_Signa:
 	       static_cast<float>(-5.23*_PI/180),//sign? TODO value
 	       5,
 	       4,
-	       9, 4, 1, 1, 1,
+           9, 4, 1, 1, 1,
+               0.0F, 511.F,
 		   (short int)(351),
 		   (float)(89.0F/13.0F), //TODO
 		   (float)(390.0F) );
@@ -376,22 +419,22 @@ case PETMR_Signa:
                static_cast<float>(-5.021*_PI/180),//sign? TODO value
                4,
                2,
-               6, 9, 1, 1, 1
-#ifdef STIR_TOF
-               ,
+               6, 9, 1, 1, 1,
+               0.0F, 511.F,
 			   (short int)(55),
 			   (float)(89.0F),
 			   (float)(550.0F)
-#endif
 );
     break;
   
   case HZLR:
 
     set_params(HZLR, string_list("Positron HZL/R"),
-               32, 256, 2 * 192,
+               32, 256, 2 * 192, 2*192,
                780.0F, 7.0F, 5.1875F, 2.F, 0.0F,
-               0, 0, 0, 0, 0,0, 1);
+               0, 0, 0, 0, 0,0, 1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
     // Default 7.0mm average interaction depth.
     //  crystals per singles unit etc unknown
     break;
@@ -399,9 +442,11 @@ case PETMR_Signa:
   case HRRT:
 
     set_params(HRRT, string_list("HRRT"),
-               104, 288, 2 * 288,
+               104, 288, 2 * 288, 2*288,
                234.765F, 7.0F, 2.4375F, 1.21875F, 0.0F,
-               0, 0, 0, 0, 0, 0, 2); // added by Dylan Togane
+               0, 0, 0, 0, 0, 0, 2,
+               0.0F, 511.F,
+               1, 1.F, 1.F); // added by Dylan Togane
     // warning: used 7.0mm average interaction depth.
     // crystals per singles unit etc unknown
     break;
@@ -430,13 +475,15 @@ case PETMR_Signa:
        scanner.
     */
     set_params(Allegro,string_list("Allegro", "Philips Allegro"),
-           29, 295, 28*23,
+           29, 295, 28*23, 28*23,
            430.05F, 12.F,
            6.3F, 4.3F, 0.0F,
            1, 0,
            29, 0 /* 23* or 22*/,
            29, 0 /*  all detectors in a ring? */,
-           1);
+           1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
     break;
 
   case GeminiTF:
@@ -448,32 +495,40 @@ case PETMR_Signa:
                0, 0,
                0, 0, // Not considering any gap, but this is per module 28 flat modules in total, while 420 PMTs
                0, 0 /*  Not sure about these, but shouldn't be important */,
-               1);
+               1,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
     break;
 
   case HiDAC: // all of these don't make any sense for the HiDAC
     set_params(HiDAC, string_list("HiDAC"),
-               0, 0, 0,
+               0, 0, 0,0,
                0.F, 0.F, 0.F, 0.F, 0.F,
-               0, 0, 0, 0, 0, 0, 0);
+               0, 0, 0, 0, 0, 0, 0,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
 
     break;
 
   case User_defined_scanner: // zlong, 08-04-2004, Userdefined support
 
     set_params(User_defined_scanner, string_list("Userdefined"),
-               0, 0, 0,
+               0, 0, 0,0,
                0.F, 0.F, 0.F, 0.F, 0.F,
-               0, 0, 0, 0, 0, 0, 0);
+               0, 0, 0, 0, 0, 0, 0,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
 
     break;
 
   default:
     // warning("Unknown scanner type used for initialisation of Scanner\n");
     set_params(Unknown_scanner, string_list("Unknown"),
-               0, 0, 0,
+               0, 0, 0,0,
                0.F, 0.F, 0.F, 0.F, 0.F,
-               0, 0, 0, 0, 0, 0, 0);
+               0, 0, 0, 0, 0, 0, 0,
+               0.0F, 511.F,
+               1, 1.F, 1.F);
 
     break;
 
@@ -481,33 +536,6 @@ case PETMR_Signa:
 
 }
 
-
-Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
-                 int num_detectors_per_ring_v, int num_rings_v,
-                 int max_num_non_arccorrected_bins_v,
-                 int default_num_arccorrected_bins_v,
-                 float inner_ring_radius_v, float average_depth_of_interaction_v,
-                 float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
-                 int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-                 int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                 int num_axial_crystals_per_singles_unit_v,
-                 int num_transaxial_crystals_per_singles_unit_v,
-                 int num_detector_layers_v)
-{
-  set_params(type_v, list_of_names_v, num_rings_v,
-             max_num_non_arccorrected_bins_v,
-             default_num_arccorrected_bins_v,
-             num_detectors_per_ring_v,
-             inner_ring_radius_v,
-             average_depth_of_interaction_v,
-             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
-             num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
-             num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
-             num_axial_crystals_per_singles_unit_v,
-             num_transaxial_crystals_per_singles_unit_v,
-             num_detector_layers_v);
-}
-
 Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
                  int num_detectors_per_ring_v, int num_rings_v,
                  int max_num_non_arccorrected_bins_v,
@@ -520,70 +548,12 @@ Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
                  int num_transaxial_crystals_per_singles_unit_v,
                  int num_detector_layers_v,
                  float energy_resolution_v,
-                 float reference_energy_v)
-{
-  set_params(type_v, list_of_names_v, num_rings_v,
-             max_num_non_arccorrected_bins_v,
-             default_num_arccorrected_bins_v,
-             num_detectors_per_ring_v,
-             inner_ring_radius_v,
-             average_depth_of_interaction_v,
-             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
-             energy_resolution_v,
-             reference_energy_v,
-             num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
-             num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
-             num_axial_crystals_per_singles_unit_v,
-             num_transaxial_crystals_per_singles_unit_v,
-             num_detector_layers_v);
-}
-
-Scanner::Scanner(Type type_v, const list<string>& list_of_names_v,
-                 int num_detectors_per_ring_v, int num_rings_v,
-                 int max_num_non_arccorrected_bins_v,
-                 int default_num_arccorrected_bins_v,
-                 float inner_ring_radius_v, float average_depth_of_interaction_v,
-                 float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
-                 int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-                 int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                 int num_axial_crystals_per_singles_unit_v,
-                 int num_transaxial_crystals_per_singles_unit_v,
-                 int num_detector_layers_v,
+                 float reference_energy_v,
                  short int max_num_of_timing_poss_v,
                  float size_timing_pos_v,
                  float timing_resolution_v)
 {
-    set_params(type_v, list_of_names_v, num_rings_v,
-               max_num_non_arccorrected_bins_v,
-               default_num_arccorrected_bins_v,
-               num_detectors_per_ring_v,
-               inner_ring_radius_v,
-               average_depth_of_interaction_v,
-               ring_spacing_v, bin_size_v, intrinsic_tilt_v,
-               num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
-               num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
-               num_axial_crystals_per_singles_unit_v,
-               num_transaxial_crystals_per_singles_unit_v,
-               num_detector_layers_v,
-               max_num_of_timing_poss_v,
-               size_timing_pos_v,
-               timing_resolution_v);
-}
-
-
-Scanner::Scanner(Type type_v, const string& name,
-                 int num_detectors_per_ring_v, int num_rings_v,
-                 int max_num_non_arccorrected_bins_v,
-                 int default_num_arccorrected_bins_v,
-                 float inner_ring_radius_v, float average_depth_of_interaction_v,
-                 float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
-                 int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-                 int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                 int num_axial_crystals_per_singles_unit_v,
-                 int num_transaxial_crystals_per_singles_unit_v,
-                 int num_detector_layers_v)
-{
-  set_params(type_v, string_list(name), num_rings_v,
+  set_params(type_v, list_of_names_v, num_rings_v,
              max_num_non_arccorrected_bins_v,
              default_num_arccorrected_bins_v,
              num_detectors_per_ring_v,
@@ -594,234 +564,35 @@ Scanner::Scanner(Type type_v, const string& name,
              num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
              num_axial_crystals_per_singles_unit_v,
              num_transaxial_crystals_per_singles_unit_v,
-             num_detector_layers_v);
-}
-
-Scanner::Scanner(Type type_v, const string& name,
-                 int num_detectors_per_ring_v, int num_rings_v,
-                 int max_num_non_arccorrected_bins_v,
-                 int default_num_arccorrected_bins_v,
-                 float inner_ring_radius_v, float average_depth_of_interaction_v,
-                 float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
-                 int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-                 int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                 int num_axial_crystals_per_singles_unit_v,
-                 int num_transaxial_crystals_per_singles_unit_v,
-                 int num_detector_layers_v,
-                 float energy_resolution_v,
-                 float reference_energy_v)
-{
-  set_params(type_v, string_list(name), num_rings_v,
-             max_num_non_arccorrected_bins_v,
-             default_num_arccorrected_bins_v,
-             num_detectors_per_ring_v,
-             inner_ring_radius_v,
-             average_depth_of_interaction_v,
-             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
-                          energy_resolution_v,
-                          reference_energy_v,
-             num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
-             num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
-             num_axial_crystals_per_singles_unit_v,
-             num_transaxial_crystals_per_singles_unit_v,
-             num_detector_layers_v);
-}
-
-Scanner::Scanner(Type type_v, const string& name,
-                 int num_detectors_per_ring_v, int num_rings_v,
-                 int max_num_non_arccorrected_bins_v,
-                 int default_num_arccorrected_bins_v,
-                 float inner_ring_radius_v, float average_depth_of_interaction_v,
-                 float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
-                 int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-                 int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                 int num_axial_crystals_per_singles_unit_v,
-                 int num_transaxial_crystals_per_singles_unit_v,
-                 int num_detector_layers_v,
-                 short int max_num_of_timing_poss_v,
-                 float size_timing_pos_v,
-                 float timing_resolution_v
-                 )
-{
-    set_params(type_v, string_list(name), num_rings_v,
-               max_num_non_arccorrected_bins_v,
-               default_num_arccorrected_bins_v,
-               num_detectors_per_ring_v,
-               inner_ring_radius_v,
-               average_depth_of_interaction_v,
-               ring_spacing_v, bin_size_v, intrinsic_tilt_v,
-               num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
-               num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
-               num_axial_crystals_per_singles_unit_v,
-               num_transaxial_crystals_per_singles_unit_v,
-               num_detector_layers_v,
-               max_num_of_timing_poss_v,
-               size_timing_pos_v,
-               timing_resolution_v);
-}
-
-void
-Scanner::
-set_params(Type type_v,const list<string>& list_of_names_v,
-           int num_rings_v,
-           int max_num_non_arccorrected_bins_v,
-           int num_detectors_per_ring_v,
-           float inner_ring_radius_v,
-           float average_depth_of_interaction_v,
-           float ring_spacing_v,
-           float bin_size_v, float intrinsic_tilt_v,
-           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-           int num_axial_crystals_per_singles_unit_v,
-           int num_transaxial_crystals_per_singles_unit_v,
-           int num_detector_layers_v)
-{
-  set_params(type_v, list_of_names_v, num_rings_v,
-             max_num_non_arccorrected_bins_v,
-         max_num_non_arccorrected_bins_v,
-         num_detectors_per_ring_v,
-         inner_ring_radius_v,
-             average_depth_of_interaction_v,
-             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
-         num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
-         num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
-             num_axial_crystals_per_singles_unit_v,
-             num_transaxial_crystals_per_singles_unit_v,
-         num_detector_layers_v);
-}
-
-void
-Scanner::
-set_params(Type type_v,const list<string>& list_of_names_v,
-           int num_rings_v,
-           int max_num_non_arccorrected_bins_v,
-           int num_detectors_per_ring_v,
-           float inner_ring_radius_v,
-           float average_depth_of_interaction_v,
-           float ring_spacing_v,
-           float bin_size_v, float intrinsic_tilt_v,
-           float energy_resolution_v,
-           float reference_energy_v,
-           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-           int num_axial_crystals_per_singles_unit_v,
-           int num_transaxial_crystals_per_singles_unit_v,
-           int num_detector_layers_v)
-{
-  set_params(type_v, list_of_names_v, num_rings_v,
-             max_num_non_arccorrected_bins_v,
-         max_num_non_arccorrected_bins_v,
-         num_detectors_per_ring_v,
-         inner_ring_radius_v,
-             average_depth_of_interaction_v,
-             ring_spacing_v, bin_size_v, intrinsic_tilt_v,
+             num_detector_layers_v,
              energy_resolution_v,
              reference_energy_v,
-         num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
-         num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
-             num_axial_crystals_per_singles_unit_v,
-             num_transaxial_crystals_per_singles_unit_v,
-         num_detector_layers_v);
+             max_num_of_timing_poss_v,
+             size_timing_pos_v,
+             timing_resolution_v);
 }
 
 void
 Scanner::
-set_params(Type type_v,const list<string>& list_of_names_v,
-           int num_rings_v,
-           int max_num_non_arccorrected_bins_v,
-           int num_detectors_per_ring_v,
-           float inner_ring_radius_v,
-           float average_depth_of_interaction_v,
-           float ring_spacing_v,
-           float bin_size_v, float intrinsic_tilt_v,
-           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-           int num_axial_crystals_per_singles_unit_v,
-           int num_transaxial_crystals_per_singles_unit_v,
-           int num_detector_layers_v,
-           short int max_num_of_timing_poss_v,
-           float size_timing_pos_v,
-           float timing_resolution_v)
-{
-    set_params(type_v, list_of_names_v, num_rings_v,
-               max_num_non_arccorrected_bins_v,
-               max_num_non_arccorrected_bins_v,
-               num_detectors_per_ring_v,
-               inner_ring_radius_v,
-               average_depth_of_interaction_v,
-               ring_spacing_v, bin_size_v, intrinsic_tilt_v,
-               num_axial_blocks_per_bucket_v, num_transaxial_blocks_per_bucket_v,
-               num_axial_crystals_per_block_v, num_transaxial_crystals_per_block_v,
-               num_axial_crystals_per_singles_unit_v,
-               num_transaxial_crystals_per_singles_unit_v,
-               num_detector_layers_v,
-               max_num_of_timing_poss_v,
-               size_timing_pos_v,
-               timing_resolution_v);
-}
-
-void
-Scanner::
-set_params(Type type_v,const list<string>& list_of_names_v,
-           int num_rings_v,
-           int max_num_non_arccorrected_bins_v,
-           int default_num_arccorrected_bins_v,
-           int num_detectors_per_ring_v,
-           float inner_ring_radius_v,
-           float average_depth_of_interaction_v,
-           float ring_spacing_v,
-           float bin_size_v, float intrinsic_tilt_v,
-           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-           int num_axial_crystals_per_singles_unit_v,
-           int num_transaxial_crystals_per_singles_unit_v,
-           int num_detector_layers_v)
-{
-  type = type_v;
-  list_of_names = list_of_names_v;
-  num_rings =  num_rings_v;
-  max_num_non_arccorrected_bins = max_num_non_arccorrected_bins_v;
-  default_num_arccorrected_bins = default_num_arccorrected_bins_v;
-  num_detectors_per_ring = num_detectors_per_ring_v;
-  inner_ring_radius =  inner_ring_radius_v;
-  average_depth_of_interaction = average_depth_of_interaction_v;
-  ring_spacing = ring_spacing_v;
-  bin_size = bin_size_v;
-  intrinsic_tilt = intrinsic_tilt_v;
-  num_transaxial_blocks_per_bucket = num_transaxial_blocks_per_bucket_v;
-  num_axial_blocks_per_bucket = num_axial_blocks_per_bucket_v;
-  num_axial_crystals_per_block= num_axial_crystals_per_block_v;
-  num_transaxial_crystals_per_block= num_transaxial_crystals_per_block_v;
-  num_axial_crystals_per_singles_unit = num_axial_crystals_per_singles_unit_v;
-  num_transaxial_crystals_per_singles_unit = num_transaxial_crystals_per_singles_unit_v;
-  num_detector_layers = num_detector_layers_v;
-
-  energy_resolution = -1.f;
-  reference_energy = -1.f;
-  max_num_of_timing_poss = -1;
-  size_timing_pos = -1.f;
-  timing_resolution = -1.f;
-
-}
-
-void
-Scanner::
-set_params(Type type_v,const list<string>& list_of_names_v,
-           int num_rings_v,
-           int max_num_non_arccorrected_bins_v,
-           int default_num_arccorrected_bins_v,
-           int num_detectors_per_ring_v,
-           float inner_ring_radius_v,
-           float average_depth_of_interaction_v,
-           float ring_spacing_v,
-           float bin_size_v, float intrinsic_tilt_v,
-           float energy_resolution_v,
-           float reference_energy_v,
-           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-           int num_axial_crystals_per_singles_unit_v,
-           int num_transaxial_crystals_per_singles_unit_v,
-           int num_detector_layers_v)
+set_params(Type type_v, const std::list<std::string>& list_of_names_v,
+                             int num_rings_v,
+                             int max_num_non_arccorrected_bins_v,
+                             int default_num_arccorrected_bins_v,
+                             int num_detectors_per_ring_v,
+                             float inner_ring_radius_v,
+                             float average_depth_of_interaction_v,
+                             float ring_spacing_v,
+                             float bin_size_v, float intrinsic_tilt_v,
+                             int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
+                             int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
+                             int num_axial_crystals_per_singles_unit_v,
+                             int num_transaxial_crystals_per_singles_unit_v,
+                             int num_detector_layers_v,
+                             float energy_resolution_v,
+                             float reference_energy_v,
+                             short int max_num_of_timing_poss_v,
+                             float size_timing_pos_v,
+                             float timing_resolution_v)
 {
   type = type_v;
   list_of_names = list_of_names_v;
@@ -844,60 +615,11 @@ set_params(Type type_v,const list<string>& list_of_names_v,
 
   energy_resolution = energy_resolution_v;
   reference_energy = reference_energy_v;
-  max_num_of_timing_poss = -1;
-  size_timing_pos = -1.f;
-  timing_resolution = -1.f;
+  max_num_of_timing_poss = max_num_of_timing_poss_v;
+  size_timing_pos = size_timing_pos_v;
+  timing_resolution = timing_resolution_v;
 
 }
-
-
-void
-Scanner::
-set_params(Type type_v,const list<string>& list_of_names_v,
-           int num_rings_v,
-           int max_num_non_arccorrected_bins_v,
-           int default_num_arccorrected_bins_v,
-           int num_detectors_per_ring_v,
-           float inner_ring_radius_v,
-           float average_depth_of_interaction_v,
-           float ring_spacing_v,
-           float bin_size_v, float intrinsic_tilt_v,
-           int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-           int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-           int num_axial_crystals_per_singles_unit_v,
-           int num_transaxial_crystals_per_singles_unit_v,
-           int num_detector_layers_v,
-           short int max_num_of_timing_poss_v,
-           float size_timing_pos_v,
-           float timing_resolution_v)
-{
-    type = type_v;
-    list_of_names = list_of_names_v;
-    num_rings =  num_rings_v;
-    max_num_non_arccorrected_bins = max_num_non_arccorrected_bins_v;
-    default_num_arccorrected_bins = default_num_arccorrected_bins_v;
-    num_detectors_per_ring = num_detectors_per_ring_v;
-    inner_ring_radius =  inner_ring_radius_v;
-    average_depth_of_interaction = average_depth_of_interaction_v;
-    ring_spacing = ring_spacing_v;
-    bin_size = bin_size_v;
-    intrinsic_tilt = intrinsic_tilt_v;
-    num_transaxial_blocks_per_bucket = num_transaxial_blocks_per_bucket_v;
-    num_axial_blocks_per_bucket = num_axial_blocks_per_bucket_v;
-    num_axial_crystals_per_block= num_axial_crystals_per_block_v;
-    num_transaxial_crystals_per_block= num_transaxial_crystals_per_block_v;
-    num_axial_crystals_per_singles_unit = num_axial_crystals_per_singles_unit_v;
-    num_transaxial_crystals_per_singles_unit = num_transaxial_crystals_per_singles_unit_v;
-    num_detector_layers = num_detector_layers_v;
-
-    max_num_of_timing_poss = max_num_of_timing_poss_v;
-    size_timing_pos = size_timing_pos_v;
-    timing_resolution = timing_resolution_v;
-    energy_resolution = -1.f;
-    reference_energy = -1.f;
-}
-
-
 
 Succeeded
 Scanner::
@@ -1246,8 +968,8 @@ Scanner* Scanner::ask_parameters()
       int TransaxialCrystalsPerSinglesUnit =
         ask_num("Enter number of transaxial crystals per singles unit: ", 0, num_detectors_per_ring, 1);
 
-      int Num_TOF_bins =
-              ask_num("Number of TOF time bins :", 0.0f, 800.0f, 0.0f);
+      short int Num_TOF_bins =
+              ask_num("Number of TOF time bins :", 0, 800, 0);
       float Size_TOF_bin =
               ask_num("Size of timing bin (ps) :", 0.0f, 100.0f, 0.0f);
       float TOF_resolution =
@@ -1263,23 +985,7 @@ Scanner* Scanner::ask_parameters()
     ask_num("Enter number of detector layers per block: ",1,100,1);
       Type type = User_defined_scanner;
 
-      bool make_tof_scanner = false;
-      if (Num_TOF_bins > 0 && Size_TOF_bin > 0 && TOF_resolution > 0)
-          make_tof_scanner = true;
-
-          Scanner* scanner_ptr =
-                  new Scanner(type, string_list(name),
-                              num_detectors_per_ring,  NoRings,
-                              NoBins, NoBins,
-                              InnerRingRadius, AverageDepthOfInteraction,
-                              RingSpacing, BinSize,intrTilt*float(_PI)/180,
-                              AxialBlocksPerBucket,TransBlocksPerBucket,
-                              AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
-                              AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
-                              num_detector_layers);
-
-      if (EnergyResolution > -1 && ReferenceEnergy > -1)
-        scanner_ptr =
+      scanner_ptr =
             new Scanner(type, string_list(name),
                         num_detectors_per_ring,  NoRings,
                         NoBins, NoBins,
@@ -1290,29 +996,10 @@ Scanner* Scanner::ask_parameters()
                         AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
                         num_detector_layers,
                         EnergyResolution,
-                        ReferenceEnergy );
-      else
-          scanner_ptr = make_tof_scanner ? new Scanner(type, string_list(name),
-                                                                num_detectors_per_ring,  NoRings,
-                                                                NoBins, NoBins,
-                                                                InnerRingRadius, AverageDepthOfInteraction,
-                                                                RingSpacing, BinSize,intrTilt*float(_PI)/180,
-                                                                AxialBlocksPerBucket,TransBlocksPerBucket,
-                                                                AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
-                                                                AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
-                                                                num_detector_layers,
-                                                                Num_TOF_bins,
-                                                                Size_TOF_bin,
-                                                                TOF_resolution) :
-                                                    new Scanner(type, string_list(name),
-                                                                num_detectors_per_ring,  NoRings,
-                                                                NoBins, NoBins,
-                                                                InnerRingRadius, AverageDepthOfInteraction,
-                                                                RingSpacing, BinSize,intrTilt*float(_PI)/180,
-                                                                AxialBlocksPerBucket,TransBlocksPerBucket,
-                                                                AxialCrystalsPerBlock,TransaxialCrystalsPerBlock,
-                                                                AxialCrstalsPerSinglesUnit, TransaxialCrystalsPerSinglesUnit,
-                                                                num_detector_layers);
+                        ReferenceEnergy,
+                        Num_TOF_bins,
+                        Size_TOF_bin,
+                        TOF_resolution );
 
       if (scanner_ptr->check_consistency()==Succeeded::yes ||
       !ask("Ask questions again?",true))

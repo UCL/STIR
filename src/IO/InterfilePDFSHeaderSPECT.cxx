@@ -163,27 +163,37 @@ bool InterfilePDFSHeaderSPECT::post_processing()
   const int num_axial_crystals_per_singles_unit = -1;
   const int num_transaxial_crystals_per_singles_unit = -1;
   const int num_detector_layers = 1;
+  const float energy_resolution = -1.f;
+  const float reference_energy = -1.f;
+  const short int max_num_of_timing_poss = 1;
+  const float size_timing_pos = -1.f;
+  const float timing_resolution = -1.f;
 	
   shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(get_exam_info_ptr()->originating_system));
   shared_ptr<Scanner> scanner_ptr_from_file(
-                                            new Scanner(guessed_scanner_ptr->get_type(), 
-                                                        get_exam_info_ptr()->originating_system,
-                                                        num_detectors_per_ring, 
-                                                        num_rings, 
-                                                        max_num_non_arccorrected_bins, 
-                                                        default_num_arccorrected_bins,
-                                                        static_cast<float>(radii[0]),
-                                                        static_cast<float>(average_depth_of_interaction_in_cm*10),
-                                                        static_cast<float>(distance_between_rings_in_cm*10.),
-                                                        static_cast<float>(default_bin_size_in_cm*10),
-                                                        static_cast<float>(view_offset_in_degrees*_PI/180),
-                                                        num_axial_blocks_per_bucket, 
-                                                        num_transaxial_blocks_per_bucket,
-                                                        num_axial_crystals_per_block,
-                                                        num_transaxial_crystals_per_block,
-                                                        num_axial_crystals_per_singles_unit,
-                                                        num_transaxial_crystals_per_singles_unit,
-                                                        num_detector_layers));
+              new Scanner(guessed_scanner_ptr->get_type(),
+                          get_exam_info_ptr()->originating_system,
+                          num_detectors_per_ring,
+                          num_rings,
+                          max_num_non_arccorrected_bins,
+                          default_num_arccorrected_bins,
+                          static_cast<float>(radii[0]),
+              static_cast<float>(average_depth_of_interaction_in_cm*10),
+              static_cast<float>(distance_between_rings_in_cm*10.),
+              static_cast<float>(default_bin_size_in_cm*10),
+              static_cast<float>(view_offset_in_degrees*_PI/180),
+              num_axial_blocks_per_bucket,
+              num_transaxial_blocks_per_bucket,
+              num_axial_crystals_per_block,
+              num_transaxial_crystals_per_block,
+              num_axial_crystals_per_singles_unit,
+              num_transaxial_crystals_per_singles_unit,
+              num_detector_layers,
+              energy_resolution,
+              reference_energy,
+              max_num_of_timing_poss,
+              size_timing_pos,
+              timing_resolution));
 #if 0
   if (default_bin_size_in_cm <= 0)
     default_bin_size_in_cm =

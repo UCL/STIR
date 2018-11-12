@@ -136,38 +136,13 @@ class Scanner
             int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
             int num_axial_crystals_per_singles_unit_v,
             int num_transaxial_crystals_per_singles_unit_v,
-            int num_detector_layers_v);
-
-    //! Overloaded for energy resolution
-    Scanner(Type type_v, const std::list<std::string>& list_of_names_v,
-            int num_detectors_per_ring_v, int num_rings_v,
-            int max_num_non_arccorrected_bins_v,
-            int default_num_arccorrected_bins_v,
-            float inner_ring_radius_v, float average_depth_of_interaction_v,
-            float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
-            int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-            int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-            int num_axial_crystals_per_singles_unit_v,
-            int num_transaxial_crystals_per_singles_unit_v,
             int num_detector_layers_v,
             float energy_resolution_v,
-            float reference_energy_v);
+            float reference_energy_v,
+            short int max_num_of_timing_poss,
+            float size_timing_pos,
+            float timing_resolution);
 
-   //! Overloaded constructed with TOF information
-    Scanner(Type type_v, const std::list<std::string>& list_of_names_v,
-                int num_detectors_per_ring_v, int num_rings_v,
-                int max_num_non_arccorrected_bins_v,
-                int default_num_arccorrected_bins_v,
-                float inner_ring_radius_v, float average_depth_of_interaction_v,
-                float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
-                int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-                int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                int num_axial_crystals_per_singles_unit_v,
-                int num_transaxial_crystals_per_singles_unit_v,
-                int num_detector_layers_v,
-                short int max_num_of_timing_poss,
-                float size_timing_pos,
-                float timing_resolution);
 
     //! constructor ( a single name)
     /*! size info is in mm
@@ -184,39 +159,12 @@ class Scanner
             int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
             int num_axial_crystals_per_singles_unit_v,
             int num_transaxial_crystals_per_singles_unit_v,
-            int num_detector_layers_v);
-
-    //! Overloaded for energy resolution
-    Scanner(Type type_v, const std::string& name,
-            int num_detectors_per_ring_v, int num_rings_v,
-            int max_num_non_arccorrected_bins_v,
-            int default_num_arccorrected_bins_v,
-            float inner_ring_radius_v, float average_depth_of_interaction_v,
-            float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
-            int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-            int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-            int num_axial_crystals_per_singles_unit_v,
-            int num_transaxial_crystals_per_singles_unit_v,
             int num_detector_layers_v,
             float energy_resolution_v,
-            float reference_energy_v);
-
-     //! Overloaded constructor with TOF information  ( a single name)
-    Scanner(Type type_v, const std::string& name,
-                int num_detectors_per_ring_v, int num_rings_v,
-                int max_num_non_arccorrected_bins_v,
-                int default_num_arccorrected_bins_v,
-                float inner_ring_radius_v, float average_depth_of_interaction_v,
-                float ring_spacing_v, float bin_size_v, float intrinsic_tilt_v,
-                int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-                int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                int num_axial_crystals_per_singles_unit_v,
-                int num_transaxial_crystals_per_singles_unit_v,
-                int num_detector_layers_v,
-                short int max_num_of_timing_poss,
-                float size_timing_pos,
-                float timing_resolution);
-
+            float reference_energy_v,
+            short int max_num_of_timing_poss,
+            float size_timing_pos,
+            float timing_resolution);
 
 
   //! get scanner parameters as a std::string
@@ -457,90 +405,6 @@ private:
   //! This number corresponds the the least significant clock digit.
   float size_timing_pos;
 
-
-  //! set all parameters, case where default_num_arccorrected_bins==max_num_non_arccorrected_bins
-  void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
-                  int num_rings_v,
-                  int max_num_non_arccorrected_bins_v,
-                  int num_detectors_per_ring_v,
-                  float inner_ring_radius_v,
-                  float average_depth_of_interaction_v,
-                  float ring_spacing_v,
-                  float bin_size_v, float intrinsic_tilt_v,
-                  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-                  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                  int num_axial_crystals_per_singles_unit_v,
-                  int num_transaxial_crystals_per_singles_unit_v,
-                  int num_detector_layers_v);
-
-  void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
-                  int num_rings_v,
-                  int max_num_non_arccorrected_bins_v,
-                  int num_detectors_per_ring_v,
-                  float inner_ring_radius_v,
-                  float average_depth_of_interaction_v,
-                  float ring_spacing_v,
-                  float bin_size_v, float intrinsic_tilt_v,
-                  float energy_resolution_v,
-                  float reference_energy,
-                  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-                  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                  int num_axial_crystals_per_singles_unit_v,
-                  int num_transaxial_crystals_per_singles_unit_v,
-                  int num_detector_layers_v);
-
-  //! Overloaded with TOF stuff.
-  void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
-                  int num_rings_v,
-                  int max_num_non_arccorrected_bins_v,
-                  int num_detectors_per_ring_v,
-                  float inner_ring_radius_v,
-                  float average_depth_of_interaction_v,
-                  float ring_spacing_v,
-                  float bin_size_v, float intrinsic_tilt_v,
-                  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-                  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                  int num_axial_crystals_per_singles_unit_v,
-                  int num_transaxial_crystals_per_singles_unit_v,
-                  int num_detector_layers_v,
-                  short int max_num_of_timing_poss_v,
-                  float size_timing_pos_v,
-                  float timing_resolution_v);
-
-  // ! set all parameters
-  void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
-                  int num_rings_v,
-                  int max_num_non_arccorrected_bins_v,
-                  int default_num_arccorrected_bins_v,
-                  int num_detectors_per_ring_v,
-                  float inner_ring_radius_v,
-                  float average_depth_of_interaction_v,
-                  float ring_spacing_v,
-                  float bin_size_v, float intrinsic_tilt_v,
-                  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-                  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                  int num_axial_crystals_per_singles_unit_v,
-                  int num_transaxial_crystals_per_singles_unit_v,
-                  int num_detector_layers_v);
-
-  void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
-                  int num_rings_v,
-                  int max_num_non_arccorrected_bins_v,
-                  int default_num_arccorrected_bins_v,
-                  int num_detectors_per_ring_v,
-                  float inner_ring_radius_v,
-                  float average_depth_of_interaction_v,
-                  float ring_spacing_v,
-                  float bin_size_v, float intrinsic_tilt_v,
-                  float energy_resolution_v,
-                  float reference_energy,
-                  int num_axial_blocks_per_bucket_v, int num_transaxial_blocks_per_bucket_v,
-                  int num_axial_crystals_per_block_v, int num_transaxial_crystals_per_block_v,
-                  int num_axial_crystals_per_singles_unit_v,
-                  int num_transaxial_crystals_per_singles_unit_v,
-                  int num_detector_layers_v);
-
-  //! Overloaded with TOF stuff.
   void set_params(Type type_v, const std::list<std::string>& list_of_names_v,
                   int num_rings_v,
                   int max_num_non_arccorrected_bins_v,
@@ -555,10 +419,11 @@ private:
                   int num_axial_crystals_per_singles_unit_v,
                   int num_transaxial_crystals_per_singles_unit_v,
                   int num_detector_layers_v,
+                  float energy_resolution_v,
+                  float reference_energy,
                   short int max_num_of_timing_poss_v,
                   float size_timing_pos_v,
                   float timing_resolution_v);
-
 
 };
 
