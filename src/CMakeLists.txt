@@ -260,10 +260,9 @@ if(BUILD_DOCUMENTATION)
 
     # Add a custom command that does everything, but also generates a doxygen.stamp file.
     # This should prevent doxygen being re-run when not needed.
-    # TODO This should depnd on all .h files really
     add_custom_command(
         OUTPUT doxygen.stamp
-        DEPENDS ${doxyfile}
+        DEPENDS ${doxyfile} ${ALL_HEADERS}
         COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
         COMMAND ${CMAKE_COMMAND} -E touch doxygen.stamp
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

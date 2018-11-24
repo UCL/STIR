@@ -45,8 +45,8 @@ MACRO(HEADER_DIRECTORIES return_h_list return_i_list)
     LIST(REMOVE_DUPLICATES h_list)
     LIST(REMOVE_DUPLICATES i_list)
 
-    SET(${return_h_list} ${h_list})
-    SET(${return_i_list} ${i_list})
+    SET(${return_h_list} ${h_list} PARENT_SCOPE)
+    SET(${return_i_list} ${i_list} PARENT_SCOPE)
 ENDMACRO()
 
 HEADER_DIRECTORIES(ALL_HEADERS ALL_INLINES)
