@@ -95,7 +95,7 @@ int main(int argc,char **argv)
 
                  // PW HDF5 Wrapper is initialised here and the address of the data is read subsequently.
                  shared_ptr<HDF5Wrapper> m_input_hdf5_sptr;
-                 m_input_hdf5_sptr.reset(new HDF5Wrapper(rdf_filename));
+                 m_input_hdf5_sptr.reset(new HDF5Wrapper(rdf_geo_filename));
                  m_input_hdf5_sptr->initialise_geo_factors_data("",modulo(i_view,16)+1);
 
                  // PW Here the data is read from the HDF5 array.
@@ -103,7 +103,8 @@ int main(int argc,char **argv)
                  std::array<unsigned long long int, 2> count = {static_cast<unsigned long long int>(projDataGE.get_num_axial_poss(i_seg)),
                   static_cast<unsigned long long int>(projDataGE.get_num_tangential_poss())};
 
-                 std::array<unsigned long long int, 2> offset = {0, 0};
+
+                 std::array<unsigned long long int, 2> offset = {projDataGE.seg_ax_offset[projDataGE.find_segment_index_in_sequence(i_seg)], 0};
                  std::array<unsigned long long int, 2> block = {1, 1};
 
                  unsigned int total_size = projDataGE.get_num_tangential_poss() * static_cast<unsigned long long int>(projDataGE.get_num_axial_poss(i_seg));
@@ -113,19 +114,19 @@ int main(int argc,char **argv)
 
                  std::copy(tmp.begin(),tmp.end(),ret_viewgram.begin_all());
 
-                 //PW Flip tangential positions here .
-                 // Viewgram<float> STIRviewgram = projDataGE.get_empty_viewgram(projDataGE.get_num_views()-1-view, ret_viewgram.get_segment_num());
-                 // for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(); tang_pos <= ret_viewgram.get_max_tangential_pos_num(); ++tang_pos)
-                 // for(int axial_pos = ret_viewgram.get_min_axial_pos_num(); axial_pos <= ret_viewgram.get_max_axial_pos_num(); axial_pos++)
-                   //    {
-                     //          STIRviewgram[axial_pos][ret_viewgram.get_max_tangential_pos_num()-tang_pos-1] = ret_viewgram[axial_pos][tang_pos];
-                      // }
+                 //PW Flip view and tangential positions here.
+                 Viewgram<float> STIRviewgram = projDataGE.get_empty_viewgram(projDataGE.get_num_views()-1-i_view, ret_viewgram.get_segment_num());
+                  for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(); tang_pos <= ret_viewgram.get_max_tangential_pos_num(); ++tang_pos)
+                  for(int axial_pos = ret_viewgram.get_min_axial_pos_num(); axial_pos <= ret_viewgram.get_max_axial_pos_num(); axial_pos++)
+                       {
+                               STIRviewgram[axial_pos][-tang_pos] = ret_viewgram[axial_pos][tang_pos];
+                       }
 
                  //PW Currently the scale factors are hardcorded.
                    //! \todo Get these from HDF5 file.
-                 ret_viewgram *= 2.2110049e-4;
+                 STIRviewgram *= 2.2110049e-4;
                    // This is now saved in STIR viewgrams.
-                     proj_data.set_viewgram(ret_viewgram);
+                     proj_data.set_viewgram(STIRviewgram);
             }
     return EXIT_SUCCESS;
 }
