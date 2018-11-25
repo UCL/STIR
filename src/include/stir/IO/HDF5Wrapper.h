@@ -58,6 +58,8 @@ public:
     Succeeded initialise_geo_factors_data(const std::string& path = "",
                                           const unsigned int slice_num=0);
 
+    Succeeded initialise_efficiency_factors(const std::string& path);
+
     Succeeded get_from_dataspace(std::streampos &current_offset,
                                  shared_ptr<char>& output);
 
@@ -74,13 +76,19 @@ public:
                                  Array<1, unsigned char> &output);
 
     //PW Here I added the get_from_2d_dataset which must read the hyperslab and memory space for 2D array
-    // with specific offset, count, stride and block. This dataset that is read from this memory space,
-    // is then read into a 1D output array.
+    // with specific offset, count, stride and block. This dataset is read from this memory space and then
+    // into a 1D output array.
     Succeeded get_from_2d_dataset(const std::array<unsigned long long, 2> &offset,
                                  const std::array<unsigned long long, 2> &count,
                                  const std::array<unsigned long long, 2> &stride,
                                  const std::array<unsigned long long, 2> &block,
                                  Array<1, unsigned int> &output);
+
+    Succeeded get_from_efficiency_dataset(const std::array<unsigned long long int, 2>& offset,
+                                            const std::array<unsigned long long int, 2>& count,
+                                            const std::array<unsigned long long int, 2>& stride,
+                                            const std::array<unsigned long long int, 2>& block,
+                                            Array<1, float> &output);
 
     inline H5::DataSet* get_dataset_ptr() const;
 
