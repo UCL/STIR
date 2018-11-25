@@ -78,7 +78,7 @@ public:
     //! Set Sinogram<float>
     Succeeded set_sinogram(const Sinogram<float>& s);
         std::vector< unsigned int > seg_ax_offset;
-        inline unsigned int find_segment_index_in_sequence(const int segment_num) const;
+        unsigned int find_segment_index_in_sequence(const int segment_num) const;
 
 private:
     inline unsigned int find_segment_offset(const int segment_num) const;

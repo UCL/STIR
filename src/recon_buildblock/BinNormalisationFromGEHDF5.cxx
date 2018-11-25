@@ -499,9 +499,9 @@ get_bin_efficiency(const Bin& bin, const double start_time, const double end_tim
 	float lor_efficiency_this_pair = 1.F;
 	if (this->use_detector_efficiencies())
 	  {
-	    lor_efficiency_this_pair =
-          efficiency_factors[pos1.axial_coord()][447-pos1.tangential_coord()] *
-          efficiency_factors[pos2.axial_coord()][447-pos2.tangential_coord()];
+        lor_efficiency_this_pair =1/
+          (efficiency_factors[pos1.axial_coord()][447-pos1.tangential_coord()] *
+          efficiency_factors[pos2.axial_coord()][447-pos2.tangential_coord()]);
 	  }
 	if (this->use_dead_time())
 	  {

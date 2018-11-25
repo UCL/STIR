@@ -134,7 +134,7 @@ private:
   virtual bool post_processing();
 
   string normalisation_GEHDF5_filename;
-  
+  shared_ptr<HDF5Wrapper> m_input_hdf5_sptr;
   HDF5Wrapper h5data;
 };
 
