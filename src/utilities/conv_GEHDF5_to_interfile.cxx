@@ -34,6 +34,7 @@
 #include "stir/Succeeded.h"
 #include "stir/NumericType.h"
 #include "stir/ProjDataFromHDF5.h"
+#include "stir/info.h"
 
 #define NUMARG 4
 
@@ -57,10 +58,11 @@ int main(int argc,char **argv)
     const std::string rdf_filename(argv[2]);
     shared_ptr<ProjDataInfo> template_projdata_info_sptr =
             ProjData::read_from_file(argv[3])->get_proj_data_info_sptr();
-
+    info("Converting RDF Uncompressed Sinogram to STIR interfile");
     shared_ptr<ProjData> template_projdata_ptr = ProjData::read_from_file(argv[3]);
     ProjDataInterfile proj_data(template_projdata_ptr->get_exam_info_sptr(), template_projdata_ptr->get_proj_data_info_sptr(),
                                 output_filename, std::ios::out);
+
 
     ProjDataFromHDF5 projDataGE(template_projdata_info_sptr, rdf_filename);
 
@@ -70,6 +72,6 @@ int main(int argc,char **argv)
             Viewgram<float> ret_viewgram = projDataGE.get_viewgram(i_view, i_seg);
             proj_data.set_viewgram(ret_viewgram);
         }
-
+    info("Sinogram converted");
     return EXIT_SUCCESS;
 }

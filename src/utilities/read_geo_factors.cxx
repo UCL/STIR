@@ -54,7 +54,7 @@ using std::fstream;
 using std::ios;
 #endif
 
-#define NUMARG 4
+#define NUMARG 5
 
 int main(int argc,char **argv)
 {
@@ -62,8 +62,9 @@ int main(int argc,char **argv)
 
     static const char * const options[]={
         "argv[1]  output_filename\n"
-        "argv[2]  RDF_filename\n"
+        "argv[2]  RDF_geo3d_filename\n"
         "argv[3]  template_projdata"
+        "argv[4]  RDF_Sino_Filename"
     };
     if (argc!=NUMARG){
         std::cerr << "\n\nConvert geometric correction factors into STIR interfile.\n\n";
@@ -73,7 +74,8 @@ int main(int argc,char **argv)
     }
 
     const std::string output_filename(argv[1]);
-    const std::string rdf_filename(argv[2]);
+    const std::string rdf_geo_filename(argv[2]);
+    const std::string rdf_sino_filename(argv[4]);
     shared_ptr<ProjDataInfo> template_projdata_info_sptr =
             ProjData::read_from_file(argv[3])->get_proj_data_info_sptr();
 
@@ -83,7 +85,7 @@ int main(int argc,char **argv)
     ProjDataInterfile proj_data(template_projdata_ptr->get_exam_info_sptr(), template_projdata_ptr->get_proj_data_info_sptr(),
                                 output_filename, std::ios::out);
 
-    ProjDataFromHDF5 projDataGE(template_projdata_info_sptr, rdf_filename);
+     ProjDataFromHDF5 projDataGE(template_projdata_info_sptr, rdf_sino_filename);
     for (int i_seg = projDataGE.get_min_segment_num(); i_seg <= projDataGE.get_max_segment_num(); ++i_seg)
             for(int i_view = projDataGE.get_min_view_num(); i_view <= projDataGE.get_max_view_num(); ++i_view)
             {
@@ -94,7 +96,7 @@ int main(int argc,char **argv)
                  // PW HDF5 Wrapper is initialised here and the address of the data is read subsequently.
                  shared_ptr<HDF5Wrapper> m_input_hdf5_sptr;
                  m_input_hdf5_sptr.reset(new HDF5Wrapper(rdf_filename));
-                 m_input_hdf5_sptr->initialise_geo_factors_data("",16-modulo(i_view,16)+1);
+                 m_input_hdf5_sptr->initialise_geo_factors_data("",modulo(i_view,16)+1);
 
                  // PW Here the data is read from the HDF5 array.
                  std::array<unsigned long long int, 2> stride = {1, 1};
@@ -110,12 +112,15 @@ int main(int argc,char **argv)
                  m_input_hdf5_sptr->get_from_2d_dataset(offset, count, stride, block, tmp);
 
                  std::copy(tmp.begin(),tmp.end(),ret_viewgram.begin_all());
+
                  //PW Flip tangential positions here .
-                 for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(); tang_pos <= ret_viewgram.get_max_tangential_pos_num(); ++tang_pos)
-                 for(int axial_pos = ret_viewgram.get_min_axial_pos_num(); axial_pos <= ret_viewgram.get_max_axial_pos_num(); axial_pos++)
-                      {
-                              ret_viewgram[axial_pos][-tang_pos] = ret_viewgram[axial_pos][tang_pos];
-                      }
+                 // Viewgram<float> STIRviewgram = projDataGE.get_empty_viewgram(projDataGE.get_num_views()-1-view, ret_viewgram.get_segment_num());
+                 // for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(); tang_pos <= ret_viewgram.get_max_tangential_pos_num(); ++tang_pos)
+                 // for(int axial_pos = ret_viewgram.get_min_axial_pos_num(); axial_pos <= ret_viewgram.get_max_axial_pos_num(); axial_pos++)
+                   //    {
+                     //          STIRviewgram[axial_pos][ret_viewgram.get_max_tangential_pos_num()-tang_pos-1] = ret_viewgram[axial_pos][tang_pos];
+                      // }
+
                  //PW Currently the scale factors are hardcorded.
                    //! \todo Get these from HDF5 file.
                  ret_viewgram *= 2.2110049e-4;
