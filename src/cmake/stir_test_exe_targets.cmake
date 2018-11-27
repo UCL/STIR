@@ -51,8 +51,8 @@
 #message(status dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES: ${${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}})
 
 
-if(NOT TARGET tests)
-  add_custom_target(tests)
+if(NOT TARGET BUILD_TESTS)
+  add_custom_target(BUILD_TESTS)
 endif()
 
 #### define macros
@@ -64,7 +64,7 @@ macro (create_stir_involved_test source  libraries dependencies)
    target_link_libraries(${executable} ${libraries})
    SET_PROPERTY(TARGET ${executable} PROPERTY FOLDER "Tests")
 
-   add_dependencies(tests ${executable})
+   add_dependencies(BUILD_TESTS ${executable})
   endif()
 endmacro( create_stir_involved_test)
 
