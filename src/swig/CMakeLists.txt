@@ -35,14 +35,14 @@ if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
     # a custom target that depends on the file.
     add_custom_command(
       OUTPUT STIR_DOXY2SWIG.i
-      DEPENDS doc
+      DEPENDS RUN_DOXYGEN
       COMMAND ${PYTHON_EXECUTABLE}
           ${CMAKE_SOURCE_DIR}/external_helpers/doxy2swig/doxy2swig.py -c
           ${CMAKE_BINARY_DIR}/xml/index.xml
           STIR_DOXY2SWIG.i
     )
     add_custom_target(
-      doxy2swig
+      RUN_DOXY2SWIG
       DEPENDS STIR_DOXY2SWIG.i)
     # Set a variable that will be passed to SWIG. It specifies the location of the generated .i file.
     # We need some interesting "escaping" to be able to pass a quoted string as a preprocessor variable to SWIG.
@@ -52,7 +52,7 @@ if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
     set(SWIG_DOXY_OPTIONS -DDOXY2SWIG_XML_INCLUDE_FILE="\\\"${CMAKE_CURRENT_BINARY_DIR}/STIR_DOXY2SWIG.i\\\"")
     # Set a variable that will be used below to indicate dependency on the generated .i
     # (It will be empty if BUILD_DOCUMENTATION is off).
-    set(SWIG_DOXY_TARGET doxy2swig) # ${CMAKE_CURRENT_BINARY_DIR}/STIR_DOXY2SWIG.i)
+    set(SWIG_DOXY_TARGET RUN_DOXY2SWIG) # ${CMAKE_CURRENT_BINARY_DIR}/STIR_DOXY2SWIG.i)
 
     #configure_file(stir.i.in ${CMAKE_CURRENT_BINARY_DIR}/stir.i)
   endif()

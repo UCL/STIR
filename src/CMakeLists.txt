@@ -271,7 +271,7 @@ if(BUILD_DOCUMENTATION)
       # Now add a custom target that depends on the doxygen.stamp.
       # We add this target to the dependency list of "ALL" to make sure it always gets run.
     add_custom_target(
-        doc ALL
+        RUN_DOXYGEN ALL
         DEPENDS doxygen.stamp)
 
 #    install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION share/doc/stir)
