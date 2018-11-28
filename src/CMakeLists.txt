@@ -205,7 +205,12 @@ configure_file(
 install(FILES "${CONF_INCLUDE_DIR}/stir/config.h" DESTINATION include/stir)
 
 #### install include files
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/src/include/" DESTINATION include)
+set (INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src/include")
+install(DIRECTORY "${INCLUDE_DIR}" DESTINATION include)
+
+#### find header files for re-use in stir_exe_targets.cmake and doxygen target
+include(FindAllHeaderFiles)
+find_all_header_files(ALL_HEADERS ALL_INLINES "${INCLUDE_DIR}/stir")
 
 #### STIR library
 include(stir_dirs)
@@ -214,12 +219,18 @@ include(stir_dirs)
 if(NOT DISABLE_STIR_LOCAL)
   find_path(STIR_LOCAL NAME "extra_stir_dirs.cmake" PATHS "${PROJECT_SOURCE_DIR}/src/local/" NO_DEFAULT_PATH)
   if (STIR_LOCAL)
+    # append any headers there
+    find_all_header_files(ALL_HEADERS ALL_INLINES "${STIR_LOCAL}")
+    # include user file
     include(${STIR_LOCAL}/extra_stir_dirs.cmake)
   endif()
 endif()
 
 # Include the experimental code
 if (STIR_ENABLE_EXPERIMENTAL)
+  # append any headers there
+  find_all_header_files(ALL_HEADERS ALL_INLINES "${INCLUDE_DIR}/stir_experimental")
+  # add the sub-dir
   ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/experimental)
 endif()
 
@@ -229,7 +240,6 @@ foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})
 #        INCLUDE(${STIR_DIR}/lib.cmake)
 endforeach(STIR_DIR)
 
-
 ## Build doxygen documentation
 # Has to be after previous things such that all variables are filled
 find_package(Doxygen)
@@ -238,6 +248,7 @@ if(BUILD_DOCUMENTATION)
     if(NOT DOXYGEN_FOUND)
         message(FATAL_ERROR "Doxygen is needed to build the documentation.")
     endif()
+endif()
 
 if(DOXYGEN_FOUND)
     if(DOXYGEN_DOT_FOUND)
