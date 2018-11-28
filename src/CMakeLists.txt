@@ -239,6 +239,7 @@ if(BUILD_DOCUMENTATION)
         message(FATAL_ERROR "Doxygen is needed to build the documentation.")
     endif()
 
+if(DOXYGEN_FOUND)
     if(DOXYGEN_DOT_FOUND)
         set(HAVE_DOT 1)
     	message(WARNING "Graphviz dot is not found. It is recommended to install Graphviz for nicer Doxygen documentation")
@@ -268,10 +269,16 @@ if(BUILD_DOCUMENTATION)
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM)
-      # Now add a custom target that depends on the doxygen.stamp.
-      # We add this target to the dependency list of "ALL" to make sure it always gets run.
+    # Now add a custom target that depends on the doxygen.stamp.
+    # If BUILD_DOCUMENTATION, we add this target to the dependency list of "ALL"
+    # to make sure it always gets run.
+    # Otheriwse, the user has to build the target manually.
+    if(BUILD_DOCUMENTATION)
+        set(DOXY_ALL ALL)
+    endif()
+      
     add_custom_target(
-        RUN_DOXYGEN ALL
+        RUN_DOXYGEN ${DOXY_ALL}
         DEPENDS doxygen.stamp)
 
 #    install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION share/doc/stir)
