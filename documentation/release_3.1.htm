@@ -219,9 +219,10 @@ You should normally not have to change these options.</li>
   preprocessor variables etc (as opposed to passing these on the compiler command line).
 </li>
 <li> added <code>BUILD_TESTING</code> and <code>BUILD_EXECUTABLES</code> options to reduce build time if you do not need those files</li>
-<li>install include files</li> 
-<li> CMake now has a flag to create the target "doc" for building the Doxygen documentation
-  thanks to Jannis Fischer.
+<li>install include files</li>
+<li> if doxygen is found, added the target <tt>RUN_DOXYGEN</tt> for building the
+   Doxygen documentation (thanks to Jannis Fischer). This target is always built if
+   <tt>BUILD_DOCUMENTATION</tt> is <tt>ON</tt>.
 </li>
 <li> Added a <tt>tests</tt> build target so that <tt>make tests</tt>
      (or whatever is appropriate for your build system) will build all
