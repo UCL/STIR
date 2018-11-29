@@ -57,6 +57,19 @@ mark_as_advanced(VERSION VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
+####### Installation directories
+# Use locations as in
+# https://gitlab.kitware.com/cmake/cmake/blob/master/Source/CMakeInstallDestinations.cmake
+# TODO append version numbers
+if(BEOS)
+  set(STIR_DOC_DIR "documentation/doc/stir")
+elseif(CYGWIN)
+  set(STIR_DOC_DIR "share/doc/stir")
+else()
+  set(STIR_DOC_DIR "doc/stir")
+endif()
+set(ConfigPackageLocation lib/cmake/)
+
 ####### External packages
 # Note: we need to have the find_package statements in the top-level CMakeLists.txt
 # such that we can use it in STIRConfig.cmake.in (see below).
@@ -130,8 +143,6 @@ WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/STIRConfigVersion.c
 #)
 
 ## create files specific to the "installed" version
-
-set(ConfigPackageLocation lib/cmake/)
 
 # Set STIR_INCLUDE_DIRS before exporting such that it will refer to
 # the installed files, not the source.

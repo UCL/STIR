@@ -292,7 +292,10 @@ if(DOXYGEN_FOUND)
         RUN_DOXYGEN ${DOXY_ALL}
         DEPENDS doxygen.stamp)
 
-#    install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION share/doc/stir)
+    if(BUILD_DOCUMENTATION)
+        # Doxyfile.in currently tells doxygen to output in PROJECT_BINARY_DIR
+        install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION ${STIR_DOC_DIR})
+    endif()
 endif()
 
 #### SWIG settings
