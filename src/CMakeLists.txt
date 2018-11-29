@@ -261,7 +261,7 @@ if(BUILD_DOCUMENTATION)
         OUTPUT doxygen.stamp
         DEPENDS ${doxyfile}
         COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
-        COMMAND cmake -E touch doxygen.stamp
+        COMMAND ${CMAKE_COMMAND} -E touch doxygen.stamp
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM)
