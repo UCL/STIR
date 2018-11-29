@@ -28,7 +28,7 @@
 # to display .h and .inl files in Qt-Creator
 foreach(executable ${${dir_EXE_SOURCES}})
  if(BUILD_EXECUTABLES)
-   add_executable(${executable} ${ALL_HEADERS} ${ALL_INLINES} ${executable} ${STIR_REGISTRIES})
+   add_executable(${executable} ${ALL_HEADERS} ${ALL_INLINES}  ${ALL_TXXS} ${executable} ${STIR_REGISTRIES})
    target_link_libraries(${executable} ${STIR_LIBRARIES})
    SET_PROPERTY(TARGET ${executable} PROPERTY FOLDER "Executables")
   endif()
