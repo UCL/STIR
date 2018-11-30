@@ -230,19 +230,19 @@ std::vector<float>detection_efficiency_unscattered;
 
   int index_photopeak = 0; //default for one energy window
 
-  if (this->template_exam_info_sptr->get_num_energy_windows()>1)
-  {
-     for (int i = 0 ; i < this->template_exam_info_sptr->get_num_energy_windows() ; ++i)
+ if (this->template_exam_info_sptr->get_num_energy_windows()>1)
+ {
+   for (int i = 0 ; i < this->template_exam_info_sptr->get_num_energy_windows() ; ++i)
      {
-            if( this->template_exam_info_sptr->get_high_energy_thres(i) >= 511.F &&  this->template_exam_info_sptr->get_low_energy_thres(i) <= 511.F)
+              if( this->template_exam_info_sptr->get_high_energy_thres(i) >= 511.F &&  this->template_exam_info_sptr->get_low_energy_thres(i) <= 511.F)
 
-            {
+              {
 
-                 index_photopeak = i;
-              }
+                  index_photopeak = i;
+               }
 
-     }
-   }
+       }
+    }
 
   //normalisation factor between trues and scattered counts
 
