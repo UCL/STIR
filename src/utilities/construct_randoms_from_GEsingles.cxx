@@ -173,6 +173,10 @@ int main(int argc, char **argv)
 
 
 
+    shared_ptr<HDF5Wrapper> m_input_sptr;
+    m_input_sptr.reset(new HDF5Wrapper(_listmode_filename));
+    int num_slices = m_input_sptr->get_timeframe_definitions()->get_num_frames();
+
     Bin bin;
     Bin uncompressed_bin;
 
@@ -229,17 +233,13 @@ int main(int argc, char **argv)
 
                 int ra = 0, a = 0;
                 int rb = 0, b = 0;
-
-                shared_ptr<HDF5Wrapper> m_input_sptr;
-                m_input_sptr.reset(new HDF5Wrapper(_listmode_filename));
-                int num_slices = m_input_sptr->get_timeframe_definitions()->get_num_frames();
                 uncompressed_proj_data_info_ptr->get_det_pair_for_bin(a, ra, b, rb,
                                               uncompressed_bin);
 
+                float coincidence_time_window = 0.00000000457f;
                 /*(*segment_ptr)[bin.axial_pos_num()]*/
                 sinogram[bin.view_num()][bin.tangential_pos_num()] +=
-                num_slices*0.00000000457*efficiencies[ra][447-a]*efficiencies[rb][447-b%num_detectors_per_ring];
-               std::cout<<num_slices<<std::endl;
+                num_slices*coincidence_time_window*efficiencies[ra][447-a]*efficiencies[rb][447-b%num_detectors_per_ring];
                 }
               }
               }
