@@ -83,3 +83,5 @@ install_manifest.txt
 
 # other stuff
 .cache
+*.idea
+*.user
