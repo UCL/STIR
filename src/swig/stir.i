@@ -475,6 +475,10 @@
 %}
 
 %feature("autodoc", "1");
+// Use include set by build
+#if defined(DOXY2SWIG_XML_INCLUDE_FILE)
+%include DOXY2SWIG_XML_INCLUDE_FILE
+#endif
 
 // TODO doesn't work
 %warnfilter(315) std::unique_ptr;
