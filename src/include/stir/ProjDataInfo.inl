@@ -90,7 +90,7 @@ ProjDataInfo::get_tof_bin(const double& delta) const
   if (!is_tof_data())
     return 0;
 
-  for (int i = min_tof_pos_num; i <= max_tof_pos_num; i++)
+  for (int i = min_tof_pos_num; i <= max_tof_pos_num; ++i)
   {
     if (delta >= tof_bin_boundaries_ps[i].low_lim &&
       delta < tof_bin_boundaries_ps[i].high_lim)
@@ -99,6 +99,28 @@ ProjDataInfo::get_tof_bin(const double& delta) const
   // TODO handle differently
   warning(boost::format("TOF delta time %g out of range") % delta);
   return 0;
+}
+
+int
+ProjDataInfo::get_unmashed_tof_bin(const double& delta) const
+{
+  if (!is_tof_data())
+    return 0;
+
+  float d = tof_bin_boundaries_ps[min_tof_pos_num].low_lim;
+  float dd = tof_bin_boundaries_ps[max_tof_pos_num].high_lim;
+
+  if (delta < tof_bin_boundaries_ps[min_tof_pos_num].low_lim &&
+          delta > tof_bin_boundaries_ps[max_tof_pos_num].high_lim)
+  {
+      // TODO handle differently
+      warning(boost::format("TOF delta time %g out of range") % delta);
+      return 0;
+  }
+
+  return delta * get_scanner_ptr()->get_num_max_of_timing_poss() /
+          get_coincidence_window_in_pico_sec();
+
 }
 
 int

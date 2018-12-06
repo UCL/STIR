@@ -203,6 +203,9 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
         min_tof_pos_num = - (scanner_ptr->get_num_max_of_timing_poss() / tof_mash_factor)/2;
         max_tof_pos_num = min_tof_pos_num + (scanner_ptr->get_num_max_of_timing_poss() / tof_mash_factor) -1;
 
+        min_unmashed_tof_pos_num = - (scanner_ptr->get_num_max_of_timing_poss())/2;
+        max_unmashed_tof_pos_num = min_tof_pos_num + (scanner_ptr->get_num_max_of_timing_poss()) -1;
+
         num_tof_bins = max_tof_pos_num - min_tof_pos_num +1 ;
 
         // Ensure that we have a central tof bin.

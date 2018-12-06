@@ -221,6 +221,9 @@ public:
   inline int get_num_tangential_poss() const;
   //! Get number of tof bins
   inline int get_tof_bin(const double& delta) const;
+
+  inline int get_unmashed_tof_bin(const double& delta) const;
+
   //! Get number of TOF bins
   inline int get_num_tof_poss() const;
   //! Get minimum segment number
@@ -450,6 +453,10 @@ private:
   int min_tof_pos_num;
   //! Maximum TOF pos
   int max_tof_pos_num;
+  //! Minimum TOF pos regardless of the mashing factor
+  int min_unmashed_tof_pos_num;
+  //! Maximum TOF pos regardless of the mashing factor
+  int max_unmashed_tof_pos_num;
   //! TOF mash factor.
   int tof_mash_factor;
   //! Finally (with any mashing factor) TOF bin increament.

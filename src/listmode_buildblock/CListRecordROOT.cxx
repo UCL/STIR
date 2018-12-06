@@ -51,7 +51,8 @@ void CListEventROOT::get_detection_position(DetectionPositionPair<>& _det_pos) c
 
     _det_pos.pos1() = det1;
     _det_pos.pos2() = det2;
-    _det_pos.timing_pos() = this->get_uncompressed_proj_data_info_sptr()->get_tof_bin(delta_time);
+//    _det_pos.timing_pos() = this->get_uncompressed_proj_data_info_sptr()->get_tof_bin(delta_time);
+    _det_pos.timing_pos() = this->get_uncompressed_proj_data_info_sptr()->get_unmashed_tof_bin(delta_time);
 }
 
 void CListEventROOT::set_detection_position(const DetectionPositionPair<>&)
