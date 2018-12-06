@@ -7,6 +7,7 @@
   \brief Declaration of class SeparableGaussianImageFilter
     
   \author Kris Thielemans
+  \author Sanida Mustafovic
   \author Ludovica Brusaferri
       
 */

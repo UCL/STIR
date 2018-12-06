@@ -9,6 +9,7 @@
   \see class stir::SeparableMetzArrayFilter
 
   \author Kris Thielemans
+  \author Sanida Mustafovic
   \author Ludovica Brusaferri
 
    $Date: 
