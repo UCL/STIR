@@ -28,6 +28,7 @@
   \author Kris Thielemans
   \author Claire Labbe
   \author PARAPET project
+  \author Ludovica Brusaferri
 
 
 
@@ -90,9 +91,6 @@
 */
 
 #include "stir/common.h"
-#include "stir/DiscretisedDensity.h"
-#include "stir/PostFiltering.h"
-#include "stir/DataProcessor.h"
 #include "stir/ZoomOptions.h"
 
 START_NAMESPACE_STIR
@@ -193,19 +191,15 @@ zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
   (as returned by 
   DiscretisedDensity\<3,float\>::get_physical_coordinates_for_indices)
   remain the same.
+
+    The code also provides for three possible rescaling options:
+   (i)   preserving the image values: should be used when zooming an attenuation image
+   (ii)  preserving the image projectors: should be used when zooming an activity image
+   (iii) preserving the image sum: default
 */
 void 
 zoom_image(VoxelsOnCartesianGrid<float> &image_out, 
        const VoxelsOnCartesianGrid<float> &image_in, const ZoomOptions::ZO &zo = ZoomOptions::preserve_sum);
-
-/*!
-\brief
-zoom and posfilter \a image_in according to dimensions, origin and voxel_size of \a image_out.
-*/
-
-void
-zoom_image_and_postfilter(VoxelsOnCartesianGrid<float> &image_out,
-       const VoxelsOnCartesianGrid<float> &image_in, const ZoomOptions::ZO &zo, const std::string& postfilter_parameter_filename);
 
 //------------------ 2D zooms---------------------
 

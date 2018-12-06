@@ -26,6 +26,7 @@
   \author Kris Thielemans
   \author Claire Labbe
   \author PARAPET project
+  \author Ludovica Brusaferri
 
 
 */
@@ -445,20 +446,12 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
 
   overlap_interpolate(image_out, temp2, zoom_z, z_offset);
 
-
-  /* The code provides for three possible rescaling options:
-   * preserving the image values: should be used when zooming an attenuation image
-   * preserving the image projectors: should be used when zooming an activity image
-   * preserving the image sum: DEFAULT*/
-
   float scale_image = 1.F;
 
     switch (zo)
   {
   case ZoomOptions::preserve_values:
   {
-      std::cerr << "Zoom - Rescaling Factor: preserve values\n";
-
       scale_image =  zoom_x*zoom_y*zoom_z;
       break;
   }
@@ -466,15 +459,12 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
   case ZoomOptions::preserve_projections:
 
   {
-      std::cerr << "Zoom - Rescaling Factor: preserve projectors\n";
-
       scale_image =  zoom_y*zoom_z;
       break;
   }
 
   case ZoomOptions::preserve_sum:
   {
-     std::cerr << "Zoom - Rescaling Factor: preserve sum\n";
       return; // no need to scale
   }
 
@@ -482,19 +472,6 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
 
 
    image_out*= scale_image;
-
-}
-
-void
-zoom_image_and_postfilter(VoxelsOnCartesianGrid<float> &image_out,
-       const VoxelsOnCartesianGrid<float> &image_in, const ZoomOptions::ZO &zo, const std::string& postfilter_parameter_filename)
-{
-    zoom_image(image_out, image_in, zo);
-
-    //apply filter
-    PostFiltering <DiscretisedDensity<3,float> > filter;
-    filter.parse(postfilter_parameter_filename.c_str());
-    filter.process_data(image_out);
 
 }
 
