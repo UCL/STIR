@@ -90,6 +90,10 @@
 */
 
 #include "stir/common.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/PostFiltering.h"
+#include "stir/DataProcessor.h"
+#include "stir/ZoomOptions.h"
 
 START_NAMESPACE_STIR
 
@@ -192,7 +196,16 @@ zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
 */
 void 
 zoom_image(VoxelsOnCartesianGrid<float> &image_out, 
-	   const VoxelsOnCartesianGrid<float> &image_in);
+       const VoxelsOnCartesianGrid<float> &image_in, const ZoomOptions::ZO &zo = ZoomOptions::preserve_sum);
+
+/*!
+\brief
+zoom and posfilter \a image_in according to dimensions, origin and voxel_size of \a image_out.
+*/
+
+void
+zoom_image_and_postfilter(VoxelsOnCartesianGrid<float> &image_out,
+       const VoxelsOnCartesianGrid<float> &image_in, const ZoomOptions::ZO &zo, const std::string& postfilter_parameter_filename);
 
 //------------------ 2D zooms---------------------
 
