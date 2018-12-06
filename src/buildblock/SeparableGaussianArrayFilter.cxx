@@ -1,3 +1,36 @@
+//
+//
+/*!
+
+  \file
+  \ingroup Array
+
+  \brief Implementations for class stir::SeparableGaussianArrayFilter
+
+  \author Kris Thielemans
+  \author Sanida Mustafovic
+  \author Ludovica Brusaferri
+
+*/
+/*
+    Copyright (C) 2000 - 2009-06-22, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2018, University of Hull
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+
+    See STIR/LICENSE.txt for details
+*/
 
 #include "stir/SeparableGaussianArrayFilter.h"
 #include "stir/ArrayFilter1DUsingConvolution.h"
@@ -92,12 +125,12 @@ calculate_coefficients(VectorWithOffset<elemT>& filter_coefficients, const int m
       return;
   }
 
-  const int kernel_lenght = max_kernel_sizes/2;
-  filter_coefficients.grow(-kernel_lenght,kernel_lenght);
+  const int kernel_length = max_kernel_sizes/2;
+  filter_coefficients.grow(-kernel_length,kernel_length);
 
   filter_coefficients[0] = 1/sqrt(2*square(standard_deviation)*_PI);
 
-  for (int i = 1; i<=kernel_lenght;i++)
+  for (int i = 1; i<=kernel_length;i++)
   { 
     filter_coefficients[i] = 
       filter_coefficients[-i]= 
@@ -122,14 +155,10 @@ if (normalise)
           sum +=double (filter_coefficients[i]);
         }
 
-        cerr << " SUM IS " << sum << endl;
-
         for (int i =filter_coefficients.get_min_index();i<=filter_coefficients.get_max_index();i++)
         {
          filter_coefficients[i] /= sum;
         }
-
-        cerr << " here  - rescaled" << endl;
 
     }
 

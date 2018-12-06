@@ -6,15 +6,16 @@
   \file
   \ingroup ImageProcessor
   \brief Declaration of class stir::SeparableGaussianArrayFilter
+  \see class stir::SeparableMetzArrayFilter
 
-  \author Sanida Mustafovic
   \author Kris Thielemans
+  \author Ludovica Brusaferri
 
    $Date: 
    $Revision: 
 */
 /*
-    Copyright (C) 2000- 2002, IRSL
+    Copyright (C) 2000- 2002, IRSL and UCL
     See STIR/LICENSE.txt for details
 */
 
@@ -30,6 +31,19 @@
 
 START_NAMESPACE_STIR
 
+/*!
+  \ingroup Array
+  \brief Separable Gaussian filtering in \c n - dimensions
+
+  The implementation follows the same discretisation strategy used for the Metz filter.
+  \see SeparableMetzArrayFilter for what a Metz filter is.
+
+  For power 0, the Metz filterthe reduces to the Gaussian filter in frequency-space.
+  However, if the FWHM is not a lot larger than the sampling distance it will give small negative values.
+  Therefore, if a Gaussian filter is needed, the SeparableGaussianArrayFilter is preferable to a Metz filter
+  with power 0.
+
+ */
 
 template <int num_dimensions, typename elemT>
 class SeparableGaussianArrayFilter:
