@@ -723,11 +723,11 @@ DataSymmetriesForBins_PET_CartesianGridTests::run_tests()
     proj_data_info_sptr.reset(
       ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
                     /*span=*/11,
-                    /*max_delta=*/scanner_sptr->get_num_rings()-1,
+                    /*max_delta=*/5,
                     /*num_views=*/scanner_sptr->get_num_detectors_per_ring()/8,
                     /*num_tang_poss=*/64,
                     /*arc_corrected*/false,
-                    /*tof_mashing*/100));
+                    /*tof_mashing*/116));
 
 
     run_tests_for_1_projdata(proj_data_info_sptr);
