@@ -82,6 +82,9 @@ class Succeeded;
       \warning This information is only sensible for discrete detector-based scanners.
       \warning Currently, in a TOF compatible scanner template, the last three types have to
                 be explicitly defined to avoid ambiguity.
+      \warning The energy resolution has to be specified but it is used only for scatter correction.
+      \warning In order to define a nonTOF scanner the timing resolution has to be set to 0 or 1.
+                Anything else will trigger a TOF reconstruction.
       \todo Some scanners do not have all info filled in at present. Values are then
       set to 0.
 
@@ -113,8 +116,8 @@ class Scanner
      any given parameters.
   */
   enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, test_scanner, Siemens_mMR, RPT,HiDAC,
-         Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600,Discovery690,PETMR_Signa,
-         HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,
+         Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600,Discovery690,PETMR_Signa, PETMR_Signa_nonTOF,
+         HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,ntest_TOF_50,
 	     Unknown_scanner};
   
   //! constructor that takes scanner type as an input argument

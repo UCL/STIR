@@ -154,20 +154,14 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
     float high_dist = 0.f;
 
     float d1;
-    //float step =  100000.f / 8.f;
-    //int p1, p2;
 
-    // THe direction can be from 1 -> 2 depending on the bin sign.
+    // The direction can be from 1 -> 2 depending on the bin sign.
     const CartesianCoordinate3D<float> middle = (point1 + point2)*0.5f;
-    const CartesianCoordinate3D<float> difference = point2 - point1;
+    const CartesianCoordinate3D<float> diff = point2 - middle;
 
-//    const CartesianCoordinate3D<float> diff = point2 - middle;
-
-    const float denom = 1.f / inner_product(difference, difference);
-
-    const float lor_length = 2.f / (std::sqrt(difference.x() * difference.x() +
-                                        difference.y() * difference.y() +
-                                        difference.z() * difference.z()));
+    const float lor_length = 1.f / (std::sqrt(diff.x() * diff.x() +
+                                        diff.y() * diff.y() +
+                                        diff.z() * diff.z()));
 
     for (ProjMatrixElemsForOneBin::iterator element_ptr = probabilities.begin();
          element_ptr != probabilities.end(); ++element_ptr)
@@ -175,57 +169,28 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
         Coordinate3D<int> c(element_ptr->get_coords());
         symm_ptr->transform_image_coordinates(c);
 
-//        voxel_center =
-//                image_info_sptr->get_physical_coordinates_for_indices (c);
+        voxel_center =
+                image_info_sptr->get_physical_coordinates_for_indices (c);
 
-//        project_point_on_a_line(point1, point2, voxel_center);
+        project_point_on_a_line(point1, point2, voxel_center);
 
-//        const CartesianCoordinate3D<float> x = voxel_center - middle;
+        const CartesianCoordinate3D<float> x = voxel_center - middle;
 
-//        const float d2 = -inner_product(x, diff) * lor_length;
+        const float d2 = -inner_product(x, diff) * lor_length;
+
+        low_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d2) * r_sqrt2_gauss_sigma);
+        high_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin_ptr()->timing_pos_num()].high_lim - d2) * r_sqrt2_gauss_sigma);
 
 
-        // The following is the optimisation of the previous:
-        {
-            voxel_center =
-                    image_info_sptr->get_physical_coordinates_for_indices (c);
-
-            const CartesianCoordinate3D<float> x =  point2 - voxel_center;
-
-            const float u = inner_product(x, difference) * denom;
-
-            voxel_center[3] = point1[3] + u * difference[3];
-            voxel_center[2] = point1[2] + u * difference[2];
-            voxel_center[1] = point1[1] + u * difference[1];
-
-            const CartesianCoordinate3D<float> x_dim = voxel_center - middle;
-
-            d1 = -inner_product(x_dim, difference) * lor_length;
-
-        }
-
-        low_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d1) * r_sqrt2_gauss_sigma);
-        high_dist = ((proj_data_info_sptr->tof_bin_boundaries_mm[probabilities.get_bin_ptr()->timing_pos_num()].high_lim - d1) * r_sqrt2_gauss_sigma);
-
-        //p1 = (((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].low_lim - d1) * r_sqrt2_gauss_sigma) + 4.f) * step;
-        //p2 = (((proj_data_info_sptr->tof_bin_boundaries_mm[tof_probabilities.get_bin_ptr()->timing_pos_num()].high_lim - d1) * r_sqrt2_gauss_sigma) + 4.f) * step;
-
-//        if (p1 < 0 || p2 < 0 ||
-//                p1 >= 100000 || p2 >= 100000)
-//        {
-//            *element_ptr = ProjMatrixElemsForOneBin::value_type(c, 0.0f);
-//            continue;
-//        }
-
-        if (low_dist >= 4.f || high_dist >= 4.f ||
-                low_dist <= -4.f || high_dist <= -4.f)
+        if ((low_dist >= 4.f && high_dist >= 4.f) ||
+                (low_dist <= -4.f && high_dist <= -4.f))
         {
             *element_ptr = ProjMatrixElemsForOneBin::value_type(c, 0.0f);
             continue;
         }
 
         get_tof_value(low_dist, high_dist, new_value);
-        //new_value = element_ptr->get_value() *(cache_erf[p2] - cache_erf[p1]);
+        new_value *= element_ptr->get_value();
         *element_ptr = ProjMatrixElemsForOneBin::value_type(c, new_value);
     }
 }

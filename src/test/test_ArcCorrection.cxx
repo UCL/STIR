@@ -189,7 +189,7 @@ ArcCorrectionTests::run_tests_tof()
 
 	shared_ptr<ProjDataInfo> proj_data_info_ptr(
 		ProjDataInfo::ProjDataInfoGE(scanner_ptr,
-			/*max_delta*/ 10,/*views*/ 224, /*tang_pos*/ 357, /*arc_corrected*/ false, /*tof_mashing_factor*/ 39));
+            /*max_delta*/ 10,/*views*/ 224, /*tang_pos*/ 357, /*arc_corrected*/ false, /*tof_mashing_factor*/ 116));
 
 	cerr << "Using default range and bin-size\n";
 	{

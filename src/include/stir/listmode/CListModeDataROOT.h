@@ -178,6 +178,10 @@ private:
     float size_timing_bin;
 
     float timing_resolution;
+
+    float energy_resolution;
+
+    float reference_energy;
 //@}
 
     int tof_mash_factor;

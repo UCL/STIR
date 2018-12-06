@@ -59,6 +59,9 @@ CListModeDataROOT(const std::string& hroot_filename)
     this->parser.add_key("Maximum number of non-arc-corrected bins", &this->max_num_non_arccorrected_bins);
     // end Scanner and physical dimensions.
 
+    this->parser.add_key("energy resolution", &this->energy_resolution);
+    this->parser.add_key("reference energy", &this->reference_energy);
+
     this->parser.add_key("number of TOF time bins", &this->max_num_timing_bins);
     this->parser.add_key("Size of timing bin (ps)", &this->size_timing_bin);
     this->parser.add_key("Timing resolution (ps)", &this->timing_resolution);
@@ -143,6 +146,8 @@ CListModeDataROOT(const std::string& hroot_filename)
                                              /*num_transaxial_crystals_per_singles_unit_v*/
                                              this->root_file_sptr->get_num_trans_crystals_per_singles_unit(),
                                              /*num_detector_layers_v*/ 1,
+                                            this->energy_resolution,
+                                            this->reference_energy,
                                             /* maximum number of timing bins */
                                              max_num_timing_bins,
                                             /* size of basic TOF bin */
