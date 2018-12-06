@@ -107,9 +107,6 @@ ProjDataInfo::get_unmashed_tof_bin(const double& delta) const
   if (!is_tof_data())
     return 0;
 
-  float d = tof_bin_boundaries_ps[min_tof_pos_num].low_lim;
-  float dd = tof_bin_boundaries_ps[max_tof_pos_num].high_lim;
-
   if (delta < tof_bin_boundaries_ps[min_tof_pos_num].low_lim &&
           delta > tof_bin_boundaries_ps[max_tof_pos_num].high_lim)
   {
