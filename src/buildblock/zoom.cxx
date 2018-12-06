@@ -447,11 +447,9 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
 
 
   /* The code provides for three possible rescaling options:
-   * preserving the image values,
-   * preserving the image projectors,
-   * preserving the image sum
-
-    DEFAULT: Preserve image sum*/
+   * preserving the image values: should be used when zooming an attenuation image
+   * preserving the image projectors: should be used when zooming an activity image
+   * preserving the image sum: DEFAULT*/
 
   float scale_image = 1.F;
 
