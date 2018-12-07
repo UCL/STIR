@@ -206,7 +206,7 @@ install(FILES "${CONF_INCLUDE_DIR}/stir/config.h" DESTINATION include/stir)
 
 #### install include files
 set (INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src/include")
-install(DIRECTORY "${INCLUDE_DIR}" DESTINATION include)
+install(DIRECTORY "${INCLUDE_DIR}/" DESTINATION include)
 
 #### find header files for re-use in stir_exe_targets.cmake and doxygen target
 include(FindAllHeaderFiles)
