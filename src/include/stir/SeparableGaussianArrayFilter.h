@@ -16,7 +16,9 @@
    $Revision: 
 */
 /*
-    Copyright (C) 2000- 2002, IRSL and UCL
+    Copyright (C) 2000 - 2009-06-22, Hammersmith Imanet Ltd
+    Copyright (C) 2011-07-01 - 2011, Kris Thielemans
+    Copyright (C) 2018, UCL
     See STIR/LICENSE.txt for details
 */
 
@@ -40,7 +42,7 @@ START_NAMESPACE_STIR
   \see SeparableMetzArrayFilter for what a Metz filter is.
 
   For power 0, the Metz filterthe reduces to the Gaussian filter in frequency-space.
-  However, if the FWHM is not a lot larger than the sampling distance it will give small negative values.
+  However, if the FWHM is not a lot larger than the sampling distance the Metz filter will give small negative values.
   Therefore, if a Gaussian filter is needed, the SeparableGaussianArrayFilter is preferable to a Metz filter
   with power 0.
 
@@ -55,17 +57,23 @@ public:
   //! Default constructor
   SeparableGaussianArrayFilter();  
   
+  //! Constructor
+  /*!
+  \param fwhms: the FWHM of the Gaussian 1D filters (in mm)
+  \param max_kernel_sizes maximum number of elements in the kernels.
+          -1 means unrestricted
+  */
 
   SeparableGaussianArrayFilter(const BasicCoordinate< num_dimensions,float>&  fwhm,
                                const BasicCoordinate< num_dimensions,int>&  max_kernel_sizes,
-                               bool normalise = false);
+                               bool normalise = true);
   
   SeparableGaussianArrayFilter(const float fwhm,
                                const float  max_kernel_sizes,
-                               bool normalise = false);
+                               bool normalise = true);
 private:
 
-  void construct_filter(bool normalise = false);
+  void construct_filter(bool normalise = true);
 
   void calculate_coefficients(VectorWithOffset<elemT>& filter_coefficients,
                 const int max_kernel_sizes,

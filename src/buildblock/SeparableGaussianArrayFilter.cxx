@@ -15,7 +15,7 @@
 /*
     Copyright (C) 2000 - 2009-06-22, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-    Copyright (C) 2018, University of Hull
+    Copyright (C) 2018, UCL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -128,7 +128,7 @@ calculate_coefficients(VectorWithOffset<elemT>& filter_coefficients, const int m
   const int kernel_length = max_kernel_sizes/2;
   filter_coefficients.grow(-kernel_length,kernel_length);
 
-  filter_coefficients[0] = 1/sqrt(2*square(standard_deviation)*_PI);
+  filter_coefficients[0] = static_cast<elemT>(1/sqrt(2*square(standard_deviation)*_PI));
 
   for (int i = 1; i<=kernel_length;i++)
   { 
@@ -149,7 +149,7 @@ if (normalise)
 
     {
 
-        float sum = 0.F;
+        double sum = 0.;
         for (int i =filter_coefficients.get_min_index();i<=filter_coefficients.get_max_index();i++)
         {
           sum +=double (filter_coefficients[i]);

@@ -12,7 +12,8 @@
       
 */
 /*
-    Copyright (C) 2000- 2007, Hammersmith Imanet and UCL
+    Copyright (C) 2000- 2007, Hammersmith Imanet
+    Copyright (C) 2018, UCL
     See STIR/LICENSE.txt for details
 */
 
@@ -34,7 +35,7 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup ImageProcessor
-  \brief A class in the ImageProcessor hierarchy that implements Gaussian filtering.
+  \brief A class in the DataProcessor hierarchy that implements Gaussian filtering.
 
   As it is derived from RegisteredParsingObject, it implements all the
   necessary things to parse parameter files etc.

@@ -3563,9 +3563,11 @@ a Cartesian voxel grid. These filters are composed of 3 1D filter
 kernels, one for the x,y and z directions each. Each 1D filter
 is specified by a Full Width at Half Maximum (FWHM) parameter
 (in millimetres), and a maximum spatial kernel width.
-The filter can be optionally normalised to 1.
-
+The kernel values are obtained by sampling a Gaussian.
 The rules which apply to the construction and application of the Gaussian filter follow the one of the Metz filter.
+
+The filter is normalised to 1 by default, but the user can choose to disable this option.
+
 
 { \subsubsubsubsection{Parameters}
 }
@@ -3581,6 +3583,11 @@ z-dir maximum kernel size := 31
 Normalise filter to 1 := 1
 end separable gaussian filter parameters :=
 \end{verbatim}
+
+Default values are:
+(i) fwhm = 0 , which means no filtering
+(ii) maximum kernel size = -1 , which means unrestricted
+(iii) normalise filter to 1 = 1, which means that the filter is normalised to 1.
 
 { \subsubsubsection{Median}
 }
