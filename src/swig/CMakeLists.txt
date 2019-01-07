@@ -1,5 +1,5 @@
 # Copyright 2012 Kris Thielemans
-# Copyright 2014 University College London
+# Copyright 2014, 2018 University College London
 # This file is part of STIR.
 #
 # This file is free software; you can redistribute it and/or modify
@@ -28,6 +28,35 @@ if(BUILD_SWIG_PYTHON OR BUILD_SWIG_OCTAVE OR BUILD_SWIG_MATLAB)
   SET_SOURCE_FILES_PROPERTIES(stir.i PROPERTIES CPLUSPLUS ON)
   # some include files in STIR have "#ifdef SWIG" statements, so we defined the variable here
   add_definitions(-D SWIG)
+
+  if(BUILD_DOCUMENTATION)
+    # We use doxy2swig to convert the doxygen-generated xml to a swig file
+    # Note the "standard" CMake trick of first adding a custom command that generates a file, and then
+    # a custom target that depends on the file.
+    add_custom_command(
+      OUTPUT STIR_DOXY2SWIG.i
+      DEPENDS RUN_DOXYGEN
+      COMMAND ${PYTHON_EXECUTABLE}
+          ${CMAKE_SOURCE_DIR}/external_helpers/doxy2swig/doxy2swig.py -c
+          ${CMAKE_BINARY_DIR}/xml/index.xml
+          STIR_DOXY2SWIG.i
+    )
+    add_custom_target(
+      RUN_DOXY2SWIG
+      DEPENDS STIR_DOXY2SWIG.i)
+    # Set a variable that will be passed to SWIG. It specifies the location of the generated .i file.
+    # We need some interesting "escaping" to be able to pass a quoted string as a preprocessor variable to SWIG.
+    # (The value of the preprocessor variables needs to have the quotes, as SWIG doesn't
+    # substitute preprocessor variables inside quotes).
+    # (SWIG_DOXY_OPTIONS will be empty if BUILD_DOCUMENTATION is off).
+    set(SWIG_DOXY_OPTIONS -DDOXY2SWIG_XML_INCLUDE_FILE="\\\"${CMAKE_CURRENT_BINARY_DIR}/STIR_DOXY2SWIG.i\\\"")
+    # Set a variable that will be used below to indicate dependency on the generated .i
+    # (It will be empty if BUILD_DOCUMENTATION is off).
+    set(SWIG_DOXY_TARGET RUN_DOXY2SWIG) # ${CMAKE_CURRENT_BINARY_DIR}/STIR_DOXY2SWIG.i)
+
+    #configure_file(stir.i.in ${CMAKE_CURRENT_BINARY_DIR}/stir.i)
+  endif()
+
 endif()
 
 if(BUILD_SWIG_PYTHON)
@@ -43,7 +72,7 @@ if(BUILD_SWIG_PYTHON)
   # TODO probably better to call the module stirpy or something
   # TODO -builtin option only appropriate for python
   # while the next statement sets it for all modules called stir
-  SET(SWIG_MODULE_stir_EXTRA_FLAGS -builtin)
+  SET(SWIG_MODULE_stir_EXTRA_FLAGS -builtin ${SWIG_DOXY_OPTIONS})
   if (CMAKE_VERSION VERSION_LESS "3.8")
     SWIG_ADD_MODULE(stir python stir.i ${STIR_REGISTRIES})
   else()
@@ -52,7 +81,9 @@ if(BUILD_SWIG_PYTHON)
   SWIG_LINK_LIBRARIES(stir ${STIR_LIBRARIES} ${PYTHON_LIBRARIES})
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stir_REAL_NAME} PROPERTIES
         LINK_FLAGS "${OpenMP_EXE_LINKER_FLAGS}")  
-
+  if (SWIG_DOXY_TARGET)
+    add_dependencies(${SWIG_MODULE_stir_REAL_NAME} ${SWIG_DOXY_TARGET})
+  endif()
   CONFIGURE_FILE(./pyfragments.swg ./ COPYONLY)
 
   set(PYTHON_DEST ${CMAKE_INSTALL_PREFIX}/python CACHE PATH "Destination for python module")
@@ -90,7 +121,7 @@ if (BUILD_SWIG_OCTAVE)
   SET(OCTAVE_SUFFIX ".oct")
   SET(OCTAVE_PREFIX "")
 
-  SET(SWIG_MODULE_stiroct_EXTRA_FLAGS -module stiroct)
+  SET(SWIG_MODULE_stiroct_EXTRA_FLAGS -module stiroct ${SWIG_DOXY_OPTIONS})
   if (CMAKE_VERSION VERSION_LESS "3.8")
     SWIG_ADD_MODULE(stiroct octave stir.i ${STIR_REGISTRIES})
   else()
@@ -98,6 +129,9 @@ if (BUILD_SWIG_OCTAVE)
   endif()
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stiroct_REAL_NAME} PROPERTIES SUFFIX ${OCTAVE_SUFFIX} PREFIX "${OCTAVE_PREFIX}")
   SWIG_LINK_LIBRARIES(stiroct ${STIR_LIBRARIES} ${OCTAVE_LIBRARIES})
+  if (SWIG_DOXY_TARGET)
+    add_dependencies(${SWIG_MODULE_stiroct_REAL_NAME} ${SWIG_DOXY_TARGET})
+  endif()
 
   # add OCTAVE_INCFLAGS to swig-generated file only, not to all files as 
   # 1) we don't need it at the moment 2) we'd need to change from -Ibla to bla
@@ -113,7 +147,7 @@ endif (BUILD_SWIG_OCTAVE)
 if (BUILD_SWIG_MATLAB)
 
   set(module_name stir)
-  SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module ${module_name} )
+  SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module ${module_name} ${SWIG_DOXY_OPTIONS})
   if (CMAKE_VERSION VERSION_LESS "3.8")
     SWIG_ADD_MODULE(stirMATLAB matlab stir.i ${STIR_REGISTRIES})
   else()
@@ -123,6 +157,9 @@ if (BUILD_SWIG_MATLAB)
         SUFFIX "_wrap.${MATLAB_MEX_EXT}" PREFIX "${MATLAB_PREFIX}"
         LINK_FLAGS "${MATLAB_CXXLINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}"
         FOLDER "Matlab")  
+  if (SWIG_DOXY_TARGET)
+    add_dependencies(${SWIG_MODULE_stirMATLAB_REAL_NAME} ${SWIG_DOXY_TARGET})
+  endif()
   SWIG_LINK_LIBRARIES(stirMATLAB ${STIR_LIBRARIES}  ${MATLAB_LIBRARIES})
 
   include_directories(${MATLAB_INCLUDE_DIR})

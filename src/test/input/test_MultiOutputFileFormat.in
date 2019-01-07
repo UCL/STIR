@@ -1,0 +1,14 @@
+Test OutputFileFormat Parameters:=
+
+output file format type := multi
+Multi Output File Format Parameters:=
+
+	individual output file format type := interfile
+	interfile Output File Format Parameters:=
+		number format := float
+		number_of_bytes_per_pixel:=4
+	End Interfile Output File Format Parameters:=
+
+End Multi Output File Format Parameters:=
+
+End:=

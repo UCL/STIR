@@ -39,7 +39,7 @@ class MultipleProjData : public ExamData
 {
 public:
 
-  MultipleProjData():ExamData() {};
+  MultipleProjData():ExamData() {}
 
   MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr)
     :ExamData(exam_info_sptr)
@@ -55,6 +55,10 @@ public:
   //! \warning The _proj_datas have been resized, but are still empty.
   MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
                    const int num_gates);
+
+  static
+  unique_ptr<MultipleProjData>
+  read_from_file(const std::string &parameter_file);
 
   //N.E.14/07/16 Inherited from ExamData
   // //! Get a pointer to the exam information

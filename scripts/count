@@ -1,7 +1,8 @@
-#! /bin/csh -fe
+#! /bin/bash -e
 # A script to write a sequence of numbered strings to stdout
 #
 #  Copyright (C) 2005- 2008, Hammersmith Imanet Ltd
+#  Copyright (C) 2018 University College London
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify
@@ -17,55 +18,71 @@
 #  See STIR/LICENSE.txt for details
 #      
 # Author Kris Thielemans
-# Examples:
-# count 3 5
-# => 3 4 5
-# count 3 9 2
-# => 3 5 7 9
-# count -pre A --post B 3 5
-# => A3B A4B A5B
+
+print_usage_and_exit()
+{
+  echo "Usage:"
+  echo "   `basename $prog` [--pre prefix] [--post postfix] start end [inc]"
+  echo "Prints a sequence of words to stdout"
+  echo ""
+  echo "Examples:"
+  echo "count 3 5"
+  echo "  => 3 4 5"
+  echo "count 3 9 2"
+  echo "  => 3 5 7 9"
+  echo "count -pre A --post B 3 5"
+  echo " => A3B A4B A5B"
+  exit 1
+}
+
+prog=$0
 
 # option processing
-set prefix=
-set postfix=
+prefix=
+postfix=
 # check if more than 2 args and first arg starts with a -
-while ( $#argv > 2 && "$1" =~ -* )
+while :; do
 
-switch ("$1")
-case --pre:
-    set prefix = "$2"
+  case "$1" in
+  --pre)
+    prefix="$2"
     shift
     shift
-    breaksw
+    ;;
 
-case --post:
-    set postfix = "$2"
+ --post)
+    postfix="$2"
     shift
     shift
-    breaksw
+    ;;
 
-default:
-    echo count: Unrecognised option "$1"
-    exit 1
+ -?*)
+    echo Unrecognised option "$1"
+    print_usage_and_exit    
+    ;;
 
-endsw
-end
+ *)
+   break
+  esac
+done
 
-if ($#argv != 2 && $#argv != 3) then
-  echo "usage: count [--pre prefixtext] [--post postfixtest] minimum maximum [increment]"
-  exit 1
-endif
+if [ $# -ne 2 -a  $# -ne 3 ]
+then
+  print_usage_and_exit
+fi
 
-if ($#argv == 3) then
-    set increment = $3
+if [ $# -eq 3 ]
+then
+    increment=$3
 else
-    set increment = 1
-endif
+    increment=1
+fi
 
-set all =
-set frame = $1
-while ($frame <= $2 )
-  set all = "$all $prefix$frame$postfix"
-  @ frame+= $increment
-end
+all=
+frame=$1
+while [ $frame -le $2 ]
+do
+  all="$all $prefix$frame$postfix"
+  frame=$(( frame+$increment ))
+done
 echo $all

@@ -118,9 +118,9 @@ BinNormalisationFromAttenuationImage(const std::string& filename,
 }
 
 BinNormalisationFromAttenuationImage::
-BinNormalisationFromAttenuationImage(shared_ptr<DiscretisedDensity<3,float> > const& attenuation_image_ptr,
+BinNormalisationFromAttenuationImage(shared_ptr<DiscretisedDensity<3,float> > const& attenuation_image_ptr_v,
                                      shared_ptr<ForwardProjectorByBin> const& forward_projector_ptr)
-  : attenuation_image_ptr(attenuation_image_ptr),
+  : attenuation_image_ptr(attenuation_image_ptr_v->clone()), // need a clone as it guarantees we won't be affected by the caller, and vice versa
     forward_projector_ptr(forward_projector_ptr)
 {
   post_processing();

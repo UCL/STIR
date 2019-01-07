@@ -14,6 +14,10 @@ output file format type:= Interfile
     scale_to_write_data:= 1
   End Interfile Output File Format Parameters:=
 
+; optional keywords to set image timing
+image duration (sec) := 20 ; defaults to -1 (i.e. unknown)
+image relative start time (sec) := 0 ; defaults to zero
+
 X output image size (in pixels) := 128
 Y output image size (in pixels) := 128
 Z output image size (in pixels) := 95

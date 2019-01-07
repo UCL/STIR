@@ -514,10 +514,17 @@ pos_frequencies_to_all(const Array<num_dimensions, std::complex<T> >& c)
  * add any you need
  ******************************************************************/
 
-// note: instantiate the highest dimension you need. That will do all lower dimensions
 template
 void 
 fourier<>(Array<3,std::complex<float> >& c, const int sign);
+
+template
+void 
+fourier<>(Array<2,std::complex<float> >& c, const int sign);
+
+template
+void
+fourier<>(Array<1,std::complex<float> >& c, const int sign);
 
 template
 void 
