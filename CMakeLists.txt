@@ -31,7 +31,7 @@ SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 cmake_minimum_required(VERSION 2.8.3)
 
 # add project source to cmake path such that it can use our find_package modules and .cmake files
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/src/cmake")
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/src/cmake;${CMAKE_MODULE_PATH}")
 include(src/cmake/SetC++Version.cmake)
 
 UseCXX("${CMAKE_CXX_STANDARD}")
