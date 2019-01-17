@@ -53,6 +53,7 @@ if (@ITK_FOUND@)
   message(STATUS "ITK support in STIR enabled.")
   set(ITK_DIR "@ITK_DIR@")
   find_package(ITK REQUIRED)
+  set(STIR_BUILT_WITH_ITK TRUE)
 endif()
 
 if (@LLN_FOUND@)
