@@ -168,7 +168,7 @@ process_data()
     }
 
 
-    std::cerr << "TOTAL SCATTER:= " << total_scatter << '\n';
+    std::cout << "TOTAL SCATTER:= " << total_scatter << '\n';
     return Succeeded::yes;
 }
 

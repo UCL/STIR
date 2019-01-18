@@ -97,13 +97,13 @@ public:
 
     double L_G_for_view_segment_number(ProjData&data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float rescale, bool compute_gradient,bool isgradient_mu);
 
-    double L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale, bool compute_gradient,bool isgradient_mu);
+    inline float KL(const double a, const float b, const float threshold_a = 0);
 
+    double L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale, bool compute_gradient,bool isgradient_mu);
 
     double L_G_for_view_segment_number_from_est_data(ProjData&data,ProjData&est_data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float rescale);
 
     double L_G_for_viewgram_from_est_data(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale);
-
 
 };
 

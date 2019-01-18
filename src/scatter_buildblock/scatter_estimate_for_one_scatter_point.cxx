@@ -194,10 +194,12 @@ std::vector<float>detection_efficiency_unscattered;
   const float cos_incident_angle_AS = static_cast<float>(
     cos_angle(scatter_point - detector_coord_A,
               detA_to_ring_center)) ;
+
   const float cos_incident_angle_BS = static_cast<float>(
     cos_angle(scatter_point - detector_coord_B,
               detB_to_ring_center)) ;
-
+  if (cos_incident_angle_AS*cos_incident_angle_BS<0)
+      return 0;
 #ifndef NDEBUG
   {  
     // check if mu-value ok
@@ -267,6 +269,8 @@ std::vector<float>detection_efficiency_unscattered;
 
 
   return scatter_ratio;
+
+
           
 }
 

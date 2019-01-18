@@ -70,27 +70,27 @@ L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const 
 {
 
 if (isgradient_mu)
-     std::cerr <<"IS GRADIENT W.R.T. ATTENUATION"<< "\n";
+     std::cout <<"IS GRADIENT W.R.T. ATTENUATION"<< "\n";
 
-else  std::cerr <<"IS GRADIENT W.R.T. ACTIVITY"<< "\n";
+else  std::cout <<"IS GRADIENT W.R.T. ACTIVITY"<< "\n";
 
     this->output_proj_data_sptr->fill(0.f);
 
 
-    std::cerr << "number of energy windows:= "<<  this->template_exam_info_sptr->get_num_energy_windows() << '\n';
+    std::cout << "number of energy windows:= "<<  this->template_exam_info_sptr->get_num_energy_windows() << '\n';
 
     if(this->template_exam_info_sptr->get_energy_window_pair().first!= -1 &&
        this->template_exam_info_sptr->get_energy_window_pair().second!= -1 )
     {
-        std::cerr << "energy window pair :="<<" {"<<  this->template_exam_info_sptr->get_energy_window_pair().first  << ',' <<  this->template_exam_info_sptr->get_energy_window_pair().second <<"}\n";
+        std::cout << "energy window pair :="<<" {"<<  this->template_exam_info_sptr->get_energy_window_pair().first  << ',' <<  this->template_exam_info_sptr->get_energy_window_pair().second <<"}\n";
 
     }
 
 
     for (int i = 0; i < this->template_exam_info_sptr->get_num_energy_windows(); ++i)
     {
-        std::cerr << "energy window lower level"<<"["<<i+1<<"] := "<< this->template_exam_info_sptr->get_low_energy_thres(i) << '\n';
-        std::cerr << "energy window upper level"<<"["<<i+1<<"] := "<<  this->template_exam_info_sptr->get_high_energy_thres(i) << '\n';
+        std::cout << "energy window lower level"<<"["<<i+1<<"] := "<< this->template_exam_info_sptr->get_low_energy_thres(i) << '\n';
+        std::cout << "energy window upper level"<<"["<<i+1<<"] := "<<  this->template_exam_info_sptr->get_high_energy_thres(i) << '\n';
     }
 
 
@@ -170,7 +170,7 @@ else  std::cerr <<"IS GRADIENT W.R.T. ACTIVITY"<< "\n";
 
 
 
-    std::cerr << "LIKELIHOOD:= " << sum << '\n';
+    std::cout << "LIKELIHOOD:= " << sum << '\n';
 
 
     return sum;
@@ -189,6 +189,28 @@ L_G_for_view_segment_number(ProjData&data,VoxelsOnCartesianGrid<float>& gradient
     return sum;
 
 }
+
+inline float KL(const double a, const float b, const float threshold_a = 0)
+{
+    assert(a>=0);
+     assert(b>=0);
+     float res = a<=threshold_a ? b : (a*(log(a)-log(b)) + b - a);
+#ifndef NDEBUG
+#define ICHANGEDIT
+#define NDEBUG
+     if (res != res)
+       warning("KL nan at a=%g b=%g, threshold %g\n",a,b,threshold_a);
+     if (res > 1.E20)
+       warning("KL large at a=%g b=%g, threshold %g\n",a,b,threshold_a);
+#ifdef ICHANGEDIT
+#undef NDEBUG
+#endif
+#endif
+     assert(res>=-1.e-4);
+     return res;
+}
+
+
 double
 SingleScatterLikelihoodAndGradient::
 L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale,bool compute_gradient, bool isgradient_mu)
@@ -236,16 +258,12 @@ L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartes
     //forward model
            const double y = L_G_estimate(tmp_gradient_image,bin,compute_gradient,isgradient_mu);
 
-           v_est[bin.axial_pos_num()][bin.tangential_pos_num()] = static_cast<float>(rescale*y);
+           v_est[bin.axial_pos_num()][bin.tangential_pos_num()] = static_cast<float>(y);
 
-
-           sum+=viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]*log(v_est[bin.axial_pos_num()][bin.tangential_pos_num()]+0.000000000000000000001)- v_est[bin.axial_pos_num()][bin.tangential_pos_num()]-0.000000000000000000001;
-
-
-
-
-          gradient_image += tmp_gradient_image*(viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]/(v_est[bin.axial_pos_num()][bin.tangential_pos_num()]+0.000000000000000000001)-1);
-
+           float eps = 0.000000000000000000001;
+           sum+=viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]*log(v_est[bin.axial_pos_num()][bin.tangential_pos_num()]+eps)- v_est[bin.axial_pos_num()][bin.tangential_pos_num()]-eps;
+           gradient_image += tmp_gradient_image*(viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]/(v_est[bin.axial_pos_num()][bin.tangential_pos_num()]+eps)-1);
+           if (sum != sum) error('Nan Here');
        }
 
        return sum;
@@ -424,13 +442,8 @@ L_G_for_viewgram_from_est_data(Viewgram<float>& viewgram,Viewgram<float>& v_est,
            const double y = L_G_estimate(tmp_gradient_image,bin,true,true);
 
 
-
            sum+=viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]*log(v_est[bin.axial_pos_num()][bin.tangential_pos_num()])- v_est[bin.axial_pos_num()][bin.tangential_pos_num()];
-
-
-
-
-               gradient_image += tmp_gradient_image*(viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]/(v_est[bin.axial_pos_num()][bin.tangential_pos_num()])-1);
+           gradient_image += tmp_gradient_image*(viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]/(v_est[bin.axial_pos_num()][bin.tangential_pos_num()])-1);
 
        }
 
@@ -464,6 +477,7 @@ L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,const Bin bin, boo
     }
 
     return scatter_ratio_singles;
+    //if (scatter_ratio_singles<0) std::cerr << "scatter_ratio_singles<0:" <<scatter_ratio_singles <<'\n';
 }
 
 
@@ -543,9 +557,6 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
         detection_efficiency_scattered[i] = detection_efficiency(new_energy,i);
         detection_efficiency_unscattered[i] = detection_efficiency(511.F,i);
 
-        //if (detection_efficiency_scattered[i]==0&&detection_efficiency_unscattered[i]==0)
-        //return 0;
-
     }
 
     //compute the probability of detection for two given energy windows X and Y
@@ -602,6 +613,9 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
     const float cos_incident_angle_BS = static_cast<float>(
             cos_angle(scatter_point - detector_coord_B,
                     detB_to_ring_center));
+
+    if (cos_incident_angle_AS*cos_incident_angle_BS<0)
+    return 0;
 
 #ifndef NDEBUG
     {
@@ -683,6 +697,8 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
                     *cos_incident_angle_BS
                     *dif_Compton_cross_section_value
                     *common_factor;
+
+
 
     /*Single Scatter Forward model Jacobian w.r.t. attenuation:
      * The derivative is given by three terms, respectively in [A,S], [B,S] and [S] */
@@ -782,6 +798,8 @@ if(compute_gradient)
     return scatter_ratio;
 
 }
+
+
 
 END_NAMESPACE_STIR
 
