@@ -66,7 +66,7 @@ total_Compton_cross_section(511.F);
 
 double
 SingleScatterLikelihoodAndGradient::
-L_G_function(ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale,bool compute_gradient, bool isgradient_mu)
+L_G_function(const ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale, const bool compute_gradient, const bool isgradient_mu)
 {
 
 if (isgradient_mu)
@@ -178,7 +178,7 @@ else  std::cout <<"IS GRADIENT W.R.T. ACTIVITY"<< "\n";
 
 double
 SingleScatterLikelihoodAndGradient::
-L_G_for_view_segment_number(ProjData&data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float rescale,bool compute_gradient,bool isgradient_mu)
+L_G_for_view_segment_number(const ProjData&data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float rescale, const bool compute_gradient,const bool isgradient_mu)
 {
 
     Viewgram<float> viewgram=data.get_viewgram(vs_num.view_num(), vs_num.segment_num(),false);
@@ -213,7 +213,7 @@ inline float KL(const double a, const float b, const float threshold_a = 0)
 
 double
 SingleScatterLikelihoodAndGradient::
-L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale,bool compute_gradient, bool isgradient_mu)
+L_G_for_viewgram(const Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale,const bool compute_gradient, const bool isgradient_mu)
 {
 
     const ViewSegmentNumbers vs_num(viewgram.get_view_num(),viewgram.get_segment_num());
@@ -258,7 +258,8 @@ L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartes
     //forward model
            const double y = L_G_estimate(tmp_gradient_image,bin,compute_gradient,isgradient_mu);
 
-           v_est[bin.axial_pos_num()][bin.tangential_pos_num()] = static_cast<float>(y);
+           v_est[bin.axial_pos_num()][bin.tangential_pos_num()] = static_cast<float>(rescale*y);
+           //in case a scaling factor for the data is needed. Currently not used and set to 1.
 
            float eps = 0.000000000000000000001;
            sum+=viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]*log(v_est[bin.axial_pos_num()][bin.tangential_pos_num()]+eps)- v_est[bin.axial_pos_num()][bin.tangential_pos_num()]-eps;
@@ -272,7 +273,7 @@ L_G_for_viewgram(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartes
 
 double
 SingleScatterLikelihoodAndGradient::
-L_G_function_from_est_data(ProjData& data,ProjData& est_data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale)
+L_G_function_from_est_data(const ProjData& data, ProjData& est_data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale)
 {
 
 
@@ -383,7 +384,7 @@ L_G_function_from_est_data(ProjData& data,ProjData& est_data,VoxelsOnCartesianGr
 
 double
 SingleScatterLikelihoodAndGradient::
-L_G_for_view_segment_number_from_est_data(ProjData&data,ProjData&est_data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float rescale)
+L_G_for_view_segment_number_from_est_data(const ProjData&data,ProjData&est_data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float rescale)
 {
 
     Viewgram<float> viewgram=data.get_viewgram(vs_num.view_num(), vs_num.segment_num(),false);
@@ -396,7 +397,7 @@ L_G_for_view_segment_number_from_est_data(ProjData&data,ProjData&est_data,Voxels
 }
 double
 SingleScatterLikelihoodAndGradient::
-L_G_for_viewgram_from_est_data(Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale)
+L_G_for_viewgram_from_est_data(const Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale)
 {
 
     const ViewSegmentNumbers vs_num(viewgram.get_view_num(),viewgram.get_segment_num());
@@ -453,7 +454,7 @@ L_G_for_viewgram_from_est_data(Viewgram<float>& viewgram,Viewgram<float>& v_est,
 
 double
 SingleScatterLikelihoodAndGradient::
-L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,const Bin bin, bool compute_gradient,bool isgradient_mu)
+L_G_estimate(VoxelsOnCartesianGrid<float>& gradient_image_bin,const Bin bin, const bool compute_gradient,const bool isgradient_mu)
 {
     double scatter_ratio_singles = 0;
     unsigned det_num_B=0;
@@ -487,7 +488,7 @@ SingleScatterLikelihoodAndGradient::
 L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
         const std::size_t scatter_point_num,
         const unsigned det_num_A,
-        const unsigned det_num_B, bool compute_gradient,bool isgradient_mu)
+        const unsigned det_num_B, const bool compute_gradient,const bool isgradient_mu)
 {
 
     // The code now supports more than one energy window: the low energy threshold has to correspond to lowest window.
