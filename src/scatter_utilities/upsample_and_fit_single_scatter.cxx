@@ -188,7 +188,8 @@ int main(int argc, const char *argv[])
 
   if (stir::is_null_ptr(normalisation_sptr))
     {
-	  normalisation_sptr.reset(new stir::TrivialBinNormalisation);
+       normalisation_sptr.reset(new stir::TrivialBinNormalisation);
+       normalisation_sptr->set_up(data_to_fit_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone());
     }
   stir::shared_ptr<stir::ProjDataInfo> data_to_fit_proj_data_info_sptr =
     data_to_fit_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();

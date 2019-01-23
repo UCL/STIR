@@ -1,7 +1,7 @@
 # Copyright 2011-01-01 - 2011-06-30 Hammersmith Imanet Ltd
 # Copyright 2011-07-01 - 2012 Kris Thielemans
 # Copyright 2016 ETH Zurich
-# Copyright 2013, 2014, 2016, 2017 University College London
+# Copyright 2013, 2014, 2016, 2017, 2018 University College London
 
 # This file is part of STIR.
 #
@@ -205,7 +205,12 @@ configure_file(
 install(FILES "${CONF_INCLUDE_DIR}/stir/config.h" DESTINATION include/stir)
 
 #### install include files
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/src/include/" DESTINATION include)
+set (INCLUDE_DIR "${PROJECT_SOURCE_DIR}/src/include")
+install(DIRECTORY "${INCLUDE_DIR}/" DESTINATION include)
+
+#### find header files for re-use in stir_exe_targets.cmake and doxygen target
+include(FindAllHeaderFiles)
+find_all_header_files(ALL_HEADERS ALL_INLINES ALL_TXXS "${INCLUDE_DIR}/stir")
 
 #### STIR library
 include(stir_dirs)
@@ -214,12 +219,18 @@ include(stir_dirs)
 if(NOT DISABLE_STIR_LOCAL)
   find_path(STIR_LOCAL NAME "extra_stir_dirs.cmake" PATHS "${PROJECT_SOURCE_DIR}/src/local/" NO_DEFAULT_PATH)
   if (STIR_LOCAL)
+    # append any headers there
+    find_all_header_files(ALL_HEADERS ALL_INLINES ALL_TXXS "${STIR_LOCAL}")
+    # include user file
     include(${STIR_LOCAL}/extra_stir_dirs.cmake)
   endif()
 endif()
 
 # Include the experimental code
 if (STIR_ENABLE_EXPERIMENTAL)
+  # append any headers there
+  find_all_header_files(ALL_HEADERS ALL_INLINES ALL_TXXS "${INCLUDE_DIR}/stir_experimental")
+  # add the sub-dir
   ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/experimental)
 endif()
 
@@ -229,22 +240,23 @@ foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})
 #        INCLUDE(${STIR_DIR}/lib.cmake)
 endforeach(STIR_DIR)
 
-
-#### SWIG settings
-ADD_SUBDIRECTORY(swig)
-
-## CMake variables to build doxygen documentation
-## Create html documentation using Doxygen
-## Has to be at the end such that all variables are filled
+## Build doxygen documentation
+# Has to be after previous things such that all variables are filled
 find_package(Doxygen)
 option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
 if(BUILD_DOCUMENTATION)
     if(NOT DOXYGEN_FOUND)
         message(FATAL_ERROR "Doxygen is needed to build the documentation.")
     endif()
+endif()
 
-    if(NOT DOXYGEN_DOT_FOUND)
-    	message(FATAL_ERROR "Dot is needed for the Doxygen documentation to be generated.")
+if(DOXYGEN_FOUND)
+    if(DOXYGEN_DOT_FOUND)
+        set(HAVE_DOT 1)
+    	message(WARNING "Graphviz dot is not found. It is recommended to install Graphviz for nicer Doxygen documentation")
+    else()
+        set(HAVE_DOT 0)
+        message(STATUS "Graphviz dot found. It will be used for the Doxygen documentation.")
     endif()
 
     set(doxyfile_in ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
@@ -255,13 +267,39 @@ if(BUILD_DOCUMENTATION)
 
     configure_file(${doxyfile_in} ${doxyfile} @ONLY)
 
-    add_custom_target(doc
+    # The following lines are modifications of Jannis Fischer's original. The modifications were inspired by
+    # https://samthursfield.wordpress.com/2015/11/21/cmake-dependencies-between-targets-and-files-and-custom-commands/
+
+    # Add a custom command that does everything, but also generates a doxygen.stamp file.
+    # This should prevent doxygen being re-run when not needed.
+    add_custom_command(
+        OUTPUT doxygen.stamp
+        DEPENDS ${doxyfile} ${ALL_HEADERS}
         COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
+        COMMAND ${CMAKE_COMMAND} -E touch doxygen.stamp
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM)
+    # Now add a custom target that depends on the doxygen.stamp.
+    # If BUILD_DOCUMENTATION, we add this target to the dependency list of "ALL"
+    # to make sure it always gets run.
+    # Otheriwse, the user has to build the target manually.
+    if(BUILD_DOCUMENTATION)
+        set(DOXY_ALL ALL)
+    endif()
+      
+    add_custom_target(
+        RUN_DOXYGEN ${DOXY_ALL}
+        DEPENDS doxygen.stamp)
 
-#    install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION share/doc/stir)
+    if(BUILD_DOCUMENTATION)
+        # Doxyfile.in currently tells doxygen to output in PROJECT_BINARY_DIR
+        install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION ${STIR_DOC_DIR})
+    endif()
 endif()
+
+#### SWIG settings
+# Needs to be added after running doxygen as we use its xml output for swig
+ADD_SUBDIRECTORY(swig)
 
 

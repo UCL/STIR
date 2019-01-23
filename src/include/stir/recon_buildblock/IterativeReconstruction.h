@@ -247,14 +247,14 @@ public:
   virtual const ExamData& get_input_data() const;
   //@}
 
-protected:
- 
-  IterativeReconstruction();
-
   virtual Succeeded set_up(shared_ptr <TargetT > const& target_data_ptr);
 
   //! the principal operations for updating the data iterates at each iteration
   virtual void update_estimate(TargetT &current_estimate)=0;
+
+protected:
+ 
+  IterativeReconstruction();
 
   //! operations for the end of the iteration
   /*! At specific subiteration numbers, this 

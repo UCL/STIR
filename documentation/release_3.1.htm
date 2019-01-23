@@ -138,6 +138,9 @@ These are only minimally documented at the present stage unfortunately.
 <li>Sensitivity calculation parallelized using distributed worker mechanism.</li>
 <li>Python (and MATLAB) interface
   <ul>
+    <li>when <tt>BUILD_DOCUMENTATION</tt> is <tt>ON</tt>, we now use
+      <a href="https://github.com/m7thon/doxy2swig">doxy2swig</a> to pass the doxygen documentation
+      to Python/MATLAB.</li>
     <li>added GeneralisedPoissonNoiseGenerator</li>
     <li>added the <code>Shape</code> classes</li>
     <li>added the <code>GeneralisedPrior</code> classes</li>
@@ -216,11 +219,12 @@ You should normally not have to change these options.</li>
   preprocessor variables etc (as opposed to passing these on the compiler command line).
 </li>
 <li> added <code>BUILD_TESTING</code> and <code>BUILD_EXECUTABLES</code> options to reduce build time if you do not need those files</li>
-<li>install include files</li> 
-<li> CMake now has a flag to create the target "doc" for building the Doxygen documentation
-  thanks to Jannis Fischer.
+<li>install include files</li>
+<li> if doxygen is found, added the target <tt>RUN_DOXYGEN</tt> for building the
+   Doxygen documentation (thanks to Jannis Fischer). This target is always built if
+   <tt>BUILD_DOCUMENTATION</tt> is <tt>ON</tt>.
 </li>
-<li> Added a <tt>tests</tt> build target so that <tt>make tests</tt>
+<li> Added a <tt>BUILD_TESTS</tt> build target so that <tt>make BUILD_TESTS</tt>
      (or whatever is appropriate for your build system) will build all
      tests (not the other executables or Python etc libraries) .
 </li>
