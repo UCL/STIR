@@ -194,8 +194,8 @@ mark_as_advanced(STIR_NO_UNIQUE_PTR STIR_USE_BOOST_SHARED_PTR)
 # This has to be written where we build somewhere. We will put it somewhere "natural"
 # (even though there are no other include files there).
 set(CONF_INCLUDE_DIR "${CMAKE_BINARY_DIR}/src/include")
-# add it to the include path
-include_directories("${CONF_INCLUDE_DIR}")
+# add it to the include path. Make sure we prepend it.
+include_directories(BEFORE "${CONF_INCLUDE_DIR}")
 # create file
 configure_file(
   cmake/STIRConfig.h.in
