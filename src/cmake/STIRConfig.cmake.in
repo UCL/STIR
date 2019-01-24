@@ -46,16 +46,8 @@ set(STIR_REGISTRIES @STIR_REGISTRIES@)
 # to set ITK_DIR etc first before calling find_package
 # to make sure we pick the same version of the external library
 
-if (@BOOST_ROOT@)
-  set(BOOST_ROOT "@BOOST_ROOT@")
-endif()
-set (BOOST_INCLUDEDIR "@Boost_INCLUDE_DIRS@")
-find_package(Boost REQUIRED)
-
 if (@ITK_FOUND@)
   message(STATUS "ITK support in STIR enabled.")
-  set(ITK_DIR "@ITK_DIR@")
-  find_package(ITK REQUIRED)
   set(STIR_BUILT_WITH_ITK TRUE)
 endif()
 

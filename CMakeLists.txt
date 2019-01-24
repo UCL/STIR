@@ -77,7 +77,6 @@ set(ConfigPackageLocation lib/cmake/)
 #### we need the boost library from boost.org
 set(BOOST_ROOT CACHE PATH "root of Boost")
 find_package( Boost 1.36.0 REQUIRED )
-include_directories(${Boost_INCLUDE_DIRS})
 
 #### optional external libraries. 
 # Listed here such that we know if we should compile extra utilities

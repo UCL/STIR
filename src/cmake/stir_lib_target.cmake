@@ -25,6 +25,8 @@ target_include_directories(${dir} PUBLIC
   $<BUILD_INTERFACE:${STIR_INCLUDE_DIR}>
   $<INSTALL_INTERFACE:include>)
 
+target_include_directories(${dir} PUBLIC Boost::boost)
+
 SET_PROPERTY(TARGET ${dir} PROPERTY FOLDER "Libs")
 
 install(TARGETS ${dir} EXPORT STIRTargets DESTINATION lib)
