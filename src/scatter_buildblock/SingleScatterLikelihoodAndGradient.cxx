@@ -543,38 +543,43 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
     //The code can now compute the scatter for a combination of two windows X and Y
     //Default: one window -> The code will combine the window with itself
 
-    std::vector<float>detection_efficiency_scattered;
-    std::vector<float>detection_efficiency_unscattered;
-
-    for (int i = 0; i < this->template_exam_info_sptr->get_num_energy_windows(); ++i)
-    {
-        detection_efficiency_scattered.push_back(0);
-        detection_efficiency_unscattered.push_back(0);
-
-    }
-
-    for (int i = 0; i < this->template_exam_info_sptr->get_num_energy_windows(); ++i)
-    {
-        detection_efficiency_scattered[i] = detection_efficiency(new_energy,i);
-        detection_efficiency_unscattered[i] = detection_efficiency(511.F,i);
-
-    }
 
     //compute the probability of detection for two given energy windows X and Y
 
-    int index0 = 0;
-    int index1 = 0;
 
-    if (this->template_exam_info_sptr->get_num_energy_windows()>1)
-    {
+    std::vector<float>detection_efficiency_scattered;
+    std::vector<float>detection_efficiency_unscattered;
 
-        index0 = this->template_exam_info_sptr->get_energy_window_pair().first-1;
-        index1 = this->template_exam_info_sptr->get_energy_window_pair().second-1;
 
-    }
+    detection_efficiency_scattered.push_back(0);
+    detection_efficiency_unscattered.push_back(0);
 
-    float detection_probability_XY=detection_efficiency_scattered[index0]*detection_efficiency_unscattered[index1];
-    float detection_probability_YX=detection_efficiency_scattered[index1]*detection_efficiency_unscattered[index0];
+
+
+    //detection efficiency of each window for that energy
+      for (int i = 0; i < this->template_exam_info_sptr->get_num_energy_windows(); ++i)
+      {
+          detection_efficiency_scattered[i] = detection_efficiency(new_energy,i);
+          detection_efficiency_unscattered[i] = detection_efficiency(511.F,i);
+      }
+
+
+        int index0 = 0;
+        int index1 = 0;
+
+        if (this->template_exam_info_sptr->get_num_energy_windows()>1)
+        {
+            index0 = this->template_exam_info_sptr->get_energy_window_pair().first-1;
+            index1 = this->template_exam_info_sptr->get_energy_window_pair().second-1;
+
+        }
+
+
+        float detection_probability_XY=detection_efficiency_scattered[index0]*detection_efficiency_unscattered[index1];
+        float detection_probability_YX=detection_efficiency_scattered[index1]*detection_efficiency_unscattered[index0];
+
+
+
 
     const float emiss_to_detA =
     cached_integral_over_activity_image_between_scattpoint_det

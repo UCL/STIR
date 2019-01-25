@@ -117,43 +117,31 @@ SingleScatterSimulation::
 std::vector<float>detection_efficiency_scattered;
 std::vector<float>detection_efficiency_unscattered;
 
-  for (int i = 0; i < this->template_exam_info_sptr->get_num_energy_windows(); ++i)
-    {
-        detection_efficiency_scattered.push_back(0);
-        detection_efficiency_unscattered.push_back(0);
 
-    }
+detection_efficiency_scattered.push_back(0);
+detection_efficiency_unscattered.push_back(0);
 
 
+
+//detection efficiency of each window for that energy
   for (int i = 0; i < this->template_exam_info_sptr->get_num_energy_windows(); ++i)
   {
       detection_efficiency_scattered[i] = detection_efficiency(new_energy,i);
       detection_efficiency_unscattered[i] = detection_efficiency(511.F,i);
-  //    if (detection_efficiency_scattered[i]==0&&detection_efficiency_unscattered[i]==0)
-     //return 0;
   }
 
-
-
-//Set the probability of detection for one energy window (Default)
 
     int index0 = 0;
     int index1 = 0;
 
     if (this->template_exam_info_sptr->get_num_energy_windows()>1)
     {
-        //TODO: check if the values are insered correctly (i.e. index<=num_windows)
-
-        /*if (this->template_exam_info_sptr->get_energy_window_pair().first!=-1 &&
-                this->template_exam_info_sptr->get_energy_window_pair().second!=-1)
-        {*/
-            index0 = this->template_exam_info_sptr->get_energy_window_pair().first-1;
-            index1 = this->template_exam_info_sptr->get_energy_window_pair().second-1;
+        index0 = this->template_exam_info_sptr->get_energy_window_pair().first-1;
+        index1 = this->template_exam_info_sptr->get_energy_window_pair().second-1;
 
     }
 
 
-    //compute the probability of detection for two given energy windows X and Y
     float detection_probability_XY=detection_efficiency_scattered[index0]*detection_efficiency_unscattered[index1];
     float detection_probability_YX=detection_efficiency_scattered[index1]*detection_efficiency_unscattered[index0];
 

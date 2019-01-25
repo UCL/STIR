@@ -89,7 +89,7 @@ int main(int argc, const char *argv[])
 
     shared_ptr<ProjData> data = ProjData::read_from_file("simulated_scatter_sino.hs");
     const float rescale = 1;
-    shared_ptr<DiscretisedDensity<3,float> > a(read_from_file<DiscretisedDensity<3,float> >("initial_atn_image_LR.hv"));
+    shared_ptr<DiscretisedDensity<3,float> > a(read_from_file<DiscretisedDensity<3,float> >("true_atn_image.hv"));
     VoxelsOnCartesianGrid<float>& gradient_image = dynamic_cast< VoxelsOnCartesianGrid<float>& > (*a);
     gradient_image.fill(0);
 
