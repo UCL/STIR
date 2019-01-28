@@ -25,7 +25,7 @@ target_include_directories(${dir} PUBLIC
   $<BUILD_INTERFACE:${STIR_INCLUDE_DIR}>
   $<INSTALL_INTERFACE:include>)
 
-target_include_directories(${dir} PUBLIC Boost::boost)
+target_include_directories(${dir} PUBLIC ${Boost_INCLUDE_DIR})
 
 SET_PROPERTY(TARGET ${dir} PROPERTY FOLDER "Libs")
 
