@@ -1,5 +1,3 @@
-//
-//
 /*!
   \file
   \ingroup listmode
@@ -59,25 +57,25 @@ START_NAMESPACE_STIR
 class CListEvent
 {
 public:
-  virtual ~CListEvent() {}
+    virtual ~CListEvent() {}
 
-  //! Checks if this is a prompt event or a delayed event
-  /*! PET scanners generally have a facility to detect events in a
+    //! Checks if this is a prompt event or a delayed event
+    /*! PET scanners generally have a facility to detect events in a
       'delayed' coincidence window. This is used to estimate the
       number of accidental coincidences (or 'randoms').
   */
-  virtual
+    virtual
     bool
     is_prompt() const = 0;
 
-  //! Changes the event from prompt to delayed or vice versa
-  /*! Default implementation just returns Succeeded::no. */
-  virtual
+    //! Changes the event from prompt to delayed or vice versa
+    /*! Default implementation just returns Succeeded::no. */
+    virtual
     Succeeded
     set_prompt(const bool prompt = true);
 
-  //! Finds the LOR between the coordinates where the detection took place
-  /*! Obviously, these coordinates are only estimates which depend on the
+    //! Finds the LOR between the coordinates where the detection took place
+    /*! Obviously, these coordinates are only estimates which depend on the
       scanner hardware. For example, Depth-of-Interaction might not be
       taken into account. However, the intention is that this function returns
       'likely' positions (e.g. not the face of a crystal, but a point somewhere
@@ -88,11 +86,11 @@ public:
 
       \todo This function might need time info or so for rotating scanners.
   */
-  virtual LORAs2Points<float>
+    virtual LORAs2Points<float>
     get_LOR() const = 0;
 
-  //! Finds the bin coordinates of this event for some characteristics of the projection data
-  /*! bin.get_bin_value() will be <=0 when the event corresponds to
+    //! Finds the bin coordinates of this event for some characteristics of the projection data
+    /*! bin.get_bin_value() will be <=0 when the event corresponds to
       an LOR outside the range of the projection data.
 
       bin.get_bin_value() will be set to a negative value if no such bin
@@ -108,18 +106,18 @@ public:
 
     \todo get_bin() might need time info or so for rotating scanners.
   */
-  virtual
+    virtual
     void
     get_bin(Bin& bin, const ProjDataInfo&) const;
 
-  //! This method checks if the template is valid for LmToProjData
-  /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
+    //! This method checks if the template is valid for LmToProjData
+    /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
    *  Most scanners have listmode data that correspond to non arc-corrected data and
    *  this check avoids a crash when an unsupported template is used as input.
    */
-  virtual
-  bool
-  is_valid_template(const ProjDataInfo&) const =0;
+    virtual
+    bool
+    is_valid_template(const ProjDataInfo&) const =0;
 
 }; /*-coincidence event*/
 

@@ -35,8 +35,6 @@
 
 START_NAMESPACE_STIR
 
-using namespace std;
-
 //! A class for a general element of a listmode file for a Siemens scanner using the ROOT files
 class CListRecordROOT : public CListRecord // currently no gating yet
 {
