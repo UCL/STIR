@@ -81,8 +81,8 @@ set_sinogram_and_ring_coordinates(
   block_B_ring_bit0 = block_B_ring | 0x1;
   block_B_ring_bit1 = block_B_ring/2;
   
-  bin = tangential_pos_num < 0 ? tangential_pos_num + NumProjBins : tangential_pos_num;
-  view = view_num;
+  bin = static_cast<unsigned int>(tangential_pos_num < 0 ? tangential_pos_num + NumProjBins : tangential_pos_num);
+  view = static_cast<unsigned int>(view_num);
 }
 
 

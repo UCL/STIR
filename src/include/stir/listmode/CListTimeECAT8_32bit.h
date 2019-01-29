@@ -50,7 +50,7 @@ class CListTimeECAT8_32bit : public CListTime
       std::copy(data_ptr, data_ptr+sizeof(this->raw), reinterpret_cast<char *>(&this->raw));
       return Succeeded::yes;
     }
-  bool is_time() const
+  inline bool is_time() const
   { return this->data.type == 1U && this->data.deadtimeetc == 0U; }
   inline unsigned long get_time_in_millisecs() const
   { return static_cast<unsigned long>(this->data.time);  }

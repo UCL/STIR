@@ -54,7 +54,7 @@ START_NAMESPACE_STIR
 class CListRecord
 {
 public:
-  virtual ~CListRecord() {}
+  virtual ~CListRecord();
 
   virtual bool is_time() const = 0;
 

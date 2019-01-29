@@ -53,14 +53,14 @@ namespace ecat {
 class CListRecordECAT8_32bit : public CListRecord // currently no gating yet
 {
 
-  //public:
+  public:
 
-  bool is_time() const;
+  inline bool is_time() const;
   /*
   bool is_gating_input() const
   { return this->is_time(); }
   */
-  bool is_event() const;
+  inline bool is_event() const;
   virtual CListEventECAT8_32bit&  event();
   virtual const CListEventECAT8_32bit&  event() const;
   virtual CListTimeECAT8_32bit&   time();
@@ -72,7 +72,6 @@ class CListRecordECAT8_32bit : public CListRecord // currently no gating yet
       raw == dynamic_cast<CListRecordECAT8_32bit const &>(e2).raw;
   }	 
 
- public:     
  CListRecordECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr);
 
   virtual Succeeded init_from_data_ptr(const char * const data_ptr, 

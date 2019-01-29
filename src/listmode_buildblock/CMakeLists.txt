@@ -6,12 +6,13 @@ set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
 	CListEvent 
+	CListRecord
 	CListModeData 
 	LmToProjData 
-        LmToProjDataBootstrap
-        CListModeDataECAT8_32bit
-        CListEventECAT8_32bit
-        CListRecordECAT8_32bit
+    LmToProjDataBootstrap
+    CListModeDataECAT8_32bit
+    CListEventECAT8_32bit
+    CListRecordECAT8_32bit
 	CListModeDataSAFIR
 	DetectorCoordinateMapFromFile
 )

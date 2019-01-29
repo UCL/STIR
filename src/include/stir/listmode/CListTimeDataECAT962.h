@@ -31,6 +31,7 @@
 #define __stir_listmode_CListTimeDataECAT962_H__
 
 #include "stir/IO/stir_ecat_common.h" // for namespace macros
+#include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 START_NAMESPACE_ECAT

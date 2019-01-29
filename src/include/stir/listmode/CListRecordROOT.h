@@ -30,8 +30,6 @@
 #include "stir/listmode/CListRecord.h"
 #include "stir/listmode/CListEventROOT.h"
 #include "stir/listmode/CListTimeROOT.h"
-#include "stir/Scanner.h"
-#include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 
