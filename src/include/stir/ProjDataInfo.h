@@ -219,11 +219,10 @@ public:
   inline int get_num_views() const;
   //! Get number of tangential positions
   inline int get_num_tangential_poss() const;
-  //! Get number of tof bins
-  inline int get_tof_bin(const double& delta) const;
-
-  inline int get_unmashed_tof_bin(const double& delta) const;
-
+  //! Get number of tof bin for a given time difference
+  inline int get_tof_bin(const double delta) const;
+  //! Get number of tof bin for a given time difference, ignoring the TOF mashing factor
+  inline int get_unmashed_tof_bin(const double delta) const;
   //! Get number of TOF bins
   inline int get_num_tof_poss() const;
   //! Get minimum segment number

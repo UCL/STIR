@@ -85,7 +85,7 @@ ProjDataInfo::get_num_tof_poss() const
 { return num_tof_bins; }
 
 int
-ProjDataInfo::get_tof_bin(const double& delta) const
+ProjDataInfo::get_tof_bin(const double delta) const
 {
   if (!is_tof_data())
     return 0;
@@ -102,7 +102,7 @@ ProjDataInfo::get_tof_bin(const double& delta) const
 }
 
 int
-ProjDataInfo::get_unmashed_tof_bin(const double& delta) const
+ProjDataInfo::get_unmashed_tof_bin(const double delta) const
 {
   if (!is_tof_data())
     return 0;

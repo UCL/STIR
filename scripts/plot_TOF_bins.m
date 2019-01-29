@@ -3,7 +3,7 @@
 % Nikos Efthimiou. 2018/11/01
 % University of Hull 
 
-%This scripts loads LOR files, exported by test_time_of_flight from the disk and plots them. 
+%This scripts loads LOR files, exported by test_time_of_flight to the disk and plots them. 
 %%
 clc; clear all;
 %Path to TOF files. 
