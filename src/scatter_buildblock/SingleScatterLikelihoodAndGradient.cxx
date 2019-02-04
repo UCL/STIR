@@ -66,7 +66,7 @@ total_Compton_cross_section(511.F);
 
 double
 SingleScatterLikelihoodAndGradient::
-L_G_function(const ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale, const bool compute_gradient, const bool isgradient_mu)
+L_G_function(const ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const bool compute_gradient, const bool isgradient_mu, const float rescale)
 {
 
 if (isgradient_mu)
@@ -259,7 +259,7 @@ L_G_for_viewgram(const Viewgram<float>& viewgram,Viewgram<float>& v_est,VoxelsOn
            const double y = L_G_estimate(tmp_gradient_image,bin,compute_gradient,isgradient_mu);
 
            v_est[bin.axial_pos_num()][bin.tangential_pos_num()] = static_cast<float>(rescale*y);
-           //in case a scaling factor for the data is needed. Currently not used and set to 1.
+           //in case a scaling factor for the data is needed,i.e. for adding different level of noise. By default is set to 1.
 
            float eps = 0.000000000000000000001;
            sum+=viewgram[bin.axial_pos_num()][bin.tangential_pos_num()]*log(v_est[bin.axial_pos_num()][bin.tangential_pos_num()]+eps)- v_est[bin.axial_pos_num()][bin.tangential_pos_num()]-eps;
