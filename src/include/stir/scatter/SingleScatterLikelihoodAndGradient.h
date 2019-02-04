@@ -63,7 +63,7 @@ public:
 
 
 
-    double L_G_function(const ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale , const bool compute_gradient = true ,const bool isgradient_mu = true);
+    double L_G_function(const ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const bool compute_gradient = true ,const bool isgradient_mu = true,const float rescale = 1.F);
 
     double L_G_function_from_est_data(const ProjData& data, ProjData& est_data,VoxelsOnCartesianGrid<float>& gradient_image, const float rescale);
 
