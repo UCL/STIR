@@ -255,7 +255,7 @@ ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
 float
 ProjDataFromStream::get_bin_value(const Bin& this_bin) const
 {
-    if (sino_stream == 0)
+    if (is_null_ptr(sino_stream))
     {
         error("ProjDataFromStream::get_viewgram: stream ptr is 0\n");
     }
