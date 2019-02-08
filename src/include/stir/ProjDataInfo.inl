@@ -38,12 +38,13 @@ START_NAMESPACE_STIR
 double
 ProjDataInfo::mm_to_tof_delta_time(const float dist)
 {
-  return dist / (0.299792458 / 2);
+  return dist / _c_light_div2;
 }
+
 float
 ProjDataInfo::tof_delta_time_to_mm(const double delta_time)
 {
-  return static_cast<float>(delta_time * (0.299792458 / 2));
+  return static_cast<float>(delta_time * _c_light_div2);
 }
 
 shared_ptr<ProjDataInfo> 
@@ -107,16 +108,15 @@ ProjDataInfo::get_unmashed_tof_bin(const double delta) const
   if (!is_tof_data())
     return 0;
 
-  if (delta < tof_bin_boundaries_ps[min_tof_pos_num].low_lim &&
-          delta > tof_bin_boundaries_ps[max_tof_pos_num].high_lim)
+  for (int i = min_unmashed_tof_pos_num; i <= max_unmashed_tof_pos_num; ++i)
   {
-      // TODO handle differently
-      warning(boost::format("TOF delta time %g out of range") % delta);
-      return 0;
+    if (delta >= tof_bin_boundaries_ps[i].low_lim &&
+      delta < tof_bin_boundaries_ps[i].high_lim)
+      return i;
   }
-
-  return delta * get_scanner_ptr()->get_num_max_of_timing_poss() /
-          get_coincidence_window_in_pico_sec();
+  // TODO handle differently
+  warning(boost::format("TOF delta time %g out of range") % delta);
+  return 0;
 
 }
 

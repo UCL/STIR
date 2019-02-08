@@ -299,6 +299,11 @@ START_NAMESPACE_STIR
 #define _PI  boost::math::constants::pi<double>()
 #endif
 
+//! Define the speed of light in mm / ps
+const double _c_light = 0.299792458;
+//! This ratio is used often.
+const double _c_light_div2 = _c_light * 0.5;
+
 //! returns the square of a number, templated.
 /*! \ingroup buildblock */
 template <class NUMBER> 

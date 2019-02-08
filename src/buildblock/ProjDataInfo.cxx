@@ -198,6 +198,31 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
                   "the scanner's number of max timing bins. Abort.");
         tof_mash_factor = new_num;
 
+        tof_increament_in_mm = tof_delta_time_to_mm(scanner_ptr->get_size_of_timing_pos());
+        min_unmashed_tof_pos_num = - (scanner_ptr->get_num_max_of_timing_poss())/2;
+        max_unmashed_tof_pos_num = min_tof_pos_num + (scanner_ptr->get_num_max_of_timing_poss()) -1;
+
+        // Upper and lower boundaries of the timing poss;
+        tof_bin_unmashed_boundaries_mm.grow(min_unmashed_tof_pos_num, max_unmashed_tof_pos_num);
+        tof_bin_unmashed_boundaries_ps.grow(min_unmashed_tof_pos_num, max_unmashed_tof_pos_num);
+
+        // Silently intialise the unmashed TOF bins.
+        for (int k = min_unmashed_tof_pos_num; k <= max_unmashed_tof_pos_num; ++k )
+        {
+            Bin bin;
+            bin.timing_pos_num() = k;
+
+            float cur_low = get_k(bin) - get_sampling_in_k(bin)/2.f;
+            float cur_high = get_k(bin) + get_sampling_in_k(bin)/2.f;
+
+            tof_bin_unmashed_boundaries_mm[k].low_lim = cur_low;
+            tof_bin_unmashed_boundaries_mm[k].high_lim = cur_high;
+            tof_bin_unmashed_boundaries_ps[k].low_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[k].low_lim));
+            tof_bin_unmashed_boundaries_ps[k].high_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[k].high_lim));
+
+        }
+
+        // Now, initialise the mashed TOF bins.
         tof_increament_in_mm = tof_delta_time_to_mm(tof_mash_factor * scanner_ptr->get_size_of_timing_pos());
 
         min_tof_pos_num = - (scanner_ptr->get_num_max_of_timing_poss() / tof_mash_factor)/2;

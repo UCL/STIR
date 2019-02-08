@@ -33,6 +33,8 @@ option(BUILD_EXECUTABLES
 option(BUILD_SHARED_LIBS 
        "Use shared libraries" OFF)
 
+### Settings for external libraries
+
 if (LLN_FOUND)
   set(HAVE_ECAT ON)
   message(STATUS "ECAT support enabled.")
@@ -64,16 +66,6 @@ if (RDF_FOUND)
 
 else()
   message(STATUS "RDF support disabled.")
-endif()
-
-if (HDF5_FOUND)
-  set(HAVE_HDF5 ON)
-  message(STATUS "HDF5 support enabled.")
-  add_definitions(-D HAVE_HDF5)
-  include_directories(${HDF5_INCLUDE_DIRS})
-
-else()
-  message(STATUS "HDF5 support disabled.")
 endif()
 
 
