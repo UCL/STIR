@@ -93,6 +93,7 @@ int main(int argc, const char *argv[])
     VoxelsOnCartesianGrid<float>& gradient_image = dynamic_cast< VoxelsOnCartesianGrid<float>& > (*a);
     gradient_image.fill(0);
 
+
     double g= simulation_method_sptr->L_G_function(*data,gradient_image, false);
 
     t.stop();
