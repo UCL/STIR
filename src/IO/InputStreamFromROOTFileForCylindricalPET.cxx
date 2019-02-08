@@ -56,7 +56,7 @@ InputStreamFromROOTFileForCylindricalPET(std::string _filename,
     up_energy_window = _up_energy_window;
     offset_dets = _offset_dets;
 
-     half_block = static_cast<int>( (module_repeater_y * submodule_repeater_y * crystal_repeater_y) / 2);
+    half_block = (module_repeater_y * submodule_repeater_y * crystal_repeater_y) / 2;
     if (half_block < 0 )
         half_block = 0;
 }
@@ -207,8 +207,7 @@ set_up(const std::string & header_path)
     if (nentries == 0)
         error("InputStreamFromROOTFileForCylindricalPET: The total number of entries in the ROOT file is zero. Abort.");
 
-    return Succeeded::yes;
-    half_block = static_cast<int>( (module_repeater_y * submodule_repeater_y * crystal_repeater_y) / 2);
+    half_block = (module_repeater_y * submodule_repeater_y * crystal_repeater_y) / 2;
     if (half_block < 0 )
         half_block = 0;
 

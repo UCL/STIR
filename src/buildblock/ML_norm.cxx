@@ -479,6 +479,7 @@ FanProjData(const int num_rings, const int num_detectors_per_ring, const int max
   assert(num_detectors_per_ring%2 == 0);
   assert(max_ring_diff<num_rings);
   assert(fan_size < num_detectors_per_ring);
+
   
   IndexRange<4> fan_indices;
   fan_indices.grow(0,num_rings-1);
@@ -756,6 +757,9 @@ void make_fan_data(FanProjData& fan_data,
   int num_detectors_per_ring;
   int fan_size;
   int max_delta;
+  if(proj_data.get_proj_data_info_sptr()->is_tof_data())
+      error("make_fan_data: Incompatible with TOF data. Abort.");
+
   shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
     get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
 		 *proj_data.get_proj_data_info_ptr());
@@ -768,9 +772,9 @@ void make_fan_data(FanProjData& fan_data,
 
   for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
   {
-	  for (bin.timing_pos_num() = proj_data.get_min_tof_pos_num(); bin.timing_pos_num() <= proj_data.get_max_tof_pos_num(); ++ bin.timing_pos_num())
+//	  for (bin.timing_pos_num() = proj_data.get_min_tof_pos_num(); bin.timing_pos_num() <= proj_data.get_max_tof_pos_num(); ++ bin.timing_pos_num())
 	  {
-		segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num(),bin.timing_pos_num())));
+        segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num()/*,bin.timing_pos_num()*/)));
 
 		for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
 		 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
@@ -800,6 +804,9 @@ void set_fan_data(ProjData& proj_data,
   int num_detectors_per_ring;
   int fan_size;
   int max_delta;
+  if(proj_data.get_proj_data_info_sptr()->is_tof_data())
+      error("make_fan_data: Incompatible with TOF data. Abort.");
+
   shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
     get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
 		 *proj_data.get_proj_data_info_ptr());
@@ -814,9 +821,9 @@ void set_fan_data(ProjData& proj_data,
  
   for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
   {
-	  for (bin.timing_pos_num() = proj_data.get_min_tof_pos_num(); bin.timing_pos_num() <= proj_data.get_max_tof_pos_num(); ++ bin.timing_pos_num())
+//	  for (bin.timing_pos_num() = proj_data.get_min_tof_pos_num(); bin.timing_pos_num() <= proj_data.get_max_tof_pos_num(); ++ bin.timing_pos_num())
 	  {
-		segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_empty_segment_by_sinogram(bin.segment_num(),bin.timing_pos_num())));
+        segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_empty_segment_by_sinogram(bin.segment_num()/*,bin.timing_pos_num()*/)));
 
 		for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
 		 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());
@@ -935,6 +942,9 @@ void make_fan_sum_data(Array<2,float>& data_fan_sums,
   int num_detectors_per_ring;
   int fan_size;
   int max_delta;
+  if(proj_data.get_proj_data_info_sptr()->is_tof_data())
+      error("make_fan_data: Incompatible with TOF data. Abort.");
+
   shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
     get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
 		 *proj_data.get_proj_data_info_ptr());
@@ -946,9 +956,9 @@ void make_fan_sum_data(Array<2,float>& data_fan_sums,
 
   for (bin.segment_num() = proj_data.get_min_segment_num(); bin.segment_num() <= proj_data.get_max_segment_num();  ++ bin.segment_num())
   {
-	  for (bin.timing_pos_num() = proj_data.get_min_tof_pos_num(); bin.timing_pos_num() <= proj_data.get_max_tof_pos_num(); ++ bin.timing_pos_num())
+//	  for (bin.timing_pos_num() = proj_data.get_min_tof_pos_num(); bin.timing_pos_num() <= proj_data.get_max_tof_pos_num(); ++ bin.timing_pos_num())
 	  {
-		segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num(),bin.timing_pos_num())));
+        segment_ptr.reset(new SegmentBySinogram<float>(proj_data.get_segment_by_sinogram(bin.segment_num()/*,bin.timing_pos_num()*/)));
 
 		for (bin.axial_pos_num() = proj_data.get_min_axial_pos_num(bin.segment_num());
 		 bin.axial_pos_num() <= proj_data.get_max_axial_pos_num(bin.segment_num());

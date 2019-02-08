@@ -219,11 +219,10 @@ public:
   inline int get_num_views() const;
   //! Get number of tangential positions
   inline int get_num_tangential_poss() const;
-  //! Get number of tof bins
-  inline int get_tof_bin(const double& delta) const;
-
-  inline int get_unmashed_tof_bin(const double& delta) const;
-
+  //! Get number of tof bin for a given time difference
+  inline int get_tof_bin(const double delta) const;
+  //! Get number of tof bin for a given time difference, ignoring the TOF mashing factor
+  inline int get_unmashed_tof_bin(const double delta) const;
   //! Get number of TOF bins
   inline int get_num_tof_poss() const;
   //! Get minimum segment number
@@ -425,7 +424,11 @@ public:
   mutable VectorWithOffset<Float1Float2> tof_bin_boundaries_mm;
   //! Vector which holds the lower and higher boundary for each TOF position in ps`, for faster access.
   mutable VectorWithOffset<Float1Float2> tof_bin_boundaries_ps;
-  
+  //! Vector which holds the lower and higher boundary for each TOF position, without the application of TOF mashing, in mm, for faster access.
+  mutable VectorWithOffset<Float1Float2> tof_bin_unmashed_boundaries_mm;
+  //! Vector which holds the lower and higher boundary for each TOF position, without the application of TOF mashing, in ps`, for faster access.
+  mutable VectorWithOffset<Float1Float2> tof_bin_unmashed_boundaries_ps;
+
   //! Set horizontal bed position
   void set_bed_position_horizontal(const float bed_position_horizontal_arg)
   { bed_position_horizontal = bed_position_horizontal_arg; }

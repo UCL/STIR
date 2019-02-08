@@ -672,18 +672,21 @@ int InterfilePDFSHeader::find_storage_order()
         // If TOF information is in there
         if (matrix_labels.size() > 4)
         {
-            num_timing_poss = matrix_size[4][0];
-            storage_order =ProjDataFromStream::Timing_Segment_View_AxialPos_TangPos;
-            num_views = matrix_size[2][0];
+            if (matrix_labels[4] == "timing positions")
+            {
+                num_timing_poss = matrix_size[4][0];
+                storage_order = ProjDataFromStream::Timing_Segment_View_AxialPos_TangPos;
+                num_views = matrix_size[2][0];
 #ifdef _MSC_VER
-            num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
+                num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
 #else      
-            num_rings_per_segment = matrix_size[1];
+                num_rings_per_segment = matrix_size[1];
 #endif
+            }
         }
         else
         {
-            storage_order =ProjDataFromStream::Segment_View_AxialPos_TangPos;
+            storage_order = ProjDataFromStream::Segment_View_AxialPos_TangPos;
             num_views = matrix_size[2][0];
 #ifdef _MSC_VER
             num_rings_per_segment.assign(matrix_size[1].begin(), matrix_size[1].end());
@@ -1360,10 +1363,7 @@ bool InterfilePDFSHeader::post_processing()
  
   
   // float azimuthal_angle_sampling =_PI/num_views;
-  
-  
-   //TODO: TOF ProjDataInfo
-  
+
   if (is_arccorrected)
     {
       if (effective_central_bin_size_in_cm <= 0)
