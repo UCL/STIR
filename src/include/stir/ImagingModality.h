@@ -73,6 +73,14 @@ class ImagingModality
     {
       return !(*this==mod);
     }
+  bool is_known() const
+    {
+      return this->modality != Unknown;
+    }
+  bool is_unknown() const
+    {
+      return this->modality == Unknown;
+    }
  private:
   ImagingModalityValue modality;
   std::string modality_string;

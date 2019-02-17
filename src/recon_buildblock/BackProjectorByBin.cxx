@@ -81,7 +81,11 @@ void
 BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
 const ProjData& proj_data, int subset_num, int num_subsets)
 {
-  if (image.get_exam_info().imaging_modality !=
+  if (image.get_exam_info().imaging_modality.is_unknown()
+      || proj_data.get_exam_info().imaging_modality.is_unknown())
+    warning("back_project: Imaging modality is unknown for either the image or the projection data or both.\n"
+            "Going ahead anyway.");
+  else if (image.get_exam_info().imaging_modality !=
       proj_data.get_exam_info().imaging_modality)
     error("back_project: Imaging modality should be the same for the image and the projection data");
 
