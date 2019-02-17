@@ -71,6 +71,10 @@ forward_project(RelatedViewgrams<float>& viewgrams,
 		     const int min_axial_pos_num, const int max_axial_pos_num,
 		     const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
+  if (density.get_exam_info().imaging_modality !=
+      viewgrams.get_exam_info().imaging_modality)
+    error("forward_project: Imaging modality should be the same for the image and the projection data");
+
   actual_forward_project(viewgrams, density,
              min_axial_pos_num,
 	     max_axial_pos_num,
