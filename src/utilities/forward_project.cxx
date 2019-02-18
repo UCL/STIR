@@ -88,6 +88,14 @@ main (int argc, char * argv[])
   shared_ptr<ProjData> template_proj_data_sptr = 
     ProjData::read_from_file(argv[3]);
 
+  if (image_density_sptr->get_exam_info().imaging_modality.is_unknown()
+      || template_proj_data_sptr->get_exam_info().imaging_modality.is_unknown())
+    warning("forward_project. Imaging modality unknown for either the image or the projection data or both.\n"
+            "Going ahead anyway.");
+  else if (image_density_sptr->get_exam_info().imaging_modality !=
+      template_proj_data_sptr->get_exam_info().imaging_modality)
+    error("forward_project: Imaging modality should be the same for the image and the projection data");
+
   shared_ptr<ForwardProjectorByBin> forw_projector_sptr;
   if (argc>=5)
     {

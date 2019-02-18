@@ -78,8 +78,14 @@ Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
 
 <h3>Bug fixes</h3>
 <ul>
-<li>bug fixed in writing of SPECT interfile headers: "direction of rotation" was set incorrect. This 
-affected output of forward_project (and stir_math -s). Reconstruction was not affected though.
+<li>bug fixed in writing of SPECT interfile headers:
+    <ul>
+      <li>images were always written as PET. This was mostly harmless, except when using the
+        image then as input to <tt>forward_project</tt>, in which case the output projection data
+        was written with a PET Interfile header, resulting in incorrect geometry etc etc.</li>
+      <li>for projection data, "direction of rotation" was set incorrectly. This 
+        affected output of <tt>forward_project</tt> (and <tt>stir_math -s</tt>). Reconstruction was not affected though.</li>
+    </ul>
 </li>
 <li>fix conversion from raw GATE using
   <tt>conv_GATE_raw_ECAT_projdata_to_interfile</tt>(it was using the wrong segment-order and data-type).</li>
@@ -102,6 +108,7 @@ python/matlab or use of the C++ library.
 
 <h3>New functionality</h3>
 <ul>
+<li><tt>generate_image</tt> now has optional keywords for modality, patient position and timing.</li>
   <li><tt>create_projdata_template</tt> now allows even span. In particular,
 span 2 corresponds to how GE stores data. See the STIR glossary for more information.</li>
 <li>As mentioned above, many operations are now multi-threaded when you built with OPENMP support.
