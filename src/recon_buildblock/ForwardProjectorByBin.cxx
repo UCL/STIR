@@ -86,7 +86,7 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
 {
   if (image.get_exam_info().imaging_modality.is_unknown()
       || proj_data.get_exam_info().imaging_modality.is_unknown())
-    warning("forward_project. Imaging modality unknown for either the image or the projection dat or both.\n"
+    warning("forward_project. Imaging modality unknown for either the image or the projection data or both.\n"
             "Going ahead anyway.");
   else if (image.get_exam_info().imaging_modality !=
       proj_data.get_exam_info().imaging_modality)
