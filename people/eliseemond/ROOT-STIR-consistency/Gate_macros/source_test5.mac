@@ -1,0 +1,50 @@
+#=====================================================
+
+#  P A R T I C L E   S O U R C E
+
+#=====================================================
+
+/gate/source/addSource                                         posiFDG
+
+
+
+/gate/source/posiFDG/setType backtoback
+
+
+
+# The particles emitted by the source are gammas
+
+/gate/source/posiFDG/gps/particle gamma
+
+
+
+# The gammas have an energy of 511 keV
+
+/gate/source/posiFDG/gps/energytype Mono
+
+/gate/source/posiFDG/gps/monoenergy 0.511 MeV
+
+
+
+/gate/source/posiFDG/setActivity                               5000000 becquerel
+
+
+
+/gate/source/posiFDG/setForcedUnstableFlag                     true
+
+/gate/source/posiFDG/setForcedHalfLife                         6586 s
+
+/gate/source/posiFDG/gps/angtype                               iso
+
+
+#Shape of the source
+/gate/source/posiFDG/gps/type Point
+#/gate/source/posiFDG/gps/shape Ellipsoid
+#/gate/source/posiFDG/gps/halfx 5. cm
+#/gate/source/posiFDG/gps/halfy 5. cm
+#/gate/source/posiFDG/gps/halfz 5. cm
+
+#Position of the source
+/gate/source/posiFDG/gps/centre 9.5 9.5 7. cm
+
+/gate/source/list

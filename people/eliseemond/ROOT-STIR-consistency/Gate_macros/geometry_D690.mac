@@ -1,0 +1,117 @@
+#	CYLINDRICAL
+
+/gate/world/daughters/name                    cylindricalPET
+/gate/world/daughters/insert                  cylinder
+/gate/cylindricalPET/placement/setTranslation 0.0 0.0 0.0 cm
+/gate/cylindricalPET/geometry/setRmax         43.1 cm
+/gate/cylindricalPET/geometry/setRmin         40.5 cm
+/gate/cylindricalPET/geometry/setHeight       15.716 cm
+/gate/cylindricalPET/setMaterial              Air
+/gate/cylindricalPET/vis/forceWireframe
+/gate/cylindricalPET/vis/setColor             white
+
+
+
+#	RSECTOR
+
+/gate/cylindricalPET/daughters/name           rsector
+/gate/cylindricalPET/daughters/insert         box
+/gate/rsector/placement/setTranslation           41.76 0.0 0.0 cm
+/gate/rsector/geometry/setXLength                25  mm
+/gate/rsector/geometry/setYLength                39.96 mm
+/gate/rsector/geometry/setZLength                156.96 mm
+/gate/rsector/setMaterial                        Air
+/gate/rsector/vis/setVisible                     0
+
+#       END-SHIELDING
+
+/gate/rsector/daughters/name endshielding
+/gate/rsector/daughters/insert box
+/gate/endshielding/placement/setTranslation 0.0 0.0 0.0 cm
+/gate/endshielding/geometry/setXLength 25 mm
+/gate/endshielding/geometry/setYLength 39.96 mm
+/gate/endshielding/geometry/setZLength 1.0 mm
+/gate/endshielding/setMaterial Lead
+/gate/endshielding/repeaters/insert cubicArray
+/gate/endshielding/cubicArray/setRepeatNumberX 1
+/gate/endshielding/cubicArray/setRepeatNumberY 1
+/gate/endshielding/cubicArray/setRepeatNumberZ 2
+/gate/endshielding/cubicArray/setRepeatVector 0.0 0.0 15.706 cm
+/gate/endshielding/vis/setColor white
+
+#	MODULE
+
+/gate/rsector/daughters/name                     module
+/gate/rsector/daughters/insert                   box
+/gate/module/placement/setTranslation          0 0.0 0.0 cm
+/gate/module/geometry/setXLength               25 mm
+/gate/module/geometry/setYLength               39.96 mm
+/gate/module/geometry/setZLength               39.24 mm
+/gate/module/setMaterial                       Air
+/gate/module/vis/setColor                      green
+#/gate/module/vis/setVisible                    0
+
+
+
+#	C R Y S T A L
+
+/gate/module/daughters/name                    crystal
+/gate/module/daughters/insert                  box
+/gate/crystal/placement/setTranslation        0.0 0.0 0.0 cm
+/gate/crystal/geometry/setXLength             25 mm
+/gate/crystal/geometry/setYLength             4.44 mm
+/gate/crystal/geometry/setZLength             6.54 mm           # Filled the gaps between the crystals for convenience
+/gate/crystal/setMaterial                     LYSO
+/gate/crystal/vis/setColor                        red
+
+
+
+#	R E P E A T    C R Y S T A L
+
+/gate/crystal/repeaters/insert                cubicArray
+/gate/crystal/cubicArray/setRepeatNumberX     1
+/gate/crystal/cubicArray/setRepeatNumberY     9
+/gate/crystal/cubicArray/setRepeatNumberZ     6
+/gate/crystal/cubicArray/setRepeatVector      0.0 4.44 6.54 mm
+
+
+
+
+
+#	R E P E A T    MODULE
+
+/gate/module/repeaters/insert                  cubicArray
+/gate/module/cubicArray/setRepeatNumberX       1
+/gate/module/cubicArray/setRepeatNumberY       1
+/gate/module/cubicArray/setRepeatNumberZ       4
+/gate/module/cubicArray/setRepeatVector        0.0 0.0 39.24 mm
+
+
+
+
+
+#	R E P E A T    RSECTOR
+
+/gate/rsector/repeaters/insert                   ring
+/gate/rsector/ring/setRepeatNumber               64
+
+
+
+
+
+#	A T T A C H    S Y S T E M 
+
+/gate/systems/cylindricalPET/rsector/attach   rsector
+/gate/systems/cylindricalPET/module/attach    module
+/gate/systems/cylindricalPET/crystal/attach   crystal
+
+
+
+#	A T T A C H    C R Y S T A L  SD
+
+/gate/crystal/attachCrystalSD
+
+
+
+/gate/systems/cylindricalPET/describe
+

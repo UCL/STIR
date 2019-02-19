@@ -1,0 +1,23 @@
+generate_image Parameters :=
+output filename:=stir_image5.v
+X output image size (in pixels):=301
+Y output image size (in pixels):=301
+Z output image size (in pixels):=47
+X voxel size (in mm):= 2.1306
+Y voxel size (in mm):= 2.1306
+Z voxel size (in mm) :=3.27
+
+  Z number of samples to take per voxel := 5
+  Y number of samples to take per voxel := 5
+  X number of samples to take per voxel := 5
+
+shape type:= Ellipsoid
+Ellipsoid Parameters:=
+   radius-x (in mm):=2
+   radius-y (in mm):=2
+   radius-z (in mm):=2
+   origin (in mm):={145.21,95,95}
+   END:=
+value :=1
+
+END:=
