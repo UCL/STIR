@@ -1,0 +1,5 @@
+/gate/digitizer/Coincidences/setOffset          0. ns
+
+/gate/digitizer/Coincidences/setWindow          4.9 ns
+
+/gate/digitizer/insert                          coincidenceSorter

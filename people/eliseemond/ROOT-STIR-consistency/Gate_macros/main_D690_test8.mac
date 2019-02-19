@@ -1,0 +1,70 @@
+# Author: Elise Emond
+
+/vis/disable
+
+#-----------------#
+# G êE O M êE T R Y #
+#-----------------#
+
+
+# Material database
+/gate/geometry/setMaterialDatabase GateMaterials.db
+
+# World dimensions
+/gate/world/geometry/setXLength 600. cm
+/gate/world/geometry/setYLength 600. cm
+/gate/world/geometry/setZLength 600. cm
+
+# Scanner
+/control/execute geometry_D690.mac
+
+
+#---------------#
+# P H Y S I C S #
+#---------------#
+
+/control/execute physics.mac
+
+#-----------------------------#
+# I N I T I A L I S A T I O N #
+#-----------------------------#
+
+/gate/run/initialize
+
+#-------------------#
+# D I G I T I S E R #
+#-------------------#
+
+/control/execute digitiser_D690.mac
+
+#-------------------------------------#
+# C O I N C I D E N C E   S O R T E R #
+#-------------------------------------#
+
+/control/execute csorter_D690.mac
+
+#-------------------------------------#
+# R A D I O A C T I V E   S O U R C E #
+#-------------------------------------#
+
+/control/execute source_test8.mac
+
+#-----------------------#
+# O U T P U T   D A T A #
+#-----------------------#
+
+/gate/output/root/enable
+/gate/output/root/setFileName             RootLM_D690_test8
+/gate/output/root/setRootHitFlag          0
+/gate/output/root/setRootSinglesFlag      0
+/gate/output/root/setRootCoincidencesFlag 1
+
+#---------------------------------#
+# A C Q U I S I T I O N   T I M E #
+#---------------------------------#
+
+/gate/application/setTimeSlice   100 ms
+/gate/application/setTimeStart   0 s
+/gate/application/setTimeStop    1 s
+
+/gate/application/startDAQ
