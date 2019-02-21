@@ -1,7 +1,8 @@
 # The original *cmake.in file is part of STIR.
 #
 # Author: Kris Thielemans
-# Copyright 2016 University College London
+# Author Richard Brown
+# Copyright 2016, 2019 University College London
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -25,11 +26,13 @@
 # At this point in time, you do need to add
 #  include_directories("${STIR_INCLUDE_DIRS}")
 # to your CMake file to get the STIR_REGISTRIES to compile.
-
+#
+# The file also sets variables such as STIR_BUILT_WITH_ITK, STIR_BUILT_WITH_OpenMP etc
+# in case you need to how it was built.
 @PACKAGE_INIT@ 
 
 # add folder where this file resides to the cmake path such that it can use our find_package modules and .cmake files
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR};${CMAKE_MODULE_PATH}")
 
 include("${CMAKE_CURRENT_LIST_DIR}/STIRTargets.cmake")
 
@@ -43,16 +46,11 @@ set(STIR_REGISTRIES @STIR_REGISTRIES@)
 # to set ITK_DIR etc first before calling find_package
 # to make sure we pick the same version of the external library
 
-if (@BOOST_ROOT@)
-  set(BOOST_ROOT "@BOOST_ROOT@")
-endif()
-set (BOOST_INCLUDEDIR "@Boost_INCLUDE_DIRS@")
-find_package(Boost REQUIRED)
-
 if (@ITK_FOUND@)
   message(STATUS "ITK support in STIR enabled.")
   set(ITK_DIR "@ITK_DIR@")
   find_package(ITK REQUIRED)
+  set(STIR_BUILT_WITH_ITK TRUE)
 endif()
 
 if (@LLN_FOUND@)
@@ -61,6 +59,7 @@ if (@LLN_FOUND@)
   # need to add this as stir_ecat7.h etc rely on it
   # would be better to add it to STIR_INCLUDE_DIRS (TODO)
   include_directories("@LLN_INCLUDE_DIRS@")
+  set(STIR_BUILT_WITH_LLN_MATRIX TRUE)
 endif()
 
 if (@CERN_ROOT_FOUND@)
@@ -70,6 +69,7 @@ if (@CERN_ROOT_FOUND@)
   # need to add this as registries rely on it
   # would be better to add it to STIR_INCLUDE_DIRS (TODO)
   include_directories(${CERN_ROOT_INCLUDE_DIRS})
+  set(STIR_BUILT_WITH_CERN_ROOT TRUE)
 endif()
 
 if (@AVW_FOUND@)
@@ -79,12 +79,15 @@ if (@AVW_FOUND@)
   # need to add this as registries rely on it
   # would be better to add it to STIR_INCLUDE_DIRS (TODO)
   include_directories(${AVW_INCLUDE_DIRS})
+  set(STIR_BUILT_WITH_AVW TRUE)
 endif()
 
 if (@STIR_MPI@)
   find_package(MPI REQUIRED)
+  set(STIR_BUILT_WITH_MPI TRUE)
 endif()
 
 if(@STIR_OPENMP@)
   find_package(OpenMP REQUIRED)  
+  set(STIR_BUILT_WITH_OpenMP TRUE)
 endif()

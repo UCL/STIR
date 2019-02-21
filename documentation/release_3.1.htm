@@ -78,8 +78,14 @@ Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
 
 <h3>Bug fixes</h3>
 <ul>
-<li>bug fixed in writing of SPECT interfile headers: "direction of rotation" was set incorrect. This 
-affected output of forward_project (and stir_math -s). Reconstruction was not affected though.
+<li>bug fixed in writing of SPECT interfile headers:
+    <ul>
+      <li>images were always written as PET. This was mostly harmless, except when using the
+        image then as input to <tt>forward_project</tt>, in which case the output projection data
+        was written with a PET Interfile header, resulting in incorrect geometry etc etc.</li>
+      <li>for projection data, "direction of rotation" was set incorrectly. This 
+        affected output of <tt>forward_project</tt> (and <tt>stir_math -s</tt>). Reconstruction was not affected though.</li>
+    </ul>
 </li>
 <li>fix conversion from raw GATE using
   <tt>conv_GATE_raw_ECAT_projdata_to_interfile</tt>(it was using the wrong segment-order and data-type).</li>
@@ -102,6 +108,7 @@ python/matlab or use of the C++ library.
 
 <h3>New functionality</h3>
 <ul>
+<li><tt>generate_image</tt> now has optional keywords for modality, patient position and timing.</li>
   <li><tt>create_projdata_template</tt> now allows even span. In particular,
 span 2 corresponds to how GE stores data. See the STIR glossary for more information.</li>
 <li>As mentioned above, many operations are now multi-threaded when you built with OPENMP support.
@@ -138,6 +145,9 @@ These are only minimally documented at the present stage unfortunately.
 <li>Sensitivity calculation parallelized using distributed worker mechanism.</li>
 <li>Python (and MATLAB) interface
   <ul>
+    <li>when <tt>BUILD_DOCUMENTATION</tt> is <tt>ON</tt>, we now use
+      <a href="https://github.com/m7thon/doxy2swig">doxy2swig</a> to pass the doxygen documentation
+      to Python/MATLAB.</li>
     <li>added GeneralisedPoissonNoiseGenerator</li>
     <li>added the <code>Shape</code> classes</li>
     <li>added the <code>GeneralisedPrior</code> classes</li>
@@ -216,9 +226,10 @@ You should normally not have to change these options.</li>
   preprocessor variables etc (as opposed to passing these on the compiler command line).
 </li>
 <li> added <code>BUILD_TESTING</code> and <code>BUILD_EXECUTABLES</code> options to reduce build time if you do not need those files</li>
-<li>install include files</li> 
-<li> CMake now has a flag to create the target "doc" for building the Doxygen documentation
-  thanks to Jannis Fischer.
+<li>install include files</li>
+<li> if doxygen is found, added the target <tt>RUN_DOXYGEN</tt> for building the
+   Doxygen documentation (thanks to Jannis Fischer). This target is always built if
+   <tt>BUILD_DOCUMENTATION</tt> is <tt>ON</tt>.
 </li>
 <li> Added a <tt>BUILD_TESTS</tt> build target so that <tt>make BUILD_TESTS</tt>
      (or whatever is appropriate for your build system) will build all

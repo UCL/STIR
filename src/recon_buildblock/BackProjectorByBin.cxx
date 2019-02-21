@@ -81,13 +81,21 @@ void
 BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
 const ProjData& proj_data, int subset_num, int num_subsets)
 {
-	if (subset_num < 0)
-		error(boost::format("forward_project: wrong subset number %1%") % subset_num);
-	if (subset_num > num_subsets - 1)
-		error(boost::format("forward_project: wrong subset number %1% (must be less than the number of subsets %2%)")
-		% subset_num % num_subsets);
-	
-	check(*proj_data.get_proj_data_info_sptr(), image);
+  if (image.get_exam_info().imaging_modality.is_unknown()
+      || proj_data.get_exam_info().imaging_modality.is_unknown())
+    warning("back_project: Imaging modality is unknown for either the image or the projection data or both.\n"
+            "Going ahead anyway.");
+  else if (image.get_exam_info().imaging_modality !=
+      proj_data.get_exam_info().imaging_modality)
+    error("back_project: Imaging modality should be the same for the image and the projection data");
+
+  if (subset_num < 0)
+    error(boost::format("forward_project: wrong subset number %1%") % subset_num);
+  if (subset_num > num_subsets - 1)
+    error(boost::format("forward_project: wrong subset number %1% (must be less than the number of subsets %2%)")
+          % subset_num % num_subsets);
+
+  check(*proj_data.get_proj_data_info_sptr(), image);
     
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(this->get_symmetries_used()->clone());  
