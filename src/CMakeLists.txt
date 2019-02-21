@@ -181,6 +181,21 @@ include(CheckCXXSymbolExists)
 # Finally, do the check!
 check_cxx_symbol_exists(BOOST_NO_CXX11_SMART_PTR boost/config.hpp HAVE_NO_CXX11_SMART_PTR)
 
+include(CheckCXXSourceCompiles)
+check_cxx_source_compiles("
+   #include <memory>
+   std::unique_ptr<int> f(){int *ptr = new int;return std::unique_ptr<int>(ptr);}
+   int main(){auto p = f(); return 0;}
+   "
+        STIR_HAVE_UNIQUE_PTR)
+
+
+if(STIR_HAVE_UNIQUE_PTR)
+    option(STIR_NO_UNIQUE_PTR "Disable use of std::unique_ptr" OFF)
+else()
+    set(STIR_NO_UNIQUE_PTR ON)
+endif()
+
 # Now we introduce 2 options such that the user can override the default behaviour
 # (not recommended! unless the above failed of course)
 option(STIR_NO_UNIQUE_PTR
