@@ -182,6 +182,7 @@ include(CheckCXXSymbolExists)
 check_cxx_symbol_exists(BOOST_NO_CXX11_SMART_PTR boost/config.hpp HAVE_NO_CXX11_SMART_PTR)
 
 include(CheckCXXSourceCompiles)
+# Perform test to see if STIR unique_ptr exists
 check_cxx_source_compiles("
    #include <memory>
    std::unique_ptr<int> f(){int *ptr = new int;return std::unique_ptr<int>(ptr);}
@@ -189,12 +190,20 @@ check_cxx_source_compiles("
    "
         STIR_HAVE_UNIQUE_PTR)
 
-
 if(STIR_HAVE_UNIQUE_PTR)
     option(STIR_NO_UNIQUE_PTR "Disable use of std::unique_ptr" OFF)
 else()
     set(STIR_NO_UNIQUE_PTR ON)
 endif()
+
+# Perform test to see if BOOST shared_ptr exists
+check_cxx_source_compiles("
+        #include <memory>
+        std::shared_ptr<int> f(){int *ptr = new int; return std::shared_ptr<int>(ptr);}
+        int main(){auto p = f(); return 0;}
+    "
+        STIR_USE_BOOST_SHARED_PTR
+        )
 
 # Now we introduce 2 options such that the user can override the default behaviour
 # (not recommended! unless the above failed of course)
