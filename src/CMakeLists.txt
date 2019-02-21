@@ -196,7 +196,7 @@ else()
     set(STIR_NO_UNIQUE_PTR ON)
 endif()
 
-# Perform test to see if BOOST shared_ptr exists
+# Perform test to see if std::shared_ptr exists
 check_cxx_source_compiles("
         #include <memory>
         std::shared_ptr<int> f(){int *ptr = new int; return std::shared_ptr<int>(ptr);}
