@@ -194,6 +194,7 @@ if(STIR_HAVE_UNIQUE_PTR)
     option(STIR_NO_UNIQUE_PTR "Disable use of std::unique_ptr" OFF)
 else()
     set(STIR_NO_UNIQUE_PTR ON)
+    mark_as_advanced(STIR_NO_UNIQUE_PTR)
 endif()
 
 # Perform test to see if std::shared_ptr exists
@@ -204,6 +205,14 @@ check_cxx_source_compiles("
     "
        HAVE_STD_SHARED_PTR
         )
+
+if(HAVE_STD_SHARED_PTR)
+    option(STIR_USE_BOOST_SHARED_PTR "Enable use of std::shared_ptr" ON)
+    mark_as_advanced(STIR_USE_BOOST_SHARED_PTR)
+else()
+    set(STIR_USE_BOOST_SHARED_PTR OFF)
+endif()
+
 
 # Now we introduce 2 options such that the user can override the default behaviour
 # (not recommended! unless the above failed of course)
