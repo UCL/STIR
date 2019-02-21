@@ -202,7 +202,7 @@ check_cxx_source_compiles("
         std::shared_ptr<int> f(){int *ptr = new int; return std::shared_ptr<int>(ptr);}
         int main(){auto p = f(); return 0;}
     "
-        STIR_USE_BOOST_SHARED_PTR
+       HAVE_STD_SHARED_PTR
         )
 
 # Now we introduce 2 options such that the user can override the default behaviour
