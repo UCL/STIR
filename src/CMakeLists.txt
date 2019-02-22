@@ -207,7 +207,7 @@ check_cxx_source_compiles("
         )
 
 if(HAVE_STD_SHARED_PTR)
-    option(STIR_USE_BOOST_SHARED_PTR "Enable use of std::shared_ptr" ON)
+    option(STIR_USE_BOOST_SHARED_PTR "Use of boost::shared_ptr as opposed to std::shared_ptr" OFF)
     mark_as_advanced(STIR_USE_BOOST_SHARED_PTR)
 else()
     set(STIR_USE_BOOST_SHARED_PTR OFF)
