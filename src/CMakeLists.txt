@@ -192,9 +192,9 @@ check_cxx_source_compiles("
 
 if(STIR_HAVE_UNIQUE_PTR)
     option(STIR_NO_UNIQUE_PTR "Disable use of std::unique_ptr" OFF)
+    mark_as_advanced(STIR_NO_UNIQUE_PTR)
 else()
     set(STIR_NO_UNIQUE_PTR ON)
-    mark_as_advanced(STIR_NO_UNIQUE_PTR)
 endif()
 
 # Perform test to see if std::shared_ptr exists
