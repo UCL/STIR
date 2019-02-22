@@ -159,7 +159,6 @@ check_function_exists(getopt HAVE_SYSTEM_GETOPT)
 # Check for CXX11 smart pointer support.
 # This is far more complicated than it should be, largely because we want to support
 # older compilers (some claim to be C++-11 but are do not have std::unique_ptr for instance).
-# So, we will check BOOST_NO_CXX11_SMART_PTR using check_cxx_symbol_exists.
 # However, we need to do that with the same compilers flags as used for STIR.
 #
 # Sadly, older versions of CMake failed to take CMAKE_CXX_STANDARD into account, so
@@ -175,23 +174,21 @@ else()
   # Note: need to set this before including CheckCXXSymbolExists
   cmake_policy(SET CMP0067 NEW)
 endif()
-set(CMAKE_REQUIRED_INCLUDES ${Boost_INCLUDE_DIRS})
+#set(CMAKE_REQUIRED_INCLUDES ${Boost_INCLUDE_DIRS})
 #set(CMAKE_REQUIRED_QUIET FALSE)
-include(CheckCXXSymbolExists)
-# Finally, do the check!
-check_cxx_symbol_exists(BOOST_NO_CXX11_SMART_PTR boost/config.hpp HAVE_NO_CXX11_SMART_PTR)
+# Finally, do the checks!
 
 include(CheckCXXSourceCompiles)
-# Perform test to see if STIR unique_ptr exists
+# Perform test to see if std::unique_ptr exists
 check_cxx_source_compiles("
    #include <memory>
    std::unique_ptr<int> f(){int *ptr = new int;return std::unique_ptr<int>(ptr);}
    int main(){auto p = f(); return 0;}
    "
-        STIR_HAVE_UNIQUE_PTR)
+        HAVE_STD_UNIQUE_PTR)
 
-if(STIR_HAVE_UNIQUE_PTR)
-    option(STIR_NO_UNIQUE_PTR "Disable use of std::unique_ptr" OFF)
+if(HAVE_STD_UNIQUE_PTR)
+    option(STIR_NO_UNIQUE_PTR "Disable use of std::unique_ptr (not recommended)" OFF)
     mark_as_advanced(STIR_NO_UNIQUE_PTR)
 else()
     set(STIR_NO_UNIQUE_PTR ON)
@@ -207,7 +204,7 @@ check_cxx_source_compiles("
         )
 
 if(HAVE_STD_SHARED_PTR)
-    option(STIR_USE_BOOST_SHARED_PTR "Use of boost::shared_ptr as opposed to std::shared_ptr" OFF)
+    option(STIR_USE_BOOST_SHARED_PTR "Use boost::shared_ptr as opposed to std::shared_ptr (not recommended)" OFF)
     mark_as_advanced(STIR_USE_BOOST_SHARED_PTR)
 else()
     set(STIR_USE_BOOST_SHARED_PTR ON)
