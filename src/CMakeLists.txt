@@ -214,14 +214,6 @@ else()
 endif()
 
 
-# Now we introduce 2 options such that the user can override the default behaviour
-# (not recommended! unless the above failed of course)
-option(STIR_NO_UNIQUE_PTR
-       "Disable use of std::unique_ptr" ${HAVE_NO_CXX11_SMART_PTR})
-option(STIR_USE_BOOST_SHARED_PTR
-       "Use of boost::shared_ptr as opposed to std::shared_ptr" ${HAVE_NO_CXX11_SMART_PTR})
-mark_as_advanced(STIR_NO_UNIQUE_PTR STIR_USE_BOOST_SHARED_PTR)
-
 #### Create stir/config.h
 
 # This has to be written where we build somewhere. We will put it somewhere "natural"
