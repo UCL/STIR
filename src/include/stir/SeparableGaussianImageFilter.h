@@ -74,6 +74,7 @@ public:
   //! Default constructor
   SeparableGaussianImageFilter();
 
+private:
 
   BasicCoordinate< num_dimensions,float> get_fwhms();
   BasicCoordinate< num_dimensions,int> get_max_kernel_sizes();

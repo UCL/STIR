@@ -38,7 +38,7 @@ START_NAMESPACE_STIR
   \ingroup Array
   \brief Separable Gaussian filtering in \c n - dimensions
 
-  The implementation follows the same discretisation strategy used for the Metz filter.
+  The implementation follows a similar strategy used for the Metz filter, but this filter uses discretisation in image space.
   \see SeparableMetzArrayFilter for what a Metz filter is.
 
   For power 0, the Metz filterthe reduces to the Gaussian filter in frequency-space.
