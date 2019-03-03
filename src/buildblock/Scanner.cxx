@@ -120,7 +120,7 @@ Scanner::Scanner(Type scanner_type)
 
     // KT 25/01/2002 corrected ring_spacing
     set_params(E931, string_list("ECAT 931"),
-               8, 192, 2 * 256, 2*256,
+               8, 192, 192, 2*256,
                510.0F, 7.0F, 13.5F, 3.129F, 0.0F,
                2, 4, 4, 8, 4, 8 * 4, 1,
                0.0F, 511.F,
@@ -132,7 +132,7 @@ Scanner::Scanner(Type scanner_type)
   case E951:
 
     set_params(E951, string_list("ECAT 951"),
-               16, 192, 2 * 256, 2*256,
+               16, 192, 192, 2*256,
                510.0F, 7.0F, 6.75F, 3.12932F, 0.0F,
                1, 4, 8, 8, 8, 8 * 4, 1,
                0.0F, 511.F,
@@ -142,7 +142,7 @@ Scanner::Scanner(Type scanner_type)
   case E953:
 
     set_params(E953, string_list("ECAT 953"),
-               16, 160, 2 * 192, 2*192,
+               16, 160, 160, 2*192,
                382.5F, 7.0F, 6.75F, 3.12932F, static_cast<float>(15.*_PI/180),
                1, 4, 8, 8, 8, 8 * 4, 1,
                0.0F, 511.F,
@@ -152,7 +152,7 @@ Scanner::Scanner(Type scanner_type)
   case E921:
 
     set_params(E921, string_list("ECAT 921", "ECAT EXACT", "EXACT"),
-               24, 192, 2* 192, 2 * 192,
+               24, 192, 192, 2 * 192,
                412.5F, 7.0F, 6.75F, 3.375F, static_cast<float>(15.*_PI/180),
                1, 4, 8, 8, 8, 8 * 4, 1,
                0.0F, 511.F,
@@ -162,7 +162,7 @@ Scanner::Scanner(Type scanner_type)
   case E925:
 
     set_params(E925, string_list("ECAT 925", "ECAT ART"),
-               24, 192, 2* 192, 2* 192,
+               24, 192, 192, 2* 192,
                412.5F, 7.0F, 6.75F, 3.375F, static_cast<float>(15.*_PI/180),
                3, 4, 8, 8, 8, 8 * 4, 1,
                0.0F, 511.F,
@@ -173,7 +173,7 @@ Scanner::Scanner(Type scanner_type)
   case E961:
 
     set_params(E961,string_list("ECAT 961", "ECAT HR"),
-               24, 336, 2* 392, 2*392,
+               24, 336, 336, 2*392,
                412.0F, 7.0F, 6.25F, 1.650F, static_cast<float>(13.*_PI/180),
                1, 8, 8, 7, 8, 7 * 8, 1,
                0.0F, 511.F,
@@ -183,7 +183,7 @@ Scanner::Scanner(Type scanner_type)
   case E962:
 
     set_params(E962,string_list("ECAT 962","ECAT HR+"),
-               32, 288, 2* 288, 2*288,
+               32, 288, 288, 2*288,
                412.0F, 7.0F, 4.85F, 2.25F,  0.0F,
                4, 3, 8, 8, 8, 8 * 3, 1,
                0.0F, 511.F,
@@ -193,7 +193,7 @@ Scanner::Scanner(Type scanner_type)
   case E966:
 
     set_params(E966, string_list("ECAT EXACT 3D", "EXACT 3D", "ECAT HR++","ECAT 966"),
-               48, 288, 2* 288, 2*288,
+               48, 288, 288, 2*288,
                412.0F, 7.0F, 4.850F, 2.250F, 0.0,
                6, 2, 8, 8, 2 * 8, 8 * 2, 1,
                0.0F, 511.F,
@@ -203,7 +203,7 @@ Scanner::Scanner(Type scanner_type)
   case E1080:
     // data added by Robert Barnett, Westmead Hospital, Sydney
     set_params(E1080, string_list("ECAT 1080", "Biograph 16", "1080"),
-               41, 336, 2* 336, 2*336,
+               41, 336, 336, 2*336,
                412.0F, 7.0F, 4.0F, 2.000F, 0.0F,
                1, 2, 41, 14, 41, 14, 1,
                0.0F, 511.F,
@@ -219,7 +219,7 @@ Scanner::Scanner(Type scanner_type)
     // Transaxial blocks have 8 physical crystals and a gap at the
     // 9th crystal where the counts are zero.
     set_params(Siemens_mMR, string_list("Siemens mMR", "mMR", "2008"),
-               64, 344, 2* 252, 2*252,
+               64, 344, 344, 2*252,
                328.0F, 7.0F, 4.0625F, 2.08626F, 0.0F,
                2, 1, 8, 9, 16, 9, 1,
                0.0F, 511.F,
@@ -229,7 +229,7 @@ Scanner::Scanner(Type scanner_type)
   case test_scanner:
     // This is a relatively small scanner for test purposes.
     set_params(test_scanner, string_list("test_scanner"),
-               4, 344, 2*252,2*252,
+               4, 344, 344,2*252,
                328.0F, 7.0F, 4.0625F, 2.08626F, 0.0F,
                1, 1, 4, 1, 4, 1, 1,
                0.0F, 511.F,
@@ -241,7 +241,7 @@ Scanner::Scanner(Type scanner_type)
   case RPT:
 
     set_params(RPT, string_list("PRT-1", "RPT"),
-               16, 128, 2 * 192, 2*192,
+               16, 128, 128, 2*192,
                380.0F - 7.0F, 7.0F, 6.75F, 3.1088F, 0.0F,
                1, 4, 8, 8, 8, 32, 1,
                0.0F, 511.F,
@@ -254,7 +254,7 @@ Scanner::Scanner(Type scanner_type)
   case RATPET:
 
     set_params(RATPET, string_list("RATPET"),
-               8, 56, 2 * 56, 2*56,
+               8, 56, 56, 2*56,
                115 / 2.F,  7.0F, 6.25F, 1.65F, 0.0F,
                1, 16, 8, 7, 8, 0, 1,
                0.0F, 511.F,
@@ -345,6 +345,19 @@ Scanner::Scanner(Type scanner_type)
            (float)(10.0F),
            (float)(400.0F) );// TODO not sure about sign of view_offset
     break;
+
+  case DiscoverySTE_nonTOF:
+
+     set_params(DiscoverySTE_nonTOF, string_list("GE Discovery STE nonTOF", "Discovery STE nonTOF"),
+            24, 329, 293, 2 * 280,
+                886.2F/2.F, 8.4F, 6.54F, 2.397F,
+            static_cast<float>(-4.5490*_PI/180),//sign?
+            4, 2, 6, 8, 1, 1, 1,
+                0.0F, 511.F,
+            (short int)(0.F),
+            (float)(0.F),
+            (float)(0.F) );// TODO not sure about sign of view_offset
+     break;
 
   case ntest_TOF_50: // dummy
       // 8x8 blocks, 1 virtual "crystal", 56 blocks along the ring, 8 blocks in axial direction
@@ -846,7 +859,7 @@ if (!close_enough(energy_resolution, scanner.energy_resolution) &&
             " %d opposed to %d"
             "This only affects scatter simulation. \n", energy_resolution, scanner.energy_resolution);
 
-  return
+  bool ok =
       (num_rings == scanner.num_rings) &&
       (max_num_non_arccorrected_bins == scanner.max_num_non_arccorrected_bins) &&
       (default_num_arccorrected_bins == scanner.default_num_arccorrected_bins) &&
@@ -862,10 +875,16 @@ if (!close_enough(energy_resolution, scanner.energy_resolution) &&
       (num_transaxial_crystals_per_block == scanner.num_transaxial_crystals_per_block) &&
       (num_detector_layers == scanner.num_detector_layers) &&
       (num_axial_crystals_per_singles_unit == scanner.num_axial_crystals_per_singles_unit) &&
-      (num_transaxial_crystals_per_singles_unit == scanner.num_transaxial_crystals_per_singles_unit) &&
-      (max_num_of_timing_poss == scanner.max_num_of_timing_poss) &&
-      close_enough(size_timing_pos, scanner.size_timing_pos) &&
-	  close_enough(timing_resolution, scanner.timing_resolution);
+      (num_transaxial_crystals_per_singles_unit == scanner.num_transaxial_crystals_per_singles_unit);
+
+  if (this->is_tof_ready() && scanner.is_tof_ready())
+  {
+      ok = (max_num_of_timing_poss == scanner.max_num_of_timing_poss) &&
+              close_enough(size_timing_pos, scanner.size_timing_pos) &&
+              close_enough(timing_resolution, scanner.timing_resolution);
+  }
+
+  return ok;
 
 }
 

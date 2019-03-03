@@ -217,8 +217,8 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
 
             tof_bin_unmashed_boundaries_mm[k].low_lim = cur_low;
             tof_bin_unmashed_boundaries_mm[k].high_lim = cur_high;
-            tof_bin_unmashed_boundaries_ps[k].low_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[k].low_lim));
-            tof_bin_unmashed_boundaries_ps[k].high_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_boundaries_mm[k].high_lim));
+            tof_bin_unmashed_boundaries_ps[k].low_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_unmashed_boundaries_mm[k].low_lim));
+            tof_bin_unmashed_boundaries_ps[k].high_lim = static_cast<float>(mm_to_tof_delta_time(tof_bin_unmashed_boundaries_mm[k].high_lim));
 
         }
 
