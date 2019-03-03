@@ -290,8 +290,8 @@ read_norm_data(const string& filename)
     normalisation data.    
   */
 
-   const int min_tang_pos_num = -(scanner_ptr->get_max_num_non_arccorrected_bins())/2;
-   const int max_tang_pos_num = min_tang_pos_num +scanner_ptr->get_max_num_non_arccorrected_bins()- 1;
+   //const int min_tang_pos_num = -(scanner_ptr->get_max_num_non_arccorrected_bins())/2;
+   //const int max_tang_pos_num = min_tang_pos_num +scanner_ptr->get_max_num_non_arccorrected_bins()- 1;
 
    //geometric_factors = 
    //  Array<2,float>(IndexRange2D(0,127-1, //XXXXnrm_subheader_ptr->num_geo_corr_planes-1,

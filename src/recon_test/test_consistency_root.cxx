@@ -60,7 +60,7 @@ START_NAMESPACE_STIR
 class ROOTconsistency_Tests : public RunTests
 {
 public:
-  ROOTconsistency_Tests(std::string in, std::string image)
+  ROOTconsistency_Tests(std::string in, const std::string& image)
     : root_header_filename(in), image_filename(image)
     {}
     void run_tests();
@@ -95,7 +95,7 @@ private:
         const BasicCoordinate<3, float>& grid_spacing);
 
 	//! Modified version of check_if_equal for this test
-	bool check_if_almost_equal(const double a, const double b, std::string str, const double tolerance);
+	bool check_if_almost_equal(const double a, const double b, const std::string& str, const double tolerance);
 
 	std::string root_header_filename;
 	std::string image_filename;

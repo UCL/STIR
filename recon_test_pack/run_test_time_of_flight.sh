@@ -90,8 +90,8 @@ echo "Data maxs:" $Data_maxs
 
 for i in $(seq 5)
 do
-  if [ $(( $(($(($i-1)) - $((TOF_bins/2)))) - $((Data_mins[$i])))) -ne 0 ]; then
-    echo "Wrong values in TOF sinogram. Error. $(( $(($(($i-1)) - $((TOF_bins/2)))) - $((Data_mins[$i]))))"
+  if [ $(( $((i-1 - TOF_bins/2)) - Data_mins[i])) -ne 0 ]; then
+    echo "Wrong values in TOF sinogram. Error. $(( $(($((i-1)) -TOF_bins/2)) - Data_mins[i]))"
     exit 1
     fi
 done

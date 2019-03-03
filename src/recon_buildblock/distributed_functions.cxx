@@ -353,7 +353,7 @@ namespace distributed
   void send_viewgram(const stir::Viewgram<float>& viewgram, int destination)
   {
     //send dimensions of viewgram (axial and tangential positions and the view and segment numbers)
-    int viewgram_values[6];
+    int viewgram_values[7];
     viewgram_values[0] = viewgram.get_min_axial_pos_num();
     viewgram_values[1] = viewgram.get_max_axial_pos_num();
     viewgram_values[2] = viewgram.get_min_tangential_pos_num();

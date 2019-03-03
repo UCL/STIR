@@ -287,11 +287,11 @@ TOF_Tests::test_tof_kernel_application(bool print_to_file)
         if (sum_tof_proj_matrix_row.size() > 0)
         {
             ProjMatrixElemsForOneBin::iterator element_ptr = new_proj_matrix_row.begin();
+            bool found = false;
             while (element_ptr != new_proj_matrix_row.end())
             {
-
                 ProjMatrixElemsForOneBin::iterator sum_element_ptr = sum_tof_proj_matrix_row.begin();
-                bool found = false;
+                found = false;
                 while(sum_element_ptr != sum_tof_proj_matrix_row.end())
                 {
                     if(element_ptr->get_coords() == sum_element_ptr->get_coords())
@@ -309,7 +309,7 @@ TOF_Tests::test_tof_kernel_application(bool print_to_file)
                                                                                            element_ptr->get_value()));
                     break;
                 }
-                            ++element_ptr;
+                ++element_ptr;
             }
 
         }
