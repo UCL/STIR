@@ -584,7 +584,7 @@ ProjMatrixByBinSPECTUB::clone() const
 ProjMatrixByBinSPECTUB::
 ~ProjMatrixByBinSPECTUB()
 {
-  delete_UB_SPECT_arrays();
+ // delete_UB_SPECT_arrays();
 }
 
 void
