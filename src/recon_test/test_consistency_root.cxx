@@ -60,7 +60,7 @@ START_NAMESPACE_STIR
 class ROOTconsistency_Tests : public RunTests
 {
 public:
-  ROOTconsistency_Tests(std::string in, const std::string& image)
+  ROOTconsistency_Tests(const std::string& in, const std::string& image)
     : root_header_filename(in), image_filename(image)
     {}
     void run_tests();
