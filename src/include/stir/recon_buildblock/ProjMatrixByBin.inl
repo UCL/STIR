@@ -151,8 +151,12 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
 
     const CartesianCoordinate3D<float> diff_unit_vector(diff/static_cast<float>(norm(diff)));
 
-    for (ProjMatrixElemsForOneBin::iterator element_ptr = probabilities.begin();
-         element_ptr != probabilities.end(); ++element_ptr)
+//    for (ProjMatrixElemsForOneBin::iterator element_ptr = probabilities.begin();
+//         element_ptr != probabilities.end(); ++element_ptr)
+
+    ProjMatrixElemsForOneBin::iterator element_ptr = probabilities.begin();
+
+    while (element_ptr != probabilities.end())
     {
         Coordinate3D<int> c(element_ptr->get_coords());
         symm_ptr->transform_image_coordinates(c);
@@ -166,13 +170,17 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
         if ((low_dist >= 4.f && high_dist >= 4.f) ||
                 (low_dist <= -4.f && high_dist <= -4.f))
         {
-            *element_ptr = ProjMatrixElemsForOneBin::value_type(c, 0.0f);
+//            *element_ptr = ProjMatrixElemsForOneBin::value_type(c, 0.0f);
+            element_ptr = probabilities.erase(element_ptr);
             continue;
         }
-
-        new_value = get_tof_value(low_dist, high_dist);
-        new_value *= element_ptr->get_value();
-        *element_ptr = ProjMatrixElemsForOneBin::value_type(c, new_value);
+        else
+        {
+          new_value = get_tof_value(low_dist, high_dist);
+          new_value *= element_ptr->get_value();
+          *element_ptr = ProjMatrixElemsForOneBin::value_type(c, new_value);
+        }
+        ++element_ptr;
     }
 }
 

@@ -171,19 +171,23 @@ set_up(
 
 /*!
     \warning Preconditions
-    <li>abs(axial_pos_num) fits in 17 bits</li>
-    <li>abs(tangential_pos_num) fits in 11 bits</li>   
+    <li>abs(axial_pos_num) fits in 13 (4095) bits
+    <li>abs(tangential_pos_num) fits in 10 (1024) bits
+    <li>abs(tof_pos_num) fits in 7 bits (127)
   */
 ProjMatrixByBin::CacheKey
 ProjMatrixByBin::cache_key(const Bin& bin) const
 {
-  assert(static_cast<boost::uint32_t>(abs(bin.axial_pos_num())) < (static_cast<boost::uint32_t>(1)<<18));
-  assert(abs(bin.tangential_pos_num()) < (1<<12));
-  return (CacheKey)( 
-                    (static_cast<boost::uint32_t>(bin.axial_pos_num()>=0?0:1) << 31)
-                    | (static_cast<boost::uint32_t>(abs(bin.axial_pos_num()))<<13) 
-                    | (static_cast<boost::uint32_t>(bin.tangential_pos_num()>=0?0:1) << 12)
-                    |  static_cast<boost::uint32_t>(abs(bin.tangential_pos_num())) );    	
+  assert(static_cast<boost::uint32_t>(abs(bin.axial_pos_num())) < (static_cast<boost::uint32_t>(1)<<13));
+  assert(abs(bin.tangential_pos_num()) < (1<<10));
+
+  return static_cast<CacheKey>(
+                    static_cast<boost::uint32_t>(bin.axial_pos_num()>=0?0:1) << 31
+  | (static_cast<boost::uint32_t>(abs(bin.axial_pos_num()))<<19)
+  | (static_cast<boost::uint32_t>(bin.tangential_pos_num()>=0?0:1) << 18)
+  | static_cast<boost::uint32_t>(abs(bin.tangential_pos_num()) << 8)
+  | ((static_cast<boost::uint32_t>(bin.timing_pos_num()>=0?0:1) << 7))
+  | static_cast<boost::uint32_t>(abs(bin.timing_pos_num())));
 } 
 
 
