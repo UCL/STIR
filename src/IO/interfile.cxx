@@ -391,10 +391,9 @@ interfile_get_data_file_name_in_header(const string& header_file_name,
 {
   const string dir_name_of_binary_data =
     get_directory_name(data_file_name);
-  if (dir_name_of_binary_data.size() == 0 ||
-      is_absolute_pathname(data_file_name))
+  if (dir_name_of_binary_data.size() == 0)
     {
-      // data_dirname is empty or it's an absolute path
+      // data_dirname is empty
       return data_file_name;
     }
   const string dir_name_of_header =
