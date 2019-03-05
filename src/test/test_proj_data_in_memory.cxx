@@ -168,7 +168,7 @@ run_tests_tof()
 
   shared_ptr<ProjDataInfo> proj_data_info_sptr
     (ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
-		                    /*span*/1, 10,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ true, 11)
+                            /*span*/1, 5,/*views*/ 96, /*tang_pos*/64, /*arc_corrected*/ true, 70)
      );
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
 
@@ -176,7 +176,7 @@ run_tests_tof()
   // construct with filling to 0
   ProjDataInMemory proj_data(exam_info_sptr, proj_data_info_sptr);
   {
-	check_if_equal( proj_data.get_sinogram(0,0,false,-2).get_timing_pos_num(),
+    check_if_equal( proj_data.get_sinogram(0,0,false,-2).get_timing_pos_num(),
 					 -2,
 					 "test get_sinogram timing position index");
 	Sinogram<float> sinogram = proj_data.get_sinogram(0,0,false,-2);
