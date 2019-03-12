@@ -81,6 +81,10 @@ namespace stir {
 #include <boost/smart_ptr/detail/shared_count.hpp>
 #include <boost/smart_ptr/shared_ptr.hpp>
 
+#ifdef HAVE_NLOHMANN_JSON
+#include <nlohmann/json.hpp>
+#endif
+
 #define unique_ptr auto_ptr
 using std::auto_ptr;
 #endif

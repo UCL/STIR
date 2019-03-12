@@ -256,6 +256,13 @@ if (STIR_ENABLE_EXPERIMENTAL)
   ADD_SUBDIRECTORY(${CMAKE_SOURCE_DIR}/src/experimental)
 endif()
 
+if (STIR_ENABLE_SPECT_EXPERIMENTAL)
+  # append any headers there
+  find_all_header_files(ALL_HEADERS ALL_INLINES ALL_TXXS "${INCLUDE_DIR}/stir_spect_experimental")
+  # add the sub-dir
+  add_subdirectory(${CMAKE_SOURCE_DIR}/src/spect_experimental)
+endif()
+
 # go and look for CMakeLists.txt files in all those directories
 foreach(STIR_DIR ${STIR_DIRS} ${STIR_TEST_DIRS})
 	ADD_SUBDIRECTORY(${STIR_DIR})
