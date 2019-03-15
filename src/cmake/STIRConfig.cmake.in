@@ -130,6 +130,16 @@ endif()
 #  set(STIR_BUILD_WITH_nlohmann_json TRUE)
 #endif()
 
+if (@SIMSET_FOUND@)
+  set(SIMSET_CONFIG @SIMSET_CONFIG@)
+  find_package(SIMSET REQUIRED)
+  message(STATUS "SIMSET support in STIR enabled.")
+  # need to add this as registries rely on it
+  # would be better to add it to STIR_INCLUDE_DIRS (TODO)
+  include_directories(${SIMSET_INCLUDE_DIRS})
+  set(STIR_BUILT_WITH_SIMSET TRUE)
+endif()
+
 if (@STIR_MPI@)
   find_package(MPI ${STIR_FIND_TYPE})
   if(NOT MPI_FOUND)

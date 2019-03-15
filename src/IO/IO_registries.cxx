@@ -81,6 +81,10 @@
 #    include "stir/IO/ITKOutputFileFormat.h"
 #    include "stir/IO/ITKImageInputFileFormat.h"
 #  endif
+#ifdef HAVE_SIMSET
+#include "stir/IO/SimSETListmodeInputFileFormat.h"
+#include "stir/IO/InputStreamFromSimSET.h"
+#endif
 #endif // MINI_STIR
 
 START_NAMESPACE_STIR
@@ -111,7 +115,16 @@ static InputStreamFromROOTFileForCylindricalPET::RegisterIt dummy60606;
 static InputStreamFromROOTFileForECATPET::RegisterIt dummy606062;
 #  endif
 
-#  ifdef HAVE_LLN_MATRIX
+//!
+//! \brief LMdummySimSET
+//! \author Nikos Efthimiou
+//! \details SimSET support
+#ifdef HAVE_SIMSET
+static RegisterInputFileFormat<SimSETListmodeInputFileFormat> LMdummySimSET(7);
+//static InputStreamFromSimSET::RegisterIt dummy70707;
+#endif
+
+#ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT
 START_NAMESPACE_ECAT6
 static ECAT6OutputFileFormat::RegisterIt dummy2;

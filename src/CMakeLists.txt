@@ -73,6 +73,15 @@ else()
   message(STATUS "ITK support disabled.")
 endif()
 
+if (SIMSET_FOUND) 
+  message(STATUS "SimSET libraries added.")
+  set(HAVE_SIMSET ON)
+  include_directories(${SIMSET_INCLUDE_DIRS})
+else()
+  message(STATUS "SimSET support disabled.")
+  set(HAVE_SIMSET OFF)
+endif()
+
 #### Swig related
 option(BUILD_SWIG_PYTHON
        "Use SWIG to generate python bindings for STIR (experimental)" OFF)

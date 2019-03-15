@@ -73,6 +73,12 @@ list(APPEND ${dir_LIB_SOURCES}
 	InputStreamWithRecordsFromUPENNtxt.cxx)
 endif()
 
+if (SIMSET_FOUND)
+	list(APPEND ${dir_LIB_SOURCES}
+		InputStreamFromSimSET.cxx
+	)
+endif()
+
 if (HAVE_HDF5)
  list(APPEND ${dir_LIB_SOURCES}
     GEHDF5Wrapper.cxx
@@ -85,7 +91,6 @@ list(APPEND ${dir_LIB_SOURCES}
   PETSIRDCListmodeInputFileFormat.cxx
 )
 endif()
-
 endif() # MINI_STIR
 
 target_sources(${STIR_BUILDBLOCK_LIB} PRIVATE ${${dir_LIB_SOURCES}})
@@ -126,6 +131,10 @@ if (UPENN_FOUND)
   target_link_libraries(${TARGET} PRIVATE ${UPENN_libsss_tof} ${UPENN_libfit} ${UPENN_libdist} ${UPENN_libgeom}
         ${UPENN_liblor} ${UPENN_liblist} ${UPENN_libmhdr} ${JANSSON_LIBRARY} ${ZLIB_LIBRARY_RELEASE}
 ${UPENN_libimagio} ${UPENN_libimagio++})
+endif()
+
+if (SIMSET_FOUND)
+  target_link_libraries(${TARGET} PUBLIC ${SIMSET_LIBRARY})
 endif()
 
 if (HAVE_JSON)

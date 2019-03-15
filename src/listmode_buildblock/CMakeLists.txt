@@ -63,6 +63,13 @@ if(HAVE_PETSIRD)
   CListRecordPETSIRD.cxx)
 endif()
 
+if (HAVE_SIMSET)
+	list(APPEND ${dir_LIB_SOURCES}
+		CListModeDataSimSET
+        CListRecordSimSET
+	)
+endif()
+
 #$(dir)_REGISTRY_SOURCES:= $(dir)_registries
 
 
