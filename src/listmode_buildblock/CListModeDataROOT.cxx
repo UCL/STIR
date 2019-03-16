@@ -217,13 +217,12 @@ set_get_position(const CListModeDataROOT::SavedPosition& pos)
     return root_file_sptr->set_get_position(pos);
 }
 
-//Succeeded
-//CListModeDataROOT::
-//set_listmode_position(const unsigned long pos)
-//{
-//    root_file_sptr->set_listmode_position(pos);
-//    return Succeeded::yes;
-//}
+Succeeded
+CListModeDataROOT::
+set_listmode_position(const unsigned long pos)
+{
+    return root_file_sptr->set_listmode_position(pos);
+}
 
 void
 CListModeDataROOT::

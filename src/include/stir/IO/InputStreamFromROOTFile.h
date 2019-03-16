@@ -105,8 +105,9 @@ public:
     inline
     Succeeded set_get_position(const SavedPosition&);
 
-    //! Go to an event number
-//    Succeeded set_listmode_position(unsigned long pos);
+    //! Go to event number [pos]
+    inline
+    Succeeded set_listmode_position(unsigned long pos);
 
     //! Get the vector with the saved positions
     inline

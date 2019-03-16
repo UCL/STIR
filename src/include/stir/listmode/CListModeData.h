@@ -214,7 +214,7 @@ public:
   virtual
     Succeeded set_get_position(const SavedPosition&) = 0;
 
-   //! Go to a position in the listmode data
+   //! Set the position for reading to a integer position
   virtual
     Succeeded set_listmode_position(unsigned long pos) = 0;
     //Succeeded set_listmode_position(unsigned long pos) {return Succeeded::no;}//= 0;
