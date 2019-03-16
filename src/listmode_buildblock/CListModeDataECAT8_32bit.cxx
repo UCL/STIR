@@ -140,8 +140,8 @@ Succeeded
 CListModeDataECAT8_32bit::
 set_listmode_position(const unsigned long pos)
 {
-//    /*return current_lm_data_ptr->set_listmode_position(pos);*/
-    return Succeeded::no;
+    return current_lm_data_ptr->set_listmode_position(pos);
+    //return Succeeded::no;
 }
 
 } // namespace ecat

@@ -171,13 +171,13 @@ set_get_position(const typename InputStreamWithRecords<RecordT, OptionsT>::Saved
     return Succeeded::yes;
 }
 
-//template <class RecordT, class OptionsT>
-//Succeeded
-//InputStreamWithRecords<RecordT, OptionsT>::
-//set_listmode_position(const unsigned long pos)
-//{
-//    return Succeeded::no;
-//}
+template <class RecordT, class OptionsT>
+Succeeded
+InputStreamWithRecords<RecordT, OptionsT>::
+set_listmode_position(const unsigned long pos)
+{
+    return Succeeded::no;
+}
 
 template <class RecordT, class OptionsT>
 std::vector<std::streampos> 

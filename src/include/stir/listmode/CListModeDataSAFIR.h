@@ -79,10 +79,11 @@ public:
 	virtual Succeeded set_get_position(const SavedPosition& pos)
 	{ return current_lm_data_ptr->set_get_position(pos); }
 
+    //! Set current position in the input file to pos
    virtual
     Succeeded set_listmode_position(unsigned long pos)
-    { /*return current_lm_data_ptr->set_listmode_position(pos);*/
-        return Succeeded::no;}
+    { return current_lm_data_ptr->set_listmode_position(pos);}
+
 
 	/*! 
 	Returns just false in the moment.
