@@ -585,6 +585,8 @@ void
 ProjMatrixByBinSPECTUB::
 delete_UB_SPECT_arrays()
 {
+  if (!this->already_setup)
+    return;
   //... freeing matrix memory....................................
   using namespace SPECTUB;
   delete [] Rrad;
