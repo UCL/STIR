@@ -86,12 +86,13 @@ set_listmode_position(unsigned long pos)
     }
 }
 
-//Succeeded
-//InputStreamFromROOTFile::
-//get_current_position()
-//{
-
-//}
+//get the current position
+unsigned long
+InputStreamFromROOTFile::
+get_list_mode_position()
+{
+    return current_position;
+}
 
 std::vector<unsigned long int>
 InputStreamFromROOTFile::

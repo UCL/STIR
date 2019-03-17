@@ -136,11 +136,18 @@ set_get_position(const CListModeDataECAT8_32bit::SavedPosition& pos)
     current_lm_data_ptr->set_get_position(pos);
 }
 
+unsigned long
+CListModeDataECAT8_32bit::
+get_list_mode_position()
+{
+    return current_lm_data_ptr->get_list_mode_position();
+}
+
 Succeeded
 CListModeDataECAT8_32bit::
-set_listmode_position(const unsigned long pos)
+set_list_mode_position(const unsigned long pos)
 {
-    return current_lm_data_ptr->set_listmode_position(pos);
+    return current_lm_data_ptr->set_list_mode_position(pos);
     //return Succeeded::no;
 }
 

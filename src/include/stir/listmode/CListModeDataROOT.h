@@ -133,7 +133,10 @@ public:
     Succeeded set_get_position(const SavedPosition&);
 
    virtual
-    Succeeded set_listmode_position(const unsigned long pos);
+    Succeeded set_list_mode_position(const unsigned long pos);
+
+   virtual
+    unsigned long get_list_mode_position();
 
     virtual
     bool has_delayeds() const { return true; }

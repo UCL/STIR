@@ -71,7 +71,9 @@ public:
     Succeeded set_get_position(const SavedPosition&);
 
  virtual
-    Succeeded set_listmode_position(unsigned long pos);
+    Succeeded set_list_mode_position(unsigned long pos);
+ virtual
+    unsigned long get_list_mode_position();
 
   //! returns \c true, as ECAT listmode data stores delayed events (and prompts)
   /*! \todo this might depend on the acquisition parameters */

@@ -109,6 +109,10 @@ public:
     inline
     Succeeded set_listmode_position(unsigned long pos);
 
+    //! Return the current event position
+    inline
+    unsigned long get_list_mode_position();
+
     //! Get the vector with the saved positions
     inline
     std::vector<unsigned long int> get_saved_get_positions() const;

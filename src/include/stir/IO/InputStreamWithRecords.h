@@ -111,7 +111,11 @@ public:
 
   //! set current position to pos
   inline
-  Succeeded set_listmode_position(unsigned long pos);
+  Succeeded set_list_mode_position(unsigned long pos);
+
+  //! Return the current position
+  inline
+  unsigned long get_list_mode_position();
 
   //! Function that enables the user to store the saved get_positions
   /*! Together with set_saved_get_positions(), this allows 

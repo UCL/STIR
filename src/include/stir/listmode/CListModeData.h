@@ -216,8 +216,11 @@ public:
 
    //! Set the position for reading to a integer position
   virtual
-    Succeeded set_listmode_position(unsigned long pos) = 0;
-    //Succeeded set_listmode_position(unsigned long pos) {return Succeeded::no;}//= 0;
+    Succeeded set_list_mode_position(unsigned long pos) = 0;
+
+    //! get current position position
+  virtual
+    unsigned long get_list_mode_position() = 0;
 
   //! Get scanner pointer  
   /*! Returns a pointer to a scanner object that is appropriate for the 

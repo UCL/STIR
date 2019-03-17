@@ -81,8 +81,12 @@ public:
 
     //! Set current position in the input file to pos
    virtual
-    Succeeded set_listmode_position(unsigned long pos)
-    { return current_lm_data_ptr->set_listmode_position(pos);}
+    Succeeded set_list_mode_position(unsigned long pos)
+    { return current_lm_data_ptr->set_list_mode_position(pos);}
+
+   virtual
+    unsigned long get_list_mode_position()
+    {return current_lm_data_ptr->get_list_mode_position();}
 
 
 	/*! 
