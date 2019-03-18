@@ -52,18 +52,18 @@ save_get_position()
     return saved_get_positions.size()-1;
 }
 
-//Succeeded
-//InputStreamFromROOTFile::
-//set_get_position(const InputStreamFromROOTFile::SavedPosition& pos)
-//{
-//    assert(pos < saved_get_positions.size());
-//    if (saved_get_positions[pos] > nentries)
-//        current_position = nentries; // go to eof
-//    else
-//        current_position = saved_get_positions[pos];
+Succeeded
+InputStreamFromROOTFile::
+set_get_position(const InputStreamFromROOTFile::SavedPosition& pos)
+{
+    assert(pos < saved_get_positions.size());
+    if (saved_get_positions[pos] > nentries)
+        current_position = nentries; // go to eof
+    else
+        current_position = saved_get_positions[pos];
 
-//    return Succeeded::yes;
-//}
+    return Succeeded::yes;
+}
 
 //Succeeded
 //InputStreamFromROOTFile::
