@@ -136,5 +136,12 @@ set_get_position(const CListModeDataECAT8_32bit::SavedPosition& pos)
     current_lm_data_ptr->set_get_position(pos);
 }
 
+//Succeeded
+//CListModeDataECAT8_32bit::
+//set_listmode_position(const unsigned long pos)
+//{
+//    /*return current_lm_data_ptr->set_listmode_position(pos);*/ return Succeeded::no;
+//}
+
 } // namespace ecat
 END_NAMESPACE_STIR

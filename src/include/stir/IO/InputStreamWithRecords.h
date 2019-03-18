@@ -109,6 +109,9 @@ public:
   inline
   Succeeded set_get_position(const SavedPosition&);
 
+//  inline
+//  Succeeded set_listmode_position(unsigned long pos);
+
   //! Function that enables the user to store the saved get_positions
   /*! Together with set_saved_get_positions(), this allows 
       reinstating the saved get_positions when 

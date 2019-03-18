@@ -52,18 +52,37 @@ save_get_position()
     return saved_get_positions.size()-1;
 }
 
-Succeeded
-InputStreamFromROOTFile::
-set_get_position(const InputStreamFromROOTFile::SavedPosition& pos)
-{
-    assert(pos < saved_get_positions.size());
-    if (saved_get_positions[pos] > nentries)
-        current_position = nentries; // go to eof
-    else
-        current_position = saved_get_positions[pos];
+//Succeeded
+//InputStreamFromROOTFile::
+//set_get_position(const InputStreamFromROOTFile::SavedPosition& pos)
+//{
+//    assert(pos < saved_get_positions.size());
+//    if (saved_get_positions[pos] > nentries)
+//        current_position = nentries; // go to eof
+//    else
+//        current_position = saved_get_positions[pos];
 
-    return Succeeded::yes;
-}
+//    return Succeeded::yes;
+//}
+
+//Succeeded
+//InputStreamFromROOTFile::
+//set_listmode_position(unsigned long pos)
+//{
+//    if (pos > nentries)
+//        current_position = nentries;
+//    else
+//        current_position = pos;
+
+//    return Succeeded::yes;
+//}
+
+//Succeeded
+//InputStreamFromROOTFile::
+//get_current_position()
+//{
+
+//}
 
 std::vector<unsigned long int>
 InputStreamFromROOTFile::

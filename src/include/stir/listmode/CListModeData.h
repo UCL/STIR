@@ -31,6 +31,7 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/IO/ExamData.h"
 #include "stir/RegisteredParsingObject.h"
+#include "stir/Succeeded.h"
 
 # ifdef BOOST_NO_STDC_NAMESPACE
 namespace std { using ::time_t; }
@@ -212,6 +213,10 @@ public:
   
   virtual
     Succeeded set_get_position(const SavedPosition&) = 0;
+
+   //! Go to a position in the listmode data
+//  virtual
+//    Succeeded set_listmode_position(unsigned long pos) {return Succeeded::no;}//= 0;
 
   //! Get scanner pointer  
   /*! Returns a pointer to a scanner object that is appropriate for the 
