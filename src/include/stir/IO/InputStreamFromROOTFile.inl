@@ -57,12 +57,7 @@ InputStreamFromROOTFile::
 set_get_position(const InputStreamFromROOTFile::SavedPosition& pos)
 {
     assert(pos < saved_get_positions.size());
-    if (saved_get_positions[pos] > nentries)
-        current_position = nentries; // go to eof
-    else
-        current_position = saved_get_positions[pos];
-
-    return Succeeded::yes;
+    return set_list_mode_position(saved_get_positions[pos]);
 }
 
 
@@ -71,19 +66,15 @@ Succeeded
 InputStreamFromROOTFile::
 set_list_mode_position(unsigned long pos)
 {
-    if (pos > nentries){
+    if (pos >= nentries)
+    {
         current_position = nentries;
-        }
+    }
     else
     {
         current_position = pos;
     }
-
-    if (current_position == pos)
-        return Succeeded::yes;
-    else {
-        return Succeeded::no;
-    }
+    return Succeeded::yes;
 }
 
 //get the current position
