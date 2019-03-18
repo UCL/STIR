@@ -215,8 +215,9 @@ public:
     Succeeded set_get_position(const SavedPosition&) = 0;
 
    //! Go to a position in the listmode data
-//  virtual
-//    Succeeded set_listmode_position(unsigned long pos) {return Succeeded::no;}//= 0;
+  virtual
+    Succeeded set_listmode_position(unsigned long pos) = 0;
+    //Succeeded set_listmode_position(unsigned long pos) {return Succeeded::no;}//= 0;
 
   //! Get scanner pointer  
   /*! Returns a pointer to a scanner object that is appropriate for the 
