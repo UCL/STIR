@@ -72,6 +72,7 @@ public:
 
  virtual
     Succeeded set_list_mode_position(unsigned long pos);
+
  virtual
     unsigned long get_list_mode_position();
 
