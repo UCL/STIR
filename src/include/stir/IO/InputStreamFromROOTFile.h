@@ -107,7 +107,7 @@ public:
 
     //! Go to event number [pos]
     inline
-    Succeeded set_listmode_position(unsigned long pos);
+    Succeeded set_list_mode_position(unsigned long pos);
 
     //! Return the current event position
     inline

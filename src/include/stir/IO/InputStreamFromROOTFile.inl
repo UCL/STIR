@@ -69,7 +69,7 @@ set_get_position(const InputStreamFromROOTFile::SavedPosition& pos)
 //! Set current position
 Succeeded
 InputStreamFromROOTFile::
-set_listmode_position(unsigned long pos)
+set_list_mode_position(unsigned long pos)
 {
     if (pos > nentries){
         current_position = nentries;

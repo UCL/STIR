@@ -221,7 +221,7 @@ Succeeded
 CListModeDataROOT::
 set_list_mode_position(const unsigned long pos)
 {
-    return root_file_sptr->set_listmode_position(pos);
+    return root_file_sptr->set_list_mode_position(pos);
 }
 
 unsigned long
