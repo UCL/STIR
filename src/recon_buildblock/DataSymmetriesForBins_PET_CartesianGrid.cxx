@@ -71,7 +71,7 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
     if (fabs(num_planes_per_scanner_ring_float - num_planes_per_scanner_ring) > 1.E-2)
         error(boost::format("DataSymmetriesForBins_PET_CartesianGrid can currently only support z-grid spacing "
                             "equal to the ring spacing of the scanner divided by an integer. Sorry. "
-                            "(Image z-spacing is %1% and ring spacing is %2%)\n") % image_plane_spacing % proj_data_info_cyl_ptr->get_ring_spacing());
+                            "(Image z-spacing is %1% and ring spacing is %2%)") % image_plane_spacing % proj_data_info_cyl_ptr->get_ring_spacing());
   }
   
   /* disabled as we support this now
