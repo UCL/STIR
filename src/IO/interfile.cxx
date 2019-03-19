@@ -515,7 +515,7 @@ static void interfile_create_filenames(const std::string& filename, std::string&
 
   header_name=filename;
   replace_extension(header_name, ".hv");
-}
+}output_header << "number of time frames := 1\n";
 
 ////// end static functions
 
@@ -593,7 +593,6 @@ write_basic_interfile_image_header(const string& header_file_name,
     {
       output_header << "!PET STUDY (General) :=\n";
     }
-  write_interfile_time_frame_definitions(output_header, exam_info);
   write_interfile_energy_windows(output_header, exam_info);
   write_interfile_image_data_descriptions(output_header, data_type_descriptions);
   if (!is_spect)
@@ -628,6 +627,8 @@ write_basic_interfile_image_header(const string& header_file_name,
 		<< dimensions.z()<< endl;
   output_header << "scaling factor (mm/pixel) [3] := " 
 		<< voxel_size.z() << endl;
+
+  write_interfile_time_frame_definitions(output_header, exam_info);
 
   if (origin.z() != InterfileHeader::double_value_not_set)
     {
