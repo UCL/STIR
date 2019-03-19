@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
     Copyright (C) Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain.
-    Copyright (C) 2013-2014, University College London
+    Copyright (C) 2013-2014, 2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -49,6 +49,7 @@
 //#include "boost/scoped_ptr.hpp"
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <fstream>
 #include <algorithm>
@@ -287,17 +288,17 @@ set_up(
 	bin.thdx   = bin.thcm / wmh.psfres;
 	
 	//....PSF and collimator parameters ........................................	
-	
-	if ( psf_type == "Geometrical" ) wmh.do_psf = false;
+        boost::algorithm::to_lower(psf_type);
+	if ( psf_type == "geometrical" ) wmh.do_psf = false;
 	else{
 		wmh.do_psf = true;
 		
-		if ( psf_type == "3D" ) {
+		if ( psf_type == "3d" ) {
 			wmh.do_psf_3d = true;
 			cout << "3D PSF Correction. Parallel geometry" << endl;
 		}
 		else {
-			if ( psf_type== "2D" ) {
+			if ( psf_type== "2d" ) {
 				wmh.do_psf_3d = false;
 				cout << "2D PSF Correction. Parallel geometry" << endl;
 			}
@@ -330,20 +331,20 @@ set_up(
 	}
 	
 	//... attenuation parameters .........................	
-	
-	if ( attenuation_type == "No" ) {
+	boost::algorithm::to_lower(attenuation_type);
+	if ( attenuation_type == "no" ) {
 		wmh.do_att = false;
 	}
 	else{
 		wmh.do_att = true;
 		
-		if ( attenuation_type == "Simple" ) wmh.do_full_att = false;
+		if ( attenuation_type == "simple" ) wmh.do_full_att = false;
 		else {
-			if (attenuation_type == "Full" ) wmh.do_full_att = true;
+			if (attenuation_type == "full" ) wmh.do_full_att = true;
 			else 
                           {
                             //error_wm_SPECT( 123, attenuation_type );
-                            error("attenuation_type has to be Simple or Full");
+                            error("attenuation_type has to be No, Simple or Full");
                           }
 		}
 		
@@ -352,17 +353,17 @@ set_up(
 	}
 	
 	//... masking parameters.............................		
-		
-	if( mask_type == "No" ){
+	boost::algorithm::to_lower(mask_type);
+	if( mask_type == "no" ){
 		wmh.do_msk = wmh.do_msk_cyl = wmh.do_msk_att = wmh.do_msk_file = false; 
 	}
 	else{
 		wmh.do_msk = true;
-		if( mask_type == "Cylinder" ) wmh.do_msk_cyl = true;
+		if( mask_type == "cylinder" ) wmh.do_msk_cyl = true;
 		else {
-			if( mask_type == "Attenuation Map" ) wmh.do_msk_att = true;
+			if( mask_type == "attenuation map" ) wmh.do_msk_att = true;
 			else{
-				if( mask_type == "Explicit Mask" ){
+				if( mask_type == "explicit mask" ){
 					wmh.do_msk_file = true;
 					
 					wmh.msk_fn = mask_file;
@@ -372,7 +373,7 @@ set_up(
 				else 
                                 {
                                   // error_wm_SPECT( 125, mask_type);
-                                  error("mask_type has to be Cylinder, Attenuation Map or Explicit Mask");
+                                  error("mask_type has to be No, Cylinder, Attenuation Map or Explicit Mask");
                                 }
 			}
 		}
@@ -585,6 +586,8 @@ void
 ProjMatrixByBinSPECTUB::
 delete_UB_SPECT_arrays()
 {
+  if (!this->already_setup)
+    return;
   //... freeing matrix memory....................................
   using namespace SPECTUB;
   delete [] Rrad;
