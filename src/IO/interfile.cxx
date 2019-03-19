@@ -515,7 +515,7 @@ static void interfile_create_filenames(const std::string& filename, std::string&
 
   header_name=filename;
   replace_extension(header_name, ".hv");
-}output_header << "number of time frames := 1\n";
+}
 
 ////// end static functions
 
