@@ -142,7 +142,7 @@ class ProjMatrixByBinSPECTUB :
     distance from the collimator.
 
     \verbatim
-     sigma_at_depth = collimator_slope * depth_in_cm + collimator sigma 0
+     sigma_at_depth = collimator_slope * depth_in_mm + collimator sigma 0
     \end_verbatim
 
     Set slope and sigma_0 to zero for "geometrical" modelling.
