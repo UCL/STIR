@@ -134,18 +134,109 @@ ProjMatrixByBinSPECTUB::set_defaults()
 
 }
 
-
 bool
 ProjMatrixByBinSPECTUB::post_processing()
 {
   if (ProjMatrixByBin::post_processing() == true)
     return true;
 
+  this->set_attenuation_type(this->attenuation_type);
+  if (!this->attenuation_map.empty())
+    this->set_attenuation_image_sptr(this->attenuation_map);
+  else
+    this->attenuation_image_sptr.reset();
+
   this->already_setup= false;
 
   return false;
 }
 
+bool
+ProjMatrixByBinSPECTUB::
+get_keep_all_views_in_cache() const
+{
+  return this->keep_all_views_in_cache;
+}
+
+void
+ProjMatrixByBinSPECTUB::
+set_keep_all_views_in_cache(bool value)
+{
+  if (this->keep_all_views_in_cache != value)
+    {
+      this->keep_all_views_in_cache = value;
+      this->already_setup = false;
+    }
+}
+
+std::string
+ProjMatrixByBinSPECTUB::
+get_attenuation_type() const
+{
+  return this->attenuation_type;
+}
+
+void
+ProjMatrixByBinSPECTUB::
+set_attenuation_type(const std::string& value)
+{
+  if (this->attenuation_type != boost::algorithm::to_lower_copy(value))
+    {
+      this->attenuation_type = boost::algorithm::to_lower_copy(value);
+      if ( this->attenuation_type != "no" && this->attenuation_type != "simple" && this->attenuation_type != "full")
+        error("attenuation_type has to be No, Simple or Full");
+      this->already_setup = false;
+    }
+}
+
+shared_ptr<const DiscretisedDensity<3,float> >
+ProjMatrixByBinSPECTUB::
+get_attenuation_image_sptr() const
+{
+  return this->attenuation_image_sptr;
+}
+
+void
+ProjMatrixByBinSPECTUB::
+set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > value)
+{
+  this->attenuation_image_sptr = value;
+  if (this->attenuation_type == "no")
+    {
+      info("Setting attenuation type to 'simple'");
+      this->set_attenuation_type("simple");
+    }
+  this->already_setup = false;
+}
+
+void
+ProjMatrixByBinSPECTUB::
+set_attenuation_image_sptr(const std::string& value)
+{
+  this->attenuation_map = value;
+  set_attenuation_image_sptr(read_from_file<DiscretisedDensity<3,float> >(this->attenuation_map));
+}
+
+void
+ProjMatrixByBinSPECTUB::
+set_resolution_model(const float collimator_sigma_0_in_mm, const float collimator_slope_in_mm, const bool full_3D)
+{
+  this->collimator_sigma_0 = collimator_sigma_0_in_mm / 10;
+  this->collimator_slope = collimator_slope_in_mm / 10;
+  if (collimator_slope == 0.F && collimator_sigma_0 == 0.F)
+    {
+      this->psf_type = "geometrical";
+    }
+  else if (full_3D)
+    {
+      this->psf_type = "3d";
+    }
+  else
+    {
+      this->psf_type = "2d";
+    }
+  this->already_setup = false;
+}
 
 void
 ProjMatrixByBinSPECTUB::
@@ -186,6 +277,7 @@ set_up(
 	  else
 	  {
 		  this->clear_cache();
+                  this->delete_UB_SPECT_arrays();
 	  }
   }
 
@@ -347,9 +439,6 @@ set_up(
                             error("attenuation_type has to be No, Simple or Full");
                           }
 		}
-		
-	    wmh.att_fn = attenuation_map;
-
 	}
 	
 	//... masking parameters.............................		
@@ -443,13 +532,13 @@ set_up(
 	//... to read attenuation map ..................................................
 
 	if ( wmh.do_att || wmh.do_msk_att ){
-		shared_ptr<DiscretisedDensity<3,float> > att_sptr(
-			read_from_file<DiscretisedDensity<3,float> >(wmh.att_fn));
-		if (!density_info_ptr->has_same_characteristics(*att_sptr))
+                if (is_null_ptr(attenuation_image_sptr))
+                    error("Attenation image not set");
+		if (!density_info_ptr->has_same_characteristics(*attenuation_image_sptr))
 			error("Currently the attenuation map and emission image must have the same dimension, orientation and voxel size");
 
 		attmap = new float [ vol.Nvox ];
-		std::copy(att_sptr->begin_all(), att_sptr->end_all(),attmap);
+		std::copy(attenuation_image_sptr->begin_all(), attenuation_image_sptr->end_all(),attmap);
 		for (int i = 0 ; i < wmh.vol.Nvox ; i++ ){
 			if ((boost::math::isnan)(attmap [ i ])){
 				attmap [ i ] = 0;
