@@ -214,7 +214,8 @@ ProjMatrixByBinSPECTUB::
 set_attenuation_image_sptr(const std::string& value)
 {
   this->attenuation_map = value;
-  set_attenuation_image_sptr(read_from_file<DiscretisedDensity<3,float> >(this->attenuation_map));
+  shared_ptr<DiscretisedDensity<3, float> > im_sptr(read_from_file<DiscretisedDensity<3,float> >(this->attenuation_map));
+  set_attenuation_image_sptr(im_sptr);
 }
 
 void
