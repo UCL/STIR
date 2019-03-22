@@ -338,10 +338,10 @@ set_up(
 	//... projecction parameters ..........................................
 	prj.ang0 = this->proj_data_info_ptr->get_scanner_ptr()->get_default_intrinsic_tilt() * float(180/_PI);
 	prj.incr = proj_Data_Info_Cylindrical->get_azimuthal_angle_sampling() * float(180/_PI);
-	prj.thcm = vol.thcm;
+	prj.thcm = proj_Data_Info_Cylindrical->get_axial_sampling(0)/10;
 	
 	//.......geometrical and other derived parameters of projection structure...........
-	prj.Nsli    = vol.Nsli;					 // number of slices
+	prj.Nsli    = proj_Data_Info_Cylindrical->get_num_axial_poss(0);  // number of slices
 	prj.lngcm   = prj.Nbin * prj.szcm;        // length in cm of the detection line
 	prj.Nbp     = prj.Nbin * prj.Nsli;        // number of bins for each projection angle (2D-projection)
 	prj.Nbt     = prj.Nbp * prj.Nang;         // total number of bins considering all the projection angles 	
@@ -357,7 +357,13 @@ set_up(
 	
 	wmh.prj = prj;
 	// wmh.NpixAngOS = vol.Npix * prj.NangOS;
-	
+
+        if (abs(wmh.prj.thcm - vox.thcm)>.01F)
+          error(boost::format("SPECTUB Matrix (probably) only works with equal z-sampling for projection data (%1%) and image (%2%)")
+                % (wmh.prj.thcm*10) % (vol.thcm*10));
+        if (abs(wmh.prj.Nsli - vol.Nsli)>.01F)
+          error(boost::format("SPECTUB Matrix (probably) only works with equal number of slices for projection data (%1%) and image (%2%)")
+                % wmh.prj.Nsli % vol.Nsli);
 	//....rotation radius .................................................	
 	const VectorWithOffset<float> radius_all_views =
 	  proj_Data_Info_Cylindrical->get_ring_radii_for_all_views();
@@ -375,7 +381,7 @@ set_up(
 	
 	bin.szcm   = wmh.prj.szcm;
 	bin.szcmd2 = bin.szcm / (float)2.;
-	bin.thcm   = wmh.prj.thcm;
+	bin.thcm   = wmh.prj.thcm*10;
 	bin.thcmd2 = bin.thcm / (float)2.;
 	bin.szdx   = bin.szcm / wmh.psfres;
 	bin.thdx   = bin.thcm / wmh.psfres;
@@ -480,10 +486,10 @@ set_up(
 
 	//:: Control of read parameters
 	cout << "" << endl;
-	cout << "Parameters of SPECT UB matrix:" << endl;
-	cout << "Image grid side row: " << wmh.vol.Nrow << "\tcol: " << wmh.vol.Ncol << "\tvoxel_size: " << wmh.vol.szcm<< endl;
+	cout << "Parameters of SPECT UB matrix: (in cm)" << endl;
+	cout << "Image grid side row: " << wmh.vol.Nrow << "\tcol: " << wmh.vol.Ncol << "\ttransverse voxel_size: " << wmh.vol.szcm<< endl;
 	cout << "Number of slices: " << wmh.vol.Nsli << "\tslice_thickness: " << wmh.vol.thcm << endl;
-	cout << "Number of bins: " << wmh.prj.Nbin << "\tbin size: " << wmh.prj.szcm << endl;
+	cout << "Number of bins: " << wmh.prj.Nbin << "\tbin size: " << wmh.prj.szcm << "\taxial size: " << wmh.prj.thcm << endl;
 	cout << "Number of angles: " << wmh.prj.Nang << "\tAngle increment: " << wmh.prj.incr << "\tFirst angle: " << wmh.prj.ang0 << endl;
 	cout << "Number of subsets: " << wmh.prj.NOS << endl;
 	if ( wmh.do_att ){
