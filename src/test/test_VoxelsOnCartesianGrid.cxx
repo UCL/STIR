@@ -3,6 +3,8 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011,  Hammersmith Imanet Ltd 
+    Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
+                        Australian eHealth Research Centre
     This file is part of STIR. 
  
     This file is free software; you can redistribute it and/or modify 
@@ -23,9 +25,10 @@
   
   \brief Test program for stir::VoxelsOnCartesianGrid and image hierarchy
     
-   \author Sanida Mustafovic
-   \author Kris Thielemans
-   \author PARAPET project
+  \author Ashley Gillman
+  \author Sanida Mustafovic
+  \author Kris Thielemans
+  \author PARAPET project
       
 */
 
