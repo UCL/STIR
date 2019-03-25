@@ -12,8 +12,10 @@ zoom := 1
 xy output image size (in pixels) := 180
 
 ; you NEED to set this to the number of z-position in your data.
-; otherwise, things will currently go wrong
+; otherwise, the current projector will abort
 Z output image size (in pixels):=64
+; currently NEED to set this to 0.5 to get same z-spacing as in the data
+z zoom := 0.5
 
 ; filter parameters, default to pure ramp
 ; choose alpha < 1 for a Hamming window

@@ -57,12 +57,7 @@ set_defaults()
   this->current_frame_num = 1;
   this->num_events_to_use = 0L;
  
-  this->output_image_size_xy=-1; 
-  this->output_image_size_z=-1; 
-  this->zoom=1.F; 
-  this->Xoffset=0.F; 
-  this->Yoffset=0.F; 
-  this->Zoffset=0.F; 
+  this->target_parameter_parser.set_defaults();
  
 } 
 
@@ -73,13 +68,7 @@ initialise_keymap()
 { 
   base_type::initialise_keymap(); 
   this->parser.add_key("list mode filename", &this->list_mode_filename); 
-  this->parser.add_key("zoom", &this->zoom); 
-  this->parser.add_key("XY output image size (in pixels)",&this->output_image_size_xy); 
-  this->parser.add_key("Z output image size (in pixels)",&this->output_image_size_z); 
-  //parser.add_key("X offset (in mm)", &Xoffset); // KT 10122001 added spaces 
-  //parser.add_key("Y offset (in mm)", &Yoffset); 
-   
-  //this->parser.add_key("Z offset (in mm)", &Zoffset); 
+  this->target_parameter_parser.add_to_keymap(this->parser);
   this->parser.add_key("time frame definition filename", &this->frame_defs_filename);
   // SM TODO -- later do not parse
   this->parser.add_key("time frame number", &this->current_frame_num);
@@ -107,17 +96,9 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
       vector<pair<double, double> > frame_times(1, pair<double,double>(0,0));
       this->frame_defs = TimeFrameDefinitions(frame_times);
     } 
-  // image stuff 
-  if (this->zoom <= 0) 
-  { warning("zoom should be positive\n"); return true; } 
-   
-  if (this->output_image_size_xy!=-1 && this->output_image_size_xy<1) // KT 10122001 appended_xy 
-  { warning("output image size xy must be positive (or -1 as default)\n"); return true; } 
-  if (this->output_image_size_z!=-1 && this->output_image_size_z<1) // KT 10122001 new 
-  { warning("output image size z must be positive (or -1 as default)\n"); return true; } 
-   
+  target_parameter_parser.check_values();
 
-   return false;
+  return false;
 } 
 
 template <typename TargetT>
@@ -172,26 +153,6 @@ set_up(shared_ptr <TargetT > const& target_sptr)
  
     return Succeeded::yes;
 }
-
-#if 0
-template <typename TargetT> 
-TargetT * 
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>:: 
-construct_target_ptr() const 
-{ 
-  return 
-    new VoxelsOnCartesianGrid<float> (this->get_input_data().get_exam_info_sptr(),
-                                      *this->proj_data_sptr->get_proj_data_info_ptr(),
-					this->zoom, 
-					CartesianCoordinate3D<float>(this->Zoffset, 
-								     this->Yoffset, 
-								     this->Xoffset), 
-					CartesianCoordinate3D<int>(this->output_image_size_z, 
-                                                                   this->output_image_size_xy, 
-                                                                   this->output_image_size_xy) 
-                                       );
-} 
-#endif
 
 #  ifdef _MSC_VER
 // prevent warning message on instantiation of abstract class 
