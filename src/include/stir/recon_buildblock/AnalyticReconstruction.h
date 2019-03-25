@@ -3,7 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd 
-    Copyright (C) 2018, University College London
+    Copyright (C) 2016, 2018, 2019 University College London
     This file is part of STIR. 
  
     This file is free software; you can redistribute it and/or modify 
@@ -27,21 +27,16 @@
   \brief declares the stir::AnalyticReconstruction class
 
   \author Kris Thielemans
-  \author Matthew Jacobson
-  \author Claire Labbe
+  \author Nikos Efthimiou
   \author PARAPET project
 
-*/
-/* Modification history
-
-   KT 10122001
-   - added construct_target_image_ptr and 0 argument reconstruct()
 */
 
 #include "stir/recon_buildblock/Reconstruction.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/ProjData.h"
 #include "stir/RegisteredParsingObject.h"
+#include "stir/ParseAndCreateFrom.h"
 #include <string>
 
 #include "stir/IO/ExamData.h"
@@ -103,29 +98,6 @@ public:
   // parameters
  protected:
 
-  //! the output image size in x and y direction
-  /*! convention: if -1, use a size such that the whole FOV is covered
-  */
-  int output_image_size_xy;
-
-  //! the output image size in z direction
-  /*! convention: if -1, use default as provided by VoxelsOnCartesianGrid constructor
-  */
-  int output_image_size_z; 
-
-  //! the zoom factor
-  double zoom;
-
-  //! offset in the x-direction
-  double Xoffset;
-
-  //! offset in the y-direction
-  double Yoffset;
-
-  //! offset in the z-direction
-  double Zoffset;
-
-
   //! the input projection data file name
   std::string input_filename;
   //! the maximum absolute ring difference number to use in the reconstruction
@@ -143,6 +115,8 @@ public:
 
 
 protected:
+  ParseAndCreateFrom<TargetT, ProjData> target_parameter_parser;
+
   //! executes the reconstruction storing result in \c target_image_sptr
   /*!
     \return Succeeded::yes if everything was alright.
