@@ -43,6 +43,7 @@ set_defaults()
   output_image_size_xy=-1;
   output_image_size_z=-1;
   zoom=1.F;
+  Zzoom=1.F;
   Xoffset=0.F;
   Yoffset=0.F;
   Zoffset=0.F;
@@ -54,6 +55,7 @@ add_to_keymap(KeyParser& parser)
 {
   //base_type::initialise_keymap();
   parser.add_key("zoom", &zoom);
+  parser.add_key("Z zoom", &Zzoom);
   parser.add_key("XY output image size (in pixels)",&output_image_size_xy);
   parser.add_key("Z output image size (in pixels)",&output_image_size_z);
   //parser.add_key("X offset (in mm)", &Xoffset); // KT 10122001 added spaces
@@ -100,7 +102,10 @@ ParseDiscretisedDensityParameters::
 check_values() const
 {
   if (zoom <= 0)
-  { error("zoom should be positive"); }  
+  { error("zoom should be positive"); }
+  if (Zzoom <= 0)
+  { error("z zoom should be positive"); }
+  
   if (output_image_size_xy!=-1 && output_image_size_xy<1) // KT 10122001 appended_xy
   { error("output image size xy must be positive (or -1 as default)"); }
   if (output_image_size_z!=-1 && output_image_size_z<1) // KT 10122001 new

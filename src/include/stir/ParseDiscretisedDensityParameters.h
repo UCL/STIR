@@ -72,6 +72,9 @@ class ParseDiscretisedDensityParameters
   //! the zoom factor
   double zoom;
 
+  //! the zoom factor in z-direction
+  double Zzoom;
+
   //! offset in the x-direction
   double Xoffset;
 

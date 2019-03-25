@@ -39,7 +39,7 @@ create(const ExamDataT& exam_data) const
   return
     new VoxelsOnCartesianGrid<elemT> (exam_data.get_exam_info_sptr(),
                                       *exam_data.get_proj_data_info_ptr(),
-                                      CartesianCoordinate3D<float>(static_cast<float>(1),
+                                      CartesianCoordinate3D<float>(static_cast<float>(this->Zzoom),
                                                                    static_cast<float>(this->zoom),
                                                                    static_cast<float>(this->zoom)),
                                       CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset),
