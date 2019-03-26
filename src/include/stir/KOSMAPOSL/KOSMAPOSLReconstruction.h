@@ -158,9 +158,8 @@ public:
   const bool get_only_2D() const;
   bool get_hybrid();
 
-   // shared_ptr<TargetT>& get_kpnorm_sptr();
-   // shared_ptr<TargetT>& get_kmnorm_sptr();
-   shared_ptr<TargetT>& get_pet_prior_sptr();
+   shared_ptr<TargetT>& get_kpnorm_sptr();
+   shared_ptr<TargetT>& get_kmnorm_sptr();
    shared_ptr<TargetT>& get_anatomical_prior_sptr();
 
     /*! \name Functions to set parameters
@@ -169,9 +168,8 @@ public:
    one place, all objects that use the shared pointer will be affected.
   */
 
-  // void set_kpnorm_sptr(shared_ptr<TargetT>&);
-  // void set_kmnorm_sptr(shared_ptr<TargetT>&);
-  void set_pet_prior_sptr(shared_ptr<TargetT>&);
+  void set_kpnorm_sptr(shared_ptr<TargetT>&);
+  void set_kmnorm_sptr(shared_ptr<TargetT>&);
   void set_anatomical_prior_sptr(shared_ptr<TargetT>&);
 
 
@@ -190,19 +188,7 @@ public:
 
   //! Anatomical image filename
   std::string anatomical_image_filename;
-
-  //! PET image used to calculate PET kernel
-  shared_ptr<const TargetT> pet_prior_sptr;
-
-  //! Anatomical image used to calculate PET kernel
   shared_ptr<TargetT> anatomical_prior_sptr;
-
-  /*! Internal pointers to norms for PET and MR respectively.
-
-      Note that although these are type TargetT, they are used as 2D
-      images. The penultimate dimension is the number voxels in the
-      image, and the final dimension is the number of voxels in the kernel.
-  */
   shared_ptr<TargetT> kpnorm_sptr,kmnorm_sptr;
  //kernel parameters
   int num_neighbours,num_non_zero_feat,num_elem_neighbourhood,num_voxels,dimz,dimy,dimx;
@@ -239,70 +225,57 @@ private:
     void  calculate_norm_matrix(TargetT &normp,
                                 const int &dimf_row,
                                 const int &dimf_col,
-                                const TargetT& pet,
-                                Array<3,float> distance);
+                                const TargetT& pet);
 
   /*! Create a matrix similarly to calculate_norm_matrix() but this is done for the anatomical image, */
   /*! which does not  change over iteration.*/
-    void  calculate_norm_const_matrix(TargetT &normm,
+    void calculate_norm_const_matrix(TargetT &normm,
                                 const int &dimf_row,
                                 const int &dimf_col);
 
   /*! Estimate the SD of the anatomical image to be used as normalisation for the feature vector */
     void estimate_stand_dev_for_anatomical_image(double &SD);
 
-  // /*! Compute for each voxel, jl, of the PET image the linear combination between the coefficient \f$ \alpha_{jl} \f$ and the kernel matrix \f$ k_{jl} \f$\f$ */
-  // /*! The information is stored in the image, kImage */
-  // void full_compute_kernelised_image(TargetT& kernelised_image_out,
-  //                                    const TargetT& image_to_kernelise,
-  //                                    const TargetT& current_alpha_estimate);
+  /*! Compute for each voxel, jl, of the PET image the linear combination between the coefficient \f$ \alpha_{jl} \f$ and the kernel matrix \f$ k_{jl} \f$\f$ */
+  /*! The information is stored in the image, kImage */
+//    void full_compute_kernelised_image(TargetT& kernelised_image_out,
+//                                     const TargetT& image_to_kernelise,
+//                                     const TargetT& current_alpha_estimate);
 
-  //  /*! Similar to compute_kernelised_image() but this is the special case when the feature vectors contains only one non-zero element. */
-  //  /*! The computation becomes faster because we do not need to create norm matrixes*/
-  // void compact_compute_kernelised_image(TargetT& kernelised_image_out,
-  //                                       const TargetT& image_to_kernelise,
-  //                                       const TargetT& current_alpha_estimate);
+  /*! Similar to compute_kernelised_image() but this is the special case when the feature vectors contains only one non-zero element. */
+  /*! The computation becomes faster because we do not need to create norm matrixes*/
+//    void compact_compute_kernelised_image(TargetT& kernelised_image_out,
+//                                        const TargetT& image_to_kernelise,
+//                                        const TargetT& current_alpha_estimate);
 
   /*! choose between compact_compute_kernelised_image() and  full_compute_kernelised_image()*/
-  void compute_kernelised_image(TargetT& kernelised_image_out,
+    void compute_kernelised_image(TargetT& kernelised_image_out,
                                 const TargetT& image_to_kernelise,
                                 const TargetT& current_alpha_estimate);
 
-  double calc_pet_kernel(int x, int y, int z,
-                         int min_x, int min_y, int min_z,
-                         int max_x, int max_y, int max_z,
-                         int dx, int dy, int dz,
-                         int min_dx, int min_dy, int min_dz,
-                         int max_dx, int max_dy, int max_dz,
-                         const TargetT& current_alpha_estimate,
+  double calc_pet_kernel(const double current_alpha_estimate_zyx,
+                         const double current_alpha_estimate_zyx_dr,
+                         const double distance_dzdydx,
                          bool use_compact_implementation,
-                         const CartesianCoordinate3D<float>& grid_spacing,
-                         Array<3, float> distance);
+                         const int l,
+                         const int m);
 
-  double calc_anatomical_kernel(int x, int y, int z,
-                                int min_x, int min_y, int min_z,
-                                int max_x, int max_y, int max_z,
-                                int dx, int dy, int dz,
-                                int min_dx, int min_dy, int min_dz,
-                                int max_dx, int max_dy, int max_dz,
-                                bool use_compact_implementation,
-                                const CartesianCoordinate3D<float>& grid_spacing,
-                                Array<3, float> distance);
+  double calc_anatomical_kernel(const double anatomical_prior_zyx,
+                                const double anatomical_prior_zyx_dr,
+                                const double distance_dzdydx,
+                                const bool use_compact_implementation,
+                                const int l,
+                                const int m);
 
-  double calc_kernel_from_precalculated(int x, int y, int z,
-                                        int min_x, int min_y, int min_z,
-                                        int max_x, int max_y, int max_z,
-                                        int dx, int dy, int dz,
-                                        int min_dx, int min_dy, int min_dz,
-                                        int max_dx, int max_dy, int max_dz,
-                                        // const TargetT& current_alpha_estimate,
-                                        const TargetT& precalculated_norm, double sigma,
-                                        double precalc_denom);
+  double calc_kernel_from_precalculated(const double current_alpha_estimate_zyx,
+                                        const double precalculated_norm_zxy,
+                                        const double sigma,
+                                        const double precalc_denom);
 
-  double calc_intensity_kernel_compact(int x, int y, int z,
-                                       int dx, int dy, int dz,
-                                       const TargetT& prior_image, double sigma,
-                                       double precalc_denom = 0);
+  double calc_intensity_kernel_compact(const double prior_image_zyx,
+                                       const double prior_image_zyx_dr,
+                                       const double sigma,
+                                       const double precalc_denom);
 };
 
 END_NAMESPACE_STIR
