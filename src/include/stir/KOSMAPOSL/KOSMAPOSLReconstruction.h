@@ -158,8 +158,8 @@ public:
   const bool get_only_2D() const;
   bool get_hybrid();
 
-   shared_ptr<TargetT>& get_kpnorm_sptr();
-   shared_ptr<TargetT>& get_kmnorm_sptr();
+//   shared_ptr<TargetT>& get_kpnorm_sptr();
+//   shared_ptr<TargetT>& get_kmnorm_sptr();
    shared_ptr<TargetT>& get_anatomical_prior_sptr();
 
     /*! \name Functions to set parameters
@@ -168,8 +168,8 @@ public:
    one place, all objects that use the shared pointer will be affected.
   */
 
-  void set_kpnorm_sptr(shared_ptr<TargetT>&);
-  void set_kmnorm_sptr(shared_ptr<TargetT>&);
+//  void set_kpnorm_sptr(shared_ptr<TargetT>&);
+//  void set_kmnorm_sptr(shared_ptr<TargetT>&);
   void set_anatomical_prior_sptr(shared_ptr<TargetT>&);
 
 

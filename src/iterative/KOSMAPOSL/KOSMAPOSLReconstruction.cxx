@@ -219,7 +219,7 @@ else{
 }
 
 this->anatomical_prior_sptr= (read_from_file<TargetT>(anatomical_image_filename));
-if (this->anatomical_image_filename != "0"){
+
     set_anatomical_prior_sptr (this->anatomical_prior_sptr);
     info(boost::format("Reading anatomical data '%1%'")
          % anatomical_image_filename  );
@@ -244,24 +244,21 @@ if (this->anatomical_image_filename != "0"){
     precalculate_patch_euclidean_distances(distance,num_neighbours, only_2D, grid_spacing);
 
     if(num_non_zero_feat>1){
-    shared_ptr<TargetT> normp_sptr(this->anatomical_prior_sptr->get_empty_copy ());
-    shared_ptr<TargetT> normm_sptr(this->anatomical_prior_sptr->get_empty_copy ());
+      this->kpnorm_sptr = shared_ptr<TargetT>(this->anatomical_prior_sptr->get_empty_copy ());
+      this->kmnorm_sptr = shared_ptr<TargetT>(this->anatomical_prior_sptr->get_empty_copy ());
 
-    normp_sptr->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
-    normm_sptr->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
+      this->kpnorm_sptr->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
+      this->kmnorm_sptr->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
+
     int dimf_col = this->num_non_zero_feat-1;
     int dimf_row=this->num_voxels;
 
-    calculate_norm_const_matrix(*normm_sptr,
+    calculate_norm_const_matrix(*this->kmnorm_sptr,
                                 dimf_row,
                                 dimf_col);
 
     info(boost::format("Kernel from anatomical image calculated "));
-
-    this->set_kpnorm_sptr (normp_sptr);
-    this->set_kmnorm_sptr (normm_sptr);
     }
-}
   return false;
 }
 
@@ -354,13 +351,13 @@ KOSMAPOSLReconstruction<TargetT>::
 get_hybrid()
 { return this->hybrid; }
 
-template <typename TargetT >
-shared_ptr<TargetT> &KOSMAPOSLReconstruction<TargetT>::get_kpnorm_sptr()
-{ return this->kpnorm_sptr; }
+//template <typename TargetT >
+//shared_ptr<TargetT> &KOSMAPOSLReconstruction<TargetT>::get_kpnorm_sptr()
+//{ return this->kpnorm_sptr; }
 
-template <typename TargetT >
-shared_ptr<TargetT> &KOSMAPOSLReconstruction<TargetT>::get_kmnorm_sptr()
-{ return this->kmnorm_sptr; }
+//template <typename TargetT >
+//shared_ptr<TargetT> &KOSMAPOSLReconstruction<TargetT>::get_kmnorm_sptr()
+//{ return this->kmnorm_sptr; }
 
 template <typename TargetT>
 shared_ptr<TargetT> &KOSMAPOSLReconstruction<TargetT>::get_anatomical_prior_sptr()
