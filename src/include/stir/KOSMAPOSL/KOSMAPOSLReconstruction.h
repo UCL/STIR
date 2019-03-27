@@ -152,11 +152,11 @@ public:
   const int get_num_neighbours() const;
   const int get_num_non_zero_feat() const;
   const double get_sigma_m() const;
-  double get_sigma_p();
-  double get_sigma_dp();
-  double get_sigma_dm();
+  const double get_sigma_p() const;
+  const double get_sigma_dp() const;
+  const double get_sigma_dm()const;
   const bool get_only_2D() const;
-  bool get_hybrid();
+  const bool get_hybrid()const;
 
 //   shared_ptr<TargetT>& get_kpnorm_sptr();
 //   shared_ptr<TargetT>& get_kmnorm_sptr();
@@ -256,7 +256,7 @@ private:
   double calc_pet_kernel(const double current_alpha_estimate_zyx,
                          const double current_alpha_estimate_zyx_dr,
                          const double distance_dzdydx,
-                         bool use_compact_implementation,
+                         const bool use_compact_implementation,
                          const int l,
                          const int m);
 
@@ -267,13 +267,11 @@ private:
                                 const int l,
                                 const int m);
 
-  double calc_kernel_from_precalculated(const double current_alpha_estimate_zyx,
-                                        const double precalculated_norm_zxy,
+  double calc_kernel_from_precalculated(const double precalculated_norm_zxy,
                                         const double sigma,
                                         const double precalc_denom);
 
-  double calc_intensity_kernel_compact(const double prior_image_zyx,
-                                       const double prior_image_zyx_dr,
+  double calc_intensity_kernel_compact(const double prior_image_zyx_diff,
                                        const double sigma,
                                        const double precalc_denom);
 };
