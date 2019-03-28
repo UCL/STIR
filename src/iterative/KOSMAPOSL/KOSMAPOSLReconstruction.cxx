@@ -229,7 +229,7 @@ this->anatomical_prior_sptr= (read_from_file<TargetT>(anatomical_image_filename)
             error("Failed to read anatomical file %s", anatomical_image_filename.c_str());
             return false;
         }
-    estimate_stand_dev_for_anatomical_image(this->anatomical_sd);
+    this->anatomical_sd=estimate_stand_dev_for_anatomical_image();
 
     info(boost::format("SD from anatomical image calculated = '%1%'")
          % this->anatomical_sd);
@@ -398,10 +398,15 @@ set_anatomical_prior_sptr (shared_ptr<TargetT>& arg)
 
 template<typename TargetT>
 void KOSMAPOSLReconstruction<TargetT>::
-calculate_norm_matrix(TargetT &normp, const int& dimf_row, const int& dimf_col,
+calculate_norm_matrix(TargetT &normp,
+                      const int dimf_row,
+                      const int dimf_col,
                       const TargetT& pet)
 {
+//  The following is the 2D matrix containing the feature vector for each voxel of the image "pet"
   Array<2,float> fp;
+//  The following are the indexes obtained when reshaping a 3D matrix to a 1D vector and they depend
+//  on x y and z, and dx dy and dz respectively
   int l=0,m=0;
 
   fp = Array<2,float>(IndexRange2D(0,dimf_row,0,dimf_col));
@@ -410,6 +415,7 @@ calculate_norm_matrix(TargetT &normp, const int& dimf_row, const int& dimf_col,
   const int max_z = pet.get_max_index();
   this->dimz=max_z-min_z+1;
 
+//The following loop extracts the feature vector related to each voxel in the "pet" image and save it in "fp"
   for (int z=min_z; z<=max_z; z++)
     {
       const int min_dz = max(distance.get_min_index(), min_z-z);
@@ -515,14 +521,16 @@ calculate_norm_matrix(TargetT &normp, const int& dimf_row, const int& dimf_col,
 template<typename TargetT>
 void KOSMAPOSLReconstruction<TargetT>::
 calculate_norm_const_matrix(TargetT &normm,
-                            const int& dimf_row, const int &dimf_col)
+                            const int dimf_row,
+                            const int dimf_col)
 {
 
     calculate_norm_matrix(normm,dimf_row,dimf_col,*this->anatomical_prior_sptr);
 
 }
 template<typename TargetT>
-void KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(double& SD)
+double KOSMAPOSLReconstruction<TargetT>::
+estimate_stand_dev_for_anatomical_image()
 {
     double kmean=0;
     double kStand_dev=0;
@@ -588,7 +596,7 @@ void KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(d
                                }
                        }
 
-       SD= sqrt(kStand_dev / (nv-1));
+       return sqrt(kStand_dev / (nv-1));
 }
 
 
@@ -865,12 +873,12 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
       //     calculate kernelised image
     int min_z, max_z, min_y, max_y, min_x, max_x;
 
-        min_z = current_alpha_estimate.get_min_index();
-        max_z = current_alpha_estimate.get_max_index();
-        min_y = current_alpha_estimate[min_z].get_min_index();
-        max_y = current_alpha_estimate[min_z].get_max_index();
-        min_x = current_alpha_estimate[min_z][min_y].get_min_index();
-        max_x = current_alpha_estimate[min_z][min_y].get_max_index();
+    min_z = current_alpha_estimate.get_min_index();
+    max_z = current_alpha_estimate.get_max_index();
+    min_y = current_alpha_estimate[min_z].get_min_index();
+    max_y = current_alpha_estimate[min_z].get_max_index();
+    min_x = current_alpha_estimate[min_z][min_y].get_min_index();
+    max_x = current_alpha_estimate[min_z][min_y].get_max_index();
 
         // Iterate over the image
 

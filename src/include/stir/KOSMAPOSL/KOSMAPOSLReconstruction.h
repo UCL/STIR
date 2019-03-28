@@ -223,18 +223,18 @@ private:
   /*! Create a matrix containing the norm of the difference between two feature vectors, \f$ \|  \boldsymbol{z}^{(n)}_j-\boldsymbol{z}^{(n)}_l \| \f$. */
   /*! This is done for the PET image which keeps changing*/
     void  calculate_norm_matrix(TargetT &normp,
-                                const int &dimf_row,
-                                const int &dimf_col,
+                                const int dimf_row,
+                                const int dimf_col,
                                 const TargetT& pet);
 
   /*! Create a matrix similarly to calculate_norm_matrix() but this is done for the anatomical image, */
   /*! which does not  change over iteration.*/
     void calculate_norm_const_matrix(TargetT &normm,
-                                const int &dimf_row,
-                                const int &dimf_col);
+                                const int dimf_row,
+                                const int dimf_col);
 
   /*! Estimate the SD of the anatomical image to be used as normalisation for the feature vector */
-    void estimate_stand_dev_for_anatomical_image(double &SD);
+    double estimate_stand_dev_for_anatomical_image();
 
   /*! Compute for each voxel, jl, of the PET image the linear combination between the coefficient \f$ \alpha_{jl} \f$ and the kernel matrix \f$ k_{jl} \f$\f$ */
   /*! The information is stored in the image, kImage */
