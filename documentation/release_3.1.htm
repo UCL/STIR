@@ -7,8 +7,7 @@
   <body>
     <h1>Summary of changes in STIR release 3.1 (dated 15/01/2018)</h1>
 
-<p>This version is 95% backwards compatible with STIR 3.0 for the user aside from minor changes 
-when using Python/MATLAB and when changed image orientation when reading/writing images via ITK (see below).
+<p>This version is 95% backwards compatible with STIR 3.0 for the user (see below).
 Developers might need to make code changes as 
 detailed below.
 </p>
@@ -75,6 +74,17 @@ Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
 </p>
 
 <h2> Summary for end users (also to be read by developers)</h2>
+
+<h3>Changes breaking backwards compatibility from a user-perspective</h3>
+<ul>
+  <li> minor changes when using Python/MATLAB</li>
+  <li> the need for a new <code>z zoom</code> keyword for SPECT reconstructions (see the updated sample .par files)</li>
+  <li> changed image orientation when reading/writing images via ITK</li>
+</ul>
+
+It is now highly recommended to specify imaging modality and patient orientation in your Interfile headers. If you don't,
+STIR will assume you know what you're doing and write a warning (but we might not cover all cases). For
+patient orientation, we will assume HFS.
 
 <h3>Bug fixes</h3>
 <ul>
@@ -160,6 +170,11 @@ These are only minimally documented at the present stage unfortunately.
   </li>
 <li>Extract single images from dynamic image with executable <code>extract_dynamic_images</code>.
 </li>
+<li>Reconstruction parameter files now can use a new optional keyword <code>z zoom</code> to llow
+  changing the spacing from the default. However, results of this have not been checked yet.
+  It is currently only recommended for SPECT (where it should be set to <code>0.5</code> due
+  current work-arounds on how to read SPECT dat into STIR).
+  </li>
   </ul>
 
 

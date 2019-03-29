@@ -30,6 +30,7 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
+#include "stir/ParseAndCreateFrom.h"
 //#include "stir/ProjData.h"
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 //#include "stir/recon_buildblock/BinNormalisation.h"
@@ -282,30 +283,7 @@ protected:
   int max_segment_num_to_process;
 
   /**********************/
-  // image stuff
-  // TODO to be replaced with single class or so (TargetT obviously)
-  //! the output image size in x and y direction
-  /*! convention: if -1, use a size such that the whole FOV is covered
-  */
-  int output_image_size_xy; // KT 10122001 appended _xy
-
-  //! the output image size in z direction
-  /*! convention: if -1, use default as provided by VoxelsOnCartesianGrid constructor
-  */
-  int output_image_size_z; // KT 10122001 new
-
-  //! the zoom factor
-  double zoom;
-
-  //! offset in the x-direction
-  double Xoffset;
-
-  //! offset in the y-direction
-  double Yoffset;
-
-  // KT 20/06/2001 new
-  //! offset in the z-direction
-  double Zoffset;
+   ParseAndCreateFrom<TargetT, ProjData> target_parameter_parser;
   /********************************/
 
 

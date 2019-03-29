@@ -2,6 +2,7 @@ FBP2DParameters :=
 output filename prefix := out/FBP
 input file := input.hs
 Z output image size (in pixels):=64
+z zoom:=.5
 Back Projector type:= matrix
   Back Projector Using Matrix Parameters :=
 	Matrix type := SPECT UB
