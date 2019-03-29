@@ -101,7 +101,7 @@ class RelativeDifferencePrior:  public
   //! Name which will be used when parsing a GeneralisedPrior object
   static const char * const registered_name; 
 
-  //! Default constructor 
+  //! Default constructor
   RelativeDifferencePrior();
 
   //! Constructs it explicitly
@@ -132,6 +132,13 @@ class RelativeDifferencePrior:  public
   virtual Succeeded 
     add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
                                                 const DiscretisedDensity<3,elemT>& input) const;
+
+  //! Create variable gamma for Realative Difference Penalty
+  float gamma;
+  //! get the gamma value used in RDP
+  float get_gamma();
+  //! set the gamma value used in the RDP
+  void set_gamma(float g);
 
   //! get penalty weights for the neigbourhood
   Array<3,float> get_weights() const;

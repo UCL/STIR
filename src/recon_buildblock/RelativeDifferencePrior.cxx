@@ -48,12 +48,13 @@ void
 RelativeDifferencePrior<elemT>::initialise_keymap()
 {
   base_type::initialise_keymap();
-  this->parser.add_start_key("RelativeDifference Prior Parameters");
+  this->parser.add_start_key("Relative Difference Prior Parameters");
   this->parser.add_key("only 2D", &only_2D); 
   this->parser.add_key("kappa filename", &kappa_filename);
   this->parser.add_key("weights", &weights);
   this->parser.add_key("gradient filename prefix", &gradient_filename_prefix);
-  this->parser.add_stop_key("END RelativeDifference Prior Parameters");
+  this->parser.add_key("gamma value", this->gamma);
+  this->parser.add_stop_key("END Relative Difference Prior Parameters");
 }
 
 template <typename elemT>
@@ -134,6 +135,7 @@ RelativeDifferencePrior<elemT>::set_defaults()
   this->only_2D = false;
   this->kappa_ptr.reset();  
   this->weights.recycle();
+  this->gamma = 1;
 }
 
 template <>
@@ -146,6 +148,20 @@ RelativeDifferencePrior<elemT>::RelativeDifferencePrior()
 {
   set_defaults();
 }
+
+// Return the value of gamma - a RDP parameter
+template <typename elemT>
+float
+RelativeDifferencePrior<elemT>::
+get_gamma()
+{ return this->gamma; }
+
+// Set the value of gamma - a RDP parameter
+template <typename elemT>
+void
+RelativeDifferencePrior<elemT>::
+set_gamma(float g)
+{ this->gamma = g; }
 
 
 template <typename elemT>
@@ -272,11 +288,15 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
                 const int min_dx = max(weights[0][0].get_min_index(), min_x-x);
                 const int max_dx = min(weights[0][0].get_max_index(), max_x-x);
                 
-                /* formula:
-                  sum_dx,dy,dz
-                   1/4 weights[dz][dy][dx] *
-                   (current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])^2 *
-                   (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+                /* Relative Difference Prior given by Eq.5 of J. Nuyts, D. Bequ, P. Dupont, and L. Mortelmans,
+                   “A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction
+                   in Emission Tomography,” vol. 49, no. 1, pp. 56–60, 2002.
+
+                  formula:
+                   sum_dx,dy,dz
+                    (current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])^2 /
+                     ((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
+                      (this->gamma *abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])))
                 */
                 for (int dz=min_dz;dz<=max_dz;++dz)
                   for (int dy=min_dy;dy<=max_dy;++dy)
@@ -284,7 +304,9 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
                       {
                         elemT current =
                           weights[dz][dy][dx] *
-                          square(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])/4;
+                          (square(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]))/
+                          ((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
+                           (this->gamma *abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])));
 
                         if (do_kappa)
                           current *= 
@@ -351,24 +373,46 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
               const int min_dx = max(weights[0][0].get_min_index(), min_x-x);
               const int max_dx = min(weights[0][0].get_max_index(), max_x-x);
                 
-                /* formula:
-                  sum_dx,dy,dz
-                   weights[dz][dy][dx] *
-                   (current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) *
+                /* Relative Difference Prior Gradient given by Eq.6 of J. Nuyts, D. Bequ, P. Dupont, and L. Mortelmans,
+                   “A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction
+                   in Emission Tomography,” vol. 49, no. 1, pp. 56–60, 2002.
+
+                formula:
+                  weights[dz][dy][dx] *
+                  (((current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) *
+                   (this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])) +
+                   (current_image_estimate[z][y][x] + 3* current_image_estimate[z+dz][y+dy][x+dx]))/
+                  square((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
+                    this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]))) *
                    (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+                   =
+                   sum_dx,dy,dz
+                    weights[dz][dy][dx] *
+                            (((rjk-1)(this->gamma * abs(rjk-1)) + rjk + 3)/
+                            square(rjk + 1 + this->gamma * abs(rjk-1))) *
+                            (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+
+                    where rjk = current_image_estimate[z][y][x]] /
+                            current_image_estimate[z+dz][y+dy][x+dx]
                 */
+
+
 #if 1
                 elemT gradient = 0;
                 for (int dz=min_dz;dz<=max_dz;++dz)
                   for (int dy=min_dy;dy<=max_dy;++dy)
                     for (int dx=min_dx;dx<=max_dx;++dx)
                       {
+                        // Use an intermediate variable
+                        elemT rjk = current_image_estimate[z][y][x] / current_image_estimate[z+dz][y+dy][x+dx];
+
                         elemT current =
                           weights[dz][dy][dx] *
-                          (current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]);
+                          ((rjk - 1) * (this->gamma * abs(rjk - 1)) + rjk + 3)/
+                          (square(rjk + 1 + this->gamma * abs(rjk - 1)));
 
                         if (do_kappa)
-                          current *= 
+                          current *=
                             (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
 
                         gradient += current;
