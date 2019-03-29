@@ -99,9 +99,9 @@ inline uint ravel_index(int x, int y, int z,
       }
 
 
-inline double gaussian_kernel_already_sq(double distance_sq, double sigma) {
+inline double gaussian_kernel_already_sq(double distance_sq) {
   // std::cout << "gaussian_kernel(" << distance_sq << ", " << sigma << ")" << std::endl;
-  return exp(-distance_sq / (2 * sigma*sigma));
+  return exp(-distance_sq );
 }
 inline double gaussian_kernel(double distance, double sigma) {
   // std::cout << "gaussian_kernel(" << distance_sq << ", " << sigma << ")" << std::endl;
@@ -965,38 +965,37 @@ calc_pet_kernel(const double current_alpha_estimate_zyx,
                 const int l,
                 const int m) {
 
-  const double pet_intensity_kernel =
+  const double pet_kernel =
     use_compact_implementation
-    ? calc_intensity_kernel_compact(current_alpha_estimate_zyx-
+    ? calc_kernel_compact(current_alpha_estimate_zyx-
                                     current_alpha_estimate_zyx_dr,
-                                    sigma_p,
-                                    current_alpha_estimate_zyx)
+                                    sigma_p*sigma_p,
+                                    sigma_dp*sigma_dp,
+                                    distance_dzdydx*distance_dzdydx,
+                                    current_alpha_estimate_zyx*current_alpha_estimate_zyx)
     : calc_kernel_from_precalculated((*kmnorm_sptr)[0][l][m],
-                                      sigma_p,
-                                      current_alpha_estimate_zyx);
+                                    sigma_p*sigma_p,
+                                    sigma_dp*sigma_dp,
+                                    distance_dzdydx*distance_dzdydx,
+                                    current_alpha_estimate_zyx*current_alpha_estimate_zyx);
 
-  const double pet_distance_kernel =
-    gaussian_kernel(distance_dzdydx ,
-                    sigma_dp);
-  // std::cout << pet_intensity_kernel << " " << pet_distance_kernel << std:: endl;
-  const double pet_kernel = pet_intensity_kernel * pet_distance_kernel;
-  return pet_kernel;
+   return pet_kernel;
 }
 
 template <typename TargetT>
 double
 KOSMAPOSLReconstruction<TargetT>::
 calc_kernel_from_precalculated(const double precalculated_norm_zxy,
-                               const double sigma,
-                               const double precalc_denom) {
-//   if (precalc_denom == 0) {
-//     precalc_denom = square(current_alpha_estimate_zyx);
-//   };
+                               const double sq_sigma_int,
+                               const double sq_sigma_dist,
+                               const double sq_distance_dzdydx,
+                               const double sq_precalc_denom) {
 
   const double norm_distance_sq
-    = precalculated_norm_zxy
-    / precalc_denom;
-  return gaussian_kernel_already_sq(norm_distance_sq, sigma);
+    = precalculated_norm_zxy/ sq_precalc_denom/sq_sigma_int+
+          sq_distance_dzdydx/sq_sigma_dist/2;
+
+  return gaussian_kernel_already_sq(norm_distance_sq);
 }
 
 template <typename TargetT>
@@ -1009,39 +1008,38 @@ calc_anatomical_kernel(const double anatomical_prior_zyx,
                        const int l,
                        const int m) {
 
-  const double anatomical_intensity_kernel =
-    use_compact_implementation
-    ? calc_intensity_kernel_compact(anatomical_prior_zyx-
-                                    anatomical_prior_zyx_dr,
-                                    sigma_m,
-                                    anatomical_sd)
-    : calc_kernel_from_precalculated((*kmnorm_sptr)[0][l][m],
-                                     sigma_m,
-                                     anatomical_sd);
-
-  const double anatomical_distance_kernel =
-    gaussian_kernel(distance_dzdydx ,
-                    sigma_dm);
   const double anatomical_kernel =
-    anatomical_intensity_kernel * anatomical_distance_kernel;
+    use_compact_implementation
+    ? calc_kernel_compact(anatomical_prior_zyx-
+                                    anatomical_prior_zyx_dr,
+                                    sigma_m*sigma_m,
+                                    sigma_dm*sigma_dm,
+                                    distance_dzdydx*distance_dzdydx,
+                                    anatomical_sd*anatomical_sd)
+    : calc_kernel_from_precalculated((*kmnorm_sptr)[0][l][m],
+                                     sigma_m*sigma_m,
+                                     sigma_dm*sigma_dm,
+                                     distance_dzdydx*distance_dzdydx,
+                                     anatomical_sd*anatomical_sd);
+
   return anatomical_kernel;
 }
 
 template <typename TargetT>
 double
 KOSMAPOSLReconstruction<TargetT>::
-calc_intensity_kernel_compact(const double prior_image_zyx_diff,
-                              const double sigma,
-                              const double precalc_denom) {
-//  if (precalc_denom == 0) {
-//    precalc_denom = prior_image_zyx;
+calc_kernel_compact(const double prior_image_zyx_diff,
+                              const double sq_sigma_int,
+                              const double sq_sigma_dist,
+                              const double sq_distance_dzdydx,
+                              const double sq_precalc_denom) {
 
-//  };
     const double norm_distance_sq
-      = (prior_image_zyx_diff)
-         / precalc_denom;
-    //std::cout << norm_distance_sq << " ";
-    return gaussian_kernel(norm_distance_sq, sigma);
+      = ((prior_image_zyx_diff)/ sq_precalc_denom/sq_sigma_int)*
+        ((prior_image_zyx_diff)/2)+
+        sq_distance_dzdydx/sq_sigma_dist/2;
+
+    return gaussian_kernel_already_sq(norm_distance_sq);
 }
 
 template <typename TargetT>

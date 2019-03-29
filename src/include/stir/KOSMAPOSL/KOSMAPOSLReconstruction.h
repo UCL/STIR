@@ -268,11 +268,15 @@ private:
                                 const int m);
 
   double calc_kernel_from_precalculated(const double precalculated_norm_zxy,
-                                        const double sigma,
+                                        const double sq_sigma_int,
+                                        const double sq_sigma_dist,
+                                        const double sq_distance_dzdydx,
                                         const double precalc_denom);
 
-  double calc_intensity_kernel_compact(const double prior_image_zyx_diff,
-                                       const double sigma,
+  double calc_kernel_compact(const double prior_image_zyx_diff,
+                                       const double sq_sigma_int,
+                                       const double sq_sigma_dist,
+                                       const double sq_distance_dzdydx,
                                        const double precalc_denom);
 };
 
