@@ -4,6 +4,11 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2012-06-05 - 2012, Kris Thielemans
+    Copyright (C) 2018 Commonwealth Scientific and Industrial Research Organisation
+    Copyright (C) 2018 University of Leeds
+    Copyright (C) 2019 University College of London
+    Copyright (C) 2019 National Physical Laboratory
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,6 +28,8 @@
   \ingroup OSMAPOSL
   \brief Declaration of class stir::KOSMAPOSLReconstruction
 
+  \author Daniel Deidda
+  \author Ashley Gillman
   \author Matthew Jacobson
   \author Kris Thielemans
   \author PARAPET project
@@ -128,8 +135,8 @@ class KOSMAPOSLReconstruction:
     base_type;
 public:
 
-    //! Name which will be used when parsing a KOSMAPOSLReconstruction object
-    static const char * const registered_name;
+  //! Name which will be used when parsing a KOSMAPOSLReconstruction object
+  static const char * const registered_name;
 
   //! Default constructor (calling set_defaults())
   KOSMAPOSLReconstruction();
@@ -158,9 +165,7 @@ public:
   const bool get_only_2D() const;
   const bool get_hybrid()const;
 
-//   shared_ptr<TargetT>& get_kpnorm_sptr();
-//   shared_ptr<TargetT>& get_kmnorm_sptr();
-   shared_ptr<TargetT>& get_anatomical_prior_sptr();
+  shared_ptr<TargetT>& get_anatomical_prior_sptr();
 
     /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
@@ -168,8 +173,6 @@ public:
    one place, all objects that use the shared pointer will be affected.
   */
 
-//  void set_kpnorm_sptr(shared_ptr<TargetT>&);
-//  void set_kmnorm_sptr(shared_ptr<TargetT>&);
   void set_anatomical_prior_sptr(shared_ptr<TargetT>&);
 
 
