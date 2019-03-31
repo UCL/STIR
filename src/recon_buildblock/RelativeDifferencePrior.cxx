@@ -53,7 +53,7 @@ RelativeDifferencePrior<elemT>::initialise_keymap()
   this->parser.add_key("kappa filename", &kappa_filename);
   this->parser.add_key("weights", &weights);
   this->parser.add_key("gradient filename prefix", &gradient_filename_prefix);
-  this->parser.add_key("gamma value", this->gamma);
+  this->parser.add_key("gamma value", &this->gamma);
   this->parser.add_stop_key("END Relative Difference Prior Parameters");
 }
 
@@ -404,7 +404,12 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                     for (int dx=min_dx;dx<=max_dx;++dx)
                       {
                         // Use an intermediate variable
-                        elemT rjk = current_image_estimate[z][y][x] / current_image_estimate[z+dz][y+dy][x+dx];
+                        //elemT rjk = current_image_estimate[z][y][x] / (current_image_estimate[z+dz][y+dy][x+dx] +small );
+                        elemT rjk;
+                        if (current_image_estimate[z+dz][y+dy][x+dx] == 0)
+                        { rjk = 0; } //Remove the divide by zero
+                        else
+                        { rjk = current_image_estimate[z][y][x] / current_image_estimate[z+dz][y+dy][x+dx]; }
 
                         elemT current =
                           weights[dz][dy][dx] *
@@ -412,8 +417,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                           (square(rjk + 1 + this->gamma * abs(rjk - 1)));
 
                         if (do_kappa)
-                          current *=
-                            (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
+                          current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
 
                         gradient += current;
                       }
