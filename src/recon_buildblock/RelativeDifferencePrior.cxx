@@ -302,11 +302,18 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
                   for (int dy=min_dy;dy<=max_dy;++dy)
                     for (int dx=min_dx;dx<=max_dx;++dx)
                       {
-                        elemT current =
-                          weights[dz][dy][dx] *
+                        elemT current;
+
+                        // Check for divide by zero - if both voxels == 0, current = 0
+                        if (current_image_estimate[z][y][x] == 0 && current_image_estimate[z+dz][y+dy][x+dx] == 0)
+                        { current = 0; }
+                        else
+                        {
+                          current = weights[dz][dy][dx] *
                           (square(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]))/
                           ((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
                            (this->gamma *abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])));
+                        }
 
                         if (do_kappa)
                           current *= 
@@ -385,17 +392,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                   square((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
                     this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]))) *
                    (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
-                   =
-                   sum_dx,dy,dz
-                    weights[dz][dy][dx] *
-                            (((rjk-1)(this->gamma * abs(rjk-1)) + rjk + 3)/
-                            square(rjk + 1 + this->gamma * abs(rjk-1))) *
-                            (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
-
-                    where rjk = current_image_estimate[z][y][x]] /
-                            current_image_estimate[z+dz][y+dy][x+dx]
                 */
-
 
 #if 1
                 elemT gradient = 0;
@@ -403,19 +400,20 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                   for (int dy=min_dy;dy<=max_dy;++dy)
                     for (int dx=min_dx;dx<=max_dx;++dx)
                       {
-                        // Use an intermediate variable
-                        //elemT rjk = current_image_estimate[z][y][x] / (current_image_estimate[z+dz][y+dy][x+dx] +small );
-                        elemT rjk;
-                        if (current_image_estimate[z+dz][y+dy][x+dx] == 0)
-                        { rjk = 0; } //Remove the divide by zero
+
+                        elemT current;
+                        // Check for divide by zero - if both voxels == 0, current = 0
+                        if (current_image_estimate[z][y][x] == 0 && current_image_estimate[z+dz][y+dy][x+dx] == 0)
+                        { current = 0; }
                         else
-                        { rjk = current_image_estimate[z][y][x] / current_image_estimate[z+dz][y+dy][x+dx]; }
-
-                        elemT current =
-                          weights[dz][dy][dx] *
-                          ((rjk - 1) * (this->gamma * abs(rjk - 1)) + rjk + 3)/
-                          (square(rjk + 1 + this->gamma * abs(rjk - 1)));
-
+                        {
+                            current = weights[dz][dy][dx] *
+                                    (((current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) *
+                                     (this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])) +
+                                     (current_image_estimate[z][y][x] + 3 * current_image_estimate[z+dz][y+dy][x+dx]))/
+                                    square((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
+                                      this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])));
+                        }
                         if (do_kappa)
                           current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
 
