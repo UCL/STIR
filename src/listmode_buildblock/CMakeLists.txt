@@ -5,8 +5,12 @@ set(dir listmode_buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-	CListEvent 
+        ListModeData
+        ListEvent
+        CListEvent
 	CListModeData 
+        SPECTListModeData
+        SPECTListEvent
 	LmToProjData 
         LmToProjDataBootstrap
         CListModeDataECAT8_32bit

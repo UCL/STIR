@@ -25,8 +25,12 @@
 */
 
 
-#include "stir/listmode/CListRecord.h"
-#include "stir/listmode/CListModeData.h"
+#include "stir/listmode/ListRecord.h"
+#include "stir/listmode/ListEvent.h"
+#include "stir/listmode/ListTime.h"
+#include "stir/listmode/ListGatingInput.h"
+#include "stir/listmode/ListRecordWithGatingInput.h"
+#include "stir/listmode/ListModeData.h"
 #include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/read_from_file.h"
@@ -100,15 +104,15 @@ int main(int argc, char *argv[])
       return EXIT_FAILURE;
     }
 
-  shared_ptr<CListModeData> lm_data_ptr(read_from_file<CListModeData>(argv[0]));  
+  shared_ptr<ListModeData> lm_data_ptr(read_from_file<ListModeData>(argv[0]));
 
   cout << "Scanner: " << lm_data_ptr->get_scanner_ptr()->get_name() << endl;
 
   unsigned long num_listed_events = 0;
   {      
     // loop over all events in the listmode file
-    shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
-    CListRecord& record = *record_sptr;
+    shared_ptr <ListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
+    ListRecord& record = *record_sptr;
 
     while (num_events_to_list==0 || num_events_to_list!=num_listed_events)
       {
@@ -129,7 +133,7 @@ int main(int argc, char *argv[])
               }
 	   } 
         {
-          CListRecordWithGatingInput * record_ptr = dynamic_cast<CListRecordWithGatingInput *>(&record);
+          ListRecordWithGatingInput * record_ptr = dynamic_cast<ListRecordWithGatingInput *>(&record);
           if (record_ptr!=0 && record_ptr->is_gating_input())
             {
               recognised=true;
