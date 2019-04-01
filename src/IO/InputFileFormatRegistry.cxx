@@ -29,7 +29,9 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"  
 #include "stir/DynamicDiscretisedDensity.h" 
+#include "stir/listmode/ListModeData.h"
 #include "stir/listmode/CListModeData.h"
+#include "stir/listmode/SPECTListModeData.h"
 
 START_NAMESPACE_STIR
 
@@ -37,7 +39,9 @@ START_NAMESPACE_STIR
 template class InputFileFormatRegistry<DiscretisedDensity<3,float> >;
 template class InputFileFormatRegistry<ParametricVoxelsOnCartesianGrid >;
 template class InputFileFormatRegistry<DynamicDiscretisedDensity>;
+template class InputFileFormatRegistry<ListModeData>;
 template class InputFileFormatRegistry<CListModeData>;
+template class InputFileFormatRegistry<SPECTListModeData>;
 template class InputFileFormatRegistry<VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > >;
 
 END_NAMESPACE_STIR

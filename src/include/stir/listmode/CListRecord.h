@@ -29,7 +29,11 @@
 #ifndef __stir_listmode_CListRecord_H__
 #define __stir_listmode_CListRecord_H__
 
-
+#include "ListRecord.h"
+#include "ListRecordWithGatingInput.h"
+#include "ListEvent.h"
+#include "ListGatingInput.h"
+#include "ListTime.h"
 #include "stir/round.h"
 #include "stir/Succeeded.h"
 
@@ -51,7 +55,7 @@ template <typename coordT> class LORAs2Points;
 
     \see CListModeData for more info on list mode data. 
 */
-class CListEvent
+class CListEvent : virtual public ListEvent
 {
 public:
   virtual ~CListEvent() {}
@@ -131,7 +135,7 @@ public:
     (and actual?) number of gates would be useful.
     \see CListModeData for more info on list mode data. 
 */
-class CListTime
+class CListTime : virtual public ListTime
 {
 public:
   virtual ~CListTime() {}
@@ -156,7 +160,7 @@ public:
 
    If your scanner has more data available, you can provide it in the derived class.
 */
-class CListGatingInput
+class CListGatingInput:  virtual public ListGatingInput
 {
 public:
   virtual ~CListGatingInput() {}
@@ -181,7 +185,7 @@ public:
     
     \see CListModeData for more info on list mode data. 
 */
-class CListRecord
+class CListRecord : virtual public ListRecord
 {
 public:
   virtual ~CListRecord() {}
@@ -192,8 +196,8 @@ public:
 
   virtual CListEvent&  event() = 0;
   virtual const CListEvent&  event() const = 0;
-  virtual CListTime&   time() = 0; 
-  virtual const CListTime&   time() const = 0; 
+  virtual CListTime&   time() = 0;
+  virtual const CListTime&   time() const = 0;
 
   virtual bool operator==(const CListRecord& e2) const = 0;
   bool operator!=(const CListRecord& e2) const { return !(*this == e2); }
