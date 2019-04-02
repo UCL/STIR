@@ -19,19 +19,48 @@
   \ingroup listmode SimSET
   \brief Declaration of class stir::CListModeDataSimSET
 
-  \details This class tries to read the PhGPhoton params files, which are the
-  same as used to run the SimSET simulation. However, it will then check for a
+  \details This class tries to read the PHG param file, which is the
+  same used to run the SimSET simulation. However, it will then check for a
   history file and initialise an InputStream.
 
-  Unfortuantely, SimSET does not hold any information on the scanner as name,
+  Unfortuantely, SimSET does not hold any information on the scanner; as name,
   model, manufacurer etc. In addition, in the case of cylindrical PET scanner
-  important information as number of detectors and rings are not present. In
-  this case the only information available are radius and scanner length.
-  Therefore, we will make use of the bining file setup. As the actual bining
-  parameters will come from the STIR template users are encouraged to set the
-  bining information such as the number of tang positions and z positions are such
-  that match the Scanner num_detectors /2 and num_rings.
+  important information as number of detectors and rings might not be present.
 
+  THerefore in order to detect the scanner we try to harvest as much information
+  as possible and compare it with the templates in Scanner.cxx.
+  Scanner not included in that file will not be able to operate.
+
+  The important bits of infomation are the number of rings, inner ring radius,
+  number of detectors, number of layers and number of bins. Optionally, energy resolution.
+
+  If two scanners share those same characteristics, the first one in order will
+  be used.
+  The number of rings might come from two sources. First is checked if the
+  cylindrical ring geometry was separated in rings. In SimSET that is not
+  mandatory.
+
+  If that is the case, we will chack the bining parameters file.
+  You can set the Z binning to be the number of rings.
+  
+  If the cylinder was separated in rings then, in SimSET each gap is defined
+  as a ring of air. Therefore most likely the simulation will have 2N + 1 and that
+  is the number with which we will be checking.
+
+  Although the cylinder might be separated in rings, radial gaps on the cylinder
+  are not defined in some way. In order to let STIR know the number of detectors per
+  ring you have to set in binning parameter file the number of tagential positions
+  to be half the number of detectors.
+
+  Moreover, the the inner ring is taken by the LayerInfo->InnerRadius,
+
+  \warning Currectly, we support only simplePET and cylindrical scanners.
+
+  \warning When this interface was build the SimSET version was 2.9.2. But STIR
+  cannot work with it. You need to download and apply the patch from
+  https://gist.github.com/NikEfth/c217afccca9499f0245554941f704654.
+  This patch allow SimSET to build a library to which we link to and created few
+  convinience headers =).
 
   \author Nikos Efthimiou
 */
@@ -84,20 +113,19 @@ public:
     get_total_number_of_events() const ;
 
 private:
-    //! Check if the hroot contains a full scanner description.
-    Succeeded check_scanner_definition(std::string& ret);
+
     //! Check if the scanner_sptr matches the geometry in root_file_sptr.
     //! \todo This function should be extended with TOF information.
     Succeeded
-    check_scanner_match_geometry(const double _radius,
-                                 const double _minZ,
-                                 const double _maxZ,
-                                 const unsigned int _numLayers,
-                                 const double _enResolution,
-                                 const double _enResReference,
-                                 const unsigned int _numTDBins,
+    check_scanner_match_geometry(const unsigned int _numTDBins,
                                  const unsigned int _numZbins,
-                                 shared_ptr<Scanner>& scanner_sptr);
+                                 shared_ptr<Scanner>& scanner_sptr,
+                                 const double _radius = -1.0,
+                                 const double _minZ = -1.0,
+                                 const double _maxZ = -1.0,
+                                 const unsigned int _numLayers = 1,
+                                 const double _enResolution = -1.0,
+                                 const double _enResReference = -1.0);
 
     //! Pointer to the listmode data
     shared_ptr<InputStreamFromSimSET > history_file_sptr;

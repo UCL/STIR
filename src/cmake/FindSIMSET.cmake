@@ -24,5 +24,5 @@ endif()
 # handle the QUIETLY and REQUIRED arguments and set LLN_FOUND to TRUE if 
 # all listed variables are TRUE
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(SIMSET "SIMSET matrix library not found. If you do have it, set the missing variables" SIMSET_LIBRARY SIMSET_INCLUDE_DIRS)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(SIMSET "SIMSET library not found. If you do have it, set the missing variables" SIMSET_LIBRARY SIMSET_INCLUDE_DIRS)
 

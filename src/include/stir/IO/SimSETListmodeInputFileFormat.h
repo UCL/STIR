@@ -24,18 +24,6 @@
 #include <iostream>
 #include <unistd.h>
 
-extern "C" {
-#include <LbEnvironment.h>
-#include <LbInterface.h>
-}
-
-#define	PHGRDHST_NumFlags	3
-/* LOCAL CONSTANTS */
-#define PHGRDHST_IsUsePHGHistory()		LbFgIsSet(PhgOptions, LBFlag0)		/* Will we use the PHG history file */
-#define PHGRDHST_IsUseColHistory()		LbFgIsSet(PhgOptions, LBFlag1)		/* Will we use the Collimator history file */
-#define PHGRDHST_IsUseDetHistory()		LbFgIsSet(PhgOptions, LBFlag2)		/* Will we use the Detector history file */
-
-
 START_NAMESPACE_STIR
 
 //!
@@ -47,21 +35,12 @@ START_NAMESPACE_STIR
 //!
 //! The phg parameter file should be used here.
 //! However, STIR passes only 1024 bytes. The solution is that the
-//! first line of your phg file should always be the fileName of that
-//! file. That way we can use SimSET functions to check for
-//! consistency.
+//! first line of your phg file should always write the line
 //!
+//! # Hello, I am a SimSET PHG file!
 //!
-//! Three things are checked Header size, header kind,
-//! and version of the header.
+//! This will let us know that this is a PHG file.
 //!
-//! \warning Althought the first two work as supposed, in the third
-//! we need to skip several byte to reach the proper value.
-//! In the original function I cannot find a similar requirement.
-//!
-//! \warning In addition, that float number with the header version
-//! has to be read as big endian. Further investigation on this should be
-//! carried out.
 //!
 //! \author Nikos Efthimiou
 //!
@@ -104,6 +83,21 @@ protected:
     //! be too much.
     bool is_SimSET_signature(std::istream& signature) const
     {
+        std::string check("# Hello, I am a SimSET PHG file!");
+        std::string firstLine;
+        getline(signature, firstLine);
+        if (firstLine == check)
+            return true;
+        else
+            return false;
+    }
+};
+
+END_NAMESPACE_STIR
+
+#endif
+
+// This is an alternative version of the is_SimSET_signature.
 //        std::string argv_str;
 //        std::getline(signature, argv_str);
 //        char fileName[1024];
@@ -176,10 +170,3 @@ protected:
 //        delete [] flag;
 //        delete [] knownOptions;
 
-        return true;
-    }
-};
-
-END_NAMESPACE_STIR
-
-#endif
