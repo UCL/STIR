@@ -37,12 +37,6 @@ extern "C" {
 #include <PhgBin.h>
 }
 
-//#define	PHGRDHST_NumFlags	3
-/* LOCAL CONSTANTS */
-//#define PHGRDHST_IsUsePHGHistory() LbFgIsSet(PhgOptions, LBFlag0)		/* Will we use the PHG history file */
-//#define PHGRDHST_IsUseColHistory() LbFgIsSet(PhgOptions, LBFlag1)		/* Will we use the Collimator history file */
-//#define PHGRDHST_IsUseDetHistory() LbFgIsSet(PhgOptions, LBFlag2)		/* Will we use the Detector history file */
-
 START_NAMESPACE_STIR
 
 //! N.E: Large parts adapted from phgbin and functions called by it;
@@ -207,28 +201,66 @@ CListModeDataSimSET(const std::string& _phg_filename)
 
     // We have already established that a cylindrical scanner will be used.
     shared_ptr<Scanner> tmpl_scanner;
-    if (check_scanner_match_geometry( DetRunTimeParams[0].CylindricalDetector.RingInfo->LayerInfo->InnerRadius,
-                                      DetRunTimeParams[0].CylindricalDetector.RingInfo->MinZ,
-                                      DetRunTimeParams[0].CylindricalDetector.RingInfo->MaxZ,
-                                      DetRunTimeParams[0].CylindricalDetector.RingInfo->NumLayers,
-                                      DetRunTimeParams->EnergyResolutionPercentage,
-                                      DetRunTimeParams->ReferenceEnergy,
-                                      PhgBinParams->numTDBins,
-                                      PhgBinParams->numZBins,
-                                      tmpl_scanner) == Succeeded::yes)
+    // SimplePET
+    if (DetRunTimeParams[0].DetectorType == 1)
     {
-        std::string msg("\n**************************************************************\n"
-                        "CListModeDataSimSET: Based on the information harvested by the PHG"
-                        "params file and the Bining file we believe that the best matching"
-                        "scanner is: ");
-        msg.append(tmpl_scanner->get_name());
-        msg.append("!\n**************************************************************\n");
-        info(msg);
+        if (check_scanner_match_geometry( PhgBinParams->numTDBins,
+                                          PhgBinParams->numZBins,
+                                          tmpl_scanner) == Succeeded::yes)
+        {
+            std::string msg("\n**************************************************************\n"
+                            "CListModeDataSimSET: Based on the information harvested by the PHG"
+                            "params file and the Bining file we believe that the best matching"
+                            "scanner is: ");
+            msg.append(tmpl_scanner->get_name());
+            msg.append("!\n**************************************************************\n");
+            info(msg);
+        }
+        else
+        {
+            error("CListModeDataSimSET: The information harvested from the PHG file and Bining file "
+                  "do not match a scanner in the Scanner list.");
+        }
+    }
+    else if (DetRunTimeParams[0].DetectorType == 6) // CylindricalPET
+    {
+        uint chk_rings = 0 ;
+
+        if (DetRunTimeParams[0].CylindricalDetector.NumRings == 1)
+            chk_rings = PhgBinParams->numZBins;
+        else
+        {
+            chk_rings =
+                    static_cast<int>(static_cast<float>(DetRunTimeParams[0].CylindricalDetector.NumRings)/2.F + 0.5F);
+        }
+
+        if (check_scanner_match_geometry( PhgBinParams->numTDBins,
+                                          chk_rings,
+                                          tmpl_scanner,
+                                          DetRunTimeParams[0].CylindricalDetector.RingInfo->LayerInfo->InnerRadius,
+                                          DetRunTimeParams[0].CylindricalDetector.RingInfo->MinZ,
+                                          DetRunTimeParams[0].CylindricalDetector.RingInfo->MaxZ,
+                                          DetRunTimeParams[0].CylindricalDetector.RingInfo->NumLayers,
+                                          DetRunTimeParams->EnergyResolutionPercentage,
+                                          DetRunTimeParams->ReferenceEnergy) == Succeeded::yes)
+        {
+            std::string msg("\n**************************************************************\n"
+                            "CListModeDataSimSET: Based on the information harvested by the PHG"
+                            "params file and the Bining file we believe that the best matching"
+                            "scanner is: ");
+            msg.append(tmpl_scanner->get_name());
+            msg.append("!\n**************************************************************\n");
+            info(msg);
+        }
+        else
+        {
+            error("CListModeDataSimSET: The information harvested from the PHG file and Bining file "
+                  "do not match a scanner in the Scanner list.");
+        }
     }
     else
     {
-        error("CListModeDataSimSET: The information harvested from the PHG file and Bining file "
-              "do not match a scanner in the Scanner list.");
+        error("CListModeDataSimSET: Only cylindricalPET and simple PET scanners are supported.");
     }
 
     // ExamInfo initialisation
@@ -249,10 +281,6 @@ CListModeDataSimSET(const std::string& _phg_filename)
                                                                          tmpl_scanner->get_max_num_non_arccorrected_bins(),
                                                                          /* arc_correction*/false));
     this->set_proj_data_info_sptr(tmp);
-
-//    if (this->open_lm_file() == Succeeded::no)
-//        error("CListModeDataSimSET: error opening ROOT file for filename '%s'",
-//              hroot_filename.c_str());
 
     // if the ProjData have been initialised properly create a
     // Input Stream from SimSET.
@@ -365,15 +393,15 @@ set_defaults()
 
 Succeeded
 CListModeDataSimSET::
-check_scanner_match_geometry(const double _radius,
+check_scanner_match_geometry(const unsigned int _numTDBins,
+                             const unsigned int _numZbins,
+                             shared_ptr<Scanner> &scanner_sptr,
+                             const double _radius,
                              const double _minZ,
                              const double _maxZ,
                              const unsigned int _numLayers,
                              const double _enResolution,
-                             const double _enResReference,
-                             const unsigned int _numTDBins,
-                             const unsigned int _numZbins,
-                             shared_ptr<Scanner>& scanner_sptr)
+                             const double _enResReference)
 {
 
     std::string all_scanners = Scanner::list_all_names();
@@ -387,11 +415,12 @@ check_scanner_match_geometry(const double _radius,
         Scanner::Type cur_scanner = static_cast<Scanner::Type>(scanInt);
         scanner_sptr.reset(new Scanner(cur_scanner));
 
-        if (scanner_sptr->get_inner_ring_radius() == static_cast<float>(_radius*10) &&
+        if ((_radius > 0.0 ?
+             scanner_sptr->get_inner_ring_radius() == static_cast<float>(_radius*10) : 1) &&
                 scanner_sptr->get_num_detector_layers() == static_cast<int>(_numLayers) &&
                 scanner_sptr->get_num_rings() == static_cast<int>(_numZbins) &&
                 (scanner_sptr->get_energy_resolution() > -1.f ?
-                scanner_sptr->get_energy_resolution() == static_cast<float>(_enResolution) : 1) &&
+                 scanner_sptr->get_energy_resolution() == static_cast<float>(_enResolution) : 1) &&
                 scanner_sptr->get_num_detectors_per_ring() == 2*static_cast<int>(_numTDBins) &&
                 scanner_sptr->get_max_num_non_arccorrected_bins() == static_cast<int>(_numTDBins))
             return Succeeded::yes;
@@ -399,49 +428,5 @@ check_scanner_match_geometry(const double _radius,
 
     return Succeeded::no;
 }
-
-Succeeded
-CListModeDataSimSET::
-check_scanner_definition(std::string& ret)
-{
-    //    if ( num_rings == -1 ||
-    //         num_detectors_per_ring == -1 ||
-    //         max_num_non_arccorrected_bins == -1 ||
-    //         inner_ring_diameter == -1.f ||
-    //         average_depth_of_interaction == -1.f ||
-    //         ring_spacing == -.1f ||
-    //         bin_size == -1.f )
-    //    {
-    //       std::ostringstream stream("CListModeDataSimSET: The User_defined_scanner has not been fully described.\nPlease include in the hroot:\n");
-
-    //       if (num_rings == -1)
-    //           stream << "Number of rings := \n";
-
-    //       if (num_detectors_per_ring == -1)
-    //           stream << "Number of detectors per ring := \n";
-
-    //       if (max_num_non_arccorrected_bins == -1)
-    //           stream << "Maximum number of non-arc-corrected bins := \n";
-
-    //       if (inner_ring_diameter == -1)
-    //           stream << "Inner ring diameter (cm) := \n";
-
-    //       if (average_depth_of_interaction == -1)
-    //           stream << "Average depth of interaction (cm) := \n";
-
-    //       if (ring_spacing == -1)
-    //           stream << "Distance between rings (cm) := \n";
-
-    //       if (bin_size == -1)
-    //           stream << "Default bin size (cm) := \n";
-
-    //       ret = stream.str();
-
-    //       return Succeeded::no;
-    //    }
-
-    return Succeeded::yes;
-}
-
 
 END_NAMESPACE_STIR

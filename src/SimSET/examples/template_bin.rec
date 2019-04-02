@@ -35,7 +35,7 @@ INT     num_aa_bins             =       144
 # Transaxial binning.####
 # NOTE: Take note if you are setting min_td and max_td to any value less than the radius of your object cylinder.
 # num_td_bins needs to be odd for STIR, and the range needs to be symmetric
-INT     num_td_bins             =       287
+INT     num_td_bins             =       288
 REAL    min_td                  =       -29.16815
 REAL    max_td                  =        29.16815
 # Energy bins ####
