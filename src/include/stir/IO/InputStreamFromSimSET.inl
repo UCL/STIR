@@ -1,6 +1,5 @@
 /*
- *  Copyright (C) 2015, 2016 University of Leeds
-    Copyright (C) 2016, UCL
+ *  Copyright (C) 2019 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -17,11 +16,10 @@
 */
 /*!
   \file
-  \ingroup IO
-  \brief Implementation of class stir::InputStreamFromROOTFile
+  \ingroup IO SimSET
+  \brief Implementation of class stir::InputStreamFromSimSETFile
 
   \author Nikos Efthimiou
-  \author Harry Tsoumpas
 */
 
 #include "stir/IO/InputStreamFromSimSET.h"
@@ -36,14 +34,16 @@ unsigned long int
 InputStreamFromSimSET::
 get_total_number_of_events() const
 {
-    return static_cast<unsigned long int>(numPhotons);
+    return static_cast<unsigned long int>(phgrdhstHdrParams.H.NumDecays);
 }
 
 Succeeded
 InputStreamFromSimSET::
 reset()
 {
-    curFileIndex = startFileIndex;
+    nextDecay = firstDecay;
+    blueScatters = 0;
+    pinkScatters = 0;
     return Succeeded::yes;
 }
 
@@ -51,8 +51,7 @@ InputStreamFromSimSET::SavedPosition
 InputStreamFromSimSET::
 save_get_position()
 {
-    assert(curFileIndex <= numPhotons);
-    saved_get_positions.push_back(curFileIndex);
+    saved_get_positions.push_back(nextDecay);
     return saved_get_positions.size()-1;
 }
 
@@ -60,11 +59,11 @@ Succeeded
 InputStreamFromSimSET::
 set_get_position(const InputStreamFromSimSET::SavedPosition& pos)
 {
-    curFileIndex = pos;
+    nextDecay = saved_get_positions.at(pos);
     return Succeeded::yes;
 }
 
-std::vector<LbUsFourByte>
+std::vector<PHG_Decay>
 InputStreamFromSimSET::
 get_saved_get_positions() const
 {
@@ -73,7 +72,7 @@ get_saved_get_positions() const
 
 void
 InputStreamFromSimSET::
-set_saved_get_positions(const std::vector<LbUsFourByte> &poss)
+set_saved_get_positions(const std::vector<PHG_Decay> &poss)
 {
     saved_get_positions = poss;
 }
@@ -83,51 +82,141 @@ InputStreamFromSimSET::
 get_next_record(CListRecordSimSET& record)
 {
 
-    LbUsFourByte		numBluePhotons;				/* Number of blue photons for this decay */
-    LbUsFourByte		numPinkPhotons;				/* Number of pink photons for this decay */
-
-    LbUsFourByte		numPhotonsProcessed;		/* Number of photons processed */
-    LbUsFourByte		numDecaysProcessed;			/* Number of decays processed */
-    PHG_Decay		   	decay;						/* The decay */
-
-    PHG_DetectedPhoton	detectedPhoton;				/* The detected photon */
-    PHG_TrackingPhoton	trackingPhoton;				/* The tracking photon */
-    PHG_TrackingPhoton	*bluePhotons = 0;			/* Blue photons for current decay */
-    PHG_TrackingPhoton	*pinkPhotons = 0;			/* Pink photon for current decay*/
-    double 				angle_norm;					/* for normalizing photon direction */
-    Boolean				isOldPhotons1;				/* is this a very old history file--must be
-                                                     read using oldReadEvent */
-    Boolean				isOldPhotons2;				/* is this a moderately old history file--must be
-                                                     read using oldReadEvent */
-    Boolean				isOldDecays;				/* is this an old history file--must be read using oldReadEvent */
-
-    EventTy	retEventType = Null;
-    PhoHFileEventType	eventType = PhoHFileNullEvent;	/* The event type we read */
-
-    while (retEventType == Decay)
+    while(true)
     {
-        numDecaysProcessed++;
 
-        eventType = PhoHFileReadEvent(historyFile, &nextDecay, &detectedPhoton);
+        PHG_Decay decay;
 
-        if (eventType == PhoHFilePhotonEvent)
-            retEventType = Photon;
+        EventTy	retEventType = Null;
+        PhoHFileEventType	eventType = PhoHFileNullEvent;	/* The event type we read */
 
-        if (eventType == PhoHFileNullEvent)
-            error("");
+        while(true)
+        {
+
+            // We do not process decay events, so skip them
+            do
+            {
+                if (numDecaysProcessed == get_total_number_of_events())
+                    return Succeeded::no;
+
+                eventType = PhoHFileReadEvent(historyFile, &nextDecay, &cur_detectedPhotonBlue);
+
+                numDecaysProcessed++;
+
+                if (eventType == PhoHFilePhotonEvent)
+                    retEventType = Photon;
+
+                if (eventType == PhoHFileDecayEvent)
+                    retEventType = Decay;
+
+                if (eventType == PhoHFileNullEvent)
+                    return Succeeded::no;
+
+                /* Update current decay */
+                decay = nextDecay;
+
+            }while (retEventType == Decay);
+
+            /* See if it is blue or pink */
+            if (!LbFgIsSet(cur_detectedPhotonBlue.flags, PHGFg_PhotonBlue))
+                continue;
+
+            eventType = PhoHFileReadEvent(historyFile, &decay, &cur_detectedPhotonPink);
+            if (LbFgIsSet(cur_detectedPhotonPink.flags, PHGFg_PhotonBlue))
+                continue;
+
+            break;
+        }
+
+        /* Reject the coincidence if it is random and
+          we are rejecting randoms */
+        if ( (decay.decayType == PhgEn_PETRandom) &&
+             (!binParams->acceptRandoms) )
+            continue;
+
+        /* Get scatter count */
+        blueScatters += cur_detectedPhotonBlue.flags>>2;
+
+        /* See if this photon fails the acceptance criteria */
+        /* NOTE: It seems like failing a blue should go to the
+                        next blue, not the next pink. However, because we let
+                        the user get their hands on the photon pair we will
+                        always call the user routine with every blue and
+                        every pink
+                    */
+        {
+            if ( (blueScatters < binParams->minS) &&
+                 (!ignoreMinScatters) )
+                continue;
+
+            /* Max scatters is ignored for some scatterRandomParam, this means
+                            take all photons from max and above, and put them into
+                            the top bin
+                        */
+            if	((blueScatters > binParams->maxS) &&
+                 (!ignoreMaxScatters))
+                continue;
+
+            if ((binParams->numE1Bins > 0) && (cur_detectedPhotonBlue.energy < static_cast<float>(binParams->minE)))
+                continue;
+
+            if	((binParams->numE1Bins > 0) && (cur_detectedPhotonBlue.energy > static_cast<float>(binParams->maxE)))
+                continue;
+
+            if ((binParams->numZBins > 0) && (cur_detectedPhotonBlue.location.z_position < static_cast<float>(binParams->minZ)))
+                continue;
+
+            if ((binParams->numZBins > 0) && (cur_detectedPhotonBlue.location.z_position > static_cast<float>(binParams->maxZ)))
+                continue;
+        }
 
 
-        /* Update current decay */
-        decay = nextDecay;
+        /* Get scatter count */
+        pinkScatters += cur_detectedPhotonPink.flags>>2;
 
+        /* See if this photon fails the acceptance criteria */
+        {
+            if ( (pinkScatters < binParams->minS) &&
+                 (!ignoreMinScatters) )
+                continue;
+
+            /* Max scatters is ignored for some scatterRandomParam, this means
+                                        take all photons from max and above, and put them into
+                                        the top bin
+                                    */
+            if	( (pinkScatters > binParams->maxS) &&
+                  (!ignoreMaxScatters) )
+                continue;
+
+            if ((binParams->numE2Bins > 0) && (cur_detectedPhotonPink.energy < static_cast<float>(binParams->minE)))
+                continue;
+
+            if	((binParams->numE2Bins > 0) && (cur_detectedPhotonPink.energy > static_cast<float>(binParams->maxE)))
+                continue;
+
+            if ((binParams->numZBins > 0) && (cur_detectedPhotonPink.location.z_position < static_cast<float>(binParams->minZ)))
+                continue;
+
+            if ((binParams->numZBins > 0) && (cur_detectedPhotonPink.location.z_position > static_cast<float>(binParams->maxZ)))
+                continue;
+        }
+        break;
     }
 
-    int nikos = 0;
-    //    return
-    //            record.init_from_data(ring1, ring2,
-    //                                  crystal1, crystal2,
-    //                                  time1, time2,
-    //                                  eventID1, eventID2);
+    cur_detectedPhotonBlue.location.z_position -= static_cast<float>(binParams->minZ);
+    cur_detectedPhotonPink.location.z_position -= static_cast<float>(binParams->minZ);
+
+    // STIR uses mm.
+    cur_detectedPhotonBlue.location.z_position *= 10.f;
+    cur_detectedPhotonBlue.location.y_position *= 10.f;
+    cur_detectedPhotonBlue.location.x_position *= 10.f;
+
+    cur_detectedPhotonPink.location.z_position *= 10.f;
+    cur_detectedPhotonPink.location.y_position *= 10.f;
+    cur_detectedPhotonPink.location.x_position *= 10.f;
+
+    return record.init_from_data(cur_detectedPhotonBlue,
+                                 cur_detectedPhotonPink);
 }
 
 END_NAMESPACE_STIR

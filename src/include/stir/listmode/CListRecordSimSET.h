@@ -1,6 +1,5 @@
 /*
-    Copyright (C) 2015-2016 University of Leeds
-    Copyright (C) 2016 UCL
+    Copyright (C) 2019 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -17,11 +16,10 @@
 */
 /*!
   \file
-  \ingroup listmode
-  \brief Classes for listmode events for GATE simulated ROOT data
+  \ingroup listmode SimSET
+  \brief Classes for listmode events for GATE simulated SimSET history file
 
   \author Efthimiou Nikos
-  \author Harry Tsoumpas
 */
 
 #ifndef __stir_listmode_CListRecordSimSET_H__
@@ -30,10 +28,11 @@
 #include "stir/listmode/CListRecord.h"
 #include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.h"
 #include "stir/Succeeded.h"
-#include "stir/round.h"
-#include "boost/static_assert.hpp"
-#include "stir/DetectionPositionPair.h"
-#include <boost/cstdint.hpp>
+
+extern "C" {
+#include <LbTypes.h>
+#include <Photon.h>
+}
 
 START_NAMESPACE_STIR
 
@@ -50,8 +49,8 @@ public:
     virtual void set_detection_position(const DetectionPositionPair<>&);
 
     //! \details This is the main function which transform GATE coordinates to STIR
-    void init_from_data(const int &_ring1, const int &_ring2,
-                             const int &crystal1, const int &crystal2);
+    void init_from_data(const PHG_DetectedPhoton* _blue,
+                        const PHG_DetectedPhoton* _pink);
 
     inline bool is_prompt() const
     { return true; }
@@ -70,9 +69,6 @@ private:
     int det2;
     //! Indicates if swap segments
     bool swapped;
-    //! This is the number of detector we have to rotate in order to
-    //! align GATE and STIR.
-    int quarter_of_detectors;
 };
 
 //! A class for storing and using a timing 'event' from a listmode file from the ECAT 8_32bit scanner
@@ -81,14 +77,15 @@ private:
 class CListTimeSimSET : public CListTime
 {
 public:
-    void init_from_data(double time1, double time2)
+    inline void init_from_data(const PHG_DetectedPhoton* _blue,
+                               const PHG_DetectedPhoton* _pink)
     {
-        timeA = time1;
-        timeB = time2;
+        timeA = _blue->time_since_creation;
+        timeB = _pink->time_since_creation;
     }
 
     //! Returns always true
-    bool is_time() const
+    inline bool is_time() const
     { return true; }
     //! Returns the detection time of the first photon
     //! in milliseconds.
@@ -160,34 +157,23 @@ public:
 
     bool operator==(const CListRecord& e2) const
     {
-        return dynamic_cast<CListRecordSimSET const *>(&e2) != 0 &&
-                raw[0] == dynamic_cast<CListRecordSimSET const &>(e2).raw[0] &&
-                raw[1] == dynamic_cast<CListRecordSimSET const &>(e2).raw[1];
+        return this->event().get_LOR().p1() ==  e2.event().get_LOR().p1() &&
+                this->event().get_LOR().p2() ==  e2.event().get_LOR().p2() &&
+                this->time().get_time_in_secs() == this->time().get_time_in_secs();
     }
 
     CListRecordSimSET(const shared_ptr<Scanner>& scanner_sptr) :
         event_data(scanner_sptr)
     {}
 
-    virtual Succeeded init_from_data( const int& ring1,
-                                      const int& ring2,
-                                      const int& crystal1,
-                                      const int& crystal2,
-                                      double time1, double time2,
-                                      const int& event1, const int& event2)
+    virtual Succeeded init_from_data(const PHG_DetectedPhoton&	detectedPhotonBlue,
+                                     const PHG_DetectedPhoton&	detectedPhotonPink)
     {
-        /// \warning ROOT data are time and event at the same time.
+        this->event_data.init_from_data(&detectedPhotonBlue,
+                                        &detectedPhotonPink);
 
-        this->event_data.init_from_data(ring1, ring2,
-                                        crystal1, crystal2);
-
-        this->time_data.init_from_data(
-                    time1,time2);
-
-        // We can make a singature raw based on the two events IDs.
-        // It is pretty unique.
-        raw[0] = event1;
-        raw[1] = event2;
+        this->time_data.init_from_data(&detectedPhotonBlue,
+                                       &detectedPhotonPink);
 
         return Succeeded::yes;
     }
@@ -195,8 +181,6 @@ public:
 private:
     CListEventSimSET  event_data;
     CListTimeSimSET   time_data;
-    boost::int32_t raw[2]; // this raw field isn't strictly necessary, get rid of it?
-
 };
 
 END_NAMESPACE_STIR

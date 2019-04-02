@@ -1,6 +1,5 @@
 /*
-    Copyright (C) 2015-2016 University of Leeds
-    Copyright (C) 2016 UCL
+    Copyright (C) 2019 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -17,12 +16,11 @@
 */
 /*!
   \file
-  \ingroup listmode
-  \brief Implementation of classes stir::ecat::CListEventROOT and stir::ecat::CListRecordROOT
-  for listmode events for the ROOT as listmode file format.
+  \ingroup listmode SimSET
+  \brief Implementation of classes stir::ecat::CListEventSimSET and stir::ecat::CListRecordSimsET
+  for listmode events for the SimSET as listmode file format.
 
   \author Nikos Efthimiou
-  \author Harry Tsoumpas
 */
 
 #include "stir/listmode/CListRecordSimSET.h"
@@ -34,17 +32,11 @@ CListEventSimSET::
 CListEventSimSET(const shared_ptr<Scanner>& scanner_sptr) :
     CListEventCylindricalScannerWithDiscreteDetectors(scanner_sptr)
 {
-    quarter_of_detectors = static_cast<int>(scanner_sptr->get_num_detectors_per_ring()/4.f);
+
 }
 
-//!
-//! \brief CListEventROOT::get_detection_position
-//! \param det_pos
-//! \author Nikos Efthimiou
-//!
 void CListEventSimSET::get_detection_position(DetectionPositionPair<>& _det_pos) const
 {
-
     DetectionPosition<> det1(this->det1, this->ring1, 0);
     DetectionPosition<> det2(this->det2, this->ring2, 0);
 
@@ -57,53 +49,24 @@ void CListEventSimSET::set_detection_position(const DetectionPositionPair<>&)
     error("Cannot set events in a ROOT file!");
 }
 
-void CListEventSimSET::init_from_data(const int& _ring1, const int& _ring2,
-                                    const int& crystal1, const int& crystal2)
+void CListEventSimSET::init_from_data(const PHG_DetectedPhoton* _blue,
+                                      const PHG_DetectedPhoton* _pink)
 {
-//    if  (crystal1 < 0 )
-//        det1 = scanner_sptr->get_num_detectors_per_ring() + crystal1;
-//    else if ( crystal1 >= scanner_sptr->get_num_detectors_per_ring())
-//        det1 = crystal1 - scanner_sptr->get_num_detectors_per_ring();
-//    else
-//        det1 = crystal1;
+    CartesianCoordinate3D<float> blue_coord(_blue->location.z_position,
+                                             _blue->location.y_position,
+                                             _blue->location.x_position);
 
-//    if  (crystal2 < 0 )
-//        det2 = scanner_sptr->get_num_detectors_per_ring() + crystal2;
-//    else if ( crystal2 >= scanner_sptr->get_num_detectors_per_ring())
-//        det2 = crystal2 - scanner_sptr->get_num_detectors_per_ring();
-//    else
-//        det2 = crystal2;
+    CartesianCoordinate3D<float> pink_coord(_pink->location.z_position,
+                                             _pink->location.y_position,
+                                             _pink->location.x_position);
 
-    // STIR assumes that 0 is on y whill GATE on the x axis
-    det1 = crystal1 + quarter_of_detectors;
-    det2 = crystal2 + quarter_of_detectors;
 
-    if  (det1 < 0 )
-        det1 = scanner_sptr->get_num_detectors_per_ring() + det1;
-    else if ( det1 >= scanner_sptr->get_num_detectors_per_ring())
-        det1 = det1 - scanner_sptr->get_num_detectors_per_ring();
+    this->get_uncompressed_proj_data_info_sptr()->
+            find_scanner_coordinates_given_cartesian_coordinates(det2, det1,
+                                                                 ring2, ring1,
+                                                                 blue_coord,
+                                                                 pink_coord);
 
-    if  (det2 < 0 )
-        det2 = scanner_sptr->get_num_detectors_per_ring() + det2;
-    else if ( det2 >= scanner_sptr->get_num_detectors_per_ring())
-        det2 = det2 - scanner_sptr->get_num_detectors_per_ring();
-
-    if (det1 > det2)
-    {
-        int tmp = det1;
-        det1 = det2;
-        det2 = tmp;
-
-        ring1 = _ring2;
-        ring2 = _ring1;
-        swapped = true;
-    }
-    else
-    {
-        ring1 = _ring1;
-        ring2 = _ring2;
-        swapped = false;
-    }
 }
 
 END_NAMESPACE_STIR

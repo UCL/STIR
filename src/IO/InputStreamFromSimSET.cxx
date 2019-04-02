@@ -20,10 +20,10 @@
 #include "stir/error.h"
 
 extern "C" {
+//#include <LbFile.h>
+//#include <PhgHdr.h>
+//#include <PhoHFile.h>
 #include <print.header.h>
-#include <LbFile.h>
-#include <PhgHdr.h>
-#include <PhoHFile.h>
 }
 
 
@@ -47,8 +47,8 @@ InputStreamFromSimSET::
     // -Keep in mind that this is not were the actual reading will
     // take place, but in the InputStreamFromSimSET.
     // Here we just need the header.
-    if (historyFile != 0)
-        fclose(historyFile);
+//    if (historyFile != 0)
+//        fclose(historyFile);
 }
 
 std::string
@@ -64,14 +64,34 @@ void
 InputStreamFromSimSET::set_defaults()
 {
     startFileIndex = 0;
+    curFileIndex = 0;
+    numPhotonsProcessed = 0;
+    numDecaysProcessed = 0;
+    numPhotons = 0;
 }
 
 Succeeded
 InputStreamFromSimSET::
-set_up(const std::string & _history_params_filename)
+set_up(const std::string historyFileName,
+       PHG_BinParamsTy * _binParams)
 {
+    strcpy(phgrdhstHistName, historyFileName.c_str());
+    binParams = _binParams;
 
-    history_filename = _history_params_filename;
+    /* the maximum scatter range is ignored when
+    scatterRandomParam == 3,5,8 or 10 */
+    ignoreMaxScatters = ( (binParams->scatterRandomParam == 3) ||
+                (binParams->scatterRandomParam == 5) ||
+                (binParams->scatterRandomParam == 8) ||
+                (binParams->scatterRandomParam == 10) );
+
+    /* for scatter-random parameters 4,5,9,10 the
+    range min is for the sum of blue and pink scatters,
+    and thus cannot be applied to individual photons */
+    ignoreMinScatters = ( (binParams->scatterRandomParam == 4) ||
+                (binParams->scatterRandomParam == 5) ||
+                (binParams->scatterRandomParam == 9) ||
+                (binParams->scatterRandomParam == 10) );
 
     if (set_up_standard_hist_file() == Succeeded::no)
     {
@@ -92,21 +112,15 @@ InputStreamFromSimSET::set_up_standard_hist_file()
     Boolean	isColList; /* this is collimator history file */
     Boolean	isDetList; /* this is detector history file */
 
-
-    char *history_cstr = new char[history_filename.length() + 1];
-    strcpy(history_cstr, history_filename.c_str());
-
     /* Open history file file */
-    if ((historyFile = LbFlFileOpen(history_cstr, "rb")) == nullptr)
+    if ((historyFile = LbFlFileOpen(phgrdhstHistName, "rb")) == nullptr)
     {
-        delete [] history_cstr;
         return Succeeded::no;
     }
 
     /* Read in the header and verify it is the right type of file */
-    if (PhgHdrGtParams(historyFile, phgrdhstHdrParams.get(), headerHk.get()) == false)
+    if (PhgHdrGtParams(historyFile, &phgrdhstHdrParams, &headerHk) == false)
     {
-        delete [] history_cstr;
         return Succeeded::no;
     }
 
@@ -114,11 +128,10 @@ InputStreamFromSimSET::set_up_standard_hist_file()
      photons had insufficient information for further processing--no detector angle was saved - NE: skipped */
 
     /* Set flags for type of list mode file being processed */
-    if ( 	(phgrdhstHdrParams->H.HdrKind == PhoHFileEn_PHG) ||
-            (phgrdhstHdrParams->H.HdrKind == PhoHFileEn_PHG2625) ||
-            (phgrdhstHdrParams->H.HdrKind == PhoHFileEn_PHGOLD) )
+    if ( 	(phgrdhstHdrParams.H.HdrKind == PhoHFileEn_PHG) ||
+            (phgrdhstHdrParams.H.HdrKind == PhoHFileEn_PHG2625) ||
+            (phgrdhstHdrParams.H.HdrKind == PhoHFileEn_PHGOLD) )
     {
-
         isPHGList = true;
         isColList = false;
         isDetList = false;
@@ -150,12 +163,15 @@ InputStreamFromSimSET::set_up_standard_hist_file()
             break;
     }
 
+    numDecaysProcessed++;
+
     if (locEventType != Decay)
     {
         error("InputStreamFromSimSET: Expected first event to be decay, and it wasn't.");
     }
 
-    delete [] history_cstr;
+    display(&phgrdhstHdrParams);
+
     return Succeeded::yes;
 }
 
@@ -163,36 +179,74 @@ Succeeded
 InputStreamFromSimSET::set_up_custom_hist_file()
 {
 
-    return Succeeded::yes;
+//    Boolean	isPHGList; /* this is PHG history file */
+//    Boolean	isColList; /* this is collimator history file */
+//    Boolean	isDetList; /* this is detector history file */
+
+//    /* Open history file file */
+//    if ((historyFile = LbFlFileOpen(phgrdhstHistName, "rb")) == nullptr)
+//    {
+//        return Succeeded::no;
+//    }
+
+//    /* Read in the header and verify it is the right type of file */
+//    if (PhgHdrGtParams(historyFile, &phgrdhstHdrParams, &headerHk) == false)
+//    {
+//        return Succeeded::no;
+//    }
+
+//    /* Set flags for type of list mode file being processed */
+//    if ( 	(phgrdhstHdrParams.H.HdrKind == PhoHFileEn_PHG) ||
+//        (phgrdhstHdrParams.H.HdrKind == PhoHFileEn_PHG2625) ||
+//        (phgrdhstHdrParams.H.HdrKind == PhoHFileEn_PHGOLD) )
+//    {
+//        isPHGList = true;
+//        isColList = false;
+//        isDetList = false;
+//    }
+//    else
+//    {
+//        error("InputStreamFromSimSET: File specified as PHG history file is not valid.");
+//    }
+
+//    /* Verify that requested file is of the right type */
+//    {
+//        if ( PHGRDHST_IsUsePHGHistory() && (!isPHGList) )
+//        {
+//            error("InputStreamFromSimSET: File specified as PHG history file is not valid.");
+//        }
+
+//        if ( PHGRDHST_IsUseColHistory() && (!isColList) )
+//        {
+//            error("InputStreamFromSimSET: File specified as Collimator history file is not valid.");
+//        }
+
+//        if ( PHGRDHST_IsUseDetHistory() && (!isDetList) )
+//        {
+//            error("InputStreamFromSimSET: File specified as Detector history file is not valid.");
+//        }
+//    }
+
+//    /* Setup header hook */
+//    {
+//        histHk.doCustom = true;
+
+//        /* Do custom parameter initialization  */
+//        if (PhoHFileGetRunTimeParams(phgrdhstHistParamsName, &(histHk.customParams)) == false)
+//        {
+//            error("InputStreamFromSimSET: Unable to get custom parameters for history file.");
+//        }
+
+//        strcpy(histHk.customParamsName, phgrdhstHistParamsName);
+
+//        histHk.bluesReceived = 0;
+//        histHk.bluesAccepted = 0;
+//        histHk.pinksReceived = 0;
+//        histHk.pinksAccepted = 0;
+//        histHk.histFile = historyFile;
+//    }
+
+    return Succeeded::no;
 }
 
 END_NAMESPACE_STIR
-
-
-//phgrdhstHdrParams.reset(new PhoHFileHdrTy);
-//headerHk.reset(new LbHdrHkTy);
-
-//// Let's read the header in the proper structure.
-//char *history_cstr = new char[history_filename.length() + 1];
-//strcpy(history_cstr, history_filename.c_str());
-
-///* Open data file file */
-//if ((historyFile = LbFlFileOpen(history_cstr, "rb")) == nullptr)
-//{
-//    warning("CListModeDataSimSET: Unable to open history file.");
-//    return Succeeded::no;
-//}
-
-///* Read in the header and verify it is the right type of file */
-//if (PhgHdrGtParams(historyFile, phgrdhstHdrParams.get(), headerHk.get()) == false)
-//{
-//    warning("CListModeDataSimSET: Unable to read the header. Wrong type or version?.");
-//    return Succeeded::no;
-//}
-
-///* Display the header */
-//info("History file Header: ");
-//display(phgrdhstHdrParams.get());
-
-
-//delete [] history_cstr;

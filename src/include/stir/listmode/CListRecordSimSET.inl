@@ -1,6 +1,5 @@
 /*
- *  Copyright (C) 2015, 2016 University of Leeds
-    Copyright (C) 2016, UCL
+ *  Copyright (C) 2019 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -17,8 +16,8 @@
 */
 /*!
   \file
-  \ingroup IO
-  \brief Implementation of class stir::InputStreamFromROOTFile
+  \ingroup listmode SimSET
+  \brief Implementation of class stir::InputStreamFromSimSET
 
   \author Nikos Efthimiou
 */
