@@ -1668,3 +1668,7 @@ namespace stir {
   stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
      stir::BackProjectorByBin>;
 %include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
+
+%include "stir/recon_buildblock/QuadraticPrior.h"
+#define elemT float
+%template (QuadraticPrior3DFloat) stir::QuadraticPrior<elemT >;
