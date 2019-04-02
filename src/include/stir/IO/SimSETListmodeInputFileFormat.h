@@ -43,6 +43,8 @@ START_NAMESPACE_STIR
 //! \details Class to check the file signature of SiSET history files.
 //! These are listmode files.
 //!
+//! \ingroup SimSET
+//!
 //! The phg parameter file should be used here.
 //! However, STIR passes only 1024 bytes. The solution is that the
 //! first line of your phg file should always be the fileName of that

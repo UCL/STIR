@@ -16,7 +16,7 @@
 */
 /*!
   \file
-  \ingroup listmode
+  \ingroup listmode SimSET
   \brief Declaration of class stir::CListModeDataSimSET
 
   \details This class tries to read the PhGPhoton params files, which are the
@@ -43,39 +43,6 @@
 #include "stir/listmode/CListRecordSimSET.h"
 #include "stir/IO/InputStreamFromSimSET.h"
 #include "stir/KeyParser.h"
-
-extern "C" {
-//#include "SystemDependent.h"
-
-//#include "LbTypes.h"
-//#include "LbError.h"
-//#include "LbDebug.h"
-//#include "LbEnvironment.h"
-//#include "LbFile.h"
-//#include "LbMemory.h"
-//#include "LbParamFile.h"
-//#include "LbInterface.h"
-//#include "LbHeader.h"
-
-//#include "Photon.h"
-//#include "PhgParams.h"
-//#include "ColTypes.h"
-//#include "ColParams.h"
-//#include "DetTypes.h"
-//#include "DetParams.h"
-//#include "CylPos.h"
-//#include "PhgMath.h"
-//#include "PhoHFile.h"
-//#include "PhgHdr.h"
-//#include "ProdTbl.h"
-//#include "PhoTrk.h"
-//#include "SubObj.h"
-//#include "EmisList.h"
-//#include "Collimator.h"
-//#include "Detector.h"
-//#include "phg.h"
-//#include "PhgBin.h"
-}
 
 START_NAMESPACE_STIR
 
@@ -136,14 +103,6 @@ private:
     shared_ptr<InputStreamFromSimSET > history_file_sptr;
     //! Name of the PHG file.
     const std::string phg_filename;
-    //! Name of history file as string.
-    std::string phgrdhstHistName_str;
-    //! Name of history file as char.
-    char *phgrdhstHistName;
-    //! Name of history parameters file as string.
-    std::string phgrdhstHistParamsName_str;
-    //! Name of history parameters file.
-    char *phgrdhstHistParamsName;
     //! The name of the originating scanner
     std::string originating_system;
 

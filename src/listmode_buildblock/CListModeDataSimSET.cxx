@@ -16,7 +16,7 @@
 */
 /*!
   \file
-  \ingroup listmode
+  \ingroup listmode SimSET
   \brief Implementation of class stir::CListModeDataSimSET
 
   \author Nikos Efthimiou
@@ -34,15 +34,14 @@
 #include <boost/algorithm/string.hpp>
 
 extern "C" {
-#include <LbEnvironment.h>
-#include <LbInterface.h>
+#include <PhgBin.h>
 }
 
-#define	PHGRDHST_NumFlags	3
+//#define	PHGRDHST_NumFlags	3
 /* LOCAL CONSTANTS */
-#define PHGRDHST_IsUsePHGHistory()		LbFgIsSet(PhgOptions, LBFlag0)		/* Will we use the PHG history file */
-#define PHGRDHST_IsUseColHistory()		LbFgIsSet(PhgOptions, LBFlag1)		/* Will we use the Collimator history file */
-#define PHGRDHST_IsUseDetHistory()		LbFgIsSet(PhgOptions, LBFlag2)		/* Will we use the Detector history file */
+//#define PHGRDHST_IsUsePHGHistory() LbFgIsSet(PhgOptions, LBFlag0)		/* Will we use the PHG history file */
+//#define PHGRDHST_IsUseColHistory() LbFgIsSet(PhgOptions, LBFlag1)		/* Will we use the Collimator history file */
+//#define PHGRDHST_IsUseDetHistory() LbFgIsSet(PhgOptions, LBFlag2)		/* Will we use the Detector history file */
 
 START_NAMESPACE_STIR
 
@@ -116,14 +115,22 @@ CListModeDataSimSET(const std::string& _phg_filename)
     if (!PhgGetRunTimeParams())
         error("CListModeDataSimSET: Error geting our run-time parameters.");
 
+    /* If user requested to bin PHG history file, use the one specified in
+     the param file.
+     */
+    if (PHGRDHST_IsUsePHGHistory() &&
+            (strlen(PhgRunTimeParams.PhgPhoHFileHistoryFilePath) == 0))
+    {
+
+        error("CListModeDataSimSET: No history file supplied in run time parameters.");
+    }
+    else {
+        strcpy(phgrdhstHistName, PhgRunTimeParams.PhgPhoHFileHistoryFilePath);
+        strcpy(phgrdhstHistParamsName, PhgRunTimeParams.PhgPhoHParamsFilePath);
+    }
+
     if (PhgRunTimeParams.PhgIsPET != 1)
         error("CListModeDataSimSET: Currently we are able to process only PET files.");
-
-    strcpy(phgrdhstHistName, PhgRunTimeParams.PhgPhoHFileHistoryFilePath);
-    strcpy(phgrdhstHistParamsName, PhgRunTimeParams.PhgPhoHParamsFilePath);
-
-    phgrdhstHistName_str.push_back(*phgrdhstHistName);
-    phgrdhstHistParamsName_str.push_back(*phgrdhstHistParamsName);
 
     /* Initialize the math library - NE: skipped*/
     /* Initialize the emission list manager - NE: skipped*/
@@ -210,10 +217,12 @@ CListModeDataSimSET(const std::string& _phg_filename)
                                       PhgBinParams->numZBins,
                                       tmpl_scanner) == Succeeded::yes)
     {
-        std::string msg("CListModeDataSimSET: Based on the information harvested by the PHG"
+        std::string msg("\n**************************************************************\n"
+                        "CListModeDataSimSET: Based on the information harvested by the PHG"
                         "params file and the Bining file we believe that the best matching"
                         "scanner is: ");
         msg.append(tmpl_scanner->get_name());
+        msg.append("!\n**************************************************************\n");
         info(msg);
     }
     else
@@ -229,7 +238,7 @@ CListModeDataSimSET(const std::string& _phg_filename)
     this->exam_info_sptr->imaging_modality = ImagingModality::PT;
     this->exam_info_sptr->originating_system = this->originating_system;
     this->exam_info_sptr->set_low_energy_thres(static_cast<float>(PhgBinParams->minE));
-    this->exam_info_sptr->set_low_energy_thres(static_cast<float>(PhgBinParams->maxE));
+    this->exam_info_sptr->set_high_energy_thres(static_cast<float>(PhgBinParams->maxE));
 
 
     // initialise ProjData.
@@ -241,10 +250,16 @@ CListModeDataSimSET(const std::string& _phg_filename)
                                                                          /* arc_correction*/false));
     this->set_proj_data_info_sptr(tmp);
 
+//    if (this->open_lm_file() == Succeeded::no)
+//        error("CListModeDataSimSET: error opening ROOT file for filename '%s'",
+//              hroot_filename.c_str());
+
     // if the ProjData have been initialised properly create a
     // Input Stream from SimSET.
     history_file_sptr.reset(new InputStreamFromSimSET());
-    history_file_sptr->set_up(phgrdhstHistParamsName_str);
+    std::string tmpString(phgrdhstHistName);
+    history_file_sptr->set_up(tmpString,
+                              &PhgBinParams[0]);
 
     // Clean up.
     delete [] argv;
@@ -263,8 +278,6 @@ get_name() const
 
 CListModeDataSimSET::~CListModeDataSimSET()
 {
-    delete [] phgrdhstHistName;
-    delete [] phgrdhstHistParamsName;
 }
 
 shared_ptr <CListRecord>
@@ -279,8 +292,8 @@ Succeeded
 CListModeDataSimSET::
 open_lm_file()
 {
-    //    info(boost::format("CListModeDataSimSET: used ROOT file %s") %
-    //         this->root_file_sptr->get_SimSET_filename());
+//    info(boost::format("CListModeDataSimSET: used History file %s") %
+//         this->history_file_sptr->get_total_number_of_events());
     return Succeeded::yes;
 }
 
@@ -290,8 +303,8 @@ Succeeded
 CListModeDataSimSET::
 get_next_record(CListRecord& record_of_general_type) const
 {
-    //    CListModeDataSimSET& record = dynamic_cast<CListModeDataSimSET&>(record_of_general_type);
-    //    return root_file_sptr->get_next_record(record);
+    CListRecordSimSET& record = dynamic_cast<CListRecordSimSET&>(record_of_general_type);
+    return history_file_sptr->get_next_record(record);
 }
 
 Succeeded
@@ -303,7 +316,7 @@ reset()
 
 unsigned long CListModeDataSimSET::get_total_number_of_events() const
 {
-    //    return root_file_sptr->get_total_number_of_events();
+        return history_file_sptr->get_total_number_of_events();
 }
 
 CListModeData::SavedPosition
@@ -324,13 +337,6 @@ void
 CListModeDataSimSET::
 set_defaults()
 {
-    phgrdhstHistParamsName = new char[1024];
-    phgrdhstHistName = new char[1024];
-
-    /* Clear the file name parameters */
-    phgrdhstHistParamsName[0] = '\0';
-    phgrdhstHistName[0] = '\0';
-
     PhgBinFields[0].NumCoincidences = 0;
     PhgBinFields[0].NumAcceptedCoincidences = 0;
     PhgBinFields[0].TotBluePhotons = 0;
@@ -351,6 +357,10 @@ set_defaults()
     LbHdrStNull(&PhgBinFields[0].WeightImgHdrHk);
     PhgBinFields[0].WeightFile = nullptr;
     PhgBinData[0].weightImage = nullptr;
+
+    /* Clear the file name parameters */
+    phgrdhstHistParamsName[0] = '\0';
+    phgrdhstHistName[0] = '\0';
 }
 
 Succeeded
@@ -377,10 +387,10 @@ check_scanner_match_geometry(const double _radius,
         Scanner::Type cur_scanner = static_cast<Scanner::Type>(scanInt);
         scanner_sptr.reset(new Scanner(cur_scanner));
 
-        if (scanner_sptr->get_inner_ring_radius() == static_cast<float>(_radius) &&
+        if (scanner_sptr->get_inner_ring_radius() == static_cast<float>(_radius*10) &&
                 scanner_sptr->get_num_detector_layers() == static_cast<int>(_numLayers) &&
                 scanner_sptr->get_num_rings() == static_cast<int>(_numZbins) &&
-                (scanner_sptr->get_energy_resolution() > 0.0f ?
+                (scanner_sptr->get_energy_resolution() > -1.f ?
                 scanner_sptr->get_energy_resolution() == static_cast<float>(_enResolution) : 1) &&
                 scanner_sptr->get_num_detectors_per_ring() == 2*static_cast<int>(_numTDBins) &&
                 scanner_sptr->get_max_num_non_arccorrected_bins() == static_cast<int>(_numTDBins))
