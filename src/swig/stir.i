@@ -1672,3 +1672,7 @@ namespace stir {
 %include "stir/recon_buildblock/QuadraticPrior.h"
 #define elemT float
 %template (QuadraticPrior3DFloat) stir::QuadraticPrior<elemT >;
+
+%include "stir/recon_buildblock/PLSPrior.h"
+#define elemT float
+%template (PLSPrior3DFloat) stir::PLSPrior<elemT >;
