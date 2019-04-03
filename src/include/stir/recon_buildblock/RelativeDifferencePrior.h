@@ -105,7 +105,7 @@ class RelativeDifferencePrior:  public
   RelativeDifferencePrior();
 
   //! Constructs it explicitly
-  RelativeDifferencePrior(const bool only_2D, float penalization_factor);
+  RelativeDifferencePrior(const bool only_2D, float penalization_factor, float gamma);
   
   virtual bool
     parabolic_surrogate_curvature_depends_on_argument() const

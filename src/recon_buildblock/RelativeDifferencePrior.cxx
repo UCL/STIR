@@ -165,10 +165,11 @@ set_gamma(float g)
 
 
 template <typename elemT>
-RelativeDifferencePrior<elemT>::RelativeDifferencePrior(const bool only_2D_v, float penalisation_factor_v)
+RelativeDifferencePrior<elemT>::RelativeDifferencePrior(const bool only_2D_v, float penalisation_factor_v, float gamma_v)
   :  only_2D(only_2D_v)
 {
   this->penalisation_factor = penalisation_factor_v;
+  this->gamma = gamma_v;
 }
 
 
@@ -310,9 +311,9 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
                         else
                         {
                           current = weights[dz][dy][dx] *
-                          (square(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]))/
-                          ((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
-                           (this->gamma *abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])));
+                                  (pow(current_image_estimate[z][y][x]-current_image_estimate[z+dz][y+dy][x+dx],2)/
+                                  (current_image_estimate[z][y][x]+current_image_estimate[z+dz][y+dy][x+dx]
+                                  +this->gamma*abs(current_image_estimate[z][y][x]-current_image_estimate[z+dz][y+dy][x+dx])));
                         }
 
                         if (do_kappa)
@@ -409,9 +410,9 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                         {
                             current = weights[dz][dy][dx] *
                                     (((current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) *
-                                     (this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])) +
-                                     (current_image_estimate[z][y][x] + 3 * current_image_estimate[z+dz][y+dy][x+dx]))/
-                                    square((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
+                                      (this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) +
+                                       current_image_estimate[z][y][x] + 3 * current_image_estimate[z+dz][y+dy][x+dx]))/
+                                     square((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
                                       this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])));
                         }
                         if (do_kappa)
