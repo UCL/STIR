@@ -265,6 +265,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
     error("RelativeDifferencePrior: kappa image has not the same index range as the reconstructed image\n");
 
 
+  double small = 0.000000001;
   double result = 0.;
   const int min_z = current_image_estimate.get_min_index(); 
   const int max_z = current_image_estimate.get_max_index(); 
@@ -304,18 +305,10 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
                     for (int dx=min_dx;dx<=max_dx;++dx)
                       {
                         elemT current;
-
-                        // Check for divide by zero - if both voxels == 0, current = 0
-                        if (current_image_estimate[z][y][x] == 0 && current_image_estimate[z+dz][y+dy][x+dx] == 0)
-                        { current = 0; }
-                        else
-                        {
                           current = weights[dz][dy][dx] *
                                   (pow(current_image_estimate[z][y][x]-current_image_estimate[z+dz][y+dy][x+dx],2)/
                                   (current_image_estimate[z][y][x]+current_image_estimate[z+dz][y+dy][x+dx]
-                                  +this->gamma*abs(current_image_estimate[z][y][x]-current_image_estimate[z+dz][y+dy][x+dx])));
-                        }
-
+                                  +this->gamma*abs(current_image_estimate[z][y][x]-current_image_estimate[z+dz][y+dy][x+dx]) + small ));
                         if (do_kappa)
                           current *= 
                             (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
@@ -353,7 +346,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
   }
  
  
-  
+  double small = 0.000000001;
   const bool do_kappa = !is_null_ptr(kappa_ptr);
   if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
     error("RelativeDifferencePrior: kappa image has not the same index range as the reconstructed image\n");
@@ -403,18 +396,12 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                       {
 
                         elemT current;
-                        // Check for divide by zero - if both voxels == 0, current = 0
-                        if (current_image_estimate[z][y][x] == 0 && current_image_estimate[z+dz][y+dy][x+dx] == 0)
-                        { current = 0; }
-                        else
-                        {
                             current = weights[dz][dy][dx] *
                                     (((current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) *
                                       (this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) +
                                        current_image_estimate[z][y][x] + 3 * current_image_estimate[z+dz][y+dy][x+dx]))/
-                                     square((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
-                                      this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])));
-                        }
+                                     (square((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
+                                      this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])) +small));
                         if (do_kappa)
                           current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
 
