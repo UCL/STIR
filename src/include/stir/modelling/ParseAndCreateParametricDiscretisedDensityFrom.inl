@@ -41,15 +41,13 @@ create(const ExamDataT& exam_data) const
       (VoxelsOnCartesianGrid<elemT>
        (exam_data.get_exam_info_sptr(),
         *exam_data.get_proj_data_info_ptr(),
-        CartesianCoordinate3D<float>(static_cast<float>(this->Zzoom),
-                                     static_cast<float>(this->zoom),
-                                     static_cast<float>(this->zoom)),
-        CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset),
-                                     static_cast<float>(this->Yoffset),
-                                     static_cast<float>(this->Xoffset)),
-        CartesianCoordinate3D<int>(this->output_image_size_z,
-                                   this->output_image_size_xy,
-                                   this->output_image_size_xy)
+        CartesianCoordinate3D<float>(this->get_zoom_z(),
+                                     this->get_zoom_xy(),
+                                     this->get_zoom_xy()),
+        this->get_offset(),
+        CartesianCoordinate3D<int>(this->get_output_image_size_z(),
+                                   this->get_output_image_size_xy(),
+                                   this->get_output_image_size_xy())
         )
        );
 }

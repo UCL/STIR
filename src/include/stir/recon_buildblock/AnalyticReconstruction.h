@@ -95,7 +95,20 @@ public:
 
   virtual void set_input_data(const shared_ptr<ExamData>&);
   virtual const ProjData& get_input_data() const;
-  // parameters
+  //! @name forwarding functions for ParseDiscretisedDensityParameters
+  //@{
+  int get_output_image_size_xy() const;
+  void set_output_image_size_xy(int);
+  int get_output_image_size_z() const;
+  void set_output_image_size_z(int);
+  float get_zoom_xy() const;
+  void set_zoom_xy(float);
+  float get_zoom_z() const;
+  void set_zoom_z(float);
+  const CartesianCoordinate3D<float>& get_offset() const;
+  void set_offset(const CartesianCoordinate3D<float>&);
+  //@}
+
  protected:
 
   //! the input projection data file name

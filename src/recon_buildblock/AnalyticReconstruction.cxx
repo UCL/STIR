@@ -189,6 +189,57 @@ get_input_data() const
 {
   return *this->proj_data_ptr;
 }
- 
+
+// forwarding functions for ParseDiscretisedDensityParameters
+int
+AnalyticReconstruction::
+get_output_image_size_xy() const
+{ return target_parameter_parser.get_output_image_size_xy(); }
+
+void
+AnalyticReconstruction::
+set_output_image_size_xy(int v)
+{ target_parameter_parser.set_output_image_size_xy(v); }
+
+int
+AnalyticReconstruction::
+get_output_image_size_z() const
+{ return target_parameter_parser.get_output_image_size_z(); }
+
+void
+AnalyticReconstruction::
+set_output_image_size_z(int v)
+{ target_parameter_parser.set_output_image_size_z(v); }
+
+float
+AnalyticReconstruction::
+get_zoom_xy() const
+{ return target_parameter_parser.get_zoom_xy(); }
+
+void
+AnalyticReconstruction::
+set_zoom_xy(float v)
+{ target_parameter_parser.set_zoom_xy(v); }
+
+float
+AnalyticReconstruction::
+get_zoom_z() const
+{ return target_parameter_parser.get_zoom_z(); }
+
+void
+AnalyticReconstruction::
+set_zoom_z(float v)
+{ target_parameter_parser.set_zoom_z(v); }
+
+const CartesianCoordinate3D<float>&
+AnalyticReconstruction::
+get_offset() const
+{ return target_parameter_parser.get_offset(); }
+
+void
+AnalyticReconstruction::
+set_offset(const CartesianCoordinate3D<float>& v)
+{ target_parameter_parser.set_offset(v); }
+
 END_NAMESPACE_STIR
 
