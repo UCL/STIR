@@ -305,7 +305,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
                     for (int dx=min_dx;dx<=max_dx;++dx)
                       {
                         elemT current;
-                          current = weights[dz][dy][dx] *
+                          current = weights[dz][dy][dx] * 0.5 *
                                   (pow(current_image_estimate[z][y][x]-current_image_estimate[z+dz][y+dy][x+dx],2)/
                                   (current_image_estimate[z][y][x]+current_image_estimate[z+dz][y+dy][x+dx]
                                   +this->gamma*abs(current_image_estimate[z][y][x]-current_image_estimate[z+dz][y+dy][x+dx]) + small ));
