@@ -69,7 +69,7 @@ MinimalInterfileHeader::MinimalInterfileHeader()
 {
   exam_info_sptr.reset(new ExamInfo);
   // need to default to PET for backwards compatibility
-  this->exam_info_sptr->imaging_modality = ImagingModality::PT;
+  //this->exam_info_sptr->imaging_modality = ImagingModality::PT;
 
   add_start_key("INTERFILE");
   add_key("imaging modality",
