@@ -425,7 +425,7 @@ forward_project_all_symmetries(
   const int nviews = pos_view.get_proj_data_info_ptr()->get_num_views(); 
   
   const int segment_num = pos_view.get_segment_num();
-  const int timing_pos_num = pos_view.get_timing_pos_num();
+  //const int timing_pos_num = pos_view.get_timing_pos_num();
   const float delta = proj_data_info_ptr->get_average_ring_difference(segment_num);  
   const int view = pos_view.get_view_num();
 
