@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2005- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -21,12 +22,17 @@
   \ingroup data_buildblock
   \brief Implementation of class stir::MultipleProjData
   \author Kris Thielemans
+  \author Richard Brown
   
 */
 
 #include "stir/MultipleProjData.h"
 #include "stir/is_null_ptr.h"
+#include "stir/KeyParser.h"
+#include "stir/MultipleDataSetHeader.h"
 #include <fstream>
+#include <boost/format.hpp>
+#include "stir/info.h"
 
 START_NAMESPACE_STIR
 
@@ -54,6 +60,40 @@ MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
     ExamData(exam_info_sptr)
 {
     this->_proj_datas.resize(num_gates);
+}
+
+unique_ptr<MultipleProjData>
+MultipleProjData::
+read_from_file(const std::string &parameter_file)
+{
+   MultipleDataSetHeader header;
+
+    if (header.parse(parameter_file.c_str()) == false)
+        error(boost::format("MultipleProjData::read_from_file: Error parsing %1%") % parameter_file);
+
+    int num_data_sets = header.get_num_data_sets();
+
+    // Create the multiple proj data
+    unique_ptr<MultipleProjData> multiple_proj_data( new MultipleProjData );
+
+    // Read the projdata
+    for (int i=0; i<num_data_sets; ++i) {
+        info(boost::format("MultipleProjData::read_from_file: Reading %1%") % header.get_filename(i));
+        // Create each of the individual proj datas
+        multiple_proj_data->_proj_datas.push_back(ProjData::read_from_file(header.get_filename(i)));
+    }
+
+    // Get the exam info (from the first ProjData)
+    multiple_proj_data->set_exam_info(multiple_proj_data->_proj_datas[0]->get_exam_info());
+
+    // Update the time definitions based on each individual frame
+    multiple_proj_data->get_exam_info_sptr()->time_frame_definitions.set_num_time_frames(num_data_sets);
+    for (int i=0; i<num_data_sets; ++i) {
+        const TimeFrameDefinitions &tdef = multiple_proj_data->_proj_datas[i]->get_exam_info_ptr()->time_frame_definitions;
+        multiple_proj_data->get_exam_info_sptr()->time_frame_definitions.set_time_frame(i+1, tdef.get_start_time(1), tdef.get_end_time(1));
+    }
+
+    return multiple_proj_data;
 }
 
 #if 0

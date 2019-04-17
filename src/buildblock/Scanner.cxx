@@ -325,6 +325,31 @@ Scanner::Scanner(Type scanner_type)
 	       2,
 	       6, 8, 1, 1, 1);
     break;
+
+  case Discovery690:
+    // same as 710
+    set_params(Discovery690, string_list("GE Discovery 690", "Discovery 690",
+                                         "GE Discovery 710", "Discovery 710"),
+               24,
+               381,
+               331, // TODO
+               2 * 288,
+               405.1F,
+               9.4F,
+               6.54F,
+               2.1306F,
+               static_cast<float>(-5.021*_PI/180),//sign? TODO value
+               4,
+               2,
+               6, 9, 1, 1, 1
+#ifdef STIR_TOF
+               ,
+			   (short int)(55),
+			   (float)(89.0F),
+			   (float)(550.0F)
+#endif
+);
+    break;
   
   case HZLR:
 
@@ -917,7 +942,7 @@ Scanner* Scanner::ask_parameters()
       Type type = User_defined_scanner;
   
       if (EnergyResolution > -1 && ReferenceEnergy > -1)
-        Scanner* scanner_ptr =
+        scanner_ptr =
             new Scanner(type, string_list(name),
                         num_detectors_per_ring,  NoRings,
                         NoBins, NoBins,
@@ -930,7 +955,7 @@ Scanner* Scanner::ask_parameters()
                         EnergyResolution,
                         ReferenceEnergy );
       else
-        Scanner* scanner_ptr =
+       scanner_ptr =
             new Scanner(type, string_list(name),
                         num_detectors_per_ring,  NoRings,
                         NoBins, NoBins,

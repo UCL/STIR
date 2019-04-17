@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -127,15 +128,7 @@ set_defaults()
   vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
   this->frame_defs = TimeFrameDefinitions(frame_times);
 
-
-  // image stuff
-  this->output_image_size_xy=-1;
-  this->output_image_size_z=-1;
-  this->zoom=1.F;
-  this->Xoffset=0.F;
-  this->Yoffset=0.F;
-  // KT 20/06/2001 new
-  this->Zoffset=0.F;
+  this->target_parameter_parser.set_defaults();
   
 #ifdef STIR_MPI
   //distributed stuff
@@ -162,15 +155,7 @@ initialise_keymap()
   this->parser.add_key("maximum absolute segment number to process", &this->max_segment_num_to_process);
   this->parser.add_key("zero end planes of segment 0", &this->zero_seg0_end_planes);
 
-  // image stuff
-
-  this->parser.add_key("zoom", &this->zoom);
-  this->parser.add_key("XY output image size (in pixels)",&this->output_image_size_xy);
-  this->parser.add_key("Z output image size (in pixels)",&this->output_image_size_z);
-  //parser.add_key("X offset (in mm)", &this->Xoffset); // KT 10122001 added spaces
-  //parser.add_key("Y offset (in mm)", &this->Yoffset);
-  
-  this->parser.add_key("Z offset (in mm)", &this->Zoffset);
+  this->target_parameter_parser.add_to_keymap(this->parser);
 
   this->parser.add_parsing_key("Projector pair type", &this->projector_pair_ptr);
   this->parser.add_key("additive sinogram",&this->additive_projection_data_filename);
@@ -214,15 +199,7 @@ post_processing()
         }
   }
 
- // image stuff
-  if (this->zoom <= 0)
-  { error("zoom should be positive"); return true; }
-  
-  if (this->output_image_size_xy!=-1 && this->output_image_size_xy<1) // KT 10122001 appended_xy
-  { error("output image size xy must be positive (or -1 as default)"); return true; }
-  if (this->output_image_size_z!=-1 && this->output_image_size_z<1) // KT 10122001 new
-  { error("output image size z must be positive (or -1 as default)"); return true; }
-
+  target_parameter_parser.check_values();
 
   if (this->additive_projection_data_filename != "0")
   {
@@ -318,15 +295,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
 construct_target_ptr() const
 {
   return
-      new VoxelsOnCartesianGrid<float> (*this->proj_data_sptr->get_proj_data_info_ptr(),
-                                        static_cast<float>(this->zoom),
-                                        CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset),
-                                                                     static_cast<float>(this->Yoffset),
-                                                                     static_cast<float>(this->Xoffset)),
-                                        CartesianCoordinate3D<int>(this->output_image_size_z,
-                                                                   this->output_image_size_xy,
-                                                                   this->output_image_size_xy)
-                                       );
+    target_parameter_parser.create(this->get_input_data());
 }
 
 /***************************************************************
@@ -491,6 +460,15 @@ set_input_data(const shared_ptr<ExamData> & arg)
 {
     this->proj_data_sptr = dynamic_pointer_cast<ProjData>(arg);
 }
+
+template<typename TargetT>
+const ProjData&
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
+get_input_data() const
+{
+  return *this->proj_data_sptr;
+}
+
 
 /***************************************************************
   subset balancing

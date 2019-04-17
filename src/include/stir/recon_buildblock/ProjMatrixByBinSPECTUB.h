@@ -107,6 +107,54 @@ class ProjMatrixByBinSPECTUB :
                       const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
                       );
 
+  bool get_keep_all_views_in_cache() const;
+  //! Enable keeping the matrix in memory
+  /*!
+    This speeds-up the calculations, but can use a lot of memory.
+
+    You have to call set_up() after this (unless the value didn't change).
+  */
+  void set_keep_all_views_in_cache(bool value = true);
+  std::string get_attenuation_type() const;
+  //! Set type of attenuation modelling
+  /* Has to be "no", "simple" or "full"
+
+    You have to call set_up() after this (unless the value didn't change).
+  */
+  void set_attenuation_type(const std::string& value);
+  shared_ptr<const DiscretisedDensity<3,float> >
+    get_attenuation_image_sptr() const;
+  //! Sets attenuation image
+  /*!
+    The image has to have same characteristics as the emission image currently.
+
+    Will call set_attenuation_type() to set to "simple" if it was set to "no".
+
+    You have to call set_up() after this.
+  */
+  void
+    set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > value);
+  void
+    set_attenuation_image_sptr(const std::string& value);
+  //! Set the parameters for the depth-dependent resolution model
+  /*!
+    The detector and collimator blurring is modelled as a Gaussian with sigma dependent on the
+    distance from the collimator.
+
+    \verbatim
+     sigma_at_depth = collimator_slope * depth_in_mm + collimator sigma 0
+    \end_verbatim
+
+    Set slope and sigma_0 to zero for "geometrical" modelling.
+
+    \warning Values are in mm
+
+    You have to call set_up() after this.
+  */
+
+  void
+    set_resolution_model(const float collimator_sigma_0_in_mm, const float collimator_slope_in_mm, const bool full_3D = true);
+
  private:
 
   // parameters that will be parsed
@@ -140,6 +188,8 @@ class ProjMatrixByBinSPECTUB :
   virtual void set_defaults();
   virtual void initialise_keymap();
   virtual bool post_processing();
+
+  shared_ptr<const DiscretisedDensity<3,float> > attenuation_image_sptr;
 
   // wm_SPECT starts here ---------------------------------------------------------------------------------------------
   bool *msk_3d; //!< voxels to be included in matrix (no weight calculated outside the mask) 

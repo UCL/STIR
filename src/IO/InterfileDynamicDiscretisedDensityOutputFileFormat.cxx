@@ -2,6 +2,7 @@
 //
 /*
   Copyright (C) 2006-2009, Hammersmith Imanet Ltd
+  Copyright (C) 2018 - , University College London
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -23,6 +24,7 @@
 
 \author Kris Thielemans
 \author Charalampos Tsoumpas
+\author Richard Brown
 
 */
 
@@ -30,6 +32,7 @@
 #include "stir/DynamicDiscretisedDensity.h" 
 #include "stir/NumericType.h"
 #include "stir/Succeeded.h"
+#include "stir/IO/interfile.h"
 
 START_NAMESPACE_STIR
 
@@ -56,8 +59,8 @@ void
 InterfileDynamicDiscretisedDensityOutputFileFormat::
 initialise_keymap()
 {
-  this->parser.add_start_key("Interfile Output File Format");
-  this->parser.add_stop_key("End Interfile Output File Format");
+  this->parser.add_start_key("Interfile Output File Format Parameters");
+  this->parser.add_stop_key("End Interfile Output File Format Parameters");
   base_type::initialise_keymap();
 }
 
@@ -91,11 +94,15 @@ InterfileDynamicDiscretisedDensityOutputFileFormat::
 actual_write_to_file(std::string& filename, 
 		     const DynamicDiscretisedDensity & density) const
 {
-  // TODO modify write_basic_interfile to return filename
-  
-  error("InterfileDynamicDiscretisedDensityOutputFileFormat TODO");
-  return Succeeded::no;
-};
+    // TODO modify write_basic_interfile to return filename
+    Succeeded success =
+        write_basic_interfile(filename, density,
+                  this->type_of_numbers, this->scale_to_write_data,
+                  this->file_byte_order);
+    if (success == Succeeded::yes)
+        replace_extension(filename, ".hv");
+    return success;
+}
 
 
 
