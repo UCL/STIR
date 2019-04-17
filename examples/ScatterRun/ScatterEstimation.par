@@ -56,7 +56,7 @@ mask image postfilter filename := ./par_files/postfilter_Gaussian.par
 ;Parameter file for the tail fitting of the mask image.
 tail fitting par filename := ./par_files/tail_fitting.par
 
-;Backgroud data
+;Background data
 background projdata filename := ./data/total_background_3d.hs
 ; export SSRB sinograms
 export 2d projdata := 1

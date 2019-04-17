@@ -63,8 +63,8 @@ static void print_usage_and_exit()
                "half filter width := \n"
                "remove interleaving := \n"
 
-               "; If provided it will be given to the ScatterSimulation \n"
-               "; subsampled attenuation imagw filename := \n"
+               "; If provided it will be passed to the ScatterSimulation as an input \n"
+               "; subsampled attenuation image filename := \n"
 
                "maximum scale value := \n"
                "minimum scale value := \n"
@@ -85,7 +85,7 @@ static void print_usage_and_exit()
 
                "tail fitting par filename :=\n "
 
-               ";Backgroud data\n"
+               ";Background data\n"
                "background projdata filename := \n"
                "; export SSRB sinograms\n"
                "; export 2d projdata := \n"
