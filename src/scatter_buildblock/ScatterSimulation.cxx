@@ -555,12 +555,12 @@ downsample_scanner(shared_ptr<ProjDataInfo> arg)
     new_scanner_sptr->set_num_rings(static_cast<int>(new_scanner_sptr->get_num_rings()/downsample_scanner_rings));
     new_scanner_sptr->set_num_detectors_per_ring(static_cast<int>(new_scanner_sptr->get_num_detectors_per_ring()/downsample_scanner_dets));
     new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_lenght/new_scanner_sptr->get_num_rings()));
-
+    new_scanner_sptr->set_max_num_non_arccorrected_bins(static_cast<int>(new_scanner_sptr->get_max_num_non_arccorrected_bins()/downsample_scanner_dets));
 
     ProjDataInfo * tmp_proj_data_info_2d_ptr = ProjDataInfo::ProjDataInfoCTI(new_scanner_sptr,
                                                                              1, 0,
                                                                              new_scanner_sptr->get_num_detectors_per_ring()/2,
-                                                                             new_scanner_sptr->get_num_detectors_per_ring()/2,
+                                                                             new_scanner_sptr->get_max_num_non_arccorrected_bins(),
                                                                              false);
 
     return tmp_proj_data_info_2d_ptr->create_shared_clone();
