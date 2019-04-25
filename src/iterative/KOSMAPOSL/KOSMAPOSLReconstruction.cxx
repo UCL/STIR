@@ -383,9 +383,9 @@ void KOSMAPOSLReconstruction<TargetT>::
 calculate_norm_matrix(TargetT &normp,
                       const int dimf_row,
                       const int dimf_col,
-                      const TargetT& pet)
+                      const TargetT& emission)
 {
-//  The following is the 2D matrix containing the feature vector for each voxel of the image "pet"
+//  The following is the 2D matrix containing the feature vector for each voxel of the image "emission"
   Array<2,float> fp;
 //  The following are the indexes obtained when reshaping a 3D matrix to a 1D vector and they depend
 //  on x y and z, and dx dy and dz respectively
@@ -393,26 +393,26 @@ calculate_norm_matrix(TargetT &normp,
 
   fp = Array<2,float>(IndexRange2D(0,dimf_row,0,dimf_col));
 
-  const int min_z = pet.get_min_index();
-  const int max_z = pet.get_max_index();
+  const int min_z = emission.get_min_index();
+  const int max_z = emission.get_max_index();
   this->dimz=max_z-min_z+1;
 
-//The following loop extracts the feature vector related to each voxel in the "pet" image and save it in "fp"
+//The following loop extracts the feature vector related to each voxel in the "emission" image and save it in "fp"
   for (int z=min_z; z<=max_z; z++)
     {
       const int min_dz = max(distance.get_min_index(), min_z-z);
       const int max_dz = min(distance.get_max_index(), max_z-z);
 
-      const int min_y = pet[z].get_min_index();
-      const int max_y = pet[z].get_max_index();
+      const int min_y = emission[z].get_min_index();
+      const int max_y = emission[z].get_max_index();
       this->dimy=max_y-min_y+1;
       for (int y=min_y;y<= max_y;y++)
         {
           const int min_dy = max(distance[0].get_min_index(), min_y-y);
           const int max_dy = min(distance[0].get_max_index(), max_y-y);
 
-          const int min_x = pet[z][y].get_min_index();
-          const int max_x = pet[z][y].get_max_index();
+          const int min_x = emission[z][y].get_min_index();
+          const int max_x = emission[z][y].get_max_index();
           this->dimx=max_x-min_x+1;
 
 
@@ -447,7 +447,7 @@ calculate_norm_matrix(TargetT &normp,
                         continue;
                       }
                       else{
-                        fp[l][c] = (pet[z+dz][y+dy][x+dx]) ;
+                        fp[l][c] = (emission[z+dz][y+dy][x+dx]) ;
                       }
                     }
             }
@@ -587,7 +587,7 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
                          const TargetT& current_alpha_estimate)
 {
     if(!current_alpha_estimate.has_same_characteristics(*this->anatomical_prior_sptr))
-        error("anatomical and PET image have different sizes! Make sure they are the same");
+        error("anatomical and emission image have different sizes! Make sure they are the same");
     bool use_compact_implementation = this->num_non_zero_feat == 1;
 
     // Something very weird happens here if I do not get_empty_copy()
@@ -596,7 +596,7 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
     unique_ptr<TargetT> kImage_uptr(current_alpha_estimate.get_empty_copy());
 
     if (!use_compact_implementation && this->get_hybrid()) {
-      // Going to need the full PET regional normalised differences
+      // Going to need the full emission regional normalised differences
       int dimf_row = this->num_voxels;
       int dimf_col = this->num_non_zero_feat-1;
       calculate_norm_matrix(*this->kpnorm_sptr, dimf_row, dimf_col,
@@ -643,14 +643,14 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
                         = ravel_index(dx, dy, dz, min_dx, min_dy, min_dz, max_dx, max_dy, max_dz);
 
 //                     std::cout << "d " <<z<<" "<<y<<" "<<x<< std::endl;
-                    // Calculate the PET kernel
-                    double pet_kernel;
+                    // Calculate the emission kernel
+                    double emission_kernel;
                     if (get_hybrid()) {
                       if(current_alpha_estimate[z][y][x]==0){
                         continue;
                       }
 
-                      pet_kernel = calc_pet_kernel(current_alpha_estimate[z][y][x],
+                      emission_kernel = calc_emission_kernel(current_alpha_estimate[z][y][x],
                                                    current_alpha_estimate[z+dz][y+dy][x+dx],
                                                    distance[dz][dy][dx],
                                                    use_compact_implementation,
@@ -658,7 +658,7 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
                                                    delta_ravelled_idx);
                                     }
                                     else {
-                                      pet_kernel = 1;
+                                      emission_kernel = 1;
                                     }
                     // Calculate the anatomical kernel
                        const double anatomical_kernel = calc_anatomical_kernel((*anatomical_prior_sptr)[z][y][x],
@@ -668,7 +668,7 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
                                                                                current_ravelled_idx,
                                                                                delta_ravelled_idx);
 
-                       const double kernel = anatomical_kernel * pet_kernel;
+                       const double kernel = anatomical_kernel * emission_kernel;
 
                        kernelised_image_out[z][y][x]
                        += kernel * image_to_kernelise[z+dz][y+dy][x+dx];
@@ -692,14 +692,14 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
 template <typename TargetT>
 double
 KOSMAPOSLReconstruction<TargetT>::
-calc_pet_kernel(const double current_alpha_estimate_zyx,
+calc_emission_kernel(const double current_alpha_estimate_zyx,
                 const double current_alpha_estimate_zyx_dr,
                 const double distance_dzdydx,
                 const bool use_compact_implementation,
                 const int l,
                 const int m) {
 
-  const double pet_kernel =
+  const double emission_kernel =
     use_compact_implementation
     ? calc_kernel_compact(current_alpha_estimate_zyx-
                                     current_alpha_estimate_zyx_dr,
@@ -713,7 +713,7 @@ calc_pet_kernel(const double current_alpha_estimate_zyx,
                                     distance_dzdydx*distance_dzdydx,
                                     current_alpha_estimate_zyx*current_alpha_estimate_zyx);
 
-   return pet_kernel;
+   return emission_kernel;
 }
 
 template <typename TargetT>
@@ -949,10 +949,10 @@ update_estimate(TargetT &current_alpha_coefficent_image)
 
     unique_ptr<TargetT> kcurrent_ptr(current_alpha_coefficent_image.get_empty_copy());
 
-    // compute the PET image from the alpha coefficient image
+    // compute the emission image from the alpha coefficient image
     compute_kernelised_image (*kcurrent_ptr, current_alpha_coefficent_image,current_alpha_coefficent_image);
 
-    //Write the PET image estimate:
+    //Write the emission image estimate:
     subiteration_counter++;
     if((subiteration_counter)%this->save_interval==0){
 

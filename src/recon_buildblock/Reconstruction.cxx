@@ -103,7 +103,7 @@ post_processing()
 {
 
   if ((this->_disable_output) & (this->get_registered_name ()=="KOSMAPOSL") )
-  { warning("You have disabled the alpha coefficient output. Only PET image files will be written to "
+  { warning("You have disabled the alpha coefficient output. Only emission image files will be written to "
             "disk after or during reconstuction"); }
 
   else if (this->_disable_output)

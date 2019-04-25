@@ -50,14 +50,14 @@ template <typename TargetT>
 class PoissonLogLikelihoodWithLinearModelForMean;
 
 /*! \ingroup KOSMAPOSL
-  \brief An reconstructor class appropriate for PET emission data
+  \brief A reconstructor class appropriate for emission data
 
   This class implements the iterative algorithm obtained using the Kernel method (KEM) and Hybrid kernel method (HKEM).
   This implementation corresponds to the one presented by Deidda D et al, ``Hybrid PET-MR list-mode kernelized expectation
   maximization reconstruction for quantitative PET images of the carotid arteries", IEEE MIC Atlanta, 2017. However, this allows
   also sinogram-based reconstruction. Each voxel value of the image, \f$ \boldsymbol{\lambda}\f$, can be represented as a
   linear combination using the kernel method.  If we have an image with prior information, we can construct for each voxel
-  \f$ j \f$ of the PET image a feature vector, $\f \boldsymbol{v}_j \f$, using the prior information. The voxel value,
+  \f$ j \f$ of the emission image a feature vector, $\f \boldsymbol{v}_j \f$, using the prior information. The voxel value,
   \f$\lambda_j\f$, can then be described using the kernel matrix
 
 
@@ -91,7 +91,7 @@ class PoissonLogLikelihoodWithLinearModelForMean;
    k_p(\boldsymbol{z}^{(n)}_j,\boldsymbol{z}^{(n)}_l) = \exp \left(\tiny - \frac{\|  \boldsymbol{z}^{(n)}_j-\boldsymbol{z}^{(n)}_l \|^2}{2 \sigma_p^2} \right) \exp \left(\tiny - \frac{\|  \boldsymbol{x}_j-\boldsymbol{x}_l \|^2}{ \tiny{2 \sigma_{dp}^2}} \right)
   \f]
 
-  is the part coming from the PET iterative update. Here, the Gaussian kernel functions have been modulated by the distance between voxels in the image space.
+  is the part coming from the emission iterative update. Here, the Gaussian kernel functions have been modulated by the distance between voxels in the image space.
 
   \par Parameters for parsing
 
@@ -224,11 +224,11 @@ private:
   double anatomical_sd;
   mutable Array<3,float> distance;
   /*! Create a matrix containing the norm of the difference between two feature vectors, \f$ \|  \boldsymbol{z}^{(n)}_j-\boldsymbol{z}^{(n)}_l \| \f$. */
-  /*! This is done for the PET image which keeps changing*/
+  /*! This is done for the emission image which keeps changing*/
     void  calculate_norm_matrix(TargetT &normp,
                                 const int dimf_row,
                                 const int dimf_col,
-                                const TargetT& pet);
+                                const TargetT& emission);
 
   /*! Create a matrix similarly to calculate_norm_matrix() but this is done for the anatomical image, */
   /*! which does not  change over iteration.*/
@@ -239,7 +239,7 @@ private:
   /*! Estimate the SD of the anatomical image to be used as normalisation for the feature vector */
     double estimate_stand_dev_for_anatomical_image();
 
-  /*! Compute for each voxel, jl, of the PET image the linear combination between the coefficient \f$ \alpha_{jl} \f$ and the kernel matrix \f$ k_{jl} \f$\f$ */
+  /*! Compute for each voxel, jl, of the emission image the linear combination between the coefficient \f$ \alpha_{jl} \f$ and the kernel matrix \f$ k_{jl} \f$\f$ */
   /*! The information is stored in the image, kImage */
 //    void full_compute_kernelised_image(TargetT& kernelised_image_out,
 //                                     const TargetT& image_to_kernelise,
@@ -256,7 +256,7 @@ private:
                                 const TargetT& image_to_kernelise,
                                 const TargetT& current_alpha_estimate);
 
-  double calc_pet_kernel(const double current_alpha_estimate_zyx,
+  double calc_emission_kernel(const double current_alpha_estimate_zyx,
                          const double current_alpha_estimate_zyx_dr,
                          const double distance_dzdydx,
                          const bool use_compact_implementation,
