@@ -140,11 +140,11 @@ class InputFileFormatRegistry
       const_iterator iter = this->_registry.begin();
       const_iterator const end = this->_registry.end();
       while (iter != end)
-    {
-      if (iter->second->can_read(signature, input))
+	{
+	  if (iter->second->can_read(signature, input))
 	    return iter;
 	  ++iter;
-    }
+	}
       return end;
     }
 
