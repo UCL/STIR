@@ -87,18 +87,18 @@ get_next_record(RecordT& record) const
   char * data_ptr = data_sptr.get();
   stream_ptr->read(data_ptr, this->size_of_record_signature);
   if (stream_ptr->gcount()<static_cast<std::streamsize>(this->size_of_record_signature))
-    return Succeeded::no; 
+    return Succeeded::no;
   const std::size_t size_of_record = record.size_of_record_at_ptr(data_ptr, this->size_of_record_signature,options);
   assert(size_of_record <= this->max_size_of_record);
   if (size_of_record > this->size_of_record_signature)
     stream_ptr->read(data_ptr + this->size_of_record_signature,
                      size_of_record - this->size_of_record_signature);
   if (stream_ptr->eof())
-    return Succeeded::no; 
+    return Succeeded::no;
   else if (stream_ptr->bad())
-    { 
+    {
       warning("Error after reading from list mode stream in get_next_record");
-      return Succeeded::no; 
+      return Succeeded::no;
     }
   return 
     record.init_from_data_ptr(data_ptr, size_of_record,options);

@@ -68,7 +68,7 @@ It reads a parameter file, which refers to
 
   The first 32 bytes of the binary file are interpreted as file signature and matched against the strings "MUPET CListModeData\0" and "SAFIR CListModeData\0". If either is successfull, the class claims it can read the file format. The rest of the file is read as records as specified as template parameter, e.g. CListRecordSAFIR.
 */
-class SAFIRCListmodeInputFileFormat : public InputFileFormat<CListModeData>, public ParsingObject
+class SAFIRCListmodeInputFileFormat : public InputFileFormat<ListModeData>, public ParsingObject
 {
 public:
 	SAFIRCListmodeInputFileFormat() : did_parsing(false) {}

@@ -114,8 +114,9 @@ find_factory(const FileSignature& signature,
 	     const std::string& filename) const
 {
   const_iterator iter= this->_actual_find_factory(signature, filename);
-  if (this->_valid(iter))
-    return *(iter->second);
+
+  if (this->_valid(iter)){
+    return *(iter->second);}
   else
     {
       std::cerr << "Available input file formats:\n";
