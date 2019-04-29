@@ -24,36 +24,74 @@
 
   \par Usage:
   \code
-  ctac_to_mu_values [-p || -d] -o output_filename -i input_filename
+  ctac_to_mu_values -o output_filename -i input_directory -j slope_filename
   \endcode
-  Use <tt>-p</tt> switch for parametric images, or the <tt>-d</tt> switch for dynamic images.
 */
+
+#include "stir/IO/ITKImageInputFileFormat.h"
+#include "stir/info.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/modelling/ParametricDiscretisedDensity.h"
 #include "stir/DynamicDiscretisedDensity.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/stream.h"
 #include <algorithm>
 #include "stir/getopt.h"
+
+
 #include <nlohmann/json.hpp>
 
-using json = nlohmann::json;
+USING_NAMESPACE_STIR
+
+typedef DiscretisedDensity<3,float> FloatImageType;
+
+Succeeded apply_scaling_to_HU(
+    const std::unique_ptr<FloatImageType> &input_image_sptr,
+    std::shared_ptr<FloatImageType> output_image_sptr){
+
+  FloatImageType::full_iterator out_iter = output_image_sptr->begin_all();
+  FloatImageType::const_full_iterator in_iter = input_image_sptr->begin_all_const();
+
+  const float a1 = 0.13001;
+  const float b1 = 1.32007;
+  const float c1 = 1e-4;
+
+  const float a2 = 0.13001;
+  const float b2 = 9.45;
+  const float c2 = 1e-5;
+
+  while( in_iter != input_image_sptr->end_all_const())
+  {
+    if (*in_iter<0.f) {
+      float mu = a1 + b1 * c1 *(*in_iter);
+      *out_iter = (mu < 0.0f) ? 0.0f : a1 + b1 * c1 *(*in_iter);
+    } else {
+      *out_iter = a2 + b2 * c2 * (*in_iter);
+    }
+
+    ++in_iter; ++out_iter;
+  }
+
+  return Succeeded::yes;
+}
+
 
 int main(int argc, char * argv[])
 {
   USING_NAMESPACE_STIR;
   const char * output_filename = 0;
   const char * input_filename = 0;
-  bool do_parametric=0;
-  bool do_dynamic=0;
+  const char * slope_filename = 0;
 
-  const char * const usage = "ctac_to_mu_values [ -p | -d ] -o output_filename -i input_filename\n";
+  const char * const usage = "ctac_to_mu_values -o output_filename -i input_directory -j slope_filename\n";
   opterr = 0;
   {
     char c;
 
-    while ((c = getopt (argc, argv, "i:o:(p||d)")) != -1)
+    while ((c = getopt (argc, argv, "i:o:j:?")) != -1)
       switch (c)
 	{
 	case 'i':
@@ -62,11 +100,8 @@ int main(int argc, char * argv[])
 	case 'o':
 	  output_filename = optarg;
 	  break;
-	case 'p':
-	  do_parametric=true;
-	  break;
-	case 'd':
-	  do_dynamic=true;
+	case 'j':
+      slope_filename = optarg;
 	  break;
 	case '?':
 	  std::cerr << usage;
@@ -83,68 +118,74 @@ int main(int argc, char * argv[])
 	}
   }
 
-  if (output_filename==0 || input_filename==0)
+  if (output_filename==0 || input_filename==0 || slope_filename==0)
     {
       std::cerr << usage;
       return EXIT_FAILURE;
     }
 
-  if(do_parametric)// A better way will be to template it...
-    {
-      shared_ptr<ParametricVoxelsOnCartesianGrid> 
-	input_image_sptr(ParametricVoxelsOnCartesianGrid::read_from_file(input_filename));  
-      shared_ptr<ParametricVoxelsOnCartesianGrid> output_image_sptr(input_image_sptr->clone());
-      ParametricVoxelsOnCartesianGrid::full_iterator out_iter = output_image_sptr->begin_all();
-      ParametricVoxelsOnCartesianGrid::const_full_iterator in_iter = input_image_sptr->begin_all_const();
-      while( in_iter != input_image_sptr->end_all_const())
-	{
-	  if (*in_iter<0.F)
-	    *out_iter = -(*in_iter);
-	  ++in_iter; ++out_iter;
-	}  
-      Succeeded success =
-	OutputFileFormat<ParametricVoxelsOnCartesianGrid>::default_sptr()->
-	write_to_file(output_filename, *output_image_sptr);
-      return success==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
-    }  
-  else if(do_dynamic)// A better way will be to template it...
-    {
-      const shared_ptr<DynamicDiscretisedDensity> 
-	input_image_sptr(read_from_file<DynamicDiscretisedDensity>(input_filename));  
-      const DynamicDiscretisedDensity input_image = *input_image_sptr;
-      DynamicDiscretisedDensity output_image = input_image;
-      for(unsigned int frame_num=1;frame_num<=(input_image.get_time_frame_definitions()).get_num_frames();++frame_num)
-	{
-	  DiscretisedDensity<3,float>::full_iterator out_iter = output_image[frame_num].begin_all();
-	  DiscretisedDensity<3,float>::const_full_iterator in_iter = input_image[frame_num].begin_all_const();
-	  while( in_iter != input_image[frame_num].end_all_const())
-	    {
-	      if (*in_iter<0.F)
-		*out_iter = -(*in_iter);
-	      ++in_iter; ++out_iter;
-	    }  
-	}  
-      Succeeded success =
-	output_image.write_to_ecat7(output_filename);
-      return success==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
-    }
-  else
-    {
-      shared_ptr<DiscretisedDensity<3,float> > 
-	input_image_sptr(read_from_file<DiscretisedDensity<3,float> >(input_filename));
+  //Read slope file
+  std::ifstream slope_json_file_stream(slope_filename);
+  nlohmann::json slope_json;
+  slope_json_file_stream >> slope_json;
 
-      shared_ptr<DiscretisedDensity<3,float> > output_image_sptr(input_image_sptr->clone());
-      DiscretisedDensity<3,float>::full_iterator out_iter = output_image_sptr->begin_all();
-      DiscretisedDensity<3,float>::const_full_iterator in_iter = input_image_sptr->begin_all_const();
-      while( in_iter != input_image_sptr->end_all_const())
-	{
-	  if (*in_iter<0.F)
-	    *out_iter = -(*in_iter);
-	  ++in_iter; ++out_iter;
-	}  
-      Succeeded success =
-	OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-	write_to_file(output_filename, *output_image_sptr);
-      return success==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
-    }
+  //std::cout << slope_json.dump(4);
+
+  //Read DICOM data
+  stir::info(boost::format("ctac_to_mu_values: opening file %1%") % input_filename);
+
+  std::unique_ptr< FloatImageType > input_image_sptr(stir::read_from_file<FloatImageType>( input_filename ));
+
+  unique_ptr<VoxelsOnCartesianGrid<float> >image_aptr
+      (dynamic_cast<VoxelsOnCartesianGrid<float> *>(
+           DiscretisedDensity<3,float>::read_from_file(input_filename))
+      );
+
+  BasicCoordinate<3,int> min_indices, max_indices;
+  if (!image_aptr->get_regular_range(min_indices, max_indices))
+    error("Non-regular range of coordinates. That's strange.\n");
+
+  BasicCoordinate<3,float> edge_min_indices(min_indices), edge_max_indices(max_indices);
+  edge_min_indices-= 0.5F;
+  edge_max_indices+= 0.5F;
+
+  std::cout << "\nOrigin in mm {z,y,x}    :" << image_aptr->get_origin()
+            << "\nVoxel-size in mm {z,y,x}:" << image_aptr->get_voxel_size()
+            << "\nMin_indices {z,y,x}     :" << min_indices
+            << "\nMax_indices {z,y,x}     :" << max_indices
+            << "\nNumber of voxels {z,y,x}:" << max_indices - min_indices + 1
+            << "\nPhysical coordinate of first index in mm {z,y,x} :"
+            << image_aptr->get_physical_coordinates_for_indices(min_indices)
+            << "\nPhysical coordinate of last index in mm {z,y,x}  :"
+            << image_aptr->get_physical_coordinates_for_indices(max_indices)
+            << "\nPhysical coordinate of first edge in mm {z,y,x} :"
+            << image_aptr->get_physical_coordinates_for_indices(edge_min_indices)
+            << "\nPhysical coordinate of last edge in mm {z,y,x}  :"
+            << image_aptr->get_physical_coordinates_for_indices(edge_max_indices);
+  std::cout << std::endl;
+
+  shared_ptr< FloatImageType > output_image_sptr(input_image_sptr->clone());
+  //Scale volume
+  apply_scaling_to_HU(input_image_sptr, output_image_sptr);
+  //Write output file
+
+  /*FloatImageType::full_iterator out_iter = output_image_sptr->begin_all();
+  FloatImageType::const_full_iterator in_iter = input_image_sptr->begin_all_const();
+
+
+  while( in_iter != input_image_sptr->end_all_const())
+  {
+    if (*in_iter<0.F)
+      *out_iter = -(*in_iter);
+    ++in_iter; ++out_iter;
+  }*/
+  Succeeded success = OutputFileFormat< FloatImageType >::default_sptr()->
+      write_to_file(output_filename, *output_image_sptr);
+
+
+
+  return success==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
+
+  //return EXIT_SUCCESS;
+
 }
