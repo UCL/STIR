@@ -41,7 +41,7 @@ namespace ecat {
   \ingroup listmode
 */
 class ECAT8_32bitListmodeInputFileFormat :
-public InputFileFormat<CListModeData >
+public InputFileFormat<ListModeData >
 {
  public:
   virtual const std::string

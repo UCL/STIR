@@ -118,11 +118,12 @@ int main(int argc, char *argv[])
       {
         bool recognised = false;
         bool listed = false;
-	if (lm_data_ptr->get_next_record(record) == Succeeded::no) 
-	  {
+//      std::cout<<"ciao"<<std::endl;
+    if (lm_data_ptr->get_next_record(record) == Succeeded::no)
+      {
 	    // no more events in file for some reason
 	    break; //get out of while loop
-	  }
+      }
 	if (record.is_time())
 	  {
             recognised=true;
@@ -131,7 +132,7 @@ int main(int argc, char *argv[])
                 cout << "Time " << record.time().get_time_in_millisecs();
                 listed = true; 
               }
-	   } 
+       }
         {
           ListRecordWithGatingInput * record_ptr = dynamic_cast<ListRecordWithGatingInput *>(&record);
           if (record_ptr!=0 && record_ptr->is_gating_input())
