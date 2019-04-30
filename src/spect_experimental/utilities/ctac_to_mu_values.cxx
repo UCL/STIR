@@ -50,26 +50,27 @@ typedef DiscretisedDensity<3,float> FloatImageType;
 
 Succeeded apply_scaling_to_HU(
     const std::unique_ptr<FloatImageType> &input_image_sptr,
+    const nlohmann::json &transform,
     std::shared_ptr<FloatImageType> output_image_sptr){
 
   FloatImageType::full_iterator out_iter = output_image_sptr->begin_all();
   FloatImageType::const_full_iterator in_iter = input_image_sptr->begin_all_const();
 
-  const float a1 = 0.13001;
-  const float b1 = 1.32007;
-  const float c1 = 1e-4;
+  const float a1 = transform["a1"];
+  const float b1 = transform["b1"];
 
-  const float a2 = 0.13001;
-  const float b2 = 9.45;
-  const float c2 = 1e-5;
+  const float a2 = transform["a2"];
+  const float b2 = transform["b2"];
+
+  std::cout << transform.dump(4);
 
   while( in_iter != input_image_sptr->end_all_const())
   {
     if (*in_iter<0.f) {
-      float mu = a1 + b1 * c1 *(*in_iter);
-      *out_iter = (mu < 0.0f) ? 0.0f : a1 + b1 * c1 *(*in_iter);
+      float mu = a1 + b1 *(*in_iter);
+      *out_iter = (mu < 0.0f) ? 0.0f : mu;
     } else {
-      *out_iter = a2 + b2 * c2 * (*in_iter);
+      *out_iter = a2 + b2 * (*in_iter);
     }
 
     ++in_iter; ++out_iter;
@@ -85,13 +86,14 @@ int main(int argc, char * argv[])
   const char * output_filename = 0;
   const char * input_filename = 0;
   const char * slope_filename = 0;
+  const char * keV_str = 0;
 
-  const char * const usage = "ctac_to_mu_values -o output_filename -i input_directory -j slope_filename\n";
+  const char * const usage = "ctac_to_mu_values -o output_filename -i input_directory -j slope_filename -k target_energy\n";
   opterr = 0;
   {
     char c;
 
-    while ((c = getopt (argc, argv, "i:o:j:?")) != -1)
+    while ((c = getopt (argc, argv, "i:o:j:k:?")) != -1)
       switch (c)
 	{
 	case 'i':
@@ -103,6 +105,9 @@ int main(int argc, char * argv[])
 	case 'j':
       slope_filename = optarg;
 	  break;
+	case 'k':
+      keV_str = optarg;
+      break;
 	case '?':
 	  std::cerr << usage;
 	  return EXIT_FAILURE;
@@ -118,7 +123,7 @@ int main(int argc, char * argv[])
 	}
   }
 
-  if (output_filename==0 || input_filename==0 || slope_filename==0)
+  if (output_filename==0 || input_filename==0 || slope_filename==0 || keV_str==0 )
     {
       std::cerr << usage;
       return EXIT_FAILURE;
@@ -129,7 +134,32 @@ int main(int argc, char * argv[])
   nlohmann::json slope_json;
   slope_json_file_stream >> slope_json;
 
-  //std::cout << slope_json.dump(4);
+  std::string manufacturer = "Mediso";
+
+  int keV;
+
+  std::stringstream ss;
+  ss << keV_str;
+  ss >> keV;
+
+  nlohmann::json target = slope_json["scale"][manufacturer]["transform"];
+
+  int location = -1;
+  int pos = 0;
+  for (auto entry : target){
+    if (entry["kev"] == keV)
+      location = pos;
+    pos++;
+  }
+
+  if (location == -1){
+    std::cerr << "Desired keV: " << keV << " not found! ";
+    std::cerr << "Aborting!";
+    return EXIT_FAILURE;
+  }
+
+  nlohmann::json j = target[location];
+  std::cout << j.dump(4);
 
   //Read DICOM data
   stir::info(boost::format("ctac_to_mu_values: opening file %1%") % input_filename);
@@ -166,23 +196,10 @@ int main(int argc, char * argv[])
 
   shared_ptr< FloatImageType > output_image_sptr(input_image_sptr->clone());
   //Scale volume
-  apply_scaling_to_HU(input_image_sptr, output_image_sptr);
+  apply_scaling_to_HU(input_image_sptr, j,  output_image_sptr);
   //Write output file
-
-  /*FloatImageType::full_iterator out_iter = output_image_sptr->begin_all();
-  FloatImageType::const_full_iterator in_iter = input_image_sptr->begin_all_const();
-
-
-  while( in_iter != input_image_sptr->end_all_const())
-  {
-    if (*in_iter<0.F)
-      *out_iter = -(*in_iter);
-    ++in_iter; ++out_iter;
-  }*/
   Succeeded success = OutputFileFormat< FloatImageType >::default_sptr()->
       write_to_file(output_filename, *output_image_sptr);
-
-
 
   return success==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 
