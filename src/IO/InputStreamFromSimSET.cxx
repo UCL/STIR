@@ -67,7 +67,9 @@ InputStreamFromSimSET::set_defaults()
 Succeeded
 InputStreamFromSimSET::
 set_up(const std::string historyFileName,
-       PHG_BinParamsTy * _binParams)
+       PHG_BinParamsTy * _binParams,
+       const float lowEnWin,
+       const float highEnWin)
 {
     strcpy(phgrdhstHistName, historyFileName.c_str());
     binParams = _binParams;
@@ -91,6 +93,10 @@ set_up(const std::string historyFileName,
     {
         return set_up_custom_hist_file();
     }
+
+    low_energy_threshold = lowEnWin;
+
+    high_energy_threshold = highEnWin;
 
     return Succeeded::yes;
 }
