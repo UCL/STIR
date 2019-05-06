@@ -124,6 +124,12 @@ get_next_record(CListRecordSimSET& record)
             if (LbFgIsSet(cur_detectedPhotonPink.flags, PHGFg_PhotonBlue))
                 continue;
 
+            if (cur_detectedPhotonBlue.energy < low_energy_threshold ||
+                    cur_detectedPhotonBlue.energy > high_energy_threshold ||
+                    cur_detectedPhotonPink.energy < low_energy_threshold ||
+                    cur_detectedPhotonPink.energy > high_energy_threshold )
+                continue;
+
             break;
         }
 

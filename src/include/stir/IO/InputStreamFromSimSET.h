@@ -84,7 +84,9 @@ public:
     //! The function will try to set up first assuming that the history file
     //! is standard. Upon failure it will try with a custom set up.
     Succeeded set_up(const std::string historyFileName,
-                     PHG_BinParamsTy * _binParams);
+                     PHG_BinParamsTy * _binParams,
+                     const float lowEnWin,
+                     const float highEnWin);
     //! Check if the file is a standard history file. The code
     //! was adapted from bin.phg.c::phgrdhstStandard(char *argv[]).
     Succeeded set_up_standard_hist_file();
@@ -162,6 +164,10 @@ private:
     //! Hook to history file information. Used in the case of custom
     //! history file.
     PhoHFileHkTy histHk;
+
+    float low_energy_threshold;
+
+    float high_energy_threshold;
 
 };
 

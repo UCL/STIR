@@ -287,7 +287,9 @@ CListModeDataSimSET(const std::string& _phg_filename)
     history_file_sptr.reset(new InputStreamFromSimSET());
     std::string tmpString(phgrdhstHistName);
     history_file_sptr->set_up(tmpString,
-                              &PhgBinParams[0]);
+                              &PhgBinParams[0],
+            exam_info_sptr->get_low_energy_thres(),
+            exam_info_sptr->get_high_energy_thres());
 
     // Clean up.
     delete [] argv;
