@@ -23,6 +23,7 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Robert Twyman
 
 */
 
@@ -47,12 +48,19 @@ START_NAMESPACE_STIR
   A class in the GeneralisedPrior hierarchy. This implements a Relative Difference Gibbs prior.
 
   The gradient of the prior is computed as follows:
-  
+
   \f[
-  g_r = \sum_dr w_{dr} (\lambda_r - \lambda_{r+dr}) * \kappa_r * \kappa_{r+dr}
+  g_r = \sum_{dr} w_{dr} *
+  \frac{\left(\lambda_{j}-\lambda_{k}\right)\left(\gamma\left|\lambda_{j}-\lambda_{k}\right|+\lambda_{j}+3 \lambda_{k}\right)}
+  {\left(\lambda_{j}+\lambda_{k}+\gamma\left|\lambda_{j}-\lambda_{k}\right|\right)^{2}} *
+  \kappa_r * \kappa_{r+dr}
   \f]
+
   where \f$\lambda\f$ is the image and \f$r\f$ and \f$dr\f$ are indices and the sum
-  is over the neighbourhood where the weights \f$w_{dr}\f$ are non-zero.
+  is over the neighbourhood where the weights \f$w_{dr}\f$ are non-zero. \f$\gamma\f$ is
+  a smoothing scalar term. For more details, see: <em> J. Nuyts, D. Bequ, P. Dupont, and L. Mortelmans,
+  “A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction in Emission Tomography,”
+ vol. 49, no. 1, pp. 56–60, 2002. </em>
 
   The \f$\kappa\f$ image can be used to have spatially-varying penalties such as in 
   Jeff Fessler's papers. It should have identical dimensions to the image for which the
@@ -61,8 +69,8 @@ START_NAMESPACE_STIR
 
   By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
   x-voxel_size divided by the Euclidean distance between the points.
- 
-  \par Parsing
+
+\par Parsing
   These are the keywords that can be used in addition to the ones in GeneralPrior.
   \verbatim
   Relative Difference Prior Parameters:=
@@ -73,6 +81,7 @@ START_NAMESPACE_STIR
   ; following example uses 2D 'nearest neighbour' penalty
   ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
   ; use next parameter to specify an image with penalisation factors (a la Fessler)
+  ; gamma value :=
   ; see class documentation for more info
   ; kappa filename:=
   ; use next parameter to get gradient images at every subiteration

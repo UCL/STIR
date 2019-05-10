@@ -23,6 +23,7 @@
     
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Robert Twyman
 
 */
 
