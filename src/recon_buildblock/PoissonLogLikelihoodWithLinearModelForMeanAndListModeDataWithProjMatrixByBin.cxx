@@ -399,17 +399,7 @@ construct_target_ptr() const
 { 
 
  return 
-      new VoxelsOnCartesianGrid<float> (this->get_input_data().get_exam_info_sptr(),
-                                        *proj_data_info_sptr,
-                                        static_cast<float>(this->zoom), 
-                                        CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset), 
-                                                                     static_cast<float>(this->Yoffset), 
-                                                                     static_cast<float>(this->Xoffset)), 
-                                        CartesianCoordinate3D<int>(this->output_image_size_z, 
-                                                                   this->output_image_size_xy, 
-                                                                   this->output_image_size_xy) 
-                                       ); 
-
+   this->target_parameter_parser.create(this->get_input_data());
 } 
  
 template <typename TargetT> 

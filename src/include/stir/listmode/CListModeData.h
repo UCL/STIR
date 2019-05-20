@@ -235,6 +235,11 @@ public:
 
   virtual shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
 
+  const ProjDataInfo* get_proj_data_info_ptr() const
+  {
+    return this->get_proj_data_info_sptr().get();
+  }
+
 protected:
   virtual ListRecord* get_empty_record_ptr() const
   {return reinterpret_cast<ListRecord*>(this->get_empty_record_sptr().get());}
