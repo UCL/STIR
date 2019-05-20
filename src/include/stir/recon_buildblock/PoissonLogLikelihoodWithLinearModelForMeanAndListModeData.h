@@ -35,6 +35,7 @@
 //#include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 #include "stir/listmode/CListModeData.h"
+#include "stir/ParseAndCreateFrom.h"
 #include "stir/TimeFrameDefinitions.h"
 
 START_NAMESPACE_STIR
@@ -135,26 +136,8 @@ protected:
    //! will be called when a new time frame starts
    /*! The frame numbers start from 1. */
    virtual void start_new_time_frame(const unsigned int new_frame_num);
- 
-  int output_image_size_xy;  
- 
-  //! the output image size in z direction 
-  /*! convention: if -1, use default as provided by VoxelsOnCartesianGrid constructor 
-  */ 
-  int output_image_size_z;  
- 
-  //! the zoom factor 
-  double zoom; 
- 
-  //! offset in the x-direction 
-  double Xoffset; 
- 
-  //! offset in the y-direction 
-  double Yoffset; 
- 
-  // KT 20/06/2001 new 
-  //! offset in the z-direction 
-  double Zoffset;
+
+   ParseAndCreateFrom<TargetT, CListModeData> target_parameter_parser;
 };
 
 END_NAMESPACE_STIR

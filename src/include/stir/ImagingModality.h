@@ -55,15 +55,32 @@ class ImagingModality
       this->set_enum();
     }
 
-    ImagingModalityValue get_modality() const
+  ImagingModalityValue get_modality() const
     {
       return this->modality;
     }
 
-    std::string get_name() const
-      {
-        return this->modality_string;
-      }
+  std::string get_name() const
+    {
+      return this->modality_string;
+    }
+
+  bool operator==(const ImagingModality& mod) const
+    {
+      return this->modality == mod.modality;
+    }
+  bool operator!=(const ImagingModality& mod) const
+    {
+      return !(*this==mod);
+    }
+  bool is_known() const
+    {
+      return this->modality != Unknown;
+    }
+  bool is_unknown() const
+    {
+      return this->modality == Unknown;
+    }
  private:
   ImagingModalityValue modality;
   std::string modality_string;
