@@ -88,7 +88,7 @@ read_from_file(const string& filename) // The written image is read in respect t
       if (is_null_ptr(gated_proj_data_ptr->_proj_datas[0]))
 	      error("GatedProjData: No gate available\n");
       // Get the exam info (from the first ProjData)
-      if (num_gates()>0)
+      if (num_gates>0)
         gated_proj_data_ptr->set_exam_info(gated_proj_data_ptr->_proj_datas[0]->get_exam_info());
     }
     else
