@@ -211,6 +211,10 @@ HFS, FFS, HFP or FFP).
   </li>
   <li>Code that was hosted in <tt>src/local</tt> and <tt>include/local/stir</tt> is now in <tt>src/experimental</tt> and <tt>include/stir_experimental</tt>, respectively. An extra CMake parameter has also been added, <tt>STIR_ENABLE_EXPERIMENTAL</tt>, which is <tt>OFF</tt> by default. Enabling this parameter will include the experimental code in the build.
   </li>
+  <li>The DICOM series reading restrictions in <tt>read_file_itk</tt> have been relaxed. The requirement for the same acquisition, 
+    trigger or frame times in a series is no longer enforced. This allows 3-D DICOM volumes to be read correctly but may cause
+    issues for dynamic PET or CT data.
+  </li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>
 <ul>
