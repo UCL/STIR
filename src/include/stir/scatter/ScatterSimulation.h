@@ -137,7 +137,7 @@ public:
                               const std::string &);
 
     void
-    set_output_proj_data_sptr(shared_ptr<ProjData>&);
+    set_output_proj_data_sptr(shared_ptr<ProjData>);
 
     shared_ptr<ProjData>
     get_output_proj_data_sptr() const;

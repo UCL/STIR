@@ -58,6 +58,10 @@ private:
     //! Load an attenuation image for scatter points, downsample and check if
     //! the mean value is approximately the same.
     void test_downsampling_DiscretisedDensity();
+    //! Base function for the scatter simulation tests
+    void simulate_scatter_one_voxel();
+    //! scatter simulation test for one point.
+//    void simulate_scatter_for_one_point(shared_ptr<SingleScatterSimulation>);
 };
 
 
@@ -227,14 +231,100 @@ test_downsampling_DiscretisedDensity()
 }
 
 void
+ScatterSimulationTests::simulate_scatter_one_voxel()
+{
+    Scanner::Type type= Scanner::E931;
+    shared_ptr<Scanner> test_scanner(new Scanner(type));
+
+    test_scanner->set_reference_energy(511);
+    test_scanner->set_energy_resolution(0.11);
+
+    shared_ptr<ExamInfo> exam(new ExamInfo);
+    exam->set_low_energy_thres(450);
+    exam->set_high_energy_thres(650);
+
+    // Create the original projdata
+    shared_ptr<ProjDataInfoCylindricalNoArcCorr> original_projdata_info( dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(
+                                                                        ProjDataInfo::ProjDataInfoCTI(test_scanner,
+                                                                                                      1, 0,
+                                                                                                      test_scanner->get_num_detectors_per_ring()/2,
+                                                                                                      test_scanner->get_max_num_non_arccorrected_bins(),
+                                                                                                      false)));
+
+    shared_ptr<VoxelsOnCartesianGrid<float> > tmpl_density( new VoxelsOnCartesianGrid<float>(*original_projdata_info));
+
+    shared_ptr<SingleScatterSimulation> sss(new SingleScatterSimulation());
+    sss->set_template_proj_data_info_sptr(original_projdata_info);
+    sss->set_exam_info_sptr(exam);
+//    sss->downsample_scanner(1, 4);
+    {
+
+    BasicCoordinate<3,int> min_coord = make_coordinate(0,0,0);
+    BasicCoordinate<3,int> max_coord = make_coordinate(0,0,0);
+    IndexRange<3> range(min_coord,max_coord);
+
+    shared_ptr<VoxelsOnCartesianGrid<float> > one_density( new VoxelsOnCartesianGrid<float>(range, tmpl_density->get_origin(),
+                                                                                            tmpl_density->get_grid_spacing()));
+
+    shared_ptr<VoxelsOnCartesianGrid<float> > one_act_density(new VoxelsOnCartesianGrid<float>(*one_density));
+    one_act_density->fill(1.0);
+    sss->set_activity_image_sptr(one_act_density);
+    sss->set_random_point(false);
+
+    shared_ptr<VoxelsOnCartesianGrid<float> > one_att_density(new VoxelsOnCartesianGrid<float>(*one_density));
+    one_att_density->fill(9.687E-02);
+    sss->set_density_image_sptr(one_att_density);
+    sss->set_density_image_for_scatter_points_sptr(one_att_density);
+
+    shared_ptr<ProjDataInMemory> sss_output(new ProjDataInMemory(exam, original_projdata_info));
+    sss->set_output_proj_data_sptr(sss_output);
+
+    sss->process_data();
+
+    sss_output->write_to_file("nikos_sino");
+
+//    Box3D phantom(tmpl_density->get_z_size()*tmpl_density->get_voxel_size().z()*2,
+//              tmpl_density->get_y_size()*tmpl_density->get_voxel_size().y()*0.25,
+//              tmpl_density->get_x_size()*tmpl_density->get_voxel_size().x()*0.25,
+//              tmpl_density->get_origin());
+
+
+//    CartesianCoordinate3D<int> num_samples(3,3,3);
+//    shared_ptr<VoxelsOnCartesianGrid<float> > water_density(tmpl_density->clone());
+
+//    phantom.construct_volume(*water_density, num_samples);
+//    // Water attenuation coefficient.
+//    *water_density *= 9.687E-02;
+
+    std::string density_image_for_scatter_points_output_filename("./nikos");
+     OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+             write_to_file(density_image_for_scatter_points_output_filename,
+                           *one_act_density);
+
+//    simulate_scatter_for_one_point(sss);
+    }
+
+    int nikos = 0;
+}
+
+
+//void
+//ScatterSimulationTests::simulate_scatter_for_one_point(shared_ptr<SingleScatterSimulation>)
+//{
+
+//}
+
+void
 ScatterSimulationTests::
 run_tests()
 {
 
     // test the downsampling functions.
-    test_downsampling_ProjDataInfo();
+//    test_downsampling_ProjDataInfo();
 
-    test_downsampling_DiscretisedDensity();
+//    test_downsampling_DiscretisedDensity();
+
+    simulate_scatter();
 }
 
 

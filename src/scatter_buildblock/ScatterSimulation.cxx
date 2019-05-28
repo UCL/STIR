@@ -202,8 +202,8 @@ ScatterSimulation::set_defaults()
     this->use_cache = true;
     this->zoom_xy = 1.f;
     this->zoom_z = 1.f;
-    this->downsample_scanner_dets = 0;
-    this->downsample_scanner_rings = 0;
+    this->downsample_scanner_dets = 1;
+    this->downsample_scanner_rings = 1;
     this->density_image_filename = "";
     this->activity_image_filename = "";
     this->density_image_for_scatter_points_output_filename ="";
@@ -510,7 +510,7 @@ set_output_proj_data(const std::string& filename)
 
 void
 ScatterSimulation::
-set_output_proj_data_sptr(shared_ptr<ProjData>& arg)
+set_output_proj_data_sptr(shared_ptr<ProjData> arg)
 {
     this->output_proj_data_sptr = arg;
 }
@@ -608,9 +608,12 @@ ScatterSimulation::downsample_scanner(int _downsample_scanner_rings, int _downsa
     new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_length/new_scanner_sptr->get_num_rings()));
     new_scanner_sptr->set_max_num_non_arccorrected_bins(static_cast<int>(new_scanner_sptr->get_max_num_non_arccorrected_bins()/det_factor));
 
+    int delta_ring = is_null_ptr(proj_data_info_cyl_noarc_cor_sptr) ? new_scanner_sptr->get_num_rings()-1 :
+                                                                      proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
+
     this->proj_data_info_cyl_noarc_cor_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(
                                                       ProjDataInfo::ProjDataInfoCTI(new_scanner_sptr,
-                                                                                    1, new_scanner_sptr->get_num_rings()-1,
+                                                                                    1, delta_ring,
                                                                                     new_scanner_sptr->get_num_detectors_per_ring()/2,
                                                                                     new_scanner_sptr->get_max_num_non_arccorrected_bins(),
                                                                                     false)->clone())
