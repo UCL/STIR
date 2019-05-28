@@ -140,10 +140,17 @@ public:
     set_output_proj_data_sptr(shared_ptr<ProjData>&);
 
     shared_ptr<ProjData>
-    get_output_proj_data_sptr();
+    get_output_proj_data_sptr() const;
 
-    //! \details Load the scatter template and perform basic checks.
-    void set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>&);
+    inline int get_num_scatter_points() const
+    {
+        return this->scatt_points_vector.size();
+    }
+
+    //! \details Create a local copy of the scatter template
+    void set_template_proj_data_info_sptr(shared_ptr<ProjDataInfo>);
+    //! Get the template ProjDataInfo
+    shared_ptr<ProjDataInfoCylindricalNoArcCorr> get_template_proj_data_info_sptr() const;
 
     void set_template_proj_data_info(const std::string&);
 
@@ -164,14 +171,22 @@ public:
 
     void set_density_image(const std::string&);
 
-    void set_density_image_for_scatter_points_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
+    void set_density_image_for_scatter_points_sptr(shared_ptr<DiscretisedDensity<3,float> >);
 
-    //! If densitiy image for scatter points not set, then run this on the attenuation image.
-    shared_ptr<DiscretisedDensity<3, float> >
-    downsample_image(shared_ptr<DiscretisedDensity<3,float> >, bool scale = true);
+    shared_ptr<DiscretisedDensity<3,float> > get_density_image_for_scatter_points_sptr() const;
+
+    //! This function is a less powerfull tool than directly zooming the image.
+    //! However it will check that the downsampling is done in manner compatible with the
+    //! ScatterSimulation.
+    void downsample_image(float factor_xy, float factor_z, bool scale = true);
+
+    void set_image_downsample_factors(float factor_xy = 1.f, float factor_z = 1.f, bool scale = true);
+
+    void downsample_scanner(int _downsample_scanner_rings = 1, int _downsample_scanner_dets = 1);
 
     //! set_density_image_for_scatter_points
     void set_density_image_for_scatter_points(const std::string&);
+
     //! set the attenuation threshold
     void set_attenuation_threshold(const float);
 
@@ -213,7 +228,7 @@ protected:
     compute_emis_to_det_points_solid_angle_factor(const CartesianCoordinate3D<float>& emis_point,
                                                   const CartesianCoordinate3D<float>& detector_coord);
 
-    shared_ptr<ProjDataInfo> downsample_scanner(shared_ptr<ProjDataInfo> arg);
+
 
     virtual void set_defaults();
     virtual void initialise_keymap();
@@ -376,22 +391,16 @@ protected:
         of memory, you can switch this off, but performance will suffer dramatically.
     */
     bool use_cache;
-
     //! Filename for the initial activity estimate.
     std::string activity_image_filename;
-
     //! Zoom factor on plane XY. Defaults on 1.f.
     float zoom_xy;
     //! Zoom factor on Z axis. Defaults on 1.f.
     float zoom_z;
-    //! Optional to the zoom_xy the final size of the image can be set
-    int size_xy;
-    //! Optional to the zoom_z the final size of the image can be set
-    int size_z;
-
+    //! Scale the values of the downsampled image.
+    bool scale_image;
     //! If full scanner template is provided then downsample it
     int downsample_scanner_rings;
-
     //! If full scanner template is provided then downsample it
     int downsample_scanner_dets;
 

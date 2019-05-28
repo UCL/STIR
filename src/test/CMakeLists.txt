@@ -42,6 +42,7 @@ Set(${dir_INVOLVED_TEST_EXE_SOURCES}
         # the next 2 are interactive, so we don't add a test for it, but only compile them
 	test_display
 	test_interpolate
+	test_ScatterSimulation
 )
 
 set(buildblock_simple_tests
