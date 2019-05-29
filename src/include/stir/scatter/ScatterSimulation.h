@@ -118,7 +118,11 @@ public:
     //! resolution are stored in ExamInfo.
     void
     set_exam_info_sptr(const shared_ptr<ExamInfo>&);
-
+    //! Returns true if template_exam_info_sptr has been set.
+    inline bool has_exam_info() const
+    {
+        return !stir::is_null_ptr(template_exam_info_sptr);
+    }
 
     //! find scatter points
     /*! This function sets scatt_points_vector and scatter_volume. It will also
@@ -153,6 +157,13 @@ public:
     shared_ptr<ProjDataInfoCylindricalNoArcCorr> get_template_proj_data_info_sptr() const;
 
     void set_template_proj_data_info(const std::string&);
+
+    void set_template_proj_data_info(const ProjDataInfo&);
+
+    inline bool has_template_proj_data_info() const
+    {
+        return !stir::is_null_ptr(proj_data_info_cyl_noarc_cor_sptr);
+    }
 
     void set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 

@@ -572,6 +572,27 @@ set_template_proj_data_info(const std::string& filename)
 }
 
 void
+ScatterSimulation::set_template_proj_data_info(const ProjDataInfo& arg)
+{
+    this->proj_data_info_cyl_noarc_cor_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(arg.clone()));
+
+    if (is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr))
+        error("ScatterSimulation: Can only handle non-arccorrected data");
+
+    // find final size of detection_points_vector
+    this->total_detectors =
+            this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_rings()*
+            this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_detectors_per_ring ();
+
+    // reserve space to avoid reallocation, but the actual size will grow dynamically
+    this->detection_points_vector.reserve(static_cast<std::size_t>(this->total_detectors));
+
+    // remove any cached values as they'd be incorrect if the sizes changes
+    this->remove_cache_for_integrals_over_attenuation();
+    this->remove_cache_for_integrals_over_activity();
+}
+
+void
 ScatterSimulation::
 set_exam_info_sptr(const shared_ptr<ExamInfo>& arg)
 {
