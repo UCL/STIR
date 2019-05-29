@@ -66,13 +66,6 @@ private:
 
     void test_scatter_simulation();
 
-    void create_scatter_sinogram();
-
-    void create_attenuation_sinogram(bool ACF = true);
-    //! Base function for the scatter simulation tests
-//    void simulate_scatter_one_voxel();
-    //! scatter simulation test for one point.
-//    void simulate_scatter_for_one_point(shared_ptr<SingleScatterSimulation>);
 };
 
 
@@ -304,7 +297,6 @@ ScatterSimulationTests::test_scatter_simulation()
 
         CartesianCoordinate3D<int> num_samples(3,3,3);
         phantom.construct_volume(*act_density, num_samples);
-        // Water attenuation coefficient.
     }
 
     sss->set_activity_image_sptr(act_density);
