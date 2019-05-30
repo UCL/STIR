@@ -42,6 +42,7 @@
 #include "stir/IO/write_to_file.h"
 #include <iostream>
 #include <math.h>
+#include "stir/centre_of_gravity.h"
 
 using std::cerr;
 using std::endl;
@@ -85,11 +86,11 @@ test_downsampling_ProjDataInfo()
                                                                                                       false)));
 
 
-    SingleScatterSimulation sss;
-    sss.set_template_proj_data_info_sptr(original_projdata);
+    unique_ptr<SingleScatterSimulation> sss(new SingleScatterSimulation());
+    sss->set_template_proj_data_info_sptr(original_projdata);
 
     {
-        shared_ptr<ProjDataInfoCylindricalNoArcCorr> sss_projdata(sss.get_template_proj_data_info_sptr());
+        shared_ptr<ProjDataInfoCylindricalNoArcCorr> sss_projdata(sss->get_template_proj_data_info_sptr());
         check(*original_projdata == *sss_projdata, "Check the ProjDataInfo has been set correctly.");
     }
 
@@ -97,8 +98,8 @@ test_downsampling_ProjDataInfo()
     {
         int down_rings = 2;
         int down_dets = 2;
-        sss.downsample_scanner(down_rings, down_dets);
-        shared_ptr<ProjDataInfoCylindricalNoArcCorr> sss_projdata(sss.get_template_proj_data_info_sptr());
+        sss->downsample_scanner(down_rings, down_dets);
+        shared_ptr<ProjDataInfoCylindricalNoArcCorr> sss_projdata(sss->get_template_proj_data_info_sptr());
         check_if_equal(original_projdata->get_scanner_ptr()->get_num_rings(), 2*sss_projdata->get_scanner_ptr()->get_num_rings(), "Check the number of rings is correct");
         check_if_equal(original_projdata->get_scanner_ptr()->get_num_detectors_per_ring(),
               2*sss_projdata->get_scanner_ptr()->get_num_detectors_per_ring(), "Check number of detectors per ring.");
@@ -125,6 +126,7 @@ test_downsampling_ProjDataInfo()
               down_dets*sss_projdata->get_num_views(), "Check the number of detectors per ring.");
 
     }
+
 }
 
 void ScatterSimulationTests::
@@ -145,9 +147,9 @@ test_downsampling_DiscretisedDensity()
     shared_ptr<VoxelsOnCartesianGrid<float> > tmpl_density( new VoxelsOnCartesianGrid<float>(*original_projdata));
 
 
-    Box3D phantom(tmpl_density->get_z_size()*tmpl_density->get_voxel_size().z()*2,
+    Box3D phantom(tmpl_density->get_x_size()*tmpl_density->get_voxel_size().x()*0.25,
               tmpl_density->get_y_size()*tmpl_density->get_voxel_size().y()*0.25,
-              tmpl_density->get_x_size()*tmpl_density->get_voxel_size().x()*0.25,
+              tmpl_density->get_z_size()*tmpl_density->get_voxel_size().z()*2,
               tmpl_density->get_origin());
 
 
@@ -175,17 +177,17 @@ test_downsampling_DiscretisedDensity()
 //    *atten_density = *bone_density;
     *atten_density += *water_density;
 
-    SingleScatterSimulation sss;
+    unique_ptr<SingleScatterSimulation> sss(new SingleScatterSimulation());
 
-    sss.set_template_proj_data_info_sptr(original_projdata);
-    sss.set_density_image_for_scatter_points_sptr(atten_density);
+    sss->set_template_proj_data_info_sptr(original_projdata);
+    sss->set_density_image_for_scatter_points_sptr(atten_density);
 
 //    int total_scatter_points_orig = sss.get_num_scatter_points();
 
-    sss.downsample_image(0.5f, 0.5f, 1);
+    sss->downsample_image(0.5f, 0.5f, 1);
 
-    shared_ptr<VoxelsOnCartesianGrid<float> > downed_image(
-                dynamic_cast<VoxelsOnCartesianGrid<float> *> (sss.get_density_image_for_scatter_points_sptr().get()));
+    shared_ptr<DiscretisedDensity<3,float> > downed_image = sss->get_density_image_for_scatter_points_sptr();
+
 
     float mean_value_atten = 0.0f;
     int atten_counter = 0;
@@ -225,38 +227,53 @@ test_downsampling_DiscretisedDensity()
     set_tolerance(0.1);
     check_if_equal(mean_value_atten, mean_value_downed, "Check the mean value of downsampled image.");
 
+    CartesianCoordinate3D<float> cog_atten = find_centre_of_gravity_in_mm(*atten_density);
+    CartesianCoordinate3D<float> cog_downed = find_centre_of_gravity_in_mm(*dynamic_cast<VoxelsOnCartesianGrid<float>*>(downed_image.get()));
+
+
+    check_if_equal(cog_atten, cog_downed, "Check centre of gravity of the original image is the same as the downsampled.");
 //    int total_scatter_points_down = sss.get_num_scatter_points();
 
-   //    std::string density_image_for_scatter_points_output_filename("./nikos");
+//       std::string density_image_for_scatter_points_output_filename("./nikos");
 //    OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
 //            write_to_file(density_image_for_scatter_points_output_filename,
 //                          *downed_image);
-
+//int debug_stop = 0;
 }
 
 void
 ScatterSimulationTests::test_scatter_simulation()
 {
-    shared_ptr<SingleScatterSimulation> sss(new SingleScatterSimulation());
+    unique_ptr<SingleScatterSimulation> sss(new SingleScatterSimulation());
 
     Scanner::Type type= Scanner::E931;
     shared_ptr<Scanner> test_scanner(new Scanner(type));
 
-    test_scanner->set_reference_energy(511);
-    test_scanner->set_energy_resolution(0.11);
+    if(!test_scanner->has_energy_information())
+    {
+        test_scanner->set_reference_energy(511);
+        test_scanner->set_energy_resolution(0.34f);
+    }
+
+    check(test_scanner->has_energy_information() == true, "Check the scanner has energy information.");
 
     shared_ptr<ExamInfo> exam(new ExamInfo);
     exam->set_low_energy_thres(450);
     exam->set_high_energy_thres(650);
+
+    check(exam->has_energy_information() == true, "Check the ExamInfo has energy information.");
+
     sss->set_exam_info_sptr(exam);
 
     // Create the original projdata
     shared_ptr<ProjDataInfoCylindricalNoArcCorr> original_projdata_info( dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(
-                                                                        ProjDataInfo::ProjDataInfoCTI(test_scanner,
-                                                                                                      1, 0,
-                                                                                                      test_scanner->get_num_detectors_per_ring()/2,
-                                                                                                      test_scanner->get_max_num_non_arccorrected_bins(),
-                                                                                                      false)));
+                                                                             ProjDataInfo::ProjDataInfoCTI(test_scanner,
+                                                                                                           1, 0,
+                                                                                                           test_scanner->get_num_detectors_per_ring()/2,
+                                                                                                           test_scanner->get_max_num_non_arccorrected_bins(),
+                                                                                                           false)));
+
+    check(original_projdata_info->has_energy_information() == true, "Check the ProjDataInfo has energy information.");
 
     shared_ptr<VoxelsOnCartesianGrid<float> > tmpl_density( new VoxelsOnCartesianGrid<float>(*original_projdata_info));
 
@@ -303,52 +320,51 @@ ScatterSimulationTests::test_scatter_simulation()
 
     check(sss->process_data() == Succeeded::yes ? true : false, "Check Scatter Simulation process");
 
-//    shared_ptr<ProjDataInMemory> atten_sino(new ProjDataInMemory(exam, output_projdata_info));
-//    atten_sino->fill(1.F);
-//    shared_ptr<ProjDataInMemory> act_sino(new ProjDataInMemory(exam, output_projdata_info));
-//    {
-//        info("ScatterSimulationTests: Calculate the Attenuation coefficients.");
-//        shared_ptr<ForwardProjectorByBin> forw_projector_ptr;
-//        shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
-//        forw_projector_ptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
+    //    shared_ptr<ProjDataInMemory> atten_sino(new ProjDataInMemory(exam, output_projdata_info));
+    //    atten_sino->fill(1.F);
+    //    shared_ptr<ProjDataInMemory> act_sino(new ProjDataInMemory(exam, output_projdata_info));
+    //    {
+    //        info("ScatterSimulationTests: Calculate the Attenuation coefficients.");
+    //        shared_ptr<ForwardProjectorByBin> forw_projector_ptr;
+    //        shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
+    //        forw_projector_ptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
 
-//        shared_ptr<BinNormalisation> normalisation_ptr
-//                (new BinNormalisationFromAttenuationImage(water_density,
-//                                                          forw_projector_ptr));
+    //        shared_ptr<BinNormalisation> normalisation_ptr
+    //                (new BinNormalisationFromAttenuationImage(water_density,
+    //                                                          forw_projector_ptr));
 
-//        {
-//            normalisation_ptr->set_up(output_projdata_info->create_shared_clone());
-//            const double start_frame = 0;
-//            const double end_frame = 0;
-//            shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(forw_projector_ptr->get_symmetries_used()->clone());
-//            normalisation_ptr->undo(*atten_sino,start_frame,end_frame, symmetries_sptr);
-//        }
+    //        {
+    //            normalisation_ptr->set_up(output_projdata_info->create_shared_clone());
+    //            const double start_frame = 0;
+    //            const double end_frame = 0;
+    //            shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(forw_projector_ptr->get_symmetries_used()->clone());
+    //            normalisation_ptr->undo(*atten_sino,start_frame,end_frame, symmetries_sptr);
+    //        }
 
-////        atten_sino->write_to_file("_sino");
-////        std::string density_image_for_scatter_points_output_filename("./image");
-////        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-////                write_to_file(density_image_for_scatter_points_output_filename,
-////                              *act_density);
+    ////        atten_sino->write_to_file("_sino");
+    ////        std::string density_image_for_scatter_points_output_filename("./image");
+    ////        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+    ////                write_to_file(density_image_for_scatter_points_output_filename,
+    ////                              *act_density);
 
-//        {
-//            forw_projector_ptr->set_up(output_projdata_info->create_shared_clone(), act_density);
-//            forw_projector_ptr->forward_project(*act_sino, *act_density);
-//        }
+    //        {
+    //            forw_projector_ptr->set_up(output_projdata_info->create_shared_clone(), act_density);
+    //            forw_projector_ptr->forward_project(*act_sino, *act_density);
+    //        }
 
-//        for (int i = output_projdata_info->get_min_view_num();
-//             i < output_projdata_info->get_max_view_num(); ++i)
-//        {
-//            Viewgram<float> view_att = atten_sino->get_viewgram(i, 0);
-//            Viewgram<float> view_act = act_sino->get_viewgram(i,0);
-//            Viewgram<float> view_sct = sss_output->get_viewgram(i,0);
+    //        for (int i = output_projdata_info->get_min_view_num();
+    //             i < output_projdata_info->get_max_view_num(); ++i)
+    //        {
+    //            Viewgram<float> view_att = atten_sino->get_viewgram(i, 0);
+    //            Viewgram<float> view_act = act_sino->get_viewgram(i,0);
+    //            Viewgram<float> view_sct = sss_output->get_viewgram(i,0);
 
-//            view_act *= view_att;
-//            view_act += view_sct;
+    //            view_act *= view_att;
+    //            view_act += view_sct;
 
-//            act_sino->set_viewgram(view_act);
-//        }
-//    }
-//    int nikos = 0;
+    //            act_sino->set_viewgram(view_act);
+    //        }
+    //    }
 }
 
 
@@ -364,9 +380,8 @@ run_tests()
 {
 
     // test the downsampling functions.
-//    test_downsampling_ProjDataInfo();
-
-//    test_downsampling_DiscretisedDensity();
+    test_downsampling_ProjDataInfo();
+    test_downsampling_DiscretisedDensity();
 
     test_scatter_simulation();
 }

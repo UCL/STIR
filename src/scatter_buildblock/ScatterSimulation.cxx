@@ -54,6 +54,7 @@ ScatterSimulation()
 ScatterSimulation::
 ~ScatterSimulation()
 {
+    // Sometimes I get a segfault without this line.
     scatt_points_vector.clear();
 }
 
@@ -406,24 +407,34 @@ void
 ScatterSimulation::
 downsample_image(float factor_xy, float factor_z, bool scale)
 {
-    int new_x, new_y, new_z;
+
 
     zoom_xy = factor_xy;
     zoom_z = factor_z;
     scale_image = scale;
 
-    new_x = static_cast<int>(
-                dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_x_size() * factor_xy + 0.5f);
+    int old_x = dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_x_size();
+    int old_y = dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_y_size();
+    int old_z = dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_z_size();
 
-    new_y = static_cast<int>(
-                dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_y_size() * factor_xy + 0.5f);
+    CartesianCoordinate3D<float> grid = dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_grid_spacing();
 
-    new_z = static_cast<int>(
-                dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_z_size() * factor_z + 0.5f);
+    int new_x = static_cast<int>(old_x * factor_xy);
+    int new_y = static_cast<int>(old_y * factor_xy);
+    int new_z = static_cast<int>(old_z * factor_z);
+
+    if (new_x%2 == 0 || new_y%2 == 0 )
+    {
+        warning("ScatterSimulation: The x and y size of the downsampled attenuation image "
+                "for scatter points has an even number of voxels. This might be less than ideal."
+                "You might want to adjust the zoom factors");
+    }
+
+    CartesianCoordinate3D<float> offset_in_mm = dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_origin();
 
     zoom_image_in_place( *dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get()),
                          CartesianCoordinate3D<float>(factor_z, factor_xy, factor_xy),
-                         density_image_for_scatter_points_sptr->get_origin(),
+                         offset_in_mm,
                          CartesianCoordinate3D<int>(new_z, new_y, new_x));
 
     {
@@ -629,8 +640,16 @@ ScatterSimulation::downsample_scanner(int _downsample_scanner_rings, int _downsa
     new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_length/new_scanner_sptr->get_num_rings()));
     new_scanner_sptr->set_max_num_non_arccorrected_bins(static_cast<int>(new_scanner_sptr->get_max_num_non_arccorrected_bins()/det_factor));
 
-    int delta_ring = is_null_ptr(proj_data_info_cyl_noarc_cor_sptr) ? new_scanner_sptr->get_num_rings()-1 :
-                                                                      proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
+    int delta_ring = 0;
+    if (is_null_ptr(proj_data_info_cyl_noarc_cor_sptr))
+        delta_ring = new_scanner_sptr->get_num_rings()-1;
+    else {
+        if(proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num() < new_scanner_sptr->get_num_rings()-1)
+            delta_ring = proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
+        else {
+            delta_ring = new_scanner_sptr->get_num_rings()-1;
+        }
+    }
 
     this->proj_data_info_cyl_noarc_cor_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(
                                                       ProjDataInfo::ProjDataInfoCTI(new_scanner_sptr,

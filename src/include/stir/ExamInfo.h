@@ -93,6 +93,11 @@ public :
   inline void set_high_energy_thres(float new_val);
   //@}
 
+  inline bool has_energy_information() const
+  {
+    return (low_energy_thres > 0.f)&&(up_energy_thres > 0.f);
+  }
+
   //! Standard trick for a 'virtual copy-constructor'
   inline ExamInfo* clone() const;
   //! Like clone() but return a shared_ptr

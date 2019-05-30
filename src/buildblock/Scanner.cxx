@@ -121,7 +121,8 @@ Scanner::Scanner(Type scanner_type)
     set_params(E931, string_list("ECAT 931"),  
                8, 192, 2 * 256, 
                510.0F, 7.0F, 13.5F, 3.129F, 0.0F, 
-               2, 4, 4, 8, 4, 8 * 4, 1);
+               2, 4, 4, 8, 4, 8 * 4, 1,
+               0.37f, 511.f);
     // 16 BUCKETS per ring in TWO rings - i.e. 32 buckets in total
 
     break;
