@@ -590,7 +590,10 @@ set_params(Type type_v,const list<string>& list_of_names_v,
   num_detector_layers = num_detector_layers_v;
 
   energy_resolution = energy_resolution_v;
-  reference_energy = reference_energy_v;
+  if (reference_energy_v <= 0)
+      reference_energy = 511.f;
+  else
+      reference_energy = reference_energy_v;
 
 }
 

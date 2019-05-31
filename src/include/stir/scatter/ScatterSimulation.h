@@ -155,6 +155,8 @@ public:
     void set_template_proj_data_info_sptr(shared_ptr<ProjDataInfo>);
     //! Get the template ProjDataInfo
     shared_ptr<ProjDataInfoCylindricalNoArcCorr> get_template_proj_data_info_sptr() const;
+    //! Get the ExamInfo as shared pointer
+    shared_ptr<ExamInfo> get_ExamInfo_sptr() const;
 
     void set_template_proj_data_info(const std::string&);
 
