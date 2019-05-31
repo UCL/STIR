@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2019, University College London
+    Copyright (C) 2018-2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -475,7 +475,7 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
 
 void
 zoom_image(PixelsOnCartesianGrid<float> &image2D_out, 
-           const PixelsOnCartesianGrid<float> &image2D_in)
+           const PixelsOnCartesianGrid<float> &image2D_in, const ZoomOptions::ZO &zo)
 {
   /*
     see above for how to find zoom and offsets
@@ -511,6 +511,33 @@ zoom_image(PixelsOnCartesianGrid<float> &image2D_out,
     overlap_interpolate(temp[y], image2D_in[y], zoom_x, x_offset);
 
   overlap_interpolate(image2D_out, temp, zoom_y, y_offset);   
+
+  float scale_image = 1.F;
+
+    switch (zo)
+  {
+  case ZoomOptions::preserve_values:
+  {
+      scale_image =  zoom_x*zoom_y;
+      break;
+  }
+
+  case ZoomOptions::preserve_projections:
+
+  {
+      scale_image =  zoom_y;
+      break;
+  }
+
+  case ZoomOptions::preserve_sum:
+  {
+      return; // no need to scale
+  }
+
+    }
+
+   image2D_out*= scale_image;
+
 }
 
 END_NAMESPACE_STIR

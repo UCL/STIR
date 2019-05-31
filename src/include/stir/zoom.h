@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
-    Copyright (C) 2019, University College London
+    Copyright (C) 2018-2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -210,7 +210,7 @@ zoom \a image2D_in according to dimensions, origin and pixel_size of
 */
 void
 zoom_image(PixelsOnCartesianGrid<float> &image2D_out, 
-           const PixelsOnCartesianGrid<float> &image2D_in);
+           const PixelsOnCartesianGrid<float> &image2D_in, const ZoomOptions::ZO &zo = ZoomOptions::preserve_sum);
 
 /*!
   \brief zoom \a image, replacing the first argument with the new data
