@@ -52,7 +52,7 @@ int main(int argc, char **argv)
    if (argc>2 && strcmp(argv[1], "--scaling")==0)
        {
         char const * const scaling = argv[2];
-        if (strcmp(scaling, "preserve_sum")==0 || strcmp(scaling, "preserve_values")==0 || strcmp(scaling, "preserve_projections")!=0)
+        if (strcmp(scaling, "preserve_sum")==0 || strcmp(scaling, "preserve_values")==0 || strcmp(scaling, "preserve_projections")==0)
             zoom_options = static_cast<ZoomOptions::ZO>(atoi(scaling));
         else
             error("Unsupported scaling type. Usage: preserve_sum, preserve_values, preserve_projections. Sorry\n");
