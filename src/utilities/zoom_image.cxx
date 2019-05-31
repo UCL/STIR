@@ -66,7 +66,7 @@ int main(int argc, char **argv)
     << '\t' << argv[0] << " [--scaling option] <output filename> <input filename> sizexy [zoomxy [offset_in_mm_x [offset_in_mm_y [sizez [zoomz [offset_in_mm_z]]]]]]]\n"
 	<< "or alternatively\n"
     << '\t' << argv[0] << " [--scaling option] --template template_filename <output filename> <input filename>\n"
-    << "Suppoerted scaling option: preserve_sum, preserve_values, preserve_projections.\n";
+    << "Supported scaling option: preserve_sum, preserve_values, preserve_projections.\n";
     exit(EXIT_FAILURE);
   }
   
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 	  dynamic_cast<VoxelsOnCartesianGrid<float> *>(output_density_sptr.get());
 	if (output_image_ptr==NULL)
 	  error("Output image is not of VoxelsOnCartesianGrid type. Sorry\n");
-	zoom_image(*output_image_ptr, *image_ptr);
+	zoom_image(*output_image_ptr, *image_ptr, zoom_options);
       }
       // write it to file
       write_to_file(output_filename, *output_density_sptr);
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
 
 
   const VoxelsOnCartesianGrid<float> new_image = 
-    zoom_image(*image_ptr, zooms, offsets_in_mm, new_sizes);
+    zoom_image(*image_ptr, zooms, offsets_in_mm, new_sizes, zoom_options);
 
   // write it to file
   write_to_file(output_filename, new_image);
