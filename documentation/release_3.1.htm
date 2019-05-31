@@ -133,7 +133,7 @@ These are only minimally documented at the present stage unfortunately.
   </ul>
   </li>
     <li><code>CListModeData</code> got a new function <code>get_total_number_of_events()</code>, BUT currently only <code>CListModeDataFromROOT</code> supports it. </li> 
-<li> Reconstruction of listmode data has been corrected. LM-OSEM can be performed but only gometrical subsets are currently supported. 
+<li> Reconstruction of listmode data has been corrected. LM-OSEM can be performed but only geometrical subsets are currently supported. 
   </li>
 <li>Sensitivity calculation parallelized using distributed worker mechanism.</li>
 <li>Python (and MATLAB) interface
@@ -153,6 +153,7 @@ These are only minimally documented at the present stage unfortunately.
   </li>
 <li>Extract single images from dynamic image with executable <code>extract_dynamic_images</code>.
 </li>
+<li>New functionality added to <code>zoom_image</code>. The user can now specify different types of zoom: preserve_values, preserve_projections, preserve_sum.</li>  
   </ul>
 
 
@@ -363,6 +364,7 @@ In order to ensure backwards compatibility, at the moment, it is completely opti
  <li>Added the ability to <code>KeyParser</code> to parse <code>long int</code> numbers. Also add <code>remove_key</code>.
  </li>
  <li>Introduce <code>operator&gt;=</code> for <code>ProjDataInfo</code>.</li>
+<li>New functionality added to <code>zoom_image</code>. The user can now specify different types of zoom: preserve_values, preserve_projections, preserve_sum.</li>
 </ul>
 
 <h3>Other code changes</h3>
@@ -386,11 +388,6 @@ can handle the template.
   All derived classes of <code>CListEvent</code> will need to implement it.</li>
 <li>We removed <code>SeparableMetzArrayFilter::discrete_fourier_transform()</code>. Now <code>stir::fourier</code> is used. No need to comply with the Licence of "Numerical Recipies" anymore.</li>
 </li>
-</ul>
-
-<h3>Zoom Options</h3>
-<ul>
-<li>New functionality added to zoom_image. The user can now specify different types of zoom: preserve_values, preserve_projections, preserve_sum.</li>
 </ul>
 
 </body>
