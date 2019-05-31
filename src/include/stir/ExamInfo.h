@@ -58,8 +58,8 @@ public :
   ExamInfo()
     : start_time_in_secs_since_1970(0.)
     {
-      low_energy_thres = -1.f;
-      up_energy_thres = -1.f;
+      low_energy_thres = 450.f;
+      up_energy_thres = 650.f;
   }
 
   std::string originating_system;
