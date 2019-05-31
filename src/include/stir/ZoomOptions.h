@@ -1,6 +1,4 @@
 /*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
     Copyright (C) 2018-2019, University College London
     This file is part of STIR.
 
@@ -26,9 +24,9 @@
   \brief Declaration of class stir::ZoomOptions
   \ingroup buildblock
 
-  \author Kris Thielemans
   \author Ludovica Brusaferri
-
+  \author Kris Thielemans
+  
 */
 
 #include "stir/common.h"
@@ -37,16 +35,21 @@ START_NAMESPACE_STIR
 
 /*!
   \brief
-  This class enables the user to choose between different zooming options:
-  (i) preserve sum
-  (ii) preserve values
-  (iii) preserve projections
+  This class enables the user to choose between different zooming options
+  \ingroup buildblock
+  
+  The 3 possible values determine a global scale factor used for the end result:
+  (i) preserve sum (locally)
+  (ii) preserve values (like interpolation)
+  (iii) preserve projections: using a STIR forward projector on the zoomed image will give (approximately) the same projections.
+  
+  \see zoom_image
 */
 
 class ZoomOptions{
  public:
   enum ZO {preserve_sum, preserve_values, preserve_projections};
-  ZoomOptions(const ZO& v) : v(v) {}
+  ZoomOptions(const ZO v = preserve_sum) : v(v) {}
   private:
   ZO v;
 };
