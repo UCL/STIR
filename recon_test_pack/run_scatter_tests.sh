@@ -55,30 +55,32 @@ echo "===  make emission image"
 generate_image  generate_uniform_cylinder.par
 echo "===  use that as template for attenuation"
 stir_math --including-first --times-scalar .096 my_atten_image.hv my_uniform_cylinder.hv
+ATTEN_IMAGE=my_atten_image.hv
 
 echo "===  Downsample the attenuation image"
 # This will be used to "select" scatter points in the simulation.
 # Note: the more downsampling, the faster, but less accurate of course.
 # Downsampling factors and final size are currently hard-wired in this script.
 # You'd have to adjust these for your data.
-ATTEN_IMAGE=my_zoomed_my_atten_image.hv
+ZOOM_ATTEN_IMAGE=my_zoomed_my_atten_image.hv
 zoom_z=.16666667
 zoom_xy=0.25
 new_voxels_z=8
 new_voxels_xy=33
-zoom_image ${ATTEN_IMAGE} my_atten_image.hv ${new_voxels_xy} ${zoom_xy} 0 0 ${new_voxels_z} ${zoom_z} 0
+zoom_image ${ZOOM_ATTEN_IMAGE} ${ATTEN_IMAGE} ${new_voxels_xy} ${zoom_xy} 0 0 ${new_voxels_z} ${zoom_z} 0
 if [ $? -ne 0 ]; then
   echo "Error running zoom_image"
   exit 1
 fi
 # scale image back to appropriate units (cm^-1)
-stir_math --accumulate  --times-scalar ${zoom_xy}  --times-scalar ${zoom_xy} --times-scalar ${zoom_z}  --including-first ${ATTEN_IMAGE}
+stir_math --accumulate  --times-scalar ${zoom_xy}  --times-scalar ${zoom_xy} --times-scalar ${zoom_z}  --including-first ${ZOOM_ATTEN_IMAGE}
 if [ $? -ne 0 ]; then
   echo "Error running stir_math"
   exit 1
 fi
 
 export ATTEN_IMAGE
+export ZOOM_ATTEN_IMAGE
 echo "===  run scatter simulation (new)"
 simulate_scatter scatter_simulation_new.par > my_simulate_scatter_new.log
 if [ $? -ne 0 ]; then
@@ -88,11 +90,17 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-echo "===  compare result"
-# we need a fairly large threshold (4%) as scatter points are chosen randomly
-compare_projdata -t .04 my_scatter_cylinder.hs scatter_cylinder.hs > my_scatter_compare_projdata.log 2>&1
+echo "===  compare result with correct"
+compare_projdata my_scatter_cylinder.hs scatter_cylinder.hs > my_scatter_compare_projdata.log 2>&1
 if [ $? -ne 0 ]; then
   echo "Error comparing scatter output."
+  error_log_files="${error_log_files} my_scatter_compare_projdata.log"
+fi
+
+echo "===  compare result with old scatter simulation"
+compare_projdata my_scatter_cylinder.hs old_scatter_cylinder.hs > my_scatter_compare_with_old_projdata.log 2>&1
+if [ $? -ne 0 ]; then
+  echo "Error comparing scatter output with old scatter output."
   error_log_files="${error_log_files} my_scatter_compare_projdata.log"
 fi
 

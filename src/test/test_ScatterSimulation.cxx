@@ -94,10 +94,11 @@ test_downsampling_ProjDataInfo()
         check(*original_projdata == *sss_projdata, "Check the ProjDataInfo has been set correctly.");
     }
 
-    //Even number
+    // Downsample the scanner 50%
     {
-        int down_rings = 2;
-        int down_dets = 2;
+        int down_rings = static_cast<int>(test_scanner->get_num_rings()*0.5 + 0.5);
+        int down_dets = static_cast<int>(test_scanner->get_num_detectors_per_ring() * 0.5);
+
         sss->downsample_scanner(down_rings, down_dets);
         shared_ptr<ProjDataInfoCylindricalNoArcCorr> sss_projdata(sss->get_template_proj_data_info_sptr());
         check_if_equal(original_projdata->get_scanner_ptr()->get_num_rings(), 2*sss_projdata->get_scanner_ptr()->get_num_rings(), "Check the number of rings is correct");
@@ -118,13 +119,6 @@ test_downsampling_ProjDataInfo()
         Bin b2(sss_projdata->get_min_segment_num(),0,
                sss_projdata->get_max_axial_pos_num(sss_projdata->get_min_segment_num())/2,0);
         check_if_equal(original_projdata->get_m(b1), sss_projdata->get_m(b2), "Check center of Bin (min_seg, 0, mid_axial, 0, 0)");
-
-        check_if_equal(original_projdata->get_scanner_ptr()->get_num_detectors_per_ring(),
-              down_dets*sss_projdata->get_scanner_ptr()->get_num_detectors_per_ring(), "Check the number of detectors per ring.");
-
-        check_if_equal(original_projdata->get_num_views(),
-              down_dets*sss_projdata->get_num_views(), "Check the number of detectors per ring.");
-
     }
 
 }
@@ -278,11 +272,7 @@ ScatterSimulationTests::test_scatter_simulation()
     shared_ptr<VoxelsOnCartesianGrid<float> > tmpl_density( new VoxelsOnCartesianGrid<float>(*original_projdata_info));
 
     sss->set_template_proj_data_info_sptr(original_projdata_info);
-    sss->downsample_scanner(1,8);
-    shared_ptr<ProjDataInfoCylindricalNoArcCorr> output_projdata_info(sss->get_template_proj_data_info_sptr());
 
-    shared_ptr<ProjDataInMemory> sss_output(new ProjDataInMemory(exam, output_projdata_info));
-    sss->set_output_proj_data_sptr(sss_output);
 
     shared_ptr<VoxelsOnCartesianGrid<float> > water_density(tmpl_density->clone());
     {
@@ -300,7 +290,6 @@ ScatterSimulationTests::test_scatter_simulation()
 
     sss->set_density_image_sptr(water_density);
     sss->set_density_image_for_scatter_points_sptr(water_density);
-    sss->downsample_image(0.25, 0.5);
     sss->set_random_point(false);
 
     shared_ptr<VoxelsOnCartesianGrid<float> > act_density(tmpl_density->clone());
@@ -317,6 +306,11 @@ ScatterSimulationTests::test_scatter_simulation()
     }
 
     sss->set_activity_image_sptr(act_density);
+    sss->default_downsampling();
+
+    shared_ptr<ProjDataInfoCylindricalNoArcCorr> output_projdata_info(sss->get_template_proj_data_info_sptr());
+    shared_ptr<ProjDataInMemory> sss_output(new ProjDataInMemory(exam, output_projdata_info));
+    sss->set_output_proj_data_sptr(sss_output);
 
     check(sss->process_data() == Succeeded::yes ? true : false, "Check Scatter Simulation process");
 

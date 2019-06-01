@@ -1,5 +1,5 @@
 !INTERFILE  :=
-name of data file := scatter_cylinder.s
+name of data file := old_scatter_cylinder.s
 originating system := unknown
 !version of keys := STIR3.0
 !GENERAL DATA :=
@@ -45,8 +45,6 @@ Number of crystals per singles unit in transaxial direction := -1
 end scanner parameters:=
 effective central bin size (cm) := 2.21541
 number of time frames := 1
-energy window lower level := 350
-energy window upper level :=  650
 start vertical bed position (mm) := 0
 start horizontal bed position (mm) := 0
 !END OF INTERFILE :=

@@ -54,14 +54,14 @@ static void print_usage_and_exit()
                "attenuation image filename := \n"
                "attenuation image for scatter points filename := \n"
                "activity image filename :=\n"
-               "output filename prefix := ${OUTPUT_PREFIX}\n"
+               "output filename prefix := \n"
                "zoom XY for attenuation image for scatter points := 1\n"
-               "size XY for attenuation image for scatter points := -1\n"
                "zoom Z for attenuation image for scatter points: := 1\n"
-               "size Z for attenuation image for scatter points := -1\n"
+               "XY size of downsampled image for scatter points :=\n"
+               "Z size of downsampled image for scatter points :=\n"
                "attenuation image for scatter points output filename :=\n"
-               "reduce number of detectors per ring by:= 1\n"
-               "reduce number of rings by:= 1\n"
+               "downsampled scanner number of detectors per ring := 32\n"
+               "downsampled scanner number of rings := \n"
                "attenuation threshold := 0.01\n"
                "random := 1\n"
                "use cache := 1\n"
@@ -90,6 +90,9 @@ int main(int argc, const char *argv[])
     parser.add_stop_key("End Scatter Simulation");
     parser.add_parsing_key("Simulation method", &simulation_method_sptr);
     parser.parse(argv[1]);
+
+    if(simulation_method_sptr->set_up() == Succeeded::no)
+        return EXIT_FAILURE;
 
     if(simulation_method_sptr->process_data() == stir::Succeeded::yes)
     {

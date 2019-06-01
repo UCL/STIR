@@ -203,6 +203,8 @@ ScatterSimulation::set_defaults()
     this->use_cache = true;
     this->zoom_xy = 1.f;
     this->zoom_z = 1.f;
+    this->zoom_size_xy = -1;
+    this->zoom_size_z = -1;
     this->downsample_scanner_dets = 1;
     this->downsample_scanner_rings = 1;
     this->density_image_filename = "";
@@ -224,7 +226,6 @@ ask_parameters()
     this->density_image_filename = ask_string("density image filename", "");
     this->activity_image_filename = ask_string("activity image filename", "");
     this->density_image_for_scatter_points_filename = ask_string("density image for scatter points filename", "");
-    // if empty ... ask zoom_xy and zoom_z
     this->template_proj_data_filename = ask_string("Scanner ProjData filename", "");
 }
 
@@ -244,11 +245,15 @@ ScatterSimulation::initialise_keymap()
                          &this->zoom_xy);
     this->parser.add_key("zoom Z for attenuation image for scatter points",
                          &this->zoom_z);
+    this->parser.add_key("XY size of downsampled image for scatter points",
+                         &this->zoom_size_xy);
+    this->parser.add_key("Z size of downsampled image for scatter points",
+                         &this->zoom_size_z);
     this->parser.add_key("attenuation image for scatter points output filename",
                          &this->density_image_for_scatter_points_output_filename);
-    this->parser.add_key("reduce number of detectors per ring by",
+    this->parser.add_key("downsampled scanner number of detectors per ring",
                          &this->downsample_scanner_dets);
-    this->parser.add_key("reduce number of rings by",
+    this->parser.add_key("downsampled scanner number of rings",
                          &this->downsample_scanner_rings);
     this->parser.add_key("activity image filename",
                          &this->activity_image_filename);
@@ -299,9 +304,35 @@ Succeeded
 ScatterSimulation::
 set_up()
 {
-//    if (!is_null_ptr())
-//    this->set_template_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone());
-//    //this->set_exam_info_sptr(template_proj_data_sptr->get_exam_info_ptr()->create_shared_clone());
+    if (is_null_ptr(proj_data_info_cyl_noarc_cor_sptr))
+        return Succeeded::no;
+
+    if (!proj_data_info_cyl_noarc_cor_sptr->has_energy_information())
+        return Succeeded::no;
+
+    if(!template_exam_info_sptr->has_energy_information())
+        return Succeeded::no;
+
+    if(is_null_ptr(activity_image_sptr))
+        return Succeeded::no;
+
+    if(is_null_ptr(density_image_sptr))
+        return Succeeded::no;
+
+    if(is_null_ptr(density_image_for_scatter_points_sptr))
+    {
+        if(!is_null_ptr(density_image_sptr))
+        {
+           set_density_image_for_scatter_points_sptr(density_image_sptr);
+        }
+        else
+        {
+            return Succeeded::no;
+        }
+    }
+
+    if(is_null_ptr(output_proj_data_sptr))
+        return Succeeded::no;
 
     return Succeeded::yes;
 }
@@ -396,32 +427,35 @@ set_density_image_for_scatter_points(const std::string& filename)
 
 void
 ScatterSimulation::
-set_image_downsample_factors(float factor_xy, float factor_z, bool scale)
+set_image_downsample_factors(float _zoom_xy, float _zoom_z,
+                             int _size_zoom_xy, int _size_zoom_z, bool scale)
 {
-    zoom_xy = factor_xy;
-    zoom_z = factor_z;
+    zoom_xy = _zoom_xy;
+    zoom_z = _zoom_z;
+    zoom_size_xy = _size_zoom_xy;
+    zoom_size_z = _size_zoom_z;
     scale_image = scale;
 }
 
 void
 ScatterSimulation::
-downsample_image(float factor_xy, float factor_z, bool scale)
+downsample_image(float _zoom_xy, float _zoom_z, bool scale,
+                 int _size_xy, int _size_z)
 {
+    zoom_xy = _zoom_xy;
+    zoom_z = _zoom_z;
+    zoom_size_xy = _size_xy;
+    zoom_size_z = _size_z;
 
-
-    zoom_xy = factor_xy;
-    zoom_z = factor_z;
     scale_image = scale;
 
     int old_x = dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_x_size();
     int old_y = dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_y_size();
     int old_z = dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_z_size();
 
-    CartesianCoordinate3D<float> grid = dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_grid_spacing();
-
-    int new_x = static_cast<int>(old_x * factor_xy);
-    int new_y = static_cast<int>(old_y * factor_xy);
-    int new_z = static_cast<int>(old_z * factor_z);
+    int new_x = _size_xy == -1 ? static_cast<int>(old_x * zoom_xy) : _size_xy;
+    int new_y = _size_xy == -1 ? static_cast<int>(old_y * zoom_xy) : _size_xy;
+    int new_z = _size_z == -1 ? static_cast<int>(old_z * zoom_z) : _size_z;
 
     if (new_x%2 == 0 || new_y%2 == 0 )
     {
@@ -433,7 +467,7 @@ downsample_image(float factor_xy, float factor_z, bool scale)
     CartesianCoordinate3D<float> offset_in_mm = dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_origin();
 
     zoom_image_in_place( *dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get()),
-                         CartesianCoordinate3D<float>(factor_z, factor_xy, factor_xy),
+                         CartesianCoordinate3D<float>(zoom_z, zoom_xy, zoom_xy),
                          offset_in_mm,
                          CartesianCoordinate3D<int>(new_z, new_y, new_x));
 
@@ -461,7 +495,6 @@ downsample_image(float factor_xy, float factor_z, bool scale)
 
     this->sample_scatter_points();
     this->remove_cache_for_integrals_over_attenuation();
-
 }
 
 
@@ -534,14 +567,6 @@ set_template_proj_data_info_sptr(shared_ptr<ProjDataInfo> arg)
 
     if (is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr))
         error("ScatterSimulation: Can only handle non-arccorrected data");
-
-//    if (this->proj_data_info_cyl_noarc_cor_sptr->get_num_segments() > 1) // do SSRB
-//    {
-//        info("ScatterSimulation: Performing SSRB on template info ...");
-//        this->proj_data_info_cyl_noarc_cor_sptr.reset(
-//                dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(SSRB(* this->proj_data_info_cyl_noarc_cor_sptr,
-//                                                                      this->proj_data_info_cyl_noarc_cor_sptr->get_num_segments(), 1, false)));
-//    }
 
     // find final size of detection_points_vector
     this->total_detectors =
@@ -616,54 +641,43 @@ set_exam_info_sptr(const shared_ptr<ExamInfo>& arg)
     this->template_exam_info_sptr = arg;
 }
 
-void
-ScatterSimulation::downsample_scanner(int _downsample_scanner_rings, int _downsample_scanner_dets)
+Succeeded
+ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
 {
-    int ring_factor = 1;
-    int det_factor = 1;
-    if (_downsample_scanner_rings == 1)
-        ring_factor = downsample_scanner_rings;
-    else {
-        ring_factor = _downsample_scanner_rings;
-        downsample_scanner_rings = _downsample_scanner_rings;
-    }
-    if (_downsample_scanner_dets == 1)
-        det_factor = downsample_scanner_dets;
-    else {
-        det_factor = _downsample_scanner_dets;
-        downsample_scanner_dets = _downsample_scanner_dets;
-    }
+    if (new_num_rings == -1)
+        if(downsample_scanner_rings > -1)
+            new_num_rings = downsample_scanner_rings;
+        else
+            return Succeeded::no;
 
-    // copy localy.
+    if (new_num_dets == -1)
+        if(downsample_scanner_dets > -1)
+            new_num_dets = downsample_scanner_dets;
+        else
+            return Succeeded::no;
+
+
     info("ScatterSimulator: Downsampling scanner of template info ...");
+    // copy localy.
     shared_ptr<Scanner> new_scanner_sptr( new Scanner(*this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()));
 
-    // preserve the lenght of the scanner
+    // preserve the length of the scanner
     float scanner_length = new_scanner_sptr->get_num_rings()* new_scanner_sptr->get_ring_spacing();
 
-    new_scanner_sptr->set_num_rings(static_cast<int>(static_cast<float>(new_scanner_sptr->get_num_rings())/ring_factor  + 0.5f ));
-    new_scanner_sptr->set_num_detectors_per_ring(static_cast<int>(new_scanner_sptr->get_num_detectors_per_ring()/det_factor));
+    new_scanner_sptr->set_num_rings(new_num_rings);
+    new_scanner_sptr->set_num_detectors_per_ring(new_num_dets);
     new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_length/new_scanner_sptr->get_num_rings()));
-    new_scanner_sptr->set_max_num_non_arccorrected_bins(static_cast<int>(new_scanner_sptr->get_max_num_non_arccorrected_bins()/det_factor));
+    new_scanner_sptr->set_max_num_non_arccorrected_bins(static_cast<int>(new_num_dets/2));
 
-    int delta_ring = 0;
-    if (is_null_ptr(proj_data_info_cyl_noarc_cor_sptr))
-        delta_ring = new_scanner_sptr->get_num_rings()-1;
-    else {
-        if(proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num() < new_scanner_sptr->get_num_rings()-1)
-            delta_ring = proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
-        else {
-            delta_ring = new_scanner_sptr->get_num_rings()-1;
-        }
-    }
+    // Find how much is the delta ring
+    int delta_ring = new_scanner_sptr->get_num_rings()-1;
 
     this->proj_data_info_cyl_noarc_cor_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(
                                                       ProjDataInfo::ProjDataInfoCTI(new_scanner_sptr,
                                                                                     1, delta_ring,
                                                                                     new_scanner_sptr->get_num_detectors_per_ring()/2,
                                                                                     new_scanner_sptr->get_max_num_non_arccorrected_bins(),
-                                                                                    false)->clone())
-                                                  );
+                                                                                    false)->clone()));
 
     // find final size of detection_points_vector
     this->total_detectors =
@@ -676,6 +690,69 @@ ScatterSimulation::downsample_scanner(int _downsample_scanner_rings, int _downsa
     // remove any cached values as they'd be incorrect if the sizes changes
     this->remove_cache_for_integrals_over_attenuation();
     this->remove_cache_for_integrals_over_activity();
+
+    return Succeeded::yes;
+}
+
+Succeeded ScatterSimulation::default_downsampling()
+{
+    if(is_null_ptr(proj_data_info_cyl_noarc_cor_sptr))
+            return Succeeded::no;
+
+    float total_axial_length = proj_data_info_cyl_noarc_cor_sptr->get_scanner_sptr()->get_num_rings() *
+            proj_data_info_cyl_noarc_cor_sptr->get_scanner_sptr()->get_ring_spacing();
+
+    int new_num_rings = round(total_axial_length / 20);
+
+    if(downsample_scanner(new_num_rings, 32) == Succeeded::no)
+        return Succeeded::no;
+
+    // Downsample the activity and attanuation images
+    shared_ptr<VoxelsOnCartesianGrid<float> > tmpl_density( new VoxelsOnCartesianGrid<float>(*proj_data_info_cyl_noarc_cor_sptr));
+
+    if(!is_null_ptr(activity_image_sptr))
+    {
+        VoxelsOnCartesianGrid<float>* tmp_act = dynamic_cast<VoxelsOnCartesianGrid<float>* >(activity_image_sptr.get());
+        float _zoom_xy =
+                tmpl_density->get_voxel_size().x() / tmp_act->get_voxel_size().x();
+        float _zoom_z =
+                tmpl_density->get_voxel_size().z() / tmp_act->get_voxel_size().z();
+
+        zoom_image(*tmp_act, *tmpl_density);
+
+        *tmp_act *= _zoom_xy * _zoom_xy * _zoom_z;
+
+        this->remove_cache_for_integrals_over_activity();
+    }
+
+    if(!is_null_ptr(density_image_sptr))
+    {
+        VoxelsOnCartesianGrid<float>* tmp_att = dynamic_cast<VoxelsOnCartesianGrid<float>* >(density_image_sptr.get());
+        float _zoom_xy =
+                tmpl_density->get_voxel_size().x() / tmp_att->get_voxel_size().x();
+        float _zoom_z =
+                tmpl_density->get_voxel_size().z() / tmp_att->get_voxel_size().z();
+
+        zoom_image(*tmp_att, *tmpl_density);
+        *tmp_att *= _zoom_xy * _zoom_xy * _zoom_z;
+
+        this->remove_cache_for_integrals_over_attenuation();
+    }
+
+    if(!is_null_ptr(density_image_for_scatter_points_sptr))
+    {
+        VoxelsOnCartesianGrid<float>* tmp_att = dynamic_cast<VoxelsOnCartesianGrid<float>* >(density_image_for_scatter_points_sptr.get());
+        float _zoom_xy =
+                tmpl_density->get_voxel_size().x() / tmp_att->get_voxel_size().x();
+        float _zoom_z =
+                tmpl_density->get_voxel_size().z() / tmp_att->get_voxel_size().z();
+
+        zoom_image(*tmp_att, *tmpl_density);
+        *tmp_att *= _zoom_xy * _zoom_xy * _zoom_z;
+
+        this->sample_scatter_points();
+        this->remove_cache_for_integrals_over_attenuation();
+    }
 }
 
 void
