@@ -42,6 +42,16 @@ using std::cerr;
 
 USING_NAMESPACE_STIR
 
+static void print_usage_and_exit(const std::string& prog_name)
+{
+  cerr<<"Usage: \n" 
+      << '\t' << prog_name << " [--scaling option] <output filename> <input filename> sizexy [zoomxy [offset_in_mm_x [offset_in_mm_y [sizez [zoomz [offset_in_mm_z]]]]]]]\n"
+      << "or alternatively\n"
+      << '\t' << prog_name << " [--scaling option] --template template_filename <output filename> <input filename>\n"
+      << "Supported scaling option: preserve_sum, preserve_values, preserve_projections.\n";
+  exit(EXIT_FAILURE);
+}
+
 int main(int argc, char **argv)
 {
   const char * const prog_name = argv[0];
@@ -64,18 +74,15 @@ int main(int argc, char **argv)
        argv +=2;
      }
        
-  if(argc<4) {
-    cerr<<"Usage: \n" 
-        << '\t' << prog_name << " [--scaling option] <output filename> <input filename> sizexy [zoomxy [offset_in_mm_x [offset_in_mm_y [sizez [zoomz [offset_in_mm_z]]]]]]]\n"
-        << "or alternatively\n"
-        << '\t' << prog_name << " [--scaling option] --template template_filename <output filename> <input filename>\n"
-        << "Supported scaling option: preserve_sum, preserve_values, preserve_projections.\n";
-    exit(EXIT_FAILURE);
-  }
+  if(argc<4)
+    print_usage_and_exit(prog_name);
   
   // get parameters from command line
   if (strcmp(argv[1], "--template")==0)
-    {      
+    {
+      if (argc!=5)
+        print_usage_and_exit(prog_name);
+
       char const * const template_filename = argv[2];
       char const * const output_filename = argv[3];
       char const * const input_filename = argv[4];
