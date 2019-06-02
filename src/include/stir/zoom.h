@@ -150,7 +150,8 @@ VoxelsOnCartesianGrid<float>
 zoom_image(const VoxelsOnCartesianGrid<float> &image,
 	   const CartesianCoordinate3D<float>& zooms,
 	   const CartesianCoordinate3D<float>& offsets_in_mm,
-	   const BasicCoordinate<3,int>& new_sizes);
+	   const BasicCoordinate<3,int>& new_sizes,
+           const ZoomOptions = ZoomOptions::preserve_sum);
 
 /*! 
   \brief 
@@ -180,7 +181,8 @@ void
 zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
 		    const CartesianCoordinate3D<float>& zooms,
 		    const CartesianCoordinate3D<float>& offsets_in_mm,
-		    const BasicCoordinate<3,int>& new_sizes);
+		    const BasicCoordinate<3,int>& new_sizes,
+                    const ZoomOptions = ZoomOptions::preserve_sum);
 
 /*!
  \brief zoom \a image_in according to dimensions, origin and voxel_size of \a image_out.
@@ -198,7 +200,8 @@ zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
 */
 void 
 zoom_image(VoxelsOnCartesianGrid<float> &image_out, 
-       const VoxelsOnCartesianGrid<float> &image_in, const ZoomOptions::ZO &zo = ZoomOptions::preserve_sum);
+           const VoxelsOnCartesianGrid<float> &image_in,
+           const ZoomOptions = ZoomOptions::preserve_sum);
 
 //------------------ 2D zooms---------------------
 
@@ -210,7 +213,8 @@ zoom \a image2D_in according to dimensions, origin and pixel_size of
 */
 void
 zoom_image(PixelsOnCartesianGrid<float> &image2D_out, 
-           const PixelsOnCartesianGrid<float> &image2D_in, const ZoomOptions::ZO &zo = ZoomOptions::preserve_sum);
+           const PixelsOnCartesianGrid<float> &image2D_in,
+           const ZoomOptions = ZoomOptions::preserve_sum);
 
 /*!
   \brief zoom \a image, replacing the first argument with the new data
@@ -220,7 +224,8 @@ VoxelsOnCartesianGrid<float>
 zoom_image(const VoxelsOnCartesianGrid<float> &image,
 	   const float zoom,
 	   const float x_offset_in_mm, const float y_offset_in_mm, 
-	   const int new_size);
+	   const int new_size,
+           const ZoomOptions = ZoomOptions::preserve_sum);
 
 /*!
   \brief zoom \a image, replacing the first argument with the new data
@@ -230,7 +235,8 @@ void
 zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
 		    const float zoom,
 		    const float x_offset_in_mm, const float y_offset_in_mm, 
-		    const int new_size);
+		    const int new_size,
+                    const ZoomOptions = ZoomOptions::preserve_sum);
 
 //@}
 

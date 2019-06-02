@@ -44,29 +44,32 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-  // default value for scaling
-  ZoomOptions::ZO zoom_options = ZoomOptions::preserve_sum;
+  const char * const prog_name = argv[0];
 
+  // default value for scaling
+  ZoomOptions zoom_options = ZoomOptions::preserve_sum;
+  
   if (argc>2 && strcmp(argv[1], "--scaling")==0)
      {
        char const * const scaling = argv[2];
        if (strcmp(scaling, "preserve_sum")==0)
            zoom_options = ZoomOptions::preserve_sum;
-       if (strcmp(scaling, "preserve_values")==0)
+       else if (strcmp(scaling, "preserve_values")==0)
            zoom_options = ZoomOptions::preserve_values;
-       if (strcmp(scaling, "preserve_projections")==0)
+       else if (strcmp(scaling, "preserve_projections")==0)
            zoom_options = ZoomOptions::preserve_projections;
        else
-          error("Unsupported scaling type. Usage: preserve_sum, preserve_values, preserve_projections. Sorry\n");
+          error("Unsupported scaling type. Usage: preserve_sum, preserve_values, preserve_projections.");
        argc -=2;
-       argc +=2;
-
+       argv +=2;
+     }
+       
   if(argc<4) {
     cerr<<"Usage: \n" 
-    << '\t' << argv[0] << " [--scaling option] <output filename> <input filename> sizexy [zoomxy [offset_in_mm_x [offset_in_mm_y [sizez [zoomz [offset_in_mm_z]]]]]]]\n"
-	<< "or alternatively\n"
-    << '\t' << argv[0] << " [--scaling option] --template template_filename <output filename> <input filename>\n"
-    << "Supported scaling option: preserve_sum, preserve_values, preserve_projections.\n";
+        << '\t' << prog_name << " [--scaling option] <output filename> <input filename> sizexy [zoomxy [offset_in_mm_x [offset_in_mm_y [sizez [zoomz [offset_in_mm_z]]]]]]]\n"
+        << "or alternatively\n"
+        << '\t' << prog_name << " [--scaling option] --template template_filename <output filename> <input filename>\n"
+        << "Supported scaling option: preserve_sum, preserve_values, preserve_projections.\n";
     exit(EXIT_FAILURE);
   }
   
@@ -100,7 +103,7 @@ int main(int argc, char **argv)
 
       return EXIT_SUCCESS;
     }
-    }
+
   // old cmdline conventions
 
   char const * const output_filename = argv[1];

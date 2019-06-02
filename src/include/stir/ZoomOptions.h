@@ -48,10 +48,11 @@ START_NAMESPACE_STIR
 
 class ZoomOptions{
  public:
-  enum ZO {preserve_sum, preserve_values, preserve_projections};
-  ZoomOptions(const ZO v = preserve_sum) : v(v) {}
-  private:
-  ZO v;
+  enum Scaling {preserve_sum, preserve_values, preserve_projections};
+  ZoomOptions(const Scaling v = preserve_sum) : v(v) {}
+  Scaling get_scaling_option() const { return v; }
+ private:
+  Scaling v;
 };
 
 END_NAMESPACE_STIR
