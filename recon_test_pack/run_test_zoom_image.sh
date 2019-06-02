@@ -2,8 +2,6 @@
 # A script to check to see if zoom_image scales things ok.
 #
 #  Copyright (C) 2005, Hammersmith Imanet Ltd (boiler plate code for option processing)
-#  Copyright (C) 2011 - 2011-01-14, Hammersmith Imanet Ltd
-#  Copyright (C) 2011-07-01 - 2011, Kris Thielemans
 #  Copyright (C) 2019, University College London
 #  This file is part of STIR.
 #
@@ -104,9 +102,10 @@ generate_image  generate_uniform_cylinder.par
 error_log_files=""
 
 input_image=my_uniform_cylinder.hv
-input_voxel_size_x=`stir_print_voxel_sizes.sh ${input_image}|awk '{print $3}'`
 ROI=ROI_uniform_cylinder.par
 org_ROI_mean=`get_ROI_value ${input_image}`
+
+echo "===  running zoom_image and compare ROI values"
 
 # running with same template (no changes expected)
 zoom_image --template $input_image my_zoom_test.hv $input_image
@@ -149,6 +148,8 @@ then
   exit 1
 fi
 
+echo "===  make attenuation image"
+generate_image  generate_atten_cylinder.par
 
 echo "===  create template sinogram (DSTE in 3D with max ring diff 2 to save time)"
 template_sino=my_DSTE_3D_rd2_template.hs
@@ -164,6 +165,8 @@ create_projdata_template  ${template_sino} < my_input.txt > my_create_${template
 if [ $? -ne 0 ]; then 
   echo "ERROR running create_projdata_template. Check my_create_${template_sino}.log"; exit 1; 
 fi
+
+echo "===  running projections to check if result is the same when using preserve-projections"
 
 # create sinograms (use zero background)
 ./simulate_data.sh my_uniform_cylinder.hv my_atten_image.hv ${template_sino} 0
