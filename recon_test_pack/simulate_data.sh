@@ -26,15 +26,20 @@ if [ -n "$TRAVIS" ]; then
     set -e
 fi
 
-if [ $# -ne 3 ]; then
-  echo "Usage: `basename $0` emission_image attenuation_image template_sino"
-  echo "Creates my_prompts.hs my_randoms.hs my_acfs.hs my_additive_sinogram.hs "
+if [ $# -lt 3  -o $# -gt 4 ]; then
+  echo "Usage: `basename $0` emission_image attenuation_image template_sino  [ background_value ]"
+  echo "Creates my_prompts.hs my_randoms.hs my_acfs.hs my_additive_sinogram.hs"
   exit 1
 fi
 
 emission_image=$1
 atten_image=$2
 template_sino=$3
+if [ $# -gt 3 ]; then
+  background_value=$4
+else
+  background_value=10
+fi
 
 echo "===  create ACFs"
 calculate_attenuation_coefficients --ACF my_acfs.hs ${atten_image} ${template_sino} > my_create_acfs.log 2>&1
@@ -51,7 +56,7 @@ fi
 
 echo "=== create constant randoms background"
 ${INSTALL_DIR}stir_math -s --including-first \
-         --times-scalar 0 --add-scalar 10 \
+         --times-scalar 0 --add-scalar $background_value \
          my_randoms my_line_integrals.hs
 if [ $? -ne 0 ]; then 
   echo "ERROR running stir_math"; exit 1; 
