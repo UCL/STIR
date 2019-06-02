@@ -3,6 +3,9 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011,  Hammersmith Imanet Ltd 
+    Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
+                        Australian eHealth Research Centre
+    Copyright (C) 2019, University College London
     This file is part of STIR. 
  
     This file is free software; you can redistribute it and/or modify 
@@ -23,9 +26,10 @@
   
   \brief Test program for stir::VoxelsOnCartesianGrid and image hierarchy
     
-   \author Sanida Mustafovic
-   \author Kris Thielemans
-   \author PARAPET project
+  \author Ashley Gillman
+  \author Sanida Mustafovic
+  \author Kris Thielemans
+  \author PARAPET project
       
 */
 
@@ -200,7 +204,21 @@ VoxelsOnCartesianGridTests::run_tests()
                                                 scanner_ptr->get_default_bin_size()/zoom),
                    "test on grid spacing");
     check_if_equal(ob5.get_origin(), origin);
-    
+
+    {
+      // with different zooms
+      shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo());
+      CartesianCoordinate3D<float> zooms(1.1F,1.2F,1.3F);
+      VoxelsOnCartesianGrid<float>
+        ob6(exam_info_sptr, *proj_data_info_ptr,zooms,origin,CartesianCoordinate3D<int>(z_size,xy_size,xy_size));
+      check_if_equal(ob6.get_grid_spacing(),
+                     CartesianCoordinate3D<float>(scanner_ptr->get_ring_spacing()/2/zooms[1],
+                                                  scanner_ptr->get_default_bin_size()/zooms[2],
+                                                  scanner_ptr->get_default_bin_size()/zooms[3]),
+                     "test on grid spacing (3 different zooms)");
+      check_if_equal(ob6.get_origin(), origin);
+    }
+
     {
       cerr << "Tests get_empty_voxels_on_cartesian_grid\n";
       

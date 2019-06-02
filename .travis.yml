@@ -19,6 +19,9 @@ matrix:
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON" CC=gcc-5 CXX=g++-5
  - os: linux
    python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON" -DCMAKE_CXX_STANDARD=11 CC=gcc-5 CXX=g++-5
+ - os: linux
+   python: 3
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CC=clang-5.0 CXX=clang++-5.0
    # note: cannot use OpenMP yet with Clang on Travis apparently. See https://github.com/travis-ci/travis-ci/issues/8613
 

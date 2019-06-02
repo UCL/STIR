@@ -260,7 +260,8 @@ construct_new_image_from_zoom_parameters(const VoxelsOnCartesianGrid<float> &ima
     origin(0.F,0.F,0.F);
   
   VoxelsOnCartesianGrid<float> 
-    new_image(IndexRange3D(0, new_sizes.z()-1,
+    new_image(image.get_exam_info_sptr(),
+              IndexRange3D(0, new_sizes.z()-1,
 			   -new_sizes.y()/2, -new_sizes.y()/2+new_sizes.y()-1,
 			   -new_sizes.x()/2, -new_sizes.x()/2+new_sizes.x()-1),
 	      origin,
@@ -374,7 +375,7 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
            const VoxelsOnCartesianGrid<float> &image_in,
            const ZoomOptions zoom_options)
 {
-
+  image_out.set_exam_info(image_in.get_exam_info());
 /*
      interpolation routine uses the following relation:
          x_in_index = x_out_index/zoom  + offset
@@ -483,6 +484,7 @@ zoom_image(PixelsOnCartesianGrid<float> &image2D_out,
            const PixelsOnCartesianGrid<float> &image2D_in,
            const ZoomOptions zoom_options)
 {
+  image2D_out.set_exam_info(image2D_in.get_exam_info());
   /*
     see above for how to find zoom and offsets
   */
