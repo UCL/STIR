@@ -171,7 +171,7 @@ def test_zoom_image():
         # not sure why we need to explicitly call __div__
         middle_in_mm=FloatCartesianCoordinate3D((min_in_mm+max_in_mm).__div__(2))
     else:
-        middle_in_mm=FloatCartesianCoordinate3D((min_in_mm+max_in_mm)/2)
+        middle_in_mm=FloatCartesianCoordinate3D((min_in_mm+max_in_mm)/2.)
     zoom=2
     offset=1
     new_size=6
@@ -180,11 +180,11 @@ def test_zoom_image():
     assert zoomed_image[ind]==1./(zoom*zoom)
     # awkward syntax...
     zoomed_image=zoom_image(image, zoom, offset, offset, new_size, ZoomOptions(ZoomOptions.preserve_sum))
-    assert zoomed_image[ind]==1./(zoom*zoom)
+    assert abs(zoomed_image[ind]-1./(zoom*zoom))<.001
     zoomed_image=zoom_image(image, zoom, offset, offset, new_size, ZoomOptions(ZoomOptions.preserve_values))
-    assert zoomed_image[ind]==1
+    assert abs(zoomed_image[ind]-1)<.001
     zoomed_image=zoom_image(image, zoom, offset, offset, new_size, ZoomOptions(ZoomOptions.preserve_projections))
-    assert zoomed_image[ind]==1./(zoom)
+    assert abs(zoomed_image[ind]-1./(zoom))<.001
     
 def test_Scanner():
     s=Scanner.get_scanner_from_name("ECAT 962")
