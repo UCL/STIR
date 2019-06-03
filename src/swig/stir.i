@@ -58,6 +58,7 @@
  #include "stir/ProjData.h"
  #include "stir/ProjDataInMemory.h"
  #include "stir/ProjDataInterfile.h"
+    
 
 #include "stir/CartesianCoordinate2D.h"
 #include "stir/CartesianCoordinate3D.h"
