@@ -30,7 +30,6 @@ except ImportError:
 
 from stir import *
 import stirextra
-import sys
 
 def test_Vector():
     dv=FloatVector(3)
