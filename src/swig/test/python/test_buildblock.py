@@ -167,11 +167,11 @@ def test_zoom_image():
     image.fill(1)
     # find coordinate of middle of image for later use (independent of image sizes etc)
     [min_in_mm, max_in_mm]=stirextra.get_physical_coordinates_for_bounding_box(image)
-    if sys.version_info[0] < 3:
-        # not sure why we need to explicitly call __div__
-        middle_in_mm=FloatCartesianCoordinate3D((min_in_mm+max_in_mm).__div__(2))
-    else:
+    try:
         middle_in_mm=FloatCartesianCoordinate3D((min_in_mm+max_in_mm)/2.)
+    except:
+        # SWIG versinos pre 3.0.11 had a bug, which we try to work around here
+        middle_in_mm=FloatCartesianCoordinate3D((min_in_mm+max_in_mm).__div__(2))
     zoom=2
     offset=1
     new_size=6
