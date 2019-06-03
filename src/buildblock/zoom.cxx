@@ -453,29 +453,29 @@ zoom_image(VoxelsOnCartesianGrid<float> &image_out,
   float scale_image = 1.F;
 
   switch (zoom_options.get_scaling_option())
-  {
-  case ZoomOptions::preserve_values:
-  {
-      scale_image =  zoom_x*zoom_y*zoom_z;
-      break;
-  }
+    {
+    case ZoomOptions::preserve_values:
+      {
+        scale_image =  zoom_x*zoom_y*zoom_z;
+        break;
+      }
 
-  case ZoomOptions::preserve_projections:
+    case ZoomOptions::preserve_projections:
 
-  {
-      scale_image =  zoom_y*zoom_z;
-      break;
-  }
+      {
+        scale_image =  zoom_y*zoom_z;
+        break;
+      }
 
-  case ZoomOptions::preserve_sum:
-  {
-      return; // no need to scale
-  }
+    case ZoomOptions::preserve_sum:
+      {
+        return; // no need to scale
+      }
 
     }
 
-
-   image_out*= scale_image;
+  if (scale_image != 1.F)
+    image_out*= scale_image;
 
 }
 
@@ -523,28 +523,29 @@ zoom_image(PixelsOnCartesianGrid<float> &image2D_out,
   float scale_image = 1.F;
 
   switch (zoom_options.get_scaling_option())
-  {
-  case ZoomOptions::preserve_values:
-  {
-      scale_image =  zoom_x*zoom_y;
-      break;
-  }
+    {
+    case ZoomOptions::preserve_values:
+      {
+        scale_image =  zoom_x*zoom_y;
+        break;
+      }
 
-  case ZoomOptions::preserve_projections:
+    case ZoomOptions::preserve_projections:
 
-  {
-      scale_image =  zoom_y;
-      break;
-  }
+      {
+        scale_image =  zoom_y;
+        break;
+      }
 
-  case ZoomOptions::preserve_sum:
-  {
-      return; // no need to scale
-  }
+    case ZoomOptions::preserve_sum:
+      {
+        return; // no need to scale
+      }
 
     }
 
-   image2D_out*= scale_image;
+  if (scale_image != 1.F)
+    image2D_out*= scale_image;
 
 }
 
