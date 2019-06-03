@@ -157,6 +157,7 @@ def test_FloatVoxelsOnCartesianGrid():
     assert abs(image[ind]-1.4)<.001
 
 def test_zoom_image():
+    # create test image
     origin=FloatCartesianCoordinate3D(3,1,6)
     gridspacing=FloatCartesianCoordinate3D(1,1,2)
     minind=Int3BasicCoordinate((0,-9,-9))
@@ -169,8 +170,16 @@ def test_zoom_image():
     try:
         middle_in_mm=FloatCartesianCoordinate3D((min_in_mm+max_in_mm)/2.)
     except:
-        # SWIG versinos pre 3.0.11 had a bug, which we try to work around here
+        # SWIG versions pre 3.0.11 had a bug, which we try to work around here
         middle_in_mm=FloatCartesianCoordinate3D((min_in_mm+max_in_mm).__div__(2))
+
+    # test that we throw an exception if ZoomOptions is out-of-range
+    try:
+        zo=ZoomOptions(42)
+        assert False
+    except:
+        assert True
+
     zoom=2
     offset=1
     new_size=6

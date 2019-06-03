@@ -29,7 +29,7 @@
   
 */
 
-#include "stir/common.h"
+#include "stir/error.h"
 
 START_NAMESPACE_STIR
 
@@ -49,7 +49,15 @@ START_NAMESPACE_STIR
 class ZoomOptions{
  public:
   enum Scaling {preserve_sum, preserve_values, preserve_projections};
-  ZoomOptions(const Scaling v = preserve_sum) : v(v) {}
+  //! constructor from Scaling
+  /*! calls error() if out-of-range
+   */
+  ZoomOptions(const Scaling v = preserve_sum) : v(v)
+    {
+      // need to catch out-of-range in case somebody did a static_cast from an int (e.g. SWIG does)
+      if ((v < preserve_sum) || (v > preserve_projections))
+        error("ZoomOptions initialised with out-of-range value");
+    }
   Scaling get_scaling_option() const { return v; }
  private:
   Scaling v;
