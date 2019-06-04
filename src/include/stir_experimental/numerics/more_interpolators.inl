@@ -13,6 +13,7 @@
 
 */
 #include "stir/Coordinate3D.h"
+#include "stir/ProjData.h"
 #include "stir/Array.h"
 #include "stir/round.h"
 #include <cmath>
@@ -65,16 +66,17 @@ push_nearest_neighbour_interpolate(Array<num_dimensions, elemT>& out,
 
 
 
+
 template <class elemT, class positionT>
 elemT
-pull_linear_interpolate(const Array<3, elemT>& in, 
-			const BasicCoordinate<3, positionT>& point_in_input_coords) 
+pull_linear_interpolate(const Array<3, elemT>& in,
+                        const BasicCoordinate<3, positionT>& point_in_input_coords)
 {
-  // find left neighbour 
-  const Coordinate3D<int> 
+  // find left neighbour
+  const Coordinate3D<int>
   left_neighbour(round(std::floor(point_in_input_coords[1])),
-		 round(std::floor(point_in_input_coords[2])),
-		 round(std::floor(point_in_input_coords[3])));
+                 round(std::floor(point_in_input_coords[2])),
+                 round(std::floor(point_in_input_coords[3])));
 
   // TODO handle boundary conditions
   if (left_neighbour[1] < in.get_max_index() &&
@@ -97,17 +99,17 @@ pull_linear_interpolate(const Array<3, elemT>& in,
       const positionT iyc = 1 - iy;
       const positionT izc = 1 - iz;
       return
-	static_cast<elemT>
-	( 
-	 ixc * (iyc * (izc * in[z1][y1][x1]
-		       + iz  * in[z2][y1][x1])
-		+ iy * (izc * in[z1][y2][x1]
-			+ iz  * in[z2][y2][x1])) 
-	 + ix * (iyc * (izc * in[z1][y1][x2]
-			+ iz  * in[z2][y1][x2])
-		 + iy * (izc * in[z1][y2][x2]
-			 + iz  * in[z2][y2][x2]))
-	 );
+        static_cast<elemT>
+        (
+         ixc * (iyc * (izc * in[z1][y1][x1]
+                       + iz  * in[z2][y1][x1])
+                + iy * (izc * in[z1][y2][x1]
+                        + iz  * in[z2][y2][x1]))
+         + ix * (iyc * (izc * in[z1][y1][x2]
+                        + iz  * in[z2][y1][x2])
+                 + iy * (izc * in[z1][y2][x2]
+                         + iz  * in[z2][y2][x2]))
+         );
     }
   else
     return 0;

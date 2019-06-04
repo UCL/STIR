@@ -17,6 +17,7 @@
 
 */
 #include "stir/BasicCoordinate.h"
+#include "stir/ProjData.h"
 #include "stir/Array.h"
 
 
@@ -79,6 +80,7 @@ public:
   {
     this->_input_ptr = &input;
   }
+
 
   template <class positionT>
   elemT operator()(const BasicCoordinate<3, positionT>& point_in_input_coords) const

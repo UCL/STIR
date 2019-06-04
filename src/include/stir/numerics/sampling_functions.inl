@@ -94,8 +94,7 @@ void sample_function_on_regular_grid_test(Array<3,elemT>& out,
           for (;
                index_out[3]<=max_out[3] && relative_positions[3]<=max_relative_positions[3];
                ++index_out[3], relative_positions[3]+= step[3])
-              func.add_to(relative_positions,
-                      out[index_out]);
+              out[index_out] = func(relative_positions) ;
         }
     }
 }

@@ -337,11 +337,16 @@ interpolate_projdata_test(ProjData& proj_data_out,
                      const bool use_view_offset)
 {
 
-    SegmentBySinogram<float> sino_3D_in = proj_data_in.get_empty_segment_by_sinogram(0) ;
+    PullLinearInterpolator<float> interpolator;
     SegmentBySinogram<float> sino_3D_out = proj_data_out.get_empty_segment_by_sinogram(0) ;
     sino_3D_out.fill(20);
-    PushTransposeLinearInterpolator<float> interpolator;
-    interpolator.set_output(sino_3D_in);
+    for (int segment_num = proj_data_in.get_min_segment_num();
+         segment_num <= proj_data_in.get_max_segment_num(); ++segment_num)
+    {
+        SegmentBySinogram<float> sino_3D_in(proj_data_in.get_segment_by_sinogram(segment_num)) ;
+        Array<3,float> ext = sino_3D_in;
+        interpolator.set_input(ext);
+    }
 
 
 
