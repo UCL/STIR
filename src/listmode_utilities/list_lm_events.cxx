@@ -59,6 +59,7 @@ int main(int argc, char *argv[])
 
   bool list_time=true;
   bool list_coincidence=false;
+  bool list_SPECT_event=false;
   bool list_gating=true;
   bool list_unknown=false;
   unsigned long num_events_to_list = 0;
@@ -79,6 +80,10 @@ int main(int argc, char *argv[])
       else if (strcmp(argv[0], "--coincidence")==0)
         {
           list_coincidence = atoi(argv[1])!=0;
+        }
+      else if (strcmp(argv[0], "--SPECT-event")==0)
+        {
+          list_SPECT_event = atoi(argv[1])!=0;
         }
       else if (strcmp(argv[0], "--unknown")==0)
         {
@@ -125,7 +130,7 @@ int main(int argc, char *argv[])
 	    break; //get out of while loop
       }
 	if (record.is_time())
-	  {
+      {
             recognised=true;
             if (list_time)
               {
@@ -165,6 +170,25 @@ int main(int argc, char *argv[])
                        << ",l:" << det_pos.pos2().radial_coord()
                        << ")";
                   listed = true; 
+                }
+            }
+          if (list_SPECT_event)
+            {ListEvent * event_ptr =
+                dynamic_cast<ListEvent *>(&record.event());
+              if (event_ptr!=0)
+                {
+                  LORAs2Points<float> lor;
+                  lor=event_ptr->get_LOR();
+                  cout << "Gamma event: LOR as two points "
+                       << "(x1:" << lor.p1().x()
+                       << ",y1:" << lor.p1().y()
+                       << ",z1:" << lor.p1().z()
+                       << ")-"
+                   << "(x2:" << lor.p2().x()
+                       << ",y2:" << lor.p2().y()
+                       << ",z2:" << lor.p2().z()
+                       << ")";
+                  listed = true;
                 }
             }
         }

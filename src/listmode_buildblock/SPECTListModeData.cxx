@@ -62,20 +62,20 @@ get_scanner_ptr() const
   return proj_data_info_sptr->get_scanner_ptr();
 }
 
-//void
-//SPECTListModeData::
-//set_proj_data_info_sptr(shared_ptr<ProjDataInfo> new_proj_data_info_sptr)
-//{
-//    proj_data_info_sptr = new_proj_data_info_sptr;
-//}
+void
+SPECTListModeData::
+set_proj_data_info_sptr(shared_ptr<ProjDataInfo> new_proj_data_info_sptr)
+{
+    proj_data_info_sptr = new_proj_data_info_sptr;
+}
 
-//shared_ptr<ProjDataInfo>
-//SPECTListModeData::get_proj_data_info_sptr() const
-//{
-//    if(is_null_ptr(proj_data_info_sptr))
-//        error("SPECTListModeData: ProjDataInfo has not been set.");
-//    return proj_data_info_sptr;
-//}
+shared_ptr<ProjDataInfo>
+SPECTListModeData::get_proj_data_info_sptr() const
+{
+    if(is_null_ptr(proj_data_info_sptr))
+        error("SPECTListModeData: ProjDataInfo has not been set.");
+    return proj_data_info_sptr;
+}
 
 #if 0
 std::time_t

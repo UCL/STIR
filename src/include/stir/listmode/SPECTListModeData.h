@@ -34,13 +34,14 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/IO/ExamData.h"
 #include "stir/RegisteredParsingObject.h"
+#include "stir/listmode/SPECTListRecord.h"
 
 # ifdef BOOST_NO_STDC_NAMESPACE
 namespace std { using ::time_t; }
 #endif
 
 START_NAMESPACE_STIR
-class SPECTListRecord;
+
 class Succeeded;
 class ExamInfo;
 
@@ -232,17 +233,20 @@ public:
       return 0;
   }
 
-//  virtual shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
+  virtual shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
 
 protected:
 
-  virtual ListRecord* get_empty_record_ptr() const
-  {return reinterpret_cast<ListRecord*>(this->get_empty_record_sptr().get());}
+  virtual shared_ptr<ListRecord> get_empty_record_helper_sptr() const
+  {
+        shared_ptr<SPECTListRecord> sptr(this->get_empty_record_sptr());
+        shared_ptr<ListRecord> sptr1(static_pointer_cast<ListRecord>(sptr));
+        return sptr1;}
 
   virtual Succeeded get_next(ListRecord& event) const
   {return this->get_next_record(reinterpret_cast<SPECTListRecord&>(event));}
 
-//  void set_proj_data_info_sptr(shared_ptr<ProjDataInfo>);
+  void set_proj_data_info_sptr(shared_ptr<ProjDataInfo>);
   //! Has to be set by the derived class
   //  shared_ptr<ExamInfo> exam_info_sptr;
 private:
