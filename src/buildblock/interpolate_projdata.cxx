@@ -337,19 +337,8 @@ interpolate_projdata_test(ProjData& proj_data_out,
                      const bool use_view_offset)
 {
 
-    PullLinearInterpolator<float> interpolator;
-    SegmentBySinogram<float> sino_3D_out = proj_data_out.get_empty_segment_by_sinogram(0) ;
-    sino_3D_out.fill(20);
-    for (int segment_num = proj_data_in.get_min_segment_num();
-         segment_num <= proj_data_in.get_max_segment_num(); ++segment_num)
-    {
-        SegmentBySinogram<float> sino_3D_in(proj_data_in.get_segment_by_sinogram(segment_num)) ;
-        Array<3,float> ext = sino_3D_in;
-        interpolator.set_input(ext);
-    }
 
-
-
+  PullLinearInterpolator<float>  proj_data_interpolator;
   if (use_view_offset)
     warning("interpolate_projdata with use_view_offset is EXPERIMENTAL and NOT TESTED.");
 
@@ -371,6 +360,7 @@ interpolate_projdata_test(ProjData& proj_data_out,
     {
       error("interpolate_projdata needs both projection to be of a scanner with the same ring radius");
     }
+
 
 
 
@@ -442,12 +432,10 @@ interpolate_projdata_test(ProjData& proj_data_out,
             extended[z][y][old_max+1] = extended[z][y][old_max];
           }
       }
-    sample_function_on_regular_grid_test(extended, interpolator, offset, step);
-    std::cerr << "MAX D "<< extended.find_max() << '\n';
-    std::cerr << "MIN D "<< extended.find_min() << '\n';
-    proj_data_out.set_segment(sino_3D_out);
-    if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
-      return Succeeded::no;
+    std::cerr << "MAX UP "<< extended.find_max() << '\n';
+    std::cerr << "MIN UP "<< extended.find_min() << '\n';
+    proj_data_interpolator.set_input(extended);
+    //proj_data_interpolator.set_input(proj_data_in.get_empty_segment_by_sinogram(0));
   }
   else
   {
@@ -464,17 +452,20 @@ interpolate_projdata_test(ProjData& proj_data_out,
             extended[z][y][old_max+1] = extended[z][y][old_max];
           }
       }
-    sample_function_on_regular_grid_test(extended, interpolator, offset, step);
-    std::cerr << "MAX D "<< extended.find_max() << '\n';
-    std::cerr << "MIN D "<< extended.find_min() << '\n';
-    proj_data_out.set_segment(sino_3D_out);
-    if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
-      return Succeeded::no;
+     std::cerr << "MAX UP "<< extended.find_max() << '\n';
+     std::cerr << "MIN UP "<< extended.find_min() << '\n';
+    proj_data_interpolator.set_input(extended);
   }
 
   // now do interpolation
 
+  SegmentBySinogram<float> sino_3D_out = proj_data_out.get_empty_segment_by_sinogram(0) ;
+  sample_function_on_regular_grid(sino_3D_out, proj_data_interpolator, offset, step);
+
+  proj_data_out.set_segment(sino_3D_out);
+
+  if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
+    return Succeeded::no;
   return Succeeded::yes;
 }
-
 END_NAMESPACE_STIR
