@@ -330,7 +330,7 @@ interpolate_projdata_test(ProjData& proj_data_out,
                      const bool use_view_offset)
 {
 
-    //construct interpolator
+    //construct Bspline sinterpolator
     stir::BSpline::BSplineType  spline_type = stir::BSpline::linear;
     BasicCoordinate<3, BSpline::BSplineType> these_types;
     these_types[1]=these_types[2]=these_types[3]=spline_type;

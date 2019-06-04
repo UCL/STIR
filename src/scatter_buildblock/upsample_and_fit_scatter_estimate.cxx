@@ -155,7 +155,7 @@ downsample_scatter_estimate(ProjData& scaled_scatter_proj_data,
                                   const ProjData& scatter_proj_data,
                                   const bool remove_interleaving)
 {
-    stir::BSpline::BSplineType  spline_type = stir::BSpline::linear;
+
     shared_ptr<ProjDataInfo> interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_ptr()->clone());
     interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
 
@@ -165,7 +165,7 @@ downsample_scatter_estimate(ProjData& scaled_scatter_proj_data,
                            interpolated_direct_scatter_proj_data_info_sptr);
 
     // interpolate projdata
-    interpolate_projdata(interpolated_direct_scatter, scatter_proj_data, spline_type, remove_interleaving);
+    interpolate_projdata_test(interpolated_direct_scatter, scatter_proj_data, remove_interleaving);
 
     // Perform Inverse Single Slice Rebinning
     inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);

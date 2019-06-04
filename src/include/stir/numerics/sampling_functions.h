@@ -57,6 +57,13 @@ void sample_function_on_regular_grid(Array<3,elemT>& out,
                                      const BasicCoordinate<3, positionT>&  offset,  
                                      const BasicCoordinate<3, positionT>& step);
 
+template <class FunctionType, class elemT, class positionT>
+inline
+void sample_function_on_regular_grid_test(Array<3,elemT>& out,
+                                     FunctionType func,
+                                     const BasicCoordinate<3, positionT>&  offset,
+                                     const BasicCoordinate<3, positionT>& step);
+
 END_NAMESPACE_STIR
 
 #include "stir/numerics/sampling_functions.inl"
