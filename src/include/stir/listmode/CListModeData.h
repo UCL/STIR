@@ -32,6 +32,7 @@
 #include "stir/IO/ExamData.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/listmode/ListModeData.h"
+#include "stir/listmode/CListRecord.h"
 
 # ifdef BOOST_NO_STDC_NAMESPACE
 namespace std { using ::time_t; }
@@ -186,7 +187,7 @@ public:
     Succeeded get_next_record(CListRecord& event) const = 0;
 
   //! Call this function if you want to re-start reading at the beginning.
-  virtual 
+  virtual
     Succeeded reset() = 0;
 
   //! Save the current reading position
@@ -220,7 +221,7 @@ public:
       list mode data that is being read.
       \warning This member is obsolete and might be removed soon.
   */
-  const Scanner* get_scanner_ptr() const;
+  virtual const Scanner* get_scanner_ptr() const;
 
   //! Return if the file stores delayed events as well (as opposed to prompts)
   virtual bool has_delayeds() const = 0;
@@ -241,11 +242,14 @@ public:
   }
 
 protected:
-  virtual ListRecord* get_empty_record_ptr() const
-  {return reinterpret_cast<ListRecord*>(this->get_empty_record_sptr().get());}
+  virtual shared_ptr<ListRecord> get_empty_record_helper_sptr() const
+  {
+        shared_ptr<CListRecord> sptr(this->get_empty_record_sptr());
+        shared_ptr<ListRecord> sptr1(static_pointer_cast<ListRecord>(sptr));
+        return sptr1;}
 
   virtual Succeeded get_next(ListRecord& event) const
-  {return this->get_next_record(reinterpret_cast<CListRecord&>(event));}
+  {return this->get_next_record((CListRecord&)(event));}
 
   void set_proj_data_info_sptr(shared_ptr<ProjDataInfo>);
   //! Has to be set by the derived class

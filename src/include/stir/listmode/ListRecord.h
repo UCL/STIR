@@ -63,8 +63,8 @@ public:
   virtual ListTime&   time() = 0;
   virtual const ListTime&   time() const = 0;
 
-  virtual bool operator==(const ListRecord& e2) const { return (*this == e2); }
-  bool operator!=(const ListRecord& e2) const { return !(*this == e2); }
+//  virtual bool operator==(const ListRecord& e2) const { return (*this == e2); }
+//  bool operator!=(const ListRecord& e2) const { return !(*this == e2); }
 };
 
 END_NAMESPACE_STIR

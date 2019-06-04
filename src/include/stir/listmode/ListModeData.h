@@ -176,13 +176,13 @@ public:
   */
 
     shared_ptr <ListRecord> get_empty_record_sptr() const
-    {shared_ptr <ListRecord> sptr(this->get_empty_record_ptr());
+    {shared_ptr <ListRecord> sptr(this->get_empty_record_helper_sptr());
     return sptr;}
 
   //! Gets the next record in the listmode sequence
   virtual
     Succeeded get_next_record(ListRecord& event) const
-    {return get_next(event);}
+    {      return get_next(event);}
 
   //! Call this function if you want to re-start reading at the beginning.
   virtual
@@ -219,7 +219,7 @@ public:
       list mode data that is being read.
       \warning This member is obsolete and might be removed soon.
   */
-  const Scanner* get_scanner_ptr() const;
+  virtual const Scanner* get_scanner_ptr() const = 0;
 
   //! Return if the file stores delayed events as well (as opposed to prompts)
 //  virtual bool has_delayeds() const = 0;
@@ -232,12 +232,12 @@ public:
       return 0;
   }
 
-  virtual shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
+  virtual shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const = 0;
 
 protected:
-  virtual ListRecord* get_empty_record_ptr() const = 0;
+  virtual shared_ptr <ListRecord> get_empty_record_helper_sptr() const = 0;
   virtual Succeeded get_next(ListRecord& event) const = 0;
-  void set_proj_data_info_sptr(shared_ptr<ProjDataInfo>);
+  virtual void set_proj_data_info_sptr(shared_ptr<ProjDataInfo>) = 0;
   //! Has to be set by the derived class
   //  shared_ptr<ExamInfo> exam_info_sptr;
 private:

@@ -135,7 +135,7 @@ public:
     (and actual?) number of gates would be useful.
     \see CListModeData for more info on list mode data. 
 */
-class CListTime : virtual public ListTime
+class CListTime : public ListTime
 {
 public:
   virtual ~CListTime() {}
@@ -160,7 +160,7 @@ public:
 
    If your scanner has more data available, you can provide it in the derived class.
 */
-class CListGatingInput:  virtual public ListGatingInput
+class CListGatingInput : public ListGatingInput
 {
 public:
   virtual ~CListGatingInput() {}
@@ -185,7 +185,7 @@ public:
     
     \see CListModeData for more info on list mode data. 
 */
-class CListRecord : virtual public ListRecord
+class CListRecord : public ListRecord
 {
 public:
   virtual ~CListRecord() {}
@@ -199,7 +199,7 @@ public:
   virtual CListTime&   time() = 0;
   virtual const CListTime&   time() const = 0;
 
-  virtual bool operator==(const CListRecord& e2) const = 0;
+  virtual bool operator==(const CListRecord& e2) const =0;//{ return (*this == e2); }
   bool operator!=(const CListRecord& e2) const { return !(*this == e2); }
 
 };
