@@ -21,16 +21,16 @@ int
 InputStreamFromROOTFileForCylindricalPET::
 get_num_rings() const
 {
-    return static_cast<int>(this->rsector_repeater * this->module_repeater_y *
-                            this->submodule_repeater_y * this->crystal_repeater_y);
+    return static_cast<int>( this->crystal_repeater_z * this->module_repeater_z *
+                             this->submodule_repeater_z);
 }
 
 int
 InputStreamFromROOTFileForCylindricalPET::
 get_num_dets_per_ring() const
 {
-    return static_cast<int>( this->crystal_repeater_z * this->module_repeater_z *
-                             this->submodule_repeater_z);
+    return static_cast<int>(this->rsector_repeater * this->module_repeater_y *
+                            this->submodule_repeater_y * this->crystal_repeater_y);
 }
 
 
@@ -104,6 +104,66 @@ get_num_trans_crystals_per_singles_unit() const
         error(boost::format("Singles readout depth (%1%) is invalid") % this->singles_readout_depth);
 
     return 0;
+}
+
+void
+InputStreamFromROOTFileForCylindricalPET::set_crystal_repeater_x(int val)
+{
+    crystal_repeater_x = val;
+}
+
+void
+InputStreamFromROOTFileForCylindricalPET::set_crystal_repeater_y(int val)
+{
+    crystal_repeater_y = val;
+}
+
+void
+InputStreamFromROOTFileForCylindricalPET::set_crystal_repeater_z(int val)
+{
+    crystal_repeater_z = val;
+}
+
+void
+InputStreamFromROOTFileForCylindricalPET::set_submodule_repeater_x(int val)
+{
+    submodule_repeater_x = val;
+}
+
+void
+InputStreamFromROOTFileForCylindricalPET::set_submodule_repeater_y(int val)
+{
+    submodule_repeater_y = val;
+}
+
+void
+InputStreamFromROOTFileForCylindricalPET::set_submodule_repeater_z(int val)
+{
+    submodule_repeater_z = val;
+}
+
+void
+InputStreamFromROOTFileForCylindricalPET::set_module_repeater_x(int val)
+{
+    module_repeater_x = val;
+}
+
+void
+InputStreamFromROOTFileForCylindricalPET::set_module_repeater_y(int val)
+{
+    module_repeater_y = val;
+}
+
+void
+InputStreamFromROOTFileForCylindricalPET::set_module_repeater_z(int val)
+{
+    module_repeater_z = val;
+}
+
+void
+InputStreamFromROOTFileForCylindricalPET::set_rsector_repeater(int val)
+{
+    rsector_repeater = val;
 }
 
 END_NAMESPACE_STIR

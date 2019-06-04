@@ -140,6 +140,11 @@ int main(int argc, char *argv[])
 		    << ")\n";
 	}
 
+      std::cout << "energy window lower level := "
+                << exam_info.get_low_energy_thres() << '\n'
+                << "energy window upper level := "
+                << exam_info.get_high_energy_thres() << '\n';
+        
     }
   if (print_geom)
     std::cout << proj_data_sptr->get_proj_data_info_ptr()->parameter_info() << std::endl;

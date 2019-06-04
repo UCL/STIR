@@ -81,10 +81,17 @@ check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& den
 
 void 
 ForwardProjectorByBin::forward_project(ProjData& proj_data, 
-				       const DiscretisedDensity<3,float>& image)
+				       const DiscretisedDensity<3,float>& image,
+							 int subset_num, int num_subsets, bool zero)
 {
-  
- // this->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
+	if (subset_num < 0)
+		error(boost::format("forward_project: wrong subset number %1%") % subset_num);
+	if (subset_num > num_subsets - 1)
+		error(boost::format("forward_project: wrong subset number %1% (must be less than the number of subsets %2%)") 
+		% subset_num % num_subsets);
+	if (zero && num_subsets > 1)
+		proj_data.fill(0.0);
+	// this->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
 //			     image_sptr);
 
   check(*proj_data.get_proj_data_info_sptr(), image);
@@ -94,7 +101,7 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
   const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
     detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
                                          proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
-                                         0, 1/*subset_num, num_subsets*/);
+                                         subset_num, num_subsets);
 #ifdef STIR_OPENMP
 #pragma omp parallel for  shared(proj_data, image, symmetries_sptr) schedule(runtime)  
 #endif

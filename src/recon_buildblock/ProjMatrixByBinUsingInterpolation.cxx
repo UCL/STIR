@@ -129,7 +129,7 @@ set_up(
     (densel_range.get_max_index() + densel_range.get_min_index())*voxel_size.z()/2.F;
   origin.z() -= z_to_middle;
 
-  symmetries_ptr.reset(
+  symmetries_sptr.reset(
     new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_ptr,
                                                 density_info_ptr,
                                                 do_symmetry_90degrees_min_phi,

@@ -520,6 +520,10 @@ void
 fourier<>(Array<3,std::complex<float> >& c, const int sign);
 
 template
+void
+fourier<>(Array<1,std::complex<float> >& c, const int sign);
+
+template
 void 
 fourier<>(VectorWithOffset<std::complex<float> >& c, const int sign);
 

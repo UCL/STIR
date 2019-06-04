@@ -189,7 +189,7 @@ set_up(
   }
 
 	this->proj_data_info_ptr=proj_data_info_ptr_v;
-	symmetries_ptr.reset( 
+    symmetries_sptr.reset(
 		new TrivialDataSymmetriesForBins(proj_data_info_ptr_v));
 
 	this->densel_range = image_info_ptr->get_index_range();

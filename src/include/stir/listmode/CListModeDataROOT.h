@@ -51,6 +51,20 @@ START_NAMESPACE_STIR
   We currently support only ROOT output using the 'Cylindrical PET' and 'ECAT' systems
   from GATE.
 
+  The Scanner geometry is set in multiple places. In hroot there is the option to use the
+  Scanner name to pull a Scanner from the library. Another option is to use
+  Scanner::User_defined_scanner and set the members: num_rings, num_detectors_per_ring,
+  max_num_non_arccorrected_bins, inner_ring_diameter, average_depth_of_interaction,
+  ring_spacing and bin_size, manually.
+
+  In any case this scanner must checkout the geometry created by the repeaters section
+  (which will initialise the InputStreamFromROOTFile.
+  And of course, match the Scanner used by other parts of STIR (e.g. ProjDataInfo e.t.c).
+
+  Finally, in the case that Scanner::Unknown_scanner the algorithm will
+  try to create the scanner from the members. Subject to concistency
+  checks, of course.
+
   \par Example headers
 If the scanner is known to stir::Scanner, you can use this
 \verbatim
@@ -100,6 +114,8 @@ public:
     //! returns the header filename
     virtual std::string
     get_name() const;
+    //! Set private members default values;
+    void set_defaults();
 
     virtual
     shared_ptr <CListRecord> get_empty_record_sptr() const;
@@ -124,21 +140,38 @@ public:
     get_total_number_of_events() const ;
 
 private:
+    //! Check if the hroot contains a full scanner description
+    Succeeded check_scanner_definition(std::string& ret);
+    //! Check if the scanner_sptr matches the geometry in root_file_sptr
+    Succeeded check_scanner_match_geometry(std::string& ret, const shared_ptr<Scanner>& scanner_sptr);
+
     //! The header file
     std::string hroot_filename;
 
     //! Pointer to the listmode data
     shared_ptr<InputStreamFromROOTFile > root_file_sptr;
 
+//! \name Variables that can be set in the hroot file to define a scanner's geometry.
+//! They are compared to the Scanner  (if set)  and the InputStreamFromROOTFile
+//! geometry, as given by the repeaters. Can be used to check for inconsistencies.
+//@{
     //! The name of the originating scanner
     std::string originating_system;
+    //! Number of rings, set in the hroot file (optional)
     int num_rings;
+    //! Number of detectors per ring, set in the hroot file (optional)
     int num_detectors_per_ring;
+    //! Number of non arc corrected bins, set in the hroot file (optional)
     int max_num_non_arccorrected_bins;
+    //! Inner ring diameter, set in the hroot file (optional)
     float inner_ring_diameter;
+    //! Average depth of interaction, set in the hroot file (optional)
     float average_depth_of_interaction;
+    //! Ring spacing, set in the hroot file (optional)
     float ring_spacing;
+    //! Bin size, set in the hroot file (optional)
     float bin_size;
+//@}
 
     KeyParser parser;
 

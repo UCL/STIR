@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2002-2007, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2016 University College London
+    Copyright (C) 2013, 2016, 2018 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
+  \author Richard Brown
 
   See http://stir.sourceforge.net for a description of the full
   proposal for Interfile headers for 3D PET.
@@ -126,6 +127,7 @@ private:
   virtual void read_num_energy_windows();
   virtual void en_window_pair_set();
   void read_frames_info();
+  virtual int get_num_data_types() const { return num_time_frames; }
 
 public :
 
@@ -172,6 +174,9 @@ public :
  protected:
   // version 3.3 had only a single offset. we'll internally replace it with data_offset_each_dataset
   unsigned long data_offset;
+
+  float bed_position_horizontal;
+  float bed_position_vertical;
 };
 
 
@@ -187,11 +192,21 @@ class InterfileImageHeader : public InterfileHeader
 public:
   InterfileImageHeader();
   std::vector<double>	first_pixel_offsets;
+  int num_image_data_types;
+  std::vector<std::string> index_nesting_level;
+  std::vector<std::string> image_data_type_description;
 
 protected:
   virtual void read_matrix_info();
   //! Returns false if OK, true if not.
   virtual bool post_processing();
+  /// Read image data types
+  void read_image_data_types();
+  //!
+  //! \brief Get the number of data types
+  //! \details no. time frames * no. data types (kinetic params) * no. gates
+  //! Currently, this is only implemented for either multiple time frames OR multiple data types (gates not considered).
+  virtual int get_num_data_types() const { return num_time_frames*num_image_data_types; }
 
 };
 

@@ -5,6 +5,7 @@
     Copyright (C) 2000 - 2009-05-13, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
     Copyright (C) 2018, University College London
+    Copyright (C) 2018, University of Leeds
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -160,6 +161,7 @@ ProjDataInfo::set_max_tangential_pos_num(const int max_tang_poss)
 
 
 ProjDataInfo::ProjDataInfo()
+  : bed_position_horizontal(0.F), bed_position_vertical(0.F)
 {}
 
 
@@ -169,8 +171,7 @@ ProjDataInfo::ProjDataInfo(const shared_ptr<Scanner>& scanner_ptr_v,
                            const VectorWithOffset<int>& num_axial_pos_per_segment_v, 
                            const int num_views_v, 
                            const int num_tangential_poss_v)
-			   :scanner_ptr(scanner_ptr_v)
-
+	: scanner_ptr(scanner_ptr_v), bed_position_horizontal(0.F), bed_position_vertical(0.F)
 { 
   set_num_views(num_views_v);
   set_num_tangential_poss(num_tangential_poss_v);
@@ -189,7 +190,11 @@ ProjDataInfo::parameter_info()  const
   std::ostringstream s;
 #endif
   s << scanner_ptr->parameter_info();
-
+  s << "\n";
+  s << "start vertical bed position (mm) := "
+    << get_bed_position_vertical() << endl;
+  s << "start horizontal bed position (mm) := "
+    << get_bed_position_horizontal() << endl;
   s << "\nSegment_num range:           ("
       << get_min_segment_num()
       << ", " <<  get_max_segment_num() << ")\n";
@@ -199,7 +204,6 @@ ProjDataInfo::parameter_info()  const
     s << get_num_axial_poss(seg_num) << " ";
   s << "}\n";
   s << "Number of tangential positions: " << get_num_tangential_poss() << endl;
-
   return s.str();
 
 }
@@ -369,7 +373,14 @@ ProjDataInfo::ProjDataInfoCTI(const shared_ptr<Scanner>& scanner,
   }
   // check if we went one too far
   if (RDmaxtmp[seg_num] > max_delta)
-    seg_num--;
+  {
+    if (max_delta < num_ring-1)
+      warning(boost::format("Creation of ProjDataInfo with span=%1% and max_delta=%2% leads to a 'smaller' last segment than the others (did you mean to set max_delta=%3%?).\n"
+                            "This is fine, but note that in previous versions of STIR this last segment was dropped.")
+              % span % max_delta % RDmaxtmp[seg_num]);
+    // Palak Wadwha changed this to max_delta to accomodate GE scanners, it is more general anyway.
+    RDmaxtmp[seg_num] = max_delta;
+  }
 
   const int max_seg_num = seg_num;
   
@@ -564,7 +575,9 @@ blindly_equals(const root_type * const that) const
    (get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num())&&
    equal(min_axial_pos_per_seg.begin(), min_axial_pos_per_seg.end(), proj.min_axial_pos_per_seg.begin())&&
    equal(max_axial_pos_per_seg.begin(), max_axial_pos_per_seg.end(), proj.max_axial_pos_per_seg.begin())&&
-   (*get_scanner_ptr()== *(proj.get_scanner_ptr()));
+   (*get_scanner_ptr()== *(proj.get_scanner_ptr()))&&
+   (get_bed_position_horizontal()==proj.get_bed_position_horizontal())&&
+   (get_bed_position_vertical()==proj.get_bed_position_vertical());
 }
 
 bool
