@@ -142,7 +142,7 @@ class RelativeDifferencePrior:  public
     add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
                                                 const DiscretisedDensity<3,elemT>& input) const;
 
-  //! Create variable gamma for Realative Difference Penalty
+  //! Create variable gamma for Relative Difference Penalty
   float gamma;
   //! get the gamma value used in RDP
   float get_gamma();
