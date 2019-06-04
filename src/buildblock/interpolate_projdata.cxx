@@ -291,6 +291,8 @@ interpolate_projdata(ProjData& proj_data_out,
             extended[z][y][old_max+1] = extended[z][y][old_max];
           }
       }
+    std::cerr << "MAX UP "<< extended.find_max() << '\n';
+    std::cerr << "MIN UP "<< extended.find_min() << '\n';
     proj_data_interpolator.set_coef(extended);
   }
   else
@@ -308,6 +310,8 @@ interpolate_projdata(ProjData& proj_data_out,
             extended[z][y][old_max+1] = extended[z][y][old_max];
           }
       }
+     std::cerr << "MAX UP "<< extended.find_max() << '\n';
+     std::cerr << "MIN UP "<< extended.find_min() << '\n';
     proj_data_interpolator.set_coef(extended);
   }
         
@@ -333,11 +337,12 @@ interpolate_projdata_test(ProjData& proj_data_out,
                      const bool use_view_offset)
 {
 
-    //construct interpolator
-    stir::BSpline::BSplineType  spline_type = stir::BSpline::linear;
-    BasicCoordinate<3, BSpline::BSplineType> these_types;
-    these_types[1]=these_types[2]=these_types[3]=spline_type;
-    BSpline::BSplinesRegularGrid<3, float, float> proj_data_interpolator(these_types);
+    SegmentBySinogram<float> sino_3D_in = proj_data_in.get_empty_segment_by_sinogram(0) ;
+    SegmentBySinogram<float> sino_3D_out = proj_data_out.get_empty_segment_by_sinogram(0) ;
+    sino_3D_out.fill(20);
+    PushTransposeLinearInterpolator<float> interpolator;
+    interpolator.set_output(sino_3D_in);
+
 
 
   if (use_view_offset)
@@ -432,7 +437,12 @@ interpolate_projdata_test(ProjData& proj_data_out,
             extended[z][y][old_max+1] = extended[z][y][old_max];
           }
       }
-    proj_data_interpolator.set_coef(extended);
+    sample_function_on_regular_grid_test(extended, interpolator, offset, step);
+    std::cerr << "MAX D "<< extended.find_max() << '\n';
+    std::cerr << "MIN D "<< extended.find_min() << '\n';
+    proj_data_out.set_segment(sino_3D_out);
+    if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
+      return Succeeded::no;
   }
   else
   {
@@ -449,23 +459,16 @@ interpolate_projdata_test(ProjData& proj_data_out,
             extended[z][y][old_max+1] = extended[z][y][old_max];
           }
       }
-    proj_data_interpolator.set_coef(extended);
+    sample_function_on_regular_grid_test(extended, interpolator, offset, step);
+    std::cerr << "MAX D "<< extended.find_max() << '\n';
+    std::cerr << "MIN D "<< extended.find_min() << '\n';
+    proj_data_out.set_segment(sino_3D_out);
+    if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
+      return Succeeded::no;
   }
 
   // now do interpolation
 
-  SegmentBySinogram<float> sino_3D_in = proj_data_in.get_empty_segment_by_sinogram(0) ;
-  SegmentBySinogram<float> sino_3D_out = proj_data_out.get_empty_segment_by_sinogram(0) ;
-  sino_3D_out.fill(20);
-  PushTransposeLinearInterpolator<float> interpolator;
-  interpolator.set_output(sino_3D_in);
-
-  sample_function_on_regular_grid_test(sino_3D_out, interpolator, offset, step);
-
-  proj_data_out.set_segment(sino_3D_out);
-
-  if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
-    return Succeeded::no;
   return Succeeded::yes;
 }
 
