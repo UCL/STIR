@@ -40,6 +40,9 @@
 #include "stir/interpolate_projdata.h"
 #include "stir/extend_projdata.h"
 #include "stir/numerics/sampling_functions.h"
+#include "stir_experimental/motion/Transform3DObjectImageProcessor.h"
+#include "stir_experimental/motion/transform_3d_object.h"
+#include "stir_experimental/numerics/more_interpolators.h"
 #include <typeinfo>
 
 START_NAMESPACE_STIR
@@ -452,7 +455,11 @@ interpolate_projdata_test(ProjData& proj_data_out,
   // now do interpolation
 
   SegmentBySinogram<float> sino_3D_out = proj_data_out.get_empty_segment_by_sinogram(0) ;
-  sample_function_on_regular_grid_test(sino_3D_out, proj_data_interpolator, offset, step);
+  sino_3D_out.fill(20);
+  PushTransposeLinearInterpolator<float> interpolator;
+  interpolator.set_output(sino_3D_out);
+
+  sample_function_on_regular_grid_test(sino_3D_out, interpolator, offset, step);
 
   proj_data_out.set_segment(sino_3D_out);
 
