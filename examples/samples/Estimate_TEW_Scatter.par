@@ -1,0 +1,10 @@
+Estimate_TEW_scatter Parameters:= 
+
+      output scatter filename :=scatterTEW.hs
+      lower filename := lower.hs
+      upper filename := upper.hs
+      lower width := 6
+      peak width := 6
+      upper width := 20
+
+END:=
