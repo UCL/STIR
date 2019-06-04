@@ -202,7 +202,14 @@ HFS, FFS, HFP or FFP).
   It has a new switch <tt>--NOPMRT</tt> which reverts to the previous behaviour (i.e. using
   the old ray tracer on-the-fly projector).
   </li>
-  <li><tt>InterfileDynamicDiscretisedDensityOutputFileFormat::</tt> changed start/end key from <tt>Interfile Output File Format</tt> to <tt>Interfile Output File Format Parameters</tt> to match other Interfile types.
+<li><code>upsample_and_fit_single_scatter</code> previously aborted if there were not enough counts
+  (after weighting with the masking used for the tail-fit) in the scatter estimate for one sinogram.
+  Now we just write a warning and set it to 1. For consistency, we now use scale factor 1 if all
+  sinograms had zero counts (after weighting), while we were setting it 0 before. As this should never occur,
+  and the scale factor should be irrelevant then, this should not affect any results.<br />
+  (Actual change is in <code>get_scale_factors_per_sinogram</code>).
+  </li>
+<li><tt>InterfileDynamicDiscretisedDensityOutputFileFormat::</tt> changed start/end key from <tt>Interfile Output File Format</tt> to <tt>Interfile Output File Format Parameters</tt> to match other Interfile types.
   </li>
   <li>Renamed <tt>InterfileParametricDensityOutputFileFormat</tt> to <tt>InterfileParametricDiscretisedDensityOutputFileFormat</tt> and the corresponding keys.
   </li>
