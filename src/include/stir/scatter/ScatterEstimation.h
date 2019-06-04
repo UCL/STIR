@@ -100,7 +100,13 @@ public:
                                       const bool remove_interleaving = true);
 
     static void
-    downsample_scatter_estimate(ProjData& scaled_scatter_proj_data,
+    pull_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                      const  ProjData& emission_proj_data,
+                                      const ProjData& scatter_proj_data,
+                                      const bool remove_interleaving = true);
+
+    static void
+    push_scatter_estimate(ProjData& scaled_scatter_proj_data,
                                       const  ProjData& emission_proj_data,
                                       const ProjData& scatter_proj_data,
                                       const bool remove_interleaving = true);

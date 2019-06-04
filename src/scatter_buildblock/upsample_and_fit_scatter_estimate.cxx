@@ -150,7 +150,7 @@ upsample_scatter_estimate(ProjData& scaled_scatter_proj_data,
 
 void
 ScatterEstimation::
-downsample_scatter_estimate(ProjData& scaled_scatter_proj_data,
+pull_scatter_estimate(ProjData& scaled_scatter_proj_data,
                                   const  ProjData& emission_proj_data,
                                   const ProjData& scatter_proj_data,
                                   const bool remove_interleaving)
@@ -165,7 +165,31 @@ downsample_scatter_estimate(ProjData& scaled_scatter_proj_data,
                            interpolated_direct_scatter_proj_data_info_sptr);
 
     // interpolate projdata
-    interpolate_projdata_test(interpolated_direct_scatter, scatter_proj_data, remove_interleaving);
+    interpolate_projdata_pull(interpolated_direct_scatter, scatter_proj_data, remove_interleaving);
+
+    // Perform Inverse Single Slice Rebinning
+    inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);
+
+}
+
+void
+ScatterEstimation::
+push_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                  const  ProjData& emission_proj_data,
+                                  const ProjData& scatter_proj_data,
+                                  const bool remove_interleaving)
+{
+
+    shared_ptr<ProjDataInfo> interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_ptr()->clone());
+    interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
+
+
+    info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
+    ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
+                           interpolated_direct_scatter_proj_data_info_sptr);
+
+    // interpolate projdata
+    interpolate_projdata_push(interpolated_direct_scatter, scatter_proj_data, remove_interleaving);
 
     // Perform Inverse Single Slice Rebinning
     inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);

@@ -71,7 +71,13 @@ interpolate_projdata(ProjData& proj_data_out,
              const bool use_view_offset = false);
 
 Succeeded
-interpolate_projdata_test(ProjData& proj_data_out,
+interpolate_projdata_pull(ProjData& proj_data_out,
+             const ProjData& proj_data_in,
+             const bool remove_interleaving = false,
+             const bool use_view_offset = false);
+
+Succeeded
+interpolate_projdata_push(ProjData& proj_data_out,
              const ProjData& proj_data_in,
              const bool remove_interleaving = false,
              const bool use_view_offset = false);
