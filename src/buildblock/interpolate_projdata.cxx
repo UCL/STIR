@@ -454,10 +454,11 @@ interpolate_projdata_test(ProjData& proj_data_out,
 
   // now do interpolation
 
+  SegmentBySinogram<float> sino_3D_in = proj_data_in.get_empty_segment_by_sinogram(0) ;
   SegmentBySinogram<float> sino_3D_out = proj_data_out.get_empty_segment_by_sinogram(0) ;
   sino_3D_out.fill(20);
   PushTransposeLinearInterpolator<float> interpolator;
-  interpolator.set_output(sino_3D_out);
+  interpolator.set_output(sino_3D_in);
 
   sample_function_on_regular_grid_test(sino_3D_out, interpolator, offset, step);
 
