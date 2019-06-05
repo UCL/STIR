@@ -751,9 +751,12 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 
 #if 1
      shared_ptr<TargetT> sensitivity_this_subset_sptr(sensitivity.clone());
-
+     shared_ptr<ProjData> sens_proj_data_sptr;
      // have to create a ProjData object filled with 1 here because otherwise zero_seg0_endplanes will not be effective
-     shared_ptr<ProjData> sens_proj_data_sptr(new ProjDataInMemory(this->proj_data_sptr->get_exam_info_sptr(), this->proj_data_sptr->get_proj_data_info_sptr()));
+     if (!this->use_tofsens)
+         sens_proj_data_sptr.reset(new ProjDataInMemory(this->proj_data_sptr->get_exam_info_sptr(), this->proj_data_sptr->get_proj_data_info_sptr()->create_non_tof_clone()));
+     else
+        sens_proj_data_sptr.reset(new ProjDataInMemory(this->proj_data_sptr->get_exam_info_sptr(), this->proj_data_sptr->get_proj_data_info_sptr()));
      sens_proj_data_sptr->fill(1.0F);
 
      distributable_sensitivity_computation(this->projector_pair_ptr->get_forward_projector_sptr(), 

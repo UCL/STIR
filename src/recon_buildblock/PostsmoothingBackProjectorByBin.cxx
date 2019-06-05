@@ -88,7 +88,9 @@ PostsmoothingBackProjectorByBin::get_original_back_projector_ptr() const
 PostsmoothingBackProjectorByBin*
 PostsmoothingBackProjectorByBin::clone() const
 {
-	return new PostsmoothingBackProjectorByBin(*this);
+    PostsmoothingBackProjectorByBin* sptr(new PostsmoothingBackProjectorByBin(*this));
+    sptr->original_back_projector_ptr.reset(this->original_back_projector_ptr->clone());
+    return sptr;
 }
 
 void PostsmoothingBackProjectorByBin::
