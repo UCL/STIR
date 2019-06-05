@@ -469,16 +469,21 @@ interpolate_projdata_pull(ProjData& proj_data_out,
   return Succeeded::yes;
 }
 
+
+
+
 Succeeded
-interpolate_projdata_push(ProjData& proj_data_in,
-                     const ProjData& proj_data_out,
+interpolate_projdata_push(ProjData& proj_data_out,
+                     const ProjData& proj_data_in,
                      const bool remove_interleaving,
                      const bool use_view_offset)
 {
 
-  SegmentBySinogram<float> sino_3D_out = proj_data_in.get_empty_segment_by_sinogram(0) ;
-  PushTransposeLinearInterpolator<float>  proj_data_interpolator;
-  proj_data_interpolator.set_output(sino_3D_out);
+
+    SegmentBySinogram<float> sino_3D_out = proj_data_out.get_empty_segment_by_sinogram(0) ;
+    PushTransposeLinearInterpolator<float>  proj_data_interpolator;
+    proj_data_interpolator.set_output(sino_3D_out);
+
 
   if (use_view_offset)
     warning("interpolate_projdata with use_view_offset is EXPERIMENTAL and NOT TESTED.");
@@ -513,17 +518,17 @@ interpolate_projdata_push(ProjData& proj_data_in,
   const float out_sampling_m = proj_data_out_info.get_sampling_in_m(Bin(0,0,0,0));
   // offset in 'in' index units
   offset[1] =
-    (proj_data_in_info.get_m(Bin(0,0,0,0)) -
-     proj_data_out_info.get_m(Bin(0,0,0,0))) / in_sampling_m;
+    (proj_data_out_info.get_m(Bin(0,0,0,0)) -
+     proj_data_in_info.get_m(Bin(0,0,0,0))) / out_sampling_m;
   step[1]=
-    out_sampling_m/in_sampling_m;
-
-  const float in_sampling_phi =
-    (proj_data_in_info.get_phi(Bin(0,1,0,0)) - proj_data_in_info.get_phi(Bin(0,0,0,0))) /
-    (remove_interleaving ? 2 : 1);
+    in_sampling_m/out_sampling_m;
 
   const float out_sampling_phi =
-    proj_data_out_info.get_phi(Bin(0,1,0,0)) - proj_data_out_info.get_phi(Bin(0,0,0,0));
+    (proj_data_out_info.get_phi(Bin(0,1,0,0)) - proj_data_out_info.get_phi(Bin(0,0,0,0))) /
+    (remove_interleaving ? 2 : 1);
+
+  const float in_sampling_phi =
+    proj_data_in_info.get_phi(Bin(0,1,0,0)) - proj_data_in_info.get_phi(Bin(0,0,0,0));
 
   const float out_view_offset =
     use_view_offset
@@ -534,17 +539,17 @@ interpolate_projdata_push(ProjData& proj_data_in,
     ? proj_data_in_info.get_scanner_ptr()->get_default_intrinsic_tilt()
     : 0.F;
   offset[2] =
-    (proj_data_in_info.get_phi(Bin(0,0,0,0)) + in_view_offset - proj_data_out_info.get_phi(Bin(0,0,0,0)) - out_view_offset) / in_sampling_phi;
+    (proj_data_out_info.get_phi(Bin(0,0,0,0)) + out_view_offset - proj_data_in_info.get_phi(Bin(0,0,0,0)) - in_view_offset) / out_sampling_phi;
   step[2] =
-    out_sampling_phi/in_sampling_phi;
+    in_sampling_phi/out_sampling_phi;
 
   const float in_sampling_s = proj_data_in_info.get_sampling_in_s(Bin(0,0,0,0));
   const float out_sampling_s = proj_data_out_info.get_sampling_in_s(Bin(0,0,0,0));
   offset[3] =
-    (proj_data_out_info.get_s(Bin(0,0,0,0)) -
-     proj_data_in_info.get_s(Bin(0,0,0,0))) / in_sampling_s;
+    (proj_data_in_info.get_s(Bin(0,0,0,0)) -
+     proj_data_out_info.get_s(Bin(0,0,0,0))) / out_sampling_s;
   step[3]=
-    out_sampling_s/in_sampling_s;
+    in_sampling_s/out_sampling_s;
 
   // initialise interpolator
   if (remove_interleaving)
@@ -553,11 +558,11 @@ interpolate_projdata_push(ProjData& proj_data_in,
 
 
     shared_ptr<ProjDataInfo> non_interleaved_proj_data_info_sptr =
-      make_non_interleaved_proj_data_info(proj_data_out_info);
+      make_non_interleaved_proj_data_info(proj_data_in_info);
 
     const SegmentBySinogram<float> non_interleaved_segment =
       make_non_interleaved_segment(*non_interleaved_proj_data_info_sptr,
-                                           proj_data_out.get_segment_by_sinogram(0));
+                                           proj_data_in.get_segment_by_sinogram(0));
     //    display(non_interleaved_segment, non_interleaved_segment.find_max(),"non-inter");
 
     Array<3,float> extended =
@@ -574,14 +579,14 @@ interpolate_projdata_push(ProjData& proj_data_in,
           }
       }
     sample_function_on_regular_grid_push(extended, proj_data_interpolator, offset, step);
-    proj_data_in.set_segment(sino_3D_out);
+    proj_data_out.set_segment(sino_3D_out);
     std::cerr << "MAX UP "<< sino_3D_out.find_max() << '\n';
     std::cerr << "MIN UP "<< sino_3D_out.find_min() << '\n';
   }
   else
   {
     Array<3,float> extended =
-      extend_segment_in_views(proj_data_out.get_segment_by_sinogram(0), 2, 2);
+      extend_segment_in_views(proj_data_in.get_segment_by_sinogram(0), 2, 2);
     for (int z=extended.get_min_index(); z<= extended.get_max_index(); ++z)
       {
         for (int y=extended[z].get_min_index(); y<= extended[z].get_max_index(); ++y)
@@ -594,13 +599,10 @@ interpolate_projdata_push(ProjData& proj_data_in,
           }
       }
     sample_function_on_regular_grid_push(extended, proj_data_interpolator, offset, step);
-    proj_data_in.set_segment(sino_3D_out);
+    proj_data_out.set_segment(sino_3D_out);
     std::cerr << "MAX UP "<< sino_3D_out.find_max() << '\n';
     std::cerr << "MIN UP "<< sino_3D_out.find_min() << '\n';
   }
-
-  // now do interpolation
-
 
 }
 
