@@ -61,7 +61,7 @@ CListModeDataSimSET(const std::string& _phg_filename)
 
     char* flag = new char[4];
     memset(flag, 0, 4);
-    strcpy(flag, "-p");
+    strcpy(flag, "-d");
     flag[3] = '\0';
     argv[1] = flag;
 
@@ -285,7 +285,7 @@ CListModeDataSimSET(const std::string& _phg_filename)
     // if the ProjData have been initialised properly create a
     // Input Stream from SimSET.
     history_file_sptr.reset(new InputStreamFromSimSET());
-    std::string tmpString(phgrdhstHistName);
+    std::string tmpString(DetRunTimeParams[0].DetHistoryFilePath);
     history_file_sptr->set_up(tmpString,
                               &PhgBinParams[0],
             exam_info_sptr->get_low_energy_thres(),

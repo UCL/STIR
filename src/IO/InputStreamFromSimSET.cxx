@@ -127,13 +127,13 @@ InputStreamFromSimSET::set_up_standard_hist_file()
      photons had insufficient information for further processing--no detector angle was saved - NE: skipped */
 
     /* Set flags for type of list mode file being processed */
-    if ( 	(phgrdhstHdrParams.H.HdrKind == PhoHFileEn_PHG) ||
-            (phgrdhstHdrParams.H.HdrKind == PhoHFileEn_PHG2625) ||
-            (phgrdhstHdrParams.H.HdrKind == PhoHFileEn_PHGOLD) )
+    if ( 	(phgrdhstHdrParams.H.HdrKind == PhoHFileEn_DET) ||
+            (phgrdhstHdrParams.H.HdrKind == PhoHFileEn_DET2625) ||
+            (phgrdhstHdrParams.H.HdrKind == PhoHFileEn_DETOLD) )
     {
-        isPHGList = true;
+        isPHGList = false;
         isColList = false;
-        isDetList = false;
+        isDetList = true;
     }
     else
     {
