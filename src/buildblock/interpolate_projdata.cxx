@@ -470,14 +470,16 @@ interpolate_projdata_pull(ProjData& proj_data_out,
 }
 
 Succeeded
-interpolate_projdata_push(ProjData& proj_data_out,
-                     const ProjData& proj_data_in,
+interpolate_projdata_push(ProjData& proj_data_in,
+                     const ProjData& proj_data_out,
                      const bool remove_interleaving,
                      const bool use_view_offset)
 {
 
-
+  SegmentBySinogram<float> sino_3D_out = proj_data_in.get_empty_segment_by_sinogram(0) ;
   PushTransposeLinearInterpolator<float>  proj_data_interpolator;
+  proj_data_interpolator.set_output(sino_3D_out);
+
   if (use_view_offset)
     warning("interpolate_projdata with use_view_offset is EXPERIMENTAL and NOT TESTED.");
 
@@ -551,11 +553,11 @@ interpolate_projdata_push(ProjData& proj_data_out,
 
 
     shared_ptr<ProjDataInfo> non_interleaved_proj_data_info_sptr =
-      make_non_interleaved_proj_data_info(proj_data_in_info);
+      make_non_interleaved_proj_data_info(proj_data_out_info);
 
     const SegmentBySinogram<float> non_interleaved_segment =
       make_non_interleaved_segment(*non_interleaved_proj_data_info_sptr,
-                                           proj_data_in.get_segment_by_sinogram(0));
+                                           proj_data_out.get_segment_by_sinogram(0));
     //    display(non_interleaved_segment, non_interleaved_segment.find_max(),"non-inter");
 
     Array<3,float> extended =
@@ -571,15 +573,15 @@ interpolate_projdata_push(ProjData& proj_data_out,
             extended[z][y][old_max+1] = extended[z][y][old_max];
           }
       }
-    std::cerr << "MAX UP "<< extended.find_max() << '\n';
-    std::cerr << "MIN UP "<< extended.find_min() << '\n';
-    proj_data_interpolator.set_output(extended);
-    //proj_data_interpolator.set_input(proj_data_in.get_empty_segment_by_sinogram(0));
+    sample_function_on_regular_grid_push(extended, proj_data_interpolator, offset, step);
+    proj_data_in.set_segment(sino_3D_out);
+    std::cerr << "MAX UP "<< sino_3D_out.find_max() << '\n';
+    std::cerr << "MIN UP "<< sino_3D_out.find_min() << '\n';
   }
   else
   {
     Array<3,float> extended =
-      extend_segment_in_views(proj_data_in.get_segment_by_sinogram(0), 2, 2);
+      extend_segment_in_views(proj_data_out.get_segment_by_sinogram(0), 2, 2);
     for (int z=extended.get_min_index(); z<= extended.get_max_index(); ++z)
       {
         for (int y=extended[z].get_min_index(); y<= extended[z].get_max_index(); ++y)
@@ -591,21 +593,15 @@ interpolate_projdata_push(ProjData& proj_data_out,
             extended[z][y][old_max+1] = extended[z][y][old_max];
           }
       }
-     std::cerr << "MAX UP "<< extended.find_max() << '\n';
-     std::cerr << "MIN UP "<< extended.find_min() << '\n';
-    proj_data_interpolator.set_output(extended);
+    sample_function_on_regular_grid_push(extended, proj_data_interpolator, offset, step);
+    proj_data_in.set_segment(sino_3D_out);
+    std::cerr << "MAX UP "<< sino_3D_out.find_max() << '\n';
+    std::cerr << "MIN UP "<< sino_3D_out.find_min() << '\n';
   }
 
   // now do interpolation
 
-  SegmentBySinogram<float> sino_3D_out = proj_data_out.get_empty_segment_by_sinogram(0) ;
-  sample_function_on_regular_grid_push(sino_3D_out, proj_data_interpolator, offset, step);
 
-  proj_data_out.set_segment(sino_3D_out);
-
-  if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
-    return Succeeded::no;
-  return Succeeded::yes;
 }
 
 END_NAMESPACE_STIR
