@@ -119,7 +119,7 @@ template <class elemT, class positionT, class valueT>
 void
 push_transpose_linear_interpolate(Array<3, elemT>& out, 
 				  const BasicCoordinate<3, positionT>& point_in_output_coords,
-				  valueT value)
+                                  valueT value)
 {
   if (value==0)
    return;
@@ -128,6 +128,7 @@ push_transpose_linear_interpolate(Array<3, elemT>& out,
     left_neighbour(round(std::floor(point_in_output_coords[1])),
 		   round(std::floor(point_in_output_coords[2])),
 		   round(std::floor(point_in_output_coords[3])));
+
 
   // TODO handle boundary conditions
   if (left_neighbour[1] < out.get_max_index() &&

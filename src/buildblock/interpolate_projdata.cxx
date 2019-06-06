@@ -438,8 +438,6 @@ interpolate_projdata_pull(ProjData& proj_data_out,
 
     sample_function_on_regular_grid_pull(sino_3D_out,extended, offset, step);
     proj_data_out.set_segment(sino_3D_out);
-    std::cerr << "MAX UP "<< sino_3D_out.find_max() << '\n';
-    std::cerr << "MIN UP "<< sino_3D_out.find_min() << '\n';
   }
   else
   {
@@ -458,8 +456,7 @@ interpolate_projdata_pull(ProjData& proj_data_out,
       }
     sample_function_on_regular_grid_pull(sino_3D_out,extended, offset, step);
     proj_data_out.set_segment(sino_3D_out);
-    std::cerr << "MAX UP "<< sino_3D_out.find_max() << '\n';
-    std::cerr << "MIN UP "<< sino_3D_out.find_min() << '\n';
+
   }
 
   return Succeeded::yes;
@@ -543,8 +540,8 @@ interpolate_projdata_push(ProjData& proj_data_out,
   step[3]=
     in_sampling_s/out_sampling_s;
 
-  std::cerr << "PUSH - OFFSET"<< offset[1] << "," << offset[2] << "," << offset[3] << '\n';
-  std::cerr << "PUSH - STEP"<< step[1] << "," << step[2] << "," << step[3] << '\n';
+  std::cerr << "PUSH - OFFSET:"<< offset[1] << "," << offset[2] << "," << offset[3] << '\n';
+  std::cerr << "PUSH - STEP:"<< step[1] << "," << step[2] << "," << step[3] << '\n';
 
   // initialise interpolator
   if (remove_interleaving)
@@ -575,8 +572,8 @@ interpolate_projdata_push(ProjData& proj_data_out,
       }
     sample_function_on_regular_grid_push(sino_3D_out,extended, offset, step);
     proj_data_out.set_segment(sino_3D_out);
-    std::cerr << "MAX UP "<< sino_3D_out.find_max() << '\n';
-    std::cerr << "MIN UP "<< sino_3D_out.find_min() << '\n';
+
+
   }
   else
   {
@@ -595,8 +592,7 @@ interpolate_projdata_push(ProjData& proj_data_out,
       }
     sample_function_on_regular_grid_push(sino_3D_out,extended, offset, step);
     proj_data_out.set_segment(sino_3D_out);
-    std::cerr << "MAX UP "<< sino_3D_out.find_max() << '\n';
-    std::cerr << "MIN UP "<< sino_3D_out.find_min() << '\n';
+
   }
 
    return Succeeded::yes;

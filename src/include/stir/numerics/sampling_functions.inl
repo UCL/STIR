@@ -116,7 +116,7 @@ void sample_function_on_regular_grid_push(Array<3,elemT>& out,
   BasicCoordinate<3, int> index_in;
   BasicCoordinate<3, positionT>  relative_positions;
   index_in[1]=min_in[1];
-  relative_positions[1]= index_in[1] * step[1] - offset[1] ;
+  relative_positions[1]= index_in[1] *step[1] - offset[1] ;
   const BasicCoordinate<3, positionT> max_relative_positions=
     (BasicCoordinate<3,positionT>(max_in)+static_cast<positionT>(.001)) * step + offset;
   for (;
@@ -139,6 +139,7 @@ void sample_function_on_regular_grid_push(Array<3,elemT>& out,
                             in[index_in]);
         }
     }
+            out*=(step[1]*step[2]*step[3]); //very important
 }
 
 

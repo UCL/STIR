@@ -190,7 +190,7 @@ push_scatter_estimate(ProjData& scaled_scatter_proj_data,
 
     // interpolate projdata
     interpolate_projdata_push(interpolated_direct_scatter, scatter_proj_data, remove_interleaving);
-
+      std::cerr << "PUSH.." << '\n';
     // Perform Inverse Single Slice Rebinning
     inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);
 
