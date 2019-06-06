@@ -23,6 +23,7 @@ This file is part of STIR.
   \brief implementation of stir::sample_function_on_regular_grid
 */
 
+#include "stir_experimental/numerics/more_interpolators.h"
 START_NAMESPACE_STIR
 
 template <class FunctionType, class elemT, class positionT>
@@ -62,9 +63,9 @@ void sample_function_on_regular_grid(Array<3,elemT>& out,
     }                             
 }
 
-template <class FunctionType, class elemT, class positionT>
+template <class elemT, class positionT>
 void sample_function_on_regular_grid_pull(Array<3,elemT>& out,
-                                     FunctionType func,
+                                     const Array<3,elemT>& in,
                                      const BasicCoordinate<3, positionT>&  offset,
                                      const BasicCoordinate<3, positionT>& step)
 {
@@ -94,15 +95,16 @@ void sample_function_on_regular_grid_pull(Array<3,elemT>& out,
           for (;
                index_out[3]<=max_out[3] && relative_positions[3]<=max_relative_positions[3];
                ++index_out[3], relative_positions[3]+= step[3])
-              out[index_out] = func(relative_positions) ;
+              out[index_out] = pull_linear_interpolate(in,
+                                                       relative_positions);
         }
     }
 }
 
 
-template <class FunctionType, class elemT, class positionT>
-void sample_function_on_regular_grid_push(Array<3,elemT>& in,
-                                     FunctionType func,
+template <class elemT, class positionT>
+void sample_function_on_regular_grid_push(Array<3,elemT>& out,
+                                     const Array<3,elemT>& in,
                                      const BasicCoordinate<3, positionT>&  offset,
                                      const BasicCoordinate<3, positionT>& step)
 {
@@ -132,7 +134,9 @@ void sample_function_on_regular_grid_push(Array<3,elemT>& in,
           for (;
                index_in[3]<=max_in[3] && relative_positions[3]<=max_relative_positions[3];
                ++index_in[3], relative_positions[3]+= step[3])
-              func.add_to(relative_positions, in[index_in]);
+              push_transpose_linear_interpolate(out,
+                            relative_positions,
+                            in[index_in]);
         }
     }
 }

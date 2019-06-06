@@ -57,17 +57,17 @@ void sample_function_on_regular_grid(Array<3,elemT>& out,
                                      const BasicCoordinate<3, positionT>&  offset,  
                                      const BasicCoordinate<3, positionT>& step);
 
-template <class FunctionType, class elemT, class positionT>
+template <class elemT, class positionT>
 inline
 void sample_function_on_regular_grid_pull(Array<3,elemT>& out,
-                                     FunctionType func,
+                                     const Array<3,elemT>& in,
                                      const BasicCoordinate<3, positionT>&  offset,
                                      const BasicCoordinate<3, positionT>& step);
 
-template <class FunctionType, class elemT, class positionT>
+template <class elemT, class positionT>
 inline
 void sample_function_on_regular_grid_push(Array<3,elemT>& out,
-                                     FunctionType func,
+                                     const Array<3,elemT>& in,
                                      const BasicCoordinate<3, positionT>&  offset,
                                      const BasicCoordinate<3, positionT>& step);
 
