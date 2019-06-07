@@ -438,6 +438,8 @@ interpolate_projdata_pull(ProjData& proj_data_out,
 
     sample_function_on_regular_grid_pull(sino_3D_out,extended, offset, step);
     proj_data_out.set_segment(sino_3D_out);
+    if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
+      return Succeeded::no;
   }
   else
   {
@@ -456,6 +458,8 @@ interpolate_projdata_pull(ProjData& proj_data_out,
       }
     sample_function_on_regular_grid_pull(sino_3D_out,extended, offset, step);
     proj_data_out.set_segment(sino_3D_out);
+    if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
+      return Succeeded::no;
 
   }
 
@@ -508,7 +512,7 @@ interpolate_projdata_push(ProjData& proj_data_out,
   // offset in 'in' index units
   offset[1] =
     (proj_data_out_info.get_m(Bin(0,0,0,0)) -
-     proj_data_in_info.get_m(Bin(0,0,0,0))) / out_sampling_m;
+     proj_data_in_info.get_m(Bin(0,0,0,0))) / out_sampling_m; //divide by sampling: conversion from mm to voxel units
   step[1]=
     in_sampling_m/out_sampling_m;
 
@@ -572,7 +576,8 @@ interpolate_projdata_push(ProjData& proj_data_out,
       }
     sample_function_on_regular_grid_push(sino_3D_out,extended, offset, step);
     proj_data_out.set_segment(sino_3D_out);
-
+    if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
+        return Succeeded::no;
 
   }
   else
@@ -592,6 +597,8 @@ interpolate_projdata_push(ProjData& proj_data_out,
       }
     sample_function_on_regular_grid_push(sino_3D_out,extended, offset, step);
     proj_data_out.set_segment(sino_3D_out);
+    if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
+      return Succeeded::no;
 
   }
 
