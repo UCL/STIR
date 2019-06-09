@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2004 - 2009 Hammersmith Imanet Ltd
-    Copyright (C) 2013 - 2016 University College London
+    Copyright (C) 2013 - 2016, 2019 University College London
+    Copyright (C) 2018-2019, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -18,7 +19,7 @@
 /*!
   \file
   \ingroup scatter
-  \brief Definition of class stir::ScatterEstimationByBin.
+  \brief Definition of class stir::ScatterSimulation.
 
   \author Nikos Efthimiou
   \author Kris Thielemans
@@ -62,11 +63,11 @@ Succeeded
 ScatterSimulation::
 process_data()
 {
-    // this is usefull in the scatter estimation process.
+    // this is useful in the scatter estimation process.
     this->output_proj_data_sptr->fill(0.f);
     info("ScatterSimulator: Running Scatter Simulation ...");
     info("ScatterSimulator: Initialising ...");
-    // The activiy image might have been changed, during the estimation process.
+    // The activity image might have been changed, during the estimation process.
     this->remove_cache_for_integrals_over_activity();
     this->remove_cache_for_integrals_over_attenuation();
     this->sample_scatter_points();
@@ -140,7 +141,7 @@ process_data()
         return Succeeded::no;
     }
 
-    std::cerr << "TOTAL SCATTER:= " << total_scatter << '\n';
+    info(boost::format("TOTAL SCATTER:= %g") % total_scatter);
     return Succeeded::yes;
 }
 
@@ -305,19 +306,19 @@ ScatterSimulation::
 set_up()
 {
     if (is_null_ptr(proj_data_info_cyl_noarc_cor_sptr))
-        return Succeeded::no;
+        error("ScatterSimulation: projection data info not set");
 
     if (!proj_data_info_cyl_noarc_cor_sptr->has_energy_information())
-        return Succeeded::no;
+        error("ScatterSimulation: scanner energy resolution information not set");
 
     if(!template_exam_info_sptr->has_energy_information())
-        return Succeeded::no;
+        error("ScatterSimulation: template energy window information not set");
 
     if(is_null_ptr(activity_image_sptr))
-        return Succeeded::no;
+        error("ScatterSimulation: activity image not set");
 
     if(is_null_ptr(density_image_sptr))
-        return Succeeded::no;
+        error("ScatterSimulation: density image not set");
 
     if(is_null_ptr(density_image_for_scatter_points_sptr))
     {
@@ -327,12 +328,12 @@ set_up()
         }
         else
         {
-            return Succeeded::no;
+            error("ScatterSimulation: internal error");
         }
     }
 
     if(is_null_ptr(output_proj_data_sptr))
-        return Succeeded::no;
+        error("ScatterSimulation: output projection data not set");
 
     return Succeeded::yes;
 }
@@ -507,7 +508,8 @@ set_output_proj_data_sptr(const shared_ptr<ExamInfo>& _exam,
     if (filename.size() > 0 )
         this->output_proj_data_sptr.reset(new ProjDataInterfile(_exam,
                                                                 _info,
-                                                                filename));
+                                                                filename,
+                                                                std::ios::in | std::ios::out | std::ios::trunc));
     else
         this->output_proj_data_sptr.reset( new ProjDataInMemory(_exam,
                                                                 _info));
@@ -522,7 +524,7 @@ get_output_proj_data_sptr() const
     {
 //        this->output_proj_data_sptr.reset(new ProjDataInMemory(this->template_exam_info_sptr,
 //                                                                this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone()));
-        error("ScatterSimulation: No output ProjData set. Abort.");
+        error("ScatterSimulation: No output ProjData set. Aborting.");
     }
 
     return this->output_proj_data_sptr;
@@ -535,7 +537,7 @@ set_output_proj_data(const std::string& filename)
 
     if(is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr))
     {
-        error("Template ProjData has not been set. Abord.");
+        error("Template ProjData has not been set. Aborting.");
     }
     this->output_proj_data_filename = filename;
     if (is_null_ptr(this->template_exam_info_sptr))
