@@ -1,6 +1,7 @@
 /*
   Copyright (C) 2004 -  2009 Hammersmith Imanet Ltd
-  Copyright (C) 2013,2016 University College London
+  Copyright (C) 2013,2016,2019 University College London
+  Copyright (C) 2018-2019, University of Hull
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -221,7 +222,7 @@ post_processing()
     // file. I prefer this implementation since makes smaller modular files.
     if (this->recon_template_par_filename.size() == 0)
     {
-        warning("Please define a reconstruction method. Abort.");
+        warning("Please define a reconstruction method. Aborting.");
         return true;
     }
     else
@@ -232,7 +233,7 @@ post_processing()
         local_parser.add_parsing_key("reconstruction method", &this->reconstruction_template_sptr);
         if (!local_parser.parse(this->recon_template_par_filename.c_str()))
         {
-            warning(boost::format("Error parsing reconstruction parameters file %1%. Abort.")
+            warning(boost::format("Error parsing reconstruction parameters file %1%. Aborting.")
                     %this->recon_template_par_filename);
             return true;
         }
@@ -241,7 +242,7 @@ post_processing()
     info("ScatterEstimation: Loading attenuation image...");
     if (this->atten_image_filename.size() == 0)
     {
-        warning("Please define an attenuation image. Abort.");
+        warning("Please define an attenuation image. Aborting.");
         return true;
     }
     else
@@ -294,7 +295,7 @@ post_processing()
         else
         {
             warning("ScatterEstimation: Recompute initial activity image was set to false but"
-                    "no file name was set. Abort.");
+                    "no file name was set. Aborting.");
             return true;
         }
     }
@@ -306,7 +307,7 @@ post_processing()
 
         if(!filter_sptr->parse(this->mask_postfilter_filename.c_str()))
         {
-            warning(boost::format("Error parsing post filter parameters file %1%. Abort.")
+            warning(boost::format("Error parsing post filter parameters file %1%. Aborting.")
                     %this->mask_postfilter_filename);
             return true;
         }
@@ -315,7 +316,7 @@ post_processing()
     info ("ScatterEstimation: Initialising Scatter Simulation ... ");
     if (this->scatter_sim_par_filename.size() == 0)
     {
-        warning("ScatterEstimation: Please define a scatter simulation method. Abort.");
+        warning("ScatterEstimation: Please define a scatter simulation method. Aborting.");
         return true;
     }
     else // Parse locally
@@ -326,7 +327,7 @@ post_processing()
         local_parser.add_parsing_key("Simulation method", &this->scatter_simulation_sptr);
         if (!local_parser.parse(this->scatter_sim_par_filename.c_str()))
         {
-            warning(boost::format("ScatterEstimation: Error parsing scatter simulation parameters file %1%. Abort.")
+            warning(boost::format("ScatterEstimation: Error parsing scatter simulation parameters file %1%. Aborting.")
                     %this->recon_template_par_filename);
             return true;
         }
@@ -339,7 +340,7 @@ post_processing()
     {
         if (this->mask_projdata_filename.size() == 0)
         {
-            warning("ScatterEstimation: Please define a filename for mask proj_data. Abort.");
+            warning("ScatterEstimation: Please define a filename for mask proj_data. Aborting.");
             return true;
         }
         this->mask_projdata_sptr =
@@ -351,7 +352,7 @@ post_processing()
         {
             if (this->mask_image_filename.size() == 0 )
             {
-                warning("ScatterEstimation: Please define a filename for mask image. Abort.");
+                warning("ScatterEstimation: Please define a filename for mask image. Aborting.");
                 return true;
             }
 
@@ -361,7 +362,7 @@ post_processing()
 
         if (this->tail_mask_par_filename.size() == 0)
         {
-            warning("ScatterEstimation: Please define a filename for tails mask. Abort.");
+            warning("ScatterEstimation: Please define a filename for tails mask. Aborting.");
             return true;
         }
     }
@@ -389,7 +390,7 @@ set_up()
 
     if (is_null_ptr(this->input_projdata_sptr))
     {
-        warning("ScatterEstimation: No input proj_data have been set. Abort.");
+        warning("ScatterEstimation: No input proj_data have been set. Aborting.");
         return Succeeded::no;
     }
 
@@ -422,7 +423,7 @@ set_up()
     }
     else
     {
-        warning(boost::format("The input data %1% are not 3D. Abort.") %this->input_projdata_filename );
+        warning(boost::format("The input data %1% are not 3D. Aborting.") %this->input_projdata_filename );
         return Succeeded::no;
     }
 
@@ -436,7 +437,7 @@ set_up()
         }
         else
         {
-            error("ScatterEstimation: ScatterEstimation: No initial activity image, please set to recompute. Abort.");
+            error("ScatterEstimation: ScatterEstimation: No initial activity image, please set to recompute. Aborting.");
         }
     }
     else
@@ -453,7 +454,7 @@ set_up()
     {
         if (is_null_ptr(this->atten_image_sptr))
         {
-            warning("ScatterEstimation: Attenuation image has not been loaded properly. Abort.");
+            warning("ScatterEstimation: Attenuation image has not been loaded properly. Aborting.");
             return Succeeded::no;
         }
 
@@ -548,7 +549,7 @@ set_up()
 
             if(is_null_ptr(this->filter_sptr))
             {
-                warning(boost::format("ScatterEstimation: Error creating a filter from %1%. Abort.") %this->mask_postfilter_filename );
+                warning(boost::format("ScatterEstimation: Error creating a filter from %1%. Aborting.") %this->mask_postfilter_filename );
                 return Succeeded::no;
             }
 
@@ -567,7 +568,7 @@ set_up()
 
     if(is_null_ptr(this->reconstruction_template_sptr))
     {
-        warning("ScatterEstimation: Reconstruction method has not been initialised. Abort.");
+        warning("ScatterEstimation: Reconstruction method has not been initialised. Aborting.");
         return Succeeded::no;
     }
 
@@ -580,7 +581,7 @@ set_up()
     {
         if(set_up_analytic() == Succeeded::no)
         {
-            warning("ScatterEstimation: set_up_analytic reconstruction failed. Abord.");
+            warning("ScatterEstimation: set_up_analytic reconstruction failed. Aborting.");
             return Succeeded::no;
         }
 
@@ -590,7 +591,7 @@ set_up()
     {
         if(set_up_iterative(tmp_iterative) == Succeeded::no)
         {
-            warning("ScatterEstimation: set_up_iterative reconstruction failed. Abord.");
+            warning("ScatterEstimation: set_up_iterative reconstruction failed. Aborting.");
             return Succeeded::no;
         }
 
@@ -598,7 +599,7 @@ set_up()
     }
     else
     {
-        warning("ScatterEstimation: Failure to detect a method of reconstruction. Abord.");
+        warning("ScatterEstimation: Failure to detect a method of reconstruction. Aborting.");
         return Succeeded::no;
     }
 
@@ -607,7 +608,7 @@ set_up()
     // Now, we can call Reconstruction::set_up().
     if (this->reconstruction_template_sptr->set_up(this->current_activity_image_lowres_sptr) == Succeeded::no)
     {
-        warning ("ScatterEstimation: Failure at set_up() of the reconstruction method. Abort.");
+        warning ("ScatterEstimation: Failure at set_up() of the reconstruction method. Aborting.");
         return Succeeded::no;
     }
 
@@ -618,7 +619,7 @@ set_up()
     info("ScatterEstimation: Setting up Scatter Simulation method ...");
     if(is_null_ptr(this->scatter_simulation_sptr))
     {
-        warning("Scatter simulation method has not been initialised. Abort.");
+        warning("Scatter simulation method has not been initialised. Aborting.");
         return Succeeded::no;
     }
 
@@ -652,9 +653,9 @@ set_up()
 
     // Check if Load a mask proj_data
 
-    if(is_null_ptr(this->mask_projdata_sptr))
+    if(is_null_ptr(this->mask_projdata_sptr) || this->recompute_mask_projdata)
     {
-        if(is_null_ptr(this->mask_image_sptr))
+        if(is_null_ptr(this->mask_image_sptr) || this->recompute_mask_image)
         {
             // Applying mask
             // 1. Clone from the original image.
@@ -663,7 +664,7 @@ set_up()
             if(this->apply_mask_in_place(*this->mask_image_sptr,
                                          this->mask_image) == false)
             {
-                warning("Error in masking. Abort.");
+                warning("Error in masking. Aborting.");
                 return Succeeded::no;
             }
 
@@ -674,7 +675,7 @@ set_up()
 
         if(ffw_project_mask_image() == Succeeded::no)
         {
-            warning("ScatterEstimation: Unsuccessfull to fwd project the mask image. Abort.");
+            warning("ScatterEstimation: Unsuccessfull to fwd project the mask image. Aborting.");
             return Succeeded::no;
         }
     }
@@ -803,6 +804,8 @@ set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterat
         // N.E.: From K.T.: Bin normalisation doesn't know about SSRB.
         // we need to get norm2d=1/SSRB(1/norm3d))
 
+        info("ScatterEstimation: Constructing 2D normalisation coefficients ...");
+
         shared_ptr<ProjData> inv_projdata_3d_sptr(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
                                                                        this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone()));
         inv_projdata_3d_sptr->fill(1.f);
@@ -850,6 +853,8 @@ set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterat
 
         if( add_projdata_3d_sptr->get_num_segments() > 1)
         {
+            info("ScatterEstimation: Running SSRB on the background data ...");
+
             size_t lastindex = this->back_projdata_filename.find_last_of(".");
             std::string rawname = this->back_projdata_filename.substr(0, lastindex);
             std::string out_filename = rawname + "_2d.hs";
@@ -893,6 +898,7 @@ ScatterEstimation::
 set_up_analytic()
 {
     //TODO : I have most stuff in tmp.
+     error("Analytic recon not implemented yet");
     return Succeeded::yes;
 }
 
@@ -903,7 +909,7 @@ process_data()
 
     if (this->set_up() == Succeeded::no)
     {
-        info("ScatterEstimation: Unsuccessfull set up!");
+        info("ScatterEstimation: Unsuccessful set up!");
        return Succeeded::no;
     }
 
@@ -962,7 +968,7 @@ process_data()
             if (i_scat_iter == 2) // do average 0 and 1
             {
                 if (is_null_ptr(act_image_for_averaging))
-                    error("Storing the first actibity estimate has failed at some point.");
+                    error("Storing the first activity estimate has failed at some point.");
 
                 *this->current_activity_image_lowres_sptr += *act_image_for_averaging;
                 *this->current_activity_image_lowres_sptr /= 2.f;
@@ -976,8 +982,9 @@ process_data()
         }
 
         info("ScatterEstimation: Scatter simulation in progress...");
-        this->scatter_simulation_sptr->process_data();
-        info("ScatterEstimation: Scatter simulation in progress...");
+        if (this->scatter_simulation_sptr->process_data() == Succeeded::no)
+          error("ScatterEstimation: Scatter simulation failed");
+        info("ScatterEstimation: Scatter simulation done...");
 
         if(this->run_debug_mode) // Write unscaled scatter sinogram
         {
@@ -985,7 +992,7 @@ process_data()
             convert << "unscaled_" << i_scat_iter;
             FilePath tmp(convert.str(),false);
             tmp.prepend_directory_name(extras_path.get_path());
-            dynamic_cast<ProjDataInMemory *> (unscaled_est_projdata_2d_sptr.get())->write_to_file(tmp.get_string());
+            unscaled_est_projdata_2d_sptr->write_to_file(tmp.get_string());
         }
 
         // Set the min and max scale factors
@@ -1258,13 +1265,13 @@ ScatterEstimation::ffw_project_mask_image()
 {
     if (is_null_ptr(this->mask_image_sptr))
     {
-        warning("You cannot forward project if you have not set the mask image. Abort.");
+        warning("You cannot forward project if you have not set the mask image. Aborting.");
         return Succeeded::no;
     }
 
     if (is_null_ptr(this->input_projdata_2d_sptr))
     {
-        warning("No 2D proj_data have been initialised. Abort.");
+        warning("No 2D proj_data have been initialised. Aborting.");
         return Succeeded::no;
     }
 
@@ -1344,7 +1351,7 @@ apply_mask_in_place(DiscretisedDensity<3, float>& arg,
 
     if(filter.parse(this->mask_postfilter_filename.c_str()) == false)
     {
-        warning(boost::format("Error parsing postfilter parameters file %1%. Abort.")
+        warning(boost::format("Error parsing postfilter parameters file %1%. Aborting.")
                 %this->mask_postfilter_filename);
         return false;
     }
