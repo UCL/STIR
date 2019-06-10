@@ -1,4 +1,5 @@
 /*
+    Copyright (C) 2018 - 2019 University of Hull
     Copyright (C) 2004 - 2009 Hammersmith Imanet Ltd
     Copyright (C) 2013 - 2016 University College London
     This file is part of STIR.
@@ -57,11 +58,6 @@ START_NAMESPACE_STIR
   \todo Currently this can only be run by initialising it via parsing of a file. We need
   to add a lot of set/get members.
 
-  \todo This class currently uses a simple Gaussian model for the energy resolution. This model
-  and its parameters (\a reference_energy and \a energy_resolution) really should be moved the
-  the Scanner class. Also the \a lower_energy_threshold and \a upper_energy_threshold should
-  be read from the emission data, as opposed to setting them here.
-
   \todo detector coordinates are derived from ProjDataInfo, but areas and orientations are
   determined by using a cylindrical scanner.
 
@@ -87,6 +83,10 @@ START_NAMESPACE_STIR
   <li>P. Aguiar, Ch. Tsoumpas, C. Crespo, J. Pavia, C. Falcon, A. Cot, K. Thielemans and D. Ros,
      <i>Assessment of scattered photons in the quantification of the small animal PET studies,</i>
      Eur J Nucl Med Mol I 33:S315-S315 Sep 2006, Proc. EANM 2006, Athens, Greece.
+  </li>
+  <li>I Polycarpou, P K Marsden and C Tsoumpas,
+      <i>A comparative investigation of scatter correction in 3D PET</i>,
+      J Phys: Conference Series (317), conference 1, 2011
   </li>
   </ol>
 */
@@ -142,14 +142,6 @@ public:
     void set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 
     void set_activity_image(const std::string& filename);
-    //! create output projection data of same size as template_proj_data_info
-    /*! \warning use set_template_proj_data_info() first.
-
-     Currently always uses Interfile output.
-     \warning If the specified file already exists it will be erased.
-    */
-    void set_proj_data_from_file(const std::string& filename,
-                                        shared_ptr<ProjData>& _this_projdata);
     //! \details Since July 2016, the information for the energy window and energy
     //! resolution are stored in ExamInfo.
     void set_exam_info_sptr(const shared_ptr<ExamInfo>&);

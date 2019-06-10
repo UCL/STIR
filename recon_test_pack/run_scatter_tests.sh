@@ -91,13 +91,6 @@ if [ $? -ne 0 ]; then
   error_log_files="${error_log_files} my_scatter_compare_projdata.log"
 fi
 
-echo "===  compare result with old scatter simulation"
-compare_projdata my_scatter_cylinder.hs old_scatter_cylinder.hs > my_scatter_compare_with_old_projdata.log 2>&1
-if [ $? -ne 0 ]; then
-  echo "Error comparing scatter output with old scatter output."
-  error_log_files="${error_log_files} my_scatter_compare_projdata.log"
-fi
-
 if [ -z "${error_log_files}" ]; then
   echo "All tests OK!"
   echo "You can remove all output using \"rm -f my_*\""

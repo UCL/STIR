@@ -537,20 +537,28 @@ set_output_proj_data(const std::string& filename)
 
     if(is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr))
     {
-        error("Template ProjData has not been set. Aborting.");
+        error("ScatterSimulation: Template ProjData has not been set. Aborting.");
     }
+
     this->output_proj_data_filename = filename;
+    shared_ptr<ProjData> tmp_sptr;
+
     if (is_null_ptr(this->template_exam_info_sptr))
     {
         shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
-        this->output_proj_data_sptr.reset(new ProjDataInterfile(exam_info_sptr,
-                                                                this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone(),
-                                                                this->output_proj_data_filename,std::ios::in | std::ios::out | std::ios::trunc));
+        tmp_sptr.reset(new ProjDataInterfile(exam_info_sptr,
+                                                       this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone(),
+                                                       this->output_proj_data_filename,std::ios::in | std::ios::out | std::ios::trunc));
     }
     else
-        this->output_proj_data_sptr.reset(new ProjDataInterfile(this->template_exam_info_sptr,
-                                                                this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone(),
-                                                                this->output_proj_data_filename,std::ios::in | std::ios::out | std::ios::trunc));
+    {
+        tmp_sptr.reset(new ProjDataInterfile(this->template_exam_info_sptr,
+                                             this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone(),
+                                             this->output_proj_data_filename,std::ios::in | std::ios::out | std::ios::trunc));
+
+    }
+
+    set_output_proj_data_sptr(tmp_sptr);
 }
 
 

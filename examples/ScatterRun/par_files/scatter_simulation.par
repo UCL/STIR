@@ -24,7 +24,7 @@ Scatter Simulation :=
 		;; If subsample attenuation image during Scatter simulation 
 		;; then output the zoomed image here
 		;; attenuation image for scatter points output filename := my_zoomed_my_atten_image
-		
+        ;; Minimum mu-value (in 1/cm) for scatter point selection
 		attenuation threshold := 0.01 
 		random := 1 
 		use cache := 1
