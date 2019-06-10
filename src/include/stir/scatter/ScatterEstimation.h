@@ -96,7 +96,7 @@ public:
     //! Default constructor (calls set_defaults())
     ScatterEstimation();
 
-    //! Full process_data which performs set_up() before begining
+    //! Full process_data which performs set_up() before beginning
     virtual Succeeded process_data();
 
     virtual void reconstruct_iterative(int,
