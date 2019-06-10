@@ -334,7 +334,7 @@ private:
     float min_scale_value;
     //!
     unsigned int half_filter_width;
-    //! Ouput file name prefix
+    //! Output file name prefix
     std::string o_scatter_estimate_prefix;
 };
 
