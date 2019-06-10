@@ -2,7 +2,7 @@
 # A script to check to see if scatter simulation gives the expected result.
 #
 #  Copyright (C) 2011, Kris Thielemans
-#  Copyright (C) 2013, University College London
+#  Copyright (C) 2013,2019 University College London
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify
@@ -21,12 +21,6 @@
 #        Nikos Efthimiou
 # 
 
-# Scripts should exit with error code when a test fails:
-if [ -n "$TRAVIS" ]; then
-    # The code runs inside Travis
-    set -e
-fi
-
 echo This script should work with STIR version ">"3.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
@@ -42,7 +36,7 @@ rm -f my_* *.log
 
 command -v generate_image >/dev/null 2>&1 || { echo "generate_image not found or not executable. Aborting." >&2; exit 1; }
 echo "Using `command -v generate_image`"
-echo "Using `command -v estimate_scatter`"
+echo "Using `command -v simulate_scatter`"
 
 # first need to set this to the C locale, as this is what the STIR utilities use
 # otherwise, awk might interpret floating point numbers incorrectly
@@ -82,7 +76,7 @@ fi
 export ATTEN_IMAGE
 export ZOOM_ATTEN_IMAGE
 echo "===  run scatter simulation (new)"
-simulate_scatter scatter_simulation_new.par > my_simulate_scatter_new.log
+simulate_scatter scatter_simulation_new.par > my_simulate_scatter_new.log 2>&1
 if [ $? -ne 0 ]; then
   echo "Error running scatter simulation"
   error_log_files="${error_log_files} my_simulate_scatter.log my_scatter_cylinder*.log"
@@ -105,9 +99,19 @@ if [ $? -ne 0 ]; then
 fi
 
 if [ -z "${error_log_files}" ]; then
- echo "All tests OK!"
- echo "You can remove all output using \"rm -f my_*\""
+  echo "All tests OK!"
+  echo "You can remove all output using \"rm -f my_*\""
 else
- echo "There were errors. Check ${error_log_files}"
-fi
+  echo "There were errors. Check ${error_log_files}"
 
+  if [ -n "$TRAVIS" ]; then
+    # The code runs inside Travis
+    for f in ${error_log_files}
+    do
+        echo "=== $f"
+        cat $f
+    done
+    
+    exit 1
+  fi
+fi
