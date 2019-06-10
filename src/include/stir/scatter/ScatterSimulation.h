@@ -51,7 +51,7 @@ START_NAMESPACE_STIR
 
   One non-standard feature is that you can specify a different attenuation image to find the
   scatter points and one to compute the integrals over the attenuation image. The idea is that
-  maybe you want to compute the integrals on a finer grid than you sample the attenuation image.
+  maybe you want to compute the integrals on a finer grid then you sample the attenuation image.
   This is probably not very useful though.
 
   \todo Currently this can only be run by initialising it via parsing of a file. We need
