@@ -3,7 +3,7 @@ Scatter Simulation :=
 		Scatter Simulation Parameters := 
 
 		;; Use either already subsampled ProjDataInfo
-		;; or subsample bellow. 
+		;; or use the subsampling parameters below. 
 		template projdata filename := ./data/sinospan11_f1g1d0b0.hs
 
 		;; The scatter_cylinder has already been reduced. 
