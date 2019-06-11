@@ -143,8 +143,8 @@ initialise_keymap()
                          &this->recompute_atten_projdata);
     this->parser.add_key("background projdata filename",
                          &this->back_projdata_filename);
-    this->parser.add_key("normalisation coefficients filename",
-                         &this->norm_coeff_filename);
+    this->parser.add_parsing_key("Bin Normalisation type",
+                         &this->normalisation_coeffs_3d_sptr);
     this->parser.add_key("recompute initial activity image",
                          &this->recompute_initial_activity_image);
     this->parser.add_key("initial activity image filename",
@@ -208,7 +208,7 @@ post_processing()
     info("ScatterEstimation: Loading input projection data");
     if (this->input_projdata_filename.size() == 0)
     {
-        warning("No input projdata filename is given. Abort ");
+        warning("ScatterEstimation: No input projdata filename is given. Aborting.");
         return true;
     }
 
@@ -216,13 +216,13 @@ post_processing()
             ProjData::read_from_file(this->input_projdata_filename);
 
     this->atten_coeff_3d_sptr.reset(new TrivialBinNormalisation());
-    shared_ptr<BinNormalisation> normalisation_coeffs_3d_sptr(new TrivialBinNormalisation());
+    normalisation_coeffs_3d_sptr.reset(new TrivialBinNormalisation());
 
     // If the reconstruction_template_sptr is null then, we need to parse it from another
     // file. I prefer this implementation since makes smaller modular files.
     if (this->recon_template_par_filename.size() == 0)
     {
-        warning("Please define a reconstruction method. Aborting.");
+        warning("ScatterEstimation: Please define a reconstruction method. Aborting.");
         return true;
     }
     else
@@ -233,7 +233,7 @@ post_processing()
         local_parser.add_parsing_key("reconstruction method", &this->reconstruction_template_sptr);
         if (!local_parser.parse(this->recon_template_par_filename.c_str()))
         {
-            warning(boost::format("Error parsing reconstruction parameters file %1%. Aborting.")
+            warning(boost::format("ScatterEstimation: Error parsing reconstruction parameters file %1%. Aborting.")
                     %this->recon_template_par_filename);
             return true;
         }
@@ -251,29 +251,37 @@ post_processing()
 
     if(this->atten_coeff_filename.size() > 0)
     {
-        if (!this->recompute_atten_projdata)
-        {
-            info("ScatterEstimation: Loading attenuation correction coefficients...");
-            this->atten_coeff_3d_sptr.reset(new BinNormalisationFromProjData(this->atten_coeff_filename));
-        }
-        else
+        if (this->recompute_atten_projdata)
         {
             info("ScatterEstimation: No attenuation correction proj_data file name. The attenuation correction sinogram will be recomputed.");
-//            //! TODO.
-//            shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
-//            shared_ptr<ForwardProjectorByBin> forw_projector_ptr();
-//            forw_projector_ptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
-//            cerr << "\n\nForward projector used:\n" << forw_projector_ptr->parameter_info();
+            shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
+            shared_ptr<ForwardProjectorByBin> forw_projector_ptr(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
 
+            shared_ptr<ProjData> out_proj_data_ptr(
+                        new ProjDataInterfile(atten_image_sptr->get_exam_info_sptr(),
+                                  input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
+                                  atten_coeff_filename, std::ios::in|std::ios::out|std::ios::trunc));
+
+            out_proj_data_ptr->fill(1.F);
+
+            // construct a normalisation object that does all the work for us.
+            shared_ptr<BinNormalisation> tmp_normalisation_sptr
+              (new BinNormalisationFromAttenuationImage(atten_image_sptr,
+                                    forw_projector_ptr));
+
+            const double start_frame = input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
+            const double end_frame = input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
+            shared_ptr<DataSymmetriesForViewSegmentNumbers>
+                    symmetries_sptr(forw_projector_ptr->get_symmetries_used()->clone());
+
+            tmp_normalisation_sptr->apply(*out_proj_data_ptr,start_frame,end_frame, symmetries_sptr);
         }
+
+        info("ScatterEstimation: Loading attenuation correction coefficients...");
+        this->atten_coeff_3d_sptr.reset(new BinNormalisationFromProjData(this->atten_coeff_filename));
     }
 
-    if (this->norm_coeff_filename.size() > 0  )
-    {
-        info("ScatterEstimation: Loading normalisation coefficients...");
-        normalisation_coeffs_3d_sptr.reset(new BinNormalisationFromProjData(this->norm_coeff_filename));
-    }
-    else
+    if(is_null_ptr(normalisation_coeffs_3d_sptr))
         warning("No normalisation coefficients have been set!!");
 
     this->multiplicative_binnorm_3d_sptr.reset(new ChainedBinNormalisation(normalisation_coeffs_3d_sptr, atten_coeff_3d_sptr));
@@ -294,8 +302,8 @@ post_processing()
                 read_from_file<DiscretisedDensity<3,float> >(this->initial_activity_image_filename);
         else
         {
-            warning("ScatterEstimation: Recompute initial activity image was set to false but"
-                    "no file name was set. Aborting.");
+            warning("ScatterEstimation: Recompute initial activity image was set to false and"
+                    "no filename was set. Aborting.");
             return true;
         }
     }
@@ -307,7 +315,7 @@ post_processing()
 
         if(!filter_sptr->parse(this->mask_postfilter_filename.c_str()))
         {
-            warning(boost::format("Error parsing post filter parameters file %1%. Aborting.")
+            warning(boost::format("ScatterEstimation: Error parsing post filter parameters file %1%. Aborting.")
                     %this->mask_postfilter_filename);
             return true;
         }
@@ -1140,9 +1148,7 @@ reconstruct_analytic(int _current_iter_num,
 /****************** functions to help **********************/
 
 void
-ScatterEstimation::
-write_log(const double simulation_time,
-          const float total_scatter)
+ScatterEstimation::write_log()
 {
     //    std::string log_filename =
     //            this->output_proj_data_filename + ".log";

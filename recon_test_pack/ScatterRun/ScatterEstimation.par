@@ -24,17 +24,21 @@ zoom Z for activity image :=0.16666667
 size Z for activity image :=22
 
 ; Measured data
-input file := ./data/sinospan11_f1g1d0b0.hs
+input file := ./NEMA_IQ/nema_proj_f1g1d0b0.hs
 
 ;;;; Multuplicative data ;;;;
 
 ; Attenuation data
-recompute attenuation projdata := 0
+recompute attenuation projdata := 1
 attenuation projdata filename := ./produced_data/attensinoACF.hs 
-attenuation image filename := ./data/JOBR-LM-00-umap-mlaa_000.v.hdr.STIR
+attenuation image filename := ./NEMA_IQ/20170809_NEMA_MUMAP_UCL.v.hdr
 
 ; Normalisation coefficients
-normalisation coefficients filename := ./data/normsino.hs
+    Bin Normalisation type := from ecat8
+        Bin Normalisation From ecat8 :=
+        normalisation filename:= ./NEMA_IQ/20170809_NEMA_UCL.n.hdr
+    End Bin Normalisation From ecat8:=
+
 
 ; Mask 
 ; If !recompute mask projdata then the filename must be set.

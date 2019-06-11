@@ -2,6 +2,7 @@
 #define __stir_scatter_ScatterEstimation_H__
 
 /*
+    Copyright (C) 2018 - 2019 University of Hull
     Copyright (C) 2016 University College London
     This file is part of STIR.
 
@@ -145,9 +146,9 @@ public:
     inline void set_mask_proj_data_sptr(const shared_ptr<ProjData>);
 
     inline void set_scatter_simulation_method_sptr(const shared_ptr<ScatterSimulation>);
-    //! Set the zoom factor in the XY plane
+    //! Set the zoom factor in the XY plane for the downsampling of the activity and attenuation image.
     inline void set_zoom_xy(float);
-    //! Set the zoom factor in the Z axis
+    //! Set the zoom factor in the Z axis for the downsampling of the activity and attenuation image.
     inline void set_zoom_z(float);
 
 
@@ -156,15 +157,8 @@ public:
     inline float get_zoom_xy();
     //! Get the zoom factor in the Z axis.
     inline float get_zoom_z();
-
-    //!
-    //! \brief write_log
-    //! \param simulation_time
-    //! \param total_scatter
-    //! \deprecated
-    virtual void
-    write_log(const double simulation_time,
-              const float total_scatter);
+    //! Output the log of the process.
+    virtual void write_log();
 
 protected:
     //! All recomputes_** will default true
@@ -275,7 +269,7 @@ protected:
     int size_z;
 private:
 
-    //! \details A helper function to reduce the size of set_up().ß
+    //! \details A helper function to reduce the size of set_up().
     Succeeded ffw_project_mask_image();
 
     //! \details A complicated function to mask images.
@@ -323,6 +317,8 @@ private:
     FilePath extras_path;
 
     shared_ptr<PostFiltering <DiscretisedDensity<3,float> > > filter_sptr;
+    //! Normalisation factors.
+    shared_ptr<BinNormalisation> normalisation_coeffs_3d_sptr;
 
     //! \details The number of iterations the scatter estimation will perform.
     //! Default = 5.
