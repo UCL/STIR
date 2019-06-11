@@ -305,25 +305,20 @@ private:
     bool override_scanner_template;
     //! In debug mode a lot of extra files are going to be saved in the disk.
     bool run_debug_mode;
-
     //! Parameter file for scatter simulation
     //! \warning Values in this file could be overridden.
     std::string scatter_sim_par_filename;
-
     //! \details Class which will implement the scatter simulation.
     shared_ptr < ScatterSimulation > scatter_simulation_sptr;
-
     //! This path is used in the debug mode to store all the intermediate files, as they are many.
     FilePath extras_path;
 
     shared_ptr<PostFiltering <DiscretisedDensity<3,float> > > filter_sptr;
     //! Normalisation factors.
     shared_ptr<BinNormalisation> normalisation_coeffs_3d_sptr;
-
     //! \details The number of iterations the scatter estimation will perform.
     //! Default = 5.
     int num_scatter_iterations;
-
     //! Default value = 100
     float max_scale_value;
     //! Default value = 0.4

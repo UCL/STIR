@@ -333,7 +333,11 @@ set_up()
     }
 
     if(is_null_ptr(output_proj_data_sptr))
-        error("ScatterSimulation: output projection data not set");
+    {
+        this->output_proj_data_sptr.reset(new ProjDataInMemory(this->template_exam_info_sptr,
+                                                               this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone()));
+        info("ScatterSimulation: output projection data created.");
+    }
 
     return Succeeded::yes;
 }
@@ -522,8 +526,6 @@ get_output_proj_data_sptr() const
 
     if(is_null_ptr(this->output_proj_data_sptr))
     {
-//        this->output_proj_data_sptr.reset(new ProjDataInMemory(this->template_exam_info_sptr,
-//                                                                this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone()));
         error("ScatterSimulation: No output ProjData set. Aborting.");
     }
 

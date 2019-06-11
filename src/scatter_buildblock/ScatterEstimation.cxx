@@ -635,19 +635,19 @@ set_up()
     // and it will override anything that the ScatterSimulation.par file has done.
     if(this->override_density_image)
     {
-        info("ScatterEstimation: Over-riding attenuation image! (The file ans settings set in the simulation par file are discarded)");
+        info("ScatterEstimation: Over-riding attenuation image! (The file and settings set in the simulation par file are discarded)");
         this->scatter_simulation_sptr->set_density_image_sptr(this->atten_image_lowres_sptr);
     }
 
     if(this->override_density_image_for_scatter_points)
     {
-        info("ScatterEstimation: Over-riding attenuation image for scatter points! (The file ans settings set in the simulation par file are discarded)");
+        info("ScatterEstimation: Over-riding attenuation image for scatter points! (The file and settings set in the simulation par file are discarded)");
         this->scatter_simulation_sptr->set_density_image_for_scatter_points_sptr(this->atten_image_lowres_sptr);
     }
 
     if(this->override_initial_activity_image)
     {
-        info("ScatterEstimation: Over-riding activity image! (The file ans settings set in the simulation par file are discarded)");
+        info("ScatterEstimation: Over-riding activity image! (The file and settings set in the simulation par file are discarded)");
         this->scatter_simulation_sptr->set_activity_image_sptr(this->current_activity_image_lowres_sptr);
     }
 
@@ -657,6 +657,12 @@ set_up()
         this->scatter_simulation_sptr->set_template_proj_data_info_sptr(this->input_projdata_2d_sptr->get_proj_data_info_sptr());
 
         this->scatter_simulation_sptr->set_exam_info_sptr(this->input_projdata_2d_sptr->get_exam_info_sptr());
+    }
+
+    if (this->scatter_simulation_sptr->set_up() == Succeeded::no)
+    {
+        warning ("ScatterEstimation: Failure at set_up() of the Scatter Simulation. Aborting.");
+        return Succeeded::no;
     }
 
     // Check if Load a mask proj_data
