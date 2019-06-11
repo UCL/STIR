@@ -705,8 +705,8 @@ set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterat
     info("ScatterEstimation: Setting up iterative reconstruction ...");
     iterative_object->set_input_data(this->input_projdata_2d_sptr);
 
-    const double start_time = 0.0;
-    const double end_time = 0.0;
+    const double start_time = this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
+    const double end_time =this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
 
 
     //
