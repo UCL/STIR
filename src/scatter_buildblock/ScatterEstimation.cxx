@@ -164,6 +164,8 @@ initialise_keymap()
                                  &this->scatter_simulation_sptr);
     this->parser.add_key("scatter simulation parameters file",
                          &this->scatter_sim_par_filename);
+    this->parser.add_key("use default downsampling in scatter simulation",
+                         &this->use_default_downsampling);
 
     this->parser.add_key("override initial activity image",
                          &this->override_initial_activity_image);
@@ -173,6 +175,8 @@ initialise_keymap()
                          &this->override_density_image_for_scatter_points);
     this->parser.add_key("override scanner template",
                          &this->override_scanner_template);
+
+
 
     // END Scatter simulation
 
@@ -580,6 +584,7 @@ set_up()
         return Succeeded::no;
     }
 
+    // We have to check which reconstruction method we are going to use ...
     AnalyticReconstruction* tmp_analytic =
             dynamic_cast<AnalyticReconstruction * >(this->reconstruction_template_sptr.get());
     IterativeReconstruction<DiscretisedDensity<3, float> >* tmp_iterative =
@@ -659,11 +664,16 @@ set_up()
         this->scatter_simulation_sptr->set_exam_info_sptr(this->input_projdata_2d_sptr->get_exam_info_sptr());
     }
 
+    if (this->use_default_downsampling)
+        this->scatter_simulation_sptr->default_downsampling();
+
     if (this->scatter_simulation_sptr->set_up() == Succeeded::no)
     {
         warning ("ScatterEstimation: Failure at set_up() of the Scatter Simulation. Aborting.");
         return Succeeded::no;
     }
+
+    // Downsample the scanner here ??
 
     // Check if Load a mask proj_data
 

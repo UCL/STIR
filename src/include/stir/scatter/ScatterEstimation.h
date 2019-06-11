@@ -323,6 +323,8 @@ private:
     float max_scale_value;
     //! Default value = 0.4
     float min_scale_value;
+
+    bool use_default_downsampling;
     //!
     unsigned int half_filter_width;
     //! Output file name prefix

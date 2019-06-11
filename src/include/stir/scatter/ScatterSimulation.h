@@ -414,6 +414,8 @@ protected:
     //! Number of detectors per ring of downsampled scanner
     int downsample_scanner_dets;
 
+    bool use_default_downsampling;
+
 };
 
 END_NAMESPACE_STIR

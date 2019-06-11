@@ -206,6 +206,7 @@ ScatterSimulation::set_defaults()
     this->zoom_z = 1.f;
     this->zoom_size_xy = -1;
     this->zoom_size_z = -1;
+    this->use_default_downsampling = false;
     this->downsample_scanner_dets = 1;
     this->downsample_scanner_rings = 1;
     this->density_image_filename = "";
@@ -262,6 +263,8 @@ ScatterSimulation::initialise_keymap()
                          &this->attenuation_threshold);
     this->parser.add_key("output filename prefix",
                          &this->output_proj_data_filename);
+    this->parser.add_key("use default downsampling",
+                         &this->use_default_downsampling)
     this->parser.add_key("random", &this->random);
     this->parser.add_key("use cache", &this->use_cache);
 }
@@ -298,6 +301,9 @@ post_processing()
     if (this->output_proj_data_filename.size() > 0)
         this->set_output_proj_data(this->output_proj_data_filename);
 
+    if(this->use_default_downsampling)
+        default_downsampling();
+
     return false;
 }
 
@@ -306,19 +312,19 @@ ScatterSimulation::
 set_up()
 {
     if (is_null_ptr(proj_data_info_cyl_noarc_cor_sptr))
-        error("ScatterSimulation: projection data info not set");
+        error("ScatterSimulation: projection data info not set. Aborting.");
 
     if (!proj_data_info_cyl_noarc_cor_sptr->has_energy_information())
-        error("ScatterSimulation: scanner energy resolution information not set");
+        error("ScatterSimulation: scanner energy resolution information not set. Aborting.");
 
     if(!template_exam_info_sptr->has_energy_information())
-        error("ScatterSimulation: template energy window information not set");
+        error("ScatterSimulation: template energy window information not set. Aborting.");
 
     if(is_null_ptr(activity_image_sptr))
-        error("ScatterSimulation: activity image not set");
+        error("ScatterSimulation: activity image not set. Aborting.");
 
     if(is_null_ptr(density_image_sptr))
-        error("ScatterSimulation: density image not set");
+        error("ScatterSimulation: density image not set. Aborting.");
 
     if(is_null_ptr(density_image_for_scatter_points_sptr))
     {
@@ -328,7 +334,7 @@ set_up()
         }
         else
         {
-            error("ScatterSimulation: internal error");
+            error("ScatterSimulation: Cannot find appropriate image for scatter points. Aborting.");
         }
     }
 
