@@ -104,6 +104,8 @@ public:
     //! Get only the filename
 	//! An inherent functionality from utilities is that on Windows all separators will be checked.
     std::string get_filename() const;
+    //! Convinience function which returns the filename withouth the extension.
+    std::string get_filename_no_extension() const;
     //! Get the extension of the filename.
     // This function will return the the bit that is after the last dot.
     std::string get_extension() const ;

@@ -183,9 +183,6 @@ protected:
     //! If set to 1 the attenuation coefficients are going to
     //! be recalculated.
     bool recompute_atten_projdata;
-    //! If set then the initial activity estimate will be recomputed
-    //! and stored if a name is provided.
-    bool recompute_initial_activity_image;
 
     //! This is the reconsturction object which is going to be used for the scatter estimation
     //! and the calculation of the initial activity image (if recompute set). It can be defined in the same
@@ -195,12 +192,8 @@ protected:
     reconstruction_template_sptr;
     //! The current activity estimate.
     shared_ptr<DiscretisedDensity < 3, float > > current_activity_image_sptr;
-    //! The current activity estimate in low resolution.
-    shared_ptr<DiscretisedDensity < 3, float > > current_activity_image_lowres_sptr;
     //! Image with attenuation values.
     shared_ptr<DiscretisedDensity < 3, float > > atten_image_sptr;
-    //! Low resolution image with attenutation values.
-    shared_ptr<DiscretisedDensity <3, float> > atten_image_lowres_sptr;
     //! ((1/SSRB(1/norm3D)) * SSRB(atten)). Through out the code we set as first the norm
     //! and second the atten.
     shared_ptr<ChainedBinNormalisation>  multiplicative_binnorm_2d_sptr;
@@ -227,10 +220,6 @@ protected:
     shared_ptr<ProjData> add_projdata_2d_sptr;
     //! (Additive + Scatter Estimate) * Mult in 2D
     shared_ptr<ProjData> back_projdata_2d_sptr;
-
-
-    //! Filename of the initial activity image.
-    std::string initial_activity_image_filename;
     //! Filename of mask image
     std::string mask_image_filename;
     //! Postfilter parameter file to be used in mask calculation
@@ -258,15 +247,6 @@ protected:
 
     //! \details the set of parameters to mask the attenuation image
     mask_parameters mask_image;
-
-    //! Zoom factor on plane XY. Defaults on 1.f.
-    float zoom_xy;
-    //! Zoom factor on Z axis. Defaults on 1.f.
-    float zoom_z;
-    //! Optional to the zoom_xy the final size of the image can be set
-    int size_xy;
-    //! Optional to the zoom_z the final size of the image can be set
-    int size_z;
 private:
 
     //! \details A helper function to reduce the size of set_up().

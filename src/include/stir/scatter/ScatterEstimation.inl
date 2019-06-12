@@ -2,35 +2,6 @@ START_NAMESPACE_STIR
 
 void
 ScatterEstimation::
-set_zoom_xy(float arg)
-{
-    this->zoom_xy = arg;
-}
-
-void
-ScatterEstimation::
-set_zoom_z(float arg)
-{
-    this->zoom_z = arg;
-}
-
-
-float
-ScatterEstimation::
-get_zoom_xy()
-{
-    return zoom_xy;
-}
-
-float
-ScatterEstimation::
-get_zoom_z()
-{
-    return zoom_z;
-}
-
-void
-ScatterEstimation::
 set_input_proj_data_sptr(const shared_ptr<ProjData> arg)
 {
     this->input_projdata_sptr = arg;

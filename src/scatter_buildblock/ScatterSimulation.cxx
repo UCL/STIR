@@ -264,7 +264,7 @@ ScatterSimulation::initialise_keymap()
     this->parser.add_key("output filename prefix",
                          &this->output_proj_data_filename);
     this->parser.add_key("use default downsampling",
-                         &this->use_default_downsampling)
+                         &this->use_default_downsampling);
     this->parser.add_key("random", &this->random);
     this->parser.add_key("use cache", &this->use_cache);
 }
@@ -771,6 +771,8 @@ Succeeded ScatterSimulation::default_downsampling()
         this->sample_scatter_points();
         this->remove_cache_for_integrals_over_attenuation();
     }
+
+    return Succeeded::yes;
 }
 
 void
