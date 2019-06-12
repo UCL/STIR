@@ -169,7 +169,7 @@ protected:
     //!
     //! \brief set_up_iterative
     //! \return
-    Succeeded set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * arg);
+    Succeeded set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float> > > arg);
 
     //!
     //! \brief set_up_initialise_analytic

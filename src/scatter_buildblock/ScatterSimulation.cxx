@@ -736,7 +736,7 @@ Succeeded ScatterSimulation::default_downsampling()
         float _zoom_z =
                 tmpl_density->get_voxel_size().z() / tmp_act->get_voxel_size().z();
 
-        zoom_image(*tmp_act, *tmpl_density);
+        zoom_image(*tmpl_density, *tmp_act);
 
         *tmp_act *= _zoom_xy * _zoom_xy * _zoom_z;
 
@@ -751,7 +751,7 @@ Succeeded ScatterSimulation::default_downsampling()
         float _zoom_z =
                 tmpl_density->get_voxel_size().z() / tmp_att->get_voxel_size().z();
 
-        zoom_image(*tmp_att, *tmpl_density);
+        zoom_image(*tmpl_density , *tmp_att);
         *tmp_att *= _zoom_xy * _zoom_xy * _zoom_z;
 
         this->remove_cache_for_integrals_over_attenuation();
@@ -765,7 +765,7 @@ Succeeded ScatterSimulation::default_downsampling()
         float _zoom_z =
                 tmpl_density->get_voxel_size().z() / tmp_att->get_voxel_size().z();
 
-        zoom_image(*tmp_att, *tmpl_density);
+        zoom_image(*tmpl_density, * tmp_att );
         *tmp_att *= _zoom_xy * _zoom_xy * _zoom_z;
 
         this->sample_scatter_points();

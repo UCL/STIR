@@ -441,10 +441,10 @@ set_up()
     }
 
     // We have to check which reconstruction method we are going to use ...
-    AnalyticReconstruction* tmp_analytic =
-            dynamic_cast<AnalyticReconstruction * >(this->reconstruction_template_sptr.get());
-    IterativeReconstruction<DiscretisedDensity<3, float> >* tmp_iterative =
-            dynamic_cast<IterativeReconstruction<DiscretisedDensity<3, float> > * >(this->reconstruction_template_sptr.get());
+    shared_ptr<AnalyticReconstruction> tmp_analytic (
+            dynamic_cast<AnalyticReconstruction * >(this->reconstruction_template_sptr.get()));
+    shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float> >> tmp_iterative(
+            dynamic_cast<IterativeReconstruction<DiscretisedDensity<3, float> > * >(this->reconstruction_template_sptr.get()));
 
     if (!is_null_ptr(tmp_analytic))
     {
@@ -475,7 +475,21 @@ set_up()
     if(iterative_method)
         this->current_activity_image_sptr.reset(tmp_iterative->get_initial_data_ptr());
 
-    // Should I make attenuation image the same.
+    // Based on the activity image zoom the attenuation
+    if (!is_null_ptr(current_activity_image_sptr))
+    {
+        VoxelsOnCartesianGrid<float>* tmp_act = dynamic_cast<VoxelsOnCartesianGrid<float>* >(current_activity_image_sptr.get());
+        VoxelsOnCartesianGrid<float>* tmp_att = dynamic_cast<VoxelsOnCartesianGrid<float>* >(atten_image_sptr.get());
+
+        float _zoom_xy =
+                tmp_act->get_voxel_size().x() / tmp_att->get_voxel_size().x();
+        float _zoom_z =
+                tmp_act->get_voxel_size().z() / tmp_att->get_voxel_size().z();
+
+        zoom_image(*tmp_act, *tmp_att);
+
+        *tmp_att *= _zoom_xy * _zoom_xy * _zoom_z;
+    }
 
     //
     // Now, we can call Reconstruction::set_up().
@@ -569,7 +583,7 @@ set_up()
 
 Succeeded
 ScatterEstimation::
-set_up_iterative(IterativeReconstruction<DiscretisedDensity<3, float> > * iterative_object)
+set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float> > > iterative_object)
 {
     info("ScatterEstimation: Setting up iterative reconstruction ...");
     iterative_object->set_input_data(this->input_projdata_2d_sptr);
