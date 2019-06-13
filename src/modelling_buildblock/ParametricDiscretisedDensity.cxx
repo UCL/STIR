@@ -57,12 +57,12 @@ get_num_params()
 TEMPLATE
 ParamDiscDensity::
 ParametricDiscretisedDensity(const DynamicDiscretisedDensity& dyn_im)
-    : base_type(dyn_im[1].get_index_range(),
-      dyn_im[1].get_origin(),
-      dynamic_cast<const VoxelsOnCartesianGrid<float>&>(dyn_im[1]).get_grid_spacing())
+    : base_type(dyn_im.get_density(1).get_index_range(),
+      dyn_im.get_density(1).get_origin(),
+      dynamic_cast<const VoxelsOnCartesianGrid<float>&>(dyn_im.get_density(1)).get_grid_spacing())
 {
     // Copy exam info
-    this->set_exam_info(*dyn_im[1].get_exam_info_sptr());
+    this->set_exam_info(dyn_im.get_density(1).get_exam_info());
 
     // Get the time frame definition (from start of first frame to end of last)
     TimeFrameDefinitions tdefs = dyn_im.get_exam_info().get_time_frame_definitions();
