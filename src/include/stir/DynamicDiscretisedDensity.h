@@ -167,7 +167,7 @@ class DynamicDiscretisedDensity: public ExamData
   { return this->get_density(frame_num); }
 
   //! at method
-  const singleDiscDensT & at(const unsigned int frame_num)
+  singleDiscDensT & at(const unsigned int frame_num)
   { return this->get_density(frame_num); }
 
   //! Return time of start of scan
