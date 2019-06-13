@@ -680,8 +680,8 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         atten_projdata_2d_sptr = atten_projdata_3d_sptr;
     }
 
-    // Set the 2d.
-       //<- End of Attenuation projdata
+
+    //<- End of Attenuation projdata
 
     // Normalisation ProjData
 
@@ -692,23 +692,32 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
 
         info("ScatterEstimation: Constructing 2D normalisation coefficients ...");
 
-        shared_ptr<ProjData> inv_projdata_3d_sptr(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                       this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone()));
+        std::string out_filename = extras_path.get_path() + "tmp_inverted_normdata.hs";
+        shared_ptr<ProjData> inv_projdata_3d_sptr(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                        this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
+                                                                        out_filename,
+                                                                        std::ios::in | std::ios::out | std::ios::trunc));
         inv_projdata_3d_sptr->fill(1.f);
 
-        shared_ptr<ProjData> tmp_projdata_2d_sptr(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                       this->proj_data_info_2d_sptr->create_shared_clone()));
+        out_filename = extras_path.get_path() + "tmp_projdata_2d.hs";
+        shared_ptr<ProjData> tmp_projdata_2d_sptr(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                        this->proj_data_info_2d_sptr->create_shared_clone(),
+                                                                        out_filename,
+                                                                        std::ios::in | std::ios::out | std::ios::trunc));
         tmp_projdata_2d_sptr->fill(1.f);
 
-        shared_ptr<ProjData> norm_projdata_2d_sptr(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                        this->proj_data_info_2d_sptr->create_shared_clone()));
+        out_filename = extras_path.get_path() + "tmp_normdata_2d.hs";
+        shared_ptr<ProjData> norm_projdata_2d_sptr(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                        this->proj_data_info_2d_sptr->create_shared_clone(),
+                                                                        out_filename,
+                                                                        std::ios::in | std::ios::out | std::ios::trunc));
         norm_projdata_2d_sptr->fill(1.f);
 
         // Essentially since inv_projData_sptr is 1s then this is an inversion.
         // inv_projdata_sptr = 1/norm3d
         this->multiplicative_binnorm_3d_sptr->undo_only_first(*inv_projdata_3d_sptr, start_time, end_time);
 
-        // SSRB inv_projdata_sptr
+        info("ScatterEstimation: Performing SSRB on normalisation coefficients ...");
         //        if( inv_projdata_sptr->get_num_segments() > 1)
         SSRB(*tmp_projdata_2d_sptr,
              *inv_projdata_3d_sptr,false);
