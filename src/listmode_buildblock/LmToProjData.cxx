@@ -6,10 +6,12 @@
  
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Daniel Deidda
 */
 /*
     Copyright (C) 2000 - 2011-12-31, Hammersmith Imanet Ltd
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013-2019, University College London
+    Copyright (C) 2019, National Physical Laboratory
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -61,8 +63,8 @@ FRAME_BASED_DT_CORR:
 #include "stir/utilities.h"
 
 #include "stir/listmode/LmToProjData.h"
-#include "stir/listmode/CListRecord.h"
-#include "stir/listmode/CListModeData.h"
+#include "stir/listmode/ListRecord.h"
+#include "stir/listmode/ListModeData.h"
 #include "stir/ExamInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 
@@ -175,7 +177,7 @@ initialise_keymap()
   parser.add_key("do pre normalisation ", &do_pre_normalisation);
   parser.add_key("num_segments_in_memory", &num_segments_in_memory);
 
-  //if (lm_data_ptr->has_delayeds()) TODO we haven't read the CListModeData yet, so cannot access has_delayeds() yet
+  //if (lm_data_ptr->has_delayeds()) TODO we haven't read the ListModeData yet, so cannot access has_delayeds() yet
   // one could add the next 2 keywords as part of a callback function for the 'input file' keyword.
   // That's a bit too much trouble for now though...
   {
@@ -206,7 +208,7 @@ post_processing()
       return true;
     }
 
-  lm_data_ptr = stir::read_from_file<CListModeData>(input_filename);
+  lm_data_ptr = stir::read_from_file<ListModeData>(input_filename);
 
   if (template_proj_data_name.size()==0)
     {
@@ -388,7 +390,7 @@ LmToProjData(const char * const par_filename)
 ***************************************************************/
 void
 LmToProjData::
-get_bin_from_event(Bin& bin, const CListEvent& event) const
+get_bin_from_event(Bin& bin, const ListEvent& event) const
 {  
   if (do_pre_normalisation)
    {
@@ -501,7 +503,7 @@ get_compression_count(const Bin& bin) const
 ***************************************************************/
 void
 LmToProjData::
-process_new_time_event(const CListTime&)
+process_new_time_event(const ListTime&)
 {}
 
 
@@ -534,10 +536,10 @@ process_data()
     segments (template_proj_data_info_ptr->get_min_segment_num(), 
 	      template_proj_data_info_ptr->get_max_segment_num());
   
-  VectorWithOffset<CListModeData::SavedPosition> 
+  VectorWithOffset<ListModeData::SavedPosition>
     frame_start_positions(1, static_cast<int>(frame_defs.get_num_frames()));
-  shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
-  CListRecord& record = *record_sptr;
+  shared_ptr <ListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
+  ListRecord& record = *record_sptr;
 
   if (!record.event().is_valid_template(*template_proj_data_info_ptr))
 	  error("The scanner template is not valid for LmToProjData. This might be because of unsupported arc correction.");
@@ -647,14 +649,14 @@ process_data()
 		 // a record can never be both timing and coincidence event
 		 // and there might be a scanner around that has them both combined.
 		 if (record.is_event())
-		   {
+           {
 		     assert(start_time <= current_time);
 		     Bin bin;
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
                      get_bin_from_event(bin, record.event());
-		     		       
+
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
 			 && bin.tangential_pos_num()>= proj_data_ptr->get_min_tangential_pos_num()
@@ -662,25 +664,25 @@ process_data()
 			 && bin.axial_pos_num()>=proj_data_ptr->get_min_axial_pos_num(bin.segment_num())
 			 && bin.axial_pos_num()<=proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
 			 ) 
-		       {
+               {
 			 assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
 			 assert(bin.view_num()<=proj_data_ptr->get_max_view_num());
-            
+
 			 // see if we increment or decrement the value in the sinogram
 			 const int event_increment =
 			   record.event().is_prompt() 
 			   ? ( store_prompts ? 1 : 0 ) // it's a prompt
 			   :  delayed_increment;//it is a delayed-coincidence event
             
-			 if (event_increment==0)
-			   continue;
-            
+             if (event_increment==0)
+               continue;
+
 			 if (!do_time_frame)
 			   more_events-= event_increment;
-            
+
 			 // now check if we have its segment in memory
 			 if (bin.segment_num() >= start_segment_index && bin.segment_num()<=end_segment_index)
-			   {
+               {
 			     do_post_normalisation(bin);
 			 
 			     num_stored_events += event_increment;
@@ -695,14 +697,14 @@ process_data()
 			       printf("Seg %4d view %4d ax_pos %4d tang_pos %4d time %8g stored with incr %d \n", 
 				      bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num(),
 				      current_time, event_increment);
-			     else
+                 else
 			       (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
 			       bin.get_bin_value() * 
-			       event_increment;
-			   }
-		       }
+                   event_increment;
+               }
+               }
 		     else 	// event is rejected for some reason
-		       {
+               {
 			 if (interactive)
 			   printf("Seg %4d view %4d ax_pos %4d tang_pos %4d time %8g ignored\n", 
 				  bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num(), current_time);
@@ -718,7 +720,7 @@ process_data()
 	   save_and_delete_segments(output, segments, 
 				    start_segment_index, end_segment_index, 
 				    *proj_data_ptr);  
-	 } // end of for loop for segment range
+     } // end of for loop for segment range
        cerr <<  "\nNumber of prompts stored in this time period : " << num_prompts_in_frame
 	    <<  "\nNumber of delayeds stored in this time period: " << num_delayeds_in_frame
 	    << '\n';

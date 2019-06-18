@@ -1,7 +1,8 @@
 /*
     Copyright (C) 2003 - 2011-06-24, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2014, Kris Thielemans
-    Copyright (C) 2019, National Physical Laboratory, Daniel Deidda
+    Copyright (C) 2019, National Physical Laboratory
+    Copyright (C) 2019, University College of London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -223,7 +224,7 @@ public:
   const Scanner* get_scanner_ptr() const;
 
   //! Return if the file stores delayed events as well (as opposed to prompts)
-//  virtual bool has_delayeds() const = 0;
+  virtual bool has_delayeds() const {return false;}
   //! Returns the total number of events in the listmode file.
   //! \warning This function currently works only with ROOT input files. By default
   //! it will throw an error.
