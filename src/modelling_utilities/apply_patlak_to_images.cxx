@@ -100,7 +100,7 @@ USING_NAMESPACE_STIR
           par_image_sptr->get_exam_info_sptr()->set_time_frame_definitions(tdefs);
       }
       else
-          par_image_sptr = std::make_shared<ParametricVoxelsOnCartesianGrid>(dyn_image);
+          par_image_sptr = MAKE_SHARED<ParametricVoxelsOnCartesianGrid>(dyn_image);
 
       //ToDo: Assertion for the dyn-par images, sizes I have to create from one to the other image, so then it should be OK...      
       assert(indirect_patlak.get_time_frame_definitions().get_num_frames()==dyn_image.get_time_frame_definitions().get_num_frames());
