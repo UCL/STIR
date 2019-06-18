@@ -13,6 +13,7 @@
 /*
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2019, National Physical Laboratory
+    Copyright (C) 2019, University College of London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -56,6 +57,10 @@ class SPECTListEvent: public ListEvent
 {
 public:
   virtual ~SPECTListEvent() {}
+
+    virtual
+      bool
+      is_prompt() const = 0;
 
 //  //! Changes the event from prompt to delayed or vice versa
 //  /*! Default implementation just returns Succeeded::no. */

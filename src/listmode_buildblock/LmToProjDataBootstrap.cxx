@@ -30,7 +30,7 @@
 */
 
 #include "stir/listmode/LmToProjDataBootstrap.h"
-#include "stir/listmode/CListRecord.h"
+#include "stir/listmode/ListRecord.h"
 #include "stir/Succeeded.h"
 #include "stir/info.h"
 #include <iostream>
@@ -137,8 +137,8 @@ start_new_time_frame(const unsigned int new_frame_num)
   unsigned int total_num_events_in_this_frame = 0;
 
   // loop over all events in the listmode file
-  shared_ptr <CListRecord> record_sptr = this->lm_data_ptr->get_empty_record_sptr();
-  CListRecord& record = *record_sptr;
+  shared_ptr <ListRecord> record_sptr = this->lm_data_ptr->get_empty_record_sptr();
+  ListRecord& record = *record_sptr;
 
   info("Going through listmode file to find number of events in this frame");
   double current_time = start_time;
@@ -239,7 +239,7 @@ start_new_time_frame(const unsigned int new_frame_num)
 template <typename LmToProjDataT> 
 void 
 LmToProjDataBootstrap<LmToProjDataT>::
-get_bin_from_event(Bin& bin, const CListEvent &event) const
+get_bin_from_event(Bin& bin, const ListEvent &event) const
 {
   assert(num_times_to_replicate_iter != num_times_to_replicate.end());
   if (*num_times_to_replicate_iter > 0)
