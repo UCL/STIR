@@ -18,7 +18,7 @@ input file := ./NEMA_IQ/nema_proj_f1g1d0b0.hs
 ;;;; Multuplicative data ;;;;
 
 ; Attenuation data
-recompute attenuation projdata := 0
+recompute attenuation projdata := 1
 attenuation projdata filename := ./produced_data/outputACF.hs 
 attenuation image filename := ./NEMA_IQ/attenuation.hv
 
