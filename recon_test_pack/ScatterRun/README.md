@@ -30,6 +30,8 @@ In the downloaded folder a CT image of the phantom is included. If in the scatte
 
 Next time you run the estimation you can save some time by setting the recalculation off, as the data will have already been stored.
 
+*As of the time of writing STIR cannot read Siemens header files correctly. Therefore a header file for the attenuation image is supplied in the ```par_files``` folder. Just copy and paste the ```attenuation.hv``` in the ```NEMA_IQ``` folder.* 
+
 ### Randoms 
 
 In this dataset a randoms sinogram is not provided.

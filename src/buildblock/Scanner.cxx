@@ -203,7 +203,8 @@ Scanner::Scanner(Type scanner_type)
     set_params(Siemens_mMR, string_list("Siemens mMR", "mMR", "2008"),
                64, 344, 2* 252,
                328.0F, 7.0F, 4.0625F, 2.08626F, 0.0F,
-               2, 1, 8, 9, 16, 9, 1 ); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+               2, 1, 8, 9, 16, 9, 1,
+               0.145f, 511.f); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
     break;
 
   case RPT:

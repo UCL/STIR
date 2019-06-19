@@ -189,7 +189,7 @@ public:
     //! For the image for scatter points the default option is to be the same as the previous.
     //! \warning Ideally default_downsampling() should be called after having set all
     //! data, or called set_up() which will perform most checks.
-    Succeeded default_downsampling();
+    Succeeded default_downsampling(bool all_images = true);
 
     //! \name Compton scatter cross sections
     //@{

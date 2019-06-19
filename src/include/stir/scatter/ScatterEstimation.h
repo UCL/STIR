@@ -201,12 +201,11 @@ protected:
     //! and second the atten.
     shared_ptr<ChainedBinNormalisation>  multiplicative_binnorm_3d_sptr;
 
+    shared_ptr<ChainedBinNormalisation>  multiplicative_binnorm_sptr;
+
     shared_ptr<BinNormalisation> norm_coeff_sptr;
 
     shared_ptr<BinNormalisation> atten_coeff_3d_sptr;
-
-    //! shared pointer to projection data info for the 2D data - after SSRB
-    shared_ptr < ProjDataInfo > proj_data_info_2d_sptr;
     //! Mask proj_data
     shared_ptr<ProjData> mask_projdata_sptr;
     //! The full 3D projdata are used for the calculation of the 2D
@@ -218,8 +217,14 @@ protected:
     shared_ptr<ProjData> add_projdata_3d_sptr;
     //! Additive projection data after SSRB -- Randoms
     shared_ptr<ProjData> add_projdata_2d_sptr;
+
+    shared_ptr<ProjData> add_projdata_sptr;
     //! (Additive + Scatter Estimate) * Mult in 2D
     shared_ptr<ProjData> back_projdata_2d_sptr;
+
+    shared_ptr<ProjData> back_projdata_sptr;
+
+    shared_ptr<ProjData> back_projdata_3d_sptr;
     //! Filename of mask image
     std::string mask_image_filename;
     //! Postfilter parameter file to be used in mask calculation

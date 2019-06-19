@@ -1,16 +1,7 @@
 Scatter Simulation := 
 	Simulation method := Single Scatter Simulation
 		Scatter Simulation Parameters := 
- 
-		template projdata filename := ./NEMA_IQ/nema_proj_f1g1d0b0.hs
-		attenuation image filename := ./NEMA_IQ/20170809_NEMA_MUMAP_UCL.v.hdr
-		attenuation image for scatter points filename := ./NEMA_IQ/20170809_NEMA_MUMAP_UCL.v.hdr
-
-		;; If downsample attenuation image during Scatter simulation 
-		;; then output the zoomed image will be saved with the following filename
-		;; Otherwise the following allow you to set the image for the scatter points.
-		;; attenuation image for scatter points output filename := my_zoomed_my_atten_image
-		
+ 		
         ;; Minimum mu-value (in 1/cm) for scatter point selection
 		attenuation threshold := 0.01 
 		random := 1 

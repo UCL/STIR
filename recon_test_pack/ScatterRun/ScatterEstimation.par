@@ -49,18 +49,18 @@ mask image postfilter filename := ./par_files/postfilter_Gaussian.par
 ;Parameter file for the tail fitting of the mask image.
 tail fitting par filename := ./par_files/tail_fitting.par
 
-; export SSRB sinograms
+; Run simulation and reconstruction in 2D and export SSRB sinograms
 export 2d projdata := 1
 
-; ScatterSimulation Stuff 
+; ScatterSimulation parameters 
 scatter simulation parameters file := ./par_files/scatter_simulation.par 
 use default downsampling in scatter simulation := 1
 
 ; Over-ride the values set in the scatter simulation parameteres file
-override scanner template := 0
+override scanner template := 1
 override initial activity image := 1
-override density image := 0
-override density image for scatter points := 0
+override density image := 1
+override density image for scatter points := 1
 
 reconstruction parameter template file := ./par_files/run_reconstruction.par 
 
@@ -68,7 +68,7 @@ reconstruction parameter template file := ./par_files/run_reconstruction.par
 ; This is the number of times which the Scatter Estimation will
 ; iterate. Default is 5
 
-number of scatter iterations := 4 
+number of scatter iterations := 4
 
 ; Average the first two activity images
 do average at 2 := 1
