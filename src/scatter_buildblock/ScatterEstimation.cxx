@@ -73,7 +73,7 @@ set_defaults()
     this->remove_interleaving = true;
     this->atten_image_filename = "";
     this->norm_coeff_filename = "";
-    this->o_scatter_estimate_prefix = "";
+    this->output_scatter_estimate_prefix = "";
     this->num_scatter_iterations = 5;
     this->min_scale_value = 0.4f;
     this->max_scale_value = 100.f;
@@ -163,7 +163,7 @@ initialise_keymap()
     this->parser.add_key("export scatter estimates of each iteration",
                          &this->export_scatter_estimates_of_each_iteration);
     this->parser.add_key("output scatter estimate name prefix",
-                         &this->o_scatter_estimate_prefix);
+                         &this->output_scatter_estimate_prefix);
     this->parser.add_key("do average at 2",
                          &this->do_average_at_2);
     this->parser.add_key("maximum scale value",
@@ -182,6 +182,25 @@ ScatterEstimation::
 ScatterEstimation()
 {
     this->set_defaults();
+}
+
+ScatterEstimation::
+ScatterEstimation(const std::string& parameter_filename)
+{
+    if (parameter_filename.size() == 0)
+    {
+        this->set_defaults();
+        this->ask_parameters();
+    }
+    else
+    {
+        this->set_defaults();
+        if (!this->parse(parameter_filename.c_str()))
+        {
+            warning("ScatterEstimation: Error parsing input file %s. Aborting.", parameter_filename.c_str());
+            return;
+        }
+    }
 }
 
 bool
@@ -296,7 +315,7 @@ post_processing()
         }
     }
 
-    if (this->o_scatter_estimate_prefix.size() == 0)
+    if (this->output_scatter_estimate_prefix.size() == 0)
         return true;
 
     if(!this->recompute_mask_projdata)
@@ -1020,7 +1039,7 @@ process_data()
             this->multiplicative_binnorm_sptr->apply_only_first(*temp_projdata, start_time, end_time);
 
             std::stringstream convert;   // stream used for the conversion
-            convert << this->o_scatter_estimate_prefix << "_" <<
+            convert << this->output_scatter_estimate_prefix << "_" <<
                        i_scat_iter;
             std::string output_filename = convert.str();
 
@@ -1126,7 +1145,7 @@ reconstruct_analytic(int _current_iter_num,
 /****************** functions to help **********************/
 
 void
-ScatterEstimation::write_log()
+ScatterEstimation::write_log() const
 {
     //    std::string log_filename =
     //            this->output_proj_data_filename + ".log";
@@ -1379,5 +1398,11 @@ apply_mask_in_place(DiscretisedDensity<3, float>& arg,
 
     return true;
 }
+
+int ScatterEstimation::get_iterations_num() const
+{
+    return num_scatter_iterations;
+}
+
 
 END_NAMESPACE_STIR

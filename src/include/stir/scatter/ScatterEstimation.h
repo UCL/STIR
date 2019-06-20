@@ -96,6 +96,8 @@ public:
 
     //! Default constructor (calls set_defaults())
     ScatterEstimation();
+    //! Overloaded constructor with parameter file and initialisation
+    ScatterEstimation(const std::string& parameter_filename);
 
     //! Full process_data which performs set_up() before beginning
     virtual Succeeded process_data();
@@ -153,12 +155,10 @@ public:
 
 
     // Get functions
-    //! Get the zoom factor in the XY plance
-    inline float get_zoom_xy();
-    //! Get the zoom factor in the Z axis.
-    inline float get_zoom_z();
+    //! Get the number of iteration for the scatter estimation
+    int get_iterations_num() const;
     //! Output the log of the process.
-    virtual void write_log();
+    virtual void write_log() const;
 
 protected:
     //! All recomputes_** will default true
@@ -252,6 +252,11 @@ protected:
 
     //! \details the set of parameters to mask the attenuation image
     mask_parameters mask_image;
+    //! \details The number of iterations the scatter estimation will perform.
+    //! Default = 5.
+    int num_scatter_iterations;
+    //! Output file name prefix
+    std::string output_scatter_estimate_prefix;
 private:
 
     //! \details A helper function to reduce the size of set_up().
@@ -301,9 +306,6 @@ private:
     shared_ptr<PostFiltering <DiscretisedDensity<3,float> > > filter_sptr;
     //! Normalisation factors.
     shared_ptr<BinNormalisation> normalisation_coeffs_3d_sptr;
-    //! \details The number of iterations the scatter estimation will perform.
-    //! Default = 5.
-    int num_scatter_iterations;
     //! Default value = 100
     float max_scale_value;
     //! Default value = 0.4
@@ -312,8 +314,6 @@ private:
     bool use_default_downsampling;
     //!
     unsigned int half_filter_width;
-    //! Output file name prefix
-    std::string o_scatter_estimate_prefix;
 };
 
 END_NAMESPACE_STIR

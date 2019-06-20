@@ -1,3 +1,5 @@
+#include "stir/scatter/ScatterEstimation.h"
+
 START_NAMESPACE_STIR
 
 void

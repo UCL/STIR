@@ -702,6 +702,14 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
                                                                                     new_scanner_sptr->get_max_num_non_arccorrected_bins(),
                                                                                     false)->clone()));
 
+    if(!is_null_ptr(output_proj_data_sptr))
+    {
+        this->output_proj_data_sptr.reset(new ProjDataInMemory(this->template_exam_info_sptr,
+                                                               this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone()));
+        this->output_proj_data_sptr->fill(0.0);
+        info("ScatterSimulation: output projection data created.");
+    }
+
     // find final size of detection_points_vector
     this->total_detectors =
             this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_rings()*
@@ -729,6 +737,8 @@ Succeeded ScatterSimulation::default_downsampling(bool all_images)
 
     if(downsample_scanner(new_num_rings, 32) == Succeeded::no)
         return Succeeded::no;
+
+
 
     // Downsample the activity and attanuation images
     shared_ptr<VoxelsOnCartesianGrid<float> > tmpl_density( new VoxelsOnCartesianGrid<float>(*proj_data_info_cyl_noarc_cor_sptr));

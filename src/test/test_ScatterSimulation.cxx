@@ -228,7 +228,7 @@ test_downsampling_DiscretisedDensity()
     check_if_equal(cog_atten, cog_downed, "Check centre of gravity of the original image is the same as the downsampled.");
 //    int total_scatter_points_down = sss.get_num_scatter_points();
 
-//       std::string density_image_for_scatter_points_output_filename("./nikos");
+//       std::string density_image_for_scatter_points_output_filename("./output_image");
 //    OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
 //            write_to_file(density_image_for_scatter_points_output_filename,
 //                          *downed_image);
