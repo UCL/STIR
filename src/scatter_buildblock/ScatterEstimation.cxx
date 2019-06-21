@@ -248,11 +248,11 @@ post_processing()
         this->atten_image_sptr =
             read_from_file<DiscretisedDensity<3,float> >(this->atten_image_filename);
 
-    if(this->atten_coeff_filename.size() > 0)
-    {
-        info("ScatterEstimation: Loading attenuation correction coefficients...");
-        this->atten_coeff_3d_sptr.reset(new BinNormalisationFromProjData(this->atten_coeff_filename));
-    }
+//    if(this->atten_coeff_filename.size() > 0)
+//    {
+//        info("ScatterEstimation: Loading attenuation correction coefficients...");
+//        //this->atten_coeff_3d_sptr.reset(new BinNormalisationFromProjData(this->atten_coeff_filename));
+//    }
 
     if(is_null_ptr(normalisation_coeffs_3d_sptr))
         warning("ScatterEstimation: No normalisation coefficients have been set!!");
