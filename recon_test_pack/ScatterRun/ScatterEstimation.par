@@ -28,6 +28,8 @@ Bin Normalisation type := from ecat8
     normalisation filename:= ./NEMA_IQ/20170809_NEMA_UCL.n.hdr
 End Bin Normalisation From ecat8:=
 
+;; Additive
+background projdata filename := ./NEMA_IQ/MLrandoms.hs
 
 ; Mask 
 ; If !recompute mask projdata then the filename must be set.

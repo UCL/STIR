@@ -197,8 +197,7 @@ ScatterEstimation(const std::string& parameter_filename)
         this->set_defaults();
         if (!this->parse(parameter_filename.c_str()))
         {
-            warning("ScatterEstimation: Error parsing input file %s. Aborting.", parameter_filename.c_str());
-            return;
+            error("ScatterEstimation: Error parsing input file %s. Aborting.", parameter_filename.c_str());
         }
     }
 }
@@ -401,6 +400,7 @@ set_up()
             warning(boost::format("The input data %1% are not 3D. Aborting.") %this->input_projdata_filename );
             return Succeeded::no;
         }
+    }
 #else
     FilePath tmp(this->input_projdata_filename);
     std::string in_filename = extras_path.get_path() + tmp.get_filename_no_extension() + "_2d.hs";
@@ -412,7 +412,7 @@ set_up()
                                                            this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
 
     this->back_projdata_2d_sptr->fill(0.F);
-}
+
 
 info("ScatterEstimation: Setting up reconstruction method ...");
 
@@ -763,10 +763,12 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         }
         //<- End Normalisation ProjData
 #else
-        in_filename = extras_path.get_path() + "tmp_normdata_2d.hs";
-        shared_ptr<ProjData> norm_projdata_2d_sptr = ProjData::read_from_file(in_filename);
-        normalisation_coeffs_2d_sptr.reset(new BinNormalisationFromProjData(norm_projdata_2d_sptr));
-        normalisation_coeffs_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+        {
+            string in_filename = extras_path.get_path() + "tmp_normdata_2d.hs";
+            shared_ptr<ProjData> norm_projdata_2d_sptr = ProjData::read_from_file(in_filename);
+            normalisation_coeffs_2d_sptr.reset(new BinNormalisationFromProjData(norm_projdata_2d_sptr));
+            normalisation_coeffs_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+        }
 #endif
 
         this->multiplicative_binnorm_2d_sptr.reset(
@@ -807,6 +809,27 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
                                                                    std::ios::in | std::ios::out | std::ios::trunc));
             SSRB(*this->add_projdata_2d_sptr,
                  *this->add_projdata_3d_sptr, false);
+            {
+                std::string out_filename = extras_path.get_path() + "tmp_background_data.hs";
+
+                this->back_projdata_3d_sptr.reset(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                        this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
+                                                                        out_filename,
+                                                                        std::ios::in | std::ios::out | std::ios::trunc));
+
+                this->back_projdata_3d_sptr->fill(*this->add_projdata_3d_sptr);
+            }
+            {
+                std::string out_filename = extras_path.get_path() + "tmp_background_data" + "_2d.hs";
+
+                this->back_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                                        this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
+                                                                        out_filename,
+                                                                        std::ios::in | std::ios::out | std::ios::trunc));
+                this->back_projdata_2d_sptr->fill(*this->add_projdata_2d_sptr);
+                this->multiplicative_binnorm_2d_sptr->apply(*this->back_projdata_2d_sptr, start_time, end_time);
+            }
+
         }
         else
         {
@@ -815,9 +838,9 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
 
         // Add the additive component to the output sinogram
         //                iterative_object->get_objective_function_sptr()->set_additive_proj_data_sptr(this->back_projdata_2d_sptr);
-        this->back_projdata_2d_sptr->fill(*this->add_projdata_2d_sptr);
-        back_projdata_2d_sptr->fill(*add_projdata_2d_sptr);
-        this->multiplicative_binnorm_2d_sptr->apply(*this->back_projdata_2d_sptr, start_time, end_time);
+        //this->back_projdata_2d_sptr->fill(*this->add_projdata_2d_sptr);
+//        back_projdata_2d_sptr->fill(*add_projdata_2d_sptr);
+        //this->multiplicative_binnorm_2d_sptr->apply(*this->back_projdata_2d_sptr, start_time, end_time);
 
     }
     else
@@ -893,11 +916,16 @@ process_data()
                                                             this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
         scaled_est_projdata_sptr->fill(0.F);
 
-        data_to_fit_projdata_sptr = input_projdata_2d_sptr;
+        std::string out_filename = extras_path.get_path() + "tmp_fit_data" + "_2d.hs";
+
+        data_to_fit_projdata_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                              this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
+                                                              out_filename,
+                                                              std::ios::in | std::ios::out | std::ios::trunc));
+        data_to_fit_projdata_sptr->fill(*input_projdata_2d_sptr);
         //Data to fit = Input_2d - background
         //Here should be the total_background, not just the randoms.
-        if (!is_null_ptr(add_projdata_2d_sptr))
-            subtract_proj_data(*data_to_fit_projdata_sptr, *this->add_projdata_2d_sptr);
+        subtract_proj_data(*data_to_fit_projdata_sptr, *this->back_projdata_2d_sptr);
     }
     else
     {
@@ -905,7 +933,14 @@ process_data()
                                                             this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone()));
         scaled_est_projdata_sptr->fill(0.F);
 
-        data_to_fit_projdata_sptr = this->input_projdata_sptr;
+        std::string out_filename = extras_path.get_path() + "tmp_fit_data.hs";
+        data_to_fit_projdata_sptr.reset(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                              this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
+                                                              out_filename,
+                                                              std::ios::in | std::ios::out | std::ios::trunc));
+        data_to_fit_projdata_sptr->fill(*input_projdata_sptr);
+
+        subtract_proj_data(*data_to_fit_projdata_sptr, *this->back_projdata_3d_sptr);
     }
 
     info("ScatterEstimation: Start processing...");
@@ -1064,9 +1099,19 @@ process_data()
 
         this->back_projdata_sptr->fill(*scaled_est_projdata_sptr);
         if (!is_null_ptr(add_projdata_sptr))
-            add_proj_data(*back_projdata_sptr, *this->add_projdata_sptr);
+            add_proj_data(*back_projdata_sptr, *this->add_projdata_2d_sptr);
 
         this->multiplicative_binnorm_sptr->apply(*back_projdata_sptr, start_time, end_time);
+
+        if(export_2d_projdata)
+        {
+            data_to_fit_projdata_sptr->fill(*input_projdata_2d_sptr);
+            subtract_proj_data(*data_to_fit_projdata_sptr, *this->back_projdata_2d_sptr);
+        }
+        else {
+            data_to_fit_projdata_sptr->fill(*input_projdata_sptr);
+            subtract_proj_data(*data_to_fit_projdata_sptr, *this->back_projdata_sptr);
+        }
 
         current_activity_image_sptr->fill(1.f);
 
@@ -1075,10 +1120,6 @@ process_data()
                            reconstruct_analytic(i_scat_iter, this->current_activity_image_sptr);
 
         scatter_simulation_sptr->set_activity_image_sptr(current_activity_image_sptr);
-
-        // Reset to the additive factor
-        //                this->scaled_est_projdata_sptr->fill(*this->back_projdata_sptr);
-        //        scaled_est_projdata_2d_sptr->fill(0.0f);
 
     }
 
