@@ -248,11 +248,11 @@ post_processing()
         this->atten_image_sptr =
             read_from_file<DiscretisedDensity<3,float> >(this->atten_image_filename);
 
-//    if(this->atten_coeff_filename.size() > 0)
-//    {
-//        info("ScatterEstimation: Loading attenuation correction coefficients...");
-//        //this->atten_coeff_3d_sptr.reset(new BinNormalisationFromProjData(this->atten_coeff_filename));
-//    }
+    if(this->atten_coeff_filename.size() > 0 && !recompute_atten_projdata)
+    {
+        info("ScatterEstimation: Loading attenuation correction coefficients...");
+        this->atten_coeff_3d_sptr.reset(new BinNormalisationFromProjData(this->atten_coeff_filename));
+    }
 
     if(is_null_ptr(normalisation_coeffs_3d_sptr))
         warning("ScatterEstimation: No normalisation coefficients have been set!!");
@@ -609,11 +609,14 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     shared_ptr<BinNormalisation> attenuation_coeffs_2d_sptr(new TrivialBinNormalisation());
     shared_ptr<BinNormalisation> normalisation_coeffs_2d_sptr(new TrivialBinNormalisation());
 
+
 #if SPEED_UP_FOR_DEBUG == 0
     // If second is trivial attenuation proj_data have not been set.
     // In that case use the attenuation image.
     if (this->multiplicative_binnorm_3d_sptr->is_second_trivial())
     {
+        if(recompute_atten_projdata)
+        {
         shared_ptr<BinNormalisation> tmp_attenuation_correction_sptr(new TrivialBinNormalisation());
         shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
         shared_ptr<ForwardProjectorByBin> forw_projector_sptr(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
@@ -650,17 +653,21 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
             shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(forw_projector_sptr->get_symmetries_used()->clone());
             info("ScatterEstimation: Calculating the attenuation projection data...");
             tmp_attenuation_correction_sptr->apply(*atten_projdata_3d_sptr, start_time, end_time, symmetries_sptr);
-            this->atten_coeff_3d_sptr.reset(new BinNormalisationFromProjData(atten_projdata_3d_sptr));
+            this->atten_coeff_3d_sptr.reset(new BinNormalisationFromProjData(this->atten_coeff_filename));
+            atten_coeff_3d_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
+
+            this->multiplicative_binnorm_3d_sptr.reset(new ChainedBinNormalisation(normalisation_coeffs_3d_sptr, atten_coeff_3d_sptr));
+            this->multiplicative_binnorm_3d_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
+        }
+        }
+        else { // Normally it should never get in here.
+
+            this->atten_coeff_3d_sptr.reset(new BinNormalisationFromProjData(this->atten_coeff_filename));
+            atten_coeff_3d_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
+            this->multiplicative_binnorm_3d_sptr.reset(new ChainedBinNormalisation(normalisation_coeffs_3d_sptr, atten_coeff_3d_sptr));
+            this->multiplicative_binnorm_3d_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
         }
     }
-
-    // Check if it is a BinNormFromProjData -- it should but you never know
-    // Take the projdata
-    shared_ptr<ProjData> atten_projdata_3d_sptr =
-            dynamic_cast<BinNormalisationFromProjData*> (this->multiplicative_binnorm_3d_sptr->get_second_norm().get())->get_norm_proj_data_sptr();
-
-    if(is_null_ptr(atten_projdata_3d_sptr))
-        error("ScatterEstimation: No attenuation projdata has been initialised.");
 
 #endif
 
@@ -668,6 +675,10 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     if(export_2d_projdata)
     {
 #if SPEED_UP_FOR_DEBUG == 0
+        info("ScatterEstimation: 3.Calculating the attenuation projection data...");
+        shared_ptr<ProjData> atten_projdata_3d_sptr =
+                dynamic_cast<BinNormalisationFromProjData*> (this->multiplicative_binnorm_3d_sptr->get_second_norm().get())->get_norm_proj_data_sptr();
+
         if( atten_projdata_3d_sptr->get_num_segments() > 0)
         {
             info("ScatterEstimation: Running SSRB on attenuation correction coefficients ...");
@@ -685,6 +696,8 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
             else
                 atten_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                                                   this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
+
+
 
             SSRB(*atten_projdata_2d_sptr,
                  *atten_projdata_3d_sptr, true);
