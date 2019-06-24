@@ -73,7 +73,7 @@ namespace detail_interpolate_projdata
   }
 
   static shared_ptr<ProjDataInfo>
-  make_compressed_proj_data_info(const ProjDataInfo& proj_data_info)
+  transpose_make_non_interleaved_proj_data_info(const ProjDataInfo& proj_data_info)
   {
 
       // TODO: arc-correct?
@@ -150,7 +150,7 @@ namespace detail_interpolate_projdata
 #endif
 
   static void
-  make_compressed_sinogram(Sinogram<float>& out_sinogram,
+  transpose_make_non_interleaved_sinogram(Sinogram<float>& out_sinogram,
                                 const Sinogram<float>& in_sinogram)
   {
     if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(in_sinogram.get_proj_data_info_ptr()) == NULL)
@@ -216,7 +216,7 @@ namespace detail_interpolate_projdata
   }
 
   static void
-  make_compressed_segment(SegmentBySinogram<float>& out_segment,
+  transpose_make_non_interleaved_segment(SegmentBySinogram<float>& out_segment,
                                const SegmentBySinogram<float>& in_segment)
   {
     if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(in_segment.get_proj_data_info_ptr()) == NULL)
@@ -227,7 +227,7 @@ namespace detail_interpolate_projdata
          ++axial_pos_num)
       {
         Sinogram<float> out_sinogram = out_segment.get_sinogram(axial_pos_num);
-        make_compressed_sinogram(out_sinogram,
+        transpose_make_non_interleaved_sinogram(out_sinogram,
                                       in_segment.get_sinogram(axial_pos_num));
         out_segment.set_sinogram(out_sinogram);
       }
@@ -247,14 +247,14 @@ namespace detail_interpolate_projdata
   }     
 
   static SegmentBySinogram<float>
-  make_compressed_segment(const ProjDataInfo& compressed_proj_data_info,
+  transpose_make_non_interleaved_segment(const ProjDataInfo& compressed_proj_data_info,
                                const SegmentBySinogram<float>& in_segment)
   {
 
     SegmentBySinogram<float> out_segment =
       compressed_proj_data_info.get_empty_segment_by_sinogram(in_segment.get_segment_num());
 
-    make_compressed_segment(out_segment, in_segment);
+    transpose_make_non_interleaved_segment(out_segment, in_segment);
 
     return out_segment;
   }
