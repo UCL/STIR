@@ -29,6 +29,7 @@ except ImportError:
         raise ImportError('Tests require pytest or py<1.4')
 
 from stir import *
+import stirextra
 
 def test_Vector():
     dv=FloatVector(3)
@@ -155,6 +156,44 @@ def test_FloatVoxelsOnCartesianGrid():
     # shouldn't change image constructed from array
     assert abs(image[ind]-1.4)<.001
 
+def test_zoom_image():
+    # create test image
+    origin=FloatCartesianCoordinate3D(3,1,6)
+    gridspacing=FloatCartesianCoordinate3D(1,1,2)
+    minind=Int3BasicCoordinate((0,-9,-9))
+    maxind=Int3BasicCoordinate(9)
+    indrange=IndexRange3D(minind,maxind)
+    image=FloatVoxelsOnCartesianGrid(indrange, origin,gridspacing)
+    image.fill(1)
+    # find coordinate of middle of image for later use (independent of image sizes etc)
+    [min_in_mm, max_in_mm]=stirextra.get_physical_coordinates_for_bounding_box(image)
+    try:
+        middle_in_mm=FloatCartesianCoordinate3D((min_in_mm+max_in_mm)/2.)
+    except:
+        # SWIG versions pre 3.0.11 had a bug, which we try to work around here
+        middle_in_mm=FloatCartesianCoordinate3D((min_in_mm+max_in_mm).__div__(2))
+
+    # test that we throw an exception if ZoomOptions is out-of-range
+    try:
+        zo=ZoomOptions(42)
+        assert False
+    except:
+        assert True
+
+    zoom=2
+    offset=1
+    new_size=6
+    zoomed_image=zoom_image(image, zoom, offset, offset, new_size)
+    ind=zoomed_image.get_indices_closest_to_physical_coordinates(middle_in_mm)
+    assert zoomed_image[ind]==1./(zoom*zoom)
+    # awkward syntax...
+    zoomed_image=zoom_image(image, zoom, offset, offset, new_size, ZoomOptions(ZoomOptions.preserve_sum))
+    assert abs(zoomed_image[ind]-1./(zoom*zoom))<.001
+    zoomed_image=zoom_image(image, zoom, offset, offset, new_size, ZoomOptions(ZoomOptions.preserve_values))
+    assert abs(zoomed_image[ind]-1)<.001
+    zoomed_image=zoom_image(image, zoom, offset, offset, new_size, ZoomOptions(ZoomOptions.preserve_projections))
+    assert abs(zoomed_image[ind]-1./(zoom))<.001
+    
 def test_Scanner():
     s=Scanner.get_scanner_from_name("ECAT 962")
     assert s.get_num_rings()==32

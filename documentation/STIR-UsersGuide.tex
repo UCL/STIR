@@ -665,7 +665,8 @@ assumes the patient is in HFS position}. Only if DICOM is used and the correct D
 (0018, 5100) will the orientation be correct.
 
 Note that as DICOM files often store only a single slice, \textit{STIR} attempts to find
-other slices belonging to the same series/time frame/gate.
+other slices belonging to the same series. When there are multiple time frames/gates in a folder, 
+these may be incorrectly treated as a single volume.
 
 \subsubsection{SimSET files}
 There are some preliminary files to make it easier to use SimSET and \textit{STIR} together in the
