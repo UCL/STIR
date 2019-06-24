@@ -72,6 +72,21 @@ namespace detail_interpolate_projdata
     return new_proj_data_info_sptr;
   }
 
+  static shared_ptr<ProjDataInfo>
+  make_compressed_proj_data_info(const ProjDataInfo& proj_data_info)
+  {
+
+      // TODO: arc-correct?
+      if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(&proj_data_info) == NULL)
+        error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
+
+    shared_ptr<ProjDataInfo> new_proj_data_info_sptr(
+                             proj_data_info.clone());
+    new_proj_data_info_sptr->
+      set_num_views(proj_data_info.get_num_views()/2);
+    return new_proj_data_info_sptr;
+  }
+
   static void
   make_non_interleaved_sinogram(Sinogram<float>& out_sinogram,
                                 const Sinogram<float>& in_sinogram)
@@ -135,6 +150,54 @@ namespace detail_interpolate_projdata
 #endif
 
   static void
+  make_compressed_sinogram(Sinogram<float>& out_sinogram,
+                                const Sinogram<float>& in_sinogram)
+  {
+    if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(in_sinogram.get_proj_data_info_ptr()) == NULL)
+      error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
+
+    assert(out_sinogram.get_min_view_num() == 0);
+    assert(in_sinogram.get_min_view_num() == 0);
+    assert(out_sinogram.get_num_views() == in_sinogram.get_num_views()/2);
+    assert(in_sinogram.get_segment_num() == 0);
+    assert(out_sinogram.get_segment_num() == 0);
+
+    const int in_num_views = in_sinogram.get_num_views();
+
+    for (int view_num = out_sinogram.get_min_view_num();
+         view_num <= out_sinogram.get_max_view_num();
+         ++view_num)
+      {
+        // TODO don't put in outer tangential poss for now to avoid boundary stuff
+        for (int tangential_pos_num = out_sinogram.get_min_tangential_pos_num()+1;
+             tangential_pos_num <= out_sinogram.get_max_tangential_pos_num()-1;
+             ++tangential_pos_num)
+          {
+            if ((view_num+tangential_pos_num)%2 == 0)
+              {
+                const int in_view_num =
+                  view_num%2==0 ? view_num/2 : (view_num+1)/2;
+                out_sinogram[view_num][tangential_pos_num] =
+                  in_sinogram[in_view_num%in_num_views][(in_view_num>=in_num_views? -1: 1)*tangential_pos_num];
+              }
+            else
+              {
+                const int next_in_view = view_num/2+1;
+                const int other_in_view = (view_num+1)/2;
+
+                out_sinogram[view_num][tangential_pos_num] =
+                  (in_sinogram[view_num/2][tangential_pos_num] +
+                   in_sinogram[next_in_view%in_num_views][(next_in_view>=in_num_views ? -1 : 1)*tangential_pos_num] +
+                   in_sinogram[other_in_view%in_num_views][(other_in_view>=in_num_views ? -1 : 1)*(tangential_pos_num-1)] +
+                   in_sinogram[other_in_view%in_num_views][(other_in_view>=in_num_views ? -1 : 1)*(tangential_pos_num+1)]
+                   )/4;
+              }
+          }
+      }
+  }
+
+
+  static void
   make_non_interleaved_segment(SegmentBySinogram<float>& out_segment,
                                const SegmentBySinogram<float>& in_segment)
   {
@@ -147,6 +210,24 @@ namespace detail_interpolate_projdata
       {
         Sinogram<float> out_sinogram = out_segment.get_sinogram(axial_pos_num);
         make_non_interleaved_sinogram(out_sinogram, 
+                                      in_segment.get_sinogram(axial_pos_num));
+        out_segment.set_sinogram(out_sinogram);
+      }
+  }
+
+  static void
+  make_compressed_segment(SegmentBySinogram<float>& out_segment,
+                               const SegmentBySinogram<float>& in_segment)
+  {
+    if (dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(in_segment.get_proj_data_info_ptr()) == NULL)
+      error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
+
+    for (int axial_pos_num = out_segment.get_min_axial_pos_num();
+         axial_pos_num <= out_segment.get_max_axial_pos_num();
+         ++axial_pos_num)
+      {
+        Sinogram<float> out_sinogram = out_segment.get_sinogram(axial_pos_num);
+        make_compressed_sinogram(out_sinogram,
                                       in_segment.get_sinogram(axial_pos_num));
         out_segment.set_sinogram(out_sinogram);
       }
@@ -165,6 +246,18 @@ namespace detail_interpolate_projdata
     return out_segment;
   }     
 
+  static SegmentBySinogram<float>
+  make_compressed_segment(const ProjDataInfo& compressed_proj_data_info,
+                               const SegmentBySinogram<float>& in_segment)
+  {
+
+    SegmentBySinogram<float> out_segment =
+      compressed_proj_data_info.get_empty_segment_by_sinogram(in_segment.get_segment_num());
+
+    make_compressed_segment(out_segment, in_segment);
+
+    return out_segment;
+  }
 } // end namespace detail_interpolate_projdata
                                               
 
@@ -604,5 +697,6 @@ interpolate_projdata_push(ProjData& proj_data_out,
 
    return Succeeded::yes;
 }
+
 
 END_NAMESPACE_STIR

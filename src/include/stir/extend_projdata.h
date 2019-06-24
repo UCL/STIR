@@ -43,6 +43,14 @@ extend_segment_in_views(const SegmentBySinogram<float>& sino,
 Array<2,float>
 extend_sinogram_in_views(const Sinogram<float>& sino,
 			 const int min_view_extension, const int max_view_extension);
+
+Array<3,float>
+compress_segment_in_views(const SegmentBySinogram<float>& sino,
+            const float min_view_compression, const float max_view_compression);
+Array<2,float>
+compress_sinogram_in_views(const Sinogram<float>& sino,
+             const float min_view_compression, const float max_view_compression);
+
 //@}
 
 END_NAMESPACE_STIR
