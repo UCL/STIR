@@ -667,7 +667,11 @@ interpolate_projdata_push(ProjData& proj_data_out,
             extended[z][y][old_max+1] = extended[z][y][old_max];
           }
       }
-    sample_function_on_regular_grid_push(sino_3D_out,extended, offset, step);
+    for(int segm_num = proj_data_in.get_min_segment_num(); segm_num <= proj_data_in.get_max_segment_num(); ++segm_num)
+    {
+     SegmentBySinogram<float> sino_3D_in = proj_data_in.get_segment_by_sinogram(segm_num);
+      sample_function_on_regular_grid_push(sino_3D_out,sino_3D_in, offset, step);
+    }
     proj_data_out.set_segment(sino_3D_out);
     if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
         return Succeeded::no;
@@ -688,7 +692,12 @@ interpolate_projdata_push(ProjData& proj_data_out,
             extended[z][y][old_max+1] = extended[z][y][old_max];
           }
       }
-    sample_function_on_regular_grid_push(sino_3D_out,extended, offset, step);
+
+    for(int segm_num = proj_data_in.get_min_segment_num(); segm_num <= proj_data_in.get_max_segment_num(); ++segm_num)
+    {
+     SegmentBySinogram<float> sino_3D_in = proj_data_in.get_segment_by_sinogram(segm_num);
+      sample_function_on_regular_grid_push(sino_3D_out,sino_3D_in, offset, step);
+    }
     proj_data_out.set_segment(sino_3D_out);
     if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
       return Succeeded::no;
