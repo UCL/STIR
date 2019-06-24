@@ -126,7 +126,7 @@ namespace detail
 
   inline static
   Array<2,float>
-  compress_sinogram_in_views(const  Array<2,float>& sino_positive_segment,
+  transpose_extend_sinogram_in_views(const  Array<2,float>& sino_positive_segment,
                            const  Array<2,float>& sino_negative_segment,
                            const ProjDataInfo& proj_data_info,
                            const float min_view_extension, const float max_view_extension)
@@ -252,7 +252,7 @@ extend_sinogram_in_views(const Sinogram<float>& sino,
 }
 
 Array<3,float>
-compress_segment_in_views(const SegmentBySinogram<float>& sino,
+transpose_extend_segment_in_views(const SegmentBySinogram<float>& sino,
                         const float min_view_extension, const float max_view_extension)
 {
   if (sino.get_segment_num()!=0)
@@ -272,7 +272,7 @@ compress_segment_in_views(const SegmentBySinogram<float>& sino,
     {
       out[ax_pos_num] =
         detail::
-        extend_sinogram_in_views(sino[ax_pos_num],sino[ax_pos_num],
+        transpose_extend_sinogram_in_views(sino[ax_pos_num],sino[ax_pos_num],
                                  *(sino.get_proj_data_info_ptr()),
                                  min_view_extension, max_view_extension);
     }
@@ -280,7 +280,7 @@ compress_segment_in_views(const SegmentBySinogram<float>& sino,
 }
 
 Array<2,float>
-compress_sinogram_in_views(const Sinogram<float>& sino,
+transpose_extend_sinogram_in_views(const Sinogram<float>& sino,
                          const float min_view_extension, const float max_view_extension)
 {
   if (sino.get_segment_num()!=0)
@@ -288,7 +288,7 @@ compress_sinogram_in_views(const Sinogram<float>& sino,
 
   return
     detail::
-    compress_sinogram_in_views(sino, sino,
+    transpose_extend_sinogram_in_views(sino, sino,
                              *(sino.get_proj_data_info_ptr()),
                              min_view_extension, max_view_extension);
 }
