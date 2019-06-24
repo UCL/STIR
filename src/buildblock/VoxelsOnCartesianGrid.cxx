@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2012, Hammersmith Imanet Ltd
+    Copyright (C) 2018- 2019, University College London
 
     This file is free software; you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -42,7 +43,8 @@
 #include <fstream>
 #include <algorithm>
 #include <math.h>
-#include <memory> // for auto_ptr
+#include <memory>
+#include "stir/unique_ptr.h"
 #ifndef STIR_NO_NAMESPACES
 using std::ifstream;
 using std::max;
@@ -152,6 +154,29 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
                        (range,origin,grid_spacing)
 {}
 
+template<class elemT>
+VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
+                      (const shared_ptr < ExamInfo > & exam_info_sptr,
+                       const Array<3,elemT>& v,
+                       const CartesianCoordinate3D<float>& origin,
+                       const BasicCoordinate<3,float>& grid_spacing)
+                       :DiscretisedDensityOnCartesianGrid<3,elemT>
+                       (exam_info_sptr,v.get_index_range(),origin,grid_spacing)
+{
+  Array<3,elemT>::operator=(v);
+}
+
+
+template<class elemT>
+VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
+                      (const shared_ptr < ExamInfo > & exam_info_sptr,
+                       const IndexRange<3>& range, 
+                       const CartesianCoordinate3D<float>& origin,
+                       const BasicCoordinate<3,float>& grid_spacing)
+                       :DiscretisedDensityOnCartesianGrid<3,elemT>
+                        (exam_info_sptr,range,origin,grid_spacing)
+{}
+
 // KT 10/12/2001 use new format of args for the constructor, and remove the make_xy_size_odd constructor
 template<class elemT>                                                 
 VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info,
@@ -160,6 +185,51 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_dat
                                                     const CartesianCoordinate3D<int>& sizes)
                                                     
 {
+  shared_ptr<ExamInfo> exam_info_sptr_v(new ExamInfo);
+  this->construct_from_projdata_info(exam_info_sptr_v,proj_data_info,
+                                     CartesianCoordinate3D<float>(1.F, zoom, zoom),
+                                     origin,
+                                     sizes);
+}
+
+template<class elemT>                                                 
+VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr_v,
+                                                    const ProjDataInfo& proj_data_info,
+                                                    const float zoom, 
+                                                    const CartesianCoordinate3D<float>& origin,
+                                                    const CartesianCoordinate3D<int>& sizes)
+{
+  this->construct_from_projdata_info(exam_info_sptr_v,proj_data_info,
+                                     CartesianCoordinate3D<float>(1.F, zoom, zoom),
+                                     origin,
+                                     sizes);
+}
+
+template<class elemT>
+VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr_v,
+                                                    const ProjDataInfo& proj_data_info,
+                                                    const CartesianCoordinate3D<float>& zooms,
+                                                    const CartesianCoordinate3D<float>& origin,
+                                                    const CartesianCoordinate3D<int>& sizes)
+{
+  this->construct_from_projdata_info(exam_info_sptr_v,proj_data_info,
+                                     zooms,
+                                     origin,
+                                     sizes);
+}
+
+template<class elemT>
+void
+VoxelsOnCartesianGrid<elemT>::
+construct_from_projdata_info(const shared_ptr < ExamInfo > & exam_info_sptr_v,
+                             const ProjDataInfo& proj_data_info,
+                             const CartesianCoordinate3D<float>& zooms,
+                             const CartesianCoordinate3D<float>& origin,
+                             const CartesianCoordinate3D<int>& sizes)
+{
+  this->exam_info_sptr = exam_info_sptr_v;
+  // sadly, this code is a complete copy of the above
+  // probably avoidable in C++11
   this->set_origin(origin);
 
   int z_size = sizes.z();
@@ -170,7 +240,7 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_dat
   find_sampling_and_z_size(z_sampling, s_sampling, z_size, &proj_data_info);
   
   this->set_grid_spacing(
-      CartesianCoordinate3D<float>(z_sampling, s_sampling/zoom, s_sampling/zoom)
+      CartesianCoordinate3D<float>(z_sampling, s_sampling, s_sampling) / zooms
       );
   int x_size_used = sizes.x();
   int y_size_used = sizes.y();
@@ -215,7 +285,8 @@ VoxelsOnCartesianGrid<elemT>*
 VoxelsOnCartesianGrid<elemT>::get_empty_voxels_on_cartesian_grid() const
 
 {
-  return new VoxelsOnCartesianGrid(this->get_index_range(),
+  return new VoxelsOnCartesianGrid(this->get_exam_info_sptr()->create_shared_clone(),
+                                   this->get_index_range(),
                                    this->get_origin(), 
                                    this->get_grid_spacing());
 }
@@ -240,7 +311,9 @@ VoxelsOnCartesianGrid<elemT>*
 #endif
 VoxelsOnCartesianGrid<elemT>::clone() const
 {
-  return new VoxelsOnCartesianGrid(*this);
+  VoxelsOnCartesianGrid *temp = new VoxelsOnCartesianGrid(*this);
+  temp->set_exam_info(*temp->get_exam_info_sptr()->create_shared_clone());
+  return temp;
 }
 
 template<class elemT>
@@ -347,8 +420,8 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
     input, "Enter filename for input image", ".v", 
     ios::in | ios::binary);
 
-  std::auto_ptr<Scanner> scanner_ptr = 
-    std::auto_ptr<Scanner>(Scanner::ask_parameters());
+  unique_ptr<Scanner> scanner_ptr
+    (Scanner::ask_parameters());
 
 
   NumericType data_type;
@@ -421,6 +494,7 @@ VoxelsOnCartesianGrid<elemT> VoxelsOnCartesianGrid<elemT>::ask_parameters()
  instantiations
  **********************************************/
 template class VoxelsOnCartesianGrid<float>;
+template class VoxelsOnCartesianGrid<CartesianCoordinate3D<float> >;
 
 END_NAMESPACE_STIR
 

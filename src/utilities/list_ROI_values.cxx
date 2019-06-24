@@ -230,7 +230,7 @@ main(int argc, char *argv[])
 
   const bool by_plane=argc==5 ? (atoi(argv[4])!=0):true ;  
 
-  if (parameters.filter_ptr!=0)
+  if (!is_null_ptr(parameters.filter_ptr))
     parameters.filter_ptr->apply(*image_ptr);
 
   out << input_file << '\n';

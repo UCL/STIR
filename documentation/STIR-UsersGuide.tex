@@ -241,14 +241,31 @@ directory, not \textbf{STIR/src}.}
 \cmdline{cd /somewhere/nice/STIRbuild/Release}
 \cmdline{cmake-gui /somewhere/else/STIR\&}
 
-This will bring up a basic interface where you might to have to choose your prefered
+This will bring up a basic interface where you might to have to choose your preferred
 build system (i.e. \texttt{make} on Linux/Unix) and do an initial configuration. Then 
-you specify build variables. You can press \texttt{c} to do additional configurations, \texttt{g} for generating
-your build files, \texttt{q} to quit. After this step, you will have to run your build system (e.g.\ on Linux etc,
+you specify build variables. You can press \texttt{Configure} to do additional configurations,
+possibly repeatedly and finally \texttt{Generate} for generating your build files\footnote{
+When using \texttt{ccmake} as opposed to \texttt{cmake-gui}, the key presses are:
+\texttt{c} to do additional configurations, \texttt{g} for generating
+your build files, \texttt{q} to quit}. After this step, you will have to run your build system (e.g.\ on Linux etc,
 type \texttt{make}, then \texttt{make test}, then \texttt{make install}).
+A helpful note: You can specify just to make a single ``target'',
+using \texttt{make <target>}. All executable names are targets that
+make just the required executable (e.g., \texttt{make FBP2D}). A
+useful target for developers is to just make the tests, using
+\texttt{make BUILD_TESTS}. So \texttt{make BUILD_TESTS && make test}
+would build and then run the tests.
+
+On Windows or MacOSX, the procedure is essentially the same, except that you will likely have
+to specify more locations. When using Visual Studio, XCode or other IDEs as  your build system,
+you do not need to specify the Build Type, as you will be able to select that in
+your IDE.
+
 More information on using CMake is on the STIR Wiki.
 
-For example, if CMake cannot find \textit{boost}, you will have to set \texttt{BOOST\_ROOT}. 
+{\subsubsubsection{CMake configuration variables}
+}
+
 \newlength{\MakeTableFirstCol}
 \newlength{\MakeTableSecondCol}
 \setlength{\MakeTableFirstCol}{1.5in}
@@ -292,8 +309,12 @@ See section \ref{sec:RunningWithOPENMP} for information on how to run programs u
 \hline
 % ROW 
 {\raggedright \textit{STIR\_LOCAL}} & 
-{\raggedright Specify location of directy with your own extensions to STIR. See
+{\raggedright Specify location of directory with your own extensions to STIR. See
 the developer's guide.}\\
+\hline
+% ROW 
+{\raggedright \textit{STIR\_ENABLE\_EXPERIMENTAL}} & 
+{\raggedright Toggles between ON, OFF. Enable to use experimental features in \textit{STIR}.}\\
 \hline
 \end{longtable}
 
@@ -313,20 +334,28 @@ via \texttt{AVW\_ROOT\_DIR}. See section \ref{sec:convAVW} for usage.
 Note that you can use e.g. \textit{DISABLE\_LLN\_MATRIX} to \textit{not}
 use the LLN ECAT library, even if cmake found it.
 
-Finally, do not forget to set
+Here are some standard CMake variables that might be useful.
 \begin{itemize}
-\item CMAKE\_BUILD\_TYPE to \texttt{Release}, \texttt{Debug} or \texttt{RelWithDebug},
-\item CMAKE\_INSTALL\_PREFIX to specify where the final installation has to occur. CMake
+\item set \textit{CMAKE\_BUILD\_TYPE} to \texttt{Release} (default), \texttt{Debug} or \texttt{RelWithDebug}.
+(This is ignored when using Visual Studio or XCode).
+\item \textit{CMAKE\_INSTALL\_PREFIX} specifies where the final installation has to occur. CMake
 provides normally a default in a system location, but you could set it for instance to
 \texttt{./install} to put the files inside your build directory.
+\item \textit{{CMAKE\_CXX\_STANDARD} can be used to tell CMake to add flags to your compiler to use
+a particular version of the C++ standard (if it supports it). It is now recommended to set 
+this to \texttt{11}. This is necessary e.g. for ROOT 6 support. Other possible values are
+\texttt{98}, \texttt{14} and \texttt{17} (not tested yet).
 \end{itemize}
 
-On Windows or MacOSX, the procedure is essentially the same, except that you will likely have 
-to specify more locations When using Visual Studio, XCode or other IDEs as  your build system,
-you do not need to specify the Build Type, as you will be able to select that in 
-your IDE.
+When building the Python code, and you have multiple versions of Python installed,
+it is often necessary to specify the correct Python executable that you want, together with
+the libraries. You can use the \texttt{PYTHON\_EXECUTABLE} variable for this. If you
+specify the full path to the actual executable, this should be sufficient. If not, set
+\texttt{PYTHON\_LIBRARY} as well.
 
-
+There are various other variables that can be set, some of which are only visible if you toggled
+the display of \textt{Advanced} variables on. They should only be set by advanced users, or if a package
+cannot be found. For example, if CMake cannot find \textit{boost}, you will have to set \texttt{BOOST\_ROOT}.
 
 \subsubsection{
 Operating system specifics}
@@ -395,7 +424,9 @@ some point).
 Running tests}
 
 We \textbf{highly recommend} running test programs after building. There are currently two
-sets of tests. The first set tests various components of \textit{STIR}. This process is described on the Wiki.
+sets of tests. The first set tests various components of
+\textit{STIR}. This process is described on the Wiki, but briefly can
+be run using \texttt{make BUILD_TESTS && make test}.
 The second set of tests is available via the \textit{STIR} web-site, where we 
 we provide test reconstructions as part of the
 \textbf{recon\_test\_pack}, with an 
@@ -594,6 +625,11 @@ where \textit{projdata\_filename.hs} is the header text file and \textit{projdat
 is the data file. Please read section \ref{sec:outputinterfile} for info regarding 
 images written by \textit{STIR} in Interfile.
 
+\subsubsection{Siemens interfile-like}
+Siemens PET/CT and PET/MR scanners use a file format that is based on the mentioned
+proposed Interfile standard but with some variations. We read this since STIR 4.0,
+but do not write it.
+
 \subsubsection{VOLPET sinograms}
 
 The GE VOLPET sinogram format is supported for reading, but for
@@ -624,34 +660,88 @@ See the \texttt{conv\_AVW} utility (section \ref{sec:convAVW}).
 If you compiled \textit{STIR} such that it could find the \textit{ITK} library, you will be read
 all image formats supported by \textit{ITK}, see \url{http://www.itk.org/Wiki/ITK/File_Formats}{the ITK Wiki}
 for some information. However, many file formats do not specify geometric information (e.g jpg). For those
-that do, \textit{STIR} currently ignores orientation, offset and timing.
+that do, \textit{STIR} currently timing. Except for DICOM, \textbf{orientation and offset code
+assumes the patient is in HFS position}. Only if DICOM is used and the correct DICOM codes are set
+(0018, 5100) will the orientation be correct.
+
 Note that as DICOM files often store only a single slice, \textit{STIR} attempts to find
-other slices belonging to the same series/time frame/gate.
+other slices belonging to the same series. When there are multiple time frames/gates in a folder, 
+these may be incorrectly treated as a single volume.
 
 \subsubsection{SimSET files}
 There are some preliminary files to make it easier to use SimSET and \textit{STIR} together in the
 \textbf{SimSET} directory. See the README.txt in that directory for more info.
 
-\subsection{
-List mode processing}
+\subsubsection{ROOT files as output by OpenGATE}
+You need to create a text file header for your ROOT file
+to specify the scanner (as this information is not stored in the ROOT file).
+We tend to name this header \texttt{something.hroot} but this is not mandatory.
 
-Some scanners produce list mode data, which is essentially a 
-list of events.  \textit{STIR} provides utilities to use
-the list mode files, for example to convert them to sinograms. It is
-also possible to reconstruct images directly from list mode data, although
-this has not been tested very well yet as of \textit{STIR 2.1}.
+\textbf{Warning:} There is currently no check if the scanner information is correct. This
+  is dangerous for the geometry, but can also lead to crashes if the actual number of 
+  blocks/crystals etc is larger than what is specified in the scanner info.
 
-Currently supported list mode formats are specific to the ECAT 
-HR+, ECAT EXACT 3D and Siemens mMR scanners. We also support \textit{CERN ROOT} files
-as output by OpenGATE (when using CylindericalPET or ECAT systems).
-You need to create a text file header for your ROOT file, see
-\texttt{examples/samples/root\_header.hroot}.
+We currently support only ROOT output using the CylindricalPET and ECAT systems
+from GATE.
+
+A full example is given in \texttt{examples/samples/root\_header.hroot}. Below are
+2 shorter examples.
+If the scanner is known to \texttt{stir::Scanner}, you can use this
+\begin{verbatim}
+ROOT header := 
+Originating system := Siemens mMR
+
+; specify GATE output format (could be GATE_ECAT_PET as well)
+GATE scanner type := GATE_Cylindrical_PET
+GATE_Cylindrical_PET Parameters :=
+  ; name of the actual ROOT file
+  name of data file := mysim.root
+
+  ; See elsewhere for other parameters
+End GATE_Cylindrical_PET Parameters :=
+
+end ROOT header := 
+\end{verbatim}
+Below is an example using a user-defined scanner. 
+\begin{verbatim}
+ROOT header := 
+Originating system := User_defined_scanner
+Number of rings                          := 4
+Number of detectors per ring             := 504
+Inner ring diameter (cm)                 := 65.6
+Average depth of interaction (cm)        := 0.7
+Distance between rings (cm)              := 0.40625
+Default bin size (cm)                    := 0.208626
+Maximum number of non-arc-corrected bins := 344
+
+GATE scanner type := GATE_Cylindrical_PET
+GATE_Cylindrical_PET Parameters :=
+  ; name of the actual ROOT file
+  name of data file := mysim.root
+
+  ; See elsewhere for other parameters
+End GATE_Cylindrical_PET Parameters :=
+
+end ROOT header := 
+\end{verbatim}
 
 There are some unfinished classes
 available on the \textit{STIR} web-site to read \textit{LMF} format files,
 in conjunction with the \textit{LMF} library. However, these might be obsolete
 as the OpenGATE project might be distributing files
 to enable STIR to read \textit{LMF} format files.
+
+\subsection{
+List mode processing}
+
+Some scanners produce list mode data, which is essentially a 
+list of events. \textit{STIR} provides utilities to use
+the list mode files, for example to convert them to sinograms. It is
+also possible to reconstruct images directly from list mode data.
+
+Currently supported list mode formats are specific to the ECAT 
+HR+, ECAT EXACT 3D and Siemens mMR scanners. We also support \textit{CERN ROOT} files
+as output by OpenGATE (see above).
 
 \subsubsection{
 lm\_to\_projdata}
@@ -1692,7 +1782,7 @@ template.
 
 \cmdline{%
 create\_tail\_mask\_from\_ACFs		--ACF-filename <projdata> \textbackslash \\
-					--ACF-threshold <number (1.01)> \textbackslash \\
+					--ACF-threshold <number (1.1)> \textbackslash \\
 					--output-filename <projdata> \textbackslash \\
 					--safety-margin <0>%
 }
@@ -2474,6 +2564,14 @@ some options to select which data to print.
 This is a test-release of a program that can be used to find 
 ROI values for an image. See the online documentation generated 
 by doxygen for more info.
+
+{ \subsubsubsection{extract\_dynamic\_images}
+}
+
+This executable can be used to get the individual components of a 
+dynamic image as separate images. 
+To use it, simply give the pattern of the output filename, the input filename, and optionally
+supply a parameter file for saving the output images.
 
 
 \subsubsection{
@@ -3618,6 +3716,7 @@ These are the keywords that can be used in addition to the ones listed in \ref{s
   END FilterRootPrior Parameters :=
  \end{verbatim}
 
+
 { \subsubsubsection{Quadratic}
 }
 This implements a quadratic Gibbs prior. The gradient of the prior is computed as follows:
@@ -3655,7 +3754,43 @@ This implements a quadratic Gibbs prior. The gradient of the prior is computed a
   gradient filename prefix:= 
   END Quadratic Prior Parameters:=
   \end{verbatim}
+  
+{ \subsubsubsection{PLS}
+This implements the  anatomical penalty function, Parallel Level Sets (PLS),  proposed by Matthias J. Ehrhardt et. al [Ehr16]. Note that
+  PLS becomes smoothed TV when an uniform anatomical image is provided.  The prior function is the following:
 
+  \[
+  \phi(f) = \sqrt{\alpha^2 + |\nabla v|^2 - {\langle\nabla f,\xi\rangle}^2}
+  \]
+  where $ f $ is the PET image and $ \alpha $ is a parameter that controls the edge-preservation property of PLS.  The $ \xi $ is the normalised gradient calculated as follows:
+
+  \[
+  \xi = \frac{\nabla v}{\sqrt{|\nabla v|^2 + \eta^2}}
+  \]
+where $ v $ is the anatomical image and $ \eta $ is a parameter for preventing the division by zero problem.
+}
+{ \subsubsubsubsection{Parameters}
+}
+  These are the keywords that can be used in addition to the ones listed in \ref{sec:priors}..
+  \begin{verbatim}
+  prior type := PLS
+  PLS Prior Parameters:=
+  penalisation factor :=1
+
+; the following parameter is to avoid division by zero
+; The value depends on the scale of the emission image. 
+
+  eta:=1
+
+; the following parameter controls the edge-preservation property of PLS. 
+; The value depends on the scale of the emission image. 
+
+  alpha:=1
+
+  anatomical_filename:=${filename}
+  only_2D:=0
+  END PLS Prior Parameters:=
+  \end{verbatim}
 \subsubsection{
 Selecting different projector pairs}
 \label{sec:projectorpairs}
@@ -3744,7 +3879,7 @@ result.
 \begin{verbatim}
 Forward Projector Using Matrix Parameters:=
 Matrix type := some value
-End Forward Projector Pair Using Matrix Parameters:=
+End Forward Projector Using Matrix Parameters:=
 \end{verbatim}
 
 See Section \ref{sec:projmatrix} for possible values for the 'matrix type' keyword.
@@ -3804,7 +3939,7 @@ This back projector uses a projection matrix to compute its result.
 \begin{verbatim}
 Back Projector Using Matrix Parameters:=
 Matrix type := some value
-Back Forward Projector Pair Using Matrix Parameters:=
+End Back Projector Using Matrix Parameters:=
 \end{verbatim}
 
 See Section \ref{sec:projmatrix} for possible values for the 'matrix type' keyword.
@@ -4923,5 +5058,8 @@ Advances in scatter correction for 3D PET/CT. \textit { IEEE Nucl Sci Symp Med I
 {[}Wer02{]} Werling A, Bublitz O, Doll J, Adam L E, and Brix G\textbf{(2002)}, 
 Fast implementation of the single scatter simulation algorithm and its use in iterative image 
 reconstruction of PET data. \textit { Phys Med Biol } 47(16): 2947-2960.
+
+{[}Ehr16{]} {Ehrhardt M J, Markiewicz P, Liljeroth M, Barnes A, Kolehmainen V, Duncan J, Pizarro L, Atkinson D, Hutton B F, Ourselin S, and others\textbf{(2016)}, 
+PET reconstruction with an anatomical MRI prior using parallel level sets. \textit { IEEE Trans Med Imaging } 35(9): 2189-2195.
 
 \end{document}

@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2018-2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -62,7 +63,6 @@ static VoxelsOnCartesianGrid ask_parameters();
 VoxelsOnCartesianGrid();
 
 //! Construct a VoxelsOnCartesianGrid, initialising data from the Array<3,elemT> object.
-/*! All elements are set 0. */
 VoxelsOnCartesianGrid(const Array<3,elemT>& v,
 		      const CartesianCoordinate3D<float>& origin,
 		      const BasicCoordinate<3,float>& grid_spacing);
@@ -70,6 +70,19 @@ VoxelsOnCartesianGrid(const Array<3,elemT>& v,
 //! Construct a VoxelsOnCartesianGrid from an index range
 /*! All elements are set 0. */
 VoxelsOnCartesianGrid(const IndexRange<3>& range,
+		      const CartesianCoordinate3D<float>& origin, 
+		      const BasicCoordinate<3,float>& grid_spacing);
+
+ //! Construct a VoxelsOnCartesianGrid, initialising data from the Array<3,elemT> object.
+VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr,
+                      const Array<3,elemT>& v,
+		      const CartesianCoordinate3D<float>& origin,
+		      const BasicCoordinate<3,float>& grid_spacing);
+
+//! Construct a VoxelsOnCartesianGrid from an index range
+/*! All elements are set 0. */
+VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr,
+                      const IndexRange<3>& range,
 		      const CartesianCoordinate3D<float>& origin, 
 		      const BasicCoordinate<3,float>& grid_spacing);
 
@@ -103,6 +116,29 @@ VoxelsOnCartesianGrid(const ProjDataInfo& proj_data_info_ptr,
 		      const CartesianCoordinate3D<float>& origin = CartesianCoordinate3D<float>(0.F,0.F,0.F), 
 		      const CartesianCoordinate3D<int>& sizes = CartesianCoordinate3D<int>(-1,-1,-1));
 
+//! Constructor from exam_info and proj_data_info
+/*! \see VoxelsOnCartesianGrid(const ProjDataInfo&,
+		      const float zoom,
+		      const CartesianCoordinate3D<float>&, 
+		      const CartesianCoordinate3D<int>& );
+*/
+VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr,
+                      const ProjDataInfo& proj_data_info,
+		      const float zoom = 1.F,
+		      const CartesianCoordinate3D<float>& origin = CartesianCoordinate3D<float>(0.F,0.F,0.F),
+		      const CartesianCoordinate3D<int>& sizes = CartesianCoordinate3D<int>(-1,-1,-1));
+
+//! Constructor from exam_info and proj_data_info
+/*! \see VoxelsOnCartesianGrid(const ProjDataInfo&,
+		      const float zoom,
+		      const CartesianCoordinate3D<float>&,
+		      const CartesianCoordinate3D<int>& );
+*/
+VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr_v,
+                      const ProjDataInfo& proj_data_info,
+                      const CartesianCoordinate3D<float>& zooms,
+		      const CartesianCoordinate3D<float>& origin = CartesianCoordinate3D<float>(0.F,0.F,0.F),
+		      const CartesianCoordinate3D<int>& sizes = CartesianCoordinate3D<int>(-1,-1,-1));
 
 //! Definition of the pure virtual defined in DiscretisedDensity
 #ifdef STIR_NO_COVARIANT_RETURN_TYPES
@@ -164,6 +200,14 @@ void grow_z_range(const int min_z, const int max_z);
   BasicCoordinate<3,int> get_max_indices() const;
 
   //@}
+
+private:
+  void
+    construct_from_projdata_info(const shared_ptr < ExamInfo > & exam_info_sptr_v,
+                                 const ProjDataInfo& proj_data_info,
+                                 const CartesianCoordinate3D<float>& zooms,
+                                 const CartesianCoordinate3D<float>& origin,
+                                 const CartesianCoordinate3D<int>& sizes);
 
 };
 

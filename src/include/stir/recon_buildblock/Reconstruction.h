@@ -3,6 +3,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -134,11 +135,11 @@ public:
   //! post-filter
   void set_post_processor_sptr(const shared_ptr<DataProcessor<TargetT> > &);
 
-  //!
-  //! \brief set_input_dataset
-  //! \param _this_dataset
-  //!
+  //! \brief set input data
   virtual void set_input_data(const shared_ptr<ExamData>&) = 0;
+  //! get input data
+  /*! Will throw an exception if it wasn't set first */
+  virtual const ExamData& get_input_data() const = 0;
   //@}
 
   //!

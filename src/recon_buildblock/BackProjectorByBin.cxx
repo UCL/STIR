@@ -13,7 +13,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2015, University College London
+    Copyright (C) 2015, 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -34,16 +34,19 @@
 #include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/ProjData.h"
+#include "stir/DiscretisedDensity.h"
 #include <vector>
 #ifdef STIR_OPENMP
 #include "stir/is_null_ptr.h"
 #include "stir/DiscretisedDensity.h"
 #include <omp.h>
 #endif
+#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
 BackProjectorByBin::BackProjectorByBin()
+  :   _already_set_up(false)
 {
 }
 
@@ -51,10 +54,48 @@ BackProjectorByBin::~BackProjectorByBin()
 {
 }
 
+void
+BackProjectorByBin::
+set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr, 
+       const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr)
+{
+  _already_set_up = true;
+  _proj_data_info_sptr = proj_data_info_sptr->create_shared_clone();
+  _density_info_sptr = density_info_sptr;
+}
+
+void
+BackProjectorByBin::
+check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& density_info) const
+{
+  if (!this->_already_set_up)
+    error("BackProjectorByBin method called without calling set_up first.");
+  if (!(*this->_proj_data_info_sptr >= proj_data_info))
+    error(boost::format("BackProjectorByBin set-up with different geometry for projection data.\nSet_up was with\n%1%\nCalled with\n%2%")
+          % this->_proj_data_info_sptr->parameter_info() % proj_data_info.parameter_info());
+  if (! this->_density_info_sptr->has_same_characteristics(density_info))
+    error("BackProjectorByBin set-up with different geometry for density or volume data.");
+}  
+
 void 
 BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
-				 const ProjData& proj_data)
+const ProjData& proj_data, int subset_num, int num_subsets)
 {
+  if (image.get_exam_info().imaging_modality.is_unknown()
+      || proj_data.get_exam_info().imaging_modality.is_unknown())
+    warning("back_project: Imaging modality is unknown for either the image or the projection data or both.\n"
+            "Going ahead anyway.");
+  else if (image.get_exam_info().imaging_modality !=
+      proj_data.get_exam_info().imaging_modality)
+    error("back_project: Imaging modality should be the same for the image and the projection data");
+
+  if (subset_num < 0)
+    error(boost::format("forward_project: wrong subset number %1%") % subset_num);
+  if (subset_num > num_subsets - 1)
+    error(boost::format("forward_project: wrong subset number %1% (must be less than the number of subsets %2%)")
+          % subset_num % num_subsets);
+
+  check(*proj_data.get_proj_data_info_sptr(), image);
     
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(this->get_symmetries_used()->clone());  
@@ -62,7 +103,7 @@ BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
   const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
     detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
                                          proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
-                                         0, 1/*subset_num, num_subsets*/);
+                                         subset_num, num_subsets);
 
 #ifdef STIR_OPENMP
   std::vector< shared_ptr<DiscretisedDensity<3,float> > > local_output_image_sptrs;
@@ -142,6 +183,8 @@ back_project(DiscretisedDensity<3,float>& density,
 {
   if (viewgrams.get_num_viewgrams()==0)
     return;
+
+  check(*viewgrams.get_proj_data_info_sptr(), density);
 
   start_timers();
 

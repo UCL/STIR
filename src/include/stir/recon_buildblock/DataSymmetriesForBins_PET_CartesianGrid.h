@@ -123,7 +123,7 @@ public:
   inline int
     num_related_bins(const Bin& b) const;
 
-  inline std::auto_ptr<SymmetryOperation>
+  inline unique_ptr<SymmetryOperation>
     find_symmetry_operation_from_basic_bin(Bin&) const;
 
   inline bool

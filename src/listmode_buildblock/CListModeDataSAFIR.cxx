@@ -25,16 +25,10 @@ jannis.fischer@cern.ch
 
 #include "stir/ExamInfo.h"
 #include "stir/Succeeded.h"
-#include "stir/is_null_ptr.h"
 
-#include "boost/static_assert.hpp"
-#include "boost/pointer_cast.hpp"
+//#include "boost/static_assert.hpp"
 
 #include "stir/listmode/CListModeDataSAFIR.h"
-
-
-//#include "stir/ExamInfo.h"
-
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -51,14 +45,14 @@ START_NAMESPACE_STIR;
 template <class CListRecordT>
 CListModeDataSAFIR<CListRecordT>::
 CListModeDataSAFIR(const std::string& listmode_filename, const std::string& crystal_map_filename, const std::string& template_proj_data_filename)
-  : listmode_filename(listmode_filename), map(boost::make_shared<DetectorCoordinateMapFromFile>(crystal_map_filename))
+  : listmode_filename(listmode_filename), map(MAKE_SHARED<DetectorCoordinateMapFromFile>(crystal_map_filename))
 {
 	this->exam_info_sptr.reset(new ExamInfo);
 
 	// Here we are reading the scanner data from the template projdata
-	shared_ptr<ProjData> template_proj_data_sptr =
-			ProjData::read_from_file(template_proj_data_filename);
-	scanner_sptr.reset( new Scanner(*template_proj_data_sptr->get_proj_data_info_ptr()->get_scanner_ptr()));
+    shared_ptr<ProjData> template_proj_data_sptr =
+            ProjData::read_from_file(template_proj_data_filename);
+    this->set_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_sptr());
 
 	if( open_lm_file() == Succeeded::no )
 	{
@@ -80,9 +74,9 @@ shared_ptr <CListRecord>
 CListModeDataSAFIR<CListRecordT>::
 get_empty_record_sptr() const
 {
-	boost::shared_ptr<CListRecordSAFIR> sptr(new CListRecordSAFIR);
+	shared_ptr<CListRecordSAFIR> sptr(new CListRecordSAFIR);
 	sptr->event_SAFIR().set_map(map);
-	return boost::static_pointer_cast<CListRecord>(sptr);
+	return static_pointer_cast<CListRecord>(sptr);
 }
 
 template <class CListRecordT>

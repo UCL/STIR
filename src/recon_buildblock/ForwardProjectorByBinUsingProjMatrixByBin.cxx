@@ -43,7 +43,6 @@
 using std::find;
 using std::vector;
 using std::list;
-using std::auto_ptr;
 #endif
 
 START_NAMESPACE_STIR
@@ -106,12 +105,15 @@ ForwardProjectorByBinUsingProjMatrixByBin::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
        const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr)
 {    	   
+  ForwardProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);
   proj_matrix_ptr->set_up(proj_data_info_ptr, image_info_ptr);
 }
 
 const DataSymmetriesForViewSegmentNumbers *
 ForwardProjectorByBinUsingProjMatrixByBin::get_symmetries_used() const
 {
+  if (!this->_already_set_up)
+    error("ForwardProjectorByBin method called without calling set_up first.");
   return proj_matrix_ptr->get_symmetries_ptr();
 }
 
@@ -210,7 +212,7 @@ ForwardProjectorByBinUsingProjMatrixByBin::
                     axial_pos_tmp,
                     tang_pos_tmp);
             
-            auto_ptr<SymmetryOperation> symm_op_ptr = 
+            unique_ptr<SymmetryOperation> symm_op_ptr = 
               symmetries->find_symmetry_operation_from_basic_bin(bin);
             assert(bin == basic_bin);
             

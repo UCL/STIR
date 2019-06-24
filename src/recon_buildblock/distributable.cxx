@@ -58,12 +58,12 @@
 #include "stir/info.h"
 #include <boost/format.hpp>
 #include <algorithm>
-//#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
 
 #ifdef STIR_MPI
 #include "stir/recon_buildblock/distributableMPICacheEnabled.h"
 #include "stir/recon_buildblock/distributed_functions.h"
 #include "stir/recon_buildblock/distributed_test_functions.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h" // needed for RPC functions
 #endif
 #ifdef STIR_OPENMP
 #  ifdef STIR_MPI
@@ -304,6 +304,8 @@ void distributable_computation(
     task_id=task_do_distributable_loglikelihood_computation;
   else if (RPC_process_related_viewgrams == &RPC_process_related_viewgrams_gradient)
     task_id=task_do_distributable_gradient_computation;
+  else if (RPC_process_related_viewgrams == &RPC_process_related_viewgrams_sensitivity_computation)
+    task_id=task_do_distributable_sensitivity_computation;
       /* else if (RPC_process_related_viewgrams == &
 	case 
 	task_id=task_do_distributable_sensitivity_computation;break;
@@ -311,6 +313,7 @@ void distributable_computation(
   else
     {
       error("distributable_computation: unknown RPC task");
+      task_id = 0; // avoid compiler warning about "possibly unitialised" when using it
     }
 
   distributed::send_int_value(task_id, -1);
@@ -510,8 +513,7 @@ void distributable_computation(
     if (log_likelihood_ptr != NULL)
       {
         for (int i=0; i<static_cast<int>(local_log_likelihoods.size()); ++i)
-	  if(!is_null_ptr(local_output_image_sptrs[i])) // only accumulate if a thread filled something in
-	    *log_likelihood_ptr += local_log_likelihoods[i];
+          *log_likelihood_ptr += local_log_likelihoods[i]; // accumulate all (as they were initialised to zero)
       }
     count += std::accumulate(local_counts.begin(), local_counts.end(), 0);
     count2 += std::accumulate(local_count2s.begin(), local_count2s.end(), 0);
@@ -525,7 +527,7 @@ void distributable_computation(
     while(working_slaves_count>0)
       {
         int int_values[2];
-        const MPI_Status status=distributed::receive_int_values(int_values, 2, AVAILABLE_NOTIFICATION_TAG);
+        distributed::receive_int_values(int_values, 2, AVAILABLE_NOTIFICATION_TAG);
         working_slaves_count--;
             
         //reduce count values

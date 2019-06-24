@@ -111,6 +111,22 @@ QuadraticPrior<elemT>::post_processing()
 }
 
 template <typename elemT>
+Succeeded
+QuadraticPrior<elemT>::set_up (shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr)
+{
+  base_type::set_up(target_sptr);
+
+  return Succeeded::yes;
+}
+
+template <typename elemT>
+void QuadraticPrior<elemT>::check(DiscretisedDensity<3,elemT> const& current_image_estimate) const
+{
+  // Do base-class check
+  base_type::check(current_image_estimate);
+}
+
+template <typename elemT>
 void
 QuadraticPrior<elemT>::set_defaults()
 {
@@ -216,6 +232,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
     return 0.;
   }
   
+  this->check(current_image_estimate);
   
   const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
     dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
@@ -293,6 +310,8 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
     prior_gradient.fill(0);
     return;
   }
+
+  this->check(current_image_estimate);
   
   
   const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
@@ -432,6 +451,7 @@ compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel,
     return;
   }
   
+  this->check(current_image_estimate);
   
   const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
     dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
@@ -495,6 +515,7 @@ QuadraticPrior<elemT>::parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>
     return;
   }
   
+  this->check(current_image_estimate);
   
   const DiscretisedDensityOnCartesianGrid<3,elemT>& current_image_cast =
     dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,elemT> &>(current_image_estimate);
@@ -576,6 +597,8 @@ add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
   {
     return Succeeded::yes;
   }
+
+  this->check(input);
   
   DiscretisedDensityOnCartesianGrid<3,elemT>& output_cast =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,elemT> &>(output);

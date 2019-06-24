@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2002 - 2011-12-31, Hammersmith Imanet Ltd
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -62,6 +62,7 @@
 #include "stir/IO/read_data.h"
 #include "stir/ExamInfo.h"
 #include "stir/TimeFrameDefinitions.h"
+#include "stir/unique_ptr.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -82,9 +83,6 @@ using std::cerr;
 using std::endl;
 using std::cout;
 using std::copy;
-#ifndef STIR_NO_AUTO_PTR
-using std::auto_ptr;
-#endif
 #endif
 
 START_NAMESPACE_STIR
@@ -643,7 +641,8 @@ read_ECAT7_exam_info(const string& filename)
 
 void make_ECAT7_main_header(Main_header& mhead,
 			    Scanner const& scanner,
-                            const string& orig_name                     
+                            const string& orig_name,
+                            ExamInfo const& exam_info
                             )
 {
   // first set to default (sometimes nonsensical) values
@@ -727,6 +726,32 @@ void make_ECAT7_main_header(Main_header& mhead,
   
   mhead.distance_scanned=
     mhead.plane_separation * scanner.get_num_rings()*2;
+
+  mhead.num_frames = exam_info.time_frame_definitions.get_num_frames();
+  mhead.scan_start_time = static_cast<boost::uint32_t>(floor(exam_info.start_time_in_secs_since_1970));
+
+  switch(exam_info.patient_position.get_position())
+    {
+    case PatientPosition::FFP:
+      mhead.patient_orientation = FeetFirstProne; break;
+    case PatientPosition::HFP:
+      mhead.patient_orientation = HeadFirstProne; break;
+    case PatientPosition::FFS:
+      mhead.patient_orientation = FeetFirstSupine; break;
+    case PatientPosition::HFS:
+      mhead.patient_orientation = HeadFirstSupine; break;
+    case PatientPosition::FFDR:
+      mhead.patient_orientation = FeetFirstRight; break;
+    case PatientPosition::HFDR:
+      mhead.patient_orientation = HeadFirstRight; break;
+    case PatientPosition::FFDL:
+      mhead.patient_orientation = FeetFirstLeft; break;
+    case PatientPosition::HFDL:
+      mhead.patient_orientation = HeadFirstLeft; break;
+    default:
+      mhead.patient_orientation = UnknownOrientation; break;
+    }
+
 }
 
 void make_ECAT7_main_header(Main_header& mhead,
@@ -735,7 +760,7 @@ void make_ECAT7_main_header(Main_header& mhead,
                             DiscretisedDensity<3,float> const & density
                             )
 {
-  make_ECAT7_main_header(mhead, scanner, orig_name);
+  make_ECAT7_main_header(mhead, scanner, orig_name, density.get_exam_info());
   
   DiscretisedDensityOnCartesianGrid<3,float> const & image =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const&>(density);
@@ -821,35 +846,10 @@ make_ECAT7_main_header(Main_header& mhead,
 		       )
 {
   
-  make_ECAT7_main_header(mhead, *proj_data_info.get_scanner_ptr(), orig_name);
+  make_ECAT7_main_header(mhead, *proj_data_info.get_scanner_ptr(), orig_name, exam_info);
   
-  mhead.num_frames = exam_info.time_frame_definitions.get_num_frames();
   mhead.acquisition_type =
     mhead.num_frames>1 ? DynamicEmission : StaticEmission;
-
-  mhead.scan_start_time = static_cast<boost::uint32_t>(floor(exam_info.start_time_in_secs_since_1970));
-
-  switch(exam_info.patient_position.get_position())
-    {
-    case PatientPosition::FFP:
-      mhead.patient_orientation = FeetFirstProne; break;
-    case PatientPosition::HFP:
-      mhead.patient_orientation = HeadFirstProne; break;
-    case PatientPosition::FFS:
-      mhead.patient_orientation = FeetFirstSupine; break;
-    case PatientPosition::HFS:
-      mhead.patient_orientation = HeadFirstSupine; break;
-    case PatientPosition::FFDR:
-      mhead.patient_orientation = FeetFirstRight; break;
-    case PatientPosition::HFDR:
-      mhead.patient_orientation = HeadFirstRight; break;
-    case PatientPosition::FFDL:
-      mhead.patient_orientation = FeetFirstLeft; break;
-    case PatientPosition::HFDL:
-      mhead.patient_orientation = HeadFirstLeft; break;
-    default:
-      mhead.patient_orientation = UnknownOrientation; break;
-    }
 
   // extra main parameters that depend on data type
   
@@ -1067,6 +1067,33 @@ void img_subheader_zero_fill(Image_subheader & ihead)
   fill_string(ihead.annotation, 40);  
 }
 
+//! A utility function to set time frame info in a subheader
+/*!
+  \internal 
+
+  Names of the variables for time frame info in the subheaders are the same.
+  So, instead of writing essentially the same function twice, we
+  use a templated version. Note that this takes care of the
+  different locations of the information in the subheaders,
+  as only the name is used.
+
+  Note: frame_num is the frame in the exam_info (which might be different from the frame
+  where the subheader is written).
+*/
+template <typename SUBHEADERPTR>
+static void set_time_frame_info(SUBHEADERPTR sub_header_ptr,
+                                const Main_header& mhead,
+                                const ExamInfo& exam_info,
+                                const unsigned frame_num)
+{
+  const double frame_start_time = 
+    exam_info.get_time_frame_definitions().get_start_time(frame_num)
+    + exam_info.start_time_in_secs_since_1970 - mhead.scan_start_time;
+  const double frame_duration = 
+    exam_info.get_time_frame_definitions().get_duration(frame_num);
+  sub_header_ptr->frame_start_time = static_cast<unsigned int>(round(frame_start_time*1000.));
+  sub_header_ptr->frame_duration = static_cast<unsigned int>(round(frame_duration*1000.));
+}
 
 
 //! A utility function only called by make_subheader_for_ECAT7(..., ProjDataInfo&)
@@ -1442,7 +1469,8 @@ make_pdfs_from_matrix(MatrixFile * const mptr,
 
 static
 Succeeded
-get_ECAT7_image_info(CartesianCoordinate3D<int>& dimensions,
+get_ECAT7_image_info(shared_ptr<ExamInfo>& exam_info_sptr,
+                     CartesianCoordinate3D<int>& dimensions,
 		     CartesianCoordinate3D<float>& voxel_size,
 		     Coordinate3D<float>& origin,
 		     float& scale_factor,      
@@ -1495,9 +1523,15 @@ get_ECAT7_image_info(CartesianCoordinate3D<int>& dimensions,
       return Succeeded::no;
     }  
 
+  exam_info_sptr = read_ECAT7_exam_info(mptr);
+  {
+    TimeFrameDefinitions time_frame_defs(exam_info_sptr->get_time_frame_definitions(), frame_num);
+    exam_info_sptr->set_time_frame_definitions(time_frame_defs);
+  }
+
   Image_subheader const * const sub_header_ptr=
     reinterpret_cast<Image_subheader const* const>(matrix->shptr);
-    
+
   if(sub_header_ptr->num_dimensions != 3)
     warning("%s: while reading matrix \"%d,1,%d,%d,%d\" in file %s:\n"
 	    "Expected subheader_ptr->num_dimensions==3. Continuing\n",
@@ -1551,6 +1585,7 @@ ECAT7_to_VoxelsOnCartesianGrid(const string& ECAT7_filename,
   const char * const warning_prefix = "ECAT7_to_VoxelsOnCartesianGrid";
   const char * const warning_suffix =  "I'm not reading any data...\n";
 
+  shared_ptr<ExamInfo> exam_info_sptr;
   CartesianCoordinate3D<int> dimensions;
   CartesianCoordinate3D<float> voxel_size;
   Coordinate3D<float> origin;
@@ -1558,7 +1593,8 @@ ECAT7_to_VoxelsOnCartesianGrid(const string& ECAT7_filename,
   NumericType type_of_numbers;
   ByteOrder byte_order;
   long offset_in_file;
-  if (get_ECAT7_image_info(dimensions, voxel_size, origin,
+  if (get_ECAT7_image_info(exam_info_sptr,
+                           dimensions, voxel_size, origin,
 			   scale_factor, type_of_numbers, byte_order, offset_in_file,
 
 			   ECAT7_filename,
@@ -1576,7 +1612,7 @@ ECAT7_to_VoxelsOnCartesianGrid(const string& ECAT7_filename,
 			       -dimensions.y()/2,(-dimensions.y()/2)+dimensions.y()-1,
 			       -dimensions.x()/2,(-dimensions.x()/2)+dimensions.x()-1);
   VoxelsOnCartesianGrid<float>* image_ptr =
-    new VoxelsOnCartesianGrid<float> (range_3D, origin, voxel_size);
+    new VoxelsOnCartesianGrid<float> (exam_info_sptr, range_3D, origin, voxel_size);
   
   std::ifstream data_in(ECAT7_filename.c_str(), ios::in | ios::binary);
   if (!data_in)
@@ -1701,6 +1737,7 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
   case ByteVolume:
   case PetVolume:
     {
+      shared_ptr<ExamInfo> exam_info_sptr;
       CartesianCoordinate3D<int> dimensions;
       CartesianCoordinate3D<float> voxel_size;
       Coordinate3D<float> origin;
@@ -1708,7 +1745,8 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
       NumericType type_of_numbers;
       ByteOrder byte_order;
       long offset_in_file;
-      if (get_ECAT7_image_info(dimensions, voxel_size, origin,
+      if (get_ECAT7_image_info(exam_info_sptr,
+                               dimensions, voxel_size, origin,
 			       scale_factor, type_of_numbers, byte_order, offset_in_file,
 
 			       ECAT7_filename,
@@ -1733,7 +1771,8 @@ write_basic_interfile_header_for_ECAT7(string& interfile_header_filename,
 				   -dimensions.y()/2,(-dimensions.y()/2)+dimensions.y()-1,
 				   -dimensions.x()/2,(-dimensions.x()/2)+dimensions.x()-1);
       write_basic_interfile_image_header(header_filename, ECAT7_filename,
-					 range_3D, voxel_size, origin,
+					 *exam_info_sptr,
+                                         range_3D, voxel_size, origin,
 					 type_of_numbers, byte_order,
 					 scaling_factors,
 					 file_offsets);
@@ -1871,6 +1910,9 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
 
   ihead.decay_corr_fctr= 1;
 
+  // set frame info (using the first frame in exam_info as we're writing that single image)
+  set_time_frame_info(&ihead, mhead, density.get_exam_info(), 1U);
+
 #if 0  
   // attempt to write this ourselves, but we'd need to write the subheader, and we 
   // don't have neat functions for written Arrays to FILE anyway (only to streams)
@@ -1906,8 +1948,7 @@ DiscretisedDensity_to_ECAT7(MatrixFile *mptr,
     static_cast<unsigned int>(x_size)*
     static_cast<unsigned int>(y_size)*
     static_cast<unsigned int>(z_size);
-  auto_ptr<float> float_buffer =
-     auto_ptr<float>(new float[buffer_size]);
+  unique_ptr<float> float_buffer(new float[buffer_size]);
   // save_volume7 does a swap in z, so we can't use the following
   //copy(density.begin_all(), density.end_all(), float_buffer.get());
   {
@@ -2137,18 +2178,8 @@ ByteOrder::big_endian;
       }
     else
       {
-	const ExamInfo& exam_info = *proj_data.get_exam_info_ptr();
-	if (exam_info.time_frame_definitions.get_num_time_frames()==1)
-	  {
-	    // note: always use frame 1 for proj_data
-	    const double frame_start_time = 
-	      exam_info.time_frame_definitions.get_start_time(1U)
-	      + exam_info.start_time_in_secs_since_1970 - mhead.scan_start_time;
-	    const double frame_duration = 
-	      exam_info.time_frame_definitions.get_duration(1U);
-	    scan3d_shead.frame_start_time = static_cast<unsigned int>(round(frame_start_time*1000.));
-	    scan3d_shead.frame_duration = static_cast<unsigned int>(round(frame_duration*1000.));
-	  }
+        // set frame info (using the first frame in exam_info as we're writing that single proj_data)
+        set_time_frame_info(&scan3d_shead, mhead, proj_data.get_exam_info(), 1U);
       }
   }
 

@@ -300,8 +300,8 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     round(pow(2., ceil(log((double)(pad_in_s + 1)* arc_corrected_proj_data_info_sptr->get_num_tangential_poss()) / log(2.))));
   
   RampFilter filter(tangential_sampling,
-			 fft_size, 
-			 float(alpha_ramp), float(fc_ramp));   
+                    fft_size, 
+                    float(alpha_ramp), float(fc_ramp));   
 
 
   density_ptr->fill(0);
@@ -311,79 +311,80 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
     
   set_num_threads();
 #ifdef STIR_OPENMP
-  shared_ptr<DiscretisedDensity<3,float> > empty_density_ptr(density_ptr->clone());
+  std::vector< shared_ptr<DiscretisedDensity<3,float> > > local_output_image_sptrs;
+#pragma omp parallel shared(symmetries_sptr, local_output_image_sptrs)
 #endif
-
+  {
 #ifdef STIR_OPENMP
-#pragma omp parallel for shared(empty_density_ptr) schedule(dynamic)
+#pragma omp single
+    {
+      local_output_image_sptrs.resize(omp_get_num_threads(), shared_ptr<DiscretisedDensity<3,float> >());
+    }
+#pragma omp for schedule(runtime)  
 #endif
-  for (int view_num=proj_data_ptr->get_min_view_num(); view_num <= proj_data_ptr->get_max_view_num(); ++view_num) 
-  {         
-    const ViewSegmentNumbers vs_num(view_num, 0);
+    for (int view_num=proj_data_ptr->get_min_view_num(); view_num <= proj_data_ptr->get_max_view_num(); ++view_num) 
+      {         
+        const ViewSegmentNumbers vs_num(view_num, 0);
     
 #ifndef NDEBUG
 #ifdef STIR_OPENMP
-    info(boost::format("Thread %1% calculating view_num: %2%") % omp_get_thread_num() % view_num);
+        info(boost::format("Thread %1% calculating view_num: %2%") % omp_get_thread_num() % view_num);
 #endif 
 #endif
     
-    if (!symmetries_sptr->is_basic(vs_num))
-      continue;
+        if (!symmetries_sptr->is_basic(vs_num))
+          continue;
 
-    RelatedViewgrams<float> viewgrams;
+        RelatedViewgrams<float> viewgrams;
 #ifdef STIR_OPENMP
 #pragma omp critical(FBP2D_get_viewgrams)
 #endif
-    {
-      viewgrams =
-	proj_data_ptr->get_related_viewgrams(vs_num, symmetries_sptr);   
-    }
+        {
+          viewgrams =
+            proj_data_ptr->get_related_viewgrams(vs_num, symmetries_sptr);   
+        }
 
-    if (do_arc_correction)
-      viewgrams =
-	arc_correction.do_arc_correction(viewgrams);
+        if (do_arc_correction)
+          viewgrams =
+            arc_correction.do_arc_correction(viewgrams);
 
-    // now filter
-    for (RelatedViewgrams<float>::iterator viewgram_iter = viewgrams.begin();
-         viewgram_iter != viewgrams.end();
-         ++viewgram_iter)
-    {
+        // now filter
+        for (RelatedViewgrams<float>::iterator viewgram_iter = viewgrams.begin();
+             viewgram_iter != viewgrams.end();
+             ++viewgram_iter)
+          {
 #ifdef NRFFT
-      filter.apply(*viewgram_iter);
+            filter.apply(*viewgram_iter);
 #else
-      std::for_each(viewgram_iter->begin(), viewgram_iter->end(), 
-		    filter);
+            std::for_each(viewgram_iter->begin(), viewgram_iter->end(), 
+                          filter);
 #endif
-    }
-    // ramp_filtered_proj_data.set_related_viewgrams(viewgrams);
+          }
+        // ramp_filtered_proj_data.set_related_viewgrams(viewgrams);
 
-  if(display_level>1) 
-    display( viewgrams,viewgrams.find_max(),"Ramp filter");
+        if(display_level>1) 
+          display( viewgrams,viewgrams.find_max(),"Ramp filter");
 
 #ifdef STIR_OPENMP 
-  //clone density_ptr and backproject    
-  shared_ptr<DiscretisedDensity<3,float> > omp_density_ptr(empty_density_ptr->clone());
-           
-    back_projector_sptr->back_project(*omp_density_ptr, viewgrams);
-#pragma omp critical(FBP2D_REDUCTION)
-    {	//reduction
-      
-      DiscretisedDensity<3,float>::full_iterator density_iter = density_ptr->begin_all();
-      DiscretisedDensity<3,float>::full_iterator density_end = density_ptr->end_all();
-      DiscretisedDensity<3,float>::full_iterator omp_density_iter = omp_density_ptr->begin_all();
-      
-      while (density_iter!= density_end)
-	{
-	  *density_iter += (*omp_density_iter);
-	  ++density_iter;
-	  ++omp_density_iter;
-	}
-    }
+        const int thread_num=omp_get_thread_num();
+        if(is_null_ptr(local_output_image_sptrs[thread_num]))
+          local_output_image_sptrs[thread_num].reset(density_ptr->get_empty_copy());
+
+        back_projector_sptr->back_project(*(local_output_image_sptrs[thread_num]), viewgrams);	  
 #else
-    //  and backproject
-    back_projector_sptr->back_project(*density_ptr, viewgrams);
+        //  and backproject
+        back_projector_sptr->back_project(*density_ptr, viewgrams);
 #endif
-  } 
+      } 
+  } // end of OPENMP pragma
+#ifdef STIR_OPENMP
+  // "reduce" data constructed by threads
+  {
+    for (int i=0; i<static_cast<int>(local_output_image_sptrs.size()); ++i)
+      if(!is_null_ptr(local_output_image_sptrs[i])) // only accumulate if a thread filled something in
+        *density_ptr += *(local_output_image_sptrs[i]);
+  }
+#endif
  
   // Normalise the image
   const ProjDataInfoCylindrical& proj_data_info_cyl =
@@ -400,10 +401,10 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   else
     {
       if (proj_data_info_cyl.get_min_ring_difference(0)!=
-	  proj_data_info_cyl.get_max_ring_difference(0))
-	{
-	  magic_number=.5F;
-	}
+          proj_data_info_cyl.get_max_ring_difference(0))
+        {
+          magic_number=.5F;
+        }
     }
 #ifdef NEWSCALE
   // added binsize etc here to get units ok

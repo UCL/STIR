@@ -28,7 +28,9 @@ SET (STIR_INCLUDE_DIR
      "${PROJECT_SOURCE_DIR}/src/include"
 )
 
-include_directories ("${STIR_INCLUDE_DIR}")
+# add STIR include directories before existing include paths such that
+# files there are used, as opposed to an existing STIR installation elsewhere
+include_directories (BEFORE "${STIR_INCLUDE_DIR}")
 
 # registries
 SET (STIR_IO_REGISTRIES
@@ -53,6 +55,7 @@ SET( STIR_LIBRARIES analytic_FBP3DRP analytic_FBP2D       iterative_OSMAPOSL
       Shape_buildblock eval_buildblock 
       # repeat for linking
       numerics_buildblock modelling_buildblock listmode_buildblock
+      IO modelling_buildblock IO buildblock
 )
 
 #copy to PARENT_SCOPE

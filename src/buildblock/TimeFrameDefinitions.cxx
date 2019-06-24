@@ -59,18 +59,14 @@ double
 TimeFrameDefinitions::
 get_start_time(unsigned int frame_num) const
 {
-  assert(frame_num>=1);
-  assert(frame_num<=get_num_frames());
-  return frame_times[frame_num-1].first;
+  return frame_times.at(frame_num-1).first;
 }
 
 double
 TimeFrameDefinitions::
 get_end_time(unsigned int frame_num) const
 {
-  assert(frame_num>=1);
-  assert(frame_num<=get_num_frames());
-  return frame_times[frame_num-1].second;
+  return frame_times.at(frame_num-1).second;
 }
 
 double
@@ -269,6 +265,14 @@ TimeFrameDefinitions::
 TimeFrameDefinitions(const TimeFrameDefinitions& org_frame_defs, unsigned int frame_num)
 {
   this->frame_times.push_back(make_pair(org_frame_defs.get_start_time(frame_num), org_frame_defs.get_end_time(frame_num)));
+}
+
+void
+TimeFrameDefinitions::
+set_time_frame(const int frame_num, const double start, const double end)
+{
+    frame_times.at(frame_num-1).first = start;
+    frame_times.at(frame_num-1).second = end;
 }
 
 END_NAMESPACE_STIR

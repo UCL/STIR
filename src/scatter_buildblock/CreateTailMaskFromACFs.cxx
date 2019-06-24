@@ -47,8 +47,8 @@ void
 CreateTailMaskFromACFs::
 set_defaults()
 {
-    float ACF_threshold = 1.1F;
-    int safety_margin=4;
+    ACF_threshold = 1.1F;
+    safety_margin = 4;
 }
 
 CreateTailMaskFromACFs::

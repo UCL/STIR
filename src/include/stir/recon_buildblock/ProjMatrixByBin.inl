@@ -37,7 +37,13 @@ START_NAMESPACE_STIR
 const DataSymmetriesForBins*
 ProjMatrixByBin:: get_symmetries_ptr() const
 {
-  return  symmetries_ptr.get();
+  return  symmetries_sptr.get();
+}
+
+const shared_ptr<DataSymmetriesForBins>
+ProjMatrixByBin:: get_symmetries_sptr() const
+{
+  return  symmetries_sptr;
 }
 
 inline void 
@@ -55,8 +61,8 @@ get_proj_matrix_elems_for_one_bin(
   {
     // find basic bin
     Bin basic_bin = bin;    
-    std::auto_ptr<SymmetryOperation> symm_ptr = 
-      symmetries_ptr->find_symmetry_operation_from_basic_bin(basic_bin);
+    unique_ptr<SymmetryOperation> symm_ptr = 
+      symmetries_sptr->find_symmetry_operation_from_basic_bin(basic_bin);
     
     probabilities.set_bin(basic_bin);
     // check if basic bin is in cache  
@@ -83,8 +89,8 @@ get_proj_matrix_elems_for_one_bin(
     {
       // find basic bin
       Bin basic_bin = bin;  
-      std::auto_ptr<SymmetryOperation> symm_ptr = 
-        symmetries_ptr->find_symmetry_operation_from_basic_bin(basic_bin);
+      unique_ptr<SymmetryOperation> symm_ptr = 
+        symmetries_sptr->find_symmetry_operation_from_basic_bin(basic_bin);
 
       probabilities.set_bin(basic_bin);
       // check if basic bin is in cache

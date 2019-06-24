@@ -80,3 +80,8 @@ install_manifest.txt
 .cproject
 .project
 .settings
+
+# other stuff
+.cache
+*.idea
+*.user

@@ -176,6 +176,12 @@ namespace stir
 	      this->distributable_computation(RPC_process_related_viewgrams_accumulate_loglikelihood);
 	      break;
 	    }
+          case task_do_distributable_sensitivity_computation:
+            {
+              this->distributable_computation(RPC_process_related_viewgrams_sensitivity_computation);
+              break;
+            }
+
       /*
 	case task_do_distributable_sensitivity_computation;break;
       */

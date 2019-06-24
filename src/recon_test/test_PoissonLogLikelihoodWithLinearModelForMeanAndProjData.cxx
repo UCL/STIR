@@ -225,7 +225,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
     }
   else
     {
-      std::auto_ptr<target_type> aptr(read_from_file<target_type>(this->density_filename));
+      shared_ptr<target_type> aptr(read_from_file<target_type>(this->density_filename));
       density_sptr = aptr;
     }
 

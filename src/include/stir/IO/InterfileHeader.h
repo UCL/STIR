@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2002-2007, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2016 University College London
+    Copyright (C) 2013, 2016, 2018 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
+  \author Richard Brown
 
   See http://stir.sourceforge.net for a description of the full
   proposal for Interfile headers for 3D PET.
@@ -44,25 +45,54 @@ START_NAMESPACE_STIR
 class ProjDataInfo;
 
 /*!
-  \brief a class for Interfile keywords (and parsing) common to 
+  \brief a minimal class for Interfile keywords (and parsing) common to 
   all types of data
+
+  This class is only used to select which version of Interfile to use.
+
   \ingroup InterfileIO
   */
-class InterfileHeader : public KeyParser
+class MinimalInterfileHeader : public KeyParser
+  {
+  public:
+    //! A value that can be used to signify that a variable has not been set during parsing.
+    static const double double_value_not_set;
+    MinimalInterfileHeader();
+
+    virtual ~MinimalInterfileHeader() {}
+  protected:
+    shared_ptr<ExamInfo> exam_info_sptr;
+
+  private:
+    std::string imaging_modality_as_string;
+    void set_imaging_modality();
+  
+  public:
+    //! Get a pointer to the exam information
+    const ExamInfo*
+      get_exam_info_ptr() const;
+
+    //! Get a shared pointer to the exam information
+    shared_ptr<ExamInfo>
+      get_exam_info_sptr() const;
+
+    std::string version_of_keys;
+
+    std::string siemens_mi_version;
+  };
+
+/*!
+\brief a class for Interfile keywords (and parsing) common to
+all types of data
+
+\ingroup InterfileIO
+*/
+class InterfileHeader : public MinimalInterfileHeader
 {
 public:
-  //! A value that can be used to signify that a variable has not been set during parsing.
-  static const double double_value_not_set;
-
   InterfileHeader();
-
-  virtual ~InterfileHeader() {}
-
-protected:
   // Returns false if OK, true if not.
   virtual bool post_processing();
-
-  shared_ptr<ExamInfo> exam_info_sptr;
 
 private:
 
@@ -80,35 +110,25 @@ private:
   int patient_orientation_index;
   int patient_rotation_index;
 
-  // Extra private variables which will be translated to something more useful
-  std::string imaging_modality_as_string;
-  void set_imaging_modality();
-
   void set_type_of_data();
-
+protected:
   int			num_time_frames;
   std::vector<double> image_relative_start_times;
   std::vector<double> image_durations;
-
   int bytes_per_pixel;
+private:
 
   // Louvain la Neuve style of 'image scaling factors'
   double lln_quantification_units;
+
+  
  protected:
   virtual void read_matrix_info();
   void read_frames_info();
+  virtual int get_num_data_types() const { return num_time_frames; }
 
 public :
-  //! Get a pointer to the exam information
-  const ExamInfo*
-    get_exam_info_ptr() const;
 
-  //! Get a shared pointer to the exam information
-  shared_ptr<ExamInfo>
-    get_exam_info_sptr() const;
-
-  std::string version_of_keys;
-  
   ASCIIlist_type type_of_data_values;
   int type_of_data_index;
 
@@ -145,9 +165,13 @@ public :
   //! \details High energy window limit
   float upper_en_window_thres;
   // end acquisition parameters
+  
  protected:
   // version 3.3 had only a single offset. we'll internally replace it with data_offset_each_dataset
   unsigned long data_offset;
+
+  float bed_position_horizontal;
+  float bed_position_vertical;
 };
 
 
@@ -163,11 +187,21 @@ class InterfileImageHeader : public InterfileHeader
 public:
   InterfileImageHeader();
   std::vector<double>	first_pixel_offsets;
+  int num_image_data_types;
+  std::vector<std::string> index_nesting_level;
+  std::vector<std::string> image_data_type_description;
 
 protected:
   virtual void read_matrix_info();
   //! Returns false if OK, true if not.
   virtual bool post_processing();
+  /// Read image data types
+  void read_image_data_types();
+  //!
+  //! \brief Get the number of data types
+  //! \details no. time frames * no. data types (kinetic params) * no. gates
+  //! Currently, this is only implemented for either multiple time frames OR multiple data types (gates not considered).
+  virtual int get_num_data_types() const { return num_time_frames*num_image_data_types; }
 
 };
 

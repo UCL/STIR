@@ -34,7 +34,9 @@
 #include "stir/VectorWithOffset.h"
 #include "stir/Scanner.h"
 #include "stir/shared_ptr.h"
+#include "stir/unique_ptr.h"
 #include <string>
+#include <memory>
 
 START_NAMESPACE_STIR
 
@@ -55,6 +57,8 @@ class PMessage;
   \brief An (abstract base) class that contains information on the 
   projection data.
 
+  This class supports a fixed horizontal and vertical bed position. Both are set to zero
+  by default. Continuous bed motion is not supported.
 */
 class ProjDataInfo
 {
@@ -69,24 +73,37 @@ public:
   static ProjDataInfo* 
   ask_parameters();
 
-  //! Construct a ProjDataInfo suitable for GE Advance data
+  //! Construct a ProjDataInfo with span=3 for segment 0, but span=1 for others.
+  /*! This function implements our old understanding of GE data. An alternative is to use
+      construct_proj_data_info() with \c span=2.*/
   static ProjDataInfo*  
   ProjDataInfoGE(const shared_ptr<Scanner>& scanner_ptr, 
 		 const int max_delta,
 		 const int num_views, const int num_tangential_poss, 
                  const bool arc_corrected = true);
 
-  //! Construct a ProjDataInfo suitable for CTI data
-  /*! \c span is used to denote the amount of axial compression (see CTI doc).
-     It has to be an odd number. 
+  //! Old name for construct_proj_data_info()
+  /*! \deprecated
      */
   static ProjDataInfo* 
     ProjDataInfoCTI(const shared_ptr<Scanner>& scanner_ptr,
 		  const int span, const int max_delta,
                   const int num_views, const int num_tangential_poss, 
                   const bool arc_corrected = true);
-  
-  
+
+  //! Construct a ProjDataInfo suitable with a given span
+  /*! \c span is used to denote the amount of axial compression (see the STIR glossary).
+  Higher span, more axial compression. Span 1 means no axial compression.
+  Siemens/CTI currently uses odd span. GE scanners use a mixed case where segment 0
+  has span 3, while other segments have span 2. We call this span 2.
+  As a generalisation, this function supports any even span.
+  */
+  static unique_ptr<ProjDataInfo>
+	  construct_proj_data_info(const shared_ptr<Scanner>& scanner_sptr,
+		  const int span, const int max_delta,
+		  const int num_views, const int num_tangential_poss,
+		  const bool arc_corrected = true);
+
   /************ constructors ***********/
   // TODO should probably be protected
 
@@ -292,7 +309,11 @@ public:
   //! check equality
   bool operator ==(const ProjDataInfo& proj) const; 
   
-  bool operator !=(const ProjDataInfo& proj) const; 
+  bool operator !=(const ProjDataInfo& proj) const;
+
+  //! Check if \c *this contains \c proj
+  virtual bool operator>=(const ProjDataInfo& proj) const;
+
   //@}
 
   //! \name Functions that return sinograms etc (filled with 0)
@@ -323,9 +344,26 @@ public:
 
   //! Get scanner pointer  
   inline const Scanner* get_scanner_ptr() const;
+
+  //! Get scanner shared pointer
+  inline shared_ptr<Scanner> get_scanner_sptr() const;
   
   //! Return a string describing the object
   virtual std::string parameter_info() const;
+  
+  //! Set horizontal bed position
+  void set_bed_position_horizontal(const float bed_position_horizontal_arg)
+  { bed_position_horizontal = bed_position_horizontal_arg; }
+
+  //! Get horizontal bed position
+  float get_bed_position_horizontal() const { return bed_position_horizontal; }
+
+  //! Set vertical bed position
+  void set_bed_position_vertical(const float bed_position_vertical_arg)
+  { bed_position_vertical = bed_position_vertical_arg; }
+
+  //! Get vertical bed position
+  float get_bed_position_vertical() const { return bed_position_vertical; }
   
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
@@ -338,6 +376,8 @@ private:
   int max_tangential_pos_num;
   VectorWithOffset<int> min_axial_pos_per_seg; 
   VectorWithOffset<int> max_axial_pos_per_seg;
+  float bed_position_horizontal;
+  float bed_position_vertical;
   
 };
 

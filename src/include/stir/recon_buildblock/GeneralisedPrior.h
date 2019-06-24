@@ -93,6 +93,10 @@ protected:
   /*! Has to be called by initialise_keymap in the leaf-class */
   virtual void initialise_keymap();
 
+  //! Check that the prior is ready to be used
+  virtual void check(DataT const& current_estimate) const;
+
+  bool _already_set_up;
 };
 
 END_NAMESPACE_STIR

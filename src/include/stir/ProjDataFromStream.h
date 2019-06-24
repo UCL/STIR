@@ -6,6 +6,7 @@
   \ingroup projdata
   \brief Declaration of class stir::ProjDataFromStream
 
+  \author Nikos Efthimiou
   \author Sanida Mustafovic
   \author Kris Thielemans
   \author Claire Labbe
@@ -37,7 +38,7 @@
 #include "stir/NumericType.h"
 #include "stir/ByteOrder.h"
 #include "stir/shared_ptr.h"
-
+#include "stir/Bin.h"
 #include <iostream>
 #include <vector>
 
@@ -48,11 +49,14 @@ START_NAMESPACE_STIR
   \ingroup projdata
   \brief A class which reads/writes projection data from/to a (binary) stream.
 
-  Mainly useful for Interfile data.
+  At tehe end of every write (i.e., \ set_*) operation, the stream is flushed such that 
+  subsequent read operations from the same file will be able this data even if the 
+  stream isn't closed yet. This is important in an interactive context, as the object
+  owning the stream might not be deleted yet before we try to read the file again.
 
   \warning Data have to be contiguous.
-  \warning The parameter make_num_tangential_poss_odd (used in various 
-  get_ functions) is temporary and will be removed soon.
+  \warning The parameter \c make_num_tangential_poss_odd (used in various 
+  \c get_ functions) is temporary and will be removed soon.
 
 */
 class ProjDataFromStream : public ProjData
@@ -138,6 +142,8 @@ public:
   //! Get scale factor
   float get_scale_factor() const;  
 
+  //! Get the value of bin.
+  float get_bin_value(const Bin& this_bin) const;
     
 protected:
   //! the stream with the data
@@ -171,6 +177,8 @@ private:
   //! Calculate offsets for sinogram data
   std::vector<std::streamoff> get_offsets_sino(const int ax_pos_num, const int segment_num) const;
     
+  //! Calculate the offsets for specific bins.
+  std::vector<std::streamoff> get_offsets_bin(const Bin) const;
   
 };
 

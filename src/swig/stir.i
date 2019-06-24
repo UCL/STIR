@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013 University College London
+    Copyright (C) 2013, 2018 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 
 %module stir
 %{
+#define SWIG_DOC_DOXYGEN_STYLE
 #define SWIG_FILE_WITH_INIT
 
  /* Include the following headers in the wrapper code */
@@ -68,12 +69,19 @@
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/PixelsOnCartesianGrid.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/zoom.h"
 
+#include "stir/GeneralisedPoissonNoiseGenerator.h"
+  
 #include "stir/IO/read_from_file.h"
 #include "stir/IO/InterfileOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ECAT7OutputFileFormat.h"
 #endif
+
+#include "stir/Shape/Ellipsoid.h"
+#include "stir/Shape/EllipsoidalCylinder.h"
+#include "stir/Shape/Box3D.h"
 
 #include "stir/ChainedDataProcessor.h"
 #include "stir/SeparableCartesianMetzImageFilter.h"
@@ -84,6 +92,8 @@
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#include "stir/recon_buildblock/QuadraticPrior.h"
+#include "stir/recon_buildblock/PLSPrior.h"
 
 #include "stir/analytic/FBP2D/FBP2DReconstruction.h"
 #include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
@@ -455,6 +465,8 @@
 %fragment("NumPy_Fragments");
 #endif
 
+%include "attribute.i"
+
 %init %{
 #if defined(SWIGPYTHON)
   // numpy support
@@ -464,9 +476,13 @@
 %}
 
 %feature("autodoc", "1");
+// Use include set by build
+#if defined(DOXY2SWIG_XML_INCLUDE_FILE)
+%include DOXY2SWIG_XML_INCLUDE_FILE
+#endif
 
 // TODO doesn't work
-%warnfilter(315) std::auto_ptr;
+%warnfilter(315) std::unique_ptr;
 
 // disable warnings about unknown base-class 401
 // disable warnings about "no access specified given for base class" as we use this correctly for private derivation 319
@@ -490,9 +506,10 @@
 %newobject *::clone;
 %newobject *::get_empty_copy;
 %newobject *::read_from_file;
-%newobject *::ask_parameters;
 
+%ignore *::ask_parameters;
 %ignore *::create_shared_clone;
+%ignore *::read_from_stream;
 
 #if defined(SWIGPYTHON)
 %rename(__assign__) *::operator=; 
@@ -501,12 +518,19 @@
 // include standard swig support for some bits of the STL (i.e. standard C++ lib)
 %include <stl.i>
 %include <std_list.i>
+ // ignore iterators, as they don't make sense in the target language
 %ignore *::begin;
+%ignore *::rbegin;
 %ignore *::begin_all;
+%ignore *::rbegin_all;
 %ignore *::end;
+%ignore *::rend;
 %ignore *::end_all;
+%ignore *::rend_all;
 %ignore *::begin_all_const;
+%ignore *::rbegin_all_const;
 %ignore *::end_all_const;
+%ignore *::rend_all_const;
 
 // always ignore these as they are unsafe in out-of-range index access (use at() instead)
 %ignore *::operator[];
@@ -979,9 +1003,10 @@ T * operator-> () const;
   // to convert the swigged DiscretisedDensity to a VoxelsOnCartesianGrid
   static stir::VoxelsOnCartesianGrid<elemT> * read_from_file(const std::string& filename)
     {
-      std::auto_ptr<stir::DiscretisedDensity<3,elemT> > 
-	ret(stir::read_from_file<stir::DiscretisedDensity<3,elemT> >(filename));
-      return dynamic_cast<stir::VoxelsOnCartesianGrid<elemT> *>(ret.release());
+      using namespace stir;
+      unique_ptr<DiscretisedDensity<3,elemT> > 
+	ret(read_from_file<DiscretisedDensity<3,elemT> >(filename));
+      return dynamic_cast<VoxelsOnCartesianGrid<elemT> *>(ret.release());
     }
  }
 
@@ -1237,11 +1262,14 @@ namespace stir {
 
 } // namespace stir
 
+%include "stir/ZoomOptions.h"
+%include "stir/zoom.h"
+
 %rename (get_scanner) *::get_scanner_ptr;
 %ignore *::get_proj_data_info_ptr;
 %rename (get_proj_data_info) *::get_proj_data_info_sptr;
 %ignore *::get_exam_info_ptr;
-%rename (get_exam_info) *::get_exam_info_sptr;
+%ignore *::get_exam_info_sptr; // we do have get_exam_info in C++
 
 %rename (set_objective_function) *::set_objective_function_sptr;
 
@@ -1295,18 +1323,46 @@ namespace stir {
  */
 %include "stir/TimeFrameDefinitions.h"
 %include "stir/ExamInfo.h"
+
 %include "stir/IO/ExamData.h"
 %include "stir/Verbosity.h"
-// ignore non-const versions
-%ignore stir::Bin::segment_num();
-%ignore stir::Bin::axial_pos_num();
-%ignore stir::Bin::view_num();
-%ignore stir::Bin::tangential_pos_num();
+
+%attributeref(stir::Bin, int, segment_num);
+%attributeref(stir::Bin, int, axial_pos_num);
+%attributeref(stir::Bin, int, view_num);
+%attributeref(stir::Bin, int, tangential_pos_num);
+%attribute(stir::Bin, float, bin_value, get_bin_value, set_bin_value);
 %include "stir/Bin.h"
+
 %newobject stir::ProjDataInfo::ProjDataInfoGE;
 %newobject stir::ProjDataInfo::ProjDataInfoCTI;
 
+// ignore this to avoid problems with unique_ptr, and add it later
+%ignore stir::ProjDataInfo::construct_proj_data_info;
+
 %include "stir/ProjDataInfo.h"
+%newobject *::construct_proj_data_info;
+
+%extend stir::ProjDataInfo 
+{
+  // work around the current SWIG limitation that it doesn't wrap unique_ptr. 
+  // we do this with the crazy (and ugly) way to let SWIG create a new function
+  // which is the same as the original, but returns a bare pointer.
+  // (This will be wrapped as a shared_ptr in the end).
+  // This work-around is fragile however as it depends on knowledge of the
+  // exact signature of the function.
+  static ProjDataInfo *
+	  construct_proj_data_info(const shared_ptr<Scanner>& scanner_sptr,
+		  const int span, const int max_delta,
+		  const int num_views, const int num_tangential_poss,
+		  const bool arc_corrected = true)
+  {
+    return 
+      construct_proj_data_info(scanner_sptr,
+                               span, max_delta, num_views, num_tangential_poss,
+                               arc_corrected).get();
+  }
+}
 %include "stir/ProjDataInfoCylindrical.h"
 %include "stir/ProjDataInfoCylindricalArcCorr.h"
 %include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -1385,6 +1441,25 @@ namespace stir {
 
 }
 
+// shapes
+%shared_ptr(stir::Shape3D)
+%shared_ptr(stir::Shape3DWithOrientation)
+%shared_ptr(stir::RegisteredParsingObject<stir::Ellipsoid, stir::Shape3D, stir::Shape3DWithOrientation>)
+%shared_ptr(stir::Ellipsoid)
+%shared_ptr(stir::RegisteredParsingObject<stir::EllipsoidalCylinder, stir::Shape3D, stir::Shape3DWithOrientation>)
+%shared_ptr(stir::EllipsoidalCylinder)
+%shared_ptr(stir::RegisteredParsingObject<stir::Box3D, stir::Shape3D, stir::Shape3DWithOrientation>)
+%shared_ptr(stir::Box3D)
+
+%include "stir/Shape/Shape3D.h"
+%include "stir/Shape/Shape3DWithOrientation.h"
+%template(RPEllipsoid) stir::RegisteredParsingObject<stir::Ellipsoid, stir::Shape3D, stir::Shape3DWithOrientation>;
+%template(RPEllipsoidalCylinder) stir::RegisteredParsingObject<stir::EllipsoidalCylinder, stir::Shape3D, stir::Shape3DWithOrientation>;
+%template(RPBox3D) stir::RegisteredParsingObject<stir::Box3D, stir::Shape3D, stir::Shape3DWithOrientation>;
+%include "stir/Shape/Ellipsoid.h"
+%include "stir/Shape/EllipsoidalCylinder.h"
+%include "stir/Shape/Box3D.h"
+
 // filters
 #ifdef STIRSWIG_SHARED_PTR
 #define elemT float
@@ -1420,9 +1495,12 @@ namespace stir {
 %template(SeparableCartesianMetzImageFilter3DFloat) stir::SeparableCartesianMetzImageFilter<elemT>;
 #undef elemT
 
+%include "stir/GeneralisedPoissonNoiseGenerator.h"
+
  // reconstruction
 #ifdef STIRSWIG_SHARED_PTR
 #define TargetT stir::DiscretisedDensity<3,float>
+#define elemT float
 
 %shared_ptr(stir::GeneralisedObjectiveFunction<TargetT >);
 %shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT >);
@@ -1431,6 +1509,17 @@ namespace stir {
 	    stir::PoissonLogLikelihoodWithLinearModelForMean<TargetT > >);
 
 %shared_ptr(stir::PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >);
+
+%shared_ptr(stir::GeneralisedPrior<TargetT >);
+%shared_ptr(stir::PriorWithParabolicSurrogate<TargetT >);
+%shared_ptr(stir::RegisteredParsingObject< stir::QuadraticPrior<elemT>,
+            stir::GeneralisedPrior<TargetT >,
+            stir::PriorWithParabolicSurrogate<TargetT  > >);
+%shared_ptr(stir::QuadraticPrior<elemT>);
+%shared_ptr(stir::RegisteredParsingObject< stir::PLSPrior<elemT>,
+            stir::GeneralisedPrior<TargetT >,
+            stir::GeneralisedPrior<TargetT > >);
+%shared_ptr(stir::PLSPrior<elemT>);
 
 %shared_ptr(stir::Reconstruction<TargetT >);
 %shared_ptr(stir::IterativeReconstruction<TargetT >);
@@ -1453,13 +1542,18 @@ namespace stir {
 %shared_ptr(stir::FBP3DRPReconstruction);
 
 #undef TargetT
-
+#undef elemT
 #endif
 
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 %include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 %include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 %include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
+
+%include "stir/recon_buildblock/GeneralisedPrior.h"
+%include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
+%include "stir/recon_buildblock/QuadraticPrior.h"
+%include "stir/recon_buildblock/PLSPrior.h"
 
 %include "stir/recon_buildblock/Reconstruction.h"
  // there's a get_objective_function, so we'll ignore the sptr version
@@ -1473,7 +1567,7 @@ namespace stir {
 %include "stir/analytic/FBP3DRP/FBP3DRPReconstruction.h"
 
 #define TargetT stir::DiscretisedDensity<3,float>
-
+#define elemT float
 
 %template (GeneralisedObjectiveFunction3DFloat) stir::GeneralisedObjectiveFunction<TargetT >;
 //%template () stir::GeneralisedObjectiveFunction<TargetT >;
@@ -1498,6 +1592,18 @@ namespace stir {
 
 %template(ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData3DFloat) ToPoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT >;
 
+%template (GeneralisedPrior3DFloat) stir::GeneralisedPrior<TargetT >;
+%template (PriorWithParabolicSurrogate3DFloat) stir::PriorWithParabolicSurrogate<TargetT >;
+%template (RPQuadraticPrior3DFloat)
+  stir::RegisteredParsingObject< stir::QuadraticPrior<elemT>,
+      stir::GeneralisedPrior<TargetT >,
+      stir::PriorWithParabolicSurrogate<TargetT  > >;
+%template (QuadraticPrior3DFloat) stir::QuadraticPrior<elemT>;
+%template (RPPLSPrior3DFloat)
+  stir::RegisteredParsingObject< stir::PLSPrior<elemT>,
+      stir::GeneralisedPrior<TargetT >,
+      stir::GeneralisedPrior<TargetT > >;
+%template (PLSPrior3DFloat) stir::PLSPrior<elemT>;
 
 %template (Reconstruction3DFloat) stir::Reconstruction<TargetT >;
 //%template () stir::Reconstruction<TargetT >;
@@ -1518,6 +1624,7 @@ namespace stir {
 %template (OSMAPOSLReconstruction3DFloat) stir::OSMAPOSLReconstruction<TargetT >;
 %template (OSSPSReconstruction3DFloat) stir::OSSPSReconstruction<TargetT >;
 
+#undef elemT
 #undef TargetT
 
 /// projectors

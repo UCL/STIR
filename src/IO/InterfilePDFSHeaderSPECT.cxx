@@ -139,19 +139,19 @@ bool InterfilePDFSHeaderSPECT::post_processing()
   // somewhat strange values to be compatible with PET
   VectorWithOffset<int> sorted_min_ring_diff(0,0);
   VectorWithOffset<int> sorted_max_ring_diff(0,0);
-  VectorWithOffset<int> sorted_num_rings_per_segment(0,0);
+  VectorWithOffset<int> sorted_num_axial_poss_per_segment(0,0);
   sorted_min_ring_diff[0]=0;
   sorted_max_ring_diff[0]=0;
-  sorted_num_rings_per_segment[0]=num_axial_poss;
+  sorted_num_axial_poss_per_segment[0]=num_axial_poss;
 
   // we construct a new scanner object with
   // data from the Interfile header (or the guessed scanner).
   // Initialize the scanner values (most are not used in SPECT reconstruction)
 
-  const int num_rings = sorted_num_rings_per_segment[0];
+  const int num_rings = sorted_num_axial_poss_per_segment[0];
   const int num_detectors_per_ring = -1;//num_views*2;  
   const double average_depth_of_interaction_in_cm = 0;
-  const double distance_between_rings_in_cm = z_spacing_in_cm*2; // need to do times 2  such that default z-spacing of reconstruction is z_spacing
+  const double distance_between_rings_in_cm = z_spacing_in_cm;
   double default_bin_size_in_cm = bin_size_in_cm ;
   const double view_offset_in_degrees = start_angle;
   const int max_num_non_arccorrected_bins = num_bins;
@@ -198,7 +198,7 @@ bool InterfilePDFSHeaderSPECT::post_processing()
     new ProjDataInfoCylindricalArcCorr (
                                         scanner_ptr_from_file,
                                         float(bin_size_in_cm*10.),
-                                        sorted_num_rings_per_segment,
+                                        sorted_num_axial_poss_per_segment,
                                         sorted_min_ring_diff,
                                         sorted_max_ring_diff,
                                         num_views,num_bins);

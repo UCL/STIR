@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2003- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -34,6 +35,7 @@
 //#include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 #include "stir/listmode/CListModeData.h"
+#include "stir/ParseAndCreateFrom.h"
 #include "stir/TimeFrameDefinitions.h"
 
 START_NAMESPACE_STIR
@@ -81,8 +83,8 @@ public:
  
   //virtual TargetT * construct_target_ptr();  
  
-  //virtual Succeeded 
-    //set_up(shared_ptr <TargetT > const& target_sptr); 
+  virtual Succeeded
+   set_up(shared_ptr <TargetT > const& target_sptr);
  
   virtual  
   void compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,  
@@ -101,7 +103,7 @@ public:
     virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
 
     virtual void set_input_data(const shared_ptr<ExamData> &);
-
+    virtual const CListModeData& get_input_data() const;
 protected:
   std::string frame_defs_filename;
 
@@ -115,7 +117,12 @@ protected:
   //! Listmode pointer
   shared_ptr<CListModeData> list_mode_data_sptr; 
  
-  int current_frame_num;
+  unsigned int current_frame_num;
+
+  //! This is part of some functionality I transfer from LmToProjData.
+  long int num_events_to_use;
+   //! Reconstruct based on time frames
+   bool do_time_frame;
  
   //! sets any default values
   /*! Has to be called by set_defaults in the leaf-class */
@@ -125,26 +132,12 @@ protected:
   virtual void initialise_keymap(); 
 
   virtual bool post_processing(); 
- 
-  int output_image_size_xy;  
- 
-  //! the output image size in z direction 
-  /*! convention: if -1, use default as provided by VoxelsOnCartesianGrid constructor 
-  */ 
-  int output_image_size_z;  
- 
-  //! the zoom factor 
-  double zoom; 
- 
-  //! offset in the x-direction 
-  double Xoffset; 
- 
-  //! offset in the y-direction 
-  double Yoffset; 
- 
-  // KT 20/06/2001 new 
-  //! offset in the z-direction 
-  double Zoffset;
+
+   //! will be called when a new time frame starts
+   /*! The frame numbers start from 1. */
+   virtual void start_new_time_frame(const unsigned int new_frame_num);
+
+   ParseAndCreateFrom<TargetT, CListModeData> target_parameter_parser;
 };
 
 END_NAMESPACE_STIR

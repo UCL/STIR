@@ -29,6 +29,7 @@ set(${dir_LIB_SOURCES}
   extend_projdata 
   DiscretisedDensity 
   VoxelsOnCartesianGrid 
+  ParseDiscretisedDensityParameters
   utilities 
   interfile_keyword_functions 
   zoom 
@@ -62,6 +63,7 @@ set(${dir_LIB_SOURCES}
 	DynamicDiscretisedDensity 
 	DynamicProjData 
 	MultipleProjData 
+  MultipleDataSetHeader
 	GatedProjData 
 	ArrayFilter2DUsingConvolution 
 	ArrayFilter3DUsingConvolution 
@@ -72,6 +74,8 @@ set(${dir_LIB_SOURCES}
         TimeGateDefinitions
 	ML_norm
         num_threads
+        GeneralisedPoissonNoiseGenerator
+        FilePath
 )
 
 if (NOT HAVE_SYSTEM_GETOPT)

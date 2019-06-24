@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2003 - 2011-02-23, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -29,6 +30,7 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
+#include "stir/ParseAndCreateFrom.h"
 //#include "stir/ProjData.h"
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 //#include "stir/recon_buildblock/BinNormalisation.h"
@@ -215,7 +217,8 @@ public:
   virtual void set_normalisation_sptr(const shared_ptr<BinNormalisation>&);
 
   virtual void set_input_data(const shared_ptr<ExamData> &);
-  //@}
+  virtual const ProjData& get_input_data() const;
+//@}
   
   virtual void 
     compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient, 
@@ -280,30 +283,7 @@ protected:
   int max_segment_num_to_process;
 
   /**********************/
-  // image stuff
-  // TODO to be replaced with single class or so (TargetT obviously)
-  //! the output image size in x and y direction
-  /*! convention: if -1, use a size such that the whole FOV is covered
-  */
-  int output_image_size_xy; // KT 10122001 appended _xy
-
-  //! the output image size in z direction
-  /*! convention: if -1, use default as provided by VoxelsOnCartesianGrid constructor
-  */
-  int output_image_size_z; // KT 10122001 new
-
-  //! the zoom factor
-  double zoom;
-
-  //! offset in the x-direction
-  double Xoffset;
-
-  //! offset in the y-direction
-  double Yoffset;
-
-  // KT 20/06/2001 new
-  //! offset in the z-direction
-  double Zoffset;
+   ParseAndCreateFrom<TargetT, ProjData> target_parameter_parser;
   /********************************/
 
 
@@ -365,6 +345,7 @@ protected:
 //made available to be called from DistributedWorker object
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_gradient;
 RPC_process_related_viewgrams_type RPC_process_related_viewgrams_accumulate_loglikelihood;
+RPC_process_related_viewgrams_type RPC_process_related_viewgrams_sensitivity_computation;
 #endif
 
 END_NAMESPACE_STIR

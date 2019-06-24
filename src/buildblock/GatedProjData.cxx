@@ -72,9 +72,6 @@ read_from_file(const string& filename) // The written image is read in respect t
 	  return 0;
 	}
       gated_proj_data_ptr = new GatedProjData;
-      // we no longer have a _scanner_sptr member, so next lines are commented out
-      //gated_proj_data_ptr->_scanner_sptr.reset(
-      //					       find_scanner_from_ECAT_system_type(mhead.system_type));
 
       const unsigned int num_gates =
 	static_cast<unsigned int>(mhead.num_gates); // TODO +1?
@@ -90,6 +87,9 @@ read_from_file(const string& filename) // The written image is read in respect t
 	}
       if (is_null_ptr(gated_proj_data_ptr->_proj_datas[0]))
 	      error("GatedProjData: No gate available\n");
+      // Get the exam info (from the first ProjData)
+      if (num_gates>0)
+        gated_proj_data_ptr->set_exam_info(gated_proj_data_ptr->_proj_datas[0]->get_exam_info());
     }
     else
     {
@@ -128,9 +128,9 @@ read_from_file(const string& filename) // The written image is read in respect t
 	   gated_proj_data_ptr->_proj_datas[gate_num-1] =
 	     ProjData::read_from_file(filenames[gate_num-1]);
 	 }
-       // we no longer have a _scanner_sptr member, so next lines are commented out
-       //gated_proj_data_ptr->_scanner_sptr.reset(
-       //					new Scanner(*gated_proj_data_ptr->_proj_datas[0]->get_proj_data_info_ptr()->get_scanner_ptr()));
+       // Get the exam info (from the first ProjData)
+       if (num_gates>0)
+         gated_proj_data_ptr->set_exam_info(gated_proj_data_ptr->_proj_datas[0]->get_exam_info());
       return gated_proj_data_ptr;
      }    
   
@@ -156,13 +156,13 @@ GatedProjData::read_from_gdef(const string& filename)
       std::cout << "GatedProjData: Reading gate projection file: " << input_filename.c_str() << std::endl;
       gated_proj_data_ptr->_proj_datas[num-1] = ProjData::read_from_file(input_filename);
     }	
-  // we no longer have a _scanner_sptr member, so next lines are commented out
-  // gated_proj_data_ptr->_scanner_sptr.
-  //   reset(new Scanner(*gated_proj_data_ptr->_proj_datas[0]->get_proj_data_info_ptr()->get_scanner_ptr()));
   if (is_null_ptr(gated_proj_data_ptr))   
     error("GatedProjData::read_from_file unrecognised file format for projection files with prefix '%s'",
           filename.c_str());
-  return gated_proj_data_ptr;	
+  // Get the exam info (from the first ProjData)
+  if (gated_proj_data_ptr->get_num_gates()>0)
+     gated_proj_data_ptr->set_exam_info(gated_proj_data_ptr->_proj_datas[0]->get_exam_info());
+ return gated_proj_data_ptr;
 }
 
 Succeeded 

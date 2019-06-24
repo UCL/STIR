@@ -2,6 +2,7 @@
 // 
 /* 
     Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -53,14 +54,10 @@ set_defaults()
   this->list_mode_filename =""; 
   this->frame_defs_filename ="";
   this->list_mode_data_sptr.reset(); 
-  this->current_frame_num =0; 
+  this->current_frame_num = 1;
+  this->num_events_to_use = 0L;
  
-  this->output_image_size_xy=-1; 
-  this->output_image_size_z=-1; 
-  this->zoom=1.F; 
-  this->Xoffset=0.F; 
-  this->Yoffset=0.F; 
-  this->Zoffset=0.F; 
+  this->target_parameter_parser.set_defaults();
  
 } 
 
@@ -71,17 +68,11 @@ initialise_keymap()
 { 
   base_type::initialise_keymap(); 
   this->parser.add_key("list mode filename", &this->list_mode_filename); 
-  this->parser.add_key("zoom", &this->zoom); 
-  this->parser.add_key("XY output image size (in pixels)",&this->output_image_size_xy); 
-  this->parser.add_key("Z output image size (in pixels)",&this->output_image_size_z); 
-  //parser.add_key("X offset (in mm)", &Xoffset); // KT 10122001 added spaces 
-  //parser.add_key("Y offset (in mm)", &Yoffset); 
-   
-  //this->parser.add_key("Z offset (in mm)", &Zoffset); 
+  this->target_parameter_parser.add_to_keymap(this->parser);
   this->parser.add_key("time frame definition filename", &this->frame_defs_filename);
   // SM TODO -- later do not parse
   this->parser.add_key("time frame number", &this->current_frame_num);
-     
+       this->parser.add_parsing_key("Bin Normalisation type", &this->normalisation_sptr);
 } 
 
 template <typename TargetT>     
@@ -93,7 +84,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
 
   if (this->list_mode_filename.length() == 0) 
   { warning("You need to specify an input file\n"); return true; } 
-   
+
   this->list_mode_data_sptr=
     read_from_file<CListModeData>(this->list_mode_filename); 
 
@@ -102,20 +93,12 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_process
   else
     {
       // make a single frame starting from 0. End value will be ignored.
-      vector<pair<double, double> > frame_times(1, pair<double,double>(0,1));
+      vector<pair<double, double> > frame_times(1, pair<double,double>(0,0));
       this->frame_defs = TimeFrameDefinitions(frame_times);
     } 
-  // image stuff 
-  if (this->zoom <= 0) 
-  { warning("zoom should be positive\n"); return true; } 
-   
-  if (this->output_image_size_xy!=-1 && this->output_image_size_xy<1) // KT 10122001 appended_xy 
-  { warning("output image size xy must be positive (or -1 as default)\n"); return true; } 
-  if (this->output_image_size_z!=-1 && this->output_image_size_z<1) // KT 10122001 new 
-  { warning("output image size z must be positive (or -1 as default)\n"); return true; } 
-   
+  target_parameter_parser.check_values();
 
-   return false; 
+  return false;
 } 
 
 template <typename TargetT>
@@ -123,7 +106,15 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 set_input_data(const shared_ptr<ExamData> & arg)
 {
-    this->list_mode_data_sptr = boost::dynamic_pointer_cast<CListModeData>(arg);
+    this->list_mode_data_sptr = dynamic_pointer_cast<CListModeData>(arg);
+}
+
+template <typename TargetT>
+const CListModeData&
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+get_input_data() const
+{
+  return *this->list_mode_data_sptr;
 }
 
 template<typename TargetT>
@@ -131,7 +122,7 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 set_additive_proj_data_sptr(const shared_ptr<ExamData> &arg)
 {
-    this->additive_proj_data_sptr = boost::dynamic_pointer_cast<ProjData>(arg);
+    this->additive_proj_data_sptr = dynamic_pointer_cast<ProjData>(arg);
 }
 
 template<typename TargetT>
@@ -142,36 +133,26 @@ set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
   this->normalisation_sptr = arg;
 }
 
-#if 0
-Succeeded  
+template<typename TargetT>
+void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
-set_up(shared_ptr <TargetT > const& target_sptr) 
-{ 
-  if ( base_type::set_up(target_sptr) != Succeeded::yes) 
-    return Succeeded::no; 
+start_new_time_frame(const unsigned int)
+{}
+
+template<typename TargetT>
+Succeeded
+PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
+set_up(shared_ptr <TargetT > const& target_sptr)
+{
+  if ( base_type::set_up(target_sptr) != Succeeded::yes)
+    return Succeeded::no;
+
+  // handle time frame definitions etc
+    if(this->num_events_to_use==0 && this->frame_defs_filename.size() == 0)
+      do_time_frame = true;
  
-    return Succeeded::yes; 
- 
- 
-} 
- 
-template <typename TargetT> 
-TargetT * 
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>:: 
-construct_target_ptr() const 
-{ 
-  return 
-      new VoxelsOnCartesianGrid<float> (*this->proj_data_sptr->get_proj_data_info_ptr(), 
-					this->zoom, 
-					CartesianCoordinate3D<float>(this->Zoffset, 
-								     this->Yoffset, 
-								     this->Xoffset), 
-					CartesianCoordinate3D<int>(this->output_image_size_z, 
-                                                                   this->output_image_size_xy, 
-                                                                   this->output_image_size_xy) 
-                                       );
-} 
-#endif
+    return Succeeded::yes;
+}
 
 #  ifdef _MSC_VER
 // prevent warning message on instantiation of abstract class 

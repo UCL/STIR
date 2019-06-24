@@ -29,10 +29,8 @@
 #include "stir/listmode/CListRecordECAT8_32bit.h"
 #include "stir/IO/InputStreamWithRecords.h"
 #include "stir/shared_ptr.h"
-#include "stir/IO/InterfileHeader.h"
+#include "stir/IO/InterfileHeaderSiemens.h"
 #include <iostream>
-#include <string>
-#include <utility>
 #include <vector>
 
 START_NAMESPACE_STIR
@@ -80,15 +78,9 @@ private:
   typedef CListRecordECAT8_32bit CListRecordT;
   std::string listmode_filename;
   shared_ptr<InputStreamWithRecords<CListRecordT, bool> > current_lm_data_ptr;
-  shared_ptr<ProjDataInfo> proj_data_info_sptr;
-  InterfileHeader interfile_parser;
-  // members to store info from the interfile header.
-  // These tell us something about how the listmode is stored.
-  int axial_compression;
-  int maximum_ring_difference;
-  int number_of_projections;
-  int number_of_views;
-  int number_of_segments;
+
+  InterfileListmodeHeaderSiemens interfile_parser;
+
   // std::vector<int> segment_table;
 
   Succeeded open_lm_file();

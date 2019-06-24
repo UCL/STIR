@@ -26,6 +26,7 @@
 #include "stir/recon_buildblock/SPECTUB_Weight3d.h"
 #include "stir/error.h"
 #include <boost/format.hpp>
+#include <boost/math/constants/constants.hpp>
 
 //system libraries
 #include <stdio.h>
@@ -44,10 +45,6 @@ namespace SPECTUB {
 #define abs(a) ((a)>=0?(a):(-a))
 #define SIGN(a) (a<-EPSILON?-1:(a>EPSILON?1:0))
  
-#ifndef M_PI
-#define M_PI 3.14159265
-#endif
-
 #define REF_DIST 5.    //reference distance for fanbeam PSF
 
 using namespace std;
@@ -462,7 +459,7 @@ void wm_size_estimation (int kOS,
 
 void calc_gauss( discrf_type *gaussdens )
 {
-	float K0 = (float)0.3989422863; //Normalization factor: 1/sqrt(2*M_PI)
+	const float K0 = 1.0f/boost::math::constants::root_two_pi<float>(); //Normalization factor: 1/sqrt(2*M_PI)
 	float x  = 0;
 	float g;
 	

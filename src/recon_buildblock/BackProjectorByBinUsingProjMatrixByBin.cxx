@@ -16,6 +16,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -44,7 +45,6 @@
 #include "stir/is_null_ptr.h"
 
 using std::vector;
-using std::auto_ptr;
 
 START_NAMESPACE_STIR
 
@@ -98,7 +98,8 @@ BackProjectorByBinUsingProjMatrixByBin(
     )		   
     : proj_matrix_ptr(proj_matrix_ptr)
 {
-  assert(!is_null_ptr(proj_matrix_ptr));	 
+  if (is_null_ptr(proj_matrix_ptr))
+    error("BackProjector initialised with zero projection matrix ptr");
 }
 
 void
@@ -106,13 +107,16 @@ BackProjectorByBinUsingProjMatrixByBin::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
        const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr)
 
-{    	   
+{
+  BackProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);
   proj_matrix_ptr->set_up(proj_data_info_ptr, image_info_ptr);
 }
 
 const DataSymmetriesForViewSegmentNumbers *
 BackProjectorByBinUsingProjMatrixByBin::get_symmetries_used() const
 {
+  if (!this->_already_set_up)
+    error("BackProjectorByBin method called without calling set_up first.");
   return proj_matrix_ptr->get_symmetries_ptr();
 }
 
@@ -218,7 +222,7 @@ actual_back_project(DiscretisedDensity<3,float>& image,
 			    tang_pos_tmp,
 			    (*viewgram_iter)[axial_pos_tmp][tang_pos_tmp]);
 	      
-		    auto_ptr<SymmetryOperation> symm_op_ptr = 
+		    unique_ptr<SymmetryOperation> symm_op_ptr = 
 		      symmetries->find_symmetry_operation_from_basic_bin(bin);
 		    // TODO replace with Bin::compare_coordinates or so
 		    assert(bin.segment_num() == basic_bin.segment_num());

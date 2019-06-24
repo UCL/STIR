@@ -1,0 +1,68 @@
+!INTERFILE:=
+!originating system:=2008
+%SMS-MI header name space:=PETLINK bin address
+%SMS-MI version number:=3.4
+
+!GENERAL DATA:=
+!data offset in bytes:=0
+name of data file := small_listmode_file.l
+!GENERAL IMAGE DATA:=
+!type of data:=PET
+%study date (yyyy:mm:dd):=2017:03:27
+%study time (hh:mm:ss GMT+00:00):=17:00:35
+isotope name:=F-18
+isotope gamma halflife (sec):=6586.2
+isotope branching factor:=0.97
+radiopharmaceutical:=FDG
+relative time of tracer injection (sec):=0
+tracer activity at time of injection (Bq):=4.65e+007
+injected volume (ml):=0
+%tracer injection date (yyyy:mm:dd):=2017:03:27
+%tracer injection time (hh:mm:ss GMT+00:00):=16:07:00
+%patient orientation:=HFS
+PET data type:=Emission
+data format:=CoincidenceList
+horizontal bed translation:=stepped
+start horizontal bed position (mm):=0
+end horizontal bed position (mm):=0
+start vertical bed position (mm):=0
+%bed zero offset (mm):=0
+number of energy windows:=1
+%energy window lower level (keV) [1]:=430
+%energy window upper level (keV) [1]:=610
+
+
+!PET STUDY (Emission data):=
+PET scanner type:=cylindrical
+transaxial FOV diameter (cm):=59.6
+number of rings:=64
+distance between rings (cm):=0.40625
+gantry tilt angle (degrees):=0
+gantry crystal radius (cm):=32.8
+bin size (cm):=0.20445
+septa state:=none
+%number of TOF time bins:=1
+%TOF mashing factor:=1
+
+!IMAGE DATA DESCRIPTION:=
+%preset type:=time
+%preset value:=900
+%preset unit:=seconds
+image duration (sec):=900
+%total listmode word counts:=331257106
+
+%COINCIDENCE LIST DATA:=
+%LM event and tag words format (bits):=32
+%timing tagwords interval (msec):=1
+%singles polling method:=instantaneous
+%singles polling interval (sec):=2
+%singles scale factor:=8
+%total number of singles blocks:=224
+%axial compression:=1
+%maximum ring difference:=60
+%number of projections:=344
+%number of views:=252
+%number of segments :=11
+%segment table :={127,115, 115, 93, 93 ,71, 71, 49, 49, 27, 27}
+%time_sync:=25934299
+%comment:=PET/CT gantry offset during PET acquisition was x=0.000000mm, y=0.000000mm, z=0.000000mm
