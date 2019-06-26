@@ -51,6 +51,7 @@ Array<2,float>
 transpose_extend_sinogram_in_views(const Sinogram<float>& sino,
              const float min_view_compression, const float max_view_compression);
 
+
 //@}
 
 END_NAMESPACE_STIR
