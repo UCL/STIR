@@ -726,6 +726,8 @@ interpolate_projdata_push(ProjData& proj_data_out,
 
     //  extended[0]=extended[1];
      SegmentBySinogram<float> extended_segment_sino(extended, extended_proj_data_info_sptr, 0); //create SegmentBySinogram with extended
+
+
      std::cout<<"ext before compress:" << extended_segment_sino.get_num_views() << "x" <<  extended_segment_sino.get_num_tangential_poss() << '\n';
      extended_proj_data_info_sptr->set_num_views(extended_segment_sino.get_num_views()); // set the number of views
 
@@ -740,6 +742,7 @@ interpolate_projdata_push(ProjData& proj_data_out,
               out[z][y].grow(old_min+1, old_max-1); //resize
             }
         }
+
 
      SegmentBySinogram<float> compressed_output(out, extended_proj_data_info_sptr, 0);
      std::cout<<"compressed output:" <<  compressed_output.get_num_views() << "x" <<   compressed_output.get_num_tangential_poss() << '\n';
