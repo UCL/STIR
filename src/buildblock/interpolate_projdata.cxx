@@ -716,7 +716,7 @@ interpolate_projdata_push(ProjData& proj_data_out,
       SegmentBySinogram<float> transpose_interleaved_segment =
         transpose_make_non_interleaved_segment(*new_proj_data_info_sptr,
                                              compressed_output);
-      transpose_interleaved_segment.fill(1);
+      //transpose_interleaved_segment.fill(1);
       // =================== CREATE OUTPUT =======================
       proj_data_out.set_segment(transpose_interleaved_segment);
       if (proj_data_out.set_segment(transpose_interleaved_segment) == Succeeded::no)
