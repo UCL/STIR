@@ -94,13 +94,13 @@ namespace detail
         int symmetric_view_num=0;
         if (view_num<org_min_view_num && min_is_extended==true)  //if view number is smaller than the old minimum (left hand side?) and  it's been extended
           {
-            std::cout << "view_num<org_max_view_num " << '\n';
+          //  std::cout << "view_num<org_max_view_num " << '\n';
             use_extension=true;
             symmetric_view_num= view_num + num_views_for_180;
           }
         else if (view_num>org_max_view_num && max_is_extended==true) //if view number is bigger than the old maximum (right hand side?)  it's been extended
           {
-           std::cout << "view_num>org_max_view_num " << '\n';
+          // std::cout << "view_num>org_max_view_num " << '\n';
             use_extension=true;
             symmetric_view_num = view_num - num_views_for_180;
           }
@@ -137,8 +137,8 @@ namespace detail
                            const float min_view_compression, const float max_view_compression)
   {
     //* Check if projdata are from 0 to pi-phi
-    bool min_is_compressed=false;
-    bool max_is_compressed=false;
+      bool min_is_extended=false;
+    bool max_is_extended=false;
     BasicCoordinate<2,int> min_in, max_in;
     if (!sino_segment.get_regular_range(min_in, max_in))
       {
@@ -148,8 +148,6 @@ namespace detail
     const int org_min_view_num=min_in[1];
     const int org_max_view_num=max_in[1];
 
-    IndexRange<2> original_range(min_in, max_in);
-    std::cerr << "MIN and MAX:"<< min_in[1] <<","<< max_in[1] << '\n';
     const float min_phi = proj_data_info.get_phi(Bin(0,0,0,0));
     const float max_phi = proj_data_info.get_phi(Bin(0,max_in[1],0,0));
 
@@ -159,64 +157,65 @@ namespace detail
 
     if (fabs(min_phi)< .01)
       {
-        min_in[1]+=min_view_compression; //increase the min
-        min_is_compressed=true;
+        min_in[1]+=min_view_compression;  //here the new min is bigger than the original
+        min_is_extended=true;
       }
-    if (fabs(max_phi)>.01)
+    //if (fabs(max_phi-(_PI-sampling_phi))<.01)
       {
-        max_in[1]-=max_view_compression; //reduce the max
-        max_is_compressed=true;
+        max_in[1]-=max_view_compression; //here the new max is smaller than the original
+        max_is_extended=true;
       }
 
 
-    std::cerr << "MIN2 and MAX2:"<< min_in[1] <<","<< max_in[1] << '\n';
     IndexRange<2> compressed_range(min_in, max_in);
-
     Array<2,float> input_compressed_view(compressed_range);
 
-    if (!min_is_compressed)
-      warning("Minimum view of the original projdata is not 0");
-    if (!max_is_compressed)
-      warning("Maximum view of the original projdata is not 180-sampling_phi");
+   // if (!min_is_extended)
+   //   warning("Minimum view of the original projdata is not 0");
+   // if (!max_is_extended)
+    //  warning("Maximum view of the original projdata is not 180-sampling_phi");
 
     for (int view_num=min_in[1]; view_num<=max_in[1]; ++view_num)
       {
-        bool use_compression=false;
-        int symmetric_view_num=0;
-        if (view_num<org_min_view_num && min_is_compressed==true)
+        bool use_extension=false;
+        int symmetric_view_num=view_num;
+        /*if (view_num<org_min_view_num && min_is_extended==true)  //if view number is smaller than the old minimum (left hand side?) and  it's been extended
           {
-            use_compression=true;
+            std::cout << "view_num<org_max_view_num " << '\n';
+            use_extension=true;
             symmetric_view_num= view_num + num_views_for_180;
           }
-        else if (view_num>org_max_view_num && max_is_compressed==true)
+        else if (view_num>org_max_view_num && max_is_extended==true) //if view number is bigger than the old maximum (right hand side?)  it's been extended
           {
-            use_compression=true;
+           std::cout << "view_num>org_max_view_num " << '\n';
+            use_extension=true;
             symmetric_view_num = view_num - num_views_for_180;
-          }
+          }*/
 
-        if (!use_compression)
-          input_compressed_view[view_num]=
-            sino_segment[view_num];
-        else
+       // if (!use_extension)
+        //  input_extended_view[view_num]=
+        //    sino_positive_segment[view_num];
+        //else
           {
             const int symmetric_min = std::max(min_in[2], -max_in[2]);
             const int symmetric_max = std::min(-min_in[2], max_in[2]);
             for (int tang_num=symmetric_min; tang_num<=symmetric_max; ++tang_num)
-              input_compressed_view[view_num][tang_num]+=sino_segment[symmetric_view_num][-tang_num];
+              input_compressed_view[view_num][tang_num]=
+                sino_segment[symmetric_view_num][-tang_num];
             // now do extrapolation where we don't have data
             for (int tang_num=min_in[2]; tang_num<symmetric_min; ++tang_num)
-              input_compressed_view[view_num][tang_num] +=
+              input_compressed_view[view_num][tang_num] =
                 input_compressed_view[view_num][symmetric_min];
             for (int tang_num=symmetric_max+1; tang_num<=max_in[2]; ++tang_num)
-              input_compressed_view[view_num][tang_num] +=
+              input_compressed_view[view_num][tang_num] =
                 input_compressed_view[view_num][symmetric_max];
           }
       } // loop over views
+
     return input_compressed_view;
   }
 
-} // end of namespace detail
-
+}
 Array<3,float>
 extend_segment_in_views(const SegmentBySinogram<float>& sino, 
                         const int min_view_extension, const int max_view_extension)
