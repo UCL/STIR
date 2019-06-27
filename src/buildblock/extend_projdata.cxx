@@ -70,12 +70,12 @@ namespace detail
 
     if (fabs(min_phi)< .01)
       {
-        min_in[1]-=min_view_extension; 
+        min_in[1]-=min_view_extension;  //here the new min is lower than the original
         min_is_extended=true;                                   
       }
     if (fabs(max_phi-(_PI-sampling_phi))<.01) 
       {         
-        max_in[1]+=max_view_extension;
+        max_in[1]+=max_view_extension; //here the new max is bigger than the original
         max_is_extended=true;           
       }
 
@@ -92,13 +92,15 @@ namespace detail
       {
         bool use_extension=false;
         int symmetric_view_num=0;
-        if (view_num<org_min_view_num && min_is_extended==true)
+        if (view_num<org_min_view_num && min_is_extended==true)  //if view number is smaller than the old minimum (left hand side?) and  it's been extended
           {
+            std::cout << "view_num<org_max_view_num " << '\n';
             use_extension=true;
             symmetric_view_num= view_num + num_views_for_180;
           }
-        else if (view_num>org_max_view_num && max_is_extended==true)
+        else if (view_num>org_max_view_num && max_is_extended==true) //if view number is bigger than the old maximum (right hand side?)  it's been extended
           {
+           std::cout << "view_num>org_max_view_num " << '\n';
             use_extension=true;
             symmetric_view_num = view_num - num_views_for_180;
           }
