@@ -744,7 +744,7 @@ interpolate_projdata_push(ProjData& proj_data_out,
       extended_proj_data_info_sptr->set_num_views(extended_segment_sino.get_num_views());
 
       // i'm passing extended_segment_sino that is equivalent to the array 'extended' and i need to compress it
-     Array<3,float> out = transpose_extend_segment_in_views(extended_segment_sino,-4, -4); // here we do the tranpose : extended -> sino_out
+     Array<3,float> out = transpose_extend_segment_in_views(extended_segment_sino,4, 4); // here we do the tranpose : extended -> sino_out
 
      /*for (int z=out.get_min_index(); z<= out.get_max_index(); ++z)
         {

@@ -157,12 +157,12 @@ namespace detail
 
     if (fabs(min_phi)< .01)
       {
-        min_in[1]-=min_view_compression;
+        min_in[1]+=min_view_compression; //increase the min
         min_is_compressed=true;
       }
     if (fabs(max_phi-(_PI-sampling_phi))<.01)
       {
-        max_in[1]+=max_view_compression;
+        max_in[1]-=max_view_compression; //reduce the max
         max_is_compressed=true;
       }
 
