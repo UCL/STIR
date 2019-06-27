@@ -189,7 +189,7 @@ push_scatter_estimate(ProjData& scaled_scatter_proj_data,
                            interpolated_direct_scatter_proj_data_info_sptr);
 
 
-    std::cout << "ALEX:"<<  interpolated_direct_scatter.get_num_segments() << "x"<< interpolated_direct_scatter.get_segment_by_sinogram(0).get_num_views()<< "x" <<  interpolated_direct_scatter.get_segment_by_sinogram(0).get_num_tangential_poss()<< '\n';
+    //std::cout << "ALEX:"<<  interpolated_direct_scatter.get_num_segments() << "x"<< interpolated_direct_scatter.get_segment_by_sinogram(0).get_num_views()<< "x" <<  interpolated_direct_scatter.get_segment_by_sinogram(0).get_num_tangential_poss()<< '\n';
     // interpolate projdata
     interpolate_projdata_push(interpolated_direct_scatter, scatter_proj_data, remove_interleaving);
       std::cerr << "PUSH.." << '\n';

@@ -643,7 +643,7 @@ interpolate_projdata_push(ProjData& proj_data_out,
     : 0.F;
   offset[2] =
     (proj_data_out_info.get_phi(Bin(0,0,0,0)) + out_view_offset - proj_data_in_info.get_phi(Bin(0,0,0,0)) - in_view_offset) / out_sampling_phi;
-  offset[2]+=-0.5;
+
   step[2] =
     in_sampling_phi/out_sampling_phi;
 
@@ -724,7 +724,7 @@ interpolate_projdata_push(ProjData& proj_data_out,
      sample_function_on_regular_grid_push(extended,sino_3D_in, offset, step);  //here the output of the push is 'extended'
      shared_ptr<ProjDataInfo> extended_proj_data_info_sptr(proj_data_out_info.clone());  //create extended projdata inf
 
-
+    //  extended[0]=extended[1];
      SegmentBySinogram<float> extended_segment_sino(extended, extended_proj_data_info_sptr, 0); //create SegmentBySinogram with extended
      std::cout<<"ext before compress:" << extended_segment_sino.get_num_views() << "x" <<  extended_segment_sino.get_num_tangential_poss() << '\n';
      extended_proj_data_info_sptr->set_num_views(extended_segment_sino.get_num_views()); // set the number of views
