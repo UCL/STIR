@@ -708,14 +708,18 @@ interpolate_projdata_push(ProjData& proj_data_out,
          }
       std::cout<<"OUT - RESIZED:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
       // =================== TRANSPOSE REMOVE INTERLEAVING =======
-
-
-      // =================== CREATE OUTPUT =======================
       SegmentBySinogram<float> compressed_output(out, extended_proj_data_info_sptr, 0);
       std::cout<<"OUT - SINO:" <<  compressed_output.get_num_views() << "x" <<   compressed_output.get_num_tangential_poss() << '\n';
       std::cout<<"OUT - CORRECT:" << sino_3D_out.get_num_views() << "x" <<  sino_3D_out.get_num_tangential_poss() << '\n';
-      proj_data_out.set_segment(compressed_output);
-      if (proj_data_out.set_segment(compressed_output) == Succeeded::no)
+
+      shared_ptr<ProjDataInfo> new_proj_data_info_sptr = proj_data_out_info.create_shared_clone();
+      SegmentBySinogram<float> transpose_interleaved_segment =
+        transpose_make_non_interleaved_segment(*new_proj_data_info_sptr,
+                                             compressed_output);
+      transpose_interleaved_segment.fill(1);
+      // =================== CREATE OUTPUT =======================
+      proj_data_out.set_segment(transpose_interleaved_segment);
+      if (proj_data_out.set_segment(transpose_interleaved_segment) == Succeeded::no)
          return Succeeded::no;
 
     // }
