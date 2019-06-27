@@ -148,6 +148,8 @@ namespace detail
     const int org_min_view_num=min_in[1];
     const int org_max_view_num=max_in[1];
 
+    IndexRange<2> original_range(min_in, max_in);
+    std::cerr << "MIN and MAX:"<< min_in[1] <<","<< max_in[1] << '\n';
     const float min_phi = proj_data_info.get_phi(Bin(0,0,0,0));
     const float max_phi = proj_data_info.get_phi(Bin(0,max_in[1],0,0));
 
@@ -160,14 +162,16 @@ namespace detail
         min_in[1]+=min_view_compression; //increase the min
         min_is_compressed=true;
       }
-    if (fabs(max_phi-(_PI-sampling_phi))<.01)
+    if (fabs(max_phi)>.01)
       {
         max_in[1]-=max_view_compression; //reduce the max
         max_is_compressed=true;
       }
 
 
+    std::cerr << "MIN2 and MAX2:"<< min_in[1] <<","<< max_in[1] << '\n';
     IndexRange<2> compressed_range(min_in, max_in);
+
     Array<2,float> input_compressed_view(compressed_range);
 
     if (!min_is_compressed)
