@@ -669,7 +669,6 @@ interpolate_projdata_push(ProjData& proj_data_out,
     //    display(non_interleaved_segment, non_interleaved_segment.find_max(),"non-inter");
 
     Array<3,float> extended = extend_segment_in_views(non_interleaved_segment, 2, 2);
-    std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
     for (int z=extended.get_min_index(); z<= extended.get_max_index(); ++z)
       {
         for (int y=extended[z].get_min_index(); y<= extended[z].get_max_index(); ++y)
@@ -683,6 +682,7 @@ interpolate_projdata_push(ProjData& proj_data_out,
           }
       }
 
+      std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
      //std::cout<<"extended before push:" << extended.size_all()/(z_dim*y_dim) << "x" <<  extended[0].size_all()/z_dim << "x" << extended[0][0].size_all() << '\n';
     // for(int segm_num = proj_data_in.get_min_segment_num(); segm_num <= proj_data_in.get_max_segment_num(); ++segm_num)
     // {
@@ -724,7 +724,6 @@ interpolate_projdata_push(ProjData& proj_data_out,
   {
     // ================== this is without remove interleaving ======
     Array<3,float> extended = extend_segment_in_views(proj_data_out.get_segment_by_sinogram(0), 2, 2);
-    std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
    for (int z=extended.get_min_index(); z<= extended.get_max_index(); ++z)
       {
         for (int y=extended[z].get_min_index(); y<= extended[z].get_max_index(); ++y)
@@ -737,6 +736,7 @@ interpolate_projdata_push(ProjData& proj_data_out,
           }
       }
 
+     std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
     //for(int segm_num = proj_data_in.get_min_segment_num(); segm_num < proj_data_in.get_max_segment_num(); ++segm_num)
     //{
 
@@ -751,7 +751,7 @@ interpolate_projdata_push(ProjData& proj_data_out,
      std::cout<<"EXT - SINO:" << extended_segment_sino.get_num_views() << "x" <<  extended_segment_sino.get_num_tangential_poss() << '\n';
      extended_proj_data_info_sptr->set_num_views(extended_segment_sino.get_num_views()); // set the number of views
      Array<3,float> out = transpose_extend_segment_in_views(extended_segment_sino,2,2); // here we do the tranpose : extended -> sino_out
-    std::cout<<"OUT - COMPRESSED:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
+     std::cout<<"OUT - COMPRESSED:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
      for (int z=out.get_min_index(); z<= out.get_max_index(); ++z)
         {
           for (int y=out[z].get_min_index(); y<= out[z].get_max_index(); ++y)
