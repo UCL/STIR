@@ -673,6 +673,8 @@ interpolate_projdata_push(ProjData& proj_data_out,
           }
       }
 
+
+
       std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
       SegmentBySinogram<float> sino_3D_in = proj_data_in.get_segment_by_sinogram(0); //TODO: check if we need a for loop over segments
       // ===========================PUSH ==================================

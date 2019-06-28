@@ -99,8 +99,14 @@ void sample_function_on_regular_grid_pull(Array<3,elemT>& out,
                                                        relative_positions);
         }
     }
+       set_pull_boundary_conditions(out);
 }
 
+template <class elemT>
+void set_pull_boundary_conditions(Array<3,elemT>& out)
+{
+    std::cout<< "I'm here" << '\n';
+}
 
 template <class elemT, class positionT>
 void sample_function_on_regular_grid_push(Array<3,elemT>& out,
