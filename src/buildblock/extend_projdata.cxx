@@ -157,7 +157,7 @@ namespace detail
     for (int view_num=min_in[1]; view_num<=max_in[1]; ++view_num)
       {
         input_compressed_view[view_num]=sino_segment[view_num]; //here we cut everything bigger than max_in and smaller than min_in
-        input_compressed_view[min_in[1]]=input_compressed_view[min_in[1]+1];
+        //input_compressed_view[min_in[1]]=input_compressed_view[min_in[1]+1];
 
       } // loop over views
 

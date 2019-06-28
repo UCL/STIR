@@ -72,7 +72,15 @@ void sample_function_on_regular_grid_push(Array<3,elemT>& out,
                                      const BasicCoordinate<3, positionT>& step);
 template <class elemT>
 inline
-void set_pull_boundary_conditions(Array<3,elemT>& out);
+void axial_position_boundary_conditions(Array<3,elemT>& out);
+
+template <class elemT>
+inline
+void views_position_boundary_conditions(Array<3,elemT>& out);
+
+template <class elemT>
+inline
+void tan_position_boundary_conditions(Array<3,elemT>& out);
 
 END_NAMESPACE_STIR
 

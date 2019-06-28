@@ -99,13 +99,63 @@ void sample_function_on_regular_grid_pull(Array<3,elemT>& out,
                                                        relative_positions);
         }
     }
-       set_pull_boundary_conditions(out);
+       axial_position_boundary_conditions(out);
 }
 
 template <class elemT>
-void set_pull_boundary_conditions(Array<3,elemT>& out)
+void axial_position_boundary_conditions(Array<3,elemT>& array)
 {
-    std::cout<< "I'm here" << '\n';
+    // boundary contitions for the axial position
+
+    for (int i=array[0].get_min_index(); i<= array[0].get_max_index(); ++i)
+       {
+         for (int j=array[0][0].get_min_index(); j<= array[0][0].get_max_index(); ++j)
+          {
+            const int min = array.get_min_index();
+            const int max = array.get_max_index();
+            array[min][i][j]=array[min+1][i][j];
+            array[max][i][j]=array[max-1][i][j];
+            //std::cerr<<min<<","<<max<<'\n';
+          }
+      }
+
+}
+
+template <class elemT>
+void views_boundary_conditions(Array<3,elemT>& array)
+{
+    // boundary contitions for the axial position
+
+    for (int i=array.get_min_index(); i<= array.get_max_index(); ++i)
+       {
+         for (int j=array[0][0].get_min_index(); j<= array[0][0].get_max_index(); ++j)
+          {
+            const int min = array[0].get_min_index();
+            const int max = array[0].get_max_index();
+            array[i][min][j]=array[i][min+1][j];
+            //array[i][max][j]=array[i][max-1][j];
+            //std::cerr<<min<<","<<max<<'\n';
+          }
+      }
+}
+
+
+template <class elemT>
+void tan_position_boundary_conditions(Array<3,elemT>& array)
+{
+    // boundary contitions for the axial position
+
+    for (int i=array.get_min_index(); i<= array.get_max_index(); ++i)
+       {
+         for (int j=array[0].get_min_index(); j<= array[0].get_max_index(); ++j)
+          {
+            const int min = array[0][0].get_min_index();
+            const int max = array[0][0].get_max_index();
+            array[i][j][min]=array[i][j][min+1];
+            array[i][j][max]=array[i][j][max-1];
+            //std::cerr<<min<<","<<max<<'\n';
+          }
+      }
 }
 
 template <class elemT, class positionT>
@@ -146,6 +196,9 @@ void sample_function_on_regular_grid_push(Array<3,elemT>& out,
         }
     }
             out*=(step[1]*step[2]*step[3]); //very important
+            axial_position_boundary_conditions(out);
+            tan_position_boundary_conditions(out);
+            views_boundary_conditions(out);
 }
 
 
