@@ -204,7 +204,7 @@ namespace detail_interpolate_projdata
                    in_sinogram[next_in_view%in_num_views][(next_in_view>=in_num_views ? -1 : 1)*tangential_pos_num] +
                    in_sinogram[other_in_view%in_num_views][(other_in_view>=in_num_views ? -1 : 1)*(tangential_pos_num-1)] +
                    in_sinogram[other_in_view%in_num_views][(other_in_view>=in_num_views ? -1 : 1)*(tangential_pos_num+1)]
-                   )/4;
+                   )/4 + in_sinogram[view_num][tangential_pos_num]; //contribution to itself;
               }
           }
       }
@@ -528,8 +528,8 @@ interpolate_projdata_pull(ProjData& proj_data_out,
     const SegmentBySinogram<float> non_interleaved_segment =
       make_non_interleaved_segment(*non_interleaved_proj_data_info_sptr,
                                            proj_data_in.get_segment_by_sinogram(0));
-    //    display(non_interleaved_segment, non_interleaved_segment.find_max(),"non-inter");
-
+    std::cout<<"ORIGINAL IN:" << proj_data_in_info.get_num_views() << "x" <<  proj_data_in_info.get_num_tangential_poss() << '\n';
+    std::cout<<"NON-INTERLEAVED:" << non_interleaved_segment.get_num_views() << "x" <<  non_interleaved_segment.get_num_tangential_poss() << '\n';
     Array<3,float> extended =
       extend_segment_in_views(non_interleaved_segment, 2, 2);
     for (int z=extended.get_min_index(); z<= extended.get_max_index(); ++z)
@@ -544,8 +544,10 @@ interpolate_projdata_pull(ProjData& proj_data_out,
           }
       }
 
+    std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
     sample_function_on_regular_grid_pull(sino_3D_out,extended, offset, step);
     proj_data_out.set_segment(sino_3D_out);
+    std::cout<<"OUT - CORRECT:" << sino_3D_out.get_num_views() << "x" <<  sino_3D_out.get_num_tangential_poss() << '\n';
     if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
       return Succeeded::no;
   }
@@ -565,7 +567,7 @@ interpolate_projdata_pull(ProjData& proj_data_out,
           }
       }
 
-
+    std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
     sample_function_on_regular_grid_pull(sino_3D_out,extended, offset, step);
     proj_data_out.set_segment(sino_3D_out);
     if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
@@ -683,12 +685,9 @@ interpolate_projdata_push(ProjData& proj_data_out,
 
       // =================== TRANSPOSE EXTENDED ===========================
 
-      shared_ptr<ProjDataInfo> extended_proj_data_info_sptr(proj_data_out_info.clone());  //create extended projdata inf
-      SegmentBySinogram<float> extended_segment_sino(extended, extended_proj_data_info_sptr, 0); //create SegmentBySinogram with extended
-      std::cout<<"EXT - SINO:" << extended_segment_sino.get_num_views() << "x" <<  extended_segment_sino.get_num_tangential_poss() << '\n';
-      extended_proj_data_info_sptr->set_num_views(extended_segment_sino.get_num_views()); // set the number of views
+      SegmentBySinogram<float> extended_segment_sino(extended, non_interleaved_proj_data_info_sptr, 0); //create SegmentBySinogram with extended d
       Array<3,float> out = transpose_extend_segment_in_views(extended_segment_sino,2,2); // here we do the tranpose : extended -> sino_out
-      std::cout<<"OUT - COMPRESSED:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
+      std::cout<<"EXT - TRANSPOSE:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
       for (int z=out.get_min_index(); z<= out.get_max_index(); ++z)
          {
            for (int y=out[z].get_min_index(); y<= out[z].get_max_index(); ++y)
@@ -698,16 +697,19 @@ interpolate_projdata_push(ProjData& proj_data_out,
                out[z][y].grow(old_min+1, old_max-1); //resize
              }
          }
-      std::cout<<"OUT - RESIZED:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
+      std::cout<<"EXT - TRANSPOSE Pt.2:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
       // =================TRANSPOSE REMOVE INTERLEAVING ====================
 
-      SegmentBySinogram<float> compressed_output(out, extended_proj_data_info_sptr, 0);
-      std::cout<<"OUT - SINO:" <<  compressed_output.get_num_views() << "x" <<   compressed_output.get_num_tangential_poss() << '\n';
-      std::cout<<"OUT - CORRECT:" << sino_3D_out.get_num_views() << "x" <<  sino_3D_out.get_num_tangential_poss() << '\n';
+      SegmentBySinogram<float> compressed_output(out, non_interleaved_proj_data_info_sptr, 0);
+      std::cout<<"NON-INTERLEAVED:" <<  compressed_output.get_num_views() << "x" <<   compressed_output.get_num_tangential_poss() << '\n';
 
       shared_ptr<ProjDataInfo> new_proj_data_info_sptr = proj_data_out_info.create_shared_clone();
       SegmentBySinogram<float> transpose_interleaved_segment = transpose_make_non_interleaved_segment(*new_proj_data_info_sptr, compressed_output);
 
+      //std::cout<<"VIEWS - BEFORE:" <<  compressed_output.get_num_views() << '\n';
+      //std::cout<<"VIEWS - AFTER:" << transpose_interleaved_segment.get_num_views() << '\n';
+      std::cout<<"FINAL:" << transpose_interleaved_segment.get_num_views() << "x" <<  transpose_interleaved_segment.get_num_tangential_poss() << '\n';
+      std::cout<<"OUT - CORRECT:" << sino_3D_out.get_num_views() << "x" <<  sino_3D_out.get_num_tangential_poss() << '\n';
       // ======================== CREATE OUTPUT =============================
       proj_data_out.set_segment(transpose_interleaved_segment);
       if (proj_data_out.set_segment(transpose_interleaved_segment) == Succeeded::no)
@@ -741,9 +743,8 @@ interpolate_projdata_push(ProjData& proj_data_out,
      shared_ptr<ProjDataInfo> extended_proj_data_info_sptr(proj_data_out_info.clone());  //create extended projdata inf
      SegmentBySinogram<float> extended_segment_sino(extended, extended_proj_data_info_sptr, 0); //create SegmentBySinogram with extended
      std::cout<<"EXT - SINO:" << extended_segment_sino.get_num_views() << "x" <<  extended_segment_sino.get_num_tangential_poss() << '\n';
-     extended_proj_data_info_sptr->set_num_views(extended_segment_sino.get_num_views()); // set the number of views
      Array<3,float> out = transpose_extend_segment_in_views(extended_segment_sino,2,2); // here we do the tranpose : extended -> sino_out
-     std::cout<<"OUT - COMPRESSED:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
+     std::cout<<"EXT - TRANSPOSE:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
      for (int z=out.get_min_index(); z<= out.get_max_index(); ++z)
         {
           for (int y=out[z].get_min_index(); y<= out[z].get_max_index(); ++y)
@@ -753,11 +754,11 @@ interpolate_projdata_push(ProjData& proj_data_out,
               out[z][y].grow(old_min+1, old_max-1); //resize
             }
         }
-     std::cout<<"OUT - RESIZED:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
+     std::cout<<"EXT - TRANSPOSE Pt.2:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
       // ======================== CREATE OUTPUT =============================
 
      SegmentBySinogram<float> compressed_output(out, extended_proj_data_info_sptr, 0);
-     std::cout<<"OUT - SINO:" <<  compressed_output.get_num_views() << "x" <<   compressed_output.get_num_tangential_poss() << '\n';
+     std::cout<<"FINAL:" <<  compressed_output.get_num_views() << "x" <<   compressed_output.get_num_tangential_poss() << '\n';
      std::cout<<"OUT - CORRECT:" << sino_3D_out.get_num_views() << "x" <<  sino_3D_out.get_num_tangential_poss() << '\n';
      proj_data_out.set_segment(compressed_output);
      if (proj_data_out.set_segment(compressed_output) == Succeeded::no)
