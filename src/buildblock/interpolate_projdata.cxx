@@ -110,27 +110,29 @@ namespace detail_interpolate_projdata
 
     assert(out_sinogram.get_min_view_num() == 0);
     assert(in_sinogram.get_min_view_num() == 0);
-    assert(out_sinogram.get_num_views() == in_sinogram.get_num_views()*2);
+    assert(out_sinogram.get_num_views() == in_sinogram.get_num_views()*2); //check that the views are dowbled
     assert(in_sinogram.get_segment_num() == 0);
     assert(out_sinogram.get_segment_num() == 0);
 
-    const int in_num_views = in_sinogram.get_num_views();
+    const int in_num_views = in_sinogram.get_num_views();  //number of views of the input sinogram
 
-    for (int view_num = out_sinogram.get_min_view_num();
+    for (int view_num = out_sinogram.get_min_view_num(); //output sinogram should have the double number of views
          view_num <= out_sinogram.get_max_view_num();
          ++view_num)
       {
         // TODO don't put in outer tangential poss for now to avoid boundary stuff
-        for (int tangential_pos_num = out_sinogram.get_min_tangential_pos_num()+1;
+        //std::cerr<< "CHECK" << 24%12 << '\n';
+        for (int tangential_pos_num = out_sinogram.get_min_tangential_pos_num()+1; //skip boundaries
              tangential_pos_num <= out_sinogram.get_max_tangential_pos_num()-1;
              ++tangential_pos_num)
           {
+            // here we're filling a bigger grid.
             if ((view_num+tangential_pos_num)%2 == 0)
               {
                 const int in_view_num =
                   view_num%2==0 ? view_num/2 : (view_num+1)/2;
                 out_sinogram[view_num][tangential_pos_num] =
-                  in_sinogram[in_view_num%in_num_views][(in_view_num>=in_num_views? -1: 1)*tangential_pos_num];
+                  in_sinogram[in_view_num%in_num_views][(in_view_num>=in_num_views? -1: 1)*tangential_pos_num]; //filling with the input
               }
             else
               {
@@ -176,36 +178,31 @@ namespace detail_interpolate_projdata
     assert(in_sinogram.get_segment_num() == 0);
     assert(out_sinogram.get_segment_num() == 0);
 
-    const int in_num_views = in_sinogram.get_num_views();
+    if (out_sinogram.get_num_views() != in_sinogram.get_num_views()/2)
+      error("views need to be reduced of a factor 2");
 
-    for (int view_num = out_sinogram.get_min_view_num();
-         view_num <= out_sinogram.get_max_view_num();
+    const int in_num_views = in_sinogram.get_num_views();
+    const int out_num_views = out_sinogram.get_num_views();
+
+    for (int view_num = in_sinogram.get_min_view_num();
+         view_num <= in_sinogram.get_max_view_num();
          ++view_num)
       {
         // TODO don't put in outer tangential poss for now to avoid boundary stuff
-        for (int tangential_pos_num = out_sinogram.get_min_tangential_pos_num()+1;
-             tangential_pos_num <= out_sinogram.get_max_tangential_pos_num()-1;
+        for (int tangential_pos_num = in_sinogram.get_min_tangential_pos_num();
+             tangential_pos_num <= in_sinogram.get_max_tangential_pos_num();
              ++tangential_pos_num)
           {
-            if ((view_num+tangential_pos_num)%2 == 0)
+            // here i need to take the bigger grid an
+            if ((view_num+tangential_pos_num)%2 == 0) //if it's even
               {
-                const int in_view_num =
+                const int out_view_num =
                   view_num%2==0 ? view_num/2 : (view_num+1)/2;
-                out_sinogram[view_num][tangential_pos_num] =
-                  in_sinogram[in_view_num%in_num_views][(in_view_num>=in_num_views? -1: 1)*tangential_pos_num];
+                out_sinogram[out_view_num%out_num_views][(out_view_num>=out_num_views? -1: 1)*tangential_pos_num] =
+                  in_sinogram[view_num][tangential_pos_num];
               }
-            else
-              {
-                const int next_in_view = view_num/2+1;
-                const int other_in_view = (view_num+1)/2;
 
-                out_sinogram[view_num][tangential_pos_num] =
-                  (in_sinogram[view_num/2][tangential_pos_num] +
-                   in_sinogram[next_in_view%in_num_views][(next_in_view>=in_num_views ? -1 : 1)*tangential_pos_num] +
-                   in_sinogram[other_in_view%in_num_views][(other_in_view>=in_num_views ? -1 : 1)*(tangential_pos_num-1)] +
-                   in_sinogram[other_in_view%in_num_views][(other_in_view>=in_num_views ? -1 : 1)*(tangential_pos_num+1)]
-                   )/4 + in_sinogram[view_num][tangential_pos_num]; //contribution to itself;
-              }
+
           }
       }
   }
