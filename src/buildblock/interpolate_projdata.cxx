@@ -547,7 +547,6 @@ interpolate_projdata_pull(ProjData& proj_data_out,
     std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
     sample_function_on_regular_grid_pull(sino_3D_out,extended, offset, step);
     proj_data_out.set_segment(sino_3D_out);
-    std::cout<<"OUT - CORRECT:" << sino_3D_out.get_num_views() << "x" <<  sino_3D_out.get_num_tangential_poss() << '\n';
     if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
       return Succeeded::no;
   }
@@ -566,7 +565,7 @@ interpolate_projdata_pull(ProjData& proj_data_out,
             extended[z][y][old_max+1] = extended[z][y][old_max];
           }
       }
-
+    std::cout<<"ORIGINAL IN:" << proj_data_in_info.get_num_views() << "x" <<  proj_data_in_info.get_num_tangential_poss() << '\n';
     std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
     sample_function_on_regular_grid_pull(sino_3D_out,extended, offset, step);
     proj_data_out.set_segment(sino_3D_out);
