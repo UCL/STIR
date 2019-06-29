@@ -27,6 +27,10 @@ matrix:
    python: 3
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CC=clang-5.0 CXX=clang++-5.0
    # note: cannot use OpenMP yet with Clang on Travis apparently. See https://github.com/travis-ci/travis-ci/issues/8613
+ - os: linux
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=ON" CC=clang-6.0 CXX=clang++-6.0
+
 
    ####  osx
    # note: cannot use OpenMP on OSX yet, see https://github.com/UCL/STIR/issues/117
@@ -58,6 +62,7 @@ addons:
   apt:
     sources:
       - llvm-toolchain-trusty-5.0
+      - llvm-toolchain-trusty-6.0
       - ubuntu-toolchain-r-test
    packages:
       - g++-5
@@ -71,6 +76,7 @@ addons:
       - python3-pytest
       - libgomp1
       - clang-5.0
+      - clang-6.0
       - root-system-bin
       - libroot-tree-dev
       - libroot-tree-treeplayer-dev
@@ -116,7 +122,10 @@ before_install:
       ${PY_EXE} -m pip install pytest numpy
     else
       PY_EXE=`which python3`
-    fi
+      # needed for OPENMP support on Travis
+      # see https://github.com/travis-ci/travis-ci/issues/8613
+      export LD_LIBRARY_PATH=/usr/local/clang/lib:$LD_LIBRARY_PATH
+fi
     ${PY_EXE} --version  
     BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_EXECUTABLE=${PY_EXE}"
       
