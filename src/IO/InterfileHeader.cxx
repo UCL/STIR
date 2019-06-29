@@ -423,10 +423,11 @@ void InterfileHeader::set_type_of_data()
 void InterfileHeader::read_frames_info()
 {
   set_variable();
-  image_scaling_factors.resize(num_time_frames);
-  for (int i=0; i<num_time_frames; i++)
+  const int num_datasets = this->get_num_data_types();
+  image_scaling_factors.resize(num_datasets);
+  for (int i=0; i<num_datasets; i++)
     image_scaling_factors[i].resize(1, 1.);
-  data_offset_each_dataset.resize(num_time_frames, 0UL);
+  data_offset_each_dataset.resize(num_datasets, 0UL);
   image_relative_start_times.resize(num_time_frames, 0.);
   image_durations.resize(num_time_frames, 0.);
 }
@@ -436,7 +437,7 @@ InterfileImageHeader::InterfileImageHeader()
   : InterfileHeader()
 {
   num_image_data_types = 1;
-  index_nesting_level.resize(num_image_data_types, "");
+  index_nesting_level.resize(1, "");
   image_data_type_description.resize(num_image_data_types, "");
     
   add_key("first pixel offset (mm)",
@@ -452,11 +453,13 @@ InterfileImageHeader::InterfileImageHeader()
 void InterfileImageHeader::read_image_data_types()
 {
   set_variable();
-  image_scaling_factors.resize(num_image_data_types);
-  for (int i=0; i<num_image_data_types; i++)
+  const int num_datasets = this->get_num_data_types();
+  image_scaling_factors.resize(num_datasets);
+  for (int i=0; i<num_datasets; i++)
     image_scaling_factors[i].resize(1, 1.);
-  data_offset_each_dataset.resize(num_image_data_types, 0UL);
-  index_nesting_level.resize(num_image_data_types,"");
+  data_offset_each_dataset.resize(num_datasets, 0UL);
+  // should do this if ever we support multiple indices (TODO)
+  //index_nesting_level.resize(2,"");
   image_data_type_description.resize(num_image_data_types,"");
 }
 
