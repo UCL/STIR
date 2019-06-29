@@ -301,7 +301,7 @@ bool InterfileHeader::post_processing()
     }
   }
 
-  for (int frame=0; frame<this->get_num_data_types(); frame++)
+  for (int frame=0; frame<this->get_num_datasets(); frame++)
   {
     if (image_scaling_factors[frame].size() == 1)
     {
@@ -324,7 +324,7 @@ bool InterfileHeader::post_processing()
   if (lln_quantification_units!=1.)
   {
      const bool all_one = image_scaling_factors[0][0] == 1.;
-    for (int frame=0; frame<this->get_num_data_types(); frame++)
+    for (int frame=0; frame<this->get_num_datasets(); frame++)
       for (unsigned int i=0; i<image_scaling_factors[frame].size(); i++)
       {
         // check if all image_scaling_factors are equal to 1 (i.e. the image_scaling_factors keyword 
@@ -423,7 +423,7 @@ void InterfileHeader::set_type_of_data()
 void InterfileHeader::read_frames_info()
 {
   set_variable();
-  const int num_datasets = this->get_num_data_types();
+  const int num_datasets = this->get_num_datasets();
   image_scaling_factors.resize(num_datasets);
   for (int i=0; i<num_datasets; i++)
     image_scaling_factors[i].resize(1, 1.);
@@ -453,7 +453,7 @@ InterfileImageHeader::InterfileImageHeader()
 void InterfileImageHeader::read_image_data_types()
 {
   set_variable();
-  const int num_datasets = this->get_num_data_types();
+  const int num_datasets = this->get_num_datasets();
   image_scaling_factors.resize(num_datasets);
   for (int i=0; i<num_datasets; i++)
     image_scaling_factors[i].resize(1, 1.);
