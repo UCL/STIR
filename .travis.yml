@@ -64,7 +64,7 @@ addons:
       - llvm-toolchain-trusty-5.0
       - llvm-toolchain-trusty-6.0
       - ubuntu-toolchain-r-test
-   packages:
+    packages:
       - g++-5
       - g++-6
       - g++-7
@@ -125,7 +125,7 @@ before_install:
       # needed for OPENMP support on Travis
       # see https://github.com/travis-ci/travis-ci/issues/8613
       export LD_LIBRARY_PATH=/usr/local/clang/lib:$LD_LIBRARY_PATH
-fi
+    fi
     ${PY_EXE} --version  
     BUILD_FLAGS="$BUILD_FLAGS -DPYTHON_EXECUTABLE=${PY_EXE}"
       
