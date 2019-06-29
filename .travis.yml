@@ -10,13 +10,16 @@ matrix:
    #### linux
  - os: linux
    python: 3
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-5 CXX=g++-5
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-6 CXX=g++-6
  - os: linux
    python: 3
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-5 CXX=g++-5
  - os: linux
    python: 3
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON" CC=gcc-5 CXX=g++-5
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON" CC=gcc-7 CXX=g++-7
+ - os: linux
+   python: 3
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON" CC=gcc-8 CXX=g++-8
  - os: linux
    python: 3
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON" -DCMAKE_CXX_STANDARD=11 CC=gcc-5 CXX=g++-5
@@ -55,7 +58,12 @@ addons:
   apt:
     sources:
       - llvm-toolchain-trusty-5.0
-    packages:
+      - ubuntu-toolchain-r-test
+   packages:
+      - g++-5
+      - g++-6
+      - g++-7
+      - g++-8
       - libboost-dev
       - swig3.0
       - python3-dev
