@@ -138,15 +138,18 @@ void transpose_extend_tangential_position(Array<3,elemT>& array)
 template <class elemT>
 void extend_axial_position(Array<3,elemT>& array)
 {
-    for (int i=array[0].get_min_index(); i<= array[0].get_max_index(); ++i)
+     for (int i=array[0].get_min_index(); i<= array[0].get_max_index(); ++i)
        {
          for (int j=array[0][0].get_min_index(); j<= array[0][0].get_max_index(); ++j)
           {
             const int old_min = array.get_min_index();
             const int old_max = array.get_max_index();
-            array.grow(old_min-1, old_max+1)[i][j];
-            array[old_min-1][i] = array[old_min][i][j];
-            array[old_max+1][j] = array[old_max][i][j];
+            //std::cout << old_min <<"," << old_max <<'\n';
+
+            array[i][j].grow(old_min-1,old_max+1);
+            std::cout << array.get_min_index() <<"," << array.get_max_index() <<'\n';
+            //array[old_min-1][i][j] = array[old_min][i][j];
+            //array[old_max+1][j][j] = array[old_max][i][j];
           }
       }
 }
@@ -156,14 +159,19 @@ template <class elemT>
 void transpose_extend_axial_position(Array<3,elemT>& array)
 {
     for (int i=array[0].get_min_index(); i<= array[0].get_max_index(); ++i)
-       {
-         for (int j=array[0][0].get_min_index(); j<= array[0][0].get_max_index(); ++j)
-          {
-            const int old_min = array.get_min_index();
-            const int old_max = array.get_max_index();
-            array.grow(old_min+1, old_max-1)[i][j]; //resize
-          }
-      }
+      {
+        for (int j=array[0][0].get_min_index(); j<= array[0][0].get_max_index(); ++j)
+         {
+           const int old_min = array.get_min_index();
+           const int old_max = array.get_max_index();
+           //std::cout << old_min <<"," << old_max <<'\n';
+
+           array[i][j].grow(old_min+1,old_max-1);
+           //std::cout << array.get_min_index() <<"," << array.get_max_index() <<'\n';
+           //array[old_min-1][i][j] = array[old_min][i][j];
+           //array[old_max+1][j][j] = array[old_max][i][j];
+         }
+     }
 }
 template <class elemT, class positionT>
 void sample_function_on_regular_grid_push(Array<3,elemT>& out,

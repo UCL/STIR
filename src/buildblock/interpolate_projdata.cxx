@@ -690,7 +690,7 @@ interpolate_projdata_push(ProjData& proj_data_out,
      std::cout<<"EXT - SINO:" << extended_segment_sino.get_num_views() << "x" <<  extended_segment_sino.get_num_tangential_poss() << '\n';
      Array<3,float> out = transpose_extend_segment_in_views(extended_segment_sino,2,2); // here we do the tranpose : extended -> sino_out
      std::cout<<"EXT - TRANSPOSE:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
-    transpose_extend_tangential_position(out);
+     transpose_extend_tangential_position(out);
      std::cout<<"EXT - TRANSPOSE Pt.2:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
       // ======================== CREATE OUTPUT =============================
 
