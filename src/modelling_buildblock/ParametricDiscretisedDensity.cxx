@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018 - 2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
   \brief Declaration of class stir::ParametricDiscretisedDensity
 
   \author Kris Thielemans
+  \author Richard Brown
  
 */
 
@@ -51,6 +52,25 @@ get_num_params()
   typedef typename DiscDensityT::full_value_type KinParsT;
   const KinParsT dummy;
   return dummy.size();
+}
+
+TEMPLATE
+ParamDiscDensity::
+ParametricDiscretisedDensity(const DynamicDiscretisedDensity& dyn_im)
+    : base_type(dyn_im.get_density(1).get_index_range(),
+      dyn_im.get_density(1).get_origin(),
+      dynamic_cast<const VoxelsOnCartesianGrid<float>&>(dyn_im.get_density(1)).get_grid_spacing())
+{
+    // Copy exam info
+    this->set_exam_info(dyn_im.get_density(1).get_exam_info());
+
+    // Get the time frame definition (from start of first frame to end of last)
+    TimeFrameDefinitions tdefs = dyn_im.get_exam_info().get_time_frame_definitions();
+    const double start = tdefs.get_start_time(1);
+    const double end   = tdefs.get_end_time(tdefs.get_num_frames());
+    tdefs.set_num_time_frames(1);
+    tdefs.set_time_frame(1,start,end);
+    this->get_exam_info_sptr()->set_time_frame_definitions(tdefs);
 }
 
 #if 0
