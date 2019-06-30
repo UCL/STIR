@@ -527,7 +527,7 @@ interpolate_projdata_pull(ProjData& proj_data_out,
     std::cout<<"NON-INTERLEAVED:" << non_interleaved_segment.get_num_views() << "x" <<  non_interleaved_segment.get_num_tangential_poss() << '\n';
     Array<3,float> extended = extend_segment_in_views(non_interleaved_segment, 2, 2);
     extend_tangential_position(extended);
-
+    extend_axial_position(extended);
     std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
     sample_function_on_regular_grid_pull(sino_3D_out,extended, offset, step);
     proj_data_out.set_segment(sino_3D_out);
@@ -539,6 +539,7 @@ interpolate_projdata_pull(ProjData& proj_data_out,
     Array<3,float> extended =
       extend_segment_in_views(proj_data_in.get_segment_by_sinogram(0), 2, 2);
       extend_tangential_position(extended);
+      extend_axial_position(extended);
     std::cout<<"ORIGINAL IN:" << proj_data_in_info.get_num_views() << "x" <<  proj_data_in_info.get_num_tangential_poss() << '\n';
     std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
     sample_function_on_regular_grid_pull(sino_3D_out,extended, offset, step);
@@ -636,9 +637,10 @@ interpolate_projdata_push(ProjData& proj_data_out,
     const SegmentBySinogram<float> non_interleaved_segment = make_non_interleaved_segment(*non_interleaved_proj_data_info_sptr,
                                                                                             proj_data_out.get_segment_by_sinogram(0));
 
-    Array<3,float> extended = extend_segment_in_views(non_interleaved_segment, 2, 2);
-    extend_tangential_position(extended);
-    extend_axial_position(extended);
+    Array<3,float> extended = extend_segment_in_views(non_interleaved_segment, 2, 2); //extend the views
+    extend_tangential_position(extended); //extend the tangential positions
+    extend_axial_position(extended); //extend the axial positions
+
      //
 
 

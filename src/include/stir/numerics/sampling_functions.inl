@@ -150,6 +150,17 @@ void extend_axial_position(Array<3,elemT>& array)
 
     array.grow(IndexRange<3>(min, max));
 
+    for (int i=array[0].get_min_index(); i<= array[0].get_max_index(); ++i)
+       {
+         for (int j=array[0][0].get_min_index(); j<= array[0][0].get_max_index(); ++j)
+          {
+            const int min = array.get_min_index();
+            const int max = array.get_max_index();
+            array[min][i][j]=array[min+1][i][j];
+            array[max][i][j]=array[max-1][i][j];
+            //std::cerr<<min<<","<<max<<'\n';
+          }
+      }
 
 }
 
