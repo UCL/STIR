@@ -70,17 +70,30 @@ void sample_function_on_regular_grid_push(Array<3,elemT>& out,
                                      const Array<3,elemT>& in,
                                      const BasicCoordinate<3, positionT>&  offset,
                                      const BasicCoordinate<3, positionT>& step);
-template <class elemT>
+/*template <class elemT>
 inline
 void axial_position_boundary_conditions(Array<3,elemT>& out);
 
 template <class elemT>
 inline
-void views_position_boundary_conditions(Array<3,elemT>& out);
+void views_position_boundary_conditions(Array<3,elemT>& out);*/
 
 template <class elemT>
 inline
-void tan_position_boundary_conditions(Array<3,elemT>& out);
+void extend_tangential_position(Array<3,elemT>& out);
+
+template <class elemT>
+inline
+void transpose_extend_tangential_position(Array<3,elemT>& out);
+
+
+template <class elemT>
+inline
+void extend_axial_position(Array<3,elemT>& out);
+
+template <class elemT>
+inline
+void transpose_extend_axial_position(Array<3,elemT>& out);
 
 END_NAMESPACE_STIR
 

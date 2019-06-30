@@ -101,62 +101,70 @@ void sample_function_on_regular_grid_pull(Array<3,elemT>& out,
     }
 }
 
-template <class elemT>
-void axial_position_boundary_conditions(Array<3,elemT>& array)
-{
-    // boundary contitions for the axial position
 
+template <class elemT>
+void extend_tangential_position(Array<3,elemT>& array)
+{
+    for (int z=array.get_min_index(); z<= array.get_max_index(); ++z)
+      {
+        for (int y=array[z].get_min_index(); y<= array[z].get_max_index(); ++y)
+          {
+            const int old_min = array[z][y].get_min_index();
+            const int old_max = array[z][y].get_max_index();
+            array[z][y].grow(old_min-1, old_max+1);
+            array[z][y][old_min-1] = array[z][y][old_min];
+            array[z][y][old_max+1] = array[z][y][old_max];
+          }
+      }
+}
+
+
+template <class elemT>
+void transpose_extend_tangential_position(Array<3,elemT>& array)
+{
+    for (int z=array.get_min_index(); z<= array.get_max_index(); ++z)
+      {
+        for (int y=array[z].get_min_index(); y<= array[z].get_max_index(); ++y)
+          {
+            const int old_min = array[z][y].get_min_index();
+            const int old_max = array[z][y].get_max_index();
+            array[z][y].grow(old_min+1, old_max-1); //resize
+          }
+      }
+}
+
+
+
+template <class elemT>
+void extend_axial_position(Array<3,elemT>& array)
+{
     for (int i=array[0].get_min_index(); i<= array[0].get_max_index(); ++i)
        {
          for (int j=array[0][0].get_min_index(); j<= array[0][0].get_max_index(); ++j)
           {
-            const int min = array.get_min_index();
-            const int max = array.get_max_index();
-            array[min][i][j]=array[min+1][i][j];
-            array[max][i][j]=array[max-1][i][j];
-            //std::cerr<<min<<","<<max<<'\n';
+            const int old_min = array.get_min_index();
+            const int old_max = array.get_max_index();
+            array.grow(old_min-1, old_max+1)[i][j];
+            array[old_min-1][i] = array[old_min][i][j];
+            array[old_max+1][j] = array[old_max][i][j];
           }
       }
-
 }
 
-template <class elemT>
-void views_boundary_conditions(Array<3,elemT>& array)
-{
-    // boundary contitions for the axial position
 
-    for (int i=array.get_min_index(); i<= array.get_max_index(); ++i)
+template <class elemT>
+void transpose_extend_axial_position(Array<3,elemT>& array)
+{
+    for (int i=array[0].get_min_index(); i<= array[0].get_max_index(); ++i)
        {
          for (int j=array[0][0].get_min_index(); j<= array[0][0].get_max_index(); ++j)
           {
-            const int min = array[0].get_min_index();
-            const int max = array[0].get_max_index();
-            array[i][0][j]=100;
-            array[i][max][j]=array[i][max-1][j];
-            //std::cerr<<min<<","<<max<<'\n';
+            const int old_min = array.get_min_index();
+            const int old_max = array.get_max_index();
+            array.grow(old_min+1, old_max-1)[i][j]; //resize
           }
       }
 }
-
-
-template <class elemT>
-void tan_position_boundary_conditions(Array<3,elemT>& array)
-{
-    // boundary contitions for the axial position
-
-    for (int i=array.get_min_index(); i<= array.get_max_index(); ++i)
-       {
-         for (int j=array[0].get_min_index(); j<= array[0].get_max_index(); ++j)
-          {
-            const int min = array[0][0].get_min_index();
-            const int max = array[0][0].get_max_index();
-            array[i][j][min]=array[i][j][min+1];
-            array[i][j][max]=array[i][j][max-1];
-            //std::cerr<<min<<","<<max<<'\n';
-          }
-      }
-}
-
 template <class elemT, class positionT>
 void sample_function_on_regular_grid_push(Array<3,elemT>& out,
                                      const Array<3,elemT>& in,
