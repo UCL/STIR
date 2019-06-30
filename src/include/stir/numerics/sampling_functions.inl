@@ -99,7 +99,6 @@ void sample_function_on_regular_grid_pull(Array<3,elemT>& out,
                                                        relative_positions);
         }
     }
-       axial_position_boundary_conditions(out);
 }
 
 template <class elemT>
@@ -132,8 +131,8 @@ void views_boundary_conditions(Array<3,elemT>& array)
           {
             const int min = array[0].get_min_index();
             const int max = array[0].get_max_index();
-            array[i][min][j]=array[i][min+1][j];
-            //array[i][max][j]=array[i][max-1][j];
+            array[i][0][j]=100;
+            array[i][max][j]=array[i][max-1][j];
             //std::cerr<<min<<","<<max<<'\n';
           }
       }
@@ -196,9 +195,6 @@ void sample_function_on_regular_grid_push(Array<3,elemT>& out,
         }
     }
             out*=(step[1]*step[2]*step[3]); //very important
-            axial_position_boundary_conditions(out);
-            tan_position_boundary_conditions(out);
-            views_boundary_conditions(out);
 }
 
 

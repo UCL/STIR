@@ -201,8 +201,6 @@ namespace detail_interpolate_projdata
                 out_sinogram[out_view_num%out_num_views][(out_view_num>=out_num_views? -1: 1)*tangential_pos_num] =
                   in_sinogram[view_num][tangential_pos_num];
               }
-
-
           }
       }
   }
@@ -565,6 +563,7 @@ interpolate_projdata_pull(ProjData& proj_data_out,
     std::cout<<"ORIGINAL IN:" << proj_data_in_info.get_num_views() << "x" <<  proj_data_in_info.get_num_tangential_poss() << '\n';
     std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
     sample_function_on_regular_grid_pull(sino_3D_out,extended, offset, step);
+    //axial_position_boundary_conditions(sino_3D_out);
     proj_data_out.set_segment(sino_3D_out);
     if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
       return Succeeded::no;
