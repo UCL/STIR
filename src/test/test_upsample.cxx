@@ -89,7 +89,7 @@ std::cout << "TEST LR: 3D size:"<<  LR_proj_data.get_num_segments() << "x"<< LR_
  ProjDataInMemory scaled_proj_data = proj_data;
  scaled_proj_data.fill(1);
 
- //std::cout << "TEST: 3D scaled size:"<<  scaled_proj_data.get_num_segments() << "x"<< scaled_proj_data.get_segment_by_sinogram(0).get_num_views()<< "x" <<  scaled_proj_data.get_segment_by_sinogram(0).get_num_tangential_poss()<< '\n';
+ //std::cout << "TEST: g scaled size:"<<  scaled_proj_data.get_num_segments() << "x"<< scaled_proj_data.get_segment_by_sinogram(0).get_num_views()<< "x" <<  scaled_proj_data.get_segment_by_sinogram(0).get_num_tangential_poss()<< '\n';
 
  std::cout << "-------- Testing Pull --------\n";
  ScatterEstimation::pull_scatter_estimate(scaled_proj_data,proj_data,LR_proj_data,true);
@@ -100,6 +100,19 @@ std::cout << "TEST LR: 3D size:"<<  LR_proj_data.get_num_segments() << "x"<< LR_
  LR_scaled_proj_data.fill(1);
  ScatterEstimation::push_scatter_estimate(LR_scaled_proj_data,LR_proj_data,scaled_proj_data,true);
 
+ SegmentBySinogram<float> array = LR_scaled_proj_data.get_segment_by_sinogram(0);
+
+ BasicCoordinate<3,int> min, max;
+
+ min[1]=array.get_min_index()-1;
+ max[1]=array.get_max_index()+1;
+ min[2]=array[0].get_min_index();;
+ max[2]=array[0].get_max_index();;
+ min[3]=array[0][0].get_max_index();
+ max[3]=array[0][0].get_max_index();
+ array.grow(IndexRange<3>(min, max));
+
+ std::cout << min[1] <<"," << max[1] <<'\n';
  //std::cout << "TEST: 3D downsampled size:"<<  scaled_proj_data_LR.get_num_segments() << "x"<< scaled_proj_data_LR.get_segment_by_sinogram(0).get_num_views()<< "x" <<  scaled_proj_data_LR.get_segment_by_sinogram(0).get_num_tangential_poss()<< '\n';
 
 }

@@ -638,6 +638,8 @@ interpolate_projdata_push(ProjData& proj_data_out,
 
     Array<3,float> extended = extend_segment_in_views(non_interleaved_segment, 2, 2);
     extend_tangential_position(extended);
+    extend_axial_position(extended);
+     //
 
 
       std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
@@ -648,10 +650,11 @@ interpolate_projdata_push(ProjData& proj_data_out,
 
       // =================== TRANSPOSE EXTENDED ===========================
 
+      transpose_extend_axial_position(extended);
+      transpose_extend_tangential_position(extended);
       SegmentBySinogram<float> extended_segment_sino(extended, non_interleaved_proj_data_info_sptr, 0); //create SegmentBySinogram with extended d
       Array<3,float> out = transpose_extend_segment_in_views(extended_segment_sino,2,2); // here we do the tranpose : extended -> sino_out
       std::cout<<"EXT - TRANSPOSE:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
-      transpose_extend_tangential_position(out);
       std::cout<<"EXT - TRANSPOSE Pt.2:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
       // =================TRANSPOSE REMOVE INTERLEAVING ====================
 
@@ -676,6 +679,7 @@ interpolate_projdata_push(ProjData& proj_data_out,
 
       Array<3,float> extended = extend_segment_in_views(proj_data_out.get_segment_by_sinogram(0), 2, 2);
      extend_tangential_position(extended);
+     extend_axial_position(extended);
 
      std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
      SegmentBySinogram<float> sino_3D_in = proj_data_in.get_segment_by_sinogram(0);
@@ -685,12 +689,13 @@ interpolate_projdata_push(ProjData& proj_data_out,
 
       // =================== TRANSPOSE EXTENDED ===========================
 
+     transpose_extend_axial_position(extended);
+     transpose_extend_tangential_position(extended);
      shared_ptr<ProjDataInfo> extended_proj_data_info_sptr(proj_data_out_info.clone());  //create extended projdata inf
      SegmentBySinogram<float> extended_segment_sino(extended, extended_proj_data_info_sptr, 0); //create SegmentBySinogram with extended
      std::cout<<"EXT - SINO:" << extended_segment_sino.get_num_views() << "x" <<  extended_segment_sino.get_num_tangential_poss() << '\n';
      Array<3,float> out = transpose_extend_segment_in_views(extended_segment_sino,2,2); // here we do the tranpose : extended -> sino_out
      std::cout<<"EXT - TRANSPOSE:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
-     transpose_extend_tangential_position(out);
      std::cout<<"EXT - TRANSPOSE Pt.2:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
       // ======================== CREATE OUTPUT =============================
 

@@ -138,40 +138,37 @@ void transpose_extend_tangential_position(Array<3,elemT>& array)
 template <class elemT>
 void extend_axial_position(Array<3,elemT>& array)
 {
-     for (int i=array[0].get_min_index(); i<= array[0].get_max_index(); ++i)
-       {
-         for (int j=array[0][0].get_min_index(); j<= array[0][0].get_max_index(); ++j)
-          {
-            const int old_min = array.get_min_index();
-            const int old_max = array.get_max_index();
-            //std::cout << old_min <<"," << old_max <<'\n';
 
-            array[i][j].grow(old_min-1,old_max+1);
-            std::cout << array.get_min_index() <<"," << array.get_max_index() <<'\n';
-            //array[old_min-1][i][j] = array[old_min][i][j];
-            //array[old_max+1][j][j] = array[old_max][i][j];
-          }
-      }
+    BasicCoordinate<3,int> min, max;
+
+    min[1]=array.get_min_index()-1;
+    max[1]=array.get_max_index()+1;
+    min[2]=array[0].get_min_index();;
+    max[2]=array[0].get_max_index();;
+    min[3]=array[0][0].get_min_index();
+    max[3]=array[0][0].get_max_index();
+
+    array.grow(IndexRange<3>(min, max));
+
+
 }
+
+
 
 
 template <class elemT>
 void transpose_extend_axial_position(Array<3,elemT>& array)
 {
-    for (int i=array[0].get_min_index(); i<= array[0].get_max_index(); ++i)
-      {
-        for (int j=array[0][0].get_min_index(); j<= array[0][0].get_max_index(); ++j)
-         {
-           const int old_min = array.get_min_index();
-           const int old_max = array.get_max_index();
-           //std::cout << old_min <<"," << old_max <<'\n';
+    BasicCoordinate<3,int> min, max;
 
-           array[i][j].grow(old_min+1,old_max-1);
-           //std::cout << array.get_min_index() <<"," << array.get_max_index() <<'\n';
-           //array[old_min-1][i][j] = array[old_min][i][j];
-           //array[old_max+1][j][j] = array[old_max][i][j];
-         }
-     }
+    min[1]=array.get_min_index()+1;
+    max[1]=array.get_max_index()-1;
+    min[2]=array[0].get_min_index();;
+    max[2]=array[0].get_max_index();;
+    min[3]=array[0][0].get_min_index();
+    max[3]=array[0][0].get_max_index();
+    array.grow(IndexRange<3>(min, max));
+
 }
 template <class elemT, class positionT>
 void sample_function_on_regular_grid_push(Array<3,elemT>& out,
