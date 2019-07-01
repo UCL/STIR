@@ -102,6 +102,46 @@ void sample_function_on_regular_grid_pull(Array<3,elemT>& out,
 }
 
 
+template <class elemT, class positionT>
+void sample_function_on_regular_grid_push(Array<3,elemT>& out,
+                                     const Array<3,elemT>& in,
+                                     const BasicCoordinate<3, positionT>&  offset,
+                                     const BasicCoordinate<3, positionT>& step)
+{
+  BasicCoordinate<3,int> min_in, max_in;
+  IndexRange<3> in_range = in.get_index_range();
+  if (!in_range.get_regular_range(min_in,max_in))
+    warning("Output must be regular range!");
+
+  BasicCoordinate<3, int> index_in;
+  BasicCoordinate<3, positionT>  relative_positions;
+  index_in[1]=min_in[1];
+  relative_positions[1]= index_in[1] *step[1] - offset[1] ;
+  const BasicCoordinate<3, positionT> max_relative_positions=
+    (BasicCoordinate<3,positionT>(max_in)+static_cast<positionT>(.001)) * step + offset;
+  for (;
+       index_in[1]<=max_in[1] && relative_positions[1]<=max_relative_positions[1];
+       ++index_in[1], relative_positions[1]+= step[1])
+    {
+      index_in[2]=min_in[2];
+      relative_positions[2]= index_in[2] * step[2] + offset[2] ;
+      for (;
+           index_in[2]<=max_in[2] && relative_positions[2]<=max_relative_positions[2];
+           ++index_in[2], relative_positions[2]+= step[2])
+        {
+          index_in[3]=min_in[3];
+          relative_positions[3]= index_in[3] * step[3] + offset[3] ;
+          for (;
+               index_in[3]<=max_in[3] && relative_positions[3]<=max_relative_positions[3];
+               ++index_in[3], relative_positions[3]+= step[3])
+              push_transpose_linear_interpolate(out,
+                            relative_positions,
+                            in[index_in]);
+        }
+    }
+            out*=(step[1]*step[2]*step[3]); //very important
+}
+
 template <class elemT>
 void extend_tangential_position(Array<3,elemT>& array)
 {
@@ -178,47 +218,5 @@ void transpose_extend_axial_position(Array<3,elemT>& array)
     min[3]=array[0][0].get_min_index();
     max[3]=array[0][0].get_max_index();
     array.grow(IndexRange<3>(min, max));
-
 }
-template <class elemT, class positionT>
-void sample_function_on_regular_grid_push(Array<3,elemT>& out,
-                                     const Array<3,elemT>& in,
-                                     const BasicCoordinate<3, positionT>&  offset,
-                                     const BasicCoordinate<3, positionT>& step)
-{
-  BasicCoordinate<3,int> min_in, max_in;
-  IndexRange<3> in_range = in.get_index_range();
-  if (!in_range.get_regular_range(min_in,max_in))
-    warning("Output must be regular range!");
-
-  BasicCoordinate<3, int> index_in;
-  BasicCoordinate<3, positionT>  relative_positions;
-  index_in[1]=min_in[1];
-  relative_positions[1]= index_in[1] *step[1] - offset[1] ;
-  const BasicCoordinate<3, positionT> max_relative_positions=
-    (BasicCoordinate<3,positionT>(max_in)+static_cast<positionT>(.001)) * step + offset;
-  for (;
-       index_in[1]<=max_in[1] && relative_positions[1]<=max_relative_positions[1];
-       ++index_in[1], relative_positions[1]+= step[1])
-    {
-      index_in[2]=min_in[2];
-      relative_positions[2]= index_in[2] * step[2] + offset[2] ;
-      for (;
-           index_in[2]<=max_in[2] && relative_positions[2]<=max_relative_positions[2];
-           ++index_in[2], relative_positions[2]+= step[2])
-        {
-          index_in[3]=min_in[3];
-          relative_positions[3]= index_in[3] * step[3] + offset[3] ;
-          for (;
-               index_in[3]<=max_in[3] && relative_positions[3]<=max_relative_positions[3];
-               ++index_in[3], relative_positions[3]+= step[3])
-              push_transpose_linear_interpolate(out,
-                            relative_positions,
-                            in[index_in]);
-        }
-    }
-            out*=(step[1]*step[2]*step[3]); //very important
-}
-
-
 END_NAMESPACE_STIR
