@@ -514,9 +514,8 @@ interpolate_projdata_pull(ProjData& proj_data_out,
   if (remove_interleaving)
 
   {
-    shared_ptr<ProjDataInfo> non_interleaved_proj_data_info_sptr = make_non_interleaved_proj_data_info(proj_data_in_info);
-
-    const SegmentBySinogram<float> non_interleaved_segment =  make_non_interleaved_segment(*non_interleaved_proj_data_info_sptr, proj_data_in.get_segment_by_sinogram(0));
+    shared_ptr<ProjDataInfo> non_interleaved_proj_data_info_sptr = make_non_interleaved_proj_data_info(proj_data_in_info); //create non interleaved projdata info
+    const SegmentBySinogram<float> non_interleaved_segment =  make_non_interleaved_segment(*non_interleaved_proj_data_info_sptr, proj_data_in.get_segment_by_sinogram(0)); //create non interleaved segment
     std::cout<<"ORIGINAL IN:" << proj_data_in_info.get_num_views() << "x" <<  proj_data_in_info.get_num_tangential_poss() << '\n';
     std::cout<<"NON-INTERLEAVED:" << non_interleaved_segment.get_num_views() << "x" <<  non_interleaved_segment.get_num_tangential_poss() << '\n';
 
@@ -635,18 +634,17 @@ interpolate_projdata_push(ProjData& proj_data_out,
     extend_tangential_position(extended); //extend the tangential positions
     extend_axial_position(extended); //extend the axial positions
 
-
     std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
-    SegmentBySinogram<float> sino_3D_in = proj_data_in.get_segment_by_sinogram(0); //TODO: check if we need a for loop over segments
     // ===========================PUSH ==================================
 
+    SegmentBySinogram<float> sino_3D_in = proj_data_in.get_segment_by_sinogram(0); //TODO: check if we need a for loop over segments
     sample_function_on_regular_grid_push(extended,sino_3D_in, offset, step);  //here the output of the push is 'extended'
 
     // =================== TRANSPOSE EXTENDED ===========================
 
     transpose_extend_axial_position(extended); //reduce axial positions
     transpose_extend_tangential_position(extended); //reduce tangential positions
-    SegmentBySinogram<float> extended_segment_sino(extended, non_interleaved_proj_data_info_sptr, 0); //create SegmentBySinogram with extended d
+    SegmentBySinogram<float> extended_segment_sino(extended, non_interleaved_proj_data_info_sptr, 0); //create SegmentBySinogram with extended
     Array<3,float> out = transpose_extend_segment_in_views(extended_segment_sino,2,2); // here we do the tranpose : extended -> sino_out
     std::cout<<"EXT - TRANSPOSE:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
     std::cout<<"EXT - TRANSPOSE Pt.2:" << out.size_all()/(out[0][0].size_all()*out[0].size_all()/(out[0][0].size_all())) << "x" <<  out[0].size_all()/out[0][0].size_all()<< "x" << out[0][0].size_all() << '\n';
@@ -675,10 +673,10 @@ interpolate_projdata_push(ProjData& proj_data_out,
     extend_axial_position(extended); //extend the axial positions
 
     std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
-    SegmentBySinogram<float> sino_3D_in = proj_data_in.get_segment_by_sinogram(0);
 
     // ===========================PUSH ==================================
 
+   SegmentBySinogram<float> sino_3D_in = proj_data_in.get_segment_by_sinogram(0);
     sample_function_on_regular_grid_push(extended,sino_3D_in, offset, step);  //here the output of the push is 'extended'
 
     // =================== TRANSPOSE EXTENDED ===========================
