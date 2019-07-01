@@ -158,7 +158,6 @@ void extend_axial_position(Array<3,elemT>& array)
             const int max = array.get_max_index();
             array[min][i][j]=array[min+1][i][j];
             array[max][i][j]=array[max-1][i][j];
-            //std::cerr<<min<<","<<max<<'\n';
           }
       }
 
