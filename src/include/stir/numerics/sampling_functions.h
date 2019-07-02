@@ -80,11 +80,11 @@ void views_position_boundary_conditions(Array<3,elemT>& out);*/
 
 template <class elemT>
 inline
-void extend_tangential_position(Array<3,elemT>& out);
+void extend_tangential_position(Array<3,elemT>& out,int min_ext, int max_ext);
 
 template <class elemT>
 inline
-void transpose_extend_tangential_position(Array<3,elemT>& out);
+void transpose_extend_tangential_position(Array<3,elemT>& out, int min_red, int max_red);
 
 
 template <class elemT>

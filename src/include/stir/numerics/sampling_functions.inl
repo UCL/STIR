@@ -143,7 +143,7 @@ void sample_function_on_regular_grid_push(Array<3,elemT>& out,
 }
 
 template <class elemT>
-void extend_tangential_position(Array<3,elemT>& array)
+void extend_tangential_position(Array<3,elemT>& array, int min_ext, int max_ext)
 {
     for (int z=array.get_min_index(); z<= array.get_max_index(); ++z)
       {
@@ -151,16 +151,23 @@ void extend_tangential_position(Array<3,elemT>& array)
           {
             const int old_min = array[z][y].get_min_index();
             const int old_max = array[z][y].get_max_index();
-            array[z][y].grow(old_min-1, old_max+1);
-            array[z][y][old_min-1] = array[z][y][old_min];
-            array[z][y][old_max+1] = array[z][y][old_max];
+            array[z][y].grow(old_min-min_ext, old_max+max_ext);
+            for (int i = 0; i<min_ext; ++i)
+            {
+                array[z][y][old_min-i] = array[z][y][old_min];
+            }
+
+            for (int j = 0; j<max_ext; ++j)
+            {
+                array[z][y][old_max+j] = array[z][y][old_max];
+            }
           }
       }
 }
 
 
 template <class elemT>
-void transpose_extend_tangential_position(Array<3,elemT>& array)
+void transpose_extend_tangential_position(Array<3,elemT>& array, int min_red, int max_red)
 {
     for (int z=array.get_min_index(); z<= array.get_max_index(); ++z)
       {
@@ -168,7 +175,7 @@ void transpose_extend_tangential_position(Array<3,elemT>& array)
           {
             const int old_min = array[z][y].get_min_index();
             const int old_max = array[z][y].get_max_index();
-            array[z][y].grow(old_min+1, old_max-1); //resize
+            array[z][y].grow(old_min+min_red, old_max-max_red); //resize
           }
       }
 }
