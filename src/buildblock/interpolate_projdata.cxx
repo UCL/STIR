@@ -537,7 +537,9 @@ interpolate_projdata_pull(ProjData& proj_data_out,
     std::cout<<"ORIGINAL IN:" << proj_data_in_info.get_num_views() << "x" <<  proj_data_in_info.get_num_tangential_poss() << '\n';
     std::cout<<"EXT - ARRAY:" << extended.size_all()/(extended[0][0].size_all()*extended[0].size_all()/(extended[0][0].size_all())) << "x" <<  extended[0].size_all()/extended[0][0].size_all()<< "x" << extended[0][0].size_all() << '\n';
 
-    sample_function_on_regular_grid_pull(sino_3D_out,extended, offset, step); //pull interpolation
+   // sample_function_on_regular_grid_pull(sino_3D_out,extended, offset, step); //pull interpolation
+    SegmentBySinogram<float> sino_3D_in = proj_data_in.get_segment_by_sinogram(0) ;
+    sample_function_on_regular_grid_pull(sino_3D_out,sino_3D_in, offset, step); //pull interpolation
     proj_data_out.set_segment(sino_3D_out); //fill the output
     if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
       return Succeeded::no;
@@ -677,8 +679,8 @@ interpolate_projdata_push(ProjData& proj_data_out,
     // ===========================PUSH ==================================
 
    SegmentBySinogram<float> sino_3D_in = proj_data_in.get_segment_by_sinogram(0);
-    sample_function_on_regular_grid_push(extended,sino_3D_in, offset, step);  //here the output of the push is 'extended'
-
+    //sample_function_on_regular_grid_push(extended,sino_3D_in, offset, step);  //here the output of the push is 'extended'
+    sample_function_on_regular_grid_push(sino_3D_out,sino_3D_in, offset, step);  //here the output of the push is 'extended'
     // =================== TRANSPOSE EXTENDED ===========================
 
     transpose_extend_axial_position(extended);
@@ -695,8 +697,11 @@ interpolate_projdata_push(ProjData& proj_data_out,
     SegmentBySinogram<float> compressed_output(out, extended_proj_data_info_sptr, 0);
     std::cout<<"FINAL:" <<  compressed_output.get_num_views() << "x" <<   compressed_output.get_num_tangential_poss() << '\n';
     std::cout<<"OUT - CORRECT:" << sino_3D_out.get_num_views() << "x" <<  sino_3D_out.get_num_tangential_poss() << '\n';
-    proj_data_out.set_segment(compressed_output);
-    if (proj_data_out.set_segment(compressed_output) == Succeeded::no)
+//    proj_data_out.set_segment(compressed_output);
+  //  if (proj_data_out.set_segment(compressed_output) == Succeeded::no)
+
+    proj_data_out.set_segment(sino_3D_out);
+    if (proj_data_out.set_segment(sino_3D_out) == Succeeded::no)
        return Succeeded::no;
 
     }
