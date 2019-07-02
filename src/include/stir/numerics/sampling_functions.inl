@@ -108,7 +108,9 @@ void sample_function_on_regular_grid_push(Array<3,elemT>& out,
                                      const BasicCoordinate<3, positionT>&  offset,
                                      const BasicCoordinate<3, positionT>& step)
 {
-  BasicCoordinate<3,int> min_in, max_in;
+
+BasicCoordinate<3,int> min_in, max_in;
+
   IndexRange<3> in_range = in.get_index_range();
   if (!in_range.get_regular_range(min_in,max_in))
     warning("Output must be regular range!");
