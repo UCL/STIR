@@ -141,7 +141,7 @@ BasicCoordinate<3,int> min_in, max_in;
                             in[index_in]);
         }
     }
-            out*=(step[1]*step[2]*step[3]); //very important
+            //out*=(step[1]*step[2]*step[3]); //very important
 }
 
 template <class elemT>
