@@ -82,33 +82,34 @@ USING_NAMESPACE_STIR
       shared_ptr<DynamicDiscretisedDensity> 
 	dyn_image_sptr(read_from_file<DynamicDiscretisedDensity>(argv[2]));
       const DynamicDiscretisedDensity & dyn_image= *dyn_image_sptr;
-#if 1
-      shared_ptr<ParametricVoxelsOnCartesianGrid> 
-	par_image_sptr(ParametricVoxelsOnCartesianGrid::read_from_file(argv[1]));
-      ParametricVoxelsOnCartesianGrid par_image = *par_image_sptr;
-#else
-      ParametricVoxelsOnCartesianGrid par_image(dyn_image[1]);
-#endif
-
-      // Get exam info from input. Input is dynamic with multiple time frames. The
-      // output parametric image is going to be a single time frame that goes from
-      // the start of the first dynamic image to the end of the last.
-      TimeFrameDefinitions tdefs = dyn_image.get_exam_info().get_time_frame_definitions();
-      const double start = tdefs.get_start_time();
-      const double end   = tdefs.get_end_time();
-      tdefs.set_num_time_frames(1);
-      tdefs.set_time_frame(1,start,end);
-      // Set the time frame defintions
-      par_image.get_exam_info_sptr()->set_time_frame_definitions(tdefs);
+      shared_ptr<ParametricVoxelsOnCartesianGrid> par_image_sptr;
+      // If the file already exists, use it as a template
+      std::ifstream file(argv[1]);
+      if (file) {
+          warning("The output file already exists, so using this as a template.");
+          par_image_sptr = shared_ptr<ParametricVoxelsOnCartesianGrid>(ParametricVoxelsOnCartesianGrid::read_from_file(argv[1]));
+          // Modify template by getting exam info from input. Input is dynamic with multiple time frames. The
+          // output parametric image is going to be a single time frame that goes from
+          // the start of the first dynamic image to the end of the last.
+          TimeFrameDefinitions tdefs = dyn_image.get_exam_info().get_time_frame_definitions();
+          const double start = tdefs.get_start_time();
+          const double end   = tdefs.get_end_time();
+          tdefs.set_num_time_frames(1);
+          tdefs.set_time_frame(1,start,end);
+          // Set the time frame defintions
+          par_image_sptr->get_exam_info_sptr()->set_time_frame_definitions(tdefs);
+      }
+      else
+          par_image_sptr = MAKE_SHARED<ParametricVoxelsOnCartesianGrid>(dyn_image);
 
       //ToDo: Assertion for the dyn-par images, sizes I have to create from one to the other image, so then it should be OK...      
       assert(indirect_patlak.get_time_frame_definitions().get_num_frames()==dyn_image.get_time_frame_definitions().get_num_frames());
-      indirect_patlak.apply_linear_regression(par_image,dyn_image);
+      indirect_patlak.apply_linear_regression(*par_image_sptr,dyn_image);
 
       // Writing image
       std::cerr << "Writing parametric-image in '"<< argv[1] << "'\n";
       const Succeeded writing_succeeded=OutputFileFormat<ParametricVoxelsOnCartesianGrid>::default_sptr()->  
-	write_to_file(argv[1], par_image); 
+	write_to_file(argv[1], *par_image_sptr);
       std::cerr << "Total time for Image-Based Patlak in sec: " << timer.value() <<"\n";
       timer.stop();  
       
