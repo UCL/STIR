@@ -61,10 +61,10 @@ run_tests()
     shared_ptr<ExamInfo> LR_exam_info_sptr(new ExamInfo);
 
     //creating proj data info
-    shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 1,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ false));
+    shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ false));
 
     //creating low resolution proj data info
-    shared_ptr<ProjDataInfo> LR_proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 1,/*views*/ 24, /*tang_pos*/32, /*arc_corrected*/ false));
+    shared_ptr<ProjDataInfo> LR_proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 24, /*tang_pos*/32, /*arc_corrected*/ false));
 
     // construct y
     ProjDataInMemory y(exam_info_sptr, proj_data_info_sptr);
@@ -77,7 +77,7 @@ run_tests()
     ProjDataInMemory Aty(LR_exam_info_sptr, LR_proj_data_info_sptr);
 
 
-    x.fill(1);
+    x.fill(0.2);
     y.fill(1);
 
     Ax.fill(0); //initialise output
