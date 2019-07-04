@@ -36,6 +36,9 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/scatter/SingleScatterSimulation.h"
 #include "stir/scatter/ScatterEstimation.h"
+#include "stir/Sinogram.h"
+#include "stir/Array.h"
+
 
 
 START_NAMESPACE_STIR
@@ -53,53 +56,83 @@ run_tests()
 {
   std::cout << "-------- Testing Upsampling and Downsampling --------\n";
 
-
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
     shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
     shared_ptr<ExamInfo> LR_exam_info_sptr(new ExamInfo);
 
     //creating proj data info
-    shared_ptr<ProjDataInfo> proj_data_info_sptr
-      (ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 1,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ false));
+    shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 1,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ false));
 
     //creating low resolution proj data info
-    shared_ptr<ProjDataInfo> LR_proj_data_info_sptr
-      (ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 1,/*views*/ 24, /*tang_pos*/32, /*arc_corrected*/ false));
+    shared_ptr<ProjDataInfo> LR_proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 1,/*views*/ 24, /*tang_pos*/32, /*arc_corrected*/ false));
+
+    // construct y
+    ProjDataInMemory y(exam_info_sptr, proj_data_info_sptr);
+    // construct x
+    ProjDataInMemory x(LR_exam_info_sptr, LR_proj_data_info_sptr);
+
+    // construct Ax
+    ProjDataInMemory Ax(exam_info_sptr, proj_data_info_sptr);
+    // construct x
+    ProjDataInMemory Aty(LR_exam_info_sptr, LR_proj_data_info_sptr);
 
 
-    // construct projdata
-    ProjDataInMemory proj_data(exam_info_sptr, proj_data_info_sptr);
-    {
-      Sinogram<float> sinogram = proj_data.get_sinogram(0,0);
-      check_if_equal(sinogram.find_min(),0.F,"test constructor and get_sinogram");
-    }
+    x.fill(1);
+    y.fill(1);
 
-    // construct LR projdata
-    ProjDataInMemory LR_proj_data(LR_exam_info_sptr, LR_proj_data_info_sptr);
-    {
-      Sinogram<float> LR_sinogram = LR_proj_data.get_sinogram(0,0);
-      check_if_equal(LR_sinogram.find_min(), 0.F, "test constructor and get_sinogram");
-    }
+    Ax.fill(0); //initialise output
+    Aty.fill(0); //initialise output
 
-  proj_data.fill(1);
-  LR_proj_data.fill(1);
- std::cout << "TEST: 3D size:"<<  proj_data.get_num_segments() << "x"<< proj_data.get_segment_by_sinogram(0).get_num_views()<< "x" <<  proj_data.get_segment_by_sinogram(0).get_num_tangential_poss()<< '\n';
-std::cout << "TEST LR: 3D size:"<<  LR_proj_data.get_num_segments() << "x"<< LR_proj_data.get_segment_by_sinogram(0).get_num_views()<< "x" <<  LR_proj_data.get_segment_by_sinogram(0).get_num_tangential_poss()<< '\n';
-
- ProjDataInMemory scaled_proj_data = proj_data;
- scaled_proj_data.fill(1);
-
- //std::cout << "TEST: g scaled size:"<<  scaled_proj_data.get_num_segments() << "x"<< scaled_proj_data.get_segment_by_sinogram(0).get_num_views()<< "x" <<  scaled_proj_data.get_segment_by_sinogram(0).get_num_tangential_poss()<< '\n';
-
- std::cout << "-------- Testing Pull --------\n";
- ScatterEstimation::pull_scatter_estimate(scaled_proj_data,proj_data,LR_proj_data,true);
+    bool remove_interleaving = false;
+    std::cout << "-------- Testing Pull --------\n";
+    ScatterEstimation::pull_scatter_estimate(Ax,y,x,remove_interleaving);
 
     std::cout << "-------- Testing Push --------\n";
 
- ProjDataInMemory LR_scaled_proj_data = LR_proj_data;
- LR_scaled_proj_data.fill(1);
- ScatterEstimation::push_scatter_estimate(LR_scaled_proj_data,LR_proj_data,scaled_proj_data,true);
+    ScatterEstimation::push_scatter_estimate(Aty,x,y,remove_interleaving);
 
+    std::cout << "-------- <Ax|y> = <x|A*y> --------\n";
+
+    float cdot1 = 0;
+    float cdot2 = 0;
+
+    for ( int segment_num = y.get_min_segment_num(); segment_num <= y.get_max_segment_num(); ++segment_num)
+      {
+        for (int axial_pos = y.get_min_axial_pos_num(segment_num); axial_pos <= y.get_max_axial_pos_num(segment_num); ++axial_pos)
+          {
+
+            const Sinogram<float> y_sinogram = y.get_sinogram(axial_pos, segment_num);
+            const Sinogram<float> Ax_sinogram = Ax.get_sinogram(axial_pos, segment_num);
+
+            for ( int view_num = y.get_min_view_num(); view_num <= y.get_max_view_num();view_num++)
+              {
+                for ( int tang_pos = y.get_min_tangential_pos_num(); tang_pos <= y.get_max_tangential_pos_num(); tang_pos++)
+                 {
+                     cdot1 += Ax_sinogram[view_num][tang_pos]*y_sinogram[view_num][tang_pos];
+                  }
+               }
+             }
+          }
+
+    for ( int segment_num = x.get_min_segment_num(); segment_num <= x.get_max_segment_num(); ++segment_num)
+      {
+        for (int axial_pos = x.get_min_axial_pos_num(segment_num); axial_pos <= x.get_max_axial_pos_num(segment_num); ++axial_pos)
+          {
+
+            const Sinogram<float> x_sinogram = x.get_sinogram(axial_pos, segment_num);
+            const Sinogram<float> Aty_sinogram = Aty.get_sinogram(axial_pos, segment_num);
+
+            for ( int view_num = x.get_min_view_num(); view_num <= x.get_max_view_num();view_num++)
+              {
+                for ( int tang_pos = x.get_min_tangential_pos_num(); tang_pos <= x.get_max_tangential_pos_num(); tang_pos++)
+                 {
+                     cdot2 += x_sinogram[view_num][tang_pos]*Aty_sinogram[view_num][tang_pos];
+                  }
+               }
+             }
+          }
+
+    std::cout << cdot1 << "=" << cdot2 << '\n';
 
 }
 

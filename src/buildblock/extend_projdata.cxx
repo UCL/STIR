@@ -189,7 +189,6 @@ extend_segment_in_views(const SegmentBySinogram<float>& sino,
         extend_sinogram_in_views(sino[ax_pos_num],sino[ax_pos_num], 
                                  *(sino.get_proj_data_info_ptr()),
                                  min_view_extension, max_view_extension);
-      //out[min[1]]=out[min[1]+1];
     }
   return out;
 }
