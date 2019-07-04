@@ -516,25 +516,12 @@ set_output_proj_data_sptr(shared_ptr<ProjData>& arg)
 
 void
 ScatterSimulation::
-set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>& arg)
+set_template_proj_data_info_sptr(shared_ptr<ProjDataInfo> arg)
 {
     this->proj_data_info_cyl_noarc_cor_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(arg->clone()));
 
     if (is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr))
         error("ScatterSimulation: Can only handle non-arccorrected data");
-
-    if (downsample_scanner_dets > 1 || downsample_scanner_rings > 1)
-        this->proj_data_info_cyl_noarc_cor_sptr.reset(
-                dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(downsample_scanner(proj_data_info_cyl_noarc_cor_sptr)->clone()) );
-
-
-    if (this->proj_data_info_cyl_noarc_cor_sptr->get_num_segments() > 1) // do SSRB
-    {
-        info("ScatterSimulation: Performing SSRB on template info ...");
-        this->proj_data_info_cyl_noarc_cor_sptr.reset(
-                dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>(SSRB(* this->proj_data_info_cyl_noarc_cor_sptr,
-                                                                      this->proj_data_info_cyl_noarc_cor_sptr->get_num_segments(), 1, false)));
-    }
 
     // find final size of detection_points_vector
     this->total_detectors =
@@ -547,6 +534,20 @@ set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>& arg)
     // remove any cached values as they'd be incorrect if the sizes changes
     this->remove_cache_for_integrals_over_attenuation();
     this->remove_cache_for_integrals_over_activity();
+}
+
+
+shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+ScatterSimulation::
+get_template_proj_data_info_sptr() const
+{
+    return this->proj_data_info_cyl_noarc_cor_sptr;
+}
+
+shared_ptr<ExamInfo>
+ScatterSimulation::get_ExamInfo_sptr() const
+{
+    return this->template_exam_info_sptr;
 }
 
 void
@@ -564,6 +565,29 @@ set_template_proj_data_info(const std::string& filename)
 
     this->set_template_proj_data_info_sptr(tmp_proj_data_info_sptr);
 
+    if (downsample_scanner_dets > 1 || downsample_scanner_rings > 1)
+        downsample_scanner();
+}
+
+void
+ScatterSimulation::set_template_proj_data_info(const ProjDataInfo& arg)
+{
+    this->proj_data_info_cyl_noarc_cor_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(arg.clone()));
+
+    if (is_null_ptr(this->proj_data_info_cyl_noarc_cor_sptr))
+        error("ScatterSimulation: Can only handle non-arccorrected data");
+
+    // find final size of detection_points_vector
+    this->total_detectors =
+            this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_rings()*
+            this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_detectors_per_ring ();
+
+    // reserve space to avoid reallocation, but the actual size will grow dynamically
+    this->detection_points_vector.reserve(static_cast<std::size_t>(this->total_detectors));
+
+    // remove any cached values as they'd be incorrect if the sizes changes
+    this->remove_cache_for_integrals_over_attenuation();
+    this->remove_cache_for_integrals_over_activity();
 }
 
 void
@@ -573,30 +597,69 @@ set_exam_info_sptr(const shared_ptr<ExamInfo>& arg)
     this->template_exam_info_sptr = arg;
 }
 
-shared_ptr<ProjDataInfo>
-ScatterSimulation::
-downsample_scanner(shared_ptr<ProjDataInfo> arg)
+Succeeded
+ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
 {
+    if (new_num_rings == -1)
+        if(downsample_scanner_rings > -1)
+            new_num_rings = downsample_scanner_rings;
+        else
+            return Succeeded::no;
 
-    // copy localy.
+    if (new_num_dets == -1)
+        if(downsample_scanner_dets > -1)
+            new_num_dets = downsample_scanner_dets;
+        else
+            return Succeeded::no;
+
+
     info("ScatterSimulator: Downsampling scanner of template info ...");
-    shared_ptr<Scanner> new_scanner_sptr( new Scanner(*arg->get_scanner_ptr()));
+    // copy localy.
+    shared_ptr<Scanner> new_scanner_sptr( new Scanner(*this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()));
 
-    // preserve the lenght of the scanner
-    float scanner_lenght = new_scanner_sptr->get_num_rings()* new_scanner_sptr->get_ring_spacing();
+    // preserve the length of the scanner
+    float scanner_length = new_scanner_sptr->get_num_rings()* new_scanner_sptr->get_ring_spacing();
 
-    new_scanner_sptr->set_num_rings(static_cast<int>(new_scanner_sptr->get_num_rings()/downsample_scanner_rings));
-    new_scanner_sptr->set_num_detectors_per_ring(static_cast<int>(new_scanner_sptr->get_num_detectors_per_ring()/downsample_scanner_dets));
-    new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_lenght/new_scanner_sptr->get_num_rings()));
+    new_scanner_sptr->set_num_rings(new_num_rings);
+    new_scanner_sptr->set_num_detectors_per_ring(new_num_dets);
+    new_scanner_sptr->set_ring_spacing(static_cast<float>(scanner_length/new_scanner_sptr->get_num_rings()));
+    new_scanner_sptr->set_max_num_non_arccorrected_bins(new_num_dets-1);
+    new_scanner_sptr->set_default_bin_size(new_scanner_sptr->get_default_bin_size()*2);
 
+    // Find how much is the delta ring
+    // If the previous projdatainfo had max segment == 1 then should be from SSRB
+    // in ScatterEstimation. Otherwise use the max possible.
+    int delta_ring = proj_data_info_cyl_noarc_cor_sptr->get_num_segments() == 1 ? delta_ring = 0 :
+            new_scanner_sptr->get_num_rings()-1;
 
-    ProjDataInfo * tmp_proj_data_info_2d_ptr = ProjDataInfo::ProjDataInfoCTI(new_scanner_sptr,
-                                                                             1, 0,
-                                                                             new_scanner_sptr->get_num_detectors_per_ring()/2,
-                                                                             new_scanner_sptr->get_num_detectors_per_ring()/2,
-                                                                             false);
+    this->proj_data_info_cyl_noarc_cor_sptr.reset(dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >(
+                                                      ProjDataInfo::ProjDataInfoCTI(new_scanner_sptr,
+                                                                                    1, delta_ring,
+                                                                                    new_scanner_sptr->get_num_detectors_per_ring()/2,
+                                                                                    new_scanner_sptr->get_max_num_non_arccorrected_bins(),
+                                                                                    false)->clone()));
 
-    return tmp_proj_data_info_2d_ptr->create_shared_clone();
+    if(!is_null_ptr(output_proj_data_sptr))
+    {
+        this->output_proj_data_sptr.reset(new ProjDataInMemory(this->template_exam_info_sptr,
+                                                               this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone()));
+        this->output_proj_data_sptr->fill(0.0);
+        info("ScatterSimulation: output projection data created.");
+    }
+
+    // find final size of detection_points_vector
+    this->total_detectors =
+            this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_rings()*
+            this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_detectors_per_ring ();
+
+    // reserve space to avoid reallocation, but the actual size will grow dynamically
+    this->detection_points_vector.reserve(static_cast<std::size_t>(this->total_detectors));
+
+    // remove any cached values as they'd be incorrect if the sizes changes
+    this->remove_cache_for_integrals_over_attenuation();
+    this->remove_cache_for_integrals_over_activity();
+
+    return Succeeded::yes;
 }
 
 void

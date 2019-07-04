@@ -39,6 +39,8 @@
 #include "stir/Sinogram.h"
 #include "stir/Array.h"
 
+#include "stir/IO/write_to_file.h"
+
 
 
 START_NAMESPACE_STIR
@@ -62,19 +64,28 @@ run_tests()
 
     //creating proj data info
     shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
+
+    //shared_ptr<ProjData> HR = ProjData::read_from_file("projdata_UU.hs");
+
+    shared_ptr<ProjData> LR = ProjData::read_from_file("simulated_scatter_sino_UU.hs");
     //creating low resolution proj data info
-    shared_ptr<ProjDataInfo> LR_proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 21, /*tang_pos*/31, /*arc_corrected*/ false));
+    // construct y
+    //ProjDataInMemory y(exam_info_sptr, proj_data_info_sptr);
+
+
 
     // construct y
+    //ProjDataInMemory y(*HR);
     ProjDataInMemory y(exam_info_sptr, proj_data_info_sptr);
+
     // construct x
-    ProjDataInMemory x(LR_exam_info_sptr, LR_proj_data_info_sptr);
+    ProjDataInMemory x(*LR);
 
     // construct Ax
+   // ProjDataInMemory Ax(*HR);
     ProjDataInMemory Ax(exam_info_sptr, proj_data_info_sptr);
     // construct x
-    ProjDataInMemory Aty(LR_exam_info_sptr, LR_proj_data_info_sptr);
-
+    ProjDataInMemory Aty(*LR);
 
     x.fill(1);
     y.fill(1);
@@ -132,6 +143,7 @@ run_tests()
           }
 
     std::cout << cdot1 << "=" << cdot2 << '\n';
+    check_if_equal(cdot1, cdot2, "test adjoint");
 
 }
 

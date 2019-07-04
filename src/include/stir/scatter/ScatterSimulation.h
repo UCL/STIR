@@ -144,10 +144,17 @@ public:
     shared_ptr<ProjData>
     get_output_proj_data_sptr();
 
+    //! Get the template ProjDataInfo
+    shared_ptr<ProjDataInfoCylindricalNoArcCorr> get_template_proj_data_info_sptr() const;
+    //! Get the ExamInfo as shared pointer
+    shared_ptr<ExamInfo> get_ExamInfo_sptr() const;
+
     //! \details Load the scatter template and perform basic checks.
-    void set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>&);
+    void set_template_proj_data_info_sptr(shared_ptr<ProjDataInfo>);
 
     void set_template_proj_data_info(const std::string&);
+
+    void set_template_proj_data_info(const ProjDataInfo&);
 
     void set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 
@@ -205,6 +212,8 @@ public:
     //@}
 
 
+Succeeded downsample_scanner(int new_num_rings = -1, int new_num_dets = -1);
+
 protected:
 
     //! computes scatter for one viewgram
@@ -216,7 +225,6 @@ protected:
     compute_emis_to_det_points_solid_angle_factor(const CartesianCoordinate3D<float>& emis_point,
                                                   const CartesianCoordinate3D<float>& detector_coord);
 
-    shared_ptr<ProjDataInfo> downsample_scanner(shared_ptr<ProjDataInfo> arg);
 
     virtual void set_defaults();
     virtual void initialise_keymap();
