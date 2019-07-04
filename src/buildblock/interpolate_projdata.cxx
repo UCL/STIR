@@ -196,23 +196,46 @@ namespace detail_interpolate_projdata
              tangential_pos_num <= in_sinogram.get_max_tangential_pos_num()-1;
              ++tangential_pos_num)
           {
+              const int out_view_num =
+              view_num%2==0 ? view_num/2 : (view_num+1)/2;
+              int first_view=in_sinogram.get_min_view_num();
+              int last_view=in_sinogram.get_max_view_num();
+
             // here i need to take the bigger grid an
             if ((view_num+tangential_pos_num)%2 == 0) //if it's even
               {
-                const int out_view_num =
-                  view_num%2==0 ? view_num/2 : (view_num+1)/2;
-                out_sinogram[out_view_num%out_num_views][tangential_pos_num] +=
-                  in_sinogram[view_num][tangential_pos_num]+(in_sinogram[view_num-1][tangential_pos_num] +
-                        in_sinogram[view_num+1][tangential_pos_num] +
-                        in_sinogram[view_num][(tangential_pos_num-1)] +
-                        in_sinogram[view_num][(tangential_pos_num+1)]
-                        )/4;
-            }
+
+                out_sinogram[out_view_num%out_num_views][tangential_pos_num] += in_sinogram[view_num][tangential_pos_num] +
+                                                        (in_sinogram[view_num-1][tangential_pos_num] +
+                                                        in_sinogram[view_num+1][tangential_pos_num] +
+                                                        in_sinogram[view_num][(tangential_pos_num-1)] +
+                                                        in_sinogram[view_num][(tangential_pos_num+1)])/4;
+
+                //BOUNDARY CONDITIONS FOR MIN AND MAX TAN POS
+                out_sinogram[out_view_num%out_num_views][in_sinogram.get_min_tangential_pos_num()] =
+                                                        (in_sinogram[view_num][(in_sinogram.get_min_tangential_pos_num()+1)])/4;
+                out_sinogram[out_view_num%out_num_views][in_sinogram.get_max_tangential_pos_num()] =
+                                                        (in_sinogram[view_num][(in_sinogram.get_max_tangential_pos_num()-1)])/4;
+               }
+
+
+               //BOUNDARY FOR MIN AND MAX VIEWS
+               out_sinogram[first_view][tangential_pos_num] = in_sinogram[first_view][tangential_pos_num]+
+                                       (in_sinogram[first_view+1][tangential_pos_num] +
+                                       in_sinogram[last_view][tangential_pos_num]+
+                                       in_sinogram[first_view][(tangential_pos_num-1)] +
+                                       in_sinogram[first_view][(tangential_pos_num+1)])/4;
+
+               //CORNERS
+               out_sinogram[first_view][in_sinogram.get_min_tangential_pos_num()] =
+                                       (in_sinogram[first_view][(in_sinogram.get_max_tangential_pos_num()-1)])/4;
+               out_sinogram[first_view][in_sinogram.get_max_tangential_pos_num()] =
+                                       (in_sinogram[first_view][(in_sinogram.get_min_tangential_pos_num()+1)])/4;
+
 
           }
       }
   }
-
 
   static void
   make_non_interleaved_segment(SegmentBySinogram<float>& out_segment,
