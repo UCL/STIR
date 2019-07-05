@@ -65,19 +65,32 @@ run_tests()
     //creating proj data info
     shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
 
-    shared_ptr<ProjData> LR = ProjData::read_from_file("simulated_scatter_sino_UU2.hs");
+   // shared_ptr<ProjData> LR = ProjData::read_from_file("simulated_scatter_sino_UU2.hs");
+
 
     // construct y
     ProjDataInMemory y(exam_info_sptr, proj_data_info_sptr);
 
+
+    unique_ptr<SingleScatterSimulation> sss(new SingleScatterSimulation());
+    sss->set_template_proj_data_info_sptr(proj_data_info_sptr);
+    int down_rings = static_cast<int>(scanner_sptr->get_num_rings()/8);
+    int down_dets = static_cast<int>(scanner_sptr->get_max_num_views()/12);
+
+    sss->downsample_scanner(down_rings, down_dets);
+
+
+    shared_ptr<ProjDataInfoCylindricalNoArcCorr> sss_projdata(sss->get_template_proj_data_info_sptr());
+
+
     // construct x
-    ProjDataInMemory x(*LR);
+    ProjDataInMemory x(sss->get_ExamInfo_sptr(), sss->get_template_proj_data_info_sptr());
 
     // construct Ax
 
     ProjDataInMemory Ax(exam_info_sptr, proj_data_info_sptr);
     // construct x
-    ProjDataInMemory Aty(*LR);
+    ProjDataInMemory Aty(sss->get_ExamInfo_sptr(), sss->get_template_proj_data_info_sptr());
 
     x.fill(1);
     y.fill(2);
