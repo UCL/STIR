@@ -65,31 +65,22 @@ run_tests()
     //creating proj data info
     shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
 
-    //shared_ptr<ProjData> HR = ProjData::read_from_file("projdata_UU.hs");
-
-    //system("cd  /Users/luto/Documents/STIR/test_sino");
     shared_ptr<ProjData> LR = ProjData::read_from_file("simulated_scatter_sino_UU.hs");
-    //creating low resolution proj data info
-    // construct y
-    //ProjDataInMemory y(exam_info_sptr, proj_data_info_sptr);
-
-
 
     // construct y
-    //ProjDataInMemory y(*HR);
     ProjDataInMemory y(exam_info_sptr, proj_data_info_sptr);
 
     // construct x
     ProjDataInMemory x(*LR);
 
     // construct Ax
-   // ProjDataInMemory Ax(*HR);
+
     ProjDataInMemory Ax(exam_info_sptr, proj_data_info_sptr);
     // construct x
     ProjDataInMemory Aty(*LR);
 
     x.fill(1);
-    y.fill(1);
+    y.fill(2);
 
     Ax.fill(0); //initialise output
     Aty.fill(0); //initialise output
