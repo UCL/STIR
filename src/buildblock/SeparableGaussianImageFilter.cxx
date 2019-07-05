@@ -148,7 +148,28 @@ initialise_keymap()
     this->parser.add_stop_key("END Separable Gaussian Filter Parameters");
 }
 
-  
+template <typename elemT>
+void
+SeparableGaussianImageFilter<elemT>::
+set_fwhms(const BasicCoordinate< num_dimensions,float>& arg)
+{
+ fwhms = BasicCoordinate<num_dimensions,float>(arg);
+}
+
+template <typename elemT>
+void
+SeparableGaussianImageFilter<elemT>::
+set_max_kernel_sizes(const BasicCoordinate< num_dimensions,int>& arg)
+{
+  max_kernel_sizes  = BasicCoordinate<num_dimensions,int>(arg);
+}
+template <typename elemT>
+void
+SeparableGaussianImageFilter<elemT>::
+set_normalise(const bool arg)
+{
+  normalise = arg;
+}
 
 
 template<>

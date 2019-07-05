@@ -1,6 +1,3 @@
-//
-// $Id: 
-//
 /*!
 
   \file
@@ -12,8 +9,6 @@
   \author Sanida Mustafovic
   \author Ludovica Brusaferri
 
-   $Date: 
-   $Revision: 
 */
 /*
     Copyright (C) 2000 - 2009-06-22, Hammersmith Imanet Ltd

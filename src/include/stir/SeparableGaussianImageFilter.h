@@ -1,10 +1,8 @@
-//
-//
 /*!
 
   \file
   \ingroup buildblock  
-  \brief Declaration of class SeparableGaussianImageFilter
+  \brief Declaration of class stir::SeparableGaussianImageFilter
     
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -74,6 +72,9 @@ public:
   //! Default constructor
   SeparableGaussianImageFilter();
 
+  void set_fwhms(const BasicCoordinate< num_dimensions,float>&);
+  void set_max_kernel_sizes(const BasicCoordinate< num_dimensions,int>&);
+  void set_normalise(const bool);
 private:
 
   BasicCoordinate< num_dimensions,float> get_fwhms();
@@ -81,6 +82,9 @@ private:
   bool get_normalised_filter();
   
   BasicCoordinate< num_dimensions,float> fwhms;
+
+protected:
+
   BasicCoordinate< num_dimensions,int> max_kernel_sizes;
   bool normalise;
   

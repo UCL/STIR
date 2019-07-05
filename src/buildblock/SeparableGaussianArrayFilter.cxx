@@ -133,9 +133,9 @@ calculate_coefficients(VectorWithOffset<elemT>& filter_coefficients, const int m
   for (int i = 1; i<=kernel_length;i++)
   { 
     filter_coefficients[i] = 
-      filter_coefficients[-i]= 
+      filter_coefficients[-i]= static_cast<elemT>(
       exp(-square(i)/(2.*square(standard_deviation)))/
-      sqrt(2*square(standard_deviation)*_PI);
+      sqrt(2*square(standard_deviation)*_PI));
 
 // kernel.grow(0,2*max_kernel_size-1);
 
