@@ -67,6 +67,7 @@ run_tests()
 
     //shared_ptr<ProjData> HR = ProjData::read_from_file("projdata_UU.hs");
 
+    //system("cd  /Users/luto/Documents/STIR/test_sino");
     shared_ptr<ProjData> LR = ProjData::read_from_file("simulated_scatter_sino_UU.hs");
     //creating low resolution proj data info
     // construct y

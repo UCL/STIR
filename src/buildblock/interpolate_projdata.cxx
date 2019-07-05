@@ -734,6 +734,7 @@ interpolate_projdata_push(ProjData& proj_data_out,
     SegmentBySinogram<float> compressed_output(out, extended_proj_data_info_sptr, 0);
     std::cout<<"FINAL:" <<  compressed_output.get_num_views() << "x" <<   compressed_output.get_num_tangential_poss() << '\n';
     std::cout<<"OUT - CORRECT:" << sino_3D_out.get_num_views() << "x" <<  sino_3D_out.get_num_tangential_poss() << '\n';
+
     proj_data_out.set_segment(compressed_output);
     if (proj_data_out.set_segment(compressed_output) == Succeeded::no)
 
