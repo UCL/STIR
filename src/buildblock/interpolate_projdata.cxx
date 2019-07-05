@@ -228,9 +228,9 @@ namespace detail_interpolate_projdata
 
                //CORNERS
                out_sinogram[first_view][in_sinogram.get_min_tangential_pos_num()] =
-                                       (in_sinogram[first_view][(in_sinogram.get_max_tangential_pos_num()-1)])/4;
+                                       (in_sinogram[first_view][(in_sinogram.get_max_tangential_pos_num())])/4;
                out_sinogram[first_view][in_sinogram.get_max_tangential_pos_num()] =
-                                       (in_sinogram[first_view][(in_sinogram.get_min_tangential_pos_num()+1)])/4;
+                                       (in_sinogram[first_view][(in_sinogram.get_min_tangential_pos_num())])/4;
 
 
           }
