@@ -180,19 +180,23 @@ push_scatter_estimate(ProjData& scaled_scatter_proj_data,
                                   const bool remove_interleaving)
 {
 
-    shared_ptr<ProjDataInfo> interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_ptr()->clone());
+    shared_ptr<ProjDataInfo> interpolated_direct_scatter_proj_data_info_sptr(scatter_proj_data.get_proj_data_info_ptr()->clone());
+    ProjDataInMemory interpolated_direct_scatter(scatter_proj_data.get_exam_info_sptr(),interpolated_direct_scatter_proj_data_info_sptr);
+
     interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
 
 
-    info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
-    ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
-                           interpolated_direct_scatter_proj_data_info_sptr);
+   //transpose SSRB on scatter_proj_data
+
+    transpose_inverse_SSRB(interpolated_direct_scatter, scatter_proj_data);
 
 
-    interpolate_projdata_push(interpolated_direct_scatter, scatter_proj_data, remove_interleaving);
-      std::cerr << "PUSH.." << '\n';
-    // Perform Inverse Single Slice Rebinning
-    inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);
+    interpolate_projdata_push(scaled_scatter_proj_data, interpolated_direct_scatter, remove_interleaving);
+
+    //transpose reduce segment on interpolated_direct_scatter
+
+
+    //extend segment
 
 }
 

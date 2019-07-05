@@ -56,5 +56,8 @@ Succeeded
 inverse_SSRB(ProjData& proj_data_4D,
 	     const ProjData& proj_data_3D);
 
+Succeeded
+transpose_inverse_SSRB(ProjData& proj_data_4D,
+         const ProjData& proj_data_3D);
 END_NAMESPACE_STIR
 
