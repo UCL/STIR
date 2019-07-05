@@ -163,26 +163,23 @@ transpose_inverse_SSRB(ProjData& proj_data_3D,
         get_empty_sinogram(proj_data_3D.get_min_axial_pos_num(0) , 0);
     std::cout<< "SSRB-3D"<< proj_data_3D.get_max_axial_pos_num(0) << '\n';
 
-    for (int out_segment_num = proj_data_4D.get_min_segment_num();
-         out_segment_num <= proj_data_4D.get_max_segment_num();
-         ++out_segment_num)
-      {
-        for (int out_ax_pos_num = proj_data_4D.get_min_axial_pos_num(out_segment_num);
-             out_ax_pos_num  <= proj_data_4D.get_max_axial_pos_num(out_segment_num);
+
+        for (int out_ax_pos_num = proj_data_3D.get_min_axial_pos_num(0);
+             out_ax_pos_num  <= proj_data_3D.get_max_axial_pos_num(0);
              ++out_ax_pos_num )
             {
-                sino_4D = proj_data_4D.get_empty_sinogram(out_ax_pos_num, out_segment_num);
-                const float out_m =
-                    proj_data_4D_info_ptr->
-                    get_m(Bin(out_segment_num, 0, out_ax_pos_num, 0));
-                int num_contributing_sinos = 0;
+                sino_3D = proj_data_3D.get_empty_sinogram(out_ax_pos_num, 0);
 
-                for (int out_ax_pos_num = proj_data_4D.get_min_axial_pos_num(out_segment_num);
-                     out_ax_pos_num  <= proj_data_4D.get_max_axial_pos_num(out_segment_num);
-                     ++out_ax_pos_num )
+                for (int in_segment_num = proj_data_4D.get_min_segment_num();
+                     in_segment_num <= proj_data_4D.get_max_segment_num();
+                     ++in_segment_num)
+                  {
+
+                for (int in_ax_pos_num = proj_data_4D.get_min_axial_pos_num(in_segment_num);
+                     in_ax_pos_num  <= proj_data_4D.get_max_axial_pos_num(in_segment_num);
+                     ++in_ax_pos_num )
                 {
-                    sino_3D = proj_data_3D.get_sinogram(out_ax_pos_num,0);
-                    sino_4D = proj_data_4D.get_sinogram(out_ax_pos_num,out_segment_num);
+                    sino_4D = proj_data_4D.get_sinogram(in_ax_pos_num,in_segment_num);
                     sino_3D+=sino_4D;
                     sino_3D*=0.5;
 

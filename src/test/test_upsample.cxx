@@ -63,7 +63,7 @@ run_tests()
     shared_ptr<ExamInfo> LR_exam_info_sptr(new ExamInfo);
 
     //creating proj data info
-    shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 1,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
+    shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
 
    // shared_ptr<ProjData> LR = ProjData::read_from_file("simulated_scatter_sino_UU2.hs");
 
