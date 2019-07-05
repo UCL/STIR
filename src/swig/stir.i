@@ -69,6 +69,7 @@
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/PixelsOnCartesianGrid.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/zoom.h"
 
 #include "stir/GeneralisedPoissonNoiseGenerator.h"
   
@@ -1260,6 +1261,9 @@ namespace stir {
 #endif
 
 } // namespace stir
+
+%include "stir/ZoomOptions.h"
+%include "stir/zoom.h"
 
 %rename (get_scanner) *::get_scanner_ptr;
 %ignore *::get_proj_data_info_ptr;

@@ -29,6 +29,7 @@ set(${dir_LIB_SOURCES}
   extend_projdata 
   DiscretisedDensity 
   VoxelsOnCartesianGrid 
+  ParseDiscretisedDensityParameters
   utilities 
   interfile_keyword_functions 
   zoom 

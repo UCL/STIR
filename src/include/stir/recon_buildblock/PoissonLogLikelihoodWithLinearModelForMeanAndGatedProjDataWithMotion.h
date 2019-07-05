@@ -31,6 +31,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/RegisteredObject.h"
 #include "stir/RegisteredParsingObject.h"
+#include "stir/ParseAndCreateFrom.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
 #include "stir/VectorWithOffset.h"
@@ -160,31 +161,7 @@ public  RegisteredParsingObject<PoissonLogLikelihoodWithLinearModelForMeanAndGat
     get_time_gate_definitions() const ;
 
   /**********************/
-  // image stuff
-  // TODO to be replaced with single class or so (TargetT obviously)
-  //! the output image size in x and y direction
-  /*! convention: if -1, use a size such that the whole FOV is covered
-   */
-  int _output_image_size_xy; // KT 10122001 appended _xy
-
-  //! the output image size in z direction
-  /*! convention: if -1, use default as provided by VoxelsOnCartesianGrid constructor
-   */
-  int _output_image_size_z; // KT 10122001 new
-
-  //! the zoom factor
-  double _zoom;
-
-  //! offset in the x-direction
-  double _Xoffset;
-
-  //! offset in the y-direction
-  double _Yoffset;
-
-  // KT 20/06/2001 new
-  //! offset in the z-direction
-  double _Zoffset;
-
+  ParseAndCreateFrom<TargetT, GatedProjData> target_parameter_parser;
   /********************************/
   //! name of file in which additive projection data are stored
   std::string _additive_gated_proj_data_filename;

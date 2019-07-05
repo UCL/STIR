@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2006,  Hammersmith Imanet Ltd 
-    Copyright (C) 2018, University College London
+    Copyright (C) 2016, 2018 - 2019 University College London
     This file is part of STIR. 
  
     This file is free software; you can redistribute it and/or modify 
@@ -23,18 +23,16 @@
   
   \brief  implementation of the stir::AnalyticReconstruction class 
     
-  \author Matthew Jacobson
   \author Kris Thielemans
-  \author Sanida Mustafovic
+  \author Matthew Jacobson
+  \author Nikos Efthimiou
   \author PARAPET project
       
 */
 
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/CartesianCoordinate3D.h"
 #include "stir/Succeeded.h"
-#include "stir/utilities.h"
 #include "stir/is_null_ptr.h"
 #include "stir/info.h"
 #include <iostream>
@@ -53,12 +51,7 @@ AnalyticReconstruction::set_defaults()
   input_filename="";
   max_segment_num_to_process=-1;
   proj_data_ptr.reset(); 
-  output_image_size_xy=-1;
-  output_image_size_z=-1;
-  zoom=1.F;
-  Xoffset=0.F;
-  Yoffset=0.F;
-  Zoffset=0.F;
+  target_parameter_parser.set_defaults();
 }
 
 
@@ -72,13 +65,7 @@ AnalyticReconstruction::initialise_keymap()
 
   parser.add_key("maximum absolute segment number to process", &max_segment_num_to_process);
 
-  parser.add_key("zoom", &zoom);
-  parser.add_key("XY output image size (in pixels)",&output_image_size_xy);
-  parser.add_key("Z output image size (in pixels)",&output_image_size_z);
-  //parser.add_key("X offset (in mm)", &Xoffset); // KT 10122001 added spaces
-  //parser.add_key("Y offset (in mm)", &Yoffset);
-  
-  parser.add_key("Z offset (in mm)", &Zoffset);
+  this->target_parameter_parser.add_to_keymap(parser);
 
 //  parser.add_key("END", &KeyParser::stop_parsing);
  
@@ -120,29 +107,6 @@ void AnalyticReconstruction::ask_parameters()
 
   output_filename_prefix=output_filename_prefix_char;
 
-  zoom=  ask_num("Specify a zoom factor as magnification effect ? ",0.1,10.,1.);
-
-
-  output_image_size_xy =  
-    ask_num("Final image size (-1 for default)? ",
-	    -1,
-	    4*static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom),
-	    -1);
-    
-#if 0    
-    // This section enables you to position a reconstructed image
-    // along x (horizontal), y (vertical) and/or z (transverse) axes
-    // The default values is in the center of the FOV,
-    // the positve direction is
-    // for x-axis, toward the patient's left side (assuming typical spinal, head first position)
-    // for y-axis, toward the top of the FOV
-    // for z-axis, toward the patient's feet (assuming typical spinal, head first position)
-    
-    cout << endl << "    Enter offset  Xoff, Yoff (in pixels) :";
-    Xoffset = ask_num("   X offset  ",-old_size/2, old_size/2, 0);
-    Yoffset = ask_num("   Y offset  ",-old_size/2, old_size/2, 0);
-#endif
-
 }
 #endif // ask_parameters disabled
 
@@ -161,15 +125,8 @@ bool AnalyticReconstruction::post_processing()
  
   proj_data_ptr= ProjData::read_from_file(input_filename);
 
-  if (zoom <= 0)
-  { warning("zoom should be positive\n"); return true; }
-  
-  if (output_image_size_xy!=-1 && output_image_size_xy<1) // KT 10122001 appended_xy
-  { warning("output image size xy must be positive (or -1 as default)\n"); return true; }
-  if (output_image_size_z!=-1 && output_image_size_z<1) // KT 10122001 new
-  { warning("output image size z must be positive (or -1 as default)\n"); return true; }
+  target_parameter_parser.check_values();
 
-  
   return false;
 }
 
@@ -181,16 +138,7 @@ AnalyticReconstruction::
 construct_target_image_ptr() const
 {
   return
-      new VoxelsOnCartesianGrid<float> (this->get_input_data().get_exam_info_sptr(),
-                                        *this->proj_data_ptr->get_proj_data_info_ptr(),
-					static_cast<float>(this->zoom),
-					CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset),
-								     static_cast<float>(this->Yoffset),
-								     static_cast<float>(this->Xoffset)),
-					CartesianCoordinate3D<int>(this->output_image_size_z,
-                                                                   this->output_image_size_xy,
-                                                                   this->output_image_size_xy)
-                                       );
+    this->target_parameter_parser.create(this->get_input_data());
 }
 
 
@@ -241,6 +189,57 @@ get_input_data() const
 {
   return *this->proj_data_ptr;
 }
- 
+
+// forwarding functions for ParseDiscretisedDensityParameters
+int
+AnalyticReconstruction::
+get_output_image_size_xy() const
+{ return target_parameter_parser.get_output_image_size_xy(); }
+
+void
+AnalyticReconstruction::
+set_output_image_size_xy(int v)
+{ target_parameter_parser.set_output_image_size_xy(v); }
+
+int
+AnalyticReconstruction::
+get_output_image_size_z() const
+{ return target_parameter_parser.get_output_image_size_z(); }
+
+void
+AnalyticReconstruction::
+set_output_image_size_z(int v)
+{ target_parameter_parser.set_output_image_size_z(v); }
+
+float
+AnalyticReconstruction::
+get_zoom_xy() const
+{ return target_parameter_parser.get_zoom_xy(); }
+
+void
+AnalyticReconstruction::
+set_zoom_xy(float v)
+{ target_parameter_parser.set_zoom_xy(v); }
+
+float
+AnalyticReconstruction::
+get_zoom_z() const
+{ return target_parameter_parser.get_zoom_z(); }
+
+void
+AnalyticReconstruction::
+set_zoom_z(float v)
+{ target_parameter_parser.set_zoom_z(v); }
+
+const CartesianCoordinate3D<float>&
+AnalyticReconstruction::
+get_offset() const
+{ return target_parameter_parser.get_offset(); }
+
+void
+AnalyticReconstruction::
+set_offset(const CartesianCoordinate3D<float>& v)
+{ target_parameter_parser.set_offset(v); }
+
 END_NAMESPACE_STIR
 

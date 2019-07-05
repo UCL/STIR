@@ -1,8 +1,7 @@
-//
-//
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
+    Copyright (C) 2018-2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,6 +27,7 @@
   \author Kris Thielemans
   \author Claire Labbe
   \author PARAPET project
+  \author Ludovica Brusaferri
 
 
 
@@ -90,6 +90,7 @@
 */
 
 #include "stir/common.h"
+#include "stir/ZoomOptions.h"
 
 START_NAMESPACE_STIR
 
@@ -149,7 +150,8 @@ VoxelsOnCartesianGrid<float>
 zoom_image(const VoxelsOnCartesianGrid<float> &image,
 	   const CartesianCoordinate3D<float>& zooms,
 	   const CartesianCoordinate3D<float>& offsets_in_mm,
-	   const BasicCoordinate<3,int>& new_sizes);
+	   const BasicCoordinate<3,int>& new_sizes,
+           const ZoomOptions = ZoomOptions::preserve_sum);
 
 /*! 
   \brief 
@@ -179,7 +181,8 @@ void
 zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
 		    const CartesianCoordinate3D<float>& zooms,
 		    const CartesianCoordinate3D<float>& offsets_in_mm,
-		    const BasicCoordinate<3,int>& new_sizes);
+		    const BasicCoordinate<3,int>& new_sizes,
+                    const ZoomOptions = ZoomOptions::preserve_sum);
 
 /*!
  \brief zoom \a image_in according to dimensions, origin and voxel_size of \a image_out.
@@ -189,10 +192,16 @@ zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
   (as returned by 
   DiscretisedDensity\<3,float\>::get_physical_coordinates_for_indices)
   remain the same.
+
+    The code also provides for three possible rescaling options:
+   (i)   preserving the image values: should be used when zooming an attenuation image
+   (ii)  preserving the image projectors: should be used when zooming an activity image
+   (iii) preserving the image sum: default
 */
 void 
 zoom_image(VoxelsOnCartesianGrid<float> &image_out, 
-	   const VoxelsOnCartesianGrid<float> &image_in);
+           const VoxelsOnCartesianGrid<float> &image_in,
+           const ZoomOptions = ZoomOptions::preserve_sum);
 
 //------------------ 2D zooms---------------------
 
@@ -204,7 +213,8 @@ zoom \a image2D_in according to dimensions, origin and pixel_size of
 */
 void
 zoom_image(PixelsOnCartesianGrid<float> &image2D_out, 
-           const PixelsOnCartesianGrid<float> &image2D_in);
+           const PixelsOnCartesianGrid<float> &image2D_in,
+           const ZoomOptions = ZoomOptions::preserve_sum);
 
 /*!
   \brief zoom \a image, replacing the first argument with the new data
@@ -214,7 +224,8 @@ VoxelsOnCartesianGrid<float>
 zoom_image(const VoxelsOnCartesianGrid<float> &image,
 	   const float zoom,
 	   const float x_offset_in_mm, const float y_offset_in_mm, 
-	   const int new_size);
+	   const int new_size,
+           const ZoomOptions = ZoomOptions::preserve_sum);
 
 /*!
   \brief zoom \a image, replacing the first argument with the new data
@@ -224,7 +235,8 @@ void
 zoom_image_in_place(VoxelsOnCartesianGrid<float> &image,
 		    const float zoom,
 		    const float x_offset_in_mm, const float y_offset_in_mm, 
-		    const int new_size);
+		    const int new_size,
+                    const ZoomOptions = ZoomOptions::preserve_sum);
 
 //@}
 

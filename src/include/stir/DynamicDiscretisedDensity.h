@@ -162,6 +162,14 @@ class DynamicDiscretisedDensity: public ExamData
 
   const float get_calibration_factor() const;
 
+  //! at method
+  const singleDiscDensT & at(const unsigned int frame_num) const
+  { return this->get_density(frame_num); }
+
+  //! at method
+  singleDiscDensT & at(const unsigned int frame_num)
+  { return this->get_density(frame_num); }
+
   //! Return time of start of scan
   /*! \return the time in seconds since 1 Jan 1970 00:00 UTC, i.e. independent
     of your local time zone.

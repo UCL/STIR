@@ -101,13 +101,7 @@ set_defaults()
   this->_projector_pair_ptr.reset(
                                   new ProjectorByBinPairUsingSeparateProjectors(forward_projector_ptr, back_projector_ptr));
 
-  // image stuff
-  this->_output_image_size_xy=-1;
-  this->_output_image_size_z=-1;
-  this->_zoom=1.F;
-  this->_Xoffset=0.F;
-  this->_Yoffset=0.F;
-  this->_Zoffset=0.F;   // KT 20/06/2001 new
+  this->target_parameter_parser.set_defaults();
 }
 
 template<typename TargetT>
@@ -124,14 +118,7 @@ initialise_keymap()
   this->parser.add_key("maximum absolute segment number to process", &this->_max_segment_num_to_process);
   this->parser.add_key("zero end planes of segment 0", &this->_zero_seg0_end_planes);
 
-  // image stuff
-  this->parser.add_key("zoom", &this->_zoom);
-  this->parser.add_key("XY output image size (in pixels)",&this->_output_image_size_xy);
-  this->parser.add_key("Z output image size (in pixels)",&this->_output_image_size_z);
-
-  // parser.add_key("X offset (in mm)", &this->Xoffset); // KT 10122001 added spaces
-  // parser.add_key("Y offset (in mm)", &this->Yoffset);
-  this->parser.add_key("Z offset (in mm)", &this->_Zoffset);
+  this->target_parameter_parser.add_to_keymap(this->parser);
   this->parser.add_parsing_key("Projector pair type", &this->_projector_pair_ptr);
 
   // Scatter correction
@@ -159,13 +146,7 @@ post_processing()
   this->_gated_proj_data_sptr.reset(GatedProjData::read_from_file(this->_input_filename));
   
   // image stuff
-  if (this->_zoom <= 0)
-    { warning("zoom should be positive"); return true; }
-  
-  if (this->_output_image_size_xy!=-1 && this->_output_image_size_xy<1) // KT 10122001 appended_xy
-    { warning("output image size xy must be positive (or -1 as default)"); return true; }
-  if (this->_output_image_size_z!=-1 && this->_output_image_size_z<1) // KT 10122001 new
-    { warning("output image size z must be positive (or -1 as default)"); return true; }
+  this->target_parameter_parser.check_values();
 
   if (this->_additive_gated_proj_data_filename != "0")
     {
@@ -202,16 +183,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
 construct_target_ptr() const
 {  
   return 
-    new VoxelsOnCartesianGrid<float> (this->get_input_data().get_exam_info_sptr(),
-                                      *this->_gated_proj_data_sptr->get_proj_data_info_ptr(),
-                                      static_cast<float>(this->_zoom), 
-                                      CartesianCoordinate3D<float>(static_cast<float>(this->_Zoffset), 
-                                                                   static_cast<float>(this->_Yoffset), 
-                                                                   static_cast<float>(this->_Xoffset)), 
-                                      CartesianCoordinate3D<int>(this->_output_image_size_z, 
-                                                                 this->_output_image_size_xy, 
-                                                                 this->_output_image_size_xy)
-                                      ); 
+    this->target_parameter_parser.create(this->get_input_data());
 }
 /***************************************************************
   subset balancing
