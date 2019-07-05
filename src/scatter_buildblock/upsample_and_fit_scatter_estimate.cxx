@@ -181,9 +181,9 @@ push_scatter_estimate(ProjData& scaled_scatter_proj_data,
 {
 
     shared_ptr<ProjDataInfo> interpolated_direct_scatter_proj_data_info_sptr(scatter_proj_data.get_proj_data_info_ptr()->clone());
+    interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
     ProjDataInMemory interpolated_direct_scatter(scatter_proj_data.get_exam_info_sptr(),interpolated_direct_scatter_proj_data_info_sptr);
 
-    interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
 
 
    //transpose SSRB on scatter_proj_data
