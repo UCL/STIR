@@ -50,8 +50,31 @@ class UpsampleDownsampleTests: public RunTests
 {   
 public:
   void run_tests();
+  void fill_projdata_with_random(ProjData & projdata);
 };
 
+void
+UpsampleDownsampleTests::
+fill_projdata_with_random(ProjData & projdata)
+{
+    for ( int segment_num = projdata.get_min_segment_num(); segment_num <= projdata.get_max_segment_num(); ++segment_num)
+      {
+        for (int axial_pos = projdata.get_min_axial_pos_num(segment_num); axial_pos <= projdata.get_max_axial_pos_num(segment_num); ++axial_pos)
+          {
+
+            const Sinogram<float> p_sinogram = projdata.get_sinogram(axial_pos, segment_num);
+
+            for ( int view_num = projdata.get_min_view_num(); view_num <= projdata.get_max_view_num();view_num++)
+              {
+                for ( int tang_pos = projdata.get_min_tangential_pos_num(); tang_pos <= projdata.get_max_tangential_pos_num(); tang_pos++)
+                 {
+                    //p_sinogram[view_num][tang_pos]=2;
+                    projdata.set_sinogram(p_sinogram);
+                  }
+               }
+             }
+          }
+}
 void
 UpsampleDownsampleTests::
 run_tests()
@@ -63,7 +86,7 @@ run_tests()
     shared_ptr<ExamInfo> LR_exam_info_sptr(new ExamInfo);
 
     //creating proj data info
-    shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
+    shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 1,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
 
    // shared_ptr<ProjData> LR = ProjData::read_from_file("simulated_scatter_sino_UU2.hs");
 
@@ -92,8 +115,10 @@ run_tests()
     // construct x
     ProjDataInMemory Aty(sss->get_ExamInfo_sptr(), sss->get_template_proj_data_info_sptr());
 
-    x.fill(1);
+    x.fill(0.5);
     y.fill(2);
+   // fill_projdata_with_random(x);
+   // fill_projdata_with_random(y);
 
     Ax.fill(0); //initialise output
     Aty.fill(0); //initialise output
