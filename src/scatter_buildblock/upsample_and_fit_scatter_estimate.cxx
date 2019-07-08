@@ -157,7 +157,7 @@ pull_scatter_estimate(ProjData& scaled_scatter_proj_data,
 {
 
     shared_ptr<ProjDataInfo> interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_ptr()->clone());
-    interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
+    interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0); //create the output template
 
 
     info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
@@ -180,23 +180,15 @@ push_scatter_estimate(ProjData& scaled_scatter_proj_data,
                                   const bool remove_interleaving)
 {
 
-    shared_ptr<ProjDataInfo> interpolated_direct_scatter_proj_data_info_sptr(scatter_proj_data.get_proj_data_info_ptr()->clone());
-    interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0);
-    ProjDataInMemory interpolated_direct_scatter(scatter_proj_data.get_exam_info_sptr(),interpolated_direct_scatter_proj_data_info_sptr);
+    shared_ptr<ProjDataInfo> new_input_proj_data_info_sptr(scatter_proj_data.get_proj_data_info_ptr()->clone());
+    new_input_proj_data_info_sptr->reduce_segment_range(0,0); //create input template
+
+    ProjDataInMemory new_input(scatter_proj_data.get_exam_info_sptr(),new_input_proj_data_info_sptr);
+    transpose_inverse_SSRB(new_input, scatter_proj_data);
 
 
+    interpolate_projdata_push(scaled_scatter_proj_data, new_input, remove_interleaving);
 
-   //transpose SSRB on scatter_proj_data
-
-    transpose_inverse_SSRB(interpolated_direct_scatter, scatter_proj_data);
-
-
-    interpolate_projdata_push(scaled_scatter_proj_data, interpolated_direct_scatter, remove_interleaving);
-
-    //transpose reduce segment on interpolated_direct_scatter
-
-
-    //extend segment
 
 }
 
