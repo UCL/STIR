@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018-2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,7 +26,7 @@
   Run without arguments to get a usage message.
   \see zoom_image_in_place for conventions
   \author Kris Thielemans
-
+  \author Ludovica Brusaferri
 */
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/zoom.h"
@@ -41,20 +42,47 @@ using std::cerr;
 
 USING_NAMESPACE_STIR
 
+static void print_usage_and_exit(const std::string& prog_name)
+{
+  cerr<<"Usage: \n" 
+      << '\t' << prog_name << " [--scaling option] <output filename> <input filename> sizexy [zoomxy [offset_in_mm_x [offset_in_mm_y [sizez [zoomz [offset_in_mm_z]]]]]]]\n"
+      << "or alternatively\n"
+      << '\t' << prog_name << " [--scaling option] --template template_filename <output filename> <input filename>\n"
+      << "Supported scaling option: preserve_sum, preserve_values, preserve_projections.\n";
+  exit(EXIT_FAILURE);
+}
+
 int main(int argc, char **argv)
 {
-  if(argc<4) {
-    cerr<<"Usage: \n" 
-	<< '\t' << argv[0] << " <output filename> <input filename> sizexy [zoomxy [offset_in_mm_x [offset_in_mm_y [sizez [zoomz [offset_in_mm_z]]]]]]]\n"
-	<< "or alternatively\n"
-	<< '\t' << argv[0] << " --template template_filename <output filename> <input filename>\n";
+  const char * const prog_name = argv[0];
 
-    exit(EXIT_FAILURE);
-  }
+  // default value for scaling
+  ZoomOptions zoom_options = ZoomOptions::preserve_sum;
+  
+  if (argc>2 && strcmp(argv[1], "--scaling")==0)
+     {
+       char const * const scaling = argv[2];
+       if (strcmp(scaling, "preserve_sum")==0)
+           zoom_options = ZoomOptions::preserve_sum;
+       else if (strcmp(scaling, "preserve_values")==0)
+           zoom_options = ZoomOptions::preserve_values;
+       else if (strcmp(scaling, "preserve_projections")==0)
+           zoom_options = ZoomOptions::preserve_projections;
+       else
+          error("Unsupported scaling type. Usage: preserve_sum, preserve_values, preserve_projections.");
+       argc -=2;
+       argv +=2;
+     }
+       
+  if(argc<4)
+    print_usage_and_exit(prog_name);
   
   // get parameters from command line
   if (strcmp(argv[1], "--template")==0)
-    {      
+    {
+      if (argc!=5)
+        print_usage_and_exit(prog_name);
+
       char const * const template_filename = argv[2];
       char const * const output_filename = argv[3];
       char const * const input_filename = argv[4];
@@ -75,7 +103,7 @@ int main(int argc, char **argv)
 	  dynamic_cast<VoxelsOnCartesianGrid<float> *>(output_density_sptr.get());
 	if (output_image_ptr==NULL)
 	  error("Output image is not of VoxelsOnCartesianGrid type. Sorry\n");
-	zoom_image(*output_image_ptr, *image_ptr);
+	zoom_image(*output_image_ptr, *image_ptr, zoom_options);
       }
       // write it to file
       write_to_file(output_filename, *output_density_sptr);
@@ -134,7 +162,7 @@ int main(int argc, char **argv)
 
 
   const VoxelsOnCartesianGrid<float> new_image = 
-    zoom_image(*image_ptr, zooms, offsets_in_mm, new_sizes);
+    zoom_image(*image_ptr, zooms, offsets_in_mm, new_sizes, zoom_options);
 
   // write it to file
   write_to_file(output_filename, new_image);
