@@ -143,12 +143,14 @@ transpose_inverse_SSRB(ProjData& proj_data_3D,
         const float out_m = proj_data_3D_info_ptr->get_m(Bin(0, 0, out_ax_pos_num, 0));
         const float out_m_next = out_ax_pos_num == proj_data_3D.get_max_axial_pos_num(0) ?
             -1000000.F : proj_data_3D_info_ptr->get_m(Bin(0, 0, out_ax_pos_num+1, 0));
+        const float out_m_prev = out_ax_pos_num == proj_data_3D.get_min_axial_pos_num(0) ?
+            -1000000.F : proj_data_3D_info_ptr->get_m(Bin(0, 0, out_ax_pos_num-1, 0));
         for (int in_segment_num = proj_data_4D.get_min_segment_num();
              in_segment_num <= proj_data_4D.get_max_segment_num();
              ++in_segment_num)
           {
             for (int in_ax_pos_num = proj_data_4D.get_min_axial_pos_num(in_segment_num);
-                 in_ax_pos_num  <= proj_data_4D.get_max_axial_pos_num(in_segment_num)-1;
+                 in_ax_pos_num  <= proj_data_4D.get_max_axial_pos_num(in_segment_num);
                  ++in_ax_pos_num )
             {
 
@@ -166,6 +168,14 @@ transpose_inverse_SSRB(ProjData& proj_data_3D,
                 if (fabs(in_m - .5F*(out_m + out_m_next)) < 1E-2)
                  {
 
+                    sino_4D *= .5F;
+                    sino_3D += sino_4D;
+                  }
+
+                if (fabs(in_m - .5F*(out_m + out_m_prev)) < 1E-2)
+                 {
+
+                    sino_4D *= .5F;
                     sino_3D += sino_4D;
                   }
 
