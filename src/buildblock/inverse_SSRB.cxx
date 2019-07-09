@@ -161,13 +161,26 @@ transpose_inverse_SSRB(ProjData& proj_data_3D,
                     ++num_contributing_sinos;
                     sino_3D += sino_4D;
                   }
-                const float out_m_next = out_ax_pos_num == proj_data_3D.get_max_axial_pos_num(0) ?
-                    -1000000.F : proj_data_3D_info_ptr->get_m(Bin(0, 0, out_ax_pos_num+1, 0));
+                const float in_m_next = in_ax_pos_num == proj_data_4D.get_max_axial_pos_num(in_segment_num) ?
+                    -1000000.F : proj_data_4D_info_ptr->get_m(Bin(in_segment_num, 0, in_ax_pos_num+1, 0));
 
-                if (fabs(in_m - .5F*(out_m + out_m_next)) < 1E-2)
+                const float in_m_prev = in_ax_pos_num == proj_data_4D.get_min_axial_pos_num(in_segment_num) ?
+                    -1000000.F : proj_data_4D_info_ptr->get_m(Bin(in_segment_num, 0, in_ax_pos_num-1, 0));
+
+                if (fabs(out_m - .5F*(in_m + in_m_next)) < 1E-2)
                 {
                     ++num_contributing_sinos;
-                    sino_3D += 20;
+                    sino_3D += proj_data_4D.get_sinogram(in_ax_pos_num+1,in_segment_num);
+                    sino_3D*=.5F;
+                    sino_3D += sino_4D;
+                }
+
+                if (fabs(out_m - .5F*(in_m + in_m_prev)) < 1E-2)
+                {
+                    ++num_contributing_sinos;
+                    sino_3D += proj_data_4D.get_sinogram(in_ax_pos_num-1,in_segment_num);
+                    sino_3D*=.5F;
+                    sino_3D += sino_4D;
                 }
               }
             }
