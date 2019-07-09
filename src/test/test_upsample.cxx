@@ -176,7 +176,7 @@ run_tests()
           }
 
     std::cout << cdot1 << "=" << cdot2 << '\n';
-    set_tolerance(0.05);
+    set_tolerance(0.02);
     check_if_equal(cdot1, cdot2, "test adjoint");
 
 
@@ -236,7 +236,7 @@ run_tests()
           }
 
     std::cout << cdot1 << "=" << cdot2 << '\n';
-    set_tolerance(0.05);
+    set_tolerance(0.02);
     check_if_equal(cdot1, cdot2, "test adjoint");
 
 
