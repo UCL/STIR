@@ -1,0 +1,13 @@
+Projector parameters:=
+projector pair type := Matrix
+Projector Pair Using Matrix Parameters :=
+Matrix type := Ray Tracing
+Ray Tracing Matrix Parameters:=
+  restrict to cylindrical fov := 1
+  ; use a slightly better approximation than simple ray tracing
+  number of rays in tangential direction to trace for each bin := 10
+  ; remove one symmetry such that we can use more subsets
+  do symmetry 90degrees min phi := 0
+End Ray Tracing Matrix Parameters:=
+End Projector Pair Using Matrix Parameters :=
+End:=

@@ -112,6 +112,30 @@ public:
 		   const int min_axial_pos_num, const int max_axial_pos_num,
 		   const int min_tangential_pos_num, const int max_tangential_pos_num);
 
+ //! project whole proj_data into the volume
+ /*! it overwrites the data already present in the volume */
+ void back_project(const ProjData&);
+
+ /*! \brief projects the viewgrams into the volume
+  it adds to the data already present in the volume.*/
+void back_project(const RelatedViewgrams<float>&);
+
+ /*! \brief projects the specified range of the viewgrams into the volume
+  it adds to the data already present in the volume.*/
+void back_project(const RelatedViewgrams<float>&,
+          const int min_axial_pos_num, const int max_axial_pos_num);
+
+ /*! \brief projects the specified range of the viewgrams into the volume
+   it adds to the data already present in the volume.*/
+void back_project(const RelatedViewgrams<float>&,
+          const int min_axial_pos_num, const int max_axial_pos_num,
+          const int min_tangential_pos_num, const int max_tangential_pos_num);
+
+ /*! \brief tell the back projector to start accumulating into a new image*/
+ void start_accumulating_in_new_image();
+
+ /// Get output
+ virtual void get_output(DiscretisedDensity<3,float> &) const;
 
 protected:
 
@@ -119,6 +143,10 @@ protected:
                                    const RelatedViewgrams<float>&,
 		                   const int min_axial_pos_num, const int max_axial_pos_num,
 		                   const int min_tangential_pos_num, const int max_tangential_pos_num) = 0;
+
+ virtual void actual_back_project(const RelatedViewgrams<float>&,
+                          const int min_axial_pos_num, const int max_axial_pos_num,
+                          const int min_tangential_pos_num, const int max_tangential_pos_num);
   //! check if the argument is the same as what was used for set_up()
   /*! calls error() if anything is wrong.
 
@@ -127,11 +155,11 @@ protected:
   virtual void check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& density_info) const;
   bool _already_set_up;
 
+  //! The density ptr set with set_up()
+  shared_ptr<DiscretisedDensity<3,float> > _density_sptr;
+
  private:
   shared_ptr<ProjDataInfo> _proj_data_info_sptr;
-  //! The density ptr set with set_up()
-  /*! \todo it is wasteful to have to store the whole image as this uses memory that we don't need. */
-  shared_ptr<DiscretisedDensity<3,float> > _density_info_sptr;
 
   void do_segments(DiscretisedDensity<3,float>& image, 
             const ProjData& proj_data_org,
