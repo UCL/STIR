@@ -164,14 +164,15 @@ transpose_inverse_SSRB(ProjData& proj_data_3D,
 
                 if (fabs(in_m - .5F*(out_m + out_m_next)) < 1E-2)
                  {
-
-                    sino_3D += proj_data_4D.get_sinogram(in_ax_pos_num,in_segment_num);
-                    sino_3D *= .5F;
-                    int new_index = in_ax_pos_num - in_segment_num ;
+                    sino_4D *= .5F;
+                    sino_3D += sino_4D;
+                    int new_index = in_ax_pos_num + in_segment_num ;
 
                     if(new_index>=proj_data_4D.get_min_axial_pos_num(in_segment_num)&&new_index<=proj_data_4D.get_max_axial_pos_num(in_segment_num))
                     {
-                     sino_3D += proj_data_4D.get_sinogram(new_index,-in_segment_num);
+                      sino_4D2 = proj_data_4D.get_sinogram(new_index,-in_segment_num);
+                      sino_4D2 *= .5F;
+                      sino_3D += sino_4D2;
                      }
 
 

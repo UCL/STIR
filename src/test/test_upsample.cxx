@@ -256,7 +256,7 @@ run_tests()
     std::cout << "========== TEST SSRB =========== \n";
 
     //creating proj data info
-    shared_ptr<ProjDataInfo> proj_data_info_sptr_4D(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 2,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
+    shared_ptr<ProjDataInfo> proj_data_info_sptr_4D(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 1,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
     shared_ptr<ExamInfo> exam_info_sptr_4D(new ExamInfo);
     ProjDataInMemory projdata_4D(exam_info_sptr_4D, proj_data_info_sptr_4D);
 
