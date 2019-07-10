@@ -136,6 +136,7 @@ transpose_inverse_SSRB(ProjData& proj_data_3D,
     // keep sinograms out of the loop to avoid reallocations. initialise to something because there's no default constructor
     Sinogram<float> sino_3D = proj_data_3D.get_empty_sinogram(proj_data_3D.get_min_axial_pos_num(0) , 0);
     Sinogram<float> sino_4D =  proj_data_4D.get_empty_sinogram(proj_data_4D.get_min_axial_pos_num(0) , 0);
+    Sinogram<float> sino_4D2 =  proj_data_4D.get_empty_sinogram(proj_data_4D.get_min_axial_pos_num(0) , 0);
 
     for (int out_ax_pos_num = proj_data_3D.get_min_axial_pos_num(0); out_ax_pos_num  <= proj_data_3D.get_max_axial_pos_num(0); ++out_ax_pos_num )
     {
@@ -161,6 +162,9 @@ transpose_inverse_SSRB(ProjData& proj_data_3D,
                  {
                     sino_4D *= .5F;
                     sino_3D += sino_4D;
+                    sino_4D2 = proj_data_4D.get_sinogram(out_ax_pos_num+1, 0);
+                    sino_4D2 *= .5F;
+                    sino_3D += sino_4D2;
                   }
 
               }

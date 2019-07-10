@@ -58,21 +58,18 @@ void
 UpsampleDownsampleTests::
 fill_projdata_with_random(ProjData & projdata)
 {
+    Viewgram<float> view = projdata.get_viewgram(0,0);
+    view.fill(1);
     for ( int segment_num = projdata.get_min_segment_num(); segment_num <= projdata.get_max_segment_num(); ++segment_num)
       {
-        for (int axial_pos = projdata.get_min_axial_pos_num(segment_num); axial_pos <= projdata.get_max_axial_pos_num(segment_num); ++axial_pos)
-          {
-
-            const Sinogram<float> p_sinogram = projdata.get_sinogram(axial_pos, segment_num);
-
             for ( int view_num = projdata.get_min_view_num(); view_num <= projdata.get_max_view_num();view_num++)
               {
                 for ( int tang_pos = projdata.get_min_tangential_pos_num(); tang_pos <= projdata.get_max_tangential_pos_num(); tang_pos++)
                  {
-                    //p_sinogram[view_num][tang_pos]=2;
-                    projdata.set_sinogram(p_sinogram);
+                    view *=rand();
+                    projdata.set_viewgram(view);
                   }
-               }
+
              }
           }
 }
@@ -116,8 +113,8 @@ run_tests()
     // construct x
     ProjDataInMemory Aty(sss->get_ExamInfo_sptr(), sss->get_template_proj_data_info_sptr());
 
-    x.fill(0.5);
-    y.fill(2);
+    x.fill(2);
+    y.fill(3);
    // fill_projdata_with_random(x);
    // fill_projdata_with_random(y);
 
@@ -245,7 +242,7 @@ run_tests()
     std::cout << "========== TEST SSRB =========== \n";
 
     //creating proj data info
-    shared_ptr<ProjDataInfo> proj_data_info_sptr_4D(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 1,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
+    shared_ptr<ProjDataInfo> proj_data_info_sptr_4D(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
     shared_ptr<ExamInfo> exam_info_sptr_4D(new ExamInfo);
     ProjDataInMemory projdata_4D(exam_info_sptr_4D, proj_data_info_sptr_4D);
 
@@ -257,8 +254,8 @@ run_tests()
     ProjDataInMemory A_4D(exam_info_sptr_4D, proj_data_info_sptr_4D);
     ProjDataInMemory A_3D(projdata_4D.get_exam_info_sptr(),proj_data_info_sptr_3D);
 
-    projdata_4D.fill(1);
-    projdata_3D.fill(1);
+    projdata_4D.fill(2);
+    projdata_3D.fill(3);
     A_4D.fill(0); //initialise output
     A_3D.fill(0); //initialise output
 
