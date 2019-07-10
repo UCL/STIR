@@ -164,12 +164,6 @@ transpose_inverse_SSRB(ProjData& proj_data_3D,
                     sino_3D += sino_4D;
                   }
 
-                if (fabs(in_m - .5F*(out_m + out_m_next)) < 1E-2)
-                 {
-                    sino_4D = proj_data_4D.get_sinogram(in_ax_pos_num+1,in_segment_num+1);
-                    sino_3D += sino_4D;
-                  }
-
               }
             }
 
