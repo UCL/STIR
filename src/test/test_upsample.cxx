@@ -58,20 +58,37 @@ void
 UpsampleDownsampleTests::
 fill_projdata_with_random(ProjData & projdata)
 {
-    Viewgram<float> view = projdata.get_viewgram(0,0);
-    view.fill(1);
-    for ( int segment_num = projdata.get_min_segment_num(); segment_num <= projdata.get_max_segment_num(); ++segment_num)
-      {
-            for ( int view_num = projdata.get_min_view_num(); view_num <= projdata.get_max_view_num();view_num++)
-              {
-                for ( int tang_pos = projdata.get_min_tangential_pos_num(); tang_pos <= projdata.get_max_tangential_pos_num(); tang_pos++)
-                 {
-                    view *=rand();
-                    projdata.set_viewgram(view);
-                  }
+    Bin bin;
+    {
+        for (bin.segment_num()=projdata.get_min_segment_num();
+             bin.segment_num()<=projdata.get_max_segment_num();
+             ++bin.segment_num())
+            for (bin.axial_pos_num()=
+                 projdata.get_min_axial_pos_num(bin.segment_num());
+                 bin.axial_pos_num()<=projdata.get_max_axial_pos_num(bin.segment_num());
+                 ++bin.axial_pos_num())
+            {
 
-             }
-          }
+                Sinogram<float> sino = projdata.get_empty_sinogram(bin.axial_pos_num(),bin.segment_num());
+
+                for (bin.view_num()=sino.get_min_view_num();
+                     bin.view_num()<=sino.get_max_view_num();
+                     ++bin.view_num())
+                {
+                    for (bin.tangential_pos_num()=
+                         sino.get_min_tangential_pos_num();
+                         bin.tangential_pos_num()<=
+                         sino.get_max_tangential_pos_num();
+                         ++bin.tangential_pos_num())
+                         sino[bin.view_num()][bin.tangential_pos_num()]= rand()%2;//((double) rand() / (1)) + 1;
+
+                    projdata.set_sinogram(sino);
+
+                 }
+
+              }
+
+        }
 }
 void
 UpsampleDownsampleTests::
@@ -95,8 +112,8 @@ run_tests()
 
     unique_ptr<SingleScatterSimulation> sss(new SingleScatterSimulation());
     sss->set_template_proj_data_info_sptr(proj_data_info_sptr);
-    int down_rings = static_cast<int>(scanner_sptr->get_num_rings()/8);
-    int down_dets = static_cast<int>(scanner_sptr->get_max_num_views()/12);
+    int down_rings = static_cast<int>(scanner_sptr->get_num_rings()/4);
+    int down_dets = static_cast<int>(scanner_sptr->get_max_num_views()/4);
 
     sss->downsample_scanner(down_rings, down_dets);
 
@@ -113,10 +130,8 @@ run_tests()
     // construct x
     ProjDataInMemory Aty(sss->get_ExamInfo_sptr(), sss->get_template_proj_data_info_sptr());
 
-    x.fill(2);
-    y.fill(3);
-   // fill_projdata_with_random(x);
-   // fill_projdata_with_random(y);
+    fill_projdata_with_random(x);
+    fill_projdata_with_random(y);
 
     Ax.fill(0); //initialise output
     Aty.fill(0); //initialise output
@@ -254,8 +269,8 @@ run_tests()
     ProjDataInMemory A_4D(exam_info_sptr_4D, proj_data_info_sptr_4D);
     ProjDataInMemory A_3D(projdata_4D.get_exam_info_sptr(),proj_data_info_sptr_3D);
 
-    projdata_4D.fill(2);
-    projdata_3D.fill(3);
+    fill_projdata_with_random(projdata_4D);
+    fill_projdata_with_random(projdata_3D);
     A_4D.fill(0); //initialise output
     A_3D.fill(0); //initialise output
 
