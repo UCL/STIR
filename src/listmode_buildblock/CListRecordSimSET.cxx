@@ -50,7 +50,8 @@ void CListEventSimSET::set_detection_position(const DetectionPositionPair<>&)
 }
 
 void CListEventSimSET::init_from_data(const PHG_DetectedPhoton* _blue,
-                                      const PHG_DetectedPhoton* _pink)
+                                      const PHG_DetectedPhoton* _pink,
+                                      const float _weight)
 {
 
     CartesianCoordinate3D<float> blue_coord(_blue->location.z_position,
@@ -60,6 +61,8 @@ void CListEventSimSET::init_from_data(const PHG_DetectedPhoton* _blue,
     CartesianCoordinate3D<float> pink_coord(_pink->location.z_position,
                                              _pink->location.y_position,
                                              _pink->location.x_position);
+
+    weight = _weight;
 
 
     this->get_uncompressed_proj_data_info_sptr()->

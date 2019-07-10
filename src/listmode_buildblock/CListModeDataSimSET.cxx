@@ -284,12 +284,18 @@ CListModeDataSimSET(const std::string& _phg_filename)
 
     // if the ProjData have been initialised properly create a
     // Input Stream from SimSET.
+    std::string tmpString;
+    tmpString = DetRunTimeParams[0].DetHistoryFilePath;
+    if (tmpString.size() == 0)
+        error("CListModeDataSimSET: Unable to get detector history filename.");
+
     history_file_sptr.reset(new InputStreamFromSimSET());
-    std::string tmpString(DetRunTimeParams[0].DetHistoryFilePath);
-    history_file_sptr->set_up(tmpString,
+
+    if (history_file_sptr->set_up(tmpString,
                               &PhgBinParams[0],
             exam_info_sptr->get_low_energy_thres(),
-            exam_info_sptr->get_high_energy_thres());
+            exam_info_sptr->get_high_energy_thres()) == Succeeded::no)
+        error("CListModeDataSimSET: Unable to set up input.");
 
     // Clean up.
     delete [] argv;

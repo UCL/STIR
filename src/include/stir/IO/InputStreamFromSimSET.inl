@@ -220,8 +220,11 @@ get_next_record(CListRecordSimSET& record)
     cur_detectedPhotonPink.location.y_position *= 10.f;
     cur_detectedPhotonPink.location.x_position *= 10.f;
 
+    float coincidenceWeight = (curDecay.startWeight * cur_detectedPhotonBlue.photon_weight *
+                                cur_detectedPhotonBlue.photon_weight); // * binFields->WeightRatio;
     return record.init_from_data(cur_detectedPhotonBlue,
-                                 cur_detectedPhotonPink);
+                                 cur_detectedPhotonPink,
+                                 coincidenceWeight);
 }
 
 END_NAMESPACE_STIR
