@@ -94,20 +94,20 @@ void
 UpsampleDownsampleTests::
 run_tests()
 {
-  std::cout << "-------- Testing Upsampling and Downsampling ---------\n";
+//  std::cout << "-------- Testing Upsampling and Downsampling ---------\n";
 
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Siemens_mMR));
-    shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
-    shared_ptr<ExamInfo> LR_exam_info_sptr(new ExamInfo);
+    //shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+    //shared_ptr<ExamInfo> LR_exam_info_sptr(new ExamInfo);
 
     //creating proj data info
-    shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
+   // shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
 
    // shared_ptr<ProjData> LR = ProjData::read_from_file("simulated_scatter_sino_UU2.hs");
 
 
     // construct y
-    ProjDataInMemory y(exam_info_sptr, proj_data_info_sptr);
+   /* ProjDataInMemory y(exam_info_sptr, proj_data_info_sptr);
 
 
     unique_ptr<SingleScatterSimulation> sss(new SingleScatterSimulation());
@@ -250,14 +250,13 @@ run_tests()
 
     std::cout << cdot1 << "=" << cdot2 << '\n';
     set_tolerance(0.02);
-    check_if_equal(cdot1, cdot2, "test adjoint");
-
+    check_if_equal(cdot1, cdot2, "test adjoint");*/
 
 
     std::cout << "========== TEST SSRB =========== \n";
 
     //creating proj data info
-    shared_ptr<ProjDataInfo> proj_data_info_sptr_4D(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
+    shared_ptr<ProjDataInfo> proj_data_info_sptr_4D(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 1,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
     shared_ptr<ExamInfo> exam_info_sptr_4D(new ExamInfo);
     ProjDataInMemory projdata_4D(exam_info_sptr_4D, proj_data_info_sptr_4D);
 
@@ -284,8 +283,8 @@ run_tests()
 
     std::cout << "-------- <Ax|y> = <x|A*y> --------\n";
 
-    cdot1 = 0;
-    cdot2 = 0;
+   int  cdot1 = 0;
+   int cdot2 = 0;
 
     for ( int segment_num = projdata_4D.get_min_segment_num(); segment_num <= projdata_4D.get_max_segment_num(); ++segment_num)
       {
