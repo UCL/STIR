@@ -26,6 +26,7 @@
 */
 
 #include "stir/ProjDataInMemory.h"
+#include "stir/inverse_SSRB.h"
 #include "stir/ExamInfo.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/Sinogram.h"
@@ -86,7 +87,7 @@ run_tests()
     shared_ptr<ExamInfo> LR_exam_info_sptr(new ExamInfo);
 
     //creating proj data info
-    shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 1,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
+    shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
 
    // shared_ptr<ProjData> LR = ProjData::read_from_file("simulated_scatter_sino_UU2.hs");
 
@@ -230,6 +231,81 @@ run_tests()
                 for ( int tang_pos = x.get_min_tangential_pos_num(); tang_pos <= x.get_max_tangential_pos_num(); tang_pos++)
                  {
                      cdot2 += x_sinogram[view_num][tang_pos]*Aty_sinogram[view_num][tang_pos];
+                  }
+               }
+             }
+          }
+
+    std::cout << cdot1 << "=" << cdot2 << '\n';
+    set_tolerance(0.02);
+    check_if_equal(cdot1, cdot2, "test adjoint");
+
+
+
+    std::cout << "========== TEST SSRB =========== \n";
+
+    //creating proj data info
+    shared_ptr<ProjDataInfo> proj_data_info_sptr_4D(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 1,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
+    shared_ptr<ExamInfo> exam_info_sptr_4D(new ExamInfo);
+    ProjDataInMemory projdata_4D(exam_info_sptr_4D, proj_data_info_sptr_4D);
+
+    shared_ptr<ProjDataInfo> proj_data_info_sptr_3D(projdata_4D.get_proj_data_info_ptr()->clone());
+    proj_data_info_sptr_3D->reduce_segment_range(0,0); //create input template
+
+    ProjDataInMemory projdata_3D(projdata_4D.get_exam_info_sptr(),proj_data_info_sptr_3D);
+
+    ProjDataInMemory A_4D(exam_info_sptr_4D, proj_data_info_sptr_4D);
+    ProjDataInMemory A_3D(projdata_4D.get_exam_info_sptr(),proj_data_info_sptr_3D);
+
+    projdata_4D.fill(1);
+    projdata_3D.fill(1);
+    A_4D.fill(0); //initialise output
+    A_3D.fill(0); //initialise output
+
+
+    std::cout << "-------- Testing Inverse SSRB --------\n";
+    inverse_SSRB(A_4D,projdata_3D);
+
+    std::cout << "-------- Testing Transpose Inverse SSRB --------\n";
+
+    transpose_inverse_SSRB(A_3D,projdata_4D);
+
+    std::cout << "-------- <Ax|y> = <x|A*y> --------\n";
+
+    cdot1 = 0;
+    cdot2 = 0;
+
+    for ( int segment_num = projdata_4D.get_min_segment_num(); segment_num <= projdata_4D.get_max_segment_num(); ++segment_num)
+      {
+        for (int axial_pos = projdata_4D.get_min_axial_pos_num(segment_num); axial_pos <= projdata_4D.get_max_axial_pos_num(segment_num); ++axial_pos)
+          {
+
+            const Sinogram<float> yy_sinogram = projdata_4D.get_sinogram(axial_pos, segment_num);
+            const Sinogram<float> At_sinogram = A_4D.get_sinogram(axial_pos, segment_num);
+
+            for ( int view_num = projdata_4D.get_min_view_num(); view_num <= projdata_4D.get_max_view_num();view_num++)
+              {
+                for ( int tang_pos = projdata_4D.get_min_tangential_pos_num(); tang_pos <= projdata_4D.get_max_tangential_pos_num(); tang_pos++)
+                 {
+                     cdot1 += At_sinogram[view_num][tang_pos]*yy_sinogram[view_num][tang_pos];
+                  }
+               }
+             }
+          }
+
+    for ( int segment_num = projdata_3D.get_min_segment_num(); segment_num <= projdata_3D.get_max_segment_num(); ++segment_num)
+      {
+        for (int axial_pos = projdata_3D.get_min_axial_pos_num(segment_num); axial_pos <= projdata_3D.get_max_axial_pos_num(segment_num); ++axial_pos)
+          {
+
+            const Sinogram<float> xx_sinogram = projdata_3D.get_sinogram(axial_pos, segment_num);
+            const Sinogram<float> A_sinogram = A_3D.get_sinogram(axial_pos, segment_num);
+
+            for ( int view_num = projdata_3D.get_min_view_num(); view_num <= projdata_3D.get_max_view_num();view_num++)
+              {
+                for ( int tang_pos = projdata_3D.get_min_tangential_pos_num(); tang_pos <= projdata_3D.get_max_tangential_pos_num(); tang_pos++)
+                 {
+                     cdot2 += xx_sinogram[view_num][tang_pos]*A_sinogram[view_num][tang_pos];
                   }
                }
              }

@@ -64,7 +64,8 @@ set(buildblock_simple_tests
 	test_proj_data_in_memory
 	test_export_array
         test_GeneralisedPoissonNoiseGenerator
-	test_multiple_proj_data
+        test_multiple_proj_data
+        test_zoom_image_adjoint
 )
 
 include(stir_test_exe_targets)
