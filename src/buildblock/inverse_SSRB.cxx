@@ -136,8 +136,6 @@ transpose_inverse_SSRB(ProjData& proj_data_3D,
     // keep sinograms out of the loop to avoid reallocations. initialise to something because there's no default constructor
     Sinogram<float> sino_3D = proj_data_3D.get_empty_sinogram(proj_data_3D.get_min_axial_pos_num(0) , 0);
     Sinogram<float> sino_4D =  proj_data_4D.get_empty_sinogram(proj_data_4D.get_min_axial_pos_num(0) , 0);
-    Sinogram<float> sino_4D2 =  proj_data_4D.get_empty_sinogram(proj_data_4D.get_min_axial_pos_num(0) , 0);
-
 
 
     for (int out_ax_pos_num = proj_data_3D.get_min_axial_pos_num(0); out_ax_pos_num  <= proj_data_3D.get_max_axial_pos_num(0); ++out_ax_pos_num )
@@ -156,6 +154,8 @@ transpose_inverse_SSRB(ProjData& proj_data_3D,
 
                 sino_4D = proj_data_4D.get_sinogram(in_ax_pos_num,in_segment_num);
                 const float in_m = proj_data_4D_info_ptr->get_m(Bin(in_segment_num, 0, in_ax_pos_num, 0));
+                const float in_m_prev = in_ax_pos_num == proj_data_4D.get_max_axial_pos_num(in_segment_num) ?
+                    -1000000.F : proj_data_4D_info_ptr->get_m(Bin(-in_segment_num, 0, out_ax_pos_num+in_segment_num, 0));
 
                 if (fabs(out_m - in_m) < 1E-2)
                  {
@@ -166,15 +166,6 @@ transpose_inverse_SSRB(ProjData& proj_data_3D,
                  {
                     sino_4D *= .5F;
                     sino_3D += sino_4D;
-                    int new_index = in_ax_pos_num + in_segment_num ;
-
-                    if(new_index>=proj_data_4D.get_min_axial_pos_num(in_segment_num)&&new_index<=proj_data_4D.get_max_axial_pos_num(in_segment_num))
-                    {
-                      sino_4D2 = proj_data_4D.get_sinogram(new_index,-in_segment_num);
-                      sino_4D2 *= .5F;
-                      sino_3D += sino_4D2;
-                     }
-
 
                   }
 
