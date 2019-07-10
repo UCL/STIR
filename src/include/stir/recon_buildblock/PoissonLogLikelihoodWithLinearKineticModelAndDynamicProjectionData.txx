@@ -4,7 +4,7 @@
 /*
   Copyright (C) 2006 - 2011-01-14 Hammersmith Imanet Ltd
   Copyright (C) 2011 Kris Thielemans
-  Copyright (C) 2013m 2018, University College London
+  Copyright (C) 2013 - 2018, University College London
 
   This file is part of STIR.
 
@@ -29,6 +29,7 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author Charalampos Tsoumpas
+  \author Richard Brown
 */
 #include "stir/DiscretisedDensity.h"
 #include "stir/is_null_ptr.h"
@@ -36,6 +37,9 @@
 #include "stir/Succeeded.h"
 #include "stir/recon_buildblock/ProjectorByBinPair.h"
 #include "stir/info.h"
+#include "stir/MultipleDataSetHeader.h"
+#include "stir/spatial_transformation/GatedSpatialTransformation.h"
+#include "stir/recon_buildblock/BinNormalisationFromProjData.h"
 
 // include the following to set defaults
 #ifndef USE_PMRT
@@ -47,6 +51,10 @@
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #endif
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
+#include "stir/recon_buildblock/PresmoothingForwardProjectorByBin.h"
+#include "stir/recon_buildblock/PostsmoothingBackProjectorByBin.h"
+#include "stir_experimental/motion/Transform3DObjectImageProcessor.h"
+#include "stir_experimental/motion/NonRigidObjectTransformationUsingBSplines.h"
 
 #include <algorithm>
 #include <string> 
@@ -56,6 +64,8 @@
 #ifndef NDEBUG
 #include "stir/IO/write_to_file.h"
 #endif
+
+#include <boost/format.hpp>
 
 START_NAMESPACE_STIR
 
@@ -81,6 +91,13 @@ set_defaults()
 
   this->_additive_dyn_proj_data_filename = "0";
   this->_additive_dyn_proj_data_sptr.reset();
+
+  this->_normalisations_filename = "0";
+
+  for (int i=0; i<4; ++i)
+      this->_disp_field_filenames.push_back("0");
+
+  this->_bspline_order = 3;
 
 #ifndef USE_PMRT // set default for _projector_pair_ptr
   shared_ptr<ForwardProjectorByBin> forward_projector_ptr(new ForwardProjectorByBinUsingRayTracing());
@@ -123,12 +140,17 @@ initialise_keymap()
 
   // normalisation (and attenuation correction)
   this->parser.add_parsing_key("Bin Normalisation type", &this->_normalisation_sptr);
+  this->parser.add_key("Dynamic bin normalisation filename", &this->_normalisations_filename);
 
   // Modelling Information
   this->parser.add_parsing_key("Kinetic Model Type", &this->_patlak_plot_sptr); // Do sth with dynamic_cast to get the PatlakPlot
 
-  // Regularization Information
-  //  this->parser.add_parsing_key("prior type", &this->_prior_sptr);
+  // Motion Information
+  this->parser.add_key("Forward displacement field image",     &this->_disp_field_filenames[0]);
+  this->parser.add_key("Forward displacement field image (x)", &this->_disp_field_filenames[1]);
+  this->parser.add_key("Forward displacement field image (y)", &this->_disp_field_filenames[2]);
+  this->parser.add_key("Forward displacement field image (z)", &this->_disp_field_filenames[3]);
+  this->parser.add_key("BSpline order", &this->_bspline_order);
 }
 
 template<typename TargetT>
@@ -159,7 +181,135 @@ post_processing()
 	{ warning("Error reading additive input file %s", _additive_dyn_proj_data_filename.c_str()); return true; }
 
     }
+
+  // If there are multiple bin normalisation sinograms
+  if (this->_normalisations_filename != "0") {
+      MultipleDataSetHeader header;
+      if (header.parse(_normalisations_filename.c_str()) == false)
+          error("PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData::post_processing Error parsing %s", _normalisations_filename.c_str());
+      _normalisations_sptr.resize(header.get_num_data_sets());
+      for (int i=0; i<header.get_num_data_sets(); ++i)
+          _normalisations_sptr[i].reset(
+                      new BinNormalisationFromProjData(header.get_filename(i)));
+      // Check there are as many binnormalisations as sinograms
+      if (_normalisations_sptr.size() != _dyn_proj_data_sptr->get_num_proj_data())
+          error("Mismatch in # sinograms and # normalisation sinograms.");
+  }
+
+  // motion
+  set_up_motion();
+
   return false;
+}
+
+template<typename TargetT>
+void
+PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
+set_up_motion()
+{
+    // Check how motion was entered
+    // vector of filenames, where 0th is combined (e.g.,4D nifti),
+    // and 1st, 2nd & 3rd are x-, y-, & z-components
+    bool combined_motion_present  = (_disp_field_filenames[0] != "0");
+    bool x_motion_present         = (_disp_field_filenames[1] != "0");
+    bool y_motion_present         = (_disp_field_filenames[2] != "0");
+    bool z_motion_present         = (_disp_field_filenames[3] != "0");
+
+    // If no motion, return
+    if (!combined_motion_present && !x_motion_present && !y_motion_present && !z_motion_present) {
+        info(boost::format("No motion information entered"));
+        return;
+    }
+
+    // If part of the individual motion has been entered
+    if (x_motion_present != y_motion_present != z_motion_present)
+        error(boost::format("Some but not all individual components have been entered. Enter all or none."));
+
+    // If motion has been entered two different ways (4D and 3 separate components)
+    if (combined_motion_present && x_motion_present && y_motion_present && z_motion_present)
+        error(boost::format("Both combined (4D) and separated (x, y and z) motion has been entered. Enter one or the other."));
+
+    // Read the files
+    std::vector<MultipleDataSetHeader> disp_field_headers;
+
+    // If combined
+    if (combined_motion_present) {
+        disp_field_headers.resize(1);
+        if (disp_field_headers[0].parse(_disp_field_filenames[0].c_str()) == false)
+            error("PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData::post_processing Error parsing %s", _disp_field_filenames[0].c_str());
+    }
+    // If separate components
+    else {
+        disp_field_headers.resize(3);
+        for (int i=0; i<3; ++i)
+            if (disp_field_headers[i].parse(_disp_field_filenames[i+1].c_str()) == false)
+                error("PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData::post_processing Error parsing %s", _disp_field_filenames[i+1].c_str());
+    }
+
+    // Check there are as many motion fields as sinograms
+    for (int i=0; i<disp_field_headers.size(); ++i)
+        if (disp_field_headers[i].get_num_data_sets() != _dyn_proj_data_sptr->get_num_proj_data())
+            error("Mismatch in # sinograms and # forward displacement field images.");
+
+    // Create the projector pair for each frame
+    _projector_pairs_sptr.resize(disp_field_headers[0].get_num_data_sets());
+
+    // For each motion field...
+    for (int i=0; i<_projector_pairs_sptr.size(); ++i) {
+#ifndef NDEBUG
+        info(boost::format("Frame: %1%, Creating forward non-rigid transformation") % (i+1));
+#endif
+        // Create non rigid transformation
+        shared_ptr<NonRigidObjectTransformationUsingBSplines<3,float> > fwrd_non_rigid;
+
+        // If combined
+        if (combined_motion_present) {
+#ifndef NDEBUG
+            info(boost::format("Reading: %1%") % (disp_field_headers[0].get_filename(i)));
+#endif
+            fwrd_non_rigid.reset(
+                        new NonRigidObjectTransformationUsingBSplines<3,float>(
+                            disp_field_headers[0].get_filename(i),
+                            this->_bspline_order));
+        }
+        // If individual components
+        else {
+#ifndef NDEBUG
+            info(boost::format("Reading x: %1%") % (disp_field_headers[0].get_filename(i)));
+            info(boost::format("Reading y: %1%") % (disp_field_headers[1].get_filename(i)));
+            info(boost::format("Reading z: %1%") % (disp_field_headers[2].get_filename(i)));
+#endif
+            fwrd_non_rigid.reset(
+                        new NonRigidObjectTransformationUsingBSplines<3,float>(
+                            disp_field_headers[0].get_filename(i),
+                            disp_field_headers[1].get_filename(i),
+                            disp_field_headers[2].get_filename(i),
+                            this->_bspline_order));
+        }
+
+        // Create image processors
+        shared_ptr<Transform3DObjectImageProcessor<float> > fwrd_transform, back_transform;
+        fwrd_transform.reset( new Transform3DObjectImageProcessor<float>(fwrd_non_rigid) );
+        back_transform.reset( new Transform3DObjectImageProcessor<float>(*fwrd_transform) );
+        back_transform->set_do_transpose(!fwrd_transform->get_do_transpose());
+
+        // Create projectors
+        shared_ptr<PresmoothingForwardProjectorByBin> fwrd_projector;
+        shared_ptr<PostsmoothingBackProjectorByBin>   back_projector;
+        fwrd_projector.reset(
+                    new PresmoothingForwardProjectorByBin(
+                        this->_projector_pair_ptr->get_forward_projector_sptr(),
+                        fwrd_transform));
+        back_projector.reset(
+                    new PostsmoothingBackProjectorByBin(
+                        this->_projector_pair_ptr->get_back_projector_sptr(),
+                        back_transform));
+        // Finally create the projector pair and store it in the vector
+        _projector_pairs_sptr[i].reset(
+                    new ProjectorByBinPairUsingSeparateProjectors(
+                        fwrd_projector,
+                        back_projector));
+    }
 }
 
 template <typename TargetT>
@@ -320,14 +470,18 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
       return Succeeded::no;
     }
 
-  if (is_null_ptr(this->_normalisation_sptr))
-    {
-      warning("Invalid normalisation object");
-      return Succeeded::no;
-    }
+  for (int i=0; i<this->_normalisations_sptr.size(); ++i) {
+      if (is_null_ptr(this->_normalisations_sptr[i]))
+        {
+          warning(boost::format("Invalid normalisation object (%1%)") % i);
+          return Succeeded::no;
+        }
+  }
 
-  if (this->_normalisation_sptr->set_up(proj_data_info_sptr) == Succeeded::no)
-    return Succeeded::no;
+  for (int i=0; i<this->_normalisations_sptr.size(); ++i) {
+      if (this->_normalisations_sptr[i]->set_up(proj_data_info_sptr) == Succeeded::no)
+        return Succeeded::no;
+  }
 
   if (this->_patlak_plot_sptr->set_up() == Succeeded::no)
     return Succeeded::no;
@@ -352,7 +506,6 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
    
     for(unsigned int frame_num=this->_patlak_plot_sptr->get_starting_frame();frame_num<=this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames();++frame_num)
       {
-        this->_single_frame_obj_funcs[frame_num].set_projector_pair_sptr(this->_projector_pair_ptr);
         this->_single_frame_obj_funcs[frame_num].set_proj_data_sptr(this->_dyn_proj_data_sptr->get_proj_data_sptr(frame_num));
         this->_single_frame_obj_funcs[frame_num].set_max_segment_num_to_process(this->_max_segment_num_to_process);
         this->_single_frame_obj_funcs[frame_num].set_zero_seg0_end_planes(this->_zero_seg0_end_planes!=0);
@@ -361,13 +514,37 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
         this->_single_frame_obj_funcs[frame_num].set_num_subsets(this->num_subsets);
         this->_single_frame_obj_funcs[frame_num].set_frame_num(frame_num);
         this->_single_frame_obj_funcs[frame_num].set_frame_definitions(this->_patlak_plot_sptr->get_time_frame_definitions());
-        this->_single_frame_obj_funcs[frame_num].set_normalisation_sptr(this->_normalisation_sptr);
         this->_single_frame_obj_funcs[frame_num].set_recompute_sensitivity(this->get_recompute_sensitivity());
         this->_single_frame_obj_funcs[frame_num].set_use_subset_sensitivities(this->get_use_subset_sensitivities());
+
+        // Set the BinNormalisation (if there's 1 set that, if there are multiple set the relevant one)
+        if (this->_normalisations_sptr.size() == 1)
+            this->_single_frame_obj_funcs[frame_num].set_normalisation_sptr(this->_normalisation_sptr);
+        else
+            this->_single_frame_obj_funcs[frame_num].set_normalisation_sptr(this->_normalisations_sptr[frame_num-this->_patlak_plot_sptr->get_starting_frame()]);
+
+        // If there is no motion, use the standard projector pair
+        if (_projector_pairs_sptr.size() == 0)
+            this->_single_frame_obj_funcs[frame_num].set_projector_pair_sptr(this->_projector_pair_ptr);
+        // If there is motion, add it to the projectors
+        else
+            this->_single_frame_obj_funcs[frame_num].set_projector_pair_sptr(this->_projector_pairs_sptr[frame_num-this->_patlak_plot_sptr->get_starting_frame()]);
+
+        info(boost::format("Setting up frame %1% of %2%") % (frame_num-this->_patlak_plot_sptr->get_starting_frame()+1) % this->_patlak_plot_sptr->get_time_frame_definitions().get_num_frames());
+
         if(this->_single_frame_obj_funcs[frame_num].set_up(density_template_sptr) != Succeeded::yes)
           error("Single frame objective functions is not set correctly!");
       }
   }//_single_frame_obj_funcs[frame_num]
+
+  // The output parametric image should have 1 time frame that goes from the
+  // start to the end of the patlak analysis.
+  TimeFrameDefinitions tdefs = this->get_input_data().get_exam_info().get_time_frame_definitions();
+  const double start = this->_patlak_plot_sptr->get_time_frame_definitions().get_start_time();
+  const double end   = this->_patlak_plot_sptr->get_time_frame_definitions().get_end_time();
+  tdefs.set_num_time_frames(1);
+  tdefs.set_time_frame(1,start,end);
+  target_sptr->get_exam_info_sptr()->set_time_frame_definitions(tdefs);
 
   return Succeeded::yes;
 }
