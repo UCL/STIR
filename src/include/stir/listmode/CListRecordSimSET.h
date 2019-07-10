@@ -50,7 +50,8 @@ public:
 
     //! \details This is the main function which transform GATE coordinates to STIR
     void init_from_data(const PHG_DetectedPhoton* _blue,
-                        const PHG_DetectedPhoton* _pink);
+                        const PHG_DetectedPhoton* _pink,
+                        const float _weight);
 
     inline bool is_prompt() const
     { return true; }
@@ -69,6 +70,7 @@ private:
     int det2;
     //! Indicates if swap segments
     bool swapped;
+
 };
 
 //! A class for storing and using a timing 'event' from a listmode file from the ECAT 8_32bit scanner
@@ -167,10 +169,12 @@ public:
     {}
 
     virtual Succeeded init_from_data(const PHG_DetectedPhoton&	detectedPhotonBlue,
-                                     const PHG_DetectedPhoton&	detectedPhotonPink)
+                                     const PHG_DetectedPhoton&	detectedPhotonPink,
+                                     const float weight)
     {
         this->event_data.init_from_data(&detectedPhotonBlue,
-                                        &detectedPhotonPink);
+                                        &detectedPhotonPink,
+                                        weight);
 
         this->time_data.init_from_data(&detectedPhotonBlue,
                                        &detectedPhotonPink);

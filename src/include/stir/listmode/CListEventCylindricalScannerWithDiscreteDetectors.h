@@ -35,7 +35,57 @@ private:
   typedef CListEventScannerWithDiscreteDetectors<ProjDataInfoCylindricalNoArcCorr> base_type;
 
 public:
-  using base_type::base_type;
+  inline explicit 
+    CListEventCylindricalScannerWithDiscreteDetectors(const shared_ptr<Scanner>& scanner_sptr);
+
+  const Scanner * get_scanner_ptr() const
+    { return this->scanner_sptr.get(); }
+
+  //! This routine returns the corresponding detector pair   
+  virtual void get_detection_position(DetectionPositionPair<>&) const = 0;
+
+  //! This routine sets in a coincidence event from detector "indices"
+  virtual void set_detection_position(const DetectionPositionPair<>&) = 0;
+
+  //! find LOR between detector pairs
+  /*! Overrides the default implementation to use get_detection_position()
+    which should be faster.
+  */
+  inline virtual LORAs2Points<float> get_LOR() const;
+
+  //! find bin for this event
+  /*! Overrides the default implementation to use get_detection_position()
+    which should be faster.
+
+    \warning This implementation is only valid for \c proj_data_info of 
+    type ProjDataInfoCylindricalNoArcCorr. However, because of efficiency reasons
+    this is only checked in debug mode (NDEBUG not defined).
+  */
+  inline virtual void get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const;
+
+  //! This method checks if the template is valid for LmToProjData
+  /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
+   *  Most scanners have listmode data that correspond to non arc-corrected data and
+   *  this check avoids a crash when an unsupported template is used as input.
+   */
+  inline virtual bool is_valid_template(const ProjDataInfo&) const;
+
+ protected:
+   shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+    get_uncompressed_proj_data_info_sptr() const
+     {
+       return uncompressed_proj_data_info_sptr;
+     }
+
+   shared_ptr<Scanner> scanner_sptr;
+
+   //! This is the weight of the event, reflects factors as
+   //! detector efficiency, true activity and attenuation.
+   float weight;
+ private:
+   shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+     uncompressed_proj_data_info_sptr;
+
 };
 
 END_NAMESPACE_STIR
