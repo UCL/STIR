@@ -29,6 +29,8 @@
 #include <math.h>
 #include "stir/RunTests.h"
 
+#include <random>
+
 START_NAMESPACE_STIR
 
 /*!
@@ -49,11 +51,15 @@ public:
 void
 zoom_imageAdjointTests::fill_image_with_random(VoxelsOnCartesianGrid<float> & image)
 {
+    std::random_device random_device;
+    std::mt19937 random_number_generator(random_device());
+    std::uniform_real_distribution<float> number_distribution(0,10);
+
     for(int i=0 ; i<image.get_max_z() ; i++){
                for(int j=0 ; j<image.get_max_y(); j++){
                    for(int k=0 ; k<image.get_max_z() ; k++){
 
-                       image[i][j][k] = rand()%10;
+                       image[i][j][k] = number_distribution(random_number_generator);
 
                    }
                  }

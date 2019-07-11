@@ -94,9 +94,82 @@ void
 SSRBTests::
 run_tests()
 {
-//  std::cout << "-------- Testing Upsampling and Downsampling ---------\n";
 
-    std::cout << "DONE" <<'\n';
+
+    std::cout << "========== TEST SSRB =========== \n";
+
+    shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Siemens_mMR));
+
+    //creating proj data info
+    shared_ptr<ProjDataInfo> proj_data_info_sptr_4D(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 1,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
+    shared_ptr<ExamInfo> exam_info_sptr_4D(new ExamInfo);
+    ProjDataInMemory projdata_4D(exam_info_sptr_4D, proj_data_info_sptr_4D);
+
+    shared_ptr<ProjDataInfo> proj_data_info_sptr_3D(projdata_4D.get_proj_data_info_ptr()->clone());
+    proj_data_info_sptr_3D->reduce_segment_range(0,0); //create input template
+
+    ProjDataInMemory projdata_3D(projdata_4D.get_exam_info_sptr(),proj_data_info_sptr_3D);
+
+    ProjDataInMemory A_4D(exam_info_sptr_4D, proj_data_info_sptr_4D);
+    ProjDataInMemory A_3D(projdata_4D.get_exam_info_sptr(),proj_data_info_sptr_3D);
+
+    fill_projdata_with_random(projdata_4D);
+    fill_projdata_with_random(projdata_3D);
+    A_4D.fill(0); //initialise output
+    A_3D.fill(0); //initialise output
+
+
+    std::cout << "-------- Testing Inverse SSRB --------\n";
+    inverse_SSRB(A_4D,projdata_3D);
+
+    std::cout << "-------- Testing Transpose Inverse SSRB --------\n";
+
+    transpose_inverse_SSRB(A_3D,projdata_4D);
+
+    std::cout << "-------- <Ax|y> = <x|A*y> --------\n";
+
+    float cdot1 = 0;
+    float cdot2 = 0;
+
+    for ( int segment_num = projdata_4D.get_min_segment_num(); segment_num <= projdata_4D.get_max_segment_num(); ++segment_num)
+      {
+        for (int axial_pos = projdata_4D.get_min_axial_pos_num(segment_num); axial_pos <= projdata_4D.get_max_axial_pos_num(segment_num); ++axial_pos)
+          {
+
+            const Sinogram<float> yy_sinogram = projdata_4D.get_sinogram(axial_pos, segment_num);
+            const Sinogram<float> At_sinogram = A_4D.get_sinogram(axial_pos, segment_num);
+
+            for ( int view_num = projdata_4D.get_min_view_num(); view_num <= projdata_4D.get_max_view_num();view_num++)
+              {
+                for ( int tang_pos = projdata_4D.get_min_tangential_pos_num(); tang_pos <= projdata_4D.get_max_tangential_pos_num(); tang_pos++)
+                 {
+                     cdot1 += At_sinogram[view_num][tang_pos]*yy_sinogram[view_num][tang_pos];
+                  }
+               }
+             }
+          }
+
+    for ( int segment_num = projdata_3D.get_min_segment_num(); segment_num <= projdata_3D.get_max_segment_num(); ++segment_num)
+      {
+        for (int axial_pos = projdata_3D.get_min_axial_pos_num(segment_num); axial_pos <= projdata_3D.get_max_axial_pos_num(segment_num); ++axial_pos)
+          {
+
+            const Sinogram<float> xx_sinogram = projdata_3D.get_sinogram(axial_pos, segment_num);
+            const Sinogram<float> A_sinogram = A_3D.get_sinogram(axial_pos, segment_num);
+
+            for ( int view_num = projdata_3D.get_min_view_num(); view_num <= projdata_3D.get_max_view_num();view_num++)
+              {
+                for ( int tang_pos = projdata_3D.get_min_tangential_pos_num(); tang_pos <= projdata_3D.get_max_tangential_pos_num(); tang_pos++)
+                 {
+                     cdot2 += xx_sinogram[view_num][tang_pos]*A_sinogram[view_num][tang_pos];
+                  }
+               }
+             }
+          }
+
+    std::cout << cdot1 << "=" << cdot2 << '\n';
+    set_tolerance(0.02);
+    check_if_equal(cdot1, cdot2, "test adjoint");
 
 
 
