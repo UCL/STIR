@@ -80,7 +80,7 @@ fill_projdata_with_random(ProjData & projdata)
                          bin.tangential_pos_num()<=
                          sino.get_max_tangential_pos_num();
                          ++bin.tangential_pos_num())
-                         sino[bin.view_num()][bin.tangential_pos_num()]= rand()%2;//((double) rand() / (1)) + 1;
+                         sino[bin.view_num()][bin.tangential_pos_num()]= rand()%10;//((double) rand() / (1)) + 1;
 
                     projdata.set_sinogram(sino);
 
@@ -97,23 +97,23 @@ run_tests()
 //  std::cout << "-------- Testing Upsampling and Downsampling ---------\n";
 
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Siemens_mMR));
-    //shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
-    //shared_ptr<ExamInfo> LR_exam_info_sptr(new ExamInfo);
+    shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+    shared_ptr<ExamInfo> LR_exam_info_sptr(new ExamInfo);
 
     //creating proj data info
-   // shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
+    shared_ptr<ProjDataInfo> proj_data_info_sptr(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
 
    // shared_ptr<ProjData> LR = ProjData::read_from_file("simulated_scatter_sino_UU2.hs");
 
 
     // construct y
-   /* ProjDataInMemory y(exam_info_sptr, proj_data_info_sptr);
+   ProjDataInMemory y(exam_info_sptr, proj_data_info_sptr);
 
 
     unique_ptr<SingleScatterSimulation> sss(new SingleScatterSimulation());
     sss->set_template_proj_data_info_sptr(proj_data_info_sptr);
-    int down_rings = static_cast<int>(scanner_sptr->get_num_rings()/4);
-    int down_dets = static_cast<int>(scanner_sptr->get_max_num_views()/4);
+    int down_rings = static_cast<int>(scanner_sptr->get_num_rings()/6);
+    int down_dets = static_cast<int>(scanner_sptr->get_max_num_views()/6);
 
     sss->downsample_scanner(down_rings, down_dets);
 
@@ -189,7 +189,7 @@ run_tests()
           }
 
     std::cout << cdot1 << "=" << cdot2 << '\n';
-    set_tolerance(0.02);
+    set_tolerance(0.004);
     check_if_equal(cdot1, cdot2, "test adjoint");
 
 
@@ -249,18 +249,18 @@ run_tests()
           }
 
     std::cout << cdot1 << "=" << cdot2 << '\n';
-    set_tolerance(0.02);
-    check_if_equal(cdot1, cdot2, "test adjoint");*/
+    set_tolerance(0.004);
+    check_if_equal(cdot1, cdot2, "test adjoint");
 
 
     std::cout << "========== TEST SSRB =========== \n";
 
     //creating proj data info
-    shared_ptr<ProjDataInfo> proj_data_info_sptr_4D(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 1,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
-    shared_ptr<ExamInfo> exam_info_sptr_4D(new ExamInfo);
-    ProjDataInMemory projdata_4D(exam_info_sptr_4D, proj_data_info_sptr_4D);
+    //shared_ptr<ProjDataInfo> proj_data_info_sptr_4D(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 1,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
+    //shared_ptr<ExamInfo> exam_info_sptr_4D(new ExamInfo);
+    //ProjDataInMemory projdata_4D(exam_info_sptr_4D, proj_data_info_sptr_4D);
 
-    shared_ptr<ProjDataInfo> proj_data_info_sptr_3D(projdata_4D.get_proj_data_info_ptr()->clone());
+    /*shared_ptr<ProjDataInfo> proj_data_info_sptr_3D(projdata_4D.get_proj_data_info_ptr()->clone());
     proj_data_info_sptr_3D->reduce_segment_range(0,0); //create input template
 
     ProjDataInMemory projdata_3D(projdata_4D.get_exam_info_sptr(),proj_data_info_sptr_3D);
@@ -283,8 +283,7 @@ run_tests()
 
     std::cout << "-------- <Ax|y> = <x|A*y> --------\n";
 
-   int  cdot1 = 0;
-   int cdot2 = 0;
+
 
     for ( int segment_num = projdata_4D.get_min_segment_num(); segment_num <= projdata_4D.get_max_segment_num(); ++segment_num)
       {
@@ -324,7 +323,7 @@ run_tests()
 
     std::cout << cdot1 << "=" << cdot2 << '\n';
     set_tolerance(0.02);
-    check_if_equal(cdot1, cdot2, "test adjoint");
+    check_if_equal(cdot1, cdot2, "test adjoint");*/
 
 
 
