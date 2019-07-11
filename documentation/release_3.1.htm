@@ -137,6 +137,8 @@ These are only minimally documented at the present stage unfortunately.
 <li><tt>list_image_info</tt> now has options to list exam info, or only part of the information (as <tt>list_projdata_info</tt>).</li>
 <li><tt>list_lm_countrates</tt> is a new list mode utility to output total counts per specified time interval.</li>
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
+<li>Normalisation classfor Siemens ECAT8, allowing for the <i>virtual</i> crystals. This needed 2 extra functions in <code>Scanner</code>
+to know how many virtual crystals there are.</li>
 <li>add Verbosity level (currently only to be set from interactive languages)</li
 <li>Added the anatomical parallel level sets (PLS) prior. If an uniform anatomical image is provided it will work as a (smoothed) total variation (TV) prior </li>
 <li>New IO:
