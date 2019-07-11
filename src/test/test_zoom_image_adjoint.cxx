@@ -38,7 +38,7 @@ START_NAMESPACE_STIR
   after zooming. This is done by checking the centre of gravity of the
   zoomed image.
 */
-class zoom_imageTests : public RunTests
+class zoom_imageAdjointTests : public RunTests
 {
 public:
   void run_tests();
@@ -47,7 +47,7 @@ public:
 };
 
 void
-zoom_imageTests::fill_image_with_random(VoxelsOnCartesianGrid<float> & image)
+zoom_imageAdjointTests::fill_image_with_random(VoxelsOnCartesianGrid<float> & image)
 {
     for(int i=0 ; i<image.get_max_z() ; i++){
                for(int j=0 ; j<image.get_max_y(); j++){
@@ -62,7 +62,7 @@ zoom_imageTests::fill_image_with_random(VoxelsOnCartesianGrid<float> & image)
 }
 
 float
-zoom_imageTests::dot_product(VoxelsOnCartesianGrid<float> & image1,VoxelsOnCartesianGrid<float> & image2)
+zoom_imageAdjointTests::dot_product(VoxelsOnCartesianGrid<float> & image1,VoxelsOnCartesianGrid<float> & image2)
 {
     float cdot  = 0;
     for(int i=0 ; i<image1.get_max_z() ; i++){
@@ -81,7 +81,7 @@ zoom_imageTests::dot_product(VoxelsOnCartesianGrid<float> & image1,VoxelsOnCarte
 
 
 void
-zoom_imageTests::run_tests()
+zoom_imageAdjointTests::run_tests()
 
 {
   std::cerr << "Tests for zoom_image\n";
@@ -194,7 +194,7 @@ USING_NAMESPACE_STIR
 
 int main()
 {
-  zoom_imageTests tests;
+  zoom_imageAdjointTests tests;
   tests.run_tests();
   return tests.main_return_value();
 }
