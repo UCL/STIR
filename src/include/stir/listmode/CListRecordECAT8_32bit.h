@@ -185,6 +185,8 @@ class CListTimeECAT8_32bit : public CListTime
     return Succeeded::yes;
   }
 
+
+
  private:
   BOOST_STATIC_ASSERT(sizeof(CListTimeDataECAT8_32bit)==4); 
   union 
@@ -193,6 +195,19 @@ class CListTimeECAT8_32bit : public CListTime
     boost::int32_t         raw;
   };
 };
+
+
+
+//! A class for storing and using an energy 'event' from a listmode file from the ECAT 8_32bit scanner
+/*! \ingroup listmode
+ */
+class CListEnergyECAT8_32bit : public CListEnergy
+{
+ public:
+  bool is_energy() const
+  { return true; }
+  };
+
 
 //! A class for a general element of a listmode file for a Siemens scanner using the ECAT8 32bit format.
 /*! \ingroup listmode
@@ -216,6 +231,10 @@ class CListTimeECAT8_32bit : public CListTime
   */
   bool is_event() const
   { return this->any_data.is_event(); }
+
+  bool is_energy() const
+  { return true; }
+
   virtual CListEventECAT8_32bit&  event() 
     { return this->event_data; }
   virtual const CListEventECAT8_32bit&  event() const
@@ -224,6 +243,12 @@ class CListTimeECAT8_32bit : public CListTime
     { return this->time_data; }
   virtual const CListTimeECAT8_32bit&   time() const
     { return this->time_data; }
+
+  virtual CListEnergyECAT8_32bit&   energy()
+    { return this->energy_data; }
+  virtual const CListEnergyECAT8_32bit&   energy() const
+    { return this->energy_data; }
+
 
   bool operator==(const CListRecord& e2) const
   {
@@ -264,6 +289,7 @@ class CListTimeECAT8_32bit : public CListTime
  private:
   CListEventECAT8_32bit  event_data;
   CListTimeECAT8_32bit   time_data; 
+  CListEnergyECAT8_32bit    energy_data;
   CListDataAnyECAT8_32bit   any_data; 
   boost::int32_t         raw; // this raw field isn't strictly necessary, get rid of it?
 

@@ -164,8 +164,16 @@ private:
 #endif
 };
 
+//! Class for record with time data
+class CListEnergyDataSAFIR
+{
+public:
+};
+
+
+
 //! Class for general record, containing a union of data, time and raw record and providing access to certain elements.
-class CListRecordSAFIR : public CListRecord, public CListTime, public CListEventSAFIR<CListRecordSAFIR>
+class CListRecordSAFIR : public CListRecord, public CListTime, public CListEnergy, public CListEventSAFIR<CListRecordSAFIR>
 {
 public:
 	typedef CListEventDataSAFIR DataType;
@@ -184,6 +192,9 @@ public:
 	virtual bool is_event() const
 	{ return time_data.type == 0; }
 
+    virtual bool is_energy() const
+    { return true;}
+
 	virtual CListEvent&  event()
 	{ return *this; }
 
@@ -201,6 +212,14 @@ public:
 
 	virtual const CListTime&   time() const
 	{ return *this; }
+
+
+    virtual CListEnergy&   energy()
+    { return *this; }
+
+    virtual const CListEnergy&   energy() const
+    { return *this; }
+
 
 	virtual bool operator==(const CListRecord& e2) const
 	{
@@ -241,6 +260,7 @@ private:
 	union {
 		CListEventDataSAFIR event_data;
 		CListTimeDataSAFIR time_data;
+        CListEnergyDataSAFIR energy_data;
 	    boost::int64_t raw;
 	};
 	BOOST_STATIC_ASSERT(sizeof(boost::uint64_t)==8);

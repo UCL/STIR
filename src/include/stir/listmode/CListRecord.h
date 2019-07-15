@@ -150,6 +150,19 @@ public:
 
 };
 
+
+//! A class for storing and using a energy record from a listmode file
+/*! \ingroup listmode
+    CListEnergy is used to provide an interface to the 'energy' events
+    in the list mode stream.
+
+*/
+class CListEnergy
+{
+public:
+  virtual ~CListEnergy() {}
+};
+
 //! A class recording external input to the scanner (normally used for gating)
 /*! For some scanners, the state of some external measurements can be recorded in the
    list file, such as ECG triggers etc. We currently assume that these take discrete values.
@@ -190,10 +203,15 @@ public:
 
   virtual bool is_event() const = 0;
 
+  virtual bool is_energy() const = 0;
+
   virtual CListEvent&  event() = 0;
   virtual const CListEvent&  event() const = 0;
   virtual CListTime&   time() = 0; 
   virtual const CListTime&   time() const = 0; 
+
+  virtual CListEnergy&   energy() = 0;
+  virtual const CListEnergy&   energy() const = 0;
 
   virtual bool operator==(const CListRecord& e2) const = 0;
   bool operator!=(const CListRecord& e2) const { return !(*this == e2); }

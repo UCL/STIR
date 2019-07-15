@@ -181,6 +181,16 @@ private:
 #endif
 };
 
+
+//! A class for storing and using an energy 'event' from a listmode file
+/*! \ingroup listmode
+ */
+class CListEnergyDataECAT962
+{
+ public:
+};
+
+
 //! A class for a general element of a listmode file
 /*! \ingroup listmode
    For the 962 it's either a coincidence event, or a timing flag.*/
@@ -198,6 +208,8 @@ class CListRecordECAT962 : public CListRecordWithGatingInput, public CListTime, 
 
   bool is_time() const
   { return time_data.type == 1U; }
+  bool is_energy() const
+  { return true; }
   bool is_gating_input() const
   { return this->is_time(); }
   bool is_event() const
@@ -258,6 +270,7 @@ private:
   union {
     CListEventDataECAT962  event_data;
     CListTimeDataECAT962   time_data; 
+    CListEnergyDataECAT962 energy_data;
     boost::int32_t         raw;
   };
   BOOST_STATIC_ASSERT(sizeof(boost::int32_t)==4);
