@@ -206,6 +206,10 @@ class CListEnergyECAT8_32bit : public CListEnergy
  public:
   bool is_energy() const
   { return true; }
+  inline double get_energyA_in_keV() const
+  { return 0.F;  }
+  inline double get_energyB_in_keV() const
+  { return 0.F;  }
   };
 
 

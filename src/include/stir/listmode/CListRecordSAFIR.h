@@ -168,6 +168,7 @@ private:
 class CListEnergyDataSAFIR
 {
 public:
+
 };
 
 
@@ -232,6 +233,11 @@ public:
 
 	inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
 	{ return time_data.set_time_in_millisecs(time_in_millisecs); }
+
+    inline double get_energyA_in_keV() const
+    { return 0.F;  }
+    inline double get_energyB_in_keV() const
+    { return 0.F;  }
 
 	inline bool is_prompt() const { return !(event_data.isRandom); }
 

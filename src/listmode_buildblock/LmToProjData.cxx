@@ -643,11 +643,18 @@ process_data()
 		     assert(current_time>=start_time);
 		     process_new_time_event(record.time());
 		   }
+
+           if(record.is_energy())
+             {
+               std::cout<< "energyA: " << record.energy().get_energyA_in_keV() << '\n';
+               std::cout<< "energyB: " << record.energy().get_energyB_in_keV() << '\n';
+             }
 		 // note: could do "else if" here if we would be sure that
 		 // a record can never be both timing and coincidence event
 		 // and there might be a scanner around that has them both combined.
 		 if (record.is_event())
 		   {
+             std::cout<< "i'm here" << '\n';
 		     assert(start_time <= current_time);
 		     Bin bin;
 		     // set value in case the event decoder doesn't touch it

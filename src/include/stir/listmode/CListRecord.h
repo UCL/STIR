@@ -161,6 +161,9 @@ class CListEnergy
 {
 public:
   virtual ~CListEnergy() {}
+
+    virtual double get_energyA_in_keV() const = 0;
+    virtual double get_energyB_in_keV() const = 0;
 };
 
 //! A class recording external input to the scanner (normally used for gating)

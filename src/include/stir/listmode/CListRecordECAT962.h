@@ -243,6 +243,12 @@ class CListRecordECAT962 : public CListRecordWithGatingInput, public CListTime, 
   inline Succeeded set_gating(unsigned int g) 
     { return time_data.set_gating(g); }
 
+  // energy
+  inline double get_energyA_in_keV() const
+  { return 0.F;  }
+  inline double get_energyB_in_keV() const
+  { return 0.F;  }
+
   // event
   inline bool is_prompt() const { return event_data.is_prompt(); }
   inline Succeeded set_prompt(const bool prompt = true) 
