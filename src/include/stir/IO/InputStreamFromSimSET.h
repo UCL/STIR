@@ -131,17 +131,14 @@ private:
     //! Current file index
     LbUsFourByte curFileIndex;
     //! Number of photons processed
-    LbUsFourByte numPhotonsProcessed;
+    LbFourByte numPhotonsProcessed = 0;
     //! Number of decays processed
-    LbUsFourByte numDecaysProcessed;
+    LbUsFourByte numDecaysProcessed = 0;
     //! First event in the history file.
     LbUsFourByte startFileIndex;
     //! Total number of photons in the history file.
     LbUsFourByte numPhotons;
-    //! The first detected photon
-    PHG_DetectedPhoton	cur_detectedPhotonBlue;
-    //! The second detected photon
-    PHG_DetectedPhoton	cur_detectedPhotonPink;
+
     //! SimSET cylindrical PET scanner is centered to the z axis.
     //! This variable will be added to move the z position on the
     //! possitive side, as is STIR's convention.
@@ -169,6 +166,13 @@ private:
 
     float high_energy_threshold;
 
+    std::vector<PHG_DetectedPhoton>	bluePhotons;			/* Blue photons for current decay */
+    std::vector<PHG_DetectedPhoton>	pinkPhotons;			/* Pink photon for current decay*/
+    std::vector<std::pair<PHG_DetectedPhoton*, PHG_DetectedPhoton*> >buffer;
+
+    int buffer_size = 0;
+
+    float decay_weight = 0.0;
 };
 
 END_NAMESPACE_STIR
