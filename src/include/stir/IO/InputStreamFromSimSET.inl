@@ -34,7 +34,6 @@ unsigned long int
 InputStreamFromSimSET::
 get_total_number_of_events() const
 {
-    unsigned long int nikos =static_cast<unsigned long int>(phgrdhstHdrParams.H.NumDecays);
     return static_cast<unsigned long int>(phgrdhstHdrParams.H.NumDecays);
 }
 
@@ -85,146 +84,235 @@ set_saved_get_positions(const std::vector<std::streampos> &poss)
 {
     saved_get_positions = poss;
 }
-
+static int ddd = 0;
 Succeeded
 InputStreamFromSimSET::
 get_next_record(CListRecordSimSET& record)
 {
 
-    while(true)
+    PHG_Decay nextDecay;
+
+    //! The first detected photon
+    PHG_DetectedPhoton	cur_detectedPhoton;
+
+    if(buffer.size() > 0)
     {
-
-        EventTy	retEventType = Null;
-        PhoHFileEventType	eventType = PhoHFileNullEvent;	/* The event type we read */
-
-        while(true)
+        int i = 0;
+        bool found = false;
+        for (; i < buffer.size(); i++)
         {
-
-            // We do not process decay events, so skip them
-            do
-            {
-                eventType = PhoHFileReadEvent(historyFile, &curDecay, &cur_detectedPhotonBlue);
-
-                if (eventType == PhoHFilePhotonEvent)
-                    retEventType = Photon;
-
-                if (eventType == PhoHFileDecayEvent)
-                    retEventType = Decay;
-
-                if (eventType == PhoHFileNullEvent)
-                    return Succeeded::no;
-
-            }while (retEventType == Decay);
-
-            /* See if it is blue or pink */
-            if (!LbFgIsSet(cur_detectedPhotonBlue.flags, PHGFg_PhotonBlue))
+            if ((binParams->numE1Bins > 0) && (buffer.at(i).first->energy < binParams->minE))
                 continue;
 
-            eventType = PhoHFileReadEvent(historyFile, &curDecay, &cur_detectedPhotonPink);
-            if (LbFgIsSet(cur_detectedPhotonPink.flags, PHGFg_PhotonBlue))
+            if	((binParams->numE1Bins > 0) && (buffer.at(i).first->energy > binParams->maxE))
                 continue;
 
-            if (cur_detectedPhotonBlue.energy < low_energy_threshold ||
-                    cur_detectedPhotonBlue.energy > high_energy_threshold ||
-                    cur_detectedPhotonPink.energy < low_energy_threshold ||
-                    cur_detectedPhotonPink.energy > high_energy_threshold )
+            if ((binParams->numE2Bins > 0) && (buffer.at(i).second->energy < binParams->minE))
                 continue;
 
+            if	((binParams->numE2Bins > 0) && (buffer.at(i).second->energy > binParams->maxE))
+                continue;
+
+            found = true;
             break;
         }
 
-        /* Reject the coincidence if it is random and
-          we are rejecting randoms */
-        if ( (curDecay.decayType == PhgEn_PETRandom) &&
-             (!binParams->acceptRandoms) )
-            continue;
-
-        /* Get scatter count */
-//        blueScatters += cur_detectedPhotonBlue.flags>>2;
-
-        /* See if this photon fails the acceptance criteria */
-        /* NOTE: It seems like failing a blue should go to the
-                        next blue, not the next pink. However, because we let
-                        the user get their hands on the photon pair we will
-                        always call the user routine with every blue and
-                        every pink
-                    */
+        if (found)
         {
-//            if ( (blueScatters < binParams->minS) &&
-//                 (!ignoreMinScatters) )
-//                continue;
+            PHG_DetectedPhoton blue = *buffer.at(i).first;
+            PHG_DetectedPhoton pink = *buffer.at(i).second;
 
-            /* Max scatters is ignored for some scatterRandomParam, this means
-                            take all photons from max and above, and put them into
-                            the top bin
-                        */
-//            if	((blueScatters > binParams->maxS) &&
-//                 (!ignoreMaxScatters))
-//                continue;
+            buffer.erase(buffer.begin() + i);
 
-            if ((binParams->numE1Bins > 0) && (cur_detectedPhotonBlue.energy < static_cast<float>(binParams->minE)))
-                continue;
+            float coincidenceWeight = (decay_weight * blue.photon_weight * pink.photon_weight);
 
-            if	((binParams->numE1Bins > 0) && (cur_detectedPhotonBlue.energy > static_cast<float>(binParams->maxE)))
-                continue;
+            blue.location.z_position -= static_cast<float>(binParams->minZ);
+            pink.location.z_position -= static_cast<float>(binParams->minZ);
 
-            if ((binParams->numZBins > 0) && (cur_detectedPhotonBlue.location.z_position <= static_cast<float>(binParams->minZ)))
-                continue;
+            // STIR uses mm.
+            blue.location.z_position *= 10.f;
+            blue.location.y_position *= 10.f;
+            blue.location.x_position *= 10.f;
 
-            if ((binParams->numZBins > 0) && (cur_detectedPhotonBlue.location.z_position >= static_cast<float>(binParams->maxZ)))
-                continue;
+            pink.location.z_position *= 10.f;
+            pink.location.y_position *= 10.f;
+            pink.location.x_position *= 10.f;
+
+
+            std::cout << buffer.size() << std::endl;
+
+            return record.init_from_data(blue, pink, coincidenceWeight);
         }
 
-
-        /* Get scatter count */
-//        pinkScatters += cur_detectedPhotonPink.flags>>2;
-
-        /* See if this photon fails the acceptance criteria */
-        {
-//            if ( (pinkScatters < binParams->minS) &&
-//                 (!ignoreMinScatters) )
-//                continue;
-
-            /* Max scatters is ignored for some scatterRandomParam, this means
-                                        take all photons from max and above, and put them into
-                                        the top bin
-                                    */
-//            if	( (pinkScatters > binParams->maxS) &&
-//                  (!ignoreMaxScatters) )
-//                continue;
-
-            if ((binParams->numE2Bins > 0) && (cur_detectedPhotonPink.energy < static_cast<float>(binParams->minE)))
-                continue;
-
-            if	((binParams->numE2Bins > 0) && (cur_detectedPhotonPink.energy > static_cast<float>(binParams->maxE)))
-                continue;
-
-            if ((binParams->numZBins > 0) && (cur_detectedPhotonPink.location.z_position <= static_cast<float>(binParams->minZ)))
-                continue;
-
-            if ((binParams->numZBins > 0) && (cur_detectedPhotonPink.location.z_position >= static_cast<float>(binParams->maxZ)))
-                continue;
-        }
-        break;
     }
 
-    cur_detectedPhotonBlue.location.z_position -= static_cast<float>(binParams->minZ);
-    cur_detectedPhotonPink.location.z_position -= static_cast<float>(binParams->minZ);
+    {
 
-    // STIR uses mm.
-    cur_detectedPhotonBlue.location.z_position *= 10.f;
-    cur_detectedPhotonBlue.location.y_position *= 10.f;
-    cur_detectedPhotonBlue.location.x_position *= 10.f;
+        EventTy eventType = readEvent(historyFile, &curDecay, &cur_detectedPhoton);
 
-    cur_detectedPhotonPink.location.z_position *= 10.f;
-    cur_detectedPhotonPink.location.y_position *= 10.f;
-    cur_detectedPhotonPink.location.x_position *= 10.f;
+        while (eventType == Decay)
+        {
+            /* Clear decay variables */
+            bluePhotons.clear();
+            pinkPhotons.clear();
+            buffer.clear();
+            buffer_size = 0;
 
-    float coincidenceWeight = (curDecay.startWeight * cur_detectedPhotonBlue.photon_weight *
-                                cur_detectedPhotonBlue.photon_weight); // * binFields->WeightRatio;
-    return record.init_from_data(cur_detectedPhotonBlue,
-                                 cur_detectedPhotonPink,
-                                 coincidenceWeight);
+            eventType = readEvent(historyFile, &nextDecay, &cur_detectedPhoton);
+
+            if (eventType == PhoHFileNullEvent)
+                return Succeeded::no;
+
+            decay_weight = nextDecay.startWeight;
+
+            while ( eventType == Photon)
+            {
+                /* See if it is blue or pink */
+                if (LbFgIsSet( (cur_detectedPhoton.flags & 3), PHGFg_PhotonBlue)) {
+                    bluePhotons.push_back(cur_detectedPhoton);
+                }
+                else {
+                    pinkPhotons.push_back(cur_detectedPhoton);
+                }
+                eventType = readEvent(historyFile, &nextDecay, &cur_detectedPhoton);
+
+                if (eventType == PhoHFileNullEvent)
+                    return Succeeded::no;
+            }
+
+            /* Update current decay */
+            curDecay = nextDecay;
+            //-> break
+            if (PHG_IsPETCoincidencesOnly())
+            {
+                if ((bluePhotons.size() == 1) &&
+                        (pinkPhotons.size() == 1))
+                {
+                    /* Reject the coincidence if it is random and
+                      we are rejecting randoms */
+                    if ( (curDecay.decayType == PhgEn_PETRandom) &&
+                            (!binParams->acceptRandoms) )
+                        continue;
+
+                    if ((binParams->numE1Bins > 0) && (bluePhotons.at(0).energy < binParams->minE))
+                        continue;
+
+                    if	((binParams->numE1Bins > 0) && (bluePhotons.at(0).energy > binParams->maxE))
+                        continue;
+
+                    if ((binParams->numE2Bins > 0) && (pinkPhotons.at(0).energy < binParams->minE))
+                        continue;
+
+                    if	((binParams->numE2Bins > 0) && (pinkPhotons.at(0).energy > binParams->maxE))
+                        continue;
+
+                    float coincidenceWeight = (decay_weight * bluePhotons.at(0).photon_weight *
+                                               pinkPhotons.at(0).photon_weight);
+
+                    bluePhotons.at(0).location.z_position -= static_cast<float>(binParams->minZ);
+                    pinkPhotons.at(0).location.z_position -= static_cast<float>(binParams->minZ);
+
+                    // STIR uses mm.
+                    bluePhotons.at(0).location.z_position *= 10.f;
+                    bluePhotons.at(0).location.y_position *= 10.f;
+                    bluePhotons.at(0).location.x_position *= 10.f;
+
+                    pinkPhotons.at(0).location.z_position *= 10.f;
+                    pinkPhotons.at(0).location.y_position *= 10.f;
+                    pinkPhotons.at(0).location.x_position *= 10.f;
+
+                    return record.init_from_data(bluePhotons.at(0),
+                                                     pinkPhotons.at(0),
+                                                     coincidenceWeight);
+
+                }
+                else if (bluePhotons.size() == 0 || pinkPhotons.size() == 0)
+                {
+//                    warning("Single");
+                    continue;
+                }
+                else if (bluePhotons.size() > 1 || pinkPhotons.size() > 1)
+                {
+//                    warning("Multiples");
+                    // Create buffer
+                    for (int i = 0; i < bluePhotons.size(); ++i)
+                    {
+                        for(int j = 0; j< pinkPhotons.size(); ++j)
+                        {
+                            buffer.push_back({&bluePhotons.at(i), &pinkPhotons.at(j)});
+                            buffer_size++;
+                        }
+                    }
+
+                    buffer_size--;
+
+//                    /* Reject the coincidence if it is random and
+//                      we are rejecting randoms */
+//                    if ( (curDecay.decayType == PhgEn_PETRandom) &&
+//                            (!binParams->acceptRandoms) )
+//                        continue;
+
+                    int i = 0;
+                    bool found = false;
+                    for (; i < buffer.size(); ++i)
+                    {
+                        if ((binParams->numE1Bins > 0) && (buffer.at(i).first->energy < binParams->minE))
+                            continue;
+
+                        if	((binParams->numE1Bins > 0) && (buffer.at(i).first->energy > binParams->maxE))
+                            continue;
+
+                        if ((binParams->numE2Bins > 0) && (buffer.at(i).second->energy < binParams->minE))
+                            continue;
+
+                        if	((binParams->numE2Bins > 0) && (buffer.at(i).second->energy > binParams->maxE))
+                            continue;
+
+                        found = true;
+                        break;
+
+                    }
+
+                    if (found)
+                    {
+                        PHG_DetectedPhoton blue = *buffer.at(i).first;
+                        PHG_DetectedPhoton pink = *buffer.at(i).second;
+
+                        buffer.erase(buffer.begin() + i);
+
+                        float coincidenceWeight = (decay_weight * blue.photon_weight * pink.photon_weight);
+
+                        blue.location.z_position -= static_cast<float>(binParams->minZ);
+                        pink.location.z_position -= static_cast<float>(binParams->minZ);
+
+                        // STIR uses mm.
+                        blue.location.z_position *= 10.f;
+                        blue.location.y_position *= 10.f;
+                        blue.location.x_position *= 10.f;
+
+                        pink.location.z_position *= 10.f;
+                        pink.location.y_position *= 10.f;
+                        pink.location.x_position *= 10.f;
+
+                        return record.init_from_data(blue, pink, coincidenceWeight);
+                    }
+
+                }
+                else
+                {
+                    error("Why am I here??");
+                }
+            }
+            else
+            {
+                error("Not supported.");
+            }
+
+        }
+
+    }
+
+
 }
 
 END_NAMESPACE_STIR

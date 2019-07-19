@@ -140,37 +140,37 @@ InputStreamFromSimSET::set_up_standard_hist_file()
         error("InputStreamFromSimSET: File specified as PHG history file is not valid.");
     }
 
-    PhoHFileEventType eventType = PhoHFileReadEvent(historyFile, &curDecay, &detectedPhoton);
-    EventTy	locEventType;
+//    PhoHFileEventType eventType = PhoHFileReadEvent(historyFile, &curDecay, &detectedPhoton);
+//    EventTy	locEventType;
 
-    /* Convert to the local event type */
-    switch ( eventType ) {
-        case PhoHFileNullEvent:
-            locEventType = Null;
-            break;
+//    /* Convert to the local event type */
+//    switch ( eventType ) {
+//        case PhoHFileNullEvent:
+//            locEventType = Null;
+//            break;
 
-        case PhoHFileDecayEvent:
-            locEventType = Decay;
-            break;
+//        case PhoHFileDecayEvent:
+//            locEventType = Decay;
+//            break;
 
-        case PhoHFilePhotonEvent:
-            locEventType = Photon;
-            break;
+//        case PhoHFilePhotonEvent:
+//            locEventType = Photon;
+//            break;
 
-        default:
-            locEventType = Null;
-            break;
-    }
-//    firstDecay = curDecay;
-//    rewind(historyFile);
-    fseek(historyFile, headerHk.headerSize, SEEK_SET);
+//        default:
+//            locEventType = Null;
+//            break;
+//    }
+////    firstDecay = curDecay;
+////    rewind(historyFile);
+//    fseek(historyFile, headerHk.headerSize, SEEK_SET);
 
-//    numDecaysProcessed++;
+////    numDecaysProcessed++;
 
-    if (locEventType != Decay)
-    {
-        error("InputStreamFromSimSET: Expected first event to be decay, and it wasn't.");
-    }
+//    if (locEventType != Decay)
+//    {
+//        error("InputStreamFromSimSET: Expected first event to be decay, and it wasn't.");
+//    }
 
     display(&phgrdhstHdrParams);
 
