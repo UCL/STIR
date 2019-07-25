@@ -1,19 +1,23 @@
 //
 //
 
-#ifndef __stir_gpu_ForwardProjectorByBinNiftyPET_h__
-#define __stir_gpu_ForwardProjectorByBinNiftyPET_h__
+#ifndef __stir_recon_buildblock_ForwardProjectorByBin_h__
+#define __stir_recon_buildblock_ForwardProjectorByBin_h__
 /*!
   \file
   \ingroup projection
 
-  \brief Class for forward projector with NiftyPET's GPU implementation.
+  \brief Base class for forward projectors which work on 'large' collections of bins: given the whole image, fill in a stir::RelatedViewgrams<float> object.
 
-  \author Richard Brown
+  \author Kris Thielemans
+  \author Sanida Mustafovic
+  \author PARAPET project
 
 */
 /*
-    Copyright (C) 2019, University College London
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -29,7 +33,10 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/recon_buildblock/ForwardProjectorByBin.h"
+#include "stir/RegisteredObject.h"
+#include "stir/TimedObject.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -45,7 +52,7 @@ class DataSymmetriesForViewSegmentNumbers;
   \ingroup projection
   \brief Abstract base class for all forward projectors
 */
-class ForwardProjectorByBinNiftyPET : 
+class ForwardProjectorByBin : 
   public TimedObject,
   public RegisteredObject<ForwardProjectorByBin> 
 { 
@@ -53,7 +60,7 @@ public:
 
   //! Default constructor calls reset_timers()
   //inline
-    ForwardProjectorByBinNiftyPET();
+    ForwardProjectorByBin();
 
   //! Stores all necessary geometric info
  /*! 
@@ -116,7 +123,7 @@ virtual void set_up(
           const int min_axial_pos_num, const int max_axial_pos_num,
           const int min_tangential_pos_num, const int max_tangential_pos_num);
 
-    virtual ~ForwardProjectorByBinNiftyPET();
+    virtual ~ForwardProjectorByBin();
 
     /// Set input
     virtual void set_input(const shared_ptr<DiscretisedDensity<3,float> >&);
@@ -135,8 +142,21 @@ protected:
           const int min_axial_pos_num, const int max_axial_pos_num,
           const int min_tangential_pos_num, const int max_tangential_pos_num);
 
+  //! check if the argument is the same as what was used for set_up()
+  /*! calls error() if anything is wrong.
+
+      If overriding this function in a derived class, you need to call this one.
+   */
+  virtual void check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& density_info) const;
+  bool _already_set_up;
+
+  //! The density ptr set with set_up()
+  shared_ptr<DiscretisedDensity<3,float> > _density_sptr;
+
+private:
+  shared_ptr<ProjDataInfo> _proj_data_info_sptr;
 };
 
 END_NAMESPACE_STIR
 
-#endif // __stir_gpu_ForwardProjectorByBinNiftyPET_h__
+#endif // __stir_recon_buildblock_ForwardProjectorByBin_h__

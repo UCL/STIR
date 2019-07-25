@@ -1,16 +1,22 @@
 //
 //
 /*!
+
   \file
   \ingroup projection
 
-  \brief Class for forward projector with NiftyPET's GPU implementation.
+  \brief non-inline implementations for stir::ForwardProjectorByBin
 
-  \author Richard Brown
+  \author Kris Thielemans
+  \author PARAPET project
+
 
 */
 /*
-    Copyright (C) 2019, University College London
+    Copyright (C) 2000 PARAPET partners
+    Copyright (C) 2000-2011 Hammersmith Imanet Ltd
+    Copyright (C) 2013 Kris Thielemans
+    Copyright (C) 2015, 2018, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,22 +32,32 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/recon_buildblock/ForwardProjectorByBinNiftyPET.h"
+#include "stir/recon_buildblock/ForwardProjectorByBin.h"
+#include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
+#include "stir/RelatedViewgrams.h"
+#include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/ProjData.h"
+#include "stir/DiscretisedDensity.h"
+#include "stir/Succeeded.h"
+#include "stir/info.h"
+#include "stir/error.h"
+#include <boost/format.hpp>
+#include <iostream>
 
 START_NAMESPACE_STIR
 
 
-ForwardProjectorByBinNiftyPET::ForwardProjectorByBinNiftyPET()
+ForwardProjectorByBin::ForwardProjectorByBin()
   :   _already_set_up(false)
 {
 }
 
-ForwardProjectorByBinNiftyPET::~ForwardProjectorByBinNiftyPET()
+ForwardProjectorByBin::~ForwardProjectorByBin()
 {
 }
 
 void
-ForwardProjectorByBinNiftyPET::
+ForwardProjectorByBin::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr, 
        const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr)
 {
@@ -51,20 +67,20 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
 }
 
 void
-ForwardProjectorByBinNiftyPET::
+ForwardProjectorByBin::
 check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& density_info) const
 {
   if (!this->_already_set_up)
-    error("ForwardProjectorByBinNiftyPET method called without calling set_up first.");
+    error("ForwardProjectorByBin method called without calling set_up first.");
   if (!(*this->_proj_data_info_sptr >= proj_data_info))
-    error(boost::format("ForwardProjectorByBinNiftyPET set-up with different geometry for projection data.\nSet_up was with\n%1%\nCalled with\n%2%")
+    error(boost::format("ForwardProjectorByBin set-up with different geometry for projection data.\nSet_up was with\n%1%\nCalled with\n%2%")
           % this->_proj_data_info_sptr->parameter_info() % proj_data_info.parameter_info());
   if (! this->_density_sptr->has_same_characteristics(density_info))
-    error("ForwardProjectorByBinNiftyPET set-up with different geometry for density or volume data.");
+    error("ForwardProjectorByBin set-up with different geometry for density or volume data.");
 }  
 
 void 
-ForwardProjectorByBinNiftyPET::forward_project(ProjData& proj_data, 
+ForwardProjectorByBin::forward_project(ProjData& proj_data, 
 				       const DiscretisedDensity<3,float>& image,
 							 int subset_num, int num_subsets, bool zero)
 {
@@ -118,7 +134,7 @@ ForwardProjectorByBinNiftyPET::forward_project(ProjData& proj_data,
 }
 
 void 
-ForwardProjectorByBinNiftyPET::forward_project(RelatedViewgrams<float>& viewgrams, 
+ForwardProjectorByBin::forward_project(RelatedViewgrams<float>& viewgrams, 
 				 const DiscretisedDensity<3,float>& image)
 {
   forward_project(viewgrams, image,
@@ -128,7 +144,7 @@ ForwardProjectorByBinNiftyPET::forward_project(RelatedViewgrams<float>& viewgram
 		  viewgrams.get_max_tangential_pos_num());
 }
 
-void ForwardProjectorByBinNiftyPET::forward_project
+void ForwardProjectorByBin::forward_project
   (RelatedViewgrams<float>& viewgrams, 
    const DiscretisedDensity<3,float>& image,
    const int min_axial_pos_num, 
@@ -142,7 +158,7 @@ void ForwardProjectorByBinNiftyPET::forward_project
 }
 
 void 
-ForwardProjectorByBinNiftyPET::
+ForwardProjectorByBin::
 forward_project(RelatedViewgrams<float>& viewgrams, 
 		     const DiscretisedDensity<3,float>& density,
 		     const int min_axial_pos_num, const int max_axial_pos_num,
@@ -182,7 +198,7 @@ forward_project(RelatedViewgrams<float>& viewgrams,
 // The following are repition of above, where the DiscretisedDensity has already been set with set_input()
 // -------------------------------------------------------------------------------------------------------------------- //
 void
-ForwardProjectorByBinNiftyPET::forward_project(ProjData& proj_data)
+ForwardProjectorByBin::forward_project(ProjData& proj_data)
 {
 
     std::cout <<"\nI'm here1. forward projecting but the input has already been set!\n";
@@ -223,17 +239,66 @@ ForwardProjectorByBinNiftyPET::forward_project(ProjData& proj_data)
 }
 
 void
-ForwardProjectorByBinNiftyPET::
-actual_forward_project(RelatedViewgrams<float>&, 
-      const DiscretisedDensity<3,float>&,
-        const int min_axial_pos_num, const int max_axial_pos_num,
-        const int min_tangential_pos_num, const int max_tangential_pos_num)
+ForwardProjectorByBin::forward_project(RelatedViewgrams<float>& viewgrams)
 {
-    throw std::runtime_error("If you want to use ForwardProjectorByBinNiftyPET, you need to use the set_input() method.");
+  forward_project(viewgrams,
+                  viewgrams.get_min_axial_pos_num(),
+          viewgrams.get_max_axial_pos_num(),
+          viewgrams.get_min_tangential_pos_num(),
+          viewgrams.get_max_tangential_pos_num());
+}
+
+void ForwardProjectorByBin::forward_project
+  (RelatedViewgrams<float>& viewgrams,
+   const int min_axial_pos_num,
+   const int max_axial_pos_num)
+{
+  forward_project(viewgrams,
+             min_axial_pos_num,
+         max_axial_pos_num,
+         viewgrams.get_min_tangential_pos_num(),
+         viewgrams.get_max_tangential_pos_num());
 }
 
 void
-ForwardProjectorByBinNiftyPET::
+ForwardProjectorByBin::
+forward_project(RelatedViewgrams<float>& viewgrams,
+             const int min_axial_pos_num, const int max_axial_pos_num,
+             const int min_tangential_pos_num, const int max_tangential_pos_num)
+{
+  if (viewgrams.get_num_viewgrams()==0)
+    return;
+  check(*viewgrams.get_proj_data_info_sptr(), *_density_sptr);
+  start_timers();
+
+  // first check symmetries
+  {
+    const ViewSegmentNumbers basic_vs = viewgrams.get_basic_view_segment_num();
+
+    if (get_symmetries_used()->num_related_view_segment_numbers(basic_vs) !=
+      viewgrams.get_num_viewgrams())
+      error("ForwardProjectByBin: forward_project called with incorrect related_viewgrams. Problem with symmetries!\n");
+
+    for (RelatedViewgrams<float>::const_iterator iter = viewgrams.begin();
+     iter != viewgrams.end();
+     ++iter)
+      {
+    ViewSegmentNumbers vs(iter->get_view_num(), iter->get_segment_num());
+    get_symmetries_used()->find_basic_view_segment_numbers(vs);
+    if (vs != basic_vs)
+      error("ForwardProjectByBin: forward_project called with incorrect related_viewgrams. Problem with symmetries!\n");
+    }
+  }
+  actual_forward_project(viewgrams,
+             min_axial_pos_num,
+         max_axial_pos_num,
+         min_tangential_pos_num,
+         max_tangential_pos_num);
+  stop_timers();
+}
+
+void
+ForwardProjectorByBin::
 actual_forward_project(RelatedViewgrams<float>& viewgrams,
         const int min_axial_pos_num, const int max_axial_pos_num,
         const int min_tangential_pos_num, const int max_tangential_pos_num)
@@ -245,15 +310,14 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
 
 
 void
-ForwardProjectorByBinNiftyPET::
+ForwardProjectorByBin::
 set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
 {
     _density_sptr.reset(density_sptr->clone());
-    // DO FORWARD PROJECTION 
 }
 
 void
-ForwardProjectorByBinNiftyPET::
+ForwardProjectorByBin::
 set_input(const DiscretisedDensity<3,float> *density_ptr)
 {
     shared_ptr<DiscretisedDensity<3,float> > density_sptr;
