@@ -1,23 +1,19 @@
 //
 //
 
-#ifndef __stir_recon_buildblock_ForwardProjectorByBin_h__
-#define __stir_recon_buildblock_ForwardProjectorByBin_h__
+#ifndef __stir_gpu_ForwardProjectorByBinNiftyPET_h__
+#define __stir_gpu_ForwardProjectorByBinNiftyPET_h__
 /*!
   \file
   \ingroup projection
 
-  \brief Base class for forward projectors which work on 'large' collections of bins: given the whole image, fill in a stir::RelatedViewgrams<float> object.
+  \brief Forward projection class using NiftyPET's GPU implementation.
 
-  \author Kris Thielemans
-  \author Sanida Mustafovic
-  \author PARAPET project
+  \author Richard Brown
 
 */
 /*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
+    Copyright (C) 2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -52,7 +48,7 @@ class DataSymmetriesForViewSegmentNumbers;
   \ingroup projection
   \brief Abstract base class for all forward projectors
 */
-class ForwardProjectorByBin : 
+class ForwardProjectorByBinNiftyPET : 
   public TimedObject,
   public RegisteredObject<ForwardProjectorByBin> 
 { 
@@ -60,7 +56,7 @@ public:
 
   //! Default constructor calls reset_timers()
   //inline
-    ForwardProjectorByBin();
+    ForwardProjectorByBinNiftyPET();
 
   //! Stores all necessary geometric info
  /*! 
@@ -123,7 +119,7 @@ virtual void set_up(
           const int min_axial_pos_num, const int max_axial_pos_num,
           const int min_tangential_pos_num, const int max_tangential_pos_num);
 
-    virtual ~ForwardProjectorByBin();
+    virtual ~ForwardProjectorByBinNiftyPET();
 
     /// Set input
     virtual void set_input(const shared_ptr<DiscretisedDensity<3,float> >&);
@@ -159,4 +155,4 @@ private:
 
 END_NAMESPACE_STIR
 
-#endif // __stir_recon_buildblock_ForwardProjectorByBin_h__
+#endif // __stir_gpu_ForwardProjectorByBinNiftyPET_h__
