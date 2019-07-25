@@ -29,20 +29,9 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/RegisteredObject.h"
-#include "stir/TimedObject.h"
-#include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/shared_ptr.h"
+#include "stir/recon_buildblock/ForwardProjectorByBin.h"
 
 START_NAMESPACE_STIR
-
-
-template <typename elemT> class RelatedViewgrams;
-template <int num_dimensions, class elemT> class DiscretisedDensity;
-class ProjDataInfo;
-class ProjData;
-class DataSymmetriesForViewSegmentNumbers;
-
 
 /*!
   \ingroup projection

@@ -28,7 +28,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/recon_buildblock/ForwardProjectorByBinNiftyPET.h"
+#include "stir/gpu/ForwardProjectorByBinNiftyPET.h"
 #include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/VoxelsOnCartesianGrid.h"
