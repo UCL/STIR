@@ -24,7 +24,7 @@
 set(dir gpu)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 set(${dir_LIB_SOURCES}
-  ForwardProjectorNiftyPET.cxx
+  ForwardProjectorByBinNiftyPET.cxx
 )
 
 include(stir_lib_target)
