@@ -11,10 +11,10 @@ else()
 endif()
 
 # Try to find NiftyPET
-# commented out for now as this functionality does 
+# commented out for now as this functionality does
 # not currently exist in NiftyPET
-find_package(NiftyPET QUIET)
-if (NOT NiftyPET_FOUND)
-  return()
-endif()
+# find_package(NiftyPET QUIET)
+# if (NOT NiftyPET_FOUND)
+#   return()
+# endif()
 
