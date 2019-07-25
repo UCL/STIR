@@ -87,6 +87,19 @@ option(DISABLE_RDF "disable use of GE RDF library" OFF)
 option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
 option(DISABLE_CERN_ROOT "disable use of Cern ROOT libraries" OFF)
 option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # disable by default
+option(DISBALE_GPU "disable use of GPU projectors" OFF)
+
+if (NOT DISBALE_GPU)
+  # Try to find CUDA
+  find_package(CUDA QUIET)
+  # The following line is commented out but will be needed when NiftyPET is ready
+  # find_package(NIFTYPET QUIET)
+  # If we have both CUDA and NiftyPET
+  if (CUDA_FOUND #[[AND NIFTYPET_FOUND]])
+    message(STATUS "CUDA Version: ${CUDA_VERSION}")
+    ADD_SUBDIRECTORY(src/gpu)
+  endif()
+endif()
 
 if(NOT DISABLE_ITK)
    # See if we can find a compiled version of ITK (http://www.itk.org/)
