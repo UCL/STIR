@@ -29,7 +29,9 @@
     See STIR/LICENSE.txt for details
 */
 
+#include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
+#include "stir/recon_buildblock/ProjMatrixByBin.h"
 
 START_NAMESPACE_STIR
 
@@ -37,11 +39,13 @@ START_NAMESPACE_STIR
   \ingroup projection
   \brief Abstract base class for all forward projectors
 */
-class ForwardProjectorByBinNiftyPET : 
-  public TimedObject,
-  public RegisteredObject<ForwardProjectorByBin> 
+class ForwardProjectorByBinNiftyPET:
+  public RegisteredParsingObject<ForwardProjectorByBinNiftyPET,
+                                 ForwardProjectorByBin>
 { 
 public:
+  //! Name which will be used when parsing a ForwardProjectorByBin object
+  static const char * const registered_name;
 
   //! Default constructor calls reset_timers()
   //inline
@@ -60,14 +64,14 @@ public:
 virtual void set_up(		 
     const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
     const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
-    ) =0;
+    );
 
   //! Informs on which symmetries the projector handles
   /*! It should get data related by at least those symmetries.
    Otherwise, a run-time error will occur (unless the derived
    class has other behaviour).
    */
-  virtual  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const = 0;
+  virtual  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
   //! project the volume into the whole or a subset of proj_data, optionally zeroing the rest
   /*! it overwrites the data already present in the projection data.
@@ -121,7 +125,7 @@ protected:
   virtual void actual_forward_project(RelatedViewgrams<float>&, 
 		  const DiscretisedDensity<3,float>&,
 		  const int min_axial_pos_num, const int max_axial_pos_num,
-		  const int min_tangential_pos_num, const int max_tangential_pos_num) = 0;
+		  const int min_tangential_pos_num, const int max_tangential_pos_num);
 
   virtual void actual_forward_project(RelatedViewgrams<float>& viewgrams,
           const int min_axial_pos_num, const int max_axial_pos_num,
@@ -140,6 +144,7 @@ protected:
 
 private:
   shared_ptr<ProjDataInfo> _proj_data_info_sptr;
+  shared_ptr<ProjMatrixByBin>  proj_matrix_sptr;
 };
 
 END_NAMESPACE_STIR

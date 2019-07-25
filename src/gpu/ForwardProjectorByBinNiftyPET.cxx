@@ -42,6 +42,10 @@
 
 START_NAMESPACE_STIR
 
+//////////////////////////////////////////////////////////
+const char * const 
+ForwardProjectorByBinNiftyPET::registered_name =
+  "NiftyPET";
 
 ForwardProjectorByBinNiftyPET::ForwardProjectorByBinNiftyPET()
   :   _already_set_up(false)
@@ -57,9 +61,17 @@ ForwardProjectorByBinNiftyPET::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr, 
        const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr)
 {
-  _already_set_up = true;
-  _proj_data_info_sptr = proj_data_info_sptr->create_shared_clone();
-  _density_sptr = density_info_sptr;
+    ForwardProjectorByBin::set_up(proj_data_info_sptr, density_info_sptr);
+    proj_matrix_sptr->set_up(proj_data_info_sptr, density_info_sptr);
+}
+
+const DataSymmetriesForViewSegmentNumbers *
+ForwardProjectorByBinNiftyPET::
+get_symmetries_used() const
+{
+  if (!this->_already_set_up)
+    error("ForwardProjectorByBin method called without calling set_up first.");
+  return proj_matrix_sptr->get_symmetries_ptr();
 }
 
 void
@@ -309,9 +321,7 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
         const int min_axial_pos_num, const int max_axial_pos_num,
         const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
-    actual_forward_project(viewgrams,*_density_sptr,
-                           min_axial_pos_num, max_axial_pos_num,
-                           min_tangential_pos_num, max_tangential_pos_num);
+    throw std::runtime_error("This function needs to return the related viewgrams of the forward projected image.");
 }
 
 void
@@ -319,6 +329,7 @@ ForwardProjectorByBinNiftyPET::
 set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
 {
     _density_sptr.reset(density_sptr->clone());
+    throw std::runtime_error("This method needs to do the actual GPU projection.");
 }
 
 void

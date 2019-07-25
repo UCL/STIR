@@ -97,6 +97,7 @@ if (NOT DISBALE_GPU)
   SET(NIFTYPET_LIBRARIES "/home/sirfuser/devel/NIPET/niftypet/nipet/lm/mmr_lmproc.so;/home/sirfuser/devel/NIPET/niftypet/nipet/sct/petsct.so;/home/sirfuser/devel/NIPET/niftypet/nipet/prj/petprj.so;/home/sirfuser/devel/NIPET/niftypet/nipet/dinf/dinf.so;/home/sirfuser/devel/NIPET/niftypet/nipet/mmr_auxe.so")
   if (CUDA_FOUND #[[AND NIFTYPET_FOUND]])
     set(STIR_gpu gpu)
+    set(STIR_gpu_test "test/gpu")
   endif()
 endif()
 
