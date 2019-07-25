@@ -1,8 +1,8 @@
 //
 //
 
-#ifndef __stir_recon_buildblock_ForwardProjectorByBin_h__
-#define __stir_recon_buildblock_ForwardProjectorByBin_h__
+#ifndef __stir_gpu_ForwardProjectorByBinNiftyPET_h__
+#define __stir_gpu_ForwardProjectorByBinNiftyPET_h__
 /*!
   \file
   \ingroup projection
