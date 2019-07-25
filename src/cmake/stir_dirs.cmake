@@ -49,7 +49,7 @@ ${PROJECT_SOURCE_DIR}/src/spatial_transformation_buildblock/spatial_transformati
 
 SET( STIR_LIBRARIES analytic_FBP3DRP analytic_FBP2D       iterative_OSMAPOSL   iterative_KOSMAPOSL
      iterative_OSSPS
-      scatter_buildblock modelling_buildblock listmode_buildblock recon_buildblock  
+      scatter_buildblock modelling_buildblock listmode_buildblock recon_buildblock ${STIR_gpu}
       display  IO  data_buildblock numerics_buildblock  buildblock 
       spatial_transformation_buildblock
       Shape_buildblock eval_buildblock 
@@ -68,6 +68,7 @@ SET( STIR_DIRS
      data_buildblock 
      display 
      recon_buildblock 
+     ${STIR_gpu}
      modelling_buildblock 
      listmode_buildblock 
      IO 

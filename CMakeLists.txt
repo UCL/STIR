@@ -90,7 +90,14 @@ option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # d
 option(DISBALE_GPU "disable use of GPU projectors" OFF)
 
 if (NOT DISBALE_GPU)
-  ADD_SUBDIRECTORY(src/gpu)
+  find_package(CUDA QUIET)
+  #find_package(NIFTYPET QUIET)
+  # temporary fix until find_package(NIFTYPET) exists
+  SET(NIFTYPET_INCLUDE_DIRS "/home/sirfuser/devel/NIPET/niftypet/nipet;/home/sirfuser/devel/NIPET/niftypet/nipet/dinf;/home/sirfuser/devel/NIPET/niftypet/nipet/lm/src;/home/sirfuser/devel/NIPET/niftypet/nipet/prj/src;/home/sirfuser/devel/NIPET/niftypet/nipet/sct/src;/home/sirfuser/devel/NIPET/niftypet/nipet/src")
+  SET(NIFTYPET_LIBRARIES "/home/sirfuser/devel/NIPET/niftypet/nipet/lm/mmr_lmproc.so;/home/sirfuser/devel/NIPET/niftypet/nipet/sct/petsct.so;/home/sirfuser/devel/NIPET/niftypet/nipet/prj/petprj.so;/home/sirfuser/devel/NIPET/niftypet/nipet/dinf/dinf.so;/home/sirfuser/devel/NIPET/niftypet/nipet/mmr_auxe.so")
+  if (CUDA_FOUND #[[AND NIFTYPET_FOUND]])
+    set(STIR_gpu gpu)
+  endif()
 endif()
 
 if(NOT DISABLE_ITK)

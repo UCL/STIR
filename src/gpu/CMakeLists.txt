@@ -1,20 +1,46 @@
+# Copyright 2019 - University College London - Richard Brown
 
-# For GPU projectors, we'll need both CUDA and NiftyPET
-# If either are missing, return
+# This file is part of STIR.
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation; either version 2.1 of the License, or
+# (at your option) any later version.
+#
+# This file is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# See STIR/LICENSE.txt for details
 
-# Try to find CUDA
-find_package(CUDA QUIET)
-if (NOT CUDA_FOUND)
-  return()
-else()
-  message(STATUS "CUDA Version: ${CUDA_VERSION}")
-endif()
+# cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
 
-# Try to find NiftyPET
-# commented out for now as this functionality does
-# not currently exist in NiftyPET
-# find_package(NiftyPET QUIET)
-# if (NOT NiftyPET_FOUND)
-#   return()
-# endif()
 
+# ------------------------------------------------------------- #
+#                CREATE OUR LIBRARY AND INCLUDE OUR HEADERS
+# ------------------------------------------------------------- #
+
+set(dir gpu)
+set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
+set(${dir_LIB_SOURCES}
+  ForwardProjectorNiftyPET.cxx
+)
+
+include(stir_lib_target)
+
+target_link_libraries(gpu recon_buildblock modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
+
+
+
+
+# ------------------------------------------------------------- #
+#                ADD LIBRARIES AND HEADERS                      #
+# ------------------------------------------------------------- #
+
+# Add headers
+TARGET_INCLUDE_DIRECTORIES(gpu PUBLIC ${CUDA_INCLUDE_DIRS})
+TARGET_INCLUDE_DIRECTORIES(gpu PUBLIC ${NIFTYPET_INCLUDE_DIRS})
+
+target_link_libraries(gpu ${CUDA_LIBRARIES})
+target_link_libraries(gpu ${NIFTYPET_LIBRARIES})
