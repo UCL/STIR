@@ -141,21 +141,30 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
     // Probably not necessary - delete after development if not used
     int num_segments  = this->_projected_data_sptr->get_num_segments();
 
-    void gpu_fprj(proj_data_ptr,im_ptr,
-        float * li2rng,
-        short * li2sn,
-        char * li2nos,
-        short *s2c,
-        int *aw2ali,
-        float *crss
-        int *subs,
-        int Nprj,
-        int Naw,
-        int n0crs, int n1crs,
-        Cnst Cnt, char att);
+    float * li2rng;
+    short * li2sn;
+    char * li2nos;
+    short *s2c;
+    int *aw2ali;
+    float *crss;
+    int *subs;
+    int Nprj;
+    int Naw;
+    int n0crs;
+    int n1crs;
+    Cnst Cnt;
+    char att;
+
+    gpu_fprj(proj_data_ptr,im_ptr,li2rng,
+        li2sn,li2nos,s2c,aw2ali,crss,
+        subs,Nprj,Naw,n0crs, n1crs, Cnt, att);
 
     // Once finished, copy back
     _projected_data_sptr->fill_from(proj_data_ptr);
+
+    // Delete created arrays
+    delete [] proj_data_ptr;
+    delete [] im_ptr;
 }
 
 END_NAMESPACE_STIR
