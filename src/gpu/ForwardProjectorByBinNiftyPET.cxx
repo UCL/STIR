@@ -35,7 +35,7 @@
 START_NAMESPACE_STIR
 
 //////////////////////////////////////////////////////////
-const char * const 
+const char * const
 ForwardProjectorByBinNiftyPET::registered_name =
   "NiftyPET";
 
@@ -50,7 +50,7 @@ ForwardProjectorByBinNiftyPET::~ForwardProjectorByBinNiftyPET()
 
 void
 ForwardProjectorByBinNiftyPET::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr, 
+set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
        const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr)
 {
     ForwardProjectorByBin::set_up(proj_data_info_sptr,density_info_sptr);
@@ -74,7 +74,7 @@ get_symmetries_used() const
 
 void
 ForwardProjectorByBinNiftyPET::
-actual_forward_project(RelatedViewgrams<float>&, 
+actual_forward_project(RelatedViewgrams<float>&,
       const DiscretisedDensity<3,float>&,
         const int min_axial_pos_num, const int max_axial_pos_num,
         const int min_tangential_pos_num, const int max_tangential_pos_num)
@@ -140,11 +140,12 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
     float *crss;
     int *subs;
     int Nprj;
-    int Naw;
-    int n0crs;
-    int n1crs;
+    int Naw = 68516;  // len(txLUT["aw2ali"])
+    int n0crs = 4;  // txLUT["crs"].shape[0]
+    int n1crs = 504;  // txLUT["crs"].shape[1]
+
     Cnst Cnt;
-    char att;
+    char att = 0;
 
     gpu_fprj(proj_data_ptr,im_ptr,li2rng,
         li2sn,li2nos,s2c,aw2ali,crss,
