@@ -61,8 +61,13 @@ ForwardProjectorByBinNiftyPET::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr, 
        const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr)
 {
+    check(*this->_proj_data_info_sptr, *_density_sptr);
     ForwardProjectorByBin::set_up(proj_data_info_sptr, density_info_sptr);
     _symmetries_sptr.reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_sptr, density_info_sptr));
+
+    // Initialise projected_data_sptr from this->_proj_data_info_sptr
+    _projected_data_sptr.reset(
+                new ProjDataInMemory(this->_density_sptr->get_exam_info_sptr(), this->_proj_data_info_sptr));
 }
 
 const DataSymmetriesForViewSegmentNumbers *
@@ -90,7 +95,12 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
         const int min_axial_pos_num, const int max_axial_pos_num,
         const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
-    throw std::runtime_error("This function needs to return the related viewgrams of the forward projected image.");
+//    if (min_axial_pos_num != _proj_data_info_sptr->get_min_axial_pos_num() ||
+//         … )
+//       error();
+
+    viewgrams = _projected_data_sptr->get_related_viewgrams(
+        viewgrams. get_basic_view_segment_num(), _symmetries_sptr);
 }
 
 void

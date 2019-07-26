@@ -86,10 +86,10 @@ run_projections()
     // Forward project
     std::cerr << "\nDoing forward projection...\n";
     ForwardProjectorByBinNiftyPET fwrd_projector;
-    fwrd_projector->set_up(proj_data->get_proj_data_info_sptr(), input);
-    fwrd_projector->set_input(input);
+    fwrd_projector.set_up(proj_data->get_proj_data_info_sptr(), input);
+    fwrd_projector.set_input(input);
     proj_data->fill(0.F);
-    fwrd_projector->forward_project(*proj_data);
+    fwrd_projector.forward_project(*proj_data);
     std::cerr << "\tDone!\n";
 }
 
@@ -100,6 +100,10 @@ run_tests()
     try {
         cerr << "Tests for GPU-accelerated projectors\n";
         this->run_projections();
+    }
+    catch(const std::exception &error) {
+        std::cerr << "\nHere's the error:\n\t" << error.what() << "\n\n";
+        everything_ok = false;
     }
     catch(...) {
         everything_ok = false;

@@ -32,6 +32,7 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
+#include "stir/ProjDataInMemory.h"
 
 START_NAMESPACE_STIR
 
@@ -92,6 +93,7 @@ protected:
 
 private:
     shared_ptr<DataSymmetriesForBins_PET_CartesianGrid> _symmetries_sptr;
+    shared_ptr<ProjDataInMemory> _projected_data_sptr;
 };
 
 END_NAMESPACE_STIR
