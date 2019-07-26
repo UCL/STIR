@@ -29,16 +29,7 @@
 */
 
 #include "stir/gpu/ForwardProjectorByBinNiftyPET.h"
-#include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
 #include "stir/RelatedViewgrams.h"
-#include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/ProjData.h"
-#include "stir/DiscretisedDensity.h"
-#include "stir/Succeeded.h"
-#include "stir/info.h"
-#include "stir/error.h"
-#include <boost/format.hpp>
-#include <iostream>
 #include <prjf.h>
 
 START_NAMESPACE_STIR
@@ -102,7 +93,7 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
 //       error();
 
     viewgrams = _projected_data_sptr->get_related_viewgrams(
-        viewgrams. get_basic_view_segment_num(), _symmetries_sptr);
+        viewgrams.get_basic_view_segment_num(), _symmetries_sptr);
 }
 
 void
