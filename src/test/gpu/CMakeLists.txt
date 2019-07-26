@@ -24,6 +24,9 @@ set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_
 set(${dir_INVOLVED_TEST_EXE_SOURCES}
 	test_ProjectorNiftyPET
 )
-#create_stir_test (test_ProjectorNiftyPET.cxx "gpu;buildblock;IO;buildblock;numerics_buildblock;display" "")
+
+ADD_TEST(test_ProjectorNiftyPET
+   ${CMAKE_CURRENT_BINARY_DIR}/test_ProjectorNiftyPET
+)
 
 include(stir_test_exe_targets)
