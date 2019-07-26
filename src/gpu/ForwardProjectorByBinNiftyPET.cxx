@@ -39,6 +39,7 @@
 #include "stir/error.h"
 #include <boost/format.hpp>
 #include <iostream>
+#include <prjf.h>
 
 START_NAMESPACE_STIR
 
@@ -108,7 +109,20 @@ ForwardProjectorByBinNiftyPET::
 set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
 {
     _density_sptr.reset(density_sptr->clone());
-    throw std::runtime_error("This method needs to do the actual GPU projection.");
+
+    void gpu_fprj(float * prjout,
+	float * im,
+	float * li2rng,
+	short * li2sn,
+	char * li2nos,
+	short *s2c,
+	int *aw2ali,
+	float *crs,
+	int *subs,
+	int Nprj,
+	int Naw,
+	int n0crs, int n1crs,
+	Cnst Cnt, char att);
 }
 
 END_NAMESPACE_STIR
