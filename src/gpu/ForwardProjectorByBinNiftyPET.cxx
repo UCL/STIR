@@ -62,6 +62,7 @@ ForwardProjectorByBinNiftyPET::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr, 
        const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr)
 {
+    ForwardProjectorByBin::set_up(proj_data_info_sptr,density_info_sptr);
     check(*this->_proj_data_info_sptr, *_density_sptr);
     ForwardProjectorByBin::set_up(proj_data_info_sptr, density_info_sptr);
     _symmetries_sptr.reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_sptr, density_info_sptr));
@@ -110,19 +111,51 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
 {
     _density_sptr.reset(density_sptr->clone());
 
-    void gpu_fprj(float * prjout,
-	float * im,
-	float * li2rng,
-	short * li2sn,
-	char * li2nos,
-	short *s2c,
-	int *aw2ali,
-	float *crs,
-	int *subs,
-	int Nprj,
-	int Naw,
-	int n0crs, int n1crs,
-	Cnst Cnt, char att);
+    // Get dimensions of sinogram
+    int num_sinograms = _projected_data_sptr->get_num_sinograms();
+    int num_views     = _projected_data_sptr->get_num_views();
+    int num_tang_poss = _projected_data_sptr->get_num_tangential_poss();
+    int num_proj_data_elems = num_sinograms * num_views * num_tang_poss;
+    // Create array for sinogram and fill it
+    float *proj_data_ptr = new float[num_proj_data_elems];
+    // Necessary?
+    for (int i=0; i<num_proj_data_elems; ++i)
+        proj_data_ptr[i] = 0.F;
+
+    // Get dimensions of image
+    int dim[3];
+    Coordinate3D<int> min_indices;
+    Coordinate3D<int> max_indices;
+    if (!_density_sptr->get_regular_range(min_indices, max_indices))
+        throw std::runtime_error("ForwardProjectorByBinNiftyPET::set_input - "
+                                 "expected image to have regular range.");
+    for (int i=0; i<3; ++i)
+        dim[i] = max_indices[i + 1] - min_indices[i + 1] + 1;
+    // Create array for image and fill it - think carefully about index order!
+    float *im_ptr = new float[dim[0]*dim[1]*dim[2]];
+    for (int z = min_indices[1], i = 0; z <= max_indices[1]; z++) {
+		for (int y = min_indices[2]; y <= max_indices[2]; y++) {
+			for (int x = min_indices[3]; x <= max_indices[3]; x++, i++) {
+				im_ptr[i] = (*_density_sptr)[z][y][x];
+
+    // Probably not necessary - delete after development if not used
+    int num_segments  = this->_projected_data_sptr->get_num_segments();
+
+    void gpu_fprj(proj_data_ptr,im_ptr,
+        float * li2rng,
+        short * li2sn,
+        char * li2nos,
+        short *s2c,
+        int *aw2ali,
+        float *crss
+        int *subs,
+        int Nprj,
+        int Naw,
+        int n0crs, int n1crs,
+        Cnst Cnt, char att);
+
+    // Once finished, copy back
+    _projected_data_sptr->fill_from(proj_data_ptr);
 }
 
 END_NAMESPACE_STIR
