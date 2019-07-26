@@ -124,6 +124,7 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
         dim[i] = max_indices[i + 1] - min_indices[i + 1] + 1;
     // Create array for image and fill it - think carefully about index order!
     float *im_ptr = new float[dim[0]*dim[1]*dim[2]];
+    // TODO: assert((y,x,z) = (320,320,128)) as required by NiftyPET by cropping/padding original 344x344x127
     for (int z = min_indices[1], i = 0; z <= max_indices[1]; z++)
 		for (int y = min_indices[2]; y <= max_indices[2]; y++)
 			for (int x = min_indices[3]; x <= max_indices[3]; x++, i++)
@@ -132,26 +133,52 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
     // Probably not necessary - delete after development if not used
     int num_segments  = this->_projected_data_sptr->get_num_segments();
 
-    float * li2rng;
-    short * li2sn;
-    char * li2nos;
-    short *s2c;
-    int *aw2ali;
-    float *crss;
-    int *subs;
-    int Nprj;
-    int Naw = 68516;  // len(txLUT["aw2ali"])
-    int n0crs = 4;  // txLUT["crs"].shape[0]
-    int n1crs = 504;  // txLUT["crs"].shape[1]
-
     Cnst Cnt;
-    char att = 0;
+    Cnt.SPN = const_cast<char>(11);
+    Cnt.RNG_STRT = const_cast<char>(0);
+    Cnt.RNG_END = const_cast<char>(64);
+    Cnt.VERBOSE = false;
+    Cnt.DEVID = const_cast<char>(0);
+    Cnt.NSN11 = 837;
+    Cnt.NSEG0 = 127;
 
-    gpu_fprj(proj_data_ptr,im_ptr,li2rng,
-        li2sn,li2nos,s2c,aw2ali,crss,
-        subs,Nprj,Naw,n0crs, n1crs, Cnt, att);
+    int nsinos;
+    switch(Cnt.SPN){
+      case 11:
+        nsinos = Cnt.NSN11; break;
+      case 0:
+        nsinos = Cnt.NSEG0; break;
+      default:
+        throw runtime_error("Unsupported span");
+    }
+
+    std::vector<int> isub();  // TODO: make argument
+    if (isub.size() == 0) {
+      // AW #defined to be 68516, number of active bins in 2D sino
+      isub = std::vector<int>(AW);
+      for (int i = 0; i<AW; i++) isub[i] = i;
+    }
+    std::vector<int> sinog(isub.size() * nsinos, 0);
+
+    float * li2rng;    // axLUT["li2rng"]
+    short * li2sn;     // axLUT["li2sn1" if Cnt.SPN == 1 else "li2sn"]
+    char * li2nos;     // axLUT["li2nos"]
+    short *s2c;        // txLUT["s2c"]
+    int *aw2ali;       // txLUT["aw2ali"]
+    float *crss;       // txLUT["crs"]
+    int Naw = 68516;  // len(txLUT["aw2ali"])
+    int n0crs = 4;    // txLUT["crs"].shape[0]
+    int n1crs = 504;  // txLUT["crs"].shape[1]
+    char att = 0;     // whether to exp{-result} for attenuation maps
+
+    gpu_fprj(sinog.data, im_ptr, li2rng,
+        li2sn, li2nos, s2c, aw2ali, crss,
+        isub.data, isub.size(),
+        Naw, n0crs, n1crs,
+        Cnt, att);
 
     // Once finished, copy back
+    // TODO: sinog => proj_data_ptr
     _projected_data_sptr->fill_from(proj_data_ptr);
 
     // Delete created arrays
