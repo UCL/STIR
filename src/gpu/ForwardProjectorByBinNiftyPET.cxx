@@ -133,9 +133,9 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
         dim[i] = max_indices[i + 1] - min_indices[i + 1] + 1;
     // Create array for image and fill it - think carefully about index order!
     float *im_ptr = new float[dim[0]*dim[1]*dim[2]];
-    for (int z = min_indices[1], i = 0; z <= max_indices[1]; z++) {
-		for (int y = min_indices[2]; y <= max_indices[2]; y++) {
-			for (int x = min_indices[3]; x <= max_indices[3]; x++, i++) {
+    for (int z = min_indices[1], i = 0; z <= max_indices[1]; z++)
+		for (int y = min_indices[2]; y <= max_indices[2]; y++)
+			for (int x = min_indices[3]; x <= max_indices[3]; x++, i++)
 				im_ptr[i] = (*_density_sptr)[z][y][x];
 
     // Probably not necessary - delete after development if not used
