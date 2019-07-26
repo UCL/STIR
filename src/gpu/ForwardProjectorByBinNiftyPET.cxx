@@ -152,7 +152,7 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
         throw runtime_error("Unsupported span");
     }
 
-    std::vector<int> isub();  // TODO: make argument
+    std::vector<int> isub();  // TODO: expose as argument?
     if (isub.size() == 0) {
       // AW #defined to be 68516, number of active bins in 2D sino
       isub = std::vector<int>(AW);
@@ -160,6 +160,7 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
     }
     std::vector<int> sinog(isub.size() * nsinos, 0);
 
+    // TODO: fill in precomputed values
     float * li2rng;    // axLUT["li2rng"]
     short * li2sn;     // axLUT["li2sn1" if Cnt.SPN == 1 else "li2sn"]
     char * li2nos;     // axLUT["li2nos"]
@@ -171,8 +172,8 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
     int n1crs = 504;  // txLUT["crs"].shape[1]
     char att = 0;     // whether to exp{-result} for attenuation maps
 
-    gpu_fprj(sinog.data, im_ptr, li2rng,
-        li2sn, li2nos, s2c, aw2ali, crss,
+    gpu_fprj(sinog.data, im_ptr,
+        li2rng, li2sn, li2nos, s2c, aw2ali, crss,
         isub.data, isub.size(),
         Naw, n0crs, n1crs,
         Cnt, att);
