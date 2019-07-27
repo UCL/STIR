@@ -287,7 +287,7 @@ protected:
     //! average detection efficiency of unscattered counts
     double
     detection_efficiency_no_scatter(const unsigned det_num_A,
-                                    const unsigned det_num_B, int en_window) const;
+                                    const unsigned det_num_B) const;
 
     // next needs to be mutable because find_in_detection_points_vector is const
     mutable std::vector<CartesianCoordinate3D<float> > detection_points_vector;
@@ -370,6 +370,7 @@ protected:
     std::string output_proj_data_filename;
     //! Shared ptr to hold the simulated data.
     shared_ptr<ProjData> output_proj_data_sptr;
+    shared_ptr<ProjData> HR_output_proj_data_sptr;
 
     //! threshold below which a voxel in the attenuation image will not be considered as a candidate scatter point
     float attenuation_threshold;

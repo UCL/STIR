@@ -1400,59 +1400,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 
        output_header << scanner.parameter_info();
 
-
- //Write the number of energy windows available
-
-        if (pdfs.get_exam_info_ptr()->get_num_energy_windows() > 0)
-        {
-            output_header <<"number of energy windows := " <<
-                            pdfs.get_exam_info_ptr()->get_num_energy_windows() << '\n';
-        }
-
-        else
-          {
-        // need to write this anyway to allow vectored keys below
-            output_header <<"number of energy windows := 1";
-          }
-
- // Write energy window lower and upper thresholds for all the energy windows available, if they are not -1
-
-
-
-         for (unsigned int num_windows = 0; num_windows <  pdfs.get_exam_info_ptr()->get_num_energy_windows(); ++num_windows)
-         {
-             
-             if (pdfs.get_exam_info_ptr()->get_high_energy_thres(num_windows ) >= 0 &&
-                 pdfs.get_exam_info_ptr()->get_low_energy_thres(num_windows ) >= 0)
-             {
-                 output_header << "energy window lower level [" << num_windows +1  << "] := " <<
-                 pdfs.get_exam_info_ptr()->get_low_energy_thres(num_windows) << '\n';
-                 output_header << "energy window upper level [" << num_windows +1  << "] := " <<
-                 pdfs.get_exam_info_ptr()->get_high_energy_thres(num_windows) << '\n';
-             }
-             
-         }
-
-
-        //just for en_win>1
-
-
-if (pdfs.get_exam_info_ptr()->get_num_energy_windows() > 1)
-{
-    output_header << "energy window pair :="<<" {"<<  pdfs.get_exam_info_ptr()->get_energy_window_pair().first  <<
-                     ',' <<  pdfs.get_exam_info_ptr()->get_energy_window_pair().second <<"}\n";
-
 }
-
-
-       output_header << "effective central bin size (cm) := " 
-		     << proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10. << endl;
-
-     } // end of cylindrical scanner
-  else
-    {
-      // TODO something here
-    }
 
 
    // write time frame info and energy windows

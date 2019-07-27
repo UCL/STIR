@@ -134,7 +134,7 @@ energy_lower_limit(const float low, const float approx, const float resolution_a
 double
 ScatterSimulation::
 detection_efficiency_no_scatter(const unsigned det_num_A, 
-                                const unsigned det_num_B, int en_window) const
+                                const unsigned det_num_B) const
 {
   // TODO: slightly dangerous to use a static here
   // it would give wrong results when the energy_thresholds are changed...

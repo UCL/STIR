@@ -64,8 +64,9 @@ public:
 
     double L_G_function(const ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const bool compute_gradient = true ,const bool isgradient_mu = true,const float rescale = 1.F);
     double L_G_function(const ProjData& data,const ProjData &add_sino,VoxelsOnCartesianGrid<float>& gradient_image,const bool compute_gradient = true ,const bool isgradient_mu = true,const float rescale = 1.F);
-    double L_G_function_from_est_data(const ProjData& data,const ProjData &est_data,VoxelsOnCartesianGrid<float>& gradient_image,const bool compute_gradient = true ,const bool isgradient_mu = true,const float rescale = 1.F);
-
+    void L_G_function_from_est_data(const ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image,const bool compute_gradient = true ,const bool isgradient_mu = true,const float rescale = 1.F);
+    ProjDataInMemory
+    likelihood_and_gradient_scatter_from_est_data(const ProjData &projdata, const ProjData &add_projdata, VoxelsOnCartesianGrid<float>& gradient_image_HR, VoxelsOnCartesianGrid<float>& gradient_image_LR,const bool compute_gradient, const bool isgradient_mu);
 
     protected:
 
@@ -102,10 +103,10 @@ public:
     double L_G_for_viewgram(const Viewgram<float>& viewgram,const Viewgram<float>& v_add, Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale, const bool compute_gradient,const bool isgradient_mu);
 
 
-    double L_G_for_view_segment_number_from_est_data(const ProjData&data,const ProjData& est_data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float rescale, const bool compute_gradient,const bool isgradient_mu);
+    void L_G_for_view_segment_number_from_est_data(const ProjData&data,VoxelsOnCartesianGrid<float>& gradient_image,const ViewSegmentNumbers& vs_num, const float rescale, const bool compute_gradient,const bool isgradient_mu);
 
 
-    double L_G_for_viewgram_from_est_data(const Viewgram<float>& viewgram,const Viewgram<float>& v_est,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale, const bool compute_gradient,const bool isgradient_mu);
+    void L_G_for_viewgram_from_est_data(const Viewgram<float>& viewgram,VoxelsOnCartesianGrid<float>& gradient_image,const float rescale, const bool compute_gradient,const bool isgradient_mu);
 
 
 };
