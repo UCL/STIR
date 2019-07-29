@@ -66,11 +66,9 @@ inverse_SSRB(ProjData& proj_data_4D,
 	Sinogram<float> sino_4D = 
 		proj_data_4D.
 		get_empty_sinogram(proj_data_4D.get_min_axial_pos_num(0) , 0);
-    std::cout<< "SSRB-4D" << proj_data_4D.get_max_axial_pos_num(0) << '\n';
 	Sinogram<float> sino_3D = 
 		proj_data_3D.
 		get_empty_sinogram(proj_data_3D.get_min_axial_pos_num(0) , 0);
-    std::cout<< "SSRB-3D"<< proj_data_3D.get_max_axial_pos_num(0) << '\n';
 	
 	for (int out_segment_num = proj_data_4D.get_min_segment_num(); 
 	     out_segment_num <= proj_data_4D.get_max_segment_num();
