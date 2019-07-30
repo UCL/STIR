@@ -28,6 +28,7 @@
     See STIR/LICENSE.txt for details
 */
 
+#include <fstream>
 #include "stir/gpu/ForwardProjectorByBinNiftyPET.h"
 #include "stir/RelatedViewgrams.h"
 #include <prjf.h>
@@ -102,9 +103,11 @@ template <class dataType>
 static std::vector<dataType>
 read_binary_file(std::string file_name)
 {
-    std::string data_path = std::getenv("STIR_PATH");
-    if (data_path.size() == 0)
+    const char* stir_path = std::getenv("STIR_PATH");
+    if (!stir_path)
         throw std::runtime_error("STIR_PATH not defined, cannot find data");
+
+    std::string data_path = stir_path;
     data_path += "/examples/mMR_params" + file_name;
     std::ifstream stream(data_path, std::ios::in | std::ios::binary);
     std::vector<dataType> contents((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
