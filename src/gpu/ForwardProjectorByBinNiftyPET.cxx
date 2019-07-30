@@ -34,6 +34,8 @@
 
 START_NAMESPACE_STIR
 
+#define AW 68516
+
 //////////////////////////////////////////////////////////
 const char * const
 ForwardProjectorByBinNiftyPET::registered_name =
@@ -96,6 +98,19 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
         viewgrams.get_basic_view_segment_num(), _symmetries_sptr);
 }
 
+template <class dataType>
+static std::vector<dataType>
+read_binary_file(std::string file_name)
+{
+    std::string data_path = std::getenv("STIR_PATH");
+    if (data_path.size() == 0)
+        throw std::runtime_error("STIR_PATH not defined, cannot find data");
+    data_path += "/examples/mMR_params" + file_name;
+    std::ifstream stream(data_path, std::ios::in | std::ios::binary);
+    std::vector<dataType> contents((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+    return contents;
+}
+
 void
 ForwardProjectorByBinNiftyPET::
 set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
@@ -134,11 +149,11 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
     int num_segments  = this->_projected_data_sptr->get_num_segments();
 
     Cnst Cnt;
-    Cnt.SPN = const_cast<char>(11);
-    Cnt.RNG_STRT = const_cast<char>(0);
-    Cnt.RNG_END = const_cast<char>(64);
+    Cnt.SPN = static_cast<char>(11);
+    Cnt.RNG_STRT = static_cast<char>(0);
+    Cnt.RNG_END = static_cast<char>(64);
     Cnt.VERBOSE = false;
-    Cnt.DEVID = const_cast<char>(0);
+    Cnt.DEVID = static_cast<char>(0);
     Cnt.NSN11 = 837;
     Cnt.NSEG0 = 127;
 
@@ -149,10 +164,10 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
       case 0:
         nsinos = Cnt.NSEG0; break;
       default:
-        throw runtime_error("Unsupported span");
+        throw std::runtime_error("Unsupported span");
     }
 
-    std::vector<int> isub();  // TODO: expose as argument?
+    std::vector<int> isub;  // TODO: expose as argument?
     if (isub.size() == 0) {
       // AW #defined to be 68516, number of active bins in 2D sino
       isub = std::vector<int>(AW);
@@ -160,21 +175,23 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
     }
     std::vector<int> sinog(isub.size() * nsinos, 0);
 
-    // TODO: fill in precomputed values
-    float * li2rng;    // axLUT["li2rng"]
-    short * li2sn;     // axLUT["li2sn1" if Cnt.SPN == 1 else "li2sn"]
-    char * li2nos;     // axLUT["li2nos"]
-    short *s2c;        // txLUT["s2c"]
-    int *aw2ali;       // txLUT["aw2ali"]
-    float *crss;       // txLUT["crs"]
+    // Read the binary files if not already done.
+    if (aw2ali.size() == 0) {
+        aw2ali = read_binary_file<int>  ("aw2ali.dat");
+        li2rng = read_binary_file<float>("li2rng.dat");
+        li2sn  = read_binary_file<short>("li2sn.dat" );
+        li2nos = read_binary_file<char> ("li2nos.dat");
+        s2c    = read_binary_file<short>("s2c.dat"   );
+        crss   = read_binary_file<float>("crss.dat"  );
+    }
     int Naw = 68516;  // len(txLUT["aw2ali"])
     int n0crs = 4;    // txLUT["crs"].shape[0]
     int n1crs = 504;  // txLUT["crs"].shape[1]
     char att = 0;     // whether to exp{-result} for attenuation maps
 
-    gpu_fprj(sinog.data, im_ptr,
-        li2rng, li2sn, li2nos, s2c, aw2ali, crss,
-        isub.data, isub.size(),
+    gpu_fprj(proj_data_ptr, im_ptr,
+        li2rng.data(), li2sn.data(), li2nos.data(), s2c.data(), aw2ali.data(), crss.data(),
+        isub.data(), isub.size(),
         Naw, n0crs, n1crs,
         Cnt, att);
 
