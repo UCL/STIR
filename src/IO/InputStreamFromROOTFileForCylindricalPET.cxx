@@ -52,8 +52,8 @@ InputStreamFromROOTFileForCylindricalPET(std::string _filename,
     chain_name = _chain_name;
     exclude_scattered = _exclude_scattered;
     exclude_randoms = _exclude_randoms;
-    low_energy_window = _low_energy_window;
-    up_energy_window = _up_energy_window;
+    low_energy_window[0] = _low_energy_window;
+    up_energy_window[0] = _up_energy_window;
     offset_dets = _offset_dets;
 
     half_block = module_repeater_y * submodule_repeater_y * crystal_repeater_y / 2  - 1;
@@ -81,10 +81,10 @@ get_next_record(CListRecordROOT& record)
             continue;
         if ( (this->eventID1 != this->eventID2) && this->exclude_randoms)
             continue;
-        if (this->energy1 < this->low_energy_window ||
-                 this->energy1 > this->up_energy_window ||
-                 this->energy2 < this->low_energy_window ||
-                 this->energy2 > this->up_energy_window)
+        if (this->energy1 < this->low_energy_window[0] ||
+                 this->energy1 > this->up_energy_window[0] ||
+                 this->energy2 < this->low_energy_window[0] ||
+                 this->energy2 > this->up_energy_window[0])
             continue;
 
         break;

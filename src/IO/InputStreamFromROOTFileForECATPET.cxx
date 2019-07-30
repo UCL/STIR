@@ -49,8 +49,8 @@ InputStreamFromROOTFileForECATPET(std::string _filename,
     chain_name = _chain_name;
     exclude_scattered = _exclude_scattered;
     exclude_randoms = _exclude_randoms;
-    low_energy_window = _low_energy_window;
-    up_energy_window = _up_energy_window;
+    low_energy_window[0] = _low_energy_window;
+    up_energy_window[0] = _up_energy_window;
     offset_dets = _offset_dets;
 
     half_block = crystal_repeater_y / 2  - 1;
@@ -77,10 +77,10 @@ get_next_record(CListRecordROOT& record)
             continue;
         if ( eventID1 != eventID2 && exclude_randoms )
             continue;
-        if (energy1 < low_energy_window ||
-                 energy1 > up_energy_window ||
-                 energy2 < low_energy_window ||
-                 energy2 > up_energy_window)
+        if (energy1 < low_energy_window[0] ||
+                 energy1 > up_energy_window[0] ||
+                 energy2 < low_energy_window[0] ||
+                 energy2 > up_energy_window[0])
             continue;
 
         break;

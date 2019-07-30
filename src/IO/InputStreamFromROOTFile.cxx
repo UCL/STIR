@@ -53,8 +53,10 @@ InputStreamFromROOTFile::set_defaults()
     singles_readout_depth = -1;
     exclude_scattered = false;
     exclude_randoms = false;
-    low_energy_window = 0.f;
-    up_energy_window = 1000.f;
+    low_energy_window.resize(1);
+    up_energy_window.resize(1);  
+    low_energy_window[0] = 0.f;
+    up_energy_window[0] = 1000.f;
     read_optional_root_fields=false;
 }
 
@@ -67,8 +69,8 @@ InputStreamFromROOTFile::initialise_keymap()
     this->parser.add_key("exclude scattered events", &this->exclude_scattered);
     this->parser.add_key("exclude random events", &this->exclude_randoms);
     this->parser.add_key("offset (num of detectors)", &this->offset_dets);
-    this->parser.add_key("low energy window (keV)", &this->low_energy_window);
-    this->parser.add_key("upper energy window (keV)", &this->up_energy_window);
+    this->parser.add_key("low energy window (keV)", &this->low_energy_window[0]);
+    this->parser.add_key("upper energy window (keV)", &this->up_energy_window[0]);
     this->parser.add_key("read optional ROOT fields", &this->read_optional_root_fields);
 }
 

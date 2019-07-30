@@ -81,16 +81,16 @@ set_saved_get_positions(const std::vector<unsigned long> &poss)
 
 float
 InputStreamFromROOTFile::
-get_low_energy_thres() const
+get_low_energy_thres(int en_win) const
 {
-    return low_energy_window;
+    return low_energy_window[en_win];
 }
 
 float
 InputStreamFromROOTFile::
-get_up_energy_thres() const
+get_up_energy_thres(int en_win) const
 {
-    return up_energy_window;
+    return up_energy_window[en_win];
 }
 
 std::string
@@ -137,15 +137,15 @@ InputStreamFromROOTFile::set_detectors_offset(int val)
 }
 
 void
-InputStreamFromROOTFile::set_low_energy_window(float val)
+InputStreamFromROOTFile::set_low_energy_window(float val, int en_win)
 {
-    low_energy_window = val;
+    low_energy_window[en_win] = val;
 }
 
 void
-InputStreamFromROOTFile::set_upper_energy_window(float val)
+InputStreamFromROOTFile::set_upper_energy_window(float val, int en_win)
 {
-    up_energy_window = val;
+    up_energy_window[en_win] = val;
 }
 
 void
