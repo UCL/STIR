@@ -89,15 +89,20 @@ option(DISABLE_CERN_ROOT "disable use of Cern ROOT libraries" OFF)
 option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # disable by default
 option(DISBALE_GPU "disable use of GPU projectors" OFF)
 
+# GPU projector
 if (NOT DISBALE_GPU)
   find_package(CUDA QUIET)
-  #find_package(NIFTYPET QUIET)
-  # temporary fix until find_package(NIFTYPET) exists
-  SET(NIFTYPET_INCLUDE_DIRS "/home/sirfuser/devel/NIPET/niftypet/nipet;/home/sirfuser/devel/NIPET/niftypet/nipet/dinf;/home/sirfuser/devel/NIPET/niftypet/nipet/lm/src;/home/sirfuser/devel/NIPET/niftypet/nipet/prj/src;/home/sirfuser/devel/NIPET/niftypet/nipet/sct/src;/home/sirfuser/devel/NIPET/niftypet/nipet/src")
-  SET(NIFTYPET_LIBRARIES "/home/sirfuser/devel/NIPET/niftypet/nipet/lm/mmr_lmproc.so;/home/sirfuser/devel/NIPET/niftypet/nipet/sct/petsct.so;/home/sirfuser/devel/NIPET/niftypet/nipet/prj/petprj.so;/home/sirfuser/devel/NIPET/niftypet/nipet/dinf/dinf.so;/home/sirfuser/devel/NIPET/niftypet/nipet/mmr_auxe.so")
-  if (CUDA_FOUND #[[AND NIFTYPET_FOUND]])
-    set(STIR_gpu gpu)
-    set(STIR_gpu_test "test/gpu")
+  if (CUDA_FOUND)
+    set(NIFTYPET_DIR $ENV{NIFTYPET_DIR})
+    if ("${NIFTYPET_DIR}" STREQUAL "")
+      message(WARNING "NIFTYPET_DIR not set as env variable. If NiftyPET is installed, set this variable to use GPU projectors.")
+    else()
+      MESSAGE(STATUS "Adding GPU projector...")
+      SET(NIFTYPET_INCLUDE_DIRS "${NIFTYPET_DIR}/niftypet/nipet;${NIFTYPET_DIR}/niftypet/nipet/dinf;${NIFTYPET_DIR}/niftypet/nipet/lm/src;${NIFTYPET_DIR}/niftypet/nipet/prj/src;${NIFTYPET_DIR}/niftypet/nipet/sct/src;${NIFTYPET_DIR}/niftypet/nipet/src")
+      SET(NIFTYPET_LIBRARIES "${NIFTYPET_DIR}/niftypet/nipet/lm/mmr_lmproc.so;${NIFTYPET_DIR}/niftypet/nipet/sct/petsct.so;${NIFTYPET_DIR}/niftypet/nipet/prj/petprj.so;${NIFTYPET_DIR}/niftypet/nipet/dinf/dinf.so;${NIFTYPET_DIR}/niftypet/nipet/mmr_auxe.so")
+      set(STIR_gpu gpu)
+      set(STIR_gpu_test "test/gpu")
+    endif()
   endif()
 endif()
 
