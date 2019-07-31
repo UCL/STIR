@@ -654,7 +654,6 @@ process_data()
 		 // and there might be a scanner around that has them both combined.
 		 if (record.is_event())
 		   {
-             std::cout<< "i'm here" << '\n';
 		     assert(start_time <= current_time);
 		     Bin bin;
 		     // set value in case the event decoder doesn't touch it

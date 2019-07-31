@@ -495,9 +495,10 @@ static void write_interfile_energy_windows(std::ostream& output_header, const Ex
         }
     }
 
-  //Write energy window pairs (only inf num_en win >1)
-    if (exam_info.get_num_energy_windows() > 1)
-    {   output_header << "energy window pair :="<<" {"<<  exam_info.get_energy_window_pair().first  <<
+  if (exam_info.get_energy_window_pair().first> 0 &&
+      exam_info.get_energy_window_pair().second> 0)
+  {
+       output_header << "energy window pair :="<<" {"<<  exam_info.get_energy_window_pair().first  <<
                ',' <<  exam_info.get_energy_window_pair().second <<"}\n";
     }
 
