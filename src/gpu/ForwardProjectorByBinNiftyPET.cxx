@@ -108,9 +108,19 @@ read_binary_file(std::string file_name)
         throw std::runtime_error("STIR_PATH not defined, cannot find data");
 
     std::string data_path = stir_path;
-    data_path += "/examples/mMR_params" + file_name;
-    std::ifstream stream(data_path, std::ios::in | std::ios::binary);
-    std::vector<dataType> contents((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+    data_path += "/examples/mMR_params/" + file_name;
+
+    std::ifstream file(data_path, std::ios::in | std::ios::binary);
+
+    // get its size:
+    file.seekg(0, std::ios::end);
+    long file_size = file.tellg();
+    unsigned long num_elements = static_cast<unsigned long>(file_size) / static_cast<unsigned long>(sizeof(dataType));
+    file.seekg(0, std::ios::beg);
+
+    std::vector<dataType> contents(num_elements);
+    file.read(reinterpret_cast<char*>(contents.data()), file_size);
+
     return contents;
 }
 
