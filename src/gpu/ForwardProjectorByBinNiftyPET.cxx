@@ -142,11 +142,11 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
         dim[i] = max_indices[i + 1] - min_indices[i + 1] + 1;
     // Create array for image and fill it - think carefully about index order!
     float *im_ptr = new float[dim[0]*dim[1]*dim[2]];
-    // TODO: assert((y,x,z) = (320,320,128)) as required by NiftyPET by cropping/padding original 344x344x127
+    // TODO: float *im_ptr = new float[128 * 320 * 320];  // NiftyPET dims
     for (int z = min_indices[1], i = 0; z <= max_indices[1]; z++)
-		for (int y = min_indices[2]; y <= max_indices[2]; y++)
-			for (int x = min_indices[3]; x <= max_indices[3]; x++, i++)
-				im_ptr[i] = (*_density_sptr)[z][y][x];
+    for (int y = min_indices[2]; y <= max_indices[2]; y++)
+    for (int x = min_indices[3]; x <= max_indices[3]; x++, i++)
+      im_ptr[i] = (*_density_sptr)[z][y][x];
 
     // Probably not necessary - delete after development if not used
     int num_segments  = this->_projected_data_sptr->get_num_segments();
@@ -192,14 +192,14 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
     int n1crs = 504;  // txLUT["crs"].shape[1]
     char att = 0;     // whether to exp{-result} for attenuation maps
 
-    gpu_fprj(proj_data_ptr, im_ptr,
+    gpu_fprj(sinog.data(), im_ptr,
         li2rng.data(), li2sn.data(), li2nos.data(), s2c.data(), aw2ali.data(), crss.data(),
         isub.data(), isub.size(),
         Naw, n0crs, n1crs,
         Cnt, att);
 
     // Once finished, copy back
-    // TODO: sinog => proj_data_ptr
+    // TODO: convert NiftyPET sinog.data() => STIR proj_data_ptr
     _projected_data_sptr->fill_from(proj_data_ptr);
 
     // Delete created arrays
