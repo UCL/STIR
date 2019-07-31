@@ -148,11 +148,11 @@ public:
     //! Get the detection energy of the first photon
     //! in keV
     inline double get_energyA_in_keV() const
-    { return energyA * 1e3; }
+    { return energyA; }
     //! Get the detection energy of the second photon
     //! in keV
     inline double get_energyB_in_keV() const
-    { return energyB * 1e3; }
+    { return energyB; }
 
 private:
 

@@ -74,8 +74,10 @@ CListModeDataROOT(const std::string& hroot_filename)
     // Only PET scanners supported
     this->exam_info_sptr->imaging_modality = ImagingModality::PT;
     this->exam_info_sptr->originating_system = this->originating_system;
-    this->exam_info_sptr->set_low_energy_thres(this->root_file_sptr->get_low_energy_thres());
-    this->exam_info_sptr->set_high_energy_thres(this->root_file_sptr->get_up_energy_thres());
+    this->exam_info_sptr->set_num_energy_windows(this->root_file_sptr->get_number_of_energy_windows());
+    this->exam_info_sptr->set_low_energy_thres(1e3*this->root_file_sptr->get_low_energy_thres());
+    this->exam_info_sptr->set_high_energy_thres(1e3*this->root_file_sptr->get_up_energy_thres());
+
 
     shared_ptr<Scanner> this_scanner_sptr;
 

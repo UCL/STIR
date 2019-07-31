@@ -37,7 +37,7 @@ InputStreamFromROOTFileForECATPET(std::string _filename,
                                   int crystal_repeater_x, int crystal_repeater_y, int crystal_repeater_z,
                                   int block_repeater,
                                   bool _exclude_scattered, bool _exclude_randoms,
-                                  float _low_energy_window, float _up_energy_window,
+                                  std::vector<double> _low_energy_window, std::vector<double> _up_energy_window,
                                   int _offset_dets):
     base_type(),
     crystal_repeater_x(crystal_repeater_x), crystal_repeater_y(crystal_repeater_y), crystal_repeater_z(crystal_repeater_z),
@@ -49,8 +49,8 @@ InputStreamFromROOTFileForECATPET(std::string _filename,
     chain_name = _chain_name;
     exclude_scattered = _exclude_scattered;
     exclude_randoms = _exclude_randoms;
-    low_energy_window[0] = _low_energy_window;
-    up_energy_window[0] = _up_energy_window;
+    low_energy_window = _low_energy_window;
+    up_energy_window = _up_energy_window;
     offset_dets = _offset_dets;
 
     half_block = crystal_repeater_y / 2  - 1;

@@ -94,7 +94,7 @@ public:
                                       int crystal_repeater_x, int crystal_repeater_y, int crystal_repeater_z,
                                       int blocks_repeater,
                                       bool exclude_scattered, bool exclude_randoms,
-                                      float low_energy_window, float up_energy_window,
+                                      std::vector<double> low_energy_window, std::vector<double> up_energy_window,
                                       int offset_dets);
 
     virtual ~InputStreamFromROOTFileForECATPET() {}

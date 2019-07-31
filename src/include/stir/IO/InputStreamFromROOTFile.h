@@ -136,7 +136,8 @@ public:
     inline float get_low_energy_thres(int en_win = 0) const;
     //! Upper energy threshold
     inline float get_up_energy_thres(int en_win = 0) const;
-
+    //! Upper number of energy windows
+    inline int get_number_of_energy_windows() const;
     //! Set singles_readout_depth
     inline void set_singles_readout_depth(int);
 
@@ -197,9 +198,11 @@ protected:
     //! Skip random events (eventID1 != eventID2)
     bool exclude_randoms;
     //! Lower energy threshold
-    std::vector<float> low_energy_window;
+    std::vector<double> low_energy_window;
     //! Upper energy threshold
-    std::vector<float> up_energy_window;
+    std::vector<double> up_energy_window;
+
+    int num_en_windows;
     //! This value will apply a rotation on the detectors' id in the same ring.
     int offset_dets;
     //!For the singles_readout_depth from GATE's online documentation:

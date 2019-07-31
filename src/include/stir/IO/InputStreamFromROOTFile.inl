@@ -79,6 +79,13 @@ set_saved_get_positions(const std::vector<unsigned long> &poss)
     saved_get_positions = poss;
 }
 
+int
+InputStreamFromROOTFile::
+get_number_of_energy_windows() const
+{
+    return num_en_windows;
+}
+
 float
 InputStreamFromROOTFile::
 get_low_energy_thres(int en_win) const
