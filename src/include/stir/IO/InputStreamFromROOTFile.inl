@@ -86,19 +86,29 @@ get_number_of_energy_windows() const
     return num_en_windows;
 }
 
-float
+std::vector<float>
 InputStreamFromROOTFile::
-get_low_energy_thres(int en_win) const
+get_low_energy_thres() const
 {
-    return low_energy_window[en_win];
+    std::vector<float> low_energy_window;
+    low_energy_window.resize(2);
+    low_energy_window[0]=1e3*low_energy_window_1;
+    low_energy_window[1]=1e3*low_energy_window_2;
+    return low_energy_window;
 }
 
-float
+std::vector<float>
 InputStreamFromROOTFile::
-get_up_energy_thres(int en_win) const
+get_up_energy_thres() const
 {
-    return up_energy_window[en_win];
+    std::vector<float> up_energy_window;
+    up_energy_window.resize(2);
+    up_energy_window[0]=1e3*up_energy_window_1;
+    up_energy_window[1]=1e3*up_energy_window_2;
+    return up_energy_window;
 }
+
+
 
 std::string
 InputStreamFromROOTFile::
@@ -144,15 +154,15 @@ InputStreamFromROOTFile::set_detectors_offset(int val)
 }
 
 void
-InputStreamFromROOTFile::set_low_energy_window(float val, int en_win)
+InputStreamFromROOTFile::set_low_energy_window(float val)
 {
-    low_energy_window[en_win] = val;
+    low_energy_window_1= val;
 }
 
 void
-InputStreamFromROOTFile::set_upper_energy_window(float val, int en_win)
+InputStreamFromROOTFile::set_upper_energy_window(float val)
 {
-    up_energy_window[en_win] = val;
+    up_energy_window_1 = val;
 }
 
 void

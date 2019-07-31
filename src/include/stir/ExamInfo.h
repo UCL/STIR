@@ -59,12 +59,14 @@ public :
     : start_time_in_secs_since_1970(0.)
     {
 
-      num_windows = 1;
+      num_windows = 2;
       low_energy_thres.resize(num_windows);
       up_energy_thres.resize(num_windows);
       en_win_pair.resize(2);
       low_energy_thres[0]=-1.F;
       up_energy_thres[0]=-1.F;
+      low_energy_thres[0]=1.F;
+      up_energy_thres[0]=1.F;
       en_win_pair[0]=-1.F;
       en_win_pair[1]=-1.F;
 
@@ -108,6 +110,8 @@ public :
   //! Set the number of energy windows
   inline void set_num_energy_windows(int n_win);
   inline void set_energy_window_pair(std::vector<int> val,int n_win);
+  inline void set_low_energy_thres_vect(std::vector<float> new_val);
+  inline void set_high_energy_thres_vect(std::vector<float> new_val);
   //@}
 
   //! Standard trick for a 'virtual copy-constructor'

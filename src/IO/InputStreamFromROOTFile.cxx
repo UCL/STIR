@@ -36,11 +36,12 @@ InputStreamFromROOTFile::
 InputStreamFromROOTFile(std::string filename,
                         std::string chain_name,
                         bool exclude_scattered, bool exclude_randoms,
-                        float low_energy_window, float up_energy_window,
+                        float low_energy_window_1, float up_energy_window_1,
+                        float low_energy_window_2, float up_energy_window_2,
                         int offset_dets)
     : filename(filename), chain_name(chain_name),
       exclude_scattered(exclude_scattered), exclude_randoms(exclude_randoms),
-      low_energy_window(low_energy_window), up_energy_window(up_energy_window), offset_dets(offset_dets)
+      low_energy_window_1(low_energy_window_1), up_energy_window_1(up_energy_window_1),low_energy_window_2(low_energy_window_2), up_energy_window_2(up_energy_window_2), offset_dets(offset_dets)
 {
     set_defaults();
     reset();
@@ -53,10 +54,10 @@ InputStreamFromROOTFile::set_defaults()
     singles_readout_depth = -1;
     exclude_scattered = false;
     exclude_randoms = false;
-    low_energy_window.resize(1);
-    up_energy_window.resize(1);  
-    low_energy_window[0] = 0.f;
-    up_energy_window[0] = 1000.f;
+    low_energy_window_1 = 0.f;
+    up_energy_window_1 = 1000.f;
+    low_energy_window_2 = 0.f;
+    up_energy_window_2 = 1000.f;
     read_optional_root_fields=false;
 }
 
@@ -70,8 +71,10 @@ InputStreamFromROOTFile::initialise_keymap()
     this->parser.add_key("exclude random events", &this->exclude_randoms);
     this->parser.add_key("offset (num of detectors)", &this->offset_dets);
     this->parser.add_key("number of energy windows", &this->num_en_windows);
-    this->parser.add_key("low energy window (MeV)", &this->low_energy_window);
-    this->parser.add_key("upper energy window (MeV)", &this->up_energy_window);
+    this->parser.add_key("low energy window 1 (MeV)", &this->low_energy_window_1);
+    this->parser.add_key("upper energy window 1 (MeV)", &this->up_energy_window_1);
+    this->parser.add_key("low energy window 2 (MeV)", &this->low_energy_window_2);
+    this->parser.add_key("upper energy window 2 (MeV)", &this->up_energy_window_2);
     this->parser.add_key("read optional ROOT fields", &this->read_optional_root_fields);
 }
 

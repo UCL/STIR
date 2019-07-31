@@ -84,7 +84,8 @@ public:
     InputStreamFromROOTFile(std::string filename,
                             std::string chain_name,
                             bool exclude_scattered, bool exclude_randoms,
-                            float low_energy_window, float up_energy_window,
+                            float low_energy_window_1, float up_energy_window_1,
+                            float low_energy_window_2, float up_energy_window_2,
                             int offset_dets);
 
 
@@ -133,9 +134,10 @@ public:
 
     virtual int get_num_trans_crystals_per_singles_unit() const = 0;
     //! Lower energy threshold
-    inline float get_low_energy_thres(int en_win = 0) const;
+    inline std::vector<float> get_low_energy_thres() const;
     //! Upper energy threshold
-    inline float get_up_energy_thres(int en_win = 0) const;
+    inline std::vector<float> get_up_energy_thres() const;
+
     //! Upper number of energy windows
     inline int get_number_of_energy_windows() const;
     //! Set singles_readout_depth
@@ -151,9 +153,9 @@ public:
 
     inline void set_detectors_offset(int);
 
-    inline void set_low_energy_window(float, int en_win = 0);
+    inline void set_low_energy_window(float);
 
-    inline void set_upper_energy_window(float, int en_win = 0);
+    inline void set_upper_energy_window(float);
     //! Set the read_optional_root_fields flag
     inline void set_optional_ROOT_fields(bool);
 
@@ -198,9 +200,13 @@ protected:
     //! Skip random events (eventID1 != eventID2)
     bool exclude_randoms;
     //! Lower energy threshold
-    std::vector<double> low_energy_window;
+    float low_energy_window_1;
     //! Upper energy threshold
-    std::vector<double> up_energy_window;
+    float up_energy_window_1;
+    //! Lower energy threshold
+    float low_energy_window_2;
+    //! Upper energy threshold
+    float up_energy_window_2;
 
     int num_en_windows;
     //! This value will apply a rotation on the detectors' id in the same ring.

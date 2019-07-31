@@ -101,7 +101,8 @@ public:
                                              int module_repeater_x, int module_repeater_y, int module_repeater_z,
                                              int rsector_repeater,
                                              bool exclude_scattered, bool exclude_randoms,
-                                             std::vector<double> low_energy_window, std::vector<double> up_energy_window,
+                                             float low_energy_window_1, float up_energy_window_1,
+                                             float low_energy_window_2, float up_energy_window_2,
                                              int offset_dets);
 
     virtual ~InputStreamFromROOTFileForCylindricalPET() {}

@@ -241,10 +241,10 @@ public:
                     time1,time2);
 
 
-        if(this->event_data.is_swapped())
+       /* if(this->event_data.is_swapped())
         this->energy_data.init_energy_from_data(
                     energy2,energy1);
-        else
+        else*/
         this->energy_data.init_energy_from_data(
                     energy1,energy2);
 
