@@ -44,6 +44,7 @@ Set(${dir_INVOLVED_TEST_EXE_SOURCES}
 	test_interpolate
         test_upsample
         test_SSRB
+        test_ScatterGradient
 )
 
 set(buildblock_simple_tests
