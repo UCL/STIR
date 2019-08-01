@@ -60,7 +60,7 @@ public:
 
     virtual
       bool
-      is_prompt() const = 0;
+      is_prompt() const {return true;}
 
 //  //! Changes the event from prompt to delayed or vice versa
 //  /*! Default implementation just returns Succeeded::no. */

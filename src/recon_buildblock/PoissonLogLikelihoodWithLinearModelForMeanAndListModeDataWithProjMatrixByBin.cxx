@@ -31,7 +31,7 @@
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjData.h"
-#include "stir/listmode/CListRecord.h"
+#include "stir/listmode/ListRecord.h"
 #include "stir/Viewgram.h"
 #include "stir/info.h"
 #include <boost/format.hpp>
@@ -431,10 +431,10 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
     double current_time = 0.;
     ProjMatrixElemsForOneBin proj_matrix_row;
     gradient.fill(0);
-    shared_ptr<CListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
-    CListRecord& record = *record_sptr;
+    shared_ptr<ListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
+    ListRecord& record = *record_sptr;
 
-    VectorWithOffset<CListModeData::SavedPosition>
+    VectorWithOffset<ListModeData::SavedPosition>
             frame_start_positions(1, static_cast<int>(this->frame_defs.get_num_frames()));
 
     long int more_events =
@@ -467,6 +467,8 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
             if (measured_bin.get_bin_value() != 1.0f
                     || measured_bin.segment_num() < proj_data_info_sptr->get_min_segment_num()
                     || measured_bin.segment_num()  > proj_data_info_sptr->get_max_segment_num()
+                    || measured_bin.view_num() < proj_data_info_sptr->get_min_view_num()
+                    || measured_bin.view_num()  > proj_data_info_sptr->get_max_view_num()
                     || measured_bin.tangential_pos_num() < proj_data_info_sptr->get_min_tangential_pos_num()
                     || measured_bin.tangential_pos_num() > proj_data_info_sptr->get_max_tangential_pos_num()
                     || measured_bin.axial_pos_num() < proj_data_info_sptr->get_min_axial_pos_num(measured_bin.segment_num())
@@ -485,7 +487,6 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
                 if (subset_num != static_cast<int>(basic_bin.view_num() % this->num_subsets))
                     continue;
             }
-
             this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
             //in_the_range++;
             Bin fwd_bin;

@@ -235,6 +235,9 @@ public:
 
   virtual shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const = 0;
 
+  const ProjDataInfo* get_proj_data_info_ptr() const  { return this->get_proj_data_info_sptr().get(); }
+
+
 protected:
   virtual shared_ptr <ListRecord> get_empty_record_helper_sptr() const = 0;
   virtual Succeeded get_next(ListRecord& event) const = 0;
