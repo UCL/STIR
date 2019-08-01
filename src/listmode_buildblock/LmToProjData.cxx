@@ -646,7 +646,7 @@ process_data()
 
            if(record.is_energy())
              {
-               std::cout<< "energyA: " << record.energy().get_energyA_in_keV() << '\n';
+              std::cout<< "energyA: " << record.energy().get_energyA_in_keV() << '\n';
                std::cout<< "energyB: " << record.energy().get_energyB_in_keV() << '\n';
              }
 		 // note: could do "else if" here if we would be sure that

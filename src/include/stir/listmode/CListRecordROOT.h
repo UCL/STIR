@@ -241,13 +241,15 @@ public:
                     time1,time2);
 
 
-       /* if(this->event_data.is_swapped())
-        this->energy_data.init_energy_from_data(
-                    energy2,energy1);
-        else*/
+        //if(this->event_data.is_swapped())
+        //this->energy_data.init_energy_from_data(
+          //          energy2,energy1);
+        //else
         this->energy_data.init_energy_from_data(
                     energy1,energy2);
 
+        std::cout<< "energyA: " << energy1 << '\n';
+        std::cout<< "energyB: " << energy2 << '\n';
 
         // We can make a singature raw based on the two events IDs.
         // It is pretty unique.
