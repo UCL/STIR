@@ -180,7 +180,7 @@ protected:
   //! Clone of the density sptr set with set_up()
   shared_ptr<DiscretisedDensity<3,float> > _density_sptr;
 
- private:
+  protected:
   shared_ptr<ProjDataInfo> _proj_data_info_sptr;
 
   void do_segments(DiscretisedDensity<3,float>& image, 

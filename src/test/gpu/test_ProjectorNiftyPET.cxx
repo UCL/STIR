@@ -25,6 +25,7 @@
 */
 
 #include "stir/gpu/ForwardProjectorByBinNiftyPET.h"
+#include "stir/gpu/BackProjectorByBinNiftyPET.h"
 #include "stir/RunTests.h"
 #include "stir/num_threads.h"
 
@@ -87,6 +88,10 @@ run_projections()
     proj_data->fill(0.F);
     fwrd_projector.forward_project(*proj_data);
     std::cerr << "\tDone!\n";
+
+    // Back project
+    std::cerr << "\nDoing back projection...\n";
+    BackProjectorByBinNiftyPET *back_projector;
 }
 
 void
