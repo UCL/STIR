@@ -24,13 +24,9 @@
   \author Richard Brown
 */
 
+#include "stir/gpu/ForwardProjectorByBinNiftyPET.h"
 #include "stir/RunTests.h"
 #include "stir/num_threads.h"
-#include <iostream>
-#include "stir/gpu/ForwardProjectorByBinNiftyPET.h"
-#include "stir/DiscretisedDensity.h"
-#include "stir/ProjData.h"
-#include "stir/is_null_ptr.h"
 
 START_NAMESPACE_STIR
 

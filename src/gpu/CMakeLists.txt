@@ -16,6 +16,19 @@
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
 
+SET(NIFTYPET_INCLUDE_DIRS 
+	"${NIFTYPET_DIR}/niftypet/nipet;"
+	"${NIFTYPET_DIR}/niftypet/nipet/dinf;"
+	"${NIFTYPET_DIR}/niftypet/nipet/lm/src;"
+	"${NIFTYPET_DIR}/niftypet/nipet/prj/src;"
+	"${NIFTYPET_DIR}/niftypet/nipet/sct/src;"
+	"${NIFTYPET_DIR}/niftypet/nipet/src")
+SET(NIFTYPET_LIBRARIES 
+	"${NIFTYPET_DIR}/niftypet/nipet/lm/mmr_lmproc.so;"
+	"${NIFTYPET_DIR}/niftypet/nipet/sct/petsct.so;"
+	"${NIFTYPET_DIR}/niftypet/nipet/prj/petprj.so;"
+	"${NIFTYPET_DIR}/niftypet/nipet/dinf/dinf.so;"
+	"${NIFTYPET_DIR}/niftypet/nipet/mmr_auxe.so")
 
 # ------------------------------------------------------------- #
 #                CREATE OUR LIBRARY AND INCLUDE OUR HEADERS

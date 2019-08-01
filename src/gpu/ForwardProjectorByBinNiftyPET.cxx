@@ -31,7 +31,6 @@
 #include <fstream>
 #include "stir/gpu/ForwardProjectorByBinNiftyPET.h"
 #include "stir/RelatedViewgrams.h"
-#include "stir/zoom.h"
 #include <prjf.h>
 
 START_NAMESPACE_STIR
@@ -57,7 +56,6 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
 {
     ForwardProjectorByBin::set_up(proj_data_info_sptr,density_info_sptr);
     check(*this->_proj_data_info_sptr, *_density_sptr);
-    ForwardProjectorByBin::set_up(proj_data_info_sptr, density_info_sptr);
     _symmetries_sptr.reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_sptr, density_info_sptr));
 
     // Initialise projected_data_sptr from this->_proj_data_info_sptr
@@ -78,8 +76,8 @@ void
 ForwardProjectorByBinNiftyPET::
 actual_forward_project(RelatedViewgrams<float>&,
       const DiscretisedDensity<3,float>&,
-        const int min_axial_pos_num, const int max_axial_pos_num,
-        const int min_tangential_pos_num, const int max_tangential_pos_num)
+        const int, const int,
+        const int, const int)
 {
     throw std::runtime_error("Need to use set_input() if wanting to use ForwardProjectorByBinNiftyPET.");
 }
@@ -87,8 +85,8 @@ actual_forward_project(RelatedViewgrams<float>&,
 void
 ForwardProjectorByBinNiftyPET::
 actual_forward_project(RelatedViewgrams<float>& viewgrams,
-        const int min_axial_pos_num, const int max_axial_pos_num,
-        const int min_tangential_pos_num, const int max_tangential_pos_num)
+        const int, const int,
+        const int, const int)
 {
 //    if (min_axial_pos_num != _proj_data_info_sptr->get_min_axial_pos_num() ||
 //         … )
