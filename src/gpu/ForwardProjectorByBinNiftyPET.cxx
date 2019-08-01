@@ -36,8 +36,6 @@
 
 START_NAMESPACE_STIR
 
-#define AW 68516
-
 //////////////////////////////////////////////////////////
 const char * const
 ForwardProjectorByBinNiftyPET::registered_name =
@@ -136,9 +134,27 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
     // --------------------------------------------------------------- //
     //   Set up the image
     // --------------------------------------------------------------- //
-    // NiftyPET requires the image to be (z,x,y)=(128,320,320)
-    const int dim[3] = {128,320,320};
 
+    // Get the dimensions of the input image
+    Coordinate3D<int> min_indices;
+    Coordinate3D<int> max_indices;
+    if (!_density_sptr->get_regular_range(min_indices, max_indices))
+        throw std::runtime_error("ForwardProjectorByBinNiftyPET::set_input - "
+                                 "expected image to have regular range.");
+    int stir_dim[3];
+    for (int i = 0; i < 3; i++)
+        stir_dim[i] = max_indices[i + 1] - min_indices[i + 1] + 1;
+
+    // NiftyPET requires the image to be (z,x,y)=(128,320,320)
+    const int np_dim[3] = {128,320,320};
+
+    // Check that stir image is <= niftyPET image in all dimensions
+    for (int i=0; i<3; ++i)
+        if (stir_dim[i] > np_dim[i])
+            throw std::runtime_error("STIR image should be smaller than (128,320,320).");
+
+#if 0
+    // COULD USE THE ZOOM FUNCTIONALITY FOR STIR DIMS > NP DIMS
     // image needs to be VoxelsOnCartesianGrid
     shared_ptr<VoxelsOnCartesianGrid<float> > orig_image =
             dynamic_pointer_cast<VoxelsOnCartesianGrid<float> >(density_sptr);
@@ -148,21 +164,30 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
     const ZoomOptions zoom_options = ZoomOptions::preserve_sum;
     const VoxelsOnCartesianGrid<float> &resized_image =
       zoom_image(*orig_image, zoom, offsets_in_mm, new_sizes, zoom_options);
+#endif
 
-    // Get the indices of the resized image
-    Coordinate3D<int> min_indices;
-    Coordinate3D<int> max_indices;
-    if (!_density_sptr->get_regular_range(min_indices, max_indices))
-        throw std::runtime_error("ForwardProjectorByBinNiftyPET::set_input - "
-                                 "expected image to have regular range.");
+    // Create the NityPET image and fill with zeroes
+    float *im_ptr = new float[np_dim[0] * np_dim[1] * np_dim[2]];
+    std::fill( im_ptr, im_ptr + sizeof( im_ptr ), 0.f );
 
-    // Create the NiftyPET image
-    float *im_ptr = new float[dim[0] * dim[1] * dim[2]];
+    // Copy data from STIR to NiftyPET image
+    int np_z, np_y, np_x, np_1d;
+    for (int z = min_indices[1]; z <= max_indices[1]; z++) {
+        for (int y = min_indices[2]; y <= max_indices[2]; y++) {
+            for (int x = min_indices[3]; x <= max_indices[3]; x++) {
+                // Convert the stir 3d index to a NiftyPET 1d index
+                np_z = z - min_indices[1];
+                np_y = y - min_indices[2];
+                np_x = x - min_indices[3];
+                np_1d = np_z*np_dim[0]*np_dim[1] + np_y * np_dim[1] + np_x;
+                im_ptr[np_1d] = (*_density_sptr)[z][y][x];
+            }
+        }
+    }
 
-    for (int z = min_indices[1], i = 0; z <= max_indices[1]; z++)
-        for (int y = min_indices[2]; y <= max_indices[2]; y++)
-            for (int x = min_indices[3]; x <= max_indices[3]; x++, i++)
-                im_ptr[i] = resized_image[z][y][x];
+    // --------------------------------------------------------------- //
+    //   Other arguments
+    // --------------------------------------------------------------- //
 
     Cnst Cnt;
     Cnt.SPN = static_cast<char>(11);
@@ -183,11 +208,15 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
         throw std::runtime_error("Unsupported span");
     }
 
+    int Naw = 68516;  // len(txLUT["aw2ali"]) - number of active bins in 2D sino
+    int n0crs = 4;    // txLUT["crs"].shape[0]
+    int n1crs = 504;  // txLUT["crs"].shape[1]
+    char att = 0;     // whether to exp{-result} for attenuation maps
+
     std::vector<int> isub;  // TODO: expose as argument?
     if (isub.size() == 0) {
-      // AW #defined to be 68516, number of active bins in 2D sino
-      isub = std::vector<int>(AW);
-      for (unsigned i = 0; i<AW; i++) isub[i] = int(i);
+      isub = std::vector<int>(unsigned(Naw));
+      for (unsigned i = 0; i<unsigned(Naw); i++) isub[i] = int(i);
     }
     std::vector<float> sinog(isub.size() * static_cast<unsigned long>(nsinos), 0);
 
@@ -200,16 +229,20 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
         s2c    = read_binary_file<short>("s2c.dat"   );
         crss   = read_binary_file<float>("crss.dat"  );
     }
-    int Naw = 68516;  // len(txLUT["aw2ali"])
-    int n0crs = 4;    // txLUT["crs"].shape[0]
-    int n1crs = 504;  // txLUT["crs"].shape[1]
-    char att = 0;     // whether to exp{-result} for attenuation maps
+
+    // --------------------------------------------------------------- //
+    //   Do the forward projection!
+    // --------------------------------------------------------------- //
 
     gpu_fprj(sinog.data(), im_ptr,
         li2rng.data(), li2sn.data(), li2nos.data(), s2c.data(), aw2ali.data(), crss.data(),
         isub.data(), int(isub.size()),
         Naw, n0crs, n1crs,
         Cnt, att);
+
+    // --------------------------------------------------------------- //
+    //   NiftyPET -> STIR projection data conversion
+    // --------------------------------------------------------------- //
 
     // Once finished, copy back
     // TODO: convert NiftyPET sinog.data() => STIR proj_data_ptr
@@ -225,6 +258,10 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
     for (int i=0; i<num_proj_data_elems; ++i)
         proj_data_ptr[i] = 0.F;
     _projected_data_sptr->fill_from(proj_data_ptr);
+
+    // --------------------------------------------------------------- //
+    //   Delete arrays
+    // --------------------------------------------------------------- //
 
     // Delete created arrays
     delete [] proj_data_ptr;
