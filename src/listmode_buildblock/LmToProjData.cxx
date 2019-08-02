@@ -654,19 +654,6 @@ process_data()
 		 // and there might be a scanner around that has them both combined.
 		 if (record.is_event())
 		   {
-             if((record.is_energy())&&(record.event().is_swapped()==false)
-                &&(record.energy().get_energyA_in_keV() > 1e-3*low_en_thres[en_win_A])&&(record.energy().get_energyA_in_keV() < 1e-3*up_en_thres[en_win_A])
-                &&(record.energy().get_energyB_in_keV() > 1e-3*low_en_thres[en_win_B])&&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_B]))
-                 { std::cout<< "energy 300: " << 1e3*record.energy().get_energyB_in_keV() << '\n';
-                   std::cout<< "energy 200: " << 1e3*record.energy().get_energyA_in_keV() << '\n';
-                 }
-             if((record.is_energy())&&(record.event().is_swapped()==true)&&(record.energy().get_energyA_in_keV() > 1e-3*low_en_thres[en_win_B])
-                &&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_B])
-                &&(record.energy().get_energyB_in_keV() > 1e-3*low_en_thres[en_win_A])&&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_A]))
-                { std::cout<< "energy 200: " << 1e3*record.energy().get_energyB_in_keV() << '\n';
-                  std::cout<< "energy 300: " << 1e3*record.energy().get_energyA_in_keV() << '\n';
-                 }
-
 
 		     assert(start_time <= current_time);
 		     Bin bin;
@@ -682,47 +669,61 @@ process_data()
 			 && bin.axial_pos_num()>=proj_data_ptr->get_min_axial_pos_num(bin.segment_num())
 			 && bin.axial_pos_num()<=proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
 			 ) 
-		       {
 
-			 assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
-			 assert(bin.view_num()<=proj_data_ptr->get_max_view_num());
-            
-			 // see if we increment or decrement the value in the sinogram
-			 const int event_increment =
-			   record.event().is_prompt() 
-			   ? ( store_prompts ? 1 : 0 ) // it's a prompt
-			   :  delayed_increment;//it is a delayed-coincidence event
-            
-			 if (event_increment==0)
-			   continue;
-            
-			 if (!do_time_frame)
-			   more_events-= event_increment;
-            
-			 // now check if we have its segment in memory
-			 if (bin.segment_num() >= start_segment_index && bin.segment_num()<=end_segment_index)
-			   {
-			     do_post_normalisation(bin);
-			 
-			     num_stored_events += event_increment;
-			     if (record.event().is_prompt())
-			       ++num_prompts_in_frame;
-			     else
-			       ++num_delayeds_in_frame;
+             {
+                if(((record.is_energy())&&(record.event().is_swapped()==false)
+                  &&(record.energy().get_energyA_in_keV() > 1e-3*low_en_thres[en_win_A])&&(record.energy().get_energyA_in_keV() < 1e-3*up_en_thres[en_win_A])
+                  &&(record.energy().get_energyB_in_keV() > 1e-3*low_en_thres[en_win_B])&&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_B]))
+                  ||((record.is_energy())&&(record.event().is_swapped()==true)
+                     &&(record.energy().get_energyA_in_keV() > 1e-3*low_en_thres[en_win_B])&&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_B])
+                     &&(record.energy().get_energyB_in_keV() > 1e-3*low_en_thres[en_win_A])&&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_A])))
 
-			     if (num_stored_events%500000L==0) cout << "\r" << num_stored_events << " events stored" << flush;
-                            
-			     if (interactive)
-			       printf("Seg %4d view %4d ax_pos %4d tang_pos %4d time %8g stored with incr %d \n", 
-				      bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num(),
-				      current_time, event_increment);
-			     else
-			       (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
-			       bin.get_bin_value() * 
-			       event_increment;
+                   {
+                      // std::cout<< "energy A: " << 1e3*record.energy().get_energyB_in_keV() << '\n';
+                      // std::cout<< "energy B: " << 1e3*record.energy().get_energyA_in_keV() << '\n';
 
-		       }
+                     assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
+                     assert(bin.view_num()<=proj_data_ptr->get_max_view_num());
+            
+                     // see if we increment or decrement the value in the sinogram
+                     const int event_increment =
+                       record.event().is_prompt()
+                       ? ( store_prompts ? 1 : 0 ) // it's a prompt
+                       :  delayed_increment;//it is a delayed-coincidence event
+
+                     if (event_increment==0)
+                       continue;
+
+                     if (!do_time_frame)
+                       more_events-= event_increment;
+
+                     // now check if we have its segment in memory
+                     if (bin.segment_num() >= start_segment_index && bin.segment_num()<=end_segment_index)
+                       {
+                         do_post_normalisation(bin);
+
+                         num_stored_events += event_increment;
+                         if (record.event().is_prompt())
+                           ++num_prompts_in_frame;
+                         else
+                           ++num_delayeds_in_frame;
+
+                         if (num_stored_events%500000L==0) cout << "\r" << num_stored_events << " events stored" << flush;
+
+                         if (interactive)
+                           printf("Seg %4d view %4d ax_pos %4d tang_pos %4d time %8g stored with incr %d \n",
+                              bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num(),
+                              current_time, event_increment);
+                         else
+                           (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] +=
+                           bin.get_bin_value() *
+                           event_increment;
+
+
               }
+             }
+
+            }
 		     else 	// event is rejected for some reason
 		       {
 			 if (interactive)
