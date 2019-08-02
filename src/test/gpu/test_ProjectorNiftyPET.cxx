@@ -26,8 +26,11 @@
 
 #include "stir/gpu/ForwardProjectorByBinNiftyPET.h"
 #include "stir/gpu/BackProjectorByBinNiftyPET.h"
+#include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/RunTests.h"
 #include "stir/num_threads.h"
+#include "stir/CPUTimer.h"
 
 START_NAMESPACE_STIR
 
@@ -59,6 +62,35 @@ TestGPUProjectors(std::string image_filename, std::string sinogram_filename) :
 {
 }
 
+template<class fwrd, class back>
+void project(shared_ptr<ProjData> proj_data, shared_ptr<DiscretisedDensity<3,float> > im)
+{
+    CPUTimer timer;
+    timer.start();
+
+    std::cerr << "\nDoing forward projection using " << fwrd::registered_name << "...\n";
+    fwrd fwrd_projector;
+    fwrd_projector.set_up(proj_data->get_proj_data_info_sptr(), im);
+    fwrd_projector.set_input(im);
+    /*proj_data->fill(0.F);
+    fwrd_projector.forward_project(*proj_data);*/
+    timer.stop();
+    double time_fwd(timer.value());
+    std::cerr << "\tDone! (" << time_fwd << " secs)\n";
+
+    timer.reset();
+    timer.start();
+
+    // GPU Back project
+    std::cerr << "\nDoing back projection using " << back::registered_name << "...\n";
+    back back_projector;
+    timer.stop();
+    double time_bck(timer.value());
+    std::cerr << "\tDone! (" << time_bck << " secs)\n";
+
+    std::cerr << "\nTotal time for projection with " << fwrd::registered_name << ": " << time_fwd+time_bck << " secs.\n";
+}
+
 void
 TestGPUProjectors::
 run_projections()
@@ -80,18 +112,8 @@ run_projections()
       ProjData::read_from_file(_sinogram_filename);
     std::cerr << "\tDone!\n";
 
-    // Forward project
-    std::cerr << "\nDoing forward projection...\n";
-    ForwardProjectorByBinNiftyPET fwrd_projector;
-    fwrd_projector.set_up(proj_data->get_proj_data_info_sptr(), input);
-    fwrd_projector.set_input(input);
-    proj_data->fill(0.F);
-    fwrd_projector.forward_project(*proj_data);
-    std::cerr << "\tDone!\n";
-
-    // Back project
-    std::cerr << "\nDoing back projection...\n";
-    BackProjectorByBinNiftyPET *back_projector;
+    project<ForwardProjectorByBinNiftyPET,BackProjectorByBinNiftyPET>(proj_data,input);
+    project<ForwardProjectorByBinUsingProjMatrixByBin,BackProjectorByBinUsingProjMatrixByBin>(proj_data,input);
 }
 
 void
