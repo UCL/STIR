@@ -93,6 +93,13 @@ protected:
 
  private:
   shared_ptr<DataSymmetriesForBins_PET_CartesianGrid> _symmetries_sptr;
+
+  std::vector<float> li2rng;    // axLUT["li2rng"]
+  std::vector<short> li2sn;     // axLUT["li2sn1" if Cnt.SPN == 1 else "li2sn"]
+  std::vector<char>  li2nos;    // axLUT["li2nos"]
+  std::vector<short> s2c;       // txLUT["s2c"]
+  std::vector<int>   aw2ali;    // txLUT["aw2ali"]
+  std::vector<float> crss;      // txLUT["crs"]
 };
 
 END_NAMESPACE_STIR
