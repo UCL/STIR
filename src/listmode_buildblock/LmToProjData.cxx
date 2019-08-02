@@ -654,21 +654,18 @@ process_data()
 		 // and there might be a scanner around that has them both combined.
 		 if (record.is_event())
 		   {
-             if((record.event().is_swapped()==false))
-               {
-                 if((record.energy().get_energyA_in_keV() > 1e-3*low_en_thres[en_win_A])&&(record.energy().get_energyA_in_keV() < 1e-3*up_en_thres[en_win_A]))
-                std::cout<< "energy 200: " << 1e3*record.energy().get_energyA_in_keV() << '\n';
-                 if((record.energy().get_energyB_in_keV() > 1e-3*low_en_thres[en_win_B])&&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_B]))
-                 std::cout<< "energy 300: " << 1e3*record.energy().get_energyB_in_keV() << '\n';
+             if((record.is_energy())&&(record.event().is_swapped()==false)
+                &&(record.energy().get_energyA_in_keV() > 1e-3*low_en_thres[en_win_A])&&(record.energy().get_energyA_in_keV() < 1e-3*up_en_thres[en_win_A])
+                &&(record.energy().get_energyB_in_keV() > 1e-3*low_en_thres[en_win_B])&&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_B]))
+                 { std::cout<< "energy 300: " << 1e3*record.energy().get_energyB_in_keV() << '\n';
+                   std::cout<< "energy 200: " << 1e3*record.energy().get_energyA_in_keV() << '\n';
                  }
-             if(record.event().is_swapped()==true)
-               {
-                 if((record.energy().get_energyA_in_keV() > 1e-3*low_en_thres[en_win_B])&&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_B]))
-                std::cout<< "energy 300: " << 1e3*record.energy().get_energyA_in_keV() << '\n';
-                 if((record.energy().get_energyB_in_keV() > 1e-3*low_en_thres[en_win_A])&&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_A]))
-                 std::cout<< "energy 200: " << 1e3*record.energy().get_energyB_in_keV() << '\n';
+             if((record.is_energy())&&(record.event().is_swapped()==true)&&(record.energy().get_energyA_in_keV() > 1e-3*low_en_thres[en_win_B])
+                &&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_B])
+                &&(record.energy().get_energyB_in_keV() > 1e-3*low_en_thres[en_win_A])&&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_A]))
+                { std::cout<< "energy 200: " << 1e3*record.energy().get_energyB_in_keV() << '\n';
+                  std::cout<< "energy 300: " << 1e3*record.energy().get_energyA_in_keV() << '\n';
                  }
-
 
 
 		     assert(start_time <= current_time);
