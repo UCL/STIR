@@ -658,14 +658,14 @@ process_data()
                {
                  if((record.energy().get_energyA_in_keV() > 1e-3*low_en_thres[en_win_A])&&(record.energy().get_energyA_in_keV() < 1e-3*up_en_thres[en_win_A]))
                 std::cout<< "energy 200: " << 1e3*record.energy().get_energyA_in_keV() << '\n';
-                 if((record.energy().get_energyB_in_keV()) > 1e-3*low_en_thres[en_win_B]&&(record.energy().get_energyB_in_keV()) < 1e-3*up_en_thres[en_win_B])
+                 if((record.energy().get_energyB_in_keV() > 1e-3*low_en_thres[en_win_B])&&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_B]))
                  std::cout<< "energy 300: " << 1e3*record.energy().get_energyB_in_keV() << '\n';
                  }
              if(record.event().is_swapped()==true)
                {
-                 if((record.energy().get_energyA_in_keV()) > 1e-3*low_en_thres[en_win_B]&&(record.energy().get_energyB_in_keV()) < 1e-3*up_en_thres[en_win_B])
+                 if((record.energy().get_energyA_in_keV() > 1e-3*low_en_thres[en_win_B])&&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_B]))
                 std::cout<< "energy 300: " << 1e3*record.energy().get_energyA_in_keV() << '\n';
-                 if((record.energy().get_energyB_in_keV()) > 1e-3*low_en_thres[en_win_A]&&(record.energy().get_energyB_in_keV()) < 1e-3*up_en_thres[en_win_A])
+                 if((record.energy().get_energyB_in_keV() > 1e-3*low_en_thres[en_win_A])&&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_A]))
                  std::cout<< "energy 200: " << 1e3*record.energy().get_energyB_in_keV() << '\n';
                  }
 
