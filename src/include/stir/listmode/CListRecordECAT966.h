@@ -128,6 +128,7 @@ class CListEventECAT966 : public CListEventCylindricalScannerWithViewTangRingRin
       return Succeeded::yes;
     }
   inline bool is_prompt() const { return this->data.random == 0; }
+  inline bool is_swapped() const { throw "is_swapped function non implemented in this class"; }
   inline Succeeded set_prompt(const bool prompt = true) 
   { if (prompt) this->data.random=0; else this->data.random=1; return Succeeded::yes; }
 

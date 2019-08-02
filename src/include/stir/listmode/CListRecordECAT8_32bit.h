@@ -100,6 +100,7 @@ class CListEventECAT8_32bit : public CListEventCylindricalScannerWithDiscreteDet
       return Succeeded::yes;
     }
   inline bool is_prompt() const { return this->data.delayed == 1; }
+  inline bool is_swapped() const { throw "is_swapped function non implemented in this class"; }
   inline Succeeded set_prompt(const bool prompt = true) 
   { if (prompt) this->data.delayed=1; else this->data.delayed=0; return Succeeded::yes; }
 

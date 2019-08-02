@@ -64,6 +64,7 @@ class CListEventDataECAT962
 {
  public:  
   inline bool is_prompt() const { return random == 0; }
+  inline bool is_swapped() const { throw "is_swapped function non implemented in this class"; }
   inline Succeeded set_prompt(const bool prompt = true) 
   { if (prompt) random=0; else random=1; return Succeeded::yes; }
 

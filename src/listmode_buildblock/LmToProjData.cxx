@@ -649,29 +649,21 @@ process_data()
          std::vector<float> low_en_thres = this_frame_exam_info.get_low_energy_thres_vect();
          std::vector<float> up_en_thres = this_frame_exam_info.get_high_energy_thres_vect();
 
-           if(record.is_energy())
-             {
-
-
-               int en_win_A = this_frame_exam_info.get_energy_window_pair().first-1;
-               int en_win_B = this_frame_exam_info.get_energy_window_pair().second-1;
-               std::vector<float> low_en_thres = this_frame_exam_info.get_low_energy_thres_vect();
-               std::vector<float> up_en_thres = this_frame_exam_info.get_high_energy_thres_vect();
-               if((record.energy().get_energyA_in_keV()) > 1e-3*low_en_thres[en_win_A]&&(record.energy().get_energyA_in_keV()) < 1e-3*up_en_thres[en_win_A])
-            //  std::cout<< "energyA: " << record.energy().get_energyA_in_keV() << '\n';
-               if((record.energy().get_energyB_in_keV()) > 1e-3*low_en_thres[en_win_B]&&(record.energy().get_energyB_in_keV()) < 1e-3*up_en_thres[en_win_B])
-              // std::cout<< "energyB: " << record.energy().get_energyB_in_keV() << '\n';
-               if(record.event().is_swapped()==true)
-                  std::cout<< 1<< '\n';
-               else std::cout<< 0 << '\n';
-
-
-               }
 		 // note: could do "else if" here if we would be sure that
 		 // a record can never be both timing and coincidence event
 		 // and there might be a scanner around that has them both combined.
 		 if (record.is_event())
 		   {
+             if(record.event().is_swapped())
+               {
+
+
+                 if((record.energy().get_energyA_in_keV()) > 1e-3*low_en_thres[en_win_A]&&(record.energy().get_energyA_in_keV()) < 1e-3*up_en_thres[en_win_A])
+                std::cout<< "energyA: " << record.energy().get_energyA_in_keV() << '\n';
+                 if((record.energy().get_energyB_in_keV()) > 1e-3*low_en_thres[en_win_B]&&(record.energy().get_energyB_in_keV()) < 1e-3*up_en_thres[en_win_B])
+                 std::cout<< "energyB: " << record.energy().get_energyB_in_keV() << '\n';
+                 }
+
 		     assert(start_time <= current_time);
 		     Bin bin;
 		     // set value in case the event decoder doesn't touch it

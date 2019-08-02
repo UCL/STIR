@@ -81,6 +81,7 @@ public:
 	//! Returns 0 if event is prompt and 1 if random/delayed
 	inline bool is_prompt()
 		const { return !(static_cast<const Derived*>(this)->is_prompt()); }
+    inline bool is_swapped() const { throw "is_swapped function non implemented in this class"; }
 	//! Function to set map for detector indices to coordinates.
 	inline void set_map( shared_ptr<DetectorCoordinateMapFromFile> new_map ) { map = new_map; }
 

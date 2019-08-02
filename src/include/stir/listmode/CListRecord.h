@@ -65,8 +65,8 @@ public:
     bool
     is_prompt() const = 0;
 
-    bool is_swapped() const
-    { return false; }
+   virtual bool is_swapped() const = 0;
+
 
   //! Changes the event from prompt to delayed or vice versa
   /*! Default implementation just returns Succeeded::no. */
