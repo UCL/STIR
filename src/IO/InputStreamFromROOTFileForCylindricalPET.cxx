@@ -84,11 +84,22 @@ get_next_record(CListRecordROOT& record)
             continue;
         if ( (this->eventID1 != this->eventID2) && this->exclude_randoms)
             continue;
-        if (this->energy1 < this->low_energy_window_1 ||
-                 this->energy1 > this->up_energy_window_1 ||
-                 this->energy2 < this->low_energy_window_2 ||
+        if((this->low_energy_window_1<this->low_energy_window_2))
+        {
+            if (this->energy1 < this->low_energy_window_1 ||
+                 this->energy1 > this->up_energy_window_2 ||
+                 this->energy2 < this->low_energy_window_1||
                  this->energy2 > this->up_energy_window_2)
             continue;
+        }
+        else
+        {
+            if (this->energy1 < this->low_energy_window_2 ||
+                 this->energy1 > this->up_energy_window_1 ||
+                 this->energy2 < this->low_energy_window_2||
+                 this->energy2 > this->up_energy_window_1)
+            continue;
+        }
 
         break;
     }

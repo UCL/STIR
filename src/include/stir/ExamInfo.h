@@ -95,6 +95,11 @@ public :
   inline float  get_low_energy_thres(int en_window = 0) const;
   //! Get the high energy boundary
   inline float  get_high_energy_thres(int en_window = 0) const;
+
+  inline std::vector<float>  get_low_energy_thres_vect() const;
+  //! Get the high energy boundary
+  inline std::vector<float>  get_high_energy_thres_vect() const;
+
   //! Get the number of energy windows
   inline int  get_num_energy_windows() const;
   inline std::pair<int,int> get_energy_window_pair() const;

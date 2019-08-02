@@ -82,6 +82,10 @@ CListModeDataROOT(const std::string& hroot_filename)
     this->exam_info_sptr->set_low_energy_thres_vect(this->root_file_sptr->get_low_energy_thres());
     this->exam_info_sptr->set_high_energy_thres_vect(this->root_file_sptr->get_up_energy_thres());
 
+    for(int i =0; i<this->exam_info_sptr->get_num_energy_windows(); ++i)
+    if (this->exam_info_sptr->get_high_energy_thres(i)<=this->exam_info_sptr->get_low_energy_thres(i))
+        error("the upper energy threshold needs to be higher than the lower energy threshold");
+
     std::vector<int> val;
     val.resize(2);
     if(this->root_file_sptr->get_low_energy_thres()[0]>this->root_file_sptr->get_low_energy_thres()[1])
