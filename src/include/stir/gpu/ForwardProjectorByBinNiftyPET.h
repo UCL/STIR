@@ -33,12 +33,13 @@
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/ProjDataInMemory.h"
+#include "stir/gpu/ProjectorByBinNiftyPETHelper.h"
 
 START_NAMESPACE_STIR
 
 /*!
   \ingroup projection
-  \brief Abstract base class for all forward projectors
+  \brief Class for NiftyPET's GPU forward projector
 */
 class ForwardProjectorByBinNiftyPET:
   public RegisteredParsingObject<ForwardProjectorByBinNiftyPET,
@@ -54,6 +55,9 @@ public:
 
     /// Constructor
     virtual ~ForwardProjectorByBinNiftyPET();
+
+    /// Keymap
+    virtual void initialise_keymap();
 
   //! Stores all necessary geometric info
  /*! 
@@ -94,13 +98,8 @@ protected:
 private:
     shared_ptr<DataSymmetriesForBins_PET_CartesianGrid> _symmetries_sptr;
     shared_ptr<ProjDataInMemory> _projected_data_sptr;
-
-    std::vector<float> li2rng;    // axLUT["li2rng"]
-    std::vector<short> li2sn;     // axLUT["li2sn1" if Cnt.SPN == 1 else "li2sn"]
-    std::vector<char>  li2nos;    // axLUT["li2nos"]
-    std::vector<short> s2c;       // txLUT["s2c"]
-    std::vector<int>   aw2ali;    // txLUT["aw2ali"]
-    std::vector<float> crss;      // txLUT["crs"]
+    ProjectorByBinNiftyPETHelper _helper;
+    int _cuda_device;
 };
 
 END_NAMESPACE_STIR

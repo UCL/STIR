@@ -37,6 +37,7 @@ SET(NIFTYPET_LIBRARIES
 set(dir gpu)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 set(${dir_LIB_SOURCES}
+  ProjectorByBinNiftyPETHelper.cxx
   ForwardProjectorByBinNiftyPET.cxx
   BackProjectorByBinNiftyPET.cxx
 )

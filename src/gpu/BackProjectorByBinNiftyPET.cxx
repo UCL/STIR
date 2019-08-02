@@ -28,6 +28,7 @@
 
 #include <fstream>
 #include "stir/gpu/BackProjectorByBinNiftyPET.h"
+#include "stir/gpu/ProjectorByBinNiftyPETHelper.h"
 #include "stir/DiscretisedDensity.h"
 #include <prjb.h>
 #include <auxmath.h>
@@ -39,7 +40,8 @@ const char * const
 BackProjectorByBinNiftyPET::registered_name =
   "NiftyPET";
 
-BackProjectorByBinNiftyPET::BackProjectorByBinNiftyPET()
+BackProjectorByBinNiftyPET::BackProjectorByBinNiftyPET() :
+    _cuda_device(0)
 {
     this->_already_set_up = false;
 }
@@ -50,12 +52,34 @@ BackProjectorByBinNiftyPET::~BackProjectorByBinNiftyPET()
 
 void
 BackProjectorByBinNiftyPET::
+initialise_keymap()
+{
+  parser.add_start_key("Back Projector Using NiftyPET Parameters");
+  parser.add_stop_key("End Back Projector Using NiftyPET Parameters");
+  parser.add_key("CUDA device", &_cuda_device);
+}
+
+void
+BackProjectorByBinNiftyPET::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr, 
        const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr)
 {
     BackProjectorByBin::set_up(proj_data_info_sptr,density_info_sptr);
     check(*this->_proj_data_info_sptr, *_density_sptr);
     _symmetries_sptr.reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_sptr, density_info_sptr));
+
+    // Set up the niftyPET binary helper
+    _helper.set_li2rng_filename("li2rng.dat"  );
+    _helper.set_li2sn_filename ("li2sn.dat"   );
+    _helper.set_li2nos_filename("li2nos.dat"  );
+    _helper.set_s2c_filename   ("s2c.dat"     );
+    _helper.set_aw2ali_filename("aw2ali.dat"  );
+    _helper.set_crs_filename   ( "crss.dat"   );
+    _helper.set_cuda_device_id ( _cuda_device );
+    _helper.set_span           ( _proj_data_info_sptr->get_num_segments() );
+    std::cout << "\n\n TODO still need to check att\n\n";
+    _helper.set_att(0);
+    _helper.set_up();
 }
 
 const DataSymmetriesForViewSegmentNumbers *
@@ -67,107 +91,50 @@ get_symmetries_used() const
   return _symmetries_sptr.get();
 }
 
-template <class dataType>
-static std::vector<dataType>
-read_binary_file(std::string file_name)
-{
-    const char* stir_path = std::getenv("STIR_PATH");
-    if (!stir_path)
-        throw std::runtime_error("STIR_PATH not defined, cannot find data");
-
-    std::string data_path = stir_path;
-    data_path += "/examples/mMR_params/" + file_name;
-
-    std::ifstream file(data_path, std::ios::in | std::ios::binary);
-
-    // get its size:
-    file.seekg(0, std::ios::end);
-    long file_size = file.tellg();
-    unsigned long num_elements = static_cast<unsigned long>(file_size) / static_cast<unsigned long>(sizeof(dataType));
-    file.seekg(0, std::ios::beg);
-
-    std::vector<dataType> contents(num_elements);
-    file.read(reinterpret_cast<char*>(contents.data()), file_size);
-
-    return contents;
-}
-
 void
 BackProjectorByBinNiftyPET::
-start_accumulating_in_new_image()
+back_project(const ProjData& proj_data, int, int)
 {
-    throw std::runtime_error("need to remove gaps!");
-    remove_gaps();
-    // third argument is 837 or 127
-    // remember that first argument is output
-
     // --------------------------------------------------------------- //
-    //   Set up the image
+    //   Get arguments
     // --------------------------------------------------------------- //
 
-    // NiftyPET requires the image to be (z,x,y)=(128,320,320)
-    const int np_dim[3] = {128,320,320};
-    // Create the NityPET image and fill with zeroes
-    float *im_ptr = new float[np_dim[0] * np_dim[1] * np_dim[2]];
-    std::fill( im_ptr, im_ptr + sizeof( im_ptr ), 0.f ); // <- TODO: necessary?
+    std::vector<float> li2rng = _helper.get_li2rng();
+    std::vector<short> li2sn  = _helper.get_li2sn();
+    std::vector<char>  li2nos = _helper.get_li2nos();
+    std::vector<short> s2c    = _helper.get_s2c();
+    std::vector<int  > aw2ali = _helper.get_aw2ali();
+    std::vector<float> crs    = _helper.get_crs();
+    std::vector<int>   isub   = _helper.get_isub();
+    Cnst Cnt                  = _helper.get_cnst();
+    int Naw                   = _helper.get_naw();
+    int n0crs                 = _helper.get_n0crs();
+    int n1crs                 = _helper.get_n1crs();
+    char att                  = _helper.get_att();
+    int nsinos                = _helper.get_nsinos();
 
     // --------------------------------------------------------------- //
-    //   Other arguments
+    //   STIR -> NiftyPET projection data conversion
     // --------------------------------------------------------------- //
 
-    Cnst Cnt;
-    Cnt.SPN = static_cast<char>(11);
-    Cnt.RNG_STRT = static_cast<char>(0);
-    Cnt.RNG_END = static_cast<char>(64);
-    Cnt.VERBOSE = false;
-    Cnt.DEVID = static_cast<char>(0);
-    Cnt.NSN11 = 837;
-    Cnt.NSEG0 = 127;
-
-    int nsinos;
-    switch(Cnt.SPN){
-      case 11:
-        nsinos = Cnt.NSN11; break;
-      case 0:
-        nsinos = Cnt.NSEG0; break;
-      default:
-        throw std::runtime_error("Unsupported span");
-    }
-
-    int Naw = 68516;  // len(txLUT["aw2ali"]) - number of active bins in 2D sino
-    int n0crs = 4;    // txLUT["crs"].shape[0]
-    int n1crs = 504;  // txLUT["crs"].shape[1]
-
-    std::vector<int> isub;  // TODO: expose as argument?
-    if (isub.size() == 0) {
-      isub = std::vector<int>(unsigned(Naw));
-      for (unsigned i = 0; i<unsigned(Naw); i++) isub[i] = int(i);
-    }
-
-    // Read the binary files if not already done.
-    if (aw2ali.size() == 0) {
-        aw2ali = read_binary_file<int>  ("aw2ali.dat");
-        li2rng = read_binary_file<float>("li2rng.dat");
-        li2sn  = read_binary_file<short>("li2sn.dat" );
-        li2nos = read_binary_file<char> ("li2nos.dat");
-        s2c    = read_binary_file<short>("s2c.dat"   );
-        crss   = read_binary_file<float>("crss.dat"  );
-    }
+    std::vector<float> sino_w_gaps = _helper.create_niftyPET_sinogram_with_gaps();
+    _helper.convert_proj_data_stir_to_niftyPET(sino_w_gaps,proj_data);
 
     // --------------------------------------------------------------- //
-    //   Set up the projection data
+    //   Remove gaps from sinogram
     // --------------------------------------------------------------- //
 
-    // TODO convert STIR proj data to NiftyPET proj data
-    std::vector<float> sinog(isub.size() * static_cast<unsigned long>(nsinos), 0);
-
+    std::vector<float> sinog = _helper.create_niftyPET_sinogram_no_gaps();
+    remove_gaps(sinog.data(),sino_w_gaps.data(),nsinos,aw2ali.data(),Cnt);
 
     // --------------------------------------------------------------- //
-    //   Do the back projection!
+    //   Back project
     // --------------------------------------------------------------- //
 
-    gpu_bprj(im_ptr,sinog.data(),
-             li2rng.data(),li2sn.data(),li2nos.data(),s2c.data(),aw2ali.data(),crss.data(),
+    std::vector<float> np_im = _helper.create_niftyPET_image();
+
+    gpu_bprj(np_im.data(),sinog.data(),
+             li2rng.data(),li2sn.data(),li2nos.data(),s2c.data(),aw2ali.data(),crs.data(),
              isub.data(), int(isub.size()),
              Naw,n0crs,n1crs,
              Cnt);
@@ -176,55 +143,7 @@ start_accumulating_in_new_image()
     //   NiftyPET -> STIR image conversion
     // --------------------------------------------------------------- //
 
-    // Get the dimensions of the input image
-    Coordinate3D<int> min_indices;
-    Coordinate3D<int> max_indices;
-    if (!_density_sptr->get_regular_range(min_indices, max_indices))
-        throw std::runtime_error("ForwardProjectorByBinNiftyPET::set_input - "
-                                 "expected image to have regular range.");
-    int stir_dim[3];
-    for (int i = 0; i < 3; i++)
-        stir_dim[i] = max_indices[i + 1] - min_indices[i + 1] + 1;
-
-    // Check that stir image is <= niftyPET image in all dimensions
-    for (int i=0; i<3; ++i)
-        if (stir_dim[i] > np_dim[i])
-            throw std::runtime_error("STIR image should be smaller than (128,320,320).");
-
-#if 0
-    // COULD USE THE ZOOM FUNCTIONALITY FOR STIR DIMS > NP DIMS
-    // image needs to be VoxelsOnCartesianGrid
-    shared_ptr<VoxelsOnCartesianGrid<float> > orig_image =
-            dynamic_pointer_cast<VoxelsOnCartesianGrid<float> >(density_sptr);
-    const CartesianCoordinate3D<float> zoom(1.f,1.f,1.f);
-    const CartesianCoordinate3D<int>   new_sizes(128, 320, 320);
-    const CartesianCoordinate3D<float> offsets_in_mm(0.f,0.f,0.f);
-    const ZoomOptions zoom_options = ZoomOptions::preserve_sum;
-    const VoxelsOnCartesianGrid<float> &resized_image =
-      zoom_image(*orig_image, zoom, offsets_in_mm, new_sizes, zoom_options);
-#endif
-
-    // Copy data from NiftyPET to STIR image
-    int np_z, np_y, np_x, np_1d;
-    for (int z = min_indices[1]; z <= max_indices[1]; z++) {
-        for (int y = min_indices[2]; y <= max_indices[2]; y++) {
-            for (int x = min_indices[3]; x <= max_indices[3]; x++) {
-                // Convert the stir 3d index to a NiftyPET 1d index
-                np_z = z - min_indices[1];
-                np_y = y - min_indices[2];
-                np_x = x - min_indices[3];
-                np_1d = np_z*np_dim[0]*np_dim[1] + np_y * np_dim[1] + np_x;
-                (*_density_sptr)[z][y][x] = im_ptr[np_1d];
-            }
-        }
-    }
-
-    // --------------------------------------------------------------- //
-    //   Delete arrays
-    // --------------------------------------------------------------- //
-
-    // Delete created arrays
-    delete [] im_ptr;
+    _helper.convert_image_niftyPET_to_stir(*_density_sptr,np_im);
 }
 
 void

@@ -31,13 +31,14 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
+#include "stir/gpu/ProjectorByBinNiftyPETHelper.h"
 
 START_NAMESPACE_STIR
 
 
 /*!
   \ingroup projection
-  \brief Abstract base class for all back projectors
+  \brief Class for NiftyPET's GPU back projector
 */
 class BackProjectorByBinNiftyPET :
   public RegisteredParsingObject<BackProjectorByBinNiftyPET,
@@ -51,6 +52,9 @@ public:
   BackProjectorByBinNiftyPET();
 
   virtual ~BackProjectorByBinNiftyPET();
+
+  /// Keymap
+  virtual void initialise_keymap();
 
   //! Stores all necessary geometric info
  /*! 
@@ -74,8 +78,8 @@ public:
   */
  virtual  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
- /*! \brief tell the back projector to start accumulating into a new image*/
- void start_accumulating_in_new_image();
+  /// Back project
+  void back_project(const ProjData&, int subset_num = 0, int num_subsets = 1);
 
  /// Get output
  virtual void get_output(DiscretisedDensity<3,float> &) const;
@@ -93,13 +97,8 @@ protected:
 
  private:
   shared_ptr<DataSymmetriesForBins_PET_CartesianGrid> _symmetries_sptr;
-
-  std::vector<float> li2rng;    // axLUT["li2rng"]
-  std::vector<short> li2sn;     // axLUT["li2sn1" if Cnt.SPN == 1 else "li2sn"]
-  std::vector<char>  li2nos;    // axLUT["li2nos"]
-  std::vector<short> s2c;       // txLUT["s2c"]
-  std::vector<int>   aw2ali;    // txLUT["aw2ali"]
-  std::vector<float> crss;      // txLUT["crs"]
+  ProjectorByBinNiftyPETHelper _helper;
+  int _cuda_device;
 };
 
 END_NAMESPACE_STIR
