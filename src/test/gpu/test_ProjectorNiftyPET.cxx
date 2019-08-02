@@ -114,6 +114,8 @@ run_projections()
 
     project<ForwardProjectorByBinNiftyPET,BackProjectorByBinNiftyPET>(proj_data,input);
     project<ForwardProjectorByBinUsingProjMatrixByBin,BackProjectorByBinUsingProjMatrixByBin>(proj_data,input);
+
+    // comparison
 }
 
 void

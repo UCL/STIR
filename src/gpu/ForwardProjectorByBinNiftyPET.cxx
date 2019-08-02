@@ -32,6 +32,8 @@
 #include "stir/gpu/ForwardProjectorByBinNiftyPET.h"
 #include "stir/RelatedViewgrams.h"
 #include <prjf.h>
+#include <auxmath.h>
+#include <def.h>
 
 START_NAMESPACE_STIR
 
@@ -177,7 +179,7 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
                 np_z = z - min_indices[1];
                 np_y = y - min_indices[2];
                 np_x = x - min_indices[3];
-                np_1d = np_z*np_dim[0]*np_dim[1] + np_y * np_dim[1] + np_x;
+                np_1d = np_z + np_y*np_dim[0] np_x*np_dim[0]*np_dim[1];
                 im_ptr[np_1d] = (*_density_sptr)[z][y][x];
             }
         }
@@ -187,6 +189,7 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
     //   Other arguments
     // --------------------------------------------------------------- //
 
+    throw std::runtime_error("change all these so they use def.h");
     Cnst Cnt;
     Cnt.SPN = static_cast<char>(11);
     Cnt.RNG_STRT = static_cast<char>(0);
@@ -239,6 +242,13 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
         Cnt, att);
 
     // --------------------------------------------------------------- //
+    //   Put the gaps back in (to be able to convert from NP->STIR)
+    // --------------------------------------------------------------- //
+
+    std::vector<float> sino(NSANGLES*NSBINS*nsinos, 0);
+    put_gaps(sino.data(),sinog.data(),aw2ali.data(),Cnt);
+
+    // --------------------------------------------------------------- //
     //   NiftyPET -> STIR projection data conversion
     // --------------------------------------------------------------- //
 
@@ -250,6 +260,12 @@ set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
     int num_views     = _projected_data_sptr->get_num_views();
     int num_tang_poss = _projected_data_sptr->get_num_tangential_poss();
     int num_proj_data_elems = num_sinograms * num_views * num_tang_poss;
+
+    if (num_sinograms != nsinos || num_views != NSBINS || num_tang_poss != NSANGLES)
+	throw std::runtime_error("for now only accept sinograms of (252,344,837");
+
+
+
     // Create array for sinogram and fill it
     float *proj_data_ptr = new float[num_proj_data_elems];
     // Necessary?

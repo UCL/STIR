@@ -30,6 +30,7 @@
 #include "stir/gpu/BackProjectorByBinNiftyPET.h"
 #include "stir/DiscretisedDensity.h"
 #include <prjb.h>
+#include <auxmath.h>
 
 START_NAMESPACE_STIR
 
@@ -95,6 +96,11 @@ void
 BackProjectorByBinNiftyPET::
 start_accumulating_in_new_image()
 {
+    throw std::runtime_error("need to remove gaps!");
+    remove_gaps();
+    // third argument is 837 or 127
+    // remember that first argument is output
+
     // --------------------------------------------------------------- //
     //   Set up the image
     // --------------------------------------------------------------- //
