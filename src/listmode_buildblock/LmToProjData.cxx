@@ -672,15 +672,15 @@ process_data()
 
              {
                 if(((record.is_energy())&&(record.event().is_swapped()==false)
-                  &&(record.energy().get_energyA_in_keV() > 1e-3*low_en_thres[en_win_A])&&(record.energy().get_energyA_in_keV() < 1e-3*up_en_thres[en_win_A])
-                  &&(record.energy().get_energyB_in_keV() > 1e-3*low_en_thres[en_win_B])&&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_B]))
+                  &&(record.energy().get_energyA_in_keV() > low_en_thres[en_win_A])&&(record.energy().get_energyA_in_keV() < up_en_thres[en_win_A])
+                  &&(record.energy().get_energyB_in_keV() > low_en_thres[en_win_B])&&(record.energy().get_energyB_in_keV() < up_en_thres[en_win_B]))
                   ||((record.is_energy())&&(record.event().is_swapped()==true)
-                     &&(record.energy().get_energyA_in_keV() > 1e-3*low_en_thres[en_win_B])&&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_B])
-                     &&(record.energy().get_energyB_in_keV() > 1e-3*low_en_thres[en_win_A])&&(record.energy().get_energyB_in_keV() < 1e-3*up_en_thres[en_win_A])))
+                     &&(record.energy().get_energyA_in_keV() > low_en_thres[en_win_B])&&(record.energy().get_energyB_in_keV() < up_en_thres[en_win_B])
+                     &&(record.energy().get_energyB_in_keV() > low_en_thres[en_win_A])&&(record.energy().get_energyB_in_keV() < up_en_thres[en_win_A])))
 
                    {
-                      // std::cout<< "energy A: " << 1e3*record.energy().get_energyB_in_keV() << '\n';
-                      // std::cout<< "energy B: " << 1e3*record.energy().get_energyA_in_keV() << '\n';
+                       std::cout<< "energy A: " << record.energy().get_energyA_in_keV() << '\n';
+                       std::cout<< "energy B: " << record.energy().get_energyB_in_keV() << '\n';
 
                      assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
                      assert(bin.view_num()<=proj_data_ptr->get_max_view_num());

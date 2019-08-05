@@ -93,7 +93,7 @@ public:
                                       std::string chain_name,
                                       int crystal_repeater_x, int crystal_repeater_y, int crystal_repeater_z,
                                       int blocks_repeater,
-                                      bool exclude_scattered, bool exclude_randoms,
+                                      bool exclude_scattered, bool exclude_randoms,int maximum_order_of_scatter,
                                       float low_energy_window_1, float up_energy_window_1,
                                       float low_energy_window_2, float up_energy_window_2,
                                       int offset_dets);

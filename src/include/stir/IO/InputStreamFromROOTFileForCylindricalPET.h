@@ -100,7 +100,7 @@ public:
                                              int submodule_repeater_x, int submodule_repeater_y, int submodule_repeater_z,
                                              int module_repeater_x, int module_repeater_y, int module_repeater_z,
                                              int rsector_repeater,
-                                             bool exclude_scattered, bool exclude_randoms,
+                                             bool exclude_scattered, bool exclude_randoms, int maximum_order_of_scatter,
                                              float low_energy_window_1, float up_energy_window_1,
                                              float low_energy_window_2, float up_energy_window_2,
                                              int offset_dets);

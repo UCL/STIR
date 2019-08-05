@@ -83,7 +83,7 @@ public:
     //! constructor
     InputStreamFromROOTFile(std::string filename,
                             std::string chain_name,
-                            bool exclude_scattered, bool exclude_randoms,
+                            bool exclude_scattered, bool exclude_randoms,int maximum_order_of_scatter,
                             float low_energy_window_1, float up_energy_window_1,
                             float low_energy_window_2, float up_energy_window_2,
                             int offset_dets);
@@ -134,9 +134,9 @@ public:
 
     virtual int get_num_trans_crystals_per_singles_unit() const = 0;
     //! Lower energy threshold
-    inline std::vector<float> get_low_energy_thres() const;
+    inline std::vector<float> get_low_energy_thres_in_keV() const;
     //! Upper energy threshold
-    inline std::vector<float> get_up_energy_thres() const;
+    inline std::vector<float> get_up_energy_thres_in_keV() const;
 
     //! Upper number of energy windows
     inline int get_number_of_energy_windows() const;
@@ -150,6 +150,8 @@ public:
     inline void set_exclude_scattered_events(bool);
 
     inline void set_exclude_random_events(bool);
+
+    inline void set_maximum_order_of_scatter(int);
 
     inline void set_detectors_offset(int);
 
@@ -197,6 +199,8 @@ protected:
 
     //! Skip scattered events (comptonphantom1 > 0 && comptonphantom2 > 0)
     bool exclude_scattered;
+    //! Scatter order to skip;
+    bool maximum_order_of_scatter;
     //! Skip random events (eventID1 != eventID2)
     bool exclude_randoms;
     //! Lower energy threshold

@@ -37,7 +37,7 @@ InputStreamFromROOTFileForCylindricalPET(std::string _filename,
                                          int submodule_repeater_x, int submodule_repeater_y, int submodule_repeater_z,
                                          int module_repeater_x, int module_repeater_y, int module_repeater_z,
                                          int rsector_repeater,
-                                         bool _exclude_scattered, bool _exclude_randoms,
+                                         bool _exclude_scattered, bool _exclude_randoms, int _maximum_order_of_scatter,
                                          float _low_energy_window_1, float _up_energy_window_1,
                                          float _low_energy_window_2, float _up_energy_window_2,
                                          int _offset_dets):
@@ -53,6 +53,7 @@ InputStreamFromROOTFileForCylindricalPET(std::string _filename,
     chain_name = _chain_name;
     exclude_scattered = _exclude_scattered;
     exclude_randoms = _exclude_randoms;
+    maximum_order_of_scatter = _maximum_order_of_scatter;
     low_energy_window_1 = _low_energy_window_1;
     up_energy_window_1 = _up_energy_window_1;
     low_energy_window_2 = _low_energy_window_2;
@@ -80,7 +81,7 @@ get_next_record(CListRecordROOT& record)
 
         current_position ++ ;
 
-        if ( (this->comptonphantom1 > 0 || this->comptonphantom2 > 0) && this->exclude_scattered )
+        if ( (this->comptonphantom1 > maximum_order_of_scatter || this->comptonphantom2 >this->maximum_order_of_scatter) && this->exclude_scattered )
             continue;
         if ( (this->eventID1 != this->eventID2) && this->exclude_randoms)
             continue;

@@ -88,7 +88,7 @@ get_number_of_energy_windows() const
 
 std::vector<float>
 InputStreamFromROOTFile::
-get_low_energy_thres() const
+get_low_energy_thres_in_keV() const
 {
     std::vector<float> low_energy_window;
     low_energy_window.resize(2);
@@ -99,7 +99,7 @@ get_low_energy_thres() const
 
 std::vector<float>
 InputStreamFromROOTFile::
-get_up_energy_thres() const
+get_up_energy_thres_in_keV() const
 {
     std::vector<float> up_energy_window;
     up_energy_window.resize(2);
@@ -140,6 +140,13 @@ InputStreamFromROOTFile::set_exclude_scattered_events(bool val)
 {
     exclude_scattered = val;
 }
+
+void
+InputStreamFromROOTFile::set_maximum_order_of_scatter(int val)
+{
+    maximum_order_of_scatter= val;
+}
+
 
 void
 InputStreamFromROOTFile::set_exclude_random_events(bool val)

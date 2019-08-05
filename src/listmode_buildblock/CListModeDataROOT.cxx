@@ -76,11 +76,8 @@ CListModeDataROOT(const std::string& hroot_filename)
     this->exam_info_sptr->originating_system = this->originating_system;
     this->exam_info_sptr->set_num_energy_windows(this->root_file_sptr->get_number_of_energy_windows());
 
-//    /std::vector<float> a;
-   // std::vector<float> b;
-
-    this->exam_info_sptr->set_low_energy_thres_vect(this->root_file_sptr->get_low_energy_thres());
-    this->exam_info_sptr->set_high_energy_thres_vect(this->root_file_sptr->get_up_energy_thres());
+    this->exam_info_sptr->set_low_energy_thres_vect(this->root_file_sptr->get_low_energy_thres_in_keV());
+    this->exam_info_sptr->set_high_energy_thres_vect(this->root_file_sptr->get_up_energy_thres_in_keV());
 
     for(int i =0; i<this->exam_info_sptr->get_num_energy_windows(); ++i)
     if (this->exam_info_sptr->get_high_energy_thres(i)<=this->exam_info_sptr->get_low_energy_thres(i))
@@ -88,13 +85,13 @@ CListModeDataROOT(const std::string& hroot_filename)
 
     std::vector<int> val;
     val.resize(2);
-    if(this->root_file_sptr->get_low_energy_thres()[0]>this->root_file_sptr->get_low_energy_thres()[1])
+    if(this->root_file_sptr->get_low_energy_thres_in_keV()[0]>this->root_file_sptr->get_low_energy_thres_in_keV()[1])
     {val[0]=1;
      val[1]=2;}
-    else if(this->root_file_sptr->get_low_energy_thres()[1]>this->root_file_sptr->get_low_energy_thres()[0])
+    else if(this->root_file_sptr->get_low_energy_thres_in_keV()[1]>this->root_file_sptr->get_low_energy_thres_in_keV()[0])
     {val[0]=2;
      val[1]=1;}
-    else if(this->root_file_sptr->get_low_energy_thres()[1]==this->root_file_sptr->get_low_energy_thres()[0])
+    else if(this->root_file_sptr->get_low_energy_thres_in_keV()[1]==this->root_file_sptr->get_low_energy_thres_in_keV()[0])
     {val[0]=1;
      val[1]=1;}
     this->exam_info_sptr->set_energy_window_pair(val,1);
