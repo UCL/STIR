@@ -397,10 +397,6 @@ bool InterfileHeader::post_processing()
             {
               exam_info_sptr->set_high_energy_thres(upper_en_window_thres[i],i);
               exam_info_sptr->set_low_energy_thres(lower_en_window_thres[i],i);
-
-              if (upper_en_window_thres[i] <=lower_en_window_thres[i])
-                  error("the upper energy threshold needs to be higher than the lower energy threshold");
-
              }
        }
 

@@ -211,6 +211,7 @@ public:
     total_Compton_cross_section_relative_to_511keV(const float energy);
     //@}
 
+    float detection_efficiency(const float energy, int en_window = 0) const;
 
 Succeeded downsample_scanner(int new_num_rings = -1, int new_num_dets = -1);
 
@@ -262,7 +263,6 @@ protected:
      * @{
      */
 
-    float detection_efficiency(const float energy, int en_window = 0) const;
 
 
     //! maximum angle to consider above which detection after Compton scatter is considered too small
