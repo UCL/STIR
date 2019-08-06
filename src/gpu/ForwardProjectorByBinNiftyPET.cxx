@@ -82,7 +82,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
     _helper.set_aw2ali_filename("aw2ali.dat"  );
     _helper.set_crs_filename   ( "crss.dat"   );
     _helper.set_cuda_device_id ( _cuda_device );
-    _helper.set_span           ( _projected_data_sptr->get_num_segments() );
+    _helper.set_span           ( char(_projected_data_sptr->get_num_segments()) );
     std::cout << "\n\n TODO still need to check att\n\n";
     _helper.set_att(0);
     _helper.set_up();
