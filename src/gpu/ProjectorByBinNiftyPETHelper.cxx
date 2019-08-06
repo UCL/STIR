@@ -112,11 +112,8 @@ set_up()
     }
 
     // isub
-    std::vector<int> isub;  // TODO: expose as argument?
-    if (isub.size() == 0) {
-      isub = std::vector<int>(unsigned(AW));
-      for (unsigned i = 0; i<unsigned(AW); i++) isub[i] = int(i);
-    }
+    _isub = std::vector<int>(unsigned(AW));
+    for (unsigned i = 0; i<unsigned(AW); i++) _isub[i] = int(i);
 }
 
 void
