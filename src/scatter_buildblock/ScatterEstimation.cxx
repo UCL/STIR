@@ -1010,7 +1010,6 @@ process_data()
 
                 *this->current_activity_image_sptr += *act_image_for_averaging;
                 *this->current_activity_image_sptr /= 2.f;
-                this->do_average_at_2 = false;
             }
         }
 
