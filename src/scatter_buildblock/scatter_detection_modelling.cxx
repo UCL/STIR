@@ -97,7 +97,7 @@ compute_emis_to_det_points_solid_angle_factor(
 
 float
 ScatterSimulation::
-detection_efficiency(const float energy,int en_window) const
+detection_efficiency(const float energy,const int en_window) const
 {
   // factor 2.35482 is used to convert FWHM to sigma
   const float sigma_times_sqrt2= 
@@ -111,6 +111,87 @@ detection_efficiency(const float energy,int en_window) const
           - erf((this->template_exam_info_sptr->get_low_energy_thres(en_window)-energy)/sigma_times_sqrt2 ));
   /* Maximum efficiency is 1.*/
   return efficiency;
+}
+
+float
+ScatterSimulation::
+detection_efficiency_full_model(const float energy,const int en_window) const
+{
+  const float HLD = this->template_exam_info_sptr->get_high_energy_thres(en_window);
+  const float LLD = this->template_exam_info_sptr->get_low_energy_thres(en_window);
+  const float ref_energy = HLD - (HLD - LLD)/2; //the reference energy is the center of the given energy window
+
+  const int Z = 66; // atomic number of LSO
+  const float H_1 = pow(Z,5)/ref_energy; //high of the photopeak prop. to the photoelectric cross section
+  const float H_2 = 8.17*pow(10,25)*total_Compton_cross_section(ref_energy)*Z;
+  const float H_3 = 7;
+  const float H_4 = 235;
+  const float beta = -4.682;
+  const float global_scale = 0.0000296;
+  const float fwhm = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution(); //full width half maximum
+  const float std_peak = sqrt(energy*ref_energy)*fwhm/2.35482;
+  const float scaling_std_compton = 107;
+  const float shift_compton = 0.5916;
+
+  const float f1 = photoelectric(H_1, std_peak, energy, ref_energy);
+  const float f2 = compton_plateau(H_2, std_peak, energy, ref_energy,scaling_std_compton,shift_compton);
+  const float f3 = flat_continuum(H_3,std_peak, energy, ref_energy);
+  const float f4 = exponential_tail(H_4,std_peak, energy, ref_energy,beta);
+
+  return global_scale*(f1+f2+f3+f4);
+}
+
+float
+ScatterSimulation::
+photoelectric(const float K, const float std_peak, const float energy, const float ref_energy) const
+{
+  const double pi = boost::math::constants::pi<double>();
+  const float diff = energy - ref_energy;
+  const float pow_diff = pow(diff,2);
+  const float pow_std_peak = pow(std_peak,2);
+  return  K/(std_peak*sqrt(2*pi))*exp(-pow_diff/(2*pow_std_peak));
+}
+
+float
+ScatterSimulation::
+compton_plateau(const float K, const float std_peak, const float energy, const float ref_energy, const float scaling_std_compton,const float shift_compton) const
+{
+    const double pi = boost::math::constants::pi<double>();
+    const float m_0_c_2 = 511.F;
+    const float alpha = ref_energy/m_0_c_2;
+    const float theta = 2*pi;
+    const float E_1 = ref_energy/(1+alpha*(1-cos(theta)));
+    const float mean = ref_energy*shift_compton;
+    return ((ref_energy/E_1)+(E_1/ref_energy)-1+cos(theta))*(K*exp(-(pow((energy - mean),2))/(scaling_std_compton*std_peak)));
+}
+float
+ScatterSimulation::
+flat_continuum(const float K, const float std_peak, const float energy, const float ref_energy) const
+{
+    const float den = sqrt(2)*std_peak;
+    float f = 0;
+        if (energy<=ref_energy)
+            f = K* erfc((energy-ref_energy)/den);
+        else
+            f = 0;
+     return f;
+}
+
+float
+ScatterSimulation::
+exponential_tail(const float K, const float std_peak, const float energy, const float ref_energy, const float beta) const
+{
+    const double pi = boost::math::constants::pi<double>();
+    const float den1 = sqrt(2)*pi*std_peak*beta;
+    const float den2 = sqrt(2)*std_peak;
+    const float den3 = 2*beta;
+    float f = 0;
+
+    if (energy > 100)
+        f = K * exp((energy-ref_energy)/den1)*erfc((energy-ref_energy)/den2+1/den3);
+    else
+        f =0;
+    return f;
 }
 
 float
