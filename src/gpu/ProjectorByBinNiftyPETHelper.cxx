@@ -153,7 +153,7 @@ create_niftyPET_sinogram_with_gaps() const
 void get_stir_indices_and_dims(int stir_dim[3], Coordinate3D<int> &min_indices, Coordinate3D<int> &max_indices, const DiscretisedDensity<3,float >&stir)
 {
     if (!stir.get_regular_range(min_indices, max_indices))
-        throw std::runtime_error("ForwardProjectorByBinNiftyPET::set_input - "
+        throw std::runtime_error("ProjectorByBinNiftyPETHelper::set_input - "
                                  "expected image to have regular range.");
     for (int i=0; i<3; ++i)
         stir_dim[i] = max_indices[i + 1] - min_indices[i + 1] + 1;
@@ -215,6 +215,7 @@ convert_image_stir_to_niftyPET(std::vector<float> &np_vec, const DiscretisedDens
     // which at the time of writing was (127,320,320).
     const int np_dim[3] = {SZ_IMZ,SZ_IMX,SZ_IMY};
     check_im_sizes(stir_dim,np_dim);
+    check_voxel_spacing(stir);
 
     // Copy data from STIR to NiftyPET image
     unsigned np_z, np_y, np_x, np_1d;
@@ -246,8 +247,9 @@ convert_image_niftyPET_to_stir(DiscretisedDensity<3,float> &stir, const std::vec
     // which at the time of writing was (127,320,320).
     const int np_dim[3] = {SZ_IMZ,SZ_IMX,SZ_IMY};
     check_im_sizes(stir_dim,np_dim);
+    check_voxel_spacing(stir);
 
-    // Copy data from STIR to NiftyPET image
+    // Copy data from NiftyPET to STIR image
     unsigned np_z, np_y, np_x, np_1d;
     for (int z = min_indices[1]; z <= max_indices[1]; z++) {
         for (int y = min_indices[2]; y <= max_indices[2]; y++) {
