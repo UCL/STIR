@@ -125,7 +125,7 @@ public:
     //! Get the template ProjDataInfo
     shared_ptr<ProjDataInfoCylindricalNoArcCorr> get_template_proj_data_info_sptr() const;
     //! Get the ExamInfo as shared pointer
-    shared_ptr<ExamInfo> get_ExamInfo_sptr() const;
+    shared_ptr<ExamInfo> get_exam_info_sptr() const;
 
     shared_ptr<DiscretisedDensity<3,float> > get_density_image_for_scatter_points_sptr() const;
     //@}
