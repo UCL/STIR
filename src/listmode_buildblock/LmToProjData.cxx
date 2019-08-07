@@ -644,11 +644,6 @@ process_data()
 		     process_new_time_event(record.time());
 		   }
 
-         int en_win_A = this_frame_exam_info.get_energy_window_pair().first-1;
-         int en_win_B = this_frame_exam_info.get_energy_window_pair().second-1;
-         std::vector<float> low_en_thres = this_frame_exam_info.get_low_energy_thres_vect();
-         std::vector<float> up_en_thres = this_frame_exam_info.get_high_energy_thres_vect();
-
 		 // note: could do "else if" here if we would be sure that
 		 // a record can never be both timing and coincidence event
 		 // and there might be a scanner around that has them both combined.
