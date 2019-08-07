@@ -35,14 +35,14 @@ InputStreamFromROOTFileForECATPET::
 InputStreamFromROOTFileForECATPET(std::string _filename,
                                   std::string _chain_name,
                                   int crystal_repeater_x, int crystal_repeater_y, int crystal_repeater_z,
-                                  int block_repeater,
+                                  int block_repeater_y, int block_repeater_z,
                                   bool _exclude_scattered, bool _exclude_randoms, int _maximum_order_of_scatter,
                                   float _low_energy_window_1, float _up_energy_window_1,
                                   float _low_energy_window_2, float _up_energy_window_2,
                                   int _offset_dets):
     base_type(),
     crystal_repeater_x(crystal_repeater_x), crystal_repeater_y(crystal_repeater_y), crystal_repeater_z(crystal_repeater_z),
-    block_repeater(block_repeater)
+    block_repeater_y(block_repeater_y), block_repeater_z(block_repeater_z)
 {
     set_defaults();
 
@@ -90,15 +90,15 @@ get_next_record(CListRecordROOT& record)
     }
 
     int ring1 = static_cast<Int_t>(crystalID1/crystal_repeater_z)
-            + static_cast<Int_t>(blockID1/ block_repeater)*crystal_repeater_z;
+            + static_cast<Int_t>(blockID1/ block_repeater_y)*crystal_repeater_z;
 
     int ring2 = static_cast<Int_t>(crystalID2/crystal_repeater_z)
-            + static_cast<Int_t>(blockID2/block_repeater)*crystal_repeater_z;
+            + static_cast<Int_t>(blockID2/block_repeater_y)*crystal_repeater_z;
 
-    int crystal1 = (blockID1%block_repeater) * crystal_repeater_y
+    int crystal1 = (blockID1%block_repeater_y) * crystal_repeater_y
             + (crystalID1%crystal_repeater_z);
 
-    int crystal2 = (blockID2%block_repeater) * crystal_repeater_y
+    int crystal2 = (blockID2%block_repeater_y) * crystal_repeater_y
             + (crystalID2%crystal_repeater_z);
 
     // GATE counts crystal ID =0 the most negative. Therefore
@@ -133,7 +133,8 @@ InputStreamFromROOTFileForECATPET::set_defaults()
     crystal_repeater_x = -1;
     crystal_repeater_y = -1;
     crystal_repeater_z = -1;
-    block_repeater = -1;
+    block_repeater_y = -1;
+    block_repeater_z = -1;
 }
 
 void
@@ -142,7 +143,8 @@ InputStreamFromROOTFileForECATPET::initialise_keymap()
     base_type::initialise_keymap();
     this->parser.add_start_key("GATE_ECAT_PET Parameters");
     this->parser.add_stop_key("End GATE_ECAT_PET Parameters");
-    this->parser.add_key("number of blocks", &this->block_repeater);
+    this->parser.add_key("number of blocks Y", &this->block_repeater_y);
+    this->parser.add_key("number of blocks Z", &this->block_repeater_z);
 
     this->parser.add_key("number of crystals X", &this->crystal_repeater_x);
     this->parser.add_key("number of crystals Y", &this->crystal_repeater_y);
@@ -194,19 +196,25 @@ check_all_required_keywords_are_set(std::string& ret) const
 
     if (crystal_repeater_y == -1)
     {
-        stream << "crystal_repeater_x, ";
+        stream << "crystal_repeater_y, ";
         ok = false;
     }
 
     if (crystal_repeater_z == -1)
     {
-        stream << "crystal_repeater_x, ";
+        stream << "crystal_repeater_z, ";
         ok = false;
     }
 
-    if (block_repeater == -1)
+    if (block_repeater_y == -1)
     {
-        stream << "crystal_repeater_x, ";
+        stream << "block_repeater_y, ";
+        ok = false;
+    }
+
+    if (block_repeater_z == -1)
+    {
+        stream << "block_repeater_z, ";
         ok = false;
     }
 
