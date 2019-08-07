@@ -244,7 +244,11 @@ get_segment_axial_pos_num_for_ring_pair(int& segment_num,
                                         const int ring2) const
 {
   assert(0<=ring1);
+  //std::cout << "RING1" << ring1 << std::endl;
+  //std::cout << "NUM RINGS" << get_scanner_ptr()->get_num_rings()<< std::endl;
+
   assert(ring1<get_scanner_ptr()->get_num_rings());
+
   assert(0<=ring2);
   assert(ring2<get_scanner_ptr()->get_num_rings());
 

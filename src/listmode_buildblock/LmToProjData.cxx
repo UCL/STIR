@@ -671,16 +671,8 @@ process_data()
 			 ) 
 
              {
-                if(((record.is_energy())&&(record.event().is_swapped()==false)
-                  &&(record.energy().get_energyA_in_keV() > low_en_thres[en_win_A])&&(record.energy().get_energyA_in_keV() < up_en_thres[en_win_A])
-                  &&(record.energy().get_energyB_in_keV() > low_en_thres[en_win_B])&&(record.energy().get_energyB_in_keV() < up_en_thres[en_win_B]))
-                  ||((record.is_energy())&&(record.event().is_swapped()==true)
-                     &&(record.energy().get_energyA_in_keV() > low_en_thres[en_win_B])&&(record.energy().get_energyB_in_keV() < up_en_thres[en_win_B])
-                     &&(record.energy().get_energyB_in_keV() > low_en_thres[en_win_A])&&(record.energy().get_energyB_in_keV() < up_en_thres[en_win_A])))
-
-                   {
-                       std::cout<< "energy A: " << record.energy().get_energyA_in_keV() << '\n';
-                       std::cout<< "energy B: " << record.energy().get_energyB_in_keV() << '\n';
+                     std::cout<< "energy A: " << record.energy().get_energyA_in_keV() << '\n';
+                     std::cout<< "energy B: " << record.energy().get_energyB_in_keV() << '\n';
 
                      assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
                      assert(bin.view_num()<=proj_data_ptr->get_max_view_num());
@@ -718,9 +710,6 @@ process_data()
                            (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] +=
                            bin.get_bin_value() *
                            event_increment;
-
-
-              }
              }
 
             }

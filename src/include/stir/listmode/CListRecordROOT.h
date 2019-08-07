@@ -240,11 +240,6 @@ public:
         this->time_data.init_from_data(
                     time1,time2);
 
-
-        if(this->event_data.is_swapped())
-        this->energy_data.init_energy_from_data(
-                    energy2,energy1);
-        else
         this->energy_data.init_energy_from_data(
                     energy1,energy2);
 
