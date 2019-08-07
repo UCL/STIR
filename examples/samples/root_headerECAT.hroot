@@ -24,7 +24,7 @@ name of input TChain := Coincidences
 Number of blocks Z := 8
 number of blocks Y := 56
 number of crystals X := 1
-number of crystals Y := 8
+number of crystals Y := 9
 number of crystals Z := 8
 
 ;; From GATE's online documentation: 
