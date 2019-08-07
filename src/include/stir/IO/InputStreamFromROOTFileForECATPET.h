@@ -53,8 +53,8 @@ From (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defin
         name of data file := ${INPUT_ROOT_FILE}
         name of input TChain := Coincidences
 
-        number of blocks X := 1
         number of blocks Y := 1
+        number of blocks Z := 1
         number of crystals X := 1
         number of crystals Y := 1
         number of crystals Z := 4
