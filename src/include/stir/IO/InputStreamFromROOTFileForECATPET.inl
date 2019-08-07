@@ -21,7 +21,7 @@ int
 InputStreamFromROOTFileForECATPET::
 get_num_rings() const
 {
-   return this->block_repeater_y * this->crystal_repeater_z;
+   return this->block_repeater_z * this->crystal_repeater_z;
 }
 
 int
