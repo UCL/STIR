@@ -1,7 +1,10 @@
+;This is an example file for a ROOT file generated with GATE for a Siemens mMR-like scanner
+;It uses an 8x9 block and it has an ECAT system as output
+
 ROOT header := 
 
 originating system := User_defined_scanner
-Number of rings                          := 4
+Number of rings                          := 64
 Number of detectors per ring             := 504
 Inner ring diameter (cm)                 := 65.6
 Average depth of interaction (cm)        := 0.7
@@ -11,26 +14,21 @@ Maximum number of non-arc-corrected bins := 344
 
 
 
-GATE scanner type := GATE_Cylindrical_PET
-GATE_Cylindrical_PET Parameters :=
+GATE scanner type := GATE_ECAT_PET
+GATE_ECAT_PET Parameters :=
 
-name of data file := ${INPUT_ROOT_FILE}
+name of data file := benchmarkPET.root
 
 name of input TChain := Coincidences
 
 ; As the GATE repeaters. 
 ; If you skip a level in GATE's hierarchy, 
 ; use 1.
-number of Rsectors := 504 
-number of modules_X := 1 
-number of modules_Y := 1
-number of modules_Z := 1
-number of submodules_X := 1
-number of submodules_Y := 1
-number of submodules_Z := 1
-number of crystals_X := 1
-number of crystals_Y := 1
-number of crystals_Z := 4
+Number of blocks Z := 8
+number of blocks Y := 56
+number of crystals X := 1
+number of crystals Y := 9
+number of crystals Z := 8
 
 ;; From GATE's online documentation: 
 ;; (http://wiki.opengatecollaboration.org/index.php/Users_Guide_V7.2:Digitizer_and_readout_parameters)
@@ -45,15 +43,11 @@ Singles readout depth := 1
 
 ;
 ; If set the scattered events will be skipped
-exclude scattered events := ${EXCLUDE_SCATTERED}
-
-;
-; If set only a certain order of scatter will be kept
-exclude scattered events := ${MAXIMUM_ORDER_OF_SCATTER}
+exclude scattered events := 0
 
 ;
 ; If set the random events will be skipped
-exclude random events := ${EXCLUDE_RANDOM}
+exclude random events := 0 
 
 ; 
 ; STIR will try to align the data. 
@@ -61,10 +55,10 @@ exclude random events := ${EXCLUDE_RANDOM}
 ; rotate using: 
 offset (num of detectors) := 0 
 
-; If want to deactivate set to [0, 10000]
+; If want to deactivate set to [0, 1000]
 low energy window (keV) := 0
-upper energy window (keV):= 10000
+upper energy window (keV):= 1000
 
-End GATE_Cylindrical_PET Parameters :=
+End GATE_ECAT_PET Parameters :=
 
 end ROOT header := 
