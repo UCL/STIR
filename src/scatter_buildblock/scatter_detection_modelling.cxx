@@ -32,6 +32,7 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/numerics/erf.h"
 #include "stir/info.h"
+#include "stir/CPUTimer.h"
 #include <iostream>
 
 START_NAMESPACE_STIR
@@ -110,44 +111,53 @@ detection_efficiency(const float energy, const int en_window) const
     0.5f*( erf((this->template_exam_info_sptr->get_high_energy_thres(en_window)-energy)/sigma_times_sqrt2)
           - erf((this->template_exam_info_sptr->get_low_energy_thres(en_window)-energy)/sigma_times_sqrt2 ));
   /* Maximum efficiency is 1.*/
+
   return efficiency;
 }
 
-float
-ScatterSimulation::detection_efficiency_new(const float incoming_photon_energy, const int en_window) const
-{
-    float HLD = this->template_exam_info_sptr->get_high_energy_thres(en_window);
-    float LLD = this->template_exam_info_sptr->get_low_energy_thres(en_window);
-    float sum = 0;
-    std::vector<float> out = energy_spectrum(LLD, HLD, incoming_photon_energy);
-    for(int i = 0 ; i< out.size(); ++i)
-    {
-        sum+=out[i];
-    }
-    return sum;
-}
-
 std::vector<float>
-ScatterSimulation::energy_spectrum(const float LLD, const float HLD, const float incoming_photon_energy) const
+ScatterSimulation::detection_efficiency(const float LLD, const float HLD, const float size, const float incoming_photon_energy) const
 {
-    int size = HLD - LLD;
+
     std::vector<float> energy_range(size);
     std::vector<float> out(size);
+    float increment_x = (HLD - LLD)/size;
     float increment_theta = (2*M_PI)/size;
     std::vector<float> theta(size);
     for(int i = 0 ; i< size; ++i)
     {
-        energy_range[i]+= LLD + i;
+        energy_range[i]+= LLD+i*increment_x;
         theta[i]+=i*increment_theta;
         out[i]+=0;
     }
 
     for(int j = 0; j < size; ++j)
     {
-        out[j]= detection_model_with_fitted_parameters(energy_range[j], theta[j], incoming_photon_energy);
+        out[j]+= detection_model_with_fitted_parameters(energy_range[j], theta[j], incoming_photon_energy);
     }
 
     return out;
+}
+
+float
+ScatterSimulation::detection_efficiency_full(const float incoming_photon_energy, const int en_window) const
+{
+
+    const float HLD = this->template_exam_info_sptr->get_high_energy_thres(en_window);
+    const float LLD = this->template_exam_info_sptr->get_low_energy_thres(en_window);
+    float sum = 0;
+    const int size = HLD-LLD;
+    const float increment_x = (HLD - LLD)/size;
+    const float increment_theta = (2*M_PI)/size;
+    for(int i = 0 ; i< size; ++i)
+    {
+        const float energy_range = LLD+i*increment_x;
+        const float theta=i*increment_theta;
+        sum+= detection_model_with_fitted_parameters(energy_range, theta, incoming_photon_energy);
+    }
+
+    sum*=increment_x;
+    return sum;
 }
 
 float
@@ -166,7 +176,7 @@ detection_model_with_fitted_parameters(const float x, const float theta, const f
   const float H_3 = 7; //fitting parameter
   const float H_4 = 26.0; //fitting parameter
   const float beta = -0.817; //fitting parameter
-  const float global_scale = 0.000233; //fitting parameter
+  const float global_scale = 2.33*1e-07; //fitting parameter
   const float fwhm = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution();
   const float std_peak = energy*fwhm/2.35482;
   const float scaling_std_compton = 28.8; //fitting parameter
