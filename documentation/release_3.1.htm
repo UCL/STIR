@@ -150,7 +150,7 @@ These are only minimally documented at the present stage unfortunately.
   </ul>
   </li>
     <li><code>CListModeData</code> got a new function <code>get_total_number_of_events()</code>, BUT currently only <code>CListModeDataFromROOT</code> supports it. </li> 
-<li> Reconstruction of listmode data has been corrected. LM-OSEM can be performed but only gometrical subsets are currently supported. 
+<li> Reconstruction of listmode data has been corrected. LM-OSEM can be performed but only geometrical subsets are currently supported. 
   </li>
 <li>Sensitivity calculation parallelized using distributed worker mechanism.</li>
 <li>Python (and MATLAB) interface
@@ -170,10 +170,13 @@ These are only minimally documented at the present stage unfortunately.
   </li>
 <li>Extract single images from dynamic image with executable <code>extract_dynamic_images</code>.
 </li>
-<li>Reconstruction parameter files now can use a new optional keyword <code>z zoom</code> to llow
+<li>New functionality added to <code>zoom_image</code>. The user can now specify different types of zoom: preserve_values, preserve_projections, preserve_sum.</li>  
+<li>Reconstruction parameter files now can use a new optional keyword <code>z zoom</code> to allow
   changing the spacing from the default. However, results of this have not been checked yet.
   It is currently only recommended for SPECT (where it should be set to <code>0.5</code> due
   current work-arounds on how to read SPECT dat into STIR).
+  </li>
+<li>Indirect parametric reconstruction (Patlak) no longer requires you to pass a pre-existing template file. If one is supplied, it will be used; else the parametric image will be created based on the dynamic image.
   </li>
   </ul>
 
@@ -201,7 +204,14 @@ HFS, FFS, HFP or FFP).
   It has a new switch <tt>--NOPMRT</tt> which reverts to the previous behaviour (i.e. using
   the old ray tracer on-the-fly projector).
   </li>
-  <li><tt>InterfileDynamicDiscretisedDensityOutputFileFormat::</tt> changed start/end key from <tt>Interfile Output File Format</tt> to <tt>Interfile Output File Format Parameters</tt> to match other Interfile types.
+<li><code>upsample_and_fit_single_scatter</code> previously aborted if there were not enough counts
+  (after weighting with the masking used for the tail-fit) in the scatter estimate for one sinogram.
+  Now we just write a warning and set it to 1. For consistency, we now use scale factor 1 if all
+  sinograms had zero counts (after weighting), while we were setting it 0 before. As this should never occur,
+  and the scale factor should be irrelevant then, this should not affect any results.<br />
+  (Actual change is in <code>get_scale_factors_per_sinogram</code>).
+  </li>
+<li><tt>InterfileDynamicDiscretisedDensityOutputFileFormat::</tt> changed start/end key from <tt>Interfile Output File Format</tt> to <tt>Interfile Output File Format Parameters</tt> to match other Interfile types.
   </li>
   <li>Renamed <tt>InterfileParametricDensityOutputFileFormat</tt> to <tt>InterfileParametricDiscretisedDensityOutputFileFormat</tt> and the corresponding keys.
   </li>
@@ -210,6 +220,10 @@ HFS, FFS, HFP or FFP).
   <li>Output template for <tt>get_dynamic_images_from_parametric_images</tt> is now optional. Writing of the output is no longer restricted to ecat7.
   </li>
   <li>Code that was hosted in <tt>src/local</tt> and <tt>include/local/stir</tt> is now in <tt>src/experimental</tt> and <tt>include/stir_experimental</tt>, respectively. An extra CMake parameter has also been added, <tt>STIR_ENABLE_EXPERIMENTAL</tt>, which is <tt>OFF</tt> by default. Enabling this parameter will include the experimental code in the build.
+  </li>
+  <li>The DICOM series reading restrictions in <tt>read_file_itk</tt> have been relaxed. The requirement for the same acquisition, 
+    trigger or frame times in a series is no longer enforced. This allows 3-D DICOM volumes to be read correctly but may cause
+    issues for dynamic PET or CT data.
   </li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>
@@ -385,6 +399,7 @@ In order to ensure backwards compatibility, at the moment, it is completely opti
  <li>Added the ability to <code>KeyParser</code> to parse <code>long int</code> numbers. Also add <code>remove_key</code>.
  </li>
  <li>Introduce <code>operator&gt;=</code> for <code>ProjDataInfo</code>.</li>
+<li>New functionality added to <code>zoom_image</code>. The user can now specify different types of zoom: preserve_values, preserve_projections, preserve_sum.</li>
 </ul>
 
 <h3>Other code changes</h3>

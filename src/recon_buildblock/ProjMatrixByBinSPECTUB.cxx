@@ -381,7 +381,7 @@ set_up(
 	
 	bin.szcm   = wmh.prj.szcm;
 	bin.szcmd2 = bin.szcm / (float)2.;
-	bin.thcm   = wmh.prj.thcm*10;
+	bin.thcm   = wmh.prj.thcm;
 	bin.thcmd2 = bin.thcm / (float)2.;
 	bin.szdx   = bin.szcm / wmh.psfres;
 	bin.thdx   = bin.thcm / wmh.psfres;

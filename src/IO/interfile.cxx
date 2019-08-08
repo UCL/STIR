@@ -593,9 +593,6 @@ write_basic_interfile_image_header(const string& header_file_name,
     {
       output_header << "!PET STUDY (General) :=\n";
     }
-  write_interfile_time_frame_definitions(output_header, exam_info);
-  write_interfile_energy_windows(output_header, exam_info);
-  write_interfile_image_data_descriptions(output_header, data_type_descriptions);
   if (!is_spect)
     {
       output_header << "!PET data type := Image\n";
@@ -641,6 +638,11 @@ write_basic_interfile_image_header(const string& header_file_name,
 		    << first_pixel_offsets.z() << '\n';
     }
   
+
+  write_interfile_time_frame_definitions(output_header, exam_info);
+  write_interfile_energy_windows(output_header, exam_info);
+  write_interfile_image_data_descriptions(output_header, data_type_descriptions);
+
   for (int i=1; i<=scaling_factors.get_length();i++)
     {
       // only write scaling factors and offset if more than 1 frame or they are not default values
