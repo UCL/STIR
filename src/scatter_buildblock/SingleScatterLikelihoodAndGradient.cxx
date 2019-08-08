@@ -405,7 +405,8 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
         float detection_probability_YX=detection_efficiency_scattered[index1]*detection_efficiency_unscattered[index0];
 
 
-
+    if ((detection_probability_XY==0)&&(detection_probability_YX==0))
+      return 0;
 
     const float emiss_to_detA =
     cached_integral_over_activity_image_between_scattpoint_det

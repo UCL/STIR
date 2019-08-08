@@ -212,7 +212,7 @@ public:
     //@}
 
     float detection_efficiency(const float energy, const int en_window = 0) const;
-    float detection_efficiency_full_model(const float incoming_photon_energy, const int en_window = 0) const;
+    float detection_efficiency_new(const float incoming_photon_energy, const int en_window = 0) const;
     std::vector<float> energy_spectrum(const float LLD, const float HLD, const float incoming_photon_energy) const;
     float detection_model_with_fitted_parameters(const float x, const float theta, const float energy) const;
     float photoelectric(const float K, const float std_peak, const float x, const float energy) const;

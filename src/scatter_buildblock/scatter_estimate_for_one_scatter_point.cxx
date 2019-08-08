@@ -145,6 +145,8 @@ detection_efficiency_unscattered.push_back(0);
     float detection_probability_XY=detection_efficiency_scattered[index0]*detection_efficiency_unscattered[index1];
     float detection_probability_YX=detection_efficiency_scattered[index1]*detection_efficiency_unscattered[index0];
 
+  if ((detection_probability_XY==0)&&(detection_probability_YX==0))
+      return 0;
 
 
   const float emiss_to_detA =
