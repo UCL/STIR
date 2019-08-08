@@ -1,3 +1,6 @@
+;This is an example file for a ROOT file generated with GATE for a Siemens mMR-like scanner
+;It uses an 8x9 block and it has an ECAT system as output
+
 ROOT header := 
 
 originating system := User_defined_scanner
