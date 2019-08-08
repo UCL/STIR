@@ -212,11 +212,13 @@ public:
     //@}
 
     float detection_efficiency(const float energy, const int en_window = 0) const;
-    float detection_efficiency_full_model(const float energy, const int en_window = 0) const;
-    float photoelectric(const float K, const float std_peak, const float energy, const float ref_energy) const;
-    float compton_plateau(const float K, const float std_peak, const float energy, const float ref_energy, const float scaling_std_compton,const float shift_compton) const;
-    float flat_continuum(const float K, const float std_peak, const float energy, const float ref_energy) const;
-    float exponential_tail(const float K, const float std_peak, const float energy, const float ref_energy, const float beta) const;
+    float detection_efficiency_full_model(const float incoming_photon_energy, const int en_window = 0) const;
+    std::vector<float> energy_spectrum(const float LLD, const float HLD, const float incoming_photon_energy) const;
+    float detection_model_with_fitted_parameters(const float x, const float theta, const float energy) const;
+    float photoelectric(const float K, const float std_peak, const float x, const float energy) const;
+    float compton_plateau(const float K, const float std_peak, const float x, const float energy, const float theta, const float scaling_std_compton,const float shift_compton) const;
+    float flat_continuum(const float K, const float std_peak, const float x, const float energy) const;
+    float exponential_tail(const float K, const float std_peak, const float x, const float energy, const float beta) const;
     Succeeded downsample_scanner(int new_num_rings = -1, int new_num_dets = -1);
 
 protected:
