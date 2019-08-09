@@ -376,6 +376,7 @@ protected:
     std::string output_proj_data_filename;
     //! Shared ptr to hold the simulated data.
     shared_ptr<ProjData> output_proj_data_sptr;
+    shared_ptr<ProjData> HR_output_proj_data_sptr;
 
     //! threshold below which a voxel in the attenuation image will not be considered as a candidate scatter point
     float attenuation_threshold;
