@@ -768,22 +768,21 @@ likelihood_and_gradient_scatter(const ProjData &projdata, const ProjData &add_pr
 {
     gradient_image_LR.fill(0);
     gradient_image_HR.fill(0);
-    int lenght = this->output_proj_data_sptr->get_num_views()*this->output_proj_data_sptr->get_num_axial_poss(0)*this->output_proj_data_sptr->get_num_tangential_poss(); //TODO: the code is for segment zero only
+    int length = this->output_proj_data_sptr->get_num_views()*this->output_proj_data_sptr->get_num_axial_poss(0)*this->output_proj_data_sptr->get_num_tangential_poss(); //TODO: the code is for segment zero only
     std::vector<VoxelsOnCartesianGrid<float> > jacobian_array;
     std::vector<float> ratio;
-    jacobian_array.reserve(lenght);
-    ratio.reserve(lenght);
-    for (int i = 0 ; i <= lenght ; ++i)
+    jacobian_array.reserve(length);
+    ratio.reserve(length);
+    for (int i = 0 ; i < length ; ++i)
     {
        jacobian_array.push_back(gradient_image_LR);
        ratio.push_back(0);
     }
 
-    get_jacobian(jacobian_array, compute_gradient, isgradient_mu);
-    const ProjDataInMemory est_data_LR = *(this->output_proj_data_sptr);
-    get_ratio(projdata,add_projdata,est_data_LR,ratio);
+    const ProjDataInMemory est_data_LR = get_jacobian(jacobian_array, compute_gradient, isgradient_mu);
+    const ProjDataInMemory est_data_HR = get_ratio(projdata,add_projdata,est_data_LR,ratio);
 
-    for (int i = 0 ; i <= lenght ; ++i)
+    for (int i = 0 ; i < length ; ++i)
     {
     gradient_image_LR += jacobian_array[i]*ratio[i];
     }
@@ -797,17 +796,17 @@ likelihood_and_gradient_scatter(const ProjData &projdata, const ProjData &add_pr
 
     }
 
-    ProjDataInMemory est_data_HR = *(this->HR_output_proj_data_sptr);
     return est_data_HR;
 
 }
 
-void
+ProjDataInMemory
 SingleScatterLikelihoodAndGradient::
 get_jacobian(std::vector<VoxelsOnCartesianGrid<float> > &gradient_image_array,const bool compute_gradient, const bool isgradient_mu)
 {
 
-    this->output_proj_data_sptr->fill(0.f);
+    ProjDataInMemory est_data(this->get_output_proj_data_sptr()->get_exam_info_sptr(),this->get_output_proj_data_sptr()->get_proj_data_info_sptr());
+    est_data.fill(0);
 
     this->remove_cache_for_integrals_over_activity();
     this->remove_cache_for_integrals_over_attenuation();
@@ -868,7 +867,7 @@ get_jacobian(std::vector<VoxelsOnCartesianGrid<float> > &gradient_image_array,co
             //info(boost::format("ScatterSimulator: %d / %d") % bin_counter% total_bins);
 
 
-            this->get_jacobian_for_view_segment_number(gradient_image_array,vs_num,compute_gradient,isgradient_mu);
+            this->get_jacobian_for_view_segment_number(gradient_image_array,est_data,vs_num,compute_gradient,isgradient_mu);
 
             bin_counter +=
             this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num()) *
@@ -879,18 +878,17 @@ get_jacobian(std::vector<VoxelsOnCartesianGrid<float> > &gradient_image_array,co
 
         }
     }
-
+return est_data;
 }
 
 void
 SingleScatterLikelihoodAndGradient::
-get_jacobian_for_view_segment_number(std::vector<VoxelsOnCartesianGrid<float> > &gradient_image_array,const ViewSegmentNumbers& vs_num, const bool compute_gradient,const bool isgradient_mu)
+get_jacobian_for_view_segment_number(std::vector<VoxelsOnCartesianGrid<float> > &gradient_image_array, ProjData &est_data, const ViewSegmentNumbers& vs_num, const bool compute_gradient,const bool isgradient_mu)
 {
 
-    Viewgram<float> v_est= this->proj_data_info_cyl_noarc_cor_sptr->get_empty_viewgram(vs_num.view_num(), vs_num.segment_num());
-
+    Viewgram<float> v_est = est_data.get_empty_viewgram(vs_num.view_num(), vs_num.segment_num());
     get_jacobian_for_viewgram(v_est,gradient_image_array, compute_gradient,isgradient_mu);
-    output_proj_data_sptr->set_viewgram(v_est);
+    est_data.set_viewgram(v_est);
 
 }
 
@@ -921,7 +919,8 @@ get_jacobian_for_viewgram(Viewgram<float>& v_est,std::vector<VoxelsOnCartesianGr
         }
     }
     // now compute scatter for all bins
-
+        if(gradient_image_array.size()!=static_cast<int>(all_bins.size())*this->output_proj_data_sptr->get_num_views())
+            error("SIZE is %d , but it should be %d",gradient_image_array.size(),static_cast<int>(all_bins.size()));
 
        VoxelsOnCartesianGrid<float> tmp_gradient_image(gradient_image_array[0]);
 
@@ -932,6 +931,7 @@ get_jacobian_for_viewgram(Viewgram<float>& v_est,std::vector<VoxelsOnCartesianGr
 
            const Bin bin = all_bins[i];
 
+
     //forward model
            const double y = L_G_estimate(tmp_gradient_image,bin,compute_gradient,isgradient_mu);
 
@@ -941,15 +941,14 @@ get_jacobian_for_viewgram(Viewgram<float>& v_est,std::vector<VoxelsOnCartesianGr
 
 }
 
-void
+ProjDataInMemory
 SingleScatterLikelihoodAndGradient::
 get_ratio(const ProjData& projdata,const ProjData &add_projdata, const ProjData &est_projdata, std::vector<float> &ratio_vector)
 {
 
-    this->HR_output_proj_data_sptr.reset(new ProjDataInMemory(projdata.get_exam_info_sptr(),projdata.get_proj_data_info_sptr()->create_shared_clone()));
-    ProjDataInMemory ratio_HR(projdata);
-    ProjDataInMemory est_projdata_HR(projdata);
-    ProjDataInMemory ratio_LR(est_projdata);
+    ProjDataInMemory ratio_HR(projdata); ratio_HR.fill(0);
+    ProjDataInMemory est_projdata_HR(projdata); est_projdata_HR.fill(0);
+    ProjDataInMemory ratio_LR(est_projdata); ratio_LR.fill(0);
 
     if((est_projdata.get_num_views()!=projdata.get_num_views())||(est_projdata.get_num_tangential_poss()!=projdata.get_num_tangential_poss()))
     ScatterEstimation::pull_scatter_estimate(est_projdata_HR,projdata,est_projdata,true);
@@ -965,7 +964,6 @@ get_ratio(const ProjData& projdata,const ProjData &add_projdata, const ProjData 
                 Sinogram<float> add_sino = add_projdata.get_sinogram(bin.axial_pos_num(),bin.segment_num());
                 Sinogram<float> est_sino = est_projdata_HR.get_sinogram(bin.axial_pos_num(),bin.segment_num());
                 Sinogram<float> ratio_sino = ratio_HR.get_empty_sinogram(bin.axial_pos_num(),bin.segment_num());
-                this->HR_output_proj_data_sptr->set_sinogram(est_sino);
 
                 for (bin.view_num()=sino.get_min_view_num();
                      bin.view_num()<=sino.get_max_view_num();
@@ -985,6 +983,7 @@ get_ratio(const ProjData& projdata,const ProjData &add_projdata, const ProjData 
     ratio_LR.fill(ratio_HR);
 
     ViewSegmentNumbers vs_num;
+    int counter = 0;
 
     for (vs_num.segment_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_segment_num(); vs_num.segment_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num(); ++vs_num.segment_num())
     {
@@ -992,9 +991,6 @@ get_ratio(const ProjData& projdata,const ProjData &add_projdata, const ProjData 
         {
 
             Viewgram<float> viewgram = ratio_LR.get_viewgram(vs_num.view_num(), vs_num.segment_num(),false);
-            //Viewgram<float> v_add = add_sino.get_viewgram(vs_num.view_num(), vs_num.segment_num(),false);
-            //Viewgram<float> v_est = est_data.get_viewgram(vs_num.view_num(), vs_num.segment_num(),false);
-
             const ViewSegmentNumbers vs_num(viewgram.get_view_num(),viewgram.get_segment_num());
             std::vector<Bin> all_bins;
             {
@@ -1010,6 +1006,7 @@ get_ratio(const ProjData& projdata,const ProjData &add_projdata, const ProjData 
 
             for (int i = 0; i < static_cast<int>(all_bins.size()); ++i)
             {
+              ++ counter;
 
               const Bin bin = all_bins[i];
 
@@ -1019,7 +1016,9 @@ get_ratio(const ProjData& projdata,const ProjData &add_projdata, const ProjData 
         }
     }
 
-
+    if(ratio_vector.size()!=counter)
+        error("SIZE is %d , but it should be %d",ratio_vector.size(),counter);
+return est_projdata_HR;
 }
 END_NAMESPACE_STIR
 
