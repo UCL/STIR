@@ -88,10 +88,12 @@ CListModeDataROOT(const std::string& hroot_filename)
     if(this->root_file_sptr->get_low_energy_thres_in_keV()[0]>this->root_file_sptr->get_low_energy_thres_in_keV()[1])
     {val[0]=1;
      val[1]=2;}
-    else if(this->root_file_sptr->get_low_energy_thres_in_keV()[1]>this->root_file_sptr->get_low_energy_thres_in_keV()[0])
+    else if(this->root_file_sptr->get_low_energy_thres_in_keV()[0]<this->root_file_sptr->get_low_energy_thres_in_keV()[1])
     {val[0]=2;
-     val[1]=1;}
-    else if(this->root_file_sptr->get_low_energy_thres_in_keV()[1]==this->root_file_sptr->get_low_energy_thres_in_keV()[0])
+     val[1]=1;
+     this->exam_info_sptr->set_low_energy_thres_vect(this->root_file_sptr->get_low_energy_thres_in_keV(),true);
+     this->exam_info_sptr->set_high_energy_thres_vect(this->root_file_sptr->get_up_energy_thres_in_keV(),true);}
+    else if(this->root_file_sptr->get_low_energy_thres_in_keV()[0]==this->root_file_sptr->get_low_energy_thres_in_keV()[1])
     {val[0]=1;
      val[1]=1;
      if(this->exam_info_sptr->get_num_energy_windows() > 1)

@@ -115,8 +115,8 @@ public :
   //! Set the number of energy windows
   inline void set_num_energy_windows(int n_win);
   inline void set_energy_window_pair(std::vector<int> val,int n_win);
-  inline void set_low_energy_thres_vect(std::vector<float> new_val);
-  inline void set_high_energy_thres_vect(std::vector<float> new_val);
+  inline void set_low_energy_thres_vect(std::vector<float> new_val,bool switch_energy = false);
+  inline void set_high_energy_thres_vect(std::vector<float> new_val,bool switch_energy = false);
   //@}
 
   //! Standard trick for a 'virtual copy-constructor'

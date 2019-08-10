@@ -53,13 +53,13 @@ ExamInfo::set_high_energy_thres(float new_val,int en_window)
 }
 
 void
-ExamInfo::set_low_energy_thres_vect(std::vector<float> new_val)
+ExamInfo::set_low_energy_thres_vect(std::vector<float> new_val, bool switch_energy)
 {
     low_energy_thres = new_val;
     //TODO extend to the case of more than two
 
     //Decrescent ordering
-    if (new_val[0]<new_val[1])
+    if (switch_energy)
     {
         low_energy_thres[1] = new_val[0];
         low_energy_thres[0] = new_val[1];
@@ -68,13 +68,13 @@ ExamInfo::set_low_energy_thres_vect(std::vector<float> new_val)
 }
 
 void
-ExamInfo::set_high_energy_thres_vect(std::vector<float> new_val)
+ExamInfo::set_high_energy_thres_vect(std::vector<float> new_val, bool switch_energy)
 {
     up_energy_thres = new_val;
     //TODO extend to the case of more than two
 
     //Decrescent ordering
-    if (new_val[0]<new_val[1])
+    if (switch_energy)
     {
         up_energy_thres[1] = new_val[0];
         up_energy_thres[0] = new_val[1];
