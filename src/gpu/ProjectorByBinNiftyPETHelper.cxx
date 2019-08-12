@@ -34,6 +34,7 @@
 #include <boost/format.hpp>
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/is_null_ptr.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 
 START_NAMESPACE_STIR
 
@@ -263,27 +264,88 @@ convert_image_niftyPET_to_stir(DiscretisedDensity<3,float> &stir, const std::vec
 }
 
 void
+get_vals_for_proj_data_conversion(std::vector<int> &sizes, std::vector<int> &segment_sequence,
+                                  int &num_sinograms, int &min_view, int &max_view,
+                                  int &min_tang_pos, int &max_tang_pos,
+                                  const ProjData& proj_data, const std::vector<float> &np_vec)
+{
+    shared_ptr<const ProjDataInfoCylindricalNoArcCorr> info_sptr =
+            dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(proj_data.get_proj_data_info_sptr());
+    if (is_null_ptr(info_sptr))
+        error("ProjectorByBinNiftyPETHelper: only works with cylindrical projection data without arc-correction");
+
+    const int num_rings     = info_sptr->get_scanner_sptr()->get_num_rings();
+    const int max_ring_diff = info_sptr->get_max_ring_difference(info_sptr->get_max_segment_num());
+
+    segment_sequence.resize(unsigned(2*max_ring_diff+1));
+    sizes.resize(unsigned(2*max_ring_diff+1));
+    segment_sequence[0]=0;
+    sizes[0]=num_rings;
+    for (int ringdiff=1; ringdiff<=max_ring_diff; ++ringdiff) {
+        segment_sequence[unsigned(2*ringdiff-1)] = -ringdiff;
+        segment_sequence[unsigned( 2*ringdiff )] =  ringdiff;
+        sizes           [unsigned(2*ringdiff-1)] =  num_rings-ringdiff;
+        sizes           [unsigned( 2*ringdiff )] =  num_rings-ringdiff;
+    }
+
+    // Get dimensions of STIR sinogram
+    num_sinograms = proj_data.get_num_sinograms();
+    min_view      = proj_data.get_min_view_num();
+    max_view      = proj_data.get_max_view_num();
+    min_tang_pos  = proj_data.get_min_tangential_pos_num();
+    max_tang_pos  = proj_data.get_max_tangential_pos_num();
+    int num_proj_data_elems = num_sinograms * (1+max_view-min_view) * (1+max_tang_pos-min_tang_pos);
+
+    // Make sure they're the same size
+    if (np_vec.size() != unsigned(num_proj_data_elems))
+        throw std::runtime_error("ProjectorByBinNiftyPETHelper::get_vals_for_proj_data_conversion "
+                                 "NiftyPET and STIR sinograms are different sizes.");
+}
+
+void get_stir_segment_and_axial_pos_from_niftypet_sino(int &segment, int &axial_pos, const unsigned np_sino, const std::vector<int> &sizes, const std::vector<int> &segment_sequence)
+{
+    int z = int(np_sino);
+    for (unsigned i=0; i<segment_sequence.size(); ++i) {
+        if (z < sizes[i]) {
+            axial_pos = z;
+            segment = segment_sequence[i];
+            return;
+          }
+        else {
+            z -= sizes[i];
+        }
+    }
+}
+
+void
 ProjectorByBinNiftyPETHelper::
 convert_proj_data_stir_to_niftyPET(std::vector<float> &np_vec, const ProjData& stir) const
 {
-    // Get dimensions of STIR sinogram
-    unsigned num_sinograms = unsigned(stir.get_num_sinograms());
-    unsigned num_views     = unsigned(stir.get_num_views());
-    unsigned num_tang_poss = unsigned(stir.get_num_tangential_poss());
-    unsigned num_proj_data_elems = num_sinograms * num_views * num_tang_poss;
+    // Get the values (and LUT) to be able to switch between STIR and NiftyPET projDatas
+    std::vector<int> sizes, segment_sequence;
+    int num_sinograms, min_view, max_view, min_tang_pos, max_tang_pos;
+    get_vals_for_proj_data_conversion(sizes, segment_sequence, num_sinograms, min_view, max_view,
+                                      min_tang_pos, max_tang_pos, stir, np_vec);
 
-    // Make sure they're the same size
-    if (np_vec.size() != num_proj_data_elems)
-        throw std::runtime_error("ProjectorByBinNiftyPETHelper::convert_proj_data_stir_to_niftyPET "
-                                 "NiftyPET and STIR sinograms are different sizes.");
+    unsigned np_1d, np_ang, np_bin;
+    int segment, axial_pos;
+    // Loop over all NiftyPET sinograms
+    for (unsigned np_sino = 0; np_sino < unsigned(num_sinograms); ++np_sino) {
 
-    unsigned np_1d;
-    for (unsigned ang=0; ang<num_views; ++ang) {
-        for (unsigned bin=0; bin<num_tang_poss; ++bin) {
-            for (unsigned sino=0; sino<num_sinograms; ++sino) {
-                np_1d = convert_niftypet_proj_3d_to_1d_idx(ang,bin,sino);
-                np_vec[np_1d] = -1.f;
-                throw std::runtime_error("Need to do this: dont know how to access stir sinogram data");
+        // Convert the NiftyPET sinogram to STIR's segment and axial position
+        get_stir_segment_and_axial_pos_from_niftypet_sino(segment, axial_pos, np_sino, sizes, segment_sequence);
+
+        // Get the corresponding STIR sinogram
+        const Sinogram<float> sino = stir.get_sinogram(axial_pos,segment);
+
+        // Loop over the STIR view and tangential position
+        for (int view=min_view; view<=max_view; ++view) {
+            for (int tang_pos=min_tang_pos; tang_pos<=max_tang_pos; ++tang_pos) {
+
+                np_ang  = unsigned(view-min_view);
+                np_bin  = unsigned(tang_pos-min_tang_pos);
+                np_1d = convert_niftypet_proj_3d_to_1d_idx(np_ang,np_bin,np_sino);
+                np_vec.at(np_1d) = sino.at(view).at(tang_pos);
             }
         }
     }
@@ -293,25 +355,34 @@ void
 ProjectorByBinNiftyPETHelper::
 convert_proj_data_niftyPET_to_stir(ProjData &stir, const std::vector<float> &np_vec) const
 {
-    // Get dimensions of STIR sinogram
-    unsigned num_sinograms = unsigned(stir.get_num_sinograms());
-    unsigned num_views     = unsigned(stir.get_num_views());
-    unsigned num_tang_poss = unsigned(stir.get_num_tangential_poss());
-    unsigned num_proj_data_elems = num_sinograms * num_views * num_tang_poss;
+    // Get the values (and LUT) to be able to switch between STIR and NiftyPET projDatas
+    std::vector<int> sizes, segment_sequence;
+    int num_sinograms, min_view, max_view, min_tang_pos, max_tang_pos;
+    get_vals_for_proj_data_conversion(sizes, segment_sequence, num_sinograms, min_view, max_view,
+                                      min_tang_pos, max_tang_pos, stir, np_vec);
 
-    // Make sure they're the same size
-    if (np_vec.size() != num_proj_data_elems)
-        throw std::runtime_error("ProjectorByBinNiftyPETHelper::convert_proj_data_stir_to_niftyPET "
-                                 "NiftyPET and STIR sinograms are different sizes.");
+    unsigned np_1d, np_ang, np_bin;
+    int segment, axial_pos;
+    // Loop over all NiftyPET sinograms
+    for (unsigned np_sino = 0; np_sino < unsigned(num_sinograms); ++np_sino) {
 
-    unsigned np_1d;
-    for (unsigned ang=0; ang<num_views; ++ang) {
-        for (unsigned bin=0; bin<num_tang_poss; ++bin) {
-            for (unsigned sino=0; sino<num_sinograms; ++sino) {
-                np_1d = convert_niftypet_proj_3d_to_1d_idx(ang,bin,sino);
-                throw std::runtime_error("Need to do this: dont know how to access stir sinogram data");
+        // Convert the NiftyPET sinogram to STIR's segment and axial position
+        get_stir_segment_and_axial_pos_from_niftypet_sino(segment, axial_pos, np_sino, sizes, segment_sequence);
+
+        // Get the corresponding STIR sinogram
+        Sinogram<float> sino = stir.get_sinogram(axial_pos,segment);
+
+        // Loop over the STIR view and tangential position
+        for (int view=min_view; view<=max_view; ++view) {
+            for (int tang_pos=min_tang_pos; tang_pos<=max_tang_pos; ++tang_pos) {
+
+                np_ang  = unsigned(view-min_view);
+                np_bin  = unsigned(tang_pos-min_tang_pos);
+                np_1d = convert_niftypet_proj_3d_to_1d_idx(np_ang,np_bin,np_sino);
+                sino.at(view).at(tang_pos) = np_vec.at(np_1d);
             }
         }
+        stir.set_sinogram(sino);
     }
 }
 
