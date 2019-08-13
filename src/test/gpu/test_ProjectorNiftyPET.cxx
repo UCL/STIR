@@ -31,6 +31,8 @@
 #include "stir/RunTests.h"
 #include "stir/num_threads.h"
 #include "stir/CPUTimer.h"
+#include "stir/IO/OutputFileFormat.h"
+#include "stir/IO/ITKOutputFileFormat.h"
 
 START_NAMESPACE_STIR
 
@@ -81,9 +83,12 @@ void project(shared_ptr<ProjData> proj_data, shared_ptr<DiscretisedDensity<3,flo
     timer.reset();
     timer.start();
 
-    // GPU Back project
+    // Back project
     std::cerr << "\nDoing back projection using " << back::registered_name << "...\n";
     back back_projector;
+    back_projector.set_up(proj_data->get_proj_data_info_sptr(),im);
+    back_projector.start_accumulating_in_new_image();
+    back_projector.get_output(*im);
     timer.stop();
     double time_bck(timer.value());
     std::cerr << "\tDone! (" << time_bck << " secs)\n";
@@ -113,7 +118,15 @@ run_projections()
     std::cerr << "\tDone!\n";
 
     project<ForwardProjectorByBinNiftyPET,BackProjectorByBinNiftyPET>(proj_data,input);
-    project<ForwardProjectorByBinUsingProjMatrixByBin,BackProjectorByBinUsingProjMatrixByBin>(proj_data,input);
+    proj_data->write_to_file("/home/rich/Documents/Data/forward_projected.hs");
+    shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
+    output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
+    output_file_format_sptr->write_to_file("/home/rich/Documents/Data/forward_then_back_projected",*input);
+    ITKOutputFileFormat itk_writer;
+    itk_writer.default_extension = ".nii";
+    itk_writer.write_to_file("/home/rich/Documents/Data/forward_then_back_projected",*input);
+
+    //    project<ForwardProjectorByBinUsingProjMatrixByBin,BackProjectorByBinUsingProjMatrixByBin>(proj_data,input);
 
     // comparison
 }

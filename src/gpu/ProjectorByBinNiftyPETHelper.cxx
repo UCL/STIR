@@ -274,18 +274,18 @@ get_vals_for_proj_data_conversion(std::vector<int> &sizes, std::vector<int> &seg
     if (is_null_ptr(info_sptr))
         error("ProjectorByBinNiftyPETHelper: only works with cylindrical projection data without arc-correction");
 
-    const int num_rings     = info_sptr->get_scanner_sptr()->get_num_rings();
-    const int max_ring_diff = info_sptr->get_max_ring_difference(info_sptr->get_max_segment_num());
+    const int max_ring_diff   = info_sptr->get_max_ring_difference(info_sptr->get_max_segment_num());
+    const int max_segment_num = info_sptr->get_max_segment_num();
 
     segment_sequence.resize(unsigned(2*max_ring_diff+1));
     sizes.resize(unsigned(2*max_ring_diff+1));
-    segment_sequence[0]=0;
-    sizes[0]=num_rings;
-    for (int ringdiff=1; ringdiff<=max_ring_diff; ++ringdiff) {
-        segment_sequence[unsigned(2*ringdiff-1)] = -ringdiff;
-        segment_sequence[unsigned( 2*ringdiff )] =  ringdiff;
-        sizes           [unsigned(2*ringdiff-1)] =  num_rings-ringdiff;
-        sizes           [unsigned( 2*ringdiff )] =  num_rings-ringdiff;
+    segment_sequence[unsigned(0)]=0;
+    sizes[0]=info_sptr->get_num_axial_poss(0);
+    for (int segment_num=1; segment_num<=max_segment_num; ++segment_num) {
+       segment_sequence[unsigned(2*segment_num-1)] = -segment_num;
+       segment_sequence[unsigned(2*segment_num)] = segment_num;
+       sizes [unsigned(2*segment_num-1)] =info_sptr->get_num_axial_poss(-segment_num);
+       sizes [unsigned(2*segment_num)] =info_sptr->get_num_axial_poss(segment_num);
     }
 
     // Get dimensions of STIR sinogram
