@@ -201,8 +201,6 @@ void
 ForwardProjectorByBin::forward_project(ProjData& proj_data)
 {
 
-    std::cout <<"\nI'm here1. forward projecting but the input has already been set!\n";
-
  // this->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
 //			     image_sptr);
 

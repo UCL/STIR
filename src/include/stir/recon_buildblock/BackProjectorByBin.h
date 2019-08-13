@@ -114,7 +114,7 @@ public:
 
  //! project whole proj_data into the volume
  /*! it overwrites the data already present in the volume */
- void back_project(const ProjData&);
+ void back_project(const ProjData&, int subset_num = 0, int num_subsets = 1);
 
  /*! \brief projects the viewgrams into the volume
   it adds to the data already present in the volume.*/
@@ -168,6 +168,9 @@ protected:
 	    const int start_tang_pos_num,const int end_tang_pos_num,
 	    const int start_view, const int end_view);
 
+#ifdef STIR_OPENMP
+  std::vector< shared_ptr<DiscretisedDensity<3,float> > > _local_output_image_sptrs;
+#endif
 
 };
 
