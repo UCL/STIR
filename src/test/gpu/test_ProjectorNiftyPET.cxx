@@ -65,17 +65,24 @@ TestGPUProjectors(std::string image_filename, std::string sinogram_filename) :
 }
 
 template<class fwrd, class back>
-void project(shared_ptr<ProjData> proj_data, shared_ptr<DiscretisedDensity<3,float> > im)
+void project(const shared_ptr<const ProjDataInMemory> input_sino_sptr, const shared_ptr<const DiscretisedDensity<3,float> > input_image_sptr)
 {
     CPUTimer timer;
     timer.start();
 
+    // Copy image and sinogram
+    shared_ptr<DiscretisedDensity<3,float> > image_sptr(input_image_sptr->clone());
+    shared_ptr<ProjDataInMemory> sino_sptr = MAKE_SHARED<ProjDataInMemory>(*input_sino_sptr);
+
+    // Set the sinogram to zero
+    sino_sptr->fill(0.F);
+
+    // Do the forward projection
     std::cerr << "\nDoing forward projection using " << fwrd::registered_name << "...\n";
     fwrd fwrd_projector;
-    fwrd_projector.set_up(proj_data->get_proj_data_info_sptr(), im);
-    fwrd_projector.set_input(im);
-    /*proj_data->fill(0.F);
-    fwrd_projector.forward_project(*proj_data);*/
+    fwrd_projector.set_up(sino_sptr->get_proj_data_info_sptr(), image_sptr);
+    fwrd_projector.set_input(image_sptr);
+    fwrd_projector.forward_project(*sino_sptr);
     timer.stop();
     double time_fwd(timer.value());
     std::cerr << "\tDone! (" << time_fwd << " secs)\n";
@@ -83,17 +90,29 @@ void project(shared_ptr<ProjData> proj_data, shared_ptr<DiscretisedDensity<3,flo
     timer.reset();
     timer.start();
 
+    // Set the image to zero
+    image_sptr->fill(0.F);
+
     // Back project
     std::cerr << "\nDoing back projection using " << back::registered_name << "...\n";
     back back_projector;
-    back_projector.set_up(proj_data->get_proj_data_info_sptr(),im);
+    back_projector.set_up(sino_sptr->get_proj_data_info_sptr(),image_sptr);
     back_projector.start_accumulating_in_new_image();
-    back_projector.get_output(*im);
+    back_projector.back_project(*sino_sptr);
+    back_projector.get_output(*image_sptr);
     timer.stop();
     double time_bck(timer.value());
     std::cerr << "\tDone! (" << time_bck << " secs)\n";
 
     std::cerr << "\nTotal time for projection with " << fwrd::registered_name << ": " << time_fwd+time_bck << " secs.\n";
+
+    sino_sptr->write_to_file("/home/rich/Documents/Data/forward_projected.hs");
+    shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr =
+            OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
+    output_file_format_sptr->write_to_file("/home/rich/Documents/Data/forward_then_back_projected",*image_sptr);
+    ITKOutputFileFormat itk_writer;
+    itk_writer.default_extension = ".nii";
+    itk_writer.write_to_file("/home/rich/Documents/Data/forward_then_back_projected",*image_sptr);
 }
 
 void
@@ -101,31 +120,11 @@ TestGPUProjectors::
 run_projections()
 {
     // Open image
-    std::cerr << "\nReading the image to project...\n";
-    shared_ptr<DiscretisedDensity<3,float> > input(
-                DiscretisedDensity<3,float>::read_from_file(_image_filename));
-    if(is_null_ptr(input)) {
-        std::cerr << "\nError reading image to project.\n";
-        everything_ok = false;
-        return;
-    }
-    std::cerr << "\tDone!\n";
+    const shared_ptr<const DiscretisedDensity<3,float> > image_sptr(DiscretisedDensity<3,float>::read_from_file(_image_filename));
+    const shared_ptr<const ProjDataInMemory> sino_sptr = MAKE_SHARED<ProjDataInMemory>(*ProjData::read_from_file(_sinogram_filename));
 
-    // Open sinogram
-    std::cerr << "\nReading the sinogram to project...\n";
-    shared_ptr<ProjData> proj_data =
-      ProjData::read_from_file(_sinogram_filename);
-    std::cerr << "\tDone!\n";
-
-    project<ForwardProjectorByBinNiftyPET,BackProjectorByBinNiftyPET>(proj_data,input);
-    proj_data->write_to_file("/home/rich/Documents/Data/forward_projected.hs");
-    shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
-    output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
-    output_file_format_sptr->write_to_file("/home/rich/Documents/Data/forward_then_back_projected",*input);
-    ITKOutputFileFormat itk_writer;
-    itk_writer.default_extension = ".nii";
-    itk_writer.write_to_file("/home/rich/Documents/Data/forward_then_back_projected",*input);
-
+    // Forward and back project
+    project<ForwardProjectorByBinNiftyPET,BackProjectorByBinNiftyPET>(sino_sptr,image_sptr);
     //    project<ForwardProjectorByBinUsingProjMatrixByBin,BackProjectorByBinUsingProjMatrixByBin>(proj_data,input);
 
     // comparison
