@@ -77,56 +77,122 @@ check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& den
           % this->_proj_data_info_sptr->parameter_info() % proj_data_info.parameter_info());
   if (! this->_density_sptr->has_same_characteristics(density_info))
     error("ForwardProjectorByBin set-up with different geometry for density or volume data.");
-}  
-
-void 
-ForwardProjectorByBin::forward_project(ProjData& proj_data, 
-				       const DiscretisedDensity<3,float>& image,
-							 int subset_num, int num_subsets, bool zero)
-{
-  set_input(&image);
-  forward_project(proj_data,subset_num, num_subsets, zero);
 }
 
-void 
-ForwardProjectorByBin::forward_project(RelatedViewgrams<float>& viewgrams, 
-				 const DiscretisedDensity<3,float>& image)
+void
+ForwardProjectorByBin::forward_project(ProjData& proj_data,
+                       const DiscretisedDensity<3,float>& image,
+                             int subset_num, int num_subsets, bool zero)
 {
-  set_input(&image);
-  forward_project(viewgrams,
+  if (image.get_exam_info().imaging_modality.is_unknown()
+      || proj_data.get_exam_info().imaging_modality.is_unknown())
+    warning("forward_project. Imaging modality unknown for either the image or the projection data or both.\n"
+            "Going ahead anyway.");
+  else if (image.get_exam_info().imaging_modality !=
+      proj_data.get_exam_info().imaging_modality)
+    error("forward_project: Imaging modality should be the same for the image and the projection data");
+  if (subset_num < 0)
+    error(boost::format("forward_project: wrong subset number %1%") % subset_num);
+  if (subset_num > num_subsets - 1)
+    error(boost::format("forward_project: wrong subset number %1% (must be less than the number of subsets %2%)")
+          % subset_num % num_subsets);
+  if (zero && num_subsets > 1)
+    proj_data.fill(0.0);
+  // this->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
+//			     image_sptr);
+
+  check(*proj_data.get_proj_data_info_sptr(), image);
+  shared_ptr<DataSymmetriesForViewSegmentNumbers>
+    symmetries_sptr(this->get_symmetries_used()->clone());
+
+  const std::vector<ViewSegmentNumbers> vs_nums_to_process =
+    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
+                                         proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
+                                         subset_num, num_subsets);
+#ifdef STIR_OPENMP
+#pragma omp parallel for  shared(proj_data, image, symmetries_sptr) schedule(runtime)
+#endif
+    // note: older versions of openmp need an int as loop
+  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+    {
+      const ViewSegmentNumbers vs=vs_nums_to_process[i];
+
+      info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num());
+
+      RelatedViewgrams<float> viewgrams =
+        proj_data.get_empty_related_viewgrams(vs, symmetries_sptr);
+      forward_project(viewgrams, image);
+#ifdef STIR_OPENMP
+#pragma omp critical (FORWARDPROJ_SETVIEWGRAMS)
+#endif
+      {
+        if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
+          error("Error set_related_viewgrams in forward projecting");
+      }
+    }
+
+}
+
+void
+ForwardProjectorByBin::forward_project(RelatedViewgrams<float>& viewgrams,
+                 const DiscretisedDensity<3,float>& image)
+{
+  forward_project(viewgrams, image,
                   viewgrams.get_min_axial_pos_num(),
-		  viewgrams.get_max_axial_pos_num(),
-		  viewgrams.get_min_tangential_pos_num(),
-		  viewgrams.get_max_tangential_pos_num());
+          viewgrams.get_max_axial_pos_num(),
+          viewgrams.get_min_tangential_pos_num(),
+          viewgrams.get_max_tangential_pos_num());
 }
 
 void ForwardProjectorByBin::forward_project
-  (RelatedViewgrams<float>& viewgrams, 
+  (RelatedViewgrams<float>& viewgrams,
    const DiscretisedDensity<3,float>& image,
-   const int min_axial_pos_num, 
+   const int min_axial_pos_num,
    const int max_axial_pos_num)
 {
-  set_input(&image);
-  forward_project(viewgrams,
+  forward_project(viewgrams, image,
              min_axial_pos_num,
-	     max_axial_pos_num,
-	     viewgrams.get_min_tangential_pos_num(),
-	     viewgrams.get_max_tangential_pos_num());
+         max_axial_pos_num,
+         viewgrams.get_min_tangential_pos_num(),
+         viewgrams.get_max_tangential_pos_num());
 }
 
-void 
+void
 ForwardProjectorByBin::
-forward_project(RelatedViewgrams<float>& viewgrams, 
-		     const DiscretisedDensity<3,float>& density,
-		     const int min_axial_pos_num, const int max_axial_pos_num,
-		     const int min_tangential_pos_num, const int max_tangential_pos_num)
+forward_project(RelatedViewgrams<float>& viewgrams,
+             const DiscretisedDensity<3,float>& density,
+             const int min_axial_pos_num, const int max_axial_pos_num,
+             const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
-  set_input(&density);
-  forward_project(viewgrams,
+  if (viewgrams.get_num_viewgrams()==0)
+    return;
+  check(*viewgrams.get_proj_data_info_sptr(), density);
+  start_timers();
+
+  // first check symmetries
+  {
+    const ViewSegmentNumbers basic_vs = viewgrams.get_basic_view_segment_num();
+
+    if (get_symmetries_used()->num_related_view_segment_numbers(basic_vs) !=
+      viewgrams.get_num_viewgrams())
+      error("ForwardProjectByBin: forward_project called with incorrect related_viewgrams. Problem with symmetries!\n");
+
+    for (RelatedViewgrams<float>::const_iterator iter = viewgrams.begin();
+     iter != viewgrams.end();
+     ++iter)
+      {
+    ViewSegmentNumbers vs(iter->get_view_num(), iter->get_segment_num());
+    get_symmetries_used()->find_basic_view_segment_numbers(vs);
+    if (vs != basic_vs)
+      error("ForwardProjectByBin: forward_project called with incorrect related_viewgrams. Problem with symmetries!\n");
+    }
+  }
+  actual_forward_project(viewgrams, density,
              min_axial_pos_num,
          max_axial_pos_num,
          min_tangential_pos_num,
          max_tangential_pos_num);
+  stop_timers();
 }
 // -------------------------------------------------------------------------------------------------------------------- //
 // The following are repetition of above, where the DiscretisedDensity has already been set with set_input()
@@ -161,7 +227,7 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
                                          proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
                                          subset_num, num_subsets);
 #ifdef STIR_OPENMP
-#pragma omp parallel for  shared(proj_data, _density_sptr, symmetries_sptr) schedule(runtime)
+#pragma omp parallel for  shared(proj_data, symmetries_sptr) schedule(runtime)
 #endif
     // note: older versions of openmp need an int as loop
   for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
@@ -257,18 +323,9 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
 
 void
 ForwardProjectorByBin::
-set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
+set_input(const DiscretisedDensity<3,float> & density)
 {
-    _density_sptr.reset(density_sptr->clone());
-}
-
-void
-ForwardProjectorByBin::
-set_input(const DiscretisedDensity<3,float> *density_ptr)
-{
-    shared_ptr<DiscretisedDensity<3,float> > density_sptr;
-    density_sptr.reset(density_ptr->clone());
-    this->set_input(density_sptr);
+    _density_sptr.reset(density.clone());
 }
 
 END_NAMESPACE_STIR

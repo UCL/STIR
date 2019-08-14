@@ -409,15 +409,14 @@ void distributable_computation(
 #endif
   //double total_seq_rpc_time=0.0; //sums up times used for RPC_process_related_viewgrams
 
+  forward_projector_ptr->set_input(*input_image_ptr);
+  back_projector_ptr->start_accumulating_in_new_image();
+
 #ifdef STIR_OPENMP
-  std::vector< shared_ptr<DiscretisedDensity<3,float> > > local_output_image_sptrs;
   std::vector<double> local_log_likelihoods;
   std::vector<int> local_counts, local_count2s;
-#pragma omp parallel shared(local_output_image_sptrs, local_log_likelihoods, local_counts, local_count2s)
+#pragma omp parallel shared(local_log_likelihoods, local_counts, local_count2s)
 #endif
-
-    forward_projector_ptr->set_input(input_image_ptr);
-    back_projector_ptr->start_accumulating_in_new_image();
 
   // start of threaded section if openmp
   { 
@@ -425,7 +424,6 @@ void distributable_computation(
 #pragma omp single
     {
       std::cerr << "Starting loop with " << omp_get_num_threads() << " threads\n"; 
-      local_output_image_sptrs.resize(omp_get_max_threads(), shared_ptr<DiscretisedDensity<3,float> >());
       local_log_likelihoods.resize(omp_get_max_threads(), 0.);
       local_counts.resize(omp_get_max_threads(), 0);
       local_count2s.resize(omp_get_max_threads(), 0);
@@ -483,12 +481,6 @@ void distributable_computation(
 #endif
 
 #ifdef STIR_OPENMP
-          if (output_image_ptr != NULL)
-            {
-              if(is_null_ptr(local_output_image_sptrs[thread_num]))
-                local_output_image_sptrs[thread_num].reset(output_image_ptr->get_empty_copy());
-            }
-            
           RPC_process_related_viewgrams(forward_projector_ptr,
                                         back_projector_ptr,
                                         y.get(),
@@ -511,12 +503,6 @@ void distributable_computation(
 #ifdef STIR_OPENMP
   // "reduce" data constructed by threads
   {
-    if (output_image_ptr != NULL)
-      {
-        for (int i=0; i<static_cast<int>(local_output_image_sptrs.size()); ++i)
-	  if(!is_null_ptr(local_output_image_sptrs[i])) // only accumulate if a thread filled something in
-	    *output_image_ptr += *(local_output_image_sptrs[i]);
-      }
     if (log_likelihood_ptr != NULL)
       {
         for (int i=0; i<static_cast<int>(local_log_likelihoods.size()); ++i)
