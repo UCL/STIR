@@ -100,7 +100,7 @@ get_symmetries_used() const
 {
   return original_back_projector_ptr->get_symmetries_used();
 }
-
+#ifdef STIR_PROJECTORS_AS_V3
 void 
 PostsmoothingBackProjectorByBin::
 actual_back_project(DiscretisedDensity<3,float>& density,
@@ -126,14 +126,14 @@ actual_back_project(DiscretisedDensity<3,float>& density,
                                                 min_tangential_pos_num, max_tangential_pos_num);
     }
 }
- 
+#endif
 void
 PostsmoothingBackProjectorByBin::
 actual_back_project(const RelatedViewgrams<float>& viewgrams,
                     const int min_axial_pos_num, const int max_axial_pos_num,
                     const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
-      original_back_projector_ptr->back_project(*_density_sptr, viewgrams,
+      original_back_projector_ptr->back_project(viewgrams,
                                                 min_axial_pos_num, max_axial_pos_num,
                                                 min_tangential_pos_num, max_tangential_pos_num);
 }

@@ -344,6 +344,9 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
     const int min_segment_num = proj_data_info_sptr->get_min_segment_num();
     const int max_segment_num = proj_data_info_sptr->get_max_segment_num();
 
+    this->projector_pair_sptr->get_back_projector_sptr()->
+      start_accumulating_in_new_image();
+
     // warning: has to be same as subset scheme used as in distributable_computation
     for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
     {
@@ -355,15 +358,17 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 
         if (! this->projector_pair_sptr->get_symmetries_used()->is_basic(view_segment_num))
           continue;
-        this->add_view_seg_to_sensitivity(sensitivity, view_segment_num);
+        this->add_view_seg_to_sensitivity(view_segment_num);
       }
     }
+    this->projector_pair_sptr->get_back_projector_sptr()->
+      get_output(sensitivity);
 }
 
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const
+add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const
 {
     shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
             (this->projector_pair_sptr->get_symmetries_used()->clone());
@@ -386,7 +391,7 @@ add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view
        viewgrams.get_max_axial_pos_num();
 
     this->projector_pair_sptr->get_back_projector_sptr()->
-      back_project(sensitivity, viewgrams,
+      back_project(viewgrams,
                    min_ax_pos_num, max_ax_pos_num);
   }
 

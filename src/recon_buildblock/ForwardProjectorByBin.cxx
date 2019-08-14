@@ -84,55 +84,10 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
                        const DiscretisedDensity<3,float>& image,
                              int subset_num, int num_subsets, bool zero)
 {
-  if (image.get_exam_info().imaging_modality.is_unknown()
-      || proj_data.get_exam_info().imaging_modality.is_unknown())
-    warning("forward_project. Imaging modality unknown for either the image or the projection data or both.\n"
-            "Going ahead anyway.");
-  else if (image.get_exam_info().imaging_modality !=
-      proj_data.get_exam_info().imaging_modality)
-    error("forward_project: Imaging modality should be the same for the image and the projection data");
-  if (subset_num < 0)
-    error(boost::format("forward_project: wrong subset number %1%") % subset_num);
-  if (subset_num > num_subsets - 1)
-    error(boost::format("forward_project: wrong subset number %1% (must be less than the number of subsets %2%)")
-          % subset_num % num_subsets);
-  if (zero && num_subsets > 1)
-    proj_data.fill(0.0);
-  // this->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
-//			     image_sptr);
-
-  check(*proj_data.get_proj_data_info_sptr(), image);
-  shared_ptr<DataSymmetriesForViewSegmentNumbers>
-    symmetries_sptr(this->get_symmetries_used()->clone());
-
-  const std::vector<ViewSegmentNumbers> vs_nums_to_process =
-    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
-                                         proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
-                                         subset_num, num_subsets);
-#ifdef STIR_OPENMP
-#pragma omp parallel for  shared(proj_data, image, symmetries_sptr) schedule(runtime)
-#endif
-    // note: older versions of openmp need an int as loop
-  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
-    {
-      const ViewSegmentNumbers vs=vs_nums_to_process[i];
-
-      info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num());
-
-      RelatedViewgrams<float> viewgrams =
-        proj_data.get_empty_related_viewgrams(vs, symmetries_sptr);
-      forward_project(viewgrams, image);
-#ifdef STIR_OPENMP
-#pragma omp critical (FORWARDPROJ_SETVIEWGRAMS)
-#endif
-      {
-        if (!(proj_data.set_related_viewgrams(viewgrams) == Succeeded::yes))
-          error("Error set_related_viewgrams in forward projecting");
-      }
-    }
-
+  set_input(image);
+  forward_project(proj_data,subset_num,num_subsets,zero);
 }
-
+#ifdef STIR_PROJECTORS_AS_V3
 void
 ForwardProjectorByBin::forward_project(RelatedViewgrams<float>& viewgrams,
                  const DiscretisedDensity<3,float>& image)
@@ -194,6 +149,7 @@ forward_project(RelatedViewgrams<float>& viewgrams,
          max_tangential_pos_num);
   stop_timers();
 }
+#endif
 // -------------------------------------------------------------------------------------------------------------------- //
 // The following are repetition of above, where the DiscretisedDensity has already been set with set_input()
 // -------------------------------------------------------------------------------------------------------------------- //
@@ -307,6 +263,16 @@ forward_project(RelatedViewgrams<float>& viewgrams,
          min_tangential_pos_num,
          max_tangential_pos_num);
   stop_timers();
+}
+
+void
+ForwardProjectorByBin::
+actual_forward_project(RelatedViewgrams<float>&,
+        const DiscretisedDensity<3,float>&,
+        const int, const int,
+        const int, const int)
+{
+    error("ForwardProjectorByBin::actual_forward_project() This is deprecated and should not be used.");
 }
 
 void

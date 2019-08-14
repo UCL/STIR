@@ -93,7 +93,7 @@ public:
     */
   void back_project(DiscretisedDensity<3,float>&,
 		const ProjData&, int subset_num = 0, int num_subsets = 1);
-
+#ifdef STIR_PROJECTORS_AS_V3
   /*! \brief projects the viewgrams into the volume
    it adds to the data already present in the volume.*/
  void back_project(DiscretisedDensity<3,float>&,
@@ -111,7 +111,7 @@ public:
 		   const RelatedViewgrams<float>&,
 		   const int min_axial_pos_num, const int max_axial_pos_num,
 		   const int min_tangential_pos_num, const int max_tangential_pos_num);
-
+#endif
  //! project whole proj_data into the volume
  /*! it overwrites the data already present in the volume */
  void back_project(const ProjData&, int subset_num = 0, int num_subsets = 1);
@@ -142,7 +142,7 @@ protected:
   virtual void actual_back_project(DiscretisedDensity<3,float>&,
                                    const RelatedViewgrams<float>&,
 		                   const int min_axial_pos_num, const int max_axial_pos_num,
-		                   const int min_tangential_pos_num, const int max_tangential_pos_num) = 0;
+                           const int min_tangential_pos_num, const int max_tangential_pos_num);
 
  virtual void actual_back_project(const RelatedViewgrams<float>&,
                           const int min_axial_pos_num, const int max_axial_pos_num,

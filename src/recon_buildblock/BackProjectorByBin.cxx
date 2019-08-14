@@ -90,75 +90,11 @@ void
 BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
 const ProjData& proj_data, int subset_num, int num_subsets)
 {
-  if (image.get_exam_info().imaging_modality.is_unknown()
-      || proj_data.get_exam_info().imaging_modality.is_unknown())
-    warning("back_project: Imaging modality is unknown for either the image or the projection data or both.\n"
-            "Going ahead anyway.");
-  else if (image.get_exam_info().imaging_modality !=
-      proj_data.get_exam_info().imaging_modality)
-    error("back_project: Imaging modality should be the same for the image and the projection data");
-
-  if (subset_num < 0)
-    error(boost::format("forward_project: wrong subset number %1%") % subset_num);
-  if (subset_num > num_subsets - 1)
-    error(boost::format("forward_project: wrong subset number %1% (must be less than the number of subsets %2%)")
-          % subset_num % num_subsets);
-
-  check(*proj_data.get_proj_data_info_sptr(), image);
-
-  shared_ptr<DataSymmetriesForViewSegmentNumbers>
-    symmetries_sptr(this->get_symmetries_used()->clone());
-
-  const std::vector<ViewSegmentNumbers> vs_nums_to_process =
-    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
-                                         proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
-                                         subset_num, num_subsets);
-
-#ifdef STIR_OPENMP
-  std::vector< shared_ptr<DiscretisedDensity<3,float> > > local_output_image_sptrs;
-#pragma omp parallel shared(proj_data, symmetries_sptr, local_output_image_sptrs)
-#endif
-  {
-#ifdef STIR_OPENMP
-#pragma omp single
-    {
-      local_output_image_sptrs.resize(omp_get_num_threads(), shared_ptr<DiscretisedDensity<3,float> >());
-    }
-#pragma omp for schedule(runtime)
-#endif
-    // note: older versions of openmp need an int as loop
-    for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
-      {
-        const ViewSegmentNumbers vs=vs_nums_to_process[i];
-#ifdef STIR_OPENMP
-        RelatedViewgrams<float> viewgrams;
-#pragma omp critical (BACKPROJECTORBYBIN_GETVIEWGRAMS)
-        viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr);
-#else
-        const RelatedViewgrams<float> viewgrams =
-          proj_data.get_related_viewgrams(vs, symmetries_sptr);
-#endif
-#ifdef STIR_OPENMP
-        const int thread_num=omp_get_thread_num();
-        if(is_null_ptr(local_output_image_sptrs[thread_num]))
-          local_output_image_sptrs[thread_num].reset(image.get_empty_copy());
-
-        back_project(*(local_output_image_sptrs[thread_num]), viewgrams);
-#else
-        back_project(image, viewgrams);
-#endif
-      }
-  }
-#ifdef STIR_OPENMP
-  // "reduce" data constructed by threads
-  {
-    for (int i=0; i<static_cast<int>(local_output_image_sptrs.size()); ++i)
-      if(!is_null_ptr(local_output_image_sptrs[i])) // only accumulate if a thread filled something in
-        image += *(local_output_image_sptrs[i]);
-  }
-#endif
+  start_accumulating_in_new_image();
+  back_project(proj_data, subset_num, num_subsets);
+  get_output(image);
 }
-
+#ifdef STIR_PROJECTORS_AS_V3
 void
 BackProjectorByBin::back_project( DiscretisedDensity<3,float>& image,
                   const RelatedViewgrams<float>& viewgrams)
@@ -223,6 +159,7 @@ back_project(DiscretisedDensity<3,float>& density,
          max_tangential_pos_num);
   stop_timers();
 }
+#endif
 // -------------------------------------------------------------------------------------------------------------------- //
 // The following are repetition of above, where the DiscretisedDensity has already been set with start_accumulating_in_new_image()
 // -------------------------------------------------------------------------------------------------------------------- //
@@ -384,6 +321,16 @@ get_output(DiscretisedDensity<3,float> &density) const
     std::copy(_density_sptr->begin_all(), _density_sptr->end_all(), density.begin_all());
 #endif
 
+}
+
+void
+BackProjectorByBin::
+actual_back_project(DiscretisedDensity<3,float>&,
+                                 const RelatedViewgrams<float>&,
+                         const int, const int,
+                         const int, const int)
+{
+    error("BackProjectorByBin::actual_forward_project() This is deprecated and should not be used.");
 }
 
 void

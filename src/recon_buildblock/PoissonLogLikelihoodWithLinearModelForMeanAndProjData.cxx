@@ -769,7 +769,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 #endif
 }
 
-
+#if 0
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
@@ -801,7 +801,7 @@ add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view
   }
   
 }
-
+#endif
 
 template<typename TargetT>
 Succeeded
@@ -830,6 +830,9 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
     this->get_time_frame_definitions().get_start_time(this->get_time_frame_num());
   const double end_time =
     this->get_time_frame_definitions().get_end_time(this->get_time_frame_num());
+
+  this->get_projector_pair().get_forward_projector_sptr()->set_input(input);
+  this->get_projector_pair().get_back_projector_sptr()->start_accumulating_in_new_image();
 
   for (int segment_num = -this->get_max_segment_num_to_process();
        segment_num<= this->get_max_segment_num_to_process();
@@ -860,7 +863,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
           {
             tmp_viewgrams = this->get_proj_data().get_empty_related_viewgrams(view_segment_num, symmetries_sptr);
             this->get_projector_pair().get_forward_projector_sptr()->
-              forward_project(tmp_viewgrams, input);
+              forward_project(tmp_viewgrams);
           }
           
           // now divide by the data term
@@ -871,10 +874,12 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 
           // back-project
           this->get_projector_pair().get_back_projector_sptr()->
-            back_project(output, tmp_viewgrams);
+            back_project(tmp_viewgrams);
       }
 
   } // end of loop over segments
+
+  this->get_projector_pair().get_back_projector_sptr()->get_output(output);
 
   return Succeeded::yes;
 }

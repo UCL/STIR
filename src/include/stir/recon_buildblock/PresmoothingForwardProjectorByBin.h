@@ -90,12 +90,12 @@ private:
 
   shared_ptr<ForwardProjectorByBin> original_forward_projector_ptr;
   shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > image_processor_ptr;
-
+#ifdef STIR_PROJECTORS_AS_V3
   void actual_forward_project(RelatedViewgrams<float>&, 
                               const DiscretisedDensity<3,float>&,
                               const int min_axial_pos_num, const int max_axial_pos_num,
                               const int min_tangential_pos_num, const int max_tangential_pos_num);
-
+#endif
   void actual_forward_project(RelatedViewgrams<float>&,
                               const int min_axial_pos_num, const int max_axial_pos_num,
                               const int min_tangential_pos_num, const int max_tangential_pos_num);

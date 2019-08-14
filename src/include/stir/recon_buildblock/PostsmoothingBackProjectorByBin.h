@@ -92,12 +92,12 @@ private:
 
   shared_ptr<BackProjectorByBin> original_back_projector_ptr;
   shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > image_processor_ptr;
-
+#ifdef STIR_PROJECTORS_AS_V3
   void actual_back_project(DiscretisedDensity<3,float>&,
                            const RelatedViewgrams<float>&,
                            const int min_axial_pos_num, const int max_axial_pos_num,
                            const int min_tangential_pos_num, const int max_tangential_pos_num);
-
+#endif
   void actual_back_project(const RelatedViewgrams<float>&,
                            const int min_axial_pos_num, const int max_axial_pos_num,
                            const int min_tangential_pos_num, const int max_tangential_pos_num);

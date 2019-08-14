@@ -101,7 +101,7 @@ get_symmetries_used() const
 {
   return original_forward_projector_ptr->get_symmetries_used();
 }
-
+#ifdef STIR_PROJECTORS_AS_V3
 void 
 PresmoothingForwardProjectorByBin::
 actual_forward_project(RelatedViewgrams<float>& viewgrams, 
@@ -125,7 +125,7 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
                                                       min_tangential_pos_num, max_tangential_pos_num);
     }
 }
- 
+#endif
 void
 PresmoothingForwardProjectorByBin::
 actual_forward_project(RelatedViewgrams<float>& viewgrams,
@@ -133,7 +133,7 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
                   const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
     // No need to do the data processing since it was already done on set_input()
-    original_forward_projector_ptr->forward_project(viewgrams,*_density_sptr,
+    original_forward_projector_ptr->forward_project(viewgrams,
                                                       min_axial_pos_num, max_axial_pos_num,
                                                       min_tangential_pos_num, max_tangential_pos_num);
 }
