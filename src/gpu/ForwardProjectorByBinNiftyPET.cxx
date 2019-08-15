@@ -123,10 +123,9 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
 
 void
 ForwardProjectorByBinNiftyPET::
-set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
+set_input(const DiscretisedDensity<3,float> & density)
 {
-    // TODO: required?
-    _density_sptr.reset(density_sptr->clone());
+    ForwardProjectorByBin::set_input(density);
 
     // Create NiftyPET image
     std::vector<float> np_vec = _helper.create_niftyPET_image();

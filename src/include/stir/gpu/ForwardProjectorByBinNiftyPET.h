@@ -82,7 +82,7 @@ virtual void set_up(
   virtual  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
     /// Set input
-    virtual void set_input(const shared_ptr<DiscretisedDensity<3,float> >&);
+    virtual void set_input(const DiscretisedDensity<3,float>&);
 
 protected:
   //! This virtual function has to be implemented by the derived class.
