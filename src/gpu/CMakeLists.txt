@@ -16,6 +16,14 @@
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
 
+# Check that one of the libraries exists. 
+# This lets us know if NIFTYPET_DIR is correct or not.
+if(NOT EXISTS "${NIFTYPET_DIR}/niftypet/nipet/lm/mmr_lmproc.so")
+   MESSAGE(FATAL_ERROR "NIFTYPET_DIR is incorrect.")
+endif()
+
+MESSAGE(STATUS "Adding GPU projector...")
+
 SET(NIFTYPET_INCLUDE_DIRS 
 	"${NIFTYPET_DIR}/niftypet/nipet;"
 	"${NIFTYPET_DIR}/niftypet/nipet/dinf;"
@@ -45,8 +53,6 @@ set(${dir_LIB_SOURCES}
 include(stir_lib_target)
 
 target_link_libraries(gpu recon_buildblock modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
-
-
 
 
 # ------------------------------------------------------------- #

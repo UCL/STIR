@@ -87,22 +87,6 @@ option(DISABLE_RDF "disable use of GE RDF library" OFF)
 option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
 option(DISABLE_CERN_ROOT "disable use of Cern ROOT libraries" OFF)
 option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # disable by default
-option(DISBALE_GPU "disable use of GPU projectors" OFF)
-
-# GPU projector
-if (NOT DISBALE_GPU)
-  find_package(CUDA QUIET)
-  if (CUDA_FOUND)
-    set(NIFTYPET_DIR $ENV{NIFTYPET_DIR})
-    if ("${NIFTYPET_DIR}" STREQUAL "")
-      message(WARNING "NIFTYPET_DIR not set as env variable. If NiftyPET is installed, set this variable to use GPU projectors.")
-    else()
-      MESSAGE(STATUS "Adding GPU projector...")
-      set(STIR_gpu gpu)
-      set(STIR_gpu_test "test/gpu")
-    endif()
-  endif()
-endif()
 
 if(NOT DISABLE_ITK)
    # See if we can find a compiled version of ITK (http://www.itk.org/)
@@ -137,6 +121,20 @@ endif()
 
 # Enable version 3 projectors
 option(STIR_PROJECTORS_AS_V3 "Enable STIR version 3 legacy code" OFF)
+
+# GPU projector
+set(NIFTYPET_DIR "" CACHE PATH "Path to NiftyPET")
+if (NOT "${NIFTYPET_DIR}" STREQUAL "")
+  option(DISBALE_GPU "disable use of GPU projectors" OFF)
+  if (NOT DISBALE_GPU)
+    find_package(CUDA QUIET)
+    if (CUDA_FOUND)
+      MESSAGE(STATUS "Adding GPU projector...")
+      set(STIR_gpu gpu)
+      set(STIR_gpu_test "test/gpu")
+    endif()
+  endif()
+endif()
 
 #### enable support for ctest
 ENABLE_TESTING()
