@@ -180,7 +180,7 @@ BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int 
                                          subset_num, num_subsets);
 
 #ifdef STIR_OPENMP
-#pragma omp parallel shared(proj_data, symmetries_sptr, _local_output_image_sptrs)
+#pragma omp parallel shared(proj_data, symmetries_sptr)
 #endif
   {
 #ifdef STIR_OPENMP
