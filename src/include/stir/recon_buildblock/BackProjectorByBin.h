@@ -115,7 +115,7 @@ public:
 #endif
  //! project whole proj_data into the volume
  /*! it overwrites the data already present in the volume */
- void back_project(const ProjData&, int subset_num = 0, int num_subsets = 1);
+ virtual void back_project(const ProjData&, int subset_num = 0, int num_subsets = 1);
 
  /*! \brief projects the viewgrams into the volume
   it adds to the data already present in the volume.*/
@@ -133,7 +133,7 @@ void back_project(const RelatedViewgrams<float>&,
           const int min_tangential_pos_num, const int max_tangential_pos_num);
 
  /*! \brief tell the back projector to start accumulating into a new image*/
- void start_accumulating_in_new_target();
+ virtual void start_accumulating_in_new_target();
 
  /// Get output
  virtual void get_output(DiscretisedDensity<3,float> &) const;
