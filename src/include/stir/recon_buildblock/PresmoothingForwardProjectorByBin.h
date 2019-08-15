@@ -4,10 +4,12 @@
   \brief Declaration of class stir::PresmoothingForwardProjectorByBin
 
   \author Kris Thielemans
+  \author Richard Brown
 
 */
 /*
     Copyright (C) 2002- 2007, Hammersmith Imanet
+    Copyright (C) 2019, University College London
 
     This file is part of STIR.
 

@@ -7,10 +7,12 @@
   \brief Declaration of class PostsmoothingForwardProjectorByBin
 
   \author Kris Thielemans
+  \author Richard Brown
 
 */
 /*
     Copyright (C) 2000- 2001, IRSL
+    Copyright (C) 2019, University College London
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_recon_buildblock_PostsmoothingForwardProjectorByBin__H__

@@ -80,6 +80,7 @@ Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
   <li> minor changes when using Python/MATLAB</li>
   <li> the need for a new <code>z zoom</code> keyword for SPECT reconstructions (see the updated sample .par files)</li>
   <li> changed image orientation when reading/writing images via ITK</li>
+  <li> Images must be set prior to using the forward and back projectors. To tell the back projector to start projecting into a new image, <tt>reset_output</tt> must be used. The result of the back projection is then returned via <tt>get_output</tt>. Backwards compatibility can be maintained with the CMake switch, <tt>STIR_PROJECTORS_AS_V3</tt>. The user should not notice these changes unless they have developed their own projectors.</li>
 </ul>
 
 It is now highly recommended to specify imaging modality and patient orientation in your Interfile headers. If you don't,
@@ -137,7 +138,7 @@ These are only minimally documented at the present stage unfortunately.
 <li><tt>list_image_info</tt> now has options to list exam info, or only part of the information (as <tt>list_projdata_info</tt>).</li>
 <li><tt>list_lm_countrates</tt> is a new list mode utility to output total counts per specified time interval.</li>
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
-<li>add Verbosity level (currently only to be set from interactive languages)</li
+<li>add Verbosity level (currently only to be set from interactive languages)</li>
 <li>Added the anatomical parallel level sets (PLS) prior. If an uniform anatomical image is provided it will work as a (smoothed) total variation (TV) prior </li>
 <li>New IO:
   <ul>
@@ -225,6 +226,7 @@ HFS, FFS, HFP or FFP).
     trigger or frame times in a series is no longer enforced. This allows 3-D DICOM volumes to be read correctly but may cause
     issues for dynamic PET or CT data.
   </li>
+  <li> As mentioned in the breaking of backwards compatibility, images must be set prior to using the forward and back projectors. To tell the back projector to start projecting into a new image, <tt>reset_output</tt> must be used. The result of the back projection is then returned via <tt>get_output</tt>. This was done so that using data processors (such as motion or smoothing) prior to the forwards projection or following the back projection will be more efficient.</li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>
 <ul>

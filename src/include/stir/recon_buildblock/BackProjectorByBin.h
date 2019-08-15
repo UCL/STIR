@@ -9,12 +9,13 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
+  \author Richard Brown
 
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018-2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

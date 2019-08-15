@@ -4,10 +4,12 @@
   \brief Implementation of class stir::PostsmoothingBackProjectorByBin
 
   \author Kris Thielemans
+  \author Richard Brown
 
 */
 /*
     Copyright (C) 2000- 2012, Hammersmith Imanet
+    Copyright (C) 2019, University College London
 
     This file is part of STIR.
 
