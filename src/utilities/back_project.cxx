@@ -111,7 +111,7 @@ main (int argc, char * argv[])
 #if 0
   back_projector_sptr->back_project(*image_density_sptr, *proj_data_sptr);
 #else
-  back_projector_sptr->start_accumulating_in_new_image();
+  back_projector_sptr->reset_output();
   back_projector_sptr->back_project(*proj_data_sptr);
   back_projector_sptr->get_output(*image_density_sptr);
 #endif

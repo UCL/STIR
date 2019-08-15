@@ -131,8 +131,8 @@ void back_project(const RelatedViewgrams<float>&,
           const int min_axial_pos_num, const int max_axial_pos_num,
           const int min_tangential_pos_num, const int max_tangential_pos_num);
 
- /*! \brief tell the back projector to start accumulating into a new image*/
- void start_accumulating_in_new_image();
+ /*! \brief tell the back projector to start accumulating into a new target/image*/
+ void reset_output();
 
  /// Get output
  virtual void get_output(DiscretisedDensity<3,float> &) const;

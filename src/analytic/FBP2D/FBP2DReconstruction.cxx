@@ -303,7 +303,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
                     fft_size, 
                     float(alpha_ramp), float(fc_ramp));   
 
-  back_projector_sptr->start_accumulating_in_new_image();
+  back_projector_sptr->reset_output();
 
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(back_projector_sptr->get_symmetries_used()->clone());
