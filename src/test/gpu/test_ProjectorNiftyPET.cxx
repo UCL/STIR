@@ -26,13 +26,13 @@
 
 #include "stir/gpu/ForwardProjectorByBinNiftyPET.h"
 #include "stir/gpu/BackProjectorByBinNiftyPET.h"
+#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/RunTests.h"
 #include "stir/num_threads.h"
 #include "stir/CPUTimer.h"
 #include "stir/IO/OutputFileFormat.h"
-#include "stir/IO/ITKOutputFileFormat.h"
 
 START_NAMESPACE_STIR
 
@@ -64,24 +64,22 @@ TestGPUProjectors(std::string image_filename, std::string sinogram_filename) :
 {
 }
 
-template<class fwrd, class back>
-void project(const shared_ptr<const ProjDataInMemory> input_sino_sptr, const shared_ptr<const DiscretisedDensity<3,float> > input_image_sptr)
+void project(double &time, shared_ptr<ProjDataInMemory> sino_sptr, shared_ptr<DiscretisedDensity<3,float> > image_sptr, const shared_ptr<const ProjDataInMemory> input_sino_sptr, const shared_ptr<const DiscretisedDensity<3,float> > input_image_sptr, ForwardProjectorByBin &fwrd_projector, BackProjectorByBin &back_projector, const std::string &name)
 {
+    image_sptr.reset(input_image_sptr->clone());
+    sino_sptr = MAKE_SHARED<ProjDataInMemory>(*input_sino_sptr);
+
+    // set the output image and singorams to zero
+    sino_sptr->fill(0.F);
+    image_sptr->fill(0.F);
+
     CPUTimer timer;
     timer.start();
 
-    // Copy image and sinogram
-    shared_ptr<DiscretisedDensity<3,float> > image_sptr(input_image_sptr->clone());
-    shared_ptr<ProjDataInMemory> sino_sptr = MAKE_SHARED<ProjDataInMemory>(*input_sino_sptr);
-
-    // Set the sinogram to zero
-    sino_sptr->fill(0.F);
-
     // Do the forward projection
-    std::cerr << "\nDoing forward projection using " << fwrd::registered_name << "...\n";
-    fwrd fwrd_projector;
+    std::cerr << "\nDoing forward projection using " << fwrd_projector.get_registered_name() << "...\n";
     fwrd_projector.set_up(sino_sptr->get_proj_data_info_sptr(), image_sptr);
-    fwrd_projector.set_input(image_sptr);
+    fwrd_projector.set_input(*input_image_sptr);
     fwrd_projector.forward_project(*sino_sptr);
     timer.stop();
     double time_fwd(timer.value());
@@ -94,25 +92,23 @@ void project(const shared_ptr<const ProjDataInMemory> input_sino_sptr, const sha
     image_sptr->fill(0.F);
 
     // Back project
-    std::cerr << "\nDoing back projection using " << back::registered_name << "...\n";
-    back back_projector;
-    back_projector.set_up(sino_sptr->get_proj_data_info_sptr(),image_sptr);
+    std::cerr << "\nDoing back projection using " << back_projector.get_registered_name() << "...\n";
+    back_projector.set_up(input_sino_sptr->get_proj_data_info_sptr(),image_sptr);
     back_projector.reset_output();
-    back_projector.back_project(*sino_sptr);
+    back_projector.back_project(*input_sino_sptr);
     back_projector.get_output(*image_sptr);
     timer.stop();
     double time_bck(timer.value());
     std::cerr << "\tDone! (" << time_bck << " secs)\n";
 
-    std::cerr << "\nTotal time for projection with " << fwrd::registered_name << ": " << time_fwd+time_bck << " secs.\n";
+    time = time_fwd+time_bck;
 
-    sino_sptr->write_to_file("/home/rich/Documents/Data/forward_projected.hs");
+    std::cerr << "\nTotal time for projection with " << fwrd_projector.get_registered_name() << ": " << time << " secs.\n";
+
+    sino_sptr->write_to_file(name + "_forward_projected.hs");
     shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr =
             OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
-    output_file_format_sptr->write_to_file("/home/rich/Documents/Data/forward_then_back_projected",*image_sptr);
-    ITKOutputFileFormat itk_writer;
-    itk_writer.default_extension = ".nii";
-    itk_writer.write_to_file("/home/rich/Documents/Data/forward_then_back_projected",*image_sptr);
+    output_file_format_sptr->write_to_file(name + "_back_projected",*image_sptr);
 }
 
 void
@@ -123,11 +119,38 @@ run_projections()
     const shared_ptr<const DiscretisedDensity<3,float> > image_sptr(DiscretisedDensity<3,float>::read_from_file(_image_filename));
     const shared_ptr<const ProjDataInMemory> sino_sptr = MAKE_SHARED<ProjDataInMemory>(*ProjData::read_from_file(_sinogram_filename));
 
-    // Forward and back project
-    project<ForwardProjectorByBinNiftyPET,BackProjectorByBinNiftyPET>(sino_sptr,image_sptr);
-    //    project<ForwardProjectorByBinUsingProjMatrixByBin,BackProjectorByBinUsingProjMatrixByBin>(proj_data,input);
+    // Create output images and sinograms
+    shared_ptr<DiscretisedDensity<3,float> > gpu_image_sptr, cpu_image_sptr;
+    shared_ptr<ProjDataInMemory> gpu_sino_sptr, cpu_sino_sptr;
+    double time_gpu, time_cpu;
+
+    // Forward and back project - gpu
+    ForwardProjectorByBinNiftyPET gpu_fwrd;
+    BackProjectorByBinNiftyPET    gpu_back;
+    project(time_gpu, gpu_sino_sptr, gpu_image_sptr, sino_sptr, image_sptr, gpu_fwrd, gpu_back, "gpu");
+
+    // Forward and back project - cpu
+    shared_ptr<ProjMatrixByBin> PM_sptr(new  ProjMatrixByBinUsingRayTracing());
+    ForwardProjectorByBinUsingProjMatrixByBin cpu_fwrd(PM_sptr);
+    BackProjectorByBinUsingProjMatrixByBin    cpu_back(PM_sptr);
+    project(time_cpu, cpu_sino_sptr, cpu_image_sptr, sino_sptr, image_sptr, cpu_fwrd, cpu_back, "cpu");
 
     // comparison
+    std::cout << "\nTime for forward and back projection\n";
+    std::cout << "\tGPU: " << time_gpu << "\n";
+    std::cout << "\tCPU: " << time_cpu << "\n";
+
+    const float min_image_gpu = gpu_image_sptr->find_min();
+    const float min_image_cpu = cpu_image_sptr->find_min();
+    const float max_image_gpu = gpu_image_sptr->find_max();
+    const float max_image_cpu = cpu_image_sptr->find_max();
+    const float percent_diff_max_image = 100.f*(max_image_gpu-max_image_cpu)/max_image_cpu;
+    std::cout << "\nMin/max in back projected images\n";
+    std::cout << "\tGPU: " << min_image_gpu << "/" << max_image_gpu << "\n";
+    std::cout << "\tCPU: " << min_image_cpu << "/" << max_image_cpu << "\n";
+    std::cout << "\tDiff in max (%): " << percent_diff_max_image << "\n";
+    if (std::abs(percent_diff_max_image) > 1)
+        throw std::runtime_error("not ok");
 }
 
 void
