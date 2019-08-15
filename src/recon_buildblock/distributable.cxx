@@ -410,7 +410,7 @@ void distributable_computation(
   //double total_seq_rpc_time=0.0; //sums up times used for RPC_process_related_viewgrams
 
   forward_projector_ptr->set_input(*input_image_ptr);
-  back_projector_ptr->reset_output();
+  back_projector_ptr->start_accumulating_in_new_target();
 
 #ifdef STIR_OPENMP
   std::vector<double> local_log_likelihoods;

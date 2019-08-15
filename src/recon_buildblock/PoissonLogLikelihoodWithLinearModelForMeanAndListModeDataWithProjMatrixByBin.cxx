@@ -345,7 +345,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
     const int max_segment_num = proj_data_info_sptr->get_max_segment_num();
 
     this->projector_pair_sptr->get_back_projector_sptr()->
-      reset_output();
+      start_accumulating_in_new_target();
 
     // warning: has to be same as subset scheme used as in distributable_computation
     for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)

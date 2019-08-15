@@ -102,7 +102,7 @@ do_segments(DiscretisedDensity<3,float>& image,
   
   list<ViewSegmentNumbers> already_processed;
   
-  back_projector_ptr->reset_output();
+  back_projector_ptr->start_accumulating_in_new_target();
 
   for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
     for (int view= start_view; view<=end_view; view++)

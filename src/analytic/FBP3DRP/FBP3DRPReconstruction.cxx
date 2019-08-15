@@ -662,7 +662,7 @@ void FBP3DRPReconstruction::do_3D_Reconstruction(
 								  back_projector_sptr->get_symmetries_used()->clone());
 
   forward_projector_sptr->set_input(estimated_image());
-  back_projector_sptr->reset_output();
+  back_projector_sptr->start_accumulating_in_new_target();
 
   for (int seg_num= -max_segment_num_to_process; seg_num <= max_segment_num_to_process; seg_num++) 
   {

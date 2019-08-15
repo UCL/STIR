@@ -91,7 +91,7 @@ void
 BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
 const ProjData& proj_data, int subset_num, int num_subsets)
 {
-  reset_output();
+  start_accumulating_in_new_target();
   back_project(proj_data, subset_num, num_subsets);
   get_output(image);
 }
@@ -162,7 +162,7 @@ back_project(DiscretisedDensity<3,float>& density,
 }
 #endif
 // -------------------------------------------------------------------------------------------------------------------- //
-// The following are repetition of above, where the DiscretisedDensity has already been set with reset_output()
+// The following are repetition of above, where the DiscretisedDensity has already been set with start_accumulating_in_new_target()
 // -------------------------------------------------------------------------------------------------------------------- //
 void
 BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int num_subsets)
@@ -285,11 +285,11 @@ back_project(const RelatedViewgrams<float>& viewgrams,
 
 void
 BackProjectorByBin::
-reset_output()
+start_accumulating_in_new_target()
 {
 #ifdef STIR_OPENMP
   if (omp_get_num_threads()!=1)
-      error("BackProjectorByBin::reset_output cannot be called inside a thread");
+      error("BackProjectorByBin::start_accumulating_in_new_target cannot be called inside a thread");
 
   for (int i=0; i<static_cast<int>(_local_output_image_sptrs.size()); ++i)
                if(!is_null_ptr(_local_output_image_sptrs[i])) // only accumulate if a thread filled something in
