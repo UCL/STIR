@@ -97,7 +97,7 @@ void project(const shared_ptr<const ProjDataInMemory> input_sino_sptr, const sha
     std::cerr << "\nDoing back projection using " << back::registered_name << "...\n";
     back back_projector;
     back_projector.set_up(sino_sptr->get_proj_data_info_sptr(),image_sptr);
-    back_projector.start_accumulating_in_new_image();
+    back_projector.reset_output();
     back_projector.back_project(*sino_sptr);
     back_projector.get_output(*image_sptr);
     timer.stop();
