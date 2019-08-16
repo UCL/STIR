@@ -336,7 +336,7 @@ convert_proj_data_stir_to_niftyPET(std::vector<float> &np_vec, const ProjData& s
         get_stir_segment_and_axial_pos_from_niftypet_sino(segment, axial_pos, np_sino, sizes, segment_sequence);
 
         // Get the corresponding STIR sinogram
-        const Sinogram<float> sino = stir.get_sinogram(axial_pos,segment);
+        const Sinogram<float> &sino = stir.get_sinogram(axial_pos,segment);
 
         // Loop over the STIR view and tangential position
         for (int view=min_view; view<=max_view; ++view) {
