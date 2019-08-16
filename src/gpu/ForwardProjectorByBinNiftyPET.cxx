@@ -148,13 +148,13 @@ set_input(const DiscretisedDensity<3,float> & density)
     int n1crs                 = _helper.get_n1crs();
     char att                  = _helper.get_att();
 
-    std::vector<float> sinog  = _helper.create_niftyPET_sinogram_no_gaps();
+    std::vector<float> sino_no_gaps  = _helper.create_niftyPET_sinogram_no_gaps();
 
     // --------------------------------------------------------------- //
     //   Do the forward projection!
     // --------------------------------------------------------------- //
 
-    gpu_fprj(sinog.data(), np_vec.data(),
+    gpu_fprj(sino_no_gaps.data(), np_vec.data(),
         li2rng.data(), li2sn.data(), li2nos.data(), s2c.data(), aw2ali.data(), crs.data(),
         isub.data(), int(isub.size()),
         Naw, n0crs, n1crs,
@@ -165,7 +165,7 @@ set_input(const DiscretisedDensity<3,float> & density)
     // --------------------------------------------------------------- //
 
     std::vector<float> sino_w_gaps = _helper.create_niftyPET_sinogram_with_gaps();
-    put_gaps(sino_w_gaps.data(),sinog.data(),aw2ali.data(),Cnt);
+    put_gaps(sino_w_gaps.data(),sino_no_gaps.data(),aw2ali.data(),Cnt);
 
     // --------------------------------------------------------------- //
     //   NiftyPET -> STIR projection data conversion

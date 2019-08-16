@@ -123,8 +123,8 @@ back_project(const ProjData& proj_data, int, int)
     //   Remove gaps from sinogram
     // --------------------------------------------------------------- //
 
-    std::vector<float> sinog = _helper.create_niftyPET_sinogram_no_gaps();
-    remove_gaps(sinog.data(),sino_w_gaps.data(),nsinos,aw2ali.data(),Cnt);
+    std::vector<float> sino_no_gaps = _helper.create_niftyPET_sinogram_no_gaps();
+    remove_gaps(sino_no_gaps.data(),sino_w_gaps.data(),nsinos,aw2ali.data(),Cnt);
 
     // --------------------------------------------------------------- //
     //   Back project
@@ -132,7 +132,7 @@ back_project(const ProjData& proj_data, int, int)
 
     std::vector<float> np_im = _helper.create_niftyPET_image();
 
-    gpu_bprj(np_im.data(),sinog.data(),
+    gpu_bprj(np_im.data(),sino_no_gaps.data(),
              li2rng.data(),li2sn.data(),li2nos.data(),s2c.data(),aw2ali.data(),crs.data(),
              isub.data(), int(isub.size()),
              Naw,n0crs,n1crs,
