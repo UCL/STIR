@@ -80,11 +80,18 @@ Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
   <li> minor changes when using Python/MATLAB</li>
   <li> the need for a new <code>z zoom</code> keyword for SPECT reconstructions (see the updated sample .par files)</li>
   <li> changed image orientation when reading/writing images via ITK</li>
-  <li> Images must be set prior to using the forward and back projectors. To tell the back projector 
-    to start projecting into a new image, <tt>start_accumulating_in_new_target</tt> must be used. 
-    The result of the back projection is then returned via <tt>get_output</tt>. Backwards compatibility 
-    can be maintained with the CMake switch, <tt>STIR_PROJECTORS_AS_V3</tt>. The user should not notice 
-  these changes unless they have developed their own projectors.</li>
+  <li> The resulting target must be set prior to using the forward and back projectors. 
+    For the forward projector this is done with <tt>set_input</tt>. 
+    For the back projector, this is done during the <tt>set_up</tt>, 
+    but then<tt>start_accumulating_in_new_target</tt> must be called each time the user
+    wishes to start back projecting into a zero-filled image. 
+    The result of the back projection is then returned via <tt>get_output</tt>. 
+    Backwards compatibility can be maintained with the CMake switch, 
+    <tt>STIR_PROJECTORS_AS_V3</tt>. The user should not notice 
+    these changes unless they have developed their own projectors. 
+    These changes were made so that using data processors (such as motion or 
+    smoothing) prior to the forwards projection or following the back 
+  projection will be more efficient.</li>
 </ul>
 
 It is now highly recommended to specify imaging modality and patient orientation in your Interfile headers. If you don't,
@@ -230,11 +237,6 @@ HFS, FFS, HFP or FFP).
     trigger or frame times in a series is no longer enforced. This allows 3-D DICOM volumes to be read correctly but may cause
     issues for dynamic PET or CT data.
   </li>
-  <li> As mentioned in the breaking of backwards compatibility, images must be set prior to using the forward 
-    and back projectors. To tell the back projector to start projecting into a new image, 
-    <tt>start_accumulating_in_new_target</tt> must be used. The result of the back projection is then 
-    returned via <tt>get_output</tt>. This was done so that using data processors (such as motion or 
-  smoothing) prior to the forwards projection or following the back projection will be more efficient.</li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>
 <ul>
