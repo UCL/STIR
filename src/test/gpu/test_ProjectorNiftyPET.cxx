@@ -47,7 +47,7 @@ class TestGPUProjectors : public RunTests
 {
 public:
   //! Constructor that can take some input data to run the test with
-  TestGPUProjectors(std::string image_filename, std::string sinogram_filename);
+  TestGPUProjectors(const std::string &image_filename, const std::string &sinogram_filename);
   virtual ~TestGPUProjectors() {}
 
   void run_tests();
@@ -58,7 +58,7 @@ protected:
 };
 
 TestGPUProjectors::
-TestGPUProjectors(std::string image_filename, std::string sinogram_filename) :
+TestGPUProjectors(const string &image_filename, const string &sinogram_filename) :
     _image_filename(image_filename),
     _sinogram_filename(sinogram_filename)
 {
