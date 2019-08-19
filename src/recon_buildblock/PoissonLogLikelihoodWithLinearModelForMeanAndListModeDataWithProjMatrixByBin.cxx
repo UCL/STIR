@@ -98,7 +98,7 @@ initialise_keymap()
   this->parser.add_stop_key("End PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters"); 
   this->parser.add_key("max ring difference num to process", &this->max_ring_difference_num_to_process);
   this->parser.add_parsing_key("Matrix type", &this->PM_sptr); 
-  this->parser.add_key("additive sinogram",&this->additive_projection_data_filename); 
+  this->parser.add_key("additive sinogram",&this->additive_projection_data_filename);
  
   this->parser.add_key("num_events_to_use",&this->num_events_to_use);
 } 
