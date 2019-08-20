@@ -467,8 +467,6 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
             if (measured_bin.get_bin_value() != 1.0f
                     || measured_bin.segment_num() < proj_data_info_sptr->get_min_segment_num()
                     || measured_bin.segment_num()  > proj_data_info_sptr->get_max_segment_num()
-                    || measured_bin.view_num() < proj_data_info_sptr->get_min_view_num()
-                    || measured_bin.view_num()  > proj_data_info_sptr->get_max_view_num()
                     || measured_bin.tangential_pos_num() < proj_data_info_sptr->get_min_tangential_pos_num()
                     || measured_bin.tangential_pos_num() > proj_data_info_sptr->get_max_tangential_pos_num()
                     || measured_bin.axial_pos_num() < proj_data_info_sptr->get_min_axial_pos_num(measured_bin.segment_num())
