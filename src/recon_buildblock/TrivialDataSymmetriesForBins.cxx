@@ -60,7 +60,7 @@ TrivialDataSymmetriesForBins::num_related_bins(const Bin& b) const
 
 bool TrivialDataSymmetriesForBins::find_basic_bin(Bin& b) const
 {
-  return true;
+  return false;
 }
 
 
