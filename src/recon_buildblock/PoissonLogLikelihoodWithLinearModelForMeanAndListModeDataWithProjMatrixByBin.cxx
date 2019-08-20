@@ -476,8 +476,8 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
             if (this->num_subsets > 1)
             {
                 Bin basic_bin = measured_bin;
-                if (!this->PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin) ||
-                        subset_num != static_cast<int>(basic_bin.view_num() % this->num_subsets))
+                this->PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin);
+                if (subset_num != static_cast<int>(basic_bin.view_num() % this->num_subsets))
                     continue;
             }
 
