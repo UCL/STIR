@@ -9,12 +9,13 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
+  \author Richard Brown
 
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018-2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -93,7 +94,7 @@ public:
     */
   void back_project(DiscretisedDensity<3,float>&,
 		const ProjData&, int subset_num = 0, int num_subsets = 1);
-
+#ifdef STIR_PROJECTORS_AS_V3
   /*! \brief projects the viewgrams into the volume
    it adds to the data already present in the volume.*/
  void back_project(DiscretisedDensity<3,float>&,
@@ -111,14 +112,63 @@ public:
 		   const RelatedViewgrams<float>&,
 		   const int min_axial_pos_num, const int max_axial_pos_num,
 		   const int min_tangential_pos_num, const int max_tangential_pos_num);
+#endif
+ /*! \brief projects the viewgrams into the volume
+   it adds to the data backprojected since start_accumulating_in_new_target() was last called. */
+ virtual void back_project(const ProjData&, int subset_num = 0, int num_subsets = 1);
 
+ /*! \brief projects the viewgrams into the volume
+  it adds to the data backprojected since start_accumulating_in_new_target() was last called. */
+void back_project(const RelatedViewgrams<float>&);
+
+ /*! \brief projects the specified range of the viewgrams and axial positions into the volume
+  it adds to the data backprojected since start_accumulating_in_new_target() was last called. */
+void back_project(const RelatedViewgrams<float>&,
+          const int min_axial_pos_num, const int max_axial_pos_num);
+
+ /*! \brief projects the specified range of the viewgrams, axial positions and tangential positions into the volume
+   it adds to the data backprojected since start_accumulating_in_new_target() was last called. */
+void back_project(const RelatedViewgrams<float>&,
+          const int min_axial_pos_num, const int max_axial_pos_num,
+          const int min_tangential_pos_num, const int max_tangential_pos_num);
+
+ /*! \brief tell the back projector to start accumulating into a new target.
+   This function has to be called before any back-projection is initiated.*/
+ virtual void start_accumulating_in_new_target();
+
+ /*! \brief Get output
+  This will overwrite the array-content of the argument with the result of all backprojections since calling `start_accumulating_in_new_target()`. Note that the argument has to have the same characteristics as what was used when calling `set_up()`.
+ */
+ virtual void get_output(DiscretisedDensity<3,float> &) const;
 
 protected:
 
+  /*! \brief This actually does the back projection.
+   There are two versions of this code to enable backwards compatibility.
+
+   This is the older version (in which the backprojected image is not a member variable).
+   In most cases, the new version (in which the backprojected image is a member variable) calls the old version.
+
+   If you are developing your own projector, one of these two needs to be overloaded. It doesn't matter which,
+   but it might as well be the new one in case we one day decide to remove the old ones.
+  */
   virtual void actual_back_project(DiscretisedDensity<3,float>&,
                                    const RelatedViewgrams<float>&,
 		                   const int min_axial_pos_num, const int max_axial_pos_num,
-		                   const int min_tangential_pos_num, const int max_tangential_pos_num) = 0;
+                           const int min_tangential_pos_num, const int max_tangential_pos_num);
+
+  /*! \brief This actually does the back projection.
+   There are two versions of this code to enable backwards compatibility.
+
+   This is the newer version (in which the backprojected image is a member variable).
+   In most cases, the new version calls the old version (in which the backprojected image is not a member variable).
+
+   If you are developing your own projector, one of these two needs to be overloaded. It doesn't matter which,
+   but it might as well be the new one in case we one day decide to remove the old ones.
+  */
+ virtual void actual_back_project(const RelatedViewgrams<float>&,
+                          const int min_axial_pos_num, const int max_axial_pos_num,
+                          const int min_tangential_pos_num, const int max_tangential_pos_num);
   //! check if the argument is the same as what was used for set_up()
   /*! calls error() if anything is wrong.
 
@@ -127,11 +177,11 @@ protected:
   virtual void check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& density_info) const;
   bool _already_set_up;
 
+  //! Clone of the density sptr set with set_up()
+  shared_ptr<DiscretisedDensity<3,float> > _density_sptr;
+
  private:
   shared_ptr<ProjDataInfo> _proj_data_info_sptr;
-  //! The density ptr set with set_up()
-  /*! \todo it is wasteful to have to store the whole image as this uses memory that we don't need. */
-  shared_ptr<DiscretisedDensity<3,float> > _density_info_sptr;
 
   void do_segments(DiscretisedDensity<3,float>& image, 
             const ProjData& proj_data_org,
@@ -140,6 +190,10 @@ protected:
 	    const int start_tang_pos_num,const int end_tang_pos_num,
 	    const int start_view, const int end_view);
 
+#ifdef STIR_OPENMP
+  //! A vector of back projected images that will be used with openMP. There will be as many images as openMP threads
+  std::vector< shared_ptr<DiscretisedDensity<3,float> > > _local_output_image_sptrs;
+#endif
 
 };
 

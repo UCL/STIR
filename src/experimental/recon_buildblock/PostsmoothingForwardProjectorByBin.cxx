@@ -126,7 +126,7 @@ get_symmetries_used() const
 {
   return original_forward_projector_ptr->get_symmetries_used();
 }
-
+#ifdef STIR_PROJECTORS_AS_V3
 void 
 PostsmoothingForwardProjectorByBin::
 actual_forward_project(RelatedViewgrams<float>& viewgrams, 
@@ -147,7 +147,27 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
       }
 
 }
+#endif
+void
+PostsmoothingForwardProjectorByBin::
+actual_forward_project(RelatedViewgrams<float>& viewgrams,
+                  const int min_axial_pos_num, const int max_axial_pos_num,
+                  const int min_tangential_pos_num, const int max_tangential_pos_num)
+{
+    // No need to do the data processing since it was already done on set_input()
+    original_forward_projector_ptr->forward_project(viewgrams,
+                                                      min_axial_pos_num, max_axial_pos_num,
+                                                      min_tangential_pos_num, max_tangential_pos_num);
  
+    for(RelatedViewgrams<float>::iterator iter = viewgrams.begin();
+        iter != viewgrams.end();
+        ++iter)
+        {
+          smooth(*iter,
+                 min_axial_pos_num, max_axial_pos_num,
+                 min_tangential_pos_num, max_tangential_pos_num);
+        }
+}
 void 
 PostsmoothingForwardProjectorByBin::
 smooth(Viewgram<float>& v,
