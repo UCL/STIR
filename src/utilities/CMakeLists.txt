@@ -32,6 +32,7 @@ set(${dir_EXE_SOURCES}
 	compare_projdata 
 	compare_image 
 	extract_segments 
+        estimate_triple_energy_window_scatter_sinogram
 	correct_projdata 
 	stir_math 
 	list_projdata_info 
