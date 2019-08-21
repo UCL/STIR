@@ -186,10 +186,10 @@ protected:
 
   //! Clone of the density sptr set with set_up()
   shared_ptr<DiscretisedDensity<3,float> > _density_sptr;
+  shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > _post_data_processor_sptr;
 
  private:
   shared_ptr<ProjDataInfo> _proj_data_info_sptr;
-  shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > _post_data_processor_sptr;
 
   void do_segments(DiscretisedDensity<3,float>& image, 
             const ProjData& proj_data_org,
