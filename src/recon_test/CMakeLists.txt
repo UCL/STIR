@@ -31,6 +31,7 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
         fwdtest
         bcktest
         recontest
+        test_data_processor_projectors
 )
 
 include(stir_test_exe_targets)
