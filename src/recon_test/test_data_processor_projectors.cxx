@@ -51,8 +51,8 @@ protected:
     float _fwhm;
     shared_ptr<DiscretisedDensity<3,float> > _input_image_sptr;
     shared_ptr<ProjDataInMemory> _input_sino_sptr;
-    void pre_data_processor_fwd_proj() const;
-    void post_data_processor_bck_proj() const;
+    Succeeded pre_data_processor_fwd_proj() const;
+    Succeeded post_data_processor_bck_proj() const;
 };
 
 TestDataProcessorProjectors::TestDataProcessorProjectors(const string &image_filename, const string &sinogram_filename, const float fwhm) :
@@ -73,9 +73,11 @@ run_tests()
         _input_sino_sptr = MAKE_SHARED<ProjDataInMemory>(*ProjData::read_from_file(_sinogram_filename));
 
         cerr << "Tests for pre-data-processor forward projection\n";
-        this->pre_data_processor_fwd_proj();
+        Succeeded success_fwd = this->pre_data_processor_fwd_proj();
         cerr << "Tests for post-data-processor back projection\n";
-        this->post_data_processor_bck_proj();
+        Succeeded success_bck = this->post_data_processor_bck_proj();
+        if (success_fwd == Succeeded::no || success_bck == Succeeded::no)
+            everything_ok = false;
     }
     catch(const std::exception &error) {
         std::cerr << "\nHere's the error:\n\t" << error.what() << "\n\n";
@@ -104,7 +106,22 @@ get_data_processor(shared_ptr<SeparableCartesianMetzImageFilter<float> > &data_p
     data_processor_sptr->parse(parameterstream);
 }
 
-void
+Succeeded compare_images(const DiscretisedDensity<3,float> &im_1, const DiscretisedDensity<3,float> &im_2)
+{
+    if (im_1 == im_2) {
+        std::cout << "\nImages match!\n";
+        return Succeeded::yes;
+    }
+
+    std::cout << "\nImages don't match\n";
+    std::cout << "Min im1 / im2 = " << im_1.find_min() << " / " << im_2.find_min() << "\n";
+    std::cout << "Max im1 / im2 = " << im_1.find_max() << " / " << im_2.find_max() << "\n";
+    std::cout << "Sum im1 / im2 = " << im_1.sum()      << " / " << im_2.sum()      << "\n";
+
+    return Succeeded::no;
+}
+
+Succeeded
 TestDataProcessorProjectors::
 pre_data_processor_fwd_proj() const
 {
@@ -122,7 +139,6 @@ pre_data_processor_fwd_proj() const
     shared_ptr<SeparableCartesianMetzImageFilter<float> > data_processor_sptr;
     get_data_processor(data_processor_sptr, _fwhm);
     data_processor_sptr->set_up(*_input_image_sptr);
-
 
     // Loop over twice!
     for (unsigned i=0; i<sinos.size(); ++i) {
@@ -144,11 +160,10 @@ pre_data_processor_fwd_proj() const
         projectors[i].forward_project(*sinos[i]);
     }
 
-    if (images[0] != images[1])
-        throw std::runtime_error("TestDataProcessorProjectors, forward projection: images don't match!");
+    return compare_images(*images[0],*images[1]);
 }
 
-void
+Succeeded
 TestDataProcessorProjectors::
 post_data_processor_bck_proj() const
 {
@@ -189,8 +204,7 @@ post_data_processor_bck_proj() const
             data_processor_sptr->apply(*images[i]);
     }
 
-    if (images[0] != images[1])
-        throw std::runtime_error("TestDataProcessorProjectors, back projection: images don't match!");
+    return compare_images(*images[0],*images[1]);
 }
 
 END_NAMESPACE_STIR
