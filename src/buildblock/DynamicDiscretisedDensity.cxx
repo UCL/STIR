@@ -111,12 +111,12 @@ get_densities() const
 const DiscretisedDensity<3,float> & 
 DynamicDiscretisedDensity::
 get_density(const unsigned int frame_num) const 
-{  return *this->_densities[frame_num-1] ; }
+{  return *this->_densities.at(frame_num-1) ; }
 
 DiscretisedDensity<3,float> & 
 DynamicDiscretisedDensity::
 get_density(const unsigned int frame_num)
-{  return *this->_densities[frame_num-1] ; }
+{  return *this->_densities.at(frame_num-1) ; }
 
 const float 
 DynamicDiscretisedDensity::

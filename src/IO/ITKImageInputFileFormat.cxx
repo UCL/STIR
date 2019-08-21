@@ -440,11 +440,11 @@ read_file_itk(const std::string &filename)
           typedef itk::GDCMSeriesFileNames NamesGeneratorType;
           typename NamesGeneratorType::Pointer nameGenerator = NamesGeneratorType::New();
           nameGenerator->SetUseSeriesDetails( true );
-          // Make sure we read only data from a single frame and gate
+          // Reads complete series.
           nameGenerator->AddSeriesRestriction("0008|0022" ); // AcquisitionDate
-          nameGenerator->AddSeriesRestriction("0008|0032" ); // AcquisitionTime
-          nameGenerator->AddSeriesRestriction("0018|1060" ); // TriggerTime
-          nameGenerator->AddSeriesRestriction("0018|1063" ); // FrameTime
+          //nameGenerator->AddSeriesRestriction("0008|0032" ); // AcquisitionTime
+          //nameGenerator->AddSeriesRestriction("0018|1060" ); // TriggerTime
+          //nameGenerator->AddSeriesRestriction("0018|1063" ); // FrameTime
 
           const std::string dir_name = get_directory_name(filename);
           nameGenerator->SetDirectory( dir_name.c_str() );

@@ -78,11 +78,11 @@ pull_linear_interpolate(const Array<3, elemT>& in,
 
   // TODO handle boundary conditions
   if (left_neighbour[1] < in.get_max_index() &&
-      left_neighbour[1] > in.get_min_index() &&
+      left_neighbour[1] >= in.get_min_index() &&
       left_neighbour[2] < in[left_neighbour[1]].get_max_index() &&
-      left_neighbour[2] > in[left_neighbour[1]].get_min_index() &&
+      left_neighbour[2] >= in[left_neighbour[1]].get_min_index() &&
       left_neighbour[3] < in[left_neighbour[1]][left_neighbour[2]].get_max_index() &&
-      left_neighbour[3] > in[left_neighbour[1]][left_neighbour[2]].get_min_index())
+      left_neighbour[3] >= in[left_neighbour[1]][left_neighbour[2]].get_min_index())
     {
       const int x1=left_neighbour[3];
       const int y1=left_neighbour[2];
@@ -129,11 +129,11 @@ push_transpose_linear_interpolate(Array<3, elemT>& out,
 
   // TODO handle boundary conditions
   if (left_neighbour[1] < out.get_max_index() &&
-      left_neighbour[1] > out.get_min_index() &&
+      left_neighbour[1] >= out.get_min_index() &&
       left_neighbour[2] < out[left_neighbour[1]].get_max_index() &&
-      left_neighbour[2] > out[left_neighbour[1]].get_min_index() &&
+      left_neighbour[2] >= out[left_neighbour[1]].get_min_index() &&
       left_neighbour[3] < out[left_neighbour[1]][left_neighbour[2]].get_max_index() &&
-      left_neighbour[3] > out[left_neighbour[1]][left_neighbour[2]].get_min_index())
+      left_neighbour[3] >= out[left_neighbour[1]][left_neighbour[2]].get_min_index())
     {
       const int x1=left_neighbour[3];
       const int y1=left_neighbour[2];

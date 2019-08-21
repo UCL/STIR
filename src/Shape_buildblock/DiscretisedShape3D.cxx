@@ -84,12 +84,7 @@ void
 DiscretisedShape3D::
 construct_volume(VoxelsOnCartesianGrid<float> &new_image, const CartesianCoordinate3D<int>& num_samples) const
 {
-  zoom_image(new_image, this->image());
-  const float factor =
-    (image().get_voxel_size().x()*image().get_voxel_size().y()*image().get_voxel_size().z())/
-    (new_image.get_voxel_size().x()*new_image.get_voxel_size().y()*new_image.get_voxel_size().z());
-  if (fabs(factor-1)>.01)
-    new_image *= factor;
+  zoom_image(new_image, this->image(), ZoomOptions::preserve_values);
 }
 
 Shape3D* 
