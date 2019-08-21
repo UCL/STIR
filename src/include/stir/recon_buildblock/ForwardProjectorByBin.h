@@ -47,7 +47,7 @@ template <int num_dimensions, class elemT> class DiscretisedDensity;
 class ProjDataInfo;
 class ProjData;
 class DataSymmetriesForViewSegmentNumbers;
-
+template <typename DataT> class DataProcessor;
 
 /*!
   \ingroup projection
@@ -77,6 +77,13 @@ virtual void set_up(
     const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
     const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
     ) =0;
+
+  /// Setup whilst applying a pre-forward-projection data processor
+  void set_up(
+    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
+    const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr, // TODO should be Info only
+    shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > pre_data_processor_sptr
+    );
 
   //! Informs on which symmetries the projector handles
   /*! It should get data related by at least those symmetries.
@@ -154,6 +161,7 @@ protected:
 
 private:
   shared_ptr<ProjDataInfo> _proj_data_info_sptr;
+  shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > _pre_data_processor_sptr;
 };
 
 END_NAMESPACE_STIR

@@ -37,6 +37,8 @@
 #include "stir/ProjData.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/info.h"
+#include "stir/is_null_ptr.h"
+#include "stir/DataProcessor.h"
 #include <vector>
 #ifdef STIR_OPENMP
 #include "stir/is_null_ptr.h"
@@ -72,6 +74,16 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
       _local_output_image_sptrs.resize(omp_get_num_threads(), shared_ptr<DiscretisedDensity<3,float> >());
     }
 #endif
+}
+
+void
+BackProjectorByBin::
+set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
+       const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr,
+       shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > post_data_processor_sptr)
+{
+  set_up(proj_data_info_sptr,density_info_sptr);
+  _post_data_processor_sptr = post_data_processor_sptr;
 }
 
 void
@@ -322,6 +334,12 @@ get_output(DiscretisedDensity<3,float> &density) const
     std::copy(_density_sptr->begin_all(), _density_sptr->end_all(), density.begin_all());
 #endif
 
+    // If a post-back-projection data processor has been set, apply it.
+    if (!is_null_ptr(_post_data_processor_sptr)) {
+        Succeeded success = _post_data_processor_sptr->apply(*_density_sptr);
+        if(success != Succeeded::yes)
+            throw std::runtime_error("BackProjectorByBin::get_output(). Post-back-projection data processor failed.");
+    }
 }
 
 void
