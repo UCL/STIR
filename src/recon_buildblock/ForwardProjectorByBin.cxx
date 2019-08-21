@@ -94,6 +94,8 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
 {
   set_up(proj_data_info_sptr,density_info_sptr);
   _pre_data_processor_sptr = pre_data_processor_sptr;
+  if (!is_null_ptr(_pre_data_processor_sptr))
+    _pre_data_processor_sptr->set_up(*density_info_sptr);
 }
 
 void
