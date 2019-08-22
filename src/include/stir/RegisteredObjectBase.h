@@ -28,6 +28,7 @@
 */
 
 #include "stir/common.h"
+#include "stir/ParsingObject.h"
 
 #include <string>
 
@@ -45,20 +46,11 @@ START_NAMESPACE_STIR
   for parsing..
 */
 
-class Object
+class Object : public ParsingObject
 {
 public:
   virtual ~Object() {}
-  /*! \brief return a string describing all parameters of the object
 
-  There is currently no requirement on the format of the returned string.
-  Ideally it would be such that the object can be constructed by parsing
-  the string again.
-
-  \todo Ideally this function would be a const member, but we cannot
-  do this because ParsingObject::parameter_info is not const.
-  */
-  virtual std::string parameter_info()  = 0;
   /*! \brief Returns the name of the type of the object.
 
   Each type that can be parsed has a unique (within its hierarchy) name

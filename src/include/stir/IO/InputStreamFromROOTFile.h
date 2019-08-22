@@ -32,7 +32,6 @@
 #include "stir/Succeeded.h"
 #include "stir/listmode/CListRecordROOT.h"
 #include "stir/RegisteredObject.h"
-#include "stir/ParsingObject.h"
 
 #include <TROOT.h>
 #include <TSystem.h>
@@ -71,8 +70,7 @@ START_NAMESPACE_STIR
         \warning The initial validation of the ROOT input was done with version 5.34.
 */
 
-class InputStreamFromROOTFile : public RegisteredObject< InputStreamFromROOTFile > ,
-        public ParsingObject
+class InputStreamFromROOTFile : public RegisteredObject< InputStreamFromROOTFile >
 {
 public:
     typedef std::vector<long long int>::size_type SavedPosition;

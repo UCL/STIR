@@ -88,8 +88,7 @@ class Succeeded;
 */
 template <typename TargetT>
 class GeneralisedObjectiveFunction: 
-   public RegisteredObject<GeneralisedObjectiveFunction<TargetT> >,
-   public ParsingObject
+   public RegisteredObject<GeneralisedObjectiveFunction<TargetT> >
 {
 public:
   

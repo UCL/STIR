@@ -97,7 +97,7 @@ class AddParser : public Base, public ParsingObject
   the variables in that file are never referenced, so would not include
   it in the final executable (to try to remove redundant object files).
 */
-template <typename Derived, typename Base, typename Parent = AddParser<Base> >
+template <typename Derived, typename Base, typename Parent = Base>
 class RegisteredParsingObject : public Parent
 {
 public:
