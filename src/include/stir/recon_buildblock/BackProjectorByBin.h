@@ -203,6 +203,8 @@ protected:
   std::vector< shared_ptr<DiscretisedDensity<3,float> > > _local_output_image_sptrs;
 #endif
 
+  virtual void set_defaults();
+  virtual void initialise_keymap();
 };
 
 END_NAMESPACE_STIR

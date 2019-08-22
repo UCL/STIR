@@ -53,10 +53,27 @@ START_NAMESPACE_STIR
 ForwardProjectorByBin::ForwardProjectorByBin()
   :   _already_set_up(false)
 {
+  set_defaults();
 }
 
 ForwardProjectorByBin::~ForwardProjectorByBin()
 {
+}
+
+void
+ForwardProjectorByBin::
+set_defaults()
+{
+  _pre_data_processor_sptr.reset();
+}
+
+void
+ForwardProjectorByBin::
+initialise_keymap()
+{
+  parser.add_start_key("Forward Projector Parameters");
+  parser.add_stop_key("End Forward Projector Parameters");
+  parser.add_parsing_key("pre data processor", &_pre_data_processor_sptr);
 }
 
 void

@@ -162,6 +162,9 @@ protected:
 private:
   shared_ptr<ProjDataInfo> _proj_data_info_sptr;
   shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > _pre_data_processor_sptr;
+
+  virtual void set_defaults();
+  virtual void initialise_keymap();
 };
 
 END_NAMESPACE_STIR

@@ -52,10 +52,27 @@ START_NAMESPACE_STIR
 BackProjectorByBin::BackProjectorByBin()
   :   _already_set_up(false)
 {
+    set_defaults();
 }
 
 BackProjectorByBin::~BackProjectorByBin()
 {
+}
+
+void
+BackProjectorByBin::
+set_defaults()
+{
+  _post_data_processor_sptr.reset();
+}
+
+void
+BackProjectorByBin::
+initialise_keymap()
+{
+  parser.add_start_key("Back Projector Parameters");
+  parser.add_stop_key("End Back Projector Parameters");
+  parser.add_parsing_key("post data processor", &_post_data_processor_sptr);
 }
 
 void
