@@ -4,7 +4,7 @@
 
   \file
 
-  \brief Declaration of class stir::Object
+  \brief Declaration of class stir::RegisteredObjectBase
 
   \author Kris Thielemans
   
@@ -27,29 +27,28 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/common.h"
 #include "stir/ParsingObject.h"
 
 #include <string>
 
-#ifndef __stir_Object_H__
-#define __stir_Object_H__
+#ifndef __stir_RegisteredObjectBase_H__
+#define __stir_RegisteredObjectBase_H__
 
 START_NAMESPACE_STIR
 
 /*! \brief Base class for all classes that can parse .par files (and more?) 
   \ingroup buildblock
-  The main reason that this class exists is such that KeyParser can store
+  The only reason that this class exists is such that KeyParser can store
   different types of objects, and get some basic info from it.
 
   \see RegisteredObject for more info on the registries etc that are used
   for parsing..
 */
 
-class Object : public ParsingObject
+class RegisteredObjectBase : public ParsingObject
 {
 public:
-  virtual ~Object() {}
+  virtual ~RegisteredObjectBase() {}
 
   /*! \brief Returns the name of the type of the object.
 

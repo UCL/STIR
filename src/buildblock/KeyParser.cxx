@@ -29,7 +29,7 @@
 
 #include "stir/KeyParser.h"
 #include "stir/Succeeded.h"
-#include "stir/Object.h"
+#include "stir/RegisteredObjectBase.h"
 #include "stir/interfile_keyword_functions.h"
 #include "stir/stream.h"
 #include "stir/is_null_ptr.h"
@@ -213,7 +213,7 @@ map_element::map_element(KeyArgument::type t,
 }
 
 map_element::map_element(void (KeyParser::*pom)(),
-	      Object** pov, 
+	      RegisteredObjectBase** pov, 
               Parser* parser)
   :
   type(KeyArgument::PARSINGOBJECT),
@@ -223,7 +223,7 @@ map_element::map_element(void (KeyParser::*pom)(),
   {}
 
 map_element::map_element(void (KeyParser::*pom)(),
-	      shared_ptr<Object>* pov, 
+	      shared_ptr<RegisteredObjectBase>* pov, 
               Parser* parser)
   :
   type(KeyArgument::SHARED_PARSINGOBJECT),
@@ -883,7 +883,7 @@ void KeyParser::set_parsing_object()
   if(current_index!=0)
     error("KeyParser::PARSINGOBJECT can't handle vectored keys yet\n");
   const std::string& par_ascii = *boost::any_cast<std::string>(&this->parameter);
-  *reinterpret_cast<Object **>(current->p_object_variable) =
+  *reinterpret_cast<RegisteredObjectBase **>(current->p_object_variable) =
     (*current->parser)(input, par_ascii);	    
 }
 
@@ -901,7 +901,7 @@ void KeyParser::set_shared_parsing_object()
   if(current_index!=0)
     error("KeyParser::SHARED_PARSINGOBJECT can't handle vectored keys yet");
   const std::string& par_ascii = *boost::any_cast<std::string>(&this->parameter);
-  reinterpret_cast<shared_ptr<Object> *>(current->p_object_variable)->
+  reinterpret_cast<shared_ptr<RegisteredObjectBase> *>(current->p_object_variable)->
     reset((*current->parser)(input, par_ascii));
 }
 
@@ -1179,8 +1179,8 @@ string KeyParser::parameter_info() const
 	}
       case KeyArgument::PARSINGOBJECT:
         {
-          Object* parsing_object_ptr =
-            *reinterpret_cast<Object**>(i->second.p_object_variable);
+          RegisteredObjectBase* parsing_object_ptr =
+            *reinterpret_cast<RegisteredObjectBase**>(i->second.p_object_variable);
 	  if (parsing_object_ptr!=0)
 	  {
 	    s << parsing_object_ptr->get_registered_name() << endl;
@@ -1196,8 +1196,8 @@ string KeyParser::parameter_info() const
 
           s << "COMPILED WITH GNU C++ (prior to version 3.0), CANNOT INSERT VALUE";
 #else
-          shared_ptr<Object> parsing_object_ptr =
-            (*reinterpret_cast<shared_ptr<Object>*>(i->second.p_object_variable));
+          shared_ptr<RegisteredObjectBase> parsing_object_ptr =
+            (*reinterpret_cast<shared_ptr<RegisteredObjectBase>*>(i->second.p_object_variable));
           
           if (!is_null_ptr(parsing_object_ptr))
 	  {
