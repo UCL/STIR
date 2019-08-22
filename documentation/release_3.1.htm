@@ -385,6 +385,18 @@ from the above):</H2>
   </li>
 <li> <code>ProjMatrixByBin</code> now uses <code>get_symmetries_sptr()</code> (replaces <code>get_symmetries_ptr()</code>).
   </li>
+<li> The inheritance between <code>Object</code>, <code>ParsingObject</code> and <code>RegisteredObject</code> have changed. Specifically:
+  <ul>
+    <li><code>Object</code> inherits from <code>ParsingObject</code>.</li>
+    <li><code>Object</code> no longer needs the <code>method parameter_info()</code>.</li>
+    <li>Classes that inherit from <code>RegisteredObject</code> no longer need to also 
+    	inherit from <code>ParsingObject</code>.</li>
+    <li>The class <code>AddParser</code> has been removed. The default third argument of 
+    	<code>RegisteredParsingObject</code> has been changed accordingly.</li>
+    <li><code>Object</code> has been renamed as <code>RegisteredObjectBase</code>. 
+        This is because the class only exists for the parser to get information about the class.</li>
+  </ul>
+</li>
 </ul>
 
 <h3>New functionality</h3>
