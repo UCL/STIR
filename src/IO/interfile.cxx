@@ -479,7 +479,7 @@ static void write_interfile_energy_windows(std::ostream& output_header, const Ex
 
    else
     { // need to write this anyway to allow vectored keys below
-      output_header <<"number of energy windows := 1";
+      //output_header <<"number of energy windows := 1";
      }
 
   //Write energy window thresholds

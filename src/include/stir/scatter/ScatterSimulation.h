@@ -211,8 +211,8 @@ public:
     total_Compton_cross_section_relative_to_511keV(const float energy);
     //@}
 
-    float detection_efficiency(const float energy, const int en_window = 0) const;
-    float detection_efficiency_full(const float incoming_photon_energy, const int en_window = 0) const;
+    float detection_efficiency_gaussian(const float energy, const int en_window = 0) const;
+    float detection_efficiency(const float incoming_photon_energy, const int en_window = 0) const;
     std::vector<float> detection_efficiency(const float LLD, const float HLD, const float size, const float incoming_photon_energy) const;
     float detection_model_with_fitted_parameters(const float x, const float theta, const float energy) const;
     float photoelectric(const float K, const float std_peak, const float x, const float energy) const;
