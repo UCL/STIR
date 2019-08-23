@@ -1657,17 +1657,11 @@ namespace stir {
 
 %include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 
-%shared_ptr(  stir::ForwardProjectorByBin);
-%template (internalAddParserForwardProjectorByBin)
-  stir::ForwardProjectorByBin;
 %template (internalRPForwardProjectorByBinUsingProjMatrixByBin)  
   stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,
      stir::ForwardProjectorByBin>;
 %include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 
-%shared_ptr(  stir::BackProjectorByBin);
-%template (internalAddParserBackProjectorByBin)
-  stir::BackProjectorByBin;
 %template (internalRPBackProjectorByBinUsingProjMatrixByBin)  
   stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
      stir::BackProjectorByBin>;
