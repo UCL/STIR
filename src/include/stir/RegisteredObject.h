@@ -63,24 +63,23 @@ START_NAMESPACE_STIR
   and its parameters. This makes only sense if the object construction
   can be interactive as well (see ask_type_and_parameters()).
 
-  In case the construction of the object is done by using ParsingObject,
-  nearly all of the necessary functionality can be provided to the
-  hierarchy by using RegisteredParsingObject in the hierarchy. In such 
-  a case, the hierarchy looks normally as follows:
+  We currently assume that the construction of the object is done by using ParsingObject.
+  Nearly all of the necessary functionality can be provided to the
+  hierarchy by using RegisteredParsingObject in the hierarchy.
+  The hierarchy looks normally as follows:
   \code
   RegisteredObject<Base>
   Base
   ...
-  Parent   <- ParsingObject
+  Parent
   RegisteredParsingObject<Derived,Base,Parent>
   Derived
   \endcode
 
-  A <strong>recommended</strong> variation on this is the following:
+  When there is no intermediate class in hierarchy, this is simplified to:
   \code
   RegisteredObject<Base>
-  Base <- ParsingObject
-  ...
+  Base
   RegisteredParsingObject<Derived,Base,Base>
   Derived
   \endcode
