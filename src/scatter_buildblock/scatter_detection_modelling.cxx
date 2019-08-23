@@ -98,7 +98,7 @@ compute_emis_to_det_points_solid_angle_factor(
 
 float
 ScatterSimulation::
-detection_efficiency_gaussian(const float energy, const int en_window) const
+detection_efficiency(const float energy, const int en_window) const
 {
   // factor 2.35482 is used to convert FWHM to sigma
   const float sigma_times_sqrt2= 
@@ -140,7 +140,7 @@ ScatterSimulation::detection_efficiency(const float LLD, const float HLD, const 
 }
 
 float
-ScatterSimulation::detection_efficiency(const float incoming_photon_energy, const int en_window) const
+ScatterSimulation::detection_efficiency2(const float incoming_photon_energy, const int en_window) const
 {
 
     const float HLD = this->template_exam_info_sptr->get_high_energy_thres(en_window);
