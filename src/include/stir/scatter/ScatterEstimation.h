@@ -110,6 +110,24 @@ public:
                                       const  ProjData& emission_proj_data,
                                       const ProjData& scatter_proj_data,
                                       const bool remove_interleaving = true);
+
+    static void
+    pull_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                      const  ProjData& emission_proj_data,
+                                      const ProjData& scatter_proj_data,
+                                      const ProjData& norm,
+                                      const bool remove_interleaving=true);
+
+    static void
+    push_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                      const  ProjData& emission_proj_data,
+                                      const ProjData& scatter_proj_data,
+                                        const ProjData& norm,
+                                      const bool remove_interleaving=true);
+
+    static void
+    apply_norm(ProjData& projdata,const ProjData& norm);
+
     //! Default constructor (calls set_defaults())
     ScatterEstimation();
 

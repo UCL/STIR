@@ -65,9 +65,9 @@ public:
     double L_G_function(const ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image, const bool compute_gradient = true ,const bool isgradient_mu = true,const float rescale = 1.F);
     double L_G_function(const ProjData& data,const ProjData &add_sino,VoxelsOnCartesianGrid<float>& gradient_image,const bool compute_gradient = true ,const bool isgradient_mu = true,const float rescale = 1.F);
     void L_G_function_from_est_data(const ProjData& data,VoxelsOnCartesianGrid<float>& gradient_image,const bool compute_gradient = true ,const bool isgradient_mu = true,const float rescale = 1.F);
-    ProjDataInMemory  likelihood_and_gradient_scatter(const ProjData &projdata, const ProjData &add_projdata, VoxelsOnCartesianGrid<float>& gradient_image_HR, VoxelsOnCartesianGrid<float>& gradient_image_LR,const bool compute_gradient, const bool isgradient_mu);
+    ProjDataInMemory  likelihood_and_gradient_scatter(const ProjData &projdata,const ProjData& norm, const ProjData &add_projdata, VoxelsOnCartesianGrid<float>& gradient_image_HR, VoxelsOnCartesianGrid<float>& gradient_image_LR,const bool compute_gradient, const bool isgradient_mu);
     ProjDataInMemory get_jacobian(std::vector<VoxelsOnCartesianGrid<float> >  &gradient_image_array,const bool compute_gradient, const bool isgradient_mu);
-    ProjDataInMemory get_ratio(const ProjData& projdata,const ProjData &add_projdata, const ProjData &est_projdata, std::vector<float> &ratio_vector);
+    ProjDataInMemory get_ratio(const ProjData& projdata,const ProjData& norm,const ProjData &add_projdata, const ProjData &est_projdata, std::vector<float> &ratio_vector);
     protected:
 
     void

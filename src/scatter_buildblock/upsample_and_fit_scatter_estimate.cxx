@@ -193,4 +193,81 @@ push_scatter_estimate(ProjData& scaled_scatter_proj_data,
 }
 
 
+void
+ScatterEstimation::
+pull_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                  const  ProjData& emission_proj_data,
+                                  const ProjData& scatter_proj_data,
+                                  const ProjData& norm,
+                                  const bool remove_interleaving)
+{
+
+    shared_ptr<ProjDataInfo> interpolated_direct_scatter_proj_data_info_sptr(emission_proj_data.get_proj_data_info_ptr()->clone());
+    interpolated_direct_scatter_proj_data_info_sptr->reduce_segment_range(0,0); //create the output template
+
+
+    info("upsample_and_fit_scatter_estimate: Interpolating scatter estimate to size of emission data");
+    ProjDataInMemory interpolated_direct_scatter(emission_proj_data.get_exam_info_sptr(),
+                           interpolated_direct_scatter_proj_data_info_sptr);
+
+    // interpolate projdata
+    interpolate_projdata_pull(interpolated_direct_scatter, scatter_proj_data, remove_interleaving);
+
+    // Perform Inverse Single Slice Rebinning
+    inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);
+
+     apply_norm(scaled_scatter_proj_data,norm);
+
+}
+
+void
+ScatterEstimation::
+push_scatter_estimate(ProjData& scaled_scatter_proj_data,
+                                  const  ProjData& emission_proj_data,
+                                  const ProjData& scatter_proj_data,
+                                   const ProjData& norm,
+                                  const bool remove_interleaving)
+{
+
+    ProjDataInMemory scatter_proj_data_in_memory(scatter_proj_data);
+    apply_norm(scatter_proj_data_in_memory,norm);
+
+    shared_ptr<ProjDataInfo> new_input_proj_data_info_sptr(scatter_proj_data_in_memory.get_proj_data_info_ptr()->clone());
+    new_input_proj_data_info_sptr->reduce_segment_range(0,0); //create input template
+
+    ProjDataInMemory new_input(scatter_proj_data_in_memory.get_exam_info_sptr(),new_input_proj_data_info_sptr);
+
+    transpose_inverse_SSRB(new_input, scatter_proj_data_in_memory);
+
+
+    interpolate_projdata_push(scaled_scatter_proj_data, new_input, remove_interleaving);
+
+
+}
+
+void
+ScatterEstimation::
+apply_norm(ProjData& projdata,const ProjData& norm)
+{
+Bin bin;
+{
+    for (bin.segment_num()=projdata.get_min_segment_num(); bin.segment_num()<=projdata.get_max_segment_num(); ++bin.segment_num())
+        for (bin.axial_pos_num() =  projdata.get_min_axial_pos_num(bin.segment_num()); bin.axial_pos_num()<=projdata.get_max_axial_pos_num(bin.segment_num()); ++bin.axial_pos_num())
+        {
+            Sinogram<float> sino = projdata.get_sinogram(bin.axial_pos_num(),bin.segment_num());
+            Sinogram<float> norm_sino = norm.get_sinogram(bin.axial_pos_num(),bin.segment_num());
+
+            for (bin.view_num()=sino.get_min_view_num();
+                 bin.view_num()<=sino.get_max_view_num();
+                 ++bin.view_num())
+            {
+                for (bin.tangential_pos_num()=  sino.get_min_tangential_pos_num(); bin.tangential_pos_num()<= sino.get_max_tangential_pos_num();  ++bin.tangential_pos_num())
+                     sino[bin.view_num()][bin.tangential_pos_num()] *= norm_sino[bin.axial_pos_num()][bin.tangential_pos_num()];
+                     projdata.set_sinogram(sino);
+             }
+
+          }
+    }
+
+}
 END_NAMESPACE_STIR

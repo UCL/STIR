@@ -764,7 +764,7 @@ L_G_for_viewgram_from_est_data(const Viewgram<float>& viewgram, VoxelsOnCartesia
 
 ProjDataInMemory
 SingleScatterLikelihoodAndGradient::
-likelihood_and_gradient_scatter(const ProjData &projdata, const ProjData &add_projdata, VoxelsOnCartesianGrid<float>& gradient_image_HR, VoxelsOnCartesianGrid<float>& gradient_image_LR,const bool compute_gradient, const bool isgradient_mu)
+likelihood_and_gradient_scatter(const ProjData &projdata, const ProjData& norm , const ProjData &add_projdata, VoxelsOnCartesianGrid<float>& gradient_image_HR, VoxelsOnCartesianGrid<float>& gradient_image_LR,const bool compute_gradient, const bool isgradient_mu)
 {
     gradient_image_LR.fill(0);
     gradient_image_HR.fill(0);
@@ -780,7 +780,7 @@ likelihood_and_gradient_scatter(const ProjData &projdata, const ProjData &add_pr
     }
 
     const ProjDataInMemory est_data_LR = get_jacobian(jacobian_array, compute_gradient, isgradient_mu);
-    const ProjDataInMemory est_data_HR = get_ratio(projdata,add_projdata,est_data_LR,ratio);
+    const ProjDataInMemory est_data_HR = get_ratio(projdata,norm,add_projdata,est_data_LR,ratio);
 
     for (int i = 0 ; i < length ; ++i)
     {
@@ -943,7 +943,7 @@ get_jacobian_for_viewgram(Viewgram<float>& v_est,std::vector<VoxelsOnCartesianGr
 
 ProjDataInMemory
 SingleScatterLikelihoodAndGradient::
-get_ratio(const ProjData& projdata,const ProjData &add_projdata, const ProjData &est_projdata, std::vector<float> &ratio_vector)
+get_ratio(const ProjData& projdata,const ProjData& norm,const ProjData &add_projdata, const ProjData &est_projdata, std::vector<float> &ratio_vector)
 {
 
     ProjDataInMemory ratio_HR(projdata); ratio_HR.fill(0);
@@ -951,7 +951,7 @@ get_ratio(const ProjData& projdata,const ProjData &add_projdata, const ProjData 
     ProjDataInMemory ratio_LR(est_projdata); ratio_LR.fill(0);
 
     if((est_projdata.get_num_views()!=projdata.get_num_views())||(est_projdata.get_num_tangential_poss()!=projdata.get_num_tangential_poss()))
-    ScatterEstimation::pull_scatter_estimate(est_projdata_HR,projdata,est_projdata,true);
+    ScatterEstimation::pull_scatter_estimate(est_projdata_HR,projdata,est_projdata,norm,true);
     else
     est_projdata_HR.fill(est_projdata);
 
@@ -978,7 +978,7 @@ get_ratio(const ProjData& projdata,const ProjData &add_projdata, const ProjData 
         }
 
     if((est_projdata.get_num_views()!=projdata.get_num_views())||(est_projdata.get_num_tangential_poss()!=projdata.get_num_tangential_poss()))
-    ScatterEstimation::push_scatter_estimate(ratio_LR,est_projdata,ratio_HR,true);
+    ScatterEstimation::push_scatter_estimate(ratio_LR,est_projdata,ratio_HR,norm,true);
     else
     ratio_LR.fill(ratio_HR);
 

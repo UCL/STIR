@@ -136,22 +136,27 @@ run_tests()
     // construct x
     ProjDataInMemory Aty(sss->get_ExamInfo_sptr(), sss->get_template_proj_data_info_sptr());
 
+    ProjDataInMemory N(exam_info_sptr, proj_data_info_sptr);
+
     fill_projdata_with_random(x);
     fill_projdata_with_random(y);
 
     Ax.fill(0); //initialise output
     Aty.fill(0); //initialise output
 
+    //N.fill(10);
+    fill_projdata_with_random(N);
+
     bool remove_interleaving = false;
 
     std::cout << "========== REMOVE INTERLEAVING = FALSE =========== \n";
 
     std::cout << "-------- Testing Pull --------\n";
-    ScatterEstimation::pull_scatter_estimate(Ax,y,x,remove_interleaving);
+    ScatterEstimation::pull_scatter_estimate(Ax,y,x,N,remove_interleaving);
 
     std::cout << "-------- Testing Push --------\n";
 
-    ScatterEstimation::push_scatter_estimate(Aty,x,y,remove_interleaving);
+    ScatterEstimation::push_scatter_estimate(Aty,x,y,N,remove_interleaving);
 
     std::cout << "-------- <Ax|y> = <x|A*y> --------\n";
 
@@ -207,11 +212,11 @@ run_tests()
     remove_interleaving = true;
 
     std::cout << "-------- Testing Pull --------\n";
-    ScatterEstimation::pull_scatter_estimate(Ax,y,x,remove_interleaving);
+    ScatterEstimation::pull_scatter_estimate(Ax,y,x,N,remove_interleaving);
 
     std::cout << "-------- Testing Push --------\n";
 
-    ScatterEstimation::push_scatter_estimate(Aty,x,y,remove_interleaving);
+    ScatterEstimation::push_scatter_estimate(Aty,x,y,N,remove_interleaving);
 
     std::cout << "-------- <Ax|y> = <x|A*y> --------\n";
 
