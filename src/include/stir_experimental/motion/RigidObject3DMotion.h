@@ -43,8 +43,7 @@ class AbsTimeInterval;
     is completely dependent on what the derived class does.
     
 */
-class RigidObject3DMotion: public RegisteredObject<RigidObject3DMotion>,
-                           public ParsingObject
+class RigidObject3DMotion: public RegisteredObject<RigidObject3DMotion>
 {
 
 public:

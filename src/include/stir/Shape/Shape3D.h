@@ -71,8 +71,7 @@ template <typename elemT> class VoxelsOnCartesianGrid;
   \endverbatim
 */
 class Shape3D :
-   public RegisteredObject<Shape3D>,
-   public ParsingObject
+   public RegisteredObject<Shape3D>
 {
 public:
 
