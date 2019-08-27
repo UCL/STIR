@@ -213,12 +213,17 @@ public:
 
     float detection_efficiency(const float energy, const int en_window = 0) const;
     float detection_efficiency2(const float incoming_photon_energy, const int en_window = 0) const;
+    float detection_efficiency3(const float incoming_photon_energy, const int en_window = 0) const;
     std::vector<float> detection_efficiency(const float LLD, const float HLD, const float size, const float incoming_photon_energy) const;
-    float detection_model_with_fitted_parameters(const float x, const float theta, const float energy) const;
+    float detection_model_with_fitted_parameters(const float x, const float energy) const;
     float photoelectric(const float K, const float std_peak, const float x, const float energy) const;
-    float compton_plateau(const float K, const float std_peak, const float x, const float energy, const float theta, const float scaling_std_compton,const float shift_compton) const;
+    float compton_plateau(const float K, const float std_peak, const float x, const float energy, const float scaling_std_compton,const float shift_compton) const;
     float flat_continuum(const float K, const float std_peak, const float x, const float energy) const;
     float exponential_tail(const float K, const float std_peak, const float x, const float energy, const float beta) const;
+    float integral_photoelectric(const float LT, const float HT, const float FWHM, const float energy) const;
+    float integral_compton_plateau(const float LT, const float HT, const float FWHM, const float energy) const;
+    float integral_flat_continuum(const float LT, const float HT, const float FWHM, const float energy) const;
+    float integral_exponential_tail(const float LT, const float HT, const float FWHM, const float energy) const;
     Succeeded downsample_scanner(int new_num_rings = -1, int new_num_dets = -1);
 
 protected:

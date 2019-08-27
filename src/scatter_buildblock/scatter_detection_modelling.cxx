@@ -122,18 +122,15 @@ ScatterSimulation::detection_efficiency(const float LLD, const float HLD, const 
     std::vector<float> energy_range(size);
     std::vector<float> out(size);
     float increment_x = (HLD - LLD)/size;
-    float increment_theta = (2*M_PI)/size;
-    std::vector<float> theta(size);
     for(int i = 0 ; i< size; ++i)
     {
         energy_range[i]+= LLD+i*increment_x;
-        theta[i]+=i*increment_theta;
         out[i]+=0;
     }
 
     for(int j = 0; j < size; ++j)
     {
-        out[j]+= detection_model_with_fitted_parameters(energy_range[j], theta[j], incoming_photon_energy);
+        out[j]+= detection_model_with_fitted_parameters(energy_range[j], incoming_photon_energy);
     }
 
     return out;
@@ -143,26 +140,39 @@ float
 ScatterSimulation::detection_efficiency2(const float incoming_photon_energy, const int en_window) const
 {
 
+    const float HT = this->template_exam_info_sptr->get_high_energy_thres(en_window);
+    const float LT = this->template_exam_info_sptr->get_low_energy_thres(en_window);
+    const float FWHM = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution();
+    const float f1 = integral_photoelectric(LT,HT, FWHM, incoming_photon_energy) ;
+    const float f2 = integral_compton_plateau(LT,HT, FWHM, incoming_photon_energy) ;
+    const float f3 = integral_flat_continuum(LT,HT, FWHM, incoming_photon_energy) ;
+    const float f4 = integral_exponential_tail(LT,HT, FWHM, incoming_photon_energy) ;
+    return f1+f2+f3+f4;
+ }
+
+float
+ScatterSimulation::detection_efficiency3(const float incoming_photon_energy, const int en_window) const
+{
+
     const float HLD = this->template_exam_info_sptr->get_high_energy_thres(en_window);
     const float LLD = this->template_exam_info_sptr->get_low_energy_thres(en_window);
     float sum = 0;
     const int size = HLD-LLD;
     const float increment_x = (HLD - LLD)/size;
-    const float increment_theta = (2*M_PI)/size;
     for(int i = 0 ; i< size; ++i)
     {
         const float energy_range = LLD+i*increment_x;
-        const float theta=i*increment_theta;
-        sum+= detection_model_with_fitted_parameters(energy_range, theta, incoming_photon_energy);
+        sum+= detection_model_with_fitted_parameters(energy_range, incoming_photon_energy);
     }
 
     sum*=increment_x;
     return sum;
 }
 
+
 float
 ScatterSimulation::
-detection_model_with_fitted_parameters(const float x, const float theta, const float energy) const
+detection_model_with_fitted_parameters(const float x, const float energy) const
 {
   //! Brief
   //! All the parameters are obtained by fitting the model to the energy spectrum obtained with GATE.
@@ -172,17 +182,17 @@ detection_model_with_fitted_parameters(const float x, const float theta, const f
 
   const int Z = 66; // atomic number of LSO
   const float H_1 = pow(Z,5)/energy; //the height of the photopeak is prop. to the photoelectric cross section
-  const float H_2 = 9.27*pow(10,25)*total_Compton_cross_section(energy)*Z; // the eight of the compton plateau is proportional to the compton cross section
+  const float H_2 = 9.40*pow(10,25)*total_Compton_cross_section(energy)*Z; // the eight of the compton plateau is proportional to the compton cross section
   const float H_3 = 7; //fitting parameter
   const float H_4 = 26.0; //fitting parameter
   const float beta = -0.817; //fitting parameter
   const float global_scale = 2.33*1e-07; //fitting parameter
   const float fwhm = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution();
   const float std_peak = energy*fwhm/2.35482;
-  const float scaling_std_compton = 28.8; //fitting parameter
-  const float shift_compton = 0.6; //fitting parameter
+  const float scaling_std_compton = 29.6; //fitting parameter
+  const float shift_compton = 0.598; //fitting parameter
   const float f1 = photoelectric(H_1, std_peak, x, energy);
-  const float f2 = compton_plateau(H_2, std_peak, x, energy,theta, scaling_std_compton,shift_compton);
+  const float f2 = compton_plateau(H_2, std_peak, x, energy, scaling_std_compton,shift_compton);
   const float f3 = flat_continuum(H_3,std_peak, x, energy);
   const float f4 = exponential_tail(H_4,std_peak, x, energy,beta);
 
@@ -201,13 +211,13 @@ photoelectric(const float K, const float std_peak, const float x, const float en
 
 float
 ScatterSimulation::
-compton_plateau(const float K, const float std_peak, const float x, const float energy, const float theta, const float scaling_std_compton,const float shift_compton) const
+compton_plateau(const float K, const float std_peak, const float x, const float energy, const float scaling_std_compton,const float shift_compton) const
 {
     const float m_0_c_2 = 511.F;
     const float alpha = energy/m_0_c_2;
-    const float E_1 = energy/(1+alpha*(1-cos(theta)));
+    const float E_1 = energy/(1+alpha*(1-cos(M_PI)));
     const float mean = energy*shift_compton;
-    return ((energy/E_1)+(E_1/energy)-1+cos(theta))*(K*exp(-(pow((x - mean),2))/(4*scaling_std_compton*std_peak)));
+    return ((energy/E_1)+(E_1/energy)-1+cos(M_PI))*(K*exp(-(pow((x - mean),2))/(4*scaling_std_compton*std_peak)));
 }
 float
 ScatterSimulation::
@@ -236,6 +246,60 @@ exponential_tail(const float K, const float std_peak, const float x, const float
         f = 0;
     return f;
 }
+
+float
+ScatterSimulation::
+integral_photoelectric(const float LT, const float HT, const float FWHM, const float energy) const
+{
+const float den = energy;
+const float num = -145.897*erf((1.66511*(energy -HT))/(energy*FWHM))+145.897*erf((1.66511*abs((energy -LT)))/(energy*FWHM));
+    return num/den;
+}
+
+float
+ScatterSimulation::
+integral_compton_plateau(const float LT, const float HT, const float FWHM, const float energy) const
+{
+const float a = pow((255.5+energy),3);
+const float b = sqrt(energy*FWHM);
+const float fact1 = 1/(a*b)*FWHM;
+const float fact2a = 8.88178*1e-16*erf(0.0832061*sqrt(energy/FWHM));
+const float fact2b = -6.28408*erf((0.0832061*energy-0.141027*HT)/sqrt(energy*FWHM));
+const float fact2c = ((0.522874*energy-0.886227*LT)*erf((0.0832061*abs(energy-1.69492*LT))/(sqrt(energy*FWHM))))/(abs(0.0832061*energy-0.141027*LT));
+const float fact2 = fact2a+fact2b+fact2c;
+const float fact3 = (energy*(96199.6+energy*(753.03+(1.65785+0.00036048*energy)*energy))
+                      + (-2.4579*1e07+energy*(-240499+energy*(-705.966+(-0.36841+0.000720959*energy)*energy)))*log(1+0.00391389*energy));
+
+return fact1*fact2*fact3;
+}
+
+float
+ScatterSimulation::
+integral_flat_continuum(const float LT, const float HT, const float FWHM, const float energy) const
+{
+  const float num1 = pow((energy-LT),2);
+  const float den1 = pow((energy*FWHM),2);
+  const float fact1 = -5.52632*1e-07+5.52632*1e-07*exp(-(2.77259*num1)/(den1))*energy*FWHM;
+  const float fact2 = 1.631*1e-06*energy-1.631*1e-06*LT;
+  const float fact3 = erfc((1.66511*(-energy*LT))/(energy*FWHM));
+  return fact1 + fact2*fact3;
+}
+
+float
+ScatterSimulation::
+integral_exponential_tail(const float LT, const float HT, const float FWHM, const float energy) const
+{
+const float fact1 = 6.058*1e-06*exp(0.64874/FWHM)*energy*FWHM;
+const float fact2 = -1.26141*exp(-0.64874/FWHM)*erf(0.417191+(1.66511-(1.66511*LT)/(energy))/FWHM);
+const float fact3 = 1.26141*exp(-0.64874/FWHM)*erf(0.417191+(1.66511-(1.66511*HT)/(energy))/FWHM);
+const float fact4 = 1.54145*exp(-0.64874*LT/(energy*FWHM))*erfc(-0.611995+(-1.66511+(1.66511*LT)/(energy))/FWHM);
+const float fact5 = -1.54145*exp(-0.64874*HT/(energy*FWHM))*erfc(-0.611995+(-1.66511+(1.66511*HT)/(energy))/FWHM);
+if (energy<100)
+        return 0;
+else
+ return fact1*(fact2+fact3+fact4+fact5);
+}
+
 
 float
 ScatterSimulation::
