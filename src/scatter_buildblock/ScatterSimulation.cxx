@@ -35,6 +35,7 @@
 #include "stir/error.h"
 #include <fstream>
 #include <boost/format.hpp>
+#include <ctime>
 
 #include "stir/zoom.h"
 #include "stir/SSRB.h"
@@ -59,6 +60,9 @@ Succeeded
 ScatterSimulation::
 process_data()
 {
+
+    time_t tstart, tend;
+    tstart = time(0);
     // this is usefull in the scatter estimation process.
     this->output_proj_data_sptr->fill(0.f);
     //show energy window information
@@ -169,6 +173,8 @@ process_data()
 
 
     std::cout << "TOTAL SCATTER:= " << total_scatter << '\n';
+    tend = time(0);
+    cout << "ELAPSED TIME: "<< difftime(1000*tend, 1000*tstart) <<" [ms]."<< endl;
     return Succeeded::yes;
 }
 
