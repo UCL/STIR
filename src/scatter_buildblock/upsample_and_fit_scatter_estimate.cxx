@@ -27,6 +27,8 @@
 #include "stir/ProjDataInfo.h"
 #include "stir/ExamInfo.h"
 #include "stir/ProjDataInMemory.h"
+#include "stir/ViewSegmentNumbers.h"
+#include "stir/Viewgram.h"
 #include "stir/inverse_SSRB.h"
 #include "stir/scale_sinograms.h"
 #include "stir/scatter/ScatterEstimation.h"
@@ -216,7 +218,7 @@ pull_scatter_estimate(ProjData& scaled_scatter_proj_data,
     // Perform Inverse Single Slice Rebinning
     inverse_SSRB(scaled_scatter_proj_data, interpolated_direct_scatter);
 
-     apply_norm(scaled_scatter_proj_data,norm);
+    apply_norm(scaled_scatter_proj_data,norm);
 
 }
 
@@ -249,25 +251,49 @@ void
 ScatterEstimation::
 apply_norm(ProjData& projdata,const ProjData& norm)
 {
-Bin bin;
+
+if((projdata.get_num_views()!=norm.get_num_views())||(projdata.get_num_tangential_poss()!=norm.get_num_tangential_poss()))
+    error("sinograms have to have the same dimensions");
+ProjDataInMemory projdata_out(projdata);
+projdata_out.fill(0);
+
+ViewSegmentNumbers vs_num;
+
+for (vs_num.segment_num() = norm.get_min_segment_num(); vs_num.segment_num() <= norm.get_max_segment_num(); ++vs_num.segment_num())
 {
-    for (bin.segment_num()=projdata.get_min_segment_num(); bin.segment_num()<=projdata.get_max_segment_num(); ++bin.segment_num())
-        for (bin.axial_pos_num() =  projdata.get_min_axial_pos_num(bin.segment_num()); bin.axial_pos_num()<=projdata.get_max_axial_pos_num(bin.segment_num()); ++bin.axial_pos_num())
+    for (vs_num.view_num() = norm.get_min_view_num();vs_num.view_num() <= norm.get_max_view_num(); ++vs_num.view_num())
+    {
+
+        Viewgram<float> viewgram_n = norm.get_viewgram(vs_num.view_num(), vs_num.segment_num(),false);
+        Viewgram<float> viewgram_in = projdata.get_viewgram(vs_num.view_num(), vs_num.segment_num(),false);
+        Viewgram<float> viewgram_out = projdata_out.get_empty_viewgram(vs_num.view_num(), vs_num.segment_num(),false);
+        const ViewSegmentNumbers vs_num(viewgram_n.get_view_num(),viewgram_n.get_segment_num());
+        std::vector<Bin> all_bins;
         {
-            Sinogram<float> sino = projdata.get_sinogram(bin.axial_pos_num(),bin.segment_num());
-            Sinogram<float> norm_sino = norm.get_sinogram(bin.axial_pos_num(),bin.segment_num());
-
-            for (bin.view_num()=sino.get_min_view_num();
-                 bin.view_num()<=sino.get_max_view_num();
-                 ++bin.view_num())
+            Bin bin(vs_num.segment_num(), vs_num.view_num(), 0, 0);
+            for (bin.axial_pos_num() = norm.get_min_axial_pos_num(bin.segment_num());  bin.axial_pos_num() <= norm.get_max_axial_pos_num(bin.segment_num());  ++bin.axial_pos_num())
             {
-                for (bin.tangential_pos_num()=  sino.get_min_tangential_pos_num(); bin.tangential_pos_num()<= sino.get_max_tangential_pos_num();  ++bin.tangential_pos_num())
-                     sino[bin.view_num()][bin.tangential_pos_num()] *= norm_sino[bin.axial_pos_num()][bin.tangential_pos_num()];
-                     projdata.set_sinogram(sino);
-             }
+                for (bin.tangential_pos_num() = norm.get_min_tangential_pos_num(); bin.tangential_pos_num() <= norm.get_max_tangential_pos_num(); ++bin.tangential_pos_num())
+                {
+                    all_bins.push_back(bin);
+                }
+            }
+        }
 
-          }
+        for (int i = 0; i < static_cast<int>(all_bins.size()); ++i)
+        {
+
+          const Bin bin = all_bins[i];
+
+          viewgram_out[bin.axial_pos_num()][bin.tangential_pos_num()]=viewgram_in[bin.axial_pos_num()][bin.tangential_pos_num()]*viewgram_n[bin.axial_pos_num()][bin.tangential_pos_num()];
+        }
+
+        projdata_out.set_viewgram(viewgram_out);
+
     }
+}
+
+projdata.fill(projdata_out);
 
 }
 END_NAMESPACE_STIR
