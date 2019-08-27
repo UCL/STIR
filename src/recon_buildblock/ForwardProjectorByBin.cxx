@@ -328,7 +328,7 @@ set_input(const DiscretisedDensity<3,float> & density)
     // If a pre-forward-projection data processor has been set, apply it.
     if (!is_null_ptr(_pre_data_processor_sptr)) {
         Succeeded success = _pre_data_processor_sptr->apply(*_density_sptr);
-        if(success != Succeeded::yes)
+        if (success != Succeeded::yes)
             throw std::runtime_error("ForwardProjectorByBin::set_input(). Pre-forward-projection data processor failed.");
     }
 }

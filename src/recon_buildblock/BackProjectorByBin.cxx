@@ -355,8 +355,8 @@ get_output(DiscretisedDensity<3,float> &density) const
 
     // If a post-back-projection data processor has been set, apply it.
     if (!is_null_ptr(_post_data_processor_sptr)) {
-        Succeeded success = _post_data_processor_sptr->apply(*_density_sptr);
-        if(success != Succeeded::yes)
+        Succeeded success = _post_data_processor_sptr->apply(density);
+        if (success != Succeeded::yes)
             throw std::runtime_error("BackProjectorByBin::get_output(). Post-back-projection data processor failed.");
     }
 }
