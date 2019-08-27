@@ -21,7 +21,6 @@
 #include "stir/RunTests.h"
 #include "stir/num_threads.h"
 #include "stir/CPUTimer.h"
-#include "stir/IO/OutputFileFormat.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
@@ -29,8 +28,6 @@
 #include "stir/SeparableCartesianMetzImageFilter.h"
 
 START_NAMESPACE_STIR
-
-using namespace std;
 
 /*!
   \ingroup test
@@ -40,23 +37,20 @@ class TestDataProcessorProjectors : public RunTests
 {
 public:
     //! Constructor that can take some input data to run the test with
-    TestDataProcessorProjectors(const std::string &image_filename, const std::string &sinogram_filename, const float fwhm);
+    TestDataProcessorProjectors(const std::string &sinogram_filename, const float fwhm);
 
     virtual ~TestDataProcessorProjectors() {}
 
     void run_tests();
 protected:
-    std::string _image_filename;
     std::string _sinogram_filename;
     float _fwhm;
-    shared_ptr<DiscretisedDensity<3,float> > _input_image_sptr;
     shared_ptr<ProjDataInMemory> _input_sino_sptr;
-    Succeeded pre_data_processor_fwd_proj() const;
-    Succeeded post_data_processor_bck_proj() const;
+    shared_ptr<VoxelsOnCartesianGrid<float> > post_data_processor_bck_proj();
+    void pre_data_processor_fwd_proj(const VoxelsOnCartesianGrid<float> &input_image);
 };
 
-TestDataProcessorProjectors::TestDataProcessorProjectors(const string &image_filename, const string &sinogram_filename, const float fwhm) :
-    _image_filename(image_filename),
+TestDataProcessorProjectors::TestDataProcessorProjectors(const std::string &sinogram_filename, const float fwhm) :
     _sinogram_filename(sinogram_filename),
     _fwhm(fwhm)
 {
@@ -67,17 +61,17 @@ TestDataProcessorProjectors::
 run_tests()
 {
     try {
-
-        // Open image
-        _input_image_sptr.reset(DiscretisedDensity<3,float>::read_from_file(_image_filename));
+        // Open sinogram
         _input_sino_sptr = MAKE_SHARED<ProjDataInMemory>(*ProjData::read_from_file(_sinogram_filename));
 
-        cerr << "Tests for pre-data-processor forward projection\n";
-        Succeeded success_fwd = this->pre_data_processor_fwd_proj();
-        cerr << "Tests for post-data-processor back projection\n";
-        Succeeded success_bck = this->post_data_processor_bck_proj();
-        if (success_fwd == Succeeded::no || success_bck == Succeeded::no)
-            everything_ok = false;
+        // Back project
+        std::cerr << "Tests for post-data-processor back projection\n";
+        shared_ptr<VoxelsOnCartesianGrid<float> > bck_projected_im_sptr =
+                this->post_data_processor_bck_proj();
+
+        // Forward project
+        std::cerr << "Tests for pre-data-processor forward projection\n";
+        this->pre_data_processor_fwd_proj(*bck_projected_im_sptr);
     }
     catch(const std::exception &error) {
         std::cerr << "\nHere's the error:\n\t" << error.what() << "\n\n";
@@ -106,7 +100,7 @@ get_data_processor(shared_ptr<SeparableCartesianMetzImageFilter<float> > &data_p
     data_processor_sptr->parse(parameterstream);
 }
 
-Succeeded compare_images(const DiscretisedDensity<3,float> &im_1, const DiscretisedDensity<3,float> &im_2)
+Succeeded compare_images(const VoxelsOnCartesianGrid<float> &im_1, const VoxelsOnCartesianGrid<float> &im_2)
 {
     if (im_1 == im_2) {
         std::cout << "\nImages match!\n";
@@ -121,24 +115,69 @@ Succeeded compare_images(const DiscretisedDensity<3,float> &im_1, const Discreti
     return Succeeded::no;
 }
 
-Succeeded
-TestDataProcessorProjectors::
-pre_data_processor_fwd_proj() const
+Succeeded compare_sinos(const ProjDataInMemory &proj_data_1, const ProjDataInMemory &proj_data_2)
 {
-    // Create two sinograms, images and two forward projectors.
+    if (*proj_data_1.get_proj_data_info_sptr() != *proj_data_2.get_proj_data_info_sptr()) {
+        std::cout << "\nSinogram proj data info don't match\n";
+        return Succeeded::no;
+    }
+
+    int min_segment_num = proj_data_1.get_min_segment_num();
+    int max_segment_num = proj_data_1.get_max_segment_num();
+    int min_view        = proj_data_1.get_min_view_num();
+    int max_view        = proj_data_1.get_max_view_num();
+    int min_tang_pos    = proj_data_1.get_min_tangential_pos_num();
+    int max_tang_pos    = proj_data_1.get_max_tangential_pos_num();
+
+    // Loop over all segments
+    for (int segment=min_segment_num; segment<=max_segment_num; ++segment) {
+
+        int min_axial_pos = proj_data_1.get_min_axial_pos_num(segment);
+        int max_axial_pos = proj_data_1.get_max_axial_pos_num(segment);
+
+        // Loop over all axial positions
+        for (int axial_pos = min_axial_pos; axial_pos<=max_axial_pos; ++axial_pos) {
+
+            // Get the corresponding STIR sinogram
+            const Sinogram<float> &sino_1 = proj_data_1.get_sinogram(axial_pos,segment);
+            const Sinogram<float> &sino_2 = proj_data_2.get_sinogram(axial_pos,segment);
+
+            // Loop over the STIR view and tangential position
+            for (int view=min_view; view<=max_view; ++view) {
+                for (int tang_pos=min_tang_pos; tang_pos<=max_tang_pos; ++tang_pos) {
+
+                    // Compare values
+                    if (std::abs(sino_1.at(view).at(tang_pos) - sino_2.at(view).at(tang_pos)) > 1e-4f) {
+                        std::cout << "\nSinogram values don't match\n";
+                        return Succeeded::no;
+                    }
+                }
+            }
+        }
+    }
+
+    std::cout << "\nSinograms match!\n";
+    return Succeeded::yes;
+}
+
+void
+TestDataProcessorProjectors::
+pre_data_processor_fwd_proj(const VoxelsOnCartesianGrid<float> &input_image)
+{
+    // Create two sinograms, images and forward projectors.
     //    One for pre-data processor forward projection,
     //    the other for data processor then forward projection
     shared_ptr<ProjMatrixByBin> PM_sptr(new  ProjMatrixByBinUsingRayTracing());
     std::vector<shared_ptr<ProjDataInMemory> > sinos(2, MAKE_SHARED<ProjDataInMemory>(*_input_sino_sptr));
-    std::vector<shared_ptr<DiscretisedDensity<3,float> > > images(2);
-    images[0].reset(_input_image_sptr->clone());
-    images[1].reset(_input_image_sptr->clone());
+    std::vector<shared_ptr<VoxelsOnCartesianGrid<float> > > images(2);
+    images[0].reset(input_image.clone());
+    images[1].reset(input_image.clone());
     std::vector<ForwardProjectorByBinUsingProjMatrixByBin> projectors(2, ForwardProjectorByBinUsingProjMatrixByBin(PM_sptr));
 
     // Set up the data processor
     shared_ptr<SeparableCartesianMetzImageFilter<float> > data_processor_sptr;
     get_data_processor(data_processor_sptr, _fwhm);
-    data_processor_sptr->set_up(*_input_image_sptr);
+    data_processor_sptr->set_up(input_image);
 
     // Loop over twice!
     for (unsigned i=0; i<sinos.size(); ++i) {
@@ -160,26 +199,27 @@ pre_data_processor_fwd_proj() const
         projectors[i].forward_project(*sinos[i]);
     }
 
-    return compare_images(*images[0],*images[1]);
+    if (compare_sinos(*sinos[0],*sinos[1]) == Succeeded::no)
+        everything_ok = false;
 }
 
-Succeeded
+shared_ptr<VoxelsOnCartesianGrid<float> >
 TestDataProcessorProjectors::
-post_data_processor_bck_proj() const
+post_data_processor_bck_proj()
 {
     // Create two images and two back projectors.
     //    One for pre-data processor back projection,
     //    the other for data processor then back projection
+    std::vector<shared_ptr<VoxelsOnCartesianGrid<float> > > images(2);
+    images[0] = MAKE_SHARED<VoxelsOnCartesianGrid<float> >(*_input_sino_sptr->get_proj_data_info_sptr());
+    images[1].reset(images[0]->clone());
     shared_ptr<ProjMatrixByBin> PM_sptr(new  ProjMatrixByBinUsingRayTracing());
-    std::vector<shared_ptr<DiscretisedDensity<3,float> > > images(2);
-    images[0].reset(_input_image_sptr->clone());
-    images[1].reset(_input_image_sptr->clone());
     std::vector<BackProjectorByBinUsingProjMatrixByBin> projectors(2, BackProjectorByBinUsingProjMatrixByBin(PM_sptr));
 
     // Set up the data processor
     shared_ptr<SeparableCartesianMetzImageFilter<float> > data_processor_sptr;
     get_data_processor(data_processor_sptr, _fwhm);
-    data_processor_sptr->set_up(*_input_image_sptr);
+    data_processor_sptr->set_up(*images[0]);
 
     // Loop over twice!
     for (unsigned i=0; i<images.size(); ++i) {
@@ -189,10 +229,10 @@ post_data_processor_bck_proj() const
 
         // The first time, use the data processor during the back projection
         if (i==0)
-            projectors[i].BackProjectorByBin::set_up(_input_sino_sptr->get_proj_data_info_sptr(),_input_image_sptr,data_processor_sptr);
+            projectors[i].BackProjectorByBin::set_up(_input_sino_sptr->get_proj_data_info_sptr(),images[i],data_processor_sptr);
         // The second time, use the data processor after of the projection process
         else
-            projectors[i].set_up(_input_sino_sptr->get_proj_data_info_sptr(),_input_image_sptr);
+            projectors[i].set_up(_input_sino_sptr->get_proj_data_info_sptr(),images[i]);
 
         // Back project
         projectors[i].start_accumulating_in_new_target();
@@ -204,7 +244,11 @@ post_data_processor_bck_proj() const
             data_processor_sptr->apply(*images[i]);
     }
 
-    return compare_images(*images[0],*images[1]);
+    if (compare_images(*images[0],*images[1]) == Succeeded::no)
+        everything_ok = false;
+
+    // Return one of the images to be used for the forward projection
+    return images[0];
 }
 
 END_NAMESPACE_STIR
@@ -215,14 +259,18 @@ USING_NAMESPACE_STIR
 
 int main(int argc, char **argv)
 {
-    if (argc != 4) {
-        cerr << "\n\tUsage: " << argv[0] << " image sinogram fwhm\n";
+    if (argc < 2 || argc > 3) {
+        std::cerr << "\n\tUsage: " << argv[0] << " sinogram [fwhm]\n";
         return EXIT_FAILURE;
     }
 
+    float fwhm = 5.f;
+    if (argc == 3)
+        fwhm = float(atof(argv[2]));
+
     set_default_num_threads();
 
-    TestDataProcessorProjectors test(argv[1], argv[2], float(atof(argv[3])));
+    TestDataProcessorProjectors test(argv[1], fwhm);
 
     if (test.is_everything_ok())
         test.run_tests();
