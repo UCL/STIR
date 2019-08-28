@@ -133,12 +133,15 @@ transpose_inverse_SSRB(ProjData& proj_data_3D,
 
     // keep sinograms out of the loop to avoid reallocations. initialise to something because there's no default constructor
     Sinogram<float> sino_3D = proj_data_3D.get_empty_sinogram(proj_data_3D.get_min_axial_pos_num(0) , 0);
+    Sinogram<float> sino_3D2 = proj_data_3D.get_empty_sinogram(proj_data_3D.get_min_axial_pos_num(0) , 0);
+    Sinogram<float> sino_3D3 = proj_data_3D.get_empty_sinogram(proj_data_3D.get_min_axial_pos_num(0) , 0);
     Sinogram<float> sino_4D =  proj_data_4D.get_empty_sinogram(proj_data_4D.get_min_axial_pos_num(0) , 0);
 
 
     for (int out_ax_pos_num = proj_data_3D.get_min_axial_pos_num(0); out_ax_pos_num  <= proj_data_3D.get_max_axial_pos_num(0); ++out_ax_pos_num )
     {
         sino_3D = proj_data_3D.get_empty_sinogram(out_ax_pos_num, 0);
+        sino_3D3 = proj_data_3D.get_empty_sinogram(out_ax_pos_num, 0);
 
 
         const float out_m = proj_data_3D_info_ptr->get_m(Bin(0, 0, out_ax_pos_num, 0));
@@ -152,25 +155,31 @@ transpose_inverse_SSRB(ProjData& proj_data_3D,
 
                 sino_4D = proj_data_4D.get_sinogram(in_ax_pos_num,in_segment_num);
                 const float in_m = proj_data_4D_info_ptr->get_m(Bin(in_segment_num, 0, in_ax_pos_num, 0));
-                const float in_m_prev = in_ax_pos_num == proj_data_4D.get_max_axial_pos_num(in_segment_num) ?
-                    -1000000.F : proj_data_4D_info_ptr->get_m(Bin(-in_segment_num, 0, out_ax_pos_num+in_segment_num, 0));
 
                 if (fabs(out_m - in_m) < 1E-2)
                  {
                     sino_3D += sino_4D;
                   }
 
+
                 if (fabs(in_m - .5F*(out_m + out_m_next)) < 1E-2)
                  {
-                    sino_4D *= .5F;
-                    sino_3D += sino_4D;
+                    for (int out_reaching = out_ax_pos_num; out_reaching <= proj_data_3D.get_max_axial_pos_num(0); ++out_reaching )
+                    {
+                        sino_3D2 = proj_data_3D.get_empty_sinogram(out_reaching, 0);
+                        sino_4D *= .5F;
+                        sino_3D += sino_4D;
+                        sino_3D2 += sino_4D;
 
                   }
 
               }
             }
 
-         proj_data_3D.set_sinogram(sino_3D);
+        }
+
+         sino_3D3 += sino_3D+sino_3D2;
+         proj_data_3D.set_sinogram(sino_3D3);
         }
 
 

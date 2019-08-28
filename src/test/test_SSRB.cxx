@@ -42,6 +42,7 @@
 
 #include "stir/IO/write_to_file.h"
 
+#include <random>
 
 
 START_NAMESPACE_STIR
@@ -58,6 +59,10 @@ void
 SSRBTests::
 fill_projdata_with_random(ProjData & projdata)
 {
+
+    std::random_device random_device;
+    std::mt19937 random_number_generator(random_device());
+    std::uniform_real_distribution<float> number_distribution(0,10);
     Bin bin;
     {
         for (bin.segment_num()=projdata.get_min_segment_num();
@@ -80,7 +85,7 @@ fill_projdata_with_random(ProjData & projdata)
                          bin.tangential_pos_num()<=
                          sino.get_max_tangential_pos_num();
                          ++bin.tangential_pos_num())
-                         sino[bin.view_num()][bin.tangential_pos_num()]= rand()%10;//((double) rand() / (1)) + 1;
+                         sino[bin.view_num()][bin.tangential_pos_num()]= number_distribution(random_number_generator);
 
                     projdata.set_sinogram(sino);
 
@@ -101,7 +106,7 @@ run_tests()
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Siemens_mMR));
 
     //creating proj data info
-    shared_ptr<ProjDataInfo> proj_data_info_sptr_4D(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
+    shared_ptr<ProjDataInfo> proj_data_info_sptr_4D(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 2,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
     shared_ptr<ExamInfo> exam_info_sptr_4D(new ExamInfo);
     ProjDataInMemory projdata_4D(exam_info_sptr_4D, proj_data_info_sptr_4D);
 
@@ -168,7 +173,7 @@ run_tests()
           }
 
     std::cout << cdot1 << "=" << cdot2 << '\n';
-    set_tolerance(0.02);
+    set_tolerance(0.04);
     check_if_equal(cdot1, cdot2, "test adjoint");
 
 
