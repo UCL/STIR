@@ -161,12 +161,12 @@ transpose_inverse_SSRB(ProjData& proj_data_3D,
                 if (fabs(in_m - .5F*(out_m + out_m_next)) < 1E-2)
                  {
 
-                    int out_reaching = out_ax_pos_num +1;
-                    for (out_reaching; out_reaching <= proj_data_3D.get_max_axial_pos_num(0); ++out_reaching )
+                   // int out_reaching = out_ax_pos_num +1;
+                    for (int i = out_ax_pos_num + 1; i < proj_data_3D.get_max_axial_pos_num(0); ++i)
                     {
                         sino_4D *= .5F;
                         sino_3D += sino_4D;
-                        sino_3D2 = proj_data_3D.get_empty_sinogram(out_reaching, 0);
+                        sino_3D2 = proj_data_3D.get_empty_sinogram(i, 0);
                         sino_3D2 += sino_4D;
 
                   }
