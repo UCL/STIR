@@ -5,10 +5,12 @@
   \brief Implementation of class stir::PresmoothingForwardProjectorByBin
 
   \author Kris Thielemans
+  \author Richard Brown
 
 */
 /*
     Copyright (C) 2000- 2012, Hammersmith Imanet
+    Copyright (C) 2019, University College London
 
     This file is part of STIR.
 
@@ -101,7 +103,7 @@ get_symmetries_used() const
 {
   return original_forward_projector_ptr->get_symmetries_used();
 }
-
+#ifdef STIR_PROJECTORS_AS_V3
 void 
 PresmoothingForwardProjectorByBin::
 actual_forward_project(RelatedViewgrams<float>& viewgrams, 
@@ -125,7 +127,27 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
                                                       min_tangential_pos_num, max_tangential_pos_num);
     }
 }
- 
+#endif
+void
+PresmoothingForwardProjectorByBin::
+actual_forward_project(RelatedViewgrams<float>& viewgrams,
+                  const int min_axial_pos_num, const int max_axial_pos_num,
+                  const int min_tangential_pos_num, const int max_tangential_pos_num)
+{
+    // No need to do the data processing since it was already done on set_input()
+    original_forward_projector_ptr->forward_project(viewgrams,
+                                                      min_axial_pos_num, max_axial_pos_num,
+                                                      min_tangential_pos_num, max_tangential_pos_num);
+}
+
+void
+PresmoothingForwardProjectorByBin::
+set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
+{
+    _density_sptr.reset(density_sptr->clone());
+    if (!is_null_ptr(image_processor_ptr))
+        image_processor_ptr->apply(*_density_sptr,*density_sptr);
+}
 
 
 END_NAMESPACE_STIR

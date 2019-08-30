@@ -79,7 +79,7 @@ class Succeeded;
 
 
 class ProjDataRebinning : 
-  public TimedObject, public ParsingObject ,
+  public TimedObject,
   public RegisteredObject<ProjDataRebinning >
 {
 public:
