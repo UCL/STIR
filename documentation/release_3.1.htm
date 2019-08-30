@@ -138,7 +138,8 @@ These are only minimally documented at the present stage unfortunately.
 <li><tt>list_lm_countrates</tt> is a new list mode utility to output total counts per specified time interval.</li>
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
 <li>add Verbosity level (currently only to be set from interactive languages)</li
-<li>Added the anatomical parallel level sets (PLS) prior. If an uniform anatomical image is provided it will work as a (smoothed) total variation (TV) prior </li>
+<li>Added the anatomical parallel level sets (PLS) prior. If an uniform anatomical image is provided it will work as a (smoothed) total variation (TV) prior. </li>
+<li>We added <code>SeparableGaussianArrayFilter</code> and <code>SeparableGaussianImageFilter</code>. This filter constructs the kernel by sampling a Gaussian. It is therefore different from the Metz filter with power 0, as that is constructed by sampling a Gaussian in frequency space (and can therefore have negative values in image space).
 <li>New IO:
   <ul>
     <li>GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. </li>
@@ -422,7 +423,7 @@ which is called by <code>LmToProjData</code> to check if the list mode format
 can handle the template.
   All derived classes of <code>CListEvent</code> will need to implement it.</li>
 <li>We removed <code>SeparableMetzArrayFilter::discrete_fourier_transform()</code>. Now <code>stir::fourier</code> is used. No need to comply with the Licence of "Numerical Recipies" anymore.</li>
-</li> We added <code>SeparableGaussianArrayFilter</code> and <code>SeparableGaussianImageFilter</code>
+</li> 
 </ul>
 
 </body>

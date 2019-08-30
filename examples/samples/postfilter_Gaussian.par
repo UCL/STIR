@@ -10,7 +10,7 @@ z-dir filter FWHM (in mm):= 6
 ; y-dir maximum kernel size := 129
 ; z-dir maximum kernel size := 31
 
-; optionally normalise filter to 1
+; normalise filter to 1 or not (default is to normalise)
 Normalise filter to 1 := 1
 
 END Separable Gaussian Filter Parameters :=
