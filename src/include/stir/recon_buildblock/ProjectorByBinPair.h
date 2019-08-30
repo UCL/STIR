@@ -50,8 +50,7 @@ class ProjDataInfo;
   file.
 */
 class ProjectorByBinPair : 
-public RegisteredObject<ProjectorByBinPair> ,
-public ParsingObject
+public RegisteredObject<ProjectorByBinPair>
 { 
 public:
 
