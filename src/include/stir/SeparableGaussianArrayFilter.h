@@ -13,7 +13,7 @@
 /*
     Copyright (C) 2000 - 2009-06-22, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-    Copyright (C) 2018, UCL
+    Copyright (C) 2018, 2019, UCL
     See STIR/LICENSE.txt for details
 */
 
@@ -36,7 +36,7 @@ START_NAMESPACE_STIR
   The implementation follows a similar strategy used for the Metz filter, but this filter uses discretisation in image space.
   \see SeparableMetzArrayFilter for what a Metz filter is.
 
-  For power 0, the Metz filterthe reduces to the Gaussian filter in frequency-space.
+  For power 0, the Metz filter reduces to the Gaussian filter in frequency-space.
   However, if the FWHM is not a lot larger than the sampling distance the Metz filter will give small negative values.
   Therefore, if a Gaussian filter is needed, the SeparableGaussianArrayFilter is preferable to a Metz filter
   with power 0.

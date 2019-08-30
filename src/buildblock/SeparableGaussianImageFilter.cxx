@@ -13,7 +13,7 @@
 */
 /*
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
-    Copyright (C) 2018, UCL
+    Copyright (C) 2018, 2019, UCL
 
     This file is part of STIR.
 

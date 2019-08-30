@@ -96,7 +96,7 @@ SeparableGaussianArrayFilterTests::run_tests()
         set_tolerance(.01);
         check_if_equal(1.F, test.sum(), "test if Gaussian kernel is normalised to 1");
         set_tolerance(old_tol);
-        check(test.find_min() >= -0.005F, "test if Gaussian kernel is almost non-negative");
+        check(test.find_min() >= 0, "test if Gaussian kernel is almost non-negative");
 
       }
 

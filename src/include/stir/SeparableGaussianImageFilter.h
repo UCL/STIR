@@ -72,15 +72,15 @@ public:
   //! Default constructor
   SeparableGaussianImageFilter();
 
-  void set_fwhms(const BasicCoordinate< num_dimensions,float>&);
-  void set_max_kernel_sizes(const BasicCoordinate< num_dimensions,int>&);
-  void set_normalise(const bool);
-private:
-
   BasicCoordinate< num_dimensions,float> get_fwhms();
   BasicCoordinate< num_dimensions,int> get_max_kernel_sizes();
   bool get_normalised_filter();
   
+    void set_fwhms(const BasicCoordinate< num_dimensions,float>&);
+    void set_max_kernel_sizes(const BasicCoordinate< num_dimensions,int>&);
+    void set_normalise(const bool);
+    
+private:
   BasicCoordinate< num_dimensions,float> fwhms;
 
 protected:
