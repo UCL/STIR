@@ -91,7 +91,9 @@ Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
     these changes unless they have developed their own projectors. 
     These changes were made so that using data processors (such as motion or 
     smoothing) prior to the forwards projection or following the back 
-  projection will be more efficient.</li>
+    projection will be more efficient.</li>
+  <li> replaced Gaussian filters in <tt>experimental</tt>) with better, but incompatible,
+    versions in <tt>buildblock</tt>. See below for more information.</li>
 </ul>
 
 It is now highly recommended to specify imaging modality and patient orientation in your Interfile headers. If you don't,
@@ -151,7 +153,7 @@ These are only minimally documented at the present stage unfortunately.
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
 <li>add Verbosity level (currently only to be set from interactive languages)</li>
 <li>Added the anatomical parallel level sets (PLS) prior. If an uniform anatomical image is provided it will work as a (smoothed) total variation (TV) prior. </li>
-<li>We added <code>SeparableGaussianArrayFilter</code> and <code>SeparableGaussianImageFilter</code>. This filter constructs the kernel by sampling a Gaussian. It is therefore different from the Metz filter with power 0, as that is constructed by sampling a Gaussian in frequency space (and can therefore have negative values in image space).</li>
+<li>We added <code>SeparableGaussianArrayFilter</code> and <code>SeparableGaussianImageFilter</code> (based on old code in <tt>experimental</tt> which has now been removed). This filter constructs the kernel by sampling a Gaussian. It is therefore different from the Metz filter with power 0, as that is constructed by sampling a Gaussian in frequency space (and can therefore have negative values in image space).</li>
 <li>New IO:
   <ul>
     <li>GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. </li>
