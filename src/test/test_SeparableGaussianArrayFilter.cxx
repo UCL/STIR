@@ -86,9 +86,9 @@ SeparableGaussianArrayFilterTests::run_tests()
       fwhms[1]=9.F; fwhms[2]=7.4F; fwhms[3]=5.4F;
       BasicCoordinate< num_dimensions,int> max_kernel_sizes;
       max_kernel_sizes[1]=19; max_kernel_sizes[2]=19; max_kernel_sizes[3]=29;
-      bool normalise = 1;
       
       {
+        bool normalise = 1;
         SeparableGaussianArrayFilter<3,float> filter(fwhms,max_kernel_sizes,normalise);
 
         filter(test);
