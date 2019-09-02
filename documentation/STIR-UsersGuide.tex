@@ -3557,6 +3557,38 @@ The maximum width of the kernel (in pixels). Prior to version
 in the input image (in that direction).
 \end{description}
 
+{ \subsubsubsection{Separable Gaussian Filter}
+}
+This is a separable 3D Gaussian filter for images discretised on
+a Cartesian voxel grid. These filters are composed of 3 1D filter
+kernels, one for the x,y and z directions each. Each 1D filter
+is specified by a Full Width at Half Maximum (FWHM) parameter
+(in millimetres), and a maximum spatial kernel width.
+The kernel values are obtained by sampling a Gaussian.
+
+The filter is normalised to 1 by default, but the user can choose to disable this option.
+
+
+{ \subsubsubsubsection{Parameters}
+}
+Sample parameters are given below
+\begin{verbatim}
+separable gaussian filter parameters :=
+x-dir filter fwhm (in mm) := 6
+y-dir filter fwhm (in mm) := 6
+z-dir filter fwhm (in mm) := 6
+x-dir maximum kernel size := 129
+y-dir maximum kernel size := 129
+z-dir maximum kernel size := 31
+Normalise filter to 1 := 1
+end separable gaussian filter parameters :=
+\end{verbatim}
+
+Default values are:
+(i) fwhm = 0 , which means no filtering
+(ii) maximum kernel size = -1 , which means unrestricted
+(iii) normalise filter to 1 = 1, which means that the filter is normalised to 1.
+
 { \subsubsubsection{Median}
 }
 \label{sec:median}
