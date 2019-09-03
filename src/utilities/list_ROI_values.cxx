@@ -233,7 +233,7 @@ main(int argc, char *argv[])
   if (!is_null_ptr(parameters.filter_ptr))
     parameters.filter_ptr->apply(*image_ptr);
 
-  out << input_file << '\n';
+  out << std::setw(15) << 'ImageName';
   out << std::setw(15) << "ROI";
 
     if(by_plane)
@@ -261,7 +261,8 @@ main(int argc, char *argv[])
 
 	for (int i=min_plane_number;i<=max_plane_number;i++)
 	  {
-	    out << std::setw(15) << *current_name_iter
+        out << std::setw(15) <<input_file
+        << std::setw(15) << *current_name_iter
 		<< std::setw(10) << i+1  
 		<< std::setw(15) << values[i].get_mean()
 		<< std::setw(15) << values[i].get_stddev();
@@ -276,7 +277,8 @@ main(int argc, char *argv[])
       {
 	ROIValues values;
 	values=compute_total_ROI_values(*image_ptr, **current_shape_iter, parameters.num_samples);
-	out << std::setw(15) << *current_name_iter
+    out << std::setw(15) <<input_file
+        << std::setw(15) << *current_name_iter
 	    << std::setw(15) << values.get_mean()
 	    << std::setw(15) << values.get_stddev();
 	    if (do_CV)
