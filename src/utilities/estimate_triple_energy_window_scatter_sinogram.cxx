@@ -72,6 +72,7 @@ public:
   std::string scatter_filename;
   std::string lower_filename,upper_filename;
   double lower_width, peak_width, upper_width;
+  bool do_smooth;
 
   Succeeded compute();
 private:
@@ -93,6 +94,7 @@ initialise_keymap()
   add_key("lower width",&lower_width);
   add_key("peak width",&peak_width);
   add_key("upper width",&upper_width);
+  add_key("do smooth",&do_smooth);
   add_stop_key("END");
 
 }
@@ -125,6 +127,7 @@ main(int argc, char **argv)
       << "lower width :=\n"
       << "peak width :=\n"
       << "upper width :=\n"
+      << "do smooth :=\n"
       << "END :=\n";
       exit(EXIT_FAILURE);
     }
@@ -176,18 +179,19 @@ main(int argc, char **argv)
         (*upper_sptr).get_segment_by_view(segment_num);
       SegmentByView<float> scatter_segment_by_view=
         (*lower_sptr).get_segment_by_view(segment_num);
-
       SegmentByView<float> filter_lower_segment_by_view =
-        (*lower_sptr).get_segment_by_view(segment_num);
+      (*lower_sptr).get_segment_by_view(segment_num);
       SegmentByView<float> filter_upper_segment_by_view =
-        (*upper_sptr).get_segment_by_view(segment_num);
+      (*upper_sptr).get_segment_by_view(segment_num);
 
-      IndexRange3D kernel_size(0,0,-2,2,-2,2);
-      Array<3,float> kernel(kernel_size);
-      kernel.fill(1/25.F);
-      ArrayFilter3DUsingConvolution<float> filter3d(kernel);
-      filter3d(filter_lower_segment_by_view,lower_segment_by_view);
-      filter3d(filter_upper_segment_by_view,upper_segment_by_view);
+     if(estimate.do_smooth){
+         IndexRange3D kernel_size(0,0,-2,2,-2,2);
+         Array<3,float> kernel(kernel_size);
+         kernel.fill(1/25.F);
+         ArrayFilter3DUsingConvolution<float> filter3d(kernel);
+         filter3d(filter_lower_segment_by_view,lower_segment_by_view);
+         filter3d(filter_upper_segment_by_view,upper_segment_by_view);
+     }
 
 
       // construct function object that does the manipulations on each data
@@ -204,13 +208,11 @@ main(int argc, char **argv)
       in_place_apply_function(filter_lower_segment_by_view, divide_by_small_width);
       in_place_apply_function(filter_upper_segment_by_view, divide_by_small_width);
 
-      scatter_segment_by_view=filter_lower_segment_by_view;
-      scatter_segment_by_view+=filter_upper_segment_by_view;
+       scatter_segment_by_view=filter_lower_segment_by_view;
+       scatter_segment_by_view+=filter_upper_segment_by_view;
 
-//      scatter_segment_by_view=lower_segment_by_view;
-//      scatter_segment_by_view-=upper_segment_by_view;
 
-      in_place_apply_function(scatter_segment_by_view, mult_by_half_peak_width);
+       in_place_apply_function(scatter_segment_by_view, mult_by_half_peak_width);
 
 
      if (!(out_scatter_proj_data_ptr->set_segment(scatter_segment_by_view) == Succeeded::yes))
