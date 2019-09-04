@@ -208,20 +208,11 @@ main(int argc, char **argv)
       in_place_apply_function(filter_lower_segment_by_view, divide_by_small_width);
       in_place_apply_function(filter_upper_segment_by_view, divide_by_small_width);
 
-//      if(estimate.do_smooth){
-          scatter_segment_by_view=filter_lower_segment_by_view;
-          scatter_segment_by_view+=filter_upper_segment_by_view;
-//      }
-//      else{
-//          scatter_segment_by_view=lower_segment_by_view;
-//          scatter_segment_by_view+=upper_segment_by_view;
-//      }
+       scatter_segment_by_view=filter_lower_segment_by_view;
+       scatter_segment_by_view+=filter_upper_segment_by_view;
 
 
-//      scatter_segment_by_view=lower_segment_by_view;
-//      scatter_segment_by_view-=upper_segment_by_view;
-
-      in_place_apply_function(scatter_segment_by_view, mult_by_half_peak_width);
+       in_place_apply_function(scatter_segment_by_view, mult_by_half_peak_width);
 
 
      if (!(out_scatter_proj_data_ptr->set_segment(scatter_segment_by_view) == Succeeded::yes))
