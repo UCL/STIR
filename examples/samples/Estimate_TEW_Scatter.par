@@ -6,5 +6,6 @@ Estimate_TEW_scatter Parameters:=
       lower width := 6
       peak width := 6
       upper width := 20
+      do smooth := 1
 
 END:=
