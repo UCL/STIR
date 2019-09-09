@@ -186,18 +186,24 @@ void extend_axial_position(Array<3,elemT>& array)
 {
 
     BasicCoordinate<3,int> min, max;
+
     min[1]=array.get_min_index()-1;
     max[1]=array.get_max_index()+1;
+    min[2]=array[0].get_min_index();;
+    max[2]=array[0].get_max_index();;
+    min[3]=array[0][0].get_min_index();
+    max[3]=array[0][0].get_max_index();
+
+    array.grow(IndexRange<3>(min, max));
 
     for (int i=array[0].get_min_index(); i<= array[0].get_max_index(); ++i)
        {
          for (int j=array[0][0].get_min_index(); j<= array[0][0].get_max_index(); ++j)
           {
-            const int old_min = array.get_min_index();
-            const int old_max = array.get_max_index();
-            array.grow(IndexRange<3>(min, max));
-            array[min][i][j]=array[old_min][i][j];
-            array[max][i][j]=array[old_max][i][j];
+            const int min = array.get_min_index();
+            const int max = array.get_max_index();
+            array[min][i][j]=array[min+1][i][j];
+            array[max][i][j]=array[max-1][i][j];
           }
       }
 
@@ -210,22 +216,24 @@ template <class elemT>
 void transpose_extend_axial_position(Array<3,elemT>& array)
 {
     BasicCoordinate<3,int> min, max;
+
     min[1]=array.get_min_index()+1;
     max[1]=array.get_max_index()-1;
+    min[2]=array[0].get_min_index();;
+    max[2]=array[0].get_max_index();;
+    min[3]=array[0][0].get_min_index();
+    max[3]=array[0][0].get_max_index();
 
 
     for (int i=array[0].get_min_index(); i<= array[0].get_max_index(); ++i)
        {
          for (int j=array[0][0].get_min_index(); j<= array[0][0].get_max_index(); ++j)
           {
-            const int old_min = array.get_min_index();
-            const int old_max = array.get_max_index();
-            array[min][i][j]+=array[old_min][i][j];
-            array[max][i][j]+=array[old_max][i][j];
-            array.grow(IndexRange<3>(min, max));
+            array[min[1]][i][j]+=array[min[1]-1][i][j];
+            array[max[1]][i][j]+=array[max[1]+1][i][j];
           }
       }
 
-
+         array.grow(IndexRange<3>(min, max));
 }
 END_NAMESPACE_STIR
