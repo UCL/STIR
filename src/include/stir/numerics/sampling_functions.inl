@@ -229,7 +229,9 @@ void transpose_extend_axial_position(Array<3,elemT>& array)
        {
          for (int j=array[0][0].get_min_index(); j<= array[0][0].get_max_index(); ++j)
           {
+
             array[min[1]][i][j]+=array[min[1]-1][i][j];
+            array[min[1]][i][j]+=array[min[1]+1][i][j]-array[min[1]][i][j];
             array[max[1]][i][j]+=array[max[1]+1][i][j];
           }
       }
