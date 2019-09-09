@@ -172,6 +172,8 @@ void transpose_extend_tangential_position(Array<3,elemT>& array)
           {
             const int old_min = array[z][y].get_min_index();
             const int old_max = array[z][y].get_max_index();
+            array[z][y][old_min+1] += array[z][y][old_min];
+            array[z][y][old_max-1] += array[z][y][old_max];
             array[z][y].grow(old_min+1, old_max-1); //resize
           }
       }
@@ -221,6 +223,17 @@ void transpose_extend_axial_position(Array<3,elemT>& array)
     max[2]=array[0].get_max_index();;
     min[3]=array[0][0].get_min_index();
     max[3]=array[0][0].get_max_index();
-    array.grow(IndexRange<3>(min, max));
+
+
+    for (int i=array[0].get_min_index(); i<= array[0].get_max_index(); ++i)
+       {
+         for (int j=array[0][0].get_min_index(); j<= array[0][0].get_max_index(); ++j)
+          {
+            array[min[1]][i][j]+=array[min[1]-1][i][j];
+            array[max[1]][i][j]+=array[max[1]+1][i][j];
+          }
+      }
+
+         array.grow(IndexRange<3>(min, max));
 }
 END_NAMESPACE_STIR
