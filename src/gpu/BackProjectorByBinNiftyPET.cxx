@@ -116,8 +116,20 @@ back_project(const ProjData& proj_data, int, int)
     //   STIR -> NiftyPET projection data conversion
     // --------------------------------------------------------------- //
 
+    proj_data.write_to_file("temp");
+
     std::vector<float> sino_w_gaps = _helper.create_niftyPET_sinogram_with_gaps();
     _helper.convert_proj_data_stir_to_niftyPET(sino_w_gaps,proj_data);
+
+
+//    for (int i=0;i<sino_w_gaps.size();++i)
+//        sino_w_gaps[i] = i;
+
+//    std::cout << "\nmidway\n";
+//    for (unsigned i=aw2ali.size()-11; i<aw2ali.size(); ++i)
+//        std::cout << aw2ali[i] << "\n";
+//    std::cout << "\ngood\n";
+//    exit(0);
 
     // --------------------------------------------------------------- //
     //   Remove gaps from sinogram
@@ -125,6 +137,23 @@ back_project(const ProjData& proj_data, int, int)
 
     std::vector<float> sino_no_gaps = _helper.create_niftyPET_sinogram_no_gaps();
     remove_gaps(sino_no_gaps.data(),sino_w_gaps.data(),nsinos,aw2ali.data(),Cnt);
+
+    // temp back put gaps
+    std::vector<float> sino_w_gaps2 = _helper.create_niftyPET_sinogram_with_gaps();
+    put_gaps(sino_w_gaps2.data(),sino_no_gaps.data(),aw2ali.data(),Cnt);
+
+    std::ofstream data_file;
+    data_file.open("sino_w_gaps.bin", std::ios::out | std::ios::binary);
+    data_file.write(reinterpret_cast<char*>(&sino_w_gaps[0]), sino_w_gaps.size()*sizeof(float));
+    data_file.close();
+
+    std::ofstream data_file2;
+    data_file2.open("sino_w_gaps2.bin", std::ios::out | std::ios::binary);
+    data_file2.write(reinterpret_cast<char*>(&sino_w_gaps2[0]), sino_w_gaps2.size()*sizeof(float));
+    data_file2.close();
+
+    //exit(1);
+
 
     // --------------------------------------------------------------- //
     //   Back project

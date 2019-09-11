@@ -92,16 +92,39 @@ set_up()
     _s2c    = read_binary_file<short>(_fname_s2c   );
     _aw2ali = read_binary_file<int>  (_fname_aw2ali);
     _crs    = read_binary_file<float>(_fname_crs   );
-    _already_set_up = true;
 
-    // Set up cnst
+    // Set up cnst - backwards engineered from def.h, scanner.h and resources.py
     _cnt.SPN      = _span;
     _cnt.RNG_STRT = 0;
     _cnt.RNG_END  = NRINGS;
-    _cnt.VERBOSE  = false;
+    _cnt.VERBOSE  = true;
     _cnt.DEVID    = _devid;
     _cnt.NSN11    = NSINOS11;
     _cnt.NSEG0    = SEG0;
+    _cnt.NCRS     = nCRS;
+    _cnt.OFFGAP   = 1;
+    _cnt.TGAP     = 9;
+    _cnt.A        = NSANGLES;
+    _cnt.W        = NSBINS;
+    _cnt.NCRSR    = nCRSR;
+
+    _cnt.MRD =  mxRD;
+    _cnt.ALPHA =  aLPHA;
+    _cnt.AXR =  SZ_RING;
+    _cnt.BTP =  0;
+    _cnt.BTPRT =  1.0;
+    _cnt.COSUPSMX =  0.725f;
+    _cnt.COSSTP = (1-_cnt.COSUPSMX)/(255);
+    _cnt.ETHRLD =  0.05f;
+    _cnt.NRNG =  NRINGS;
+    _cnt.ITOFBIND =  0.08552925517901334f;
+    _cnt.NSN1 =  NSINOS;
+    _cnt.NSN64 =  4096;
+    _cnt.NSRNG =  8;
+    _cnt.RE =  33.47f;
+    _cnt.TOFBIND =  11.691905862f;
+    _cnt.TOFBINN =  1;
+    _cnt.TOFBINS =  3.9e-10f;
 
     switch(_cnt.SPN){
       case 11:
@@ -115,6 +138,8 @@ set_up()
     // isub
     _isub = std::vector<int>(unsigned(AW));
     for (unsigned i = 0; i<unsigned(AW); i++) _isub[i] = int(i);
+
+    _already_set_up = true;
 }
 
 void
@@ -167,6 +192,7 @@ ProjectorByBinNiftyPETHelper::
 convert_niftypet_proj_3d_to_1d_idx(const unsigned ang, const unsigned bins, const unsigned sino) const
 {
     return ang*NSBINS*unsigned(_nsinos) + bins*unsigned(_nsinos) + sino;
+//    return bins*NSANGLES*unsigned(_nsinos) + ang*unsigned(_nsinos) + sino;
 }
 
 void check_im_sizes(const int stir_dim[3], const int np_dim[3])
