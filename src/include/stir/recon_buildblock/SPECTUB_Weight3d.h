@@ -22,6 +22,8 @@
 #ifndef _WEIGHT3D_SPECTUB_H
 #define _WEIGHT3D_SPECTUB_H
 
+#include "stir/spatial_transformation/InvertAxis.h"
+
 /*! \namespace SPECTUB
   \brief Namespace for the SPECT library from University of Barcelona
 

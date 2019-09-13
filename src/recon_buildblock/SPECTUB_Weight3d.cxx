@@ -230,7 +230,7 @@ void wm_calculation( const int kOS,
 				}
 			
 				//=== LOOP4: IMAGE SLICES ================================================================
-				
+
 				for ( vox.islc = vol.first_sl ; vox.islc < vol.last_sl ; vox.islc++ ){
 					
 					vox.iv = vox.ip + vox.islc * vol.Npix ;   // volume index of the voxel (volume as an array)
@@ -260,9 +260,9 @@ void wm_calculation( const int kOS,
 						weight = psf.val[ ie ] * eff * coeff_att ;
                         
                         //... fill image STIR indices ...........................
-						
+                        stir::InvertAxis invert;
                         if ( wm.do_save_STIR ){
-							wm.nx[ vox.iv ] = (short int)( vox.icol - (int) floor( vol.Ncold2 ) );  // centered index for STIR format
+                            wm.nx[ vox.iv ] = (short int)invert.invert_axis_index(( vox.icol - (int) floor( vol.Ncold2 ) ),vol.Ncold2*2, "x");  // centered index for STIR format
 							wm.ny[ vox.iv ] = (short int)( vox.irow - (int) floor( vol.Nrowd2 ) );  // centered index for STIR format
 							wm.nz[ vox.iv ] = (short int)  vox.islc ;                               // non-centered index for STIR format
 						}
