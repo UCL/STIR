@@ -27,8 +27,7 @@ START_NAMESPACE_STIR
   Absolute time means at present 'secs since midnight 1/1/1970 UTC'
 
 */
-class AbsTimeInterval: public RegisteredObject<AbsTimeInterval>,
-                           public ParsingObject
+class AbsTimeInterval: public RegisteredObject<AbsTimeInterval>
 {
 
 public:

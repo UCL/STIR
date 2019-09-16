@@ -12,12 +12,13 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author PARAPET project
+  \author Richard Brown
 
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018-2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -93,7 +94,7 @@ virtual void set_up(
     void forward_project(ProjData&, 
 			 const DiscretisedDensity<3,float>&, 
 			 int subset_num = 0, int num_subsets = 1, bool zero = true);
-
+#ifdef STIR_PROJECTORS_AS_V3
    //! project the volume into the viewgrams
    /*! it overwrites the data already present in the viewgram */
     void forward_project(RelatedViewgrams<float>&, 
@@ -107,15 +108,38 @@ virtual void set_up(
 		  const DiscretisedDensity<3,float>&,
 		  const int min_axial_pos_num, const int max_axial_pos_num,
 		  const int min_tangential_pos_num, const int max_tangential_pos_num);
+#endif
+   //! project the volume into the whole proj_data
+   /*! it overwrites the data already present in the projection data */
+    virtual void forward_project(ProjData&,
+                         int subset_num = 0, int num_subsets = 1, bool zero = true);
+
+   //! project the volume into the viewgrams
+   /*! it overwrites the data already present in the viewgram */
+    void forward_project(RelatedViewgrams<float>&);
+
+    void forward_project(RelatedViewgrams<float>&,
+          const int min_axial_pos_num, const int max_axial_pos_num);
+
+    void forward_project(RelatedViewgrams<float>&,
+          const int min_axial_pos_num, const int max_axial_pos_num,
+          const int min_tangential_pos_num, const int max_tangential_pos_num);
 
     virtual ~ForwardProjectorByBin();
+
+    /// Set input
+    virtual void set_input(const DiscretisedDensity<3,float>&);
 
 protected:
   //! This virtual function has to be implemented by the derived class.
   virtual void actual_forward_project(RelatedViewgrams<float>&, 
 		  const DiscretisedDensity<3,float>&,
 		  const int min_axial_pos_num, const int max_axial_pos_num,
-		  const int min_tangential_pos_num, const int max_tangential_pos_num) = 0;
+          const int min_tangential_pos_num, const int max_tangential_pos_num);
+
+  virtual void actual_forward_project(RelatedViewgrams<float>& viewgrams,
+          const int min_axial_pos_num, const int max_axial_pos_num,
+          const int min_tangential_pos_num, const int max_tangential_pos_num);
 
   //! check if the argument is the same as what was used for set_up()
   /*! calls error() if anything is wrong.
@@ -125,11 +149,11 @@ protected:
   virtual void check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& density_info) const;
   bool _already_set_up;
 
+  //! The density ptr set with set_up()
+  shared_ptr<DiscretisedDensity<3,float> > _density_sptr;
+
 private:
   shared_ptr<ProjDataInfo> _proj_data_info_sptr;
-  //! The density ptr set with set_up()
-  /*! \todo it is wasteful to have to store the whole image as this uses memory that we don't need. */
-  shared_ptr<DiscretisedDensity<3,float> > _density_info_sptr;
 };
 
 END_NAMESPACE_STIR

@@ -80,6 +80,20 @@ Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
   <li> minor changes when using Python/MATLAB</li>
   <li> the need for a new <code>z zoom</code> keyword for SPECT reconstructions (see the updated sample .par files)</li>
   <li> changed image orientation when reading/writing images via ITK</li>
+  <li> The resulting target must be set prior to using the forward and back projectors. 
+    For the forward projector this is done with <tt>set_input</tt>. 
+    For the back projector, this is done during the <tt>set_up</tt>, 
+    but then<tt>start_accumulating_in_new_target</tt> must be called each time the user
+    wishes to start back projecting into a zero-filled image. 
+    The result of the back projection is then returned via <tt>get_output</tt>. 
+    Backwards compatibility can be maintained with the CMake switch, 
+    <tt>STIR_PROJECTORS_AS_V3</tt>. The user should not notice 
+    these changes unless they have developed their own projectors. 
+    These changes were made so that using data processors (such as motion or 
+    smoothing) prior to the forwards projection or following the back 
+    projection will be more efficient.</li>
+  <li> replaced Gaussian filters in <tt>experimental</tt>) with better, but incompatible,
+    versions in <tt>buildblock</tt>. See below for more information.</li>
 </ul>
 
 It is now highly recommended to specify imaging modality and patient orientation in your Interfile headers. If you don't,
@@ -137,8 +151,9 @@ These are only minimally documented at the present stage unfortunately.
 <li><tt>list_image_info</tt> now has options to list exam info, or only part of the information (as <tt>list_projdata_info</tt>).</li>
 <li><tt>list_lm_countrates</tt> is a new list mode utility to output total counts per specified time interval.</li>
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
-<li>add Verbosity level (currently only to be set from interactive languages)</li
-<li>Added the anatomical parallel level sets (PLS) prior. If an uniform anatomical image is provided it will work as a (smoothed) total variation (TV) prior </li>
+<li>add Verbosity level (currently only to be set from interactive languages)</li>
+<li>Added the anatomical parallel level sets (PLS) prior. If an uniform anatomical image is provided it will work as a (smoothed) total variation (TV) prior. </li>
+<li>We added <code>SeparableGaussianArrayFilter</code> and <code>SeparableGaussianImageFilter</code> (based on old code in <tt>experimental</tt> which has now been removed). This filter constructs the kernel by sampling a Gaussian. It is therefore different from the Metz filter with power 0, as that is constructed by sampling a Gaussian in frequency space (and can therefore have negative values in image space).</li>
 <li>New IO:
   <ul>
     <li>GATE compatibility layer. ROOT files from cylindricalPET and ECAT simulated scanners can be imported as listmode files. Some simple options are provided, like exclude scattered or randoms. </li>
@@ -241,7 +256,13 @@ HFS, FFS, HFP or FFP).
 
 <h3>Build system</h3>
 <ul>
-<li>Also find the Python executable. This allows specifying your python version by
+  <li>MATLAB support now uses CMake's own <a href="https://cmake.org/cmake/help/latest/module/FindMatlab.html">FindMatlab</a> module, as opposed to our own
+    code, which was out-of-date. Unfortunately, this uses different CMake variables.
+    In particular, <strong><tt>MATLAB_ROOT</tt> is now ignored. Use <tt>Matlab_ROOT_DIR</tt> instead</strong>.
+    In addition, CMake launches MATLAB to find out some settings, which on some
+    systems can be very slow.
+  </li>
+  <li>Also find the Python executable. This allows specifying your python version by
 defining <code>PYTHON_EXECUTABLE</code> when running CMake.</li>
 <li>added (advanced) options <code>STIR_USE_BOOST_SHARED_PTR</code> and <code>STIR_NO_UNIQUE_PTR</code>.
 These default to <code>Off</code> unless Boost believes that your compiler does not have a working
@@ -373,6 +394,18 @@ from the above):</H2>
   </li>
 <li> <code>ProjMatrixByBin</code> now uses <code>get_symmetries_sptr()</code> (replaces <code>get_symmetries_ptr()</code>).
   </li>
+<li> The inheritance between <code>Object</code>, <code>ParsingObject</code> and <code>RegisteredObject</code> have changed. Specifically:
+  <ul>
+    <li><code>Object</code> inherits from <code>ParsingObject</code>.</li>
+    <li><code>Object</code> no longer needs the <code>method parameter_info()</code>.</li>
+    <li>Classes that inherit from <code>RegisteredObject</code> no longer need to also 
+    	inherit from <code>ParsingObject</code>.</li>
+    <li>The class <code>AddParser</code> has been removed. The default third argument of 
+    	<code>RegisteredParsingObject</code> has been changed accordingly.</li>
+    <li><code>Object</code> has been renamed as <code>RegisteredObjectBase</code>. 
+        This is because the class only exists for the parser to get information about the class.</li>
+  </ul>
+</li>
 </ul>
 
 <h3>New functionality</h3>
@@ -422,7 +455,7 @@ which is called by <code>LmToProjData</code> to check if the list mode format
 can handle the template.
   All derived classes of <code>CListEvent</code> will need to implement it.</li>
 <li>We removed <code>SeparableMetzArrayFilter::discrete_fourier_transform()</code>. Now <code>stir::fourier</code> is used. No need to comply with the Licence of "Numerical Recipies" anymore.</li>
-</li>
+</li> 
 </ul>
 
 </body>

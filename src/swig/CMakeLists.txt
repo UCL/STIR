@@ -148,21 +148,25 @@ if (BUILD_SWIG_MATLAB)
 
   set(module_name stir)
   SET(SWIG_MODULE_stirMATLAB_EXTRA_FLAGS -module ${module_name} ${SWIG_DOXY_OPTIONS})
+  # TODO depending on SWIG version add "-mexname stirMATLAB_wrap" above
   if (CMAKE_VERSION VERSION_LESS "3.8")
     SWIG_ADD_MODULE(stirMATLAB matlab stir.i ${STIR_REGISTRIES})
   else()
     SWIG_ADD_LIBRARY(stirMATLAB LANGUAGE matlab TYPE MODULE SOURCES stir.i ${STIR_REGISTRIES})
   endif()
+  if (WIN32)
+     set (Matlab_CXXLINKER_FLAGS "/EXPORT:mexFunction")
+  endif()
   SET_TARGET_PROPERTIES(${SWIG_MODULE_stirMATLAB_REAL_NAME} PROPERTIES
         SUFFIX "_wrap.${MATLAB_MEX_EXT}" PREFIX "${MATLAB_PREFIX}"
-        LINK_FLAGS "${MATLAB_CXXLINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}"
+        LINK_FLAGS "${Matlab_CXXLINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}"
         FOLDER "Matlab")  
   if (SWIG_DOXY_TARGET)
     add_dependencies(${SWIG_MODULE_stirMATLAB_REAL_NAME} ${SWIG_DOXY_TARGET})
   endif()
-  SWIG_LINK_LIBRARIES(stirMATLAB ${STIR_LIBRARIES}  ${MATLAB_LIBRARIES})
+  SWIG_LINK_LIBRARIES(stirMATLAB ${STIR_LIBRARIES}  ${Matlab_LIBRARIES})
 
-  include_directories(${MATLAB_INCLUDE_DIR})
+  include_directories(${Matlab_INCLUDE_DIRS})
   # disabled, as currently set via add_definitions in main CMakeLists.txt
   #SET_SOURCE_FILES_PROPERTIES( ${swig_generated_file_fullname}
   #      PROPERTIES COMPILE_FLAGS "${MATLAB_CXXFLAGS}")
