@@ -238,8 +238,10 @@ main(int argc, char *argv[])
 
     if(by_plane)
       out    << std::setw(10) << "Plane_num" ;
-    out << std::setw(15) << "Mean "
-	<< std::setw(15) << "Stddev";
+      out << std::setw(15) << "Mean "
+          << std::setw(15) << "Max "
+          << std::setw(15) << "Min "
+          << std::setw(15) << "Stddev";
     if (do_CV)
       out << std::setw(15) << "CV";
     if (do_V)
@@ -265,6 +267,8 @@ main(int argc, char *argv[])
         << std::setw(15) << *current_name_iter
 		<< std::setw(10) << i+1  
 		<< std::setw(15) << values[i].get_mean()
+        << std::setw(15) << values[i].get_max()
+        << std::setw(15) << values[i].get_min()
 		<< std::setw(15) << values[i].get_stddev();
 	    if (do_CV)
 	      out << std::setw(15) << values[i].get_CV();
@@ -280,6 +284,8 @@ main(int argc, char *argv[])
     out << std::setw(15) <<input_file
         << std::setw(15) << *current_name_iter
 	    << std::setw(15) << values.get_mean()
+        << std::setw(15) << values.get_max()
+        << std::setw(15) << values.get_min()
 	    << std::setw(15) << values.get_stddev();
 	    if (do_CV)
 	      out << std::setw(15) << values.get_CV();
