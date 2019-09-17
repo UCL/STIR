@@ -74,6 +74,7 @@
 #include "stir/GeneralisedPoissonNoiseGenerator.h"
   
 #include "stir/IO/read_from_file.h"
+#include "stir/IO/write_to_file.h"
 #include "stir/IO/InterfileOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ECAT7OutputFileFormat.h"
@@ -1291,6 +1292,8 @@ namespace stir {
 //%template() stir::DiscretisedDensityOnCartesianGrid<3,float>;
 %template(FloatVoxelsOnCartesianGrid) stir::VoxelsOnCartesianGrid<float>;
 
+%include "stir/IO/write_to_file.h"
+%template(write_image_to_file) stir::write_to_file<DiscretisedDensity<3, float> >;
 
 #ifdef STIRSWIG_SHARED_PTR
 #define DataT stir::DiscretisedDensity<3,float>
