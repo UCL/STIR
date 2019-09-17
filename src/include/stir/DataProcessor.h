@@ -30,7 +30,6 @@
 
 
 #include "stir/RegisteredObject.h"
-#include "stir/ParsingObject.h"
 #include "stir/TimedObject.h"
 #include "stir/Succeeded.h"
 
@@ -50,12 +49,11 @@ START_NAMESPACE_STIR
   RegisteredParsingObject are supposed to handle. So, all this 
   functionality is achieved by deriving DataProcessor from the
   appropriate RegisteredObject class, and deriving the 'leaves'
-  from Registered ParsingObject.
+  from RegisteredParsingObject.
  */
 template <typename DataT>
 class DataProcessor : 
 public RegisteredObject<DataProcessor<DataT> >,
-public ParsingObject,
 public TimedObject
 {
 public:

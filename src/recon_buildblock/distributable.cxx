@@ -384,6 +384,8 @@ void distributable_computation(
   
   if (output_image_ptr != NULL)
     output_image_ptr->fill(0);
+  else
+    output_image_ptr = input_image_ptr->clone();
   
   if (log_likelihood_ptr != NULL)
     {
@@ -407,19 +409,21 @@ void distributable_computation(
 #endif
   //double total_seq_rpc_time=0.0; //sums up times used for RPC_process_related_viewgrams
 
+  forward_projector_ptr->set_input(*input_image_ptr);
+  back_projector_ptr->start_accumulating_in_new_target();
+
 #ifdef STIR_OPENMP
-  std::vector< shared_ptr<DiscretisedDensity<3,float> > > local_output_image_sptrs;
   std::vector<double> local_log_likelihoods;
   std::vector<int> local_counts, local_count2s;
-#pragma omp parallel shared(local_output_image_sptrs, local_log_likelihoods, local_counts, local_count2s)
+#pragma omp parallel shared(local_log_likelihoods, local_counts, local_count2s)
 #endif
+
   // start of threaded section if openmp
   { 
 #ifdef STIR_OPENMP
 #pragma omp single
     {
       std::cerr << "Starting loop with " << omp_get_num_threads() << " threads\n"; 
-      local_output_image_sptrs.resize(omp_get_max_threads(), shared_ptr<DiscretisedDensity<3,float> >());
       local_log_likelihoods.resize(omp_get_max_threads(), 0.);
       local_counts.resize(omp_get_max_threads(), 0);
       local_count2s.resize(omp_get_max_threads(), 0);
@@ -475,16 +479,11 @@ void distributable_computation(
           info(boost::format("calculating segment_num: %d, view_num: %d")
                % view_segment_num.segment_num() % view_segment_num.view_num());
 #endif
+
 #ifdef STIR_OPENMP
-          if (output_image_ptr != NULL)
-            {
-              if(is_null_ptr(local_output_image_sptrs[thread_num]))
-                local_output_image_sptrs[thread_num].reset(output_image_ptr->get_empty_copy());
-            }
-            
           RPC_process_related_viewgrams(forward_projector_ptr,
                                         back_projector_ptr,
-                                        local_output_image_sptrs[thread_num].get(), input_image_ptr, y.get(), 
+                                        y.get(),
                                         local_counts[thread_num], local_count2s[thread_num], 
                                         is_null_ptr(log_likelihood_ptr)? NULL : &local_log_likelihoods[thread_num], 
                                         additive_binwise_correction_viewgrams.get(),
@@ -493,7 +492,7 @@ void distributable_computation(
 #else
           RPC_process_related_viewgrams(forward_projector_ptr,
                                         back_projector_ptr,
-                                        output_image_ptr, input_image_ptr, y.get(), count, count2, log_likelihood_ptr, 
+                                        y.get(), count, count2, log_likelihood_ptr,
                                         additive_binwise_correction_viewgrams.get(),
                                         mult_viewgrams_sptr.get());
 #endif // OPENMP                                    
@@ -504,12 +503,6 @@ void distributable_computation(
 #ifdef STIR_OPENMP
   // "reduce" data constructed by threads
   {
-    if (output_image_ptr != NULL)
-      {
-        for (int i=0; i<static_cast<int>(local_output_image_sptrs.size()); ++i)
-	  if(!is_null_ptr(local_output_image_sptrs[i])) // only accumulate if a thread filled something in
-	    *output_image_ptr += *(local_output_image_sptrs[i]);
-      }
     if (log_likelihood_ptr != NULL)
       {
         for (int i=0; i<static_cast<int>(local_log_likelihoods.size()); ++i)
@@ -519,6 +512,7 @@ void distributable_computation(
     count2 += std::accumulate(local_count2s.begin(), local_count2s.end(), 0);
   }
 #endif
+    back_projector_ptr->get_output(*output_image_ptr);
 #ifdef STIR_MPI
   //end of iteration processing
 

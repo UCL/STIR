@@ -160,7 +160,7 @@ ProjMatrixByBin::cache_key(const Bin& bin) const
   assert(abs(bin.tangential_pos_num()) < (1<<12));
   return (CacheKey)( 
                     (static_cast<boost::uint32_t>(bin.axial_pos_num()>=0?0:1) << 31)
-                    | (static_cast<boost::uint32_t>(bin.axial_pos_num())<<13) 
+                    | (static_cast<boost::uint32_t>(abs(bin.axial_pos_num()))<<13) 
                     | (static_cast<boost::uint32_t>(bin.tangential_pos_num()>=0?0:1) << 12)
                     |  static_cast<boost::uint32_t>(abs(bin.tangential_pos_num())) );    	
 } 

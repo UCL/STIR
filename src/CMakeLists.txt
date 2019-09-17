@@ -91,12 +91,14 @@ option(BUILD_SWIG_MATLAB
 mark_as_advanced(BUILD_SWIG_OCTAVE)
 
 if (BUILD_SWIG_MATLAB)
+  # require 3.3 for descent FindMatlab.cmake
+  cmake_minimum_required(VERSION 3.3.0)
   set(CMAKE_POSITION_INDEPENDENT_CODE True)
-  FIND_PACKAGE(MATLAB REQUIRED)
-  # Add matlab compiler flags to everything
-  # TODO this is probably not necessary anymore with CMAKE_POSITION_INDEPENDENT_CODE set to true
-  add_definitions(${MATLAB_CXXFLAGS})
-
+  message(STATUS "Trying to find Matlab. This might take a while. If this fails, set Matlab_ROOT_DIR.")
+  FIND_PACKAGE(Matlab COMPONENTS MX_LIBRARY REQUIRED)
+  matlab_get_mex_suffix("${Matlab_ROOT_DIR}" Matlab_MEX_EXT)
+  message(STATUS "Found Matlab_LIBRARIES: ${Matlab_LIBRARIES}")
+  message(STATUS "Found Matlab_INCLUDE_DIRS: ${Matlab_INCLUDE_DIRS}")
 endif()
 
 if (BUILD_SWIG_PYTHON)

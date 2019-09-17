@@ -7,10 +7,12 @@
   \brief Declaration of class PostsmoothingForwardProjectorByBin
 
   \author Kris Thielemans
+  \author Richard Brown
 
 */
 /*
     Copyright (C) 2000- 2001, IRSL
+    Copyright (C) 2019, University College London
     See STIR/LICENSE.txt for details
 */
 #ifndef __stir_recon_buildblock_PostsmoothingForwardProjectorByBin__H__
@@ -74,11 +76,16 @@ private:
   std::vector<double> tang_kernel_double;
   std::vector<double> ax_kernel_double;
 
+#ifdef STIR_PROJECTORS_AS_V3
   void actual_forward_project(RelatedViewgrams<float>&, 
 		  const DiscretisedDensity<3,float>&,
 		  const int min_axial_pos_num, const int max_axial_pos_num,
 		  const int min_tangential_pos_num, const int max_tangential_pos_num);
-
+#endif
+  /// Actual forward project where input has already been set.
+  void actual_forward_project(RelatedViewgrams<float>&,
+          const int min_axial_pos_num, const int max_axial_pos_num,
+          const int min_tangential_pos_num, const int max_tangential_pos_num);
   void smooth(Viewgram<float>&,
               const int min_axial_pos_num, const int max_axial_pos_num,
               const int min_tangential_pos_num, const int max_tangential_pos_num) const;

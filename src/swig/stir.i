@@ -69,6 +69,7 @@
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
 #include "stir/PixelsOnCartesianGrid.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/zoom.h"
 
 #include "stir/GeneralisedPoissonNoiseGenerator.h"
   
@@ -1262,6 +1263,9 @@ namespace stir {
 
 } // namespace stir
 
+%include "stir/ZoomOptions.h"
+%include "stir/zoom.h"
+
 %rename (get_scanner) *::get_scanner_ptr;
 %ignore *::get_proj_data_info_ptr;
 %rename (get_proj_data_info) *::get_proj_data_info_sptr;
@@ -1664,17 +1668,11 @@ namespace stir {
 
 %include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 
-%shared_ptr(  stir::AddParser<stir::ForwardProjectorByBin>);
-%template (internalAddParserForwardProjectorByBin)
-  stir::AddParser<stir::ForwardProjectorByBin>;
 %template (internalRPForwardProjectorByBinUsingProjMatrixByBin)  
   stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,
      stir::ForwardProjectorByBin>;
 %include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 
-%shared_ptr(  stir::AddParser<stir::BackProjectorByBin>);
-%template (internalAddParserBackProjectorByBin)
-  stir::AddParser<stir::BackProjectorByBin>;
 %template (internalRPBackProjectorByBinUsingProjMatrixByBin)  
   stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
      stir::BackProjectorByBin>;

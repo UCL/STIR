@@ -77,8 +77,7 @@ class Succeeded;
 template <typename TargetT>
 class Reconstruction :
         public RegisteredObject<Reconstruction < TargetT > >,
-        public TimedObject,
-        public ParsingObject
+        public TimedObject
 {
 public:
   //! virtual destructor

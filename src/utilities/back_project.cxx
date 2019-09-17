@@ -104,13 +104,17 @@ main (int argc, char * argv[])
       back_projector_sptr.reset(new BackProjectorByBinUsingProjMatrixByBin(PM)); 
     }
 
+  image_density_sptr->fill(0.F);
   back_projector_sptr->set_up(proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone(),
 			      image_density_sptr );
 
-  image_density_sptr->fill(0.F);
-  
+#if 0
   back_projector_sptr->back_project(*image_density_sptr, *proj_data_sptr);
-  
+#else
+  back_projector_sptr->start_accumulating_in_new_target();
+  back_projector_sptr->back_project(*proj_data_sptr);
+  back_projector_sptr->get_output(*image_density_sptr);
+#endif
   OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
     write_to_file(output_filename, *image_density_sptr);
 

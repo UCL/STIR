@@ -4,10 +4,12 @@
   \brief Declaration of class stir::PresmoothingForwardProjectorByBin
 
   \author Kris Thielemans
+  \author Richard Brown
 
 */
 /*
     Copyright (C) 2002- 2007, Hammersmith Imanet
+    Copyright (C) 2019, University College London
 
     This file is part of STIR.
 
@@ -39,7 +41,7 @@ template <typename DataT> class DataProcessor;
 /*!
   \brief A very preliminary class that first smooths the image, then forward projects.
 
-  \warning. It assumes that the ImageProcessor used to do the filtering does not change 
+  \warning. It assumes that the DataProcessor does not change
   the size of the image.
 */
 class PresmoothingForwardProjectorByBin : 
@@ -47,6 +49,14 @@ class PresmoothingForwardProjectorByBin :
     RegisteredParsingObject<PresmoothingForwardProjectorByBin,
                             ForwardProjectorByBin>
 {
+#ifdef SWIG
+  // work-around swig problem. It gets confused when using a private (or protected)
+  // typedef in a definition of a public typedef/member
+public:
+#else
+ private:
+#endif
+  typedef ForwardProjectorByBin base_type;
 public:
   //! Name which will be used when parsing a PresmoothingForwardProjectorByBin object
   static const char * const registered_name; 
@@ -75,17 +85,22 @@ public:
   // class has other behaviour).
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
+  /// Set input
+  virtual void set_input(const shared_ptr<DiscretisedDensity<3,float> >&);
 
 private:
 
   shared_ptr<ForwardProjectorByBin> original_forward_projector_ptr;
   shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > image_processor_ptr;
-
+#ifdef STIR_PROJECTORS_AS_V3
   void actual_forward_project(RelatedViewgrams<float>&, 
                               const DiscretisedDensity<3,float>&,
                               const int min_axial_pos_num, const int max_axial_pos_num,
                               const int min_tangential_pos_num, const int max_tangential_pos_num);
-
+#endif
+  void actual_forward_project(RelatedViewgrams<float>&,
+                              const int min_axial_pos_num, const int max_axial_pos_num,
+                              const int min_tangential_pos_num, const int max_tangential_pos_num);
 
 
   virtual void set_defaults();
