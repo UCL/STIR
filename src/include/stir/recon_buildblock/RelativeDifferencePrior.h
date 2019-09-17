@@ -33,7 +33,7 @@
 
 
 #include "stir/RegisteredParsingObject.h"
-#include "stir/recon_buildblock/PriorWithParabolicSurrogate.h"
+#include "stir/recon_buildblock/GeneralisedPrior.h"
 #include "stir/Array.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/shared_ptr.h"
@@ -96,14 +96,15 @@ template <typename elemT>
 class RelativeDifferencePrior:  public
                        RegisteredParsingObject< RelativeDifferencePrior<elemT>,
                                                 GeneralisedPrior<DiscretisedDensity<3,elemT> >,
-                                                PriorWithParabolicSurrogate<DiscretisedDensity<3,elemT> >
+                                                GeneralisedPrior<DiscretisedDensity<3,elemT> >
                                               >
 {
  private:
   typedef
     RegisteredParsingObject< RelativeDifferencePrior<elemT>,
                              GeneralisedPrior<DiscretisedDensity<3,elemT> >,
-                             PriorWithParabolicSurrogate<DiscretisedDensity<3,elemT> > >
+                             GeneralisedPrior<DiscretisedDensity<3,elemT> >
+                           >
     base_type;
 
  public:
@@ -142,10 +143,8 @@ class RelativeDifferencePrior:  public
     add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
                                                 const DiscretisedDensity<3,elemT>& input) const;
 
-  //! Create variable gamma for Relative Difference Penalty
-  float gamma;
   //! get the gamma value used in RDP
-  float get_gamma();
+  float get_gamma() const;
   //! set the gamma value used in the RDP
   void set_gamma(float g);
 
@@ -169,6 +168,8 @@ class RelativeDifferencePrior:  public
   virtual Succeeded set_up(shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr);
   
 protected:
+  //! Create variable gamma for Relative Difference Penalty
+  float gamma;
   //! can be set during parsing to restrict the weights to the 2D case
   bool only_2D;
   //! filename prefix for outputing the gradient whenever compute_gradient() is called.

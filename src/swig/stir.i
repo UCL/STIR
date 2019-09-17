@@ -1680,14 +1680,6 @@ namespace stir {
      stir::BackProjectorByBin>;
 %include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
 
-%include "stir/recon_buildblock/QuadraticPrior.h"
-#define elemT float
-%template (QuadraticPrior3DFloat) stir::QuadraticPrior<elemT >;
-
-%include "stir/recon_buildblock/PLSPrior.h"
-#define elemT float
-%template (PLSPrior3DFloat) stir::PLSPrior<elemT >;
-
 %include "stir/recon_buildblock/RelativeDifferencePrior.h"
 #define elemT float
 %template (RelativeDifferencePrior3DFloat) stir::RelativeDifferencePrior<elemT >;

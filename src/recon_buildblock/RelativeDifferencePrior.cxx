@@ -1,7 +1,7 @@
 //
 //
 /*
-    Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2000- 2019, Hammersmith Imanet Ltd
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -154,7 +154,7 @@ RelativeDifferencePrior<elemT>::RelativeDifferencePrior()
 template <typename elemT>
 float
 RelativeDifferencePrior<elemT>::
-get_gamma()
+get_gamma() const
 { return this->gamma; }
 
 // Set the value of gamma - a RDP parameter
