@@ -116,7 +116,7 @@ detection_efficiency(const float energy, const int en_window) const
 }
 
 std::vector<float>
-ScatterSimulation::detection_efficiency(const float LLD, const float HLD, const float size, const float incoming_photon_energy) const
+ScatterSimulation::detection_spectrum(const float LLD, const float HLD, const float size, const float incoming_photon_energy) const
 {
 
     std::vector<float> energy_range(size);
@@ -124,7 +124,7 @@ ScatterSimulation::detection_efficiency(const float LLD, const float HLD, const 
     float increment_x = (HLD - LLD)/size;
     for(int i = 0 ; i< size; ++i)
     {
-        energy_range[i]+= LLD+i*increment_x;
+        energy_range[i]+= LLD+increment_x +i*increment_x;
         out[i]+=0;
     }
 
@@ -137,7 +137,7 @@ ScatterSimulation::detection_efficiency(const float LLD, const float HLD, const 
 }
 
 float
-ScatterSimulation::detection_efficiency2(const float incoming_photon_energy, const int en_window) const
+ScatterSimulation::detection_efficiency_integral(const float incoming_photon_energy, const int en_window) const
 {
 
     const float HT = this->template_exam_info_sptr->get_high_energy_thres(en_window);
@@ -151,7 +151,21 @@ ScatterSimulation::detection_efficiency2(const float incoming_photon_energy, con
  }
 
 float
-ScatterSimulation::detection_efficiency3(const float incoming_photon_energy, const int en_window) const
+ScatterSimulation::detection_efficiency_integral(const float incoming_photon_energy, const float LT, const float HT, const float FWHM) const
+{
+
+    //const float HT = this->template_exam_info_sptr->get_high_energy_thres(en_window);
+    //const float LT = this->template_exam_info_sptr->get_low_energy_thres(en_window);
+    //const float FWHM = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution();
+    const float f1 = integral_photoelectric(LT,HT, FWHM, incoming_photon_energy) ;
+    const float f2 = integral_compton_plateau(LT,HT, FWHM, incoming_photon_energy) ;
+    const float f3 = integral_flat_continuum(LT,HT, FWHM, incoming_photon_energy) ;
+    const float f4 = integral_exponential_tail(LT,HT, FWHM, incoming_photon_energy) ;
+    return f1+f2+f3+f4;
+ }
+
+float
+ScatterSimulation::detection_efficiency_numerical(const float incoming_photon_energy, const int en_window) const
 {
 
     const float HLD = this->template_exam_info_sptr->get_high_energy_thres(en_window);
@@ -161,7 +175,7 @@ ScatterSimulation::detection_efficiency3(const float incoming_photon_energy, con
     const float increment_x = (HLD - LLD)/size;
     for(int i = 0 ; i< size; ++i)
     {
-        const float energy_range = LLD+i*increment_x;
+        const float energy_range = LLD+increment_x +i*increment_x;
         sum+= detection_model_with_fitted_parameters(energy_range, incoming_photon_energy);
     }
 
@@ -182,15 +196,16 @@ detection_model_with_fitted_parameters(const float x, const float energy) const
 
   const int Z = 66; // atomic number of LSO
   const float H_1 = pow(Z,5)/energy; //the height of the photopeak is prop. to the photoelectric cross section
-  const float H_2 = 9.40*pow(10,25)*total_Compton_cross_section(energy)*Z; // the eight of the compton plateau is proportional to the compton cross section
+  const float H_2 = 9.33*pow(10,25)*total_Compton_cross_section(energy)*Z; // the eight of the compton plateau is proportional to the compton cross section
   const float H_3 = 7; //fitting parameter
-  const float H_4 = 26.0; //fitting parameter
-  const float beta = -0.817; //fitting parameter
-  const float global_scale = 2.33*1e-07; //fitting parameter
-  const float fwhm = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution();
+  const float H_4 = 29.4; //fitting parameter
+  const float beta = -0.8401; //fitting parameter
+  const float global_scale = 0.29246*0.8*1e-06;//2.33*1e-07; //fitting parameter
+  //const float fwhm = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution();
+  const float fwhm = 0.14;
   const float std_peak = energy*fwhm/2.35482;
-  const float scaling_std_compton = 29.6; //fitting parameter
-  const float shift_compton = 0.598; //fitting parameter
+  const float scaling_std_compton = 28.3; //fitting parameter
+  const float shift_compton = 0.597; //fitting parameter
   const float f1 = photoelectric(H_1, std_peak, x, energy);
   const float f2 = compton_plateau(H_2, std_peak, x, energy, scaling_std_compton,shift_compton);
   const float f3 = flat_continuum(H_3,std_peak, x, energy);
