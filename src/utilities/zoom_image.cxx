@@ -45,10 +45,10 @@ USING_NAMESPACE_STIR
 static void print_usage_and_exit(const std::string& prog_name)
 {
   cerr<<"Usage: \n" 
-      << '\t' << prog_name << " [--scaling option] <output filename> <input filename> sizexy [zoomxy [offset_in_mm_x [offset_in_mm_y [sizez [zoomz [offset_in_mm_z]]]]]]]\n"
+      << '\t' << prog_name << " [--scaling <option>] <output filename> <input filename> sizexy [zoomxy [offset_in_mm_x [offset_in_mm_y [sizez [zoomz [offset_in_mm_z]]]]]]]\n"
       << "or alternatively\n"
-      << '\t' << prog_name << " [--scaling option] --template template_filename <output filename> <input filename>\n"
-      << "Supported scaling option: preserve_sum, preserve_values, preserve_projections.\n";
+      << '\t' << prog_name << " [--scaling <option>] --template template_filename <output filename> <input filename>\n"
+      << "Supported <option>: preserve_sum, preserve_values, preserve_projections.\n";
   exit(EXIT_FAILURE);
 }
 
