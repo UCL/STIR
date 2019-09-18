@@ -27,50 +27,43 @@
 START_NAMESPACE_STIR
 
 void
-InvertAxis::invert_axis(shared_ptr<DiscretisedDensity<3,float> > & inverted_image_sptr,
-                        const shared_ptr<DiscretisedDensity<3,float> > & input_image_sptr,
-                        const std::string axis_name){
-
-    const int min_z = input_image_sptr->get_min_index();
-    const int max_z = input_image_sptr->get_max_index();
+InvertAxis::invert_axis(DiscretisedDensity<3,float>  & inverted_image,
+                        const DiscretisedDensity<3,float>  & input_image,
+                        const std::string &axis_name){
+//change all the pointers
+    const int min_z = input_image.get_min_index();
+    const int max_z = input_image.get_max_index();
 
 
         for (int z=min_z; z<=max_z; z++){
 
-            const int min_y = (*input_image_sptr)[z].get_min_index();
-            const int max_y = (*input_image_sptr)[z].get_max_index();
+            const int min_y = input_image[z].get_min_index();
+            const int max_y = input_image[z].get_max_index();
 
               for (int y=min_y;y<= max_y;y++){
 
-                  const int min_x = (*input_image_sptr)[z][y].get_min_index();
-                  const int max_x = (*input_image_sptr)[z][y].get_max_index();
+                  const int min_x = input_image[z][y].get_min_index();
+                  const int max_x = input_image[z][y].get_max_index();
 
                     for (int x=min_x;x<= max_x;x++){
 
                       if (axis_name=="x"){
 //                        checking whether the size is odd
                           if(!((max_y-min_y+1) % 2)==0)
-                              (*inverted_image_sptr)[z][y][x]=(*input_image_sptr)[z][y][-x-1];
+                              inverted_image[z][y][x]=input_image[z][y][-x-1];
                           else
-                              (*inverted_image_sptr)[z][y][x]=(*input_image_sptr)[z][y][-x];
+                              inverted_image[z][y][x]=input_image[z][y][-x];
                           }
 
                       else if (axis_name=="y"){
                           if(((max_y-min_y+1) % 2)==0)
-                              (*inverted_image_sptr)[z][y][x]=(*input_image_sptr)[z][-y-1][x];
+                              inverted_image[z][y][x]=input_image[z][-y-1][x];
                           else
-                              (*inverted_image_sptr)[z][y][x]=(*input_image_sptr)[z][-y][x];
+                              inverted_image[z][y][x]=input_image[z][-y][x];
                           }
 
                       else if (axis_name=="z"){
-                          (*inverted_image_sptr)[z][y][x]=(*input_image_sptr)[max_z-z][y][x];
-                          }
-
-                      else if (axis_name=="nan"){
-                          if((*input_image_sptr)[z][y][x]>=0 && (*input_image_sptr)[z][y][x]<=1000000)
-                              continue;
-                          else
-                              (*inverted_image_sptr)[z][y][x]=0;
+                          inverted_image[z][y][x]=input_image[max_z-z][y][x];
                           }
                       }
                     }
@@ -80,7 +73,7 @@ InvertAxis::invert_axis(shared_ptr<DiscretisedDensity<3,float> > & inverted_imag
 int
 InvertAxis::invert_axis_index(const int input_index,
                               const int size,
-                              const std::string axis_name){
+                              const std::string& axis_name){
 
     if (axis_name=="x" || axis_name=="y"){
 

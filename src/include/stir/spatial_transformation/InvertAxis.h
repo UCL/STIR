@@ -35,14 +35,14 @@ class InvertAxis{
 public:
 
 void
-invert_axis(shared_ptr<DiscretisedDensity<3,float> > & inverted_image_sptr,
-           const shared_ptr<DiscretisedDensity<3,float> > & input_image_sptr,
-           const std::string axis_name);
+invert_axis(DiscretisedDensity<3, float> &inverted_image,
+           const DiscretisedDensity<3, float> &input_image,
+           const std::string & axis_name);
 
 int
 invert_axis_index(const int input_index,
                   const int size,
-                  const std::string axis_name);
+                  const std::string & axis_name);
 };
 END_NAMESPACE_STIR
 

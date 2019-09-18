@@ -68,6 +68,35 @@ static void show_menu();
 static void show_math_menu();
 static void math_mode(VoxelsOnCartesianGrid<float> &main_buffer, int &quit_from_math);
 
+static void remove_nan(VoxelsOnCartesianGrid<float>  & output_image,
+                        const VoxelsOnCartesianGrid<float>  & input_image){
+//change all the pointers
+    const int min_z = input_image.get_min_index();
+    const int max_z = input_image.get_max_index();
+
+
+        for (int z=min_z; z<=max_z; z++){
+
+            const int min_y = input_image[z].get_min_index();
+            const int max_y = input_image[z].get_max_index();
+
+              for (int y=min_y;y<= max_y;y++){
+
+                  const int min_x = input_image[z][y].get_min_index();
+                  const int max_x = input_image[z][y].get_max_index();
+
+                    for (int x=min_x;x<= max_x;x++){
+
+                          if(input_image[z][y][x]>=0 && input_image[z][y][x]<=1000000)
+                              output_image[z][y][x]=input_image[z][y][x];
+                          else
+                              output_image[z][y][x]=0;
+                      }
+                    }
+              }
+        }
+
+
 static VoxelsOnCartesianGrid<float> 
 transpose_13(const VoxelsOnCartesianGrid<float> & image)
 {
@@ -258,7 +287,17 @@ int main(int argc, char *argv[])
                 break;
             }  
 
-            case 13: show_menu();
+            case 13: // remove nan values
+            {
+                char outfile[max_filename_length];
+                VoxelsOnCartesianGrid<float>& output_buffer(*main_buffer.get_empty_copy());
+                ask_filename_with_extension(outfile, "Output filename (without extension) ", "");
+                remove_nan(output_buffer, main_buffer);
+                write_to_file(outfile, output_buffer);
+                break;
+            }
+
+            case 14: show_menu();
      
         } // end switch main mode
     } while(choice>0 && choice<=13 && (!quit_from_math));
@@ -384,7 +423,8 @@ MAIN MODE:\n\
 10. Math mode\n\
 11. Reload main buffer\n\
 12. Write buffer to file\n\
-13. Redisplay menu"<<endl;
+13. Remove nan values\n\
+14. Redisplay menu"<<endl;
 }
 void show_math_menu()
 {
