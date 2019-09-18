@@ -34,6 +34,7 @@
 #include "stir/info.h"
 #include "stir/CPUTimer.h"
 #include <iostream>
+#include <omp.h>
 
 START_NAMESPACE_STIR
 unsigned 
@@ -173,6 +174,7 @@ ScatterSimulation::detection_efficiency(const float incoming_photon_energy, cons
     float sum = 0;
     const int size = 30;
     const float increment_x = (HLD - LLD)/size;
+    #pragma omp parallel for reduction(+:sum)
     for(int i = 0 ; i< size; ++i)
     {
         const float energy_range = LLD+increment_x +i*increment_x;
@@ -255,7 +257,7 @@ exponential_tail(const float K, const float std_peak, const float x, const float
     const float den2 = sqrt(2)*std_peak;
     const float den3 = 2*beta;
     float f;
-    if (x > 100) //i am not sure of the behaviour of the function at too low energies
+    if (x > 150) //i am not sure of the behaviour of the function at too low energies
         f = K * exp((x-energy)/den1)*erfc((x-energy)/den2+1/den3);
     else
         f = 0;
@@ -309,7 +311,7 @@ const float fact2 = -1.26141*exp(-0.64874/FWHM)*erf(0.417191+(1.66511-(1.66511*L
 const float fact3 = 1.26141*exp(-0.64874/FWHM)*erf(0.417191+(1.66511-(1.66511*HT)/(energy))/FWHM);
 const float fact4 = 1.54145*exp(-0.64874*LT/(energy*FWHM))*erfc(-0.611995+(-1.66511+(1.66511*LT)/(energy))/FWHM);
 const float fact5 = -1.54145*exp(-0.64874*HT/(energy*FWHM))*erfc(-0.611995+(-1.66511+(1.66511*HT)/(energy))/FWHM);
-if (energy<100)
+if (energy<150)
         return 0;
 else
  return fact1*(fact2+fact3+fact4+fact5);
