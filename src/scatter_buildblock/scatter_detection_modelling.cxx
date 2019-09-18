@@ -255,7 +255,7 @@ exponential_tail(const float K, const float std_peak, const float x, const float
     const float den2 = sqrt(2)*std_peak;
     const float den3 = 2*beta;
     float f;
-    if (x > 100)
+    if (x > 100) //i am not sure of the behaviour of the function at too low energies
         f = K * exp((x-energy)/den1)*erfc((x-energy)/den2+1/den3);
     else
         f = 0;
