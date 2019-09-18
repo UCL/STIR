@@ -27,6 +27,7 @@
 #include "stir/error.h"
 #include <boost/format.hpp>
 #include <boost/math/constants/constants.hpp>
+#include "stir/spatial_transformation/InvertAxis.h"
 
 //system libraries
 #include <stdio.h>

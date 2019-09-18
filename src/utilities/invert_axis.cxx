@@ -43,15 +43,15 @@ int main(int argc, char **argv)
   std::string name(axis_name);
  // const int num_planes = atoi(argv[3]);
 std::cout<<" the axis to invert is "<< name<<std::endl;
-  const std::shared_ptr<DiscretisedDensity<3,float> > image_sptr(DiscretisedDensity<3,float>::read_from_file(input_filename));
-   std::shared_ptr<DiscretisedDensity<3,float> > out_image_sptr(image_sptr->clone());
+  const DiscretisedDensity<3,float> image(DiscretisedDensity<3,float>::read_from_file(input_filename));
+  DiscretisedDensity<3,float> out_image(image.clone());
 
-  invert.invert_axis(out_image_sptr,
-              image_sptr,
+  invert.invert_axis(out_image,
+              image,
               name);
 
   const Succeeded res = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-    write_to_file(output_filename_prefix, *out_image_sptr);
+    write_to_file(output_filename_prefix, out_image);
 
   return res==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
 }
