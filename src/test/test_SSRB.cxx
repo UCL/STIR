@@ -60,9 +60,10 @@ SSRBTests::
 fill_projdata_with_random(ProjData & projdata)
 {
 
+    projdata.fill(0);
     std::random_device random_device;
     std::mt19937 random_number_generator(random_device());
-    std::uniform_real_distribution<float> number_distribution(0,10);
+    std::uniform_real_distribution<float> number_distribution(0,1);
     Bin bin;
     {
         for (bin.segment_num()=projdata.get_min_segment_num();
@@ -74,6 +75,9 @@ fill_projdata_with_random(ProjData & projdata)
                  ++bin.axial_pos_num())
             {
 
+                if((bin.segment_num()+bin.axial_pos_num())>projdata.get_max_axial_pos_num(bin.segment_num())||(bin.segment_num()+bin.axial_pos_num())<projdata.get_min_axial_pos_num(bin.segment_num()))
+                //std::cout << "SEGMENT: " << bin.segment_num()  << "AXIAL: " << bin.axial_pos_num() << '\n';
+                    continue;
                 Sinogram<float> sino = projdata.get_empty_sinogram(bin.axial_pos_num(),bin.segment_num());
 
                 for (bin.view_num()=sino.get_min_view_num();
@@ -109,6 +113,7 @@ run_tests()
     shared_ptr<ProjDataInfo> proj_data_info_sptr_4D(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 2,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
     shared_ptr<ExamInfo> exam_info_sptr_4D(new ExamInfo);
     ProjDataInMemory projdata_4D(exam_info_sptr_4D, proj_data_info_sptr_4D);
+    //shared_ptr<ProjDataInfo> proj_data_info_sptr_3D(ProjDataInfo::ProjDataInfoCTI(scanner_sptr,/*span*/1, 0,/*views*/ 252, /*tang_pos*/344, /*arc_corrected*/ false));
 
     shared_ptr<ProjDataInfo> proj_data_info_sptr_3D(projdata_4D.get_proj_data_info_ptr()->clone());
     proj_data_info_sptr_3D->reduce_segment_range(0,0); //create input template
@@ -116,10 +121,14 @@ run_tests()
     ProjDataInMemory projdata_3D(projdata_4D.get_exam_info_sptr(),proj_data_info_sptr_3D);
 
     ProjDataInMemory A_4D(exam_info_sptr_4D, proj_data_info_sptr_4D);
-    ProjDataInMemory A_3D(projdata_4D.get_exam_info_sptr(),proj_data_info_sptr_3D);
+    ProjDataInMemory A_3D(projdata_3D.get_exam_info_sptr(),proj_data_info_sptr_3D);
+   // ProjDataInterfile A_4D(exam_info_sptr_4D, proj_data_info_sptr_4D, "4D.hs",std::ios::out|std::ios::in|std::ios::app);
+    //ProjDataInterfile A_3D(projdata_4D.get_exam_info_sptr(),proj_data_info_sptr_3D, "3D.hs",std::ios::out|std::ios::in|std::ios::app);
 
     fill_projdata_with_random(projdata_4D);
+    //projdata_4D.fill(1);
     fill_projdata_with_random(projdata_3D);
+    //projdata_3D.fill(1);
     A_4D.fill(0); //initialise output
     A_3D.fill(0); //initialise output
 
@@ -173,7 +182,7 @@ run_tests()
           }
 
     std::cout << cdot1 << "=" << cdot2 << '\n';
-    set_tolerance(0.04);
+    set_tolerance(0.008);
     check_if_equal(cdot1, cdot2, "test adjoint");
 
 
