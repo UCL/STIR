@@ -171,6 +171,10 @@ main(int argc, char *argv[])
 {
   bool do_CV=false;
   bool do_V=false;
+  bool do_filename=false;
+  bool do_max=false;
+  bool do_min=false;
+
   const char * const progname = argv[0];
 
   if (argc>1 && strcmp(argv[1],"--CV")==0)
@@ -188,13 +192,82 @@ main(int argc, char *argv[])
 	--argc;++argv;
       }
     }
+  if (argc>1 && strcmp(argv[1],"--list-filename")==0)
+    {
+      do_filename=true;
+      --argc; ++argv;
+      if(strcmp(argv[1],"--CV")==0)
+      {
+        do_CV=true;
+        --argc;++argv;
+      }
+
+      if(strcmp(argv[1],"--V")==0)
+      {
+        do_V=true;
+        --argc;++argv;
+      }
+    }
+  if (argc>1 && strcmp(argv[1],"--max")==0)
+    {
+      do_max=true;
+      --argc; ++argv;
+      if(strcmp(argv[1],"--list-filename")==0)
+      {
+        do_filename=true;
+        --argc; ++argv;
+      }
+      if(strcmp(argv[1],"--CV")==0)
+      {
+        do_CV=true;
+        --argc;++argv;
+      }
+
+      if(strcmp(argv[1],"--V")==0)
+      {
+        do_V=true;
+        --argc;++argv;
+      }
+    }
+
+  if (argc>1 && strcmp(argv[1],"--min")==0)
+    {
+      do_min=true;
+      --argc; ++argv;
+      if(strcmp(argv[1],"--max")==0)
+      {
+        do_max=true;
+        --argc;++argv;
+      }
+      if(strcmp(argv[1],"--list-filename")==0)
+      {
+        do_filename=true;
+        --argc; ++argv;
+      }
+      if(strcmp(argv[1],"--CV")==0)
+      {
+        do_CV=true;
+        --argc;++argv;
+      }
+
+      if(strcmp(argv[1],"--V")==0)
+      {
+        do_V=true;
+        --argc;++argv;
+      }
+    }
+
+
   if(argc!=6 && argc!=5 && argc!=4 && argc!=3) 
   {
     cerr<<"\nUsage: " << progname << " \\\n"
-	<< "\t[--CV] [--V] output_filename data_filename [ ROI_filename.par [min_plane_num max_plane_num]]\n";
+    << "\t[--CV] [--V] [--list-filename] [--max] [--min] output_filename data_filename [ ROI_filename.par [min_plane_num max_plane_num]]\n";
     cerr << "Normally, only mean and stddev are listed.\n"
 	 << "Use the option --CV to output the Coefficient of Variation as well.\n"
-	 << "Use the option --V to output the Total Volume, as well.\n";;
+     << "Use the option --V to output the Total Volume, as well.\n"
+     << "Use the option --list-filename to output the filename as well.\n"
+     << "Use the option --max to output the max value as well.\n"
+     << "Use the option --min to output the min as well.\n";;
     cerr << "If [min_plane_num] is set to 0 and no [max_plane_num given] then sum of the plane values will be listed.\n";
     cerr << "When ROI_filename.par is not given, the user will be asked for the parameters.\n"
       "Use this to see what a .par file should look like.\n."<<endl;
@@ -232,16 +305,21 @@ main(int argc, char *argv[])
 
   if (!is_null_ptr(parameters.filter_ptr))
     parameters.filter_ptr->apply(*image_ptr);
-
+if (do_filename)
   out << std::setw(15) << "ImageName";
+else
+  out << input_file << '\n';
+
   out << std::setw(15) << "ROI";
 
     if(by_plane)
       out    << std::setw(10) << "Plane_num" ;
       out << std::setw(15) << "Mean "
-          << std::setw(15) << "Max "
-          << std::setw(15) << "Min "
           << std::setw(15) << "Stddev";
+    if(do_max)
+      out << std::setw(15) << "Max ";
+    if(do_min)
+      out << std::setw(15) << "Min ";
     if (do_CV)
       out << std::setw(15) << "CV";
     if (do_V)
@@ -263,13 +341,16 @@ main(int argc, char *argv[])
 
 	for (int i=min_plane_number;i<=max_plane_number;i++)
 	  {
-        out << std::setw(15) <<input_file
-        << std::setw(15) << *current_name_iter
+        if (do_filename)
+        out << std::setw(15) <<input_file;
+        out << std::setw(15) << *current_name_iter
 		<< std::setw(10) << i+1  
 		<< std::setw(15) << values[i].get_mean()
-        << std::setw(15) << values[i].get_max()
-        << std::setw(15) << values[i].get_min()
-		<< std::setw(15) << values[i].get_stddev();
+        << std::setw(15) << values[i].get_stddev();
+        if (do_max)
+          out << std::setw(15) << values[i].get_max();
+        if (do_min)
+          out << std::setw(15) << values[i].get_min();
 	    if (do_CV)
 	      out << std::setw(15) << values[i].get_CV();
 	    if (do_V)
@@ -279,14 +360,17 @@ main(int argc, char *argv[])
       }
     if(!by_plane)
       {
-	ROIValues values;
-	values=compute_total_ROI_values(*image_ptr, **current_shape_iter, parameters.num_samples);
-    out << std::setw(15) <<input_file
-        << std::setw(15) << *current_name_iter
-	    << std::setw(15) << values.get_mean()
-        << std::setw(15) << values.get_max()
-        << std::setw(15) << values.get_min()
-	    << std::setw(15) << values.get_stddev();
+        ROIValues values;
+        values=compute_total_ROI_values(*image_ptr, **current_shape_iter, parameters.num_samples);
+        if (do_filename)
+          out << std::setw(15) <<input_file;
+          out << std::setw(15) << *current_name_iter
+              << std::setw(15) << values.get_mean()
+              << std::setw(15) << values.get_stddev();
+        if (do_max)
+          out << std::setw(15) << values.get_max();
+        if (do_min)
+          out << std::setw(15) << values.get_min();
 	    if (do_CV)
 	      out << std::setw(15) << values.get_CV();
 	    if (do_V)
