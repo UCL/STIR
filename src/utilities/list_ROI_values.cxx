@@ -233,7 +233,7 @@ main(int argc, char *argv[])
   if (!is_null_ptr(parameters.filter_ptr))
     parameters.filter_ptr->apply(*image_ptr);
 
-  out << std::setw(15) << 'ImageName';
+  out << std::setw(15) << "ImageName";
   out << std::setw(15) << "ROI";
 
     if(by_plane)
