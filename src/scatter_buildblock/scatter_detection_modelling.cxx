@@ -174,7 +174,7 @@ ScatterSimulation::detection_efficiency(const float incoming_photon_energy, cons
     const float HLD = this->template_exam_info_sptr->get_high_energy_thres(en_window);
     const float LLD = this->template_exam_info_sptr->get_low_energy_thres(en_window);
     float sum = 0;
-    const int size = 30;
+    const int size = 28;
     const float increment_x = (HLD - LLD)/size;
     #ifdef STIR_OPENMP
     #pragma omp parallel for reduction(+:sum)
@@ -200,24 +200,24 @@ detection_model_with_fitted_parameters(const float x, const float energy) const
   //! We consider to have four terms: (i) gaussian model for the photopeak, (ii) compton plateau, (iii) flat continuum, (iv) exponential tale
   //! The model has be trained with 511 keV and tested with 370 keV.
 
-  const int Z = 66; // atomic number of LSO
-  const float H_1 = pow(Z,5)/energy; //the height of the photopeak is prop. to the photoelectric cross section
-  const float H_2 = 9.33*pow(10,25)*total_Compton_cross_section(energy)*Z; // the eight of the compton plateau is proportional to the compton cross section
-  const float H_3 = 7; //fitting parameter
-  const float H_4 = 29.4; //fitting parameter
-  const float beta = -0.8401; //fitting parameter
-  const float global_scale = 0.29246*0.8*1e-06;//2.33*1e-07; //fitting parameter
+  //const int Z = 66; // atomic number of LSO
+  //const float H_1 = pow(Z,5)/energy; //the height of the photopeak is prop. to the photoelectric cross section
+  //const float H_2 = 9.33*pow(10,25)*total_Compton_cross_section(energy)*Z; // the eight of the compton plateau is proportional to the compton cross section
+  //const float H_3 = 7; //fitting parameter
+  //const float H_4 = 29.4; //fitting parameter
+  //const float beta = -0.8401; //fitting parameter
+  //const float global_scale = 0.29246*0.8*1e-06;//2.33*1e-07; //fitting parameter
   //const float fwhm = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution();
-  const float fwhm = 0.14;
-  const float std_peak = energy*fwhm/2.35482;
-  const float scaling_std_compton = 28.3; //fitting parameter
-  const float shift_compton = 0.597; //fitting parameter
-  const float f1 = photoelectric(H_1, std_peak, x, energy);
-  const float f2 = compton_plateau(H_2, std_peak, x, energy, scaling_std_compton,shift_compton);
-  const float f3 = flat_continuum(H_3,std_peak, x, energy);
-  const float f4 = exponential_tail(H_4,std_peak, x, energy,beta);
+  //const float fwhm = 0.14;
+  //const float std_peak = energy*fwhm/2.35482;
+  //const float scaling_std_compton = 28.3; //fitting parameter
+  //const float shift_compton = 0.597; //fitting parameter
+  const float f1 = photoelectric((66*66*66*66*66)/energy, (energy*0.14f)/2.35482f, x, energy);
+  const float f2 = compton_plateau(9.33f*1000000000000*10000000000000*total_Compton_cross_section(energy)*66, (energy*0.14f)/2.35482f, x, energy, 28.3f,0.597f);
+  const float f3 = flat_continuum(7,(energy*0.14f)/2.35482f, x, energy);
+  const float f4 = exponential_tail(29.4f,(energy*0.14f)/2.35482f, x, energy,-0.8401f);
 
-  return global_scale*(f1+f2+f3+f4);
+  return 0.29246f*0.8f*1e-06*(f1+f2+f3+f4);
 }
 
 float
@@ -225,47 +225,44 @@ ScatterSimulation::
 photoelectric(const float K, const float std_peak, const float x, const float energy) const
 {
   const float diff = x - energy;
-  const float pow_diff = pow(diff,2);
-  const float pow_std_peak = pow(std_peak,2);
-  return  K/(std_peak*sqrt(2*M_PI))*exp(-pow_diff/(2*pow_std_peak));
+  const float pow_diff = diff*diff;
+  const float pow_std_peak = std_peak*std_peak;
+  return  K/(std_peak*2.5066f)*exp(-pow_diff/(2*pow_std_peak));
 }
 
 float
 ScatterSimulation::
 compton_plateau(const float K, const float std_peak, const float x, const float energy, const float scaling_std_compton,const float shift_compton) const
 {
-    const float m_0_c_2 = 511.F;
+    const float m_0_c_2 = 511.0f;
     const float alpha = energy/m_0_c_2;
-    const float E_1 = energy/(1+alpha*(1-cos(M_PI)));
+    const float E_1 = energy/(1+alpha*(2));
     const float mean = energy*shift_compton;
-    return ((energy/E_1)+(E_1/energy)-1+cos(M_PI))*(K*exp(-(pow((x - mean),2))/(4*scaling_std_compton*std_peak)));
+    const float x_minus_mean = x - mean;
+    return ((energy/E_1)+(E_1/energy)-2)*(K*exp(-(x_minus_mean*x_minus_mean)/(4*scaling_std_compton*std_peak)));
 }
 float
 ScatterSimulation::
 flat_continuum(const float K, const float std_peak, const float x, const float energy) const
 {
-    const float den = sqrt(2)*std_peak;
-    float f = 0;
+    const float den = 1.4142f*std_peak;
         if (x<=energy)
-            f = K* erfc((x-energy)/den);
+            return K* erfc((x-energy)/den);
         else
-            f = 0;
-     return f;
+     	return 0;
 }
 
 float
 ScatterSimulation::
 exponential_tail(const float K, const float std_peak, const float x, const float energy, const float beta) const
 {
-    const float den1 = sqrt(2)*M_PI*std_peak*beta;
-    const float den2 = sqrt(2)*std_peak;
+    const float den1 = 1.4142f*M_PI*std_peak*beta;
+    const float den2 = 1.4142f*std_peak;
     const float den3 = 2*beta;
-    float f;
     if (x > 100) //i am not sure of the behaviour of the function at too low energies
-        f = K * exp((x-energy)/den1)*erfc((x-energy)/den2+1/den3);
+        return K * exp((x-energy)/den1)*erfc((x-energy)/den2+1/den3);
     else
-        f = 0;
-    return f;
+    	return 0;
 }
 
 float
