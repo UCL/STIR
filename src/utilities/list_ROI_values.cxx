@@ -84,7 +84,7 @@ public:
 private:
   shared_ptr<Shape3D> current_shape_sptr;
   std::string current_shape_name;
-  void increment_current_shape_num();  
+  void increment_current_shape_num();
 };
 
 ROIValuesParameters::ROIValuesParameters()
@@ -105,7 +105,7 @@ increment_current_shape_num()
     }
 }
 
-void 
+void
 ROIValuesParameters::
 set_defaults()
 {
@@ -118,7 +118,7 @@ set_defaults()
   num_samples = CartesianCoordinate3D<int>(1,1,1);
 }
 
-void 
+void
 ROIValuesParameters::
 initialise_keymap()
 {
@@ -126,12 +126,12 @@ initialise_keymap()
   add_key("ROI name", &current_shape_name);
   add_parsing_key("ROI Shape type", &current_shape_sptr);
   add_key("next shape", KeyArgument::NONE,
-	  (KeywordProcessor)&ROIValuesParameters::increment_current_shape_num);
+      (KeywordProcessor)&ROIValuesParameters::increment_current_shape_num);
   add_key("number of samples to take for ROI template-z", &num_samples.z());
   add_key("number of samples to take for ROI template-y", &num_samples.y());
   add_key("number of samples to take for ROI template-x", &num_samples.x());
   add_parsing_key("Image Filter type", &filter_ptr);
-  add_stop_key("END"); 
+  add_stop_key("END");
 }
 
 bool
@@ -177,93 +177,30 @@ main(int argc, char *argv[])
 
   const char * const progname = argv[0];
 
-  if (argc>1 && strcmp(argv[1],"--CV")==0)
-    {
-      do_CV=true;
+while (argc>1 && strncmp(argv[1],"--",2)==0)
+{
+      if(strcmp(argv[1],"--min")==0)
+          do_min=true;
+      else if(strcmp(argv[1],"--max")==0)
+          do_max=true;
+      else if(strcmp(argv[1],"--list-filename")==0)
+          do_filename=true;
+      else if(strcmp(argv[1],"--CV")==0)
+          do_CV=true;
+      else if(strcmp(argv[1],"--V")==0)
+          do_V=true;
+      else
+          error(boost::format("Unknown option %s") % argv[1]);
       --argc; ++argv;
-    }
-  if (argc>1 && strcmp(argv[1],"--V")==0)
-    {
-      do_V=true;
-      --argc; ++argv;
-      if(strcmp(argv[1],"--CV")==0)
-      {
-	do_CV=true;
-	--argc;++argv;
-      }
-    }
-  if (argc>1 && strcmp(argv[1],"--list-filename")==0)
-    {
-      do_filename=true;
-      --argc; ++argv;
-      if(strcmp(argv[1],"--CV")==0)
-      {
-        do_CV=true;
-        --argc;++argv;
-      }
-
-      if(strcmp(argv[1],"--V")==0)
-      {
-        do_V=true;
-        --argc;++argv;
-      }
-    }
-  if (argc>1 && strcmp(argv[1],"--max")==0)
-    {
-      do_max=true;
-      --argc; ++argv;
-      if(strcmp(argv[1],"--list-filename")==0)
-      {
-        do_filename=true;
-        --argc; ++argv;
-      }
-      if(strcmp(argv[1],"--CV")==0)
-      {
-        do_CV=true;
-        --argc;++argv;
-      }
-
-      if(strcmp(argv[1],"--V")==0)
-      {
-        do_V=true;
-        --argc;++argv;
-      }
-    }
-
-  if (argc>1 && strcmp(argv[1],"--min")==0)
-    {
-      do_min=true;
-      --argc; ++argv;
-      if(strcmp(argv[1],"--max")==0)
-      {
-        do_max=true;
-        --argc;++argv;
-      }
-      if(strcmp(argv[1],"--list-filename")==0)
-      {
-        do_filename=true;
-        --argc; ++argv;
-      }
-      if(strcmp(argv[1],"--CV")==0)
-      {
-        do_CV=true;
-        --argc;++argv;
-      }
-
-      if(strcmp(argv[1],"--V")==0)
-      {
-        do_V=true;
-        --argc;++argv;
-      }
-    }
+}
 
 
-  if(argc!=6 && argc!=5 && argc!=4 && argc!=3) 
+  if(argc!=6 && argc!=5 && argc!=4 && argc!=3)
   {
     cerr<<"\nUsage: " << progname << " \\\n"
     << "\t[--CV] [--V] [--list-filename] [--max] [--min] output_filename data_filename [ ROI_filename.par [min_plane_num max_plane_num]]\n";
     cerr << "Normally, only mean and stddev are listed.\n"
-	 << "Use the option --CV to output the Coefficient of Variation as well.\n"
+     << "Use the option --CV to output the Coefficient of Variation as well.\n"
      << "Use the option --V to output the Total Volume, as well.\n"
      << "Use the option --list-filename to output the filename as well.\n"
      << "Use the option --max to output the max value as well.\n"
@@ -282,8 +219,8 @@ main(int argc, char *argv[])
     warning("Cannot open output file.\n");
     return EXIT_FAILURE;
   }
-  
-  shared_ptr<DiscretisedDensity<3,float> > 
+
+  shared_ptr<DiscretisedDensity<3,float> >
     image_ptr(read_from_file<DiscretisedDensity<3,float> >(input_file));
   ROIValuesParameters parameters;
   if (argc<4)
@@ -291,17 +228,17 @@ main(int argc, char *argv[])
   else
     {
       if (parameters.parse(argv[3]) == false)
-	exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE);
     }
   cerr << "Parameters used (aside from names and ROIs):\n\n" << parameters.parameter_info() << endl;
 
 
-  const int min_plane_number = 
+  const int min_plane_number =
     argc==6 ? atoi(argv[4])-1 : image_ptr->get_min_index();
-  const int max_plane_number = 
+  const int max_plane_number =
     argc==6 ? atoi(argv[5])-1 : image_ptr->get_max_index();
 
-  const bool by_plane=argc==5 ? (atoi(argv[4])!=0):true ;  
+  const bool by_plane=argc==5 ? (atoi(argv[4])!=0):true ;
 
   if (!is_null_ptr(parameters.filter_ptr))
     parameters.filter_ptr->apply(*image_ptr);
@@ -331,32 +268,32 @@ else
     std::vector<std::string >::const_iterator current_name_iter =
       parameters.shape_names.begin();
     for (;
-	 current_shape_iter != parameters.shape_ptrs.end();
-	 ++current_shape_iter, ++current_name_iter)
-      {  
+     current_shape_iter != parameters.shape_ptrs.end();
+     ++current_shape_iter, ++current_name_iter)
+      {
     if(by_plane)
       {
-	VectorWithOffset<ROIValues> values;
-	compute_ROI_values_per_plane(values, *image_ptr, **current_shape_iter, parameters.num_samples);
+    VectorWithOffset<ROIValues> values;
+    compute_ROI_values_per_plane(values, *image_ptr, **current_shape_iter, parameters.num_samples);
 
-	for (int i=min_plane_number;i<=max_plane_number;i++)
-	  {
+    for (int i=min_plane_number;i<=max_plane_number;i++)
+      {
         if (do_filename)
         out << std::setw(15) <<input_file;
         out << std::setw(15) << *current_name_iter
-		<< std::setw(10) << i+1  
-		<< std::setw(15) << values[i].get_mean()
+        << std::setw(10) << i+1
+        << std::setw(15) << values[i].get_mean()
         << std::setw(15) << values[i].get_stddev();
         if (do_max)
           out << std::setw(15) << values[i].get_max();
         if (do_min)
           out << std::setw(15) << values[i].get_min();
-	    if (do_CV)
-	      out << std::setw(15) << values[i].get_CV();
-	    if (do_V)
-	      out << std::setw(15) << values[i].get_roi_volume();
-	    out <<'\n';
-	  }
+        if (do_CV)
+          out << std::setw(15) << values[i].get_CV();
+        if (do_V)
+          out << std::setw(15) << values[i].get_roi_volume();
+        out <<'\n';
+      }
       }
     if(!by_plane)
       {
@@ -371,19 +308,19 @@ else
           out << std::setw(15) << values.get_max();
         if (do_min)
           out << std::setw(15) << values.get_min();
-	    if (do_CV)
-	      out << std::setw(15) << values.get_CV();
-	    if (do_V)
-	      out << std::setw(15) << values.get_roi_volume();
-	    out <<'\n';
-      }  
+        if (do_CV)
+          out << std::setw(15) << values.get_CV();
+        if (do_V)
+          out << std::setw(15) << values.get_roi_volume();
+        out <<'\n';
+      }
 #if 0
-	for (VectorWithOffset<ROIValues>::const_iterator iter = values.begin();
-	     iter != values.end();
-	     iter++)
-	  {
-	    std::cout << iter->report();
-	  }
+    for (VectorWithOffset<ROIValues>::const_iterator iter = values.begin();
+         iter != values.end();
+         iter++)
+      {
+        std::cout << iter->report();
+      }
 #endif
       }
   }
