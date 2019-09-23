@@ -211,7 +211,7 @@ post_processing()
   this->subiteration_counter=0;
   this->anatomical_sd=0;
 
-  if (this->anatomical_image_filenames.max_size()>1){
+  if (this->anatomical_image_filenames.size()>1){
       error("At the moment you can only use one anatomical image %s");
       return false;
   }
