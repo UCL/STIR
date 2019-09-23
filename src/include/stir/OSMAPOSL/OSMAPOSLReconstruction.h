@@ -163,7 +163,7 @@ public:
  protected:
 
   //! operations prior to the iterations
-  virtual Succeeded set_up(shared_ptr <TargetT > const& target_image_ptr);
+  //virtual Succeeded set_up(shared_ptr <TargetT > const& target_image_ptr);
 
   //! determines whether non-positive values in the initial image will be set to small positive ones
   bool enforce_initial_positivity;
@@ -213,7 +213,7 @@ private:
   friend void do_sensitivity(const char * const par_filename);
 
   //! the principal operations for updating the image iterates at each iteration
-  virtual void update_estimate (TargetT& current_image_estimate);
+  //virtual void update_estimate (TargetT& current_image_estimate);
 
   PoissonLogLikelihoodWithLinearModelForMean<TargetT >&
     objective_function();

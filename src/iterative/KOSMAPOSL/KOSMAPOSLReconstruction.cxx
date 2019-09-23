@@ -91,7 +91,7 @@ START_NAMESPACE_STIR
 
 namespace { // priave namespace for internal functions
 
-inline uint ravel_index(int x, int y, int z,
+inline unsigned int ravel_index(int x, int y, int z,
                          int min_x, int min_y, int min_z,
                          int max_x, int max_y, int max_z) {
   unsigned int ravelled_index=
