@@ -1648,6 +1648,72 @@ OSMAPOSLParameters :=
 End:=
 \end{verbatim}
 
+{ \subsubsubsection{HKEM}
+}
+\label{sec:HKEM}
+  { \subsubsubsubsection{Algorithm description}
+  }
+  Hybrid kernelised expectation maximisation(HKEM) and kernelised expectation maximisation (KEM) iterative algorithms
+  are implemented corresponding to the one presented by Deidda D et al, ``Hybrid PET-MR list-mode kernelized expectation
+  maximization reconstruction for quantitative PET images of the carotid arteries", IEEE MIC Atlanta, 2017. However, this allows
+  also sinogram-based reconstruction. Each voxel value of the image, \f$ \boldsymbol{\lambda}\f$, can be represented as a
+  linear combination using the kernel method.  If we have an image with prior information, we can construct for each voxel
+  \f$ j \f$ of the emission image a feature vector, $\f \boldsymbol{v}_j \f$, using the prior information. The voxel value,
+  \f$\lambda_j\f$, can then be described using the kernel matrix 
+  \f[
+   \lambda_j=  \sum_{l=1}^L \alpha_l k_{jl}
+  \f]
+
+  where \f$k_{jl}\f$ is the \f$jl^{th}\f$ kernel element of the matrix, \f$\boldsymbol{K}\f$.
+  The resulting algorithm with OSEM, for example, is the following:
+
+  \f[
+  \alpha^{(n+1)}_j =  \frac{ \alpha^{(n)}_j }{\sum_{m} k^{(n)}_{jm} \sum_i p_{mi}} \sum_{m}k^{(n)}_{jm}\sum_i p_{mi}\frac{ y_i }{\sum_{q} p_{iq} \sum_l k^{(n)}_{ql}\alpha^{(n)}_l  $
+  \f[
+
+  where the  element, $\f jl \f$, of the kernel can be written as:
+
+  \f[
+    k^{(n)}_{jl} = k_m(\boldsymbol{v}_j,\boldsymbol{v}_l) \cdot k_p(\boldsymbol{z}^{(n)}_j,\boldsymbol{z}^{(n)}_l);
+  \f]
+
+  with
+
+  \f[
+   k_m(\boldsymbol{v}_j,\boldsymbol{v}_l) = \exp \left(\tiny - \frac{\|  \boldsymbol{v}_j-\boldsymbol{v}_l \|^2}{2 \sigma_m^2} \right) \exp \left(- \frac{\tiny \|  \boldsymbol{x}_j$
+  \f]
+
+  being the MR component of the kernel and
+
+  \f[
+   k_p(\boldsymbol{z}^{(n)}_j,\boldsymbol{z}^{(n)}_l) = \exp \left(\tiny - \frac{\|  \boldsymbol{z}^{(n)}_j-\boldsymbol{z}^{(n)}_l \|^2}{2 \sigma_p^2} \right) \exp \left(\tiny - \f$
+  \f]
+
+  is the part coming from the emission iterative update. Here, the Gaussian kernel functions have been modulated by the distance between voxels in the image space.
+
+Below is an excerpt of a possible parameter for file KOSMAPOSL. A complete parameter file
+can be found in \textbf{STIR/samples/}. The changes in this parameter file includes the MR anatomical prior images and the kernel-based parameters. 
+
+
+ \begin{verbatim}
+  KOSMAPOSL Parameters:=
+
+  hybrid:=1
+  sigma m:= 1                                ;is the parameter $\f \sigma_{m} \f$;
+  sigma p:=1                                 ;is the parameter $\f \sigma_{p} \f$;
+  sigma dm:=1                                ;is the parameter $\f \sigma_{dm} \f$;
+  sigma dp:=1                                ;is the parameter $\f \sigma_{dp} \f$;
+  number of neighbours:= 3                   ;is the cubic root of the number of voxels in the neighbourhood;
+  anatomical image filenames:=filename        ;is the list of filenames of the anatomical images;
+  number of non-zero feature elements:=1     ;is the number of non zero elements in the feature vector;
+  only_2D:=0                                 ;=1 if you want to reconstruct 2D images;
+
+
+  End KOSMAPOSL Parameters :=
+  \end{verbatim}
+
+
+
 \subsubsection{
 Filtered back projection (FBP2D)}
 
