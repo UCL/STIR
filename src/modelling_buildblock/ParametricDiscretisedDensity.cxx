@@ -2,7 +2,7 @@
 //
 /*
     Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018 - 2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
   \brief Declaration of class stir::ParametricDiscretisedDensity
 
   \author Kris Thielemans
+  \author Richard Brown
  
 */
 
@@ -51,6 +52,25 @@ get_num_params()
   typedef typename DiscDensityT::full_value_type KinParsT;
   const KinParsT dummy;
   return dummy.size();
+}
+
+TEMPLATE
+ParamDiscDensity::
+ParametricDiscretisedDensity(const DynamicDiscretisedDensity& dyn_im)
+    : base_type(dyn_im.get_density(1).get_index_range(),
+      dyn_im.get_density(1).get_origin(),
+      dynamic_cast<const VoxelsOnCartesianGrid<float>&>(dyn_im.get_density(1)).get_grid_spacing())
+{
+    // Copy exam info
+    this->set_exam_info(dyn_im.get_density(1).get_exam_info());
+
+    // Get the time frame definition (from start of first frame to end of last)
+    TimeFrameDefinitions tdefs = dyn_im.get_exam_info().get_time_frame_definitions();
+    const double start = tdefs.get_start_time(1);
+    const double end   = tdefs.get_end_time(tdefs.get_num_frames());
+    tdefs.set_num_time_frames(1);
+    tdefs.set_time_frame(1,start,end);
+    this->get_exam_info_sptr()->set_time_frame_definitions(tdefs);
 }
 
 #if 0
@@ -151,59 +171,12 @@ update_parametric_image(const SingleDiscretisedDensityType &  single_density, co
 TEMPLATE
 ParamDiscDensity *
 ParamDiscDensity::
-read_from_file(const std::string& filename)
+read_from_file(const std::string& filename) // The written image is read in respect to its center as origin!!!
 {
-  // TODO this will only work for elemT==float
-  shared_ptr<DynamicDiscretisedDensity > multi_sptr(
-						    stir::read_from_file<DynamicDiscretisedDensity>(filename));
-
-  using namespace boost::lambda;
-  
-  // somewhat naughty trick to get elemT of DiscDensityT
-  typedef typename DiscDensityT::full_value_type KinParsT;
-
-  // check size
-  {
-    KinParsT dummy;
-    const unsigned num_pars = dummy.size();
-
-    if (num_pars != multi_sptr->get_num_time_frames())
-      error("I expect %d 'time frames' when reading %s. Exiting",
-            num_pars, filename.c_str());
-  }
-
-  if (dynamic_cast<const VoxelsOnCartesianGrid<float> * >(&(*multi_sptr)[1])==0)
-    error("ParametricDiscretisedDensity::read_from_file only supports VoxelsOnCartesianGrid");
-
-  CartesianCoordinate3D<float> grid_spacing =
-    static_cast<const VoxelsOnCartesianGrid<float> *>(&(*multi_sptr)[1])->get_grid_spacing();
-  // TODO this will only work for VoxelsOnCartesianGrid
-  ParamDiscDensity * parametric_density_ptr =
-    new ParamDiscDensity(DiscDensityT((*multi_sptr)[1].get_exam_info_sptr(),
-                                      (*multi_sptr)[1].get_index_range(),
-                                      (*multi_sptr)[1].get_origin(), 
-                                      grid_spacing));
-  
-  for (unsigned f=1; f<= multi_sptr->get_num_time_frames(); ++f)
-    {
-      const SingleDiscretisedDensityType& current_density =
-        dynamic_cast<SingleDiscretisedDensityType const&>((*multi_sptr)[f]);
-      typename SingleDiscretisedDensityType::const_full_iterator single_density_iter =
-        current_density.begin_all();
-      const typename SingleDiscretisedDensityType::const_full_iterator end_single_density_iter =
-        current_density.end_all();
-      typename ParamDiscDensity::full_densel_iterator parametric_density_iter =
-        parametric_density_ptr->begin_all_densel();
-
-      while (single_density_iter!=end_single_density_iter)
-        {
-          (*parametric_density_iter)[f] = *single_density_iter;
-          ++single_density_iter; ++parametric_density_iter;
-        }
-    }
-  return parametric_density_ptr;
+  unique_ptr<ParamDiscDensity> param_sptr
+    (stir::read_from_file<ParamDiscDensity>(filename));
+  return param_sptr.release();
 }
-
 
 TEMPLATE
 ParamDiscDensity *

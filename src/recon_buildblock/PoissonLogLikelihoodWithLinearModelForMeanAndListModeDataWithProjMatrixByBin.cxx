@@ -344,6 +344,9 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
     const int min_segment_num = proj_data_info_sptr->get_min_segment_num();
     const int max_segment_num = proj_data_info_sptr->get_max_segment_num();
 
+    this->projector_pair_sptr->get_back_projector_sptr()->
+      start_accumulating_in_new_target();
+
     // warning: has to be same as subset scheme used as in distributable_computation
     for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
     {
@@ -355,15 +358,17 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 
         if (! this->projector_pair_sptr->get_symmetries_used()->is_basic(view_segment_num))
           continue;
-        this->add_view_seg_to_sensitivity(sensitivity, view_segment_num);
+        this->add_view_seg_to_sensitivity(view_segment_num);
       }
     }
+    this->projector_pair_sptr->get_back_projector_sptr()->
+      get_output(sensitivity);
 }
 
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const
+add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const
 {
     shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_used
             (this->projector_pair_sptr->get_symmetries_used()->clone());
@@ -386,7 +391,7 @@ add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view
        viewgrams.get_max_axial_pos_num();
 
     this->projector_pair_sptr->get_back_projector_sptr()->
-      back_project(sensitivity, viewgrams,
+      back_project(viewgrams,
                    min_ax_pos_num, max_ax_pos_num);
   }
 
@@ -399,17 +404,7 @@ construct_target_ptr() const
 { 
 
  return 
-      new VoxelsOnCartesianGrid<float> (this->get_input_data().get_exam_info_sptr(),
-                                        *proj_data_info_sptr,
-                                        static_cast<float>(this->zoom), 
-                                        CartesianCoordinate3D<float>(static_cast<float>(this->Zoffset), 
-                                                                     static_cast<float>(this->Yoffset), 
-                                                                     static_cast<float>(this->Xoffset)), 
-                                        CartesianCoordinate3D<int>(this->output_image_size_z, 
-                                                                   this->output_image_size_xy, 
-                                                                   this->output_image_size_xy) 
-                                       ); 
-
+   this->target_parameter_parser.create(this->get_input_data());
 } 
  
 template <typename TargetT> 
@@ -486,8 +481,8 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
             if (this->num_subsets > 1)
             {
                 Bin basic_bin = measured_bin;
-                if (!this->PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin) ||
-                        subset_num != static_cast<int>(basic_bin.view_num() % this->num_subsets))
+                this->PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin);
+                if (subset_num != static_cast<int>(basic_bin.view_num() % this->num_subsets))
                     continue;
             }
 

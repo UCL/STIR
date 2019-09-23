@@ -28,6 +28,7 @@
 #include "stir/PatientPosition.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/ImagingModality.h"
+#include "stir/shared_ptr.h"
 
 START_NAMESPACE_STIR
 
@@ -93,6 +94,13 @@ public :
     {
       time_frame_definitions = new_time_frame_definitions;
     }
+
+  //! Clone and create shared_ptr of the copy
+  shared_ptr<ExamInfo> create_shared_clone()
+  {
+      return shared_ptr<ExamInfo>(new ExamInfo(*this));
+  }
+
   private:
      //!
   //! \brief low_energy_thres

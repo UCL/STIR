@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2016, UCL
+    Copyright (C) 2018, University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,20 +27,24 @@ InputStreamFromROOTFileForECATPET::registered_name =
 InputStreamFromROOTFileForECATPET::
 InputStreamFromROOTFileForECATPET():
     base_type()
-{}
+{
+    set_defaults();
+}
 
 InputStreamFromROOTFileForECATPET::
 InputStreamFromROOTFileForECATPET(std::string _filename,
                                   std::string _chain_name,
                                   int crystal_repeater_x, int crystal_repeater_y, int crystal_repeater_z,
-                                  int block_repeater,
+                                  int block_repeater_y, int block_repeater_z,
                                   bool _exclude_scattered, bool _exclude_randoms,
                                   float _low_energy_window, float _up_energy_window,
                                   int _offset_dets):
     base_type(),
     crystal_repeater_x(crystal_repeater_x), crystal_repeater_y(crystal_repeater_y), crystal_repeater_z(crystal_repeater_z),
-    block_repeater(block_repeater)
+    block_repeater_y(block_repeater_y), block_repeater_z(block_repeater_z)
 {
+    set_defaults();
+
     filename = _filename;
     chain_name = _chain_name;
     exclude_scattered = _exclude_scattered;
@@ -70,7 +75,7 @@ get_next_record(CListRecordROOT& record)
 
         if ( (comptonphantom1 > 0 || comptonphantom2 > 0) && exclude_scattered )
             continue;
-        if ( event1 != event2 && exclude_randoms )
+        if ( eventID1 != eventID2 && exclude_randoms )
             continue;
         if (energy1 < low_energy_window ||
                  energy1 > up_energy_window ||
@@ -81,17 +86,17 @@ get_next_record(CListRecordROOT& record)
         break;
     }
 
-    int ring1 = static_cast<Int_t>(crystalID1/crystal_repeater_z)
-            + static_cast<Int_t>(blockID1/ block_repeater)*crystal_repeater_z;
+    int ring1 = static_cast<Int_t>(crystalID1/crystal_repeater_y)
+            + static_cast<Int_t>(blockID1/ block_repeater_y)*crystal_repeater_z;
 
-    int ring2 = static_cast<Int_t>(crystalID2/crystal_repeater_z)
-            + static_cast<Int_t>(blockID2/block_repeater)*crystal_repeater_z;
+    int ring2 = static_cast<Int_t>(crystalID2/crystal_repeater_y)
+            + static_cast<Int_t>(blockID2/block_repeater_y)*crystal_repeater_z;
 
-    int crystal1 = (blockID1%block_repeater) * crystal_repeater_y
-            + (crystalID1%crystal_repeater_z);
+    int crystal1 = (blockID1%block_repeater_y) * crystal_repeater_y
+            + (crystalID1%crystal_repeater_y);
 
-    int crystal2 = (blockID2%block_repeater) * crystal_repeater_y
-            + (crystalID2%crystal_repeater_z);
+    int crystal2 = (blockID2%block_repeater_y) * crystal_repeater_y
+            + (crystalID2%crystal_repeater_y);
 
     // GATE counts crystal ID =0 the most negative. Therefore
     // ID = 0 should be negative, in Rsector 0 and the mid crystal ID be 0 .
@@ -106,7 +111,7 @@ get_next_record(CListRecordROOT& record)
             record.init_from_data(ring1, ring2,
                                   crystal1, crystal2,
                                   time1, time2,
-                                  event1, event2);
+                                  eventID1, eventID2);
 }
 
 std::string
@@ -120,7 +125,14 @@ method_info() const
 
 void
 InputStreamFromROOTFileForECATPET::set_defaults()
-{}
+{
+    base_type::set_defaults();
+    crystal_repeater_x = -1;
+    crystal_repeater_y = -1;
+    crystal_repeater_z = -1;
+    block_repeater_y = -1;
+    block_repeater_z = -1;
+}
 
 void
 InputStreamFromROOTFileForECATPET::initialise_keymap()
@@ -128,7 +140,8 @@ InputStreamFromROOTFileForECATPET::initialise_keymap()
     base_type::initialise_keymap();
     this->parser.add_start_key("GATE_ECAT_PET Parameters");
     this->parser.add_stop_key("End GATE_ECAT_PET Parameters");
-    this->parser.add_key("number of blocks", &this->block_repeater);
+    this->parser.add_key("number of blocks Y", &this->block_repeater_y);
+    this->parser.add_key("number of blocks Z", &this->block_repeater_z);
 
     this->parser.add_key("number of crystals X", &this->crystal_repeater_x);
     this->parser.add_key("number of crystals Y", &this->crystal_repeater_y);
@@ -146,6 +159,14 @@ set_up(const std::string & header_path )
 {
     if (base_type::set_up(header_path) == Succeeded::no)
         return Succeeded::no;
+
+    std::string missing_keywords;
+    if(!check_all_required_keywords_are_set(missing_keywords))
+    {
+        warning(missing_keywords.c_str());
+        return Succeeded::no;
+    }
+
     stream_ptr->SetBranchAddress("crystalID1",&crystalID1);
     stream_ptr->SetBranchAddress("crystalID2",&crystalID2);
     stream_ptr->SetBranchAddress("blockID1",&blockID1);
@@ -156,6 +177,48 @@ set_up(const std::string & header_path )
         error("The total number of entries in the ROOT file is zero. Abort.");
 
     return Succeeded::yes;
+}
+
+bool InputStreamFromROOTFileForECATPET::
+check_all_required_keywords_are_set(std::string& ret) const
+{
+    std::ostringstream stream("InputStreamFromROOTFileForCylindricalPET: Required keywords are missing! Check: ");
+    bool ok = true;
+
+    if (crystal_repeater_x == -1)
+    {
+        stream << "crystal_repeater_x, ";
+        ok = false;
+    }
+
+    if (crystal_repeater_y == -1)
+    {
+        stream << "crystal_repeater_y, ";
+        ok = false;
+    }
+
+    if (crystal_repeater_z == -1)
+    {
+        stream << "crystal_repeater_z, ";
+        ok = false;
+    }
+
+    if (block_repeater_y == -1)
+    {
+        stream << "block_repeater_y, ";
+        ok = false;
+    }
+
+    if (block_repeater_z == -1)
+    {
+        stream << "block_repeater_z, ";
+        ok = false;
+    }
+
+    if (!ok)
+        ret = stream.str();
+
+    return ok;
 }
 
 END_NAMESPACE_STIR

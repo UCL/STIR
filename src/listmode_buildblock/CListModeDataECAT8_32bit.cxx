@@ -49,13 +49,8 @@ CListModeDataECAT8_32bit(const std::string& listmode_filename)
   if (this_scanner_sptr->get_type() == Scanner::Unknown_scanner)
     error(boost::format("Unknown value for originating_system keyword: '%s") % originating_system );
 
-    shared_ptr<ProjDataInfo> tmp( ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
-                                                                         this->interfile_parser.get_axial_compression(),
-                                                                         this->interfile_parser.get_maximum_ring_difference(),
-                                                                         this->interfile_parser.get_num_views(),
-                                                                         this->interfile_parser.get_num_projections(),
-                                                                         /* arc_correction*/false));
-   this->set_proj_data_info_sptr( tmp );
+  this->set_proj_data_info_sptr(interfile_parser.data_info_ptr->create_shared_clone());
+
   if (this->open_lm_file() == Succeeded::no)
     error("CListModeDataECAT8_32bit: error opening the first listmode file for filename %s\n",
 	  listmode_filename.c_str());

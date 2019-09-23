@@ -233,6 +233,11 @@ public:
 
   virtual shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const;
 
+  const ProjDataInfo* get_proj_data_info_ptr() const
+  {
+    return this->get_proj_data_info_sptr().get();
+  }
+
 protected:
 
   void set_proj_data_info_sptr(shared_ptr<ProjDataInfo>);

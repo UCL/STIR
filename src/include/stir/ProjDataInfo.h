@@ -57,6 +57,8 @@ class PMessage;
   \brief An (abstract base) class that contains information on the 
   projection data.
 
+  This class supports a fixed horizontal and vertical bed position. Both are set to zero
+  by default. Continuous bed motion is not supported.
 */
 class ProjDataInfo
 {
@@ -349,6 +351,20 @@ public:
   //! Return a string describing the object
   virtual std::string parameter_info() const;
   
+  //! Set horizontal bed position
+  void set_bed_position_horizontal(const float bed_position_horizontal_arg)
+  { bed_position_horizontal = bed_position_horizontal_arg; }
+
+  //! Get horizontal bed position
+  float get_bed_position_horizontal() const { return bed_position_horizontal; }
+
+  //! Set vertical bed position
+  void set_bed_position_vertical(const float bed_position_vertical_arg)
+  { bed_position_vertical = bed_position_vertical_arg; }
+
+  //! Get vertical bed position
+  float get_bed_position_vertical() const { return bed_position_vertical; }
+  
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
 
@@ -360,6 +376,8 @@ private:
   int max_tangential_pos_num;
   VectorWithOffset<int> min_axial_pos_per_seg; 
   VectorWithOffset<int> max_axial_pos_per_seg;
+  float bed_position_horizontal;
+  float bed_position_vertical;
   
 };
 

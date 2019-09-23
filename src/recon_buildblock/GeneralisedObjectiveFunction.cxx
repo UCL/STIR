@@ -65,6 +65,14 @@ Succeeded
 GeneralisedObjectiveFunction<TargetT>::
 set_up(shared_ptr<TargetT> const& target_data_ptr)
 {
+  if (target_data_ptr->get_exam_info().imaging_modality.is_unknown()
+      || this->get_input_data().get_exam_info().imaging_modality.is_unknown())
+    warning("Imaging modality is unknown for either the target or the input data or both.\n"
+            "Going ahead anyway.");
+  else if (target_data_ptr->get_exam_info().imaging_modality !=
+      this->get_input_data().get_exam_info().imaging_modality)
+    error("Imaging modality should be the same for the target and the input data");
+
   if (!is_null_ptr(this->prior_sptr) &&
       this->prior_sptr->set_up(target_data_ptr) == Succeeded::no)
     return Succeeded::no;

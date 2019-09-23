@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2013, Institute for Bioengineering of Catalonia
     Copyright (C) Biomedical Image Group (GIB), Universitat de Barcelona, Barcelona, Spain.
-    Copyright (C) 2013-2014, University College London
+    Copyright (C) 2013-2014, 2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -49,6 +49,7 @@
 //#include "boost/scoped_ptr.hpp"
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/format.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <fstream>
 #include <algorithm>
@@ -133,18 +134,110 @@ ProjMatrixByBinSPECTUB::set_defaults()
 
 }
 
-
 bool
 ProjMatrixByBinSPECTUB::post_processing()
 {
   if (ProjMatrixByBin::post_processing() == true)
     return true;
 
+  this->set_attenuation_type(this->attenuation_type);
+  if (!this->attenuation_map.empty())
+    this->set_attenuation_image_sptr(this->attenuation_map);
+  else
+    this->attenuation_image_sptr.reset();
+
   this->already_setup= false;
 
   return false;
 }
 
+bool
+ProjMatrixByBinSPECTUB::
+get_keep_all_views_in_cache() const
+{
+  return this->keep_all_views_in_cache;
+}
+
+void
+ProjMatrixByBinSPECTUB::
+set_keep_all_views_in_cache(bool value)
+{
+  if (this->keep_all_views_in_cache != value)
+    {
+      this->keep_all_views_in_cache = value;
+      this->already_setup = false;
+    }
+}
+
+std::string
+ProjMatrixByBinSPECTUB::
+get_attenuation_type() const
+{
+  return this->attenuation_type;
+}
+
+void
+ProjMatrixByBinSPECTUB::
+set_attenuation_type(const std::string& value)
+{
+  if (this->attenuation_type != boost::algorithm::to_lower_copy(value))
+    {
+      this->attenuation_type = boost::algorithm::to_lower_copy(value);
+      if ( this->attenuation_type != "no" && this->attenuation_type != "simple" && this->attenuation_type != "full")
+        error("attenuation_type has to be No, Simple or Full");
+      this->already_setup = false;
+    }
+}
+
+shared_ptr<const DiscretisedDensity<3,float> >
+ProjMatrixByBinSPECTUB::
+get_attenuation_image_sptr() const
+{
+  return this->attenuation_image_sptr;
+}
+
+void
+ProjMatrixByBinSPECTUB::
+set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > value)
+{
+  this->attenuation_image_sptr = value;
+  if (this->attenuation_type == "no")
+    {
+      info("Setting attenuation type to 'simple'");
+      this->set_attenuation_type("simple");
+    }
+  this->already_setup = false;
+}
+
+void
+ProjMatrixByBinSPECTUB::
+set_attenuation_image_sptr(const std::string& value)
+{
+  this->attenuation_map = value;
+  shared_ptr<DiscretisedDensity<3, float> > im_sptr(read_from_file<DiscretisedDensity<3,float> >(this->attenuation_map));
+  set_attenuation_image_sptr(im_sptr);
+}
+
+void
+ProjMatrixByBinSPECTUB::
+set_resolution_model(const float collimator_sigma_0_in_mm, const float collimator_slope_in_mm, const bool full_3D)
+{
+  this->collimator_sigma_0 = collimator_sigma_0_in_mm / 10;
+  this->collimator_slope = collimator_slope_in_mm / 10;
+  if (collimator_slope == 0.F && collimator_sigma_0 == 0.F)
+    {
+      this->psf_type = "geometrical";
+    }
+  else if (full_3D)
+    {
+      this->psf_type = "3d";
+    }
+  else
+    {
+      this->psf_type = "2d";
+    }
+  this->already_setup = false;
+}
 
 void
 ProjMatrixByBinSPECTUB::
@@ -185,6 +278,7 @@ set_up(
 	  else
 	  {
 		  this->clear_cache();
+                  this->delete_UB_SPECT_arrays();
 	  }
   }
 
@@ -244,10 +338,10 @@ set_up(
 	//... projecction parameters ..........................................
 	prj.ang0 = this->proj_data_info_ptr->get_scanner_ptr()->get_default_intrinsic_tilt() * float(180/_PI);
 	prj.incr = proj_Data_Info_Cylindrical->get_azimuthal_angle_sampling() * float(180/_PI);
-	prj.thcm = vol.thcm;
+	prj.thcm = proj_Data_Info_Cylindrical->get_axial_sampling(0)/10;
 	
 	//.......geometrical and other derived parameters of projection structure...........
-	prj.Nsli    = vol.Nsli;					 // number of slices
+	prj.Nsli    = proj_Data_Info_Cylindrical->get_num_axial_poss(0);  // number of slices
 	prj.lngcm   = prj.Nbin * prj.szcm;        // length in cm of the detection line
 	prj.Nbp     = prj.Nbin * prj.Nsli;        // number of bins for each projection angle (2D-projection)
 	prj.Nbt     = prj.Nbp * prj.Nang;         // total number of bins considering all the projection angles 	
@@ -263,7 +357,13 @@ set_up(
 	
 	wmh.prj = prj;
 	// wmh.NpixAngOS = vol.Npix * prj.NangOS;
-	
+
+        if (abs(wmh.prj.thcm - vox.thcm)>.01F)
+          error(boost::format("SPECTUB Matrix (probably) only works with equal z-sampling for projection data (%1%) and image (%2%)")
+                % (wmh.prj.thcm*10) % (vol.thcm*10));
+        if (abs(wmh.prj.Nsli - vol.Nsli)>.01F)
+          error(boost::format("SPECTUB Matrix (probably) only works with equal number of slices for projection data (%1%) and image (%2%)")
+                % wmh.prj.Nsli % vol.Nsli);
 	//....rotation radius .................................................	
 	const VectorWithOffset<float> radius_all_views =
 	  proj_Data_Info_Cylindrical->get_ring_radii_for_all_views();
@@ -287,17 +387,17 @@ set_up(
 	bin.thdx   = bin.thcm / wmh.psfres;
 	
 	//....PSF and collimator parameters ........................................	
-	
-	if ( psf_type == "Geometrical" ) wmh.do_psf = false;
+        boost::algorithm::to_lower(psf_type);
+	if ( psf_type == "geometrical" ) wmh.do_psf = false;
 	else{
 		wmh.do_psf = true;
 		
-		if ( psf_type == "3D" ) {
+		if ( psf_type == "3d" ) {
 			wmh.do_psf_3d = true;
 			cout << "3D PSF Correction. Parallel geometry" << endl;
 		}
 		else {
-			if ( psf_type== "2D" ) {
+			if ( psf_type== "2d" ) {
 				wmh.do_psf_3d = false;
 				cout << "2D PSF Correction. Parallel geometry" << endl;
 			}
@@ -330,39 +430,36 @@ set_up(
 	}
 	
 	//... attenuation parameters .........................	
-	
-	if ( attenuation_type == "No" ) {
+	boost::algorithm::to_lower(attenuation_type);
+	if ( attenuation_type == "no" ) {
 		wmh.do_att = false;
 	}
 	else{
 		wmh.do_att = true;
 		
-		if ( attenuation_type == "Simple" ) wmh.do_full_att = false;
+		if ( attenuation_type == "simple" ) wmh.do_full_att = false;
 		else {
-			if (attenuation_type == "Full" ) wmh.do_full_att = true;
+			if (attenuation_type == "full" ) wmh.do_full_att = true;
 			else 
                           {
                             //error_wm_SPECT( 123, attenuation_type );
-                            error("attenuation_type has to be Simple or Full");
+                            error("attenuation_type has to be No, Simple or Full");
                           }
 		}
-		
-	    wmh.att_fn = attenuation_map;
-
 	}
 	
 	//... masking parameters.............................		
-		
-	if( mask_type == "No" ){
+	boost::algorithm::to_lower(mask_type);
+	if( mask_type == "no" ){
 		wmh.do_msk = wmh.do_msk_cyl = wmh.do_msk_att = wmh.do_msk_file = false; 
 	}
 	else{
 		wmh.do_msk = true;
-		if( mask_type == "Cylinder" ) wmh.do_msk_cyl = true;
+		if( mask_type == "cylinder" ) wmh.do_msk_cyl = true;
 		else {
-			if( mask_type == "Attenuation Map" ) wmh.do_msk_att = true;
+			if( mask_type == "attenuation map" ) wmh.do_msk_att = true;
 			else{
-				if( mask_type == "Explicit Mask" ){
+				if( mask_type == "explicit mask" ){
 					wmh.do_msk_file = true;
 					
 					wmh.msk_fn = mask_file;
@@ -372,7 +469,7 @@ set_up(
 				else 
                                 {
                                   // error_wm_SPECT( 125, mask_type);
-                                  error("mask_type has to be Cylinder, Attenuation Map or Explicit Mask");
+                                  error("mask_type has to be No, Cylinder, Attenuation Map or Explicit Mask");
                                 }
 			}
 		}
@@ -389,10 +486,10 @@ set_up(
 
 	//:: Control of read parameters
 	cout << "" << endl;
-	cout << "Parameters of SPECT UB matrix:" << endl;
-	cout << "Image grid side row: " << wmh.vol.Nrow << "\tcol: " << wmh.vol.Ncol << "\tvoxel_size: " << wmh.vol.szcm<< endl;
+	cout << "Parameters of SPECT UB matrix: (in cm)" << endl;
+	cout << "Image grid side row: " << wmh.vol.Nrow << "\tcol: " << wmh.vol.Ncol << "\ttransverse voxel_size: " << wmh.vol.szcm<< endl;
 	cout << "Number of slices: " << wmh.vol.Nsli << "\tslice_thickness: " << wmh.vol.thcm << endl;
-	cout << "Number of bins: " << wmh.prj.Nbin << "\tbin size: " << wmh.prj.szcm << endl;
+	cout << "Number of bins: " << wmh.prj.Nbin << "\tbin size: " << wmh.prj.szcm << "\taxial size: " << wmh.prj.thcm << endl;
 	cout << "Number of angles: " << wmh.prj.Nang << "\tAngle increment: " << wmh.prj.incr << "\tFirst angle: " << wmh.prj.ang0 << endl;
 	cout << "Number of subsets: " << wmh.prj.NOS << endl;
 	if ( wmh.do_att ){
@@ -442,13 +539,13 @@ set_up(
 	//... to read attenuation map ..................................................
 
 	if ( wmh.do_att || wmh.do_msk_att ){
-		shared_ptr<DiscretisedDensity<3,float> > att_sptr(
-			read_from_file<DiscretisedDensity<3,float> >(wmh.att_fn));
-		if (!density_info_ptr->has_same_characteristics(*att_sptr))
+                if (is_null_ptr(attenuation_image_sptr))
+                    error("Attenation image not set");
+		if (!density_info_ptr->has_same_characteristics(*attenuation_image_sptr))
 			error("Currently the attenuation map and emission image must have the same dimension, orientation and voxel size");
 
 		attmap = new float [ vol.Nvox ];
-		std::copy(att_sptr->begin_all(), att_sptr->end_all(),attmap);
+		std::copy(attenuation_image_sptr->begin_all(), attenuation_image_sptr->end_all(),attmap);
 		for (int i = 0 ; i < wmh.vol.Nvox ; i++ ){
 			if ((boost::math::isnan)(attmap [ i ])){
 				attmap [ i ] = 0;
@@ -585,6 +682,8 @@ void
 ProjMatrixByBinSPECTUB::
 delete_UB_SPECT_arrays()
 {
+  if (!this->already_setup)
+    return;
   //... freeing matrix memory....................................
   using namespace SPECTUB;
   delete [] Rrad;

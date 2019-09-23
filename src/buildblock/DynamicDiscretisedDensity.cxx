@@ -6,6 +6,7 @@
   \brief Implementation of class stir::DynamicDiscretisedDensity
   \author Kris Thielemans
   \author Charalampos Tsoumpas
+  \author Richard Brown
   
 */
 /*
@@ -37,6 +38,9 @@
 #include "stir/round.h"
 #include <fstream>
 #include "stir/IO/interfile.h"
+
+#include "stir/DynamicProjData.h"
+#include "stir/MultipleDataSetHeader.h"
 
 
 #ifndef STIR_NO_NAMESPACES
@@ -71,9 +75,33 @@ operator=(const DynamicDiscretisedDensity& argument)
 
 void 
 DynamicDiscretisedDensity::
-set_density_sptr(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr, 
+set_density(const DiscretisedDensity<3,float>& density,
                  const unsigned int frame_num)
-{  this->_densities[frame_num-1]=density_sptr; }  
+{
+    // scan start should be the same
+    if (fabs(this->get_exam_info().start_time_in_secs_since_1970 - 
+             density.get_exam_info().start_time_in_secs_since_1970) > .5)
+      error("DynamicDiscretisedDensity::set_density: Density should have same start_time_secs");
+    // The added density should only contain 1 time frame
+    if(density.get_exam_info().time_frame_definitions.get_num_time_frames() != 1)
+        error("DynamicDiscretisedDensity::set_density: Density should contain 1 time frame");
+    if(this->get_exam_info_sptr()->time_frame_definitions.get_num_time_frames() < frame_num)
+        error("DynamicDiscretisedDensity::set_density: Set DynamicDiscretisedDensity time frame definition before using set_density");
+
+    // Check the starts and ends match
+    double dyn_start    = this->exam_info_sptr->time_frame_definitions.get_start_time(frame_num);
+    double dis_start    = density.get_exam_info().time_frame_definitions.get_start_time(1);
+    double dyn_end      = this->exam_info_sptr->time_frame_definitions.get_end_time(frame_num);
+    double dis_end      = density.get_exam_info().time_frame_definitions.get_end_time(1);
+
+    if (fabs(dyn_start - dis_start) > 1e-10)
+        error("DynamicDiscretisedDensity::set_density: Time frame start should match");
+
+    if (fabs(dyn_end - dis_end) > 1e-10)
+        error("DynamicDiscretisedDensity::set_density: Time frame end should match");
+
+    this->_densities.at(frame_num-1).reset(density.clone());
+}
 
 const std::vector<shared_ptr<DiscretisedDensity<3,float> > > &
 DynamicDiscretisedDensity::
@@ -83,12 +111,12 @@ get_densities() const
 const DiscretisedDensity<3,float> & 
 DynamicDiscretisedDensity::
 get_density(const unsigned int frame_num) const 
-{  return *this->_densities[frame_num-1] ; }
+{  return *this->_densities.at(frame_num-1) ; }
 
 DiscretisedDensity<3,float> & 
 DynamicDiscretisedDensity::
 get_density(const unsigned int frame_num)
-{  return *this->_densities[frame_num-1] ; }
+{  return *this->_densities.at(frame_num-1) ; }
 
 const float 
 DynamicDiscretisedDensity::
@@ -120,12 +148,11 @@ DynamicDiscretisedDensity*
 DynamicDiscretisedDensity::
 read_from_file(const string& filename) // The written image is read in respect to its center as origin!!!
 {
-  return stir::read_from_file<DynamicDiscretisedDensity>(filename).get();
+  unique_ptr<DynamicDiscretisedDensity> dyn_sptr
+    (stir::read_from_file<DynamicDiscretisedDensity>(filename));
+  return dyn_sptr.release();
 }
 
-//Warning write_time_frame_definitions() is not yet implemented, so time information is missing.
-/*          sheader_ptr->frame_start_time=this->get_start_time(frame_num)*1000.;  //Start Time in Milliseconds
-            sheader_ptr->frame_duration=this->get_duration(frame_num)*1000.;        //Duration in Milliseconds */
 Succeeded 
 DynamicDiscretisedDensity::
 write_to_ecat7(const string& filename) const 

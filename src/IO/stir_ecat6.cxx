@@ -29,6 +29,7 @@
 
 
 #include "stir/IO/interfile.h"
+#include "stir/ExamInfo.h"
 #include "stir/Sinogram.h"
 #include "stir/ProjDataFromStream.h"
 #include "stir/ProjDataInfo.h"
@@ -189,14 +190,16 @@ Scanner* find_scanner_from_ECAT6_Main_header(const ECAT6_Main_header& mhead)
 
 void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
 			    Scanner const& scanner,
-                            const std::string& orig_name                     
+                            const std::string& orig_name,
+                            ExamInfo const& exam_info
                             )
 {
 #ifndef STIR_ORIGINAL_ECAT6
-  ecat::ecat7::make_ECAT7_main_header(mhead, scanner, orig_name);
+  ecat::ecat7::make_ECAT7_main_header(mhead, scanner, orig_name, exam_info);
   strcpy(mhead.magic_number, "MATRIX6.4");
   mhead.sw_version= 64;
 #else
+  warning("Exam_info currently ignored when creating an ECAT6 file");
   mhead= main_zero_fill();
   mhead.calibration_factor = 1.F;
   
@@ -222,7 +225,7 @@ void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
                             DiscretisedDensity<3,float> const & density
                             )
 {
-  make_ECAT6_Main_header(mhead, scanner, orig_name);
+  make_ECAT6_Main_header(mhead, scanner, orig_name, density.get_exam_info());
   
   DiscretisedDensityOnCartesianGrid<3,float> const & image =
     dynamic_cast<DiscretisedDensityOnCartesianGrid<3,float> const&>(density);
@@ -239,8 +242,9 @@ void make_ECAT6_Main_header(ECAT6_Main_header& mhead,
                             ProjDataInfo const & proj_data_info
                             )
 {
-  
-  make_ECAT6_Main_header(mhead, *proj_data_info.get_scanner_ptr(), orig_name);
+  warning("Exam_info currently ignored when creating an ECAT6 raw-data file");
+  ExamInfo dummy_exam_info;
+  make_ECAT6_Main_header(mhead, *proj_data_info.get_scanner_ptr(), orig_name, dummy_exam_info);
   
   // extra main parameters that depend on data type
   mhead.file_type= matScanFile;

@@ -154,6 +154,12 @@ public:
   //! prompts the user to enter parameter values manually
   virtual void ask_parameters();
 
+  //! operations prior to the iterations
+  virtual Succeeded set_up(shared_ptr <TargetT > const& target_image_ptr);
+
+  //! the principal operations for updating the image iterates at each iteration
+  virtual void update_estimate (TargetT& current_image_estimate);
+
  protected:
 
   //! operations prior to the iterations
@@ -205,7 +211,6 @@ public:
 private:
 
   friend void do_sensitivity(const char * const par_filename);
-
 
   //! the principal operations for updating the image iterates at each iteration
   virtual void update_estimate (TargetT& current_image_estimate);

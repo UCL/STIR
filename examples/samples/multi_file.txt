@@ -1,0 +1,5 @@
+Multi :=
+  total number of data sets := 2
+  data set[1] := sinogram_1.hs
+  data set[2] := sinogram_2.hs
+end :=

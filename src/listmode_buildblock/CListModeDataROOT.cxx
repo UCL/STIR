@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2015, 2016 University of Leeds
     Copyright (C) 2016, 2017 University College London
+    Copyright (C) 2018 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -40,11 +41,15 @@ CListModeDataROOT::
 CListModeDataROOT(const std::string& hroot_filename)
     : hroot_filename(hroot_filename)
 {
+    set_defaults();
+    std::string error_str;
+
     this->parser.add_start_key("ROOT header");
     this->parser.add_stop_key("End ROOT header");
 
     // Scanner related & Physical dimensions.
     this->parser.add_key("originating system", &this->originating_system);
+
     this->parser.add_key("Number of rings", &this->num_rings);
     this->parser.add_key("Number of detectors per ring", &this->num_detectors_per_ring);
     this->parser.add_key("Inner ring diameter (cm)", &this->inner_ring_diameter);
@@ -63,7 +68,6 @@ CListModeDataROOT(const std::string& hroot_filename)
     if (root_file_sptr->set_up( f.get_path_only()) == Succeeded::no)
         error("CListModeDataROOT: Unable to set_up() from the input Header file (.hroot).");
 
-//    this->root_file_sptr->set_up();
     // ExamInfo initialisation
     this->exam_info_sptr.reset(new ExamInfo);
 
@@ -75,27 +79,39 @@ CListModeDataROOT(const std::string& hroot_filename)
 
     shared_ptr<Scanner> this_scanner_sptr;
 
-    if (this->originating_system != "User_defined_scanner")
+    // If the user set Scanner::User_defined_scanner then the local geometry valiables must be set.
+    bool give_it_a_try = false;
+    if (this->originating_system != "User_defined_scanner") //
     {
         this_scanner_sptr.reset(Scanner::get_scanner_from_name(this->originating_system));
         if (this_scanner_sptr->get_type() == Scanner::Unknown_scanner)
         {
-            error(boost::format("Unknown value for originating_system keyword: '%s. Abort.") % originating_system );
+            warning(boost::format("CListModeDataROOT: Unknown value for originating_system keyword: '%s.\n WIll try to "
+                                  "figure out the scanner's geometry from the parameters") % originating_system );
+            give_it_a_try = true;
         }
-        warning("I've set the scanner from STIR settings and ignored values in the hroot header.");
-        // TODO at least check consistency
+        else
+            warning("CListModeDataROOT: I've set the scanner from STIR settings and ignored values in the hroot header.");
     }
-    else
+    // If the user provide a Scanner name then, the local variables will be ignored and the Scanner
+    // will be the selected.
+    else if (this->originating_system == "User_defined_scanner" ||
+             give_it_a_try)
     {
-        info("Trying to figure out the scanner geometry from the information "
+        warning("CListModeDataROOT: Trying to figure out the scanner geometry from the information "
              "given in the ROOT header file.");
+
+        if (check_scanner_definition(error_str) == Succeeded::no)
+        {
+            error(error_str.c_str());
+        }
 
         this_scanner_sptr.reset(new Scanner(Scanner::User_defined_scanner,
                                              std::string ("ROOT_defined_scanner"),
                                              /* num dets per ring */
-                                             this->root_file_sptr->get_num_rings(),
+                                             this->num_detectors_per_ring,
                                              /* num of rings */
-                                             this->root_file_sptr->get_num_dets_per_ring(),
+                                             this->num_rings,
                                              /* number of non arccor bins */
                                              this->max_num_non_arccorrected_bins,
                                              /* number of maximum arccor bins */
@@ -120,6 +136,12 @@ CListModeDataROOT(const std::string& hroot_filename)
                                              /*num_transaxial_crystals_per_singles_unit_v*/
                                              this->root_file_sptr->get_num_trans_crystals_per_singles_unit(),
                                              /*num_detector_layers_v*/ 1 ));
+    }
+
+    // Compare with InputStreamFromROOTFile scanner generated geometry and throw error if wrong.
+    if (check_scanner_match_geometry(error_str, this_scanner_sptr) == Succeeded::no)
+    {
+        error(error_str.c_str());
     }
 
     shared_ptr<ProjDataInfo> tmp( ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
@@ -156,20 +178,6 @@ open_lm_file()
 {
     info(boost::format("CListModeDataROOT: used ROOT file %s") %
          this->root_file_sptr->get_ROOT_filename());
-    // we actually don't do anything here. It's all done by the parsing above.
-
-//        root_file_sptr.reset(
-//                    new InputStreamFromROOTFile(this->input_data_filename,
-//                                                this->name_of_input_tchain,
-//                                                this->number_of_crystals_x, this->number_of_crystals_y, this->number_of_crystals_z,
-//                                                this->number_of_submodules_x, this->number_of_submodules_y, this->number_of_submodules_z,
-//                                                this->number_of_modules_x, this->number_of_modules_y, this->number_of_modules_z,
-//                                                this->number_of_rsectors,
-//                                                this->exclude_scattered, this->exclude_randoms,
-//                                                static_cast<float>(this->low_energy_window*0.001f),
-//                                                static_cast<float>(this->up_energy_window*0.001f),
-//                                                this->offset_dets));
-
     return Succeeded::yes;
 }
 
@@ -208,5 +216,126 @@ set_get_position(const CListModeDataROOT::SavedPosition& pos)
 {
     return root_file_sptr->set_get_position(pos);
 }
+
+void
+CListModeDataROOT::
+set_defaults()
+{
+    num_rings = -1;
+    num_detectors_per_ring = -1;
+    max_num_non_arccorrected_bins = -1;
+    inner_ring_diameter = -1.f;
+    average_depth_of_interaction = -1.f;
+    ring_spacing = -.1f;
+    bin_size = -1.f;
+}
+
+Succeeded
+CListModeDataROOT::
+check_scanner_match_geometry(std::string& ret, const shared_ptr<Scanner>& scanner_sptr)
+{
+    std::ostringstream stream("CListModeDataROOT: The Scanner does not match the GATE geometry. Check: ");
+    bool ok = true;
+
+    if (scanner_sptr->get_num_rings() != root_file_sptr->get_num_rings())
+    {
+        stream << "the number of rings, ";
+        ok = false;
+    }
+
+    if (scanner_sptr->get_num_detectors_per_ring() != root_file_sptr->get_num_dets_per_ring())
+    {
+        stream << "the number of detector per ring, ";
+        ok = false;
+    }
+
+    if (scanner_sptr->get_num_axial_blocks_per_bucket() != root_file_sptr->get_num_axial_blocks_per_bucket_v())
+    {
+        stream << "the number of axial blocks per bucket, ";
+        ok = false;
+    }
+
+    if(scanner_sptr->get_num_transaxial_blocks_per_bucket() != root_file_sptr->get_num_transaxial_blocks_per_bucket_v())
+    {
+        stream << "the number of transaxial blocks per bucket, ";
+        ok = false;
+    }
+
+    if(scanner_sptr->get_num_axial_crystals_per_block() != root_file_sptr->get_num_axial_crystals_per_block_v())
+    {
+        stream << "the number of axial crystals per block, ";
+        ok = false;
+    }
+
+    if(scanner_sptr->get_num_transaxial_crystals_per_block() != root_file_sptr->get_num_transaxial_crystals_per_block_v())
+    {
+        stream << "the number of transaxial crystals per block, ";
+        ok = false;
+    }
+
+    if(scanner_sptr->get_num_axial_crystals_per_singles_unit() != root_file_sptr->get_num_axial_crystals_per_singles_unit())
+    {
+        stream << "the number of axial crystals per singles unit, ";
+        ok = false;
+    }
+
+    if(scanner_sptr->get_num_transaxial_crystals_per_singles_unit() != root_file_sptr->get_num_trans_crystals_per_singles_unit())
+    {
+        stream << "the number of transaxial crystals per singles unit, ";
+        ok = false;
+    }
+
+    if (!ok)
+    {
+        ret = stream.str();
+        return Succeeded::no;
+    }
+
+     return Succeeded::yes;
+}
+
+Succeeded
+CListModeDataROOT::
+check_scanner_definition(std::string& ret)
+{
+    if ( num_rings == -1 ||
+         num_detectors_per_ring == -1 ||
+         max_num_non_arccorrected_bins == -1 ||
+         inner_ring_diameter == -1.f ||
+         average_depth_of_interaction == -1.f ||
+         ring_spacing == -.1f ||
+         bin_size == -1.f )
+    {
+       std::ostringstream stream("CListModeDataROOT: The User_defined_scanner has not been fully described.\nPlease include in the hroot:\n");
+
+       if (num_rings == -1)
+           stream << "Number of rings := \n";
+
+       if (num_detectors_per_ring == -1)
+           stream << "Number of detectors per ring := \n";
+
+       if (max_num_non_arccorrected_bins == -1)
+           stream << "Maximum number of non-arc-corrected bins := \n";
+
+       if (inner_ring_diameter == -1)
+           stream << "Inner ring diameter (cm) := \n";
+
+       if (average_depth_of_interaction == -1)
+           stream << "Average depth of interaction (cm) := \n";
+
+       if (ring_spacing == -1)
+           stream << "Distance between rings (cm) := \n";
+
+       if (bin_size == -1)
+           stream << "Default bin size (cm) := \n";
+
+       ret = stream.str();
+
+       return Succeeded::no;
+    }
+
+    return Succeeded::yes;
+}
+
 
 END_NAMESPACE_STIR

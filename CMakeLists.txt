@@ -31,7 +31,7 @@ SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 cmake_minimum_required(VERSION 2.8.3)
 
 # add project source to cmake path such that it can use our find_package modules and .cmake files
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/src/cmake)
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/src/cmake;${CMAKE_MODULE_PATH}")
 include(src/cmake/SetC++Version.cmake)
 
 UseCXX("${CMAKE_CXX_STANDARD}")
@@ -57,6 +57,19 @@ mark_as_advanced(VERSION VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 
+####### Installation directories
+# Use locations as in
+# https://gitlab.kitware.com/cmake/cmake/blob/master/Source/CMakeInstallDestinations.cmake
+# TODO append version numbers
+if(BEOS)
+  set(STIR_DOC_DIR "documentation/doc/stir")
+elseif(CYGWIN)
+  set(STIR_DOC_DIR "share/doc/stir")
+else()
+  set(STIR_DOC_DIR "doc/stir")
+endif()
+set(ConfigPackageLocation lib/cmake/)
+
 ####### External packages
 # Note: we need to have the find_package statements in the top-level CMakeLists.txt
 # such that we can use it in STIRConfig.cmake.in (see below).
@@ -64,7 +77,6 @@ set(STIR_VERSION
 #### we need the boost library from boost.org
 set(BOOST_ROOT CACHE PATH "root of Boost")
 find_package( Boost 1.36.0 REQUIRED )
-include_directories(${Boost_INCLUDE_DIRS})
 
 #### optional external libraries. 
 # Listed here such that we know if we should compile extra utilities
@@ -74,6 +86,7 @@ option(DISABLE_AVW "disable use of AVW library" OFF)
 option(DISABLE_RDF "disable use of GE RDF library" OFF)
 option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
 option(DISABLE_CERN_ROOT "disable use of Cern ROOT libraries" OFF)
+option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # disable by default
 
 if(NOT DISABLE_ITK)
    # See if we can find a compiled version of ITK (http://www.itk.org/)
@@ -106,6 +119,9 @@ if(NOT DISABLE_RDF)
   find_package(RDF)
 endif()
 
+# Enable version 3 projectors
+option(STIR_PROJECTORS_AS_V3 "Enable STIR version 3 legacy code" OFF)
+
 #### enable support for ctest
 ENABLE_TESTING()
 
@@ -129,8 +145,6 @@ WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/STIRConfigVersion.c
 #)
 
 ## create files specific to the "installed" version
-
-set(ConfigPackageLocation lib/cmake/)
 
 # Set STIR_INCLUDE_DIRS before exporting such that it will refer to
 # the installed files, not the source.
