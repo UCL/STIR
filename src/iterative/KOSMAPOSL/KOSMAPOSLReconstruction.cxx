@@ -159,7 +159,7 @@ set_defaults()
   this->sigma_p=1;
   this->sigma_dp=1;
   this->sigma_dm=1;
-  this->anatomical_image_filename="";
+//  this->anatomical_image_filenames[0="";
   this->only_2D = 0;
   this->kernelised_output_filename_prefix="";
   this->hybrid=0;
@@ -174,7 +174,7 @@ initialise_keymap()
   this->parser.add_start_key("KOSMAPOSLParameters");
   this->parser.add_stop_key("End KOSMAPOSLParameters");
 
-  this->parser.add_key("anatomical image filename",&this->anatomical_image_filename);
+//  this->parser.add_key("anatomical image filename",&this->anatomical_image_filenames);
   this->parser.add_key("number of neighbours",&this->num_neighbours);
   this->parser.add_key("number of non-zero feature elements",&this->num_non_zero_feat);
   this->parser.add_key("sigma_m",&this->sigma_m);
@@ -183,7 +183,8 @@ initialise_keymap()
   this->parser.add_key("sigma_dm",&this->sigma_dm);
   this->parser.add_key("only_2D",&this->only_2D);
   this->parser.add_key("hybrid",&this->hybrid);
-    this->parser.add_key("kernelised output filename prefix",&this->kernelised_output_filename_prefix);
+  this->parser.add_key("anatomical image filenames", &anatomical_image_filenames);
+  this->parser.add_key("kernelised output filename prefix",&this->kernelised_output_filename_prefix);
 
 
 
@@ -210,21 +211,27 @@ post_processing()
   this->subiteration_counter=0;
   this->anatomical_sd=0;
 
-if(!this->only_2D){
- this->num_elem_neighbourhood=this->num_neighbours*this->num_neighbours*this->num_neighbours ;}
-else{
+  if (this->anatomical_image_filenames.max_size()>1){
+      error("At the moment you can only use one anatomical image %s");
+      return false;
+  }
+
+
+  if(!this->only_2D){
+     this->num_elem_neighbourhood=this->num_neighbours*this->num_neighbours*this->num_neighbours ;}
+  else{
      this->num_elem_neighbourhood=this->num_neighbours*this->num_neighbours ;
 }
 
-this->anatomical_prior_sptr= (read_from_file<TargetT>(anatomical_image_filename));
+this->anatomical_prior_sptr= (read_from_file<TargetT>(anatomical_image_filenames[0]));
 
     set_anatomical_prior_sptr (this->anatomical_prior_sptr);
     info(boost::format("Reading anatomical data '%1%'")
-         % anatomical_image_filename  );
+         % anatomical_image_filenames[0]  );
 
     if (is_null_ptr(this->anatomical_prior_sptr))
         {
-            error("Failed to read anatomical file %s", anatomical_image_filename.c_str());
+            error("Failed to read anatomical file %s", anatomical_image_filenames[0].c_str());
             return false;
         }
     this->anatomical_sd=estimate_stand_dev_for_anatomical_image();
@@ -299,7 +306,7 @@ template <typename TargetT>
 const std::string
 KOSMAPOSLReconstruction<TargetT>::
 get_anatomical_filename() const
-{ return this->anatomical_image_filename; }
+{ return this->anatomical_image_filenames[0]; }
 
 template <typename TargetT>
 const int

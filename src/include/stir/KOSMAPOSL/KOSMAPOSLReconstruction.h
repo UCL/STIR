@@ -104,7 +104,7 @@ class PoissonLogLikelihoodWithLinearModelForMean;
   sigma dm:=1                                ;is the parameter $\f \sigma_{dm} \f$;
   sigma dp:=1                                ;is the parameter $\f \sigma_{dp} \f$;
   number of neighbours:= 3                   ;is the cubic root of the number of voxels in the neighbourhood;
-  anatomical image filename:=filename        ;is the filename of the anatomical image;
+  anatomical image filenames:={filename1,filename2}        ;are the filenames of the anatomical images, currently can only do one image;
   number of non-zero feature elements:=1     ;is the number of non zero elements in the feature vector;
   only_2D:=0                                 ;=1 if you want to reconstruct 2D images;
 
@@ -190,7 +190,8 @@ public:
   std::string sens_filenames;
 
   //! Anatomical image filename
-  std::string anatomical_image_filename;
+  std::vector<std::string> anatomical_image_filenames;
+
   shared_ptr<TargetT> anatomical_prior_sptr;
   shared_ptr<TargetT> kpnorm_sptr,kmnorm_sptr;
  //kernel parameters
