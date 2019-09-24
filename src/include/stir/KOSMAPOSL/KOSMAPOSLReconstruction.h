@@ -150,7 +150,7 @@ public:
     {return *this;}
 
   //kernel
-  const std::string get_anatomical_filename() const;
+  const std::string get_anatomical_image_filenames() const;
   const int get_num_neighbours() const;
   const int get_num_non_zero_feat() const;
   const double get_sigma_m() const;
@@ -170,6 +170,15 @@ public:
 
   void set_anatomical_prior_sptr(shared_ptr<TargetT>&);
 
+  void set_anatomical_image_filenames(const std::string&);
+  void set_num_neighbours(const int);
+  void set_num_non_zero_feat(const int);
+  void set_sigma_m(const double);
+  void set_sigma_p(const double);
+  void set_sigma_dp(const double);
+  void set_sigma_dm(const double);
+  void set_only_2D(const bool);
+  void set_hybrid(const bool);
 
   //! boolean value to determine if the update images have to be written to disk
   void set_write_update_image(const int);

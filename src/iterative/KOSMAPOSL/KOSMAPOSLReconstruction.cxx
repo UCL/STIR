@@ -222,7 +222,6 @@ this->anatomical_prior_sptr= (read_from_file<TargetT>(anatomical_image_filenames
     set_anatomical_prior_sptr (this->anatomical_prior_sptr);
     info(boost::format("Reading anatomical data '%1%'")
          % anatomical_image_filenames[0]  );
-
     if (is_null_ptr(this->anatomical_prior_sptr))
         {
             error("Failed to read anatomical file %s", anatomical_image_filenames[0].c_str());
@@ -299,7 +298,7 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
 template <typename TargetT>
 const std::string
 KOSMAPOSLReconstruction<TargetT>::
-get_anatomical_filename() const
+get_anatomical_image_filenames() const
 { return this->anatomical_image_filenames[0]; }
 
 template <typename TargetT>
@@ -373,6 +372,78 @@ KOSMAPOSLReconstruction<TargetT>::
 set_anatomical_prior_sptr (shared_ptr<TargetT>& arg)
 {
   this->anatomical_prior_sptr = arg;
+}
+
+template <typename TargetT>
+void
+KOSMAPOSLReconstruction<TargetT>::
+set_anatomical_image_filenames(const std::string& arg)
+{
+  this->anatomical_image_filenames[0]  = arg;
+}
+
+template <typename TargetT>
+void
+KOSMAPOSLReconstruction<TargetT>::
+set_num_neighbours(const int arg)
+{
+    this->num_neighbours = arg;
+}
+
+template <typename TargetT>
+void
+KOSMAPOSLReconstruction<TargetT>::
+set_num_non_zero_feat(const int arg)
+{
+    this->num_non_zero_feat = arg;
+}
+
+template <typename TargetT>
+void
+KOSMAPOSLReconstruction<TargetT>::
+set_sigma_m(const double arg)
+{
+    this->sigma_m = arg;
+}
+
+template <typename TargetT>
+void
+KOSMAPOSLReconstruction<TargetT>::
+set_sigma_p(const double arg)
+{
+    this->sigma_p = arg;
+}
+
+template <typename TargetT>
+void
+KOSMAPOSLReconstruction<TargetT>::
+set_sigma_dp(const double arg)
+{
+    this->sigma_dp = arg;
+}
+
+template <typename TargetT>
+void
+KOSMAPOSLReconstruction<TargetT>::
+set_sigma_dm(const double arg)
+{
+    this->sigma_dm = arg;
+}
+
+template <typename TargetT>
+void
+KOSMAPOSLReconstruction<TargetT>::
+set_only_2D(const bool arg)
+{
+    this->only_2D = arg;
+}
+
+template <typename TargetT>
+void
+KOSMAPOSLReconstruction<TargetT>::
+set_hybrid(const bool arg)
+{
+    this->hybrid = arg;
 }
 
 /***************************************************************/
