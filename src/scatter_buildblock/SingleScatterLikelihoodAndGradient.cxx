@@ -925,7 +925,7 @@ get_jacobian_for_viewgram(Viewgram<float>& v_est,std::vector<VoxelsOnCartesianGr
        VoxelsOnCartesianGrid<float> tmp_gradient_image(gradient_image_array[0]);
 
     #ifdef STIR_OPENMP
-    #pragma omp parallel schedule(dynamic)
+    #pragma omp parallel for schedule(dynamic)
     #endif
        for (int i = 0; i < static_cast<int>(all_bins.size()); ++i)
        {
