@@ -149,7 +149,8 @@ set_defaults()
 
   this->num_neighbours=3;
   this->num_non_zero_feat=1;
-  this->sigma_m[0]=1;
+  this->sigma_m.push_back(1);
+  this->anatomical_image_filenames.push_back("");
   this->sigma_p=1;
   this->sigma_dp=1;
   this->sigma_dm=1;
@@ -178,9 +179,6 @@ initialise_keymap()
   this->parser.add_key("hybrid",&this->hybrid);
   this->parser.add_key("anatomical image filenames", &anatomical_image_filenames);
   this->parser.add_key("kernelised output filename prefix",&this->kernelised_output_filename_prefix);
-
-
-
 }
 
 
@@ -197,13 +195,13 @@ ask_parameters()
 template <typename TargetT>
 bool KOSMAPOSLReconstruction<TargetT>::
 post_processing()
-{
+{std::cout<<"coutiao";
   if (base_type::post_processing())
     return true;
 
   this->subiteration_counter=0;
-  this->anatomical_sd[0]=0;
-
+  this->anatomical_sd.push_back(0);
+std::cout<<"coutiao";
   if (!this->anatomical_image_filenames.size()==sigma_m.size()){
       error("The number of sigma_m parameters must be the same as the numberof anatomical image filenames %s");
       return false;
@@ -215,7 +213,7 @@ post_processing()
   else{
      this->num_elem_neighbourhood=this->num_neighbours*this->num_neighbours ;
       }
-for(int i = 0; i<=anatomical_image_filenames.size(); i++)
+for(int i = 0; i<=anatomical_image_filenames.size()-1; i++)
 {  if (!this->anatomical_image_filenames.empty()){
       this->anatomical_prior_sptr[i]= (read_from_file<TargetT>(anatomical_image_filenames[i]));
 
@@ -582,7 +580,7 @@ calculate_norm_const_matrix(std::vector<shared_ptr<TargetT> > normm,
                             const int dimf_row,
                             const int dimf_col)
 {
-    for( int i=0; i<= anatomical_image_filenames.size();i++){
+    for( int i=0; i<= anatomical_image_filenames.size()-1;i++){
         calculate_norm_matrix(*normm[i],dimf_row,dimf_col,*(this->anatomical_prior_sptr[i]));
     }
 
