@@ -148,12 +148,11 @@ set_defaults()
   base_type::set_defaults();
 
   this->num_neighbours=3;
-
+  this->num_non_zero_feat=1;
   this->sigma_m=1;
   this->sigma_p=1;
   this->sigma_dp=1;
   this->sigma_dm=1;
-//  this->anatomical_image_filenames[0="";
   this->only_2D = 0;
   this->kernelised_output_filename_prefix="";
   this->hybrid=0;
