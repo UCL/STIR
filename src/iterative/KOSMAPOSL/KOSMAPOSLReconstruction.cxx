@@ -223,6 +223,7 @@ post_processing()
     set_anatomical_prior_sptr (this->anatomical_prior_sptr);
     info(boost::format("Reading anatomical data '%1%'")
          % anatomical_image_filenames[0]  );
+  }
     if (is_null_ptr(this->anatomical_prior_sptr))
         {
             error("Failed to read anatomical file %s", anatomical_image_filenames[0].c_str());
