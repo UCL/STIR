@@ -34,21 +34,6 @@
 #include <string>
 
 START_NAMESPACE_STIR
-
-
-//! Auxiliary class for RegisteredParsingObject
-/*!
-  \ingroup buildblock
-   This class simply makes a class derived from Base and ParsingObject. Its use
-    should be restricted to the default value of the RegisteredParsingObject
-    template.
-*/
-template <typename Base>
-class AddParser : public Base, public ParsingObject
-{};
-
-
-
 /*!
   \brief Parent class for all leaves in a RegisteredObject hierarchy that
   do parsing of parameter files.
@@ -97,7 +82,7 @@ class AddParser : public Base, public ParsingObject
   the variables in that file are never referenced, so would not include
   it in the final executable (to try to remove redundant object files).
 */
-template <typename Derived, typename Base, typename Parent = AddParser<Base> >
+template <typename Derived, typename Base, typename Parent = Base>
 class RegisteredParsingObject : public Parent
 {
 public:

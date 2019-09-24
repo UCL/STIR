@@ -337,6 +337,8 @@ do_segments(const VoxelsOnCartesianGrid<float>& image,
   
   std::list<ViewSegmentNumbers> already_processed;
   
+  forw_projector.set_input(image);
+
   for (int segment_num = start_segment_num; segment_num <= end_segment_num; ++segment_num)
     for (int view= start_view; view<=end_view; view++)      
     {       
@@ -354,7 +356,7 @@ do_segments(const VoxelsOnCartesianGrid<float>& image,
       
       RelatedViewgrams<float> viewgrams = 
         proj_data.get_empty_related_viewgrams(vs, symmetries_sptr,false);
-      forw_projector.forward_project(viewgrams, image,
+      forw_projector.forward_project(viewgrams,
         viewgrams.get_min_axial_pos_num(),
         viewgrams.get_max_axial_pos_num(),
         start_tangential_pos_num, end_tangential_pos_num);	  

@@ -143,7 +143,7 @@ ParsingObject::ask_parameters()
 }
 
 std::string
-ParsingObject::parameter_info() 
+ParsingObject::parameter_info()
 { 
   if (!keymap_is_initialised)
   {

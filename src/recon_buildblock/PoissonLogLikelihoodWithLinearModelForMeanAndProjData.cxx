@@ -769,7 +769,7 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 #endif
 }
 
-
+#if 0
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
@@ -801,7 +801,7 @@ add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view
   }
   
 }
-
+#endif
 
 template<typename TargetT>
 Succeeded
@@ -830,6 +830,9 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
     this->get_time_frame_definitions().get_start_time(this->get_time_frame_num());
   const double end_time =
     this->get_time_frame_definitions().get_end_time(this->get_time_frame_num());
+
+  this->get_projector_pair().get_forward_projector_sptr()->set_input(input);
+  this->get_projector_pair().get_back_projector_sptr()->start_accumulating_in_new_target();
 
   for (int segment_num = -this->get_max_segment_num_to_process();
        segment_num<= this->get_max_segment_num_to_process();
@@ -860,7 +863,7 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
           {
             tmp_viewgrams = this->get_proj_data().get_empty_related_viewgrams(view_segment_num, symmetries_sptr);
             this->get_projector_pair().get_forward_projector_sptr()->
-              forward_project(tmp_viewgrams, input);
+              forward_project(tmp_viewgrams);
           }
           
           // now divide by the data term
@@ -871,10 +874,12 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 
           // back-project
           this->get_projector_pair().get_back_projector_sptr()->
-            back_project(output, tmp_viewgrams);
+            back_project(tmp_viewgrams);
       }
 
   } // end of loop over segments
+
+  this->get_projector_pair().get_back_projector_sptr()->get_output(output);
 
   return Succeeded::yes;
 }
@@ -1018,15 +1023,11 @@ void distributable_sensitivity_computation(
 void RPC_process_related_viewgrams_gradient(
                                             const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                             const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-                                            DiscretisedDensity<3,float>* output_image_ptr, 
-                                            const DiscretisedDensity<3,float>* input_image_ptr, 
                                             RelatedViewgrams<float>* measured_viewgrams_ptr,
                                             int& count, int& count2, double* log_likelihood_ptr /* = NULL */,
                                             const RelatedViewgrams<float>* additive_binwise_correction_ptr,
                                             const RelatedViewgrams<float>* mult_viewgrams_ptr)
 {       
-  assert(output_image_ptr != NULL);
-  assert(input_image_ptr != NULL);
   assert(measured_viewgrams_ptr != NULL);
   if (!is_null_ptr(mult_viewgrams_ptr))
     error("Internal error: mult_viewgrams_ptr should be zero when computing gradient");
@@ -1051,7 +1052,7 @@ void RPC_process_related_viewgrams_gradient(
                 }
     }
 */
-  forward_projector_sptr->forward_project(estimated_viewgrams, *input_image_ptr);
+  forward_projector_sptr->forward_project(estimated_viewgrams);
         
         
         
@@ -1069,29 +1070,24 @@ void RPC_process_related_viewgrams_gradient(
       
   divide_and_truncate(*measured_viewgrams_ptr, estimated_viewgrams, rim_truncation_sino, count, count2, log_likelihood_ptr);
       
-  back_projector_sptr->back_project(*output_image_ptr, *measured_viewgrams_ptr);
+  back_projector_sptr->back_project(*measured_viewgrams_ptr);
 };      
 
 
 void RPC_process_related_viewgrams_accumulate_loglikelihood(
                                                             const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                                             const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-                                                            DiscretisedDensity<3,float>* output_image_ptr,
-                                                            const DiscretisedDensity<3,float>* input_image_ptr, 
                                                             RelatedViewgrams<float>* measured_viewgrams_ptr,
                                                             int& count, int& count2, double* log_likelihood_ptr,
                                                             const RelatedViewgrams<float>* additive_binwise_correction_ptr,
                                                             const RelatedViewgrams<float>* mult_viewgrams_ptr)
 {
-
-  assert(output_image_ptr == NULL);
-  assert(input_image_ptr != NULL);
   assert(measured_viewgrams_ptr != NULL);
   assert(log_likelihood_ptr != NULL);
 
   RelatedViewgrams<float> estimated_viewgrams = measured_viewgrams_ptr->get_empty_copy();
 
-  forward_projector_sptr->forward_project(estimated_viewgrams, *input_image_ptr);
+  forward_projector_sptr->forward_project(estimated_viewgrams);
   
   if (additive_binwise_correction_ptr != NULL)
   {
@@ -1119,24 +1115,20 @@ void RPC_process_related_viewgrams_accumulate_loglikelihood(
 void RPC_process_related_viewgrams_sensitivity_computation(
                                                             const shared_ptr<ForwardProjectorByBin>& forward_projector_sptr,
                                                             const shared_ptr<BackProjectorByBin>& back_projector_sptr,
-                                                            DiscretisedDensity<3,float>* output_image_ptr,
-                                                            const DiscretisedDensity<3,float>* input_image_ptr,
                                                             RelatedViewgrams<float>* measured_viewgrams_ptr,
                                                             int& count, int& count2, double* log_likelihood_ptr,
                                                             const RelatedViewgrams<float>* additive_binwise_correction_ptr,
                                                             const RelatedViewgrams<float>* mult_viewgrams_ptr)
 {
-
-  assert(output_image_ptr != NULL);
   assert(measured_viewgrams_ptr != NULL);
 
   if( mult_viewgrams_ptr )
   {
-    back_projector_sptr->back_project(*output_image_ptr, *mult_viewgrams_ptr);
+    back_projector_sptr->back_project(*mult_viewgrams_ptr);
   }
   else
   {  
-    back_projector_sptr->back_project(*output_image_ptr, *measured_viewgrams_ptr);
+    back_projector_sptr->back_project(*measured_viewgrams_ptr);
   }
 
 }

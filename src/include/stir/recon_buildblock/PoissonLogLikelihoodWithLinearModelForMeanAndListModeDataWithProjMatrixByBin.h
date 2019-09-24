@@ -126,7 +126,7 @@ protected:
   virtual bool actual_subsets_are_approximately_balanced(std::string& warning_message) const;
 
   void
-    add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const;
+    add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const;
 };
 
 END_NAMESPACE_STIR

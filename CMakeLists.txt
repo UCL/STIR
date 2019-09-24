@@ -119,6 +119,9 @@ if(NOT DISABLE_RDF)
   find_package(RDF)
 endif()
 
+# Enable version 3 projectors
+option(STIR_PROJECTORS_AS_V3 "Enable STIR version 3 legacy code" OFF)
+
 #### enable support for ctest
 ENABLE_TESTING()
 
