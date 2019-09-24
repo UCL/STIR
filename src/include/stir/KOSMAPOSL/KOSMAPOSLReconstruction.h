@@ -150,7 +150,7 @@ public:
     {return *this;}
 
   //kernel
-  const std::string get_anatomical_image_filenames() const;
+  const std::vector<std::string> get_anatomical_image_filenames() const;
   const int get_num_neighbours() const;
   const int get_num_non_zero_feat() const;
   const std::vector<double> get_sigma_m() const;
@@ -160,7 +160,7 @@ public:
   const bool get_only_2D() const;
   const bool get_hybrid()const;
 
-  shared_ptr<TargetT>& get_anatomical_prior_sptr();
+  std::vector<shared_ptr<TargetT> > &get_anatomical_prior_sptr();
 
     /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
@@ -168,9 +168,8 @@ public:
    one place, all objects that use the shared pointer will be affected.
   */
 
-  void set_anatomical_prior_sptr(shared_ptr<TargetT>&);
-
-  void set_anatomical_image_filenames(const std::string&);
+  void set_anatomical_prior_sptr(shared_ptr<TargetT>&, int &index);
+  void set_anatomical_image_filenames(std::string&, int &index);
   void set_num_neighbours(const int);
   void set_num_non_zero_feat(const int);
   void set_sigma_m(double&, int &index);
@@ -196,8 +195,8 @@ public:
   //! Anatomical image filename
   std::vector<std::string> anatomical_image_filenames;
 
-  shared_ptr<TargetT> anatomical_prior_sptr;
-  shared_ptr<TargetT> kpnorm_sptr,kmnorm_sptr;
+  std::vector<shared_ptr<TargetT> > anatomical_prior_sptr,kmnorm_sptr;
+  shared_ptr<TargetT> kpnorm_sptr;
  //kernel parameters
   int num_neighbours,num_non_zero_feat,num_elem_neighbourhood,num_voxels,dimz,dimy,dimx;
   std::vector<double> sigma_m;
@@ -235,12 +234,12 @@ private:
 
   /*! Create a matrix similarly to calculate_norm_matrix() but this is done for the anatomical image, */
   /*! which does not  change over iteration.*/
-    void calculate_norm_const_matrix(TargetT &normm,
+    void calculate_norm_const_matrix(std::vector<shared_ptr<TargetT> > normm,
                                 const int dimf_row,
                                 const int dimf_col);
 
   /*! Estimate the SD of the anatomical image to be used as normalisation for the feature vector */
-    double estimate_stand_dev_for_anatomical_image();
+    void estimate_stand_dev_for_anatomical_image(std::vector<double> SD);
 
   /*! Compute for each voxel, jl, of the emission image the linear combination between the coefficient \f$ \alpha_{jl} \f$ and the kernel matrix \f$ k_{jl} \f$\f$ */
   /*! The information is stored in the image, kImage */
@@ -271,7 +270,8 @@ private:
                                 const double distance_dzdydx,
                                 const bool use_compact_implementation,
                                 const int l,
-                                const int m);
+                                const int m,
+                                const int index);
 
   double calc_kernel_from_precalculated(const double precalculated_norm_zxy,
                                         const double sq_sigma_int,
