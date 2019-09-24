@@ -215,32 +215,34 @@ post_processing()
      this->num_elem_neighbourhood=this->num_neighbours*this->num_neighbours*this->num_neighbours ;}
   else{
      this->num_elem_neighbourhood=this->num_neighbours*this->num_neighbours ;
-}
+      }
 
-this->anatomical_prior_sptr= (read_from_file<TargetT>(anatomical_image_filenames[0]));
+  if (!this->anatomical_image_filenames.empty()){
+      this->anatomical_prior_sptr= (read_from_file<TargetT>(anatomical_image_filenames[0]));
 
-    set_anatomical_prior_sptr (this->anatomical_prior_sptr);
-    info(boost::format("Reading anatomical data '%1%'")
-         % anatomical_image_filenames[0]  );
+      set_anatomical_prior_sptr (this->anatomical_prior_sptr);
+      info(boost::format("Reading anatomical data '%1%'")
+           % anatomical_image_filenames[0]  );
+      }
 
-    if (is_null_ptr(this->anatomical_prior_sptr))
-        {
-            error("Failed to read anatomical file %s", anatomical_image_filenames[0].c_str());
-            return false;
-        }
-    this->anatomical_sd=estimate_stand_dev_for_anatomical_image();
+  if (is_null_ptr(this->anatomical_prior_sptr)){
+      error("Failed to read anatomical file %s", anatomical_image_filenames[0].c_str());
+      return false;
+      }
 
-    info(boost::format("SD from anatomical image calculated = '%1%'")
-         % this->anatomical_sd);
+  this->anatomical_sd=estimate_stand_dev_for_anatomical_image();
 
-    const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
+  info(boost::format("SD from anatomical image calculated = '%1%'")
+       % this->anatomical_sd);
+
+  const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
       dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> *>
         (this->get_anatomical_prior_sptr ().get());
 
-    // TODO - which spacing to use? Need both?
-    const CartesianCoordinate3D<float>& grid_spacing =
+  // TODO - which spacing to use? Need both?
+  const CartesianCoordinate3D<float>& grid_spacing =
       current_anatomical_cast->get_grid_spacing();
-    precalculate_patch_euclidean_distances(distance,num_neighbours, only_2D, grid_spacing);
+  precalculate_patch_euclidean_distances(distance,num_neighbours, only_2D, grid_spacing);
 
     if(num_non_zero_feat>1){
       this->kpnorm_sptr = shared_ptr<TargetT>(this->anatomical_prior_sptr->get_empty_copy ());
