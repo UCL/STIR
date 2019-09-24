@@ -101,7 +101,7 @@ compute_emis_to_det_points_solid_angle_factor(
 
 float
 ScatterSimulation::
-detection_efficiency(const float energy, const int en_window) const
+detection_efficiency_gauss(const float energy, const int en_window) const
 {
   // factor 2.35482 is used to convert FWHM to sigma
   const float sigma_times_sqrt2= 
@@ -168,13 +168,13 @@ ScatterSimulation::detection_efficiency_integral(const float incoming_photon_ene
  }
 
 float
-ScatterSimulation::detection_efficiency_numerical(const float incoming_photon_energy, const int en_window) const
+ScatterSimulation::detection_efficiency(const float incoming_photon_energy, const int en_window) const
 {
 
     const float HLD = this->template_exam_info_sptr->get_high_energy_thres(en_window);
     const float LLD = this->template_exam_info_sptr->get_low_energy_thres(en_window);
     float sum = 0;
-    const int size = 28;
+    const int size = 30;
     const float increment_x = (HLD - LLD)/size;
     #ifdef STIR_OPENMP
     #pragma omp parallel for reduction(+:sum) schedule(dynamic)
