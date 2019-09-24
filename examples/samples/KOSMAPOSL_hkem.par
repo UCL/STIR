@@ -3,7 +3,7 @@ KOSMAPOSLParameters :=
 ; See documentation of KOSMAPOSLreconstruction
 ; for more info.
 
-;the following disable the alpha coefficient output:
+;the following disables the alpha coefficient output:
 disable output :=1
 
 
@@ -43,7 +43,7 @@ number of neighbours:= 3
 ; default: 1
 number of non-zero feature elements:=1
 
-; this are the file names of the anatomical images (at the momentwe can accept only one image)
+; this are the file names of the anatomical images (at the moment we can accept only one image)
 anatomical image filenames:= {MRbrain.hv}
 
 ; the following should be 1 if you want to reconstruct 2D data

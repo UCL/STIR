@@ -1,12 +1,8 @@
 //
 //
 /*
-
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000 - 2011-12-31, Hammersmith Imanet Ltd
-    Copyright (C) 2012-06-05 - 2012, Kris Thielemans
     Copyright (C) 2018 Commonwealth Scientific and Industrial Research Organisation
-    Copyright (C) 2018 University of Leeds   
+    Copyright (C) 2018-2019 University of Leeds
     Copyright (C) 2019 University College of London
     Copyright (C) 2019 National Physical Laboratory
 
@@ -33,10 +29,8 @@
 
   \author Daniel Deidda
   \author Ashley Gillman
-  \author Matthew Jacobson
-  \author Sanida Mustafovic
+  \author Palak Wadhwa
   \author Kris Thielemans
-  \author PARAPET project
       
 */
 

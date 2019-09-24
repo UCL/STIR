@@ -1,11 +1,9 @@
 //
 //
 /*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
-    Copyright (C) 2012-06-05 - 2012, Kris Thielemans
+
     Copyright (C) 2018 Commonwealth Scientific and Industrial Research Organisation
-    Copyright (C) 2018 University of Leeds
+    Copyright (C) 2018-2019 University of Leeds
     Copyright (C) 2019 University College of London
     Copyright (C) 2019 National Physical Laboratory
 
@@ -30,9 +28,8 @@
 
   \author Daniel Deidda
   \author Ashley Gillman
-  \author Matthew Jacobson
+  \author Palak Wadhwa
   \author Kris Thielemans
-  \author PARAPET project
 
 */
 
@@ -53,8 +50,8 @@ class PoissonLogLikelihoodWithLinearModelForMean;
   \brief A reconstructor class appropriate for emission data
 
   This class implements the iterative algorithm obtained using the Kernel method (KEM) and Hybrid kernel method (HKEM).
-  This implementation corresponds to the one presented by Deidda D et al, ``Hybrid PET-MR list-mode kernelized expectation
-  maximization reconstruction for quantitative PET images of the carotid arteries", IEEE MIC Atlanta, 2017. However, this allows
+  This implementation corresponds to the one presented by Deidda D et al, ``Hybrid PET-MR list-mode kernelized expectation maximization reconstruction",
+  Inverse Problems, 2019, DOI: https://doi.org/10.1088/1361-6420/ab013f. However, this allows
   also sinogram-based reconstruction. Each voxel value of the image, \f$ \boldsymbol{\lambda}\f$, can be represented as a
   linear combination using the kernel method.  If we have an image with prior information, we can construct for each voxel
   \f$ j \f$ of the emission image a feature vector, $\f \boldsymbol{v}_j \f$, using the prior information. The voxel value,
@@ -105,7 +102,7 @@ class PoissonLogLikelihoodWithLinearModelForMean;
   sigma dp:=1                                ;is the parameter $\f \sigma_{dp} \f$;
   number of neighbours:= 3                   ;is the cubic root of the number of voxels in the neighbourhood;
   anatomical image filenames:={filename1,filename2}        ;are the filenames of the anatomical images, currently can only do one image;
-  number of non-zero feature elements:=1     ;is the number of non zero elements in the feature vector;
+  number of non-zero feature elements:=1     ;is the number of non zero elements in the feature vector. This makes you choose the size of your feature vector by default we only have one element;
   only_2D:=0                                 ;=1 if you want to reconstruct 2D images;
 
 
@@ -121,8 +118,6 @@ class KOSMAPOSLReconstruction:
         Reconstruction < TargetT >,
         OSMAPOSLReconstruction < TargetT >
          >
-
-//public IterativeReconstruction<TargetT >
 {
  private:
   typedef RegisteredParsingObject<
@@ -205,10 +200,8 @@ public:
   //! boolean value to determine if the update images have to be written to disk
   int write_update_image;
 
-    virtual void set_defaults();
+  virtual void set_defaults();
   virtual void initialise_keymap();
-
-  //! used to check acceptable parameter ranges, etc...
   virtual bool post_processing();
 
  

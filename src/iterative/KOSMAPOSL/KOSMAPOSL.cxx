@@ -1,10 +1,11 @@
 //
 //
 /*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000-2012 Hammersmith Imanet Ltd
+
     Copyright (C) 2018 Commonwealth Scientific and Industrial Research Organisation
-    Copyright (C) 2018 University of Leeds
+    Copyright (C) 2018-2019 University of Leeds
+    Copyright (C) 2019 University College of London
+    Copyright (C) 2019 National Physical Laboratory
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,9 +27,8 @@
 
   \author Daniel Deidda
   \author Ashley Gillman
-  \author Matthew Jacobson
+  \author Palak Wadhwa
   \author Kris Thielemans
-  \author PARAPET project
 
 */
 #include "stir/KOSMAPOSL/KOSMAPOSLReconstruction.h"
