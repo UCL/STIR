@@ -1648,6 +1648,119 @@ OSMAPOSLParameters :=
 End:=
 \end{verbatim}
 
+{ \subsubsubsection{HKEM}
+}
+\label{sec:HKEM}
+  { \subsubsubsubsection{Algorithm description}
+  }
+  Hybrid kernelised expectation maximisation(HKEM) and kernelised expectation maximisation (KEM) iterative algorithms
+  are implemented corresponding to the one presented by Deidda D et al, ``Hybrid PET-MR list-mode kernelized expectation maximization reconstruction",
+  Inverse Problems, 2019, DOI: https://doi.org/10.1088/1361-6420/ab013f. However, this allows
+  also sinogram-based reconstruction. Each voxel value of the image, \f$ \boldsymbol{\lambda}\f$, can be represented as a
+  linear combination using the kernel method.  If we have an image with prior information, we can construct for each voxel
+  \f$ j \f$ of the emission image a feature vector, $\f \boldsymbol{v}_j \f$, using the prior information. The voxel value,
+  \f$\lambda_j\f$, can then be described using the kernel matrix 
+  \f[
+   \lambda_j=  \sum_{l=1}^L \alpha_l k_{jl}
+  \f]
+
+  where \f$k_{jl}\f$ is the \f$jl^{th}\f$ kernel element of the matrix, \f$\boldsymbol{K}\f$.
+  The resulting algorithm with OSEM, for example, is the following:
+
+  \f[
+  \alpha^{(n+1)}_j =  \frac{ \alpha^{(n)}_j }{\sum_{m} k^{(n)}_{jm} \sum_i p_{mi}} \sum_{m}k^{(n)}_{jm}\sum_i p_{mi}\frac{ y_i }{\sum_{q} p_{iq} \sum_l k^{(n)}_{ql}\alpha^{(n)}_l  $
+  \f[
+
+  where the  element, $\f jl \f$, of the kernel can be written as:
+
+  \f[
+    k^{(n)}_{jl} = k_m(\boldsymbol{v}_j,\boldsymbol{v}_l) \cdot k_p(\boldsymbol{z}^{(n)}_j,\boldsymbol{z}^{(n)}_l);
+  \f]
+
+  with
+
+  \f[
+   k_m(\boldsymbol{v}_j,\boldsymbol{v}_l) = \exp \left(\tiny - \frac{\|  \boldsymbol{v}_j-\boldsymbol{v}_l \|^2}{2 \sigma_m^2} \right) \exp \left(- \frac{\tiny \|  \boldsymbol{x}_j$
+  \f]
+
+  being the MR component of the kernel and
+
+  \f[
+   k_p(\boldsymbol{z}^{(n)}_j,\boldsymbol{z}^{(n)}_l) = \exp \left(\tiny - \frac{\|  \boldsymbol{z}^{(n)}_j-\boldsymbol{z}^{(n)}_l \|^2}{2 \sigma_p^2} \right) \exp \left(\tiny - \f$
+  \f]
+
+  is the part coming from the emission iterative update. Here, the Gaussian kernel functions have been modulated by the distance between voxels in the image space.
+
+Below is an excerpt of a possible parameter file for KOSMAPOSL. A complete parameter file
+can be found in \textbf{STIR/samples/}. The changes in this parameter file includes the MR anatomical prior images and the kernel-based parameters. 
+
+
+ \begin{verbatim}
+ An example of a KOSMAPOSL parameter file can be found in examples/samples/. It is similar to the OSMAPOSL parameter file withe following extra keywords
+
+KOSMAPOSL Parameters:=
+
+;the following disables the alpha coefficient output:
+disable output :=1
+
+
+; here we have the possibility to choose the parameters which define the kernel
+; matrix and the name of the anatomical image. the following are the defaults values:
+
+; 1 (default): use hybrid kernel (prior from MR and PET estimate)
+; OR
+; 0 kernel is MR-only
+hybrid:=1
+
+; Gaussian scaling parameter for the anatomical prior (units of image intensity)
+; It controls the edge preservation from the anatomical image, the bigger the stronger
+; default: 1
+sigma_m:= 1
+
+; Gaussian scaling parameter for the PET estimate (units of PET image intensity)
+; It controls the edge preservation from the functional image, the bigger the stronger
+; default: 1
+sigma_p:=1
+
+
+; NB: sigma_dm and sigma_dp should be the same
+; Spatial Gaussian scaling parameter for the anatomical prior (mm)
+; default: 1 (usual range 1-5)
+sigma_dm:=5
+
+; Spatial Gaussian scaling parameter for the PET prior (mm)
+; default: 1 (usual range 1-5)
+sigma_dp:=5
+
+; Number of neigbouring voxels to compare: (num_neighbours X num_neighbours X num_neighbours)
+; default: 3
+number of neighbours:= 3
+
+; Number of non-zero elements in the feature vectors. This makes you choose the size of your feature vector by default we only have one element
+; default: 1
+number of non-zero feature elements:=1
+
+; this are the file names of the anatomical images (at the moment we can accept only one image)
+anatomical image filenames:= {MRbrain.hv}
+
+; the following should be 1 if you want to reconstruct 2D data
+only_2D:=1
+
+; the following is the output prefix of the PET reconstructed image
+kernelised output filename prefix :=KOSMAPOSL
+
+objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+.
+.
+.
+
+End KOSMAPOSL Parameters :=
+  \end{verbatim}
+
+
+
 \subsubsection{
 Filtered back projection (FBP2D)}
 
