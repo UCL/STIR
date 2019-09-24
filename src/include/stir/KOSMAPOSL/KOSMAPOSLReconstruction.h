@@ -160,7 +160,7 @@ public:
   const bool get_only_2D() const;
   const bool get_hybrid()const;
 
-  shared_ptr<TargetT>& get_anatomical_prior_sptr();
+  shared_ptr<const TargetT> get_anatomical_prior_sptr() const;
 
     /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
@@ -168,7 +168,7 @@ public:
    one place, all objects that use the shared pointer will be affected.
   */
 
-  void set_anatomical_prior_sptr(shared_ptr<TargetT>&);
+  void set_anatomical_prior_sptr(shared_ptr<TargetT>);
 
   void set_anatomical_image_filenames(const std::string&);
   void set_num_neighbours(const int);
