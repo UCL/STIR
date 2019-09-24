@@ -922,13 +922,13 @@ get_jacobian_for_viewgram(Viewgram<float>& v_est,std::vector<VoxelsOnCartesianGr
         if(gradient_image_array.size()!=static_cast<int>(all_bins.size())*this->output_proj_data_sptr->get_num_views())
             error("SIZE is %d , but it should be %d",gradient_image_array.size(),static_cast<int>(all_bins.size()));
 
-       VoxelsOnCartesianGrid<float> tmp_gradient_image(gradient_image_array[0]);
 
-  //  #ifdef STIR_OPENMP
-  //  #pragma omp parallel for schedule(dynamic)
-  //  #endif
+     #ifdef STIR_OPENMP
+    #pragma omp parallel for schedule(dynamic)
+    #endif
        for (int i = 0; i < static_cast<int>(all_bins.size()); ++i)
        {
+           VoxelsOnCartesianGrid<float> tmp_gradient_image(gradient_image_array[0]);
            tmp_gradient_image.fill(0);
 
            const Bin bin = all_bins[i];
