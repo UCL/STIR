@@ -149,7 +149,7 @@ set_defaults()
 
   this->num_neighbours=3;
   this->num_non_zero_feat=1;
-  this->sigma_m=1;
+  this->sigma_m[0]=1;
   this->sigma_p=1;
   this->sigma_dp=1;
   this->sigma_dm=1;
@@ -170,7 +170,7 @@ initialise_keymap()
 //  this->parser.add_key("anatomical image filename",&this->anatomical_image_filenames);
   this->parser.add_key("number of neighbours",&this->num_neighbours);
   this->parser.add_key("number of non-zero feature elements",&this->num_non_zero_feat);
-  this->parser.add_key("sigma_m",&this->sigma_m);
+  this->parser.add_key("sigma_m",&sigma_m);
   this->parser.add_key("sigma_p",&this->sigma_p);
   this->parser.add_key("sigma_dp",&this->sigma_dp);
   this->parser.add_key("sigma_dm",&this->sigma_dm);
@@ -202,10 +202,10 @@ post_processing()
     return true;
 
   this->subiteration_counter=0;
-  this->anatomical_sd=0;
+  this->anatomical_sd[0]=0;
 
-  if (this->anatomical_image_filenames.size()>1){
-      error("At the moment you can only use one anatomical image %s");
+  if (!this->anatomical_image_filenames.size()==sigma_m.size()){
+      error("The number of sigma_m parameters must be the same as the numberof anatomical image filenames %s");
       return false;
   }
 
@@ -215,23 +215,24 @@ post_processing()
   else{
      this->num_elem_neighbourhood=this->num_neighbours*this->num_neighbours ;
       }
-
-  if (!this->anatomical_image_filenames.empty()){
-      this->anatomical_prior_sptr= (read_from_file<TargetT>(anatomical_image_filenames[0]));
+for(int i = 0; i<=anatomical_image_filenames.size(); i++)
+{  if (!this->anatomical_image_filenames.empty()){
+      this->anatomical_prior_sptr= (read_from_file<TargetT>(anatomical_image_filenames[i]));
 
     set_anatomical_prior_sptr (this->anatomical_prior_sptr);
     info(boost::format("Reading anatomical data '%1%'")
-         % anatomical_image_filenames[0]  );
+         % anatomical_image_filenames[i]  );
   }
     if (is_null_ptr(this->anatomical_prior_sptr))
         {
-            error("Failed to read anatomical file %s", anatomical_image_filenames[0].c_str());
+            error("Failed to read anatomical file %s", anatomical_image_filenames[i].c_str());
             return false;
         }
-    this->anatomical_sd=estimate_stand_dev_for_anatomical_image();
+    this->anatomical_sd[i]=estimate_stand_dev_for_anatomical_image();
 
   info(boost::format("SD from anatomical image calculated = '%1%'")
-       % this->anatomical_sd);
+       % this->anatomical_sd[i]);
+}
 
   const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
       dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> *>
@@ -242,12 +243,14 @@ post_processing()
       current_anatomical_cast->get_grid_spacing();
   precalculate_patch_euclidean_distances(distance,num_neighbours, only_2D, grid_spacing);
 
-    if(num_non_zero_feat>1){
-      this->kpnorm_sptr = shared_ptr<TargetT>(this->anatomical_prior_sptr->get_empty_copy ());
-      this->kmnorm_sptr = shared_ptr<TargetT>(this->anatomical_prior_sptr->get_empty_copy ());
 
-      this->kpnorm_sptr->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
-      this->kmnorm_sptr->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
+    if(num_non_zero_feat>1){
+         for(int i = 0; i <=anatomical_image_filenames.size()-1; i++){
+    this->kmnorm_sptr = shared_ptr<TargetT>(this->anatomical_prior_sptr->get_empty_copy ());
+    this->kmnorm_sptr->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
+            }
+    this->kpnorm_sptr = shared_ptr<TargetT>(this->anatomical_prior_sptr->get_empty_copy ());
+    this->kpnorm_sptr->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
 
     int dimf_col = this->num_non_zero_feat-1;
     int dimf_row=this->num_voxels;
@@ -315,7 +318,7 @@ get_num_non_zero_feat() const
 { return this->num_non_zero_feat; }
 
 template <typename TargetT>
-const double
+const std::vector<double>
 KOSMAPOSLReconstruction<TargetT>::
 get_sigma_m() const
 { return this->sigma_m; }
@@ -402,9 +405,9 @@ set_num_non_zero_feat(const int arg)
 template <typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
-set_sigma_m(const double arg)
+set_sigma_m(double& arg, int &index)
 {
-    this->sigma_m = arg;
+    this->sigma_m[index] = arg;
 }
 
 template <typename TargetT>
@@ -819,15 +822,15 @@ calc_anatomical_kernel(const double anatomical_prior_zyx,
     use_compact_implementation
     ? calc_kernel_compact(anatomical_prior_zyx-
                                     anatomical_prior_zyx_dr,
-                                    sigma_m*sigma_m,
+                                    sigma_m[0]*sigma_m[0],
                                     sigma_dm*sigma_dm,
                                     distance_dzdydx*distance_dzdydx,
-                                    anatomical_sd*anatomical_sd)
+                                    anatomical_sd[0]*anatomical_sd[0])
     : calc_kernel_from_precalculated((*kmnorm_sptr)[0][l][m],
-                                     sigma_m*sigma_m,
+                                     sigma_m[0]*sigma_m[0],
                                      sigma_dm*sigma_dm,
                                      distance_dzdydx*distance_dzdydx,
-                                     anatomical_sd*anatomical_sd);
+                                     anatomical_sd[0]*anatomical_sd[0]);
 
   return anatomical_kernel;
 }

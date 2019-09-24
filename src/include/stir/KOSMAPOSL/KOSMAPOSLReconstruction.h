@@ -153,7 +153,7 @@ public:
   const std::string get_anatomical_image_filenames() const;
   const int get_num_neighbours() const;
   const int get_num_non_zero_feat() const;
-  const double get_sigma_m() const;
+  const std::vector<double> get_sigma_m() const;
   const double get_sigma_p() const;
   const double get_sigma_dp() const;
   const double get_sigma_dm()const;
@@ -173,7 +173,7 @@ public:
   void set_anatomical_image_filenames(const std::string&);
   void set_num_neighbours(const int);
   void set_num_non_zero_feat(const int);
-  void set_sigma_m(const double);
+  void set_sigma_m(double&, int &index);
   void set_sigma_p(const double);
   void set_sigma_dp(const double);
   void set_sigma_dm(const double);
@@ -200,7 +200,7 @@ public:
   shared_ptr<TargetT> kpnorm_sptr,kmnorm_sptr;
  //kernel parameters
   int num_neighbours,num_non_zero_feat,num_elem_neighbourhood,num_voxels,dimz,dimy,dimx;
-  double sigma_m;
+  std::vector<double> sigma_m;
   bool only_2D;
   bool hybrid;
   double sigma_p;
@@ -224,7 +224,7 @@ private:
   virtual void update_estimate (TargetT& current_image_estimate);
 
   int subiteration_counter;
-  double anatomical_sd;
+  std::vector<double> anatomical_sd;
   mutable Array<3,float> distance;
   /*! Create a matrix containing the norm of the difference between two feature vectors, \f$ \|  \boldsymbol{z}^{(n)}_j-\boldsymbol{z}^{(n)}_l \| \f$. */
   /*! This is done for the emission image which keeps changing*/
