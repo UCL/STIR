@@ -924,15 +924,14 @@ get_jacobian_for_viewgram(Viewgram<float>& v_est,std::vector<VoxelsOnCartesianGr
 
        VoxelsOnCartesianGrid<float> tmp_gradient_image(gradient_image_array[0]);
 
+    #ifdef STIR_OPENMP
+    #pragma omp parallel schedule(dynamic)
+    #endif
        for (int i = 0; i < static_cast<int>(all_bins.size()); ++i)
        {
-    //creates a template image to fill
            tmp_gradient_image.fill(0);
 
            const Bin bin = all_bins[i];
-
-
-    //forward model
            const double y = L_G_estimate(tmp_gradient_image,bin,compute_gradient,isgradient_mu);
 
            v_est[bin.axial_pos_num()][bin.tangential_pos_num()] = static_cast<float>(y);

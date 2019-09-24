@@ -177,7 +177,7 @@ ScatterSimulation::detection_efficiency_numerical(const float incoming_photon_en
     const int size = 28;
     const float increment_x = (HLD - LLD)/size;
     #ifdef STIR_OPENMP
-    #pragma omp parallel for reduction(+:sum)
+    #pragma omp parallel for reduction(+:sum) schedule(dynamic)
     #endif
     for(int i = 0 ; i< size; ++i)
     {
