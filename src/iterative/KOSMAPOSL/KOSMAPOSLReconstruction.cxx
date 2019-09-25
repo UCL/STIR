@@ -359,7 +359,7 @@ get_hybrid() const
 //{ return this->kmnorm_sptr; }
 
 template <typename TargetT>
-shared_ptr<TargetT> &KOSMAPOSLReconstruction<TargetT>::get_anatomical_prior_sptr()
+shared_ptr<const TargetT> KOSMAPOSLReconstruction<TargetT>::get_anatomical_prior_sptr() const
 { return this->anatomical_prior_sptr; }
 
 
@@ -370,7 +370,7 @@ shared_ptr<TargetT> &KOSMAPOSLReconstruction<TargetT>::get_anatomical_prior_sptr
 template<typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
-set_anatomical_prior_sptr (shared_ptr<TargetT>& arg)
+set_anatomical_prior_sptr (shared_ptr<TargetT> arg)
 {
   this->anatomical_prior_sptr = arg;
 }
