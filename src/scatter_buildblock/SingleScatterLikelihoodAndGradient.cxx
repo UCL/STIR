@@ -746,10 +746,15 @@ get_jacobian(std::vector<VoxelsOnCartesianGrid<float> > &gradient_image_array,co
     int axial_bins = 0 ;
     double sum = 0;
 
+    #ifdef STIR_OPENMP
+    #pragma omp parallel for reduction(+:axial_bins) schedule(dynamic)
+    #endif
     for (vs_num.segment_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_segment_num();
          vs_num.segment_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
          ++vs_num.segment_num())
-        axial_bins += this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num());
+    {
+      axial_bins += this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num());
+    }
 
     const int total_bins =
     this->proj_data_info_cyl_noarc_cor_sptr->get_num_views() * axial_bins *
