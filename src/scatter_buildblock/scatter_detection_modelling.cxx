@@ -217,7 +217,7 @@ detection_model_with_fitted_parameters(const float x, const float energy) const
   const float f3 = flat_continuum(7,(energy*0.14f)/2.35482f, x, energy);
   const float f4 = exponential_tail(29.4f,(energy*0.14f)/2.35482f, x, energy,-0.8401f);
 
-  return 0.29246f*0.8f*1e-06*(f1+f2);
+  return 0.29246f*0.8f*1e-06*(f1+f2+f3+f4);
 }
 
 float
