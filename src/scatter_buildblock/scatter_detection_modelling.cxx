@@ -127,7 +127,7 @@ ScatterSimulation::detection_spectrum(const float LLD, const float HLD, const fl
     float increment_x = (HLD - LLD)/size;
     for(int i = 0 ; i< size; ++i)
     {
-        energy_range[i]+= LLD+increment_x +i*increment_x;
+        energy_range[i]+= LLD +i*increment_x;
         out[i]+=0;
     }
 
@@ -174,14 +174,14 @@ ScatterSimulation::detection_efficiency(const float incoming_photon_energy, cons
     const float HLD = this->template_exam_info_sptr->get_high_energy_thres(en_window);
     const float LLD = this->template_exam_info_sptr->get_low_energy_thres(en_window);
     float sum = 0;
-    const int size = 30;
+    const int size = 20;
     const float increment_x = (HLD - LLD)/size;
     #ifdef STIR_OPENMP
     #pragma omp parallel for reduction(+:sum) schedule(dynamic)
     #endif
     for(int i = 0 ; i< size; ++i)
     {
-        const float energy_range = LLD+increment_x +i*increment_x;
+        const float energy_range = LLD+i*increment_x;
         sum+= detection_model_with_fitted_parameters(energy_range, incoming_photon_energy);
     }
 
