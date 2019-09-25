@@ -752,9 +752,7 @@ get_jacobian(std::vector<VoxelsOnCartesianGrid<float> > &gradient_image_array,co
     for (segm_num = this->proj_data_info_cyl_noarc_cor_sptr->get_min_segment_num();
          segm_num <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
          ++segm_num)
-    {
       axial_bins += this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num());
-    }
 
     const int total_bins =
     this->proj_data_info_cyl_noarc_cor_sptr->get_num_views() * axial_bins *
