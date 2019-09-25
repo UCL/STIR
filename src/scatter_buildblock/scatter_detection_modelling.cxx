@@ -184,9 +184,8 @@ ScatterSimulation::detection_efficiency(const float incoming_photon_energy, cons
     {
         const float energy_range = LLD+i*increment_x;
         sum+= detection_model_with_fitted_parameters(energy_range, incoming_photon_energy);
-        sum*=increment_x;
     }
-
+    sum*=increment_x;
     return sum;
 }
 
