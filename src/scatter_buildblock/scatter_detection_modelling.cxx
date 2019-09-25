@@ -213,7 +213,7 @@ detection_model_with_fitted_parameters(const float x, const float energy) const
   //const float scaling_std_compton = 28.3; //fitting parameter
   //const float shift_compton = 0.597; //fitting parameter
   const float f1 = photoelectric((66*66*66*66*66)/energy, (energy*0.14f)/2.35482f, x, energy);
-  const float f2 = compton_plateau(9.33f*10E25*total_Compton_cross_section(energy)*66, (energy*0.14f)/2.35482f, x, energy, 28.3f,0.597f);
+  const float f2 = compton_plateau(9.33f*1e+25*total_Compton_cross_section(energy)*66, (energy*0.14f)/2.35482f, x, energy, 28.3f,0.597f);
   const float f3 = flat_continuum(7,(energy*0.14f)/2.35482f, x, energy);
   const float f4 = exponential_tail(29.4f,(energy*0.14f)/2.35482f, x, energy,-0.8401f);
 
@@ -259,7 +259,7 @@ exponential_tail(const float K, const float std_peak, const float x, const float
     const float den1 = 1.4142f*M_PI*std_peak*beta;
     const float den2 = 1.4142f*std_peak;
     const float den3 = 2*beta;
-    if (x > 100) //i am not sure of the behaviour of the function at too low energies
+    if (x > 210) //i am not sure of the behaviour of the function at too low energies
         return K * exp((x-energy)/den1)*erfc((x-energy)/den2+1/den3);
     else
     	return 0;
