@@ -174,7 +174,7 @@ ScatterSimulation::detection_efficiency(const float incoming_photon_energy, cons
     const float HLD = this->template_exam_info_sptr->get_high_energy_thres(en_window);
     const float LLD = this->template_exam_info_sptr->get_low_energy_thres(en_window);
     float sum = 0;
-    const int size = 10;
+    const int size = 30;
     double increment_x = (HLD - LLD) / (size - 1);
 
     #ifdef STIR_OPENMP
