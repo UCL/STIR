@@ -118,25 +118,25 @@ detection_efficiency_gauss(const float energy, const int en_window) const
   return efficiency;
 }
 
-std::vector<float>
+std::vector<double>
 ScatterSimulation::detection_spectrum(const float LLD, const float HLD, const float size, const float incoming_photon_energy) const
 {
 
-    std::vector<float> energy_range(size);
-    std::vector<float> out(size);
-    float increment_x = (HLD - LLD)/size;
-    for(int i = 0 ; i< size; ++i)
+    std::vector<double> output(size);
+    double increment_x = (HLD - LLD) / (size - 1);
+
+    for(int i = 0; i < size; ++i)
     {
-        energy_range[i]+= LLD +i*increment_x;
-        out[i]+=0;
+        output[i] = LLD + (i * increment_x);
+        std::cout << output[i] << std::endl;
     }
 
-    for(int j = 0; j < size; ++j)
+    for(int i = 0; i < size; ++i)
     {
-        out[j]+= detection_model_with_fitted_parameters(energy_range[j], incoming_photon_energy);
+        output[i] = detection_model_with_fitted_parameters(output[i], incoming_photon_energy);
     }
 
-    return out;
+    return output;
 }
 
 float
@@ -174,8 +174,8 @@ ScatterSimulation::detection_efficiency(const float incoming_photon_energy, cons
     const float HLD = this->template_exam_info_sptr->get_high_energy_thres(en_window);
     const float LLD = this->template_exam_info_sptr->get_low_energy_thres(en_window);
     float sum = 0;
-    const int size = 20;
-    const float increment_x = (HLD - LLD)/size;
+    const int size = 30;
+    double increment_x = (HLD - LLD) / (size - 1);
     #ifdef STIR_OPENMP
     #pragma omp parallel for reduction(+:sum) schedule(dynamic)
     #endif
