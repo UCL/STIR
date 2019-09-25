@@ -478,24 +478,11 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
 #endif
 
 
-    //normalisation
-
-
-      // we will divide by the effiency of the detector pair for unscattered photons
+      //normalisation
+      // we will divide by the solid angle factors for unscattered photons
       // (computed with the same detection model as used in the scatter code)
-      // This way, the scatter estimate will correspond to a 'normalised' scatter estimate.
+      // the energy dependency is left out
 
-      // there is a scatter_volume factor for every scatter point, as the sum over scatter points
-      // is an approximation for the integral over the scatter point.
-
-      // the factors total_Compton_cross_section_511keV should probably be moved to the scatter_computation code
-
-
-     // currently the scatter simulation is normalised w.r.t. the detection efficiency in the photopeak window
-      //find the window that contains 511 keV
-
-
-      //normalisation factor between trues and scattered counts
 
      const double common_factor =
             1/detection_efficiency_no_scatter(det_num_A, det_num_B) *
@@ -504,91 +491,59 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
 
     // Single ScatterForward Model
 
-    const float line_integral1 = detection_probability_XY*(1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1);
-    const float line_integral2 = detection_probability_YX*(1.F/rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1);
-    const float line_integral1_times_activityA = line_integral1*emiss_to_detA;
-    const float line_integral2_times_activityB = line_integral2*emiss_to_detB;
-    const float global_factor = atten_to_detB*atten_to_detA*cos_incident_angle_AS*cos_incident_angle_BS*dif_Compton_cross_section_value*common_factor;
-    const float global_factor_times_mu = global_factor*scatter_point_mu;
+    const double line_integral1 = detection_probability_XY*(1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1);
+    const double line_integral2 = detection_probability_YX*(1.F/rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1);
+    const double line_integral1_times_activityA = line_integral1*emiss_to_detA;
+    const double line_integral2_times_activityB = line_integral2*emiss_to_detB;
+    const double global_factor = atten_to_detB*atten_to_detA*cos_incident_angle_AS*cos_incident_angle_BS*dif_Compton_cross_section_value*common_factor;
+    const double global_factor_times_mu = global_factor*scatter_point_mu;
 
     float scatter_ratio=0;
 
-    scatter_ratio= (detection_probability_XY*emiss_to_detA*(1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1)
-                    +detection_probability_YX*emiss_to_detB*(1.F/rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1))
-                    *global_factor_times_mu;
-
+    scatter_ratio = (line_integral1_times_activityA+line_integral2_times_activityB)*global_factor_times_mu;
 
 
     /*Single Scatter Forward model Jacobian w.r.t. attenuation:
      * The derivative is given by three terms, respectively in [A,S], [B,S] and [S] */
 
-    float contribution_AS_mu = (detection_probability_XY*emiss_to_detA*(1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1)
-                            +detection_probability_YX*emiss_to_detB*(1.F/rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1)*
-                            total_Compton_cross_section_relative_to_511keV(new_energy))
-                            *global_factor_times_mu;
+    float contribution_AS_mu = (line_integral1_times_activityA+line_integral2_times_activityB*total_Compton_cross_section_relative_to_511keV(new_energy))
+                               *global_factor_times_mu;
 
-    float contribution_BS_mu = (detection_probability_XY*emiss_to_detA*
-                            (1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1)*total_Compton_cross_section_relative_to_511keV(new_energy)
-                            +detection_probability_YX*emiss_to_detB*(1.F/rA_squared)*
-                             pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1))
-                            *global_factor_times_mu;
+    float contribution_BS_mu = (line_integral1_times_activityA*total_Compton_cross_section_relative_to_511keV(new_energy)+line_integral2_times_activityB*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1))
+                               *global_factor_times_mu;
 
-    float contribution_S = (detection_probability_XY*emiss_to_detA*(1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1)
-                            +detection_probability_YX*emiss_to_detB*(1.F/rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1))
-                            *global_factor;
+    float contribution_S =      (line_integral1_times_activityA+line_integral2_times_activityB)
+                                *global_factor;
 
 
     /*Single Scatter Forward model Jacobian w.r.t. activity:
-     *
      * The derivative is given by two terms, respectively in [A,S] and [B,S]  */
 
 
-    float contribution_AS_act = (detection_probability_XY*(1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1))
-                               *global_factor_times_mu;
-
-    float contribution_BS_act = (detection_probability_YX*(1.F/rA_squared)*pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1))
-                               *global_factor_times_mu;
-
+    float contribution_AS_act = line_integral1*global_factor_times_mu;
+    float contribution_BS_act = line_integral2*global_factor_times_mu;
 
     //Fill gradient image along [A,S], [B,S] and in [S]
-
 
 if(compute_gradient)
 {
     if (isgradient_mu)
 
         {
-        line_contribution(gradient,rescale,scatter_point,
-                detector_coord_B,contribution_BS_mu);
-
-        line_contribution(gradient,rescale,scatter_point,
-                detector_coord_A,contribution_AS_mu);
-
-        s_contribution(gradient,scatter_point,
-                contribution_S);
-
+            line_contribution(gradient,rescale,scatter_point,detector_coord_B,contribution_BS_mu);
+            line_contribution(gradient,rescale,scatter_point, detector_coord_A,contribution_AS_mu);
+            s_contribution(gradient,scatter_point,contribution_S);
         }
-
     else
 
         {
-
-        line_contribution_act(gradient,scatter_point,
-                detector_coord_B,contribution_BS_act);
-
-        line_contribution_act(gradient,scatter_point,
-                detector_coord_A,contribution_AS_act);
+            line_contribution_act(gradient,scatter_point,detector_coord_B,contribution_BS_act);
+            line_contribution_act(gradient,scatter_point, detector_coord_A,contribution_AS_act);
         }
 
 }
-
-
-
     return scatter_ratio;
-
 }
-
-
 
 
 void

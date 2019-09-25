@@ -207,21 +207,10 @@ detection_efficiency_unscattered.push_back(0);
 #endif
 
 
-  // we will divide by the effiency of the detector pair for unscattered photons
+  //normalisation
+  // we will divide by the solid angle factors for unscattered photons
   // (computed with the same detection model as used in the scatter code)
-  // This way, the scatter estimate will correspond to a 'normalised' scatter estimate.
-
-  // there is a scatter_volume factor for every scatter point, as the sum over scatter points
-  // is an approximation for the integral over the scatter point.
-
-  // the factors total_Compton_cross_section_511keV should probably be moved to the scatter_computation code
-
-
- // currently the scatter simulation is normalised w.r.t. the detection efficiency in the photopeak window
-  //find the window that contains 511 keV
-
-
-  //normalisation factor between trues and scattered counts
+  // the energy dependency is left out
 
     const double common_factor =
         1/detection_efficiency_no_scatter(det_num_A, det_num_B) *
