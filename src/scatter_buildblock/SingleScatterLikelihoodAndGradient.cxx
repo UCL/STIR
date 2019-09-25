@@ -528,8 +528,7 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
                             *global_factor_times_mu;
 
     float contribution_BS_mu = (detection_probability_XY*emiss_to_detA*
-                            (1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1)*
-                            (total_Compton_cross_section_relative_to_511keV(new_energy))
+                            (1.F/rB_squared)*pow(atten_to_detB,total_Compton_cross_section_relative_to_511keV(new_energy)-1)*total_Compton_cross_section_relative_to_511keV(new_energy)
                             +detection_probability_YX*emiss_to_detB*(1.F/rA_squared)*
                              pow(atten_to_detA,total_Compton_cross_section_relative_to_511keV(new_energy)-1))
                             *global_factor_times_mu;
