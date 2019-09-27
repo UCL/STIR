@@ -107,8 +107,8 @@ get_next_record(CListRecordROOT& record)
     crystal2 -= half_block;
 
     // Add offset
-    crystal1 += offset_dets;
-    crystal2 += offset_dets;
+    crystal1 -= offset_dets;
+    crystal2 -= offset_dets;
 
     return
             record.init_from_data(ring1, ring2,
