@@ -43,8 +43,11 @@ int main(int argc, char **argv)
   std::string name(axis_name);
  // const int num_planes = atoi(argv[3]);
 std::cout<<" the axis to invert is "<< name<<std::endl;
-  const DiscretisedDensity<3,float> image(DiscretisedDensity<3,float>::read_from_file(input_filename));
-  DiscretisedDensity<3,float> out_image(image.clone());
+const std::auto_ptr<DiscretisedDensity<3,float> > image_aptr(DiscretisedDensity<3,float>::read_from_file(input_filename));
+const std::auto_ptr<DiscretisedDensity<3,float> > out_image_aptr(image_aptr->clone());
+
+DiscretisedDensity<3,float>& image = *image_aptr;
+DiscretisedDensity<3,float>& out_image = *out_image_aptr;
 
   invert.invert_axis(out_image,
               image,
