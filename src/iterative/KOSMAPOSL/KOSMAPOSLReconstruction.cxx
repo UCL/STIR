@@ -195,13 +195,13 @@ ask_parameters()
 template <typename TargetT>
 bool KOSMAPOSLReconstruction<TargetT>::
 post_processing()
-{std::cout<<"coutiao";
+{
   if (base_type::post_processing())
     return true;
 
   this->subiteration_counter=0;
-  this->anatomical_sd.push_back(0);
-std::cout<<"coutiao";
+  this->anatomical_sd.resize(anatomical_image_filenames.size());
+
   if (!this->anatomical_image_filenames.size()==sigma_m.size()){
       error("The number of sigma_m parameters must be the same as the numberof anatomical image filenames %s");
       return false;
@@ -215,7 +215,7 @@ std::cout<<"coutiao";
       }
 for(int i = 0; i<=anatomical_image_filenames.size()-1; i++)
 {  if (!this->anatomical_image_filenames.empty()){
-      this->anatomical_prior_sptr[i]= (read_from_file<TargetT>(anatomical_image_filenames[i]));
+      this->anatomical_prior_sptr.push_back(read_from_file<TargetT>(anatomical_image_filenames[i]));
 
     set_anatomical_prior_sptr (this->anatomical_prior_sptr[i],i);
     info(boost::format("Reading anatomical data '%1%'")
@@ -229,9 +229,11 @@ for(int i = 0; i<=anatomical_image_filenames.size()-1; i++)
     }
 
 estimate_stand_dev_for_anatomical_image(this->anatomical_sd);
-
-//info(boost::format("SDs from anatomical images calculated = '%1%'")
-//   % this->anatomical_sd);
+for(int i = 0; i<=anatomical_image_filenames.size()-1; i++)
+{
+info(boost::format("SDs from anatomical images calculated = '%1%'")
+   % this->anatomical_sd[i]);
+}
 
 const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
   dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> *>
@@ -588,7 +590,7 @@ calculate_norm_const_matrix(std::vector<shared_ptr<TargetT> > normm,
 
 }
 template<typename TargetT>
-void KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(std::vector<double> SD)
+void KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(std::vector<double> &SD)
 {
 
     for( int i=0; i<= anatomical_image_filenames.size()-1;i++){
@@ -656,7 +658,7 @@ void KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(s
                                }
                        }
 
-       SD[i]= sqrt(kStand_dev / (nv-1));
+       SD[i]=((double)sqrt(kStand_dev/(nv-1) ));//std::cout<<"SD :"<<SD[i]<<std::endl;
     }
 }
 

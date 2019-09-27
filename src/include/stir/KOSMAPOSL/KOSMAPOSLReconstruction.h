@@ -239,7 +239,7 @@ private:
                                 const int dimf_col);
 
   /*! Estimate the SD of the anatomical image to be used as normalisation for the feature vector */
-    void estimate_stand_dev_for_anatomical_image(std::vector<double> SD);
+    void estimate_stand_dev_for_anatomical_image(std::vector<double> &SD);
 
   /*! Compute for each voxel, jl, of the emission image the linear combination between the coefficient \f$ \alpha_{jl} \f$ and the kernel matrix \f$ k_{jl} \f$\f$ */
   /*! The information is stored in the image, kImage */
