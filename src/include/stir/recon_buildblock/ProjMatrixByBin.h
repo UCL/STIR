@@ -86,8 +86,7 @@ class Bin;
   only the 'basic' bins, and computes symmetry related bins from the 'basic' ones.
 */
 class ProjMatrixByBin :  
-  public RegisteredObject<ProjMatrixByBin>,  
-  public ParsingObject,
+  public RegisteredObject<ProjMatrixByBin>,
   public TimedObject
 {
 public:

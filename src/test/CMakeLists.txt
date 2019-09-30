@@ -48,6 +48,7 @@ set(buildblock_simple_tests
         test_Array
         test_ArrayFilter
         test_SeparableMetzArrayFilter
+        test_SeparableGaussianArrayFilter
         test_NestedIterator
         test_VectorWithOffset
         test_convert_array

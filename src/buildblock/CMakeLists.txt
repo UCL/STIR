@@ -46,6 +46,8 @@ set(${dir_LIB_SOURCES}
 	ArrayFilterUsingRealDFTWithPadding 
 	SeparableArrayFunctionObject 
 	SeparableMetzArrayFilter 
+        SeparableGaussianImageFilter
+        SeparableGaussianArrayFilter
 	MedianArrayFilter3D 
 	MedianImageFilter3D 
 	MinimalArrayFilter3D 

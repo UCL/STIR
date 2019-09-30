@@ -86,17 +86,17 @@ get_next_record(CListRecordROOT& record)
         break;
     }
 
-    int ring1 = static_cast<Int_t>(crystalID1/crystal_repeater_z)
+    int ring1 = static_cast<Int_t>(crystalID1/crystal_repeater_y)
             + static_cast<Int_t>(blockID1/ block_repeater_y)*crystal_repeater_z;
 
-    int ring2 = static_cast<Int_t>(crystalID2/crystal_repeater_z)
+    int ring2 = static_cast<Int_t>(crystalID2/crystal_repeater_y)
             + static_cast<Int_t>(blockID2/block_repeater_y)*crystal_repeater_z;
 
     int crystal1 = (blockID1%block_repeater_y) * crystal_repeater_y
-            + (crystalID1%crystal_repeater_z);
+            + (crystalID1%crystal_repeater_y);
 
     int crystal2 = (blockID2%block_repeater_y) * crystal_repeater_y
-            + (crystalID2%crystal_repeater_z);
+            + (crystalID2%crystal_repeater_y);
 
     // GATE counts crystal ID =0 the most negative. Therefore
     // ID = 0 should be negative, in Rsector 0 and the mid crystal ID be 0 .
