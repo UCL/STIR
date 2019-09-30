@@ -423,7 +423,7 @@ void distributable_computation(
 #ifdef STIR_OPENMP
 #pragma omp single
     {
-      std::cerr << "Starting loop with " << omp_get_num_threads() << " threads\n"; 
+      info(boost::format("Starting loop with %1% threads") % omp_get_num_threads());
       local_log_likelihoods.resize(omp_get_max_threads(), 0.);
       local_counts.resize(omp_get_max_threads(), 0);
       local_count2s.resize(omp_get_max_threads(), 0);
