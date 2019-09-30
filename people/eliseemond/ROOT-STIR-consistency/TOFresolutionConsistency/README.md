@@ -14,4 +14,4 @@ Command for Gate single detector time resolution: /gate/digitizer/Singles/timeRe
 3. Then you can deconvolve the theoretical distribution (Gaussian distribution with expected FWHM, for Discovery 710 550ps) with this detector response to get an estimate of the single detector time resolution (you will obtain a Gaussian distribution after the deconvolution with a slightly lower FWHM: use setTimeResolution = this new FWHM/sqrt(2))
 4. Check that this is correct: modify once again the setTimeResolution in the digitiser with the value you just calculated and then run the second to last Python cell in getTimingResolution.py to obtain the coincidence FWHM.
 
-*NB: sadly I had written a nice Mathematica script for convolution/deconvolution but lost it when my computer crashed at the MIC 2017 and forgot to recover this file... *
+*NB: sadly I had written a nice Mathematica script for convolution/deconvolution but lost it when my computer crashed at the MIC 2017 and forgot to recover this file... You can however use the file in eliseemond/Mathematica/ConvolutionEffectiveEnergy.nb as a model to convolve distributions in Mathematica.*
