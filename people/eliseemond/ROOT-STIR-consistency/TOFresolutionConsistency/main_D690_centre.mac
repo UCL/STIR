@@ -1,0 +1,105 @@
+# Auteur: Elise Emond
+
+#-------------#
+# V I S U E L #
+#-------------#
+
+/vis/disable
+#/vis/enable
+
+#/control/execute visualisation.mac
+
+#-------------------#
+# G ê O M ê T R I E #
+#-------------------#
+
+
+# Base de donnÇes des matÇriaux
+/gate/geometry/setMaterialDatabase GateMaterials.db
+
+# Dimensions du monde
+/gate/world/geometry/setXLength 600. cm
+/gate/world/geometry/setYLength 600. cm
+/gate/world/geometry/setZLength 600. cm
+
+# Scanner
+
+/control/execute geometry_D690.mac
+
+
+#-----------------#
+# P H Y S I Q U E #
+#-----------------#
+
+/control/execute physics.mac
+
+#---------#
+# C U T S #
+#---------#
+
+/control/execute cuts.mac
+
+#-----------------------------#
+# I N I T I A L I S A T I O N #
+#-----------------------------#
+
+/gate/run/initialize
+
+#-------------------#
+# D I G I T I S E R #
+#-------------------#
+
+/control/execute digitiser_D690.mac
+
+#-------------------------------------#
+# C O I N C I D E N C E   S O R T E R #
+#-------------------------------------#
+
+/control/execute csorter_D690.mac
+
+#-------------------------------------#
+# S O U R C E   R A D I O A C T I V E #
+#-------------------------------------#
+
+/control/execute source_centre.mac
+
+#-----------------------------------#
+# D O N N … E S   E N   S O R T I E #
+#-----------------------------------#
+
+/gate/output/root/enable
+/gate/output/root/setFileName             RootLM_D690_centre
+/gate/output/root/setRootHitFlag         0
+/gate/output/root/setRootSinglesFlag      0
+/gate/output/root/setRootCoincidencesFlag 1
+/gate/output/root/setRootdelayFlag        0
+
+/gate/output/ascii/enable
+/gate/output/ascii/setFileName            Output_centre
+/gate/output/ascii/setOutFileHitsFlag          0
+/gate/output/ascii/setOutFileSinglesFlag      0
+/gate/output/ascii/setOutFileCoincidencesFlag 1
+/gate/output/ascii/setOutFiledelayFlag 0
+
+#---------------------------#
+# R A N D O M   E N G I N E #
+#---------------------------#
+
+# JamesRandom Ranlux64 MersenneTwister
+#/gate/random/setEngineName JamesRandom
+#/gate/random/setEngineSeed default
+#/gate/random/setEngineSeed auto
+#/gate/random/setEngineSeed 123456789
+#/gate/random/setEngineSeed default
+#/gate/random/resetEngineFrom fileName
+#/gate/random/verbose 1
+
+#---------------------------------------#
+# T E M P S   D ' A C Q U I S I T I O N #
+#---------------------------------------#
+
+/gate/application/setTimeSlice   100 ms
+/gate/application/setTimeStart   0 s
+/gate/application/setTimeStop    10 s
+
+/gate/application/startDAQ
