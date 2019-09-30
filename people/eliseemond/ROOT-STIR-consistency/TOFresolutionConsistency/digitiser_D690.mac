@@ -1,0 +1,20 @@
+/gate/digitizer/Singles/insert                        adder
+/gate/digitizer/Singles/insert                        readout
+/gate/digitizer/Singles/readout/setDepth              1
+
+
+
+/gate/digitizer/Singles/insert                        blurring
+/gate/digitizer/Singles/blurring/setResolution        0.124           #checked
+/gate/digitizer/Singles/blurring/setEnergyOfReference 511. keV
+
+
+
+/gate/digitizer/Singles/insert                        thresholder
+/gate/digitizer/Singles/thresholder/setThreshold      425. keV     #checked
+/gate/digitizer/Singles/insert                        upholder
+/gate/digitizer/Singles/upholder/setUphold            650. keV     #checked
+
+
+/gate/digitizer/Singles/insert timeResolution 
+/gate/digitizer/Singles/timeResolution/setTimeResolution 384.76 ps
