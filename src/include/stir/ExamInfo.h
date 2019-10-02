@@ -59,14 +59,14 @@ public :
     : start_time_in_secs_since_1970(0.)
     {
 
-      num_windows = -1;
+      num_windows = 1;
       low_energy_thres.resize(1);
       up_energy_thres.resize(1);
       en_win_pair.resize(2);
-      low_energy_thres[0]=-1.F;
-      up_energy_thres[0]=-1.F;
-      en_win_pair[0]=-1.F;
-      en_win_pair[1]=-1.F;
+      low_energy_thres[0]=1.F;
+      up_energy_thres[0]=1.F;
+      en_win_pair[0]=1.F;
+      en_win_pair[1]=1.F;
 
    }
 
