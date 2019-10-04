@@ -183,7 +183,7 @@ get_next_record(CListRecordSimSET& record)
             /* Update current decay */
             curDecay = nextDecay;
             //-> break
-            if (PHG_IsPETCoincidencesOnly())
+            if (PHG_IsPETCoincidencesOnly() || PHG_IsPETCoincPlusSingles())
             {
                 if ((bluePhotons.size() == 1) &&
                         (pinkPhotons.size() == 1))
@@ -228,7 +228,7 @@ get_next_record(CListRecordSimSET& record)
                 }
                 else if (bluePhotons.size() == 0 || pinkPhotons.size() == 0)
                 {
-//                    warning("Single");
+                    //warning("InputStreamFromSimSET: Single, not supported. continue... ");
                     continue;
                 }
                 else if (bluePhotons.size() > 1 || pinkPhotons.size() > 1)
