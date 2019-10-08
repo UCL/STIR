@@ -148,7 +148,14 @@ public:
     void convert_proj_data_niftyPET_to_stir(ProjData &stir_sptr, const std::vector<float> &np_vec) const;
 
     /// Convert 3d niftypet proj data index to 1d
-    unsigned convert_niftypet_proj_3d_to_1d_idx(const unsigned ang, const unsigned bins, const unsigned sino) const;
+    unsigned convert_niftypet_proj_3d_to_1d_idx(const unsigned ang, const unsigned bins, const unsigned sino, const bool transpose = false) const;
+
+    /// Convert 1d niftypet proj data index to 3d. Careful, the only time we use this is after gaps have been put back into
+    /// the sinogram, at which point a transpose is required. So this will only be correct for the transposed data
+    void convert_niftypet_proj_1d_to_3d_idx(unsigned &ang, unsigned &bins, unsigned &sino, const unsigned idx) const;
+
+    /// In mmraux.py::putgaps, a transpose is required. Therefore we need to do the same between the putgaps and back projection
+    std::vector<float> transpose_after_put_gaps(const std::vector<float> &original_sino) const;
 
 private:
     bool _already_set_up;

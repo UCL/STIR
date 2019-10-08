@@ -189,10 +189,48 @@ unsigned convert_niftypet_im_3d_to_1d_idx(const unsigned x, const unsigned y, co
 
 unsigned
 ProjectorByBinNiftyPETHelper::
-convert_niftypet_proj_3d_to_1d_idx(const unsigned ang, const unsigned bins, const unsigned sino) const
+convert_niftypet_proj_3d_to_1d_idx(const unsigned ang, const unsigned bins, const unsigned sino, const bool transpose) const
 {
-    return ang*NSBINS*unsigned(_nsinos) + bins*unsigned(_nsinos) + sino;
-//    return bins*NSANGLES*unsigned(_nsinos) + ang*unsigned(_nsinos) + sino;
+    if (!transpose)
+        return ang*NSBINS*unsigned(_nsinos) + bins*unsigned(_nsinos) + sino;
+    else
+        return sino*NSBINS*NSANGLES + ang*NSBINS + bins;
+//    // ORRRRRRRR
+//    return bins*NSANGLES*unsigned(_nsinos) + sino*NSANGLES + ang;
+}
+
+void
+ProjectorByBinNiftyPETHelper::
+convert_niftypet_proj_1d_to_3d_idx(unsigned &ang, unsigned &bins, unsigned &sino, const unsigned idx) const
+{
+    sino =  idx % unsigned(_nsinos);
+    bins = (idx / unsigned(_nsinos)) % NSBINS;
+    ang  =  idx / (unsigned(_nsinos) * NSBINS);
+}
+
+std::vector<float>
+ProjectorByBinNiftyPETHelper::
+transpose_after_put_gaps(const std::vector<float> &original_sino) const
+{
+    // Get a blank copy for output
+    std::vector<float> transposed_sino = this->create_niftyPET_sinogram_with_gaps();
+
+    // Loop over all elements
+    unsigned sino, bins, ang, new_1d;
+    for (unsigned old_1d=0; old_1d<original_sino.size(); ++old_1d) {
+
+        // Convert to 3D index
+        convert_niftypet_proj_1d_to_3d_idx(ang,bins,sino,old_1d);
+
+        // Now convert the 3D to the transposed 1D
+        new_1d = convert_niftypet_proj_3d_to_1d_idx(ang,bins,sino,true);
+
+        // Switch
+        transposed_sino[new_1d] = original_sino[old_1d];
+    }
+
+    // Return the transposed sino
+    return transposed_sino;
 }
 
 void check_im_sizes(const int stir_dim[3], const int np_dim[3])

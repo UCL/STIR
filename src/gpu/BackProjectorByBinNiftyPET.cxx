@@ -138,8 +138,8 @@ back_project(const ProjData& proj_data, int, int)
     std::vector<float> sino_no_gaps = _helper.create_niftyPET_sinogram_no_gaps();
     remove_gaps(sino_no_gaps.data(),sino_w_gaps.data(),nsinos,aw2ali.data(),Cnt);
 
-    // temp back put gaps
-    std::vector<float> sino_w_gaps2 = _helper.create_niftyPET_sinogram_with_gaps();
+    // Need to transpose (2,0,1) the data
+    std::vector<float> sino_no_gaps_transpose = _helper.transpose_after_put_gaps(sino_no_gaps);
     put_gaps(sino_w_gaps2.data(),sino_no_gaps.data(),aw2ali.data(),Cnt);
 
     std::ofstream data_file;
@@ -161,7 +161,7 @@ back_project(const ProjData& proj_data, int, int)
 
     std::vector<float> np_im = _helper.create_niftyPET_image();
 
-    gpu_bprj(np_im.data(),sino_no_gaps.data(),
+    gpu_bprj(np_im.data(),sino_no_gaps_transpose.data(),
              li2rng.data(),li2sn.data(),li2nos.data(),s2c.data(),aw2ali.data(),crs.data(),
              isub.data(), int(isub.size()),
              Naw,n0crs,n1crs,
