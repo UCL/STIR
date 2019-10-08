@@ -264,32 +264,10 @@ for (vs_num.segment_num() = norm.get_min_segment_num(); vs_num.segment_num() <= 
     for (vs_num.view_num() = norm.get_min_view_num();vs_num.view_num() <= norm.get_max_view_num(); ++vs_num.view_num())
     {
 
-        Viewgram<float> viewgram_n = norm.get_viewgram(vs_num.view_num(), vs_num.segment_num(),false);
-        Viewgram<float> viewgram_in = projdata.get_viewgram(vs_num.view_num(), vs_num.segment_num(),false);
-        Viewgram<float> viewgram_out = projdata_out.get_empty_viewgram(vs_num.view_num(), vs_num.segment_num(),false);
-        const ViewSegmentNumbers vs_num(viewgram_n.get_view_num(),viewgram_n.get_segment_num());
-        std::vector<Bin> all_bins;
-        {
-            Bin bin(vs_num.segment_num(), vs_num.view_num(), 0, 0);
-            for (bin.axial_pos_num() = norm.get_min_axial_pos_num(bin.segment_num());  bin.axial_pos_num() <= norm.get_max_axial_pos_num(bin.segment_num());  ++bin.axial_pos_num())
-            {
-                for (bin.tangential_pos_num() = norm.get_min_tangential_pos_num(); bin.tangential_pos_num() <= norm.get_max_tangential_pos_num(); ++bin.tangential_pos_num())
-                {
-                    all_bins.push_back(bin);
-                }
-            }
-        }
-
-        for (int i = 0; i < static_cast<int>(all_bins.size()); ++i)
-        {
-
-          const Bin bin = all_bins[i];
-
-          viewgram_out[bin.axial_pos_num()][bin.tangential_pos_num()]=viewgram_in[bin.axial_pos_num()][bin.tangential_pos_num()]*viewgram_n[bin.axial_pos_num()][bin.tangential_pos_num()];
-        }
-
-        projdata_out.set_viewgram(viewgram_out);
-
+        Viewgram<float> viewgram_n = norm.get_viewgram(vs_num.view_num(), vs_num.segment_num());
+        Viewgram<float> viewgram_in = projdata.get_viewgram(vs_num.view_num(), vs_num.segment_num());
+        viewgram_in *= viewgram_n;
+        projdata_out.set_viewgram(viewgram_in);
     }
 }
 
