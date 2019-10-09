@@ -136,6 +136,65 @@ void get_min_max_in_proj_data(float &min, float &max, const shared_ptr<const Pro
     }
 }
 
+float get_proj_diff(const shared_ptr<const ProjDataInMemory> sino_1_sptr, const shared_ptr<const ProjDataInMemory> sino_2_sptr)
+{
+    const int min_segment_num = sino_1_sptr->get_min_segment_num();
+    const int max_segment_num = sino_1_sptr->get_max_segment_num();
+    const int min_view        = sino_1_sptr->get_min_view_num();
+    const int max_view        = sino_1_sptr->get_max_view_num();
+    const int min_tang_pos    = sino_1_sptr->get_min_tangential_pos_num();
+    const int max_tang_pos    = sino_1_sptr->get_max_tangential_pos_num();
+
+    float sum(0.f);
+    unsigned count(0);
+
+    for (int segment_num = min_segment_num; segment_num<= max_segment_num; ++segment_num) {
+
+        int min_axial_pos = sino_1_sptr->get_min_axial_pos_num(segment_num);
+        int max_axial_pos = sino_1_sptr->get_max_axial_pos_num(segment_num);
+
+        for (int axial_pos = min_axial_pos; axial_pos<=max_axial_pos; ++axial_pos) {
+
+            // Get the corresponding STIR sinograms
+            Sinogram<float> sino_1 = sino_1_sptr->get_sinogram(axial_pos,segment_num);
+            Sinogram<float> sino_2 = sino_2_sptr->get_sinogram(axial_pos,segment_num);
+
+            // Loop over the STIR view and tangential position
+            for (int view=min_view; view<=max_view; ++view) {
+                for (int tang_pos=min_tang_pos; tang_pos<=max_tang_pos; ++tang_pos) {
+
+                    sum += std::pow( sino_1.at(view).at(tang_pos) - sino_2.at(view).at(tang_pos) , 2.f);
+                    ++count;
+                }
+            }
+        }
+    }
+
+    return std::sqrt(sum) / float(count);
+}
+
+float get_image_diff(const DiscretisedDensity<3,float> &image_1, const DiscretisedDensity<3,float> &image_2)
+{
+    float sum(0.f);
+    unsigned count(0);
+
+    DiscretisedDensity<3,float>::const_full_iterator im_1_iter = image_1.begin_all_const();
+    DiscretisedDensity<3,float>::const_full_iterator im_2_iter = image_2.begin_all_const();
+
+    while (im_1_iter!=image_1.end_all_const()) {
+
+        sum += std::pow( *im_1_iter - *im_2_iter , 2.f);
+        ++count;
+        ++im_1_iter;
+        ++im_2_iter;
+    }
+}
+
+inline bool file_exists (const std::string& name) {
+    ifstream f(name.c_str());
+    return f.good();
+}
+
 void
 TestGPUProjectors::
 run_projections()
@@ -153,12 +212,20 @@ run_projections()
     ForwardProjectorByBinNiftyPET gpu_fwrd;
     BackProjectorByBinNiftyPET    gpu_back;
     project(time_gpu, gpu_sino_sptr, gpu_image_sptr, sino_sptr, image_sptr, gpu_fwrd, gpu_back, "gpu");
-/*
+
     // Forward and back project - cpu
-    shared_ptr<ProjMatrixByBin> PM_sptr(new  ProjMatrixByBinUsingRayTracing());
-    ForwardProjectorByBinUsingProjMatrixByBin cpu_fwrd(PM_sptr);
-    BackProjectorByBinUsingProjMatrixByBin    cpu_back(PM_sptr);
-    project(time_cpu, cpu_sino_sptr, cpu_image_sptr, sino_sptr, image_sptr, cpu_fwrd, cpu_back, "cpu");
+    if (file_exists("/home/rich/Documents/Data/cpu_forward_projected.hs") &&
+            file_exists("/home/rich/Documents/Data/cpu_back_projected.hv")) {
+        cpu_image_sptr.reset(DiscretisedDensity<3,float>::read_from_file("cpu_back_projected.hv"));
+        cpu_sino_sptr = MAKE_SHARED<ProjDataInMemory>(*ProjData::read_from_file("cpu_forward_projected.hs"));
+        time_cpu = -1;
+    }
+    else {
+        shared_ptr<ProjMatrixByBin> PM_sptr(new  ProjMatrixByBinUsingRayTracing());
+        ForwardProjectorByBinUsingProjMatrixByBin cpu_fwrd(PM_sptr);
+        BackProjectorByBinUsingProjMatrixByBin    cpu_back(PM_sptr);
+        project(time_cpu, cpu_sino_sptr, cpu_image_sptr, sino_sptr, image_sptr, cpu_fwrd, cpu_back, "cpu");
+    }
 
     // comparison
     std::cout << "\nTime for forward and back projection\n";
@@ -171,25 +238,29 @@ run_projections()
     const float max_image_gpu = gpu_image_sptr->find_max();
     const float max_image_cpu = cpu_image_sptr->find_max();
     const float percent_diff_max_image = 100.f*(max_image_gpu-max_image_cpu)/max_image_cpu;
+    const float rms_image = get_image_diff(*cpu_image_sptr,*gpu_image_sptr);
     std::cout << "\nMin/max in back projected images\n";
     std::cout << "\tGPU: " << min_image_gpu << " / " << max_image_gpu << "\n";
     std::cout << "\tCPU: " << min_image_cpu << " / " << max_image_cpu << "\n";
     std::cout << "\tDiff in max (%): " << percent_diff_max_image << "\n";
+    std::cout << "\tRMS: " << rms_image << "\n";
 
     // Min and max in sinograms
     float min_sino_gpu, min_sino_cpu, max_sino_gpu, max_sino_cpu;
     get_min_max_in_proj_data(min_sino_gpu,max_sino_gpu,gpu_sino_sptr);
     get_min_max_in_proj_data(min_sino_cpu,max_sino_cpu,cpu_sino_sptr);
     const float percent_diff_max_sino = 100.f*(max_sino_gpu-max_sino_cpu)/max_sino_cpu;
+    const float rms_proj = get_proj_diff(gpu_sino_sptr,cpu_sino_sptr);
     std::cout << "\nMin/max in forward projected sinograms\n";
     std::cout << "\tGPU: " << min_sino_gpu << " / " << max_sino_gpu << "\n";
     std::cout << "\tCPU: " << min_sino_cpu << " / " << max_sino_cpu << "\n";
     std::cout << "\tDiff in max (%): " << percent_diff_max_sino << "\n";
+    std::cout << "\tRMS: " << rms_proj << "\n";
 
-    if (std::abs(percent_diff_max_image) > 1)
+    if (std::abs(rms_image) > 1)
         throw std::runtime_error("Images don't agree!");
-    if (std::abs(percent_diff_max_sino) > 1)
-        throw std::runtime_error("Sinograms don't agree!");*/
+    if (std::abs(rms_proj) > 1)
+        throw std::runtime_error("Sinograms don't agree!");
 }
 
 void

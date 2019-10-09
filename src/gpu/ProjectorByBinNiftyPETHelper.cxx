@@ -35,6 +35,9 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/is_null_ptr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include <auxmath.h>
+#include <prjb.h>
+#include <prjf.h>
 
 START_NAMESPACE_STIR
 
@@ -184,53 +187,162 @@ void get_stir_indices_and_dims(int stir_dim[3], Coordinate3D<int> &min_indices, 
 
 unsigned convert_niftypet_im_3d_to_1d_idx(const unsigned x, const unsigned y, const unsigned z)
 {
-    return y*SZ_IMX*SZ_IMZ + x*SZ_IMZ + z;
+    return z*SZ_IMX*SZ_IMY + y*SZ_IMX + x;
 }
 
 unsigned
 ProjectorByBinNiftyPETHelper::
-convert_niftypet_proj_3d_to_1d_idx(const unsigned ang, const unsigned bins, const unsigned sino, const bool transpose) const
+convert_niftypet_proj_3d_to_1d_idx(const unsigned ang, const unsigned bins, const unsigned sino) const
 {
-    if (!transpose)
-        return ang*NSBINS*unsigned(_nsinos) + bins*unsigned(_nsinos) + sino;
-    else
-        return sino*NSBINS*NSANGLES + ang*NSBINS + bins;
-//    // ORRRRRRRR
-//    return bins*NSANGLES*unsigned(_nsinos) + sino*NSANGLES + ang;
+    return sino*NSANGLES*NSBINS + ang*NSBINS + bins;
 }
 
 void
 ProjectorByBinNiftyPETHelper::
-convert_niftypet_proj_1d_to_3d_idx(unsigned &ang, unsigned &bins, unsigned &sino, const unsigned idx) const
+permute(std::vector<float> &output_array, const std::vector<float> &orig_array, const unsigned output_dims[3], const unsigned permute_order[3]) const
 {
-    sino =  idx % unsigned(_nsinos);
-    bins = (idx / unsigned(_nsinos)) % NSBINS;
-    ang  =  idx / (unsigned(_nsinos) * NSBINS);
-}
+#ifndef NDEBUG
+    // Check that in the permute order, each number is between 0 and 2 (can't be <0 because it's unsigned)
+    for (unsigned i=0; i<3; ++i)
+        if (permute_order[i]>2)
+            throw std::runtime_error("Permute order values should be between 0 and 2.");
+    // Check that each number is unique
+    for (unsigned i=0; i<3; ++i)
+        for (unsigned j=i+1; j<3; ++j)
+            if (permute_order[i] == permute_order[j])
+                throw std::runtime_error("Permute order values should be unique.");
+    // Check that size of output_dims==arr.size()
+    assert(orig_array.size() == output_dims[0]*output_dims[1]*output_dims[2]);
+    // Check that output array is same size as input array
+    assert(orig_array.size() == output_array.size());
+#endif
 
-std::vector<float>
-ProjectorByBinNiftyPETHelper::
-transpose_after_put_gaps(const std::vector<float> &original_sino) const
-{
-    // Get a blank copy for output
-    std::vector<float> transposed_sino = this->create_niftyPET_sinogram_with_gaps();
+    // Calculate old dimensions
+    unsigned old_dims[3];
+    for (unsigned i=0; i<3; ++i)
+        old_dims[permute_order[i]] = output_dims[i];
 
     // Loop over all elements
-    unsigned sino, bins, ang, new_1d;
-    for (unsigned old_1d=0; old_1d<original_sino.size(); ++old_1d) {
+    unsigned old_3d_idx[3], new_3d_idx[3], new_1d_idx;
+    for (unsigned old_1d_idx=0; old_1d_idx<orig_array.size(); ++old_1d_idx) {
 
-        // Convert to 3D index
-        convert_niftypet_proj_1d_to_3d_idx(ang,bins,sino,old_1d);
+        // From the 1d index, generate the old 3d index
+        old_3d_idx[2] =  old_1d_idx %  old_dims[2];
+        old_3d_idx[1] = (old_1d_idx /  old_dims[2]) % old_dims[1];
+        old_3d_idx[0] =  old_1d_idx / (old_dims[2]  * old_dims[1]);
 
-        // Now convert the 3D to the transposed 1D
-        new_1d = convert_niftypet_proj_3d_to_1d_idx(ang,bins,sino,true);
+        // Get the corresponding new 3d index
+        for (unsigned i=0; i<3; ++i)
+            new_3d_idx[i] = old_3d_idx[permute_order[i]];
 
-        // Switch
-        transposed_sino[new_1d] = original_sino[old_1d];
+        // Get the new 1d index from the new 3d index
+        new_1d_idx = new_3d_idx[0]*output_dims[2]*output_dims[1] + new_3d_idx[1]*output_dims[2] + new_3d_idx[2];
+
+        // Fill the data
+        output_array[new_1d_idx] = orig_array[old_1d_idx];
     }
+}
 
-    // Return the transposed sino
-    return transposed_sino;
+void
+ProjectorByBinNiftyPETHelper::
+remove_gaps(std::vector<float> &sino_no_gaps, const std::vector<float> &sino_w_gaps) const
+{
+#ifndef NDEBUG
+    check_set_up();
+    assert(!sino_no_gaps.empty());
+#endif
+
+    ::remove_gaps(sino_no_gaps.data(),
+                  const_cast<std::vector<float>&>(sino_w_gaps).data(),
+                  _nsinos,
+                  const_cast<std::vector<int  >&>(_aw2ali).data(),
+                  _cnt);
+}
+
+void
+ProjectorByBinNiftyPETHelper::
+put_gaps(std::vector<float> &sino_w_gaps, const std::vector<float> &sino_no_gaps) const
+{
+#ifndef NDEBUG
+    check_set_up();
+    assert(!sino_w_gaps.empty());
+#endif
+
+    std::vector<float> unpermuted_sino_w_gaps = this->create_niftyPET_sinogram_with_gaps();
+
+    ::put_gaps(unpermuted_sino_w_gaps.data(),
+               const_cast<std::vector<float>&>(sino_no_gaps).data(),
+               const_cast<std::vector<int  >&>(_aw2ali).data(),
+               _cnt);
+
+    // Permute the data (as this is done on the NiftyPET python side after put gaps
+    unsigned output_dims[3] = {837, 252, 344};
+    unsigned permute_order[3] = {2,0,1};
+    this->permute(sino_w_gaps,unpermuted_sino_w_gaps,output_dims,permute_order);
+}
+
+void
+ProjectorByBinNiftyPETHelper::
+back_project(std::vector<float> &image, const std::vector<float> &sino_no_gaps) const
+{
+#ifndef NDEBUG
+    check_set_up();
+    assert(!image.empty());
+#endif
+
+    std::vector<float> unpermuted_image = this->create_niftyPET_image();
+
+    gpu_bprj(unpermuted_image.data(),
+             const_cast<std::vector<float>&>(sino_no_gaps).data(),
+             const_cast<std::vector<float>&>(_li2rng).data(),
+             const_cast<std::vector<short>&>(_li2sn).data(),
+             const_cast<std::vector<char >&>(_li2nos).data(),
+             const_cast<std::vector<short>&>(_s2c).data(),
+             const_cast<std::vector<int  >&>(_aw2ali).data(),
+             const_cast<std::vector<float>&>(_crs).data(),
+             const_cast<std::vector<int  >&>(_isub).data(),
+             int(_isub.size()),
+             this->get_naw(),
+             this->get_n0crs(),
+             this->get_n1crs(),
+             _cnt);
+
+    // Permute the data (as this is done on the NiftyPET python side after back projection
+    unsigned output_dims[3] = {127,320,320};
+    unsigned permute_order[3] = {2,0,1};
+    this->permute(image,unpermuted_image,output_dims,permute_order);
+}
+
+void
+ProjectorByBinNiftyPETHelper::
+forward_project(std::vector<float> &sino_no_gaps, const std::vector<float> &image) const
+{
+#ifndef NDEBUG
+    check_set_up();
+    assert(!sino_no_gaps.empty());
+#endif
+
+    // Permute the data (as this is done on the NiftyPET python side before forward projection
+    unsigned output_dims[3] = {320,320,127};
+    unsigned permute_order[3] = {1,2,0};
+    std::vector<float> permuted_image = this->create_niftyPET_image();
+    this->permute(permuted_image,image,output_dims,permute_order);
+
+    gpu_fprj(sino_no_gaps.data(),
+             permuted_image.data(),
+             const_cast<std::vector<float>&>(_li2rng).data(),
+             const_cast<std::vector<short>&>(_li2sn).data(),
+             const_cast<std::vector<char >&>(_li2nos).data(),
+             const_cast<std::vector<short>&>(_s2c).data(),
+             const_cast<std::vector<int  >&>(_aw2ali).data(),
+             const_cast<std::vector<float>&>(_crs).data(),
+             const_cast<std::vector<int  >&>(_isub).data(),
+             int(_isub.size()),
+             this->get_naw(),
+             this->get_n0crs(),
+             this->get_n1crs(),
+             _cnt,
+             _att);
 }
 
 void check_im_sizes(const int stir_dim[3], const int np_dim[3])

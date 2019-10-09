@@ -30,8 +30,6 @@
 #include "stir/gpu/BackProjectorByBinNiftyPET.h"
 #include "stir/gpu/ProjectorByBinNiftyPETHelper.h"
 #include "stir/DiscretisedDensity.h"
-#include <prjb.h>
-#include <auxmath.h>
 
 START_NAMESPACE_STIR
 
@@ -77,7 +75,6 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
     _helper.set_crs_filename   ( "crss.dat"   );
     _helper.set_cuda_device_id ( _cuda_device );
     _helper.set_span           ( char(_proj_data_info_sptr->get_num_segments()) );
-    std::cout << "\n\n TODO still need to check att\n\n";
     _helper.set_att(0);
     _helper.set_up();
 }
@@ -96,76 +93,25 @@ BackProjectorByBinNiftyPET::
 back_project(const ProjData& proj_data, int, int)
 {
     // --------------------------------------------------------------- //
-    //   Get arguments
-    // --------------------------------------------------------------- //
-
-    std::vector<float> li2rng = _helper.get_li2rng();
-    std::vector<short> li2sn  = _helper.get_li2sn();
-    std::vector<char>  li2nos = _helper.get_li2nos();
-    std::vector<short> s2c    = _helper.get_s2c();
-    std::vector<int  > aw2ali = _helper.get_aw2ali();
-    std::vector<float> crs    = _helper.get_crs();
-    std::vector<int>   isub   = _helper.get_isub();
-    Cnst Cnt                  = _helper.get_cnst();
-    int Naw                   = _helper.get_naw();
-    int n0crs                 = _helper.get_n0crs();
-    int n1crs                 = _helper.get_n1crs();
-    int nsinos                = _helper.get_nsinos();
-
-    // --------------------------------------------------------------- //
     //   STIR -> NiftyPET projection data conversion
     // --------------------------------------------------------------- //
 
-    proj_data.write_to_file("temp");
-
     std::vector<float> sino_w_gaps = _helper.create_niftyPET_sinogram_with_gaps();
     _helper.convert_proj_data_stir_to_niftyPET(sino_w_gaps,proj_data);
-
-
-//    for (int i=0;i<sino_w_gaps.size();++i)
-//        sino_w_gaps[i] = i;
-
-//    std::cout << "\nmidway\n";
-//    for (unsigned i=aw2ali.size()-11; i<aw2ali.size(); ++i)
-//        std::cout << aw2ali[i] << "\n";
-//    std::cout << "\ngood\n";
-//    exit(0);
 
     // --------------------------------------------------------------- //
     //   Remove gaps from sinogram
     // --------------------------------------------------------------- //
 
     std::vector<float> sino_no_gaps = _helper.create_niftyPET_sinogram_no_gaps();
-    remove_gaps(sino_no_gaps.data(),sino_w_gaps.data(),nsinos,aw2ali.data(),Cnt);
-
-    // Need to transpose (2,0,1) the data
-    std::vector<float> sino_no_gaps_transpose = _helper.transpose_after_put_gaps(sino_no_gaps);
-    put_gaps(sino_w_gaps2.data(),sino_no_gaps.data(),aw2ali.data(),Cnt);
-
-    std::ofstream data_file;
-    data_file.open("sino_w_gaps.bin", std::ios::out | std::ios::binary);
-    data_file.write(reinterpret_cast<char*>(&sino_w_gaps[0]), sino_w_gaps.size()*sizeof(float));
-    data_file.close();
-
-    std::ofstream data_file2;
-    data_file2.open("sino_w_gaps2.bin", std::ios::out | std::ios::binary);
-    data_file2.write(reinterpret_cast<char*>(&sino_w_gaps2[0]), sino_w_gaps2.size()*sizeof(float));
-    data_file2.close();
-
-    //exit(1);
-
+    _helper.remove_gaps(sino_no_gaps, sino_w_gaps);
 
     // --------------------------------------------------------------- //
     //   Back project
     // --------------------------------------------------------------- //
 
     std::vector<float> np_im = _helper.create_niftyPET_image();
-
-    gpu_bprj(np_im.data(),sino_no_gaps_transpose.data(),
-             li2rng.data(),li2sn.data(),li2nos.data(),s2c.data(),aw2ali.data(),crs.data(),
-             isub.data(), int(isub.size()),
-             Naw,n0crs,n1crs,
-             Cnt);
+    _helper.back_project(np_im,sino_no_gaps);
 
     // --------------------------------------------------------------- //
     //   NiftyPET -> STIR image conversion

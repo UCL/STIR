@@ -81,50 +81,8 @@ public:
     /// Set emission (0) or transmission (1) - whether to exp{-result} for attenuation maps
     void set_att(const char att)                              { _att = att;                   }
 
-    /// Get li2rng
-    std::vector<float> get_li2rng() const { check_set_up(); return _li2rng; }
-
-    /// Get li2sn
-    std::vector<short> get_li2sn()  const { check_set_up(); return _li2sn;  }
-
-    /// Get li2nos
-    std::vector<char> get_li2nos()  const { check_set_up(); return _li2nos; }
-
-    /// Get s2c
-    std::vector<short> get_s2c()    const { check_set_up(); return _s2c;    }
-
-    /// Get aw2ali
-    std::vector<int> get_aw2ali()   const { check_set_up(); return _aw2ali; }
-
-    /// Get crs
-    std::vector<float> get_crs()    const { check_set_up(); return _crs;    }
-
-    /// Get Cnst
-    Cnst get_cnst()                 const { check_set_up(); return _cnt;    }
-
-    /// Get isub
-    std::vector<int> get_isub()     const { check_set_up(); return _isub;   }
-
-    /// Get att
-    char get_att()                  const { check_set_up(); return _att;    }
-
-    /// Get nsinos
-    int get_nsinos()                const { check_set_up(); return _nsinos; }
-
-    /// Get Naw - number of active bins in 2d sino
-    static int get_naw() { return AW; }
-
-    /// Get n0crs
-    static int get_n0crs() { return 4; } // not sure which one this is in def.h
-
-    /// Get n1crs
-    static int get_n1crs() { return nCRS; }
-
     /// Set up
     void set_up();
-
-    /// Check that set up has been run before returning data
-    void check_set_up() const;
 
     /// Create NiftyPET image
     static std::vector<float> create_niftyPET_image();
@@ -147,17 +105,44 @@ public:
     /// Convert NiftyPET proj data to STIR proj data
     void convert_proj_data_niftyPET_to_stir(ProjData &stir_sptr, const std::vector<float> &np_vec) const;
 
-    /// Convert 3d niftypet proj data index to 1d
-    unsigned convert_niftypet_proj_3d_to_1d_idx(const unsigned ang, const unsigned bins, const unsigned sino, const bool transpose = false) const;
+    /// Remove gaps from sinogram. Do some unavoidable const_casting as the wrapped methods don't use const
+    void remove_gaps(std::vector<float> &sino_no_gaps, const std::vector<float> &sino_w_gaps) const;
 
-    /// Convert 1d niftypet proj data index to 3d. Careful, the only time we use this is after gaps have been put back into
-    /// the sinogram, at which point a transpose is required. So this will only be correct for the transposed data
-    void convert_niftypet_proj_1d_to_3d_idx(unsigned &ang, unsigned &bins, unsigned &sino, const unsigned idx) const;
+    /// Put gaps into sinogram. Do some unavoidable const_casting as the wrapped methods don't use const
+    void put_gaps(std::vector<float> &sino_w_gaps, const std::vector<float> &sino_no_gaps) const;
 
-    /// In mmraux.py::putgaps, a transpose is required. Therefore we need to do the same between the putgaps and back projection
-    std::vector<float> transpose_after_put_gaps(const std::vector<float> &original_sino) const;
+    /// Back project. Do some unavoidable const_casting as the wrapped methods don't use const
+    void back_project(std::vector<float> &image, const std::vector<float> &sino_no_gaps) const;
+
+    /// Forward project, returns sinogram without gaps. Do some unavoidable const_casting as the wrapped methods don't use const
+    void forward_project(std::vector<float> &sino_no_gaps, const std::vector<float> &image) const;
 
 private:
+
+    /// Check that set up has been run before returning data
+    void check_set_up() const;
+
+    /// Permute the data
+    void permute(std::vector<float> &output_array, const std::vector<float> &orig_array, const unsigned output_dims[3], const unsigned *permute_order) const;
+
+    /// Convert 3d niftypet proj data index to 1d
+    unsigned convert_niftypet_proj_3d_to_1d_idx(const unsigned ang, const unsigned bins, const unsigned sino) const;
+
+    /// Convert 1d niftypet proj data index to 3d
+    void convert_niftypet_proj_1d_to_3d_idx(unsigned &ang, unsigned &bins, unsigned &sino, const unsigned idx) const;
+
+    /// Get Cnst
+    Cnst get_cnst() const { check_set_up(); return _cnt; }
+
+    /// Get Naw - number of active bins in 2d sino
+    static int get_naw() { return AW; }
+
+    /// Get n0crs
+    static int get_n0crs() { return 4; } // not sure which one this is in def.h
+
+    /// Get n1crs
+    static int get_n1crs() { return nCRS; }
+
     bool _already_set_up;
     std::string _fname_li2rng, _fname_li2sn, _fname_li2nos, _fname_s2c, _fname_aw2ali, _fname_crs;
     std::vector<float> _li2rng;

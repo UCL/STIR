@@ -32,8 +32,6 @@
 #include "stir/gpu/ForwardProjectorByBinNiftyPET.h"
 #include "stir/gpu/ProjectorByBinNiftyPETHelper.h"
 #include "stir/RelatedViewgrams.h"
-#include <prjf.h>
-#include <auxmath.h>
 
 START_NAMESPACE_STIR
 
@@ -83,7 +81,6 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
     _helper.set_crs_filename   ( "crss.dat"   );
     _helper.set_cuda_device_id ( _cuda_device );
     _helper.set_span           ( char(_projected_data_sptr->get_num_segments()) );
-    std::cout << "\n\n TODO still need to check att\n\n";
     _helper.set_att(0);
     _helper.set_up();
 }
@@ -127,45 +124,26 @@ set_input(const DiscretisedDensity<3,float> & density)
 {
     ForwardProjectorByBin::set_input(density);
 
-    // Create NiftyPET image
+    // --------------------------------------------------------------- //
+    //   STIR -> NiftyPET image data conversion
+    // --------------------------------------------------------------- //
+
     std::vector<float> np_vec = _helper.create_niftyPET_image();
     _helper.convert_image_stir_to_niftyPET(np_vec,*_density_sptr);
 
     // --------------------------------------------------------------- //
-    //   Other arguments
+    //   Forward projection
     // --------------------------------------------------------------- //
-
-    std::vector<float> li2rng = _helper.get_li2rng();
-    std::vector<short> li2sn  = _helper.get_li2sn();
-    std::vector<char>  li2nos = _helper.get_li2nos();
-    std::vector<short> s2c    = _helper.get_s2c();
-    std::vector<int  > aw2ali = _helper.get_aw2ali();
-    std::vector<float> crs    = _helper.get_crs();
-    std::vector<int>   isub   = _helper.get_isub();
-    Cnst Cnt                  = _helper.get_cnst();
-    int Naw                   = _helper.get_naw();
-    int n0crs                 = _helper.get_n0crs();
-    int n1crs                 = _helper.get_n1crs();
-    char att                  = _helper.get_att();
 
     std::vector<float> sino_no_gaps  = _helper.create_niftyPET_sinogram_no_gaps();
-
-    // --------------------------------------------------------------- //
-    //   Do the forward projection!
-    // --------------------------------------------------------------- //
-
-    gpu_fprj(sino_no_gaps.data(), np_vec.data(),
-        li2rng.data(), li2sn.data(), li2nos.data(), s2c.data(), aw2ali.data(), crs.data(),
-        isub.data(), int(isub.size()),
-        Naw, n0crs, n1crs,
-        Cnt, att);
+    _helper.forward_project(sino_no_gaps, np_vec);
 
     // --------------------------------------------------------------- //
     //   Put gaps back into sinogram
     // --------------------------------------------------------------- //
 
     std::vector<float> sino_w_gaps = _helper.create_niftyPET_sinogram_with_gaps();
-    put_gaps(sino_w_gaps.data(),sino_no_gaps.data(),aw2ali.data(),Cnt);
+    _helper.put_gaps(sino_w_gaps, sino_no_gaps);
 
     // --------------------------------------------------------------- //
     //   NiftyPET -> STIR projection data conversion
