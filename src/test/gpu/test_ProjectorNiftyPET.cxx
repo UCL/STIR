@@ -188,6 +188,7 @@ float get_image_diff(const DiscretisedDensity<3,float> &image_1, const Discretis
         ++im_1_iter;
         ++im_2_iter;
     }
+    return std::sqrt(sum) / float(count);
 }
 
 inline bool file_exists (const std::string& name) {
@@ -214,6 +215,8 @@ run_projections()
     project(time_gpu, gpu_sino_sptr, gpu_image_sptr, sino_sptr, image_sptr, gpu_fwrd, gpu_back, "gpu");
 
     // Forward and back project - cpu
+    // Since this is a test for the gpu not the cpu,
+    // only do this one if the output doesn't already exist
     if (file_exists("/home/rich/Documents/Data/cpu_forward_projected.hs") &&
             file_exists("/home/rich/Documents/Data/cpu_back_projected.hv")) {
         cpu_image_sptr.reset(DiscretisedDensity<3,float>::read_from_file("cpu_back_projected.hv"));
