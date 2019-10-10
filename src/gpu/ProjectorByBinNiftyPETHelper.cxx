@@ -132,7 +132,7 @@ set_up()
     switch(_cnt.SPN){
       case 11:
         _nsinos = _cnt.NSN11; break;
-      case 0:
+      case 1:
         _nsinos = _cnt.NSEG0; break;
       default:
         throw std::runtime_error("Unsupported span");
