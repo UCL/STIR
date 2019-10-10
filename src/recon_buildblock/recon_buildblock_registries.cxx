@@ -71,6 +71,11 @@
 
 #include "stir/recon_buildblock/FourierRebinning.h"
 
+#ifdef HAVE_GPU
+#include "stir/gpu/ForwardProjectorByBinNiftyPET.h"
+#include "stir/gpu/BackProjectorByBinNiftyPET.h"
+#endif
+
 //#include "stir/IO/InputFileFormatRegistry.h"
 
 START_NAMESPACE_STIR
@@ -112,6 +117,11 @@ static FBP3DRPReconstruction::RegisterIt dummy602;
 static OSMAPOSLReconstruction<DiscretisedDensity<3,float> >::RegisterIt dummy603;
 static KOSMAPOSLReconstruction<DiscretisedDensity<3,float> >::RegisterIt dummyK ;
 static OSSPSReconstruction<DiscretisedDensity<3, float> >::RegisterIt dummy604;
+
+#ifdef HAVE_GPU
+static ForwardProjectorByBinNiftyPET::RegisterIt gpu_fwd;
+static BackProjectorByBinNiftyPET::RegisterIt gpu_bck;
+#endif
 
 #ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT

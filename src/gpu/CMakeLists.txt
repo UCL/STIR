@@ -22,8 +22,6 @@ if(NOT EXISTS "${NIFTYPET_DIR}/niftypet/nipet/lm/mmr_lmproc.so")
    MESSAGE(FATAL_ERROR "NIFTYPET_DIR is incorrect.")
 endif()
 
-MESSAGE(STATUS "Adding GPU projector...")
-
 SET(NIFTYPET_INCLUDE_DIRS 
 	"${NIFTYPET_DIR}/niftypet/nipet;"
 	"${NIFTYPET_DIR}/niftypet/nipet/dinf;"

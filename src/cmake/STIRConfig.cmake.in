@@ -91,3 +91,8 @@ if(@STIR_OPENMP@)
   find_package(OpenMP REQUIRED)  
   set(STIR_BUILT_WITH_OpenMP TRUE)
 endif()
+
+if(NOT @DISBALE_GPU@ AND @CUDA_FOUND@)
+  find_package(CUDA REQUIRED)
+  set(STIR_BUILT_WITH_CUDA TRUE)
+endif()

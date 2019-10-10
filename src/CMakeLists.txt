@@ -77,6 +77,13 @@ else()
   message(STATUS "ITK support disabled.")
 endif()
 
+if (NOT DISBALE_GPU AND CUDA_FOUND) 
+  message(STATUS "GPU support enabled.")
+  set(HAVE_GPU ON)
+else()
+  message(STATUS "GPU support disabled.")
+endif()
+
 #### Swig related
 option(BUILD_SWIG_PYTHON
        "Use SWIG to generate python bindings for STIR (experimental)" OFF)
