@@ -30,6 +30,7 @@
 #include "stir/gpu/BackProjectorByBinNiftyPET.h"
 #include "stir/gpu/ProjectorByBinNiftyPETHelper.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/ProjDataInMemory.h"
 
 START_NAMESPACE_STIR
 
@@ -66,6 +67,15 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
     check(*this->_proj_data_info_sptr, *_density_sptr);
     _symmetries_sptr.reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_sptr, density_info_sptr));
 
+    // For the NiftyPET projector, we need to create an empty projdata. This
+    // will slowly get filled up by actual_back_project. And then get_output
+    // will use the now-filled projdata to back project.
+    _proj_data_sptr.reset(
+                new ProjDataInMemory(
+                    density_info_sptr->get_exam_info_sptr(),
+                    proj_data_info_sptr,
+                    false));
+
     // Set up the niftyPET binary helper
     _helper.set_li2rng_filename("li2rng.dat"  );
     _helper.set_li2sn_filename ("li2sn.dat"   );
@@ -92,12 +102,20 @@ void
 BackProjectorByBinNiftyPET::
 back_project(const ProjData& proj_data, int, int)
 {
+    // Copy the data across. Don't actually do the back projection yet.
+    _proj_data_sptr.reset(new ProjDataInMemory(proj_data));
+}
+
+void
+BackProjectorByBinNiftyPET::
+get_output(DiscretisedDensity<3,float> &density) const
+{
     // --------------------------------------------------------------- //
     //   STIR -> NiftyPET projection data conversion
     // --------------------------------------------------------------- //
 
     std::vector<float> sino_w_gaps = _helper.create_niftyPET_sinogram_with_gaps();
-    _helper.convert_proj_data_stir_to_niftyPET(sino_w_gaps,proj_data);
+    _helper.convert_proj_data_stir_to_niftyPET(sino_w_gaps,*_proj_data_sptr);
 
     // --------------------------------------------------------------- //
     //   Remove gaps from sinogram
@@ -117,16 +135,7 @@ back_project(const ProjData& proj_data, int, int)
     //   NiftyPET -> STIR image conversion
     // --------------------------------------------------------------- //
 
-    _helper.convert_image_niftyPET_to_stir(*_density_sptr,np_im);
-}
-
-void
-BackProjectorByBinNiftyPET::
-get_output(DiscretisedDensity<3,float> &density) const
-{
-    if (!density.has_same_characteristics(*_density_sptr))
-            error("Images should have similar characteristics.");
-    std::copy(_density_sptr->begin_all(), _density_sptr->end_all(), density.begin_all());
+    _helper.convert_image_niftyPET_to_stir(density,np_im);
 }
 
 void
@@ -141,11 +150,11 @@ actual_back_project(DiscretisedDensity<3,float>&,
 
 void
 BackProjectorByBinNiftyPET::
-actual_back_project(const RelatedViewgrams<float>&,
+actual_back_project(const RelatedViewgrams<float>& related_viewgrams,
                          const int, const int,
                          const int, const int)
 {
-    // TODO - dont think we do anything here...
+    _proj_data_sptr->set_related_viewgrams(related_viewgrams);
 }
 
 END_NAMESPACE_STIR

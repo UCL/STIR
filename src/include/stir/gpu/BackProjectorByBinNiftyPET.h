@@ -99,6 +99,7 @@ protected:
   shared_ptr<DataSymmetriesForBins_PET_CartesianGrid> _symmetries_sptr;
   ProjectorByBinNiftyPETHelper _helper;
   int _cuda_device;
+  shared_ptr<ProjData> _proj_data_sptr;
 };
 
 END_NAMESPACE_STIR
