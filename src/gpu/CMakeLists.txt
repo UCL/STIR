@@ -16,25 +16,27 @@
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
 
-# Check that one of the libraries exists. 
-# This lets us know if NIFTYPET_DIR is correct or not.
-if(NOT EXISTS "${NIFTYPET_DIR}/niftypet/nipet/lm/mmr_lmproc.so")
-   MESSAGE(FATAL_ERROR "NIFTYPET_DIR is incorrect.")
+# Get the petprj and aux libraries
+if (NOT EXISTS "${NIFTYPET_SOURCE_DIR}/niftypet/nipet/prj/src/prjf.h")
+	MESSAGE(FATAL_ERROR "NiftyPET source directory incorrect 
+		(${NIFTYPET_SOURCE_DIR}/niftypet/nipet/prj/src/prjf.h doesn't exist).")
 endif()
 
 SET(NIFTYPET_INCLUDE_DIRS 
-	"${NIFTYPET_DIR}/niftypet/nipet;"
-	"${NIFTYPET_DIR}/niftypet/nipet/dinf;"
-	"${NIFTYPET_DIR}/niftypet/nipet/lm/src;"
-	"${NIFTYPET_DIR}/niftypet/nipet/prj/src;"
-	"${NIFTYPET_DIR}/niftypet/nipet/sct/src;"
-	"${NIFTYPET_DIR}/niftypet/nipet/src")
+	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet;"
+	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/dinf;"
+	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/lm/src;"
+	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/prj/src;"
+	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/sct/src;"
+	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/src")
 SET(NIFTYPET_LIBRARIES 
-	"${NIFTYPET_DIR}/niftypet/nipet/lm/mmr_lmproc.so;"
-	"${NIFTYPET_DIR}/niftypet/nipet/sct/petsct.so;"
-	"${NIFTYPET_DIR}/niftypet/nipet/prj/petprj.so;"
-	"${NIFTYPET_DIR}/niftypet/nipet/dinf/dinf.so;"
-	"${NIFTYPET_DIR}/niftypet/nipet/mmr_auxe.so")
+	${NIFTYPET_PETPRJ_LIB}
+	${NIFTYPET_MMR_AUXE_LIB})
+# 	"${NIFTYPET_DIR}/niftypet/nipet/lm/mmr_lmproc.so;"
+# 	"${NIFTYPET_DIR}/niftypet/nipet/sct/petsct.so;"
+# 	"${NIFTYPET_DIR}/niftypet/nipet/prj/petprj.so;"
+# 	"${NIFTYPET_DIR}/niftypet/nipet/dinf/dinf.so;"
+# 	"${NIFTYPET_DIR}/niftypet/nipet/mmr_auxe.so")
 
 # ------------------------------------------------------------- #
 #                CREATE OUR LIBRARY AND INCLUDE OUR HEADERS

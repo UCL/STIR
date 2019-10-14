@@ -123,16 +123,26 @@ endif()
 option(STIR_PROJECTORS_AS_V3 "Enable STIR version 3 legacy code" OFF)
 
 # GPU projector
-set(NIFTYPET_DIR "" CACHE PATH "Path to NiftyPET")
-if (NOT "${NIFTYPET_DIR}" STREQUAL "")
+find_library(NIFTYPET_PETPRJ_LIB petprj)
+find_library(NIFTYPET_MMR_AUXE_LIB mmr_auxe)
+set(NIFTYPET_SOURCE_DIR "" CACHE PATH "Path to NiftyPET source.")
+if (NIFTYPET_PETPRJ_LIB AND 
+  NIFTYPET_MMR_AUXE_LIB AND
+  NOT "${NIFTYPET_SOURCE_DIR}" STREQUAL "")
   option(DISBALE_GPU "disable use of GPU projectors" OFF)
   if (NOT DISBALE_GPU)
     find_package(CUDA QUIET)
-    if (CUDA_FOUND)
+    if (CUDA_FOUND)  
+      set(HAVE_GPU ON)
       set(STIR_gpu gpu)
       set(STIR_gpu_test "test/gpu")
     endif()
   endif()
+endif()
+if (HAVE_GPU) 
+  message(STATUS "GPU support enabled.")
+else()
+  message(STATUS "GPU support disabled.")
 endif()
 
 #### enable support for ctest
