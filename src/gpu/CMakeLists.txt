@@ -32,11 +32,6 @@ SET(NIFTYPET_INCLUDE_DIRS
 SET(NIFTYPET_LIBRARIES 
 	${NIFTYPET_PETPRJ_LIB}
 	${NIFTYPET_MMR_AUXE_LIB})
-# 	"${NIFTYPET_DIR}/niftypet/nipet/lm/mmr_lmproc.so;"
-# 	"${NIFTYPET_DIR}/niftypet/nipet/sct/petsct.so;"
-# 	"${NIFTYPET_DIR}/niftypet/nipet/prj/petprj.so;"
-# 	"${NIFTYPET_DIR}/niftypet/nipet/dinf/dinf.so;"
-# 	"${NIFTYPET_DIR}/niftypet/nipet/mmr_auxe.so")
 
 # ------------------------------------------------------------- #
 #                CREATE OUR LIBRARY AND INCLUDE OUR HEADERS
