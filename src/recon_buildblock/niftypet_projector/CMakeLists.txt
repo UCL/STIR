@@ -17,18 +17,18 @@
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
 
 # Get the petprj and aux libraries
-if (NOT EXISTS "${NIFTYPET_SOURCE_DIR}/niftypet/nipet/prj/src/prjf.h")
-	MESSAGE(FATAL_ERROR "NiftyPET source directory incorrect 
-		(${NIFTYPET_SOURCE_DIR}/niftypet/nipet/prj/src/prjf.h doesn't exist).")
+if (NOT EXISTS "${NIFTYPET_INCLUDE_DIR}/niftypet/nipet/prj/src/prjf.h")
+	MESSAGE(FATAL_ERROR "NiftyPET include/source directory incorrect 
+		(${NIFTYPET_INCLUDE_DIR}/niftypet/nipet/prj/src/prjf.h doesn't exist).")
 endif()
 
 SET(NIFTYPET_INCLUDE_DIRS 
-	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet"
-	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/dinf"
-	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/lm/src"
-	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/prj/src"
-	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/sct/src"
-	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/src" PARENT_SCOPE
+	"${NIFTYPET_INCLUDE_DIR}/niftypet/nipet"
+	"${NIFTYPET_INCLUDE_DIR}/niftypet/nipet/dinf"
+	"${NIFTYPET_INCLUDE_DIR}/niftypet/nipet/lm/src"
+	"${NIFTYPET_INCLUDE_DIR}/niftypet/nipet/prj/src"
+	"${NIFTYPET_INCLUDE_DIR}/niftypet/nipet/sct/src"
+	"${NIFTYPET_INCLUDE_DIR}/niftypet/nipet/src" PARENT_SCOPE
 	)
 SET(NIFTYPET_LIBRARIES 
 	${NIFTYPET_PETPRJ_LIB}

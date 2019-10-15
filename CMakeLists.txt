@@ -125,10 +125,10 @@ option(STIR_PROJECTORS_AS_V3 "Enable STIR version 3 legacy code" OFF)
 # NiftyPET projector
 find_library(NIFTYPET_PETPRJ_LIB petprj)
 find_library(NIFTYPET_MMR_AUXE_LIB mmr_auxe)
-set(NIFTYPET_SOURCE_DIR "" CACHE PATH "Path to NiftyPET source.")
+set(NIFTYPET_INCLUDE_DIR "" CACHE PATH "Path to NiftyPET include dir. Set this to top level of source code if unsure.")
 if (NIFTYPET_PETPRJ_LIB AND 
   NIFTYPET_MMR_AUXE_LIB AND
-  NOT "${NIFTYPET_SOURCE_DIR}" STREQUAL "")
+  NOT "${NIFTYPET_INCLUDE_DIR}" STREQUAL "")
   option(DISABLE_NIFTYPET_PROJECTOR "disable use of NiftyPET projector" OFF)
   if (NOT DISABLE_NIFTYPET_PROJECTOR)
     find_package(CUDA QUIET)
