@@ -23,40 +23,15 @@ if (NOT EXISTS "${NIFTYPET_SOURCE_DIR}/niftypet/nipet/prj/src/prjf.h")
 endif()
 
 SET(NIFTYPET_INCLUDE_DIRS 
-	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet;"
-	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/dinf;"
-	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/lm/src;"
-	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/prj/src;"
-	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/sct/src;"
-	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/src")
+	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet"
+	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/dinf"
+	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/lm/src"
+	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/prj/src"
+	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/sct/src"
+	"${NIFTYPET_SOURCE_DIR}/niftypet/nipet/src" PARENT_SCOPE
+	)
 SET(NIFTYPET_LIBRARIES 
 	${NIFTYPET_PETPRJ_LIB}
-	${NIFTYPET_MMR_AUXE_LIB})
-
-# ------------------------------------------------------------- #
-#                CREATE OUR LIBRARY AND INCLUDE OUR HEADERS
-# ------------------------------------------------------------- #
-
-set(dir ${STIR_NIFTYPET_PROJECTOR_LIB})
-set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
-set(${dir_LIB_SOURCES}
-  ProjectorByBinNiftyPETHelper.cxx
-  ForwardProjectorByBinNiftyPET.cxx
-  BackProjectorByBinNiftyPET.cxx
-)
-
-include(stir_lib_target)
-
-target_link_libraries(${STIR_NIFTYPET_PROJECTOR_LIB} recon_buildblock modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
-
-
-# ------------------------------------------------------------- #
-#                ADD LIBRARIES AND HEADERS                      #
-# ------------------------------------------------------------- #
-
-# Add headers
-TARGET_INCLUDE_DIRECTORIES(${STIR_NIFTYPET_PROJECTOR_LIB} PUBLIC ${CUDA_INCLUDE_DIRS})
-TARGET_INCLUDE_DIRECTORIES(${STIR_NIFTYPET_PROJECTOR_LIB} PUBLIC ${NIFTYPET_INCLUDE_DIRS})
-
-target_link_libraries(${STIR_NIFTYPET_PROJECTOR_LIB} ${CUDA_LIBRARIES})
-target_link_libraries(${STIR_NIFTYPET_PROJECTOR_LIB} ${NIFTYPET_LIBRARIES})
+	${NIFTYPET_MMR_AUXE_LIB}
+	PARENT_SCOPE
+	)

@@ -67,7 +67,7 @@ namespace stir {
 
 #cmakedefine HAVE_ITK
 
-#cmakedefine STIR_WITH_NIFTYPET_PROJETOR
+#cmakedefine STIR_WITH_NIFTYPET_PROJECTOR
 
 #cmakedefine STIR_OPENMP
 

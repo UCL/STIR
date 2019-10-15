@@ -71,7 +71,7 @@
 
 #include "stir/recon_buildblock/FourierRebinning.h"
 
-#ifdef STIR_WITH_NIFTYPET_PROJETOR
+#ifdef STIR_WITH_NIFTYPET_PROJECTOR
 #include "stir/recon_buildblock/niftypet_projector/ForwardProjectorByBinNiftyPET.h"
 #include "stir/recon_buildblock/niftypet_projector/BackProjectorByBinNiftyPET.h"
 #endif
@@ -118,7 +118,7 @@ static OSMAPOSLReconstruction<DiscretisedDensity<3,float> >::RegisterIt dummy603
 static KOSMAPOSLReconstruction<DiscretisedDensity<3,float> >::RegisterIt dummyK ;
 static OSSPSReconstruction<DiscretisedDensity<3, float> >::RegisterIt dummy604;
 
-#ifdef STIR_WITH_NIFTYPET_PROJETOR
+#ifdef STIR_WITH_NIFTYPET_PROJECTOR
 static ForwardProjectorByBinNiftyPET::RegisterIt gpu_fwd;
 static BackProjectorByBinNiftyPET::RegisterIt gpu_bck;
 #endif

@@ -100,6 +100,17 @@ set(${dir_LIB_SOURCES}
 )
 endif()
 
+if (STIR_WITH_NIFTYPET_PROJECTOR)
+	add_subdirectory(niftypet_projector)
+	set(${dir_LIB_SOURCES}
+		${${dir_LIB_SOURCES}}
+		niftypet_projector/ProjectorByBinNiftyPETHelper
+		niftypet_projector/ForwardProjectorByBinNiftyPET
+		niftypet_projector/BackProjectorByBinNiftyPET
+		)
+endif()
+
+
 include(stir_lib_target)
 
 
@@ -115,5 +126,11 @@ endif()
 # modelling_buildblock currently needed for ParametricDensity and Patlak (TODO get rid of this somehow?)
 target_link_libraries(recon_buildblock modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
 
+if (STIR_WITH_NIFTYPET_PROJECTOR)
+	# Add headers
+	TARGET_INCLUDE_DIRECTORIES(recon_buildblock PUBLIC ${CUDA_INCLUDE_DIRS})
+	TARGET_INCLUDE_DIRECTORIES(recon_buildblock PUBLIC ${NIFTYPET_INCLUDE_DIRS})
 
-
+	target_link_libraries(recon_buildblock ${CUDA_LIBRARIES})
+	target_link_libraries(recon_buildblock ${NIFTYPET_LIBRARIES})
+endif()
