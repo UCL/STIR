@@ -3902,17 +3902,20 @@ This implements a quadratic Gibbs prior. The gradient of the prior is computed a
   
 { \subsubsubsection{PLS}
 This implements the  anatomical penalty function, Parallel Level Sets (PLS),  proposed by Matthias J. Ehrhardt et. al [Ehr16]. Note that
-  PLS becomes smoothed TV when an uniform anatomical image is provided.  The prior function is the following:
+  PLS becomes smoothed TV when an uniform anatomical image is provided.  
+The prior has 2 parameters alpha and eta. It is computed for an image $ f $ as
 
   \[
   \phi(f) = \sqrt{\alpha^2 + |\nabla v|^2 - {\langle\nabla f,\xi\rangle}^2}
   \]
-  where $ f $ is the PET image and $ \alpha $ is a parameter that controls the edge-preservation property of PLS.  The $ \xi $ is the normalised gradient calculated as follows:
+  where $ f $ is the PET image, $ \xi $ is the normalised gradient calculated as follows:
 
   \[
   \xi = \frac{\nabla v}{\sqrt{|\nabla v|^2 + \eta^2}}
   \]
-where $ v $ is the anatomical image and $ \eta $ is a parameter for preventing the division by zero problem.
+
+  $ v $ is the anatomical image, $ \alpha $ controls the edge-preservation property of PLS, and depends on the scale of the emission image,
+  and $ \eta $ avoids division by zero, and depends on the scale of the anatomical image. 
 }
 { \subsubsubsubsection{Parameters}
 }
@@ -3922,14 +3925,11 @@ where $ v $ is the anatomical image and $ \eta $ is a parameter for preventing t
   PLS Prior Parameters:=
   penalisation factor :=1
 
-; the following parameter is to avoid division by zero
-; The value depends on the scale of the emission image. 
+  ; 
+  ; alpha controls the edge-preservation property of PLS, and depends on the scale of the emission image. 
+  ; eta avoids division by zero, and depends on the scale of the anatomical image. 
 
   eta:=1
-
-; the following parameter controls the edge-preservation property of PLS. 
-; The value depends on the scale of the emission image. 
-
   alpha:=1
 
   anatomical_filename:=${filename}
