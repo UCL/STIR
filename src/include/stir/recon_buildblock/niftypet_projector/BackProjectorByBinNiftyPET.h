@@ -31,7 +31,7 @@
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
-#include "stir/gpu/ProjectorByBinNiftyPETHelper.h"
+#include "stir/recon_buildblock/niftypet_projector/ProjectorByBinNiftyPETHelper.h"
 
 START_NAMESPACE_STIR
 
@@ -84,6 +84,11 @@ public:
  /// Get output
  virtual void get_output(DiscretisedDensity<3,float> &) const;
 
+
+  /*! \brief tell the back projector to start accumulating into a new target.
+    This function has to be called before any back-projection is initiated.*/
+  virtual void start_accumulating_in_new_target();
+
 protected:
 
   virtual void actual_back_project(DiscretisedDensity<3,float>&,
@@ -99,7 +104,7 @@ protected:
   shared_ptr<DataSymmetriesForBins_PET_CartesianGrid> _symmetries_sptr;
   ProjectorByBinNiftyPETHelper _helper;
   int _cuda_device;
-  shared_ptr<ProjData> _proj_data_sptr;
+  std::vector<float> _np_sino_w_gaps;
 };
 
 END_NAMESPACE_STIR

@@ -33,7 +33,7 @@
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/ProjDataInMemory.h"
-#include "stir/gpu/ProjectorByBinNiftyPETHelper.h"
+#include "stir/recon_buildblock/niftypet_projector/ProjectorByBinNiftyPETHelper.h"
 
 START_NAMESPACE_STIR
 

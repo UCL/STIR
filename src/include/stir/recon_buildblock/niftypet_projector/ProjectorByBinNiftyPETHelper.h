@@ -33,9 +33,9 @@
 #include "stir/shared_ptr.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/ProjData.h"
-#include <fstream>
-#include <driver_types.h>
-#include <scanner_0.h>
+
+// Forward declaration of Cnst
+struct Cnst;
 
 START_NAMESPACE_STIR
 
@@ -102,6 +102,9 @@ public:
     /// Convert STIR proj data to NiftyPET proj data
     void convert_proj_data_stir_to_niftyPET(std::vector<float> &np_vec, const ProjData& stir) const;
 
+    ///
+    void convert_viewgram_stir_to_niftyPET(std::vector<float> &np_vec, const Viewgram<float>& viewgram) const;
+
     /// Convert NiftyPET proj data to STIR proj data
     void convert_proj_data_niftyPET_to_stir(ProjData &stir_sptr, const std::vector<float> &np_vec) const;
 
@@ -132,16 +135,19 @@ private:
     void convert_niftypet_proj_1d_to_3d_idx(unsigned &ang, unsigned &bins, unsigned &sino, const unsigned idx) const;
 
     /// Get Cnst
-    Cnst get_cnst() const { check_set_up(); return _cnt; }
+    const Cnst & get_cnst() const { check_set_up(); return *_cnt; }
+
+    /// Get Cnst
+    Cnst & get_cnst() { check_set_up(); return *_cnt; }
 
     /// Get Naw - number of active bins in 2d sino
-    static int get_naw() { return AW; }
+    static int get_naw();// { return AW; }
 
     /// Get n0crs
-    static int get_n0crs() { return 4; } // not sure which one this is in def.h
+    static int get_n0crs();// { return 4; } // not sure which one this is in def.h
 
     /// Get n1crs
-    static int get_n1crs() { return nCRS; }
+    static int get_n1crs();// { return nCRS; }
 
     bool _already_set_up;
     std::string _fname_li2rng, _fname_li2sn, _fname_li2nos, _fname_s2c, _fname_aw2ali, _fname_crs;
@@ -153,7 +159,7 @@ private:
     std::vector<float> _crs;
     char _span;
     char _devid;
-    Cnst _cnt;
+    shared_ptr<Cnst> _cnt;
     int _nsinos;
     char _att;
     std::vector<int> _isub;

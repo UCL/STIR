@@ -37,7 +37,7 @@ SET(NIFTYPET_LIBRARIES
 #                CREATE OUR LIBRARY AND INCLUDE OUR HEADERS
 # ------------------------------------------------------------- #
 
-set(dir gpu)
+set(dir ${STIR_NIFTYPET_PROJECTOR_LIB})
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 set(${dir_LIB_SOURCES}
   ProjectorByBinNiftyPETHelper.cxx
@@ -47,7 +47,7 @@ set(${dir_LIB_SOURCES}
 
 include(stir_lib_target)
 
-target_link_libraries(gpu recon_buildblock modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
+target_link_libraries(${STIR_NIFTYPET_PROJECTOR_LIB} recon_buildblock modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
 
 
 # ------------------------------------------------------------- #
@@ -55,8 +55,8 @@ target_link_libraries(gpu recon_buildblock modelling_buildblock display numerics
 # ------------------------------------------------------------- #
 
 # Add headers
-TARGET_INCLUDE_DIRECTORIES(gpu PUBLIC ${CUDA_INCLUDE_DIRS})
-TARGET_INCLUDE_DIRECTORIES(gpu PUBLIC ${NIFTYPET_INCLUDE_DIRS})
+TARGET_INCLUDE_DIRECTORIES(${STIR_NIFTYPET_PROJECTOR_LIB} PUBLIC ${CUDA_INCLUDE_DIRS})
+TARGET_INCLUDE_DIRECTORIES(${STIR_NIFTYPET_PROJECTOR_LIB} PUBLIC ${NIFTYPET_INCLUDE_DIRS})
 
-target_link_libraries(gpu ${CUDA_LIBRARIES})
-target_link_libraries(gpu ${NIFTYPET_LIBRARIES})
+target_link_libraries(${STIR_NIFTYPET_PROJECTOR_LIB} ${CUDA_LIBRARIES})
+target_link_libraries(${STIR_NIFTYPET_PROJECTOR_LIB} ${NIFTYPET_LIBRARIES})

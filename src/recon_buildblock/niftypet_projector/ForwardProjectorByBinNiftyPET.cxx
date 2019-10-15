@@ -28,9 +28,8 @@
     See STIR/LICENSE.txt for details
 */
 
-#include <fstream>
-#include "stir/gpu/ForwardProjectorByBinNiftyPET.h"
-#include "stir/gpu/ProjectorByBinNiftyPETHelper.h"
+#include "stir/recon_buildblock/niftypet_projector/ForwardProjectorByBinNiftyPET.h"
+#include "stir/recon_buildblock/niftypet_projector/ProjectorByBinNiftyPETHelper.h"
 #include "stir/RelatedViewgrams.h"
 
 START_NAMESPACE_STIR

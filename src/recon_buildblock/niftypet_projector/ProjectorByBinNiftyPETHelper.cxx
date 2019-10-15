@@ -29,15 +29,17 @@
 */
 
 #include <fstream>
-#include "stir/gpu/ProjectorByBinNiftyPETHelper.h"
+#include "stir/recon_buildblock/niftypet_projector/ProjectorByBinNiftyPETHelper.h"
 #include <def.h>
 #include <boost/format.hpp>
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/is_null_ptr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include <driver_types.h>
 #include <auxmath.h>
 #include <prjb.h>
 #include <prjf.h>
+#include <scanner_0.h>
 
 START_NAMESPACE_STIR
 
@@ -51,7 +53,7 @@ read_binary_file(std::string file_name)
         throw std::runtime_error("STIR_PATH not defined, cannot find data");
 
     std::string data_path = stir_path;
-    data_path += "/examples/mMR_params/" + file_name;
+    data_path += "/examples/niftypet_mMR_params/" + file_name;
 
     std::ifstream file(data_path, std::ios::in | std::ios::binary);
 
@@ -97,43 +99,44 @@ set_up()
     _crs    = read_binary_file<float>(_fname_crs   );
 
     // Set up cnst - backwards engineered from def.h, scanner.h and resources.py
-    _cnt.SPN      = _span;
-    _cnt.RNG_STRT = 0;
-    _cnt.RNG_END  = NRINGS;
-    _cnt.VERBOSE  = true;
-    _cnt.DEVID    = _devid;
-    _cnt.NSN11    = NSINOS11;
-    _cnt.NSEG0    = SEG0;
-    _cnt.NCRS     = nCRS;
-    _cnt.OFFGAP   = 1;
-    _cnt.TGAP     = 9;
-    _cnt.A        = NSANGLES;
-    _cnt.W        = NSBINS;
-    _cnt.NCRSR    = nCRSR;
+    _cnt.reset(new Cnst);
+    _cnt->SPN      = _span;
+    _cnt->RNG_STRT = 0;
+    _cnt->RNG_END  = NRINGS;
+    _cnt->VERBOSE  = true;
+    _cnt->DEVID    = _devid;
+    _cnt->NSN11    = NSINOS11;
+    _cnt->NSEG0    = SEG0;
+    _cnt->NCRS     = nCRS;
+    _cnt->OFFGAP   = 1;
+    _cnt->TGAP     = 9;
+    _cnt->A        = NSANGLES;
+    _cnt->W        = NSBINS;
+    _cnt->NCRSR    = nCRSR;
 
-    _cnt.MRD =  mxRD;
-    _cnt.ALPHA =  aLPHA;
-    _cnt.AXR =  SZ_RING;
-    _cnt.BTP =  0;
-    _cnt.BTPRT =  1.0;
-    _cnt.COSUPSMX =  0.725f;
-    _cnt.COSSTP = (1-_cnt.COSUPSMX)/(255);
-    _cnt.ETHRLD =  0.05f;
-    _cnt.NRNG =  NRINGS;
-    _cnt.ITOFBIND =  0.08552925517901334f;
-    _cnt.NSN1 =  NSINOS;
-    _cnt.NSN64 =  4096;
-    _cnt.NSRNG =  8;
-    _cnt.RE =  33.47f;
-    _cnt.TOFBIND =  11.691905862f;
-    _cnt.TOFBINN =  1;
-    _cnt.TOFBINS =  3.9e-10f;
+    _cnt->MRD =  mxRD;
+    _cnt->ALPHA =  aLPHA;
+    _cnt->AXR =  SZ_RING;
+    _cnt->BTP =  0;
+    _cnt->BTPRT =  1.0;
+    _cnt->COSUPSMX =  0.725f;
+    _cnt->COSSTP = (1-_cnt->COSUPSMX)/(255);
+    _cnt->ETHRLD =  0.05f;
+    _cnt->NRNG =  NRINGS;
+    _cnt->ITOFBIND =  0.08552925517901334f;
+    _cnt->NSN1 =  NSINOS;
+    _cnt->NSN64 =  4096;
+    _cnt->NSRNG =  8;
+    _cnt->RE =  33.47f;
+    _cnt->TOFBIND =  11.691905862f;
+    _cnt->TOFBINN =  1;
+    _cnt->TOFBINS =  3.9e-10f;
 
-    switch(_cnt.SPN){
+    switch(_cnt->SPN){
       case 11:
-        _nsinos = _cnt.NSN11; break;
+        _nsinos = _cnt->NSN11; break;
       case 1:
-        _nsinos = _cnt.NSEG0; break;
+        _nsinos = _cnt->NSEG0; break;
       default:
         throw std::runtime_error("Unsupported span");
     }
@@ -256,7 +259,7 @@ remove_gaps(std::vector<float> &sino_no_gaps, const std::vector<float> &sino_w_g
                   const_cast<std::vector<float>&>(sino_w_gaps).data(),
                   _nsinos,
                   const_cast<std::vector<int  >&>(_aw2ali).data(),
-                  _cnt);
+                  *_cnt);
 }
 
 void
@@ -273,7 +276,7 @@ put_gaps(std::vector<float> &sino_w_gaps, const std::vector<float> &sino_no_gaps
     ::put_gaps(unpermuted_sino_w_gaps.data(),
                const_cast<std::vector<float>&>(sino_no_gaps).data(),
                const_cast<std::vector<int  >&>(_aw2ali).data(),
-               _cnt);
+               *_cnt);
 
     // Permute the data (as this is done on the NiftyPET python side after put gaps
     unsigned output_dims[3] = {837, 252, 344};
@@ -305,7 +308,7 @@ back_project(std::vector<float> &image, const std::vector<float> &sino_no_gaps) 
              this->get_naw(),
              this->get_n0crs(),
              this->get_n1crs(),
-             _cnt);
+             *_cnt);
 
     // Permute the data (as this is done on the NiftyPET python side after back projection
     unsigned output_dims[3] = {127,320,320};
@@ -341,7 +344,7 @@ forward_project(std::vector<float> &sino_no_gaps, const std::vector<float> &imag
              this->get_naw(),
              this->get_n0crs(),
              this->get_n1crs(),
-             _cnt,
+             *_cnt,
              _att);
 }
 
@@ -443,10 +446,10 @@ void
 get_vals_for_proj_data_conversion(std::vector<int> &sizes, std::vector<int> &segment_sequence,
                                   int &num_sinograms, int &min_view, int &max_view,
                                   int &min_tang_pos, int &max_tang_pos,
-                                  const ProjData& proj_data, const std::vector<float> &np_vec)
+                                  const ProjDataInfo& proj_data_info, const std::vector<float> &np_vec)
 {
-    shared_ptr<const ProjDataInfoCylindricalNoArcCorr> info_sptr =
-            dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(proj_data.get_proj_data_info_sptr());
+    const ProjDataInfoCylindricalNoArcCorr * info_sptr =
+            dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(&proj_data_info);
     if (is_null_ptr(info_sptr))
         error("ProjectorByBinNiftyPETHelper: only works with cylindrical projection data without arc-correction");
 
@@ -465,11 +468,16 @@ get_vals_for_proj_data_conversion(std::vector<int> &sizes, std::vector<int> &seg
     }
 
     // Get dimensions of STIR sinogram
-    num_sinograms = proj_data.get_num_sinograms();
-    min_view      = proj_data.get_min_view_num();
-    max_view      = proj_data.get_max_view_num();
-    min_tang_pos  = proj_data.get_min_tangential_pos_num();
-    max_tang_pos  = proj_data.get_max_tangential_pos_num();
+    min_view      = proj_data_info.get_min_view_num();
+    max_view      = proj_data_info.get_max_view_num();
+    min_tang_pos  = proj_data_info.get_min_tangential_pos_num();
+    max_tang_pos  = proj_data_info.get_max_tangential_pos_num();
+
+
+    num_sinograms = proj_data_info.get_num_axial_poss(0);
+    for (int s=1; s<= proj_data_info.get_max_segment_num(); ++s)
+        num_sinograms += 2* proj_data_info.get_num_axial_poss(s);
+
     int num_proj_data_elems = num_sinograms * (1+max_view-min_view) * (1+max_tang_pos-min_tang_pos);
 
     // Make sure they're the same size
@@ -493,36 +501,63 @@ void get_stir_segment_and_axial_pos_from_niftypet_sino(int &segment, int &axial_
     }
 }
 
+void get_niftypet_sino_from_stir_segment_and_axial_pos(unsigned &np_sino, const int segment, const int axial_pos, const std::vector<int> &sizes, const std::vector<int> &segment_sequence)
+{
+    np_sino = 0U;
+    for (unsigned i=0; i<segment_sequence.size(); ++i) {
+        if (segment == segment_sequence[i]) {
+            np_sino += axial_pos;
+            return;
+          }
+        else {
+            np_sino += sizes[i];
+        }
+    }
+    throw std::runtime_error("ProjectorByBinNiftyPETHelper::get_niftypet_sino_from_stir_segment_and_axial_pos(): Failed to find NiftyPET sinogram.");
+}
+
 void
 ProjectorByBinNiftyPETHelper::
-convert_proj_data_stir_to_niftyPET(std::vector<float> &np_vec, const ProjData& stir) const
+convert_viewgram_stir_to_niftyPET(std::vector<float> &np_vec, const Viewgram<float>& viewgram) const
 {
     // Get the values (and LUT) to be able to switch between STIR and NiftyPET projDatas
     std::vector<int> sizes, segment_sequence;
     int num_sinograms, min_view, max_view, min_tang_pos, max_tang_pos;
     get_vals_for_proj_data_conversion(sizes, segment_sequence, num_sinograms, min_view, max_view,
-                                      min_tang_pos, max_tang_pos, stir, np_vec);
+                                      min_tang_pos, max_tang_pos, *viewgram.get_proj_data_info_sptr(), np_vec);
 
-    unsigned np_1d, np_ang, np_bin;
-    int segment, axial_pos;
-    // Loop over all NiftyPET sinograms
-    for (unsigned np_sino = 0; np_sino < unsigned(num_sinograms); ++np_sino) {
+    unsigned np_1d, np_ang, np_bin, np_sino;
+    const int segment = viewgram.get_segment_num();
+    const int view = viewgram.get_view_num();
+
+    // Loop over the STIR view and tangential position
+    for (int ax_pos=viewgram.get_min_axial_pos_num(); ax_pos<=viewgram.get_max_axial_pos_num(); ++ax_pos) {
 
         // Convert the NiftyPET sinogram to STIR's segment and axial position
-        get_stir_segment_and_axial_pos_from_niftypet_sino(segment, axial_pos, np_sino, sizes, segment_sequence);
+        get_niftypet_sino_from_stir_segment_and_axial_pos(np_sino, segment, ax_pos, sizes, segment_sequence);
 
-        // Get the corresponding STIR sinogram
-        const Sinogram<float> &sino = stir.get_sinogram(axial_pos,segment);
+        for (int tang_pos=min_tang_pos; tang_pos<=max_tang_pos; ++tang_pos) {
 
-        // Loop over the STIR view and tangential position
-        for (int view=min_view; view<=max_view; ++view) {
-            for (int tang_pos=min_tang_pos; tang_pos<=max_tang_pos; ++tang_pos) {
+            np_ang  = unsigned(view-min_view);
+            np_bin  = unsigned(tang_pos-min_tang_pos);
+            np_1d = convert_niftypet_proj_3d_to_1d_idx(np_ang,np_bin,np_sino);
+            np_vec.at(np_1d) = viewgram.at(ax_pos).at(tang_pos);
+        }
+    }
+}
 
-                np_ang  = unsigned(view-min_view);
-                np_bin  = unsigned(tang_pos-min_tang_pos);
-                np_1d = convert_niftypet_proj_3d_to_1d_idx(np_ang,np_bin,np_sino);
-                np_vec.at(np_1d) = sino.at(view).at(tang_pos);
-            }
+void
+ProjectorByBinNiftyPETHelper::
+convert_proj_data_stir_to_niftyPET(std::vector<float> &np_vec, const ProjData& stir) const
+{
+    const int min_view = stir.get_min_view_num();
+    const int max_view = stir.get_max_view_num();
+    const int min_segment = stir.get_min_segment_num();
+    const int max_segment = stir.get_max_segment_num();
+
+    for (int view=min_view; view<=max_view; ++view) {
+        for (int segment=min_segment; segment<=max_segment; ++segment) {
+            convert_viewgram_stir_to_niftyPET(np_vec, stir.get_viewgram(view,segment));
         }
     }
 }
@@ -535,7 +570,7 @@ convert_proj_data_niftyPET_to_stir(ProjData &stir, const std::vector<float> &np_
     std::vector<int> sizes, segment_sequence;
     int num_sinograms, min_view, max_view, min_tang_pos, max_tang_pos;
     get_vals_for_proj_data_conversion(sizes, segment_sequence, num_sinograms, min_view, max_view,
-                                      min_tang_pos, max_tang_pos, stir, np_vec);
+                                      min_tang_pos, max_tang_pos, *stir.get_proj_data_info_sptr(), np_vec);
 
     unsigned np_1d, np_ang, np_bin;
     int segment, axial_pos;
@@ -560,6 +595,27 @@ convert_proj_data_niftyPET_to_stir(ProjData &stir, const std::vector<float> &np_
         }
         stir.set_sinogram(sino);
     }
+}
+
+int
+ProjectorByBinNiftyPETHelper::
+get_naw()
+{
+    return AW;
+}
+
+int
+ProjectorByBinNiftyPETHelper::
+get_n0crs()
+{
+    return 4;
+}
+
+int
+ProjectorByBinNiftyPETHelper::
+get_n1crs()
+{
+    return nCRS;
 }
 
 END_NAMESPACE_STIR

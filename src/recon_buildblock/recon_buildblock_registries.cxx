@@ -72,8 +72,8 @@
 #include "stir/recon_buildblock/FourierRebinning.h"
 
 #ifdef STIR_WITH_NIFTYPET_PROJETOR
-#include "stir/gpu/ForwardProjectorByBinNiftyPET.h"
-#include "stir/gpu/BackProjectorByBinNiftyPET.h"
+#include "stir/recon_buildblock/niftypet_projector/ForwardProjectorByBinNiftyPET.h"
+#include "stir/recon_buildblock/niftypet_projector/BackProjectorByBinNiftyPET.h"
 #endif
 
 //#include "stir/IO/InputFileFormatRegistry.h"

@@ -24,8 +24,8 @@
   \author Richard Brown
 */
 
-#include "stir/gpu/ForwardProjectorByBinNiftyPET.h"
-#include "stir/gpu/BackProjectorByBinNiftyPET.h"
+#include "stir/recon_buildblock/niftypet_projector/ForwardProjectorByBinNiftyPET.h"
+#include "stir/recon_buildblock/niftypet_projector/BackProjectorByBinNiftyPET.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/BackProjectorByBinUsingProjMatrixByBin.h"
@@ -34,6 +34,7 @@
 #include "stir/CPUTimer.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include <fstream>
 
 START_NAMESPACE_STIR
 
