@@ -72,6 +72,9 @@ PLSPrior<elemT>::set_up (shared_ptr<DiscretisedDensity<3,elemT> > const& target_
       return Succeeded::no;
     }
 
+    if(! (*target_sptr).has_same_characteristics(*this->anatomical_sptr))
+        error("anatomical and target images are not compatible! Make sure they are");
+
     shared_ptr<DiscretisedDensity<3,elemT> > anatomical_im_grad_z_sptr;
     if (!only_2D)
     anatomical_im_grad_z_sptr.reset(this->anatomical_sptr->get_empty_copy ());
