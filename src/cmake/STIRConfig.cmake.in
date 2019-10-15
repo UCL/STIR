@@ -92,7 +92,7 @@ if(@STIR_OPENMP@)
   set(STIR_BUILT_WITH_OpenMP TRUE)
 endif()
 
-if(@HAVE_GPU@)
+if(@STIR_WITH_NIFTYPET_PROJETOR@)
   find_package(CUDA REQUIRED)
   set(STIR_BUILT_WITH_CUDA TRUE)
 endif()
