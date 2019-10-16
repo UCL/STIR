@@ -84,6 +84,9 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
   _already_set_up = true;
   _proj_data_info_sptr = proj_data_info_sptr->create_shared_clone();
   _density_sptr = density_info_sptr;
+  // Data processor might have been set during parsing
+  if (!is_null_ptr(_pre_data_processor_sptr))
+    _pre_data_processor_sptr->set_up(*density_info_sptr);
 }
 
 void

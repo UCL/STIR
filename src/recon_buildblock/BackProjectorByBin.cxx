@@ -83,6 +83,9 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
   _already_set_up = true;
   _proj_data_info_sptr = proj_data_info_sptr->create_shared_clone();
   _density_sptr.reset(density_info_sptr->clone());
+  // Data processor might have been set during parsing
+  if (!is_null_ptr(_post_data_processor_sptr))
+    _post_data_processor_sptr->set_up(*density_info_sptr);
 
 #ifdef STIR_OPENMP
 #pragma omp parallel

@@ -188,6 +188,9 @@ protected:
   shared_ptr<DiscretisedDensity<3,float> > _density_sptr;
   shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > _post_data_processor_sptr;
 
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+
  private:
   shared_ptr<ProjDataInfo> _proj_data_info_sptr;
 
@@ -202,9 +205,6 @@ protected:
   //! A vector of back projected images that will be used with openMP. There will be as many images as openMP threads
   std::vector< shared_ptr<DiscretisedDensity<3,float> > > _local_output_image_sptrs;
 #endif
-
-  virtual void set_defaults();
-  virtual void initialise_keymap();
 };
 
 END_NAMESPACE_STIR

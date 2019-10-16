@@ -1,0 +1,20 @@
+Back Projector parameters:=
+  
+  type := Matrix
+  Back projector Using Matrix Parameters :=
+    Matrix type := Ray Tracing
+    Ray tracing matrix parameters :=
+    End Ray tracing matrix parameters :=
+  End Back Projector Using Matrix Parameters :=
+
+  Post Data Processor := Separable Cartesian Metz
+  Separable Cartesian Metz Filter Parameters :=
+    x-dir filter FWHM (in mm):= 5.0
+    y-dir filter FWHM (in mm):= 5.0
+    z-dir filter FWHM (in mm):= 5.0
+    x-dir filter Metz power:= 0.0
+    y-dir filter Metz power:= 0.0
+    z-dir filter Metz power:= 0.0
+  END Separable Cartesian Metz Filter Parameters :=
+
+End:=
