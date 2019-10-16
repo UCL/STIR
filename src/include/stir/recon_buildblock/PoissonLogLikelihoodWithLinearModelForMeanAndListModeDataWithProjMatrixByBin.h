@@ -74,7 +74,7 @@ public:
   
   PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>(); 
 
-  //! This should compute the gradient of the objective function at the  current_image_estimate
+  //! This should compute the gradient of the objective function at the current_image_estimate overwritting gradient
   virtual  
   void compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,  
                                          const TargetT &current_estimate,  
