@@ -110,9 +110,9 @@ compare_images(bool &everything_ok, const DiscretisedDensity<3,float> &im_1, con
 
     // Compare values
     if (compare_arrays(arr_1,arr_2) == Succeeded::yes)
-        std::cout << "\nImages match!\n";
+        std::cout << "Images match!\n";
     else {
-        std::cout << "\nImages don't match!\n";
+        std::cout << "Images don't match!\n";
         everything_ok = false;
     }
 }
@@ -145,9 +145,9 @@ compare_sinos(bool &everything_ok, const ProjData &proj_data_1, const ProjData &
 
     // Compare values
     if (compare_arrays(arr_1,arr_2) == Succeeded::yes)
-        std::cout << "\nSinograms match!\n";
+        std::cout << "Sinograms match!\n";
     else {
-        std::cout << "\nSinograms don't match!\n";
+        std::cout << "Sinograms don't match!\n";
         everything_ok = false;
     }
 }
@@ -204,6 +204,67 @@ get_data_processor(shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > &dat
     data_processor_sptr->parse(parameterstream);
 }
 
+static
+shared_ptr<BackProjectorByBin>
+get_back_projector_via_parser(const float fwhm = -1.f)
+{
+    std::string buffer;
+    std::stringstream parameterstream(buffer);
+
+    parameterstream << "Back Projector parameters:=\n";
+    if (fwhm > 0)
+        parameterstream
+                    << "Post Data Processor := Separable Cartesian Metz\n"
+                    << "Separable Cartesian Metz Filter Parameters :=\n"
+                    << "  x-dir filter FWHM (in mm):= " << fwhm << "\n"
+                    << "  y-dir filter FWHM (in mm):= " << fwhm << "\n"
+                    << "  z-dir filter FWHM (in mm):= " << fwhm << "\n"
+                    << "  x-dir filter Metz power:= .0\n"
+                    << "  y-dir filter Metz power:= .0\n"
+                    << "  z-dir filter Metz power:=.0\n"
+                    << "END Separable Cartesian Metz Filter Parameters :=\n";
+    parameterstream << "End Back Projector Parameters:=\n";
+
+    shared_ptr<ProjMatrixByBin> PM_sptr(new ProjMatrixByBinUsingRayTracing);
+
+    shared_ptr<BackProjectorByBin> back_proj_sptr =
+            MAKE_SHARED<BackProjectorByBinUsingProjMatrixByBin>(PM_sptr);
+    back_proj_sptr->parse(parameterstream);
+
+    return back_proj_sptr;
+}
+
+static
+shared_ptr<ForwardProjectorByBin>
+get_forward_projector_via_parser(const float fwhm = -1.f)
+{
+    shared_ptr<ForwardProjectorByBin> fwd_proj;
+    std::string buffer;
+    std::stringstream parameterstream(buffer);
+
+    parameterstream << "Forward Projector parameters:=\n";
+    if (fwhm > 0)
+        parameterstream
+                    << "Pre Data Processor := Separable Cartesian Metz\n"
+                    << "Separable Cartesian Metz Filter Parameters :=\n"
+                    << "  x-dir filter FWHM (in mm):= " << fwhm << "\n"
+                    << "  y-dir filter FWHM (in mm):= " << fwhm << "\n"
+                    << "  z-dir filter FWHM (in mm):= " << fwhm << "\n"
+                    << "  x-dir filter Metz power:= .0\n"
+                    << "  y-dir filter Metz power:= .0\n"
+                    << "  z-dir filter Metz power:=.0\n"
+                    << "END Separable Cartesian Metz Filter Parameters :=\n";
+    parameterstream << "end:=\n";
+
+    shared_ptr<ProjMatrixByBin> PM_sptr(new ProjMatrixByBinUsingRayTracing);
+
+    shared_ptr<ForwardProjectorByBin> fwd_proj_sptr =
+            MAKE_SHARED<ForwardProjectorByBinUsingProjMatrixByBin>(PM_sptr);
+    fwd_proj_sptr->parse(parameterstream);
+
+    return fwd_proj_sptr;
+}
+
 const std::vector<shared_ptr<ProjData> >
 TestDataProcessorProjectors::
 pre_data_processor_fwd_proj(const DiscretisedDensity<3,float> &input_image)
@@ -211,36 +272,34 @@ pre_data_processor_fwd_proj(const DiscretisedDensity<3,float> &input_image)
     // Create two sinograms, images and forward projectors.
     //    One for pre-data processor forward projection,
     //    the other for data processor then forward projection
-    shared_ptr<ProjMatrixByBin> PM_sptr(new  ProjMatrixByBinUsingRayTracing());
     std::vector<shared_ptr<ProjData> > sinos(2, MAKE_SHARED<ProjDataInMemory>(*_input_sino_sptr));
     std::vector<shared_ptr<DiscretisedDensity<3,float> > > images(2);
     images[0].reset(input_image.clone());
     images[1].reset(input_image.clone());
-    std::vector<ForwardProjectorByBinUsingProjMatrixByBin> projectors(2, ForwardProjectorByBinUsingProjMatrixByBin(PM_sptr));
-
-    // Set up the data processor
-    shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > data_processor_sptr;
-    get_data_processor(data_processor_sptr, _fwhm);
-    data_processor_sptr->set_up(input_image);
+    std::vector<shared_ptr<ForwardProjectorByBin> > projectors(2);
 
     // Loop over twice!
     for (unsigned i=0; i<sinos.size(); ++i) {
 
+        // The first time, use the data processor during the forward projection
+        projectors[i] = get_forward_projector_via_parser(i==0 ? _fwhm : -1);
+
         // Fill sinogram with zeros
         sinos[i]->fill(0.f);
 
-        // The first time, use the data processor during the forward projection
-        if (i==0)
-            projectors[i].ForwardProjectorByBin::set_up(_input_sino_sptr->get_proj_data_info_sptr(),images[i],data_processor_sptr);
-        // The second time, use the data processor outside of the projection process
-        else {
-            projectors[i].set_up(_input_sino_sptr->get_proj_data_info_sptr(),images[i]);
+        projectors[i]->set_up(_input_sino_sptr->get_proj_data_info_sptr(),images[i]);
+
+        // The second time, use the data processor before the forward projection
+        if (i!=0) {
+            // Set up the data processor
+            shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > data_processor_sptr;
+            get_data_processor(data_processor_sptr, _fwhm);
             data_processor_sptr->apply(*images[i]);
         }
 
         // Forward project
-        projectors[i].set_input(*images[i]);
-        projectors[i].forward_project(*sinos[i]);
+        projectors[i]->set_input(*images[i]);
+        projectors[i]->forward_project(*sinos[i]);
     }
 
     return sinos;
@@ -256,35 +315,31 @@ post_data_processor_bck_proj()
     std::vector<shared_ptr<DiscretisedDensity<3,float> > > images(2);
     images[0] = MAKE_SHARED<VoxelsOnCartesianGrid<float> >(*_input_sino_sptr->get_proj_data_info_sptr());
     images[1].reset(images[0]->clone());
-    shared_ptr<ProjMatrixByBin> PM_sptr(new  ProjMatrixByBinUsingRayTracing());
-    std::vector<BackProjectorByBinUsingProjMatrixByBin> projectors(2, BackProjectorByBinUsingProjMatrixByBin(PM_sptr));
-
-    // Set up the data processor
-    shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > data_processor_sptr;
-    get_data_processor(data_processor_sptr, _fwhm);
-    data_processor_sptr->set_up(*images[0]);
+    std::vector<shared_ptr<BackProjectorByBin> > projectors(2);
 
     // Loop over twice!
     for (unsigned i=0; i<images.size(); ++i) {
 
+        // The first time, use the data processor during the back projection
+        projectors[i] = get_back_projector_via_parser(i==0 ? _fwhm : -1);
+
+        projectors[i]->set_up(_input_sino_sptr->get_proj_data_info_sptr(),images[i]);
+
         // Fill sinogram with zeros
         images[i]->fill(0.f);
 
-        // The first time, use the data processor during the back projection
-        if (i==0)
-            projectors[i].BackProjectorByBin::set_up(_input_sino_sptr->get_proj_data_info_sptr(),images[i],data_processor_sptr);
-        // The second time, use the data processor after of the projection process
-        else
-            projectors[i].set_up(_input_sino_sptr->get_proj_data_info_sptr(),images[i]);
-
         // Back project
-        projectors[i].start_accumulating_in_new_target();
-        projectors[i].back_project(*_input_sino_sptr);
-        projectors[i].get_output(*images[i]);
+        projectors[i]->start_accumulating_in_new_target();
+        projectors[i]->back_project(*_input_sino_sptr);
+        projectors[i]->get_output(*images[i]);
 
         // The second time, use the data processor after the back projection
-        if (i!=0)
+        if (i!=0) {
+            // Set up the data processor
+            shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > data_processor_sptr;
+            get_data_processor(data_processor_sptr, _fwhm);
             data_processor_sptr->apply(*images[i]);
+        }
     }
 
     return images;
