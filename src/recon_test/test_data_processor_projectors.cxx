@@ -272,20 +272,23 @@ pre_data_processor_fwd_proj(const DiscretisedDensity<3,float> &input_image)
     // Create two sinograms, images and forward projectors.
     //    One for pre-data processor forward projection,
     //    the other for data processor then forward projection
-    std::vector<shared_ptr<ProjData> > sinos(2, MAKE_SHARED<ProjDataInMemory>(*_input_sino_sptr));
+    std::vector<shared_ptr<ProjData> > sinos(2);
     std::vector<shared_ptr<DiscretisedDensity<3,float> > > images(2);
-    images[0].reset(input_image.clone());
-    images[1].reset(input_image.clone());
     std::vector<shared_ptr<ForwardProjectorByBin> > projectors(2);
 
     // Loop over twice!
     for (unsigned i=0; i<sinos.size(); ++i) {
 
+        // Copy the sinogram and fill with zeros
+        sinos[i] = MAKE_SHARED<ProjDataInMemory>(*_input_sino_sptr);
+        sinos[i]->fill(0.f);
+
+        // Copy input image
+        images[i].reset(input_image.clone());
+
         // The first time, use the data processor during the forward projection
         projectors[i] = get_forward_projector_via_parser(i==0 ? _fwhm : -1);
 
-        // Fill sinogram with zeros
-        sinos[i]->fill(0.f);
 
         projectors[i]->set_up(_input_sino_sptr->get_proj_data_info_sptr(),images[i]);
 
@@ -313,20 +316,19 @@ post_data_processor_bck_proj()
     //    One for pre-data processor back projection,
     //    the other for data processor then back projection
     std::vector<shared_ptr<DiscretisedDensity<3,float> > > images(2);
-    images[0] = MAKE_SHARED<VoxelsOnCartesianGrid<float> >(*_input_sino_sptr->get_proj_data_info_sptr());
-    images[1].reset(images[0]->clone());
     std::vector<shared_ptr<BackProjectorByBin> > projectors(2);
 
     // Loop over twice!
     for (unsigned i=0; i<images.size(); ++i) {
 
+        // Copy images and fill with zeros
+        images[i] = MAKE_SHARED<VoxelsOnCartesianGrid<float> >(*_input_sino_sptr->get_proj_data_info_sptr());
+        images[i]->fill(0.f);
+
         // The first time, use the data processor during the back projection
         projectors[i] = get_back_projector_via_parser(i==0 ? _fwhm : -1);
 
         projectors[i]->set_up(_input_sino_sptr->get_proj_data_info_sptr(),images[i]);
-
-        // Fill sinogram with zeros
-        images[i]->fill(0.f);
 
         // Back project
         projectors[i]->start_accumulating_in_new_target();
