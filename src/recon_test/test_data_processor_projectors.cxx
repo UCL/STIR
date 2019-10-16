@@ -46,14 +46,110 @@ protected:
     std::string _sinogram_filename;
     float _fwhm;
     shared_ptr<ProjDataInMemory> _input_sino_sptr;
-    shared_ptr<VoxelsOnCartesianGrid<float> > post_data_processor_bck_proj();
-    void pre_data_processor_fwd_proj(const VoxelsOnCartesianGrid<float> &input_image);
+    const std::vector<shared_ptr<VoxelsOnCartesianGrid<float> > > post_data_processor_bck_proj();
+    const std::vector<shared_ptr<ProjDataInMemory> > pre_data_processor_fwd_proj(const VoxelsOnCartesianGrid<float> &input_image);
 };
 
 TestDataProcessorProjectors::TestDataProcessorProjectors(const std::string &sinogram_filename, const float fwhm) :
     _sinogram_filename(sinogram_filename),
     _fwhm(fwhm)
 {
+}
+
+static
+Succeeded
+compare_arrays(const std::vector<float> &vec1, const std::vector<float> &vec2)
+{
+    // Subtract
+    std::vector<float> diff = vec1;
+    std::transform(vec1.begin(), vec1.end(), vec2.begin(), diff.begin(), std::minus<float>());
+
+    // Get max difference
+    const float max_diff = *std::max_element(diff.begin(), diff.end());
+
+    std::cout << "Min array 1 / array 2 = " << *std::min_element(vec1.begin(),vec1.end()) << " / " << *std::min_element(vec2.begin(),vec2.end()) << "\n";
+    std::cout << "Max array 1 / array 2 = " << *std::max_element(vec1.begin(),vec1.end()) << " / " << *std::max_element(vec2.begin(),vec2.end()) << "\n";
+    std::cout << "Sum array 1 / array 2 = " <<  std::accumulate(vec1.begin(),vec1.end(),0.f) << " / " << std::accumulate(vec2.begin(),vec2.end(),0.f)      << "\n";
+    std::cout << "Max diff = " << max_diff << "\n\n";
+
+    return (std::abs(max_diff) < 1e-4f ? Succeeded::yes : Succeeded::no);
+}
+
+static
+void
+compare_images(bool &everything_ok, const VoxelsOnCartesianGrid<float> &im_1, const VoxelsOnCartesianGrid<float> &im_2)
+{
+    std::cout << "\nComparing images...\n";
+
+    if (!im_1.has_same_characteristics(im_2)) {
+        std::cout << "\nImages have different characteristics!\n";
+        everything_ok = false;
+    }
+
+    Coordinate3D<int> min_indices, max_indices;
+
+    im_1.get_regular_range(min_indices, max_indices);
+    unsigned num_elements = 1;
+    for (int i=0; i<3; ++i)
+        num_elements *= unsigned(max_indices[i + 1] - min_indices[i + 1] + 1);
+
+    std::vector<float> arr_1(num_elements), arr_2(num_elements);
+
+    DiscretisedDensity<3,float>::const_full_iterator im_1_iter = im_1.begin_all_const();
+    DiscretisedDensity<3,float>::const_full_iterator im_2_iter = im_2.begin_all_const();
+    std::vector<float>::iterator arr_1_iter = arr_1.begin();
+    std::vector<float>::iterator arr_2_iter = arr_2.begin();
+    while (im_1_iter!=im_1.end_all_const()) {
+        *arr_1_iter = *im_1_iter;
+        *arr_2_iter = *im_2_iter;
+        ++im_1_iter;
+        ++im_2_iter;
+        ++arr_1_iter;
+        ++arr_2_iter;
+    }
+
+    // Compare values
+    if (compare_arrays(arr_1,arr_2) == Succeeded::yes)
+        std::cout << "\nImages match!\n";
+    else {
+        std::cout << "\nImages don't match!\n";
+        everything_ok = false;
+    }
+}
+
+static
+void
+compare_sinos(bool &everything_ok, const ProjDataInMemory &proj_data_1, const ProjDataInMemory &proj_data_2)
+{
+    std::cout << "\nComparing sinograms...\n";
+
+    if (*proj_data_1.get_proj_data_info_sptr() != *proj_data_2.get_proj_data_info_sptr()) {
+        std::cout << "\nSinogram proj data info don't match\n";
+        everything_ok = false;
+    }
+
+    int min_segment_num = proj_data_1.get_min_segment_num();
+    int max_segment_num = proj_data_1.get_max_segment_num();
+
+    // Get number of elements
+    unsigned num_elements(0);
+    for (int segment_num = min_segment_num; segment_num<= max_segment_num; ++segment_num)
+        num_elements += unsigned(proj_data_1.get_max_axial_pos_num(segment_num) - proj_data_1.get_min_axial_pos_num(segment_num)) + 1;
+    num_elements *= unsigned(proj_data_1.get_max_view_num() - proj_data_1.get_min_view_num()) + 1;
+    num_elements *= unsigned(proj_data_1.get_max_tangential_pos_num() - proj_data_1.get_min_tangential_pos_num()) + 1;
+
+    // Create arrays
+    std::vector<float> arr_1(num_elements), arr_2(num_elements);
+    proj_data_1.copy_to(arr_1.begin());
+    proj_data_2.copy_to(arr_2.begin());
+
+    // Compare values
+    if (compare_arrays(arr_1,arr_2) == Succeeded::yes)
+        std::cout << "\nSinograms match!\n";
+    else {
+        std::cout << "\nSinograms don't match!\n";
+        everything_ok = false;
+    }
 }
 
 void
@@ -66,12 +162,19 @@ run_tests()
 
         // Back project
         std::cerr << "Tests for post-data-processor back projection\n";
-        shared_ptr<VoxelsOnCartesianGrid<float> > bck_projected_im_sptr =
+        const std::vector<shared_ptr<VoxelsOnCartesianGrid<float> > > bck_projected_ims =
                 this->post_data_processor_bck_proj();
 
         // Forward project
         std::cerr << "Tests for pre-data-processor forward projection\n";
-        this->pre_data_processor_fwd_proj(*bck_projected_im_sptr);
+        const std::vector<shared_ptr<ProjDataInMemory> > fwd_projected_sinos =
+                this->pre_data_processor_fwd_proj(*bck_projected_ims[0]);
+
+        // Compare back projections
+        compare_images(everything_ok, *bck_projected_ims[0],*bck_projected_ims[1]);
+
+        // Compare forward projections
+        compare_sinos(everything_ok, *fwd_projected_sinos[0],*fwd_projected_sinos[1]);
     }
     catch(const std::exception &error) {
         std::cerr << "\nHere's the error:\n\t" << error.what() << "\n\n";
@@ -82,6 +185,7 @@ run_tests()
     }
 }
 
+static
 void
 get_data_processor(shared_ptr<SeparableCartesianMetzImageFilter<float> > &data_processor_sptr, const float fwhm)
 {
@@ -100,67 +204,7 @@ get_data_processor(shared_ptr<SeparableCartesianMetzImageFilter<float> > &data_p
     data_processor_sptr->parse(parameterstream);
 }
 
-Succeeded compare_images(const VoxelsOnCartesianGrid<float> &im_1, const VoxelsOnCartesianGrid<float> &im_2)
-{
-    if (im_1 == im_2) {
-        std::cout << "\nImages match!\n";
-        return Succeeded::yes;
-    }
-
-    std::cout << "\nImages don't match\n";
-    std::cout << "Min im1 / im2 = " << im_1.find_min() << " / " << im_2.find_min() << "\n";
-    std::cout << "Max im1 / im2 = " << im_1.find_max() << " / " << im_2.find_max() << "\n";
-    std::cout << "Sum im1 / im2 = " << im_1.sum()      << " / " << im_2.sum()      << "\n";
-
-    return Succeeded::no;
-}
-
-Succeeded compare_sinos(const ProjDataInMemory &proj_data_1, const ProjDataInMemory &proj_data_2)
-{
-    if (*proj_data_1.get_proj_data_info_sptr() != *proj_data_2.get_proj_data_info_sptr()) {
-        std::cout << "\nSinogram proj data info don't match\n";
-        return Succeeded::no;
-    }
-
-    int min_segment_num = proj_data_1.get_min_segment_num();
-    int max_segment_num = proj_data_1.get_max_segment_num();
-    int min_view        = proj_data_1.get_min_view_num();
-    int max_view        = proj_data_1.get_max_view_num();
-    int min_tang_pos    = proj_data_1.get_min_tangential_pos_num();
-    int max_tang_pos    = proj_data_1.get_max_tangential_pos_num();
-
-    // Loop over all segments
-    for (int segment=min_segment_num; segment<=max_segment_num; ++segment) {
-
-        int min_axial_pos = proj_data_1.get_min_axial_pos_num(segment);
-        int max_axial_pos = proj_data_1.get_max_axial_pos_num(segment);
-
-        // Loop over all axial positions
-        for (int axial_pos = min_axial_pos; axial_pos<=max_axial_pos; ++axial_pos) {
-
-            // Get the corresponding STIR sinogram
-            const Sinogram<float> &sino_1 = proj_data_1.get_sinogram(axial_pos,segment);
-            const Sinogram<float> &sino_2 = proj_data_2.get_sinogram(axial_pos,segment);
-
-            // Loop over the STIR view and tangential position
-            for (int view=min_view; view<=max_view; ++view) {
-                for (int tang_pos=min_tang_pos; tang_pos<=max_tang_pos; ++tang_pos) {
-
-                    // Compare values
-                    if (std::abs(sino_1.at(view).at(tang_pos) - sino_2.at(view).at(tang_pos)) > 1e-4f) {
-                        std::cout << "\nSinogram values don't match\n";
-                        return Succeeded::no;
-                    }
-                }
-            }
-        }
-    }
-
-    std::cout << "\nSinograms match!\n";
-    return Succeeded::yes;
-}
-
-void
+const std::vector<shared_ptr<ProjDataInMemory> >
 TestDataProcessorProjectors::
 pre_data_processor_fwd_proj(const VoxelsOnCartesianGrid<float> &input_image)
 {
@@ -199,11 +243,10 @@ pre_data_processor_fwd_proj(const VoxelsOnCartesianGrid<float> &input_image)
         projectors[i].forward_project(*sinos[i]);
     }
 
-    if (compare_sinos(*sinos[0],*sinos[1]) == Succeeded::no)
-        everything_ok = false;
+    return sinos;
 }
 
-shared_ptr<VoxelsOnCartesianGrid<float> >
+const std::vector<shared_ptr<VoxelsOnCartesianGrid<float> > >
 TestDataProcessorProjectors::
 post_data_processor_bck_proj()
 {
@@ -244,11 +287,7 @@ post_data_processor_bck_proj()
             data_processor_sptr->apply(*images[i]);
     }
 
-    if (compare_images(*images[0],*images[1]) == Succeeded::no)
-        everything_ok = false;
-
-    // Return one of the images to be used for the forward projection
-    return images[0];
+    return images;
 }
 
 END_NAMESPACE_STIR
