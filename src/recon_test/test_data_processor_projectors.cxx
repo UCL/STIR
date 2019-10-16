@@ -45,9 +45,9 @@ public:
 protected:
     std::string _sinogram_filename;
     float _fwhm;
-    shared_ptr<ProjDataInMemory> _input_sino_sptr;
-    const std::vector<shared_ptr<VoxelsOnCartesianGrid<float> > > post_data_processor_bck_proj();
-    const std::vector<shared_ptr<ProjDataInMemory> > pre_data_processor_fwd_proj(const VoxelsOnCartesianGrid<float> &input_image);
+    shared_ptr<ProjData> _input_sino_sptr;
+    const std::vector<shared_ptr<DiscretisedDensity<3,float> > > post_data_processor_bck_proj();
+    const std::vector<shared_ptr<ProjData> > pre_data_processor_fwd_proj(const DiscretisedDensity<3,float> &input_image);
 };
 
 TestDataProcessorProjectors::TestDataProcessorProjectors(const std::string &sinogram_filename, const float fwhm) :
@@ -77,7 +77,7 @@ compare_arrays(const std::vector<float> &vec1, const std::vector<float> &vec2)
 
 static
 void
-compare_images(bool &everything_ok, const VoxelsOnCartesianGrid<float> &im_1, const VoxelsOnCartesianGrid<float> &im_2)
+compare_images(bool &everything_ok, const DiscretisedDensity<3,float> &im_1, const DiscretisedDensity<3,float> &im_2)
 {
     std::cout << "\nComparing images...\n";
 
@@ -119,7 +119,7 @@ compare_images(bool &everything_ok, const VoxelsOnCartesianGrid<float> &im_1, co
 
 static
 void
-compare_sinos(bool &everything_ok, const ProjDataInMemory &proj_data_1, const ProjDataInMemory &proj_data_2)
+compare_sinos(bool &everything_ok, const ProjData &proj_data_1, const ProjData &proj_data_2)
 {
     std::cout << "\nComparing sinograms...\n";
 
@@ -158,16 +158,16 @@ run_tests()
 {
     try {
         // Open sinogram
-        _input_sino_sptr = MAKE_SHARED<ProjDataInMemory>(*ProjData::read_from_file(_sinogram_filename));
+        _input_sino_sptr = ProjData::read_from_file(_sinogram_filename);
 
         // Back project
         std::cerr << "Tests for post-data-processor back projection\n";
-        const std::vector<shared_ptr<VoxelsOnCartesianGrid<float> > > bck_projected_ims =
+        const std::vector<shared_ptr<DiscretisedDensity<3,float> > > bck_projected_ims =
                 this->post_data_processor_bck_proj();
 
         // Forward project
         std::cerr << "Tests for pre-data-processor forward projection\n";
-        const std::vector<shared_ptr<ProjDataInMemory> > fwd_projected_sinos =
+        const std::vector<shared_ptr<ProjData> > fwd_projected_sinos =
                 this->pre_data_processor_fwd_proj(*bck_projected_ims[0]);
 
         // Compare back projections
@@ -187,7 +187,7 @@ run_tests()
 
 static
 void
-get_data_processor(shared_ptr<SeparableCartesianMetzImageFilter<float> > &data_processor_sptr, const float fwhm)
+get_data_processor(shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > &data_processor_sptr, const float fwhm)
 {
     data_processor_sptr.reset(new SeparableCartesianMetzImageFilter<float>);
     std::string buffer;
@@ -204,22 +204,22 @@ get_data_processor(shared_ptr<SeparableCartesianMetzImageFilter<float> > &data_p
     data_processor_sptr->parse(parameterstream);
 }
 
-const std::vector<shared_ptr<ProjDataInMemory> >
+const std::vector<shared_ptr<ProjData> >
 TestDataProcessorProjectors::
-pre_data_processor_fwd_proj(const VoxelsOnCartesianGrid<float> &input_image)
+pre_data_processor_fwd_proj(const DiscretisedDensity<3,float> &input_image)
 {
     // Create two sinograms, images and forward projectors.
     //    One for pre-data processor forward projection,
     //    the other for data processor then forward projection
     shared_ptr<ProjMatrixByBin> PM_sptr(new  ProjMatrixByBinUsingRayTracing());
-    std::vector<shared_ptr<ProjDataInMemory> > sinos(2, MAKE_SHARED<ProjDataInMemory>(*_input_sino_sptr));
-    std::vector<shared_ptr<VoxelsOnCartesianGrid<float> > > images(2);
+    std::vector<shared_ptr<ProjData> > sinos(2, MAKE_SHARED<ProjDataInMemory>(*_input_sino_sptr));
+    std::vector<shared_ptr<DiscretisedDensity<3,float> > > images(2);
     images[0].reset(input_image.clone());
     images[1].reset(input_image.clone());
     std::vector<ForwardProjectorByBinUsingProjMatrixByBin> projectors(2, ForwardProjectorByBinUsingProjMatrixByBin(PM_sptr));
 
     // Set up the data processor
-    shared_ptr<SeparableCartesianMetzImageFilter<float> > data_processor_sptr;
+    shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > data_processor_sptr;
     get_data_processor(data_processor_sptr, _fwhm);
     data_processor_sptr->set_up(input_image);
 
@@ -246,21 +246,21 @@ pre_data_processor_fwd_proj(const VoxelsOnCartesianGrid<float> &input_image)
     return sinos;
 }
 
-const std::vector<shared_ptr<VoxelsOnCartesianGrid<float> > >
+const std::vector<shared_ptr<DiscretisedDensity<3,float> > >
 TestDataProcessorProjectors::
 post_data_processor_bck_proj()
 {
     // Create two images and two back projectors.
     //    One for pre-data processor back projection,
     //    the other for data processor then back projection
-    std::vector<shared_ptr<VoxelsOnCartesianGrid<float> > > images(2);
+    std::vector<shared_ptr<DiscretisedDensity<3,float> > > images(2);
     images[0] = MAKE_SHARED<VoxelsOnCartesianGrid<float> >(*_input_sino_sptr->get_proj_data_info_sptr());
     images[1].reset(images[0]->clone());
     shared_ptr<ProjMatrixByBin> PM_sptr(new  ProjMatrixByBinUsingRayTracing());
     std::vector<BackProjectorByBinUsingProjMatrixByBin> projectors(2, BackProjectorByBinUsingProjMatrixByBin(PM_sptr));
 
     // Set up the data processor
-    shared_ptr<SeparableCartesianMetzImageFilter<float> > data_processor_sptr;
+    shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > data_processor_sptr;
     get_data_processor(data_processor_sptr, _fwhm);
     data_processor_sptr->set_up(*images[0]);
 
