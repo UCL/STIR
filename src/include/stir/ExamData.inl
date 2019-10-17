@@ -1,4 +1,3 @@
-#include "stir/IO/ExamData.h"
 
 START_NAMESPACE_STIR
 

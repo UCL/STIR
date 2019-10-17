@@ -14,7 +14,7 @@
 
     See STIR/LICENSE.txt for details
 */
-#include "stir/IO/ExamData.h"
+#include "stir/ExamData.h"
 
 
 #include <iostream>

@@ -71,5 +71,5 @@ private:
 
 END_NAMESPACE_STIR
 
-#include "stir/IO/ExamData.inl"
+#include "stir/ExamData.inl"
 #endif
