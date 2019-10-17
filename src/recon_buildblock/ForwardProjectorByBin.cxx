@@ -42,6 +42,8 @@
 #include "stir/Succeeded.h"
 #include "stir/info.h"
 #include "stir/error.h"
+#include "stir/DataProcessor.h"
+#include "stir/is_null_ptr.h"
 #include <boost/format.hpp>
 #include <iostream>
 
@@ -52,10 +54,27 @@ ForwardProjectorByBin::ForwardProjectorByBin()
   :   _already_set_up(false),
     _openMP_compatible(true)
 {
+  set_defaults();
 }
 
 ForwardProjectorByBin::~ForwardProjectorByBin()
 {
+}
+
+void
+ForwardProjectorByBin::
+set_defaults()
+{
+  _pre_data_processor_sptr.reset();
+}
+
+void
+ForwardProjectorByBin::
+initialise_keymap()
+{
+  parser.add_start_key("Forward Projector Parameters");
+  parser.add_stop_key("End Forward Projector Parameters");
+  parser.add_parsing_key("pre data processor", &_pre_data_processor_sptr);
 }
 
 void
@@ -294,6 +313,20 @@ ForwardProjectorByBin::
 set_input(const DiscretisedDensity<3,float> & density)
 {
     _density_sptr.reset(density.clone());
+
+    // If a pre-forward-projection data processor has been set, apply it.
+    if (!is_null_ptr(_pre_data_processor_sptr)) {
+        Succeeded success = _pre_data_processor_sptr->apply(*_density_sptr);
+        if (success != Succeeded::yes)
+            throw std::runtime_error("ForwardProjectorByBin::set_input(). Pre-forward-projection data processor failed.");
+    }
+}
+
+void
+ForwardProjectorByBin::
+set_pre_data_processor(shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > pre_data_processor_sptr)
+{
+    _pre_data_processor_sptr = pre_data_processor_sptr;
 }
 
 END_NAMESPACE_STIR

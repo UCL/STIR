@@ -47,7 +47,7 @@ template <int num_dimensions, class elemT> class DiscretisedDensity;
 class ProjDataInfo;
 class ProjData;
 class DataSymmetriesForViewSegmentNumbers;
-
+template <typename DataT> class DataProcessor;
 
 /*!
   \ingroup projection
@@ -130,6 +130,9 @@ virtual void set_up(
     /// Set input
     virtual void set_input(const DiscretisedDensity<3,float>&);
 
+    /// Set data processor to use before forward projection. MUST BE CALLED BEFORE SET_INPUT.
+    void set_pre_data_processor(shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > pre_data_processor_sptr);
+
     /// Get whether a projector can be used with openMP
     bool get_openMP_compatible() const { return _openMP_compatible; }
 
@@ -154,6 +157,10 @@ protected:
 
   //! The density ptr set with set_up()
   shared_ptr<DiscretisedDensity<3,float> > _density_sptr;
+  shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > _pre_data_processor_sptr;
+
+  virtual void set_defaults();
+  virtual void initialise_keymap();
 
   shared_ptr<ProjDataInfo> _proj_data_info_sptr;
 

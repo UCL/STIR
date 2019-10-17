@@ -25,19 +25,19 @@
 #
 # Copyright 2004-2011, Hammersmith Imanet Ltd
 # Copyright 2011-2013, Kris Thielemans
-# Copyright 2014-2015, University College London
+# Copyright 2014-2015,2019 University College London
 
 
 # set default for variables.
 # A lot of these are for being able to do the processing in stages
 # (e.g. for when something went wrong)
-: ${do_lln:=0}
 : ${do_update:=0}
 : ${do_version:=1}
 : ${do_license:=1}
 : ${do_ChangeLog:=1}
 : ${do_doc:=1}
 : ${do_doxygen:=1}
+: ${do_git_commit:=0}
 : ${do_zip_source:=1}
 : ${do_recon_test_pack:=1}
 : ${do_transfer:=1}
@@ -47,9 +47,9 @@
 : ${do_website_sync:=0}
 
 set -e
-: ${VERSION:=3.0}
+: ${VERSION:=4.0_alpha}
 
-: ${REPO:=~/devel/UCL_STIR}
+: ${REPO:=git@github.com:UCL/STIR} #=~/devel/UCL_STIR}
 : ${CHECKOUTOPTS:=""}
 
 : ${destination:=~/devel/STIR-website/}
@@ -91,7 +91,6 @@ fi
 # update VERSION.txt
 if [ $do_version = 1 ]; then
 echo "updating VERSION.txt"
-echo "TODO update PROJECT_NUMBER in Doxyfile"
 trap "echo ERROR in updating VERSION.txt" ERR
 echo $VERSION > VERSION.txt
 fi
@@ -116,11 +115,9 @@ if [ $do_license = 1 ]; then
   rm tmp_LICENSE.txt
   echo $END_STRING >> LICENSE.txt
   #then add new list on again
-  find . -path ./local -prune -path ./include/local -prune -path ./include/stir/local -prune -path .git -prune \
-     -o -name "*[xhlkc]" -type f  -print | xargs grep -l PARAPET |grep -v 'local/' >>LICENSE.txt 
+  find . -path .git -prune \
+     -o -name "*[xhlkc]" -type f  -print | xargs grep -l PARAPET  >>LICENSE.txt 
 fi
-
-#git commit  -m "updated VERSION.txt etc for release of version $VERSION"
 
 # make ChangeLog file
 if [ $do_ChangeLog = 1 ]; then
@@ -137,8 +134,14 @@ if [ $do_doc = 1 ]; then
   if [ $do_doxygen = 1 ]; then
     PATH=$PATH:/cygdrive/c/Program\ Files/GPLGS:/cygdrive/d/Program\ Files/Graphviz2.26.3/bin
     echo "Running doxygen"
-    doxygen > ${DISTRIB}/doxygen.log 2>&1
-    mv dox.log ${DISTRIB}/
+    mkdir -p ${DISTRIB}/build/STIR_${VERSION}
+    pushd ${DISTRIB}/build/STIR_${VERSION}
+    cmake -DGRAPHICS=None ${DISTRIB}/STIR
+    echo "CMake OK"
+    make RUN_DOXYGEN > ${DISTRIB}/doxygen.log 2>&1
+    mkdir -p ${DISTRIB}/STIR/documentation/doxy
+    mv html ${DISTRIB}/STIR/documentation/doxy/
+    popd
     echo "Done"
   fi
   cd ../documentation
@@ -158,6 +161,16 @@ if [ $do_doc = 1 ]; then
   echo "zipping documentation"
   zip -rD ${DISTRIB}/STIR_doc_${VERSION}.zip STIR/documentation/*.rtf STIR/documentation/*.pdf STIR/documentation/*.htm STIR/documentation/doxy >/dev/null
   find STIR/documentation/contrib -type f | zip -@ ${DISTRIB}/STIR_doc_${VERSION}.zip 
+fi
+
+if [ $do_git_commit = 1 ]; then
+    trap "echo ERROR with git" ERR
+    cd ${DISTRIB}/STIR
+    git commit  -m "updated VERSION.txt etc for release of version $VERSION"
+    echo "Still do"
+    echo "git tag -a stir_rel_XXX -m \"version $VERSION\"; git push --tags"
+else
+    echo "no git commit"
 fi
 
 trap "echo ERROR after creating doc" ERR

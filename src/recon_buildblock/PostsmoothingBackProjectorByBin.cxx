@@ -42,7 +42,7 @@ PostsmoothingBackProjectorByBin::
 set_defaults()
 {
   original_back_projector_ptr.reset();
-  image_processor_ptr.reset();
+  _post_data_processor_sptr.reset();
 }
 
 void
@@ -52,7 +52,7 @@ initialise_keymap()
   parser.add_start_key("Post Smoothing Back Projector Parameters");
   parser.add_stop_key("End Post Smoothing Back Projector Parameters");
   parser.add_parsing_key("Original Back projector type", &original_back_projector_ptr);
-  parser.add_parsing_key("filter type", &image_processor_ptr);
+  parser.add_parsing_key("filter type", &_post_data_processor_sptr);
 }
 
 bool
@@ -77,9 +77,10 @@ PostsmoothingBackProjectorByBin::
 PostsmoothingBackProjectorByBin(
                        const shared_ptr<BackProjectorByBin>& original_back_projector_ptr,
                        const shared_ptr<DataProcessor<DiscretisedDensity<3,float> > >& image_processor_ptr)
-                       : original_back_projector_ptr(original_back_projector_ptr),
-                         image_processor_ptr(image_processor_ptr)
-{}
+                       : original_back_projector_ptr(original_back_projector_ptr)
+{
+    _post_data_processor_sptr = image_processor_ptr;
+}
 
 PostsmoothingBackProjectorByBin::
 ~PostsmoothingBackProjectorByBin()
@@ -92,8 +93,6 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
 {
   BackProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);
   original_back_projector_ptr->set_up(proj_data_info_ptr, image_info_ptr);
-  if (!is_null_ptr(image_processor_ptr))
-     image_processor_ptr->set_up(*image_info_ptr);
 }
 
 const DataSymmetriesForViewSegmentNumbers * 
@@ -139,15 +138,5 @@ actual_back_project(const RelatedViewgrams<float>& viewgrams,
                                                 min_axial_pos_num, max_axial_pos_num,
                                                 min_tangential_pos_num, max_tangential_pos_num);
 }
-
-void
-PostsmoothingBackProjectorByBin::
-get_output(DiscretisedDensity<3,float> &density) const
-{
-    BackProjectorByBin::get_output(density);
-    if (!is_null_ptr(image_processor_ptr))
-        image_processor_ptr->apply(density);
-}
-
 
 END_NAMESPACE_STIR
