@@ -242,6 +242,10 @@ HFS, FFS, HFP or FFP).
     trigger or frame times in a series is no longer enforced. This allows 3-D DICOM volumes to be read correctly but may cause
     issues for dynamic PET or CT data.
   </li>
+  <li>Data processors (such as motion or smoothing) can be used prior to forward projections and following back projections. 
+    This supercedes functionality provided by <code>PresmoothingForwardProjectorByBin</code> and 
+    <code>PostsmoothingBackProjectorByBin</code>, which can now be considered deprecated.
+  </li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>
 <ul>
