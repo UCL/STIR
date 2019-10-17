@@ -83,9 +83,6 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
   _already_set_up = true;
   _proj_data_info_sptr = proj_data_info_sptr->create_shared_clone();
   _density_sptr.reset(density_info_sptr->clone());
-  // Data processor might have been set during parsing
-  if (!is_null_ptr(_post_data_processor_sptr))
-    _post_data_processor_sptr->set_up(*density_info_sptr);
 
 #ifdef STIR_OPENMP
 #pragma omp parallel
@@ -94,18 +91,6 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
       _local_output_image_sptrs.resize(omp_get_num_threads(), shared_ptr<DiscretisedDensity<3,float> >());
     }
 #endif
-}
-
-void
-BackProjectorByBin::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
-       const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr,
-       shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > post_data_processor_sptr)
-{
-  set_up(proj_data_info_sptr,density_info_sptr);
-  _post_data_processor_sptr = post_data_processor_sptr;
-  if (!is_null_ptr(_post_data_processor_sptr))
-    _post_data_processor_sptr->set_up(*density_info_sptr);
 }
 
 void
@@ -362,6 +347,13 @@ get_output(DiscretisedDensity<3,float> &density) const
         if (success != Succeeded::yes)
             throw std::runtime_error("BackProjectorByBin::get_output(). Post-back-projection data processor failed.");
     }
+}
+
+void
+BackProjectorByBin::
+set_post_data_processor(shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > post_data_processor_sptr)
+{
+    _post_data_processor_sptr = post_data_processor_sptr;
 }
 
 void

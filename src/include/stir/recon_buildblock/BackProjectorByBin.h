@@ -77,13 +77,6 @@ public:
     const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
     ) =0;
 
-  /// Setup whilst applying a post-back-projection data processor
-  void set_up(
-     const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-     const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr, // TODO should be Info only
-     shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > post_data_processor_sptr
-     );
-
   /*! \brief Informs on which symmetries the projector handles
    It should get data related by at least those symmetries.
    Otherwise, a run-time error will occur (unless the derived
@@ -147,6 +140,9 @@ void back_project(const RelatedViewgrams<float>&,
   This will overwrite the array-content of the argument with the result of all backprojections since calling `start_accumulating_in_new_target()`. Note that the argument has to have the same characteristics as what was used when calling `set_up()`.
  */
  virtual void get_output(DiscretisedDensity<3,float> &) const;
+
+  /// Set data processor to use after back projection
+  void set_post_data_processor(shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > post_data_processor_sptr);
 
 protected:
 
