@@ -173,7 +173,6 @@ protected:
     void do_colsher_filter_view( RelatedViewgrams<float> & viewgrams);
 //!  3D backprojection implentation for 8 viewgrams.
     void do_3D_backprojection_view(RelatedViewgrams<float> const & viewgrams,
-                                   VoxelsOnCartesianGrid<float> &image,
                                    int rmin, int rmax);
 //!  Saving CPU timing and values of reconstruction parameters into a log file.    
     void do_log_file(const VoxelsOnCartesianGrid<float> &image);
@@ -191,8 +190,7 @@ public:
     virtual void do_process_viewgrams(
                                   RelatedViewgrams<float> & viewgrams,
                                   int rmin, int rmax,
-                                  int orig_min_ring, int orig_max_ring,
-                                  VoxelsOnCartesianGrid<float> &image);
+                                  int orig_min_ring, int orig_max_ring);
 
     // parameters stuff
  public:

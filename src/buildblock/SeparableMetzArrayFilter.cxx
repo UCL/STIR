@@ -224,7 +224,7 @@ void build_metz(VectorWithOffset<elemT>& kernel,
     for (int i=0;i<=Res/2;i++) {
       if (i%samples_per_voxel==0){
         int j=i/samples_per_voxel;
-        filter[j] = (fftdata[i].real()*MmPerVox)/(Res*sampling_interval);
+        filter[j] = (fftdata[i].real()*MmPerVox)/sampling_interval;
       }
       
     }

@@ -1,0 +1,19 @@
+lm_to_projdata Parameters:=
+  input file := ${INPUT}
+  output filename prefix := ${OUT_PROJDATA_FILE}
+  template_projdata := ${TEMPLATE}
+  maximum absolute segment number to process := -1
+  ; store the prompts (value should be 1 or 0)
+  store prompts := 1  ;default
+  ; what to do if it's a delayed event
+  store delayeds := 0  ;default
+  
+  ; miscellaneous parameters
+
+  ; list each event on stdout and do not store any files (use only for testing!)
+  ; has to be 0 or 1
+  List event coordinates := 0
+  ; if you're short of RAM (i.e. a single projdata does not fit into memory),
+  ; you can use this to process the list mode data in multiple passes.
+  num_segments_in_memory := -1
+End := 

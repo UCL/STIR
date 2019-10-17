@@ -46,7 +46,7 @@ START_NAMESPACE_STIR
 
 typedef std::vector<std::string> ASCIIlist_type;
 
-class Object;
+class RegisteredObjectBase;
 class Succeeded;
 
 class KeyParser;
@@ -90,7 +90,7 @@ public :
   void *p_object_variable;		// pointer to a variable 
   const ASCIIlist_type *p_object_list_of_values;// only used by ASCIIlist
   // TODO should really not be here, but it works for now
-  typedef Object * (Parser)(std::istream*, const std::string&);
+  typedef RegisteredObjectBase * (Parser)(std::istream*, const std::string&);
   Parser* parser;
 
   map_element();
@@ -98,10 +98,10 @@ public :
   map_element(KeyArgument::type t, void (KeyParser::*pom)(),
 	      void* pov= 0, const ASCIIlist_type *list_of_valid_keywords = 0);
   map_element(void (KeyParser::*pom)(),
-	      Object** pov, 
+	      RegisteredObjectBase** pov, 
               Parser *);
   map_element(void (KeyParser::*pom)(),
-	      shared_ptr<Object>* pov, 
+	      shared_ptr<RegisteredObjectBase>* pov, 
               Parser *);
   ~map_element();
 	
@@ -275,7 +275,7 @@ public:
   {
     add_in_keymap(keyword,     
                   map_element(&KeyParser::set_parsing_object, 
-                    reinterpret_cast<Object**>(parsed_object_ptr_ptr), 
+                    reinterpret_cast<RegisteredObjectBase**>(parsed_object_ptr_ptr), 
                     (map_element::Parser *)(&ParsingClass::read_registered_object))
 		    );
   }
@@ -287,7 +287,7 @@ public:
   {
     add_in_keymap(keyword,     
                   map_element(&KeyParser::set_shared_parsing_object, 
-                    reinterpret_cast<shared_ptr<Object>*>(parsed_object_ptr_ptr), 
+                    reinterpret_cast<shared_ptr<RegisteredObjectBase>*>(parsed_object_ptr_ptr), 
                     (map_element::Parser *)(&ParsingClass::read_registered_object))
 		    );
   }

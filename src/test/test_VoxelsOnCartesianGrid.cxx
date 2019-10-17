@@ -3,6 +3,9 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011,  Hammersmith Imanet Ltd 
+    Copyright (C) 2018, Commonwealth Scientific and Industrial Research Organisation
+                        Australian eHealth Research Centre
+    Copyright (C) 2019, University College London
     This file is part of STIR. 
  
     This file is free software; you can redistribute it and/or modify 
@@ -23,9 +26,10 @@
   
   \brief Test program for stir::VoxelsOnCartesianGrid and image hierarchy
     
-   \author Sanida Mustafovic
-   \author Kris Thielemans
-   \author PARAPET project
+  \author Ashley Gillman
+  \author Sanida Mustafovic
+  \author Kris Thielemans
+  \author PARAPET project
       
 */
 
@@ -200,7 +204,21 @@ VoxelsOnCartesianGridTests::run_tests()
                                                 scanner_ptr->get_default_bin_size()/zoom),
                    "test on grid spacing");
     check_if_equal(ob5.get_origin(), origin);
-    
+
+    {
+      // with different zooms
+      shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo());
+      CartesianCoordinate3D<float> zooms(1.1F,1.2F,1.3F);
+      VoxelsOnCartesianGrid<float>
+        ob6(exam_info_sptr, *proj_data_info_ptr,zooms,origin,CartesianCoordinate3D<int>(z_size,xy_size,xy_size));
+      check_if_equal(ob6.get_grid_spacing(),
+                     CartesianCoordinate3D<float>(scanner_ptr->get_ring_spacing()/2/zooms[1],
+                                                  scanner_ptr->get_default_bin_size()/zooms[2],
+                                                  scanner_ptr->get_default_bin_size()/zooms[3]),
+                     "test on grid spacing (3 different zooms)");
+      check_if_equal(ob6.get_origin(), origin);
+    }
+
     {
       cerr << "Tests get_empty_voxels_on_cartesian_grid\n";
       
@@ -252,6 +270,95 @@ VoxelsOnCartesianGridTests::run_tests()
       }
     }
 
+  }
+
+  {
+    cerr << "Test LPS with different orientations:" << std::endl;
+
+    shared_ptr<ExamInfo> hfs_exam_info_sptr(new ExamInfo());
+    hfs_exam_info_sptr->patient_position.set_orientation(PatientPosition::head_in);
+    hfs_exam_info_sptr->patient_position.set_rotation(PatientPosition::supine);
+    VoxelsOnCartesianGrid<float> hfs_image(hfs_exam_info_sptr,
+                                           range, origin, grid_spacing);
+
+    shared_ptr<ExamInfo> ffs_exam_info_sptr(new ExamInfo());
+    ffs_exam_info_sptr->patient_position.set_orientation(PatientPosition::feet_in);
+    ffs_exam_info_sptr->patient_position.set_rotation(PatientPosition::supine);
+    VoxelsOnCartesianGrid<float> ffs_image(ffs_exam_info_sptr,
+                                           range, origin, grid_spacing);
+
+    shared_ptr<ExamInfo> hfp_exam_info_sptr(new ExamInfo());
+    hfp_exam_info_sptr->patient_position.set_orientation(PatientPosition::head_in);
+    hfp_exam_info_sptr->patient_position.set_rotation(PatientPosition::prone);
+    VoxelsOnCartesianGrid<float> hfp_image(hfp_exam_info_sptr,
+                                           range, origin, grid_spacing);
+
+    shared_ptr<ExamInfo> ffp_exam_info_sptr(new ExamInfo());
+    ffp_exam_info_sptr->patient_position.set_orientation(PatientPosition::feet_in);
+    ffp_exam_info_sptr->patient_position.set_rotation(PatientPosition::prone);
+    VoxelsOnCartesianGrid<float> ffp_image(ffp_exam_info_sptr,
+                                           range, origin, grid_spacing);
+
+    const BasicCoordinate<3,int> indices = make_coordinate(1,2,3);
+
+    // Check some known relations
+    check_if_equal(hfs_image.get_LPS_coordinates_for_indices(indices).x(),
+                   -hfp_image.get_LPS_coordinates_for_indices(indices).x(),
+                   "head in (suppine/prone) have opposite x");
+    check_if_equal(hfs_image.get_LPS_coordinates_for_indices(indices).y(),
+                   -hfp_image.get_LPS_coordinates_for_indices(indices).y(),
+                   "head in (suppine/prone) have opposite y");
+    check_if_equal(hfs_image.get_LPS_coordinates_for_indices(indices).z(),
+                   hfp_image.get_LPS_coordinates_for_indices(indices).z(),
+                   "head in (suppine/prone) have same z");
+
+    check_if_equal(ffs_image.get_LPS_coordinates_for_indices(indices).x(),
+                   -ffp_image.get_LPS_coordinates_for_indices(indices).x(),
+                   "feet in (suppine/prone) have opposite x");
+    check_if_equal(ffs_image.get_LPS_coordinates_for_indices(indices).y(),
+                   -ffp_image.get_LPS_coordinates_for_indices(indices).y(),
+                   "feet in (suppine/prone) have opposite y");
+    check_if_equal(ffs_image.get_LPS_coordinates_for_indices(indices).z(),
+                   ffp_image.get_LPS_coordinates_for_indices(indices).z(),
+                   "feet in (suppine/prone) have same z");
+
+    check_if_equal(hfs_image.get_LPS_coordinates_for_indices(indices).x(),
+                   -ffs_image.get_LPS_coordinates_for_indices(indices).x(),
+                   "(head/feet) in suppine have opposite x");
+    check_if_equal(hfs_image.get_LPS_coordinates_for_indices(indices).y(),
+                   ffs_image.get_LPS_coordinates_for_indices(indices).y(),
+                   "(head/feet) in suppine have same y");
+    check_if_equal(hfs_image.get_LPS_coordinates_for_indices(indices).z(),
+                   -ffs_image.get_LPS_coordinates_for_indices(indices).z(),
+                   "(head/feet) in suppine have opposite z");
+
+    check_if_equal(hfp_image.get_LPS_coordinates_for_indices(indices).x(),
+                   -ffp_image.get_LPS_coordinates_for_indices(indices).x(),
+                   "(head/feet) in prone have opposite x");
+    check_if_equal(hfp_image.get_LPS_coordinates_for_indices(indices).y(),
+                   ffp_image.get_LPS_coordinates_for_indices(indices).y(),
+                   "(head/feet) in prone have same y");
+    check_if_equal(hfp_image.get_LPS_coordinates_for_indices(indices).z(),
+                   -ffp_image.get_LPS_coordinates_for_indices(indices).z(),
+                   "(head/feet) in prone have opposite z");
+
+    // Check inverse consistency
+    check_if_equal(indices,
+                   hfs_image.get_indices_closest_to_LPS_coordinates(
+                     hfs_image.get_LPS_coordinates_for_indices(indices)),
+                   "HFS inverse consistency");
+    check_if_equal(indices,
+                   ffs_image.get_indices_closest_to_LPS_coordinates(
+                     ffs_image.get_LPS_coordinates_for_indices(indices)),
+                   "FFS inverse consistency");
+    check_if_equal(indices,
+                   hfp_image.get_indices_closest_to_LPS_coordinates(
+                     hfp_image.get_LPS_coordinates_for_indices(indices)),
+                   "HFP inverse consistency");
+    check_if_equal(indices,
+                   ffp_image.get_indices_closest_to_LPS_coordinates(
+                     ffp_image.get_LPS_coordinates_for_indices(indices)),
+                   "FFP inverse consistency");
   }
 }
 

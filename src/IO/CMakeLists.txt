@@ -24,7 +24,6 @@ set(dir IO)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-  ExamData
   OutputFileFormat 
   OutputFileFormat_default 
   InterfileOutputFileFormat
@@ -32,7 +31,9 @@ set(${dir_LIB_SOURCES}
   InterfileHeaderSiemens
   InputFileFormatRegistry 
   InterfileDynamicDiscretisedDensityOutputFileFormat 
-  InterfileParametricDensityOutputFileFormat
+  InterfileParametricDiscretisedDensityOutputFileFormat
+  MultiDynamicDiscretisedDensityOutputFileFormat
+
   GIPL_ImageFormat
 ) 
 

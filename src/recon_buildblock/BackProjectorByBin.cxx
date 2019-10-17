@@ -8,12 +8,13 @@
 
   \author Kris Thielemans
   \author PARAPET project
+  \author Richard Brown
   
 */
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000- 2011, Hammersmith Imanet Ltd
-    Copyright (C) 2015, 2018, University College London
+    Copyright (C) 2015, 2018-2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -35,6 +36,9 @@
 #include "stir/RelatedViewgrams.h"
 #include "stir/ProjData.h"
 #include "stir/DiscretisedDensity.h"
+#include "stir/info.h"
+#include "stir/is_null_ptr.h"
+#include "stir/DataProcessor.h"
 #include <vector>
 #ifdef STIR_OPENMP
 #include "stir/is_null_ptr.h"
@@ -48,10 +52,27 @@ START_NAMESPACE_STIR
 BackProjectorByBin::BackProjectorByBin()
   :   _already_set_up(false)
 {
+    set_defaults();
 }
 
 BackProjectorByBin::~BackProjectorByBin()
 {
+}
+
+void
+BackProjectorByBin::
+set_defaults()
+{
+  _post_data_processor_sptr.reset();
+}
+
+void
+BackProjectorByBin::
+initialise_keymap()
+{
+  parser.add_start_key("Back Projector Parameters");
+  parser.add_stop_key("End Back Projector Parameters");
+  parser.add_parsing_key("post data processor", &_post_data_processor_sptr);
 }
 
 void
@@ -61,7 +82,15 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
 {
   _already_set_up = true;
   _proj_data_info_sptr = proj_data_info_sptr->create_shared_clone();
-  _density_info_sptr = density_info_sptr;
+  _density_sptr.reset(density_info_sptr->clone());
+
+#ifdef STIR_OPENMP
+#pragma omp parallel
+    {
+#pragma omp single
+      _local_output_image_sptrs.resize(omp_get_num_threads(), shared_ptr<DiscretisedDensity<3,float> >());
+    }
+#endif
 }
 
 void
@@ -73,35 +102,109 @@ check(const ProjDataInfo& proj_data_info, const DiscretisedDensity<3,float>& den
   if (!(*this->_proj_data_info_sptr >= proj_data_info))
     error(boost::format("BackProjectorByBin set-up with different geometry for projection data.\nSet_up was with\n%1%\nCalled with\n%2%")
           % this->_proj_data_info_sptr->parameter_info() % proj_data_info.parameter_info());
-  if (! this->_density_info_sptr->has_same_characteristics(density_info))
+  if (! this->_density_sptr->has_same_characteristics(density_info))
     error("BackProjectorByBin set-up with different geometry for density or volume data.");
-}  
+}
 
-void 
+void
 BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
-				 const ProjData& proj_data)
+const ProjData& proj_data, int subset_num, int num_subsets)
 {
-  check(*proj_data.get_proj_data_info_sptr(), image);
-    
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> 
-    symmetries_sptr(this->get_symmetries_used()->clone());  
-  
-  const std::vector<ViewSegmentNumbers> vs_nums_to_process = 
+  start_accumulating_in_new_target();
+  back_project(proj_data, subset_num, num_subsets);
+  get_output(image);
+}
+#ifdef STIR_PROJECTORS_AS_V3
+void
+BackProjectorByBin::back_project( DiscretisedDensity<3,float>& image,
+                  const RelatedViewgrams<float>& viewgrams)
+{
+  back_project(image,viewgrams,
+                  viewgrams.get_min_axial_pos_num(),
+          viewgrams.get_max_axial_pos_num(),
+          viewgrams.get_min_tangential_pos_num(),
+          viewgrams.get_max_tangential_pos_num());
+}
+
+void BackProjectorByBin::back_project
+  (DiscretisedDensity<3,float>& image,
+   const RelatedViewgrams<float>& viewgrams,
+   const int min_axial_pos_num,
+   const int max_axial_pos_num)
+{
+  back_project(image,viewgrams,
+             min_axial_pos_num,
+         max_axial_pos_num,
+         viewgrams.get_min_tangential_pos_num(),
+         viewgrams.get_max_tangential_pos_num());
+}
+
+void
+BackProjectorByBin::
+back_project(DiscretisedDensity<3,float>& density,
+         const RelatedViewgrams<float>& viewgrams,
+         const int min_axial_pos_num, const int max_axial_pos_num,
+         const int min_tangential_pos_num, const int max_tangential_pos_num)
+{
+  if (viewgrams.get_num_viewgrams()==0)
+    return;
+
+  check(*viewgrams.get_proj_data_info_sptr(), density);
+
+  start_timers();
+
+  // first check symmetries
+  {
+    const ViewSegmentNumbers basic_vs = viewgrams.get_basic_view_segment_num();
+
+    if (get_symmetries_used()->num_related_view_segment_numbers(basic_vs) !=
+      viewgrams.get_num_viewgrams())
+      error("BackProjectorByBin::back_project called with incorrect related_viewgrams. Problem with symmetries!\n");
+
+    for (RelatedViewgrams<float>::const_iterator iter = viewgrams.begin();
+     iter != viewgrams.end();
+     ++iter)
+      {
+    ViewSegmentNumbers vs(iter->get_view_num(), iter->get_segment_num());
+    get_symmetries_used()->find_basic_view_segment_numbers(vs);
+    if (vs != basic_vs)
+      error("BackProjectorByBin::back_project called with incorrect related_viewgrams. Problem with symmetries!\n");
+    }
+  }
+
+  actual_back_project(density,viewgrams,
+             min_axial_pos_num,
+         max_axial_pos_num,
+         min_tangential_pos_num,
+         max_tangential_pos_num);
+  stop_timers();
+}
+#endif
+// -------------------------------------------------------------------------------------------------------------------- //
+// The following are repetition of above, where the DiscretisedDensity has already been set with start_accumulating_in_new_target()
+// -------------------------------------------------------------------------------------------------------------------- //
+void
+BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int num_subsets)
+{
+#ifndef NDEBUG
+    assert(fabs(_density_sptr->sum()) < 1.e-7F);
+#endif
+  check(*proj_data.get_proj_data_info_sptr(), *_density_sptr);
+
+  shared_ptr<DataSymmetriesForViewSegmentNumbers>
+    symmetries_sptr(this->get_symmetries_used()->clone());
+
+  const std::vector<ViewSegmentNumbers> vs_nums_to_process =
     detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
                                          proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
-                                         0, 1/*subset_num, num_subsets*/);
+                                         subset_num, num_subsets);
 
 #ifdef STIR_OPENMP
-  std::vector< shared_ptr<DiscretisedDensity<3,float> > > local_output_image_sptrs;
-#pragma omp parallel shared(proj_data, symmetries_sptr, local_output_image_sptrs)
+#pragma omp parallel shared(proj_data, symmetries_sptr)
 #endif
-  { 
+  {
 #ifdef STIR_OPENMP
-#pragma omp single
-    {
-      local_output_image_sptrs.resize(omp_get_num_threads(), shared_ptr<DiscretisedDensity<3,float> >());
-    }
-#pragma omp for schedule(runtime)  
+#pragma omp for schedule(runtime)
 #endif
     // note: older versions of openmp need an int as loop
     for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
@@ -112,94 +215,171 @@ BackProjectorByBin::back_project(DiscretisedDensity<3,float>& image,
 #pragma omp critical (BACKPROJECTORBYBIN_GETVIEWGRAMS)
         viewgrams = proj_data.get_related_viewgrams(vs, symmetries_sptr);
 #else
-        const RelatedViewgrams<float> viewgrams = 
+        const RelatedViewgrams<float> viewgrams =
           proj_data.get_related_viewgrams(vs, symmetries_sptr);
 #endif
-#ifdef STIR_OPENMP
-        const int thread_num=omp_get_thread_num();
-        if(is_null_ptr(local_output_image_sptrs[thread_num]))
-          local_output_image_sptrs[thread_num].reset(image.get_empty_copy());
-        
-        back_project(*(local_output_image_sptrs[thread_num]), viewgrams);	  
-#else            
-        back_project(image, viewgrams);
-#endif
+
+        info(boost::format("Processing view %1% of segment %2%") % vs.view_num() % vs.segment_num());
+        back_project(viewgrams);
       }
   }
 #ifdef STIR_OPENMP
   // "reduce" data constructed by threads
   {
-    for (int i=0; i<static_cast<int>(local_output_image_sptrs.size()); ++i)
-      if(!is_null_ptr(local_output_image_sptrs[i])) // only accumulate if a thread filled something in
-        image += *(local_output_image_sptrs[i]);
+    for (int i=0; i<static_cast<int>(_local_output_image_sptrs.size()); ++i)
+      if(!is_null_ptr(_local_output_image_sptrs[i])) // only accumulate if a thread filled something in
+        (*_density_sptr) += *(_local_output_image_sptrs[i]);
   }
 #endif
 }
 
-void 
-BackProjectorByBin::back_project( DiscretisedDensity<3,float>& image,
-				  const RelatedViewgrams<float>& viewgrams)
+void
+BackProjectorByBin::back_project(const RelatedViewgrams<float>& viewgrams)
 {
-  back_project(image,viewgrams,
+  back_project(viewgrams,
                   viewgrams.get_min_axial_pos_num(),
-		  viewgrams.get_max_axial_pos_num(),
-		  viewgrams.get_min_tangential_pos_num(),
-		  viewgrams.get_max_tangential_pos_num());
+          viewgrams.get_max_axial_pos_num(),
+          viewgrams.get_min_tangential_pos_num(),
+          viewgrams.get_max_tangential_pos_num());
 }
 
 void BackProjectorByBin::back_project
-  (DiscretisedDensity<3,float>& image,
-   const RelatedViewgrams<float>& viewgrams,    
-   const int min_axial_pos_num, 
+  (const RelatedViewgrams<float>& viewgrams,
+   const int min_axial_pos_num,
    const int max_axial_pos_num)
 {
-  back_project(image,viewgrams,
+  back_project(viewgrams,
              min_axial_pos_num,
-	     max_axial_pos_num,
-	     viewgrams.get_min_tangential_pos_num(),
-	     viewgrams.get_max_tangential_pos_num());
+         max_axial_pos_num,
+         viewgrams.get_min_tangential_pos_num(),
+         viewgrams.get_max_tangential_pos_num());
 }
 
-void 
+void
 BackProjectorByBin::
-back_project(DiscretisedDensity<3,float>& density,
-	     const RelatedViewgrams<float>& viewgrams, 		    
-	     const int min_axial_pos_num, const int max_axial_pos_num,
-	     const int min_tangential_pos_num, const int max_tangential_pos_num)
+back_project(const RelatedViewgrams<float>& viewgrams,
+         const int min_axial_pos_num, const int max_axial_pos_num,
+         const int min_tangential_pos_num, const int max_tangential_pos_num)
 {
   if (viewgrams.get_num_viewgrams()==0)
     return;
 
-  check(*viewgrams.get_proj_data_info_sptr(), density);
+  check(*viewgrams.get_proj_data_info_sptr(), *_density_sptr);
 
   start_timers();
 
-  // first check symmetries    
+#ifdef STIR_OPENMP
+  const int thread_num=omp_get_thread_num();
+  if(is_null_ptr(_local_output_image_sptrs[thread_num]))
+    _local_output_image_sptrs[thread_num].reset(_density_sptr->get_empty_copy());
+#endif
+
+  // first check symmetries
   {
     const ViewSegmentNumbers basic_vs = viewgrams.get_basic_view_segment_num();
-        
+
     if (get_symmetries_used()->num_related_view_segment_numbers(basic_vs) !=
       viewgrams.get_num_viewgrams())
       error("BackProjectorByBin::back_project called with incorrect related_viewgrams. Problem with symmetries!\n");
-    
+
     for (RelatedViewgrams<float>::const_iterator iter = viewgrams.begin();
-	 iter != viewgrams.end();
-	 ++iter)
+     iter != viewgrams.end();
+     ++iter)
       {
-	ViewSegmentNumbers vs(iter->get_view_num(), iter->get_segment_num());
-	get_symmetries_used()->find_basic_view_segment_numbers(vs);
-	if (vs != basic_vs)
-	  error("BackProjectorByBin::back_project called with incorrect related_viewgrams. Problem with symmetries!\n");
+    ViewSegmentNumbers vs(iter->get_view_num(), iter->get_segment_num());
+    get_symmetries_used()->find_basic_view_segment_numbers(vs);
+    if (vs != basic_vs)
+      error("BackProjectorByBin::back_project called with incorrect related_viewgrams. Problem with symmetries!\n");
     }
   }
 
-  actual_back_project(density,viewgrams,
-             min_axial_pos_num,
-	     max_axial_pos_num,
-	     min_tangential_pos_num,
-	     max_tangential_pos_num);
+  actual_back_project(
+         viewgrams,
+         min_axial_pos_num,
+         max_axial_pos_num,
+         min_tangential_pos_num,
+         max_tangential_pos_num);
   stop_timers();
 }
 
+void
+BackProjectorByBin::
+start_accumulating_in_new_target()
+{
+#ifdef STIR_OPENMP
+  if (omp_get_num_threads()!=1)
+      error("BackProjectorByBin::start_accumulating_in_new_target cannot be called inside a thread");
+
+  for (int i=0; i<static_cast<int>(_local_output_image_sptrs.size()); ++i)
+               if(!is_null_ptr(_local_output_image_sptrs[i])) // only accumulate if a thread filled something in
+            _local_output_image_sptrs.at(i)->fill(0.F);
+
+#endif
+    _density_sptr->fill(0.);
+}
+
+void
+BackProjectorByBin::
+get_output(DiscretisedDensity<3,float> &density) const
+{
+    if (!density.has_same_characteristics(*_density_sptr))
+            error("Images should have similar characteristics.");
+
+#ifdef STIR_OPENMP
+  if (omp_get_num_threads()!=1)
+        error("BackProjectorByBin::get_output() cannot be called inside a thread");
+
+  // "reduce" data constructed by threads
+  {
+    density.fill(0.F);
+    for (int i=0; i<static_cast<int>(_local_output_image_sptrs.size()); ++i) {
+        if(!is_null_ptr(_local_output_image_sptrs[i]))// only accumulate if a thread filled something in
+            density += *(_local_output_image_sptrs[i]);
+    }
+  }
+#else
+    std::copy(_density_sptr->begin_all(), _density_sptr->end_all(), density.begin_all());
+#endif
+
+    // If a post-back-projection data processor has been set, apply it.
+    if (!is_null_ptr(_post_data_processor_sptr)) {
+        Succeeded success = _post_data_processor_sptr->apply(density);
+        if (success != Succeeded::yes)
+            throw std::runtime_error("BackProjectorByBin::get_output(). Post-back-projection data processor failed.");
+    }
+}
+
+void
+BackProjectorByBin::
+set_post_data_processor(shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > post_data_processor_sptr)
+{
+    _post_data_processor_sptr = post_data_processor_sptr;
+}
+
+void
+BackProjectorByBin::
+actual_back_project(DiscretisedDensity<3,float>&,
+                                 const RelatedViewgrams<float>&,
+                         const int, const int,
+                         const int, const int)
+{
+    error("BackProjectorByBin::actual_forward_project() This is deprecated and should not be used.");
+}
+
+void
+BackProjectorByBin::
+actual_back_project(const RelatedViewgrams<float>& viewgrams,
+                         const int min_axial_pos_num, const int max_axial_pos_num,
+                         const int min_tangential_pos_num, const int max_tangential_pos_num)
+{
+    shared_ptr<DiscretisedDensity<3,float> > density_sptr = _density_sptr;
+#ifdef STIR_OPENMP
+    const int thread_num=omp_get_thread_num();
+    density_sptr = _local_output_image_sptrs[thread_num];
+#endif
+    actual_back_project(*density_sptr, viewgrams,
+                        min_axial_pos_num, max_axial_pos_num,
+                        min_tangential_pos_num, max_tangential_pos_num);
+}
 
 END_NAMESPACE_STIR

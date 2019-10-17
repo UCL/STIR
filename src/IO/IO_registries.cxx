@@ -33,7 +33,11 @@
 #include "stir/IO/InterfileOutputFileFormat.h"
 #include "stir/IO/ITKOutputFileFormat.h"
 #include "stir/IO/InterfileDynamicDiscretisedDensityOutputFileFormat.h"
-#include "stir/IO/InterfileParametricDensityOutputFileFormat.h"
+#include "stir/IO/InterfileDynamicDiscretisedDensityInputFileFormat.h"
+#include "stir/IO/InterfileParametricDiscretisedDensityInputFileFormat.h"
+#include "stir/IO/InterfileParametricDiscretisedDensityOutputFileFormat.h"
+#include "stir/IO/MultiDynamicDiscretisedDensityInputFileFormat.h"
+#include "stir/IO/MultiDynamicDiscretisedDensityOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ECAT6OutputFileFormat.h"
 #include "stir/IO/ECAT7OutputFileFormat.h"
@@ -81,7 +85,8 @@ static InterfileOutputFileFormat::RegisterIt dummy1;
 static ITKOutputFileFormat::RegisterIt dummyITK1;
 #endif
 static InterfileDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynIntfIn;
-static InterfileParametricDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfIn;
+static InterfileParametricDiscretisedDensityOutputFileFormat<ParametricVoxelsOnCartesianGridBaseType>::RegisterIt dummyparIntfIn;
+static MultiDynamicDiscretisedDensityOutputFileFormat::RegisterIt dummydynMultiIn;
 
 //! Support for SAFIR listmode file format
 static RegisterInputFileFormat<SAFIRCListmodeInputFileFormat> LMdummySAFIR(4);
@@ -123,8 +128,12 @@ static RegisterInputFileFormat<ecat::ecat7::ECAT7DynamicDiscretisedDensityInputF
 #ifdef HAVE_ITK
 // we'll put it at low priority such that it is tried (almost) last, i.e. after STIR specific input routines
 // This is because we translate the ITK info currently incompletely.
-static RegisterInputFileFormat<ITKImageInputFileFormat> idummy8(10000);
+static RegisterInputFileFormat<ITKImageInputFileFormat<DiscretisedDensity<3,float> > > idummy6(10000);
+static RegisterInputFileFormat<ITKImageInputFileFormat<VoxelsOnCartesianGrid<CartesianCoordinate3D<float> > > > idummy7(10000);
 #endif
+static RegisterInputFileFormat<InterfileDynamicDiscretisedDensityInputFileFormat> dyndummy_intf(1);
+static RegisterInputFileFormat<InterfileParametricDiscretisedDensityInputFileFormat> paradummy_intf(1);
+static RegisterInputFileFormat<MultiDynamicDiscretisedDensityInputFileFormat> multidummy_intf(1);
 
 
 /*************************** listmode data **********************/

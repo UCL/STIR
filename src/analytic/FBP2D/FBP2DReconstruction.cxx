@@ -303,23 +303,14 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
                     fft_size, 
                     float(alpha_ramp), float(fc_ramp));   
 
+  back_projector_sptr->start_accumulating_in_new_target();
 
-  density_ptr->fill(0);
-  
   shared_ptr<DataSymmetriesForViewSegmentNumbers> 
     symmetries_sptr(back_projector_sptr->get_symmetries_used()->clone());
     
   set_num_threads();
-#ifdef STIR_OPENMP
-  std::vector< shared_ptr<DiscretisedDensity<3,float> > > local_output_image_sptrs;
-#pragma omp parallel shared(symmetries_sptr, local_output_image_sptrs)
-#endif
   {
 #ifdef STIR_OPENMP
-#pragma omp single
-    {
-      local_output_image_sptrs.resize(omp_get_num_threads(), shared_ptr<DiscretisedDensity<3,float> >());
-    }
 #pragma omp for schedule(runtime)  
 #endif
     for (int view_num=proj_data_ptr->get_min_view_num(); view_num <= proj_data_ptr->get_max_view_num(); ++view_num) 
@@ -365,26 +356,12 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
         if(display_level>1) 
           display( viewgrams,viewgrams.find_max(),"Ramp filter");
 
-#ifdef STIR_OPENMP 
-        const int thread_num=omp_get_thread_num();
-        if(is_null_ptr(local_output_image_sptrs[thread_num]))
-          local_output_image_sptrs[thread_num].reset(density_ptr->get_empty_copy());
-
-        back_projector_sptr->back_project(*(local_output_image_sptrs[thread_num]), viewgrams);	  
-#else
         //  and backproject
-        back_projector_sptr->back_project(*density_ptr, viewgrams);
-#endif
+        back_projector_sptr->back_project(viewgrams);
       } 
   } // end of OPENMP pragma
-#ifdef STIR_OPENMP
-  // "reduce" data constructed by threads
-  {
-    for (int i=0; i<static_cast<int>(local_output_image_sptrs.size()); ++i)
-      if(!is_null_ptr(local_output_image_sptrs[i])) // only accumulate if a thread filled something in
-        *density_ptr += *(local_output_image_sptrs[i]);
-  }
-#endif
+
+  back_projector_sptr->get_output(*density_ptr);
  
   // Normalise the image
   const ProjDataInfoCylindrical& proj_data_info_cyl =
