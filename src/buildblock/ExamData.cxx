@@ -14,6 +14,13 @@
 
     See STIR/LICENSE.txt for details
 */
+/*!
+  \file
+  \ingroup buildblock
+  \brief implementation of stir::ExamData
+
+  \author Nikos Efthimiou
+*/
 #include "stir/ExamData.h"
 
 

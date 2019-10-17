@@ -18,8 +18,8 @@
 #define __stir_IO_ExamData_H__
 /*!
   \file
-  \ingroup
-  \brief
+  \ingroup buildblock
+  \brief declaration of stir::ExamData
 
   \author Nikos Efthimiou
 */
@@ -32,6 +32,12 @@ START_NAMESPACE_STIR
 
 class Succeeded;
 
+/*! 
+  \brief base class for data objects such as ProjData etc
+  \ingroup buildblock
+
+  Provides an ExamInfo member.
+*/
 class ExamData
 {
 public:
