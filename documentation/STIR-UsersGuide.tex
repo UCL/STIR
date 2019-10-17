@@ -3500,6 +3500,13 @@ the data processor .
 
 See also the online documentation for the class \textbf{DataProcessor}.
 
+As of STIR version 4.0, it is now possible to use data processors 
+on images prior to forward projection and following back projection
+via with any projector. This supercedes functionality provided by 
+ \textbf{PresmoothingForwardProjectorByBin} and 
+ \textbf{PostsmoothingBackProjectorByBin},
+  which can now be considered deprecated.
+
 { \subsubsubsection{Separable Convolution}
 }
 This implements spatial non-periodic convolution with a 3D separable 
