@@ -48,10 +48,10 @@ if((${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang") OR
 endif()
 
 ####### Set Version number etc
-set(VERSION_MAJOR   3   CACHE STRING "Project major version number.")
-set(VERSION_MINOR   1   CACHE STRING "Project minor version number.")
+set(VERSION_MAJOR   4   CACHE STRING "Project major version number.")
+set(VERSION_MINOR   0   CACHE STRING "Project minor version number.")
 set(VERSION_PATCH   0   CACHE STRING "Project patch version number.")
-set(VERSION   030100   CACHE STRING "Project version number.")
+set(VERSION   040000   CACHE STRING "Project version number.")
 mark_as_advanced(VERSION VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
 
 set(STIR_VERSION
