@@ -48,7 +48,8 @@
 START_NAMESPACE_STIR
 
 BackProjectorByBin::BackProjectorByBin()
-  :   _already_set_up(false)
+  :   _already_set_up(false),
+    _openMP_compatible(true)
 {
 }
 

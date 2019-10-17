@@ -49,7 +49,8 @@ START_NAMESPACE_STIR
 
 
 ForwardProjectorByBin::ForwardProjectorByBin()
-  :   _already_set_up(false)
+  :   _already_set_up(false),
+    _openMP_compatible(true)
 {
 }
 

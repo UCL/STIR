@@ -141,6 +141,9 @@ void back_project(const RelatedViewgrams<float>&,
  */
  virtual void get_output(DiscretisedDensity<3,float> &) const;
 
+  /// Get whether a projector can be used with openMP
+  bool get_openMP_compatible() const { return _openMP_compatible; }
+
 protected:
 
   /*! \brief This actually does the back projection.
@@ -189,6 +192,8 @@ protected:
 	    const int start_axial_pos_num, const int end_axial_pos_num,
 	    const int start_tang_pos_num,const int end_tang_pos_num,
 	    const int start_view, const int end_view);
+
+  bool _openMP_compatible;
 
 #ifdef STIR_OPENMP
   //! A vector of back projected images that will be used with openMP. There will be as many images as openMP threads

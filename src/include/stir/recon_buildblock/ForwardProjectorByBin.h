@@ -130,6 +130,9 @@ virtual void set_up(
     /// Set input
     virtual void set_input(const DiscretisedDensity<3,float>&);
 
+    /// Get whether a projector can be used with openMP
+    bool get_openMP_compatible() const { return _openMP_compatible; }
+
 protected:
   //! This virtual function has to be implemented by the derived class.
   virtual void actual_forward_project(RelatedViewgrams<float>&, 
@@ -153,6 +156,8 @@ protected:
   shared_ptr<DiscretisedDensity<3,float> > _density_sptr;
 
   shared_ptr<ProjDataInfo> _proj_data_info_sptr;
+
+  bool _openMP_compatible;
 };
 
 END_NAMESPACE_STIR
