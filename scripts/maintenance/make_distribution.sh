@@ -139,8 +139,8 @@ if [ $do_doc = 1 ]; then
     cmake -DGRAPHICS=None ${DISTRIB}/STIR
     echo "CMake OK"
     make RUN_DOXYGEN > ${DISTRIB}/doxygen.log 2>&1
-    mkdir -p ${DISTRIB}/doxy
-    mv html ${DISTRIB}/doxy/
+    mkdir -p ${DISTRIB}/STIR/documentation/doxy
+    mv html ${DISTRIB}/STIR/documentation/doxy/
     popd
     echo "Done"
   fi
