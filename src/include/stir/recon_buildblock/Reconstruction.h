@@ -41,7 +41,7 @@
 #include "stir/RegisteredObject.h"
 #include <string>
 
-#include "stir/IO/ExamData.h"
+#include "stir/ExamData.h"
 
 START_NAMESPACE_STIR
 

@@ -54,7 +54,7 @@
  #include "stir/SegmentByView.h"
  #include "stir/SegmentBySinogram.h"
  #include "stir/ExamInfo.h"
- #include "stir/IO/ExamData.h"
+ #include "stir/ExamData.h"
  #include "stir/Verbosity.h"
  #include "stir/ProjData.h"
  #include "stir/ProjDataInMemory.h"
@@ -1327,7 +1327,7 @@ namespace stir {
 %include "stir/TimeFrameDefinitions.h"
 %include "stir/ExamInfo.h"
 
-%include "stir/IO/ExamData.h"
+%include "stir/ExamData.h"
 %include "stir/Verbosity.h"
 
 %attributeref(stir::Bin, int, segment_num);
