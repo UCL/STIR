@@ -122,24 +122,6 @@ ExamInfo::get_high_energy_thres(int en_window) const
 }
 
 
-std::vector<float>
-ExamInfo::get_low_energy_thres_vect() const
-{
-    return low_energy_thres;
-
-}
-
-//Get the high energy boundary for all the energy windows. en_window is set to 0 by default
-//So that it will work also in the case of 1 energy window
-
-std::vector<float>
-ExamInfo::get_high_energy_thres_vect() const
-{
-
-    return up_energy_thres;
-
-}
-
 //Get the number of energy windows
 int
 ExamInfo::get_num_energy_windows() const

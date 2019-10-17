@@ -71,41 +71,9 @@ CListModeDataROOT(const std::string& hroot_filename)
     // ExamInfo initialisation
     this->exam_info_sptr.reset(new ExamInfo);
 
-    // Only PET scanners supported
+ // Only PET scanners supported
     this->exam_info_sptr->imaging_modality = ImagingModality::PT;
     this->exam_info_sptr->originating_system = this->originating_system;
-    this->exam_info_sptr->set_num_energy_windows(this->root_file_sptr->get_number_of_energy_windows());
-
-    this->exam_info_sptr->set_low_energy_thres_vect(this->root_file_sptr->get_low_energy_thres_in_keV());
-    this->exam_info_sptr->set_high_energy_thres_vect(this->root_file_sptr->get_up_energy_thres_in_keV());
-
-    for(int i =0; i<this->exam_info_sptr->get_num_energy_windows(); ++i)
-    if (this->exam_info_sptr->get_high_energy_thres(i)<=this->exam_info_sptr->get_low_energy_thres(i))
-        error("the upper energy threshold needs to be higher than the lower energy threshold");
-
-    std::vector<int> val;
-    val.resize(2);
-    if(this->root_file_sptr->get_low_energy_thres_in_keV()[0]>this->root_file_sptr->get_low_energy_thres_in_keV()[1])
-    {val[0]=1;
-     val[1]=2;}
-    else if(this->root_file_sptr->get_low_energy_thres_in_keV()[0]<this->root_file_sptr->get_low_energy_thres_in_keV()[1])
-    {val[0]=2;
-     val[1]=1;
-     this->exam_info_sptr->set_low_energy_thres_vect(this->root_file_sptr->get_low_energy_thres_in_keV(),true);
-     this->exam_info_sptr->set_high_energy_thres_vect(this->root_file_sptr->get_up_energy_thres_in_keV(),true);}
-    else if(this->root_file_sptr->get_low_energy_thres_in_keV()[0]==this->root_file_sptr->get_low_energy_thres_in_keV()[1])
-    {val[0]=1;
-     val[1]=1;
-     if(this->exam_info_sptr->get_num_energy_windows() > 1)
-     {std::vector<float> low_t = this->root_file_sptr->get_low_energy_thres_in_keV();
-      std::vector<float> up_t = this->root_file_sptr->get_up_energy_thres_in_keV();
-      low_t[1]=350;
-      up_t[1]=460;
-     this->exam_info_sptr->set_low_energy_thres_vect(low_t);
-     this->exam_info_sptr->set_high_energy_thres_vect(up_t);}
-    }
-    this->exam_info_sptr->set_energy_window_pair(val,1);
-
 
     shared_ptr<Scanner> this_scanner_sptr;
 

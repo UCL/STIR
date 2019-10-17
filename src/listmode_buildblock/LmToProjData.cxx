@@ -213,7 +213,7 @@ post_processing()
       warning("You have to specify template_projdata\n");
       return true;
     }
-  shared_ptr<ProjData> template_proj_data_ptr =
+  template_proj_data_ptr =
     ProjData::read_from_file(template_proj_data_name);
 
   template_proj_data_info_ptr.reset(template_proj_data_ptr->get_proj_data_info_ptr()->clone());
@@ -528,8 +528,27 @@ process_data()
   // few coincidence events (as happens with ECAT scanners)
   current_time = 0;
 
+  float low_thres_A =  template_proj_data_ptr->get_exam_info().get_low_energy_thres(template_proj_data_ptr->get_exam_info().get_energy_window_pair().first-1);
+  float high_thres_A =  template_proj_data_ptr->get_exam_info().get_high_energy_thres(template_proj_data_ptr->get_exam_info().get_energy_window_pair().first-1);
+  float low_thres_B =  template_proj_data_ptr->get_exam_info().get_low_energy_thres(template_proj_data_ptr->get_exam_info().get_energy_window_pair().second-1);
+  float high_thres_B =  template_proj_data_ptr->get_exam_info().get_high_energy_thres(template_proj_data_ptr->get_exam_info().get_energy_window_pair().second-1);
+  int num_en_windows = template_proj_data_ptr->get_exam_info().get_num_energy_windows();
+  std::vector<float> high_en_thres(num_en_windows);
+  std::vector<float> low_en_thres(num_en_windows);
+  std::vector<int> energy_window_pair(2);
+  energy_window_pair[0]=template_proj_data_ptr->get_exam_info().get_energy_window_pair().first;
+  energy_window_pair[1]=template_proj_data_ptr->get_exam_info().get_energy_window_pair().second;
+
+  for (int i = 0; i< num_en_windows; ++i)
+  {
+      low_en_thres[i] =  template_proj_data_ptr->get_exam_info().get_low_energy_thres(i);
+      high_en_thres[i] =  template_proj_data_ptr->get_exam_info().get_high_energy_thres(i);
+  }
+
+
   double time_of_last_stored_event = 0;
   long num_stored_events = 0;
+
   VectorWithOffset<segment_type *> 
     segments (template_proj_data_info_ptr->get_min_segment_num(), 
 	      template_proj_data_info_ptr->get_max_segment_num());
@@ -538,7 +557,6 @@ process_data()
     frame_start_positions(1, static_cast<int>(frame_defs.get_num_frames()));
   shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
   CListRecord& record = *record_sptr;
-
   if (!record.event().is_valid_template(*template_proj_data_info_ptr))
 	  error("The scanner template is not valid for LmToProjData. This might be because of unsupported arc correction.");
 
@@ -565,14 +583,18 @@ process_data()
         char rest[50];
         sprintf(rest, "_f%dg1d0b0", current_frame_num);
         const string output_filename = output_filename_prefix + rest;
-      
+        this_frame_exam_info.set_num_energy_windows(num_en_windows);
+        this_frame_exam_info.set_high_energy_thres_vect(high_en_thres);
+        this_frame_exam_info.set_low_energy_thres_vect(low_en_thres);
+        this_frame_exam_info.set_energy_window_pair(energy_window_pair,num_en_windows);
+
         proj_data_ptr = 
           construct_proj_data(output, output_filename, this_frame_exam_info, template_proj_data_info_ptr);
+
       }
 
       long num_prompts_in_frame = 0;
       long num_delayeds_in_frame = 0;
-
       const double start_time = frame_defs.get_start_time(current_frame_num);
       const double end_time = frame_defs.get_end_time(current_frame_num);
 
@@ -647,7 +669,7 @@ process_data()
 		 // note: could do "else if" here if we would be sure that
 		 // a record can never be both timing and coincidence event
 		 // and there might be a scanner around that has them both combined.
-		 if (record.is_event())
+         if (record.is_event())
 		   {
 
 		     assert(start_time <= current_time);
@@ -661,14 +683,16 @@ process_data()
 		     if (bin.get_bin_value()>0
 			 && bin.tangential_pos_num()>= proj_data_ptr->get_min_tangential_pos_num()
 			 && bin.tangential_pos_num()<= proj_data_ptr->get_max_tangential_pos_num()
-			 && bin.axial_pos_num()>=proj_data_ptr->get_min_axial_pos_num(bin.segment_num())
-			 && bin.axial_pos_num()<=proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
-			 ) 
+             && bin.axial_pos_num()>=proj_data_ptr->get_min_axial_pos_num(bin.segment_num())
+             && bin.axial_pos_num()<=proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
+             && record.energy().get_energyA_in_keV() >= low_thres_A
+             && record.energy().get_energyA_in_keV() <= high_thres_A
+             && record.energy().get_energyB_in_keV() >= low_thres_B
+             && record.energy().get_energyB_in_keV() <= high_thres_B)
 
              {
-                     std::cout<< "energy A: " << record.energy().get_energyA_in_keV() << '\n';
-                     std::cout<< "energy B: " << record.energy().get_energyB_in_keV() << '\n';
-
+                 std::cout<< "energy A: " << record.energy().get_energyA_in_keV() << '\n';
+                 std::cout<< "energy B: " << record.energy().get_energyB_in_keV() << '\n';
                      assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
                      assert(bin.view_num()<=proj_data_ptr->get_max_view_num());
             
@@ -686,6 +710,7 @@ process_data()
 
                      // now check if we have its segment in memory
                      if (bin.segment_num() >= start_segment_index && bin.segment_num()<=end_segment_index)
+
                        {
                          do_post_normalisation(bin);
 
