@@ -7,7 +7,7 @@ type:=Matrix
   End Ray tracing matrix parameters :=
   End Forward Projector Using Matrix Parameters :=
 
-  Post Data Processor := Separable Gaussian
+  Pre Data Processor := Separable Gaussian
   Separable Gaussian Filter Parameters :=
     x-dir filter FWHM (in mm):= 6
     y-dir filter FWHM (in mm):= 6
