@@ -7,14 +7,11 @@ Back Projector parameters:=
     End Ray tracing matrix parameters :=
   End Back Projector Using Matrix Parameters :=
 
-  Post Data Processor := Separable Cartesian Metz
-  Separable Cartesian Metz Filter Parameters :=
-    x-dir filter FWHM (in mm):= 5.0
-    y-dir filter FWHM (in mm):= 5.0
-    z-dir filter FWHM (in mm):= 5.0
-    x-dir filter Metz power:= 0.0
-    y-dir filter Metz power:= 0.0
-    z-dir filter Metz power:= 0.0
-  END Separable Cartesian Metz Filter Parameters :=
+  Post Data Processor := Separable Gaussian
+  Separable Gaussian Filter Parameters :=
+    x-dir filter FWHM (in mm):= 6
+    y-dir filter FWHM (in mm):= 6
+    z-dir filter FWHM (in mm):= 6
+  END Separable Gaussian Filter Parameters :=
 
 End:=
