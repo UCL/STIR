@@ -60,7 +60,6 @@ set(${dir_EXE_SOURCES}
         conv_interfile_to_gipl
         shift_image
         shift_image_origin
-        read_geo_factors
         warp_and_accumulate_gated_images
         warp_image
         zeropad_planes
@@ -80,6 +79,7 @@ if (HDF5_FOUND)
  list(APPEND ${dir_EXE_SOURCES}
     conv_GEHDF5_to_interfile
     construct_randoms_from_GEsingles
+    read_geo_factors
  )
 endif()
 
