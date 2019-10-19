@@ -35,8 +35,6 @@ option(BUILD_SHARED_LIBS
 
 ### Settings for external libraries
 
-find_package(HDF5 COMPONENTS CXX)
-
 if (LLN_FOUND)
   set(HAVE_ECAT ON)
   message(STATUS "ECAT support enabled.")
@@ -73,9 +71,7 @@ endif()
 if (HDF5_FOUND)
   set(HAVE_HDF5 ON)
   message(STATUS "HDF5 support enabled.")
-  add_definitions(-D HAVE_HDF5)
   include_directories(${HDF5_INCLUDE_DIRS})
-
 else()
   message(STATUS "HDF5 support disabled.")
 endif()
