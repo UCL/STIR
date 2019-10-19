@@ -77,9 +77,7 @@ endif()
 
 if (HDF5_FOUND)
  list(APPEND ${dir_EXE_SOURCES}
-    conv_GEHDF5_to_interfile
     construct_randoms_from_GEsingles
-    read_geo_factors
  )
 endif()
 
