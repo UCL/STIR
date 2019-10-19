@@ -7,6 +7,7 @@
   \brief Declaration of class stir::CListModeDataGESigna
     
   \author Kris Thielemans
+  \author Ottavia Bertolli
 */
 
 #ifndef __stir_listmode_CListModeDataGESigna_H__

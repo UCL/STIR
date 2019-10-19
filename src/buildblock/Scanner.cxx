@@ -32,6 +32,7 @@
   \author Kris Thielemans
   \author Claire Labbe
   \author Palak Wadhwa
+  \author Ottavia Bertolli
   \author PARAPET project
 */
 

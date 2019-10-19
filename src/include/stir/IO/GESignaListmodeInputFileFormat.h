@@ -23,6 +23,7 @@
   \brief Declaration of class stir::ecat::GESignaListmodeInputFileFormat
 
   \author Kris Thielemans
+  \author Ottavia Bertolli
 */
 #include "stir/IO/InputFileFormat.h"
 #include "stir/listmode/CListModeDataGESigna.h"

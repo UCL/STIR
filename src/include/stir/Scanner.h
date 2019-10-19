@@ -29,6 +29,7 @@
   \author Kris Thielemans
   \author Sanida Mustafovic
   \author Charalampos Tsoumpas
+  \author Ottavia Bertolli
   \author PARAPET project
 */
 #ifndef __stir_buildblock_SCANNER_H__

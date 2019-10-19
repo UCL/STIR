@@ -7,11 +7,14 @@
   \brief
 
   \author Nikos Efthimiou
+  \author Palak Wadhwa
 
 
 */
 /*
+    Copyright (C) 2017-2019, University of Leeds
     Copyright (C) 2018 University of Hull
+    Copyright (C) 2018-2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify

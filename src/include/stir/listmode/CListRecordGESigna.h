@@ -12,6 +12,7 @@
   without approval from GE.
     
   \author Kris Thielemans
+  \author Ottavia Bertolli
   \author Palak Wadhwa
 */
 

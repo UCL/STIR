@@ -7,6 +7,7 @@
   \brief Implementation of class stir::CListModeDataGESigna
     
   \author Kris Thielemans
+  \author Ottavia Bertolli
 */
 
 

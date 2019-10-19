@@ -6,6 +6,7 @@
   \brief Declaration of class stir::InputStreamWithRecordsFromHDF5
     
   \author Kris Thielemans
+  \author Ottavia Bertolli
       
 */
 /*

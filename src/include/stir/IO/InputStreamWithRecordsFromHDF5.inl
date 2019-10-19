@@ -4,6 +4,7 @@
   \brief Implementation of class stir::InputStreamWithRecordsFromHDF5
     
   \author Kris Thielemans
+  \author Ottavia Bertolli
 */
 /*
     Copyright (C) 2003-2011, Hammersmith Imanet Ltd
