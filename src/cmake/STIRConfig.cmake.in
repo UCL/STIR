@@ -39,7 +39,7 @@ include("${CMAKE_CURRENT_LIST_DIR}/STIRTargets.cmake")
 set_and_check(STIR_INCLUDE_DIRS "@PACKAGE_STIR_INCLUDE_DIRS@")
 #set_and_check(STIR_LIBRARY_DIRS "@PACKAGE_STIR_LIBRARY_DIRS@")
 set(STIR_LIBRARIES @STIR_LIBRARIES@)
-set(STIR_REGISTRIES @STIR_REGISTRIES@)
+set_and_check(STIR_REGISTRIES @PACKAGE_STIR_REGISTRIES@)
 
 ## find external packages
 # we use a trick by Matt McCormick (kitware)
