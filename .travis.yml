@@ -13,7 +13,7 @@ matrix:
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-6 CXX=g++-6
  - os: linux
    python: 3
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CC=gcc-5 CXX=g++-5
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DDISABLE_HDF5=ON" CC=gcc-5 CXX=g++-5
  - os: linux
    python: 3
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON" CC=gcc-7 CXX=g++-7
@@ -71,6 +71,7 @@ addons:
       - g++-7
       - g++-8
       - libboost-dev
+      - libhdf5-serial-dev
       - swig3.0
       - python3-dev
       - python3-numpy
