@@ -72,7 +72,7 @@ compare_arrays(const std::vector<float> &vec1, const std::vector<float> &vec2)
     std::cout << "Sum array 1 / array 2 = " <<  std::accumulate(vec1.begin(),vec1.end(),0.f) << " / " << std::accumulate(vec2.begin(),vec2.end(),0.f)      << "\n";
     std::cout << "Max diff = " << max_diff << "\n\n";
 
-    return (std::abs(max_diff) < 1e-4f ? Succeeded::yes : Succeeded::no);
+    return (std::abs(max_diff) < 1e-3f ? Succeeded::yes : Succeeded::no);
 }
 
 static
@@ -254,7 +254,7 @@ get_forward_projector_via_parser(const float fwhm = -1.f)
                     << "  y-dir filter Metz power:= .0\n"
                     << "  z-dir filter Metz power:=.0\n"
                     << "END Separable Cartesian Metz Filter Parameters :=\n";
-    parameterstream << "end:=\n";
+    parameterstream << "End Forward Projector Parameters:=\n";
 
     shared_ptr<ProjMatrixByBin> PM_sptr(new ProjMatrixByBinUsingRayTracing);
 
