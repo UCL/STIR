@@ -315,7 +315,7 @@ read_norm_data(const string& filename)
     std::array<unsigned long long int, 2> block = {1, 1};
     unsigned int total_size = num_rings*num_detectors_per_ring;
     stir::Array<1, float> buffer(0, total_size-1);
-    m_input_hdf5_sptr->get_from_efficiency_dataset(offset, count, stride, block, buffer);
+    m_input_hdf5_sptr->get_from_2d_dataset(offset, count, stride, block, buffer);
     std::copy(buffer.begin(), buffer.end(), efficiency_factors.begin_all());
     }
 

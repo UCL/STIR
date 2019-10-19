@@ -150,13 +150,14 @@ ProjDataFromHDF5::
 get_viewgram(const int view_num, const int segment_num,
              const bool make_num_tangential_poss_odd) const
 {
-    std::cout<<"Now processing segment "<<segment_num<<"for view "<<view_num<<std::endl;
-    Viewgram<float> ret_viewgram = get_empty_viewgram(view_num, segment_num, make_num_tangential_poss_odd);
+    if (make_num_tangential_poss_odd)
+        error("make_num_tangential_poss_odd not supported by ProjDataFromHDF5");
+    Viewgram<float> ret_viewgram = get_empty_viewgram(view_num, segment_num);
     ret_viewgram.fill(0.0);
     //! \todo NE: Get the number of tof positions from the proj_data_info_ptr
     const unsigned int num_tof_poss = 27;
     const unsigned int max_num_axial_poss = 1981;
-
+    //! \todo Hard-wired numbers to be changed.
     // PW Attempt to flip the tangential and view numbers.
    for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(), i_tang = 0; tang_pos <= ret_viewgram.get_max_tangential_pos_num(), i_tang<=static_cast<unsigned long long int>(get_num_tangential_poss())-1; ++tang_pos, ++i_tang)
       for(int i_axial=0, axial_pos = seg_ax_offset[find_segment_index_in_sequence(segment_num)]; i_axial<=static_cast<unsigned long long int>(get_num_axial_poss(segment_num))-1 , axial_pos <= seg_ax_offset[find_segment_index_in_sequence(segment_num)]+static_cast<unsigned long long int>(get_num_axial_poss(segment_num))-1; i_axial++, axial_pos++)
@@ -203,7 +204,7 @@ Succeeded ProjDataFromHDF5::set_viewgram(const Viewgram<float>& v)
 Sinogram<float> ProjDataFromHDF5::get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd) const
 {
     // TODO
-    warning("ProjDataGEAdvance::get_sinogram not implemented yet\n");
+    error("ProjDataGEAdvance::get_sinogram not implemented yet");
     return get_empty_sinogram(ax_pos_num, segment_num);
 }
 
@@ -212,16 +213,6 @@ Succeeded ProjDataFromHDF5::set_sinogram(const Sinogram<float>& s)
     error("ProjDataFromHDF5::set_sinogram not implemented yet\n");
     return Succeeded::no;
 }
-
-
-
-//! \todo move inlines in seprate file.
-/*
- *
- *  INLINES
- *
- *
- */
 
 unsigned int
 ProjDataFromHDF5::find_segment_index_in_sequence(const int segment_num) const

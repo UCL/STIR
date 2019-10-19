@@ -3,7 +3,7 @@
 /*!
   \file
   \ingroup IO
-  \brief Declaration of class stir::InputStreamWithRecordsFromHDF5
+  \brief Declaration of class stir::HDF5Wrapper
 
   \author Nikos Efthimiou
   \author Palak Wadhwa
@@ -33,7 +33,7 @@
 
 START_NAMESPACE_STIR
 
-bool HDF5Wrapper::check_GE_signature(const std::string filename)
+bool HDF5Wrapper::check_GE_signature(const std::string& filename)
 {
     H5::H5File file;
 
@@ -87,7 +87,7 @@ HDF5Wrapper::open(const std::string& filename)
     {
         warning("CListModeDataGESigna: "
                 "Probably this is GESigna, but couldn't find scan start time etc."
-                "The scanner is initialised from library instread from HDF5 header.");
+                "The scanner will be initialised from STIR as opposed to from the HDF5 header.");
         is_signa = true;
 
         this->scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa));
@@ -431,6 +431,8 @@ Succeeded HDF5Wrapper::get_from_dataset(const std::array<unsigned long long int,
     return Succeeded::yes;
 }
 
+//! \todo Array read as UINT32 should have an output of std::uint32_t.
+//! \todo Check read data type as it's unlikely that it is NATIVE_UINT32, it may be STD_U32LE.
 //PW Developed for Geometric Correction Factors
 Succeeded HDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long int, 2>& offset,
                                         const std::array<unsigned long long int, 2>& count,
@@ -448,7 +450,7 @@ Succeeded HDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long i
 }
 
 //PW Developed for Efficiency Factors
-Succeeded HDF5Wrapper::get_from_efficiency_dataset(const std::array<unsigned long long int, 2>& offset,
+Succeeded HDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long int, 2>& offset,
                                         const std::array<unsigned long long int, 2>& count,
                                         const std::array<unsigned long long int, 2>& stride,
                                         const std::array<unsigned long long int, 2>& block,
@@ -463,6 +465,8 @@ Succeeded HDF5Wrapper::get_from_efficiency_dataset(const std::array<unsigned lon
     return Succeeded::yes;
 }
 
+//! \todo Array read as UINT32 should have an output of std::uint32_t.
+//! \todo Check the H5 data type as it's unlikely that it is NATIVE_UINT32, it may be STD_U32LE.
 // Developed for Singles
 Succeeded HDF5Wrapper::get_dataspace(const unsigned int current_id,
                                      Array<1, unsigned int>& output)
@@ -477,6 +481,8 @@ Succeeded HDF5Wrapper::get_dataspace(const unsigned int current_id,
     return Succeeded::yes;
 }
 
+//! \todo Array read as UINT32 should have an output of std::uint32_t.
+//! \todo Check the H5 data type as it's unlikely that it is NATIVE_UINT32, it may be STD_U32LE.
 // Developed for Singles
 Succeeded HDF5Wrapper::get_dataspace(const unsigned int current_id,
                                      shared_ptr<Array<2, unsigned int> >& output)
@@ -490,82 +496,6 @@ Succeeded HDF5Wrapper::get_dataspace(const unsigned int current_id,
     //  // TODO error checking
     return Succeeded::yes;
 }
-
-//Succeeded HDF5Wrapper::get_row(const unsigned int row_id,
-//                                     Array<1, unsigned int>& data_ptr)
-//{
-//    std::ostringstream datasetname;
-//    datasetname << m_address << current_id;
-//    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
-//    m_dataset_sptr->read( data_ptr.get_data_ptr(), H5::PredType::NATIVE_UINT32);
-//    data_ptr.release_data_ptr();
-
-//    //  // TODO error checking
-//    return Succeeded::yes;
-//}
-
-//Succeeded HDF5Wrapper::get_column(const unsigned int col_id,
-//                                     Array<1, unsigned int>& data_ptr)
-//{
-//    std::ostringstream datasetname;
-//    datasetname << m_address << current_id;
-//    m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
-//    m_dataset_sptr->read( data_ptr.get_data_ptr(), H5::PredType::NATIVE_UINT32);
-//    data_ptr.release_data_ptr();
-
-//    //  // TODO error checking
-//    return Succeeded::yes;
-//}
-
-//stir::Array<2, float>* data_sptr;
-//shared_ptr<char> HDF5Wrapper::get_next_viewgram()
-//{
-
-//}
-
-//stir::Array<2, float>* data_sptr;
-//shared_ptr<char> HDF5Wrapper::get_next_sinogram()
-//{
-
-//}
-
-//stir::Array<3, float>* data_sptr;
-//shared_ptr<char> HDF5Wrapper::get_next_segment_by_sinogram()
-//{
-
-//}
-
-//stir::Array<3, float>* data_sptr;
-//shared_ptr<char> HDF5Wrapper::get_next_segment_by_viewgram()
-//{
-
-//}
-
-// initialise_singles
-// Can be used for normalisation, too.
-// Can be used for nonTOF sinograms.
-//Succeeded HDF5Wrapper::initialise_list_2D_arrays(const std::string &path)
-//{
-//    if(path.size() == 0)
-//    {
-//        if(is_signa)
-//        {
-//            m_listmode_address = "/ListData/listData";
-//        }
-//        else
-//            return Succeeded::no;
-//    }
-//    else
-//        m_listmode_address = path;
-
-//    dataset_list_sptr.reset(new H5::DataSet(file.openDataSet(m_listmode_address)));
-
-//    H5::DataSpace dataspace = dataset_list_sptr->getSpace();
-//    dataset_list_Ndims = dataspace.getSimpleExtentNdims() ;
-
-
-//    return Succeeded::yes;
-//}
 
 
 

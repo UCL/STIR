@@ -80,6 +80,11 @@ set(${dir_LIB_SOURCES}
         GeneralisedPoissonNoiseGenerator
         FilePath
 )
+if (HAVE_HDF5)
+ list(APPEND ${dir_LIB_SOURCES}
+    ProjDataFromHDF5
+ )
+endif()
 
 if (NOT HAVE_SYSTEM_GETOPT)
   # add our own version of getopt to buildblock
@@ -91,12 +96,6 @@ include(stir_lib_target)
 # TODO Remove but currently needed for ProjData.cxx, DynamicDisc*cxx, TimeFrameDef
 if (LLN_FOUND)
   target_link_libraries(buildblock ${LLN_LIBRARIES})
-endif()
-
-if (HDF5_FOUND)
- list(APPEND ${dir_LIB_SOURCES}
-    ProjDataFromHDF5
- )
 endif()
 
 if (RDF_FOUND)

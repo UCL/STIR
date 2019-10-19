@@ -66,7 +66,7 @@ public:
                               shared_ptr<HDF5Wrapper> input_hdf5);
 
     //! Get the segment sequence
-    inline std::vector<int> get_segment_sequence_in_hdf5() const;
+    std::vector<int> get_segment_sequence_in_hdf5() const;
 
     //! Get Viewgram<float>
     Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const;
@@ -81,7 +81,7 @@ public:
         unsigned int find_segment_index_in_sequence(const int segment_num) const;
 
 private:
-    inline unsigned int find_segment_offset(const int segment_num) const;
+    unsigned int find_segment_offset(const int segment_num) const;
 
     //! Cache the segment sequence of the GE data.
     //! \author Kris Thielemans

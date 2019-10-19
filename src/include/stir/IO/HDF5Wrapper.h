@@ -1,6 +1,6 @@
 /*  Copyright (C) 2017-2019, University of Leeds
     Copyright (C) 2018 University of Hull
-    Copyright (C) 2018-2019, University College LondonCopyright (C) 2018-2019 University College London
+    Copyright (C) 2018-2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -19,8 +19,8 @@
 #define __stir_IO_HDF5Wrapper_H__
 /*!
   \file
-  \ingroup
-  \brief
+  \ingroup IO
+  \brief Declaration of class stir::HDF5Wrapper
 
   \author Nikos Efthimiou
   \author Palak Wadhwa
@@ -38,11 +38,16 @@
 
 START_NAMESPACE_STIR
 
+/*!
+  \ingroup IO
+  \brief A class that extracts and reads the necessary data from GE HDF5 input files.
+*/
+
 class HDF5Wrapper
 {
 public:
 
-    static bool check_GE_signature(const std::string filename);
+    static bool check_GE_signature(const std::string& filename);
 
     explicit HDF5Wrapper();
 
@@ -70,7 +75,7 @@ public:
                             Array<1, unsigned int> &output);
 
     Succeeded get_dataspace(const unsigned int current_id,
-                            shared_ptr<Array<2, unsigned int> > &output);
+                            shared_ptr<Array<2, unsigned int> >& output);
 
     Succeeded get_from_dataset(const std::array<unsigned long long, 3> &offset,
                                  const std::array<unsigned long long, 3> &count,
@@ -87,7 +92,7 @@ public:
                                  const std::array<unsigned long long, 2> &block,
                                  Array<1, unsigned int> &output);
 
-    Succeeded get_from_efficiency_dataset(const std::array<unsigned long long int, 2>& offset,
+    Succeeded get_from_2d_dataset(const std::array<unsigned long long int, 2>& offset,
                                             const std::array<unsigned long long int, 2>& count,
                                             const std::array<unsigned long long int, 2>& stride,
                                             const std::array<unsigned long long int, 2>& block,
