@@ -50,7 +50,12 @@ for Siemens scanners (warning: tested in Biograph mMR only at present).
 <p>The build system now only uses CMake. We recommend to use CMake version 3.1 or later 
 on Linux/MacOSX and 3.10.2 or later on Windows, but we try to accomodate older versions of CMake.
 </p>
-    
+
+<p>ROOT6 and HDF5 code requires at least C++-11. We tell CMake to enable this. If you do not want this,
+  you will have to disable support for ROOT and HDF5. Note that <b>in the next version of STIR, older
+  versions of C++ will no longer be supported</b>.
+</p>
+
 <p>We now support the parsing of SIEMENS Interfile files natively.</p>
 
 <p>Finally, we now keep track of time frames and patient orientation for images, in particular
