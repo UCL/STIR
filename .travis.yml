@@ -25,12 +25,12 @@ matrix:
    env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=0 -DSTIR_OPENMP:BOOL=ON -DCMAKE_CXX_STANDARD=11" CC=gcc-5 CXX=g++-5
  - os: linux
    python: 3
-   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CC=clang-5.0 CXX=clang++-5.0
- #- os: linux
- #  python: 3
- #  # OPENMP on Travis seemed to be version 1 (???), so don't build it
- #  # This gives loads of warnings about auto_ptr, exceeding the log size limit
- #  env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF"  -DCMAKE_CXX_STANDARD=11 CC=clang-6.0 CXX=clang++-6.0
+   # need -Wno-deprecated-declarations to avoid log-file limit due to tons of warnings about auto_ptr
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF" CXXFLAGS="-Wno-deprecated-declarations" CC=clang-5.0 CXX=clang++-5.0
+ - os: linux
+   python: 3
+   # OPENMP on Travis seemed to be version 1 (???), so don't build it
+   env: EXTRA_BUILD_FLAGS="-DDISABLE_CERN_ROOT=1 -DSTIR_OPENMP:BOOL=OFF -DCMAKE_CXX_STANDARD=11" CXXFLAGS="-Wno-deprecated-declarations" CC=clang-6.0 CXX=clang++-6.0
 
    ####  osx
    # note: cannot use OpenMP on OSX yet, see https://github.com/UCL/STIR/issues/117
