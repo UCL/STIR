@@ -78,7 +78,7 @@ addons:
       - python3-pytest
       - libgomp1
       - clang-5.0
-      # - clang-6.0
+      - clang-6.0
       - root-system-bin
       - libroot-tree-dev
       - libroot-tree-treeplayer-dev
