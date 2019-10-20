@@ -298,6 +298,8 @@ void
 IterativeReconstruction<TargetT>::
 set_start_subset_num(const int arg)
 {
+  if (arg<0 || arg>= this->num_subsets)
+    error("set_start_subset_num out-of-range error");
   this->start_subset_num  = arg;
 }
 
