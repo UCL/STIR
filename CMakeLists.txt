@@ -163,7 +163,7 @@ foreach(r  ${STIR_REGISTRIES})
   # append this with installed location
   # (note: have to use CMAKE_INSTALL_PREFIX for CONFIGURE_PACKAGE_CONFIG_FILE to
   # make the variable relocatable)
-  list(APPEND INSTALLED_STIR_REGISTRIES "${CMAKE_INSTALL_PREFIX}/${STIR_DATA_DIR}/${r_filename}")
+  list(APPEND INSTALLED_STIR_REGISTRIES "${CMAKE_INSTALL_PREFIX}/${STIR_DATA_DIR}/src/${r_filename}")
 endforeach()
 set(STIR_REGISTRIES ${INSTALLED_STIR_REGISTRIES})
 
