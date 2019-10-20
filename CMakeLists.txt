@@ -92,6 +92,9 @@ option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # d
 if(NOT DISABLE_ITK)
    # See if we can find a compiled version of ITK (http://www.itk.org/)
    find_package(ITK QUIET)
+   if (ITK_FOUND)
+      include(${ITK_USE_FILE})
+   endif()
 endif()
 
 if(NOT DISABLE_LLN_MATRIX)
