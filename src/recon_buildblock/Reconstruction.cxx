@@ -44,6 +44,11 @@
 
 START_NAMESPACE_STIR
 
+template <typename TargetT>
+Reconstruction<TargetT>::Reconstruction()
+{
+  this->set_defaults();
+}
 
 
 // parameters
@@ -52,6 +57,7 @@ template <typename TargetT>
 void 
 Reconstruction<TargetT>::set_defaults()
 {
+  this->_already_set_up=false;
   this->output_filename_prefix="";
   this->output_file_format_ptr =
     OutputFileFormat<TargetT>::default_sptr();
@@ -78,6 +84,7 @@ template <typename TargetT>
 void 
 Reconstruction<TargetT>::initialise(const std::string& parameter_filename)
 {
+  _already_set_up = false;
   if(parameter_filename.size()==0)
   {
     this->set_defaults();
@@ -147,8 +154,10 @@ set_post_processor_sptr(const shared_ptr<DataProcessor<TargetT> > & arg)
 template <typename TargetT>
 Succeeded
 Reconstruction<TargetT>::
-set_up(shared_ptr<TargetT> const& target_data_sptr)
+set_up(shared_ptr<TargetT> const& target_data_sptr_v)
 {
+  _already_set_up = true;
+  this->target_data_sptr = target_data_sptr_v;
 
   if(!is_null_ptr(this->post_filter_sptr)) 
   {
@@ -162,6 +171,17 @@ set_up(shared_ptr<TargetT> const& target_data_sptr)
       }
   }
   return Succeeded::yes;
+}
+
+template <typename TargetT>
+void
+Reconstruction<TargetT>::
+check(TargetT const& target_data) const
+{
+  if (!this->_already_set_up)
+    error("Reconstruction method called without calling set_up first.");
+  if (! this->target_data_sptr->has_same_characteristics(target_data))
+    error("Reconstruction set-up with different geometry for target.");
 }
 
 template <typename TargetT>
