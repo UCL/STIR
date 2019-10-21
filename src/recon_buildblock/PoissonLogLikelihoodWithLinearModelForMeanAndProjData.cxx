@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018, 2019 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -879,7 +879,12 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
 
   } // end of loop over segments
 
-  this->get_projector_pair().get_back_projector_sptr()->get_output(output);
+  shared_ptr<TargetT> tmp(output.get_empty_copy());
+  this->get_projector_pair().get_back_projector_sptr()->get_output(*tmp);
+  // output += tmp;
+  std::transform(output.begin_all(), output.end_all(),
+                 tmp->begin_all(), output.begin_all(),
+		 std::plus<typename TargetT::full_value_type>());
 
   return Succeeded::yes;
 }
