@@ -484,9 +484,7 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
       // the energy dependency is left out
 
 
-     const double common_factor =
-            1/detection_efficiency_no_scatter(det_num_A, det_num_B) *
-            scatter_volume/total_Compton_cross_section_511keV;
+     const double common_factor = scatter_volume/total_Compton_cross_section_511keV;
 
 
     // Single ScatterForward Model

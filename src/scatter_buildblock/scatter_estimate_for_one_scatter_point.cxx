@@ -212,9 +212,7 @@ detection_efficiency_unscattered.push_back(0);
   // (computed with the same detection model as used in the scatter code)
   // the energy dependency is left out
 
-    const double common_factor =
-        1/detection_efficiency_no_scatter(det_num_A, det_num_B) *
-        scatter_volume/total_Compton_cross_section_511keV;
+    const double common_factor = scatter_volume/total_Compton_cross_section_511keV;
 
 
   float scatter_ratio=0 ;
