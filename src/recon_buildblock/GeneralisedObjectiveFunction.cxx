@@ -146,10 +146,13 @@ compute_sub_gradient(TargetT& gradient,
 		     const TargetT &current_estimate, 
 		     const int subset_num)
 {
-   assert(gradient.get_index_range() == current_estimate.get_index_range());  
+  assert(gradient.get_index_range() == current_estimate.get_index_range());
 
-   this->compute_sub_gradient_without_penalty(gradient, 
-					      current_estimate, 
+  if (subset_num<0 || subset_num>=this->get_num_subsets())
+    error("compute_sub_gradient subset_num out-of-range error");
+
+  this->compute_sub_gradient_without_penalty(gradient,
+					      current_estimate,
 					      subset_num); 
    if (!this->prior_is_zero())
      {
@@ -195,6 +198,9 @@ GeneralisedObjectiveFunction<TargetT>::
 compute_objective_function_without_penalty(const TargetT& current_estimate,
 					   const int subset_num)
 {
+  if (subset_num<0 || subset_num>=this->get_num_subsets())
+    error("compute_objective_function_without_penalty subset_num out-of-range error");
+
   return
     this->actual_compute_objective_function_without_penalty(current_estimate, subset_num);
 }
@@ -229,6 +235,9 @@ add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& output,
 								const TargetT& input,
 								const int subset_num) const
 {
+  if (subset_num<0 || subset_num>=this->get_num_subsets())
+    error("add_multiplication_with_approximate_sub_Hessian_without_penalty subset_num out-of-range error");
+
   {
     string explanation;
     if (!output.has_same_characteristics(input,
