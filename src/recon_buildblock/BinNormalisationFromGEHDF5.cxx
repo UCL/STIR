@@ -293,7 +293,7 @@ read_norm_data(const string& filename)
 //  */
 
    const int min_tang_pos_num = -(scanner_ptr->get_max_num_non_arccorrected_bins())/2;
-   const int max_tang_pos_num = min_tang_pos_num +scanner_ptr->get_max_num_non_arccorrected_bins()- 1;
+  // const int max_tang_pos_num = min_tang_pos_num +scanner_ptr->get_max_num_non_arccorrected_bins()- 1;
 
 //    geometric_factors =
 //    Array<3,float>(IndexRange3D(0,15, 0,1981-1, //XXXXnrm_subheader_ptr->num_geo_corr_planes-1,

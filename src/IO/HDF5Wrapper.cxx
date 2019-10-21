@@ -380,7 +380,7 @@ Succeeded HDF5Wrapper::initialise_efficiency_factors(const std::string& path)
             m_dataspace = m_dataset_sptr->getSpace();
             int rank = m_dataspace.getSimpleExtentNdims();
             hsize_t dims_out[2];
-            int ndims = m_dataspace.getSimpleExtentDims( dims_out, NULL);
+           // int ndims = m_dataspace.getSimpleExtentDims( dims_out, NULL);
                  std::cout << "rank " << rank << ", dimensions " <<
                      (unsigned long)(dims_out[0]) << " x " <<
                      (unsigned long)(dims_out[1]) << std::endl;
@@ -485,13 +485,13 @@ Succeeded HDF5Wrapper::get_dataspace(const unsigned int current_id,
 //! \todo Check the H5 data type as it's unlikely that it is NATIVE_UINT32, it may be STD_U32LE.
 // Developed for Singles
 Succeeded HDF5Wrapper::get_dataspace(const unsigned int current_id,
-                                     shared_ptr<Array<2, unsigned int> >& output)
+                                     Array<2, unsigned int>& output)
 {
     std::ostringstream datasetname;
     datasetname << m_address << current_id;
     m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
-    m_dataset_sptr->read( (*output)[current_id].get_data_ptr(), H5::PredType::NATIVE_UINT32);
-    (*output)[current_id].release_data_ptr();
+    m_dataset_sptr->read( output[current_id].get_data_ptr(), H5::PredType::NATIVE_UINT32);
+    output[current_id].release_data_ptr();
 
     //  // TODO error checking
     return Succeeded::yes;

@@ -1,7 +1,9 @@
 #ifndef __stir_IO_GESignaListmodeInputFileFormat_h__
 #define __stir_IO_GESignaListmodeInputFileFormat_h__
 /*
-    Copyright (C) 2013 University College London
+    Copyright (C) 2016-2019 University College London
+    Copyright (C) 2017-2019 University of Leeds
+    Copyright (C) 2017-2019 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -19,11 +21,13 @@
 /*!
 
   \file
-  \ingroup ECAT
-  \brief Declaration of class stir::ecat::GESignaListmodeInputFileFormat
+  \ingroup IO
+  \brief Declaration of class stir::IO::GESignaListmodeInputFileFormat
 
   \author Kris Thielemans
   \author Ottavia Bertolli
+  \author Palak Wadhwa
+  \author Nikos Efthimiou
 */
 #include "stir/IO/InputFileFormat.h"
 #include "stir/listmode/CListModeDataGESigna.h"
@@ -102,7 +106,7 @@ std::cout << "\n Manufacturer :  " << read_str_manufacturer << "\n\n";
   virtual unique_ptr<data_type>
     read_from_file(const std::string& filename) const
   {	
-    return std::auto_ptr<data_type>(new CListModeDataGESigna(filename)); 
+    return unique_ptr<data_type>(new CListModeDataGESigna(filename));
   }
 };
 

@@ -156,7 +156,7 @@ get_viewgram(const int view_num, const int segment_num,
     ret_viewgram.fill(0.0);
     //! \todo NE: Get the number of tof positions from the proj_data_info_ptr
     const unsigned int num_tof_poss = 27;
-    const unsigned int max_num_axial_poss = 1981;
+   // const unsigned int max_num_axial_poss = 1981;
     //! \todo Hard-wired numbers to be changed.
     // PW Attempt to flip the tangential and view numbers.
    for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(), i_tang = 0; tang_pos <= ret_viewgram.get_max_tangential_pos_num(), i_tang<=static_cast<unsigned long long int>(get_num_tangential_poss())-1; ++tang_pos, ++i_tang)
@@ -197,20 +197,20 @@ get_viewgram(const int view_num, const int segment_num,
 Succeeded ProjDataFromHDF5::set_viewgram(const Viewgram<float>& v)
 {
     // but this is difficult: how to adjust the scale factors when writing only 1 viewgram ?
-    error("ProjDataFromGEHDF5::set_viewgram not implemented yet\n");
+    error("ProjDataFromGEHDF5::set_viewgram not implemented yet");
     return Succeeded::no;
 }
 
 Sinogram<float> ProjDataFromHDF5::get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd) const
 {
     // TODO
-    error("ProjDataGEAdvance::get_sinogram not implemented yet");
+    error("ProjDataGEHDF5::get_sinogram not implemented yet");
     return get_empty_sinogram(ax_pos_num, segment_num);
 }
 
 Succeeded ProjDataFromHDF5::set_sinogram(const Sinogram<float>& s)
 {
-    error("ProjDataFromHDF5::set_sinogram not implemented yet\n");
+    error("ProjDataFromHDF5::set_sinogram not implemented yet");
     return Succeeded::no;
 }
 

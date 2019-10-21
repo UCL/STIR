@@ -75,7 +75,7 @@ public:
                             Array<1, unsigned int> &output);
 
     Succeeded get_dataspace(const unsigned int current_id,
-                            shared_ptr<Array<2, unsigned int> >& output);
+                            Array<2, unsigned int>& output);
 
     Succeeded get_from_dataset(const std::array<unsigned long long, 3> &offset,
                                  const std::array<unsigned long long, 3> &count,

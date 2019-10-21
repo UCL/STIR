@@ -19,7 +19,7 @@
 
   \file
   \ingroup singles_buildblock
-  \brief Implementation of SinglesRatesFromGEHDF5
+  \brief Implementation of stir::SinglesRatesFromGEHDF5
 
   \author Palak Wadhwa
   \author Kris Thielemans
@@ -47,9 +47,9 @@ using std::ios;
 
 
 START_NAMESPACE_STIR
-//PW Need to change the registered name
+//PW todo Need to change the registered name
 const char * const 
-SinglesRatesFromGEHDF5::registered_name = "Singles From listmode File"; 
+SinglesRatesFromGEHDF5::registered_name = "Singles From GE HDF5 listmode File";
 
 const double MAX_INTERVAL_DIFFERENCE = 0.05; // 5% max difference.
 
@@ -540,9 +540,9 @@ SinglesRatesFromGEHDF5::
 initialise_keymap()
 {
 //PW Modify this to change sgl to listmode
-  parser.add_start_key("Singles Rates From listmode File");
+  parser.add_start_key("Singles Rates From GE HDF5 listmode File");
   parser.add_key("listmode_filename", &_listmode_filename);
-  parser.add_stop_key("End Singles Rates From listmode File");
+  parser.add_stop_key("End Singles Rates From GE HDF5 listmode File");
 }
 
 bool 
