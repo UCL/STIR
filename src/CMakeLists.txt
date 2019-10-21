@@ -183,8 +183,12 @@ if(STIR_OPENMP)
     set (CMAKE_STATIC_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_STATIC_LINKER_FLAGS}")   
     include_directories("${OPENMP_INCLUDES}")
     link_directories("${OPENMP_LIBRARIES}")
+  endif()
+  if(${CMAKE_VERSION} VERSION_LESS "3.9.0") 
+    set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX)
   else()
-    # need to explicitly set his. Definitely for gcc, hopefully also for other systems.
+    message(WARNING "Your CMake version is old. OpenMP linking flags  might be incorrect.")
+    # need to explicitly set this. Definitely for gcc, hopefully also for other systems.
     # See https://gitlab.kitware.com/cmake/cmake/issues/15392
     set (OpenMP_EXE_LINKER_FLAGS ${OpenMP_CXX_FLAGS})
   endif()
