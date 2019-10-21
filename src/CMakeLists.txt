@@ -146,9 +146,14 @@ endif()
 if(STIR_OPENMP)
   find_package(OpenMP REQUIRED)  
   add_definitions(${OpenMP_CXX_FLAGS})
-  # need to explicitly set his. Definitely for gcc, hopefully also for other systems.
-  # See https://gitlab.kitware.com/cmake/cmake/issues/15392
-  set (OpenMP_EXE_LINKER_FLAGS ${OpenMP_CXX_FLAGS})
+  if(${CMAKE_VERSION} VERSION_LESS "3.9.0") 
+    set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX)
+  else()
+    message(WARNING "Your CMake version is old. OpenMP linking flags  might be incorrect.")
+    # need to explicitly set this. Definitely for gcc, hopefully also for other systems.
+    # See https://gitlab.kitware.com/cmake/cmake/issues/15392
+    set (OpenMP_EXE_LINKER_FLAGS ${OpenMP_CXX_FLAGS})
+  endif()
 endif()
 
 #### Flags for compatibility between different systems
