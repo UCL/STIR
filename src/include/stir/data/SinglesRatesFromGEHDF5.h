@@ -178,11 +178,6 @@ private:
  std::vector<int> _total_prompts;
  std::vector<int> _total_randoms;
 
-
-#ifdef HAVE_LLN_MATRIX
- Main_header _singles_main_header;
-#endif
-
  unsigned int m_num_time_slices = 0;
 
  // A value of zero for _singles_time_interval indicates that the time slices

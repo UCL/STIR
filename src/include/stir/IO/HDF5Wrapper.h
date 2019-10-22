@@ -69,7 +69,7 @@ public:
     Succeeded initialise_efficiency_factors(const std::string& path);
 
     Succeeded get_from_dataspace(std::streampos &current_offset,
-                                 shared_ptr<char>& output);
+                                 char* output);
 
     Succeeded get_dataspace(const unsigned int current_id,
                             Array<1, unsigned int> &output);

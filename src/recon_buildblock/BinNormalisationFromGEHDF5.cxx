@@ -161,7 +161,7 @@ void
 BinNormalisationFromGEHDF5::set_defaults()
 {
   this->normalisation_GEHDF5_filename = "";
-  this->_use_gaps = false;
+  //this->_use_gaps = false;
   this->_use_detector_efficiencies = true;
   this->_use_dead_time = false;
   this->_use_geometric_factors =false;

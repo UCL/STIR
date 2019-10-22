@@ -54,7 +54,7 @@ START_NAMESPACE_STIR
 
 template <class RecordT>
         InputStreamWithRecordsFromHDF5<RecordT>::
-        InputStreamWithRecordsFromHDF5(const std::string filename,
+        InputStreamWithRecordsFromHDF5(const std::string& filename,
                                        const std::size_t size_of_record_signature,
                                        const std::size_t max_size_of_record):
     m_filename(filename),
@@ -91,19 +91,19 @@ get_next_record(RecordT& record)
 
   if (current_offset > m_list_size)
       return Succeeded::no;
-
-  input_sptr->get_from_dataspace(current_offset, data_sptr);
+char* data_ptr = data_sptr.get();
+  input_sptr->get_from_dataspace(current_offset, data_ptr);
 
     // NE: Is this really meaningful?
 
   const std::size_t size_of_record =
-    record.size_of_record_at_ptr(data_sptr.get(), this->size_of_record_signature, false);
+    record.size_of_record_at_ptr(data_ptr, this->size_of_record_signature, false);
 
   assert(size_of_record <= this->max_size_of_record);
 
 
   return
-    record.init_from_data_ptr(data_sptr.get(), size_of_record,false);
+    record.init_from_data_ptr(data_ptr, size_of_record,false);
 }
 
 

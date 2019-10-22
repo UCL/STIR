@@ -192,8 +192,8 @@ Succeeded HDF5Wrapper::initialise_scanner_from_HDF5()
 
 Succeeded HDF5Wrapper::initialise_exam_info()
 {
-    this->exam_info_sptr.reset(new ExamInfo());
-
+    this->exam_info_sptr.get();
+/*
     // PW Get the high and low energy threshold values from HDF5 header.
     unsigned int low_energy_thres = 0;
     unsigned int high_energy_thres = 0;
@@ -225,7 +225,7 @@ Succeeded HDF5Wrapper::initialise_exam_info()
 
     TimeFrameDefinitions tm(tf);
     exam_info_sptr->set_time_frame_definitions(tm);
-
+*/
     return Succeeded::yes;
 }
 
@@ -404,11 +404,11 @@ Succeeded HDF5Wrapper::initialise_efficiency_factors(const std::string& path)
 }
 
 // Developed for listmode access
-Succeeded HDF5Wrapper::get_from_dataspace(std::streampos& current_offset, shared_ptr<char>& output)
+Succeeded HDF5Wrapper::get_from_dataspace(std::streampos& current_offset, char* output)
 {
     hsize_t pos = static_cast<hsize_t>(current_offset);
     m_dataspace.selectHyperslab( H5S_SELECT_SET, &m_size_of_record_signature, &pos );
-    m_dataset_sptr->read( output.get(), H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace );
+    m_dataset_sptr->read( output, H5::PredType::STD_U8LE, *m_memspace_ptr, m_dataspace );
     current_offset += static_cast<std::streampos>(m_size_of_record_signature);
 
     //  // TODO error checking

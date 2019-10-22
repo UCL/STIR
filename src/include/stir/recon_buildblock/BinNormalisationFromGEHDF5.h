@@ -1,6 +1,7 @@
 /*
   Copyright (C) 2000-2007, Hammersmith Imanet Ltd
   Copyright (C) 2013-2014 University College London
+  Copyright (C) 2017-2018 University of Leeds
 
   Largely a copy of the ECAT7 version. 
 
@@ -23,6 +24,7 @@
   \brief Declaration of class stir::ecat::BinNormalisationFromGEHDF5
 
   \author Kris Thielemans
+  \author Palak Wadhwa
 */
 
 
@@ -50,8 +52,7 @@ START_NAMESPACE_STIR
   \ingroup recon_buildblock
   \ingroup GE
   \brief A BinNormalisation class that gets the normalisation factors from
-  an GEHDF5 3D normalisation file. Note that you have to point it to the
-  "Interfile" header.
+  an GEHDF5 3D normalisation file.
 
   \par Parsing example
   \verbatim
@@ -61,7 +62,6 @@ START_NAMESPACE_STIR
 
   ; next keywords can be used to switch off some of the normalisation components
   ; do not use unless you know why
-  ; use_gaps:=1
   ; use_detector_efficiencies:=1
   ; use_dead_time:=1
   ; use_geometric_factors:=1
@@ -118,7 +118,6 @@ private:
   int mash;
   int num_blocks_per_singles_unit;
 
-  bool _use_gaps;
   bool _use_detector_efficiencies;
   bool _use_dead_time;
   bool _use_geometric_factors;

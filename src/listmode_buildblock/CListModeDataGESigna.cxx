@@ -1,5 +1,7 @@
 /*
-    Copyright (C) 2013 University College London
+    Copyright (C) 2013-2019 University College London
+    Copyright (C) 2017-2018 University of Hull
+
 */
 /*!
   \file
@@ -8,6 +10,7 @@
     
   \author Kris Thielemans
   \author Ottavia Bertolli
+  \author Nikos Efthimiou
 */
 
 
@@ -88,6 +91,7 @@ open_lm_file()
   CListModeData::scanner_sptr = inputFile.get_scanner_sptr();
   
   //! \todo N.E: Remove hard-coded sizes;
+  //! \todo Check the list record size of the signature and the maximum record size.
   current_lm_data_ptr.
   reset(
         new InputStreamWithRecordsFromHDF5<CListRecordT>(listmode_filename,

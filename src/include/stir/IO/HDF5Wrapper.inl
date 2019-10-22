@@ -4,7 +4,7 @@
 
   \file
   \ingroup IO
-  \brief
+  \brief Declaration of class stir::HDF5Wrapper
 
   \author Nikos Efthimiou
   \author Palak Wadhwa

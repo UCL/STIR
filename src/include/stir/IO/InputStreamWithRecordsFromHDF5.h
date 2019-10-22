@@ -6,11 +6,16 @@
   \brief Declaration of class stir::InputStreamWithRecordsFromHDF5
     
   \author Kris Thielemans
+  \author Palak Wadhwa
   \author Ottavia Bertolli
+  \author Nikos Efthimiou
       
 */
 /*
-    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2016-2018, University College London
+    Copyright (C) 2016-2018, University of Leeds
+    Copyright (C) 2016-2018, University of Hull
+
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -32,6 +37,7 @@
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/HDF5Wrapper.h"
+#include "boost/shared_array.hpp"
 #include <string>
 #include <iostream>
 #include <vector>
@@ -78,7 +84,7 @@ public:
 //                           const std::size_t max_size_of_record);
 
   explicit
-    InputStreamWithRecordsFromHDF5(const std::string filename,
+    InputStreamWithRecordsFromHDF5(const std::string& filename,
                            const std::size_t size_of_record_signature,
                            const std::size_t max_size_of_record);
 
@@ -126,7 +132,7 @@ private:
 
   shared_ptr<HDF5Wrapper> input_sptr;
 
-  shared_ptr<char> data_sptr;
+  boost::shared_array<char> data_sptr;
 
   uint64_t m_list_size = 0 ;
 

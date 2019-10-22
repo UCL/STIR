@@ -13,10 +13,9 @@
 
 
 */
-/*
-    Copyright (C) 2000 PARAPET partners
-    Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
-    Copyright (C) 2018 University of Leeds
+/*  Copyright (C) 2018-2019 University College London
+    Copyright (C) 2018-2019 University of Leeds
+    Copyright (C) 2018-2019 University of Hull
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -75,14 +74,13 @@ public:
 
     //! Set Viewgram<float>
     Succeeded set_viewgram(const Viewgram<float>& v);
+
+private:
+    unsigned int find_segment_offset(const int segment_num) const;
     //! Set Sinogram<float>
     Succeeded set_sinogram(const Sinogram<float>& s);
         std::vector< unsigned int > seg_ax_offset;
         unsigned int find_segment_index_in_sequence(const int segment_num) const;
-
-private:
-    unsigned int find_segment_offset(const int segment_num) const;
-
     //! Cache the segment sequence of the GE data.
     //! \author Kris Thielemans
     void initialise_segment_sequence();

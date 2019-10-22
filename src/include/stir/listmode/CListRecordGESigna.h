@@ -8,9 +8,6 @@
   \ingroup listmode
   \brief Classes for listmode records of GE Dimension console data
 
-  This file is based on GE proprietary information and can therefore not be distributed outside UCL
-  without approval from GE.
-    
   \author Kris Thielemans
   \author Ottavia Bertolli
   \author Palak Wadhwa
@@ -57,7 +54,7 @@ enum ExtendedEvtType
 
 //! Class for storing and using a coincidence event from a GE Dimension listmode file
 /*! \ingroup listmode
-  This class cannot have virtual functions, as it needs to just store the data 4 bytes for CListRecordGESigna to work.
+  This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
 */
 class CListEventDataGESigna
 {
@@ -104,7 +101,7 @@ class CListEventDataGESigna
 
 //! A class for storing and using a timing 'event' from a GE Signa PET/MR listmode file
 /*! \ingroup listmode
-  This class cannot have virtual functions, as it needs to just store the data 8 bytes for CListRecordGESigna to work.
+  This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
  */
 class CListTimeDataGESigna
 {
@@ -153,7 +150,7 @@ private:
 #if 0
 //! A class for storing and using a trigger 'event' from a GE Dimension listmode file
 /*! \ingroup listmode
-  This class cannot have virtual functions, as it needs to just store the data 8 bytes for CListRecordGESigna to work.
+  This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
  */
 class CListGatingDataGESigna
 {
@@ -200,11 +197,6 @@ private:
 /*! \ingroup listmode
   All types of records are stored in a (private) union with the "basic" classes such as CListEventDataGESigna.
   This class essentially just forwards the work to the "basic" classes.
-
-  A complication for GE Dimension data is that not all events are the same size:
-  coincidence events are 4 bytes, and others are 8 bytes. 
-
-  \todo Currently we always assume the data is from a DSTE. We should really read this from the RDF header.
 */
 class CListRecordGESigna : public CListRecord, public CListTime, // public CListGatingInput,
     public  CListEventCylindricalScannerWithDiscreteDetectors

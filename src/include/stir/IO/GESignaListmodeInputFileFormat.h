@@ -100,8 +100,7 @@ std::cout << "\n Manufacturer :  " << read_str_manufacturer << "\n\n";
     warning("read_from_file for GESigna listmode data with istream not implemented %s:%s. Sorry",
 	  __FILE__, __LINE__);
     return
-      std::auto_ptr<data_type>
-      (0);
+      unique_ptr<data_type>();
   }
   virtual unique_ptr<data_type>
     read_from_file(const std::string& filename) const

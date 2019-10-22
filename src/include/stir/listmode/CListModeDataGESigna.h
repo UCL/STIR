@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2013 University College London
+    Copyright (C) 2013-2019 University College London
 */
 /*!
   \file
