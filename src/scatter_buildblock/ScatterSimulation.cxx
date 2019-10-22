@@ -202,8 +202,8 @@ ScatterSimulation::set_defaults()
     this->attenuation_threshold =  0.01f ;
     this->random = true;
     this->use_cache = true;
-    this->zoom_xy = 1.f;
-    this->zoom_z = 1.f;
+    this->zoom_xy = -1.f;
+    this->zoom_z = -1.f;
     this->zoom_size_xy = -1;
     this->zoom_size_z = -1;
     this->use_default_downsampling = false;

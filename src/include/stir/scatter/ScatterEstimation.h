@@ -257,6 +257,8 @@ protected:
     int num_scatter_iterations;
     //! Output file name prefix
     std::string output_scatter_estimate_prefix;
+
+    std::string output_background_estimate_prefix;
 private:
 
     //! \details A helper function to reduce the size of set_up().

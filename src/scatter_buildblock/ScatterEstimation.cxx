@@ -74,6 +74,7 @@ set_defaults()
     this->atten_image_filename = "";
     this->norm_coeff_filename = "";
     this->output_scatter_estimate_prefix = "";
+    this->output_background_estimate_prefix = "";
     this->num_scatter_iterations = 5;
     this->min_scale_value = 0.4f;
     this->max_scale_value = 100.f;
@@ -164,6 +165,8 @@ initialise_keymap()
                          &this->export_scatter_estimates_of_each_iteration);
     this->parser.add_key("output scatter estimate name prefix",
                          &this->output_scatter_estimate_prefix);
+    this->parser.add_key("output background estimate name prefix",
+                         &this->output_background_estimate_prefix);
     this->parser.add_key("do average at 2",
                          &this->do_average_at_2);
     this->parser.add_key("maximum scale value",
@@ -315,6 +318,9 @@ post_processing()
     }
 
     if (this->output_scatter_estimate_prefix.size() == 0)
+        return true;
+
+    if (this->output_background_estimate_prefix.size() == 0)
         return true;
 
     if(!this->recompute_mask_projdata)
@@ -761,11 +767,12 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
                  *inv_projdata_3d_sptr,false);
 
             // Crucial: Avoid divisions by zero!!
-            pow_times_add min_threshold (0.0f, 1.0f, 1.0f, 1e-9f, NumericInfo<float>().max_value());
-            pow_times_add add_scalar (1e-4f, 1.0f, 1.0f, NumericInfo<float>().min_value(), NumericInfo<float>().max_value());
+            // This should be resolved after https://github.com/UCL/STIR/issues/348
+            pow_times_add min_threshold (0.0f, 1.0f, 1.0f,  1E-20f, NumericInfo<float>().max_value());
+//            pow_times_add add_scalar (1e-4f, 1.0f, 1.0f, NumericInfo<float>().min_value(), NumericInfo<float>().max_value());
 
             apply_to_proj_data(*tmp_projdata_2d_sptr, min_threshold);
-            apply_to_proj_data(*tmp_projdata_2d_sptr, add_scalar);
+//            apply_to_proj_data(*tmp_projdata_2d_sptr, add_scalar);
 
             normalisation_coeffs_2d_sptr.reset(new BinNormalisationFromProjData(tmp_projdata_2d_sptr));
             normalisation_coeffs_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
@@ -1089,25 +1096,42 @@ process_data()
             std::stringstream convert;   // stream used for the conversion
             convert << this->output_scatter_estimate_prefix << "_" <<
                        i_scat_iter;
-            std::string output_filename = convert.str();
+            std::string output_scatter_filename = convert.str();
 
-            shared_ptr <ProjData> temp_projdata_3d (
+            // To save the 3d scatter estimate
+            shared_ptr <ProjData> temp_scatter_projdata_3d (
                         new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
                                               this->input_projdata_sptr->get_proj_data_info_sptr() ,
-                                              output_filename,
+                                              output_scatter_filename,
                                               std::ios::in | std::ios::out | std::ios::trunc));
             shared_ptr<BinNormalisation> dummy_normalisation_coeffs_3d_sptr(new TrivialBinNormalisation());
             // Upsample to 3D
-            upsample_and_fit_scatter_estimate(*temp_projdata_3d,
+            //we're currently not doing the tail fitting in this step, but keeping the same scale as determined in 2D
+
+            upsample_and_fit_scatter_estimate(*temp_scatter_projdata_3d,
                                               *this->input_projdata_sptr,
                                               *temp_projdata,
                                               *dummy_normalisation_coeffs_3d_sptr,
                                               *this->input_projdata_sptr,
                                               1.0f, 1.0f, 1, spline_type,
                                               false);
+
+            // Now save the full background term.
+            convert.clear();
+            convert << this->output_background_estimate_prefix << "_" <<
+                       i_scat_iter;
+            std::string output_background_filename = convert.str();
+
+            shared_ptr <ProjData> temp_background_projdata_3d (
+                        new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
+                                              this->input_projdata_sptr->get_proj_data_info_sptr() ,
+                                              output_background_filename,
+                                              std::ios::in | std::ios::out | std::ios::trunc));
+            temp_background_projdata_3d->fill(*temp_scatter_projdata_3d);
+
             if (!is_null_ptr(add_projdata_3d_sptr))
-                add_proj_data(*temp_projdata_3d, *this->add_projdata_3d_sptr);
-            this->multiplicative_binnorm_3d_sptr->apply(*temp_projdata_3d, start_time, end_time);
+                add_proj_data(*temp_background_projdata_3d, *this->add_projdata_3d_sptr);
+            this->multiplicative_binnorm_3d_sptr->apply(*temp_background_projdata_3d, start_time, end_time);
         }
 
         this->back_projdata_sptr->fill(*scaled_est_projdata_sptr);
