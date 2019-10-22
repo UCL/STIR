@@ -1017,7 +1017,6 @@ process_data()
 
                 *this->current_activity_image_sptr += *act_image_for_averaging;
                 *this->current_activity_image_sptr /= 2.f;
-                this->do_average_at_2 = false;
             }
         }
 
@@ -1079,7 +1078,7 @@ process_data()
             //we do this by min-thresholding and then subtracting the threshold.
             //as long as the threshold is tiny, this will be ok
 
-            // On the same time we are going to save to a temp projdata file
+            // At the same time we are going to save to a temp projdata file
 
             shared_ptr<ProjData> temp_projdata ( new ProjDataInMemory (scaled_est_projdata_sptr->get_exam_info_sptr(),
                                                                        scaled_est_projdata_sptr->get_proj_data_info_sptr()));
