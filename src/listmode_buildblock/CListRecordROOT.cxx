@@ -88,8 +88,9 @@ void CListEventROOT::init_from_data(const int& _ring1, const int& _ring2,
     else if ( det2 >= scanner_sptr->get_num_detectors_per_ring())
         det2 = det2 - scanner_sptr->get_num_detectors_per_ring();
 
-    if (((det1 + det2 < 3*scanner_sptr->get_num_detectors_per_ring()/4) && (det1-det2 > 0))
-            ||((det1 + det2 > 3*scanner_sptr->get_num_detectors_per_ring()/4)&&(det1-det2 < 0)))
+   // if (((det1 + det2 < 3*scanner_sptr->get_num_detectors_per_ring()/4) && (det1-det2 > 0))
+     //       ||((det1 + det2 > 3*scanner_sptr->get_num_detectors_per_ring()/4)&&(det1-det2 < 0)))
+    if(det1>det2)
         {
             int tmp = det1;
             det1 = det2;

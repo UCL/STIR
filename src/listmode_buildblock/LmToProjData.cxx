@@ -685,16 +685,10 @@ process_data()
 			 && bin.tangential_pos_num()<= proj_data_ptr->get_max_tangential_pos_num()
              && bin.axial_pos_num()>=proj_data_ptr->get_min_axial_pos_num(bin.segment_num())
              && bin.axial_pos_num()<=proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
-             && ((!record.event().is_swapped()
              && record.energy().get_energyA_in_keV() >= low_thres_A
              && record.energy().get_energyA_in_keV() <= high_thres_A
              && record.energy().get_energyB_in_keV() >= low_thres_B
              && record.energy().get_energyB_in_keV() <= high_thres_B)
-             || (record.event().is_swapped()
-             && record.energy().get_energyA_in_keV() >= low_thres_B
-             && record.energy().get_energyA_in_keV() <= high_thres_B
-             && record.energy().get_energyB_in_keV() >= low_thres_A
-             && record.energy().get_energyB_in_keV() <= high_thres_A)))
              {
 
 
