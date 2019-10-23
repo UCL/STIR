@@ -87,7 +87,7 @@ GEHDF5Wrapper::open(const std::string& filename)
     {
         warning("CListModeDataGESigna: "
                 "Probably this is GESigna, but couldn't find scan start time etc."
-                "The scanner will be initialised from STIR as opposed to from the HDF5 header.");
+                "The scanner will be initialised from STIR as opposed to the HDF5 header.");
         is_signa = true;
 
         this->scanner_sptr.reset(new Scanner(Scanner::PETMR_Signa));

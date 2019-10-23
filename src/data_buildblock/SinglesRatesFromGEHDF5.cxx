@@ -47,7 +47,6 @@ using std::ios;
 
 
 START_NAMESPACE_STIR
-//PW todo Need to change the registered name
 const char * const 
 SinglesRatesFromGEHDF5::registered_name = "Singles From GE HDF5 listmode File";
 
