@@ -135,7 +135,7 @@ detection_efficiency_unscattered.push_back(0);
     int index1 = 0;
 
     if (this->template_exam_info_sptr->get_num_energy_windows()>1)
-    {`
+    {
         index0 = this->template_exam_info_sptr->get_energy_window_pair().first-1;
         index1 = this->template_exam_info_sptr->get_energy_window_pair().second-1;
 
