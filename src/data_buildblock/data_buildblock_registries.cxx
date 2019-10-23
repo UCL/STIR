@@ -30,7 +30,9 @@
 #include "stir/data/SinglesRatesFromECAT7.h"
 #include "stir/data/SinglesRatesFromSglFile.h"
 #endif
-
+#ifdef HAVE_HDF5
+#include "stir/data/SinglesRatesFromGEHDF5.h"
+#endif
 START_NAMESPACE_STIR
 #ifdef HAVE_LLN_MATRIX
 START_NAMESPACE_ECAT
@@ -39,6 +41,9 @@ static SinglesRatesFromECAT7::RegisterIt dummy100;
 static SinglesRatesFromSglFile::RegisterIt dummy200;
 END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
+#endif
+#ifdef HAVE_HDF5
+static SinglesRatesFromGEHDF5::RegisterIt dummy300;
 #endif
 
 END_NAMESPACE_STIR
