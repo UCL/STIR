@@ -236,23 +236,23 @@ public:
 
         this->event_data.init_from_data(ring1, ring2,
                                         crystal1, crystal2);
-        if(this->event().is_swapped())
-        {
+       // if(this->event().is_swapped())
+       //  {
             //std::cout << "I m swapped" << std::endl;
-            this->time_data.init_from_data(time2,time1);
+         //    this->time_data.init_from_data(time2,time1);
 
-            this->energy_data.init_energy_from_data(energy2,energy1);
-        }
+         //    this->energy_data.init_energy_from_data(energy2,energy1);
+      //   }
 
 
-        else
-        {
+      //   else
+      //   {
             //std::cout << "I m not swapped" << std::endl;
             this->time_data.init_from_data(time1,time2);
 
             this->energy_data.init_energy_from_data(energy1,energy2);
-        }
-
+      //   }
+//
         // We can make a singature raw based on the two events IDs.
         // It is pretty unique.
         raw[0] = event1;
