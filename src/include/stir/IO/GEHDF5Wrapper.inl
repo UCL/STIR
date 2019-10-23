@@ -4,7 +4,7 @@
 
   \file
   \ingroup IO
-  \brief Declaration of class stir::HDF5Wrapper
+  \brief Declaration of class stir::GEHDF5Wrapper
 
   \author Nikos Efthimiou
   \author Palak Wadhwa
@@ -33,34 +33,34 @@
 START_NAMESPACE_STIR
 
 shared_ptr<Scanner>
-HDF5Wrapper::get_scanner_sptr() const
+GEHDF5Wrapper::get_scanner_sptr() const
 {
     return this->scanner_sptr;
 }
 
 shared_ptr<ExamInfo>
-HDF5Wrapper::get_exam_info_sptr() const
+GEHDF5Wrapper::get_exam_info_sptr() const
 {
     return this->exam_info_sptr;
 }
 
-H5::DataSet* HDF5Wrapper::get_dataset_ptr() const
+H5::DataSet* GEHDF5Wrapper::get_dataset_ptr() const
 {
     return m_dataset_sptr.get();
 }
 
-hsize_t HDF5Wrapper::get_dataset_size() const
+hsize_t GEHDF5Wrapper::get_dataset_size() const
 {
     return m_list_size;
 }
 
-TimeFrameDefinitions* HDF5Wrapper::get_timeframe_definitions() const
+/*TimeFrameDefinitions* GEHDF5Wrapper::get_timeframe_definitions() const
 {
     //! \todo For examInfo get timeframe definitions
     return &exam_info_sptr->time_frame_definitions;
 }
-
-const H5::H5File& HDF5Wrapper::get_file() const
+*/
+const H5::H5File& GEHDF5Wrapper::get_file() const
 { return file; }
 
 END_NAMESPACE_STIR

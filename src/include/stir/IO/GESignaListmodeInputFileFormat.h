@@ -33,7 +33,6 @@
 #include "stir/listmode/CListModeDataGESigna.h"
 //#include "stir/listmode/CListRecordGESigna.h"
 
-#include "stir/utilities.h"
 #include <string>
 #include "H5Cpp.h"
 

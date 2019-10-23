@@ -60,7 +60,7 @@ public:
 
 private:
 
-//  shared_ptr<HDF5Wrapper> input_sptr;
+//  shared_ptr<GEHDF5Wrapper> input_sptr;
 
   typedef CListRecordGESigna CListRecordT;
   std::string listmode_filename;

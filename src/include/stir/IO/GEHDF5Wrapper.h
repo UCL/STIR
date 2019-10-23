@@ -15,12 +15,12 @@
 
     See STIR/LICENSE.txt for details
 */
-#ifndef __stir_IO_HDF5Wrapper_H__
-#define __stir_IO_HDF5Wrapper_H__
+#ifndef __stir_IO_GEHDF5Wrapper_H__
+#define __stir_IO_GEHDF5Wrapper_H__
 /*!
   \file
   \ingroup IO
-  \brief Declaration of class stir::HDF5Wrapper
+  \brief Declaration of class stir::GEHDF5Wrapper
 
   \author Nikos Efthimiou
   \author Palak Wadhwa
@@ -43,15 +43,15 @@ START_NAMESPACE_STIR
   \brief A class that extracts and reads the necessary data from GE HDF5 input files.
 */
 
-class HDF5Wrapper
+class GEHDF5Wrapper
 {
 public:
 
     static bool check_GE_signature(const std::string& filename);
 
-    explicit HDF5Wrapper();
+    explicit GEHDF5Wrapper();
 
-    explicit HDF5Wrapper(const std::string& filename);
+    explicit GEHDF5Wrapper(const std::string& filename);
 
     Succeeded open(const std::string& filename);
 
@@ -102,7 +102,7 @@ public:
 
     inline hsize_t get_dataset_size() const;
 
-    inline TimeFrameDefinitions* get_timeframe_definitions() const;
+//    inline TimeFrameDefinitions* get_timeframe_definitions() const;
 
     //! Get shared pointer to exam info
     /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
@@ -116,7 +116,7 @@ public:
     //! \obsolete
     inline const H5::H5File& get_file() const;
 
-    ~HDF5Wrapper() {}
+    ~GEHDF5Wrapper() {}
 
 protected:
 
@@ -171,6 +171,6 @@ private:
 
 END_NAMESPACE_STIR
 
-#include "stir/IO/HDF5Wrapper.inl"
+#include "stir/IO/GEHDF5Wrapper.inl"
 
 #endif

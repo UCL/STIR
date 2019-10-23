@@ -73,7 +73,7 @@ Succeeded
 InputStreamWithRecordsFromHDF5<RecordT>::
 set_up()
 {
-    input_sptr.reset(new HDF5Wrapper(m_filename));
+    input_sptr.reset(new GEHDF5Wrapper(m_filename));
     data_sptr.reset(new char[this->max_size_of_record]);
 
     input_sptr->initialise_listmode_data();

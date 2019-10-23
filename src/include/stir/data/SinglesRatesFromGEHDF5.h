@@ -33,7 +33,7 @@
 #include "stir/data/SinglesRates.h"
 #include "stir/Array.h"
 #include "stir/RegisteredParsingObject.h"
-#include "stir/IO/HDF5Wrapper.h"
+#include "stir/IO/GEHDF5Wrapper.h"
 
 
 START_NAMESPACE_STIR
@@ -172,7 +172,7 @@ private:
  // Indexed by time slice and singles bin index.
  shared_ptr<Array<2, unsigned int> > m_singles_sptr;
 
- shared_ptr<HDF5Wrapper> m_input_sptr;
+ shared_ptr<GEHDF5Wrapper> m_input_sptr;
  
  std::vector<double> _times;
  std::vector<int> _total_prompts;

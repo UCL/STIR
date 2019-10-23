@@ -31,7 +31,7 @@
 #include "stir/data/SinglesRatesFromGEHDF5.h"
 #include "stir/round.h"
 #include "stir/stream.h"
-#include "stir/IO/HDF5Wrapper.h"
+#include "stir/IO/GEHDF5Wrapper.h"
 
 #include <vector>
 #include <fstream>
@@ -321,7 +321,7 @@ read_singles_from_listmode_file(const std::string& _listmode_filename)
     unsigned int slice = 0;
 
     //PW Open the list mode file here.
-    m_input_sptr.reset(new HDF5Wrapper(_listmode_filename));
+    m_input_sptr.reset(new GEHDF5Wrapper(_listmode_filename));
 
 
     SinglesRates::scanner_sptr = m_input_sptr->get_scanner_sptr();
@@ -329,7 +329,7 @@ read_singles_from_listmode_file(const std::string& _listmode_filename)
     const int total_singles_units = SinglesRates::scanner_sptr->get_num_singles_units();
 
 
-    m_num_time_slices = m_input_sptr->get_timeframe_definitions()->get_num_frames();
+    m_num_time_slices = m_input_sptr->get_exam_info_sptr()->time_frame_definitions.get_num_frames();
 
     // Allocate the main array.
     m_singles_sptr.reset(new Array<2, unsigned int>(IndexRange2D(0, m_num_time_slices - 1, 0, total_singles_units - 1)));

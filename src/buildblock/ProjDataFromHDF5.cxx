@@ -35,7 +35,7 @@
 #include "stir/IndexRange.h"
 #include "stir/IndexRange3D.h"
 #include "stir/IndexRange4D.h"
-#include "stir/IO/HDF5Wrapper.h"
+#include "stir/IO/GEHDF5Wrapper.h"
 #include "stir/display.h"
 #include "stir/CPUTimer.h"
 #include "stir/HighResWallClockTimer.h"
@@ -51,7 +51,7 @@ ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info
                                    const std::string& input_filename) :
     ProjData()
 {
-    m_input_hdf5_sptr.reset(new HDF5Wrapper(input_filename));
+    m_input_hdf5_sptr.reset(new GEHDF5Wrapper(input_filename));
     exam_info_sptr = m_input_hdf5_sptr->get_exam_info_sptr();
     proj_data_info_ptr = input_proj_data_info_sptr;
 
@@ -61,7 +61,7 @@ ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info
 }
 
 ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
-                                   shared_ptr<HDF5Wrapper> input_hdf5) :
+                                   shared_ptr<GEHDF5Wrapper> input_hdf5) :
     ProjData(input_hdf5->get_exam_info_sptr(), input_proj_data_info_sptr)
 {
     m_input_hdf5_sptr = input_hdf5;
@@ -73,7 +73,7 @@ ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info
 
 ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ExamInfo> input_exam_info_sptr,
                                    shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
-                                   shared_ptr<HDF5Wrapper> input_hdf5) :
+                                   shared_ptr<GEHDF5Wrapper> input_hdf5) :
     ProjData(input_exam_info_sptr, input_proj_data_info_sptr)
 {
     m_input_hdf5_sptr = input_hdf5;

@@ -38,7 +38,7 @@
 #include "stir/stream.h"
 #include "stir/Sinogram.h"
 #include "stir/IndexRange2D.h"
-#include "stir/IO/HDF5Wrapper.h"
+#include "stir/IO/GEHDF5Wrapper.h"
 #include "stir/Array.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/display.h"
@@ -173,9 +173,9 @@ int main(int argc, char **argv)
 
 
 
-    shared_ptr<HDF5Wrapper> m_input_sptr;
-    m_input_sptr.reset(new HDF5Wrapper(_listmode_filename));
-    int num_slices = m_input_sptr->get_timeframe_definitions()->get_num_frames();
+    shared_ptr<GEHDF5Wrapper> m_input_sptr;
+    m_input_sptr.reset(new GEHDF5Wrapper(_listmode_filename));
+    int num_slices = m_input_sptr->get_exam_info_sptr()->time_frame_definitions.get_num_frames();
 
     Bin bin;
     Bin uncompressed_bin;

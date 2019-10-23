@@ -34,7 +34,7 @@
 #define __ProjDataFromHDF5_H__
 
 #include "stir/ProjData.h"
-#include "stir/IO/HDF5Wrapper.h"
+#include "stir/IO/GEHDF5Wrapper.h"
 #include "stir/Array.h"
 
 START_NAMESPACE_STIR
@@ -58,27 +58,24 @@ public:
                               const std::string& input_filename);
 
     explicit ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
-                              shared_ptr<HDF5Wrapper> input_hdf5_sptr);
+                              shared_ptr<GEHDF5Wrapper> input_hdf5_sptr);
 
     explicit ProjDataFromHDF5(shared_ptr<ExamInfo> input_exam_info_sptr,
                               shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
-                              shared_ptr<HDF5Wrapper> input_hdf5);
+                              shared_ptr<GEHDF5Wrapper> input_hdf5);
 
-    //! Get the segment sequence
-    std::vector<int> get_segment_sequence_in_hdf5() const;
-
+private:
+    unsigned int find_segment_offset(const int segment_num) const;
+    //! Set Viewgram<float>
+    Succeeded set_viewgram(const Viewgram<float>& v);
+    //! Set Sinogram<float>
+    Succeeded set_sinogram(const Sinogram<float>& s);
     //! Get Viewgram<float>
     Viewgram<float> get_viewgram(const int view_num, const int segment_num,const bool make_num_tangential_poss_odd=false) const;
     //! Get Sinogram<float>
     Sinogram<float> get_sinogram(const int ax_pos_num, const int sergment_num,const bool make_num_tangential_poss_odd=false) const;
-
-    //! Set Viewgram<float>
-    Succeeded set_viewgram(const Viewgram<float>& v);
-
-private:
-    unsigned int find_segment_offset(const int segment_num) const;
-    //! Set Sinogram<float>
-    Succeeded set_sinogram(const Sinogram<float>& s);
+    //! Get the segment sequence
+    std::vector<int> get_segment_sequence_in_hdf5() const;
         std::vector< unsigned int > seg_ax_offset;
         unsigned int find_segment_index_in_sequence(const int segment_num) const;
     //! Cache the segment sequence of the GE data.
@@ -89,7 +86,7 @@ private:
 
     void initialise_viewgram_buffer();
     //! Handler of the HDF5 input data and header
-    shared_ptr<HDF5Wrapper> m_input_hdf5_sptr;
+    shared_ptr<GEHDF5Wrapper> m_input_hdf5_sptr;
 
     std::vector< int > segment_sequence;
     Array<4, unsigned char> tof_data;

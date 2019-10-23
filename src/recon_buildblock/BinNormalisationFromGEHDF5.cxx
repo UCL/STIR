@@ -1,7 +1,6 @@
 /*
-  Copyright (C) 2002-2011, Hammersmith Imanet Ltd
-  Copyright (C) 2013-2014 University College London
-  Copyright (C) 2017-2018 University of Leeds
+  Copyright (C) 2013-2018 University College London
+  Copyright (C) 2017-2019 University of Leeds
 
   This file contains is based on information supplied by Siemens but
   is distributed with their consent.
@@ -238,7 +237,7 @@ void
 BinNormalisationFromGEHDF5::
 read_norm_data(const string& filename)
 {
-  m_input_hdf5_sptr.reset(new HDF5Wrapper(filename));
+  m_input_hdf5_sptr.reset(new GEHDF5Wrapper(filename));
   this->scanner_ptr = m_input_hdf5_sptr->get_scanner_sptr();
 
   num_transaxial_crystals_per_block = scanner_ptr->get_num_transaxial_crystals_per_block();

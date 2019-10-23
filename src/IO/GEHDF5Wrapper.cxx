@@ -3,7 +3,7 @@
 /*!
   \file
   \ingroup IO
-  \brief Declaration of class stir::HDF5Wrapper
+  \brief Declaration of class stir::GEHDF5Wrapper
 
   \author Nikos Efthimiou
   \author Palak Wadhwa
@@ -28,12 +28,12 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/IO/HDF5Wrapper.h"
+#include "stir/IO/GEHDF5Wrapper.h"
 #include <sstream>
 
 START_NAMESPACE_STIR
 
-bool HDF5Wrapper::check_GE_signature(const std::string& filename)
+bool GEHDF5Wrapper::check_GE_signature(const std::string& filename)
 {
     H5::H5File file;
 
@@ -59,31 +59,31 @@ bool HDF5Wrapper::check_GE_signature(const std::string& filename)
     return false;
 }
 
-HDF5Wrapper::HDF5Wrapper()
+GEHDF5Wrapper::GEHDF5Wrapper()
 {
     // Not much.
 }
 
-HDF5Wrapper::HDF5Wrapper(const std::string& filename)
+GEHDF5Wrapper::GEHDF5Wrapper(const std::string& filename)
 {
     if(!file.isHdf5(filename))
-        error("HDF5Wrapper: The input file is not HDF5! Abort.");
+        error("GEHDF5Wrapper: The input file is not HDF5! Abort.");
 
     if(open(filename) == Succeeded::no)
-        error("HDF5Wrapper: Error opening HDF5 file. Abort.");
+        error("GEHDF5Wrapper: Error opening HDF5 file. Abort.");
 }
 
 Succeeded
-HDF5Wrapper::open(const std::string& filename)
+GEHDF5Wrapper::open(const std::string& filename)
 {
     if(!file.isHdf5(filename))
-        error("HDF5Wrapper: The input file is not HDF5! Abort.");
+        error("GEHDF5Wrapper: The input file is not HDF5! Abort.");
 
     file.openFile(filename, H5F_ACC_RDONLY);
 
     initialise_exam_info();
 
-    if(HDF5Wrapper::check_GE_signature(filename))
+    if(GEHDF5Wrapper::check_GE_signature(filename))
     {
         warning("CListModeDataGESigna: "
                 "Probably this is GESigna, but couldn't find scan start time etc."
@@ -101,7 +101,7 @@ HDF5Wrapper::open(const std::string& filename)
     }
 }
 
-Succeeded HDF5Wrapper::initialise_scanner_from_HDF5()
+Succeeded GEHDF5Wrapper::initialise_scanner_from_HDF5()
 {
     int num_transaxial_blocks_per_bucket = 0;
     int num_axial_blocks_per_bucket = 0;
@@ -190,10 +190,10 @@ Succeeded HDF5Wrapper::initialise_scanner_from_HDF5()
     return Succeeded::yes;
 }
 
-Succeeded HDF5Wrapper::initialise_exam_info()
+Succeeded GEHDF5Wrapper::initialise_exam_info()
 {
-    this->exam_info_sptr.get();
-/*
+    this->exam_info_sptr.reset(new ExamInfo());
+
     // PW Get the high and low energy threshold values from HDF5 header.
     unsigned int low_energy_thres = 0;
     unsigned int high_energy_thres = 0;
@@ -207,7 +207,7 @@ Succeeded HDF5Wrapper::initialise_exam_info()
     // PW Set these values in exam_info_sptr.
     exam_info_sptr->set_high_energy_thres(static_cast<float>(low_energy_thres));
     exam_info_sptr->set_low_energy_thres(static_cast<float>(high_energy_thres));
-
+/*
     //! \todo convert time slices to timeFrameDefinitions
     //NE Copied from SignesRatesFromGEHDF5:
     //PW Get the total number of time slices from the HDF5 file format.
@@ -229,7 +229,7 @@ Succeeded HDF5Wrapper::initialise_exam_info()
     return Succeeded::yes;
 }
 
-Succeeded HDF5Wrapper::initialise_listmode_data(const std::string &path)
+Succeeded GEHDF5Wrapper::initialise_listmode_data(const std::string &path)
 {
     if(path.size() == 0)
     {
@@ -264,7 +264,7 @@ Succeeded HDF5Wrapper::initialise_listmode_data(const std::string &path)
     return Succeeded::yes;
 }
 
-Succeeded HDF5Wrapper::initialise_singles_data(const std::string &path)
+Succeeded GEHDF5Wrapper::initialise_singles_data(const std::string &path)
 {
     if(path.size() == 0)
     {
@@ -290,7 +290,7 @@ Succeeded HDF5Wrapper::initialise_singles_data(const std::string &path)
     return Succeeded::yes;
 }
 
-Succeeded HDF5Wrapper::initialise_proj_data_data(const std::string& path,
+Succeeded GEHDF5Wrapper::initialise_proj_data_data(const std::string& path,
                                                  const unsigned int view_num)
 {
     if(path.size() == 0)
@@ -329,7 +329,7 @@ Succeeded HDF5Wrapper::initialise_proj_data_data(const std::string& path,
 // PW The geo factors are stored in geo3d file under the file path called /SegmentData/Segment4/3D_Norm_correction/slice%d where
 // slice numbers go from 1 to 16. Here this path is initialised, along with the output buffer and hyperslab.
 //
-Succeeded HDF5Wrapper::initialise_geo_factors_data(const std::string& path,
+Succeeded GEHDF5Wrapper::initialise_geo_factors_data(const std::string& path,
                                                  const unsigned int slice_num)
 {
     if(path.size() == 0)
@@ -369,7 +369,7 @@ Succeeded HDF5Wrapper::initialise_geo_factors_data(const std::string& path,
     return Succeeded::yes;
 }
 
-Succeeded HDF5Wrapper::initialise_efficiency_factors(const std::string& path)
+Succeeded GEHDF5Wrapper::initialise_efficiency_factors(const std::string& path)
 {
     if(path.size() == 0)
     {
@@ -404,7 +404,7 @@ Succeeded HDF5Wrapper::initialise_efficiency_factors(const std::string& path)
 }
 
 // Developed for listmode access
-Succeeded HDF5Wrapper::get_from_dataspace(std::streampos& current_offset, char* output)
+Succeeded GEHDF5Wrapper::get_from_dataspace(std::streampos& current_offset, char* output)
 {
     hsize_t pos = static_cast<hsize_t>(current_offset);
     m_dataspace.selectHyperslab( H5S_SELECT_SET, &m_size_of_record_signature, &pos );
@@ -416,7 +416,7 @@ Succeeded HDF5Wrapper::get_from_dataspace(std::streampos& current_offset, char* 
 }
 
 // Developed for ProjData
-Succeeded HDF5Wrapper::get_from_dataset(const std::array<unsigned long long int, 3>& offset,
+Succeeded GEHDF5Wrapper::get_from_dataset(const std::array<unsigned long long int, 3>& offset,
                                         const std::array<unsigned long long int, 3>& count,
                                         const std::array<unsigned long long int, 3>& stride,
                                         const std::array<unsigned long long int, 3>& block,
@@ -434,7 +434,7 @@ Succeeded HDF5Wrapper::get_from_dataset(const std::array<unsigned long long int,
 //! \todo Array read as UINT32 should have an output of std::uint32_t.
 //! \todo Check read data type as it's unlikely that it is NATIVE_UINT32, it may be STD_U32LE.
 //PW Developed for Geometric Correction Factors
-Succeeded HDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long int, 2>& offset,
+Succeeded GEHDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long int, 2>& offset,
                                         const std::array<unsigned long long int, 2>& count,
                                         const std::array<unsigned long long int, 2>& stride,
                                         const std::array<unsigned long long int, 2>& block,
@@ -450,7 +450,7 @@ Succeeded HDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long i
 }
 
 //PW Developed for Efficiency Factors
-Succeeded HDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long int, 2>& offset,
+Succeeded GEHDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long int, 2>& offset,
                                         const std::array<unsigned long long int, 2>& count,
                                         const std::array<unsigned long long int, 2>& stride,
                                         const std::array<unsigned long long int, 2>& block,
@@ -468,11 +468,11 @@ Succeeded HDF5Wrapper::get_from_2d_dataset(const std::array<unsigned long long i
 //! \todo Array read as UINT32 should have an output of std::uint32_t.
 //! \todo Check the H5 data type as it's unlikely that it is NATIVE_UINT32, it may be STD_U32LE.
 // Developed for Singles
-Succeeded HDF5Wrapper::get_dataspace(const unsigned int current_id,
+Succeeded GEHDF5Wrapper::get_dataspace(const unsigned int current_id,
                                      Array<1, unsigned int>& output)
 {
     std::ostringstream datasetname;
-    datasetname << m_address << current_id;
+    datasetname << "/Singles/CrystalSingles/sample" << current_id;
     m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
     m_dataset_sptr->read(output.get_data_ptr(), H5::PredType::NATIVE_UINT32);
     output.release_data_ptr();
@@ -484,11 +484,11 @@ Succeeded HDF5Wrapper::get_dataspace(const unsigned int current_id,
 //! \todo Array read as UINT32 should have an output of std::uint32_t.
 //! \todo Check the H5 data type as it's unlikely that it is NATIVE_UINT32, it may be STD_U32LE.
 // Developed for Singles
-Succeeded HDF5Wrapper::get_dataspace(const unsigned int current_id,
+Succeeded GEHDF5Wrapper::get_dataspace(const unsigned int current_id,
                                      Array<2, unsigned int>& output)
 {
     std::ostringstream datasetname;
-    datasetname << m_address << current_id;
+    datasetname << "/Singles/CrystalSingles/sample" << current_id;
     m_dataset_sptr.reset(new H5::DataSet(file.openDataSet(datasetname.str())));
     m_dataset_sptr->read( output[current_id].get_data_ptr(), H5::PredType::NATIVE_UINT32);
     output[current_id].release_data_ptr();

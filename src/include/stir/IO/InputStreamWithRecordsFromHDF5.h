@@ -36,7 +36,7 @@
 
 #include "stir/shared_ptr.h"
 #include "stir/Succeeded.h"
-#include "stir/IO/HDF5Wrapper.h"
+#include "stir/IO/GEHDF5Wrapper.h"
 #include "boost/shared_array.hpp"
 #include <string>
 #include <iostream>
@@ -130,7 +130,7 @@ public:
 
 private:
 
-  shared_ptr<HDF5Wrapper> input_sptr;
+  shared_ptr<GEHDF5Wrapper> input_sptr;
 
   boost::shared_array<char> data_sptr;
 

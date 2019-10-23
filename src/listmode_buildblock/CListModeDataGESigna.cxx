@@ -18,7 +18,7 @@
 #include "stir/Succeeded.h"
 #include "stir/ExamInfo.h"
 #include "stir/info.h"
-#include "stir/IO/HDF5Wrapper.h"
+#include "stir/IO/GEHDF5Wrapper.h"
 #include <boost/format.hpp>
 #include <iostream>
 #include <fstream>
@@ -75,20 +75,20 @@ open_lm_file()
                                                                            4, 16, 
                                                                            ByteOrder::little_endian != ByteOrder::get_native_order()));
 #else
-  if(!HDF5Wrapper::check_GE_signature(listmode_filename))
+  if(!GEHDF5Wrapper::check_GE_signature(listmode_filename))
   {
      //! \todo N.E:Write a msg
      return Succeeded::no;
   }
 
-//  input_sptr.reset( new HDF5Wrapper(listmode_filename));
+//  input_sptr.reset( new GEHDF5Wrapper(listmode_filename));
 
 
 #endif
 
-  //! \todo N.E: Probably can do without the HDF5Wrapper here.
-  HDF5Wrapper inputFile(listmode_filename);
-  CListModeData::scanner_sptr = inputFile.get_scanner_sptr();
+  //! \todo N.E: Probably can do without the GEHDF5Wrapper here.
+  GEHDF5Wrapper inputFile(listmode_filename);
+ // CListModeData::scaner_sptr = inputFile.get_scanner_sptr();
   
   //! \todo N.E: Remove hard-coded sizes;
   //! \todo Check the list record size of the signature and the maximum record size.
@@ -120,7 +120,7 @@ reset()
 
 CListModeData::SavedPosition
 CListModeDataGESigna::
-save_get_position() 
+save_get_position()
 {
   return static_cast<SavedPosition>(current_lm_data_ptr->save_get_position());
 } 
