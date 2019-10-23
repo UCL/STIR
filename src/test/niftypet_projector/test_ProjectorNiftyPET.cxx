@@ -78,6 +78,109 @@ protected:
   shared_ptr<ProjDataInMemory> _proj_data_sptr;
 };
 
+static
+Succeeded
+compare_arrays(const std::vector<float> &vec1, const std::vector<float> &vec2)
+{
+    // Subtract
+    std::vector<float> diff = vec1;
+    std::transform(vec1.begin(), vec1.end(), vec2.begin(), diff.begin(), std::minus<float>());
+
+    // Get max difference
+    const float max_diff = *std::max_element(diff.begin(), diff.end());
+
+    // Get Euclidean distance with diff^2, accumulate and then sqrt
+    std::vector<float> diff_sq = vec1;
+    std::transform(diff.begin(), diff.end(), diff_sq.begin(), [](float f)->float { return f*f; });
+    float sum_diff_sq = std::accumulate(diff_sq.begin(),diff_sq.end(),0.f);
+    float euclidean_dist = sqrt(sum_diff_sq);
+
+    std::cout << "Min array 1 / array 2 = " << *std::min_element(vec1.begin(),vec1.end()) << " / " << *std::min_element(vec2.begin(),vec2.end()) << "\n";
+    std::cout << "Max array 1 / array 2 = " << *std::max_element(vec1.begin(),vec1.end()) << " / " << *std::max_element(vec2.begin(),vec2.end()) << "\n";
+    std::cout << "Sum array 1 / array 2 = " <<  std::accumulate(vec1.begin(),vec1.end(),0.f) << " / " << std::accumulate(vec2.begin(),vec2.end(),0.f)      << "\n";
+    std::cout << "Max diff = " << max_diff << "\n";
+    std::cout << "Euclidean distance = " << euclidean_dist << "\n\n";
+
+    return (std::abs(max_diff) < 1e-3f ? Succeeded::yes : Succeeded::no);
+}
+
+static
+void
+compare_images(bool &everything_ok, const DiscretisedDensity<3,float> &im_1, const DiscretisedDensity<3,float> &im_2)
+{
+    std::cout << "\nComparing images...\n";
+
+    if (!im_1.has_same_characteristics(im_2)) {
+        std::cout << "\nImages have different characteristics!\n";
+        everything_ok = false;
+    }
+
+    Coordinate3D<int> min_indices, max_indices;
+
+    im_1.get_regular_range(min_indices, max_indices);
+    unsigned num_elements = 1;
+    for (int i=0; i<3; ++i)
+        num_elements *= unsigned(max_indices[i + 1] - min_indices[i + 1] + 1);
+
+    std::vector<float> arr_1(num_elements), arr_2(num_elements);
+
+    DiscretisedDensity<3,float>::const_full_iterator im_1_iter = im_1.begin_all_const();
+    DiscretisedDensity<3,float>::const_full_iterator im_2_iter = im_2.begin_all_const();
+    std::vector<float>::iterator arr_1_iter = arr_1.begin();
+    std::vector<float>::iterator arr_2_iter = arr_2.begin();
+    while (im_1_iter!=im_1.end_all_const()) {
+        *arr_1_iter = *im_1_iter;
+        *arr_2_iter = *im_2_iter;
+        ++im_1_iter;
+        ++im_2_iter;
+        ++arr_1_iter;
+        ++arr_2_iter;
+    }
+
+    // Compare values
+    if (compare_arrays(arr_1,arr_2) == Succeeded::yes)
+        std::cout << "Images match!\n";
+    else {
+        std::cout << "Images don't match!\n";
+        everything_ok = false;
+    }
+}
+
+static
+void
+compare_sinos(bool &everything_ok, const ProjData &proj_data_1, const ProjData &proj_data_2)
+{
+    std::cout << "\nComparing sinograms...\n";
+
+    if (*proj_data_1.get_proj_data_info_sptr() != *proj_data_2.get_proj_data_info_sptr()) {
+        std::cout << "\nSinogram proj data info don't match\n";
+        everything_ok = false;
+    }
+
+    int min_segment_num = proj_data_1.get_min_segment_num();
+    int max_segment_num = proj_data_1.get_max_segment_num();
+
+    // Get number of elements
+    unsigned num_elements(0);
+    for (int segment_num = min_segment_num; segment_num<= max_segment_num; ++segment_num)
+        num_elements += unsigned(proj_data_1.get_max_axial_pos_num(segment_num) - proj_data_1.get_min_axial_pos_num(segment_num)) + 1;
+    num_elements *= unsigned(proj_data_1.get_max_view_num() - proj_data_1.get_min_view_num()) + 1;
+    num_elements *= unsigned(proj_data_1.get_max_tangential_pos_num() - proj_data_1.get_min_tangential_pos_num()) + 1;
+
+    // Create arrays
+    std::vector<float> arr_1(num_elements), arr_2(num_elements);
+    proj_data_1.copy_to(arr_1.begin());
+    proj_data_2.copy_to(arr_2.begin());
+
+    // Compare values
+    if (compare_arrays(arr_1,arr_2) == Succeeded::yes)
+        std::cout << "Sinograms match!\n";
+    else {
+        std::cout << "Sinograms don't match!\n";
+        everything_ok = false;
+    }
+}
+
 void project(double &time, shared_ptr<ProjDataInMemory> &sino_sptr, shared_ptr<DiscretisedDensity<3,float> > &image_sptr, const shared_ptr<const ProjDataInMemory> input_sino_sptr, const shared_ptr<const DiscretisedDensity<3,float> > input_image_sptr, ForwardProjectorByBin &fwrd_projector, BackProjectorByBin &back_projector, const std::string &name, const bool save_to_file)
 {
     image_sptr.reset(input_image_sptr->clone());
@@ -125,86 +228,6 @@ void project(double &time, shared_ptr<ProjDataInMemory> &sino_sptr, shared_ptr<D
                 OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
         output_file_format_sptr->write_to_file(name + "_back_projected",*image_sptr);
     }
-}
-
-void get_min_max_in_proj_data(float &min, float &max, const shared_ptr<const ProjDataInMemory> sino_sptr)
-{
-    const int min_segment_num = sino_sptr->get_min_segment_num();
-    const int max_segment_num = sino_sptr->get_max_segment_num();
-    bool accumulators_initialized = false;
-    float accum_min=std::numeric_limits<float>::max(); // initialize to very large in case projdata is empty (although that's unlikely)
-    float accum_max=std::numeric_limits<float>::min();
-    double sum=0.;
-    for (int segment_num = min_segment_num; segment_num<= max_segment_num; ++segment_num) {
-        const SegmentByView<float> seg(sino_sptr->get_segment_by_view(segment_num));
-        const float this_max=seg.find_max();
-        const float this_min=seg.find_min();
-        sum+=static_cast<double>(seg.sum());
-        if(!accumulators_initialized) {
-            accum_max=this_max;
-            accum_min=this_min;
-            accumulators_initialized=true;
-        }
-        else {
-            if (accum_max<this_max) max=this_max;
-            if (accum_min>this_min) min=this_min;
-        }
-    }
-}
-
-float get_proj_diff(const shared_ptr<const ProjDataInMemory> sino_1_sptr, const shared_ptr<const ProjDataInMemory> sino_2_sptr)
-{
-    const int min_segment_num = sino_1_sptr->get_min_segment_num();
-    const int max_segment_num = sino_1_sptr->get_max_segment_num();
-    const int min_view        = sino_1_sptr->get_min_view_num();
-    const int max_view        = sino_1_sptr->get_max_view_num();
-    const int min_tang_pos    = sino_1_sptr->get_min_tangential_pos_num();
-    const int max_tang_pos    = sino_1_sptr->get_max_tangential_pos_num();
-
-    float sum(0.f);
-    unsigned count(0);
-
-    for (int segment_num = min_segment_num; segment_num<= max_segment_num; ++segment_num) {
-
-        int min_axial_pos = sino_1_sptr->get_min_axial_pos_num(segment_num);
-        int max_axial_pos = sino_1_sptr->get_max_axial_pos_num(segment_num);
-
-        for (int axial_pos = min_axial_pos; axial_pos<=max_axial_pos; ++axial_pos) {
-
-            // Get the corresponding STIR sinograms
-            Sinogram<float> sino_1 = sino_1_sptr->get_sinogram(axial_pos,segment_num);
-            Sinogram<float> sino_2 = sino_2_sptr->get_sinogram(axial_pos,segment_num);
-
-            // Loop over the STIR view and tangential position
-            for (int view=min_view; view<=max_view; ++view) {
-                for (int tang_pos=min_tang_pos; tang_pos<=max_tang_pos; ++tang_pos) {
-
-                    sum += std::pow( sino_1.at(view).at(tang_pos) - sino_2.at(view).at(tang_pos) , 2.f);
-                    ++count;
-                }
-            }
-        }
-    }
-
-    return std::sqrt(sum) / float(count);
-}
-
-float get_image_diff(const DiscretisedDensity<3,float> &image_1, const DiscretisedDensity<3,float> &image_2)
-{
-    float sum(0.f);
-    unsigned count(0);
-
-    DiscretisedDensity<3,float>::const_full_iterator im_1_iter = image_1.begin_all_const();
-    DiscretisedDensity<3,float>::const_full_iterator im_2_iter = image_2.begin_all_const();
-
-    while (im_1_iter!=image_1.end_all_const()) {
-
-        sum += std::pow( *im_1_iter - *im_2_iter , 2.f);
-        ++count;
-        ++im_1_iter;
-        ++im_2_iter;
-    }
-    return std::sqrt(sum) / float(count);
 }
 
 inline bool file_exists (const std::string& name) {
@@ -352,35 +375,12 @@ run_projections()
     std::cout << "\tGPU: " << time_gpu << "\n";
     std::cout << "\tCPU: " << time_cpu << "\n";
 
-    // Min and max in images
-    const float min_image_gpu = gpu_image_sptr->find_min();
-    const float min_image_cpu = cpu_image_sptr->find_min();
-    const float max_image_gpu = gpu_image_sptr->find_max();
-    const float max_image_cpu = cpu_image_sptr->find_max();
-    const float percent_diff_max_image = 100.f*(max_image_gpu-max_image_cpu)/max_image_cpu;
-    const float rms_image = get_image_diff(*cpu_image_sptr,*gpu_image_sptr);
-    std::cout << "\nMin/max in back projected images\n";
-    std::cout << "\tGPU: " << min_image_gpu << " / " << max_image_gpu << "\n";
-    std::cout << "\tCPU: " << min_image_cpu << " / " << max_image_cpu << "\n";
-    std::cout << "\tDiff in max (%): " << percent_diff_max_image << "\n";
-    std::cout << "\tRMS: " << rms_image << "\n";
 
-    // Min and max in sinograms
-    float min_sino_gpu, min_sino_cpu, max_sino_gpu, max_sino_cpu;
-    get_min_max_in_proj_data(min_sino_gpu,max_sino_gpu,gpu_sino_sptr);
-    get_min_max_in_proj_data(min_sino_cpu,max_sino_cpu,cpu_sino_sptr);
-    const float percent_diff_max_sino = 100.f*(max_sino_gpu-max_sino_cpu)/max_sino_cpu;
-    const float rms_proj = get_proj_diff(gpu_sino_sptr,cpu_sino_sptr);
-    std::cout << "\nMin/max in forward projected sinograms\n";
-    std::cout << "\tGPU: " << min_sino_gpu << " / " << max_sino_gpu << "\n";
-    std::cout << "\tCPU: " << min_sino_cpu << " / " << max_sino_cpu << "\n";
-    std::cout << "\tDiff in max (%): " << percent_diff_max_sino << "\n";
-    std::cout << "\tRMS: " << rms_proj << "\n";
+    // Compare back projections
+    compare_images(everything_ok, *gpu_image_sptr,*cpu_image_sptr);
 
-    if (std::abs(rms_image) > 1)
-        throw std::runtime_error("Images don't agree!");
-    if (std::abs(rms_proj) > 1)
-        throw std::runtime_error("Sinograms don't agree!");
+    // Compare forward projections
+    compare_sinos(everything_ok, *gpu_sino_sptr,*cpu_sino_sptr);
 }
 
 void
@@ -405,14 +405,26 @@ END_NAMESPACE_STIR
 
 USING_NAMESPACE_STIR
 
+void print_usage()
+{
+    cerr << "\n\tUsage: test_ProjectorNiftyPET [-h] span [save_results [sinogram [image]]]\n";
+    cerr << "\t\tSpan will only be used when creating a sinogram.\n";
+    cerr << "\t\tTo enter your own sinogram, use any dummy value.\n";
+    cerr << "\t\tCurrently only support Span 1 or 11.\n";
+    cerr << "\t\tSave_results: 0 or 1. Default to 0.\n";
+}
+
 int main(int argc, char **argv)
 {
+    for (int i=0; i<argc; ++i) {
+        if (strcmp(argv[i],"-h") ==0) {
+            print_usage();
+            return EXIT_SUCCESS;
+        }
+    }
+
     if (argc < 2 || argc > 5) {
-        cerr << "\n\tUsage: " << argv[0] << " span [save_results [sinogram [image]]]\n";
-        cerr << "\tSpan will only be used when creating a sinogram.\n";
-        cerr << "\tTo enter your own sinogram, use any dummy value.\n";
-        cerr << "\tCurrently only support Span 1 or 11.\n";
-        cerr << "\tSave_results: 0 or 1. Default to 0.\n";
+        print_usage();
         return EXIT_FAILURE;
     }
 
