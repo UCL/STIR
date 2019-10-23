@@ -291,7 +291,7 @@ read_norm_data(const string& filename)
 //    normalisation data.
 //  */
 
-   const int min_tang_pos_num = -(scanner_ptr->get_max_num_non_arccorrected_bins())/2;
+ //  const int min_tang_pos_num = -(scanner_ptr->get_max_num_non_arccorrected_bins())/2;
   // const int max_tang_pos_num = min_tang_pos_num +scanner_ptr->get_max_num_non_arccorrected_bins()- 1;
 
 //    geometric_factors =

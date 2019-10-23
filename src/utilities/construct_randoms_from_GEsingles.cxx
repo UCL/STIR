@@ -72,8 +72,6 @@ int main(int argc, char **argv)
   bool do_block = argc>=10?atoi(argv[9])!=0: true;
   bool do_geo   = argc>=9?atoi(argv[8])!=0: true;
   bool do_eff   = argc>=8?atoi(argv[7])!=0: true;
-#else
-  bool do_eff = true;
 #endif
  // const int eff_iter_num = atoi(argv[4]);
   const int iter_num = 1;//atoi(argv[5]);
@@ -108,7 +106,7 @@ int main(int argc, char **argv)
       SinglesRatesFromGEHDF5  singles;
       singles.read_singles_from_listmode_file(_listmode_filename);
     // efficiencies
-    if (do_eff)
+    if (true)
       {
         //singles.write(std::cout);
 

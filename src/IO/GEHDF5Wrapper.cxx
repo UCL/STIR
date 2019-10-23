@@ -346,7 +346,7 @@ Succeeded GEHDF5Wrapper::initialise_geo_factors_data(const std::string& path,
                 // PW here I output the dataspace dimensions and order to be correctly translated in the main code.
                 int rank = m_dataspace.getSimpleExtentNdims();
                 hsize_t dims_out[2];
-                int ndims = m_dataspace.getSimpleExtentDims( dims_out, NULL);
+          //      int ndims = m_dataspace.getSimpleExtentDims( dims_out, NULL);
                      std::cout << "rank " << rank << ", dimensions " <<
                          (unsigned long)(dims_out[0]) << " x " <<
                          (unsigned long)(dims_out[1]) << std::endl;
