@@ -319,7 +319,7 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
 
     // The code now supports more than one energy window: the low energy threshold has to correspond to lowest window.
 
-  /*  int low = 0;
+  int low = 0;
 
     if (this->template_exam_info_sptr->get_num_energy_windows()>1)
 
@@ -345,7 +345,7 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
     static const float max_single_scatter_cos_angle=max_cos_angle(this->template_exam_info_sptr->get_low_energy_thres(low),
             2.f,
             this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution());
-*/
+
     //static const float min_energy=energy_lower_limit(lower_energy_threshold,2.,energy_resolution);
 
     const CartesianCoordinate3D<float>& scatter_point =
@@ -360,8 +360,8 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
                     detector_coord_B - scatter_point));
     // note: costheta is identical for scatter to A or scatter to B
     // Hence, the Compton_cross_section and energy are identical for both cases as well.
-   // if(max_single_scatter_cos_angle>costheta)
-   // return 0;
+    if(max_single_scatter_cos_angle>costheta)
+    return 0;
     const float new_energy =
     photon_energy_after_Compton_scatter_511keV(costheta);
 

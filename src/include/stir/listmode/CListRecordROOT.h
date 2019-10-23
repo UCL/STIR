@@ -238,6 +238,7 @@ public:
                                         crystal1, crystal2);
         if(this->event().is_swapped())
         {
+            //std::cout << "I m swapped" << std::endl;
             this->time_data.init_from_data(time2,time1);
 
             this->energy_data.init_energy_from_data(energy2,energy1);
@@ -246,6 +247,7 @@ public:
 
         else
         {
+            //std::cout << "I m not swapped" << std::endl;
             this->time_data.init_from_data(time1,time2);
 
             this->energy_data.init_energy_from_data(energy1,energy2);
