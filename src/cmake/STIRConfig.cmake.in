@@ -37,9 +37,11 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR};${CMAKE_MODULE_PATH}")
 include("${CMAKE_CURRENT_LIST_DIR}/STIRTargets.cmake")
 
 set_and_check(STIR_INCLUDE_DIRS "@PACKAGE_STIR_INCLUDE_DIRS@")
-#set_and_check(STIR_LIBRARY_DIRS "@PACKAGE_STIR_LIBRARY_DIRS@")
+# cannot use set_and_check on lists at present
+# https://gitlab.kitware.com/cmake/cmake/issues/16219
+#set(STIR_LIBRARY_DIRS "@PACKAGE_STIR_LIBRARY_DIRS@")
 set(STIR_LIBRARIES @STIR_LIBRARIES@)
-set(STIR_REGISTRIES @STIR_REGISTRIES@)
+set(STIR_REGISTRIES @PACKAGE_STIR_REGISTRIES@)
 
 ## find external packages
 # we use a trick by Matt McCormick (kitware)
@@ -50,6 +52,7 @@ if (@ITK_FOUND@)
   message(STATUS "ITK support in STIR enabled.")
   set(ITK_DIR "@ITK_DIR@")
   find_package(ITK REQUIRED)
+  include(${ITK_USE_FILE})
   set(STIR_BUILT_WITH_ITK TRUE)
 endif()
 

@@ -80,6 +80,9 @@ class Reconstruction :
         public TimedObject
 {
 public:
+  //! default constructor (calls set_defaults())
+  Reconstruction();
+
   //! virtual destructor
   virtual ~Reconstruction() {};
   
@@ -103,6 +106,8 @@ public:
 
    Because of C++ rules, overloading one of the reconstruct() functions
    in a derived class, will hide the other. So you have to overload both.
+
+   \warning you need to call set_up() first.
   */     
   virtual Succeeded 
     reconstruct(shared_ptr<TargetT> const& target_image_sptr) = 0;
@@ -177,6 +182,13 @@ public:
   shared_ptr<DataProcessor<TargetT> >  post_filter_sptr;
 
 protected:
+  //! do consistency checks
+  /*! calls error() if anything is wrong, in particular when set_up() hasn't been called yet.
+
+      If overriding this function in a derived class, you need to call this one.
+   */
+  virtual void check(TargetT const& target_data) const;
+  bool _already_set_up;
 
   /*! 
   \brief 

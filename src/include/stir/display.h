@@ -181,6 +181,12 @@ void display(const RelatedViewgrams<elemT>& v1,
 	     const char * const title = 0,
              int zoom = 0);
 
+class DetPairData;
+class FanProjData;
+
+void display(const DetPairData&,const char * const);
+void display(const FanProjData&,const char * const);
+
 
 
 END_NAMESPACE_STIR
