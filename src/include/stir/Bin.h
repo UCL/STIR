@@ -52,8 +52,11 @@ public:
   inline Bin();
 
   //!  A constructor : constructs a bin with value (defaulting to 0)
-  inline Bin(int segment_num,int view_num, int axial_pos_num,
+ inline Bin(int segment_num,int view_num, int axial_pos_num,
     int tangential_pos_num,float bin_value=0);
+
+ inline Bin(int segment_num,int view_num, int axial_pos_num,
+            int tangential_pos_num, int first_energy_window, int second_energy_window, float bin_value = 0);
   
   //!get axial position number
   inline int axial_pos_num()const;
@@ -63,7 +66,12 @@ public:
   inline int tangential_pos_num()  const; 
   //! get view number
   inline int view_num() const; 
-  
+  //! get first_energy_window_number
+  inline int first_energy_window_num()  const;
+  //! get second_energy_window_number
+  inline int second_energy_window_num() const;
+
+
   inline int& axial_pos_num(); 
   inline int& segment_num(); 
   inline int& tangential_pos_num(); 
@@ -78,6 +86,16 @@ public:
   inline float get_bin_value()const; 
   //! set the value to be back projected 
   inline void set_bin_value( float v );
+
+  //! get the first energy window number
+  inline float get_first_energy_window_num()const;
+  //! set the first energy window number
+  inline void set_first_energy_window_num( int v );
+  //! get the second energy window number
+  inline float get_second_energy_window_num()const;
+  //! set the second energy window number
+  inline void set_second_energy_window_num( int v );
+
   
   //! accumulate voxel's contribution during forward projection 
   inline Bin&  operator+=(const float dx);
@@ -100,6 +118,8 @@ private :
   int  axial_pos; 
   int  tangential_pos; 
   float bin_value;
+  int first_energy_window;
+  int second_energy_window;
   
   
 };

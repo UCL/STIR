@@ -237,7 +237,7 @@ public:
   inline Succeeded 
     get_bin_for_det_pair(Bin&,
 			 const int det1_num, const int ring1_num,
-			 const int det2_num, const int ring2_num) const;
+             const int det2_num, const int ring2_num, const std::pair<int,int> &energy_window_pair = std::pair<int,int>(1,1)) const;
 
 
   //! This routine gets the detector pair corresponding to a bin.

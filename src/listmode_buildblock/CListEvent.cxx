@@ -45,7 +45,8 @@ void
 CListEvent::
 get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
 {
-  bin = proj_data_info.get_bin(get_LOR());
+  const std::pair<int,int> energy_window_pair(1,2); //TODO REMOVE
+  bin = proj_data_info.get_bin(get_LOR(),energy_window_pair);
 }
 
 END_NAMESPACE_STIR

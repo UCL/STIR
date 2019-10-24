@@ -427,8 +427,8 @@ get_bin_from_event(Bin& bin, const CListEvent& event) const
     const float bin_value = 1/bin_efficiency;
     // TODO wasteful: we decode the event twice. replace by something like
     // template_proj_data_info_ptr->get_bin_from_uncompressed(bin, uncompressed_bin);
-    event.get_bin(bin, *template_proj_data_info_ptr);
-   
+    event.get_bin(bin, *template_proj_data_info_ptr);//, energy_window_pair);
+
     if (bin.get_bin_value()>0)
       {
 	bin.set_bin_value(bin_value);
@@ -437,7 +437,7 @@ get_bin_from_event(Bin& bin, const CListEvent& event) const
   }
   else
     {
-      event.get_bin(bin, *template_proj_data_info_ptr);
+      event.get_bin(bin, *template_proj_data_info_ptr);//, energy_window_pair);
     }
 
 } 
@@ -675,18 +675,18 @@ process_data()
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
-             get_bin_from_event(bin, record.event());
-		     		       
+             get_bin_from_event(bin, record.event());// template_proj_data_ptr->get_exam_info().get_energy_window_pair());
+
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
 			 && bin.tangential_pos_num()>= proj_data_ptr->get_min_tangential_pos_num()
 			 && bin.tangential_pos_num()<= proj_data_ptr->get_max_tangential_pos_num()
              && bin.axial_pos_num()>=proj_data_ptr->get_min_axial_pos_num(bin.segment_num())
              && bin.axial_pos_num()<=proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
-             && record.energy().get_energyA_in_keV() >= (low_en_thres[template_proj_data_ptr->get_exam_info().get_energy_window_pair().first-1])
-             && record.energy().get_energyA_in_keV() <= (high_en_thres[template_proj_data_ptr->get_exam_info().get_energy_window_pair().first-1])
-             && record.energy().get_energyB_in_keV() >= (low_en_thres[template_proj_data_ptr->get_exam_info().get_energy_window_pair().second-1])
-             && record.energy().get_energyB_in_keV() <= (high_en_thres[template_proj_data_ptr->get_exam_info().get_energy_window_pair().second-1]))
+             && record.energy().get_energyA_in_keV() >= (low_en_thres[bin.first_energy_window_num()-1])
+             && record.energy().get_energyA_in_keV() <= (high_en_thres[bin.first_energy_window_num()-1])
+             && record.energy().get_energyB_in_keV() >= (low_en_thres[bin.second_energy_window_num()-1])
+             && record.energy().get_energyB_in_keV() <= (high_en_thres[bin.second_energy_window_num()-1]))
              {
 
 

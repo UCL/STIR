@@ -124,7 +124,7 @@ ProjDataInfoCylindricalArcCorr::
 get_bin(const LOR<float>& lor, const std::pair<int,int> &energy_window_pair) const
 
 {
-  if ((energy_window_pair.first!= 0)||(energy_window_pair.second!= 0))
+  if ((energy_window_pair.first!= 1)||(energy_window_pair.second!= 1))
      {
        error("TODO NOT IMPLEMENTED YET FOR MULTIPLE ENERGY WINDOWS");
   }
