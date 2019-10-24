@@ -388,12 +388,12 @@ LmToProjData(const char * const par_filename)
 ***************************************************************/
 void
 LmToProjData::
-get_bin_from_event(Bin& bin, const CListEvent& event) const
+get_bin_from_event(Bin& bin, const CListEvent& event, const std::pair<int,int> &energy_window_pair) const
 {  
   if (do_pre_normalisation)
    {
      Bin uncompressed_bin;
-     event.get_bin(uncompressed_bin, *proj_data_info_cyl_uncompressed_ptr);
+     event.get_bin(uncompressed_bin, *proj_data_info_cyl_uncompressed_ptr, energy_window_pair);
      if (uncompressed_bin.get_bin_value()<=0)
       return; // rejected for some strange reason
 
@@ -427,7 +427,7 @@ get_bin_from_event(Bin& bin, const CListEvent& event) const
     const float bin_value = 1/bin_efficiency;
     // TODO wasteful: we decode the event twice. replace by something like
     // template_proj_data_info_ptr->get_bin_from_uncompressed(bin, uncompressed_bin);
-    event.get_bin(bin, *template_proj_data_info_ptr);//, energy_window_pair);
+    event.get_bin(bin, *template_proj_data_info_ptr,energy_window_pair);//, energy_window_pair);
 
     if (bin.get_bin_value()>0)
       {
@@ -437,7 +437,7 @@ get_bin_from_event(Bin& bin, const CListEvent& event) const
   }
   else
     {
-      event.get_bin(bin, *template_proj_data_info_ptr);//, energy_window_pair);
+      event.get_bin(bin, *template_proj_data_info_ptr,energy_window_pair);//, energy_window_pair);
     }
 
 } 
@@ -675,7 +675,7 @@ process_data()
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
-             get_bin_from_event(bin, record.event());// template_proj_data_ptr->get_exam_info().get_energy_window_pair());
+             get_bin_from_event(bin, record.event(), template_proj_data_ptr->get_exam_info().get_energy_window_pair());
 
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
@@ -690,6 +690,8 @@ process_data()
              {
 
 
+                // std::cout<< "energy first: " << bin.first_energy_window_num() << '\n';
+                // std::cout<< "energy second: " << bin.second_energy_window_num() << '\n';
                  std::cout<< "energy A: " << record.energy().get_energyA_in_keV() << '\n';
                  std::cout<< "energy B: " << record.energy().get_energyB_in_keV() << '\n';
                      assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
