@@ -528,14 +528,11 @@ process_data()
   // few coincidence events (as happens with ECAT scanners)
   current_time = 0;
 
-  float low_thres_A =  template_proj_data_ptr->get_exam_info().get_low_energy_thres(template_proj_data_ptr->get_exam_info().get_energy_window_pair().first-1);
-  float high_thres_A =  template_proj_data_ptr->get_exam_info().get_high_energy_thres(template_proj_data_ptr->get_exam_info().get_energy_window_pair().first-1);
-  float low_thres_B =  template_proj_data_ptr->get_exam_info().get_low_energy_thres(template_proj_data_ptr->get_exam_info().get_energy_window_pair().second-1);
-  float high_thres_B =  template_proj_data_ptr->get_exam_info().get_high_energy_thres(template_proj_data_ptr->get_exam_info().get_energy_window_pair().second-1);
   int num_en_windows = template_proj_data_ptr->get_exam_info().get_num_energy_windows();
   std::vector<float> high_en_thres(num_en_windows);
   std::vector<float> low_en_thres(num_en_windows);
   std::vector<int> energy_window_pair(2);
+
   energy_window_pair[0]=template_proj_data_ptr->get_exam_info().get_energy_window_pair().first;
   energy_window_pair[1]=template_proj_data_ptr->get_exam_info().get_energy_window_pair().second;
 
@@ -685,10 +682,10 @@ process_data()
 			 && bin.tangential_pos_num()<= proj_data_ptr->get_max_tangential_pos_num()
              && bin.axial_pos_num()>=proj_data_ptr->get_min_axial_pos_num(bin.segment_num())
              && bin.axial_pos_num()<=proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
-             && record.energy().get_energyA_in_keV() >= low_thres_A
-             && record.energy().get_energyA_in_keV() <= high_thres_A
-             && record.energy().get_energyB_in_keV() >= low_thres_B
-             && record.energy().get_energyB_in_keV() <= high_thres_B)
+             && record.energy().get_energyA_in_keV() >= (low_en_thres[energy_window_pair[0]-1])
+             && record.energy().get_energyA_in_keV() <= (high_en_thres[energy_window_pair[0]-1])
+             && record.energy().get_energyB_in_keV() >= (low_en_thres[energy_window_pair[1]-1])
+             && record.energy().get_energyB_in_keV() <= (high_en_thres[energy_window_pair[1]-1]))
              {
 
 
