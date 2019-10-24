@@ -180,6 +180,13 @@ private:
   //! Calculate the offsets for specific bins.
   std::vector<std::streamoff> get_offsets_bin(const Bin) const;
   
+private:
+#if __cplusplus > 199711L
+  ProjDataFromStream& operator=(ProjDataFromStream&&) = delete;
+#else
+  ProjDataFromStream& operator=(ProjDataFromStream&&){}
+#endif
+  
 };
 
 END_NAMESPACE_STIR
