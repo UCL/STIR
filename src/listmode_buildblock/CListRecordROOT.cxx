@@ -90,22 +90,10 @@ void CListEventROOT::init_from_data(const int& _ring1, const int& _ring2,
 
    // if (((det1 + det2 < 3*scanner_sptr->get_num_detectors_per_ring()/4) && (det1-det2 > 0))
      //       ||((det1 + det2 > 3*scanner_sptr->get_num_detectors_per_ring()/4)&&(det1-det2 < 0)))
-    if(det2>det1)
-        {
-            int tmp = det1;
-            det1 = det2;
-            det2 = tmp;
+    ring1 = _ring1;
+    ring2 = _ring2;
+    swapped = false;
 
-            ring1 = _ring2;
-            ring2 = _ring1;
-            swapped = true;
-        }
-        else
-        {
-            ring1 = _ring1;
-            ring2 = _ring2;
-            swapped = false;
-        }
 }
 
 END_NAMESPACE_STIR
