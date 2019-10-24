@@ -88,34 +88,54 @@ ProjDataInMemory(shared_ptr<ExamInfo> const& exam_info_sptr,
   }
 }
 
-ProjDataInMemory::
-ProjDataInMemory(const ProjData& proj_data)
-  : ProjDataFromStream(proj_data.get_exam_info_sptr(),
-		       proj_data.get_proj_data_info_ptr()->create_shared_clone(), shared_ptr<iostream>())
+static
+shared_ptr<std::iostream>
+create_stream()
 {
+  shared_ptr<std::iostream> output_stream_sptr;
 #ifdef STIR_USE_OLD_STRSTREAM
   const size_t buffer_size = get_size_of_buffer();
   //buffer = unique_ptr<char>(new char[buffer_size]);
   buffer.reset(new char[buffer_size]);
-  sino_stream.reset(new strstream(buffer.get(), buffer_size, ios::in | ios::out | ios::binary));
+  output_stream_sptr.reset(new strstream(buffer.get(), buffer_size, ios::in | ios::out | ios::binary));
 #else
   // it would be advantageous to preallocate memory as well
   // the only way to do this is by passing a string of the appropriate size
   // However, if basic_string doesn't do reference counting, we would have
   // temporarily 2 strings of a (potentially large) size in memory.
   // todo?
-  sino_stream.reset(new std::stringstream(ios::in | ios::out | ios::binary));
+  output_stream_sptr.reset
+          (new std::stringstream(ios::in | ios::out | ios::binary));
 #endif
 
-  if (!*sino_stream)
+  if (!*output_stream_sptr)
     error("ProjDataInMemory error initialising stream");
 
+  return output_stream_sptr;
+}
+
+ProjDataInMemory::
+ProjDataInMemory(const ProjData& proj_data)
+  : ProjDataFromStream(proj_data.get_exam_info_sptr(),
+		       proj_data.get_proj_data_info_ptr()->create_shared_clone(), shared_ptr<iostream>())
+{
+  // copy stream
+  this->sino_stream = create_stream();
+
   // copy data
-  // (note: cannot use fill(projdata) as that uses virtual functions, which won't work in a constructor
-  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
-       segment_num <= proj_data_info_ptr->get_max_segment_num();
-       ++segment_num)
-    set_segment(proj_data.get_segment_by_view(segment_num));
+  this->fill(proj_data);
+}
+
+ProjDataInMemory::
+ProjDataInMemory (const ProjDataInMemory& proj_data)
+    : ProjDataFromStream(proj_data.get_exam_info_sptr(),
+                 proj_data.get_proj_data_info_ptr()->create_shared_clone(), shared_ptr<iostream>())
+{
+  // copy stream
+  this->sino_stream = create_stream();
+
+  // copy data
+  this->fill(proj_data);
 }
 
 size_t

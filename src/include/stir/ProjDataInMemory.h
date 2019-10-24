@@ -78,6 +78,9 @@ public:
   //! constructor that copies data from another ProjData
   ProjDataInMemory (const ProjData& proj_data);
 
+  //! Copy constructor
+  ProjDataInMemory (const ProjDataInMemory& proj_data);
+
   //! destructor deallocates all memory the object owns
   virtual ~ProjDataInMemory();
  
