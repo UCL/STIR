@@ -692,8 +692,8 @@ process_data()
 
                 // std::cout<< "energy first: " << bin.first_energy_window_num() << '\n';
                 // std::cout<< "energy second: " << bin.second_energy_window_num() << '\n';
-                 std::cout<< "energy A: " << record.energy().get_energyA_in_keV() << '\n';
-                 std::cout<< "energy B: " << record.energy().get_energyB_in_keV() << '\n';
+                 std::cout<< "energy A new: " << record.energy().get_energyA_in_keV() << '\n';
+                 std::cout<< "energy B new: " << record.energy().get_energyB_in_keV() << '\n';
                      assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
                      assert(bin.view_num()<=proj_data_ptr->get_max_view_num());
             
