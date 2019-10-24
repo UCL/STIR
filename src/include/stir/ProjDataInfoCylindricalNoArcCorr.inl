@@ -135,12 +135,20 @@ Succeeded
 ProjDataInfoCylindricalNoArcCorr::
 get_bin_for_det_pair(Bin& bin,
 		     const int det_num1, const int ring_num1,
-		     const int det_num2, const int ring_num2) const
+             const int det_num2, const int ring_num2) const// const std::pair<int,int>& energy_window_pair) const
 {  
   if (get_view_tangential_pos_num_for_det_num_pair(bin.view_num(), bin.tangential_pos_num(), det_num1, det_num2))
+  {
+    //bin.first_energy_window_num()=energy_window_pair.first;
+    //bin.second_energy_window_num()=energy_window_pair.second;
     return get_segment_axial_pos_num_for_ring_pair(bin.segment_num(), bin.axial_pos_num(), ring_num1, ring_num2);
+  }
   else
+  {
+    //bin.first_energy_window_num()=energy_window_pair.seocond;
+    //bin.second_energy_window_num()=energy_window_pair.first;
     return get_segment_axial_pos_num_for_ring_pair(bin.segment_num(), bin.axial_pos_num(), ring_num2, ring_num1);
+  }
 }
 
 Succeeded 

@@ -67,7 +67,9 @@ public:
   inline int& axial_pos_num(); 
   inline int& segment_num(); 
   inline int& tangential_pos_num(); 
-  inline int& view_num(); 
+  inline int& view_num();
+  inline int& first_energy_window_num();
+  inline int& second_energy_window_num();
   
   //! get an empty copy
   inline Bin get_empty_copy() const;

@@ -531,10 +531,11 @@ process_data()
   int num_en_windows = template_proj_data_ptr->get_exam_info().get_num_energy_windows();
   std::vector<float> high_en_thres(num_en_windows);
   std::vector<float> low_en_thres(num_en_windows);
-  std::vector<int> energy_window_pair(2);
+  std::vector<int> energy_window_pair_vec(2);
+ // const std::pair<int,int> energy_window_pair = template_proj_data_ptr->get_exam_info().get_energy_window_pair();
 
-  energy_window_pair[0]=template_proj_data_ptr->get_exam_info().get_energy_window_pair().first;
-  energy_window_pair[1]=template_proj_data_ptr->get_exam_info().get_energy_window_pair().second;
+  energy_window_pair_vec[0]=template_proj_data_ptr->get_exam_info().get_energy_window_pair().first;
+  energy_window_pair_vec[1]=template_proj_data_ptr->get_exam_info().get_energy_window_pair().second;
 
   for (int i = 0; i< num_en_windows; ++i)
   {
@@ -583,7 +584,7 @@ process_data()
         this_frame_exam_info.set_num_energy_windows(num_en_windows);
         this_frame_exam_info.set_high_energy_thres_vect(high_en_thres);
         this_frame_exam_info.set_low_energy_thres_vect(low_en_thres);
-        this_frame_exam_info.set_energy_window_pair(energy_window_pair,num_en_windows);
+        this_frame_exam_info.set_energy_window_pair(energy_window_pair_vec,num_en_windows);
 
         proj_data_ptr = 
           construct_proj_data(output, output_filename, this_frame_exam_info, template_proj_data_info_ptr);
@@ -674,7 +675,7 @@ process_data()
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
-                     get_bin_from_event(bin, record.event());
+             get_bin_from_event(bin, record.event());
 		     		       
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
@@ -682,10 +683,10 @@ process_data()
 			 && bin.tangential_pos_num()<= proj_data_ptr->get_max_tangential_pos_num()
              && bin.axial_pos_num()>=proj_data_ptr->get_min_axial_pos_num(bin.segment_num())
              && bin.axial_pos_num()<=proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
-             && record.energy().get_energyA_in_keV() >= (low_en_thres[energy_window_pair[0]-1])
-             && record.energy().get_energyA_in_keV() <= (high_en_thres[energy_window_pair[0]-1])
-             && record.energy().get_energyB_in_keV() >= (low_en_thres[energy_window_pair[1]-1])
-             && record.energy().get_energyB_in_keV() <= (high_en_thres[energy_window_pair[1]-1]))
+             && record.energy().get_energyA_in_keV() >= (low_en_thres[template_proj_data_ptr->get_exam_info().get_energy_window_pair().first-1])
+             && record.energy().get_energyA_in_keV() <= (high_en_thres[template_proj_data_ptr->get_exam_info().get_energy_window_pair().first-1])
+             && record.energy().get_energyB_in_keV() >= (low_en_thres[template_proj_data_ptr->get_exam_info().get_energy_window_pair().second-1])
+             && record.energy().get_energyB_in_keV() <= (high_en_thres[template_proj_data_ptr->get_exam_info().get_energy_window_pair().second-1]))
              {
 
 

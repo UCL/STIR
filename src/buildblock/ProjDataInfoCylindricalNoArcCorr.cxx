@@ -538,7 +538,7 @@ find_bin_given_cartesian_coordinates_of_detection(Bin& bin,
 
 Bin
 ProjDataInfoCylindricalNoArcCorr::
-get_bin(const LOR<float>& lor) const
+get_bin(const LOR<float>& lor,const std::pair<int,int> &energy_window_pair) const
 {
   Bin bin;
 #ifndef STIR_DEVEL

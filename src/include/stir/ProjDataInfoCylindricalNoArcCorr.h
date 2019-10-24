@@ -257,7 +257,7 @@ public:
 
   virtual 
     Bin
-    get_bin(const LOR<float>&) const;
+    get_bin(const LOR<float>&, const std::pair<int,int>&) const;
 
 
   //! \name set of obsolete functions to go between bins<->LORs (will disappear!)

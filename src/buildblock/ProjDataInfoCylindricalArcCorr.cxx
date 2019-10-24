@@ -121,9 +121,13 @@ ProjDataInfoCylindricalArcCorr::parameter_info()  const
 
 Bin
 ProjDataInfoCylindricalArcCorr::
-get_bin(const LOR<float>& lor) const
+get_bin(const LOR<float>& lor, const std::pair<int,int> &energy_window_pair) const
 
 {
+  if ((energy_window_pair.first!= 0)||(energy_window_pair.second!= 0))
+     {
+       error("TODO NOT IMPLEMENTED YET FOR MULTIPLE ENERGY WINDOWS");
+  }
   Bin bin;
   LORInAxialAndSinogramCoordinates<float> lor_coords;
   if (lor.change_representation(lor_coords, get_ring_radius()) == Succeeded::no)
