@@ -34,6 +34,7 @@
 #include "stir/CPUTimer.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/recon_array_functions.h"
 #include <fstream>
 
 START_NAMESPACE_STIR
@@ -334,16 +335,17 @@ set_up_input_image()
                               CartesianCoordinate3D<float>(2.03125f, 2.08626f, 2.08626f)
                               ));
 
-        // fill
-        float val = 0.f;
-        for (int z=min_indices[1]; z<=max_indices[1]; ++z)
-            for (int y=min_indices[2]; y<=max_indices[2]; ++y)
-                for (int x=min_indices[3]; x<=max_indices[3]; ++x)
-                    (*_image_sptr)[z][y][x] = ++val;
-    }
+        _image_sptr->fill(1.f);
 
-    shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr =
-            OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
+        // Truncate it to a small cylinder
+        truncate_rim(*_image_sptr,16);
+
+        if (_save_results) {
+            shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr =
+                OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
+            output_file_format_sptr->write_to_file("image_to_forward_project",*_image_sptr);
+        }
+    }
 }
 
 void
@@ -407,40 +409,66 @@ USING_NAMESPACE_STIR
 
 void print_usage()
 {
-    cerr << "\n\tUsage: test_ProjectorNiftyPET [-h] span [save_results [sinogram [image]]]\n";
-    cerr << "\t\tSpan will only be used when creating a sinogram.\n";
-    cerr << "\t\tTo enter your own sinogram, use any dummy value.\n";
+    cerr << "\n\tUsage: test_ProjectorNiftyPET [-h] [--span <val>] [--save] [--sinogram <filename>] [--image <filename>]\n";
+    cerr << "\t\tOne of \"--span <val>\" or \"--sinogram <filename>\" is required.\n";
+    cerr << "\t\tIf both are given, the sinogram filename will be used.\n";
     cerr << "\t\tCurrently only support Span 1 or 11.\n";
-    cerr << "\t\tSave_results: 0 or 1. Default to 0.\n";
+    cerr << "\t\tUse \"--save\" to save results.\n";
 }
 
 int main(int argc, char **argv)
 {
-    for (int i=0; i<argc; ++i) {
-        if (strcmp(argv[i],"-h") ==0) {
-            print_usage();
-            return EXIT_SUCCESS;
-        }
-    }
-
-    if (argc < 2 || argc > 5) {
-        print_usage();
-        return EXIT_FAILURE;
-    }
-
     set_default_num_threads();
 
     TestGPUProjectors test;
 
-    test.set_span(atoi(argv[1]));
+    int span = -1;
+    bool save_results = false;
+    std::string sinogram_filename = "";
+    std::string image_filename = "";
 
-    if (argc > 2)
-        if (bool(atoi(argv[1])))
-            test.set_save_results(true);
-    if (argc > 3)
-        test.set_sinogram_filename(argv[3]);
-    if (argc > 4)
-        test.set_image_filename(argv[4]);
+    // skip program name
+    --argc;
+    ++argv;
+    // Parse input
+    while (argc>0) {
+        if (strcmp(argv[0],"-h") ==0) {
+            print_usage();
+            return EXIT_SUCCESS;
+        }
+        else if (strcmp(argv[0],"--span") ==0) {
+            span = stoi(argv[1]);
+            argc-=2; argv+=2;
+        }
+        else if (strcmp(argv[0],"--save") ==0) {
+            save_results = true;
+            argc-=1; argv+=1;
+        }
+        else if (strcmp(argv[0],"--sinogram") ==0) {
+            sinogram_filename = argv[1];
+            argc-=2; argv+=2;
+        }
+        else if (strcmp(argv[0],"--image") ==0) {
+            image_filename = argv[1];
+            argc-=2; argv+=2;
+        }
+        else {
+            cerr << "Unknown option '" << argv[0] <<"'\n";
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // If no span or filename, throw error
+    if (span == -1 && sinogram_filename.empty()) {
+        print_usage();
+        return EXIT_FAILURE;
+    }
+
+    if (span > 0)
+        test.set_span(span);
+    test.set_image_filename(image_filename);
+    test.set_sinogram_filename(sinogram_filename);
+    test.set_save_results(save_results);
 
     if (test.is_everything_ok())
         test.run_tests();
