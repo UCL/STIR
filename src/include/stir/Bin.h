@@ -52,11 +52,11 @@ public:
   inline Bin();
 
   //!  A constructor : constructs a bin with value (defaulting to 0)
- inline Bin(int segment_num,int view_num, int axial_pos_num,
-    int tangential_pos_num,float bin_value=0);
+ //inline Bin(int segment_num,int view_num, int axial_pos_num,
+   // int tangential_pos_num,float bin_value=0);
 
  inline Bin(int segment_num,int view_num, int axial_pos_num,
-            int tangential_pos_num, int first_energy_window, int second_energy_window, float bin_value = 0);
+            int tangential_pos_num, float bin_value = 0, int first_energy_window = 1, int second_energy_window = 1);
   
   //!get axial position number
   inline int axial_pos_num()const;
