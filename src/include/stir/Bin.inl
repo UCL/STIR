@@ -36,9 +36,14 @@ Bin::Bin()
 {}
 
 
+Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num,float bin_value)
+	 :segment(segment_num),view(view_num),
+     axial_pos(axial_pos_num),tangential_pos(tangential_pos_num),bin_value(bin_value)
+     {}
+
 Bin::Bin(int segment_num,int view_num, int axial_pos_num,int tangential_pos_num,float bin_value, int first_energy_window,
          int second_energy_window)
-	 :segment(segment_num),view(view_num),
+     :segment(segment_num),view(view_num),
      axial_pos(axial_pos_num),tangential_pos(tangential_pos_num),bin_value(bin_value),first_energy_window(first_energy_window),
      second_energy_window(second_energy_window)
      {}

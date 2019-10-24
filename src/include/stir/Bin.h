@@ -56,7 +56,10 @@ public:
    // int tangential_pos_num,float bin_value=0);
 
  inline Bin(int segment_num,int view_num, int axial_pos_num,
-            int tangential_pos_num, float bin_value = 0, int first_energy_window = 1, int second_energy_window = 1);
+            int tangential_pos_num, float bin_value = 0);
+
+ inline Bin(int segment_num,int view_num, int axial_pos_num,
+            int tangential_pos_num, float bin_value, int first_energy_window, int second_energy_window);
   
   //!get axial position number
   inline int axial_pos_num()const;
