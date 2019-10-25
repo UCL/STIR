@@ -107,6 +107,7 @@ if (STIR_WITH_NIFTYPET_PROJECTOR)
 		niftypet_projector/ProjectorByBinNiftyPETHelper
 		niftypet_projector/ForwardProjectorByBinNiftyPET
 		niftypet_projector/BackProjectorByBinNiftyPET
+		niftypet_projector/ProjectorByBinPairUsingNiftyPET
 		)
 endif()
 
