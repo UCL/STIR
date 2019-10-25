@@ -35,6 +35,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/is_null_ptr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/recon_array_functions.h"
 #include <driver_types.h>
 #include <auxmath.h>
 #include <prjb.h>
@@ -470,6 +471,11 @@ convert_image_niftyPET_to_stir(DiscretisedDensity<3,float> &stir, const std::vec
             }
         }
     }
+
+    // After the back projection, we enforce a truncation outside of the FOV.
+    // This is because the NiftyPET FOV is smaller than the STIR FOV and this
+    // could cause some voxel values to spiral out of control.
+    truncate_rim(stir,17);
 }
 
 void
