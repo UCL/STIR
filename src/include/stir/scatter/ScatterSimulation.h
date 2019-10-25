@@ -211,7 +211,7 @@ public:
     total_Compton_cross_section_relative_to_511keV(const float energy);
     //@}
 
-    float detection_efficiency_gauss(const float energy, const int en_window = 0) const;
+    float detection_efficiency_num(const float energy, const int en_window = 0) const;
     float detection_efficiency_integral(const float incoming_photon_energy, const float LT, const float HT, const float FWHM) const;
     float detection_efficiency_integral(const float incoming_photon_energy, const int en_window = 0) const;
     float detection_efficiency(const float incoming_photon_energy, const int en_window = 0) const;

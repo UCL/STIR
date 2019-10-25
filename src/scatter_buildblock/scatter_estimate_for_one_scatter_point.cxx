@@ -142,7 +142,7 @@ detection_efficiency_unscattered.push_back(0);
     }
 
     float detection_probability_XY=detection_efficiency_scattered[index0]*detection_efficiency_unscattered[index1];
-    float detection_probability_YX=detection_efficiency_unscattered[index0]*detection_efficiency_scattered[index1];
+    float detection_probability_YX=detection_efficiency_scattered[index1]*detection_efficiency_unscattered[index0];
 
   if ((detection_probability_XY==0)&&(detection_probability_YX==0))
       return 0;
@@ -211,7 +211,9 @@ detection_efficiency_unscattered.push_back(0);
   // (computed with the same detection model as used in the scatter code)
   // the energy dependency is left out
 
-    const double common_factor = scatter_volume/total_Compton_cross_section_511keV;
+  const double common_factor =
+      1/detection_efficiency_no_scatter(det_num_A, det_num_B) *
+      scatter_volume/total_Compton_cross_section_511keV;
 
 
   float scatter_ratio=0 ;
