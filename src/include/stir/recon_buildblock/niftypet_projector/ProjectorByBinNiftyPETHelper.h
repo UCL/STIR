@@ -149,6 +149,7 @@ private:
     /// Get n1crs
     static int get_n1crs();// { return nCRS; }
 
+    float _niftypet_to_stir_ratio;
     bool _already_set_up;
     std::string _fname_li2rng, _fname_li2sn, _fname_li2nos, _fname_s2c, _fname_aw2ali, _fname_crs;
     std::vector<float> _li2rng;

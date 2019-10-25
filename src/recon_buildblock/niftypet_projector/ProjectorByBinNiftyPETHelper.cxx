@@ -73,6 +73,15 @@ void
 ProjectorByBinNiftyPETHelper::
 set_up()
 {
+
+    // Intensities from projections do not have to match between
+    // reconstruction packages. To account for that we need to
+    // divide by this value after forward projection and multiply
+    // after back projection.
+    // This value is fixed for the mMR, but may have to change
+    // if other scanners are incorporated.
+    _niftypet_to_stir_ratio = 1.25f;
+
     if (_span < 0)
         throw std::runtime_error("ProjectorByBinNiftyPETHelper::set_up() "
                                 "sinogram span not set.");
@@ -314,6 +323,10 @@ back_project(std::vector<float> &image, const std::vector<float> &sino_no_gaps) 
     unsigned output_dims[3] = {127,320,320};
     unsigned permute_order[3] = {2,0,1};
     this->permute(image,unpermuted_image,output_dims,permute_order);
+
+    // Scale to account for niftypet-to-stir ratio
+    for (unsigned i=0; i<image.size(); ++i)
+        image[i] *= _niftypet_to_stir_ratio;
 }
 
 void
@@ -346,6 +359,10 @@ forward_project(std::vector<float> &sino_no_gaps, const std::vector<float> &imag
              this->get_n1crs(),
              *_cnt,
              _att);
+
+    // Scale to account for niftypet-to-stir ratio
+    for (unsigned i=0; i<sino_no_gaps.size(); ++i)
+        sino_no_gaps[i] /= _niftypet_to_stir_ratio;
 }
 
 void check_im_sizes(const int stir_dim[3], const int np_dim[3])
