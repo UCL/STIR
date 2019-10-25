@@ -476,7 +476,7 @@ void distributable_computation(
                % view_segment_num.segment_num() % view_segment_num.view_num());
 #else
           info(boost::format("calculating segment_num: %d, view_num: %d")
-               % view_segment_num.segment_num() % view_segment_num.view_num());
+               % view_segment_num.segment_num() % view_segment_num.view_num(), 2);
 #endif
 
 #ifdef STIR_OPENMP
