@@ -62,15 +62,14 @@ ProjectorByBinPairUsingNiftyPET::post_processing()
 {
   if (base_type::post_processing())
     return true;
-
-  this->forward_projector_sptr.reset(new ForwardProjectorByBinNiftyPET);
-  this->back_projector_sptr.reset(new BackProjectorByBinNiftyPET);
   return false;
 }
 
 ProjectorByBinPairUsingNiftyPET::
 ProjectorByBinPairUsingNiftyPET()
 {
+  this->forward_projector_sptr.reset(new ForwardProjectorByBinNiftyPET);
+  this->back_projector_sptr.reset(new BackProjectorByBinNiftyPET);
   set_defaults();
 }
 
