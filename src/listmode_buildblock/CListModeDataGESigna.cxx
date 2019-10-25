@@ -5,9 +5,9 @@
 */
 /*!
   \file
-  \ingroup listmode  
+  \ingroup listmode
   \brief Implementation of class stir::CListModeDataGESigna
-    
+
   \author Kris Thielemans
   \author Ottavia Bertolli
   \author Nikos Efthimiou
@@ -19,6 +19,7 @@
 #include "stir/ExamInfo.h"
 #include "stir/info.h"
 #include "stir/IO/GEHDF5Wrapper.h"
+#include "stir/Scanner.h"
 #include <boost/format.hpp>
 #include <iostream>
 #include <fstream>
@@ -27,11 +28,11 @@ START_NAMESPACE_STIR
 
 CListModeDataGESigna::
 CListModeDataGESigna(const std::string& listmode_filename)
-  : listmode_filename(listmode_filename)    
+  : listmode_filename(listmode_filename)
 {
   if (open_lm_file() == Succeeded::no)
     error(boost::format("CListModeDataGESigna: error opening the first listmode file for filename %s") %
-	  listmode_filename);
+      listmode_filename);
  printf( "\n Success in opening the listmode\n" );
 }
 
@@ -42,7 +43,7 @@ get_name() const
   return listmode_filename;
 }
 
-std::time_t 
+std::time_t
 CListModeDataGESigna::
 get_scan_start_time_in_secs_since_1970() const
 {
@@ -50,7 +51,7 @@ get_scan_start_time_in_secs_since_1970() const
 }
 
 
-shared_ptr <CListRecord> 
+shared_ptr <CListRecord>
 CListModeDataGESigna::
 get_empty_record_sptr() const
 {
@@ -71,8 +72,8 @@ open_lm_file()
     }
   stream_ptr->seekg(12492704); // TODO get offset from RDF. // I got it from the listmode OtB 1/09/16 5872
   current_lm_data_ptr.reset(
-                            new InputStreamWithRecords<CListRecordT, bool>(stream_ptr, 
-                                                                           4, 16, 
+                            new InputStreamWithRecords<CListRecordT, bool>(stream_ptr,
+                                                                           4, 16,
                                                                            ByteOrder::little_endian != ByteOrder::get_native_order()));
 #else
   if(!GEHDF5Wrapper::check_GE_signature(listmode_filename))
@@ -89,13 +90,18 @@ open_lm_file()
   //! \todo N.E: Probably can do without the GEHDF5Wrapper here.
   GEHDF5Wrapper inputFile(listmode_filename);
  // CListModeData::scaner_sptr = inputFile.get_scanner_sptr();
-  
+  shared_ptr<Scanner> tmp = inputFile.get_scanner_sptr();
+  shared_ptr<ProjDataInfo> proj_data_tmp(ProjDataInfo::ProjDataInfoCTI(tmp,2,tmp->get_num_rings()-1,
+  tmp->get_num_detectors_per_ring()/2,tmp->get_max_num_non_arccorrected_bins(),
+  false));
+  this->set_proj_data_info_sptr(proj_data_tmp);
+
   //! \todo N.E: Remove hard-coded sizes;
   //! \todo Check the list record size of the signature and the maximum record size.
   current_lm_data_ptr.
   reset(
         new InputStreamWithRecordsFromHDF5<CListRecordT>(listmode_filename,
-                                                               4, 16));
+                                                               6, 16));
 
   return Succeeded::yes;
 }
@@ -123,7 +129,7 @@ CListModeDataGESigna::
 save_get_position()
 {
   return static_cast<SavedPosition>(current_lm_data_ptr->save_get_position());
-} 
+}
 
 Succeeded
 CListModeDataGESigna::

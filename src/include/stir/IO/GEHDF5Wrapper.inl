@@ -54,12 +54,12 @@ hsize_t GEHDF5Wrapper::get_dataset_size() const
     return m_list_size;
 }
 
-/*TimeFrameDefinitions* GEHDF5Wrapper::get_timeframe_definitions() const
+TimeFrameDefinitions* GEHDF5Wrapper::get_timeframe_definitions() const
 {
     //! \todo For examInfo get timeframe definitions
     return &exam_info_sptr->time_frame_definitions;
 }
-*/
+
 const H5::H5File& GEHDF5Wrapper::get_file() const
 { return file; }
 

@@ -345,6 +345,7 @@ case PETMR_Signa:
 	       5,
 	       4,
 	       9, 4, 1, 1, 1);
+break;
 
   case Discovery690:
     // same as 710
