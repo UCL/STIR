@@ -84,6 +84,9 @@ virtual void set_up(
     /// Set input
     virtual void set_input(const DiscretisedDensity<3,float>&);
 
+    /// Set verbosity
+    void set_verbosity(const bool verbosity) { _verbosity = verbosity; }
+
 protected:
   //! This virtual function has to be implemented by the derived class.
   virtual void actual_forward_project(RelatedViewgrams<float>&, 

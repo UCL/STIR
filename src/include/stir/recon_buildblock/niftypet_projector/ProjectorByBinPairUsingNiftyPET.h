@@ -63,6 +63,9 @@ public:
     const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
     );
 
+  /// Set verbosity
+  void set_verbosity(const bool verbosity) { _verbosity = verbosity; }
+
 private:
 
   void set_defaults();

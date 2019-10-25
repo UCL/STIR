@@ -89,6 +89,9 @@ public:
     This function has to be called before any back-projection is initiated.*/
   virtual void start_accumulating_in_new_target();
 
+  /// Set verbosity
+  void set_verbosity(const bool verbosity) { _verbosity = verbosity; }
+
 protected:
 
   virtual void actual_back_project(DiscretisedDensity<3,float>&,
