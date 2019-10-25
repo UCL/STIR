@@ -54,7 +54,7 @@ public:
   //!  A constructor : constructs a bin with value (defaulting to 0)
  //inline Bin(int segment_num,int view_num, int axial_pos_num,
    // int tangential_pos_num,float bin_value=0);
-
+//
  inline Bin(int segment_num,int view_num, int axial_pos_num,
             int tangential_pos_num, float bin_value = 0);
 
