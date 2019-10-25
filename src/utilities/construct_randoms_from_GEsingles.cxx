@@ -173,7 +173,7 @@ int main(int argc, char **argv)
 
     shared_ptr<GEHDF5Wrapper> m_input_sptr;
     m_input_sptr.reset(new GEHDF5Wrapper(_listmode_filename));
-    int num_slices = m_input_sptr->get_exam_info_sptr()->time_frame_definitions.get_num_frames();
+    int num_slices = m_input_sptr->get_timeframe_definitions()->get_num_frames();
 
     Bin bin;
     Bin uncompressed_bin;
