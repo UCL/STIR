@@ -104,6 +104,7 @@ protected:
   shared_ptr<DataSymmetriesForBins_PET_CartesianGrid> _symmetries_sptr;
   ProjectorByBinNiftyPETHelper _helper;
   int _cuda_device;
+  bool _verbosity;
   std::vector<float> _np_sino_w_gaps;
 };
 

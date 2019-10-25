@@ -100,6 +100,7 @@ private:
     shared_ptr<ProjDataInMemory> _projected_data_sptr;
     ProjectorByBinNiftyPETHelper _helper;
     int _cuda_device;
+    bool _verbosity;
 };
 
 END_NAMESPACE_STIR

@@ -81,6 +81,9 @@ public:
     /// Set emission (0) or transmission (1) - whether to exp{-result} for attenuation maps
     void set_att(const char att)                              { _att = att;                   }
 
+    /// Set verbosity level for CUDA output
+    void set_verbose(const bool verbose)                      { _verbose = verbose;           }
+
     /// Set up
     void set_up();
 
@@ -164,6 +167,7 @@ private:
     int _nsinos;
     char _att;
     std::vector<int> _isub;
+    bool _verbose;
 };
 
 END_NAMESPACE_STIR

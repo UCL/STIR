@@ -43,6 +43,7 @@ BackProjectorByBinNiftyPET::BackProjectorByBinNiftyPET() :
 {
     _openMP_compatible = false;
     this->_already_set_up = false;
+    this->_verbosity = true;
 }
 
 BackProjectorByBinNiftyPET::~BackProjectorByBinNiftyPET()
@@ -56,6 +57,7 @@ initialise_keymap()
   parser.add_start_key("Back Projector Using NiftyPET Parameters");
   parser.add_stop_key("End Back Projector Using NiftyPET Parameters");
   parser.add_key("CUDA device", &_cuda_device);
+  parser.add_key("verbosity", &_verbosity);
 }
 
 void
@@ -77,6 +79,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
     _helper.set_cuda_device_id ( _cuda_device );
     _helper.set_span           ( char(_proj_data_info_sptr->get_num_segments()) );
     _helper.set_att(0);
+    _helper.set_verbose(_verbosity);
     _helper.set_up();
 }
 
