@@ -236,6 +236,10 @@ protected:
   bool _disable_output;
 
 
+  /// Verbosity level
+  int _verbosity;
+
+
 };
 
 END_NAMESPACE_STIR
