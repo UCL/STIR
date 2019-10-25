@@ -64,6 +64,7 @@ Reconstruction<TargetT>::set_defaults()
   this->post_filter_sptr.reset();
 
   this->_disable_output = false;
+  this->_verbosity = -1;
 
 }
 
@@ -76,6 +77,7 @@ Reconstruction<TargetT>::initialise_keymap()
   this->parser.add_parsing_key("output file format type", &this->output_file_format_ptr);
   this->parser.add_parsing_key("post-filter type", &this->post_filter_sptr); 
   this->parser.add_key("disable output", &_disable_output);
+  this->parser.add_key("verbosity", &_verbosity);
 //  parser.add_key("END", &KeyParser::stop_parsing);
  
 }
@@ -123,6 +125,9 @@ post_processing()
 
   if (is_null_ptr(this->output_file_format_ptr))
     { warning("output file format has to be set to valid value"); return true; }
+
+  if (_verbosity >= 0)
+      Verbosity::set(_verbosity);
 
   return false;
 }
