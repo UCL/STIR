@@ -102,7 +102,7 @@ public:
 
     inline hsize_t get_dataset_size() const;
 
-    inline TimeFrameDefinitions* get_timeframe_definitions() const;
+ //   inline TimeFrameDefinitions* get_timeframe_definitions() const;
 
     //! Get shared pointer to exam info
     /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
