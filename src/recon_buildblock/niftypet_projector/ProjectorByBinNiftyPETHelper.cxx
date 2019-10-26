@@ -40,6 +40,7 @@
 #include <prjb.h>
 #include <prjf.h>
 #include <scanner_0.h>
+#include <recon.h>
 
 START_NAMESPACE_STIR
 
@@ -264,6 +265,9 @@ remove_gaps(std::vector<float> &sino_no_gaps, const std::vector<float> &sino_w_g
     assert(!sino_no_gaps.empty());
 #endif
 
+    if (_verbose)
+        getMemUse();
+
     ::remove_gaps(sino_no_gaps.data(),
                   const_cast<std::vector<float>&>(sino_w_gaps).data(),
                   _nsinos,
@@ -281,6 +285,9 @@ put_gaps(std::vector<float> &sino_w_gaps, const std::vector<float> &sino_no_gaps
 #endif
 
     std::vector<float> unpermuted_sino_w_gaps = this->create_niftyPET_sinogram_with_gaps();
+
+    if (_verbose)
+        getMemUse();
 
     ::put_gaps(unpermuted_sino_w_gaps.data(),
                const_cast<std::vector<float>&>(sino_no_gaps).data(),
@@ -303,6 +310,9 @@ back_project(std::vector<float> &image, const std::vector<float> &sino_no_gaps) 
 #endif
 
     std::vector<float> unpermuted_image = this->create_niftyPET_image();
+
+    if (_verbose)
+        getMemUse();
 
     gpu_bprj(unpermuted_image.data(),
              const_cast<std::vector<float>&>(sino_no_gaps).data(),
@@ -343,6 +353,9 @@ forward_project(std::vector<float> &sino_no_gaps, const std::vector<float> &imag
     unsigned permute_order[3] = {1,2,0};
     std::vector<float> permuted_image = this->create_niftyPET_image();
     this->permute(permuted_image,image,output_dims,permute_order);
+
+    if (_verbose)
+        getMemUse();
 
     gpu_fprj(sino_no_gaps.data(),
              permuted_image.data(),
