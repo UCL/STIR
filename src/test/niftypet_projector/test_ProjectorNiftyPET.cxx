@@ -17,7 +17,7 @@
 /*!
 
   \file
-  \ingroup stir::projector_test
+  \ingroup projector_test
 
   \brief Test program for forward and backwards projectors using wrappers around NiftyPET's GPU projectors (stir::ForwardProjectorByBinNiftyPET and stir::BackProjectorByBinNiftyPET)
 
@@ -124,19 +124,8 @@ compare_images(bool &everything_ok, const DiscretisedDensity<3,float> &im_1, con
         num_elements *= unsigned(max_indices[i + 1] - min_indices[i + 1] + 1);
 
     std::vector<float> arr_1(num_elements), arr_2(num_elements);
-
-    DiscretisedDensity<3,float>::const_full_iterator im_1_iter = im_1.begin_all_const();
-    DiscretisedDensity<3,float>::const_full_iterator im_2_iter = im_2.begin_all_const();
-    std::vector<float>::iterator arr_1_iter = arr_1.begin();
-    std::vector<float>::iterator arr_2_iter = arr_2.begin();
-    while (im_1_iter!=im_1.end_all_const()) {
-        *arr_1_iter = *im_1_iter;
-        *arr_2_iter = *im_2_iter;
-        ++im_1_iter;
-        ++im_2_iter;
-        ++arr_1_iter;
-        ++arr_2_iter;
-    }
+    std::copy(im_1.begin_all_const(), im_1.end_all_const(),arr_1.begin());
+    std::copy(im_2.begin_all_const(), im_2.end_all_const(),arr_2.begin());
 
     // Compare values
     if (compare_arrays(arr_1,arr_2) == Succeeded::yes)
@@ -197,13 +186,17 @@ void project(double &time, shared_ptr<ProjDataInMemory> &sino_sptr, shared_ptr<D
     // Do the forward projection
     std::cerr << "\nDoing forward projection using " << fwrd_projector.get_registered_name() << "...\n";
     fwrd_projector.set_up(sino_sptr->get_proj_data_info_sptr(), image_sptr);
-    fwrd_projector.set_input(*input_image_sptr);
+    fwrd_projector.set_input(*image_sptr);
     fwrd_projector.forward_project(*sino_sptr);
     timer.stop();
     double time_fwd(timer.value());
     std::cerr << "\tDone! (" << time_fwd << " secs)\n";
 
     timer.reset();
+
+    // Truncate the resultant image to a cylinder
+    truncate_rim(*image_sptr,17);
+
     timer.start();
 
     // Set the image to zero
@@ -338,7 +331,7 @@ set_up_input_image()
         _image_sptr->fill(1.f);
 
         // Truncate it to a small cylinder
-        truncate_rim(*_image_sptr,16);
+        truncate_rim(*_image_sptr,17);
 
         if (_save_results) {
             shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr =
