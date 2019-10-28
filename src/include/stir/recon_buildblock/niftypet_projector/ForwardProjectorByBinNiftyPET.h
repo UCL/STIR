@@ -85,7 +85,7 @@ virtual void set_up(
     virtual void set_input(const DiscretisedDensity<3,float>&);
 
     /// Set verbosity
-    void set_verbosity(const bool verbosity) { _verbosity = verbosity; }
+    void set_verbosity(const bool verbosity) { _cuda_verbosity = verbosity; }
 
 protected:
   //! This virtual function has to be implemented by the derived class.
@@ -103,7 +103,7 @@ private:
     shared_ptr<ProjDataInMemory> _projected_data_sptr;
     ProjectorByBinNiftyPETHelper _helper;
     int _cuda_device;
-    bool _verbosity;
+    bool _cuda_verbosity;
 };
 
 END_NAMESPACE_STIR

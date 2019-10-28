@@ -30,11 +30,11 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
-#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/recon_buildblock/niftypet_projector/ProjectorByBinNiftyPETHelper.h"
 
 START_NAMESPACE_STIR
 
+class DataSymmetriesForViewSegmentNumbers;
 
 /*!
   \ingroup projection
@@ -76,7 +76,7 @@ public:
    Otherwise, a run-time error will occur (unless the derived
    class has other behaviour).
   */
- virtual  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
+ virtual const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
   /// Back project
   void back_project(const ProjData&, int subset_num = 0, int num_subsets = 1);
@@ -90,7 +90,7 @@ public:
   virtual void start_accumulating_in_new_target();
 
   /// Set verbosity
-  void set_verbosity(const bool verbosity) { _verbosity = verbosity; }
+  void set_verbosity(const bool verbosity) { _cuda_verbosity = verbosity; }
 
 protected:
 
@@ -104,10 +104,10 @@ protected:
                           const int min_tangential_pos_num, const int max_tangential_pos_num);
 
  private:
-  shared_ptr<DataSymmetriesForBins_PET_CartesianGrid> _symmetries_sptr;
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
   ProjectorByBinNiftyPETHelper _helper;
   int _cuda_device;
-  bool _verbosity;
+  bool _cuda_verbosity;
   std::vector<float> _np_sino_w_gaps;
 };
 
