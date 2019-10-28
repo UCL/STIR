@@ -261,10 +261,8 @@ void
 ProjectorByBinNiftyPETHelper::
 remove_gaps(std::vector<float> &sino_no_gaps, const std::vector<float> &sino_w_gaps) const
 {
-#ifndef NDEBUG
     check_set_up();
     assert(!sino_no_gaps.empty());
-#endif
 
     if (_verbose)
         getMemUse();
@@ -280,10 +278,8 @@ void
 ProjectorByBinNiftyPETHelper::
 put_gaps(std::vector<float> &sino_w_gaps, const std::vector<float> &sino_no_gaps) const
 {
-#ifndef NDEBUG
     check_set_up();
     assert(!sino_w_gaps.empty());
-#endif
 
     std::vector<float> unpermuted_sino_w_gaps = this->create_niftyPET_sinogram_with_gaps();
 
@@ -305,10 +301,8 @@ void
 ProjectorByBinNiftyPETHelper::
 back_project(std::vector<float> &image, const std::vector<float> &sino_no_gaps) const
 {
-#ifndef NDEBUG
     check_set_up();
     assert(!image.empty());
-#endif
 
     std::vector<float> unpermuted_image = this->create_niftyPET_image();
 
@@ -344,10 +338,8 @@ void
 ProjectorByBinNiftyPETHelper::
 forward_project(std::vector<float> &sino_no_gaps, const std::vector<float> &image) const
 {
-#ifndef NDEBUG
     check_set_up();
     assert(!sino_no_gaps.empty());
-#endif
 
     // Permute the data (as this is done on the NiftyPET python side before forward projection
     unsigned output_dims[3] = {320,320,127};
