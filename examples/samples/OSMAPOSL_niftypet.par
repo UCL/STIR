@@ -16,12 +16,6 @@ projector pair type := NiftyPET
  verbosity := 1
 end projector pair using NiftyPET parameters := 
 
-;Bin Normalisation type:=None
-; change to STIR 2.x default for compatibility 
-use subset sensitivities:=0
-; if the next parameter is disabled, 
-; it default to an image full of 1s.
-; this will be wrong however
 recompute_sensitivity:=1
 sensitivity filename:= sensitivity
 
@@ -30,9 +24,6 @@ end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 initial estimate:= init_1s.hv
 
 output filename prefix := reconstructed
-; if the next parameter is disabled, 
-; it default to an image full of 1s.
-; this funny value is just for testing if you can read an initial image
 
 number of subsets:= 1
 number of subiterations:= 50
