@@ -244,59 +244,29 @@ set_up_input_sino()
         shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
         exam_info_sptr->imaging_modality = ImagingModality::PT;
 
-        // ProjDataInfo
-        int max_seg_num;
-        if (_span == 11)
-            max_seg_num = 5;
-        else if (_span == 1)
-            max_seg_num = 0;
-        else
-            throw std::runtime_error("Span of 1 and 11 only currently supported.");
-
-        VectorWithOffset<int> ax_pos_per_segment(-max_seg_num,max_seg_num);
-        ax_pos_per_segment[0] = 127;
-        if (max_seg_num > 0) {
-            ax_pos_per_segment[-1] = ax_pos_per_segment[1] = 115;
-            ax_pos_per_segment[-2] = ax_pos_per_segment[2] =  93;
-            ax_pos_per_segment[-3] = ax_pos_per_segment[3] =  71;
-            ax_pos_per_segment[-4] = ax_pos_per_segment[4] =  49;
-            ax_pos_per_segment[-5] = ax_pos_per_segment[5] =  27;
-        }
-
-        VectorWithOffset<int> max_ring_diff(-max_seg_num,max_seg_num);
-        if (max_seg_num > 0) {
-            max_ring_diff[-5] = -50;
-            max_ring_diff[-4] = -39;
-            max_ring_diff[-3] = -28;
-            max_ring_diff[-2] = -17;
-            max_ring_diff[-1] = -06;
-        }
-        max_ring_diff[ 0] =  05;
-        if (max_seg_num > 0) {
-            max_ring_diff[ 1] =  16;
-            max_ring_diff[ 2] =  27;
-            max_ring_diff[ 3] =  38;
-            max_ring_diff[ 4] =  49;
-            max_ring_diff[ 5] =  60;
-        }
-
-        VectorWithOffset<int> min_ring_diff(-max_seg_num,max_seg_num);
-        for (int i=-max_seg_num; i<=max_seg_num; ++i)
-            min_ring_diff[i] = -max_ring_diff[-i];
-
-        shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr
-                (new ProjDataInfoCylindricalNoArcCorr
-                 (scanner_sptr,ax_pos_per_segment,min_ring_diff,max_ring_diff,scanner_sptr->get_max_num_views(),344));
+        shared_ptr<ProjDataInfo> proj_data_info_sptr(
+                    ProjDataInfo::construct_proj_data_info(
+                        scanner_sptr, // good
+                        _span, // good
+                        /* mMR needs maxDelta of */60,
+                        scanner_sptr->get_num_detectors_per_ring()/2, // good
+                        scanner_sptr->get_max_num_non_arccorrected_bins(), // good
+                        /* arc_correction*/false));
 
         // Create ProjData
         _proj_data_sptr.reset(new ProjDataInMemory(exam_info_sptr,proj_data_info_sptr));
 
-        // Get number of elements
-        unsigned num_elements(0);
-        for (int segment_num = -max_seg_num; segment_num<= max_seg_num; ++segment_num)
-            num_elements += unsigned(_proj_data_sptr->get_max_axial_pos_num(segment_num) - _proj_data_sptr->get_min_axial_pos_num(segment_num)) + 1;
-        num_elements *= unsigned(_proj_data_sptr->get_max_view_num() - _proj_data_sptr->get_min_view_num()) + 1;
-        num_elements *= unsigned(_proj_data_sptr->get_max_tangential_pos_num() - _proj_data_sptr->get_min_tangential_pos_num()) + 1;
+        // Get dimensions of STIR sinogram
+        int min_view      = _proj_data_sptr->get_min_view_num();
+        int max_view      = _proj_data_sptr->get_max_view_num();
+        int min_tang_pos  = _proj_data_sptr->get_min_tangential_pos_num();
+        int max_tang_pos  = _proj_data_sptr->get_max_tangential_pos_num();
+
+        int num_sinograms = _proj_data_sptr->get_num_axial_poss(0);
+        for (int s=1; s<= _proj_data_sptr->get_max_segment_num(); ++s)
+            num_sinograms += 2* _proj_data_sptr->get_num_axial_poss(s);
+
+        unsigned num_elements = unsigned(num_sinograms * (1+max_view-min_view) * (1+max_tang_pos-min_tang_pos));
 
         // Create array
         std::vector<float> arr(num_elements);
