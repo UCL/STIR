@@ -93,7 +93,7 @@ public:
     /// Create NiftyPET singram with no gaps. Forward project into this
     std::vector<float> create_niftyPET_sinogram_no_gaps() const;
 
-    /// Create NiftyPET singram with gaps. Use this before converting to stir.
+    /// Create NiftyPET sinogram with gaps. Use this before converting to stir.
     std::vector<float> create_niftyPET_sinogram_with_gaps() const;
 
     /// Convert STIR image to NiftyPET image
