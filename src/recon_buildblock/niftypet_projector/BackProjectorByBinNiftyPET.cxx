@@ -150,7 +150,7 @@ actual_back_project(const RelatedViewgrams<float>& related_viewgrams,
                          const int, const int,
                          const int, const int)
 {
-    for(auto iter = related_viewgrams.begin(); iter != related_viewgrams.end(); ++iter)
+    for(stir::RelatedViewgrams<float>::const_iterator iter = related_viewgrams.begin(); iter != related_viewgrams.end(); ++iter)
         _helper.convert_viewgram_stir_to_niftyPET(_np_sino_w_gaps,*iter);
 }
 
