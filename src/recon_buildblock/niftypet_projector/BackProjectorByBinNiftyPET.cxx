@@ -136,16 +136,6 @@ start_accumulating_in_new_target()
 
 void
 BackProjectorByBinNiftyPET::
-actual_back_project(DiscretisedDensity<3,float>&,
-                    const RelatedViewgrams<float>&,
-                         const int, const int,
-                         const int, const int)
-{
-    throw std::runtime_error("Need to use set_input() if wanting to use BackProjectorByBinNiftyPET.");
-}
-
-void
-BackProjectorByBinNiftyPET::
 actual_back_project(const RelatedViewgrams<float>& related_viewgrams,
                          const int, const int,
                          const int, const int)
