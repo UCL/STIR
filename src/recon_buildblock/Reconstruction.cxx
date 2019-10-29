@@ -213,6 +213,15 @@ get_target_image()
     return target_data_sptr;
 }
 
+template <typename TargetT>
+void
+Reconstruction<TargetT>::
+set_verbosity(const int verbosity)
+{
+    _verbosity = verbosity;
+    Verbosity::set(_verbosity);
+}
+
 template class Reconstruction<DiscretisedDensity<3,float> >; 
 template class Reconstruction<ParametricVoxelsOnCartesianGrid >; 
 END_NAMESPACE_STIR

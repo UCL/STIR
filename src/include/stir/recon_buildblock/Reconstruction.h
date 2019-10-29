@@ -169,6 +169,9 @@ public:
   //!
   shared_ptr<TargetT > get_target_image();
 
+  //! Set verbosity
+  void set_verbosity(const int verbosity);
+
   // parameters
  protected:
 
