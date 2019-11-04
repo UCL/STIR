@@ -81,7 +81,6 @@ private:
   mutable Array<3,float> down_sampled_uniformity;
   mutable RelatedViewgrams<float> NCOR_viewgrams;
   std::string normalisation_spect_filename, folder_prefix;
-  int num_pixel_in_detector_head_row;
 
   bool _use_detector_efficiencies;
   bool _use_decay_correction;

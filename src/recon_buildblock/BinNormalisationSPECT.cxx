@@ -94,7 +94,6 @@ initialise_keymap()
   this->parser.add_key("folder_prefix", &this->folder_prefix);
   this->parser.add_key("rel_angle", &this->rel_angle);
   this->parser.add_key("half_life", &this->half_life);
-  this->parser.add_key("num_pixel_in_detector_head_row",&this->num_pixel_in_detector_head_row);
   this->parser.add_key("view_time_interval", &this->view_time_interval);
   this->parser.add_key("num detector heads", &this->num_detector_heads);
   this->parser.add_key("use_decay_correction", &this->_use_decay_correction);
