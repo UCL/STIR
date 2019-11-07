@@ -4,6 +4,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
     Copyright (C) 2012-06-05 - 2012, Kris Thielemans
+    Copyright (C) 2018 Commonwealth Scientific and Industrial Research Organisation
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -25,6 +26,8 @@
 
   \author Matthew Jacobson
   \author Kris Thielemans
+  \author Ashley Gillman
+  \author Daniel Deidda
   \author PARAPET project
 
 */
@@ -159,6 +162,9 @@ public:
 
  protected:
 
+  //! operations prior to the iterations
+  //virtual Succeeded set_up(shared_ptr <TargetT > const& target_image_ptr);
+
   //! determines whether non-positive values in the initial image will be set to small positive ones
   bool enforce_initial_positivity;
 
@@ -194,15 +200,28 @@ public:
   //! used to check acceptable parameter ranges, etc...
   virtual bool post_processing();
 
+  virtual void compute_sub_gradient_without_penalty_plus_sensitivity(
+    TargetT& gradient, const TargetT &current_estimate, const int subset_num);
+
+  virtual const TargetT& get_subset_sensitivity(const int subset_num);
+
+  virtual void apply_multiplicative_update(
+    TargetT& current_image_estimate, const TargetT& multiplicative_update_image);
  
 private:
+
   friend void do_sensitivity(const char * const par_filename);
+
+  //! the principal operations for updating the image iterates at each iteration
+  //virtual void update_estimate (TargetT& current_image_estimate);
 
   PoissonLogLikelihoodWithLinearModelForMean<TargetT >&
     objective_function();
 
   PoissonLogLikelihoodWithLinearModelForMean<TargetT > const&
     objective_function() const;
+
+  unique_ptr<TargetT> multiplicative_update_image_ptr;
 };
 
 END_NAMESPACE_STIR

@@ -371,6 +371,9 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
     const int min_segment_num = proj_data_info_sptr->get_min_segment_num();
     const int max_segment_num = proj_data_info_sptr->get_max_segment_num();
 
+    this->projector_pair_sptr->get_back_projector_sptr()->
+      start_accumulating_in_new_target();
+
     // warning: has to be same as subset scheme used as in distributable_computation
     for (int segment_num = min_segment_num; segment_num <= max_segment_num; ++segment_num)
     {
@@ -382,15 +385,17 @@ add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const
 
         if (! this->projector_pair_sptr->get_symmetries_used()->is_basic(view_segment_num))
           continue;
-        this->add_view_seg_to_sensitivity(sensitivity, view_segment_num);
+        this->add_view_seg_to_sensitivity(view_segment_num);
       }
     }
+    this->projector_pair_sptr->get_back_projector_sptr()->
+      get_output(sensitivity);
 }
 
 template<typename TargetT>
 void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view_seg_nums) const
+add_view_seg_to_sensitivity(const ViewSegmentNumbers& view_seg_nums) const
 {
     int min_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_min_tof_pos_num() : 0;
     int max_timing_pos_num = use_tofsens ? this->proj_data_info_sptr->get_max_tof_pos_num() : 0;
@@ -417,7 +422,7 @@ add_view_seg_to_sensitivity(TargetT& sensitivity, const ViewSegmentNumbers& view
 			const int max_ax_pos_num =
 				viewgrams.get_max_axial_pos_num();
 
-			this->sens_backprojector_sptr->back_project(sensitivity, viewgrams,
+            this->sens_backprojector_sptr->back_project(viewgrams,
 				min_ax_pos_num, max_ax_pos_num);
 		}
 	}
@@ -461,6 +466,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
   this->list_mode_data_sptr->reset();
   double current_time = 0.;
   ProjMatrixElemsForOneBin proj_matrix_row;
+    gradient.fill(0);
 
   shared_ptr<CListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
 
@@ -522,6 +528,16 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
             }
         }
 
+            measured_bin.set_bin_value(1.0f);
+            // If more than 1 subsets, check if the current bin belongs to
+            // the current.
+            if (this->num_subsets > 1)
+            {
+                Bin basic_bin = measured_bin;
+                this->PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin);
+                if (subset_num != static_cast<int>(basic_bin.view_num() % this->num_subsets))
+                    continue;
+            }
             this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row,
                                                                       measured_bin);
 

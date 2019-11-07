@@ -48,8 +48,7 @@ class Succeeded;
 */
 template <typename DataT>
 class GeneralisedPrior: 
-   public RegisteredObject<GeneralisedPrior<DataT> >,
-   public ParsingObject
+   public RegisteredObject<GeneralisedPrior<DataT> >
 			 
 {
 public:

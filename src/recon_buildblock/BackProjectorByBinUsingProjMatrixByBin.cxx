@@ -58,7 +58,7 @@ BackProjectorByBinUsingProjMatrixByBin::
 set_defaults()
 {
   this->proj_matrix_ptr.reset();
-  //BackProjectorByBin::set_defaults();
+  BackProjectorByBin::set_defaults();
 }
 
 void
@@ -68,7 +68,7 @@ initialise_keymap()
   parser.add_start_key("Back Projector Using Matrix Parameters");
   parser.add_stop_key("End Back Projector Using Matrix Parameters");
   parser.add_parsing_key("matrix type", &proj_matrix_ptr);
-  //BackProjectorByBin::initialise_keymap();
+  BackProjectorByBin::initialise_keymap();
 }
 
 
@@ -252,13 +252,13 @@ BackProjectorByBinUsingProjMatrixByBin::
 actual_back_project(DiscretisedDensity<3,float>& image,
                     const Bin& bin)
 {
-    if (proj_matrix_ptr->is_cache_enabled() && !tof_enabled)
+    if (proj_matrix_ptr->is_cache_enabled() /*&& !tof_enabled*/)
     {
         ProjMatrixElemsForOneBin proj_matrix_row;
         proj_matrix_ptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, bin);
         proj_matrix_row.back_project(image, bin);
     }
-    else if (proj_matrix_ptr->is_cache_enabled() && tof_enabled)
+    else if (proj_matrix_ptr->is_cache_enabled()/* && tof_enabled*/)
     {
         tof_row->back_project(image, bin);
     }
@@ -272,7 +272,7 @@ BackProjectorByBinUsingProjMatrixByBin::
 enable_tof(ProjMatrixElemsForOneBin * for_row)
 {
     tof_row = for_row;
-    tof_enabled = true;
+//    tof_enabled = true;
 }
 
 BackProjectorByBinUsingProjMatrixByBin*

@@ -85,15 +85,15 @@ initialise_keymap()
     byte_order_values.push_back("LITTLEENDIAN");
     byte_order_values.push_back("BIGENDIAN");
   }
-  parser.add_key("byte order",
+  this->parser.add_key("byte order",
 		 &byte_order_index,
 		 &byte_order_values);
-  parser.add_key("number format",
+  this->parser.add_key("number format",
 		 &number_format_index,
 		 &number_format_values);
-  parser.add_key("number of bytes per pixel",
+  this->parser.add_key("number of bytes per pixel",
 		 &bytes_per_pixel);
-  parser.add_key("scale_to_write_data",
+  this->parser.add_key("scale_to_write_data",
 		 &scale_to_write_data);
 }
 
@@ -112,7 +112,7 @@ set_key_values()
                                      bytes_per_pixel_in_size_t);
   bytes_per_pixel = static_cast<int>(bytes_per_pixel_in_size_t);
   number_format_index =
-     parser.find_in_ASCIIlist(number_format, number_format_values); 
+     this->parser.find_in_ASCIIlist(number_format, number_format_values);
 
 }
 

@@ -102,6 +102,7 @@ do_segments(DiscretisedDensity<3,float>& image,
   
   
   list<ViewSegmentNumbers> already_processed;
+  back_projector_ptr->start_accumulating_in_new_target();
   for (int timing_num = start_timing_num; timing_num <= end_timing_num; ++timing_num)
   {
 	  already_processed.clear();
@@ -141,7 +142,7 @@ do_segments(DiscretisedDensity<3,float>& image,
 					  r_viewgrams_iter++;
 				  }
 
-				  back_projector_ptr->back_project(image, viewgrams_empty,
+                  back_projector_ptr->back_project(viewgrams_empty,
 					  std::max(start_axial_pos_num, viewgrams_empty.get_min_axial_pos_num()),
 					  std::min(end_axial_pos_num, viewgrams_empty.get_max_axial_pos_num()),
 					  start_tang_pos_num, end_tang_pos_num);
@@ -174,14 +175,13 @@ do_segments(DiscretisedDensity<3,float>& image,
 					  ++r_viewgrams_iter;
 				  }
 
-				  back_projector_ptr->back_project(image, viewgrams,
+                  back_projector_ptr->back_project(viewgrams,
 					  std::max(start_axial_pos_num, viewgrams.get_min_axial_pos_num()),
 					  std::min(end_axial_pos_num, viewgrams.get_max_axial_pos_num()),
 					  start_tang_pos_num, end_tang_pos_num);
 		  } // fill
 	  } // for view_num, segment_num 
   } // for timing_pos_num
-    
 }
 
 END_NAMESPACE_STIR

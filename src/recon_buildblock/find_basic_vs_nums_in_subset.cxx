@@ -45,6 +45,10 @@ namespace detail
     std::vector<ViewSegmentNumbers> vs_nums_to_process;
     for (int segment_num = min_segment_num; segment_num <= max_segment_num; segment_num++)
       {
+        for (int timing_pos_num = -proj_data_info.get_min_tof_pos_num();
+                      timing_pos_num<= proj_data_info.get_max_tof_pos_num();
+                      ++timing_pos_num)
+              {
         for (int view = proj_data_info.get_min_view_num() + subset_num; 
              view <= proj_data_info.get_max_view_num(); 
              view += num_subsets)
@@ -67,6 +71,7 @@ namespace detail
               }
 #endif
           }
+    }
       }
     return vs_nums_to_process;
   }
