@@ -560,6 +560,8 @@ convert_viewgram_stir_to_niftyPET(std::vector<float> &np_vec, const Viewgram<flo
     // Loop over the STIR view and tangential position
     for (int ax_pos=viewgram.get_min_axial_pos_num(); ax_pos<=viewgram.get_max_axial_pos_num(); ++ax_pos) {
 
+        unsigned np_sino;
+
         // Convert the NiftyPET sinogram to STIR's segment and axial position
         get_niftypet_sino_from_stir_segment_and_axial_pos(np_sino, segment, ax_pos, sizes, segment_sequence);
 
