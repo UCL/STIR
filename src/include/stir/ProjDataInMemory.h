@@ -97,6 +97,9 @@ private:
 #endif
   
   size_t get_size_of_buffer() const;
+
+  //! Create a new stream
+  shared_ptr<std::iostream> create_stream() const;
 };
 
 END_NAMESPACE_STIR
