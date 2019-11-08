@@ -554,7 +554,6 @@ convert_viewgram_stir_to_niftyPET(std::vector<float> &np_vec, const Viewgram<flo
     get_vals_for_proj_data_conversion(sizes, segment_sequence, num_sinograms, min_view, max_view,
                                       min_tang_pos, max_tang_pos, *viewgram.get_proj_data_info_sptr(), np_vec);
 
-    unsigned np_1d, np_ang, np_bin, np_sino;
     const int segment = viewgram.get_segment_num();
     const int view = viewgram.get_view_num();
 
@@ -566,9 +565,9 @@ convert_viewgram_stir_to_niftyPET(std::vector<float> &np_vec, const Viewgram<flo
 
         for (int tang_pos=min_tang_pos; tang_pos<=max_tang_pos; ++tang_pos) {
 
-            np_ang  = unsigned(view-min_view);
-            np_bin  = unsigned(tang_pos-min_tang_pos);
-            np_1d = convert_niftypet_proj_3d_to_1d_idx(np_ang,np_bin,np_sino);
+            unsigned np_ang  = unsigned(view-min_view);
+            unsigned np_bin  = unsigned(tang_pos-min_tang_pos);
+            unsigned np_1d = convert_niftypet_proj_3d_to_1d_idx(np_ang,np_bin,np_sino);
             np_vec.at(np_1d) = viewgram.at(ax_pos).at(tang_pos);
         }
     }
