@@ -41,7 +41,7 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup projection
-  \brief Abstract base class for all forward projectors
+  \brief Helper class for the wrapped NiftyPET projectors.
 */
 class ProjectorByBinNiftyPETHelper
 {

@@ -600,7 +600,6 @@ convert_proj_data_niftyPET_to_stir(ProjData &stir, const std::vector<float> &np_
     get_vals_for_proj_data_conversion(sizes, segment_sequence, num_sinograms, min_view, max_view,
                                       min_tang_pos, max_tang_pos, *stir.get_proj_data_info_sptr(), np_vec);
 
-    unsigned np_1d, np_ang, np_bin;
     int segment, axial_pos;
     // Loop over all NiftyPET sinograms
     for (unsigned np_sino = 0; np_sino < unsigned(num_sinograms); ++np_sino) {
@@ -609,15 +608,15 @@ convert_proj_data_niftyPET_to_stir(ProjData &stir, const std::vector<float> &np_
         get_stir_segment_and_axial_pos_from_niftypet_sino(segment, axial_pos, np_sino, sizes, segment_sequence);
 
         // Get the corresponding STIR sinogram
-        Sinogram<float> sino = stir.get_sinogram(axial_pos,segment);
+        Sinogram<float> sino = stir.get_empty_sinogram(axial_pos,segment);
 
         // Loop over the STIR view and tangential position
         for (int view=min_view; view<=max_view; ++view) {
             for (int tang_pos=min_tang_pos; tang_pos<=max_tang_pos; ++tang_pos) {
 
-                np_ang  = unsigned(view-min_view);
-                np_bin  = unsigned(tang_pos-min_tang_pos);
-                np_1d = convert_niftypet_proj_3d_to_1d_idx(np_ang,np_bin,np_sino);
+                unsigned np_ang  = unsigned(view-min_view);
+                unsigned np_bin  = unsigned(tang_pos-min_tang_pos);
+                unsigned np_1d = convert_niftypet_proj_3d_to_1d_idx(np_ang,np_bin,np_sino);
                 sino.at(view).at(tang_pos) = np_vec.at(np_1d);
             }
         }

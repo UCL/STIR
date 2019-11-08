@@ -130,7 +130,7 @@ start_accumulating_in_new_target()
 {
     // Call base level
     BackProjectorByBin::start_accumulating_in_new_target();
-    // Create a zero-filled NiftyPET image that will be back-projected into
+    // Also reset the niftypet sinogram
     _np_sino_w_gaps = _helper.create_niftyPET_sinogram_with_gaps();
 }
 
