@@ -88,9 +88,10 @@ ProjDataInMemory(shared_ptr<ExamInfo> const& exam_info_sptr,
   }
 }
 
-static
 shared_ptr<std::iostream>
+ProjDataInMemory::
 create_stream()
+const
 {
   shared_ptr<std::iostream> output_stream_sptr;
 #ifdef STIR_USE_OLD_STRSTREAM

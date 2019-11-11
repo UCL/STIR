@@ -183,8 +183,6 @@ private:
 private:
 #if __cplusplus > 199711L
   ProjDataFromStream& operator=(ProjDataFromStream&&) = delete;
-#else
-  ProjDataFromStream& operator=(ProjDataFromStream&&){}
 #endif
   
 };
