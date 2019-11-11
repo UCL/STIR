@@ -31,6 +31,7 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 
 START_NAMESPACE_STIR
 
@@ -69,6 +70,16 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
     check(*this->_proj_data_info_sptr, *_density_sptr);
     _symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_sptr));
 
+    // Get span
+    shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+            proj_data_info_cy_no_ar_cor_sptr(
+                dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(
+                    proj_data_info_sptr));
+    if (is_null_ptr(proj_data_info_cy_no_ar_cor_sptr))
+        error("BackProjectorByBinNiftyPET: Failed casting to ProjDataInfoCylindricalNoArcCorr");
+    int span = proj_data_info_cy_no_ar_cor_sptr->get_max_ring_difference(0) -
+            proj_data_info_cy_no_ar_cor_sptr->get_min_ring_difference(0) + 1;
+
     // Set up the niftyPET binary helper
     _helper.set_li2rng_filename("li2rng.dat"  );
     _helper.set_li2sn_filename ("li2sn.dat"   );
@@ -77,7 +88,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
     _helper.set_aw2ali_filename("aw2ali.dat"  );
     _helper.set_crs_filename   ( "crss.dat"   );
     _helper.set_cuda_device_id ( _cuda_device );
-    _helper.set_span           ( char(_proj_data_info_sptr->get_num_segments()) );
+    _helper.set_span           ( static_cast<char>(span) );
     _helper.set_att(0);
     _helper.set_verbose(_cuda_verbosity);
     _helper.set_up();
