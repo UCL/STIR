@@ -899,8 +899,12 @@ get_ratio(const ProjData& projdata,const ProjData& norm,const ProjData &add_proj
                      ++bin.view_num())
                 {
                     for (bin.tangential_pos_num()=  sino.get_min_tangential_pos_num(); bin.tangential_pos_num()<= sino.get_max_tangential_pos_num();  ++bin.tangential_pos_num())
-                         ratio_sino[bin.view_num()][bin.tangential_pos_num()] = sino[bin.axial_pos_num()][bin.tangential_pos_num()]/(est_sino[bin.axial_pos_num()][bin.tangential_pos_num()]+add_sino[bin.axial_pos_num()][bin.tangential_pos_num()])-1;
-                         ratio_HR.set_sinogram(ratio_sino);
+                        if(est_sino[bin.axial_pos_num()][bin.tangential_pos_num()]==0)
+                        ratio_sino[bin.view_num()][bin.tangential_pos_num()] = 0;
+                        else
+                        ratio_sino[bin.view_num()][bin.tangential_pos_num()] = sino[bin.axial_pos_num()][bin.tangential_pos_num()]/(est_sino[bin.axial_pos_num()][bin.tangential_pos_num()]+add_sino[bin.axial_pos_num()][bin.tangential_pos_num()])-1;
+                        ratio_HR.set_sinogram(ratio_sino);
+
                  }
 
               }
