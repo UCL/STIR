@@ -105,8 +105,13 @@ get_symmetries_used() const
 
 void
 BackProjectorByBinNiftyPET::
-back_project(const ProjData& proj_data, int, int)
+back_project(const ProjData& proj_data, int subset_num, int num_subsets)
 {
+    // Check the user has tried to project all data
+    if (subset_num != 0 || num_subsets != 1)
+        error("BackProjectorByBinNiftyPET::back_project "
+              "only works with all data (no subsets).");
+
     _helper.convert_proj_data_stir_to_niftyPET(_np_sino_w_gaps,proj_data);
 }
 
