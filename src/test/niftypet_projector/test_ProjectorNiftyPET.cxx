@@ -177,7 +177,14 @@ compare_sinos(bool &everything_ok, const ProjData &proj_data_1, const ProjData &
     }
 }
 
-void project(double &time, shared_ptr<ProjDataInMemory> &sino_sptr, shared_ptr<DiscretisedDensity<3,float> > &image_sptr, const shared_ptr<const ProjDataInMemory> input_sino_sptr, const shared_ptr<const DiscretisedDensity<3,float> > input_image_sptr, ForwardProjectorByBin &fwrd_projector, BackProjectorByBin &back_projector, const std::string &name, const bool save_to_file)
+void project(double &time,
+             shared_ptr<ProjDataInMemory> &sino_sptr,
+             shared_ptr<DiscretisedDensity<3,float> > &image_sptr,
+             const shared_ptr<const ProjDataInMemory> input_sino_sptr,
+             const shared_ptr<const DiscretisedDensity<3,float> > input_image_sptr,
+             ForwardProjectorByBin &fwrd_projector,
+             BackProjectorByBin &back_projector,
+             const std::string &name, const bool save_to_file)
 {
     image_sptr.reset(input_image_sptr->clone());
     sino_sptr = MAKE_SHARED<ProjDataInMemory>(*input_sino_sptr);
