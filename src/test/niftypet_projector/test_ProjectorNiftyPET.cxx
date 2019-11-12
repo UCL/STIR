@@ -156,9 +156,12 @@ compare_sinos(bool &everything_ok, const ProjData &proj_data_1, const ProjData &
     // Get number of elements
     unsigned num_elements(0);
     for (int segment_num = min_segment_num; segment_num<= max_segment_num; ++segment_num)
-        num_elements += unsigned(proj_data_1.get_max_axial_pos_num(segment_num) - proj_data_1.get_min_axial_pos_num(segment_num)) + 1;
-    num_elements *= unsigned(proj_data_1.get_max_view_num() - proj_data_1.get_min_view_num()) + 1;
-    num_elements *= unsigned(proj_data_1.get_max_tangential_pos_num() - proj_data_1.get_min_tangential_pos_num()) + 1;
+        num_elements += unsigned(proj_data_1.get_max_axial_pos_num(segment_num) -
+                                 proj_data_1.get_min_axial_pos_num(segment_num)) + 1;
+    num_elements *= unsigned(proj_data_1.get_max_view_num() -
+                             proj_data_1.get_min_view_num()) + 1;
+    num_elements *= unsigned(proj_data_1.get_max_tangential_pos_num() -
+                             proj_data_1.get_min_tangential_pos_num()) + 1;
 
     // Create arrays
     std::vector<float> arr_1(num_elements), arr_2(num_elements);
@@ -189,7 +192,7 @@ void project(double &time, shared_ptr<ProjDataInMemory> &sino_sptr, shared_ptr<D
     // Do the forward projection
     std::cerr << "\nDoing forward projection using " << fwrd_projector.get_registered_name() << "...\n";
     fwrd_projector.set_up(sino_sptr->get_proj_data_info_sptr(), image_sptr);
-    fwrd_projector.set_input(*image_sptr);
+    fwrd_projector.set_input(*input_image_sptr);
     fwrd_projector.forward_project(*sino_sptr);
     timer.stop();
     double time_fwd(timer.value());
@@ -201,9 +204,6 @@ void project(double &time, shared_ptr<ProjDataInMemory> &sino_sptr, shared_ptr<D
     truncate_rim(*image_sptr,17);
 
     timer.start();
-
-    // Set the image to zero
-    image_sptr->fill(0.F);
 
     // Back project
     std::cerr << "\nDoing back projection using " << back_projector.get_registered_name() << "...\n";
@@ -301,7 +301,9 @@ set_up_input_image()
                               CartesianCoordinate3D<float>(2.03125f, 2.08626f, 2.08626f)
                               ));
 
-        _image_sptr->fill(1.f);
+        float val(0.f);
+        for(Array<3,float>::full_iterator iter = _image_sptr->begin_all(); iter != _image_sptr->end_all(); ++iter, ++val)
+            *iter = val;
 
         // Truncate it to a small cylinder
         truncate_rim(*_image_sptr,17);
