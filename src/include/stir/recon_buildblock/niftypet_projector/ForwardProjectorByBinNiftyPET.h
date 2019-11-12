@@ -39,7 +39,9 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup projection
-  \brief Class for NiftyPET's GPU forward projector
+  \brief Class for NiftyPET's GPU forward projector.
+
+Currently only projects all the data in one go
 */
 class ForwardProjectorByBinNiftyPET:
   public RegisteredParsingObject<ForwardProjectorByBinNiftyPET,
