@@ -87,6 +87,7 @@ option(DISABLE_RDF "disable use of GE RDF library" OFF)
 option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
 option(DISABLE_CERN_ROOT "disable use of Cern ROOT libraries" OFF)
 option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # disable by default
+option(DISABLE_NIFTYPET_PROJECTOR "disable use of NiftyPET projector" OFF)
 
 if(NOT DISABLE_ITK)
    # See if we can find a compiled version of ITK (http://www.itk.org/)
@@ -126,16 +127,11 @@ endif()
 option(STIR_PROJECTORS_AS_V3 "Enable STIR version 3 legacy code" OFF)
 
 # NiftyPET projector
-find_library(NIFTYPET_PETPRJ_LIB petprj)
-find_library(NIFTYPET_MMR_AUXE_LIB mmr_auxe)
-set(NIFTYPET_INCLUDE_DIR "" CACHE PATH "Path to NiftyPET include dir. Set this to top level of source code if unsure.")
-if (NIFTYPET_PETPRJ_LIB AND 
-  NIFTYPET_MMR_AUXE_LIB AND
-  NOT "${NIFTYPET_INCLUDE_DIR}" STREQUAL "")
-  option(DISABLE_NIFTYPET_PROJECTOR "disable use of NiftyPET projector" OFF)
-  if (NOT DISABLE_NIFTYPET_PROJECTOR)
-    find_package(CUDA QUIET)
-    if (CUDA_FOUND)  
+if(NOT DISABLE_NIFTYPET_PROJECTOR)
+  find_package(CUDA QUIET)
+  if (CUDA_FOUND)
+    find_package(NIFTYPET)
+    if (NIFTYPET_FOUND)
       set(STIR_WITH_NIFTYPET_PROJECTOR ON)
       set(STIR_NIFTYPET_PROJECTOR_test "test/niftypet_projector")
     endif()

@@ -101,14 +101,12 @@ set(${dir_LIB_SOURCES}
 endif()
 
 if (STIR_WITH_NIFTYPET_PROJECTOR)
-	add_subdirectory(niftypet_projector)
-	set(${dir_LIB_SOURCES}
-		${${dir_LIB_SOURCES}}
-		niftypet_projector/ProjectorByBinNiftyPETHelper
-		niftypet_projector/ForwardProjectorByBinNiftyPET
-		niftypet_projector/BackProjectorByBinNiftyPET
-		niftypet_projector/ProjectorByBinPairUsingNiftyPET
-		)
+  list(APPEND ${dir_LIB_SOURCES}
+    niftypet_projector/ProjectorByBinNiftyPETHelper
+    niftypet_projector/ForwardProjectorByBinNiftyPET
+    niftypet_projector/BackProjectorByBinNiftyPET
+    niftypet_projector/ProjectorByBinPairUsingNiftyPET
+  )
 endif()
 
 
