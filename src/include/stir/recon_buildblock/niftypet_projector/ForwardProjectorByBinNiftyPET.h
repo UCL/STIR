@@ -76,11 +76,7 @@ virtual void set_up(
     const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
     );
 
-  //! Informs on which symmetries the projector handles
-  /*! It should get data related by at least those symmetries.
-   Otherwise, a run-time error will occur (unless the derived
-   class has other behaviour).
-   */
+  //! Symmetries not used, so returns TrivialDataSymmetriesForBins.
   virtual  const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
     /// Set input
