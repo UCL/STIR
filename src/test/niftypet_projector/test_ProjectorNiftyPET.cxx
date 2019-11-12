@@ -79,6 +79,9 @@ protected:
   shared_ptr<ProjDataInMemory> _proj_data_sptr;
 };
 
+// TODO: Use iterators instead of vectors to avoid copying
+// data from image/sinogram to vector and then comparing their
+// iterators.
 static
 Succeeded
 compare_arrays(const std::vector<float> &vec1, const std::vector<float> &vec2)
