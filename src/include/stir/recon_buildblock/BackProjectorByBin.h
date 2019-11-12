@@ -144,8 +144,12 @@ void back_project(const RelatedViewgrams<float>&,
   /// Set data processor to use after back projection
   void set_post_data_processor(shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > post_data_processor_sptr);
 
+  // TODO: Not all projectors are compatible with OpenMP (e.g., NiftyPET)
+  // If you're tackling that problem, uncomment here!
+#if 0
   /// Get whether a projector can be used with openMP
   bool get_openMP_compatible() const { return _openMP_compatible; }
+#endif
 
 protected:
 
@@ -200,7 +204,11 @@ protected:
 	    const int start_tang_pos_num,const int end_tang_pos_num,
 	    const int start_view, const int end_view);
 
+  // TODO: Not all projectors are compatible with OpenMP (e.g., NiftyPET)
+  // If you're tackling that problem, uncomment here!
+#if 0
   bool _openMP_compatible;
+#endif
 
 #ifdef STIR_OPENMP
   //! A vector of back projected images that will be used with openMP. There will be as many images as openMP threads

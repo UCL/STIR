@@ -43,7 +43,7 @@ ForwardProjectorByBinNiftyPET::registered_name =
 ForwardProjectorByBinNiftyPET::ForwardProjectorByBinNiftyPET() :
     _cuda_device(0), _cuda_verbosity(true)
 {
-    _openMP_compatible = false;
+    //_openMP_compatible = false;
     this->_already_set_up = false;
 }
 

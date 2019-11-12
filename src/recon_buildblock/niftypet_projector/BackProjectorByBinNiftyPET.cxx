@@ -43,7 +43,7 @@ BackProjectorByBinNiftyPET::registered_name =
 BackProjectorByBinNiftyPET::BackProjectorByBinNiftyPET() :
     _cuda_device(0), _cuda_verbosity(true)
 {
-    this->_openMP_compatible = false;
+    //this->_openMP_compatible = false;
     this->_already_set_up = false;
 }
 

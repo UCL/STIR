@@ -133,8 +133,12 @@ virtual void set_up(
     /// Set data processor to use before forward projection. MUST BE CALLED BEFORE SET_INPUT.
     void set_pre_data_processor(shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > pre_data_processor_sptr);
 
+    // TODO: Not all projectors are compatible with OpenMP (e.g., NiftyPET)
+    // If you're tackling that problem, uncomment here!
+#if 0
     /// Get whether a projector can be used with openMP
     bool get_openMP_compatible() const { return _openMP_compatible; }
+#endif
 
 protected:
   //! This virtual function has to be implemented by the derived class.
@@ -164,7 +168,11 @@ protected:
 
   shared_ptr<ProjDataInfo> _proj_data_info_sptr;
 
+  // TODO: Not all projectors are compatible with OpenMP (e.g., NiftyPET)
+  // If you're tackling that problem, uncomment here!
+#if 0
   bool _openMP_compatible;
+#endif
 };
 
 END_NAMESPACE_STIR
