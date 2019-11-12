@@ -40,7 +40,10 @@ class DataSymmetriesForViewSegmentNumbers;
   \ingroup projection
   \brief Class for NiftyPET's GPU back projector
 
-Currently only projects all the data in one go.
+Only applicable for mMR data.
+Current limitations:
+ - Projects all of the data in one go
+ - Only debugged for span 11.
 */
 class BackProjectorByBinNiftyPET :
   public RegisteredParsingObject<BackProjectorByBinNiftyPET,

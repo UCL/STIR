@@ -41,7 +41,10 @@ START_NAMESPACE_STIR
   \ingroup projection
   \brief Class for NiftyPET's GPU forward projector.
 
-Currently only projects all the data in one go
+Only applicable for mMR data.
+Current limitations:
+ - Projects all of the data in one go
+ - Only debugged for span 11.
 */
 class ForwardProjectorByBinNiftyPET:
   public RegisteredParsingObject<ForwardProjectorByBinNiftyPET,
