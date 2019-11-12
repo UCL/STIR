@@ -31,6 +31,7 @@
 #include "stir/recon_buildblock/niftypet_projector/ForwardProjectorByBinNiftyPET.h"
 #include "stir/recon_buildblock/niftypet_projector/ProjectorByBinNiftyPETHelper.h"
 #include "stir/RelatedViewgrams.h"
+#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 
 START_NAMESPACE_STIR
 
@@ -69,6 +70,16 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
     check(*this->_proj_data_info_sptr, *_density_sptr);
     _symmetries_sptr.reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_sptr, density_info_sptr));
 
+    // Get span
+    shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+            proj_data_info_cy_no_ar_cor_sptr(
+                dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(
+                    proj_data_info_sptr));
+    if (is_null_ptr(proj_data_info_cy_no_ar_cor_sptr))
+        error("ForwardProjectorByBinNiftyPET: Failed casting to ProjDataInfoCylindricalNoArcCorr");
+    int span = proj_data_info_cy_no_ar_cor_sptr->get_max_ring_difference(0) -
+            proj_data_info_cy_no_ar_cor_sptr->get_min_ring_difference(0) + 1;
+
     // Initialise projected_data_sptr from this->_proj_data_info_sptr
     _projected_data_sptr.reset(
                 new ProjDataInMemory(this->_density_sptr->get_exam_info_sptr(), this->_proj_data_info_sptr));
@@ -81,7 +92,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
     _helper.set_aw2ali_filename("aw2ali.dat"  );
     _helper.set_crs_filename   ( "crss.dat"   );
     _helper.set_cuda_device_id ( _cuda_device );
-    _helper.set_span           ( char(_projected_data_sptr->get_num_segments()) );
+    _helper.set_span           ( static_cast<char>(span) );
     _helper.set_att(0);
     _helper.set_verbose(_cuda_verbosity);
     _helper.set_up();

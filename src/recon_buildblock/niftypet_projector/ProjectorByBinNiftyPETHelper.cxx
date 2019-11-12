@@ -510,8 +510,10 @@ get_vals_for_proj_data_conversion(std::vector<int> &sizes, std::vector<int> &seg
 
     // Make sure they're the same size
     if (np_vec.size() != unsigned(num_proj_data_elems))
-        throw std::runtime_error("ProjectorByBinNiftyPETHelper::get_vals_for_proj_data_conversion "
-                                 "NiftyPET and STIR sinograms are different sizes.");
+        error(boost::format(
+                  "ProjectorByBinNiftyPETHelper::get_vals_for_proj_data_conversion "
+                  "NiftyPET and STIR sinograms are different sizes (%1% for STIR versus %2% for NP")
+              % num_proj_data_elems % np_vec.size());
 }
 
 void get_stir_segment_and_axial_pos_from_niftypet_sino(int &segment, int &axial_pos, const unsigned np_sino, const std::vector<int> &sizes, const std::vector<int> &segment_sequence)
