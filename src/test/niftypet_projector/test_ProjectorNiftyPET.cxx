@@ -249,11 +249,11 @@ set_up_input_sino()
 
         shared_ptr<ProjDataInfo> proj_data_info_sptr(
                     ProjDataInfo::construct_proj_data_info(
-                        scanner_sptr, // good
-                        _span, // good
+                        scanner_sptr,
+                        _span,
                         /* mMR needs maxDelta of */60,
-                        scanner_sptr->get_num_detectors_per_ring()/2, // good
-                        scanner_sptr->get_max_num_non_arccorrected_bins(), // good
+                        scanner_sptr->get_num_detectors_per_ring()/2,
+                        scanner_sptr->get_max_num_non_arccorrected_bins(),
                         /* arc_correction*/false));
 
         // Create ProjData
