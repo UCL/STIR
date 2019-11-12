@@ -166,6 +166,7 @@ protected:
   virtual void set_defaults();
   virtual void initialise_keymap();
 
+private:
   shared_ptr<ProjDataInfo> _proj_data_info_sptr;
 
   // TODO: Not all projectors are compatible with OpenMP (e.g., NiftyPET)

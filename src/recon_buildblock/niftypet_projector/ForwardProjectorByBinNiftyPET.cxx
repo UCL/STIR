@@ -67,7 +67,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
        const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr)
 {
     ForwardProjectorByBin::set_up(proj_data_info_sptr,density_info_sptr);
-    check(*this->_proj_data_info_sptr, *_density_sptr);
+    check(*proj_data_info_sptr, *_density_sptr);
     _symmetries_sptr.reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_sptr, density_info_sptr));
 
     // Get span
@@ -82,7 +82,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
 
     // Initialise projected_data_sptr from this->_proj_data_info_sptr
     _projected_data_sptr.reset(
-                new ProjDataInMemory(this->_density_sptr->get_exam_info_sptr(), this->_proj_data_info_sptr));
+                new ProjDataInMemory(this->_density_sptr->get_exam_info_sptr(), proj_data_info_sptr));
 
     // Set up the niftyPET binary helper
     _helper.set_li2rng_filename("li2rng.dat"  );

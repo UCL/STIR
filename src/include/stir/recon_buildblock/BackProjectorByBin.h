@@ -194,7 +194,7 @@ protected:
   virtual void set_defaults();
   virtual void initialise_keymap();
 
-  protected:
+  private:
   shared_ptr<ProjDataInfo> _proj_data_info_sptr;
 
   void do_segments(DiscretisedDensity<3,float>& image, 
