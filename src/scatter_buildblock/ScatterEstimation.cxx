@@ -177,8 +177,8 @@ initialise_keymap()
                          &this->half_filter_width);
     this->parser.add_key("remove interleaving",
                          &this->remove_interleaving);
-    this->parser.add_key("export 2d projdata",
-                         &this->export_2d_projdata);
+    this->parser.add_key("run in 2d projdata",
+                         &this->run_in_2d_projdata);
 }
 
 ScatterEstimation::
@@ -364,7 +364,7 @@ set_up()
     if (this->run_debug_mode)
     {
         info("ScatterEstimation: Debugging mode is activated.");
-        this->export_2d_projdata = true;
+        this->run_in_2d_projdata = true;
         this->export_scatter_estimates_of_each_iteration = true;
 
         // Create extras folder in this location
@@ -381,7 +381,7 @@ set_up()
 
 #if SPEED_UP_FOR_DEBUG == 0
     // Load InputProjData and calculate the SSRB
-    if(export_2d_projdata)
+    if(run_in_2d_projdata)
     {
         if (this->input_projdata_sptr->get_num_segments() > 1)
         {
@@ -543,7 +543,7 @@ if(is_null_ptr(this->reconstruction_template_sptr))
     if(this->override_scanner_template)
     {
         info("ScatterEstimation: Over-riding the scanner template! (The file and settings set in the simulation par file are discarded)");
-        if (export_2d_projdata)
+        if (run_in_2d_projdata)
         {
             this->scatter_simulation_sptr->set_template_proj_data_info_sptr(this->input_projdata_2d_sptr->get_proj_data_info_sptr());
         }
@@ -678,7 +678,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
 #endif
 
     shared_ptr<ProjData> atten_projdata_2d_sptr;
-    if(export_2d_projdata)
+    if(run_in_2d_projdata)
     {
 #if SPEED_UP_FOR_DEBUG == 0
         info("ScatterEstimation: 3.Calculating the attenuation projection data...");
@@ -689,7 +689,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         {
             info("ScatterEstimation: Running SSRB on attenuation correction coefficients ...");
 
-            if(this->export_2d_projdata)
+            if(this->run_in_2d_projdata)
             {
                 FilePath tmp(this->atten_coeff_filename);
                 std::string out_filename = extras_path.get_path() + tmp.get_filename_no_extension() + "_2d.hs";
@@ -726,7 +726,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     //<- End of Attenuation projdata
 
     // Normalisation ProjData
-    if(export_2d_projdata)
+    if(run_in_2d_projdata)
     {
 #if SPEED_UP_FOR_DEBUG == 0
         if (!this->multiplicative_binnorm_3d_sptr->is_first_trivial()) // This means that we have set a normalisation sinogram.
@@ -796,7 +796,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         this->multiplicative_binnorm_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
     }
 
-    if (export_2d_projdata)
+    if (run_in_2d_projdata)
         multiplicative_binnorm_sptr = multiplicative_binnorm_2d_sptr;
     else
         multiplicative_binnorm_sptr = multiplicative_binnorm_3d_sptr;
@@ -865,7 +865,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     }
     else
     {
-        if (export_2d_projdata)
+        if (run_in_2d_projdata)
         {
             std::string out_filename = extras_path.get_path() + "tmp_background_data" + "_2d.hs";
 
@@ -885,7 +885,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         this->back_projdata_3d_sptr->fill(0.0f);
     }
 
-    if (export_2d_projdata)
+    if (run_in_2d_projdata)
         back_projdata_sptr = this->back_projdata_2d_sptr;
     else
         back_projdata_sptr = this->back_projdata_3d_sptr;
@@ -930,7 +930,7 @@ process_data()
     shared_ptr<ProjData> scaled_est_projdata_sptr;
     shared_ptr<ProjData> data_to_fit_projdata_sptr;
 
-    if(export_2d_projdata)
+    if(run_in_2d_projdata)
     {
         scaled_est_projdata_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                                             this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
@@ -1139,7 +1139,7 @@ process_data()
 
         this->multiplicative_binnorm_sptr->apply(*back_projdata_sptr, start_time, end_time);
 
-        if(export_2d_projdata)
+        if(run_in_2d_projdata)
         {
             data_to_fit_projdata_sptr->fill(*input_projdata_2d_sptr);
             subtract_proj_data(*data_to_fit_projdata_sptr, *this->back_projdata_2d_sptr);
@@ -1481,5 +1481,11 @@ int ScatterEstimation::get_iterations_num() const
     return num_scatter_iterations;
 }
 
+Succeeded
+ScatterEstimation::prepare_projdata(const shared_ptr<ProjData> input,
+                                    shared_ptr<ProjData> output)
+{
+
+}
 
 END_NAMESPACE_STIR

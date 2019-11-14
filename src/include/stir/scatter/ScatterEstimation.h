@@ -282,8 +282,8 @@ private:
     bool remove_interleaving;
     //! Save all scatter simulated sinograms
     bool export_scatter_estimates_of_each_iteration;
-    //! Export SSRB sinograms
-    bool export_2d_projdata;
+    //! Run the process in 2D by SSRB the 3D sinograms
+    bool run_in_2d_projdata;
     //! This bool will allow the ScatterEstimation to override the value of
     //! the initial activity image set in ScatterSimulation par file
     bool override_initial_activity_image;
@@ -316,6 +316,10 @@ private:
     bool use_default_downsampling;
     //!
     unsigned int half_filter_width;
+
+
+    Succeeded prepare_projdata(const shared_ptr<ProjData> input,
+                                        shared_ptr<ProjData> output);
 };
 
 END_NAMESPACE_STIR
