@@ -123,15 +123,10 @@ initialise_keymap()
     this->parser.add_key("tail fitting par filename",
                          &this->tail_mask_par_filename);
     // END MASK
-
-    this->parser.add_key("attenuation projdata filename",
-                         &this->atten_coeff_filename);
-    this->parser.add_key("recompute attenuation projdata",
-                         &this->recompute_atten_projdata);
     this->parser.add_key("background projdata filename",
                          &this->back_projdata_filename);
     this->parser.add_parsing_key("Bin Normalisation type",
-                         &this->normalisation_coeffs_sptr);
+                         &this->multiplicative_binnorm_sptr);
 
     // RECONSTRUCTION RELATED
     this->parser.add_key("reconstruction parameter template file",
@@ -251,23 +246,16 @@ post_processing()
         this->atten_image_sptr =
             read_from_file<DiscretisedDensity<3,float> >(this->atten_image_filename);
 
-    if(this->atten_coeff_filename.size() > 0 && !recompute_atten_projdata)
-    {
-        info("ScatterEstimation: Loading attenuation correction coefficients...");
-        this->atten_coeff_sptr.reset(new BinNormalisationFromProjData(this->atten_coeff_filename));
-    }
-
     if(is_null_ptr(normalisation_coeffs_sptr))
         warning("ScatterEstimation: No normalisation coefficients have been set!!");
 
-    this->multiplicative_binnorm_sptr.reset(new ChainedBinNormalisation(normalisation_coeffs_sptr, atten_coeff_sptr));
     this->multiplicative_binnorm_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
 
 
     if (this->back_projdata_filename.size() > 0)
     {
         info("ScatterEstimation: Loading background projdata...");
-        this->add_projdata_sptr =
+        this->back_projdata_sptr =
                 ProjData::read_from_file(this->back_projdata_filename);
     }
 
@@ -378,6 +366,7 @@ set_up()
         return Succeeded::no;
     }
 
+#if 0
     // Calculate the SSRB
     if (input_projdata_sptr->get_num_segments() > 1)
     {
@@ -402,6 +391,13 @@ set_up()
         input_projdata_2d_sptr = input_projdata_sptr;
     }
 
+#else
+    {
+        std::string tmp_input2D = "./extras/nema_proj_f1g1d0b0.hs_2d.hs";
+        this->input_projdata_2d_sptr =
+                ProjData::read_from_file(tmp_input2D);
+    }
+#endif
 info("ScatterEstimation: Setting up reconstruction method ...");
 
 if(is_null_ptr(this->reconstruction_template_sptr))
@@ -591,83 +587,40 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     else
         iterative_object->set_input_data(this->input_projdata_sptr);
 
+    bool do_chains = false;
+
     const double start_time = this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_start_time();
     const double end_time =this->input_projdata_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_end_time();
 
 
-    //    //
-    //    // Multiplicative projdata
-    //    //
+    //
+    // Multiplicative projdata
+    //
 
-//#if SPEED_UP_FOR_DEBUG == 0
-//    // If second is trivial attenuation proj_data have not been set, yet
-
-//    if (this->multiplicative_binnorm_sptr->is_second_trivial())
-//    {
-
-//        if(recompute_atten_projdata)// In that case use the attenuation image to create it
-//        {
-//            shared_ptr<BinNormalisation> tmp_attenuation_correction_sptr(new TrivialBinNormalisation());
-//            shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
-//            shared_ptr<ForwardProjectorByBin> forw_projector_sptr(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
-
-//            {
-//                warning("ScatterEstimation: No attenuation projdata have been initialised."
-//                        "BinNormalisationFromAttenuationImage will be used. It is slower in general.");
-
-//                tmp_attenuation_correction_sptr.reset(new BinNormalisationFromAttenuationImage(this->atten_image_sptr,
-//                                                                                               forw_projector_sptr));
-//            }
-
-//            {
-//                shared_ptr<ProjData> atten_projdata_3d_sptr;
-
-//                if (this->atten_coeff_filename.size() > 0 )
-//                    atten_projdata_3d_sptr.reset(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
-//                                                                       this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-//                                                                       this->atten_coeff_filename,
-//                                                                       std::ios::in | std::ios::out | std::ios::trunc));
-//                else // Maybe throw an error??
-//                    atten_projdata_3d_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
-//                                                                      this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone()));
-
-//                atten_projdata_3d_sptr->fill(1.f);
-
-//                if (tmp_attenuation_correction_sptr->set_up(atten_projdata_3d_sptr->get_proj_data_info_ptr()->create_shared_clone())
-//                        != Succeeded::yes)
-//                {
-
-//                    return Succeeded::no;
-//                }
-
-//                shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(forw_projector_sptr->get_symmetries_used()->clone());
-//                info("ScatterEstimation: Calculating the attenuation projection data...");
-//                tmp_attenuation_correction_sptr->apply(*atten_projdata_3d_sptr, start_time, end_time, symmetries_sptr);
-//                this->atten_coeff_3d_sptr.reset(new BinNormalisationFromProjData(this->atten_coeff_filename));
-//                atten_coeff_3d_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
-
-//                this->multiplicative_binnorm_3d_sptr.reset(new ChainedBinNormalisation(normalisation_coeffs_3d_sptr, atten_coeff_3d_sptr));
-//                this->multiplicative_binnorm_3d_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
-//            }
-//        }
-//        else { // Normally it should never get in here.
-
-//            this->atten_coeff_sptr.reset(new BinNormalisationFromProjData(this->atten_coeff_filename));
-//            atten_coeff_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
-//            this->multiplicative_binnorm_sptr.reset(new ChainedBinNormalisation(normalisation_coeffs_sptr, atten_coeff_sptr));
-//            this->multiplicative_binnorm_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
-//        }
-//    }
-
-//#endif
-
+    shared_ptr<ProjData> tmp_atten_projdata_sptr;
     shared_ptr<ProjData> atten_projdata_2d_sptr;
 
+    // Check if we have Chained Normalisation.
+    // // If it is then we assume that we have only attenuation.
 
-#if SPEED_UP_FOR_DEBUG == 0
+    const ChainedBinNormalisation* tmp_chain_multiplicative_binnorm_sptr =
+            dynamic_cast<const ChainedBinNormalisation*>(this->multiplicative_binnorm_sptr.get());
+
+    if (!is_null_ptr(tmp_chain_multiplicative_binnorm_sptr ))
+    {
+        do_chains = true;
+        tmp_atten_projdata_sptr =
+                dynamic_cast<BinNormalisationFromProjData*> (tmp_chain_multiplicative_binnorm_sptr->get_second_norm().get())->get_norm_proj_data_sptr();
+    }
+    else
+    {
+        do_chains = false;
+        tmp_atten_projdata_sptr =
+                dynamic_cast<BinNormalisationFromProjData*> (this->multiplicative_binnorm_sptr.get())->get_norm_proj_data_sptr();
+    }
+
+#if 1
     info("ScatterEstimation: 3.Calculating the attenuation projection data...");
-    shared_ptr<ProjData> tmp_atten_projdata_sptr =
-            dynamic_cast<BinNormalisationFromProjData*> (this->multiplicative_binnorm_sptr->get_second_norm().get())->get_norm_proj_data_sptr();
 
     if( tmp_atten_projdata_sptr->get_num_segments() > 1)
     {
@@ -696,82 +649,81 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
 
 #endif
 
-    atten_coeff_2d_sptr.reset(new BinNormalisationFromProjData(atten_projdata_2d_sptr));
-    atten_coeff_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
-    //<- End of Attenuation projdata
-
-    // Normalisation ProjData
-
-
-    if(!this->multiplicative_binnorm_sptr->is_first_trivial())
+    if(!do_chains)
     {
-        // Check if 3D
-        shared_ptr<ProjData> tmp_norm_projdata_sptr =
-                dynamic_cast<BinNormalisationFromProjData*> (this->multiplicative_binnorm_sptr->get_first_norm().get())->get_norm_proj_data_sptr();
-
-        if ( tmp_norm_projdata_sptr->get_num_segments() > 1) // This means that we have set a normalisation sinogram.
+        multiplicative_binnorm_2d_sptr.reset(new BinNormalisationFromProjData(atten_projdata_2d_sptr));
+        multiplicative_binnorm_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+    }
+    else
+    {
+        if(!tmp_chain_multiplicative_binnorm_sptr->is_first_trivial()) // Check that we have actually something in here
         {
-            // N.E.: From K.T.: Bin normalisation doesn't know about SSRB.
-            // we need to get norm2d=1/SSRB(1/norm3d))
+            // Check if 3D
+            shared_ptr<ProjData> tmp_norm_projdata_sptr =
+                    dynamic_cast<BinNormalisationFromProjData*> (tmp_chain_multiplicative_binnorm_sptr->get_first_norm().get())->get_norm_proj_data_sptr();
 
-            info("ScatterEstimation: Constructing 2D normalisation coefficients ...");
+            shared_ptr<BinNormalisation> norm_coeff_2d_sptr;
 
-            std::string out_filename = extras_path.get_path() + "tmp_inverted_normdata.hs";
-            shared_ptr<ProjData> inv_projdata_3d_sptr(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                            this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-                                                                            out_filename,
-                                                                            std::ios::in | std::ios::out | std::ios::trunc));
-            inv_projdata_3d_sptr->fill(1.f);
+            if ( tmp_norm_projdata_sptr->get_num_segments() > 1) // This means that we have set a normalisation sinogram.
+            {
+                // N.E.: From K.T.: Bin normalisation doesn't know about SSRB.
+                // we need to get norm2d=1/SSRB(1/norm3d))
 
-            out_filename = extras_path.get_path() + "tmp_projdata_2d.hs";
-            shared_ptr<ProjData> tmp_projdata_2d_sptr(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                            this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-                                                                            out_filename,
-                                                                            std::ios::in | std::ios::out | std::ios::trunc));
-            tmp_projdata_2d_sptr->fill(1.f);
+                info("ScatterEstimation: Constructing 2D normalisation coefficients ...");
 
-            out_filename = extras_path.get_path() + "tmp_normdata_2d.hs";
-            shared_ptr<ProjData> norm_projdata_2d_sptr(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                             this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-                                                                             out_filename,
-                                                                             std::ios::in | std::ios::out | std::ios::trunc));
-            norm_projdata_2d_sptr->fill(1.f);
+                std::string out_filename = extras_path.get_path() + "tmp_inverted_normdata.hs";
+                shared_ptr<ProjData> inv_projdata_3d_sptr(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                                this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
+                                                                                out_filename,
+                                                                                std::ios::in | std::ios::out | std::ios::trunc));
+                inv_projdata_3d_sptr->fill(1.f);
 
-            // Essentially since inv_projData_sptr is 1s then this is an inversion.
-            // inv_projdata_sptr = 1/norm3d
-            this->multiplicative_binnorm_3d_sptr->undo_only_first(*inv_projdata_3d_sptr, start_time, end_time);
+                out_filename = extras_path.get_path() + "tmp_projdata_2d.hs";
+                shared_ptr<ProjData> tmp_projdata_2d_sptr(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                                this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
+                                                                                out_filename,
+                                                                                std::ios::in | std::ios::out | std::ios::trunc));
+                tmp_projdata_2d_sptr->fill(1.f);
 
-            info("ScatterEstimation: Performing SSRB on normalisation coefficients ...");
+                out_filename = extras_path.get_path() + "tmp_normdata_2d.hs";
+                shared_ptr<ProjData> norm_projdata_2d_sptr(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                                 this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
+                                                                                 out_filename,
+                                                                                 std::ios::in | std::ios::out | std::ios::trunc));
+                norm_projdata_2d_sptr->fill(1.f);
 
-            SSRB(*tmp_projdata_2d_sptr,
-                 *inv_projdata_3d_sptr,false);
+                // Essentially since inv_projData_sptr is 1s then this is an inversion.
+                // inv_projdata_sptr = 1/norm3d
+                tmp_chain_multiplicative_binnorm_sptr->undo_only_first(*inv_projdata_3d_sptr, start_time, end_time);
 
-            // Crucial: Avoid divisions by zero!!
-            // This should be resolved after https://github.com/UCL/STIR/issues/348
-            pow_times_add min_threshold (0.0f, 1.0f, 1.0f,  1E-20f, NumericInfo<float>().max_value());
-//            pow_times_add add_scalar (1e-4f, 1.0f, 1.0f, NumericInfo<float>().min_value(), NumericInfo<float>().max_value());
+                info("ScatterEstimation: Performing SSRB on normalisation coefficients ...");
 
-            apply_to_proj_data(*tmp_projdata_2d_sptr, min_threshold);
-//            apply_to_proj_data(*tmp_projdata_2d_sptr, add_scalar);
+                SSRB(*tmp_projdata_2d_sptr,
+                     *inv_projdata_3d_sptr,false);
 
-            norm_coeff_2d_sptr.reset(new BinNormalisationFromProjData(tmp_projdata_2d_sptr));
-            norm_coeff_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
-            norm_coeff_2d_sptr->undo(*norm_projdata_2d_sptr, start_time, end_time);
+                // Crucial: Avoid divisions by zero!!
+                // This should be resolved after https://github.com/UCL/STIR/issues/348
+                pow_times_add min_threshold (0.0f, 1.0f, 1.0f,  1E-20f, NumericInfo<float>().max_value());
+                pow_times_add invert (0.0f, 1.0f, -1.0f, NumericInfo<float>().min_value(), NumericInfo<float>().max_value());
+                apply_to_proj_data(*tmp_projdata_2d_sptr, min_threshold);
+                apply_to_proj_data(*tmp_projdata_2d_sptr, invert);
 
-            norm_coeff_2d_sptr.reset(new BinNormalisationFromProjData(norm_projdata_2d_sptr));
-            norm_coeff_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
-        }
-        else
-        {
-            norm_coeff_2d_sptr.reset(new BinNormalisationFromProjData(tmp_norm_projdata_sptr));
-            norm_coeff_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+                norm_coeff_2d_sptr.reset(new BinNormalisationFromProjData(tmp_projdata_2d_sptr));
+                norm_coeff_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+            }
+            else
+            {
+                norm_coeff_2d_sptr.reset(new BinNormalisationFromProjData(tmp_norm_projdata_sptr));
+                norm_coeff_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+            }
+
+            shared_ptr<BinNormalisationFromProjData>atten_coeff_2d_sptr(new BinNormalisationFromProjData(atten_projdata_2d_sptr));
+            this->multiplicative_binnorm_2d_sptr.reset(
+                        new ChainedBinNormalisation(norm_coeff_2d_sptr, atten_coeff_2d_sptr));
+            this->multiplicative_binnorm_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
         }
 
     }
-
-    this->multiplicative_binnorm_2d_sptr.reset(
-                new ChainedBinNormalisation(norm_coeff_2d_sptr, atten_coeff_2d_sptr));
-    this->multiplicative_binnorm_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
 
     if (run_in_2d_projdata)
         iterative_object->get_objective_function_sptr()->set_normalisation_sptr(multiplicative_binnorm_2d_sptr);
@@ -781,62 +733,54 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     info("ScatterEstimation: Done on normalisation coefficients.");
 
     //
-    // Set additive (background) projdata
+    // Set backgroud (randoms) projdata
     //
 
-    if (!is_null_ptr(this->add_projdata_sptr))
+    if (!is_null_ptr(this->back_projdata_sptr))
     {
 
-        if( add_projdata_sptr->get_num_segments() > 1)
+        if( back_projdata_sptr->get_num_segments() > 1)
         {
-
-            add_projdata_3d_sptr = add_projdata_sptr;
             info("ScatterEstimation: Running SSRB on the background data ...");
 
             FilePath tmp(this->back_projdata_filename);
             std::string out_filename = extras_path.get_path() + tmp.get_filename_no_extension() + "_2d.hs";
 
-            this->add_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+            this->back_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                                                    this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
                                                                    out_filename,
                                                                    std::ios::in | std::ios::out | std::ios::trunc));
-            SSRB(*this->add_projdata_2d_sptr,
-                 *this->add_projdata_3d_sptr, false);
-            {
-                std::string out_filename = extras_path.get_path() + "tmp_background_data.hs";
+            SSRB(*this->back_projdata_2d_sptr,
+                 *this->back_projdata_sptr, false);
+//            {
+//                std::string out_filename = extras_path.get_path() + "tmp_background_data.hs";
 
-                this->back_projdata_3d_sptr.reset(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                        this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-                                                                        out_filename,
-                                                                        std::ios::in | std::ios::out | std::ios::trunc));
+//                this->back_projdata_3d_sptr.reset(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
+//                                                                        this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
+//                                                                        out_filename,
+//                                                                        std::ios::in | std::ios::out | std::ios::trunc));
 
-                this->back_projdata_3d_sptr->fill(*this->add_projdata_3d_sptr);
-            }
-            {
-                std::string out_filename = extras_path.get_path() + "tmp_background_data" + "_2d.hs";
+//                this->back_projdata_3d_sptr->fill(*this->add_projdata_3d_sptr);
+//            }
+//            {
+//                std::string out_filename = extras_path.get_path() + "tmp_background_data" + "_2d.hs";
 
-                this->back_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                                                                        this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-                                                                        out_filename,
-                                                                        std::ios::in | std::ios::out | std::ios::trunc));
-                this->back_projdata_2d_sptr->fill(*this->add_projdata_2d_sptr);
-                this->multiplicative_binnorm_2d_sptr->apply(*this->back_projdata_2d_sptr, start_time, end_time);
-            }
+//                this->back_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+//                                                                        this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
+//                                                                        out_filename,
+//                                                                        std::ios::in | std::ios::out | std::ios::trunc));
+//                this->back_projdata_2d_sptr->fill(*this->add_projdata_2d_sptr);
+//                this->multiplicative_binnorm_2d_sptr->apply(*this->back_projdata_2d_sptr, start_time, end_time);
+//            }
 
         }
         else
         {
-            this->add_projdata_2d_sptr = add_projdata_sptr;
+            this->back_projdata_2d_sptr = back_projdata_sptr;
         }
 
-        // Add the additive component to the output sinogram
-        //                iterative_object->get_objective_function_sptr()->set_additive_proj_data_sptr(this->back_projdata_2d_sptr);
-        //this->back_projdata_2d_sptr->fill(*this->add_projdata_2d_sptr);
-//        back_projdata_2d_sptr->fill(*add_projdata_2d_sptr);
-        //this->multiplicative_binnorm_2d_sptr->apply(*this->back_projdata_2d_sptr, start_time, end_time);
-
     }
-    else
+    else // We will need a background for the scatter
     {
         if (run_in_2d_projdata)
         {
@@ -848,22 +792,38 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
                                                                     std::ios::in | std::ios::out | std::ios::trunc));
             this->back_projdata_2d_sptr->fill(0.0f);
         }
+        else
+        {
+            std::string out_filename = extras_path.get_path() + "tmp_background_data.hs";
 
-        std::string out_filename = extras_path.get_path() + "tmp_background_data.hs";
-
-        this->back_projdata_3d_sptr.reset(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-                                                                out_filename,
-                                                                std::ios::in | std::ios::out | std::ios::trunc));
-        this->back_projdata_3d_sptr->fill(0.0f);
+            this->back_projdata_sptr.reset(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                    this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
+                                                                    out_filename,
+                                                                    std::ios::in | std::ios::out | std::ios::trunc));
+            this->back_projdata_sptr->fill(0.0f);
+        }
     }
 
-    if (run_in_2d_projdata)
-        back_projdata_sptr = this->back_projdata_2d_sptr;
-    else
-        back_projdata_sptr = this->back_projdata_3d_sptr;
 
-    iterative_object->get_objective_function_sptr()->set_additive_proj_data_sptr(this->back_projdata_sptr);
+
+    if (run_in_2d_projdata)
+    {
+        // Normalise in order to get the additive component
+        add_projdata_2d_sptr->fill(*back_projdata_2d_sptr);
+        this->multiplicative_binnorm_2d_sptr->apply(*this->add_projdata_2d_sptr, start_time, end_time);
+
+        iterative_object->get_objective_function_sptr()->set_additive_proj_data_sptr(this->add_projdata_2d_sptr);
+    }
+    else
+    {
+        // Normalise in order to get the additive component
+        add_projdata_sptr->fill(*back_projdata_sptr);
+        this->multiplicative_binnorm_sptr->apply(*this->add_projdata_sptr, start_time, end_time);
+
+        iterative_object->get_objective_function_sptr()->set_additive_proj_data_sptr(this->add_projdata_sptr);
+    }
+
+
 
     return Succeeded::yes;
 }
