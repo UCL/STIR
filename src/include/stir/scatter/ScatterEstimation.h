@@ -207,8 +207,6 @@ protected:
     shared_ptr<ProjData> input_projdata_sptr;
     //! The 2D projdata are used for the scatter estimation.
     shared_ptr<ProjData> input_projdata_2d_sptr;
-    //! Original additive projdata
-    shared_ptr<ProjData> add_projdata_3d_sptr;
     //! Additive projection data after SSRB -- Randoms
     shared_ptr<ProjData> add_projdata_2d_sptr;
 
@@ -217,8 +215,6 @@ protected:
     shared_ptr<ProjData> back_projdata_2d_sptr;
     //! Initially this points to the un-normalised randoms.
     shared_ptr<ProjData> back_projdata_sptr;
-
-    shared_ptr<ProjData> back_projdata_3d_sptr;
     //! Filename of mask image
     std::string mask_image_filename;
     //! Postfilter parameter file to be used in mask calculation
@@ -300,8 +296,6 @@ private:
     FilePath extras_path;
 
     shared_ptr<PostFiltering <DiscretisedDensity<3,float> > > filter_sptr;
-    //! Normalisation factors.
-    shared_ptr<BinNormalisation> normalisation_coeffs_sptr;
     //! Default value = 100
     float max_scale_value;
     //! Default value = 0.4

@@ -1,0 +1,15 @@
+correct_projdata Parameters := 
+
+  input file := nema_proj_f1g1d0b0.hs
+
+  output filename := 20170809_NEMA_UCL.n.hdr.STIR
+  ; use data (1) or set to one (0) := 
+
+  ; apply (1) or undo (0) correction := 
+ 
+Bin Normalisation type := from ecat8
+    Bin Normalisation From ecat8 :=
+    normalisation filename:= 20170809_NEMA_UCL.n.hdr
+End Bin Normalisation From ecat8:=
+
+END:= 
