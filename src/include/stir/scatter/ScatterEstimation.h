@@ -196,20 +196,10 @@ protected:
     shared_ptr<DiscretisedDensity < 3, float > > atten_image_sptr;
     //! ((1/SSRB(1/norm3D)) * SSRB(atten)). Through out the code we set as first the norm
     //! and second the atten.
-    shared_ptr<ChainedBinNormalisation>  multiplicative_binnorm_2d_sptr;
+    shared_ptr<BinNormalisation>  multiplicative_binnorm_2d_sptr;
     //! (norm * atten) in 3D. Through out the code we set as first the norm
     //! and second the atten.
-    shared_ptr<ChainedBinNormalisation>  multiplicative_binnorm_3d_sptr;
-
-    shared_ptr<ChainedBinNormalisation>  multiplicative_binnorm_sptr;
-
-    shared_ptr<BinNormalisation> atten_coeff_2d_sptr;
-
-    shared_ptr<BinNormalisation> norm_coeff_2d_sptr;
-
-    shared_ptr<BinNormalisation> norm_coeff_sptr;
-
-    shared_ptr<BinNormalisation> atten_coeff_sptr;
+    shared_ptr<BinNormalisation>  multiplicative_binnorm_sptr;
     //! Mask proj_data
     shared_ptr<ProjData> mask_projdata_sptr;
     //! The full 3D projdata are used for the calculation of the 2D
@@ -225,7 +215,7 @@ protected:
     shared_ptr<ProjData> add_projdata_sptr;
     //! (Additive + Scatter Estimate) * Mult in 2D
     shared_ptr<ProjData> back_projdata_2d_sptr;
-
+    //! Initially this points to the un-normalised randoms.
     shared_ptr<ProjData> back_projdata_sptr;
 
     shared_ptr<ProjData> back_projdata_3d_sptr;
