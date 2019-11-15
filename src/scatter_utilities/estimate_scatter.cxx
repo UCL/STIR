@@ -88,7 +88,7 @@ static void print_usage_and_exit()
                ";Background data\n"
                "background projdata filename := \n"
                "; export SSRB sinograms\n"
-               "; export 2d projdata := \n"
+               "; run in 2d projdata := \n"
 
                "; ScatterSimulation Stuff \n"
                "scatter simulation parameter file :=\n"

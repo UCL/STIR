@@ -203,9 +203,13 @@ protected:
 
     shared_ptr<ChainedBinNormalisation>  multiplicative_binnorm_sptr;
 
+    shared_ptr<BinNormalisation> atten_coeff_2d_sptr;
+
+    shared_ptr<BinNormalisation> norm_coeff_2d_sptr;
+
     shared_ptr<BinNormalisation> norm_coeff_sptr;
 
-    shared_ptr<BinNormalisation> atten_coeff_3d_sptr;
+    shared_ptr<BinNormalisation> atten_coeff_sptr;
     //! Mask proj_data
     shared_ptr<ProjData> mask_projdata_sptr;
     //! The full 3D projdata are used for the calculation of the 2D
@@ -307,7 +311,7 @@ private:
 
     shared_ptr<PostFiltering <DiscretisedDensity<3,float> > > filter_sptr;
     //! Normalisation factors.
-    shared_ptr<BinNormalisation> normalisation_coeffs_3d_sptr;
+    shared_ptr<BinNormalisation> normalisation_coeffs_sptr;
     //! Default value = 100
     float max_scale_value;
     //! Default value = 0.4
