@@ -395,7 +395,14 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
 
       const double scatter_ratio =
         scatter_estimate(det_num_A, det_num_B);
-             
+
+#if defined STIR_OPENMP 
+#  if _OPENMP >= 201107
+#    pragma omp atomic write
+#  else
+#    pragma omp critical(ScatterSimulationByBin_process_data_for_view_segment_num)
+#  endif
+#endif
       viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
         static_cast<float>(scatter_ratio);
 
