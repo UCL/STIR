@@ -70,7 +70,7 @@ run in 2d projdata := 1
 scatter simulation parameters file := ./par_files/scatter_simulation.par 
 use default downsampling in scatter simulation := 1
 
-; Over-ride the values set in the scatter simulation parameteres file
+; Over-ride the values set in the scatter simulation parameter file
 override scanner template := 1
 override initial activity image := 1
 override density image := 1
