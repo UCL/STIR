@@ -20,7 +20,7 @@
   \file
   \ingroup test
 
-  \brief Test program for ScatterSimulation
+  \brief Test program for stir::ScatterSimulation
 
   \author Nikos Efthimiou
 
