@@ -60,7 +60,7 @@ mask image times scalar := 100002
 mask image postfilter filename := ./par_files/postfilter_Gaussian.par
 ;End of Mask
 
-;Parameter file for the tail fitting of the mask image.
+;Parameter file for the tail fitting of the scatter data (within the mask)
 tail fitting par filename := ./par_files/tail_fitting.par
 
 ; Run simulation and reconstruction in 2D and export SSRB sinograms
