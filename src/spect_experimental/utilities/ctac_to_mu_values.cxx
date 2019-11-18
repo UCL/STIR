@@ -19,7 +19,7 @@
 /*!
   \file
   \ingroup utilities
-  \brief Produces an image of mu-values from a CTAC.
+  \brief Produces an image of mu-values from a CT/CTAC.
   \author Benjamin A. Thomas
 
   \par Usage:
@@ -64,7 +64,7 @@ Succeeded apply_bilinear_scaling_to_HU(
   const float a2 = transform["a2"];
   const float b2 = transform["b2"];
 
-  std::cout << transform.dump(4);
+  //std::cout << transform.dump(4);
 
   while( in_iter != input_image_sptr->end_all_const())
   {
@@ -91,8 +91,7 @@ int main(int argc, char * argv[])
   const char * manufacturer_name = 0;
   const char * keV_str = 0;
 
-  const char * const usage = "ctac_to_mu_values -o output_filename -i input_directory \
-                             j slope_filename -m manufacturer_name -k target_energy\n";
+  const char * const usage = "ctac_to_mu_values -o output_filename -i input_dicom_slice -j slope_filename -m manufacturer_name -k target_energy\n";
   opterr = 0;
   {
     char c;
@@ -148,7 +147,7 @@ int main(int argc, char * argv[])
   for (std::string::size_type i=0; i<manufacturer.length(); ++i)
     manufacturer[i] = std::toupper(manufacturer[i],loc);
 
-  stir::info(boost::format("Manufacturer: '%1'") % manufacturer);
+  stir::info(boost::format("Manufacturer: '%s'") % manufacturer);
 
   //Get desired keV as integer value
   int keV;
@@ -156,6 +155,8 @@ int main(int argc, char * argv[])
   std::stringstream ss;
   ss << keV_str;
   ss >> keV;
+
+  stir::info(boost::format("target keV: '%i'") % keV);
 
   //Extract appropriate chunk of JSON file for given manufacturer.
   nlohmann::json target = slope_json["scale"][manufacturer]["transform"];
@@ -176,7 +177,7 @@ int main(int argc, char * argv[])
 
   //Extract transform for specific keV.
   nlohmann::json j = target[location];
-  std::cout << j.dump(4);
+  //std::cout << j.dump(4);
 
   //Read DICOM data
   stir::info(boost::format("ctac_to_mu_values: opening file %1%") % input_filename);
