@@ -45,7 +45,7 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup ImageProcessor  
-  \brief A class in the ImageProcessor hierarchy that implements Metz 
+  \brief A class in the DataProcessor hierarchy that implements Metz
   filtering (which includes Gaussian filtering).
   
   As it is derived from RegisteredParsingObject, it implements all the 

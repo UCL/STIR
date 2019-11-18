@@ -92,9 +92,11 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
       
       num_planes_per_axial_pos[segment_num] = round(num_planes_per_axial_pos_float);
       
-      if (fabs(num_planes_per_axial_pos_float - num_planes_per_axial_pos[segment_num]) > 1.E-5)
-        error("DataSymmetriesForBins_PET_CartesianGrid can currently only support z-grid spacing "
-	      "equal to the axial sampling in the projection data divided by an integer. Sorry\n");
+      if (fabs(num_planes_per_axial_pos_float - num_planes_per_axial_pos[segment_num]) > 1.E-2)
+          error(boost::format("DataSymmetriesForBins_PET_CartesianGrid can currently only support z-grid spacing "
+                              "equal to the sinogram spacing of the scanner divided by an integer. Sorry. "
+                              "(Image z-spacing is %1% and axial sinogram spacing is %2% at segment %3%")
+                % image_plane_spacing % proj_data_info_cyl_ptr->get_axial_sampling(segment_num) % segment_num);
       
     }  
     

@@ -91,12 +91,14 @@ option(BUILD_SWIG_MATLAB
 mark_as_advanced(BUILD_SWIG_OCTAVE)
 
 if (BUILD_SWIG_MATLAB)
+  # require 3.3 for descent FindMatlab.cmake
+  cmake_minimum_required(VERSION 3.3.0)
   set(CMAKE_POSITION_INDEPENDENT_CODE True)
-  FIND_PACKAGE(MATLAB REQUIRED)
-  # Add matlab compiler flags to everything
-  # TODO this is probably not necessary anymore with CMAKE_POSITION_INDEPENDENT_CODE set to true
-  add_definitions(${MATLAB_CXXFLAGS})
-
+  message(STATUS "Trying to find Matlab. This might take a while. If this fails, set Matlab_ROOT_DIR.")
+  FIND_PACKAGE(Matlab COMPONENTS MX_LIBRARY REQUIRED)
+  matlab_get_mex_suffix("${Matlab_ROOT_DIR}" Matlab_MEX_EXT)
+  message(STATUS "Found Matlab_LIBRARIES: ${Matlab_LIBRARIES}")
+  message(STATUS "Found Matlab_INCLUDE_DIRS: ${Matlab_INCLUDE_DIRS}")
 endif()
 
 if (BUILD_SWIG_PYTHON)
@@ -142,11 +144,55 @@ if (STIR_MPI)
 endif()
 
 if(STIR_OPENMP)
+
+  if(APPLE)
+    if(NOT DEFINED OPENMP_INCLUDES OR NOT DEFINED OPENMP_LIBRARIES)
+      set(OPENMP_INCLUDES "OPENMP_INCLUDES-NOTFOUND" CACHE PATH "Need to set OpenMP include dir on OSX")
+      set(OPENMP_LIBRARIES "OPENMP_LIBRARIES-NOTFOUND" CACHE PATH "Need to set OpenMP lib dir on OSX")
+    endif()
+    if(NOT EXISTS ${OPENMP_INCLUDES} OR NOT EXISTS ${OPENMP_LIBRARIES})
+      message(FATAL_ERROR "Need to set OPENMP_INCLUDES and OPENMP_LIBRARIES on OSX.")
+    endif()
+    if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+      set(OpenMP_C "${CMAKE_C_COMPILER}")
+      set(OpenMP_C_FLAGS "-fopenmp=libomp -Wno-unused-command-line-argument")
+      set(OpenMP_C_LIB_NAMES "libomp" "libgomp" "libiomp5")
+      set(OpenMP_libomp_LIBRARY ${OpenMP_C_LIB_NAMES})
+      set(OpenMP_libgomp_LIBRARY ${OpenMP_C_LIB_NAMES})
+      set(OpenMP_libiomp5_LIBRARY ${OpenMP_C_LIB_NAMES})
+    endif()
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      set(OpenMP_CXX "${CMAKE_CXX_COMPILER}")
+      set(OpenMP_CXX_FLAGS "-fopenmp=libomp -Wno-unused-command-line-argument")
+      set(OpenMP_CXX_LIB_NAMES "libomp" "libgomp" "libiomp5")
+      set(OpenMP_libomp_LIBRARY ${OpenMP_CXX_LIB_NAMES})
+      set(OpenMP_libgomp_LIBRARY ${OpenMP_CXX_LIB_NAMES})
+      set(OpenMP_libiomp5_LIBRARY ${OpenMP_CXX_LIB_NAMES})
+    endif()
+  endif()
+
   find_package(OpenMP REQUIRED)  
+
   add_definitions(${OpenMP_CXX_FLAGS})
-  # need to explicitly set his. Definitely for gcc, hopefully also for other systems.
-  # See https://gitlab.kitware.com/cmake/cmake/issues/15392
-  set (OpenMP_EXE_LINKER_FLAGS ${OpenMP_CXX_FLAGS})
+  
+  if (APPLE)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+    set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_SHARED_LINKER_FLAGS}")
+    set (CMAKE_STATIC_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_STATIC_LINKER_FLAGS}")   
+    include_directories("${OPENMP_INCLUDES}")
+    link_directories("${OPENMP_LIBRARIES}")
+  else()
+    if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.9.0") 
+      set (OpenMP_EXE_LINKER_FLAGS OpenMP::OpenMP_CXX)
+    else()
+      message(WARNING "Your CMake version is old. OpenMP linking flags  might be incorrect.")
+      # need to explicitly set this. Definitely for gcc, hopefully also for other systems.
+      # See https://gitlab.kitware.com/cmake/cmake/issues/15392
+      set (OpenMP_EXE_LINKER_FLAGS ${OpenMP_CXX_FLAGS})
+    endif()
+  endif()
 endif()
 
 #### Flags for compatibility between different systems

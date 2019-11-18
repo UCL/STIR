@@ -366,6 +366,9 @@ compute_sub_gradient_without_penalty(TargetT& gradient,
                                      const TargetT &current_estimate, 
                                      const int subset_num)
 {
+  if (subset_num<0 || subset_num>=this->get_num_subsets())
+    error("compute_sub_gradient_without_penalty subset_num out-of-range error");
+
   this->
     compute_sub_gradient_without_penalty_plus_sensitivity(gradient, 
                                                           current_estimate,

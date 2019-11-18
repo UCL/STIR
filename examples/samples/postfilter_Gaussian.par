@@ -1,0 +1,17 @@
+PostFiltering parameters :=
+  Postfilter type :=  Separable Gaussian
+Separable Gaussian Filter Parameters :=
+x-dir filter FWHM (in mm):= 6
+y-dir filter FWHM (in mm):= 6
+z-dir filter FWHM (in mm):= 6
+
+; optionally restrict kernel sizes
+; x-dir maximum kernel size := 129
+; y-dir maximum kernel size := 129
+; z-dir maximum kernel size := 31
+
+; normalise filter to 1 or not (default is to normalise)
+Normalise filter to 1 := 1
+
+END Separable Gaussian Filter Parameters :=
+End PostFiltering Parameters:=

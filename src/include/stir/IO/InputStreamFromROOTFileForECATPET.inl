@@ -21,14 +21,14 @@ int
 InputStreamFromROOTFileForECATPET::
 get_num_rings() const
 {
-    return this->crystal_repeater_z;
+   return this->block_repeater_z * this->crystal_repeater_z;
 }
 
 int
 InputStreamFromROOTFileForECATPET::
 get_num_dets_per_ring() const
 {
-    return this->block_repeater * this->crystal_repeater_y;
+    return this->block_repeater_y * this->crystal_repeater_y;
 }
 
 
@@ -36,14 +36,14 @@ int
 InputStreamFromROOTFileForECATPET::
 get_num_axial_blocks_per_bucket_v() const
 {
-    return 1;
+    return this->block_repeater_z;
 }
 
 int
 InputStreamFromROOTFileForECATPET::
 get_num_transaxial_blocks_per_bucket_v() const
 {
-    return this->block_repeater;
+    return this->block_repeater_y;
 }
 
 int
@@ -93,9 +93,15 @@ InputStreamFromROOTFileForECATPET::set_crystal_repeater_z(int val)
 }
 
 void
-InputStreamFromROOTFileForECATPET::set_block_repeater(int val)
+InputStreamFromROOTFileForECATPET::set_block_repeater_y(int val)
 {
-    block_repeater = val;
+    block_repeater_y = val;
+}
+
+void
+InputStreamFromROOTFileForECATPET::set_block_repeater_z(int val)
+{
+    block_repeater_z = val;
 }
 
 END_NAMESPACE_STIR

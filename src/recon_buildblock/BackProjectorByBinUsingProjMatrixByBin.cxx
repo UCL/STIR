@@ -58,7 +58,7 @@ BackProjectorByBinUsingProjMatrixByBin::
 set_defaults()
 {
   this->proj_matrix_ptr.reset();
-  //BackProjectorByBin::set_defaults();
+  BackProjectorByBin::set_defaults();
 }
 
 void
@@ -68,7 +68,7 @@ initialise_keymap()
   parser.add_start_key("Back Projector Using Matrix Parameters");
   parser.add_stop_key("End Back Projector Using Matrix Parameters");
   parser.add_parsing_key("matrix type", &proj_matrix_ptr);
-  //BackProjectorByBin::initialise_keymap();
+  BackProjectorByBin::initialise_keymap();
 }
 
 

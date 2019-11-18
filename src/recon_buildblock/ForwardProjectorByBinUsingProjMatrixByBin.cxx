@@ -58,7 +58,7 @@ ForwardProjectorByBinUsingProjMatrixByBin::
 set_defaults()
 {
   this->proj_matrix_ptr.reset();
-  //ForwardProjectorByBin::set_defaults();
+  ForwardProjectorByBin::set_defaults();
 }
 
 void
@@ -68,7 +68,7 @@ initialise_keymap()
   parser.add_start_key("Forward Projector Using Matrix Parameters");
   parser.add_stop_key("End Forward Projector Using Matrix Parameters");
   parser.add_parsing_key("matrix type", &proj_matrix_ptr);
-  //ForwardProjectorByBin::initialise_keymap();
+  ForwardProjectorByBin::initialise_keymap();
 }
 
 bool

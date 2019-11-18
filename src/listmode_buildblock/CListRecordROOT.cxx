@@ -88,22 +88,12 @@ void CListEventROOT::init_from_data(const int& _ring1, const int& _ring2,
     else if ( det2 >= scanner_sptr->get_num_detectors_per_ring())
         det2 = det2 - scanner_sptr->get_num_detectors_per_ring();
 
-    if (det1 > det2)
-    {
-        int tmp = det1;
-        det1 = det2;
-        det2 = tmp;
-
-        ring1 = _ring2;
-        ring2 = _ring1;
-        swapped = true;
-    }
-    else
-    {
-        ring1 = _ring1;
-        ring2 = _ring2;
-        swapped = false;
-    }
+    ring1 = _ring1;
+    ring2 = _ring2;
+    #ifdef STIR_TOF
+    delta_time = _delta_time;
+    #endif
+    swapped = false;
 }
 
 END_NAMESPACE_STIR

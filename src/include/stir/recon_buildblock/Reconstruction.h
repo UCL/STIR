@@ -41,7 +41,7 @@
 #include "stir/RegisteredObject.h"
 #include <string>
 
-#include "stir/IO/ExamData.h"
+#include "stir/ExamData.h"
 
 START_NAMESPACE_STIR
 
@@ -77,10 +77,12 @@ class Succeeded;
 template <typename TargetT>
 class Reconstruction :
         public RegisteredObject<Reconstruction < TargetT > >,
-        public TimedObject,
-        public ParsingObject
+        public TimedObject
 {
 public:
+  //! default constructor (calls set_defaults())
+  Reconstruction();
+
   //! virtual destructor
   virtual ~Reconstruction() {};
   
@@ -104,6 +106,8 @@ public:
 
    Because of C++ rules, overloading one of the reconstruct() functions
    in a derived class, will hide the other. So you have to overload both.
+
+   \warning you need to call set_up() first.
   */     
   virtual Succeeded 
     reconstruct(shared_ptr<TargetT> const& target_image_sptr) = 0;
@@ -178,6 +182,13 @@ public:
   shared_ptr<DataProcessor<TargetT> >  post_filter_sptr;
 
 protected:
+  //! do consistency checks
+  /*! calls error() if anything is wrong, in particular when set_up() hasn't been called yet.
+
+      If overriding this function in a derived class, you need to call this one.
+   */
+  virtual void check(TargetT const& target_data) const;
+  bool _already_set_up;
 
   /*! 
   \brief 
@@ -223,6 +234,10 @@ protected:
   //! output image. You want to use it if you call for reconstruction
   //! from within some other code and want to use directly the output image.
   bool _disable_output;
+
+
+  /// Verbosity level
+  int _verbosity;
 
 
 };
