@@ -28,6 +28,9 @@
   \endcode
 */
 
+#include <algorithm>
+#include <cctype>
+
 #include "stir/IO/ITKImageInputFileFormat.h"
 #include "stir/info.h"
 #include "stir/Succeeded.h"
@@ -38,7 +41,6 @@
 #include "stir/DynamicDiscretisedDensity.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/stream.h"
-#include <algorithm>
 #include "stir/getopt.h"
 
 
@@ -48,7 +50,7 @@ USING_NAMESPACE_STIR
 
 typedef DiscretisedDensity<3,float> FloatImageType;
 
-Succeeded apply_scaling_to_HU(
+Succeeded apply_bilinear_scaling_to_HU(
     const std::unique_ptr<FloatImageType> &input_image_sptr,
     const nlohmann::json &transform,
     std::shared_ptr<FloatImageType> output_image_sptr){
@@ -86,14 +88,16 @@ int main(int argc, char * argv[])
   const char * output_filename = 0;
   const char * input_filename = 0;
   const char * slope_filename = 0;
+  const char * manufacturer_name = 0;
   const char * keV_str = 0;
 
-  const char * const usage = "ctac_to_mu_values -o output_filename -i input_directory -j slope_filename -k target_energy\n";
+  const char * const usage = "ctac_to_mu_values -o output_filename -i input_directory \
+                             j slope_filename -m manufacturer_name -k target_energy\n";
   opterr = 0;
   {
     char c;
 
-    while ((c = getopt (argc, argv, "i:o:j:k:?")) != -1)
+    while ((c = getopt (argc, argv, "i:o:j::m:k:?")) != -1)
       switch (c)
 	{
 	case 'i':
@@ -105,6 +109,9 @@ int main(int argc, char * argv[])
 	case 'j':
       slope_filename = optarg;
 	  break;
+    case 'm':
+      manufacturer_name = optarg;
+      break;
 	case 'k':
       keV_str = optarg;
       break;
@@ -123,7 +130,7 @@ int main(int argc, char * argv[])
 	}
   }
 
-  if (output_filename==0 || input_filename==0 || slope_filename==0 || keV_str==0 )
+  if (output_filename==0 || input_filename==0 || slope_filename==0 || manufacturer_name==0 || keV_str==0 )
     {
       std::cerr << usage;
       return EXIT_FAILURE;
@@ -134,14 +141,23 @@ int main(int argc, char * argv[])
   nlohmann::json slope_json;
   slope_json_file_stream >> slope_json;
 
-  std::string manufacturer = "Mediso";
+  //Put user-specified manufacturer into upper case.
+  std::string manufacturer = manufacturer_name;
+  std::locale loc;
 
+  for (std::string::size_type i=0; i<manufacturer.length(); ++i)
+    manufacturer[i] = std::toupper(manufacturer[i],loc);
+
+  stir::info(boost::format("Manufacturer: '%1'") % manufacturer);
+
+  //Get desired keV as integer value
   int keV;
 
   std::stringstream ss;
   ss << keV_str;
   ss >> keV;
 
+  //Extract appropriate chunk of JSON file for given manufacturer.
   nlohmann::json target = slope_json["scale"][manufacturer]["transform"];
 
   int location = -1;
@@ -158,12 +174,12 @@ int main(int argc, char * argv[])
     return EXIT_FAILURE;
   }
 
+  //Extract transform for specific keV.
   nlohmann::json j = target[location];
   std::cout << j.dump(4);
 
   //Read DICOM data
   stir::info(boost::format("ctac_to_mu_values: opening file %1%") % input_filename);
-
   std::unique_ptr< FloatImageType > input_image_sptr(stir::read_from_file<FloatImageType>( input_filename ));
 
   unique_ptr<VoxelsOnCartesianGrid<float> >image_aptr
@@ -194,15 +210,14 @@ int main(int argc, char * argv[])
             << image_aptr->get_physical_coordinates_for_indices(edge_max_indices);
   std::cout << std::endl;
 
+  //Create output image from input image.
   shared_ptr< FloatImageType > output_image_sptr(input_image_sptr->clone());
-  //Scale volume
-  apply_scaling_to_HU(input_image_sptr, j,  output_image_sptr);
-  //Write output file
+  //Apply scaling.
+  apply_bilinear_scaling_to_HU(input_image_sptr, j,  output_image_sptr);
+  //Write output file.
   Succeeded success = OutputFileFormat< FloatImageType >::default_sptr()->
       write_to_file(output_filename, *output_image_sptr);
 
   return success==Succeeded::yes ? EXIT_SUCCESS : EXIT_FAILURE;
-
-  //return EXIT_SUCCESS;
 
 }
