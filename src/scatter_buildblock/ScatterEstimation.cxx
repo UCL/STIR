@@ -160,13 +160,13 @@ initialise_keymap()
                          &this->output_background_estimate_prefix);
     this->parser.add_key("do average at 2",
                          &this->do_average_at_2);
-    this->parser.add_key("maximum scale value",
+    this->parser.add_key("maximum scatter scaling factor",
                          &this->max_scale_value);
-    this->parser.add_key("minimum scale value",
+    this->parser.add_key("minimum scatter scaling factor",
                          &this->min_scale_value);
-    this->parser.add_key("half filter width",
+    this->parser.add_key("upsampling half filter width",
                          &this->half_filter_width);
-    this->parser.add_key("remove interleaving",
+    this->parser.add_key("remove interleaving before upsampling",
                          &this->remove_interleaving);
     this->parser.add_key("run in 2d projdata",
                          &this->run_in_2d_projdata);
@@ -270,7 +270,6 @@ post_processing()
     //        }
     //    }
 
-    info ("ScatterEstimation: Initialising mask image ... ");
     if(this->mask_postfilter_filename.size() > 0 )
     {
         this->filter_sptr.reset(new PostFiltering <DiscretisedDensity<3,float> >);
@@ -560,7 +559,7 @@ if(is_null_ptr(this->reconstruction_template_sptr))
                         write_to_file(this->mask_image_filename, *this->mask_image_sptr.get());
         }
 
-        if(ffw_project_mask_image() == Succeeded::no)
+        if(project_mask_image() == Succeeded::no)
         {
             warning("ScatterEstimation: Unsuccessfull to fwd project the mask image. Aborting.");
             return Succeeded::no;
@@ -812,7 +811,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     {
         if (run_in_2d_projdata)
         {
-
+            std::string out_filename = extras_path.get_path() + "tmp_background_data_2d.hs";
 
             this->back_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                                                     this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
@@ -837,8 +836,10 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     if (run_in_2d_projdata)
     {
         // Normalise in order to get the additive component
+        std::stringstream convert;   // stream used for the conversion
+        convert << output_background_estimate_prefix << "_0_2d.hs";
 
-        std::string out_filename = extras_path.get_path() +"/"+ output_background_estimate_prefix + "_0_2d.hs";
+        std::string out_filename = convert.str(); //extras_path.get_path() +"/"+ output_background_estimate_prefix + "";
         add_projdata_2d_sptr.reset(
                     new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                           this->input_projdata_2d_sptr->get_proj_data_info_sptr() ,
@@ -1336,7 +1337,7 @@ apply_to_proj_data(ProjData& data, const pow_times_add& func)
 }
 
 Succeeded
-ScatterEstimation::ffw_project_mask_image()
+ScatterEstimation::project_mask_image()
 {
     if (is_null_ptr(this->mask_image_sptr))
     {
@@ -1344,10 +1345,21 @@ ScatterEstimation::ffw_project_mask_image()
         return Succeeded::no;
     }
 
-    if (is_null_ptr(this->input_projdata_2d_sptr))
+    if (run_in_2d_projdata)
     {
-        warning("No 2D proj_data have been initialised. Aborting.");
-        return Succeeded::no;
+        if (is_null_ptr(this->input_projdata_2d_sptr))
+        {
+            warning("No 2D proj_data have been initialised. Aborting.");
+            return Succeeded::no;
+        }
+    }
+    else
+    {
+        if (is_null_ptr(this->input_projdata_sptr))
+        {
+            warning("No 3D proj_data have been initialised. Aborting.");
+            return Succeeded::no;
+        }
     }
 
     shared_ptr<ForwardProjectorByBin> forw_projector_sptr;
@@ -1356,11 +1368,23 @@ ScatterEstimation::ffw_project_mask_image()
     info(boost::format("ScatterEstimation: Forward projector used for the calculation of "
                        "the tail mask: %1%") % forw_projector_sptr->parameter_info());
 
-    forw_projector_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_ptr()->create_shared_clone(),
-                                this->mask_image_sptr );
+    shared_ptr<ProjData> mask_projdata;
+    if(run_in_2d_projdata)
+    {
+        forw_projector_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_ptr()->create_shared_clone(),
+                                    this->mask_image_sptr );
 
-    shared_ptr<ProjData> mask_projdata(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                                                            this->input_projdata_2d_sptr->get_proj_data_info_ptr()->create_shared_clone()));
+        mask_projdata.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                 this->input_projdata_2d_sptr->get_proj_data_info_ptr()->create_shared_clone()));
+    }
+    else
+    {
+        forw_projector_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_ptr()->create_shared_clone(),
+                                    this->mask_image_sptr );
+
+        mask_projdata.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                 this->input_projdata_sptr->get_proj_data_info_ptr()->create_shared_clone()));
+    }
 
     forw_projector_sptr->forward_project(*mask_projdata, *this->mask_image_sptr);
 

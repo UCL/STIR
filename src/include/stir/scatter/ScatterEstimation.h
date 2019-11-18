@@ -117,12 +117,10 @@ public:
     //!     <ol>
     //!     <li> Check if debug mode and activate all export flags.
     //!     <li> Load the input_projdata_3d_sptr and perform SSRB
-    //!     <li> If recompute_initial_activity_image is set and has a filename
-    //!          then load it. Else, create and initialise the activity image to 1s.
     //!     <li> Initialise (partially for the moment) the reconstruction method:
     //!          Parses the input par file.
-    //!     <li> Load the attenuation image, and perform basic checks.
-    //!     <li>
+    //!     <li> Load Normalisation data and perform SSRB
+    //!     <li> Load the background data (randoms) and do normalisation (to get the additive data)
     //!     </ol>
     //! </ul>
     virtual Succeeded set_up();
@@ -252,7 +250,7 @@ protected:
 private:
 
     //! \details A helper function to reduce the size of set_up().
-    Succeeded ffw_project_mask_image();
+    Succeeded project_mask_image();
 
     //! \details A complicated function to mask images.
     bool apply_mask_in_place(DiscretisedDensity<3, float> &,

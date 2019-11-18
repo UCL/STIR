@@ -165,7 +165,7 @@ public:
     void set_density_image_for_scatter_points_sptr(shared_ptr<DiscretisedDensity<3,float> >);
 
     void set_image_downsample_factors(float factor_xy = 1.f, float factor_z = 1.f,
-                                      int _size_zoom_xy = -1, int _size_zoom_z = -1, bool scale = true);
+                                      int _size_zoom_xy = -1, int _size_zoom_z = -1);
         //! set_density_image_for_scatter_points
     void set_density_image_for_scatter_points(const std::string&);
     //! set the attenuation threshold
@@ -181,7 +181,7 @@ public:
     //! This function is a less powerfull tool than directly zooming the image.
     //! However it will check that the downsampling is done in manner compatible with the
     //! ScatterSimulation.
-    void downsample_image(float _zoom_xy, float _zoom_z, bool scale = true,
+    void downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
                           int _size_xy = -1, int _size_z = -1);
 
     Succeeded downsample_scanner(int new_num_rings = -1, int new_num_dets = -1);
@@ -409,8 +409,6 @@ protected:
     int zoom_size_xy;
     //! Zoomed image size on Z axis. Defaults on -1.
     int zoom_size_z;
-    //! Scale the values of the downsampled image.
-    bool scale_image;
     //! Number of rings of downsampled scanner
     int downsample_scanner_rings;
     //! Number of detectors per ring of downsampled scanner

@@ -290,7 +290,7 @@ post_processing()
     if ((zoom_xy!=1 || zoom_z != 1) &&
             !is_null_ptr(density_image_for_scatter_points_sptr))
     {
-        downsample_image(zoom_xy, zoom_z, scale_image);
+        downsample_density_image_for_scatter_points(zoom_xy, zoom_z);
 
         if(this->density_image_for_scatter_points_output_filename.size()>0)
             OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
@@ -440,26 +440,23 @@ set_density_image_for_scatter_points(const std::string& filename)
 void
 ScatterSimulation::
 set_image_downsample_factors(float _zoom_xy, float _zoom_z,
-                             int _size_zoom_xy, int _size_zoom_z, bool scale)
+                             int _size_zoom_xy, int _size_zoom_z)
 {
     zoom_xy = _zoom_xy;
     zoom_z = _zoom_z;
     zoom_size_xy = _size_zoom_xy;
     zoom_size_z = _size_zoom_z;
-    scale_image = scale;
 }
 
 void
 ScatterSimulation::
-downsample_image(float _zoom_xy, float _zoom_z, bool scale,
+downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
                  int _size_xy, int _size_z)
 {
     zoom_xy = _zoom_xy;
     zoom_z = _zoom_z;
     zoom_size_xy = _size_xy;
     zoom_size_z = _size_z;
-
-    scale_image = scale;
 
     int old_x = dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_x_size();
     int old_y = dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_y_size();
@@ -499,11 +496,9 @@ downsample_image(float _zoom_xy, float _zoom_z, bool scale,
     }
 
     // Scale values.
-    if(scale)
-    {
-        float scale_value = this->zoom_xy * this->zoom_xy * this->zoom_z;
-        *density_image_for_scatter_points_sptr *= scale_value;
-    }
+    float scale_value = this->zoom_xy * this->zoom_xy * this->zoom_z;
+    *density_image_for_scatter_points_sptr *= scale_value;
+
 
     this->sample_scatter_points();
     this->remove_cache_for_integrals_over_attenuation();
