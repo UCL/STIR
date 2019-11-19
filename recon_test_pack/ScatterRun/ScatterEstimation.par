@@ -49,7 +49,6 @@ recompute mask projdata := 1
 mask projdata filename := ./produced_data/mask_projdata.hs 
 
 ; Input or output filename - depends on recompute  
-;; If recompute is set, fwd will be performed automatically
 recompute mask image := 1
 mask attenuation image filename := ./produced_data/mask.hv
 
