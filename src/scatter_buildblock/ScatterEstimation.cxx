@@ -1063,7 +1063,7 @@ process_data()
         }
 
         if (this->export_scatter_estimates_of_each_iteration ||
-                i_scat_iter == this->num_scatter_iterations -1 )
+                i_scat_iter == this->num_scatter_iterations )
         {
 
             //this is complicated as the 2d scatter estimate was
