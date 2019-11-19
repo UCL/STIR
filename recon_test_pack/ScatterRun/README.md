@@ -4,11 +4,11 @@ The files in this folder can be used as a manual test for the scatter estimation
 
 ## Running as a test
 
-In order to run it as a test you have to manual download the NEMA file from https://zenodo.org/record/1304454 and extract in ```NEMA_IQ```. Then run the command ```scatter_estimate scatter_estimation.par```. 
+In order to run it as a test you have to manual download the NEMA file from https://zenodo.org/record/1304454 and extract in `NEMA_IQ`. Then run the command `scatter_estimate ScatterEstimation.par`. 
 
 ## Using as a template
 
-The files in the folder have default values which should be alright for most people. Place your projection, multiplicative and additive data in the folder and set the appropriate names in the scatter_estimation.par file. 
+The files in the folder have default values which should be alright for most people. Place your projection, multiplicative and additive data in the folder and set the appropriate names in the `ScatterEstimation.par` file. 
 
 ## Data preparation
 
