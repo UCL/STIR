@@ -91,8 +91,7 @@ START_NAMESPACE_STIR
   </ol>
 */
 
-class ScatterSimulation : public RegisteredObject<ScatterSimulation>,
-        public ParsingObject
+class ScatterSimulation : public RegisteredObject<ScatterSimulation>
 {
 public:
 

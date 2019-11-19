@@ -42,6 +42,7 @@
 
 #include "stir/stir_math.h"
 #include "stir/zoom.h"
+#include "stir/ZoomOptions.h"
 #include "stir/NumericInfo.h"
 
 START_NAMESPACE_STIR
@@ -183,6 +184,7 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
         unsigned det_num_A = 0; // initialise to avoid compiler warnings
         unsigned det_num_B = 0;
         this->find_detectors(det_num_A, det_num_B, bin);
+        // TODO: Not thread-safe. See issue  #417 on Github.
         const double scatter_ratio =
                 scatter_estimate(det_num_A, det_num_B);
         viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
@@ -475,10 +477,12 @@ downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
 
     CartesianCoordinate3D<float> offset_in_mm = dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_origin();
 
+    ZoomOptions scaling(ZoomOptions::preserve_values);
     zoom_image_in_place( *dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get()),
                          CartesianCoordinate3D<float>(zoom_z, zoom_xy, zoom_xy),
                          offset_in_mm,
-                         CartesianCoordinate3D<int>(new_z, new_y, new_x));
+                         CartesianCoordinate3D<int>(new_z, new_y, new_x),
+                         scaling);
 
     {
         float image_plane_spacing = dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_grid_spacing()[1];
@@ -494,11 +498,6 @@ downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
                                   "Reconsider your z-axis downsampling."
                                   "(Image z-spacing is %1% and ring spacing is %2%)") % image_plane_spacing % proj_data_info_cyl_noarc_cor_sptr->get_ring_spacing());
     }
-
-    // Scale values.
-    float scale_value = this->zoom_xy * this->zoom_xy * this->zoom_z;
-    *density_image_for_scatter_points_sptr *= scale_value;
-
 
     this->sample_scatter_points();
     this->remove_cache_for_integrals_over_attenuation();
@@ -734,6 +733,7 @@ Succeeded ScatterSimulation::default_downsampling(bool all_images)
         return Succeeded::no;
 
 
+    ZoomOptions scaling(ZoomOptions::preserve_values);
 
     // Downsample the activity and attanuation images
     shared_ptr<VoxelsOnCartesianGrid<float> > tmpl_density( new VoxelsOnCartesianGrid<float>(*proj_data_info_cyl_noarc_cor_sptr));
@@ -753,9 +753,8 @@ Succeeded ScatterSimulation::default_downsampling(bool all_images)
         zoom_image_in_place(*tmp_act ,
                             CartesianCoordinate3D<float>(_zoom_z, _zoom_xy, _zoom_xy),
                             CartesianCoordinate3D<float>(0,0,0),
-                            new_size);
-
-        *tmp_act *= _zoom_xy * _zoom_xy * _zoom_z;
+                            new_size,
+                            scaling);
 
         this->remove_cache_for_integrals_over_activity();
     }
@@ -775,9 +774,7 @@ Succeeded ScatterSimulation::default_downsampling(bool all_images)
         zoom_image_in_place(*tmp_att ,
                             CartesianCoordinate3D<float>(_zoom_z, _zoom_xy, _zoom_xy),
                             CartesianCoordinate3D<float>(0,0,0),
-                            new_size);
-
-        *tmp_att *= _zoom_xy * _zoom_xy * _zoom_z;
+                            new_size, scaling);
 
         this->remove_cache_for_integrals_over_attenuation();
     }
@@ -794,12 +791,7 @@ Succeeded ScatterSimulation::default_downsampling(bool all_images)
                                                           tmpl_density->get_y_size(),
                                                           tmpl_density->get_x_size());
 
-        zoom_image_in_place(*tmp_att ,
-                            CartesianCoordinate3D<float>(_zoom_z, _zoom_xy, _zoom_xy),
-                            CartesianCoordinate3D<float>(0,0,0),
-                            new_size);
-
-        *tmp_att *= _zoom_xy * _zoom_xy * _zoom_z;
+        downsample_density_image_for_scatter_points(_zoom_xy, _zoom_z,tmpl_density->get_x_size(), tmpl_density->get_z_size());
 
         this->sample_scatter_points();
         this->remove_cache_for_integrals_over_attenuation();

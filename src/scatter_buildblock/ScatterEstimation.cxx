@@ -270,6 +270,7 @@ post_processing()
     //        }
     //    }
 
+
     if(this->mask_postfilter_filename.size() > 0 )
     {
         this->filter_sptr.reset(new PostFiltering <DiscretisedDensity<3,float> >);
@@ -405,7 +406,7 @@ if(is_null_ptr(this->reconstruction_template_sptr))
     // We have to check which reconstruction method we are going to use ...
     shared_ptr<AnalyticReconstruction> tmp_analytic =
             dynamic_pointer_cast<AnalyticReconstruction >(this->reconstruction_template_sptr);
-    shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float> > > tmp_iterative =
+    shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float> >> tmp_iterative =
             dynamic_pointer_cast<IterativeReconstruction<DiscretisedDensity<3, float> > >(reconstruction_template_sptr);
 
     if (!is_null_ptr(tmp_analytic))
@@ -1500,11 +1501,5 @@ int ScatterEstimation::get_iterations_num() const
     return num_scatter_iterations;
 }
 
-Succeeded
-ScatterEstimation::prepare_projdata(const shared_ptr<ProjData> input,
-                                    shared_ptr<ProjData> output)
-{
-
-}
 
 END_NAMESPACE_STIR

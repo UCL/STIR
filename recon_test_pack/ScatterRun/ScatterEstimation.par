@@ -30,7 +30,7 @@ Bin Normalisation type := Chained
 	Chained Bin Normalisation Parameters:=
    Bin Normalisation to apply first:= from ProjData
            Bin Normalisation From ProjData :=
-            normalisation projdata filename:= ./NEMA_IQ/20170809_NEMA_UCL.n.hdr.hs
+            normalisation projdata filename:= ./NEMA_IQ/20170809_NEMA_UCL_normfactors.hs
        End Bin Normalisation From ProjData:=
 
 	Bin Normalisation to apply second:= From ProjData
@@ -101,7 +101,7 @@ minimum scatter scaling factor := 0.4 ;0.1
 
 ;Upsample and fit 
 ; defaults to 3.
-half filter width := 3
-remove interleaving := 1
+upsampling half filter width := 3
+remove interleaving before upsampling := 1
 
 End Scatter Estimation Parameters :=

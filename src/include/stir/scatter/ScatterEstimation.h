@@ -302,10 +302,6 @@ private:
     bool use_default_downsampling;
     //!
     unsigned int half_filter_width;
-
-
-    Succeeded prepare_projdata(const shared_ptr<ProjData> input,
-                                        shared_ptr<ProjData> output);
 };
 
 END_NAMESPACE_STIR

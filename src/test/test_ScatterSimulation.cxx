@@ -178,7 +178,7 @@ test_downsampling_DiscretisedDensity()
 
 //    int total_scatter_points_orig = sss.get_num_scatter_points();
 
-    sss->downsample_image(0.5f, 0.5f, 1);
+    sss->downsample_density_image_for_scatter_points(0.5f, 0.5f, 1);
 
     shared_ptr<DiscretisedDensity<3,float> > downed_image = sss->get_density_image_for_scatter_points_sptr();
 
