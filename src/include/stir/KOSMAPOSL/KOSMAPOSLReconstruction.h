@@ -202,7 +202,7 @@ public:
   int num_neighbours,num_non_zero_feat,num_elem_neighbourhood,num_voxels,dimz,dimy,dimx;
   double sigma_m;
   bool only_2D;
-  bool hybrid;
+  bool hybrid, only_iterative_info;
   double sigma_p;
   double sigma_dp, sigma_dm;
 
