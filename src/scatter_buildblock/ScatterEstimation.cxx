@@ -246,9 +246,6 @@ post_processing()
         warning("ScatterEstimation: No multiplicative coefficients have been set!!\n\
                 At least attenuation has to be set!");
 
-    this->multiplicative_binnorm_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
-
-
     if (this->back_projdata_filename.size() > 0)
     {
         info("ScatterEstimation: Loading background projdata...");
@@ -357,6 +354,8 @@ set_up()
         extras_path = current_full_path.append("extras");
     }
 
+    this->multiplicative_binnorm_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
+
     if (is_null_ptr(this->input_projdata_sptr))
     {
         warning("ScatterEstimation: No input proj_data have been set. Aborting.");
@@ -374,7 +373,7 @@ set_up()
                           this->input_projdata_sptr->get_num_segments(), 1, false)));
 
         FilePath tmp(this->input_projdata_filename);
-        std::string out_filename = extras_path.get_path() + tmp.get_filename_no_extension() + "_2d.hs";
+        std::string out_filename = tmp.get_filename_no_extension() + "_2d.hs";
 
         this->input_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
                                                                  proj_data_info_2d_sptr,
@@ -623,12 +622,11 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     {
         info("ScatterEstimation: Running SSRB on attenuation correction coefficients ...");
 
-        std::string out_filename = extras_path.get_path() + "tmp_atten_sino_2d.hs";
+        std::string out_filename = "tmp_atten_sino_2d.hs";
 
-        atten_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                                                           this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-                                                           out_filename,
-                                                           std::ios::in | std::ios::out | std::ios::trunc));
+        atten_projdata_2d_sptr = create_new_proj_data(out_filename, this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                             this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+
         SSRB(*atten_projdata_2d_sptr,
              *tmp_atten_projdata_sptr, true);
     }
@@ -680,25 +678,21 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
 
                 info("ScatterEstimation: Constructing 2D normalisation coefficients ...");
 
-                std::string out_filename = extras_path.get_path() + "tmp_inverted_normdata.hs";
-                shared_ptr<ProjData> inv_projdata_3d_sptr(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                                this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-                                                                                out_filename,
-                                                                                std::ios::in | std::ios::out | std::ios::trunc));
+                std::string out_filename = "tmp_inverted_normdata.hs";
+                shared_ptr<ProjData> inv_projdata_3d_sptr = create_new_proj_data(out_filename,
+                                                                                 this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                                 this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
                 inv_projdata_3d_sptr->fill(1.f);
 
-                out_filename = extras_path.get_path() + "tmp_projdata_2d.hs";
-                shared_ptr<ProjData> tmp_projdata_2d_sptr(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                                this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-                                                                                out_filename,
-                                                                                std::ios::in | std::ios::out | std::ios::trunc));
+                out_filename = "tmp_projdata_2d.hs";
+                shared_ptr<ProjData> tmp_projdata_2d_sptr = create_new_proj_data(out_filename, this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                                 this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
                 tmp_projdata_2d_sptr->fill(1.f);
 
-                out_filename = extras_path.get_path() + "tmp_normdata_2d.hs";
-                shared_ptr<ProjData> norm_projdata_2d_sptr(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                                 this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-                                                                                 out_filename,
-                                                                                 std::ios::in | std::ios::out | std::ios::trunc));
+                out_filename = "tmp_normdata_2d.hs";
+                shared_ptr<ProjData> norm_projdata_2d_sptr = create_new_proj_data(out_filename,
+                                                                                  this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                                  this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
                 norm_projdata_2d_sptr->fill(1.f);
 
                 // Essentially since inv_projData_sptr is 1s then this is an inversion.
@@ -766,12 +760,10 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
             info("ScatterEstimation: Running SSRB on the background data ...");
 
             FilePath tmp(this->back_projdata_filename);
-            std::string out_filename = extras_path.get_path() + tmp.get_filename_no_extension() + "_2d.hs";
+            std::string out_filename = tmp.get_filename_no_extension() + "_2d.hs";
 
-            this->back_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                                                                   this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-                                                                   out_filename,
-                                                                   std::ios::in | std::ios::out | std::ios::trunc));
+            this->back_projdata_2d_sptr = create_new_proj_data(out_filename, this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                               this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
             SSRB(*this->back_projdata_2d_sptr,
                  *this->back_projdata_sptr, false);
 //            {
@@ -812,22 +804,20 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     {
         if (run_in_2d_projdata)
         {
-            std::string out_filename = extras_path.get_path() + "tmp_background_data_2d.hs";
+            std::string out_filename = "tmp_background_data_2d.hs";
 
-            this->back_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                                                                    this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-                                                                    out_filename,
-                                                                    std::ios::in | std::ios::out | std::ios::trunc));
+            this->back_projdata_2d_sptr = create_new_proj_data(out_filename,
+                                                               this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                               this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
             this->back_projdata_2d_sptr->fill(0.0f);
         }
         else
         {
-            std::string out_filename = extras_path.get_path() + "tmp_background_data.hs";
+            std::string out_filename = "tmp_background_data.hs";
 
-            this->back_projdata_sptr.reset(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                    this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-                                                                    out_filename,
-                                                                    std::ios::in | std::ios::out | std::ios::trunc));
+            this->back_projdata_sptr = create_new_proj_data(out_filename,
+                                                            this->input_projdata_sptr->get_exam_info_sptr(),
+                                                            this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
             this->back_projdata_sptr->fill(0.0f);
         }
     }
@@ -841,11 +831,9 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         convert << output_background_estimate_prefix << "_0_2d.hs";
 
         std::string out_filename = convert.str(); //extras_path.get_path() +"/"+ output_background_estimate_prefix + "";
-        add_projdata_2d_sptr.reset(
-                    new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                                          this->input_projdata_2d_sptr->get_proj_data_info_sptr() ,
-                                          out_filename,
-                                          std::ios::in | std::ios::out | std::ios::trunc));
+        add_projdata_2d_sptr = create_new_proj_data(out_filename,
+                                                    this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                    this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
         add_projdata_2d_sptr->fill(*back_projdata_2d_sptr);
         this->multiplicative_binnorm_2d_sptr->apply(*this->add_projdata_2d_sptr, start_time, end_time);
 
@@ -854,12 +842,10 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     else
     {
         // Normalise in order to get the additive component
-        std::string out_filename = extras_path.get_path() +"/"+ output_background_estimate_prefix + "_0.hs";
-        add_projdata_sptr.reset(
-                    new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
-                                          this->input_projdata_sptr->get_proj_data_info_sptr() ,
-                                          out_filename,
-                                          std::ios::in | std::ios::out | std::ios::trunc));
+        std::string out_filename = output_background_estimate_prefix + "_0.hs";
+        add_projdata_sptr = create_new_proj_data(out_filename,
+                                                 this->input_projdata_sptr->get_exam_info_sptr(),
+                                                 this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
         add_projdata_sptr->fill(*back_projdata_sptr);
         this->multiplicative_binnorm_sptr->apply(*this->add_projdata_sptr, start_time, end_time);
 
@@ -1460,5 +1446,23 @@ int ScatterEstimation::get_iterations_num() const
     return num_scatter_iterations;
 }
 
+shared_ptr<ProjData> ScatterEstimation::create_new_proj_data(const std::string filename,
+                                                             const shared_ptr<ExamInfo> exam_info_sptr,
+                                                             const shared_ptr<ProjDataInfo> proj_data_info_sptr) const
+{
+    shared_ptr<ProjData> pd_sptr(nullptr);
+    if (run_debug_mode)
+    {
+        pd_sptr.reset(new ProjDataInterfile(exam_info_sptr,
+                                            proj_data_info_sptr,
+                                            extras_path.get_path() + filename,
+                                            std::ios::in | std::ios::out | std::ios::trunc));
+    }
+    else
+    {
+        pd_sptr.reset(new ProjDataInMemory(exam_info_sptr, proj_data_info_sptr));
+    }
+    return pd_sptr;
+}
 
 END_NAMESPACE_STIR

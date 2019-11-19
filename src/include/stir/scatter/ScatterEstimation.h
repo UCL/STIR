@@ -259,6 +259,10 @@ private:
     void subtract_proj_data(ProjData&, const ProjData&);
 
     void apply_to_proj_data(ProjData& , const pow_times_add&);
+    //! Returnes a shared pointer to a new ProjData. If we run in run_debug_mode and
+    //! the extras_path has been set, then it will a ProjDataFromStream, otherwise it will be a ProjDataInMemory.
+    shared_ptr<ProjData> create_new_proj_data(const std::string filename, const shared_ptr<ExamInfo> exam_info_sptr,
+                                                                 const shared_ptr<ProjDataInfo> proj_data_info_sptr) const;
 
     //! \details Average the two first activity images 0 and 1.
     bool do_average_at_2;
