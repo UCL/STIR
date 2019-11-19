@@ -4,7 +4,7 @@ The files in this folder can be used as a manual test for the scatter estimation
 
 ## Running as a test
 
-In order to run it as a test you have to manual download the NEMA file from https://zenodo.org/record/1304454 and extract in ```NEMA_IQ```. Then run the command ```scatter_estimate scatter_estimation.par```. 
+In order to run it as a test you have to manual download the NEMA file from https://zenodo.org/record/1304454 and extract in `NEMA_IQ`. Then run the command `scatter_estimate ScatterEstimation.par`. 
 
 ## Using as a template
 
