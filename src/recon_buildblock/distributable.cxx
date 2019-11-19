@@ -384,8 +384,6 @@ void distributable_computation(
   
   if (output_image_ptr != NULL)
     output_image_ptr->fill(0);
-  else
-    output_image_ptr = input_image_ptr->clone();
   
   if (log_likelihood_ptr != NULL)
     {
@@ -410,7 +408,8 @@ void distributable_computation(
   //double total_seq_rpc_time=0.0; //sums up times used for RPC_process_related_viewgrams
 
   forward_projector_ptr->set_input(*input_image_ptr);
-  back_projector_ptr->start_accumulating_in_new_target();
+  if (output_image_ptr != NULL)
+    back_projector_ptr->start_accumulating_in_new_target();
 
 #ifdef STIR_OPENMP
   std::vector<double> local_log_likelihoods;
@@ -477,7 +476,7 @@ void distributable_computation(
                % view_segment_num.segment_num() % view_segment_num.view_num());
 #else
           info(boost::format("calculating segment_num: %d, view_num: %d")
-               % view_segment_num.segment_num() % view_segment_num.view_num());
+               % view_segment_num.segment_num() % view_segment_num.view_num(), 2);
 #endif
 
 #ifdef STIR_OPENMP
@@ -512,6 +511,7 @@ void distributable_computation(
     count2 += std::accumulate(local_count2s.begin(), local_count2s.end(), 0);
   }
 #endif
+  if (output_image_ptr != NULL)
     back_projector_ptr->get_output(*output_image_ptr);
 #ifdef STIR_MPI
   //end of iteration processing

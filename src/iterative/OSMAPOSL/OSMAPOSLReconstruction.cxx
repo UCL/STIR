@@ -416,6 +416,7 @@ void
 OSMAPOSLReconstruction<TargetT>::apply_multiplicative_update(
   TargetT& current_image_estimate, const TargetT& multiplicative_update_image)
 {
+  this->check(current_image_estimate);
   typename TargetT::const_full_iterator multiplicative_update_image_iter =
     multiplicative_update_image.begin_all_const();
   const typename TargetT::const_full_iterator end_multiplicative_update_image_iter =
@@ -436,6 +437,7 @@ void
 OSMAPOSLReconstruction<TargetT>::
 update_estimate(TargetT &current_image_estimate)
 {
+  this->check(current_image_estimate);
   // TODO should use something like iterator_traits to figure out the 
   // type instead of hard-wiring float
   static const float small_num = 0.000001F;

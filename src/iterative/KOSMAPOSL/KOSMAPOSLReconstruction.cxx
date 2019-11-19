@@ -156,6 +156,8 @@ set_defaults()
   this->only_2D = 0;
   this->kernelised_output_filename_prefix="";
   this->hybrid=0;
+  this->only_iterative_info=0;
+  this->_disable_output=1;
 }
 
 template <typename TargetT>
@@ -176,6 +178,7 @@ initialise_keymap()
   this->parser.add_key("sigma_dm",&this->sigma_dm);
   this->parser.add_key("only_2D",&this->only_2D);
   this->parser.add_key("hybrid",&this->hybrid);
+  this->parser.add_key("only_iterative_info",&this->only_iterative_info);
   this->parser.add_key("anatomical image filenames", &anatomical_image_filenames);
   this->parser.add_key("kernelised output filename prefix",&this->kernelised_output_filename_prefix);
 
@@ -216,22 +219,35 @@ post_processing()
      this->num_elem_neighbourhood=this->num_neighbours*this->num_neighbours ;
       }
 
+  if (this->only_iterative_info & !this->hybrid)
+      error("If you choose to have only the iterative side information hybrid needs to be set as 1");
   if (!this->anatomical_image_filenames.empty()){
       this->anatomical_prior_sptr= (read_from_file<TargetT>(anatomical_image_filenames[0]));
 
-    set_anatomical_prior_sptr (this->anatomical_prior_sptr);
-    info(boost::format("Reading anatomical data '%1%'")
+      set_anatomical_prior_sptr (this->anatomical_prior_sptr);
+      info(boost::format("Reading anatomical data '%1%'")
          % anatomical_image_filenames[0]  );
-  }
-    if (is_null_ptr(this->anatomical_prior_sptr))
+      }
+  if (is_null_ptr(this->anatomical_prior_sptr))
         {
             error("Failed to read anatomical file %s", anatomical_image_filenames[0].c_str());
             return false;
         }
-    this->anatomical_sd=estimate_stand_dev_for_anatomical_image();
 
-  info(boost::format("SD from anatomical image calculated = '%1%'")
+  if (!this->only_iterative_info){
+
+      this->anatomical_sd=estimate_stand_dev_for_anatomical_image();
+
+      info(boost::format("SD from anatomical image calculated = '%1%'")
        % this->anatomical_sd);
+
+  }
+  else{
+      this->anatomical_sd=1;
+      info(boost::format("SD set to '%1%'")
+       % this->anatomical_sd);
+      set_anatomical_prior_sptr(shared_ptr<TargetT>(this->anatomical_prior_sptr->get_empty_copy()));
+      }
 
   const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
       dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> *>

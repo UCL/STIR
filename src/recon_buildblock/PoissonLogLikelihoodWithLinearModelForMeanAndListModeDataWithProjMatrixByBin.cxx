@@ -430,7 +430,7 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
     this->list_mode_data_sptr->reset();
     double current_time = 0.;
     ProjMatrixElemsForOneBin proj_matrix_row;
-
+    gradient.fill(0);
     shared_ptr<CListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
     CListRecord& record = *record_sptr;
 

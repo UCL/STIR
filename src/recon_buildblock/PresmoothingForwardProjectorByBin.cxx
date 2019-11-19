@@ -43,7 +43,7 @@ PresmoothingForwardProjectorByBin::
 set_defaults()
 {
   original_forward_projector_ptr.reset();
-  image_processor_ptr.reset();
+  _pre_data_processor_sptr.reset();
 }
 
 void
@@ -53,7 +53,7 @@ initialise_keymap()
   parser.add_start_key("Pre Smoothing Forward Projector Parameters");
   parser.add_stop_key("End Pre Smoothing Forward Projector Parameters");
   parser.add_parsing_key("Original Forward projector type", &original_forward_projector_ptr);
-  parser.add_parsing_key("filter type", &image_processor_ptr);
+  parser.add_parsing_key("filter type", &_pre_data_processor_sptr);
 }
 
 bool
@@ -78,9 +78,10 @@ PresmoothingForwardProjectorByBin::
 PresmoothingForwardProjectorByBin(
                        const shared_ptr<ForwardProjectorByBin>& original_forward_projector_ptr,
                        const shared_ptr<DataProcessor<DiscretisedDensity<3,float> > >& image_processor_ptr)
-                       : original_forward_projector_ptr(original_forward_projector_ptr),
-                         image_processor_ptr(image_processor_ptr)
-{}
+                       : original_forward_projector_ptr(original_forward_projector_ptr)
+{
+    _pre_data_processor_sptr = image_processor_ptr;
+}
 
 PresmoothingForwardProjectorByBin::
 ~PresmoothingForwardProjectorByBin()
@@ -93,8 +94,6 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
 {
   ForwardProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);
   original_forward_projector_ptr->set_up(proj_data_info_ptr, image_info_ptr);
-  if (!is_null_ptr(image_processor_ptr))
-    image_processor_ptr->set_up(*image_info_ptr);
 }
 
 const DataSymmetriesForViewSegmentNumbers * 
@@ -139,15 +138,5 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
                                                       min_axial_pos_num, max_axial_pos_num,
                                                       min_tangential_pos_num, max_tangential_pos_num);
 }
-
-void
-PresmoothingForwardProjectorByBin::
-set_input(const shared_ptr<DiscretisedDensity<3,float> >& density_sptr)
-{
-    _density_sptr.reset(density_sptr->clone());
-    if (!is_null_ptr(image_processor_ptr))
-        image_processor_ptr->apply(*_density_sptr,*density_sptr);
-}
-
 
 END_NAMESPACE_STIR

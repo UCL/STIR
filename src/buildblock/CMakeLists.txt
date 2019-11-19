@@ -6,6 +6,7 @@ set(${dir_LIB_SOURCES}
   Array  
   IndexRange 
   PatientPosition
+  ExamData
   ProjData 
   ProjDataInfo 
   ProjDataInfoCylindrical 

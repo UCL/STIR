@@ -26,7 +26,7 @@
   \author Kris Thielemans
 */
 #include "stir/ProjData.h"
-#include "stir/IO/ExamData.h"
+#include "stir/ExamData.h"
 #include "stir/shared_ptr.h"
 #include "stir/Array.h"
 #include "stir/is_null_ptr.h"
