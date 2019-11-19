@@ -22,7 +22,7 @@ cp ../par_files/lm_to_projdata.par .
 lm_to_projdata lm_to_projdata.par
 ```
 
-Now there two new files names as ```nema_proj_f1g1d0b0.hs``` and ```nema_proj_f1g1d0b0.s``` which are the emission projection data.
+Now there two new files names as `nema_proj_f1g1d0b0.hs` and `nema_proj_f1g1d0b0.s` which are the emission projection data.
 
 ### Attenuation correction
 
