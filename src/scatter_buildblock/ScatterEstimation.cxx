@@ -1038,6 +1038,9 @@ process_data()
         }
 
         // Set the min and max scale factors
+        // We're going to assume that the first iteration starts from an image without scatter correction, and therefore
+        // overestimates scatter. This could be inaccurate, but is the case most of the time.
+        // TODO introduce a variable to control this behaviour
         if (i_scat_iter > 0)
         {
             local_max_scale_value = this->max_scale_value;
