@@ -463,6 +463,13 @@ set_hybrid(const bool arg)
     this->hybrid = arg;
 }
 
+template <typename TargetT>
+void
+KOSMAPOSLReconstruction<TargetT>::
+set_only_iterative(const bool arg)
+{
+    this->only_iterative_info = arg;
+}
 /***************************************************************/
 // Here start the definition of few functions that calculate the SD of the anatomical image, a norm matrix and
 // finally the Kernelised image

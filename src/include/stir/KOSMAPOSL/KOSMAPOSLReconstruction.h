@@ -179,6 +179,7 @@ public:
   void set_sigma_dm(const double);
   void set_only_2D(const bool);
   void set_hybrid(const bool);
+  void set_only_iterative(const bool);
 
   //! boolean value to determine if the update images have to be written to disk
   void set_write_update_image(const int);
