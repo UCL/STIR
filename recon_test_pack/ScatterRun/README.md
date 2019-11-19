@@ -38,4 +38,4 @@ In this dataset a randoms sinogram is not provided.
 
 ## Running the estimation
 
-If you want to run in debug mode, which will generate a lot of output files set the ```run in debug mode := 1 ``` in ```ScatterEstimation.par``` otherwise turn to 0. 
+If you want to run in debug mode, which will generate a lot of output files set the `run in debug mode := 1` in `ScatterEstimation.par` otherwise turn to 0. 
