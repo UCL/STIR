@@ -8,7 +8,7 @@ In order to run it as a test you have to manual download the NEMA file from http
 
 ## Using as a template
 
-The files in the folder have default values which should be alright for most people. Place your projection, multiplicative and additive data in the folder and set the appropriate names in the scatter_estimation.par file. 
+The files in the folder have default values which should be alright for most people. Place your projection, multiplicative and additive data in the folder and set the appropriate names in the `ScatterEstimation.par` file. 
 
 ## Data preparation
 
