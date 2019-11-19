@@ -54,7 +54,7 @@
  #include "stir/SegmentByView.h"
  #include "stir/SegmentBySinogram.h"
  #include "stir/ExamInfo.h"
- #include "stir/IO/ExamData.h"
+ #include "stir/ExamData.h"
  #include "stir/Verbosity.h"
  #include "stir/ProjData.h"
  #include "stir/ProjDataInMemory.h"
@@ -74,6 +74,7 @@
 #include "stir/GeneralisedPoissonNoiseGenerator.h"
   
 #include "stir/IO/read_from_file.h"
+#include "stir/IO/write_to_file.h"
 #include "stir/IO/InterfileOutputFileFormat.h"
 #ifdef HAVE_LLN_MATRIX
 #include "stir/IO/ECAT7OutputFileFormat.h"
@@ -1265,6 +1266,7 @@ namespace stir {
 %include "stir/ZoomOptions.h"
 %include "stir/zoom.h"
 
+%ignore *::get_scanner_sptr;
 %rename (get_scanner) *::get_scanner_ptr;
 %ignore *::get_proj_data_info_ptr;
 %rename (get_proj_data_info) *::get_proj_data_info_sptr;
@@ -1272,6 +1274,30 @@ namespace stir {
 %ignore *::get_exam_info_sptr; // we do have get_exam_info in C++
 
 %rename (set_objective_function) *::set_objective_function_sptr;
+%ignore  *::get_objective_function_sptr; // we have it without _sptr in C++
+
+%rename (get_initial_data) *::get_initial_data_ptr;
+%rename (construct_target_image) *::construct_target_image_ptr;
+%rename (construct_target) *::construct_target_ptr;
+%ignore *::get_prior_sptr;
+%rename (get_prior) *::get_prior_ptr;
+%rename (get_proj_matrix) *::get_proj_matrix;
+%rename (get_projector_pair) *::get_projector_pair_sptr;
+%rename (get_normalisation) *::get_normalisation_sptr;
+%rename (get_symmetries) *::get_symmetries_ptr;
+%ignore *::get_symmetries_sptr;
+%rename (get_inter_iteration_filter) *::get_inter_iteration_filter_sptr;
+%rename (get_anatomical_prior) *::get_anatomical_prior_sptr;
+%rename (get_proj_data) *::get_proj_data_sptr;
+%rename (get_subset_sensitivity) *::get_subset_sensitivity_sptr;
+%rename (get_forward_projector) *::get_forward_projector_sptr;
+%rename (get_back_projector) *::get_back_projector_sptr;
+%rename (get_kappa) *::get_kappa_sptr;
+%rename (get_attenuation_image) *::get_attenuation_image_sptr;
+/* would be nice, but needs swig to be compiled with PCRE support 
+%rename("rstrip:[_ptr]")
+%rename("rstrip:[_sptr]")
+*/
 
   // Todo need to instantiate with name?
   // TODO Swig doesn't see that Array<2,float> is derived from it anyway becuse of num_dimensions bug
@@ -1291,6 +1317,8 @@ namespace stir {
 //%template() stir::DiscretisedDensityOnCartesianGrid<3,float>;
 %template(FloatVoxelsOnCartesianGrid) stir::VoxelsOnCartesianGrid<float>;
 
+%include "stir/IO/write_to_file.h"
+%template(write_image_to_file) stir::write_to_file<DiscretisedDensity<3, float> >;
 
 #ifdef STIRSWIG_SHARED_PTR
 #define DataT stir::DiscretisedDensity<3,float>
@@ -1324,7 +1352,7 @@ namespace stir {
 %include "stir/TimeFrameDefinitions.h"
 %include "stir/ExamInfo.h"
 
-%include "stir/IO/ExamData.h"
+%include "stir/ExamData.h"
 %include "stir/Verbosity.h"
 
 %attributeref(stir::Bin, int, segment_num);
@@ -1657,17 +1685,11 @@ namespace stir {
 
 %include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 
-%shared_ptr(  stir::AddParser<stir::ForwardProjectorByBin>);
-%template (internalAddParserForwardProjectorByBin)
-  stir::AddParser<stir::ForwardProjectorByBin>;
 %template (internalRPForwardProjectorByBinUsingProjMatrixByBin)  
   stir::RegisteredParsingObject<stir::ForwardProjectorByBinUsingProjMatrixByBin,
      stir::ForwardProjectorByBin>;
 %include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 
-%shared_ptr(  stir::AddParser<stir::BackProjectorByBin>);
-%template (internalAddParserBackProjectorByBin)
-  stir::AddParser<stir::BackProjectorByBin>;
 %template (internalRPBackProjectorByBinUsingProjMatrixByBin)  
   stir::RegisteredParsingObject<stir::BackProjectorByBinUsingProjMatrixByBin,
      stir::BackProjectorByBin>;

@@ -92,19 +92,10 @@ if [ $? -ne 0 ]; then
 fi
 
 if [ -z "${error_log_files}" ]; then
-  echo "All tests OK!"
-  echo "You can remove all output using \"rm -f my_*\""
+ echo "All tests OK!"
+ echo "You can remove all output using \"rm -f my_*\""
+ exit 0
 else
-  echo "There were errors. Check ${error_log_files}"
-
-  if [ -n "$TRAVIS" ]; then
-    # The code runs inside Travis
-    for f in ${error_log_files}
-    do
-        echo "=== $f"
-        cat $f
-    done
-    
-    exit 1
-  fi
+ echo "There were errors. Check ${error_log_files}"
+ exit 1
 fi

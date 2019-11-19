@@ -301,7 +301,7 @@ bool InterfileHeader::post_processing()
     }
   }
 
-  for (int frame=0; frame<this->get_num_data_types(); frame++)
+  for (int frame=0; frame<this->get_num_datasets(); frame++)
   {
     if (image_scaling_factors[frame].size() == 1)
     {
@@ -324,7 +324,7 @@ bool InterfileHeader::post_processing()
   if (lln_quantification_units!=1.)
   {
      const bool all_one = image_scaling_factors[0][0] == 1.;
-    for (int frame=0; frame<this->get_num_data_types(); frame++)
+    for (int frame=0; frame<this->get_num_datasets(); frame++)
       for (unsigned int i=0; i<image_scaling_factors[frame].size(); i++)
       {
         // check if all image_scaling_factors are equal to 1 (i.e. the image_scaling_factors keyword 
@@ -423,10 +423,11 @@ void InterfileHeader::set_type_of_data()
 void InterfileHeader::read_frames_info()
 {
   set_variable();
-  image_scaling_factors.resize(num_time_frames);
-  for (int i=0; i<num_time_frames; i++)
+  const int num_datasets = this->get_num_datasets();
+  image_scaling_factors.resize(num_datasets);
+  for (int i=0; i<num_datasets; i++)
     image_scaling_factors[i].resize(1, 1.);
-  data_offset_each_dataset.resize(num_time_frames, 0UL);
+  data_offset_each_dataset.resize(num_datasets, 0UL);
   image_relative_start_times.resize(num_time_frames, 0.);
   image_durations.resize(num_time_frames, 0.);
 }
@@ -436,7 +437,7 @@ InterfileImageHeader::InterfileImageHeader()
   : InterfileHeader()
 {
   num_image_data_types = 1;
-  index_nesting_level.resize(num_image_data_types, "");
+  index_nesting_level.resize(1, "");
   image_data_type_description.resize(num_image_data_types, "");
     
   add_key("first pixel offset (mm)",
@@ -452,11 +453,13 @@ InterfileImageHeader::InterfileImageHeader()
 void InterfileImageHeader::read_image_data_types()
 {
   set_variable();
-  image_scaling_factors.resize(num_image_data_types);
-  for (int i=0; i<num_image_data_types; i++)
+  const int num_datasets = this->get_num_datasets();
+  image_scaling_factors.resize(num_datasets);
+  for (int i=0; i<num_datasets; i++)
     image_scaling_factors[i].resize(1, 1.);
-  data_offset_each_dataset.resize(num_image_data_types, 0UL);
-  index_nesting_level.resize(num_image_data_types,"");
+  data_offset_each_dataset.resize(num_datasets, 0UL);
+  // should do this if ever we support multiple indices (TODO)
+  //index_nesting_level.resize(2,"");
   image_data_type_description.resize(num_image_data_types,"");
 }
 

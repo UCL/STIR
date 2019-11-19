@@ -69,7 +69,7 @@ public:
 
    void ask_parameters();
 
-   std::string parameter_info();  
+   virtual std::string parameter_info();
 
 protected:
   //! Set defaults before parsing

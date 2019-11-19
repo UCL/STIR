@@ -13,7 +13,7 @@ OSMAPOSLParameters :=
                 maximum number of sigmas:= 2.0
 
                 ;PSF type of correction { 2D // 3D // Geometrical }
-                psf type:= 2D
+                psf type:= 3D
                 ; next 2 parameters define the PSF. They are ignored if psf_type is "Geometrical"
                 ; the PSF is modelled as a Gaussian with sigma dependent on the distance from the collimator
                 ; sigma_at_depth = collimator_slope * depth_in_cm + collimator sigma 0(cm)

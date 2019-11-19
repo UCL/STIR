@@ -4,6 +4,7 @@
 #define __stir_modelling_ParametricDiscretisedDensity_H__
 /*
     Copyright (C) 2006 - 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,6 +24,7 @@
   \ingroup modelling
   \brief Declaration of class stir::ParametricDiscretisedDensity
   \author Kris Thielemans
+  \author Richard Brown
  
 */
 
@@ -34,6 +36,9 @@
 START_NAMESPACE_STIR
 template <typename DiscDensT>
 class ParametricDiscretisedDensity;
+
+/// Forward declaration of dynamic image
+class DynamicDiscretisedDensity;
 
 //! A helper class to find the type of a 'single' image for a corresponding parametric image.
 template <typename DiscDensT>
@@ -93,6 +98,9 @@ public DiscDensT
   ParametricDiscretisedDensity(const base_type& density)
     : base_type(density)
     {}
+
+  /// Create blank parametric image from a dynamic image
+  ParametricDiscretisedDensity(const DynamicDiscretisedDensity& dyn_im);
 
   // implementation works, although only for VoxelsOnCartesianGrid , but not needed for now
   // ParametricDiscretisedDensity(const VectorWithOffset<shared_ptr<SingleDiscretisedDensityType> > & densities);

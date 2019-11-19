@@ -2,6 +2,7 @@
 \batchmode
 \documentclass{article}
 \usepackage{geometry}
+\usepackage{amsmath}
 %\usepackage{a4wide}
 %\usepackage{layout}
 
@@ -39,7 +40,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 3.1}}
+ Version 4.0}}
 \end{center}
 
 \end{spacing}
@@ -253,7 +254,7 @@ A helpful note: You can specify just to make a single ``target'',
 using \texttt{make <target>}. All executable names are targets that
 make just the required executable (e.g., \texttt{make FBP2D}). A
 useful target for developers is to just make the tests, using
-\texttt{make BUILD_TESTS}. So \texttt{make BUILD_TESTS && make test}
+\texttt{make BUILD\_TESTS}. So \texttt{make BUILD\_TESTS \&\& make test}
 would build and then run the tests.
 
 On Windows or MacOSX, the procedure is essentially the same, except that you will likely have
@@ -341,7 +342,7 @@ Here are some standard CMake variables that might be useful.
 \item \textit{CMAKE\_INSTALL\_PREFIX} specifies where the final installation has to occur. CMake
 provides normally a default in a system location, but you could set it for instance to
 \texttt{./install} to put the files inside your build directory.
-\item \textit{{CMAKE\_CXX\_STANDARD} can be used to tell CMake to add flags to your compiler to use
+\item \textit{CMAKE\_CXX\_STANDARD} can be used to tell CMake to add flags to your compiler to use
 a particular version of the C++ standard (if it supports it). It is now recommended to set 
 this to \texttt{11}. This is necessary e.g. for ROOT 6 support. Other possible values are
 \texttt{98}, \texttt{14} and \texttt{17} (not tested yet).
@@ -354,7 +355,7 @@ specify the full path to the actual executable, this should be sufficient. If no
 \texttt{PYTHON\_LIBRARY} as well.
 
 There are various other variables that can be set, some of which are only visible if you toggled
-the display of \textt{Advanced} variables on. They should only be set by advanced users, or if a package
+the display of \texttt{Advanced} variables on. They should only be set by advanced users, or if a package
 cannot be found. For example, if CMake cannot find \textit{boost}, you will have to set \texttt{BOOST\_ROOT}.
 
 \subsubsection{
@@ -426,7 +427,7 @@ Running tests}
 We \textbf{highly recommend} running test programs after building. There are currently two
 sets of tests. The first set tests various components of
 \textit{STIR}. This process is described on the Wiki, but briefly can
-be run using \texttt{make BUILD_TESTS && make test}.
+be run using \texttt{make BUILD\_TESTS \&\& make test}.
 The second set of tests is available via the \textit{STIR} web-site, where we 
 we provide test reconstructions as part of the
 \textbf{recon\_test\_pack}, with an 
@@ -1647,6 +1648,119 @@ OSMAPOSLParameters :=
 
 End:=
 \end{verbatim}
+
+{ \subsubsubsection{HKEM}
+}
+\label{sec:HKEM}
+  { \subsubsubsubsection{Algorithm description}
+  }
+  Hybrid kernelised expectation maximisation(HKEM) and kernelised expectation maximisation (KEM) iterative algorithms
+  are implemented corresponding to the one presented by Deidda D et al, ``Hybrid PET-MR list-mode kernelized expectation maximization reconstruction",
+  Inverse Problems, 2019, DOI: https://doi.org/10.1088/1361-6420/ab013f. However, this allows
+  also sinogram-based reconstruction. Each voxel value of the image, $ \boldsymbol{\lambda}$, can be represented as a
+  linear combination using the kernel method.  If we have an image with prior information, we can construct for each voxel
+  $ j $ of the emission image a feature vector, $ \boldsymbol{v}_j $, using the prior information. The voxel value,
+  $\lambda_j$, can then be described using the kernel matrix 
+  \[
+   \lambda_j=  \sum_{l=1}^L \alpha_l k_{jl}
+  \]
+  \noindent
+  where $k_{jl}$ is the $jl^{th}$ kernel element of the matrix, $\boldsymbol{K}$.
+  The resulting algorithm with OSEM, for example, is the following:
+
+  \[
+  \alpha^{(n+1)}_j =  \frac{ \alpha^{(n)}_j }{\sum_{m} k^{(n)}_{jm} \sum_i p_{mi}} \sum_{m}k^{(n)}_{jm}\sum_i p_{mi}\frac{ y_i }{\sum_{q} p_{iq} \sum_l k^{(n)}_{ql}\alpha^{(n)}_l  + s_i}
+  \]
+  \noindent
+  where the  element, $ jl $, of the kernel can be written as:
+
+  \[
+    k^{(n)}_{jl} = k_m(\boldsymbol{v}_j,\boldsymbol{v}_l) \cdot k_p(\boldsymbol{z}^{(n)}_j,\boldsymbol{z}^{(n)}_l);
+  \]
+  \noindent
+  with
+
+  \[
+   k_m(\boldsymbol{v}_j,\boldsymbol{v}_l) = \exp \left(\tiny - \frac{\|  \boldsymbol{v}_j-\boldsymbol{v}_l \|^2}{2 \sigma_m^2} \right) \exp \left(- \frac{\tiny \|  \boldsymbol{x}_j-\boldsymbol{x}_l \|^2}{ \tiny 2 \sigma_{dm}^2} \right)
+  \]
+  \noindent
+  being the MR component of the kernel and
+
+  \[
+   k_p(\boldsymbol{z}^{(n)}_j,\boldsymbol{z}^{(n)}_l) = \exp \left(\tiny - \frac{\|  \boldsymbol{z}^{(n)}_j-\boldsymbol{z}^{(n)}_l \|^2}{2 \sigma_p^2} \right) \exp \left(\tiny - \frac{\|  \boldsymbol{x}_j-\boldsymbol{x}_l \|^2}{ \tiny{2 \sigma_{dp}^2}} \right)
+  \]
+  \noindent
+  is the part coming from the emission iterative update. Here, the Gaussian kernel functions have been modulated by the distance between voxels in the image space.
+
+Below is an excerpt of a possible parameter file for KOSMAPOSL. A complete parameter file
+can be found in \textbf{STIR/samples/}. The changes in this parameter file includes the MR anatomical prior images and the kernel-based parameters. 
+
+
+ \begin{verbatim}
+ An example of a KOSMAPOSL parameter file can be found in examples/samples/. It is similar to the OSMAPOSL parameter file withe following extra keywords
+
+KOSMAPOSL Parameters:=
+
+;the following disables the alpha coefficient output:
+disable output :=1
+
+
+; here we have the possibility to choose the parameters which define the kernel
+; matrix and the name of the anatomical image. the following are the defaults values:
+
+; 1 (default): use hybrid kernel (prior from MR and PET estimate)
+; OR
+; 0 kernel is MR-only
+hybrid:=1
+
+; Gaussian scaling parameter for the anatomical prior (units of image intensity)
+; It controls the edge preservation from the anatomical image, the bigger the stronger
+; default: 1
+sigma_m:= 1
+
+; Gaussian scaling parameter for the PET estimate (units of PET image intensity)
+; It controls the edge preservation from the functional image, the bigger the stronger
+; default: 1
+sigma_p:=1
+
+
+; NB: sigma_dm and sigma_dp should be the same
+; Spatial Gaussian scaling parameter for the anatomical prior (mm)
+; default: 1 (usual range 1-5)
+sigma_dm:=5
+
+; Spatial Gaussian scaling parameter for the PET prior (mm)
+; default: 1 (usual range 1-5)
+sigma_dp:=5
+
+; Number of neigbouring voxels to compare: (num_neighbours X num_neighbours X num_neighbours)
+; default: 3
+number of neighbours:= 3
+
+; Number of non-zero elements in the feature vectors. This makes you choose the size of your feature vector by default we only have one element
+; default: 1
+number of non-zero feature elements:=1
+
+; this are the file names of the anatomical images (at the moment we can accept only one image)
+anatomical image filenames:= {MRbrain.hv}
+
+; the following should be 1 if you want to reconstruct 2D data
+only_2D:=1
+
+; the following is the output prefix of the PET reconstructed image
+kernelised output filename prefix :=KOSMAPOSL
+
+objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+.
+.
+.
+
+End KOSMAPOSL Parameters :=
+  \end{verbatim}
+
+
 
 \subsubsection{
 Filtered back projection (FBP2D)}
@@ -3387,6 +3501,15 @@ the data processor .
 
 See also the online documentation for the class \textbf{DataProcessor}.
 
+As of STIR version 4.0, it is now possible to use data processors 
+on images prior to forward projection and following back projection
+with any projector. This supercedes functionality provided by 
+ \textbf{PresmoothingForwardProjectorByBin} and 
+ \textbf{PostsmoothingBackProjectorByBin},
+  which can now be considered deprecated. Examples are available
+in \textbf{examples/samples/forward\_projector\_proj\_matrix\_ray\_tracing\_pre\_smoothing.par} 
+(and a similarly named back-projector example).
+
 { \subsubsubsection{Separable Convolution}
 }
 This implements spatial non-periodic convolution with a 3D separable 
@@ -3556,6 +3679,38 @@ The maximum width of the kernel (in pixels). Prior to version
 0.93 of the PARAPET library this was fixed to the number of pixels 
 in the input image (in that direction).
 \end{description}
+
+{ \subsubsubsection{Separable Gaussian Filter}
+}
+This is a separable 3D Gaussian filter for images discretised on
+a Cartesian voxel grid. These filters are composed of 3 1D filter
+kernels, one for the x,y and z directions each. Each 1D filter
+is specified by a Full Width at Half Maximum (FWHM) parameter
+(in millimetres), and a maximum spatial kernel width.
+The kernel values are obtained by sampling a Gaussian.
+
+The filter is normalised to 1 by default, but the user can choose to disable this option.
+
+
+{ \subsubsubsubsection{Parameters}
+}
+Sample parameters are given below
+\begin{verbatim}
+separable gaussian filter parameters :=
+x-dir filter fwhm (in mm) := 6
+y-dir filter fwhm (in mm) := 6
+z-dir filter fwhm (in mm) := 6
+x-dir maximum kernel size := 129
+y-dir maximum kernel size := 129
+z-dir maximum kernel size := 31
+Normalise filter to 1 := 1
+end separable gaussian filter parameters :=
+\end{verbatim}
+
+Default values are:
+(i) fwhm = 0 , which means no filtering
+(ii) maximum kernel size = -1 , which means unrestricted
+(iii) normalise filter to 1 = 1, which means that the filter is normalised to 1.
 
 { \subsubsubsection{Median}
 }
@@ -3757,17 +3912,20 @@ This implements a quadratic Gibbs prior. The gradient of the prior is computed a
   
 { \subsubsubsection{PLS}
 This implements the  anatomical penalty function, Parallel Level Sets (PLS),  proposed by Matthias J. Ehrhardt et. al [Ehr16]. Note that
-  PLS becomes smoothed TV when an uniform anatomical image is provided.  The prior function is the following:
+  PLS becomes smoothed TV when an uniform anatomical image is provided.  
+The prior has 2 parameters alpha and eta. It is computed for an image $ f $ as
 
   \[
   \phi(f) = \sqrt{\alpha^2 + |\nabla v|^2 - {\langle\nabla f,\xi\rangle}^2}
   \]
-  where $ f $ is the PET image and $ \alpha $ is a parameter that controls the edge-preservation property of PLS.  The $ \xi $ is the normalised gradient calculated as follows:
+  where $ f $ is the PET image, $ \xi $ is the normalised gradient calculated as follows:
 
   \[
   \xi = \frac{\nabla v}{\sqrt{|\nabla v|^2 + \eta^2}}
   \]
-where $ v $ is the anatomical image and $ \eta $ is a parameter for preventing the division by zero problem.
+
+  $ v $ is the anatomical image, $ \alpha $ controls the edge-preservation property of PLS, and depends on the scale of the emission image,
+  and $ \eta $ avoids division by zero, and depends on the scale of the anatomical image. 
 }
 { \subsubsubsubsection{Parameters}
 }
@@ -3777,14 +3935,11 @@ where $ v $ is the anatomical image and $ \eta $ is a parameter for preventing t
   PLS Prior Parameters:=
   penalisation factor :=1
 
-; the following parameter is to avoid division by zero
-; The value depends on the scale of the emission image. 
+  ; 
+  ; alpha controls the edge-preservation property of PLS, and depends on the scale of the emission image. 
+  ; eta avoids division by zero, and depends on the scale of the anatomical image. 
 
   eta:=1
-
-; the following parameter controls the edge-preservation property of PLS. 
-; The value depends on the scale of the emission image. 
-
   alpha:=1
 
   anatomical_filename:=${filename}
