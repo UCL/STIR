@@ -1438,7 +1438,7 @@ ScatterEstimation::project_mask_image()
 }
 
 //! If the filters are not applied in this specific order the
-//! results are not the desirable every time.
+//! results are not desirable every time.
 bool
 ScatterEstimation::
 apply_mask_in_place(DiscretisedDensity<3, float>& arg,
