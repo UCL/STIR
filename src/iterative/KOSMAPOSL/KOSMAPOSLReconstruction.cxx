@@ -219,7 +219,7 @@ post_processing()
      this->num_elem_neighbourhood=this->num_neighbours*this->num_neighbours ;
       }
 
-  if (this->only_iterative_info & !this->hybrid)
+  if ((this->only_iterative_info) && (!this->hybrid))
       error("If you choose to have only the iterative side information hybrid needs to be set as 1");
   if (!this->anatomical_image_filenames.empty()){
       this->anatomical_prior_sptr= (read_from_file<TargetT>(anatomical_image_filenames[0]));
