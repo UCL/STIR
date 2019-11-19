@@ -855,7 +855,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     {
         // Normalise in order to get the additive component
         std::string out_filename = extras_path.get_path() +"/"+ output_background_estimate_prefix + "_0.hs";
-        add_projdata_2d_sptr.reset(
+        add_projdata_sptr.reset(
                     new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
                                           this->input_projdata_sptr->get_proj_data_info_sptr() ,
                                           out_filename,
