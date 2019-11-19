@@ -171,7 +171,7 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
         }
     }
     // now compute scatter for all bins
-    double total_scatter = 0;
+    total_scatter = 0;
     Viewgram<float> viewgram =
             this->output_proj_data_sptr->get_empty_viewgram(vs_num.view_num(), vs_num.segment_num());
 #ifdef STIR_OPENMP
@@ -819,6 +819,50 @@ ScatterSimulation::
 set_cache_enabled(const bool arg)
 {
     use_cache = arg;
+}
+
+void
+ScatterSimulation::write_log()
+{
+        std::string log_filename =
+                this->output_proj_data_filename + ".log";
+        std::ofstream mystream(log_filename.c_str());
+
+        if (!mystream)
+        {
+            warning("Cannot open log file '%s'", log_filename.c_str()) ;
+            return;
+        }
+
+        int axial_bins = 0 ;
+
+        for (int segment_num = this->output_proj_data_sptr->get_min_segment_num();
+             segment_num <= this->output_proj_data_sptr->get_max_segment_num();
+             ++segment_num)
+            axial_bins += this->output_proj_data_sptr->get_num_axial_poss(segment_num);
+
+        const int total_bins =
+                this->output_proj_data_sptr->get_num_views() * axial_bins *
+                this->output_proj_data_sptr->get_num_tangential_poss();
+        mystream << this->parameter_info()
+//                 << "\nTotal simulation time elapsed: "
+//                 <<   simulation_time / 60 << "min"
+                   << "\nTotal Scatter Points : " << scatt_points_vector.size()
+                   << "\nTotal Scatter Counts : " << total_scatter
+                   << "\nActivity image SIZE: "
+                   << (*this->activity_image_sptr).size() << " * "
+                   << (*this->activity_image_sptr)[0].size() << " * "  // TODO relies on 0 index
+                   << (*this->activity_image_sptr)[0][0].size()
+                << "\nAttenuation image for scatter points SIZE: "
+                << (*this->density_image_for_scatter_points_sptr).size() << " * "
+                << (*this->density_image_for_scatter_points_sptr)[0].size() << " * "
+                << (*this->density_image_for_scatter_points_sptr)[0][0].size()
+                << "\nTotal bins : " << total_bins << " = "
+                << this->output_proj_data_sptr->get_num_views()
+                << " view_bins * "
+                << axial_bins << " axial_bins * "
+                << this->output_proj_data_sptr->get_num_tangential_poss()
+                << " tangential_bins\n";
 }
 
 END_NAMESPACE_STIR

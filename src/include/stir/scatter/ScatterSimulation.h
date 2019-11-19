@@ -224,6 +224,8 @@ public:
 
     virtual Succeeded set_up();
 
+    //! Output the log of the process.
+    virtual void write_log();
 
 protected:
 
@@ -414,6 +416,8 @@ protected:
     int downsample_scanner_dets;
 
     bool use_default_downsampling;
+
+    double total_scatter;
 
 };
 

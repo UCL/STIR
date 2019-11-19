@@ -1219,50 +1219,6 @@ reconstruct_analytic(int _current_iter_num,
 /****************** functions to help **********************/
 
 void
-ScatterEstimation::write_log() const
-{
-    //    std::string log_filename =
-    //            this->output_proj_data_filename + ".log";
-    //    std::ofstream mystream(log_filename.c_str());
-
-    //    if (!mystream)
-    //    {
-    //        warning("Cannot open log file '%s'", log_filename.c_str()) ;
-    //        return;
-    //    }
-
-    //    int axial_bins = 0 ;
-
-    //    for (int segment_num = this->output_proj_data_sptr->get_min_segment_num();
-    //         segment_num <= this->output_proj_data_sptr->get_max_segment_num();
-    //         ++segment_num)
-    //        axial_bins += this->output_proj_data_sptr->get_num_axial_poss(segment_num);
-
-    //    const int total_bins =
-    //            this->output_proj_data_sptr->get_num_views() * axial_bins *
-    //            this->output_proj_data_sptr->get_num_tangential_poss();
-    //    mystream << this->parameter_info()
-    //             << "\nTotal simulation time elapsed: "
-    //             <<   simulation_time / 60 << "min"
-    //               << "\nTotal Scatter Points : " << scatt_points_vector.size()
-    //               << "\nTotal Scatter Counts : " << total_scatter
-    //               << "\nActivity image SIZE: "
-    //               << (*this->activity_image_sptr).size() << " * "
-    //               << (*this->activity_image_sptr)[0].size() << " * "  // TODO relies on 0 index
-    //               << (*this->activity_image_sptr)[0][0].size()
-    //            << "\nAttenuation image SIZE: "
-    //            << (*this->atten_image_sptr).size() << " * "
-    //            << (*this->atten_image_sptr)[0].size() << " * "
-    //            << (*this->atten_image_sptr)[0][0].size()
-    //            << "\nTotal bins : " << total_bins << " = "
-    //            << this->output_proj_data_sptr->get_num_views()
-    //            << " view_bins * "
-    //            << axial_bins << " axial_bins * "
-    //            << this->output_proj_data_sptr->get_num_tangential_poss()
-    //            << " tangential_bins\n";
-}
-
-void
 ScatterEstimation::
 add_proj_data(ProjData& first_addend, const ProjData& second_addend)
 {

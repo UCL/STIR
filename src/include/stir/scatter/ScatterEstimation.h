@@ -155,8 +155,6 @@ public:
     // Get functions
     //! Get the number of iteration for the scatter estimation
     int get_iterations_num() const;
-    //! Output the log of the process.
-    virtual void write_log() const;
 
 protected:
     //! All recomputes_** will default true
