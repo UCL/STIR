@@ -63,7 +63,7 @@ public:
 
   virtual void undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const;
 
-  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const { return 1;}
+  virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
 
   void read_uniformity_table(Array<3,float>& uniformity) const;
   void read_cor_table(Array<3,float>& cor) const;
@@ -74,13 +74,15 @@ public:
                            int zoom) const;
 
 private:
+  int max_tang;
   shared_ptr<ProjData> norm_proj_data_info_ptr;
   mutable Array<1,float> normalisation_spect;
   Array<3,float> uniformity;
   Array<3,float> cor;
   mutable Array<3,float> down_sampled_uniformity;
   mutable RelatedViewgrams<float> NCOR_viewgrams;
-  std::string normalisation_spect_filename, folder_prefix;
+  std::string uniformity_filename, folder_prefix, projdata_filename;
+  float bin_efficiency;
 
   bool _use_detector_efficiencies;
   bool _use_decay_correction;
