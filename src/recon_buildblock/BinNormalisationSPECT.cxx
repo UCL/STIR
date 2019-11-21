@@ -1,15 +1,9 @@
 //
 //
 /*
-    Copyright (C) 2002- 2011, Hammersmith Imanet Ltd
-    Copyright CTI
+    Copyright (C) 2019, UCL
+    Copyright (C) 2019, NPL
     This file is part of STIR.
-
-    Some parts of this file originate in CTI code, distributed as
-    part of the matrix library from Louvain-la-Neuve, and hence carries
-    its restrictive license. Affected parts are the dead-time correction
-    in get_dead_time_efficiency and geo_Z_corr related code.
-
     Most of this file is free software; you can redistribute that part and/or modify
     it under the terms of the GNU Lesser General Public License as published by
     the Free Software Foundation; either version 2.1 of the License, or
@@ -41,8 +35,10 @@
 #include "stir/DetectionPosition.h"
 #include "stir/DetectionPositionPair.h"
 #include "stir/shared_ptr.h"
+#include "stir/IO/read_from_file.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/ViewSegmentNumbers.h"
+#include "stir/ProjData.h"
 #include "stir/IndexRange3D.h"
 #include "stir/IndexRange2D.h"
 #include "stir/IndexRange.h"
@@ -72,7 +68,7 @@ BinNormalisationSPECT::registered_name = "SPECT";
 void 
 BinNormalisationSPECT::set_defaults()
 {
-  this->normalisation_spect_filename = "";
+  this->uniformity_filename = "";
   this->_use_detector_efficiencies = false;
   this->_use_dead_time = false;
   this->_use_uniformity_factors = false;
@@ -87,7 +83,7 @@ BinNormalisationSPECT::
 initialise_keymap()
 {
   this->parser.add_start_key("Bin Normalisation SPECT");
-  this->parser.add_key("normalisation_SPECT_filename", &this->normalisation_spect_filename);
+  this->parser.add_key("uniformity_filename", &this->uniformity_filename);
   this->parser.add_key("use_detector_efficiencies", &this->_use_detector_efficiencies);
 //  this->parser.add_key("use_COR_factors", &this->_use_cor_factors);
   this->parser.add_key("use_uniformity_factors", &this->_use_uniformity_factors);
@@ -96,6 +92,7 @@ initialise_keymap()
   this->parser.add_key("half_life", &this->half_life);
   this->parser.add_key("view_time_interval", &this->view_time_interval);
   this->parser.add_key("num detector heads", &this->num_detector_heads);
+  this->parser.add_key("projdata filename", &this->projdata_filename);
   this->parser.add_key("use_decay_correction", &this->_use_decay_correction);
 
   this->parser.add_stop_key("End Bin Normalisation SPECT");
@@ -114,7 +111,9 @@ post_processing()
       read_cor_table(cor);
   }
 
-  read_norm_data(normalisation_spect_filename);
+  norm_proj_data_info_ptr=ProjData::read_from_file(projdata_filename);
+  max_tang=norm_proj_data_info_ptr->get_max_tangential_pos_num();
+//  read_norm_data(normalisation_spect_filename);
   return false;
 }
 
@@ -142,7 +141,53 @@ void
 BinNormalisationSPECT::
 read_norm_data(const std::string& filename)
 {// to think about this here I would need to read each table for uniformity or cor
+//    read_uniformity_table(uniformity);
   }
+
+float BinNormalisationSPECT::get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const {
+    int zoom=1024/(2*(max_tang+1));
+    double normalisation=1;
+
+    if(zoom!=1 && !resampled && use_uniformity_factors()){
+
+        resample_uniformity(//down_sampled_uniformity,
+                            uniformity,
+                            max_tang,
+                            zoom);
+    }
+
+    if(bin.view_num()==0)
+    set_num_views(norm_proj_data_info_ptr->get_num_views());
+
+        int head_num=(int)bin.view_num()/(num_views/num_detector_heads);
+
+            double rel_time;
+            rel_time=(this->view_time_interval)*
+                    (bin.view_num()+1-head_num*
+                    (num_views/num_detector_heads));
+    /*####################################################################################################
+     *####################################   uniformity factors  #########################################*/
+
+                if (use_uniformity_factors()){
+                    if(uniformity_filename=="")
+                        error("You need to define the uniformity filename and the folder prefix");
+                    if(zoom!=1)
+                    normalisation=
+                    normalisation*down_sampled_uniformity[head_num][bin.axial_pos_num()][bin.tangential_pos_num()+max_tang+1];
+                    else{
+                    normalisation=
+                    normalisation*uniformity[head_num][bin.axial_pos_num()][bin.tangential_pos_num()+max_tang+1];}
+                }
+    /*####################################################################################################
+     *####################################     decay factors     #########################################*/
+
+                if (use_decay_correction_factors()){
+                    normalisation=
+                    normalisation/decay_correction_factor(half_life, rel_time);
+                }
+
+return normalisation;
+}
 
 void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const{
 
@@ -302,7 +347,7 @@ BinNormalisationSPECT::
 read_uniformity_table(Array<3,float>& uniformity) const
 {//std::ofstream unif_table("uniformity.dat",std::ios::out);
     for(int n=1; n<=3; n++ ){
-        std::ifstream input(this->folder_prefix+std::to_string(n)+"/uniformity_table.dat");
+        std::ifstream input(this->folder_prefix+std::to_string(n)+"/"+uniformity_filename);
         std::string str;
         float value;
         int i=0,j=0;
