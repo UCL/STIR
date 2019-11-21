@@ -368,17 +368,29 @@ set_up()
     {
         info("ScatterEstimation: Running SSRB on input data...");
         shared_ptr<ProjDataInfo> proj_data_info_2d_sptr(
-                    dynamic_cast<ProjDataInfoCylindricalNoArcCorr* >
-                    (SSRB(*this->input_projdata_sptr->get_proj_data_info_ptr(),
-                          this->input_projdata_sptr->get_num_segments(), 1, false)));
+                    SSRB(*this->input_projdata_sptr->get_proj_data_info_ptr(),
+                          this->input_projdata_sptr->get_num_segments(), 1, false));
 
-        FilePath tmp(this->input_projdata_filename);
-        std::string out_filename = tmp.get_filename_no_extension() + "_2d.hs";
+        //! TODO: This tries to shield from the case that we call the function from
+        //! SIRF and a input_projdata_filename has not been set.
+        //! It is not completely safe. Maybe the best way would be to get the name from
+        //! input_projdata_sptr.
+        if (this->input_projdata_filename.size() > 0)
+        {
+            FilePath tmp(this->input_projdata_filename);
+            std::string out_filename = tmp.get_filename_no_extension() + "_2d.hs";
 
-        this->input_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                 proj_data_info_2d_sptr,
-                                                                 out_filename,
-                                                                 std::ios::in | std::ios::out | std::ios::trunc));
+            this->input_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                     proj_data_info_2d_sptr,
+                                                                     out_filename,
+                                                                     std::ios::in | std::ios::out | std::ios::trunc));
+        }
+        else
+        {
+            this->input_projdata_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                 proj_data_info_2d_sptr));
+        }
+
         SSRB(*this->input_projdata_2d_sptr,
              *input_projdata_sptr,false);
     }
@@ -759,11 +771,22 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         {
             info("ScatterEstimation: Running SSRB on the background data ...");
 
-            FilePath tmp(this->back_projdata_filename);
-            std::string out_filename = tmp.get_filename_no_extension() + "_2d.hs";
+            //! TODO the variable back_projdata_filename might not have been set.
+            //! This workaround is only temporal.
+            if (this->back_projdata_filename.size() > 0 )
+            {
+                FilePath tmp(this->back_projdata_filename);
+                std::string out_filename = tmp.get_filename_no_extension() + "_2d.hs";
 
-            this->back_projdata_2d_sptr = create_new_proj_data(out_filename, this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                                                               this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+                this->back_projdata_2d_sptr = create_new_proj_data(out_filename, this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                                   this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
+            }
+            else
+            {
+                this->back_projdata_2d_sptr(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                                                              this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
+            }
+
             SSRB(*this->back_projdata_2d_sptr,
                  *this->back_projdata_sptr, false);
 //            {
