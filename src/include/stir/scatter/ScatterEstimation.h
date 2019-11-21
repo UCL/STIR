@@ -205,6 +205,8 @@ protected:
     shared_ptr<ProjData> input_projdata_2d_sptr;
     //! Additive projection data after SSRB -- Randoms
     shared_ptr<ProjData> add_projdata_2d_sptr;
+    //! Prompts - randoms
+    shared_ptr<ProjData> data_to_fit_projdata_sptr;
 
     shared_ptr<ProjData> add_projdata_sptr;
     //! (Additive + Scatter Estimate) * Mult in 2D
@@ -244,7 +246,7 @@ protected:
     //! Output file name prefix
     std::string output_scatter_estimate_prefix;
 
-    std::string output_background_estimate_prefix;
+    std::string output_additive_estimate_prefix;
 private:
 
     //! \details A helper function to reduce the size of set_up().
