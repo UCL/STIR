@@ -364,7 +364,7 @@ set_up()
         error("ScatterEstimation: Currently, only runing the estimation in 2D is supported.");
     }
 
-#if 0
+#if 1
     // Calculate the SSRB
     if (input_projdata_sptr->get_num_segments() > 1)
     {
@@ -450,6 +450,8 @@ if(is_null_ptr(this->reconstruction_template_sptr))
 
     if(iterative_method)
         this->current_activity_image_sptr.reset(tmp_iterative->get_initial_data_ptr());
+
+    this->current_activity_image_sptr->fill(1.0);
 
     //    if ( run_debug_mode )
     //    {
@@ -617,7 +619,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
                 dynamic_cast<BinNormalisationFromProjData*> (this->multiplicative_binnorm_sptr.get())->get_norm_proj_data_sptr();
     }
 
-#if 0
+#if 1
     info("ScatterEstimation: 3.Calculating the attenuation projection data...");
 
     if( tmp_atten_projdata_sptr->get_num_segments() > 1)
@@ -649,7 +651,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         multiplicative_binnorm_2d_sptr.reset(new BinNormalisationFromProjData(atten_projdata_2d_sptr));
         multiplicative_binnorm_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
     }
-#if 0
+#if 1
     else
     {
         if(!tmp_chain_multiplicative_binnorm_sptr->is_first_trivial()) // Check that we have actually something in here
@@ -686,34 +688,31 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
                                                                                  this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
                 inv_projdata_3d_sptr->fill(1.f);
 
-                out_filename = "tmp_projdata_2d.hs";
-                shared_ptr<ProjData> tmp_projdata_2d_sptr = create_new_proj_data(out_filename, this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                                 this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
-                tmp_projdata_2d_sptr->fill(1.f);
-
                 out_filename = "tmp_normdata_2d.hs";
                 shared_ptr<ProjData> norm_projdata_2d_sptr = create_new_proj_data(out_filename,
-                                                                                  this->input_projdata_sptr->get_exam_info_sptr(),
+                                                                                  this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                                                                   this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
-                norm_projdata_2d_sptr->fill(1.f);
+                norm_projdata_2d_sptr->fill(0.f);
 
                 // Essentially since inv_projData_sptr is 1s then this is an inversion.
                 // inv_projdata_sptr = 1/norm3d
                 tmp_chain_multiplicative_binnorm_sptr->undo_only_first(*inv_projdata_3d_sptr, start_time, end_time);
 
-                info("ScatterEstimation: Performing SSRB on normalisation coefficients ...");
-
-                SSRB(*tmp_projdata_2d_sptr,
-                     *inv_projdata_3d_sptr,false);
-
                 // Crucial: Avoid divisions by zero!!
                 // This should be resolved after https://github.com/UCL/STIR/issues/348
                 pow_times_add min_threshold (0.0f, 1.0f, 1.0f,  1E-20f, NumericInfo<float>().max_value());
-                pow_times_add invert (0.0f, 1.0f, -1.0f, NumericInfo<float>().min_value(), NumericInfo<float>().max_value());
-                apply_to_proj_data(*tmp_projdata_2d_sptr, min_threshold);
-                apply_to_proj_data(*tmp_projdata_2d_sptr, invert);
+                apply_to_proj_data(*inv_projdata_3d_sptr, min_threshold);
 
-                norm_coeff_2d_sptr.reset(new BinNormalisationFromProjData(tmp_projdata_2d_sptr));
+
+                info("ScatterEstimation: Performing SSRB on normalisation coefficients ...");
+
+                SSRB(*norm_projdata_2d_sptr,
+                     *inv_projdata_3d_sptr,false);
+
+                pow_times_add invert (0.0f, 1.0f, -1.0f, NumericInfo<float>().min_value(), NumericInfo<float>().max_value());
+                apply_to_proj_data(*norm_projdata_2d_sptr, invert);
+
+                norm_coeff_2d_sptr.reset(new BinNormalisationFromProjData(norm_projdata_2d_sptr));
                 norm_coeff_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
             }
             else
@@ -756,7 +755,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
 
     if (!is_null_ptr(this->back_projdata_sptr))
     {
-#if 0
+#if 1
         if( back_projdata_sptr->get_num_segments() > 1)
         {
             info("ScatterEstimation: Running SSRB on the background data ...");
@@ -773,7 +772,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
             }
             else
             {
-                this->back_projdata_2d_sptr(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+                this->back_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
                                                               this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
             }
 
@@ -964,7 +963,7 @@ process_data()
     info("ScatterEstimation: Start processing...");
     shared_ptr<DiscretisedDensity <3,float> > act_image_for_averaging;
 
-    //Recompute the initial activity image if the max is equal to the min.
+    //Recompute the initial y image if the max is equal to the min.
 #if 1
     if( this->current_activity_image_sptr->find_max() == this->current_activity_image_sptr->find_min() )
     {
