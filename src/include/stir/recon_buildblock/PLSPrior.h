@@ -50,20 +50,20 @@ START_NAMESPACE_STIR
   https://doi.org/10.1109/TMI.2016.2549601
   Note that PLS becomes smoothed TV when an uniform anatomical image is provided.
 
-  The prior is computed as follows:
+  The prior has 2 parameters alpha and eta. It is computed for an image \f$ f f$ as
 
   \f[
   \phi(f) = \sqrt{\alpha^2 + |\nabla f|^2 - {\langle\nabla f,\xi\rangle}^2}
   \f]
-  where \f$ f \f$ is the PET image and \f$ \alpha \f$ is a parameter that controls the edge-preservation property of PLS.
-
-  The \f$ \xi \f$ is the normalised gradient of the anatomical image calculated as follows:
+  where \f$ f \f$ is the PET image,
+  \f$ \xi \f$ is the normalised gradient of the anatomical image calculated as follows:
 
   \f[
   \xi = \frac{\nabla v}{\sqrt{|\nabla v|^2 + \eta^2}}
   \f]
 
-  where \f$ v f$ is the anatomical image and \f$ \eta \f$ is a parameter for preventing the division by zero problem.
+  with \f$ v f$ the anatomical image, \f$ \alpha \f$ controls the edge-preservation property of PLS, and depends on the scale
+  of the emission image,  and \f$ \eta \f$ avoids division by zero, and depends on the scale of the anatomical image.
 
 
   A \f$\kappa\f$ image can be used to have spatially-varying penalties such as in

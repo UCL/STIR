@@ -160,7 +160,7 @@ public:
   const bool get_only_2D() const;
   const bool get_hybrid()const;
 
-  std::vector<shared_ptr<TargetT> > &get_anatomical_prior_sptr();
+  std::vector<shared_ptr<TargetT> > get_anatomical_prior_sptr();
 
     /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
@@ -168,8 +168,9 @@ public:
    one place, all objects that use the shared pointer will be affected.
   */
 
-  void set_anatomical_prior_sptr(shared_ptr<TargetT>&, int &index);
-  void set_anatomical_image_filenames(std::string&, int &index);
+  void set_anatomical_prior_sptr(shared_ptr<TargetT>&, int index);
+  void set_anatomical_image_filenames(std::string&, int index);
+
   void set_num_neighbours(const int);
   void set_num_non_zero_feat(const int);
   void set_sigma_m(double&, int &index);

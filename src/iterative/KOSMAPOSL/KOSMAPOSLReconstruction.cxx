@@ -247,9 +247,10 @@ const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
 
     if(num_non_zero_feat>1){
          for(int i = 0; i <=anatomical_image_filenames.size()-1; i++){
-    this->kmnorm_sptr[i] = shared_ptr<TargetT>(this->anatomical_prior_sptr[i]->get_empty_copy ());
-    this->kmnorm_sptr[i]->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
-            }
+           this->kmnorm_sptr[i] = shared_ptr<TargetT>(this->anatomical_prior_sptr[i]->get_empty_copy ());
+           this->kmnorm_sptr[i]->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
+           }
+      
     this->kpnorm_sptr = shared_ptr<TargetT>(this->anatomical_prior_sptr[0]->get_empty_copy ());
     this->kpnorm_sptr->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
 
@@ -363,7 +364,8 @@ get_hybrid() const
 //{ return this->kmnorm_sptr; }
 
 template <typename TargetT>
-std::vector<shared_ptr<TargetT> > &KOSMAPOSLReconstruction<TargetT>::get_anatomical_prior_sptr()
+
+std::vector<shared_ptr<TargetT> > KOSMAPOSLReconstruction<TargetT>::get_anatomical_prior_sptr()
 { return this->anatomical_prior_sptr; }
 
 
@@ -374,7 +376,7 @@ std::vector<shared_ptr<TargetT> > &KOSMAPOSLReconstruction<TargetT>::get_anatomi
 template<typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
-set_anatomical_prior_sptr (shared_ptr<TargetT>& arg, int &index)
+set_anatomical_prior_sptr (shared_ptr<TargetT>& arg, int index)
 {
   this->anatomical_prior_sptr[index] = arg;
 }
@@ -382,7 +384,7 @@ set_anatomical_prior_sptr (shared_ptr<TargetT>& arg, int &index)
 template <typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
-set_anatomical_image_filenames(std::string &arg, int &index)
+set_anatomical_image_filenames(std::string &arg, int index)
 {
   this->anatomical_image_filenames[index]  = arg;
 }
