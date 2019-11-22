@@ -607,7 +607,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
                 dynamic_cast<BinNormalisationFromProjData*> (this->multiplicative_binnorm_sptr.get())->get_norm_proj_data_sptr();
     }
 
-#if 0
+#if 1
     info("ScatterEstimation: 3.Calculating the attenuation projection data...");
 
     if( tmp_atten_projdata_sptr->get_num_segments() > 1)
@@ -639,7 +639,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         multiplicative_binnorm_2d_sptr.reset(new BinNormalisationFromProjData(atten_projdata_2d_sptr));
         multiplicative_binnorm_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
     }
-#if 0
+#if 1
     else
     {
         if(!tmp_chain_multiplicative_binnorm_sptr->is_first_trivial()) // Check that we have actually something in here
@@ -742,7 +742,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
 
     if (!is_null_ptr(this->back_projdata_sptr))
     {
-#if 0
+#if 1
         if( back_projdata_sptr->get_num_segments() > 1)
         {
             info("ScatterEstimation: Running SSRB on the background data ...");

@@ -34,7 +34,24 @@ Next time you run the estimation you can save some time by setting the recalcula
 
 ### Randoms 
 
-In this dataset a randoms sinogram is not provided.
+In the dataset the delayed events are included in the listmode file. In order to generate the randoms sinograms: 
+
+```bash
+find_ML_singles_from_delayed ML_singles 20170809_NEMA_60min_UCL.l 10
+construct_randoms_from_singles ML_randoms ML_singles tmpl_scanner.hs 10
+```
+
+### Normalisation factors
+
+In the dataset the normalisation factors are included. However, as during the scatter estimation procedure we need to perform SSRB on them, we cannot use them directly in the ECAT8 format. 
+
+In the `par_files` you can run the 
+
+```bash 
+correct_projdata correct_projdata.par 
+```
+
+which generate the normalisation sinogram. 
 
 ## Running the estimation
 
