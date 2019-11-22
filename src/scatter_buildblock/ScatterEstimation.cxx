@@ -453,38 +453,24 @@ if(is_null_ptr(this->reconstruction_template_sptr))
 
     this->current_activity_image_sptr->fill(1.0);
 
-    //    if ( run_debug_mode )
-    //    {
-    //        std::string out_filename = extras_path.get_path() + "inital_activity_image";
-    //        OutputFileFormat<DiscretisedDensity < 3, float > >::default_sptr()->
-    //                write_to_file(out_filename, *this->current_activity_image_sptr);
-    //    }
-
     // Based on the activity image zoom the attenuation
     if (!is_null_ptr(current_activity_image_sptr))
     {
-        VoxelsOnCartesianGrid<float>* tmp_act = dynamic_cast<VoxelsOnCartesianGrid<float>* >(current_activity_image_sptr.get());
         VoxelsOnCartesianGrid<float>* tmp_att = dynamic_cast<VoxelsOnCartesianGrid<float>* >(atten_image_sptr.get());
+        VoxelsOnCartesianGrid<float>* tmp = dynamic_cast<VoxelsOnCartesianGrid<float>* >(current_activity_image_sptr.get())->get_empty_copy();
 
         ZoomOptions scale(ZoomOptions::preserve_values);
 
-        zoom_image(*tmp_att, *tmp_act, scale);
+        zoom_image(*tmp, *tmp_att, scale);
+
+        atten_image_sptr.reset(new VoxelsOnCartesianGrid<float>(*tmp));
+
+//        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+//                write_to_file("post_activity", *this->current_activity_image_sptr.get());
+
+//        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
+//                write_to_file("post_attenuation", *this->atten_image_sptr.get());
     }
-
-    //    if ( run_debug_mode )
-    //    {
-    //        std::string out_filename = extras_path.get_path() + "mod_atten_image";
-    //        OutputFileFormat<DiscretisedDensity < 3, float > >::default_sptr()->
-    //                write_to_file(out_filename, *this->atten_image_sptr);
-    //    }
-
-    //        if ( run_debug_mode )
-    //        {
-    //            std::string out_filename = extras_path.get_path() + "inital_activity_image";
-    //            OutputFileFormat<DiscretisedDensity < 3, float > >::default_sptr()->
-    //                    write_to_file(out_filename, *this->current_activity_image_sptr);
-    //        }
-
 
     //
     // ScatterSimulation
@@ -524,12 +510,14 @@ if(is_null_ptr(this->reconstruction_template_sptr))
         if (run_in_2d_projdata)
         {
             this->scatter_simulation_sptr->set_template_proj_data_info_sptr(this->input_projdata_2d_sptr->get_proj_data_info_sptr());
+            this->scatter_simulation_sptr->set_exam_info_sptr(this->input_projdata_2d_sptr->get_exam_info_sptr());
         }
         else
         {
             this->scatter_simulation_sptr->set_template_proj_data_info_sptr(this->input_projdata_sptr->get_proj_data_info_sptr());
+            this->scatter_simulation_sptr->set_exam_info_sptr(this->input_projdata_sptr->get_exam_info_sptr());
         }
-        this->scatter_simulation_sptr->set_exam_info_sptr(this->input_projdata_2d_sptr->get_exam_info_sptr());
+
     }
 
     //    if (this->scatter_simulation_sptr->set_up() == Succeeded::no)
@@ -619,7 +607,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
                 dynamic_cast<BinNormalisationFromProjData*> (this->multiplicative_binnorm_sptr.get())->get_norm_proj_data_sptr();
     }
 
-#if 1
+#if 0
     info("ScatterEstimation: 3.Calculating the attenuation projection data...");
 
     if( tmp_atten_projdata_sptr->get_num_segments() > 1)
@@ -651,7 +639,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
         multiplicative_binnorm_2d_sptr.reset(new BinNormalisationFromProjData(atten_projdata_2d_sptr));
         multiplicative_binnorm_2d_sptr->set_up(this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
     }
-#if 1
+#if 0
     else
     {
         if(!tmp_chain_multiplicative_binnorm_sptr->is_first_trivial()) // Check that we have actually something in here
@@ -702,7 +690,6 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
                 // This should be resolved after https://github.com/UCL/STIR/issues/348
                 pow_times_add min_threshold (0.0f, 1.0f, 1.0f,  1E-20f, NumericInfo<float>().max_value());
                 apply_to_proj_data(*inv_projdata_3d_sptr, min_threshold);
-
 
                 info("ScatterEstimation: Performing SSRB on normalisation coefficients ...");
 
@@ -755,7 +742,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
 
     if (!is_null_ptr(this->back_projdata_sptr))
     {
-#if 1
+#if 0
         if( back_projdata_sptr->get_num_segments() > 1)
         {
             info("ScatterEstimation: Running SSRB on the background data ...");

@@ -694,12 +694,14 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
                                                                                     1, delta_ring,
                                                                                     new_scanner_sptr->get_num_detectors_per_ring()/2,
                                                                                     new_scanner_sptr->get_max_num_non_arccorrected_bins(),
-                                                                                    false)->clone()));
+                                                                                    false)));
+
+
 
     if(!is_null_ptr(output_proj_data_sptr))
     {
         this->output_proj_data_sptr.reset(new ProjDataInMemory(this->template_exam_info_sptr,
-                                                               this->proj_data_info_cyl_noarc_cor_sptr->create_shared_clone()));
+                                                               this->proj_data_info_cyl_noarc_cor_sptr));
         this->output_proj_data_sptr->fill(0.0);
         info("ScatterSimulation: output projection data created.");
     }
@@ -741,7 +743,7 @@ Succeeded ScatterSimulation::default_downsampling(bool all_images)
     if(!is_null_ptr(activity_image_sptr) && all_images)
     {
         VoxelsOnCartesianGrid<float>* tmp_act = dynamic_cast<VoxelsOnCartesianGrid<float>* >(activity_image_sptr.get());
-        float _zoom_xy =
+        VoxelsOnCartesianGrid<float>* tmp = tmpl_density->get_empty_copy();
                 tmp_act->get_voxel_size().x() / tmpl_density->get_voxel_size().x();
         float _zoom_z =
                 tmp_act->get_voxel_size().z() / tmpl_density->get_voxel_size().z();
@@ -750,8 +752,8 @@ Succeeded ScatterSimulation::default_downsampling(bool all_images)
                                                           tmp_act->get_y_size(),
                                                           tmp_act->get_x_size());
 
-        zoom_image_in_place(*tmp_act ,
-                            CartesianCoordinate3D<float>(_zoom_z, _zoom_xy, _zoom_xy),
+        zoom_image(*tmp, *tmp_act, scaling);
+        activity_image_sptr.reset(new VoxelsOnCartesianGrid<float>(*tmp));
                             CartesianCoordinate3D<float>(0,0,0),
                             new_size,
                             scaling);
@@ -761,8 +763,8 @@ Succeeded ScatterSimulation::default_downsampling(bool all_images)
 
     if(!is_null_ptr(density_image_sptr) && all_images)
     {
-        VoxelsOnCartesianGrid<float>* tmp_att = dynamic_cast<VoxelsOnCartesianGrid<float>* >(density_image_sptr.get());
-        float _zoom_xy =
+        VoxelsOnCartesianGrid<float>* tmp_act = dynamic_cast<VoxelsOnCartesianGrid<float>* >(density_image_sptr.get());
+        VoxelsOnCartesianGrid<float>* tmp = tmpl_density->get_empty_copy();
                 tmp_att->get_voxel_size().x() / tmpl_density->get_voxel_size().x();
         float _zoom_z =
                 tmp_att->get_voxel_size().z() / tmpl_density->get_voxel_size().z();
@@ -771,8 +773,8 @@ Succeeded ScatterSimulation::default_downsampling(bool all_images)
                                                           tmp_att->get_y_size(),
                                                           tmp_att->get_x_size());
 
-        zoom_image_in_place(*tmp_att ,
-                            CartesianCoordinate3D<float>(_zoom_z, _zoom_xy, _zoom_xy),
+        zoom_image(*tmp, *tmp_act, scaling);
+        density_image_sptr.reset(new VoxelsOnCartesianGrid<float>(*tmp));
                             CartesianCoordinate3D<float>(0,0,0),
                             new_size, scaling);
 
