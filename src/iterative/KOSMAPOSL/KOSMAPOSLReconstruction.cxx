@@ -1026,17 +1026,18 @@ update_estimate(TargetT &current_alpha_coefficent_image)
     compute_kernelised_image (*kcurrent_ptr, current_alpha_coefficent_image,current_alpha_coefficent_image);
 
     //Write the emission image estimate:
-    subiteration_counter++;
     if((subiteration_counter)%this->save_interval==0){
 
         char itC[10];
-        sprintf (itC, "%d", subiteration_counter);
+        sprintf (itC, "%d", subiteration_counter + this->start_subiteration_num);
         std::string it=itC;
         std::string us="_";
         std::string k=".hv";
         this->current_kimage_filename =this->kernelised_output_filename_prefix+us+it+k;
 
-        write_to_file(this->current_kimage_filename,*kcurrent_ptr); }
+        write_to_file(this->current_kimage_filename,*kcurrent_ptr);
+    }
+    subiteration_counter++;
   }
   
 #ifndef PARALLEL
