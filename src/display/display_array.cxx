@@ -77,6 +77,7 @@
 #include "stir/display.h"
 #include "stir/IndexRange3D.h"
 #include "stir/utilities.h"
+#include "stir/ML_norm.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/info.h"
 #include <boost/format.hpp>
@@ -540,6 +541,34 @@ void display(const RelatedViewgrams<elemT>& vs,
   }
 }
 
+
+void display(const DetPairData& det_pair_data, const char * const title)
+{
+  const int num_detectors = det_pair_data.get_num_detectors();
+  Array<2,float> full_data(IndexRange2D(num_detectors,num_detectors));
+  for (int a = det_pair_data.get_min_index(); a <= det_pair_data.get_max_index(); ++a)
+    for (int b = det_pair_data.get_min_index(a); b <= det_pair_data.get_max_index(a); ++b)
+       full_data[a%num_detectors][b%num_detectors] =
+         det_pair_data(a,b);
+  display(full_data,title);
+}
+
+void display(const FanProjData& fan_data, const char * const title)
+{
+  const int num_rings = fan_data.get_num_rings();
+  const int num_detectors_per_ring = fan_data.get_num_detectors_per_ring();
+  Array<3,float> full_data(IndexRange3D(num_rings,num_detectors_per_ring,num_detectors_per_ring));
+  for (int ra=fan_data.get_min_ra(); ra <= fan_data.get_max_ra(); ++ra)
+  {
+    full_data.fill(0);
+    for (int a = 0; a<num_detectors_per_ring; ++a)
+      for (int rb=fan_data.get_min_rb(ra); rb <= fan_data.get_max_rb(ra); ++rb)
+        for (int b = fan_data.get_min_b(a); b <= fan_data.get_max_b(a); ++b)
+          full_data[rb][a%num_detectors_per_ring][b%num_detectors_per_ring] =
+             fan_data(ra,a,rb,b);
+    display(full_data, full_data.find_max(), title);
+  }
+}
 
 
 /***********************************************

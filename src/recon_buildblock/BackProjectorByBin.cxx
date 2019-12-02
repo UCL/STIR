@@ -37,6 +37,8 @@
 #include "stir/ProjData.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/info.h"
+#include "stir/is_null_ptr.h"
+#include "stir/DataProcessor.h"
 #include <vector>
 #ifdef STIR_OPENMP
 #include "stir/is_null_ptr.h"
@@ -50,10 +52,27 @@ START_NAMESPACE_STIR
 BackProjectorByBin::BackProjectorByBin()
   :   _already_set_up(false)
 {
+    set_defaults();
 }
 
 BackProjectorByBin::~BackProjectorByBin()
 {
+}
+
+void
+BackProjectorByBin::
+set_defaults()
+{
+  _post_data_processor_sptr.reset();
+}
+
+void
+BackProjectorByBin::
+initialise_keymap()
+{
+  parser.add_start_key("Back Projector Parameters");
+  parser.add_stop_key("End Back Projector Parameters");
+  parser.add_parsing_key("post data processor", &_post_data_processor_sptr);
 }
 
 void
@@ -322,6 +341,19 @@ get_output(DiscretisedDensity<3,float> &density) const
     std::copy(_density_sptr->begin_all(), _density_sptr->end_all(), density.begin_all());
 #endif
 
+    // If a post-back-projection data processor has been set, apply it.
+    if (!is_null_ptr(_post_data_processor_sptr)) {
+        Succeeded success = _post_data_processor_sptr->apply(density);
+        if (success != Succeeded::yes)
+            throw std::runtime_error("BackProjectorByBin::get_output(). Post-back-projection data processor failed.");
+    }
+}
+
+void
+BackProjectorByBin::
+set_post_data_processor(shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > post_data_processor_sptr)
+{
+    _post_data_processor_sptr = post_data_processor_sptr;
 }
 
 void

@@ -36,7 +36,7 @@
 #include "stir/recon_buildblock/GeneralisedPrior.h"
 #include <string>
 
-#include "stir/IO/ExamData.h"
+#include "stir/ExamData.h"
 #include "stir/ProjData.h"
 #include "stir/recon_buildblock/BinNormalisation.h"
 

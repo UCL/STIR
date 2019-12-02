@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
   <head>
-    <title>Summary of changes in STIR release 3.1 (dated 15/01/2018)</title>
+    <title>Summary of changes in STIR release 4.0-alpha (dated 19/10/2019)</title>
   </head>
 
   <body>
-    <h1>Summary of changes in STIR release 3.1 (dated 15/01/2018)</h1>
+    <h1>Summary of changes in STIR release 4.0-alpha (dated 19/10/2019)</h1>
 
 <p>This version is 95% backwards compatible with STIR 3.0 for the user (see below).
 Developers might need to make code changes as 
@@ -195,6 +195,9 @@ These are only minimally documented at the present stage unfortunately.
   </li>
 <li>Indirect parametric reconstruction (Patlak) no longer requires you to pass a pre-existing template file. If one is supplied, it will be used; else the parametric image will be created based on the dynamic image.
   </li>
+  <li>Verbosity can be set in reconstructions with the "verbosity := " keyword
+    in the parameter file.
+  </li>
   </ul>
 
 
@@ -241,6 +244,10 @@ HFS, FFS, HFP or FFP).
   <li>The DICOM series reading restrictions in <tt>read_file_itk</tt> have been relaxed. The requirement for the same acquisition, 
     trigger or frame times in a series is no longer enforced. This allows 3-D DICOM volumes to be read correctly but may cause
     issues for dynamic PET or CT data.
+  </li>
+  <li>Data processors (such as motion or smoothing) can be used prior to forward projections and following back projections. 
+    This supercedes functionality provided by <code>PresmoothingForwardProjectorByBin</code> and 
+    <code>PostsmoothingBackProjectorByBin</code>, which can now be considered deprecated.
   </li>
 </ul>
 <h4>Python (and MATLAB) interface</h4>

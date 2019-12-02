@@ -78,6 +78,9 @@ public:
   //! constructor that copies data from another ProjData
   ProjDataInMemory (const ProjData& proj_data);
 
+  //! Copy constructor
+  ProjDataInMemory (const ProjDataInMemory& proj_data);
+
   //! destructor deallocates all memory the object owns
   virtual ~ProjDataInMemory();
  
@@ -94,6 +97,9 @@ private:
 #endif
   
   size_t get_size_of_buffer() const;
+
+  //! Create a new stream
+  shared_ptr<std::iostream> create_stream() const;
 };
 
 END_NAMESPACE_STIR
