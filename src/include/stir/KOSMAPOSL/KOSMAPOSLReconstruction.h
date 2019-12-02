@@ -196,7 +196,7 @@ public:
   //! Anatomical image filename
   std::vector<std::string> anatomical_image_filenames;
 
-  std::vector<shared_ptr<TargetT> > anatomical_prior_sptr,kmnorm_sptr;
+  std::vector<std::shared_ptr<TargetT> > anatomical_prior_sptr,kmnorm_sptr;
   shared_ptr<TargetT> kpnorm_sptr;
  //kernel parameters
   int num_neighbours,num_non_zero_feat,num_elem_neighbourhood,num_voxels,dimz,dimy,dimx;

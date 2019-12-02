@@ -215,7 +215,7 @@ post_processing()
       }
 for(int i = 0; i<=anatomical_image_filenames.size()-1; i++)
 {  if (!this->anatomical_image_filenames.empty()){
-      this->anatomical_prior_sptr.push_back(read_from_file<TargetT>(anatomical_image_filenames[i]));
+      this->anatomical_prior_sptr.push_back(shared_ptr<TargetT>(read_from_file<TargetT>(anatomical_image_filenames[i])));
 
     set_anatomical_prior_sptr (this->anatomical_prior_sptr[i],i);
     info(boost::format("Reading anatomical data '%1%'")
