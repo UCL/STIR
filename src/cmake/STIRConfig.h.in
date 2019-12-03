@@ -83,6 +83,5 @@ namespace stir {
 #endif
 
 #cmakedefine STIR_PROJECTORS_AS_V3
-#cmakedefine HAVE_NLOHMANN_JSON
 
 #endif //  __stir_config__H__

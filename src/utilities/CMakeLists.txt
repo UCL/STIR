@@ -75,4 +75,11 @@ if (AVW_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  conv_AVW)
 endif()
 
+if (nlohmann_json_FOUND)
+  list(APPEND ${dir_EXE_SOURCES}  ctac_to_mu_values)
+
+  install(DIRECTORY share/ DESTINATION share
+		  FILES_MATCHING PATTERN "*.json")
+endif()
+
 include(stir_exe_targets)
