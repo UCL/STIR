@@ -24,25 +24,16 @@
 
   \par Usage:
   \code
-  ctac_to_mu_values -o output_filename -i input_directory -j slope_filename
+  ctac_to_mu_values -o output_filename -i input_volume -j slope_filename -m manufacturer_name [-v kilovoltage_peak] -k target_photon_energy
   \endcode
 */
 
-#include <algorithm>
-#include <cctype>
-
-#include "stir/IO/ITKImageInputFileFormat.h"
 #include "stir/info.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/DiscretisedDensity.h"
-#include "stir/modelling/ParametricDiscretisedDensity.h"
-#include "stir/DynamicDiscretisedDensity.h"
-#include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/stream.h"
 #include "stir/getopt.h"
-
 
 #include <nlohmann/json.hpp>
 
@@ -98,12 +89,12 @@ Succeeded get_record_from_json(
 }
 
 Succeeded apply_bilinear_scaling_to_HU(
-    const std::unique_ptr<FloatImageType> &input_image_sptr,
-    const nlohmann::json &transform,
-    std::shared_ptr<FloatImageType> output_image_sptr){
+    FloatImageType &output_image_sptr,
+    const FloatImageType &input_image_sptr,
+    const nlohmann::json &transform){
 
-  FloatImageType::full_iterator out_iter = output_image_sptr->begin_all();
-  FloatImageType::const_full_iterator in_iter = input_image_sptr->begin_all_const();
+  FloatImageType::full_iterator out_iter = output_image_sptr.begin_all();
+  FloatImageType::const_full_iterator in_iter = input_image_sptr.begin_all_const();
 
   const float a1 = transform["a1"];
   const float b1 = transform["b1"];
@@ -113,7 +104,7 @@ Succeeded apply_bilinear_scaling_to_HU(
 
   //std::cout << transform.dump(4);
 
-  while( in_iter != input_image_sptr->end_all_const())
+  while( in_iter != input_image_sptr.end_all_const())
   {
     if (*in_iter<0.f) {
       float mu = a1 + b1 *(*in_iter);
@@ -136,14 +127,15 @@ int main(int argc, char * argv[])
   const char * input_filename = 0;
   const char * slope_filename = 0;
   const char * manufacturer_name = 0;
+  const char * kVp_str = 0;
   const char * keV_str = 0;
 
-  const char * const usage = "ctac_to_mu_values -o output_filename -i input_dicom_slice -j slope_filename -m manufacturer_name -k target_energy\n";
+  const char * const usage = "ctac_to_mu_values -o output_filename -i input_volume -j slope_filename -m manufacturer_name [-v kilovoltage_peak] -k target_photon_energy\n";
   opterr = 0;
   {
     char c;
 
-    while ((c = getopt (argc, argv, "i:o:j::m:k:?")) != -1)
+    while ((c = getopt (argc, argv, "i:o:j::m:v:k:?")) != -1)
       switch (c)
 	{
 	case 'i':
@@ -157,6 +149,9 @@ int main(int argc, char * argv[])
 	  break;
     case 'm':
       manufacturer_name = optarg;
+      break;
+  case 'v':
+      kVp_str = optarg;
       break;
 	case 'k':
       keV_str = optarg;
@@ -182,6 +177,12 @@ int main(int argc, char * argv[])
       return EXIT_FAILURE;
     }
 
+  if (kVp_str == 0){
+    //If the user does not specify a value for kVP, assume 120 kVp.
+    kVp_str = "120";
+    stir::info(boost::format("No value for kVp given, assuming %s") % kVp_str);
+  }
+
   //Read slope file
   std::ifstream slope_json_file_stream(slope_filename);
   nlohmann::json slope_json;
@@ -193,45 +194,16 @@ int main(int argc, char * argv[])
 
   //Extract the target slope information from the given file of slope definitions.
   if ( get_record_from_json(j, manufacturer, slope_json, keV_str) == Succeeded::no ) {
-    stir::error(boost::format("Unable to find the desired slope reference in %1%") % slope_filename);
+    stir::error(boost::format("ctac_to_mu_values: unable to find the desired slope reference in %1%") % slope_filename);
   }
 
   //Read DICOM data
   stir::info(boost::format("ctac_to_mu_values: opening file %1%") % input_filename);
-  std::unique_ptr< FloatImageType > input_image_sptr(stir::read_from_file<FloatImageType>( input_filename ));
-
-  unique_ptr<VoxelsOnCartesianGrid<float> >image_aptr
-      (dynamic_cast<VoxelsOnCartesianGrid<float> *>(
-           DiscretisedDensity<3,float>::read_from_file(input_filename))
-      );
-
-  BasicCoordinate<3,int> min_indices, max_indices;
-  if (!image_aptr->get_regular_range(min_indices, max_indices))
-    error("Non-regular range of coordinates. That's strange.\n");
-
-  BasicCoordinate<3,float> edge_min_indices(min_indices), edge_max_indices(max_indices);
-  edge_min_indices-= 0.5F;
-  edge_max_indices+= 0.5F;
-
-  std::cout << "\nOrigin in mm {z,y,x}    :" << image_aptr->get_origin()
-            << "\nVoxel-size in mm {z,y,x}:" << image_aptr->get_voxel_size()
-            << "\nMin_indices {z,y,x}     :" << min_indices
-            << "\nMax_indices {z,y,x}     :" << max_indices
-            << "\nNumber of voxels {z,y,x}:" << max_indices - min_indices + 1
-            << "\nPhysical coordinate of first index in mm {z,y,x} :"
-            << image_aptr->get_physical_coordinates_for_indices(min_indices)
-            << "\nPhysical coordinate of last index in mm {z,y,x}  :"
-            << image_aptr->get_physical_coordinates_for_indices(max_indices)
-            << "\nPhysical coordinate of first edge in mm {z,y,x} :"
-            << image_aptr->get_physical_coordinates_for_indices(edge_min_indices)
-            << "\nPhysical coordinate of last edge in mm {z,y,x}  :"
-            << image_aptr->get_physical_coordinates_for_indices(edge_max_indices);
-  std::cout << std::endl;
-
+  unique_ptr< FloatImageType > input_image_sptr(stir::read_from_file<FloatImageType>( input_filename ));
   //Create output image from input image.
   shared_ptr< FloatImageType > output_image_sptr(input_image_sptr->clone());
   //Apply scaling.
-  apply_bilinear_scaling_to_HU(input_image_sptr, j,  output_image_sptr);
+  apply_bilinear_scaling_to_HU(*output_image_sptr, *input_image_sptr, j);
   //Write output file.
   Succeeded success = OutputFileFormat< FloatImageType >::default_sptr()->
       write_to_file(output_filename, *output_image_sptr);
