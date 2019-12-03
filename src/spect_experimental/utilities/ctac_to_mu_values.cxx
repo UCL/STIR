@@ -50,6 +50,53 @@ USING_NAMESPACE_STIR
 
 typedef DiscretisedDensity<3,float> FloatImageType;
 
+Succeeded get_record_from_json(
+    nlohmann::json &output_json,
+    std::string &manufacturer,
+    const nlohmann::json input_json,
+    const std::string keV_str){
+
+  //Put user-specified manufacturer into upper case.
+  std::locale loc;
+
+  for (std::string::size_type i=0; i<manufacturer.length(); ++i)
+    manufacturer[i] = std::toupper(manufacturer[i],loc);
+
+  stir::info(boost::format("Manufacturer: '%s'") % manufacturer);
+
+  //Get desired keV as integer value
+  int keV;
+
+  std::stringstream ss;
+  ss << keV_str;
+  ss >> keV;
+
+  stir::info(boost::format("target keV: '%i'") % keV);
+
+  //Extract appropriate chunk of JSON file for given manufacturer.
+  nlohmann::json target = input_json["scale"][manufacturer]["transform"];
+
+  int location = -1;
+  int pos = 0;
+  for (auto entry : target){
+    if (entry["kev"] == keV)
+      location = pos;
+    pos++;
+  }
+
+  if (location == -1){
+    std::cerr << "Desired keV: " << keV << " not found! ";
+    std::cerr << "Aborting!";
+    return Succeeded::no;
+  }
+
+  //Extract transform for specific keV.
+  output_json = target[location];
+  //std::cout << output_json.dump(4);
+
+  return Succeeded::yes;
+}
+
 Succeeded apply_bilinear_scaling_to_HU(
     const std::unique_ptr<FloatImageType> &input_image_sptr,
     const nlohmann::json &transform,
@@ -140,44 +187,14 @@ int main(int argc, char * argv[])
   nlohmann::json slope_json;
   slope_json_file_stream >> slope_json;
 
-  //Put user-specified manufacturer into upper case.
   std::string manufacturer = manufacturer_name;
-  std::locale loc;
 
-  for (std::string::size_type i=0; i<manufacturer.length(); ++i)
-    manufacturer[i] = std::toupper(manufacturer[i],loc);
+  nlohmann::json j;
 
-  stir::info(boost::format("Manufacturer: '%s'") % manufacturer);
-
-  //Get desired keV as integer value
-  int keV;
-
-  std::stringstream ss;
-  ss << keV_str;
-  ss >> keV;
-
-  stir::info(boost::format("target keV: '%i'") % keV);
-
-  //Extract appropriate chunk of JSON file for given manufacturer.
-  nlohmann::json target = slope_json["scale"][manufacturer]["transform"];
-
-  int location = -1;
-  int pos = 0;
-  for (auto entry : target){
-    if (entry["kev"] == keV)
-      location = pos;
-    pos++;
+  //Extract the target slope information from the given file of slope definitions.
+  if ( get_record_from_json(j, manufacturer, slope_json, keV_str) == Succeeded::no ) {
+    stir::error(boost::format("Unable to find the desired slope reference in %1%") % slope_filename);
   }
-
-  if (location == -1){
-    std::cerr << "Desired keV: " << keV << " not found! ";
-    std::cerr << "Aborting!";
-    return EXIT_FAILURE;
-  }
-
-  //Extract transform for specific keV.
-  nlohmann::json j = target[location];
-  //std::cout << j.dump(4);
 
   //Read DICOM data
   stir::info(boost::format("ctac_to_mu_values: opening file %1%") % input_filename);
