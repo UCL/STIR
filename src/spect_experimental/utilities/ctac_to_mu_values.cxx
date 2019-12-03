@@ -45,7 +45,8 @@ Succeeded get_record_from_json(
     nlohmann::json &output_json,
     std::string &manufacturer,
     const nlohmann::json input_json,
-    const std::string keV_str){
+    const std::string &keV_str,
+    const std::string& kVp_str){
 
   //Put user-specified manufacturer into upper case.
   std::locale loc;
@@ -64,24 +65,32 @@ Succeeded get_record_from_json(
 
   stir::info(boost::format("target keV: '%i'") % keV);
 
+  //Get desired kVp as integer value
+  int kVp;
+
+  ss.clear();
+  ss << kVp_str;
+  ss >> kVp;
+
+  stir::info(boost::format("kVp: '%i'") % kVp);
+
   //Extract appropriate chunk of JSON file for given manufacturer.
   nlohmann::json target = input_json["scale"][manufacturer]["transform"];
 
   int location = -1;
   int pos = 0;
   for (auto entry : target){
-    if (entry["kev"] == keV)
+    if ( (entry["kev"] == keV) && (entry["kvp"] == kVp) )
       location = pos;
     pos++;
   }
 
   if (location == -1){
-    std::cerr << "Desired keV: " << keV << " not found! ";
-    std::cerr << "Aborting!";
+    stir::error("Desired slope not found!");
     return Succeeded::no;
   }
 
-  //Extract transform for specific keV.
+  //Extract transform for specific keV and kVp.
   output_json = target[location];
   //std::cout << output_json.dump(4);
 
@@ -193,8 +202,10 @@ int main(int argc, char * argv[])
   nlohmann::json j;
 
   //Extract the target slope information from the given file of slope definitions.
-  if ( get_record_from_json(j, manufacturer, slope_json, keV_str) == Succeeded::no ) {
+  if ( get_record_from_json(j, manufacturer, slope_json, keV_str, kVp_str) == Succeeded::no ) {
     stir::error(boost::format("ctac_to_mu_values: unable to find the desired slope reference in %1%") % slope_filename);
+    stir::error("Aborting!");
+    return EXIT_FAILURE;
   }
 
   //Read DICOM data
