@@ -201,7 +201,6 @@ post_processing()
   if (base_type::post_processing())
     return true;
 
-  this->subiteration_counter=0;
   this->anatomical_sd=0;
 
   if (this->anatomical_image_filenames.size()>1){
@@ -1026,18 +1025,12 @@ update_estimate(TargetT &current_alpha_coefficent_image)
     compute_kernelised_image (*kcurrent_ptr, current_alpha_coefficent_image,current_alpha_coefficent_image);
 
     //Write the emission image estimate:
-    if((subiteration_counter)%this->save_interval==0){
-
-        char itC[10];
-        sprintf (itC, "%d", subiteration_counter + this->start_subiteration_num);
-        std::string it=itC;
-        std::string us="_";
-        std::string k=".hv";
-        this->current_kimage_filename =this->kernelised_output_filename_prefix+us+it+k;
-
-        write_to_file(this->current_kimage_filename,*kcurrent_ptr);
+    if(!(this->subiteration_num % this->save_interval) ||    // every save_interval'th
+        this->subiteration_num == this->num_subiterations) { // or on last iteration
+          this->current_kimage_filename = this->make_filename_prefix_subiteration_num(
+            this->kernelised_output_filename_prefix);
+          write_to_file(this->current_kimage_filename, *kcurrent_ptr);
     }
-    subiteration_counter++;
   }
   
 #ifndef PARALLEL
