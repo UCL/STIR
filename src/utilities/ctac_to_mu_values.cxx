@@ -111,11 +111,13 @@ Succeeded apply_bilinear_scaling_to_HU(
   const float a2 = transform["a2"];
   const float b2 = transform["b2"];
 
+  const float breakPoint = transform["break"];
+
   //std::cout << transform.dump(4);
 
   while( in_iter != input_image_sptr.end_all_const())
   {
-    if (*in_iter<0.f) {
+    if (*in_iter < breakPoint) {
       float mu = a1 + b1 *(*in_iter);
       *out_iter = (mu < 0.0f) ? 0.0f : mu;
     } else {
