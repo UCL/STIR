@@ -124,7 +124,7 @@ if(NOT DISABLE_RDF)
 endif()
 
 if(NOT DISABLE_NLOHMANN_JSON)
-    find_package(nlohmann_json 3.2.0 REQUIRED)
+    find_package(nlohmann_json 3.2.0 QUIET)
     if (nlohmann_json_FOUND)
         message(STATUS "nlohmann JSON library found.")
         message(STATUS "The nlohmann JSON library needs C++-11, so we will enable this.")
