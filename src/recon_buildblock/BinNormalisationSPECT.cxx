@@ -74,7 +74,6 @@ BinNormalisationSPECT::set_defaults()
   this->_use_uniformity_factors = false;
   this->num_detector_heads = 3;
   this->half_life = 6*60*60; //seconds
-  this->_use_cor_factors = false;
 
 }
 
@@ -85,7 +84,6 @@ initialise_keymap()
   this->parser.add_start_key("Bin Normalisation SPECT");
   this->parser.add_key("uniformity_filename", &this->uniformity_filename);
   this->parser.add_key("use_detector_efficiencies", &this->_use_detector_efficiencies);
-//  this->parser.add_key("use_COR_factors", &this->_use_cor_factors);
   this->parser.add_key("use_uniformity_factors", &this->_use_uniformity_factors);
   this->parser.add_key("folder_prefix", &this->folder_prefix);
   this->parser.add_key("rel_angle", &this->rel_angle);
@@ -105,11 +103,6 @@ post_processing()
   if(use_uniformity_factors()){
       uniformity.resize(IndexRange3D(0,2,0,1023,0,1023));
   read_uniformity_table(uniformity);}
-
-  if(use_COR_factors()){
-      cor.resize(IndexRange3D(0,2,0,719,0,719));
-      read_cor_table(cor);
-  }
 
   norm_proj_data_info_ptr=ProjData::read_from_file(projdata_filename);
   max_tang=norm_proj_data_info_ptr->get_max_tangential_pos_num();
@@ -140,8 +133,7 @@ BinNormalisationSPECT(const std::string& filename)
 void
 BinNormalisationSPECT::
 read_norm_data(const std::string& filename)
-{// to think about this here I would need to read each table for uniformity or cor
-//    read_uniformity_table(uniformity);
+{// to think about this
   }
 
 float BinNormalisationSPECT::get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const {
@@ -159,12 +151,11 @@ float BinNormalisationSPECT::get_bin_efficiency(const Bin& bin,const double star
     if(bin.view_num()==0)
     set_num_views(norm_proj_data_info_ptr->get_num_views());
 
-        int head_num=(int)bin.view_num()/(num_views/num_detector_heads);
-
-            double rel_time;
-            rel_time=(this->view_time_interval)*
-                    (bin.view_num()+1-head_num*
-                    (num_views/num_detector_heads));
+    int head_num=(int)bin.view_num()/(num_views/num_detector_heads);
+    double rel_time;
+    rel_time=(this->view_time_interval)*
+             (bin.view_num()+1-head_num*
+             (num_views/num_detector_heads));
     /*####################################################################################################
      *####################################   uniformity factors  #########################################*/
 
@@ -229,12 +220,12 @@ void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams,const doubl
              *####################################   uniformity factors  #########################################*/
 
                         if (use_uniformity_factors()){
+                            if(uniformity_filename=="")
+                                error("You need to define the uniformity filename and the folder prefix");
                             if(zoom!=1)
-                            normalisation=
-                            normalisation*down_sampled_uniformity[head_num][bin.axial_pos_num()][bin.tangential_pos_num()+max_tang+1];
+                                normalisation=normalisation*down_sampled_uniformity[head_num][bin.axial_pos_num()][bin.tangential_pos_num()+max_tang+1];
                             else
-                            normalisation=
-                            normalisation*uniformity[head_num][bin.axial_pos_num()][bin.tangential_pos_num()+max_tang+1];
+                                normalisation=normalisation*uniformity[head_num][bin.axial_pos_num()][bin.tangential_pos_num()+max_tang+1];
                         }
             /*####################################################################################################
              *####################################     decay factors     #########################################*/
@@ -254,15 +245,11 @@ void BinNormalisationSPECT::apply(RelatedViewgrams<float>& viewgrams,const doubl
 void BinNormalisationSPECT::undo(RelatedViewgrams<float>& viewgrams,const double start_time, const double end_time) const{
 
     this->check(*viewgrams.get_proj_data_info_sptr());
-//    int head_to_sino_index=num_pixel_in_detector_head_row/
-//        (viewgrams.get_max_tangential_pos_num()-viewgrams.get_min_tangential_pos_num()+1);
     int view_num=viewgrams.get_basic_view_num();
     int max_tang=viewgrams.get_max_tangential_pos_num();
     int zoom=1024/(2*(max_tang+1));
     double normalisation=1;
-//    NCOR_viewgrams=viewgrams;
-//    RelatedViewgrams<float>::iterator NCOR_iter=NCOR_viewgrams.begin();
-//std::cout<<"uni "<<down_sampled_uniformity.empty()<<","<<zoom<<std::endl;
+
 if(zoom!=1 && !resampled && use_uniformity_factors()){
 
     resample_uniformity(//down_sampled_uniformity,
@@ -282,7 +269,7 @@ if(zoom!=1 && !resampled && use_uniformity_factors()){
             (num_views/num_detector_heads));
 
     for (RelatedViewgrams<float>::iterator iter = viewgrams.begin(); iter != viewgrams.end(); ++iter)
-    {//NCOR_iter=iter;
+    {
       Bin bin(iter->get_segment_num(),iter->get_view_num(), 0,0);
       for (bin.axial_pos_num()= iter->get_min_axial_pos_num();
        bin.axial_pos_num()<=iter->get_max_axial_pos_num();
@@ -295,12 +282,12 @@ if(zoom!=1 && !resampled && use_uniformity_factors()){
  *####################################   uniformity factors  #########################################*/
 
             if (use_uniformity_factors()){
+                if(uniformity_filename=="")
+                    error("You need to define the uniformity filename and the folder prefix");
                 if(zoom!=1)
-                normalisation=
-                normalisation*down_sampled_uniformity[head_num][bin.axial_pos_num()][bin.tangential_pos_num()+max_tang+1];
+                    normalisation=normalisation*down_sampled_uniformity[head_num][bin.axial_pos_num()][bin.tangential_pos_num()+max_tang+1];
                 else
-                normalisation=
-                normalisation*uniformity[head_num][bin.axial_pos_num()][bin.tangential_pos_num()+max_tang+1];
+                    normalisation=normalisation*uniformity[head_num][bin.axial_pos_num()][bin.tangential_pos_num()+max_tang+1];
             }
 /*####################################################################################################
  *####################################     decay factors     #########################################*/
@@ -321,38 +308,15 @@ if(zoom!=1 && !resampled && use_uniformity_factors()){
 
 void
 BinNormalisationSPECT::
-read_cor_table(Array<3,float>& cor) const
-{//std::ofstream cor_table("cor.dat",std::ios::out);
-    for(int n=1; n<=3; n++ ){
-        std::ifstream input(this->folder_prefix+std::to_string(n)+"/COR_table.dat");
-        std::string str;
-
-        int i=0;
-
-        while (std::getline(input, str)){
-//            value=std::stof(str);
-//            std::cout<<"uni "<<n<<", "<<i<<", "<<j<<", "
-//                    <<value<<std::endl;
-             input>>cor[n-1][i][0]>>cor[n-1][i][1];
-//             std::cout<<"uni "<<n<<","<<i<<", "<<cor[n-1][i][0]<<cor[n-1][i][1]<<", "<<std::endl;
-//             cor_table<<cor[n-1][i][0]<<" "<<cor[n-1][i][1]<<std::endl;
-             i=i+1;
-            }
-    }
-}
-
-
-void
-BinNormalisationSPECT::
 read_uniformity_table(Array<3,float>& uniformity) const
 {//std::ofstream unif_table("uniformity.dat",std::ios::out);
     for(int n=1; n<=3; n++ ){
         std::ifstream input(this->folder_prefix+std::to_string(n)+"/"+uniformity_filename);
         std::string str;
-        float value;
         int i=0,j=0;
 
         while (std::getline(input, str)){
+            float value;
             value=std::stof(str);
 
             if(j>1023){
@@ -431,13 +395,6 @@ BinNormalisationSPECT::
 get_half_life() const
 {
   return this->half_life;
-}
-
-bool
-BinNormalisationSPECT::
-use_COR_factors() const
-{
-  return this->_use_cor_factors;
 }
 
 END_NAMESPACE_STIR

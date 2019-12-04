@@ -67,7 +67,7 @@ class estimate_TEW_scatter : public KeyParser, ArrayFilter3DUsingConvolution<flo
 {
 public:
 
-  estimate_TEW_scatter(const char * const par_filename);
+  explicit estimate_TEW_scatter(const char * const par_filename);
 
   std::string scatter_filename;
   std::string lower_filename,upper_filename;
@@ -76,7 +76,6 @@ public:
 
   Succeeded compute();
 private:
-
 
 
 //  virtual void set_defaults();

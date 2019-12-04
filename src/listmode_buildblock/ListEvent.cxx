@@ -36,13 +36,6 @@
 
 START_NAMESPACE_STIR
 
-//Succeeded
-//ListEvent::
-//set_prompt(const bool)
-//{
-//  return Succeeded::no;
-//}
-
 void 
 ListEvent::
 get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
@@ -51,3 +44,4 @@ get_bin(Bin& bin, const ProjDataInfo& proj_data_info) const
 }
 
 END_NAMESPACE_STIR
+

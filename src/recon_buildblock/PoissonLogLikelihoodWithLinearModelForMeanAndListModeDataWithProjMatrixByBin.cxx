@@ -101,6 +101,7 @@ initialise_keymap()
   this->parser.add_key("additive sinogram",&this->additive_projection_data_filename);
  
   this->parser.add_key("num_events_to_use",&this->num_events_to_use);
+
 } 
 template <typename TargetT> 
 int 
