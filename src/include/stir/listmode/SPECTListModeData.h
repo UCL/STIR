@@ -33,7 +33,7 @@
 #include <string>
 #include <ctime>
 #include "stir/ProjDataInfo.h"
-#include "stir/IO/ExamData.h"
+#include "stir/ExamData.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/listmode/SPECTListRecord.h"
 
