@@ -123,8 +123,6 @@ start_new_time_frame(const unsigned int new_frame_num)
 {
 
   base_type::start_new_time_frame(new_frame_num);
-//  ListModeData::SavedPosition start_of_this_frame;
-//  start_of_this_frame = this->lm_data_ptr->save_get_position();
 
   const double start_time = this->frame_defs.get_start_time(new_frame_num);
   const double end_time = this->frame_defs.get_end_time(new_frame_num);
@@ -149,13 +147,13 @@ start_new_time_frame(const unsigned int new_frame_num)
 	  break; //get out of while loop
 	}
       if (record.is_time())
-    {
+	{
 	  const double new_time = record.time().get_time_in_secs();
 	  if (this->do_time_frame && new_time >= end_time)
 	    break; // get out of while loop
-      current_time = new_time;
+	  current_time = new_time;
 	}
-      if (record.is_event() && start_time <= current_time)
+      else if (record.is_event() && start_time <= current_time)
 	{
 	  ++total_num_events_in_this_frame;
 
@@ -232,14 +230,12 @@ start_new_time_frame(const unsigned int new_frame_num)
   num_times_to_replicate_iter = num_times_to_replicate.begin();
     
   info(boost::format("Filled in replication vector for %1% events.") % total_num_events_in_this_frame);
-//  this->lm_data_ptr->set_get_position(start_of_this_frame);
-  this->lm_data_ptr->reset();
 }
 
 template <typename LmToProjDataT> 
 void 
 LmToProjDataBootstrap<LmToProjDataT>::
-get_bin_from_event(Bin& bin, const ListEvent &event) const
+get_bin_from_event(Bin& bin, const ListEvent& event) const
 {
   assert(num_times_to_replicate_iter != num_times_to_replicate.end());
   if (*num_times_to_replicate_iter > 0)
@@ -254,9 +250,8 @@ get_bin_from_event(Bin& bin, const ListEvent &event) const
 
 
 // instantiation
-template class LmToProjDataBootstrap<LmToProjData>;
+template Lass LmToProjDataBootstrap<LmToProjData>;
 
 
 
 END_NAMESPACE_STIR
-
