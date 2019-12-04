@@ -32,7 +32,7 @@
 #include <string>
 #include <ctime>
 #include "stir/ProjDataInfo.h"
-#include "stir/IO/ExamData.h"
+#include "stir/ExamData.h"
 #include "stir/RegisteredParsingObject.h"
 #include "stir/listmode/ListRecord.h"
 # ifdef BOOST_NO_STDC_NAMESPACE

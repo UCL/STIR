@@ -75,21 +75,6 @@ public:
     Succeeded
     set_prompt(const bool prompt = true);
 
-  //! Finds the LOR between the coordinates where the detection took place
-  /*! Obviously, these coordinates are only estimates which depend on the
-      scanner hardware. For example, Depth-of-Interaction might not be
-      taken into account. However, the intention is that this function returns
-      'likely' positions (e.g. not the face of a crystal, but a point somewhere 
-      in the middle).
-
-      Coordinates are in mm and in the standard STIR coordinate system
-      used by ProjDataInfo etc (i.e. origin is in the centre of the scanner).
-      
-      \todo This function might need time info or so for rotating scanners.
-  */
-  virtual LORAs2Points<float>
-    get_LOR() const = 0;
-
   //! Finds the bin coordinates of this event for some characteristics of the projection data
   /*! bin.get_bin_value() will be <=0 when the event corresponds to
       an LOR outside the range of the projection data.
@@ -111,107 +96,34 @@ public:
     void
     get_bin(Bin& bin, const ProjDataInfo&) const;
 
-  //! This method checks if the template is valid for LmToProjData
-  /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
-   *  Most scanners have listmode data that correspond to non arc-corrected data and
-   *  this check avoids a crash when an unsupported template is used as input.
-   */
-  virtual
-  bool
-  is_valid_template(const ProjDataInfo&) const =0;
 
 }; /*-coincidence event*/
 
-
-//! A class for storing and using a timing record from a listmode file
-/*! \ingroup listmode
-    CListTime is used to provide an interface to the 'timing' events 
-    in the list mode stream. Usually, the timing event also contains 
-    gating information. For rotating scanners, it could also contain
-    angle info.
-
-    \todo this is still under development. Things to add are angles
-    or so for rotating scanners. Also, some info on the maximum
-    (and actual?) number of gates would be useful.
-    \see CListModeData for more info on list mode data. 
-*/
 class CListTime : public ListTime
 {
 public:
   virtual ~CListTime() {}
-
-  virtual unsigned long get_time_in_millisecs() const = 0;
-  inline double get_time_in_secs() const
-    { return get_time_in_millisecs()/1000.; }
-
-  virtual Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs) = 0;
-  inline Succeeded set_time_in_secs(const double time_in_secs)
-    { 
-      unsigned long time_in_millisecs;
-      round_to(time_in_millisecs, time_in_secs/1000.);
-      return set_time_in_millisecs(time_in_millisecs); 
-    }
-
 };
 
-//! A class recording external input to the scanner (normally used for gating)
-/*! For some scanners, the state of some external measurements can be recorded in the
-   list file, such as ECG triggers etc. We currently assume that these take discrete values.
-
-   If your scanner has more data available, you can provide it in the derived class.
-*/
 class CListGatingInput : public ListGatingInput
 {
 public:
   virtual ~CListGatingInput() {}
-
-  //! get gating-related info
-  /*! Generally, gates are numbered from 0 to some maximum value.
-   */
-  virtual unsigned int get_gating() const = 0;
-
-  virtual Succeeded set_gating(unsigned int) = 0;
 };
 
-//! A class for a general element of a list mode file
-/*! \ingroup listmode
-    This represents either a timing or coincidence event in a list mode
-    data stream.
-
-    Some scanners can have more types of records. For example,
-    the Quad-HiDAC puts singles information in the
-    list mode file. If you need that information,
-    you will have to do casting to e.g. CListRecordQHiDAC.
-    
-    \see CListModeData for more info on list mode data. 
-*/
 class CListRecord : public ListRecord
 {
 public:
   virtual ~CListRecord() {}
-
-  virtual bool is_time() const = 0;
-
-  virtual bool is_event() const = 0;
-
-  virtual CListEvent&  event() = 0;
-  virtual const CListEvent&  event() const = 0;
-  virtual CListTime&   time() = 0;
-  virtual const CListTime&   time() const = 0;
-
-  virtual bool operator==(const CListRecord& e2) const =0;//{ return (*this == e2); }
-  bool operator!=(const CListRecord& e2) const { return !(*this == e2); }
+//  virtual bool operator==(const CListRecord& e2) const =0;
+//  bool operator!=(const CListRecord& e2) const { return !(*this == e2); }
 
 };
 
 class CListRecordWithGatingInput : public CListRecord
-{
- public:
-  virtual bool is_gating_input() const { return false; }
-  virtual CListGatingInput&  gating_input() = 0; 
-  virtual const CListGatingInput&  gating_input() const = 0; 
-};
+{};
 
 END_NAMESPACE_STIR
 
 #endif
+
