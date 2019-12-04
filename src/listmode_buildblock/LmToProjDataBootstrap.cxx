@@ -30,7 +30,7 @@
 */
 
 #include "stir/listmode/LmToProjDataBootstrap.h"
-#include "stir/listmode/ListRecord.h"
+#include "stir/listmode/CListRecord.h"
 #include "stir/Succeeded.h"
 #include "stir/info.h"
 #include <iostream>
@@ -123,8 +123,8 @@ start_new_time_frame(const unsigned int new_frame_num)
 {
 
   base_type::start_new_time_frame(new_frame_num);
-//  ListModeData::SavedPosition start_of_this_frame;
-//  start_of_this_frame = this->lm_data_ptr->save_get_position();
+  CListModeData::SavedPosition start_of_this_frame;
+  start_of_this_frame = this->lm_data_ptr->save_get_position();
 
   const double start_time = this->frame_defs.get_start_time(new_frame_num);
   const double end_time = this->frame_defs.get_end_time(new_frame_num);
@@ -136,8 +136,8 @@ start_new_time_frame(const unsigned int new_frame_num)
   unsigned int total_num_events_in_this_frame = 0;
 
   // loop over all events in the listmode file
-  shared_ptr <ListRecord> record_sptr = this->lm_data_ptr->get_empty_record_sptr();
-  ListRecord& record = *record_sptr;
+  shared_ptr <CListRecord> record_sptr = this->lm_data_ptr->get_empty_record_sptr();
+  CListRecord& record = *record_sptr;
 
   info("Going through listmode file to find number of events in this frame");
   double current_time = start_time;
@@ -232,14 +232,13 @@ start_new_time_frame(const unsigned int new_frame_num)
   num_times_to_replicate_iter = num_times_to_replicate.begin();
     
   info(boost::format("Filled in replication vector for %1% events.") % total_num_events_in_this_frame);
-//  this->lm_data_ptr->set_get_position(start_of_this_frame);
-  this->lm_data_ptr->reset();
+  this->lm_data_ptr->set_get_position(start_of_this_frame);
 }
 
 template <typename LmToProjDataT> 
 void 
 LmToProjDataBootstrap<LmToProjDataT>::
-get_bin_from_event(Bin& bin, const ListEvent &event) const
+get_bin_from_event(Bin& bin, const CListEvent &event) const
 {
   assert(num_times_to_replicate_iter != num_times_to_replicate.end());
   if (*num_times_to_replicate_iter > 0)
@@ -259,4 +258,3 @@ template class LmToProjDataBootstrap<LmToProjData>;
 
 
 END_NAMESPACE_STIR
-
