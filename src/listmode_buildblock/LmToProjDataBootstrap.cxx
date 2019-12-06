@@ -250,7 +250,7 @@ get_bin_from_event(Bin& bin, const ListEvent& event) const
 
 
 // instantiation
-template Lass LmToProjDataBootstrap<LmToProjData>;
+template class LmToProjDataBootstrap<LmToProjData>;
 
 
 
