@@ -59,11 +59,14 @@ Succeeded get_record_from_json(
   stir::info(boost::format("Manufacturer: '%s'") % manufacturer);
 
   //Get desired keV as integer value
+  float keV_as_float;
   int keV;
 
   std::stringstream ss;
-  ss << keV_str.substr(0,keV_str.find("."));
-  ss >> keV;
+  ss << keV_str;
+  ss >> keV_as_float;
+
+  keV = std::round(keV_as_float);
 
   stir::info(boost::format("target keV: '%i'") % keV);
 
