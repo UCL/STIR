@@ -26,6 +26,7 @@
   \code
   ctac_to_mu_values -o output_filename -i input_volume -j slope_filename -m manufacturer_name [-v kilovoltage_peak] -k target_photon_energy
   \endcode
+  Default value for tube voltage is 120 kV.
 */
 
 #include <string>
@@ -146,7 +147,8 @@ int main(int argc, char * argv[])
   const char * kVp_str = 0;
   const char * keV_str = 0;
 
-  const char * const usage = "ctac_to_mu_values -o output_filename -i input_volume -j slope_filename -m manufacturer_name [-v kilovoltage_peak] -k target_photon_energy\n";
+  const char * const usage = "ctac_to_mu_values -o output_filename -i input_volume -j slope_filename -m manufacturer_name [-v kilovoltage_peak] -k target_photon_energy\n"
+	  "Default value for tube voltage is 120 kV.\n";
   opterr = 0;
   {
     char c;
