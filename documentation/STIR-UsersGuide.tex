@@ -2687,6 +2687,24 @@ dynamic image as separate images.
 To use it, simply give the pattern of the output filename, the input filename, and optionally
 supply a parameter file for saving the output images.
 
+{ \subsubsubsection{ctac\_to\_mu\_values}
+}
+
+This executable can be used to convert a CT or CT for attenuation correction (CTAC) to linear attenuation coefficients
+(mu-values) in cm-1. To use it, pass the output filename, input volume file name (if this is a DICOM series, then
+choose one file from the directory), the JSON file containing the conversion slopes, the manufacturer of the scanner
+(this needs to be present in the JSON file) and the target keV. It should normally be run as follows
+
+\cmdline{ctac\_to\_mu\_values {\textbackslash}\\
+-o output\_filename {\textbackslash}\\
+-i input\_volume {\textbackslash}\\
+-j slope\_filename {\textbackslash}\\
+-m manufacturer\_name {\textbackslash}\\
+[-v kilovoltage\_peak] {\textbackslash}\\
+-k target_photon\_energy}
+
+The optional \textit{kilovoltage\_peak} is the kilovoltage peak (kVp) used to acquire the data. If no value is given,
+a kVp of 120 is assumed. 
 
 \subsubsection{
 Converting data}
