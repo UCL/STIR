@@ -28,6 +28,8 @@
   \endcode
 */
 
+#include <string>
+
 #include "stir/info.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/OutputFileFormat.h"
@@ -60,7 +62,7 @@ Succeeded get_record_from_json(
   int keV;
 
   std::stringstream ss;
-  ss << keV_str;
+  ss << keV_str.substr(0,keV_str.find("."));
   ss >> keV;
 
   stir::info(boost::format("target keV: '%i'") % keV);
@@ -146,7 +148,7 @@ int main(int argc, char * argv[])
   {
     char c;
 
-    while ((c = getopt (argc, argv, "i:o:j::m:v:k:?")) != -1)
+    while ((c = getopt (argc, argv, "i:o:j:m:v:k:?")) != -1)
       switch (c)
 	{
 	case 'i':
