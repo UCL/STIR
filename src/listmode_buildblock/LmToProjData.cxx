@@ -475,7 +475,7 @@ do_post_normalisation(Bin& bin) const
 	    }
 	  else
 	    {
-	      bin.set_bin_value(1/bin_efficiency);
+          bin.set_bin_value(bin.get_bin_value()/bin_efficiency);
 	    }	  
 	}
     }
@@ -683,11 +683,11 @@ process_data()
 			   {
 			     do_post_normalisation(bin);
 			 
-			     num_stored_events += event_increment;
+                 num_stored_events += bin.get_bin_value() *event_increment;
 			     if (record.event().is_prompt())
-			       ++num_prompts_in_frame;
+                   num_prompts_in_frame+=bin.get_bin_value() *event_increment;
 			     else
-			       ++num_delayeds_in_frame;
+                   num_delayeds_in_frame+=abs(bin.get_bin_value() *event_increment);
 
 			     if (num_stored_events%500000L==0) cout << "\r" << num_stored_events << " events stored" << flush;
                             
@@ -698,7 +698,7 @@ process_data()
 			     else
 			       (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
 			       bin.get_bin_value() * 
-			       event_increment;
+                   event_increment;
 			   }
 		       }
 		     else 	// event is rejected for some reason
