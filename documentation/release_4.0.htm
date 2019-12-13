@@ -198,6 +198,9 @@ These are only minimally documented at the present stage unfortunately.
   <li>Verbosity can be set in reconstructions with the "verbosity := " keyword
     in the parameter file.
   </li>
+  <li><code>ctac_to_mu_values</code> is a new utility that converts a CT image to linear attenuation coefficients.
+      This application depends on the <a href="https://github.com/nlohmann/json">nlohmann JSON library</a>.
+  </li>
     <li>NiftyPET's GPU projectors have been wrapped. If NiftyPET is installed, these projectors can be used 
       on data from the Siemens mMR. See the example parameter file in <tt>examples/samples/OSMAPOSL_niftypet.par</tt>.
   </li>
