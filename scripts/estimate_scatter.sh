@@ -470,9 +470,9 @@ SCATTER_LEVEL=1
 TEMPLATE=$template_proj_data_file
 OUTPUT_PREFIX=$unscaled
 export ACTIVITY_IMAGE DENSITY_IMAGE LOW_DENSITY_IMAGE SCATTER_LEVEL TEMPLATE OUTPUT_PREFIX
-echo estimate_scatter ${ACTIVITY_IMAGE} ${zoomed_attenuation_image} $template_proj_data_file \
-    $unscaled.hs $scatterpar  > estimate_scatter_${OUTPUT_PREFIX}.log
-estimate_scatter $scatterpar >> estimate_scatter_${OUTPUT_PREFIX}.log 2>&1 
+echo simulate_scatter ${ACTIVITY_IMAGE} ${zoomed_attenuation_image} $template_proj_data_file \
+    $unscaled.hs $scatterpar  > simulate_scatter_${OUTPUT_PREFIX}.log
+simulate_scatter $scatterpar >> simulate_scatter_${OUTPUT_PREFIX}.log 2>&1 
 
 
 # output of upsample_and_fit_single_scatter
