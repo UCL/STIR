@@ -89,10 +89,11 @@ int main(int argc, const char *argv[])
     parser.add_start_key("Scatter Simulation");
     parser.add_stop_key("End Scatter Simulation");
     parser.add_parsing_key("Simulation method", &simulation_method_sptr);
-    parser.parse(argv[1]);
+    if (!parser.parse(argv[1]))
+      { t.stop(); return EXIT_FAILURE; }
 
     if(simulation_method_sptr->set_up() == Succeeded::no)
-        return EXIT_FAILURE;
+      { t.stop(); return EXIT_FAILURE; }
 
     if(simulation_method_sptr->process_data() == stir::Succeeded::yes)
     {
