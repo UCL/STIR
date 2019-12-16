@@ -99,8 +99,8 @@ initialise_keymap()
   this->parser.add_key("max ring difference num to process", &this->max_ring_difference_num_to_process);
   this->parser.add_parsing_key("Matrix type", &this->PM_sptr); 
   this->parser.add_key("additive sinogram",&this->additive_projection_data_filename); 
+ 
   this->parser.add_key("num_events_to_use",&this->num_events_to_use);
-
 } 
 template <typename TargetT> 
 int 
@@ -183,10 +183,6 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
         }
         return true;
 }
-
-template <typename TargetT> void
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::start_new_time_frame(const unsigned int)
-{}
 
 template <typename TargetT>  
 Succeeded 
