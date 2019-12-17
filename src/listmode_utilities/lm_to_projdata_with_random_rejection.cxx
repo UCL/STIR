@@ -8,7 +8,6 @@
  
   \author Kris Thielemans
   
-  $Revision $
 */
 /*
     Copyright (C) 2003- 2012, Hammersmith Imanet Ltd
