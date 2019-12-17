@@ -36,7 +36,7 @@ int main(int argc, char * argv[])
 {
   
   if ((argc<1) || (argc>3)) {
-    std::cerr << "Usage: " << argv[0] << " [par_file reject_if_above]]\n";
+    std::cerr << "Usage: " << argv[0] << " [par_file fraction_of_counts_to_keep]]\n";
     exit(EXIT_FAILURE);
   }
 
