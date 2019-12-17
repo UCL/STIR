@@ -36,7 +36,7 @@ USING_NAMESPACE_STIR
 int main(int argc, char * argv[])
 {
   
-  if (argc<1 && argc>3) {
+  if ((argc<1) || (argc>3)) {
     std::cerr << "Usage: " << argv[0] << " [par_file reject_if_above]]\n";
     exit(EXIT_FAILURE);
   }
@@ -48,4 +48,3 @@ int main(int argc, char * argv[])
   application.process_data();
   return EXIT_SUCCESS;
 }
-
