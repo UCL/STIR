@@ -36,6 +36,9 @@
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/recon_array_functions.h"
 #include <fstream>
+#ifdef HAVE_ITK
+#include "stir/IO/ITKOutputFileFormat.h"
+#endif
 
 START_NAMESPACE_STIR
 
@@ -84,28 +87,41 @@ protected:
 // iterators.
 static
 Succeeded
-compare_arrays(const std::vector<float> &vec1, const std::vector<float> &vec2)
+compare_arrays(const std::vector<float> &vec1, const std::vector<float> &vec2, const float threshold)
 {
+    // Get minimum between two arrays
+    float min = std::min(*std::min_element(vec1.begin(),vec1.end()),
+                         *std::min_element(vec2.begin(),vec2.end()));
+
+    // Get maximum between two arrays
+    float max = std::max(*std::max_element(vec1.begin(),vec1.end()),
+                         *std::max_element(vec2.begin(),vec2.end()));
+
+    // Normalise arrays between 0 and 1
+    std::vector<float> vec1_normalised = vec1;
+    std::vector<float> vec2_normalised = vec2;
+    for (unsigned i=0; i<vec1_normalised.size(); ++i) {
+        vec1_normalised[i] = (vec1[i]-min) / (max-min);
+        vec2_normalised[i] = (vec2[i]-min) / (max-min);
+    }
+
     // Subtract
-    std::vector<float> diff = vec1;
-    std::transform(vec1.begin(), vec1.end(), vec2.begin(), diff.begin(), std::minus<float>());
+    std::vector<float> diff = vec1_normalised;
+    std::transform(vec1_normalised.begin(), vec1_normalised.end(),
+                   vec2_normalised.begin(), diff.begin(), std::minus<float>());
 
-    // Get max difference
-    const float max_diff = *std::max_element(diff.begin(), diff.end());
-
-    // Get Euclidean distance with diff^2, accumulate and then sqrt
-    std::vector<float> diff_sq = vec1;
+    // Get RMS with diff^2, accumulate, div by num voxels, and then sqrt
+    std::vector<float> diff_sq = diff;
     std::transform(diff.begin(), diff.end(), diff_sq.begin(), [](float f)->float { return f*f; });
     float sum_diff_sq = std::accumulate(diff_sq.begin(),diff_sq.end(),0.f);
-    float euclidean_dist = sqrt(sum_diff_sq);
+    float rms = sqrt(sum_diff_sq/float(diff_sq.size()));
 
     std::cout << "Min array 1 / array 2 = " << *std::min_element(vec1.begin(),vec1.end()) << " / " << *std::min_element(vec2.begin(),vec2.end()) << "\n";
     std::cout << "Max array 1 / array 2 = " << *std::max_element(vec1.begin(),vec1.end()) << " / " << *std::max_element(vec2.begin(),vec2.end()) << "\n";
-    std::cout << "Sum array 1 / array 2 = " <<  std::accumulate(vec1.begin(),vec1.end(),0.f) << " / " << std::accumulate(vec2.begin(),vec2.end(),0.f)      << "\n";
-    std::cout << "Max diff = " << max_diff << "\n";
-    std::cout << "Euclidean distance = " << euclidean_dist << "\n\n";
+    std::cout << "Sum array 1 / array 2 = " <<  std::accumulate(vec1.begin(),vec1.end(),0.f) << " / " << std::accumulate(vec2.begin(),vec2.end(),0.f) << "\n";
+    std::cout << "RMS = " << rms << "\n\n";
 
-    return (std::abs(max_diff) < 1e-3f ? Succeeded::yes : Succeeded::no);
+    return (std::abs(rms) < threshold ? Succeeded::yes : Succeeded::no);
 }
 
 static
@@ -131,7 +147,7 @@ compare_images(bool &everything_ok, const DiscretisedDensity<3,float> &im_1, con
     std::copy(im_2.begin_all_const(), im_2.end_all_const(),arr_2.begin());
 
     // Compare values
-    if (compare_arrays(arr_1,arr_2) == Succeeded::yes)
+    if (compare_arrays(arr_1,arr_2,3e-2f) == Succeeded::yes)
         std::cout << "Images match!\n";
     else {
         std::cout << "Images don't match!\n";
@@ -169,12 +185,27 @@ compare_sinos(bool &everything_ok, const ProjData &proj_data_1, const ProjData &
     proj_data_2.copy_to(arr_2.begin());
 
     // Compare values
-    if (compare_arrays(arr_1,arr_2) == Succeeded::yes)
+    if (compare_arrays(arr_1,arr_2,0.23f) == Succeeded::yes)
         std::cout << "Sinograms match!\n";
     else {
         std::cout << "Sinograms don't match!\n";
         everything_ok = false;
     }
+}
+
+static
+void
+save_im_to_file(const shared_ptr<DiscretisedDensity<3,float> > &image_sptr, const std::string &filename)
+{
+    shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr =
+            OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
+    output_file_format_sptr->write_to_file(filename,*image_sptr);
+
+#ifdef HAVE_ITK
+    ITKOutputFileFormat itk_output;
+    itk_output.default_extension = ".nii";
+    itk_output.write_to_file(filename,*image_sptr);
+#endif
 }
 
 void project(double &time,
@@ -207,9 +238,6 @@ void project(double &time,
 
     timer.reset();
 
-    // Truncate the resultant image to a cylinder
-    truncate_rim(*image_sptr,17);
-
     timer.start();
 
     // Back project
@@ -222,15 +250,16 @@ void project(double &time,
     double time_bck(timer.value());
     std::cerr << "\tDone! (" << time_bck << " secs)\n";
 
+    // Truncate the resultant image to a cylinder
+    truncate_rim(*image_sptr,17);
+
     time = time_fwd+time_bck;
 
     std::cerr << "\nTotal time for projection with " << fwrd_projector.get_registered_name() << ": " << time << " secs.\n";
 
     if (save_to_file) {
         sino_sptr->write_to_file(name + "_forward_projected.hs");
-        shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr =
-                OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
-        output_file_format_sptr->write_to_file(name + "_back_projected",*image_sptr);
+        save_im_to_file(image_sptr,name + "_back_projected");
     }
 }
 
@@ -285,6 +314,10 @@ set_up_input_sino()
 
         // Fill
         _proj_data_sptr->fill_from(arr.begin());
+
+        if (_save_results) {
+            _proj_data_sptr->write_to_file("proj_data_to_back_project");
+        }
     }
 }
 
@@ -315,11 +348,8 @@ set_up_input_image()
         // Truncate it to a small cylinder
         truncate_rim(*_image_sptr,17);
 
-        if (_save_results) {
-            shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr =
-                OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
-            output_file_format_sptr->write_to_file("image_to_forward_project",*_image_sptr);
-        }
+        if (_save_results)
+            save_im_to_file(_image_sptr,"image_to_forward_project");
     }
 }
 
@@ -351,7 +381,6 @@ run_projections()
     std::cout << "\nTime for forward and back projection\n";
     std::cout << "\tGPU: " << time_gpu << "\n";
     std::cout << "\tCPU: " << time_cpu << "\n";
-
 
     // Compare back projections
     compare_images(everything_ok, *gpu_image_sptr,*cpu_image_sptr);

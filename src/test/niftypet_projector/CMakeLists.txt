@@ -25,9 +25,7 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
 	test_ProjectorNiftyPET
 )
 
-ADD_TEST(test_ProjectorNiftyPET_span11
-   ${CMAKE_CURRENT_BINARY_DIR}/test_ProjectorNiftyPET 11)
-ADD_TEST(test_ProjectorNiftyPET_span1
-   ${CMAKE_CURRENT_BINARY_DIR}/test_ProjectorNiftyPET 1)
+ADD_TEST(test_ProjectorNiftyPET
+   ${CMAKE_CURRENT_BINARY_DIR}/test_ProjectorNiftyPET --span 11)
 
 include(stir_test_exe_targets)
