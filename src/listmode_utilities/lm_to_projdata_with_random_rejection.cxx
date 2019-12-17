@@ -4,7 +4,7 @@
   \file 
   \ingroup listmode
 
-  \brief Program to bin listmode data to projection data using bootstrapping (uses stir::LmToProjDataWithRandomRejection)
+  \brief Program to bin listmode data to projection data using random rejection of counts (uses stir::LmToProjDataWithRandomRejection)
  
   \author Kris Thielemans
   
