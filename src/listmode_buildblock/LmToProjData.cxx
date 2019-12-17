@@ -695,10 +695,10 @@ process_data()
 			       printf("Seg %4d view %4d ax_pos %4d tang_pos %4d time %8g stored with incr %d \n", 
 				      bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num(),
 				      current_time, event_increment);
-			     else
-			       (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
-			       bin.get_bin_value() * 
-                         event_increment;
+                 else
+                   (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] +=
+                   bin.get_bin_value() *
+                   event_increment;
 			   }
 		       }
 		     else 	// event is rejected for some reason
