@@ -775,6 +775,18 @@ The seed is a positive integer (do not use $0$). Specifying different seeds will
 You can use the same parameter file as for \texttt{lm\_to\_projdata}.
 
 \subsubsection{
+lm\_to\_projdata\_with\_random\_rejection}
+As before, but using random rejection of events. This is useful to generate multiple sub-samples 
+from a long list mode file to study variance.
+
+You can use it as follows:
+
+\cmdline{lm\_to\_projdata\_with\_random\_rejection par\_filename seed ratio}
+
+The seed is a positive integer (do not use $0$). Specifying different seeds will give you different noise realisations. The ratio is a number between 0 and 1, the default value is 0.5 which will save half of the events.
+You can use the same parameter file as for \texttt{lm\_to\_projdata}.
+
+\subsubsection{
 lm\_fansums}
 Computes fan-sums, i.e. for each detector, sum all data that are in coincidence with that detector.
 Results are written as a simple text file. This could be used to check if all detectors are working
