@@ -683,11 +683,11 @@ process_data()
 			   {
 			     do_post_normalisation(bin);
 			 
-                 num_stored_events += event_increment;
+			     num_stored_events += event_increment;
 			     if (record.event().is_prompt())
-                   ++num_prompts_in_frame;
+			       ++num_prompts_in_frame;
 			     else
-                   ++num_delayeds_in_frame;
+			       ++num_delayeds_in_frame;
 
 			     if (num_stored_events%500000L==0) cout << "\r" << num_stored_events << " events stored" << flush;
                             
@@ -695,10 +695,10 @@ process_data()
 			       printf("Seg %4d view %4d ax_pos %4d tang_pos %4d time %8g stored with incr %d \n", 
 				      bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num(),
 				      current_time, event_increment);
-                 else
-                   (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] +=
-                   bin.get_bin_value() *
-                   event_increment;
+			     else
+			       (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
+			       bin.get_bin_value() * 
+			       event_increment;
 			   }
 		       }
 		     else 	// event is rejected for some reason
