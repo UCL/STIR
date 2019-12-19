@@ -40,7 +40,7 @@ acf3d=../acf.hs # will be created if it doesn't exist yet
 if [ -r ${mask_image} ]; then
   echo Reusing mask image ${mask_image}
 else
-  FWHMx=20 FWHMz=20 postfilter ${mask_image} ${atnimg} ${pardir}/postfilter_Gaussian.par
+  FWHMxy=20 FWHMz=20 postfilter ${mask_image} ${atnimg} ${pardir}/postfilter_Gaussian.par
   stir_math --accumulate --including-first  --max-threshold .001 ${mask_image}
   stir_math --accumulate --including-first  --add-scalar -.00099 ${mask_image}
   stir_math --accumulate --including-first  --min-threshold 0 ${mask_image}

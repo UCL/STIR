@@ -475,7 +475,7 @@ do_post_normalisation(Bin& bin) const
 	    }
 	  else
 	    {
-	      bin.set_bin_value(1/bin_efficiency);
+          bin.set_bin_value(bin.get_bin_value()/bin_efficiency);
 	    }	  
 	}
     }
