@@ -397,8 +397,8 @@ get_point_on_lor_in_index_coordinates
  const DiscretisedDensity<3, float>& density_info,
  const ProjDataInfo& proj_data_info)
 {
-  return density_info.get_index_coordinates_for_relative_coordinates
-    (proj_data_info.get_relative_coordinates_for_gantry_coordinates
+  return density_info.get_index_coordinates_for_physical_coordinates
+    (proj_data_info.get_physical_coordinates_for_gantry_coordinates
      (proj_data_info.get_point_on_lor_in_gantry_coordinates
       (s_in_mm, m_in_mm, a_in_mm, cphi, sphi, tantheta)));
 }

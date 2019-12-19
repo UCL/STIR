@@ -119,7 +119,7 @@ ProjDataInfo::get_scanner_sptr() const
 
 CartesianCoordinate3D<float>
 ProjDataInfo::
-get_relative_coordinates_for_gantry_coordinates
+get_physical_coordinates_for_gantry_coordinates
 (const CartesianCoordinate3D<float>& coords) const
 {
   // TODO: bed postion
