@@ -398,7 +398,7 @@ public:
 
   // Convert coordinates from a sinogram-based
   inline CartesianCoordinate3D<float>
-  get_relative_coordinates_for_gantry_coordinates
+  get_physical_coordinates_for_gantry_coordinates
   (const CartesianCoordinate3D<float>& coords) const;
 
 protected:
