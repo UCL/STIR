@@ -86,6 +86,7 @@ option(DISABLE_AVW "disable use of AVW library" OFF)
 option(DISABLE_RDF "disable use of GE RDF library" OFF)
 option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
 option(DISABLE_CERN_ROOT "disable use of Cern ROOT libraries" OFF)
+option(DISABLE_NLOHMANN_JSON "disable use of nlohmann JSON libraries" OFF)
 option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # disable by default
 
 if(NOT DISABLE_ITK)
@@ -120,6 +121,15 @@ endif()
 
 if(NOT DISABLE_RDF)
   find_package(RDF)
+endif()
+
+if(NOT DISABLE_NLOHMANN_JSON)
+    find_package(nlohmann_json 3.2.0 QUIET)
+    if (nlohmann_json_FOUND)
+        message(STATUS "nlohmann JSON library found.")
+        message(STATUS "The nlohmann JSON library needs C++-11, so we will enable this.")
+        UseCXX(11)
+    endif()
 endif()
 
 # Enable version 3 projectors

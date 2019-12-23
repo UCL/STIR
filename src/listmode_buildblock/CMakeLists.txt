@@ -13,6 +13,7 @@ set(${dir_LIB_SOURCES}
         SPECTListEvent
 	LmToProjData 
         LmToProjDataBootstrap
+	LmToProjDataWithRandomRejection
         CListModeDataECAT8_32bit
         CListRecordECAT8_32bit
 	CListModeDataSAFIR

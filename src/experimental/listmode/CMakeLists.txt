@@ -4,8 +4,6 @@ set(dir local_listmode_buildblock)
 
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
-set(${dir_LIB_SOURCES}
-	LmToProjDataWithRandomRejection
 )
 
 if (HAVE_ECAT)
