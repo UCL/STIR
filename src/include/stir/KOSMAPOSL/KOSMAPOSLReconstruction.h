@@ -169,11 +169,14 @@ public:
   */
 
   void set_anatomical_prior_sptr(shared_ptr<TargetT>&, int index);
-  void set_anatomical_image_filenames(std::string&, int index);
+  void set_anatomical_image_filenames(const std::string, const int index);
+  void set_anatomical_image_filenames(const std::string);
+
 
   void set_num_neighbours(const int);
   void set_num_non_zero_feat(const int);
-  void set_sigma_m(double&, int &index);
+  void set_sigma_m(const double, const int index);
+  void set_sigma_m(const double);
   void set_sigma_p(const double);
   void set_sigma_dp(const double);
   void set_sigma_dm(const double);
@@ -196,7 +199,7 @@ public:
   //! Anatomical image filename
   std::vector<std::string> anatomical_image_filenames;
 
-  std::vector<std::shared_ptr<TargetT> > anatomical_prior_sptr,kmnorm_sptr;
+  std::vector<shared_ptr<TargetT> > anatomical_prior_sptr,kmnorm_sptr;
   shared_ptr<TargetT> kpnorm_sptr;
  //kernel parameters
   int num_neighbours,num_non_zero_feat,num_elem_neighbourhood,num_voxels,dimz,dimy,dimx;
@@ -235,7 +238,7 @@ private:
 
   /*! Create a matrix similarly to calculate_norm_matrix() but this is done for the anatomical image, */
   /*! which does not  change over iteration.*/
-    void calculate_norm_const_matrix(std::vector<shared_ptr<TargetT> > normm,
+    void calculate_norm_const_matrix(std::vector<shared_ptr<TargetT> > &normm,
                                 const int dimf_row,
                                 const int dimf_col);
 

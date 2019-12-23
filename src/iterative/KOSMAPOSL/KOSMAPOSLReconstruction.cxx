@@ -171,7 +171,7 @@ initialise_keymap()
 //  this->parser.add_key("anatomical image filename",&this->anatomical_image_filenames);
   this->parser.add_key("number of neighbours",&this->num_neighbours);
   this->parser.add_key("number of non-zero feature elements",&this->num_non_zero_feat);
-  this->parser.add_key("sigma_m",&sigma_m);
+  this->parser.add_key("sigma_m",&this->sigma_m);
   this->parser.add_key("sigma_p",&this->sigma_p);
   this->parser.add_key("sigma_dp",&this->sigma_dp);
   this->parser.add_key("sigma_dm",&this->sigma_dm);
@@ -203,7 +203,7 @@ post_processing()
   this->anatomical_sd.resize(anatomical_image_filenames.size());
 
   if (!this->anatomical_image_filenames.size()==sigma_m.size()){
-      error("The number of sigma_m parameters must be the same as the numberof anatomical image filenames %s");
+      error("The number of sigma_m parameters must be the same as the number of anatomical image filenames");
       return false;
   }
 
@@ -384,9 +384,17 @@ set_anatomical_prior_sptr (shared_ptr<TargetT>& arg, int index)
 template <typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
-set_anatomical_image_filenames(std::string &arg, int index)
+set_anatomical_image_filenames(const std::string arg, const int index)
 {
   this->anatomical_image_filenames[index]  = arg;
+}
+
+template <typename TargetT>
+void
+KOSMAPOSLReconstruction<TargetT>::
+set_anatomical_image_filenames(std::string arg)
+{
+  this->anatomical_image_filenames[0]  = arg;
 }
 
 template <typename TargetT>
@@ -408,9 +416,17 @@ set_num_non_zero_feat(const int arg)
 template <typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
-set_sigma_m(double& arg, int &index)
+set_sigma_m(const double arg, const int index)
 {
     this->sigma_m[index] = arg;
+}
+
+template <typename TargetT>
+void
+KOSMAPOSLReconstruction<TargetT>::
+set_sigma_m(const double arg)
+{
+    this->sigma_m[0] = arg;
 }
 
 template <typename TargetT>
@@ -580,7 +596,7 @@ calculate_norm_matrix(TargetT &normp,
 
 template<typename TargetT>
 void KOSMAPOSLReconstruction<TargetT>::
-calculate_norm_const_matrix(std::vector<shared_ptr<TargetT> > normm,
+calculate_norm_const_matrix(std::vector<shared_ptr<TargetT> > &normm,
                             const int dimf_row,
                             const int dimf_col)
 {

@@ -57,18 +57,13 @@ PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
 input file := my_noisy_prompts_1ax_pos.hs
 
-; Daniel: here we have the possibility to choose the parameters which define the kernel matrix and the name of the MR image.
+; here we have the possibility to choose the parameters which define the kernel matrix and the name of the MR image.
 
 projector pair type := Matrix
 Projector Pair Using Matrix Parameters :=
 Matrix type := Ray Tracing
 Ray tracing matrix parameters :=
 number of rays in tangential direction to trace for each bin := 10
-do symmetry 90degrees min phi := 1
-do_symmetry_180degrees_min_phi:= 1
-do_symmetry_swap_s:= 1
-do_symmetry_swap_segment:= 1
-do_symmetry_shift_z:= 1
 End Ray tracing matrix parameters :=
 End Projector Pair Using Matrix Parameters :=
 
