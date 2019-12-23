@@ -123,7 +123,7 @@ start_new_time_frame(const unsigned int new_frame_num)
 {
 
   base_type::start_new_time_frame(new_frame_num);
-  CListModeData::SavedPosition start_of_this_frame = this->lm_data_ptr->save_get_position();
+  ListModeData::SavedPosition start_of_this_frame = this->lm_data_ptr->save_get_position();
 
   warning("LmToProjDataBootstrap: the number of events printed at the end is not correct! check that via manip_projdata");
 

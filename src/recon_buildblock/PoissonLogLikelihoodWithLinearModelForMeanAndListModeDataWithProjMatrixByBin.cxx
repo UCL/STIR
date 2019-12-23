@@ -184,10 +184,6 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
         return true;
 }
 
-template <typename TargetT> void
-PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::start_new_time_frame(const unsigned int)
-{}
-
 template <typename TargetT>  
 Succeeded 
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::

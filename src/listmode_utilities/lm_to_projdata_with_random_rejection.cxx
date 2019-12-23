@@ -26,7 +26,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir_experimental/listmode/LmToProjDataWithRandomRejection.h"
+#include "stir/listmode/LmToProjDataWithRandomRejection.h"
 
 USING_NAMESPACE_STIR
 

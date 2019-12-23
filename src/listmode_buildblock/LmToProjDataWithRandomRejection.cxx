@@ -7,10 +7,13 @@
   \brief Class stir::LmToProjDataWithRandomRejection for rebinning listmode files rejection some events randomly
     
   \author Kris Thielemans
+  \author Daniel Deidda
       
 */
 /*
     Copyright (C) 2003- 2012, Hammersmith Imanet Ltd
+    Copyright (C) 2019, National Physical Laboratory
+    Copyright (C) 2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -26,8 +29,8 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir_experimental/listmode/LmToProjDataWithRandomRejection.h"
-#include "stir/listmode/CListRecord.h"
+#include "stir/listmode/LmToProjDataWithRandomRejection.h"
+#include "stir/listmode/ListRecord.h"
 #include "stir/Succeeded.h"
 #include <iostream>
 #include <algorithm>
@@ -136,7 +139,7 @@ start_new_time_frame(const unsigned int new_frame_num)
 template <typename LmToProjDataT> 
 void 
 LmToProjDataWithRandomRejection<LmToProjDataT>::
-get_bin_from_event(Bin& bin, const CListEvent& event) const
+get_bin_from_event(Bin& bin, const ListEvent& event) const
 {
 
   static boost::uniform_01<random_generator_type> random01(random_generator);
