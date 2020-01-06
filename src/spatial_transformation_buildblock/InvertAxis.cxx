@@ -49,7 +49,7 @@ InvertAxis::invert_axis(DiscretisedDensity<3,float>  & inverted_image,
 
                       if (axis_name=="x"){
 //                        checking whether the size is odd
-                          if(!((max_y-min_y+1) % 2)==0)
+                          if(((max_x-min_x+1) % 2)==0)
                               inverted_image[z][y][x]=input_image[z][y][-x-1];
                           else
                               inverted_image[z][y][x]=input_image[z][y][-x];
