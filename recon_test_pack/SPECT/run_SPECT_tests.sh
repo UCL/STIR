@@ -142,7 +142,7 @@ for reconpar in FBP2D OSEM_2DPSF OSEM_3DPSF; do
     then
     echo ---- This test seems to be ok !;
     else
-    echo There were problems her
+    echo There were problems here!
     error_log_files="${error_log_files} my_${parfile}.log"
     fi
 done
