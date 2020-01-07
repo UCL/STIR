@@ -384,7 +384,7 @@ set_anatomical_prior_sptr (shared_ptr<TargetT>& arg, int index)
 template <typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
-set_anatomical_image_filenames(const std::string arg, const int index)
+set_anatomical_image_filenames(const std::string &arg, const int index)
 {
   this->anatomical_image_filenames[index]  = arg;
 }
@@ -392,7 +392,7 @@ set_anatomical_image_filenames(const std::string arg, const int index)
 template <typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
-set_anatomical_image_filenames(std::string arg)
+set_anatomical_image_filenames(const std::string &arg)
 {
   this->anatomical_image_filenames[0]  = arg;
 }
@@ -426,7 +426,7 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_sigma_m(const double arg)
 {
-    this->sigma_m[0] = arg;
+    std::fill(this->sigma_m.begin(), this->sigma_m.end(), arg);
 }
 
 template <typename TargetT>
