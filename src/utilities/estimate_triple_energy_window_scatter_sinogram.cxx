@@ -67,7 +67,7 @@ class estimate_TEW_scatter : public KeyParser, ArrayFilter3DUsingConvolution<flo
 {
 public:
 
-  explicit estimate_TEW_scatter(const char * const par_filename);
+  estimate_TEW_scatter();
 
   std::string scatter_filename;
   std::string lower_filename,upper_filename;
@@ -98,17 +98,9 @@ initialise_keymap()
 
 }
 
-estimate_TEW_scatter::
-estimate_TEW_scatter(const char * const par_filename)
+estimate_TEW_scatter::estimate_TEW_scatter()
 {
   initialise_keymap();
-  if (par_filename!=0)
-    {
-      if (parse(par_filename) == false)
-    exit(EXIT_FAILURE);
-    }
-  else
-    ask_parameters();
 }
 
 int 
@@ -132,10 +124,18 @@ main(int argc, char **argv)
     }
 
   // first process command line options
- estimate_TEW_scatter estimate(argv[1]);
+ estimate_TEW_scatter estimate;
 
   if (argc==0)
     { cerr << "No par file on command line\n"; exit(EXIT_FAILURE); }
+  else{
+      if (argv[1]!=0)
+      {
+        if (estimate.parse(argv[1]) == false)
+            exit(EXIT_FAILURE);
+      }
+      else
+          estimate.ask_parameters();}
 
   // find output filename
   const string output_file_name = estimate.scatter_filename;

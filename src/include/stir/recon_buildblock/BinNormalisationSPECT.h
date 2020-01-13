@@ -92,7 +92,7 @@ private:
   double half_life, view_time_interval;
   int num_detector_heads,rel_angle;
   mutable int num_views;
-  mutable bool resampled=0;
+  mutable bool resampled;
 
   // parsing stuff
   virtual void set_defaults();
