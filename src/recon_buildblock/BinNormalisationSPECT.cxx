@@ -50,6 +50,7 @@
 
 #ifndef STIR_NO_NAMESPACES
 using std::ofstream;
+using std::ostringstream;
 using std::fstream;
 #endif
 
@@ -311,8 +312,12 @@ void
 BinNormalisationSPECT::
 read_uniformity_table(Array<3,float>& uniformity) const
 {//std::ofstream unif_table("uniformity.dat",std::ios::out);
-    for(int n=1; n<=3; n++ ){
-        std::ifstream input(this->folder_prefix+boost::lexical_cast<std::string>(n)+"/"+uniformity_filename);
+    for(int n=1; n<=num_detector_heads; n++ ){
+
+        const std::string n_string = boost::lexical_cast<std::string>(n);
+
+        const std::string filename(this->folder_prefix+n_string+"/"+uniformity_filename);
+        std::ifstream input(filename.c_str());
         std::string str;
         int i=0,j=0;
 
