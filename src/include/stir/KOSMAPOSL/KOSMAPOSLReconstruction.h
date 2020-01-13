@@ -168,8 +168,8 @@ public:
    one place, all objects that use the shared pointer will be affected.
   */
 
-  void set_anatomical_prior_sptr(shared_ptr<TargetT>&, int index);
-  void set_anatomical_prior_sptr(shared_ptr<TargetT>&);
+  void set_anatomical_prior_sptr(shared_ptr<TargetT>, int index);
+  void set_anatomical_prior_sptr(shared_ptr<TargetT> arg);
   void set_anatomical_image_filenames(const std::string&, const int index);
   void set_anatomical_image_filenames(const std::string&);
 

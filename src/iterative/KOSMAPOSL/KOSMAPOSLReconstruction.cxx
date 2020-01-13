@@ -376,7 +376,7 @@ std::vector<shared_ptr<TargetT> > KOSMAPOSLReconstruction<TargetT>::get_anatomic
 template<typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
-set_anatomical_prior_sptr (shared_ptr<TargetT>& arg, int index)
+set_anatomical_prior_sptr (shared_ptr<TargetT> arg, int index)
 {
   this->anatomical_prior_sptr[index] = arg;
 }
@@ -384,7 +384,7 @@ set_anatomical_prior_sptr (shared_ptr<TargetT>& arg, int index)
 template<typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
-set_anatomical_prior_sptr (shared_ptr<TargetT>& arg)
+set_anatomical_prior_sptr (shared_ptr<TargetT> arg)
 {
   std::fill(this->anatomical_prior_sptr.begin(), this->anatomical_prior_sptr.end(), arg);
 }
