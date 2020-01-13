@@ -52,7 +52,10 @@ class PoissonLogLikelihoodWithLinearModelForMean;
   This class implements the iterative algorithm obtained using the Kernel method (KEM) and Hybrid kernel method (HKEM).
   This implementation corresponds to the one presented by Deidda D et al, ``Hybrid PET-MR list-mode kernelized expectation maximization reconstruction",
   Inverse Problems, 2019, DOI: https://doi.org/10.1088/1361-6420/ab013f. However, this allows
-  also sinogram-based reconstruction. Each voxel value of the image, \f$ \boldsymbol{\lambda}\f$, can be represented as a
+  also sinogram-based reconstruction. Furtermore, it is possible to use multiple side information images (they can be anatomical images or images from
+  different modalities). This extension is called multiplexing-HKEM and is described in Deidda et al. ``Multiplexing Kernelized Expectation Maximization
+  Reconstruction for PET-MR." IEEE NSS/MIC Proceedings (NSS/MIC) 2018, DOI: https://doi.org/10.1109/NSSMIC.2018.8824312.
+  Each voxel value of the image, \f$ \boldsymbol{\lambda}\f$, can be represented as a
   linear combination using the kernel method.  If we have an image with prior information, we can construct for each voxel
   \f$ j \f$ of the emission image a feature vector, $\f \boldsymbol{v}_j \f$, using the prior information. The voxel value,
   \f$\lambda_j\f$, can then be described using the kernel matrix
@@ -149,6 +152,7 @@ public:
   const KOSMAPOSLReconstruction& get_parameters() const
     {return *this;}
 
+  //@{
   //kernel
   const std::vector<std::string> get_anatomical_image_filenames() const;
   const int get_num_neighbours() const;
@@ -161,14 +165,16 @@ public:
   const bool get_hybrid()const;
 
   std::vector<shared_ptr<TargetT> > get_anatomical_prior_sptr();
+//@}
 
     /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
    \warning Be careful with setting shared pointers. If you modify the objects in 
    one place, all objects that use the shared pointer will be affected.
   */
-
+ //@{
   void set_anatomical_prior_sptr(shared_ptr<TargetT>, int index);
+  //! sets all elements of vector anatomical_prior to the same value
   void set_anatomical_prior_sptr(shared_ptr<TargetT> arg);
   void set_anatomical_image_filenames(const std::string&, const int index);
   void set_anatomical_image_filenames(const std::string&);
@@ -177,6 +183,7 @@ public:
   void set_num_neighbours(const int);
   void set_num_non_zero_feat(const int);
   void set_sigma_m(const double, const int index);
+  //! sets all elements of vector sigma_m to the same value
   void set_sigma_m(const double);
   void set_sigma_p(const double);
   void set_sigma_dp(const double);
@@ -186,7 +193,7 @@ public:
 
   //! boolean value to determine if the update images have to be written to disk
   void set_write_update_image(const int);
-
+  //@}
 
   //! prompts the user to enter parameter values manually
   virtual void ask_parameters();
