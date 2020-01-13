@@ -74,6 +74,7 @@ BinNormalisationSPECT::set_defaults()
   this->_use_uniformity_factors = false;
   this->num_detector_heads = 3;
   this->half_life = 6*60*60; //seconds
+  this->resampled=0;
 
 }
 
@@ -311,13 +312,13 @@ BinNormalisationSPECT::
 read_uniformity_table(Array<3,float>& uniformity) const
 {//std::ofstream unif_table("uniformity.dat",std::ios::out);
     for(int n=1; n<=3; n++ ){
-        std::ifstream input(this->folder_prefix+std::to_string(n)+"/"+uniformity_filename);
+        std::ifstream input(this->folder_prefix+boost::lexical_cast<std::string>(n)+"/"+uniformity_filename);
         std::string str;
         int i=0,j=0;
 
         while (std::getline(input, str)){
             float value;
-            value=std::stof(str);
+            value=boost::lexical_cast<float>(str);
 
             if(j>1023){
                 j=0;
