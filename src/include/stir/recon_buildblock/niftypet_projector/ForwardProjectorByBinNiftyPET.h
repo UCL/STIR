@@ -100,7 +100,7 @@ protected:
           const int min_tangential_pos_num, const int max_tangential_pos_num);
 
 private:
-    shared_ptr<DataSymmetriesForBins_PET_CartesianGrid> _symmetries_sptr;
+    shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
     shared_ptr<ProjDataInMemory> _projected_data_sptr;
     ProjectorByBinNiftyPETHelper _helper;
     int _cuda_device;

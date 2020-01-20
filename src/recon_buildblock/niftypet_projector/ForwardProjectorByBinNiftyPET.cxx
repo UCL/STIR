@@ -32,6 +32,7 @@
 #include "stir/recon_buildblock/niftypet_projector/ProjectorByBinNiftyPETHelper.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
 
 START_NAMESPACE_STIR
 
@@ -68,7 +69,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
 {
     ForwardProjectorByBin::set_up(proj_data_info_sptr,density_info_sptr);
     check(*proj_data_info_sptr, *_density_sptr);
-    _symmetries_sptr.reset(new DataSymmetriesForBins_PET_CartesianGrid(proj_data_info_sptr, density_info_sptr));
+    _symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_sptr));
 
     // Get span
     shared_ptr<ProjDataInfoCylindricalNoArcCorr>
