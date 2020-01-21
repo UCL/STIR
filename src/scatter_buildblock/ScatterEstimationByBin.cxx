@@ -302,6 +302,7 @@ process_data()
 #endif
   this->shift_detector_coordinates_to_origin =
     CartesianCoordinate3D<float>(this->proj_data_info_ptr->get_m(Bin(0,0,0,0)),0, 0);
+  // ^ ORIGINTODO
 
   float total_scatter = 0 ;
 

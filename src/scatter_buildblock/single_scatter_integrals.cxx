@@ -100,6 +100,7 @@ integral_between_2_points(const DiscretisedDensity<3,float>& density,
   const float z_to_middle =
     (image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
   origin.z() -= z_to_middle;
+  // ORIGINTODO: ^
   /* TODO replace with image.get_index_coordinates_for_physical_coordinates */
   ProjMatrixElemsForOneBin lor;
   RayTraceVoxelsOnCartesianGrid(lor, 
