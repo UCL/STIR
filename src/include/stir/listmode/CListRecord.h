@@ -108,7 +108,6 @@ public:
 class CListGatingInput : public ListGatingInput
 {
 public:
-  virtual ~CListGatingInput() {}
 };
 
 class CListRecord : public ListRecord
@@ -126,4 +125,3 @@ class CListRecordWithGatingInput : public CListRecord
 END_NAMESPACE_STIR
 
 #endif
-

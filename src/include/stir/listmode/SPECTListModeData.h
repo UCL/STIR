@@ -47,7 +47,7 @@ class Succeeded;
 class ExamInfo;
 
 /*!
-  \brief The base class for reading list mode data.
+  \brief The base class for reading SPECT list mode data.
   \ingroup listmode
 
   \par What is list mode data?

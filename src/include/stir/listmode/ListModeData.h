@@ -114,7 +114,7 @@ class ExamInfo;
     error("Help!");
   \endcode
 
-  \todo Currently, this class (and ListRecord) is generic for emission modalities
+  Currently, this class (and ListRecord) is generic for emission modalities
   such as PET and  SPECT.
 
   \par Notes for developers
