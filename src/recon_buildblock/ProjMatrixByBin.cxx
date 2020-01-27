@@ -214,7 +214,7 @@ get_cached_proj_matrix_elems_for_one_bin(
   {
     const_MapProjMatrixElemsForOneBinIterator pos = 
       cache_collection[bin.view_num()][bin.segment_num()].find(cache_key( bin));
-
+  
     if ( pos != cache_collection[bin.view_num()][bin.segment_num()]. end())
       { 
 	//cout << Key << " =========>> entry found in cache " <<  endl;
@@ -231,7 +231,7 @@ get_cached_proj_matrix_elems_for_one_bin(
     return Succeeded::yes;	
   else
     {
-      //cout << " This entry  is not in the cache :" << Key << endl;
+      //cout << " This entry  is not in the cache :" << Key << endl;	
       return Succeeded::no;
     }
 }

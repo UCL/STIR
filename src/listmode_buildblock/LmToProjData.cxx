@@ -6,12 +6,10 @@
  
   \author Kris Thielemans
   \author Sanida Mustafovic
-  \author Daniel Deidda
 */
 /*
     Copyright (C) 2000 - 2011-12-31, Hammersmith Imanet Ltd
-    Copyright (C) 2013-2019, University College London
-    Copyright (C) 2019, National Physical Laboratory
+    Copyright (C) 2013, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -649,14 +647,14 @@ process_data()
 		 // a record can never be both timing and coincidence event
 		 // and there might be a scanner around that has them both combined.
 		 if (record.is_event())
-           {
+		   {
 		     assert(start_time <= current_time);
 		     Bin bin;
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
                      get_bin_from_event(bin, record.event());
-
+		     		       
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
 			 && bin.tangential_pos_num()>= proj_data_ptr->get_min_tangential_pos_num()
@@ -664,25 +662,25 @@ process_data()
 			 && bin.axial_pos_num()>=proj_data_ptr->get_min_axial_pos_num(bin.segment_num())
 			 && bin.axial_pos_num()<=proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
 			 ) 
-               {
+		       {
 			 assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
 			 assert(bin.view_num()<=proj_data_ptr->get_max_view_num());
-
+            
 			 // see if we increment or decrement the value in the sinogram
 			 const int event_increment =
 			   record.event().is_prompt() 
 			   ? ( store_prompts ? 1 : 0 ) // it's a prompt
 			   :  delayed_increment;//it is a delayed-coincidence event
             
-             if (event_increment==0)
-               continue;
-
+			 if (event_increment==0)
+			   continue;
+            
 			 if (!do_time_frame)
 			   more_events-= event_increment;
-
+            
 			 // now check if we have its segment in memory
 			 if (bin.segment_num() >= start_segment_index && bin.segment_num()<=end_segment_index)
-               {
+			   {
 			     do_post_normalisation(bin);
 			 
 			     num_stored_events += event_increment;
@@ -697,14 +695,14 @@ process_data()
 			       printf("Seg %4d view %4d ax_pos %4d tang_pos %4d time %8g stored with incr %d \n", 
 				      bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num(),
 				      current_time, event_increment);
-                 else
+			     else
 			       (*segments[bin.segment_num()])[bin.view_num()][bin.axial_pos_num()][bin.tangential_pos_num()] += 
 			       bin.get_bin_value() * 
-                   event_increment;
-               }
-               }
+			       event_increment;
+			   }
+		       }
 		     else 	// event is rejected for some reason
-               {
+		       {
 			 if (interactive)
 			   printf("Seg %4d view %4d ax_pos %4d tang_pos %4d time %8g ignored\n", 
 				  bin.segment_num(), bin.view_num(), bin.axial_pos_num(), bin.tangential_pos_num(), current_time);
@@ -720,7 +718,7 @@ process_data()
 	   save_and_delete_segments(output, segments, 
 				    start_segment_index, end_segment_index, 
 				    *proj_data_ptr);  
-     } // end of for loop for segment range
+	 } // end of for loop for segment range
        cerr <<  "\nNumber of prompts stored in this time period : " << num_prompts_in_frame
 	    <<  "\nNumber of delayeds stored in this time period: " << num_delayeds_in_frame
 	    << '\n';

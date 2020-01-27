@@ -423,7 +423,7 @@ MAIN MODE:\n\
 10. Math mode\n\
 11. Reload main buffer\n\
 12. Write buffer to file\n\
-13. Remove nan values\n\
+13. Remove nan values, substitute nan with 0\n\
 14. Redisplay menu"<<endl;
 }
 void show_math_menu()
@@ -443,7 +443,7 @@ MATH MODE:\n\
 10. Zoom image \n\
 11. Minimum & maximum in image\n\
 12. Main buffer --> Math buffer\n\
-13. Math buffer --> Main Buffer\n\
+13. Remove nan values. Substitute nan with 0\n\
 14. Reload main buffer\n\
 15. Redisplay menu\n\
 16. Main mode"<<endl;

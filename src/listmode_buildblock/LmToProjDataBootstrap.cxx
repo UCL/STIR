@@ -156,7 +156,7 @@ start_new_time_frame(const unsigned int new_frame_num)
 	    break; // get out of while loop
 	  current_time = new_time;
 	}
-      else if (record.is_event() && start_time <= current_time)
+      if (record.is_event() && start_time <= current_time)
 	{
 	  ++total_num_events_in_this_frame;
 

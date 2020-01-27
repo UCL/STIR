@@ -126,7 +126,7 @@ public:
     void set_saved_get_positions(const std::vector<std::streampos>& );
 
   inline
-  shared_ptr<std::istream> get_stream_sptr(){return this->stream_ptr;}
+  std::istream& get_stream(){return *this->stream_ptr;}
 
 private:
   shared_ptr<std::istream> stream_ptr;
