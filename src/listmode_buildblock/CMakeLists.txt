@@ -8,9 +8,6 @@ set(${dir_LIB_SOURCES}
         ListModeData
         ListEvent
         CListEvent
-	CListModeData 
-        SPECTListModeData
-        SPECTListEvent
 	LmToProjData 
         LmToProjDataBootstrap
 	LmToProjDataWithRandomRejection

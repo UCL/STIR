@@ -3,7 +3,7 @@
 /*!
   \file
   \ingroup listmode
-  \brief Declarations of classes stir::CListRecord, stir::CListTime and stir::CListEvent which
+  \brief Declarations of classes stir::CListRecord, and stir::CListEvent which
   are used for list mode data.
     
   \author Kris Thielemans
@@ -75,48 +75,11 @@ public:
     Succeeded
     set_prompt(const bool prompt = true);
 
-  //! Finds the bin coordinates of this event for some characteristics of the projection data
-  /*! bin.get_bin_value() will be <=0 when the event corresponds to
-      an LOR outside the range of the projection data.
-
-      bin.get_bin_value() will be set to a negative value if no such bin
-      can be found.
-
-      Currently, bin.get_bin_value() might indicate some weight
-      which can be used for normalisation. This is unlikely
-      to remain the case in future versions.
-
-      The default implementation uses get_LOR()
-      and ProjDataInfo::get_bin(). However, a derived class
-      can overload this with a more efficient implementation.
-
-    \todo get_bin() might need time info or so for rotating scanners.
-  */
-  virtual
-    void
-    get_bin(Bin& bin, const ProjDataInfo&) const;
-
-
 }; /*-coincidence event*/
-
-class CListTime : public ListTime
-{
-public:
-  virtual ~CListTime() {}
-};
-
-class CListGatingInput : public ListGatingInput
-{
-public:
-};
 
 class CListRecord : public ListRecord
 {
 public:
-  virtual ~CListRecord() {}
-//  virtual bool operator==(const CListRecord& e2) const =0;
-//  bool operator!=(const CListRecord& e2) const { return !(*this == e2); }
-
 };
 
 class CListRecordWithGatingInput : public CListRecord

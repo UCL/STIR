@@ -22,7 +22,6 @@
 #ifndef _WEIGHT3D_SPECTUB_H
 #define _WEIGHT3D_SPECTUB_H
 
-
 /*! \namespace SPECTUB
   \brief Namespace for the SPECT library from University of Barcelona
 

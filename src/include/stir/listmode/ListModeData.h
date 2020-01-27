@@ -220,7 +220,7 @@ public:
       list mode data that is being read.
       \warning This member is obsolete and might be removed soon.
   */
-  virtual const Scanner* get_scanner_ptr() const = 0;
+  virtual const Scanner* get_scanner_ptr() const ;
 
   //! Return if the file stores delayed events as well (as opposed to prompts)
   virtual bool has_delayeds() const = 0;
@@ -233,7 +233,7 @@ public:
       return 0;
   }
 
-  virtual shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const = 0;
+  virtual shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const ;
 
   const ProjDataInfo* get_proj_data_info_ptr() const  { return this->get_proj_data_info_sptr().get(); }
 
@@ -241,10 +241,9 @@ public:
 protected:
   virtual shared_ptr <ListRecord> get_empty_record_helper_sptr() const = 0;
   virtual Succeeded get_next(ListRecord& event) const = 0;
-  virtual void set_proj_data_info_sptr(shared_ptr<ProjDataInfo>) = 0;
+  virtual void set_proj_data_info_sptr(shared_ptr<ProjDataInfo>) ;
   //! Has to be set by the derived class
   //  shared_ptr<ExamInfo> exam_info_sptr;
-private:
   //! Has to be initialised by the derived class
   shared_ptr<ProjDataInfo> proj_data_info_sptr;
 };

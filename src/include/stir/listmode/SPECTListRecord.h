@@ -33,7 +33,7 @@
 #define __stir_listmode_SPECTListRecord_H__
 
 
-#include "stir/listmode/SPECTListTime.h"
+#include "stir/listmode/ListTime.h"
 #include "ListRecord.h"
 #include "stir/listmode/SPECTListEvent.h"
 
@@ -54,7 +54,7 @@ START_NAMESPACE_STIR
 class SPECTListRecord : public ListRecord
 {
 public:
-  virtual ~SPECTListRecord() {}
+//  virtual ~SPECTListRecord() {}
 
   virtual bool is_time() const = 0;
 
@@ -62,8 +62,8 @@ public:
 
   virtual SPECTListEvent&  event() = 0;
   virtual const SPECTListEvent&  event() const = 0;
-  virtual SPECTListTime&   time() = 0;
-  virtual const SPECTListTime&   time() const = 0;
+  virtual ListTime&   time() = 0;
+  virtual const ListTime&   time() const = 0;
 
   virtual bool operator==(const SPECTListRecord& e2) const = 0;
   bool operator!=(const SPECTListRecord& e2) const { return !(*this == e2); }

@@ -11,7 +11,6 @@
 
 */
 /*
-    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2019, National Physical Laboratory
     Copyright (C) 2019, University College of London
     This file is part of STIR.
@@ -56,64 +55,11 @@ START_NAMESPACE_STIR
 class SPECTListEvent: public ListEvent
 {
 public:
-  virtual ~SPECTListEvent() {}
-
     virtual
       bool
       is_prompt() const {return true;}
 
-//  //! Changes the event from prompt to delayed or vice versa
-//  /*! Default implementation just returns Succeeded::no. */
-//  virtual
-//    Succeeded
-//    set_prompt(const bool prompt = true);
-
-  //! Finds the LOR between the coordinates where the detection took place
-  /*! Obviously, these coordinates are only estimates which depend on the
-      scanner hardware. For example, Depth-of-Interaction might not be
-      taken into account. However, the intention is that this function returns
-      'likely' positions (e.g. not the face of a crystal, but a point somewhere
-      in the middle).
-
-      Coordinates are in mm and in the standard STIR coordinate system
-      used by ProjDataInfo etc (i.e. origin is in the centre of the scanner).
-
-      \todo This function might need time info or so for rotating scanners.
-  */
-  virtual LORAs2Points<float>
-    get_LOR() const = 0;
-
-  //! Finds the bin coordinates of this event for some characteristics of the projection data
-  /*! bin.get_bin_value() will be <=0 when the event corresponds to
-      an LOR outside the range of the projection data.
-
-      bin.get_bin_value() will be set to a negative value if no such bin
-      can be found.
-
-      Currently, bin.get_bin_value() might indicate some weight
-      which can be used for normalisation. This is unlikely
-      to remain the case in future versions.
-
-      The default implementation uses get_LOR()
-      and ProjDataInfo::get_bin(). However, a derived class
-      can overload this with a more efficient implementation.
-
-    \todo get_bin() might need time info or so for rotating scanners.
-  */
-  virtual
-    void
-    get_bin(Bin& bin, const ProjDataInfo&) const;
-
-  //! This method checks if the template is valid for LmToProjData
-  /*! Used before the actual processing of the data (see issue #61), before calling get_bin()
-   *  Most scanners have listmode data that correspond to non arc-corrected data and
-   *  this check avoids a crash when an unsupported template is used as input.
-   */
-  virtual
-  bool
-  is_valid_template(const ProjDataInfo&) const =0;
-
-}; /*-coincidence event*/
+}; /*-gamma event*/
 
 END_NAMESPACE_STIR
 

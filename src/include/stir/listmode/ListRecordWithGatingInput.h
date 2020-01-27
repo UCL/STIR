@@ -38,7 +38,7 @@
 
 START_NAMESPACE_STIR
 
-class ListRecordWithGatingInput : public ListRecord
+class ListRecordWithGatingInput : public virtual ListRecord
 {
  public:
   virtual bool is_gating_input() const { return false; }

@@ -53,7 +53,8 @@ START_NAMESPACE_STIR
 class ListRecord
 {
 public:
-//  virtual ~ListRecord();
+
+    virtual ~ListRecord(){}
 
   virtual bool is_time() const = 0;
 
@@ -63,9 +64,6 @@ public:
   virtual const ListEvent&  event() const = 0;
   virtual ListTime&   time() = 0;
   virtual const ListTime&   time() const = 0;
-
-//  virtual bool operator==(const ListRecord& e2) const { return (*this == e2); }
-//  bool operator!=(const ListRecord& e2) const { return !(*this == e2); }
 };
 
 END_NAMESPACE_STIR
