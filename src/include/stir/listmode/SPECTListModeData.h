@@ -53,12 +53,6 @@ class SPECTListModeData : virtual public ListModeData
 {
 public:
 
-  //! Default constructor
-    SPECTListModeData(){}
-
-  virtual
-    ~SPECTListModeData(){}
-
   //! Get a pointer to an empty record
   /*! This is mainly/only useful to get a record of the correct type, that can then be
       passed to get_next_record().

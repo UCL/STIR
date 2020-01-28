@@ -57,11 +57,6 @@ class ListEvent
 public:
   virtual ~ListEvent() {}
  virtual bool is_prompt() const =0;// {return helper_is_prompt();}
-//  //! Changes the event from prompt to delayed or vice versa
-//  /*! Default implementation just returns Succeeded::no. */
-//  virtual
-//    Succeeded
-//    set_prompt(const bool prompt = true);
 
   //! Finds the LOR between the coordinates where the detection took place
   /*! Obviously, these coordinates are only estimates which depend on the

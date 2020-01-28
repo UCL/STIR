@@ -11,7 +11,6 @@
 
 */
 /*
-    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
     Copyright (C) 2019, National Physical Laboratory
     Copyright (C) 2019, University College of London
     This file is part of STIR.

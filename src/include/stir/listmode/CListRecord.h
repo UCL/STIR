@@ -6,11 +6,13 @@
   \brief Declarations of classes stir::CListRecord, and stir::CListEvent which
   are used for list mode data.
     
+  \author Daniel Deidda
   \author Kris Thielemans
-      
+
 */
 /*
-    Copyright (C) 2003- 2011, Hammersmith Imanet Ltd
+    Copyright (C) 2019, National Physical Laboratory
+    Copyright (C) 2019, University College of London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -30,12 +32,6 @@
 #define __stir_listmode_CListRecord_H__
 
 #include "ListRecord.h"
-#include "ListRecordWithGatingInput.h"
-#include "ListEvent.h"
-#include "ListGatingInput.h"
-#include "ListTime.h"
-#include "stir/round.h"
-#include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 class Bin;
@@ -55,19 +51,9 @@ template <typename coordT> class LORAs2Points;
 
     \see CListModeData for more info on list mode data. 
 */
-class CListEvent : virtual public ListEvent
+class CListEvent : public ListEvent
 {
 public:
-  virtual ~CListEvent() {}
-
-  //! Checks if this is a prompt event or a delayed event
-  /*! PET scanners generally have a facility to detect events in a 
-      'delayed' coincidence window. This is used to estimate the
-      number of accidental coincidences (or 'randoms').
-  */
-  virtual
-    bool
-    is_prompt() const = 0;
 
   //! Changes the event from prompt to delayed or vice versa
   /*! Default implementation just returns Succeeded::no. */

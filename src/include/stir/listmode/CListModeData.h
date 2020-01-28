@@ -1,6 +1,7 @@
+
 /*
-    Copyright (C) 2003 - 2011-06-24, Hammersmith Imanet Ltd
-    Copyright (C) 2011-07-01 - 2014, Kris Thielemans
+  Copyright (C) 2019, National Physical Laboratory
+  Copyright (C) 2019, University College of London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -20,7 +21,8 @@
   \ingroup listmode
   \brief Declaration of class stir::CListModeData
     
-  \author Kris Thielemans
+\author Daniel Deidda
+\author Kris Thielemans
 */
 
 #ifndef __stir_listmode_CListModeData_H__
@@ -59,13 +61,6 @@ class ExamInfo;
 class CListModeData : public ListModeData
 {
 public:
-
-  //! Default constructor
-    CListModeData(){}
-
-  virtual
-    ~CListModeData(){}
-
   //! Get a pointer to an empty record
   /*! This is mainly/only useful to get a record of the correct type, that can then be
       passed to get_next_record().
@@ -80,11 +75,6 @@ public:
 
   //! Return if the file stores delayed events as well (as opposed to prompts)
   virtual bool has_delayeds() const = 0;
-
-  const ProjDataInfo* get_proj_data_info_ptr() const
-  {
-    return this->get_proj_data_info_sptr().get();
-  }
 
 protected:
   virtual shared_ptr<ListRecord> get_empty_record_helper_sptr() const

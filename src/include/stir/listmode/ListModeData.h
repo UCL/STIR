@@ -177,8 +177,7 @@ public:
   */
 
     shared_ptr <ListRecord> get_empty_record_sptr() const
-    {shared_ptr <ListRecord> sptr(this->get_empty_record_helper_sptr());
-    return sptr;}
+    {return this->get_empty_record_helper_sptr();}
 
   //! Gets the next record in the listmode sequence
   virtual
