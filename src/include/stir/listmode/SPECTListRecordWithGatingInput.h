@@ -28,8 +28,8 @@
     See STIR/LICENSE.txt for details
 */
 
-#ifndef __stir_listmode_ListRecordWithGatingInput_H__
-#define __stir_listmode_ListRecordWithGatingInput_H__
+#ifndef __stir_listmode_SPECTListRecordWithGatingInput_H__
+#define __stir_listmode_SPECTListRecordWithGatingInput_H__
 
 #include "SPECTListRecord.h"
 #include "ListGatingInput.h"
