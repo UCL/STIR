@@ -110,7 +110,7 @@ int ProjData::get_num_sinograms() const
     for (int s=1; s<= this->get_max_segment_num(); ++s)
         num_sinos += 2* this->get_num_axial_poss(s);
 
-    return num_sinos;
+    return num_sinos*this->get_num_tof_poss();
 }
 
 std::size_t ProjData::size_all() const
