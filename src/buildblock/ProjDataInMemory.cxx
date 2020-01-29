@@ -9,6 +9,7 @@
 /*
     Copyright (C) 2002 - 2011-02-23, Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
+    Copyright (C) 2019, UCL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -143,16 +144,7 @@ size_t
 ProjDataInMemory::
 get_size_of_buffer() const
 {
-  size_t num_sinograms = 0;
-  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
-       segment_num <= proj_data_info_ptr->get_max_segment_num();
-       ++segment_num)
-    num_sinograms += proj_data_info_ptr->get_num_axial_poss(segment_num);
-  return 
-    num_sinograms * 
-    proj_data_info_ptr->get_num_views() *
-    proj_data_info_ptr->get_num_tangential_poss() *
-    sizeof(float);
+  return size_all() * sizeof(float);
 }
 
 float 
