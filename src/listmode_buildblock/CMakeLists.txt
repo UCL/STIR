@@ -9,6 +9,7 @@ set(${dir_LIB_SOURCES}
 	CListModeData 
 	LmToProjData 
         LmToProjDataBootstrap
+	LmToProjDataWithRandomRejection
         CListModeDataECAT8_32bit
         CListRecordECAT8_32bit
 	CListModeDataSAFIR
