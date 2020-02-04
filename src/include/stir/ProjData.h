@@ -333,7 +333,15 @@ public:
   //! Get maximum tangential position number
   inline int get_max_tangential_pos_num() const;
   //! Get the number of sinograms
+  /*! Note that this will count TOF sinograms as well.
+      \see get_num_non_tof_sinograms()
+  */
   inline int get_num_sinograms() const;
+  //! Get the number of sinograms
+  /*! Note that this is the sum of the number of axial poss over all segments.
+      \see get_num_sinograms()
+  */
+  inline int get_num_non_tof_sinograms() const;
   //! Get the total size of the data
   inline std::size_t size_all() const;
   //! writes data to a file in Interfile format

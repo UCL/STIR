@@ -635,12 +635,8 @@ namespace std {
 #endif
   static Array<4,float> create_array_for_proj_data(const ProjData& proj_data)
   {
-      //    int num_sinos=proj_data.get_num_axial_poss(0);
-      //    for (int s=1; s<= proj_data.get_max_segment_num(); ++s)
-      //      {
-      //        num_sinos += 2*proj_data.get_num_axial_poss(s);
-      //      }
-      Array<4,float> array(IndexRange4D(proj_data.get_num_tof_poss(),proj_data.get_num_segments(), proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
+    const int num_non_tof_sinos = proj_data.get_num_non_tof_sinograms();
+ Array<4,float> array(IndexRange4D(proj_data.get_num_tof_poss(),num_non_tof_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
       return array;
   }
 

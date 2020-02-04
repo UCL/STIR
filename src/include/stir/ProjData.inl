@@ -104,13 +104,18 @@ int ProjData::get_min_tof_pos_num() const
 int ProjData::get_max_tof_pos_num() const
 { return proj_data_info_ptr->get_max_tof_pos_num(); }
 
-int ProjData::get_num_sinograms() const
+int ProjData::get_num_non_tof_sinograms() const
 {
     int num_sinos = proj_data_info_ptr->get_num_axial_poss(0);
     for (int s=1; s<= this->get_max_segment_num(); ++s)
         num_sinos += 2* this->get_num_axial_poss(s);
 
-    return num_sinos*this->get_num_tof_poss();
+    return num_sinos;
+}
+
+int ProjData::get_num_sinograms() const
+{
+    return this->get_num_non_tof_sinograms()*this->get_num_tof_poss();
 }
 
 std::size_t ProjData::size_all() const
