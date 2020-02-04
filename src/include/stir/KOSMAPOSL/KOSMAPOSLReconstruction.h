@@ -52,7 +52,10 @@ class PoissonLogLikelihoodWithLinearModelForMean;
   This class implements the iterative algorithm obtained using the Kernel method (KEM) and Hybrid kernel method (HKEM).
   This implementation corresponds to the one presented by Deidda D et al, ``Hybrid PET-MR list-mode kernelized expectation maximization reconstruction",
   Inverse Problems, 2019, DOI: https://doi.org/10.1088/1361-6420/ab013f. However, this allows
-  also sinogram-based reconstruction. Each voxel value of the image, \f$ \boldsymbol{\lambda}\f$, can be represented as a
+  also sinogram-based reconstruction. Furtermore, it is possible to use multiple side information images (they can be anatomical images or images from
+  different modalities). This extension is called multiplexing-HKEM and is described in Deidda et al. ``Multiplexing Kernelized Expectation Maximization
+  Reconstruction for PET-MR." IEEE NSS/MIC Proceedings (NSS/MIC) 2018, DOI: https://doi.org/10.1109/NSSMIC.2018.8824312.
+  Each voxel value of the image, \f$ \boldsymbol{\lambda}\f$, can be represented as a
   linear combination using the kernel method.  If we have an image with prior information, we can construct for each voxel
   \f$ j \f$ of the emission image a feature vector, $\f \boldsymbol{v}_j \f$, using the prior information. The voxel value,
   \f$\lambda_j\f$, can then be described using the kernel matrix
@@ -149,30 +152,38 @@ public:
   const KOSMAPOSLReconstruction& get_parameters() const
     {return *this;}
 
+  //@{
   //kernel
-  const std::string get_anatomical_image_filenames() const;
+  const std::vector<std::string> get_anatomical_image_filenames() const;
   const int get_num_neighbours() const;
   const int get_num_non_zero_feat() const;
-  const double get_sigma_m() const;
+  const std::vector<double> get_sigma_m() const;
   const double get_sigma_p() const;
   const double get_sigma_dp() const;
   const double get_sigma_dm()const;
   const bool get_only_2D() const;
   const bool get_hybrid()const;
 
-  shared_ptr<const TargetT> get_anatomical_prior_sptr() const;
+  std::vector<shared_ptr<TargetT> > get_anatomical_prior_sptr();
+//@}
 
     /*! \name Functions to set parameters
     This can be used as alternative to the parsing mechanism.
    \warning Be careful with setting shared pointers. If you modify the objects in 
    one place, all objects that use the shared pointer will be affected.
   */
-
-  void set_anatomical_prior_sptr(shared_ptr<TargetT>);
-
+ //@{
+  void set_anatomical_prior_sptr(shared_ptr<TargetT>, int index);
+  //! sets all elements of vector anatomical_prior to the same value
+  void set_anatomical_prior_sptr(shared_ptr<TargetT> arg);
+  void set_anatomical_image_filenames(const std::string&, const int index);
   void set_anatomical_image_filenames(const std::string&);
+
+
   void set_num_neighbours(const int);
   void set_num_non_zero_feat(const int);
+  void set_sigma_m(const double, const int index);
+  //! sets all elements of vector sigma_m to the same value
   void set_sigma_m(const double);
   void set_sigma_p(const double);
   void set_sigma_dp(const double);
@@ -182,7 +193,7 @@ public:
 
   //! boolean value to determine if the update images have to be written to disk
   void set_write_update_image(const int);
-
+  //@}
 
   //! prompts the user to enter parameter values manually
   virtual void ask_parameters();
@@ -196,11 +207,11 @@ public:
   //! Anatomical image filename
   std::vector<std::string> anatomical_image_filenames;
 
-  shared_ptr<TargetT> anatomical_prior_sptr;
-  shared_ptr<TargetT> kpnorm_sptr,kmnorm_sptr;
+  std::vector<shared_ptr<TargetT> > anatomical_prior_sptr,kmnorm_sptr;
+  shared_ptr<TargetT> kpnorm_sptr;
  //kernel parameters
   int num_neighbours,num_non_zero_feat,num_elem_neighbourhood,num_voxels,dimz,dimy,dimx;
-  double sigma_m;
+  std::vector<double> sigma_m;
   bool only_2D;
   bool hybrid;
   double sigma_p;
@@ -224,7 +235,7 @@ private:
   virtual void update_estimate (TargetT& current_image_estimate);
 
   int subiteration_counter;
-  double anatomical_sd;
+  std::vector<double> anatomical_sd;
   mutable Array<3,float> distance;
   /*! Create a matrix containing the norm of the difference between two feature vectors, \f$ \|  \boldsymbol{z}^{(n)}_j-\boldsymbol{z}^{(n)}_l \| \f$. */
   /*! This is done for the emission image which keeps changing*/
@@ -235,12 +246,12 @@ private:
 
   /*! Create a matrix similarly to calculate_norm_matrix() but this is done for the anatomical image, */
   /*! which does not  change over iteration.*/
-    void calculate_norm_const_matrix(TargetT &normm,
+    void calculate_norm_const_matrix(std::vector<shared_ptr<TargetT> > &normm,
                                 const int dimf_row,
                                 const int dimf_col);
 
   /*! Estimate the SD of the anatomical image to be used as normalisation for the feature vector */
-    double estimate_stand_dev_for_anatomical_image();
+    void estimate_stand_dev_for_anatomical_image(std::vector<double> &SD);
 
   /*! Compute for each voxel, jl, of the emission image the linear combination between the coefficient \f$ \alpha_{jl} \f$ and the kernel matrix \f$ k_{jl} \f$\f$ */
   /*! The information is stored in the image, kImage */
@@ -271,7 +282,8 @@ private:
                                 const double distance_dzdydx,
                                 const bool use_compact_implementation,
                                 const int l,
-                                const int m);
+                                const int m,
+                                const int index);
 
   double calc_kernel_from_precalculated(const double precalculated_norm_zxy,
                                         const double sq_sigma_int,

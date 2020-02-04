@@ -26,7 +26,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir_experimental/listmode/LmToProjDataWithRandomRejection.h"
+#include "stir/listmode/LmToProjDataWithRandomRejection.h"
 #include "stir/listmode/CListRecord.h"
 #include "stir/Succeeded.h"
 #include <iostream>

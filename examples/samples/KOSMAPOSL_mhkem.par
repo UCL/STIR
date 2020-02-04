@@ -1,9 +1,9 @@
 KOSMAPOSLParameters :=
-; Example file for using [Hybrid] Kernelized Expectation Maximisation (HKEM or KEM).
-; See documentation of KOSMAPOSLreconstruction
+; Example file for using [Multiplexing] Hybrid Kernelized Expectation Maximisation (HKEM or KEM).
+; The difference with the normal KOSMAPOSL is that we use multiple anatomical images and sigma_m
 ; for more info.
 
-;the following disables the alpha coefficient output:
+;the following disable the alpha coefficient output:
 disable output :=1
 
 
@@ -18,7 +18,8 @@ hybrid:=1
 ; Gaussian scaling parameter for the anatomical prior (units of image intensity)
 ; It controls the edge preservation from the anatomical image, the bigger the stronger
 ; default: 1
-sigma_m:= 1
+sigma_m:= {0.1,0.1}
+
 
 ; Gaussian scaling parameter for the PET estimate (units of PET image intensity)
 ; It controls the edge preservation from the functional image, the bigger the stronger
@@ -29,11 +30,11 @@ sigma_p:=1
 ; NB: sigma_dm and sigma_dp should be the same 
 ; Spatial Gaussian scaling parameter for the anatomical prior (mm)
 ; default: 1 (usual range 1-5)
-sigma_dm:=5
+sigma_dm:=3
 
 ; Spatial Gaussian scaling parameter for the PET prior (mm)
 ; default: 1 (usual range 1-5)
-sigma_dp:=5	
+sigma_dp:=3	
 
 ; Number of neigbouring voxels to compare: (num_neighbours X num_neighbours X num_neighbours)
 ; default: 3
@@ -43,14 +44,14 @@ number of neighbours:= 3
 ; default: 1
 number of non-zero feature elements:=1
 
-; this are the file names of the anatomical images (at the moment we can accept only one image)
-anatomical image filenames:= {MRbrain.hv}
+; this is the file name of the anatomical image
+anatomical image filenames:= {MRbrain.hv,CTbrain.hv}
 
 ; the following should be 1 if you want to reconstruct 2D data
 only_2D:=1
 
 ; the following is the output prefix of the PET reconstructed image
-kernelised output filename prefix :=KOSMAPOSL
+kernelised output filename prefix :=MKOSMAPOSL
 
 objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
@@ -85,7 +86,7 @@ End Bin Normalisation From ProjData:=
 subset sensitivity filenames:= sens_%d.hv
 recompute sensitivity := 1
 
-xy output image size (in pixels) := -1
+xy output image size (in pixels) := 256
 end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
 
@@ -95,7 +96,7 @@ end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 ; Number of subsets should usually be a divisor of num_views/8
 ; the following is an example for the Siemens mMR
 number of subsets:= 21
-number of subiterations:= 210
+number of subiterations:= 630
 save estimates at subiteration intervals:= 21
 
 END KOSMAPOSLParameters:=

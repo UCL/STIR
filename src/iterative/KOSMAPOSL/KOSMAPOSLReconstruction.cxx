@@ -149,7 +149,8 @@ set_defaults()
 
   this->num_neighbours=3;
   this->num_non_zero_feat=1;
-  this->sigma_m=1;
+  this->sigma_m.push_back(1);
+  this->anatomical_image_filenames.push_back("");
   this->sigma_p=1;
   this->sigma_dp=1;
   this->sigma_dm=1;
@@ -178,9 +179,6 @@ initialise_keymap()
   this->parser.add_key("hybrid",&this->hybrid);
   this->parser.add_key("anatomical image filenames", &anatomical_image_filenames);
   this->parser.add_key("kernelised output filename prefix",&this->kernelised_output_filename_prefix);
-
-
-
 }
 
 
@@ -200,12 +198,12 @@ post_processing()
 {
   if (base_type::post_processing())
     return true;
-
+  
   this->subiteration_counter=0;
-  this->anatomical_sd=0;
+  this->anatomical_sd.resize(anatomical_image_filenames.size());
 
-  if (this->anatomical_image_filenames.size()>1){
-      error("At the moment you can only use one anatomical image %s");
+  if (!this->anatomical_image_filenames.size()==sigma_m.size()){
+      error("The number of sigma_m parameters must be the same as the number of anatomical image filenames");
       return false;
   }
 
@@ -215,44 +213,51 @@ post_processing()
   else{
      this->num_elem_neighbourhood=this->num_neighbours*this->num_neighbours ;
       }
+for(int i = 0; i<=anatomical_image_filenames.size()-1; i++)
+{  if (!this->anatomical_image_filenames.empty()){
+      this->anatomical_prior_sptr.push_back(shared_ptr<TargetT>(read_from_file<TargetT>(anatomical_image_filenames[i])));
 
-  if (!this->anatomical_image_filenames.empty()){
-      this->anatomical_prior_sptr= (read_from_file<TargetT>(anatomical_image_filenames[0]));
-
-    set_anatomical_prior_sptr (this->anatomical_prior_sptr);
+    set_anatomical_prior_sptr (this->anatomical_prior_sptr[i],i);
     info(boost::format("Reading anatomical data '%1%'")
-         % anatomical_image_filenames[0]  );
+         % anatomical_image_filenames[i]  );
   }
-    if (is_null_ptr(this->anatomical_prior_sptr))
+    if (is_null_ptr(this->anatomical_prior_sptr[i]))
         {
-            error("Failed to read anatomical file %s", anatomical_image_filenames[0].c_str());
+            error("Failed to read anatomical file %s", anatomical_image_filenames[i].c_str());
             return false;
         }
-    this->anatomical_sd=estimate_stand_dev_for_anatomical_image();
+    }
 
-  info(boost::format("SD from anatomical image calculated = '%1%'")
-       % this->anatomical_sd);
+estimate_stand_dev_for_anatomical_image(this->anatomical_sd);
+for(int i = 0; i<=anatomical_image_filenames.size()-1; i++)
+{
+info(boost::format("SDs from anatomical images calculated = '%1%'")
+   % this->anatomical_sd[i]);
+}
 
-  const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
-      dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> *>
-        (this->get_anatomical_prior_sptr ().get());
+const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
+  dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> *>
+    (this->anatomical_prior_sptr[0].get());
 
   // TODO - which spacing to use? Need both?
   const CartesianCoordinate3D<float>& grid_spacing =
       current_anatomical_cast->get_grid_spacing();
   precalculate_patch_euclidean_distances(distance,num_neighbours, only_2D, grid_spacing);
 
-    if(num_non_zero_feat>1){
-      this->kpnorm_sptr = shared_ptr<TargetT>(this->anatomical_prior_sptr->get_empty_copy ());
-      this->kmnorm_sptr = shared_ptr<TargetT>(this->anatomical_prior_sptr->get_empty_copy ());
 
-      this->kpnorm_sptr->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
-      this->kmnorm_sptr->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
+    if(num_non_zero_feat>1){
+         for(int i = 0; i <=anatomical_image_filenames.size()-1; i++){
+           this->kmnorm_sptr[i] = shared_ptr<TargetT>(this->anatomical_prior_sptr[i]->get_empty_copy ());
+           this->kmnorm_sptr[i]->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
+           }
+      
+    this->kpnorm_sptr = shared_ptr<TargetT>(this->anatomical_prior_sptr[0]->get_empty_copy ());
+    this->kpnorm_sptr->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
 
     int dimf_col = this->num_non_zero_feat-1;
     int dimf_row=this->num_voxels;
 
-    calculate_norm_const_matrix(*this->kmnorm_sptr,
+    calculate_norm_const_matrix(this->kmnorm_sptr,
                                 dimf_row,
                                 dimf_col);
 
@@ -297,10 +302,10 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
 ***************************************************************/
 
 template <typename TargetT>
-const std::string
+const std::vector<std::string>
 KOSMAPOSLReconstruction<TargetT>::
 get_anatomical_image_filenames() const
-{ return this->anatomical_image_filenames[0]; }
+{ return this->anatomical_image_filenames; }
 
 template <typename TargetT>
 const int
@@ -315,7 +320,7 @@ get_num_non_zero_feat() const
 { return this->num_non_zero_feat; }
 
 template <typename TargetT>
-const double
+const std::vector<double>
 KOSMAPOSLReconstruction<TargetT>::
 get_sigma_m() const
 { return this->sigma_m; }
@@ -359,7 +364,8 @@ get_hybrid() const
 //{ return this->kmnorm_sptr; }
 
 template <typename TargetT>
-shared_ptr<const TargetT> KOSMAPOSLReconstruction<TargetT>::get_anatomical_prior_sptr() const
+
+std::vector<shared_ptr<TargetT> > KOSMAPOSLReconstruction<TargetT>::get_anatomical_prior_sptr()
 { return this->anatomical_prior_sptr; }
 
 
@@ -370,15 +376,31 @@ shared_ptr<const TargetT> KOSMAPOSLReconstruction<TargetT>::get_anatomical_prior
 template<typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
+set_anatomical_prior_sptr (shared_ptr<TargetT> arg, int index)
+{
+  this->anatomical_prior_sptr[index] = arg;
+}
+
+template<typename TargetT>
+void
+KOSMAPOSLReconstruction<TargetT>::
 set_anatomical_prior_sptr (shared_ptr<TargetT> arg)
 {
-  this->anatomical_prior_sptr = arg;
+  std::fill(this->anatomical_prior_sptr.begin(), this->anatomical_prior_sptr.end(), arg);
 }
 
 template <typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
-set_anatomical_image_filenames(const std::string& arg)
+set_anatomical_image_filenames(const std::string &arg, const int index)
+{
+  this->anatomical_image_filenames[index]  = arg;
+}
+
+template <typename TargetT>
+void
+KOSMAPOSLReconstruction<TargetT>::
+set_anatomical_image_filenames(const std::string &arg)
 {
   this->anatomical_image_filenames[0]  = arg;
 }
@@ -402,9 +424,17 @@ set_num_non_zero_feat(const int arg)
 template <typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
+set_sigma_m(const double arg, const int index)
+{
+    this->sigma_m[index] = arg;
+}
+
+template <typename TargetT>
+void
+KOSMAPOSLReconstruction<TargetT>::
 set_sigma_m(const double arg)
 {
-    this->sigma_m = arg;
+    std::fill(this->sigma_m.begin(), this->sigma_m.end(), arg);
 }
 
 template <typename TargetT>
@@ -574,32 +604,37 @@ calculate_norm_matrix(TargetT &normp,
 
 template<typename TargetT>
 void KOSMAPOSLReconstruction<TargetT>::
-calculate_norm_const_matrix(TargetT &normm,
+calculate_norm_const_matrix(std::vector<shared_ptr<TargetT> > &normm,
                             const int dimf_row,
                             const int dimf_col)
 {
+    for( int i=0; i<= anatomical_image_filenames.size()-1;i++){
+        calculate_norm_matrix(*normm[i],dimf_row,dimf_col,*(this->anatomical_prior_sptr[i]));
+    }
 
-    calculate_norm_matrix(normm,dimf_row,dimf_col,*this->anatomical_prior_sptr);
+
 
 }
 template<typename TargetT>
-double KOSMAPOSLReconstruction<TargetT>::
-estimate_stand_dev_for_anatomical_image()
+void KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(std::vector<double> &SD)
 {
-    double kmean=0;
-    double kStand_dev=0;
-    double dim_z=0;
-    int nv=0;
-    const int min_z = (*anatomical_prior_sptr).get_min_index();
-    const int max_z = (*anatomical_prior_sptr).get_max_index();
 
-     dim_z = max_z -min_z+1;
+    for( int i=0; i<= anatomical_image_filenames.size()-1;i++){
+
+        double kmean=0;
+        double kStand_dev=0;
+        double dim_z=0;
+        int nv=0;
+        const int min_z = (*anatomical_prior_sptr[i]).get_min_index();
+        const int max_z = (*anatomical_prior_sptr[i]).get_max_index();
+
+        dim_z = max_z -min_z+1;
 
         for (int z=min_z; z<=max_z; z++)
           {
 
-            const int min_y = (*anatomical_prior_sptr)[z].get_min_index();
-            const int max_y = (*anatomical_prior_sptr)[z].get_max_index();
+            const int min_y = (*anatomical_prior_sptr[i])[z].get_min_index();
+            const int max_y = (*anatomical_prior_sptr[i])[z].get_max_index();
             double dim_y=0;
 
             dim_y = max_y -min_y+1;
@@ -607,8 +642,8 @@ estimate_stand_dev_for_anatomical_image()
               for (int y=min_y;y<= max_y;y++)
                 {
 
-                  const int min_x = (*anatomical_prior_sptr)[z][y].get_min_index();
-                  const int max_x = (*anatomical_prior_sptr)[z][y].get_max_index();
+                  const int min_x = (*anatomical_prior_sptr[i])[z][y].get_min_index();
+                  const int max_x = (*anatomical_prior_sptr[i])[z][y].get_max_index();
                   double dim_x=0;
 
                   dim_x = max_x -min_x +1;
@@ -617,8 +652,8 @@ estimate_stand_dev_for_anatomical_image()
 
                     for (int x=min_x;x<= max_x;x++)
                     {
-                        if((*anatomical_prior_sptr)[z][y][x]>=0 && (*anatomical_prior_sptr)[z][y][x]<=1000000){
-                        kmean += (*anatomical_prior_sptr)[z][y][x];
+                        if((*anatomical_prior_sptr[i])[z][y][x]>=0 && (*anatomical_prior_sptr[i])[z][y][x]<=1000000){
+                        kmean += (*anatomical_prior_sptr[i])[z][y][x];
                         nv+=1;}
                         else{
                             error("The anatomical image might contain nan, negatives or infinitive");
@@ -631,26 +666,26 @@ estimate_stand_dev_for_anatomical_image()
                       for (int z=min_z; z<=max_z; z++)
                         {
 
-
-                          const int min_y = (*anatomical_prior_sptr)[z].get_min_index();
-                          const int max_y = (*anatomical_prior_sptr)[z].get_max_index();
+                          const int min_y = (*anatomical_prior_sptr[i])[z].get_min_index();
+                          const int max_y = (*anatomical_prior_sptr[i])[z].get_max_index();
 
                             for (int y=min_y;y<= max_y;y++)
                               {
 
-                                const int min_x = (*anatomical_prior_sptr)[z][y].get_min_index();
-                                const int max_x = (*anatomical_prior_sptr)[z][y].get_max_index();
+                                const int min_x = (*anatomical_prior_sptr[i])[z][y].get_min_index();
+                                const int max_x = (*anatomical_prior_sptr[i])[z][y].get_max_index();
 
                                 for (int x=min_x;x<= max_x;x++)
                                   {
-                                    if((*anatomical_prior_sptr)[z][y][x]>=0 && (*anatomical_prior_sptr)[z][y][x]<=1000000){
-                                        kStand_dev += square((*anatomical_prior_sptr)[z][y][x] - kmean);}
+                                    if((*anatomical_prior_sptr[i])[z][y][x]>=0 && (*anatomical_prior_sptr[i])[z][y][x]<=1000000){
+                                        kStand_dev += square((*anatomical_prior_sptr[i])[z][y][x] - kmean);}
                                     else{continue;}
                                   }
                                }
                        }
 
-       return sqrt(kStand_dev / (nv-1));
+       SD[i]=((double)sqrt(kStand_dev/(nv-1) ));//std::cout<<"SD :"<<SD[i]<<std::endl;
+    }
 }
 
 template<typename TargetT>
@@ -659,8 +694,10 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
                          const TargetT& image_to_kernelise,
                          const TargetT& current_alpha_estimate)
 {
-    if(!current_alpha_estimate.has_same_characteristics(*this->anatomical_prior_sptr))
+    for( int i=0; i<= anatomical_image_filenames.size()-1;i++){
+    if(!current_alpha_estimate.has_same_characteristics(*this->anatomical_prior_sptr[i]))
         error("anatomical and emission image have different sizes! Make sure they are the same");
+    }
     bool use_compact_implementation = this->num_non_zero_feat == 1;
 
     // Something very weird happens here if I do not get_empty_copy()
@@ -734,12 +771,16 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
                                       emission_kernel = 1;
                                     }
                     // Calculate the anatomical kernel
-                       const double anatomical_kernel = calc_anatomical_kernel((*anatomical_prior_sptr)[z][y][x],
-                                                                               (*anatomical_prior_sptr)[z+dz][y+dy][x+dx],
-                                                                               distance[dz][dy][dx],
-                                                                               use_compact_implementation,
-                                                                               current_ravelled_idx,
-                                                                               delta_ravelled_idx);
+                     double anatomical_kernel=1;
+                    for( int i=0; i<= anatomical_image_filenames.size()-1;i++){
+                         anatomical_kernel = anatomical_kernel * calc_anatomical_kernel((*anatomical_prior_sptr[i])[z][y][x],
+                                                                     (*anatomical_prior_sptr[i])[z+dz][y+dy][x+dx],
+                                                                      distance[dz][dy][dx],
+                                                                      use_compact_implementation,
+                                                                      current_ravelled_idx,
+                                                                      delta_ravelled_idx,
+                                                                      i);
+                    }
 
                        const double kernel = anatomical_kernel * emission_kernel;
 
@@ -780,7 +821,7 @@ calc_emission_kernel(const double current_alpha_estimate_zyx,
                                     sigma_dp*sigma_dp,
                                     distance_dzdydx*distance_dzdydx,
                                     current_alpha_estimate_zyx*current_alpha_estimate_zyx)
-    : calc_kernel_from_precalculated((*kmnorm_sptr)[0][l][m],
+    : calc_kernel_from_precalculated((*kpnorm_sptr)[0][l][m],
                                     sigma_p*sigma_p,
                                     sigma_dp*sigma_dp,
                                     distance_dzdydx*distance_dzdydx,
@@ -813,22 +854,22 @@ calc_anatomical_kernel(const double anatomical_prior_zyx,
                        const double distance_dzdydx,
                        const bool use_compact_implementation,
                        const int l,
-                       const int m) {
+                       const int m,
+                       const int index) {
 
   const double anatomical_kernel =
     use_compact_implementation
     ? calc_kernel_compact(anatomical_prior_zyx-
                                     anatomical_prior_zyx_dr,
-                                    sigma_m*sigma_m,
+                                    sigma_m[index]*sigma_m[index],
                                     sigma_dm*sigma_dm,
                                     distance_dzdydx*distance_dzdydx,
-                                    anatomical_sd*anatomical_sd)
-    : calc_kernel_from_precalculated((*kmnorm_sptr)[0][l][m],
-                                     sigma_m*sigma_m,
+                                    anatomical_sd[index]*anatomical_sd[index])
+    : calc_kernel_from_precalculated((*kmnorm_sptr[index])[0][l][m],
+                                     sigma_m[index]*sigma_m[index],
                                      sigma_dm*sigma_dm,
                                      distance_dzdydx*distance_dzdydx,
-                                     anatomical_sd*anatomical_sd);
-
+                                     anatomical_sd[index]*anatomical_sd[index]);
   return anatomical_kernel;
 }
 
@@ -1026,17 +1067,12 @@ update_estimate(TargetT &current_alpha_coefficent_image)
     compute_kernelised_image (*kcurrent_ptr, current_alpha_coefficent_image,current_alpha_coefficent_image);
 
     //Write the emission image estimate:
-    subiteration_counter++;
-    if((subiteration_counter)%this->save_interval==0){
-
-        char itC[10];
-        sprintf (itC, "%d", subiteration_counter);
-        std::string it=itC;
-        std::string us="_";
-        std::string k=".hv";
-        this->current_kimage_filename =this->kernelised_output_filename_prefix+us+it+k;
-
-        write_to_file(this->current_kimage_filename,*kcurrent_ptr); }
+    if(!(this->subiteration_num % this->save_interval) ||    // every save_interval'th
+        this->subiteration_num == this->num_subiterations) { // or on last iteration
+          this->current_kimage_filename = this->make_filename_prefix_subiteration_num(
+            this->kernelised_output_filename_prefix);
+          write_to_file(this->current_kimage_filename, *kcurrent_ptr);
+    }
   }
   
 #ifndef PARALLEL
