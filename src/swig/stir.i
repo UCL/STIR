@@ -640,9 +640,7 @@ namespace std {
       //      {
       //        num_sinos += 2*proj_data.get_num_axial_poss(s);
       //      }
-      int num_sinos = proj_data.get_num_sinograms();
-
-      Array<4,float> array(IndexRange4D(proj_data.get_num_tof_poss(),num_sinos, proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
+      Array<4,float> array(IndexRange4D(proj_data.get_num_tof_poss(),proj_data.get_num_segments(), proj_data.get_num_views(), proj_data.get_num_tangential_poss()));
       return array;
   }
 
