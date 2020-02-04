@@ -47,10 +47,10 @@ START_NAMESPACE_STIR
 //!
 class cache_index{
 public:
-    cache_index() {
+    cache_index():
+    key(0){
         view_num = 0;
         seg_num = 0;
-        key = 0;
     }
 
     inline bool operator==(const cache_index& Y) const
@@ -247,8 +247,8 @@ TOF_Tests::test_tof_kernel_application(bool print_to_file)
     ProjDataInfoCylindrical* proj_data_ptr =
             dynamic_cast<ProjDataInfoCylindrical*> (test_proj_data_info_sptr.get());
 
-    ProjDataInfoCylindrical* proj_data_nonTOF_ptr =
-            dynamic_cast<ProjDataInfoCylindrical*> (test_nonTOF_proj_data_info_sptr.get());
+//    ProjDataInfoCylindrical* proj_data_nonTOF_ptr =
+//            dynamic_cast<ProjDataInfoCylindrical*> (test_nonTOF_proj_data_info_sptr.get());
 
     LORInAxialAndNoArcCorrSinogramCoordinates<float> lor;
 
