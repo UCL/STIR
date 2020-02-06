@@ -59,6 +59,12 @@
 
 #include <memory>
 #include <iostream>
+
+#ifdef STIR_OPENMP
+#include <omp.h>
+#endif
+#include "stir/num_threads.h"
+
 #ifdef BOOST_NO_STRINGSTREAM
 #include <strstream.h>
 #else
@@ -355,14 +361,6 @@ KOSMAPOSLReconstruction<TargetT>::
 get_hybrid() const
 { return this->hybrid; }
 
-//template <typename TargetT >
-//shared_ptr<TargetT> &KOSMAPOSLReconstruction<TargetT>::get_kpnorm_sptr()
-//{ return this->kpnorm_sptr; }
-
-//template <typename TargetT >
-//shared_ptr<TargetT> &KOSMAPOSLReconstruction<TargetT>::get_kmnorm_sptr()
-//{ return this->kmnorm_sptr; }
-
 template <typename TargetT>
 
 std::vector<shared_ptr<TargetT> > KOSMAPOSLReconstruction<TargetT>::get_anatomical_prior_sptr()
@@ -509,6 +507,12 @@ calculate_norm_matrix(TargetT &normp,
       const int min_y = emission[z].get_min_index();
       const int max_y = emission[z].get_max_index();
       this->dimy=max_y-min_y+1;
+
+#ifdef STIR_OPENMP
+#pragma omp parallel
+    {
+      #pragma omp  for schedule(dynamic)//schedule(static,1)
+#endif
       for (int y=min_y;y<= max_y;y++)
         {
           const int min_dy = max(distance[0].get_min_index(), min_y-y);
@@ -517,7 +521,6 @@ calculate_norm_matrix(TargetT &normp,
           const int min_x = emission[z][y].get_min_index();
           const int max_x = emission[z][y].get_max_index();
           this->dimx=max_x-min_x+1;
-
 
           for (int x=min_x;x<= max_x;x++)
             {
@@ -555,12 +558,20 @@ calculate_norm_matrix(TargetT &normp,
                     }
             }
         }
-    }
+#ifdef STIR_OPENMP
+}
+#endif
+      }
 
   // the norms of the difference between feature vectors related to the
   // same neighbourhood are calculated now
   int p=0,o=0;
 
+#ifdef STIR_OPENMP
+#pragma omp parallel
+    {
+      #pragma omp  for collapse(3) schedule(dynamic)//schedule(static,1)
+#endif
   for (int q=0; q<=dimf_row-1; ++q){
     for (int n=-(this->num_neighbours-1)/2*(!this->only_2D);
          n<=(this->num_neighbours-1)/2*(!this->only_2D);
@@ -600,6 +611,9 @@ calculate_norm_matrix(TargetT &normp,
               normp[0][q][p] += square(fp[q][i]-fp[o][i]);
             }
       }
+#ifdef STIR_OPENMP
+}
+#endif
 }
 
 template<typename TargetT>
@@ -629,7 +643,9 @@ void KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(s
         const int max_z = (*anatomical_prior_sptr[i]).get_max_index();
 
         dim_z = max_z -min_z+1;
-
+        #ifdef STIR_OPENMP
+        #pragma omp parallel for reduction(+:kmean,nv)
+        #endif
         for (int z=min_z; z<=max_z; z++)
           {
 
@@ -662,7 +678,9 @@ void KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(s
                 }
             }
                       kmean=kmean / nv;
-
+#ifdef STIR_OPENMP
+                      #pragma omp parallel for reduction(+:kStand_dev)
+#endif
                       for (int z=min_z; z<=max_z; z++)
                         {
 
@@ -677,9 +695,7 @@ void KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(s
 
                                 for (int x=min_x;x<= max_x;x++)
                                   {
-                                    if((*anatomical_prior_sptr[i])[z][y][x]>=0 && (*anatomical_prior_sptr[i])[z][y][x]<=1000000){
-                                        kStand_dev += square((*anatomical_prior_sptr[i])[z][y][x] - kmean);}
-                                    else{continue;}
+                                    kStand_dev += square((*anatomical_prior_sptr[i])[z][y][x] - kmean);
                                   }
                                }
                        }
@@ -694,10 +710,12 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
                          const TargetT& image_to_kernelise,
                          const TargetT& current_alpha_estimate)
 {
+
     for( int i=0; i<= anatomical_image_filenames.size()-1;i++){
     if(!current_alpha_estimate.has_same_characteristics(*this->anatomical_prior_sptr[i]))
         error("anatomical and emission image have different sizes! Make sure they are the same");
     }
+
     bool use_compact_implementation = this->num_non_zero_feat == 1;
 
     // Something very weird happens here if I do not get_empty_copy()
@@ -725,12 +743,16 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
     max_x = current_alpha_estimate[min_z][min_y].get_max_index();
 
         // Iterate over the image
+    for (int z=min_z; z<=max_z; z++) {
+        const int min_dz = max(distance.get_min_index(), min_z-z);
+        const int max_dz = min(distance.get_max_index(), max_z-z);
 
-        for (int z=min_z; z<=max_z; z++) {
-          const int min_dz = max(distance.get_min_index(), min_z-z);
-          const int max_dz = min(distance.get_max_index(), max_z-z);
-
-          for (int y=min_y; y<= max_y; y++) {
+#ifdef STIR_OPENMP
+#pragma omp parallel
+    {
+      #pragma omp  for schedule(dynamic)//schedule(static,1)
+#endif
+          for (int y=min_y; y<= max_y; y++) {//info("forloop");
             const int min_dy = max(distance[0].get_min_index(), min_y-y);
             const int max_dy = min(distance[0].get_max_index(), max_y-y);
 
@@ -743,6 +765,7 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
               // Iterate over the kernel patch, centered at the current voxel
 
               double kernel_sum = 0;
+
               for (int dz=min_dz; dz<=max_dz; ++dz) {
                 for (int dy=min_dy; dy<=max_dy; ++dy) {
                   for (int dx=min_dx; dx<=max_dx; ++dx) {
@@ -800,8 +823,12 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
                       kernelised_image_out[z][y][x] /= kernel_sum;
                     }
                   }
-                }
-}
+
+#ifdef STIR_OPENMP
+    }
+    #endif
+    }
+    }
 
 template <typename TargetT>
 double
@@ -920,20 +947,34 @@ update_estimate(TargetT &current_alpha_coefficent_image)
 
   base_type::compute_sub_gradient_without_penalty_plus_sensitivity (*multiplicative_update_image_ptr,
                                                           *current_update_image_ptr,
-                                                          subset_num); 
-
-  //apply kernel to the multiplicative update
+                                                          subset_num);
   unique_ptr< TargetT > kmultiplicative_update_ptr((*multiplicative_update_image_ptr).get_empty_copy());
-  compute_kernelised_image (*kmultiplicative_update_ptr, *multiplicative_update_image_ptr, current_alpha_coefficent_image);
 
+  const TargetT& sensitivity =
+    base_type::get_subset_sensitivity(subset_num);
+
+unique_ptr< TargetT > ksens_ptr(sensitivity.get_empty_copy());
+#ifdef STIR_OPENMP
+#pragma omp parallel sections
+ { omp_set_nested(1);
+#pragma omp section
+    {info("KOSMAPOSL: kernelising gradient in parallel");
+#endif
+  //apply kernel to the multiplicative update
+        compute_kernelised_image (*kmultiplicative_update_ptr, *multiplicative_update_image_ptr, current_alpha_coefficent_image);
+
+#ifdef STIR_OPENMP
+}//end section
+#pragma omp section
+    {info("KOSMAPOSL: kernelising sensitivity in parallel");
+#endif
   // divide by subset sensitivity  
-  {
-    const TargetT& sensitivity =
-      base_type::get_subset_sensitivity(subset_num);
+        compute_kernelised_image (*ksens_ptr, sensitivity, current_alpha_coefficent_image);
 
-  unique_ptr< TargetT > ksens_ptr(sensitivity.get_empty_copy());
-  compute_kernelised_image (*ksens_ptr, sensitivity, current_alpha_coefficent_image);
-
+#ifdef STIR_OPENMP
+}//end section
+}//end sections
+#endif
      int count = 0;
     
     //std::cerr <<this->MAP_model << std::endl;
@@ -1004,7 +1045,7 @@ update_estimate(TargetT &current_alpha_coefficent_image)
     }
     
     info(boost::format("Number of (cancelled) singularities in Sensitivity division: %1%") % count);
-  }
+
   
     
   if(this->inter_update_filter_interval>0 &&
