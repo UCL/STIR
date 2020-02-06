@@ -253,11 +253,11 @@ const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
 
     if(num_non_zero_feat>1){
          for(int i = 0; i <=anatomical_image_filenames.size()-1; i++){
-           this->kmnorm_sptr[i] = shared_ptr<TargetT>(this->anatomical_prior_sptr[i]->get_empty_copy ());
+           this->kmnorm_sptr.push_back( shared_ptr<TargetT>(this->anatomical_prior_sptr[i]->get_empty_copy ()));
            this->kmnorm_sptr[i]->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
            }
       
-    this->kpnorm_sptr = shared_ptr<TargetT>(this->anatomical_prior_sptr[0]->get_empty_copy ());
+    this->kpnorm_sptr= shared_ptr<TargetT>(this->anatomical_prior_sptr[0]->get_empty_copy ());
     this->kpnorm_sptr->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
 
     int dimf_col = this->num_non_zero_feat-1;
@@ -511,7 +511,7 @@ calculate_norm_matrix(TargetT &normp,
 #ifdef STIR_OPENMP
 #pragma omp parallel
     {
-      #pragma omp  for schedule(dynamic)//schedule(static,1)
+      #pragma omp  for schedule(dynamic) private(l,m)//schedule(static,1)
 #endif
       for (int y=min_y;y<= max_y;y++)
         {
@@ -570,7 +570,7 @@ calculate_norm_matrix(TargetT &normp,
 #ifdef STIR_OPENMP
 #pragma omp parallel
     {
-      #pragma omp  for collapse(3) schedule(dynamic)//schedule(static,1)
+      #pragma omp  for collapse(3) schedule(dynamic) private(p,o)//schedule(static,1)
 #endif
   for (int q=0; q<=dimf_row-1; ++q){
     for (int n=-(this->num_neighbours-1)/2*(!this->only_2D);
