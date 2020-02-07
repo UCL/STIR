@@ -153,8 +153,6 @@ ProjMatrixByBin::apply_tof_kernel_and_symm_transformation(ProjMatrixElemsForOneB
     float low_dist = 0.f;
     float high_dist = 0.f;
 
-    float d1;
-
     // The direction can be from 1 -> 2 depending on the bin sign.
     const CartesianCoordinate3D<float> middle = (point1 + point2)*0.5f;
     const CartesianCoordinate3D<float> diff = point2 - middle;
