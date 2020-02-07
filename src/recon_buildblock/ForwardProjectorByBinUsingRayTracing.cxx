@@ -1451,12 +1451,14 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
   stop_timers();
 }
 
+#if 0 // disabled as currently not used. needs to be written in the new style anyway
 void
 ForwardProjectorByBinUsingRayTracing::
  actual_forward_project(Bin& this_bin,
                         const DiscretisedDensity<3,float>& density)
 {
-    error("ForwardProjectorByBinUsingRayTracing is not supported for list-mode data. Abort.");
+    error("ForwardProjectorByBinUsingRayTracing does not support single-bin forward projection. Abort.");
 }
+#endif
 
 END_NAMESPACE_STIR

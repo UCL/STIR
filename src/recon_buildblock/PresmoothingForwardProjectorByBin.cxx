@@ -148,11 +148,13 @@ actual_forward_project(RelatedViewgrams<float>& viewgrams,
                                                       min_tangential_pos_num, max_tangential_pos_num);
 }
 
+#if 0 // disabled as currently not used. needs to be written in the new style anyway
 void
 PresmoothingForwardProjectorByBin::actual_forward_project(Bin&,
                             const DiscretisedDensity<3,float>&)
 {
-
+  error("TODO");
 }
+#endif
 
 END_NAMESPACE_STIR
