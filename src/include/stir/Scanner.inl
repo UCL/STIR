@@ -229,7 +229,7 @@ Scanner::get_reference_energy() const
     return reference_energy;
 }
 
-int Scanner::get_num_max_of_timing_poss() const
+int Scanner::get_max_num_timing_poss() const
 {
     return max_num_of_timing_poss;
 }

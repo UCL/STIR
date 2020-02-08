@@ -276,7 +276,7 @@ class Scanner
   /* inline int get_num_layers_singles_units() const; */
   inline int get_num_singles_units() const;
   //! Get the maximum number of TOF bins.
-  inline int get_num_max_of_timing_poss() const;
+  inline int get_max_num_timing_poss() const;
   //! Get the delta t which correspnds to the max number of TOF bins in picosecs.
   inline float get_size_of_timing_pos() const;
   //! Get the timing resolution of the scanner.

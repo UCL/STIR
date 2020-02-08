@@ -193,14 +193,14 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
 {
     if (scanner_ptr->is_tof_ready() && new_num > 0 )
     {
-        if(tof_mash_factor < 0 || tof_mash_factor > scanner_ptr->get_num_max_of_timing_poss())
+        if(tof_mash_factor < 0 || tof_mash_factor > scanner_ptr->get_max_num_timing_poss())
             error("ProjDataInfo: TOF mashing factor must be positive and smaller or equal than"
                   "the scanner's number of max timing bins. Abort.");
         tof_mash_factor = new_num;
 
         tof_increament_in_mm = tof_delta_time_to_mm(scanner_ptr->get_size_of_timing_pos());
-        min_unmashed_tof_pos_num = - (scanner_ptr->get_num_max_of_timing_poss())/2;
-        max_unmashed_tof_pos_num = min_unmashed_tof_pos_num + (scanner_ptr->get_num_max_of_timing_poss()) -1;
+        min_unmashed_tof_pos_num = - (scanner_ptr->get_max_num_timing_poss())/2;
+        max_unmashed_tof_pos_num = min_unmashed_tof_pos_num + (scanner_ptr->get_max_num_timing_poss()) -1;
 
         // Upper and lower boundaries of the timing poss;
         tof_bin_unmashed_boundaries_mm.grow(min_unmashed_tof_pos_num, max_unmashed_tof_pos_num);
@@ -225,11 +225,11 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
         // Now, initialise the mashed TOF bins.
         tof_increament_in_mm = tof_delta_time_to_mm(tof_mash_factor * scanner_ptr->get_size_of_timing_pos());
 
-        min_tof_pos_num = - (scanner_ptr->get_num_max_of_timing_poss() / tof_mash_factor)/2;
-        max_tof_pos_num = min_tof_pos_num + (scanner_ptr->get_num_max_of_timing_poss() / tof_mash_factor) -1;
+        min_tof_pos_num = - (scanner_ptr->get_max_num_timing_poss() / tof_mash_factor)/2;
+        max_tof_pos_num = min_tof_pos_num + (scanner_ptr->get_max_num_timing_poss() / tof_mash_factor) -1;
 
-        min_unmashed_tof_pos_num = - (scanner_ptr->get_num_max_of_timing_poss())/2;
-        max_unmashed_tof_pos_num = min_tof_pos_num + (scanner_ptr->get_num_max_of_timing_poss()) -1;
+        min_unmashed_tof_pos_num = - (scanner_ptr->get_max_num_timing_poss())/2;
+        max_unmashed_tof_pos_num = min_tof_pos_num + (scanner_ptr->get_max_num_timing_poss()) -1;
 
         num_tof_bins = max_tof_pos_num - min_tof_pos_num +1 ;
 
@@ -677,7 +677,7 @@ ProjDataInfo* ProjDataInfo::ask_parameters()
 
    const int tof_mash_factor = scanner_ptr->is_tof_ready() ?
            ask_num("Time-of-flight mash factor:", 0,
-                   scanner_ptr->get_num_max_of_timing_poss(), 25) : 0;
+                   scanner_ptr->get_max_num_timing_poss(), 25) : 0;
 
   const bool arc_corrected =
     ask("Is the data arc-corrected?",true);

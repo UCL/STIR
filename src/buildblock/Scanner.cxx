@@ -937,7 +937,7 @@ Scanner::parameter_info() const
 
   if (is_tof_ready())
   {
-    s << "Number of TOF time bins :=" << get_num_max_of_timing_poss() << "\n";
+    s << "Number of TOF time bins :=" << get_max_num_timing_poss() << "\n";
     s << "Size of timing bin (ps) :=" << get_size_of_timing_pos() << "\n";
     s << "Timing resolution (ps) :=" << get_timing_resolution() << "\n";
   }

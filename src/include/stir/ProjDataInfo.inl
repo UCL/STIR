@@ -174,7 +174,7 @@ ProjDataInfo::get_max_tof_pos_num() const
 float
 ProjDataInfo::get_coincidence_window_in_pico_sec() const
 {
-    return scanner_ptr->is_tof_ready()? (scanner_ptr->get_num_max_of_timing_poss() *
+    return scanner_ptr->is_tof_ready()? (scanner_ptr->get_max_num_timing_poss() *
                                          scanner_ptr->get_size_of_timing_pos())
                                       :(scanner_ptr->get_size_of_timing_pos());
 }
