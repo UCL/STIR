@@ -64,7 +64,7 @@ void
 ProjDataInMemoryTests::
 run_tests_no_tof()
 {
-  std::cerr << "-------- Testing ProjDataInMemory --------\n";
+  std::cerr << "-------- Testing ProjDataInMemory without TOF --------\n";
   shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
     
   shared_ptr<ProjDataInfo> proj_data_info_sptr
@@ -153,6 +153,7 @@ run_tests_no_tof()
     // this should call error, so we'll catch it
     try
       {
+        std::cout << "\nthis test should throw an error (which we will catch)\n";
         proj_data2.fill(proj_data);
         check(false, "test fill wtih too small proj_data should have thrown");
       }
@@ -167,12 +168,12 @@ void
 ProjDataInMemoryTests::
 run_tests_tof()
 {
-  std::cerr << "-------- Testing ProjDataInMemory --------\n";
+  std::cerr << "-------- Testing ProjDataInMemory with TOF --------\n";
   shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::PETMR_Signa));
 
   shared_ptr<ProjDataInfo> proj_data_info_sptr
     (ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
-                            /*span*/1, 5,/*views*/ 96, /*tang_pos*/64, /*arc_corrected*/ true, 70)
+                            /*span*/1, 10,/*views*/ 96, /*tang_pos*/64, /*arc_corrected*/ true, 70)
      );
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
 
@@ -253,41 +254,43 @@ run_tests_tof()
   {
     shared_ptr<ProjDataInfo> proj_data_info_sptr2
       (ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
-                                     /*span*/1, 8,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ true)
+                                     /*span*/1, 8,/*views*/ 96, /*tang_pos*/64, /*arc_corrected*/ true, proj_data.get_tof_mash_factor())
        );
 
 
     // construct without filling
     ProjDataInMemory proj_data2(exam_info_sptr, proj_data_info_sptr2, false);
-//    proj_data2.fill(proj_data);
-//    check_if_equal(proj_data2.get_viewgram(0,0).find_max(),
-//                   proj_data.get_viewgram(0,0).find_max(),
-//                   "test 1 for copy-constructor and get_viewgram");
-//    check_if_equal(proj_data2.get_viewgram(1,1).find_max(),
-//                   proj_data.get_viewgram(1,1).find_max(),
-//                   "test 1 for copy-constructor and get_viewgram");
+    proj_data2.fill(proj_data);
+    check_if_equal(proj_data2.get_viewgram(0,0,false,-2).find_max(),
+                   proj_data.get_viewgram(0,0,false,-2).find_max(),
+                   "test 1 for copy-constructor and get_viewgram(0,0,-2)");
+    check_if_equal(proj_data2.get_viewgram(1,1,false,2).find_max(),
+                   proj_data.get_viewgram(1,1,false,2).find_max(),
+                   "test 1 for copy-constructor and get_viewgram(1,1,2)");
+
   }
 
   // test fill with smaller input
   {
-//    shared_ptr<ProjDataInfo> proj_data_info_sptr2
-//      (ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
-//                                     /*span*/1, 12,/*views*/ 96, /*tang_pos*/128, /*arc_corrected*/ true)
-//       );
+    shared_ptr<ProjDataInfo> proj_data_info_sptr2
+      (ProjDataInfo::ProjDataInfoCTI(scanner_sptr,
+                                     /*span*/1, 20,/*views*/ 96, /*tang_pos*/64, /*arc_corrected*/ true, 70)
+       );
 
+    // construct without filling
+    ProjDataInMemory proj_data2(exam_info_sptr, proj_data_info_sptr2, false);
+    // this should call error, so we'll catch it
+    try
+      {
+        std::cout << "\nthis test should throw an error (which we will catch)\n";
+        proj_data2.fill(proj_data);
+        check(false, "test fill with too small proj_data should have thrown");
+      }
+    catch (...)
+      {
+        // ok
+      }
 
-//    // construct without filling
-//    ProjDataInMemory proj_data2(exam_info_sptr, proj_data_info_sptr2, false);
-//    // this should call error, so we'll catch it
-//    try
-//      {
-//        proj_data2.fill(proj_data);
-//        check(false, "test fill wtih too small proj_data should have thrown");
-//      }
-//    catch (...)
-//      {
-//        // ok
-//      }
   }
 }
 
