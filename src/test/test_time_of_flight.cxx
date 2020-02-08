@@ -467,14 +467,12 @@ export_lor(ProjMatrixElemsForOneBin& probabilities,
             tmp.float1 = d2;
 
             ProjMatrixElemsForOneBin::iterator element_ptr = probabilities.begin();
-            bool found = false;
 
             while (element_ptr != probabilities.end())
             {
                 if (element_ptr->get_coords() == tmpl_element_ptr->get_coords())
                 {
                     tmp.float2 = element_ptr->get_value();
-                    found = true;
                     lor_to_export.push_back(tmp);
                     break;
                 }

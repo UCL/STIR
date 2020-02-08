@@ -69,7 +69,8 @@ public:
     // used to calculate the centre of gravity (see below).
     class LORMax{
     public:
-        LORMax() { voxel_centre = CartesianCoordinate3D<float>(0.f,0.f,0.f); value = 0.f;}
+      LORMax() : voxel_centre(CartesianCoordinate3D<float>(0.f,0.f,0.f)), value(0.f)
+      {}
         CartesianCoordinate3D<float> voxel_centre;
         float value;
     };
