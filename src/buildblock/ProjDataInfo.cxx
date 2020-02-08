@@ -724,6 +724,8 @@ blindly_equals(const root_type * const that) const
    (get_max_view_num()==proj.get_max_view_num()) &&
    (get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
    (get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num())&&
+   (get_min_tof_pos_num() ==proj.get_min_tof_pos_num())&&
+   (get_max_tof_pos_num() ==proj.get_max_tof_pos_num())&&
    equal(min_axial_pos_per_seg.begin(), min_axial_pos_per_seg.end(), proj.min_axial_pos_per_seg.begin())&&
    equal(max_axial_pos_per_seg.begin(), max_axial_pos_per_seg.end(), proj.max_axial_pos_per_seg.begin())&&
    (*get_scanner_ptr()== *(proj.get_scanner_ptr()))&&
@@ -752,7 +754,7 @@ operator !=(const root_type& that) const
 /*!
   \return
      \c true only if the types are the same, they are equal, or the range for the
-     segments, axial and tangential positions is at least as large.
+     TOF, segments, axial and tangential positions is at least as large.
 
   \warning Currently view ranges have to be identical.
 */
