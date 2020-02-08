@@ -134,10 +134,10 @@ run_tests_no_tof()
     proj_data2.fill(proj_data);
     check_if_equal(proj_data2.get_viewgram(0,0).find_max(),
                    proj_data.get_viewgram(0,0).find_max(),
-                   "test 1 for copy-constructor and get_viewgram");
+                   "test 1 for constructor, fill and get_viewgram(0,0)");
     check_if_equal(proj_data2.get_viewgram(1,1).find_max(),
                    proj_data.get_viewgram(1,1).find_max(),
-                   "test 1 for copy-constructor and get_viewgram");
+                   "test 1 for constructor, fill and get_viewgram(1,1)");
   }
 
   // test fill with smaller input
@@ -155,7 +155,7 @@ run_tests_no_tof()
       {
         std::cout << "\nthis test should throw an error (which we will catch)\n";
         proj_data2.fill(proj_data);
-        check(false, "test fill wtih too small proj_data should have thrown");
+        check(false, "test fill with too small proj_data should have thrown");
       }
     catch (...)
       {
@@ -263,10 +263,10 @@ run_tests_tof()
     proj_data2.fill(proj_data);
     check_if_equal(proj_data2.get_viewgram(0,0,false,-2).find_max(),
                    proj_data.get_viewgram(0,0,false,-2).find_max(),
-                   "test 1 for copy-constructor and get_viewgram(0,0,-2)");
+                   "test 1 for constructor, fill and get_viewgram(0,0,-2)");
     check_if_equal(proj_data2.get_viewgram(1,1,false,2).find_max(),
                    proj_data.get_viewgram(1,1,false,2).find_max(),
-                   "test 1 for copy-constructor and get_viewgram(1,1,2)");
+                   "test 1 for constructor, fill and get_viewgram(1,1,2)");
 
   }
 
