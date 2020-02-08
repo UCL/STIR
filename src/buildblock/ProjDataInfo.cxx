@@ -200,7 +200,7 @@ ProjDataInfo::set_tof_mash_factor(const int new_num)
 
         tof_increament_in_mm = tof_delta_time_to_mm(scanner_ptr->get_size_of_timing_pos());
         min_unmashed_tof_pos_num = - (scanner_ptr->get_num_max_of_timing_poss())/2;
-        max_unmashed_tof_pos_num = min_tof_pos_num + (scanner_ptr->get_num_max_of_timing_poss()) -1;
+        max_unmashed_tof_pos_num = min_unmashed_tof_pos_num + (scanner_ptr->get_num_max_of_timing_poss()) -1;
 
         // Upper and lower boundaries of the timing poss;
         tof_bin_unmashed_boundaries_mm.grow(min_unmashed_tof_pos_num, max_unmashed_tof_pos_num);

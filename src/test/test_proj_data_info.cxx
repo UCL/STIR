@@ -106,6 +106,30 @@ void
 ProjDataInfoTests::
 test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 {
+  cerr << "\tTests on get_min/max_num\n";
+  check_if_equal(proj_data_info.get_max_tangential_pos_num() - proj_data_info.get_min_tangential_pos_num() + 1,
+		 proj_data_info.get_num_tangential_poss(),
+		 "basic check on min/max/num_tangential_pos_num");
+  check(abs(proj_data_info.get_max_tangential_pos_num() + proj_data_info.get_min_tangential_pos_num()) <=1,
+		 "check on min/max_tangential_pos_num being (almost) centred");
+  check_if_equal(proj_data_info.get_max_tof_pos_num() - proj_data_info.get_min_tof_pos_num() + 1,
+		 proj_data_info.get_num_tof_poss(),
+		 "basic check on min/max/num_tof_pos_num");
+  check_if_equal(proj_data_info.get_max_tof_pos_num() + proj_data_info.get_min_tof_pos_num(), 0,
+		 "check on min/max_tof_pos_num being (almost) centred");
+  check_if_equal(proj_data_info.get_max_view_num() - proj_data_info.get_min_view_num() + 1,
+		 proj_data_info.get_num_views(),
+		 "basic check on min/max/num_view_num");
+  check_if_equal(proj_data_info.get_max_segment_num() - proj_data_info.get_min_segment_num() + 1,
+		 proj_data_info.get_num_segments(),
+		 "basic check on min/max/num_segment_num");
+  // not strictly necessary in most of the code, but most likely required in some of it
+  check_if_equal(proj_data_info.get_max_segment_num() + proj_data_info.get_min_segment_num(), 0,
+		 "check on min/max_segment_num being centred");
+  check_if_equal(proj_data_info.get_max_axial_pos_num(0) - proj_data_info.get_min_axial_pos_num(0) + 1,
+		 proj_data_info.get_num_axial_poss(0),
+		 "basic check on min/max/num_axial_pos_num");
+
   cerr << "\tTests on get_LOR/get_bin\n";
   int max_diff_segment_num=0;
   int max_diff_view_num=0;
