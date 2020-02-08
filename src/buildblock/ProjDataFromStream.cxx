@@ -386,6 +386,11 @@ ProjDataFromStream::get_offsets(const int view_num, const int segment_num,
       temp[2] = 0;
       return temp;
   }
+  else
+  {
+    error("ProjDataFromStream::get_offsets: unsupported storage_order");
+    return vector<streamoff>(); // return something to avoid compiler warning
+  }
 }
 
 Succeeded
@@ -641,7 +646,8 @@ ProjDataFromStream::get_offsets_bin(const Bin this_bin) const
     }
     else
     {
-      error("ProjDataFromStream::get_offsets_bin: unsupported storage order\n");
+      error("ProjDataFromStream::get_offsets_bin: unsupported storage order");
+      return vector<streamoff>(); // return something to avoid compiler warning
     }
 }
 
@@ -737,7 +743,8 @@ ProjDataFromStream::get_offsets_sino(const int ax_pos_num, const int segment_num
   }
   else
   {
-    error("ProjDataFromStream::get_offsets_sino: unsupported storage order\n");
+     error("ProjDataFromStream::get_offsets_sino: unsupported storage order");
+     return vector<streamoff>(); // return something to avoid compiler warning
   }
 }
 
