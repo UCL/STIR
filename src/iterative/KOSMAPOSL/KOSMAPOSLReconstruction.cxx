@@ -490,45 +490,41 @@ calculate_norm_matrix(TargetT &normp,
   Array<2,float> fp;
 //  The following are the indexes obtained when reshaping a 3D matrix to a 1D vector and they depend
 //  on x y and z, and dx dy and dz respectively
-  int l=0,m=0;
+//  int l=0,m=0;
 
   fp = Array<2,float>(IndexRange2D(0,dimf_row,0,dimf_col));
 
-  const int min_z = emission.get_min_index();
-  const int max_z = emission.get_max_index();
-  this->dimz=max_z-min_z+1;
+  const int min_z = min_ind[1];
+  const int max_z = min_ind[1];
+  const int min_y = min_ind[2];
+  const int max_y = min_ind[2];
+  const int min_x = min_ind[3];
+  const int max_x = min_ind[3];
 
+#ifdef STIR_OPENMP
+#  if _OPENMP <201107
+                      #pragma omp parallel for
+#  else
+                      #pragma omp parallel for collapse(3) schedule(dynamic)
+#  endif
+#endif
 //The following loop extracts the feature vector related to each voxel in the "emission" image and save it in "fp"
   for (int z=min_z; z<=max_z; z++)
     {
-      const int min_dz = max(distance.get_min_index(), min_z-z);
-      const int max_dz = min(distance.get_max_index(), max_z-z);
-
-      const int min_y = emission[z].get_min_index();
-      const int max_y = emission[z].get_max_index();
-      this->dimy=max_y-min_y+1;
-
-#ifdef STIR_OPENMP
-#pragma omp parallel
-    {
-      #pragma omp  for schedule(dynamic) private(l,m)//schedule(static,1)
-#endif
       for (int y=min_y;y<= max_y;y++)
         {
-          const int min_dy = max(distance[0].get_min_index(), min_y-y);
-          const int max_dy = min(distance[0].get_max_index(), max_y-y);
-
-          const int min_x = emission[z][y].get_min_index();
-          const int max_x = emission[z][y].get_max_index();
-          this->dimx=max_x-min_x+1;
-
           for (int x=min_x;x<= max_x;x++)
             {
+              const int min_dz = max(distance.get_min_index(), min_z-z);
+              const int max_dz = min(distance.get_max_index(), max_z-z);
+              const int min_dy = max(distance[0].get_min_index(), min_y-y);
+              const int max_dy = min(distance[0].get_max_index(), max_y-y);
+
               const int min_dx = max(distance[0][0].get_min_index(), min_x-x);
               const int max_dx = min(distance[0][0].get_max_index(), max_x-x);
 
 
-              l = (z-min_z)*(max_x-min_x +1)*(max_y-min_y +1)
+              int l = (z-min_z)*(max_x-min_x +1)*(max_y-min_y +1)
                 + (y-min_y)*(max_x-min_x +1) + (x-min_x);
 
               //here a matrix with the feature vectors is created
@@ -536,7 +532,7 @@ calculate_norm_matrix(TargetT &normp,
                 for (int dy=min_dy;dy<=max_dy;++dy)
                   for (int dx=min_dx;dx<=max_dx;++dx)
                     {
-                      m = (dz)*(max_dx-min_dx +1)*(max_dy-min_dy +1)
+                     int m = (dz)*(max_dx-min_dx +1)*(max_dy-min_dy +1)
                         + (dy)*(max_dx-min_dx +1)
                         + (dx);
                       int c = m;
@@ -558,19 +554,17 @@ calculate_norm_matrix(TargetT &normp,
                     }
             }
         }
-#ifdef STIR_OPENMP
-}
-#endif
       }
 
   // the norms of the difference between feature vectors related to the
   // same neighbourhood are calculated now
-  int p=0,o=0;
 
 #ifdef STIR_OPENMP
-#pragma omp parallel
-    {
-      #pragma omp  for collapse(3) schedule(dynamic) private(p,o)//schedule(static,1)
+#  if _OPENMP <201107
+                      #pragma omp parallel for
+#  else
+                      #pragma omp parallel for collapse(3) schedule(dynamic)
+#  endif
 #endif
   for (int q=0; q<=dimf_row-1; ++q){
     for (int n=-(this->num_neighbours-1)/2*(!this->only_2D);
@@ -585,10 +579,11 @@ calculate_norm_matrix(TargetT &normp,
           for (int i=0; i<=dimf_col; ++i)
             {
 
-              p = j
+              int p = j
                 + k*(this->num_neighbours)
                 + n*(this->num_neighbours)*(this->num_neighbours)
                 + (this->num_elem_neighbourhood-1)/2;
+              int o;
 
               if (q%dimx==0 && (j+k*this->dimx+n*dimx*dimy)>=(dimx-1))
                 {
@@ -597,7 +592,7 @@ calculate_norm_matrix(TargetT &normp,
                     continue;
                   }
 
-                  o=q+j+k*this->dimx+n*dimx*dimy+1;
+                   o=q+j+k*this->dimx+n*dimx*dimy+1;
                 }
 
               else{
@@ -611,9 +606,6 @@ calculate_norm_matrix(TargetT &normp,
               normp[0][q][p] += square(fp[q][i]-fp[o][i]);
             }
       }
-#ifdef STIR_OPENMP
-}
-#endif
 }
 
 template<typename TargetT>
@@ -632,70 +624,63 @@ calculate_norm_const_matrix(std::vector<shared_ptr<TargetT> > &normm,
 template<typename TargetT>
 void KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(std::vector<double> &SD)
 {
-
+    (*anatomical_prior_sptr[0]).get_regular_range(min_ind, max_ind);
     for( int i=0; i<= anatomical_image_filenames.size()-1;i++){
 
         double kmean=0;
         double kStand_dev=0;
-        double dim_z=0;
         int nv=0;
-        const int min_z = (*anatomical_prior_sptr[i]).get_min_index();
-        const int max_z = (*anatomical_prior_sptr[i]).get_max_index();
 
-        dim_z = max_z -min_z+1;
-        #ifdef STIR_OPENMP
-        #pragma omp parallel for reduction(+:kmean,nv)
-        #endif
+        const int min_z = min_ind[1];
+        const int max_z = max_ind[1];
+        this->dimz = max_z -min_z+1;
+        const int min_y = min_ind[2];
+        const int max_y = max_ind[2];
+        this->dimy = max_y -min_y+1;
+        const int min_x = min_ind[3];
+        const int max_x = max_ind[3];
+        this->dimx = max_x -min_x +1;
+        this->num_voxels = dimz*dimy*dimx;
+
+#ifdef STIR_OPENMP
+#  if _OPENMP <201107
+                      #pragma omp parallel for
+#  else
+                      #pragma omp parallel for collapse(3) reduction(+:kmean,nv)
+#  endif
+#endif
         for (int z=min_z; z<=max_z; z++)
           {
-
-            const int min_y = (*anatomical_prior_sptr[i])[z].get_min_index();
-            const int max_y = (*anatomical_prior_sptr[i])[z].get_max_index();
-            double dim_y=0;
-
-            dim_y = max_y -min_y+1;
-
               for (int y=min_y;y<= max_y;y++)
                 {
-
-                  const int min_x = (*anatomical_prior_sptr[i])[z][y].get_min_index();
-                  const int max_x = (*anatomical_prior_sptr[i])[z][y].get_max_index();
-                  double dim_x=0;
-
-                  dim_x = max_x -min_x +1;
-
-                   this->num_voxels = dim_z*dim_y*dim_x;
-
                     for (int x=min_x;x<= max_x;x++)
-                    {
-                        if((*anatomical_prior_sptr[i])[z][y][x]>=0 && (*anatomical_prior_sptr[i])[z][y][x]<=1000000){
+                    {// no break allowed inside a parallel for
+                        if(!((*anatomical_prior_sptr[i])[z][y][x]>=0 && (*anatomical_prior_sptr[i])[z][y][x]<=1000000))
+                            warning("The anatomical image might contain nan, negatives or infinitive. You might get all-zero image!");
+
                         kmean += (*anatomical_prior_sptr[i])[z][y][x];
-                        nv+=1;}
-                        else{
-                            error("The anatomical image might contain nan, negatives or infinitive");
-                            break;}
+                        nv+=1;
                     }
                 }
             }
                       kmean=kmean / nv;
+
 #ifdef STIR_OPENMP
-                      #pragma omp parallel for reduction(+:kStand_dev)
+#  if _OPENMP <201107
+                      #pragma omp parallel for
+#  else
+                      #pragma omp parallel for collapse(3) reduction(+:kStand_dev)
+#  endif
 #endif
                       for (int z=min_z; z<=max_z; z++)
                         {
-
-                          const int min_y = (*anatomical_prior_sptr[i])[z].get_min_index();
-                          const int max_y = (*anatomical_prior_sptr[i])[z].get_max_index();
-
-                            for (int y=min_y;y<= max_y;y++)
+                          for (int y=min_y;y<= max_y;y++)
                               {
-
-                                const int min_x = (*anatomical_prior_sptr[i])[z][y].get_min_index();
-                                const int max_x = (*anatomical_prior_sptr[i])[z][y].get_max_index();
-
-                                for (int x=min_x;x<= max_x;x++)
+                              for (int x=min_x;x<= max_x;x++)
                                   {
-                                    kStand_dev += square((*anatomical_prior_sptr[i])[z][y][x] - kmean);
+                                    if((*anatomical_prior_sptr[i])[z][y][x]>=0 && (*anatomical_prior_sptr[i])[z][y][x]<=1000000){
+                                        kStand_dev += square((*anatomical_prior_sptr[i])[z][y][x] - kmean);}
+                                    else{continue;}
                                   }
                                }
                        }
@@ -743,24 +728,24 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
     max_x = current_alpha_estimate[min_z][min_y].get_max_index();
 
         // Iterate over the image
-    for (int z=min_z; z<=max_z; z++) {
-        const int min_dz = max(distance.get_min_index(), min_z-z);
-        const int max_dz = min(distance.get_max_index(), max_z-z);
+
 
 #ifdef STIR_OPENMP
-#pragma omp parallel
-    {
-      #pragma omp  for schedule(dynamic)//schedule(static,1)
+#  if _OPENMP <201107
+                      #pragma omp parallel for
+#  else
+                      #pragma omp parallel for collapse(3) schedule(dynamic)
+#  endif
 #endif
-          for (int y=min_y; y<= max_y; y++) {//info("forloop");
-            const int min_dy = max(distance[0].get_min_index(), min_y-y);
-            const int max_dy = min(distance[0].get_max_index(), max_y-y);
-
+    for (int z=min_z; z<=max_z; z++) {
+        for (int y=min_y; y<= max_y; y++) {
             for (int x=min_x; x<= max_x; x++) {
-
-              // std::cout << "c" << std::endl;
-              const int min_dx = max(distance[0][0].get_min_index(), min_x-x);
-              const int max_dx = min(distance[0][0].get_max_index(), max_x-x);
+                const int min_dz = max(distance.get_min_index(), min_z-z);
+                const int max_dz = min(distance.get_max_index(), max_z-z);
+                const int min_dy = max(distance[0].get_min_index(), min_y-y);
+                const int max_dy = min(distance[0].get_max_index(), max_y-y);
+                const int min_dx = max(distance[0][0].get_min_index(), min_x-x);
+                const int max_dx = min(distance[0][0].get_max_index(), max_x-x);
 
               // Iterate over the kernel patch, centered at the current voxel
 
@@ -823,10 +808,6 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
                       kernelised_image_out[z][y][x] /= kernel_sum;
                     }
                   }
-
-#ifdef STIR_OPENMP
-    }
-    #endif
     }
     }
 
@@ -954,27 +935,13 @@ update_estimate(TargetT &current_alpha_coefficent_image)
     base_type::get_subset_sensitivity(subset_num);
 
 unique_ptr< TargetT > ksens_ptr(sensitivity.get_empty_copy());
-#ifdef STIR_OPENMP
-#pragma omp parallel sections
- { omp_set_nested(1);
-#pragma omp section
-    {info("KOSMAPOSL: kernelising gradient in parallel");
-#endif
+
   //apply kernel to the multiplicative update
         compute_kernelised_image (*kmultiplicative_update_ptr, *multiplicative_update_image_ptr, current_alpha_coefficent_image);
 
-#ifdef STIR_OPENMP
-}//end section
-#pragma omp section
-    {info("KOSMAPOSL: kernelising sensitivity in parallel");
-#endif
   // divide by subset sensitivity  
         compute_kernelised_image (*ksens_ptr, sensitivity, current_alpha_coefficent_image);
 
-#ifdef STIR_OPENMP
-}//end section
-}//end sections
-#endif
      int count = 0;
     
     //std::cerr <<this->MAP_model << std::endl;
