@@ -678,9 +678,7 @@ void KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(s
                               {
                               for (int x=min_x;x<= max_x;x++)
                                   {
-                                    if((*anatomical_prior_sptr[i])[z][y][x]>=0 && (*anatomical_prior_sptr[i])[z][y][x]<=1000000){
-                                        kStand_dev += square((*anatomical_prior_sptr[i])[z][y][x] - kmean);}
-                                    else{continue;}
+                                   kStand_dev += square((*anatomical_prior_sptr[i])[z][y][x] - kmean);
                                   }
                                }
                        }
