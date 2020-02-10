@@ -252,8 +252,9 @@ const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
 
 
     if(num_non_zero_feat>1){
+         this->kmnorm_sptr.resize(anatomical_image_filenames.size());
          for(int i = 0; i <=anatomical_image_filenames.size()-1; i++){
-           this->kmnorm_sptr.push_back( shared_ptr<TargetT>(this->anatomical_prior_sptr[i]->get_empty_copy ()));
+           this->kmnorm_sptr[i].reset(this->anatomical_prior_sptr[i]->get_empty_copy ());
            this->kmnorm_sptr[i]->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
            }
       
