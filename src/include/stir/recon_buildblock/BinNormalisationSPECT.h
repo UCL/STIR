@@ -32,6 +32,8 @@ class BinNormalisationSPECT :
   public RegisteredParsingObject<BinNormalisationSPECT, BinNormalisation>
 {
 public:
+
+
   //! Name which will be used when parsing a BinNormalisation object
   static const char * const registered_name; 
 
@@ -65,6 +67,7 @@ public:
 
   virtual float get_bin_efficiency(const Bin& bin,const double start_time, const double end_time) const;
 
+  void read_linearity_table(Array<3,float>& linearity) const;
   void read_uniformity_table(Array<3,float>& uniformity) const;
   void read_cor_table(Array<3,float>& cor) const;
 
@@ -73,7 +76,12 @@ public:
                            const int max_ax,
                            int zoom) const;
 
-private:
+protected:
+  // parsing stuff
+  virtual void set_defaults();
+  virtual void initialise_keymap();
+  virtual bool post_processing();
+
   int max_tang;
   shared_ptr<ProjData> norm_proj_data_info_ptr;
   mutable Array<1,float> normalisation_spect;
@@ -93,11 +101,6 @@ private:
   int num_detector_heads,rel_angle;
   mutable int num_views;
   mutable bool resampled;
-
-  // parsing stuff
-  virtual void set_defaults();
-  virtual void initialise_keymap();
-  virtual bool post_processing();
 };
 
 END_NAMESPACE_STIR
