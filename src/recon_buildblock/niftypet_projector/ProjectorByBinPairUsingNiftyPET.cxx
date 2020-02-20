@@ -72,7 +72,7 @@ ProjectorByBinPairUsingNiftyPET()
   set_defaults();
 }
 
-Succeeded
+/*Succeeded
 ProjectorByBinPairUsingNiftyPET::
 set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
        const shared_ptr<DiscretisedDensity<3,float> >& image_info_sptr)
@@ -85,7 +85,7 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
     return Succeeded::no;
 
   return Succeeded::yes;
-}
+}*/
 
 void ProjectorByBinPairUsingNiftyPET::set_verbosity(const bool verbosity)
 {
