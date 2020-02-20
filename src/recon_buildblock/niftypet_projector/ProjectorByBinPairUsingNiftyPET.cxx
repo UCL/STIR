@@ -53,7 +53,7 @@ void
 ProjectorByBinPairUsingNiftyPET::set_defaults()
 {
   base_type::set_defaults();
-  this->_verbosity = true;
+  this->set_verbosity(true);
 }
 
 bool
@@ -85,6 +85,21 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
     return Succeeded::no;
 
   return Succeeded::yes;
+}
+
+void ProjectorByBinPairUsingNiftyPET::set_verbosity(const bool verbosity)
+{
+    _verbosity = verbosity;
+
+    shared_ptr<ForwardProjectorByBinNiftyPET> fwd_prj_downcast_sptr =
+            dynamic_pointer_cast<ForwardProjectorByBinNiftyPET>(this->forward_projector_sptr);
+    if (fwd_prj_downcast_sptr)
+        fwd_prj_downcast_sptr->set_verbosity(_verbosity);
+
+    shared_ptr<BackProjectorByBinNiftyPET> bck_prj_downcast_sptr =
+            dynamic_pointer_cast<BackProjectorByBinNiftyPET>(this->back_projector_sptr);
+    if (bck_prj_downcast_sptr)
+        bck_prj_downcast_sptr->set_verbosity(_verbosity);
 }
 
 END_NAMESPACE_STIR

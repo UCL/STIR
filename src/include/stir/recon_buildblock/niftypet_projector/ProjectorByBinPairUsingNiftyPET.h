@@ -64,7 +64,7 @@ public:
     );
 
   /// Set verbosity
-  void set_verbosity(const bool verbosity) { _verbosity = verbosity; }
+  void set_verbosity(const bool verbosity);
 
 private:
 
