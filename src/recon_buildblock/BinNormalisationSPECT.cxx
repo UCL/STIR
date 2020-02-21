@@ -27,10 +27,6 @@
   \author Daniel Deidda
 */
 
-// enable if you want results identical to Peter Bloomfield's normalisation code
-// (and hence old versions of Bkproj_3d)
-// #define SAME_AS_PETER
-
 #include "stir/recon_buildblock/BinNormalisationSPECT.h"
 #include "stir/DetectionPosition.h"
 #include "stir/DetectionPositionPair.h"
