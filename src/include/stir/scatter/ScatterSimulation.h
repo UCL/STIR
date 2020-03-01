@@ -116,7 +116,7 @@ public:
     shared_ptr<ExamInfo> get_ExamInfo_sptr() const;
     //@}
 
-    //! \name set functions
+    //! \name get functions
     //@{
     shared_ptr<ProjData>
     get_output_proj_data_sptr() const;
@@ -137,8 +137,6 @@ public:
     void set_template_proj_data_info(const std::string&);
 
     void set_template_proj_data_info(const ProjDataInfo&);
-    //! \details Create a local copy of the scatter template
-    void set_template_proj_data_info_sptr(shared_ptr<ProjDataInfo>);
 
     void set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 
@@ -359,14 +357,8 @@ protected:
 
     shared_ptr< DiscretisedDensity<3, float> > density_image_sptr;
 
-    shared_ptr< DiscretisedDensity<3, float> > density_image_for_scatter_points_sptr;
     //! Pointer to hold the current activity estimation
     shared_ptr<DiscretisedDensity<3,float> > activity_image_sptr;
-
-    int total_detectors;
-
-    Array<2,float> cached_activity_integral_scattpoint_det;
-    Array<2,float> cached_attenuation_integral_scattpoint_det;
 
     //! set-up cache for attenuation integrals
     /*! \warning This will not remove existing cached data (if the sizes match). If you need this,
@@ -419,6 +411,14 @@ protected:
 
     double total_scatter;
 
+ private:
+    int total_detectors;
+
+    Array<2,float> cached_activity_integral_scattpoint_det;
+    Array<2,float> cached_attenuation_integral_scattpoint_det;
+    shared_ptr< DiscretisedDensity<3, float> > density_image_for_scatter_points_sptr;
+
+    bool _already_set_up;
 };
 
 END_NAMESPACE_STIR

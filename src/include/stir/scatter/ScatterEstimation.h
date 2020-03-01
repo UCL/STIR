@@ -277,9 +277,6 @@ private:
     //! Run the process in 2D by SSRB the 3D sinograms
     bool run_in_2d_projdata;
     //! This bool will allow the ScatterEstimation to override the value of
-    //! the initial activity image set in ScatterSimulation par file
-    bool override_initial_activity_image;
-    //! This bool will allow the ScatterEstimation to override the value of
     //! the density image set in ScatterSimulation par file
     bool override_density_image;
     //! This bool will allow the ScatterEstimation to override the value of

@@ -14,10 +14,10 @@ projector pair type := Matrix
   End Ray tracing matrix parameters :=
   End Projector Pair Using Matrix Parameters :=
 
-recompute sensitivity := 1
-zoom := 0.5
-;XY output image size (in pixels) := 150
-;z output image size (in pixels) := 
+;recompute sensitivity := 0
+;subset sensitivity filenames := sens_%d.hv
+
+zoom := 0.3
 
 end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
@@ -25,8 +25,8 @@ end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 enforce initial positivity condition:=1
 
 number of subsets:= 21
-number of subiterations:= 21
-save estimates at subiteration intervals:= 21
+number of subiterations:=21
+;save estimates at subiteration intervals:= 21
 
 ;
 ; Disable output

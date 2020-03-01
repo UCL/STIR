@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2004 -  2009 Hammersmith Imanet Ltd
-  Copyright (C) 2013,2016,2019 University College London
+  Copyright (C) 2013,2016,2019,2020 University College London
   Copyright (C) 2018-2019, University of Hull
   This file is part of STIR.
 
@@ -65,8 +65,8 @@ set_defaults()
     this->do_average_at_2 = true;
     this->export_scatter_estimates_of_each_iteration = false;
     this->run_debug_mode = false;
-    this->override_initial_activity_image = false;
-    this->override_density_image = false;
+    this->override_scanner_template = true;
+    this->override_density_image = true;
     this->override_density_image_for_scatter_points = false;
     this->remove_interleaving = true;
     this->atten_image_filename = "";
@@ -140,8 +140,6 @@ initialise_keymap()
     this->parser.add_key("use default downsampling in scatter simulation",
                          &this->use_default_downsampling);
 
-    this->parser.add_key("override initial activity image",
-                         &this->override_initial_activity_image);
     this->parser.add_key("override density image",
                          &this->override_density_image);
     this->parser.add_key("override density image for scatter points",
@@ -509,22 +507,16 @@ if(is_null_ptr(this->reconstruction_template_sptr))
         info("ScatterEstimation: Over-riding the scanner template! (The file and settings set in the simulation par file are discarded)");
         if (run_in_2d_projdata)
         {
-            this->scatter_simulation_sptr->set_template_proj_data_info_sptr(this->input_projdata_2d_sptr->get_proj_data_info_sptr());
+            this->scatter_simulation_sptr->set_template_proj_data_info(*this->input_projdata_2d_sptr->get_proj_data_info_sptr());
             this->scatter_simulation_sptr->set_exam_info_sptr(this->input_projdata_2d_sptr->get_exam_info_sptr());
         }
         else
         {
-            this->scatter_simulation_sptr->set_template_proj_data_info_sptr(this->input_projdata_sptr->get_proj_data_info_sptr());
+            this->scatter_simulation_sptr->set_template_proj_data_info(*this->input_projdata_sptr->get_proj_data_info_sptr());
             this->scatter_simulation_sptr->set_exam_info_sptr(this->input_projdata_sptr->get_exam_info_sptr());
         }
 
     }
-
-    //    if (this->scatter_simulation_sptr->set_up() == Succeeded::no)
-    //    {
-    //        warning ("ScatterEstimation: Failure at set_up() of the Scatter Simulation. Aborting.");
-    //        return Succeeded::no;
-    //    }
 
     if (this->use_default_downsampling)
         this->scatter_simulation_sptr->default_downsampling(false);
@@ -965,7 +957,7 @@ process_data()
 
         if ( run_debug_mode )
         {
-            std::string out_filename = extras_path.get_path() + "inital_activity_image";
+            std::string out_filename = extras_path.get_path() + "initial_activity_image";
             OutputFileFormat<DiscretisedDensity < 3, float > >::default_sptr()->
                     write_to_file(out_filename, *this->current_activity_image_sptr);
         }
@@ -1010,6 +1002,14 @@ process_data()
         }
 
         info("ScatterEstimation: Scatter simulation in progress...");
+	if (i_scat_iter == 1)
+	{
+	    if (this->scatter_simulation_sptr->set_up() == Succeeded::no)
+	    {
+		warning ("ScatterEstimation: Failure at set_up() of the Scatter Simulation. Aborting.");
+		return Succeeded::no;
+	    }
+	}
 
         if (this->scatter_simulation_sptr->process_data() == Succeeded::no)
             error("ScatterEstimation: Scatter simulation failed");
