@@ -4,11 +4,10 @@
   \file 
   \ingroup listmode
 
-  \brief Program to bin listmode data to projection data using bootstrapping (uses stir::LmToProjDataWithRandomRejection)
+  \brief Program to bin listmode data to projection data using random rejection of counts (uses stir::LmToProjDataWithRandomRejection)
  
   \author Kris Thielemans
   
-  $Revision $
 */
 /*
     Copyright (C) 2003- 2012, Hammersmith Imanet Ltd
@@ -27,7 +26,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir_experimental/listmode/LmToProjDataWithRandomRejection.h"
+#include "stir/listmode/LmToProjDataWithRandomRejection.h"
 
 USING_NAMESPACE_STIR
 
@@ -36,8 +35,8 @@ USING_NAMESPACE_STIR
 int main(int argc, char * argv[])
 {
   
-  if (argc<1 && argc>3) {
-    std::cerr << "Usage: " << argv[0] << " [par_file reject_if_above]]\n";
+  if ((argc<1) || (argc>3)) {
+    std::cerr << "Usage: " << argv[0] << " [par_file fraction_of_counts_to_keep]]\n";
     exit(EXIT_FAILURE);
   }
 
@@ -48,4 +47,3 @@ int main(int argc, char * argv[])
   application.process_data();
   return EXIT_SUCCESS;
 }
-
