@@ -216,6 +216,7 @@ public:
   bool hybrid;
   double sigma_p;
   double sigma_dp, sigma_dm;
+  BasicCoordinate<3,int> min_ind, max_ind;
 
   //! boolean value to determine if the update images have to be written to disk
   int write_update_image;
