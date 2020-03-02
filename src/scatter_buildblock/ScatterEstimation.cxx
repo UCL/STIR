@@ -451,25 +451,6 @@ if(is_null_ptr(this->reconstruction_template_sptr))
 
     this->current_activity_image_sptr->fill(1.0);
 
-    // Based on the activity image zoom the attenuation
-    if (!is_null_ptr(current_activity_image_sptr))
-    {
-        VoxelsOnCartesianGrid<float>* tmp_att = dynamic_cast<VoxelsOnCartesianGrid<float>* >(atten_image_sptr.get());
-        VoxelsOnCartesianGrid<float>* tmp = dynamic_cast<VoxelsOnCartesianGrid<float>* >(current_activity_image_sptr.get())->get_empty_copy();
-
-        ZoomOptions scale(ZoomOptions::preserve_values);
-
-        zoom_image(*tmp, *tmp_att, scale);
-
-        atten_image_sptr.reset(new VoxelsOnCartesianGrid<float>(*tmp));
-
-//        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-//                write_to_file("post_activity", *this->current_activity_image_sptr.get());
-
-//        OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-//                write_to_file("post_attenuation", *this->atten_image_sptr.get());
-    }
-
     //
     // ScatterSimulation
     //
