@@ -428,7 +428,10 @@ ScatterSimulation::
 downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
 					    int _size_xy, int _size_z)
 {
-    const VoxelsOnCartesianGrid<float> & tmp_att = dynamic_cast<VoxelsOnCartesianGrid<float>& >(*density_image_sptr);
+    if (is_null_ptr(this->density_image_sptr))
+        error("ScatterSimulation: downsampling function called before attenuation image is set");
+
+    const VoxelsOnCartesianGrid<float> & tmp_att = dynamic_cast<VoxelsOnCartesianGrid<float>& >(*this->density_image_sptr);
     if (_zoom_xy < 0 || _zoom_z < 0)
     {
 	VoxelsOnCartesianGrid<float> tmpl_density(*proj_data_info_cyl_noarc_cor_sptr);

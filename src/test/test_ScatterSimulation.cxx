@@ -87,7 +87,7 @@ test_downsampling_ProjDataInfo()
 
 
     unique_ptr<SingleScatterSimulation> sss(new SingleScatterSimulation());
-    sss->set_template_proj_data_info_sptr(original_projdata);
+    sss->set_template_proj_data_info(*original_projdata);
 
     {
         shared_ptr<ProjDataInfoCylindricalNoArcCorr> sss_projdata(sss->get_template_proj_data_info_sptr());
@@ -173,13 +173,13 @@ test_downsampling_DiscretisedDensity()
 
     unique_ptr<SingleScatterSimulation> sss(new SingleScatterSimulation());
 
-    sss->set_template_proj_data_info_sptr(original_projdata);
-    sss->set_density_image_for_scatter_points_sptr(atten_density);
+    sss->set_template_proj_data_info(*original_projdata);
+    sss->set_density_image_sptr(atten_density);
 
 //    int total_scatter_points_orig = sss.get_num_scatter_points();
 
     sss->downsample_density_image_for_scatter_points(0.5f, 0.5f, 1);
-
+    
     shared_ptr<DiscretisedDensity<3,float> > downed_image = sss->get_density_image_for_scatter_points_sptr();
 
 
@@ -271,7 +271,7 @@ ScatterSimulationTests::test_scatter_simulation()
 
     shared_ptr<VoxelsOnCartesianGrid<float> > tmpl_density( new VoxelsOnCartesianGrid<float>(*original_projdata_info));
 
-    sss->set_template_proj_data_info_sptr(original_projdata_info);
+    sss->set_template_proj_data_info(*original_projdata_info);
 
 
     shared_ptr<VoxelsOnCartesianGrid<float> > water_density(tmpl_density->clone());
