@@ -693,8 +693,6 @@ Succeeded ScatterSimulation::default_downsampling(bool all_images)
         return Succeeded::no;
 
 
-    ZoomOptions scaling(ZoomOptions::preserve_values);
-
     // Downsample the activity and attanuation images
     shared_ptr<VoxelsOnCartesianGrid<float> > tmpl_density( new VoxelsOnCartesianGrid<float>(*proj_data_info_cyl_noarc_cor_sptr));
 
@@ -703,21 +701,21 @@ Succeeded ScatterSimulation::default_downsampling(bool all_images)
         VoxelsOnCartesianGrid<float>* tmp_act = dynamic_cast<VoxelsOnCartesianGrid<float>* >(activity_image_sptr.get());
         VoxelsOnCartesianGrid<float>* tmp = tmpl_density->get_empty_copy();
 
-
+	ZoomOptions scaling(ZoomOptions::preserve_projections);
         zoom_image(*tmp, *tmp_act, scaling);
-        activity_image_sptr.reset(new VoxelsOnCartesianGrid<float>(*tmp));
+        activity_image_sptr.reset(tmp);
 
         this->remove_cache_for_integrals_over_activity();
     }
 
     if(!is_null_ptr(density_image_sptr) && all_images)
     {
-        VoxelsOnCartesianGrid<float>* tmp_act = dynamic_cast<VoxelsOnCartesianGrid<float>* >(density_image_sptr.get());
+        VoxelsOnCartesianGrid<float>* tmp_att = dynamic_cast<VoxelsOnCartesianGrid<float>* >(density_image_sptr.get());
         VoxelsOnCartesianGrid<float>* tmp = tmpl_density->get_empty_copy();
 
-
-        zoom_image(*tmp, *tmp_act, scaling);
-        density_image_sptr.reset(new VoxelsOnCartesianGrid<float>(*tmp));
+	ZoomOptions scaling(ZoomOptions::preserve_values);
+        zoom_image(*tmp, *tmp_att, scaling);
+        density_image_sptr.reset(tmp);
 
         this->remove_cache_for_integrals_over_attenuation();
     }
