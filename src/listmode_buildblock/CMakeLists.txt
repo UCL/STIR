@@ -5,8 +5,9 @@ set(dir listmode_buildblock)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-	CListEvent 
-	CListModeData 
+        ListModeData
+        ListEvent
+        CListEvent
 	LmToProjData 
         LmToProjDataBootstrap
 	LmToProjDataWithRandomRejection

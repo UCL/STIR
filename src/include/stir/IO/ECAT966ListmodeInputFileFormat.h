@@ -56,7 +56,7 @@ START_NAMESPACE_ECAT7
   This class expects to be passed the name of the .sgl file.
 */
 class ECAT966ListmodeInputFileFormat :
-public InputFileFormat<CListModeData >
+public InputFileFormat<ListModeData >
 {
  public:
   virtual const std::string

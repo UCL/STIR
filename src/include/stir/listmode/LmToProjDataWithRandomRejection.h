@@ -6,11 +6,13 @@
   \ingroup listmode
   \brief Class for binning list mode files with the bootstrap method
     
-  \author Kris Thielemans
-      
+  \author Kris Thielemans\author Daniel Deidda
+
 */
 /*
-    Copyright (C) 2003- 2012, Hammersmith Imanet
+    Copyright (C) 2003- 2012, Hammersmith Imanet Ltd
+    Copyright (C) 2019, National Physical Laboratory
+    Copyright (C) 2019, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -91,7 +93,7 @@ protected:
   /*! Initialises a vector with the number of times each event has to be replicated */
   virtual void start_new_time_frame(const unsigned int new_frame_num);
 
-  virtual void get_bin_from_event(Bin& bin, const CListEvent&) const;
+  virtual void get_bin_from_event(Bin& bin, const ListEvent&) const;
 
 
   // \name parsing variables

@@ -66,7 +66,7 @@ improvements to the documentation.
   and Richard Brown (UCL)
   but with contributions by Jannis Fischer (ETH Zurich) for SAFIR support,
   Elise Emond for IO fixes (UCL), Edoardo Pasca (STFC) for Siemens interfile support,
-  Daniel Deida (Leeds) for the PLS prior, Ashley Gillman (CSIRO AeHRC) for patient orientation and
+  Daniel Deida (Leeds, NPL) for the PLS prior, the HKEM algorithm, and list mode and projection functionalities for SPECT, Ashley Gillman (CSIRO AeHRC) for patient orientation and
   geometrical support, and some code clean-up by David Volgyes. Various bits
 were tested by (in alphabetical order, all UCL except where indicated):
 Ottavia Bertolli, Matthias Ehrhardt, Pawel Markiewicz, Richard Manber, Alaleh Rashidnasab,
@@ -94,6 +94,7 @@ Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
     projection will be more efficient.</li>
   <li> replaced Gaussian filters in <tt>experimental</tt>) with better, but incompatible,
     versions in <tt>buildblock</tt>. See below for more information.</li>
+  <li> Compared to previous versions of STIR, the <b>SPECT reconstructed images are now inverted along the x axis</b> to match DICOM and nifti (and PET) orientation. </li>
 </ul>
 
 It is now highly recommended to specify imaging modality and patient orientation in your Interfile headers. If you don't,
@@ -132,8 +133,11 @@ python/matlab or use of the C++ library.
 
 <h3>New functionality</h3>
 <ul>
-<li><tt>KOSMAPOSL</tt> STIR now allows to use the hybrid kernel method described in the following paper: "Hybrid PET-MR list-mode kernelized expectation maximization reconstruction",
+<li><tt>KOSMAPOSL</tt> STIR now allows to use the hybrid kernel method described in the following paper: "<i>Hybrid PET-MR list-mode kernelized expectation maximization reconstruction</i>",
   Inverse Problems, 2019, DOI: https://doi.org/10.1088/1361-6420/ab013f.</li>
+<li><tt>KOSMAPOSL</tt> also allows to use multiple anatomical images. The method is described in "<i>Multiplexing Kernelized Expectation Maximization
+Reconstruction for PET-MR</i>", NSS/MIC proceedings, 2018, DOI: https://doi.org/10.1109/NSSMIC.2018.8824312.
+  </li>
 <li><tt>generate_image</tt> now has optional keywords for modality, patient position and timing.</li>
   <li><tt>create_projdata_template</tt> now allows even span. In particular,
 span 2 corresponds to how GE stores data. See the STIR glossary for more information.</li>
@@ -201,11 +205,22 @@ These are only minimally documented at the present stage unfortunately.
   <li><code>ctac_to_mu_values</code> is a new utility that converts a CT image to linear attenuation coefficients.
       This application depends on the <a href="https://github.com/nlohmann/json">nlohmann JSON library</a>.
   </li>
+  <li>New utility <code>invert_axis</code> to invert x, y or z axis of an image.
+  </li>
+  <li>List-Mode functionalities are now extended for SPECT.
+  </li>
+  <li>Triple energy Window (TEW) for scatter correction is now available. Needs availability of different sinograms acquired at different energy windows.
+  </li>
+  <li>Normalisation for SPECT has been added. Can be used with <tt>lm_to_projdata</tt> and during reconstruction. Currently provides the option to apply uniformity and decay correction.
+  </li>
   </ul>
 
 
 <h3>Changed functionality</h3>
 <ul>
+<li><tt>manip_image</tt> 
+    now has an extra option that allows to substitute nan with zero.
+</li>
 <li><tt>create_projdata_template</tt> 
     now returns an extra segment pair if the maximum ring difference does not coincide with a &quot;full&quot; segment.
     This change was to accomodate how GE uses even span.
@@ -376,7 +391,10 @@ from the above):</H2>
 
 <h3>Backward incompatibities</h3>
 <ul>
-
+ <li> The base class for list mode has been generalised from <tt>CListMode</tt> to <tt>ListMode</tt>. <tt>SPECTListMode</tt> for
+    SPECT and <tt>CListMode</tt> for PET are derived classes. All the classes and utilities for list mode now use the <tt>ListMode</tt> class 
+    (<tt>ListModeData</tt>, <tt>ListRecord</tt>, <tt>ListEvent</tt> etc. accordingly)
+    and new developments using list mode need to use the base class as well. </li>
 <li> <tt>list_ROI_values</tt> now has the option to save the image name , max and min as new columns, and they will appear in the same 
     row as the roi name, mean value and so on. 
 </li>
@@ -478,4 +496,3 @@ can handle the template.
 </body>
 
 </html>
-
