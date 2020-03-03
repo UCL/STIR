@@ -87,6 +87,7 @@ protected:
   mutable Array<1,float> normalisation_spect;
   Array<3,float> uniformity;
   Array<3,float> cor;
+  mutable float map[1048576];
   mutable Array<3,float> down_sampled_uniformity;
   mutable RelatedViewgrams<float> NCOR_viewgrams;
   std::string uniformity_filename, folder_prefix, projdata_filename;

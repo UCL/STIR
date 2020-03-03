@@ -174,7 +174,7 @@ float BinNormalisationSPECT::get_bin_efficiency(const Bin& bin,const double star
                     normalisation=
                     normalisation/decay_correction_factor(half_life, rel_time);
                 }
-
+//std::cout<<"value"<<uniformity[head_num][bin.axial_pos_num()][bin.tangential_pos_num()+max_tang+1]<<" "<<normalisation<<std::endl;
 return normalisation;
 }
 
@@ -309,31 +309,22 @@ BinNormalisationSPECT::
 read_uniformity_table(Array<3,float>& uniformity) const
 {//std::ofstream unif_table("uniformity.dat",std::ios::out);
     for(int n=1; n<=num_detector_heads; n++ ){
-
-        const std::string n_string = boost::lexical_cast<std::string>(n);
-
-        const std::string filename(this->folder_prefix+n_string+"/"+uniformity_filename);
-        std::ifstream input(filename.c_str());
-        std::string str;
-        int i=0,j=0;
-
-        while (std::getline(input, str)){
-            float value;
-            value=boost::lexical_cast<float>(str);
-
-            if(j>1023){
-                j=0;
-                i=i+1;
-            }
-            if(i>1023)
-                i=0;
-//            std::cout<<"uni "<<n<<", "<<i<<", "<<j<<", "
-//                    <<value<<std::endl;
-             uniformity[n-1][i][j]=value;
-//             unif_table<<uniformity[n-1][i][j]<<std::endl;
-             j=j+1;
-            }
-    }
+      
+              const std::string n_string = boost::lexical_cast<std::string>(n);
+              const std::string filename(this->folder_prefix+n_string+"/"+uniformity_filename);
+              
+              std::ifstream input(filename.c_str());
+              
+              if (!input)
+                  error("Could not open Uniformity correction table!");
+              input.read(const_cast<char *>(reinterpret_cast<char *>(&map)), sizeof(map));
+              input.close();
+              for(int j=1;j<=1023;j++)
+                  for(int i=1;i<=1023;i++){
+                      uniformity[n-1][j][i]=map[j+i*1024];
+//                      std::cout<<"value"<<uniformity[n-1][j][i]<<std::endl;
+                  }
+              }
 }
 
 void
