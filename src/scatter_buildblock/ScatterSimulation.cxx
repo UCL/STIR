@@ -168,8 +168,9 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
             }
         }
     }
+
     // now compute scatter for all bins
-    total_scatter = 0;
+    double total_scatter = 0;
     Viewgram<float> viewgram =
             this->output_proj_data_sptr->get_empty_viewgram(vs_num.view_num(), vs_num.segment_num());
 #ifdef STIR_OPENMP
@@ -182,16 +183,24 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
         unsigned det_num_A = 0; // initialise to avoid compiler warnings
         unsigned det_num_B = 0;
         this->find_detectors(det_num_A, det_num_B, bin);
-        // TODO: Not thread-safe. See issue  #417 on Github.
+
         const double scatter_ratio =
                 scatter_estimate(det_num_A, det_num_B);
+
+#if defined STIR_OPENMP 
+#  if _OPENMP >= 201107
+#    pragma omp atomic write
+#  else
+#    pragma omp critical(ScatterSimulationByBin_process_data_for_view_segment_num)
+#  endif
+#endif
         viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
                 static_cast<float>(scatter_ratio);
         total_scatter += scatter_ratio;
     } // end loop over bins
 
     if (this->output_proj_data_sptr->set_viewgram(viewgram) == Succeeded::no)
-        error("ScatterEstimationByBin: error writing viewgram");
+        error("ScatterSimulation: error writing viewgram");
 
     return static_cast<double>(viewgram.sum());
 }
@@ -750,7 +759,9 @@ set_cache_enabled(const bool arg)
 }
 
 void
-ScatterSimulation::write_log()
+ScatterSimulation::
+write_log(const double simulation_time, 
+          const float total_scatter)
 {
         std::string log_filename =
                 this->output_proj_data_filename + ".log";
