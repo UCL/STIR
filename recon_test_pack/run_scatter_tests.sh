@@ -2,7 +2,7 @@
 # A script to check to see if scatter simulation gives the expected result.
 #
 #  Copyright (C) 2011, Kris Thielemans
-#  Copyright (C) 2013,2019 University College London
+#  Copyright (C) 2013, 2020 University College London
 #  This file is part of STIR.
 #
 #  This file is free software; you can redistribute it and/or modify
@@ -17,11 +17,16 @@
 #
 #  See STIR/LICENSE.txt for details
 #      
-# Authors Kris Thielemans
-#        Nikos Efthimiou
+# Author Kris Thielemans
 # 
 
-echo This script should work with STIR version ">"3.0. If you have
+# Scripts should exit with error code when a test fails:
+if [ -n "$TRAVIS" ]; then
+    # The code runs inside Travis
+    set -e
+fi
+
+echo This script should work with STIR version 4.0. If you have
 echo a later version, you might have to update your test pack.
 echo Please check the web site.
 echo
@@ -31,12 +36,9 @@ if [ $# -eq 1 ]; then
   PATH=$1:$PATH
 fi
 
-# first delete any files remaining from a previous run
-rm -f my_* *.log
-
 command -v generate_image >/dev/null 2>&1 || { echo "generate_image not found or not executable. Aborting." >&2; exit 1; }
 echo "Using `command -v generate_image`"
-echo "Using `command -v simulate_scatter`"
+echo "Using `command -v estimate_scatter`"
 
 # first need to set this to the C locale, as this is what the STIR utilities use
 # otherwise, awk might interpret floating point numbers incorrectly
@@ -49,34 +51,9 @@ echo "===  make emission image"
 generate_image  generate_uniform_cylinder.par
 echo "===  use that as template for attenuation"
 stir_math --including-first --times-scalar .096 my_atten_image.hv my_uniform_cylinder.hv
-ATTEN_IMAGE=my_atten_image.hv
 
-echo "===  Downsample the attenuation image"
-# This will be used to "select" scatter points in the simulation.
-# Note: the more downsampling, the faster, but less accurate of course.
-# Downsampling factors and final size are currently hard-wired in this script.
-# You'd have to adjust these for your data.
-ZOOM_ATTEN_IMAGE=my_zoomed_my_atten_image.hv
-zoom_z=.16666667
-zoom_xy=0.25
-new_voxels_z=8
-new_voxels_xy=33
-zoom_image ${ZOOM_ATTEN_IMAGE} ${ATTEN_IMAGE} ${new_voxels_xy} ${zoom_xy} 0 0 ${new_voxels_z} ${zoom_z} 0
-if [ $? -ne 0 ]; then
-  echo "Error running zoom_image"
-  exit 1
-fi
-# scale image back to appropriate units (cm^-1)
-stir_math --accumulate  --times-scalar ${zoom_xy}  --times-scalar ${zoom_xy} --times-scalar ${zoom_z}  --including-first ${ZOOM_ATTEN_IMAGE}
-if [ $? -ne 0 ]; then
-  echo "Error running stir_math"
-  exit 1
-fi
-
-export ATTEN_IMAGE
-export ZOOM_ATTEN_IMAGE
-echo "===  run scatter simulation (new)"
-simulate_scatter scatter_simulation_new.par > my_simulate_scatter_new.log 2>&1
+echo "===  run scatter simulation"
+./simulate_scatter.sh my_scatter_cylinder my_uniform_cylinder.hv my_atten_image.hv scatter_cylinder.hs > my_simulate_scatter.log
 if [ $? -ne 0 ]; then
   echo "Error running scatter simulation"
   error_log_files="${error_log_files} my_simulate_scatter.log my_scatter_cylinder*.log"
@@ -84,7 +61,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-echo "===  compare result with correct"
+echo "===  compare result"
 compare_projdata my_scatter_cylinder.hs scatter_cylinder.hs > my_scatter_compare_projdata.log 2>&1
 if [ $? -ne 0 ]; then
   echo "Error comparing scatter output."
@@ -99,3 +76,4 @@ else
  echo "There were errors. Check ${error_log_files}"
  exit 1
 fi
+
