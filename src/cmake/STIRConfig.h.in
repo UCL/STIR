@@ -69,6 +69,10 @@ namespace stir {
 
 #cmakedefine STIR_OPENMP
 
+#cmakedefine STIR_OPENMP_PROJECTIONS
+
+#cmakedefine STIR_OPENMP_MATRIX
+
 #cmakedefine STIR_MPI
 
 #cmakedefine STIR_USE_BOOST_SHARED_PTR

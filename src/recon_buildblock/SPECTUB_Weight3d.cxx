@@ -36,6 +36,10 @@
 #include <string>
 #include <math.h>
 
+#ifdef STIR_OPENMP
+#include <omp.h>
+#endif
+#include "stir/num_threads.h"
 namespace SPECTUB {
 
 #define EPSILON 1e-12
@@ -124,15 +128,11 @@ void wm_calculation( const int kOS,
 		
 		jp = -1;											// projection index (row index of the weight matrix )
 		int j1;
-		
+//		#pragma omp parallel for collapse(3) schedule(dynamic)
 		for ( int j = 0 ; j < prj.NangOS ; j++ ){
-			
-			j1 = wmh.index[ j ];			
-			
 			for ( int k = 0 ; k < prj.Nsli ; k++ ){
-				
 				for ( int i = 0 ; i < prj.Nbin ; i++){
-					
+					j1 = wmh.index[ j ];	
 					jp++;
 					wm.na[ jp ] = j1;
 					wm.nb[ jp ] = i - (int)prj.Nbind2;
@@ -141,11 +141,17 @@ void wm_calculation( const int kOS,
 			}
 		}
 	}	
-	
+	int ne=0;
 	//=== LOOP1: IMAGE ROWS =======================================================================
-	
-	for ( vox.irow = 0 ; vox.irow < vol.Nrow ; vox.irow++ ){
-		
+#ifdef STIR_OPENMP
+#pragma omp parallel for schedule(dynamic) reduction(+:ne)
+#endif
+
+	for ( int i = 0 ; i < vol.Nrow ; i++ ){
+		vox.irow=i;
+        #ifdef STIR_OPENMP
+        omp_set_num_threads(omp_get_num_procs());
+        #endif
                 //cout << "weights: " << 100.*(vox.irow+1)/vol.Nrow << "%" << endl;
 		
 		vox.y = vol.y0 + vox.irow * vol.szcm ;       // y coordinate of the voxel (index 0->Nrow-1: irow)
@@ -256,7 +262,7 @@ void wm_calculation( const int kOS,
 						if ( ks >= vol.Nsli ) continue;
 
 						jp = k * prj.Nbp + ks * prj.Nbin + psf.ib[ ie ];
-						
+						ne=wm.ne[jp];
 						if ( wmh.do_full_att ) coeff_att = calc_att( &attpth[ ie ], attmap, vox.islc );
 						
 						weight = psf.val[ ie ] * eff * coeff_att ;
@@ -273,8 +279,13 @@ void wm_calculation( const int kOS,
                         
 						wm.col[ jp ][ wm.ne[ jp ] ] = vox.iv;
 						wm.val[ jp ][ wm.ne[ jp ] ] = weight;
-						wm.ne[ jp ]++;
-						
+                        #pragma omp critical
+                        ne++;
+                        #pragma omp critical
+						wm.ne[ jp ]=ne;
+                        #pragma omp critical
+                        cout<< "ne "<< ne<< " "<<NITEMS[ jp ]<<" "<<omp_get_thread_num()<<endl;
+						#pragma omp critical
 						if ( wm.ne[ jp ] >= NITEMS[ jp ] ) error_weight3d(45, "" );
 					}   
 				}                    // end of LOOP4: image slices

@@ -197,7 +197,7 @@ protected:
 	    const int start_tang_pos_num,const int end_tang_pos_num,
 	    const int start_view, const int end_view);
 
-#ifdef STIR_OPENMP
+#ifdef STIR_OPENMP_PROJECTIONS
   //! A vector of back projected images that will be used with openMP. There will be as many images as openMP threads
   std::vector< shared_ptr<DiscretisedDensity<3,float> > > _local_output_image_sptrs;
 #endif
