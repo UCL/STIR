@@ -110,7 +110,7 @@ main (int argc, char * argv[])
   shared_ptr<ProjData> template_proj_data_ptr = 
     ProjData::read_from_file(argv[3]);
 
-  shared_ptr<ForwardProjectorByBin> forw_projector_ptr;
+  shared_ptr<ForwardProjectorByBin> forw_projector_sptr;
   if (argc>=5)
   {
       KeyParser parser;
@@ -122,14 +122,14 @@ main (int argc, char * argv[])
   else if (use_PMRT)
   {
       shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
-      forw_projector_ptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM)); 
+      forw_projector_sptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM));
   }
   else
   {
-    forw_projector_ptr.reset(new ForwardProjectorByBinUsingRayTracing());
+    forw_projector_sptr.reset(new ForwardProjectorByBinUsingRayTracing());
   }
 
-  cerr << "\n\nForward projector used:\n" << forw_projector_ptr->parameter_info();  
+  cerr << "\n\nForward projector used:\n" << forw_projector_sptr->parameter_info();
 
   const std::string output_file_name = argv[1];
   shared_ptr<ProjData> 
@@ -145,7 +145,7 @@ main (int argc, char * argv[])
   // construct a normalisation object that does all the work for us.
   shared_ptr<BinNormalisation> normalisation_ptr
 	(new BinNormalisationFromAttenuationImage(atten_image_filename,
-						  forw_projector_ptr));
+						  forw_projector_sptr));
   
   if (
       normalisation_ptr->set_up(template_proj_data_ptr->get_exam_info_sptr(), template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone())
@@ -158,7 +158,7 @@ main (int argc, char * argv[])
   // dummy values currently necessary for BinNormalisation, but they will be ignored
   const double start_frame = 0;
   const double end_frame = 0;
-  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(forw_projector_ptr->get_symmetries_used()->clone());
+  shared_ptr<DataSymmetriesForViewSegmentNumbers> symmetries_sptr(forw_projector_sptr->get_symmetries_used()->clone());
   if (doACF)
     {
       normalisation_ptr->apply(*out_proj_data_ptr, symmetries_sptr);
