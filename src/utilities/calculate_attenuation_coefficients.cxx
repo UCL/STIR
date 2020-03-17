@@ -64,11 +64,11 @@ START_NAMESPACE_STIR
 
 static void print_usage_and_exit()
 {
-    std::cerr<<"\nUsage: calculate_attenuation_coefficients [--PMRT --NOPMRT]  --AF|--ACF <output filename > <input image file name> <template_proj_data>\n"
+    std::cerr<<"\nUsage: calculate_attenuation_coefficients [--PMRT --NOPMRT]  --AF|--ACF <output filename > <input image file name> <template_proj_data> [forwardprojector-parfile]\n"
 	     <<"\t--ACF  calculates the attenuation correction factors\n"
 	     <<"\t--AF  calculates the attenuation factor (i.e. the inverse of the ACFs)\n"
-             <<"\t--PMRT uses the Ray Tracing Projection Matrix (default)\n"
-             <<"\t--NOPMRT uses the (old) Ray Tracing forward projector\n"
+             <<"\t--PMRT uses the Ray Tracing Projection Matrix (default) (ignored if parfile provided)\n"
+             <<"\t--NOPMRT uses the (old) Ray Tracing forward projector (ignored if parfile provided)\n"
              <<"The input image has to give the attenuation (or mu) values at 511 keV, and be in units of cm^-1.\n";
     exit(EXIT_FAILURE);
 }
@@ -89,7 +89,7 @@ main (int argc, char * argv[])
       use_PMRT=true; 
       --argc; ++argv;
     }
-  if (argc!=5 )
+  if (argc!=5 || argc!=6)
     print_usage_and_exit();
 
   bool doACF=true;// initialise to avoid compiler warning
@@ -111,11 +111,19 @@ main (int argc, char * argv[])
     ProjData::read_from_file(argv[3]);
 
   shared_ptr<ForwardProjectorByBin> forw_projector_ptr;
-  if (use_PMRT)
-    {
+  if (argc>=5)
+  {
+      KeyParser parser;
+      parser.add_start_key("Forward Projector parameters");
+      parser.add_parsing_key("type", &forw_projector_sptr);
+      parser.add_stop_key("END");
+      parser.parse(argv[5]);
+  }
+  else if (use_PMRT)
+  {
       shared_ptr<ProjMatrixByBin> PM(new  ProjMatrixByBinUsingRayTracing());
       forw_projector_ptr.reset(new ForwardProjectorByBinUsingProjMatrixByBin(PM)); 
-    }
+  }
   else
   {
     forw_projector_ptr.reset(new ForwardProjectorByBinUsingRayTracing());
