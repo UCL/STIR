@@ -89,7 +89,7 @@ main (int argc, char * argv[])
       use_PMRT=true; 
       --argc; ++argv;
     }
-  if (argc!=5 || argc!=6)
+  if (!(argc==5 || argc==6))
     print_usage_and_exit();
 
   bool doACF=true;// initialise to avoid compiler warning
