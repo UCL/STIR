@@ -117,7 +117,7 @@ main (int argc, char * argv[])
       parser.add_start_key("Forward Projector parameters");
       parser.add_parsing_key("type", &forw_projector_sptr);
       parser.add_stop_key("END");
-      parser.parse(argv[5]);
+      parser.parse(argv[4]);
   }
   else if (use_PMRT)
   {
