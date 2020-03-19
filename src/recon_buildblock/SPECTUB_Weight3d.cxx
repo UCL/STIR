@@ -27,6 +27,7 @@
 #include "stir/error.h"
 #include <boost/format.hpp>
 #include <boost/math/constants/constants.hpp>
+#include "stir/spatial_transformation/InvertAxis.h"
 
 //system libraries
 #include <stdio.h>
@@ -152,9 +153,10 @@ void wm_calculation( const int kOS,
 		//=== LOOP2: IMAGE COLUMNS =================================================================
 		
 		for ( vox.icol = 0 ; vox.icol < vol.Ncol ; vox.icol++ ){
-			
+			stir::InvertAxis invert;
 			vox.x  = vol.x0 + vox.icol * vol.szcm ;     // x coordinate of the voxel (index 0->Ncol-1: icol)
-			vox.ip = vox.irow * vol.Ncol + vox.icol ;	 // in-plane index of the voxel considering the slice as an array
+//			Inverting column index: using "z" as it inverts values in the range 0 - N as opposed to -N/2 - N/2-1
+			vox.ip = vox.irow * vol.Ncol + invert.invert_axis_index(vox.icol,vol.Ncol, "z") ;	 // in-plane index of the voxel considering the slice as an array
  			
 			//... to apply mask .........................................
 			
@@ -230,7 +232,7 @@ void wm_calculation( const int kOS,
 				}
 			
 				//=== LOOP4: IMAGE SLICES ================================================================
-				
+
 				for ( vox.islc = vol.first_sl ; vox.islc < vol.last_sl ; vox.islc++ ){
 					
 					vox.iv = vox.ip + vox.islc * vol.Npix ;   // volume index of the voxel (volume as an array)
@@ -260,9 +262,9 @@ void wm_calculation( const int kOS,
 						weight = psf.val[ ie ] * eff * coeff_att ;
                         
                         //... fill image STIR indices ...........................
-						
+                        
                         if ( wm.do_save_STIR ){
-							wm.nx[ vox.iv ] = (short int)( vox.icol - (int) floor( vol.Ncold2 ) );  // centered index for STIR format
+                            wm.nx[ vox.iv ] = (short int)invert.invert_axis_index(( vox.icol - (int) floor( vol.Ncold2 ) ),vol.Ncold2*2, "x");  // centered index for STIR format
 							wm.ny[ vox.iv ] = (short int)( vox.irow - (int) floor( vol.Nrowd2 ) );  // centered index for STIR format
 							wm.nz[ vox.iv ] = (short int)  vox.islc ;                               // non-centered index for STIR format
 						}

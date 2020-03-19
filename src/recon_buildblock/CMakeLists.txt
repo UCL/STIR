@@ -63,6 +63,7 @@ set(${dir_LIB_SOURCES}
 	BinNormalisationFromProjData 
 	TrivialBinNormalisation 
 	BinNormalisationFromAttenuationImage 
+	BinNormalisationSPECT
 	GeneralisedPrior 
 	ProjDataRebinning 
 	FourierRebinning

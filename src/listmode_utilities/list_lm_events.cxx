@@ -1,5 +1,7 @@
 /*
     Copyright (C) 2003-2011 Hammersmith Imanet Ltd
+    Copyright (C) 2019, National Physical Laboratory
+    Copyright (C) 2019, University College of London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -22,11 +24,16 @@
   \brief Program to show info about listmode data
  
   \author Kris Thielemans
+  \author Daniel Deidda
 */
 
 
-#include "stir/listmode/CListRecord.h"
-#include "stir/listmode/CListModeData.h"
+#include "stir/listmode/ListRecord.h"
+#include "stir/listmode/ListEvent.h"
+#include "stir/listmode/ListTime.h"
+#include "stir/listmode/ListGatingInput.h"
+#include "stir/listmode/ListRecordWithGatingInput.h"
+#include "stir/listmode/ListModeData.h"
 #include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.h"
 #include "stir/Succeeded.h"
 #include "stir/IO/read_from_file.h"
@@ -55,6 +62,7 @@ int main(int argc, char *argv[])
 
   bool list_time=true;
   bool list_coincidence=false;
+  bool list_SPECT_event=false;
   bool list_gating=true;
   bool list_unknown=false;
   unsigned long num_events_to_list = 0;
@@ -75,6 +83,10 @@ int main(int argc, char *argv[])
       else if (strcmp(argv[0], "--coincidence")==0)
         {
           list_coincidence = atoi(argv[1])!=0;
+        }
+      else if (strcmp(argv[0], "--SPECT-event")==0)
+        {
+          list_SPECT_event = atoi(argv[1])!=0;
         }
       else if (strcmp(argv[0], "--unknown")==0)
         {
@@ -100,36 +112,37 @@ int main(int argc, char *argv[])
       return EXIT_FAILURE;
     }
 
-  shared_ptr<CListModeData> lm_data_ptr(read_from_file<CListModeData>(argv[0]));  
+  shared_ptr<ListModeData> lm_data_ptr(read_from_file<ListModeData>(argv[0]));
 
   cout << "Scanner: " << lm_data_ptr->get_scanner_ptr()->get_name() << endl;
 
   unsigned long num_listed_events = 0;
   {      
     // loop over all events in the listmode file
-    shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
-    CListRecord& record = *record_sptr;
+    shared_ptr <ListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
+    ListRecord& record = *record_sptr;
 
     while (num_events_to_list==0 || num_events_to_list!=num_listed_events)
       {
         bool recognised = false;
         bool listed = false;
-	if (lm_data_ptr->get_next_record(record) == Succeeded::no) 
-	  {
+//      std::cout<<"ciao"<<std::endl;
+    if (lm_data_ptr->get_next_record(record) == Succeeded::no)
+      {
 	    // no more events in file for some reason
 	    break; //get out of while loop
-	  }
+      }
 	if (record.is_time())
-	  {
+      {
             recognised=true;
             if (list_time)
               {
                 cout << "Time " << record.time().get_time_in_millisecs();
                 listed = true; 
               }
-	   } 
+       }
         {
-          CListRecordWithGatingInput * record_ptr = dynamic_cast<CListRecordWithGatingInput *>(&record);
+          ListRecordWithGatingInput * record_ptr = dynamic_cast<ListRecordWithGatingInput *>(&record);
           if (record_ptr!=0 && record_ptr->is_gating_input())
             {
               recognised=true;
@@ -160,6 +173,25 @@ int main(int argc, char *argv[])
                        << ",l:" << det_pos.pos2().radial_coord()
                        << ")";
                   listed = true; 
+                }
+            }
+          if (list_SPECT_event)
+            {ListEvent * event_ptr =
+                dynamic_cast<ListEvent *>(&record.event());
+              if (event_ptr!=0)
+                {
+                  LORAs2Points<float> lor;
+                  lor=event_ptr->get_LOR();
+                  cout << "Gamma event: LOR as two points "
+                       << "(x1:" << lor.p1().x()
+                       << ",y1:" << lor.p1().y()
+                       << ",z1:" << lor.p1().z()
+                       << ")-"
+                   << "(x2:" << lor.p2().x()
+                       << ",y2:" << lor.p2().y()
+                       << ",z2:" << lor.p2().z()
+                       << ")";
+                  listed = true;
                 }
             }
         }

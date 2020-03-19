@@ -31,7 +31,7 @@
 #include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjData.h"
-#include "stir/listmode/CListRecord.h"
+#include "stir/listmode/ListRecord.h"
 #include "stir/Viewgram.h"
 #include "stir/info.h"
 #include <boost/format.hpp>
@@ -98,9 +98,10 @@ initialise_keymap()
   this->parser.add_stop_key("End PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin Parameters"); 
   this->parser.add_key("max ring difference num to process", &this->max_ring_difference_num_to_process);
   this->parser.add_parsing_key("Matrix type", &this->PM_sptr); 
-  this->parser.add_key("additive sinogram",&this->additive_projection_data_filename); 
+  this->parser.add_key("additive sinogram",&this->additive_projection_data_filename);
  
   this->parser.add_key("num_events_to_use",&this->num_events_to_use);
+
 } 
 template <typename TargetT> 
 int 
@@ -431,10 +432,10 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
     double current_time = 0.;
     ProjMatrixElemsForOneBin proj_matrix_row;
     gradient.fill(0);
-    shared_ptr<CListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
-    CListRecord& record = *record_sptr;
+    shared_ptr<ListRecord> record_sptr = this->list_mode_data_sptr->get_empty_record_sptr();
+    ListRecord& record = *record_sptr;
 
-    VectorWithOffset<CListModeData::SavedPosition>
+    VectorWithOffset<ListModeData::SavedPosition>
             frame_start_positions(1, static_cast<int>(this->frame_defs.get_num_frames()));
 
     long int more_events =
@@ -485,7 +486,6 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
                 if (subset_num != static_cast<int>(basic_bin.view_num() % this->num_subsets))
                     continue;
             }
-
             this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row, measured_bin);
             //in_the_range++;
             Bin fwd_bin;

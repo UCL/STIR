@@ -2713,7 +2713,7 @@ choose one file from the directory), the JSON file containing the conversion slo
 -j slope\_filename {\textbackslash}\\
 -m manufacturer\_name {\textbackslash}\\
 [-v kilovoltage\_peak] {\textbackslash}\\
--k target_photon\_energy}
+-k target\_photon\_energy}
 
 The optional \textit{kilovoltage\_peak} is the kilovoltage peak (kVp) used to acquire the data. If no value is given,
 a kVp of 120 is assumed. 
@@ -4735,6 +4735,33 @@ END Chained Bin Normalisation Parameters:=
 \end{verbatim}
 
 See also online documentation for class ChainedBinNormalisation.
+
+{ \subsubsubsection{SPECT }
+}
+\label{sec:chainedbinnormalisation}
+This can be used to apply decay correction and uniformity for SPECT. You need to specify the folder where the data and uniformity table are. In addition, for the decay correction it is necessary to specify how many detector heads the scanner has, the acquisition time per angular position, and  the half life of the radioisotope.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Bin Normalisation type := SPECT
+   Bin Normalisation SPECT:=
+      folder_prefix:=folder_prefix
+      projdata filename:=input_sino
+      use_uniformity_factors :=0
+      uniformity_filename:=uniformity_table.dat
+      use_decay_correction:=1
+     
+      half_life:=21600 ;seconds
+      num detector heads:=3
+      rel_angle:=120
+      
+      ;the following is the time of a head position
+      view_time_interval:=15 ;seconds
+
+   End Bin Normalisation SPECT:=
+\end{verbatim}
+
 
 \subsubsection{
 Available shapes}
