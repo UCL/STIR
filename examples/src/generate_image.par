@@ -7,6 +7,7 @@ imaging modality:=PET
 patient orientation := head_in
 ; rotation: allowed values: prone|supine|other|unknown
 patient rotation :=  supine
+image duration (sec) := 1 ; defaults to -1 (i.e. unknown)
 
 output filename:=image
 X output image size (in pixels):=56
