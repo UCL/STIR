@@ -8,21 +8,6 @@ patient orientation := head_in
 ; rotation: allowed values: prone|supine|other|unknown
 patient rotation :=  supine
 
-;;;;; specific keywords
-
-output filename:=image
-; optional keywords to specify the output file format
-; example below uses Interfile with 16-bit unsigned integers
-output file format type:= Interfile
-  interfile Output File Format Parameters:=
-    number format := unsigned integer
-    number_of_bytes_per_pixel:=2
-    ; fix the scale factor to 1
-    ; comment out next line to let STIR use the full dynamic 
-    ; range of the output type
-    scale_to_write_data:= 1
-  End Interfile Output File Format Parameters:=
-
 output filename:=image
 X output image size (in pixels):=56
 Y output image size (in pixels):=56
