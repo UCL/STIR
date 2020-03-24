@@ -165,7 +165,7 @@ private:
 };
 
 //! Class for general record, containing a union of data, time and raw record and providing access to certain elements.
-class CListRecordSAFIR : public CListRecord, public CListTime, public CListEventSAFIR<CListRecordSAFIR>
+class CListRecordSAFIR : public CListRecord, public ListTime, public CListEventSAFIR<CListRecordSAFIR>
 {
 public:
 	typedef CListEventDataSAFIR DataType;
@@ -196,10 +196,10 @@ public:
 	virtual const CListEventSAFIR<CListRecordSAFIR>&  event_SAFIR() const
 	{ return *this; }
 
-	virtual CListTime&   time()
+    virtual ListTime&   time()
 	{ return *this; }
 
-	virtual const CListTime&   time() const
+    virtual const ListTime&   time() const
 	{ return *this; }
 
 	virtual bool operator==(const CListRecord& e2) const

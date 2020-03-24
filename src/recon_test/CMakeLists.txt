@@ -31,6 +31,7 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
         fwdtest
         bcktest
         recontest
+        test_data_processor_projectors
 )
 
 include(stir_test_exe_targets)
@@ -42,5 +43,8 @@ create_stir_mpi_test(test_PoissonLogLikelihoodWithLinearModelForMeanAndProjData.
 if (BUILD_TESTING)
   install(TARGETS fwdtest bcktest DESTINATION bin)
 endif()
+
+# test_data_processor_projectors requires input argument
+ADD_TEST(test_data_processor_projectors test_data_processor_projectors ${CMAKE_SOURCE_DIR}/recon_test_pack/Utahscat600k_ca_seg4.hs)
 
 # TODO test_modelling.sh

@@ -18,8 +18,8 @@
 #define __stir_IO_ExamData_H__
 /*!
   \file
-  \ingroup
-  \brief
+  \ingroup buildblock
+  \brief declaration of stir::ExamData
 
   \author Nikos Efthimiou
 */
@@ -32,6 +32,12 @@ START_NAMESPACE_STIR
 
 class Succeeded;
 
+/*! 
+  \brief base class for data objects such as ProjData etc
+  \ingroup buildblock
+
+  Provides an ExamInfo member.
+*/
 class ExamData
 {
 public:
@@ -44,15 +50,15 @@ public:
 
     virtual ~ExamData();
 
-    inline virtual const ExamInfo&
+    virtual const ExamInfo&
       get_exam_info() const;
     //! Get pointer to exam info
-    inline virtual const ExamInfo*
+    virtual const ExamInfo*
       get_exam_info_ptr() const;
     //! Get shared pointer to exam info
     /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
       shared pointer will be affected. */
-    inline virtual shared_ptr<ExamInfo>
+    virtual shared_ptr<ExamInfo>
       get_exam_info_sptr() const;
     //! change exam info
     /*! This will allocate a new ExamInfo object and copy the data in there. */
@@ -71,5 +77,4 @@ private:
 
 END_NAMESPACE_STIR
 
-#include "stir/IO/ExamData.inl"
 #endif

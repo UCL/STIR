@@ -13,7 +13,7 @@
 /*
     Copyright (C) 2000 - 2009-06-22, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2011, Kris Thielemans
-    Copyright (C) 2018, 2019, UCL
+    Copyright (C) 2018, 2019, 2020, UCL
     See STIR/LICENSE.txt for details
 */
 
@@ -56,7 +56,7 @@ public:
   /*!
   \param fwhms: the FWHM of the Gaussian 1D filters (in mm)
   \param max_kernel_sizes maximum number of elements in the kernels.
-          -1 means unrestricted
+          -1 means that the size will be determined such that the smallest element is approximately 1E-6 times the largest (in each dimension)
   */
 
   SeparableGaussianArrayFilter(const BasicCoordinate< num_dimensions,float>&  fwhm,

@@ -26,6 +26,9 @@
 
 
  */
+#ifndef  __find_fwhm_in_image_H__
+#define  __find_fwhm_in_image_H__
+
 #include "stir/shared_ptr.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/DiscretisedDensityOnCartesianGrid.h"
@@ -52,10 +55,10 @@ START_NAMESPACE_STIR
    is estimated using linear extrapolation.
 */
 template <class RandomAccessIterType>
-float find_level_width(const RandomAccessIterType& begin_iterator,
-                       const RandomAccessIterType& max_iterator,
-                       const RandomAccessIterType& end_iterator,
-                       const float level_height)  ;  
+inline float find_level_width(const RandomAccessIterType& begin_iterator,
+			      const RandomAccessIterType& max_iterator,
+			      const RandomAccessIterType& end_iterator,
+			      const float level_height);
 /*!
    \ingroup resolution
    \brief find width at a level
@@ -71,9 +74,9 @@ float find_level_width(const RandomAccessIterType& begin_iterator,
                        const float level_height)
 */
 template <class RandomAccessIterType>
-float find_level_width(const RandomAccessIterType& begin_iterator,
-                       const RandomAccessIterType& end_iterator,
-                       const float level_height);  
+inline float find_level_width(const RandomAccessIterType& begin_iterator,
+			      const RandomAccessIterType& end_iterator,
+			      const float level_height);  
 /*!
    \ingroup resolution
    \brief 
@@ -144,3 +147,8 @@ find_fwhm_in_image(DiscretisedDensity<3,elemT> & input_image,
                    const unsigned int num_maxima, const float level, 
                    const int dimension, const bool nema);
 END_NAMESPACE_STIR
+
+#include "stir/find_fwhm_in_image.inl"
+
+
+#endif // __find_fwhm_in_image_H__

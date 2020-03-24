@@ -274,6 +274,7 @@ void
 IterativeReconstruction<TargetT>::
 set_num_subsets(const int arg)
 {
+  this->_already_set_up = false;
   this->num_subsets  = arg;
 }
 
@@ -298,6 +299,8 @@ void
 IterativeReconstruction<TargetT>::
 set_start_subset_num(const int arg)
 {
+  if (arg<0 || arg>= this->num_subsets)
+    error("set_start_subset_num out-of-range error");
   this->start_subset_num  = arg;
 }
 
@@ -417,8 +420,8 @@ Succeeded
 IterativeReconstruction<TargetT>::
 reconstruct(shared_ptr<TargetT > const& target_data_sptr)
 {
-
   this->start_timers();
+  this->check(*target_data_sptr);
 #if 0
   if (this->set_up(target_data_sptr) == Succeeded::no)
     {
@@ -619,7 +622,8 @@ void
 IterativeReconstruction<TargetT>::
 set_input_data(const shared_ptr<ExamData> &arg)
 {
-    this->objective_function_sptr->set_input_data(arg);
+  this->_already_set_up = false;
+  this->objective_function_sptr->set_input_data(arg);
 }
 
 template <typename TargetT>

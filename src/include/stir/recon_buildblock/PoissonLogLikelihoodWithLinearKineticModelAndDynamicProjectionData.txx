@@ -417,8 +417,8 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
                                                       const TargetT &current_estimate, 
                                                       const int subset_num)
 {
-  assert(subset_num>=0);
-  assert(subset_num<this->num_subsets);
+  if (subset_num<0 || subset_num>=this->get_num_subsets())
+    error("compute_sub_gradient_without_penalty subset_num out-of-range error");
 
   DynamicDiscretisedDensity dyn_gradient=this->_dyn_image_template;
   DynamicDiscretisedDensity dyn_image_estimate=this->_dyn_image_template;

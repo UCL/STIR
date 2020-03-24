@@ -85,13 +85,10 @@ public:
   // class has other behaviour).
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
-  /// Set input
-  virtual void set_input(const shared_ptr<DiscretisedDensity<3,float> >&);
-
 private:
 
   shared_ptr<ForwardProjectorByBin> original_forward_projector_ptr;
-  shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > image_processor_ptr;
+
 #ifdef STIR_PROJECTORS_AS_V3
   void actual_forward_project(RelatedViewgrams<float>&, 
                               const DiscretisedDensity<3,float>&,

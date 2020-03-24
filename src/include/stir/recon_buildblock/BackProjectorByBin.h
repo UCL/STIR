@@ -44,7 +44,7 @@ template <int num_dimensions, class elemT> class DiscretisedDensity;
 class ProjDataInfo;
 class ProjData;
 class DataSymmetriesForViewSegmentNumbers;
-
+template <typename DataT> class DataProcessor;
 
 
 /*!
@@ -141,6 +141,9 @@ void back_project(const RelatedViewgrams<float>&,
  */
  virtual void get_output(DiscretisedDensity<3,float> &) const;
 
+  /// Set data processor to use after back projection
+  void set_post_data_processor(shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > post_data_processor_sptr);
+
 protected:
 
   /*! \brief This actually does the back projection.
@@ -179,6 +182,10 @@ protected:
 
   //! Clone of the density sptr set with set_up()
   shared_ptr<DiscretisedDensity<3,float> > _density_sptr;
+  shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > _post_data_processor_sptr;
+
+  virtual void set_defaults();
+  virtual void initialise_keymap();
 
  private:
   shared_ptr<ProjDataInfo> _proj_data_info_sptr;
@@ -194,7 +201,6 @@ protected:
   //! A vector of back projected images that will be used with openMP. There will be as many images as openMP threads
   std::vector< shared_ptr<DiscretisedDensity<3,float> > > _local_output_image_sptrs;
 #endif
-
 };
 
 END_NAMESPACE_STIR

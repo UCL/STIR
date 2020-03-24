@@ -32,6 +32,7 @@ set(${dir_EXE_SOURCES}
 	compare_projdata 
 	compare_image 
 	extract_segments 
+        estimate_triple_energy_window_scatter_sinogram
 	correct_projdata 
 	stir_math 
 	list_projdata_info 
@@ -41,6 +42,7 @@ set(${dir_EXE_SOURCES}
 	find_maxima_in_image 
 	create_projdata_template 
 	SSRB 
+        invert_axis
 	poisson_noise 
 	get_time_frame_info 
 	generate_image 
@@ -73,6 +75,13 @@ set(${dir_EXE_SOURCES}
 
 if (AVW_FOUND)
   list(APPEND ${dir_EXE_SOURCES}  conv_AVW)
+endif()
+
+if (nlohmann_json_FOUND)
+  list(APPEND ${dir_EXE_SOURCES}  ctac_to_mu_values)
+
+  install(DIRECTORY share/ DESTINATION share
+		  FILES_MATCHING PATTERN "*.json")
 endif()
 
 include(stir_exe_targets)

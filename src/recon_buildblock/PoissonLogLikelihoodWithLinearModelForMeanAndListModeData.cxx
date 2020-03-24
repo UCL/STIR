@@ -78,15 +78,15 @@ initialise_keymap()
 template <typename TargetT>     
 bool  
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::post_processing() 
-{ 
+{
   if (base_type::post_processing() == true) 
   return true; 
 
   if (this->list_mode_filename.length() == 0) 
-  { warning("You need to specify an input file\n"); return true; } 
+  { warning("You need to specify an input file\n"); return true; }
 
   this->list_mode_data_sptr=
-    read_from_file<CListModeData>(this->list_mode_filename); 
+    read_from_file<ListModeData>(this->list_mode_filename);
 
   if (this->frame_defs_filename.size()!=0)
     this->frame_defs = TimeFrameDefinitions(this->frame_defs_filename);
@@ -106,11 +106,11 @@ void
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 set_input_data(const shared_ptr<ExamData> & arg)
 {
-    this->list_mode_data_sptr = dynamic_pointer_cast<CListModeData>(arg);
+    this->list_mode_data_sptr = dynamic_pointer_cast<ListModeData>(arg);
 }
 
 template <typename TargetT>
-const CListModeData&
+const ListModeData&
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeData<TargetT>::
 get_input_data() const
 {
