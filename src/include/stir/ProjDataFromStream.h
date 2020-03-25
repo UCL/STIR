@@ -49,7 +49,7 @@ START_NAMESPACE_STIR
   \ingroup projdata
   \brief A class which reads/writes projection data from/to a (binary) stream.
 
-  At tehe end of every write (i.e., \ set_*) operation, the stream is flushed such that 
+  At the end of every write (i.e., \ set_*) operation, the stream is flushed such that 
   subsequent read operations from the same file will be able this data even if the 
   stream isn't closed yet. This is important in an interactive context, as the object
   owning the stream might not be deleted yet before we try to read the file again.
@@ -144,6 +144,9 @@ public:
 
   //! Get the value of bin.
   float get_bin_value(const Bin& this_bin) const;
+  
+  //! set the value f the bin
+  void set_bin_value(Bin bin);
     
 protected:
   //! the stream with the data
