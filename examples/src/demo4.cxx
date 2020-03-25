@@ -3,7 +3,7 @@
 /*!
   \file
   \ingroup examples
-  \brief A modification of demo3.cxx but performs an OSMAPOSL reconstruction.
+  \brief A modification of demo2.cxx that parses all parameters from a parameter file.
 
   It illustrates
 	- basic class derivation principles
@@ -46,6 +46,7 @@ public:
   void run();
 private:
   std::string input_filename;
+  std::string output_filename;
   std::string template_filename;
   shared_ptr<BackProjectorByBin> back_projector_sptr;
   shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
@@ -56,6 +57,7 @@ MyStuff::set_defaults()
 {
   back_projector_sptr.reset(new BackProjectorByBinUsingInterpolation);
   output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
+  output_filename = "output";
 }
 
 void 
@@ -63,6 +65,7 @@ MyStuff::initialise_keymap()
 {
   parser.add_start_key("MyStuff parameters");
   parser.add_key("input file", &input_filename);
+  parser.add_key("output filename", &output_filename);
   parser.add_key("template image file", &template_filename);
   parser.add_parsing_key("back projector type", &back_projector_sptr);
   parser.add_parsing_key("output file format type", &output_file_format_sptr);
@@ -72,6 +75,9 @@ MyStuff::initialise_keymap()
 void
 MyStuff::run()
 {
+
+    std::cout << "input_filename: " << input_filename << "\n";
+    std::cout << "output_filename: " << output_filename << "\n";
 
   shared_ptr<ProjData> 
     proj_data_sptr(ProjData::read_from_file(input_filename));
@@ -89,9 +95,9 @@ MyStuff::run()
   back_projector_sptr->back_project(*density_sptr, *proj_data_sptr);
 
   /////////////// output
-  output_file_format_sptr->write_to_file("output", *density_sptr);
+  output_file_format_sptr->write_to_file(output_filename, *density_sptr);
 
-  display(*density_sptr, density_sptr->find_max(), "Output");
+//  display(*density_sptr, density_sptr->find_max(), "Output");
 }
 
 }// end of namespace stir
