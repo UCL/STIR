@@ -41,7 +41,7 @@ MultipleProjData::
 get_proj_data_info_sptr() const
 {
   if (get_num_gates() == 0)
-    return 0;
+    return nullptr;
   else
     return _proj_datas[0]->get_proj_data_info_sptr();
 }
