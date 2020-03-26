@@ -141,7 +141,7 @@ ProjDataFromStream::get_viewgram(const int view_num, const int segment_num,
   const streamoff beg_view_offset = offsets[1];
   const streamoff intra_views_offset = offsets[2];
   
-  Viewgram<float> viewgram(proj_data_info_ptr, view_num, segment_num);
+  Viewgram<float> viewgram(proj_data_info_sptr, view_num, segment_num);
   float scale = float(1);
   Succeeded succeeded = Succeeded::yes;
   
@@ -343,7 +343,7 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
             scale_factor); 
   }
 
-   if (get_num_tangential_poss() != v.get_proj_data_info_ptr()->get_num_tangential_poss())
+   if (get_num_tangential_poss() != v.get_proj_data_info_sptr()->get_num_tangential_poss())
   {
     warning("ProjDataFromStream::set_viewgram: num_bins is not correct\n"); 
     return Succeeded::no;
@@ -357,13 +357,13 @@ ProjDataFromStream::set_viewgram(const Viewgram<float>& v)
 
 
  
-  if (*get_proj_data_info_ptr() != *(v.get_proj_data_info_ptr()))
+  if (*get_proj_data_info_sptr() != *(v.get_proj_data_info_sptr()))
   {
     warning("ProjDataFromStream::set_viewgram: viewgram has incompatible ProjDataInfo member\n"
             "Original ProjDataInfo: %s\n"
             "ProjDataInfo From viewgram: %s",
-            this->get_proj_data_info_ptr()->parameter_info().c_str(),
-            v.get_proj_data_info_ptr()->parameter_info().c_str()
+            this->get_proj_data_info_sptr()->parameter_info().c_str(),
+            v.get_proj_data_info_sptr()->parameter_info().c_str()
             );
 
    return Succeeded::no;
@@ -610,7 +610,7 @@ ProjDataFromStream::get_sinogram(const int ax_pos_num, const int segment_num,
   const streamoff segment_offset = offsets[0];
   const streamoff beg_ax_pos_offset = offsets[1];
   const streamoff intra_ax_pos_offset = offsets[2];
-  Sinogram<float> sinogram(proj_data_info_ptr, ax_pos_num, segment_num);
+  Sinogram<float> sinogram(proj_data_info_sptr, ax_pos_num, segment_num);
   float scale = float(1);
   Succeeded succeeded = Succeeded::yes;
 
@@ -708,13 +708,13 @@ ProjDataFromStream::set_sinogram(const Sinogram<float>& s)
             scale_factor); 
   }
   
-  if (*get_proj_data_info_ptr() != *(s.get_proj_data_info_ptr()))
+  if (*get_proj_data_info_sptr() != *(s.get_proj_data_info_sptr()))
   {
     warning("ProjDataFromStream::set_sinogram: Sinogram<float> has incompatible ProjDataInfo member.\n"
             "Original ProjDataInfo: %s\n"
             "ProjDataInfo from sinogram: %s",
-            this->get_proj_data_info_ptr()->parameter_info().c_str(),
-            s.get_proj_data_info_ptr()->parameter_info().c_str()
+            this->get_proj_data_info_sptr()->parameter_info().c_str(),
+            s.get_proj_data_info_sptr()->parameter_info().c_str()
             );
 
     return Succeeded::no;
@@ -834,7 +834,7 @@ ProjDataFromStream::get_segment_by_sinogram(const int segment_num) const
   streamoff segment_offset = get_offset_segment(segment_num);  
   if (get_storage_order() == Segment_AxialPos_View_TangPos)
     {
-      SegmentBySinogram<float> segment(proj_data_info_ptr,segment_num);
+      SegmentBySinogram<float> segment(proj_data_info_sptr,segment_num);
       float scale = float(1);
       Succeeded succeeded = Succeeded::yes;
 #ifdef STIR_OPENMP
@@ -881,7 +881,7 @@ ProjDataFromStream::get_segment_by_view(const int segment_num) const
   }
   if (get_storage_order() == Segment_View_AxialPos_TangPos)
   {    
-    SegmentByView<float> segment(proj_data_info_ptr,segment_num);
+    SegmentByView<float> segment(proj_data_info_sptr,segment_num);
     streamoff segment_offset = get_offset_segment(segment_num);
     float scale = float(1);
     Succeeded succeeded = Succeeded::yes;  

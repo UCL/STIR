@@ -541,7 +541,7 @@ main(int argc, char **argv)
 	{
 	  all_proj_data[0] = ProjData::read_from_file(argv[0]);
 	  shared_ptr<ProjDataInfo> 
-	    output_proj_data_info_sptr((*all_proj_data[0]).get_proj_data_info_ptr()->clone());
+	    output_proj_data_info_sptr((*all_proj_data[0]).get_proj_data_info_sptr()->clone());
 	  if (max_segment_num_to_process>=0)
 	    {
 	      output_proj_data_info_sptr->

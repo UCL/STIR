@@ -283,7 +283,7 @@ void divide_and_truncate(RelatedViewgrams<float>& numerator, const RelatedViewgr
 			 int& count, int& count2, double* log_likelihood_ptr )
 {
   assert(numerator.get_num_viewgrams() == denominator.get_num_viewgrams());
-  assert(*(numerator.get_proj_data_info_ptr()) == (*denominator.get_proj_data_info_ptr()));
+  assert(*(numerator.get_proj_data_info_sptr()) == (*denominator.get_proj_data_info_sptr()));
   RelatedViewgrams<float>::iterator numerator_iter = numerator.begin();
   RelatedViewgrams<float>::const_iterator denominator_iter = denominator.begin();
   while(numerator_iter!=numerator.end())

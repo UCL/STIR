@@ -71,23 +71,23 @@ SSRB(const ProjDataInfo& in_proj_data_info,
       num_tang_poss_to_trim)
     error("SSRB: too large number of tangential positions to trim (%d)\n",
 	  num_tang_poss_to_trim);
-  const ProjDataInfoCylindrical * const in_proj_data_info_ptr =
+  const ProjDataInfoCylindrical * const in_proj_data_info_sptr =
     dynamic_cast<ProjDataInfoCylindrical const * >
     (&in_proj_data_info);
-  if (in_proj_data_info_ptr== NULL)
+  if (in_proj_data_info_sptr== NULL)
     {
       error("SSRB works only on segments with proj_data_info of "
 	    "type ProjDataInfoCylindrical\n");
     }
-  ProjDataInfoCylindrical * out_proj_data_info_ptr =
+  ProjDataInfoCylindrical * out_proj_data_info_sptr =
     dynamic_cast<ProjDataInfoCylindrical * >
-    (in_proj_data_info_ptr->clone());
+    (in_proj_data_info_sptr->clone());
 
-  out_proj_data_info_ptr->
+  out_proj_data_info_sptr->
     set_num_views(
 		  in_proj_data_info.get_num_views()/
 		  num_views_to_combine);
-  out_proj_data_info_ptr->
+  out_proj_data_info_sptr->
     set_num_tangential_poss(in_proj_data_info.get_num_tangential_poss() -
 			    num_tang_poss_to_trim);
 
@@ -104,25 +104,25 @@ SSRB(const ProjDataInfo& in_proj_data_info,
 	  max_in_segment_num_to_process);
 
   const int in_axial_compression =
-      in_proj_data_info_ptr->get_max_ring_difference(0) -
-      in_proj_data_info_ptr->get_min_ring_difference(0)
+      in_proj_data_info_sptr->get_max_ring_difference(0) -
+      in_proj_data_info_sptr->get_min_ring_difference(0)
       + 1;
 
-  out_proj_data_info_ptr->reduce_segment_range(-out_max_segment_num,out_max_segment_num);
+  out_proj_data_info_sptr->reduce_segment_range(-out_max_segment_num,out_max_segment_num);
   for (int out_segment_num = -out_max_segment_num; 
        out_segment_num <= out_max_segment_num;
        ++out_segment_num)
     {
       const int in_min_segment_num = out_segment_num*num_segments_to_combine - num_segments_to_combine/2;
       const int in_max_segment_num = out_segment_num*num_segments_to_combine + num_segments_to_combine/2;
-      out_proj_data_info_ptr->
-	set_min_ring_difference(in_proj_data_info_ptr->get_min_ring_difference(in_min_segment_num),
+      out_proj_data_info_sptr->
+	set_min_ring_difference(in_proj_data_info_sptr->get_min_ring_difference(in_min_segment_num),
 				out_segment_num);
-      out_proj_data_info_ptr->
-	set_max_ring_difference(in_proj_data_info_ptr->get_max_ring_difference(in_max_segment_num),
+      out_proj_data_info_sptr->
+	set_max_ring_difference(in_proj_data_info_sptr->get_max_ring_difference(in_max_segment_num),
 				out_segment_num);
 
-      out_proj_data_info_ptr->
+      out_proj_data_info_sptr->
 	set_min_axial_pos_num(0,out_segment_num);
       
       // find number of axial_poss in out_segment
@@ -135,32 +135,32 @@ SSRB(const ProjDataInfo& in_proj_data_info,
 	     ++in_segment_num)
 	  {
             if (in_axial_compression !=
-                (in_proj_data_info_ptr->get_max_ring_difference(in_segment_num) -
-                 in_proj_data_info_ptr->get_min_ring_difference(in_segment_num) +
+                (in_proj_data_info_sptr->get_max_ring_difference(in_segment_num) -
+                 in_proj_data_info_sptr->get_min_ring_difference(in_segment_num) +
                  1))
               warning("SSRB: in_proj_data_info with non-identical axial compression for all segments.\n"
 		      "That's ok, but results might not be what you expect.\n");
 
 	    min_m =
 	      min(min_m,
-		  in_proj_data_info_ptr->
-		  get_m(Bin(in_segment_num,0,in_proj_data_info_ptr->get_min_axial_pos_num(in_segment_num), 0)));
+		  in_proj_data_info_sptr->
+		  get_m(Bin(in_segment_num,0,in_proj_data_info_sptr->get_min_axial_pos_num(in_segment_num), 0)));
 	    max_m =
 	      max(max_m,
-		  in_proj_data_info_ptr->
-		  get_m(Bin(in_segment_num,0,in_proj_data_info_ptr->get_max_axial_pos_num(in_segment_num), 0)));
+		  in_proj_data_info_sptr->
+		  get_m(Bin(in_segment_num,0,in_proj_data_info_sptr->get_max_axial_pos_num(in_segment_num), 0)));
 	  }
 	const float number_of_ms =
-	  (max_m - min_m)/out_proj_data_info_ptr->get_axial_sampling(out_segment_num)+1;
+	  (max_m - min_m)/out_proj_data_info_sptr->get_axial_sampling(out_segment_num)+1;
 	if (fabs(round(number_of_ms)-number_of_ms) > 1.E-3)
 	  error("SSRB: number of axial positions to be found in out_segment %d is non-integer %g\n",
 		out_segment_num, number_of_ms);
-	out_proj_data_info_ptr->
+	out_proj_data_info_sptr->
 	  set_max_axial_pos_num(round(number_of_ms) - 1,
 				out_segment_num);
       }
     }
-  return out_proj_data_info_ptr;
+  return out_proj_data_info_sptr;
 }
 
 void 
@@ -173,15 +173,15 @@ SSRB(const string& output_filename,
      const int max_in_segment_num_to_process
      )
 {
-  shared_ptr<ProjDataInfo> out_proj_data_info_ptr(
-    SSRB(*in_proj_data.get_proj_data_info_ptr(),
+  shared_ptr<ProjDataInfo> out_proj_data_info_sptr(
+    SSRB(*in_proj_data.get_proj_data_info_sptr(),
          num_segments_to_combine,
 	 num_views_to_combine,
 	 num_tang_poss_to_trim,
          max_in_segment_num_to_process
 	 ));
   ProjDataInterfile out_proj_data(in_proj_data.get_exam_info_sptr(), 
-				  out_proj_data_info_ptr, output_filename, std::ios::out); 
+				  out_proj_data_info_sptr, output_filename, std::ios::out);
 
   SSRB(out_proj_data, in_proj_data, do_norm);
 }
@@ -192,18 +192,18 @@ SSRB(ProjData& out_proj_data,
      const bool do_norm
      )
 {
-  const ProjDataInfoCylindrical * const in_proj_data_info_ptr =
-    dynamic_cast<ProjDataInfoCylindrical const * >
-    (in_proj_data.get_proj_data_info_ptr());
-  if (in_proj_data_info_ptr== NULL)
+  const shared_ptr<const ProjDataInfoCylindrical> in_proj_data_info_sptr =
+    dynamic_pointer_cast<const ProjDataInfoCylindrical>
+    (in_proj_data.get_proj_data_info_sptr());
+  if (in_proj_data_info_sptr== NULL)
   {
     error("SSRB works only on segments with proj_data_info of "
       "type ProjDataInfoCylindrical\n");
   }
-  const ProjDataInfoCylindrical * const out_proj_data_info_ptr =
-    dynamic_cast<ProjDataInfoCylindrical const * >
-    (out_proj_data.get_proj_data_info_ptr());
-  if (out_proj_data_info_ptr== NULL)
+  const shared_ptr<const ProjDataInfoCylindrical> out_proj_data_info_sptr =
+    dynamic_pointer_cast<const ProjDataInfoCylindrical>
+    (out_proj_data.get_proj_data_info_sptr());
+  if (out_proj_data_info_sptr== NULL)
   {
     error("SSRB works only on segments with proj_data_info of "
       "type ProjDataInfoCylindrical\n");
@@ -229,17 +229,17 @@ SSRB(ProjData& out_proj_data,
         // this the only place where we need ProjDataInfoCylindrical
         // Presumably for other types, there'd be something equivalent (say range of theta)
 	const int out_min_ring_diff = 
-	  out_proj_data_info_ptr->get_min_ring_difference(out_segment_num);
+	  out_proj_data_info_sptr->get_min_ring_difference(out_segment_num);
 	const int out_max_ring_diff = 
-	  out_proj_data_info_ptr->get_max_ring_difference(out_segment_num);
+	  out_proj_data_info_sptr->get_max_ring_difference(out_segment_num);
 	for (int in_segment_num = in_proj_data.get_min_segment_num(); 
 	     in_segment_num <= in_proj_data.get_max_segment_num();
 	     ++in_segment_num)
 	  {
 	    const int in_min_ring_diff = 
-	      in_proj_data_info_ptr->get_min_ring_difference(in_segment_num);
+	      in_proj_data_info_sptr->get_min_ring_difference(in_segment_num);
 	    const int in_max_ring_diff = 
-	      in_proj_data_info_ptr->get_max_ring_difference(in_segment_num);
+	      in_proj_data_info_sptr->get_max_ring_difference(in_segment_num);
 	    if (in_min_ring_diff >= out_min_ring_diff &&
 		in_max_ring_diff <= out_max_ring_diff)
 	      {
@@ -277,7 +277,7 @@ SSRB(ProjData& out_proj_data,
 	  {
 	    out_sino= out_proj_data.get_empty_sinogram(out_ax_pos_num, out_segment_num);
             // get_m could be replaced by get_t  
-	    const float out_m = out_proj_data_info_ptr->get_m(Bin(out_segment_num,0, out_ax_pos_num, 0));
+	    const float out_m = out_proj_data_info_sptr->get_m(Bin(out_segment_num,0, out_ax_pos_num, 0));
 	  
 	    unsigned int num_in_ax_pos = 0;
 
@@ -288,7 +288,7 @@ SSRB(ProjData& out_proj_data,
 		   in_ax_pos_num  <= in_proj_data.get_max_axial_pos_num(in_segment_num);
 		   ++in_ax_pos_num )
 		{
-		  const float in_m = in_proj_data_info_ptr->get_m(Bin(in_segment_num,0, in_ax_pos_num, 0));
+		  const float in_m = in_proj_data_info_sptr->get_m(Bin(in_segment_num,0, in_ax_pos_num, 0));
 		  if (fabs(out_m - in_m) < 1E-4)
 		    {
 		      ++num_in_ax_pos;

@@ -40,7 +40,7 @@ create(const ExamDataT& exam_data) const
       new ParametricDiscretisedDensity<VoxelsOnCartesianGrid<elemT> >
       (VoxelsOnCartesianGrid<elemT>
        (exam_data.get_exam_info_sptr(),
-        *exam_data.get_proj_data_info_ptr(),
+        *exam_data.get_proj_data_info_sptr(),
         CartesianCoordinate3D<float>(this->get_zoom_z(),
                                      this->get_zoom_xy(),
                                      this->get_zoom_xy()),

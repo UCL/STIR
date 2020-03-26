@@ -151,7 +151,7 @@ main(int argc, char **argv)
 
 
 	  shared_ptr<ProjDataInfo> 
-        output_proj_data_info_sptr((*lower_sptr).get_proj_data_info_ptr()->clone());
+        output_proj_data_info_sptr((*lower_sptr).get_proj_data_info_sptr()->clone());
 
       out_scatter_proj_data_ptr.reset(new ProjDataInterfile((*lower_sptr).get_exam_info_sptr(),
 							output_proj_data_info_sptr, 

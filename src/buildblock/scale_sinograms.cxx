@@ -41,7 +41,7 @@ scale_sinograms(
 {	
   const ProjDataInfo &proj_data_info = 
     dynamic_cast<const ProjDataInfo&> 
-    (*scaled_scatter_proj_data.get_proj_data_info_ptr());
+    (*scaled_scatter_proj_data.get_proj_data_info_sptr());
 
   Bin bin;
 	
@@ -74,7 +74,7 @@ get_scale_factors_per_sinogram(const ProjData& numerator_proj_data,
 	
   const ProjDataInfo &proj_data_info = 
     dynamic_cast<const ProjDataInfo&> 
-    (*weights_proj_data.get_proj_data_info_ptr());
+    (*weights_proj_data.get_proj_data_info_sptr());
 
   Bin bin;
 

@@ -101,10 +101,6 @@ public:
   //! Overloading Array::resize
   void resize(const IndexRange<2>& range);
 
-  //! Get the projection data info pointer
-  /*! \warning Do not use this pointer after the Sinogram object is destructed.
-  */
-  inline const ProjDataInfo* get_proj_data_info_ptr() const;
   //! Get shared pointer to proj data info
   /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
     shared pointer will be affected. */

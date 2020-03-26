@@ -351,7 +351,7 @@ FBP3DRPReconstruction::input_proj_data_info_cyl() const
 {
   return 
     static_cast<ProjDataInfoCylindrical const&> 
-    (*proj_data_ptr->get_proj_data_info_ptr());
+    (*proj_data_ptr->get_proj_data_info_sptr());
 }
 
 FBP3DRPReconstruction::
@@ -377,7 +377,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_
 
   // TODO move to post_processing()
   {
-    if (dynamic_cast<const ProjDataInfoCylindrical *> (proj_data_ptr->get_proj_data_info_ptr()) == 0)
+    if (dynamic_pointer_cast<const ProjDataInfoCylindrical> (proj_data_ptr->get_proj_data_info_sptr()) == 0)
       error("FBP3DRP currently needs cylindrical projection data. Sorry\n");
 
     if (colsher_stretch_factor_planar<1 || colsher_stretch_factor_axial<1)
@@ -432,7 +432,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_
 
 #ifndef NRFFT
   const float theta_max =
-    atan(proj_data_ptr->get_proj_data_info_ptr()->
+    atan(proj_data_ptr->get_proj_data_info_sptr()->
 	 get_tantheta(Bin(max_segment_num_to_process,0,0,0)));
   
   colsher_filter = 
@@ -477,7 +477,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_
         
         //Now forward only on this plane
         Sinogram<float> sino_fwd_pos = 
-          direct_sinos_ptr->get_proj_data_info_ptr()->get_empty_sinogram(plane_with_max_activity, 0);
+          direct_sinos_ptr->get_proj_data_info_sptr()->get_empty_sinogram(plane_with_max_activity, 0);
         
         full_log << "    Forward projection on one ring which contains maximum activity from seg0" << endl;
         //KTTODO forward_project_2D(estimated_image(),sino_fwd_pos, plane_with_max_activity);
@@ -501,19 +501,19 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const& target_image_
   // find out if arc-correction if necessary
   // and initialise proj_data_info_with_missing_data_sptr accordingly
   {
-    if (dynamic_cast<const ProjDataInfoCylindricalArcCorr*>
-	(proj_data_ptr->get_proj_data_info_ptr()) != 0)
+    if (dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>
+	(proj_data_ptr->get_proj_data_info_sptr()) != 0)
       {
 	// it's already arc-corrected
 	arc_correction_sptr.reset(); // just rest to make sure in case we run the reconstruction twice
 	proj_data_info_with_missing_data_sptr =
-	  proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone();
+	  proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone();
       }
     else
       {
 	arc_correction_sptr.reset(new ArcCorrection);
 	// TODO arc-correct to voxel_size
-	if (arc_correction_sptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone()) ==
+	if (arc_correction_sptr->set_up(proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone()) ==
 	    Succeeded::no)
 	  return Succeeded::no;
       
@@ -595,7 +595,7 @@ void FBP3DRPReconstruction::do_2D_reconstruction()
   
   // image_estimate should have 'default' dimensions, origin and voxel_size
   image_estimate_density_ptr.
-    reset(new VoxelsOnCartesianGrid<float>(*proj_data_ptr->get_proj_data_info_ptr()));
+    reset(new VoxelsOnCartesianGrid<float>(*proj_data_ptr->get_proj_data_info_sptr()));
   
   {        
     FBP2DReconstruction recon2d(proj_data_ptr, 
@@ -864,10 +864,10 @@ void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & vi
 { 
 
   assert(dynamic_cast<ProjDataInfoCylindricalArcCorr const *>
-	 (viewgrams.get_proj_data_info_ptr()));
+	 (viewgrams.get_proj_data_info_sptr()));
 
   // TODO make into object member instead of static
-  static int prev_seg_num = viewgrams.get_proj_data_info_ptr()->get_min_segment_num()-1;  
+  static int prev_seg_num = viewgrams.get_proj_data_info_sptr()->get_min_segment_num()-1;  
 #ifdef NRFFT
   static ColsherFilter colsher_filter(0,0,0,0,0,0,0,0,0,0);
 #endif
@@ -884,15 +884,15 @@ void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & vi
     const int height = (int) pow(2., ((int) ceil(log((PadZ + 1.) * nrings) / log(2.))));	
     
     
-    const float theta_max = atan(viewgrams.get_proj_data_info_ptr()->get_tantheta(Bin(max_segment_num_to_process,0,0,0)));
+    const float theta_max = atan(viewgrams.get_proj_data_info_sptr()->get_tantheta(Bin(max_segment_num_to_process,0,0,0)));
     
     const float theta = 
-      static_cast<float>(atan(viewgrams.get_proj_data_info_ptr()->get_tantheta(Bin(seg_num,0,0,0))));
+      static_cast<float>(atan(viewgrams.get_proj_data_info_sptr()->get_tantheta(Bin(seg_num,0,0,0))));
     
     const float sampling_in_s =
-      viewgrams.get_proj_data_info_ptr()->get_sampling_in_s(Bin(seg_num,0,0,0));
+      viewgrams.get_proj_data_info_sptr()->get_sampling_in_s(Bin(seg_num,0,0,0));
     const float sampling_in_t =
-      viewgrams.get_proj_data_info_ptr()->get_sampling_in_t(Bin(seg_num,0,0,0));
+      viewgrams.get_proj_data_info_sptr()->get_sampling_in_t(Bin(seg_num,0,0,0));
     full_log << "Colsher filter theta_max = " << theta_max << " theta = " << theta
       << " d_a = " << sampling_in_s
 	     << " d_b = " << sampling_in_t << endl;

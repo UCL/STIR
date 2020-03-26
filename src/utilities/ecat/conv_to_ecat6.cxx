@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
       }
     else
       {
-	make_ECAT6_Main_header(mhead, filenames[0], *proj_data_ptr->get_proj_data_info_ptr());
+	make_ECAT6_Main_header(mhead, filenames[0], *proj_data_ptr->get_proj_data_info_sptr());
 	mhead.num_frames = num_frames;
 	mhead.num_gates = num_gates;
 	mhead.num_bed_pos = num_bed_poss-1;

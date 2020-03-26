@@ -158,7 +158,7 @@ main(int argc, char *argv[])
 
     
    const ProjDataInfo * proj_data_info_ptr = 
-    proj_data_ptr->get_proj_data_info_ptr();
+    proj_data_ptr->get_proj_data_info_sptr();
   
   VoxelsOnCartesianGrid<float> * vox_image_ptr =
     new VoxelsOnCartesianGrid<float>(*proj_data_info_ptr); 
@@ -175,7 +175,7 @@ main(int argc, char *argv[])
  shared_ptr<ProjMatrixByBin> PM
    (ProjMatrixByBin :: read_registered_object(0, name));
  
-  PM->set_up(proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),image_sptr);
+  PM->set_up(proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone(),image_sptr);
   shared_ptr<BackProjectorByBin>  bck_projector_ptr
     (new BackProjectorByBinUsingSquareProjMatrixByBin(PM));   
  

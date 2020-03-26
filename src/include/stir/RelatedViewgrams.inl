@@ -134,16 +134,6 @@ int RelatedViewgrams<elemT>::get_max_tangential_pos_num() const
 }
 
 template <typename elemT>
-const ProjDataInfo * 
-RelatedViewgrams<elemT>::
-get_proj_data_info_ptr() const
-{
-  assert(viewgrams.size()>0);
-  check_state();
-  return viewgrams[0].get_proj_data_info_ptr();
-}
-
-template <typename elemT>
 shared_ptr<ProjDataInfo>
 RelatedViewgrams<elemT>::
 get_proj_data_info_sptr() const

@@ -479,7 +479,7 @@ set_up()
       max_segment_num_to_process > max_segment_num_available)
     max_segment_num_to_process = max_segment_num_available;
   shared_ptr<ProjDataInfo>  
-    input_proj_data_info_sptr(input_projdata_ptr->get_proj_data_info_ptr()->clone());
+    input_proj_data_info_sptr(input_projdata_ptr->get_proj_data_info_sptr()->clone());
   shared_ptr<ProjDataInfo> output_proj_data_info_sptr;
 
   if (!do_arc_correction)
