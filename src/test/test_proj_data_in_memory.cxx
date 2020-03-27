@@ -151,6 +151,39 @@ run_tests()
         // ok
       }
   }
+//  test set_bin_value()
+  {
+      std::vector<float> test;
+      test.resize(proj_data.size_all());
+      
+      for(int i=0;i<test.size();i++)
+      test[i]=i;
+      
+      proj_data.fill_from(test.begin());
+      
+      Bin bin(0,proj_data_info_sptr->get_max_view_num()/2,
+                proj_data_info_sptr->get_max_axial_pos_num(0)/2,
+                0);
+      
+      Bin old_bin=bin;
+      
+      bin.set_bin_value(42);
+      proj_data.set_bin_value(bin);
+      
+      Viewgram<float> viewgram=proj_data.get_viewgram(
+                  proj_data_info_sptr->get_max_view_num()/2,
+                  0,
+                  false);
+      
+      Bin new_bin=old_bin;
+      new_bin.set_bin_value(viewgram[proj_data_info_sptr->get_max_axial_pos_num(0)/2][0]);
+     
+      
+//      std::cout<<"old "<<proj_data.get_bin_value(bin)<<" new "<<new_bin.get_bin_value()<<std::endl;
+      check(old_bin.get_bin_value()==new_bin.get_bin_value(), "ProjDataFromStream::set_bin_value  did not change the value of the viewgram bin");
+//      proj_data_info_sptr->get
+      
+  }
 }
 
 END_NAMESPACE_STIR

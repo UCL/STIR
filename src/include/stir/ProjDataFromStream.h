@@ -145,8 +145,8 @@ public:
   //! Get the value of bin.
   float get_bin_value(const Bin& this_bin) const;
   
-  //! set the value f the bin
-  void set_bin_value(Bin bin);
+  //! Set the value of the bin
+  void set_bin_value(const Bin &bin);
     
 protected:
   //! the stream with the data
