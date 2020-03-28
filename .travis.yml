@@ -152,6 +152,9 @@ script:
   - if [[ $EXTRA_BUILD_FLAGS == *"DDISABLE_CERN_ROOT=0"* ]]; then ./run_root_GATE.sh; fi
   - cd $TRAVIS_BUILD_DIR/recon_test_pack/SPECT
   - ./run_SPECT_tests.sh
+  # Run examples to see if they work
+  - cd $TRAVIS_BUILD_DIR/examples/PET_simulation
+  - ./run_simulation.sh
   - cd $TRAVIS_BUILD_DIR/src
   # Run Python tests, making sure we're using the correct Python interpreter
   - export PYTHON=$(cmake -LA -N $TRAVIS_BUILD_DIR/build |awk -F= '/PYTHON_EXECUTABLE/ {print $2}')
