@@ -1,13 +1,15 @@
 /*!
   \file
   \ingroup listmode
-  \brief Implementation of class stir::CListModeData 
-    
+  \brief Implementation of class stir::ListModeData
+
+  \author Daniel Deidda
   \author Kris Thielemans
 */
 /*
     Copyright (C) 2003, Hammersmith Imanet Ltd
     Copyright (C) 2014, University College London
+    Copyright (C) 2019, National Physical Laboratory
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,61 +25,61 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/listmode/CListModeData.h"
+#include "stir/listmode/ListModeData.h"
 #include "stir/ExamInfo.h"
 #include "stir/is_null_ptr.h"
 
 START_NAMESPACE_STIR
 
-CListModeData::
-CListModeData()
+ListModeData::
+ListModeData()
 {
 }
 
-CListModeData::
-~CListModeData()
+ListModeData::
+~ListModeData()
 {}
 
 //const ExamInfo*
-//CListModeData::get_exam_info_ptr() const
+//ListModeData::get_exam_info_ptr() const
 //{
 //  assert(!is_null_ptr(exam_info_sptr));
 //  return exam_info_sptr.get();
 //}
 
 //shared_ptr<ExamInfo>
-//CListModeData::get_exam_info_sptr() const
+//ListModeData::get_exam_info_sptr() const
 //{
 //  return exam_info_sptr;
 //}
 
 const Scanner*
-CListModeData::
+ListModeData::
 get_scanner_ptr() const
 {
     if(is_null_ptr(proj_data_info_sptr))
-        error("CListModeData: ProjDataInfo has not been set.");
+        error("ListModeData: ProjDataInfo has not been set.");
   return proj_data_info_sptr->get_scanner_ptr();
 }
 
 void
-CListModeData::
+ListModeData::
 set_proj_data_info_sptr(shared_ptr<ProjDataInfo> new_proj_data_info_sptr)
 {
     proj_data_info_sptr = new_proj_data_info_sptr;
 }
 
 shared_ptr<ProjDataInfo>
-CListModeData::get_proj_data_info_sptr() const
+ListModeData::get_proj_data_info_sptr() const
 {
     if(is_null_ptr(proj_data_info_sptr))
-        error("CListModeData: ProjDataInfo has not been set.");
+        error("ListModeData: ProjDataInfo has not been set.");
     return proj_data_info_sptr;
 }
 
 #if 0
-std::time_t 
-CListModeData::
+std::time_t
+ListModeData::
 get_scan_start_time_in_secs_since_1970() const
 {
   const double time = this->exam_info_sptr->start_time_in_secs_since_1970;

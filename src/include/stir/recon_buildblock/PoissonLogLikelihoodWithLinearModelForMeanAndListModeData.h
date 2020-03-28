@@ -34,7 +34,7 @@
 
 //#include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMean.h"
-#include "stir/listmode/CListModeData.h"
+#include "stir/listmode/ListModeData.h"
 #include "stir/ParseAndCreateFrom.h"
 #include "stir/TimeFrameDefinitions.h"
 
@@ -103,7 +103,7 @@ public:
     virtual void set_additive_proj_data_sptr(const shared_ptr<ExamData>&);
 
     virtual void set_input_data(const shared_ptr<ExamData> &);
-    virtual const CListModeData& get_input_data() const;
+    virtual const ListModeData& get_input_data() const;
 protected:
   std::string frame_defs_filename;
 
@@ -115,7 +115,7 @@ protected:
   shared_ptr<BinNormalisation> normalisation_sptr;
  
   //! Listmode pointer
-  shared_ptr<CListModeData> list_mode_data_sptr; 
+  shared_ptr<ListModeData> list_mode_data_sptr;
  
   unsigned int current_frame_num;
 
@@ -137,7 +137,7 @@ protected:
    /*! The frame numbers start from 1. */
    virtual void start_new_time_frame(const unsigned int new_frame_num);
 
-   ParseAndCreateFrom<TargetT, CListModeData> target_parameter_parser;
+   ParseAndCreateFrom<TargetT, ListModeData> target_parameter_parser;
 };
 
 END_NAMESPACE_STIR
