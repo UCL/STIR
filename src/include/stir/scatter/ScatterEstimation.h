@@ -3,7 +3,7 @@
 
 /*
     Copyright (C) 2018 - 2019 University of Hull
-    Copyright (C) 2016 University College London
+    Copyright (C) 2016,2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -64,9 +64,20 @@ typedef struct
 /*!
   \ingroup scatter
   \brief Estimate the scatter probability using a model-based approach
+  \author Nikos Efthimiou
+  \author Kris Thielemans
+
+  This is an implementation of Watson's SSS iterative algorithm to estimate scatter.
+  Simulation is normally at low resolution, ideally reconstruction as well (to save time).
+  The code also does tail-fitting.
+
+  A particular feature is that the first iterations happen in 2D (after SSRB of all the data).
+  Currently only the last simulation is in 3D. This could be changed later.
 
   \todo The code should throw an error if 2D input data are loaded.
   It should just deactivate the final upsampling.
+  \todo Currently FBP reconstruction is not working and just throws an error.
+  \todo This code needs far more documentation.
 */
 
 class ScatterEstimation: public ParsingObject
