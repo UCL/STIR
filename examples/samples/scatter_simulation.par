@@ -1,0 +1,21 @@
+Scatter Simulation :=
+Simulation method := Single Scatter Simulation
+Scatter Simulation Parameters := 
+
+attenuation_threshold :=.01
+random :=0
+use_cache :=1
+
+activity_image_filename := ${ACTIVITY_IMAGE}
+attenuation_image_filename := ${ATTENUATION_IMAGE}
+attenuation_image_for_scatter_points_filename := ${LOW_RES_ATTENUATION_IMAGE}
+template_projdata_filename :=  ${TEMPLATE}
+
+; output filename without extension
+; files will be calle "out".hs and "out".log
+output_filename_prefix :=${OUTPUT_PREFIX}
+
+
+End Scatter Estimation Parameters:=
+End Scatter Simulation Parameters:=
+End Scatter Simulation:=
