@@ -1,6 +1,5 @@
 /*
-  Copyright (C) 2004 -  2009 Hammersmith Imanet Ltd
-  Copyright (C) 2013,2016,2019,2020 University College London
+  Copyright (C) 2018,2019,2020 University College London
   Copyright (C) 2018-2019, University of Hull
   This file is part of STIR.
 
@@ -140,9 +139,9 @@ initialise_keymap()
     this->parser.add_key("use default downsampling in scatter simulation",
                          &this->use_default_downsampling);
 
-    this->parser.add_key("override density image",
+    this->parser.add_key("override attenuation image",
                          &this->override_density_image);
-    this->parser.add_key("override density image for scatter points",
+    this->parser.add_key("override attenuation image for scatter points",
                          &this->override_density_image_for_scatter_points);
     this->parser.add_key("override scanner template",
                          &this->override_scanner_template);

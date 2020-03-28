@@ -71,8 +71,8 @@ use default downsampling in scatter simulation := 1
 ; Over-ride the values set in the scatter simulation parameter file
 override scanner template := 1
 override initial activity image := 1
-override density image := 1
-override density image for scatter points := 1
+override attenuation image := 1
+override attenuation image for scatter points := 1
 
 reconstruction parameter template file := ./par_files/run_reconstruction.par 
 
