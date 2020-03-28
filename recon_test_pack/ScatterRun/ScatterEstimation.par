@@ -42,20 +42,17 @@ END Chained Bin Normalisation Parameters:=
 ;; Background data (not - normalised)
 background projdata filename := ./NEMA_IQ/MLrandoms.hs
 
-; Mask 
+; Mask for tail-fitting
+; It will be computed by masking the attenuation image, and forward projecting that.
 ; If !recompute mask projdata then the filename must be set.
 recompute mask projdata := 1
 mask projdata filename := mask_projdata.hs 
 
 ; Input or output filename - depends on recompute  
 recompute mask image := 1
-mask attenuation image filename := mask.hv
-
-mask image max threshold  := 0.001
-mask image additive scalar := -0.00099 
-mask image min threshold := 0.0
-mask image times scalar := 100002
-mask image postfilter filename := ./par_files/postfilter_Gaussian.par
+mask image filename := mask.hv
+mask attenuation image min threshold := 0.003
+mask attenuation image postfilter filename := ./par_files/postfilter_Gaussian.par
 ;End of Mask
 
 ;Parameter file for the tail fitting of the scatter data (within the mask)

@@ -41,25 +41,22 @@
 #include "stir/recon_buildblock/GeneralisedObjectiveFunction.h"
 #include "stir/recon_buildblock/AnalyticReconstruction.h"
 
-#include "stir/PostFiltering.h"
 #include "stir/stir_math.h"
 #include "stir/FilePath.h"
 
 START_NAMESPACE_STIR
 
-//!
-//! \bief mask_parameters
-//! \details A struct to hold the parameters for
-//! masking.
-//! \todo Maybe It could be moved it to STIR math.
-//!
-typedef struct
+template <class TargetT> class PostFiltering;
+
+//! A struct to hold the parameters for image masking.
+struct MaskingParameters
 {
-    float max_threshold;
-    float add_scalar;
-    float min_threshold;
-    float times_scalar;
-}mask_parameters;
+  float min_threshold;
+  //! filter parameter file to be used in mask calculation
+  std::string filter_filename;
+  //! filter to apply before thresholding
+  shared_ptr<PostFiltering <DiscretisedDensity<3,float> > > filter_sptr;
+};
 
 /*!
   \ingroup scatter
@@ -226,8 +223,6 @@ protected:
     shared_ptr<ProjData> back_projdata_sptr;
     //! Filename of mask image
     std::string mask_image_filename;
-    //! Postfilter parameter file to be used in mask calculation
-    std::string mask_postfilter_filename;
     //! Filename of mask's projdata
     std::string mask_projdata_filename;
     //! Filename of background projdata
@@ -250,7 +245,7 @@ protected:
     shared_ptr < DiscretisedDensity < 3, float >  > mask_image_sptr;
 
     //! \details the set of parameters to mask the attenuation image
-    mask_parameters mask_image;
+    MaskingParameters masking_parameters;
     //! \details The number of iterations the scatter estimation will perform.
     //! Default = 5.
     int num_scatter_iterations;
@@ -263,9 +258,9 @@ private:
     //! \details A helper function to reduce the size of set_up().
     Succeeded project_mask_image();
 
-    //! \details A complicated function to mask images.
-    bool apply_mask_in_place(DiscretisedDensity<3, float> &,
-                             const mask_parameters&);
+    //! \details Find a mask by thresholding etc
+    static void apply_mask_in_place(DiscretisedDensity<3, float> &,
+				    const MaskingParameters&);
 
     void add_proj_data(ProjData&, const ProjData&);
 
@@ -305,7 +300,6 @@ private:
     //! This path is used in the debug mode to store all the intermediate files, as they are many.
     FilePath extras_path;
 
-    shared_ptr<PostFiltering <DiscretisedDensity<3,float> > > filter_sptr;
     //! Default value = 100
     float max_scale_value;
     //! Default value = 0.4

@@ -32,6 +32,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/SSRB.h"
 #include "stir/DataProcessor.h"
+#include "stir/PostFiltering.h"
 #include "stir/scatter/CreateTailMaskFromACFs.h"
 #include "stir/scatter/SingleScatterSimulation.h"
 #include "stir/zoom.h"
@@ -59,6 +60,8 @@ set_defaults()
 {
     this->recompute_atten_projdata = true;
     this->recompute_mask_image = true;
+    this->masking_parameters.min_threshold = .003F;
+    this->masking_parameters.filter_sptr.reset();
     this->recompute_mask_projdata = true;
     this->iterative_method = true;
     this->do_average_at_2 = true;
@@ -96,20 +99,14 @@ initialise_keymap()
                          &this->atten_image_filename);
 
     // MASK parameters
-    this->parser.add_key("mask attenuation image filename",
-                         &this->mask_image_filename);
-    this->parser.add_key("mask image postfilter filename",
-                         &this->mask_postfilter_filename);
     this->parser.add_key("recompute mask image",
                          &this->recompute_mask_image);
-    this->parser.add_key("mask image max threshold ",
-                         &this->mask_image.max_threshold);
-    this->parser.add_key("mask image additive scalar",
-                         &this->mask_image.add_scalar);
-    this->parser.add_key("mask image min threshold",
-                         &this->mask_image.min_threshold);
-    this->parser.add_key("mask image times scalar",
-                         &this->mask_image.times_scalar);
+    this->parser.add_key("mask image filename",
+                         &this->mask_image_filename);
+    this->parser.add_key("mask attenuation image filter filename",
+                         &this->masking_parameters.filter_filename);
+    this->parser.add_key("mask attenuation image min threshold",
+                         &this->masking_parameters.min_threshold);
     this->parser.add_key("recompute mask projdata",
                          &this->recompute_mask_projdata);
     this->parser.add_key("mask projdata filename",
@@ -263,15 +260,14 @@ post_processing()
     //        }
     //    }
 
-
-    if(this->mask_postfilter_filename.size() > 0 )
+    if(!this->masking_parameters.filter_filename.empty())
     {
-        this->filter_sptr.reset(new PostFiltering <DiscretisedDensity<3,float> >);
+        this->masking_parameters.filter_sptr.reset(new PostFiltering <DiscretisedDensity<3,float> >);
 
-        if(!filter_sptr->parse(this->mask_postfilter_filename.c_str()))
+        if(!masking_parameters.filter_sptr->parse(this->masking_parameters.filter_filename.c_str()))
         {
             warning(boost::format("ScatterEstimation: Error parsing post filter parameters file %1%. Aborting.")
-                    %this->mask_postfilter_filename);
+                    %this->masking_parameters.filter_filename);
             return true;
         }
     }
@@ -511,21 +507,16 @@ if(is_null_ptr(this->reconstruction_template_sptr))
             // 1. Clone from the original image.
             // 2. Apply to the new clone.
             this->mask_image_sptr.reset(this->atten_image_sptr->clone());
-            if(this->apply_mask_in_place(*this->mask_image_sptr,
-                                         this->mask_image) == false)
-            {
-                warning("Error in masking. Aborting.");
-                return Succeeded::no;
-            }
+            this->apply_mask_in_place(*this->mask_image_sptr, this->masking_parameters);
 
             if (this->mask_image_filename.size() > 0 )
                 OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
-                        write_to_file(this->mask_image_filename, *this->mask_image_sptr.get());
+                        write_to_file(this->mask_image_filename, *this->mask_image_sptr);
         }
 
         if(project_mask_image() == Succeeded::no)
         {
-            warning("ScatterEstimation: Unsuccessfull to fwd project the mask image. Aborting.");
+            warning("ScatterEstimation: Unsuccessful to fwd project the mask image. Aborting.");
             return Succeeded::no;
         }
     }
@@ -1396,62 +1387,24 @@ ScatterEstimation::project_mask_image()
     return create_tail_mask_from_acfs.process_data();
 }
 
-//! If the filters are not applied in this specific order the
-//! results are not desirable every time.
-bool
+void
 ScatterEstimation::
 apply_mask_in_place(DiscretisedDensity<3, float>& arg,
-                    const mask_parameters& _this_mask)
+                    const MaskingParameters& masking_parameters)
 {
-    // Re-reading every time should not be a problem, as it is
-    // just a small txt file.
-    PostFiltering<DiscretisedDensity<3, float> > filter;
-
-    if(filter.parse(this->mask_postfilter_filename.c_str()) == false)
-    {
-        warning(boost::format("Error parsing postfilter parameters file %1%. Aborting.")
-                %this->mask_postfilter_filename);
-        return false;
+  if (!is_null_ptr(masking_parameters.filter_sptr))
+    {      
+      masking_parameters.filter_sptr->process_data(arg);
     }
 
-    //1. add_scalar//2. mult_scalar//3. power//4. min_threshold//5. max_threshold
-
-    pow_times_add pow_times_thres_max(0.0f, 1.0f, 1.0f, NumericInfo<float>().min_value(),
-                                      0.001f);
-    pow_times_add pow_times_add_scalar( -0.00099f, 1.0f, 1.0f, NumericInfo<float>().min_value(),
-                                        NumericInfo<float>().max_value());
-
-    pow_times_add pow_times_thres_min(0.0, 1.0f, 1.0f, 0.0f,
-                                      NumericInfo<float>().max_value());
-
-    pow_times_add pow_times_times( 0.0f, 100002.0f, 1.0f, NumericInfo<float>().min_value(),
-                                   NumericInfo<float>().max_value());
-
-    pow_times_add pow_times_add_object(_this_mask.add_scalar,
-                                       _this_mask.times_scalar,
-                                       1.0f,
-                                       _this_mask.min_threshold,
-                                       _this_mask.max_threshold);
-    // 1. filter the image
-    filter.process_data(arg);
-
-    // 2. max threshold
-    in_place_apply_function(arg,
-                            pow_times_thres_max);
-    // 3. add scalar
-    in_place_apply_function(arg,
-                            pow_times_add_scalar);
-    // 4. min threshold
-    in_place_apply_function(arg,
-                            pow_times_thres_min);
-    // 5. times scalar
-    in_place_apply_function(arg,
-                            pow_times_times);
-    // 6. Add 1.
-    in_place_apply_function(arg,
-                            pow_times_add_object);
-
-    return true;
+  // min threshold
+  for (DiscretisedDensity<3,float>::full_iterator iter = arg.begin_all(); iter != arg.end_all(); ++iter)
+    {
+      if (*iter < masking_parameters.min_threshold)
+	*iter = 0.F;
+      else
+	*iter = 1.F;
+    }
 }
 
 int ScatterEstimation::get_iterations_num() const

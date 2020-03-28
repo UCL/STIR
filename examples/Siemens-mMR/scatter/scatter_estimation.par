@@ -43,21 +43,17 @@ END Chained Bin Normalisation Parameters:=
 ;; Background data (not - normalised)
 background projdata filename := ${randoms3d}
 
-; Mask 
+; Mask for tail-fitting
+; It will be computed by masking the attenuation image, and forward projecting that.
 ; If !recompute mask projdata then the filename must be set.
-recompute mask projdata := 0
+recompute mask projdata := 1 ; TODO
 mask projdata filename := output/mask2d.hs
-; TODO
 
 ; Input or output filename - depends on recompute  
-recompute mask image := 0 ; TODO 
-mask attenuation image filename := ${mask_image}
-
-mask image max threshold  := 0.001
-mask image additive scalar := -0.00099 
-mask image min threshold := 0.0
-mask image times scalar := 100002
-mask image postfilter filename := ${pardir}/postfilter_Gaussian.par
+recompute mask image := 1
+mask image filename := ${mask_image}
+mask attenuation image min threshold  := 0.003
+mask attenuation image postfilter filename := ${pardir}/postfilter_Gaussian.par
 ;End of Mask
 
 ;Parameter file for the tail fitting of the scatter data (within the mask)
