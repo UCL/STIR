@@ -223,7 +223,8 @@ public:
     virtual Succeeded set_up();
 
     //! Output the log of the process.
-    virtual void write_log();
+    virtual void write_log(const double simulation_time, const float total_scatter);
+    
 
 protected:
 
@@ -408,8 +409,6 @@ protected:
     int downsample_scanner_dets;
 
     bool use_default_downsampling;
-
-    double total_scatter;
 
  private:
     int total_detectors;
