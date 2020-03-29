@@ -365,25 +365,8 @@ set_up()
                     SSRB(*this->input_projdata_sptr->get_proj_data_info_ptr(),
                           this->input_projdata_sptr->get_num_segments(), 1, false));
 
-        //! TODO: This tries to shield from the case that we call the function from
-        //! SIRF and a input_projdata_filename has not been set.
-        //! It is not completely safe. Maybe the best way would be to get the name from
-        //! input_projdata_sptr.
-        if (this->input_projdata_filename.size() > 0)
-        {
-            FilePath tmp(this->input_projdata_filename);
-            std::string out_filename = tmp.get_filename_no_extension() + "_2d.hs";
-
-            this->input_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
-                                                                     proj_data_info_2d_sptr,
-                                                                     out_filename,
-                                                                     std::ios::in | std::ios::out | std::ios::trunc));
-        }
-        else
-        {
-            this->input_projdata_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
+	this->input_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
                                                                  proj_data_info_2d_sptr));
-        }
 
         SSRB(*this->input_projdata_2d_sptr,
              *input_projdata_sptr,false);
