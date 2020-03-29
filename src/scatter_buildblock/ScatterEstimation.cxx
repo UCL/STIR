@@ -86,9 +86,6 @@ initialise_keymap()
 {
     this->parser.add_start_key("Scatter Estimation Parameters");
     this->parser.add_stop_key("end Scatter Estimation Parameters");
-    // N.E. 13/07/16: I don't like "input file" for the input data.
-    // I try to keep consistency with the reconstruction
-    // params.
 
     this->parser.add_key("run in debug mode",
                          &this->run_debug_mode);
@@ -173,18 +170,10 @@ ScatterEstimation()
 ScatterEstimation::
 ScatterEstimation(const std::string& parameter_filename)
 {
-    if (parameter_filename.size() == 0)
+  this->set_defaults();
+  if (!this->parse(parameter_filename.c_str()))
     {
-        this->set_defaults();
-        this->ask_parameters();
-    }
-    else
-    {
-        this->set_defaults();
-        if (!this->parse(parameter_filename.c_str()))
-        {
-            error("ScatterEstimation: Error parsing input file %s. Aborting.", parameter_filename.c_str());
-        }
+      error("ScatterEstimation: Error parsing input file %s. Aborting.", parameter_filename.c_str());
     }
 }
 
@@ -192,7 +181,7 @@ bool
 ScatterEstimation::
 post_processing()
 {
-    // Check that the crusial parts have been set.
+    // Check that the crucial parts have been set.
     info("ScatterEstimation: Loading input projection data");
     if (this->input_projdata_filename.size() == 0)
     {
@@ -383,13 +372,13 @@ set_up()
                 ProjData::read_from_file(tmp_input2D);
     }
 #endif
-info("ScatterEstimation: Setting up reconstruction method ...");
+    info("ScatterEstimation: Setting up reconstruction method ...");
 
-if(is_null_ptr(this->reconstruction_template_sptr))
-{
-    warning("ScatterEstimation: Reconstruction method has not been initialised. Aborting.");
-    return Succeeded::no;
-}
+    if(is_null_ptr(this->reconstruction_template_sptr))
+    {
+	warning("ScatterEstimation: Reconstruction method has not been initialised. Aborting.");
+	return Succeeded::no;
+    }
 
     // We have to check which reconstruction method we are going to use ...
     shared_ptr<AnalyticReconstruction> tmp_analytic =
@@ -601,8 +590,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
             }
             else
             {
-                error("ScatterEstimation: ECAT8 Normsalisation factors from are supported, but we cannot SSRB directly.\n"
-                      "Please convert to ProjData before proceeding or use 3D estimation. Aborting.");
+                error("ScatterEstimation: please convert BinNormalisation to ProjData before proceeding or use 3D estimation. Aborting.");
 
             }
 
@@ -682,67 +670,25 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
     info("ScatterEstimation: Done on normalisation coefficients.");
 
     //
-    // Set backgroud (randoms) projdata
+    // Set background (randoms) projdata
     //
 
     if (!is_null_ptr(this->back_projdata_sptr))
     {
-#if 1
         if( back_projdata_sptr->get_num_segments() > 1)
         {
             info("ScatterEstimation: Running SSRB on the background data ...");
 
-            //! TODO the variable back_projdata_filename might not have been set.
-            //! This workaround is only temporal.
-            if (this->back_projdata_filename.size() > 0 )
-            {
-                FilePath tmp(this->back_projdata_filename);
-                std::string out_filename = tmp.get_filename_no_extension() + "_2d.hs";
-
-                this->back_projdata_2d_sptr = create_new_proj_data(out_filename, this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                                                                   this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
-            }
-            else
-            {
-                this->back_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-                                                              this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
-            }
+	    this->back_projdata_2d_sptr.reset(new ProjDataInMemory(this->input_projdata_2d_sptr->get_exam_info_sptr(),
+								   this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone()));
 
             SSRB(*this->back_projdata_2d_sptr,
                  *this->back_projdata_sptr, false);
-//            {
-//                std::string out_filename = extras_path.get_path() + "tmp_background_data.hs";
-
-//                this->back_projdata_3d_sptr.reset(new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
-//                                                                        this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-//                                                                        out_filename,
-//                                                                        std::ios::in | std::ios::out | std::ios::trunc));
-
-//                this->back_projdata_3d_sptr->fill(*this->add_projdata_3d_sptr);
-//            }
-//            {
-//                std::string out_filename = extras_path.get_path() + "tmp_background_data" + "_2d.hs";
-
-//                this->back_projdata_2d_sptr.reset(new ProjDataInterfile(this->input_projdata_2d_sptr->get_exam_info_sptr(),
-//                                                                        this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone(),
-//                                                                        out_filename,
-//                                                                        std::ios::in | std::ios::out | std::ios::trunc));
-//                this->back_projdata_2d_sptr->fill(*this->add_projdata_2d_sptr);
-//                this->multiplicative_binnorm_2d_sptr->apply(*this->back_projdata_2d_sptr, start_time, end_time);
-//            }
-
         }
         else
         {
             this->back_projdata_2d_sptr = back_projdata_sptr;
         }
-#else
-        {
-            FilePath tmp(this->back_projdata_filename);
-            std::string in_filename = extras_path.get_path() + tmp.get_filename_no_extension() + "_2d.hs";
-            this->back_projdata_2d_sptr = ProjData::read_from_file(in_filename);
-        }
-#endif
     }
     else // We will need a background for the scatter, so let's create a simple empty ProjData
     {
@@ -789,11 +735,7 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
                                                          this->input_projdata_2d_sptr->get_proj_data_info_sptr()->create_shared_clone());
 
         data_to_fit_projdata_sptr->fill(*input_projdata_2d_sptr);
-        //Data to fit = Input_2d - background
-        //Here should be the total_background, not just the randoms.
         subtract_proj_data(*data_to_fit_projdata_sptr, *this->back_projdata_2d_sptr);
-
-
     }
     else
     {
@@ -812,7 +754,6 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
                                                          this->input_projdata_sptr->get_exam_info_sptr(),
                                                          this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
         data_to_fit_projdata_sptr->fill(*input_projdata_sptr);
-
         subtract_proj_data(*data_to_fit_projdata_sptr, *this->back_projdata_sptr);
     }
 
@@ -900,8 +841,8 @@ process_data()
     if( this->current_activity_image_sptr->find_max() == this->current_activity_image_sptr->find_min() )
     {
         info("ScatterEstimation: The max and the min values of the current activity image are equal."
-             "We deduct that it has been initialised to some value, therefore we will run the intial "
-             "recontruction ...");
+             "We deduce that it has been initialised to some value, therefore we will run an initial "
+             "reconstruction ...");
 
         if (iterative_method)
             reconstruct_iterative(0, this->current_activity_image_sptr);
@@ -1042,7 +983,6 @@ process_data()
                 if(this->output_scatter_estimate_prefix.size() > 0)
                 {
                     std::stringstream convert;
-
                     convert << this->output_scatter_estimate_prefix << "_" << i_scat_iter;
                     std::string output_scatter_filename = convert.str();
 
