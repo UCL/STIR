@@ -15,18 +15,19 @@ projector pair type := Matrix
   End Projector Pair Using Matrix Parameters :=
 
 ;recompute sensitivity := 0
-;subset sensitivity filenames := sens_%d.hv
+;subset sensitivity filenames := scatter_subset_sens_%d.hv
 
-zoom := 0.3
+; reconstruct at large voxel size to save time
+zoom := 0.2
 
 end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 
 ; initial estimate := 
 enforce initial positivity condition:=1
 
-number of subsets:= 21
-number of subiterations:=21
-;save estimates at subiteration intervals:= 21
+number of subsets:= ${scatter_recon_num_subsets}
+number of subiterations:=${scatter_recon_num_subiterations}
+;save estimates at subiteration intervals:= ${scatter_recon_num_subiterations}
 
 ; smooth a bit as we're have a down-sampled scanner, and during the scatter estimation resolution can be low
 post-filter type :=  Separable Gaussian
