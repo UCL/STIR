@@ -153,10 +153,9 @@ void wm_calculation( const int kOS,
 		//=== LOOP2: IMAGE COLUMNS =================================================================
 		
 		for ( vox.icol = 0 ; vox.icol < vol.Ncol ; vox.icol++ ){
-			stir::InvertAxis invert;
+			
 			vox.x  = vol.x0 + vox.icol * vol.szcm ;     // x coordinate of the voxel (index 0->Ncol-1: icol)
-//			Inverting column index: using "z" as it inverts values in the range 0 - N as opposed to -N/2 - N/2-1
-			vox.ip = vox.irow * vol.Ncol + invert.invert_axis_index(vox.icol,vol.Ncol, "z") ;	 // in-plane index of the voxel considering the slice as an array
+//			vox.ip = vox.irow * vol.Ncol + vox.icol ;	 // in-plane index of the voxel considering the slice as an array
  			
 			//... to apply mask .........................................
 			
