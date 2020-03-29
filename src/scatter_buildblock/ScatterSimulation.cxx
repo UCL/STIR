@@ -367,7 +367,8 @@ ScatterSimulation::
 set_activity_image(const std::string& filename)
 {
     this->activity_image_filename = filename;
-    this->set_activity_image_sptr(read_from_file<DiscretisedDensity<3,float> >(filename));
+    shared_ptr<DiscretisedDensity<3,float> > sptr(read_from_file<DiscretisedDensity<3,float> >(filename));
+    this->set_activity_image_sptr(sptr);
 }
 
 void
@@ -378,7 +379,7 @@ set_density_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >& arg)
         error("ScatterSimulation: Unable to set the density image");
     this->density_image_sptr=arg;
     // make sure that we're not re-using a previously interpolated image for scatter points
-    this->density_image_for_scatter_points_sptr = 0;
+    this->density_image_for_scatter_points_sptr.reset();
     this->remove_cache_for_integrals_over_attenuation();
     this->_already_set_up = false;
 }
@@ -388,7 +389,8 @@ ScatterSimulation::
 set_density_image(const std::string& filename)
 {
     this->density_image_filename=filename;
-    this->set_density_image_sptr(read_from_file<DiscretisedDensity<3,float> >(filename));
+    shared_ptr<DiscretisedDensity<3,float> > sptr(read_from_file<DiscretisedDensity<3,float> >(filename));
+    this->set_density_image_sptr(sptr);
 }
 
 void
@@ -416,7 +418,8 @@ ScatterSimulation::
 set_density_image_for_scatter_points(const std::string& filename)
 {
     this->density_image_for_scatter_points_filename=filename;
-    this->set_density_image_for_scatter_points_sptr(read_from_file<DiscretisedDensity<3,float> >(filename));
+    shared_ptr<DiscretisedDensity<3,float> > sptr(read_from_file<DiscretisedDensity<3,float> >(filename));    
+    this->set_density_image_for_scatter_points_sptr(sptr);
 }
 
 void
@@ -598,8 +601,7 @@ ScatterSimulation::
 set_template_proj_data_info(const std::string& filename)
 {
     this->template_proj_data_filename = filename;
-    shared_ptr<ProjData> template_proj_data_sptr =
-            ProjData::read_from_file(this->template_proj_data_filename);
+    shared_ptr<ProjData> template_proj_data_sptr(ProjData::read_from_file(this->template_proj_data_filename));
 
     this->set_exam_info_sptr(template_proj_data_sptr->get_exam_info_sptr());
 
