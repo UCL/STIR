@@ -1418,9 +1418,12 @@ shared_ptr<ProjData> ScatterEstimation::create_new_proj_data(const std::string& 
     shared_ptr<ProjData> pd_sptr;
     if (run_debug_mode)
     {
+        FilePath tmp(filename, false);
+	tmp = tmp.get_filename(); // get rid of any folder info
+	tmp.prepend_directory_name(extras_path.get_path());	
         pd_sptr.reset(new ProjDataInterfile(exam_info_sptr,
                                             proj_data_info_sptr,
-                                            extras_path.get_path() + filename,
+                                            tmp.get_string(),
                                             std::ios::in | std::ios::out | std::ios::trunc));
     }
     else
