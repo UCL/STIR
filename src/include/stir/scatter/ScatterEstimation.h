@@ -170,16 +170,6 @@ protected:
     virtual void initialise_keymap();
     virtual bool post_processing();
 
-    //!
-    //! \brief set_up_iterative
-    //! \return
-    Succeeded set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float> > > arg);
-
-    //!
-    //! \brief set_up_initialise_analytic
-    //! \return
-    Succeeded set_up_analytic();
-
     //! Recompute or load the mask image.
     bool recompute_mask_image;
     //! If set the mask projdata will be recomputed
@@ -241,9 +231,6 @@ protected:
     //! If they are to be recalculated they will be stored here, if set.
     std::string atten_coeff_filename;
 
-    //!
-    shared_ptr < DiscretisedDensity < 3, float >  > mask_image_sptr;
-
     //! \details the set of parameters to mask the attenuation image
     MaskingParameters masking_parameters;
     //! \details The number of iterations the scatter estimation will perform.
@@ -254,6 +241,14 @@ protected:
 
     std::string output_additive_estimate_prefix;
 private:
+    //! variable storing the mask image
+    shared_ptr < DiscretisedDensity < 3, float >  > mask_image_sptr;
+
+    //! \brief set_up iterative reconstruction
+    Succeeded set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float> > > arg);
+
+    //! \brief set_up analytic reconstruction
+    Succeeded set_up_analytic();
 
     //! \details A helper function to reduce the size of set_up().
     Succeeded project_mask_image();
@@ -269,26 +264,25 @@ private:
     void apply_to_proj_data(ProjData& , const pow_times_add&);
     //! Returnes a shared pointer to a new ProjData. If we run in run_debug_mode and
     //! the extras_path has been set, then it will a ProjDataFromStream, otherwise it will be a ProjDataInMemory.
-    shared_ptr<ProjData> create_new_proj_data(const std::string filename, const shared_ptr<ExamInfo> exam_info_sptr,
-                                                                 const shared_ptr<ProjDataInfo> proj_data_info_sptr) const;
+    shared_ptr<ProjData> create_new_proj_data(const std::string& filename,
+					      const shared_ptr<ExamInfo> exam_info_sptr,
+					      const shared_ptr<ProjDataInfo> proj_data_info_sptr) const;
 
-    //! \details Average the two first activity images 0 and 1.
+    //! \details Average the two first activity images 0 and 1 (defaults to \c true)
     bool do_average_at_2;
-    //! \details Used for convinience. It is initialised on post_processing.
-    bool iterative_method;
-    //!
+    //! for upsampling (defaults to \c true)
     bool remove_interleaving;
     //! Save all scatter simulated sinograms
     bool export_scatter_estimates_of_each_iteration;
     //! Run the process in 2D by SSRB the 3D sinograms
     bool run_in_2d_projdata;
     //! This bool will allow the ScatterEstimation to override the value of
-    //! the density image set in ScatterSimulation par file
+    //! the density image set in ScatterSimulation par file (defaults to \c true)
     bool override_density_image;
     //! This bool will allow the ScatterEstimation to override the value of
-    //! the density image for scatter points set in ScatterSimulation par file
+    //! the density image for scatter points set in ScatterSimulation par file (defaults to \c true)
     bool override_density_image_for_scatter_points;
-    //! This will over-ride the scanner template in scatter sinogram simulation.
+    //! This will over-ride the scanner template in scatter sinogram simulation (defaults to \c true)
     bool override_scanner_template;
     //! In debug mode a lot of extra files are going to be saved in the disk.
     bool run_debug_mode;
@@ -308,6 +302,9 @@ private:
     bool use_default_downsampling;
     //!
     unsigned int half_filter_width;
+
+    //! \details internal variable set to \c true when using iterative reconstruction
+    bool iterative_method;
 };
 
 END_NAMESPACE_STIR

@@ -63,7 +63,6 @@ set_defaults()
     this->masking_parameters.min_threshold = .003F;
     this->masking_parameters.filter_sptr.reset();
     this->recompute_mask_projdata = true;
-    this->iterative_method = true;
     this->do_average_at_2 = true;
     this->export_scatter_estimates_of_each_iteration = false;
     this->run_debug_mode = false;
@@ -1412,11 +1411,11 @@ int ScatterEstimation::get_iterations_num() const
     return num_scatter_iterations;
 }
 
-shared_ptr<ProjData> ScatterEstimation::create_new_proj_data(const std::string filename,
+shared_ptr<ProjData> ScatterEstimation::create_new_proj_data(const std::string& filename,
                                                              const shared_ptr<ExamInfo> exam_info_sptr,
                                                              const shared_ptr<ProjDataInfo> proj_data_info_sptr) const
 {
-    shared_ptr<ProjData> pd_sptr(nullptr);
+    shared_ptr<ProjData> pd_sptr;
     if (run_debug_mode)
     {
         pd_sptr.reset(new ProjDataInterfile(exam_info_sptr,

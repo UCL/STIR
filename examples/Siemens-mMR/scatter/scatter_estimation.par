@@ -5,25 +5,17 @@ Scatter Estimation Parameters :=
 ;; extra files will be stored 
 run in debug mode := 1
 
-;; 
-;; initialisation 
-;; 
-
-; If name is provided and recomputation == true
-; the file will be saved in the disk 
-
 ; Measured data
 input file := ${sino_input}
-
 
 ; Attenuation Image
 attenuation image filename := ${atnimg}
 
+; Normalisation coefficients & attenuation data
 ; If only one normalisation input is set; 
-; it will be assumed that are attenuation correction factors. 
-; Normalisation coefficients + attenuation data
-;; The algorithm will assume that the first is normalisation is the 
-;; efficiency factors and the second the attenuation. You should, 
+; it will be assumed that they are attenuation correction factors. 
+;; The algorithm will assume that the first is normalisation, i.e. the 
+;; efficiency factors and the second the attenuation. You should not 
 ;; change this order. 
 Bin Normalisation type := Chained
 	Chained Bin Normalisation Parameters:=
@@ -40,7 +32,7 @@ Bin Normalisation type := Chained
 		
 END Chained Bin Normalisation Parameters:=
 
-;; Background data (not - normalised)
+;; Background data (not  normalised)
 background projdata filename := ${randoms3d}
 
 ; Mask for tail-fitting
@@ -82,9 +74,6 @@ export scatter estimates of each iteration := 1
 
 output scatter estimate name prefix := scatter
 output additive estimate name prefix:= total_additive
-
-; If provided it will be given to the ScatterSimulation 
-; subsampled attenuation imagw filename := sub_atten.hv
 
 maximum scatter scaling factor := 2 ;10
 minimum scatter scaling factor := 0.4 ;0.1
