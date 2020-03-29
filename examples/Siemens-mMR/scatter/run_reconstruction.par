@@ -28,6 +28,13 @@ number of subsets:= 21
 number of subiterations:=21
 ;save estimates at subiteration intervals:= 21
 
+; smooth a bit as we're have a down-sampled scanner, and during the scatter estimation resolution can be low
+post-filter type :=  Separable Gaussian
+Separable Gaussian Filter Parameters :=
+  x-dir filter FWHM (in mm):= 15
+  y-dir filter FWHM (in mm):= 15
+  z-dir filter FWHM (in mm):= 15
+END Separable Gaussian Filter Parameters :=
 ;
 ; Disable output
 ;
