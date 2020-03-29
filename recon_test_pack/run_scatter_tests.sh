@@ -58,6 +58,7 @@ if [ $? -ne 0 ]; then
   echo "Error running scatter simulation"
   error_log_files="${error_log_files} my_simulate_scatter.log my_scatter_cylinder*.log"
   echo "Check ${error_log_files}"
+  tail ${error_log_files}
   exit 1
 fi
 
@@ -74,6 +75,7 @@ if [ -z "${error_log_files}" ]; then
  exit 0
 else
  echo "There were errors. Check ${error_log_files}"
+ tail ${error_log_files}
  exit 1
 fi
 
