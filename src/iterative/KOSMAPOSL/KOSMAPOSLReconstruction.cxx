@@ -208,7 +208,7 @@ post_processing()
   this->subiteration_counter=0;
   this->anatomical_sd.resize(anatomical_image_filenames.size());
 
-  if (!this->anatomical_image_filenames.size()==sigma_m.size()){
+  if (this->anatomical_image_filenames.size()!=sigma_m.size()){
       error("The number of sigma_m parameters must be the same as the number of anatomical image filenames");
       return false;
   }
@@ -299,7 +299,8 @@ KOSMAPOSLReconstruction<TargetT>::
 set_up(shared_ptr <TargetT > const& target_image_ptr)
 {
 
- base_type::set_up(target_image_ptr) == Succeeded::no;
+ if (base_type::set_up(target_image_ptr) == Succeeded::no)
+     error("KOSMAPOSL::set_up(): Error building post filter");
 
   return Succeeded::yes;
 }
