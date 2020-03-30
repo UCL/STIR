@@ -1322,24 +1322,24 @@ bool InterfilePDFSHeader::post_processing()
 		effective_central_bin_size_in_cm,
 		scanner_ptr_from_file->get_default_bin_size()/10);
       
-      data_info_sptr =
-	MAKE_SHARED<ProjDataInfoCylindricalArcCorr>(
+      data_info_sptr.reset(
+	new ProjDataInfoCylindricalArcCorr (
 					    scanner_ptr_from_file,
 					    float(effective_central_bin_size_in_cm*10.),
 					    sorted_num_rings_per_segment,
 					    sorted_min_ring_diff,
 					    sorted_max_ring_diff,
-					    num_views,num_bins);
+					    num_views,num_bins));
     }
   else
     {
-      data_info_sptr =
-	MAKE_SHARED<ProjDataInfoCylindricalNoArcCorr>(
+      data_info_sptr.reset(
+	new ProjDataInfoCylindricalNoArcCorr (
 					      scanner_ptr_from_file,
 					      sorted_num_rings_per_segment,
 					      sorted_min_ring_diff,
 					      sorted_max_ring_diff,
-					      num_views,num_bins);
+					      num_views,num_bins));
       if (effective_central_bin_size_in_cm>0 &&
 	  fabs(effective_central_bin_size_in_cm - 
 	       data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10.)>.01)
