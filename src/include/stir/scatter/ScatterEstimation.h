@@ -84,10 +84,11 @@ public:
     /*! Current procedure:
     1. interpolate segment 0 of \a scatter_proj_data to size of segment 0 of \a emission_proj_data
     2. inverseSSRB to create oblique segments
-    3. find scale factors with get_scale_factors_per_sinogram()
-    4. apply thresholds
-    5. filter scale-factors in axial direction (independently for every segment)
-    6. apply scale factors using scale_sinograms()
+    3. undo normalisation (as measured data is not normalised)
+    4. find scale factors with get_scale_factors_per_sinogram()
+    5. apply thresholds
+    6. filter scale-factors in axial direction (independently for every segment)
+    7. apply scale factors using scale_sinograms()
   */
     static void
     upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
@@ -262,8 +263,13 @@ private:
     void subtract_proj_data(ProjData&, const ProjData&);
 
     void apply_to_proj_data(ProjData& , const pow_times_add&);
-    //! Returnes a shared pointer to a new ProjData. If we run in run_debug_mode and
-    //! the extras_path has been set, then it will a ProjDataFromStream, otherwise it will be a ProjDataInMemory.
+
+    //! extract the normalisation component of a combined norm
+    shared_ptr<BinNormalisation>
+      get_normalisation_object_sptr(const shared_ptr<BinNormalisation>& combined_norm_sptr);
+
+    //! Returns a shared pointer to a new ProjData. If we run in run_debug_mode and
+    //! the extras_path has been set, then it will be a ProjDataInterfile, otherwise it will be a ProjDataInMemory.
     shared_ptr<ProjData> create_new_proj_data(const std::string& filename,
 					      const shared_ptr<ExamInfo> exam_info_sptr,
 					      const shared_ptr<ProjDataInfo> proj_data_info_sptr) const;
