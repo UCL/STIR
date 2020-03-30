@@ -155,7 +155,7 @@ void wm_calculation( const int kOS,
 		for ( vox.icol = 0 ; vox.icol < vol.Ncol ; vox.icol++ ){
 			
 			vox.x  = vol.x0 + vox.icol * vol.szcm ;     // x coordinate of the voxel (index 0->Ncol-1: icol)
-//			vox.ip = vox.irow * vol.Ncol + vox.icol ;	 // in-plane index of the voxel considering the slice as an array
+			vox.ip = vox.irow * vol.Ncol + vox.icol ;	 // in-plane index of the voxel considering the slice as an array
  			
 			//... to apply mask .........................................
 			
