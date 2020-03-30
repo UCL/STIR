@@ -1,7 +1,5 @@
 MyStuff parameters :=
-	input file := sino.hs
-	output filename := my_output
-	template image file := image.hv
+	image filename := image.hv
   	objective function type := PoissonLogLikelihoodWithLinearModelForMeanAndProjData
   	PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
     projector pair type := Matrix
@@ -20,11 +18,8 @@ MyStuff parameters :=
 	    	do symmetry shift z := 1
 	    end ray tracing matrix parameters :=
     end projector pair using matrix parameters :=
-
-    input file := sino.hs
-
-    additive projection data to handle randoms etc
-    additive sinogram := 0
-
+	input file := sino.hs	
+    ;additive projection data to handle randoms etc
+    ;additive sinogram := 0
   end PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
 End :=
