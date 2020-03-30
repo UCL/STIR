@@ -318,6 +318,12 @@ post_processing()
     return false;
 }
 
+shared_ptr<const ProjData> 
+ScatterEstimation::get_output() const
+{
+    return scatter_estimate_sptr;
+}
+
 Succeeded
 ScatterEstimation::
 set_up()
@@ -958,19 +964,19 @@ process_data()
                     std::string output_scatter_filename = convert.str();
 
                     // To save the 3d scatter estimate
-                    temp_scatter_projdata.reset(
+                    scatter_estimate_sptr.reset(
                                 new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
                                                       this->input_projdata_sptr->get_proj_data_info_sptr() ,
                                                       output_scatter_filename,
                                                       std::ios::in | std::ios::out | std::ios::trunc));
-                    temp_scatter_projdata->fill(0.0);
+                    scatter_estimate_sptr->fill(0.0);
                 }
                 else
                 {
-                    temp_scatter_projdata.reset(
+                    scatter_estimate_sptr.reset(
                                 new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
                                                       this->input_projdata_sptr->get_proj_data_info_sptr()));
-                    temp_scatter_projdata->fill(0.0);
+                    scatter_estimate_sptr->fill(0.0);
                 }
 
                 // Upsample to 3D
@@ -979,7 +985,7 @@ process_data()
 		shared_ptr<BinNormalisation> normalisation_factors_3d_sptr =
 		  this->get_normalisation_object_sptr(this->multiplicative_binnorm_sptr);
 
-                upsample_and_fit_scatter_estimate(*temp_scatter_projdata,
+                upsample_and_fit_scatter_estimate(*scatter_estimate_sptr,
                                                   *this->input_projdata_sptr,
                                                   *temp_projdata,
                                                   *normalisation_factors_3d_sptr,
@@ -989,7 +995,7 @@ process_data()
 	    }
 	    else
 	    {
-	        temp_scatter_projdata = scaled_est_projdata_sptr;
+	        scatter_estimate_sptr = scaled_est_projdata_sptr;
 	    }
 
 	    if(this->output_additive_estimate_prefix.size() > 0)
@@ -1007,7 +1013,7 @@ process_data()
 								   output_additive_filename,
 								   std::ios::in | std::ios::out | std::ios::trunc));
 
-		temp_additive_projdata->fill(*temp_scatter_projdata);
+		temp_additive_projdata->fill(*scatter_estimate_sptr);
 		if (!is_null_ptr(this->back_projdata_sptr))
 		  {
 		    add_proj_data(*temp_additive_projdata, *this->back_projdata_sptr);
@@ -1065,7 +1071,6 @@ reconstruct_iterative(int _current_iter_num,
         error("ScatterEstimation: Failure at set_up() of the reconstruction method. Aborting.");
     }
 
-    tmp_iterative->set_start_subset_num(0);
     //    return iterative_object->reconstruct(this->activity_image_lowres_sptr);
     tmp_iterative->reconstruct(this->current_activity_image_sptr);
 

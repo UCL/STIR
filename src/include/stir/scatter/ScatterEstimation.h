@@ -106,16 +106,13 @@ public:
     //! Default constructor (calls set_defaults())
     ScatterEstimation();
     //! Overloaded constructor with parameter file and initialisation
-    ScatterEstimation(const std::string& parameter_filename);
+    explicit ScatterEstimation(const std::string& parameter_filename);
 
     //! Full process_data which performs set_up() before beginning
     virtual Succeeded process_data();
 
-    virtual void reconstruct_iterative(int,
-                                       shared_ptr<DiscretisedDensity<3, float> >&);
-
-    virtual void reconstruct_analytic(int,
-                                      shared_ptr<DiscretisedDensity<3, float> > &);
+    //! Get current scatter estimate
+    shared_ptr<const ProjData> get_output() const;
 
     //!
     //! \brief set_up
@@ -179,12 +176,12 @@ protected:
     //! be recalculated.
     bool recompute_atten_projdata;
 
-    //! This is the reconsturction object which is going to be used for the scatter estimation
+    //! This is the reconstruction object which is going to be used for the scatter estimation
     //! and the calculation of the initial activity image (if recompute set). It can be defined in the same
     //! parameters file as the scatter parameters or in an external defined in the
     //! reconstruction_template_par_filename
     shared_ptr < Reconstruction < DiscretisedDensity < 3, float > > >
-    reconstruction_template_sptr;
+      reconstruction_template_sptr;
     //! The current activity estimate.
     shared_ptr<DiscretisedDensity < 3, float > > current_activity_image_sptr;
     //! Image with attenuation values.
@@ -242,6 +239,9 @@ protected:
 
     std::string output_additive_estimate_prefix;
 private:
+    //! variable for storing current scatter estimate
+    shared_ptr<ProjData> scatter_estimate_sptr;
+    
     //! variable storing the mask image
     shared_ptr < DiscretisedDensity < 3, float >  > mask_image_sptr;
 
@@ -253,6 +253,14 @@ private:
 
     //! \details A helper function to reduce the size of set_up().
     Succeeded project_mask_image();
+
+    //! reconstruct image with current scatter estimate (iteratively)
+    /*! \a scat_iter is used for determining the filename for saving */
+    void reconstruct_iterative(int scat_iter, shared_ptr<DiscretisedDensity<3, float> >& output_sptr);
+
+    //! reconstruct image with current scatter estimate (analytic reconstruction)
+    /*! \a scat_iter is used for determining the filename for saving */
+    void reconstruct_analytic(int scat_iter, shared_ptr<DiscretisedDensity<3, float> > & output_sptr);
 
     //! \details Find a mask by thresholding etc
     static void apply_mask_in_place(DiscretisedDensity<3, float> &,
