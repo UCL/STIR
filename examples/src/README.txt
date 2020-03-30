@@ -36,6 +36,12 @@ demo3.cxx
 	Note that the same functionality could be provided without deriving
 	a new class from ParsingObject. One could have a KeyParser object
 	in main() and fill it in directly.
+
+demo4.cxx
+	A modified demo3.cxx that computes the objective function 
+	value of the image generated from demo3.cxx.
+	It illustrates
+	- Basic concepts of creating an objective function object
  
 CMakeLists.txt
 	A CMake file to say which files to build.
@@ -57,6 +63,10 @@ demoPM.par
 	An example parameter file for demo3.cxx, using the 
 	backprojector that uses a projection matrix (using the ray tracing 
 	model)
+
+demo_obj_fun.par
+	An example parameter file for demo4.cxx, used to 
+	compute the objective function value of an image.
 
 generate_image.par
 	An example parameter file for generate_image that allows it
@@ -86,7 +96,7 @@ cd your-build-dir
 ccmake -DSTIR_LOCAL=/where/ever/the/STIR/source/is/STIR/examples/src  .
 
 # make the examples
-make demo1 demo2 demo3
+make demo1 demo2 demo3 demo4
 # optionally install everything, including the demos
 make install
 
@@ -102,22 +112,25 @@ First you need to create some data.
 
 # Run the demos.
 EXE_LOC=/whereever/you/built/STIR/src/examples/src
-
+	
+# demo1
 	$EXE_LOC/demo1
-# you can display the output using for instance
-      manip_image output.hv
+	# you can display the output using for instance
+	manip_image output.hv
       
-
+# demo2
 	$EXE_LOC/demo2
-# demo2 contains a call stir::display, so you'll see the display immediately
-( at least when on Unix)
+	# demo2 contains a call stir::display, so you'll see the display immediately ( at least when on Unix)
 
-
+# demo3
 	$EXE_LOC/demo3 demo.par
 	$EXE_LOC/demo3 demoPM.par
-# the next one will ask the questions interactively
+	# the next one will ask the questions interactively
 	$EXE_LOC/demo3 
 
+# demo4
+	$EXE_LOC/demo4 demo4_obj_fun.par
+	
 
 What now ?
 ----------
