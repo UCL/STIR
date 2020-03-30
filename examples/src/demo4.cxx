@@ -26,15 +26,47 @@
     of the GNU General  Public Licence (GPL)
     See STIR/LICENSE.txt for details
 */
-#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
-#include "stir/IO/OutputFileFormat.h"
-#include "stir/IO/read_from_file.h"
+//#include "stir/recon_buildblock/BackProjectorByBinUsingInterpolation.h"
+//#include "stir/IO/OutputFileFormat.h"
+//#include "stir/IO/read_from_file.h"
+//#include "stir/ProjData.h"
+//#include "stir/DiscretisedDensity.h"
+//#include "stir/shared_ptr.h"
+//#include "stir/ParsingObject.h"
+//#include "stir/Succeeded.h"
+//#include "stir/display.h"
+#include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/ProjData.h"
-#include "stir/DiscretisedDensity.h"
-#include "stir/shared_ptr.h"
-#include "stir/ParsingObject.h"
+#include "stir/ExamInfo.h"
+#include "stir/ProjDataInfo.h"
+#include "stir/ProjDataInMemory.h"
+#include "stir/SegmentByView.h"
+#include "stir/Scanner.h"
+#include "stir/DataSymmetriesForViewSegmentNumbers.h"
+#include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
+#include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
+#include "stir/recon_buildblock/ProjectorByBinPairUsingProjMatrixByBin.h"
+#include "stir/recon_buildblock/BinNormalisationFromProjData.h"
+#include "stir/recon_buildblock/TrivialBinNormalisation.h"
+//#include "stir/OSMAPOSL/OSMAPOSLReconstruction.h"
+#include "stir/recon_buildblock/distributable_main.h"
+#include "stir/RunTests.h"
+#include "stir/IO/read_from_file.h"
+#include "stir/IO/write_to_file.h"
+#include "stir/info.h"
 #include "stir/Succeeded.h"
-#include "stir/display.h"
+#include "stir/num_threads.h"
+#include <iostream>
+#include <memory>
+#include <boost/random/uniform_01.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/variate_generator.hpp>
+
+#include "stir/IO/OutputFileFormat.h"
+#include "stir/recon_buildblock/distributable_main.h"
+
+#include "stir/is_null_ptr.h"
 
 namespace stir {
 
@@ -43,19 +75,26 @@ class MyStuff: public ParsingObject
 public:
   void set_defaults();
   void initialise_keymap();
+  bool post_processing();
   void run();
+  typedef DiscretisedDensity<3,float> target_type;
+
+protected:
+  shared_ptr<GeneralisedObjectiveFunction<target_type> >  objective_function_sptr;
+
 private:
   std::string input_filename;
   std::string output_filename;
   std::string template_filename;
-  shared_ptr<BackProjectorByBin> back_projector_sptr;
+//  shared_ptr<BackProjectorByBin> back_projector_sptr;
   shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
 };
 
 void
 MyStuff::set_defaults()
 {
-  back_projector_sptr.reset(new BackProjectorByBinUsingInterpolation);
+  objective_function_sptr.reset(new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>);
+//  back_projector_sptr.reset(new BackProjectorByBinUsingInterpolation);
   output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
   output_filename = "output";
 }
@@ -67,10 +106,22 @@ MyStuff::initialise_keymap()
   parser.add_key("input file", &input_filename);
   parser.add_key("output filename", &output_filename);
   parser.add_key("template image file", &template_filename);
-  parser.add_parsing_key("back projector type", &back_projector_sptr);
+  parser.add_parsing_key("objective function type", &objective_function_sptr);
   parser.add_parsing_key("output file format type", &output_file_format_sptr);
   parser.add_stop_key("End");
 }
+
+bool MyStuff::
+post_processing()
+{
+  if (is_null_ptr(this->objective_function_sptr))
+  {
+      error("objective_function_sptr is null");
+      return true;
+  }
+  return false;
+}
+
 
 void
 MyStuff::run()
@@ -87,14 +138,19 @@ MyStuff::run()
   shared_ptr<DiscretisedDensity<3,float> > 
     density_sptr(read_from_file<DiscretisedDensity<3,float> >(template_filename));
 
-  density_sptr->fill(0);
+  density_sptr->fill(1);
 
   /////////////// back project
-  back_projector_sptr->set_up(proj_data_info_sptr, density_sptr);
+  ///
+ objective_function_sptr->set_up(density_sptr);
 
-  back_projector_sptr->back_project(*density_sptr, *proj_data_sptr);
+   double my_val = objective_function_sptr->compute_objective_function(*density_sptr);
+   std::cout << my_val;
+//  back_projector_sptr->back_project(*density_sptr, *proj_data_sptr);
 
   /////////////// output
+
+
   output_file_format_sptr->write_to_file(output_filename, *density_sptr);
 
 //  display(*density_sptr, density_sptr->find_max(), "Output");
