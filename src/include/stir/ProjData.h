@@ -122,11 +122,6 @@ public:
   //! Get shared pointer to proj data info
   inline shared_ptr<const ProjDataInfo>
     get_proj_data_info_sptr() const;
-  //! Get shared pointer to proj data info
-  /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
-    shared pointer will be affected. */
-  inline shared_ptr<ProjDataInfo>
-    get_proj_data_info_sptr();
 
 //  //! Get pointer to exam info
 //  inline const ExamInfo*

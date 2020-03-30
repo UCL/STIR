@@ -36,12 +36,6 @@ ProjData::get_proj_data_info_sptr() const
   return proj_data_info_sptr;
 }
 
-shared_ptr<ProjDataInfo>
-ProjData::get_proj_data_info_sptr()
-{
-  return proj_data_info_sptr;
-}
-
 //const ExamInfo*
 //ProjData::get_exam_info_ptr() const
 //{
