@@ -266,12 +266,12 @@ ProjDataFromStream::set_bin_value(const Bin& this_bin)
 
     const streamoff total_offset = offsets[0];
 
-    sino_stream->seekg(0 , ios::beg); // reset file
-    sino_stream->seekg(total_offset, ios::cur); // start of view within segment
+    sino_stream->seekp(0 , ios::beg); // reset file
+    sino_stream->seekp(total_offset, ios::cur); // start of view within segment
 
     if (! *sino_stream)
     {
-        error("ProjDataFromStream::set_bin_value: error after seekg.");
+        error("ProjDataFromStream::set_bin_value: error after seekp.");
     }
 
     Array< 1,  float>  value(1);
