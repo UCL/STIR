@@ -3,13 +3,14 @@
 /*!
   \file
   \ingroup examples
-  \brief A modification of demo2.cxx that parses all parameters from a parameter file.
+  \brief An example of a method to compute the objective function value
+  of an image. All parameters are parsed from a parameter file.
 
   It illustrates
 	- basic class derivation principles
 	- how to use ParsingObject to have automatic capabilities of parsing
 	  parameters files (and interactive questions to the user)
-	- how most STIR programs parse the parameter files.
+	- how to initialise and setup a objective function object
 
   Note that the same functionality could be provided without deriving
   a new class from ParsingObject. One could have a KeyParser object
