@@ -419,7 +419,7 @@ forward_project_all_symmetries(
   const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr =
     dynamic_pointer_cast<const ProjDataInfoCylindrical>
     (pos_view.get_proj_data_info_sptr());
-  if (proj_data_info_sptr == NULL)
+  if (proj_data_info_sptr == nullptr)
     error("ForwardProjectorByBinUsingRayTracing::forward_project called with wrong type of ProjDataInfo\n");
     
   const int nviews = pos_view.get_proj_data_info_sptr()->get_num_views(); 
@@ -1122,7 +1122,7 @@ forward_project_all_symmetries_2D(Viewgram<float> & pos_view,
   const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr =
     dynamic_pointer_cast<const ProjDataInfoCylindrical>
     (pos_view.get_proj_data_info_sptr());
-  if (proj_data_info_sptr == NULL)
+  if (proj_data_info_sptr == nullptr)
     error("ForwardProjectorByBinUsingRayTracing::forward_project called with wrong type of ProjDataInfo\n");
     
   const int nviews = pos_view.get_proj_data_info_sptr()->get_num_views(); 
