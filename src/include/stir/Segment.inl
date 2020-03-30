@@ -45,7 +45,7 @@ Segment<elemT>:: get_segment_num() const
 { return segment_num; }
 
 template <typename elemT>
-shared_ptr<ProjDataInfo>
+shared_ptr<const ProjDataInfo>
 Segment<elemT>::get_proj_data_info_sptr() const
 {
   return proj_data_info_sptr;

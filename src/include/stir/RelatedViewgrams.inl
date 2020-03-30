@@ -134,7 +134,7 @@ int RelatedViewgrams<elemT>::get_max_tangential_pos_num() const
 }
 
 template <typename elemT>
-shared_ptr<ProjDataInfo>
+shared_ptr<const ProjDataInfo>
 RelatedViewgrams<elemT>::
 get_proj_data_info_sptr() const
 {

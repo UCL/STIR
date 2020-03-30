@@ -232,7 +232,7 @@ public:
       return 0;
   }
 
-  virtual shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const ;
+  virtual shared_ptr<const ProjDataInfo> get_proj_data_info_sptr() const ;
 
 protected:
   virtual shared_ptr <ListRecord> get_empty_record_helper_sptr() const = 0;

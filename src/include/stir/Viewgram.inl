@@ -87,7 +87,7 @@ Viewgram<elemT>::get_empty_copy(void) const
 }
 
 template <typename elemT>
-shared_ptr<ProjDataInfo>
+shared_ptr<const ProjDataInfo>
 Viewgram<elemT>::get_proj_data_info_sptr() const
 {
   return proj_data_info_sptr;
