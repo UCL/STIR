@@ -191,7 +191,7 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
             % subset_num % num_subsets);
     if (zero && num_subsets > 1)
       proj_data.fill(0.0);
- // this->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
+ // this->set_up(proj_data_ptr->get_proj_data_info_sptr()->clone(),
 //			     image_sptr);
 
   check(*proj_data.get_proj_data_info_sptr(), *_density_sptr);
@@ -199,7 +199,7 @@ ForwardProjectorByBin::forward_project(ProjData& proj_data,
     symmetries_sptr(this->get_symmetries_used()->clone());
 
   const std::vector<ViewSegmentNumbers> vs_nums_to_process =
-    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
+    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_sptr(), *symmetries_sptr,
                                          proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
                                          subset_num, num_subsets);
 #ifdef STIR_OPENMP

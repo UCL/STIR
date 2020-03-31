@@ -30,16 +30,10 @@
 
 START_NAMESPACE_STIR
 
-const ProjDataInfo*
-ProjData::get_proj_data_info_ptr() const
-{
-  return proj_data_info_ptr.get();
-}
-
-shared_ptr<ProjDataInfo>
+shared_ptr<const ProjDataInfo>
 ProjData::get_proj_data_info_sptr() const
 {
-  return proj_data_info_ptr;
+  return proj_data_info_sptr;
 }
 
 //const ExamInfo*
@@ -55,44 +49,44 @@ ProjData::get_proj_data_info_sptr() const
 //}
 
 int ProjData::get_num_segments() const
-{ return proj_data_info_ptr->get_num_segments(); }
+{ return proj_data_info_sptr->get_num_segments(); }
 
 int ProjData::get_num_axial_poss(const int segment_num) const
-{ return proj_data_info_ptr->get_num_axial_poss(segment_num); }
+{ return proj_data_info_sptr->get_num_axial_poss(segment_num); }
 
 int ProjData::get_num_views() const
-{ return proj_data_info_ptr->get_num_views(); }
+{ return proj_data_info_sptr->get_num_views(); }
 
 int ProjData::get_num_tangential_poss() const
-{ return proj_data_info_ptr->get_num_tangential_poss(); }
+{ return proj_data_info_sptr->get_num_tangential_poss(); }
 
 int ProjData::get_min_segment_num() const
-{ return proj_data_info_ptr->get_min_segment_num(); }
+{ return proj_data_info_sptr->get_min_segment_num(); }
 
 int ProjData::get_max_segment_num() const
-{ return proj_data_info_ptr->get_max_segment_num(); }
+{ return proj_data_info_sptr->get_max_segment_num(); }
 
 int ProjData::get_min_axial_pos_num(const int segment_num) const
-{ return proj_data_info_ptr->get_min_axial_pos_num(segment_num); }
+{ return proj_data_info_sptr->get_min_axial_pos_num(segment_num); }
 
 int ProjData::get_max_axial_pos_num(const int segment_num) const
-{ return proj_data_info_ptr->get_max_axial_pos_num(segment_num); }
+{ return proj_data_info_sptr->get_max_axial_pos_num(segment_num); }
 
 int ProjData::get_min_view_num() const
-{ return proj_data_info_ptr->get_min_view_num(); }
+{ return proj_data_info_sptr->get_min_view_num(); }
 
 int ProjData::get_max_view_num() const
-{ return proj_data_info_ptr->get_max_view_num(); }
+{ return proj_data_info_sptr->get_max_view_num(); }
 
 int ProjData::get_min_tangential_pos_num() const
-{ return proj_data_info_ptr->get_min_tangential_pos_num(); }
+{ return proj_data_info_sptr->get_min_tangential_pos_num(); }
 
 int ProjData::get_max_tangential_pos_num() const
-{ return proj_data_info_ptr->get_max_tangential_pos_num(); }
+{ return proj_data_info_sptr->get_max_tangential_pos_num(); }
 
 int ProjData::get_num_sinograms() const
 {
-    int num_sinos = proj_data_info_ptr->get_num_axial_poss(0);
+    int num_sinos = proj_data_info_sptr->get_num_axial_poss(0);
     for (int s=1; s<= this->get_max_segment_num(); ++s)
         num_sinos += 2* this->get_num_axial_poss(s);
 

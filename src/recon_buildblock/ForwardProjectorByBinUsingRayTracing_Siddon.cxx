@@ -96,7 +96,7 @@ proj_Siddon(
             int Siddon,
 #endif
             Array <4,float> & Projptr, const VoxelsOnCartesianGrid<float> &Bild, 
-	    const ProjDataInfoCylindrical* proj_data_info_ptr, 
+	    const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr,
 	    const float cphi, const float sphi, const float delta, const 
             float s_in_mm, 
 	    const float R, const int rmin, const int rmax, const float offset, 
@@ -551,7 +551,7 @@ template
 bool
 ForwardProjectorByBinUsingRayTracing::
 proj_Siddon<1>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
-	       const ProjDataInfoCylindrical* proj_data_info_ptr, 
+	       const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr,
 	       const float cphi, const float sphi, const float delta, 
 	       const float s_in_mm, 
 	       const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
@@ -565,7 +565,7 @@ template
 bool
 ForwardProjectorByBinUsingRayTracing::
 proj_Siddon<2>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
-	       const ProjDataInfoCylindrical* proj_data_info_ptr, 
+	       const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr,
 	       const float cphi, const float sphi, const float delta, 
 	       const float s_in_mm, 
 	       const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
@@ -579,7 +579,7 @@ template
 bool
 ForwardProjectorByBinUsingRayTracing::
 proj_Siddon<3>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
-	       const ProjDataInfoCylindrical* proj_data_info_ptr, 
+	       const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr,
 	       const float cphi, const float sphi, const float delta, 
 	       const float s_in_mm, 
 	       const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
@@ -593,7 +593,7 @@ template
 bool
 ForwardProjectorByBinUsingRayTracing::
 proj_Siddon<4>(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
-	       const ProjDataInfoCylindrical* proj_data_info_ptr, 
+	       const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr,
 	       const float cphi, const float sphi, const float delta, 
 	       const float s_in_mm, 
 	       const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 

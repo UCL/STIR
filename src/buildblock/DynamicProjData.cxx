@@ -193,7 +193,7 @@ write_to_ecat7(const string& filename) const
   Main_header mhead;
   ecat::ecat7::make_ECAT7_main_header(mhead, filename, 
 				      *get_exam_info_ptr(),
-                                      *get_proj_data(1).get_proj_data_info_ptr() );
+                                      *get_proj_data(1).get_proj_data_info_sptr() );
     
   MatrixFile* mptr= matrix_create (filename.c_str(), MAT_CREATE, &mhead);
   if (mptr == 0)
@@ -257,7 +257,7 @@ read_interfile_DPDFS(istream& input,
        warning("interfile parsing: error opening file %s",full_data_file_name);
        return 0;
      }
-   shared_ptr<ProjDataInfo> proj_data_info_sptr(hdr.data_info_ptr->create_shared_clone());
+   shared_ptr<ProjDataInfo> proj_data_info_sptr(hdr.data_info_sptr->create_shared_clone());
    unsigned long data_offset = hdr.data_offset_each_dataset[0];
    // offset in file between time frames
    unsigned long data_offset_increment = 0UL; // we will find it below

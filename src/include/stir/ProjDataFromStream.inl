@@ -80,7 +80,7 @@ ProjDataFromStream::operator ==(const ProjDataFromStream& proj)
 {
   
   return 
- (*get_proj_data_info_ptr())== *(proj.get_proj_data_info_ptr())&&
+ (*get_proj_data_info_sptr())== *(proj.get_proj_data_info_sptr())&&
   (scale_factor ==proj.scale_factor)&&
   (get_segment_sequence_in_stream()==proj.get_segment_sequence_in_stream())&&
   (get_offset_in_stream()==proj.get_offset_in_stream()) &&

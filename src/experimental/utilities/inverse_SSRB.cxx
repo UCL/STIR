@@ -62,7 +62,7 @@ int main(int argc, const char *argv[])
 	shared_ptr<ProjData> template_proj_data_sptr = ProjData::read_from_file(argv[3]);  
 	const ProjDataInfo* proj_data_info_ptr =
 		dynamic_cast<ProjDataInfo const *>(
-		template_proj_data_sptr->get_proj_data_info_ptr());
+		template_proj_data_sptr->get_proj_data_info_sptr());
 
 	const shared_ptr<ProjData> proj_data_3D_sptr = ProjData::read_from_file(argv[2],ios::in);  
 

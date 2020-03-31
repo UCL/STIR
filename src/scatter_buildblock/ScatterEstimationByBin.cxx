@@ -219,7 +219,7 @@ set_template_proj_data_info(const std::string& filename)
   shared_ptr<ProjData> template_proj_data_sptr = 
     ProjData::read_from_file(this->template_proj_data_filename);  
 
-  this->set_template_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone());
+  this->set_template_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone());
 }
 
 /*

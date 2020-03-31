@@ -79,7 +79,7 @@ public:
   inline virtual bool is_valid_template(const ProjDataInfo&) const;
 
  protected:
-   shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+   shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
     get_uncompressed_proj_data_info_sptr() const
      {
        return uncompressed_proj_data_info_sptr;

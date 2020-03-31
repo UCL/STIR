@@ -154,12 +154,12 @@ post_processing()
       shared_ptr<ProjData> template_proj_data_sptr = 
 	ProjData::read_from_file(output_template_filename);
       proj_data_info_ptr =
-	template_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();
+	template_proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
     }
   else
     {
       proj_data_info_ptr =
-	in_proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();
+	in_proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
     }
   if (max_out_segment_num_to_process<0)
     max_out_segment_num_to_process = 

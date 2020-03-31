@@ -438,6 +438,8 @@ from the above):</H2>
     	<code>RegisteredParsingObject</code> has been changed accordingly.</li>
     <li><code>Object</code> has been renamed as <code>RegisteredObjectBase</code>. 
         This is because the class only exists for the parser to get information about the class.</li>
+    <li><code>InterfilePDFSHeader</code> now contains a <code>shared_ptr&lt;ProjDataInfo&gt;</code> instead of a raw pointer.</li>
+    <li><code>get_proj_data_info_sptr</code> used to return <code>shared_ptr&lt;ProjDataInfo&gt;</code>, but now returns <code>shared_ptr&lt;const ProjDataInfo&gt;</code>.</li>
   </ul>
 </li>
 </ul>

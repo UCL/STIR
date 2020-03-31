@@ -57,7 +57,7 @@ main(int argc, char **argv)
     argc>5 ? static_cast<float>(atof(argv[4])) : 1.E19F;
 
   shared_ptr<ProjData> proj_data_ptr
-    (new ProjDataInterfile(input_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
+    (new ProjDataInterfile(input_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone(),
 			  output_file_name));
 
   Succeeded success = Succeeded::yes;

@@ -279,13 +279,13 @@ PrepareProjData(const char * const par_filename)
 
     if (!is_null_ptr(trues_projdata_ptr))
       output_data_info_ptr= 
-	trues_projdata_ptr->get_proj_data_info_ptr()->create_shared_clone();
+	trues_projdata_ptr->get_proj_data_info_sptr()->create_shared_clone();
     else if (!is_null_ptr(randoms_projdata_ptr))
       output_data_info_ptr= 
-	randoms_projdata_ptr->get_proj_data_info_ptr()->create_shared_clone();
+	randoms_projdata_ptr->get_proj_data_info_sptr()->create_shared_clone();
     else if (!is_null_ptr(precorrected_projdata_ptr))
       output_data_info_ptr= 
-	precorrected_projdata_ptr->get_proj_data_info_ptr()->create_shared_clone();
+	precorrected_projdata_ptr->get_proj_data_info_sptr()->create_shared_clone();
     else
       {
 	warning("\nAt least one of these input files must be set: trues, randoms, precorrected\n");

@@ -238,7 +238,7 @@ public:
   int num_views;
   int num_bins;
   ProjDataFromStream::StorageOrder storage_order;
-  ProjDataInfo* data_info_ptr;
+  shared_ptr<ProjDataInfo> data_info_sptr;
 
 private:
   void resize_segments_and_set();

@@ -117,9 +117,9 @@ typedef SegmentByView<elem_type> segment_type;
 
 static void 
 allocate_segments(VectorWithOffset<segment_type *>& segments,
-                       const int start_segment_index, 
+                       const int start_segment_index,
 	               const int end_segment_index,
-                       const ProjDataInfo* proj_data_info_ptr);
+                       const shared_ptr<const ProjDataInfo> proj_data_info_sptr);
 
 // In the next 2 functions, the 'output' parameter needs to be passed 
 // because save_and_delete_segments needs it when we're not using SegmentByView
@@ -216,7 +216,7 @@ post_processing()
   shared_ptr<ProjData> template_proj_data_ptr =
     ProjData::read_from_file(template_proj_data_name);
 
-  template_proj_data_info_ptr.reset(template_proj_data_ptr->get_proj_data_info_ptr()->clone());
+  template_proj_data_info_ptr.reset(template_proj_data_ptr->get_proj_data_info_sptr()->clone());
 
   // propagate relevant metadata
   template_proj_data_info_ptr->set_bed_position_horizontal
@@ -559,14 +559,14 @@ process_data()
 
       // *********** open output file
       shared_ptr<iostream> output;
-      shared_ptr<ProjData> proj_data_ptr;
+      shared_ptr<ProjData> proj_data_sptr;
 
       {
         char rest[50];
         sprintf(rest, "_f%dg1d0b0", current_frame_num);
         const string output_filename = output_filename_prefix + rest;
       
-        proj_data_ptr = 
+        proj_data_sptr =
           construct_proj_data(output, output_filename, this_frame_exam_info, template_proj_data_info_ptr);
       }
 
@@ -581,16 +581,16 @@ process_data()
 	 segments between start_segment_index and 
 	 start_segment_index+num_segments_in_memory.
        */
-       for (int start_segment_index = proj_data_ptr->get_min_segment_num(); 
-	    start_segment_index <= proj_data_ptr->get_max_segment_num(); 
+       for (int start_segment_index = proj_data_sptr->get_min_segment_num();
+	    start_segment_index <= proj_data_sptr->get_max_segment_num();
 	    start_segment_index += num_segments_in_memory) 
 	 {
 	 
 	   const int end_segment_index = 
-	     min( proj_data_ptr->get_max_segment_num()+1, start_segment_index + num_segments_in_memory) - 1;
+	     min( proj_data_sptr->get_max_segment_num()+1, start_segment_index + num_segments_in_memory) - 1;
     
 	   if (!interactive)
-	     allocate_segments(segments, start_segment_index, end_segment_index, proj_data_ptr->get_proj_data_info_ptr());
+	     allocate_segments(segments, start_segment_index, end_segment_index, proj_data_sptr->get_proj_data_info_sptr());
 
 	   // the next variable is used to see if there are more events to store for the current segments
 	   // num_events_to_store-more_events will be the number of allowed coincidence events currently seen in the file
@@ -600,7 +600,7 @@ process_data()
 	   long more_events = 
          do_time_frame? 1 : num_events_to_store;
 
-	   if (start_segment_index != proj_data_ptr->get_min_segment_num())
+	   if (start_segment_index != proj_data_sptr->get_min_segment_num())
 	     {
 	       // we're going once more through the data (for the next batch of segments)
 	       cerr << "\nProcessing next batch of segments\n";
@@ -657,10 +657,10 @@ process_data()
 		     		       
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
-			 && bin.tangential_pos_num()>= proj_data_ptr->get_min_tangential_pos_num()
-			 && bin.tangential_pos_num()<= proj_data_ptr->get_max_tangential_pos_num()
-			 && bin.axial_pos_num()>=proj_data_ptr->get_min_axial_pos_num(bin.segment_num())
-			 && bin.axial_pos_num()<=proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
+			 && bin.tangential_pos_num()>= proj_data_sptr->get_min_tangential_pos_num()
+			 && bin.tangential_pos_num()<= proj_data_sptr->get_max_tangential_pos_num()
+			 && bin.axial_pos_num()>=proj_data_sptr->get_min_axial_pos_num(bin.segment_num())
+			 && bin.axial_pos_num()<=proj_data_sptr->get_max_axial_pos_num(bin.segment_num())
 			 ) 
 		       {
 			 assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
@@ -717,7 +717,7 @@ process_data()
 	   if (!interactive)
 	   save_and_delete_segments(output, segments, 
 				    start_segment_index, end_segment_index, 
-				    *proj_data_ptr);  
+				    *proj_data_sptr);
 	 } // end of for loop for segment range
        cerr <<  "\nNumber of prompts stored in this time period : " << num_prompts_in_frame
 	    <<  "\nNumber of delayeds stored in this time period: " << num_delayeds_in_frame
@@ -746,14 +746,14 @@ void
 allocate_segments( VectorWithOffset<segment_type *>& segments,
 		  const int start_segment_index, 
 		  const int end_segment_index,
-		  const ProjDataInfo* proj_data_info_ptr)
+		  const shared_ptr<const ProjDataInfo> proj_data_info_sptr)
 {
   
   for (int seg=start_segment_index ; seg<=end_segment_index; seg++)
   {
 #ifdef USE_SegmentByView
     segments[seg] = new SegmentByView<elem_type>(
-    	proj_data_info_ptr->get_empty_segment_by_view (seg)); 
+    	proj_data_info_sptr->get_empty_segment_by_view (seg));
 #else
     segments[seg] = 
       new Array<3,elem_type>(IndexRange3D(0, proj_data_info_ptr->get_num_views()-1, 

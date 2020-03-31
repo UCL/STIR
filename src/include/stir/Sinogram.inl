@@ -86,16 +86,8 @@ Sinogram<elemT>::get_empty_copy(void) const
     return copy;
 }
 
-
 template <typename elemT>
-const ProjDataInfo*
-Sinogram<elemT>:: get_proj_data_info_ptr() const
-{
-  return proj_data_info_ptr.get();
-}
-
-template <typename elemT>
-shared_ptr<ProjDataInfo>
+shared_ptr<const ProjDataInfo>
 Sinogram<elemT>::get_proj_data_info_sptr() const
 {
   return proj_data_info_ptr;

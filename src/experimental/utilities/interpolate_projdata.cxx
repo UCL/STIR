@@ -87,7 +87,7 @@ int main(int argc, const char *argv[])
 
   shared_ptr<ProjData> template_proj_data_sptr = ProjData::read_from_file(argv[3]);  
   const ProjDataInfo* proj_data_info_ptr =
-    template_proj_data_sptr->get_proj_data_info_ptr();
+    template_proj_data_sptr->get_proj_data_info_sptr();
 	
   string proj_data_out_filename(argv[1]);
   ProjDataInterfile proj_data_out(proj_data_info_ptr->create_shared_clone(), proj_data_out_filename,std::ios::out);

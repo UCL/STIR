@@ -183,7 +183,7 @@ construct_target_ptr() const
 { 
 #if 0 
   const shared_ptr<DiscretisedDensity<3,float> > density_template_sptr = 
-    (*(this->_dyn_proj_data_sptr->get_proj_data_info_ptr()),
+    (*(this->_dyn_proj_data_sptr->get_proj_data_info_sptr()),
      static_cast<float>(this->_zoom),
      CartesianCoordinate3D<float>(static_cast<float>(this->_Zoffset),
 				  static_cast<float>(this->_Yoffset),
@@ -264,7 +264,7 @@ set_up(shared_ptr<TargetT > const& target_sptr)
     }
 
   shared_ptr<ProjDataInfo> proj_data_info_sptr =
-    (this->_dyn_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_ptr()->clone();
+    (this->_dyn_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_sptr()->clone();
   proj_data_info_sptr->
     reduce_segment_range(-this->_max_segment_num_to_process,
 			 +this->_max_segment_num_to_process);

@@ -961,7 +961,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients 
   const float k_interval = 0.01F; //0.01F;
   
 
-  shared_ptr<ProjDataInfo> new_data_info_ptr  = proj_data_ptr->get_proj_data_info_ptr()->clone();
+  shared_ptr<ProjDataInfo> new_data_info_ptr  = proj_data_ptr->get_proj_data_info_sptr()->clone();
   VoxelsOnCartesianGrid<float>* in_density_cast =
     dynamic_cast< VoxelsOnCartesianGrid<float>* >(in_density); 
   
@@ -1010,7 +1010,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients 
   shared_ptr<ProjMatrixByDensel> proj_matrix_ptr = 
     new ProjMatrixByDenselUsingRayTracing;
   
-  proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
+  proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_sptr()->clone(),
     image_sptr);
   info(proj_matrix_ptr->parameter_info());
 
@@ -1269,7 +1269,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
   const float k_interval = 0.01F; //0.01F;
   
 
-  shared_ptr<ProjDataInfo> new_data_info_ptr  = proj_data_ptr->get_proj_data_info_ptr()->clone();
+  shared_ptr<ProjDataInfo> new_data_info_ptr  = proj_data_ptr->get_proj_data_info_sptr()->clone();
   VoxelsOnCartesianGrid<float>* in_density_cast =
     dynamic_cast< VoxelsOnCartesianGrid<float>* >(in_density); 
   
@@ -1318,7 +1318,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
   shared_ptr<ProjMatrixByDensel> proj_matrix_ptr = 
     new ProjMatrixByDenselUsingRayTracing;
   
-  proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
+  proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_sptr()->clone(),
     image_sptr);
   info(boost::format("%1%") % proj_matrix_ptr->parameter_info());
   
@@ -1572,7 +1572,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
   const float k_interval = 0.01F; //0.01F;
   
 
-  shared_ptr<ProjDataInfo> new_data_info_ptr  = proj_data_ptr->get_proj_data_info_ptr()->clone();
+  shared_ptr<ProjDataInfo> new_data_info_ptr  = proj_data_ptr->get_proj_data_info_sptr()->clone();
   VoxelsOnCartesianGrid<float>* in_density_cast =
     dynamic_cast< VoxelsOnCartesianGrid<float>* >(in_density); 
   
@@ -1621,7 +1621,7 @@ ModifiedInverseAveragingImageFilterAll<elemT>::precalculate_filter_coefficients_
   shared_ptr<ProjMatrixByDensel> proj_matrix_ptr = 
     new ProjMatrixByDenselUsingRayTracing;
   
-  proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
+  proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_sptr()->clone(),
     image_sptr);
   info(proj_matrix_ptr->parameter_info());
   
@@ -1990,7 +1990,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
       if ( (count % 20) ==0  /*|| count == 1 */) 
       {
 	
-	shared_ptr<ProjDataInfo> new_data_info_ptr  = proj_data_ptr->get_proj_data_info_ptr()->clone();
+	shared_ptr<ProjDataInfo> new_data_info_ptr  = proj_data_ptr->get_proj_data_info_sptr()->clone();
 	
 	int limit_segments= 0;
 	new_data_info_ptr->reduce_segment_range(-limit_segments, limit_segments);
@@ -2044,7 +2044,7 @@ virtual_apply(DiscretisedDensity<3,elemT>& out_density, const DiscretisedDensity
 	shared_ptr<ProjMatrixByDensel> proj_matrix_ptr = 
 	  new ProjMatrixByDenselUsingRayTracing;
 	
-	proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
+	proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_sptr()->clone(),
 	  image_sptr);
         info(proj_matrix_ptr->parameter_info());
 	

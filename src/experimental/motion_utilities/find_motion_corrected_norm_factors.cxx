@@ -267,7 +267,7 @@ post_processing()
     ProjData::read_from_file(template_proj_data_name);
 
   template_proj_data_info_ptr = 
-    template_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone();
+    template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone();
 
   // initialise segment_num related variables
 
@@ -439,7 +439,7 @@ FindMCNormFactors::process_data()
 	 
 	const ProjDataInfoCylindricalNoArcCorr * const out_proj_data_info_ptr =
 	  dynamic_cast<ProjDataInfoCylindricalNoArcCorr const * >
-	  (out_proj_data_ptr->get_proj_data_info_ptr());
+	  (out_proj_data_ptr->get_proj_data_info_sptr());
 	if (out_proj_data_info_ptr== NULL)
 	  {
 	    error("works only on  proj_data_info of "
