@@ -151,7 +151,7 @@ run_tests()
         // ok
       }
   }
-//  test set_bin_value()
+//  test set_bin_value() and get_bin_value
   {
       std::vector<float> test;
       test.resize(proj_data.size_all());
@@ -175,7 +175,7 @@ run_tests()
       Bin new_bin=bin;
       new_bin.set_bin_value(viewgram[proj_data_info_sptr->get_max_axial_pos_num(0)/2][0]);
      
-      check(bin.get_bin_value()==new_bin.get_bin_value(),
+      check(new_bin.get_bin_value()==proj_data.get_bin_value(new_bin),
             "ProjDataFromStream::set_bin_value/get_bin_value not consistent");
   }
 }
