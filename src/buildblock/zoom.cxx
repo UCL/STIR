@@ -207,8 +207,8 @@ zoom_viewgram (Viewgram<float>& out_view,
   const shared_ptr<const ProjDataInfoCylindricalArcCorr> out_proj_data_info_arccorr_sptr =
     dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(out_view.get_proj_data_info_sptr());
 
-  if (in_proj_data_info_arccorr_sptr==nullptr ||
-      out_proj_data_info_arccorr_sptr==nullptr)
+  if (is_null_ptr(in_proj_data_info_arccorr_sptr) ||
+      is_null_ptr(out_proj_data_info_arccorr_sptr))
     error("zoom_viewgram does not support non-arccorrected data. Sorry\n");
 
   

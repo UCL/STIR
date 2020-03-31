@@ -140,7 +140,7 @@ int main(int argc, char **argv)
     const shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr =
       dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>
       (proj_data.get_proj_data_info_sptr());
-    if (proj_data_info_sptr == nullptr)
+    if (is_null_ptr(proj_data_info_sptr))
       {
 	error("Can only process not arc-corrected data\n");
       }

@@ -73,7 +73,7 @@ namespace detail_interpolate_projdata
   make_non_interleaved_sinogram(Sinogram<float>& out_sinogram,
                                 const Sinogram<float>& in_sinogram)
   {
-    if (dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(in_sinogram.get_proj_data_info_sptr()) == nullptr)
+    if (is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(in_sinogram.get_proj_data_info_sptr())))
       error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
 
     assert(out_sinogram.get_min_view_num() == 0);
@@ -135,7 +135,7 @@ namespace detail_interpolate_projdata
   make_non_interleaved_segment(SegmentBySinogram<float>& out_segment,
                                const SegmentBySinogram<float>& in_segment)
   {
-    if (dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(in_segment.get_proj_data_info_sptr()) == nullptr)
+    if (is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(in_segment.get_proj_data_info_sptr())))
       error("make_non_interleaved_proj_data is only appropriate for non-arccorrected data");
 
     for (int axial_pos_num = out_segment.get_min_axial_pos_num();

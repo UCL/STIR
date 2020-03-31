@@ -195,7 +195,7 @@ SSRB(ProjData& out_proj_data,
   const shared_ptr<const ProjDataInfoCylindrical> in_proj_data_info_sptr =
     dynamic_pointer_cast<const ProjDataInfoCylindrical>
     (in_proj_data.get_proj_data_info_sptr());
-  if (in_proj_data_info_sptr== nullptr)
+  if (is_null_ptr(in_proj_data_info_sptr))
   {
     error("SSRB works only on segments with proj_data_info of "
       "type ProjDataInfoCylindrical\n");
@@ -203,7 +203,7 @@ SSRB(ProjData& out_proj_data,
   const shared_ptr<const ProjDataInfoCylindrical> out_proj_data_info_sptr =
     dynamic_pointer_cast<const ProjDataInfoCylindrical>
     (out_proj_data.get_proj_data_info_sptr());
-  if (out_proj_data_info_sptr== nullptr)
+  if (is_null_ptr(out_proj_data_info_sptr))
   {
     error("SSRB works only on segments with proj_data_info of "
       "type ProjDataInfoCylindrical\n");

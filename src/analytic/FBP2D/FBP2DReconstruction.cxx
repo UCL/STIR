@@ -152,7 +152,7 @@ bool FBP2DReconstruction::post_processing_only_FBP2D_parameters()
       const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_cyl_sptr =
 	dynamic_pointer_cast<const ProjDataInfoCylindrical>(proj_data_ptr->get_proj_data_info_sptr());
 
-      if (proj_data_info_cyl_sptr==nullptr)
+      if (is_null_ptr(proj_data_info_cyl_sptr))
         num_segments_to_combine = 1; //cannot SSRB non-cylindrical data yet
       else
 	{
@@ -260,8 +260,8 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   // arc-correction if necessary
   ArcCorrection arc_correction;
   bool do_arc_correction = false;
-  if (dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>
-      (proj_data_ptr->get_proj_data_info_sptr()) != nullptr)
+  if (!is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>
+      (proj_data_ptr->get_proj_data_info_sptr())))
     {
       // it's already arc-corrected
       arc_corrected_proj_data_info_sptr =

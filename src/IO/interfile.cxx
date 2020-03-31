@@ -1226,7 +1226,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
       output_header << "!PET data type := Emission\n";
       {
         // KT 10/12/2001 write applied corrections keyword
-        if(dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr> (pdfs.get_proj_data_info_sptr()) != nullptr)
+        if(!is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr> (pdfs.get_proj_data_info_sptr())))
           output_header << "applied corrections := {arc correction}\n";
         else
           output_header << "applied corrections := {None}\n";
@@ -1359,7 +1359,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
   const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr =
     dynamic_pointer_cast<const ProjDataInfoCylindrical>(pdfs.get_proj_data_info_sptr());
 
-   if (proj_data_info_sptr!=nullptr)
+   if (!is_null_ptr(proj_data_info_sptr))
      {
        // cylindrical scanners
    

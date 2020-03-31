@@ -204,7 +204,7 @@ actual_back_project(DiscretisedDensity<3,float>& density,
     dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr> (viewgrams.get_proj_data_info_sptr());
  
 
-  if ( proj_data_info_cyl_sptr==nullptr)
+  if (is_null_ptr(proj_data_info_cyl_sptr))
   {
     error("\nBackProjectorByBinUsingInterpolation:\n"
 	  "can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n");
@@ -596,7 +596,7 @@ BackProjectorByBinUsingInterpolation::back_project_all_symmetries(
     dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr> (pos_view.get_proj_data_info_sptr());
  
 
-  if ( proj_data_info_cyl_sptr==nullptr)
+  if (is_null_ptr(proj_data_info_cyl_sptr))
   {
     error("\nBackProjectorByBinUsingInterpolation:\n\
 can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n");
@@ -832,7 +832,7 @@ back_project_view_plus_90_and_delta(
   const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_cyl_sptr =
     dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr> (pos_view.get_proj_data_info_sptr());
 
-  if ( proj_data_info_cyl_sptr==nullptr)
+  if (is_null_ptr(proj_data_info_cyl_sptr))
     {
       error("\nBackProjectorByBinUsingInterpolation:,\n\
 can only handle arc-corrected data (cast to ProjDataInfoCylindricalArcCorr)!\n");
