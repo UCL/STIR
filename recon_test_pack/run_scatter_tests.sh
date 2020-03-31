@@ -18,13 +18,7 @@
 #  See STIR/LICENSE.txt for details
 #      
 # Author Kris Thielemans
-# 
-
-# Scripts should exit with error code when a test fails:
-if [ -n "$TRAVIS" ]; then
-    # The code runs inside Travis
-    set -e
-fi
+#
 
 echo This script should work with STIR version 4.0. If you have
 echo a later version, you might have to update your test pack.
