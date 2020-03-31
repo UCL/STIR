@@ -136,9 +136,9 @@ public:
       return this->_proj_datas[index-1]; 
     }
 
-  const ProjDataInfo *
-    get_proj_data_info_ptr() const;
-  // return get_proj_data_sptr(1))->get_proj_data_info_ptr()
+  const shared_ptr<const ProjDataInfo>
+    get_proj_data_info_sptr() const;
+  // return get_proj_data_sptr(1))->get_proj_data_info_sptr()
 
   /*! \deprecated */
   unsigned int get_num_gates() const

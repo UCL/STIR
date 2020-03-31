@@ -161,13 +161,13 @@ void make_det_pair_data(DetPairData& det_pair_data,
 			const int ax_pos_num)
 {
   make_det_pair_data(det_pair_data,
-		     *proj_data.get_proj_data_info_ptr(),
+		     *proj_data.get_proj_data_info_sptr(),
 		     segment_num,
 		     ax_pos_num);
   const int num_detectors = 
     det_pair_data.get_num_detectors();
   const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data.get_proj_data_info_ptr());
+    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data.get_proj_data_info_sptr());
 
   shared_ptr<Sinogram<float> > 
     pos_sino_ptr(new Sinogram<float>(proj_data.get_sinogram(ax_pos_num,segment_num)));
@@ -201,10 +201,10 @@ void set_det_pair_data(ProjData& proj_data,
 			const int segment_num,
 			const int ax_pos_num)
 {
-  const ProjDataInfo* proj_data_info_ptr =
-    proj_data.get_proj_data_info_ptr();
+  const shared_ptr<const ProjDataInfo> proj_data_info_sptr =
+    proj_data.get_proj_data_info_sptr();
   const ProjDataInfoCylindricalNoArcCorr& proj_data_info =
-    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_ptr);
+    dynamic_cast<const ProjDataInfoCylindricalNoArcCorr&>(*proj_data_info_sptr);
 
   const int num_detectors = det_pair_data.get_num_detectors();
   assert(proj_data_info.get_scanner_ptr()->get_num_detectors_per_ring() == num_detectors);
@@ -729,7 +729,7 @@ void make_fan_data(FanProjData& fan_data,
   int max_delta;
   shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
     get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
-		 *proj_data.get_proj_data_info_ptr());
+		 *proj_data.get_proj_data_info_sptr());
 
   const int half_fan_size = fan_size/2;
   fan_data = FanProjData(num_rings, num_detectors_per_ring, max_delta, 2*half_fan_size+1);
@@ -770,7 +770,7 @@ void set_fan_data(ProjData& proj_data,
   int max_delta;
   shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
     get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
-		 *proj_data.get_proj_data_info_ptr());
+		 *proj_data.get_proj_data_info_sptr());
 
   const int half_fan_size = fan_size/2;
   assert(num_rings == fan_data.get_num_rings());
@@ -902,7 +902,7 @@ void make_fan_sum_data(Array<2,float>& data_fan_sums,
   int max_delta;
   shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
     get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
-		 *proj_data.get_proj_data_info_ptr());
+		 *proj_data.get_proj_data_info_sptr());
   const int half_fan_size = fan_size/2;
   data_fan_sums.fill(0);
 

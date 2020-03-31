@@ -80,7 +80,7 @@ main (int argc, char * argv[])
 
   shared_ptr<ProjData> 
     out_proj_data_ptr(new ProjDataInterfile(attenuation_proj_data_ptr->get_exam_info_sptr(),
-					    attenuation_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
+					    attenuation_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone(),
 					    output_file_name));
 
   for (int segment_num = attenuation_proj_data_ptr->get_min_segment_num(); 

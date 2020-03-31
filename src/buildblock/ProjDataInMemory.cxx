@@ -102,7 +102,7 @@ const
 ProjDataInMemory::
 ProjDataInMemory(const ProjData& proj_data)
   : ProjDataFromStream(proj_data.get_exam_info_sptr(),
-		       proj_data.get_proj_data_info_ptr()->create_shared_clone(), shared_ptr<iostream>())
+		       proj_data.get_proj_data_info_sptr()->create_shared_clone(), shared_ptr<iostream>())
 {
   this->buffer.reset(this->create_buffer());
   this->sino_stream = this->create_stream();
@@ -114,7 +114,7 @@ ProjDataInMemory(const ProjData& proj_data)
 ProjDataInMemory::
 ProjDataInMemory (const ProjDataInMemory& proj_data)
     : ProjDataFromStream(proj_data.get_exam_info_sptr(),
-                 proj_data.get_proj_data_info_ptr()->create_shared_clone(), shared_ptr<iostream>())
+                 proj_data.get_proj_data_info_sptr()->create_shared_clone(), shared_ptr<iostream>())
 {
   this->buffer.reset(this->create_buffer());
   this->sino_stream = this->create_stream();

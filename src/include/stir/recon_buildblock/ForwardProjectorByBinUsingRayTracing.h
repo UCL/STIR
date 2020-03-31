@@ -224,7 +224,7 @@ forward_project_view_2D(Viewgram<float> & pos_view,
   template <int symmetry_type> 
   static bool 
     proj_Siddon(Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
-			  const ProjDataInfoCylindrical* proj_data_info_ptr, 
+			  const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr,
 			  const float cphi, const float sphi, const float delta, 
 			  const float s_in_mm, 
 			  const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 
@@ -236,7 +236,7 @@ forward_project_view_2D(Viewgram<float> & pos_view,
   static bool
     proj_Siddon(int symmetry_type,
                 Array<4,float> &Projptr, const VoxelsOnCartesianGrid<float> &, 
-			  const ProjDataInfoCylindrical* proj_data_info_ptr, 
+			  const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_ptr,
 			  const float cphi, const float sphi, const float delta, 
 			  const float s_in_mm, 
 			  const float R, const int min_ax_pos_num, const int max_ax_pos_num, const float offset, 

@@ -159,7 +159,7 @@ main(int argc, char* argv[])
     
   // construct new proj_data_info_ptr for output data
   shared_ptr<ProjDataInfo> proj_data_info_ptr =
-    in_projdata_ptr->get_proj_data_info_ptr()->create_shared_clone();
+    in_projdata_ptr->get_proj_data_info_sptr()->create_shared_clone();
 
   if (proj_data_info_ptr->get_max_segment_num()<max_segment_num_to_process)
     max_segment_num_to_process = proj_data_info_ptr->get_max_segment_num();
@@ -232,7 +232,7 @@ main(int argc, char* argv[])
        same amount.
     */
     const ProjDataInfo& in_proj_data_info = 
-      *(in_projdata_ptr->get_proj_data_info_ptr());
+      *(in_projdata_ptr->get_proj_data_info_sptr());
 
     const float m_difference_segment_0 = 
       in_proj_data_info.get_m(Bin(0,0,0,0)) -

@@ -86,11 +86,11 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
 {
   BinNormalisation::set_up(proj_data_info_ptr);
 
-  if (*(norm_proj_data_ptr->get_proj_data_info_ptr()) == *proj_data_info_ptr)
+  if (*(norm_proj_data_ptr->get_proj_data_info_sptr()) == *proj_data_info_ptr)
     return Succeeded::yes;
   else
   {
-    const ProjDataInfo& norm_proj = *(norm_proj_data_ptr->get_proj_data_info_ptr());
+    const ProjDataInfo& norm_proj = *(norm_proj_data_ptr->get_proj_data_info_sptr());
     const ProjDataInfo& proj = *proj_data_info_ptr;
     bool ok = 
       (norm_proj >= proj) &&

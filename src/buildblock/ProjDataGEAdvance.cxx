@@ -64,14 +64,14 @@ ProjDataGEAdvance::ProjDataGEAdvance(iostream* s)
   // TODO find from file
   const int max_delta = 11;
   shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Advance));
-  proj_data_info_ptr.reset( 
+  proj_data_info_sptr.reset(
     ProjDataInfo::ProjDataInfoGE(scanner_sptr, max_delta, 
                                  scanner_sptr->get_max_num_views(), 
 				 scanner_sptr->get_default_num_arccorrected_bins()));
   
   
-  const int min_view = proj_data_info_ptr->get_min_view_num();
-  const int max_view = proj_data_info_ptr->get_max_view_num();
+  const int min_view = proj_data_info_sptr->get_min_view_num();
+  const int max_view = proj_data_info_sptr->get_max_view_num();
   view_scaling_factor.grow(min_view, max_view);
   
   const int offset_begin = 256;
@@ -103,14 +103,14 @@ ProjDataGEAdvance::ProjDataGEAdvance(iostream* s)
   // WARNING: this construction works only with odd max_delta
   //-------------------------------------------------------------
   
-  int num_segments_orig = proj_data_info_ptr->get_max_segment_num()+1;	
+  int num_segments_orig = proj_data_info_sptr->get_max_segment_num()+1;
   //(int) get_max_average_ring_difference(); 
   
   num_rings_orig.resize(num_segments_orig);
   segment_sequence_orig.resize(num_segments_orig);
   
   
-  const int num_rings = proj_data_info_ptr->get_scanner_ptr()->get_num_rings();
+  const int num_rings = proj_data_info_sptr->get_scanner_ptr()->get_num_rings();
   num_rings_orig[0]=(2*num_rings-1);
   
   {

@@ -1120,7 +1120,7 @@ read_interfile_PDFS(istream& input,
      }
 
    return new ProjDataFromStream(hdr.get_exam_info_sptr(),
-				 hdr.data_info_ptr->create_shared_clone(),
+				 hdr.data_info_sptr->create_shared_clone(),
 				 data_in,
 				 hdr.data_offset_each_dataset[0],
 				 hdr.segment_sequence,
@@ -1174,14 +1174,14 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 #if 0
   // TODO get_phi currently ignores view offset
   const float angle_first_view = 
-    pdfs.get_proj_data_info_ptr()->get_phi(Bin(0,0,0,0)) * float(180/_PI);
+    pdfs.get_proj_data_info_sptr()->get_phi(Bin(0,0,0,0)) * float(180/_PI);
 #else
   const float angle_first_view = 
-    pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_intrinsic_tilt() * float(180/_PI);
+    pdfs.get_proj_data_info_sptr()->get_scanner_ptr()->get_default_intrinsic_tilt() * float(180/_PI);
 #endif
   const float angle_increment = 
-    (pdfs.get_proj_data_info_ptr()->get_phi(Bin(0,1,0,0)) -
-     pdfs.get_proj_data_info_ptr()->get_phi(Bin(0,0,0,0))) * float(180/_PI);
+    (pdfs.get_proj_data_info_sptr()->get_phi(Bin(0,1,0,0)) -
+     pdfs.get_proj_data_info_sptr()->get_phi(Bin(0,0,0,0))) * float(180/_PI);
 
   output_header << "!INTERFILE  :=\n";
 
@@ -1192,7 +1192,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
   output_header << "name of data file := " << data_file_name_in_header << endl;
 
   output_header << "originating system := ";
-  output_header <<pdfs.get_proj_data_info_ptr()->get_scanner_ptr()->get_name() << endl;
+  output_header <<pdfs.get_proj_data_info_sptr()->get_scanner_ptr()->get_name() << endl;
 
   if (is_spect)
     output_header << "!version of keys := 3.3\n";
@@ -1226,7 +1226,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
       output_header << "!PET data type := Emission\n";
       {
         // KT 10/12/2001 write applied corrections keyword
-        if(dynamic_cast< const ProjDataInfoCylindricalArcCorr*> (pdfs.get_proj_data_info_ptr()) != NULL)
+        if(!is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr> (pdfs.get_proj_data_info_sptr())))
           output_header << "applied corrections := {arc correction}\n";
         else
           output_header << "applied corrections := {None}\n";
@@ -1255,10 +1255,10 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
                     << '\n';
       output_header << "start angle := " << angle_first_view << '\n';
 
-      ProjDataInfoCylindricalArcCorr const * proj_data_info_cyl_ptr = 
-        dynamic_cast<ProjDataInfoCylindricalArcCorr const *>(pdfs.get_proj_data_info_ptr());
+      const shared_ptr<const ProjDataInfoCylindricalArcCorr> proj_data_info_cyl_sptr =
+        dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>(pdfs.get_proj_data_info_sptr());
 
-      VectorWithOffset<float> ring_radii = proj_data_info_cyl_ptr->get_ring_radii_for_all_views();
+      VectorWithOffset<float> ring_radii = proj_data_info_cyl_sptr->get_ring_radii_for_all_views();
       if (*std::min_element(ring_radii.begin(),ring_radii.end()) == 
           *std::max_element(ring_radii.begin(),ring_radii.end()))
         {
@@ -1272,13 +1272,13 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
         }
 
       output_header << "!matrix size [1] := "
-                    <<proj_data_info_cyl_ptr->get_num_tangential_poss() << '\n';
+                    <<proj_data_info_cyl_sptr->get_num_tangential_poss() << '\n';
       output_header << "!scaling factor (mm/pixel) [1] := "
-                    <<proj_data_info_cyl_ptr->get_tangential_sampling() << '\n';
+                    <<proj_data_info_cyl_sptr->get_tangential_sampling() << '\n';
       output_header << "!matrix size [2] := "
-                    <<proj_data_info_cyl_ptr->get_num_axial_poss(0) << '\n';
+                    <<proj_data_info_cyl_sptr->get_num_axial_poss(0) << '\n';
       output_header << "!scaling factor (mm/pixel) [2] := "
-                    <<proj_data_info_cyl_ptr->get_axial_sampling(0) << '\n';
+                    <<proj_data_info_cyl_sptr->get_axial_sampling(0) << '\n';
 
       if (pdfs.get_offset_in_stream())
 	output_header<<"data offset in bytes := "
@@ -1338,71 +1338,71 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
 		  << pdfs.get_segment_sequence_in_stream().size()<< "\n";
     output_header << "matrix axis label [" << order_of_view << "] := view\n";
     output_header << "!matrix size [" << order_of_view << "] := "
-		  << pdfs.get_proj_data_info_ptr()->get_num_views() << "\n";
+		  << pdfs.get_proj_data_info_sptr()->get_num_views() << "\n";
     
     output_header << "matrix axis label [" << order_of_z << "] := axial coordinate\n";
     output_header << "!matrix size [" << order_of_z << "] := ";
     // tedious way to print a list of numbers
     {
       std::vector<int>::const_iterator seg = segment_sequence.begin();
-      output_header << "{ " <<pdfs.get_proj_data_info_ptr()->get_num_axial_poss(*seg);
+      output_header << "{ " <<pdfs.get_proj_data_info_sptr()->get_num_axial_poss(*seg);
       for (seg++; seg != segment_sequence.end(); seg++)
-	output_header << "," << pdfs.get_proj_data_info_ptr()->get_num_axial_poss(*seg);
+	output_header << "," << pdfs.get_proj_data_info_sptr()->get_num_axial_poss(*seg);
       output_header << "}\n";
     }
 
     output_header << "matrix axis label [" << order_of_bin << "] := tangential coordinate\n";
     output_header << "!matrix size [" << order_of_bin << "] := "
-		  <<pdfs.get_proj_data_info_ptr()->get_num_tangential_poss() << "\n";
+		  <<pdfs.get_proj_data_info_sptr()->get_num_tangential_poss() << "\n";
   }
 
-  const  ProjDataInfoCylindrical* proj_data_info_ptr = 
-    dynamic_cast< const  ProjDataInfoCylindrical*> (pdfs.get_proj_data_info_ptr());
+  const shared_ptr<const ProjDataInfoCylindrical> proj_data_info_sptr =
+    dynamic_pointer_cast<const ProjDataInfoCylindrical>(pdfs.get_proj_data_info_sptr());
 
-   if (proj_data_info_ptr!=NULL)
+   if (!is_null_ptr(proj_data_info_sptr))
      {
        // cylindrical scanners
    
        output_header << "minimum ring difference per segment := ";    
        {
 	 std::vector<int>::const_iterator seg = segment_sequence.begin();
-	 output_header << "{ " << proj_data_info_ptr->get_min_ring_difference(*seg);
+	 output_header << "{ " << proj_data_info_sptr->get_min_ring_difference(*seg);
 	 for (seg++; seg != segment_sequence.end(); seg++)
-	   output_header << "," <<proj_data_info_ptr->get_min_ring_difference(*seg);
+	   output_header << "," <<proj_data_info_sptr->get_min_ring_difference(*seg);
 	 output_header << "}\n";
        }
 
        output_header << "maximum ring difference per segment := ";
        {
 	 std::vector<int>::const_iterator seg = segment_sequence.begin();
-	 output_header << "{ " <<proj_data_info_ptr->get_max_ring_difference(*seg);
+	 output_header << "{ " <<proj_data_info_sptr->get_max_ring_difference(*seg);
 	 for (seg++; seg != segment_sequence.end(); seg++)
-	   output_header << "," <<proj_data_info_ptr->get_max_ring_difference(*seg);
+	   output_header << "," <<proj_data_info_sptr->get_max_ring_difference(*seg);
 	 output_header << "}\n";
        }
   
-       const Scanner& scanner = *proj_data_info_ptr->get_scanner_ptr();
-       if (fabs(proj_data_info_ptr->get_ring_radius()-
+       const Scanner& scanner = *proj_data_info_sptr->get_scanner_ptr();
+       if (fabs(proj_data_info_sptr->get_ring_radius()-
 		scanner.get_effective_ring_radius()) > .1)
 	 warning("write_basic_interfile_PDFS_header: inconsistent effective ring radius:\n"
 		 "\tproj_data_info has %g, scanner has %g.\n"
 		 "\tThis really should not happen and signifies a bug.\n"
 		 "\tYou will have a problem reading this data back in.",
-		 proj_data_info_ptr->get_ring_radius(),
+		 proj_data_info_sptr->get_ring_radius(),
 		 scanner.get_effective_ring_radius());
-       if (fabs(proj_data_info_ptr->get_ring_spacing()-
+       if (fabs(proj_data_info_sptr->get_ring_spacing()-
 		scanner.get_ring_spacing()) > .1)
 	 warning("write_basic_interfile_PDFS_header: inconsistent ring spacing:\n"
 		 "\tproj_data_info has %g, scanner has %g.\n"
 		 "\tThis really should not happen and signifies a bug.\n"
 		 "\tYou will have a problem reading this data back in.",
-		 proj_data_info_ptr->get_ring_spacing(),
+		 proj_data_info_sptr->get_ring_spacing(),
 		 scanner.get_ring_spacing());
 
        output_header << scanner.parameter_info();
 
        output_header << "effective central bin size (cm) := " 
-		     << proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0))/10. << endl;
+		     << proj_data_info_sptr->get_sampling_in_s(Bin(0,0,0,0))/10. << endl;
 
      } // end of cylindrical scanner
   else

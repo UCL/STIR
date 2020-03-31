@@ -89,7 +89,7 @@ class Succeeded;
   are get_empty_ functions that just create the corresponding object
   of appropriate sizes etc. but filled with 0.
 
-  One important member of this class is get_proj_data_info_ptr() which
+  One important member of this class is get_proj_data_info_sptr() which
   allows access to a ProjDataInfo object, which describes the dimensions
   of the data, the scanner type, the geometry ...
 
@@ -119,14 +119,10 @@ public:
 
   //! Destructor
   virtual ~ProjData() {}
-  //! Get proj data info pointer
-  inline const ProjDataInfo* 
-    get_proj_data_info_ptr() const;
   //! Get shared pointer to proj data info
-  /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
-    shared pointer will be affected. */
-  inline shared_ptr<ProjDataInfo>
+  inline shared_ptr<const ProjDataInfo>
     get_proj_data_info_sptr() const;
+
 //  //! Get pointer to exam info
 //  inline const ExamInfo*
 //    get_exam_info_ptr() const;
@@ -307,7 +303,7 @@ public:
 protected:
 //   shared_ptr<ExamInfo> exam_info_sptr;
 
-   shared_ptr<ProjDataInfo> proj_data_info_ptr; // TODO fix name to _sptr
+   shared_ptr<ProjDataInfo> proj_data_info_sptr;
 };
 
 

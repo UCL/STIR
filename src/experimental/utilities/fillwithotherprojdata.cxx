@@ -49,8 +49,8 @@ int main(int argc, char *argv[])
   shared_ptr<ProjData> in_projdata_ptr = 
     ProjData::read_from_file(argv[2]);
   
-  if (*out_projdata_ptr->get_proj_data_info_ptr() !=
-      *in_projdata_ptr->get_proj_data_info_ptr())
+  if (*out_projdata_ptr->get_proj_data_info_sptr() !=
+      *in_projdata_ptr->get_proj_data_info_sptr())
     {
       error("Projection data infos are incompatible\n");
     }

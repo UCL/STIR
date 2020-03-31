@@ -36,14 +36,14 @@
 
 START_NAMESPACE_STIR
 
-const ProjDataInfo *
+const shared_ptr<const ProjDataInfo>
 MultipleProjData::
-get_proj_data_info_ptr() const
+get_proj_data_info_sptr() const
 {
   if (get_num_gates() == 0)
-    return 0;
+    return shared_ptr<ProjDataInfo>();
   else
-    return _proj_datas[0]->get_proj_data_info_ptr();
+    return _proj_datas[0]->get_proj_data_info_sptr();
 }
 
 void 

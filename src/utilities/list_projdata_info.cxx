@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
         
     }
   if (print_geom)
-    std::cout << proj_data_sptr->get_proj_data_info_ptr()->parameter_info() << std::endl;
+    std::cout << proj_data_sptr->get_proj_data_info_sptr()->parameter_info() << std::endl;
 
   if (print_min || print_max || print_sum)
     {

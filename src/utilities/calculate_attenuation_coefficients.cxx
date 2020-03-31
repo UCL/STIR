@@ -135,7 +135,7 @@ main (int argc, char * argv[])
   shared_ptr<ProjData> 
     out_proj_data_ptr(
 		      new ProjDataInterfile(atten_image_sptr->get_exam_info_sptr(),// TODO this should say it's an ACF File
-					    template_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone(),
+					    template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone(),
 					    output_file_name,
                                             std::ios::in|std::ios::out|std::ios::trunc));
 
@@ -148,7 +148,7 @@ main (int argc, char * argv[])
 						  forw_projector_ptr));
   
   if (
-      normalisation_ptr->set_up(template_proj_data_ptr->get_proj_data_info_ptr()->create_shared_clone())
+      normalisation_ptr->set_up(template_proj_data_ptr->get_proj_data_info_sptr()->create_shared_clone())
       != Succeeded::yes)
     {
       warning("calculate_attenuation_coefficients: set-up of normalisation failed\n");

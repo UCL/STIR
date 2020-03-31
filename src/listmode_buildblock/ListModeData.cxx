@@ -69,7 +69,7 @@ set_proj_data_info_sptr(shared_ptr<ProjDataInfo> new_proj_data_info_sptr)
     proj_data_info_sptr = new_proj_data_info_sptr;
 }
 
-shared_ptr<ProjDataInfo>
+shared_ptr<const ProjDataInfo>
 ListModeData::get_proj_data_info_sptr() const
 {
     if(is_null_ptr(proj_data_info_sptr))

@@ -90,7 +90,7 @@ main (int argc,char *argv[])
   GeneralisedPoissonNoiseGenerator generator(scaling_factor, preserve_mean);
   generator.seed(seed);
 
-  ProjDataInterfile new_data(in_data->get_exam_info_sptr(),in_data->get_proj_data_info_ptr()->create_shared_clone(), filename);
+  ProjDataInterfile new_data(in_data->get_exam_info_sptr(),in_data->get_proj_data_info_sptr()->create_shared_clone(), filename);
 
   
   generator.generate_random(new_data,*in_data);
