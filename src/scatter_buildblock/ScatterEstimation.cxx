@@ -610,11 +610,6 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
                 // inv_projdata_sptr = 1/norm3d
                 tmp_chain_multiplicative_binnorm_sptr->get_first_norm()->undo(*inv_projdata_3d_sptr, start_time, end_time);
 
-                // Crucial: Avoid divisions by zero!!
-                // This should be resolved after https://github.com/UCL/STIR/issues/348
-                pow_times_add min_threshold (0.0f, 1.0f, 1.0f,  1E-20f, NumericInfo<float>().max_value());
-                apply_to_proj_data(*inv_projdata_3d_sptr, min_threshold);
-
                 info("ScatterEstimation: Performing SSRB on efficiency factors ...");
 
                 SSRB(*norm_projdata_2d_sptr,
@@ -622,8 +617,8 @@ set_up_iterative(shared_ptr<IterativeReconstruction<DiscretisedDensity<3, float>
 
                 // Crucial: Avoid divisions by zero!!
                 // This should be resolved after https://github.com/UCL/STIR/issues/348
-                //pow_times_add min_threshold (0.0f, 1.0f, 1.0f,  1E-20f, NumericInfo<float>().max_value());
-                //apply_to_proj_data(*norm_projdata_2d_sptr, min_threshold);
+                pow_times_add min_threshold (0.0f, 1.0f, 1.0f,  1E-20f, NumericInfo<float>().max_value());
+                apply_to_proj_data(*norm_projdata_2d_sptr, min_threshold);
 
                 pow_times_add invert (0.0f, 1.0f, -1.0f, NumericInfo<float>().min_value(), NumericInfo<float>().max_value());
                 apply_to_proj_data(*norm_projdata_2d_sptr, invert);
@@ -950,34 +945,36 @@ process_data()
                 temp_projdata->fill(*scaled_est_projdata_sptr);
                 pow_times_add min_threshold (0.0f, 1.0f, 1.0f, 1e-9f, NumericInfo<float>().max_value());
                 pow_times_add add_scalar (-1e-9f, 1.0f, 1.0f, NumericInfo<float>().min_value(), NumericInfo<float>().max_value());
-
                 apply_to_proj_data(*temp_projdata, min_threshold);
                 apply_to_proj_data(*temp_projdata, add_scalar);
+		// threshold back to 0 to avoid getting tiny negatives (due to numerical precision errors)
+                pow_times_add min_threshold_zero (0.0f, 1.0f, 1.0f, 0.f, NumericInfo<float>().max_value());
+                apply_to_proj_data(*temp_projdata, min_threshold_zero);
 
                 // ok, we can multiply with the norm
                 normalisation_factors_sptr->apply(*temp_projdata, start_time, end_time);
 
-                if(this->output_scatter_estimate_prefix.size() > 0)
+		// Create proj_data to save the 3d scatter estimate
+                if(!this->output_scatter_estimate_prefix.empty())
                 {
                     std::stringstream convert;
                     convert << this->output_scatter_estimate_prefix << "_" << i_scat_iter;
                     std::string output_scatter_filename = convert.str();
 
-                    // To save the 3d scatter estimate
                     scatter_estimate_sptr.reset(
                                 new ProjDataInterfile(this->input_projdata_sptr->get_exam_info_sptr(),
                                                       this->input_projdata_sptr->get_proj_data_info_sptr() ,
                                                       output_scatter_filename,
                                                       std::ios::in | std::ios::out | std::ios::trunc));
-                    scatter_estimate_sptr->fill(0.0);
                 }
                 else
                 {
+		    // TODO should check if we have one already from previous iteration
                     scatter_estimate_sptr.reset(
                                 new ProjDataInMemory(this->input_projdata_sptr->get_exam_info_sptr(),
                                                       this->input_projdata_sptr->get_proj_data_info_sptr()));
-                    scatter_estimate_sptr->fill(0.0);
                 }
+		scatter_estimate_sptr->fill(0.0);
 
                 // Upsample to 3D
                 //we're currently not doing the tail fitting in this step, but keeping the same scale as determined in 2D
@@ -998,7 +995,7 @@ process_data()
 	        scatter_estimate_sptr = scaled_est_projdata_sptr;
 	    }
 
-	    if(this->output_additive_estimate_prefix.size() > 0)
+	    if(!this->output_additive_estimate_prefix.empty())
 	    {
 		info("ScatterEstimation: constructing additive sinogram");
 		// Now save the full background term.
@@ -1038,6 +1035,7 @@ process_data()
         }
         else
         {
+	    // TODO restructure code to move additive_projdata code from above
             error("ScatterEstimation: You should not be here. This is not 2D.");
         }
         current_activity_image_sptr->fill(1.f);
