@@ -174,8 +174,9 @@ run_tests()
       
       Bin new_bin=bin;
       new_bin.set_bin_value(viewgram[proj_data_info_sptr->get_max_axial_pos_num(0)/2][0]);
-     
-      check(new_bin.get_bin_value()==proj_data.get_bin_value(new_bin),
+//     Compare bin from viewgram obtained using ProjDataFromSream::set_bin_value()
+//      with ProjDataFromSream::get_bin_value()
+      check_if_equal(viewgram[bin.axial_pos_num()][bin.tangential_pos_num()],proj_data.get_bin_value(new_bin),
             "ProjDataFromStream::set_bin_value/get_bin_value not consistent");
   }
 }
