@@ -27,6 +27,8 @@
 #include "stir/scatter/ScatterSimulation.h"
 #include "stir/ViewSegmentNumbers.h"
 #include "stir/Bin.h"
+#include "stir/CPUTimer.h"
+#include "stir/HighResWallClockTimer.h"
 #include "stir/IndexRange3D.h"
 #include "stir/Viewgram.h"
 #include "stir/is_null_ptr.h"
@@ -76,9 +78,16 @@ process_data()
     info("ScatterSimulator: Initialising ...");
 
     ViewSegmentNumbers vs_num;
-
+    /* ////////////////// SCATTER ESTIMATION TIME //////////////// */
+    CPUTimer bin_timer;
+    bin_timer.start();
+    // variables to report (remaining) time
+    HighResWallClockTimer wall_clock_timer;
+    double previous_timer = 0 ;
+    int previous_bin_count = 0 ;
     int bin_counter = 0;
     int axial_bins = 0 ;
+    wall_clock_timer.start();
 
     for (vs_num.segment_num() = this->proj_data_info_cyl_noarc_cor_sptr->get_min_segment_num();
          vs_num.segment_num() <= this->proj_data_info_cyl_noarc_cor_sptr->get_max_segment_num();
@@ -88,6 +97,8 @@ process_data()
     const int total_bins =
             this->proj_data_info_cyl_noarc_cor_sptr->get_num_views() * axial_bins *
             this->proj_data_info_cyl_noarc_cor_sptr->get_num_tangential_poss();
+    /* ////////////////// end SCATTER ESTIMATION TIME //////////////// */
+
     /* Currently, proj_data_info.find_cartesian_coordinates_of_detection() returns
      coordinate in a coordinate system where z=0 in the first ring of the scanner.
      We want to shift this to a coordinate system where z=0 in the middle
@@ -129,10 +140,25 @@ process_data()
             bin_counter +=
                     this->proj_data_info_cyl_noarc_cor_sptr->get_num_axial_poss(vs_num.segment_num()) *
                     this->proj_data_info_cyl_noarc_cor_sptr->get_num_tangential_poss();
-            info(boost::format("ScatterSimulator: %d / %d bins done") % bin_counter% total_bins);
-
+            /* ////////////////// SCATTER ESTIMATION TIME ////////////////*/
+            {
+                wall_clock_timer.stop(); // must be stopped before getting the value
+                info(boost::format("%1$5u / %2% bins done. Total time elapsed %3$5.2f secs, remaining about %4$5.2f mins (ignoring caching).")
+                     % bin_counter % total_bins
+                     % wall_clock_timer.value()
+                     % ((wall_clock_timer.value() - previous_timer)
+                        * (total_bins - bin_counter) / (bin_counter - previous_bin_count) / 60),
+		     /* verbosity level*/ 3);
+                previous_timer = wall_clock_timer.value() ;
+                previous_bin_count = bin_counter ;
+                wall_clock_timer.start();
+            }
+            /* ////////////////// end SCATTER ESTIMATION TIME //////////////// */
         }
     }
+
+    bin_timer.stop();
+    wall_clock_timer.stop();
 
     if (detection_points_vector.size() != static_cast<unsigned int>(total_detectors))
     {
@@ -142,6 +168,7 @@ process_data()
     }
 
     info(boost::format("TOTAL SCATTER counts before upsampling and norm = %g") % total_scatter);
+    this->write_log(wall_clock_timer.value(), total_scatter);
     return Succeeded::yes;
 }
 
@@ -170,7 +197,7 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
     }
 
     // now compute scatter for all bins
-    double total_scatter = 0;
+    double total_scatter = 0.;
     Viewgram<float> viewgram =
             this->output_proj_data_sptr->get_empty_viewgram(vs_num.view_num(), vs_num.segment_num());
 #ifdef STIR_OPENMP
@@ -196,13 +223,13 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
 #endif
         viewgram[bin.axial_pos_num()][bin.tangential_pos_num()] =
                 static_cast<float>(scatter_ratio);
-        total_scatter += scatter_ratio;
+        total_scatter += static_cast<double>(scatter_ratio);
     } // end loop over bins
 
     if (this->output_proj_data_sptr->set_viewgram(viewgram) == Succeeded::no)
         error("ScatterSimulation: error writing viewgram");
 
-    return static_cast<double>(viewgram.sum());
+    return total_scatter;
 }
 
 void
@@ -765,7 +792,10 @@ ScatterSimulation::
 write_log(const double simulation_time, 
           const float total_scatter)
 {
-        std::string log_filename =
+      if (this->output_proj_data_filename.empty())
+	return;
+
+       std::string log_filename =
                 this->output_proj_data_filename + ".log";
         std::ofstream mystream(log_filename.c_str());
 
@@ -786,14 +816,14 @@ write_log(const double simulation_time,
                 this->output_proj_data_sptr->get_num_views() * axial_bins *
                 this->output_proj_data_sptr->get_num_tangential_poss();
         mystream << this->parameter_info()
-//                 << "\nTotal simulation time elapsed: "
-//                 <<   simulation_time / 60 << "min"
-                   << "\nTotal Scatter Points : " << scatt_points_vector.size()
-                   << "\nTotal Scatter Counts : " << total_scatter
-                   << "\nActivity image SIZE: "
-                   << (*this->activity_image_sptr).size() << " * "
-                   << (*this->activity_image_sptr)[0].size() << " * "  // TODO relies on 0 index
-                   << (*this->activity_image_sptr)[0][0].size()
+                 << "\nTotal simulation time elapsed: "
+                 <<   simulation_time / 60 << "min"
+		 << "\nTotal Scatter Points : " << scatt_points_vector.size()
+		 << "\nTotal Scatter Counts (before upsampling and norm) : " << total_scatter
+		 << "\nActivity image SIZE: "
+		 << (*this->activity_image_sptr).size() << " * "
+		 << (*this->activity_image_sptr)[0].size() << " * "  // TODO relies on 0 index
+		 << (*this->activity_image_sptr)[0][0].size()
                 << "\nAttenuation image for scatter points SIZE: "
                 << (*this->density_image_for_scatter_points_sptr).size() << " * "
                 << (*this->density_image_for_scatter_points_sptr)[0].size() << " * "
