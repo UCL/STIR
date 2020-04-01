@@ -186,7 +186,7 @@ ProjMatrixByBinFromFile::post_processing()
 void
 ProjMatrixByBinFromFile::
 set_up(		 
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
+    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,
     const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     )
 {
@@ -334,7 +334,7 @@ Succeeded
 ProjMatrixByBinFromFile::
 write_to_file(const std::string& output_filename_prefix, 
 	      const ProjMatrixByBin& proj_matrix,
-	      const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
+	      const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
 	      const DiscretisedDensity<3,float>& template_density)
 {
 

@@ -87,7 +87,7 @@ public:
 
    shared_ptr<Scanner> scanner_sptr;
  private:
-   shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+   shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
      uncompressed_proj_data_info_sptr;
 
 };

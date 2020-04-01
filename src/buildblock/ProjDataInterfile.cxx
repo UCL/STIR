@@ -88,7 +88,7 @@ create_stream(const string& filename, const ios::openmode open_mode)
 
 ProjDataInterfile ::
 ProjDataInterfile (shared_ptr<ExamInfo> const& exam_info_sptr,
-		     shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
+		     shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
 		     const string& filename, const ios::openmode open_mode, 
 		     const vector<int>& segment_sequence_in_stream,
 		     StorageOrder o,
@@ -103,7 +103,7 @@ ProjDataInterfile (shared_ptr<ExamInfo> const& exam_info_sptr,
 
 ProjDataInterfile ::
 ProjDataInterfile (shared_ptr<ExamInfo> const& exam_info_sptr,
-		   shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
+		   shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
 		   const string& filename, const ios::openmode open_mode, 
 		   StorageOrder o,
 		   NumericType data_type,

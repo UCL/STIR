@@ -64,7 +64,7 @@ get_scanner_ptr() const
 
 void
 ListModeData::
-set_proj_data_info_sptr(shared_ptr<ProjDataInfo> new_proj_data_info_sptr)
+set_proj_data_info_sptr(shared_ptr<const ProjDataInfo> new_proj_data_info_sptr)
 {
     proj_data_info_sptr = new_proj_data_info_sptr;
 }

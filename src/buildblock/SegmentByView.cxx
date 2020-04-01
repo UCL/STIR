@@ -40,7 +40,7 @@ START_NAMESPACE_STIR
 template <typename elemT>
 SegmentByView<elemT>::
 SegmentByView(const Array<3,elemT>& v,  
-              const shared_ptr<ProjDataInfo>& pdi_ptr, 
+              const shared_ptr<const ProjDataInfo>& pdi_ptr, 
               const int segment_num)
   :
   Segment<elemT>(pdi_ptr, segment_num), 
@@ -57,7 +57,7 @@ SegmentByView(const Array<3,elemT>& v,
 
 template <typename elemT>
 SegmentByView<elemT>::
-SegmentByView(const shared_ptr<ProjDataInfo>& pdi_ptr,
+SegmentByView(const shared_ptr<const ProjDataInfo>& pdi_ptr,
               const int segment_num)
   :
   Segment<elemT>(pdi_ptr, segment_num),

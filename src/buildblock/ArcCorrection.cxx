@@ -60,14 +60,14 @@ get_arc_corrected_proj_data_info() const
     static_cast<const ProjDataInfoCylindricalArcCorr&>(*_arc_corr_proj_data_info_sptr); 
 }
 
-shared_ptr<ProjDataInfo> 
+shared_ptr<const ProjDataInfo> 
 ArcCorrection::
 get_arc_corrected_proj_data_info_sptr() const
 {
   return _arc_corr_proj_data_info_sptr;
 }
 
-shared_ptr<ProjDataInfo> 
+shared_ptr<const ProjDataInfo> 
 ArcCorrection::
 get_not_arc_corrected_proj_data_info_sptr() const
 {
@@ -77,7 +77,7 @@ get_not_arc_corrected_proj_data_info_sptr() const
 
 Succeeded
 ArcCorrection::
-set_up(const shared_ptr<ProjDataInfo>& noarc_corr_proj_data_info_sptr, 
+set_up(const shared_ptr<const ProjDataInfo>& noarc_corr_proj_data_info_sptr, 
        const int num_arccorrected_tangential_poss, 
        const float bin_size)
 {
@@ -171,7 +171,7 @@ set_up(const shared_ptr<ProjDataInfo>& noarc_corr_proj_data_info_sptr,
     
 Succeeded
 ArcCorrection::
-  set_up(const shared_ptr<ProjDataInfo>& noarc_corr_proj_data_info_sptr,
+  set_up(const shared_ptr<const ProjDataInfo>& noarc_corr_proj_data_info_sptr,
 	 const int num_arccorrected_tangential_poss)
 {
   float tangential_sampling = 
@@ -195,7 +195,7 @@ ArcCorrection::
 
 Succeeded
 ArcCorrection::
-set_up(const shared_ptr<ProjDataInfo>& noarc_corr_proj_data_info_sptr)
+set_up(const shared_ptr<const ProjDataInfo>& noarc_corr_proj_data_info_sptr)
 {
   float tangential_sampling = 
     noarc_corr_proj_data_info_sptr->get_scanner_ptr()->get_default_bin_size();

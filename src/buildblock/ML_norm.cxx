@@ -685,7 +685,7 @@ std::istream& operator>>(std::istream& s, FanProjData& fan_data)
   return s;
 }
 
-shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
 get_fan_info(int& num_rings, int& num_detectors_per_ring, 
 	     int& max_ring_diff, int& fan_size, 
 	     const ProjDataInfo& proj_data_info)
@@ -727,7 +727,7 @@ void make_fan_data(FanProjData& fan_data,
   int num_detectors_per_ring;
   int fan_size;
   int max_delta;
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
+  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
     get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
 		 *proj_data.get_proj_data_info_sptr());
 
@@ -768,7 +768,7 @@ void set_fan_data(ProjData& proj_data,
   int num_detectors_per_ring;
   int fan_size;
   int max_delta;
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
+  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
     get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
 		 *proj_data.get_proj_data_info_sptr());
 
@@ -900,7 +900,7 @@ void make_fan_sum_data(Array<2,float>& data_fan_sums,
   int num_detectors_per_ring;
   int fan_size;
   int max_delta;
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
+  shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_ptr =
     get_fan_info(num_rings, num_detectors_per_ring, max_delta, fan_size, 
 		 *proj_data.get_proj_data_info_sptr());
   const int half_fan_size = fan_size/2;

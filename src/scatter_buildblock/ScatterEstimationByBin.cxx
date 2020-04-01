@@ -189,7 +189,7 @@ set_density_image_for_scatter_points(const std::string& filename)
 
 void
 ScatterEstimationByBin::
-set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>& new_sptr)
+set_template_proj_data_info_sptr(const shared_ptr<const ProjDataInfo>& new_sptr)
 {
   
   this->proj_data_info_ptr = dynamic_cast<ProjDataInfoCylindricalNoArcCorr const *>(new_sptr->clone());
