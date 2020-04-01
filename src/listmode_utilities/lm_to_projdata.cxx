@@ -10,10 +10,12 @@
 
   \author Kris Thielemans
   \author Sanida Mustafovic
+  \author Richard Brown
   
 */
 /*
     Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -31,6 +33,7 @@
 
 #include "stir/listmode/LmToProjData.h"
 #include "stir/IO/InputFileFormatRegistry.h"
+#include "stir/listmode/niftypet_listmode/LmToProjDataNiftyPET.h"
 
 #ifndef STIR_NO_NAMESPACES
 using std::cerr;
@@ -63,6 +66,9 @@ int main(int argc, char * argv[])
     }
   LmToProjData application(argc==2 ? argv[1] : 0);
   application.process_data();
+
+  LmToProjDataNiftyPET lmNP;
+  lmNP.process_data();
 
   return EXIT_SUCCESS;
 }

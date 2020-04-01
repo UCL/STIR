@@ -8,6 +8,7 @@ set(${dir_LIB_SOURCES}
         ListModeData
         ListEvent
         CListEvent
+        LmToProjDataAbstract
 	LmToProjData 
         LmToProjDataBootstrap
 	LmToProjDataWithRandomRejection
@@ -30,6 +31,12 @@ if (HAVE_CERN_ROOT)
 		CListModeDataROOT
 		CListRecordROOT
 	)
+endif()
+
+if (STIR_WITH_NIFTYPET_PROJECTOR)
+  list(APPEND ${dir_LIB_SOURCES}
+    niftypet_listmode/LmToProjDataNiftyPET
+  )
 endif()
 
 
