@@ -222,7 +222,7 @@ stir_mathTests::run_tests()
     // take a single segment in the data.
 
     shared_ptr<Scanner> scanner_ptr(new Scanner(Scanner::E953));
-    const shared_ptr<const ProjDataInfo> proj_data_info_ptr(
+    shared_ptr<ProjDataInfo> proj_data_info_ptr(
       ProjDataInfo::ProjDataInfoCTI(scanner_ptr, 
 			            /*span=*/1, 
                                     /*max_delta=*/0,

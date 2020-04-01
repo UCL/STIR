@@ -173,8 +173,8 @@ protected:
   string frame_definition_filename;
   int max_segment_num_to_process;
 
-  shared_ptr<const ProjDataInfo> template_proj_data_info_ptr;
-  shared_ptr<const ProjDataInfo> proj_data_info_uncompressed_ptr;
+  shared_ptr<ProjDataInfo> template_proj_data_info_ptr;
+  shared_ptr<ProjDataInfo> proj_data_info_uncompressed_ptr;
   const ProjDataInfoCylindricalNoArcCorr * proj_data_info_cyl_uncompressed_ptr;
   shared_ptr<Scanner> scanner_ptr;
   bool do_pre_normalisation;

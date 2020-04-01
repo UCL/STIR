@@ -249,7 +249,7 @@ test_generic_proj_data_info(ProjDataInfo& proj_data_info)
 
     // test on reduce_segment_range and operator>=
     {
-      const shared_ptr<ProjDataInfo> smaller(proj_data_info.clone());
+      shared_ptr<ProjDataInfo> smaller(proj_data_info.clone());
       check(proj_data_info >= *smaller, "check on operator>= and equal objects");
       smaller->set_min_tangential_pos_num(0);
       check(proj_data_info >= *smaller, "check on tangential_pos and operator>=");

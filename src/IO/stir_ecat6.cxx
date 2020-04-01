@@ -478,7 +478,7 @@ void ECAT6_to_PDFS(const int frame_num, const int gate_num, const int data_num, 
     const int num_tangential_poss = scanParams.nprojs; 
     
     
-    const shared_ptr<const ProjDataInfo> p_data_info(
+    shared_ptr<ProjDataInfo> p_data_info(
       ProjDataInfo::ProjDataInfoCTI(scanner_ptr,span,max_ring_diff,num_views,num_tangential_poss,arccorrected)); 
     
     

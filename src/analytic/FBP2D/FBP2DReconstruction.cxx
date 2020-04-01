@@ -227,7 +227,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
       //  full_log << "SSRB combining " << num_segments_to_combine 
       //           << " segments in input file to a new segment 0\n" << std::endl; 
 
-      shared_ptr<const ProjDataInfo> 
+      shared_ptr<ProjDataInfo> 
 	ssrb_info_sptr(SSRB(proj_data_info_cyl, 
 			    num_segments_to_combine,
 			    1, 0,

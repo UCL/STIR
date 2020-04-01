@@ -73,9 +73,9 @@ void
 MyStuff::run()
 {
 
-  const shared_ptr<const ProjData> 
+  shared_ptr<ProjData> 
     proj_data_sptr(ProjData::read_from_file(input_filename));
-  const shared_ptr<const ProjDataInfo> 
+  shared_ptr<ProjDataInfo> 
     proj_data_info_sptr(proj_data_sptr->get_proj_data_info_sptr()->clone());
 
   shared_ptr<DiscretisedDensity<3,float> > 

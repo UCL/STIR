@@ -144,7 +144,7 @@ CListModeDataROOT(const std::string& hroot_filename)
         error(error_str.c_str());
     }
 
-    const shared_ptr<const ProjDataInfo> tmp( ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
+    shared_ptr<ProjDataInfo> tmp( ProjDataInfo::construct_proj_data_info(this_scanner_sptr,
                                                                          1,
                                                                          this_scanner_sptr->get_num_rings()-1,
                                                                          this_scanner_sptr->get_num_detectors_per_ring()/2,

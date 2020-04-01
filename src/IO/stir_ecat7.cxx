@@ -1372,7 +1372,7 @@ make_pdfs_from_matrix_aux(SUBHEADERPTR sub_header_ptr,
 	}
     }
   
-  const shared_ptr<ProjDataInfo> pdi_ptr(
+  shared_ptr<ProjDataInfo> pdi_ptr(
     ProjDataInfo::ProjDataInfoCTI(scanner_ptr, span_to_use, max_delta, 
 				  num_views, num_tangential_poss,  
 				  arc_corrected));

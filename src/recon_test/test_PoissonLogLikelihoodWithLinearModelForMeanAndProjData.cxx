@@ -175,7 +175,7 @@ construct_input_data(shared_ptr<target_type>& density_sptr)
       // construct a small scanner and sinogram
       shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::E953));
       scanner_sptr->set_num_rings(5);
-      const shared_ptr<const ProjDataInfo> proj_data_info_sptr(
+      shared_ptr<ProjDataInfo> proj_data_info_sptr(
         ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
                                       /*span=*/3, 
                                       /*max_delta=*/4,
