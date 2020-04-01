@@ -43,7 +43,7 @@ START_NAMESPACE_STIR
 class TrivialDataSymmetriesForBins : public DataSymmetriesForBins
 {
 public:
-  TrivialDataSymmetriesForBins(const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
+  TrivialDataSymmetriesForBins(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr);
 
   virtual 
 #ifndef STIR_NO_COVARIANT_RETURN_TYPES

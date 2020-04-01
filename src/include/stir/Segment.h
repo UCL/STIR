@@ -64,8 +64,6 @@ public:
   
   virtual ~Segment() {}
   //! Get shared pointer to proj data info
-  /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
-    shared pointer will be affected. */
   inline shared_ptr<const ProjDataInfo>
     get_proj_data_info_sptr() const;
 
@@ -123,10 +121,10 @@ public:
   //@}
 
 protected:
-  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
   int segment_num;
   
-  inline Segment(const shared_ptr<ProjDataInfo>& proj_data_info_sptr_v,const int s_num);
+  inline Segment(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr_v,const int s_num);
 };
 
 END_NAMESPACE_STIR

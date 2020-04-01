@@ -82,7 +82,7 @@ BinNormalisationFromProjData(const shared_ptr<ProjData>& norm_proj_data_ptr)
 
 Succeeded 
 BinNormalisationFromProjData::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
 {
   BinNormalisation::set_up(proj_data_info_ptr);
 

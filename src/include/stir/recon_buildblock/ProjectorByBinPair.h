@@ -69,7 +69,7 @@ public:
   */
   virtual Succeeded
     set_up(		 
-	   const shared_ptr<ProjDataInfo>&,
+	   const shared_ptr<const ProjDataInfo>&,
 	   const shared_ptr<DiscretisedDensity<3,float> >& // TODO should be Info only
     );
 
@@ -110,7 +110,7 @@ protected:
   bool _already_set_up;
 
  private:
-  shared_ptr<ProjDataInfo> _proj_data_info_sptr;
+  shared_ptr<const ProjDataInfo> _proj_data_info_sptr;
   //! The density ptr set with set_up()
   /*! \todo it is wasteful to have to store the whole image as this uses memory that we don't need. */
   shared_ptr<DiscretisedDensity<3,float> > _density_info_sptr;

@@ -396,7 +396,7 @@ ProjData:: ProjData()
 {}
 
 ProjData::ProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
-		   const shared_ptr<ProjDataInfo>& proj_data_info_sptr)
+		   const shared_ptr<const ProjDataInfo>& proj_data_info_sptr)
   :ExamData(exam_info_sptr), proj_data_info_sptr(proj_data_info_sptr)
 {}
 

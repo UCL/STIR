@@ -147,7 +147,7 @@ public:
   //! The constructor defaults to using piecewise linear interpolation and the exact Jacobian 
   /*! \deprecated Use set_up() instead */
   BackProjectorByBinUsingInterpolation(
-    shared_ptr<ProjDataInfo>const&,
+    shared_ptr<const ProjDataInfo>const&,
     shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr,
     const bool use_piecewise_linear_interpolation = true, const bool use_exact_Jacobian = true);
 
@@ -155,7 +155,7 @@ public:
   /*! Note that the density_info_ptr is not stored in this object. It's only used to get some info on sizes etc.
   */
   virtual void set_up(		 
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
+    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
     const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     );
 

@@ -490,7 +490,7 @@ set_up()
 	shared_ptr<ArcCorrection>(new ArcCorrection);
       arc_correction_sptr->set_up(input_proj_data_info_sptr);
       output_proj_data_info_sptr =
-	arc_correction_sptr->get_arc_corrected_proj_data_info_sptr();
+	arc_correction_sptr->get_arc_corrected_proj_data_info_sptr()->create_shared_clone();
     }
   output_proj_data_info_sptr->reduce_segment_range(-max_segment_num_to_process, 
 					  max_segment_num_to_process);

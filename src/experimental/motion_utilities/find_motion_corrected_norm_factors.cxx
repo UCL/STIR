@@ -83,7 +83,7 @@ static
 shared_ptr<ProjData>
 construct_proj_data(shared_ptr<iostream>& output,
                     const string& output_filename, 
-                    const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
+                    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr);
 
 /*! \ingroup motion
   \brief Class to compute 'time-efficiency' factors for motino corrected projection data
@@ -616,7 +616,7 @@ static
 shared_ptr<ProjData>
 construct_proj_data(shared_ptr<iostream>& output,
                     const string& output_filename, 
-                    const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
+                    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
 {
   vector<int> segment_sequence_in_stream(proj_data_info_ptr->get_num_segments());
   { 

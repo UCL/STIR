@@ -98,7 +98,7 @@ calc_ring1_plus_ring2(const Bin& bin,
 
 static
 void
-set_detection_tangential_coords(shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_cyl_uncomp,
+set_detection_tangential_coords(shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_cyl_uncomp,
                                 const Bin& uncomp_bin, 
                                 DetectionPositionPair<>& detection_position_pair) {
   int det1_num=0;
@@ -209,7 +209,7 @@ BinNormalisationFromECAT8(const string& filename)
 
 Succeeded
 BinNormalisationFromECAT8::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v)
 {
   BinNormalisation::set_up(proj_data_info_ptr_v);
 

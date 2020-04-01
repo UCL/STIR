@@ -91,7 +91,7 @@ public:
   /*! This test is essentially checking if the forward projector can handle the data 
       by calling ForwardProjectorByBin::set_up().
   */
-  virtual Succeeded set_up(const shared_ptr<ProjDataInfo>&);
+  virtual Succeeded set_up(const shared_ptr<const ProjDataInfo>&);
 
   //! Normalise some data
   /*! 
