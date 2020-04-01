@@ -64,7 +64,7 @@ initialise_keymap()
 
 void
 ForwardProjectorByBinNiftyPET::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
        const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr)
 {
     ForwardProjectorByBin::set_up(proj_data_info_sptr,density_info_sptr);
@@ -72,9 +72,9 @@ set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
     _symmetries_sptr.reset(new TrivialDataSymmetriesForBins(proj_data_info_sptr));
 
     // Get span
-    shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+    shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
             proj_data_info_cy_no_ar_cor_sptr(
-                dynamic_pointer_cast<ProjDataInfoCylindricalNoArcCorr>(
+                dynamic_pointer_cast<const ProjDataInfoCylindricalNoArcCorr>(
                     proj_data_info_sptr));
     if (is_null_ptr(proj_data_info_cy_no_ar_cor_sptr))
         error("ForwardProjectorByBinNiftyPET: Failed casting to ProjDataInfoCylindricalNoArcCorr");
