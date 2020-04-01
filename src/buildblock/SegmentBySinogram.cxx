@@ -42,7 +42,7 @@ START_NAMESPACE_STIR
 template <typename elemT>
 SegmentBySinogram<elemT> ::
 SegmentBySinogram(const Array<3,elemT>& v, 
-		  const shared_ptr<ProjDataInfo>& pdi_ptr,
+		  const shared_ptr<const ProjDataInfo>& pdi_ptr,
 		  const int segment_num)
   : 
   Segment<elemT>(pdi_ptr, segment_num), 
@@ -58,7 +58,7 @@ SegmentBySinogram(const Array<3,elemT>& v,
 
 template <typename elemT>  
 SegmentBySinogram<elemT> ::
-SegmentBySinogram(const shared_ptr<ProjDataInfo>& pdi_ptr,
+SegmentBySinogram(const shared_ptr<const ProjDataInfo>& pdi_ptr,
 		  const int segment_num)
   : 
   Segment<elemT>(pdi_ptr, segment_num), 

@@ -173,7 +173,7 @@ SSRB(const string& output_filename,
      const int max_in_segment_num_to_process
      )
 {
-  shared_ptr<ProjDataInfo> out_proj_data_info_sptr(
+  const shared_ptr<const ProjDataInfo> out_proj_data_info_sptr(
     SSRB(*in_proj_data.get_proj_data_info_sptr(),
          num_segments_to_combine,
 	 num_views_to_combine,

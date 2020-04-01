@@ -123,10 +123,10 @@ public:
   //@}
 
 protected:
-  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
   int segment_num;
   
-  inline Segment(const shared_ptr<ProjDataInfo>& proj_data_info_sptr_v,const int s_num);
+  inline Segment(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr_v,const int s_num);
 };
 
 END_NAMESPACE_STIR

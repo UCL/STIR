@@ -263,7 +263,7 @@ set_up(shared_ptr<TargetT > const& target_sptr)
       return Succeeded::no;
     }
 
-  shared_ptr<ProjDataInfo> proj_data_info_sptr =
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr =
     (this->_dyn_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_sptr()->clone();
   proj_data_info_sptr->
     reduce_segment_range(-this->_max_segment_num_to_process,

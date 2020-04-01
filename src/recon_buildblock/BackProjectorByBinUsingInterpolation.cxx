@@ -119,7 +119,7 @@ BackProjectorByBinUsingInterpolation(const bool use_piecewise_linear_interpolati
 }
 
 BackProjectorByBinUsingInterpolation::
-BackProjectorByBinUsingInterpolation(shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
+BackProjectorByBinUsingInterpolation(shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
 				     shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr,
 				     const bool use_piecewise_linear_interpolation,
                                      const bool use_exact_Jacobian)
@@ -131,7 +131,7 @@ BackProjectorByBinUsingInterpolation(shared_ptr<ProjDataInfo> const& proj_data_i
 }
 
 void
-BackProjectorByBinUsingInterpolation::set_up(shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
+BackProjectorByBinUsingInterpolation::set_up(shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
 				     shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr)
 {
   BackProjectorByBin::set_up(proj_data_info_ptr, image_info_ptr);

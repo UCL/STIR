@@ -478,19 +478,19 @@ set_up()
   if (max_segment_num_to_process<0 ||
       max_segment_num_to_process > max_segment_num_available)
     max_segment_num_to_process = max_segment_num_available;
-  shared_ptr<ProjDataInfo>  
-    input_proj_data_info_sptr(input_projdata_ptr->get_proj_data_info_sptr()->clone());
+  const shared_ptr<const ProjDataInfo>
+    input_proj_data_info_sptr(input_projdata_ptr->get_proj_data_info_sptr());
   shared_ptr<ProjDataInfo> output_proj_data_info_sptr;
 
   if (!do_arc_correction)
-    output_proj_data_info_sptr = input_proj_data_info_sptr;
+    output_proj_data_info_sptr = input_proj_data_info_sptr->create_shared_clone();
   else
     {
       arc_correction_sptr = 
 	shared_ptr<ArcCorrection>(new ArcCorrection);
       arc_correction_sptr->set_up(input_proj_data_info_sptr);
       output_proj_data_info_sptr =
-	arc_correction_sptr->get_arc_corrected_proj_data_info_sptr();
+	arc_correction_sptr->get_arc_corrected_proj_data_info_sptr()->create_shared_clone();
     }
   output_proj_data_info_sptr->reduce_segment_range(-max_segment_num_to_process, 
 					  max_segment_num_to_process);

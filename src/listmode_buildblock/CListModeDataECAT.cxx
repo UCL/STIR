@@ -113,7 +113,7 @@ CListModeDataECAT(const std::string& listmode_filename_prefix)
       }
   }
 
-    shared_ptr<ProjDataInfo> tmp(ProjDataInfo::construct_proj_data_info(scanner_sptr,
+    const shared_ptr<const ProjDataInfo> tmp(ProjDataInfo::construct_proj_data_info(scanner_sptr,
                                                                         1,
                                                                         scanner_sptr->get_num_rings() - 1,
                                                                         scanner_sptr->get_max_num_views(),

@@ -65,8 +65,8 @@ int main(int argc, char *argv[])
       return (EXIT_FAILURE);
     }
 
-  shared_ptr<ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr
-    (dynamic_cast<ProjDataInfoCylindricalNoArcCorr *>
+  const shared_ptr<const ProjDataInfoCylindricalNoArcCorr> proj_data_info_sptr
+    (dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>
      (
      ProjDataInfo::ProjDataInfoCTI(scanner_sptr, 
                                    1, scanner_sptr->get_num_rings()-1,

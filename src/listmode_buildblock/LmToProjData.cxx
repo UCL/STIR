@@ -138,7 +138,7 @@ shared_ptr<ProjData>
 construct_proj_data(shared_ptr<iostream>& output,
                     const string& output_filename, 
 		    const ExamInfo& exam_info,
-                    const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
+                    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr);
 
 /**************************************************************
  The 3 parsing functions
@@ -793,7 +793,7 @@ shared_ptr<ProjData>
 construct_proj_data(shared_ptr<iostream>& output,
                     const string& output_filename, 
 		    const ExamInfo& exam_info,
-                    const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
+                    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
 {
   shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo(exam_info));
 

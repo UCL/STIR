@@ -69,11 +69,11 @@ public:
 
 public:
   //! Construct from proj_data_info pointer, view and segment number. Data are set to 0.
-  inline Viewgram(const shared_ptr<ProjDataInfo>& proj_data_info_ptr, 
+  inline Viewgram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr, 
                   const int v_num, const int s_num); 
 
   //! Construct with data set to the array.
-  inline Viewgram(const Array<2,elemT>& p,const shared_ptr<ProjDataInfo>& proj_data_info_ptr, 
+  inline Viewgram(const Array<2,elemT>& p,const shared_ptr<const ProjDataInfo>& proj_data_info_ptr, 
                   const int v_num, const int s_num); 
   
 
@@ -137,7 +137,7 @@ public:
   
 private:
   
-  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
   int view_num;
   int segment_num;  
 };

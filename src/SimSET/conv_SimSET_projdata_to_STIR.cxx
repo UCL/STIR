@@ -105,7 +105,7 @@ int main(int argc,char **argv)
   scanner_sptr->set_num_rings(num_rings);
   scanner_sptr->set_ring_spacing(scanner_length/num_rings);
   scanner_sptr->set_num_detectors_per_ring(num_views*2);
-  shared_ptr<ProjDataInfo> proj_data_info_sptr(
+  const shared_ptr<ProjDataInfo> proj_data_info_sptr(
     ProjDataInfo::ProjDataInfoCTI( scanner_sptr,
 				   /*span=*/1, 
 				   /*max_delta=*/max_ring_difference,

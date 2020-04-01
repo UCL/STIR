@@ -33,7 +33,7 @@ START_NAMESPACE_STIR
 
 template <typename elemT>
 Segment<elemT>::
-Segment( const shared_ptr<ProjDataInfo>& proj_data_info_sptr_v,const int s_num)
+Segment( const shared_ptr<const ProjDataInfo>& proj_data_info_sptr_v,const int s_num)
  :
  proj_data_info_sptr(proj_data_info_sptr_v),
  segment_num(s_num)

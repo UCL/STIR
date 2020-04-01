@@ -109,7 +109,7 @@ public:
   ProjData();
   //! construct by specifying info. Data will be undefined.
   ProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
-           const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
+           const shared_ptr<const ProjDataInfo>& proj_data_info_ptr);
 #if 0
   // it would be nice to have something like this. However, it's implementation
   // normally fails as we'd need to use set_viewgram or so, which is virtual, but
@@ -303,7 +303,7 @@ public:
 protected:
 //   shared_ptr<ExamInfo> exam_info_sptr;
 
-   shared_ptr<ProjDataInfo> proj_data_info_sptr;
+   shared_ptr<const ProjDataInfo> proj_data_info_sptr;
 };
 
 

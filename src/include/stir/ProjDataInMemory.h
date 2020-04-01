@@ -71,7 +71,7 @@ public:
         If \c false, the data is undefined until you set it yourself.
   */
   ProjDataInMemory (shared_ptr<ExamInfo> const& exam_info_sptr,
-		    shared_ptr<ProjDataInfo> const& proj_data_info_ptr,
+		    shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
                     const bool initialise_with_0 = true);
 
   //! constructor that copies data from another ProjData

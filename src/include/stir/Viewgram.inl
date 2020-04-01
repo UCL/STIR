@@ -97,7 +97,7 @@ Viewgram<elemT>::get_proj_data_info_sptr() const
 template <typename elemT>
 Viewgram<elemT>::
 Viewgram(const Array<2,elemT>& p, 
-	 const shared_ptr<ProjDataInfo>& pdi_sptr,
+	 const shared_ptr<const ProjDataInfo>& pdi_sptr,
 	 const int v_num, const int s_num) 
   :
   Array<2,elemT>(p), proj_data_info_sptr(pdi_sptr),
@@ -115,7 +115,7 @@ Viewgram(const Array<2,elemT>& p,
 
 template <typename elemT>
 Viewgram<elemT>::
-Viewgram(const shared_ptr<ProjDataInfo>& pdi_sptr,
+Viewgram(const shared_ptr<const ProjDataInfo>& pdi_sptr,
 	 const int v_num, const int s_num) 
   : 
   Array<2,elemT>(IndexRange2D (pdi_sptr->get_min_axial_pos_num(s_num),

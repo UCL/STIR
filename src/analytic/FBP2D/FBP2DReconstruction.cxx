@@ -227,7 +227,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
       //  full_log << "SSRB combining " << num_segments_to_combine 
       //           << " segments in input file to a new segment 0\n" << std::endl; 
 
-      shared_ptr<ProjDataInfo> 
+      shared_ptr<const ProjDataInfo> 
 	ssrb_info_sptr(SSRB(proj_data_info_cyl, 
 			    num_segments_to_combine,
 			    1, 0,
@@ -255,7 +255,7 @@ actual_reconstruct(shared_ptr<DiscretisedDensity<3,float> > const & density_ptr)
   float tangential_sampling;
   // TODO make next type shared_ptr<ProjDataInfoCylindricalArcCorr> once we moved to boost::shared_ptr
   // will enable us to get rid of a few of the ugly lines related to tangential_sampling below
-  shared_ptr<ProjDataInfo> arc_corrected_proj_data_info_sptr;
+  shared_ptr<const ProjDataInfo> arc_corrected_proj_data_info_sptr;
 
   // arc-correction if necessary
   ArcCorrection arc_correction;

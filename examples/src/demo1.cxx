@@ -41,9 +41,9 @@ int main()
   const std::string input_filename =
     ask_filename_with_extension("Input file",".hs");
 
-  shared_ptr<ProjData> 
+  const shared_ptr<const ProjData> 
     proj_data_sptr(ProjData::read_from_file(input_filename));
-  shared_ptr<ProjDataInfo> 
+  const shared_ptr<const ProjDataInfo> 
     proj_data_info_sptr(proj_data_sptr->get_proj_data_info_sptr()->clone());
 
   /////////////// template image (for sizes etc)
