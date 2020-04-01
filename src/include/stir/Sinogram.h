@@ -102,8 +102,6 @@ public:
   void resize(const IndexRange<2>& range);
 
   //! Get shared pointer to proj data info
-  /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
-    shared pointer will be affected. */
   inline shared_ptr<const ProjDataInfo>
     get_proj_data_info_sptr() const;
 

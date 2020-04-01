@@ -105,9 +105,7 @@ public:
   const ProjDataInfoCylindricalArcCorr& 
     get_arc_corrected_proj_data_info() const;
   //! Returning a shared_ptr to the object
-  /*! \warning It is dangerous to change the object pointed to. Use
-      this function only if you are sure that this will never happen.
-      \todo return a shared_ptr<ProjDataInfoCylindricalArcCorr>
+  /*! \todo return a shared_ptr<ProjDataInfoCylindricalArcCorr>
       after switching to boost::shared_ptr.
   */
   shared_ptr<const ProjDataInfo> 
@@ -121,9 +119,7 @@ public:
   const ProjDataInfoCylindricalNoArcCorr& 
     get_not_arc_corrected_proj_data_info() const;
   //! Returning a shared_ptr to the object
-  /*! \warning It is dangerous to change the object pointed to. Use
-      this function only if you are sure that this will never happen.
-      \todo return a shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+  /*! \todo return a shared_ptr<ProjDataInfoCylindricalNoArcCorr>
       after switching to boost::shared_ptr.
   */
   shared_ptr<const ProjDataInfo> 
