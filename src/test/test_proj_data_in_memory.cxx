@@ -8,7 +8,7 @@
   \brief Test program for stir::ProjDataInMemory
 
   \author Kris Thielemans
-  \author Dniel Deidda
+  \author Daniel Deidda
 
 */
 /*
