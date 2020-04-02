@@ -306,7 +306,7 @@ ScatterSimulationTests::test_scatter_simulation()
     }
 
     sss->set_activity_image_sptr(act_density);
-    sss->default_downsampling();
+    sss->downsample_scanner();
 
     shared_ptr<ProjDataInfoCylindricalNoArcCorr> output_projdata_info(sss->get_template_proj_data_info_sptr());
     shared_ptr<ProjDataInMemory> sss_output(new ProjDataInMemory(exam, output_projdata_info));

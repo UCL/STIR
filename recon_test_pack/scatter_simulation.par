@@ -12,7 +12,6 @@ activity image filename := ${ACTIVITY_IMAGE}
 
 output filename prefix := ${OUTPUT_PREFIX}
 
-scatter level := 1
 attenuation threshold := 0.01 
 random := ${RANDOM}
 use cache := 1

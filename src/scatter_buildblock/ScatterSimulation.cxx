@@ -244,8 +244,8 @@ ScatterSimulation::set_defaults()
     this->zoom_z = -1.f;
     this->zoom_size_xy = -1;
     this->zoom_size_z = -1;
-    this->use_default_downsampling = false;
-    this->downsample_scanner_dets = -1;
+    this->downsample_scanner_bool = false;
+    this->downsample_scanner_dets = 64;
     this->downsample_scanner_rings = -1;
     this->density_image_filename = "";
     this->activity_image_filename = "";
@@ -301,8 +301,8 @@ ScatterSimulation::initialise_keymap()
                          &this->attenuation_threshold);
     this->parser.add_key("output filename prefix",
                          &this->output_proj_data_filename);
-    this->parser.add_key("use default downsampling",
-                         &this->use_default_downsampling);
+    this->parser.add_key("downsample scanner",
+                         &this->downsample_scanner_bool);
     this->parser.add_key("random", &this->random);
     this->parser.add_key("use cache", &this->use_cache);
 }
@@ -328,9 +328,6 @@ post_processing()
     if (this->output_proj_data_filename.size() > 0)
         this->set_output_proj_data(this->output_proj_data_filename);
 
-    if(this->use_default_downsampling)
-        default_downsampling();
-
     return false;
 }
 
@@ -355,6 +352,9 @@ set_up()
 
     if(is_null_ptr(density_image_sptr))
         error("ScatterSimulation: density image not set. Aborting.");
+
+    if(downsample_scanner_bool)
+        downsample_scanner();
 
     if(is_null_ptr(density_image_for_scatter_points_sptr))
     {
@@ -494,6 +494,12 @@ downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
     int new_y = zoom_size_xy == -1 ? static_cast<int>(old_y * zoom_xy + 1) : zoom_size_xy;
     int new_z = zoom_size_z == -1 ? static_cast<int>(old_z * zoom_z + 1) : zoom_size_z;
 
+    // make sizes odd to avoid edge effects and half-voxel shifts
+    if (new_x%2 == 0)
+      new_x++;
+    if (new_y%2 == 0)
+      new_y++;
+        
     const CartesianCoordinate3D<float> new_voxel_size =
       tmp_att.get_voxel_size() / make_coordinate(zoom_z, zoom_xy, zoom_xy);
     // create new image of appropriate size
@@ -666,14 +672,21 @@ set_exam_info_sptr(const shared_ptr<ExamInfo>& arg)
 Succeeded
 ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
 {
-    if (new_num_rings == -1)
+    if (new_num_rings <= 0)
     {
 	if(downsample_scanner_rings > 0)
             new_num_rings = downsample_scanner_rings;
-        else
+        else if (!is_null_ptr(proj_data_info_cyl_noarc_cor_sptr))
+	  {
+	    const float total_axial_length = proj_data_info_cyl_noarc_cor_sptr->get_scanner_sptr()->get_num_rings() *
+	      proj_data_info_cyl_noarc_cor_sptr->get_scanner_sptr()->get_ring_spacing();
+
+	    new_num_rings = round(total_axial_length / 20.F + 0.5F);
+	  }
+	else
             return Succeeded::no;
     }
-    if (new_num_dets == -1)
+    if (new_num_dets <= 0)
     {
         if(downsample_scanner_dets > 0)
             new_num_dets = downsample_scanner_dets;
@@ -720,27 +733,18 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
     return Succeeded::yes;
 }
 
-Succeeded ScatterSimulation::default_downsampling(bool all_images)
+Succeeded ScatterSimulation::downsample_images_to_scanner_size()
 {
     if(is_null_ptr(proj_data_info_cyl_noarc_cor_sptr))
             return Succeeded::no;
 
-    float total_axial_length = proj_data_info_cyl_noarc_cor_sptr->get_scanner_sptr()->get_num_rings() *
-            proj_data_info_cyl_noarc_cor_sptr->get_scanner_sptr()->get_ring_spacing();
+    // Downsample the activity and attenuation images
+    shared_ptr<VoxelsOnCartesianGrid<float> > tmpl_image( new VoxelsOnCartesianGrid<float>(*proj_data_info_cyl_noarc_cor_sptr));
 
-    int new_num_rings = round(total_axial_length / 20.F + 0.5F);
-
-    if(downsample_scanner(new_num_rings, 42) == Succeeded::no)
-        return Succeeded::no;
-
-
-    // Downsample the activity and attanuation images
-    shared_ptr<VoxelsOnCartesianGrid<float> > tmpl_density( new VoxelsOnCartesianGrid<float>(*proj_data_info_cyl_noarc_cor_sptr));
-
-    if(!is_null_ptr(activity_image_sptr) && all_images)
+    if(!is_null_ptr(activity_image_sptr))
     {
         VoxelsOnCartesianGrid<float>* tmp_act = dynamic_cast<VoxelsOnCartesianGrid<float>* >(activity_image_sptr.get());
-        VoxelsOnCartesianGrid<float>* tmp = tmpl_density->get_empty_copy();
+        VoxelsOnCartesianGrid<float>* tmp = tmpl_image->get_empty_copy();
 
 	ZoomOptions scaling(ZoomOptions::preserve_projections);
         zoom_image(*tmp, *tmp_act, scaling);
@@ -749,10 +753,10 @@ Succeeded ScatterSimulation::default_downsampling(bool all_images)
         this->remove_cache_for_integrals_over_activity();
     }
 
-    if(!is_null_ptr(density_image_sptr) && all_images)
+    if(!is_null_ptr(density_image_sptr))
     {
         VoxelsOnCartesianGrid<float>* tmp_att = dynamic_cast<VoxelsOnCartesianGrid<float>* >(density_image_sptr.get());
-        VoxelsOnCartesianGrid<float>* tmp = tmpl_density->get_empty_copy();
+        VoxelsOnCartesianGrid<float>* tmp = tmpl_image->get_empty_copy();
 
 	ZoomOptions scaling(ZoomOptions::preserve_values);
         zoom_image(*tmp, *tmp_att, scaling);

@@ -68,7 +68,7 @@ set_defaults()
     this->run_debug_mode = false;
     this->override_scanner_template = true;
     this->override_density_image = true;
-    this->override_density_image_for_scatter_points = false;
+    this->downsample_scanner_bool = true;
     this->remove_interleaving = true;
     this->atten_image_filename = "";
     this->norm_coeff_filename = "";
@@ -129,13 +129,11 @@ initialise_keymap()
                                  &this->scatter_simulation_sptr);
     this->parser.add_key("scatter simulation parameters file",
                          &this->scatter_sim_par_filename);
-    this->parser.add_key("use default downsampling in scatter simulation",
-                         &this->use_default_downsampling);
+    this->parser.add_key("use scanner downsampling in scatter simulation",
+                         &this->downsample_scanner_bool);
 
     this->parser.add_key("override attenuation image",
                          &this->override_density_image);
-    this->parser.add_key("override attenuation image for scatter points",
-                         &this->override_density_image_for_scatter_points);
     this->parser.add_key("override scanner template",
                          &this->override_scanner_template);
 
@@ -442,12 +440,6 @@ set_up()
         this->scatter_simulation_sptr->set_density_image_sptr(this->atten_image_sptr);
     }
 
-    if(this->override_density_image_for_scatter_points)
-    {
-        info("ScatterEstimation: Over-riding attenuation image for scatter points! (The file and settings set in the simulation par file are discarded)");
-        this->scatter_simulation_sptr->set_density_image_for_scatter_points_sptr(this->atten_image_sptr);
-    }
-
     //    if(this->override_initial_activity_image)
     //    {
     //        info("ScatterEstimation: Over-riding activity image! (The file and settings set in the simulation par file are discarded)");
@@ -471,8 +463,8 @@ set_up()
 
     }
 
-    if (this->use_default_downsampling)
-        this->scatter_simulation_sptr->default_downsampling(false);
+    if (this->downsample_scanner_bool)
+        this->scatter_simulation_sptr->downsample_scanner();
 
     // Check if Load a mask proj_data
 

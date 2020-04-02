@@ -181,14 +181,20 @@ public:
     void downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
                           int _size_xy = -1, int _size_z = -1);
 
+    //! Downsample the scanner keeping the total axial length the same.
+    /*! If \c new_num_rings<=0, use rings of approximately 2 cm thickness.
+        If \c new_num_dets <=0, use the default set (currently set in set_defaults())
+    */
     Succeeded downsample_scanner(int new_num_rings = -1, int new_num_dets = -1);
-    //! Dowsample the scanner to 32 detectors per ring and rings of 2 cm length
-    //! (keeping the total axial length the same.
-    //! The image for the scatter simulation will be an appropriate for the scanner.
-    //! For the image for scatter points the default option is to be the same as the previous.
-    //! \warning Ideally default_downsampling() should be called after having set all
-    //! data, or called set_up() which will perform most checks.
-    Succeeded default_downsampling(bool all_images = true);
+    //! Downsamples activity and attenuation images to voxel sizes appropriate for the (downsampled) scanner.
+    /*! This step is not necessary but could result in a speed-up in computing the line integrals.
+        It also avoids problems with too high resolution images compared to the downsampled scanner.
+
+	Another way to resolve that is to smooth the images before the scatter simulation.
+	This is currently not implemented in this class.
+	\warning This function should be called after having set all data.
+    */
+    Succeeded downsample_images_to_scanner_size();
 
     //! \name Compton scatter cross sections
     //@{
@@ -408,7 +414,7 @@ protected:
     //! Number of detectors per ring of downsampled scanner
     int downsample_scanner_dets;
 
-    bool use_default_downsampling;
+    bool downsample_scanner_bool;
 
  private:
     int total_detectors;

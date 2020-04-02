@@ -55,7 +55,8 @@ run in 2d projdata := 1
 
 ; ScatterSimulation parameters 
 scatter simulation parameters file := ${scatter_pardir}/scatter_simulation.par 
-use default downsampling in scatter simulation := 1
+; next option is the default
+use scanner downsampling in scatter simulation := 1
 
 reconstruction parameter template file := ${scatter_pardir}/run_reconstruction.par 
 

@@ -293,9 +293,6 @@ private:
     //! This bool will allow the ScatterEstimation to override the value of
     //! the density image set in ScatterSimulation par file (defaults to \c true)
     bool override_density_image;
-    //! This bool will allow the ScatterEstimation to override the value of
-    //! the density image for scatter points set in ScatterSimulation par file (defaults to \c true)
-    bool override_density_image_for_scatter_points;
     //! This will over-ride the scanner template in scatter sinogram simulation (defaults to \c true)
     bool override_scanner_template;
     //! In debug mode a lot of extra files are going to be saved in the disk.
@@ -313,7 +310,7 @@ private:
     //! Default value = 0.4
     float min_scale_value;
 
-    bool use_default_downsampling;
+    bool downsample_scanner_bool;
     //!
     unsigned int half_filter_width;
 
