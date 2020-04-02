@@ -141,17 +141,20 @@ void wm_calculation( const int kOS,
 			}
 		}
 	}	
-	int ne=0;
+	int ne;
 	//=== LOOP1: IMAGE ROWS =======================================================================
 #ifdef STIR_OPENMP
-#pragma omp parallel for schedule(dynamic) reduction(+:ne)
+#pragma omp parallel 
+    {
+omp_set_num_threads(omp_get_num_procs());
+#endif
+ ne=0;
+#ifdef STIR_OPENMP
+#pragma omp parallel for reduction(+:ne)//schedule(dynamic) 
 #endif
 
 	for ( int i = 0 ; i < vol.Nrow ; i++ ){
 		vox.irow=i;
-        #ifdef STIR_OPENMP
-        omp_set_num_threads(omp_get_num_procs());
-        #endif
                 //cout << "weights: " << 100.*(vox.irow+1)/vol.Nrow << "%" << endl;
 		
 		vox.y = vol.y0 + vox.irow * vol.szcm ;       // y coordinate of the voxel (index 0->Nrow-1: irow)
@@ -159,10 +162,9 @@ void wm_calculation( const int kOS,
 		//=== LOOP2: IMAGE COLUMNS =================================================================
 		
 		for ( vox.icol = 0 ; vox.icol < vol.Ncol ; vox.icol++ ){
-			stir::InvertAxis invert;
+			
 			vox.x  = vol.x0 + vox.icol * vol.szcm ;     // x coordinate of the voxel (index 0->Ncol-1: icol)
-//			Inverting column index: using "z" as it inverts values in the range 0 - N as opposed to -N/2 - N/2-1
-			vox.ip = vox.irow * vol.Ncol + invert.invert_axis_index(vox.icol,vol.Ncol, "z") ;	 // in-plane index of the voxel considering the slice as an array
+			vox.ip = vox.irow * vol.Ncol + vox.icol ;	 // in-plane index of the voxel considering the slice as an array
  			
 			//... to apply mask .........................................
 			
@@ -270,6 +272,7 @@ void wm_calculation( const int kOS,
                         //... fill image STIR indices ...........................
                         
                         if ( wm.do_save_STIR ){
+                            stir::InvertAxis invert;
                             wm.nx[ vox.iv ] = (short int)invert.invert_axis_index(( vox.icol - (int) floor( vol.Ncold2 ) ),vol.Ncold2*2, "x");  // centered index for STIR format
 							wm.ny[ vox.iv ] = (short int)( vox.irow - (int) floor( vol.Nrowd2 ) );  // centered index for STIR format
 							wm.nz[ vox.iv ] = (short int)  vox.islc ;                               // non-centered index for STIR format
@@ -279,14 +282,21 @@ void wm_calculation( const int kOS,
                         
 						wm.col[ jp ][ wm.ne[ jp ] ] = vox.iv;
 						wm.val[ jp ][ wm.ne[ jp ] ] = weight;
+                        
                         #pragma omp critical
-                        ne++;
-                        #pragma omp critical
+                        #pragma omp parallel sections
+                        {
+                            #pragma omp section
+                        {
+//                            #pragma omp critical 
+                            ne++;
+//                            #pragma omp critical
 						wm.ne[ jp ]=ne;
-                        #pragma omp critical
-                        cout<< "ne "<< ne<< " "<<NITEMS[ jp ]<<" "<<omp_get_thread_num()<<endl;
-						#pragma omp critical
+//                        #pragma omp critical
+                        cout<< " ne "<< ne<< " "<<NITEMS[ jp ]<<" "<<omp_get_thread_num()<<endl;
+//						#pragma omp critical
 						if ( wm.ne[ jp ] >= NITEMS[ jp ] ) error_weight3d(45, "" );
+                        }}
 					}   
 				}                    // end of LOOP4: image slices
 			}                        // end of LOOP3: projection angle into subset
@@ -314,6 +324,11 @@ void wm_calculation( const int kOS,
 		}
 		delete [] attpth;
 	}
+
+#ifdef STIR_OPENMP
+    omp_set_num_threads(1);
+#endif
+     }
 }
 
 
