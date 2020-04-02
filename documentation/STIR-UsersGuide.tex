@@ -1862,7 +1862,7 @@ the default backprojector used by FBP3DRP, has a central artefact
 on some systems (including Sparc and 64-bit AMD and Intel processors).
 
 \subsection{
-Scatter Correction}
+Scatter Estimation and simulation}
 Coincidence events where one or more of the photons are scattered form a major contribution to the data
 in 3D PET. This scatter background needs to be estimated and taken into account during reconstruction. In
 \textit{STIR 2.1}, a version of the Single Scatter Simulation ( \textit{SSS}) algorithm [Wat96, Wat00,
@@ -1870,14 +1870,94 @@ Wat97, Wat04, Wer02, Poe03] has been implemented and evaluated [Tso04].
 Polycarpou et al describe in detail how to perform scatter correction
 using STIR [Pol11].
 
-\subsubsection{Data Initialisation \label{sec:scatter_data_initialisation}}
+Since \textit{STIR 4.0}, there is a class \texttt{ScatterEstimation} and executable
+\texttt{scatter\_estimation} that performs the iterative process necessary to estimate
+the scatter from measured data.\footnote{%
+There is also a script \texttt{estimate\_scatter.sh} that performs most of the steps by
+calling various other executables, as detailed below. However, it is strongly recommended to
+ignore this script.}
+
+A full example of scatter estimation (and other steps) is provided in \texttt{examples/Siemens-mMR}.
+The following describes the various components.
+
+\subsubsection{Scatter simulation}
+The actual scatter simulation process consists of $2$ steps:
+\begin{itemize} 
+\item Use \textbf{simulate\_scatter} to find subsampled (single) scatter estimate from current emission image
+\item Use \textbf{upsample\_and\_fit\_single\_scatter}
+\end{itemize} 
+These steps are now discussed in more detail.\\[1cm]
+
+\cmdline{simulate\_scatter simulate\_scatter.par}
+Note that this if you enable the \texttt{downsample\_scanner} option, the class currently simulates
+scatter for the downsampled scanner, and needs to be followed by upsampling.
+
+Example \texttt{simulate\_scatter.par}
+\begin{verbatim}
+Scatter Simulation Parameters:=
+; threshold below which not to bother putting a scatter point
+; in a voxel (in cm^-1)
+   attenuation_threshold :=.01
+; Place the scatter points in a random position of a voxel or in the centre
+   random := 1
+; Caching (of the line integrals) speeds up the estimation drastically.
+   use_cache := 1
+   activity_image_filename := ACTIVITY_IMAGE
+   attenuation_image_filename := DENSITY_IMAGE
+   template_projdata_filename := SUBSAMPLED_PROJECTION_DATA_TEMPLATE
+   output_filename_prefix := OUTPUT_PROJECTION_DATA
+
+   ; downsample the template projection data
+   downsample scanner := 0 ; default value is off!
+   ; if the above is 1, let STIR do the downsampling.
+   ; This is safer than doing it yourself, physical size will be preserved etc.
+   ; These settings try to sensible defaults
+   downsampled scanner number of detectors per ring := -1
+   downsampled scanner number of rings := -1
+
+; advanced usage (don't use these!)
+   ; use your own down-sampled attenuation image
+   attenuation_image_for_scatter_points_filename :=
+   ; or specify dimensions yourself
+   zoom XY for attenuation image for scatter points := -1
+   zoom Z for attenuation image for scatter points := -1
+   XY size of downsampled image for scatter points := -1
+   Z size of downsampled image for scatter points := -1
+   ; you can write the zoomed image to file
+   attenuation image for scatter points output filename :=
+
+End Scatter Simulation Parameters:=
+\end{verbatim}
+\begin{description}
+\item[activity\_image]
+current estimate of the activity (or emission) image
+\item[attenuation\_image] mu-map or attenuation image (at 511 keV and in units cm$^{-1}$),
+used to compute the line-integrals (in the exponentials) in the Klein-Nishina formula.
+\item[template\_proj\_data]
+``sinogram'' template. If \texttt{downsample\_scanner} is on, it
+is first downsampled.
+\item[random]
+select random scatter points in each selected scatter voxel (as in [Wat96])
+\item[attenuation\_threshold]
+allows excluding voxels with too low attenuation as scatter points (all voxels will be used for the attenuation line integrals)
+\item[attenuation\_image\_for\_scatter\_points] "subsampled" attenuation image (at 511 keV and in units cm${}^{-1}$), 
+used to select scatter points (and their corresponding mu),
+normally computed automatically. This is used to speed up your
+ calculation. When caching line integrals (which is the default), it also means that the scatter estimation
+ needs less memory.
+\end{description}
+The reason we use $2$ different attenuation images is to be able to investigate if the sampling used for
+the attenuation in those $2$ situations makes any difference. Unfortunately, we didn't complete that
+investigation so cannot recommend what to use for the original attenuation image (for large uniform
+objects, it won't make any difference, for objects with small features of high attenuation, it might). 
+As discussed in the literature however, you can safely reduce the number of scatter points and still get
+good estimates.
+
+\textit{Optional Data Initialisation}
+If you want more control over the scatter simulation, you can provide the following input data yourself. Note
+however that is not recommended as you can easily do things wrong.
 \begin{itemize}
-\item Apply randoms correction (and optionally normalisation) to the emission data (this will be used to scale the scatter estimate)
-\item Reconstruct/get attenuation image (ideally use odd number of voxels for zoom\_image step below).
-\item Calculate Attenuation Correction Factors (ACFs)
-\item Use \textbf{create\_tail\_mask\_from\_ACFs} to estimate the region that will be used for scaling
-\item Reconstruct emission image without scatter correction
-\item Construct a ``sub-sampled sinogram" template (i.e. same geometrical characteristics but
+\item You can construct a ``sub-sampled sinogram" template (i.e. same geometrical characteristics but
 less rings and detectors without arc-correction) as suggested in literature (e.g. in [Tso04]). This template
 sinogram should have no compression (number of views = half the number of detectors per ring, and span = 1 (see the
 STIR glossary). 
@@ -1886,19 +1966,13 @@ detector pairs. You can reduce this if your scanner has a narrower FOV, but be c
 make it too small (otherwise you will get strange behaviour at the edge when upsampling the scatter estimate).
 Because of a limitation in the upsampling routine, it is currently recommended to have ring difference 0 only in this
 template.
-\item Construct a ``subsampled" attenuation image using \texttt{zoom\_image} and \texttt{stir\_math}. 
- STIR SSS will select 1 scatter point per voxel in this attenuation image. This can be used to speed up your
- calculation. When caching line integrals (which is the default), it also means that the scatter estimation
- needs less memory.\\
- Careful: \texttt{zoom\_image} will scale the voxel values with the product of the zoom-factors in each dimension. 
- You need to undo this scaling for the ``subsampled'' image.    
+\item You can construct a ``subsampled" attenuation image using \texttt{zoom\_image}. 
+ STIR SSS will select 1 scatter point per voxel in this attenuation image.\\
+ Careful: \texttt{zoom\_image} will by default scale the voxel values.    
  For example
  \begin{verbatim}
   # zoom to larger voxels 
-  zoom_image zoomed.hv image_mu.hv 21 .25 0 0 5 .1626
-  # correct back to mu-values
-   stir_math --accumulate  --including-first --times-scalar .1626 \
-     --times-scalar .25 --times-scalar .25  zoomed.hv
+  zoom_image --scaling preserve-values zoomed.hv image_mu.hv 21 .25 0 0 5 .1626
  \end{verbatim}
   The exact number of voxels and zoom does not matter too much (as long as you cover the 
   whole object), but the offset parameters to zoom\_image
@@ -1906,70 +1980,6 @@ template.
   \textbf{HAVE TO BE ODD}\footnote{See the Wiki for more information on offset conventions.}
 \end{itemize}
 
-\cmdline{%
-create\_tail\_mask\_from\_ACFs		--ACF-filename <projdata> \textbackslash \\
-					--ACF-threshold <number (1.1)> \textbackslash \\
-					--output-filename <projdata> \textbackslash \\
-					--safety-margin <0>%
-}
-\begin{description}
-\item[ACF-filename] Attenuation Correction Factors Projection Data Filename
-\item[ACF-threshold] Value used to threshold ACF and creates the mask, defaults to 1.01
-\item[safety-margin] This dilates the mask for a number of safety bins in tangential direction
-\item[output-filename] The file that new projection data will be stored
-\end{description}
-
-\subsubsection{SSS}
-The actual scatter estimation process consists of $2$ steps:
-\begin{itemize} 
-\item Use \textbf{estimate\_scatter} to find subsampled (single) scatter estimate from current emission image
-\item Use \textbf{upsample\_and\_fit\_single\_scatter}
-\end{itemize} 
-These steps are now discussed in more detail.\\[1cm]
-
-\cmdline{estimate\_scatter scatter.par}
-Example \texttt{scatter.par}
-\begin{verbatim}
-Scatter Estimation Parameters:=
-; threshold below which not to bother putting a scatter point
-; in a voxel (in cm^-1)
-   attenuation_threshold :=.01
-; Place the scatter points in a random position of a voxel or in the centre
-   random := 1
-; Caching (of the line integrals) speeds up the estimation drastically.
-   use_cache := 1
-; The resolution of the scanner (at 511 keV) as given in the literature
-; given as a ratio (example value is 22%)
-   energy_resolution :=.22
-; Acquisition settings
-   lower_energy_threshold :=350
-   upper_energy_threshold :=650
-   activity_image_filename := ACTIVITY_IMAGE
-   density_image_filename := DENSITY_IMAGE
-   density_image_for_scatter_points_filename := LOW_RESOLUTION_DENSITY_IMAGE
-   template_proj_data_filename := SUBSAMPLED_PROJECTION_DATA_TEMPLATE
-   output_filename_prefix := OUTPUT_PROJECTION_DATA
-End Scatter Estimation Parameters:=
-\end{verbatim}
-\begin{description}
-\item[activity\_image]
-current estimate of the activity (or emission) image
-\item[density\_image] mu-map or attenuation image (at 511 keV and in units cm$^{-1}$),
-used to compute the line-integrals (in the exponentials) in the Klein-Nishina formula.
-\item[density\_image\_for\_scatter\_points] "subsampled" attenuation image (at 511 keV and in units cm${}^{-1}$), 
-used to select scatter points (and their corresponding mu),
-as discussed in section \ref{sec:scatter_data_initialisation}
-\item[template\_proj\_data]
-``subsampled sinogram'' template,
-as discussed in section \ref{sec:scatter_data_initialisation}
-\end{description}
-The reason we use $2$ different attenuation images is to be able to investigate if the sampling used for
-the attenuation in those $2$ situations makes any difference. Unfortunately, we didn't complete that
-investigation so cannot recommend what to use for the original attenuation image (for large uniform
-objects, it won't make any difference, for objects with small features of high attenuation, it might). 
-As discussed in the literature however, you can safely reduce the number of scatter points and still get
-good estimates. 
-\\[1cm]
 \cmdline{%
 upsample\_and\_fit\_single\_scatter \textbackslash \\
 					--min-scale-factor <number> \textbackslash \\
@@ -2019,39 +2029,132 @@ normalisation factors, $U$ the upsampled scatter estimate. (If no normalisation 
 final scatter estimate:
 \[S_b =  \alpha U_b/N_b \]
 
-The procedure of scaling involves B-Splines interpolation for the tangential (Cubic), axial (Cubic) and
+The procedure of upsampling involves B-Splines interpolation for the tangential (Cubic), axial (Cubic) and
 view (Linear) dimensions, while for oblique segments, currently the interpolation is achieved by applying the
 pseudo-inverse transform of Single Slice Rebinning as described in [Tso05].
 
-\subsubsection{Iterative loop (if necessary)}
+\subsubsection{Scatter estimation}
 The scatter estimation is based on images that do not include scatter, therefore an iterative procedure
-is needed such that scatter is eliminated progressively. In the first iteration, scatter (B.2) is
-overestimated and thus images are overcorrected (B.3) for it. Then, in the second iteration (B.2) scatter
-is underestimated. The mean value of the two scatter estimates can be used for scatter correction. Two
+is needed such that scatter is eliminated progressively. In the first iteration, scatter is
+overestimated and thus images are overcorrected for it. Then, in the second iteration scatter
+is underestimated. The mean value of the two scatter estimates can be used for scatter correction. Two/three
 iterations are usually enough to estimate a good approximation of scatter.
 
-\begin{itemize}
-\item Reconstruct emission image with scatter estimate\\
-Two options exist:
-\begin{itemize}
-\item	FBP: Correct the scatter estimate for attenuation and subtract from the precorrected emission data. 
-Run FBP with sufficient filtering.
-   \[\mathrm{Image} = \mathrm{FBP}\left(\mathrm{ACF}*(N*(P-R)-S)\right) \]
-\item Iterative (e.g. OSEM or OSSPS): Use the following for the additive sinogram (\textit{A}).
-    \[A=(R*N+S)*(\mathrm{ACF})  \]
-\end{itemize}
-where
-  \begin{description}
-   \item[N] Normalization Factors, 
-   \item[ACF] Attenuation Correction Factors,
-   \item[R] Random Projection Data,
-   \item[S] Scatter Projection Data as estimated using  \textit{STIR},
-   \item[P] Measured Projection Data (prompts)
-  \end{description}
-\end{itemize}
+\cmdline{%
+estimate\_scatter scatter\_estimate.par}
+Example \texttt{scatter\_estimate.par}
+\begin{verbatim}
+Scatter Estimation Parameters :=
+
+;;; input
+
+; Measured data
+input file := ${sino_input}
+
+; Attenuation Image
+attenuation image filename := ${atnimg}
+
+; Normalisation coefficients & attenuation data
+; If only one normalisation input is set; 
+; it will be assumed that they are attenuation correction factors. 
+;; The algorithm will assume that the first is normalisation, i.e. the 
+;; efficiency factors and the second the attenuation. You should not 
+;; change this order. 
+Bin Normalisation type := Chained
+	Chained Bin Normalisation Parameters:=
+   Bin Normalisation to apply first:= from ProjData
+           Bin Normalisation From ProjData :=
+            normalisation projdata filename:= ${NORM}
+       End Bin Normalisation From ProjData:=
+
+	Bin Normalisation to apply second:= From ProjData
+		Bin Normalisation From ProjData :=
+           normalisation projdata filename:= ${acf3d}
+        End Bin Normalisation From ProjData:=
+		
+END Chained Bin Normalisation Parameters:=
+
+;; Background data (not  normalised)
+background projdata filename := ${randoms3d}
+
+;;; Output
+; Export scatter estimates of each iteration 
+export scatter estimates of each iteration := 1
+
+output scatter estimate name prefix := ${scatter_prefix}
+output additive estimate name prefix:= ${total_additive_prefix}
+
+;;; Parameters
+
+;Run in debug mode
+;; A new folder called extras will be created, in which many 
+;; extra files will be stored (default is off)
+run in debug mode := 0
+
+;; Mask for tail-fitting
+; It will be computed by masking the attenuation image, and forward projecting that.
+; If recompute mask projdata == 0, then the filename must be set.
+recompute mask projdata := 1
+mask projdata filename := ${mask_projdata_filename}
+; Input or output filename - depends on recompute  
+recompute mask image := 1
+mask image filename := ${mask_image}
+mask attenuation image min threshold  := 0.003
+mask attenuation image postfilter filename := ${scatter_pardir}/postfilter_Gaussian.par
+;End of Mask
+
+; Run simulation and reconstruction in 2D (this is currently the only possibility)
+run in 2d projdata := 1
+
+; ScatterSimulation parameters 
+scatter simulation parameters file := ${scatter_pardir}/scatter_simulation.par 
+; next option is the default
+use scanner downsampling in scatter simulation := 1
+
+reconstruction parameter template file := ${scatter_pardir}/run_reconstruction.par 
+
+; number of times which the Scatter Estimation will iterate. Default is 5
+number of scatter iterations := ${num_scat_iters}
+
+; Average the first two activity images to reduce the initial oscillatoins
+do average at 2 := 1
+
+;; tail fitting parameters
+;Parameter file for the tail fitting of the scatter data (within the mask)
+tail fitting par filename := ${scatter_pardir}/tail_fitting.par
+
+maximum scatter scaling factor := 2 
+minimum scatter scaling factor := 0.4
+
+; smooth scale factors (defaults to 3)
+upsampling half filter width := 3
+
+End Scatter Estimation Parameters :=
+\end{verbatim}
+
+Performance of the scatter estimation is strongly determined by the tail-fitting. By default, the
+``tails'' are determined by forward projecting an image mask (normally constructed by thresholding the
+attenuation image). Alternatively, you can pass a file such that it will find the tails itself. Parameters are
+similar to what'sdescribed below.
+\cmdline{%
+create\_tail\_mask\_from\_ACFs		--ACF-filename <projdata> \textbackslash \\
+					--ACF-threshold <number (1.1)> \textbackslash \\
+					--output-filename <projdata> \textbackslash \\
+					--safety-margin <0>%
+}
+\begin{description}
+\item[ACF-filename] Attenuation Correction Factors Projection Data Filename
+\item[ACF-threshold] Value used to threshold ACF and creates the mask, defaults to 1.01
+\item[safety-margin] This dilates the mask for a number of safety bins in tangential direction
+\item[output-filename] The file that new projection data will be stored
+\end{description}
+
+After tail-fitting, the scale factors can be thresholded (if there would be no out-of-FOV
+nor multiple scatter, the scale factors should be around $1$).
+
 
 \subsubsection{Limitations}
-The three separate executables need to be merged in one together with the iterative loop. The
+The
 \textit{SSS} can estimate 3D scatter that is measured by indirect rings but no interpolation of indirect
 rings is currently in place. Therefore, upsampling of oblique sinograms is currently handled in a simple
 way i.e. (pseudo)-inverse SSRB but ideally interpolation of the 3D sinograms will be useful. In the
@@ -2712,7 +2815,7 @@ choose one file from the directory), the JSON file containing the conversion slo
 -i input\_volume {\textbackslash}\\
 -j slope\_filename {\textbackslash}\\
 -m manufacturer\_name {\textbackslash}\\
-[-v kilovoltage\_peak] {\textbackslash}\\
+{[}-v kilovoltage\_peak{]} {\textbackslash}\\
 -k target\_photon\_energy}
 
 The optional \textit{kilovoltage\_peak} is the kilovoltage peak (kVp) used to acquire the data. If no value is given,
