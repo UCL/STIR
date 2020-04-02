@@ -8,10 +8,12 @@
   \brief Test program for stir::ProjDataInMemory
 
   \author Kris Thielemans
+  \author Daniel Deidda
 
 */
 /*
-    Copyright (C) 2015, University College London
+    Copyright (C) 2015, 2020 University College London
+    Copyright (C) 2020, National Physical Laboratory
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -150,6 +152,29 @@ run_tests()
       {
         // ok
       }
+  }
+//  test set_bin_value() and get_bin_value
+  {
+      std::vector<float> test;
+      test.resize(proj_data.size_all());
+      
+      for(int i=0;i<test.size();i++)
+      test[i]=i;
+      
+      proj_data.fill_from(test.begin());
+      
+      Bin bin(0,proj_data_info_sptr->get_max_view_num()/2,
+                proj_data_info_sptr->get_max_axial_pos_num(0)/2,
+                0);
+      
+      bin.set_bin_value(42);
+      proj_data.set_bin_value(bin);
+      check_if_equal(bin.get_bin_value(),proj_data.get_bin_value(bin),
+            "ProjDataInMemory::set_bin_value/get_bin_value not consistent");
+      // also check via get_viewgram
+      const Viewgram<float> viewgram=proj_data.get_viewgram(bin.view_num(), bin.segment_num());
+      check_if_equal(bin.get_bin_value(),viewgram[bin.axial_pos_num()][bin.tangential_pos_num()],
+            "ProjDataInMemory::set_bin_value/get_viewgram not consistent");
   }
 }
 
