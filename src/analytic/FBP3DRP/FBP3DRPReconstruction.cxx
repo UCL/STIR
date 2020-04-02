@@ -863,8 +863,8 @@ void FBP3DRPReconstruction::do_forward_project_view(RelatedViewgrams<float> & vi
 void FBP3DRPReconstruction::do_colsher_filter_view( RelatedViewgrams<float> & viewgrams)
 { 
 
-  assert(dynamic_cast<ProjDataInfoCylindricalArcCorr const *>
-	 (viewgrams.get_proj_data_info_sptr()));
+  assert(!is_null_ptr(dynamic_pointer_cast<const ProjDataInfoCylindricalArcCorr>
+	 (viewgrams.get_proj_data_info_sptr())));
 
   // TODO make into object member instead of static
   static int prev_seg_num = viewgrams.get_proj_data_info_sptr()->get_min_segment_num()-1;  

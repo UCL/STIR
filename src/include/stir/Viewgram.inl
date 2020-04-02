@@ -103,14 +103,14 @@ Viewgram(const Array<2,elemT>& p,
   Array<2,elemT>(p), proj_data_info_sptr(pdi_sptr),
   view_num(v_num), segment_num(s_num)
 {
-  assert(view_num <= proj_data_info_ptr->get_max_view_num());
-  assert(view_num >= proj_data_info_ptr->get_min_view_num());
+  assert(view_num <= proj_data_info_sptr->get_max_view_num());
+  assert(view_num >= proj_data_info_sptr->get_min_view_num());
   // segment_num is already checked by doing get_max_axial_pos_num(s_num)
 
-  assert( get_min_axial_pos_num() == pdi_ptr->get_min_axial_pos_num(s_num));
-  assert( get_max_axial_pos_num() == pdi_ptr->get_max_axial_pos_num(s_num));
-  assert( get_min_tangential_pos_num() == pdi_ptr->get_min_tangential_pos_num());
-  assert( get_max_tangential_pos_num() == pdi_ptr->get_max_tangential_pos_num());
+  assert( get_min_axial_pos_num() == pdi_sptr->get_min_axial_pos_num(s_num));
+  assert( get_max_axial_pos_num() == pdi_sptr->get_max_axial_pos_num(s_num));
+  assert( get_min_tangential_pos_num() == pdi_sptr->get_min_tangential_pos_num());
+  assert( get_max_tangential_pos_num() == pdi_sptr->get_max_tangential_pos_num());
 }
 
 template <typename elemT>
@@ -126,8 +126,8 @@ Viewgram(const shared_ptr<const ProjDataInfo>& pdi_sptr,
   view_num(v_num),
   segment_num(s_num)
 {
-  assert(view_num <= proj_data_info_ptr->get_max_view_num());
-  assert(view_num >= proj_data_info_ptr->get_min_view_num());
+  assert(view_num <= proj_data_info_sptr->get_max_view_num());
+  assert(view_num >= proj_data_info_sptr->get_min_view_num());
   // segment_num is already checked by doing get_max_axial_pos_num(s_num)
 }
 

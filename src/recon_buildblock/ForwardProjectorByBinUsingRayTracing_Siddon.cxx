@@ -128,7 +128,7 @@ proj_Siddon(
 
   // in our current coordinate system, the following constant is always 2
   const int num_planes_per_physical_ring = 2;
-  assert(fabs(Bild.get_voxel_size().z() * num_planes_per_physical_ring/ proj_data_info_ptr->get_ring_spacing() -1) < 10E-4);
+  assert(fabs(Bild.get_voxel_size().z() * num_planes_per_physical_ring/ proj_data_info_sptr->get_ring_spacing() -1) < 10E-4);
 
 
 

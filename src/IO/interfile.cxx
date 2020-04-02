@@ -1110,7 +1110,7 @@ read_interfile_PDFS(istream& input,
 	break;
       }
   
-   assert(hdr.data_info_ptr !=0);
+   assert(!is_null_ptr(hdr.data_info_sptr));
 
    shared_ptr<iostream> data_in(new fstream (full_data_file_name, open_mode | ios::binary));
    if (!data_in->good())
