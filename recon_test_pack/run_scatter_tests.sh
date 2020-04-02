@@ -57,7 +57,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "===  compare result"
-compare_projdata my_scatter_cylinder.hs scatter_cylinder.hs > my_scatter_compare_projdata.log 2>&1
+compare_projdata -t .001 my_scatter_cylinder.hs scatter_cylinder.hs > my_scatter_compare_projdata.log 2>&1
 if [ $? -ne 0 ]; then
   echo "Error comparing scatter output."
   error_log_files="${error_log_files} my_scatter_compare_projdata.log"
