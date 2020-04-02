@@ -343,7 +343,7 @@ set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
 template<typename TargetT>
 Succeeded 
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
-set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 {
   /*!todo define in the PoissonLogLikelihoodWithLinearModelForMean class to return Succeeded::yes 
     if (base_type::set_up_before_sensitivity(target_sptr) != Succeeded::yes)

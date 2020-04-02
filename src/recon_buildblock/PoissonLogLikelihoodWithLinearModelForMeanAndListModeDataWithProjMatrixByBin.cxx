@@ -188,7 +188,7 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
 template <typename TargetT>  
 Succeeded 
 PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<TargetT>::
-set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr) 
+set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr) 
 { 
 #ifdef STIR_MPI
     //broadcast objective_function (100=PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin)

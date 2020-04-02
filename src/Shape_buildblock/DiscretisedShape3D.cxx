@@ -127,10 +127,10 @@ DiscretisedShape3D(const VoxelsOnCartesianGrid<float>& image_v)
 
 
 DiscretisedShape3D::
-DiscretisedShape3D(const shared_ptr<DiscretisedDensity<3,float> >& density_ptr_v)
-   : density_ptr(density_ptr_v)
+DiscretisedShape3D(const shared_ptr<const DiscretisedDensity<3,float> >& density_ptr_v)
+  : density_ptr(density_ptr_v->clone())
 {
-  if(dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_ptr.get()) == NULL)
+  if(dynamic_cast<const VoxelsOnCartesianGrid<float> *>(density_ptr.get()) == NULL)
   {
     error("DiscretisedShape3D can currently only handle images of type VoxelsOnCartesianGrid.\n"); 
   }

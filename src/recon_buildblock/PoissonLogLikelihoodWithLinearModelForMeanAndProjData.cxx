@@ -531,7 +531,7 @@ actual_subsets_are_approximately_balanced(std::string& warning_message) const
 template<typename TargetT>
 Succeeded 
 PoissonLogLikelihoodWithLinearModelForMeanAndProjData<TargetT>::
-set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 {
   if (is_null_ptr(this->proj_data_sptr))
 	error("you need to set the input data before calling set_up");

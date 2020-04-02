@@ -73,12 +73,8 @@ public:
       returns somewhat useful info. This has a consequence that the object cannot
       be constructed from its own parameter_info(). This is in contrast with most
       other shapes.
-
-      \warning any modifications to the object that this shared_ptr points to
-      (and hence any modifications to this shape) will have
-      confusing consequences.
   */
-  DiscretisedShape3D(const shared_ptr<DiscretisedDensity<3,float> >& density_ptr);
+  DiscretisedShape3D(const shared_ptr<const DiscretisedDensity<3,float> >& density_ptr);
 
   //! Compare shapes
   /*! \todo currently not implemented (will call error() */
@@ -155,7 +151,7 @@ private:
   shared_ptr<DiscretisedDensity<3,float> > density_ptr;
   
   inline const VoxelsOnCartesianGrid<float>& image() const;
-  inline VoxelsOnCartesianGrid<float>& image();
+  // inline VoxelsOnCartesianGrid<float>& image();
 
   //! \name Parsing functions
   //@{

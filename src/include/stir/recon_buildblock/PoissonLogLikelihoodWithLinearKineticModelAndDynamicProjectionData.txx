@@ -291,7 +291,7 @@ set_num_subsets(const int num_subsets)
 template<typename TargetT>
 Succeeded 
 PoissonLogLikelihoodWithLinearKineticModelAndDynamicProjectionData<TargetT>::
-set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 {
   if (this->_max_segment_num_to_process==-1)
     this->_max_segment_num_to_process =

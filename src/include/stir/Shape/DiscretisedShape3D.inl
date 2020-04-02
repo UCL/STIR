@@ -36,11 +36,12 @@ image() const
   return static_cast<const VoxelsOnCartesianGrid<float>&>(*density_ptr);
 }
  
+#if 0
 VoxelsOnCartesianGrid<float>& 
 DiscretisedShape3D::
 image()
 {
-  return static_cast<VoxelsOnCartesianGrid<float>&>(*density_ptr);
+  return static_cast<const VoxelsOnCartesianGrid<float>&>(*density_ptr);
 }
-
+#endif
 END_NAMESPACE_STIR

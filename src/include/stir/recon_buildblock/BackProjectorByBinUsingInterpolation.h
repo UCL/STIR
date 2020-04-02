@@ -148,7 +148,7 @@ public:
   /*! \deprecated Use set_up() instead */
   BackProjectorByBinUsingInterpolation(
     shared_ptr<const ProjDataInfo>const&,
-    shared_ptr<DiscretisedDensity<3,float> > const& image_info_ptr,
+    shared_ptr<const DiscretisedDensity<3,float> > const& image_info_ptr,
     const bool use_piecewise_linear_interpolation = true, const bool use_exact_Jacobian = true);
 
   //! Stores all necessary geometric info
@@ -156,7 +156,7 @@ public:
   */
   virtual void set_up(		 
     const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     );
 
   /*! \brief Gets the symmetries used by this backprojector
