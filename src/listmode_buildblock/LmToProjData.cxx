@@ -663,8 +663,8 @@ process_data()
 			 && bin.axial_pos_num()<=proj_data_sptr->get_max_axial_pos_num(bin.segment_num())
 			 ) 
 		       {
-			 assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
-			 assert(bin.view_num()<=proj_data_ptr->get_max_view_num());
+			 assert(bin.view_num()>=proj_data_sptr->get_min_view_num());
+			 assert(bin.view_num()<=proj_data_sptr->get_max_view_num());
             
 			 // see if we increment or decrement the value in the sinogram
 			 const int event_increment =
