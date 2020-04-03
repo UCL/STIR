@@ -249,7 +249,7 @@ read_interfile_DPDFS(istream& input,
 	break;
       }
   
-   assert(hdr.data_info_ptr !=0);
+   assert(!is_null_ptr(hdr.data_info_sptr));
 
    shared_ptr<std::iostream> data_in(new std::fstream (full_data_file_name, open_mode | std::ios::binary));
    if (!data_in->good())
