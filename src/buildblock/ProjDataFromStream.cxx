@@ -216,11 +216,11 @@ ProjDataFromStream::get_bin_value(const Bin& this_bin) const
 {
     if (is_null_ptr(sino_stream))
     {
-        error("ProjDataFromStream::get_viewgram: stream ptr is 0\n");
+        error("ProjDataFromStream::get_bin_value: stream ptr is 0\n");
     }
     if (! *sino_stream)
     {
-        error("ProjDataFromStream::get_viewgram: error in stream state before reading\n");
+        error("ProjDataFromStream::get_bin_value: error in stream state before reading\n");
     }
 
     vector<streamoff> offsets = get_offsets_bin(this_bin);
@@ -250,6 +250,40 @@ ProjDataFromStream::get_bin_value(const Bin& this_bin) const
     return value[0];
 }
 
+void
+ProjDataFromStream::set_bin_value(const Bin& this_bin) 
+{
+    if (is_null_ptr(sino_stream))
+    {
+        error("ProjDataFromStream::set_bin_value: stream ptr is 0\n");
+    }
+    if (! *sino_stream)
+    {
+        error("ProjDataFromStream::set_bin_value: error in stream state before writing");
+    }
+
+    vector<streamoff> offsets = get_offsets_bin(this_bin);
+
+    const streamoff total_offset = offsets[0];
+
+    sino_stream->seekp(0 , ios::beg); // reset file
+    sino_stream->seekp(total_offset, ios::cur); // start of view within segment
+
+    if (! *sino_stream)
+    {
+        error("ProjDataFromStream::set_bin_value: error after seekp.");
+    }
+
+    Array< 1,  float>  value(1);
+    value[0]=this_bin.get_bin_value();
+    float scale = float(1);
+    // Now the storage order is not more important. Just read.
+    if (write_data(*sino_stream, value, on_disk_data_type, scale, on_disk_byte_order)
+            == Succeeded::no)
+        error("ProjDataFromStream: error writing data\n");
+    if(scale != 1.f)
+        error("ProjDataFromStream: error writing data: scale factor returned by write_data should be 1\n");
+}
 
 vector<streamoff>
 ProjDataFromStream::get_offsets(const int view_num, const int segment_num) const
