@@ -1,8 +1,6 @@
 /* CListModeDataSAFIR.cxx
 
 Coincidence LM Data Class for SAFIR: Implementation
-Jannis Fischer
-jannis.fischer@cern.ch
 
 	Copyright 2015 ETH Zurich, Institute of Particle Physics
 
@@ -44,8 +42,8 @@ START_NAMESPACE_STIR;
 
 template <class CListRecordT>
 CListModeDataSAFIR<CListRecordT>::
-CListModeDataSAFIR(const std::string& listmode_filename, const std::string& crystal_map_filename, const std::string& template_proj_data_filename)
-  : listmode_filename(listmode_filename), map(MAKE_SHARED<DetectorCoordinateMapFromFile>(crystal_map_filename))
+CListModeDataSAFIR(const std::string& listmode_filename, const std::string& crystal_map_filename, const std::string& template_proj_data_filename, const double lor_randomization_sigma)
+  : listmode_filename(listmode_filename), map(MAKE_SHARED<DetectorCoordinateMapFromFile>(crystal_map_filename, lor_randomization_sigma))
 {
 	this->exam_info_sptr.reset(new ExamInfo);
 

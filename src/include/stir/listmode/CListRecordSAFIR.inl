@@ -1,8 +1,6 @@
 /* CListRecordSAFIR.inl
 
  Coincidence Event Class for SAFIR: Inline File
- Jannis Fischer
- jannis.fischer@cern.ch
 
 	Copyright 2015 ETH Zurich, Institute of Particle Physics
 
@@ -19,9 +17,9 @@
 	limitations under the License.
 
  */
+#include<random>
 
 #include "stir/LORCoordinates.h"
-
 #include "stir/listmode/CListRecord.h"
 #include "stir/ProjDataInfo.h"
 #include "stir/Bin.h"
