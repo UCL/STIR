@@ -95,8 +95,11 @@ void IOTests_DynamicDiscretisedDensity::create_image()
     
     dyn_im_1_sptr->fill(2.);
     dyn_im_2_sptr->fill(1.);
-    dyn_im_1_sptr->get_exam_info_sptr()->time_frame_definitions.set_time_frame(1,im_1_start, im_1_end);
-    dyn_im_2_sptr->get_exam_info_sptr()->time_frame_definitions.set_time_frame(1,im_2_start, im_2_end);
+    shared_ptr<ExamInfo> exam_info_sptr = dyn_im_1_sptr->get_exam_info_sptr()->create_shared_clone();
+    exam_info_sptr->time_frame_definitions.set_time_frame(1,im_1_start, im_1_end);
+    dyn_im_1_sptr->set_exam_info(*exam_info_sptr);
+    exam_info_sptr->time_frame_definitions.set_time_frame(1,im_2_start, im_2_end);
+    dyn_im_2_sptr->set_exam_info(*exam_info_sptr);
     
     // Create a scanner (any will do)
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Advance));
@@ -109,8 +112,10 @@ void IOTests_DynamicDiscretisedDensity::create_image()
     _image_to_write_sptr.reset(new DynamicDiscretisedDensity(tdefs,dummy_im_sptr->get_exam_info_sptr()->start_time_in_secs_since_1970,scanner_sptr,dummy_im_sptr));
     _image_to_write_sptr->set_density(*dyn_im_1_sptr,1);
     _image_to_write_sptr->set_density(*dyn_im_2_sptr,2);
-    _image_to_write_sptr->get_exam_info_sptr()->set_high_energy_thres(dummy_im_sptr->get_exam_info_sptr()->get_high_energy_thres());
-    _image_to_write_sptr->get_exam_info_sptr()->set_low_energy_thres(dummy_im_sptr->get_exam_info_sptr()->get_low_energy_thres());
+    exam_info_sptr = _image_to_write_sptr->get_exam_info_sptr()->create_shared_clone();
+    exam_info_sptr->set_high_energy_thres(dummy_im_sptr->get_exam_info_sptr()->get_high_energy_thres());
+    exam_info_sptr->set_low_energy_thres(dummy_im_sptr->get_exam_info_sptr()->get_low_energy_thres());
+    _image_to_write_sptr->set_exam_info(*exam_info_sptr);
 }
 
 void IOTests_DynamicDiscretisedDensity::check_result()

@@ -68,13 +68,12 @@ class MinimalInterfileHeader : public KeyParser
     void set_imaging_modality();
   
   public:
-    //! Get a pointer to the exam information
-    const ExamInfo*
-      get_exam_info_ptr() const;
-
     //! Get a shared pointer to the exam information
-    shared_ptr<ExamInfo>
+    shared_ptr<const ExamInfo>
       get_exam_info_sptr() const;
+    //! Get the exam information
+    const ExamInfo&
+      get_exam_info() const;
 
     std::string version_of_keys;
 

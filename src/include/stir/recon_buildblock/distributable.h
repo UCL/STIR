@@ -70,7 +70,7 @@ const int task_do_distributable_sensitivity_computation=44;
 */
 void setup_distributable_computation(
                                      const shared_ptr<ProjectorByBinPair>& proj_pair_sptr,
-                                     const shared_ptr<ExamInfo>& exam_info_sptr,
+                                     const shared_ptr<const ExamInfo>& exam_info_sptr,
                                      const shared_ptr<const ProjDataInfo> proj_data_info_sptr,
                                      const shared_ptr<const DiscretisedDensity<3,float> >& target_sptr,
                                      const bool zero_seg0_end_planes,

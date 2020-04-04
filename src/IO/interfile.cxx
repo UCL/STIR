@@ -178,7 +178,9 @@ read_interfile_image(istream& input,
       warning(str(boost::format("Discretised density should contain 1 time frame, but this image contains %1%. "
                                 "Only the first will be kept, and the rest discarded.")
                   % image_ptr->get_exam_info().get_time_frame_definitions().get_num_frames()));
-      image_ptr->get_exam_info_sptr()->time_frame_definitions.set_num_time_frames(1);
+      shared_ptr<ExamInfo> sptr = image_ptr->get_exam_info_sptr()->create_shared_clone();
+      sptr->time_frame_definitions.set_num_time_frames(1);
+      image_ptr->set_exam_info(*sptr);
   }
   else if (image_ptr->get_exam_info().get_time_frame_definitions().get_num_frames() == 0)
       warning("DiscretisedDensity does not contain any time frames. This might cause an error.");
@@ -209,14 +211,12 @@ read_interfile_dynamic_image(istream& input,
                                   scanner_sptr,
                                   image_sptr);
 
-  // Copy the exam info (currently hdr and image_sptr share the same one and this will cause problems)
-  image_sptr->set_exam_info(*image_sptr->get_exam_info_sptr());
-
   ifstream data_in;
   open_read_binary(data_in, full_data_file_name);
 
   data_in.seekg(hdr.data_offset_each_dataset[0]);
 
+  ExamInfo _exam_info(*hdr.get_exam_info_sptr());
   for (unsigned int frame_num=1; frame_num <= dynamic_dens_ptr->get_num_time_frames(); ++frame_num)
     {
       data_in.seekg(hdr.data_offset_each_dataset[frame_num-1]);
@@ -236,8 +236,9 @@ read_interfile_dynamic_image(istream& input,
           (*image_sptr)[i] *= static_cast<float>(hdr.image_scaling_factors[frame_num-1][i]);
 
       // Set the time frame of the individual frame
-      image_sptr->get_exam_info_sptr()->time_frame_definitions =
-              TimeFrameDefinitions(hdr.get_exam_info_ptr()->time_frame_definitions,frame_num);
+      _exam_info.time_frame_definitions =
+              TimeFrameDefinitions(hdr.get_exam_info().time_frame_definitions,frame_num);
+      image_sptr->set_exam_info(_exam_info);
 
       // now stick into the dynamic image
       dynamic_dens_ptr->set_density(*image_sptr,frame_num);
@@ -1072,7 +1073,7 @@ read_interfile_PDFS(istream& input,
         return 0;
       }
     input.seekg(offset);
-    if (hdr.get_exam_info_ptr()->imaging_modality.get_modality() ==
+    if (hdr.get_exam_info().imaging_modality.get_modality() ==
         ImagingModality::NM)
       {
         // spect data

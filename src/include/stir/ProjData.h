@@ -108,7 +108,7 @@ public:
   //! Empty constructor 
   ProjData();
   //! construct by specifying info. Data will be undefined.
-  ProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
+  ProjData(const shared_ptr<const ExamInfo>& exam_info_sptr,
            const shared_ptr<const ProjDataInfo>& proj_data_info_ptr);
 #if 0
   // it would be nice to have something like this. However, it's implementation
@@ -122,19 +122,6 @@ public:
   //! Get shared pointer to proj data info
   inline shared_ptr<const ProjDataInfo>
     get_proj_data_info_sptr() const;
-
-//  //! Get pointer to exam info
-//  inline const ExamInfo*
-//    get_exam_info_ptr() const;
-//  //! Get shared pointer to exam info
-//  /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
-//    shared pointer will be affected. */
-//  inline shared_ptr<ExamInfo>
-//    get_exam_info_sptr() const;
-//  //! change exam info
-//  /*! This will allocate a new ExamInfo object and copy the data in there. */
-//  void
-//    set_exam_info(ExamInfo const&);
   //! Get viewgram
   virtual Viewgram<float> 
     get_viewgram(const int view, const int segment_num,const bool make_num_tangential_poss_odd = false) const=0;

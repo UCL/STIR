@@ -24,7 +24,6 @@ set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_ROIs
         test_warp_image
-	test_DynamicDiscretisedDensity
 )
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
@@ -66,6 +65,7 @@ set(buildblock_simple_tests
 	test_export_array
         test_GeneralisedPoissonNoiseGenerator
 	test_multiple_proj_data
+	test_DynamicDiscretisedDensity
 )
 
 include(stir_test_exe_targets)

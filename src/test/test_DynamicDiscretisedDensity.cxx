@@ -83,7 +83,7 @@ START_NAMESPACE_STIR
   (*frame1_sptr)[0][0][0] = 1.F;
 
   std::vector< std::pair< double, double > > time_frame_definitions_vector(1) ;
-  std::pair< double, double > time_frame_pair(1.,1.) ;
+  std::pair< double, double > time_frame_pair(1.,2.5);
   time_frame_definitions_vector[0]=time_frame_pair;
   const TimeFrameDefinitions time_frame_definitions(time_frame_definitions_vector);
   const double scan_start_time_in_secs_since_1970 = double(1277478034); // somewhere in June 2010...
@@ -91,8 +91,10 @@ START_NAMESPACE_STIR
   Scanner::Type test_scanner=Scanner::E966;
   shared_ptr<Scanner> scanner_sptr(new Scanner(test_scanner));
   DynamicDiscretisedDensity dynamic_image(time_frame_definitions, scan_start_time_in_secs_since_1970, scanner_sptr); 
-  frame1_sptr->get_exam_info_sptr()->set_time_frame_definitions(time_frame_definitions);
-  frame1_sptr->get_exam_info_sptr()->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
+  shared_ptr<ExamInfo> exam_info_sptr =  frame1_sptr->get_exam_info_sptr()->create_shared_clone();
+  exam_info_sptr->set_time_frame_definitions(time_frame_definitions);
+  exam_info_sptr->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
+  frame1_sptr->set_exam_info(*exam_info_sptr);
   dynamic_image.set_density(*frame1_sptr, 1);
   check_if_equal(dynamic_image[1][0][0][0],1.F,"check DynamicDiscretisedDensity class implementation");
   }
@@ -142,11 +144,13 @@ START_NAMESPACE_STIR
 
   DynamicDiscretisedDensity dynamic_image(time_frame_definitions,
                                           scan_start_time_in_secs_since_1970,
-                                          scanner_sptr); 
-  frame1_2_sptr->get_exam_info_sptr()->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,1));
-  frame1_2_sptr->get_exam_info_sptr()->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
-  frame2_2_sptr->get_exam_info_sptr()->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,2));
-  frame2_2_sptr->get_exam_info_sptr()->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
+                                          scanner_sptr);
+  shared_ptr<ExamInfo> exam_info_sptr = frame1_2_sptr->get_exam_info_sptr()->create_shared_clone();
+  exam_info_sptr->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,1));
+  exam_info_sptr->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
+  frame1_2_sptr->set_exam_info(*exam_info_sptr);
+  exam_info_sptr->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,2));
+  frame2_2_sptr->set_exam_info(*exam_info_sptr);
   dynamic_image.set_density(*frame1_2_sptr, 1);
   dynamic_image.set_density(*frame2_2_sptr, 2);
 
@@ -206,13 +210,20 @@ START_NAMESPACE_STIR
   shared_ptr<Scanner> scanner_sptr(new Scanner(test_scanner));
   DynamicDiscretisedDensity dynamic_image(time_frame_definitions,
                                           scan_start_time_in_secs_since_1970,
-                                          scanner_sptr); 
-  frame1_3_sptr->get_exam_info_sptr()->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,1));
-  frame1_3_sptr->get_exam_info_sptr()->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
-  frame2_3_sptr->get_exam_info_sptr()->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,2));
-  frame2_3_sptr->get_exam_info_sptr()->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
-  frame3_3_sptr->get_exam_info_sptr()->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,3));
-  frame3_3_sptr->get_exam_info_sptr()->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
+                                          scanner_sptr);
+  shared_ptr<ExamInfo> exam_info_sptr = dynamic_image.get_exam_info_sptr()->create_shared_clone();
+  exam_info_sptr->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,1));
+  exam_info_sptr->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
+  frame1_3_sptr->set_exam_info(*exam_info_sptr);
+
+  exam_info_sptr->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,2));
+  exam_info_sptr->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
+  frame2_3_sptr->set_exam_info(*exam_info_sptr);
+
+  exam_info_sptr->set_time_frame_definitions(TimeFrameDefinitions(time_frame_definitions,3));
+  exam_info_sptr->start_time_in_secs_since_1970 = scan_start_time_in_secs_since_1970;
+  frame3_3_sptr->set_exam_info(*exam_info_sptr);
+
   dynamic_image.set_density(*frame1_3_sptr, 1);
   dynamic_image.set_density(*frame2_3_sptr, 2);
   dynamic_image.set_density(*frame3_3_sptr, 3);

@@ -173,7 +173,7 @@ shared_ptr<VoxelsOnCartesianGrid<float> > IOTests<A>::create_single_image()
                     *sin(static_cast<float>(y+10*_PI)/single_image.get_max_y())
                     *cos(static_cast<float>(z*_PI/3)/single_image.get_max_z());
     
-    shared_ptr<ExamInfo> exam_info_sptr = single_image.get_exam_info_sptr();
+    shared_ptr<ExamInfo> exam_info_sptr = single_image.get_exam_info_sptr()->create_shared_clone();
     exam_info_sptr->time_frame_definitions.set_num_time_frames(1);
     exam_info_sptr->time_frame_definitions.set_time_frame(1,10,100);
     exam_info_sptr->start_time_in_secs_since_1970 = double(1277478034);

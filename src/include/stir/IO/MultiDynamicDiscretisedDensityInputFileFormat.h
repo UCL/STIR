@@ -88,8 +88,7 @@ public InputFileFormat<DynamicDiscretisedDensity>
          error("MultiDynamicDiscretisedDensity:::read_from_file: Error parsing %s", filename.c_str());
     DynamicDiscretisedDensity* dyn_disc_den_ptr = new DynamicDiscretisedDensity;
     dyn_disc_den_ptr->set_num_densities(header.get_num_data_sets());
-    dyn_disc_den_ptr->get_exam_info_sptr()->time_frame_definitions.set_num_time_frames(header.get_num_data_sets());
-
+    shared_ptr<ExamInfo> _exam_info_sptr;
     for (int i=1; i<=header.get_num_data_sets(); ++i) {
         unique_ptr<DiscretisedDensity<3,float> > t(DiscretisedDensity<3,float>::read_from_file(header.get_filename(i-1)));
 
@@ -98,16 +97,18 @@ public InputFileFormat<DynamicDiscretisedDensity>
             error(str(boost::format("The individual components of a dynamic image should contain 1 time frame, but image %1% contains %2%.") % i % t->get_exam_info().get_time_frame_definitions().get_num_frames()));
         double start = t->get_exam_info().get_time_frame_definitions().get_start_time(1);
         double end = t->get_exam_info().get_time_frame_definitions().get_end_time(1);
-        dyn_disc_den_ptr->get_exam_info_sptr()->time_frame_definitions.set_time_frame(i, start, end);
-        dyn_disc_den_ptr->set_density(*t,i);
         // Set some info on the first frame
-        if (i==1) {
-            dyn_disc_den_ptr->get_exam_info_sptr()->start_time_in_secs_since_1970 = 
-                    t->get_exam_info().start_time_in_secs_since_1970;
+        if (i==1)
+          {
+            _exam_info_sptr = dyn_disc_den_ptr->get_exam_info_sptr()->create_shared_clone();
+            _exam_info_sptr->time_frame_definitions.set_num_time_frames(header.get_num_data_sets());
             shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(t->get_exam_info_sptr()->originating_system));
             dyn_disc_den_ptr->set_scanner(*scanner_sptr);
         }
-    }    
+        _exam_info_sptr->time_frame_definitions.set_time_frame(i, start, end);
+        dyn_disc_den_ptr->set_density(*t,i);
+    }
+    dyn_disc_den_ptr->set_exam_info(*_exam_info_sptr);
     // Hard wire some stuff for now (TODO?)
     dyn_disc_den_ptr->set_calibration_factor(1.);
     dyn_disc_den_ptr->set_if_decay_corrected(1.);

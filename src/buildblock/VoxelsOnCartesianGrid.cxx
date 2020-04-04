@@ -156,7 +156,7 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
 
 template<class elemT>
 VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
-                      (const shared_ptr < ExamInfo > & exam_info_sptr,
+                      (const shared_ptr < const ExamInfo > & exam_info_sptr,
                        const Array<3,elemT>& v,
                        const CartesianCoordinate3D<float>& origin,
                        const BasicCoordinate<3,float>& grid_spacing)
@@ -169,7 +169,7 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
 
 template<class elemT>
 VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid
-                      (const shared_ptr < ExamInfo > & exam_info_sptr,
+                      (const shared_ptr < const ExamInfo > & exam_info_sptr,
                        const IndexRange<3>& range, 
                        const CartesianCoordinate3D<float>& origin,
                        const BasicCoordinate<3,float>& grid_spacing)
@@ -193,7 +193,7 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const ProjDataInfo& proj_dat
 }
 
 template<class elemT>                                                 
-VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr_v,
+VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr < const ExamInfo > & exam_info_sptr_v,
                                                     const ProjDataInfo& proj_data_info,
                                                     const float zoom, 
                                                     const CartesianCoordinate3D<float>& origin,
@@ -206,7 +206,7 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr < ExamInfo 
 }
 
 template<class elemT>
-VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr < ExamInfo > & exam_info_sptr_v,
+VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr < const ExamInfo > & exam_info_sptr_v,
                                                     const ProjDataInfo& proj_data_info,
                                                     const CartesianCoordinate3D<float>& zooms,
                                                     const CartesianCoordinate3D<float>& origin,
@@ -221,7 +221,7 @@ VoxelsOnCartesianGrid<elemT>::VoxelsOnCartesianGrid(const shared_ptr < ExamInfo 
 template<class elemT>
 void
 VoxelsOnCartesianGrid<elemT>::
-construct_from_projdata_info(const shared_ptr < ExamInfo > & exam_info_sptr_v,
+construct_from_projdata_info(const shared_ptr < const ExamInfo > & exam_info_sptr_v,
                              const ProjDataInfo& proj_data_info,
                              const CartesianCoordinate3D<float>& zooms,
                              const CartesianCoordinate3D<float>& origin,
@@ -312,7 +312,7 @@ VoxelsOnCartesianGrid<elemT>*
 VoxelsOnCartesianGrid<elemT>::clone() const
 {
   VoxelsOnCartesianGrid *temp = new VoxelsOnCartesianGrid(*this);
-  temp->set_exam_info(*temp->get_exam_info_sptr()->create_shared_clone());
+  temp->set_exam_info(temp->get_exam_info());
   return temp;
 }
 

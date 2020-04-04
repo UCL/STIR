@@ -115,7 +115,10 @@ void IOTests_ParametricDiscretisedDensity::create_image()
     _image_to_write_sptr->update_parametric_image(*param_2_sptr,2);
 
     // Set the time definitions
-    _image_to_write_sptr->get_exam_info_sptr()->time_frame_definitions = dummy_im_sptr->get_exam_info_sptr()->time_frame_definitions;
+    shared_ptr<ExamInfo> sptr = dummy_im_sptr->get_exam_info_sptr()->create_shared_clone();
+    sptr = _image_to_write_sptr->get_exam_info_sptr()->create_shared_clone();
+    sptr->time_frame_definitions = dummy_im_sptr->get_exam_info_sptr()->time_frame_definitions;
+    _image_to_write_sptr->set_exam_info(*sptr);
 }
 
 void IOTests_ParametricDiscretisedDensity::check_result()

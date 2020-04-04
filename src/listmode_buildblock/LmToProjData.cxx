@@ -551,7 +551,7 @@ process_data()
       start_new_time_frame(current_frame_num);
 
       // construct ExamInfo appropriate for a single projdata with this time frame
-      ExamInfo this_frame_exam_info(*lm_data_ptr->get_exam_info_ptr());
+      ExamInfo this_frame_exam_info(lm_data_ptr->get_exam_info());
       {
         TimeFrameDefinitions this_time_frame_defs(frame_defs, current_frame_num);
         this_frame_exam_info.set_time_frame_definitions(this_time_frame_defs);

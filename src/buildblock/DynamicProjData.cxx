@@ -67,20 +67,18 @@ void
 DynamicProjData::
 set_start_time_in_secs_since_1970(const double start_time)
 { 
-  // reset local pointer to a new one (with the same info) to avoid changing
-  // other objects that happen to use the same shared_ptr
-  this->exam_info_sptr.reset(new ExamInfo(*this->exam_info_sptr));
-  this->exam_info_sptr->start_time_in_secs_since_1970=start_time;
+  shared_ptr<ExamInfo> sptr = this->exam_info_sptr->create_shared_clone();
+  sptr->start_time_in_secs_since_1970=start_time;
+  this->exam_info_sptr = sptr;
 }
 
 void
 DynamicProjData::
 set_time_frame_definitions(const TimeFrameDefinitions& time_frame_definitions) 
 { 
-  // reset local pointer to a new one (with the same info) to avoid changing
-  // other objects that happen to use the same shared_ptr
-  this->exam_info_sptr.reset(new ExamInfo(*this->exam_info_sptr));
-  this->exam_info_sptr->time_frame_definitions=time_frame_definitions;
+  shared_ptr<ExamInfo> sptr = this->exam_info_sptr->create_shared_clone();
+  sptr->time_frame_definitions=time_frame_definitions;
+  this->exam_info_sptr = sptr;
 }
 
 const TimeFrameDefinitions& 
@@ -192,7 +190,7 @@ write_to_ecat7(const string& filename) const
 
   Main_header mhead;
   ecat::ecat7::make_ECAT7_main_header(mhead, filename, 
-				      *get_exam_info_ptr(),
+				      get_exam_info(),
                                       *get_proj_data(1).get_proj_data_info_sptr() );
     
   MatrixFile* mptr= matrix_create (filename.c_str(), MAT_CREATE, &mhead);
@@ -267,7 +265,7 @@ read_interfile_DPDFS(istream& input,
        error(boost::format("DynamicProjData: error allocating memory for new object (for file \"%1%\")")
 		    % full_data_file_name);
      }
-   dynamic_proj_data_ptr->resize(hdr.get_exam_info_ptr()->time_frame_definitions.get_num_time_frames());
+   dynamic_proj_data_ptr->resize(hdr.get_exam_info().time_frame_definitions.get_num_time_frames());
    
    // now set all proj_data_sptrs
    for (unsigned int frame_num=1; frame_num <= dynamic_proj_data_ptr->get_num_frames(); ++frame_num)
@@ -275,8 +273,8 @@ read_interfile_DPDFS(istream& input,
        info(boost::format("Using data offset %1% for frame %2% in file %3%\n") % data_offset % frame_num % full_data_file_name);
        shared_ptr<ExamInfo> current_exam_info_sptr(new ExamInfo(*hdr.get_exam_info_sptr()));
        std::vector<std::pair<double, double> > frame_times;
-       frame_times.push_back(std::make_pair(hdr.get_exam_info_ptr()->time_frame_definitions.get_start_time(frame_num),
-					    hdr.get_exam_info_ptr()->time_frame_definitions.get_end_time(frame_num)));
+       frame_times.push_back(std::make_pair(hdr.get_exam_info().time_frame_definitions.get_start_time(frame_num),
+					    hdr.get_exam_info().time_frame_definitions.get_end_time(frame_num)));
        TimeFrameDefinitions time_frame_defs(frame_times);
        current_exam_info_sptr->set_time_frame_definitions(time_frame_defs);
 
