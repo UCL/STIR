@@ -40,7 +40,7 @@ class CListEventSimSET : public CListEventCylindricalScannerWithDiscreteDetector
 {
 public:
 
-    CListEventSimSET(const shared_ptr<Scanner>& scanner_sptr);
+    CListEventSimSET(const shared_ptr<ProjDataInfo>& proj_data_info);
 
     //! This routine returns the corresponding detector pair
     virtual void get_detection_position(DetectionPositionPair<>&) const;
@@ -51,7 +51,8 @@ public:
     //! \details This is the main function which transform GATE coordinates to STIR
     void init_from_data(const PHG_DetectedPhoton* _blue,
                         const PHG_DetectedPhoton* _pink,
-                        const float _weight);
+                        const float _weight,
+                        const float _tofDifference = 0.0);
 
     inline bool is_prompt() const
     { return true; }
@@ -70,6 +71,8 @@ private:
     int det2;
     //! Indicates if swap segments
     bool swapped;
+    //! TOF time difference between the two photons
+    float tofDifference;
 
 };
 
@@ -164,17 +167,19 @@ public:
                 this->time().get_time_in_secs() == this->time().get_time_in_secs();
     }
 
-    CListRecordSimSET(const shared_ptr<Scanner>& scanner_sptr) :
-        event_data(scanner_sptr)
+    CListRecordSimSET(const shared_ptr<ProjDataInfo>& proj_data_info) :
+        event_data(proj_data_info)
     {}
 
     virtual Succeeded init_from_data(const PHG_DetectedPhoton&	detectedPhotonBlue,
                                      const PHG_DetectedPhoton&	detectedPhotonPink,
-                                     const float weight)
+                                     const float weight,
+                                     const float tofDifference)
     {
         this->event_data.init_from_data(&detectedPhotonBlue,
                                         &detectedPhotonPink,
-                                        weight);
+                                        weight,
+                                        tofDifference);
 
         this->time_data.init_from_data(&detectedPhotonBlue,
                                        &detectedPhotonPink);

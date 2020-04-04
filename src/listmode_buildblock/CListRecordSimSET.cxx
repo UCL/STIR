@@ -29,8 +29,8 @@ START_NAMESPACE_STIR
 
 
 CListEventSimSET::
-CListEventSimSET(const shared_ptr<Scanner>& scanner_sptr) :
-    CListEventCylindricalScannerWithDiscreteDetectors(scanner_sptr)
+CListEventSimSET(const shared_ptr<ProjDataInfo> &proj_data_info) :
+    CListEventCylindricalScannerWithDiscreteDetectors(proj_data_info)
 {
 
 }
@@ -42,6 +42,7 @@ void CListEventSimSET::get_detection_position(DetectionPositionPair<>& _det_pos)
 
     _det_pos.pos1() = det1;
     _det_pos.pos2() = det2;
+    _det_pos.timing_pos() = this->get_uncompressed_proj_data_info_sptr()->get_unmashed_tof_bin(tofDifference);
 }
 
 void CListEventSimSET::set_detection_position(const DetectionPositionPair<>&)
@@ -51,7 +52,8 @@ void CListEventSimSET::set_detection_position(const DetectionPositionPair<>&)
 
 void CListEventSimSET::init_from_data(const PHG_DetectedPhoton* _blue,
                                       const PHG_DetectedPhoton* _pink,
-                                      const float _weight)
+                                      const float _weight,
+                                      const float _tofDifference)
 {
 
     CartesianCoordinate3D<float> blue_coord(_blue->location.z_position,
@@ -63,15 +65,13 @@ void CListEventSimSET::init_from_data(const PHG_DetectedPhoton* _blue,
                                              _pink->location.x_position);
 
     weight = _weight;
-
+    tofDifference = _tofDifference;
 
     this->get_uncompressed_proj_data_info_sptr()->
             find_scanner_coordinates_given_cartesian_coordinates(det2, det1,
                                                                  ring2, ring1,
                                                                  blue_coord,
                                                                  pink_coord);
-
-
 
 }
 

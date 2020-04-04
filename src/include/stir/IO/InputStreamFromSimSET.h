@@ -58,12 +58,13 @@ START_NAMESPACE_STIR
  * Random and Scattered can be excluded as instructed in the bin params file, see SimSET instructions.
  *
  * \warning Support for old photons and old decays has not been implemented. Probably it will not.
- * \warning SiSET supports multiple history files. In STIR this is not supported, yet.If you need this
- * feature then use SimSET toold to concatenate the history files. This might have an effect on the
- * timestamps, though.
+ * \warning SimSET supports multiple history files. In STIR this is not supported, yet.
+ * If you need this feature then use SimSET tools to concatenate the history files.
+ * This might have an effect on the timestamps, though.
  * \warning Custom history files are not supported. Some code exists in the set_up_custom_hist_file()
  * function. However, currently I am not sure how these files are organised. Upon request I might have a
  * look in this.
+ *
 */
 class InputStreamFromSimSET
 {

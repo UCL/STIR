@@ -27,9 +27,9 @@
   model, manufacurer etc. In addition, in the case of cylindrical PET scanner
   important information as number of detectors and rings might not be present.
 
-  THerefore in order to detect the scanner we try to harvest as much information
+  Therefore in order to detect the scanner we try to harvest as much information
   as possible and compare it with the templates in Scanner.cxx.
-  Scanner not included in that file will not be able to operate.
+  If Scanner not included in that file will not be able to operate.
 
   The important bits of infomation are the number of rings, inner ring radius,
   number of detectors, number of layers and number of bins. Optionally, energy resolution.
@@ -40,7 +40,7 @@
   cylindrical ring geometry was separated in rings. In SimSET that is not
   mandatory.
 
-  If that is the case, we will chack the bining parameters file.
+  If that is the case, we will check the bining parameters file.
   You can set the Z binning to be the number of rings.
   
   If the cylinder was separated in rings then, in SimSET each gap is defined
