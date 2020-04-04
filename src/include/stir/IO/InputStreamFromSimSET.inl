@@ -99,6 +99,7 @@ get_next_record(CListRecordSimSET& record)
     {
         int i = 0;
         bool found = false;
+        float tofDifference;
         for (; i < buffer.size(); i++)
         {
             if ((binParams->numE1Bins > 0) && (buffer.at(i).first->energy < binParams->minE))
@@ -112,6 +113,26 @@ get_next_record(CListRecordSimSET& record)
 
             if	((binParams->numE2Bins > 0) && (buffer.at(i).second->energy > binParams->maxE))
                 continue;
+
+            /* tofDifference is in nanoseconds, hence '1E9*' */
+            tofDifference = 1.0E9 * (buffer.at(i).first->time_since_creation - buffer.at(i).second->time_since_creation);
+
+            //                        /* make sure that positive TOF is always oriented in the same direction,
+            //                        +TOF equating to +x. */
+            //                        if (blue.location.x_position < pink.location.x_position) {
+            //                            tofDifference = -tofDifference;
+            //                        } else if ( (blue.location.x_position == pink.location.x_position)
+            //                                    &&  (blue.location.y_position < pink.location.y_position) ) {
+            //                            tofDifference = -tofDifference;
+            //                        }
+
+            if ( (tofDifference >= binParams->maxTOF) ||
+                (tofDifference <= binParams->minTOF) ) {
+
+                /* outside coincidence window, go to next photon */
+                continue;
+
+            }
 
             found = true;
             break;
@@ -141,7 +162,7 @@ get_next_record(CListRecordSimSET& record)
 
             std::cout << buffer.size() << std::endl;
 
-            return record.init_from_data(blue, pink, coincidenceWeight);
+            return record.init_from_data(blue, pink, coincidenceWeight, tofDifference);
         }
 
     }
@@ -221,9 +242,29 @@ get_next_record(CListRecordSimSET& record)
                     pinkPhotons.at(0).location.y_position *= 10.f;
                     pinkPhotons.at(0).location.x_position *= 10.f;
 
+                    /* tofDifference is in nanoseconds, hence '1E9*' */
+                    float tofDifference = 1.0E9 * (bluePhotons.at(0).time_since_creation - pinkPhotons.at(0).time_since_creation);
+
+//                        /* make sure that positive TOF is always oriented in the same direction,
+//                        +TOF equating to +x. */
+//                        if (blue.location.x_position < pink.location.x_position) {
+//                            tofDifference = -tofDifference;
+//                        } else if ( (blue.location.x_position == pink.location.x_position)
+//                                    &&  (blue.location.y_position < pink.location.y_position) ) {
+//                            tofDifference = -tofDifference;
+//                        }
+
+                    if ( (tofDifference >= binParams->maxTOF) ||
+                        (tofDifference <= binParams->minTOF) ) {
+
+                        /* outside coincidence window, go to next photon */
+                        continue;
+
+                    }
                     return record.init_from_data(bluePhotons.at(0),
-                                                     pinkPhotons.at(0),
-                                                     coincidenceWeight);
+                                                 pinkPhotons.at(0),
+                                                 coincidenceWeight,
+                                                 tofDifference);
 
                 }
                 else if (bluePhotons.size() == 0 || pinkPhotons.size() == 0)
@@ -294,7 +335,27 @@ get_next_record(CListRecordSimSET& record)
                         pink.location.y_position *= 10.f;
                         pink.location.x_position *= 10.f;
 
-                        return record.init_from_data(blue, pink, coincidenceWeight);
+                        /* tofDifference is in nanoseconds, hence '1E9*' */
+                        float tofDifference = 1.0E9 * (blue.time_since_creation - pink.time_since_creation);
+
+//                        /* make sure that positive TOF is always oriented in the same direction,
+//                        +TOF equating to +x. */
+//                        if (blue.location.x_position < pink.location.x_position) {
+//                            tofDifference = -tofDifference;
+//                        } else if ( (blue.location.x_position == pink.location.x_position)
+//                                    &&  (blue.location.y_position < pink.location.y_position) ) {
+//                            tofDifference = -tofDifference;
+//                        }
+
+                        if ( (tofDifference >= binParams->maxTOF) ||
+                            (tofDifference <= binParams->minTOF) ) {
+
+                            /* outside coincidence window, go to next photon */
+                            continue;
+
+                        }
+
+                        return record.init_from_data(blue, pink, coincidenceWeight, tofDifference);
                     }
 
                 }

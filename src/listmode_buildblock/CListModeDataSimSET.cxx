@@ -320,7 +320,7 @@ shared_ptr <CListRecord>
 CListModeDataSimSET::
 get_empty_record_sptr() const
 {
-    shared_ptr<CListRecord> sptr(new CListRecordSimSET(this->get_proj_data_info_sptr()->get_scanner_sptr()));
+    shared_ptr<CListRecord> sptr(new CListRecordSimSET(this->get_proj_data_info_sptr()));
     return sptr;
 }
 
