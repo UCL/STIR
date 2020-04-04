@@ -263,7 +263,7 @@ public  GeneralisedObjectiveFunction<TargetT>
 protected:
   //! set-up specifics for the derived class 
   virtual Succeeded 
-    set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr) = 0;
+    set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr) = 0;
 
   //! compute subset and total sensitivity
   /*! This function fills in the sensitivity data by calling add_subset_sensitivity()

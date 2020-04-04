@@ -124,7 +124,7 @@ DataSymmetriesForBins_PET_CartesianGrid::
 DataSymmetriesForBins_PET_CartesianGrid
 (
  const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
- const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr,
+ const shared_ptr<const DiscretisedDensity<3,float> >& image_info_ptr,
  const bool do_symmetry_90degrees_min_phi_v,
  const bool do_symmetry_180degrees_min_phi_v,
  const bool do_symmetry_swap_segment_v,

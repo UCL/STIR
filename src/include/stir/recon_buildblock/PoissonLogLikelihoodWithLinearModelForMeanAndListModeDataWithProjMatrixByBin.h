@@ -93,7 +93,7 @@ protected:
   }
 
   virtual Succeeded 
-    set_up_before_sensitivity(shared_ptr <TargetT > const& target_sptr); 
+    set_up_before_sensitivity(shared_ptr <const TargetT > const& target_sptr); 
  
   virtual void
     add_subset_sensitivity(TargetT& sensitivity, const int subset_num) const;

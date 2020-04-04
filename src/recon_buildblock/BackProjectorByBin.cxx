@@ -78,7 +78,7 @@ initialise_keymap()
 void
 BackProjectorByBin::
 set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, 
-       const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr)
+       const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr)
 {
   _already_set_up = true;
   _proj_data_info_sptr = proj_data_info_sptr->create_shared_clone();

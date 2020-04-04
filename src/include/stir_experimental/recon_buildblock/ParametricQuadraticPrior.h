@@ -157,7 +157,7 @@ class ParametricQuadraticPrior:  public
   void set_kappa_sptr(const shared_ptr<TargetT >&);
 
   //! Has to be called before using this object
-  virtual Succeeded set_up(shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr);
+  virtual Succeeded set_up(shared_ptr<const DiscretisedDensity<3,elemT> > const& target_sptr);
   
 protected:
   //! can be set during parsing to restrict the weights to the 2D case
