@@ -27,32 +27,14 @@
   model, manufacurer etc. In addition, in the case of cylindrical PET scanner
   important information as number of detectors and rings might not be present.
 
-  Therefore in order to detect the scanner we try to harvest as much information
-  as possible and compare it with the templates in Scanner.cxx.
-  If Scanner not included in that file will not be able to operate.
+  Therefore in order to detect the scanner as well as add STIR spesific parameters
+  we encapsulated the SimSET header by a hsim header file, which points to the
+  phg file and hold information valuable to STIR.
 
-  The important bits of infomation are the number of rings, inner ring radius,
-  number of detectors, number of layers and number of bins. Optionally, energy resolution.
+  \todo The functionality of the header could (should) be more complete and allow
+  the user to define the simulated geometry.
 
-  If two scanners share those same characteristics, the first one in order will
-  be used.
-  The number of rings might come from two sources. First is checked if the
-  cylindrical ring geometry was separated in rings. In SimSET that is not
-  mandatory.
-
-  If that is the case, we will check the bining parameters file.
-  You can set the Z binning to be the number of rings.
-  
-  If the cylinder was separated in rings then, in SimSET each gap is defined
-  as a ring of air. Therefore most likely the simulation will have 2N + 1 and that
-  is the number with which we will be checking.
-
-  Although the cylinder might be separated in rings, radial gaps on the cylinder
-  are not defined in some way. In order to let STIR know the number of detectors per
-  ring you have to set in binning parameter file the number of tagential positions
-  to be half the number of detectors.
-
-  Moreover, the the inner ring is taken by the LayerInfo->InnerRadius,
+  Moreover, the the inner ring is taken by the LayerInfo->InnerRadius.
 
   \warning Currectly, we support only simplePET and cylindrical scanners.
 
@@ -80,7 +62,7 @@ class CListModeDataSimSET : public CListModeData
 {
 public:
     //! construct from the filename of the Interfile header
-    CListModeDataSimSET(const std::string& _history_filename);
+    CListModeDataSimSET(const std::string& _hsimset_filename);
 
     //! returns the header filename
     virtual std::string
@@ -130,7 +112,11 @@ private:
     //! Pointer to the listmode data
     shared_ptr<InputStreamFromSimSET > history_file_sptr;
     //! Name of the PHG file.
-    const std::string phg_filename;
+    std::string phg_filename;
+    //! Name of the header file.
+    const std::string hsimset_filename;
+    //! TOF mashing factor, used to compress the number of TOF bins
+    int tof_mash_factor;
     //! The name of the originating scanner
     std::string originating_system;
 
