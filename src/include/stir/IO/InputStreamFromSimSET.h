@@ -57,6 +57,10 @@ START_NAMESPACE_STIR
  *
  * Random and Scattered can be excluded as instructed in the bin params file, see SimSET instructions.
  *
+ * The compariston of the timing difference with the TOF bis takes place even if you are not
+ * reconstructing TOF data. The ends of the TOF bins also set the coincidence window size.
+ * It is important to set them every time.
+ *
  * \warning Support for old photons and old decays has not been implemented. Probably it will not.
  * \warning SimSET supports multiple history files. In STIR this is not supported, yet.
  * If you need this feature then use SimSET tools to concatenate the history files.

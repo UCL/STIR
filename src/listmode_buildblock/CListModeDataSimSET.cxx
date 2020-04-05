@@ -41,10 +41,21 @@ START_NAMESPACE_STIR
 
 //! N.E: Large parts adapted from phgbin and functions called by it;
 CListModeDataSimSET::
-CListModeDataSimSET(const std::string& _phg_filename)
-    : phg_filename(_phg_filename)
+CListModeDataSimSET(const std::string& _hsimset_filename)
+    : hsimset_filename(_hsimset_filename)
 {
     set_defaults();
+
+    KeyParser parser;
+    parser.add_start_key("SimSET header");
+    parser.add_stop_key("end SimSET header");
+
+    parser.add_key("originating system", &this->originating_system);
+    parser.add_key("name of phg file", &this->phg_filename);
+    parser.add_key("%TOF mashing factor", &this->tof_mash_factor);
+
+    if(!parser.parse(hsimset_filename.c_str()))
+        error("CListModeDataSimSET: error parsing '%s'", hsimset_filename.c_str());
 
     double SubObjCurTimeBinDuration = 0.0;
 
@@ -200,7 +211,7 @@ CListModeDataSimSET(const std::string& _phg_filename)
 
 
     // We have already established that a cylindrical scanner will be used.
-    shared_ptr<Scanner> tmpl_scanner;
+    shared_ptr<Scanner> tmpl_scanner(Scanner::get_scanner_from_name(originating_system));
     // SimplePET
     if (DetRunTimeParams[0].DetectorType == 1)
     {
@@ -208,13 +219,8 @@ CListModeDataSimSET(const std::string& _phg_filename)
                                           PhgBinParams->numZBins,
                                           tmpl_scanner) == Succeeded::yes)
         {
-            std::string msg("\n**************************************************************\n"
-                            "CListModeDataSimSET: Based on the information harvested by the PHG"
-                            "params file and the Bining file we believe that the best matching"
-                            "scanner is: ");
-            msg.append(tmpl_scanner->get_name());
-            msg.append("!\n**************************************************************\n");
-            info(msg);
+            info("CListModeDataSimSET: The information harvested from the PHG file and Bining file "
+                  "do match a scanner in the Scanner defined by the user.");
         }
         else
         {
@@ -244,13 +250,8 @@ CListModeDataSimSET(const std::string& _phg_filename)
                                           DetRunTimeParams->EnergyResolutionPercentage,
                                           DetRunTimeParams->ReferenceEnergy) == Succeeded::yes)
         {
-            std::string msg("\n**************************************************************\n"
-                            "CListModeDataSimSET: Based on the information harvested by the PHG"
-                            "params file and the Bining file we believe that the best matching"
-                            "scanner is: ");
-            msg.append(tmpl_scanner->get_name());
-            msg.append("!\n**************************************************************\n");
-            info(msg);
+            info("CListModeDataSimSET: The information harvested from the PHG file and Bining file "
+                  "do match a scanner in the Scanner defined by the user.");
         }
         else
         {
@@ -262,6 +263,11 @@ CListModeDataSimSET(const std::string& _phg_filename)
     {
         error("CListModeDataSimSET: Only cylindricalPET and simple PET scanners are supported.");
     }
+
+
+    // Here we should put some stuff that STIR needs to parse.
+    // Now that might be the TOF mashing factor, however
+    // later bed positions etc might need to be parsed here.
 
     // ExamInfo initialisation
     this->exam_info_sptr.reset(new ExamInfo);
@@ -279,7 +285,8 @@ CListModeDataSimSET(const std::string& _phg_filename)
                                                                          tmpl_scanner->get_num_rings()-1,
                                                                          tmpl_scanner->get_num_detectors_per_ring()/2,
                                                                          tmpl_scanner->get_max_num_non_arccorrected_bins(),
-                                                                         /* arc_correction*/false));
+                                                                         /* arc_correction*/false,
+                                                                         tof_mash_factor));
     this->set_proj_data_info_sptr(tmp);
 
     // if the ProjData have been initialised properly create a
@@ -411,30 +418,17 @@ check_scanner_match_geometry(const unsigned int _numTDBins,
                              const double _enResolution,
                              const double _enResReference)
 {
-
-    std::string all_scanners = Scanner::list_all_names();
-
-    std::vector<std::string> names;
-    boost::split(names, all_scanners, [](char c){return c == '\n';});
-
-    for ( int scanInt = Scanner::Type::E931;
-          scanInt != Scanner::Type::User_defined_scanner; ++scanInt )
-    {
-        Scanner::Type cur_scanner = static_cast<Scanner::Type>(scanInt);
-        scanner_sptr.reset(new Scanner(cur_scanner));
-
-        if ((_radius > 0.0 ?
-             scanner_sptr->get_inner_ring_radius() == static_cast<float>(_radius*10) : 1) &&
-                scanner_sptr->get_num_detector_layers() == static_cast<int>(_numLayers) &&
-                scanner_sptr->get_num_rings() == static_cast<int>(_numZbins) &&
-                (scanner_sptr->get_energy_resolution() > -1.f ?
-                 scanner_sptr->get_energy_resolution() == static_cast<float>(_enResolution) : 1) &&
-                scanner_sptr->get_num_detectors_per_ring() == 2*static_cast<int>(_numTDBins) &&
-                scanner_sptr->get_max_num_non_arccorrected_bins() == static_cast<int>(_numTDBins))
-            return Succeeded::yes;
-    }
-
-    return Succeeded::no;
+    if ((_radius > 0.0 ?
+         scanner_sptr->get_inner_ring_radius() == static_cast<float>(_radius*10) : 1) &&
+            scanner_sptr->get_num_detector_layers() == static_cast<int>(_numLayers) &&
+            scanner_sptr->get_num_rings() == static_cast<int>(_numZbins) &&
+            (scanner_sptr->get_energy_resolution() > 0.f ?
+             scanner_sptr->get_energy_resolution() == static_cast<float>(_enResolution) : 1) &&
+            scanner_sptr->get_num_detectors_per_ring() == 2*static_cast<int>(_numTDBins) &&
+            scanner_sptr->get_max_num_non_arccorrected_bins() == static_cast<int>(_numTDBins))
+        return Succeeded::yes;
+    else
+        return Succeeded::no;
 }
 
 END_NAMESPACE_STIR
