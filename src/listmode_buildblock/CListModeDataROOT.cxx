@@ -69,13 +69,15 @@ CListModeDataROOT(const std::string& hroot_filename)
         error("CListModeDataROOT: Unable to set_up() from the input Header file (.hroot).");
 
     // ExamInfo initialisation
-    this->exam_info_sptr.reset(new ExamInfo);
+    shared_ptr<ExamInfo> _exam_info_sptr(new ExamInfo);
 
     // Only PET scanners supported
-    this->exam_info_sptr->imaging_modality = ImagingModality::PT;
-    this->exam_info_sptr->originating_system = this->originating_system;
-    this->exam_info_sptr->set_low_energy_thres(this->root_file_sptr->get_low_energy_thres());
-    this->exam_info_sptr->set_high_energy_thres(this->root_file_sptr->get_up_energy_thres());
+    _exam_info_sptr->imaging_modality = ImagingModality::PT;
+    _exam_info_sptr->originating_system = this->originating_system;
+    _exam_info_sptr->set_low_energy_thres(this->root_file_sptr->get_low_energy_thres());
+    _exam_info_sptr->set_high_energy_thres(this->root_file_sptr->get_up_energy_thres());
+
+    this->exam_info_sptr = _exam_info_sptr;
 
     shared_ptr<Scanner> this_scanner_sptr;
 
