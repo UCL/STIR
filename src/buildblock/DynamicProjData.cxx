@@ -61,7 +61,7 @@ read_interfile_DPDFS(const string& filename,
 const double
 DynamicProjData::
 get_start_time_in_secs_since_1970() const
-{ return this->get_exam_info_sptr()->start_time_in_secs_since_1970; }
+{ return this->get_exam_info().start_time_in_secs_since_1970; }
 
 void 
 DynamicProjData::

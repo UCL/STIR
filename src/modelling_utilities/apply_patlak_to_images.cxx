@@ -97,9 +97,9 @@ USING_NAMESPACE_STIR
           tdefs.set_num_time_frames(1);
           tdefs.set_time_frame(1,start,end);
           // Set the time frame definitions
-          shared_ptr<ExamInfo> sptr = par_image_sptr->get_exam_info_sptr()->create_shared_clone();
-          sptr->set_time_frame_definitions(tdefs);
-          par_image_sptr->set_exam_info(*sptr);
+          ExamInfo exam_info = par_image_sptr->get_exam_info();
+          exam_info.set_time_frame_definitions(tdefs);
+          par_image_sptr->set_exam_info(exam_info);
       }
       else
           par_image_sptr = MAKE_SHARED<ParametricVoxelsOnCartesianGrid>(dyn_image);

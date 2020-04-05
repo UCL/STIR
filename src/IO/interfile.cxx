@@ -178,9 +178,9 @@ read_interfile_image(istream& input,
       warning(str(boost::format("Discretised density should contain 1 time frame, but this image contains %1%. "
                                 "Only the first will be kept, and the rest discarded.")
                   % image_ptr->get_exam_info().get_time_frame_definitions().get_num_frames()));
-      shared_ptr<ExamInfo> sptr = image_ptr->get_exam_info_sptr()->create_shared_clone();
-      sptr->time_frame_definitions.set_num_time_frames(1);
-      image_ptr->set_exam_info(*sptr);
+      ExamInfo exam_info = image_ptr->get_exam_info();
+      exam_info.time_frame_definitions.set_num_time_frames(1);
+      image_ptr->set_exam_info(exam_info);
   }
   else if (image_ptr->get_exam_info().get_time_frame_definitions().get_num_frames() == 0)
       warning("DiscretisedDensity does not contain any time frames. This might cause an error.");
@@ -203,11 +203,11 @@ read_interfile_dynamic_image(istream& input,
   if (is_null_ptr(image_sptr))
     error("Error parsing dynamic image");
 
-  shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(hdr.get_exam_info_sptr()->originating_system));
+  shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(hdr.get_exam_info().originating_system));
 
   DynamicDiscretisedDensity * dynamic_dens_ptr =
-    new DynamicDiscretisedDensity(hdr.get_exam_info_sptr()->time_frame_definitions,
-                                  hdr.get_exam_info_sptr()->start_time_in_secs_since_1970,
+    new DynamicDiscretisedDensity(hdr.get_exam_info().time_frame_definitions,
+                                  hdr.get_exam_info().start_time_in_secs_since_1970,
                                   scanner_sptr,
                                   image_sptr);
 
@@ -216,7 +216,7 @@ read_interfile_dynamic_image(istream& input,
 
   data_in.seekg(hdr.data_offset_each_dataset[0]);
 
-  ExamInfo _exam_info(*hdr.get_exam_info_sptr());
+  ExamInfo _exam_info(hdr.get_exam_info());
   for (unsigned int frame_num=1; frame_num <= dynamic_dens_ptr->get_num_time_frames(); ++frame_num)
     {
       data_in.seekg(hdr.data_offset_each_dataset[frame_num-1]);
@@ -261,7 +261,7 @@ read_interfile_parametric_image(istream& input,
   if (is_null_ptr(image_sptr))
     error("Error parsing parametric image");
 
-  shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(hdr.get_exam_info_sptr()->originating_system));
+  shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name(hdr.get_exam_info().originating_system));
 
   BasicCoordinate<3,float> voxel_size;
   voxel_size[1] = hdr.pixel_sizes[2];

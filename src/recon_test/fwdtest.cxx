@@ -115,7 +115,7 @@ main(int argc, char *argv[])
   {
     shared_ptr<ProjData> proj_data_sptr = 
       ProjData::read_from_file(argv[2]);
-    exam_info_sptr = proj_data_sptr->get_exam_info_sptr()->create_shared_clone();
+    exam_info_sptr = proj_data_sptr->get_exam_info().create_shared_clone();
     new_data_info_ptr= proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
   }
   else

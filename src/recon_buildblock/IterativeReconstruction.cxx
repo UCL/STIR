@@ -389,7 +389,7 @@ IterativeReconstruction<TargetT>::get_initial_data_ptr() const
     {
       TargetT * target_ptr =
         TargetT::read_from_file(this->initial_data_filename);
-      target_ptr->set_exam_info(*this->get_input_data().get_exam_info_sptr());
+      target_ptr->set_exam_info(this->get_input_data().get_exam_info());
       return target_ptr;
     }
 }
