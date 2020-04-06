@@ -408,7 +408,7 @@ lm_to_proj_data() const
     // var   | type               | python var | description                      | shape
     // ------+--------------------|------------+----------------------------------+-----------------------------------------------------------------
     // nitag | int                |            | gets set inside lmproc           | 
-	// sne   | int                |            | gets set inside lmproc           | 
+    // sne   | int                |            | gets set inside lmproc           |
     // snv   | unsigned int *     | pvs        | sino views                       | [ tn,           Cnt['NSEG0'],    Cnt['NSBINS']                  ]
     // hcp   | unsigned int *     | phc        | head curve prompts               | [ nitag                                                         ]
     // hcd   | unsigned int *     | dhc        | head curve delayeds              | [ nitag                                                         ]
@@ -442,7 +442,7 @@ lm_to_proj_data() const
     // var        | type    | required? | description                                              |
     // -----------+---------+-----------+----------------------------------------------------------|
     // li2rno     | int *   |           | linear indx to ring indx                                 |
-	// li2sn      | int *   |           | linear michelogram index (along diagonals) to sino index |
+    // li2sn      | int *   |           | linear michelogram index (along diagonals) to sino index |
     // li2nos     | int *   |           | linear indx to no of sinos in span-11                    |
     // sn1_rno    | short * | yes       |                                                          |
     // sn1_ssrb   | short * | yes       |                                                          |
