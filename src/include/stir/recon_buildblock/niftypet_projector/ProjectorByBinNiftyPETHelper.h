@@ -72,6 +72,15 @@ public:
     /// Set crs filename
     void set_crs_filename(const std::string &fname_crs)       { _fname_crs = fname_crs;       }
 
+    /// Set sn1_rno filename
+    void set_sn1_rno_filename(const std::string &fname_sn1_rno)   { _fname_sn1_rno = fname_sn1_rno;   }
+
+    /// Set sn1_sn11 filename
+    void set_sn1_sn11_filename(const std::string &fname_sn1_sn11) { _fname_sn1_sn11 = fname_sn1_sn11; }
+
+    /// Set sn1_ssrb filename
+    void set_sn1_ssrb_filename(const std::string &fname_sn1_ssrb) { _fname_sn1_ssrb = fname_sn1_ssrb; }
+
     /// Set CUDA device ID
     void set_cuda_device_id(const int devid)                 { _devid = char(devid);          }
 
@@ -83,6 +92,11 @@ public:
 
     /// Set verbosity level for CUDA output
     void set_verbose(const bool verbose)                      { _verbose = verbose;           }
+
+    /// Read binary file
+    template<typename dataType>
+    static
+    std::vector<dataType> read_binary_file(const std::string &filename);
 
     /// Set up
     void set_up();
@@ -123,6 +137,9 @@ public:
     /// Forward project, returns sinogram without gaps. Do some unavoidable const_casting as the wrapped methods don't use const
     void forward_project(std::vector<float> &sino_no_gaps, const std::vector<float> &image) const;
 
+    /// Listmode to sinogram
+    void lm_to_proj_data() const;
+
 private:
 
     /// Check that set up has been run before returning data
@@ -155,6 +172,7 @@ private:
     float _niftypet_to_stir_ratio;
     bool _already_set_up;
     std::string _fname_li2rng, _fname_li2sn, _fname_li2nos, _fname_s2c, _fname_aw2ali, _fname_crs;
+    std::string _fname_sn1_rno, _fname_sn1_sn11, _fname_sn1_ssrb;
     std::vector<float> _li2rng;
     std::vector<short> _li2sn;
     std::vector<char>  _li2nos;

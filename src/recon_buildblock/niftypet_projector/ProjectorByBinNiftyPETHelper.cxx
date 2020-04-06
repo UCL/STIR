@@ -30,33 +30,28 @@
 
 #include <fstream>
 #include "stir/recon_buildblock/niftypet_projector/ProjectorByBinNiftyPETHelper.h"
-#include <def.h>
+#include "def.h"
 #include <boost/format.hpp>
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/is_null_ptr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/recon_array_functions.h"
-#include <driver_types.h>
-#include <auxmath.h>
-#include <prjb.h>
-#include <prjf.h>
-#include <scanner_0.h>
-#include <recon.h>
+#include "driver_types.h"
+#include "auxmath.h"
+#include "prjb.h"
+#include "prjf.h"
+#include "scanner_0.h"
+#include "recon.h"
+#include "lmproc.h"
 
 START_NAMESPACE_STIR
 
 /// Read NiftyPET binary file
 template <class dataType>
 std::vector<dataType>
-read_binary_file(std::string file_name)
+ProjectorByBinNiftyPETHelper::
+read_binary_file(const std::string &data_path)
 {
-    const char* stir_path = std::getenv("STIR_PATH");
-    if (!stir_path)
-        throw std::runtime_error("STIR_PATH not defined, cannot find data");
-
-    std::string data_path = stir_path;
-    data_path += "/examples/niftypet_mMR_params/" + file_name;
-
     std::ifstream file(data_path, std::ios::in | std::ios::binary);
 
     // get its size:
@@ -71,6 +66,20 @@ read_binary_file(std::string file_name)
     return contents;
 }
 
+template <class dataType>
+static
+std::vector<dataType>
+read_binary_file_in_examples(const std::string &file_name)
+{
+    const char* stir_path = std::getenv("STIR_PATH");
+    if (!stir_path)
+        throw std::runtime_error("STIR_PATH not defined, cannot find data");
+
+    std::string data_path = stir_path;
+    data_path += "/examples/niftypet_mMR_params/" + file_name;
+    return ProjectorByBinNiftyPETHelper::read_binary_file<dataType>(data_path);
+}
+
 void
 ProjectorByBinNiftyPETHelper::
 set_up()
@@ -82,7 +91,7 @@ set_up()
     // after back projection.
     // This value is fixed for the mMR, but may have to change
     // if other scanners are incorporated.
-    _niftypet_to_stir_ratio = 1.25f;
+    _niftypet_to_stir_ratio = 1.f;//.25f;
 
     if (_span < 0)
         throw std::runtime_error("ProjectorByBinNiftyPETHelper::set_up() "
@@ -102,12 +111,12 @@ set_up()
         throw std::runtime_error("ProjectorByBinNiftyPETHelper::set_up() "
                                  "not all filenames have been set.");
 
-    _li2rng = read_binary_file<float>(_fname_li2rng);
-    _li2sn  = read_binary_file<short>(_fname_li2sn );
-    _li2nos = read_binary_file<char> (_fname_li2nos);
-    _s2c    = read_binary_file<short>(_fname_s2c   );
-    _aw2ali = read_binary_file<int>  (_fname_aw2ali);
-    _crs    = read_binary_file<float>(_fname_crs   );
+    _li2rng   = read_binary_file_in_examples<float>(_fname_li2rng);
+    _li2sn    = read_binary_file_in_examples<short>(_fname_li2sn );
+    _li2nos   = read_binary_file_in_examples<char> (_fname_li2nos);
+    _s2c      = read_binary_file_in_examples<short>(_fname_s2c   );
+    _aw2ali   = read_binary_file_in_examples<int>  (_fname_aw2ali);
+    _crs      = read_binary_file_in_examples<float>(_fname_crs   );
 
     // Set up cnst - backwards engineered from def.h, scanner.h and resources.py
     _cnt.reset(new Cnst);
@@ -124,6 +133,7 @@ set_up()
     _cnt->A        = NSANGLES;
     _cnt->W        = NSBINS;
     _cnt->NCRSR    = nCRSR;
+    _cnt->B        = NBUCKTS;
 
     _cnt->MRD =  mxRD;
     _cnt->ALPHA =  aLPHA;
@@ -371,6 +381,122 @@ forward_project(std::vector<float> &sino_no_gaps, const std::vector<float> &imag
         sino_no_gaps[i] /= _niftypet_to_stir_ratio;
 }
 
+void
+ProjectorByBinNiftyPETHelper::
+lm_to_proj_data() const
+{
+    // Get listmode info
+    std::string lm_binary_file = "/home/rich/Documents/Data/NiftyPET_example/LM/17598013_1946_20150604155500.000000.bf";
+    char *flm = new char[lm_binary_file.length() + 1];
+    strcpy(flm, lm_binary_file.c_str());
+    getLMinfo(flm, *_cnt);
+
+    // preallocate all the output arrays - in def.h VTIME=2 (), MXNITAG=5400 (max time 1h30)
+    const int nitag = lmprop.nitag;
+    const int pow_2_MXNITAG = pow(2,VTIME);
+    int tn;
+    if (nitag>MXNITAG)
+        tn = MXNITAG/pow_2_MXNITAG;
+    else
+        tn = (nitag+pow_2_MXNITAG-1)/pow_2_MXNITAG;
+
+    unsigned short frames(0);
+    int nfrm(1);
+    int tstart(0), tstop(3600);
+
+    // structure of output data
+    // var   | type               | python var | description                      | shape
+    // ------+--------------------|------------+----------------------------------+-----------------------------------------------------------------
+    // nitag | int                |            | gets set inside lmproc           | 
+	// sne   | int                |            | gets set inside lmproc           | 
+    // snv   | unsigned int *     | pvs        | sino views                       | [ tn,           Cnt['NSEG0'],    Cnt['NSBINS']                  ]
+    // hcp   | unsigned int *     | phc        | head curve prompts               | [ nitag                                                         ]
+    // hcd   | unsigned int *     | dhc        | head curve delayeds              | [ nitag                                                         ]
+    // fan   | unsigned int *     | fan        | fansums                          | [ nfrm,         Cnt['NRNG'],     Cnt['NCRS']                    ]
+    // bck   | unsigned int *     | bck        | buckets (singles)                | [ 2,            nitag,           Cnt['NBCKT']                   ]
+    // mss   | float *            | mss        | centre of mass (axially)         | [ nitag                                                         ]
+    // ssr   | unsigned int *     | ssr        |                                  | [ Cnt['NSEG0'], Cnt['NSANGLES'], Cnt['NSBINS']                  ]
+    // psn   | void *             | psino      | if nfrm==1, unsigned int*        | [ nfrm,          nsinos,         Cnt['NSANGLES'], Cnt['NSBINS'] ]
+    // dsn   | void *             | dsino      | if nfrm==1, unsigned int*        | [ nfrm,          nsinos,         Cnt['NSANGLES'], Cnt['NSBINS'] ]
+    // psm   | unsigned long long |            | gets set inside lmproc           |
+    // dsm   | unsigned long long |            | gets set inside lmproc           |
+    // tot   | unsigned int       |            | gets set inside lmproc           |
+    hstout dicout; 
+    dicout.snv = new unsigned int[tn * _cnt->NSEG0 * _cnt->W];
+    dicout.hcp = new unsigned int[nitag];
+    dicout.hcd = new unsigned int[nitag];
+    dicout.fan = new unsigned int[nfrm * _cnt->NRNG * _cnt->NCRS];
+    dicout.bck = new unsigned int[2 * nitag * _cnt->B];
+    dicout.mss = new float       [nitag];
+    dicout.ssr = new unsigned int[_cnt->NSEG0 * _cnt->A * _cnt->W];
+    if (nfrm == 1)  {
+        dicout.psn =  new unsigned int[nfrm * _nsinos * _cnt->A * _cnt->W];
+        dicout.dsn =  new unsigned int[nfrm * _nsinos * _cnt->A * _cnt->W];
+    }
+    else
+        throw std::runtime_error("ProjectorByBinNiftyPETHelper::lm_to_proj_data: If nfrm>1, "
+                                  "dicout.psn and dicout.dsn should be unsigned char*. Not "
+                                  "tested, but should be pretty easy.");
+
+    // structure of axial LUTs for LM processing
+    // var        | type    | required? | description                                              |
+    // -----------+---------+-----------+----------------------------------------------------------|
+    // li2rno     | int *   |           | linear indx to ring indx                                 |
+	// li2sn      | int *   |           | linear michelogram index (along diagonals) to sino index |
+    // li2nos     | int *   |           | linear indx to no of sinos in span-11                    |
+    // sn1_rno    | short * | yes       |                                                          |
+    // sn1_ssrb   | short * | yes       |                                                          |
+    // sn1_sn11no | short * | yes       |                                                          |
+    // Nli2rno    | int[2]  |           | array sizes                                              |
+    // Nli2sn     | int[2]  |           |                                                          |
+    // Nli2nos    | int     |           |                                                          |
+    axialLUT axLUT;
+    if (_fname_sn1_rno.empty() || _fname_sn1_sn11.empty() || _fname_sn1_ssrb.empty())
+        throw std::runtime_error("ProjectorByBinNiftyPETHelper::lm_to_proj_data: Filenames missing for "
+                                    ".dat files required for unlisting.");
+    std::vector<short> _sn1_rno   = read_binary_file_in_examples<short>(_fname_sn1_rno );
+    std::vector<short> _sn1_sn11  = read_binary_file_in_examples<short>(_fname_sn1_sn11);
+    std::vector<short> _sn1_ssrb  = read_binary_file_in_examples<short>(_fname_sn1_ssrb);
+    axLUT.sn1_rno  = const_cast<std::vector<short>&>(_sn1_rno).data();
+    axLUT.sn1_sn11 = const_cast<std::vector<short>&>(_sn1_sn11).data();
+    axLUT.sn1_ssrb = const_cast<std::vector<short>&>(_sn1_ssrb).data();
+
+    // check that s2c contains correct number of elements
+    if (_s2c.size() != AW*2)
+        throw std::runtime_error("ProjectorByBinNiftyPETHelper::lm_to_proj_data: Expected "
+                                 "s2c to have AW*2 number of elements.");
+    std::vector<LORcc> s2c(AW);
+    for (unsigned i = 0; i<unsigned(AW); i++) {
+        s2c[i].c0 = _s2c[ 2*i ];
+        s2c[i].c1 = _s2c[2*i+1];
+        if (i<10)
+            std::cout << "i=" << i << ", c0=" << s2c[i].c0 << ", c1=" << s2c[i].c1 << "\n";
+    }
+
+    std::cout << "\n\n\n\nabout to start unlisting\n\n\n\n\n";
+    lmproc(dicout, // hstout (struct): output
+           flm, // char *: binary filename (.s, .bf)
+           &frames, // unsigned short *: think for one frame, frames = 0
+           nfrm, // int: num frames
+           tstart, // int
+           tstop, // int
+           const_cast<std::vector<LORcc>&>(s2c).data(), // *LORcc (struct)
+           axLUT, // axialLUT (struct)
+           *_cnt); // Cnst (struct)
+
+    // Clear up
+    delete [] flm;
+    delete [] dicout.snv;
+    delete [] dicout.hcp;
+    delete [] dicout.hcd;
+    delete [] dicout.fan;
+    delete [] dicout.bck;
+    delete [] dicout.ssr;
+    delete [] dicout.psn;
+    delete [] dicout.dsn;
+    std::cout << "\n\n\n\n\n made it! \n\n\n";
+}
+
 void check_im_sizes(const int stir_dim[3], const int np_dim[3])
 {
     for (int i=0; i<3; ++i)
@@ -467,7 +593,7 @@ convert_image_niftyPET_to_stir(DiscretisedDensity<3,float> &stir, const std::vec
     // After the back projection, we enforce a truncation outside of the FOV.
     // This is because the NiftyPET FOV is smaller than the STIR FOV and this
     // could cause some voxel values to spiral out of control.
-    truncate_rim(stir,17);
+    // truncate_rim(stir,17);
 }
 
 void

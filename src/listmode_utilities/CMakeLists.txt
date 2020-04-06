@@ -41,6 +41,9 @@ if (HAVE_ECAT)
   )
 endif()
 
+if (STIR_WITH_NIFTYPET_PROJECTOR)
+  list(APPEND ${dir_EXE_SOURCES} conv_niftypet_stir)
+endif()
 
 
 include(stir_exe_targets)
