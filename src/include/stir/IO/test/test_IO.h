@@ -169,8 +169,8 @@ shared_ptr<VoxelsOnCartesianGrid<float> > IOTests<A>::create_single_image()
     exam_info_sptr->set_high_energy_thres(100.);
     exam_info_sptr->set_low_energy_thres(5.);
     
-    shared_ptr<VoxelsOnCartesianGrid<float> > single_image_sptr =
-      MAKE_SHARED<VoxelsOnCartesianGrid<float> >(exam_info_sptr, range,origin, grid_spacing);
+    shared_ptr<VoxelsOnCartesianGrid<float> > single_image_sptr
+      (new VoxelsOnCartesianGrid<float> (exam_info_sptr, range,origin, grid_spacing));
     // make reference for convenience
     VoxelsOnCartesianGrid<float> & single_image = *single_image_sptr;
 
