@@ -494,7 +494,6 @@ lm_to_proj_data() const
     delete [] dicout.ssr;
     delete [] dicout.psn;
     delete [] dicout.dsn;
-    std::cout << "\n\n\n\n\n made it! \n\n\n";
 }
 
 void check_im_sizes(const int stir_dim[3], const int np_dim[3])
