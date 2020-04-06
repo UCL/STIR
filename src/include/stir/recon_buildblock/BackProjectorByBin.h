@@ -74,7 +74,7 @@ public:
   */
  virtual void set_up(		 
     const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
+    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
     ) =0;
 
   /*! \brief Informs on which symmetries the projector handles

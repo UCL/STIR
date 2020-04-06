@@ -89,7 +89,7 @@ public:
       views is not a multiple of 4.
   */    
   DataSymmetriesForBins_PET_CartesianGrid(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-                                          const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr,
+                                          const shared_ptr<const DiscretisedDensity<3,float> >& image_info_ptr,
                                           const bool do_symmetry_90degrees_min_phi = true,
                                           const bool do_symmetry_180degrees_min_phi = true,
 					  const bool do_symmetry_swap_segment = true,
@@ -184,7 +184,7 @@ private:
   // at the moment, we don't need the following 2 members
 
   // TODO somehow store only the info
-  shared_ptr<DiscretisedDensity<3,float> > image_info_ptr;
+  shared_ptr<constDiscretisedDensity<3,float> > image_info_ptr;
 
   // a convenience function that does the dynamic_cast from the above
   inline const DiscretisedDensityOnCartesianGrid<3,float> *

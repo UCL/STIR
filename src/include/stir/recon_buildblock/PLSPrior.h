@@ -127,7 +127,7 @@ class PLSPrior:  public
 
   //! Has to be called before using this object
   /*! \todo set the anatomical image to zero if not defined */
-  virtual Succeeded set_up(shared_ptr<DiscretisedDensity<3,elemT> > const& target_sptr);
+  virtual Succeeded set_up(shared_ptr<const DiscretisedDensity<3,elemT> > const& target_sptr);
 
   //! compute the value of the function
   double
@@ -142,9 +142,9 @@ class PLSPrior:  public
       modify the image by manipulating the image refered to by this pointer.
       Unpredictable results will occur.
   */
-  shared_ptr<DiscretisedDensity<3,elemT> > get_kappa_sptr() const;
-  shared_ptr<DiscretisedDensity<3,elemT> > get_anatomical_grad_sptr(int direction) const;
-  shared_ptr<DiscretisedDensity<3,elemT> > get_norm_sptr() const;
+  shared_ptr<const DiscretisedDensity<3,elemT> > get_kappa_sptr() const;
+  shared_ptr<const DiscretisedDensity<3,elemT> > get_anatomical_grad_sptr(int direction) const;
+  shared_ptr<const DiscretisedDensity<3,elemT> > get_norm_sptr() const;
 
   //!get eta and alpha parameters
   double get_eta() const;
@@ -156,14 +156,14 @@ class PLSPrior:  public
   void set_alpha(const double);
 
   //! set anatomical pointer
-  void set_anatomical_image_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+  void set_anatomical_image_sptr(const shared_ptr<const DiscretisedDensity<3,elemT> >&);
   //! get anatomical pointer
-  shared_ptr<DiscretisedDensity<3,elemT> > get_anatomical_image_sptr() const;
+  shared_ptr<const DiscretisedDensity<3,elemT> > get_anatomical_image_sptr() const;
   /// Set anatomical filename
   void set_anatomical_filename(const std::string& filename);
 
   //! set kappa image
-  void set_kappa_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+  void set_kappa_sptr(const shared_ptr<const DiscretisedDensity<3,elemT> >&);
   /// Set kappa filename
   void set_kappa_filename(const std::string& filename);
 
@@ -218,14 +218,14 @@ protected:
                                          DiscretisedDensity<3,elemT> &pet_im_grad_x,
                         const DiscretisedDensity<3,elemT> &pet_image);
 
-  shared_ptr<DiscretisedDensity<3,elemT> > anatomical_grad_x_sptr;
-  shared_ptr<DiscretisedDensity<3,elemT> > anatomical_grad_y_sptr;
-  shared_ptr<DiscretisedDensity<3,elemT> > anatomical_grad_z_sptr;
-  shared_ptr<DiscretisedDensity<3,elemT> > anatomical_sptr;
-  shared_ptr<DiscretisedDensity<3,elemT> > norm_sptr;
-  shared_ptr<DiscretisedDensity<3,elemT> > kappa_ptr;
-  void set_anatomical_grad_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&, int);
-  void set_anatomical_grad_norm_sptr(const shared_ptr<DiscretisedDensity<3,elemT> >&);
+  shared_ptr<const DiscretisedDensity<3,elemT> > anatomical_grad_x_sptr;
+  shared_ptr<const DiscretisedDensity<3,elemT> > anatomical_grad_y_sptr;
+  shared_ptr<const DiscretisedDensity<3,elemT> > anatomical_grad_z_sptr;
+  shared_ptr<const DiscretisedDensity<3,elemT> > anatomical_sptr;
+  shared_ptr<const DiscretisedDensity<3,elemT> > norm_sptr;
+  shared_ptr<const DiscretisedDensity<3,elemT> > kappa_ptr;
+  void set_anatomical_grad_sptr(const shared_ptr<const DiscretisedDensity<3,elemT> >&, int);
+  void set_anatomical_grad_norm_sptr(const shared_ptr<const DiscretisedDensity<3,elemT> >&);
   };
 
 

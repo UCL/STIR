@@ -54,7 +54,7 @@ public :
   */
   virtual void set_up(		 
 		      const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+		      const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     );
 
 private:

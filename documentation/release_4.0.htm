@@ -442,8 +442,15 @@ from the above):</H2>
     <li><code>Object</code> has been renamed as <code>RegisteredObjectBase</code>. 
         This is because the class only exists for the parser to get information about the class.</li>
     <li>Classes that used<code>InterfilePDFSHeader</code> now contains a <code>shared_ptr&lt;ProjDataInfo&gt;</code> instead of a raw pointer.</li>
-    <li>Where possible, classes that internally contained a <code>shared_ptr&lt;ProjDataInfo&gt;</code> now contain a <code>shared_ptr&lt;const ProjDataInfo&gt;</code></li>
-    <li><code>get_proj_data_info_sptr</code> used to return <code>shared_ptr&lt;ProjDataInfo&gt;</code>, but now returns <code>shared_ptr&lt;const ProjDataInfo&gt;</code>.</li>
+    <li>Changes improving safety of use of <code>shared_ptr</code>:<br />
+      In the previous version of STIR, the use of <code>shared_ptr</code> allowed unsafe access to
+      the objects (although this never happened in distributed STIR code). We now prevent this with changes to the class interface (although there is still work to do):
+      <ul>
+        <li>Where possible, classes that internally contained a <code>shared_ptr&lt;ProjDataInfo&gt;</code> now contain a <code>shared_ptr&lt;const ProjDataInfo&gt;</code>, and similar for <code>DiscretisedDensity</code></li>
+        <li><code>get_proj_data_info_sptr</code> used to return <code>shared_ptr&lt;ProjDataInfo&gt;</code>, but now returns <code>shared_ptr&lt;const ProjDataInfo&gt;</code>.</li>
+	<li>Corresponding constructors and some functions, including <code>set_up</code>, that accept <code>shared_ptr</code> now take a <code>shared_ptr</code> to a <code>const</code> object.</li>
+      </ul>
+      </li>
   </ul>
 </li>
 </ul>

@@ -46,7 +46,7 @@ ProjectorByBinPair()
 Succeeded
 ProjectorByBinPair::
 set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
-       const shared_ptr<DiscretisedDensity<3,float> >& image_info_sptr)
+       const shared_ptr<const DiscretisedDensity<3,float> >& image_info_sptr)
 
 {    	 
   _already_set_up = true;
