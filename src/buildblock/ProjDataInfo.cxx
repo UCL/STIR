@@ -724,8 +724,8 @@ blindly_equals(const root_type * const that) const
    (get_max_view_num()==proj.get_max_view_num()) &&
    (get_min_tangential_pos_num() ==proj.get_min_tangential_pos_num())&&
    (get_max_tangential_pos_num() ==proj.get_max_tangential_pos_num())&&
-   (get_min_tof_pos_num() ==proj.get_min_tof_pos_num())&&
-   (get_max_tof_pos_num() ==proj.get_max_tof_pos_num())&&
+   (that->is_tof_data() && this->is_tof_data() ? (get_min_tof_pos_num() == proj.get_min_tof_pos_num()) &&
+                                                 (get_max_tof_pos_num() == proj.get_max_tof_pos_num()) : true) &&
    equal(min_axial_pos_per_seg.begin(), min_axial_pos_per_seg.end(), proj.min_axial_pos_per_seg.begin())&&
    equal(max_axial_pos_per_seg.begin(), max_axial_pos_per_seg.end(), proj.max_axial_pos_per_seg.begin())&&
    (*get_scanner_ptr()== *(proj.get_scanner_ptr()))&&
@@ -774,9 +774,9 @@ operator>=(const ProjDataInfo& proj_data_info) const
       proj_data_info.get_min_segment_num() < larger_proj_data_info.get_min_segment_num() ||
       proj_data_info.get_max_tangential_pos_num() > larger_proj_data_info.get_max_tangential_pos_num() ||
       proj_data_info.get_min_tangential_pos_num() < larger_proj_data_info.get_min_tangential_pos_num() ||
-	  ((proj_data_info.get_min_tof_pos_num() < larger_proj_data_info.get_min_tof_pos_num() ||
-	      proj_data_info.get_max_tof_pos_num() > larger_proj_data_info.get_max_tof_pos_num())  &&
-          (proj_data_info.is_tof_data() && larger_proj_data_info.is_tof_data())))
+          ((proj_data_info.is_tof_data() && larger_proj_data_info.is_tof_data()) ?
+           (proj_data_info.get_min_tof_pos_num() < larger_proj_data_info.get_min_tof_pos_num() ||
+            proj_data_info.get_max_tof_pos_num() > larger_proj_data_info.get_max_tof_pos_num()) : true))
     return false;
 
   for (int segment_num=proj_data_info.get_min_segment_num();
