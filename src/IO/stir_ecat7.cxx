@@ -2328,7 +2328,7 @@ ProjData_to_ECAT7(ProjData const& proj_data, NumericType output_type,
   Main_header mhead;
 
   make_ECAT7_main_header(mhead, orig_name, 
-			 *proj_data.get_exam_info_ptr(),
+			 proj_data.get_exam_info(),
 			 *proj_data.get_proj_data_info_sptr(),
                          write_as_attenuation, output_type);
 

@@ -110,16 +110,17 @@ main(int argc, char *argv[])
   const std::string output_file_name = argv[1];
 
   shared_ptr<ProjDataInfo> new_data_info_ptr;
-  shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);  
+  shared_ptr<ExamInfo> exam_info_sptr;
   if(argc>=3)
   {
     shared_ptr<ProjData> proj_data_sptr = 
       ProjData::read_from_file(argv[2]);
-    exam_info_sptr = proj_data_sptr->get_exam_info_sptr();
+    exam_info_sptr = proj_data_sptr->get_exam_info().create_shared_clone();
     new_data_info_ptr= proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
   }
   else
   {
+    exam_info_sptr.reset(new ExamInfo);
     new_data_info_ptr.reset(ProjDataInfo::ask_parameters());
   }
   int limit_segments=

@@ -1269,7 +1269,6 @@ namespace stir {
 %ignore *::get_scanner_sptr;
 %rename (get_scanner) *::get_scanner_ptr;
 %rename (get_proj_data_info) *::get_proj_data_info_sptr;
-%ignore *::get_exam_info_ptr;
 %ignore *::get_exam_info_sptr; // we do have get_exam_info in C++
 
 %rename (set_objective_function) *::set_objective_function_sptr;

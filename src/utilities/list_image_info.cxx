@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
 
   if (print_exam)
     {
-      const ExamInfo& exam_info = *image_aptr->get_exam_info_ptr();
+      const ExamInfo& exam_info = image_aptr->get_exam_info();
       std::cout << "Modality: " << exam_info.imaging_modality.get_name() << '\n';
       std::cout << "Patient position: " << exam_info.patient_position.get_position_as_string() << '\n';
       std::cout << "Scan start time in secs since 1970 UTC: " << exam_info.start_time_in_secs_since_1970 << '\n';

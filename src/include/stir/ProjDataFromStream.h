@@ -82,7 +82,7 @@ public:
     in which the segments occur in the stream. segment_sequence_in_stream[i]
     is the segment number of the i-th segment in the stream.
   */
-  ProjDataFromStream (shared_ptr<ExamInfo> const& exam_info_sptr,
+  ProjDataFromStream (shared_ptr<const ExamInfo> const& exam_info_sptr,
 		      shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
 		      shared_ptr<std::iostream> const& s, 
 		      const std::streamoff offs, 
@@ -96,7 +96,7 @@ public:
   /*! The default value for segment_sequence_in_stream is a vector with
     values min_segment_num, min_segment_num+1, ..., max_segment_num
   */
-  ProjDataFromStream (shared_ptr<ExamInfo> const& exam_info_sptr,
+  ProjDataFromStream (shared_ptr<const ExamInfo> const& exam_info_sptr,
 		      shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
 		      shared_ptr<std::iostream> const& s, 
 		      const std::streamoff offs = 0, 

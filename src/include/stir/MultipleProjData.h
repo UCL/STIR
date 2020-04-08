@@ -41,7 +41,7 @@ public:
 
   MultipleProjData():ExamData() {}
 
-  MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr)
+  MultipleProjData(const shared_ptr<const ExamInfo>& exam_info_sptr)
     :ExamData(exam_info_sptr)
   {
   }
@@ -53,7 +53,7 @@ public:
   //! \author Nikos Efthimiou
   //! \details Convinience constructor which sets the number of gates.
   //! \warning The _proj_datas have been resized, but are still empty.
-  MultipleProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
+  MultipleProjData(const shared_ptr<const ExamInfo>& exam_info_sptr,
                    const int num_gates);
 
   static

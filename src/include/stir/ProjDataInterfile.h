@@ -65,10 +65,10 @@ public:
          will be replaced with .hs for the header file.
     </ul>
    
-    \warning This call will create a new file for the binary data and the Intefile header.
-    Any existing files with the same file anmes will be overwritten without warning.
+    \warning This call will create a new file for the binary data and the Interfile header.
+    Any existing files with the same file names will be overwritten without warning.
   */
-  ProjDataInterfile (shared_ptr<ExamInfo> const& exam_info_sptr,
+  ProjDataInterfile (shared_ptr<const ExamInfo> const& exam_info_sptr,
 		     shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
 		     const std::string& filename, const std::ios::openmode, 
 		     const std::vector<int>& segment_sequence_in_stream,
@@ -81,7 +81,7 @@ public:
   /*! The default value for segment_sequence_in_stream is a vector with
     values min_segment_num, min_segment_num+1, ..., max_segment_num
   */
-  ProjDataInterfile (shared_ptr<ExamInfo> const& exam_info_sptr,
+  ProjDataInterfile (shared_ptr<const ExamInfo> const& exam_info_sptr,
 		     shared_ptr<const ProjDataInfo> const& proj_data_info_ptr,
                      const std::string& filename, 
                      const std::ios::openmode open_mode = std::ios::out,
