@@ -12,7 +12,7 @@ Please use our [issue-tracker]: https://github.com/UCL/STIR/issues
 
 For contributing any code or documentation that is non-trivial, we require a
 signed Contributor License Agreement, stating clearly that your
-conributions are licensed appropriately. This will normally need to be signed by your
+contributions are licensed appropriately. This will normally need to be signed by your
 employer/university, unless you own your own copyright.
 You will have to do this only once. Please contact us for more information.
 
