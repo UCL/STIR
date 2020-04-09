@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2007-10-08, Hammersmith Imanet Ltd
-    Copyright (C) 2013, University College London
+    Copyright (C) 2013, 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -88,15 +88,18 @@ public :
   void (KeyParser::*p_object_member)();	// pointer to a member function
   //TODO void (*p_object_member)();
   void *p_object_variable;		// pointer to a variable 
-  const ASCIIlist_type *p_object_list_of_values;// only used by ASCIIlist
+  int vectorised_key_level;
+  const ASCIIlist_type * p_object_list_of_values;// only used by ASCIIlist
   // TODO should really not be here, but it works for now
   typedef RegisteredObjectBase * (Parser)(std::istream*, const std::string&);
   Parser* parser;
 
   map_element();
 
-  map_element(KeyArgument::type t, void (KeyParser::*pom)(),
-	      void* pov= 0, const ASCIIlist_type *list_of_valid_keywords = 0);
+  // map_element(KeyArgument::type t, void (KeyParser::*object_member_ptr)());
+  
+  map_element(KeyArgument::type t, void (KeyParser::*object_member_ptr)(),
+	      void* variable_ptr, const int vectorised_key_level, const ASCIIlist_type *list_of_valid_keywords = 0);
   map_element(void (KeyParser::*pom)(),
 	      RegisteredObjectBase** pov, 
               Parser *);
@@ -135,9 +138,7 @@ public :
   \warning For end-of-line continuation, the backslash HAS to be
   the last character. Even spaces after it will stop the 'continuation'.
   
-  \warning Vectored keys are treated very dangerously: when a keyword
-  is assumed to be vectored, run-time errors occur when it is used without [].
-  \warning The use of the [*] index for vectored keys is NOT supported.
+  \warning The use of the [*] index for vectorised keys is NOT supported.
 
   Main problem: when non-trivial callback functions have to be used, you need to do it
   via a derived class (as KeyParser requires  pointers to member functions.)
@@ -173,20 +174,35 @@ public:
 
   //! add a keyword. When parsing, parse its value as a float and put it in *variable_ptr
   void add_key(const std::string& keyword, float * variable_ptr);
+  //! add a vectorised keyword. When parsing, parse its value as a float and put it in \c (*variable_ptr)[current_index]
+  void add_vectorised_key(const std::string& keyword, std::vector<float> * variable_ptr);
   //! add a keyword. When parsing, parse its value as a double and put it in *variable_ptr
   void add_key(const std::string& keyword, double * variable_ptr);
+  //! add a vectorised keyword. When parsing, parse its value as a double and put it in \c (*variable_ptr)[current_index]
+  void add_vectorised_key(const std::string& keyword, std::vector<double> * variable_ptr);
+  //! add a vectorised keyword. When parsing, parse its value as a list of doubles and put it in \c (*variable_ptr)[current_index]
+  void add_vectorised_key(const std::string& keyword, std::vector<std::vector<double> > * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a int and put it in *variable_ptr
   void add_key(const std::string& keyword, int * variable_ptr);
+  //! add a keyword. When parsing, parse its value as a int and put it in *variable_ptr
+  void add_key(const std::string& keyword, std::vector<int> * variable_ptr);
+  //! add a vectorised keyword. When parsing, parse its value as a int and put it in \c (*variable_ptr)[current_index]
+  void add_vectorised_key(const std::string& keyword, std::vector<int> * variable_ptr);
+  //! add a vectorised keyword. When parsing, parse its value as a list of ints and put it in \c (*variable_ptr)[current_index]
+  void add_vectorised_key(const std::string& keyword, std::vector<std::vector<int> > * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a int and put it in *variable_ptr
   void add_key(const std::string& keyword, long int * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a int and put it in *variable_ptr
   void add_key(const std::string& keyword, unsigned int * variable_ptr);
-
+  //! add a vectorised keyword. When parsing, parse its value as an unsigned int and put it in \c (*variable_ptr)[current_index]
+  void add_vectorised_key(const std::string& keyword, std::vector<unsigned int> * variable);
   //! add a keyword. When parsing, parse its value as an unsigned long and put it in *variable_ptr
   void add_key(const std::string& keyword, unsigned long * variable_ptr);
+  //! add a vectorised keyword. When parsing, parse its value as an unsigned long and put it in \c (*variable_ptr)[current_index]
+  void add_vectorised_key(const std::string& keyword, std::vector<unsigned long> * variable_ptr);
 
   //! add a keyword. When parsing, parse its value as a int  and put the bool value in *variable_ptr
   /*! The integer should be 0 or 1, corresponding to false and true resp. */
@@ -210,9 +226,11 @@ public:
   //! add a keyword. When parsing, parse its value as a 3d BasicCoordinate of a 3d array of floats and put its value in *variable_ptr
   void add_key(const std::string& keyword, BasicCoordinate<3,Array<3,float> >* variable_ptr);
 
-  //! add a keyword. When parsing, parse its value as a string and put it in *variable_ptr
   /*! The 'value' can contain spaces. */
   void add_key(const std::string& keyword, std::string * variable_ptr);
+  //! add a vectorised keyword. When parsing, parse its value as a string and put it in \c (*variable_ptr)[current_index]
+  /*! The 'value' can contain spaces. */
+  void add_vectorised_key(const std::string& keyword, std::vector<std::string> * variable_ptr);
   /*!
     \brief add a keyword. When parsing, its string value is checked against 
     a list of strings. The corresponding index is stored in 
@@ -224,6 +242,8 @@ public:
   void add_key(const std::string& keyword, 
     int* variable_ptr, const ASCIIlist_type * const list_of_values);
 
+  //! Add keyword this is just ignored by the parser
+  void ignore_key(const std::string& keyword);
   //! add keyword that has to occur before all others
   /*! Example of such a key: INTERFILE*/
   void add_start_key(const std::string& keyword);
@@ -300,7 +320,7 @@ public:
   /*! Keywords are listed in the order they are inserted in the keymap 
       (except for start and stop keys which are listed first and last).
 
-      \bug breaks with 'vectored' keys.
+      \bug breaks with 'vectorised' keys.
       */
   virtual std::string parameter_info() const;
 
@@ -312,7 +332,7 @@ public:
       end of the parsing. It should be possible to have checks after every question
       such that it can be repeated.
 
-      \bug breaks with  for 'vectored' keys.
+      \bug breaks with  for 'vectorised' keys.
       */
   virtual void ask_parameters();
 
@@ -331,6 +351,7 @@ protected :
   //! This will be called at the end of the parsing
   /*! \return false if everything OK, true if not 
     \todo return Succeeded instead.
+    \todo rename to \c post_parsing()
   */
   virtual bool post_processing() 
    { return false; }
@@ -366,11 +387,23 @@ protected :
   void add_key(const std::string& keyword, 
     KeyArgument::type t, KeywordProcessor function,
     void* variable= 0, const ASCIIlist_type * const list = 0);
+  //! add a keyword to the list, together with its call_back function
+  /*! This provides a more flexible way to add keys with specific call_backs.
+      Can currently only be used by derived classes, as KeywordProcessor has to be a 
+      pointer to member function.
+      \warning this interface to KeyParser will change in a future release */
+  void add_key(const std::string& keyword, 
+    KeyArgument::type t, KeywordProcessor function,
+               void* variable, const int vectorised_key_level, const ASCIIlist_type * const list = 0);
   
   //! version that defaults 'function' to set_variable
   /*! \warning this interface to KeyParser will change in a future release */
   void add_key(const std::string& keyword, KeyArgument::type t, 
 	      void* variable, const ASCIIlist_type * const list = 0);
+  //! version that defaults 'function' to set_variable
+  /*! \warning this interface to KeyParser will change in a future release */
+  void add_key(const std::string& keyword, KeyArgument::type t, 
+               void* variable, const int vectorised_key_level, const ASCIIlist_type * const list = 0);
 
   //! Removes a key from the kep map
   /*! \return \c true if it was found, \c false otherwise */

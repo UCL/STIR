@@ -440,6 +440,10 @@ from the above):</H2>
         This is because the class only exists for the parser to get information about the class.</li>
   </ul>
 </li>
+ <li><code>KeyParser</code> <a href="https://github.com/UCL/STIR/pull/490">has changed</a> to be safer for
+   parsing of vectorised keys. However, the &quot;simple&quot; <code>add_key</code>
+   functions now create non-vectorised keys. Use <code>add_vectorised_key</code> otherwise.
+   </li>
 </ul>
 
 <h3>New functionality</h3>
