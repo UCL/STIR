@@ -85,7 +85,10 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
       if (min_scale_factor == max_scale_factor)
 	{
 	  if (min_scale_factor == 1.F)
-	    return; // all done
+            {
+              scaled_scatter_proj_data.fill(interpolated_scatter);
+              return; // all done
+            }
 
 	  const ProjDataInfo& proj_data_info = *emission_proj_data.get_proj_data_info_sptr();
 	  IndexRange2D sinogram_range(proj_data_info.get_min_segment_num(),proj_data_info.get_max_segment_num(),0,0);
@@ -127,7 +130,7 @@ upsample_and_fit_scatter_estimate(ProjData& scaled_scatter_proj_data,
 	  std::for_each(scale_factors.begin(), 
 			scale_factors.end(),
 			lowpass_filter);
-	  info(boost::format("upsample_and_fit_scatter_estimate: scale factors after filtering:\n%1%rrr") %
+	  info(boost::format("upsample_and_fit_scatter_estimate: scale factors after filtering:\n%1%") %
 	       scale_factors,
 	       2);
 	}
