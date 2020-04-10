@@ -570,9 +570,9 @@ write_basic_interfile_image_header(const string& header_file_name,
   if (is_spect)
     output_header << "!version of keys := 3.3\n";
   else
-    output_header << "!version of keys := STIR3.0\n";
+    output_header << "!version of keys := STIR4.0\n";
 #else
-  output_header << "!version of keys := STIR3.0\n";
+  output_header << "!version of keys := STIR4.0\n";
 #endif
 
   output_header << "name of data file := " << data_file_name_in_header << endl;
@@ -1198,7 +1198,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
   if (is_spect)
     output_header << "!version of keys := 3.3\n";
   else
-    output_header << "!version of keys := STIR3.0\n";
+    output_header << "!version of keys := STIR4.0\n";
 
   output_header << "!GENERAL DATA :=\n";
   output_header << "!GENERAL IMAGE DATA :=\n";
