@@ -146,6 +146,11 @@ InterfileHeader::InterfileHeader()
   matrix_labels.resize(num_dimensions);
   matrix_size.resize(num_dimensions);
   pixel_sizes.resize(num_dimensions, 1.);
+  num_energy_windows = 1;
+  lower_en_window_thresholds.resize(num_energy_windows);
+  upper_en_window_thresholds.resize(num_energy_windows);
+  lower_en_window_thresholds[0]=-1.F;
+  upper_en_window_thresholds[0]=-1.F;
   num_time_frames = 1;
   image_scaling_factors.resize(num_time_frames);
   for (int i=0; i<num_time_frames; i++)
@@ -155,8 +160,9 @@ InterfileHeader::InterfileHeader()
   data_offset_each_dataset.resize(num_time_frames, 0UL);
 
   data_offset = 0UL;
-  lower_en_window_thres = -1.f;
-  upper_en_window_thres = -1.f;
+
+
+
 
   add_key("name of data file", 
     KeyArgument::ASCII,	&data_file_name);
@@ -225,11 +231,13 @@ InterfileHeader::InterfileHeader()
   add_key("quantification units",
     KeyArgument::DOUBLE, &lln_quantification_units);
 
-  add_key("energy window lower level",
-         KeyArgument::FLOAT, &lower_en_window_thres);
 
+  add_key("number of energy windows",
+    KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_num_energy_windows,&num_energy_windows);
+  add_key("energy window lower level",
+    KeyArgument::FLOAT,&lower_en_window_thresholds);
   add_key("energy window upper level",
-         KeyArgument::FLOAT, &upper_en_window_thres);
+    KeyArgument::FLOAT,&upper_en_window_thresholds);
 
   bed_position_horizontal = 0.F;
   add_key("start horizontal bed position (mm)", &bed_position_horizontal);
@@ -346,10 +354,15 @@ bool InterfileHeader::post_processing()
                lln_quantification_units);
     }      
   } // lln_quantification_units
-    if (upper_en_window_thres > 0 && lower_en_window_thres > 0 )
+  if (num_energy_windows>0)
     {
-  exam_info_sptr->set_high_energy_thres(upper_en_window_thres);
-  exam_info_sptr->set_low_energy_thres(lower_en_window_thres);
+      if (num_energy_windows>1)
+        warning("Currently only reading the first energy window.");
+      if (upper_en_window_thresholds[0] > 0 && lower_en_window_thresholds[0] > 0 )
+        {
+          exam_info_sptr->set_high_energy_thres(upper_en_window_thresholds[0]);
+          exam_info_sptr->set_low_energy_thres(lower_en_window_thresholds[0]);
+        }
     }
 
   exam_info_sptr->time_frame_definitions = 
@@ -367,6 +380,14 @@ void InterfileHeader::read_matrix_info()
   matrix_size.resize(num_dimensions);
   pixel_sizes.resize(num_dimensions, 1.);
   
+}
+
+void InterfileHeader::read_num_energy_windows()
+{
+  set_variable();
+
+  upper_en_window_thresholds.resize(num_energy_windows,-1.);
+  lower_en_window_thresholds.resize(num_energy_windows,-1.);
 }
 
 void InterfileHeader::set_type_of_data()

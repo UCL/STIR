@@ -124,6 +124,7 @@ private:
   
  protected:
   virtual void read_matrix_info();
+  virtual void read_num_energy_windows();
   void read_frames_info();
   //! \brief Get the number of datasets
   /*! To be overloaded by derived classes if multiple "dimensions" are supported.
@@ -152,6 +153,7 @@ public :
   ByteOrder file_byte_order;
 	
   int			num_dimensions;
+  int			num_energy_windows;
   std::vector<std::string>	matrix_labels;
   std::vector<std::vector<int> > matrix_size; 
   std::vector<double>	pixel_sizes;
@@ -160,14 +162,14 @@ public :
 
   // Acquisition parameters
   //!
-  //! \brief lower_en_window_thres
+  //! \brief lower_en_window_thresholds
   //! \details Low energy window limit
-  float lower_en_window_thres;
+  std::vector<float> lower_en_window_thresholds;
 
   //!
-  //! \brief upper_en_window_thres
+  //! \brief upper_en_window_thresholds
   //! \details High energy window limit
-  float upper_en_window_thres;
+  std::vector<float> upper_en_window_thresholds;
   // end acquisition parameters
   
  protected:

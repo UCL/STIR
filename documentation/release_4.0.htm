@@ -486,9 +486,29 @@ using the default output file format.</li>
    <li><code>write_to_file</code> moved from <code>ProjDataInMemory</code> to <code>ProjData</code></li>
   </ul>
 </li>
-<li> Support for Energy Resolution and energy windows in Scanners, has been added. 
-In order to ensure backwards compatibility, at the moment, it is completely optional.</li>
-<li> Information on energy windows has been added in the <code>ExamInfo</code>. </li>
+<li> Support for Energy Resolution and energy windows in scanners and projection data has been added.
+  It is only required when running the scatter simulation or estimation, and should then be set in the input file.
+  For example, for a STIR-Interfile header, you should use the following keywords:
+  <pre>
+    number of energy windows:=1
+    energy window lower level[1]:=425
+    energy window upper level[1]:=650
+    Scanner parameters:=
+      Scanner type := ...
+      Energy resolution := 0.145
+      Reference energy (in keV) := 511
+      ...
+    End scanner parameters:=
+  </pre>
+  Only 1 energy window is currently supported (if there's more than one, only the first will be read).<br />
+  <strong>Warning:</strong> Unfortunately, GitHub versions between version 3.0 and 4.0 used
+  <pre>
+    energy window lower level:=425
+    energy window upper level:=650
+  </pre>
+  This will now result in an error. The new version is compatible with the Interfile standard.
+</li>
+<li> Information on a single energy window has been added in the <code>ExamInfo</code>. </li>
 <li><code>ExamData</code> is a new base class for <code>ProjData</code>, <code>CListModeData</code>,
 <code>DiscretisedDensity</code> and the dynamic/gated variations.</li>
 <li>Moved functions from the <code>poisson_noise</code> utility to a new class

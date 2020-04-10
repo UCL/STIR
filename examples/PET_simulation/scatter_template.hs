@@ -48,8 +48,9 @@ reference energy (in keV):=511
 end scanner parameters:=
 effective central bin size (cm) := 2.21541
 
-energy window lower level:=425
-energy window upper level:=650
+number of energy windows:=1
+energy window lower level[1]:=425
+energy window upper level[1]:=650
 
 image scaling factor[1] := 1
 data offset in bytes[1] := 0

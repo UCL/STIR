@@ -473,9 +473,10 @@ static void write_interfile_energy_windows(std::ostream& output_header, const Ex
   if (exam_info.get_high_energy_thres() > 0 &&
       exam_info.get_low_energy_thres() >= 0)
     {
-      output_header << "energy window lower level := " <<
+      output_header << "number of energy windows := 1\n";
+      output_header << "energy window lower level[1] := " <<
         exam_info.get_low_energy_thres() << '\n';
-      output_header << "energy window upper level :=  " <<
+      output_header << "energy window upper level[1] :=  " <<
         exam_info.get_high_energy_thres() << '\n';
     }
 }
