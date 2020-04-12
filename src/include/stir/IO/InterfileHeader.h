@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2002-2007, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2016, 2018 University College London
+    Copyright (C) 2013, 2016, 2018, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -79,6 +79,17 @@ class MinimalInterfileHeader : public KeyParser
     std::string version_of_keys;
 
     std::string siemens_mi_version;
+  protected:
+    //! will be called when the version keyword is found
+    /*! This callback function provides an opportunity to change the keymap depending on the version
+        (which can be obtained from \c version_of_keys).
+
+        Just calls \c set_variable().
+
+        It is expected that if this is function is re-implemented in a derived class, it calls the
+        base-class version.
+    */
+    virtual void set_version_specific_keys();
   };
 
 /*!
@@ -123,6 +134,8 @@ private:
 
   
  protected:
+  //! Overload with specifics for STIR3.0 for backwards compatibility
+  virtual void set_version_specific_keys();
   virtual void read_matrix_info();
   virtual void read_num_energy_windows();
   void read_frames_info();

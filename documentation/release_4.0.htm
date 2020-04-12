@@ -511,7 +511,11 @@ using the default output file format.</li>
     energy window lower level:=425
     energy window upper level:=650
   </pre>
-  This will now result in an error. The new version is compatible with the Interfile standard.
+  This will still be read ok, as long as these keywords are preceded by
+  <pre>
+    !version of keys := STIR3.0
+  </pre>
+  The new (vectored) version is compatible with the Interfile standard.
 </li>
 <li> Information on a single energy window has been added in the <code>ExamInfo</code>. </li>
 <li><code>ExamData</code> is a new base class for <code>ProjData</code>, <code>CListModeData</code>,

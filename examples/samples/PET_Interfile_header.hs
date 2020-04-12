@@ -1,4 +1,5 @@
 !INTERFILE  :=
+!version of keys := STIR4.0
 !imaging modality := PET
 
 name of data file := PET_Interfile_header.s

@@ -1,8 +1,9 @@
 !INTERFILE  :=
 name of data file := scatter_cylinder.s
 originating system := unknown
-!version of keys := STIR3.0
+!version of keys := STIR4.0
 !GENERAL DATA :=
+!imaging modality := PT
 !GENERAL IMAGE DATA :=
 !type of data := PET
 imagedata byte order := LITTLEENDIAN

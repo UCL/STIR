@@ -34,6 +34,7 @@
 #include "stir/ImagingModality.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/info.h"
 #include <numeric>
 #include <functional>
 
@@ -73,10 +74,12 @@ MinimalInterfileHeader::MinimalInterfileHeader()
 
   add_start_key("INTERFILE");
   add_key("imaging modality",
-    KeyArgument::ASCII, (KeywordProcessor)&InterfileHeader::set_imaging_modality,
+    KeyArgument::ASCII, (KeywordProcessor)&MinimalInterfileHeader::set_imaging_modality,
     &imaging_modality_as_string);
 
-  add_key("version of keys", &version_of_keys);
+  add_key("version of keys",
+          KeyArgument::ASCII, (KeywordProcessor)&MinimalInterfileHeader::set_version_specific_keys,
+          &version_of_keys);
 
   // support for siemens interfile
   add_key("%sms-mi version number", &siemens_mi_version);
@@ -89,6 +92,11 @@ void MinimalInterfileHeader::set_imaging_modality()
 {
   set_variable();
   this->exam_info_sptr->imaging_modality = ImagingModality(imaging_modality_as_string);
+}
+
+void MinimalInterfileHeader::set_version_specific_keys()
+{
+  set_variable();
 }
 
 InterfileHeader::InterfileHeader()
@@ -222,6 +230,19 @@ InterfileHeader::InterfileHeader()
   add_key("start vertical bed position (mm)", &bed_position_vertical);
 }
 
+void InterfileHeader::set_version_specific_keys()
+{
+  MinimalInterfileHeader::set_version_specific_keys();
+  if (this->version_of_keys == "STIR3.0")
+    {
+      info("Setting energy window keys as in STIR3.0");
+      // only a single energy window, and non-vectorised
+      remove_key("energy window lower level");
+      remove_key("energy window upper level");
+      add_key("energy window lower level", &lower_en_window_thresholds[0]);
+      add_key("energy window upper level", &upper_en_window_thresholds[0]);
+    }
+}
 
 // MJ 17/05/2000 made bool
 bool InterfileHeader::post_processing()
