@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2016, 2018 University College London
+    Copyright (C) 2013, 2016, 2018, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -79,8 +79,7 @@ MinimalInterfileHeader::MinimalInterfileHeader()
   add_key("version of keys", &version_of_keys);
 
   // support for siemens interfile
-  add_key("%sms-mi version number",
-    KeyArgument::ASCII, &siemens_mi_version);
+  add_key("%sms-mi version number", &siemens_mi_version);
   add_stop_key("END OF INTERFILE");
 }
 
@@ -164,14 +163,10 @@ InterfileHeader::InterfileHeader()
 
 
 
-  add_key("name of data file", 
-    KeyArgument::ASCII,	&data_file_name);
-  add_key("originating system",
-    KeyArgument::ASCII, &exam_info_sptr->originating_system);
-  add_key("GENERAL DATA", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
-  add_key("GENERAL IMAGE DATA", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
+  add_key("name of data file", &data_file_name);
+  add_key("originating system", &exam_info_sptr->originating_system);
+  ignore_key("GENERAL DATA");
+  ignore_key("GENERAL IMAGE DATA");
   add_key("type of data", 
           KeyArgument::ASCIIlist,
           (KeywordProcessor)&InterfileHeader::set_type_of_data,
@@ -179,65 +174,47 @@ InterfileHeader::InterfileHeader()
           &type_of_data_values);
 
   add_key("patient orientation",
-	  KeyArgument::ASCIIlist,
 	  &patient_orientation_index,
 	  &patient_orientation_values);
   add_key("patient rotation",
-	  KeyArgument::ASCIIlist,
 	  &patient_rotation_index,
 	  &patient_rotation_values);
 
 
   add_key("imagedata byte order", 
-    KeyArgument::ASCIIlist,
     &byte_order_index, 
     &byte_order_values);
   
-  add_key("data format", 
-    KeyArgument::ASCII,	&KeyParser::do_nothing);
+  ignore_key("data format");
   add_key("number format", 
-    KeyArgument::ASCIIlist,
     &number_format_index,
     &number_format_values);
-  add_key("number of bytes per pixel", 
-    KeyArgument::INT,	&bytes_per_pixel);
+  add_key("number of bytes per pixel", &bytes_per_pixel);
   add_key("number of dimensions", 
     KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_matrix_info,&num_dimensions);
-  add_key("matrix size", 
-    KeyArgument::LIST_OF_INTS,&matrix_size);
-  add_key("matrix axis label", 
-    KeyArgument::ASCII,	&matrix_labels);
-  add_key("scaling factor (mm/pixel)", 
-    KeyArgument::DOUBLE, &pixel_sizes);
+  add_vectorised_key("matrix size", &matrix_size);
+  add_vectorised_key("matrix axis label", &matrix_labels);
+  add_vectorised_key("scaling factor (mm/pixel)", &pixel_sizes);
   add_key("number of time frames", 
     KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_frames_info,&num_time_frames);
-  add_key("image relative start time (sec)",
-	  KeyArgument::DOUBLE, &image_relative_start_times);
-  add_key("image duration (sec)",
-	  KeyArgument::DOUBLE, &image_durations);
+  add_vectorised_key("image relative start time (sec)", &image_relative_start_times);
+  add_vectorised_key("image duration (sec)", &image_durations);
     //image start time[<f>] := <TimeFormat>
 
   // ignore these as we'll never use them
-  add_key("maximum pixel count", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
-  add_key("minimum pixel count", 
-    KeyArgument::NONE,	&KeyParser::do_nothing);
+  ignore_key("maximum pixel count");
+  ignore_key("minimum pixel count");
 
   // TODO move to PET?
-  add_key("image scaling factor", 
-    KeyArgument::LIST_OF_DOUBLES, &image_scaling_factors);
+  add_vectorised_key("image scaling factor", &image_scaling_factors);
 
   // support for Louvain la Neuve's extension of 3.3
-  add_key("quantification units",
-    KeyArgument::DOUBLE, &lln_quantification_units);
-
+  add_key("quantification units", &lln_quantification_units);
 
   add_key("number of energy windows",
     KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_num_energy_windows,&num_energy_windows);
-  add_key("energy window lower level",
-    KeyArgument::FLOAT,&lower_en_window_thresholds);
-  add_key("energy window upper level",
-    KeyArgument::FLOAT,&upper_en_window_thresholds);
+  add_vectorised_key("energy window lower level", &lower_en_window_thresholds);
+  add_vectorised_key("energy window upper level", &upper_en_window_thresholds);
 
   bed_position_horizontal = 0.F;
   add_key("start horizontal bed position (mm)", &bed_position_horizontal);
@@ -401,36 +378,26 @@ void InterfileHeader::set_type_of_data()
 
   if (type_of_data == "PET")
     {
-      add_key("PET STUDY (Emission data)", 
-              KeyArgument::NONE,	&KeyParser::do_nothing);
-      add_key("PET STUDY (Image data)", 
-              KeyArgument::NONE,	&KeyParser::do_nothing);
-      add_key("PET STUDY (General)", 
-              KeyArgument::NONE,	&KeyParser::do_nothing);
+      ignore_key("PET STUDY (Emission data)");
+      ignore_key("PET STUDY (Image data)");
+      ignore_key("PET STUDY (General)");
       add_key("PET data type", 
-              KeyArgument::ASCIIlist,
               &PET_data_type_index, 
               &PET_data_type_values);
-      add_key("process status", 
-              KeyArgument::NONE,	&KeyParser::do_nothing);
-      add_key("IMAGE DATA DESCRIPTION", 
-              KeyArgument::NONE,	&KeyParser::do_nothing);
+      ignore_key("process status");
+      ignore_key("IMAGE DATA DESCRIPTION");
       // TODO rename keyword 
-      add_key("data offset in bytes", 
-	      KeyArgument::ULONG,	&data_offset_each_dataset);
+      add_vectorised_key("data offset in bytes", &data_offset_each_dataset);
 
     }
   else if (type_of_data == "Tomographic")
     {
-      add_key("SPECT STUDY (General)" , 
-              KeyArgument::NONE,	&KeyParser::do_nothing);  
-      add_key("SPECT STUDY (acquired data)",
-              KeyArgument::NONE,	&KeyParser::do_nothing);
+      ignore_key("SPECT STUDY (General)" );  
+      ignore_key("SPECT STUDY (acquired data)");
 
       process_status_values.push_back("Reconstructed");
       process_status_values.push_back("Acquired");
       add_key("process status", 
-              KeyArgument::ASCIIlist,
               &process_status_index,
               &process_status_values);
 
@@ -461,14 +428,11 @@ InterfileImageHeader::InterfileImageHeader()
   index_nesting_level.resize(1, "");
   image_data_type_description.resize(num_image_data_types, "");
     
-  add_key("first pixel offset (mm)",
-	   KeyArgument::DOUBLE, &first_pixel_offsets);
+  add_vectorised_key("first pixel offset (mm)", &first_pixel_offsets);
   add_key("number of image data types", 
     KeyArgument::INT,	(KeywordProcessor)&InterfileImageHeader::read_image_data_types,&num_image_data_types);
-  add_key("index nesting level", 
-    KeyArgument::LIST_OF_ASCII,	&index_nesting_level);
-  add_key("image data type description", 
-    KeyArgument::ASCII,	&image_data_type_description);
+  add_key("index nesting level", &index_nesting_level);
+  add_vectorised_key("image data type description", &image_data_type_description);
 }
 
 void InterfileImageHeader::read_image_data_types()
@@ -552,11 +516,9 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   
   // warning these keys should match what is in Scanner::parameter_info()
   // TODO get Scanner to parse these
-  add_key("Scanner parameters",
-	  KeyArgument::NONE,	&KeyParser::do_nothing);
+  ignore_key("Scanner parameters");
   // this is currently ignored (use "originating system" instead)
-  add_key("Scanner type",
-	  KeyArgument::NONE,	&KeyParser::do_nothing);
+  ignore_key("Scanner type");
 
   // first set to some crazy values
   num_rings = -1;
@@ -620,14 +582,12 @@ InterfilePDFSHeader::InterfilePDFSHeader()
   add_key("Reference energy (in keV)",
           &reference_energy);
 
-  add_key("end scanner parameters",
-	  KeyArgument::NONE,	&KeyParser::do_nothing);
+  ignore_key("end scanner parameters");
   
   effective_central_bin_size_in_cm = -1;
   add_key("effective central bin size (cm)",
 	  &effective_central_bin_size_in_cm);
-  add_key("applied corrections",
-    KeyArgument::LIST_OF_ASCII, &applied_corrections);
+  add_key("applied corrections", &applied_corrections);
 }
 
 void InterfilePDFSHeader::resize_segments_and_set()

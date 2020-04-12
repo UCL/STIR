@@ -56,9 +56,7 @@ initialise_keymap()
                   KeyArgument::INT,
                   static_cast<KeywordProcessor>(&MultipleDataSetHeader::read_num_data_sets),
                   &_num_data_sets);
-    this->add_key("data set",
-                  KeyArgument::ASCII,
-                  &_filenames);
+    this->add_vectorised_key("data set", &_filenames);
 }
 
 bool MultipleDataSetHeader::

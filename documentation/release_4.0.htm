@@ -156,6 +156,7 @@ Please note that you cannot enable both OPENMP and MPI.</li>
 These are only minimally documented at the present stage unfortunately.
 </li>
 <li><tt>list_image_info</tt> now has options to list exam info, or only part of the information (as <tt>list_projdata_info</tt>).</li>
+<li><tt>list_image_values</tt> now has options to print coordinates in LPS as opposed to indices, print in CSV, or suppress the title row.</li>
 <li><tt>list_lm_countrates</tt> is a new list mode utility to output total counts per specified time interval.</li>
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
 <li>add Verbosity level (currently only to be set from interactive languages)</li>
@@ -470,6 +471,10 @@ from the above):</H2>
         This is because the class only exists for the parser to get information about the class.</li>
   </ul>
 </li>
+ <li><code>KeyParser</code> <a href="https://github.com/UCL/STIR/pull/490">has changed</a> to be safer for
+   parsing of vectorised keys. However, the &quot;simple&quot; <code>add_key</code>
+   functions now create non-vectorised keys. Use <code>add_vectorised_key</code> otherwise.
+   </li>
 </ul>
 
 <h3>New functionality</h3>

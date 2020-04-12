@@ -56,6 +56,7 @@ set(buildblock_simple_tests
 	test_IndexRange
 	test_coordinates
 	test_filename_functions
+        test_KeyParser
 	test_VoxelsOnCartesianGrid
 	test_zoom_image
 	test_ByteOrder
