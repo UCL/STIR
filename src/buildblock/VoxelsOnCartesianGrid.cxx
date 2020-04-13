@@ -108,12 +108,11 @@ static void find_sampling_and_z_size(
   {
     s_sampling =
       proj_data_info_ptr->get_scanner_ptr()->get_default_bin_size();
-    if (s_sampling ==0)
+    if (s_sampling <= 0)
       {
-        // TODO make this independent on segment etc.
         s_sampling = 
           proj_data_info_ptr->get_sampling_in_s(Bin(0,0,0,0));
-        info(boost::format("Determining voxel size from default_bin_size failed.\n"
+        info(boost::format("Determining voxel size from default_bin_size failed as it is not set.\n"
                            "Using sampling_in_s for central bin %1%.") %
              s_sampling);
       }

@@ -473,7 +473,7 @@ downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
     const VoxelsOnCartesianGrid<float> & tmp_att = dynamic_cast<VoxelsOnCartesianGrid<float>& >(*this->density_image_sptr);
     if (_zoom_xy < 0 || _zoom_z < 0)
     {
-	VoxelsOnCartesianGrid<float> tmpl_density(*proj_data_info_cyl_noarc_cor_sptr);
+        VoxelsOnCartesianGrid<float> tmpl_density(this->density_image_sptr->get_exam_info_sptr(), *proj_data_info_cyl_noarc_cor_sptr);
 	info(boost::format("ScatterSimulation: template density to find zoom factors: voxel-sizes %1%, size %2%, product %3%")
 	     % tmpl_density.get_voxel_size()
 	     % tmpl_density.get_lengths()
