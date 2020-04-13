@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2019, University of Hull
+    Copyright (C) 2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -23,7 +24,7 @@
   \brief Test program for stir::ScatterSimulation
 
   \author Nikos Efthimiou
-
+  \author Kris Thielemans
 */
 
 #include "stir/RunTests.h"
@@ -289,7 +290,7 @@ ScatterSimulationTests::test_scatter_simulation()
     }
 
     sss->set_density_image_sptr(water_density);
-    sss->set_density_image_for_scatter_points_sptr(water_density);
+    //sss->set_density_image_for_scatter_points_sptr(water_density);
     sss->set_random_point(false);
 
     shared_ptr<VoxelsOnCartesianGrid<float> > act_density(tmpl_density->clone());
@@ -311,8 +312,16 @@ ScatterSimulationTests::test_scatter_simulation()
     shared_ptr<ProjDataInfoCylindricalNoArcCorr> output_projdata_info(sss->get_template_proj_data_info_sptr());
     shared_ptr<ProjDataInMemory> sss_output(new ProjDataInMemory(exam, output_projdata_info));
     sss->set_output_proj_data_sptr(sss_output);
-
+    std::cerr << "Setting up\n";
+    check(sss->set_up() == Succeeded::yes ? true : false, "Check Scatter Simulation set_up");
+    std::cerr << "Process\n";
     check(sss->process_data() == Succeeded::yes ? true : false, "Check Scatter Simulation process");
+
+    // minimal check that values are not 0. what else?
+    {
+      const SegmentByView<float> seg = sss_output->get_segment_by_view(0);
+      check(seg.find_max()>0.F, "Check Scatter Simulation output not zero");
+    }
 
     //    shared_ptr<ProjDataInMemory> atten_sino(new ProjDataInMemory(exam, output_projdata_info));
     //    atten_sino->fill(1.F);

@@ -25,6 +25,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_ROIs
         test_warp_image
 	test_DynamicDiscretisedDensity
+	test_ScatterSimulation
 )
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
@@ -42,7 +43,6 @@ Set(${dir_INVOLVED_TEST_EXE_SOURCES}
         # the next 2 are interactive, so we don't add a test for it, but only compile them
 	test_display
 	test_interpolate
-	test_ScatterSimulation
 )
 
 set(buildblock_simple_tests
