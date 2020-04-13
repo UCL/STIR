@@ -57,72 +57,59 @@
 
 START_NAMESPACE_STIR
 
-
 class CListModeDataSimSET : public CListModeData
 {
 public:
-    //! construct from the filename of the Interfile header
-    CListModeDataSimSET(const std::string& _hsimset_filename);
+  //! construct from the filename of the Interfile header
+  CListModeDataSimSET(const std::string& _hsimset_filename);
 
-    //! returns the header filename
-    virtual std::string
-    get_name() const;
-    //! Set private members default values;
-    void set_defaults();
+  //! returns the header filename
+  virtual std::string get_name() const;
+  //! Set private members default values;
+  void set_defaults();
 
-    virtual
-    shared_ptr <CListRecord> get_empty_record_sptr() const;
+  virtual shared_ptr<CListRecord> get_empty_record_sptr() const;
 
-    virtual
-    Succeeded get_next_record(CListRecord& record) const;
+  virtual Succeeded get_next_record(CListRecord& record) const;
 
-    virtual ~CListModeDataSimSET();
+  virtual ~CListModeDataSimSET();
 
-    virtual
-    Succeeded reset();
+  virtual Succeeded reset();
 
-    virtual
-    SavedPosition save_get_position();
+  virtual SavedPosition save_get_position();
 
-    virtual
-    Succeeded set_get_position(const SavedPosition&);
+  virtual Succeeded set_get_position(const SavedPosition&);
 
-    virtual
-    bool has_delayeds() const { return true; }
+  virtual bool has_delayeds() const { return true; }
 
-    virtual inline
-    unsigned long int
-    get_total_number_of_events() const ;
+  virtual inline unsigned long int get_total_number_of_events() const;
 
 private:
+  //! Check if the scanner_sptr matches the geometry in root_file_sptr.
+  //! \todo This function should be extended with TOF information.
+  Succeeded check_scanner_match_geometry(const unsigned int _numTDBins,
+                                         const unsigned int _numZbins,
+                                         shared_ptr<Scanner>& scanner_sptr,
+                                         const double _radius = -1.0,
+                                         const double _minZ = -1.0,
+                                         const double _maxZ = -1.0,
+                                         const unsigned int _numLayers = 1,
+                                         const double _enResolution = -1.0,
+                                         const double _enResReference = -1.0);
 
-    //! Check if the scanner_sptr matches the geometry in root_file_sptr.
-    //! \todo This function should be extended with TOF information.
-    Succeeded
-    check_scanner_match_geometry(const unsigned int _numTDBins,
-                                 const unsigned int _numZbins,
-                                 shared_ptr<Scanner>& scanner_sptr,
-                                 const double _radius = -1.0,
-                                 const double _minZ = -1.0,
-                                 const double _maxZ = -1.0,
-                                 const unsigned int _numLayers = 1,
-                                 const double _enResolution = -1.0,
-                                 const double _enResReference = -1.0);
+  //! Pointer to the listmode data
+  shared_ptr<InputStreamFromSimSET> history_file_sptr;
+  //! Name of the PHG file.
+  std::string phg_filename;
+  //! Name of the header file.
+  const std::string hsimset_filename;
+  //! TOF mashing factor, used to compress the number of TOF bins
+  int tof_mash_factor;
+  //! The name of the originating scanner
+  std::string originating_system;
 
-    //! Pointer to the listmode data
-    shared_ptr<InputStreamFromSimSET > history_file_sptr;
-    //! Name of the PHG file.
-    std::string phg_filename;
-    //! Name of the header file.
-    const std::string hsimset_filename;
-    //! TOF mashing factor, used to compress the number of TOF bins
-    int tof_mash_factor;
-    //! The name of the originating scanner
-    std::string originating_system;
-
-    Succeeded open_lm_file();
+  Succeeded open_lm_file();
 };
-
 
 END_NAMESPACE_STIR
 

@@ -37,14 +37,14 @@
 #include <string>
 #include <vector>
 
-extern "C" {
+extern "C"
+{
 #include <bin.phg.h>
 }
 
 START_NAMESPACE_STIR
 
-
-/*! 
+/*!
  * \brief A helper class to read data from a SimSET history file
  * \author Nikos Efthimiou
  *
@@ -69,115 +69,104 @@ START_NAMESPACE_STIR
  * function. However, currently I am not sure how these files are organised. Upon request I might have a
  * look in this.
  *
-*/
+ */
 class InputStreamFromSimSET
 {
 public:
+  static const char* const registered_name;
 
-    static const char * const registered_name;
+  typedef std::vector<std::streampos>::size_type SavedPosition;
+  //! Constructor taking a stream
+  /*! Data will be assumed to start at the current position reported by seekg().
+    If reset() is used, it will go back to this starting position.*/
+  InputStreamFromSimSET();
 
-    typedef std::vector<std::streampos>::size_type SavedPosition;
-    //! Constructor taking a stream
-    /*! Data will be assumed to start at the current position reported by seekg().
-      If reset() is used, it will go back to this starting position.*/
-    InputStreamFromSimSET();
+  ~InputStreamFromSimSET();
+  //! gives method information
+  std::string method_info() const;
+  //! Must be called before calling for the first event.
+  //! The function will try to set up first assuming that the history file
+  //! is standard. Upon failure it will try with a custom set up.
+  Succeeded set_up(const std::string historyFileName, PHG_BinParamsTy* _binParams, const float lowEnWin, const float highEnWin);
+  //! Check if the file is a standard history file. The code
+  //! was adapted from bin.phg.c::phgrdhstStandard(char *argv[]).
+  Succeeded set_up_standard_hist_file();
+  //! Check if the file is a custom history file. The code
+  //! was adapted from bin.phg.c::phgrdhstCustom(char *argv[]).
+  Succeeded set_up_custom_hist_file();
+  //! Get the next available record, depending on conditions.
+  inline Succeeded get_next_record(CListRecordSimSET& record);
 
-    ~InputStreamFromSimSET();
-    //! gives method information
-    std::string method_info() const;
-    //! Must be called before calling for the first event.
-    //! The function will try to set up first assuming that the history file
-    //! is standard. Upon failure it will try with a custom set up.
-    Succeeded set_up(const std::string historyFileName,
-                     PHG_BinParamsTy * _binParams,
-                     const float lowEnWin,
-                     const float highEnWin);
-    //! Check if the file is a standard history file. The code
-    //! was adapted from bin.phg.c::phgrdhstStandard(char *argv[]).
-    Succeeded set_up_standard_hist_file();
-    //! Check if the file is a custom history file. The code
-    //! was adapted from bin.phg.c::phgrdhstCustom(char *argv[]).
-    Succeeded set_up_custom_hist_file();
-    //! Get the next available record, depending on conditions.
-    inline
-    Succeeded get_next_record(CListRecordSimSET& record);
+  //! go back to starting position
+  inline Succeeded reset();
 
-    //! go back to starting position
-    inline
-    Succeeded reset();
+  //! save current "get" position in an internal array
+  inline SavedPosition save_get_position();
+  //! set current "get" position to previously saved value
+  inline Succeeded set_get_position(const SavedPosition&);
+  //! Function that enables the user to store the saved get_positions
+  inline std::vector<std::streampos> get_saved_get_positions() const;
+  //! Function that sets the saved get_positions
+  inline void set_saved_get_positions(const std::vector<std::streampos>&);
 
-    //! save current "get" position in an internal array
-    inline
-    SavedPosition save_get_position();
-    //! set current "get" position to previously saved value
-    inline
-    Succeeded set_get_position(const SavedPosition&);
-    //! Function that enables the user to store the saved get_positions
-    inline
-    std::vector<std::streampos> get_saved_get_positions() const;
-    //! Function that sets the saved get_positions
-    inline
-    void set_saved_get_positions(const std::vector<std::streampos>& );
-
-    inline unsigned long get_total_number_of_events() const;
+  inline unsigned long get_total_number_of_events() const;
 
 protected:
-
-    void set_defaults();
+  void set_defaults();
 
 private:
-    //! The history file we are going to process
-    FILE *historyFile;
-    //! Hook to header
-    LbHdrHkTy headerHk;
-    //! Type of current event.
-    //! \warning This might vary in custom history files
-    EventTy eventType;
-    //! Current file index
-    LbUsFourByte curFileIndex;
-    //! Number of photons processed
-    LbFourByte numPhotonsProcessed = 0;
-    //! Number of decays processed
-    LbUsFourByte numDecaysProcessed = 0;
-    //! First event in the history file.
-    LbUsFourByte startFileIndex;
-    //! Total number of photons in the history file.
-    LbUsFourByte numPhotons;
+  //! The history file we are going to process
+  FILE* historyFile;
+  //! Hook to header
+  LbHdrHkTy headerHk;
+  //! Type of current event.
+  //! \warning This might vary in custom history files
+  EventTy eventType;
+  //! Current file index
+  LbUsFourByte curFileIndex;
+  //! Number of photons processed
+  LbFourByte numPhotonsProcessed = 0;
+  //! Number of decays processed
+  LbUsFourByte numDecaysProcessed = 0;
+  //! First event in the history file.
+  LbUsFourByte startFileIndex;
+  //! Total number of photons in the history file.
+  LbUsFourByte numPhotons;
 
-    //! SimSET cylindrical PET scanner is centered to the z axis.
-    //! This variable will be added to move the z position on the
-    //! possitive side, as is STIR's convention.
-    double min_axial_position;
-    //! Current decay
-    PHG_Decay curDecay;
-    //! Binning parameters. They are used to get energy window,
-    //! randoms and scattered exclusion/inclusion.
-    PHG_BinParamsTy *binParams;
-    //! Save positions in the history file
-    std::vector<std::streampos> saved_get_positions;
-    //! Number of scatters for current blue photon
-    LbUsFourByte blueScatters;
-    //! Number of scatters for current pink photon
-    LbUsFourByte pinkScatters;
-    //! set true if the scatter/random param is 3,5,8 or 10
-    Boolean	ignoreMaxScatters;
-    //! set true if the scatter/random param is 4,5,9 or 10
-    Boolean	ignoreMinScatters;
-    //! Hook to history file information. Used in the case of custom
-    //! history file.
-    PhoHFileHkTy histHk;
+  //! SimSET cylindrical PET scanner is centered to the z axis.
+  //! This variable will be added to move the z position on the
+  //! possitive side, as is STIR's convention.
+  double min_axial_position;
+  //! Current decay
+  PHG_Decay curDecay;
+  //! Binning parameters. They are used to get energy window,
+  //! randoms and scattered exclusion/inclusion.
+  PHG_BinParamsTy* binParams;
+  //! Save positions in the history file
+  std::vector<std::streampos> saved_get_positions;
+  //! Number of scatters for current blue photon
+  LbUsFourByte blueScatters;
+  //! Number of scatters for current pink photon
+  LbUsFourByte pinkScatters;
+  //! set true if the scatter/random param is 3,5,8 or 10
+  Boolean ignoreMaxScatters;
+  //! set true if the scatter/random param is 4,5,9 or 10
+  Boolean ignoreMinScatters;
+  //! Hook to history file information. Used in the case of custom
+  //! history file.
+  PhoHFileHkTy histHk;
 
-    float low_energy_threshold;
+  float low_energy_threshold;
 
-    float high_energy_threshold;
+  float high_energy_threshold;
 
-    std::vector<PHG_DetectedPhoton>	bluePhotons;			/* Blue photons for current decay */
-    std::vector<PHG_DetectedPhoton>	pinkPhotons;			/* Pink photon for current decay*/
-    std::vector<std::pair<PHG_DetectedPhoton*, PHG_DetectedPhoton*> >buffer;
+  std::vector<PHG_DetectedPhoton> bluePhotons; /* Blue photons for current decay */
+  std::vector<PHG_DetectedPhoton> pinkPhotons; /* Pink photon for current decay*/
+  std::vector<std::pair<PHG_DetectedPhoton*, PHG_DetectedPhoton*>> buffer;
 
-    int buffer_size = 0;
+  int buffer_size = 0;
 
-    float decay_weight = 0.0;
+  float decay_weight = 0.0;
 };
 
 END_NAMESPACE_STIR
