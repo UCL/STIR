@@ -26,13 +26,22 @@
 
 START_NAMESPACE_STIR
 
-bool CListRecordSimSET::is_time() const
-{ return true; }
+bool
+CListRecordSimSET::is_time() const
+{
+  return true;
+}
 
-bool CListRecordSimSET::is_event() const
-{ return true; }
+bool
+CListRecordSimSET::is_event() const
+{
+  return true;
+}
 
-bool CListRecordSimSET::is_full_event() const
-{ return true; }
+bool
+CListRecordSimSET::is_full_event() const
+{
+  return true;
+}
 
 END_NAMESPACE_STIR

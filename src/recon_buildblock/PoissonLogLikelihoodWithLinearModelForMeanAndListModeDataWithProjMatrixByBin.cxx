@@ -530,7 +530,7 @@ PoissonLogLikelihoodWithLinearModelForMeanAndListModeDataWithProjMatrixByBin<Tar
                 stop_caching = true;
                 break;
               }
-
+              
           if (record_cache.size() == this->cache_size)
             break; // cache is full.
         }
