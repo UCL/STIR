@@ -164,10 +164,10 @@ bool InterfilePDFSHeaderSPECT::post_processing()
   const int num_transaxial_crystals_per_singles_unit = -1;
   const int num_detector_layers = 1;
 	
-  shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(get_exam_info_ptr()->originating_system));
+  shared_ptr<Scanner> guessed_scanner_ptr(Scanner::get_scanner_from_name(get_exam_info().originating_system));
   shared_ptr<Scanner> scanner_ptr_from_file(
                                             new Scanner(guessed_scanner_ptr->get_type(), 
-                                                        get_exam_info_ptr()->originating_system,
+                                                        get_exam_info().originating_system,
                                                         num_detectors_per_ring, 
                                                         num_rings, 
                                                         max_num_non_arccorrected_bins, 

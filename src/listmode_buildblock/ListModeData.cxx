@@ -40,19 +40,6 @@ ListModeData::
 ~ListModeData()
 {}
 
-//const ExamInfo*
-//ListModeData::get_exam_info_ptr() const
-//{
-//  assert(!is_null_ptr(exam_info_sptr));
-//  return exam_info_sptr.get();
-//}
-
-//shared_ptr<ExamInfo>
-//ListModeData::get_exam_info_sptr() const
-//{
-//  return exam_info_sptr;
-//}
-
 const Scanner*
 ListModeData::
 get_scanner_ptr() const

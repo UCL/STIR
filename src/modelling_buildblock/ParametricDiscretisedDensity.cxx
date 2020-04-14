@@ -61,8 +61,7 @@ ParametricDiscretisedDensity(const DynamicDiscretisedDensity& dyn_im)
       dyn_im.get_density(1).get_origin(),
       dynamic_cast<const VoxelsOnCartesianGrid<float>&>(dyn_im.get_density(1)).get_grid_spacing())
 {
-    // Copy exam info
-    this->set_exam_info(dyn_im.get_density(1).get_exam_info());
+    ExamInfo _exam_info(dyn_im.get_density(1).get_exam_info());
 
     // Get the time frame definition (from start of first frame to end of last)
     TimeFrameDefinitions tdefs = dyn_im.get_exam_info().get_time_frame_definitions();
@@ -70,7 +69,8 @@ ParametricDiscretisedDensity(const DynamicDiscretisedDensity& dyn_im)
     const double end   = tdefs.get_end_time(tdefs.get_num_frames());
     tdefs.set_num_time_frames(1);
     tdefs.set_time_frame(1,start,end);
-    this->get_exam_info_sptr()->set_time_frame_definitions(tdefs);
+    _exam_info.set_time_frame_definitions(tdefs);
+    this->set_exam_info(_exam_info);
 }
 
 #if 0

@@ -71,7 +71,7 @@ START_NAMESPACE_STIR
 // constructors
 //---------------------------------------------------------
 
-ProjDataFromStream::ProjDataFromStream(shared_ptr<ExamInfo> const& exam_info_sptr,
+ProjDataFromStream::ProjDataFromStream(shared_ptr<const ExamInfo> const& exam_info_sptr,
 				       shared_ptr<const ProjDataInfo> const& proj_data_info_ptr, 
                                        shared_ptr<iostream> const& s, const streamoff offs, 
                                        const vector<int>& segment_sequence_in_stream_v,
@@ -93,7 +93,7 @@ ProjDataFromStream::ProjDataFromStream(shared_ptr<ExamInfo> const& exam_info_spt
   assert(!(data_type == NumericType::UNKNOWN_TYPE));
 }
 
-ProjDataFromStream::ProjDataFromStream(shared_ptr<ExamInfo> const& exam_info_sptr,
+ProjDataFromStream::ProjDataFromStream(shared_ptr<const ExamInfo> const& exam_info_sptr,
 				       shared_ptr<const ProjDataInfo> const& proj_data_info_ptr, 
                                        shared_ptr<iostream> const& s, const streamoff offs, 
                                        StorageOrder o,                

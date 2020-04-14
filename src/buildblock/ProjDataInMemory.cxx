@@ -57,7 +57,7 @@ ProjDataInMemory::
 {}
 
 ProjDataInMemory::
-ProjDataInMemory(shared_ptr<ExamInfo> const& exam_info_sptr,
+ProjDataInMemory(shared_ptr<const ExamInfo> const& exam_info_sptr,
 		 shared_ptr<const ProjDataInfo> const& proj_data_info_ptr, const bool initialise_with_0)
   :
   ProjDataFromStream(exam_info_sptr, proj_data_info_ptr, shared_ptr<iostream>()) // trick: first initialise sino_stream_ptr to 0
