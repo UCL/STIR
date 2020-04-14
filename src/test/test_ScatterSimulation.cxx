@@ -28,19 +28,23 @@
 */
 
 #include "stir/RunTests.h"
+#include "stir/Verbosity.h"
 #include "stir/Scanner.h"
 #include "stir/Viewgram.h"
 #include "stir/Succeeded.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/scatter/SingleScatterSimulation.h"
+#if 0
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/ForwardProjectorByBinUsingProjMatrixByBin.h"
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #include "stir/recon_buildblock/BinNormalisationFromAttenuationImage.h"
+#endif
 #include "stir/Shape/EllipsoidalCylinder.h"
 #include "stir/Shape/Box3D.h"
 #include "stir/IO/write_to_file.h"
+#include "stir/stream.h"
 #include <iostream>
 #include <math.h>
 #include "stir/centre_of_gravity.h"
@@ -66,8 +70,10 @@ private:
     //! the mean value is approximately the same.
     void test_downsampling_DiscretisedDensity();
 
+    //! Do simulation of object in the centre, check if symmetric
     void test_scatter_simulation();
 
+    void test_output_is_symmetric(const ProjData& proj_data);
 };
 
 
@@ -237,6 +243,37 @@ test_downsampling_DiscretisedDensity()
 }
 
 void
+ScatterSimulationTests::test_output_is_symmetric(const ProjData& proj_data)
+{
+  const SegmentBySinogram<float> seg = proj_data.get_segment_by_sinogram(0);
+
+  //  minimal check that values are not 0.
+  check(seg.find_max()>0.F, "Check Scatter Simulation output not zero");
+
+  // values have to be symmetric around the middle of the scanner
+  for (int first=seg.get_min_axial_pos_num(), last=seg.get_max_axial_pos_num();
+       first<last;
+       ++first, --last)
+    check_if_equal(seg[first][0][0], seg[last][0][0], "check if symmetric along the scanner axis");
+
+  for (int first=-1, last=+1;
+       first>=seg.get_min_tangential_pos_num() && last<=seg.get_max_tangential_pos_num();
+       --first, ++last)
+    check_if_equal(seg[3][0][first], seg[3][0][last], "check if symmetric along the tangential_pos direction");
+
+
+  const int first_view = seg.get_min_view_num();
+  for (int view=seg.get_min_view_num() + 1; view<=seg.get_max_view_num(); ++view)
+    check_if_equal(seg[3][first_view], seg[3][view], "check if symmetric along views");
+
+#if 0
+  for (int a=seg.get_min_axial_pos_num(), a<=seg.get_max_axial_pos_num(); ++a)
+    std::cout<< seg[a][0][0] << ",";
+  std::cout<<std::endl;
+#endif
+}
+
+void
 ScatterSimulationTests::test_scatter_simulation()
 {
     unique_ptr<SingleScatterSimulation> sss(new SingleScatterSimulation());
@@ -275,53 +312,53 @@ ScatterSimulationTests::test_scatter_simulation()
     sss->set_template_proj_data_info(*original_projdata_info);
 
 
+    //// Create an object in the middle of the image (which willbe in the middle ofthe scanner
+    CartesianCoordinate3D<int> min_ind, max_ind;
+    tmpl_density->get_regular_range(min_ind, max_ind);
+    CartesianCoordinate3D<float> centre((tmpl_density->get_physical_coordinates_for_indices(min_ind) +
+                                         tmpl_density->get_physical_coordinates_for_indices(max_ind))/2.F);
+
+    EllipsoidalCylinder phantom(40.F, 40.F, 40.F, centre);
+    CartesianCoordinate3D<int> num_samples(1,1,1);
+
+    //// attenuation image
     shared_ptr<VoxelsOnCartesianGrid<float> > water_density(tmpl_density->clone());
-    {
-        EllipsoidalCylinder phantom(tmpl_density->get_z_size()*tmpl_density->get_voxel_size().z()*2,
-                                    tmpl_density->get_y_size()*tmpl_density->get_voxel_size().y()*0.25,
-                                    tmpl_density->get_x_size()*tmpl_density->get_voxel_size().x()*0.25,
-                                    tmpl_density->get_origin());
-
-        CartesianCoordinate3D<int> num_samples(3,3,3);
-        phantom.construct_volume(*water_density, num_samples);
-        // Water attenuation coefficient.
-        *water_density *= 9.687E-02;
-
-    }
-
+    phantom.construct_volume(*water_density, num_samples);
+    // Water attenuation coefficient.
+    *water_density *= 9.687E-02;
     sss->set_density_image_sptr(water_density);
-    //sss->set_density_image_for_scatter_points_sptr(water_density);
+
+    ////activity image (same object)
+    shared_ptr<VoxelsOnCartesianGrid<float> > act_density(tmpl_density->clone());
+    phantom.construct_volume(*act_density, num_samples);
+    sss->set_activity_image_sptr(act_density);
+
+    //// sss settings
+    sss->downsample_scanner(original_projdata_info->get_scanner_sptr()->get_num_rings(), -1);
+
     sss->set_random_point(false);
 
-    shared_ptr<VoxelsOnCartesianGrid<float> > act_density(tmpl_density->clone());
-    {
-        CartesianCoordinate3D<float> centre(tmpl_density->get_origin());
-        centre[3] += 80.f;
-        EllipsoidalCylinder phantom(tmpl_density->get_z_size()*tmpl_density->get_voxel_size().z()*2,
-                                    tmpl_density->get_y_size()*tmpl_density->get_voxel_size().y()*0.0625,
-                                    tmpl_density->get_x_size()*tmpl_density->get_voxel_size().x()*0.0625,
-                                    centre);
-
-        CartesianCoordinate3D<int> num_samples(3,3,3);
-        phantom.construct_volume(*act_density, num_samples);
-    }
-
-    sss->set_activity_image_sptr(act_density);
-    sss->downsample_scanner();
+    sss->downsample_density_image_for_scatter_points(.2,.5,-1,original_projdata_info->get_scanner_sptr()->get_num_rings());
 
     shared_ptr<ProjDataInfoCylindricalNoArcCorr> output_projdata_info(sss->get_template_proj_data_info_sptr());
     shared_ptr<ProjDataInMemory> sss_output(new ProjDataInMemory(exam, output_projdata_info));
     sss->set_output_proj_data_sptr(sss_output);
+
     std::cerr << "Setting up\n";
     check(sss->set_up() == Succeeded::yes ? true : false, "Check Scatter Simulation set_up");
+
+    shared_ptr<const DiscretisedDensity<3,float> > scatter_points_image_sptr = sss->get_density_image_for_scatter_points_sptr();
+
+    // decrease verbosity a bit to avoid too much output
+    Verbosity::set(2);
+
     std::cerr << "Process\n";
     check(sss->process_data() == Succeeded::yes ? true : false, "Check Scatter Simulation process");
 
-    // minimal check that values are not 0. what else?
-    {
-      const SegmentByView<float> seg = sss_output->get_segment_by_view(0);
-      check(seg.find_max()>0.F, "Check Scatter Simulation output not zero");
-    }
+    // sss_output->write_to_file("single_scatter_sim.hs");
+
+    //// check output
+    test_output_is_symmetric(*sss->get_output_proj_data_sptr());
 
     //    shared_ptr<ProjDataInMemory> atten_sino(new ProjDataInMemory(exam, output_projdata_info));
     //    atten_sino->fill(1.F);
