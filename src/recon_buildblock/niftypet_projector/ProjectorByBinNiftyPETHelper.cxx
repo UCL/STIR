@@ -111,26 +111,32 @@ static void delete_axialLUT(axialLUT *axlut_ptr)
 
 
 
+
+template <class dataType>
+std::vector<dataType>
+ProjectorByBinNiftyPETHelper::
+read_binary_file(const std::string &data_path)
+{
+    std::ifstream file(data_path, std::ios::in | std::ios::binary);
+
+    // get its size:
+    file.seekg(0, std::ios::end);
+    long file_size = file.tellg();
+    unsigned long num_elements = static_cast<unsigned long>(file_size) / static_cast<unsigned long>(sizeof(dataType));
+    file.seekg(0, std::ios::beg);
+
+    std::vector<dataType> contents(num_elements);
+    file.read(reinterpret_cast<char*>(contents.data()), file_size);
+
+    return contents;
+}
+
+
+
+
+
+
  /// DELETE
- template <class dataType>
-static
- std::vector<dataType>
- read_binary_file(const std::string &data_path)
- {
-     std::ifstream file(data_path, std::ios::in | std::ios::binary);
-
-     // get its size:
-     file.seekg(0, std::ios::end);
-     long file_size = file.tellg();
-     unsigned long num_elements = static_cast<unsigned long>(file_size) / static_cast<unsigned long>(sizeof(dataType));
-     file.seekg(0, std::ios::beg);
-
-     std::vector<dataType> contents(num_elements);
-     file.read(reinterpret_cast<char*>(contents.data()), file_size);
-
-     return contents;
- }
-
  template <class dataType>
  static
  std::vector<dataType>
@@ -142,7 +148,7 @@ static
 
      std::string data_path = stir_path;
      data_path += "/examples/niftypet_mMR_params/" + file_name;
-     return read_binary_file<dataType>(data_path);
+     return ProjectorByBinNiftyPETHelper::read_binary_file<dataType>(data_path);
  }
 
 

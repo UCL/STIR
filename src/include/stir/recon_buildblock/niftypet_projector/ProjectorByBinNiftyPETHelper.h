@@ -96,10 +96,10 @@ public:
     /// Set scanner type
     void set_scanner_type(const Scanner::Type scanner_type) { _scanner_type = scanner_type; }
 
-    // /// Read binary file
-    // template<typename dataType>
-    // static
-    // std::vector<dataType> read_binary_file(const std::string &filename);
+     /// Read binary file
+     template<typename dataType>
+     static
+     std::vector<dataType> read_binary_file(const std::string &filename);
 
     /// Set up
     void set_up();

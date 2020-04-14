@@ -162,12 +162,12 @@ main(int argc, char **argv)
         // Set up the niftyPET binary helper
         typedef ProjectorByBinNiftyPETHelper Helper;
         Helper helper;
-        helper.set_li2rng_filename("li2rng.dat"  );
-        helper.set_li2sn_filename ("li2sn.dat"   );
-        helper.set_li2nos_filename("li2nos.dat"  );
-        helper.set_s2c_filename   ("s2c.dat"     );
-        helper.set_aw2ali_filename("aw2ali.dat"  );
-        helper.set_crs_filename   ( "crss.dat"   );
+//        helper.set_li2rng_filename("li2rng.dat"  );
+//        helper.set_li2sn_filename ("li2sn.dat"   );
+//        helper.set_li2nos_filename("li2nos.dat"  );
+//        helper.set_s2c_filename   ("s2c.dat"     );
+//        helper.set_aw2ali_filename("aw2ali.dat"  );
+//        helper.set_crs_filename   ( "crss.dat"   );
         helper.set_cuda_device_id (  cuda_device );
         helper.set_span           (      11      );
         helper.set_att(0);
