@@ -594,14 +594,14 @@ set_up()
         throw std::runtime_error("ProjectorByBinNiftyPETHelper::set_up() "
                                 "scanner type not set.");
 
-//    // Get consts
-//    _cnt_sptr = get_cnst(_scanner_type, _verbose, _devid, _span);
+    // Get consts
+    _cnt_sptr = get_cnst(_scanner_type, _verbose, _devid, _span);
 
-//    // Get txLUT
-//    get_txLUT_sptr(_txlut_sptr, _crs, _s2c, *_cnt_sptr);
+    // Get txLUT
+    get_txLUT_sptr(_txlut_sptr, _crs, _s2c, *_cnt_sptr);
 
-//    // Get axLUT
-//    get_axLUT_sptr(_axlut_sptr, _li2rng, _li2sn, _li2nos, *_cnt_sptr);
+    // Get axLUT
+    get_axLUT_sptr(_axlut_sptr, _li2rng, _li2sn, _li2nos, *_cnt_sptr);
 
 
 //     // Read binaries
@@ -852,7 +852,7 @@ forward_project(std::vector<float> &sino_no_gaps, const std::vector<float> &imag
     std::vector<char> li2nos = read_binary_file_in_examples<char>("li2nos.dat");
     std::vector<short> s2c = read_binary_file_in_examples<short>("s2c.dat");
     std::vector<int> aw2ali = read_binary_file_in_examples<int>("aw2ali.dat");
-    std::vector<float> crs = read_binary_file_in_examples<float>("crs.dat");
+    std::vector<float> crs = read_binary_file_in_examples<float>("crss.dat");
 
 
     // Set up cnst - backwards engineered from def.h, scanner.h and resources.py
