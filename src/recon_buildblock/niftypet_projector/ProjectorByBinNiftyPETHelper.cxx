@@ -12,7 +12,7 @@
 
 */
 /*
-    Copyright (C) 2019, University College London
+    Copyright (C) 2019-2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -28,56 +28,539 @@
     See STIR/LICENSE.txt for details
 */
 
-#include <fstream>
 #include "stir/recon_buildblock/niftypet_projector/ProjectorByBinNiftyPETHelper.h"
-#include "def.h"
+#include <fstream>
+#include <math.h>
 #include <boost/format.hpp>
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/is_null_ptr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/recon_array_functions.h"
+#include "stir/ProjDataInMemory.h"
+#include "def.h"
 #include "driver_types.h"
 #include "auxmath.h"
 #include "prjb.h"
 #include "prjf.h"
-#include "scanner_0.h"
 #include "recon.h"
 #include "lmproc.h"
+#include "scanner_0.h"
+
 
 START_NAMESPACE_STIR
 
-/// Read NiftyPET binary file
-template <class dataType>
-std::vector<dataType>
-ProjectorByBinNiftyPETHelper::
-read_binary_file(const std::string &data_path)
+
+
+
+
+
+
+
+// //
+// // DELETE - ONLY TEMPORARY
+// //
+// template<class dataType>
+// void check_with_binary(const dataType *arr, const unsigned numel, const std::string &filename)
+// {
+//     std::cout << "Checking match with filename: " << filename << "..." << std::flush;
+//     std::vector<dataType> arr_py = ProjectorByBinNiftyPETHelper::read_binary_file<dataType>(filename);
+//     if (arr_py.size() != numel)
+//         throw std::runtime_error("\nmismatch size. numel=" + std::to_string(numel) + ", vec.size=" + std::to_string(arr_py.size()) + ", filename=" + filename);
+//     for (unsigned i=0; i<arr_py.size(); ++i)
+//         if (std::abs(arr_py[i]-arr[i])>1e-4)
+//             throw std::runtime_error("\nmismatch. i=" + std::to_string(i) + ", arr=" + std::to_string(arr[i]) + ", arr_py=" + std::to_string(arr_py[i]) + ", filename=" + filename);
+//     std::cout << " Done.\n";
+// }
+// template<class dataType>
+// void check_with_binary(const dataType *arr, const unsigned numel, const std::vector<dataType> &arr_py, const std::string &filename)
+// {
+//     std::cout << "Checking match with filename: " << filename << "..." << std::flush;
+//     if (arr_py.size() != numel)
+//         throw std::runtime_error("\nmismatch size. numel=" + std::to_string(numel) + ", vec.size=" + std::to_string(arr_py.size()) + ", filename=" + filename);
+//     for (unsigned i=0; i<arr_py.size(); ++i)
+//         if (std::abs(arr_py[i]-arr[i])>1e-3)
+//             throw std::runtime_error("\nmismatch. i=" + std::to_string(i) + ", arr=" + std::to_string(arr[i]) + ", arr_py=" + std::to_string(arr_py[i]) + ", filename=" + filename);
+//     std::cout << " Done.\n";
+// }
+
+
+
+
+
+
+
+
+
+
+static void delete_axialLUT(axialLUT *axlut_ptr)
 {
-    std::ifstream file(data_path, std::ios::in | std::ios::binary);
-
-    // get its size:
-    file.seekg(0, std::ios::end);
-    long file_size = file.tellg();
-    unsigned long num_elements = static_cast<unsigned long>(file_size) / static_cast<unsigned long>(sizeof(dataType));
-    file.seekg(0, std::ios::beg);
-
-    std::vector<dataType> contents(num_elements);
-    file.read(reinterpret_cast<char*>(contents.data()), file_size);
-
-    return contents;
+    if (!axlut_ptr) return;
+    delete [] axlut_ptr->li2rno;
+    delete [] axlut_ptr->li2sn;
+    delete [] axlut_ptr->li2nos;
+    delete [] axlut_ptr->sn1_rno;
+    delete [] axlut_ptr->sn1_sn11;
+    delete [] axlut_ptr->sn1_ssrb;
+    delete [] axlut_ptr->sn1_sn11no;
 }
 
-template <class dataType>
-static
-std::vector<dataType>
-read_binary_file_in_examples(const std::string &file_name)
-{
-    const char* stir_path = std::getenv("STIR_PATH");
-    if (!stir_path)
-        throw std::runtime_error("STIR_PATH not defined, cannot find data");
 
-    std::string data_path = stir_path;
-    data_path += "/examples/niftypet_mMR_params/" + file_name;
-    return ProjectorByBinNiftyPETHelper::read_binary_file<dataType>(data_path);
+
+
+
+
+
+
+ /// DELETE
+ template <class dataType>
+static
+ std::vector<dataType>
+ read_binary_file(const std::string &data_path)
+ {
+     std::ifstream file(data_path, std::ios::in | std::ios::binary);
+
+     // get its size:
+     file.seekg(0, std::ios::end);
+     long file_size = file.tellg();
+     unsigned long num_elements = static_cast<unsigned long>(file_size) / static_cast<unsigned long>(sizeof(dataType));
+     file.seekg(0, std::ios::beg);
+
+     std::vector<dataType> contents(num_elements);
+     file.read(reinterpret_cast<char*>(contents.data()), file_size);
+
+     return contents;
+ }
+
+ template <class dataType>
+ static
+ std::vector<dataType>
+ read_binary_file_in_examples(const std::string &file_name)
+ {
+     const char* stir_path = std::getenv("STIR_PATH");
+     if (!stir_path)
+         throw std::runtime_error("STIR_PATH not defined, cannot find data");
+
+     std::string data_path = stir_path;
+     data_path += "/examples/niftypet_mMR_params/" + file_name;
+     return read_binary_file<dataType>(data_path);
+ }
+
+
+
+
+
+
+
+
+
+static
+shared_ptr<Cnst> get_cnst(const Scanner &scanner, const bool cuda_verbose, const char cuda_device, const char span)
+{
+    shared_ptr<Cnst> cnt_sptr = MAKE_SHARED<Cnst>();
+
+    cnt_sptr->DEVID = cuda_device; // device (GPU) ID.  allows choosing the device on which to perform calculations
+    cnt_sptr->VERBOSE = cuda_verbose;
+
+    if (scanner.get_type() == Scanner::Siemens_mMR) {
+        if (!(span==0 || span==1 || span==11))
+            throw std::runtime_error("ProjectorByBinNiftyPETHelper::getcnst() "
+                                 "only spans 0, 1 and 11 supported for scanner type: " + scanner.get_name());
+
+        cnt_sptr->A = NSANGLES; //sino angles
+        cnt_sptr->W = NSBINS; // sino bins for any angular index
+        cnt_sptr->aw = AW; //sino bins (active only)
+
+        cnt_sptr->NCRS = nCRS; //number of crystals
+        cnt_sptr->NCRSR = nCRSR; //reduced number of crystals by gaps
+        cnt_sptr->NRNG = NRINGS;  //number of axial rings
+        cnt_sptr->D = -1;  //number of linear indexes along Michelogram diagonals                         /*unknown*/
+        cnt_sptr->Bt = -1; //number of buckets transaxially                                               /*unknown*/
+
+        cnt_sptr->B = NBUCKTS; //number of buckets (total)
+        cnt_sptr->Cbt = 32552; //number of crystals in bucket transaxially                                /*unknown*/
+        cnt_sptr->Cba = 3; //number of crystals in bucket axially                                         /*unknown*/
+
+        cnt_sptr->NSN1 = NSINOS; //number of sinos in span-1
+        cnt_sptr->NSN11 = NSINOS11; //in span-11
+        cnt_sptr->NSN64 = NRINGS*NRINGS; //with no MRD limit
+
+        cnt_sptr->SPN = span; //span-1 (s=1) or span-11 (s=11, default) or SSRB (s=0)
+        cnt_sptr->NSEG0 = SEG0;
+
+        cnt_sptr->RNG_STRT = 0;
+        cnt_sptr->RNG_END  = NRINGS;
+
+        cnt_sptr->TGAP = 9; // get the crystal gaps right in the sinogram, period and offset given      /*unknown*/
+        cnt_sptr->OFFGAP = 1;                                                                           /*unknown*/
+
+        cnt_sptr->NSCRS = 21910;  // number of scatter crystals used in scatter estimation              /*unknown*/
+        std::vector<short> sct_irng = {0, 10, 19, 28, 35, 44, 53, 63}; // scatter ring definition
+        cnt_sptr->NSRNG = int(sct_irng.size());
+        cnt_sptr->MRD = mxRD; // maximum ring difference
+
+        cnt_sptr->ALPHA = aLPHA; //angle subtended by a crystal
+        float R = 32.8f; // ring radius
+        cnt_sptr->RE = R + 0.67f; // effective ring radius accounting for the depth of interaction
+        cnt_sptr->AXR = SZ_RING; //axial crystal dim
+
+        cnt_sptr->COSUPSMX = 0.725f; //cosine of max allowed scatter angle
+        cnt_sptr->COSSTP = (1-cnt_sptr->COSUPSMX)/(255);; //cosine step
+
+        cnt_sptr->TOFBINN = 1; // number of TOF bins
+        cnt_sptr->TOFBINS = 3.9e-10f; // size of TOF bin in [ps]
+        float CLGHT = 29979245800.f; // speed of light [cm/s]
+        cnt_sptr->TOFBIND = cnt_sptr->TOFBINS * CLGHT; // size of TOF BIN in cm of travelled distance
+        cnt_sptr->ITOFBIND = 1.f / cnt_sptr->TOFBIND; // inverse of above
+
+        cnt_sptr->BTP = 0; //0: no bootstrapping, 1: no-parametric, 2: parametric (recommended)
+        cnt_sptr->BTPRT = 1.f; // ratio of bootstrapped/original events in the target sinogram (1.0 default)
+
+        cnt_sptr->ETHRLD = 0.05f; // intensity percentage threshold of voxels to be considered in the image
+    }
+    else
+        throw std::runtime_error("ProjectorByBinNiftyPETHelper::getcnst() "
+                                 "not implemented for scanner type: " + scanner.get_name());
+    return cnt_sptr;
+}
+
+static inline unsigned to_1d_idx(const unsigned nrow, const unsigned ncol, const unsigned row, const unsigned col)
+{
+    return col + ncol*row;
+}
+
+template<class dataType>
+dataType* create_heap_array(const unsigned numel)
+{
+    return new dataType[numel];
+}
+
+template<class dataType>
+dataType* create_heap_array(const unsigned numel, const dataType val)
+{
+    dataType *array = create_heap_array<dataType>(numel);
+    memset(array, val, numel * sizeof(dataType));
+    return array;
+}
+
+/// Converted from mmraux.py axial_lut
+static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, float *&li2rng, short *&li2sn_s, char *&li2nos_c, const Cnst &cnt)
+{ 
+    const int NRNG = cnt.NRNG;
+    int NRNG_c, NSN1_c;
+
+    if (cnt.SPN == 1) {
+        // number of rings calculated for the given ring range (optionally we can use only part of the axial FOV)
+        NRNG_c = cnt.RNG_END - cnt.RNG_STRT;
+        // number of sinos in span-1
+        NSN1_c = NRNG_c*NRNG_c;
+        // correct for the max. ring difference in the full axial extent (don't use ring range (1,63) as for this case no correction)
+        if (NRNG_c==64)
+            NSN1_c -= 12;
+    }
+    else {
+        NRNG_c = NRNG;
+        NSN1_c = cnt.NSN1;
+        if (cnt.RNG_END!=NRNG || cnt.RNG_STRT!=0)
+            throw std::runtime_error("ProjectorByBinNiftyPETHelper::get_axLUT: the reduced axial FOV only works in span-1.");
+    }
+
+    // ring dimensions
+    float *rng = create_heap_array<float>(NRNG*2);
+    float z = -.5f*float(NRNG)*cnt.AXR;
+    for (unsigned i=0; i<unsigned(NRNG); ++i) {
+        rng[to_1d_idx(NRNG,2,i,0)] = z;
+        z += cnt.AXR;
+        rng[to_1d_idx(NRNG,2,i,1)] = z;
+    }
+
+    // --create mapping from ring difference to segment number
+    // ring difference range
+    std::vector<int> rd(2*cnt.MRD+1);
+    for (unsigned i=0; i<rd.size(); ++i)
+        rd[i] = i - cnt.MRD;
+    // ring difference to segment
+    int *rd2sg = create_heap_array<int>(rd.size()*2, -1);
+    // minimum and maximum ring difference for each segment
+    std::vector<int> minrd = {-5,-16, 6,-27,17,-38,28,-49,39,-60,50};
+    std::vector<int> maxrd = { 5, -6,16,-17,27,-28,38,-39,49,-50,60};
+    for (unsigned i=0; i<rd.size(); ++i) {
+        for (unsigned iseg=0; iseg<minrd.size(); ++iseg) {
+            if (rd[i]>=minrd[iseg] && rd[i]<=maxrd[iseg]) {
+                rd2sg[to_1d_idx(rd.size(),2,i,0)] = rd[i];
+                rd2sg[to_1d_idx(rd.size(),2,i,1)] = iseg;
+            }
+        }
+    }
+
+    // create two Michelograms for segments (Mseg)
+    // and absolute axial position for individual sinos (Mssrb) which is single slice rebinning
+    int *Mssrb = create_heap_array<int>(NRNG*NRNG, -1);
+    int *Mseg  = create_heap_array<int>(NRNG*NRNG, -1);
+    for (int r1=cnt.RNG_STRT; r1<cnt.RNG_END; ++r1) {
+        for (int r0=cnt.RNG_STRT; r0<cnt.RNG_END; ++r0) {
+            if (abs(r0-r1)>cnt.MRD)
+                continue;
+            int ssp = r0+r1; // segment sino position (axially: 0-126)
+            int rdd = r1-r0;
+            int jseg;
+            for (unsigned i=0; i<rd.size(); ++i)
+                if (rd2sg[to_1d_idx(rd.size(),2,i,0)] == rdd)
+                    jseg = rd2sg[to_1d_idx(rd.size(),2,i,1)];
+            Mssrb[to_1d_idx(NRNG,NRNG,r1,r0)] = ssp;
+            Mseg[to_1d_idx(NRNG,NRNG,r1,r0)] = jseg; // negative segments are on top diagonals
+        }
+    }
+
+    // create a Michelogram map from rings to sino number in span-11 (1..837)
+    int *Msn  = create_heap_array<int>(NRNG*NRNG, -1);
+    // number of span-1 sinos per sino in span-11
+    int *Mnos = create_heap_array<int>(NRNG*NRNG, -1);
+    std::vector<int> seg = {127,115,115,93,93,71,71,49,49,27,27};
+    int *msk = create_heap_array<int>(NRNG*NRNG, 0);
+    int *Mtmp = create_heap_array<int>(NRNG*NRNG);
+    int i=0;
+    for (unsigned iseg=0; iseg<seg.size(); ++iseg) {
+        // msk = (Mseg==iseg)
+        for (unsigned a=0; a<unsigned(NRNG*NRNG); ++a)
+            msk[a] = Mseg[a]==int(iseg)? 1 : 0;
+        // Mtmp = np.copy(Mssrb)
+        // Mtmp[~msk] = -1
+        for (unsigned a=0; a<unsigned(NRNG*NRNG); ++a)
+            Mtmp[a] = msk[a] ? Mssrb[a] : -1;
+
+        // uq = np.unique(Mtmp[msk])
+        std::vector<int> uq;
+        for (unsigned a=0; a<unsigned(NRNG*NRNG); ++a)
+            if (msk[a] && std::find(uq.begin(), uq.end(),Mtmp[a]) == uq.end())
+                uq.push_back(Mtmp[a]);
+        // for u in range(0,len(uq)):
+        for (unsigned u=0; u<uq.size(); ++u) {
+            // Msn [ Mtmp==uq[u] ] = i
+            for (unsigned a=0; a<unsigned(NRNG*NRNG); ++a)
+                if (Mtmp[a]==uq[u])
+                    Msn[a] = i;
+            // Mnos[ Mtmp==uq[u] ] = np.sum(Mtmp==uq[u])
+            int sum = 0;
+            for (unsigned a=0; a<unsigned(NRNG*NRNG); ++a)
+                if (Mtmp[a]==uq[u])
+                    ++sum;
+            for (unsigned a=0; a<unsigned(NRNG*NRNG); ++a)
+                if (Mtmp[a]==uq[u])
+                    Mnos[a] = sum;
+            ++i;
+        }
+    }
+
+    //====full LUT
+    short *sn1_rno     = create_heap_array<short>(NSN1_c*2, 0);
+    short *sn1_ssrb    = create_heap_array<short>(NSN1_c, 0);
+    short *sn1_sn11    = create_heap_array<short>(NSN1_c, 0);
+    char *sn1_sn11no   = create_heap_array<char>(NSN1_c, 0);
+    int sni = 0; // full linear index, up to 4084
+    // michelogram of sino numbers for spn-1
+    short *Msn1 = create_heap_array<short>(NRNG*NRNG, -1);
+    for (unsigned ro=0; ro<unsigned(NRNG); ++ro) {
+        unsigned oblique = ro==0? 1 : 2;
+        // for m in range(oblique):
+        for (unsigned m=0; m<oblique; ++m) {
+            // strt = NRNG*(ro+Cnt['RNG_STRT']) + Cnt['RNG_STRT']
+            int strt = NRNG*(ro+cnt.RNG_STRT) + cnt.RNG_STRT;
+            int stop = (cnt.RNG_STRT+NRNG_c)*NRNG;
+            int step = NRNG+1;
+
+            // goes along a diagonal started in the first row at r1
+            // for li in range(strt, stop, step):
+            for (int li=strt; li<stop; li+=step) {
+                int r1, r0;
+                // linear indecies of michelogram --> subscript indecies for positive and negative RDs
+                if (m==0) {
+                    r1 = floor(float(li)/float(NRNG));
+                    r0 = li - r1*NRNG;
+                }
+                // for positive now (? or vice versa)
+                else {
+                    r0 = floor(float(li)/float(NRNG));
+                    r1 = li - r0*NRNG;
+                }
+                // avoid case when RD>MRD
+                if (Msn[to_1d_idx(NRNG,NRNG,r1,r0)]<0)
+                    continue;
+
+                sn1_rno[to_1d_idx(NSN1_c,2, sni,0)] = r0;
+                sn1_rno[to_1d_idx(NSN1_c,2, sni,1)] = r1;
+
+                sn1_ssrb[sni] = Mssrb[to_1d_idx(NRNG,NRNG,r1,r0)];
+                sn1_sn11[sni] = Msn[to_1d_idx(NRNG,NRNG,r0,r1)];
+
+                sn1_sn11no[sni] = Mnos[to_1d_idx(NRNG,NRNG,r0,r1)];
+
+                Msn1[to_1d_idx(NRNG,NRNG,r0,r1)] = sni;
+                //--
+                sni += 1;
+            }
+        }
+    }
+
+    // span-11 sino to SSRB
+    // sn11_ssrb = np.zeros(Cnt['NSN11'], dtype=np.int32);
+    int *sn11_ssrb = create_heap_array<int>(cnt.NSN11, -1);
+    // sn1_ssrno = np.zeros(Cnt['NSEG0'], dtype=np.int8)
+    char *sn1_ssrno = create_heap_array<char>(cnt.NSEG0, 0);
+    // for i in range(NSN1_c):
+    for (unsigned i=0; i<unsigned(NSN1_c); ++i) {
+        sn11_ssrb[sn1_sn11[i]] = sn1_ssrb[i];
+        sn1_ssrno[sn1_ssrb[i]] += 1;
+    }
+
+    // sn11_ssrno = np.zeros(Cnt['NSEG0'], dtype=np.int8)
+    char *sn11_ssrno = create_heap_array<char>(cnt.NSEG0, 0);
+    // for i in range(Cnt['NSN11']):
+    for (unsigned i=0; i<unsigned(cnt.NSN11); ++i)
+        // if sn11_ssrb[i]>0: sn11_ssrno[sn11_ssrb[i]] += 1
+        if (sn11_ssrb[i]>0)
+            sn11_ssrno[sn11_ssrb[i]] += 1;
+
+    // sn11_ssrb = sn11_ssrb[sn11_ssrb>=0]
+    for (unsigned i=0; i<unsigned(cnt.NSN11); ++i)
+        if (sn11_ssrb[i]<0)
+            sn11_ssrb[i] = 0;
+
+    // ---------------------------------------------------------------------
+    // linear index (along diagonals of Michelogram) to rings
+    // the number of Michelogram elements considered in projection calculations
+    int NLI2R_c = int(float(NRNG_c*NRNG_c)/2.f + float(NRNG_c)/2.f);
+
+    // if the whole scanner is used then account for the MRD and subtract 6 ring permutations
+    if (NRNG_c==NRNG)
+        NLI2R_c -= 6;
+
+    int    *li2r   = create_heap_array<int>(NLI2R_c*2);
+    // the same as above but to sinos in span-11
+    int    *li2sn  = create_heap_array<int>(NLI2R_c*2);
+    short  *li2sn1 = create_heap_array<short>(NLI2R_c*2);
+    li2rng = create_heap_array<float>(NLI2R_c*2);
+    // ...to number of sinos (nos)
+    int *li2nos = create_heap_array<int>(NLI2R_c);
+
+    int dli = 0;
+    for (unsigned ro=0; ro<unsigned(NRNG_c); ++ro) {
+        // selects the sub-Michelogram of the whole Michelogram
+        unsigned strt = NRNG*(ro+cnt.RNG_STRT) + cnt.RNG_STRT;
+        unsigned stop = (cnt.RNG_STRT+NRNG_c)*NRNG;
+        unsigned step = NRNG+1;
+
+        // goes along a diagonal started in the first row at r2o
+        for (unsigned li=strt; li<stop; li+=step) {
+            // from the linear indexes of Michelogram get the subscript indexes
+            unsigned r1 = floor(float(li)/float(NRNG));
+            unsigned r0 = li - r1*NRNG;
+            if (Msn[to_1d_idx(NRNG,NRNG, r1,r0)]<0)
+                continue;
+
+            li2r[to_1d_idx(NLI2R_c,2, dli,0)] = r0;
+            li2r[to_1d_idx(NLI2R_c,2, dli,1)] = r1;
+            //--//rng[to_1d_idx(NRNG,2,i,1)] = z;
+            li2rng[to_1d_idx(NLI2R_c,2, dli,0)] = rng[to_1d_idx(NRNG,2,r0,0)];
+            li2rng[to_1d_idx(NLI2R_c,2, dli,1)] = rng[to_1d_idx(NRNG,2,r1,0)];
+            //--
+            li2sn[to_1d_idx(NLI2R_c,2, dli,0)] = Msn[to_1d_idx(NRNG,NRNG,r0,r1)];
+            li2sn[to_1d_idx(NLI2R_c,2, dli,1)] = Msn[to_1d_idx(NRNG,NRNG,r1,r0)];
+
+            li2sn1[to_1d_idx(NLI2R_c,2, dli,0)] = Msn1[to_1d_idx(NRNG,NRNG,r0,r1)];
+            li2sn1[to_1d_idx(NLI2R_c,2, dli,1)] = Msn1[to_1d_idx(NRNG,NRNG,r1,r0)];
+
+            li2nos[dli] = Mnos[to_1d_idx(NRNG,NRNG,r1,r0)];
+
+            ++dli;
+        }
+    }
+
+    // Need some results in a different data type
+    li2sn_s = create_heap_array<short>(NLI2R_c*2);
+    for (unsigned i=0; i<unsigned(NLI2R_c*2); ++i)
+        li2sn_s[i] = short(li2sn[i]);
+    li2nos_c = create_heap_array<char>(NLI2R_c);
+    for (unsigned i=0; i<unsigned(NLI2R_c); ++i)
+        li2nos_c[i] = char(li2nos[i]);
+
+    // Delete temporary variables
+    delete [] rng;
+    delete [] rd2sg;
+    delete [] Mssrb;
+    delete [] Mseg;
+    delete [] Msn;
+    delete [] Mnos;
+    delete [] msk;
+    delete [] Mtmp;
+    delete [] Msn1;
+    delete [] sn11_ssrb;
+    delete [] sn1_ssrno;
+    delete [] sn11_ssrno;
+    delete [] li2sn1;
+
+    // Fill in struct
+    axlut_sptr = shared_ptr<axialLUT>(new axialLUT, delete_axialLUT);
+    axlut_sptr->li2rno     = li2r;        // int   linear indx to ring indx
+    axlut_sptr->li2sn      = li2sn;       // int   linear michelogram index (along diagonals) to sino index
+    axlut_sptr->li2nos     = li2nos;      // int   linear indx to no of sinos in span-11
+    axlut_sptr->sn1_rno    = sn1_rno;     // short
+    axlut_sptr->sn1_sn11   = sn1_sn11;    // short
+    axlut_sptr->sn1_ssrb   = sn1_ssrb;    // short
+    axlut_sptr->sn1_sn11no = sn1_sn11no;  // char
+    // array sizes
+    axlut_sptr->Nli2rno[0] = NLI2R_c;
+    axlut_sptr->Nli2rno[1] = 2;
+    axlut_sptr->Nli2sn[0]  = NLI2R_c;
+    axlut_sptr->Nli2sn[1]  = 2;
+    axlut_sptr->Nli2nos    = NLI2R_c;
+}
+
+static
+void get_txLUT_sptr(shared_ptr<txLUTs> &txlut_sptr, float *&crs, short *&s2c, Cnst &cnt)
+{
+    txlut_sptr = MAKE_SHARED<txLUTs>();
+    *txlut_sptr = get_txlut(cnt);
+
+    s2c = create_heap_array<short>(txlut_sptr->naw*2);
+    for (unsigned i=0; i<unsigned(txlut_sptr->naw); ++i) {
+        s2c[ 2*i ] = txlut_sptr->s2c[i].c0;
+        s2c[2*i+1] = txlut_sptr->s2c[i].c1;
+    }
+    // from mmraux.py
+    const float bw = 3.209f; // block width
+    // const float dg = 0.474f; // block gap [cm]
+    const int NTBLK = 56;
+    const float alpha = 2*M_PI/float(NTBLK); // 2*pi/NTBLK
+    crs = create_heap_array<float>(4 * cnt.NCRS);
+    float phi = 0.5f*M_PI - alpha/2.f - 0.001f;
+    for (int bi=0; bi<NTBLK; ++bi) {
+        //-tangent point (ring against detector block)
+        // ye = RE*np.sin(phi)
+        // xe = RE*np.cos(phi)
+        float y = cnt.RE * sin(phi);
+        float x = cnt.RE * cos(phi);
+        //-vector for the face of crystals
+        float pv[2] = {-y, x};
+        float pv_ = pow(pv[0]*pv[0] + pv[1]*pv[1], 0.5f);
+        pv[0] /= pv_;
+        pv[1] /= pv_;
+        // update phi for next block
+        phi -= alpha;
+        //-end block points
+        float xcp = x + (bw/2)*pv[0];
+        float ycp = y + (bw/2)*pv[1];
+        for (unsigned n=1; n<9; ++n) {
+            int c = bi*9 + n - 1;
+            crs[to_1d_idx(4,cnt.NCRS, 0,c)] = xcp;
+            crs[to_1d_idx(4,cnt.NCRS, 1,c)] = ycp;
+            float xc = x + (bw/2-float(n)*bw/8)*pv[0];
+            float yc = y + (bw/2-float(n)*bw/8)*pv[1];
+            crs[to_1d_idx(4,cnt.NCRS, 2,c)] = xc;
+            crs[to_1d_idx(4,cnt.NCRS, 3,c)] = yc;
+            xcp = xc;
+            ycp = yc;
+        }
+    }
 }
 
 void
@@ -101,66 +584,64 @@ set_up()
         throw std::runtime_error("ProjectorByBinNiftyPETHelper::set_up() "
                                 "emission or transmission mode (att) not set.");
 
-    // Read binaries
-    if (_fname_li2rng.size()     == 0 ||
-            _fname_li2sn.size()  == 0 ||
-            _fname_li2nos.size() == 0 ||
-            _fname_s2c.size()    == 0 ||
-            _fname_aw2ali.size() == 0 ||
-            _fname_crs.size()    == 0)
+    if (_scanner_type == Scanner::Unknown_scanner)
         throw std::runtime_error("ProjectorByBinNiftyPETHelper::set_up() "
-                                 "not all filenames have been set.");
+                                "scanner type not set.");
 
-    _li2rng   = read_binary_file_in_examples<float>(_fname_li2rng);
-    _li2sn    = read_binary_file_in_examples<short>(_fname_li2sn );
-    _li2nos   = read_binary_file_in_examples<char> (_fname_li2nos);
-    _s2c      = read_binary_file_in_examples<short>(_fname_s2c   );
-    _aw2ali   = read_binary_file_in_examples<int>  (_fname_aw2ali);
-    _crs      = read_binary_file_in_examples<float>(_fname_crs   );
+//    // Get consts
+//    _cnt_sptr = get_cnst(_scanner_type, _verbose, _devid, _span);
 
-    // Set up cnst - backwards engineered from def.h, scanner.h and resources.py
-    _cnt.reset(new Cnst);
-    _cnt->SPN      = _span;
-    _cnt->RNG_STRT = 0;
-    _cnt->RNG_END  = NRINGS;
-    _cnt->VERBOSE  = true;
-    _cnt->DEVID    = _devid;
-    _cnt->NSN11    = NSINOS11;
-    _cnt->NSEG0    = SEG0;
-    _cnt->NCRS     = nCRS;
-    _cnt->OFFGAP   = 1;
-    _cnt->TGAP     = 9;
-    _cnt->A        = NSANGLES;
-    _cnt->W        = NSBINS;
-    _cnt->NCRSR    = nCRSR;
-    _cnt->B        = NBUCKTS;
+//    // Get txLUT
+//    get_txLUT_sptr(_txlut_sptr, _crs, _s2c, *_cnt_sptr);
 
-    _cnt->MRD =  mxRD;
-    _cnt->ALPHA =  aLPHA;
-    _cnt->AXR =  SZ_RING;
-    _cnt->BTP =  0;
-    _cnt->BTPRT =  1.0;
-    _cnt->COSUPSMX =  0.725f;
-    _cnt->COSSTP = (1-_cnt->COSUPSMX)/(255);
-    _cnt->ETHRLD =  0.05f;
-    _cnt->NRNG =  NRINGS;
-    _cnt->ITOFBIND =  0.08552925517901334f;
-    _cnt->NSN1 =  NSINOS;
-    _cnt->NSN64 =  4096;
-    _cnt->NSRNG =  8;
-    _cnt->RE =  33.47f;
-    _cnt->TOFBIND =  11.691905862f;
-    _cnt->TOFBINN =  1;
-    _cnt->TOFBINS =  3.9e-10f;
+//    // Get axLUT
+//    get_axLUT_sptr(_axlut_sptr, _li2rng, _li2sn, _li2nos, *_cnt_sptr);
 
-    switch(_cnt->SPN){
-      case 11:
-        _nsinos = _cnt->NSN11; break;
-      case 1:
-        _nsinos = _cnt->NSEG0; break;
-      default:
-        throw std::runtime_error("Unsupported span");
-    }
+
+//     // Read binaries
+//     if (_fname_li2rng.size()     == 0 ||
+//             _fname_li2sn.size()  == 0 ||
+//             _fname_li2nos.size() == 0 ||
+//             _fname_s2c.size()    == 0 ||
+//             _fname_aw2ali.size() == 0 ||
+//             _fname_crs.size()    == 0)
+//         throw std::runtime_error("ProjectorByBinNiftyPETHelper::set_up() "
+//                                  "not all filenames have been set.");
+
+    //  _li2rng   = read_binary_file_in_examples<float>(_fname_li2rng);
+    //  _li2sn    = read_binary_file_in_examples<short>(_fname_li2sn );
+    //  _li2nos   = read_binary_file_in_examples<char> (_fname_li2nos);
+    //  _s2c      = read_binary_file_in_examples<short>(_fname_s2c   );
+    //  _aw2ali   = read_binary_file_in_examples<int>  (_fname_aw2ali);
+    //  _crs      = read_binary_file_in_examples<float>(_fname_crs   );
+    //  std::vector<short> _sn1_rno   = read_binary_file_in_examples<short>(_fname_sn1_rno );
+    //  std::vector<short> _sn1_sn11  = read_binary_file_in_examples<short>(_fname_sn1_sn11);
+    //  std::vector<short> _sn1_ssrb  = read_binary_file_in_examples<short>(_fname_sn1_ssrb);
+
+    // check_with_binary(li2rng, _axlut_sptr->Nli2rno[0]*2, _li2rng, "li2rng");
+    // check_with_binary(li2sn, _axlut_sptr->Nli2rno[0]*2, _li2sn, "_li2sn");
+    // check_with_binary(li2nos, _axlut_sptr->Nli2rno[0], _li2nos, "_li2nos");
+    // check_with_binary(s2c, _txlut_sptr->naw*2, _s2c, "s2c");
+    // check_with_binary(_txlut_sptr->aw2ali, _txlut_sptr->naw, _aw2ali, "_aw2ali");
+    // check_with_binary(crs, _cnt_sptr->NCRS*4, _crs, "_crs");
+    // check_with_binary(_axlut_sptr->sn1_rno, 4084*2, _sn1_rno, "_sn1_rno");
+    // check_with_binary(_axlut_sptr->sn1_sn11, 4084, _sn1_sn11, "_sn1_sn11");
+    // check_with_binary(_axlut_sptr->sn1_ssrb, 4084, _sn1_ssrb, "_sn1_ssrb");
+
+    // std::cout <<"\ncool\n";
+    // delete [] li2rng;
+    // delete [] li2sn;
+    // delete [] li2nos;
+    // delete [] s2c;
+
+    switch(_cnt_sptr->SPN){
+        case 11:
+            _nsinos = _cnt_sptr->NSN11; break;
+        case 1:
+            _nsinos = _cnt_sptr->NSEG0; break;
+        default:
+            throw std::runtime_error("Unsupported span");
+     }
 
     // isub
     _isub = std::vector<int>(unsigned(AW));
@@ -280,8 +761,8 @@ remove_gaps(std::vector<float> &sino_no_gaps, const std::vector<float> &sino_w_g
     ::remove_gaps(sino_no_gaps.data(),
                   const_cast<std::vector<float>&>(sino_w_gaps).data(),
                   _nsinos,
-                  const_cast<std::vector<int  >&>(_aw2ali).data(),
-                  *_cnt);
+                  _txlut_sptr->aw2ali,
+                  *_cnt_sptr);
 }
 
 void
@@ -298,8 +779,8 @@ put_gaps(std::vector<float> &sino_w_gaps, const std::vector<float> &sino_no_gaps
 
     ::put_gaps(unpermuted_sino_w_gaps.data(),
                const_cast<std::vector<float>&>(sino_no_gaps).data(),
-               const_cast<std::vector<int  >&>(_aw2ali).data(),
-               *_cnt);
+               _txlut_sptr->aw2ali,
+               *_cnt_sptr);
 
     // Permute the data (as this is done on the NiftyPET python side after put gaps
     unsigned output_dims[3] = {837, 252, 344};
@@ -321,18 +802,18 @@ back_project(std::vector<float> &image, const std::vector<float> &sino_no_gaps) 
 
     gpu_bprj(unpermuted_image.data(),
              const_cast<std::vector<float>&>(sino_no_gaps).data(),
-             const_cast<std::vector<float>&>(_li2rng).data(),
-             const_cast<std::vector<short>&>(_li2sn).data(),
-             const_cast<std::vector<char >&>(_li2nos).data(),
-             const_cast<std::vector<short>&>(_s2c).data(),
-             const_cast<std::vector<int  >&>(_aw2ali).data(),
-             const_cast<std::vector<float>&>(_crs).data(),
-             const_cast<std::vector<int  >&>(_isub).data(),
+             _li2rng,
+             _li2sn,
+             _li2nos,
+             _s2c,
+             _txlut_sptr->aw2ali,
+             _crs,
+             const_cast<std::vector<int>&>(_isub).data(),
              int(_isub.size()),
              this->get_naw(),
              this->get_n0crs(),
              this->get_n1crs(),
-             *_cnt);
+             *_cnt_sptr);
 
     // Permute the data (as this is done on the NiftyPET python side after back projection
     unsigned output_dims[3] = {127,320,320};
@@ -360,15 +841,59 @@ forward_project(std::vector<float> &sino_no_gaps, const std::vector<float> &imag
     if (_verbose)
         getMemUse();
 
+    std::vector<float> li2rng = read_binary_file_in_examples<float>("li2rng.dat");
+    std::vector<short> li2sn = read_binary_file_in_examples<short>("li2sn.dat");
+    std::vector<char> li2nos = read_binary_file_in_examples<char>("li2nos.dat");
+    std::vector<short> s2c = read_binary_file_in_examples<short>("s2c.dat");
+    std::vector<int> aw2ali = read_binary_file_in_examples<int>("aw2ali.dat");
+    std::vector<float> crs = read_binary_file_in_examples<float>("crs.dat");
+
+
+    // Set up cnst - backwards engineered from def.h, scanner.h and resources.py
+    Cnst *_cnt = new Cnst;
+    _cnt->SPN      = _span;
+    _cnt->RNG_STRT = 0;
+    _cnt->RNG_END  = NRINGS;
+    _cnt->VERBOSE  = true;
+    _cnt->DEVID    = _devid;
+    _cnt->NSN11    = NSINOS11;
+    _cnt->NSEG0    = SEG0;
+    _cnt->NCRS     = nCRS;
+    _cnt->OFFGAP   = 1;
+    _cnt->TGAP     = 9;
+    _cnt->A        = NSANGLES;
+    _cnt->W        = NSBINS;
+    _cnt->NCRSR    = nCRSR;
+    _cnt->B        = NBUCKTS;
+
+    _cnt->MRD =  mxRD;
+    _cnt->ALPHA =  aLPHA;
+    _cnt->AXR =  SZ_RING;
+    _cnt->BTP =  0;
+    _cnt->BTPRT =  1.0;
+    _cnt->COSUPSMX =  0.725f;
+    _cnt->COSSTP = (1-_cnt->COSUPSMX)/(255);
+    _cnt->ETHRLD =  0.05f;
+    _cnt->NRNG =  NRINGS;
+    _cnt->ITOFBIND =  0.08552925517901334f;
+    _cnt->NSN1 =  NSINOS;
+    _cnt->NSN64 =  4096;
+    _cnt->NSRNG =  8;
+    _cnt->RE =  33.47f;
+    _cnt->TOFBIND =  11.691905862f;
+    _cnt->TOFBINN =  1;
+    _cnt->TOFBINS =  3.9e-10f;
+
+
     gpu_fprj(sino_no_gaps.data(),
              permuted_image.data(),
-             const_cast<std::vector<float>&>(_li2rng).data(),
-             const_cast<std::vector<short>&>(_li2sn).data(),
-             const_cast<std::vector<char >&>(_li2nos).data(),
-             const_cast<std::vector<short>&>(_s2c).data(),
-             const_cast<std::vector<int  >&>(_aw2ali).data(),
-             const_cast<std::vector<float>&>(_crs).data(),
-             const_cast<std::vector<int  >&>(_isub).data(),
+             const_cast<std::vector<float>&>(li2rng).data(),
+             const_cast<std::vector<short>&>(li2sn).data(),
+             const_cast<std::vector<char >&>(li2nos).data(),
+             const_cast<std::vector<short>&>(s2c).data(),
+             const_cast<std::vector<int  >&>(aw2ali).data(),
+             const_cast<std::vector<float>&>(crs).data(),
+             const_cast<std::vector<int>&>(_isub).data(),
              int(_isub.size()),
              this->get_naw(),
              this->get_n0crs(),
@@ -376,20 +901,57 @@ forward_project(std::vector<float> &sino_no_gaps, const std::vector<float> &imag
              *_cnt,
              _att);
 
+    delete [] _cnt;
+
+
+//    gpu_fprj(sino_no_gaps.data(),
+//             permuted_image.data(),
+//             _li2rng,
+//             _li2sn,
+//             _li2nos,
+//             _s2c,
+//             _txlut_sptr->aw2ali,
+//             _crs,
+//             const_cast<std::vector<int>&>(_isub).data(),
+//             int(_isub.size()),
+//             this->get_naw(),
+//             this->get_n0crs(),
+//             this->get_n1crs(),
+//             *_cnt_sptr,
+//             _att);
+
     // Scale to account for niftypet-to-stir ratio
     for (unsigned i=0; i<sino_no_gaps.size(); ++i)
         sino_no_gaps[i] /= _niftypet_to_stir_ratio;
 }
 
-void
-ProjectorByBinNiftyPETHelper::
-lm_to_proj_data() const
+shared_ptr<ProjData>
+ProjectorByBinNiftyPETHelper::create_stir_sino()
 {
+    const int span=11;
+    const int max_ring_diff=60;
+    const int view_mash_factor=1;
+    shared_ptr<ExamInfo> ei_sptr = MAKE_SHARED<ExamInfo>();
+    ei_sptr->imaging_modality = ImagingModality::PT;
+    shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name("mMR"));
+    int num_views = scanner_sptr->get_num_detectors_per_ring() / 2 / view_mash_factor;
+    int num_tang_pos = scanner_sptr->get_max_num_non_arccorrected_bins();
+    shared_ptr<ProjDataInfo> pdi_sptr = ProjDataInfo::construct_proj_data_info
+            (scanner_sptr, span, max_ring_diff, num_views, num_tang_pos, false);
+    shared_ptr<ProjDataInMemory> pd_sptr = MAKE_SHARED<ProjDataInMemory>(ei_sptr, pdi_sptr);
+    return pd_sptr;
+}
+
+shared_ptr<ProjData>
+ProjectorByBinNiftyPETHelper::
+lm_to_proj_data(const std::string &lm_binary_file, const int tstart, const int tstop) const
+{
+    check_set_up();
+    
     // Get listmode info
-    std::string lm_binary_file = "/home/rich/Documents/Data/NiftyPET_example/LM/17598013_1946_20150604155500.000000.bf";
     char *flm = new char[lm_binary_file.length() + 1];
     strcpy(flm, lm_binary_file.c_str());
-    getLMinfo(flm, *_cnt);
+    getLMinfo(flm, *_cnt_sptr);
 
     // preallocate all the output arrays - in def.h VTIME=2 (), MXNITAG=5400 (max time 1h30)
     const int nitag = lmprop.nitag;
@@ -402,7 +964,6 @@ lm_to_proj_data() const
 
     unsigned short frames(0);
     int nfrm(1);
-    int tstart(0), tstop(3600);
 
     // structure of output data
     // var   | type               | python var | description                      | shape
@@ -421,68 +982,41 @@ lm_to_proj_data() const
     // psm   | unsigned long long |            | gets set inside lmproc           |
     // dsm   | unsigned long long |            | gets set inside lmproc           |
     // tot   | unsigned int       |            | gets set inside lmproc           |
+    const unsigned int num_sino_elements = _nsinos * _cnt_sptr->A * _cnt_sptr->W;
     hstout dicout; 
-    dicout.snv = new unsigned int[tn * _cnt->NSEG0 * _cnt->W];
+    dicout.snv = new unsigned int[tn * _cnt_sptr->NSEG0 * _cnt_sptr->W];
     dicout.hcp = new unsigned int[nitag];
     dicout.hcd = new unsigned int[nitag];
-    dicout.fan = new unsigned int[nfrm * _cnt->NRNG * _cnt->NCRS];
-    dicout.bck = new unsigned int[2 * nitag * _cnt->B];
+    dicout.fan = new unsigned int[nfrm * _cnt_sptr->NRNG * _cnt_sptr->NCRS];
+    dicout.bck = new unsigned int[2 * nitag * _cnt_sptr->B];
     dicout.mss = new float       [nitag];
-    dicout.ssr = new unsigned int[_cnt->NSEG0 * _cnt->A * _cnt->W];
+    dicout.ssr = new unsigned int[_cnt_sptr->NSEG0 * _cnt_sptr->A * _cnt_sptr->W];
     if (nfrm == 1)  {
-        dicout.psn =  new unsigned int[nfrm * _nsinos * _cnt->A * _cnt->W];
-        dicout.dsn =  new unsigned int[nfrm * _nsinos * _cnt->A * _cnt->W];
+        dicout.psn =  new unsigned int[nfrm * num_sino_elements];
+        dicout.dsn =  new unsigned int[nfrm * num_sino_elements];
     }
     else
         throw std::runtime_error("ProjectorByBinNiftyPETHelper::lm_to_proj_data: If nfrm>1, "
                                   "dicout.psn and dicout.dsn should be unsigned char*. Not "
                                   "tested, but should be pretty easy.");
 
-    // structure of axial LUTs for LM processing
-    // var        | type    | required? | description                                              |
-    // -----------+---------+-----------+----------------------------------------------------------|
-    // li2rno     | int *   |           | linear indx to ring indx                                 |
-    // li2sn      | int *   |           | linear michelogram index (along diagonals) to sino index |
-    // li2nos     | int *   |           | linear indx to no of sinos in span-11                    |
-    // sn1_rno    | short * | yes       |                                                          |
-    // sn1_ssrb   | short * | yes       |                                                          |
-    // sn1_sn11no | short * | yes       |                                                          |
-    // Nli2rno    | int[2]  |           | array sizes                                              |
-    // Nli2sn     | int[2]  |           |                                                          |
-    // Nli2nos    | int     |           |                                                          |
-    axialLUT axLUT;
-    if (_fname_sn1_rno.empty() || _fname_sn1_sn11.empty() || _fname_sn1_ssrb.empty())
-        throw std::runtime_error("ProjectorByBinNiftyPETHelper::lm_to_proj_data: Filenames missing for "
-                                    ".dat files required for unlisting.");
-    std::vector<short> _sn1_rno   = read_binary_file_in_examples<short>(_fname_sn1_rno );
-    std::vector<short> _sn1_sn11  = read_binary_file_in_examples<short>(_fname_sn1_sn11);
-    std::vector<short> _sn1_ssrb  = read_binary_file_in_examples<short>(_fname_sn1_ssrb);
-    axLUT.sn1_rno  = const_cast<std::vector<short>&>(_sn1_rno).data();
-    axLUT.sn1_sn11 = const_cast<std::vector<short>&>(_sn1_sn11).data();
-    axLUT.sn1_ssrb = const_cast<std::vector<short>&>(_sn1_ssrb).data();
-
-    // check that s2c contains correct number of elements
-    if (_s2c.size() != AW*2)
-        throw std::runtime_error("ProjectorByBinNiftyPETHelper::lm_to_proj_data: Expected "
-                                 "s2c to have AW*2 number of elements.");
-    std::vector<LORcc> s2c(AW);
-    for (unsigned i = 0; i<unsigned(AW); i++) {
-        s2c[i].c0 = _s2c[ 2*i ];
-        s2c[i].c1 = _s2c[2*i+1];
-        if (i<10)
-            std::cout << "i=" << i << ", c0=" << s2c[i].c0 << ", c1=" << s2c[i].c1 << "\n";
-    }
-
-    std::cout << "\n\n\n\nabout to start unlisting\n\n\n\n\n";
     lmproc(dicout, // hstout (struct): output
            flm, // char *: binary filename (.s, .bf)
            &frames, // unsigned short *: think for one frame, frames = 0
            nfrm, // int: num frames
            tstart, // int
            tstop, // int
-           const_cast<std::vector<LORcc>&>(s2c).data(), // *LORcc (struct)
-           axLUT, // axialLUT (struct)
-           *_cnt); // Cnst (struct)
+           _txlut_sptr->s2c, // *LORcc (struct)
+           *_axlut_sptr, // axialLUT (struct)
+           *_cnt_sptr); // Cnst (struct)
+
+    // Convert to STIR sinogram
+    const unsigned int *psn_int = (const unsigned int*)dicout.psn;
+    std::vector<float> np_sino(num_sino_elements);
+    for (unsigned i=0; i<num_sino_elements; ++i)
+        np_sino[i] = float(psn_int[i]);
+    shared_ptr<ProjData> stir_sino_sptr = create_stir_sino();
+    convert_proj_data_niftyPET_to_stir(*stir_sino_sptr, np_sino);
 
     // Clear up
     delete [] flm;
@@ -491,9 +1025,17 @@ lm_to_proj_data() const
     delete [] dicout.hcd;
     delete [] dicout.fan;
     delete [] dicout.bck;
+    delete [] dicout.mss;
     delete [] dicout.ssr;
-    delete [] dicout.psn;
-    delete [] dicout.dsn;
+    if (nfrm == 1)  {
+        delete [] (unsigned int*)dicout.psn;
+        delete [] (unsigned int*)dicout.dsn;
+    }
+    else
+        throw std::runtime_error("ProjectorByBinNiftyPETHelper::lm_to_proj_data: If nfrm>1, "
+                                  "need to cast before deleting as is stored as void*.");
+
+    return stir_sino_sptr;
 }
 
 void check_im_sizes(const int stir_dim[3], const int np_dim[3])

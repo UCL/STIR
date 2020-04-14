@@ -91,22 +91,6 @@ static std::shared_ptr<VoxelsOnCartesianGrid<float> > create_stir_im()
     return out_im_stir_sptr;
 }
 
-static std::shared_ptr<ProjData> create_stir_sino()
-{
-    const int span=11;
-    const int max_ring_diff=60;
-    const int view_mash_factor=1;
-    shared_ptr<ExamInfo> ei_sptr = MAKE_SHARED<ExamInfo>();
-    ei_sptr->imaging_modality = ImagingModality::PT;
-    shared_ptr<Scanner> scanner_sptr(Scanner::get_scanner_from_name("mMR"));
-    int num_views = scanner_sptr->get_num_detectors_per_ring() / 2 / view_mash_factor;
-    int num_tang_pos = scanner_sptr->get_max_num_non_arccorrected_bins();
-    shared_ptr<ProjDataInfo> pdi_sptr = ProjDataInfo::construct_proj_data_info
-            (scanner_sptr, span, max_ring_diff, num_views, num_tang_pos, false);
-    shared_ptr<ProjDataInMemory> pd_sptr = MAKE_SHARED<ProjDataInMemory>(ei_sptr, pdi_sptr);
-    return pd_sptr;
-}
-
 int
 main(int argc, char **argv)
 {
@@ -213,7 +197,7 @@ main(int argc, char **argv)
             // sinogram NP -> STIR
             if (toSTIR) {
                 std::vector<float> input_sino_np = Helper::read_binary_file<float>(input_filename);
-                shared_ptr<ProjData> output_sino_stir_sptr = create_stir_sino();
+                shared_ptr<ProjData> output_sino_stir_sptr = Helper::create_stir_sino();
                 helper.convert_proj_data_niftyPET_to_stir(*output_sino_stir_sptr, input_sino_np);
                 output_sino_stir_sptr->write_to_file(output_filename);
             }

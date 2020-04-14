@@ -48,6 +48,9 @@ class LmToProjDataAbstract : public ParsingObject
 {
 public:
 
+    /// Destructor
+    virtual ~LmToProjDataAbstract() {}
+
     //! This function does the actual work
     virtual void process_data() = 0;
 };

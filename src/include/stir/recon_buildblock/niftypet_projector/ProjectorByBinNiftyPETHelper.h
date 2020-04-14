@@ -34,8 +34,10 @@
 #include "stir/DiscretisedDensity.h"
 #include "stir/ProjData.h"
 
-// Forward declaration of Cnst
+// Forward declarations
 struct Cnst;
+struct txLUTs;
+struct axialLUT;
 
 START_NAMESPACE_STIR
 
@@ -49,37 +51,35 @@ public:
 
     /// Default constructor
     ProjectorByBinNiftyPETHelper() :
-        _already_set_up(false), _span(-1), _devid(0), _att(-1) {}
+        _already_set_up(false), _span(-1), _devid(0), _att(-1), _scanner_type(Scanner::Unknown_scanner)
+    {}
 
-    /// Destructor
-    ~ProjectorByBinNiftyPETHelper(){}
+    // /// Set li2rng filename
+    // void set_li2rng_filename(const std::string &fname_li2rng) { _fname_li2rng = fname_li2rng; }
 
-    /// Set li2rng filename
-    void set_li2rng_filename(const std::string &fname_li2rng) { _fname_li2rng = fname_li2rng; }
+    // /// Set li2sn filename
+    // void set_li2sn_filename(const std::string &fname_li2sn)   { _fname_li2sn = fname_li2sn;   }
 
-    /// Set li2sn filename
-    void set_li2sn_filename(const std::string &fname_li2sn)   { _fname_li2sn = fname_li2sn;   }
+    // /// Set li2nos filename
+    // void set_li2nos_filename(const std::string &fname_li2nos) { _fname_li2nos = fname_li2nos; }
 
-    /// Set li2nos filename
-    void set_li2nos_filename(const std::string &fname_li2nos) { _fname_li2nos = fname_li2nos; }
+    // /// Set s2c filename
+    // void set_s2c_filename(const std::string &fname_s2c)       { _fname_s2c = fname_s2c;       }
 
-    /// Set s2c filename
-    void set_s2c_filename(const std::string &fname_s2c)       { _fname_s2c = fname_s2c;       }
+    // /// Set aw2ali filename
+    // void set_aw2ali_filename(const std::string &fname_aw2ali) { _fname_aw2ali = fname_aw2ali; }
 
-    /// Set aw2ali filename
-    void set_aw2ali_filename(const std::string &fname_aw2ali) { _fname_aw2ali = fname_aw2ali; }
+    // /// Set crs filename
+    // void set_crs_filename(const std::string &fname_crs)       { _fname_crs = fname_crs;       }
 
-    /// Set crs filename
-    void set_crs_filename(const std::string &fname_crs)       { _fname_crs = fname_crs;       }
+    // /// Set sn1_rno filename
+    // void set_sn1_rno_filename(const std::string &fname_sn1_rno)   { _fname_sn1_rno = fname_sn1_rno;   }
 
-    /// Set sn1_rno filename
-    void set_sn1_rno_filename(const std::string &fname_sn1_rno)   { _fname_sn1_rno = fname_sn1_rno;   }
+    // /// Set sn1_sn11 filename
+    // void set_sn1_sn11_filename(const std::string &fname_sn1_sn11) { _fname_sn1_sn11 = fname_sn1_sn11; }
 
-    /// Set sn1_sn11 filename
-    void set_sn1_sn11_filename(const std::string &fname_sn1_sn11) { _fname_sn1_sn11 = fname_sn1_sn11; }
-
-    /// Set sn1_ssrb filename
-    void set_sn1_ssrb_filename(const std::string &fname_sn1_ssrb) { _fname_sn1_ssrb = fname_sn1_ssrb; }
+    // /// Set sn1_ssrb filename
+    // void set_sn1_ssrb_filename(const std::string &fname_sn1_ssrb) { _fname_sn1_ssrb = fname_sn1_ssrb; }
 
     /// Set CUDA device ID
     void set_cuda_device_id(const int devid)                 { _devid = char(devid);          }
@@ -93,10 +93,13 @@ public:
     /// Set verbosity level for CUDA output
     void set_verbose(const bool verbose)                      { _verbose = verbose;           }
 
-    /// Read binary file
-    template<typename dataType>
-    static
-    std::vector<dataType> read_binary_file(const std::string &filename);
+    /// Set scanner type
+    void set_scanner_type(const Scanner::Type scanner_type) { _scanner_type = scanner_type; }
+
+    // /// Read binary file
+    // template<typename dataType>
+    // static
+    // std::vector<dataType> read_binary_file(const std::string &filename);
 
     /// Set up
     void set_up();
@@ -137,8 +140,11 @@ public:
     /// Forward project, returns sinogram without gaps. Do some unavoidable const_casting as the wrapped methods don't use const
     void forward_project(std::vector<float> &sino_no_gaps, const std::vector<float> &image) const;
 
+    /// Create a STIR sinogram
+    static shared_ptr<ProjData> create_stir_sino();
+
     /// Listmode to sinogram
-    void lm_to_proj_data() const;
+    shared_ptr<ProjData> lm_to_proj_data(const std::string &lm_binary_file, const int tstart, const int tstop) const;
 
 private:
 
@@ -154,11 +160,11 @@ private:
     /// Convert 1d niftypet proj data index to 3d
     void convert_niftypet_proj_1d_to_3d_idx(unsigned &ang, unsigned &bins, unsigned &sino, const unsigned idx) const;
 
-    /// Get Cnst
-    const Cnst & get_cnst() const { check_set_up(); return *_cnt; }
+//    /// Get Cnst
+//    const Cnst & get_cnst() const { check_set_up(); return *_cnt; }
 
-    /// Get Cnst
-    Cnst & get_cnst() { check_set_up(); return *_cnt; }
+//    /// Get Cnst
+//    Cnst & get_cnst() { check_set_up(); return *_cnt; }
 
     /// Get Naw - number of active bins in 2d sino
     static int get_naw();// { return AW; }
@@ -171,21 +177,34 @@ private:
 
     float _niftypet_to_stir_ratio;
     bool _already_set_up;
-    std::string _fname_li2rng, _fname_li2sn, _fname_li2nos, _fname_s2c, _fname_aw2ali, _fname_crs;
-    std::string _fname_sn1_rno, _fname_sn1_sn11, _fname_sn1_ssrb;
-    std::vector<float> _li2rng;
-    std::vector<short> _li2sn;
-    std::vector<char>  _li2nos;
-    std::vector<short> _s2c;
-    std::vector<int>   _aw2ali;
-    std::vector<float> _crs;
+    // std::string _fname_li2rng, _fname_li2sn, _fname_li2nos, _fname_s2c, _fname_aw2ali, _fname_crs;
+    // std::string _fname_sn1_rno, _fname_sn1_sn11, _fname_sn1_ssrb;
+    // std::vector<float> _li2rng;
+    // std::vector<short> _li2sn;
+    // std::vector<char>  _li2nos;
+    // std::vector<short> _s2c;
+    // std::vector<int>   _aw2ali;
+    // std::vector<float> _crs;
     char _span;
     char _devid;
-    shared_ptr<Cnst> _cnt;
+    shared_ptr<Cnst> _cnt_sptr;
     int _nsinos;
     char _att;
     std::vector<int> _isub;
     bool _verbose;
+    Scanner::Type _scanner_type;
+    shared_ptr<txLUTs> _txlut_sptr;
+    shared_ptr<axialLUT> _axlut_sptr;
+
+
+
+    float *_crs;
+    short *_s2c;
+
+    // Get axLUT
+    float *_li2rng;
+    short *_li2sn;
+    char *_li2nos;
 };
 
 END_NAMESPACE_STIR
