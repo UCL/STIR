@@ -98,7 +98,12 @@ int main(int argc, char **argv)
 	  sprintf(in_filename, "%s_%s_%d_%d.out", 
 		  in_filename_prefix.c_str(), "eff", iter_num, eff_iter_num);
 	  std::ifstream in(in_filename);
-	  in >> efficiencies;
+      
+      for (int j=0;j<efficiencies.size()-1;j++)
+      for (int i=0;i<efficiencies[0].size()-1;i++){
+	  in >> efficiencies[j][i];
+      }
+
 	    if (!in)
 	      {
 		warning("Error reading %s, using all 1s instead\n", in_filename);
