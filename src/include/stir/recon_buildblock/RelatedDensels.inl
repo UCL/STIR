@@ -61,10 +61,10 @@ RelatedDensels::get_basic_densel() const
 
 #if 0
 const ProjDataInfo *
-RelatedDensels:: get_proj_data_info_ptr() const
+RelatedDensels:: get_proj_data_info_sptr() const
 {
  
-  return related_densels[0].get_proj_data_info_ptr();
+  return related_densels[0].get_proj_data_info_sptr();
 }
 #endif
 

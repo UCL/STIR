@@ -40,7 +40,7 @@ START_NAMESPACE_STIR
 template <typename elemT>
 SegmentByView<elemT>::
 SegmentByView(const Array<3,elemT>& v,  
-              const shared_ptr<ProjDataInfo>& pdi_ptr, 
+              const shared_ptr<const ProjDataInfo>& pdi_ptr, 
               const int segment_num)
   :
   Segment<elemT>(pdi_ptr, segment_num), 
@@ -57,7 +57,7 @@ SegmentByView(const Array<3,elemT>& v,
 
 template <typename elemT>
 SegmentByView<elemT>::
-SegmentByView(const shared_ptr<ProjDataInfo>& pdi_ptr,
+SegmentByView(const shared_ptr<const ProjDataInfo>& pdi_ptr,
               const int segment_num)
   :
   Segment<elemT>(pdi_ptr, segment_num),
@@ -71,7 +71,7 @@ SegmentByView(const shared_ptr<ProjDataInfo>& pdi_ptr,
 
 template <typename elemT>
 SegmentByView<elemT>::SegmentByView(const SegmentBySinogram<elemT>& s_s)
-  : Segment<elemT>(s_s.get_proj_data_info_ptr()->create_shared_clone(),
+  : Segment<elemT>(s_s.get_proj_data_info_sptr()->create_shared_clone(),
             s_s.get_segment_num()), 
 	       
     Array<3,elemT> (IndexRange3D(s_s.get_min_view_num(),s_s.get_max_view_num(),
@@ -104,7 +104,7 @@ SegmentByView<elemT>::get_sinogram(int axial_pos_num) const
   for (int v=get_min_view_num(); v<= get_max_view_num(); v++)
     pre_sino[v] = Array<3,elemT>::operator[](v)[axial_pos_num];
   
-  return Sinogram<elemT>(pre_sino, this->proj_data_info_ptr, axial_pos_num, 
+  return Sinogram<elemT>(pre_sino, this->proj_data_info_sptr, axial_pos_num,
 			 this->get_segment_num());
 }
 
@@ -137,7 +137,7 @@ resize(const IndexRange<3>& range)
   // TODO
   assert(range.get_min_index() == 0);
 
-  ProjDataInfo* pdi_ptr = this->proj_data_info_ptr->clone();
+  ProjDataInfo* pdi_ptr = this->proj_data_info_sptr->clone();
 
   const int ax_min = range[0].get_min_index();
   const int ax_max = range[0].get_max_index();
@@ -149,7 +149,7 @@ resize(const IndexRange<3>& range)
   pdi_ptr->set_min_tangential_pos_num(range[0][ax_min].get_min_index());
   pdi_ptr->set_max_tangential_pos_num(range[0][ax_min].get_max_index());
 
-  this->proj_data_info_ptr.reset(pdi_ptr);
+  this->proj_data_info_sptr.reset(pdi_ptr);
 
   Array<3,elemT>::resize(range);
 	

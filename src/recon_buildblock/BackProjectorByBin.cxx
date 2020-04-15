@@ -77,8 +77,8 @@ initialise_keymap()
 
 void
 BackProjectorByBin::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr, 
-       const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr, 
+       const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr)
 {
   _already_set_up = true;
   _proj_data_info_sptr = proj_data_info_sptr->create_shared_clone();
@@ -195,7 +195,7 @@ BackProjectorByBin::back_project(const ProjData& proj_data, int subset_num, int 
     symmetries_sptr(this->get_symmetries_used()->clone());
 
   const std::vector<ViewSegmentNumbers> vs_nums_to_process =
-    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_ptr(), *symmetries_sptr,
+    detail::find_basic_vs_nums_in_subset(*proj_data.get_proj_data_info_sptr(), *symmetries_sptr,
                                          proj_data.get_min_segment_num(), proj_data.get_max_segment_num(),
                                          subset_num, num_subsets);
 

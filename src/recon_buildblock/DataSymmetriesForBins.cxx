@@ -44,7 +44,7 @@ DataSymmetriesForBins::
 {}
 
 DataSymmetriesForBins::
-DataSymmetriesForBins(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
+DataSymmetriesForBins(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
 : proj_data_info_ptr(proj_data_info_ptr)
 {}
 

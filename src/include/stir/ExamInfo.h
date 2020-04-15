@@ -96,7 +96,7 @@ public :
     }
 
   //! Clone and create shared_ptr of the copy
-  shared_ptr<ExamInfo> create_shared_clone()
+  shared_ptr<ExamInfo> create_shared_clone() const
   {
       return shared_ptr<ExamInfo>(new ExamInfo(*this));
   }

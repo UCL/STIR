@@ -131,7 +131,7 @@ public:
     const CartesianCoordinate3D<float>& origin);	
 
     //! Construct DiscretisedDensity from ExamInfo and a given range of indices & origin
-  inline DiscretisedDensity(const shared_ptr < ExamInfo > & exam_info_sptr,
+  inline DiscretisedDensity(const shared_ptr < const ExamInfo > & exam_info_sptr,
                             const IndexRange<num_dimensions>& range,
                             const CartesianCoordinate3D<float>& origin);
 

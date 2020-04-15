@@ -79,7 +79,7 @@ BinNormalisationSinogramRescaling(const string& filename)
 
 Succeeded
 BinNormalisationSinogramRescaling::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr_v)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr_v)
 {
   proj_data_info_sptr =  proj_data_info_sptr_v;
  

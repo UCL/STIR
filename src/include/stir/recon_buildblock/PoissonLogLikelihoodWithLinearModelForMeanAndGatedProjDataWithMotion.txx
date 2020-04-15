@@ -343,7 +343,7 @@ set_normalisation_sptr(const shared_ptr<BinNormalisation>& arg)
 template<typename TargetT>
 Succeeded 
 PoissonLogLikelihoodWithLinearModelForMeanAndGatedProjDataWithMotion<TargetT>::
-set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
+set_up_before_sensitivity(shared_ptr<const TargetT > const& target_sptr)
 {
   /*!todo define in the PoissonLogLikelihoodWithLinearModelForMean class to return Succeeded::yes 
     if (base_type::set_up_before_sensitivity(target_sptr) != Succeeded::yes)
@@ -361,7 +361,7 @@ set_up_before_sensitivity(shared_ptr<TargetT > const& target_sptr)
     }
 
   shared_ptr<ProjDataInfo> proj_data_info_sptr(
-                                               (this->_gated_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_ptr()->clone());
+                                               (this->_gated_proj_data_sptr->get_proj_data_sptr(1))->get_proj_data_info_sptr()->clone());
   proj_data_info_sptr->
     reduce_segment_range(-this->_max_segment_num_to_process,
 			 +this->_max_segment_num_to_process);

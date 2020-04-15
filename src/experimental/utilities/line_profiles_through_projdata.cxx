@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
   const shared_ptr<ProjData> input_projdata_sptr = ProjData::read_from_file(argv[1]);  
  
   const ProjDataInfo * projdata_info_ptr = 
-    (*input_projdata_sptr).get_proj_data_info_ptr();
+    (*input_projdata_sptr).get_proj_data_info_sptr();
 
   string output_profile_string(argv[2]);
 

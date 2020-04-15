@@ -891,7 +891,7 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const ECAT6_Main_header
     ProjDataInfoCylindricalArcCorr const * const
       proj_data_info_cyl_ptr =
       dynamic_cast<ProjDataInfoCylindricalArcCorr const * const>
-      (proj_data.get_proj_data_info_ptr());
+      (proj_data.get_proj_data_info_sptr());
     if (proj_data_info_cyl_ptr==NULL)
     {
       warning("This is not arc-corrected data. Filling in default_bin_size from scanner \n");
@@ -900,7 +900,7 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const ECAT6_Main_header
 #else
       shead.sample_distance= 
 #endif
-        proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_default_bin_size()/10;
+        proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_default_bin_size()/10;
     }
     else
     {
@@ -919,7 +919,7 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const ECAT6_Main_header
     ProjDataInfoCylindrical const * const
       proj_data_info_cyl_ptr =
       dynamic_cast<ProjDataInfoCylindrical const * const>
-      (proj_data.get_proj_data_info_ptr());
+      (proj_data.get_proj_data_info_sptr());
     if (proj_data_info_cyl_ptr!=NULL)
       {
 	// check if spanned data in segment 0
@@ -938,10 +938,10 @@ ProjData_to_ECAT6(FILE *fptr, ProjData const& proj_data, const ECAT6_Main_header
   }
 	      
 
-  if (num_rings != proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings())
+  if (num_rings != proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings())
 {
     warning("Expected %d num_rings from scanner while segment 0 implies %d rings\n",
-            proj_data.get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings(), num_rings);
+            proj_data.get_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings(), num_rings);
 }
   
   short *cti_data= new short[plane_size];
@@ -1019,7 +1019,7 @@ ProjData_to_ECAT6(ProjData const& proj_data, std::string const & cti_name, std::
 		  const bool write_2D_sinograms)
 {  
   ECAT6_Main_header mhead;
-  make_ECAT6_Main_header(mhead, orig_name, *proj_data.get_proj_data_info_ptr());
+  make_ECAT6_Main_header(mhead, orig_name, *proj_data.get_proj_data_info_sptr());
   
   
   FILE *fptr= cti_create(cti_name.c_str(), &mhead);   

@@ -143,7 +143,7 @@ class ScatterEstimationByBin : public ParsingObject
   /*! Calls set_density_image_for_scatter_points_sptr() to make sure all other variables are ok. */
   void set_density_image_for_scatter_points(const std::string& filename);
 
-  void set_template_proj_data_info_sptr(const shared_ptr<ProjDataInfo>&);
+  void set_template_proj_data_info_sptr(const shared_ptr<const ProjDataInfo>&);
   void set_template_proj_data_info(const std::string& filename);
 
   //void set_output_proj_data_sptr(const shared_ptr<ProjData>& new_sptr);

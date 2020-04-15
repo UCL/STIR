@@ -63,7 +63,7 @@ protected:
   std::string orbit;
 public:  
   ProjDataFromStream::StorageOrder storage_order;
-  shared_ptr<ProjDataInfo> data_info_sptr;
+  shared_ptr<const ProjDataInfo> data_info_sptr;
 
 private:
   int num_segments;

@@ -61,7 +61,7 @@ DiscretisedDensityOnCartesianGrid
 template<int num_dimensions, typename elemT>
 DiscretisedDensityOnCartesianGrid<num_dimensions, elemT>::
 DiscretisedDensityOnCartesianGrid
-(const shared_ptr < ExamInfo > & exam_info_sptr,
+(const shared_ptr < const ExamInfo > & exam_info_sptr,
  const IndexRange<num_dimensions>& range_v,
  const CartesianCoordinate3D<float>& origin_v,
  const BasicCoordinate<num_dimensions,float>& grid_spacing_v)

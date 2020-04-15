@@ -82,7 +82,7 @@ BinNormalisationFromML2D()
 
 Succeeded 
 BinNormalisationFromML2D::
-set_up(const shared_ptr<ProjDataInfo>& proj_data_info_ptr)
+set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr)
 {
   norm_factors_ptr= new ProjDataInMemory(proj_data_info_ptr, false /* i.e. do not initialise */);
   const int num_detectors = 

@@ -53,7 +53,7 @@ GeneralisedPrior<TargetT>::set_defaults()
 template <typename TargetT>
 Succeeded 
 GeneralisedPrior<TargetT>::
-set_up(shared_ptr<TargetT> const&)
+set_up(shared_ptr<const TargetT> const&)
 {
   _already_set_up = true;
   return Succeeded::yes;
