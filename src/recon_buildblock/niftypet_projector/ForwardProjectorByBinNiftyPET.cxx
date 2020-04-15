@@ -86,12 +86,6 @@ set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
                 new ProjDataInMemory(this->_density_sptr->get_exam_info_sptr(), proj_data_info_sptr));
 
     // Set up the niftyPET binary helper
-//    _helper.set_li2rng_filename("li2rng.dat"  );
-//    _helper.set_li2sn_filename ("li2sn.dat"   );
-//    _helper.set_li2nos_filename("li2nos.dat"  );
-//    _helper.set_s2c_filename   ("s2c.dat"     );
-//    _helper.set_aw2ali_filename("aw2ali.dat"  );
-//    _helper.set_crs_filename   ( "crss.dat"   );
     _helper.set_scanner_type(proj_data_info_sptr->get_scanner_ptr()->get_type());
     _helper.set_cuda_device_id ( _cuda_device );
     _helper.set_span           ( static_cast<char>(span) );

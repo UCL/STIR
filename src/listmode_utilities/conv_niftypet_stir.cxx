@@ -91,6 +91,25 @@ static std::shared_ptr<VoxelsOnCartesianGrid<float> > create_stir_im()
     return out_im_stir_sptr;
 }
 
+template <class dataType>
+static
+std::vector<dataType>
+read_binary_file(const std::string &data_path)
+{
+    std::ifstream file(data_path, std::ios::in | std::ios::binary);
+
+    // get its size:
+    file.seekg(0, std::ios::end);
+    long file_size = file.tellg();
+    unsigned long num_elements = static_cast<unsigned long>(file_size) / static_cast<unsigned long>(sizeof(dataType));
+    file.seekg(0, std::ios::beg);
+
+    std::vector<dataType> contents(num_elements);
+    file.read(reinterpret_cast<char*>(contents.data()), file_size);
+
+    return contents;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -162,12 +181,6 @@ main(int argc, char **argv)
         // Set up the niftyPET binary helper
         typedef ProjectorByBinNiftyPETHelper Helper;
         Helper helper;
-//        helper.set_li2rng_filename("li2rng.dat"  );
-//        helper.set_li2sn_filename ("li2sn.dat"   );
-//        helper.set_li2nos_filename("li2nos.dat"  );
-//        helper.set_s2c_filename   ("s2c.dat"     );
-//        helper.set_aw2ali_filename("aw2ali.dat"  );
-//        helper.set_crs_filename   ( "crss.dat"   );
         helper.set_cuda_device_id (  cuda_device );
         helper.set_span           (      11      );
         helper.set_att(0);
@@ -178,7 +191,7 @@ main(int argc, char **argv)
         if (is_image) {
             // image NP -> STIR
             if (toSTIR) {
-                std::vector<float> input_im_np = Helper::read_binary_file<float>(input_filename);
+                std::vector<float> input_im_np = read_binary_file<float>(input_filename);
                 shared_ptr<DiscretisedDensity<3,float> > out_im_stir_sptr = create_stir_im();
                 helper.convert_image_niftyPET_to_stir(*out_im_stir_sptr, input_im_np);
                 save_disc_density(*out_im_stir_sptr, output_filename, stir_im_par_fname);
@@ -196,7 +209,7 @@ main(int argc, char **argv)
         else {
             // sinogram NP -> STIR
             if (toSTIR) {
-                std::vector<float> input_sino_np = Helper::read_binary_file<float>(input_filename);
+                std::vector<float> input_sino_np = read_binary_file<float>(input_filename);
                 shared_ptr<ProjData> output_sino_stir_sptr = Helper::create_stir_sino();
                 helper.convert_proj_data_niftyPET_to_stir(*output_sino_stir_sptr, input_sino_np);
                 output_sino_stir_sptr->write_to_file(output_filename);

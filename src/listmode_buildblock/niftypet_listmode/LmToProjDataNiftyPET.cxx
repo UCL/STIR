@@ -52,15 +52,6 @@ void LmToProjDataNiftyPET::process_data()
 {
     // Set up the niftyPET binary helper
     ProjectorByBinNiftyPETHelper helper;
-//    helper.set_li2rng_filename  ( "li2rng.dat"  );
-//    helper.set_li2sn_filename   ( "li2sn.dat"   );
-//    helper.set_li2nos_filename  ( "li2nos.dat"  );
-//    helper.set_s2c_filename     ( "s2c.dat"     );
-//    helper.set_aw2ali_filename  ( "aw2ali.dat"  );
-//    helper.set_crs_filename     ( "crss.dat"    );
-//    helper.set_sn1_rno_filename ( "sn1_rno.dat" );
-//    helper.set_sn1_sn11_filename( "sn1_sn11.dat");
-//    helper.set_sn1_ssrb_filename( "sn1_ssrb.dat");
     helper.set_cuda_device_id   ( _cuda_device  );
     helper.set_span             ( static_cast<char>(_span) );
     helper.set_att(0);
@@ -68,7 +59,8 @@ void LmToProjDataNiftyPET::process_data()
     helper.set_scanner_type(Scanner::Siemens_mMR);
     helper.set_up();
 
-    output_sptr = helper.lm_to_proj_data(_listmode_binary_file, _start_time, _stop_time);
+    helper.lm_to_proj_data(_prompts_sptr, _delayeds_sptr, _randoms_sptr,
+                _listmode_binary_file, _start_time, _stop_time);
 }
 
 END_NAMESPACE_STIR

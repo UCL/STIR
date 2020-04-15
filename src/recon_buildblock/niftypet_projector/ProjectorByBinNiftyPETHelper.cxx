@@ -45,52 +45,19 @@
 #include "recon.h"
 #include "lmproc.h"
 #include "scanner_0.h"
+#include "rnd.h"
 
 
 START_NAMESPACE_STIR
 
-
-
-
-
-
-
-
-// //
-// // DELETE - ONLY TEMPORARY
-// //
-// template<class dataType>
-// void check_with_binary(const dataType *arr, const unsigned numel, const std::string &filename)
-// {
-//     std::cout << "Checking match with filename: " << filename << "..." << std::flush;
-//     std::vector<dataType> arr_py = ProjectorByBinNiftyPETHelper::read_binary_file<dataType>(filename);
-//     if (arr_py.size() != numel)
-//         throw std::runtime_error("\nmismatch size. numel=" + std::to_string(numel) + ", vec.size=" + std::to_string(arr_py.size()) + ", filename=" + filename);
-//     for (unsigned i=0; i<arr_py.size(); ++i)
-//         if (std::abs(arr_py[i]-arr[i])>1e-4)
-//             throw std::runtime_error("\nmismatch. i=" + std::to_string(i) + ", arr=" + std::to_string(arr[i]) + ", arr_py=" + std::to_string(arr_py[i]) + ", filename=" + filename);
-//     std::cout << " Done.\n";
-// }
-// template<class dataType>
-// void check_with_binary(const dataType *arr, const unsigned numel, const std::vector<dataType> &arr_py, const std::string &filename)
-// {
-//     std::cout << "Checking match with filename: " << filename << "..." << std::flush;
-//     if (arr_py.size() != numel)
-//         throw std::runtime_error("\nmismatch size. numel=" + std::to_string(numel) + ", vec.size=" + std::to_string(arr_py.size()) + ", filename=" + filename);
-//     for (unsigned i=0; i<arr_py.size(); ++i)
-//         if (std::abs(arr_py[i]-arr[i])>1e-3)
-//             throw std::runtime_error("\nmismatch. i=" + std::to_string(i) + ", arr=" + std::to_string(arr[i]) + ", arr_py=" + std::to_string(arr_py[i]) + ", filename=" + filename);
-//     std::cout << " Done.\n";
-// }
-
-
-
-
-
-
-
-
-
+ProjectorByBinNiftyPETHelper::~ProjectorByBinNiftyPETHelper()
+{
+    delete [] _crs;
+    delete [] _s2c;
+    delete [] _li2rng;
+    delete [] _li2sn;
+    delete [] _li2nos;
+}
 
 static void delete_axialLUT(axialLUT *axlut_ptr)
 {
@@ -103,61 +70,6 @@ static void delete_axialLUT(axialLUT *axlut_ptr)
     delete [] axlut_ptr->sn1_ssrb;
     delete [] axlut_ptr->sn1_sn11no;
 }
-
-
-
-
-
-
-
-
-
-template <class dataType>
-std::vector<dataType>
-ProjectorByBinNiftyPETHelper::
-read_binary_file(const std::string &data_path)
-{
-    std::ifstream file(data_path, std::ios::in | std::ios::binary);
-
-    // get its size:
-    file.seekg(0, std::ios::end);
-    long file_size = file.tellg();
-    unsigned long num_elements = static_cast<unsigned long>(file_size) / static_cast<unsigned long>(sizeof(dataType));
-    file.seekg(0, std::ios::beg);
-
-    std::vector<dataType> contents(num_elements);
-    file.read(reinterpret_cast<char*>(contents.data()), file_size);
-
-    return contents;
-}
-
-
-
-
-
-
- /// DELETE
- template <class dataType>
- static
- std::vector<dataType>
- read_binary_file_in_examples(const std::string &file_name)
- {
-     const char* stir_path = std::getenv("STIR_PATH");
-     if (!stir_path)
-         throw std::runtime_error("STIR_PATH not defined, cannot find data");
-
-     std::string data_path = stir_path;
-     data_path += "/examples/niftypet_mMR_params/" + file_name;
-     return ProjectorByBinNiftyPETHelper::read_binary_file<dataType>(data_path);
- }
-
-
-
-
-
-
-
-
 
 static
 shared_ptr<Cnst> get_cnst(const Scanner &scanner, const bool cuda_verbose, const char cuda_device, const char span)
@@ -308,7 +220,7 @@ static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, float *&li2rng, sho
                 continue;
             int ssp = r0+r1; // segment sino position (axially: 0-126)
             int rdd = r1-r0;
-            int jseg;
+            int jseg = -1;
             for (unsigned i=0; i<rd.size(); ++i)
                 if (rd2sg[to_1d_idx(rd.size(),2,i,0)] == rdd)
                     jseg = rd2sg[to_1d_idx(rd.size(),2,i,1)];
@@ -603,43 +515,6 @@ set_up()
     // Get axLUT
     get_axLUT_sptr(_axlut_sptr, _li2rng, _li2sn, _li2nos, *_cnt_sptr);
 
-
-//     // Read binaries
-//     if (_fname_li2rng.size()     == 0 ||
-//             _fname_li2sn.size()  == 0 ||
-//             _fname_li2nos.size() == 0 ||
-//             _fname_s2c.size()    == 0 ||
-//             _fname_aw2ali.size() == 0 ||
-//             _fname_crs.size()    == 0)
-//         throw std::runtime_error("ProjectorByBinNiftyPETHelper::set_up() "
-//                                  "not all filenames have been set.");
-
-    //  _li2rng   = read_binary_file_in_examples<float>(_fname_li2rng);
-    //  _li2sn    = read_binary_file_in_examples<short>(_fname_li2sn );
-    //  _li2nos   = read_binary_file_in_examples<char> (_fname_li2nos);
-    //  _s2c      = read_binary_file_in_examples<short>(_fname_s2c   );
-    //  _aw2ali   = read_binary_file_in_examples<int>  (_fname_aw2ali);
-    //  _crs      = read_binary_file_in_examples<float>(_fname_crs   );
-    //  std::vector<short> _sn1_rno   = read_binary_file_in_examples<short>(_fname_sn1_rno );
-    //  std::vector<short> _sn1_sn11  = read_binary_file_in_examples<short>(_fname_sn1_sn11);
-    //  std::vector<short> _sn1_ssrb  = read_binary_file_in_examples<short>(_fname_sn1_ssrb);
-
-    // check_with_binary(li2rng, _axlut_sptr->Nli2rno[0]*2, _li2rng, "li2rng");
-    // check_with_binary(li2sn, _axlut_sptr->Nli2rno[0]*2, _li2sn, "_li2sn");
-    // check_with_binary(li2nos, _axlut_sptr->Nli2rno[0], _li2nos, "_li2nos");
-    // check_with_binary(s2c, _txlut_sptr->naw*2, _s2c, "s2c");
-    // check_with_binary(_txlut_sptr->aw2ali, _txlut_sptr->naw, _aw2ali, "_aw2ali");
-    // check_with_binary(crs, _cnt_sptr->NCRS*4, _crs, "_crs");
-    // check_with_binary(_axlut_sptr->sn1_rno, 4084*2, _sn1_rno, "_sn1_rno");
-    // check_with_binary(_axlut_sptr->sn1_sn11, 4084, _sn1_sn11, "_sn1_sn11");
-    // check_with_binary(_axlut_sptr->sn1_ssrb, 4084, _sn1_ssrb, "_sn1_ssrb");
-
-    // std::cout <<"\ncool\n";
-    // delete [] li2rng;
-    // delete [] li2sn;
-    // delete [] li2nos;
-    // delete [] s2c;
-
     switch(_cnt_sptr->SPN){
         case 11:
             _nsinos = _cnt_sptr->NSN11; break;
@@ -816,9 +691,9 @@ back_project(std::vector<float> &image, const std::vector<float> &sino_no_gaps) 
              _crs,
              const_cast<std::vector<int>&>(_isub).data(),
              int(_isub.size()),
-             this->get_naw(),
-             this->get_n0crs(),
-             this->get_n1crs(),
+             AW,
+             4, // n0crs
+             nCRS,
              *_cnt_sptr);
 
     // Permute the data (as this is done on the NiftyPET python side after back projection
@@ -847,84 +722,21 @@ forward_project(std::vector<float> &sino_no_gaps, const std::vector<float> &imag
     if (_verbose)
         getMemUse();
 
-    std::vector<float> li2rng = read_binary_file_in_examples<float>("li2rng.dat");
-    std::vector<short> li2sn = read_binary_file_in_examples<short>("li2sn.dat");
-    std::vector<char> li2nos = read_binary_file_in_examples<char>("li2nos.dat");
-    std::vector<short> s2c = read_binary_file_in_examples<short>("s2c.dat");
-    std::vector<int> aw2ali = read_binary_file_in_examples<int>("aw2ali.dat");
-    std::vector<float> crs = read_binary_file_in_examples<float>("crss.dat");
-
-
-    // Set up cnst - backwards engineered from def.h, scanner.h and resources.py
-    Cnst *_cnt = new Cnst;
-    _cnt->SPN      = _span;
-    _cnt->RNG_STRT = 0;
-    _cnt->RNG_END  = NRINGS;
-    _cnt->VERBOSE  = true;
-    _cnt->DEVID    = _devid;
-    _cnt->NSN11    = NSINOS11;
-    _cnt->NSEG0    = SEG0;
-    _cnt->NCRS     = nCRS;
-    _cnt->OFFGAP   = 1;
-    _cnt->TGAP     = 9;
-    _cnt->A        = NSANGLES;
-    _cnt->W        = NSBINS;
-    _cnt->NCRSR    = nCRSR;
-    _cnt->B        = NBUCKTS;
-
-    _cnt->MRD =  mxRD;
-    _cnt->ALPHA =  aLPHA;
-    _cnt->AXR =  SZ_RING;
-    _cnt->BTP =  0;
-    _cnt->BTPRT =  1.0;
-    _cnt->COSUPSMX =  0.725f;
-    _cnt->COSSTP = (1-_cnt->COSUPSMX)/(255);
-    _cnt->ETHRLD =  0.05f;
-    _cnt->NRNG =  NRINGS;
-    _cnt->ITOFBIND =  0.08552925517901334f;
-    _cnt->NSN1 =  NSINOS;
-    _cnt->NSN64 =  4096;
-    _cnt->NSRNG =  8;
-    _cnt->RE =  33.47f;
-    _cnt->TOFBIND =  11.691905862f;
-    _cnt->TOFBINN =  1;
-    _cnt->TOFBINS =  3.9e-10f;
-
-
     gpu_fprj(sino_no_gaps.data(),
              permuted_image.data(),
-             const_cast<std::vector<float>&>(li2rng).data(),
-             const_cast<std::vector<short>&>(li2sn).data(),
-             const_cast<std::vector<char >&>(li2nos).data(),
-             const_cast<std::vector<short>&>(s2c).data(),
-             const_cast<std::vector<int  >&>(aw2ali).data(),
-             const_cast<std::vector<float>&>(crs).data(),
+             _li2rng,
+             _li2sn,
+             _li2nos,
+             _s2c,
+             _txlut_sptr->aw2ali,
+             _crs,
              const_cast<std::vector<int>&>(_isub).data(),
              int(_isub.size()),
-             this->get_naw(),
-             this->get_n0crs(),
-             this->get_n1crs(),
-             *_cnt,
+             AW,
+             4, // n0crs
+             nCRS,
+             *_cnt_sptr,
              _att);
-
-    delete [] _cnt;
-
-
-//    gpu_fprj(sino_no_gaps.data(),
-//             permuted_image.data(),
-//             _li2rng,
-//             _li2sn,
-//             _li2nos,
-//             _s2c,
-//             _txlut_sptr->aw2ali,
-//             _crs,
-//             const_cast<std::vector<int>&>(_isub).data(),
-//             int(_isub.size()),
-//             this->get_naw(),
-//             this->get_n0crs(),
-//             this->get_n1crs(),
-//             *_cnt_sptr,
-//             _att);
 
     // Scale to account for niftypet-to-stir ratio
     for (unsigned i=0; i<sino_no_gaps.size(); ++i)
@@ -948,14 +760,15 @@ ProjectorByBinNiftyPETHelper::create_stir_sino()
     return pd_sptr;
 }
 
-shared_ptr<ProjData>
+void
 ProjectorByBinNiftyPETHelper::
-lm_to_proj_data(const std::string &lm_binary_file, const int tstart, const int tstop) const
+lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delayeds_sptr, shared_ptr<ProjData> &randoms_sptr,
+                const std::string &lm_binary_file, const int tstart, const int tstop) const
 {
     check_set_up();
     
     // Get listmode info
-    char *flm = new char[lm_binary_file.length() + 1];
+    char *flm = create_heap_array<char>(lm_binary_file.length() + 1);
     strcpy(flm, lm_binary_file.c_str());
     getLMinfo(flm, *_cnt_sptr);
 
@@ -990,16 +803,16 @@ lm_to_proj_data(const std::string &lm_binary_file, const int tstart, const int t
     // tot   | unsigned int       |            | gets set inside lmproc           |
     const unsigned int num_sino_elements = _nsinos * _cnt_sptr->A * _cnt_sptr->W;
     hstout dicout; 
-    dicout.snv = new unsigned int[tn * _cnt_sptr->NSEG0 * _cnt_sptr->W];
-    dicout.hcp = new unsigned int[nitag];
-    dicout.hcd = new unsigned int[nitag];
-    dicout.fan = new unsigned int[nfrm * _cnt_sptr->NRNG * _cnt_sptr->NCRS];
-    dicout.bck = new unsigned int[2 * nitag * _cnt_sptr->B];
-    dicout.mss = new float       [nitag];
-    dicout.ssr = new unsigned int[_cnt_sptr->NSEG0 * _cnt_sptr->A * _cnt_sptr->W];
+    dicout.snv = create_heap_array<unsigned int>(tn * _cnt_sptr->NSEG0 * _cnt_sptr->W);
+    dicout.hcp = create_heap_array<unsigned int>(nitag);
+    dicout.hcd = create_heap_array<unsigned int>(nitag);
+    dicout.fan = create_heap_array<unsigned int>(nfrm * _cnt_sptr->NRNG * _cnt_sptr->NCRS);
+    dicout.bck = create_heap_array<unsigned int>(2 * nitag * _cnt_sptr->B);
+    dicout.mss = create_heap_array<float>       (nitag);
+    dicout.ssr = create_heap_array<unsigned int>(_cnt_sptr->NSEG0 * _cnt_sptr->A * _cnt_sptr->W);
     if (nfrm == 1)  {
-        dicout.psn =  new unsigned int[nfrm * num_sino_elements];
-        dicout.dsn =  new unsigned int[nfrm * num_sino_elements];
+        dicout.psn =  create_heap_array<unsigned int>(nfrm * num_sino_elements);
+        dicout.dsn =  create_heap_array<unsigned int>(nfrm * num_sino_elements);
     }
     else
         throw std::runtime_error("ProjectorByBinNiftyPETHelper::lm_to_proj_data: If nfrm>1, "
@@ -1016,13 +829,38 @@ lm_to_proj_data(const std::string &lm_binary_file, const int tstart, const int t
            *_axlut_sptr, // axialLUT (struct)
            *_cnt_sptr); // Cnst (struct)
 
-    // Convert to STIR sinogram
+    // Convert prompts and delayeds to STIR sinogram
     const unsigned int *psn_int = (const unsigned int*)dicout.psn;
-    std::vector<float> np_sino(num_sino_elements);
-    for (unsigned i=0; i<num_sino_elements; ++i)
-        np_sino[i] = float(psn_int[i]);
-    shared_ptr<ProjData> stir_sino_sptr = create_stir_sino();
-    convert_proj_data_niftyPET_to_stir(*stir_sino_sptr, np_sino);
+    const unsigned int *dsn_int = (const unsigned int*)dicout.dsn;
+    std::vector<float> np_prompts = create_niftyPET_sinogram_with_gaps();
+    std::vector<float> np_delayeds = create_niftyPET_sinogram_with_gaps();
+    for (unsigned i=0; i<num_sino_elements; ++i) {
+        np_prompts[i] = float(psn_int[i]);
+        np_delayeds[i] = float(dsn_int[i]);
+    }
+    prompts_sptr = create_stir_sino();
+    delayeds_sptr = create_stir_sino();
+    convert_proj_data_niftyPET_to_stir(*prompts_sptr, np_prompts);
+    convert_proj_data_niftyPET_to_stir(*delayeds_sptr, np_delayeds);
+
+    // estimated crystal map of singles
+    // cmap = np.zeros((Cnt['NCRS'], Cnt['NRNG']), dtype=np.float32)
+    std::vector<float> cmap(_cnt_sptr->NCRS*_cnt_sptr->NRNG, 0);
+
+    // Estiamte randoms from delayeds
+    std::vector<float> np_randoms = create_niftyPET_sinogram_with_gaps();
+    gpu_randoms(np_randoms.data(),     // float *rsn
+                cmap.data(),           // float *cmap,
+                dicout.fan,            // unsigned int * fansums,
+                *_txlut_sptr,          // txLUTs txlut,
+                _axlut_sptr->sn1_rno,  // short *sn1_rno,
+                _axlut_sptr->sn1_sn11, // short *sn1_sn11,
+                *_cnt_sptr             // const Cnst Cnt)
+                );
+
+
+    randoms_sptr = create_stir_sino();
+    convert_proj_data_niftyPET_to_stir(*randoms_sptr, np_randoms);
 
     // Clear up
     delete [] flm;
@@ -1040,8 +878,6 @@ lm_to_proj_data(const std::string &lm_binary_file, const int tstart, const int t
     else
         throw std::runtime_error("ProjectorByBinNiftyPETHelper::lm_to_proj_data: If nfrm>1, "
                                   "need to cast before deleting as is stored as void*.");
-
-    return stir_sino_sptr;
 }
 
 void check_im_sizes(const int stir_dim[3], const int np_dim[3])
@@ -1298,27 +1134,6 @@ convert_proj_data_niftyPET_to_stir(ProjData &stir, const std::vector<float> &np_
         }
         stir.set_sinogram(sino);
     }
-}
-
-int
-ProjectorByBinNiftyPETHelper::
-get_naw()
-{
-    return AW;
-}
-
-int
-ProjectorByBinNiftyPETHelper::
-get_n0crs()
-{
-    return 4;
-}
-
-int
-ProjectorByBinNiftyPETHelper::
-get_n1crs()
-{
-    return nCRS;
 }
 
 END_NAMESPACE_STIR

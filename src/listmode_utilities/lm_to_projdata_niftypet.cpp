@@ -30,7 +30,7 @@ USING_NAMESPACE_STIR
 
 static void print_usage_and_exit( const char * const program_name, const int exit_status)
 {
-    std::cerr << "\n\nUsage : " << program_name << " [-h|--help] output_filename listmode_binary_file tstart tstop [--cuda_device <val>]\n\n";
+    std::cerr << "\n\nUsage : " << program_name << " [-h|--help] listmode_binary_file tstart tstop [-p|--prompts <filename>] [-d|--delayeds <filename>] [-r|--randoms <filename>] [--cuda_device <val>]\n\n";
     exit(exit_status);
 }
 
@@ -45,32 +45,49 @@ int main(int argc, char * argv[])
                 print_usage_and_exit(program_name, EXIT_SUCCESS);
 
         // Check for all compulsory arguments
-        if (argc<5)
+        if (argc<4)
             print_usage_and_exit(program_name, EXIT_FAILURE);
 
         // Get filenames
-        const std::string output_filename = argv[1];
-        const std::string input_filename  = argv[2];
-        const int tstart = std::atoi(argv[3]);
-        const int tstop = std::atoi(argv[4]);
+        const std::string input_filename  = argv[1];
+        const int tstart = std::atoi(argv[2]);
+        const int tstop = std::atoi(argv[3]);
 
         // skip past compulsory arguments
-        argc-=5;
-        argv+=5;
+        argc-=4;
+        argv+=4;
 
         // Set default value for optional arguments
+        std::string p_filename, d_filename, r_filename;
         char cuda_device(0);
 
         // Loop over remaining input
         while (argc>0 && argv[0][0]=='-') {
-            if (strcmp(argv[0], "--cuda_device")==0) {
-            cuda_device = std::atoi(argv[1]);
-                argc-=1; argv+=1;
+
+            if (strcmp(argv[0], "-p")==0 || strcmp(argv[0], "--prompts")==0) {
+                p_filename = argv[1];
+                argc-=2; argv+=2;
+            }
+            else if (strcmp(argv[0], "-d")==0 || strcmp(argv[0], "--delayeds")==0) {
+                d_filename = argv[1];
+                argc-=2; argv+=2;
+            }
+            else if (strcmp(argv[0], "-r")==0 || strcmp(argv[0], "--randoms")==0) {
+                r_filename = argv[1];
+                argc-=2; argv+=2;
+            }
+            else if (strcmp(argv[0], "--cuda_device")==0) {
+                cuda_device = std::atoi(argv[1]);
+                argc-=2; argv+=2;
             }
             else {
                 std::cerr << "Unknown option '" << argv[0] <<"'\n";
                 print_usage_and_exit(program_name, EXIT_FAILURE);
             }
+        }
+        if (p_filename.empty() && d_filename.empty() && r_filename.empty()) {
+            std::cerr << "At least one output filename required.\n";
+            print_usage_and_exit(program_name, EXIT_FAILURE);
         }
 
         LmToProjDataNiftyPET lmNP;
@@ -80,8 +97,19 @@ int main(int argc, char * argv[])
         lmNP.set_stop_time(tstop);
         lmNP.process_data();
 
-        // Save output
-        lmNP.get_output()->write_to_file(output_filename);
+        // Save outputs
+        if (!p_filename.empty()) {
+            std::cout << "\n saving prompts sinogram to " << p_filename << "\n";
+            lmNP.get_prompts_sptr()->write_to_file(p_filename);
+        }
+        if (!d_filename.empty()) {
+            std::cout << "\n saving delayeds sinogram to " << d_filename << "\n";
+            lmNP.get_delayeds_sptr()->write_to_file(d_filename);
+        }
+        if (!r_filename.empty()) {
+            std::cout << "\n saving randoms sinogram to " << r_filename << "\n";
+            lmNP.get_randoms_sptr()->write_to_file(r_filename);
+        }
     }
 
     // If there was an error

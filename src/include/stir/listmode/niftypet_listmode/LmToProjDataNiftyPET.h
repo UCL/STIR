@@ -77,9 +77,17 @@ public:
     /// This function does the actual work
     virtual void process_data();
 
-    /// Get output
-    shared_ptr<ProjData> get_output() const
-    { return output_sptr; }
+    /// Get prompts
+    shared_ptr<ProjData> get_prompts_sptr() const
+    { return _prompts_sptr; }
+
+    /// Get delayeds
+    shared_ptr<ProjData> get_delayeds_sptr() const
+    { return _delayeds_sptr; }
+
+    /// Get randoms
+    shared_ptr<ProjData> get_randoms_sptr() const
+    { return _randoms_sptr; }
 
 private:
 
@@ -91,7 +99,9 @@ private:
     int _cuda_verbosity;
     std::string _listmode_binary_file;
     int _start_time, _stop_time;
-    shared_ptr<ProjData> output_sptr;
+    shared_ptr<ProjData> _prompts_sptr;
+    shared_ptr<ProjData> _delayeds_sptr;
+    shared_ptr<ProjData> _randoms_sptr;
 };
 
 END_NAMESPACE_STIR
