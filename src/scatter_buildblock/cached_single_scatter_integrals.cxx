@@ -105,7 +105,7 @@ cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatte
 # if _OPENMP >=201012
 #  pragma omp atomic read
 # else
-#  pragma omp critical(STIRSCATTERESTIMATIONREADCACHE)
+#  pragma omp critical(STIRSCATTERESTIMATIONCACHE)
   {
 # endif
 #endif
@@ -130,7 +130,7 @@ cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatte
 # if _OPENMP >=201012
 #  pragma omp atomic write
 # else
-#  pragma omp critical(STIRSCATTERESTIMATIONWRITECACHE)
+#  pragma omp critical(STIRSCATTERESTIMATIONCACHE)
         {
 # endif
 #endif
