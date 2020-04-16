@@ -39,6 +39,10 @@ unsigned
 ScatterSimulation::
 find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord) const
 {
+#ifndef NDEBUG
+  if (!this->_already_set_up)
+        error("ScatterSimulation::find_detectors: need to call set_up() first");
+#endif
   unsigned int ret_value = 0;
 #pragma omp critical(SCATTERESTIMATIONFINDDETECTIONPOINTS)
   {
@@ -66,6 +70,10 @@ void
 ScatterSimulation::
 find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const
 {
+#ifndef NDEBUG
+  if (!this->_already_set_up)
+        error("ScatterSimulation::find_detectors: need to call set_up() first");
+#endif
   CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
   this->proj_data_info_cyl_noarc_cor_sptr->
     find_cartesian_coordinates_of_detection(
@@ -99,6 +107,11 @@ float
 ScatterSimulation::
 detection_efficiency(const float energy) const
 {
+#ifndef NDEBUG
+  if (!this->_already_set_up)
+        error("ScatterSimulation::find_detectors: need to call set_up() first");
+#endif
+
   // factor 2.35482 is used to convert FWHM to sigma
   const float sigma_times_sqrt2= 
     sqrt(2.*energy*this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_reference_energy())*
@@ -136,6 +149,11 @@ ScatterSimulation::
 detection_efficiency_no_scatter(const unsigned det_num_A, 
                                 const unsigned det_num_B) const
 {
+#ifndef NDEBUG
+  if (!this->_already_set_up)
+        error("ScatterSimulation::find_detectors: need to call set_up() first");
+#endif
+
   // TODO: slightly dangerous to use a static here
   // it would give wrong results when the energy_thresholds are changed...
   static const float detector_efficiency_no_scatter =

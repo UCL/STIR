@@ -98,32 +98,6 @@ process_data()
             this->proj_data_info_cyl_noarc_cor_sptr->get_num_views() * axial_bins *
             this->proj_data_info_cyl_noarc_cor_sptr->get_num_tangential_poss();
     /* ////////////////// end SCATTER ESTIMATION TIME //////////////// */
-
-    /* Currently, proj_data_info.find_cartesian_coordinates_of_detection() returns
-     coordinate in a coordinate system where z=0 in the first ring of the scanner.
-     We want to shift this to a coordinate system where z=0 in the middle
-     of the scanner.
-     We can use get_m() as that uses the 'middle of the scanner' system.
-     (sorry)
-  */
-#ifndef NDEBUG
-    {
-        CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
-        // check above statement
-        this->proj_data_info_cyl_noarc_cor_sptr->find_cartesian_coordinates_of_detection(
-                    detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
-        assert(detector_coord_A.z() == 0);
-        assert(detector_coord_B.z() == 0);
-        // check that get_m refers to the middle of the scanner
-        const float m_first =
-                this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, this->proj_data_info_cyl_noarc_cor_sptr->get_min_axial_pos_num(0), 0));
-        const float m_last =
-                this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, this->proj_data_info_cyl_noarc_cor_sptr->get_max_axial_pos_num(0), 0));
-        assert(fabs(m_last + m_first) < m_last * 10E-4);
-    }
-#endif
-    this->shift_detector_coordinates_to_origin =
-            CartesianCoordinate3D<float>(this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
     float total_scatter = 0 ;
 
     info("ScatterSimulator: Initialization finished ...");
@@ -370,10 +344,39 @@ set_up()
 //        info("ScatterSimulation: output projection data created.");
 //    }
 
+
+    // Note: horrible shift used for detection_points_vector
+    /* Currently, proj_data_info.find_cartesian_coordinates_of_detection() returns
+     coordinate in a coordinate system where z=0 in the first ring of the scanner.
+     We want to shift this to a coordinate system where z=0 in the middle
+     of the scanner.
+     We can use get_m() as that uses the 'middle of the scanner' system.
+     (sorry)
+  */
+#ifndef NDEBUG
+    {
+        CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
+        // check above statement
+        this->proj_data_info_cyl_noarc_cor_sptr->find_cartesian_coordinates_of_detection(
+                    detector_coord_A, detector_coord_B, Bin(0, 0, 0, 0));
+        assert(detector_coord_A.z() == 0);
+        assert(detector_coord_B.z() == 0);
+        // check that get_m refers to the middle of the scanner
+        const float m_first =
+                this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, this->proj_data_info_cyl_noarc_cor_sptr->get_min_axial_pos_num(0), 0));
+        const float m_last =
+                this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, this->proj_data_info_cyl_noarc_cor_sptr->get_max_axial_pos_num(0), 0));
+        assert(fabs(m_last + m_first) < m_last * 10E-4);
+    }
+#endif
+    this->shift_detector_coordinates_to_origin =
+            CartesianCoordinate3D<float>(this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
+
     this->initialise_cache_for_scattpoint_det_integrals_over_attenuation();
     this->initialise_cache_for_scattpoint_det_integrals_over_activity();
 
     this->_already_set_up = true;
+
     return Succeeded::yes;
 }
 

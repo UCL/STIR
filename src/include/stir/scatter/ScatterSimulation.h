@@ -219,13 +219,6 @@ public:
     total_Compton_cross_section_relative_to_511keV(const float energy);
     //@}
 
-    //! find scatter points
-    /*! This function sets scatt_points_vector and scatter_volume. It will also
-        remove any cached integrals as they would be incorrect otherwise.
-    */
-    void
-    sample_scatter_points();
-
     virtual Succeeded set_up();
 
     //! Output the log of the process.
@@ -263,6 +256,12 @@ protected:
 
     float scatter_volume;
 
+    //! find scatter points
+    /*! This function sets scatt_points_vector and scatter_volume. It will also
+        remove any cached integrals as they would be incorrect otherwise.
+    */
+    void
+    sample_scatter_points();
 
     //! remove cached attenuation integrals
     /*! should be used before recalculating scatter for a new attenuation image or
