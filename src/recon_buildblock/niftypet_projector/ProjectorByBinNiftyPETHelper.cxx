@@ -47,7 +47,6 @@
 #include "scanner_0.h"
 #include "rnd.h"
 
-
 START_NAMESPACE_STIR
 
 ProjectorByBinNiftyPETHelper::~ProjectorByBinNiftyPETHelper()
@@ -69,6 +68,21 @@ static void delete_axialLUT(axialLUT *axlut_ptr)
     delete [] axlut_ptr->sn1_sn11;
     delete [] axlut_ptr->sn1_ssrb;
     delete [] axlut_ptr->sn1_sn11no;
+}
+
+static void delete_txLUT(txLUTs *txluts_ptr)
+{
+    if (!txluts_ptr) return;
+    free(txluts_ptr->s2cF);
+    free(txluts_ptr->c2sF);
+    free(txluts_ptr->cr2s);
+    free(txluts_ptr->s2c);
+    free(txluts_ptr->s2cr);
+    free(txluts_ptr->aw2sn);
+    free(txluts_ptr->aw2ali);
+    free(txluts_ptr->crsr);
+    free(txluts_ptr->msino);
+    free(txluts_ptr->cij);
 }
 
 static
@@ -436,7 +450,7 @@ static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, float *&li2rng, sho
 static
 void get_txLUT_sptr(shared_ptr<txLUTs> &txlut_sptr, float *&crs, short *&s2c, Cnst &cnt)
 {
-    txlut_sptr = MAKE_SHARED<txLUTs>();
+    txlut_sptr = shared_ptr<txLUTs>(new txLUTs, delete_txLUT);
     *txlut_sptr = get_txlut(cnt);
 
     s2c = create_heap_array<short>(txlut_sptr->naw*2);
@@ -771,6 +785,11 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
     char *flm = create_heap_array<char>(lm_binary_file.length() + 1);
     strcpy(flm, lm_binary_file.c_str());
     getLMinfo(flm, *_cnt_sptr);
+    free(lmprop.atag);
+    free(lmprop.btag);
+    free(lmprop.ele4chnk);
+    free(lmprop.ele4thrd);
+    free(lmprop.t2dfrm);
 
     // preallocate all the output arrays - in def.h VTIME=2 (), MXNITAG=5400 (max time 1h30)
     const int nitag = lmprop.nitag;
@@ -811,8 +830,8 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
     dicout.mss = create_heap_array<float>       (nitag);
     dicout.ssr = create_heap_array<unsigned int>(_cnt_sptr->NSEG0 * _cnt_sptr->A * _cnt_sptr->W);
     if (nfrm == 1)  {
-        dicout.psn =  create_heap_array<unsigned int>(nfrm * num_sino_elements);
-        dicout.dsn =  create_heap_array<unsigned int>(nfrm * num_sino_elements);
+        dicout.psn =  create_heap_array<unsigned short>(nfrm * num_sino_elements);
+        dicout.dsn =  create_heap_array<unsigned short>(nfrm * num_sino_elements);
     }
     else
         throw std::runtime_error("ProjectorByBinNiftyPETHelper::lm_to_proj_data: If nfrm>1, "
@@ -830,8 +849,8 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
            *_cnt_sptr); // Cnst (struct)
 
     // Convert prompts and delayeds to STIR sinogram
-    const unsigned int *psn_int = (const unsigned int*)dicout.psn;
-    const unsigned int *dsn_int = (const unsigned int*)dicout.dsn;
+    const unsigned short *psn_int = (const unsigned short*)dicout.psn;
+    const unsigned short *dsn_int = (const unsigned short*)dicout.dsn;
     std::vector<float> np_prompts = create_niftyPET_sinogram_with_gaps();
     std::vector<float> np_delayeds = create_niftyPET_sinogram_with_gaps();
     for (unsigned i=0; i<num_sino_elements; ++i) {
@@ -857,7 +876,6 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
                 _axlut_sptr->sn1_sn11, // short *sn1_sn11,
                 *_cnt_sptr             // const Cnst Cnt)
                 );
-
 
     randoms_sptr = create_stir_sino();
     convert_proj_data_niftyPET_to_stir(*randoms_sptr, np_randoms);

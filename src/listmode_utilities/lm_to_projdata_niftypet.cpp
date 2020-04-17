@@ -30,7 +30,7 @@ USING_NAMESPACE_STIR
 
 static void print_usage_and_exit( const char * const program_name, const int exit_status)
 {
-    std::cerr << "\n\nUsage : " << program_name << " [-h|--help] listmode_binary_file tstart tstop [-p|--prompts <filename>] [-d|--delayeds <filename>] [-r|--randoms <filename>] [--cuda_device <val>]\n\n";
+    std::cerr << "\n\nUsage : " << program_name << " [-h|--help] listmode_binary_file tstart tstop [-p|--prompts <filename>] [-d|--delayeds <filename>] [-r|--randoms <filename>] [--cuda_device <val>] [-v|--verbose <val>]\n\n";
     exit(exit_status);
 }
 
@@ -60,6 +60,7 @@ int main(int argc, char * argv[])
         // Set default value for optional arguments
         std::string p_filename, d_filename, r_filename;
         char cuda_device(0);
+        bool verbose(true);
 
         // Loop over remaining input
         while (argc>0 && argv[0][0]=='-') {
@@ -80,6 +81,10 @@ int main(int argc, char * argv[])
                 cuda_device = std::atoi(argv[1]);
                 argc-=2; argv+=2;
             }
+            else if (strcmp(argv[0], "-v")==0 || strcmp(argv[0], "--verbose")==0) {
+                verbose = std::atoi(argv[1]);
+                argc-=2; argv+=2;
+            }
             else {
                 std::cerr << "Unknown option '" << argv[0] <<"'\n";
                 print_usage_and_exit(program_name, EXIT_FAILURE);
@@ -92,6 +97,7 @@ int main(int argc, char * argv[])
 
         LmToProjDataNiftyPET lmNP;
         lmNP.set_cuda_device(cuda_device);
+        lmNP.set_cuda_verbosity(verbose);
         lmNP.set_listmode_binary_file(input_filename);
         lmNP.set_start_time(tstart);
         lmNP.set_stop_time(tstop);

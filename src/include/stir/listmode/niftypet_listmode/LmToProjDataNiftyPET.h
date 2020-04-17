@@ -59,7 +59,7 @@ public:
     { _cuda_device = cuda_device; }
 
     /// Set CUDA verbosity
-    void set_cuda_verbosity(const int cuda_verbosity)
+    void set_cuda_verbosity(const bool cuda_verbosity)
     { _cuda_verbosity = cuda_verbosity; }
 
     /// Set listmode binary file
@@ -96,7 +96,7 @@ private:
 
     int _span;
     char _cuda_device;
-    int _cuda_verbosity;
+    bool _cuda_verbosity;
     std::string _listmode_binary_file;
     int _start_time, _stop_time;
     shared_ptr<ProjData> _prompts_sptr;

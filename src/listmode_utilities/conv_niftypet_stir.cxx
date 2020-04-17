@@ -185,6 +185,7 @@ main(int argc, char **argv)
         helper.set_span           (      11      );
         helper.set_att(0);
         helper.set_verbose(1);
+        helper.set_scanner_type(Scanner::Siemens_mMR);
         helper.set_up();
 
         // if image

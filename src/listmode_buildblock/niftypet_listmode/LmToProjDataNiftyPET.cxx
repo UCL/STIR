@@ -29,7 +29,7 @@
 START_NAMESPACE_STIR
 
 LmToProjDataNiftyPET::LmToProjDataNiftyPET() : 
-    _span(11), _cuda_device(0), _cuda_verbosity(2), _start_time(-1), _stop_time(-1)
+    _span(11), _cuda_device(0), _cuda_verbosity(true), _start_time(-1), _stop_time(-1)
 { }
 
 void LmToProjDataNiftyPET::check_input() const
