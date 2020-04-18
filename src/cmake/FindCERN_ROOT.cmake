@@ -40,23 +40,6 @@ if (NOT CERN_ROOT_LIBRARIES OR NOT CERN_ROOT_INCLUDE_DIRS OR NOT CERN_ROOT_VERSI
             COMMAND ${CERN_ROOT_CONFIG} --libdir
             OUTPUT_VARIABLE CERN_ROOT_LIBRARY_DIR
             OUTPUT_STRIP_TRAILING_WHITESPACE)
-        set(CERN_ROOT_LIBRARY_DIRS ${CERN_ROOT_LIBRARY_DIR})
-        
-        set(_rootlibs Core RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore Thread MultiProc)
-        set(CERN_ROOT_LIBRARIES)
-        foreach(_cpt ${_rootlibs} ${CERN_ROOT_FIND_COMPONENTS})
-          find_library(CERN_ROOT_${_cpt}_LIBRARY ${_cpt} HINTS ${CERN_ROOT_LIBRARY_DIR})
-          if(CERN_ROOT_${_cpt}_LIBRARY)
-            mark_as_advanced(CERN_ROOT_${_cpt}_LIBRARY)
-            list(APPEND CERN_ROOT_LIBRARIES ${CERN_ROOT_${_cpt}_LIBRARY})
-            if(CERN_ROOT_FIND_COMPONENTS)
-              list(REMOVE_ITEM CERN_ROOT_FIND_COMPONENTS ${_cpt})
-            endif()
-          endif()
-        endforeach()
-        if(CERN_ROOT_LIBRARIES)
-          list(REMOVE_DUPLICATES CERN_ROOT_LIBRARIES)
-        endif()
 
 	execute_process(
 	    COMMAND ${CERN_ROOT_CONFIG} --version
@@ -68,25 +51,42 @@ if (NOT CERN_ROOT_LIBRARIES OR NOT CERN_ROOT_INCLUDE_DIRS OR NOT CERN_ROOT_VERSI
         # no root-config
         find_path(CERN_ROOT_INCLUDE_DIR TROOT.h HINTS "${ROOTSYS}"
             DOC "location of ROOT include files")
-        set(CERN_ROOT_INCLUDE_DIRS:PATH "${CERN_ROOT_INCLUDE_DIR}")
+        set(CERN_ROOT_INCLUDE_DIRS "${CERN_ROOT_INCLUDE_DIR}")
         
         find_library(CERN_ROOT_Core_LIBRARY Core HINTS "${ROOTSYS}" "${CERN_ROOT_INCLUDE_DIRS}/.."
             DOC "location of ROOT libraries")
         
         if (CERN_ROOT_Core_LIBRARY)
             get_filename_component(CERN_ROOT_LIBRARIES_DIR "${CERN_ROOT_Core_LIBRARY}" DIRECTORY CACHE)
-            set(CERN_ROOT_LIBRARIES_DIRS:PATH "${CERN_ROOT_LIBRARIES_DIR}")
-            set(CERN_ROOT_LIBRARIES "-L${CERN_ROOT_LIBRARIES_DIRS} -lCore -lCint -lRIO -lNet -lTree")
         endif()
         
         set(version_file ${CERN_ROOT_INCLUDE_DIRS}/RVersion.h)
         if (EXISTS ${version_file})
             file(STRINGS ${version_file} version_line REGEX "define ROOT_RELEASE ")
             if (${version_line} MATCHES ".*ROOT_RELEASE \"\(.+\)\"")
-                set(CERN_ROOT_VERSION:STRING "${CMAKE_MATCH_1}" CACHE DOC "ROOT version")
+                set(CERN_ROOT_VERSION "${CMAKE_MATCH_1}" CACHE DOC "ROOT version")
             endif()
         endif()
     endif()
+
+    set(CERN_ROOT_LIBRARY_DIRS ${CERN_ROOT_LIBRARY_DIR})
+    
+    set(_rootlibs Core RIO Net Hist Graf Graf3d Gpad Tree Rint Postscript Matrix Physics MathCore Thread MultiProc)
+    set(CERN_ROOT_LIBRARIES)
+    foreach(_cpt ${_rootlibs} ${CERN_ROOT_FIND_COMPONENTS})
+      find_library(CERN_ROOT_${_cpt}_LIBRARY ${_cpt} HINTS ${CERN_ROOT_LIBRARY_DIR})
+      if(CERN_ROOT_${_cpt}_LIBRARY)
+        mark_as_advanced(CERN_ROOT_${_cpt}_LIBRARY)
+        list(APPEND CERN_ROOT_LIBRARIES ${CERN_ROOT_${_cpt}_LIBRARY})
+        if(CERN_ROOT_FIND_COMPONENTS)
+          list(REMOVE_ITEM CERN_ROOT_FIND_COMPONENTS ${_cpt})
+        endif()
+      endif()
+    endforeach()
+    if(CERN_ROOT_LIBRARIES)
+      list(REMOVE_DUPLICATES CERN_ROOT_LIBRARIES)
+    endif()
+
 endif()
 
 if (CERN_ROOT_LIBRARIES)
