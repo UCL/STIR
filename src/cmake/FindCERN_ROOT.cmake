@@ -1,29 +1,24 @@
 #
 # Simple (or not) script to find CERN ROOT include dir and libs.
 # @Author Nikos Efthimiou (nikos.efthimiou AT gmail.com)
-# If CERN_ROOT_LIBRARIES_DIRS and CERN_ROOT_INCLUDE_DIRS are set
-# then it will try to include headers from that location and link to
-# the basic libraries that we know that we need.
-# If the variables have not been set then it will try to locate a global
-# installation and it will link to all available libraries.
-# We give priority to local ROOT installations, because the user might
-# prefer to use a specific version, rather than the one installed in the
-# system.
+# @Author Kris Thielemans
+
+# Attempts to use root-config. If that fails, try and find TROOT.h and libCore*
+# Uses the ROOTSYS CMake variable, and then ROOTSYS environment variable
+
+# Defines CERN_ROOT_LIBRARIES_DIRS, CERN_ROOT_INCLUDE_DIRS and CERN_ROOT_VERSION
 
 # This file contains lines from FindROOT.cmake distributed in ROOT 6.08.
 # Therefore, this file is presumably licensed under the LGPL 2.1.
+# New parts Copyright 2016, 2020 University College London
 
-if (CERN_ROOT_LIBRARIES_DIRS AND CERN_ROOT_INCLUDE_DIRS)
-    find_path(CERN_ROOT_INCLUDE_DIRS NAME TROOT.h
-        DOC "location of ROOT include files")
-    message(STATUS "CERN_ROOT_INCLUDE_DIRS:" ${CERN_ROOT_INCLUDE_DIRS})
+if (NOT CERN_ROOT_LIBRARIES OR NOT CERN_ROOT_INCLUDE_DIRS OR NOT CERN_ROOT_VERSION)
 
-    find_library(CERN_ROOT_LIBRARIES_DIRS NAME Core
-        DOC "location of ROOT library")
-
-    set(CERN_ROOT_LIBRARIES "-L${CERN_ROOT_LIBRARIES_DIRS} -lCore -lCint -lRIO -lNet -lTree")
-else()
-    find_program(CERN_ROOT_CONFIG "root-config" )
+    if (NOT DEFINED ROOTSYS)
+        set(ROOTSYS "$ENV{ROOTSYS}")
+    endif()
+    
+    find_program(CERN_ROOT_CONFIG "root-config" HINTS "${ROOTSYS}" )
 
     if (CERN_ROOT_CONFIG)
 
@@ -68,12 +63,35 @@ else()
 	        OUTPUT_VARIABLE CERN_ROOT_VERSION
 		OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    endif(CERN_ROOT_CONFIG)
+    else()
+
+        # no root-config
+        find_path(CERN_ROOT_INCLUDE_DIR TROOT.h HINTS "${ROOTSYS}"
+            DOC "location of ROOT include files")
+        set(CERN_ROOT_INCLUDE_DIRS:PATH "${CERN_ROOT_INCLUDE_DIR}")
+        
+        find_library(CERN_ROOT_Core_LIBRARY Core HINTS "${ROOTSYS}" "${CERN_ROOT_INCLUDE_DIRS}/.."
+            DOC "location of ROOT libraries")
+        
+        if (CERN_ROOT_Core_LIBRARY)
+            get_filename_component(CERN_ROOT_LIBRARIES_DIR "${CERN_ROOT_Core_LIBRARY}" DIRECTORY CACHE)
+            set(CERN_ROOT_LIBRARIES_DIRS:PATH "${CERN_ROOT_LIBRARIES_DIR}")
+            set(CERN_ROOT_LIBRARIES "-L${CERN_ROOT_LIBRARIES_DIRS} -lCore -lCint -lRIO -lNet -lTree")
+        endif()
+        
+        set(version_file ${CERN_ROOT_INCLUDE_DIRS}/RVersion.h)
+        if (EXISTS ${version_file})
+            file(STRINGS ${version_file} version_line REGEX "define ROOT_RELEASE ")
+            if (${version_line} MATCHES ".*ROOT_RELEASE \"\(.+\)\"")
+                set(CERN_ROOT_VERSION:STRING "${CMAKE_MATCH_1}" CACHE DOC "ROOT version")
+            endif()
+        endif()
+    endif()
 endif()
 
 if (CERN_ROOT_LIBRARIES)
-  message(STATUS "AVAILABLE ROOT LIBRARIES:" ${CERN_ROOT_LIBRARIES})
+  message(STATUS "AVAILABLE ROOT LIBRARIES: ${CERN_ROOT_LIBRARIES}")
 endif()
 
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(CERN_ROOT "CERN ROOT not found. If you do have it, add root-config to your path" CERN_ROOT_LIBRARIES CERN_ROOT_INCLUDE_DIRS)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(CERN_ROOT "CERN ROOT not found. If you do have it, add root-config to your path" CERN_ROOT_LIBRARIES CERN_ROOT_INCLUDE_DIRS CERN_ROOT_VERSION)
