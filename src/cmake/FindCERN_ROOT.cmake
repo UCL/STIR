@@ -5,8 +5,10 @@
 
 # Attempts to use root-config. If that fails, try and find TROOT.h and libCore*
 # Uses the ROOTSYS CMake variable, and then ROOTSYS environment variable
-
+#
 # Defines CERN_ROOT_LIBRARIES_DIRS, CERN_ROOT_INCLUDE_DIRS and CERN_ROOT_VERSION
+#
+# Set CERN_ROOT_DEBUG for some extra info
 
 # This file contains lines from FindROOT.cmake distributed in ROOT 6.08.
 # Therefore, this file is presumably licensed under the LGPL 2.1.
@@ -64,7 +66,7 @@ if (NOT CERN_ROOT_LIBRARIES OR NOT CERN_ROOT_INCLUDE_DIRS OR NOT CERN_ROOT_VERSI
         if (EXISTS ${version_file})
             file(STRINGS ${version_file} version_line REGEX "define ROOT_RELEASE ")
             if (${version_line} MATCHES ".*ROOT_RELEASE \"\(.+\)\"")
-                set(CERN_ROOT_VERSION "${CMAKE_MATCH_1}" CACHE DOC "ROOT version")
+                set(CERN_ROOT_VERSION "${CMAKE_MATCH_1}")
             endif()
         endif()
     endif()
@@ -89,8 +91,9 @@ if (NOT CERN_ROOT_LIBRARIES OR NOT CERN_ROOT_INCLUDE_DIRS OR NOT CERN_ROOT_VERSI
 
 endif()
 
-if (CERN_ROOT_LIBRARIES)
+if (CERN_ROOT_DEBUG)
   message(STATUS "AVAILABLE ROOT LIBRARIES: ${CERN_ROOT_LIBRARIES}")
+  message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}")
 endif()
 
 INCLUDE(FindPackageHandleStandardArgs)
