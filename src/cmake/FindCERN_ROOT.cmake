@@ -64,10 +64,15 @@ if (NOT CERN_ROOT_LIBRARIES OR NOT CERN_ROOT_INCLUDE_DIRS OR NOT CERN_ROOT_VERSI
         
         set(version_file ${CERN_ROOT_INCLUDE_DIRS}/RVersion.h)
         if (EXISTS ${version_file})
+            if (CERN_ROOT_DEBUG)
+               message(STATUS "Attempting to get ROOT version from ${version_file}")
+            endif()
             file(STRINGS ${version_file} version_line REGEX "define ROOT_RELEASE ")
             if (${version_line} MATCHES ".*ROOT_RELEASE \"\(.+\)\"")
                 set(CERN_ROOT_VERSION "${CMAKE_MATCH_1}")
             endif()
+        else()
+            message(WARNING "Could not find ${version_file}")
         endif()
     endif()
 
@@ -93,8 +98,7 @@ endif()
 
 if (CERN_ROOT_DEBUG)
   message(STATUS "AVAILABLE ROOT LIBRARIES: ${CERN_ROOT_LIBRARIES}")
-  message(STATUS "ROOT Version: ${CERN_ROOT_VERSION}")
 endif()
 
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(CERN_ROOT "CERN ROOT not found. If you do have it, add root-config to your path" CERN_ROOT_LIBRARIES CERN_ROOT_INCLUDE_DIRS CERN_ROOT_VERSION)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(CERN_ROOT "CERN ROOT not found. If you do have it, set ROOTSYS or add root-config to your path" CERN_ROOT_VERSION CERN_ROOT_LIBRARIES CERN_ROOT_INCLUDE_DIRS)
