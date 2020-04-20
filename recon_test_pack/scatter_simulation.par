@@ -11,7 +11,7 @@ activity image filename := ${ACTIVITY_IMAGE}
 output filename prefix := ${OUTPUT_PREFIX}
 
 attenuation threshold := 0.01 
-random := ${DORANDOM}
+randomly_place_scatter_points := ${DORANDOM}
 use cache := 1
 
 End Scatter Simulation Parameters := 

@@ -69,7 +69,7 @@ sample_scatter_points()
 
   this->scatter_volume = voxel_size[1]*voxel_size[2]*voxel_size[3];
 
-  if(this->random)
+  if(this->randomly_place_scatter_points)
     { // Initialize Pseudo Random Number generator using time  
       srand((unsigned)time( NULL ));
     }
@@ -84,7 +84,7 @@ sample_scatter_points()
           {
             ScatterPoint scatter_point;                                 
             scatter_point.coord = convert_int_to_float(coord);
-            if (random)
+            if (randomly_place_scatter_points)
               scatter_point.coord +=
                 CartesianCoordinate3D<float>(random_point(-.5,.5),
                                              random_point(-.5,.5),

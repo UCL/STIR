@@ -396,7 +396,7 @@ ScatterSimulationTests::test_scatter_simulation()
     sss->set_activity_image_sptr(act_density);
 
     //// sss settings
-    sss->set_random_point(false);
+    sss->set_randomly_place_scatter_points(false);
 
     sss->set_template_proj_data_info(*original_projdata_info);
     sss->downsample_scanner(original_projdata_info->get_scanner_sptr()->get_num_rings(), -1);

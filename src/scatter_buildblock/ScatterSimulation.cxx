@@ -211,7 +211,7 @@ void
 ScatterSimulation::set_defaults()
 {
     this->attenuation_threshold =  0.01f ;
-    this->random = true;
+    this->randomly_place_scatter_points = true;
     this->use_cache = true;
     this->zoom_xy = -1.f;
     this->zoom_z = -1.f;
@@ -234,11 +234,11 @@ ScatterSimulation::
 ask_parameters()
 {
     this->attenuation_threshold = ask_num("attenuation threshold(cm^-1)",0.0f, 5.0f, 0.01f);
-    this->random = ask_num("random points?",0, 1, 1);
+    this->randomly_place_scatter_points = ask_num("random place scatter points?",0, 1, 1);
     this->use_cache =  ask_num(" Use cache?",0, 1, 1);
     this->density_image_filename = ask_string("density image filename", "");
     this->activity_image_filename = ask_string("activity image filename", "");
-    this->density_image_for_scatter_points_filename = ask_string("density image for scatter points filename", "");
+    //this->density_image_for_scatter_points_filename = ask_string("density image for scatter points filename", "");
     this->template_proj_data_filename = ask_string("Scanner ProjData filename", "");
 }
 
@@ -276,7 +276,7 @@ ScatterSimulation::initialise_keymap()
                          &this->output_proj_data_filename);
     this->parser.add_key("downsample scanner",
                          &this->downsample_scanner_bool);
-    this->parser.add_key("random", &this->random);
+    this->parser.add_key("randomly place scatter points", &this->randomly_place_scatter_points);
     this->parser.add_key("use cache", &this->use_cache);
 }
 
@@ -863,9 +863,9 @@ set_attenuation_threshold(const float arg)
 
 void
 ScatterSimulation::
-set_random_point(const bool arg)
+set_randomly_place_scatter_points(const bool arg)
 {
-    random = arg;
+    randomly_place_scatter_points = arg;
 }
 
 void

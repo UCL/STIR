@@ -4,7 +4,7 @@ Scatter Simulation :=
  		
         ;; Minimum mu-value (in 1/cm) for scatter point selection
 		attenuation threshold := 0.01 
-		random := 1 
+		randomly_place_scatter_points := 1
 		use cache := 1
 
 	End Scatter Simulation Parameters := 

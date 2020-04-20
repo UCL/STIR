@@ -171,9 +171,14 @@ public:
     void set_density_image_for_scatter_points(const std::string&);
     //! set the attenuation threshold
     void set_attenuation_threshold(const float);
-    //! The scattering point in the voxel will be chosen randomly, instead
-    //! choosing the centre. This will help avoid some artifacts.
-    void set_random_point(const bool);
+    //! The scattering point in the voxel will be chosen randomly, instead of choosing the centre.
+    /*! This was first recommended by Watson. It is recommended to leave this on, as otherwise
+       discretisation errors are more obvious.
+
+       Note that the random generator is seeded via date/time, so re-running the scatter
+       simulation will give a slightly different result if this boolean is on.
+    */
+    void set_randomly_place_scatter_points(const bool);
 
     void set_cache_enabled(const bool);
 
@@ -390,13 +395,7 @@ protected:
     float attenuation_threshold;
 
     //! boolean to see if we need to move the scatter point randomly within in its voxel
-    /*! This was first recommended by Watson. It is recommended to leave this on, as otherwise
-       discretisation errors are more obvious.
-
-       Note that the random generator is seeded via date/time, so re-running the scatter
-       simulation will give a slightly different result if this boolean is on.
-    */
-    bool random;
+    bool randomly_place_scatter_points;
     //! boolean to see if we need to cache the integrals
     /*! By default, we cache the integrals over the emission and attenuation image. If you run out
         of memory, you can switch this off, but performance will suffer dramatically.
