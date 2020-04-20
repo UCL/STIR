@@ -371,7 +371,7 @@ set_up()
     this->shift_detector_coordinates_to_origin =
             CartesianCoordinate3D<float>(this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
 
-#if 0
+#if 1
     // checks on image zooming to avvoid getting incorrect results
     {
       check_z_to_middle_consistent(*this->activity_image_sptr, "activity");
