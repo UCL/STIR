@@ -182,12 +182,7 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
     for (int i = 0; i < static_cast<int>(all_bins.size()); ++i)
     {
         const Bin bin = all_bins[i];
-        unsigned det_num_A = 0; // initialise to avoid compiler warnings
-        unsigned det_num_B = 0;
-        this->find_detectors(det_num_A, det_num_B, bin);
-
-        const double scatter_ratio =
-                scatter_estimate(det_num_A, det_num_B);
+        const double scatter_ratio = scatter_estimate(bin);
 
 #if defined STIR_OPENMP 
 #  if _OPENMP >= 201107
@@ -205,20 +200,6 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
         error("ScatterSimulation: error writing viewgram");
 
     return total_scatter;
-}
-
-double
-ScatterSimulation::
-scatter_estimate(const unsigned det_num_A,
-		 const unsigned det_num_B)
-{
-  double scatter_ratio_singles = 0;
-
-  this->actual_scatter_estimate(scatter_ratio_singles,
-				det_num_A,
-				det_num_B);
-
- return scatter_ratio_singles;
 }
 
 void

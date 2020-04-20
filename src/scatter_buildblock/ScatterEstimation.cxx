@@ -34,7 +34,6 @@
 #include "stir/DataProcessor.h"
 #include "stir/PostFiltering.h"
 #include "stir/scatter/CreateTailMaskFromACFs.h"
-#include "stir/scatter/SingleScatterSimulation.h"
 #include "stir/zoom.h"
 #include "stir/ZoomOptions.h"
 #include "stir/IO/write_to_file.h"

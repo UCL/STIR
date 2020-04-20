@@ -31,6 +31,23 @@ static const float total_Compton_cross_section_511keV =
 ScatterSimulation::
   total_Compton_cross_section(511.F); 
 
+double
+SingleScatterSimulation::
+scatter_estimate(const Bin& bin)
+{
+  double scatter_ratio_singles = 0;
+  unsigned det_num_A = 0; // initialise to avoid compiler warnings
+  unsigned det_num_B = 0;
+
+  this->find_detectors(det_num_A, det_num_B, bin);
+
+  this->actual_scatter_estimate(scatter_ratio_singles,
+				det_num_A,
+				det_num_B);
+
+ return scatter_ratio_singles;
+}
+
 
 void
 SingleScatterSimulation::

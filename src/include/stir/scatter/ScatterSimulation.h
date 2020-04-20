@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2018 - 2019 University of Hull
     Copyright (C) 2004 - 2009 Hammersmith Imanet Ltd
-    Copyright (C) 2013 - 2016 University College London
+    Copyright (C) 2013 - 2016, 2019, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,6 +24,8 @@
   \ingroup scatter
   \brief Definition of class stir::ScatterSimulation
 
+  \author Charalampos Tsoumpas
+  \author Nikolaos Dikaios
   \author Nikos Efthimiou
   \author Kris Thielemans
 */
@@ -38,30 +40,24 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup scatter
-  \brief Simuate the scatter probability using a model-based approach
+  \brief Simulate the scatter probability using a model-based approach
 
-  N.E. : This class is roughly the base class of what used to be the ScatterEstimationByBin.
-  Because there are different approaches on the actual simulation process, this base class will
-  be in charge of hold projection data and downsample the attenuation image, while more core function
-  will deligate to classes like SingleScatterSimulation.
-
-  This class computes the single Compton scatter estimate for PET data using an analytical
+  This base class intends to computes a Compton scatter estimate using an analytical
   approximation of an integral. It takes as input an emission image and an attenuation image.
   This is effectively an implementation of the simulation part of the algorithms of
-  Watson and Ollinger.
+  Watson and Ollinger. The base class takes care of downsampling and upsampling, book-keeping,
+  caching and looping over bins.
 
   One non-standard feature is that you can specify a different attenuation image to find the
   scatter points and one to compute the integrals over the attenuation image. The idea is that
   maybe you want to compute the integrals on a finer grid then you sample the attenuation image.
   This is probably not very useful though.
 
-  \todo Currently this can only be run by initialising it via parsing of a file. We need
-  to add a lot of set/get members.
-
   \todo detector coordinates are derived from ProjDataInfo, but areas and orientations are
   determined by using a cylindrical scanner.
 
-  \todo This class should be split into a generic class and one specific to PET single scatter.
+  \todo variables/function named \c density really should use \c attenuation. This is currently only
+  done for a few variables, but parsing keywords are correct.
 
   \par References
   This implementation is described in the following
@@ -317,14 +313,9 @@ protected:
 
     //!@}
 
+    //! virtual function that computes the scatter for one (downsampled) bin
     virtual double
-    scatter_estimate(const unsigned det_num_A,
-                     const unsigned det_num_B);
-
-    virtual void
-    actual_scatter_estimate(double& scatter_ratio_singles,
-                            const unsigned det_num_A,
-                            const unsigned det_num_B) = 0;
+      scatter_estimate(const Bin& bin) = 0;
 
     //! \name integrating functions
     //@{
