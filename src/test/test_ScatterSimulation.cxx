@@ -252,7 +252,7 @@ void
 ScatterSimulationTests::test_symmetric(ScatterSimulation& ss, const std::string& name)
 {
   shared_ptr<ProjDataInfoCylindricalNoArcCorr> output_projdata_info(ss.get_template_proj_data_info_sptr());
-  shared_ptr<ProjDataInMemory> sss_output(new ProjDataInMemory(ss.get_ExamInfo_sptr(), output_projdata_info));
+  shared_ptr<ProjDataInMemory> sss_output(new ProjDataInMemory(ss.get_exam_info_sptr(), output_projdata_info));
   ss.set_output_proj_data_sptr(sss_output);
 
   std::cerr << "\nSetting up for test " << name << "\n";

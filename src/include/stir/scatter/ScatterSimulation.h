@@ -112,8 +112,6 @@ public:
     //! Returns true if template_exam_info_sptr has been set.
     inline bool has_exam_info() const
     { return !stir::is_null_ptr(template_exam_info_sptr);}
-
-    shared_ptr<ExamInfo> get_ExamInfo_sptr() const;
     //@}
 
     //! \name get functions

@@ -705,7 +705,7 @@ get_template_proj_data_info_sptr() const
 }
 
 shared_ptr<ExamInfo>
-ScatterSimulation::get_ExamInfo_sptr() const
+ScatterSimulation::get_exam_info_sptr() const
 {
     return this->template_exam_info_sptr;
 }

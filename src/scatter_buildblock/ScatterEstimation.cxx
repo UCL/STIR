@@ -772,7 +772,7 @@ process_data()
     stir::BSpline::BSplineType  spline_type = stir::BSpline::quadratic;
 
     // This has been set to 2D or 3D in the set_up()
-    shared_ptr <ProjData> unscaled_est_projdata_sptr(new ProjDataInMemory(this->scatter_simulation_sptr->get_ExamInfo_sptr(),
+    shared_ptr <ProjData> unscaled_est_projdata_sptr(new ProjDataInMemory(this->scatter_simulation_sptr->get_exam_info_sptr(),
                                                                           this->scatter_simulation_sptr->get_template_proj_data_info_sptr()->create_shared_clone()));
     scatter_simulation_sptr->set_output_proj_data_sptr(unscaled_est_projdata_sptr);
 
