@@ -207,6 +207,20 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
     return total_scatter;
 }
 
+double
+ScatterSimulation::
+scatter_estimate(const unsigned det_num_A,
+		 const unsigned det_num_B)
+{
+  double scatter_ratio_singles = 0;
+
+  this->actual_scatter_estimate(scatter_ratio_singles,
+				det_num_A,
+				det_num_B);
+
+ return scatter_ratio_singles;
+}
+
 void
 ScatterSimulation::set_defaults()
 {
