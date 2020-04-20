@@ -2108,12 +2108,19 @@ mask attenuation image postfilter filename := ${scatter_pardir}/postfilter_Gauss
 ; Run simulation and reconstruction in 2D (this is currently the only possibility)
 run in 2d projdata := 1
 
-; ScatterSimulation parameters 
-scatter simulation parameters file := ${scatter_pardir}/scatter_simulation.par 
+;; ScatterSimulation parameters
+; specify either via a separate file or directly here
+scatter simulation parameter filename := ${scatter_pardir}/scatter_simulation.par
+; keyword for parsing here
+; Scatter Simulation type := ...
+; scatter simulation parameters would need to follow (see one of the examples)
+
 ; next option is the default
 use scanner downsampling in scatter simulation := 1
 
-reconstruction parameter template file := ${scatter_pardir}/run_reconstruction.par 
+reconstruction parameter filename := ${scatter_pardir}/run_reconstruction.par 
+; could use keyword here instead
+; reconstruction type := ...
 
 ; number of times which the Scatter Estimation will iterate. Default is 5
 number of scatter iterations := ${num_scat_iters}
@@ -2123,7 +2130,7 @@ do average at 2 := 1
 
 ;; tail fitting parameters
 ;Parameter file for the tail fitting of the scatter data (within the mask)
-tail fitting par filename := ${scatter_pardir}/tail_fitting.par
+tail fitting parameter filename := ${scatter_pardir}/tail_fitting.par
 
 maximum scatter scaling factor := 2 
 minimum scatter scaling factor := 0.4
@@ -2133,6 +2140,7 @@ upsampling half filter width := 3
 
 End Scatter Estimation Parameters :=
 \end{verbatim}
+This still needs documenting. Apologies.
 
 Performance of the scatter estimation is strongly determined by the tail-fitting. By default, the
 ``tails'' are determined by forward projecting an image mask (normally constructed by thresholding the
