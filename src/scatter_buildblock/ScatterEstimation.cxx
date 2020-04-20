@@ -859,14 +859,8 @@ process_data()
         }
 
         info("ScatterEstimation: Scatter simulation in progress...");
-	if (i_scat_iter == 1)
-	{
-	    if (this->scatter_simulation_sptr->set_up() == Succeeded::no)
-	    {
-		warning ("ScatterEstimation: Failure at set_up() of the Scatter Simulation. Aborting.");
-		return Succeeded::no;
-	    }
-	}
+        if (this->scatter_simulation_sptr->set_up() == Succeeded::no)
+            error("ScatterEstimation: Failure at set_up() of the Scatter Simulation.");
 
         if (this->scatter_simulation_sptr->process_data() == Succeeded::no)
             error("ScatterEstimation: Scatter simulation failed");
