@@ -3,15 +3,19 @@ Simulation method := Single Scatter Simulation
 Scatter Simulation Parameters := 
 
 ; default values indicated below
+
+; minimum threshold on attenuation (in cm^-1) below which scatter points will be ignored
 attenuation_threshold :=.01
+; randomly displace scatter points
 random :=1
+; cache line integrals (highly recommended)
 use_cache :=1
 
 activity_image_filename := ${ACTIVITY_IMAGE}
 attenuation_image_filename := ${ATTENUATION_IMAGE}
 template_projdata_filename :=  ${TEMPLATE}
 
-; automatically downsample scanner (off by default)
+; automatically downsample scanner (off by default, but highly recommended)
 ; output willl be downsampled as well
 downsample scanner := 0
 
