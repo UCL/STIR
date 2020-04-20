@@ -426,6 +426,9 @@ protected:
     Array<2,float> cached_attenuation_integral_scattpoint_det;
     shared_ptr< DiscretisedDensity<3, float> > density_image_for_scatter_points_sptr;
 
+    // numbers that we don't want to recompute all the time
+    mutable float detector_efficiency_no_scatter;
+
     bool _already_set_up;
 
     //! a function that checks if image sizes are ok

@@ -734,8 +734,14 @@ ScatterSimulation::set_template_proj_data_info(const ProjDataInfo& arg)
     this->total_detectors =
             this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_rings()*
             this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_detectors_per_ring ();
+
+    // get rid of any previously stored points
+    this->detection_points_vector.clear();
     // reserve space to avoid reallocation, but the actual size will grow dynamically
     this->detection_points_vector.reserve(static_cast<std::size_t>(this->total_detectors));
+
+    // set to negative value such that this will be recomputed
+    this->detector_efficiency_no_scatter = -1.F;
 
     // remove any cached values as they'd be incorrect if the sizes changes
     this->remove_cache_for_integrals_over_attenuation();

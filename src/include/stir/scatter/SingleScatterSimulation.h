@@ -93,8 +93,9 @@ protected:
                             const unsigned det_num_A,
                             const unsigned det_num_B);
 
-
-
+ private:
+    //! larger angles will be ignored
+    float max_single_scatter_cos_angle;
 };
 
 END_NAMESPACE_STIR

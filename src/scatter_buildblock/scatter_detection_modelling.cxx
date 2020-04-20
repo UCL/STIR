@@ -154,13 +154,13 @@ detection_efficiency_no_scatter(const unsigned det_num_A,
         error("ScatterSimulation::find_detectors: need to call set_up() first");
 #endif
 
-  // TODO: slightly dangerous to use a static here
-  // it would give wrong results when the energy_thresholds are changed...
-  static const float detector_efficiency_no_scatter =
-    detection_efficiency(511.F) > 0 
-    ? detection_efficiency(511.F)
-    : (info("Zero detection efficiency for 511. Will normalise to 1"), 1.F);
-
+  if (detector_efficiency_no_scatter <= 0.F) // set to negative value by set_up(), so recompute
+    {
+      detector_efficiency_no_scatter =
+        detection_efficiency(511.F) > 0
+        ? detection_efficiency(511.F)
+        : (info("Zero detection efficiency for 511. Will normalise to 1"), 1.F);
+    }
   const CartesianCoordinate3D<float>& detector_coord_A =
     detection_points_vector[det_num_A];
   const CartesianCoordinate3D<float>& detector_coord_B =

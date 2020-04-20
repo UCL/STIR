@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2016 University College London
+    Copyright (C) 2016, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -80,6 +80,9 @@ Succeeded
 SingleScatterSimulation::
 set_up()
 {
+    // set to negative value such that this will be recomputed
+    this->max_single_scatter_cos_angle = -1.F;
+
     return base_type::set_up();
 }
 

@@ -50,10 +50,13 @@ SingleScatterSimulation::
           const std::size_t scatter_point_num, 
           const unsigned det_num_A, 
           const unsigned det_num_B)
-{       
-  static const float max_single_scatter_cos_angle=max_cos_angle(this->template_exam_info_sptr->get_low_energy_thres(),
-                                                                2.f,
-                                                                this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution());
+{
+  if (this->max_single_scatter_cos_angle <= 0.F) // set to negative value by set_up(), so recompute
+    {
+      this->max_single_scatter_cos_angle=max_cos_angle(this->template_exam_info_sptr->get_low_energy_thres(),
+                                                       2.f,
+                                                       this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution());
+    }
 
   //static const float min_energy=energy_lower_limit(lower_energy_threshold,2.,energy_resolution);
 
@@ -69,7 +72,7 @@ SingleScatterSimulation::
                detector_coord_B - scatter_point));
   // note: costheta is identical for scatter to A or scatter to B
   // Hence, the Compton_cross_section and energy are identical for both cases as well.
-  if(max_single_scatter_cos_angle>costheta)
+  if(this->max_single_scatter_cos_angle>costheta)
     return 0;
   const float new_energy =
     photon_energy_after_Compton_scatter_511keV(costheta);
