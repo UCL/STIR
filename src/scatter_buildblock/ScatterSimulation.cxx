@@ -22,6 +22,7 @@
   \brief Definition of class stir::ScatterSimulation.
 
   \author Nikos Efthimiou
+  \author Charalampos Tsoumpas
   \author Kris Thielemans
 */
 #include "stir/scatter/ScatterSimulation.h"
@@ -241,8 +242,8 @@ void
 ScatterSimulation::initialise_keymap()
 {
 
-    this->parser.add_start_key("Scatter Simulation Parameters");
-    this->parser.add_stop_key("end Scatter Simulation Parameters");
+    // this->parser.add_start_key("Scatter Simulation Parameters");
+    // this->parser.add_stop_key("end Scatter Simulation Parameters");
     this->parser.add_key("template projdata filename",
                          &this->template_proj_data_filename);
     this->parser.add_key("attenuation image filename",

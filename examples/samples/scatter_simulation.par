@@ -1,13 +1,15 @@
-Scatter Simulation :=
-Simulation method := Single Scatter Simulation
-Scatter Simulation Parameters := 
+Scatter Simulation Parameters :=
+; almost minimal file for scatter estimation.
+; See User's Guide for more info
+Scatter Simulation type := PET Single Scatter Simulation
+PET Single Scatter Simulation Parameters :=
 
 ; default values indicated below
 
 ; minimum threshold on attenuation (in cm^-1) below which scatter points will be ignored
 attenuation_threshold :=.01
 ; randomly displace scatter points
-random :=1
+randomly_place_scatter_points :=1
 ; cache line integrals (highly recommended)
 use_cache :=1
 
@@ -23,5 +25,5 @@ downsample scanner := 0
 ; files will be called "out".hs and "out".log
 output_filename_prefix :=${OUTPUT_PREFIX}
 
+End PET Single Scatter Simulation Parameters:=
 End Scatter Simulation Parameters:=
-End Scatter Simulation:=

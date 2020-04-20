@@ -20,7 +20,7 @@ START_NAMESPACE_STIR
 
 const char * const
 SingleScatterSimulation::registered_name =
-        "Single Scatter Simulation";
+        "PET Single Scatter Simulation";
 
 
 SingleScatterSimulation::
@@ -46,8 +46,8 @@ SingleScatterSimulation::
 initialise_keymap()
 {
     base_type::initialise_keymap();
-    //    this->parser.add_start_key("Single Scatter Simulation");
-    //    this->parser.add_stop_key("end Single Scatter Simulation");
+    this->parser.add_start_key("PET Single Scatter Simulation Parameters");
+    this->parser.add_stop_key("end PET Single Scatter Simulation Parameters");
 }
 
 void

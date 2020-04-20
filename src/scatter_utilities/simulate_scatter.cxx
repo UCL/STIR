@@ -46,27 +46,16 @@ static void print_usage_and_exit()
     std::cerr<<"This executable runs a Scatter simulation method based on the options "
                "in a parameter file";
     std::cerr<<"\nUsage:\n simulate_scatter scatter_simulation.par\n";
-    std::cerr<<"Example parameter file:\n\n"
-               "Scatter Simulation :=\n"
-               "Simulation method := Single Scatter Simulation\n"
+    std::cerr<<"Example minimal parameter file:\n\n"
                "Scatter Simulation Parameters :=\n"
-               " template projdata filename :=\n"
+               "Simulation type := PET Single Scatter Simulation\n"
+               "PET Single Scatter Simulation Parameters :=\n"
+               "template projdata filename :=\n"
                "attenuation image filename := \n"
-               "attenuation image for scatter points filename := \n"
                "activity image filename :=\n"
                "output filename prefix := \n"
-               "zoom XY for attenuation image for scatter points := 1\n"
-               "zoom Z for attenuation image for scatter points: := 1\n"
-               "XY size of downsampled image for scatter points :=\n"
-               "Z size of downsampled image for scatter points :=\n"
-               "attenuation image for scatter points output filename :=\n"
-               "downsampled scanner number of detectors per ring := 32\n"
-               "downsampled scanner number of rings := \n"
-               "attenuation threshold := 0.01\n"
-               "random := 1\n"
-               "use cache := 1\n"
-               "End Scatter Simulation Parameters :=\n"
-               "End Scatter Simulation:="<< std::endl;
+               "End PET Single Scatter Simulation Parameters :=\n"
+               "End Scatter Simulation Parameters:="<< std::endl;
                exit(EXIT_FAILURE);
 }
 /***********************************************************/
@@ -86,9 +75,9 @@ int main(int argc, const char *argv[])
             simulation_method_sptr;
 
     KeyParser parser;
-    parser.add_start_key("Scatter Simulation");
-    parser.add_stop_key("End Scatter Simulation");
-    parser.add_parsing_key("Simulation method", &simulation_method_sptr);
+    parser.add_start_key("Scatter Simulation Parameters");
+    parser.add_stop_key("End Scatter Simulation Parameters");
+    parser.add_parsing_key("Scatter Simulation type", &simulation_method_sptr);
     if (!parser.parse(argv[1]))
       { t.stop(); return EXIT_FAILURE; }
 

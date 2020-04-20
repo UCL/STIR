@@ -266,9 +266,9 @@ post_processing()
     else // Parse locally
     {
         KeyParser local_parser;
-        local_parser.add_start_key("Scatter Simulation");
-        local_parser.add_stop_key("End Scatter Simulation");
-        local_parser.add_parsing_key("Simulation method", &this->scatter_simulation_sptr);
+        local_parser.add_start_key("Scatter Simulation Parameters");
+        local_parser.add_stop_key("End Scatter Simulation Parameters");
+        local_parser.add_parsing_key("Scatter Simulation type", &this->scatter_simulation_sptr);
         if (!local_parser.parse(this->scatter_sim_par_filename.c_str()))
         {
             warning(boost::format("ScatterEstimation: Error parsing scatter simulation parameters file %1%. Aborting.")

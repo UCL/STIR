@@ -1,6 +1,8 @@
-Scatter Simulation :=
-Simulation method := Single Scatter Simulation
-Scatter Simulation Parameters := 
+Scatter Simulation Parameters :=
+; minimal file for scatter estimation.
+; See User's Guide for more info
+Scatter Simulation type := PET Single Scatter Simulation
+PET Single Scatter Simulation Parameters :=
 
 ; using default parameters here. they should work ok
 
@@ -13,5 +15,5 @@ template_projdata_filename :=  ${TEMPLATE}
 output_filename_prefix :=${OUTPUT_PREFIX}
 
 
+End PET Single Scatter Simulation Parameters:=
 End Scatter Simulation Parameters:=
-End Scatter Simulation:=

@@ -1894,12 +1894,14 @@ scatter for the downsampled scanner, and needs to be followed by upsampling.
 
 Example \texttt{simulate\_scatter.par}
 \begin{verbatim}
-Scatter Simulation Parameters:=
+Scatter Simulation Parameters :=
+Scatter Simulation type := PET Single Scatter Simulation
+PET Single Scatter Simulation Parameters :=
 ; threshold below which not to bother putting a scatter point
 ; in a voxel (in cm^-1)
    attenuation_threshold :=.01
 ; Place the scatter points in a random position of a voxel or in the centre
-   random := 1
+   randomly_place_scatter_points := 1
 ; Caching (of the line integrals) speeds up the estimation drastically.
    use_cache := 1
    activity_image_filename := ACTIVITY_IMAGE
@@ -1911,7 +1913,7 @@ Scatter Simulation Parameters:=
    downsample scanner := 0 ; default value is off!
    ; if the above is 1, let STIR do the downsampling.
    ; This is safer than doing it yourself, physical size will be preserved etc.
-   ; These settings try to sensible defaults
+   ; With the following settings it should use sensible defaults
    downsampled scanner number of detectors per ring := -1
    downsampled scanner number of rings := -1
 
@@ -1925,7 +1927,7 @@ Scatter Simulation Parameters:=
    Z size of downsampled image for scatter points := -1
    ; you can write the zoomed image to file
    attenuation image for scatter points output filename :=
-
+End Single Scatter Simulation Parameters:=
 End Scatter Simulation Parameters:=
 \end{verbatim}
 \begin{description}

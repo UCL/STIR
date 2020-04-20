@@ -32,6 +32,12 @@
 
 START_NAMESPACE_STIR
 
+/*!
+  \ingroup scatter
+  \brief PET single scatter simulation
+
+  \todo The class is specific to PET so should be renamed accordingly.
+*/
 class SingleScatterSimulation : public
         RegisteredParsingObject<
         SingleScatterSimulation,
