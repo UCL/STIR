@@ -6,8 +6,6 @@ template projdata filename := ${TEMPLATE}
 
 attenuation image filename := ${ATTEN_IMAGE}
 
-attenuation image for scatter points filename := ${ZOOM_ATTEN_IMAGE}
-
 activity image filename := ${ACTIVITY_IMAGE}
 
 output filename prefix := ${OUTPUT_PREFIX}
