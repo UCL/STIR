@@ -128,6 +128,10 @@ public:
     //! Get the ExamInfo as shared pointer
     shared_ptr<ExamInfo> get_exam_info_sptr() const;
 
+    const DiscretisedDensity<3,float>& get_activity_image() const;
+    const DiscretisedDensity<3,float>& get_attenuation_image() const;
+    const DiscretisedDensity<3,float>& get_attenuation_image_for_scatter_points() const;
+    //! \deprecated
     shared_ptr<DiscretisedDensity<3,float> > get_density_image_for_scatter_points_sptr() const;
     //@}
 
@@ -423,6 +427,17 @@ protected:
     shared_ptr< DiscretisedDensity<3, float> > density_image_for_scatter_points_sptr;
 
     bool _already_set_up;
+
+    //! a function that checks if image sizes are ok
+    /*! It will call \c error() if not.
+
+      Currently, STIR shifts the middle of the image to the middle of the scanner. This
+      is dangerous when using image zooming.
+      This function currently checks if \a _image is consistent with the \c activity_image_sptr.
+
+      See https://github.com/UCL/STIR/issues/495 for more information.
+     */
+    void check_z_to_middle_consistent(DiscretisedDensity<3,float>& _image, const std::string& name) const;
 };
 
 END_NAMESPACE_STIR

@@ -39,6 +39,7 @@
 #include "stir/stream.h"
 #include "stir/round.h"
 #include <fstream>
+#include <algorithm>
 #include <boost/format.hpp>
 
 #include "stir/zoom.h"
@@ -209,8 +210,6 @@ process_data_for_view_segment_num(const ViewSegmentNumbers& vs_num)
 void
 ScatterSimulation::set_defaults()
 {
-    Verbosity::set(3);
-
     this->attenuation_threshold =  0.01f ;
     this->random = true;
     this->use_cache = true;
@@ -372,12 +371,45 @@ set_up()
     this->shift_detector_coordinates_to_origin =
             CartesianCoordinate3D<float>(this->proj_data_info_cyl_noarc_cor_sptr->get_m(Bin(0, 0, 0, 0)), 0, 0);
 
+#if 0
+    // checks on image zooming to avvoid getting incorrect results
+    {
+      check_z_to_middle_consistent(*this->activity_image_sptr, "activity");
+      check_z_to_middle_consistent(*this->density_image_sptr, "attenuation");
+      check_z_to_middle_consistent(*this->density_image_for_scatter_points_sptr, "scatter-point");
+    }
+#endif
     this->initialise_cache_for_scattpoint_det_integrals_over_attenuation();
     this->initialise_cache_for_scattpoint_det_integrals_over_activity();
 
     this->_already_set_up = true;
 
     return Succeeded::yes;
+}
+
+void
+ScatterSimulation::
+check_z_to_middle_consistent(DiscretisedDensity<3,float>& _image, const std::string& name) const
+{
+  const VoxelsOnCartesianGrid<float> & image = dynamic_cast<VoxelsOnCartesianGrid<float>& >(_image);
+  const float z_to_middle =
+    (image.get_max_index() + image.get_min_index())*image.get_voxel_size().z()/2.F;
+
+# if 0
+  const Scanner& scanner = *this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr();
+  const float z_to_middle_standard =
+    (scanner.get_num_rings()-1) * scanner.get_ring_spacing()/2;
+#endif
+  const VoxelsOnCartesianGrid<float> & act_image =
+    dynamic_cast<VoxelsOnCartesianGrid<float>& >(*this->activity_image_sptr);
+  const float z_to_middle_standard =
+    (act_image.get_max_index() + act_image.get_min_index())*act_image.get_voxel_size().z()/2.F;
+
+  if (abs(z_to_middle - z_to_middle_standard) > .1)
+    error(boost::format("ScatterSimulation: limitation in #planes and voxel-size for the %1% image.\n"
+                        "This would cause a shift of %2%mm w.r.t. the activity image.\n"
+                        "(see https://github.com/UCL/STIR/issues/495.")
+          % name % (z_to_middle - z_to_middle_standard));
 }
 
 void
@@ -436,6 +468,27 @@ set_density_image_for_scatter_points_sptr(shared_ptr<DiscretisedDensity<3,float>
     this->_already_set_up = false;
 }
 
+const DiscretisedDensity<3,float>&
+ScatterSimulation::
+get_activity_image() const
+{
+    return *activity_image_sptr;
+}
+
+const DiscretisedDensity<3,float>&
+ScatterSimulation::
+get_attenuation_image() const
+{
+    return *density_image_sptr;
+}
+
+const DiscretisedDensity<3,float>&
+ScatterSimulation::
+get_attenuation_image_for_scatter_points() const
+{
+    return *density_image_for_scatter_points_sptr;
+}
+
 shared_ptr<DiscretisedDensity<3,float> >
 ScatterSimulation::
 get_density_image_for_scatter_points_sptr() const
@@ -474,6 +527,11 @@ downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
         error("ScatterSimulation: downsampling function called before attenuation image is set");
 
     const VoxelsOnCartesianGrid<float> & tmp_att = dynamic_cast<VoxelsOnCartesianGrid<float>& >(*this->density_image_sptr);
+
+    const int old_x = tmp_att.get_x_size();
+    const int old_y = tmp_att.get_y_size();
+    const int old_z = tmp_att.get_z_size();
+
     if (_zoom_xy < 0 || _zoom_z < 0)
     {
         VoxelsOnCartesianGrid<float> tmpl_density(this->density_image_sptr->get_exam_info_sptr(), *proj_data_info_cyl_noarc_cor_sptr);
@@ -484,25 +542,43 @@ downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
 	     3);
 	if (_zoom_xy < 0)
 	  _zoom_xy = tmp_att.get_voxel_size().x() / tmpl_density.get_voxel_size().x();
-	if (_zoom_z < 0)
-	  _zoom_z = tmp_att.get_voxel_size().z() / (tmpl_density.get_voxel_size().z() * 2); // double z to get ring-spacing
-    }
-    set_image_downsample_factors(_zoom_xy, _zoom_z, _size_xy, _size_z);
 
-    int old_x = tmp_att.get_x_size();
-    int old_y = tmp_att.get_y_size();
-    int old_z = tmp_att.get_z_size();
+        const float z_length =
+          std::max((old_z+1)*tmp_att.get_voxel_size().z(),
+                   (tmpl_density.get_z_size()+1)*tmpl_density.get_voxel_size().z());
+	if (_zoom_z < 0)
+          {
+            if (_size_z < 0)
+              _size_z = (tmpl_density.get_z_size()+1)/2;
+            zoom_z = tmp_att.get_voxel_size().z() / (z_length/_size_z);
+          }
+        else
+          zoom_z = _zoom_z;
+    }
+    else
+      zoom_z = _zoom_z;
+
+    set_image_downsample_factors(_zoom_xy, zoom_z, _size_xy, _size_z);
 
     int new_x = zoom_size_xy == -1 ? static_cast<int>(old_x * zoom_xy + 1) : zoom_size_xy;
     int new_y = zoom_size_xy == -1 ? static_cast<int>(old_y * zoom_xy + 1) : zoom_size_xy;
-    int new_z = zoom_size_z == -1 ? static_cast<int>(old_z * zoom_z + 1) : zoom_size_z;
+    const int new_z = zoom_size_z == -1 ? static_cast<int>(old_z * zoom_z + 1) : zoom_size_z;
 
     // make sizes odd to avoid edge effects and half-voxel shifts
     if (new_x%2 == 0)
       new_x++;
     if (new_y%2 == 0)
       new_y++;
-        
+
+    // adjust zoom_z to cope with ugly "shift to middle of scanner" problem
+    {
+      // see http://github.com/UCL/STIR/issues/495
+      zoom_z = static_cast<float>(new_z-1)/(old_z-1);
+      if (_zoom_z>0 && abs(zoom_z - _zoom_z)>.1)
+        error(boost::format("Current limitation in ScatterSimulation: use zoom_z==-1 or %1%")
+              % zoom_z);
+    }
+
     const CartesianCoordinate3D<float> new_voxel_size =
       tmp_att.get_voxel_size() / make_coordinate(zoom_z, zoom_xy, zoom_xy);
     // create new image of appropriate size
@@ -516,15 +592,16 @@ downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
 						));
     // assign to class member
     this->density_image_for_scatter_points_sptr = vox_sptr;
-    info(boost::format("ScatterSimulation: scatter-point image: voxel-sizes %1%, size %2%, product %3%")
+    info(boost::format("ScatterSimulation: scatter-point image: voxel-sizes %1%, size %2%, total-length %3%")
 	 % vox_sptr->get_voxel_size()
 	 % vox_sptr->get_lengths()
-	 % (vox_sptr->get_voxel_size() * BasicCoordinate<3,float>(vox_sptr->get_lengths())),
-	 3);
+	 % (vox_sptr->get_voxel_size() * (BasicCoordinate<3,float>(vox_sptr->get_lengths()+1.F))),
+	 2);
     // fill values from original attenuation image
     ZoomOptions scaling(ZoomOptions::preserve_values);
     zoom_image( *vox_sptr, tmp_att, scaling);
 
+#if 0
     // do some checks
     {
         float image_plane_spacing = dynamic_cast<VoxelsOnCartesianGrid<float> *>(density_image_for_scatter_points_sptr.get())->get_grid_spacing()[1];
@@ -540,6 +617,7 @@ downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
                                   "Reconsider your z-axis downsampling."
                                   "(Image z-spacing is %1% and ring spacing is %2%)") % image_plane_spacing % proj_data_info_cyl_noarc_cor_sptr->get_ring_spacing());
     }
+#endif
 
     if(this->density_image_for_scatter_points_output_filename.size()>0)
       OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
@@ -656,7 +734,6 @@ ScatterSimulation::set_template_proj_data_info(const ProjDataInfo& arg)
     this->total_detectors =
             this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_rings()*
             this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_num_detectors_per_ring ();
-
     // reserve space to avoid reallocation, but the actual size will grow dynamically
     this->detection_points_vector.reserve(static_cast<std::size_t>(this->total_detectors));
 
@@ -696,8 +773,6 @@ ScatterSimulation::downsample_scanner(int new_num_rings, int new_num_dets)
         else
             return Succeeded::no;
     }
-
-    info("ScatterSimulator: Downsampling scanner of template info ...");
 
     const Scanner *const old_scanner_ptr = this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr();
     shared_ptr<Scanner> new_scanner_sptr( new Scanner(*old_scanner_ptr));
