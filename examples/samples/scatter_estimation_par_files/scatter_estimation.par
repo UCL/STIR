@@ -44,7 +44,7 @@ mask projdata filename := ${mask_projdata_filename}
 recompute mask image := 1
 mask image filename := ${mask_image}
 mask attenuation image min threshold  := 0.003
-mask attenuation image postfilter filename := ${scatter_pardir}/postfilter_Gaussian.par
+mask attenuation image postfilter filename := ${scatter_pardir}/postfilter_Gaussian_for_mask.par
 ;End of Mask
 
 ;Parameter file for the tail fitting of the scatter data (within the mask)
