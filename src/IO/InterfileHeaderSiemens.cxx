@@ -176,9 +176,6 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
   add_key("%segment table", &segment_table);
   add_key("%number of tof time bins", &num_tof_bins);
   
-  num_energy_windows = -1;
-  add_key("number of energy windows",
-    KeyArgument::INT, (KeywordProcessor)&InterfileRawDataHeaderSiemens::read_num_energy_windows, &num_energy_windows);
   add_vectorised_key("%energy window lower level (keV)", &lower_en_window_thresholds);
 
   add_vectorised_key("%energy window upper level (keV)", &upper_en_window_thresholds);
@@ -238,15 +235,6 @@ InterfileRawDataHeaderSiemens::InterfileRawDataHeaderSiemens()
 
 }
 
-
-void InterfileRawDataHeaderSiemens::read_num_energy_windows()
-{
-  set_variable();
-
-  lower_en_window_thresholds.resize(num_energy_windows, -1.);
-  upper_en_window_thresholds.resize(num_energy_windows, -1.);
-}
-
 bool InterfileRawDataHeaderSiemens::post_processing()
 {
   if (InterfileHeaderSiemens::post_processing() == true)
@@ -254,13 +242,6 @@ bool InterfileRawDataHeaderSiemens::post_processing()
 
   if (standardise_interfile_keyword(PET_data_type_values[PET_data_type_index]) != "emission")
   { warning("Interfile error: expecting emission data\n");  return true; }
-
-  if (num_energy_windows >= 1)
-    {
-    // TODO support more energy windows
-    exam_info_sptr->set_high_energy_thres(upper_en_window_thresholds[0]);
-    exam_info_sptr->set_low_energy_thres(lower_en_window_thresholds[0]);
-    }
 
   // handle scanner
 

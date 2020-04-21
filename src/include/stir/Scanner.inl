@@ -267,7 +267,11 @@ void Scanner::set_average_depth_of_interaction(const float & new_depth_of_intera
   average_depth_of_interaction = new_depth_of_interaction;
 }
 
-
+bool Scanner::has_energy_information() const
+{
+    return (energy_resolution <= 0.0 ||
+            reference_energy <= 0.0) ? false : true;
+}
 
 void Scanner::set_ring_spacing(const float&  new_spacing)
 {

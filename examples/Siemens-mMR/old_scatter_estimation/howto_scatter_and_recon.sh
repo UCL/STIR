@@ -59,8 +59,6 @@ cd output
 mask_image=mask_image.hv
 atnimg=summed_atnimg.hv
 
-cp ${pardir}/scatter.par .
-
 scatter_template=${pardir}/scatter_template.hs
 num_scat_iters=5
 
@@ -103,7 +101,9 @@ fi
 # calculate scatter in 2D
 
 # note: need OSEM because of gaps
-do_FBP=0 NUM_SUBSETS=28 do_mask=0 max_scale_factor=2 sinomask=${mysinomask} endN=${num_scat_iters} do_average_at_2=1 background_proj_data_file=${randoms2d} estimate_scatter.sh ${atnimg} ${data2d}  ${scatter_template} ${acf2d} ${norm2d}
+do_FBP=0 NUM_SUBSETS=28 do_mask=0 max_scale_factor=2 sinomask=${mysinomask} endN=${num_scat_iters} do_average_at_2=1 \
+      scatterpar=${pardir}/scatter.par background_proj_data_file=${randoms2d} \
+      estimate_scatter.sh ${atnimg} ${data2d}  ${scatter_template} ${acf2d} ${norm2d}
 
 
 # now go to 3D

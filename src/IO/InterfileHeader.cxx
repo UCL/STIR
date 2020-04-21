@@ -34,6 +34,7 @@
 #include "stir/ImagingModality.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/info.h"
 #include <numeric>
 #include <functional>
 
@@ -73,10 +74,12 @@ MinimalInterfileHeader::MinimalInterfileHeader()
 
   add_start_key("INTERFILE");
   add_key("imaging modality",
-    KeyArgument::ASCII, (KeywordProcessor)&InterfileHeader::set_imaging_modality,
+    KeyArgument::ASCII, (KeywordProcessor)&MinimalInterfileHeader::set_imaging_modality,
     &imaging_modality_as_string);
 
-  add_key("version of keys", &version_of_keys);
+  add_key("version of keys",
+          KeyArgument::ASCII, (KeywordProcessor)&MinimalInterfileHeader::set_version_specific_keys,
+          &version_of_keys);
 
   // support for siemens interfile
   add_key("%sms-mi version number", &siemens_mi_version);
@@ -89,6 +92,11 @@ void MinimalInterfileHeader::set_imaging_modality()
 {
   set_variable();
   this->exam_info_sptr->imaging_modality = ImagingModality(imaging_modality_as_string);
+}
+
+void MinimalInterfileHeader::set_version_specific_keys()
+{
+  set_variable();
 }
 
 InterfileHeader::InterfileHeader()
@@ -145,6 +153,11 @@ InterfileHeader::InterfileHeader()
   matrix_labels.resize(num_dimensions);
   matrix_size.resize(num_dimensions);
   pixel_sizes.resize(num_dimensions, 1.);
+  num_energy_windows = 1;
+  lower_en_window_thresholds.resize(num_energy_windows);
+  upper_en_window_thresholds.resize(num_energy_windows);
+  lower_en_window_thresholds[0]=-1.F;
+  upper_en_window_thresholds[0]=-1.F;
   num_time_frames = 1;
   image_scaling_factors.resize(num_time_frames);
   for (int i=0; i<num_time_frames; i++)
@@ -154,8 +167,9 @@ InterfileHeader::InterfileHeader()
   data_offset_each_dataset.resize(num_time_frames, 0UL);
 
   data_offset = 0UL;
-  lower_en_window_thres = -1.f;
-  upper_en_window_thres = -1.f;
+
+
+
 
   add_key("name of data file", &data_file_name);
   add_key("originating system", &exam_info_sptr->originating_system);
@@ -205,9 +219,10 @@ InterfileHeader::InterfileHeader()
   // support for Louvain la Neuve's extension of 3.3
   add_key("quantification units", &lln_quantification_units);
 
-  add_key("energy window lower level", &lower_en_window_thres);
-
-  add_key("energy window upper level", &upper_en_window_thres);
+  add_key("number of energy windows",
+    KeyArgument::INT,	(KeywordProcessor)&InterfileHeader::read_num_energy_windows,&num_energy_windows);
+  add_vectorised_key("energy window lower level", &lower_en_window_thresholds);
+  add_vectorised_key("energy window upper level", &upper_en_window_thresholds);
 
   bed_position_horizontal = 0.F;
   add_key("start horizontal bed position (mm)", &bed_position_horizontal);
@@ -215,6 +230,19 @@ InterfileHeader::InterfileHeader()
   add_key("start vertical bed position (mm)", &bed_position_vertical);
 }
 
+void InterfileHeader::set_version_specific_keys()
+{
+  MinimalInterfileHeader::set_version_specific_keys();
+  if (this->version_of_keys == "STIR3.0")
+    {
+      info("Setting energy window keys as in STIR3.0");
+      // only a single energy window, and non-vectorised
+      remove_key("energy window lower level");
+      remove_key("energy window upper level");
+      add_key("energy window lower level", &lower_en_window_thresholds[0]);
+      add_key("energy window upper level", &upper_en_window_thresholds[0]);
+    }
+}
 
 // MJ 17/05/2000 made bool
 bool InterfileHeader::post_processing()
@@ -324,10 +352,15 @@ bool InterfileHeader::post_processing()
                lln_quantification_units);
     }      
   } // lln_quantification_units
-    if (upper_en_window_thres > 0 && lower_en_window_thres > 0 )
+  if (num_energy_windows>0)
     {
-  exam_info_sptr->set_high_energy_thres(upper_en_window_thres);
-  exam_info_sptr->set_low_energy_thres(lower_en_window_thres);
+      if (num_energy_windows>1)
+        warning("Currently only reading the first energy window.");
+      if (upper_en_window_thresholds[0] > 0 && lower_en_window_thresholds[0] > 0 )
+        {
+          exam_info_sptr->set_high_energy_thres(upper_en_window_thresholds[0]);
+          exam_info_sptr->set_low_energy_thres(lower_en_window_thresholds[0]);
+        }
     }
 
   exam_info_sptr->time_frame_definitions = 
@@ -345,6 +378,14 @@ void InterfileHeader::read_matrix_info()
   matrix_size.resize(num_dimensions);
   pixel_sizes.resize(num_dimensions, 1.);
   
+}
+
+void InterfileHeader::read_num_energy_windows()
+{
+  set_variable();
+
+  upper_en_window_thresholds.resize(num_energy_windows,-1.);
+  lower_en_window_thresholds.resize(num_energy_windows,-1.);
 }
 
 void InterfileHeader::set_type_of_data()
@@ -1173,7 +1214,7 @@ bool InterfilePDFSHeader::post_processing()
     {
     if (energy_resolution != guessed_scanner_ptr->get_energy_resolution())
       {
-    warning("Interfile warning: 'energy resolution' (%d) is expected to be %d. "
+    warning("Interfile warning: 'energy resolution' (%4.3f) is expected to be %4.3f. "
             "Currently, the energy resolution and the reference energy, are used only in"
             " scatter correction.",
         energy_resolution, guessed_scanner_ptr->get_energy_resolution());
@@ -1181,7 +1222,7 @@ bool InterfilePDFSHeader::post_processing()
       }
     if (reference_energy != guessed_scanner_ptr->get_reference_energy())
       {
-    warning("Interfile warning: 'reference energy' (%d) is expected to be %d."
+    warning("Interfile warning: 'reference energy' (%4.3f) is expected to be %4.3f."
             "Currently, the energy resolution and the reference energy, are used only in"
             " scatter correction.",
         reference_energy, guessed_scanner_ptr->get_reference_energy());

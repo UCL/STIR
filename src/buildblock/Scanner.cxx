@@ -121,7 +121,8 @@ Scanner::Scanner(Type scanner_type)
     set_params(E931, string_list("ECAT 931"),  
                8, 192, 2 * 256, 
                510.0F, 7.0F, 13.5F, 3.129F, 0.0F, 
-               2, 4, 4, 8, 4, 8 * 4, 1);
+               2, 4, 4, 8, 4, 8 * 4, 1,
+               0.37f, 511.f);
     // 16 BUCKETS per ring in TWO rings - i.e. 32 buckets in total
 
     break;
@@ -202,7 +203,8 @@ Scanner::Scanner(Type scanner_type)
     set_params(Siemens_mMR, string_list("Siemens mMR", "mMR", "2008"),
                64, 344, 2* 252,
                328.0F, 7.0F, 4.0625F, 2.08626F, 0.0F,
-               2, 1, 8, 9, 16, 9, 1 ); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
+               2, 1, 8, 9, 16, 9, 1,
+               0.145f, 511.f); // TODO bucket/singles info incorrect? 224 buckets in total, but not sure how distributed
     break;
 
   case RPT:
@@ -589,7 +591,10 @@ set_params(Type type_v,const list<string>& list_of_names_v,
   num_detector_layers = num_detector_layers_v;
 
   energy_resolution = energy_resolution_v;
-  reference_energy = reference_energy_v;
+  if (reference_energy_v <= 0)
+      reference_energy = 511.f;
+  else
+      reference_energy = reference_energy_v;
 
 }
 
@@ -746,7 +751,7 @@ Scanner::operator ==(const Scanner& scanner) const
 if (!close_enough(energy_resolution, scanner.energy_resolution) &&
       !close_enough(reference_energy, scanner.reference_energy))
     warning("The energy resolution of the two scanners is different. \n"
-            " %d opposed to %d"
+            " %f opposed to %f"
             "This only affects scatter simulation. \n", energy_resolution, scanner.energy_resolution);
 
   return

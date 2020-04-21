@@ -77,6 +77,7 @@ Benjamin Thomas (CIRC ASTAR and UCL), Yu-jung Tsai, Vesna Cuplov).
 
 <h3>Changes breaking backwards compatibility from a user-perspective</h3>
 <ul>
+  <li> major changes in the scatter code, see <a href="#scatter_updates">the section on scatter updates</a>
   <li> minor changes when using Python/MATLAB</li>
   <li> the need for a new <code>z zoom</code> keyword for SPECT reconstructions (see the updated sample .par files)</li>
   <li> changed image orientation when reading/writing images via ITK</li>
@@ -133,6 +134,7 @@ python/matlab or use of the C++ library.
 
 <h3>New functionality</h3>
 <ul>
+<li> major changes in the scatter code, see <a href="#scatter_updates">the section on scatter updates</a>
 <li><tt>KOSMAPOSL</tt> STIR now allows to use the hybrid kernel method described in the following paper: "<i>Hybrid PET-MR list-mode kernelized expectation maximization reconstruction</i>",
   Inverse Problems, 2019, DOI: https://doi.org/10.1088/1361-6420/ab013f.</li>
 <li><tt>KOSMAPOSL</tt> also allows to use multiple anatomical images. The method is described in "<i>Multiplexing Kernelized Expectation Maximization
@@ -153,7 +155,6 @@ Please note that you cannot enable both OPENMP and MPI.</li>
 <li>Functions and executables for ML estimation of singles/randoms/normalisation factors.
 These are only minimally documented at the present stage unfortunately.
 </li>
-<li>We now include a shell script for easier scatter estimation.</li>
 <li><tt>list_image_info</tt> now has options to list exam info, or only part of the information (as <tt>list_projdata_info</tt>).</li>
 <li><tt>list_image_values</tt> now has options to print coordinates in LPS as opposed to indices, print in CSV, or suppress the title row.</li>
 <li><tt>list_lm_countrates</tt> is a new list mode utility to output total counts per specified time interval.</li>
@@ -382,6 +383,32 @@ most cylindrical scanners).
 <li>added tests for the ITK IO routines and Interfile reading of dynamic/parametric images/projection data</li>
 </ul>
 
+<H2><a id="scatter_updates"></a>Scatter updates</a></h2>
+This release contains major updates on the scatter code, mostly contributed by Nikos Efthimou,
+see the <a href="https://github.com/UCL/STIR/pull/44">pull request on GitHub</a>.
+
+<ul>
+  <li><code>estimate_scatter</code> is now renamed to <code>simulate_scatter</code>, as that is what it does.
+    Its parameter format changed as well. See an example in <tt>examples/PET_simulation</tt>. In particular:
+    <ul>
+      <li>start and end keywords are different</li>
+      <li>energy window and resolution information is now (only) taken from the template projection data.</li>
+      <li><tt>density_image_filename</tt> keywords are renamed to <tt>attenuation_image_filename</tt>.</li>
+      <li><tt>template_proj_data_filename</tt> is renamed to <tt>template_projdata_filename</tt> for consistency
+	with other parameter files.</li>
+      </ul>
+    Functionality and results are identical to the previous version.
+  </li>
+  <li>Somewhat confusingly, <code>estimate_scatter</code> is a new executable that actually estimates
+    scatter from measured data. It performs the iterative process first suggested by Watson et al. (similar
+    to Ollinger et al.). An example of this as in <tt>examples/Siemens-mMR/scatter</tt>.
+   </li>
+   <li>In the github version after STIR 3.0, we included a shell script for easier scatter estimation.
+    That script still exists for backwards compatibility, but is essentially obsolete. You should
+    use <code>estimate_scatter</code> instead.
+   </li>
+</ul>
+
 <H2>What's new for developers (aside from what should be obvious
 from the above):</H2>
 
@@ -399,6 +426,9 @@ from the above):</H2>
 <li> <tt>list_ROI_values</tt> now has the option to save the image name , max and min as new columns, and they will appear in the same 
     row as the roi name, mean value and so on. 
 </li>
+<li>The <code>ScatterEstimation</code> class has been renamed to <code>ScatterSimulation</code>.
+  <code>ScatterEstimation</code> is a new class that performs an iterative process to estimate scatter.
+  </li>
 <li>STIR now uses <code>std::unique_ptr</code> as opposed to <code>std::auto_ptr</code>, as recommended for C++-11 and 
     later (unless the CMake option <code>STIR_NO_UNIQUE_PTR</code> is set).
     This affects calls to
@@ -461,9 +491,33 @@ using the default output file format.</li>
    <li><code>write_to_file</code> moved from <code>ProjDataInMemory</code> to <code>ProjData</code></li>
   </ul>
 </li>
-<li> Support for Energy Resolution and energy windows in Scanners, has been added. 
-In order to ensure backwards compatibility, at the moment, it is completely optional.</li>
-<li> Information on energy windows has been added in the <code>ExamInfo</code>. </li>
+<li> Support for Energy Resolution and energy windows in scanners and projection data has been added.
+  It is only required when running the scatter simulation or estimation, and should then be set in the input file.
+  For example, for a STIR-Interfile header, you should use the following keywords:
+  <pre>
+    number of energy windows:=1
+    energy window lower level[1]:=425
+    energy window upper level[1]:=650
+    Scanner parameters:=
+      Scanner type := ...
+      Energy resolution := 0.145
+      Reference energy (in keV) := 511
+      ...
+    End scanner parameters:=
+  </pre>
+  Only 1 energy window is currently supported (if there's more than one, only the first will be read).<br />
+  <strong>Warning:</strong> Unfortunately, GitHub versions between version 3.0 and 4.0 used
+  <pre>
+    energy window lower level:=425
+    energy window upper level:=650
+  </pre>
+  This will still be read ok, as long as these keywords are preceded by
+  <pre>
+    !version of keys := STIR3.0
+  </pre>
+  The new (vectored) version is compatible with the Interfile standard.
+</li>
+<li> Information on a single energy window has been added in the <code>ExamInfo</code>. </li>
 <li><code>ExamData</code> is a new base class for <code>ProjData</code>, <code>CListModeData</code>,
 <code>DiscretisedDensity</code> and the dynamic/gated variations.</li>
 <li>Moved functions from the <code>poisson_noise</code> utility to a new class
