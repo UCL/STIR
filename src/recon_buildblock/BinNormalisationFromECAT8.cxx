@@ -258,8 +258,7 @@ MatrixFile* mptr = matrix_open(filename.c_str(),  MAT_READ_ONLY, Norm3d);
 #endif
 #if 0
   InterfileHeader interfile_parser;
- add_key("data format", 
-    KeyArgument::ASCII,	&KeyParser::do_nothing);
+ ignore_key("data format");
   interfile_parser.parse(filename.c_str());
 
 #else

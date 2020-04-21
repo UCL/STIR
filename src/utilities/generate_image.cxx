@@ -212,11 +212,9 @@ initialise_keymap()
     KeyArgument::ASCII, (KeywordProcessor)&GenerateImage::set_imaging_modality,
     &imaging_modality_as_string);
   add_key("patient orientation",
-	  KeyArgument::ASCIIlist,
 	  &patient_orientation_index,
 	  &patient_orientation_values);
   add_key("patient rotation",
-	  KeyArgument::ASCIIlist,
 	  &patient_rotation_index,
 	  &patient_rotation_values);
   patient_orientation_values.push_back("head_in");

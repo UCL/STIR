@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2002 - 2011-02-23, Hammersmith Imanet Ltd
+    Copyright (C) 2019, UCL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -37,11 +38,9 @@
    grow piece by piece. For some implementations (i.e. those that keep the memory
    contiguous), this might mean multiple reallocations and copying of data.
    Of course, for 'smart' implementations of stringstream, this wouldn't happen.
-   Still, I've decided to not take the risk, and always use old style strstream instead.
 
-  It's not clear if strstream will ever disappear from C++, but in any case, it won't happen 
-  very soon. Still, if you no longer have strstream, or don't want to use it, you can enable 
-  the stringstream implementation by removing the next line.
+   So, we now use boost::interprocess::bufferstream instead. You could use
+   use old style strstream instead, but that's now very deprecated, so that's not recommended.
 */
 //#define STIR_USE_OLD_STRSTREAM
 
@@ -78,6 +77,9 @@ public:
   //! constructor that copies data from another ProjData
   ProjDataInMemory (const ProjData& proj_data);
 
+  //! Copy constructor
+  ProjDataInMemory (const ProjDataInMemory& proj_data);
+
   //! destructor deallocates all memory the object owns
   virtual ~ProjDataInMemory();
  
@@ -85,15 +87,18 @@ public:
   float get_bin_value(Bin& bin);
     
 private:
-#ifdef STIR_USE_OLD_STRSTREAM
   // an auto_ptr doesn't work in gcc 2.95.2 because of assignment problems, so we use shared_array
   // note however that the buffer is not shared. we just use it such that its memory gets 
   // deallocated automatically.
   boost::shared_array<char> buffer;
-#else
-#endif
   
   size_t get_size_of_buffer() const;
+
+  //! allocates buffer for storing the data. Has to be called by constructors before create_stream()
+  char * create_buffer(const bool initialise_with_0 = false) const;
+
+  //! Create a new stream
+  shared_ptr<std::iostream> create_stream() const;
 };
 
 END_NAMESPACE_STIR

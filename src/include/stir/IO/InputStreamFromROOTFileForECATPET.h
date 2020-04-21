@@ -53,10 +53,11 @@ From (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defin
         name of data file := ${INPUT_ROOT_FILE}
         name of input TChain := Coincidences
 
-        number of blocks  := 1
-        number of crystals_X := 1
-        number of crystals_Y := 1
-        number of crystals_Z := 4
+        number of blocks Y := 1
+        number of blocks Z := 1
+        number of crystals X := 1
+        number of crystals Y := 1
+        number of crystals Z := 4
 
         Singles readout depth := 1
         exclude scattered events := ${EXCLUDE_SCATTERED}
@@ -92,7 +93,7 @@ public:
     InputStreamFromROOTFileForECATPET(std::string filename,
                                       std::string chain_name,
                                       int crystal_repeater_x, int crystal_repeater_y, int crystal_repeater_z,
-                                      int blocks_repeater,
+                                      int blocks_repeater_y, int blocks_repeater_z,
                                       bool exclude_scattered, bool exclude_randoms,
                                       float low_energy_window, float up_energy_window,
                                       int offset_dets);
@@ -127,7 +128,8 @@ public:
     inline void set_crystal_repeater_x(int);
     inline void set_crystal_repeater_y(int);
     inline void set_crystal_repeater_z(int);
-    inline void set_block_repeater(int);
+    inline void set_block_repeater_y(int);
+    inline void set_block_repeater_z(int);
 
 
 protected:
@@ -142,7 +144,8 @@ protected:
     int crystal_repeater_x;
     int crystal_repeater_y;
     int crystal_repeater_z;
-    int block_repeater;
+    int block_repeater_y;
+    int block_repeater_z;
 
     //! In GATE, inside a block, the indeces start from the lower
     //! unit counting upwards. Therefore in order to align the

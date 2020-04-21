@@ -1,6 +1,14 @@
 !INTERFILE  :=
 name of data file := small.s
+!imaging modality := PET
 originating system := RATPET
+; optional: values: PET|nucmed *defaults to PET for backwards compatibility)
+imaging modality:=PET
+; optional patient position keywords (defaulting to "unknown")
+; orientation: allowed values: head_in|feet_in|other|unknown
+patient orientation := head_in
+; rotation: allowed values: prone|supine|other|unknown
+patient rotation :=  supine
 !GENERAL DATA :=
 !GENERAL IMAGE DATA :=
 !type of data := PET

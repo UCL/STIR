@@ -25,6 +25,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_ROIs
         test_warp_image
 	test_DynamicDiscretisedDensity
+	test_ScatterSimulation
 )
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
@@ -48,12 +49,14 @@ set(buildblock_simple_tests
         test_Array
         test_ArrayFilter
         test_SeparableMetzArrayFilter
+        test_SeparableGaussianArrayFilter
         test_NestedIterator
         test_VectorWithOffset
         test_convert_array
 	test_IndexRange
 	test_coordinates
 	test_filename_functions
+        test_KeyParser
 	test_VoxelsOnCartesianGrid
 	test_zoom_image
 	test_ByteOrder

@@ -45,9 +45,10 @@ ${PROJECT_SOURCE_DIR}/src/recon_buildblock/recon_buildblock_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/Shape_buildblock/Shape_buildblock_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/modelling_buildblock/modelling_registries.cxx
 ${PROJECT_SOURCE_DIR}/src/spatial_transformation_buildblock/spatial_transformation_registries.cxx
+${PROJECT_SOURCE_DIR}/src/scatter_buildblock/scatter_registries.cxx
 )
 
-SET( STIR_LIBRARIES analytic_FBP3DRP analytic_FBP2D       iterative_OSMAPOSL  
+SET( STIR_LIBRARIES analytic_FBP3DRP analytic_FBP2D       iterative_OSMAPOSL   iterative_KOSMAPOSL
      iterative_OSSPS
       scatter_buildblock modelling_buildblock listmode_buildblock recon_buildblock  
       display  IO  data_buildblock numerics_buildblock  buildblock 
@@ -82,6 +83,7 @@ SET( STIR_DIRS
      analytic/FBP2D
      analytic/FBP3DRP
      iterative/OSMAPOSL  
+     iterative/KOSMAPOSL
      iterative/OSSPS
      iterative/POSMAPOSL  
      iterative/POSSPS

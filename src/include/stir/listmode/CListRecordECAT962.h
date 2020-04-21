@@ -184,7 +184,7 @@ private:
 //! A class for a general element of a listmode file
 /*! \ingroup listmode
    For the 962 it's either a coincidence event, or a timing flag.*/
-class CListRecordECAT962 : public CListRecordWithGatingInput, public CListTime, public CListGatingInput,
+class CListRecordECAT962 : public CListRecordWithGatingInput, public ListTime, public CListGatingInput,
     public  CListEventCylindricalScannerWithViewTangRingRingEncoding<CListRecordECAT962>
 {
  public:
@@ -206,9 +206,9 @@ class CListRecordECAT962 : public CListRecordWithGatingInput, public CListTime, 
     { return *this; }
   virtual const CListEvent&  event() const
     { return *this; }
-  virtual CListTime&   time()
+  virtual ListTime&   time()
     { return *this; }
-  virtual const CListTime&   time() const
+  virtual const ListTime&   time() const
     { return *this; }
   virtual CListGatingInput&  gating_input()
     { return *this; }

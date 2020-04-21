@@ -40,7 +40,7 @@ START_NAMESPACE_ECAT7
 */
 class SinglesRatesFromECAT7 : 
 public RegisteredParsingObject<SinglesRatesFromECAT7, SinglesRates,
-                               AddParser<SinglesRatesForTimeFrames> >
+                               SinglesRatesForTimeFrames>
 { 
 public:
 

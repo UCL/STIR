@@ -324,6 +324,7 @@ void
 OSSPSReconstruction<TargetT>::
 update_estimate(TargetT &current_image_estimate)
 {
+  this->check(current_image_estimate);
   if (this->get_subiteration_num() == this->get_start_subiteration_num())
     {
       // set all voxels to 0 that cannot be estimated.

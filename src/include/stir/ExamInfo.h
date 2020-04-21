@@ -19,6 +19,7 @@
   \ingroup buildblock
   \brief  This file declares the class stir::ExamInfo
   \author Kris Thielemans
+  \author Nikos Efthimiou
 */
 
 
@@ -30,6 +31,8 @@
 #include "stir/ImagingModality.h"
 #include "stir/shared_ptr.h"
 
+#include "stir/shared_ptr.h"
+
 START_NAMESPACE_STIR
 
 
@@ -38,7 +41,7 @@ START_NAMESPACE_STIR
   \ingroup buildblock
   \todo this is very incomplete at the moment. Things like bed positions, gating, isotopes etc etc are all missing
 
-  \todo This should be an abtract registered object, in oreder to serve as a complete
+  \todo This should be an abtract registered object, in order to serve as a complete
   base function for every input data type.
   */
 class ExamInfo
@@ -47,16 +50,16 @@ class ExamInfo
 public :
 
   //! Default constructor
-  /*! Most fields take there default values (much might be invalid).
-     \a start_time_in_secs_since_1970 is set to zero to 
+  /*! Most fields take their default values (which might be invalid).
+     \a start_time_in_secs_since_1970 is set to zero, energy window info to -1, to
      indicate that it is not initialised.
   */
 
   ExamInfo()
-    : start_time_in_secs_since_1970(0.)
+    : start_time_in_secs_since_1970(0.),
+    low_energy_thres(-1),
+    up_energy_thres(-1)
     {
-      low_energy_thres = -1.f;
-      up_energy_thres = -1.f;
   }
 
   std::string originating_system;
@@ -89,6 +92,16 @@ public :
   //! Set the high energy boundary
   inline void set_high_energy_thres(float new_val);
   //@}
+
+  inline bool has_energy_information() const
+  {
+    return (low_energy_thres > 0.f)&&(up_energy_thres > 0.f);
+  }
+
+  //! Standard trick for a 'virtual copy-constructor'
+  inline ExamInfo* clone() const;
+  //! Like clone() but return a shared_ptr
+  inline shared_ptr<ExamInfo> create_shared_clone() const;
 
   void set_time_frame_definitions(const TimeFrameDefinitions& new_time_frame_definitions)
     {

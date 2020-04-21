@@ -26,6 +26,7 @@ set(${dir_LIB_SOURCES}
    SpatialTransformation
    GatedSpatialTransformation
    warp_image
+   InvertAxis
 ) 
 
 include(stir_lib_target)

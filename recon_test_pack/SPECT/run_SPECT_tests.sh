@@ -133,6 +133,7 @@ for reconpar in FBP2D OSEM_2DPSF OSEM_3DPSF; do
       output_filename=${output_filename}_${num_subiterations}
     fi
     output_image=${output_filename}.hv
+    invert_axis x ${output_image} ${output_image}
 
     # horrible way to replace "out" with "org" (as we don't want to rely on bash)
     org_output_image=org`echo ${output_image}|cut -c 4-`
@@ -141,7 +142,7 @@ for reconpar in FBP2D OSEM_2DPSF OSEM_3DPSF; do
     then
     echo ---- This test seems to be ok !;
     else
-    echo There were problems here!;
+    echo There were problems here!
     error_log_files="${error_log_files} my_${parfile}.log"
     fi
 done
@@ -150,7 +151,9 @@ echo "============================================="
 if [ -z "${error_log_files}" ]; then
  echo "All tests OK!"
  echo "You can remove all output using \"rm -rf out\""
+ exit 0
 else
  echo "There were errors. Check ${error_log_files}"
+ exit 1
 fi
 

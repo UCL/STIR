@@ -104,6 +104,10 @@ run_tests()
     check_if_equal(proj_data2.get_viewgram(1,1).find_max(),
                    proj_data.get_viewgram(1,1).find_max(),
                    "test 1 for copy-constructor and get_viewgram");
+    proj_data2.fill(1e4f);
+    check(std::abs(proj_data2.get_viewgram(0,0).find_max() -
+          proj_data.get_viewgram(0,0).find_max()) > 1.f,
+          "test 1 for deep copy and get_viewgram");
   }
 
   // test fill with larger input
@@ -138,6 +142,7 @@ run_tests()
     // this should call error, so we'll catch it
     try
       {
+        std::cout << "\nthis test should intentionally throw an error\n";
         proj_data2.fill(proj_data);
         check(false, "test fill wtih too small proj_data should have thrown");
       }
