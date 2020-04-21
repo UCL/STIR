@@ -29,7 +29,7 @@
 START_NAMESPACE_STIR
 
 LmToProjDataNiftyPET::LmToProjDataNiftyPET() : 
-    _span(11), _cuda_device(0), _cuda_verbosity(true), _start_time(-1), _stop_time(-1)
+    _span(11), _cuda_device(0), _cuda_verbosity(true), _start_time(-1), _stop_time(-1), _norm_binary_file("")
 { }
 
 void LmToProjDataNiftyPET::check_input() const
@@ -59,8 +59,10 @@ void LmToProjDataNiftyPET::process_data()
     helper.set_scanner_type(Scanner::Siemens_mMR);
     helper.set_up();
 
-    helper.lm_to_proj_data(_prompts_sptr, _delayeds_sptr, _randoms_sptr,
-                _listmode_binary_file, _start_time, _stop_time);
+    helper.lm_to_proj_data(_prompts_sptr, _delayeds_sptr,
+                _randoms_sptr, _norm_sptr,
+                _start_time, _stop_time,
+                _listmode_binary_file , _norm_binary_file);
 }
 
 END_NAMESPACE_STIR

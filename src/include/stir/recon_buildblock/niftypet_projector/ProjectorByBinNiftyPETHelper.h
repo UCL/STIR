@@ -115,8 +115,10 @@ public:
     static shared_ptr<ProjData> create_stir_sino();
 
     /// Listmode to sinogram
-    void lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delayeds_sptr, shared_ptr<ProjData> &randoms_sptr,
-                         const std::string &lm_binary_file, const int tstart, const int tstop) const;
+    void lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delayeds_sptr,
+                         shared_ptr<ProjData> &randoms_sptr, shared_ptr<ProjData> &norm_sptr,
+                         const int tstart, const int tstop,
+                         const std::string &lm_binary_file, const std::string &norm_binary_file="") const;
 
 private:
 

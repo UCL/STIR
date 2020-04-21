@@ -62,10 +62,6 @@ public:
     void set_cuda_verbosity(const bool cuda_verbosity)
     { _cuda_verbosity = cuda_verbosity; }
 
-    /// Set listmode binary file
-    void set_listmode_binary_file(const std::string &listmode_binary_file)
-    { _listmode_binary_file = listmode_binary_file; }
-
     /// Set start time
     void set_start_time(const int start_time)
     { _start_time = start_time; }
@@ -73,6 +69,14 @@ public:
     /// Set stop time
     void set_stop_time(const int stop_time)
     { _stop_time = stop_time; }
+
+    /// Set listmode binary file
+    void set_listmode_binary_file(const std::string &listmode_binary_file)
+    { _listmode_binary_file = listmode_binary_file; }
+
+    /// Set norm binary file
+    void set_norm_binary_file(const std::string &norm_binary_file)
+    { _norm_binary_file = norm_binary_file; }
 
     /// This function does the actual work
     virtual void process_data();
@@ -89,6 +93,15 @@ public:
     shared_ptr<ProjData> get_randoms_sptr() const
     { return _randoms_sptr; }
 
+    /// Get norm
+    shared_ptr<ProjData> get_norm_sptr() const
+    {
+        if (_norm_binary_file.empty())
+            throw std::runtime_error(
+                "Set norm binary filename before extracting listmode.");
+        return _norm_sptr;
+    }
+
 private:
 
     /// Check input values are as expected
@@ -97,11 +110,13 @@ private:
     int _span;
     char _cuda_device;
     bool _cuda_verbosity;
-    std::string _listmode_binary_file;
     int _start_time, _stop_time;
+    std::string _listmode_binary_file;
+    std::string _norm_binary_file;
     shared_ptr<ProjData> _prompts_sptr;
     shared_ptr<ProjData> _delayeds_sptr;
     shared_ptr<ProjData> _randoms_sptr;
+    shared_ptr<ProjData> _norm_sptr;
 };
 
 END_NAMESPACE_STIR
