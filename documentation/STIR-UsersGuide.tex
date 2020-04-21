@@ -1890,7 +1890,7 @@ These steps are now discussed in more detail.\\[1cm]
 
 \cmdline{simulate\_scatter simulate\_scatter.par}
 Note that this if you enable the \texttt{downsample\_scanner} option, the class currently simulates
-scatter for the downsampled scanner, and needs to be followed by upsampling.
+scatter for the downsampled scanner, and needs to be followed by upsampling (see below).
 
 Example \texttt{simulate\_scatter.par}
 \begin{verbatim}
@@ -1911,7 +1911,7 @@ PET Single Scatter Simulation Parameters :=
 
    ; downsample the template projection data
    downsample scanner := 0 ; default value is off!
-   ; if the above is 1, let STIR do the downsampling.
+   ; if the above is 1, let STIR do the downsampling (recommended!).
    ; This is safer than doing it yourself, physical size will be preserved etc.
    ; With the following settings it should use sensible defaults
    downsampled scanner number of detectors per ring := -1
@@ -1968,72 +1968,14 @@ detector pairs. You can reduce this if your scanner has a narrower FOV, but be c
 make it too small (otherwise you will get strange behaviour at the edge when upsampling the scatter estimate).
 Because of a limitation in the upsampling routine, it is currently recommended to have ring difference 0 only in this
 template.
-\item You can construct a ``subsampled" attenuation image using \texttt{zoom\_image}. 
- STIR SSS will select 1 scatter point per voxel in this attenuation image.\\
- Careful: \texttt{zoom\_image} will by default scale the voxel values.    
- For example
- \begin{verbatim}
-  # zoom to larger voxels 
-  zoom_image --scaling preserve-values zoomed.hv image_mu.hv 21 .25 0 0 5 .1626
- \end{verbatim}
-  The exact number of voxels and zoom does not matter too much (as long as you cover the 
-  whole object), but the offset parameters to zoom\_image
-  \textbf{HAVE TO BE ZERO} and the number of voxels (in both input and output image)
-  \textbf{HAVE TO BE ODD}\footnote{See the Wiki for more information on offset conventions.}
+\item You can construct the ``subsampled" attenuation image using \texttt{zoom\_image}. 
+  There is however a current STIR limitation described on \url{https://github.com/UCL/STIR/issues/495}{Github issue 495}
+  that imposes a relation between the number of voxels and zoom. It is therefore strongly recommended to let
+  \texttt{simulate\_scatter} take care of this (you can safely set either the z-zoom or the z-size, and xy-size has to be odd).
+  We perform a consistency check in the code to make sure results will be fine.
 \end{itemize}
 
-\cmdline{%
-upsample\_and\_fit\_single\_scatter \textbackslash \\
-					--min-scale-factor <number> \textbackslash \\
-					--max-scale-factor <number> \textbackslash \\
-					--remove-interleaving <1|0> \textbackslash \\
-					--half-filter-width <number> \textbackslash \\
-					--output-filename <filename> \textbackslash \\
-					--data-to-fit <filename> \textbackslash \\
-					--data-to-scale <filename> \textbackslash \\
-					--norm <filename> \textbackslash \\
-					--weights <filename>%
-}
-This program takes the coarse scatter estimate, upsamples it to the size of the emission data (\textit{data-to-fit}) and 
-performs ``tail-fitting'': the tails in the sinograms are supposed to contain only scattered counts, so the upsampled
-scatter estimate is scaled to fit the emission data in the tails. The tails are determined from the \textit{weights}
-parameter.
-
-\begin{description}
-\item[min-scale-factor,max-scale-factor]: Both min and max scale factors are set such that the scaling does not explode for some reason. 
-STIR's scatter routine is scaled such that scale-factor=1 is appropriate to model single scatter only. 
-For human patients, the presence of multiple scatter and out-of-FOV scatter means that the actual 
-scale factor will be a bit more than 1. How much will depend
-on your scanner, the size of the patient etc. In most cases it shouldn't be
-more than 2. Therefore, limiting the scale factor between 0.9 and 2 is probably a good idea.
-\item[remove-interleaving]: Remove the interleaving in the coarse scatter estimate before upscaling (it is recommended to set this to 1)
-\item[half-filter-width]: width of filter to apply on estimated scale factors (in axial direction). The filter is a simple boxcar.
-\item[output-filename]: Scatter projection data at the emission data settings
-\item[data-to-fit]: Normalised Emission sinogram (corrected for randoms) 
-\item[data-to-scale]: Course scatter sinogram 
-\item[norm]: optional parameter to specify normalisation appropriate for the emission data (see below).
-  The parameter expects the filename of a .par file with the following keywords
-  \begin{verbatim}
-  Bin Normalisation parameters:=
-  type:= <type info as usual>
-  <other keywords for the chosen type>
-  END:=
-  \end{verbatim}
-\item[weights]: This is the mask sinogram, or any other weighting factors on projection space that is used to define the region of scaling. 
-\end{description}
-If the emission data was pre-normalised, the \textit{norm} parameter should not be used. However, this strategy fails for
-scanners which have zero detection efficiency in some bins (as pre-normalisation cannot work in those bins). Therefore,
-it is also possible to use emission data without normalisation, but pass the normalisation info to the fitting. In effect, what this 
-will do is find scale factors $\alpha$ that minimise
-\[  \sum_b w_b (D_b - \alpha U_b/N_b)^2 \]
-with $b$ an index running over the bins in the sinograms, $D$ the data to fit (normally randoms-corrected emission), $N$ the 
-normalisation factors, $U$ the upsampled scatter estimate. (If no normalisation is given, $N=1$). The output of the program is the
-final scatter estimate:
-\[S_b =  \alpha U_b/N_b \]
-
-The procedure of upsampling involves B-Splines interpolation for the tangential (Cubic), axial (Cubic) and
-view (Linear) dimensions, while for oblique segments, currently the interpolation is achieved by applying the
-pseudo-inverse transform of Single Slice Rebinning as described in [Tso05].
+See below for information on upsampling.
 
 \subsubsection{Scatter estimation}
 The scatter estimation is based on images that do not include scatter, therefore an iterative procedure
@@ -2041,6 +1983,10 @@ is needed such that scatter is eliminated progressively. In the first iteration,
 overestimated and thus images are overcorrected for it. Then, in the second iteration scatter
 is underestimated. The mean value of the two scatter estimates can be used for scatter correction. Two/three
 iterations are usually enough to estimate a good approximation of scatter.
+
+There are a lot of parameters that can be set in scatter estimation. It is highly recommended to use
+the example parameter files provided in the \textt{examples} folder. In particular, you could check
+the fully working example for a NEMA phantom provides for the Siemens mMR.
 
 \cmdline{%
 estimate\_scatter scatter\_estimate.par}
@@ -2118,6 +2064,9 @@ scatter simulation parameter filename := ${scatter_pardir}/scatter_simulation.pa
 ; next option is the default
 use scanner downsampling in scatter simulation := 1
 
+;; specify how to run the reconstructions
+; you should use a large voxel size to save time.
+; Important to use filtering to avoid problems with the downsampling.
 reconstruction parameter filename := ${scatter_pardir}/run_reconstruction.par 
 ; could use keyword here instead
 ; reconstruction type := ...
@@ -2141,11 +2090,16 @@ upsampling half filter width := 3
 End Scatter Estimation Parameters :=
 \end{verbatim}
 This still needs documenting. Apologies.
+Some parameters are
+similar to what is described below.
 
+\subsubsubsection{tail-fitting}
 Performance of the scatter estimation is strongly determined by the tail-fitting. By default, the
 ``tails'' are determined by forward projecting an image mask (normally constructed by thresholding the
-attenuation image). Alternatively, you can pass a file such that it will find the tails itself. Parameters are
-similar to what'sdescribed below.
+attenuation image, but you can supply one) and thresholding in the sinogram.
+Alternatively, you can pass a file
+using the \texttt{mask projdata filename} parameter. You could  use
+a separate utility for creating this mask.
 \cmdline{%
 create\_tail\_mask\_from\_ACFs		--ACF-filename <projdata> \textbackslash \\
 					--ACF-threshold <number (1.1)> \textbackslash \\
@@ -2159,8 +2113,61 @@ create\_tail\_mask\_from\_ACFs		--ACF-filename <projdata> \textbackslash \\
 \item[output-filename] The file that new projection data will be stored
 \end{description}
 
-After tail-fitting, the scale factors can be thresholded (if there would be no out-of-FOV
-nor multiple scatter, the scale factors should be around $1$).
+The following utility can be used to manually upsample with tail-fitting. Its underlying code is used in
+the \textt{scatter\_estimate} utility above.
+
+\cmdline{%
+upsample\_and\_fit\_single\_scatter \textbackslash \\
+					--min-scale-factor <number> \textbackslash \\
+					--max-scale-factor <number> \textbackslash \\
+					--remove-interleaving <1|0> \textbackslash \\
+					--half-filter-width <number> \textbackslash \\
+					--output-filename <filename> \textbackslash \\
+					--data-to-fit <filename> \textbackslash \\
+					--data-to-scale <filename> \textbackslash \\
+					--norm <filename> \textbackslash \\
+					--weights <filename>%
+}
+This program takes the coarse scatter estimate, upsamples it to the size of the emission data (\textit{data-to-fit}) and 
+performs ``tail-fitting'': the tails in the sinograms are supposed to contain only scattered counts, so the upsampled
+scatter estimate is scaled to fit the emission data in the tails. The tails are determined from the \textit{weights}
+parameter.
+
+\begin{description}
+\item[min-scale-factor,max-scale-factor]: Both min and max scale factors are set such that the scaling does not explode for some reason. 
+STIR's scatter routine is scaled such that scale-factor=1 is appropriate to model single scatter only. 
+For human patients, the presence of multiple scatter and out-of-FOV scatter means that the actual 
+scale factor will be a bit more than 1. How much will depend
+on your scanner, the size of the patient etc. In most cases it shouldn't be
+more than 2. Therefore, limiting the scale factor between 0.9 and 2 is probably a good idea.
+\item[remove-interleaving]: Remove the interleaving in the coarse scatter estimate before upscaling (it is recommended to set this to 1)
+\item[half-filter-width]: width of filter to apply on estimated scale factors (in axial direction). The filter is a simple boxcar.
+\item[output-filename]: Scatter projection data at the emission data settings
+\item[data-to-fit]: Normalised Emission sinogram (corrected for randoms) 
+\item[data-to-scale]: Course scatter sinogram 
+\item[norm]: optional parameter to specify normalisation appropriate for the emission data (see below).
+  The parameter expects the filename of a .par file with the following keywords
+  \begin{verbatim}
+  Bin Normalisation parameters:=
+  type:= <type info as usual>
+  <other keywords for the chosen type>
+  END:=
+  \end{verbatim}
+\item[weights]: This is the mask sinogram, or any other weighting factors on projection space that is used to define the region of scaling. 
+\end{description}
+If the emission data was pre-normalised, the \textit{norm} parameter should not be used. However, this strategy fails for
+scanners which have zero detection efficiency in some bins (as pre-normalisation cannot work in those bins). Therefore,
+it is also possible to use emission data without normalisation, but pass the normalisation info to the fitting. In effect, what this 
+will do is find scale factors $\alpha$ that minimise
+\[  \sum_b w_b (D_b - \alpha U_b/N_b)^2 \]
+with $b$ an index running over the bins in the sinograms, $D$ the data to fit (normally randoms-corrected emission), $N$ the 
+normalisation factors, $U$ the upsampled scatter estimate. (If no normalisation is given, $N=1$). The output of the program is the
+final scatter estimate:
+\[S_b =  \alpha U_b/N_b \]
+
+The procedure of upsampling involves B-Splines interpolation for the tangential (Cubic), axial (Cubic) and
+view (Linear) dimensions, while for oblique segments, currently the interpolation is achieved by applying the
+pseudo-inverse transform of Single Slice Rebinning as described in [Tso05].
 
 
 \subsubsection{Limitations}
