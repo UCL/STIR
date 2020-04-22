@@ -2,7 +2,8 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000 - 2009-04-30, Hammersmith Imanet Ltd
     Copyright (C) 2011-07-01 - 2012, Kris Thielemans
-    Copyright (C) 2013, 2016 University College London
+    Copyright (C) 2013, 2016, 2018, 2020 University College London
+    Copyright (C) 2018 STFC
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -33,6 +34,7 @@
 #include "stir/ImagingModality.h"
 #include "stir/ProjDataInfoCylindricalArcCorr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/IO/stir_ecat_common.h"
 #include <numeric>
 #include <functional>
 
@@ -269,15 +271,7 @@ bool InterfileRawDataHeaderSiemens::post_processing()
       {
         error("Interfile warning: 'number of segments' and length of 'segment table' are not consistent");
       }
-    // same order as in stir_ecat7
-    // Siemens always stores segments as 0, -1, +1, ...
-    segment_sequence.resize(num_segments);
-    segment_sequence[0] = 0;
-    for (int segment_num = 1; segment_num <= num_segments/2; ++segment_num)
-      {
-        segment_sequence[2 * segment_num - 1] = -segment_num;
-        segment_sequence[2 * segment_num] = segment_num;
-      }
+    segment_sequence = ecat::find_segment_sequence(*data_info_ptr);
     //XXX check if order here and segment_table are consistent
   }
 

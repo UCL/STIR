@@ -33,6 +33,7 @@
 #define __stir_IO_stir_ecat_common_H__
 
 #include "stir/common.h"
+#include <vector>
 
 //*************** namespace macros
 #if !defined(STIR_NO_NAMESPACE)
@@ -68,6 +69,7 @@ START_NAMESPACE_STIR
 class NumericType;
 class ByteOrder;
 class Scanner;
+class ProjDataInfo;
 
 START_NAMESPACE_ECAT
 
@@ -114,6 +116,14 @@ short find_ECAT_system_type(const Scanner& scanner);
   \ingroup ECAT
   Returns a Scanner(Scanner::Unknown_Scanner) object when the scanner is not recognised. */
 Scanner* find_scanner_from_ECAT_system_type(const short system_type);
+
+//! Return the sequence of how Siemens stores segments
+/*!
+  \ingroup ECAT
+   ECAT 7,8 always stores segments as 0, -1, +1, ... (numbering is in STIR convention)
+ */
+std::vector<int>
+find_segment_sequence(const ProjDataInfo& pdi);
 
 END_NAMESPACE_ECAT
 

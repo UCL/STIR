@@ -159,6 +159,8 @@ These are only minimally documented at the present stage unfortunately.
 <li><tt>list_image_values</tt> now has options to print coordinates in LPS as opposed to indices, print in CSV, or suppress the title row.</li>
 <li><tt>list_lm_countrates</tt> is a new list mode utility to output total counts per specified time interval.</li>
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
+<li>Normalisation class for Siemens ECAT8, allowing for the <i>virtual</i> crystals. This needed 2 extra functions in <code>Scanner</code>
+to know how many virtual crystals there are.</li>
 <li>add Verbosity level (currently only to be set from interactive languages)</li>
 <li>Added the anatomical parallel level sets (PLS) prior. If an uniform anatomical image is provided it will work as a (smoothed) total variation (TV) prior. </li>
 <li>We added <code>SeparableGaussianArrayFilter</code> and <code>SeparableGaussianImageFilter</code> (based on old code in <tt>experimental</tt> which has now been removed). This filter constructs the kernel by sampling a Gaussian. It is therefore different from the Metz filter with power 0, as that is constructed by sampling a Gaussian in frequency space (and can therefore have negative values in image space).</li>
