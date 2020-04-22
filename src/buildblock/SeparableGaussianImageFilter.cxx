@@ -1,3 +1,34 @@
+//
+//
+/*!
+
+  \file
+  \ingroup ImageProcessor
+  \brief Implementations for class stir::SeparableGaussianImageFilter
+
+  \author Kris Thielemans
+  \author Sanida Mustafovic
+  \author Ludovica Brusaferri
+
+*/
+/*
+    Copyright (C) 2000- 2009, Hammersmith Imanet Ltd
+    Copyright (C) 2018, 2019, UCL
+
+    This file is part of STIR.
+
+    This file is free software; you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation; either version 2.1 of the License, or
+    (at your option) any later version.
+
+    This file is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Lesser General Public License for more details.
+
+    See STIR/LICENSE.txt for details
+*/
 
 #include "stir/SeparableGaussianImageFilter.h"
 #include "stir/VoxelsOnCartesianGrid.h"
@@ -17,6 +48,7 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 
 
   if(dynamic_cast<const VoxelsOnCartesianGrid<float>*>(&density)== 0)
+
     {
       warning("SeparableGaussianImageFilter can only handle images of type VoxelsOnCartesianGrid");
       return Succeeded::no;
@@ -24,10 +56,7 @@ virtual_set_up(const DiscretisedDensity<3,elemT>& density)
 
 
   const BasicCoordinate< num_dimensions,float> rescale = dynamic_cast<const VoxelsOnCartesianGrid<float>*>(&density)->get_grid_spacing();
-
-
   gaussian_filter = SeparableGaussianArrayFilter<num_dimensions,elemT>(fwhms/rescale,max_kernel_sizes,normalise);
-
   return Succeeded::yes;
 
 }
@@ -39,7 +68,6 @@ SeparableGaussianImageFilter<elemT>::
 virtual_apply(DiscretisedDensity<3,elemT>& density) const
 
 {
-
 
  gaussian_filter(density);
 
@@ -99,7 +127,7 @@ set_defaults()
    base_type::set_defaults();
    fwhms.fill(0);
    max_kernel_sizes.fill(-1);
-   normalise = false;
+   normalise = true;
 
 }
 
@@ -120,7 +148,28 @@ initialise_keymap()
     this->parser.add_stop_key("END Separable Gaussian Filter Parameters");
 }
 
-  
+template <typename elemT>
+void
+SeparableGaussianImageFilter<elemT>::
+set_fwhms(const BasicCoordinate< num_dimensions,float>& arg)
+{
+ fwhms = BasicCoordinate<num_dimensions,float>(arg);
+}
+
+template <typename elemT>
+void
+SeparableGaussianImageFilter<elemT>::
+set_max_kernel_sizes(const BasicCoordinate< num_dimensions,int>& arg)
+{
+  max_kernel_sizes  = BasicCoordinate<num_dimensions,int>(arg);
+}
+template <typename elemT>
+void
+SeparableGaussianImageFilter<elemT>::
+set_normalise(const bool arg)
+{
+  normalise = arg;
+}
 
 
 template<>

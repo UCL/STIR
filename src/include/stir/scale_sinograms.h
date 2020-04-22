@@ -56,7 +56,8 @@ Succeeded scale_sinograms(ProjData& output_proj_data,
     scale_factor = sum(numerator * weights) / sum(denominator * weights)
   \endcode
 
-  \todo currently this function calls error() when the denominator gets too small
+  Currently this function sets the scale factor or a sinogram to 1 (and calls warning())
+  when the denominator gets too small.
 */
 Array<2,float>
   get_scale_factors_per_sinogram(const ProjData& numerator_proj_data,

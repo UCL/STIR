@@ -39,6 +39,8 @@ InputStreamFromROOTFileForECATPET(std::string _filename,
                                   bool _exclude_scattered, bool _exclude_randoms, int _maximum_order_of_scatter,
                                   float _low_energy_window_1, float _up_energy_window_1,
                                   float _low_energy_window_2, float _up_energy_window_2,
+                                  bool _exclude_scattered, bool _exclude_randoms,
+                                  float _low_energy_window, float _up_energy_window,
                                   int _offset_dets):
     base_type(),
     crystal_repeater_x(crystal_repeater_x), crystal_repeater_y(crystal_repeater_y), crystal_repeater_z(crystal_repeater_z),

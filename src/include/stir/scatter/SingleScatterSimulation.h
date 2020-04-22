@@ -58,21 +58,17 @@ public:
     virtual ~SingleScatterSimulation();
 
     virtual Succeeded process_data();
-
     //! gives method information
     virtual std::string method_info() const;
-
     //! prompts the user to enter parameter values manually
     virtual void ask_parameters();
-
-
+    //! Perform checks and intialisations
+    virtual Succeeded set_up();
 
     void initialise(const std::string& parameter_filename);
 
     virtual void set_defaults();
     virtual void initialise_keymap();
-
-    virtual Succeeded set_up();
 
     //! used to check acceptable parameter ranges, etc...
     virtual bool post_processing();

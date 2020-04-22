@@ -34,7 +34,7 @@ START_NAMESPACE_STIR
 //! \author Nikos Efthimiou
 //!
 class ROOTListmodeInputFileFormat :
-        public InputFileFormat<CListModeData >
+        public InputFileFormat<ListModeData >
 {
 public:
     virtual const std::string

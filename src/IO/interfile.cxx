@@ -391,10 +391,9 @@ interfile_get_data_file_name_in_header(const string& header_file_name,
 {
   const string dir_name_of_binary_data =
     get_directory_name(data_file_name);
-  if (dir_name_of_binary_data.size() == 0 ||
-      is_absolute_pathname(data_file_name))
+  if (dir_name_of_binary_data.size() == 0)
     {
-      // data_dirname is empty or it's an absolute path
+      // data_dirname is empty
       return data_file_name;
     }
   const string dir_name_of_header =
@@ -579,25 +578,48 @@ write_basic_interfile_image_header(const string& header_file_name,
     interfile_get_data_file_name_in_header(header_file_name, image_file_name);
  
   output_header << "!INTERFILE  :=\n";
-  output_header << "name of data file := " << data_file_name_in_header << endl;
-  output_header << "!GENERAL DATA :=\n";
+  const bool is_spect = exam_info.imaging_modality.get_modality() == ImagingModality::NM;
+  if (!is_spect && exam_info.imaging_modality.get_modality() != ImagingModality::PT)
+    warning("Writing interfile header for a modality that is neither PET nor SPECT. This isn't really defined. There will be some PET keywords anyway.");
+
+  write_interfile_modality(output_header, exam_info);
   if (!exam_info.originating_system.empty())
     output_header << "originating system := "
                   << exam_info.originating_system << endl;
-  write_interfile_modality(output_header, exam_info);
+
+#if 0
+  //we don't have a conformant implementation of Interfile 3.3, even for SPECT
+  if (is_spect)
+    output_header << "!version of keys := 3.3\n";
+  else
+    output_header << "!version of keys := STIR3.0\n";
+#else
+  output_header << "!version of keys := STIR3.0\n";
+#endif
+
+  output_header << "name of data file := " << data_file_name_in_header << endl;
+  output_header << "!GENERAL DATA :=\n";
   write_interfile_patient_position(output_header, exam_info);
   output_header << "!GENERAL IMAGE DATA :=\n";
-  output_header << "!type of data := PET\n";
+  output_header << "!type of data := " << (is_spect ? "Tomographic" : "PET") << '\n';
   output_header << "imagedata byte order := " <<
     (byte_order == ByteOrder::little_endian 
      ? "LITTLEENDIAN"
      : "BIGENDIAN")
 		<< endl;
-  output_header << "!PET STUDY (General) :=\n";
-  write_interfile_time_frame_definitions(output_header, exam_info);
-  write_interfile_energy_windows(output_header, exam_info);
-  write_interfile_image_data_descriptions(output_header, data_type_descriptions);
-  output_header << "!PET data type := Image\n";
+
+  if (is_spect)
+    {
+      output_header << "!SPECT STUDY (General) :=\n";
+    }
+  else
+    {
+      output_header << "!PET STUDY (General) :=\n";
+    }
+  if (!is_spect)
+    {
+      output_header << "!PET data type := Image\n";
+    }
   output_header << "process status := Reconstructed\n";
 
   output_header << "!number format := ";    
@@ -639,6 +661,11 @@ write_basic_interfile_image_header(const string& header_file_name,
 		    << first_pixel_offsets.z() << '\n';
     }
   
+
+  write_interfile_time_frame_definitions(output_header, exam_info);
+  write_interfile_energy_windows(output_header, exam_info);
+  write_interfile_image_data_descriptions(output_header, data_type_descriptions);
+
   for (int i=1; i<=scaling_factors.get_length();i++)
     {
       // only write scaling factors and offset if more than 1 frame or they are not default values

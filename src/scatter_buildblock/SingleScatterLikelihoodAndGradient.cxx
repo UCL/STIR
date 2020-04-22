@@ -450,22 +450,6 @@ L_G_for_one_scatter_point(VoxelsOnCartesianGrid<float>& gradient,
     if (cos_incident_angle_AS*cos_incident_angle_BS<0)
     return 0;
 
-#ifndef NDEBUG
-    {
-        // check if mu-value ok
-        // currently terribly shift needed as in sample_scatter_points (TODO)
-        const VoxelsOnCartesianGrid<float>& image =
-        dynamic_cast<const VoxelsOnCartesianGrid<float>&>(*this->density_image_for_scatter_points_sptr);
-        const CartesianCoordinate3D<float> voxel_size = image.get_voxel_size();
-        const float z_to_middle =
-        (image.get_max_index() + image.get_min_index())*voxel_size.z()/2.F;
-        CartesianCoordinate3D<float> shifted=scatter_point;
-        shifted.z() += z_to_middle;
-        assert(scatter_point_mu==
-                (*this->density_image_for_scatter_points_sptr)[this->density_image_for_scatter_points_sptr->get_indices_closest_to_physical_coordinates(shifted)]);
-    }
-#endif
-
 #ifndef NEWSCALE
     /* projectors work in pixel units, so convert attenuation data
      from cm^-1 to pixel_units^-1 */

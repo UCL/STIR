@@ -2,6 +2,7 @@
 \batchmode
 \documentclass{article}
 \usepackage{geometry}
+\usepackage{amsmath}
 %\usepackage{a4wide}
 %\usepackage{layout}
 
@@ -39,7 +40,7 @@
 \\[3cm]
 
 \textbf{{\huge User's Guide\\
- Version 3.1}}
+ Version 4.0}}
 \end{center}
 
 \end{spacing}
@@ -253,8 +254,8 @@ A helpful note: You can specify just to make a single ``target'',
 using \texttt{make <target>}. All executable names are targets that
 make just the required executable (e.g., \texttt{make FBP2D}). A
 useful target for developers is to just make the tests, using
-\texttt{make tests}. So \texttt{make tests && make test} would build
-then run the tests.
+\texttt{make BUILD\_TESTS}. So \texttt{make BUILD\_TESTS \&\& make test}
+would build and then run the tests.
 
 On Windows or MacOSX, the procedure is essentially the same, except that you will likely have
 to specify more locations. When using Visual Studio, XCode or other IDEs as  your build system,
@@ -341,7 +342,7 @@ Here are some standard CMake variables that might be useful.
 \item \textit{CMAKE\_INSTALL\_PREFIX} specifies where the final installation has to occur. CMake
 provides normally a default in a system location, but you could set it for instance to
 \texttt{./install} to put the files inside your build directory.
-\item \textit{{CMAKE\_CXX\_STANDARD} can be used to tell CMake to add flags to your compiler to use
+\item \textit{CMAKE\_CXX\_STANDARD} can be used to tell CMake to add flags to your compiler to use
 a particular version of the C++ standard (if it supports it). It is now recommended to set 
 this to \texttt{11}. This is necessary e.g. for ROOT 6 support. Other possible values are
 \texttt{98}, \texttt{14} and \texttt{17} (not tested yet).
@@ -354,7 +355,7 @@ specify the full path to the actual executable, this should be sufficient. If no
 \texttt{PYTHON\_LIBRARY} as well.
 
 There are various other variables that can be set, some of which are only visible if you toggled
-the display of \textt{Advanced} variables on. They should only be set by advanced users, or if a package
+the display of \texttt{Advanced} variables on. They should only be set by advanced users, or if a package
 cannot be found. For example, if CMake cannot find \textit{boost}, you will have to set \texttt{BOOST\_ROOT}.
 
 \subsubsection{
@@ -424,7 +425,9 @@ some point).
 Running tests}
 
 We \textbf{highly recommend} running test programs after building. There are currently two
-sets of tests. The first set tests various components of \textit{STIR}. This process is described on the Wiki.
+sets of tests. The first set tests various components of
+\textit{STIR}. This process is described on the Wiki, but briefly can
+be run using \texttt{make BUILD\_TESTS \&\& make test}.
 The second set of tests is available via the \textit{STIR} web-site, where we 
 we provide test reconstructions as part of the
 \textbf{recon\_test\_pack}, with an 
@@ -663,7 +666,8 @@ assumes the patient is in HFS position}. Only if DICOM is used and the correct D
 (0018, 5100) will the orientation be correct.
 
 Note that as DICOM files often store only a single slice, \textit{STIR} attempts to find
-other slices belonging to the same series/time frame/gate.
+other slices belonging to the same series. When there are multiple time frames/gates in a folder, 
+these may be incorrectly treated as a single volume.
 
 \subsubsection{SimSET files}
 There are some preliminary files to make it easier to use SimSET and \textit{STIR} together in the
@@ -768,6 +772,18 @@ You can use it as follows:
 \cmdline{lm\_to\_projdata\_bootstrap par\_filename seed}
 
 The seed is a positive integer (do not use $0$). Specifying different seeds will give you different noise realisations.
+You can use the same parameter file as for \texttt{lm\_to\_projdata}.
+
+\subsubsection{
+lm\_to\_projdata\_with\_random\_rejection}
+As before, but using random rejection of events. This is useful to generate multiple sub-samples 
+from a long list mode file to study variance.
+
+You can use it as follows:
+
+\cmdline{lm\_to\_projdata\_with\_random\_rejection par\_filename seed ratio}
+
+The seed is a positive integer (do not use $0$). Specifying different seeds will give you different noise realisations. The ratio is a number between 0 and 1, the default value is 0.5 which will save half of the events.
 You can use the same parameter file as for \texttt{lm\_to\_projdata}.
 
 \subsubsection{
@@ -1645,6 +1661,119 @@ OSMAPOSLParameters :=
 End:=
 \end{verbatim}
 
+{ \subsubsubsection{HKEM}
+}
+\label{sec:HKEM}
+  { \subsubsubsubsection{Algorithm description}
+  }
+  Hybrid kernelised expectation maximisation(HKEM) and kernelised expectation maximisation (KEM) iterative algorithms
+  are implemented corresponding to the one presented by Deidda D et al, ``Hybrid PET-MR list-mode kernelized expectation maximization reconstruction",
+  Inverse Problems, 2019, DOI: https://doi.org/10.1088/1361-6420/ab013f. However, this allows
+  also sinogram-based reconstruction. Each voxel value of the image, $ \boldsymbol{\lambda}$, can be represented as a
+  linear combination using the kernel method.  If we have an image with prior information, we can construct for each voxel
+  $ j $ of the emission image a feature vector, $ \boldsymbol{v}_j $, using the prior information. The voxel value,
+  $\lambda_j$, can then be described using the kernel matrix 
+  \[
+   \lambda_j=  \sum_{l=1}^L \alpha_l k_{jl}
+  \]
+  \noindent
+  where $k_{jl}$ is the $jl^{th}$ kernel element of the matrix, $\boldsymbol{K}$.
+  The resulting algorithm with OSEM, for example, is the following:
+
+  \[
+  \alpha^{(n+1)}_j =  \frac{ \alpha^{(n)}_j }{\sum_{m} k^{(n)}_{jm} \sum_i p_{mi}} \sum_{m}k^{(n)}_{jm}\sum_i p_{mi}\frac{ y_i }{\sum_{q} p_{iq} \sum_l k^{(n)}_{ql}\alpha^{(n)}_l  + s_i}
+  \]
+  \noindent
+  where the  element, $ jl $, of the kernel can be written as:
+
+  \[
+    k^{(n)}_{jl} = k_m(\boldsymbol{v}_j,\boldsymbol{v}_l) \cdot k_p(\boldsymbol{z}^{(n)}_j,\boldsymbol{z}^{(n)}_l);
+  \]
+  \noindent
+  with
+
+  \[
+   k_m(\boldsymbol{v}_j,\boldsymbol{v}_l) = \exp \left(\tiny - \frac{\|  \boldsymbol{v}_j-\boldsymbol{v}_l \|^2}{2 \sigma_m^2} \right) \exp \left(- \frac{\tiny \|  \boldsymbol{x}_j-\boldsymbol{x}_l \|^2}{ \tiny 2 \sigma_{dm}^2} \right)
+  \]
+  \noindent
+  being the MR component of the kernel and
+
+  \[
+   k_p(\boldsymbol{z}^{(n)}_j,\boldsymbol{z}^{(n)}_l) = \exp \left(\tiny - \frac{\|  \boldsymbol{z}^{(n)}_j-\boldsymbol{z}^{(n)}_l \|^2}{2 \sigma_p^2} \right) \exp \left(\tiny - \frac{\|  \boldsymbol{x}_j-\boldsymbol{x}_l \|^2}{ \tiny{2 \sigma_{dp}^2}} \right)
+  \]
+  \noindent
+  is the part coming from the emission iterative update. Here, the Gaussian kernel functions have been modulated by the distance between voxels in the image space.
+
+Below is an excerpt of a possible parameter file for KOSMAPOSL. A complete parameter file
+can be found in \textbf{STIR/samples/}. The changes in this parameter file includes the MR anatomical prior images and the kernel-based parameters. 
+
+
+ \begin{verbatim}
+ An example of a KOSMAPOSL parameter file can be found in examples/samples/. It is similar to the OSMAPOSL parameter file withe following extra keywords
+
+KOSMAPOSL Parameters:=
+
+;the following disables the alpha coefficient output:
+disable output :=1
+
+
+; here we have the possibility to choose the parameters which define the kernel
+; matrix and the name of the anatomical image. the following are the defaults values:
+
+; 1 (default): use hybrid kernel (prior from MR and PET estimate)
+; OR
+; 0 kernel is MR-only
+hybrid:=1
+
+; Gaussian scaling parameter for the anatomical prior (units of image intensity)
+; It controls the edge preservation from the anatomical image, the bigger the stronger
+; default: 1
+sigma_m:= 1
+
+; Gaussian scaling parameter for the PET estimate (units of PET image intensity)
+; It controls the edge preservation from the functional image, the bigger the stronger
+; default: 1
+sigma_p:=1
+
+
+; NB: sigma_dm and sigma_dp should be the same
+; Spatial Gaussian scaling parameter for the anatomical prior (mm)
+; default: 1 (usual range 1-5)
+sigma_dm:=5
+
+; Spatial Gaussian scaling parameter for the PET prior (mm)
+; default: 1 (usual range 1-5)
+sigma_dp:=5
+
+; Number of neigbouring voxels to compare: (num_neighbours X num_neighbours X num_neighbours)
+; default: 3
+number of neighbours:= 3
+
+; Number of non-zero elements in the feature vectors. This makes you choose the size of your feature vector by default we only have one element
+; default: 1
+number of non-zero feature elements:=1
+
+; this are the file names of the anatomical images (at the moment we can accept only one image)
+anatomical image filenames:= {MRbrain.hv}
+
+; the following should be 1 if you want to reconstruct 2D data
+only_2D:=1
+
+; the following is the output prefix of the PET reconstructed image
+kernelised output filename prefix :=KOSMAPOSL
+
+objective function type:= PoissonLogLikelihoodWithLinearModelForMeanAndProjData
+PoissonLogLikelihoodWithLinearModelForMeanAndProjData Parameters:=
+
+.
+.
+.
+
+End KOSMAPOSL Parameters :=
+  \end{verbatim}
+
+
+
 \subsubsection{
 Filtered back projection (FBP2D)}
 
@@ -1733,7 +1862,7 @@ the default backprojector used by FBP3DRP, has a central artefact
 on some systems (including Sparc and 64-bit AMD and Intel processors).
 
 \subsection{
-Scatter Correction}
+Scatter Estimation and simulation}
 Coincidence events where one or more of the photons are scattered form a major contribution to the data
 in 3D PET. This scatter background needs to be estimated and taken into account during reconstruction. In
 \textit{STIR 2.1}, a version of the Single Scatter Simulation ( \textit{SSS}) algorithm [Wat96, Wat00,
@@ -1741,14 +1870,94 @@ Wat97, Wat04, Wer02, Poe03] has been implemented and evaluated [Tso04].
 Polycarpou et al describe in detail how to perform scatter correction
 using STIR [Pol11].
 
-\subsubsection{Data Initialisation \label{sec:scatter_data_initialisation}}
+Since \textit{STIR 4.0}, there is a class \texttt{ScatterEstimation} and executable
+\texttt{scatter\_estimation} that performs the iterative process necessary to estimate
+the scatter from measured data.\footnote{%
+There is also a script \texttt{estimate\_scatter.sh} that performs most of the steps by
+calling various other executables, as detailed below. However, it is strongly recommended to
+ignore this script.}
+
+A full example of scatter estimation (and other steps) is provided in \texttt{examples/Siemens-mMR}.
+The following describes the various components.
+
+\subsubsection{Scatter simulation}
+The actual scatter simulation process consists of $2$ steps:
+\begin{itemize} 
+\item Use \textbf{simulate\_scatter} to find subsampled (single) scatter estimate from current emission image
+\item Use \textbf{upsample\_and\_fit\_single\_scatter}
+\end{itemize} 
+These steps are now discussed in more detail.\\[1cm]
+
+\cmdline{simulate\_scatter simulate\_scatter.par}
+Note that this if you enable the \texttt{downsample\_scanner} option, the class currently simulates
+scatter for the downsampled scanner, and needs to be followed by upsampling.
+
+Example \texttt{simulate\_scatter.par}
+\begin{verbatim}
+Scatter Simulation Parameters:=
+; threshold below which not to bother putting a scatter point
+; in a voxel (in cm^-1)
+   attenuation_threshold :=.01
+; Place the scatter points in a random position of a voxel or in the centre
+   random := 1
+; Caching (of the line integrals) speeds up the estimation drastically.
+   use_cache := 1
+   activity_image_filename := ACTIVITY_IMAGE
+   attenuation_image_filename := DENSITY_IMAGE
+   template_projdata_filename := SUBSAMPLED_PROJECTION_DATA_TEMPLATE
+   output_filename_prefix := OUTPUT_PROJECTION_DATA
+
+   ; downsample the template projection data
+   downsample scanner := 0 ; default value is off!
+   ; if the above is 1, let STIR do the downsampling.
+   ; This is safer than doing it yourself, physical size will be preserved etc.
+   ; These settings try to sensible defaults
+   downsampled scanner number of detectors per ring := -1
+   downsampled scanner number of rings := -1
+
+; advanced usage (don't use these!)
+   ; use your own down-sampled attenuation image
+   attenuation_image_for_scatter_points_filename :=
+   ; or specify dimensions yourself
+   zoom XY for attenuation image for scatter points := -1
+   zoom Z for attenuation image for scatter points := -1
+   XY size of downsampled image for scatter points := -1
+   Z size of downsampled image for scatter points := -1
+   ; you can write the zoomed image to file
+   attenuation image for scatter points output filename :=
+
+End Scatter Simulation Parameters:=
+\end{verbatim}
+\begin{description}
+\item[activity\_image]
+current estimate of the activity (or emission) image
+\item[attenuation\_image] mu-map or attenuation image (at 511 keV and in units cm$^{-1}$),
+used to compute the line-integrals (in the exponentials) in the Klein-Nishina formula.
+\item[template\_proj\_data]
+``sinogram'' template. If \texttt{downsample\_scanner} is on, it
+is first downsampled.
+\item[random]
+select random scatter points in each selected scatter voxel (as in [Wat96])
+\item[attenuation\_threshold]
+allows excluding voxels with too low attenuation as scatter points (all voxels will be used for the attenuation line integrals)
+\item[attenuation\_image\_for\_scatter\_points] "subsampled" attenuation image (at 511 keV and in units cm${}^{-1}$), 
+used to select scatter points (and their corresponding mu),
+normally computed automatically. This is used to speed up your
+ calculation. When caching line integrals (which is the default), it also means that the scatter estimation
+ needs less memory.
+\end{description}
+The reason we use $2$ different attenuation images is to be able to investigate if the sampling used for
+the attenuation in those $2$ situations makes any difference. Unfortunately, we didn't complete that
+investigation so cannot recommend what to use for the original attenuation image (for large uniform
+objects, it won't make any difference, for objects with small features of high attenuation, it might). 
+As discussed in the literature however, you can safely reduce the number of scatter points and still get
+good estimates.
+
+\textit{Optional Data Initialisation}
+If you want more control over the scatter simulation, you can provide the following input data yourself. Note
+however that is not recommended as you can easily do things wrong.
 \begin{itemize}
-\item Apply randoms correction (and optionally normalisation) to the emission data (this will be used to scale the scatter estimate)
-\item Reconstruct/get attenuation image (ideally use odd number of voxels for zoom\_image step below).
-\item Calculate Attenuation Correction Factors (ACFs)
-\item Use \textbf{create\_tail\_mask\_from\_ACFs} to estimate the region that will be used for scaling
-\item Reconstruct emission image without scatter correction
-\item Construct a ``sub-sampled sinogram" template (i.e. same geometrical characteristics but
+\item You can construct a ``sub-sampled sinogram" template (i.e. same geometrical characteristics but
 less rings and detectors without arc-correction) as suggested in literature (e.g. in [Tso04]). This template
 sinogram should have no compression (number of views = half the number of detectors per ring, and span = 1 (see the
 STIR glossary). 
@@ -1757,19 +1966,13 @@ detector pairs. You can reduce this if your scanner has a narrower FOV, but be c
 make it too small (otherwise you will get strange behaviour at the edge when upsampling the scatter estimate).
 Because of a limitation in the upsampling routine, it is currently recommended to have ring difference 0 only in this
 template.
-\item Construct a ``subsampled" attenuation image using \texttt{zoom\_image} and \texttt{stir\_math}. 
- STIR SSS will select 1 scatter point per voxel in this attenuation image. This can be used to speed up your
- calculation. When caching line integrals (which is the default), it also means that the scatter estimation
- needs less memory.\\
- Careful: \texttt{zoom\_image} will scale the voxel values with the product of the zoom-factors in each dimension. 
- You need to undo this scaling for the ``subsampled'' image.    
+\item You can construct a ``subsampled" attenuation image using \texttt{zoom\_image}. 
+ STIR SSS will select 1 scatter point per voxel in this attenuation image.\\
+ Careful: \texttt{zoom\_image} will by default scale the voxel values.    
  For example
  \begin{verbatim}
   # zoom to larger voxels 
-  zoom_image zoomed.hv image_mu.hv 21 .25 0 0 5 .1626
-  # correct back to mu-values
-   stir_math --accumulate  --including-first --times-scalar .1626 \
-     --times-scalar .25 --times-scalar .25  zoomed.hv
+  zoom_image --scaling preserve-values zoomed.hv image_mu.hv 21 .25 0 0 5 .1626
  \end{verbatim}
   The exact number of voxels and zoom does not matter too much (as long as you cover the 
   whole object), but the offset parameters to zoom\_image
@@ -1777,70 +1980,6 @@ template.
   \textbf{HAVE TO BE ODD}\footnote{See the Wiki for more information on offset conventions.}
 \end{itemize}
 
-\cmdline{%
-create\_tail\_mask\_from\_ACFs		--ACF-filename <projdata> \textbackslash \\
-					--ACF-threshold <number (1.1)> \textbackslash \\
-					--output-filename <projdata> \textbackslash \\
-					--safety-margin <0>%
-}
-\begin{description}
-\item[ACF-filename] Attenuation Correction Factors Projection Data Filename
-\item[ACF-threshold] Value used to threshold ACF and creates the mask, defaults to 1.01
-\item[safety-margin] This dilates the mask for a number of safety bins in tangential direction
-\item[output-filename] The file that new projection data will be stored
-\end{description}
-
-\subsubsection{SSS}
-The actual scatter estimation process consists of $2$ steps:
-\begin{itemize} 
-\item Use \textbf{estimate\_scatter} to find subsampled (single) scatter estimate from current emission image
-\item Use \textbf{upsample\_and\_fit\_single\_scatter}
-\end{itemize} 
-These steps are now discussed in more detail.\\[1cm]
-
-\cmdline{estimate\_scatter scatter.par}
-Example \texttt{scatter.par}
-\begin{verbatim}
-Scatter Estimation Parameters:=
-; threshold below which not to bother putting a scatter point
-; in a voxel (in cm^-1)
-   attenuation_threshold :=.01
-; Place the scatter points in a random position of a voxel or in the centre
-   random := 1
-; Caching (of the line integrals) speeds up the estimation drastically.
-   use_cache := 1
-; The resolution of the scanner (at 511 keV) as given in the literature
-; given as a ratio (example value is 22%)
-   energy_resolution :=.22
-; Acquisition settings
-   lower_energy_threshold :=350
-   upper_energy_threshold :=650
-   activity_image_filename := ACTIVITY_IMAGE
-   density_image_filename := DENSITY_IMAGE
-   density_image_for_scatter_points_filename := LOW_RESOLUTION_DENSITY_IMAGE
-   template_proj_data_filename := SUBSAMPLED_PROJECTION_DATA_TEMPLATE
-   output_filename_prefix := OUTPUT_PROJECTION_DATA
-End Scatter Estimation Parameters:=
-\end{verbatim}
-\begin{description}
-\item[activity\_image]
-current estimate of the activity (or emission) image
-\item[density\_image] mu-map or attenuation image (at 511 keV and in units cm$^{-1}$),
-used to compute the line-integrals (in the exponentials) in the Klein-Nishina formula.
-\item[density\_image\_for\_scatter\_points] "subsampled" attenuation image (at 511 keV and in units cm${}^{-1}$), 
-used to select scatter points (and their corresponding mu),
-as discussed in section \ref{sec:scatter_data_initialisation}
-\item[template\_proj\_data]
-``subsampled sinogram'' template,
-as discussed in section \ref{sec:scatter_data_initialisation}
-\end{description}
-The reason we use $2$ different attenuation images is to be able to investigate if the sampling used for
-the attenuation in those $2$ situations makes any difference. Unfortunately, we didn't complete that
-investigation so cannot recommend what to use for the original attenuation image (for large uniform
-objects, it won't make any difference, for objects with small features of high attenuation, it might). 
-As discussed in the literature however, you can safely reduce the number of scatter points and still get
-good estimates. 
-\\[1cm]
 \cmdline{%
 upsample\_and\_fit\_single\_scatter \textbackslash \\
 					--min-scale-factor <number> \textbackslash \\
@@ -1890,39 +2029,132 @@ normalisation factors, $U$ the upsampled scatter estimate. (If no normalisation 
 final scatter estimate:
 \[S_b =  \alpha U_b/N_b \]
 
-The procedure of scaling involves B-Splines interpolation for the tangential (Cubic), axial (Cubic) and
+The procedure of upsampling involves B-Splines interpolation for the tangential (Cubic), axial (Cubic) and
 view (Linear) dimensions, while for oblique segments, currently the interpolation is achieved by applying the
 pseudo-inverse transform of Single Slice Rebinning as described in [Tso05].
 
-\subsubsection{Iterative loop (if necessary)}
+\subsubsection{Scatter estimation}
 The scatter estimation is based on images that do not include scatter, therefore an iterative procedure
-is needed such that scatter is eliminated progressively. In the first iteration, scatter (B.2) is
-overestimated and thus images are overcorrected (B.3) for it. Then, in the second iteration (B.2) scatter
-is underestimated. The mean value of the two scatter estimates can be used for scatter correction. Two
+is needed such that scatter is eliminated progressively. In the first iteration, scatter is
+overestimated and thus images are overcorrected for it. Then, in the second iteration scatter
+is underestimated. The mean value of the two scatter estimates can be used for scatter correction. Two/three
 iterations are usually enough to estimate a good approximation of scatter.
 
-\begin{itemize}
-\item Reconstruct emission image with scatter estimate\\
-Two options exist:
-\begin{itemize}
-\item	FBP: Correct the scatter estimate for attenuation and subtract from the precorrected emission data. 
-Run FBP with sufficient filtering.
-   \[\mathrm{Image} = \mathrm{FBP}\left(\mathrm{ACF}*(N*(P-R)-S)\right) \]
-\item Iterative (e.g. OSEM or OSSPS): Use the following for the additive sinogram (\textit{A}).
-    \[A=(R*N+S)*(\mathrm{ACF})  \]
-\end{itemize}
-where
-  \begin{description}
-   \item[N] Normalization Factors, 
-   \item[ACF] Attenuation Correction Factors,
-   \item[R] Random Projection Data,
-   \item[S] Scatter Projection Data as estimated using  \textit{STIR},
-   \item[P] Measured Projection Data (prompts)
-  \end{description}
-\end{itemize}
+\cmdline{%
+estimate\_scatter scatter\_estimate.par}
+Example \texttt{scatter\_estimate.par}
+\begin{verbatim}
+Scatter Estimation Parameters :=
+
+;;; input
+
+; Measured data
+input file := ${sino_input}
+
+; Attenuation Image
+attenuation image filename := ${atnimg}
+
+; Normalisation coefficients & attenuation data
+; If only one normalisation input is set; 
+; it will be assumed that they are attenuation correction factors. 
+;; The algorithm will assume that the first is normalisation, i.e. the 
+;; efficiency factors and the second the attenuation. You should not 
+;; change this order. 
+Bin Normalisation type := Chained
+	Chained Bin Normalisation Parameters:=
+   Bin Normalisation to apply first:= from ProjData
+           Bin Normalisation From ProjData :=
+            normalisation projdata filename:= ${NORM}
+       End Bin Normalisation From ProjData:=
+
+	Bin Normalisation to apply second:= From ProjData
+		Bin Normalisation From ProjData :=
+           normalisation projdata filename:= ${acf3d}
+        End Bin Normalisation From ProjData:=
+		
+END Chained Bin Normalisation Parameters:=
+
+;; Background data (not  normalised)
+background projdata filename := ${randoms3d}
+
+;;; Output
+; Export scatter estimates of each iteration 
+export scatter estimates of each iteration := 1
+
+output scatter estimate name prefix := ${scatter_prefix}
+output additive estimate name prefix:= ${total_additive_prefix}
+
+;;; Parameters
+
+;Run in debug mode
+;; A new folder called extras will be created, in which many 
+;; extra files will be stored (default is off)
+run in debug mode := 0
+
+;; Mask for tail-fitting
+; It will be computed by masking the attenuation image, and forward projecting that.
+; If recompute mask projdata == 0, then the filename must be set.
+recompute mask projdata := 1
+mask projdata filename := ${mask_projdata_filename}
+; Input or output filename - depends on recompute  
+recompute mask image := 1
+mask image filename := ${mask_image}
+mask attenuation image min threshold  := 0.003
+mask attenuation image postfilter filename := ${scatter_pardir}/postfilter_Gaussian.par
+;End of Mask
+
+; Run simulation and reconstruction in 2D (this is currently the only possibility)
+run in 2d projdata := 1
+
+; ScatterSimulation parameters 
+scatter simulation parameters file := ${scatter_pardir}/scatter_simulation.par 
+; next option is the default
+use scanner downsampling in scatter simulation := 1
+
+reconstruction parameter template file := ${scatter_pardir}/run_reconstruction.par 
+
+; number of times which the Scatter Estimation will iterate. Default is 5
+number of scatter iterations := ${num_scat_iters}
+
+; Average the first two activity images to reduce the initial oscillatoins
+do average at 2 := 1
+
+;; tail fitting parameters
+;Parameter file for the tail fitting of the scatter data (within the mask)
+tail fitting par filename := ${scatter_pardir}/tail_fitting.par
+
+maximum scatter scaling factor := 2 
+minimum scatter scaling factor := 0.4
+
+; smooth scale factors (defaults to 3)
+upsampling half filter width := 3
+
+End Scatter Estimation Parameters :=
+\end{verbatim}
+
+Performance of the scatter estimation is strongly determined by the tail-fitting. By default, the
+``tails'' are determined by forward projecting an image mask (normally constructed by thresholding the
+attenuation image). Alternatively, you can pass a file such that it will find the tails itself. Parameters are
+similar to what'sdescribed below.
+\cmdline{%
+create\_tail\_mask\_from\_ACFs		--ACF-filename <projdata> \textbackslash \\
+					--ACF-threshold <number (1.1)> \textbackslash \\
+					--output-filename <projdata> \textbackslash \\
+					--safety-margin <0>%
+}
+\begin{description}
+\item[ACF-filename] Attenuation Correction Factors Projection Data Filename
+\item[ACF-threshold] Value used to threshold ACF and creates the mask, defaults to 1.01
+\item[safety-margin] This dilates the mask for a number of safety bins in tangential direction
+\item[output-filename] The file that new projection data will be stored
+\end{description}
+
+After tail-fitting, the scale factors can be thresholded (if there would be no out-of-FOV
+nor multiple scatter, the scale factors should be around $1$).
+
 
 \subsubsection{Limitations}
-The three separate executables need to be merged in one together with the iterative loop. The
+The
 \textit{SSS} can estimate 3D scatter that is measured by indirect rings but no interpolation of indirect
 rings is currently in place. Therefore, upsampling of oblique sinograms is currently handled in a simple
 way i.e. (pseudo)-inverse SSRB but ideally interpolation of the 3D sinograms will be useful. In the
@@ -2570,6 +2802,24 @@ dynamic image as separate images.
 To use it, simply give the pattern of the output filename, the input filename, and optionally
 supply a parameter file for saving the output images.
 
+{ \subsubsubsection{ctac\_to\_mu\_values}
+}
+
+This executable can be used to convert a CT or CT for attenuation correction (CTAC) to linear attenuation coefficients
+(mu-values) in cm-1. To use it, pass the output filename, input volume file name (if this is a DICOM series, then
+choose one file from the directory), the JSON file containing the conversion slopes, the manufacturer of the scanner
+(this needs to be present in the JSON file) and the target keV. It should normally be run as follows
+
+\cmdline{ctac\_to\_mu\_values {\textbackslash}\\
+-o output\_filename {\textbackslash}\\
+-i input\_volume {\textbackslash}\\
+-j slope\_filename {\textbackslash}\\
+-m manufacturer\_name {\textbackslash}\\
+{[}-v kilovoltage\_peak{]} {\textbackslash}\\
+-k target\_photon\_energy}
+
+The optional \textit{kilovoltage\_peak} is the kilovoltage peak (kVp) used to acquire the data. If no value is given,
+a kVp of 120 is assumed. 
 
 \subsubsection{
 Converting data}
@@ -3384,6 +3634,15 @@ the data processor .
 
 See also the online documentation for the class \textbf{DataProcessor}.
 
+As of STIR version 4.0, it is now possible to use data processors 
+on images prior to forward projection and following back projection
+with any projector. This supercedes functionality provided by 
+ \textbf{PresmoothingForwardProjectorByBin} and 
+ \textbf{PostsmoothingBackProjectorByBin},
+  which can now be considered deprecated. Examples are available
+in \textbf{examples/samples/forward\_projector\_proj\_matrix\_ray\_tracing\_pre\_smoothing.par} 
+(and a similarly named back-projector example).
+
 { \subsubsubsection{Separable Convolution}
 }
 This implements spatial non-periodic convolution with a 3D separable 
@@ -3553,6 +3812,38 @@ The maximum width of the kernel (in pixels). Prior to version
 0.93 of the PARAPET library this was fixed to the number of pixels 
 in the input image (in that direction).
 \end{description}
+
+{ \subsubsubsection{Separable Gaussian Filter}
+}
+This is a separable 3D Gaussian filter for images discretised on
+a Cartesian voxel grid. These filters are composed of 3 1D filter
+kernels, one for the x,y and z directions each. Each 1D filter
+is specified by a Full Width at Half Maximum (FWHM) parameter
+(in millimetres), and a maximum spatial kernel width.
+The kernel values are obtained by sampling a Gaussian.
+
+The filter is normalised to 1 by default, but the user can choose to disable this option.
+
+
+{ \subsubsubsubsection{Parameters}
+}
+Sample parameters are given below
+\begin{verbatim}
+separable gaussian filter parameters :=
+x-dir filter fwhm (in mm) := 6
+y-dir filter fwhm (in mm) := 6
+z-dir filter fwhm (in mm) := 6
+x-dir maximum kernel size := 129
+y-dir maximum kernel size := 129
+z-dir maximum kernel size := 31
+Normalise filter to 1 := 1
+end separable gaussian filter parameters :=
+\end{verbatim}
+
+Default values are:
+(i) fwhm = 0 , which means no filtering
+(ii) maximum kernel size = -1 , which means unrestricted
+(iii) normalise filter to 1 = 1, which means that the filter is normalised to 1.
 
 { \subsubsubsection{Median}
 }
@@ -3754,17 +4045,20 @@ This implements a quadratic Gibbs prior. The gradient of the prior is computed a
   
 { \subsubsubsection{PLS}
 This implements the  anatomical penalty function, Parallel Level Sets (PLS),  proposed by Matthias J. Ehrhardt et. al [Ehr16]. Note that
-  PLS becomes smoothed TV when an uniform anatomical image is provided.  The prior function is the following:
+  PLS becomes smoothed TV when an uniform anatomical image is provided.  
+The prior has 2 parameters alpha and eta. It is computed for an image $ f $ as
 
   \[
   \phi(f) = \sqrt{\alpha^2 + |\nabla v|^2 - {\langle\nabla f,\xi\rangle}^2}
   \]
-  where $ f $ is the PET image and $ \alpha $ is a parameter that controls the edge-preservation property of PLS.  The $ \xi $ is the normalised gradient calculated as follows:
+  where $ f $ is the PET image, $ \xi $ is the normalised gradient calculated as follows:
 
   \[
   \xi = \frac{\nabla v}{\sqrt{|\nabla v|^2 + \eta^2}}
   \]
-where $ v $ is the anatomical image and $ \eta $ is a parameter for preventing the division by zero problem.
+
+  $ v $ is the anatomical image, $ \alpha $ controls the edge-preservation property of PLS, and depends on the scale of the emission image,
+  and $ \eta $ avoids division by zero, and depends on the scale of the anatomical image. 
 }
 { \subsubsubsubsection{Parameters}
 }
@@ -3774,14 +4068,11 @@ where $ v $ is the anatomical image and $ \eta $ is a parameter for preventing t
   PLS Prior Parameters:=
   penalisation factor :=1
 
-; the following parameter is to avoid division by zero
-; The value depends on the scale of the emission image. 
+  ; 
+  ; alpha controls the edge-preservation property of PLS, and depends on the scale of the emission image. 
+  ; eta avoids division by zero, and depends on the scale of the anatomical image. 
 
   eta:=1
-
-; the following parameter controls the edge-preservation property of PLS. 
-; The value depends on the scale of the emission image. 
-
   alpha:=1
 
   anatomical_filename:=${filename}
@@ -4509,6 +4800,33 @@ END Chained Bin Normalisation Parameters:=
 \end{verbatim}
 
 See also online documentation for class ChainedBinNormalisation.
+
+{ \subsubsubsection{SPECT }
+}
+\label{sec:chainedbinnormalisation}
+This can be used to apply decay correction and uniformity for SPECT. You need to specify the folder where the data and uniformity table are. In addition, for the decay correction it is necessary to specify how many detector heads the scanner has, the acquisition time per angular position, and  the half life of the radioisotope.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Bin Normalisation type := SPECT
+   Bin Normalisation SPECT:=
+      folder_prefix:=folder_prefix
+      projdata filename:=input_sino
+      use_uniformity_factors :=0
+      uniformity_filename:=uniformity_table.dat
+      use_decay_correction:=1
+     
+      half_life:=21600 ;seconds
+      num detector heads:=3
+      rel_angle:=120
+      
+      ;the following is the time of a head position
+      view_time_interval:=15 ;seconds
+
+   End Bin Normalisation SPECT:=
+\end{verbatim}
+
 
 \subsubsection{
 Available shapes}

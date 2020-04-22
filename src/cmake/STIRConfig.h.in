@@ -82,5 +82,6 @@ namespace stir {
 #define USE_PMRT
 #endif
 
+#cmakedefine STIR_PROJECTORS_AS_V3
 
 #endif //  __stir_config__H__

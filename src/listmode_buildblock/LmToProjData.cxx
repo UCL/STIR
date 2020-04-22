@@ -61,8 +61,8 @@ FRAME_BASED_DT_CORR:
 #include "stir/utilities.h"
 
 #include "stir/listmode/LmToProjData.h"
-#include "stir/listmode/CListRecord.h"
-#include "stir/listmode/CListModeData.h"
+#include "stir/listmode/ListRecord.h"
+#include "stir/listmode/ListModeData.h"
 #include "stir/ExamInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 
@@ -175,7 +175,7 @@ initialise_keymap()
   parser.add_key("do pre normalisation ", &do_pre_normalisation);
   parser.add_key("num_segments_in_memory", &num_segments_in_memory);
 
-  //if (lm_data_ptr->has_delayeds()) TODO we haven't read the CListModeData yet, so cannot access has_delayeds() yet
+  //if (lm_data_ptr->has_delayeds()) TODO we haven't read the ListModeData yet, so cannot access has_delayeds() yet
   // one could add the next 2 keywords as part of a callback function for the 'input file' keyword.
   // That's a bit too much trouble for now though...
   {
@@ -206,7 +206,7 @@ post_processing()
       return true;
     }
 
-  lm_data_ptr = stir::read_from_file<CListModeData>(input_filename);
+  lm_data_ptr = stir::read_from_file<ListModeData>(input_filename);
 
   if (template_proj_data_name.size()==0)
     {
@@ -388,12 +388,12 @@ LmToProjData(const char * const par_filename)
 ***************************************************************/
 void
 LmToProjData::
-get_bin_from_event(Bin& bin, const CListEvent& event, const std::pair<int,int> &energy_window_pair) const
+get_bin_from_event(Bin& bin, const ListEvent& event) const
 {  
   if (do_pre_normalisation)
    {
      Bin uncompressed_bin;
-     event.get_bin(uncompressed_bin, *proj_data_info_cyl_uncompressed_ptr, energy_window_pair);
+     event.get_bin(uncompressed_bin, *proj_data_info_cyl_uncompressed_ptr);
      if (uncompressed_bin.get_bin_value()<=0)
       return; // rejected for some strange reason
 
@@ -427,7 +427,7 @@ get_bin_from_event(Bin& bin, const CListEvent& event, const std::pair<int,int> &
     const float bin_value = 1/bin_efficiency;
     // TODO wasteful: we decode the event twice. replace by something like
     // template_proj_data_info_ptr->get_bin_from_uncompressed(bin, uncompressed_bin);
-    event.get_bin(bin, *template_proj_data_info_ptr,energy_window_pair);//, energy_window_pair);
+    event.get_bin(bin, *template_proj_data_info_ptr);//, energy_window_pair);
 
     if (bin.get_bin_value()>0)
       {
@@ -437,7 +437,7 @@ get_bin_from_event(Bin& bin, const CListEvent& event, const std::pair<int,int> &
   }
   else
     {
-      event.get_bin(bin, *template_proj_data_info_ptr,energy_window_pair);//, energy_window_pair);
+      event.get_bin(bin, *template_proj_data_info_ptr);//, energy_window_pair);
     }
 
 } 
@@ -475,7 +475,7 @@ do_post_normalisation(Bin& bin) const
 	    }
 	  else
 	    {
-	      bin.set_bin_value(1/bin_efficiency);
+          bin.set_bin_value(bin.get_bin_value()/bin_efficiency);
 	    }	  
 	}
     }
@@ -501,7 +501,7 @@ get_compression_count(const Bin& bin) const
 ***************************************************************/
 void
 LmToProjData::
-process_new_time_event(const CListTime&)
+process_new_time_event(const ListTime&)
 {}
 
 
@@ -551,10 +551,11 @@ process_data()
     segments (template_proj_data_info_ptr->get_min_segment_num(), 
 	      template_proj_data_info_ptr->get_max_segment_num());
   
-  VectorWithOffset<CListModeData::SavedPosition> 
+  VectorWithOffset<ListModeData::SavedPosition>
     frame_start_positions(1, static_cast<int>(frame_defs.get_num_frames()));
-  shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
-  CListRecord& record = *record_sptr;
+  shared_ptr <ListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
+  ListRecord& record = *record_sptr;
+
   if (!record.event().is_valid_template(*template_proj_data_info_ptr))
 	  error("The scanner template is not valid for LmToProjData. This might be because of unsupported arc correction.");
 
@@ -675,7 +676,7 @@ process_data()
 		     // set value in case the event decoder doesn't touch it
 		     // otherwise it would be 0 and all events will be ignored
 		     bin.set_bin_value(1);
-             get_bin_from_event(bin, record.event(), template_proj_data_ptr->get_exam_info().get_energy_window_pair());
+             get_bin_from_event(bin, record.event());
 
 		     // check if it's inside the range we want to store
 		     if (bin.get_bin_value()>0
@@ -683,17 +684,17 @@ process_data()
 			 && bin.tangential_pos_num()<= proj_data_ptr->get_max_tangential_pos_num()
              && bin.axial_pos_num()>=proj_data_ptr->get_min_axial_pos_num(bin.segment_num())
              && bin.axial_pos_num()<=proj_data_ptr->get_max_axial_pos_num(bin.segment_num())
-             && record.energy().get_energyA_in_keV() >= (low_en_thres[bin.first_energy_window_num()-1])
+             /*&& record.energy().get_energyA_in_keV() >= (low_en_thres[bin.first_energy_window_num()-1])
              && record.energy().get_energyA_in_keV() <= (high_en_thres[bin.first_energy_window_num()-1])
              && record.energy().get_energyB_in_keV() >= (low_en_thres[bin.second_energy_window_num()-1])
-             && record.energy().get_energyB_in_keV() <= (high_en_thres[bin.second_energy_window_num()-1]))
+             && record.energy().get_energyB_in_keV() <= (high_en_thres[bin.second_energy_window_num()-1])*/)
              {
 
 
                 // std::cout<< "energy first: " << bin.first_energy_window_num() << '\n';
                 // std::cout<< "energy second: " << bin.second_energy_window_num() << '\n';
-                 std::cout<< "energy A new: " << record.energy().get_energyA_in_keV() << '\n';
-                 std::cout<< "energy B new: " << record.energy().get_energyB_in_keV() << '\n';
+                // std::cout<< "energy A new: " << record.energy().get_energyA_in_keV() << '\n';
+                 //std::cout<< "energy B new: " << record.energy().get_energyB_in_keV() << '\n';
                      assert(bin.view_num()>=proj_data_ptr->get_min_view_num());
                      assert(bin.view_num()<=proj_data_ptr->get_max_view_num());
             

@@ -71,7 +71,6 @@ public :
    }
 
 
-
   std::string originating_system;
   
   ImagingModality imaging_modality;
@@ -112,6 +111,11 @@ public :
   inline void set_low_energy_thres_vect(std::vector<float> new_val,bool switch_energy = false);
   inline void set_high_energy_thres_vect(std::vector<float> new_val,bool switch_energy = false);
   //@}
+
+  inline bool has_energy_information() const
+  {
+    return (low_energy_thres[0] > 0.f)&&(up_energy_thres[0] > 0.f);
+  }
 
   //! Standard trick for a 'virtual copy-constructor'
   inline ExamInfo* clone() const;

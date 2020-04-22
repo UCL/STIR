@@ -53,8 +53,8 @@ From (<a href="http://wiki.opengatecollaboration.org/index.php/Users_Guide:Defin
         name of data file := ${INPUT_ROOT_FILE}
         name of input TChain := Coincidences
 
-        number of blocks  Y := 1
-        number of blocks  Z := 1
+        number of blocks Y := 1
+        number of blocks Z := 1
         number of crystals X := 1
         number of crystals Y := 1
         number of crystals Z := 4
@@ -97,6 +97,9 @@ public:
                                       bool exclude_scattered, bool exclude_randoms,int maximum_order_of_scatter,
                                       float low_energy_window_1, float up_energy_window_1,
                                       float low_energy_window_2, float up_energy_window_2,
+                                      int blocks_repeater_y, int blocks_repeater_z,
+                                      bool exclude_scattered, bool exclude_randoms,
+                                      float low_energy_window, float up_energy_window,
                                       int offset_dets);
 
     virtual ~InputStreamFromROOTFileForECATPET() {}

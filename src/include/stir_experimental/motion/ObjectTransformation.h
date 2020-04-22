@@ -28,8 +28,7 @@ START_NAMESPACE_STIR
 */
 template <int num_dimensions, class elemT>
 class ObjectTransformation :
-  public RegisteredObject<ObjectTransformation<num_dimensions, elemT> >,
-  public ParsingObject
+  public RegisteredObject<ObjectTransformation<num_dimensions, elemT> >
 {
 public:
 

@@ -131,5 +131,6 @@ echo "Everything seems to be fine !"
 echo 'You could remove all generated files using "rm -f my_* *.log"'
 fi
 
+exit ${ThereWereErrors}
 
 

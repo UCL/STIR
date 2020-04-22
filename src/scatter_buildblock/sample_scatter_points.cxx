@@ -28,8 +28,9 @@
 
 #include "stir/scatter/ScatterSimulation.h"
 #include "stir/VoxelsOnCartesianGrid.h"
+#include "stir/info.h"
 #include <time.h>
-
+#include <boost/format.hpp>
 using namespace std;
 START_NAMESPACE_STIR
 
@@ -95,5 +96,6 @@ sample_scatter_points()
           }
   this->remove_cache_for_integrals_over_activity();
   this->remove_cache_for_integrals_over_attenuation();
+  info(boost::format("ScatterSimulation: using %1% scatter points") % this->scatt_points_vector.size(), 2);
 }
 END_NAMESPACE_STIR 

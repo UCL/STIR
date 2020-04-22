@@ -6,6 +6,7 @@ set(${dir_LIB_SOURCES}
   Array  
   IndexRange 
   PatientPosition
+  ExamData
   ProjData 
   ProjDataInfo 
   ProjDataInfoCylindrical 
@@ -29,6 +30,7 @@ set(${dir_LIB_SOURCES}
   extend_projdata 
   DiscretisedDensity 
   VoxelsOnCartesianGrid 
+  ParseDiscretisedDensityParameters
   utilities 
   interfile_keyword_functions 
   zoom 
@@ -45,6 +47,8 @@ set(${dir_LIB_SOURCES}
 	ArrayFilterUsingRealDFTWithPadding 
 	SeparableArrayFunctionObject 
 	SeparableMetzArrayFilter 
+        SeparableGaussianImageFilter
+        SeparableGaussianArrayFilter
 	MedianArrayFilter3D 
 	MedianImageFilter3D 
 	MinimalArrayFilter3D 

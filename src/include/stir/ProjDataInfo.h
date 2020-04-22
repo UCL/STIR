@@ -365,6 +365,11 @@ public:
   //! Get vertical bed position
   float get_bed_position_vertical() const { return bed_position_vertical; }
   
+  inline bool has_energy_information() const
+  {
+      return scanner_ptr->has_energy_information();
+  }
+
 protected:
   virtual bool blindly_equals(const root_type * const) const = 0;
 

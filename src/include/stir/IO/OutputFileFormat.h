@@ -30,7 +30,6 @@
 #define __stir_IO_OutputFileFormat_H__
 
 #include "stir/RegisteredObject.h"
-#include "stir/ParsingObject.h"
 #include "stir/NumericType.h"
 #include "stir/ByteOrder.h"
 #include <string>
@@ -63,8 +62,7 @@ class Succeeded;
  */
 template <typename DataT>
 class OutputFileFormat : 
-  public RegisteredObject<OutputFileFormat<DataT> >,
-  public ParsingObject
+  public RegisteredObject<OutputFileFormat<DataT> >
 {
 public:
   //! A function to return a default output file format

@@ -326,6 +326,8 @@ class Scanner
   //! set the reference energy of the energy resolution
   //! A negative value indicates, unknown || not set
   inline void set_reference_energy(const float new_num);
+
+  inline bool has_energy_information() const;
   //@} (end of set info)
   //@} (end of set info)
   

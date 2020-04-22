@@ -31,7 +31,7 @@ SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 cmake_minimum_required(VERSION 2.8.3)
 
 # add project source to cmake path such that it can use our find_package modules and .cmake files
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/src/cmake)
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/src/cmake;${CMAKE_MODULE_PATH}")
 include(src/cmake/SetC++Version.cmake)
 
 UseCXX("${CMAKE_CXX_STANDARD}")
@@ -48,14 +48,27 @@ if((${CMAKE_CXX_COMPILER_ID} MATCHES "AppleClang") OR
 endif()
 
 ####### Set Version number etc
-set(VERSION_MAJOR   3   CACHE STRING "Project major version number.")
-set(VERSION_MINOR   1   CACHE STRING "Project minor version number.")
-set(VERSION_PATCH   0   CACHE STRING "Project patch version number.")
-set(VERSION   030100   CACHE STRING "Project version number.")
-mark_as_advanced(VERSION VERSION_MAJOR VERSION_MINOR VERSION_PATCH)
+set(VERSION_MAJOR   4)
+set(VERSION_MINOR   0)
+set(VERSION_PATCH   0-alpha)
+set(VERSION   040000) # only used in STIRConfig.h.in
 
 set(STIR_VERSION
   ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
+
+####### Installation directories
+# Use locations as in
+# https://gitlab.kitware.com/cmake/cmake/blob/master/Source/CMakeInstallDestinations.cmake
+# TODO append version numbers
+if(BEOS)
+  set(STIR_DOC_DIR "documentation/doc/stir")
+elseif(CYGWIN)
+  set(STIR_DOC_DIR "share/doc/stir")
+else()
+  set(STIR_DOC_DIR "doc/stir")
+endif()
+set(STIR_DATA_DIR "share/stir")
+set(ConfigPackageLocation lib/cmake/)
 
 ####### External packages
 # Note: we need to have the find_package statements in the top-level CMakeLists.txt
@@ -64,7 +77,6 @@ set(STIR_VERSION
 #### we need the boost library from boost.org
 set(BOOST_ROOT CACHE PATH "root of Boost")
 find_package( Boost 1.36.0 REQUIRED )
-include_directories(${Boost_INCLUDE_DIRS})
 
 #### optional external libraries. 
 # Listed here such that we know if we should compile extra utilities
@@ -74,11 +86,15 @@ option(DISABLE_AVW "disable use of AVW library" OFF)
 option(DISABLE_RDF "disable use of GE RDF library" OFF)
 option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
 option(DISABLE_CERN_ROOT "disable use of Cern ROOT libraries" OFF)
+option(DISABLE_NLOHMANN_JSON "disable use of nlohmann JSON libraries" OFF)
 option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # disable by default
 
 if(NOT DISABLE_ITK)
    # See if we can find a compiled version of ITK (http://www.itk.org/)
    find_package(ITK QUIET)
+   if (ITK_FOUND)
+      include(${ITK_USE_FILE})
+   endif()
 endif()
 
 if(NOT DISABLE_LLN_MATRIX)
@@ -107,6 +123,18 @@ if(NOT DISABLE_RDF)
   find_package(RDF)
 endif()
 
+if(NOT DISABLE_NLOHMANN_JSON)
+    find_package(nlohmann_json 3.2.0 QUIET)
+    if (nlohmann_json_FOUND)
+        message(STATUS "nlohmann JSON library found.")
+        message(STATUS "The nlohmann JSON library needs C++-11, so we will enable this.")
+        UseCXX(11)
+    endif()
+endif()
+
+# Enable version 3 projectors
+option(STIR_PROJECTORS_AS_V3 "Enable STIR version 3 legacy code" OFF)
+
 #### enable support for ctest
 ENABLE_TESTING()
 
@@ -131,17 +159,31 @@ WRITE_BASIC_PACKAGE_VERSION_FILE(${CMAKE_CURRENT_BINARY_DIR}/STIRConfigVersion.c
 
 ## create files specific to the "installed" version
 
-set(ConfigPackageLocation lib/cmake/)
-
 # Set STIR_INCLUDE_DIRS before exporting such that it will refer to
 # the installed files, not the source.
 set (STIR_INCLUDE_DIRS "include")
+
+# install the registry sources
+install(FILES ${STIR_REGISTRIES} DESTINATION ${STIR_DATA_DIR}/src)
+
+# set STIR_REGISTRIES to this location before export
+# first create a new variable.
+set(INSTALLED_STIR_REGISTRIES)
+foreach(r  ${STIR_REGISTRIES})
+  # get filename without directory
+  get_filename_component(r_filename ${r} NAME)
+  # append this with installed location
+  # (note: have to use CMAKE_INSTALL_PREFIX for CONFIGURE_PACKAGE_CONFIG_FILE to
+  # make the variable relocatable)
+  list(APPEND INSTALLED_STIR_REGISTRIES "${CMAKE_INSTALL_PREFIX}/${STIR_DATA_DIR}/src/${r_filename}")
+endforeach()
+set(STIR_REGISTRIES ${INSTALLED_STIR_REGISTRIES})
 
 CONFIGURE_PACKAGE_CONFIG_FILE(
   src/cmake/STIRConfig.cmake.in
   "${CMAKE_BINARY_DIR}/STIRConfig.cmake"
    INSTALL_DESTINATION "${ConfigPackageLocation}"
-   PATH_VARS STIR_INCLUDE_DIRS
+   PATH_VARS STIR_INCLUDE_DIRS STIR_REGISTRIES # relocatable variables
 )
 
 # create and install STIRTargets*.cmake for the installation-tree

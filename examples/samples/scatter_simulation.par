@@ -1,0 +1,23 @@
+Scatter Simulation :=
+Simulation method := Single Scatter Simulation
+Scatter Simulation Parameters := 
+
+; default values indicated below
+attenuation_threshold :=.01
+random :=1
+use_cache :=1
+
+activity_image_filename := ${ACTIVITY_IMAGE}
+attenuation_image_filename := ${ATTENUATION_IMAGE}
+template_projdata_filename :=  ${TEMPLATE}
+
+; automatically downsample scanner (off by default)
+; output willl be downsampled as well
+downsample scanner := 0
+
+; output filename without extension
+; files will be called "out".hs and "out".log
+output_filename_prefix :=${OUTPUT_PREFIX}
+
+End Scatter Simulation Parameters:=
+End Scatter Simulation:=

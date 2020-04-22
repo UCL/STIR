@@ -1,4 +1,5 @@
 /*
+    Copyright (C) 2018 - 2019 University of Hull
     Copyright (C) 2004 - 2009 Hammersmith Imanet Ltd
     Copyright (C) 2013 - 2016 University College London
     This file is part of STIR.
@@ -52,16 +53,11 @@ START_NAMESPACE_STIR
 
   One non-standard feature is that you can specify a different attenuation image to find the
   scatter points and one to compute the integrals over the attenuation image. The idea is that
-  maybe you want to compute the integrals on a finer grid than you sample the attenuation image.
+  maybe you want to compute the integrals on a finer grid then you sample the attenuation image.
   This is probably not very useful though.
 
   \todo Currently this can only be run by initialising it via parsing of a file. We need
   to add a lot of set/get members.
-
-  \todo This class currently uses a simple Gaussian model for the energy resolution. This model
-  and its parameters (\a reference_energy and \a energy_resolution) really should be moved the
-  the Scanner class. Also the \a lower_energy_threshold and \a upper_energy_threshold should
-  be read from the emission data, as opposed to setting them here.
 
   \todo detector coordinates are derived from ProjDataInfo, but areas and orientations are
   determined by using a cylindrical scanner.
@@ -89,11 +85,14 @@ START_NAMESPACE_STIR
      <i>Assessment of scattered photons in the quantification of the small animal PET studies,</i>
      Eur J Nucl Med Mol I 33:S315-S315 Sep 2006, Proc. EANM 2006, Athens, Greece.
   </li>
+  <li>I Polycarpou, P K Marsden and C Tsoumpas,
+      <i>A comparative investigation of scatter correction in 3D PET</i>,
+      J Phys: Conference Series (317), conference 1, 2011
+  </li>
   </ol>
 */
 
-class ScatterSimulation : public RegisteredObject<ScatterSimulation>,
-        public ParsingObject
+class ScatterSimulation : public RegisteredObject<ScatterSimulation>
 {
 public:
 
@@ -103,32 +102,55 @@ public:
     virtual ~ScatterSimulation();
 
     virtual Succeeded process_data();
-
-
     //! gives method information
     virtual std::string method_info() const = 0;
-
     //! prompts the user to enter parameter values manually
     virtual void ask_parameters();
+    //! \name check functions
+    //@{
+    inline bool has_template_proj_data_info() const
+    { return !stir::is_null_ptr(proj_data_info_cyl_noarc_cor_sptr); }
+    //! Returns true if template_exam_info_sptr has been set.
+    inline bool has_exam_info() const
+    { return !stir::is_null_ptr(template_exam_info_sptr);}
 
-     //! Pointer to hold the current activity estimation
-    shared_ptr<DiscretisedDensity<3,float> > activity_image_sptr;
+    shared_ptr<ExamInfo> get_ExamInfo_sptr() const;
+    //@}
 
-    //!
-    //! \brief set_exam_info_sptr
+    //! \name get functions
+    //@{
+    shared_ptr<ProjData>
+    get_output_proj_data_sptr() const;
+
+    inline int get_num_scatter_points() const
+    { return this->scatt_points_vector.size();}
+    //! Get the template ProjDataInfo
+    shared_ptr<ProjDataInfoCylindricalNoArcCorr> get_template_proj_data_info_sptr() const;
+    //! Get the ExamInfo as shared pointer
+    shared_ptr<ExamInfo> get_exam_info_sptr() const;
+
+    shared_ptr<DiscretisedDensity<3,float> > get_density_image_for_scatter_points_sptr() const;
+    //@}
+
+    //! \name set functions
+    //@{
+
+    void set_template_proj_data_info(const std::string&);
+
+    void set_template_proj_data_info(const ProjDataInfo&);
+
+    void set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
+
+    void set_activity_image(const std::string& filename);
     //! \details Since July 2016, the information for the energy window and energy
     //! resolution are stored in ExamInfo.
-    void
-    set_exam_info_sptr(const shared_ptr<ExamInfo>&);
+    void set_exam_info_sptr(const shared_ptr<ExamInfo>&);
 
+    void set_output_proj_data_sptr(shared_ptr<ProjData>);
 
-    //! find scatter points
-    /*! This function sets scatt_points_vector and scatter_volume. It will also
-        remove any cached integrals as they would be incorrect otherwise.
-    */
-    void
-    sample_scatter_points();
+    void set_density_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
 
+    void set_density_image(const std::string&);
     //! This function depends on the ProjDataInfo of the scanner.
     //! You first have to set that.
     void set_output_proj_data(const std::string&);
@@ -138,55 +160,42 @@ public:
                               const shared_ptr<ProjDataInfo>&,
                               const std::string &);
 
-    void
-    set_output_proj_data_sptr(shared_ptr<ProjData>&);
+    void set_density_image_for_scatter_points_sptr(shared_ptr<DiscretisedDensity<3,float> >);
 
-    shared_ptr<ProjData>
-    get_output_proj_data_sptr();
-
-    //! Get the template ProjDataInfo
-    shared_ptr<ProjDataInfoCylindricalNoArcCorr> get_template_proj_data_info_sptr() const;
-    //! Get the ExamInfo as shared pointer
-    shared_ptr<ExamInfo> get_ExamInfo_sptr() const;
-
-    //! \details Load the scatter template and perform basic checks.
-    void set_template_proj_data_info_sptr(shared_ptr<ProjDataInfo>);
-
-    void set_template_proj_data_info(const std::string&);
-
-    void set_template_proj_data_info(const ProjDataInfo&);
-
-    void set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
-
-    void set_activity_image(const std::string& filename);
-
-    //! create output projection data of same size as template_proj_data_info
-    /*! \warning use set_template_proj_data_info() first.
-
-     Currently always uses Interfile output.
-     \warning If the specified file already exists it will be erased.
-    */
-    //void set_proj_data_from_file(const std::string& filename,
-                                 //       shared_ptr<ProjData>& _this_projdata);
-
-    void set_density_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
-
-    void set_density_image(const std::string&);
-
-    void set_density_image_for_scatter_points_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
-
-    //! If densitiy image for scatter points not set, then run this on the attenuation image.
-    shared_ptr<DiscretisedDensity<3, float> >
-    downsample_image(shared_ptr<DiscretisedDensity<3,float> >, bool scale = true);
-
-    //! set_density_image_for_scatter_points
+    void set_image_downsample_factors(float factor_xy = 1.f, float factor_z = 1.f,
+                                      int _size_zoom_xy = -1, int _size_zoom_z = -1);
+        //! set_density_image_for_scatter_points
     void set_density_image_for_scatter_points(const std::string&);
     //! set the attenuation threshold
     void set_attenuation_threshold(const float);
-
+    //! The scattering point in the voxel will be chosen randomly, instead
+    //! choosing the centre. This will help avoid some artifacts.
     void set_random_point(const bool);
 
     void set_cache_enabled(const bool);
+
+    //@}
+
+    //! This function is a less powerfull tool than directly zooming the image.
+    //! However it will check that the downsampling is done in manner compatible with the
+    //! ScatterSimulation.
+    void downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
+                          int _size_xy = -1, int _size_z = -1);
+
+    //! Downsample the scanner keeping the total axial length the same.
+    /*! If \c new_num_rings<=0, use rings of approximately 2 cm thickness.
+        If \c new_num_dets <=0, use the default set (currently set in set_defaults())
+    */
+    Succeeded downsample_scanner(int new_num_rings = -1, int new_num_dets = -1);
+    //! Downsamples activity and attenuation images to voxel sizes appropriate for the (downsampled) scanner.
+    /*! This step is not necessary but could result in a speed-up in computing the line integrals.
+        It also avoids problems with too high resolution images compared to the downsampled scanner.
+
+	Another way to resolve that is to smooth the images before the scatter simulation.
+	This is currently not implemented in this class.
+	\warning This function should be called after having set all data.
+    */
+    Succeeded downsample_images_to_scanner_size();
 
     //! \name Compton scatter cross sections
     //@{
@@ -225,7 +234,18 @@ public:
     float integral_compton_plateau(const float LT, const float HT, const float FWHM, const float energy) const;
     float integral_flat_continuum(const float LT, const float HT, const float FWHM, const float energy) const;
     float integral_exponential_tail(const float LT, const float HT, const float FWHM, const float energy) const;
-    Succeeded downsample_scanner(int new_num_rings = -1, int new_num_dets = -1);
+    //! find scatter points
+    /*! This function sets scatt_points_vector and scatter_volume. It will also
+        remove any cached integrals as they would be incorrect otherwise.
+    */
+    void
+    sample_scatter_points();
+
+    virtual Succeeded set_up();
+
+    //! Output the log of the process.
+    virtual void write_log(const double simulation_time, const float total_scatter);
+    
 
 protected:
 
@@ -245,8 +265,6 @@ protected:
     //! the par file. The corresponding set functions should be used either
     //! for files that are not stored in the drive.
     virtual bool post_processing();
-
-    virtual Succeeded set_up();
 
     enum image_type{act_image_type, att_image_type};
     struct ScatterPoint
@@ -359,13 +377,8 @@ protected:
 
     shared_ptr< DiscretisedDensity<3, float> > density_image_sptr;
 
-    shared_ptr< DiscretisedDensity<3, float> > density_image_for_scatter_points_sptr;
-
-
-    int total_detectors;
-
-    Array<2,float> cached_activity_integral_scattpoint_det;
-    Array<2,float> cached_attenuation_integral_scattpoint_det;
+    //! Pointer to hold the current activity estimation
+    shared_ptr<DiscretisedDensity<3,float> > activity_image_sptr;
 
     //! set-up cache for attenuation integrals
     /*! \warning This will not remove existing cached data (if the sizes match). If you need this,
@@ -400,25 +413,31 @@ protected:
         of memory, you can switch this off, but performance will suffer dramatically.
     */
     bool use_cache;
-
     //! Filename for the initial activity estimate.
     std::string activity_image_filename;
-
     //! Zoom factor on plane XY. Defaults on 1.f.
     float zoom_xy;
     //! Zoom factor on Z axis. Defaults on 1.f.
     float zoom_z;
-    //! Optional to the zoom_xy the final size of the image can be set
-    int size_xy;
-    //! Optional to the zoom_z the final size of the image can be set
-    int size_z;
-
-    //! If full scanner template is provided then downsample it
+    //! Zoomed image size on plane XY. Defaults on -1.
+    int zoom_size_xy;
+    //! Zoomed image size on Z axis. Defaults on -1.
+    int zoom_size_z;
+    //! Number of rings of downsampled scanner
     int downsample_scanner_rings;
-
-    //! If full scanner template is provided then downsample it
+    //! Number of detectors per ring of downsampled scanner
     int downsample_scanner_dets;
 
+    bool downsample_scanner_bool;
+
+ private:
+    int total_detectors;
+
+    Array<2,float> cached_activity_integral_scattpoint_det;
+    Array<2,float> cached_attenuation_integral_scattpoint_det;
+    shared_ptr< DiscretisedDensity<3, float> > density_image_for_scatter_points_sptr;
+
+    bool _already_set_up;
 };
 
 END_NAMESPACE_STIR

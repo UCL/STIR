@@ -165,17 +165,10 @@ private:
 #endif
 };
 
-//! Class for record with time data
-class CListEnergyDataSAFIR
-{
-public:
-
-};
-
 
 
 //! Class for general record, containing a union of data, time and raw record and providing access to certain elements.
-class CListRecordSAFIR : public CListRecord, public CListTime, public CListEnergy, public CListEventSAFIR<CListRecordSAFIR>
+class CListRecordSAFIR : public CListRecord, public ListTime, public CListEventSAFIR<CListRecordSAFIR>
 {
 public:
 	typedef CListEventDataSAFIR DataType;
@@ -194,8 +187,6 @@ public:
 	virtual bool is_event() const
 	{ return time_data.type == 0; }
 
-    virtual bool is_energy() const
-    { return true;}
 
 	virtual CListEvent&  event()
 	{ return *this; }
@@ -209,18 +200,12 @@ public:
 	virtual const CListEventSAFIR<CListRecordSAFIR>&  event_SAFIR() const
 	{ return *this; }
 
-	virtual CListTime&   time()
+    virtual ListTime&   time()
 	{ return *this; }
 
-	virtual const CListTime&   time() const
+    virtual const ListTime&   time() const
 	{ return *this; }
 
-
-    virtual CListEnergy&   energy()
-    { return *this; }
-
-    virtual const CListEnergy&   energy() const
-    { return *this; }
 
 
 	virtual bool operator==(const CListRecord& e2) const
@@ -235,10 +220,6 @@ public:
 	inline Succeeded set_time_in_millisecs(const unsigned long time_in_millisecs)
 	{ return time_data.set_time_in_millisecs(time_in_millisecs); }
 
-    inline double get_energyA_in_keV() const
-    { return 0.F;  }
-    inline double get_energyB_in_keV() const
-    { return 0.F;  }
 
 	inline bool is_prompt() const { return !(event_data.isRandom); }
 
@@ -267,7 +248,6 @@ private:
 	union {
 		CListEventDataSAFIR event_data;
 		CListTimeDataSAFIR time_data;
-        CListEnergyDataSAFIR energy_data;
 	    boost::int64_t raw;
 	};
 	BOOST_STATIC_ASSERT(sizeof(boost::uint64_t)==8);

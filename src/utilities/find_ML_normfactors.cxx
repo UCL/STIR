@@ -107,8 +107,8 @@ END_NAMESPACE_STIR
 static void print_usage_and_exit(const std::string& program_name)
 {
   std::cerr<<"Usage: " << program_name << " [--display | --print-KL | --include-block-timing-model] \\\n"
-       << " out_filename_prefix measured_data model num_iterations num_eff_iterations\n"
-       << " set num_iterations to 0 to do only efficiencies\n";
+	   << " out_filename_prefix measured_data model num_iterations num_eff_iterations\n"
+	   << " set num_iterations to 0 to do only efficiencies\n";
   exit(EXIT_FAILURE);
 }
 
@@ -127,33 +127,33 @@ int main(int argc, char **argv)
   bool do_KL = false;
   bool do_block = false;
 
-   // first process command line options
+  // first process command line options
   while (argc>0 && argv[0][0]=='-' && argc>=1)
     {
       if (strcmp(argv[0], "--display")==0)
-    {
-      do_display = true;
-      --argc; ++argv;
-    }
+	{
+	  do_display = true;
+	  --argc; ++argv;
+	}
       else if (strcmp(argv[0], "--print-KL")==0)
-    {
-      do_KL  = true;
-      --argc; ++argv;
-    }
+	{
+	  do_KL  = true;
+	  --argc; ++argv;
+	}
       else if (strcmp(argv[0], "--include-block-timing-model")==0)
-    {
-      do_block = true;
-      --argc; ++argv;
-    }
+	{
+	  do_block = true;
+	  --argc; ++argv;
+	}
       else
-    print_usage_and_exit(program_name);
+	print_usage_and_exit(program_name);
     }
   // go back to previous counts such that we don't have to change code below
   ++argc; --argv;
-
+  
   if (argc!=6)
     {
-          print_usage_and_exit(program_name);
+      print_usage_and_exit(program_name);
     }
   const int num_eff_iterations = atoi(argv[5]);
   const int num_iterations = atoi(argv[4]);
@@ -308,20 +308,20 @@ int main(int argc, char **argv)
 	  }
           // block norm
 	  {
-        if (do_block)
-             {
+            if (do_block)
+              {
                 det_pair_data = model_det_pair_data;
                 apply_efficiencies(det_pair_data, efficiencies);
                 apply_geo_norm(det_pair_data, norm_geo_data);
                 iterate_block_norm(norm_block_data, measured_block_data, det_pair_data);
-                { // check
-                    for (int a=0; a<measured_block_data.get_length(); ++a)
-                        for (int b=0; b<measured_block_data[0].get_length(); ++b)
-                            if (norm_block_data[a][b]==0 && measured_block_data[a][b]!=0)
-                                warning("block norm 0 at a=%d b=%d measured value=%g\n",
-                                        a,b,measured_block_data[a][b]);
-                 }
-               }
+                { // check 
+                  for (int a=0; a<measured_block_data.get_length(); ++a)
+                    for (int b=0; b<measured_block_data[0].get_length(); ++b)
+                      if (norm_block_data[a][b]==0 && measured_block_data[a][b]!=0)
+                        warning("block norm 0 at a=%d b=%d measured value=%g\n",
+                                a,b,measured_block_data[a][b]);
+                }
+              }
 	    {
 	      char *out_filename = new char[out_filename_prefix.size() + 30];
 	      sprintf(out_filename, "%s_%s_%d_%d.out", 
@@ -330,12 +330,12 @@ int main(int argc, char **argv)
 	      out << norm_block_data;
 	      delete[] out_filename;
 	    }
-        if (do_block && do_KL)
+	    if (do_block && do_KL)
 	      {
 		apply_block_norm(det_pair_data, norm_block_data);
 		std::cerr << "KL " << KL(measured_det_pair_data, det_pair_data, threshold_for_KL) << std::endl;
 	      }
-        if (do_block && do_display)
+	    if (do_block && do_display)		 
 	      {
 		DetPairData norm = det_pair_data;
 		norm.fill(1);

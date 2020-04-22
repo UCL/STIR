@@ -31,9 +31,9 @@
 #include "stir/utilities.h"
 #include "stir/shared_ptr.h"
 #include "stir/ParsingObject.h"
-#include "stir/listmode/CListRecord.h"
+#include "stir/listmode/ListRecord.h"
 #include "stir/listmode/CListEventCylindricalScannerWithDiscreteDetectors.h"
-#include "stir/listmode/CListModeData.h"
+#include "stir/listmode/ListModeData.h"
 #include "stir/TimeFrameDefinitions.h"
 #include "stir/Scanner.h"
 #include "stir/Array.h"
@@ -71,7 +71,7 @@ public:
 
   int max_segment_num_to_process;
   int fan_size;
-  shared_ptr<CListModeData> lm_data_ptr;
+  shared_ptr<ListModeData> lm_data_ptr;
   TimeFrameDefinitions frame_defs;
 
   void compute();
@@ -130,7 +130,7 @@ LmFansums::
 post_processing()
 {
   lm_data_ptr =
-    read_from_file<CListModeData>(input_filename);
+    read_from_file<ListModeData>(input_filename);
 
   const int num_rings =
       lm_data_ptr->get_scanner_ptr()->get_num_rings();
@@ -191,9 +191,9 @@ compute()
   unsigned int current_frame_num = 1;
   {      
     // loop over all events in the listmode file
-    shared_ptr<CListRecord> record_sptr =
+    shared_ptr<ListRecord> record_sptr =
       lm_data_ptr->get_empty_record_sptr();
-    CListRecord& record = *record_sptr;
+    ListRecord& record = *record_sptr;
 
     bool first_event=true;
 
@@ -240,7 +240,7 @@ compute()
                         
             DetectionPositionPair<> det_pos;
             // because of above consistency check, we can use static_cast here (saving a bit of time)
-	    static_cast<const CListEventCylindricalScannerWithDiscreteDetectors&>(record.event()).
+        dynamic_cast<const CListEventCylindricalScannerWithDiscreteDetectors&>(record.event()).
 	      get_detection_position(det_pos);
             const int ra = det_pos.pos1().axial_coord();
             const int rb = det_pos.pos2().axial_coord();

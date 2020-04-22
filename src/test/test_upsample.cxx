@@ -117,7 +117,7 @@ run_tests()
 
 
     unique_ptr<SingleScatterSimulation> sss(new SingleScatterSimulation());
-    sss->set_template_proj_data_info_sptr(proj_data_info_sptr);
+    sss->set_template_proj_data_info(*y.get_proj_data_info_sptr());
     int down_rings = static_cast<int>(scanner_sptr->get_num_rings()/6);
     int down_dets = static_cast<int>(scanner_sptr->get_max_num_views()/6);
 

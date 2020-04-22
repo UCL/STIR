@@ -41,7 +41,7 @@ START_NAMESPACE_STIR
 static MedianImageFilter3D<float>::RegisterIt dummy;
 static MinimalImageFilter3D<float>::RegisterIt dummy1;
 static SeparableCartesianMetzImageFilter<float>::RegisterIt dummy2;
-static SeparableGaussianImageFilter<float>::RegisterIt dummy9;
+static SeparableGaussianImageFilter<float>::RegisterIt dummySGF;
 static SeparableConvolutionImageFilter<float>::RegisterIt dummy5;
 static NonseparableConvolutionUsingRealDFTImageFilter<float>::RegisterIt dummy7;
 static TruncateToCylindricalFOVImageProcessor<float> ::RegisterIt dummy6;
