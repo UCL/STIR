@@ -37,7 +37,7 @@
 : ${do_ChangeLog:=1}
 : ${do_doc:=1}
 : ${do_doxygen:=1}
-: ${do_git_commit:=0}
+: ${do_git_commit:=1}
 : ${do_zip_source:=1}
 : ${do_recon_test_pack:=1}
 : ${do_transfer:=1}
@@ -47,7 +47,7 @@
 : ${do_website_sync:=0}
 
 set -e
-: ${VERSION:=4.0_alpha}
+: ${VERSION:=4.0.0}
 
 : ${REPO:=git@github.com:UCL/STIR} #=~/devel/UCL_STIR}
 : ${CHECKOUTOPTS:=""}
@@ -167,8 +167,7 @@ if [ $do_git_commit = 1 ]; then
     trap "echo ERROR with git" ERR
     cd ${DISTRIB}/STIR
     git commit  -m "updated VERSION.txt etc for release of version $VERSION"
-    echo "Still do"
-    echo "git tag -a stir_rel_XXX -m \"version $VERSION\"; git push --tags"
+    git tag -a stir_rel_$VERSION -m \"version $VERSION\"; git push --tags
 else
     echo "no git commit"
 fi
@@ -237,3 +236,4 @@ if [ $do_website_sync = 1 ]; then
     ./sync-to-sf.sh --del
 fi
 
+echo "still do 'git push'"
