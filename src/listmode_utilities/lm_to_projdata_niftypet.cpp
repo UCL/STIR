@@ -30,7 +30,7 @@ USING_NAMESPACE_STIR
 
 static void print_usage_and_exit( const char * const program_name, const int exit_status)
 {
-    std::cerr << "\n\nUsage : " << program_name << " [-h|--help] listmode_binary_file tstart tstop [-p|--prompts <filename>] [-d|--delayeds <filename>] [-r|--randoms <filename>] [--cuda_device <val>] [-v|--verbose <val>]\n\n";
+    std::cerr << "\n\nUsage : " << program_name << " [-h|--help] listmode_binary_file tstart tstop [-N|--norm_binary <filename>] [-p|--prompts <filename>] [-d|--delayeds <filename>] [-r|--randoms <filename>] [-n|--norm_sino <filename>] [--cuda_device <val>] [-v|--verbose <val>]\n\n";
     exit(exit_status);
 }
 
@@ -58,7 +58,7 @@ int main(int argc, char * argv[])
         argv+=4;
 
         // Set default value for optional arguments
-        std::string p_filename, d_filename, r_filename;
+        std::string p_filename, d_filename, r_filename, input_norm_binary, n_filename;
         char cuda_device(0);
         bool verbose(true);
 
@@ -75,6 +75,14 @@ int main(int argc, char * argv[])
             }
             else if (strcmp(argv[0], "-r")==0 || strcmp(argv[0], "--randoms")==0) {
                 r_filename = argv[1];
+                argc-=2; argv+=2;
+            }
+            else if (strcmp(argv[0], "-N")==0 || strcmp(argv[0], "--norm_binary")==0) {
+                input_norm_binary = argv[1];
+                argc-=2; argv+=2;
+            }
+            else if (strcmp(argv[0], "-n")==0 || strcmp(argv[0], "--norm_sino")==0) {
+                n_filename = argv[1];
                 argc-=2; argv+=2;
             }
             else if (strcmp(argv[0], "--cuda_device")==0) {
@@ -94,11 +102,16 @@ int main(int argc, char * argv[])
             std::cerr << "At least one output filename required.\n";
             print_usage_and_exit(program_name, EXIT_FAILURE);
         }
+        if (input_norm_binary.empty() && !n_filename.empty()) {
+            std::cerr << "To extract norm sinogram, need to supply norm binary file.\n";
+            print_usage_and_exit(program_name, EXIT_FAILURE);
+        }
 
         LmToProjDataNiftyPET lmNP;
         lmNP.set_cuda_device(cuda_device);
         lmNP.set_cuda_verbosity(verbose);
         lmNP.set_listmode_binary_file(input_filename);
+        lmNP.set_norm_binary_file(input_norm_binary);
         lmNP.set_start_time(tstart);
         lmNP.set_stop_time(tstop);
         lmNP.process_data();
@@ -115,6 +128,10 @@ int main(int argc, char * argv[])
         if (!r_filename.empty()) {
             std::cout << "\n saving randoms sinogram to " << r_filename << "\n";
             lmNP.get_randoms_sptr()->write_to_file(r_filename);
+        }
+        if (!n_filename.empty()) {
+            std::cout << "\n saving norm sinogram to " << n_filename << "\n";
+            lmNP.get_norm_sptr()->write_to_file(n_filename);
         }
     }
 

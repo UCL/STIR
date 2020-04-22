@@ -834,6 +834,8 @@ NormCmp get_norm_helper_struct(const std::string &norm_binary_file, const Cnst &
     // additional axial effects
     normc.axe2 = read_from_binary_file<float>(file, normc.naxe);
 
+    normc.axf1 = read_from_binary_file<float>(file, cnt.NSN1);
+
 
 
     // Close the file
