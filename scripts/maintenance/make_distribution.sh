@@ -242,6 +242,7 @@ if [ $do_website_final_version = 1 ]; then
     ln -s STIR_doc_${VERSION}.zip STIR_doc.zip 
     rm -fr doxy
     unzip -u STIR_doc
+    rm -rf contrib
     mv STIR/documentation/* .
     rmdir STIR/documentation
     rmdir STIR
