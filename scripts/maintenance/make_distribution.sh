@@ -48,6 +48,8 @@
 
 set -e
 : ${VERSION:=4.0.0}
+: ${TAG:=stir_rel_${VERSION}}
+
 
 : ${REPO:=git@github.com:UCL/STIR} #=~/devel/UCL_STIR}
 : ${CHECKOUTOPTS:=""}
@@ -93,6 +95,7 @@ if [ $do_version = 1 ]; then
 echo "updating VERSION.txt"
 trap "echo ERROR in updating VERSION.txt" ERR
 echo $VERSION > VERSION.txt
+git add VERSION.txt
 fi
 
 # update LICENSE.txt
@@ -116,7 +119,8 @@ if [ $do_license = 1 ]; then
   echo $END_STRING >> LICENSE.txt
   #then add new list on again
   find . -path .git -prune \
-     -o -name "*[xhlkc]" -type f  -print | xargs grep -l PARAPET  >>LICENSE.txt 
+     -o -name "*[xhlkc]" -type f  -print | grep -v .git| xargs grep -l PARAPET  >>LICENSE.txt 
+  git add LICENSE.txt
 fi
 
 # make ChangeLog file
@@ -140,7 +144,12 @@ if [ $do_doc = 1 ]; then
     echo "CMake OK"
     make RUN_DOXYGEN > ${DISTRIB}/doxygen.log 2>&1
     mkdir -p ${DISTRIB}/STIR/documentation/doxy
-    mv html ${DISTRIB}/STIR/documentation/doxy/
+    #mv html ${DISTRIB}/STIR/documentation/doxy/
+    cd ${DISTRIB}/STIR/documentation/doxy/
+    if test -L html; then
+        rm html
+    fi
+    ln -s ${DISTRIB}/build/STIR_${VERSION}/html
     popd
     echo "Done"
   fi
@@ -166,10 +175,18 @@ fi
 if [ $do_git_commit = 1 ]; then
     trap "echo ERROR with git" ERR
     cd ${DISTRIB}/STIR
-    git commit  -m "updated VERSION.txt etc for release of version $VERSION"
-    git tag -a stir_rel_$VERSION -m \"version $VERSION\"; git push --tags
+    if git diff --cached --exit-code; then
+        echo "No changes staged. git commit not called."
+    else
+        git commit  -m "updated VERSION.txt etc for release of version $VERSION"
+    fi
+    if git rev-parse "$TAG" >/dev/null 2>&1; then
+        echo "git tag $TAG exists!. Removing"
+        git tag -d $TAG
+    fi
+    git tag -a $TAG -m "version $VERSION"; 
 else
-    echo "no git commit"
+    echo "no git commit/tagging"
 fi
 
 trap "echo ERROR after creating doc" ERR
@@ -236,4 +253,4 @@ if [ $do_website_sync = 1 ]; then
     ./sync-to-sf.sh --del
 fi
 
-echo "still do 'git push'"
+echo "still do 'git push; git push --tags'"
