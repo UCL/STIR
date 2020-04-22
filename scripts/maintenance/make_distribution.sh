@@ -255,3 +255,4 @@ if [ $do_website_sync = 1 ]; then
 fi
 
 echo "still do 'git push; git push --tags'"
+echo "Did you update documentation/history.htm?"
