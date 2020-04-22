@@ -50,7 +50,7 @@ endif()
 ####### Set Version number etc
 set(VERSION_MAJOR   4)
 set(VERSION_MINOR   0)
-set(VERSION_PATCH   0-alpha)
+set(VERSION_PATCH   0)
 set(VERSION   040000) # only used in STIRConfig.h.in
 
 set(STIR_VERSION
