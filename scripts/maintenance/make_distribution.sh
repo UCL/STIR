@@ -236,7 +236,7 @@ if [ $do_website_final_version = 1 ]; then
     #ln -s recon_test_pack_${VERSION}.tar.gz  recon_test_pack.tar.gz 
     ln -s recon_test_pack_${VERSION}.zip recon_test_pack.zip
     rm -f .htaccess
-    ln -s .htaccessSF .htaccess
+    #ln -s .htaccessSF .htaccess
     cd ../documentation
     rm STIR_doc.zip
     ln -s STIR_doc_${VERSION}.zip STIR_doc.zip 
