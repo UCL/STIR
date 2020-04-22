@@ -151,6 +151,7 @@ InterfileHeader::InterfileHeader()
   lower_en_window_thres.resize(num_energy_windows);
   upper_en_window_thres.resize(num_energy_windows);
   lower_en_window_thres[0]=-1.F;
+  //
   upper_en_window_thres[0]=-1.F;
   num_time_frames = 1;
   image_scaling_factors.resize(num_time_frames);
