@@ -1769,9 +1769,9 @@ stir::ScatterSimulation
 %include "stir/scatter/SingleScatterSimulation.h"
 
 
-%shared_ptr(stir::ScatterEstimation);
-%shared_ptr(stir::ParsingObject);
-%include "stir/scatter/ScatterEstimation.h"
+//%shared_ptr(stir::ScatterEstimation);
+//%shared_ptr(stir::ParsingObject);
+//%include "stir/scatter/ScatterEstimation.h"
 
 
 
