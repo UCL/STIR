@@ -895,7 +895,7 @@ Rebin projdata Parameters :=
    End FORE Parameters:=
  END:=
 \end{verbatim}
-
+}
 For the meaning of these parameters, check the documentation for the
 \texttt{FourierRebinning} class or read
 \texttt{src/include/recon\_buildblock/FourierRebinning.h}.
@@ -2258,8 +2258,8 @@ end Patlak Plot Parameters:=
 
 \textbf{Important Note}: The current version of indirect reconstruction does not consider any special weighting for the time frames. This is a good approximation only if the counts at each frame is very similar which is mostly true for frames with the same duration. If the user needs to use  \textit{weighted least-squares}, the code will need minor modification.
 
-Moreover, two direct reconstruction version of linear kinetic models have been also implemented, evaluated [Tso08, Tso07] and optimised [Ang11]. These are the parametric versions of \textbf{OSEM} and \textbf{OSSPS} therefore called \textbf{POSEM} and \textbf{POSSPS}. 
-P
+Moreover, two direct reconstruction version of linear kinetic models have been also implemented, evaluated [Tso08, Tso07] and optimised [Ang11]. These are the parametric versions of \textbf{OSEM} and \textbf{OSSPS} therefore called \textbf{POSEM} and \textbf{POSSPS}.
+
 \cmdline{POSMAPOSL POSEM.par}
 \cmdline{POSSPS POSSPS.par}
 
@@ -4816,11 +4816,11 @@ Bin Normalisation to apply second:= some_bin_normalisation_type
 END Chained Bin Normalisation Parameters:=
 \end{verbatim}
 
-See also online documentation for class ChainedBinNormalisation.
+See also online documentation for class \texttt{ChainedBinNormalisation}.
 
 { \subsubsubsection{SPECT }
 }
-\label{sec:chainedbinnormalisation}
+\label{sec:SPECTbinnormalisation}
 This can be used to apply decay correction and uniformity for SPECT. You need to specify the folder where the data and uniformity table are. In addition, for the decay correction it is necessary to specify how many detector heads the scanner has, the acquisition time per angular position, and  the half life of the radioisotope.
 
 { \subsubsubsubsection{Parameters}
@@ -5384,14 +5384,14 @@ A single-scatter simulation technique for scatter correction in 3D PET.
 {[}Wat00{]} Watson C C \textbf{(2000)}, New, faster, image-based scatter correction for 3D PET. 
 \textit { IEEE Trans Nucl Sci } 47(4): 1587-1594. 
 
-{[}Wat04{]} Watson C C, Casey M E, Michel C, Bendriem B\textbf{(2004)}, 
+{[}Wat04{]} Watson C C, Casey M E, Michel C, Bendriem B \textbf{(2004)}, 
 Advances in scatter correction for 3D PET/CT. \textit { IEEE Nucl Sci Symp Med Imaging Conf } 3008 - 3012. 
 
-{[}Wer02{]} Werling A, Bublitz O, Doll J, Adam L E, and Brix G\textbf{(2002)}, 
+{[}Wer02{]} Werling A, Bublitz O, Doll J, Adam L E, and Brix G \textbf{(2002)}, 
 Fast implementation of the single scatter simulation algorithm and its use in iterative image 
 reconstruction of PET data. \textit { Phys Med Biol } 47(16): 2947-2960.
 
-{[}Ehr16{]} {Ehrhardt M J, Markiewicz P, Liljeroth M, Barnes A, Kolehmainen V, Duncan J, Pizarro L, Atkinson D, Hutton B F, Ourselin S, and others\textbf{(2016)}, 
+{[}Ehr16{]} Ehrhardt M J, Markiewicz P, Liljeroth M, Barnes A, Kolehmainen V, Duncan J, Pizarro L, Atkinson D, Hutton B F, Ourselin S, and others \textbf{(2016)}, 
 PET reconstruction with an anatomical MRI prior using parallel level sets. \textit { IEEE Trans Med Imaging } 35(9): 2189-2195.
 
 \end{document}
