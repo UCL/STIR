@@ -162,15 +162,9 @@ static inline unsigned to_1d_idx(const unsigned nrow, const unsigned ncol, const
 }
 
 template<class dataType>
-dataType* create_heap_array(const unsigned numel)
+dataType* create_heap_array(const unsigned numel, const dataType val = dataType(0))
 {
-    return new dataType[numel];
-}
-
-template<class dataType>
-dataType* create_heap_array(const unsigned numel, const dataType val)
-{
-    dataType *array = create_heap_array<dataType>(numel);
+    dataType *array = new dataType[numel];
     memset(array, val, numel * sizeof(dataType));
     return array;
 }
@@ -783,13 +777,10 @@ read_from_binary_file(std::ifstream &file, const unsigned long num_elements)
     // Get current position, get size to end and go back to current position
     const long current_pos = file.tellg();
     file.seekg(std::ios::cur, std::ios::end);
-    const long remaining_size = file.tellg();
+    const long remaining_elements = file.tellg() / sizeof(dataType);
     file.seekg(current_pos, std::ios::beg);
 
-    // Check there are enough elements to end
-    unsigned long remaining_elements = static_cast<unsigned long>(remaining_size) / static_cast<unsigned long>(sizeof(dataType));
-
-    if (remaining_size<num_elements)
+    if (remaining_elements<num_elements)
         throw std::runtime_error("File smaller than requested.");
 
     dataType *contents = create_heap_array<dataType>(num_elements);
@@ -797,51 +788,130 @@ read_from_binary_file(std::ifstream &file, const unsigned long num_elements)
     return contents;
 }
 
+/// Read numpy file. No error checking here (assume not fortran order etc.)
+/// Use std::cout << header if debugging.
+static
+float *
+read_numpy_axf1(const unsigned long num_elements)
+{
+    const char* NP_SOURCE = std::getenv("NP_SOURCE");
+    if (!NP_SOURCE)
+        throw std::runtime_error("NP_SOURCE not defined, cannot find data");
+
+    std::string numpy_filename = std::string(NP_SOURCE) + "/niftypet/auxdata/AxialFactorForSpan1.npy";
+    // Skip over the header (first newline)
+    std::ifstream numpy_file(numpy_filename, std::ios::in | std::ios::binary);
+    if (!numpy_file.is_open())
+        throw std::runtime_error("Failed to open numpy file: " + numpy_filename);
+
+    std::string header;
+    std::getline(numpy_file, header);
+    // Read
+    float * axf1 = read_from_binary_file<float>(numpy_file,num_elements);
+
+    // Close file
+    numpy_file.close();
+
+    return axf1;
+}
+
 // Taken from mmrnorm.py
 static
 NormCmp get_norm_helper_struct(const std::string &norm_binary_file, const Cnst &cnt)
 {
     // Open the norm binary file
-    std::ifstream file(norm_binary_file, std::ios::in | std::ios::binary);
+    std::ifstream norm_file(norm_binary_file, std::ios::in | std::ios::binary);
+    if (!norm_file.is_open())
+        throw std::runtime_error("Failed to open norm binary: " + norm_binary_file);
 
     NormCmp normc;
 
     // Dimensions of arrays
-    normc.ngeo[0]  = cnt.W;
-    normc.ngeo[1]  = cnt.NSEG0;
-    normc.ncinf[0] = 9;
-    normc.ncinf[1] = cnt.NSEG0;
-    normc.nceff[0] = cnt.NCRS;
-    normc.nceff[1] = cnt.NRNG;
+    normc.ngeo[0]  = cnt.NSEG0;
+    normc.ngeo[1]  = cnt.W;
+    normc.ncinf[0] = cnt.W;
+    normc.ncinf[1] = 9;
+    normc.nceff[0] = cnt.NRNG;
+    normc.nceff[1] = cnt.NCRS;
     normc.naxe     = cnt.NSN11;
     normc.nrdt     = cnt.NRNG;
     normc.ncdt     = 9;
 
     // geo
-    normc.geo  = read_from_binary_file<float>(file, normc.ngeo[0]*normc.ngeo[1]);
+    normc.geo  = read_from_binary_file<float>(norm_file, normc.ngeo[0]*normc.ngeo[1]);
     // crystal interference
-    normc.cinf = read_from_binary_file<float>(file, normc.ncinf[0]*normc.ncinf[1]);
+    normc.cinf = read_from_binary_file<float>(norm_file, normc.ncinf[0]*normc.ncinf[1]);
     // crystal efficiencies
-    normc.ceff = read_from_binary_file<float>(file, normc.nceff[0]*normc.nceff[1]);
+    normc.ceff = read_from_binary_file<float>(norm_file, normc.nceff[0]*normc.nceff[1]);
     // axial effects
-    normc.axe1 = read_from_binary_file<float>(file, normc.naxe);
+    normc.axe1 = read_from_binary_file<float>(norm_file, normc.naxe);
     // paralyzing ring DT parameters
-    normc.dtp  = read_from_binary_file<float>(file, normc.nrdt);
+    normc.dtp  = read_from_binary_file<float>(norm_file, normc.nrdt);
     // non-paralyzing ring DT parameters
-    normc.dtnp = read_from_binary_file<float>(file, normc.nrdt);
+    normc.dtnp = read_from_binary_file<float>(norm_file, normc.nrdt);
     // TX crystal DT parameter
-    normc.dtc  = read_from_binary_file<float>(file, normc.ncdt);
+    normc.dtc  = read_from_binary_file<float>(norm_file, normc.ncdt);
     // additional axial effects
-    normc.axe2 = read_from_binary_file<float>(file, normc.naxe);
+    normc.axe2 = read_from_binary_file<float>(norm_file, normc.naxe);
 
-    normc.axf1 = read_from_binary_file<float>(file, cnt.NSN1);
+    // Close file
+    norm_file.close();
 
-
-
-    // Close the file
-    file.close();
+    // One of the pieces of data is stored as a numpy file. Read it.
+    normc.axf1 = read_numpy_axf1(NSINOS);
 
     return normc;
+}
+
+/// Get bucket singles (from mmrhist.py)
+int *get_buckets(unsigned int *bck, const int B, const int nitag)
+{
+    // number of single rates reported for the given second
+    // nsr = (hstout['bck'][1,:,:]>>30)
+    std::vector<unsigned int> nsr(nitag * B);
+    for (unsigned i=0; i<unsigned(nitag); ++i)
+        for (unsigned j=0; j<unsigned(B); ++j)
+            nsr[to_1d_idx(nitag,B,i,j)] =
+                bck[nitag * B + to_1d_idx(nitag,B,i,j)] >> 30;
+
+
+    // average in a second period
+    // hstout['bck'][0,nsr>0] /= nsr[nsr>0]
+    for (unsigned i=0; i<unsigned(nitag); ++i)
+        for (unsigned j=0; j<unsigned(B); ++j)
+            if (nsr[to_1d_idx(nitag,B,i,j)]>0)
+                bck[nitag * B + to_1d_idx(nitag,B,i,j)] /=
+                    nsr[to_1d_idx(nitag,B,i,j)];
+
+    // time indices when single rates given
+    // tmsk = np.sum(nsr,axis=1)>0
+    // bool *tmsk = create_heap_array<bool>(nitag,false);
+    std::vector<bool> tmsk(nitag,false);
+    for (unsigned i=0; i<nitag; ++i)
+        for (unsigned j=0; j<unsigned(B); ++j)
+            if (nsr[to_1d_idx(nitag,B,i,j)]>0) {
+                tmsk[i] = true;
+                break;
+            }
+
+    // single_rate = np.copy(hstout['bck'][0,tmsk,:])
+    std::vector<unsigned int> single_rate;
+    for (unsigned i=0; i<nitag; ++i)
+        if (tmsk[i])
+            for (unsigned j=0; j<unsigned(B); ++j)
+                single_rate.push_back(bck[to_1d_idx(nitag,B,i,j)]);
+    unsigned sr_dim0 = single_rate.size()/B;
+
+    // get the average bucket singles:
+    // buckets = np.int32( np.sum(single_rate,axis=0)/single_rate.shape[0] )
+    int * buckets = create_heap_array<int>(B,0);
+    for (unsigned i=0; i<sr_dim0; ++i)
+        for (unsigned j=0; j<B; ++j)
+            buckets[j] += int(single_rate[to_1d_idx(sr_dim0,B,i,j)]);
+    for (unsigned i=0; i<B; ++i)
+        buckets[i] /= sr_dim0;
+
+    return buckets;
 }
 
 void
@@ -916,7 +986,7 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
            nfrm, // int: num frames
            tstart, // int
            tstop, // int
-           _txlut_sptr->s2c, // *LORcc (struct)
+           _txlut_sptr->s2cF, // *LORcc (struct)
            *_axlut_sptr, // axialLUT (struct)
            *_cnt_sptr); // Cnst (struct)
 
@@ -949,19 +1019,8 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
                 *_cnt_sptr             // const Cnst Cnt)
                 );
 
-    float max_randd(0.f);
-    unsigned int max_idx=0;
-    for (unsigned i=0; i<num_sino_elements; ++i)
-        if (np_randoms[i] > max_randd) {
-            max_randd = np_randoms[i];
-            max_idx = i;
-        }
-    // std::cout << "\n max in random sinogram = " << max_randd << ", idx = " << max_idx << " of " << num_sino_elements << "\n";
-    // exit(0);
-
     randoms_sptr = create_stir_sino();
     convert_proj_data_niftyPET_to_stir(*randoms_sptr, np_randoms);
-
 
     // If norm binary has been supplied, generate the norm sinogram
     if (!norm_binary_file.empty()) {
@@ -969,10 +1028,8 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
         // Get helper
         NormCmp normc = get_norm_helper_struct(norm_binary_file, *_cnt_sptr);
 
-        // Convert buckets from unsigned int to int
-        int *bck = create_heap_array<int>(2 * nitag * _cnt_sptr->B);
-        for (unsigned i=0; i<unsigned(2 * nitag * _cnt_sptr->B); ++i)
-            bck[i] = int(dicout.bck[i]);
+        // Get bucket singles
+        int * buckets = get_buckets(dicout.bck,_cnt_sptr->B,nitag);
 
         std::vector<float> np_norm_no_gaps = this->create_niftyPET_sinogram_no_gaps();
 
@@ -981,7 +1038,7 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
                              normc,
                              *_axlut_sptr,
                              _txlut_sptr->aw2ali,
-                             bck,
+                             buckets,
                              *_cnt_sptr);
 
         // Add gaps
@@ -993,7 +1050,7 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
         convert_proj_data_niftyPET_to_stir(*norm_sptr, np_norm_w_gaps);
 
         // Clear up
-        delete [] bck;
+        delete [] buckets;
         delete [] normc.geo;
         delete [] normc.cinf;
         delete [] normc.ceff;
@@ -1015,8 +1072,8 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
     delete [] dicout.mss;
     delete [] dicout.ssr;
     if (nfrm == 1)  {
-        delete [] (unsigned int*)dicout.psn;
-        delete [] (unsigned int*)dicout.dsn;
+        delete [] (unsigned short*)dicout.psn;
+        delete [] (unsigned short*)dicout.dsn;
     }
     else
         throw std::runtime_error("ProjectorByBinNiftyPETHelper::lm_to_proj_data: If nfrm>1, "
