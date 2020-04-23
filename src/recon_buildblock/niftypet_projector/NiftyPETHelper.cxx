@@ -1190,11 +1190,10 @@ get_vals_for_proj_data_conversion(std::vector<int> &sizes, std::vector<int> &seg
     if (is_null_ptr(info_sptr))
         error("NiftyPETHelper: only works with cylindrical projection data without arc-correction");
 
-    const int max_ring_diff   = info_sptr->get_max_ring_difference(info_sptr->get_max_segment_num());
     const int max_segment_num = info_sptr->get_max_segment_num();
 
-    segment_sequence.resize(unsigned(2*max_ring_diff+1));
-    sizes.resize(unsigned(2*max_ring_diff+1));
+    segment_sequence.resize(unsigned(2*max_segment_num+1));
+    sizes.resize(unsigned(2*max_segment_num+1));
     segment_sequence[unsigned(0)]=0;
     sizes[0]=info_sptr->get_num_axial_poss(0);
     for (int segment_num=1; segment_num<=max_segment_num; ++segment_num) {

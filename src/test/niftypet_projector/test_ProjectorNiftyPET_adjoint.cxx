@@ -31,8 +31,7 @@
 #include "stir/CPUTimer.h"
 #include "stir/Verbosity.h"
 #include "stir/recon_array_functions.h"
-#include <stdlib.h>
-#include "stir/IO/ITKOutputFileFormat.h"
+#include "stir/Shape/Ellipsoid.h"
 
 START_NAMESPACE_STIR
 
@@ -48,9 +47,7 @@ public:
     //! Constructor
     TestGPUProjectors(const unsigned num_attempts)
         : _num_attempts(num_attempts),
-          _time_fwrd(0), _time_back(0),
-          _cumulative_result(0),
-          _num_cumulative_results(0) {}
+          _time_fwrd(0), _time_back(0) {}
 
     /// Destructor
     virtual ~TestGPUProjectors() {}
@@ -62,46 +59,64 @@ protected:
 
     /// Set up
     void set_up();
-
     /// Set up the image
     void set_up_image();
     /// Set up the sinogram
     void set_up_sino();
-
-    /// Set up forward projector
-    void set_up_projector_forward();
-    /// Set up back projector
-    void set_up_projector_back();
-
-    /// Random image
-    void random_image();
-    /// Random sinogram
-    void random_sino();
-
-    /// Forward project
-    void forward_project();
-    /// Back project
-    void back_project();
-
     /// test the adjoint multiple times
     void test_adjoints();
-    /// test the adjoint
-    void test_adjoint();
-    /// test the inner product
-    void test_inner_product();
 
     const unsigned _num_attempts;
     ForwardProjectorByBinNiftyPET _projector_fwrd;
     BackProjectorByBinNiftyPET    _projector_back;
-    shared_ptr<
-    VoxelsOnCartesianGrid<float> > _image_sptr;
-    shared_ptr<ProjDataInMemory> _sino_sptr;
-    shared_ptr<VoxelsOnCartesianGrid<float> > _projected_image_sptr;
-    shared_ptr<ProjDataInMemory> _projected_sino_sptr;
+    shared_ptr<VoxelsOnCartesianGrid<float> >  _image_sptr;
+    shared_ptr<ProjDataInMemory>               _sino_sptr;
+    shared_ptr<VoxelsOnCartesianGrid<float> >  _projected_image_sptr;
+    shared_ptr<ProjDataInMemory>               _projected_sino_sptr;
     double _time_fwrd, _time_back;
-    double _cumulative_result;
-    unsigned _num_cumulative_results;
+    std::vector<float> _results;
 };
+
+static int get_rand(const int lower, const int upper)
+{
+    return rand() % upper + lower;
+}
+
+static float get_rand(const float lower, const float upper)
+{
+    return lower + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX/(upper-lower)));
+}
+
+static
+CartesianCoordinate3D<float>
+get_rand_point(const CartesianCoordinate3D<float> &min, const CartesianCoordinate3D<float> &max)
+{
+    return CartesianCoordinate3D<float>(
+                get_rand(min.at(1), max.at(1)),
+                get_rand(min.at(2), max.at(2)),
+                get_rand(min.at(3), max.at(3)));
+}
+
+static
+CartesianCoordinate3D<float>
+get_rand_point(const float min, const float max)
+{
+    return CartesianCoordinate3D<float>(
+                get_rand(min, max),
+                get_rand(min, max),
+                get_rand(min, max));
+}
+
+static float find_max(const ProjDataInMemory &prj)
+{
+    // Get number of elements
+    unsigned num_elements = prj.size_all();
+
+    // Create arrays
+    std::vector<float> arr(num_elements);
+    prj.copy_to(arr.begin());
+    return *std::max_element(arr.begin(),arr.end());
+}
 
 void
 TestGPUProjectors::
@@ -114,35 +129,34 @@ set_up()
 
     set_up_sino();
     set_up_image();
-    set_up_projector_forward();
-    set_up_projector_back();
+
+    std::cerr << "\tSetting up projectors...\n";
+    _projector_fwrd.set_verbosity(false);
+    _projector_fwrd.set_up(_sino_sptr->get_proj_data_info_sptr(),_image_sptr);
+    _projector_back.set_verbosity(false);
+    _projector_back.set_up(_sino_sptr->get_proj_data_info_sptr(),_image_sptr);
 }
 
 void
 TestGPUProjectors::
 set_up_image()
 {
-    std::cerr << "\tSetting up image...\n";
+    std::cerr << "\tSetting up images...\n";
 
     BasicCoordinate<3, int> min_image_indices(make_coordinate(0,  -160, -160));
     BasicCoordinate<3, int> max_image_indices(make_coordinate(126, 159,  159));
     IndexRange<3> range = IndexRange<3>(min_image_indices,max_image_indices);
 
-    _image_sptr.reset(new VoxelsOnCartesianGrid<float>(
-                          _sino_sptr->get_exam_info_sptr(),
-                          range,
-                          CartesianCoordinate3D<float>(0.f,0.f,0.f),
-                          CartesianCoordinate3D<float>(2.03125f, 2.08626f, 2.08626f)
-                          ));
+    _image_sptr = MAKE_SHARED<VoxelsOnCartesianGrid<float> >(
+                _sino_sptr->get_exam_info_sptr(),
+                range,
+                CartesianCoordinate3D<float>(0.f,0.f,0.f),
+                CartesianCoordinate3D<float>(2.03125f, 2.08626f, 2.08626f));
 
-    float val(0.f);
-    for(Array<3,float>::full_iterator iter = _image_sptr->begin_all(); iter != _image_sptr->end_all(); ++iter, ++val)
-        *iter = val;
+    // Fill
+    _image_sptr->fill(0.f);
 
-    // Truncate it to a small cylinder
-    truncate_rim(*_image_sptr,17);
-
-    // Projected image is clone
+    // Make projected image a copy
     _projected_image_sptr.reset(_image_sptr->clone());
 }
 
@@ -150,7 +164,7 @@ void
 TestGPUProjectors::
 set_up_sino()
 {
-    std::cerr << "\tSetting up sinogram...\n";
+    std::cerr << "\tSetting up sinograms...\n";
     // Create scanner
     shared_ptr<Scanner> scanner_sptr(new Scanner(Scanner::Siemens_mMR));
 
@@ -167,174 +181,127 @@ set_up_sino()
                     scanner_sptr->get_max_num_non_arccorrected_bins(),
                     /* arc_correction*/false));
 
-    // Create ProjData
-    _sino_sptr.reset(new ProjDataInMemory(exam_info_sptr,proj_data_info_sptr));
+    _sino_sptr = MAKE_SHARED<ProjDataInMemory>(exam_info_sptr,proj_data_info_sptr);
 
-    // Get dimensions of STIR sinogram
-    int min_view      = _sino_sptr->get_min_view_num();
-    int max_view      = _sino_sptr->get_max_view_num();
-    int min_tang_pos  = _sino_sptr->get_min_tangential_pos_num();
-    int max_tang_pos  = _sino_sptr->get_max_tangential_pos_num();
-
-    int num_sinograms = _sino_sptr->get_num_axial_poss(0);
-    for (int s=1; s<= _sino_sptr->get_max_segment_num(); ++s)
-        num_sinograms += 2* _sino_sptr->get_num_axial_poss(s);
-
-    unsigned num_elements = unsigned(num_sinograms * (1+max_view-min_view) * (1+max_tang_pos-min_tang_pos));
-
-    // Create array
+    // Create vector to be able to fill sinogram
+    const size_t num_elements = _sino_sptr->size_all();
     std::vector<float> arr(num_elements);
     for (unsigned i=0; i<num_elements; ++i)
         arr[i] = float(i);
-
-    // Fill
     _sino_sptr->fill_from(arr.begin());
 
-    // Projected sinogram is clone
     _projected_sino_sptr = MAKE_SHARED<ProjDataInMemory>(*_sino_sptr);
 }
 
+static
 void
-TestGPUProjectors::
-set_up_projector_forward()
+get_random_sino(ProjData &sino)
 {
-    std::cerr << "\tSetting up forward projector...\n";
-    _projector_fwrd.set_verbosity(false);
-    _projector_fwrd.set_up(_sino_sptr->get_proj_data_info_sptr(),_image_sptr);
-}
+    std::cerr << "Getting random sinogram...\n";
 
-void
-TestGPUProjectors::
-set_up_projector_back()
-{
-    std::cerr << "\tSetting up back projector...\n";
-    _projector_back.set_verbosity(false);
-    _projector_back.set_up(_sino_sptr->get_proj_data_info_sptr(),_image_sptr);
-}
+    const size_t num_elements = sino.size_all();
+    std::vector<float> arr(num_elements,0.f);
 
-static int get_rand(const int lower, const int upper)
-{
-    return rand() % upper + lower;
-}
-
-static float get_rand(const float lower, const float upper)
-{
-    return lower + static_cast<float>(rand()) / (static_cast<float>(RAND_MAX/(upper-lower)));
-}
-
-void
-TestGPUProjectors::
-random_image()
-{
-    std::cerr << "\tGetting random image...\n";
-    _image_sptr->fill(0.f);
-    BasicCoordinate<3, int> min_indices = _image_sptr->get_min_indices();
-    BasicCoordinate<3, int> max_indices = _image_sptr->get_max_indices();
-
-    const unsigned num_rand_voxels = get_rand(1,2000);
-
-    for (unsigned i=0; i<num_rand_voxels; ++i) {
+    // Number of voxels to fill
+    const unsigned num_rand_voxels = get_rand(100,2000);
+    for (unsigned j=0; j<num_rand_voxels; ++j) {
         // Get random index
-        BasicCoordinate<3, int> rand_idx;
-        for (unsigned j=1; j<=3; ++j)
-            rand_idx.at(j) = get_rand(min_indices.at(j),max_indices.at(j));
-        std::cout << "rand idx = " << rand_idx << "\n";
-        float val = get_rand(0.f,100.f);
-        _image_sptr->at(rand_idx) = val;
+        const unsigned idx = get_rand(0,num_elements-1);
+        const float val = get_rand(1.f,100.f);
+        arr[idx] = val;
     }
-    exit(0);
+    sino.fill_from(arr.begin());
 }
 
+static
 void
-TestGPUProjectors::
-random_sino()
+get_random_image(VoxelsOnCartesianGrid<float> &im)
 {
-    std::cerr << "\tGetting random sinogram...\n";
-    _sino_sptr->fill(0.f);
+    std::cerr << "Getting random image...\n";
 
-    int min_segment_num = _sino_sptr->get_min_segment_num();
-    int max_segment_num = _sino_sptr->get_max_segment_num();
+    im.fill(0.f);
+    auto temp = *im.clone();
 
-    // Get number of elements
-    unsigned num_elements(0);
-    for (int segment_num = min_segment_num; segment_num<= max_segment_num; ++segment_num)
-        num_elements += unsigned(_sino_sptr->get_max_axial_pos_num(segment_num) -
-                                 _sino_sptr->get_min_axial_pos_num(segment_num)) + 1;
-    num_elements *= unsigned(_sino_sptr->get_max_view_num() -
-                             _sino_sptr->get_min_view_num()) + 1;
-    num_elements *= unsigned(_sino_sptr->get_max_tangential_pos_num() -
-                             _sino_sptr->get_min_tangential_pos_num()) + 1;
+    CartesianCoordinate3D<float> min = im.get_physical_coordinates_for_indices(im.get_min_indices());
+    CartesianCoordinate3D<float> max = im.get_physical_coordinates_for_indices(im.get_max_indices());
+    CartesianCoordinate3D<int> num_samles = {10,10,10};
+    const float min_radius = 20.f;
+    const float max_radius = 100.f;
+    const float min_intensity = 10.f;
+    const float max_intensity = 100.f;
 
-    // Create array
-    std::vector<float> arr(num_elements,20);
+    // Keep looping until random image contains non-zeroes
+    // (in case all ellipsoids were in part that got truncated)
+    while (true) {
 
-//    const unsigned num_rand_voxels = get_rand(1,2000);
+        const unsigned num_ellipsoids = get_rand(1,5);
 
-//    for (unsigned i=0; i<num_rand_voxels; ++i) {
-//        // Get random index
-//        unsigned idx = get_rand(0,num_elements-1);
-//        float val = get_rand(0.f,100.f);
-//        arr[idx] = val;
-//    }
+        for (unsigned j=0; j<num_ellipsoids; ++j) {
 
-    _sino_sptr->fill_from(arr.begin());
+            // Get radii, centre and intensity of ellipsoid
+            const auto radii      = get_rand_point(min_radius, max_radius);
+            const auto centre     = get_rand_point(min,max);
+            const float intensity = get_rand(min_intensity,max_intensity);
+            // Create shape
+            Ellipsoid ellipsoid(radii,centre);
+            // Get shape as image
+            temp.fill(0.f);
+            ellipsoid.construct_volume(temp, num_samles);
+            temp *= intensity;
+            // Add to output image
+            im += temp;
+        }
+
+        // Truncate it to a small cylinder
+        truncate_rim(im,17);
+
+        // Check that image contains non-zeros. 
+        if (im.find_max() > 1e-4f)
+            break;
+        else 
+            std::cout << "\nRandom image contains all zeroes, regenerating...\n";
+    }
 }
 
+static
 void
-TestGPUProjectors::
-forward_project()
+forward_project(ProjData &sino, const VoxelsOnCartesianGrid<float> &im, ForwardProjectorByBinNiftyPET &projector, double &time)
 {
-    std::cerr << "\tForward projecting...\n";
-    _projected_sino_sptr->fill(0.f);
+    std::cerr << "Forward projecting...\n";
+    sino.fill(0.f);
 
     CPUTimer timer;
     timer.start();
 
-    _projector_fwrd.set_input(*_image_sptr);
-    _projector_fwrd.forward_project(*_projected_sino_sptr);
+    projector.set_input(im);
+    projector.forward_project(sino);
 
     timer.stop();
-    _time_fwrd += timer.value();
+    time += timer.value();
 }
 
+static
 void
-TestGPUProjectors::
-back_project()
+back_project(VoxelsOnCartesianGrid<float> &im, const ProjData &sino, BackProjectorByBinNiftyPET &projector, double &time)
 {
-    std::cerr << "\tBack projecting...\n";
-    _projected_image_sptr->fill(0.f);
+    std::cerr << "Back projecting...\n";
+    im.fill(0.f);
 
     CPUTimer timer;
     timer.start();
 
-    _projector_back.start_accumulating_in_new_target();
-    _projector_back.back_project(*_sino_sptr);
-    _projector_back.get_output(*_projected_image_sptr);
+    projector.start_accumulating_in_new_target();
+    projector.back_project(sino);
+    projector.get_output(im);
 
     timer.stop();
-    _time_back += timer.value();
-}
-
-void
-TestGPUProjectors::
-test_adjoints()
-{
-    set_up();
-
-    for (unsigned i=0; i<_num_attempts; ++i) {
-        std::cerr << "\nTesting adjoint-ness of NiftyPET's forward/back projectors. Attempt " << i << " of " << _num_attempts << "...\n";
-        test_adjoint();
-        std::cerr << "\nAverage time per forward/back project: " << _time_fwrd/double(i+1) << " and " << _time_back/double(i+1) << " s.\n";
-        std::cerr << "Cumulative adjoint result (0 good, 1 bad): " << _cumulative_result/float(_num_cumulative_results) << ".\n";
-    }
+    time += timer.value();
 }
 
 static float get_inner_product(
         const VoxelsOnCartesianGrid<float> &im1,
         const VoxelsOnCartesianGrid<float> &im2)
 {
-    std::cerr << "\t\tChecking inner products between images...\n";
-
     return std::inner_product(im1.begin_all(),im1.end_all(),im2.begin_all(),0.f);
 }
 
@@ -342,20 +309,8 @@ static float get_inner_product(
         const ProjDataInMemory &proj1,
         const ProjDataInMemory &proj2)
 {
-    std::cerr << "\t\tChecking inner products between sinograms...\n";
-
-    int min_segment_num = proj1.get_min_segment_num();
-    int max_segment_num = proj1.get_max_segment_num();
-
     // Get number of elements
-    unsigned num_elements(0);
-    for (int segment_num = min_segment_num; segment_num<= max_segment_num; ++segment_num)
-        num_elements += unsigned(proj1.get_max_axial_pos_num(segment_num) -
-                                 proj1.get_min_axial_pos_num(segment_num)) + 1;
-    num_elements *= unsigned(proj1.get_max_view_num() -
-                             proj1.get_min_view_num()) + 1;
-    num_elements *= unsigned(proj1.get_max_tangential_pos_num() -
-                             proj1.get_min_tangential_pos_num()) + 1;
+    const size_t num_elements = proj1.size_all();
 
     // Create arrays
     std::vector<float> arr1(num_elements), arr2(num_elements);
@@ -365,71 +320,72 @@ static float get_inner_product(
     return std::inner_product(arr1.begin(),arr1.end(),arr2.begin(),0.f);
 }
 
-static float find_max(const ProjDataInMemory &prj)
+static
+float
+test_inner_product(const VoxelsOnCartesianGrid<float> &im, const ProjData &sino,
+                   const VoxelsOnCartesianGrid<float> &im_proj, const ProjData &sino_proj)
 {
-    int min_segment_num = prj.get_min_segment_num();
-    int max_segment_num = prj.get_max_segment_num();
+    std::cerr << "Checking inner products...\n";
+    const float inner_product_images = get_inner_product(im,im_proj);
+    const float inner_product_sinos  = get_inner_product(sino, sino_proj);
 
-    // Get number of elements
-    unsigned num_elements(0);
-    for (int segment_num = min_segment_num; segment_num<= max_segment_num; ++segment_num)
-        num_elements += unsigned(prj.get_max_axial_pos_num(segment_num) -
-                                 prj.get_min_axial_pos_num(segment_num)) + 1;
-    num_elements *= unsigned(prj.get_max_view_num() -
-                             prj.get_min_view_num()) + 1;
-    num_elements *= unsigned(prj.get_max_tangential_pos_num() -
-                             prj.get_min_tangential_pos_num()) + 1;
+    std::cout << "\tinner product between images    = " << inner_product_images << "\n";
+    std::cout << "\tinner product between sinograms = " << inner_product_sinos << "\n";
 
-    // Create arrays
-    std::vector<float> arr(num_elements);
-    prj.copy_to(arr.begin());
-    return *std::max_element(arr.begin(),arr.end());
-}
-
-void TestGPUProjectors::
-test_inner_product()
-{
-    std::cerr << "\tChecking inner products...\n";
-    const float inner_product_images = get_inner_product(*_image_sptr,*_projected_image_sptr);
-    const float inner_product_sinos  = get_inner_product(*_sino_sptr, *_projected_sino_sptr );
-
-    // Check the adjoint is truly the adjoint with: |<x, Ty> - <y, Tsx>| / 0.5*(|<x, Ty>|+|<y, Tsx>|) < epsilon
-    if (std::abs(inner_product_images) + std::abs(inner_product_sinos) > 1e-4f) {
-        float adjoint_test =
-                std::abs(inner_product_images - inner_product_sinos) /
-                (0.5f * (std::abs(inner_product_images) + std::abs(inner_product_sinos)));
-        std::cout << "\ninner product between two images    = " << inner_product_images << "\n";
-        std::cout << "inner product between two sinograms = " << inner_product_sinos << "\n";
-        std::cout << "|<x, Ty> - <y, Tsx>| / 0.5*(|<x, Ty>|+|<y, Tsx>|) = " << adjoint_test << "\n";
-        _cumulative_result += adjoint_test;
-        ++_num_cumulative_results;
+    if (std::abs(inner_product_images) + std::abs(inner_product_sinos) < 1e-4f) {
+        std::cout << "\n\t\tCan't perform adjoint test as both equal zero...\n";
+        std::cout << "\t\tmax in input image = " << im.find_max() << "\n";
+        std::cout << "\t\tmax in projected image = " << im_proj.find_max() << "\n";
+        std::cout << "\t\tmax in input image = " << find_max(sino) << "\n";
+        std::cout << "\t\tmax in projected image = " << find_max(sino_proj) << "\n";
+        return -1.f;
     }
 
-    std::cout << "\n max in input image = " << _image_sptr->find_max() << "\n";
-    std::cout << "\n max in projected image = " << _projected_image_sptr->find_max() << "\n";
-    std::cout << "\n max in input image = " << find_max(*_sino_sptr) << "\n";
-    std::cout << "\n max in projected image = " << find_max(*_projected_sino_sptr) << "\n";
-
-    ITKOutputFileFormat itk_output;
-    itk_output.default_extension = ".nii";
-    itk_output.write_to_file("/home/rich/Documents/Data/GPU_adjoint_test/input_image",*_image_sptr);
-    itk_output.write_to_file("/home/rich/Documents/Data/GPU_adjoint_test/projected_image",*_projected_image_sptr);
-
-    _sino_sptr->write_to_file("/home/rich/Documents/Data/GPU_adjoint_test/input_sino");
-    _projected_sino_sptr->write_to_file("/home/rich/Documents/Data/GPU_adjoint_test/projected_sino");
+    float adjoint_test =
+            std::abs(inner_product_images - inner_product_sinos) /
+            (0.5f * (std::abs(inner_product_images) + std::abs(inner_product_sinos)));
+    std::cout << "\t|<x, Ty> - <y, Tsx>| / 0.5*(|<x, Ty>|+|<y, Tsx>|) = " << adjoint_test << "\n";
+    return adjoint_test;
 }
 
 void
 TestGPUProjectors::
-test_adjoint()
+test_adjoints()
 {
-    random_image();
-    random_sino();
+    set_up();
 
-    forward_project();
-    back_project();
+    unsigned num_unsuccessful;
 
-    test_inner_product();
+    while(_results.size() < _num_attempts) {
+
+        unsigned i = _results.size();
+        num_unsuccessful = 0;
+
+        // Even iterations, modify the image
+        if (i%2==0) {
+            get_random_image(*_image_sptr);
+            forward_project(*_projected_sino_sptr, *_image_sptr, _projector_fwrd, _time_fwrd);
+        }
+        // Odd iterations (and first), modify the sinogram
+        if (i==0 || i%2==1) {
+            get_random_sino(*_sino_sptr);
+            back_project(*_projected_image_sptr, *_sino_sptr, _projector_back, _time_back); 
+        }
+
+        const float adjoint_test = 
+            test_inner_product(*_image_sptr, *_sino_sptr, *_projected_image_sptr, *_projected_sino_sptr);
+        if (adjoint_test > 0.f) {
+            _results.push_back(adjoint_test);
+            std::cout << "\tAvg. test result = " << std::accumulate(_results.begin(), _results.end(), 0.0) / _results.size() << 
+                " (number of tests = " << _results.size() << "), avg. time forward projecting = " << _time_fwrd/double(i+1) << " s, " <<
+                "avg. time back projecting = " << _time_back/double(i+1) << " s.\n\n";
+        }
+        else {
+            ++num_unsuccessful;
+            if (num_unsuccessful==5)
+                throw std::runtime_error("Too many (5) unsuccessful comparisons");
+        }
+    }
 }
 
 void

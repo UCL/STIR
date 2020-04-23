@@ -22,13 +22,10 @@ set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)
 set(dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES ${dir}_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES)
 
 set(${dir_INVOLVED_TEST_EXE_SOURCES}
-	test_ProjectorNiftyPET
 	test_ProjectorNiftyPET_adjoint
 )
 
-ADD_TEST(test_ProjectorNiftyPET
-   ${CMAKE_CURRENT_BINARY_DIR}/test_ProjectorNiftyPET --span 11)
 ADD_TEST(test_ProjectorNiftyPET_adjoint
-   ${CMAKE_CURRENT_BINARY_DIR}/test_ProjectorNiftyPET_adjoint)
+   ${CMAKE_CURRENT_BINARY_DIR}/test_ProjectorNiftyPET_adjoint 20)
 
 include(stir_test_exe_targets)
