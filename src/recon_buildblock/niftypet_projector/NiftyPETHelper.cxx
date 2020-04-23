@@ -775,9 +775,9 @@ dataType *
 read_from_binary_file(std::ifstream &file, const unsigned long num_elements)
 {
     // Get current position, get size to end and go back to current position
-    const long current_pos = file.tellg();
+    const unsigned long current_pos = file.tellg();
     file.seekg(std::ios::cur, std::ios::end);
-    const long remaining_elements = file.tellg() / sizeof(dataType);
+    const unsigned long remaining_elements = file.tellg() / sizeof(dataType);
     file.seekg(current_pos, std::ios::beg);
 
     if (remaining_elements<num_elements)
@@ -864,21 +864,21 @@ NormCmp get_norm_helper_struct(const std::string &norm_binary_file, const Cnst &
 }
 
 /// Get bucket singles (from mmrhist.py)
-int *get_buckets(unsigned int *bck, const int B, const int nitag)
+int *get_buckets(unsigned int *bck, const unsigned B, const unsigned nitag)
 {
     // number of single rates reported for the given second
     // nsr = (hstout['bck'][1,:,:]>>30)
     std::vector<unsigned int> nsr(nitag * B);
-    for (unsigned i=0; i<unsigned(nitag); ++i)
-        for (unsigned j=0; j<unsigned(B); ++j)
+    for (unsigned i=0; i<nitag; ++i)
+        for (unsigned j=0; j<B; ++j)
             nsr[to_1d_idx(nitag,B,i,j)] =
                 bck[nitag * B + to_1d_idx(nitag,B,i,j)] >> 30;
 
 
     // average in a second period
     // hstout['bck'][0,nsr>0] /= nsr[nsr>0]
-    for (unsigned i=0; i<unsigned(nitag); ++i)
-        for (unsigned j=0; j<unsigned(B); ++j)
+    for (unsigned i=0; i<nitag; ++i)
+        for (unsigned j=0; j<B; ++j)
             if (nsr[to_1d_idx(nitag,B,i,j)]>0)
                 bck[nitag * B + to_1d_idx(nitag,B,i,j)] /=
                     nsr[to_1d_idx(nitag,B,i,j)];
@@ -888,7 +888,7 @@ int *get_buckets(unsigned int *bck, const int B, const int nitag)
     // bool *tmsk = create_heap_array<bool>(nitag,false);
     std::vector<bool> tmsk(nitag,false);
     for (unsigned i=0; i<nitag; ++i)
-        for (unsigned j=0; j<unsigned(B); ++j)
+        for (unsigned j=0; j<B; ++j)
             if (nsr[to_1d_idx(nitag,B,i,j)]>0) {
                 tmsk[i] = true;
                 break;
@@ -898,7 +898,7 @@ int *get_buckets(unsigned int *bck, const int B, const int nitag)
     std::vector<unsigned int> single_rate;
     for (unsigned i=0; i<nitag; ++i)
         if (tmsk[i])
-            for (unsigned j=0; j<unsigned(B); ++j)
+            for (unsigned j=0; j<B; ++j)
                 single_rate.push_back(bck[to_1d_idx(nitag,B,i,j)]);
     unsigned sr_dim0 = single_rate.size()/B;
 
@@ -1029,7 +1029,7 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
         NormCmp normc = get_norm_helper_struct(norm_binary_file, *_cnt_sptr);
 
         // Get bucket singles
-        int * buckets = get_buckets(dicout.bck,_cnt_sptr->B,nitag);
+        int * buckets = get_buckets(dicout.bck, unsigned(_cnt_sptr->B), unsigned(nitag));
 
         std::vector<float> np_norm_no_gaps = this->create_niftyPET_sinogram_no_gaps();
 
