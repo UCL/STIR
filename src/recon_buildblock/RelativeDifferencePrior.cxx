@@ -2,6 +2,7 @@
 //
 /*
     Copyright (C) 2000- 2019, Hammersmith Imanet Ltd
+    Copyright (C) 2019- 2020, UCL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -307,12 +308,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
                 const int min_dx = max(weights[0][0].get_min_index(), min_x-x);
                 const int max_dx = min(weights[0][0].get_max_index(), max_x-x);
                 
-                /* Relative Difference Prior given by Eq.5 of J. Nuyts, D. Bequ, P. Dupont, and L. Mortelmans,
-                   “A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction
-                   in Emission Tomography,” vol. 49, no. 1, pp. 56–60, 2002.
-                    This implementation of the prior has an additional epsilon in the denominator.
-
-                  formula:
+                /* formula:
                    sum_dx,dy,dz
                     (current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])^2 /
                      ((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
