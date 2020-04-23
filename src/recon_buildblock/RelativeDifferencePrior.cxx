@@ -1,4 +1,4 @@
-//
+﻿//
 //
 /*
     Copyright (C) 2000- 2019, Hammersmith Imanet Ltd
@@ -55,6 +55,7 @@ RelativeDifferencePrior<elemT>::initialise_keymap()
   this->parser.add_key("weights", &weights);
   this->parser.add_key("gradient filename prefix", &gradient_filename_prefix);
   this->parser.add_key("gamma value", &this->gamma);
+  this->parser.add_key("epsilon value", &this->epsilon);
   this->parser.add_stop_key("END Relative Difference Prior Parameters");
 }
 
@@ -137,6 +138,7 @@ RelativeDifferencePrior<elemT>::set_defaults()
   this->kappa_ptr.reset();  
   this->weights.recycle();
   this->gamma = 1;
+  this->epsilon = 0.0001;
 }
 
 template <>
@@ -164,13 +166,28 @@ RelativeDifferencePrior<elemT>::
 set_gamma(float g)
 { this->gamma = g; }
 
+// Return the value of epsilon - a RDP parameter
+template <typename elemT>
+float
+RelativeDifferencePrior<elemT>::
+get_epsilon() const
+{ return this->epsilon; }
+
+// Set the value of epsilon - a RDP parameter
+template <typename elemT>
+void
+RelativeDifferencePrior<elemT>::
+set_epsilon(float g)
+{ this->epsilon = g; }
+
 
 template <typename elemT>
-RelativeDifferencePrior<elemT>::RelativeDifferencePrior(const bool only_2D_v, float penalisation_factor_v, float gamma_v)
+RelativeDifferencePrior<elemT>::RelativeDifferencePrior(const bool only_2D_v, float penalisation_factor_v, float gamma_v, float epsilon_v)
   :  only_2D(only_2D_v)
 {
   this->penalisation_factor = penalisation_factor_v;
   this->gamma = gamma_v;
+  this->epsilon = epsilon_v;
 }
 
 
@@ -266,7 +283,6 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
     error("RelativeDifferencePrior: kappa image has not the same index range as the reconstructed image\n");
 
 
-  double small = 0.000000001;
   double result = 0.;
   const int min_z = current_image_estimate.get_min_index(); 
   const int max_z = current_image_estimate.get_max_index(); 
@@ -294,12 +310,13 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
                 /* Relative Difference Prior given by Eq.5 of J. Nuyts, D. Bequ, P. Dupont, and L. Mortelmans,
                    “A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction
                    in Emission Tomography,” vol. 49, no. 1, pp. 56–60, 2002.
+                    This implementation of the prior has an additional epsilon in the denominator.
 
                   formula:
                    sum_dx,dy,dz
                     (current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])^2 /
                      ((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
-                      (this->gamma *abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])))
+                      (this->gamma *abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) + this->epsilon ))
                 */
                 for (int dz=min_dz;dz<=max_dz;++dz)
                   for (int dy=min_dy;dy<=max_dy;++dy)
@@ -309,7 +326,7 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
                           current = weights[dz][dy][dx] * 0.5 *
                                   (pow(current_image_estimate[z][y][x]-current_image_estimate[z+dz][y+dy][x+dx],2)/
                                   (current_image_estimate[z][y][x]+current_image_estimate[z+dz][y+dy][x+dx]
-                                  +this->gamma*abs(current_image_estimate[z][y][x]-current_image_estimate[z+dz][y+dy][x+dx]) + small ));
+                                  + this->gamma * abs(current_image_estimate[z][y][x]-current_image_estimate[z+dz][y+dy][x+dx]) + this->epsilon ));
                         if (do_kappa)
                           current *= 
                             (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
@@ -347,7 +364,6 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
   }
  
  
-  double small = 0.000000001;
   const bool do_kappa = !is_null_ptr(kappa_ptr);
   if (do_kappa && !kappa_ptr->has_same_characteristics(current_image_estimate))
     error("RelativeDifferencePrior: kappa image has not the same index range as the reconstructed image\n");
@@ -378,14 +394,15 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                 /* Relative Difference Prior Gradient given by Eq.6 of J. Nuyts, D. Bequ, P. Dupont, and L. Mortelmans,
                    “A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction
                    in Emission Tomography,” vol. 49, no. 1, pp. 56–60, 2002.
+                    This implementation of the prior has an additional epsilon in the denominator.
 
                 formula:
-                  weights[dz][dy][dx] *
-                  (((current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) *
-                   (this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])) +
-                   (current_image_estimate[z][y][x] + 3* current_image_estimate[z+dz][y+dy][x+dx]))/
-                  square((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
-                    this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]))) *
+                weights[dz][dy][dx] *
+                (((current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) *
+                  (this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) +
+                   current_image_estimate[z][y][x] + 3 * current_image_estimate[z+dz][y+dy][x+dx] + 2 * this->epsilon))/
+                 (square((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
+                  this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])) + this->epsilon)) *
                    (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
                 */
 
@@ -400,13 +417,15 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                             current = weights[dz][dy][dx] *
                                     (((current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) *
                                       (this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) +
-                                       current_image_estimate[z][y][x] + 3 * current_image_estimate[z+dz][y+dy][x+dx] + 2 * small))/
+                                       current_image_estimate[z][y][x] + 3 * current_image_estimate[z+dz][y+dy][x+dx] + 2 * this->epsilon))/
                                      (square((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
-                                      this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])) +small));
+                                      this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])) + this->epsilon));
                         if (do_kappa)
                           current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
 
                         gradient += current;
+                        std::cout << this->gamma << "\n";
+                        std::cout << this->epsilon << "\n";
                       }
 #else
                 // attempt to speed up by precomputing the sum of weights.

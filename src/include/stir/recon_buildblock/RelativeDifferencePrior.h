@@ -51,16 +51,17 @@ START_NAMESPACE_STIR
 
   \f[
   g_r = \sum_{dr} w_{dr} *
-  \frac{\left(\lambda_{j}-\lambda_{k}\right)\left(\gamma\left|\lambda_{j}-\lambda_{k}\right|+\lambda_{j}+3 \lambda_{k}\right)}
-  {\left(\lambda_{j}+\lambda_{k}+\gamma\left|\lambda_{j}-\lambda_{k}\right|\right)^{2}} *
+  \frac{\left(\lambda_{j}-\lambda_{k}\right)\left(\gamma\left|\lambda_{j}-\lambda_{k}\right|+\lambda_{j}+3 \lambda_{k} + 2 \epsilon \right)}
+  {\left(\lambda_{j}+\lambda_{k}+\gamma\left|\lambda_{j}-\lambda_{k}\right| + \epsilon \right)^{2}} *
   \kappa_r * \kappa_{r+dr}
   \f]
 
   where \f$\lambda\f$ is the image and \f$r\f$ and \f$dr\f$ are indices and the sum
   is over the neighbourhood where the weights \f$w_{dr}\f$ are non-zero. \f$\gamma\f$ is
-  a smoothing scalar term. For more details, see: <em> J. Nuyts, D. Bequ, P. Dupont, and L. Mortelmans,
+  a smoothing scalar term and the \f$\epsilon\f$ is a small positive value included to prevent division by zero.
+  For more details, see: <em> J. Nuyts, D. Bequ, P. Dupont, and L. Mortelmans,
   “A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction in Emission Tomography,”
- vol. 49, no. 1, pp. 56–60, 2002. </em>
+  vol. 49, no. 1, pp. 56–60, 2002. </em>
 
   The \f$\kappa\f$ image can be used to have spatially-varying penalties such as in 
   Jeff Fessler's papers. It should have identical dimensions to the image for which the
@@ -82,6 +83,7 @@ START_NAMESPACE_STIR
   ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
   ; use next parameter to specify an image with penalisation factors (a la Fessler)
   ; gamma value :=
+  ; epsilon value :=
   ; see class documentation for more info
   ; kappa filename:=
   ; use next parameter to get gradient images at every subiteration
@@ -115,7 +117,7 @@ class RelativeDifferencePrior:  public
   RelativeDifferencePrior();
 
   //! Constructs it explicitly
-  RelativeDifferencePrior(const bool only_2D, float penalization_factor, float gamma);
+  RelativeDifferencePrior(const bool only_2D, float penalization_factor, float gamma, float epsilon);
   
   virtual bool
     parabolic_surrogate_curvature_depends_on_argument() const
@@ -146,7 +148,13 @@ class RelativeDifferencePrior:  public
   //! get the gamma value used in RDP
   float get_gamma() const;
   //! set the gamma value used in the RDP
-  void set_gamma(float g);
+  void set_gamma(float e);
+
+  //! get the epsilon value used in RDP
+  float get_epsilon() const;
+  //! set the epsilon value used in the RDP
+  void set_epsilon(float e);
+
 
   //! get penalty weights for the neigbourhood
   Array<3,float> get_weights() const;
@@ -170,6 +178,10 @@ class RelativeDifferencePrior:  public
 protected:
   //! Create variable gamma for Relative Difference Penalty
   float gamma;
+
+  //! Create variable epsilon for Relative Difference Penalty
+  float epsilon;
+
   //! can be set during parsing to restrict the weights to the 2D case
   bool only_2D;
   //! filename prefix for outputing the gradient whenever compute_gradient() is called.
