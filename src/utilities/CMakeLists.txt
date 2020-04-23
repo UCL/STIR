@@ -86,6 +86,6 @@ endif()
 
 include(stir_exe_targets)
 
-if (nlohmann_json_FOUND)
+if (BUILD_EXECUTABLES AND nlohmann_json_FOUND)
   target_link_libraries(ctac_to_mu_values nlohmann_json::nlohmann_json)
 endif()
