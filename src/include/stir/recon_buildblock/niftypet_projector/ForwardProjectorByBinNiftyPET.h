@@ -33,7 +33,7 @@
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
 #include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
 #include "stir/ProjDataInMemory.h"
-#include "stir/recon_buildblock/niftypet_projector/ProjectorByBinNiftyPETHelper.h"
+#include "stir/recon_buildblock/niftypet_projector/NiftyPETHelper.h"
 
 START_NAMESPACE_STIR
 
@@ -102,7 +102,7 @@ protected:
 private:
     shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
     shared_ptr<ProjDataInMemory> _projected_data_sptr;
-    ProjectorByBinNiftyPETHelper _helper;
+    NiftyPETHelper _helper;
     int _cuda_device;
     bool _cuda_verbosity;
 };

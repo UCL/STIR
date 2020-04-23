@@ -24,7 +24,7 @@
 */
 
 #include "stir/listmode/niftypet_listmode/LmToProjDataNiftyPET.h"
-#include "stir/recon_buildblock/niftypet_projector/ProjectorByBinNiftyPETHelper.h"
+#include "stir/recon_buildblock/niftypet_projector/NiftyPETHelper.h"
 
 START_NAMESPACE_STIR
 
@@ -51,7 +51,7 @@ void LmToProjDataNiftyPET::check_input() const
 void LmToProjDataNiftyPET::process_data()
 {
     // Set up the niftyPET binary helper
-    ProjectorByBinNiftyPETHelper helper;
+    NiftyPETHelper helper;
     helper.set_cuda_device_id   ( _cuda_device  );
     helper.set_span             ( static_cast<char>(_span) );
     helper.set_att(0);

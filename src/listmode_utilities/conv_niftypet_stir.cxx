@@ -27,7 +27,7 @@
 #include "stir/IndexRange3D.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
-#include "stir/recon_buildblock/niftypet_projector/ProjectorByBinNiftyPETHelper.h"
+#include "stir/recon_buildblock/niftypet_projector/NiftyPETHelper.h"
 #include "stir/is_null_ptr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjDataInMemory.h"
@@ -179,7 +179,7 @@ main(int argc, char **argv)
         }
 
         // Set up the niftyPET binary helper
-        typedef ProjectorByBinNiftyPETHelper Helper;
+        typedef NiftyPETHelper Helper;
         Helper helper;
         helper.set_cuda_device_id (  cuda_device );
         helper.set_span           (      11      );

@@ -27,7 +27,7 @@
 */
 
 #include "stir/recon_buildblock/niftypet_projector/BackProjectorByBinNiftyPET.h"
-#include "stir/recon_buildblock/niftypet_projector/ProjectorByBinNiftyPETHelper.h"
+#include "stir/recon_buildblock/niftypet_projector/NiftyPETHelper.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"

@@ -5,7 +5,7 @@
   \file
   \ingroup projection
 
-  \brief non-inline implementations for stir::ProjectorByBinNiftyPETHelper
+  \brief non-inline implementations for stir::NiftyPETHelper
 
   \author Richard Brown
 
@@ -28,7 +28,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/recon_buildblock/niftypet_projector/ProjectorByBinNiftyPETHelper.h"
+#include "stir/recon_buildblock/niftypet_projector/NiftyPETHelper.h"
 #include <fstream>
 #include <math.h>
 #include <boost/format.hpp>
@@ -50,7 +50,7 @@
 
 START_NAMESPACE_STIR
 
-ProjectorByBinNiftyPETHelper::~ProjectorByBinNiftyPETHelper()
+NiftyPETHelper::~NiftyPETHelper()
 {
     delete [] _crs;
     delete [] _s2c;
@@ -96,7 +96,7 @@ shared_ptr<Cnst> get_cnst(const Scanner &scanner, const bool cuda_verbose, const
 
     if (scanner.get_type() == Scanner::Siemens_mMR) {
         if (!(span==0 || span==1 || span==11))
-            throw std::runtime_error("ProjectorByBinNiftyPETHelper::getcnst() "
+            throw std::runtime_error("NiftyPETHelper::getcnst() "
                                  "only spans 0, 1 and 11 supported for scanner type: " + scanner.get_name());
 
         cnt_sptr->A = NSANGLES; //sino angles
@@ -151,7 +151,7 @@ shared_ptr<Cnst> get_cnst(const Scanner &scanner, const bool cuda_verbose, const
         cnt_sptr->ETHRLD = 0.05f; // intensity percentage threshold of voxels to be considered in the image
     }
     else
-        throw std::runtime_error("ProjectorByBinNiftyPETHelper::getcnst() "
+        throw std::runtime_error("NiftyPETHelper::getcnst() "
                                  "not implemented for scanner type: " + scanner.get_name());
     return cnt_sptr;
 }
@@ -188,7 +188,7 @@ static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, float *&li2rng, sho
         NRNG_c = NRNG;
         NSN1_c = cnt.NSN1;
         if (cnt.RNG_END!=NRNG || cnt.RNG_STRT!=0)
-            throw std::runtime_error("ProjectorByBinNiftyPETHelper::get_axLUT: the reduced axial FOV only works in span-1.");
+            throw std::runtime_error("NiftyPETHelper::get_axLUT: the reduced axial FOV only works in span-1.");
     }
 
     // ring dimensions
@@ -491,7 +491,7 @@ void get_txLUT_sptr(shared_ptr<txLUTs> &txlut_sptr, float *&crs, short *&s2c, Cn
 }
 
 void
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 set_up()
 {
 
@@ -504,15 +504,15 @@ set_up()
     _niftypet_to_stir_ratio = 1.f;//.25f;
 
     if (_span < 0)
-        throw std::runtime_error("ProjectorByBinNiftyPETHelper::set_up() "
+        throw std::runtime_error("NiftyPETHelper::set_up() "
                                 "sinogram span not set.");
 
     if (_att < 0)
-        throw std::runtime_error("ProjectorByBinNiftyPETHelper::set_up() "
+        throw std::runtime_error("NiftyPETHelper::set_up() "
                                 "emission or transmission mode (att) not set.");
 
     if (_scanner_type == Scanner::Unknown_scanner)
-        throw std::runtime_error("ProjectorByBinNiftyPETHelper::set_up() "
+        throw std::runtime_error("NiftyPETHelper::set_up() "
                                 "scanner type not set.");
 
     // Get consts
@@ -541,23 +541,23 @@ set_up()
 }
 
 void
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 check_set_up() const
 {
     if (!_already_set_up)
-        throw std::runtime_error("ProjectorByBinNiftyPETHelper::check_set_up() "
+        throw std::runtime_error("NiftyPETHelper::check_set_up() "
                                  "Make sure filenames have been set and set_up has been run.");
 }
 
 std::vector<float>
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 create_niftyPET_image()
 {
     return std::vector<float>(SZ_IMZ*SZ_IMX*SZ_IMY,0);
 }
 
 std::vector<float>
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 create_niftyPET_sinogram_no_gaps() const
 {
     check_set_up();
@@ -565,7 +565,7 @@ create_niftyPET_sinogram_no_gaps() const
 }
 
 std::vector<float>
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 create_niftyPET_sinogram_with_gaps() const
 {
     return std::vector<float>(NSBINS*NSANGLES*unsigned(_nsinos), 0);
@@ -574,7 +574,7 @@ create_niftyPET_sinogram_with_gaps() const
 void get_stir_indices_and_dims(int stir_dim[3], Coordinate3D<int> &min_indices, Coordinate3D<int> &max_indices, const DiscretisedDensity<3,float >&stir)
 {
     if (!stir.get_regular_range(min_indices, max_indices))
-        throw std::runtime_error("ProjectorByBinNiftyPETHelper::set_input - "
+        throw std::runtime_error("NiftyPETHelper::set_input - "
                                  "expected image to have regular range.");
     for (int i=0; i<3; ++i)
         stir_dim[i] = max_indices[i + 1] - min_indices[i + 1] + 1;
@@ -586,14 +586,14 @@ unsigned convert_niftypet_im_3d_to_1d_idx(const unsigned x, const unsigned y, co
 }
 
 unsigned
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 convert_niftypet_proj_3d_to_1d_idx(const unsigned ang, const unsigned bins, const unsigned sino) const
 {
     return sino*NSANGLES*NSBINS + ang*NSBINS + bins;
 }
 
 void
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 permute(std::vector<float> &output_array, const std::vector<float> &orig_array, const unsigned output_dims[3], const unsigned permute_order[3]) const
 {
 #ifndef NDEBUG
@@ -639,7 +639,7 @@ permute(std::vector<float> &output_array, const std::vector<float> &orig_array, 
 }
 
 void
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 remove_gaps(std::vector<float> &sino_no_gaps, const std::vector<float> &sino_w_gaps) const
 {
     check_set_up();
@@ -656,7 +656,7 @@ remove_gaps(std::vector<float> &sino_no_gaps, const std::vector<float> &sino_w_g
 }
 
 void
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 put_gaps(std::vector<float> &sino_w_gaps, const std::vector<float> &sino_no_gaps) const
 {
     check_set_up();
@@ -679,7 +679,7 @@ put_gaps(std::vector<float> &sino_w_gaps, const std::vector<float> &sino_no_gaps
 }
 
 void
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 back_project(std::vector<float> &image, const std::vector<float> &sino_no_gaps) const
 {
     check_set_up();
@@ -716,7 +716,7 @@ back_project(std::vector<float> &image, const std::vector<float> &sino_no_gaps) 
 }
 
 void
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 forward_project(std::vector<float> &sino_no_gaps, const std::vector<float> &image) const
 {
     check_set_up();
@@ -753,7 +753,7 @@ forward_project(std::vector<float> &sino_no_gaps, const std::vector<float> &imag
 }
 
 shared_ptr<ProjData>
-ProjectorByBinNiftyPETHelper::create_stir_sino()
+NiftyPETHelper::create_stir_sino()
 {
     const int span=11;
     const int max_ring_diff=60;
@@ -915,7 +915,7 @@ int *get_buckets(unsigned int *bck, const int B, const int nitag)
 }
 
 void
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delayeds_sptr,
                 shared_ptr<ProjData> &randoms_sptr, shared_ptr<ProjData> &norm_sptr,
                 const int tstart, const int tstop,
@@ -976,7 +976,7 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
         dicout.dsn =  create_heap_array<unsigned short>(nfrm * num_sino_elements);
     }
     else
-        throw std::runtime_error("ProjectorByBinNiftyPETHelper::lm_to_proj_data: If nfrm>1, "
+        throw std::runtime_error("NiftyPETHelper::lm_to_proj_data: If nfrm>1, "
                                   "dicout.psn and dicout.dsn should be unsigned char*. Not "
                                   "tested, but should be pretty easy.");
 
@@ -1076,7 +1076,7 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
         delete [] (unsigned short*)dicout.dsn;
     }
     else
-        throw std::runtime_error("ProjectorByBinNiftyPETHelper::lm_to_proj_data: If nfrm>1, "
+        throw std::runtime_error("NiftyPETHelper::lm_to_proj_data: If nfrm>1, "
                                   "need to cast before deleting as is stored as void*.");
 }
 
@@ -1085,7 +1085,7 @@ void check_im_sizes(const int stir_dim[3], const int np_dim[3])
     for (int i=0; i<3; ++i)
         if (stir_dim[i] != np_dim[i])
             throw std::runtime_error((boost::format(
-                                      "ProjectorByBinNiftyPETHelper::check_im_sizes() - "
+                                      "NiftyPETHelper::check_im_sizes() - "
                                       "STIR image (%1%, %2%, %3%) should be == (%4%,%5%,%6%).")
                                       % stir_dim[0] % stir_dim[1] % stir_dim[2]
                                       % np_dim[0]   % np_dim[1]   % np_dim[2]).str());
@@ -1104,14 +1104,14 @@ void check_voxel_spacing(const DiscretisedDensity<3, float> &stir)
     for (unsigned i=0; i<3; ++i)
         if (std::abs(stir_spacing[int(i)+1] - np_spacing[i]) > 1e-4f)
             throw std::runtime_error((boost::format(
-                                      "ProjectorByBinNiftyPETHelper::check_voxel_spacing() - "
+                                      "NiftyPETHelper::check_voxel_spacing() - "
                                       "STIR image (%1%, %2%, %3%) should be == (%4%,%5%,%6%).")
                                       % stir_spacing[1] % stir_spacing[2] % stir_spacing[3]
                                       % np_spacing[0]   % np_spacing[1]   % np_spacing[2]).str());
 }
 
 void
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 convert_image_stir_to_niftyPET(std::vector<float> &np_vec, const DiscretisedDensity<3, float> &stir)
 {
     // Get the dimensions of the input image
@@ -1143,7 +1143,7 @@ convert_image_stir_to_niftyPET(std::vector<float> &np_vec, const DiscretisedDens
 }
 
 void
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 convert_image_niftyPET_to_stir(DiscretisedDensity<3,float> &stir, const std::vector<float> &np_vec)
 {
     // Get the dimensions of the input image
@@ -1188,7 +1188,7 @@ get_vals_for_proj_data_conversion(std::vector<int> &sizes, std::vector<int> &seg
     const ProjDataInfoCylindricalNoArcCorr * info_sptr =
             dynamic_cast<const ProjDataInfoCylindricalNoArcCorr *>(&proj_data_info);
     if (is_null_ptr(info_sptr))
-        error("ProjectorByBinNiftyPETHelper: only works with cylindrical projection data without arc-correction");
+        error("NiftyPETHelper: only works with cylindrical projection data without arc-correction");
 
     const int max_ring_diff   = info_sptr->get_max_ring_difference(info_sptr->get_max_segment_num());
     const int max_segment_num = info_sptr->get_max_segment_num();
@@ -1220,7 +1220,7 @@ get_vals_for_proj_data_conversion(std::vector<int> &sizes, std::vector<int> &seg
     // Make sure they're the same size
     if (np_vec.size() != unsigned(num_proj_data_elems))
         error(boost::format(
-                  "ProjectorByBinNiftyPETHelper::get_vals_for_proj_data_conversion "
+                  "NiftyPETHelper::get_vals_for_proj_data_conversion "
                   "NiftyPET and STIR sinograms are different sizes (%1% for STIR versus %2% for NP")
               % num_proj_data_elems % np_vec.size());
 }
@@ -1252,11 +1252,11 @@ void get_niftypet_sino_from_stir_segment_and_axial_pos(unsigned &np_sino, const 
             np_sino += sizes[i];
         }
     }
-    throw std::runtime_error("ProjectorByBinNiftyPETHelper::get_niftypet_sino_from_stir_segment_and_axial_pos(): Failed to find NiftyPET sinogram.");
+    throw std::runtime_error("NiftyPETHelper::get_niftypet_sino_from_stir_segment_and_axial_pos(): Failed to find NiftyPET sinogram.");
 }
 
 void
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 convert_viewgram_stir_to_niftyPET(std::vector<float> &np_vec, const Viewgram<float>& viewgram) const
 {
     // Get the values (and LUT) to be able to switch between STIR and NiftyPET projDatas
@@ -1287,7 +1287,7 @@ convert_viewgram_stir_to_niftyPET(std::vector<float> &np_vec, const Viewgram<flo
 }
 
 void
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 convert_proj_data_stir_to_niftyPET(std::vector<float> &np_vec, const ProjData& stir) const
 {
     const int min_view = stir.get_min_view_num();
@@ -1303,7 +1303,7 @@ convert_proj_data_stir_to_niftyPET(std::vector<float> &np_vec, const ProjData& s
 }
 
 void
-ProjectorByBinNiftyPETHelper::
+NiftyPETHelper::
 convert_proj_data_niftyPET_to_stir(ProjData &stir, const std::vector<float> &np_vec) const
 {
     // Get the values (and LUT) to be able to switch between STIR and NiftyPET projDatas

@@ -30,7 +30,7 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/BackProjectorByBin.h"
-#include "stir/recon_buildblock/niftypet_projector/ProjectorByBinNiftyPETHelper.h"
+#include "stir/recon_buildblock/niftypet_projector/NiftyPETHelper.h"
 
 START_NAMESPACE_STIR
 
@@ -101,7 +101,7 @@ protected:
 
  private:
   shared_ptr<DataSymmetriesForViewSegmentNumbers> _symmetries_sptr;
-  ProjectorByBinNiftyPETHelper _helper;
+  NiftyPETHelper _helper;
   int _cuda_device;
   bool _cuda_verbosity;
   std::vector<float> _np_sino_w_gaps;

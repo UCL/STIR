@@ -1,19 +1,19 @@
 //
 //
 
-#ifndef __stir_gpu_ProjectorByBinNiftyPETHelper_h__
-#define __stir_gpu_ProjectorByBinNiftyPETHelper_h__
+#ifndef __stir_gpu_NiftyPETHelper_h__
+#define __stir_gpu_NiftyPETHelper_h__
 /*!
   \file
   \ingroup projection
 
-  \brief Helper functions for projection using NiftyPET's GPU implementation.
+  \brief Helper functions for NiftyPET's GPU implementation.
 
   \author Richard Brown
 
 */
 /*
-    Copyright (C) 2019, University College London
+    Copyright (C) 2019-2020, University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -45,17 +45,17 @@ START_NAMESPACE_STIR
   \ingroup projection
   \brief Helper class for the wrapped NiftyPET projectors.
 */
-class ProjectorByBinNiftyPETHelper
+class NiftyPETHelper
 {
 public:
 
     /// Default constructor
-    ProjectorByBinNiftyPETHelper() :
+    NiftyPETHelper() :
         _already_set_up(false), _span(-1), _devid(0), _att(-1), _scanner_type(Scanner::Unknown_scanner)
     {}
 
     /// Destructor
-    virtual ~ProjectorByBinNiftyPETHelper();
+    virtual ~NiftyPETHelper();
 
     /// Set CUDA device ID
     void set_cuda_device_id(const int devid)                 { _devid = char(devid);          }
@@ -158,4 +158,4 @@ private:
 
 END_NAMESPACE_STIR
 
-#endif // __stir_gpu_ProjectorByBinNiftyPETHelper_h__
+#endif // __stir_gpu_NiftyPETHelper_h__

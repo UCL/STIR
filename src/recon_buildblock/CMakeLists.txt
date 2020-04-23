@@ -103,7 +103,7 @@ endif()
 
 if (STIR_WITH_NIFTYPET_PROJECTOR)
   list(APPEND ${dir_LIB_SOURCES}
-    niftypet_projector/ProjectorByBinNiftyPETHelper
+    niftypet_projector/NiftyPETHelper
     niftypet_projector/ForwardProjectorByBinNiftyPET
     niftypet_projector/BackProjectorByBinNiftyPET
     niftypet_projector/ProjectorByBinPairUsingNiftyPET
