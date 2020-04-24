@@ -308,12 +308,6 @@ compute_value(const DiscretisedDensity<3,elemT> &current_image_estimate)
                 const int min_dx = max(weights[0][0].get_min_index(), min_x-x);
                 const int max_dx = min(weights[0][0].get_max_index(), max_x-x);
                 
-                /* formula:
-                   sum_dx,dy,dz
-                    (current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])^2 /
-                     ((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
-                      (this->gamma *abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) + this->epsilon ))
-                */
                 for (int dz=min_dz;dz<=max_dz;++dz)
                   for (int dy=min_dy;dy<=max_dy;++dy)
                     for (int dx=min_dx;dx<=max_dx;++dx)
@@ -386,23 +380,7 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
             {
               const int min_dx = max(weights[0][0].get_min_index(), min_x-x);
               const int max_dx = min(weights[0][0].get_max_index(), max_x-x);
-                
-                /* Relative Difference Prior Gradient given by Eq.6 of J. Nuyts, D. Bequ, P. Dupont, and L. Mortelmans,
-                   “A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction
-                   in Emission Tomography,” vol. 49, no. 1, pp. 56–60, 2002.
-                    This implementation of the prior has an additional epsilon in the denominator.
 
-                formula:
-                weights[dz][dy][dx] *
-                (((current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) *
-                  (this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx]) +
-                   current_image_estimate[z][y][x] + 3 * current_image_estimate[z+dz][y+dy][x+dx] + 2 * this->epsilon))/
-                 (square((current_image_estimate[z][y][x] + current_image_estimate[z+dz][y+dy][x+dx]) +
-                  this->gamma * abs(current_image_estimate[z][y][x] - current_image_estimate[z+dz][y+dy][x+dx])) + this->epsilon)) *
-                   (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
-                */
-
-#if 1
                 elemT gradient = 0;
                 for (int dz=min_dz;dz<=max_dz;++dz)
                   for (int dy=min_dy;dy<=max_dy;++dy)
@@ -420,55 +398,8 @@ compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient,
                           current *= (*kappa_ptr)[z][y][x] * (*kappa_ptr)[z+dz][y+dy][x+dx];
 
                         gradient += current;
-                        std::cout << this->gamma << "\n";
-                        std::cout << this->epsilon << "\n";
                       }
-#else
-                // attempt to speed up by precomputing the sum of weights.
-                // The current code gives identical results but is actually slower
-                // than the above, at least when kappas are present.
 
-
-                // precompute sum of weights
-                // TODO without kappas, this is just weights.sum() most of the time, 
-                // but not near edges
-                float sum_of_weights = 0;
-                {
-                  if (do_kappa)
-                    {                
-                      for (int dz=min_dz;dz<=max_dz;++dz)
-                        for (int dy=min_dy;dy<=max_dy;++dy)
-                          for (int dx=min_dx;dx<=max_dx;++dx)
-                            sum_of_weights +=  weights[dz][dy][dx]*(*kappa_ptr)[z+dz][y+dy][x+dx];
-                    }
-                  else
-                    {
-                      for (int dz=min_dz;dz<=max_dz;++dz)
-                        for (int dy=min_dy;dy<=max_dy;++dy)
-                          for (int dx=min_dx;dx<=max_dx;++dx)
-                            sum_of_weights +=  weights[dz][dy][dx];
-                    }
-                }
-                // now compute contribution of central term
-                elemT gradient = sum_of_weights * current_image_estimate[z][y][x] ;
-
-                // subtract the rest
-                for (int dz=min_dz;dz<=max_dz;++dz)
-                  for (int dy=min_dy;dy<=max_dy;++dy)
-                    for (int dx=min_dx;dx<=max_dx;++dx)
-                      {
-                        elemT current =
-                          weights[dz][dy][dx] * current_image_estimate[z+dz][y+dy][x+dx];
-
-                        if (do_kappa)
-                          current *= (*kappa_ptr)[z+dz][y+dy][x+dx];
-
-                        gradient -= current;
-                      }
-                // multiply with central kappa
-                if (do_kappa)
-                  gradient *= (*kappa_ptr)[z][y][x];
-#endif
                 prior_gradient[z][y][x]= gradient * this->penalisation_factor;
               }              
           }
