@@ -111,3 +111,8 @@ if(@STIR_OPENMP@)
   find_package(OpenMP ${STIR_FIND_TYPE})
   set(STIR_BUILT_WITH_OpenMP TRUE)
 endif()
+
+if(@STIR_WITH_NIFTYPET_PROJECTOR@)
+  find_package(CUDA REQUIRED)
+  set(STIR_WITH_NIFTYPET_PROJECTOR TRUE)
+endif()

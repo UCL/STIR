@@ -19,7 +19,7 @@
         <li>Kris Thielemans (UCL) for general overview, fixes, help and maintenance</li>
         <li>Nikos Efthimiou (UCL and Hull) for the scatter update, list mode reconstruction, ROOT support etc</li>
         <li>Richard Brown (UCL) for improving code structure and safety (e.g. projectors, normalisation, <code>set_up</code> checks),
-          IO additions, handling of dynamic data</li>
+          IO additions, handling of dynamic data, and wrapping of NiftyPET's GPU functionality for projecting and unlisting</li>
         <li>Daniel Deidda (Leeds and NPL) for the PLS prior, the HKEM algorithm, and list mode and projection functionalities for SPECT</li>
       <li>Ashley Gillman (CSIRO AeHRC) for patient orientation and  geometrical support</li>
       </ul>
@@ -259,6 +259,10 @@ python/matlab or use of the C++ library.
 </ul>
 <li>add Verbosity level. It can be set from interactive languages, and in reconstructions with the <tt>verbosity</tt> keyword
     in the parameter file.
+  </li>
+    <li>NiftyPET's GPU projectors have been wrapped. If NiftyPET is installed, these projectors can be used 
+      on data from the Siemens mMR. See the example parameter file in <tt>examples/samples/OSMAPOSL_niftypet.par</tt>.
+      NiftyPET's GPU-accelerated unlisting has also been wrapped, also allowing for randoms estimation and norm extraction.
   </li>
 </ul>
 

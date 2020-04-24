@@ -90,6 +90,7 @@ option(DISABLE_STIR_LOCAL "disable use of LOCAL extensions to STIR" OFF)
 option(DISABLE_CERN_ROOT "disable use of Cern ROOT libraries" OFF)
 option(DISABLE_NLOHMANN_JSON "disable use of nlohmann JSON libraries" OFF)
 option(STIR_ENABLE_EXPERIMENTAL "disable use of STIR experimental code" OFF) # disable by default
+option(DISABLE_NIFTYPET_PROJECTOR "disable use of NiftyPET projector" OFF)
 
 if(NOT DISABLE_ITK)
    # See if we can find a compiled version of ITK (http://www.itk.org/)
@@ -136,6 +137,23 @@ endif()
 
 # Enable version 3 projectors
 option(STIR_PROJECTORS_AS_V3 "Enable STIR version 3 legacy code" OFF)
+
+# NiftyPET projector
+if(NOT DISABLE_NIFTYPET_PROJECTOR)
+  find_package(CUDA QUIET)
+  if (CUDA_FOUND)
+    find_package(NIFTYPET)
+    if (NIFTYPET_FOUND)
+      set(STIR_WITH_NIFTYPET_PROJECTOR ON)
+      set(STIR_NIFTYPET_PROJECTOR_test "test/niftypet_projector")
+    endif()
+  endif()
+endif()
+if (STIR_WITH_NIFTYPET_PROJECTOR) 
+  message(STATUS "NiftyPET projector support enabled.")
+else()
+  message(STATUS "NiftyPET projector support disabled.")
+endif()
 
 #### enable support for ctest
 ENABLE_TESTING()

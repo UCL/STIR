@@ -4137,6 +4137,20 @@ End Projector Pair Using Matrix Parameters:=
 
 See Section \ref{sec:projmatrix} for possible values for the 'matrix type' keyword.
 
+{ \subsubsubsection{NiftyPET}
+}
+\label{sec:projectorpairusingniftypet}
+Both projectors are based on the NiftyPET-wrapped projectors, as detailed
+invididually in the following sections.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Projector Pair Using NiftyPET Parameters:=
+  verbosity := 1
+End Projector Pair Using NiftyPET Parameters:=
+\end{verbatim}
+
 { \subsubsubsection{Separate Projectors }
 }
 Forward and back projectors are completely independent of each 
@@ -4229,6 +4243,18 @@ Pre Smoothing Forward Projector Parameters:=
 End Pre Smoothing Forward Projector Parameters:=
 \end{verbatim}
 
+{ \subsubsubsection{NiftyPET}
+}
+This forward projector wraps NiftyPET's GPU forward projector.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Forward Projector Using NiftyPET Parameters:=
+  verbosity := 1
+End Forward Projector Using NiftyPET Parameters:=
+\end{verbatim}
+
 \subsubsection{
 Selecting a back projector}
 \label{sec:backprojectors}
@@ -4307,6 +4333,18 @@ Post Smoothing Back Projector Parameters:=
   filter type:= some filter value
   ; normal filter parameters
 End Post Smoothing Back Projector Parameters:=
+\end{verbatim}
+
+{ \subsubsubsection{NiftyPET}
+}
+This back projector wraps NiftyPET's GPU back projector.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Back Projector Using NiftyPET Parameters:=
+  verbosity := 1
+End Back Projector Using NiftyPET Parameters:=
 \end{verbatim}
 
 
