@@ -424,7 +424,7 @@ RelativeDifferencePrior<elemT>::
 add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
                                             const DiscretisedDensity<3,elemT>& input) const
 {
-   error("add_multiplication_with_approximate_Hessian()  is not implemented in Relative Difference Prior.")
+   error("add_multiplication_with_approximate_Hessian()  is not implemented in Relative Difference Prior.");
   return Succeeded::no;
 }
 
