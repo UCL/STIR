@@ -46,7 +46,7 @@ START_NAMESPACE_STIR
 /*!
   \ingroup priors
   \brief
-  A class in the GeneralisedPrior hierarchy. This implements a Relative Difference Gibbs prior.
+  A class in the GeneralisedPrior hierarchy. This implements a Relative Difference prior.
 
   The gradient of the prior is computed as follows:
 
@@ -60,7 +60,7 @@ START_NAMESPACE_STIR
   where \f$\lambda\f$ is the image and \f$r\f$ and \f$dr\f$ are indices and the sum
   is over the neighbourhood where the weights \f$w_{dr}\f$ are non-zero. \f$\gamma\f$ is
   a smoothing scalar term and the \f$\epsilon\f$ is a small positive value included to prevent division by zero.
-  For more details, see: <em> J. Nuyts, D. Bequ, P. Dupont, and L. Mortelmans,
+  For more details, see: <em> J. Nuyts, D. Bequ&eacute;, P. Dupont, and L. Mortelmans,
   “A Concave Prior Penalizing Relative Differences for Maximum-a-Posteriori Reconstruction in Emission Tomography,”
   vol. 49, no. 1, pp. 56–60, 2002. </em>
 
@@ -82,10 +82,10 @@ START_NAMESPACE_STIR
   ' value of only_2D is ignored
   ; following example uses 2D 'nearest neighbour' penalty
   ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
-  ; use next parameter to specify an image with penalisation factors (a la Fessler)
   ; gamma value :=
   ; epsilon value :=
   ; see class documentation for more info
+  ; use next parameter to specify an image with penalisation factors (a la Fessler)
   ; kappa filename:=
   ; use next parameter to get gradient images at every subiteration
   ; see class documentation
