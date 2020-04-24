@@ -132,15 +132,6 @@ class RelativeDifferencePrior:  public
   void compute_gradient(DiscretisedDensity<3,elemT>& prior_gradient, 
                         const DiscretisedDensity<3,elemT> &current_image_estimate);
 
-  //! compute the parabolic surrogate for the prior
-  /*! in the case of Relative Difference priors this will just be the sum of weighting coefficients*/
-  void parabolic_surrogate_curvature(DiscretisedDensity<3,elemT>& parabolic_surrogate_curvature, 
-                        const DiscretisedDensity<3,elemT> &current_image_estimate);
-
-  //! compute Hessian 
-  void compute_Hessian(DiscretisedDensity<3,elemT>& prior_Hessian_for_single_densel, 
-                const BasicCoordinate<3,int>& coords,
-                const DiscretisedDensity<3,elemT> &current_image_estimate);
 
   virtual Succeeded 
     add_multiplication_with_approximate_Hessian(DiscretisedDensity<3,elemT>& output,
