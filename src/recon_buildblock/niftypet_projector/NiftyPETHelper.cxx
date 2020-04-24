@@ -47,6 +47,7 @@
 #include "scanner_0.h"
 #include "rnd.h"
 #include "norm.h"
+#include "boost/filesystem.hpp"
 
 START_NAMESPACE_STIR
 
@@ -922,10 +923,14 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
                 const std::string &lm_binary_file, const std::string &norm_binary_file) const
 {
     check_set_up();
-    
+
+    // Get LM file as absolute path
+    std::string lm_abs(boost::filesystem::absolute(
+        boost::filesystem::path(lm_binary_file)).string());
+
     // Get listmode info
-    char *flm = create_heap_array<char>(lm_binary_file.length() + 1);
-    strcpy(flm, lm_binary_file.c_str());
+    char *flm = create_heap_array<char>(lm_abs.length() + 1);
+    strcpy(flm, lm_abs.c_str());
     getLMinfo(flm, *_cnt_sptr);
     free(lmprop.atag);
     free(lmprop.btag);

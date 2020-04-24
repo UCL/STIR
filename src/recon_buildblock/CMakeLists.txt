@@ -133,4 +133,6 @@ if (STIR_WITH_NIFTYPET_PROJECTOR)
 
 	target_link_libraries(recon_buildblock ${CUDA_LIBRARIES})
 	target_link_libraries(recon_buildblock ${NIFTYPET_LIBRARIES})
+	# If using NiftyPET, need boost's filesystem
+	target_link_libraries(recon_buildblock Boost::system Boost::filesystem)
 endif()

@@ -74,9 +74,39 @@ set(ConfigPackageLocation lib/cmake/)
 # Note: we need to have the find_package statements in the top-level CMakeLists.txt
 # such that we can use it in STIRConfig.cmake.in (see below).
 
+# NiftyPET projector
+if(NOT DISABLE_NIFTYPET_PROJECTOR)
+  find_package(CUDA QUIET)
+  if (CUDA_FOUND)
+    find_package(NIFTYPET)
+    if (NIFTYPET_FOUND)
+      set(STIR_WITH_NIFTYPET_PROJECTOR ON)
+      set(STIR_NIFTYPET_PROJECTOR_test "test/niftypet_projector")
+    endif()
+  endif()
+endif()
+if (STIR_WITH_NIFTYPET_PROJECTOR)
+  message(STATUS "NiftyPET projector support enabled.")
+else()
+  message(STATUS "NiftyPET projector support disabled.")
+endif()
+
 #### we need the boost library from boost.org
 set(BOOST_ROOT CACHE PATH "root of Boost")
-find_package( Boost 1.36.0 REQUIRED )
+if (NOT STIR_WITH_NIFTYPET_PROJECTOR)
+  find_package( Boost 1.36.0 REQUIRED )
+else()
+  find_package( Boost 1.36.0 COMPONENTS system filesystem REQUIRED )
+  if((CMAKE_VERSION VERSION_LESS 3.5.0) OR (NOT _Boost_IMPORTED_TARGETS))
+    # This is harder than it should be on older CMake versions to be able to cope with
+    # spaces in filenames.
+    foreach(C system filesystem)
+      add_library(Boost::${C} INTERFACE IMPORTED)
+      set_property(TARGET Boost::${C} PROPERTY
+        INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIR})
+    endforeach()
+  endif()
+endif()
 
 #### optional external libraries. 
 # Listed here such that we know if we should compile extra utilities
@@ -135,23 +165,6 @@ endif()
 
 # Enable version 3 projectors
 option(STIR_PROJECTORS_AS_V3 "Enable STIR version 3 legacy code" OFF)
-
-# NiftyPET projector
-if(NOT DISABLE_NIFTYPET_PROJECTOR)
-  find_package(CUDA QUIET)
-  if (CUDA_FOUND)
-    find_package(NIFTYPET)
-    if (NIFTYPET_FOUND)
-      set(STIR_WITH_NIFTYPET_PROJECTOR ON)
-      set(STIR_NIFTYPET_PROJECTOR_test "test/niftypet_projector")
-    endif()
-  endif()
-endif()
-if (STIR_WITH_NIFTYPET_PROJECTOR) 
-  message(STATUS "NiftyPET projector support enabled.")
-else()
-  message(STATUS "NiftyPET projector support disabled.")
-endif()
 
 #### enable support for ctest
 ENABLE_TESTING()
