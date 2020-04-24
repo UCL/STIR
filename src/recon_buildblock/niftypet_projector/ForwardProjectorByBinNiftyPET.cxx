@@ -64,8 +64,8 @@ initialise_keymap()
 
 void
 ForwardProjectorByBinNiftyPET::
-set_up(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
-       const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr)
+set_up(const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
+       const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr)
 {
     ForwardProjectorByBin::set_up(proj_data_info_sptr,density_info_sptr);
     check(*proj_data_info_sptr, *_density_sptr);
