@@ -47,7 +47,7 @@
 #include "scanner_0.h"
 #include "rnd.h"
 #include "norm.h"
-#include "boost/filesystem.hpp"
+#include "stir/FilePath.h"
 
 START_NAMESPACE_STIR
 
@@ -925,8 +925,12 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
     check_set_up();
 
     // Get LM file as absolute path
-    std::string lm_abs(boost::filesystem::absolute(
-        boost::filesystem::path(lm_binary_file)).string());
+    std::string lm_abs = lm_binary_file;
+    if (!FilePath::is_absolute(lm_binary_file)) {
+        FilePath fp_lm_binary(lm_binary_file);
+        fp_lm_binary.prepend_directory_name(FilePath::get_current_working_directory());
+        lm_abs = fp_lm_binary.get_as_string();
+    }
 
     // Get listmode info
     char *flm = create_heap_array<char>(lm_abs.length() + 1);
