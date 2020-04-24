@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2011, Hammersmith Imanet Ltd
-    Copyright (C) 2018, University College London
+    Copyright (C) 2018, 2019 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -54,6 +54,7 @@
 #include "stir/recon_buildblock/ProjMatrixByBinUsingRayTracing.h"
 #endif
 #include "stir/recon_buildblock/ProjectorByBinPairUsingSeparateProjectors.h"
+#include "stir/recon_buildblock/find_basic_vs_nums_in_subsets.h"
 
 #include "stir/ProjDataInMemory.h"
 
@@ -834,18 +835,19 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
   this->get_projector_pair().get_forward_projector_sptr()->set_input(input);
   this->get_projector_pair().get_back_projector_sptr()->start_accumulating_in_new_target();
 
-  for (int segment_num = -this->get_max_segment_num_to_process();
-       segment_num<= this->get_max_segment_num_to_process();
-       ++segment_num) 
-    {      
-      for (int view = this->get_proj_data().get_min_view_num() + subset_num; 
-           view <= this->get_proj_data().get_max_view_num(); 
-           view += this->num_subsets)
-        {
-          const ViewSegmentNumbers view_segment_num(view, segment_num);
-          
-          if (!symmetries_sptr->is_basic(view_segment_num))
-            continue;
+  const std::vector<ViewSegmentNumbers> vs_nums_to_process =
+    detail::find_basic_vs_nums_in_subset(* this->get_proj_data().get_proj_data_info_ptr(),
+					 *symmetries_sptr,
+					 -this->get_max_segment_num_to_process(),
+					 this->get_max_segment_num_to_process(),
+                                         subset_num, this->get_num_subsets());
+#ifdef STIR_OPENMP
+#pragma omp for schedule(runtime)
+#endif
+  // note: older versions of openmp need an int as loop
+  for (int i=0; i<static_cast<int>(vs_nums_to_process.size()); ++i)
+      {
+          const ViewSegmentNumbers view_segment_num=vs_nums_to_process[i];
 
           // first compute data-term: y*norm^2
           RelatedViewgrams<float> viewgrams =
@@ -875,11 +877,15 @@ actual_add_multiplication_with_approximate_sub_Hessian_without_penalty(TargetT& 
           // back-project
           this->get_projector_pair().get_back_projector_sptr()->
             back_project(tmp_viewgrams);
-      }
 
-  } // end of loop over segments
+  } // end of loop over view/segments
 
-  this->get_projector_pair().get_back_projector_sptr()->get_output(output);
+  shared_ptr<TargetT> tmp(output.get_empty_copy());
+  this->get_projector_pair().get_back_projector_sptr()->get_output(*tmp);
+  // output += tmp;
+  std::transform(output.begin_all(), output.end_all(),
+                 tmp->begin_all(), output.begin_all(),
+		 std::plus<typename TargetT::full_value_type>());
 
   return Succeeded::yes;
 }

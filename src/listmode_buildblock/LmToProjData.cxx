@@ -61,8 +61,8 @@ FRAME_BASED_DT_CORR:
 #include "stir/utilities.h"
 
 #include "stir/listmode/LmToProjData.h"
-#include "stir/listmode/CListRecord.h"
-#include "stir/listmode/CListModeData.h"
+#include "stir/listmode/ListRecord.h"
+#include "stir/listmode/ListModeData.h"
 #include "stir/ExamInfo.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 
@@ -175,7 +175,7 @@ initialise_keymap()
   parser.add_key("do pre normalisation ", &do_pre_normalisation);
   parser.add_key("num_segments_in_memory", &num_segments_in_memory);
 
-  //if (lm_data_ptr->has_delayeds()) TODO we haven't read the CListModeData yet, so cannot access has_delayeds() yet
+  //if (lm_data_ptr->has_delayeds()) TODO we haven't read the ListModeData yet, so cannot access has_delayeds() yet
   // one could add the next 2 keywords as part of a callback function for the 'input file' keyword.
   // That's a bit too much trouble for now though...
   {
@@ -206,7 +206,7 @@ post_processing()
       return true;
     }
 
-  lm_data_ptr = stir::read_from_file<CListModeData>(input_filename);
+  lm_data_ptr = stir::read_from_file<ListModeData>(input_filename);
 
   if (template_proj_data_name.size()==0)
     {
@@ -388,7 +388,7 @@ LmToProjData(const char * const par_filename)
 ***************************************************************/
 void
 LmToProjData::
-get_bin_from_event(Bin& bin, const CListEvent& event) const
+get_bin_from_event(Bin& bin, const ListEvent& event) const
 {  
   if (do_pre_normalisation)
    {
@@ -475,7 +475,7 @@ do_post_normalisation(Bin& bin) const
 	    }
 	  else
 	    {
-	      bin.set_bin_value(1/bin_efficiency);
+          bin.set_bin_value(bin.get_bin_value()/bin_efficiency);
 	    }	  
 	}
     }
@@ -501,7 +501,7 @@ get_compression_count(const Bin& bin) const
 ***************************************************************/
 void
 LmToProjData::
-process_new_time_event(const CListTime&)
+process_new_time_event(const ListTime&)
 {}
 
 
@@ -534,10 +534,10 @@ process_data()
     segments (template_proj_data_info_ptr->get_min_segment_num(), 
 	      template_proj_data_info_ptr->get_max_segment_num());
   
-  VectorWithOffset<CListModeData::SavedPosition> 
+  VectorWithOffset<ListModeData::SavedPosition>
     frame_start_positions(1, static_cast<int>(frame_defs.get_num_frames()));
-  shared_ptr <CListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
-  CListRecord& record = *record_sptr;
+  shared_ptr <ListRecord> record_sptr = lm_data_ptr->get_empty_record_sptr();
+  ListRecord& record = *record_sptr;
 
   if (!record.event().is_valid_template(*template_proj_data_info_ptr))
 	  error("The scanner template is not valid for LmToProjData. This might be because of unsupported arc correction.");

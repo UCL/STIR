@@ -2,7 +2,7 @@
     Copyright (C) 2000 PARAPET partners
     Copyright (C) 2000-2010, Hammersmith Imanet Ltd
     Copyright (C) 2011-2013, King's College London
-    Copyright (C) 2016, UCL
+    Copyright (C) 2016, 2019, UCL
  
     This file is part of STIR.
 
@@ -77,6 +77,11 @@ class Succeeded;
           collection of blocks. A \c singles_unit is then a set of crystals
           for which we can get singles rates.
 
+      A further complication is that some scanners (including many Siemens scanners) 
+      insert virtual crystals in the sinogram data (corresponding to gaps between
+      detector blocks). We currently define the blocks as the "virtual" ones,
+      but provide extra members to find out how many of these virtual crystals there are.
+
       \warning This information is only sensible for discrete detector-based scanners.
       \todo Some scanners do not have all info filled in at present. Values are then
       set to 0.
@@ -108,7 +113,7 @@ class Scanner
      to flag up an error and do some guess work in trying to recognise the scanner from 
      any given parameters.
   */
-  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR, RPT,HiDAC,
+  enum Type {E931, E951, E953, E921, E925, E961, E962, E966, E1080, Siemens_mMR, Siemens_mCT, RPT,HiDAC,
 	     Advance, DiscoveryLS, DiscoveryST, DiscoverySTE, DiscoveryRX, Discovery600, Discovery690,
 	     HZLR, RATPET, PANDA, HYPERimage, nanoPET, HRRT, Allegro, GeminiTF, User_defined_scanner,
 	     Unknown_scanner};
@@ -262,6 +267,15 @@ class Scanner
   /* inline int get_num_layers_singles_units() const; */
   inline int get_num_singles_units() const;
 
+  //! \name number of "fake" crystals per block, inserted by the scanner
+  /*! Some scanners (including many Siemens scanners) insert virtual crystals in the sinogram data.
+    The other members of the class return the size of the "virtual" block. With these
+    functions you can find its true size.
+  */
+  //@{! 
+  int get_num_virtual_axial_crystals_per_block() const;
+  int get_num_virtual_transaxial_crystals_per_block() const;
+  //@}
 
   //@} (end of block/bucket info)
 
@@ -326,6 +340,8 @@ class Scanner
   //! set the reference energy of the energy resolution
   //! A negative value indicates, unknown || not set
   inline void set_reference_energy(const float new_num);
+
+  inline bool has_energy_information() const;
   //@} (end of set info)
   //@} (end of set info)
   

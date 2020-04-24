@@ -180,7 +180,10 @@ done
 if [ -z "${error_log_files}" ]; then
  echo "All tests OK!"
  echo "You can remove all output using \"rm -f my_*\""
+ exit 0
 else
  echo "There were errors. Check ${error_log_files}"
+ tail ${error_log_files}
+ exit 1
 fi
 

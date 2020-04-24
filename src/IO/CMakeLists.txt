@@ -24,7 +24,6 @@ set(dir IO)
 set (dir_LIB_SOURCES ${dir}_LIB_SOURCES)
 
 set(${dir_LIB_SOURCES}
-  ExamData
   OutputFileFormat 
   OutputFileFormat_default 
   InterfileOutputFileFormat
@@ -36,6 +35,7 @@ set(${dir_LIB_SOURCES}
   MultiDynamicDiscretisedDensityOutputFileFormat
 
   GIPL_ImageFormat
+  stir_ecat_common 
 ) 
 
 # we can use IO from the itk library
@@ -50,7 +50,6 @@ if (LLN_FOUND)
  list(APPEND ${dir_LIB_SOURCES}
     ECAT7OutputFileFormat stir_ecat7 
     ECAT6OutputFileFormat 
-    stir_ecat_common 
     ECAT7ParametricDensityOutputFileFormat 
     ECAT7DynamicDiscretisedDensityOutputFileFormat 
     ECAT7DynamicDiscretisedDensityInputFileFormat

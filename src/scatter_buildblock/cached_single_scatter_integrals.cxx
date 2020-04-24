@@ -26,7 +26,7 @@
   \author Nikolaos Dikaios
   \author Kris Thielemans
 */
-#include "stir/scatter/ScatterEstimationByBin.h"
+#include "stir/scatter/ScatterSimulation.h"
 #include "stir/IndexRange.h" 
 #include "stir/Coordinate2D.h"
 
@@ -35,14 +35,14 @@ START_NAMESPACE_STIR
 const float cache_init_value = -1234567.89E10F; // an arbitrary value that should never occur
 
 void
-ScatterEstimationByBin::
+ScatterSimulation::
 remove_cache_for_integrals_over_attenuation()
 {
   this->cached_attenuation_integral_scattpoint_det.recycle();
 }
 
 void
-ScatterEstimationByBin::
+ScatterSimulation::
 remove_cache_for_integrals_over_activity()
 {
   this->cached_activity_integral_scattpoint_det.recycle();
@@ -50,7 +50,7 @@ remove_cache_for_integrals_over_activity()
 
 
 void
-ScatterEstimationByBin::
+ScatterSimulation::
 initialise_cache_for_scattpoint_det_integrals_over_attenuation()
 {
   if (!this->use_cache)
@@ -67,7 +67,7 @@ initialise_cache_for_scattpoint_det_integrals_over_attenuation()
 }
 
 void
-ScatterEstimationByBin::
+ScatterSimulation::
 initialise_cache_for_scattpoint_det_integrals_over_activity()
 {
   if (!this->use_cache)
@@ -85,7 +85,7 @@ initialise_cache_for_scattpoint_det_integrals_over_activity()
 }
 
 float 
-ScatterEstimationByBin::
+ScatterSimulation::
 cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatter_point_num, 
                                                            const unsigned det_num)
 {                
@@ -105,7 +105,7 @@ cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatte
 # if _OPENMP >=201012
 #  pragma omp atomic read
 # else
-#  pragma omp critical(STIRSCATTERESTIMATIONREADCACHE)
+#  pragma omp critical(STIRSCATTERESTIMATIONCACHE)
   {
 # endif
 #endif
@@ -130,7 +130,7 @@ cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatte
 # if _OPENMP >=201012
 #  pragma omp atomic write
 # else
-#  pragma omp critical(STIRSCATTERESTIMATIONWRITECACHE)
+#  pragma omp critical(STIRSCATTERESTIMATIONCACHE)
         {
 # endif
 #endif
@@ -143,7 +143,7 @@ cached_integral_over_activity_image_between_scattpoint_det(const unsigned scatte
 }
 
 float 
-ScatterEstimationByBin::
+ScatterSimulation::
 cached_exp_integral_over_attenuation_image_between_scattpoint_det(const unsigned scatter_point_num, 
                                                                   const unsigned det_num)
 {

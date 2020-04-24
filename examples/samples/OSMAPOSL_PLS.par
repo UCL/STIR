@@ -41,14 +41,14 @@ xy output image size (in pixels) := -1
   PLS Prior Parameters:=
   penalisation factor :=1
 
-; the following parameter is to avoid division by zero
-; The value depends on the scale of the emission image. 
+; the prior has 2 parameters alpha and eta. It is computed for an image f as
+;   phi(f) = sqrt{alpha^2 + |nabla f|^2 - <nabla f,xi>^2
+; with xi the normalised gradient of the anatomical image calculated as follows:
+;   xi = nabla v / sqrt(|nabla v|^2 + eta^2)
+; alpha controls the edge-preservation property of PLS, and depends on the scale of the emission image. 
+; eta avoids division by zero, and depends on the scale of the anatomical image. 
 
   eta:=1
-
-; the following parameter controls the edge-preservation property of PLS. 
-; The value depends on the scale of the emission image. 
-
   alpha:=1
 
   anatomical_filename:=${filename}

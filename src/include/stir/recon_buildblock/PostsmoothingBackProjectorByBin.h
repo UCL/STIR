@@ -87,13 +87,10 @@ public:
   // class has other behaviour).
   const DataSymmetriesForViewSegmentNumbers * get_symmetries_used() const;
 
-  /// Get output
-  virtual void get_output(DiscretisedDensity<3,float> &) const;
-
 private:
 
   shared_ptr<BackProjectorByBin> original_back_projector_ptr;
-  shared_ptr<DataProcessor<DiscretisedDensity<3,float> > > image_processor_ptr;
+
 #ifdef STIR_PROJECTORS_AS_V3
   void actual_back_project(DiscretisedDensity<3,float>&,
                            const RelatedViewgrams<float>&,

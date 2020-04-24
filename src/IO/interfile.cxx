@@ -473,9 +473,10 @@ static void write_interfile_energy_windows(std::ostream& output_header, const Ex
   if (exam_info.get_high_energy_thres() > 0 &&
       exam_info.get_low_energy_thres() >= 0)
     {
-      output_header << "energy window lower level := " <<
+      output_header << "number of energy windows := 1\n";
+      output_header << "energy window lower level[1] := " <<
         exam_info.get_low_energy_thres() << '\n';
-      output_header << "energy window upper level :=  " <<
+      output_header << "energy window upper level[1] :=  " <<
         exam_info.get_high_energy_thres() << '\n';
     }
 }
@@ -569,9 +570,9 @@ write_basic_interfile_image_header(const string& header_file_name,
   if (is_spect)
     output_header << "!version of keys := 3.3\n";
   else
-    output_header << "!version of keys := STIR3.0\n";
+    output_header << "!version of keys := STIR4.0\n";
 #else
-  output_header << "!version of keys := STIR3.0\n";
+  output_header << "!version of keys := STIR4.0\n";
 #endif
 
   output_header << "name of data file := " << data_file_name_in_header << endl;
@@ -1197,7 +1198,7 @@ write_basic_interfile_PDFS_header(const string& header_file_name,
   if (is_spect)
     output_header << "!version of keys := 3.3\n";
   else
-    output_header << "!version of keys := STIR3.0\n";
+    output_header << "!version of keys := STIR4.0\n";
 
   output_header << "!GENERAL DATA :=\n";
   output_header << "!GENERAL IMAGE DATA :=\n";

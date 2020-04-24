@@ -2,6 +2,7 @@
 //
 /*
   Copyright (C) 2004- 2009, Hammersmith Imanet Ltd
+  Copyright (C) 2016, UCL
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -29,14 +30,14 @@
   \author Kris Thielemans
   
   */
-#include "stir/scatter/ScatterEstimationByBin.h"
+#include "stir/scatter/ScatterSimulation.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/recon_buildblock/ProjMatrixElemsForOneBin.h"
 #include "stir/recon_buildblock/RayTraceVoxelsOnCartesianGrid.h"
 START_NAMESPACE_STIR
 
 float 
-ScatterEstimationByBin::
+ScatterSimulation::
 exp_integral_over_attenuation_image_between_scattpoint_det (const CartesianCoordinate3D<float>& scatter_point, 
                          const CartesianCoordinate3D<float>& detector_coord)
 {       
@@ -61,7 +62,7 @@ exp_integral_over_attenuation_image_between_scattpoint_det (const CartesianCoord
 
 
 float
-ScatterEstimationByBin::
+ScatterSimulation::
 integral_over_activity_image_between_scattpoint_det (const CartesianCoordinate3D<float>& scatter_point, 
                                                      const CartesianCoordinate3D<float>& detector_coord)
 {
@@ -82,7 +83,7 @@ integral_over_activity_image_between_scattpoint_det (const CartesianCoordinate3D
 }
 
 float 
-ScatterEstimationByBin::
+ScatterSimulation::
 integral_between_2_points(const DiscretisedDensity<3,float>& density,
                           const CartesianCoordinate3D<float>& scatter_point, 
                           const CartesianCoordinate3D<float>& detector_coord)

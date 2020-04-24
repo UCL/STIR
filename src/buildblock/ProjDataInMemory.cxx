@@ -9,6 +9,7 @@
 /*
     Copyright (C) 2002 - 2011-02-23, Hammersmith Imanet Ltd
     Copyright (C) 2011, Kris Thielemans
+    Copyright (C) 2019, UCL
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -31,12 +32,12 @@
 #include "stir/SegmentByView.h"
 #include "stir/Bin.h"
 #include <fstream>
-
+#include <cstring>
 
 #ifdef STIR_USE_OLD_STRSTREAM
 #include <strstream>
 #else
-#include <sstream>
+#include <boost/interprocess/streams/bufferstream.hpp>
 #endif
 
 #ifndef STIR_NO_NAMESPACES
@@ -61,31 +62,41 @@ ProjDataInMemory(shared_ptr<ExamInfo> const& exam_info_sptr,
   :
   ProjDataFromStream(exam_info_sptr, proj_data_info_ptr, shared_ptr<iostream>()) // trick: first initialise sino_stream_ptr to 0
 {
-  
+  this->buffer.reset(create_buffer(initialise_with_0));
+  this->sino_stream = this->create_stream();
+}
+
+char *
+ProjDataInMemory::
+create_buffer(const bool initialise_with_0) const
+{
+  char *b = new char[this->get_size_of_buffer()];
+  if (initialise_with_0)
+      memset(b, 0, this->get_size_of_buffer());
+  return b;
+}
+
+shared_ptr<std::iostream>
+ProjDataInMemory::
+create_stream()
+const
+{
+  shared_ptr<std::iostream> output_stream_sptr;
 #ifdef STIR_USE_OLD_STRSTREAM
-  const size_t buffer_size = get_size_of_buffer();
-  //buffer = unique_ptr<char>(new char[buffer_size]);
-  buffer.reset(new char[buffer_size]);
-  sino_stream.reset(new strstream(buffer.get(), buffer_size, ios::in | ios::out | ios::trunc | ios::binary));
+  output_stream_sptr.reset(new strstream(buffer.get(), this->get_size_of_buffer(), ios::in | ios::out | ios::binary));
 #else
-  // it would be advantageous to preallocate memory as well
-  // the only way to do this is by passing a string of the appropriate size
+  // Use boost::bufferstream top reallocate.
+  // For std::stringstream, the only way to do this is by passing a string of the appropriate size
   // However, if basic_string doesn't do reference counting, we would have
   // temporarily 2 strings of a (potentially large) size in memory.
-  // todo?
-  sino_stream.reset(new std::stringstream(ios::in | ios::out | ios::binary));
+  output_stream_sptr.reset
+          (new boost::interprocess::bufferstream(this->buffer.get(), this->get_size_of_buffer(), ios::in | ios::out | ios::binary));
 #endif
 
-  if (!*sino_stream)
-    error("ProjDataInMemory error initialising stream\n");
+  if (!*output_stream_sptr)
+    error("ProjDataInMemory error initialising stream");
 
-  if (initialise_with_0)
-  {
-    for (int segment_num = proj_data_info_ptr->get_min_segment_num();
-         segment_num <= proj_data_info_ptr->get_max_segment_num();
-         ++segment_num)
-      set_segment(proj_data_info_ptr->get_empty_segment_by_view(segment_num));
-  }
+  return output_stream_sptr;
 }
 
 ProjDataInMemory::
@@ -93,45 +104,30 @@ ProjDataInMemory(const ProjData& proj_data)
   : ProjDataFromStream(proj_data.get_exam_info_sptr(),
 		       proj_data.get_proj_data_info_ptr()->create_shared_clone(), shared_ptr<iostream>())
 {
-#ifdef STIR_USE_OLD_STRSTREAM
-  const size_t buffer_size = get_size_of_buffer();
-  //buffer = unique_ptr<char>(new char[buffer_size]);
-  buffer.reset(new char[buffer_size]);
-  sino_stream.reset(new strstream(buffer.get(), buffer_size, ios::in | ios::out | ios::binary));
-#else
-  // it would be advantageous to preallocate memory as well
-  // the only way to do this is by passing a string of the appropriate size
-  // However, if basic_string doesn't do reference counting, we would have
-  // temporarily 2 strings of a (potentially large) size in memory.
-  // todo?
-  sino_stream.reset(new std::stringstream(ios::in | ios::out | ios::binary));
-#endif
-
-  if (!*sino_stream)
-    error("ProjDataInMemory error initialising stream");
+  this->buffer.reset(this->create_buffer());
+  this->sino_stream = this->create_stream();
 
   // copy data
-  // (note: cannot use fill(projdata) as that uses virtual functions, which won't work in a constructor
-  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
-       segment_num <= proj_data_info_ptr->get_max_segment_num();
-       ++segment_num)
-    set_segment(proj_data.get_segment_by_view(segment_num));
+  this->fill(proj_data);
+}
+
+ProjDataInMemory::
+ProjDataInMemory (const ProjDataInMemory& proj_data)
+    : ProjDataFromStream(proj_data.get_exam_info_sptr(),
+                 proj_data.get_proj_data_info_ptr()->create_shared_clone(), shared_ptr<iostream>())
+{
+  this->buffer.reset(this->create_buffer());
+  this->sino_stream = this->create_stream();
+
+  // copy data
+  this->fill(proj_data);
 }
 
 size_t
 ProjDataInMemory::
 get_size_of_buffer() const
 {
-  size_t num_sinograms = 0;
-  for (int segment_num = proj_data_info_ptr->get_min_segment_num();
-       segment_num <= proj_data_info_ptr->get_max_segment_num();
-       ++segment_num)
-    num_sinograms += proj_data_info_ptr->get_num_axial_poss(segment_num);
-  return 
-    num_sinograms * 
-    proj_data_info_ptr->get_num_views() *
-    proj_data_info_ptr->get_num_tangential_poss() *
-    sizeof(float);
+  return size_all() * sizeof(float);
 }
 
 float 

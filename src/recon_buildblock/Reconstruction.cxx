@@ -44,6 +44,11 @@
 
 START_NAMESPACE_STIR
 
+template <typename TargetT>
+Reconstruction<TargetT>::Reconstruction()
+{
+  this->set_defaults();
+}
 
 
 // parameters
@@ -52,12 +57,14 @@ template <typename TargetT>
 void 
 Reconstruction<TargetT>::set_defaults()
 {
+  this->_already_set_up=false;
   this->output_filename_prefix="";
   this->output_file_format_ptr =
     OutputFileFormat<TargetT>::default_sptr();
   this->post_filter_sptr.reset();
 
   this->_disable_output = false;
+  this->_verbosity = -1;
 
 }
 
@@ -70,6 +77,7 @@ Reconstruction<TargetT>::initialise_keymap()
   this->parser.add_parsing_key("output file format type", &this->output_file_format_ptr);
   this->parser.add_parsing_key("post-filter type", &this->post_filter_sptr); 
   this->parser.add_key("disable output", &_disable_output);
+  this->parser.add_key("verbosity", &_verbosity);
 //  parser.add_key("END", &KeyParser::stop_parsing);
  
 }
@@ -78,6 +86,7 @@ template <typename TargetT>
 void 
 Reconstruction<TargetT>::initialise(const std::string& parameter_filename)
 {
+  _already_set_up = false;
   if(parameter_filename.size()==0)
   {
     this->set_defaults();
@@ -102,7 +111,11 @@ Reconstruction<TargetT>::
 post_processing()
 {
 
-  if (this->_disable_output)
+  if ((this->_disable_output) & (this->get_registered_name ()=="KOSMAPOSL") )
+  { warning("You have disabled the alpha coefficient output. Only emission image files will be written to "
+            "disk after or during reconstuction"); }
+
+  else if (this->_disable_output)
   { warning("You have disabled the output. No files will be written to "
             "disk after or during reconstuction"); }
 
@@ -112,6 +125,9 @@ post_processing()
 
   if (is_null_ptr(this->output_file_format_ptr))
     { warning("output file format has to be set to valid value"); return true; }
+
+  if (_verbosity >= 0)
+      Verbosity::set(_verbosity);
 
   return false;
 }
@@ -143,8 +159,10 @@ set_post_processor_sptr(const shared_ptr<DataProcessor<TargetT> > & arg)
 template <typename TargetT>
 Succeeded
 Reconstruction<TargetT>::
-set_up(shared_ptr<TargetT> const& target_data_sptr)
+set_up(shared_ptr<TargetT> const& target_data_sptr_v)
 {
+  _already_set_up = true;
+  this->target_data_sptr = target_data_sptr_v;
 
   if(!is_null_ptr(this->post_filter_sptr)) 
   {
@@ -158,6 +176,17 @@ set_up(shared_ptr<TargetT> const& target_data_sptr)
       }
   }
   return Succeeded::yes;
+}
+
+template <typename TargetT>
+void
+Reconstruction<TargetT>::
+check(TargetT const& target_data) const
+{
+  if (!this->_already_set_up)
+    error("Reconstruction method called without calling set_up first.");
+  if (! this->target_data_sptr->has_same_characteristics(target_data))
+    error("Reconstruction set-up with different geometry for target.");
 }
 
 template <typename TargetT>
