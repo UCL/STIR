@@ -145,7 +145,7 @@ RelativeDifferencePrior<elemT>::set_defaults()
 template <>
 const char * const 
 RelativeDifferencePrior<float>::registered_name =
-  "RelativeDifference";
+  "Relative Difference Prior";
 
 template <typename elemT>
 RelativeDifferencePrior<elemT>::RelativeDifferencePrior()
