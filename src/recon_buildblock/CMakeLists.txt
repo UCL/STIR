@@ -68,7 +68,8 @@ set(${dir_LIB_SOURCES}
 	ProjDataRebinning 
 	FourierRebinning
 	PLSPrior
-	QuadraticPrior 
+        QuadraticPrior
+        RelativeDifferencePrior
 	FilterRootPrior 
 	GeneralisedObjectiveFunction 
 	PoissonLogLikelihoodWithLinearModelForMean 
