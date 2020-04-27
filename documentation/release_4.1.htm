@@ -14,6 +14,7 @@
     <p>This release contains mainly code written by
       <ul>
         <li>Kris Thielemans (UCL) for general overview, fixes, help and maintenance</li>
+        <li>Richard Brown (UCL) for wrapping of NiftyPET's GPU functionality for projecting and unlisting</li>
       </ul>
     </p>
 
@@ -22,7 +23,10 @@
 
 <h3>New functionality</h3>
 <ul>
-  <li></li>
+  <li>NiftyPET's GPU projectors have been wrapped. If NiftyPET is installed, these projectors can be used 
+    on data from the Siemens mMR. See the example parameter file in <tt>examples/samples/OSMAPOSL_niftypet.par</tt>.
+    NiftyPET's GPU-accelerated unlisting has also been wrapped, also allowing for randoms estimation and norm extraction.
+  </li>
 </ul>
 
 
