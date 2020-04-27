@@ -24,14 +24,11 @@
 */
 
 #include "stir/VoxelsOnCartesianGrid.h"
-#include "stir/IndexRange3D.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/recon_buildblock/niftypet_projector/NiftyPETHelper.h"
 #include "stir/is_null_ptr.h"
-#include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/ProjDataInMemory.h"
-#include "def.h"
 
 USING_NAMESPACE_STIR
 
@@ -76,19 +73,6 @@ static void save_np_vec(const std::vector<float> &vec, const std::string &filena
     std::ofstream fout(filename, std::ios::out | std::ios::binary);
     fout.write(reinterpret_cast<const char*>(&vec[0]), vec.size()*sizeof(float));
     fout.close();
-}
-
-static std::shared_ptr<VoxelsOnCartesianGrid<float> > create_stir_im()
-{
-    // Create STIR image with correct dimensions
-    int nz(SZ_IMZ), nx(SZ_IMX), ny(SZ_IMY);
-    float sz(SZ_VOXZ*10.f), sx(SZ_VOXY*10.f), sy(SZ_VOXY*10.f);
-    shared_ptr<VoxelsOnCartesianGrid<float> > out_im_stir_sptr =
-        MAKE_SHARED<VoxelsOnCartesianGrid<float> >(
-            IndexRange3D(0, nz - 1, -(ny / 2), -(ny / 2) + ny - 1, -(nx / 2), -(nx / 2) + nx - 1),
-            CartesianCoordinate3D<float>(0.f, 0.f, 0.f),
-            CartesianCoordinate3D<float>(sz, sy, sx));
-    return out_im_stir_sptr;
 }
 
 template <class dataType>
@@ -193,7 +177,7 @@ main(int argc, char **argv)
             // image NP -> STIR
             if (toSTIR) {
                 std::vector<float> input_im_np = read_binary_file<float>(input_filename);
-                shared_ptr<DiscretisedDensity<3,float> > out_im_stir_sptr = create_stir_im();
+                shared_ptr<DiscretisedDensity<3,float> > out_im_stir_sptr = helper.create_stir_im();
                 helper.convert_image_niftyPET_to_stir(*out_im_stir_sptr, input_im_np);
                 save_disc_density(*out_im_stir_sptr, output_filename, stir_im_par_fname);
             }

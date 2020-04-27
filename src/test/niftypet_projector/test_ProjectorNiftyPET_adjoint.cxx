@@ -382,11 +382,15 @@ test_adjoints()
             std::cout << "\tAvg. test result = " << std::accumulate(_results.begin(), _results.end(), 0.0) / _results.size() << 
                 " (number of tests = " << _results.size() << "), avg. time forward projecting = " << _time_fwrd/double(i+1) << " s, " <<
                 "avg. time back projecting = " << _time_back/double(i+1) << " s.\n\n";
+
+            // Check the result
+            if (adjoint_test > 1e-4f)
+                error("Adjoint test greater than threshold, failed!");
         }
         else {
             ++num_unsuccessful;
             if (num_unsuccessful==5)
-                throw std::runtime_error("Too many (5) unsuccessful comparisons");
+                error("Too many (5) unsuccessful comparisons");
         }
     }
 }

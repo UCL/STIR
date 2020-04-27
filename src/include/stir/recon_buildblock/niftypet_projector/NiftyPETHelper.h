@@ -42,6 +42,7 @@ START_NAMESPACE_STIR
 template <int num_dimensions, typename elemT> class DiscretisedDensity;
 class ProjData;
 template <typename elemT> class Viewgram;
+template <typename elemT> class VoxelsOnCartesianGrid;
 
 /*!
   \ingroup projection
@@ -79,6 +80,9 @@ public:
 
     /// Create NiftyPET image
     static std::vector<float> create_niftyPET_image();
+
+    /// Create STIR image with mMR dimensions
+    static shared_ptr<VoxelsOnCartesianGrid<float> > create_stir_im();
 
     /// Create NiftyPET singram with no gaps. Forward project into this
     std::vector<float> create_niftyPET_sinogram_no_gaps() const;

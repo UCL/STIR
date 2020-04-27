@@ -29,16 +29,20 @@
 */
 
 #include "stir/recon_buildblock/niftypet_projector/NiftyPETHelper.h"
-#include <fstream>
-#include <math.h>
-#include <boost/format.hpp>
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/is_null_ptr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
-#include "stir/recon_array_functions.h"
 #include "stir/ProjDataInMemory.h"
-#include "def.h"
+#include "stir/IndexRange3D.h"
+#include "stir/FilePath.h"
+#include "stir/IO/stir_ecat_common.h"
+// Non-STIR includes
+#include <fstream>
+#include <math.h>
+#include <boost/format.hpp>
 #include "driver_types.h"
+// NiftyPET includes
+#include "def.h"
 #include "auxmath.h"
 #include "prjb.h"
 #include "prjf.h"
@@ -47,7 +51,6 @@
 #include "scanner_0.h"
 #include "rnd.h"
 #include "norm.h"
-#include "stir/FilePath.h"
 
 START_NAMESPACE_STIR
 
@@ -131,7 +134,7 @@ shared_ptr<Cnst> get_cnst(const Scanner &scanner, const bool cuda_verbose, const
         cnt_sptr->AXR = SZ_RING; //axial crystal dim
 
         cnt_sptr->COSUPSMX = 0.725f; //cosine of max allowed scatter angle
-        cnt_sptr->COSSTP = (1-cnt_sptr->COSUPSMX)/(255);; //cosine step
+        cnt_sptr->COSSTP = (1-cnt_sptr->COSUPSMX)/(255); //cosine step
 
         cnt_sptr->TOFBINN = 1; // number of TOF bins
         cnt_sptr->TOFBINS = 3.9e-10f; // size of TOF bin in [ps]
@@ -159,7 +162,7 @@ template<class dataType>
 dataType* create_heap_array(const unsigned numel, const dataType val = dataType(0))
 {
     dataType *array = new dataType[numel];
-    memset(array, val, numel * sizeof(dataType));
+    std::fill(array, array+numel, val);
     return array;
 }
 
@@ -182,7 +185,7 @@ static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, std::vector<float> 
         NRNG_c = NRNG;
         NSN1_c = cnt.NSN1;
         if (cnt.RNG_END!=NRNG || cnt.RNG_STRT!=0)
-            throw std::runtime_error("NiftyPETHelper::get_axLUT: the reduced axial FOV only works in span-1.");
+            throw std::runtime_error("NiftyPETHelper::get_axLUT: the reduced axial FOV only works in span=1.");
     }
 
     // ring dimensions
@@ -533,6 +536,20 @@ NiftyPETHelper::
 create_niftyPET_image()
 {
     return std::vector<float>(SZ_IMZ*SZ_IMX*SZ_IMY,0);
+}
+
+shared_ptr<VoxelsOnCartesianGrid<float> >
+NiftyPETHelper::
+create_stir_im()
+{
+    int nz(SZ_IMZ), nx(SZ_IMX), ny(SZ_IMY);
+    float sz(SZ_VOXZ*10.f), sx(SZ_VOXY*10.f), sy(SZ_VOXY*10.f);
+    shared_ptr<VoxelsOnCartesianGrid<float> > out_im_stir_sptr =
+        MAKE_SHARED<VoxelsOnCartesianGrid<float> >(
+            IndexRange3D(0, nz - 1, -(ny / 2), -(ny / 2) + ny - 1, -(nx / 2), -(nx / 2) + nx - 1),
+            CartesianCoordinate3D<float>(0.f, 0.f, 0.f),
+            CartesianCoordinate3D<float>(sz, sy, sx));
+    return out_im_stir_sptr;
 }
 
 std::vector<float>
@@ -1155,11 +1172,6 @@ convert_image_niftyPET_to_stir(DiscretisedDensity<3,float> &stir, const std::vec
             }
         }
     }
-
-    // After the back projection, we enforce a truncation outside of the FOV.
-    // This is because the NiftyPET FOV is smaller than the STIR FOV and this
-    // could cause some voxel values to spiral out of control.
-    // truncate_rim(stir,17);
 }
 
 void
@@ -1173,25 +1185,16 @@ get_vals_for_proj_data_conversion(std::vector<int> &sizes, std::vector<int> &seg
     if (is_null_ptr(info_sptr))
         error("NiftyPETHelper: only works with cylindrical projection data without arc-correction");
 
-    const int max_segment_num = info_sptr->get_max_segment_num();
-
-    segment_sequence.resize(unsigned(2*max_segment_num+1));
-    sizes.resize(unsigned(2*max_segment_num+1));
-    segment_sequence[unsigned(0)]=0;
-    sizes[0]=info_sptr->get_num_axial_poss(0);
-    for (int segment_num=1; segment_num<=max_segment_num; ++segment_num) {
-       segment_sequence[unsigned(2*segment_num-1)] = -segment_num;
-       segment_sequence[unsigned(2*segment_num)] = segment_num;
-       sizes [unsigned(2*segment_num-1)] =info_sptr->get_num_axial_poss(-segment_num);
-       sizes [unsigned(2*segment_num)] =info_sptr->get_num_axial_poss(segment_num);
-    }
+    segment_sequence = ecat::find_segment_sequence(proj_data_info);
+    sizes.resize(segment_sequence.size());
+    for (std::size_t s=0U; s<segment_sequence.size(); ++s)
+        sizes[s]=proj_data_info.get_num_axial_poss(segment_sequence[s]);
 
     // Get dimensions of STIR sinogram
     min_view      = proj_data_info.get_min_view_num();
     max_view      = proj_data_info.get_max_view_num();
     min_tang_pos  = proj_data_info.get_min_tangential_pos_num();
     max_tang_pos  = proj_data_info.get_max_tangential_pos_num();
-
 
     num_sinograms = proj_data_info.get_num_axial_poss(0);
     for (int s=1; s<= proj_data_info.get_max_segment_num(); ++s)
