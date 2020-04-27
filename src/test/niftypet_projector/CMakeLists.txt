@@ -26,6 +26,6 @@ set(${dir_INVOLVED_TEST_EXE_SOURCES}
 )
 
 ADD_TEST(test_ProjectorNiftyPET_adjoint
-   ${CMAKE_CURRENT_BINARY_DIR}/test_ProjectorNiftyPET_adjoint 20)
+   ${CMAKE_CURRENT_BINARY_DIR}/test_ProjectorNiftyPET_adjoint 3)
 
 include(stir_test_exe_targets)

@@ -359,6 +359,8 @@ test_adjoints()
 
     while(_results.size() < _num_attempts) {
 
+        std::cout << "\nPerforming test " << _results.size()+1 << " of " << _num_attempts << "\n";
+
         unsigned i = _results.size();
         num_unsuccessful = 0;
 
