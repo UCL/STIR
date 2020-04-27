@@ -4022,7 +4022,7 @@ These are the keywords that can be used in addition to the ones listed in \ref{s
  \end{verbatim}
 
 
-{ \subsubsubsection{Quadratic}
+{ \subsubsubsection{Quadratic} \label{sec:priors:Quadratic}
 }
 This implements a quadratic Gibbs prior. The gradient of the prior is computed as follows:
  \[
@@ -4059,7 +4059,52 @@ This implements a quadratic Gibbs prior. The gradient of the prior is computed a
   gradient filename prefix:= 
   END Quadratic Prior Parameters:=
   \end{verbatim}
-  
+
+
+{ \subsubsubsection{Relative Difference}
+}
+This implements a Relative Difference Prior RDP, proposed by J. Nuyts, et.al., 2002. The gradient of the prior is computed as follows:
+  \[g_r = \sum_{dr} w_{dr} *
+  \frac{\left(\lambda_{r}-\lambda_{r+dr}\right)\left(\gamma\left|\lambda_{r}-\lambda_{r+dr}\right|+\lambda_{r}+3 \lambda_{r+dr} + 2 \epsilon \right)}
+  {\left(\lambda_{r}+\lambda_{r+dr}+\gamma\left|\lambda_{r}-\lambda_{r+dr}\right| + \epsilon \right)^{2}} *
+  \kappa_r * \kappa_{r+dr}\]
+
+  \noindent where $\lambda$ is the image where the gradient is computed
+   and $r$ and $dr$ are indices and the sum
+  is over the neighbourhood where the weights $w_{dr}$ are non-zero.
+  $\gamma$ is a edge preservation hyper-parameter and $\eplion$ is small 
+  modification the penatly function used to prevent divide by zero's.
+
+  The $\kappa$ image is the same as that of \ref{sec:priors:Quadratic}.
+
+  By default, a 3x3 or 3x3x3 neigbourhood is used where the weights are set to 
+  x-voxel\_size divided by the Euclidean distance between the points.
+ 
+{ \subsubsubsubsection{Parameters}
+}
+  These are the keywords that can be used in addition to the ones listed in \ref{sec:priors}..
+  \begin{verbatim}
+  prior type := Relative Difference Prior
+  Relative Difference Prior Parameters:=
+  ; next defaults to 0, set to 1 for 2D inverse Euclidean weights, 0 for 3D 
+  only 2D:= 0
+  ; next can be used to set weights explicitly. Needs to be a 3D array (of floats).
+  ' value of only_2D is ignored
+  ; following example uses 2D 'nearest neighbour' penalty
+  ; weights:={{{0,1,0},{1,0,1},{0,1,0}}}
+  ; use next parameter to specify an image with penalisation factors (a la Fessler)
+  ; see class documentation for more info
+  ; kappa filename:=
+  ; use next parameter to get gradient images at every subiteration
+  ; see class documentation
+  ; gamma is a parameter used to control edge preservation
+  ; gamma value := 2
+  ; epsilion is used to control divide by zeros in the prior denominator
+  ; epsilon value := 0.0001
+  END Relative Difference Prior Parameters:=
+  \end{verbatim}
+
+
 { \subsubsubsection{PLS}
 This implements the  anatomical penalty function, Parallel Level Sets (PLS),  proposed by Matthias J. Ehrhardt et. al [Ehr16]. Note that
   PLS becomes smoothed TV when an uniform anatomical image is provided.  
