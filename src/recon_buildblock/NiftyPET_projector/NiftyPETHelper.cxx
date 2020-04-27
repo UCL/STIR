@@ -130,7 +130,8 @@ shared_ptr<Cnst> get_cnst(const Scanner &scanner, const bool cuda_verbose, const
         cnt_sptr->MRD = mxRD; // maximum ring difference
 
         cnt_sptr->ALPHA = aLPHA; //angle subtended by a crystal
-        cnt_sptr->RE = scanner.get_effective_ring_radius(); // effective ring radius accounting for the depth of interaction
+        float R = 32.8f; // ring radius
+        cnt_sptr->RE = R + 0.67f; // effective ring radius accounting for the depth of interaction
         cnt_sptr->AXR = SZ_RING; //axial crystal dim
 
         cnt_sptr->COSUPSMX = 0.725f; //cosine of max allowed scatter angle
