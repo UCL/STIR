@@ -31,11 +31,12 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
-#include "stir/recon_buildblock/DataSymmetriesForBins_PET_CartesianGrid.h"
-#include "stir/ProjDataInMemory.h"
 #include "stir/recon_buildblock/niftypet_projector/NiftyPETHelper.h"
 
 START_NAMESPACE_STIR
+
+class ProjDataInMemory;
+class DataSymmetriesForViewSegmentNumbers;
 
 /*!
   \ingroup projection

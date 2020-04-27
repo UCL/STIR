@@ -32,6 +32,7 @@
 #include "stir/Verbosity.h"
 #include "stir/recon_array_functions.h"
 #include "stir/Shape/Ellipsoid.h"
+#include "stir/ProjDataInMemory.h"
 
 START_NAMESPACE_STIR
 

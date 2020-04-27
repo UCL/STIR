@@ -30,6 +30,7 @@
 
 #include "stir/recon_buildblock/niftypet_projector/ForwardProjectorByBinNiftyPET.h"
 #include "stir/recon_buildblock/niftypet_projector/NiftyPETHelper.h"
+#include "stir/ProjDataInMemory.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"

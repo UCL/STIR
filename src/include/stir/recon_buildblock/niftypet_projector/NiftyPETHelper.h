@@ -29,10 +29,8 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/common.h"
 #include "stir/shared_ptr.h"
-#include "stir/DiscretisedDensity.h"
-#include "stir/ProjData.h"
+#include "stir/Scanner.h"
 
 // Forward declarations
 struct Cnst;
@@ -40,6 +38,10 @@ struct txLUTs;
 struct axialLUT;
 
 START_NAMESPACE_STIR
+
+template <int num_dimensions, typename elemT> class DiscretisedDensity;
+class ProjData;
+template <typename elemT> class Viewgram;
 
 /*!
   \ingroup projection

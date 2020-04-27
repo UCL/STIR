@@ -97,8 +97,7 @@ public:
     shared_ptr<const ProjData> get_norm_sptr() const
     {
         if (_norm_binary_file.empty())
-            throw std::runtime_error(
-                "Set norm binary filename before extracting listmode.");
+            error("Set norm binary filename before extracting listmode.");
         return _norm_sptr;
     }
 
