@@ -64,12 +64,6 @@ public:
   //! Stores all necessary geometric info
  /*!
   If necessary, set_up() can be called more than once.
-
-  Derived classes can assume that forward_project()  will be called
-  with input corresponding to the arguments of the last call to set_up().
-
-  \warning there is currently no check on this.
-  \warning Derived classes have to call set_up from the base class.
   */
  virtual void set_up(		 
     const shared_ptr<ProjDataInfo>& proj_data_info_ptr,

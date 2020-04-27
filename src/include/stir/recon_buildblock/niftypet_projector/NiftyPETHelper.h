@@ -147,13 +147,13 @@ private:
     shared_ptr<txLUTs> _txlut_sptr;
     shared_ptr<axialLUT> _axlut_sptr;
 
-    float *_crs;
-    short *_s2c;
+    std::vector<float> _crs;
+    std::vector<short> _s2c;
 
     // Get axLUT
-    float *_li2rng;
-    short *_li2sn;
-    char *_li2nos;
+    std::vector<float> _li2rng;
+    std::vector<short> _li2sn;
+    std::vector<char>  _li2nos;
 };
 
 END_NAMESPACE_STIR

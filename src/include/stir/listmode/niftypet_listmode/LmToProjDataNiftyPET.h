@@ -82,19 +82,19 @@ public:
     virtual void process_data();
 
     /// Get prompts
-    shared_ptr<ProjData> get_prompts_sptr() const
+    shared_ptr<const ProjData> get_prompts_sptr() const
     { return _prompts_sptr; }
 
     /// Get delayeds
-    shared_ptr<ProjData> get_delayeds_sptr() const
+    shared_ptr<const ProjData> get_delayeds_sptr() const
     { return _delayeds_sptr; }
 
     /// Get randoms
-    shared_ptr<ProjData> get_randoms_sptr() const
+    shared_ptr<const ProjData> get_randoms_sptr() const
     { return _randoms_sptr; }
 
     /// Get norm
-    shared_ptr<ProjData> get_norm_sptr() const
+    shared_ptr<const ProjData> get_norm_sptr() const
     {
         if (_norm_binary_file.empty())
             throw std::runtime_error(

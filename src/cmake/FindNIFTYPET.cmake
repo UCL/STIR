@@ -14,16 +14,6 @@
 #
 # See STIR/LICENSE.txt for details
 
-# cmake helper file, to be included by the root CMakeLists.txt
-# it sets 2 variables ALL_HEADERS ALL_INLINES
-# These are used for doxygen dependencies etc
-
-# The following macro finds all STIR headers and inlines.
-
-# The original MACRO was an adaptation from
-# https://cmake.org/pipermail/cmake/2012-June/050674.html
-# but we don't need the complicated stuff
-
 if (NOT NIFTYPET_ROOT_DIR)
   set(NIFTYPET_ROOT_DIR "" CACHE PATH "Path to NIFTYPET")
 endif()
@@ -36,11 +26,11 @@ ENDIF( NIFTYPET_ROOT_DIR )
 # Find the base folder containing prjf.h
 find_path(NIFTYPET_INCLUDE_DIR "niftypet/nipet/prj/src/prjf.h")
 
-find_library(NIFTYPET_PETPRJ_LIB "petprj.so"
+find_library(NIFTYPET_PETPRJ_LIB "petprj"
   DOC "NIFTYPET projector library")
-find_library(NIFTYPET_MMR_AUXE_LIB "mmr_auxe.so"
+find_library(NIFTYPET_MMR_AUXE_LIB "mmr_auxe"
   DOC "NIFTYPET aux library")
-find_library(NIFTYPET_MMR_LMPROC_LIB "mmr_lmproc.so"
+find_library(NIFTYPET_MMR_LMPROC_LIB "mmr_lmproc"
   DOC "NIFTYPET lmproc library")
 
 # handle the QUIETLY and REQUIRED arguments and set NIFTYPET_FOUND to TRUE if 

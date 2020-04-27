@@ -102,5 +102,8 @@ SET( STIR_TEST_DIRS
      test 
      test/numerics
      test/modelling
-     ${STIR_NIFTYPET_PROJECTOR_test}
 )
+
+if (STIR_WITH_NIFTYPET_PROJECTOR)
+  list(APPEND STIR_TEST_DIRS test/niftypet_projector)
+endif()

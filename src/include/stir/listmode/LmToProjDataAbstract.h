@@ -39,9 +39,6 @@ START_NAMESPACE_STIR
 
   It provides the basic machinery to go through a list mode data file,
   and write projection data for each time frame. 
-
-  The class can parse its parameters from an input file. This has the
-  following format:
 */
 
 class LmToProjDataAbstract : public ParsingObject

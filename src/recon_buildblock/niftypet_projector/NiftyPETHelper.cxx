@@ -51,14 +51,7 @@
 
 START_NAMESPACE_STIR
 
-NiftyPETHelper::~NiftyPETHelper()
-{
-    delete [] _crs;
-    delete [] _s2c;
-    delete [] _li2rng;
-    delete [] _li2sn;
-    delete [] _li2nos;
-}
+NiftyPETHelper::~NiftyPETHelper() {}
 
 static void delete_axialLUT(axialLUT *axlut_ptr)
 {
@@ -171,7 +164,7 @@ dataType* create_heap_array(const unsigned numel, const dataType val = dataType(
 }
 
 /// Converted from mmraux.py axial_lut
-static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, float *&li2rng, short *&li2sn_s, char *&li2nos_c, const Cnst &cnt)
+static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, std::vector<float> &li2rng, std::vector<short> &li2sn_s, std::vector<char> &li2nos_c, const Cnst &cnt)
 { 
     const int NRNG = cnt.NRNG;
     int NRNG_c, NSN1_c;
@@ -193,7 +186,7 @@ static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, float *&li2rng, sho
     }
 
     // ring dimensions
-    float *rng = create_heap_array<float>(NRNG*2);
+    std::vector<float> rng(NRNG*2);
     float z = -.5f*float(NRNG)*cnt.AXR;
     for (unsigned i=0; i<unsigned(NRNG); ++i) {
         rng[to_1d_idx(NRNG,2,i,0)] = z;
@@ -207,7 +200,7 @@ static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, float *&li2rng, sho
     for (unsigned i=0; i<rd.size(); ++i)
         rd[i] = i - cnt.MRD;
     // ring difference to segment
-    int *rd2sg = create_heap_array<int>(rd.size()*2, -1);
+    std::vector<int> rd2sg(rd.size()*2, -1);
     // minimum and maximum ring difference for each segment
     std::vector<int> minrd = {-5,-16, 6,-27,17,-38,28,-49,39,-60,50};
     std::vector<int> maxrd = { 5, -6,16,-17,27,-28,38,-39,49,-50,60};
@@ -222,8 +215,8 @@ static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, float *&li2rng, sho
 
     // create two Michelograms for segments (Mseg)
     // and absolute axial position for individual sinos (Mssrb) which is single slice rebinning
-    int *Mssrb = create_heap_array<int>(NRNG*NRNG, -1);
-    int *Mseg  = create_heap_array<int>(NRNG*NRNG, -1);
+    std::vector<int> Mssrb(NRNG*NRNG, -1);
+    std::vector<int> Mseg(NRNG*NRNG, -1);
     for (int r1=cnt.RNG_STRT; r1<cnt.RNG_END; ++r1) {
         for (int r0=cnt.RNG_STRT; r0<cnt.RNG_END; ++r0) {
             if (abs(r0-r1)>cnt.MRD)
@@ -240,12 +233,12 @@ static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, float *&li2rng, sho
     }
 
     // create a Michelogram map from rings to sino number in span-11 (1..837)
-    int *Msn  = create_heap_array<int>(NRNG*NRNG, -1);
+    std::vector<int> Msn(NRNG*NRNG, -1);
     // number of span-1 sinos per sino in span-11
-    int *Mnos = create_heap_array<int>(NRNG*NRNG, -1);
+    std::vector<int> Mnos(NRNG*NRNG, -1);
     std::vector<int> seg = {127,115,115,93,93,71,71,49,49,27,27};
-    int *msk = create_heap_array<int>(NRNG*NRNG, 0);
-    int *Mtmp = create_heap_array<int>(NRNG*NRNG);
+    std::vector<int> msk(NRNG*NRNG, 0);
+    std::vector<int> Mtmp(NRNG*NRNG);
     int i=0;
     for (unsigned iseg=0; iseg<seg.size(); ++iseg) {
         // msk = (Mseg==iseg)
@@ -286,7 +279,7 @@ static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, float *&li2rng, sho
     char *sn1_sn11no   = create_heap_array<char>(NSN1_c, 0);
     int sni = 0; // full linear index, up to 4084
     // michelogram of sino numbers for spn-1
-    short *Msn1 = create_heap_array<short>(NRNG*NRNG, -1);
+    std::vector<short> Msn1(NRNG*NRNG, -1);
     for (unsigned ro=0; ro<unsigned(NRNG); ++ro) {
         unsigned oblique = ro==0? 1 : 2;
         // for m in range(oblique):
@@ -331,9 +324,9 @@ static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, float *&li2rng, sho
 
     // span-11 sino to SSRB
     // sn11_ssrb = np.zeros(Cnt['NSN11'], dtype=np.int32);
-    int *sn11_ssrb = create_heap_array<int>(cnt.NSN11, -1);
+    std::vector<int> sn11_ssrb(cnt.NSN11, -1);
     // sn1_ssrno = np.zeros(Cnt['NSEG0'], dtype=np.int8)
-    char *sn1_ssrno = create_heap_array<char>(cnt.NSEG0, 0);
+    std::vector<char> sn1_ssrno(cnt.NSEG0, 0);
     // for i in range(NSN1_c):
     for (unsigned i=0; i<unsigned(NSN1_c); ++i) {
         sn11_ssrb[sn1_sn11[i]] = sn1_ssrb[i];
@@ -341,7 +334,7 @@ static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, float *&li2rng, sho
     }
 
     // sn11_ssrno = np.zeros(Cnt['NSEG0'], dtype=np.int8)
-    char *sn11_ssrno = create_heap_array<char>(cnt.NSEG0, 0);
+    std::vector<char> sn11_ssrno(cnt.NSEG0, 0);
     // for i in range(Cnt['NSN11']):
     for (unsigned i=0; i<unsigned(cnt.NSN11); ++i)
         // if sn11_ssrb[i]>0: sn11_ssrno[sn11_ssrb[i]] += 1
@@ -365,8 +358,8 @@ static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, float *&li2rng, sho
     int    *li2r   = create_heap_array<int>(NLI2R_c*2);
     // the same as above but to sinos in span-11
     int    *li2sn  = create_heap_array<int>(NLI2R_c*2);
-    short  *li2sn1 = create_heap_array<short>(NLI2R_c*2);
-    li2rng = create_heap_array<float>(NLI2R_c*2);
+    std::vector<short> li2sn1(NLI2R_c*2);
+    li2rng = std::vector<float>(NLI2R_c*2);
     // ...to number of sinos (nos)
     int *li2nos = create_heap_array<int>(NLI2R_c);
 
@@ -404,27 +397,12 @@ static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, float *&li2rng, sho
     }
 
     // Need some results in a different data type
-    li2sn_s = create_heap_array<short>(NLI2R_c*2);
+    li2sn_s = std::vector<short>(NLI2R_c*2);
     for (unsigned i=0; i<unsigned(NLI2R_c*2); ++i)
         li2sn_s[i] = short(li2sn[i]);
-    li2nos_c = create_heap_array<char>(NLI2R_c);
+    li2nos_c = std::vector<char>(NLI2R_c);
     for (unsigned i=0; i<unsigned(NLI2R_c); ++i)
         li2nos_c[i] = char(li2nos[i]);
-
-    // Delete temporary variables
-    delete [] rng;
-    delete [] rd2sg;
-    delete [] Mssrb;
-    delete [] Mseg;
-    delete [] Msn;
-    delete [] Mnos;
-    delete [] msk;
-    delete [] Mtmp;
-    delete [] Msn1;
-    delete [] sn11_ssrb;
-    delete [] sn1_ssrno;
-    delete [] sn11_ssrno;
-    delete [] li2sn1;
 
     // Fill in struct
     axlut_sptr = shared_ptr<axialLUT>(new axialLUT, delete_axialLUT);
@@ -444,12 +422,12 @@ static void get_axLUT_sptr(shared_ptr<axialLUT> &axlut_sptr, float *&li2rng, sho
 }
 
 static
-void get_txLUT_sptr(shared_ptr<txLUTs> &txlut_sptr, float *&crs, short *&s2c, Cnst &cnt)
+void get_txLUT_sptr(shared_ptr<txLUTs> &txlut_sptr, std::vector<float> &crs, std::vector<short> &s2c, Cnst &cnt)
 {
     txlut_sptr = shared_ptr<txLUTs>(new txLUTs, delete_txLUT);
     *txlut_sptr = get_txlut(cnt);
 
-    s2c = create_heap_array<short>(txlut_sptr->naw*2);
+    s2c = std::vector<short>(txlut_sptr->naw*2);
     for (unsigned i=0; i<unsigned(txlut_sptr->naw); ++i) {
         s2c[ 2*i ] = txlut_sptr->s2c[i].c0;
         s2c[2*i+1] = txlut_sptr->s2c[i].c1;
@@ -459,7 +437,7 @@ void get_txLUT_sptr(shared_ptr<txLUTs> &txlut_sptr, float *&crs, short *&s2c, Cn
     // const float dg = 0.474f; // block gap [cm]
     const int NTBLK = 56;
     const float alpha = 2*M_PI/float(NTBLK); // 2*pi/NTBLK
-    crs = create_heap_array<float>(4 * cnt.NCRS);
+    crs = std::vector<float>(4 * cnt.NCRS);
     float phi = 0.5f*M_PI - alpha/2.f - 0.001f;
     for (int bi=0; bi<NTBLK; ++bi) {
         //-tangent point (ring against detector block)
@@ -650,7 +628,7 @@ remove_gaps(std::vector<float> &sino_no_gaps, const std::vector<float> &sino_w_g
         getMemUse();
 
     ::remove_gaps(sino_no_gaps.data(),
-                  const_cast<std::vector<float>&>(sino_w_gaps).data(),
+                  const_cast<float*>(sino_w_gaps.data()),
                   _nsinos,
                   _txlut_sptr->aw2ali,
                   *_cnt_sptr);
@@ -669,7 +647,7 @@ put_gaps(std::vector<float> &sino_w_gaps, const std::vector<float> &sino_no_gaps
         getMemUse();
 
     ::put_gaps(unpermuted_sino_w_gaps.data(),
-               const_cast<std::vector<float>&>(sino_no_gaps).data(),
+               const_cast<float*>(sino_no_gaps.data()),
                _txlut_sptr->aw2ali,
                *_cnt_sptr);
 
@@ -692,14 +670,14 @@ back_project(std::vector<float> &image, const std::vector<float> &sino_no_gaps) 
         getMemUse();
 
     gpu_bprj(unpermuted_image.data(),
-             const_cast<std::vector<float>&>(sino_no_gaps).data(),
-             _li2rng,
-             _li2sn,
-             _li2nos,
-             _s2c,
+             const_cast<float*>(sino_no_gaps.data()),
+             const_cast<float*>(_li2rng.data()),
+             const_cast<short*>(_li2sn.data()),
+             const_cast<char*>(_li2nos.data()),
+             const_cast<short*>(_s2c.data()),
              _txlut_sptr->aw2ali,
-             _crs,
-             const_cast<std::vector<int>&>(_isub).data(),
+             const_cast<float*>(_crs.data()),
+             const_cast<int*>(_isub.data()),
              int(_isub.size()),
              AW,
              4, // n0crs
@@ -734,13 +712,13 @@ forward_project(std::vector<float> &sino_no_gaps, const std::vector<float> &imag
 
     gpu_fprj(sino_no_gaps.data(),
              permuted_image.data(),
-             _li2rng,
-             _li2sn,
-             _li2nos,
-             _s2c,
+             const_cast<float*>(_li2rng.data()),
+             const_cast<short*>(_li2sn.data()),
+             const_cast<char*>(_li2nos.data()),
+             const_cast<short*>(_s2c.data()),
              _txlut_sptr->aw2ali,
-             _crs,
-             const_cast<std::vector<int>&>(_isub).data(),
+             const_cast<float*>(_crs.data()),
+             const_cast<int*>(_isub.data()),
              int(_isub.size()),
              AW,
              4, // n0crs
@@ -865,7 +843,8 @@ NormCmp get_norm_helper_struct(const std::string &norm_binary_file, const Cnst &
 }
 
 /// Get bucket singles (from mmrhist.py)
-int *get_buckets(unsigned int *bck, const unsigned B, const unsigned nitag)
+std::vector<int>
+get_buckets(unsigned int *bck, const unsigned B, const unsigned nitag)
 {
     // number of single rates reported for the given second
     // nsr = (hstout['bck'][1,:,:]>>30)
@@ -886,7 +865,6 @@ int *get_buckets(unsigned int *bck, const unsigned B, const unsigned nitag)
 
     // time indices when single rates given
     // tmsk = np.sum(nsr,axis=1)>0
-    // bool *tmsk = create_heap_array<bool>(nitag,false);
     std::vector<bool> tmsk(nitag,false);
     for (unsigned i=0; i<nitag; ++i)
         for (unsigned j=0; j<B; ++j)
@@ -905,7 +883,7 @@ int *get_buckets(unsigned int *bck, const unsigned B, const unsigned nitag)
 
     // get the average bucket singles:
     // buckets = np.int32( np.sum(single_rate,axis=0)/single_rate.shape[0] )
-    int * buckets = create_heap_array<int>(B,0);
+    std::vector<int> buckets(B,0);
     for (unsigned i=0; i<sr_dim0; ++i)
         for (unsigned j=0; j<B; ++j)
             buckets[j] += int(single_rate[to_1d_idx(sr_dim0,B,i,j)]);
@@ -933,9 +911,7 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
     }
 
     // Get listmode info
-    char *flm = create_heap_array<char>(lm_abs.length() + 1);
-    strcpy(flm, lm_abs.c_str());
-    getLMinfo(flm, *_cnt_sptr);
+    getLMinfo(const_cast<char*>(lm_abs.c_str()), *_cnt_sptr);
     free(lmprop.atag);
     free(lmprop.btag);
     free(lmprop.ele4chnk);
@@ -990,7 +966,7 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
                                   "tested, but should be pretty easy.");
 
     lmproc(dicout, // hstout (struct): output
-           flm, // char *: binary filename (.s, .bf)
+           const_cast<char*>(lm_abs.c_str()), // char *: binary filename (.s, .bf)
            &frames, // unsigned short *: think for one frame, frames = 0
            nfrm, // int: num frames
            tstart, // int
@@ -1038,7 +1014,7 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
         NormCmp normc = get_norm_helper_struct(norm_binary_file, *_cnt_sptr);
 
         // Get bucket singles
-        int * buckets = get_buckets(dicout.bck, unsigned(_cnt_sptr->B), unsigned(nitag));
+        std::vector<int> buckets = get_buckets(dicout.bck, unsigned(_cnt_sptr->B), unsigned(nitag));
 
         std::vector<float> np_norm_no_gaps = this->create_niftyPET_sinogram_no_gaps();
 
@@ -1047,7 +1023,7 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
                              normc,
                              *_axlut_sptr,
                              _txlut_sptr->aw2ali,
-                             buckets,
+                             buckets.data(),
                              *_cnt_sptr);
 
         // Add gaps
@@ -1059,7 +1035,6 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
         convert_proj_data_niftyPET_to_stir(*norm_sptr, np_norm_w_gaps);
 
         // Clear up
-        delete [] buckets;
         delete [] normc.geo;
         delete [] normc.cinf;
         delete [] normc.ceff;
@@ -1072,7 +1047,6 @@ lm_to_proj_data(shared_ptr<ProjData> &prompts_sptr, shared_ptr<ProjData> &delaye
     }
 
     // Clear up
-    delete [] flm;
     delete [] dicout.snv;
     delete [] dicout.hcp;
     delete [] dicout.hcd;
