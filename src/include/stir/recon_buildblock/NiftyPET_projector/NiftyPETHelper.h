@@ -154,7 +154,6 @@ private:
     /// Convert 1d niftypet proj data index to 3d
     void convert_niftypet_proj_1d_to_3d_idx(unsigned &ang, unsigned &bins, unsigned &sino, const unsigned idx) const;
 
-    float _niftypet_to_stir_ratio;
     bool _already_set_up;
     char _span;
     char _devid;
