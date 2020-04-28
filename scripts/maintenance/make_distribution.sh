@@ -25,7 +25,7 @@
 #
 # Copyright 2004-2011, Hammersmith Imanet Ltd
 # Copyright 2011-2013, Kris Thielemans
-# Copyright 2014-2015,2019 University College London
+# Copyright 2014-2015,2019,2020 University College London
 
 
 # set default for variables.
@@ -48,7 +48,7 @@
 
 set -e
 : ${VERSION:=4.0.0}
-: ${TAG:=stir_rel_${VERSION}}
+: ${TAG:=rel_${VERSION}}
 
 
 : ${REPO:=git@github.com:UCL/STIR} #=~/devel/UCL_STIR}
@@ -183,8 +183,10 @@ if [ $do_git_commit = 1 ]; then
     if git rev-parse "$TAG" >/dev/null 2>&1; then
         echo "git tag $TAG exists!. Removing"
         git tag -d $TAG
+        git tag -d stir_$TAG
     fi
-    git tag -a $TAG -m "version $VERSION"; 
+    git tag -a $TAG -m "version $VERSION";
+    git tag -a stir_$TAG -m "version $VERSION";
 else
     echo "no git commit/tagging"
 fi
@@ -255,4 +257,4 @@ if [ $do_website_sync = 1 ]; then
 fi
 
 echo "still do 'git push; git push --tags'"
-echo "Did you update documentation/history.htm?"
+echo "Did you update CMakeLists.txt, version numbers in \*tex files, documentation/history.htm?"
