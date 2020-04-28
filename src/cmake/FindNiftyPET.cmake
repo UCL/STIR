@@ -1,5 +1,6 @@
-# Copyright 2019 University College London
-
+# Copyright 2019-2020 University College London
+# @Author Richard Brown
+#
 # This file is part of STIR.
 #
 # This file is free software; you can redistribute it and/or modify
@@ -14,36 +15,73 @@
 #
 # See STIR/LICENSE.txt for details
 
+include(FindPackageHandleStandardArgs)
+
+set(package NiftyPET)
+
+if (NOT ${package}_PATH)
+  set(${package}_PATH "" CACHE PATH "Path to ${package} installation")
+endif()
+
+###############################################################
+#  Headers
+###############################################################
+
 # Find the base folder containing prjf.h
-find_path(NIFTYPET_INCLUDE_DIR "niftypet/nipet/prj/src/prjf.h")
+find_path(${package}_INCLUDE_DIR "niftypet/nipet/prj/src/prjf.h")
+mark_as_advanced(${package}_INCLUDE_DIR)
 
-find_library(NIFTYPET_PETPRJ_LIB "petprj"
-  DOC "NIFTYPET projector library")
-find_library(NIFTYPET_MMR_AUXE_LIB "mmr_auxe"
-  DOC "NIFTYPET aux library")
-find_library(NIFTYPET_MMR_LMPROC_LIB "mmr_lmproc"
-  DOC "NIFTYPET lmproc library")
+###############################################################
+#  Libraries
+###############################################################
 
-# handle the QUIETLY and REQUIRED arguments and set NIFTYPET_FOUND to TRUE if 
-# all listed variables are TRUE
-INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(NIFTYPET 
-  "NIFTYPET components not found. If you do have it, set the missing variables"
-  NIFTYPET_INCLUDE_DIR NIFTYPET_PETPRJ_LIB NIFTYPET_MMR_AUXE_LIB NIFTYPET_MMR_LMPROC_LIB)
+set(${package}_required_libraries
+  petprj
+  mmr_auxe
+  mmr_lmproc
+  )
+set(${package}_libraries "")
 
-SET(NIFTYPET_LIBRARIES 
-  ${NIFTYPET_PETPRJ_LIB}
-  ${NIFTYPET_MMR_AUXE_LIB}
-  ${NIFTYPET_MMR_LMPROC_LIB}
+foreach(l ${${package}_required_libraries})
+  find_library(${package}_${l}
+    NAMES ${l}${CMAKE_SHARED_LIBRARY_SUFFIX} ${l}${CMAKE_STATIC_LIBRARY_SUFFIX}
+    PATHS ${${package}_PATH}
+  )
+  mark_as_advanced(${package}_${l})
+  list(APPEND ${package}_libraries ${package}_${l})
+endforeach()
+
+###############################################################
+#  Check everything has been found
+###############################################################
+
+find_package_handle_standard_args(${package}
+  FOUND_VAR ${package}_FOUND
+  REQUIRED_VARS
+    ${${package}_libraries} ${package}_INCLUDE_DIR
 )
 
-SET(NIFTYPET_INCLUDE_DIRS 
-  "${NIFTYPET_INCLUDE_DIR}/niftypet/nipet"
-  "${NIFTYPET_INCLUDE_DIR}/niftypet/nipet/dinf"
-  "${NIFTYPET_INCLUDE_DIR}/niftypet/nipet/lm/src"
-  "${NIFTYPET_INCLUDE_DIR}/niftypet/nipet/prj/src"
-  "${NIFTYPET_INCLUDE_DIR}/niftypet/nipet/sct/src"
-  "${NIFTYPET_INCLUDE_DIR}/niftypet/nipet/src"
+###############################################################
+#  Get header subdirectories
+###############################################################
+
+SET(${package}_INCLUDE_DIRS
+  "${${package}_INCLUDE_DIR}/niftypet/nipet"
+  "${${package}_INCLUDE_DIR}/niftypet/nipet/dinf"
+  "${${package}_INCLUDE_DIR}/niftypet/nipet/lm/src"
+  "${${package}_INCLUDE_DIR}/niftypet/nipet/prj/src"
+  "${${package}_INCLUDE_DIR}/niftypet/nipet/sct/src"
+  "${${package}_INCLUDE_DIR}/niftypet/nipet/src"
 )
 
-MARK_AS_ADVANCED(NIFTYPET_INCLUDE_DIR NIFTYPET_PETPRJ_LIB NIFTYPET_MMR_AUXE_LIB NIFTYPET_MMR_LMPROC_LIB)
+###############################################################
+#  Create imported targets
+###############################################################
+
+foreach(l ${${package}_required_libraries})
+  add_library(${package}::${l} UNKNOWN IMPORTED)
+  set_target_properties(${package}::${l} PROPERTIES
+    IMPORTED_LOCATION "${${package}_${l}}"
+    INTERFACE_INCLUDE_DIRECTORIES "${${package}_INCLUDE_DIRS}"
+  )
+endforeach()

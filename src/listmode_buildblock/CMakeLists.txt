@@ -33,9 +33,9 @@ if (HAVE_CERN_ROOT)
 	)
 endif()
 
-if (STIR_WITH_NIFTYPET_PROJECTOR)
+if (STIR_WITH_NiftyPET_PROJECTOR)
   list(APPEND ${dir_LIB_SOURCES}
-    niftypet_listmode/LmToProjDataNiftyPET
+    NiftyPET_listmode/LmToProjDataNiftyPET
   )
 endif()
 

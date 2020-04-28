@@ -15,7 +15,7 @@
 
 # cmake file declaring all tests in this subdirectory
 
-set(dir test/niftypet_projector)
+set(dir test/NiftyPET_projector)
 
 set(dir_SIMPLE_TEST_EXE_SOURCES ${dir}_SIMPLE_TEST_EXE_SOURCES)
 set(dir_INVOLVED_TEST_EXE_SOURCES ${dir}_INVOLVED_TEST_EXE_SOURCES)

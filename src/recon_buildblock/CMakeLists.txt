@@ -102,12 +102,12 @@ set(${dir_LIB_SOURCES}
 )
 endif()
 
-if (STIR_WITH_NIFTYPET_PROJECTOR)
+if (STIR_WITH_NiftyPET_PROJECTOR)
   list(APPEND ${dir_LIB_SOURCES}
-    niftypet_projector/NiftyPETHelper
-    niftypet_projector/ForwardProjectorByBinNiftyPET
-    niftypet_projector/BackProjectorByBinNiftyPET
-    niftypet_projector/ProjectorByBinPairUsingNiftyPET
+    NiftyPET_projector/NiftyPETHelper
+    NiftyPET_projector/ForwardProjectorByBinNiftyPET
+    NiftyPET_projector/BackProjectorByBinNiftyPET
+    NiftyPET_projector/ProjectorByBinPairUsingNiftyPET
   )
 endif()
 
@@ -126,11 +126,9 @@ endif()
 # modelling_buildblock currently needed for ParametricDensity and Patlak (TODO get rid of this somehow?)
 target_link_libraries(recon_buildblock modelling_buildblock display numerics_buildblock listmode_buildblock data_buildblock buildblock spatial_transformation_buildblock )
 
-if (STIR_WITH_NIFTYPET_PROJECTOR)
-	# Add headers
-	TARGET_INCLUDE_DIRECTORIES(recon_buildblock PUBLIC ${CUDA_INCLUDE_DIRS})
-	TARGET_INCLUDE_DIRECTORIES(recon_buildblock PUBLIC ${NIFTYPET_INCLUDE_DIRS})
-
-	target_link_libraries(recon_buildblock ${CUDA_LIBRARIES})
-	target_link_libraries(recon_buildblock ${NIFTYPET_LIBRARIES})
+if (STIR_WITH_NiftyPET_PROJECTOR)
+	target_link_libraries(recon_buildblock NiftyPET::petprj)
+	target_link_libraries(recon_buildblock NiftyPET::mmr_auxe)
+	target_link_libraries(recon_buildblock NiftyPET::mmr_lmproc)
+	target_link_libraries(recon_buildblock CUDA::cudart)
 endif()

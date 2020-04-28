@@ -42,7 +42,7 @@
 
 #include "stir/RegisteredParsingObject.h"
 #include "stir/recon_buildblock/ForwardProjectorByBin.h"
-#include "stir/recon_buildblock/niftypet_projector/NiftyPETHelper.h"
+#include "stir/recon_buildblock/NiftyPET_projector/NiftyPETHelper.h"
 
 START_NAMESPACE_STIR
 

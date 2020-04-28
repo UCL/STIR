@@ -29,7 +29,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/recon_buildblock/niftypet_projector/NiftyPETHelper.h"
+#include "stir/recon_buildblock/NiftyPET_projector/NiftyPETHelper.h"
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/is_null_ptr.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
@@ -567,14 +567,14 @@ void get_stir_indices_and_dims(int stir_dim[3], Coordinate3D<int> &min_indices, 
         stir_dim[i] = max_indices[i + 1] - min_indices[i + 1] + 1;
 }
 
-unsigned convert_niftypet_im_3d_to_1d_idx(const unsigned x, const unsigned y, const unsigned z)
+unsigned convert_NiftyPET_im_3d_to_1d_idx(const unsigned x, const unsigned y, const unsigned z)
 {
     return z*SZ_IMX*SZ_IMY + y*SZ_IMX + x;
 }
 
 unsigned
 NiftyPETHelper::
-convert_niftypet_proj_3d_to_1d_idx(const unsigned ang, const unsigned bins, const unsigned sino) const
+convert_NiftyPET_proj_3d_to_1d_idx(const unsigned ang, const unsigned bins, const unsigned sino) const
 {
     return sino*NSANGLES*NSBINS + ang*NSBINS + bins;
 }
@@ -777,7 +777,7 @@ read_numpy_axf1(const unsigned long num_elements)
     if (!NP_SOURCE)
         throw std::runtime_error("NP_SOURCE not defined, cannot find data");
 
-    std::string numpy_filename = std::string(NP_SOURCE) + "/niftypet/auxdata/AxialFactorForSpan1.npy";
+    std::string numpy_filename = std::string(NP_SOURCE) + "/NiftyPET/auxdata/AxialFactorForSpan1.npy";
     // Skip over the header (first newline)
     std::ifstream numpy_file(numpy_filename, std::ios::in | std::ios::binary);
     if (!numpy_file.is_open())
@@ -1118,7 +1118,7 @@ convert_image_stir_to_niftyPET(std::vector<float> &np_vec, const DiscretisedDens
                 np_z = unsigned(z - min_indices[1]);
                 np_y = unsigned(y - min_indices[2]);
                 np_x = unsigned(x - min_indices[3]);
-                np_1d = convert_niftypet_im_3d_to_1d_idx(np_x,np_y,np_z);
+                np_1d = convert_NiftyPET_im_3d_to_1d_idx(np_x,np_y,np_z);
                 np_vec[np_1d] = stir[z][y][x];
             }
         }
@@ -1150,7 +1150,7 @@ convert_image_niftyPET_to_stir(DiscretisedDensity<3,float> &stir, const std::vec
                 np_z = unsigned(z - min_indices[1]);
                 np_y = unsigned(y - min_indices[2]);
                 np_x = unsigned(x - min_indices[3]);
-                np_1d = convert_niftypet_im_3d_to_1d_idx(np_x,np_y,np_z);
+                np_1d = convert_NiftyPET_im_3d_to_1d_idx(np_x,np_y,np_z);
                 stir[z][y][x] = np_vec[np_1d];
             }
         }
@@ -1193,7 +1193,7 @@ get_vals_for_proj_data_conversion(std::vector<int> &sizes, std::vector<int> &seg
               % num_proj_data_elems % np_vec.size());
 }
 
-void get_stir_segment_and_axial_pos_from_niftypet_sino(int &segment, int &axial_pos, const unsigned np_sino, const std::vector<int> &sizes, const std::vector<int> &segment_sequence)
+void get_stir_segment_and_axial_pos_from_NiftyPET_sino(int &segment, int &axial_pos, const unsigned np_sino, const std::vector<int> &sizes, const std::vector<int> &segment_sequence)
 {
     int z = int(np_sino);
     for (unsigned i=0; i<segment_sequence.size(); ++i) {
@@ -1208,7 +1208,7 @@ void get_stir_segment_and_axial_pos_from_niftypet_sino(int &segment, int &axial_
     }
 }
 
-void get_niftypet_sino_from_stir_segment_and_axial_pos(unsigned &np_sino, const int segment, const int axial_pos, const std::vector<int> &sizes, const std::vector<int> &segment_sequence)
+void get_NiftyPET_sino_from_stir_segment_and_axial_pos(unsigned &np_sino, const int segment, const int axial_pos, const std::vector<int> &sizes, const std::vector<int> &segment_sequence)
 {
     np_sino = 0U;
     for (unsigned i=0; i<segment_sequence.size(); ++i) {
@@ -1220,7 +1220,7 @@ void get_niftypet_sino_from_stir_segment_and_axial_pos(unsigned &np_sino, const 
             np_sino += sizes[i];
         }
     }
-    throw std::runtime_error("NiftyPETHelper::get_niftypet_sino_from_stir_segment_and_axial_pos(): Failed to find NiftyPET sinogram.");
+    throw std::runtime_error("NiftyPETHelper::get_NiftyPET_sino_from_stir_segment_and_axial_pos(): Failed to find NiftyPET sinogram.");
 }
 
 void
@@ -1242,13 +1242,13 @@ convert_viewgram_stir_to_niftyPET(std::vector<float> &np_vec, const Viewgram<flo
         unsigned np_sino;
 
         // Convert the NiftyPET sinogram to STIR's segment and axial position
-        get_niftypet_sino_from_stir_segment_and_axial_pos(np_sino, segment, ax_pos, sizes, segment_sequence);
+        get_NiftyPET_sino_from_stir_segment_and_axial_pos(np_sino, segment, ax_pos, sizes, segment_sequence);
 
         for (int tang_pos=min_tang_pos; tang_pos<=max_tang_pos; ++tang_pos) {
 
             unsigned np_ang  = unsigned(view-min_view);
             unsigned np_bin  = unsigned(tang_pos-min_tang_pos);
-            unsigned np_1d = convert_niftypet_proj_3d_to_1d_idx(np_ang,np_bin,np_sino);
+            unsigned np_1d = convert_NiftyPET_proj_3d_to_1d_idx(np_ang,np_bin,np_sino);
             np_vec.at(np_1d) = viewgram.at(ax_pos).at(tang_pos);
         }
     }
@@ -1285,7 +1285,7 @@ convert_proj_data_niftyPET_to_stir(ProjData &stir, const std::vector<float> &np_
     for (unsigned np_sino = 0; np_sino < unsigned(num_sinograms); ++np_sino) {
 
         // Convert the NiftyPET sinogram to STIR's segment and axial position
-        get_stir_segment_and_axial_pos_from_niftypet_sino(segment, axial_pos, np_sino, sizes, segment_sequence);
+        get_stir_segment_and_axial_pos_from_NiftyPET_sino(segment, axial_pos, np_sino, sizes, segment_sequence);
 
         // Get the corresponding STIR sinogram
         Sinogram<float> sino = stir.get_empty_sinogram(axial_pos,segment);
@@ -1296,7 +1296,7 @@ convert_proj_data_niftyPET_to_stir(ProjData &stir, const std::vector<float> &np_
 
                 unsigned np_ang  = unsigned(view-min_view);
                 unsigned np_bin  = unsigned(tang_pos-min_tang_pos);
-                unsigned np_1d = convert_niftypet_proj_3d_to_1d_idx(np_ang,np_bin,np_sino);
+                unsigned np_1d = convert_NiftyPET_proj_3d_to_1d_idx(np_ang,np_bin,np_sino);
                 sino.at(view).at(tang_pos) = np_vec.at(np_1d);
             }
         }

@@ -24,7 +24,7 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/listmode/niftypet_listmode/LmToProjDataNiftyPET.h"
+#include "stir/listmode/NiftyPET_listmode/LmToProjDataNiftyPET.h"
 #include "stir/ProjData.h"
 
 USING_NAMESPACE_STIR

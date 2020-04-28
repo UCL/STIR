@@ -148,11 +148,11 @@ private:
     /// Permute the data
     void permute(std::vector<float> &output_array, const std::vector<float> &orig_array, const unsigned output_dims[3], const unsigned *permute_order) const;
 
-    /// Convert 3d niftypet proj data index to 1d
-    unsigned convert_niftypet_proj_3d_to_1d_idx(const unsigned ang, const unsigned bins, const unsigned sino) const;
+    /// Convert 3d NiftyPET proj data index to 1d
+    unsigned convert_NiftyPET_proj_3d_to_1d_idx(const unsigned ang, const unsigned bins, const unsigned sino) const;
 
-    /// Convert 1d niftypet proj data index to 3d
-    void convert_niftypet_proj_1d_to_3d_idx(unsigned &ang, unsigned &bins, unsigned &sino, const unsigned idx) const;
+    /// Convert 1d NiftyPET proj data index to 3d
+    void convert_NiftyPET_proj_1d_to_3d_idx(unsigned &ang, unsigned &bins, unsigned &sino, const unsigned idx) const;
 
     bool _already_set_up;
     char _span;

@@ -23,8 +23,8 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/listmode/niftypet_listmode/LmToProjDataNiftyPET.h"
-#include "stir/recon_buildblock/niftypet_projector/NiftyPETHelper.h"
+#include "stir/listmode/NiftyPET_listmode/LmToProjDataNiftyPET.h"
+#include "stir/recon_buildblock/NiftyPET_projector/NiftyPETHelper.h"
 
 START_NAMESPACE_STIR
 

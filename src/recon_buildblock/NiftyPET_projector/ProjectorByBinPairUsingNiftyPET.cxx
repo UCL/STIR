@@ -28,9 +28,9 @@
 */
 
 
-#include "stir/recon_buildblock/niftypet_projector/ProjectorByBinPairUsingNiftyPET.h"
-#include "stir/recon_buildblock/niftypet_projector/ForwardProjectorByBinNiftyPET.h"
-#include "stir/recon_buildblock/niftypet_projector/BackProjectorByBinNiftyPET.h"
+#include "stir/recon_buildblock/NiftyPET_projector/ProjectorByBinPairUsingNiftyPET.h"
+#include "stir/recon_buildblock/NiftyPET_projector/ForwardProjectorByBinNiftyPET.h"
+#include "stir/recon_buildblock/NiftyPET_projector/BackProjectorByBinNiftyPET.h"
 
 START_NAMESPACE_STIR
 

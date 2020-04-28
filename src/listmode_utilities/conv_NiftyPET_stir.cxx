@@ -27,7 +27,7 @@
 #include "stir/VoxelsOnCartesianGrid.h"
 #include "stir/IO/OutputFileFormat.h"
 #include "stir/IO/read_from_file.h"
-#include "stir/recon_buildblock/niftypet_projector/NiftyPETHelper.h"
+#include "stir/recon_buildblock/NiftyPET_projector/NiftyPETHelper.h"
 #include "stir/is_null_ptr.h"
 #include "stir/ProjDataInMemory.h"
 

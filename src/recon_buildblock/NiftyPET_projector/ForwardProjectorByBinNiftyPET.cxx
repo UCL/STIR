@@ -29,8 +29,8 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/recon_buildblock/niftypet_projector/ForwardProjectorByBinNiftyPET.h"
-#include "stir/recon_buildblock/niftypet_projector/NiftyPETHelper.h"
+#include "stir/recon_buildblock/NiftyPET_projector/ForwardProjectorByBinNiftyPET.h"
+#include "stir/recon_buildblock/NiftyPET_projector/NiftyPETHelper.h"
 #include "stir/ProjDataInMemory.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"

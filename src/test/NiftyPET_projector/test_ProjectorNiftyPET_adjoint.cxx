@@ -24,8 +24,8 @@
   \author Richard Brown
 */
 
-#include "stir/recon_buildblock/niftypet_projector/ForwardProjectorByBinNiftyPET.h"
-#include "stir/recon_buildblock/niftypet_projector/BackProjectorByBinNiftyPET.h"
+#include "stir/recon_buildblock/NiftyPET_projector/ForwardProjectorByBinNiftyPET.h"
+#include "stir/recon_buildblock/NiftyPET_projector/BackProjectorByBinNiftyPET.h"
 #include "stir/RunTests.h"
 #include "stir/num_threads.h"
 #include "stir/CPUTimer.h"

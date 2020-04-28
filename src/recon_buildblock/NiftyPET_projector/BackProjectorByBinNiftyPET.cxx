@@ -27,8 +27,8 @@
     See STIR/LICENSE.txt for details
 */
 
-#include "stir/recon_buildblock/niftypet_projector/BackProjectorByBinNiftyPET.h"
-#include "stir/recon_buildblock/niftypet_projector/NiftyPETHelper.h"
+#include "stir/recon_buildblock/NiftyPET_projector/BackProjectorByBinNiftyPET.h"
+#include "stir/recon_buildblock/NiftyPET_projector/NiftyPETHelper.h"
 #include "stir/DiscretisedDensity.h"
 #include "stir/RelatedViewgrams.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
@@ -142,7 +142,7 @@ start_accumulating_in_new_target()
 {
     // Call base level
     BackProjectorByBin::start_accumulating_in_new_target();
-    // Also reset the niftypet sinogram
+    // Also reset the NiftyPET sinogram
     _np_sino_w_gaps = _helper.create_niftyPET_sinogram_with_gaps();
 }
 
