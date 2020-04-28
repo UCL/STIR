@@ -46,7 +46,7 @@ class TestGPUProjectors : public RunTests
 {
 public:
     //! Constructor
-    TestGPUProjectors(const unsigned num_attempts)
+    explicit TestGPUProjectors(const unsigned num_attempts)
         : _num_attempts(num_attempts),
           _time_fwrd(0), _time_back(0) {}
 
@@ -355,14 +355,13 @@ test_adjoints()
 {
     set_up();
 
-    unsigned num_unsuccessful;
+    unsigned num_unsuccessful(0);
 
     while(_results.size() < _num_attempts) {
 
-        std::cout << "\nPerforming test " << _results.size()+1 << " of " << _num_attempts << "\n";
-
         unsigned i = _results.size();
-        num_unsuccessful = 0;
+
+        std::cout << "\nPerforming test " << i+1 << " of " << _num_attempts << "\n";
 
         // Even iterations, modify the image
         if (i%2==0) {
@@ -379,13 +378,16 @@ test_adjoints()
             test_inner_product(*_image_sptr, *_sino_sptr, *_projected_image_sptr, *_projected_sino_sptr);
         if (adjoint_test > 0.f) {
             _results.push_back(adjoint_test);
-            std::cout << "\tAvg. test result = " << std::accumulate(_results.begin(), _results.end(), 0.0) / _results.size() << 
-                " (number of tests = " << _results.size() << "), avg. time forward projecting = " << _time_fwrd/double(i+1) << " s, " <<
+            std::cout << "\tAvg. test result = " << std::accumulate(_results.begin(), _results.end(), 0.0) /double(i+1) << 
+                " (number of tests = " << i+1 << "), avg. time forward projecting = " << _time_fwrd/double(i+1) << " s, " <<
                 "avg. time back projecting = " << _time_back/double(i+1) << " s.\n\n";
 
             // Check the result
             if (adjoint_test > 1e-4f)
                 error("Adjoint test greater than threshold, failed!");
+
+            // Reset unsuccessful counter
+            num_unsuccessful = 0;
         }
         else {
             ++num_unsuccessful;

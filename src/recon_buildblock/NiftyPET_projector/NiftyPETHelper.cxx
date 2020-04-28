@@ -605,20 +605,23 @@ permute(std::vector<float> &output_array, const std::vector<float> &orig_array, 
         old_dims[permute_order[i]] = output_dims[i];
 
     // Loop over all elements
-    unsigned old_3d_idx[3], new_3d_idx[3], new_1d_idx;
     for (unsigned old_1d_idx=0; old_1d_idx<orig_array.size(); ++old_1d_idx) {
 
         // From the 1d index, generate the old 3d index
-        old_3d_idx[2] =  old_1d_idx %  old_dims[2];
-        old_3d_idx[1] = (old_1d_idx /  old_dims[2]) % old_dims[1];
-        old_3d_idx[0] =  old_1d_idx / (old_dims[2]  * old_dims[1]);
+        unsigned old_3d_idx[3] = {
+            old_1d_idx %  old_dims[2],
+            (old_1d_idx /  old_dims[2]) % old_dims[1],
+            old_1d_idx / (old_dims[2]  * old_dims[1])};
 
         // Get the corresponding new 3d index
+        unsigned new_3d_idx[3];
         for (unsigned i=0; i<3; ++i)
             new_3d_idx[i] = old_3d_idx[permute_order[i]];
 
         // Get the new 1d index from the new 3d index
-        new_1d_idx = new_3d_idx[0]*output_dims[2]*output_dims[1] + new_3d_idx[1]*output_dims[2] + new_3d_idx[2];
+        const unsigned new_1d_idx = 
+            new_3d_idx[0]*output_dims[2]*output_dims[1] + 
+            new_3d_idx[1]*output_dims[2] + new_3d_idx[2];
 
         // Fill the data
         output_array[new_1d_idx] = orig_array[old_1d_idx];
