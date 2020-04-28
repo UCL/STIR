@@ -48,7 +48,7 @@
 
 set -e
 : ${VERSION:=4.0.0}
-: ${TAG:=stir_rel_${VERSION}}
+: ${TAG:=rel_${VERSION}}
 
 
 : ${REPO:=git@github.com:UCL/STIR} #=~/devel/UCL_STIR}
@@ -183,8 +183,10 @@ if [ $do_git_commit = 1 ]; then
     if git rev-parse "$TAG" >/dev/null 2>&1; then
         echo "git tag $TAG exists!. Removing"
         git tag -d $TAG
+        git tag -d stir_$TAG
     fi
-    git tag -a $TAG -m "version $VERSION"; 
+    git tag -a $TAG -m "version $VERSION";
+    git tag -a stir_$TAG -m "version $VERSION";
 else
     echo "no git commit/tagging"
 fi
