@@ -47,7 +47,7 @@ CListEventECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
 
  this->segment_sequence = ecat::find_segment_sequence(*proj_data_info_ptr);
  this->sizes.resize(this->segment_sequence.size());
- for (unsigned s=0U; s <= this->segment_sequence.size(); ++s)
+ for (std::size_t s=0U; s < this->segment_sequence.size(); ++s)
    this->sizes[s]=proj_data_info_ptr->get_num_axial_poss(segment_sequence[s]);
 }
 
