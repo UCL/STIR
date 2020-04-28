@@ -787,6 +787,18 @@ The seed is a positive integer (do not use $0$). Specifying different seeds will
 You can use the same parameter file as for \texttt{lm\_to\_projdata}.
 
 \subsubsection{
+lm\_to\_projdata\_NiftyPET}
+If STIR has been built with NiftyPET-wrapped [Mar18] support, then GPU-accelerated functionality can be used to extract projection data from listmode files. It can also be used to estimate randoms and norm projection data.
+
+To extract a projection data for the first 1000 s of the listmode file, \texttt{list.l}, saving the prompts, randoms and norm to disk, you can use it as follows:
+
+\cmdline{lm\_to\_projdata\_NiftyPET list.l 0 1000 -N norm.n.hdr -p sino -r rands -n norm}
+
+Note that to extract the norm projection data, it is necessary to supply the binary ECAT8 normalisation file (either with the extension \texttt{.bf} (straight from the scanner) or \texttt{.n} converted to interfile format.
+
+Also note that this functionality is currently limited to the Siemens mMR scanner, span-11 projection data, and NiftyPET requires a CUDA-enabled GPU.
+
+\subsubsection{
 lm\_fansums}
 Computes fan-sums, i.e. for each detector, sum all data that are in coincidence with that detector.
 Results are written as a simple text file. This could be used to check if all detectors are working
@@ -1985,7 +1997,7 @@ is underestimated. The mean value of the two scatter estimates can be used for s
 iterations are usually enough to estimate a good approximation of scatter.
 
 There are a lot of parameters that can be set in scatter estimation. It is highly recommended to use
-the example parameter files provided in the \textt{examples} folder. In particular, you could check
+the example parameter files provided in the \texttt{examples} folder. In particular, you could check
 the fully working example for a NEMA phantom provides for the Siemens mMR.
 
 \cmdline{%
@@ -2114,7 +2126,7 @@ create\_tail\_mask\_from\_ACFs		--ACF-filename <projdata> \textbackslash \\
 \end{description}
 
 The following utility can be used to manually upsample with tail-fitting. Its underlying code is used in
-the \textt{scatter\_estimate} utility above.
+the \texttt{scatter\_estimate} utility above.
 
 \cmdline{%
 upsample\_and\_fit\_single\_scatter \textbackslash \\
@@ -4185,8 +4197,11 @@ See Section \ref{sec:projmatrix} for possible values for the 'matrix type' keywo
 { \subsubsubsection{NiftyPET}
 }
 \label{sec:projectorpairusingniftypet}
-Both projectors are based on the NiftyPET-wrapped projectors [Mar18], as detailed
-individually in the following sections.
+If STIR has been built with NiftyPET-wrapped [Mar18] support, then GPU-accelerated functionality can be used to project data. The forward and back projectors are described individually in the following sections.
+
+Note that this functionality is currently limited to the Siemens mMR scanner, and NiftyPET requires a CUDA-enabled GPU.
+
+Also note that, although NiftyPET allows spans 0, 1 and 11, the STIR wrapper has only currently been tested for span-11, so use with caution. The wrapper is also only currently capable of projecting all of the data, meaning projections of subsets of the data are not possible. We hope to address this soon.
 
 { \subsubsubsubsection{Parameters}
 }
@@ -5350,6 +5365,12 @@ A and Levkovitz R \textbf{(1999)} The ordered sets mirror descent and
 conjugate barrier optimization algorithms adapted to the 3D PET 
 reconstruction problem. Technion internal report and PhD thesis of T. Margalit
 
+[Mar18] Markiewicz P J, Ehrhardt M J, Erlandsson K, Noonan P J, Barnes A, Schott J M, 
+Atkinson D, Arridge S R, Hutton B F, Ourselin S \textbf{(2018)}, 
+NiftyPET: a High-throughput Software Platform for High 
+Quantitative Accuracy and Precision PET Imaging and Analysis.
+\textit { Neuroinformatics }, 16(1): 95-115.
+
 {[}Mus01] Mustafovic S and Thielemans K, \textbf{(2001)} Additive and Multiplicative 
 versions of the Maximum A Posteriori Algorithm with the Median 
 Root Prior. poster at \textit{IEEE Med. Img. Conf. 2001.}
@@ -5476,11 +5497,5 @@ reconstruction of PET data. \textit { Phys Med Biol } 47(16): 2947-2960.
 
 {[}Ehr16{]} Ehrhardt M J, Markiewicz P, Liljeroth M, Barnes A, Kolehmainen V, Duncan J, Pizarro L, Atkinson D, Hutton B F, Ourselin S, and others \textbf{(2016)}, 
 PET reconstruction with an anatomical MRI prior using parallel level sets. \textit { IEEE Trans Med Imaging } 35(9): 2189-2195.
-
-[Mar18] Markiewicz P J, Ehrhardt M J, Erlandsson K, Noonan P J, Barnes A, Schott J M, 
-Atkinson D, Arridge S R, Hutton B F, Ourselin S \textbf{(2018)}, 
-NiftyPET: a High-throughput Software Platform for High 
-Quantitative Accuracy and Precision PET Imaging and Analysis.
-\textit { Neuroinformatics }, 16(1): 95-115.
 
 \end{document}
