@@ -19,6 +19,7 @@
 /*!
 \file
 \ingroup utilities
+\ingroup NiftyPET
 \brief Convert between NiftyPET and STIR imagees and projdata
 \author Richard Brown
 */

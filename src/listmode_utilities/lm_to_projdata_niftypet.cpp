@@ -1,6 +1,7 @@
 /*!
   \file 
   \ingroup listmode_utilities
+  \ingroup NiftyPET
 
   \brief Program to bin listmode data to 3d sinograms using STIR's NiftyPET wrapper.
 

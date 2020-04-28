@@ -33,6 +33,7 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup listmode
+  \ingroup NiftyPET
 
   \brief This class is the abstract base class fir binning listmode data to projection data,
   i.e. (3d) sinograms.
@@ -47,6 +48,9 @@ public:
 
     /// Destructor
     virtual ~LmToProjDataAbstract() {}
+
+    /// Set up
+    virtual void set_up() {}
 
     //! This function does the actual work
     virtual void process_data() = 0;

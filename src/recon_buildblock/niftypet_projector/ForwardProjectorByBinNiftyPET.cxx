@@ -4,6 +4,7 @@
 
   \file
   \ingroup projection
+  \ingroup NiftyPET
 
   \brief non-inline implementations for stir::ForwardProjectorByBinNiftyPET
 

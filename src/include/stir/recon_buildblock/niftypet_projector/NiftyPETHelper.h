@@ -6,11 +6,25 @@
 /*!
   \file
   \ingroup projection
+  \ingroup NiftyPET
 
-  \brief Helper functions for NiftyPET's GPU implementation.
+  \brief Helper class for NiftyPET's GPU implementation.
 
   \author Richard Brown
 
+  Helper class for NiftyPET's GPU functionality. Wrapped
+  functionality includes projection, unlisting and
+  estimtaion of randoms and norms.
+
+  \todo NiftyPET limitations - currently limited
+  to the Siemens mMR scanner and requires to CUDA.
+
+  \todo STIR wrapper limitations - currently only
+  projects all of the data (no subsets). NiftyPET
+  currently supports spans 0, 1 and 11, but the STIR
+  wrapper has only been tested for span-11.
+
+  DOI - https://doi.org/10.1007/s12021-017-9352-y
 */
 /*
     Copyright (C) 2019-2020, University College London

@@ -19,6 +19,7 @@
 /*!
   \file
   \ingroup projection
+  \ingroup NiftyPET
 
   \brief Declares class stir::ProjectorByBinPairUsingNiftyPET
 
