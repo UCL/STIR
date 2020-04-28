@@ -25,7 +25,7 @@
 #
 # Copyright 2004-2011, Hammersmith Imanet Ltd
 # Copyright 2011-2013, Kris Thielemans
-# Copyright 2014-2015,2019 University College London
+# Copyright 2014-2015,2019,2020 University College London
 
 
 # set default for variables.
@@ -255,4 +255,4 @@ if [ $do_website_sync = 1 ]; then
 fi
 
 echo "still do 'git push; git push --tags'"
-echo "Did you update documentation/history.htm?"
+echo "Did you update CMakeLists.txt, version numbers in \*tex files, documentation/history.htm?"
