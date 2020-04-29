@@ -50,7 +50,7 @@ public:
     virtual ~LmToProjDataAbstract() {}
 
     /// Set up
-    virtual bool set_up() { return false; }
+    virtual Succeeded set_up() { return Succeeded::yes; }
 
     //! This function does the actual work
     virtual void process_data() = 0;
