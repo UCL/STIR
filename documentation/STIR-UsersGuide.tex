@@ -787,6 +787,18 @@ The seed is a positive integer (do not use $0$). Specifying different seeds will
 You can use the same parameter file as for \texttt{lm\_to\_projdata}.
 
 \subsubsection{
+lm\_to\_projdata\_NiftyPET}
+If STIR has been built with NiftyPET-wrapped [Mar18] support, then GPU-accelerated functionality can be used to extract projection data from listmode files. It can also be used to estimate randoms and norm projection data.
+
+To extract a projection data for the first 1000 s of the listmode file, \texttt{list.l}, saving the prompts, randoms and norm to disk, you can use it as follows:
+
+\cmdline{lm\_to\_projdata\_NiftyPET list.l 0 1000 -N norm.n.hdr -p sino -r rands -n norm}
+
+Note that to extract the norm projection data, it is necessary to supply the binary ECAT8 normalisation file (either with the extension \texttt{.bf} (straight from the scanner) or \texttt{.n} converted to interfile format.
+
+Also note that this functionality is currently limited to the Siemens mMR scanner, span-11 projection data, and NiftyPET requires a CUDA-enabled GPU.
+
+\subsubsection{
 lm\_fansums}
 Computes fan-sums, i.e. for each detector, sum all data that are in coincidence with that detector.
 Results are written as a simple text file. This could be used to check if all detectors are working
@@ -4182,6 +4194,23 @@ End Projector Pair Using Matrix Parameters:=
 
 See Section \ref{sec:projmatrix} for possible values for the 'matrix type' keyword.
 
+{ \subsubsubsection{NiftyPET}
+}
+\label{sec:projectorpairusingNiftyPET}
+If STIR has been built with NiftyPET-wrapped [Mar18] support, then GPU-accelerated functionality can be used to project data. The forward and back projectors are described individually in the following sections.
+
+Note that this functionality is currently limited to the Siemens mMR scanner, and NiftyPET requires a CUDA-enabled GPU.
+
+Also note that, although NiftyPET allows spans 0, 1 and 11, the STIR wrapper has only currently been tested for span-11, so use with caution. The wrapper is also only currently capable of projecting all of the data, meaning projections of subsets of the data are not possible. We hope to address this soon.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Projector Pair Using NiftyPET Parameters:=
+  verbosity := 1
+End Projector Pair Using NiftyPET Parameters:=
+\end{verbatim}
+
 { \subsubsubsection{Separate Projectors }
 }
 Forward and back projectors are completely independent of each 
@@ -4274,6 +4303,18 @@ Pre Smoothing Forward Projector Parameters:=
 End Pre Smoothing Forward Projector Parameters:=
 \end{verbatim}
 
+{ \subsubsubsection{NiftyPET}
+}
+This forward projector wraps NiftyPET's GPU forward projector.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Forward Projector Using NiftyPET Parameters:=
+  verbosity := 1
+End Forward Projector Using NiftyPET Parameters:=
+\end{verbatim}
+
 \subsubsection{
 Selecting a back projector}
 \label{sec:backprojectors}
@@ -4352,6 +4393,18 @@ Post Smoothing Back Projector Parameters:=
   filter type:= some filter value
   ; normal filter parameters
 End Post Smoothing Back Projector Parameters:=
+\end{verbatim}
+
+{ \subsubsubsection{NiftyPET}
+}
+This back projector wraps NiftyPET's GPU back projector.
+
+{ \subsubsubsubsection{Parameters}
+}
+\begin{verbatim}
+Back Projector Using NiftyPET Parameters:=
+  verbosity := 1
+End Back Projector Using NiftyPET Parameters:=
 \end{verbatim}
 
 
@@ -5311,6 +5364,12 @@ University of West London. Oct 1997}.
 A and Levkovitz R \textbf{(1999)} The ordered sets mirror descent and 
 conjugate barrier optimization algorithms adapted to the 3D PET 
 reconstruction problem. Technion internal report and PhD thesis of T. Margalit
+
+[Mar18] Markiewicz P J, Ehrhardt M J, Erlandsson K, Noonan P J, Barnes A, Schott J M, 
+Atkinson D, Arridge S R, Hutton B F, Ourselin S \textbf{(2018)}, 
+NiftyPET: a High-throughput Software Platform for High 
+Quantitative Accuracy and Precision PET Imaging and Analysis.
+\textit { Neuroinformatics }, 16(1): 95-115.
 
 {[}Mus01] Mustafovic S and Thielemans K, \textbf{(2001)} Additive and Multiplicative 
 versions of the Maximum A Posteriori Algorithm with the Median 

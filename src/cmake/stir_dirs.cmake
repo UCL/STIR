@@ -103,3 +103,7 @@ SET( STIR_TEST_DIRS
      test/numerics
      test/modelling
 )
+
+if (STIR_WITH_NiftyPET_PROJECTOR)
+  list(APPEND STIR_TEST_DIRS test/NiftyPET_projector)
+endif()
