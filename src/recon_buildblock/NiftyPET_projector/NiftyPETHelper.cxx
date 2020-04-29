@@ -780,7 +780,7 @@ read_numpy_axf1(const unsigned long num_elements)
     if (!NP_SOURCE)
         throw std::runtime_error("NP_SOURCE not defined, cannot find data");
 
-    std::string numpy_filename = std::string(NP_SOURCE) + "/NiftyPET/auxdata/AxialFactorForSpan1.npy";
+    std::string numpy_filename = std::string(NP_SOURCE) + "/niftypet/auxdata/AxialFactorForSpan1.npy";
     // Skip over the header (first newline)
     std::ifstream numpy_file(numpy_filename, std::ios::in | std::ios::binary);
     if (!numpy_file.is_open())

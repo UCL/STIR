@@ -99,7 +99,7 @@ int main(int argc, char * argv[])
                 print_usage_and_exit(program_name, EXIT_FAILURE);
             }
         }
-        if (p_filename.empty() && d_filename.empty() && r_filename.empty()) {
+        if (p_filename.empty() && d_filename.empty() && r_filename.empty() && n_filename.empty()) {
             std::cerr << "At least one output filename required.\n";
             print_usage_and_exit(program_name, EXIT_FAILURE);
         }
