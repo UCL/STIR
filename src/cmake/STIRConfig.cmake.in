@@ -114,5 +114,6 @@ endif()
 
 if(@STIR_WITH_NiftyPET_PROJECTOR@)
   find_package(CUDAToolkit REQUIRED)
+  find_package(NiftyPET REQUIRED)
   set(STIR_WITH_NiftyPET_PROJECTOR TRUE)
 endif()
