@@ -27,10 +27,15 @@ endif()
 #  Headers
 ###############################################################
 
-# Find the base folder containing prjf.h
-find_path(${package}_INCLUDE_DIR "niftypet/nipet/prj/src/prjf.h")
+# Find the base folder containing def.h
+find_path(${package}_INCLUDE_DIR "niftypet/nipet/def.h"
+  PATHS ${${package}_PATH}
+  PATH_SUFFIXES include
+  )
 mark_as_advanced(${package}_INCLUDE_DIR)
 
+message(STATUS "${package}_INCLUDE_DIR = ${${package}_INCLUDE_DIR}")
+message(FATAL_ERROR cool)
 ###############################################################
 #  Libraries
 ###############################################################
