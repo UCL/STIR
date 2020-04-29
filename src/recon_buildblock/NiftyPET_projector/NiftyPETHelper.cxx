@@ -609,9 +609,9 @@ permute(std::vector<float> &output_array, const std::vector<float> &orig_array, 
 
         // From the 1d index, generate the old 3d index
         unsigned old_3d_idx[3] = {
-            old_1d_idx %  old_dims[2],
-            (old_1d_idx /  old_dims[2]) % old_dims[1],
-            old_1d_idx / (old_dims[2]  * old_dims[1])};
+            old_1d_idx / (old_dims[2]  * old_dims[1]),
+            (old_1d_idx / old_dims[2]) % old_dims[1],
+            old_1d_idx % old_dims[2]};
 
         // Get the corresponding new 3d index
         unsigned new_3d_idx[3];
