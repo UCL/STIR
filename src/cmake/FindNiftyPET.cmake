@@ -34,8 +34,6 @@ find_path(${package}_INCLUDE_DIR "niftypet/nipet/def.h"
   )
 mark_as_advanced(${package}_INCLUDE_DIR)
 
-message(STATUS "${package}_INCLUDE_DIR = ${${package}_INCLUDE_DIR}")
-message(FATAL_ERROR cool)
 ###############################################################
 #  Libraries
 ###############################################################
