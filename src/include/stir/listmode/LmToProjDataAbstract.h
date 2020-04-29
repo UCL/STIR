@@ -28,6 +28,7 @@
 */
 
 #include "stir/ParsingObject.h"
+#include "stir/Succeeded.h"
 
 START_NAMESPACE_STIR
 
