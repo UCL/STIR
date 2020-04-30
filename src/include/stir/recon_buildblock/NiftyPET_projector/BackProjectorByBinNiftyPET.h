@@ -98,6 +98,10 @@ public:
   /// Set verbosity
   void set_verbosity(const bool verbosity) { _cuda_verbosity = verbosity; }
 
+  /// Set use truncation - truncate before forward
+  /// projection and after back projection
+  void set_use_truncation(const bool use_truncation) { _use_truncation = use_truncation; }
+
 protected:
 
  virtual void actual_back_project(const RelatedViewgrams<float>&,
@@ -110,6 +114,7 @@ protected:
   int _cuda_device;
   bool _cuda_verbosity;
   std::vector<float> _np_sino_w_gaps;
+  bool _use_truncation;
 };
 
 END_NAMESPACE_STIR

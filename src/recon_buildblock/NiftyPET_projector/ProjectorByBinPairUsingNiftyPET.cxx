@@ -47,6 +47,7 @@ ProjectorByBinPairUsingNiftyPET::initialise_keymap()
   parser.add_start_key("Projector Pair Using NiftyPET Parameters");
   parser.add_stop_key("End Projector Pair Using NiftyPET Parameters");
   parser.add_key("verbosity",&_verbosity);
+  parser.add_key("use_truncation",&_use_truncation);
 }
 
 
@@ -55,6 +56,7 @@ ProjectorByBinPairUsingNiftyPET::set_defaults()
 {
   base_type::set_defaults();
   this->set_verbosity(true);
+  this->set_use_truncation(false);
 }
 
 bool
@@ -101,6 +103,21 @@ void ProjectorByBinPairUsingNiftyPET::set_verbosity(const bool verbosity)
             dynamic_pointer_cast<BackProjectorByBinNiftyPET>(this->back_projector_sptr);
     if (bck_prj_downcast_sptr)
         bck_prj_downcast_sptr->set_verbosity(_verbosity);
+}
+
+void ProjectorByBinPairUsingNiftyPET::set_use_truncation(const bool use_truncation)
+{
+    _use_truncation = use_truncation;
+
+    shared_ptr<ForwardProjectorByBinNiftyPET> fwd_prj_downcast_sptr =
+            dynamic_pointer_cast<ForwardProjectorByBinNiftyPET>(this->forward_projector_sptr);
+    if (fwd_prj_downcast_sptr)
+        fwd_prj_downcast_sptr->set_use_truncation(_use_truncation);
+
+    shared_ptr<BackProjectorByBinNiftyPET> bck_prj_downcast_sptr =
+            dynamic_pointer_cast<BackProjectorByBinNiftyPET>(this->back_projector_sptr);
+    if (bck_prj_downcast_sptr)
+        bck_prj_downcast_sptr->set_use_truncation(_use_truncation);
 }
 
 END_NAMESPACE_STIR
