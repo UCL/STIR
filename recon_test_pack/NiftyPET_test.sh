@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function print_usage() {
-	echo "Usage: $0 [-h|--help] RAW_DATA_FOLDER TSTART TSTOP"
+	echo "Usage: $0 [-h|--help] RAW_DATA_FOLDER TSTART TSTOP NP_PY_EXE"
 }
 
 # Print full help
@@ -12,7 +12,7 @@ if [[ $1 == "-h" || $1 == "--help" ]]; then
 	echo -e "From raw dicom data (RAW_DATA_FOLDER) and a given time window (TSTART and TSTOP), prompt sinograms are extracted with NiftyPET, STIR-NiftyPET and STIR. Randoms are estimated, and for NiftyPET and STIR-NiftyPET, a norm sinogram is extracted.\n"
 	echo -e "Forward and back projections are performed with NiftyPET and STIR-NiftyPET with no corrections.\n"
 	echo -e "At each step, the results are compared to ensure consistency.\n"
-	echo -e "Python2 is required for NiftyPET, so NIFTYPET_PYTHON_EXECUTABLE should be set as an environmental variable.\n"
+	echo -e "NP_PY_EXE, the python executable used to compile NiftyPET should also be supplied as input argument.\n"
 	echo -e "### Data\n"
 	echo -e "An example of test data can be found here - [https://doi.org/10.5281/zenodo.1472951](https://doi.org/10.5281/zenodo.1472951).\n"
 	echo -e "Since the data needs to be read by NiftyPET, it should be in the raw form of .dcm/.bf, and not .l.hdr/.l.\n"
@@ -20,20 +20,14 @@ if [[ $1 == "-h" || $1 == "--help" ]]; then
 fi
 
 # Check input arguments
-if [[ "$#" -ne 3 ]]; then
+if [[ "$#" -ne 4 ]]; then
 	print_usage
 	exit 1
 fi
 NTYP_RAW_DATA_FOLDER=$1
 SINO_TSTART=$2
 SINO_TSTOP=$3
-
-# Check for python versions
-if [[ $NIFTYPET_PYTHON_EXECUTABLE == "" ]]; then
-	echo "Please set environmental variable: NIFTYPET_PYTHON_EXECUTABLE"
-	exit 1
-fi
-NP_PY_EXE=$NIFTYPET_PYTHON_EXECUTABLE
+NP_PY_EXE=$4
 
 fail_count=0
 
