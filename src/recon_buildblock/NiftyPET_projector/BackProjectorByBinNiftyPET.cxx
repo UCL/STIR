@@ -33,6 +33,7 @@
 #include "stir/RelatedViewgrams.h"
 #include "stir/recon_buildblock/TrivialDataSymmetriesForBins.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
+#include "stir/recon_array_functions.h"
 
 START_NAMESPACE_STIR
 
@@ -42,9 +43,8 @@ BackProjectorByBinNiftyPET::registered_name =
   "NiftyPET";
 
 BackProjectorByBinNiftyPET::BackProjectorByBinNiftyPET() :
-    _cuda_device(0), _cuda_verbosity(true)
+    _cuda_device(0), _cuda_verbosity(true), _use_truncation(false)
 {
-    //this->_openMP_compatible = false;
     this->_already_set_up = false;
 }
 
@@ -134,6 +134,12 @@ get_output(DiscretisedDensity<3,float> &density) const
     // --------------------------------------------------------------- //
 
     _helper.convert_image_niftyPET_to_stir(density,np_im);
+
+    // After the back projection, we enforce a truncation outside of the FOV.
+    // This is because the NiftyPET FOV is smaller than the STIR FOV and this
+    // could cause some voxel values to spiral out of control.
+    if (_use_truncation)
+        truncate_rim(density,17);
 }
 
 void

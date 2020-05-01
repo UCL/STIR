@@ -130,7 +130,8 @@ shared_ptr<Cnst> get_cnst(const Scanner &scanner, const bool cuda_verbose, const
         cnt_sptr->MRD = mxRD; // maximum ring difference
 
         cnt_sptr->ALPHA = aLPHA; //angle subtended by a crystal
-        cnt_sptr->RE = scanner.get_effective_ring_radius(); // effective ring radius accounting for the depth of interaction
+        float R = 32.8f; // ring radius
+        cnt_sptr->RE = R + 0.67f; // effective ring radius accounting for the depth of interaction
         cnt_sptr->AXR = SZ_RING; //axial crystal dim
 
         cnt_sptr->COSUPSMX = 0.725f; //cosine of max allowed scatter angle
@@ -780,7 +781,7 @@ read_numpy_axf1(const unsigned long num_elements)
     if (!NP_SOURCE)
         throw std::runtime_error("NP_SOURCE not defined, cannot find data");
 
-    std::string numpy_filename = std::string(NP_SOURCE) + "/NiftyPET/auxdata/AxialFactorForSpan1.npy";
+    std::string numpy_filename = std::string(NP_SOURCE) + "/niftypet/auxdata/AxialFactorForSpan1.npy";
     // Skip over the header (first newline)
     std::ifstream numpy_file(numpy_filename, std::ios::in | std::ios::binary);
     if (!numpy_file.is_open())

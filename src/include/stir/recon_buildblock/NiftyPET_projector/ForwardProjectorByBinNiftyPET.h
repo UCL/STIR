@@ -100,6 +100,10 @@ virtual void set_up(
     /// Set verbosity
     void set_verbosity(const bool verbosity) { _cuda_verbosity = verbosity; }
 
+    /// Set use truncation - truncate before forward
+    /// projection and after back projection
+    void set_use_truncation(const bool use_truncation) { _use_truncation = use_truncation; }
+
 protected:
   //! This virtual function has to be implemented by the derived class.
   virtual void actual_forward_project(RelatedViewgrams<float>&, 
@@ -117,6 +121,7 @@ private:
     NiftyPETHelper _helper;
     int _cuda_device;
     bool _cuda_verbosity;
+    bool _use_truncation;
 };
 
 END_NAMESPACE_STIR

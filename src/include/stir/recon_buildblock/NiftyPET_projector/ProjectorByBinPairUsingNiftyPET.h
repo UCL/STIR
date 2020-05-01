@@ -60,12 +60,17 @@ public:
   /// Set verbosity
   void set_verbosity(const bool verbosity);
 
+  /// Set use truncation - truncate before forward
+  /// projection and after back projection
+  void set_use_truncation(const bool use_truncation);
+
 private:
 
   void set_defaults();
   void initialise_keymap();
   bool post_processing();
   bool _verbosity;
+  bool _use_truncation;
 };
 
 END_NAMESPACE_STIR
