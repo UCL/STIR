@@ -34,7 +34,6 @@
 #include "stir/DataProcessor.h"
 #include "stir/PostFiltering.h"
 #include "stir/scatter/CreateTailMaskFromACFs.h"
-#include "stir/scatter/SingleScatterSimulation.h"
 #include "stir/zoom.h"
 #include "stir/ZoomOptions.h"
 #include "stir/IO/write_to_file.h"
@@ -272,9 +271,9 @@ post_processing()
     else // Parse locally
     {
         KeyParser local_parser;
-        local_parser.add_start_key("Scatter Simulation");
-        local_parser.add_stop_key("End Scatter Simulation");
-        local_parser.add_parsing_key("Simulation method", &this->scatter_simulation_sptr);
+        local_parser.add_start_key("Scatter Simulation Parameters");
+        local_parser.add_stop_key("End Scatter Simulation Parameters");
+        local_parser.add_parsing_key("Scatter Simulation type", &this->scatter_simulation_sptr);
         if (!local_parser.parse(this->scatter_sim_par_filename.c_str()))
         {
             warning(boost::format("ScatterEstimation: Error parsing scatter simulation parameters file %1%. Aborting.")
@@ -778,7 +777,7 @@ process_data()
     stir::BSpline::BSplineType  spline_type = stir::BSpline::quadratic;
 
     // This has been set to 2D or 3D in the set_up()
-    shared_ptr <ProjData> unscaled_est_projdata_sptr(new ProjDataInMemory(this->scatter_simulation_sptr->get_ExamInfo_sptr(),
+    shared_ptr <ProjData> unscaled_est_projdata_sptr(new ProjDataInMemory(this->scatter_simulation_sptr->get_exam_info_sptr(),
                                                                           this->scatter_simulation_sptr->get_template_proj_data_info_sptr()->create_shared_clone()));
     scatter_simulation_sptr->set_output_proj_data_sptr(unscaled_est_projdata_sptr);
 

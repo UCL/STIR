@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2002-2007, Hammersmith Imanet Ltd
-    Copyright (C) 2013, 2016, 2018 University College London
+    Copyright (C) 2013, 2016, 2018, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -79,6 +79,17 @@ class MinimalInterfileHeader : public KeyParser
     std::string version_of_keys;
 
     std::string siemens_mi_version;
+  protected:
+    //! will be called when the version keyword is found
+    /*! This callback function provides an opportunity to change the keymap depending on the version
+        (which can be obtained from \c version_of_keys).
+
+        Just calls \c set_variable().
+
+        It is expected that if this is function is re-implemented in a derived class, it calls the
+        base-class version.
+    */
+    virtual void set_version_specific_keys();
   };
 
 /*!
@@ -123,6 +134,8 @@ private:
 
   
  protected:
+  //! Overload with specifics for STIR3.0 for backwards compatibility
+  virtual void set_version_specific_keys();
   virtual void read_matrix_info();
   virtual void read_num_energy_windows();
   virtual void en_window_pair_set();
@@ -157,20 +170,20 @@ public :
   int			num_energy_windows;
   std::vector<std::string>	matrix_labels;
   std::vector<std::vector<int> > matrix_size; 
-  std::vector<double>	pixel_sizes;
+  std::vector<float>	pixel_sizes;
   std::vector<std::vector<double> > image_scaling_factors;
   std::vector<unsigned long> data_offset_each_dataset;
 
   // Acquisition parameters
   //!
-  //! \brief lower_en_window_thres
+  //! \brief lower_en_window_thresholds
   //! \details Low energy window limit
-  std::vector<float> lower_en_window_thres;
+  std::vector<float> lower_en_window_thresholds;
 
   //!
-  //! \brief upper_en_window_thres
+  //! \brief upper_en_window_thresholds
   //! \details High energy window limit
-  std::vector<float> upper_en_window_thres;
+  std::vector<float> upper_en_window_thresholds;
 
   std::vector<int> energy_window_pair;
   // end acquisition parameters

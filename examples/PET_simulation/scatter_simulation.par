@@ -1,14 +1,13 @@
-Scatter Simulation :=
-Simulation method := Single Scatter Simulation
-Scatter Simulation Parameters := 
+Scatter Simulation Parameters :=
+; minimal file for scatter estimation.
+; See User's Guide for more info
+Scatter Simulation type := PET Single Scatter Simulation
+PET Single Scatter Simulation Parameters :=
 
-attenuation_threshold :=.01
-random :=1
-use_cache :=1
+; using default parameters here. they should work ok
 
 activity_image_filename := ${ACTIVITY_IMAGE}
 attenuation_image_filename := ${ATTEN_IMAGE}
-attenuation_image_for_scatter_points_filename := ${ATTEN_IMAGE}
 template_projdata_filename :=  ${TEMPLATE}
 
 ; output filename without extension
@@ -16,5 +15,5 @@ template_projdata_filename :=  ${TEMPLATE}
 output_filename_prefix :=${OUTPUT_PREFIX}
 
 
+End PET Single Scatter Simulation Parameters:=
 End Scatter Simulation Parameters:=
-End Scatter Simulation:=

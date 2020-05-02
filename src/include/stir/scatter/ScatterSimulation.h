@@ -1,7 +1,7 @@
 /*
     Copyright (C) 2018 - 2019 University of Hull
     Copyright (C) 2004 - 2009 Hammersmith Imanet Ltd
-    Copyright (C) 2013 - 2016 University College London
+    Copyright (C) 2013 - 2016, 2019, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -24,6 +24,8 @@
   \ingroup scatter
   \brief Definition of class stir::ScatterSimulation
 
+  \author Charalampos Tsoumpas
+  \author Nikolaos Dikaios
   \author Nikos Efthimiou
   \author Kris Thielemans
 */
@@ -39,30 +41,24 @@ START_NAMESPACE_STIR
 
 /*!
   \ingroup scatter
-  \brief Simuate the scatter probability using a model-based approach
+  \brief Simulate the scatter probability using a model-based approach
 
-  N.E. : This class is roughly the base class of what used to be the ScatterEstimationByBin.
-  Because there are different approaches on the actual simulation process, this base class will
-  be in charge of hold projection data and downsample the attenuation image, while more core function
-  will deligate to classes like SingleScatterSimulation.
-
-  This class computes the single Compton scatter estimate for PET data using an analytical
+  This base class intends to computes a Compton scatter estimate using an analytical
   approximation of an integral. It takes as input an emission image and an attenuation image.
   This is effectively an implementation of the simulation part of the algorithms of
-  Watson and Ollinger.
+  Watson and Ollinger. The base class takes care of downsampling and upsampling, book-keeping,
+  caching and looping over bins.
 
   One non-standard feature is that you can specify a different attenuation image to find the
   scatter points and one to compute the integrals over the attenuation image. The idea is that
   maybe you want to compute the integrals on a finer grid then you sample the attenuation image.
   This is probably not very useful though.
 
-  \todo Currently this can only be run by initialising it via parsing of a file. We need
-  to add a lot of set/get members.
-
   \todo detector coordinates are derived from ProjDataInfo, but areas and orientations are
   determined by using a cylindrical scanner.
 
-  \todo This class should be split into a generic class and one specific to PET single scatter.
+  \todo variables/function named \c density really should use \c attenuation. This is currently only
+  done for a few variables, but parsing keywords are correct.
 
   \par References
   This implementation is described in the following
@@ -113,8 +109,6 @@ public:
     //! Returns true if template_exam_info_sptr has been set.
     inline bool has_exam_info() const
     { return !stir::is_null_ptr(template_exam_info_sptr);}
-
-    shared_ptr<ExamInfo> get_ExamInfo_sptr() const;
     //@}
 
     //! \name get functions
@@ -129,6 +123,10 @@ public:
     //! Get the ExamInfo as shared pointer
     shared_ptr<ExamInfo> get_exam_info_sptr() const;
 
+    const DiscretisedDensity<3,float>& get_activity_image() const;
+    const DiscretisedDensity<3,float>& get_attenuation_image() const;
+    const DiscretisedDensity<3,float>& get_attenuation_image_for_scatter_points() const;
+    //! \deprecated
     shared_ptr<DiscretisedDensity<3,float> > get_density_image_for_scatter_points_sptr() const;
     //@}
 
@@ -168,9 +166,14 @@ public:
     void set_density_image_for_scatter_points(const std::string&);
     //! set the attenuation threshold
     void set_attenuation_threshold(const float);
-    //! The scattering point in the voxel will be chosen randomly, instead
-    //! choosing the centre. This will help avoid some artifacts.
-    void set_random_point(const bool);
+    //! The scattering point in the voxel will be chosen randomly, instead of choosing the centre.
+    /*! This was first recommended by Watson. It is recommended to leave this on, as otherwise
+       discretisation errors are more obvious.
+
+       Note that the random generator is seeded via date/time, so re-running the scatter
+       simulation will give a slightly different result if this boolean is on.
+    */
+    void set_randomly_place_scatter_points(const bool);
 
     void set_cache_enabled(const bool);
 
@@ -238,9 +241,6 @@ public:
     /*! This function sets scatt_points_vector and scatter_volume. It will also
         remove any cached integrals as they would be incorrect otherwise.
     */
-    void
-    sample_scatter_points();
-
     virtual Succeeded set_up();
 
     //! Output the log of the process.
@@ -277,6 +277,12 @@ protected:
 
     float scatter_volume;
 
+    //! find scatter points
+    /*! This function sets scatt_points_vector and scatter_volume. It will also
+        remove any cached integrals as they would be incorrect otherwise.
+    */
+    void
+    sample_scatter_points();
 
     //! remove cached attenuation integrals
     /*! should be used before recalculating scatter for a new attenuation image or
@@ -324,14 +330,9 @@ protected:
 
     //!@}
 
+    //! virtual function that computes the scatter for one (downsampled) bin
     virtual double
-    scatter_estimate(const unsigned det_num_A,
-                     const unsigned det_num_B);
-
-    virtual void
-    actual_scatter_estimate(double& scatter_ratio_singles,
-                            const unsigned det_num_A,
-                            const unsigned det_num_B) = 0;
+      scatter_estimate(const Bin& bin) = 0;
 
     //! \name integrating functions
     //@{
@@ -401,13 +402,7 @@ protected:
     float attenuation_threshold;
 
     //! boolean to see if we need to move the scatter point randomly within in its voxel
-    /*! This was first recommended by Watson. It is recommended to leave this on, as otherwise
-       discretisation errors are more obvious.
-
-       Note that the random generator is seeded via date/time, so re-running the scatter
-       simulation will give a slightly different result if this boolean is on.
-    */
-    bool random;
+    bool randomly_place_scatter_points;
     //! boolean to see if we need to cache the integrals
     /*! By default, we cache the integrals over the emission and attenuation image. If you run out
         of memory, you can switch this off, but performance will suffer dramatically.
@@ -437,7 +432,21 @@ protected:
     Array<2,float> cached_attenuation_integral_scattpoint_det;
     shared_ptr< DiscretisedDensity<3, float> > density_image_for_scatter_points_sptr;
 
+    // numbers that we don't want to recompute all the time
+    mutable float detector_efficiency_no_scatter;
+
     bool _already_set_up;
+
+    //! a function that checks if image sizes are ok
+    /*! It will call \c error() if not.
+
+      Currently, STIR shifts the middle of the image to the middle of the scanner. This
+      is dangerous when using image zooming.
+      This function currently checks if \a _image is consistent with the \c activity_image_sptr.
+
+      See https://github.com/UCL/STIR/issues/495 for more information.
+     */
+    void check_z_to_middle_consistent(DiscretisedDensity<3,float>& _image, const std::string& name) const;
 };
 
 END_NAMESPACE_STIR

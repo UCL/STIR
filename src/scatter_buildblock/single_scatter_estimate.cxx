@@ -1,7 +1,6 @@
 //
 //
 /*Copyright (C) 2004- 2009, Hammersmith Imanet
-  Copyright (C) 2016, UCL
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -19,34 +18,34 @@
 /*!
   \file
   \ingroup scatter
-  \brief Implementations of stir::ScatterEstimationByBin::scatter_estimate and stir::ScatterEstimationByBin::single_scatter_estimate
+  \brief Implementation of stir::SingleScatterSimulation::actual_scatter_estimate
 
-  \author Nikos Efthimiou
   \author Charalampos Tsoumpas
   \author Pablo Aguiar
   \author Kris Thielemans
 
 */
 #include "stir/scatter/SingleScatterSimulation.h"
-#include "stir/scatter/ScatterEstimation.h"
-using namespace std;
 START_NAMESPACE_STIR
 
 
-
 double
-ScatterSimulation::
-scatter_estimate(const unsigned det_num_A, 
-		 const unsigned det_num_B)	
+SingleScatterSimulation::
+scatter_estimate(const Bin& bin)
 {
   double scatter_ratio_singles = 0;
+  unsigned det_num_A = 0; // initialise to avoid compiler warnings
+  unsigned det_num_B = 0;
+
+  this->find_detectors(det_num_A, det_num_B, bin);
 
   this->actual_scatter_estimate(scatter_ratio_singles,
-				det_num_A, 
+				det_num_A,
 				det_num_B);
 
  return scatter_ratio_singles;
-}      
+}
+
 
 void
 SingleScatterSimulation::

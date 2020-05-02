@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2016 University College London
+    Copyright (C) 2016, 2020 University College London
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@ START_NAMESPACE_STIR
 
 const char * const
 SingleScatterSimulation::registered_name =
-        "Single Scatter Simulation";
+        "PET Single Scatter Simulation";
 
 
 SingleScatterSimulation::
@@ -46,8 +46,8 @@ SingleScatterSimulation::
 initialise_keymap()
 {
     base_type::initialise_keymap();
-    //    this->parser.add_start_key("Single Scatter Simulation");
-    //    this->parser.add_stop_key("end Single Scatter Simulation");
+    this->parser.add_start_key("PET Single Scatter Simulation Parameters");
+    this->parser.add_stop_key("end PET Single Scatter Simulation Parameters");
 }
 
 void
@@ -80,6 +80,9 @@ Succeeded
 SingleScatterSimulation::
 set_up()
 {
+    // set to negative value such that this will be recomputed
+    this->max_single_scatter_cos_angle = -1.F;
+
     return base_type::set_up();
 }
 
@@ -87,8 +90,6 @@ Succeeded
 SingleScatterSimulation::
 process_data()
 {
-    if(this->set_up() == Succeeded::no)
-        return Succeeded::no;
     return base_type::process_data();
 }
 

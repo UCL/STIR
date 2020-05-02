@@ -140,9 +140,10 @@ int main(int argc, char *argv[])
 		    << ")\n";
 	}
 
-      std::cout << "energy window lower level := "
+      std::cout << "number of energy windows:=1\n"
+                << "energy window lower level[1] := "
                 << exam_info.get_low_energy_thres() << '\n'
-                << "energy window upper level := "
+                << "energy window upper level[1] := "
                 << exam_info.get_high_energy_thres() << '\n';
         
     }

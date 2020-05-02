@@ -156,6 +156,7 @@ Please note that you cannot enable both OPENMP and MPI.</li>
 These are only minimally documented at the present stage unfortunately.
 </li>
 <li><tt>list_image_info</tt> now has options to list exam info, or only part of the information (as <tt>list_projdata_info</tt>).</li>
+<li><tt>list_image_values</tt> now has options to print coordinates in LPS as opposed to indices, print in CSV, or suppress the title row.</li>
 <li><tt>list_lm_countrates</tt> is a new list mode utility to output total counts per specified time interval.</li>
 <li>List-mode classes for Siemens ECAT8 (32-bit).</li>
 <li>add Verbosity level (currently only to be set from interactive languages)</li>
@@ -470,6 +471,10 @@ from the above):</H2>
         This is because the class only exists for the parser to get information about the class.</li>
   </ul>
 </li>
+ <li><code>KeyParser</code> <a href="https://github.com/UCL/STIR/pull/490">has changed</a> to be safer for
+   parsing of vectorised keys. However, the &quot;simple&quot; <code>add_key</code>
+   functions now create non-vectorised keys. Use <code>add_vectorised_key</code> otherwise.
+   </li>
 </ul>
 
 <h3>New functionality</h3>
@@ -486,9 +491,33 @@ using the default output file format.</li>
    <li><code>write_to_file</code> moved from <code>ProjDataInMemory</code> to <code>ProjData</code></li>
   </ul>
 </li>
-<li> Support for Energy Resolution and energy windows in Scanners, has been added. 
-In order to ensure backwards compatibility, at the moment, it is completely optional.</li>
-<li> Information on energy windows has been added in the <code>ExamInfo</code>. </li>
+<li> Support for Energy Resolution and energy windows in scanners and projection data has been added.
+  It is only required when running the scatter simulation or estimation, and should then be set in the input file.
+  For example, for a STIR-Interfile header, you should use the following keywords:
+  <pre>
+    number of energy windows:=1
+    energy window lower level[1]:=425
+    energy window upper level[1]:=650
+    Scanner parameters:=
+      Scanner type := ...
+      Energy resolution := 0.145
+      Reference energy (in keV) := 511
+      ...
+    End scanner parameters:=
+  </pre>
+  Only 1 energy window is currently supported (if there's more than one, only the first will be read).<br />
+  <strong>Warning:</strong> Unfortunately, GitHub versions between version 3.0 and 4.0 used
+  <pre>
+    energy window lower level:=425
+    energy window upper level:=650
+  </pre>
+  This will still be read ok, as long as these keywords are preceded by
+  <pre>
+    !version of keys := STIR3.0
+  </pre>
+  The new (vectored) version is compatible with the Interfile standard.
+</li>
+<li> Information on a single energy window has been added in the <code>ExamInfo</code>. </li>
 <li><code>ExamData</code> is a new base class for <code>ProjData</code>, <code>CListModeData</code>,
 <code>DiscretisedDensity</code> and the dynamic/gated variations.</li>
 <li>Moved functions from the <code>poisson_noise</code> utility to a new class

@@ -32,6 +32,12 @@
 
 START_NAMESPACE_STIR
 
+/*!
+  \ingroup scatter
+  \brief PET single scatter simulation
+
+  \todo The class is specific to PET so should be renamed accordingly.
+*/
 class SingleScatterSimulation : public
         RegisteredParsingObject<
         SingleScatterSimulation,
@@ -82,20 +88,22 @@ protected:
     //! \param det_num_A
     //! \param det_num_B
     //! \return
-    //! \details This funtion used to be ScatterEstimationByBin::
-    //! single_scatter_estimate_for_one_scatter_point()
     float
     simulate_for_one_scatter_point(const std::size_t scatter_point_num,
                                                   const unsigned det_num_A,
                                                   const unsigned det_num_B);
+
+    virtual double
+      scatter_estimate(const Bin& bin);
 
     virtual void
     actual_scatter_estimate(double& scatter_ratio_singles,
                             const unsigned det_num_A,
                             const unsigned det_num_B);
 
-
-
+ private:
+    //! larger angles will be ignored
+    float max_single_scatter_cos_angle;
 };
 
 END_NAMESPACE_STIR

@@ -128,13 +128,13 @@ run_tests()
 
 
     // construct x
-    ProjDataInMemory x(sss->get_ExamInfo_sptr(), sss->get_template_proj_data_info_sptr());
+    ProjDataInMemory x(sss->get_exam_info_sptr(), sss->get_template_proj_data_info_sptr());
 
     // construct Ax
 
     ProjDataInMemory Ax(exam_info_sptr, proj_data_info_sptr);
     // construct x
-    ProjDataInMemory Aty(sss->get_ExamInfo_sptr(), sss->get_template_proj_data_info_sptr());
+    ProjDataInMemory Aty(sss->get_exam_info_sptr(), sss->get_template_proj_data_info_sptr());
 
     ProjDataInMemory N(exam_info_sptr, proj_data_info_sptr);
 

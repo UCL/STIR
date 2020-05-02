@@ -25,6 +25,7 @@ set(${dir_SIMPLE_TEST_EXE_SOURCES}
 	test_ROIs
         test_warp_image
 	test_DynamicDiscretisedDensity
+	test_ScatterSimulation
 )
 
 set(${dir_SIMPLE_TEST_EXE_SOURCES_NO_REGISTRIES}
@@ -45,7 +46,6 @@ Set(${dir_INVOLVED_TEST_EXE_SOURCES}
         test_upsample
         test_SSRB
         test_ScatterGradient
-	test_ScatterSimulation
 )
 
 set(buildblock_simple_tests
@@ -59,6 +59,7 @@ set(buildblock_simple_tests
 	test_IndexRange
 	test_coordinates
 	test_filename_functions
+        test_KeyParser
 	test_VoxelsOnCartesianGrid
 	test_zoom_image
 	test_ByteOrder

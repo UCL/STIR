@@ -41,7 +41,7 @@ START_NAMESPACE_STIR
   \ingroup buildblock
   \todo this is very incomplete at the moment. Things like bed positions, gating, isotopes etc etc are all missing
 
-  \todo This should be an abtract registered object, in oreder to serve as a complete
+  \todo This should be an abtract registered object, in order to serve as a complete
   base function for every input data type.
   */
 class ExamInfo
@@ -50,8 +50,8 @@ class ExamInfo
 public :
 
   //! Default constructor
-  /*! Most fields take there default values (much might be invalid).
-     \a start_time_in_secs_since_1970 is set to zero to 
+  /*! Most fields take their default values (which might be invalid).
+     \a start_time_in_secs_since_1970 is set to zero, energy window info to -1, to
      indicate that it is not initialised.
   */
 
