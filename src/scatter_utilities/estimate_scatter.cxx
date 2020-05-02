@@ -36,7 +36,7 @@
 #include "stir/scatter/ScatterEstimation.h"
 #include "stir/Succeeded.h"
 /***********************************************************/     
-//
+
 static void print_usage_and_exit()
 {
     std::cerr<<"This executable runs a Scatter simulation method based on the options "
