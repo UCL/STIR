@@ -281,7 +281,7 @@ if(BUILD_DOCUMENTATION)
     endif()
 endif()
 
-if(BUILD_DOCUMENTATION AND DOXYGEN_FOUND)
+if(DOXYGEN_FOUND)
     if(DOXYGEN_DOT_FOUND)
         set(HAVE_DOT 1)
         message(STATUS "Graphviz dot found. It will be used for the Doxygen documentation.")
@@ -315,14 +315,18 @@ if(BUILD_DOCUMENTATION AND DOXYGEN_FOUND)
     # If BUILD_DOCUMENTATION, we add this target to the dependency list of "ALL"
     # to make sure it always gets run.
     # Otheriwse, the user has to build the target manually.
-    set(DOXY_ALL ALL)
+    if(BUILD_DOCUMENTATION)
+        set(DOXY_ALL ALL)
+    endif()
       
     add_custom_target(
         RUN_DOXYGEN ${DOXY_ALL}
         DEPENDS doxygen.stamp)
 
-    # Doxyfile.in currently tells doxygen to output in PROJECT_BINARY_DIR
-    install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION ${STIR_DOC_DIR})
+    if(BUILD_DOCUMENTATION)
+        # Doxyfile.in currently tells doxygen to output in PROJECT_BINARY_DIR
+        install(DIRECTORY ${PROJECT_BINARY_DIR}/html DESTINATION ${STIR_DOC_DIR})
+    endif()
 endif()
 
 #### SWIG settings
