@@ -28,6 +28,7 @@
     See STIR/LICENSE.txt for details
 */
 
+#include "stir/IO/OutputFileFormat.h"
 #include "stir/recon_buildblock/PoissonLogLikelihoodWithLinearModelForMeanAndProjData.h"
 #include "stir/IO/read_from_file.h"
 #include "stir/is_null_ptr.h"
@@ -49,12 +50,14 @@ protected:
 private:
   std::string input_filename;
   std::string image_filename;
+  shared_ptr<OutputFileFormat<DiscretisedDensity<3,float> > > output_file_format_sptr;
 };
 
 void
 MyStuff::set_defaults()
 {
   objective_function_sptr.reset(new PoissonLogLikelihoodWithLinearModelForMeanAndProjData<target_type>);
+  output_file_format_sptr = OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr();
 }
 
 void 
@@ -89,21 +92,35 @@ MyStuff::run()
   shared_ptr<DiscretisedDensity<3,float> > 
     density_sptr(read_from_file<DiscretisedDensity<3,float> >(image_filename));
 
-  // Checks density_sptr is loaded correctly.
-  if (is_null_ptr(density_sptr))
-  {
-      error("density_sptr is null");
-  }
+  //////// gradient it copied Density filled with 0's
+  shared_ptr<DiscretisedDensity<3, float>> gradient_sptr = density_sptr;
+  gradient_sptr->fill(0);
 
   /////// setup objective function object
   objective_function_sptr->set_up(density_sptr);
 
-  /////// Compute objective function value
-  double my_val = objective_function_sptr->compute_objective_function(*density_sptr);
+  /////// Compute objective function value of input image
+  const double my_objective_function_value1 = objective_function_sptr->compute_objective_function(*density_sptr);
+
+  /////// Compute the log-likelihood gradient
+  objective_function_sptr->compute_sub_gradient(*gradient_sptr, *density_sptr, 0);
+
+  ////// Add the gradient to the image.
+  *density_sptr += *gradient_sptr;
+
+  /////// Compute objective function value of image + gradient
+  const double my_objective_function_value2 = objective_function_sptr->compute_objective_function(*density_sptr);
+
+  /////////////// Return the objective function values and improvement
+  std::cout << "The Objective Function Value of "<< image_filename << " = " << my_objective_function_value1 << "\n";
+  std::cout << "The Objective Function Value of "<< image_filename << " + objective function gradient = "
+            << my_objective_function_value2 << "\n";
+  std::cout << "An improvement of " << my_objective_function_value2 - my_objective_function_value1 << "\n";
 
   /////////////// output
-  std::cout << "The Objective Function Value of "<< image_filename << " = " << my_val << "\n";
+  output_file_format_sptr->write_to_file("gradient", *gradient_sptr);
 
+  // Current comments this demo. Adding gradient to the current estiamte does not work
 }
 
 }// end of namespace stir
