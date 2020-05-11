@@ -72,8 +72,6 @@ private:
   int num_detectors;
 };
 
-void display(const DetPairData&,const char * const);
-
 //! Makes a DetPairData of appropriate dimensions and fills it with 0
 void make_det_pair_data(DetPairData& det_pair_data,
 			const ProjDataInfo& proj_data_info,
@@ -164,9 +162,6 @@ private:
 };
 
 typedef FanProjData BlockData3D;
-
-void display(const FanProjData&,const char * const);
-
 
 shared_ptr<ProjDataInfoCylindricalNoArcCorr>
 get_fan_info(int& num_rings, int& num_detectors_per_ring, 

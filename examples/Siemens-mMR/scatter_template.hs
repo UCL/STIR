@@ -23,6 +23,9 @@ minimum ring difference per segment := { 0}
 maximum ring difference per segment := { 0}
 Scanner parameters:= 
 Scanner type := unknown
+Energy resolution := 0.145
+Reference energy (in keV) := 511
+
 Number of rings                          := 8
 Number of detectors per ring             := 64
 Inner ring diameter (cm)                 := 65.6

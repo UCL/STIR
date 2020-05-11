@@ -103,7 +103,7 @@ class CListEventDataGESigna
 /*! \ingroup listmode
   This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
  */
-class CListTimeDataGESigna
+class ListTimeDataGESigna
 {
  public:
   inline unsigned long get_time_in_millisecs() const
@@ -198,11 +198,11 @@ private:
   All types of records are stored in a (private) union with the "basic" classes such as CListEventDataGESigna.
   This class essentially just forwards the work to the "basic" classes.
 */
-class CListRecordGESigna : public CListRecord, public CListTime, // public CListGatingInput,
+class CListRecordGESigna : public CListRecord, public ListTime, // public CListGatingInput,
     public  CListEventCylindricalScannerWithDiscreteDetectors
 {
   typedef CListEventDataGESigna DataType;
-  typedef CListTimeDataGESigna TimeType;
+  typedef ListTimeDataGESigna TimeType;
   //typedef CListGatingDataGESigna GatingType;
 
  public:  
@@ -227,9 +227,9 @@ class CListRecordGESigna : public CListRecord, public CListTime, // public CList
     { return *this; }
   virtual const CListEvent&  event() const
     { return *this; }
-  virtual CListTime&   time()
+  virtual ListTime&   time()
     { return *this; }
-  virtual const CListTime&   time() const
+  virtual const ListTime&   time() const
     { return *this; }
 #if 0
   virtual CListGatingInput&  gating_input()

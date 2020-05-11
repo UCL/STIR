@@ -272,6 +272,20 @@ FilePath::get_filename() const
 }
 
 std::string
+FilePath::get_filename_no_extension() const
+{
+    std::string ret = get_filename();
+
+    std::size_t i = find_pos_of_extension();
+    if (i != std::string::npos)
+    {
+        return(ret.substr(0, i));
+    }
+    return("");
+
+}
+
+std::string
 FilePath::get_extension() const
 {
     std::size_t i = find_pos_of_extension();

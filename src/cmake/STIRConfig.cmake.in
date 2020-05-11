@@ -37,19 +37,30 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR};${CMAKE_MODULE_PATH}")
 include("${CMAKE_CURRENT_LIST_DIR}/STIRTargets.cmake")
 
 set_and_check(STIR_INCLUDE_DIRS "@PACKAGE_STIR_INCLUDE_DIRS@")
-#set_and_check(STIR_LIBRARY_DIRS "@PACKAGE_STIR_LIBRARY_DIRS@")
+# cannot use set_and_check on lists at present
+# https://gitlab.kitware.com/cmake/cmake/issues/16219
+#set(STIR_LIBRARY_DIRS "@PACKAGE_STIR_LIBRARY_DIRS@")
 set(STIR_LIBRARIES @STIR_LIBRARIES@)
-set(STIR_REGISTRIES @STIR_REGISTRIES@)
+set(STIR_REGISTRIES @PACKAGE_STIR_REGISTRIES@)
 
 ## find external packages
 # we use a trick by Matt McCormick (kitware)
 # to set ITK_DIR etc first before calling find_package
 # to make sure we pick the same version of the external library
+if (STIR_FIND_QUIETLY)
+  SET(STIR_FIND_TYPE "QUIET")
+else()
+  SET(STIR_FIND_TYPE "REQUIRED")
+endif()
 
 if (@ITK_FOUND@)
   message(STATUS "ITK support in STIR enabled.")
   set(ITK_DIR "@ITK_DIR@")
-  find_package(ITK REQUIRED)
+  find_package(ITK ${STIR_FIND_TYPE})
+  if(NOT ITK_FOUND)
+    SET(STIR_FOUND OFF)
+  endif()
+  include(${ITK_USE_FILE})
   set(STIR_BUILT_WITH_ITK TRUE)
 endif()
 
@@ -72,7 +83,10 @@ endif()
 
 if (@CERN_ROOT_FOUND@)
   set(CERN_ROOT_CONFIG @CERN_ROOT_CONFIG@)
-  find_package(CERN_ROOT REQUIRED)
+  find_package(CERN_ROOT ${STIR_FIND_TYPE})
+  if(NOT CERN_ROOT_FOUND)
+    SET(STIR_FOUND OFF)
+  endif()
   message(STATUS "CERN ROOT support in STIR enabled.")
   # need to add this as registries rely on it
   # would be better to add it to STIR_INCLUDE_DIRS (TODO)
@@ -82,7 +96,10 @@ endif()
 
 if (@AVW_FOUND@)
   set(AVW_ROOT_DIR @AVW_ROOT_DIR@)
-  find_package(AVW REQUIRED)
+  find_package(AVW ${STIR_FIND_TYPE})
+  if(NOT AVW_FOUND)
+    SET(STIR_FOUND OFF)
+  endif()
   message(STATUS "AVW support in STIR enabled.")
   # need to add this as registries rely on it
   # would be better to add it to STIR_INCLUDE_DIRS (TODO)
@@ -91,11 +108,20 @@ if (@AVW_FOUND@)
 endif()
 
 if (@STIR_MPI@)
-  find_package(MPI REQUIRED)
+  find_package(MPI ${STIR_FIND_TYPE})
+  if(NOT MPI_FOUND)
+    SET(STIR_FOUND OFF)
+  endif()
   set(STIR_BUILT_WITH_MPI TRUE)
 endif()
 
 if(@STIR_OPENMP@)
-  find_package(OpenMP REQUIRED)  
+  find_package(OpenMP ${STIR_FIND_TYPE})
   set(STIR_BUILT_WITH_OpenMP TRUE)
+endif()
+
+if(@STIR_WITH_NiftyPET_PROJECTOR@)
+  find_package(CUDAToolkit REQUIRED)
+  find_package(NiftyPET REQUIRED)
+  set(STIR_WITH_NiftyPET_PROJECTOR TRUE)
 endif()

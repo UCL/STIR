@@ -50,6 +50,10 @@ number of subsets:= 12
 number of subiterations:= 24
 save estimates at subiteration intervals:= 12
 
+; This is the default verbosity, just putting it here as an example
+; lower value means less output, 0 being the minimum
+verbosity := 2
+
 ; enable this for multiplicative form of OSMAPOSL (see User's Guide)
 ;MAP model := multiplicative
 

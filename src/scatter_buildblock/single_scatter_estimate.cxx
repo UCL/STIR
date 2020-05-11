@@ -1,7 +1,6 @@
 //
 //
-/*
-  Copyright (C) 2004- 2009, Hammersmith Imanet
+/*Copyright (C) 2004- 2009, Hammersmith Imanet
   This file is part of STIR.
 
   This file is free software; you can redistribute it and/or modify
@@ -19,39 +18,40 @@
 /*!
   \file
   \ingroup scatter
-  \brief Implementations of stir::ScatterEstimationByBin::scatter_estimate and stir::ScatterEstimationByBin::single_scatter_estimate
+  \brief Implementation of stir::SingleScatterSimulation::actual_scatter_estimate
 
   \author Charalampos Tsoumpas
   \author Pablo Aguiar
   \author Kris Thielemans
 
 */
-
-#include "stir/scatter/ScatterEstimationByBin.h"
-using namespace std;
+#include "stir/scatter/SingleScatterSimulation.h"
 START_NAMESPACE_STIR
 static const float total_Compton_cross_section_511keV = 
-ScatterEstimationByBin::
+ScatterSimulation::
   total_Compton_cross_section(511.F); 
 
-
 double
-ScatterEstimationByBin::
-scatter_estimate(const unsigned det_num_A, 
-		 const unsigned det_num_B)	
+SingleScatterSimulation::
+scatter_estimate(const Bin& bin)
 {
   double scatter_ratio_singles = 0;
+  unsigned det_num_A = 0; // initialise to avoid compiler warnings
+  unsigned det_num_B = 0;
 
-  this->single_scatter_estimate(scatter_ratio_singles,
-				det_num_A, 
+  this->find_detectors(det_num_A, det_num_B, bin);
+
+  this->actual_scatter_estimate(scatter_ratio_singles,
+				det_num_A,
 				det_num_B);
 
  return scatter_ratio_singles;
-}      
+}
+
 
 void
-ScatterEstimationByBin::
-single_scatter_estimate(double& scatter_ratio_singles,
+SingleScatterSimulation::
+actual_scatter_estimate(double& scatter_ratio_singles,
 			const unsigned det_num_A, 
 			const unsigned det_num_B)
 {
@@ -59,11 +59,11 @@ single_scatter_estimate(double& scatter_ratio_singles,
   scatter_ratio_singles = 0;
 		
   for(std::size_t scatter_point_num =0;
-      scatter_point_num < scatt_points_vector.size();
+      scatter_point_num < this->scatt_points_vector.size();
       ++scatter_point_num)
     {	
 	scatter_ratio_singles +=
-	  single_scatter_estimate_for_one_scatter_point(
+      simulate_for_one_scatter_point(
 							scatter_point_num,
 							det_num_A, det_num_B);	
 

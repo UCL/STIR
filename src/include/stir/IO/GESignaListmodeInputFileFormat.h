@@ -43,7 +43,7 @@ START_NAMESPACE_STIR
   \ingroup listmode
 */
 class GESignaListmodeInputFileFormat :
-public InputFileFormat<CListModeData >
+public InputFileFormat<ListModeData >
 {
  public:
   virtual const std::string
