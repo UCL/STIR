@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2013-2019 University College London
+    Copyright (C) 2017-2019 University of Leeds
 */
 /*!
   \file
@@ -8,6 +9,7 @@
     
   \author Kris Thielemans
   \author Ottavia Bertolli
+  \author Palak Wadhwa
 */
 
 #ifndef __stir_listmode_CListModeDataGESigna_H__

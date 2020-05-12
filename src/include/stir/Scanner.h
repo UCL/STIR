@@ -3,6 +3,7 @@
     Copyright (C) 2000-2010, Hammersmith Imanet Ltd
     Copyright (C) 2011-2013, King's College London
     Copyright (C) 2016, 2019, UCL
+    Copyright (C 2017-2018, University of Leeds
  
     This file is part of STIR.
 
@@ -30,6 +31,7 @@
   \author Sanida Mustafovic
   \author Charalampos Tsoumpas
   \author Ottavia Bertolli
+  \author Palak Wadhwa
   \author PARAPET project
 */
 #ifndef __stir_buildblock_SCANNER_H__

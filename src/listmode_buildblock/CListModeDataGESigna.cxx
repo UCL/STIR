@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2013-2019 University College London
     Copyright (C) 2017-2018 University of Hull
+    Copyright (C) 2017-2019 University of Leeds
 
 */
 /*!
@@ -11,6 +12,7 @@
   \author Kris Thielemans
   \author Ottavia Bertolli
   \author Nikos Efthimiou
+  \author Palak Wadhwa
 */
 
 

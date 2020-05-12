@@ -1,7 +1,7 @@
 //
 /*
     Copyright (C) 2000- 2007, Hammersmith Imanet Ltd
-    Copyright (C) 2017-2018, University of Leeds
+    Copyright (C) 2017-2019, University of Leeds
     This file is part of STIR.
 
     This file is free software; you can redistribute it and/or modify
