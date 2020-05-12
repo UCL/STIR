@@ -191,10 +191,6 @@ public:
   void set_only_2D(const bool);
   void set_hybrid(const bool);
 
-  //! boolean value to determine if the update images have to be written to disk
-  void set_write_update_image(const int);
-  //@}
-
   //! prompts the user to enter parameter values manually
   virtual void ask_parameters();
 
@@ -217,9 +213,6 @@ public:
   double sigma_p;
   double sigma_dp, sigma_dm;
   BasicCoordinate<3,int> min_ind, max_ind;
-
-  //! boolean value to determine if the update images have to be written to disk
-  int write_update_image;
 
   virtual void set_defaults();
   virtual void initialise_keymap();
