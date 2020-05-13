@@ -377,12 +377,17 @@ std::vector<shared_ptr<TargetT> > KOSMAPOSLReconstruction<TargetT>::get_anatomic
   set_ functions
 ***************************************************************/
 
+
 template<typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
 set_anatomical_prior_sptr (shared_ptr<TargetT> arg, int index)
 {
-  this->anatomical_prior_sptr[index] = arg;
+    int n = this->anatomical_prior_sptr.size();
+    if (index < n)
+        this->anatomical_prior_sptr[index] = arg;
+    else
+        this->anatomical_prior_sptr.push_back(arg);
 }
 
 template<typename TargetT>
@@ -688,8 +693,13 @@ void KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(s
                                   }
                                }
                        }
-
-       SD[i]=((double)sqrt(kStand_dev/(nv-1) ));//std::cout<<"SD :"<<SD[i]<<std::endl;
+                      int nsd = SD.size();
+                      double s = ((double)sqrt(kStand_dev/(nv-1) ));
+                      if (i < nsd)
+                          SD[i] = s;
+                      else
+                          SD.push_back(s);
+      /* SD[i]=((double)sqrt(kStand_dev/(nv-1) ));*///std::cout<<"SD :"<<SD[i]<<std::endl;
     }
 }
 
