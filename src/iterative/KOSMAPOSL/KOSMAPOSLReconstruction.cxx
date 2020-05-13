@@ -256,7 +256,7 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
 {
 
  if (base_type::set_up(target_image_ptr) == Succeeded::no)
-     error("KOSMAPOSL::set_up(): Error building post filter");
+     error("KOSMAPOSL::set_up(): Error setting-up underlying OSMAPOSLReconstruction object");
 
  this->subiteration_counter=0;
  
@@ -284,8 +284,8 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
    
    
        if(num_non_zero_feat>1){
-            this->kmnorm_sptr.resize(anatomical_image_filenames.size());
-            for(int i = 0; i <=anatomical_image_filenames.size()-1; i++){
+            this->kmnorm_sptr.resize(anatomical_sd.size());
+            for(int i = 0; i <=anatomical_sd.size()-1; i++){
               this->kmnorm_sptr[i].reset(this->anatomical_prior_sptr[i]->get_empty_copy ());
               this->kmnorm_sptr[i]->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
               }
