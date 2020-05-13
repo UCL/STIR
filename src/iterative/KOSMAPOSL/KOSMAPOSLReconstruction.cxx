@@ -258,6 +258,9 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
  if (base_type::set_up(target_image_ptr) == Succeeded::no)
      error("KOSMAPOSL::set_up(): Error setting-up underlying OSMAPOSLReconstruction object");
 
+ if (this->anatomical_image_filenames.empty())
+     error("KOSMAPOSL::set_up(): anatomical_image_filenames has not been set");
+ 
  this->subiteration_counter=0;
  
    if(!this->only_2D){
