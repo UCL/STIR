@@ -205,7 +205,6 @@ post_processing()
   if (base_type::post_processing())
     return true;
   
-  this->subiteration_counter=0;
   this->anatomical_sd.resize(anatomical_image_filenames.size());
 
   if (this->anatomical_image_filenames.size()!=sigma_m.size()){
@@ -213,12 +212,6 @@ post_processing()
       return false;
   }
 
-
-  if(!this->only_2D){
-     this->num_elem_neighbourhood=this->num_neighbours*this->num_neighbours*this->num_neighbours ;}
-  else{
-     this->num_elem_neighbourhood=this->num_neighbours*this->num_neighbours ;
-      }
 for(int i = 0; i<=anatomical_image_filenames.size()-1; i++)
 {  if (!this->anatomical_image_filenames.empty()){
       this->anatomical_prior_sptr.push_back(shared_ptr<TargetT>(read_from_file<TargetT>(anatomical_image_filenames[i])));
@@ -232,43 +225,6 @@ for(int i = 0; i<=anatomical_image_filenames.size()-1; i++)
             error("Failed to read anatomical file %s", anatomical_image_filenames[i].c_str());
             return false;
         }
-    }
-
-estimate_stand_dev_for_anatomical_image(this->anatomical_sd);
-for(int i = 0; i<=anatomical_image_filenames.size()-1; i++)
-{
-info(boost::format("SDs from anatomical images calculated = '%1%'")
-   % this->anatomical_sd[i]);
-}
-
-const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
-  dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> *>
-    (this->anatomical_prior_sptr[0].get());
-
-  // TODO - which spacing to use? Need both?
-  const CartesianCoordinate3D<float>& grid_spacing =
-      current_anatomical_cast->get_grid_spacing();
-  precalculate_patch_euclidean_distances(distance,num_neighbours, only_2D, grid_spacing);
-
-
-    if(num_non_zero_feat>1){
-         this->kmnorm_sptr.resize(anatomical_image_filenames.size());
-         for(int i = 0; i <=anatomical_image_filenames.size()-1; i++){
-           this->kmnorm_sptr[i].reset(this->anatomical_prior_sptr[i]->get_empty_copy ());
-           this->kmnorm_sptr[i]->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
-           }
-      
-    this->kpnorm_sptr= shared_ptr<TargetT>(this->anatomical_prior_sptr[0]->get_empty_copy ());
-    this->kpnorm_sptr->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
-
-    int dimf_col = this->num_non_zero_feat-1;
-    int dimf_row=this->num_voxels;
-
-    calculate_norm_const_matrix(this->kmnorm_sptr,
-                                dimf_row,
-                                dimf_col);
-
-    info(boost::format("Kernel from anatomical image calculated "));
     }
   return false;
 }
@@ -302,6 +258,51 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
  if (base_type::set_up(target_image_ptr) == Succeeded::no)
      error("KOSMAPOSL::set_up(): Error building post filter");
 
+ this->subiteration_counter=0;
+ 
+   if(!this->only_2D){
+      this->num_elem_neighbourhood=this->num_neighbours*this->num_neighbours*this->num_neighbours ;}
+   else{
+      this->num_elem_neighbourhood=this->num_neighbours*this->num_neighbours ;
+       }
+   
+   estimate_stand_dev_for_anatomical_image(this->anatomical_sd);
+   for(int i = 0; i<=anatomical_sd.size()-1; i++)
+   {
+   info(boost::format("SDs from anatomical images calculated = '%1%'")
+      % this->anatomical_sd[i]);
+   }
+   
+   const DiscretisedDensityOnCartesianGrid<3,float>* current_anatomical_cast =
+     dynamic_cast< const DiscretisedDensityOnCartesianGrid<3,float> *>
+       (this->anatomical_prior_sptr[0].get());
+   
+     // TODO - which spacing to use? Need both?
+     const CartesianCoordinate3D<float>& grid_spacing =
+         current_anatomical_cast->get_grid_spacing();
+     precalculate_patch_euclidean_distances(distance,num_neighbours, only_2D, grid_spacing);
+   
+   
+       if(num_non_zero_feat>1){
+            this->kmnorm_sptr.resize(anatomical_image_filenames.size());
+            for(int i = 0; i <=anatomical_image_filenames.size()-1; i++){
+              this->kmnorm_sptr[i].reset(this->anatomical_prior_sptr[i]->get_empty_copy ());
+              this->kmnorm_sptr[i]->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
+              }
+         
+       this->kpnorm_sptr= shared_ptr<TargetT>(this->anatomical_prior_sptr[0]->get_empty_copy ());
+       this->kpnorm_sptr->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
+   
+       int dimf_col = this->num_non_zero_feat-1;
+       int dimf_row=this->num_voxels;
+   
+       calculate_norm_const_matrix(this->kmnorm_sptr,
+                                   dimf_row,
+                                   dimf_col);
+   
+       info(boost::format("Kernel from anatomical image calculated "));
+       }
+   
   return Succeeded::yes;
 }
 
