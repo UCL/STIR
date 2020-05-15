@@ -155,6 +155,7 @@ set_defaults()
 
   this->sigma_m.clear();
   this->anatomical_image_filenames.clear();
+  this->anatomical_prior_sptrs.clear();
   
   this->num_neighbours=3;
   this->num_non_zero_feat=1;
@@ -217,7 +218,7 @@ for(int i = 0; i<=anatomical_image_filenames.size()-1; i++)
 {  if (!this->anatomical_image_filenames.empty()){
       this->anatomical_prior_sptrs.push_back(shared_ptr<TargetT>(read_from_file<TargetT>(anatomical_image_filenames[i])));
 
-    set_anatomical_prior_sptrs (this->anatomical_prior_sptrs[i],i);
+    set_anatomical_prior_sptr (this->anatomical_prior_sptrs[i],i);
     info(boost::format("Reading anatomical data '%1%'")
          % anatomical_image_filenames[i]  );
   }
@@ -259,7 +260,8 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
  if (base_type::set_up(target_image_ptr) == Succeeded::no)
      error("KOSMAPOSL::set_up(): Error setting-up underlying OSMAPOSLReconstruction object");
 
- if (is_null_ptr(this->anatomical_prior_sptrs[0]) && this->sigma_m[0]!=0)
+ if (is_null_ptr(this->anatomical_prior_sptrs[0]) &&
+     this->sigma_m.size()==0 )
      error("KOSMAPOSL::set_up(): anatomical image has not been set");
  
  this->subiteration_counter=0;
@@ -386,7 +388,7 @@ std::vector<shared_ptr<TargetT> > KOSMAPOSLReconstruction<TargetT>::get_anatomic
 template<typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
-set_anatomical_prior_sptrs (shared_ptr<TargetT> arg, int index)
+set_anatomical_prior_sptr (shared_ptr<TargetT> arg, int index)
 {
     int n = this->anatomical_prior_sptrs.size();
     if (index < n)
@@ -398,7 +400,7 @@ set_anatomical_prior_sptrs (shared_ptr<TargetT> arg, int index)
 template<typename TargetT>
 void
 KOSMAPOSLReconstruction<TargetT>::
-set_anatomical_prior_sptrs (shared_ptr<TargetT> arg)
+set_anatomical_prior_sptr (shared_ptr<TargetT> arg)
 {
     this->anatomical_prior_sptrs.resize(1);
     this->anatomical_prior_sptrs[0] = arg;

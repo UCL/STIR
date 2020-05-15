@@ -173,9 +173,9 @@ public:
    one place, all objects that use the shared pointer will be affected.
   */
  //@{
-  void set_anatomical_prior_sptrs(shared_ptr<TargetT>, int index);
+  void set_anatomical_prior_sptr(shared_ptr<TargetT>, int index);
   //! sets all elements of vector anatomical_prior to the same value
-  void set_anatomical_prior_sptrs(shared_ptr<TargetT> arg);
+  void set_anatomical_prior_sptr(shared_ptr<TargetT> arg);
   void set_anatomical_image_filename(const std::string&, const int index);
   void set_anatomical_image_filename(const std::string&);
 
