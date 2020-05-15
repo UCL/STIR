@@ -260,8 +260,8 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
  if (base_type::set_up(target_image_ptr) == Succeeded::no)
      error("KOSMAPOSL::set_up(): Error setting-up underlying OSMAPOSLReconstruction object");
 
- if (is_null_ptr(this->anatomical_prior_sptrs[0]) &&
-     this->hybrid==0 )
+ if ((this->anatomical_prior_sptrs.size()==0) &&
+     (this->hybrid==0))
      error("KOSMAPOSL::set_up(): anatomical image has not been set");
  
  this->subiteration_counter=0;
