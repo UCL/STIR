@@ -164,7 +164,7 @@ public:
   const bool get_only_2D() const;
   const bool get_hybrid()const;
 
-  std::vector<shared_ptr<TargetT> > get_anatomical_prior_sptr();
+  std::vector<shared_ptr<TargetT> > get_anatomical_prior_sptrs();
 //@}
 
     /*! \name Functions to set parameters
@@ -173,11 +173,11 @@ public:
    one place, all objects that use the shared pointer will be affected.
   */
  //@{
-  void set_anatomical_prior_sptr(shared_ptr<TargetT>, int index);
+  void set_anatomical_prior_sptrs(shared_ptr<TargetT>, int index);
   //! sets all elements of vector anatomical_prior to the same value
-  void set_anatomical_prior_sptr(shared_ptr<TargetT> arg);
-  void set_anatomical_image_filenames(const std::string&, const int index);
-  void set_anatomical_image_filenames(const std::string&);
+  void set_anatomical_prior_sptrs(shared_ptr<TargetT> arg);
+  void set_anatomical_image_filename(const std::string&, const int index);
+  void set_anatomical_image_filename(const std::string&);
 
 
   void set_num_neighbours(const int);
@@ -207,7 +207,7 @@ public:
   //! Anatomical image filename
   std::vector<std::string> anatomical_image_filenames;
 
-  std::vector<shared_ptr<TargetT> > anatomical_prior_sptr,kmnorm_sptr;
+  std::vector<shared_ptr<TargetT> > anatomical_prior_sptrs,kmnorm_sptrs;
   shared_ptr<TargetT> kpnorm_sptr;
  //kernel parameters
   int num_neighbours,num_non_zero_feat,num_elem_neighbourhood,num_voxels,dimz,dimy,dimx;
