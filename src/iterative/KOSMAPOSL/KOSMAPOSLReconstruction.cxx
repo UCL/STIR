@@ -270,6 +270,12 @@ set_up(shared_ptr <TargetT > const& target_image_ptr)
  if (this->anatomical_prior_sptrs.size()!=sigma_m.size()){
      error("The number of sigma_m parameters must be the same as the number of anatomical images");
  }
+ 
+ for(int i = 0; i<=this->anatomical_prior_sptrs.size()-1; i++)
+ {
+     if (is_null_ptr(anatomical_prior_sptrs[i]))
+         error("Not all the anatomical prior images have been set");
+ }
    if(!this->only_2D){
       this->num_elem_neighbourhood=this->num_neighbours*this->num_neighbours*this->num_neighbours ;}
    else{
