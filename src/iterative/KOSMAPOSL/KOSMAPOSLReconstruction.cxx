@@ -330,6 +330,8 @@ set_up(shared_ptr <TargetT > const& target_image_sptr)
                                             dimf_col);
             }
        }
+
+  this->_already_set_up = true;
    
   return Succeeded::yes;
 }
@@ -408,6 +410,7 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_anatomical_prior_sptr (shared_ptr<TargetT> arg, int index)
 {
+  this->_already_set_up = false;
   if (index < this->anatomical_prior_sptrs.size())
         this->anatomical_prior_sptrs.at(index) = arg;
     else
@@ -419,6 +422,7 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_anatomical_prior_sptr (shared_ptr<TargetT> arg)
 {
+  this->_already_set_up = false;
     this->anatomical_prior_sptrs.resize(1);
     this->anatomical_prior_sptrs[0] = arg;
 }
@@ -428,6 +432,7 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_anatomical_image_filename(const std::string &arg, const int index)
 {
+  this->_already_set_up = false;
   if (static_cast<unsigned>(index) < this->anatomical_image_filenames.size())
         this->anatomical_image_filenames.at(index) = arg;
     else
@@ -440,6 +445,7 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_anatomical_image_filename(const std::string &arg)
 {
+  this->_already_set_up = false;
   this->anatomical_image_filenames[0]  = arg;
 }
 
@@ -448,7 +454,8 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_num_neighbours(const int arg)
 {
-    this->num_neighbours = arg;
+  this->_already_set_up = false;
+  this->num_neighbours = arg;
 }
 
 template <typename TargetT>
@@ -456,7 +463,8 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_num_non_zero_feat(const int arg)
 {
-    this->num_non_zero_feat = arg;
+  this->_already_set_up = false;
+  this->num_non_zero_feat = arg;
 }
 
 template <typename TargetT>
@@ -464,6 +472,7 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_sigma_m(const double arg, const int index)
 {
+    this->_already_set_up = false;
     if (static_cast<unsigned>(index) < this->sigma_m.size())
         this->sigma_m.at(index) = arg;
     else
@@ -475,6 +484,7 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_sigma_m(const double arg)
 {
+    this->_already_set_up = false;
     this->sigma_m.resize(1);
     this->sigma_m[0] = arg;
 }
@@ -484,6 +494,7 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_sigma_p(const double arg)
 {
+    this->_already_set_up = false;
     this->sigma_p = arg;
 }
 
@@ -492,7 +503,8 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_sigma_dp(const double arg)
 {
-    this->sigma_dp = arg;
+  this->_already_set_up = false;
+  this->sigma_dp = arg;
 }
 
 template <typename TargetT>
@@ -500,7 +512,8 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_sigma_dm(const double arg)
 {
-    this->sigma_dm = arg;
+  this->_already_set_up = false;
+  this->sigma_dm = arg;
 }
 
 template <typename TargetT>
@@ -508,7 +521,8 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_only_2D(const bool arg)
 {
-    this->only_2D = arg;
+  this->_already_set_up = false;
+  this->only_2D = arg;
 }
 
 template <typename TargetT>
@@ -516,7 +530,8 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_hybrid(const bool arg)
 {
-    this->hybrid = arg;
+  this->_already_set_up = false;
+  this->hybrid = arg;
 }
 
 /***************************************************************/
@@ -941,6 +956,7 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 update_estimate(TargetT &current_alpha_coefficent_image)
 {
+  this->check(current_alpha_coefficent_image);
   // TODO should use something like iterator_traits to figure out the 
   // type instead of hard-wiring float
   static const float small_num = 0.000001F;
