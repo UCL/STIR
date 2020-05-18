@@ -213,21 +213,17 @@ post_processing()
       error("The number of sigma_m parameters must be the same as the number of anatomical image filenames");
       return false;
   }
-int an_size=anatomical_image_filenames.size();
-for(int i = 0; i<=an_size-1; i++)
-{  if (!this->anatomical_image_filenames.empty()){
-      this->anatomical_prior_sptrs.push_back(shared_ptr<TargetT>(read_from_file<TargetT>(anatomical_image_filenames[i])));
+  for(unsigned int i = 0; i < this->anatomical_image_filenames.size(); i++)
+    {
+      info(boost::format("Reading anatomical data '%1%'")
+           % anatomical_image_filenames[i]  );
+      set_anatomical_prior_sptr (shared_ptr<TargetT>(read_from_file<TargetT>(anatomical_image_filenames[i])),i);
 
-    set_anatomical_prior_sptr (this->anatomical_prior_sptrs[i],i);
-    info(boost::format("Reading anatomical data '%1%'")
-         % anatomical_image_filenames[i]  );
-
-    if (is_null_ptr(this->anatomical_prior_sptrs[i]))
+      if (is_null_ptr(this->anatomical_prior_sptrs[i]))
         {
-            error("Failed to read anatomical file %s", anatomical_image_filenames[i].c_str());
-            return false;
+          error("Failed to read anatomical file %s", anatomical_image_filenames[i].c_str());
+          return false;
         }
-      }
     }
   return false;
 }
@@ -266,14 +262,12 @@ set_up(shared_ptr <TargetT > const& target_image_sptr)
      error("KOSMAPOSL::set_up(): anatomical image has not been set");
  
  this->subiteration_counter=0;
- this->anatomical_sd.resize(anatomical_prior_sptrs.size());
 
  if (this->anatomical_prior_sptrs.size()!=sigma_m.size()){
      error("The number of sigma_m parameters must be the same as the number of anatomical images");
  }
  
- this->an_size=anatomical_prior_sptrs.size();
- for(int i = 0; i<=an_size-1; i++)
+ for(unsigned int i = 0; i < this->anatomical_prior_sptrs.size(); i++)
  {
      if (is_null_ptr(anatomical_prior_sptrs[i]))
          error("Not all the anatomical prior images have been set");
@@ -296,13 +290,13 @@ set_up(shared_ptr <TargetT > const& target_image_sptr)
    this->dimx = max_x -min_x +1;
    this->num_voxels = dimz*dimy*dimx;
    
-   if(an_size!=0){
+   if(this->anatomical_prior_sptrs.size()!=0){
        estimate_stand_dev_for_anatomical_image(this->anatomical_sd);
        info(boost::format("Kernel from anatomical image calculated "));}
    else
        info(boost::format("Kernel will be calculated only from functional image "));
    
-   for(int i = 0; i<=an_size-1; i++)
+   for(unsigned int i = 0; i < this->anatomical_prior_sptrs.size(); i++)
    {
    info(boost::format("SDs from anatomical images calculated = '%1%'")
       % this->anatomical_sd[i]);
@@ -319,7 +313,7 @@ set_up(shared_ptr <TargetT > const& target_image_sptr)
    
        if(num_non_zero_feat>1){
             this->kmnorm_sptrs.resize(anatomical_sd.size());
-            for(int i = 0; i <=an_size-1; i++){
+            for(unsigned int i = 0; i < this->anatomical_prior_sptrs.size(); i++){
               this->kmnorm_sptrs[i].reset(target_image_sptr->get_empty_copy ());
               this->kmnorm_sptrs[i]->resize(IndexRange3D(0,0,0,this->num_voxels-1,0,this->num_elem_neighbourhood-1));
               }
@@ -330,7 +324,7 @@ set_up(shared_ptr <TargetT > const& target_image_sptr)
             int dimf_col = this->num_non_zero_feat-1;
             int dimf_row=this->num_voxels;
             
-            if(an_size!=0){
+            if (this->anatomical_prior_sptrs.size()!=0){
                 calculate_norm_const_matrix(this->kmnorm_sptrs,
                                             dimf_row,
                                             dimf_col);
@@ -414,7 +408,7 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_anatomical_prior_sptr (shared_ptr<TargetT> arg, int index)
 {
-    if (index < this->an_size)
+  if (index < this->anatomical_prior_sptrs.size())
         this->anatomical_prior_sptrs.at(index) = arg;
     else
         this->anatomical_prior_sptrs.push_back(arg);
@@ -434,7 +428,7 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_anatomical_image_filename(const std::string &arg, const int index)
 {
-    if (index < this->an_size)
+  if (static_cast<unsigned>(index) < this->anatomical_image_filenames.size())
         this->anatomical_image_filenames.at(index) = arg;
     else
         this->anatomical_image_filenames.push_back(arg);
@@ -470,7 +464,7 @@ void
 KOSMAPOSLReconstruction<TargetT>::
 set_sigma_m(const double arg, const int index)
 {
-    if (index < this->an_size)
+    if (static_cast<unsigned>(index) < this->sigma_m.size())
         this->sigma_m.at(index) = arg;
     else
         this->sigma_m.push_back(arg);
@@ -664,7 +658,7 @@ calculate_norm_const_matrix(std::vector<shared_ptr<TargetT> > &normm,
                             const int dimf_row,
                             const int dimf_col)
 {
-    for( int i=0; i<= this->an_size-1;i++){
+    for(unsigned int i=0; i < this->anatomical_prior_sptrs.size();i++){
         calculate_norm_matrix(*normm[i],dimf_row,dimf_col,*(this->anatomical_prior_sptrs[i]));
     }
 
@@ -674,8 +668,8 @@ calculate_norm_const_matrix(std::vector<shared_ptr<TargetT> > &normm,
 template<typename TargetT>
 void KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(std::vector<double> &SD)
 {
-    
-    for( int i=0; i<= this->an_size-1;i++){
+    SD.resize(this->anatomical_prior_sptrs.size());
+    for(unsigned int i=0; i < this->anatomical_prior_sptrs.size();i++){
 
         double kmean=0;
         double kStand_dev=0;
@@ -728,12 +722,7 @@ void KOSMAPOSLReconstruction<TargetT>::estimate_stand_dev_for_anatomical_image(s
                                   }
                                }
                        }
-                      int nsd = SD.size();
-                      double s = ((double)sqrt(kStand_dev/(nv-1) ));
-                      if (i < nsd)
-                          SD[i] = s;
-                      else
-                          SD.push_back(s);
+                      SD[i] = ((double)sqrt(kStand_dev/(nv-1) ));
     }
 }
 
@@ -744,7 +733,7 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
                          const TargetT& current_alpha_estimate)
 {
 
-    for( int i=0; i<= this->an_size-1;i++){
+    for(unsigned int i=0; i < this->anatomical_prior_sptrs.size();i++){
     if(!current_alpha_estimate.has_same_characteristics(*this->anatomical_prior_sptrs[i]))
         error("anatomical and emission image have different sizes! Make sure they are the same");
     }
@@ -829,7 +818,7 @@ void KOSMAPOSLReconstruction<TargetT>::compute_kernelised_image(
                     // Calculate the anatomical kernel
                      double anatomical_kernel=1;
                      
-                    for( int i=0; i<= this->an_size-1;i++){
+                    for(unsigned int i=0; i < this->anatomical_prior_sptrs.size();i++){
                          anatomical_kernel = anatomical_kernel * calc_anatomical_kernel((*anatomical_prior_sptrs[i])[z][y][x],
                                                                      (*anatomical_prior_sptrs[i])[z+dz][y+dy][x+dx],
                                                                       distance[dz][dy][dx],
