@@ -147,11 +147,11 @@ main(int argc, char **argv)
         while (argc>0 && argv[0][0]=='-') {
             if (strcmp(argv[0], "--cuda_device")==0) {
             cuda_device = std::atoi(argv[1]);
-                argc-=1; argv+=1;
+                argc-=2; argv+=2;
             }
             else if (strcmp(argv[0], "--stir_im_par")==0) {
                 stir_im_par_fname = argv[1];
-                argc-=1; argv+=1;
+                argc-=2; argv+=2;
                 if (!(is_image && toSTIR)) {
                     std::cerr << "--stir_im_par can only be supplied when converting to a STIR image.\n";
                     print_usage_and_exit(program_name, EXIT_FAILURE);
