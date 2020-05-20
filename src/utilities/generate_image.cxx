@@ -409,6 +409,7 @@ compute()
       current_image *= *value_iter;
       *out_density_ptr += current_image;
     }
+  std::cerr << "Saving image to: " << output_filename << "\n";
   return
     output_file_format_sptr->write_to_file(output_filename, *out_density_ptr);  
   
