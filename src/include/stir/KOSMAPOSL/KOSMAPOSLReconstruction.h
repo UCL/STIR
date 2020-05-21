@@ -210,7 +210,7 @@ public:
   std::vector<shared_ptr<TargetT> > anatomical_prior_sptrs,kmnorm_sptrs;
   shared_ptr<TargetT> kpnorm_sptr;
  //kernel parameters
-  int num_neighbours,num_non_zero_feat,num_elem_neighbourhood,num_voxels,dimz,dimy,dimx, an_size;
+  int num_neighbours,num_non_zero_feat,num_elem_neighbourhood,num_voxels,dimz,dimy,dimx;
   std::vector<double> sigma_m;
   bool only_2D;
   bool hybrid;
