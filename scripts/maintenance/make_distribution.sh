@@ -72,6 +72,8 @@ set -e
 #fi
 
 
+read -p "Did you update CMakeLists.txt, version numbers in \*tex files, documentation/history.htm?"
+
 mkdir -p ${DISTRIB}
 cd ${DISTRIB}
 
@@ -257,4 +259,4 @@ if [ $do_website_sync = 1 ]; then
 fi
 
 echo "still do 'git push; git push --tags'"
-echo "Did you update CMakeLists.txt, version numbers in \*tex files, documentation/history.htm?"
+echo "if not beta, did you run with 'do_website_final_version=1'?
