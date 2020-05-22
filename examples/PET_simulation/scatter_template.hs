@@ -1,4 +1,8 @@
 !INTERFILE  :=
+imaging modality := PT
+patient orientation := head_in
+patient rotation :=  supine
+
 name of data file := scatter_template.hs
 originating system := unknown
 !GENERAL DATA :=
@@ -39,9 +43,17 @@ Number of crystals per block in transaxial direction        := 0
 Number of detector layers                                   := 1
 Number of crystals per singles unit in axial direction      := -1
 Number of crystals per singles unit in transaxial direction := -1
+energy_resolution :=.16
+reference energy (in keV):=511
 end scanner parameters:=
 effective central bin size (cm) := 2.21541
+
+number of energy windows:=1
+energy window lower level[1]:=425
+energy window upper level[1]:=650
+
 image scaling factor[1] := 1
 data offset in bytes[1] := 0
 number of time frames := 1
+image duration (sec)[1] := 1 ; defaults to -1 (i.e. unknown)
 !END OF INTERFILE :=

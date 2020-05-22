@@ -28,7 +28,7 @@
 
 */
 
-#include "stir/scatter/ScatterEstimationByBin.h"
+#include "stir/scatter/ScatterSimulation.h"
 #include "stir/ProjDataInfoCylindricalNoArcCorr.h"
 #include "stir/numerics/erf.h"
 #include "stir/info.h"
@@ -36,9 +36,13 @@
 
 START_NAMESPACE_STIR
 unsigned 
-ScatterEstimationByBin::
+ScatterSimulation::
 find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord) const
 {
+#ifndef NDEBUG
+  if (!this->_already_set_up)
+        error("ScatterSimulation::find_detectors: need to call set_up() first");
+#endif
   unsigned int ret_value = 0;
 #pragma omp critical(SCATTERESTIMATIONFINDDETECTIONPOINTS)
   {
@@ -63,11 +67,15 @@ find_in_detection_points_vector(const CartesianCoordinate3D<float>& coord) const
 }
 
 void
-ScatterEstimationByBin::
+ScatterSimulation::
 find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const
 {
+#ifndef NDEBUG
+  if (!this->_already_set_up)
+        error("ScatterSimulation::find_detectors: need to call set_up() first");
+#endif
   CartesianCoordinate3D<float> detector_coord_A, detector_coord_B;
-  this->proj_data_info_ptr->
+  this->proj_data_info_cyl_noarc_cor_sptr->
     find_cartesian_coordinates_of_detection(
                                             detector_coord_A,detector_coord_B,bin);
   det_num_A =
@@ -79,7 +87,7 @@ find_detectors(unsigned& det_num_A, unsigned& det_num_B, const Bin& bin) const
 }
 
 float
-ScatterEstimationByBin::
+ScatterSimulation::
 compute_emis_to_det_points_solid_angle_factor(
                                               const CartesianCoordinate3D<float>& emis_point,
                                               const CartesianCoordinate3D<float>& detector_coord)
@@ -96,34 +104,40 @@ compute_emis_to_det_points_solid_angle_factor(
 }
 
 float
-ScatterEstimationByBin::
+ScatterSimulation::
 detection_efficiency(const float energy) const
 {
+#ifndef NDEBUG
+  if (!this->_already_set_up)
+        error("ScatterSimulation::find_detectors: need to call set_up() first");
+#endif
+
   // factor 2.35482 is used to convert FWHM to sigma
   const float sigma_times_sqrt2= 
-    sqrt(2.*energy*this->reference_energy)*this->energy_resolution/2.35482;  // 2.35482=2 * sqrt( 2 * ( log(2) )
+    sqrt(2.*energy*this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_reference_energy())*
+          this->proj_data_info_cyl_noarc_cor_sptr->get_scanner_ptr()->get_energy_resolution()/2.35482f;  // 2.35482=2 * sqrt( 2 * ( log(2) )
   
   // sigma_times_sqrt2= sqrt(2) * sigma   // resolution proportional to FWHM    
   
   const float efficiency =
-    0.5*( erf((this->upper_energy_threshold-energy)/sigma_times_sqrt2) 
-          - erf((this->lower_energy_threshold-energy)/sigma_times_sqrt2 ));     
+    0.5f*( erf((this->template_exam_info_sptr->get_high_energy_thres()-energy)/sigma_times_sqrt2)
+          - erf((this->template_exam_info_sptr->get_low_energy_thres()-energy)/sigma_times_sqrt2 ));
   /* Maximum efficiency is 1.*/
   return efficiency;
 }
 
 float
-ScatterEstimationByBin::
+ScatterSimulation::
 max_cos_angle(const float low, const float approx, const float resolution_at_511keV)
 {
   return
-    2. - (8176.*log(2.))/(square(approx*resolution_at_511keV)*(511. + (16.*low*log(2.))/square(approx*resolution_at_511keV) - 
+    2.f - (8176.*log(2.))/(square(approx*resolution_at_511keV)*(511. + (16.*low*log(2.))/square(approx*resolution_at_511keV) -
                                                                sqrt(511.)*sqrt(511. + (32.*low*log(2.))/square(approx*resolution_at_511keV)))) ;
 }
 
 
 float
-ScatterEstimationByBin::
+ScatterSimulation::
 energy_lower_limit(const float low, const float approx, const float resolution_at_511keV)
 {
   return
@@ -131,17 +145,22 @@ energy_lower_limit(const float low, const float approx, const float resolution_a
 }
 
 double
-ScatterEstimationByBin::
+ScatterSimulation::
 detection_efficiency_no_scatter(const unsigned det_num_A, 
                                 const unsigned det_num_B) const
 {
-  // TODO: slightly dangerous to use a static here
-  // it would give wrong results when the energy_thresholds are changed...
-  static const float detector_efficiency_no_scatter =
-    detection_efficiency(511.F) > 0 
-    ? detection_efficiency(511.F)
-    : (info("Zero detection efficiency for 511. Will normalise to 1"), 1.F);
+#ifndef NDEBUG
+  if (!this->_already_set_up)
+        error("ScatterSimulation::find_detectors: need to call set_up() first");
+#endif
 
+  if (detector_efficiency_no_scatter <= 0.F) // set to negative value by set_up(), so recompute
+    {
+      detector_efficiency_no_scatter =
+        detection_efficiency(511.F) > 0
+        ? detection_efficiency(511.F)
+        : (info("Zero detection efficiency for 511. Will normalise to 1"), 1.F);
+    }
   const CartesianCoordinate3D<float>& detector_coord_A =
     detection_points_vector[det_num_A];
   const CartesianCoordinate3D<float>& detector_coord_B =
@@ -150,13 +169,13 @@ detection_efficiency_no_scatter(const unsigned det_num_A,
     detA_to_ring_center(0,-detector_coord_A[2],-detector_coord_A[3]);
   const CartesianCoordinate3D<float> 
     detB_to_ring_center(0,-detector_coord_B[2],-detector_coord_B[3]);
-  const float rAB_squared=norm_squared(detector_coord_A-detector_coord_B);
-  const float cos_incident_angle_A = 
+  const float rAB_squared=static_cast<float>(norm_squared(detector_coord_A-detector_coord_B));
+  const float cos_incident_angle_A = static_cast<float>(
     cos_angle(detector_coord_B - detector_coord_A,
-              detA_to_ring_center) ;
-  const float cos_incident_angle_B = 
+              detA_to_ring_center)) ;
+  const float cos_incident_angle_B = static_cast<float>(
     cos_angle(detector_coord_A - detector_coord_B,
-              detB_to_ring_center) ;
+              detB_to_ring_center)) ;
 
   //0.75 is due to the volume of the pyramid approximation!
   return

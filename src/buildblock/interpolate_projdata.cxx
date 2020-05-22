@@ -69,6 +69,19 @@ namespace detail_interpolate_projdata
     return new_proj_data_info_sptr;
   }
 
+  // access Sinogram element with wrap-around and boundary conditions
+  static float sino_element(const Sinogram<float>& sinogram, const int view_num, const int tangential_pos_num)
+  {
+    assert(sinogram.get_min_view_num() == 0);
+    const int num_views = sinogram.get_num_views();
+    const int tang_pos_num = (view_num>=num_views? -1: 1)*tangential_pos_num;
+    if (tang_pos_num < sinogram.get_min_tangential_pos_num() ||
+	tang_pos_num > sinogram.get_max_tangential_pos_num())
+      return 0.F;
+    else
+      return sinogram[view_num%num_views][tang_pos_num];
+  }
+
   static void
   make_non_interleaved_sinogram(Sinogram<float>& out_sinogram,
                                 const Sinogram<float>& in_sinogram)
@@ -82,13 +95,10 @@ namespace detail_interpolate_projdata
     assert(in_sinogram.get_segment_num() == 0);
     assert(out_sinogram.get_segment_num() == 0);
 
-    const int in_num_views = in_sinogram.get_num_views();
-
     for (int view_num = out_sinogram.get_min_view_num();
          view_num <= out_sinogram.get_max_view_num();
          ++view_num)
       {
-        // TODO don't put in outer tangential poss for now to avoid boundary stuff
         for (int tangential_pos_num = out_sinogram.get_min_tangential_pos_num()+1;
              tangential_pos_num <= out_sinogram.get_max_tangential_pos_num()-1;
              ++tangential_pos_num)
@@ -98,7 +108,7 @@ namespace detail_interpolate_projdata
                 const int in_view_num =
                   view_num%2==0 ? view_num/2 : (view_num+1)/2;
                 out_sinogram[view_num][tangential_pos_num] =
-                  in_sinogram[in_view_num%in_num_views][(in_view_num>=in_num_views? -1: 1)*tangential_pos_num];
+                  sino_element(in_sinogram, in_view_num, tangential_pos_num);
               }
             else
               {
@@ -106,10 +116,10 @@ namespace detail_interpolate_projdata
                 const int other_in_view = (view_num+1)/2;
 
                 out_sinogram[view_num][tangential_pos_num] =
-                  (in_sinogram[view_num/2][tangential_pos_num] +
-                   in_sinogram[next_in_view%in_num_views][(next_in_view>=in_num_views ? -1 : 1)*tangential_pos_num] +
-                   in_sinogram[other_in_view%in_num_views][(other_in_view>=in_num_views ? -1 : 1)*(tangential_pos_num-1)] +
-                   in_sinogram[other_in_view%in_num_views][(other_in_view>=in_num_views ? -1 : 1)*(tangential_pos_num+1)]
+                  (sino_element(in_sinogram, view_num/2, tangential_pos_num) +
+                   sino_element(in_sinogram, next_in_view, tangential_pos_num) +
+                   sino_element(in_sinogram, other_in_view, tangential_pos_num-1) +
+                   sino_element(in_sinogram, other_in_view, tangential_pos_num+1)
                    )/4;
               }
           }

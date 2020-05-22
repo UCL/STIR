@@ -12,11 +12,15 @@ name of data file := somefile.s
 !GENERAL IMAGE DATA :=
 !type of data := Tomographic
 
-; optional keywords specifying patient position (currently ignored)
+; optional keywords specifying patient position
 ; patient rotation := prone
 ; patient orientation := feet_in
 
 imagedata byte order := LITTLEENDIAN
+
+number of energy windows:=1
+energy window lower level[1]:=120
+energy window upper level[1]:=160
 
 !SPECT STUDY (General) :=
 ; specify how the data are stored on disk
