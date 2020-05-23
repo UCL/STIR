@@ -40,7 +40,7 @@ endif()
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/src/cmake;${CMAKE_MODULE_PATH}")
 include(src/cmake/SetC++Version.cmake)
 
-UseCXX("${CMAKE_CXX_STANDARD}")
+UseCXX(11)
 
 # set default build-type to Release
 if(NOT CMAKE_BUILD_TYPE)
