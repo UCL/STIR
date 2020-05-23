@@ -30,7 +30,7 @@
 
 
 
-#include "stir/ProjDataFromHDF5.h"
+#include "stir/ProjDataGEHDF5.h"
 #include "stir/IndexRange.h"
 #include "stir/IndexRange3D.h"
 #include "stir/IndexRange4D.h"
@@ -46,7 +46,7 @@ using std::ios;
 
 START_NAMESPACE_STIR
 
-ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
+ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
                                    const std::string& input_filename) :
     ProjData()
 {
@@ -59,7 +59,7 @@ ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info
     initialise_viewgram_buffer();
 }
 
-ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
+ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
                                    shared_ptr<GEHDF5Wrapper> input_hdf5) :
     ProjData(input_hdf5->get_exam_info_sptr(), input_proj_data_info_sptr)
 {
@@ -70,7 +70,7 @@ ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info
     initialise_viewgram_buffer();
 }
 
-ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ExamInfo> input_exam_info_sptr,
+ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<ExamInfo> input_exam_info_sptr,
                                    shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
                                    shared_ptr<GEHDF5Wrapper> input_hdf5) :
     ProjData(input_exam_info_sptr, input_proj_data_info_sptr)
@@ -82,7 +82,7 @@ ProjDataFromHDF5::ProjDataFromHDF5(shared_ptr<ExamInfo> input_exam_info_sptr,
     initialise_viewgram_buffer();
 }
 
-void ProjDataFromHDF5::initialise_viewgram_buffer()
+void ProjDataGEHDF5::initialise_viewgram_buffer()
 {
 //! \todo NE: Get the number of tof positions from the proj_data_info_ptr
 const unsigned int num_tof_poss = 27;
@@ -114,7 +114,7 @@ std::copy(buffer.begin(), buffer.end(), tof_data[view_num].begin_all());
 
 }
 
-void ProjDataFromHDF5::initialise_segment_sequence()
+void ProjDataGEHDF5::initialise_segment_sequence()
 {
     segment_sequence.resize(2*get_max_segment_num()+1);
     segment_sequence[0] = 0;
@@ -126,7 +126,7 @@ void ProjDataFromHDF5::initialise_segment_sequence()
     }
 }
 
-void ProjDataFromHDF5::initialise_ax_pos_offset()
+void ProjDataGEHDF5::initialise_ax_pos_offset()
 {
   seg_ax_offset.resize(get_num_segments());
 
@@ -145,12 +145,12 @@ void ProjDataFromHDF5::initialise_ax_pos_offset()
 }
 
 Viewgram<float>
-ProjDataFromHDF5::
+ProjDataGEHDF5::
 get_viewgram(const int view_num, const int segment_num,
              const bool make_num_tangential_poss_odd) const
 {
     if (make_num_tangential_poss_odd)
-        error("make_num_tangential_poss_odd not supported by ProjDataFromHDF5");
+        error("make_num_tangential_poss_odd not supported by ProjDataGEHDF5");
     Viewgram<float> ret_viewgram = get_empty_viewgram(view_num, segment_num);
     ret_viewgram.fill(0.0);
     //! \todo NE: Get the number of tof positions from the proj_data_info_ptr
@@ -193,30 +193,31 @@ get_viewgram(const int view_num, const int segment_num,
 }
 
 
-Succeeded ProjDataFromHDF5::set_viewgram(const Viewgram<float>& v)
+Succeeded ProjDataGEHDF5::set_viewgram(const Viewgram<float>& v)
 {
     // but this is difficult: how to adjust the scale factors when writing only 1 viewgram ?
     error("ProjDataFromGEHDF5::set_viewgram not implemented yet");
     return Succeeded::no;
 }
 
-Sinogram<float> ProjDataFromHDF5::get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd) const
+Sinogram<float> ProjDataGEHDF5::get_sinogram(const int ax_pos_num, const int segment_num,const bool make_num_tangential_poss_odd) const
 {
     // TODO
     error("ProjDataGEHDF5::get_sinogram not implemented yet");
     return get_empty_sinogram(ax_pos_num, segment_num);
 }
 
-Succeeded ProjDataFromHDF5::set_sinogram(const Sinogram<float>& s)
+Succeeded ProjDataGEHDF5::set_sinogram(const Sinogram<float>& s)
 {
-    error("ProjDataFromHDF5::set_sinogram not implemented yet");
+    error("ProjDataGEHDF5::set_sinogram not implemented yet");
     return Succeeded::no;
 }
 
 unsigned int
-ProjDataFromHDF5::find_segment_index_in_sequence(const int segment_num) const
+ProjDataGEHDF5::find_segment_index_in_sequence(const int segment_num) const
 {
 #ifndef STIR_NO_NAMESPACES
+
   std::vector<int>::const_iterator iter =
     std::find(segment_sequence.begin(), segment_sequence.end(), segment_num);
 #else
@@ -229,7 +230,7 @@ ProjDataFromHDF5::find_segment_index_in_sequence(const int segment_num) const
 }
 
 std::vector<int>
-ProjDataFromHDF5::get_segment_sequence_in_hdf5() const
+ProjDataGEHDF5::get_segment_sequence_in_hdf5() const
 { return segment_sequence; }
 
 

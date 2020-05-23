@@ -30,8 +30,8 @@
 
     See STIR/LICENSE.txt for details
 */
-#ifndef __ProjDataFromHDF5_H__
-#define __ProjDataFromHDF5_H__
+#ifndef __ProjDataGEDF5_H__
+#define __ProjDataGEDF5_H__
 
 #include "stir/ProjData.h"
 #include "stir/IO/GEHDF5Wrapper.h"
@@ -44,23 +44,21 @@ START_NAMESPACE_STIR
   \ingroup projdata
   \brief A class which reads projection data from a GE HDF5
   sinogram file.
-
-  \warning support is still very basic.
-
 */
-class ProjDataFromHDF5 : public ProjData
+class ProjDataGEHDF5 : public ProjData
 {
 public:
 
-    static ProjDataFromHDF5* ask_parameters(const bool on_disk = true);
+    static ProjDataGEHDF5* ask_parameters(const bool on_disk = true);
 
-    explicit ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
+    explicit ProjDataGEHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
                               const std::string& input_filename);
 
-    explicit ProjDataFromHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
+    explicit ProjDataGEHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
                               shared_ptr<GEHDF5Wrapper> input_hdf5_sptr);
 
-    explicit ProjDataFromHDF5(shared_ptr<ExamInfo> input_exam_info_sptr,
+    explicit ProjDataGEHDF5
+      (shared_ptr<ExamInfo> input_exam_info_sptr,
                               shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
                               shared_ptr<GEHDF5Wrapper> input_hdf5);
 

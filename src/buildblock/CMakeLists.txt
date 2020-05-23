@@ -82,7 +82,7 @@ set(${dir_LIB_SOURCES}
 )
 if (HAVE_HDF5)
  list(APPEND ${dir_LIB_SOURCES}
-    ProjDataFromHDF5
+    ProjDataGEHDF5
  )
 endif()
 
