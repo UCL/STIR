@@ -35,7 +35,7 @@ START_NAMESPACE_STIR
 namespace ecat {
 
 CListEventECAT8_32bit::
-CListEventECAT8_32bit(const shared_ptr<ProjDataInfo>& proj_data_info_sptr) :
+CListEventECAT8_32bit(const shared_ptr<const ProjDataInfo>& proj_data_info_sptr) :
   CListEventCylindricalScannerWithDiscreteDetectors(shared_ptr<Scanner>(new Scanner(*proj_data_info_sptr->get_scanner_ptr()))) 
 {
   const ProjDataInfoCylindricalNoArcCorr * const proj_data_info_ptr =

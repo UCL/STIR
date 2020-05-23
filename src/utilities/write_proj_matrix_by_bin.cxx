@@ -63,7 +63,7 @@ main(int argc, char **argv)
   if (argc>2)
     { 
       shared_ptr<ProjData> proj_data_sptr = ProjData::read_from_file(argv[2]);
-      proj_data_info_sptr=proj_data_sptr->get_proj_data_info_ptr()->create_shared_clone();
+      proj_data_info_sptr=proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone();
     }
   else
     {

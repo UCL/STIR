@@ -162,7 +162,17 @@ shared_ptr<VoxelsOnCartesianGrid<float> > IOTests<A>::create_single_image()
         range(CartesianCoordinate3D<int>(0,-15,-14),
         CartesianCoordinate3D<int>(4,14,14));
 
-    VoxelsOnCartesianGrid<float> single_image(range,origin, grid_spacing);
+    shared_ptr<ExamInfo> exam_info_sptr(new ExamInfo);
+    exam_info_sptr->time_frame_definitions.set_num_time_frames(1);
+    exam_info_sptr->time_frame_definitions.set_time_frame(1,10,100);
+    exam_info_sptr->start_time_in_secs_since_1970 = double(1277478034);
+    exam_info_sptr->set_high_energy_thres(100.);
+    exam_info_sptr->set_low_energy_thres(5.);
+    
+    shared_ptr<VoxelsOnCartesianGrid<float> > single_image_sptr
+      (new VoxelsOnCartesianGrid<float> (exam_info_sptr, range,origin, grid_spacing));
+    // make reference for convenience
+    VoxelsOnCartesianGrid<float> & single_image = *single_image_sptr;
 
     // fill with some data
     for (int z=single_image.get_min_z(); z<=single_image.get_max_z(); ++z)
@@ -173,15 +183,6 @@ shared_ptr<VoxelsOnCartesianGrid<float> > IOTests<A>::create_single_image()
                     *sin(static_cast<float>(y+10*_PI)/single_image.get_max_y())
                     *cos(static_cast<float>(z*_PI/3)/single_image.get_max_z());
     
-    shared_ptr<ExamInfo> exam_info_sptr = single_image.get_exam_info_sptr();
-    exam_info_sptr->time_frame_definitions.set_num_time_frames(1);
-    exam_info_sptr->time_frame_definitions.set_time_frame(1,10,100);
-    exam_info_sptr->start_time_in_secs_since_1970 = double(1277478034);
-    exam_info_sptr->set_high_energy_thres(100.);
-    exam_info_sptr->set_low_energy_thres(5.);
-    
-    shared_ptr<VoxelsOnCartesianGrid<float> > single_image_sptr(
-                new VoxelsOnCartesianGrid<float>(single_image));
     return single_image_sptr;
 }
 
@@ -255,7 +256,7 @@ void IOTests<A>::check_exam_info(const ExamInfo &exm_inf_1, const ExamInfo &exm_
         return;
 
     // Loop over each one and compare them
-    for (int i=1; i<=im_1_time_frames.get_num_frames(); i++) {
+    for (unsigned i=1; i<=im_1_time_frames.get_num_frames(); i++) {
         check_if_equal(im_1_time_frames.get_end_time(i),   im_2_time_frames.get_end_time(i),        "test on read and written file via TimeFrameDefinitions::get_end_time");
         check_if_equal(im_1_time_frames.get_start_time(i), im_2_time_frames.get_start_time(i),      "test on read and written file via TimeFrameDefinitions::get_start_time");
     }

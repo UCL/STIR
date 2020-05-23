@@ -89,7 +89,7 @@ class Succeeded;
   are get_empty_ functions that just create the corresponding object
   of appropriate sizes etc. but filled with 0.
 
-  One important member of this class is get_proj_data_info_ptr() which
+  One important member of this class is get_proj_data_info_sptr() which
   allows access to a ProjDataInfo object, which describes the dimensions
   of the data, the scanner type, the geometry ...
 
@@ -108,8 +108,8 @@ public:
   //! Empty constructor 
   ProjData();
   //! construct by specifying info. Data will be undefined.
-  ProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
-           const shared_ptr<ProjDataInfo>& proj_data_info_ptr);
+  ProjData(const shared_ptr<const ExamInfo>& exam_info_sptr,
+           const shared_ptr<const ProjDataInfo>& proj_data_info_ptr);
 #if 0
   // it would be nice to have something like this. However, it's implementation
   // normally fails as we'd need to use set_viewgram or so, which is virtual, but
@@ -119,26 +119,9 @@ public:
 
   //! Destructor
   virtual ~ProjData() {}
-  //! Get proj data info pointer
-  inline const ProjDataInfo* 
-    get_proj_data_info_ptr() const;
   //! Get shared pointer to proj data info
-  /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
-    shared pointer will be affected. */
-  inline shared_ptr<ProjDataInfo>
+  inline shared_ptr<const ProjDataInfo>
     get_proj_data_info_sptr() const;
-//  //! Get pointer to exam info
-//  inline const ExamInfo*
-//    get_exam_info_ptr() const;
-//  //! Get shared pointer to exam info
-//  /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
-//    shared pointer will be affected. */
-//  inline shared_ptr<ExamInfo>
-//    get_exam_info_sptr() const;
-//  //! change exam info
-//  /*! This will allocate a new ExamInfo object and copy the data in there. */
-//  void
-//    set_exam_info(ExamInfo const&);
   //! Get viewgram
   virtual Viewgram<float> 
     get_viewgram(const int view, const int segment_num,const bool make_num_tangential_poss_odd = false) const=0;
@@ -307,7 +290,7 @@ public:
 protected:
 //   shared_ptr<ExamInfo> exam_info_sptr;
 
-   shared_ptr<ProjDataInfo> proj_data_info_ptr; // TODO fix name to _sptr
+   shared_ptr<const ProjDataInfo> proj_data_info_sptr;
 };
 
 

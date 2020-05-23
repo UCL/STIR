@@ -50,7 +50,7 @@ CListModeDataSAFIR(const std::string& listmode_filename, const std::string& crys
 	// Here we are reading the scanner data from the template projdata
     shared_ptr<ProjData> template_proj_data_sptr =
             ProjData::read_from_file(template_proj_data_filename);
-    this->set_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_sptr());
+    this->set_proj_data_info_sptr(template_proj_data_sptr->get_proj_data_info_sptr()->create_shared_clone());
 
 	if( open_lm_file() == Succeeded::no )
 	{

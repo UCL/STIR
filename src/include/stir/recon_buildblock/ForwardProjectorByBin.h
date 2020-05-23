@@ -74,8 +74,8 @@ public:
   \warning Derived classes have to call set_up from the base class.
   */
 virtual void set_up(		 
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
+    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_sptr // TODO should be Info only
     ) =0;
 
   //! Informs on which symmetries the projector handles
@@ -160,7 +160,7 @@ protected:
   virtual void initialise_keymap();
 
 private:
-  shared_ptr<ProjDataInfo> _proj_data_info_sptr;
+  shared_ptr<const ProjDataInfo> _proj_data_info_sptr;
 };
 
 END_NAMESPACE_STIR

@@ -534,7 +534,7 @@ NonseparableSpatiallyVaryingFilters3D<elemT>::precalculate_filter_coefficients_3
   const float k_interval = 0.01F; //0.01F;
   
 
-  shared_ptr<ProjDataInfo> new_data_info_ptr  = proj_data_ptr->get_proj_data_info_ptr()->clone();
+  shared_ptr<ProjDataInfo> new_data_info_ptr  = proj_data_ptr->get_proj_data_info_sptr()->clone();
   VoxelsOnCartesianGrid<float>* in_density_cast =
     dynamic_cast< VoxelsOnCartesianGrid<float>* >(in_density); 
   
@@ -583,7 +583,7 @@ NonseparableSpatiallyVaryingFilters3D<elemT>::precalculate_filter_coefficients_3
   shared_ptr<ProjMatrixByDensel> proj_matrix_ptr = 
     new ProjMatrixByDenselUsingRayTracing;
   
-  proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
+  proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_sptr()->clone(),
     image_sptr);
   info(boost::format("%1%") % proj_matrix_ptr->parameter_info());
   

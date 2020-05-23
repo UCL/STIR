@@ -83,7 +83,7 @@ main(int argc, char *argv[])
   {
     shared_ptr<ProjData> proj_data_ptr = 
       ProjData::read_from_file(argv[1]);
-    new_data_info_ptr= proj_data_ptr->get_proj_data_info_ptr()->clone();
+    new_data_info_ptr= proj_data_ptr->get_proj_data_info_sptr()->clone();
   }
   else
   {
@@ -130,10 +130,10 @@ main(int argc, char *argv[])
       const float zoom = ask_num("Zoom factor (>1 means smaller voxels)",0.F,10.F,1.F);
       int xy_size = static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom);
       xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
-      int z_size = 2*proj_data_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings()-1;
+      int z_size = 2*proj_data_ptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings()-1;
       z_size = ask_num("Number of z pixels",1,1000,z_size);
       image_sptr = vox_image_ptr =
-        new VoxelsOnCartesianGrid<float>(*(proj_data_ptr->get_proj_data_info_ptr()),
+        new VoxelsOnCartesianGrid<float>(*(proj_data_ptr->get_proj_data_info_sptr()),
                                          zoom,
                                          CartesianCoordinate3D<float>(0,0,0),
                                          Coordinate3D<int>(z_size,xy_size,xy_size));
@@ -146,10 +146,10 @@ main(int argc, char *argv[])
       const float zoom = ask_num("Zoom factor (>1 means smaller voxels)",0.F,10.F,1.F);
       int xy_size = static_cast<int>(proj_data_ptr->get_num_tangential_poss()*zoom);
       xy_size = ask_num("Number of x,y pixels",3,xy_size*2,xy_size);
-      int z_size = 2*proj_data_ptr->get_proj_data_info_ptr()->get_scanner_ptr()->get_num_rings()-1;
+      int z_size = 2*proj_data_ptr->get_proj_data_info_sptr()->get_scanner_ptr()->get_num_rings()-1;
       z_size = ask_num("Number of z pixels",1,1000,z_size);
       image_sptr = vox_image_ptr =
-        new VoxelsOnCartesianGrid<float>(*(proj_data_ptr->get_proj_data_info_ptr()),
+        new VoxelsOnCartesianGrid<float>(*(proj_data_ptr->get_proj_data_info_sptr()),
                                          zoom,
                                          CartesianCoordinate3D<float>(0,0,0),
                                          Coordinate3D<int>(z_size,xy_size,xy_size));
@@ -187,7 +187,7 @@ main(int argc, char *argv[])
     }
   while (proj_matrix_ptr.use_count()==0);
 */
-  proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_ptr()->clone(),
+  proj_matrix_ptr->set_up(proj_data_ptr->get_proj_data_info_sptr()->clone(),
 			     image_sptr);
   cerr << proj_matrix_ptr->parameter_info();
 

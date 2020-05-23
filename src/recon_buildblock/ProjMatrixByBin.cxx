@@ -119,9 +119,9 @@ reserve_num_elements_in_cache(const std::size_t num_elems)
 
 void
 ProjMatrixByBin::
-set_up(		 
-    const shared_ptr<ProjDataInfo>& proj_data_info_sptr,
-    const shared_ptr<DiscretisedDensity<3,float> >& /*density_info_ptr*/ // TODO should be Info only
+set_up(   
+    const shared_ptr<const ProjDataInfo>& proj_data_info_sptr,
+    const shared_ptr<const DiscretisedDensity<3,float> >& /*density_info_ptr*/ // TODO should be Info only
     )
 {
   const int min_view_num = proj_data_info_sptr->get_min_view_num();

@@ -123,8 +123,8 @@ find_relation_between_coordinate_systems(int& num_planes_per_scanner_ring,
 DataSymmetriesForBins_PET_CartesianGrid::
 DataSymmetriesForBins_PET_CartesianGrid
 (
- const shared_ptr<ProjDataInfo>& proj_data_info_ptr,
- const shared_ptr<DiscretisedDensity<3,float> >& image_info_ptr,
+ const shared_ptr<const ProjDataInfo>& proj_data_info_ptr,
+ const shared_ptr<const DiscretisedDensity<3,float> >& image_info_ptr,
  const bool do_symmetry_90degrees_min_phi_v,
  const bool do_symmetry_180degrees_min_phi_v,
  const bool do_symmetry_swap_segment_v,
@@ -138,7 +138,7 @@ DataSymmetriesForBins_PET_CartesianGrid
     do_symmetry_swap_s(do_symmetry_swap_s_v),
     do_symmetry_shift_z(do_symmetry_shift_z)
 {
-  if(dynamic_cast<ProjDataInfoCylindrical *>(proj_data_info_ptr.get()) == NULL)
+  if(is_null_ptr(dynamic_cast<const ProjDataInfoCylindrical *>(proj_data_info_ptr.get())))
     error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of ProjDataInfo: %s\n"
           "(can only handle projection data corresponding to a cylinder)\n",
       typeid(*proj_data_info_ptr).name());
@@ -148,7 +148,7 @@ DataSymmetriesForBins_PET_CartesianGrid
      dynamic_cast<const DiscretisedDensityOnCartesianGrid<3,float> *>
       (image_info_ptr.get());
   
-  if (cartesian_grid_info_ptr == NULL)
+  if (is_null_ptr(cartesian_grid_info_ptr))
     error("DataSymmetriesForBins_PET_CartesianGrid constructed with wrong type of image info: %s\n",
       typeid(*image_info_ptr).name());
 

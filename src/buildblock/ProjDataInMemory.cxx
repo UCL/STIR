@@ -57,8 +57,8 @@ ProjDataInMemory::
 {}
 
 ProjDataInMemory::
-ProjDataInMemory(shared_ptr<ExamInfo> const& exam_info_sptr,
-		 shared_ptr<ProjDataInfo> const& proj_data_info_ptr, const bool initialise_with_0)
+ProjDataInMemory(shared_ptr<const ExamInfo> const& exam_info_sptr,
+		 shared_ptr<const ProjDataInfo> const& proj_data_info_ptr, const bool initialise_with_0)
   :
   ProjDataFromStream(exam_info_sptr, proj_data_info_ptr, shared_ptr<iostream>()) // trick: first initialise sino_stream_ptr to 0
 {
@@ -102,7 +102,7 @@ const
 ProjDataInMemory::
 ProjDataInMemory(const ProjData& proj_data)
   : ProjDataFromStream(proj_data.get_exam_info_sptr(),
-		       proj_data.get_proj_data_info_ptr()->create_shared_clone(), shared_ptr<iostream>())
+		       proj_data.get_proj_data_info_sptr()->create_shared_clone(), shared_ptr<iostream>())
 {
   this->buffer.reset(this->create_buffer());
   this->sino_stream = this->create_stream();
@@ -114,7 +114,7 @@ ProjDataInMemory(const ProjData& proj_data)
 ProjDataInMemory::
 ProjDataInMemory (const ProjDataInMemory& proj_data)
     : ProjDataFromStream(proj_data.get_exam_info_sptr(),
-                 proj_data.get_proj_data_info_ptr()->create_shared_clone(), shared_ptr<iostream>())
+                 proj_data.get_proj_data_info_sptr()->create_shared_clone(), shared_ptr<iostream>())
 {
   this->buffer.reset(this->create_buffer());
   this->sino_stream = this->create_stream();

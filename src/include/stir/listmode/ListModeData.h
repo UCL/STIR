@@ -232,19 +232,16 @@ public:
       return 0;
   }
 
-  virtual shared_ptr<ProjDataInfo> get_proj_data_info_sptr() const ;
-
-  const ProjDataInfo* get_proj_data_info_ptr() const  { return this->get_proj_data_info_sptr().get(); }
-
+  virtual shared_ptr<const ProjDataInfo> get_proj_data_info_sptr() const ;
 
 protected:
   virtual shared_ptr <ListRecord> get_empty_record_helper_sptr() const = 0;
   virtual Succeeded get_next(ListRecord& event) const = 0;
-  virtual void set_proj_data_info_sptr(shared_ptr<ProjDataInfo>) ;
+  virtual void set_proj_data_info_sptr(shared_ptr<const ProjDataInfo>) ;
   //! Has to be set by the derived class
   //  shared_ptr<ExamInfo> exam_info_sptr;
   //! Has to be initialised by the derived class
-  shared_ptr<ProjDataInfo> proj_data_info_sptr;
+  shared_ptr<const ProjDataInfo> proj_data_info_sptr;
 };
 
 END_NAMESPACE_STIR

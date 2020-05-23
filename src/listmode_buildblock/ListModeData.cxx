@@ -40,19 +40,6 @@ ListModeData::
 ~ListModeData()
 {}
 
-//const ExamInfo*
-//ListModeData::get_exam_info_ptr() const
-//{
-//  assert(!is_null_ptr(exam_info_sptr));
-//  return exam_info_sptr.get();
-//}
-
-//shared_ptr<ExamInfo>
-//ListModeData::get_exam_info_sptr() const
-//{
-//  return exam_info_sptr;
-//}
-
 const Scanner*
 ListModeData::
 get_scanner_ptr() const
@@ -64,12 +51,12 @@ get_scanner_ptr() const
 
 void
 ListModeData::
-set_proj_data_info_sptr(shared_ptr<ProjDataInfo> new_proj_data_info_sptr)
+set_proj_data_info_sptr(shared_ptr<const ProjDataInfo> new_proj_data_info_sptr)
 {
     proj_data_info_sptr = new_proj_data_info_sptr;
 }
 
-shared_ptr<ProjDataInfo>
+shared_ptr<const ProjDataInfo>
 ListModeData::get_proj_data_info_sptr() const
 {
     if(is_null_ptr(proj_data_info_sptr))

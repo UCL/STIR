@@ -69,11 +69,11 @@ public:
 
 public:
   //! Construct sinogram from proj_data_info pointer, ring and segment number.  Data are set to 0.
-  inline Sinogram(const shared_ptr<ProjDataInfo>& proj_data_info_ptr, 
+  inline Sinogram(const shared_ptr<const ProjDataInfo>& proj_data_info_ptr, 
                   const int ax_pos_num, const int segment_num); 
 
   //! Construct sinogram with data set to the array.
-  inline Sinogram(const Array<2,elemT>& p,const shared_ptr<ProjDataInfo >& proj_data_info_ptr, 
+  inline Sinogram(const Array<2,elemT>& p,const shared_ptr<const ProjDataInfo >& proj_data_info_ptr, 
                   const int ax_pos_num, const int segment_num); 
   
   //! Get segment number
@@ -101,14 +101,8 @@ public:
   //! Overloading Array::resize
   void resize(const IndexRange<2>& range);
 
-  //! Get the projection data info pointer
-  /*! \warning Do not use this pointer after the Sinogram object is destructed.
-  */
-  inline const ProjDataInfo* get_proj_data_info_ptr() const;
   //! Get shared pointer to proj data info
-  /*! \warning Use with care. If you modify the object in a shared ptr, everything using the same
-    shared pointer will be affected. */
-  inline shared_ptr<ProjDataInfo>
+  inline shared_ptr<const ProjDataInfo>
     get_proj_data_info_sptr() const;
 
   //inline Sinogram operator = (const Sinogram &s) const;
@@ -142,7 +136,7 @@ public:
   
 private:
   
-  shared_ptr<ProjDataInfo> proj_data_info_ptr; 
+  shared_ptr<const ProjDataInfo> proj_data_info_ptr; 
   int axial_pos_num;
   int segment_num;
     

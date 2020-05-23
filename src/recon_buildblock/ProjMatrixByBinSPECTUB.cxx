@@ -242,8 +242,8 @@ set_resolution_model(const float collimator_sigma_0_in_mm, const float collimato
 void
 ProjMatrixByBinSPECTUB::
 set_up(		 
-    const shared_ptr<ProjDataInfo>& proj_data_info_ptr_v,
-    const shared_ptr<DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
+    const shared_ptr<const ProjDataInfo>& proj_data_info_ptr_v,
+    const shared_ptr<const DiscretisedDensity<3,float> >& density_info_ptr // TODO should be Info only
     )
 {
 

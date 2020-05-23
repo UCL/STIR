@@ -163,7 +163,7 @@ private:
 
 typedef FanProjData BlockData3D;
 
-shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
 get_fan_info(int& num_rings, int& num_detectors_per_ring, 
 	     int& max_ring_diff, int& fan_size, 
 	     const ProjDataInfo& proj_data_info);

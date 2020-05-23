@@ -13,6 +13,8 @@
 # See STIR/LICENSE.txt for details
 
 # cmake file for building STIR. See the STIR User's Guide and http://www.cmake.org.
+cmake_minimum_required(VERSION 2.8.3)
+# require 2.8.3 to get FOLDER properties support (without that, we only need cmake 2.6)
 
 # avoid warning about WIN32 no longer defined in CYGWIN
 set(CMAKE_LEGACY_CYGWIN_WIN32 0) 
@@ -27,14 +29,12 @@ endif()
 PROJECT(STIR)
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
-# require 2.8.3 to get FOLDER properties support (without that, we only need cmake 2.6)
-cmake_minimum_required(VERSION 2.8.3)
 
 # add project source to cmake path such that it can use our find_package modules and .cmake files
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/src/cmake;${CMAKE_MODULE_PATH}")
 include(src/cmake/SetC++Version.cmake)
 
-UseCXX("${CMAKE_CXX_STANDARD}")
+UseCXX(11)
 
 # set default build-type to Release
 if(NOT CMAKE_BUILD_TYPE)

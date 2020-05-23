@@ -267,8 +267,8 @@ int main(int argc, char *argv[])
     // TODO exam_info currently used from the first frame, which means that time frame info is incorrect
     // better to use DynamicProjData etc.
     make_ECAT7_main_header(mhead, filenames[0], 
-			   *proj_data_ptr->get_exam_info_ptr(),
-			   *proj_data_ptr->get_proj_data_info_ptr(),
+			   proj_data_ptr->get_exam_info,
+			   *proj_data_ptr->get_proj_data_info_sptr(),
 			   write_as_attenuation,
 			   NumericType::SHORT);
     // fix time frame info

@@ -54,12 +54,12 @@ public:
     MultipleProjData(m)
   {}
 
-  DynamicProjData(const shared_ptr<ExamInfo>& exam_info_sptr)
+  DynamicProjData(const shared_ptr<const ExamInfo>& exam_info_sptr)
     : MultipleProjData(exam_info_sptr)
   {
   }
 
-  DynamicProjData(const shared_ptr<ExamInfo>& exam_info_sptr,
+  DynamicProjData(const shared_ptr<const ExamInfo>& exam_info_sptr,
                     const int num_gates)
         : MultipleProjData(exam_info_sptr,
                     num_gates)

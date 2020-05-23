@@ -290,7 +290,7 @@ pre_data_processor_fwd_proj(const DiscretisedDensity<3,float> &input_image)
         projectors[i] = get_forward_projector_via_parser(i==0 ? _fwhm : -1);
 
 
-        projectors[i]->set_up(_input_sino_sptr->get_proj_data_info_sptr(),images[i]);
+        projectors[i]->set_up(_input_sino_sptr->get_proj_data_info_sptr()->create_shared_clone(),images[i]);
 
         // The second time, use the data processor before the forward projection
         if (i!=0) {
@@ -328,7 +328,7 @@ post_data_processor_bck_proj()
         // The first time, use the data processor during the back projection
         projectors[i] = get_back_projector_via_parser(i==0 ? _fwhm : -1);
 
-        projectors[i]->set_up(_input_sino_sptr->get_proj_data_info_sptr(),images[i]);
+        projectors[i]->set_up(_input_sino_sptr->get_proj_data_info_sptr()->create_shared_clone(),images[i]);
 
         // Back project
         projectors[i]->start_accumulating_in_new_target();
