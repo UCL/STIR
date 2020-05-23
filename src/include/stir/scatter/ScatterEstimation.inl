@@ -18,7 +18,7 @@ set_reconstruction_method_sptr(const shared_ptr<Reconstruction < DiscretisedDens
 
 void
 ScatterEstimation::
-set_attenuation_image_sptr(const shared_ptr<DiscretisedDensity<3,float> > arg)
+set_attenuation_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > arg)
 {
     this->atten_image_sptr = arg;
 }
@@ -46,14 +46,14 @@ set_background_proj_data_sptr(const shared_ptr<ProjData> arg)
 
 void
 ScatterEstimation::
-set_initial_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> > arg)
+set_initial_activity_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > arg)
 {
-    this->current_activity_image_sptr = arg;
+    this->current_activity_image_sptr.reset(arg->clone());
 }
 
 void
 ScatterEstimation::
-set_mask_image_sptr(const shared_ptr<DiscretisedDensity<3, float> > arg)
+set_mask_image_sptr(const shared_ptr<const DiscretisedDensity<3, float> > arg)
 {
     this->mask_image_sptr = arg;
 }

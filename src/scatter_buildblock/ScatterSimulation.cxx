@@ -385,9 +385,9 @@ set_up()
 
 void
 ScatterSimulation::
-check_z_to_middle_consistent(DiscretisedDensity<3,float>& _image, const std::string& name) const
+check_z_to_middle_consistent(const DiscretisedDensity<3,float>& _image, const std::string& name) const
 {
-  const VoxelsOnCartesianGrid<float> & image = dynamic_cast<VoxelsOnCartesianGrid<float>& >(_image);
+  const VoxelsOnCartesianGrid<float> & image = dynamic_cast<VoxelsOnCartesianGrid<float> const& >(_image);
   const float z_to_middle =
     (image.get_max_index() + image.get_min_index())*image.get_voxel_size().z()/2.F;
 
@@ -397,7 +397,7 @@ check_z_to_middle_consistent(DiscretisedDensity<3,float>& _image, const std::str
     (scanner.get_num_rings()-1) * scanner.get_ring_spacing()/2;
 #endif
   const VoxelsOnCartesianGrid<float> & act_image =
-    dynamic_cast<VoxelsOnCartesianGrid<float>& >(*this->activity_image_sptr);
+    dynamic_cast<VoxelsOnCartesianGrid<float> const& >(*this->activity_image_sptr);
   const float z_to_middle_standard =
     (act_image.get_max_index() + act_image.get_min_index())*act_image.get_voxel_size().z()/2.F;
 
@@ -410,7 +410,7 @@ check_z_to_middle_consistent(DiscretisedDensity<3,float>& _image, const std::str
 
 void
 ScatterSimulation::
-set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >& arg)
+set_activity_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > arg)
 {
     if (is_null_ptr(arg) )
         error("ScatterSimulation: Unable to set the activity image");
@@ -431,7 +431,7 @@ set_activity_image(const std::string& filename)
 
 void
 ScatterSimulation::
-set_density_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >& arg)
+set_density_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> > arg)
 {
     if (is_null_ptr(arg) )
         error("ScatterSimulation: Unable to set the density image");
@@ -453,12 +453,12 @@ set_density_image(const std::string& filename)
 
 void
 ScatterSimulation::
-set_density_image_for_scatter_points_sptr(shared_ptr<DiscretisedDensity<3,float> > arg)
+set_density_image_for_scatter_points_sptr(shared_ptr<const DiscretisedDensity<3,float> > arg)
 {
     if (is_null_ptr(arg) )
         error("ScatterSimulation: Unable to set the density image for scatter points.");
     this->density_image_for_scatter_points_sptr.reset(
-                new VoxelsOnCartesianGrid<float>(*dynamic_cast<VoxelsOnCartesianGrid<float> *>(arg.get())));
+                new VoxelsOnCartesianGrid<float>(*dynamic_cast<const VoxelsOnCartesianGrid<float> *>(arg.get())));
     this->sample_scatter_points();
     this->remove_cache_for_integrals_over_attenuation();
     this->_already_set_up = false;
@@ -485,7 +485,7 @@ get_attenuation_image_for_scatter_points() const
     return *density_image_for_scatter_points_sptr;
 }
 
-shared_ptr<DiscretisedDensity<3,float> >
+shared_ptr<const DiscretisedDensity<3,float> >
 ScatterSimulation::
 get_density_image_for_scatter_points_sptr() const
 {
@@ -522,7 +522,7 @@ downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
     if (is_null_ptr(this->density_image_sptr))
         error("ScatterSimulation: downsampling function called before attenuation image is set");
 
-    const VoxelsOnCartesianGrid<float> & tmp_att = dynamic_cast<VoxelsOnCartesianGrid<float>& >(*this->density_image_sptr);
+    const VoxelsOnCartesianGrid<float> & tmp_att = dynamic_cast<const VoxelsOnCartesianGrid<float>& >(*this->density_image_sptr);
 
     const int old_x = tmp_att.get_x_size();
     const int old_y = tmp_att.get_y_size();
@@ -627,8 +627,8 @@ downsample_density_image_for_scatter_points(float _zoom_xy, float _zoom_z,
 
 void
 ScatterSimulation::
-set_output_proj_data_sptr(const shared_ptr<ExamInfo>& _exam,
-                          const shared_ptr<ProjDataInfo>& _info,
+set_output_proj_data_sptr(const shared_ptr<const ExamInfo> _exam,
+                          const shared_ptr<const ProjDataInfo> _info,
                           const std::string & filename)
 {
     if (filename.size() > 0 )
@@ -693,14 +693,14 @@ set_output_proj_data_sptr(shared_ptr<ProjData> arg)
     this->output_proj_data_sptr = arg;
 }
 
-shared_ptr<ProjDataInfoCylindricalNoArcCorr>
+shared_ptr<const ProjDataInfoCylindricalNoArcCorr>
 ScatterSimulation::
 get_template_proj_data_info_sptr() const
 {
     return this->proj_data_info_cyl_noarc_cor_sptr;
 }
 
-shared_ptr<ExamInfo>
+shared_ptr<const ExamInfo>
 ScatterSimulation::get_exam_info_sptr() const
 {
     return this->template_exam_info_sptr;
@@ -823,7 +823,7 @@ Succeeded ScatterSimulation::downsample_images_to_scanner_size()
 
     if(!is_null_ptr(activity_image_sptr))
     {
-        VoxelsOnCartesianGrid<float>* tmp_act = dynamic_cast<VoxelsOnCartesianGrid<float>* >(activity_image_sptr.get());
+        const VoxelsOnCartesianGrid<float>* tmp_act = dynamic_cast<const VoxelsOnCartesianGrid<float>* >(activity_image_sptr.get());
         VoxelsOnCartesianGrid<float>* tmp = tmpl_image->get_empty_copy();
 
 	ZoomOptions scaling(ZoomOptions::preserve_projections);
@@ -835,7 +835,7 @@ Succeeded ScatterSimulation::downsample_images_to_scanner_size()
 
     if(!is_null_ptr(density_image_sptr))
     {
-        VoxelsOnCartesianGrid<float>* tmp_att = dynamic_cast<VoxelsOnCartesianGrid<float>* >(density_image_sptr.get());
+        const VoxelsOnCartesianGrid<float>* tmp_att = dynamic_cast<const VoxelsOnCartesianGrid<float>* >(density_image_sptr.get());
         VoxelsOnCartesianGrid<float>* tmp = tmpl_image->get_empty_copy();
 
 	ZoomOptions scaling(ZoomOptions::preserve_values);

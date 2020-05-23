@@ -315,7 +315,7 @@ post_processing()
     return false;
 }
 
-shared_ptr<const ProjData> 
+shared_ptr<ProjData> 
 ScatterEstimation::get_output() const
 {
     return scatter_estimate_sptr;
@@ -335,7 +335,7 @@ set_up()
         extras_path = current_full_path.append("extras");
     }
 
-    this->multiplicative_binnorm_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr()->create_shared_clone());
+    this->multiplicative_binnorm_sptr->set_up(this->input_projdata_sptr->get_proj_data_info_sptr());
 
     if (is_null_ptr(this->input_projdata_sptr))
     {
@@ -474,9 +474,9 @@ set_up()
             // Applying mask
             // 1. Clone from the original image.
             // 2. Apply to the new clone.
-            this->mask_image_sptr.reset(this->atten_image_sptr->clone());
-            this->apply_mask_in_place(*this->mask_image_sptr, this->masking_parameters);
-
+            auto mask_image_ptr(this->atten_image_sptr->clone());
+            this->apply_mask_in_place(*mask_image_ptr, this->masking_parameters);
+            this->mask_image_sptr.reset(mask_image_ptr);
             if (this->mask_image_filename.size() > 0 )
                 OutputFileFormat<DiscretisedDensity<3,float> >::default_sptr()->
                         write_to_file(this->mask_image_filename, *this->mask_image_sptr);

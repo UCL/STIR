@@ -118,15 +118,15 @@ public:
     inline int get_num_scatter_points() const
     { return this->scatt_points_vector.size();}
     //! Get the template ProjDataInfo
-    shared_ptr<ProjDataInfoCylindricalNoArcCorr> get_template_proj_data_info_sptr() const;
-    //! Get the ExamInfo as shared pointer
-    shared_ptr<ExamInfo> get_exam_info_sptr() const;
+    shared_ptr<const ProjDataInfoCylindricalNoArcCorr> get_template_proj_data_info_sptr() const;
+    //! Get the ExamInfo
+    shared_ptr<const ExamInfo> get_exam_info_sptr() const;
 
     const DiscretisedDensity<3,float>& get_activity_image() const;
     const DiscretisedDensity<3,float>& get_attenuation_image() const;
     const DiscretisedDensity<3,float>& get_attenuation_image_for_scatter_points() const;
     //! \deprecated
-    shared_ptr<DiscretisedDensity<3,float> > get_density_image_for_scatter_points_sptr() const;
+    shared_ptr<const DiscretisedDensity<3,float> > get_density_image_for_scatter_points_sptr() const;
     //@}
 
     //! \name set functions
@@ -136,7 +136,7 @@ public:
 
     void set_template_proj_data_info(const ProjDataInfo&);
 
-    void set_activity_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
+    void set_activity_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> >);
 
     void set_activity_image(const std::string& filename);
     //! \details Since July 2016, the information for the energy window and energy
@@ -145,7 +145,7 @@ public:
 
     void set_output_proj_data_sptr(shared_ptr<ProjData>);
 
-    void set_density_image_sptr(const shared_ptr<DiscretisedDensity<3,float> >&);
+    void set_density_image_sptr(const shared_ptr<const DiscretisedDensity<3,float> >);
 
     void set_density_image(const std::string&);
     //! This function depends on the ProjDataInfo of the scanner.
@@ -153,11 +153,11 @@ public:
     void set_output_proj_data(const std::string&);
 
     void
-    set_output_proj_data_sptr(const shared_ptr<ExamInfo>&,
-                              const shared_ptr<ProjDataInfo>&,
+    set_output_proj_data_sptr(const shared_ptr<const ExamInfo>,
+                              const shared_ptr<const ProjDataInfo>,
                               const std::string &);
 
-    void set_density_image_for_scatter_points_sptr(shared_ptr<DiscretisedDensity<3,float> >);
+    void set_density_image_for_scatter_points_sptr(shared_ptr<const DiscretisedDensity<3,float> >);
 
     void set_image_downsample_factors(float factor_xy = 1.f, float factor_z = 1.f,
                                       int _size_zoom_xy = -1, int _size_zoom_z = -1);
@@ -359,10 +359,10 @@ protected:
 
     std::string density_image_for_scatter_points_output_filename;
 
-    shared_ptr< DiscretisedDensity<3, float> > density_image_sptr;
+    shared_ptr< const DiscretisedDensity<3, float> > density_image_sptr;
 
     //! Pointer to hold the current activity estimation
-    shared_ptr<DiscretisedDensity<3,float> > activity_image_sptr;
+    shared_ptr<const DiscretisedDensity<3,float> > activity_image_sptr;
 
     //! set-up cache for attenuation integrals
     /*! \warning This will not remove existing cached data (if the sizes match). If you need this,
@@ -428,7 +428,7 @@ protected:
 
       See https://github.com/UCL/STIR/issues/495 for more information.
      */
-    void check_z_to_middle_consistent(DiscretisedDensity<3,float>& _image, const std::string& name) const;
+    void check_z_to_middle_consistent(const DiscretisedDensity<3,float>& _image, const std::string& name) const;
 };
 
 END_NAMESPACE_STIR
