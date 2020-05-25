@@ -528,18 +528,10 @@ compute_sub_gradient_without_penalty_plus_sensitivity(TargetT& gradient,
             }
         }
 
-            measured_bin.set_bin_value(1.0f);
-            // If more than 1 subsets, check if the current bin belongs to
-            // the current.
-            if (this->num_subsets > 1)
-            {
-                Bin basic_bin = measured_bin;
-                this->PM_sptr->get_symmetries_ptr()->find_basic_bin(basic_bin);
-                if (subset_num != static_cast<int>(basic_bin.view_num() % this->num_subsets))
-                    continue;
-            }
-            this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row,
-                                                                      measured_bin);
+        measured_bin.set_bin_value(1.0f);
+
+        this->PM_sptr->get_proj_matrix_elems_for_one_bin(proj_matrix_row,
+                                                         measured_bin);
 
         //in_the_range++;
         fwd_bin.set_bin_value(0.0f);
