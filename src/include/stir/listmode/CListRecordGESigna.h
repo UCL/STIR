@@ -1,12 +1,13 @@
 /*
     Copyright (C) 2003-2011 Hammersmith Imanet Ltd (CListRecordECAT.h)
     Copyright (C) 2013 University College London (major mods for GE Dimension data)
+    Copyright (C) 2016 University College London (major mods for GE Signa (i.e. RDF 10) data)
     Copyright (C) 2017-2018 University of Leeds
 */
 /*!
   \file
   \ingroup listmode
-  \brief Classes for listmode records of GE Dimension console data
+  \brief Classes for listmode records of GE Signa PET/MR data
 
   \author Kris Thielemans
   \author Ottavia Bertolli
@@ -52,7 +53,7 @@ enum ExtendedEvtType
 };
 
 
-//! Class for storing and using a coincidence event from a GE Dimension listmode file
+//! Class for storing and using a coincidence event from a GE Signa PET/MR listmode file
 /*! \ingroup listmode
   This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
 */
@@ -149,7 +150,7 @@ private:
 };
 
 #if 0
-//! A class for storing and using a trigger 'event' from a GE Dimension listmode file
+//! A class for storing and using a trigger 'event' from a GE Signa PET/MR listmode file
 /*! \ingroup listmode
   This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
  */
@@ -194,7 +195,7 @@ private:
 
 #endif
 
-//! A class for a general element (or "record") of a GE Dimension listmode file
+//! A class for a general element (or "record") of a GE Signa PET/MR listmode file
 /*! \ingroup listmode
   All types of records are stored in a (private) union with the "basic" classes such as CListEventDataGESigna.
   This class essentially just forwards the work to the "basic" classes.
