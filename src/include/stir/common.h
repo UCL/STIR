@@ -54,8 +54,6 @@
    class B:A { virtual B* f(); }
    \endcode
 
- <LI> defines STIR_NO_UNIQUE_PTR when the compiler has no std::unique_ptr support.
-   
  <LI> preprocessor definitions which attempt to determine the 
    operating system this is going to run on.
    use as #ifdef  __OS_WIN__ ... #elif ... #endif
@@ -167,11 +165,6 @@
 #endif  // __OS_UNIX_ case
 
 #endif // !defined(__OS_xxx_)
-
-//************** unique_ptr
-#if defined(BOOST_NO_CXX11_SMART_PTR) && !defined(STIR_NO_UNIQUE_PTR)
-#  define STIR_NO_UNIQUE_PTR
-#endif
 
 //*************** overload std::copy for built-in types
 /* If you have an older compiler, chages are that std::copy is 

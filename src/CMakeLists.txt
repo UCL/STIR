@@ -196,10 +196,8 @@ check_cxx_source_compiles("
    "
         HAVE_STD_UNIQUE_PTR)
 
-if(HAVE_STD_UNIQUE_PTR)
-    option(STIR_NO_UNIQUE_PTR "Disable use of std::unique_ptr (not recommended)" OFF)
-    mark_as_advanced(STIR_NO_UNIQUE_PTR)
-else()
+if(NOT HAVE_STD_UNIQUE_PTR)
+    message(FATAL_ERROR "Problems compiling with std::unique_ptr. Giving up.")
     set(STIR_NO_UNIQUE_PTR ON)
 endif()
 
