@@ -67,6 +67,7 @@ class CListEventDataGESigna
   }
   inline void get_detection_position(DetectionPositionPair<>& det_pos) const
   {
+    // TODO 447->get_num_detectors_per_ring()-1
     det_pos.pos1().tangential_coord() = 447 - loXtalTransAxID;
     det_pos.pos1().axial_coord() = loXtalAxialID;
     det_pos.pos2().tangential_coord() = 447 - hiXtalTransAxID;

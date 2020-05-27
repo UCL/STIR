@@ -161,7 +161,8 @@ get_viewgram(const int view_num, const int segment_num,
    for (int tang_pos = ret_viewgram.get_min_tangential_pos_num(), i_tang = 0; tang_pos <= ret_viewgram.get_max_tangential_pos_num(), i_tang<=static_cast<unsigned long long int>(get_num_tangential_poss())-1; ++tang_pos, ++i_tang)
       for(int i_axial=0, axial_pos = seg_ax_offset[find_segment_index_in_sequence(segment_num)]; i_axial<=static_cast<unsigned long long int>(get_num_axial_poss(segment_num))-1 , axial_pos <= seg_ax_offset[find_segment_index_in_sequence(segment_num)]+static_cast<unsigned long long int>(get_num_axial_poss(segment_num))-1; i_axial++, axial_pos++)
         for (int tof_poss = 0; tof_poss <= num_tof_poss-1; tof_poss++)
-      {
+          {
+            // TODO 223 -> get_num_views()-1
                 ret_viewgram[i_axial][-tang_pos] += static_cast<float> (tof_data[223-view_num][i_tang][tof_poss][axial_pos]);
             }
 
