@@ -19,7 +19,8 @@
 
   \file
   \ingroup singles_buildblock
-  \brief Implementation of stir::SinglesRatesFromGEHDF5
+  \ingroup GE
+  \brief Implementation of stir::GE::RDF_HDF5::SinglesRatesFromGEHDF5
 
   \author Palak Wadhwa
   \author Kris Thielemans
@@ -47,6 +48,9 @@ using std::ios;
 
 
 START_NAMESPACE_STIR
+namespace GE {
+namespace RDF_HDF5 {
+
 const char * const 
 SinglesRatesFromGEHDF5::registered_name = "Singles From GE HDF5 listmode File";
 
@@ -558,13 +562,8 @@ SinglesRatesFromGEHDF5::set_defaults()
   _listmode_filename = "";
 }
 
-
-
-
-
-
-
-
+} // namespace
+}
 END_NAMESPACE_STIR
 
 

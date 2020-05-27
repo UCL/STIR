@@ -23,10 +23,10 @@
   \ingroup recon_buildblock
   \ingroup GE
 
-  \brief Implementation for class stir::ecat::BinNormalisationFromGEHDF5
+  \brief Implementation for class stir::GE:RDF_HDF5::BinNormalisationFromGEHDF5
 
-  This file is largely a copy of the ECAT7 version, but reading data via the Interfile-like header of GEHDF5.
-  \todo merge ECAT7 and 8 code
+  This file is largely a copy of the ECAT7 version, but with important changes for GEHDF5.
+  \todo remove duplication
 
   \author Kris Thielemans
   \author Sanida Mustafovic
@@ -58,6 +58,8 @@ using std::ios;
 #endif
 
 START_NAMESPACE_STIR
+namespace GE {
+namespace RDF_HDF5 {
 
 	   
 
@@ -568,7 +570,7 @@ BinNormalisationFromGEHDF5::get_dead_time_efficiency (const DetectionPosition<>&
   return 1;  
 }
 
-
-
+} // namespace
+}
 END_NAMESPACE_STIR
 

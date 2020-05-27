@@ -43,7 +43,7 @@ END_NAMESPACE_ECAT7
 END_NAMESPACE_ECAT
 #endif
 #ifdef HAVE_HDF5
-static SinglesRatesFromGEHDF5::RegisterIt dummy300;
+static GE::RDF_HDF5::SinglesRatesFromGEHDF5::RegisterIt dummy300;
 #endif
 
 END_NAMESPACE_STIR

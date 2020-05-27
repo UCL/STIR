@@ -7,7 +7,8 @@
 /*!
   \file
   \ingroup listmode
-  \brief Implementation of class stir::CListModeDataGESigna
+  \ingroup GE
+  \brief Implementation of class stir::GE::RDF_HDF5::CListModeDataGESigna
 
   \author Kris Thielemans
   \author Ottavia Bertolli
@@ -27,6 +28,9 @@
 #include <fstream>
 
 START_NAMESPACE_STIR
+
+namespace GE {
+namespace RDF_HDF5 {
 
 CListModeDataGESigna::
 CListModeDataGESigna(const std::string& listmode_filename)
@@ -141,4 +145,6 @@ set_get_position(const CListModeDataGESigna::SavedPosition& pos)
     current_lm_data_ptr->set_get_position(pos);
 }
 
+} // namespace
+}
 END_NAMESPACE_STIR

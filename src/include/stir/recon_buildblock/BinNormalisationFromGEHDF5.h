@@ -20,8 +20,8 @@
 /*!
   \file
   \ingroup recon_buildblock
-
-  \brief Declaration of class stir::ecat::BinNormalisationFromGEHDF5
+  \ingroup GE
+  \brief Declaration of class stir::GE_RDF_HDF5::BinNormalisationFromGEHDF5
 
   \author Kris Thielemans
   \author Palak Wadhwa
@@ -47,6 +47,8 @@ using std::string;
 #endif
 
 START_NAMESPACE_STIR
+namespace GE {
+namespace RDF_HDF5 {
 
 /*!
   \ingroup recon_buildblock
@@ -137,6 +139,8 @@ private:
   GEHDF5Wrapper h5data;
 };
 
+} // namespace
+}
 END_NAMESPACE_STIR
 
 #endif

@@ -2,7 +2,7 @@
 
   \file
   \ingroup utilities
-
+  \ingroup GE
   \brief Construct randoms as a product of singles estimates
 
   \author Palak Wadhwa
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
   DetectorEfficiencies efficiencies(IndexRange2D(num_rings, num_detectors_per_ring));
 
   {
-      SinglesRatesFromGEHDF5  singles;
+      GE::RDF_HDF5::SinglesRatesFromGEHDF5  singles;
       singles.read_singles_from_listmode_file(_listmode_filename);
     // efficiencies
     if (true)
@@ -171,8 +171,8 @@ int main(int argc, char **argv)
 
 
 
-    shared_ptr<GEHDF5Wrapper> m_input_sptr;
-    m_input_sptr.reset(new GEHDF5Wrapper(_listmode_filename));
+    shared_ptr<GE::RDF_HDF5::GEHDF5Wrapper> m_input_sptr;
+    m_input_sptr.reset(new GE::RDF_HDF5::GEHDF5Wrapper(_listmode_filename));
     int num_slices = m_input_sptr->get_exam_info_sptr()->get_time_frame_definitions().get_num_frames();
 
     Bin bin;

@@ -4,7 +4,8 @@
 
   \file
   \ingroup IO
-  \brief Declaration of class stir::GEHDF5Wrapper
+  \ingroup GE
+  \brief Declaration of class stir::GE::RDF_HDF5::GEHDF5Wrapper
 
   \author Nikos Efthimiou
   \author Palak Wadhwa
@@ -31,6 +32,8 @@
 */
 
 START_NAMESPACE_STIR
+namespace GE {
+namespace RDF_HDF5 {
 
 shared_ptr<Scanner>
 GEHDF5Wrapper::get_scanner_sptr() const
@@ -63,4 +66,6 @@ hsize_t GEHDF5Wrapper::get_dataset_size() const
 const H5::H5File& GEHDF5Wrapper::get_file() const
 { return file; }
 
+} // namespace
+}
 END_NAMESPACE_STIR

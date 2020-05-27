@@ -22,7 +22,8 @@
 
   \file
   \ingroup IO
-  \brief Declaration of class stir::IO::GESignaListmodeInputFileFormat
+  \ingroup GE
+  \brief Declaration of class stir::GE::RDF_HDF5::IO::GESignaListmodeInputFileFormat
 
   \author Kris Thielemans
   \author Ottavia Bertolli
@@ -38,9 +39,13 @@
 
 START_NAMESPACE_STIR
 
+namespace GE {
+namespace RDF_HDF5 {
+
 //! Class for being able to read list mode data from the GE Signa PET/MR scanner via the listmode-data registry.
 /*! 
   \ingroup listmode
+  \ingroup GE
 */
 class GESignaListmodeInputFileFormat :
 public InputFileFormat<ListModeData >
@@ -108,7 +113,8 @@ std::cout << "\n Manufacturer :  " << read_str_manufacturer << "\n\n";
   }
 };
 
-
+} // namespace
+}
 END_NAMESPACE_STIR
 
 #endif

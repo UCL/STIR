@@ -3,7 +3,8 @@
 /*!
   \file
   \ingroup IO
-  \brief Declaration of class stir::GEHDF5Wrapper
+  \ingroup GE
+  \brief Declaration of class stir::GE::RDF_HDF5::GEHDF5Wrapper
 
   \author Nikos Efthimiou
   \author Palak Wadhwa
@@ -32,6 +33,8 @@
 #include <sstream>
 
 START_NAMESPACE_STIR
+namespace GE {
+namespace RDF_HDF5 {
 
 bool GEHDF5Wrapper::check_GE_signature(const std::string& filename)
 {
@@ -507,7 +510,7 @@ Succeeded GEHDF5Wrapper::get_dataspace(const unsigned int current_id,
     return Succeeded::yes;
 }
 
-
-
+} // namespace
+}
 END_NAMESPACE_STIR
 

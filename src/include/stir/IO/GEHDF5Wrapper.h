@@ -20,7 +20,8 @@
 /*!
   \file
   \ingroup IO
-  \brief Declaration of class stir::GEHDF5Wrapper
+  \ingroup GE
+  \brief Declaration of class stir::GE::RDF_HDF5::GEHDF5Wrapper
 
   \author Nikos Efthimiou
   \author Palak Wadhwa
@@ -38,8 +39,12 @@
 
 START_NAMESPACE_STIR
 
+namespace GE {
+namespace RDF_HDF5 {
+
 /*!
   \ingroup IO
+  \ingroup GE
   \brief A class that extracts and reads the necessary data from GE HDF5 input files.
 */
 
@@ -169,6 +174,8 @@ private:
 
 };
 
+} // namespace
+}
 END_NAMESPACE_STIR
 
 #include "stir/IO/GEHDF5Wrapper.inl"

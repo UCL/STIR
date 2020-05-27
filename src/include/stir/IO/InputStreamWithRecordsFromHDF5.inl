@@ -1,7 +1,8 @@
 /*!
   \file
   \ingroup IO
-  \brief Implementation of class stir::InputStreamWithRecordsFromHDF5
+  \ingroup GE
+  \brief Implementation of class stir::GE::RDF_HDF5::InputStreamWithRecordsFromHDF5
     
   \author Kris Thielemans
   \author Ottavia Bertolli
@@ -33,6 +34,9 @@
 #include <fstream>
 
 START_NAMESPACE_STIR
+
+namespace GE {
+namespace RDF_HDF5 {
 
 //template <class RecordT>
 //InputStreamWithRecordsFromHDF5<RecordT>::
@@ -163,4 +167,6 @@ set_saved_get_positions(const std::vector<std::streampos>& poss)
   saved_get_positions = poss;
 }
 
+} // namespace
+}
 END_NAMESPACE_STIR

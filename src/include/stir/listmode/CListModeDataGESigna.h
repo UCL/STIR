@@ -5,7 +5,8 @@
 /*!
   \file
   \ingroup listmode
-  \brief Declaration of class stir::CListModeDataGESigna
+  \ingroup GE
+  \brief Declaration of class stir::GE::RDF_HDF5::CListModeDataGESigna
     
   \author Kris Thielemans
   \author Ottavia Bertolli
@@ -24,9 +25,12 @@
 
 
 START_NAMESPACE_STIR
+namespace GE {
+namespace RDF_HDF5 {
 
 //! A class that reads the listmode data for GE Signa PET/MR scanners
 /*!  \ingroup listmode
+    \ingroup GE
     This file format is used by GE Signa PET/MR.
 */
 class CListModeDataGESigna : public CListModeData
@@ -73,6 +77,8 @@ private:
   Succeeded open_lm_file(); 
 };
 
+} // namespace
+}
 END_NAMESPACE_STIR
 
 #endif

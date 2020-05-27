@@ -4,8 +4,8 @@
 
   \file
   \ingroup projdata
-
-  \brief Declaration of class stir::ProjDataFromGEHDF5
+  \ingroup GE
+  \brief Declaration of class stir::GE::RDF_HDF5::ProjDataFromGEHDF5
 
   \author Palak Wadhwa
   \author Nikos Efthimiou
@@ -39,9 +39,13 @@
 
 START_NAMESPACE_STIR
 
+namespace GE {
+namespace RDF_HDF5 {
+
 
 /*!
   \ingroup projdata
+  \ingroup GE
   \brief A class which reads projection data from a GE HDF5
   sinogram file.
 */
@@ -90,6 +94,8 @@ private:
     Array<4, unsigned char> tof_data;
 };
 
+} // namespace
+}
 END_NAMESPACE_STIR
 
 

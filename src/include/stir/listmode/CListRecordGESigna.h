@@ -1,17 +1,17 @@
 /*
     Copyright (C) 2003-2011 Hammersmith Imanet Ltd (CListRecordECAT.h)
-    Copyright (C) 2013 University College London (major mods for GE Dimension data)
-    Copyright (C) 2016 University College London (major mods for GE Signa (i.e. RDF 10) data)
+    Copyright (C) 2013, 2016, 2020 University College London
     Copyright (C) 2017-2018 University of Leeds
 */
 /*!
   \file
   \ingroup listmode
+  \ingroup GE
   \brief Classes for listmode records of GE Signa PET/MR data
 
-  \author Kris Thielemans
-  \author Ottavia Bertolli
-  \author Palak Wadhwa
+  \author Kris Thielemans (major mods for GE Dimension data)
+  \author Ottavia Bertolli (major mods for GE Signa (i.e. RDF 10) data)
+  \author Palak Wadhwa (fix to STIR conventions and checks)
 */
 
 #ifndef __stir_listmode_CListRecordGESigna_H__
@@ -27,6 +27,9 @@
 #include <iostream>
 
 START_NAMESPACE_STIR
+
+namespace GE {
+namespace RDF_HDF5 {
 
 /***********************************
  * Supported Event Types
@@ -55,6 +58,7 @@ enum ExtendedEvtType
 
 //! Class for storing and using a coincidence event from a GE Signa PET/MR listmode file
 /*! \ingroup listmode
+  \ingroup GE
   This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
 */
 class CListEventDataGESigna
@@ -103,6 +107,7 @@ class CListEventDataGESigna
 
 //! A class for storing and using a timing 'event' from a GE Signa PET/MR listmode file
 /*! \ingroup listmode
+  \ingroup GE
   This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
  */
 class ListTimeDataGESigna
@@ -152,6 +157,7 @@ private:
 #if 0
 //! A class for storing and using a trigger 'event' from a GE Signa PET/MR listmode file
 /*! \ingroup listmode
+  \ingroup GE
   This class cannot have virtual functions, as it needs to just store the data 6 bytes for CListRecordGESigna to work.
  */
 class CListGatingDataGESigna
@@ -197,6 +203,7 @@ private:
 
 //! A class for a general element (or "record") of a GE Signa PET/MR listmode file
 /*! \ingroup listmode
+  \ingroup GE
   All types of records are stored in a (private) union with the "basic" classes such as CListEventDataGESigna.
   This class essentially just forwards the work to the "basic" classes.
 */
@@ -330,6 +337,9 @@ private:
 
 };
 
+
+} // namespace
+} // namespace
 
 END_NAMESPACE_STIR
 

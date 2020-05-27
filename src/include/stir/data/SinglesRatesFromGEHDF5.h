@@ -19,8 +19,8 @@
 /*!
   \file
   \ingroup singles_buildblock
-
-  \brief Declaration of class stir::SinglesRatesFromGEHDF5
+  \ingroup GE
+  \brief Declaration of class stir::GE::RDF_HDF5::SinglesRatesFromGEHDF5
 
   \author Palak Wadhwa
   \author Kris Thielemans
@@ -37,11 +37,12 @@
 
 
 START_NAMESPACE_STIR
-
-
+namespace GE {
+namespace RDF_HDF5 {
 
 /*!
   \ingroup singles_buildblock
+  \ingroup GE
   \brief A class for reading singles over the number of time samples from an GE HDF5 .BLF listmode file format.
 
   .BLF files are generated as a result of PET scan by GE SIGNA PET/MR scanners.
@@ -199,13 +200,8 @@ private:
  
 };
 
-
-
-
-
-
-
-
+} // namespace
+}
 END_NAMESPACE_STIR
 
 

@@ -2,8 +2,8 @@
 
   \file
   \ingroup projdata
-
-  \brief Implementations for class stir::ProjDataGEHDF5
+  \ingroup GE
+  \brief Implementations for class stir::GE::RDF_HDF5::ProjDataGEHDF5
 
   \author Palak Wadhwa
   \author Nikos Efthimiou
@@ -45,6 +45,9 @@ using std::ios;
 #endif
 
 START_NAMESPACE_STIR
+
+namespace GE {
+namespace RDF_HDF5 {
 
 ProjDataGEHDF5::ProjDataGEHDF5(shared_ptr<ProjDataInfo> input_proj_data_info_sptr,
                                    const std::string& input_filename) :
@@ -235,4 +238,6 @@ ProjDataGEHDF5::get_segment_sequence_in_hdf5() const
 { return segment_sequence; }
 
 
+} // namespace
+}
 END_NAMESPACE_STIR

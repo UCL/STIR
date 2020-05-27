@@ -146,9 +146,7 @@ static BinNormalisationFromECAT8::RegisterIt dummy103;
 END_NAMESPACE_ECAT
 
 #ifdef HAVE_HDF5
-START_NAMESPACE_ECAT
-static BinNormalisationFromGEHDF5::RegisterIt dummy104;
-END_NAMESPACE_ECAT
+static GE::RDF_HDF5::BinNormalisationFromGEHDF5::RegisterIt dummy104;
 #endif
 
 static FourierRebinning::RegisterIt dummyFORE;

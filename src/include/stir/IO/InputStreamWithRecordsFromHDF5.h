@@ -3,7 +3,8 @@
 /*!
   \file
   \ingroup IO
-  \brief Declaration of class stir::InputStreamWithRecordsFromHDF5
+  \ingroup GE
+  \brief Declaration of class stir::GE::RDF_HDF5::InputStreamWithRecordsFromHDF5
     
   \author Kris Thielemans
   \author Palak Wadhwa
@@ -44,8 +45,13 @@
 
 START_NAMESPACE_STIR
 
+namespace GE {
+namespace RDF_HDF5 {
+
 //! A helper class to read data from a hdf5 file
 /*! \ingroup IO
+    \ingroup GE
+
     This class is really a helper class for reading different records from a stream.
     It is useful when all types of records have some kind of signature to allow
     the function to find out what the size of the record is. In that case, all IO
@@ -146,6 +152,8 @@ private:
 
 };
 
+} // namespace
+}
 END_NAMESPACE_STIR
 
 #include "stir/IO/InputStreamWithRecordsFromHDF5.inl"
