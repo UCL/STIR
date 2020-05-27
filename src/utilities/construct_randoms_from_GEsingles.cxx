@@ -5,6 +5,9 @@
   \ingroup GE
   \brief Construct randoms as a product of singles estimates
 
+  \todo This file is somewhat preliminary. 
+  - It contains some hard-wired numbers for the Sigma
+
   \author Palak Wadhwa
   \author Kris Thielemans
 
@@ -236,6 +239,7 @@ int main(int argc, char **argv)
 
                 float coincidence_time_window = 0.00000000457f;
                 /*(*segment_ptr)[bin.axial_pos_num()]*/
+                // TODO 447 needs to be num_crystals_per_ring()-1
                 sinogram[bin.view_num()][bin.tangential_pos_num()] +=
                 num_slices*coincidence_time_window*efficiencies[ra][447-a]*efficiencies[rb][447-b%num_detectors_per_ring];
                 }

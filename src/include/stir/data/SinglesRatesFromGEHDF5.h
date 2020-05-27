@@ -46,6 +46,10 @@ namespace RDF_HDF5 {
   \brief A class for reading singles over the number of time samples from an GE HDF5 .BLF listmode file format.
 
   .BLF files are generated as a result of PET scan by GE SIGNA PET/MR scanners.
+
+  \todo expose GE::RDF_HDF5::GEHDF5Wrapper.get_exam_info_sptr()
+  \todo construct_randoms_from_GEsingles.cxx needs to reorder data. This should be moved to this class
+
 */
 class SinglesRatesFromGEHDF5 : 
 public RegisteredParsingObject<SinglesRatesFromGEHDF5, SinglesRates>
